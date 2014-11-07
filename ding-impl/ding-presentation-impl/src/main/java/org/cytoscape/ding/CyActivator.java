@@ -24,7 +24,23 @@ package org.cytoscape.ding;
  * #L%
  */
 
-import static org.cytoscape.work.ServiceProperties.*;
+import static org.cytoscape.work.ServiceProperties.ENABLE_FOR;
+import static org.cytoscape.work.ServiceProperties.ID;
+import static org.cytoscape.work.ServiceProperties.INSERT_SEPARATOR_AFTER;
+import static org.cytoscape.work.ServiceProperties.INSERT_SEPARATOR_BEFORE;
+import static org.cytoscape.work.ServiceProperties.IN_CONTEXT_MENU;
+import static org.cytoscape.work.ServiceProperties.IN_MENU_BAR;
+import static org.cytoscape.work.ServiceProperties.IN_NETWORK_PANEL_CONTEXT_MENU;
+import static org.cytoscape.work.ServiceProperties.MENU_GRAVITY;
+import static org.cytoscape.work.ServiceProperties.NETWORK_ADD_MENU;
+import static org.cytoscape.work.ServiceProperties.NETWORK_DELETE_MENU;
+import static org.cytoscape.work.ServiceProperties.NETWORK_EDIT_MENU;
+import static org.cytoscape.work.ServiceProperties.NETWORK_GROUP_MENU;
+import static org.cytoscape.work.ServiceProperties.NETWORK_SELECT_MENU;
+import static org.cytoscape.work.ServiceProperties.NODE_ADD_MENU;
+import static org.cytoscape.work.ServiceProperties.PREFERRED_ACTION;
+import static org.cytoscape.work.ServiceProperties.PREFERRED_MENU;
+import static org.cytoscape.work.ServiceProperties.TITLE;
 
 import java.net.URL;
 import java.util.Enumeration;
@@ -43,10 +59,11 @@ import org.cytoscape.application.swing.CyNodeViewContextMenuFactory;
 import org.cytoscape.ding.action.GraphicsDetailAction;
 import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
 import org.cytoscape.ding.customgraphics.CustomGraphicsTranslator;
-import org.cytoscape.ding.customgraphics.NullCustomGraphicsFactory;
+import org.cytoscape.ding.customgraphics.CyCustomGraphics2Manager;
+import org.cytoscape.ding.customgraphics.CyCustomGraphics2ManagerImpl;
 import org.cytoscape.ding.customgraphics.bitmap.URLImageCustomGraphicsFactory;
-import org.cytoscape.ding.customgraphics.vector.GradientRoundRectangleFactory;
 import org.cytoscape.ding.customgraphics.vector.GradientOvalFactory;
+import org.cytoscape.ding.customgraphics.vector.GradientRoundRectangleFactory;
 import org.cytoscape.ding.customgraphicsmgr.internal.CustomGraphicsManagerImpl;
 import org.cytoscape.ding.customgraphicsmgr.internal.action.CustomGraphicsManagerAction;
 import org.cytoscape.ding.customgraphicsmgr.internal.ui.CustomGraphicsBrowser;
@@ -65,28 +82,15 @@ import org.cytoscape.ding.impl.DingVisualStyleRenderingEngineFactory;
 import org.cytoscape.ding.impl.HandleFactoryImpl;
 import org.cytoscape.ding.impl.NVLTFActionSupport;
 import org.cytoscape.ding.impl.ViewTaskFactoryListener;
-//
-// Annotation api
-//
-import org.cytoscape.view.presentation.annotations.Annotation;
-import org.cytoscape.view.presentation.annotations.AnnotationFactory;
-import org.cytoscape.view.presentation.annotations.AnnotationManager;
-import org.cytoscape.view.presentation.annotations.ArrowAnnotation;
-import org.cytoscape.view.presentation.annotations.BoundedTextAnnotation;
-import org.cytoscape.view.presentation.annotations.ImageAnnotation;
-import org.cytoscape.view.presentation.annotations.ShapeAnnotation;
-import org.cytoscape.view.presentation.annotations.TextAnnotation;
-
 // Annotation creation
 import org.cytoscape.ding.impl.cyannotator.AnnotationFactoryManager;
 import org.cytoscape.ding.impl.cyannotator.AnnotationManagerImpl;
 import org.cytoscape.ding.impl.cyannotator.create.ArrowAnnotationFactory;
+import org.cytoscape.ding.impl.cyannotator.create.BoundedTextAnnotationFactory;
+import org.cytoscape.ding.impl.cyannotator.create.GroupAnnotationFactory;
 import org.cytoscape.ding.impl.cyannotator.create.ImageAnnotationFactory;
 import org.cytoscape.ding.impl.cyannotator.create.ShapeAnnotationFactory;
-import org.cytoscape.ding.impl.cyannotator.create.BoundedTextAnnotationFactory;
 import org.cytoscape.ding.impl.cyannotator.create.TextAnnotationFactory;
-import org.cytoscape.ding.impl.cyannotator.create.GroupAnnotationFactory;
-
 // Annotation edits and changes
 import org.cytoscape.ding.impl.cyannotator.tasks.AddAnnotationTaskFactory;
 import org.cytoscape.ding.impl.cyannotator.tasks.AddArrowTaskFactory;
@@ -99,13 +103,23 @@ import org.cytoscape.ding.impl.cyannotator.tasks.RemoveAnnotationTaskFactory;
 import org.cytoscape.ding.impl.cyannotator.tasks.ResizeAnnotationTaskFactory;
 import org.cytoscape.ding.impl.cyannotator.tasks.SelectAnnotationTaskFactory;
 import org.cytoscape.ding.impl.cyannotator.tasks.UngroupAnnotationsTaskFactory;
-
+import org.cytoscape.ding.impl.editor.CustomGraphicsVisualPropertyEditor;
+import org.cytoscape.ding.impl.editor.CyCustomGraphicsValueEditor;
 import org.cytoscape.ding.impl.editor.EdgeBendEditor;
 import org.cytoscape.ding.impl.editor.EdgeBendValueEditor;
 import org.cytoscape.ding.impl.editor.ObjectPositionEditor;
+import org.cytoscape.ding.internal.charts.bar.BarChartFactory;
+import org.cytoscape.ding.internal.charts.box.BoxChartFactory;
+import org.cytoscape.ding.internal.charts.heatmap.HeatMapChartFactory;
+import org.cytoscape.ding.internal.charts.line.LineChartFactory;
+import org.cytoscape.ding.internal.charts.pie.PieChartFactory;
+import org.cytoscape.ding.internal.charts.ring.RingChartFactory;
+import org.cytoscape.ding.internal.gradients.linear.LinearGradientFactory;
+import org.cytoscape.ding.internal.gradients.radial.RadialGradientFactory;
+import org.cytoscape.ding.internal.util.IconManager;
+import org.cytoscape.ding.internal.util.IconManagerImpl;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyNetworkFactory;
-import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
@@ -124,8 +138,17 @@ import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.presentation.RenderingEngineManager;
+//
+// Annotation api
+//
+import org.cytoscape.view.presentation.annotations.Annotation;
+import org.cytoscape.view.presentation.annotations.AnnotationFactory;
+import org.cytoscape.view.presentation.annotations.AnnotationManager;
+import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
+import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2Factory;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphicsFactory;
 import org.cytoscape.view.presentation.property.values.BendFactory;
+import org.cytoscape.view.presentation.property.values.CyColumnIdentifierFactory;
 import org.cytoscape.view.presentation.property.values.HandleFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualPropertyDependencyFactory;
@@ -133,6 +156,7 @@ import org.cytoscape.view.vizmap.gui.editor.ContinuousMappingCellRendererFactory
 import org.cytoscape.view.vizmap.gui.editor.ValueEditor;
 import org.cytoscape.view.vizmap.gui.editor.VisualPropertyEditor;
 import org.cytoscape.view.vizmap.mappings.ValueTranslator;
+import org.cytoscape.work.SynchronousTaskManager;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.swing.DialogTaskManager;
 import org.cytoscape.work.undo.UndoSupport;
@@ -153,16 +177,17 @@ public class CyActivator extends AbstractCyActivator {
 	public void start(BundleContext bc) {
 		startSpacial(bc); 
 		startCustomGraphicsMgr(bc);
+		startCharts(bc);
+		startGradients(bc);
 		startPresentationImpl(bc);
 	}
 
-
 	private void startPresentationImpl(BundleContext bc) {
-
 		VisualMappingManager vmmServiceRef = getService(bc, VisualMappingManager.class);
 		CyServiceRegistrar cyServiceRegistrarServiceRef = getService(bc, CyServiceRegistrar.class);
-		CyApplicationManager applicationManagerServiceRef = getService(bc, CyApplicationManager.class);
+		CyApplicationManager cyApplicationManagerServiceRef = getService(bc, CyApplicationManager.class);
 		CustomGraphicsManager customGraphicsManagerServiceRef = getService(bc, CustomGraphicsManager.class);
+		CyCustomGraphics2Manager cyCustomGraphics2ManagerServiceRef = getService(bc, CyCustomGraphics2Manager.class);
 		RenderingEngineManager renderingEngineManagerServiceRef = getService(bc, RenderingEngineManager.class);
 		CyRootNetworkManager cyRootNetworkFactoryServiceRef = getService(bc, CyRootNetworkManager.class);
 		UndoSupport undoSupportServiceRef = getService(bc, UndoSupport.class);
@@ -170,25 +195,23 @@ public class CyActivator extends AbstractCyActivator {
 		SpacialIndex2DFactory spacialIndex2DFactoryServiceRef = getService(bc, SpacialIndex2DFactory.class);
 		DialogTaskManager dialogTaskManager = getService(bc, DialogTaskManager.class);
 		CyServiceRegistrar cyServiceRegistrarRef = getService(bc, CyServiceRegistrar.class);
-		CyNetworkManager cyNetworkManagerServiceRef = getService(bc, CyNetworkManager.class);
 		CyEventHelper cyEventHelperServiceRef = getService(bc, CyEventHelper.class);
 		CyProperty cyPropertyServiceRef = getService(bc, CyProperty.class, "(cyPropertyName=cytoscape3.props)");
 		CyNetworkTableManager cyNetworkTableManagerServiceRef = getService(bc, CyNetworkTableManager.class);
 		CyNetworkViewManager cyNetworkViewManagerServiceRef = getService(bc, CyNetworkViewManager.class);
-
 		CyNetworkFactory cyNetworkFactory = getService(bc, CyNetworkFactory.class);
 
 		DVisualLexicon dVisualLexicon = new DVisualLexicon(customGraphicsManagerServiceRef);
 
 		NVLTFActionSupport nvltfActionSupport = 
-		    new NVLTFActionSupport(applicationManagerServiceRef,cyNetworkViewManagerServiceRef,
+		    new NVLTFActionSupport(cyApplicationManagerServiceRef,cyNetworkViewManagerServiceRef,
 		                           dialogTaskManager,cyServiceRegistrarRef);
 		ViewTaskFactoryListener vtfListener = new ViewTaskFactoryListener(nvltfActionSupport);
 
 		AnnotationFactoryManager annotationFactoryManager = new AnnotationFactoryManager();
 		AnnotationManager annotationManager = new AnnotationManagerImpl(cyNetworkViewManagerServiceRef);
 
-		DingGraphLOD dingGraphLOD = new DingGraphLOD(cyPropertyServiceRef, applicationManagerServiceRef);
+		DingGraphLOD dingGraphLOD = new DingGraphLOD(cyPropertyServiceRef, cyApplicationManagerServiceRef);
 		registerService(bc, dingGraphLOD, PropertyUpdatedListener.class, new Properties());
 		
 		DingGraphLODAll dingGraphLODAll = new DingGraphLODAll();
@@ -203,7 +226,7 @@ public class CyActivator extends AbstractCyActivator {
 				vtfListener, annotationFactoryManager, dingGraphLOD, vmmServiceRef,cyNetworkViewManagerServiceRef, handleFactory);
 		DingNavigationRenderingEngineFactory dingNavigationRenderingEngineFactory = new DingNavigationRenderingEngineFactory(
 				cyServiceRegistrarServiceRef, dVisualLexicon, renderingEngineManagerServiceRef,
-				applicationManagerServiceRef);
+				cyApplicationManagerServiceRef);
 		DingRenderingEngineFactory dingVisualStyleRenderingEngineFactory = new DingVisualStyleRenderingEngineFactory(
 				cyDataTableFactoryServiceRef, cyRootNetworkFactoryServiceRef, undoSupportServiceRef,
 				spacialIndex2DFactoryServiceRef, dVisualLexicon, dialogTaskManager,
@@ -478,7 +501,7 @@ public class CyActivator extends AbstractCyActivator {
 		                ungroupAnnotationTaskFactoryProps);
 
 		// Set mouse drag selection modes
-		SelectModeTaskFactory selectNodesOnly = new SelectModeTaskFactory("Nodes only", applicationManagerServiceRef);
+		SelectModeTaskFactory selectNodesOnly = new SelectModeTaskFactory("Nodes only", cyApplicationManagerServiceRef);
 		Properties selectNodesOnlyProps = new Properties();
 		selectNodesOnlyProps.setProperty(PREFERRED_ACTION, "New");
 		selectNodesOnlyProps.setProperty(MENU_GRAVITY, "0.5");
@@ -486,7 +509,7 @@ public class CyActivator extends AbstractCyActivator {
 		selectNodesOnlyProps.setProperty(TITLE, "Nodes Only");
 		registerService(bc, selectNodesOnly, TaskFactory.class, selectNodesOnlyProps);
 		
-		SelectModeTaskFactory selectEdgesOnly = new SelectModeTaskFactory("Edges only", applicationManagerServiceRef);
+		SelectModeTaskFactory selectEdgesOnly = new SelectModeTaskFactory("Edges only", cyApplicationManagerServiceRef);
 		Properties selectEdgesOnlyProps = new Properties();
 		selectEdgesOnlyProps.setProperty(PREFERRED_ACTION, "New");
 		selectEdgesOnlyProps.setProperty(MENU_GRAVITY, "0.6");
@@ -494,7 +517,7 @@ public class CyActivator extends AbstractCyActivator {
 		selectEdgesOnlyProps.setProperty(TITLE, "Edges Only");
 		registerService(bc, selectEdgesOnly, TaskFactory.class, selectEdgesOnlyProps);
 
-		SelectModeTaskFactory selectNodesAndEdges = new SelectModeTaskFactory("Nodes and Edges", applicationManagerServiceRef);
+		SelectModeTaskFactory selectNodesAndEdges = new SelectModeTaskFactory("Nodes and Edges", cyApplicationManagerServiceRef);
 		Properties selectNodesEdgesProps = new Properties();
 		selectNodesEdgesProps.setProperty(PREFERRED_ACTION, "New");
 		selectNodesEdgesProps.setProperty(MENU_GRAVITY, "0.7");
@@ -503,7 +526,7 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc, selectNodesAndEdges, TaskFactory.class, selectNodesEdgesProps);
 		
 		//
-		ShowGraphicsDetailsTaskFactory showGraphicsDetailsTaskFactory = new ShowGraphicsDetailsTaskFactory(applicationManagerServiceRef,dingGraphLOD, dingGraphLODAll);
+		ShowGraphicsDetailsTaskFactory showGraphicsDetailsTaskFactory = new ShowGraphicsDetailsTaskFactory(cyApplicationManagerServiceRef,dingGraphLOD, dingGraphLODAll);
 		Properties showGraphicsDetailsTaskFactoryProps = new Properties();
 		showGraphicsDetailsTaskFactoryProps.setProperty(MENU_GRAVITY, "11.0");
 		showGraphicsDetailsTaskFactoryProps.setProperty(ENABLE_FOR,"networkAndView");
@@ -530,7 +553,7 @@ public class CyActivator extends AbstractCyActivator {
 		registerServiceListener(bc, annotationFactoryManager, "addAnnotationFactory", "removeAnnotationFactory",
 				AnnotationFactory.class);
 
-		GraphicsDetailAction graphicsDetailAction = new GraphicsDetailAction(applicationManagerServiceRef,
+		GraphicsDetailAction graphicsDetailAction = new GraphicsDetailAction(cyApplicationManagerServiceRef,
 				cyNetworkViewManagerServiceRef, dingGraphLOD, dingGraphLODAll);
 		registerAllServices(bc, graphicsDetailAction, new Properties());
 
@@ -540,8 +563,8 @@ public class CyActivator extends AbstractCyActivator {
 		// Register the factory
 		dVisualLexicon.addBendFactory(bendFactory, new HashMap());
 		
-		// Translator for Passthrough
-		final CustomGraphicsTranslator cgTranslator = new CustomGraphicsTranslator(customGraphicsManagerServiceRef);
+		// Translators for Passthrough
+		final CustomGraphicsTranslator cgTranslator = new CustomGraphicsTranslator(customGraphicsManagerServiceRef, cyCustomGraphics2ManagerServiceRef);
 		registerService(bc, cgTranslator, ValueTranslator.class, new Properties());
 		
 		// Factories for Visual Property Dependency
@@ -553,12 +576,18 @@ public class CyActivator extends AbstractCyActivator {
 
 		final CustomGraphicsSizeDependencyFactory customGraphicsSizeDependencyFactory = new CustomGraphicsSizeDependencyFactory(dVisualLexicon);
 		registerService(bc, customGraphicsSizeDependencyFactory, VisualPropertyDependencyFactory.class, new Properties());
-
+		
+		// Custom Graphics Editors
+		final CyCustomGraphicsValueEditor customGraphicsValueEditor = new CyCustomGraphicsValueEditor(customGraphicsManagerServiceRef, cyCustomGraphics2ManagerServiceRef, cyServiceRegistrarRef);
+		registerAllServices(bc, customGraphicsValueEditor, new Properties());
+		
+		final CustomGraphicsVisualPropertyEditor customGraphicsVisualPropertyEditor = new CustomGraphicsVisualPropertyEditor(CyCustomGraphics.class, customGraphicsValueEditor, continuousMappingCellRendererFactory);
+		registerService(bc, customGraphicsVisualPropertyEditor, VisualPropertyEditor.class, new Properties());
 	}
 
 	private void startCustomGraphicsMgr(BundleContext bc) {
-
 		DialogTaskManager dialogTaskManagerServiceRef = getService(bc, DialogTaskManager.class);
+		SynchronousTaskManager<?> syncTaskManagerServiceRef = getService(bc, SynchronousTaskManager.class);
 		CyProperty coreCyPropertyServiceRef = getService(bc, CyProperty.class, "(cyPropertyName=cytoscape3.props)");
 		CyApplicationManager cyApplicationManagerServiceRef = getService(bc, CyApplicationManager.class);
 		CyApplicationConfiguration cyApplicationConfigurationServiceRef = getService(bc,
@@ -568,8 +597,8 @@ public class CyActivator extends AbstractCyActivator {
 		VisualMappingManager vmmServiceRef = getService(bc, VisualMappingManager.class);
 		
 		CustomGraphicsManagerImpl customGraphicsManager = new CustomGraphicsManagerImpl(coreCyPropertyServiceRef,
-				dialogTaskManagerServiceRef, cyApplicationConfigurationServiceRef, eventHelperServiceRef,
-				vmmServiceRef, cyApplicationManagerServiceRef, getdefaultImageURLs(bc));
+				dialogTaskManagerServiceRef, syncTaskManagerServiceRef, cyApplicationConfigurationServiceRef, 
+				eventHelperServiceRef, vmmServiceRef, cyApplicationManagerServiceRef, getdefaultImageURLs(bc));
 		CustomGraphicsBrowser browser = new CustomGraphicsBrowser(customGraphicsManager);
 		registerAllServices(bc, browser, new Properties());
 
@@ -582,9 +611,6 @@ public class CyActivator extends AbstractCyActivator {
 		// Create and register our built-in factories.
 		// TODO:  When the CustomGraphicsFactory service stuff is set up, just
 		// register these as services
-		NullCustomGraphicsFactory nullFactory = new NullCustomGraphicsFactory(customGraphicsManager);
-		customGraphicsManager.addCustomGraphicsFactory(nullFactory, new Properties());
-
 		URLImageCustomGraphicsFactory imageFactory = new URLImageCustomGraphicsFactory(customGraphicsManager);
 		customGraphicsManager.addCustomGraphicsFactory(imageFactory, new Properties());
 
@@ -595,11 +621,57 @@ public class CyActivator extends AbstractCyActivator {
 		     new GradientRoundRectangleFactory(customGraphicsManager);
 		customGraphicsManager.addCustomGraphicsFactory(rectangleFactory, new Properties());
 
-		// Now register our service listener so that app writers can
-		// provide their own CustomGraphics factory methods
+		// Register this service listener so that app writers can provide their own CustomGraphics factories
 		registerServiceListener(bc, customGraphicsManager, 
 		                        "addCustomGraphicsFactory", "removeCustomGraphicsFactory", 
 		                        CyCustomGraphicsFactory.class);
+		
+		// Register this service listener so that app writers can provide their own CyCustomGraphics2 factories
+		final CyCustomGraphics2Manager chartFactoryManager = CyCustomGraphics2ManagerImpl.getInstance();
+		registerAllServices(bc, chartFactoryManager, new Properties());
+		registerServiceListener(bc, chartFactoryManager, "addFactory", "removeFactory", CyCustomGraphics2Factory.class);
+	}
+	
+	private void startCharts(BundleContext bc) {
+		// Register Chart Factories
+		final CyApplicationManager cyApplicationManagerServiceRef = getService(bc, CyApplicationManager.class);
+		final IconManager iconManager = new IconManagerImpl();
+		final CyColumnIdentifierFactory colIdFactory = getService(bc, CyColumnIdentifierFactory.class);
+		
+		final Properties factoryProps = new Properties();
+		factoryProps.setProperty(CyCustomGraphics2Factory.GROUP, CyCustomGraphics2Manager.GROUP_CHARTS);
+		{
+			final BarChartFactory factory = new BarChartFactory(cyApplicationManagerServiceRef, iconManager, colIdFactory);
+			registerService(bc, factory, CyCustomGraphics2Factory.class, factoryProps);
+		}{
+			final BoxChartFactory factory = new BoxChartFactory(cyApplicationManagerServiceRef, iconManager, colIdFactory);
+			registerService(bc, factory, CyCustomGraphics2Factory.class, factoryProps);
+		}{
+			final PieChartFactory factory = new PieChartFactory(cyApplicationManagerServiceRef, iconManager, colIdFactory);
+			registerService(bc, factory, CyCustomGraphics2Factory.class, factoryProps);
+		}{
+			final RingChartFactory factory = new RingChartFactory(cyApplicationManagerServiceRef, iconManager, colIdFactory);
+			registerService(bc, factory, CyCustomGraphics2Factory.class, factoryProps);
+		}{
+			final LineChartFactory factory = new LineChartFactory(cyApplicationManagerServiceRef, iconManager, colIdFactory);
+			registerService(bc, factory, CyCustomGraphics2Factory.class, factoryProps);
+		}{
+			final HeatMapChartFactory factory = new HeatMapChartFactory(cyApplicationManagerServiceRef, iconManager, colIdFactory);
+			registerService(bc, factory, CyCustomGraphics2Factory.class, factoryProps);
+		}
+	}
+	
+	private void startGradients(BundleContext bc) {
+		// Register Gradient Factories
+		final Properties factoryProps = new Properties();
+		factoryProps.setProperty(CyCustomGraphics2Factory.GROUP, CyCustomGraphics2Manager.GROUP_GRADIENTS);
+		{
+			final LinearGradientFactory factory = new LinearGradientFactory();
+			registerService(bc, factory, CyCustomGraphics2Factory.class, factoryProps);
+		}{
+			final RadialGradientFactory factory = new RadialGradientFactory();
+			registerService(bc, factory, CyCustomGraphics2Factory.class, factoryProps);
+		}
 	}
 	
 	/**

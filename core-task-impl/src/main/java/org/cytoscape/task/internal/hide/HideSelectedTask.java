@@ -36,7 +36,9 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.task.AbstractNetworkViewTask;
 import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.View;
 import org.cytoscape.view.vizmap.VisualMappingManager;
+import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.undo.UndoSupport;
 
@@ -76,7 +78,18 @@ public class HideSelectedTask extends AbstractNetworkViewTask {
 		HideUtils.setVisibleEdges(selectedEdges, false, view);
 		e.setProgress(0.8);
 		
-		vmMgr.getVisualStyle(view).apply(view);
+		VisualStyle style = vmMgr.getVisualStyle(view);
+		for (CyIdentifiable element: selectedElements) {
+			View<? extends CyIdentifiable> elementView = null;
+			if (element instanceof CyNode)
+				elementView = view.getNodeView((CyNode)element);
+			else if (element instanceof CyEdge)
+				elementView = view.getEdgeView((CyEdge)element);
+			else
+				continue;
+			style.apply(network.getRow(element), elementView);
+		}
+
 		view.updateView();
 		e.setProgress(1.0);
 	}

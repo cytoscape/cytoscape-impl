@@ -91,6 +91,8 @@ final class NodeViewDefaultSupport extends AbstractViewDefaultSupport {
 		} else if (vp == DVisualLexicon.NODE_LABEL_WIDTH) {
 			double newSize = ((Number) value).doubleValue();
 			setLabelWidth(newSize);
+		} else if (vp == BasicVisualLexicon.NODE_NESTED_NETWORK_IMAGE_VISIBLE) {
+			setNestedNetworkImgVisible(Boolean.TRUE.equals(value));
 		}
 	}
 
@@ -192,6 +194,12 @@ final class NodeViewDefaultSupport extends AbstractViewDefaultSupport {
 			nodeDetails.setLabelJustifyDefault(labelPosition.getJustify().getConversionConstant());
 			nodeDetails.setLabelOffsetVectorXDefault(labelPosition.getOffsetX());
 			nodeDetails.setLabelOffsetVectorYDefault(labelPosition.getOffsetY());
+		}
+	}
+	
+	private void setNestedNetworkImgVisible(boolean visible) {
+		synchronized (lock) {
+			nodeDetails.setNestedNetworkImgVisibleDefault(visible);
 		}
 	}
 }

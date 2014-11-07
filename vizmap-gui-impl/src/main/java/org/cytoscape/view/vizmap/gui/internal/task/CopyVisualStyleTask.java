@@ -37,6 +37,8 @@ import org.cytoscape.work.undo.UndoSupport;
 
 public class CopyVisualStyleTask extends AbstractTask {
 
+	public static final String TITLE = "Copy Style";
+
 	@Tunable(description = "Name of copied Style:")
 	public String vsName;
 
@@ -56,7 +58,7 @@ public class CopyVisualStyleTask extends AbstractTask {
 	
 	@ProvidesTitle
 	public String getTitle() {
-		return "Copy Style";
+		return TITLE;
 	}
 	
 	@Override

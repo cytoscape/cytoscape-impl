@@ -77,7 +77,7 @@ public class RTreeSerializationPerformance {
 				double height = (((double) nonnegative) / ((double) 0x7fffffff)) / sqrtN;
 				tree.insert(inx, (float) (centerX - (width / 2.0d)),
 				            (float) (centerY - (height / 2.0d)),
-				            (float) (centerX + (width / 2.0d)), (float) (centerY + (height / 2.0d)));
+				            (float) (centerX + (width / 2.0d)), (float) (centerY + (height / 2.0d)), 0.0);
 				inx++;
 			}
 

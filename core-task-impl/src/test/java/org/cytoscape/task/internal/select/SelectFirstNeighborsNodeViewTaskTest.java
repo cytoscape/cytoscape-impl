@@ -60,7 +60,7 @@ public class SelectFirstNeighborsNodeViewTaskTest extends AbstractSelectTaskTest
 		when(netView.getModel()).thenReturn(net);
 
 		// run the task
-		Task t = new SelectFirstNeighborsNodeViewTask(nv, netView, CyEdge.Type.ANY);
+		Task t = new SelectFirstNeighborsNodeViewTask(nv, netView, CyEdge.Type.ANY, eventHelper);
 		t.run(tm);
 
 		// check that the expected rows were set
@@ -72,7 +72,7 @@ public class SelectFirstNeighborsNodeViewTaskTest extends AbstractSelectTaskTest
 		View<CyNode> nv = (View<CyNode>) mock(View.class);
 
 		// run the task
-		Task t = new SelectFirstNeighborsNodeViewTask(nv, null, CyEdge.Type.ANY);
+		Task t = new SelectFirstNeighborsNodeViewTask(nv, null, CyEdge.Type.ANY, eventHelper);
 		t.run(tm);
 	}
 
@@ -81,7 +81,7 @@ public class SelectFirstNeighborsNodeViewTaskTest extends AbstractSelectTaskTest
 		CyNetworkView netView = mock(CyNetworkView.class);
 
 		// run the task
-		Task t = new SelectFirstNeighborsNodeViewTask(null, netView, CyEdge.Type.ANY);
+		Task t = new SelectFirstNeighborsNodeViewTask(null, netView, CyEdge.Type.ANY, eventHelper);
 		t.run(tm);
 	}
 }

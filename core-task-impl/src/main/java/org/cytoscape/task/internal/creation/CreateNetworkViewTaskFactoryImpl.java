@@ -26,14 +26,17 @@ package org.cytoscape.task.internal.creation;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.NetworkViewRenderer;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.task.AbstractNetworkCollectionTaskFactory;
 import org.cytoscape.task.create.CreateNetworkViewTaskFactory;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
-import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.presentation.RenderingEngineManager;
 import org.cytoscape.view.vizmap.VisualMappingManager;
@@ -46,51 +49,44 @@ public class CreateNetworkViewTaskFactoryImpl extends AbstractNetworkCollectionT
 
 	private final UndoSupport undoSupport;
 	private final CyNetworkViewManager netViewMgr;
-	private final CyNetworkViewFactory viewFactory;
 	private final CyLayoutAlgorithmManager layoutMgr;
 	private final CyEventHelper eventHelper;
 	private final VisualMappingManager vmm;
 	private final RenderingEngineManager renderingEngineMgr;
 	private final CyApplicationManager appMgr;
+	private final Set<NetworkViewRenderer> viewRenderers;
 
-	public CreateNetworkViewTaskFactoryImpl(final UndoSupport undoSupport, 
-			final CyNetworkViewFactory viewFactory,
-			final CyNetworkViewManager netViewMgr, final CyLayoutAlgorithmManager layoutMgr,
-			final CyEventHelper eventHelper, final VisualMappingManager vmm,
-			final RenderingEngineManager renderingEngineMgr,
-			final CyApplicationManager appMgr) {
+	public CreateNetworkViewTaskFactoryImpl(final UndoSupport undoSupport,
+											final CyNetworkViewManager netViewMgr,
+											final CyLayoutAlgorithmManager layoutMgr,
+											final CyEventHelper eventHelper,
+											final VisualMappingManager vmm,
+											final RenderingEngineManager renderingEngineMgr,
+											final CyApplicationManager appMgr) {
 		this.undoSupport = undoSupport;
-		this.viewFactory = viewFactory;
 		this.netViewMgr = netViewMgr;
 		this.layoutMgr = layoutMgr;
 		this.eventHelper = eventHelper;
 		this.vmm = vmm;
 		this.renderingEngineMgr = renderingEngineMgr;
 		this.appMgr = appMgr;
+		viewRenderers = new HashSet<NetworkViewRenderer>();
 	}
 
 	@Override
 	public TaskIterator createTaskIterator(final Collection<CyNetwork> networks) {
+		if (viewRenderers.isEmpty())
+			throw new RuntimeException("Unnable to create Network View: There is no NetworkViewRenderer.");
+		
 		// Create visualization + layout (optional)
 		if (layoutMgr == null)
 			return new TaskIterator(1, new CreateNetworkViewTask(undoSupport, networks, 
-			                                                     viewFactory, netViewMgr,
-			                                                     layoutMgr, eventHelper, 
-			                                                     vmm, renderingEngineMgr));
+																 netViewMgr, layoutMgr, eventHelper, 
+			                                                     vmm, renderingEngineMgr, viewRenderers));
 		else
 			return new TaskIterator(2, new CreateNetworkViewTask(undoSupport, networks, 
-			                                                     viewFactory, netViewMgr,
-					                                                 layoutMgr, eventHelper, 
-			                                                     vmm, renderingEngineMgr));
-	}
-
-	@Override
-	public boolean isReady(final Collection<CyNetwork> networks) {
-		for (CyNetwork n : networks)
-			if (!netViewMgr.getNetworkViews(n).isEmpty())
-				return false;
-
-		return true;
+																 netViewMgr, layoutMgr, eventHelper, 
+			                                                     vmm, renderingEngineMgr, viewRenderers));
 	}
 
 	@Override
@@ -100,9 +96,25 @@ public class CreateNetworkViewTaskFactoryImpl extends AbstractNetworkCollectionT
 
 	@Override
 	public boolean isReady() {
-		if (appMgr.getCurrentNetwork() != null)
-			return true;
+		return appMgr.getCurrentNetwork() != null;
+	}
+	
+	// TODO delete this method when multiple views per network is completely supported
+	@Override
+	public boolean isReady(Collection<CyNetwork> networks) {
+		for (CyNetwork n : networks) {
+			if (netViewMgr.getNetworkViews(n).isEmpty())
+				return true;
+		}
+		
 		return false;
 	}
 
+	public void addNetworkViewRenderer(final NetworkViewRenderer renderer, final Map<?, ?> props) {
+		viewRenderers.add(renderer);
+	}
+
+	public void removeNetworkViewRenderer(final NetworkViewRenderer renderer, final Map<?, ?> props) {
+		viewRenderers.remove(renderer);
+	}
 }

@@ -1,15 +1,22 @@
 package org.cytoscape.io.internal.read.json;
 
+import static org.cytoscape.io.internal.write.json.serializer.CytoscapeJsToken.COLUMN_NAME;
+import static org.cytoscape.io.internal.write.json.serializer.CytoscapeJsToken.COLUMN_TYPES;
 import static org.cytoscape.io.internal.write.json.serializer.CytoscapeJsToken.DATA;
+import static org.cytoscape.io.internal.write.json.serializer.CytoscapeJsToken.EDGE;
 import static org.cytoscape.io.internal.write.json.serializer.CytoscapeJsToken.EDGES;
 import static org.cytoscape.io.internal.write.json.serializer.CytoscapeJsToken.ELEMENTS;
 import static org.cytoscape.io.internal.write.json.serializer.CytoscapeJsToken.ID;
+import static org.cytoscape.io.internal.write.json.serializer.CytoscapeJsToken.LIST_TYPE;
+import static org.cytoscape.io.internal.write.json.serializer.CytoscapeJsToken.NETWORK;
+import static org.cytoscape.io.internal.write.json.serializer.CytoscapeJsToken.NODE;
 import static org.cytoscape.io.internal.write.json.serializer.CytoscapeJsToken.NODES;
 import static org.cytoscape.io.internal.write.json.serializer.CytoscapeJsToken.POSITION;
 import static org.cytoscape.io.internal.write.json.serializer.CytoscapeJsToken.POSITION_X;
 import static org.cytoscape.io.internal.write.json.serializer.CytoscapeJsToken.POSITION_Y;
 import static org.cytoscape.io.internal.write.json.serializer.CytoscapeJsToken.SOURCE;
 import static org.cytoscape.io.internal.write.json.serializer.CytoscapeJsToken.TARGET;
+import static org.cytoscape.io.internal.write.json.serializer.CytoscapeJsToken.TYPE;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -17,12 +24,14 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
+import org.cytoscape.model.subnetwork.CyRootNetwork;
+import org.cytoscape.model.subnetwork.CySubNetwork;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -30,38 +39,104 @@ import com.fasterxml.jackson.databind.JsonNode;
  * Parse Cytoscape.js style map.
  * 
  */
-public class CytoscapejsMapper implements JSONMapper {
+public class CytoscapejsMapper {
 
-	private final CyNetworkFactory factory;
 	private Map<CyNode, Double[]> positionMap;
 
-	public CytoscapejsMapper(final CyNetworkFactory factory) {
-		this.factory = factory;
-	}
+	public CyNetwork createNetwork(final JsonNode rootNode, final CyNetwork network, final String collectionName) {
 
-	@Override
-	public CyNetwork createNetwork(final JsonNode rootNode) {
-
+		// Create Columns first if this optional field is available.
+		final JsonNode columnTypes = rootNode.get(COLUMN_TYPES.getTag());
+		if(columnTypes != null) {
+			parseColumnTypes(columnTypes, network);
+		}
+		
 		final JsonNode elements = rootNode.get(ELEMENTS.getTag());
 		final JsonNode nodes = elements.get(NODES.getTag());
 		final JsonNode edges = elements.get(EDGES.getTag());
 
-		final CyNetwork network = factory.createNetwork();
 		// Read network 
 		final JsonNode data = rootNode.get(DATA.getTag());
-		addTableData(data, network, network);
+		// Need to put all columns to local table, not the default (shared) one.
+		addTableData(data, network, network, network.getTable(CyNetwork.class, CyNetwork.LOCAL_ATTRS));
 		
 		this.positionMap = new HashMap<CyNode, Double[]>();
 		final Map<String, CyNode> nodeMap = this.addNodes(network, nodes);
 		this.addEdges(network, edges, nodeMap);
 
+		if(collectionName != null) {
+			final CyRootNetwork rootNetwork = ((CySubNetwork)network).getRootNetwork();
+			rootNetwork.getRow(rootNetwork).set(CyNetwork.NAME, collectionName);
+		}
+		
 		return network;
 	}
+	
+	
+	private final void parseColumnTypes(final JsonNode columnTypes, final CyNetwork network) {
+		final JsonNode node = columnTypes.get(NODE.getTag());
+		if(node != null) {
+			parseType(node, network.getDefaultNodeTable());
+		}
+		
+		final JsonNode edge = columnTypes.get(EDGE.getTag());
+		if(edge != null) {
+			parseType(edge, network.getDefaultEdgeTable());
+		}
+
+		final JsonNode net = columnTypes.get(NETWORK.getTag());
+		if(net != null) {
+			parseType(net, network.getTable(CyNetwork.class, CyNetwork.LOCAL_ATTRS));
+		}
+	}
+	
+	private final void parseType(final JsonNode typeArray, final CyTable table) {
+		for (final JsonNode entry : typeArray) {
+			final JsonNode columnName = entry.get(COLUMN_NAME.getTag());
+			final JsonNode type = entry.get(TYPE.getTag());
+		
+			final String name = columnName.textValue();
+			final CyColumn column = table.getColumn(name);
+			if(column == null) {
+				final String typeString = type.textValue();
+				final Class<?> dataType = getType(typeString);
+				if(dataType == List.class) {
+					final JsonNode listClass = entry.get(LIST_TYPE.getTag());
+					final Class<?> listType = getType(listClass.textValue());
+					table.createListColumn(name, listType, false);
+				} else {
+					// Create actual column
+					table.createColumn(name, dataType, false);
+				}
+				
+			}
+		}
+	}
+	
+	private final Class<?> getType(final String type) {
+		
+		if(type.equals(List.class.getSimpleName())) {
+			return List.class;
+		} else if(type.equals(Double.class.getSimpleName())) {
+			return Double.class;
+		} else if(type.equals(Integer.class.getSimpleName())) {
+			return Integer.class;
+		} else if(type.equals(Long.class.getSimpleName())) {
+			return Long.class;
+		} else if(type.equals(Boolean.class.getSimpleName())) {
+			return Boolean.class;
+		} else {
+			return String.class;
+		}
+	}
+	
 
 	private final Map<String, CyNode> addNodes(final CyNetwork network, final JsonNode nodes) {
 
 		final Map<String, CyNode> nodeMap = new HashMap<String, CyNode>();
 
+		final CyTable nodeTable = network.getDefaultNodeTable();
+		
 		for (final JsonNode node : nodes) {
 			// Extract node properties.
 			final JsonNode data = node.get(DATA.getTag());
@@ -73,7 +148,7 @@ public class CytoscapejsMapper implements JSONMapper {
 				// Use ID as unique name.
 				network.getRow(cyNode).set(CyNetwork.NAME, nodeId.textValue());
 				nodeMap.put(nodeId.textValue(), cyNode);
-				addTableData(data, cyNode, network);
+				addTableData(data, cyNode, network, nodeTable);
 			}
 
 			// Get (x,y) location if available.
@@ -93,6 +168,8 @@ public class CytoscapejsMapper implements JSONMapper {
 
 	private final void addEdges(final CyNetwork network, final JsonNode edges, final Map<String, CyNode> nodeMap) {
 
+		final CyTable edgeTable = network.getDefaultEdgeTable();
+		
 		for (final JsonNode edge : edges) {
 			final JsonNode data = edge.get(DATA.getTag());
 			final JsonNode source = data.get(SOURCE.getTag());
@@ -103,12 +180,12 @@ public class CytoscapejsMapper implements JSONMapper {
 			final CyEdge newEdge = network.addEdge(sourceNode, targetNode, true);
 			
 			// Add edge table data
-			addTableData(data, newEdge, network);
+			addTableData(data, newEdge, network, edgeTable);
 		}
 	}
 
 
-	private final void addTableData(final JsonNode data, final CyIdentifiable graphObject, final CyNetwork network) {
+	private final void addTableData(final JsonNode data, final CyIdentifiable graphObject, final CyNetwork network, final CyTable table) {
 		final Iterator<String> fieldNames = data.fieldNames();
 
 		while (fieldNames.hasNext()) {
@@ -117,11 +194,13 @@ public class CytoscapejsMapper implements JSONMapper {
 			// Ignore unnecessary fields (ID, SUID, SELECTED)
 			if (fieldName.equals(CyIdentifiable.SUID) == false
 				&& fieldName.equals(CyNetwork.SELECTED) == false) {
-
-				final CyTable table = network.getRow(graphObject).getTable();
+				// New column creation:
+				// TODO: how can we handle number types?  
 				if (table.getColumn(fieldName) == null) {
-					// Create new column if necessary
+					
+					// GUESSS data type.
 					final Class<?> dataType = getDataType(data.get(fieldName));
+					
 					if (dataType == List.class) {
 						final Class<?> listDataType = getListDataType(data.get(fieldName));
 						table.createListColumn(fieldName, listDataType, false);
@@ -130,7 +209,8 @@ public class CytoscapejsMapper implements JSONMapper {
 					}
 				}
 
-				network.getRow(graphObject).set(fieldName, getValue(data.get(fieldName)));
+				final CyColumn col = table.getColumn(fieldName);
+				network.getRow(graphObject).set(fieldName, getValue(data.get(fieldName), col));
 			}
 		}
 	}
@@ -143,66 +223,48 @@ public class CytoscapejsMapper implements JSONMapper {
 		}
 		
 		final JsonNode entry = arrayNode.get(0);
-
-		if (entry.isLong()) {
-			return Long.class;
-		} else if (entry.isBoolean()) {
-			return Boolean.class;
-		} else if (entry.isInt()) {
-			return Integer.class;
-		} else if (entry.isFloat()) {
-			return Float.class;
-		} else if (entry.isDouble()) {
-			return Double.class;
-		} else {
-			return String.class;
-		}
+		return getDataType(entry);
 	}
+
 
 
 	private final Class<?> getDataType(final JsonNode entry) {
 		if (entry.isArray()) {
 			return List.class;
-		} else if (entry.isLong()) {
-			return Long.class;
 		} else if (entry.isBoolean()) {
 			return Boolean.class;
-		} else if (entry.isInt()) {
-			return Integer.class;
-		} else if (entry.isFloat()) {
-			return Float.class;
-		} else if (entry.isDouble()) {
+		} else if (entry.isNumber()) {
 			return Double.class;
 		} else {
 			return String.class;
 		}
 	}
 
-	private final Object getValue(final JsonNode entry) {
+	private final Object getValue(final JsonNode entry, final CyColumn column) {
 		// Check the data is list or not.
 		if (entry.isArray()) {
 			final Iterator<JsonNode> values = entry.elements();
 			final List<Object> list = new ArrayList<Object>();
 			while (values.hasNext()) {
-				list.add(parseValue(values.next()));
+				list.add(parseValue(values.next(), column.getListElementType()));
 			}
 			return list;
 		} else {
-			return parseValue(entry);
+			return parseValue(entry, column.getType());
 		}
 	}
 
 
-	private final Object parseValue(final JsonNode entry) {
-		if (entry.isLong()) {
+	private final Object parseValue(final JsonNode entry, final Class<?> type) {
+		if (type == Long.class) {
 			return entry.longValue();
-		} else if (entry.isInt()) {
+		} else if (type == Integer.class) {
 			return entry.intValue();
-		} else if (entry.isFloat()) {
+		} else if (type == Float.class) {
 			return entry.floatValue();
-		} else if (entry.isDouble()) {
+		} else if (type == Double.class) {
 			return entry.doubleValue();
-		} else if (entry.isBoolean()) {
+		} else if (type == Boolean.class) {
 			return entry.booleanValue();
 		} else {
 			return entry.asText();

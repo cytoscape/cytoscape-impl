@@ -11,7 +11,6 @@ import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.NetworkTestSupport;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.session.CyNetworkNaming;
-import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.internal.NullCyNetworkViewFactory;
@@ -44,7 +43,9 @@ public class CloneNetworkTaskFactoryTest {
 		CyGroupFactory groupFactory = Mockito.mock(CyGroupFactory.class);
 		RenderingEngineManager renderingEngineMgr = Mockito.mock(RenderingEngineManager.class);
 		CyNetworkViewFactory nullNetworkViewFactory = new NullCyNetworkViewFactory();
-		CloneNetworkTaskFactoryImpl factory = new CloneNetworkTaskFactoryImpl(networkMgr, networkViewMgr, vmm, netFactory, netViewFactory, naming, appMgr, netTableMgr, rootNetMgr, groupMgr, groupFactory, renderingEngineMgr, nullNetworkViewFactory);
+		CloneNetworkTaskFactoryImpl factory = new CloneNetworkTaskFactoryImpl(networkMgr, networkViewMgr, vmm, 
+				netFactory, netViewFactory, naming, appMgr, netTableMgr, rootNetMgr, groupMgr, groupFactory, 
+				renderingEngineMgr, nullNetworkViewFactory);
 		
 		CyNetwork network = netFactory.createNetwork();
 		TaskObserver observer = Mockito.mock(TaskObserver.class);

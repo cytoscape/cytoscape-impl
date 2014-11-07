@@ -39,6 +39,7 @@ import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualProperty;
+import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.view.presentation.RenderingEngineManager;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.vizmap.VisualMappingManager;
@@ -69,6 +70,11 @@ public class SessionXGMMLNetworkViewWriter extends GenericXGMMLWriter {
 		
 		if (visualStyle != null)
 			writeAttributePair("cy:visualStyle", visualStyle.getTitle());
+		
+		final Collection<RenderingEngine<?>> renderingEngines = renderingEngineMgr.getRenderingEngines(networkView);
+		
+		if (renderingEngines != null && !renderingEngines.isEmpty())
+			writeAttributePair("cy:rendererId", renderingEngines.iterator().next().getRendererId());
     }
 	
 	@Override

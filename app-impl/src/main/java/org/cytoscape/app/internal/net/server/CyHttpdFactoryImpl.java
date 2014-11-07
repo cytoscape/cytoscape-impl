@@ -102,6 +102,8 @@ class CyHttpdImpl implements CyHttpd
     final HttpParams params;
     final HttpService service;
 
+	private final Object lock = new Object();
+
     public CyHttpdImpl(final ServerSocketFactory serverSocketFactory)
     {
         if (serverSocketFactory == null)
@@ -139,7 +141,7 @@ class CyHttpdImpl implements CyHttpd
 
     public void start()
     {
-        synchronized (this) {
+        synchronized (lock) {
 	        if (running)
 	            throw new IllegalStateException("server is running");
 	        executor = Executors.newCachedThreadPool();
@@ -147,7 +149,7 @@ class CyHttpdImpl implements CyHttpd
 	        executor.execute(new ServerThread());
 	        while (!running) {
 	        	try {
-	        		wait(500);
+	        		lock.wait(500);
 	        		if (aborted) {
 	        			return;
 	        		}
@@ -255,8 +257,8 @@ class CyHttpdImpl implements CyHttpd
             logger.info("Server socket started on {}", String.format("%s:%d", serverSocket.getInetAddress().getHostAddress(), serverSocket.getLocalPort()));
             
             running = true;
-        	synchronized (CyHttpdImpl.this) {
-        		CyHttpdImpl.this.notifyAll();
+        	synchronized (lock) {
+        		lock.notifyAll();
         	}
 
         	// Keep servicing incoming connections until we're told to stop

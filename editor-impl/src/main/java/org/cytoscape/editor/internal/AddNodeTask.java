@@ -74,7 +74,7 @@ public class AddNodeTask extends AbstractNetworkViewTask{
 
 		// Apply visual style
 		VisualStyle vs = vmm.getVisualStyle(view);
-		vs.apply(view);
+		vs.apply(net.getRow(n), nv);
 		view.updateView();
 	}
 }

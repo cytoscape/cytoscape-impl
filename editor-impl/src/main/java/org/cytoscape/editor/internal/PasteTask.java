@@ -27,9 +27,12 @@ package org.cytoscape.editor.internal;
 import java.awt.geom.Point2D;
 import java.util.List;
 
+import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
+import org.cytoscape.model.CyNode;
 import org.cytoscape.task.AbstractNetworkViewTask;
 import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.View;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.work.TaskMonitor;
@@ -66,7 +69,17 @@ public class PasteTask extends AbstractNetworkViewTask {
 		
 		// Apply visual style
 		VisualStyle vs = vmm.getVisualStyle(view);
-		vs.apply(view);
+		for (CyIdentifiable element: pastedObjects) {
+			View<? extends CyIdentifiable> elementView = null;
+			if (element instanceof CyNode)
+				elementView = view.getNodeView((CyNode)element);
+			else if (element instanceof CyEdge)
+				elementView = view.getEdgeView((CyEdge)element);
+			else
+				continue;
+
+			vs.apply(view.getModel().getRow(element), elementView);
+		}
 
 		view.updateView();
 	}

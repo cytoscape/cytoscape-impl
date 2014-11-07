@@ -31,16 +31,28 @@ import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
 import org.cytoscape.view.vizmap.gui.internal.view.legend.LegendDialog;
 import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
 
 public class CreateLegendTask extends AbstractTask {
 
+	public static final String TITLE = "Create Legend";
+	
 	private final ServicesUtil servicesUtil;
 
+	// ==[ CONSTRUCTORS ]===============================================================================================
+	
 	public CreateLegendTask(final ServicesUtil servicesUtil) {
 		this.servicesUtil = servicesUtil;
 	}
 
+	// ==[ PUBLIC METHODS ]=============================================================================================
+	
+	@ProvidesTitle
+	public String getTitle() {
+		return TITLE;
+	}
+	
 	@Override
 	public void run(final TaskMonitor monitor) throws Exception {
 		// Should be executed in EDT!

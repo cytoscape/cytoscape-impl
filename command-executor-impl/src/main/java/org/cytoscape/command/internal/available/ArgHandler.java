@@ -31,4 +31,7 @@ import org.cytoscape.work.TunableHandler;
 
 public interface ArgHandler extends TunableHandler {
 	String getDesc();
+	String getContext();
+	boolean getRequired();
+	String getTooltip();
 }

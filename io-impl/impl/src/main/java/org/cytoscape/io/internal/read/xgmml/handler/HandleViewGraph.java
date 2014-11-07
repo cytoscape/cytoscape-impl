@@ -50,7 +50,7 @@ public class HandleViewGraph extends AbstractHandler {
 		manager.setNetworkId(netId);
 		manager.setCurrentElementId(netId);
 		manager.setVisualStyleName(atts.getValue("cy:visualStyle"));
-		manager.setRendererName(atts.getValue("cy:renderingEngine"));
+		manager.setRendererId(atts.getValue("cy:rendererId"));
 		
 		return current;
 	}

@@ -55,7 +55,7 @@ public class CyActivator extends AbstractCyActivator {
 		CySwingApplication cySwingApplicationServiceRef = getService(bc, CySwingApplication.class);
 		DialogTaskManager taskManagerServiceRef = getService(bc, DialogTaskManager.class);
 		OpenBrowser openBrowser = getService(bc, OpenBrowser.class);
-
+		
 		// UI for Network Import Clients
 		WebServiceImportDialog<NetworkImportWebServiceClient> unifiedNetworkImportDialog = new WebServiceImportDialog<NetworkImportWebServiceClient>(
 				NetworkImportWebServiceClient.class, "Import Network from Web Service", cySwingApplicationServiceRef, taskManagerServiceRef, openBrowser);

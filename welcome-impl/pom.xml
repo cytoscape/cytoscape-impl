@@ -4,7 +4,7 @@
 	<parent>
 		<artifactId>impl-parent</artifactId>
 		<groupId>org.cytoscape</groupId>
-		<version>3.1.1</version>
+		<version>3.2.0</version>
 	</parent>
 
 	<properties>
@@ -14,7 +14,7 @@
 
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>welcome-impl</artifactId>
-  <version>3.1.1</version>
+  <version>3.2.0</version>
 
 	<name>Cytoscape Welcome Screen Impl (${project.artifactId})</name>
 
@@ -97,6 +97,10 @@
 			<groupId>org.cytoscape</groupId>
 			<artifactId>layout-api</artifactId>
 		</dependency>
+        <dependency>
+            <groupId>org.cytoscape</groupId>
+            <artifactId>webservice-api</artifactId>
+        </dependency>
 
 		<!-- Testing -->
 		<dependency>

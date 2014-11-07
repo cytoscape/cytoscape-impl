@@ -33,6 +33,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyVetoException;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -55,7 +56,12 @@ import org.cytoscape.application.events.SetCurrentNetworkViewEvent;
 import org.cytoscape.application.events.SetCurrentNetworkViewListener;
 import org.cytoscape.application.swing.CyHelpBroker;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyTable;
+import org.cytoscape.model.events.ColumnDeletedEvent;
+import org.cytoscape.model.events.ColumnDeletedListener;
+import org.cytoscape.model.events.ColumnNameChangedEvent;
+import org.cytoscape.model.events.ColumnNameChangedListener;
 import org.cytoscape.model.events.RowSetRecord;
 import org.cytoscape.model.events.RowsSetEvent;
 import org.cytoscape.model.events.RowsSetListener;
@@ -68,16 +74,25 @@ import org.cytoscape.session.events.SessionLoadedEvent;
 import org.cytoscape.session.events.SessionLoadedListener;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
+import org.cytoscape.view.model.View;
+import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedEvent;
 import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedListener;
 import org.cytoscape.view.model.events.NetworkViewAddedEvent;
 import org.cytoscape.view.model.events.NetworkViewAddedListener;
 import org.cytoscape.view.model.events.UpdateNetworkPresentationEvent;
 import org.cytoscape.view.model.events.UpdateNetworkPresentationListener;
+import org.cytoscape.view.model.events.ViewChangeRecord;
+import org.cytoscape.view.model.events.ViewChangedEvent;
+import org.cytoscape.view.model.events.ViewChangedListener;
 import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.view.presentation.RenderingEngineFactory;
 import org.cytoscape.view.presentation.RenderingEngineManager;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
+import org.cytoscape.view.presentation.property.values.CyColumnIdentifier;
+import org.cytoscape.view.presentation.property.values.CyColumnIdentifierFactory;
+import org.cytoscape.view.presentation.property.values.MappableVisualPropertyValue;
+import org.cytoscape.view.vizmap.VisualMappingFunction;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.events.SetCurrentVisualStyleEvent;
@@ -96,7 +111,8 @@ import org.slf4j.LoggerFactory;
 public class NetworkViewManager extends InternalFrameAdapter implements NetworkViewAddedListener,
 		NetworkViewAboutToBeDestroyedListener, SetCurrentNetworkViewListener, SetCurrentNetworkListener,
 		RowsSetListener, VisualStyleChangedListener, SetCurrentVisualStyleListener, UpdateNetworkPresentationListener,
-		VisualStyleSetListener, SessionAboutToBeLoadedListener, SessionLoadCancelledListener, SessionLoadedListener {
+		VisualStyleSetListener, SessionAboutToBeLoadedListener, SessionLoadCancelledListener, SessionLoadedListener,
+		ColumnDeletedListener, ColumnNameChangedListener, ViewChangedListener {
 
 	private static final Logger logger = LoggerFactory.getLogger(NetworkViewManager.class);
 
@@ -118,23 +134,34 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 	private final Map<JInternalFrame, InternalFrameListener> frameListeners;
 	private final Properties props;
 	
+	/** columnIdentifier -> { valueInfo -> [views] }*/
+	private final Map<CyColumnIdentifier, Map<MappedVisualPropertyValueInfo, Set<View<?>>>> mappedValuesMap;
+	
 	private volatile boolean loadingSession;
 
 	private final CyNetworkViewManager netViewMgr;
 	private final CyApplicationManager appMgr;
 	private final RenderingEngineManager renderingEngineMgr;
-	private final VisualMappingManager vmm;	
+	private final VisualMappingManager vmm;
+	private final CyNetworkTableManager netTblMgr;
+	private final CyColumnIdentifierFactory colIdfFactory;
 	
 	public NetworkViewManager(final CyApplicationManager appMgr,
 							  final CyNetworkViewManager netViewMgr,
 							  final RenderingEngineManager renderingEngineManager,
 							  final CyProperty<Properties> cyProps,
-							  final CyHelpBroker help, final VisualMappingManager vmm) {
-
+							  final CyHelpBroker help,
+							  final VisualMappingManager vmm,
+							  final CyNetworkTableManager netTblMgr,
+							  final CyColumnIdentifierFactory colIdfFactory) {
 		if (appMgr == null)
 			throw new NullPointerException("CyApplicationManager is null.");
 		if (netViewMgr == null)
 			throw new NullPointerException("CyNetworkViewManager is null.");
+		if (netTblMgr == null)
+			throw new NullPointerException("CyNetworkTableManager is null.");
+		if (colIdfFactory == null)
+			throw new NullPointerException("CyColumnIdentifierFactory is null.");
 		
 		this.renderingEngineMgr = renderingEngineManager;
 
@@ -142,17 +169,20 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 		this.appMgr = appMgr;
 		this.props = cyProps.getProperties();
 		this.vmm = vmm;
+		this.netTblMgr = netTblMgr;
+		this.colIdfFactory = colIdfFactory;
 
 		this.desktopPane = new JDesktopPane();
 
 		// add Help hooks
 		help.getHelpBroker().enableHelp(desktopPane, "network-view-manager", null);
 
-		presentationContainerMap = new WeakHashMap<CyNetworkView, JInternalFrame>();
-		presentationMap = new WeakHashMap<CyNetworkView, RenderingEngine<CyNetwork>>();
-		iFrameMap = new WeakHashMap<JInternalFrame, CyNetworkView>();
-		frameListeners = new HashMap<JInternalFrame, InternalFrameListener>();
-		viewUpdateRequired = new HashSet<CyNetworkView>();
+		presentationContainerMap = new WeakHashMap<>();
+		presentationMap = new WeakHashMap<>();
+		iFrameMap = new WeakHashMap<>();
+		frameListeners = new HashMap<>();
+		viewUpdateRequired = new HashSet<>();
+		mappedValuesMap = new HashMap<>();
 	}
 
 	/**
@@ -529,16 +559,86 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 	}
 
 	@Override
+	public void handleEvent(final ColumnDeletedEvent e) {
+		onColumnChanged(e.getSource(), e.getColumnName());
+	}
+	
+	@Override
+	public void handleEvent(final ColumnNameChangedEvent e) {
+		onColumnChanged(e.getSource(), e.getOldColumnName());
+		onColumnChanged(e.getSource(), e.getNewColumnName());
+	}
+	
+	@Override
 	public void handleEvent(final RowsSetEvent e) {
-		final Collection<RowSetRecord> records = e.getColumnRecords(CyNetwork.NAME);
-		final CyTable source = e.getSource();
+		final CyTable tbl = e.getSource();
+		
+		// Update Network View Title
+		final Collection<RowSetRecord> nameRecords = e.getColumnRecords(CyNetwork.NAME);
 		
 		SwingUtilities.invokeLater(new Runnable() {
 			@Override
 			public void run() {
-				updateNetworkViewTitle(records, source);
+				updateNetworkViewTitle(nameRecords, tbl);
 			}
 		});
+		
+		if (loadingSession || iFrameMap.isEmpty())
+			return;
+		
+		final CyNetwork net = netTblMgr.getNetworkForTable(tbl);
+		
+		// Is this column from a network table?
+		// And if there is no related view, nothing needs to be done
+		if ( net != null && netViewMgr.viewExists(net) && 
+				(tbl.equals(net.getDefaultNodeTable()) || tbl.equals(net.getDefaultEdgeTable())) ) {
+			final Collection<CyNetworkView> networkViews = netViewMgr.getNetworkViews(net);
+			final Set<CyNetworkView> viewsToUpdate = new HashSet<>();
+			
+			for (final RowSetRecord record : e.getPayloadCollection()) {
+				final String columnName = record.getColumn();
+				
+				// Reapply locked values that map to changed columns
+				final boolean lockedValuesApplyed = reapplyLockedValues(columnName, networkViews);
+				
+				if (lockedValuesApplyed)
+					viewsToUpdate.addAll(networkViews);
+				
+				// Find views that had their styles affected by the RowsSetEvent
+				final Set<VisualStyle> styles = findStylesWithMappedColumn(columnName);
+				viewsToUpdate.addAll(findNetworkViewsWithStyles(styles));
+			}
+			
+			// Update views
+			for (final CyNetworkView view : viewsToUpdate)
+				updateView(view, null);
+		}
+	}
+	
+	private void onColumnChanged(final CyTable tbl, final String columnName) {
+		if (loadingSession || iFrameMap.isEmpty())
+			return;
+		
+		final CyNetwork net = netTblMgr.getNetworkForTable(tbl);
+		
+		// And if there is no related view, nothing needs to be done
+		if ( net != null && netViewMgr.viewExists(net) && 
+				(tbl.equals(net.getDefaultNodeTable()) || tbl.equals(net.getDefaultEdgeTable())) ) {
+			// Reapply locked values that map to changed columns
+			final Collection<CyNetworkView> networkViews = netViewMgr.getNetworkViews(net);
+			final boolean lockedValuesApplyed = reapplyLockedValues(columnName, networkViews);
+			
+			// Find views that had their styles affected by the RowsSetEvent
+			final Set<VisualStyle> styles = findStylesWithMappedColumn(columnName);
+			final Set<CyNetworkView> viewsToUpdate = findNetworkViewsWithStyles(styles);
+			
+			if (lockedValuesApplyed)
+				viewsToUpdate.addAll(networkViews);
+			
+			// Update views
+			for (final CyNetworkView view : viewsToUpdate)
+				updateView(view, null);
+		}
 	}
 	
 	private final void updateNetworkViewTitle(final Collection<RowSetRecord> records, final CyTable source) {
@@ -594,21 +694,11 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 		if (loadingSession)
 			return;
 		
-		final VisualStyle style= e.getSource();
-		// First, check current view.  If necessary, apply it.
-		final Set<CyNetworkView> networkViews = netViewMgr.getNetworkViewSet();
-		
-		for (final CyNetworkView view: networkViews) {
-			final VisualStyle targetViewsStyle = vmm.getVisualStyle(view);
-			if (targetViewsStyle != style)
-				continue;
+		if (e.getSource() != null && !iFrameMap.isEmpty()) {
+			final Set<CyNetworkView> viewsSet = findNetworkViewsWithStyles(Collections.singleton(e.getSource()));
 			
-			if (view == appMgr.getCurrentNetworkView()) {
-				style.apply(view);
-				view.updateView();
-			} else {
-				this.viewUpdateRequired.add(view);
-			}
+			for (final CyNetworkView view : viewsSet)
+				updateView(view, null);
 		}
 	}
 
@@ -633,13 +723,7 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 			return;
 		
 		final CyNetworkView view = e.getNetworkView();
-		
-		if (view == appMgr.getCurrentNetworkView()) {
-			e.getVisualStyle().apply(view);
-			view.updateView();
-		} else {
-			this.viewUpdateRequired.add(view);
-		}
+		updateView(view, null);
 	}
 	
 	@Override
@@ -656,6 +740,45 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 		
 		updateNetworkFrameSize(view, w, h, resizable);
 	}
+	
+	@Override
+	public void handleEvent(final ViewChangedEvent<?> e) {
+		final CyNetworkView netView = e.getSource();
+		
+		// Look for MappableVisualPropertyValue objects, so they can be saved for future reference
+		for (final ViewChangeRecord<?> record : e.getPayloadCollection()) {
+			if (!record.isLockedValue())
+				continue;
+			
+			final View<?> view = record.getView();
+			final Object value = record.getValue();
+			
+			if (value instanceof MappableVisualPropertyValue) {
+				final Set<CyColumnIdentifier> columnIds = ((MappableVisualPropertyValue)value).getMappedColumns();
+				
+				if (columnIds == null)
+					continue;
+				
+				final VisualProperty<?> vp = record.getVisualProperty();
+				
+				for (final CyColumnIdentifier colId : columnIds) {
+					Map<MappedVisualPropertyValueInfo, Set<View<?>>> mvpInfoMap = mappedValuesMap.get(colId);
+					
+					if (mvpInfoMap == null)
+						mappedValuesMap.put(colId, mvpInfoMap = new HashMap<>());
+					
+					final MappedVisualPropertyValueInfo mvpInfo =
+							new MappedVisualPropertyValueInfo((MappableVisualPropertyValue)value, vp, netView);
+					Set<View<?>> viewSet = mvpInfoMap.get(mvpInfo);
+					
+					if (viewSet == null)
+						mvpInfoMap.put(mvpInfo, viewSet = new HashSet<View<?>>());
+					
+					viewSet.add(view);
+				}
+			}
+		}
+	}
 
 	@Override
 	public void handleEvent(final SessionAboutToBeLoadedEvent e) {
@@ -670,5 +793,168 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 	@Override
 	public void handleEvent(final SessionLoadedEvent e) {
 		loadingSession = false;
+	}
+	
+	private Set<VisualStyle> findStylesWithMappedColumn(final String columnName) {
+		final Set<VisualStyle> styles = new HashSet<VisualStyle>();
+		final RenderingEngine<CyNetwork> renderer = appMgr.getCurrentRenderingEngine();
+		
+		if (columnName != null && renderer != null) {
+			final Set<VisualProperty<?>> properties = renderer.getVisualLexicon().getAllVisualProperties();
+			
+			for (final VisualStyle vs : vmm.getAllVisualStyles()) {
+				for (final VisualProperty<?> vp : properties) {
+					// Check VisualMappingFunction
+					final VisualMappingFunction<?, ?> fn = vs.getVisualMappingFunction(vp);
+					
+					if (fn != null && fn.getMappingColumnName().equalsIgnoreCase(columnName)) {
+						styles.add(vs);
+						break;
+					}
+					
+					// Check MappableVisualPropertyValue
+					final Object defValue = vs.getDefaultValue(vp);
+					
+					if (defValue instanceof MappableVisualPropertyValue) {
+						((MappableVisualPropertyValue) defValue).update();
+						styles.add(vs);
+						break;
+					}
+				}
+			}
+		}
+		
+		return styles;
+	}
+	
+	private Set<CyNetworkView> findNetworkViewsWithStyles(final Set<VisualStyle> styles) {
+		final Set<CyNetworkView> result = new HashSet<CyNetworkView>();
+		
+		if (styles == null || styles.isEmpty())
+			return result;
+		
+		// First, check current view.  If necessary, apply it.
+		final Set<CyNetworkView> networkViews = netViewMgr.getNetworkViewSet();
+		
+		for (final CyNetworkView view: networkViews) {
+			if (styles.contains(vmm.getVisualStyle(view)))
+				result.add(view);
+		}
+		
+		return result;
+	}
+	
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	private boolean reapplyLockedValues(final String columnName, final Collection<CyNetworkView> networkViews) {
+		boolean result = false;
+		final CyColumnIdentifier colId = colIdfFactory.createColumnIdentifier(columnName);
+		final Map<MappedVisualPropertyValueInfo, Set<View<?>>> mvpInfoMap = mappedValuesMap.get(colId);
+		
+		if (mvpInfoMap != null) {
+			for (final MappedVisualPropertyValueInfo mvpInfo : mvpInfoMap.keySet()) {
+				if (networkViews == null || !networkViews.contains(mvpInfo.getNetworkView()))
+					continue;
+				
+				final MappableVisualPropertyValue value = mvpInfo.getValue();
+				final VisualProperty vp = mvpInfo.getVisualProperty();
+				final Set<View<?>> viewSet = mvpInfoMap.get(mvpInfo);
+				
+				for (final View<?> view : viewSet) {
+					if (view.isDirectlyLocked(vp) && value.equals(view.getVisualProperty(vp))) {
+						value.update();
+						view.setLockedValue(vp, value);
+						result = true;
+					}
+				}
+			}
+		}
+		
+		return result;
+	}
+	
+	private void updateView(final CyNetworkView view, VisualStyle vs) {
+		if (view == null)
+			return;
+		
+		if (view.equals(appMgr.getCurrentNetworkView())) {
+			if (vs == null)
+				vs = vmm.getVisualStyle(view);
+			
+			vs.apply(view);
+			view.updateView();
+		} else {
+			this.viewUpdateRequired.add(view);
+		}
+	}
+	
+	private static class MappedVisualPropertyValueInfo {
+		
+		private final MappableVisualPropertyValue value;
+		private final VisualProperty<?> visualProperty;
+		private final CyNetworkView networkView;
+		
+		MappedVisualPropertyValueInfo(final MappableVisualPropertyValue value,
+									  final VisualProperty<?> visualProperty,
+									  final CyNetworkView networkView) {
+			this.value = value;
+			this.visualProperty = visualProperty;
+			this.networkView = networkView;
+		}
+		
+		MappableVisualPropertyValue getValue() {
+			return value;
+		}
+
+		VisualProperty<?> getVisualProperty() {
+			return visualProperty;
+		}
+		
+		CyNetworkView getNetworkView() {
+			return networkView;
+		}
+
+		@Override
+		public int hashCode() {
+			final int prime = 29;
+			int result = 3;
+			result = prime * result + ((networkView == null) ? 0 : networkView.hashCode());
+			result = prime * result + ((value == null) ? 0 : value.hashCode());
+			result = prime
+					* result
+					+ ((visualProperty == null) ? 0 : visualProperty.hashCode());
+			return result;
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			MappedVisualPropertyValueInfo other = (MappedVisualPropertyValueInfo) obj;
+			if (networkView == null) {
+				if (other.networkView != null)
+					return false;
+			} else if (!networkView.equals(other.networkView))
+				return false;
+			if (value == null) {
+				if (other.value != null)
+					return false;
+			} else if (!value.equals(other.value))
+				return false;
+			if (visualProperty == null) {
+				if (other.visualProperty != null)
+					return false;
+			} else if (!visualProperty.equals(other.visualProperty))
+				return false;
+			return true;
+		}
+
+		@Override
+		public String toString() {
+			return "{vp:" + visualProperty + ", value:" + value + ", networkView:" + networkView + "}";
+		}
 	}
 }

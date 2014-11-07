@@ -3,11 +3,11 @@
 	<parent>
 		<groupId>org.cytoscape</groupId>
 		<artifactId>impl-parent</artifactId>
-		<version>3.1.1</version>
+		<version>3.2.0</version>
 	</parent>
 
 	<artifactId>io-impl-parent</artifactId>
-  <version>3.1.1</version>
+  <version>3.2.0</version>
 	<packaging>pom</packaging>
 	<name>Cytoscape IO Impl Parent (${project.artifactId})</name>
 
@@ -105,8 +105,8 @@
 		
 		<!-- 3rd party libraries -->
 		<dependency>
-			<groupId>com.lowagie.text</groupId>
-			<artifactId>com.springsource.com.lowagie.text</artifactId>
+			<groupId>com.lowagie</groupId>
+			<artifactId>itext</artifactId>
 			<version>2.0.8</version>
 		</dependency>
 		<dependency>

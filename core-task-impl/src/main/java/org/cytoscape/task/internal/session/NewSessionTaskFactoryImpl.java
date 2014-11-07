@@ -42,7 +42,7 @@ public class NewSessionTaskFactoryImpl extends AbstractTaskFactory implements Ne
 	private final CySessionManager mgr;
 	private final TunableSetter tunableSetter;
 	private final CyEventHelper eventHelper;
-
+	
 	public NewSessionTaskFactoryImpl(CySessionManager mgr, TunableSetter tunableSetter, CyEventHelper eventHelper) {
 		this.mgr = mgr;
 		this.tunableSetter = tunableSetter;

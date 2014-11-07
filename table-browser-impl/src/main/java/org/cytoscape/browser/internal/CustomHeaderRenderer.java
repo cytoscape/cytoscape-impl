@@ -121,7 +121,7 @@ final class CustomHeaderRenderer extends JLabel implements TableCellRenderer {
 			return this;
 
 		final BrowserTableModel model = (BrowserTableModel) table.getModel();
-		final CyColumn col = model.getAttributes().getColumn(value.toString());
+		final CyColumn col = model.getDataTable().getColumn(value.toString());
 		if (col == null)
 			return this;
 

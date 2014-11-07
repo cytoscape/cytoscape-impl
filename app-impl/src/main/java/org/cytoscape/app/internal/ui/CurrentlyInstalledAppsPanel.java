@@ -24,16 +24,18 @@ package org.cytoscape.app.internal.ui;
  * #L%
  */
 
-import java.awt.Container;
+import java.awt.Color;
+import java.awt.Component;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.swing.JTable;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import javax.swing.event.TableModelEvent;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 
 import org.cytoscape.app.internal.event.AppsChangedEvent;
@@ -115,6 +117,16 @@ public class CurrentlyInstalledAppsPanel extends javax.swing.JPanel {
         appsAvailableScrollPane.setViewportView(appsAvailableTable);
         appsAvailableTable.getColumnModel().getColumn(1).setPreferredWidth(195);
         appsAvailableTable.removeColumn(appsAvailableTable.getColumn("App"));
+        appsAvailableTable.setDefaultRenderer(Object.class, new DefaultTableCellRenderer() {
+			private static final long serialVersionUID = 1L;
+			public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+				if(table.getValueAt(row, 2) == AppStatus.FAILED_TO_START)
+					setForeground(Color.RED);
+				else
+					setForeground(null);
+				return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+			}
+        });
         
         appsInstalledLabel.setText("0 Apps installed.");
 
@@ -255,7 +267,8 @@ public class CurrentlyInstalledAppsPanel extends javax.swing.JPanel {
         for (App app : selectedApps) {
         	// Only uninstall apps that are installed
         	if (app.getStatus() == AppStatus.INSTALLED
-        			|| app.getStatus() == AppStatus.DISABLED) {
+        			|| app.getStatus() == AppStatus.DISABLED
+        			|| app.getStatus() == AppStatus.FAILED_TO_START) {
         		try {
 					appManager.uninstallApp(app);
 				} catch (AppUninstallException e) {
@@ -351,7 +364,7 @@ public class CurrentlyInstalledAppsPanel extends javax.swing.JPanel {
 						app,
 						app.getAppFile() != null ? app.getAppName() : app.getAppName() + " (File moved)",
 						app.getVersion(),
-						app.getReadableStatus()
+						app.getStatus()
 				});
     		}
     	}
@@ -438,7 +451,11 @@ public class CurrentlyInstalledAppsPanel extends javax.swing.JPanel {
     			enableSelectedButton.setEnabled(true);
     			disableSelectedButton.setEnabled(true);
     			uninstallSelectedButton.setEnabled(false);
-    		} 
+    		} else {
+    			enableSelectedButton.setEnabled(true);
+    			disableSelectedButton.setEnabled(true);
+    			uninstallSelectedButton.setEnabled(true);
+    		}
     	} else {
     		descriptionTextArea.setText(numSelected + " apps selected.");
     		

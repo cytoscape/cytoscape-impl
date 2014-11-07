@@ -8,6 +8,7 @@ import static org.cytoscape.io.internal.write.json.serializer.CytoscapeJsToken.T
 
 import java.awt.Paint;
 import java.io.IOException;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -41,6 +42,10 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 public class CytoscapeJsVisualStyleSerializer extends JsonSerializer<VisualStyle> {
 	
 	private static final Pattern REPLACE_INVALID_JS_CHAR_PATTERN = Pattern.compile("^[^a-zA-Z_]+|[^a-zA-Z_0-9]+");
+	
+	// For rounding
+	private static final DecimalFormat DF = new DecimalFormat();
+
 
 	private static final Collection<VisualProperty<?>> NODE_SELECTED_PROPERTIES = new ArrayList<VisualProperty<?>>();
 	private static final Collection<VisualProperty<?>> EDGE_SELECTED_PROPERTIES = new ArrayList<VisualProperty<?>>();
@@ -72,6 +77,7 @@ public class CytoscapeJsVisualStyleSerializer extends JsonSerializer<VisualStyle
 		this.converter = new CytoscapeJsStyleConverter();
 		this.lexicon = lexicon;
 		this.version = cyVersion.getVersion();
+		DF.setMaximumFractionDigits(8);
 	}
 
 	/**
@@ -264,7 +270,7 @@ public class CytoscapeJsVisualStyleSerializer extends JsonSerializer<VisualStyle
 			upperValString = serializer.serialize(upperVal);
 		}
 		String map = "mapData(" + columnName + ",";
-		map += point.getValue().toString() + "," + prevPoint.getValue().toString() + "," + lowerValString + ","
+		map += DF.format(point.getValue()) + "," + DF.format(prevPoint.getValue()) + "," + lowerValString + ","
 				+ upperValString + ")";
 		writeMapSelector(jg, map, objectType, columnName, tag, (Number) point.getValue(), (Number) prevPoint.getValue());
 	}
@@ -276,7 +282,7 @@ public class CytoscapeJsVisualStyleSerializer extends JsonSerializer<VisualStyle
 
 		// Always define region, i.e., a < P <b
 		String tag = objectType + "[" + colName + " > ";
-		tag += boundL + "][" + colName + " < " + boundU + "]";
+		tag += DF.format(boundL) + "][" + colName + " < " + DF.format(boundU) + "]";
 
 		jg.writeStringField(SELECTOR.getTag(), tag);
 		jg.writeObjectFieldStart(CSS.getTag());
@@ -293,7 +299,7 @@ public class CytoscapeJsVisualStyleSerializer extends JsonSerializer<VisualStyle
 		jg.writeStartObject();
 
 		String tag = objectType + "[" + colName + " " + operator + " ";
-		tag += bound + "]";
+		tag += DF.format(bound) + "]";
 
 		jg.writeStringField(SELECTOR.getTag(), tag);
 		jg.writeObjectFieldStart(CSS.getTag());
@@ -380,7 +386,6 @@ public class CytoscapeJsVisualStyleSerializer extends JsonSerializer<VisualStyle
 			if(dep.getIdString().equals("nodeSizeLocked")) {
 				if(dep.isDependencyEnabled()) {
 					useSize = true;
-					dep.setDependency(false);
 				}
 			}
 			

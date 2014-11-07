@@ -129,6 +129,7 @@ import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.events.NetworkViewDestroyedListener;
 import org.cytoscape.view.presentation.RenderingEngineFactory;
 import org.cytoscape.view.presentation.RenderingEngineManager;
+import org.cytoscape.view.presentation.property.values.CyColumnIdentifierFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.work.ServiceProperties;
 import org.cytoscape.work.SynchronousTaskManager;
@@ -175,6 +176,7 @@ public class CyActivator extends AbstractCyActivator {
 		DialogTaskManager dialogTaskManagerServiceRef = getService(bc, DialogTaskManager.class);
 		PanelTaskManager panelTaskManagerServiceRef = getService(bc, PanelTaskManager.class);
 		TaskStatusPanelFactory taskStatusPanelFactoryRef = getService(bc, TaskStatusPanelFactory.class);
+		CyColumnIdentifierFactory cyColumnIdentifierFactory = getService(bc, CyColumnIdentifierFactory.class);
 
 		RenderingEngineFactory dingNavigationPresentationFactoryServiceRef = getService(bc,
 		                                                                                RenderingEngineFactory.class,
@@ -220,7 +222,10 @@ public class CyActivator extends AbstractCyActivator {
 		                                                               cyNetworkViewManagerServiceRef, 
 		                                                               renderingEngineManagerServiceRef,
 		                                                               cytoscapePropertiesServiceRef,
-		                                                               cyHelpBroker, visualMappingManagerServiceRef);
+		                                                               cyHelpBroker,
+		                                                               visualMappingManagerServiceRef,
+		                                                               cyNetworkTableManagerServiceRef,
+		                                                               cyColumnIdentifierFactory);
 
 		BirdsEyeViewHandler birdsEyeViewHandler = new BirdsEyeViewHandler(cyApplicationManagerServiceRef,
 		                                                                  cyNetworkViewManagerServiceRef);
@@ -318,7 +323,10 @@ public class CyActivator extends AbstractCyActivator {
 		
 		RowsSetViewUpdater rowsSetViewUpdater = new RowsSetViewUpdater(cyApplicationManagerServiceRef, 
 		                                                               cyNetworkViewManagerServiceRef, 
-		                                                               visualMappingManagerServiceRef, rowViewTracker, networkViewManager);
+		                                                               visualMappingManagerServiceRef,
+		                                                               rowViewTracker,
+		                                                               networkViewManager,
+		                                                               cyColumnIdentifierFactory);
 		
 		RecentSessionManager recentSessionManager = new RecentSessionManager(recentlyOpenedTrackerServiceRef,
 		                                                                     cyServiceRegistrarServiceRef,

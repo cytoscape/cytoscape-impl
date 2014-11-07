@@ -39,6 +39,8 @@ public class ColumnSetListener implements RowsSetListener {
 	private final String columnName;
 	private final String sharedColumnName;
 	
+	private final Object lock = new Object();
+	
 	ColumnSetListener(final String columnName, final String sharedColumnName) {
 		tables = new WeakMapList<CyTable,CyTable>();
 		this.columnName = columnName;
@@ -47,18 +49,21 @@ public class ColumnSetListener implements RowsSetListener {
 
 	public void handleEvent(RowsSetEvent e) {
 		
-		final CyTable local = e.getSource();	
-		final List<CyTable> sharedList = tables.get(local);
+		final CyTable local = e.getSource();
 		
-		for ( CyTable shared : sharedList ) {
-			for ( RowSetRecord record : e.getColumnRecords(columnName) ) {
-				// assume payload collection is for same column
-				final CyRow r = shared.getRow(record.getRow().get( CyIdentifiable.SUID, Long.class ));
-				if( r != null ) {
-					final Object name = record.getValue();
-					String sharedName = r.get(sharedColumnName, String.class);
-					if(sharedName == null){
-						r.set(sharedColumnName, name);
+		synchronized (lock) {
+			final List<CyTable> sharedList = tables.get(local);
+			
+			for ( CyTable shared : sharedList ) {
+				for ( RowSetRecord record : e.getColumnRecords(columnName) ) {
+					// assume payload collection is for same column
+					final CyRow r = shared.getRow(record.getRow().get( CyIdentifiable.SUID, Long.class ));
+					if( r != null ) {
+						final Object name = record.getValue();
+						String sharedName = r.get(sharedColumnName, String.class);
+						if(sharedName == null){
+							r.set(sharedColumnName, name);
+						}
 					}
 				}
 			}
@@ -74,7 +79,9 @@ public class ColumnSetListener implements RowsSetListener {
 		if ( shared == local )
 			throw new IllegalArgumentException("source and target tables cannot be the same.");
 		
-		tables.put(local,shared);
+		synchronized (lock) {
+			tables.put(local,shared);
+		}
     }
 
 }

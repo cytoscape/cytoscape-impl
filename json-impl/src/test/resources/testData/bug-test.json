@@ -1,0 +1,519 @@
+{
+  "format_version" : "1.0",
+  "generated_by" : "cytoscape-3.1.1",
+  "target_cytoscapejs_version" : "~2.1",
+  "data" : {
+    "selected" : true,
+    "__Annotations" : [ ],
+    "SUID" : 57874,
+    "name" : "Barabasi graph",
+    "power" : 1,
+    "m" : 1,
+    "shared_name" : "BA graph",
+    "zero_appeal" : 1,
+    "boolTest": true,
+    "algorithm" : "psumtree"
+  },
+  "elements" : {
+    "nodes" : [ {
+      "data" : {
+        "id" : "57908",
+        "selected" : false,
+        "e" : 1,
+        "c" : 1e-2,
+        "SUID" : 57908,
+        "name" : "25",
+        "a" : 2.00122
+      }
+    }, {
+      "data" : {
+        "id" : "57907",
+        "d" : 1,
+        "selected" : false,
+        "b" : 1
+      }
+    }, {
+      "data" : {
+        "id" : "57906",
+        "d" : 1,
+        "selected" : false,
+        "e" : 1,
+        "b" : 1,
+        "c" : 1,
+        "SUID" : 57906,
+        "name" : "23",
+        "a" : 1,
+        "shared_name" : "23"
+      }
+    }, {
+      "data" : {
+        "id" : "57905",
+        "d" : 1,
+        "selected" : false,
+        "e" : 1,
+        "b" : 1,
+        "c" : 1,
+        "SUID" : 57905,
+        "name" : "22",
+        "a" : 1,
+        "shared_name" : "22"
+      }
+    }, {
+      "data" : {
+        "id" : "57904",
+        "d" : 1,
+        "selected" : false,
+        "e" : 1,
+        "b" : 1,
+        "c" : 1,
+        "SUID" : 57904,
+        "name" : "21",
+        "a" : 1,
+        "shared_name" : "21"
+      }
+    }, {
+      "data" : {
+        "id" : "57903",
+        "d" : 1,
+        "selected" : false,
+        "e" : 1,
+        "b" : 1,
+        "c" : 1,
+        "SUID" : 57903,
+        "name" : "20",
+        "a" : 1,
+        "shared_name" : "20"
+      }
+    }, {
+      "data" : {
+        "id" : "57902",
+        "d" : 1,
+        "selected" : false,
+        "e" : 1,
+        "b" : 1,
+        "c" : 1,
+        "SUID" : 57902,
+        "name" : "19",
+        "a" : 1,
+        "shared_name" : "19"
+      }
+    }, {
+      "data" : {
+        "id" : "57901",
+        "d" : 1,
+        "selected" : false,
+        "e" : 1,
+        "b" : 1,
+        "c" : 1,
+        "SUID" : 57901,
+        "name" : "18",
+        "a" : 1,
+        "shared_name" : "18"
+      }
+    }, {
+      "data" : {
+        "id" : "57900",
+        "d" : 1,
+        "selected" : false,
+        "e" : 1,
+        "b" : 1,
+        "c" : 1,
+        "SUID" : 57900,
+        "name" : "17",
+        "a" : 1,
+        "shared_name" : "17"
+      }
+    }, {
+      "data" : {
+        "id" : "57899",
+        "d" : 1,
+        "selected" : false,
+        "e" : 1,
+        "b" : 1,
+        "c" : 1,
+        "SUID" : 57899,
+        "name" : "16",
+        "a" : 1,
+        "shared_name" : "16"
+      }
+    }, {
+      "data" : {
+        "id" : "57898",
+        "d" : 1,
+        "selected" : false,
+        "e" : 1,
+        "b" : 1,
+        "c" : 1,
+        "SUID" : 57898,
+        "name" : "15",
+        "a" : 1,
+        "shared_name" : "15"
+      }
+    }, {
+      "data" : {
+        "id" : "57897",
+        "d" : 1,
+        "selected" : false,
+        "e" : 1,
+        "b" : 1,
+        "c" : 1,
+        "SUID" : 57897,
+        "name" : "14",
+        "a" : 1,
+        "shared_name" : "14"
+      }
+    }, {
+      "data" : {
+        "id" : "57896",
+        "d" : 1,
+        "selected" : false,
+        "e" : 1,
+        "b" : 1,
+        "c" : 1,
+        "SUID" : 57896,
+        "name" : "13",
+        "a" : 1,
+        "shared_name" : "13"
+      }
+    }, {
+      "data" : {
+        "id" : "57895",
+        "d" : 1,
+        "selected" : false,
+        "e" : 1,
+        "b" : 1,
+        "c" : 1,
+        "SUID" : 57895,
+        "name" : "12",
+        "a" : 1,
+        "shared_name" : "12"
+      }
+    }, {
+      "data" : {
+        "id" : "57894",
+        "d" : 1,
+        "selected" : false,
+        "e" : 1,
+        "b" : 1,
+        "c" : 1,
+        "SUID" : 57894,
+        "name" : "11",
+        "a" : 1,
+        "shared_name" : "11"
+      }
+    }, {
+      "data" : {
+        "id" : "57893",
+        "d" : 1,
+        "selected" : false,
+        "e" : 1,
+        "b" : 1,
+        "c" : 1,
+        "SUID" : 57893,
+        "name" : "10",
+        "a" : 1,
+        "shared_name" : "10"
+      }
+    }, {
+      "data" : {
+        "id" : "57892",
+        "d" : 1,
+        "selected" : false,
+        "e" : 1,
+        "b" : 1,
+        "c" : 1,
+        "SUID" : 57892,
+        "name" : "9",
+        "a" : 1,
+        "shared_name" : "9"
+      }
+    }, {
+      "data" : {
+        "id" : "57891",
+        "d" : 1,
+        "selected" : false,
+        "e" : 1,
+        "b" : 1,
+        "c" : 1,
+        "SUID" : 57891,
+        "name" : "8",
+        "a" : 1,
+        "shared_name" : "8"
+      }
+    }, {
+      "data" : {
+        "id" : "57890",
+        "d" : 1,
+        "selected" : false,
+        "e" : 1,
+        "b" : 1,
+        "c" : 1,
+        "SUID" : 57890,
+        "name" : "7",
+        "a" : 1,
+        "shared_name" : "7"
+      }
+    }, {
+      "data" : {
+        "id" : "57889",
+        "d" : 1,
+        "selected" : false,
+        "e" : 1,
+        "b" : 1,
+        "c" : 1,
+        "SUID" : 57889,
+        "name" : "6",
+        "a" : 1,
+        "shared_name" : "6"
+      }
+    }, {
+      "data" : {
+        "id" : "57888",
+        "d" : 1,
+        "selected" : false,
+        "e" : 1,
+        "b" : 1,
+        "c" : 1,
+        "SUID" : 57888,
+        "name" : "5",
+        "a" : 1,
+        "shared_name" : "5"
+      }
+    }, {
+      "data" : {
+        "id" : "57887",
+        "selected" : false,
+        "SUID" : 57887,
+        "name" : "4",
+        "a" : 1,
+        "shared_name" : "4"
+      }
+    }, {
+      "data" : {
+        "id" : "57886",
+        "selected" : false,
+        "SUID" : 57886,
+        "name" : "3",
+        "a" : 1,
+        "shared_name" : "3"
+      }
+    }, {
+      "data" : {
+        "id" : "57885",
+        "selected" : false,
+        "SUID" : 57885,
+        "name" : "2",
+        "a" : 1,
+        "shared_name" : "2"
+      }
+    }, {
+      "data" : {
+        "id" : "57884",
+        "selected" : false,
+        "SUID" : 57884,
+        "name" : "1",
+        "a" : 1,
+        "shared_name" : "1"
+      }
+    } ],
+    "edges" : [ {
+      "data" : {
+        "id" : "57932",
+        "source" : "57908",
+        "target" : "57903",
+        "selected" : false,
+        "SUID" : 57932,
+        "number" : 0.1
+      }
+    }, {
+      "data" : {
+        "id" : "57931",
+        "source" : "57907",
+        "target" : "57886",
+        "selected" : false,
+        "SUID" : 57931,
+        "number" : 0.1
+      }
+    }, {
+      "data" : {
+        "id" : "57930",
+        "source" : "57906",
+        "target" : "57886",
+        "selected" : false,
+        "SUID" : 57930,
+        "number" : 0.1
+      }
+    }, {
+      "data" : {
+        "id" : "57929",
+        "source" : "57905",
+        "target" : "57890",
+        "selected" : false,
+        "SUID" : 57929,
+        "number" : 0.1
+      }
+    }, {
+      "data" : {
+        "id" : "57928",
+        "source" : "57904",
+        "target" : "57884",
+        "selected" : false,
+        "SUID" : 57928,
+        "number" : 0.1
+      }
+    }, {
+      "data" : {
+        "id" : "57927",
+        "source" : "57903",
+        "target" : "57899",
+        "selected" : false,
+        "SUID" : 57927,
+        "number" : 0.1
+      }
+    }, {
+      "data" : {
+        "id" : "57926",
+        "source" : "57902",
+        "target" : "57886",
+        "selected" : false,
+        "number" : 0.1
+      }
+    }, {
+      "data" : {
+        "id" : "57925",
+        "source" : "57901",
+        "target" : "57886",
+        "selected" : false,
+        "number" : 0.1
+      }
+    }, {
+      "data" : {
+        "id" : "57924",
+        "source" : "57900",
+        "target" : "57889",
+        "selected" : false,
+        "number" : 0.1
+      }
+    }, {
+      "data" : {
+        "id" : "57923",
+        "source" : "57899",
+        "target" : "57884",
+        "selected" : false,
+        "number" : 0.1
+      }
+    }, {
+      "data" : {
+        "id" : "57922",
+        "source" : "57898",
+        "target" : "57884",
+        "selected" : false,
+        "number" : 0.1
+      }
+    }, {
+      "data" : {
+        "id" : "57921",
+        "source" : "57897",
+        "target" : "57885",
+        "selected" : false,
+        "number" : 0.1
+      }
+    }, {
+      "data" : {
+        "id" : "57920",
+        "source" : "57896",
+        "target" : "57890",
+        "selected" : false,
+        "number" : 0.1
+      }
+    }, {
+      "data" : {
+        "id" : "57919",
+        "source" : "57895",
+        "target" : "57884",
+        "selected" : false,
+        "number" : 0.1
+      }
+    }, {
+      "data" : {
+        "id" : "57918",
+        "source" : "57894",
+        "target" : "57885",
+        "selected" : false,
+        "number" : 0
+      }
+    }, {
+      "data" : {
+        "id" : "57917",
+        "source" : "57893",
+        "target" : "57884",
+        "selected" : false,
+        "number" : 0.1
+      }
+    }, {
+      "data" : {
+        "id" : "57916",
+        "source" : "57892",
+        "target" : "57886",
+        "selected" : false,
+        "number" : 1
+      }
+    }, {
+      "data" : {
+        "id" : "57915",
+        "source" : "57891",
+        "target" : "57884",
+        "selected" : false,
+        "number" : 0.1
+      }
+    }, {
+      "data" : {
+        "id" : "57914",
+        "source" : "57890",
+        "target" : "57884",
+        "selected" : false,
+        "number" : 0.1
+      }
+    }, {
+      "data" : {
+        "id" : "57913",
+        "source" : "57889",
+        "target" : "57884",
+        "selected" : false,
+        "number" : 0.1
+      }
+    }, {
+      "data" : {
+        "id" : "57912",
+        "source" : "57888",
+        "target" : "57884",
+        "selected" : false,
+        "number" : 0.1
+      }
+    }, {
+      "data" : {
+        "id" : "57911",
+        "source" : "57887",
+        "target" : "57886",
+        "selected" : false,
+        "number" : 0.1
+      }
+    }, {
+      "data" : {
+        "id" : "57910",
+        "source" : "57886",
+        "target" : "57884",
+        "selected" : false,
+        "number" : 0.1
+      }
+    }, {
+      "data" : {
+        "id" : "57909",
+        "source" : "57885",
+        "target" : "57884",
+        "selected" : false,
+        "number" : 0.1
+      }
+    } ]
+  }
+}

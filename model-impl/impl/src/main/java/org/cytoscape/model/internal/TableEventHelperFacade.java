@@ -46,13 +46,17 @@ public class TableEventHelperFacade implements CyEventHelper {
 	private final CyEventHelper actualHelper;
 	private final Map<CyTable,Reference<LocalTableFacade>> facadeMap; 
 
+	private final Object lock = new Object();
+	
 	public TableEventHelperFacade(CyEventHelper actualHelper) {
 		this.actualHelper = actualHelper;	
 		this.facadeMap = new WeakHashMap<CyTable,Reference<LocalTableFacade>>(); 
 	}
 
 	void registerFacade(LocalTableFacade facade) {
-		facadeMap.put(facade.getLocalTable(),new WeakReference<LocalTableFacade>(facade));	
+		synchronized (lock) {
+			facadeMap.put(facade.getLocalTable(),new WeakReference<LocalTableFacade>(facade));
+		}
 	}
 
 	public <E extends CyEvent<?>> void fireEvent(final E event) {
@@ -65,7 +69,10 @@ public class TableEventHelperFacade implements CyEventHelper {
 		if ( !(source instanceof CyTable) )
 			return;
 
-		Reference<LocalTableFacade> reference = facadeMap.get((CyTable)source);
+		Reference<LocalTableFacade> reference;
+		synchronized (lock) {
+			reference = facadeMap.get((CyTable)source);
+		}
 		if (reference == null)
 			return;
 		LocalTableFacade facade = reference.get();
@@ -107,7 +114,10 @@ public class TableEventHelperFacade implements CyEventHelper {
 
 		// only propagate the payload with a facade source if it's one we care about
 		if ( source instanceof CyTable ) {
-			Reference<LocalTableFacade> reference = facadeMap.get((CyTable)source);
+			Reference<LocalTableFacade> reference;
+			synchronized (lock) {
+				reference = facadeMap.get((CyTable)source);
+			}
 			if (reference == null)
 				return;
 			LocalTableFacade facade = reference.get();

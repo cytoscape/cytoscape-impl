@@ -27,6 +27,7 @@ package org.cytoscape.task.internal.select;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyEdge.Type;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
@@ -40,14 +41,17 @@ public class SelectFirstNeighborsNodeViewTask extends AbstractTask {
 	private View<CyNode> nodeView;
 	private CyNetworkView netView;
 	private final Type direction;
+	private final CyEventHelper cyEventHelper;
 
 	private final SelectUtils selectUtils;
 
-	public SelectFirstNeighborsNodeViewTask(View<CyNode> nodeView, CyNetworkView netView, final Type direction) {
+	public SelectFirstNeighborsNodeViewTask(View<CyNode> nodeView, CyNetworkView netView, final Type direction, 
+	                                        final CyEventHelper eventHelper) {
 		this.nodeView = nodeView;
 		this.netView = netView;
 		this.direction = direction;
-		this.selectUtils = new SelectUtils();
+		this.cyEventHelper = eventHelper;
+		this.selectUtils = new SelectUtils(cyEventHelper);
 	}
 
 	public void run(TaskMonitor tm) throws Exception {

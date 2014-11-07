@@ -44,16 +44,8 @@ import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.impl.cyannotator.dialogs.TextAnnotationDialog;
 
 public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnotation {
-
-	public static final String FONTCOLOR="fontColor";
-	public static final String TEXT="text";
-	public static final String COLOR="color";
-	public static final String FONTFAMILY="fontFamily";
-	public static final String FONTSIZE="fontSize";
-	public static final String FONTSTYLE="fontStyle";
 	private String text = "";
 
-	private Font scaledFont = null;
 	private double lastScaleFactor = -1;
 
 	protected float fontSize = 0.0f;
@@ -88,11 +80,12 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 	// Need to make sure all arguments have reasonable options
 	// This constructor is used to construct a text annotation from an
 	// argument map.
+	// Need to make sure all arguments have reasonable options
 	public TextAnnotationImpl(CyAnnotator cyAnnotator, DGraphView view, Map<String, String> argMap) {
 		super(cyAnnotator, view, argMap);
 		this.font = getArgFont(argMap, "Arial", Font.PLAIN, initialFontSize);
-		this.text = getString(argMap, TEXT, "");
     this.textColor = getColor(argMap, COLOR, Color.BLACK);
+		this.text = getString(argMap, TEXT, "");
 		this.fontSize = font.getSize2D();
 		setSize(getAnnotationWidth(), getAnnotationHeight());
 	}
@@ -148,7 +141,7 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 	@Override
 	public void setFontSize(double size) {
 		this.fontSize = (float)size;
-		scaledFont = font.deriveFont((float)(fontSize*getSpecificZoom()));
+		font = font.deriveFont((float)(fontSize*getSpecificZoom()));
 		if(!usedForPreviews)
 			setSize(getAnnotationWidth(), getAnnotationHeight());
 	}
@@ -159,8 +152,7 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 
 	@Override
 	public void setFontStyle(int style) {
-		font = font.deriveFont(style, fontSize);
-		scaledFont = font.deriveFont((float)(fontSize*getSpecificZoom()));
+		font = font.deriveFont(style, (float)(fontSize*getSpecificZoom()));
 		if(!usedForPreviews)
 			setSize(getAnnotationWidth(), getAnnotationHeight());
 	}
@@ -173,7 +165,7 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 	@Override
 	public void setFontFamily(String family) {
 		font = new Font(family, font.getStyle(), (int)fontSize);
-		scaledFont = font.deriveFont((float)(fontSize*getSpecificZoom()));
+		font = font.deriveFont((float)(fontSize*getSpecificZoom()));
 		if(!usedForPreviews)
 			setSize(getAnnotationWidth(), getAnnotationHeight());
 	}

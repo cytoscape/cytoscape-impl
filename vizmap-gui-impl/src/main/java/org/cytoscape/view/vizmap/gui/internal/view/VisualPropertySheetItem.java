@@ -645,7 +645,7 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 			removeMappingBtn.setContentAreaFilled(false);
 			removeMappingBtn.setOpaque(false);
 			removeMappingBtn.setFocusable(false);
-			removeMappingBtn.setFont(themeMgr.getFont(CyFont.FONTAWESOME_FONT).deriveFont(17.0f));
+			removeMappingBtn.setFont(themeMgr.getFont(CyFont.FONTAWESOME_FONT).deriveFont(18.0f));
 			removeMappingBtn.setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 2));
 			updateRemoveMappingBtn();
 		}

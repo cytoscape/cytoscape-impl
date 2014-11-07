@@ -2,7 +2,7 @@
 	<parent>
 		<groupId>org.cytoscape</groupId>
 		<artifactId>impl-parent</artifactId>
-		<version>3.1.1</version>
+		<version>3.2.0</version>
 	</parent>
 
 	<properties>
@@ -12,7 +12,7 @@
 
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>group-impl</artifactId>
-  <version>3.1.1</version>
+  <version>3.2.0</version>
 
     <name>Cytoscape Groups Impl (${project.artifactId})</name>
 
@@ -112,6 +112,33 @@
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>model-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>viewmodel-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>presentation-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>vizmap-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-core</artifactId>
+			<version>2.2.2</version>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-databind</artifactId>
+			<version>2.2.2</version>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-annotations</artifactId>
+			<version>2.2.0</version>
 		</dependency>
 		<dependency>
 			<groupId>junit</groupId>

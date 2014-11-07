@@ -82,6 +82,7 @@ public class LoadNetworkURLTaskFactoryImpl extends AbstractTaskFactory implement
 		this.nullNetworkViewFactory = nullNetworkViewFactory;
 	}
 
+	@Override
 	public TaskIterator createTaskIterator() {
 		// Usually we need to create view, so expected number is 2.
 		return new TaskIterator(2, new LoadNetworkURLTask(mgr, netmgr, networkViewManager, props, cyNetworkNaming, streamUtil, vmm, nullNetworkViewFactory));
@@ -91,6 +92,7 @@ public class LoadNetworkURLTaskFactoryImpl extends AbstractTaskFactory implement
 		return loadCyNetworks(url);
 	}
 
+	@Override
 	public TaskIterator createTaskIterator(final URL url, TaskObserver observer) {
 		return loadCyNetworks(url);
 	}

@@ -110,10 +110,12 @@ public class CommandToolDialog extends JDialog
 
 		Border etchedBorder = BorderFactory.createEtchedBorder(EtchedBorder.LOWERED);
 
-		resultsText = new JResultsPane();
+		resultsText = new JResultsPane(this, dataPanel);
 		resultsText.setEditable(false);
 		resultsText.setPreferredSize(new Dimension(900, 200));
 		JScrollPane scrollPane = new JScrollPane(resultsText);
+		// scrollPane.getVerticalScrollBar().addAdjustmentListener(resultsText);
+		resultsText.setScrollPane(scrollPane); // So we can update the scroll position
 
 		scrollPane.setBorder(BorderFactory.createTitledBorder(etchedBorder, "Reply Log"));
 		dataPanel.add(scrollPane);

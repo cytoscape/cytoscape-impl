@@ -24,7 +24,6 @@ package org.cytoscape.linkout.internal;
  * #L%
  */
 
-
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -48,6 +47,7 @@ public class LinkoutTask extends AbstractTask {
 	private static final String REGEX = "%.+?%";
 	private static final Pattern regexPattern = Pattern.compile(REGEX);
 
+
 	public LinkoutTask(String link, OpenBrowser browser, CyNetwork network, CyIdentifiable... tableEntries) {
 		this.link = link;
 		this.tableEntries = tableEntries;
@@ -57,11 +57,9 @@ public class LinkoutTask extends AbstractTask {
 
 	@Override
 	public void run(TaskMonitor tm) {
-
 		String url = link;
 
-		// This absurdity is to support backwards compatibility
-		// with 2.x formatted links.
+		// This absurdity is to support backwards compatibility with 2.x formatted links.
 		if (tableEntries.length == 1) {
 			url = substituteAttributes(url, tableEntries[0], "ID");
 		} else if (tableEntries.length == 2) {
@@ -87,8 +85,7 @@ public class LinkoutTask extends AbstractTask {
 			String attrName = url.substring(mat.start() + 1, mat.end() - 1);
 			String replaceName = attrName;
 
-			// handle the default case where ID, ID1, ID2 is now the "name"
-			// column
+			// handle the default case where ID, ID1, ID2 is now the "name" column
 			if (attrName.equals(id))
 				attrName = CyNetwork.NAME;
 

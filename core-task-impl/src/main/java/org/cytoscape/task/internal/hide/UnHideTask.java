@@ -35,7 +35,9 @@ import org.cytoscape.model.CyNode;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
+import org.cytoscape.view.model.View;
 import org.cytoscape.view.vizmap.VisualMappingManager;
+import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.work.ContainsTunables;
 import org.cytoscape.work.TaskMonitor;
 
@@ -82,38 +84,28 @@ public class UnHideTask extends AbstractTask {
 		int nodeCount = 0;
 		int edgeCount = 0;
 		for (CyNetworkView view: views) {
+			VisualStyle style = vmMgr.getVisualStyle(view);
 			if (nodes != null) {
 				HideUtils.setVisibleNodes(nodes, true, view);
 				nodeCount = nodes.size();
+				for (CyNode node: nodes) {
+					View<CyNode> nodeView = view.getNodeView(node);
+					style.apply(net.getRow(node), nodeView);
+				}
 			}
 			if (edges != null) {
 				HideUtils.setVisibleEdges(edges, true, view);
 				edgeCount = edges.size();
+				for (CyEdge edge: edges) {
+					View<CyEdge> edgeView = view.getEdgeView(edge);
+					style.apply(net.getRow(edge), edgeView);
+				}
 			}
-			vmMgr.getVisualStyle(view).apply(view);
 			view.updateView();
 		}
 
 		e.showMessage(TaskMonitor.Level.INFO, "Showed "+nodeCount+" nodes and "+edgeCount+" edges");
-		
-/*
-		final CyNetwork network = view.getModel();
-		undoSupport.postEdit(new HideEdit(eventHelper, "Hide Selected Nodes & Edges", network, view));
-		final List<CyNode> selectedNodes = CyTableUtil.getNodesInState(network, CyNetwork.SELECTED, true);
-		e.setProgress(0.2);
-		
-		final List<CyEdge> selectedEdges = CyTableUtil.getEdgesInState(network, CyNetwork.SELECTED, true);
-		e.setProgress(0.4);
-		
-		HideUtils.setVisibleNodes(selectedNodes, false, view);
-		e.setProgress(0.6);
-		
-		HideUtils.setVisibleEdges(selectedEdges, false, view);
-		e.setProgress(0.8);
-		
-		vmMgr.getVisualStyle(view).apply(view);
-		view.updateView();
-*/
+
 		e.setProgress(1.0);
 	}
 }

@@ -24,50 +24,50 @@ package org.cytoscape.view.vizmap.gui.internal.view.editor.valueeditor;
  * #L%
  */
 
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Font;
+import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.lang.reflect.Method;
 import java.text.Collator;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
 import javax.swing.DefaultListModel;
 import javax.swing.GroupLayout;
 import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JDialog;
-import javax.swing.JLabel;
-import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.LayoutStyle;
-import javax.swing.ListCellRenderer;
 import javax.swing.ListSelectionModel;
 import javax.swing.SortOrder;
 import javax.swing.WindowConstants;
-import javax.swing.border.Border;
 
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.RenderingEngine;
+import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
 import org.cytoscape.view.presentation.property.values.ArrowShape;
 import org.cytoscape.view.presentation.property.values.LineType;
 import org.cytoscape.view.presentation.property.values.VisualPropertyValue;
 import org.cytoscape.view.vizmap.gui.DefaultViewPanel;
 import org.cytoscape.view.vizmap.gui.editor.ValueEditor;
 import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
+import org.cytoscape.view.vizmap.gui.internal.util.VisualPropertyUtil;
+import org.cytoscape.view.vizmap.gui.internal.view.cellrenderer.FontCellRenderer;
+import org.cytoscape.view.vizmap.gui.internal.view.cellrenderer.IconCellRenderer;
 import org.jdesktop.swingx.JXList;
 
 /**
@@ -83,11 +83,6 @@ public class DiscreteValueEditor<T> extends JDialog implements ValueEditor<T> {
 	
 	private final static long serialVersionUID = 1202339876950593L;
 	
-	private final Color BORDER_COLOR = new Color(200, 200, 200);
-	
-	private int iconWidth = -1; // not initialized!
-	private int iconHeight = -1; // not initialized!
-
 	// Value data type for this chooser.
 	protected final Class<T> type;
 	
@@ -97,19 +92,14 @@ public class DiscreteValueEditor<T> extends JDialog implements ValueEditor<T> {
 	
 	protected final ServicesUtil servicesUtil;
 	
-	protected Map<T, Icon> iconMap;
 	protected boolean canceled;
 	
 	protected JButton applyButton;
 	protected JButton cancelButton;
-	protected JXList iconList;
+	protected DiscreteValueList<T> discreteValueList;
 	protected JScrollPane iconListScrollPane;
 	protected JPanel mainPanel;
-	protected DefaultListModel model;
 	
-	private final Collator collator = Collator.getInstance(Locale.getDefault());
-
-
 	public DiscreteValueEditor(final Class<T> type, Set<T> values, final VisualProperty<T> vp,
 			final ServicesUtil servicesUtil) {
 		if (type == null)
@@ -123,24 +113,27 @@ public class DiscreteValueEditor<T> extends JDialog implements ValueEditor<T> {
 		this.type = type;
 		this.vp = vp;
 		this.servicesUtil = servicesUtil;
-		this.iconMap = new HashMap<T, Icon>();
 
 		init();
 	}
 	
+	protected DiscreteValueEditor(final Class<T> type, Set<T> values, final ServicesUtil servicesUtil) {
+		this(type, values, null, servicesUtil);
+	}
+	
 	@SuppressWarnings("unchecked")
 	public T getValue() {
-		return canceled != true ? (T) iconList.getSelectedValue() : null;
+		return canceled != true ? (T) getDiscreteValueList().getSelectedValue() : null;
 	}
 	
 	public void setValue(final T value) {
-		iconList.setSelectedValue(value, true);
+		getDiscreteValueList().setSelectedValue(value, true);
 	}
 	
 	@Override
 	@SuppressWarnings("unchecked")
 	public <S extends T> T showEditor(final Component parent, final S initialValue) {
-		setListItems(initialValue);
+		getDiscreteValueList().setListItems(values, initialValue);
 		setLocationRelativeTo(parent);
 		setVisible(true);
 		
@@ -158,78 +151,13 @@ public class DiscreteValueEditor<T> extends JDialog implements ValueEditor<T> {
 		return type;
 	}
 	
-	protected int getIconWidth() {
-		if (iconWidth == -1) {
-			if (type == LineType.class || type == ArrowShape.class)
-				iconWidth = 64;
-			else
-				iconWidth = 32;
-		}
-		
-		return iconWidth;
-	}
-	
-	protected int getIconHeight() {
-		if (iconHeight == -1) {
-			iconHeight = 32;
-		}
-		
-		return iconHeight;
-	}
-	
-	protected void init() {
+	private void init() {
 		setModal(true);
 		setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-		setTitle("Select New Value");
-		
-		iconList = new JXList();
-		iconList.setModel(model = new DefaultListModel());
-		iconList.setCellRenderer(new IconCellRenderer());
-		iconList.setAutoCreateRowSorter(true);
-		iconList.setSortOrder(SortOrder.ASCENDING);
-		iconList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-		iconList.setCursor(new Cursor(Cursor.HAND_CURSOR));
-		iconList.setComparator(new Comparator<T>() {
-			@Override
-			public int compare(T o1, T o2) {
-				if (o1 instanceof VisualPropertyValue)
-					return collator.compare(((VisualPropertyValue)o1).getDisplayName(),
-							((VisualPropertyValue)o2).getDisplayName());
-				if (o1 instanceof Font)
-					return collator.compare(((Font)o1).getFontName(), ((Font)o2).getFontName());
-				return collator.compare(o1.toString(), o2.toString());
-			}
-		});
-		iconList.addMouseListener(new MouseAdapter() {
-			@Override
-			public void mouseClicked(final MouseEvent evt) {
-				if (evt.getClickCount() == 2) {
-					applyButton.doClick();
-				}
-			}
-		});
+		setTitle(vp != null ? vp.getDisplayName() : "Select New Value");
 		
 		iconListScrollPane = new JScrollPane();
-		iconListScrollPane.setViewportView(iconList);
-
-		applyButton = new JButton();
-		applyButton.setText("Apply");
-		applyButton.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent evt) {
-				applyButtonActionPerformed(evt);
-			}
-		});
-
-		cancelButton = new JButton();
-		cancelButton.setText("Cancel");
-		cancelButton.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent evt) {
-				cancelButtonActionPerformed(evt);
-			}
-		});
-		cancelButton.setVisible(true);
+		iconListScrollPane.setViewportView(getDiscreteValueList());
 
 		mainPanel = new JPanel();
 		GroupLayout mainPanelLayout = new GroupLayout(mainPanel);
@@ -238,9 +166,9 @@ public class DiscreteValueEditor<T> extends JDialog implements ValueEditor<T> {
 		mainPanelLayout.setHorizontalGroup(mainPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
 				.addGroup(GroupLayout.Alignment.TRAILING, mainPanelLayout.createSequentialGroup()
 						.addContainerGap(128, Short.MAX_VALUE)
-						.addComponent(cancelButton)
+						.addComponent(getCancelButton())
 						.addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-						.addComponent(applyButton)
+						.addComponent(getApplyButton())
 						.addContainerGap())
 				.addComponent(iconListScrollPane, GroupLayout.DEFAULT_SIZE, 291, Short.MAX_VALUE));
 		mainPanelLayout.setVerticalGroup(mainPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
@@ -248,8 +176,8 @@ public class DiscreteValueEditor<T> extends JDialog implements ValueEditor<T> {
 						.addComponent(iconListScrollPane, GroupLayout.DEFAULT_SIZE, 312, Short.MAX_VALUE)
 						.addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
 						.addGroup(mainPanelLayout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-								.addComponent(applyButton)
-								.addComponent(cancelButton))
+								.addComponent(getApplyButton())
+								.addComponent(getCancelButton()))
 						.addContainerGap()));
 
 		GroupLayout layout = new GroupLayout(getContentPane());
@@ -262,28 +190,55 @@ public class DiscreteValueEditor<T> extends JDialog implements ValueEditor<T> {
 		
 		pack();
 	}
-
-	/**
-	 * Use current renderer to create icons.
-	 * @param values
-	 */
-	private void renderIcons(final Set<T> values) {
-		if (vp == null || type == Font.class)
-			return;
-		
-		iconMap.clear();
-		
-		final DefaultViewPanel defViewPanel = servicesUtil.get(DefaultViewPanel.class);
-		final RenderingEngine<CyNetwork> engine = defViewPanel != null ? defViewPanel.getRenderingEngine() : null;
-		
-		// Current engine is not ready yet.
-		if (engine != null) {
-			for (T value: values)
-				iconMap.put(value, engine.createIcon(vp, value, getIconWidth(), getIconHeight()));
+	
+	private DiscreteValueList<T> getDiscreteValueList() {
+		if (discreteValueList == null) {
+			discreteValueList = new DiscreteValueList<T>(type, vp, servicesUtil);
+			discreteValueList.addMouseListener(new MouseAdapter() {
+				@Override
+				public void mouseClicked(final MouseEvent evt) {
+					if (evt.getClickCount() == 2) {
+						getApplyButton().doClick();
+					}
+				}
+			});
 		}
+		
+		return discreteValueList;
 	}
 	
-	protected void applyButtonActionPerformed(ActionEvent evt) {
+	private JButton getApplyButton() {
+		if (applyButton == null) {
+			applyButton = new JButton();
+			applyButton.setText("Apply");
+			applyButton.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent evt) {
+					applyButtonActionPerformed(evt);
+				}
+			});
+		}
+		
+		return applyButton;
+	}
+	
+	private JButton getCancelButton() {
+		if (cancelButton == null) {
+			cancelButton = new JButton();
+			cancelButton.setText("Cancel");
+			cancelButton.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent evt) {
+					cancelButtonActionPerformed(evt);
+				}
+			});
+			cancelButton.setVisible(true);
+		}
+		
+		return cancelButton;
+	}
+
+	private void applyButtonActionPerformed(ActionEvent evt) {
 		dispose();
 	}
 	
@@ -292,93 +247,126 @@ public class DiscreteValueEditor<T> extends JDialog implements ValueEditor<T> {
 		canceled = true;
 	}
 
-	private void setListItems(final T selectedValue) {
-		renderIcons(values);
-		model.removeAllElements();
+	static class DiscreteValueList<T> extends JXList {
 		
-		for (final T key : values)
-			model.addElement(key);
+		private static final long serialVersionUID = 391558018818678186L;
+		
+		private int iconWidth = -1; // not initialized!
+		private int iconHeight = -1; // not initialized!
+		
+		private final Class<T> type;
+		private final VisualProperty<T> vp;
+		private final Set<T> values;
+		private final Map<T, Icon> iconMap;
+		private final DefaultListModel model;
+		private final ServicesUtil servicesUtil;
 
-		if (selectedValue != null)
-			iconList.setSelectedValue(selectedValue, true);
+		DiscreteValueList(final Class<T> type,
+						  final VisualProperty<T> vp,
+						  final ServicesUtil servicesUtil) {
+			this.type = type;
+			this.vp = vp;
+			this.values = Collections.synchronizedSet(new LinkedHashSet<T>());
+			this.servicesUtil = servicesUtil;
+			iconMap = new HashMap<T, Icon>();
+			
+			setModel(model = new DefaultListModel());
+			setCellRenderer(type == Font.class ? new FontCellRenderer() : new IconCellRenderer<T>(iconMap));
+			
+			setAutoCreateRowSorter(true);
+			setSortOrder(SortOrder.ASCENDING);
+			setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+			setCursor(new Cursor(Cursor.HAND_CURSOR));
+			
+			final Collator collator = Collator.getInstance(Locale.getDefault());
+			
+			setComparator(new Comparator<T>() {
+				@Override
+				public int compare(T o1, T o2) {
+					if (o1 instanceof VisualPropertyValue)
+						return collator.compare(((VisualPropertyValue)o1).getDisplayName(),
+								((VisualPropertyValue)o2).getDisplayName());
+					if (o1 instanceof Font)
+						return collator.compare(((Font)o1).getFontName(), ((Font)o2).getFontName());
+					return collator.compare(o1.toString(), o2.toString());
+				}
+			});
+		}
 		
-		iconList.repaint();
-	}
-
-	protected String getLabel(final T value) {
-		String text = null;
+		/**
+		 * Use current renderer to create icons.
+		 * @param values
+		 */
+		private void renderIcons(final Set<T> values) {
+			if (type == Font.class)
+				return;
+			
+			iconMap.clear();
+			
+			final DefaultViewPanel defViewPanel = servicesUtil.get(DefaultViewPanel.class);
+			final RenderingEngine<CyNetwork> engine = defViewPanel != null ? defViewPanel.getRenderingEngine() : null;
+			
+			// Current engine is not ready yet.
+			if (engine != null) {
+				synchronized (values) {
+					for (T value: values) {
+						Icon icon = null;
+						
+						if (value instanceof CyCustomGraphics) {
+							final Image img = ((CyCustomGraphics)value).getRenderedImage();
+							
+							if (img != null)
+								icon = VisualPropertyUtil.resizeIcon(new ImageIcon(img), getIconWidth(), getIconHeight());
+						} else if (vp != null) {
+							icon = engine.createIcon(vp, value, getIconWidth(), getIconHeight());
+						}
+						
+						if (icon != null)
+							iconMap.put(value, icon);
+					}
+				}
+			}
+		}
 		
-		// Use reflection to check existence of "getDisplayName" method
-		final Class<? extends Object> valueClass = value.getClass();
-		
-		if (value instanceof Font) {
-			text  = ((Font)value).getFontName();
-		} else {
-			try {
-				final Method displayMethod = valueClass.getMethod("getDisplayName", (Class<?>)null);
-				final Object returnVal = displayMethod.invoke(value, (Class<?>)null);
+		protected void setListItems(final Collection<T> newValues, final T selectedValue) {
+			synchronized (values) {
+				values.clear();
 				
-				if (returnVal != null)
-					text = returnVal.toString();
-			} catch (Exception e) {
-				// Use toString is failed.
-				text = value.toString();
-			}
-		}
-		
-		return text;
-	}
-	
-	private final class IconCellRenderer extends JPanel implements ListCellRenderer {
-		
-		private final static long serialVersionUID = 1202339876940871L;
-		
-		private final Font SELECTED_FONT = new Font("SansSerif", Font.ITALIC, 14);
-		private final Font NORMAL_FONT = new Font("SansSerif", Font.PLAIN, 14);
-		private final Color BG_COLOR = Color.WHITE;
-		private final Color SELECTED_BG_COLOR = new Color(222, 234, 252);
-
-		public IconCellRenderer() {
-			setOpaque(true);
-		}
-
-		@Override
-		@SuppressWarnings("unchecked")
-		public Component getListCellRendererComponent(final JList list,
-													  final Object value,
-													  final int index,
-													  final boolean isSelected,
-													  final boolean cellHasFocus) {
-			removeAll();
-			
-			setBackground(isSelected ? SELECTED_BG_COLOR : BG_COLOR);
-			
-			final Border border = BorderFactory.createMatteBorder(0, 0, 1, 0, BORDER_COLOR);
-			final Border paddingBorder = BorderFactory.createEmptyBorder(4, 4, 4, 4);
-			setBorder(BorderFactory.createCompoundBorder(border, paddingBorder));
-			
-			setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
-			
-			final Icon icon = iconMap.get(value);
-			
-			if (icon != null) {
-				final JLabel iconLbl = new JLabel(iconMap.get(value));
-				iconLbl.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
-				add(iconLbl);
-				add(Box.createHorizontalStrut(20));
+				if (newValues != null)
+					values.addAll(newValues);
 			}
 			
-			final JLabel textLbl = new JLabel(getLabel((T)value));
+			renderIcons(values);
+			model.removeAllElements();
 			
-			if (value instanceof Font)
-				textLbl.setFont(((Font) value).deriveFont(14.0f));
-			else
-				textLbl.setFont(isSelected ? SELECTED_FONT : NORMAL_FONT);
+			synchronized (values) {
+				for (final T key : values)
+					model.addElement(key);
+			}
 
-			add(textLbl);
-			add(Box.createHorizontalGlue());
+			if (selectedValue != null)
+				setSelectedValue(selectedValue, true);
 			
-			return this;
+			repaint();
+		}
+		
+		private int getIconWidth() {
+			if (iconWidth == -1) {
+				if (type == LineType.class || type == ArrowShape.class)
+					iconWidth = 64;
+				else
+					iconWidth = 32;
+			}
+			
+			return iconWidth;
+		}
+		
+		private int getIconHeight() {
+			if (iconHeight == -1) {
+				iconHeight = 32;
+			}
+			
+			return iconHeight;
 		}
 	}
 }

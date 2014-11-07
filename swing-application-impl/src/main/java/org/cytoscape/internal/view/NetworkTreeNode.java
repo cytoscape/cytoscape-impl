@@ -39,7 +39,7 @@ import org.cytoscape.model.CyNetwork;
 final class NetworkTreeNode extends DefaultMutableTreeNode {
 
 	private final static long serialVersionUID = 1213748836736485L;
-	private static final Color DEF_NODE_COLOR = Color.RED;
+	public static final Color DEF_NODE_COLOR = Color.RED;
 
 	private final Reference<CyNetwork> network;
 	private Color nodeColor;

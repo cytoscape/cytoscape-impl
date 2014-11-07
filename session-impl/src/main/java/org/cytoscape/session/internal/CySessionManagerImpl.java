@@ -99,6 +99,7 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 
 	private final Set<CyProperty<?>> sessionProperties;
 	private CyProperty<Bookmarks> bookmarks;
+	private final Object lock = new Object();
 
 	private static final Logger logger = LoggerFactory.getLogger(CySessionManagerImpl.class);
 
@@ -288,27 +289,34 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 	public void addCyProperty(final CyProperty<?> newCyProperty, final Map<String, String> properties) {
 		CyProperty.SavePolicy sp = newCyProperty.getSavePolicy();
 
-		if (sp == CyProperty.SavePolicy.SESSION_FILE || sp == CyProperty.SavePolicy.SESSION_FILE_AND_CONFIG_DIR) {
-			if (Bookmarks.class.isAssignableFrom(newCyProperty.getPropertyType()))
-				bookmarks = (CyProperty<Bookmarks>) newCyProperty;
-			else
-				sessionProperties.add(newCyProperty);
+		synchronized (lock ) {
+			if (sp == CyProperty.SavePolicy.SESSION_FILE || sp == CyProperty.SavePolicy.SESSION_FILE_AND_CONFIG_DIR) {
+				if (Bookmarks.class.isAssignableFrom(newCyProperty.getPropertyType()))
+					bookmarks = (CyProperty<Bookmarks>) newCyProperty;
+				else
+					sessionProperties.add(newCyProperty);
+			}
 		}
 	}
 
 	public void removeCyProperty(final CyProperty<?> oldCyProperty, final Map<String, String> properties) {
 		CyProperty.SavePolicy sp = oldCyProperty.getSavePolicy();
 
-		if (sp == CyProperty.SavePolicy.SESSION_FILE || sp == CyProperty.SavePolicy.SESSION_FILE_AND_CONFIG_DIR) {
-			if (Bookmarks.class.isAssignableFrom(oldCyProperty.getPropertyType()))
-				bookmarks = null;
-			else
-				sessionProperties.remove(oldCyProperty);
+		synchronized (lock) {
+			if (sp == CyProperty.SavePolicy.SESSION_FILE || sp == CyProperty.SavePolicy.SESSION_FILE_AND_CONFIG_DIR) {
+				if (Bookmarks.class.isAssignableFrom(oldCyProperty.getPropertyType()))
+					bookmarks = null;
+				else
+					sessionProperties.remove(oldCyProperty);
+			}
 		}
 	}
 
 	private Set<CyProperty<?>> getAllProperties() {
-		final Set<CyProperty<?>> set = new HashSet<CyProperty<?>>(sessionProperties);
+		final Set<CyProperty<?>> set;
+		synchronized (lock) {
+			set = new HashSet<CyProperty<?>>(sessionProperties);
+		}
 		
 		if (bookmarks != null)
 			set.add(bookmarks);
@@ -570,6 +578,7 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 		for (CyProperty<?> cyProps : cyPropsClone) {
 			if (cyProps.getSavePolicy().equals(CyProperty.SavePolicy.SESSION_FILE)) {
 				registrar.unregisterAllServices(cyProps);
+				sessionProperties.remove(cyProps);
 			}
 		}
 		

@@ -139,6 +139,7 @@ public class GenericXGMMLWriter extends AbstractTask implements CyWriter {
     protected final UnrecognizedVisualPropertyManager unrecognizedVisualPropertyMgr;
     protected final CyNetworkManager networkMgr;
     protected final CyRootNetworkManager rootNetworkMgr;
+    protected final RenderingEngineManager renderingEngineMgr;
     private final GroupUtil groupUtil;
 
     protected final Map<CyNode, CyNode> writtenNodeMap = new WeakHashMap<CyNode, CyNode>();
@@ -179,6 +180,7 @@ public class GenericXGMMLWriter extends AbstractTask implements CyWriter {
         this.unrecognizedVisualPropertyMgr = unrecognizedVisualPropertyMgr;
         this.networkMgr = networkMgr;
         this.rootNetworkMgr = rootNetworkMgr;
+        this.renderingEngineMgr = renderingEngineMgr;
         this.visualLexicon = renderingEngineMgr.getDefaultVisualLexicon();
         this.groupUtil = groupUtil;
         

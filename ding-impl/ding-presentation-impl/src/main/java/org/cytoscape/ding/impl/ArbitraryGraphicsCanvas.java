@@ -284,6 +284,11 @@ public class ArbitraryGraphicsCanvas extends DingCanvas implements ViewportChang
 
 			// now paint children
 			if (m_isVisible){
+				// System.out.println("ArbitraryGraphicsCanvas: paintChildren");
+				// Component[] components = getComponents();
+				// for (Component c: components) {
+				// 	System.out.println("Child: "+c);
+				// }
 				this.paintChildren(image2D);
 			}
 			image2D.dispose();

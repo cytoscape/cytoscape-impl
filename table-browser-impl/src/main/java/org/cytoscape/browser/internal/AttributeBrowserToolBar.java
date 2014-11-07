@@ -24,7 +24,13 @@ package org.cytoscape.browser.internal;
  * #L%
  */
 
-import static org.cytoscape.browser.internal.IconManager.*;
+import static org.cytoscape.browser.internal.IconManager.ICON_CHECK;
+import static org.cytoscape.browser.internal.IconManager.ICON_CHECK_EMPTY;
+import static org.cytoscape.browser.internal.IconManager.ICON_COLUMNS;
+import static org.cytoscape.browser.internal.IconManager.ICON_FILE_ALT;
+import static org.cytoscape.browser.internal.IconManager.ICON_REMOVE_SIGN;
+import static org.cytoscape.browser.internal.IconManager.ICON_TABLE;
+import static org.cytoscape.browser.internal.IconManager.ICON_TRASH;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -77,6 +83,7 @@ import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
+import org.cytoscape.model.CyTable.Mutability;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
@@ -244,10 +251,10 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 		boolean enabled = browserTableModel != null;
 		
 		if (enabled) {
-			if (comp == deleteTableButton /*|| comp == mapGlobalTableButton*/) {
-				enabled = objType == null;
+			if (comp == deleteTableButton) {
+				enabled = browserTableModel.getDataTable().getMutability() == Mutability.MUTABLE;
 			} else if (comp == deleteAttributeButton) {
-				final CyTable attrs = browserTableModel.getAttributes();
+				final CyTable attrs = browserTableModel.getDataTable();
 				
 				for (final CyColumn column : attrs.getColumns()) {
 					enabled = !column.isImmutable();
@@ -259,6 +266,8 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 				final int row = browserTable.getSelectedRow();
 				final int column = browserTable.getSelectedColumn();
 				enabled = row >=0 && column >= 0 && browserTableModel.isCellEditable(row, column);
+			} else if (comp == tableChooser) {
+				enabled = tableChooser.getItemCount() > 0;
 			}
 		}
 		
@@ -526,7 +535,7 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 		jMenuItemLongIntegerListAttribute.setText("Long Integer");
 		jMenuItemLongIntegerListAttribute.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				createNewAttribute("Integer List", isShared);
+				createNewAttribute("Long Integer List", isShared);
 			}
 		});
 
@@ -662,7 +671,7 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 					} else {
 						final String attrName = getAttribName(cellRow, cellColumn);
 						final Map<String, Class<?>> attribNameToTypeMap = new HashMap<String, Class<?>>();
-						final CyTable attrs = browserTableModel.getAttributes();
+						final CyTable attrs = browserTableModel.getDataTable();
 						initAttribNameToTypeMap(attrs, attrName, attribNameToTypeMap);
 						final FormulaBuilderDialog formulaBuilderDialog = new FormulaBuilderDialog(compiler,
 								browserTable, rootFrame, attrName);
@@ -737,7 +746,7 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 				@Override
 				public void actionPerformed(final ActionEvent e) {
 					try {
-						final CyTable table = browserTableModel.getAttributes();
+						final CyTable table = browserTableModel.getDataTable();
 						final Set<String> allAttrNames = new HashSet<String>();
 						for (final CyColumn column : table.getColumns())
 							allAttrNames.add(column.getName());
@@ -778,7 +787,7 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 
 	private void removeAttribute() {
 		final JFrame frame = (JFrame)SwingUtilities.getRoot(this);
-		final DeletionDialog dDialog = new DeletionDialog(frame, browserTableModel.getAttributes(), browserTable);
+		final DeletionDialog dDialog = new DeletionDialog(frame, browserTableModel.getDataTable(), browserTable);
 
 		dDialog.pack();
 		dDialog.setLocationRelativeTo(toolBar);
@@ -786,7 +795,7 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 	}
 
 	private void removeTable() {
-		final CyTable table = browserTableModel.getAttributes();
+		final CyTable table = browserTableModel.getDataTable();
 
 		if (table.getMutability() == CyTable.Mutability.MUTABLE) {
 			String title = "Please confirm this action";
@@ -827,7 +836,7 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 	}
 
 	private String[] getAttributeArray() {
-		final CyTable attrs = browserTableModel.getAttributes();
+		final CyTable attrs = browserTableModel.getDataTable();
 		final Collection<CyColumn> columns = attrs.getColumns();
 		final String[] attributeArray = new String[columns.size() - 1];
 		int index = 0;
@@ -930,7 +939,7 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 				}
 				
 			} else {
-				attrs = browserTableModel.getAttributes();
+				attrs = browserTableModel.getDataTable();
 			}
 		
 			if (type.equals("String"))

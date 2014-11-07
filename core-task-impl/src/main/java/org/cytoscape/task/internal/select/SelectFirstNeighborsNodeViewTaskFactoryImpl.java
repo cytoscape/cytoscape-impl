@@ -24,6 +24,7 @@ package org.cytoscape.task.internal.select;
  * #L%
  */
 
+import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyEdge.Type;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.task.AbstractNodeViewTaskFactory;
@@ -35,13 +36,15 @@ import org.cytoscape.work.TaskIterator;
 public class SelectFirstNeighborsNodeViewTaskFactoryImpl extends AbstractNodeViewTaskFactory implements SelectFirstNeighborsNodeViewTaskFactory{
 
 	private final Type direction;
+	private final CyEventHelper cyEventHelper;
 
-	public SelectFirstNeighborsNodeViewTaskFactoryImpl(final Type direction) {
+	public SelectFirstNeighborsNodeViewTaskFactoryImpl(final Type direction, CyEventHelper eventHelper) {
 		super();
 		this.direction = direction;
+		this.cyEventHelper = eventHelper;
 	}
 
 	public TaskIterator createTaskIterator(View<CyNode> nodeView, CyNetworkView netView) {
-		return new TaskIterator(new SelectFirstNeighborsNodeViewTask(nodeView, netView, direction));
+		return new TaskIterator(new SelectFirstNeighborsNodeViewTask(nodeView, netView, direction, cyEventHelper));
 	}
 }

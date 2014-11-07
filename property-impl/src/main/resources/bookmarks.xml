@@ -4,15 +4,14 @@
 	
 	- General purpose bookmark file to specify data source locations.
 	
-	Keiichiro Ono (kono@ucsd.edu)
 -->
 <bookmarks xmlns:xlink="http://www.w3.org/1999/xlink" version="0.5">
 	<description>
 		Bookmark file for Cytoscape 2.4 and later.
 	</description>
 	<category name="ontology">
-		<dataSource name="Gene Ontology Full"
-			xlink:href="http://www.geneontology.org/ontology/gene_ontology_edit.obo"
+		<dataSource name="Gene Ontology"
+			xlink:href="http://purl.obolibrary.org/obo/go.obo"
 			format="obo">
 			<attribute name="description">
 				The Gene Ontology (GO) project provides a controlled vocabulary to describe gene and gene product attributes in any organism. This data source contains full size GO dag, which contains all GO terms.  This OBO file is written in version 1.2 format.
@@ -20,7 +19,7 @@
 			<attribute name="ontologyType">GO</attribute>
 		</dataSource>
 		<dataSource name="Generic GO slim"
-			xlink:href="http://www.geneontology.org/GO_slims/goslim_generic.obo"
+			xlink:href="http://geneontology.org/ontology/subsets/goslim_generic.obo"
 			format="obo">
 			<attribute name="description">
 				Subset of general GO Terms.
@@ -28,28 +27,12 @@
 			<attribute name="ontologyType">GO</attribute>
 		</dataSource>
 		<dataSource name="Yeast GO slim"
-			xlink:href="http://www.geneontology.org/GO_slims/goslim_yeast.obo"
+			xlink:href="http://geneontology.org/ontology/subsets/goslim_yeast.obo"
 			format="obo">
 			<attribute name="description">
 				Subset of GO Terms for annotating Yeast data sets.  Maintained by SGD.
 			</attribute>
 			<attribute name="ontologyType">GO</attribute>
-		</dataSource>
-		<dataSource name="Molecule role (INOH Protein name/family name ontology)"
-			xlink:href="http://obo.cvs.sourceforge.net/*checkout*/obo/obo/ontology/genomic-proteomic/molecule_role.obo"
-			format="obo">
-			<attribute name="description">
-				A structured controlled vocabulary of concrete protein names and generic (abstract) protein names. This ontology is a INOH pathway annotation ontology, one of a set of ontologies intended to be used in pathway data annotation to ease data integration. This ontology is used to annotate protein names, protein family names, generic/concrete protein names in the INOH pathway data.
-				INOH is part of the BioPAX working group.
-			</attribute>
-		</dataSource>
-		<dataSource name="Event (INOH pathway ontology)"
-			xlink:href="http://obo.cvs.sourceforge.net/*checkout*/obo/obo/ontology/genomic-proteomic/event.obo"
-			format="obo">
-			<attribute name="description">
-				A structured controlled vocabulary of pathway centric biological processes. This ontology is a INOH pathway annotation ontology, one of a set of ontologies intended to be used in pathway data annotation to ease data integration. This ontology is used to annotate biological processes, pathways, sub-pathways in the INOH pathway data.
-				INOH is part of the BioPAX working group.
-			</attribute>
 		</dataSource>
 		<dataSource name="Protein-protein interaction"
 			xlink:href="http://obo.cvs.sourceforge.net/*checkout*/obo/obo/ontology/genomic-proteomic/protein/psi-mi.obo"
@@ -65,32 +48,12 @@
 				The Pathway Ontology is a controlled vocabulary for pathways that provides standard terms for the annotation of geneproducts.
 			</attribute>
 		</dataSource>
-		<dataSource name="PATO"
-			xlink:href="http://obo.cvs.sourceforge.net/*checkout*/obo/obo/ontology/phenotype/quality.obo"
-			format="obo">
-			<attribute name="description">
-				PATO is an ontology of phenotypic qualities, intended for use in a number of applications, primarily phenotype annotation.  For more information, please visit PATO wiki (http://www.bioontology.org/wiki/index.php/PATO:Main_Page). 
-			</attribute>
-		</dataSource>
-		<dataSource name="Mouse pathology"
-			xlink:href="http://obo.cvs.sourceforge.net/*checkout*/obo/obo/ontology/phenotype/mouse_pathology/mouse_pathology.obo"
-			format="obo">
-			<attribute name="description">
-				Mouse Pathology Ontology (MPATH) is an ontology for mutant mouse pathology.  This is Version 1.
-			</attribute>
-		</dataSource>
-		<dataSource name="Human disease"
-			xlink:href="http://obo.cvs.sourceforge.net/*checkout*/obo/obo/ontology/phenotype/human_disease.obo"
-			format="obo">
-			<attribute name="description">
-				This ontology is a comprehensive hierarchical controlled vocabulary for human disease representation.  For more information, please visit Disease Ontology website (http://diseaseontology.sourceforge.net/).
-			</attribute>
-		</dataSource>
+
 		<!-- List of Gene Association files-->
 		<category name="annotation">
 			<dataSource format="Gene Association"
 				name="Gene Association file for Saccharomyces cerevisiae"
-				xlink:href="http://www.geneontology.org/cgi-bin/downloadGOGA.pl/gene_association.sgd.gz">
+				xlink:href="http://geneontology.org/gene-associations/gene_association.sgd.gz">
 				<attribute name="curator">SGD</attribute>
 				<attribute name="species">
 					Saccharomyces cerevisiae
@@ -98,7 +61,7 @@
 			</dataSource>
 			<dataSource format="Gene Association"
 				name="Gene Association file for Drosophila melanogaster"
-				xlink:href="http://www.geneontology.org/cgi-bin/downloadGOGA.pl/gene_association.fb.gz">
+				xlink:href="http://geneontology.org/gene-associations/gene_association.fb.gz">
 				<attribute name="curator">FlyBase</attribute>
 				<attribute name="species">
 					Drosophila melanogaster
@@ -106,13 +69,13 @@
 			</dataSource>
 			<dataSource format="Gene Association"
 				name="Gene Association file for Mus musculus"
-				xlink:href="http://www.geneontology.org/cgi-bin/downloadGOGA.pl/gene_association.mgi.gz">
+				xlink:href="http://geneontology.org/gene-associations/gene_association.mgi.gz">
 				<attribute name="curator">MGI</attribute>
 				<attribute name="species">Mus musculus</attribute>
 			</dataSource>
 			<dataSource format="Gene Association"
 				name="Gene Association file for Arabidopsis thaliana"
-				xlink:href="http://www.geneontology.org/cgi-bin/downloadGOGA.pl/gene_association.tair.gz">
+				xlink:href="http://geneontology.org/gene-associations/gene_association.tair.gz">
 				<attribute name="curator">TAIR/TIGR</attribute>
 				<attribute name="species">
 					Arabidopsis thaliana
@@ -120,7 +83,7 @@
 			</dataSource>
 			<dataSource format="Gene Association"
 				name="Gene Association file for Caenorhabditis elegans"
-				xlink:href="http://www.geneontology.org/cgi-bin/downloadGOGA.pl/gene_association.wb.gz">
+				xlink:href="http://geneontology.org/gene-associations/gene_association.wb.gz">
 				<attribute name="curator">WormBase</attribute>
 				<attribute name="species">
 					Caenorhabditis elegans
@@ -128,25 +91,25 @@
 			</dataSource>
 			<dataSource format="Gene Association"
 				name="Gene Association file for Rattus norvegicus"
-				xlink:href="http://www.geneontology.org/cgi-bin/downloadGOGA.pl/gene_association.rgd.gz">
+				xlink:href="http://geneontology.org/gene-associations/gene_association.rgd.gz">
 				<attribute name="curator">RGD</attribute>
 				<attribute name="species">Rattus norvegicus</attribute>
 			</dataSource>
 			<dataSource format="Gene Association"
 				name="Gene Association file for Oryza sativa"
-				xlink:href="http://www.geneontology.org/cgi-bin/downloadGOGA.pl/gene_association.gramene_oryza.gz">
+				xlink:href="http://geneontology.org/gene-associations/gene_association.gramene_oryza.gz">
 				<attribute name="curator">Gramene</attribute>
 				<attribute name="species">Oryza sativa</attribute>
 			</dataSource>
 			<dataSource format="Gene Association"
 				name="Gene Association file for Danio rerio"
-				xlink:href="http://www.geneontology.org/cgi-bin/downloadGOGA.pl/gene_association.zfin.gz">
+				xlink:href="http://geneontology.org/gene-associations/gene_association.zfin.gz">
 				<attribute name="curator">ZFIN</attribute>
 				<attribute name="species">Danio rerio</attribute>
 			</dataSource>
 			<dataSource format="Gene Association"
 				name="Gene Association file for Dictyostelium discoideum"
-				xlink:href="http://www.geneontology.org/cgi-bin/downloadGOGA.pl/gene_association.ddb.gz">
+				xlink:href="http://geneontology.org/gene-associations/gene_association.ddb.gz">
 				<attribute name="curator">DictyBase</attribute>
 				<attribute name="species">
 					Dictyostelium discoideum
@@ -154,13 +117,13 @@
 			</dataSource>
 			<dataSource format="Gene Association"
 				name="Gene Association file for Candida albicans"
-				xlink:href="http://www.geneontology.org/cgi-bin/downloadGOGA.pl/gene_association.cgd.gz">
+				xlink:href="http://geneontology.org/gene-associations/gene_association.cgd.gz">
 				<attribute name="curator">CGD</attribute>
 				<attribute name="species">Candida albicans</attribute>
 			</dataSource>
 			<dataSource format="Gene Association"
 				name="Gene Association file for Pseudomonas aeruginosa PAO1"
-				xlink:href="http://www.geneontology.org/cgi-bin/downloadGOGA.pl/gene_association.pseudocap.gz">
+				xlink:href="http://geneontology.org/gene-associations/gene_association.pseudocap.gz">
 				<attribute name="curator">PseudoCAP</attribute>
 				<attribute name="species">
 					Pseudomonas aeruginosa PAO1
@@ -168,7 +131,7 @@
 			</dataSource>
 			<dataSource format="Gene Association"
 				name="Gene Association file for Bacillus anthracis Ames"
-				xlink:href="http://www.geneontology.org/cgi-bin/downloadGOGA.pl/gene_association.tigr_Banthracis.gz">
+				xlink:href="http://geneontology.org/gene-associations/gene_association.tigr_Banthracis.gz">
 				<attribute name="curator">TIGR</attribute>
 				<attribute name="species">
 					Bacillus anthracis Ames
@@ -176,7 +139,7 @@
 			</dataSource>
 			<dataSource format="Gene Association"
 				name="Gene Association file for Coxiella burnetii RSA 493"
-				xlink:href="http://www.geneontology.org/cgi-bin/downloadGOGA.pl/gene_association.tigr_Cburnetii.gz">
+				xlink:href="http://geneontology.org/gene-associations/gene_association.tigr_Cburnetii.gz">
 				<attribute name="curator">TIGR</attribute>
 				<attribute name="species">
 					Coxiella burnetii RSA 493
@@ -184,7 +147,7 @@
 			</dataSource>
 			<dataSource format="Gene Association"
 				name="Gene Association file for Campylobacter jejuni RM1221"
-				xlink:href="http://www.geneontology.org/cgi-bin/downloadGOGA.pl/gene_association.tigr_Cjejuni.gz">
+				xlink:href="http://geneontology.org/gene-associations/gene_association.tigr_Cjejuni.gz">
 				<attribute name="curator">TIGR</attribute>
 				<attribute name="species">
 					Campylobacter jejuni RM1221
@@ -192,7 +155,7 @@
 			</dataSource>
 			<dataSource format="Gene Association"
 				name="Gene Association file for Dehalococcoides ethenogenes 195"
-				xlink:href="http://www.geneontology.org/cgi-bin/downloadGOGA.pl/gene_association.tigr_Dethenogenes.gz">
+				xlink:href="http://geneontology.org/gene-associations/gene_association.tigr_Dethenogenes.gz">
 				<attribute name="curator">TIGR</attribute>
 				<attribute name="species">
 					Dehalococcoides ethenogenes 195
@@ -200,7 +163,7 @@
 			</dataSource>
 			<dataSource format="Gene Association"
 				name="Gene Association file for Geobacter sulfurreducens PCA"
-				xlink:href="http://www.geneontology.org/cgi-bin/downloadGOGA.pl/gene_association.tigr_Gsulfurreducens.gz">
+				xlink:href="http://geneontology.org/gene-associations/gene_association.tigr_Gsulfurreducens.gz">
 				<attribute name="curator">TIGR</attribute>
 				<attribute name="species">
 					Geobacter sulfurreducens PCA
@@ -208,7 +171,7 @@
 			</dataSource>
 			<dataSource format="Gene Association"
 				name="Gene Association file for Listeria monocytogenes 4b F2365"
-				xlink:href="http://www.geneontology.org/cgi-bin/downloadGOGA.pl/gene_association.tigr_Lmonocytogenes.gz">
+				xlink:href="http://geneontology.org/gene-associations/gene_association.tigr_Lmonocytogenes.gz">
 				<attribute name="curator">TIGR</attribute>
 				<attribute name="species">
 					Listeria monocytogenes 4b F2365
@@ -216,7 +179,7 @@
 			</dataSource>
 			<dataSource format="Gene Association"
 				name="Gene Association file for Methylococcus capsulatus Bath"
-				xlink:href="http://www.geneontology.org/cgi-bin/downloadGOGA.pl/gene_association.tigr_Mcapsulatus.gz">
+				xlink:href="http://geneontology.org/gene-associations/gene_association.tigr_Mcapsulatus.gz">
 				<attribute name="curator">TIGR</attribute>
 				<attribute name="species">
 					Methylococcus capsulatus Bath
@@ -224,7 +187,7 @@
 			</dataSource>
 			<dataSource format="Gene Association"
 				name="Gene Association file for Pseudomonas syringae DC3000"
-				xlink:href="http://www.geneontology.org/cgi-bin/downloadGOGA.pl/gene_association.tigr_Psyringae.gz">
+				xlink:href="http://geneontology.org/gene-associations/gene_association.tigr_Psyringae.gz">
 				<attribute name="curator">TIGR</attribute>
 				<attribute name="species">
 					Pseudomonas syringae DC3000
@@ -232,7 +195,7 @@
 			</dataSource>
 			<dataSource format="Gene Association"
 				name="Gene Association file for Shewanella oneidensis MR-1"
-				xlink:href="http://www.geneontology.org/cgi-bin/downloadGOGA.pl/gene_association.tigr_Soneidensis.gz">
+				xlink:href="http://geneontology.org/gene-associations/gene_association.tigr_Soneidensis.gz">
 				<attribute name="curator">TIGR</attribute>
 				<attribute name="species">
 					Shewanella oneidensis MR-1
@@ -240,7 +203,7 @@
 			</dataSource>
 			<dataSource format="Gene Association"
 				name="Gene Association file for Silicibacter pomeroyi DSS-3"
-				xlink:href="http://www.geneontology.org/cgi-bin/downloadGOGA.pl/gene_association.tigr_Spomeroyi.gz">
+				xlink:href="http://geneontology.org/gene-associations/gene_association.tigr_Spomeroyi.gz">
 				<attribute name="curator">TIGR</attribute>
 				<attribute name="species">
 					Silicibacter pomeroyi DSS-3
@@ -248,7 +211,7 @@
 			</dataSource>
 			<dataSource format="Gene Association"
 				name="Gene Association file for Trypanosoma brucei chr 2"
-				xlink:href="http://www.geneontology.org/cgi-bin/downloadGOGA.pl/gene_association.tigr_Tbrucei_chr2.gz">
+				xlink:href="http://geneontology.org/gene-associations/gene_association.tigr_Tbrucei_chr2.gz">
 				<attribute name="curator">TIGR</attribute>
 				<attribute name="species">
 					Trypanosoma brucei chr 2
@@ -256,13 +219,13 @@
 			</dataSource>
 			<dataSource format="Gene Association"
 				name="Gene Association file for Vibrio cholerae"
-				xlink:href="http://www.geneontology.org/cgi-bin/downloadGOGA.pl/gene_association.tigr_Vcholerae.gz">
+				xlink:href="http://geneontology.org/gene-associations/gene_association.tigr_Vcholerae.gz">
 				<attribute name="curator">TIGR</attribute>
 				<attribute name="species">Vibrio cholerae</attribute>
 			</dataSource>
 			<dataSource format="Gene Association"
 				name="Gene Association file for Gallus gallus"
-				xlink:href="http://www.geneontology.org/cgi-bin/downloadGOGA.pl/gene_association.goa_chicken.gz">
+				xlink:href="http://geneontology.org/gene-associations/gene_association.goa_chicken.gz">
 				<attribute name="curator">
 					GO Annotations @ EBI
 				</attribute>
@@ -270,7 +233,7 @@
 			</dataSource>
 			<dataSource format="Gene Association"
 				name="Gene Association file for Bos taurus"
-				xlink:href="http://www.geneontology.org/cgi-bin/downloadGOGA.pl/gene_association.goa_cow.gz">
+				xlink:href="http://geneontology.org/gene-associations/gene_association.goa_cow.gz">
 				<attribute name="curator">
 					GO Annotations @ EBI
 				</attribute>
@@ -278,7 +241,7 @@
 			</dataSource>
 			<dataSource format="Gene Association"
 				name="Gene Association file for Homo sapiens"
-				xlink:href="http://www.geneontology.org/cgi-bin/downloadGOGA.pl/gene_association.goa_human.gz">
+				xlink:href="http://geneontology.org/gene-associations/gene_association.goa_human.gz">
 				<attribute name="curator">
 					GO Annotations @ EBI
 				</attribute>
@@ -286,7 +249,7 @@
 			</dataSource>
 			<dataSource format="Gene Association"
 				name="Gene Association file for PDB"
-				xlink:href="http://www.geneontology.org/cgi-bin/downloadGOGA.pl/gene_association.goa_pdb.gz">
+				xlink:href="http://geneontology.org/gene-associations/gene_association.goa_pdb.gz">
 				<attribute name="curator">
 					GO Annotations @ EBI
 				</attribute>
@@ -294,7 +257,7 @@
 			</dataSource>
 			<dataSource format="Gene Association"
 				name="Gene Association file for UniProt"
-				xlink:href="http://www.geneontology.org/cgi-bin/downloadGOGA.pl/gene_association.goa_uniprot.gz">
+				xlink:href="http://geneontology.org/gene-associations/gene_association.goa_uniprot.gz">
 				<attribute name="curator">
 					GO Annotations @ EBI
 				</attribute>
@@ -302,13 +265,13 @@
 			</dataSource>
 			<dataSource format="Gene Association"
 				name="Gene Association file for Leishmania major"
-				xlink:href="http://www.geneontology.org/cgi-bin/downloadGOGA.pl/gene_association.GeneDB_Lmajor.gz">
+				xlink:href="http://geneontology.org/gene-associations/gene_association.GeneDB_Lmajor.gz">
 				<attribute name="curator">Sanger GeneDB</attribute>
 				<attribute name="species">Leishmania major</attribute>
 			</dataSource>
 			<dataSource format="Gene Association"
 				name="Gene Association file for Plasmodium falciparum"
-				xlink:href="http://www.geneontology.org/cgi-bin/downloadGOGA.pl/gene_association.GeneDB_Pfalciparum.gz">
+				xlink:href="http://geneontology.org/gene-associations/gene_association.GeneDB_Pfalciparum.gz">
 				<attribute name="curator">Sanger GeneDB</attribute>
 				<attribute name="species">
 					Plasmodium falciparum
@@ -316,7 +279,7 @@
 			</dataSource>
 			<dataSource format="Gene Association"
 				name="Gene Association file for Schizosaccharomyces pombe"
-				xlink:href="http://www.geneontology.org/cgi-bin/downloadGOGA.pl/gene_association.GeneDB_Spombe.gz">
+				xlink:href="http://geneontology.org/gene-associations/gene_association.GeneDB_Spombe.gz">
 				<attribute name="curator">Sanger GeneDB</attribute>
 				<attribute name="species">
 					Schizosaccharomyces pombe
@@ -324,21 +287,18 @@
 			</dataSource>
 			<dataSource format="Gene Association"
 				name="Gene Association file for Trypanosoma brucei"
-				xlink:href="http://www.geneontology.org/cgi-bin/downloadGOGA.pl/gene_association.GeneDB_Tbrucei.gz">
+				xlink:href="http://geneontology.org/gene-associations/gene_association.GeneDB_Tbrucei.gz">
 				<attribute name="curator">Sanger GeneDB</attribute>
 				<attribute name="species">Trypanosoma brucei</attribute>
 			</dataSource>
 		</category>
 	</category>
+
+	<!-- Sample Networks -->
 	<category name="network">
 		<dataSource name="Yeast Protein-Protein: Ideker, T. et al. (362 Interactions, galFiltered.sif)"
 			xlink:href="http://www.cytoscape.org/datasets/galFiltered.sif"
 			format="sif" />
-			<!--
-		<dataSource name="Human Protein-Protein: HPRD (62226 Interactions w/annotations, Rev. 4/12/2010)"
-			xlink:href="http://www.cytoscape.org/datasets/HPRD_SINGLE_PSIMI_041210.xml"
-			format="psimi25" />
-			-->
 		<dataSource name="Human Protein-Protein: Rual et al. Toward a proteome-scale map of the human protein-protein interaction network. Nature 2005."
 			xlink:href="http://cytoscape.org/datasets/rual.sif"
 			format="sif" />
@@ -346,13 +306,15 @@
 			xlink:href="http://www.cytoscape.org/tut/getting.started/RUAL.subset.sif"
 			format="sif" />
 	</category>
-	
+
+	<!-- Sample Table Data -->
 	<category name="table">
 		<dataSource name="Sample table for galFiltered.sif network"
 			xlink:href="http://chianti.ucsd.edu/~kono/data/galFiltered.attrs"
 			format="attrs" />
 	</category>
 
+	<!-- App repository location -->
 	<category name="plugins">
 		<dataSource name="Cytoscape"
 			xlink:href="http://chianti.ucsd.edu/cyto_web/plugins3/plugins3.xml"/>

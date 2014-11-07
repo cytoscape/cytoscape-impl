@@ -51,7 +51,7 @@ public class NetworkMergeAction extends AbstractCyAction {
 	private final CyNetworkFactory cnf;
 	private final CyNetworkNaming cnn;
 	private final TaskManager taskManager;
-	private final CreateNetworkViewTaskFactory netViewCreator; 
+	private final CreateNetworkViewTaskFactory netViewCreator;
 
 	public NetworkMergeAction(CySwingApplication swingApp, CyApplicationManager cam, CyNetworkManager cnm,
 			CyNetworkViewManager cnvm, CyNetworkFactory cnf, CyNetworkNaming cnn, TaskManager taskManager,
@@ -79,5 +79,4 @@ public class NetworkMergeAction extends AbstractCyAction {
 		dialog.setModalityType(Dialog.DEFAULT_MODALITY_TYPE);
 		dialog.setVisible(true);
 	}
-
 }

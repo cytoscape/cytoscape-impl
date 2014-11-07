@@ -25,6 +25,7 @@ package org.cytoscape.ding.impl.cyannotator.annotations;
  */
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Paint;
 import java.awt.Rectangle;
@@ -37,6 +38,7 @@ import java.util.Map;
 import javax.swing.JDialog;
 
 import org.cytoscape.view.presentation.annotations.ShapeAnnotation;
+import org.cytoscape.view.presentation.annotations.ShapeAnnotation.ShapeType;
 
 import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
@@ -54,42 +56,6 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
 	protected double shapeWidth = 0.0;
 	protected double shapeHeight = 0.0;
 	protected double factor = 1.0;
-
-	protected static final String WIDTH="width";
-	protected static final String HEIGHT="height";
-	protected static final String EDGECOLOR = "edgeColor";
-	protected static final String EDGETHICKNESS = "edgeThickness";
-	protected static final String EDGEOPACITY = "edgeOpacity";
-	protected static final String FILLCOLOR = "fillColor";
-	protected static final String FILLOPACITY = "fillOpacity";
-	protected static final String SHAPETYPE = "shapeType";
-	protected static final String CUSTOMSHAPE = "customShape";
-
-
-	public enum ShapeType {
-		RECTANGLE ("Rectangle"),
-		ROUNDEDRECTANGLE ("Rounded Rectangle"),
-		ELLIPSE ("Ellipse"),
-		TRIANGLE ("Triangle"),
-		PENTAGON ("Pentagon"),
-		STAR5 ("5-Pointed Star"),
-		HEXAGON ("Hexagon"),
-		STAR6 ("6-Pointed Star"),
-		CUSTOM ("Custom");
-	
-		private final String name;
-		ShapeType (String name) { 
-			this.name = name; 
-		}
-	
-		public String shapeName() {
-			return this.name;
-		}
-
-		public String toString() {
-			return this.name;
-		}
-	} 
 
 	public ShapeAnnotationImpl(CyAnnotator cyAnnotator, DGraphView view, double width, double height) {
 		super(cyAnnotator, view);
@@ -135,8 +101,8 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
     this.fillOpacity = getDouble(argMap, FILLOPACITY, 100.0);
 
     // If this is an old bounded text, we might not (yet) have a width or height
-    this.shapeWidth = getDouble(argMap, WIDTH, 100.0);
-    this.shapeHeight = getDouble(argMap, HEIGHT, 100.0);
+    this.shapeWidth = getDouble(argMap, ShapeAnnotation.WIDTH, 100.0);
+    this.shapeHeight = getDouble(argMap, ShapeAnnotation.HEIGHT, 100.0);
 
     this.borderWidth = getDouble(argMap, EDGETHICKNESS, 1.0);
     this.borderColor = getColor(argMap, EDGECOLOR, Color.BLACK);
@@ -161,11 +127,12 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
 			argMap.put(EDGECOLOR,convertColor(this.borderColor));
 		argMap.put(EDGETHICKNESS,Double.toString(this.borderWidth));
 		argMap.put(EDGEOPACITY, Double.toString(this.borderOpacity));
-		argMap.put(SHAPETYPE, Integer.toString(this.shapeType.ordinal()));
-		argMap.put(WIDTH, Double.toString(this.shapeWidth));
-		argMap.put(HEIGHT, Double.toString(this.shapeHeight));
+		argMap.put(SHAPETYPE, this.shapeType.name());
+		argMap.put(ShapeAnnotation.WIDTH, Double.toString(this.shapeWidth));
+		argMap.put(ShapeAnnotation.HEIGHT, Double.toString(this.shapeHeight));
 		if (shapeType.equals(ShapeType.CUSTOM))
 			argMap.put(CUSTOMSHAPE, GraphicsUtilities.serializeShape(shape));
+    //System.out.println("getArgMap: " + argMap);
 		return argMap;
 	}
 
@@ -284,9 +251,29 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
     setSize((int)(shapeWidth+borderWidth*2*getZoom()), (int)(shapeHeight+borderWidth*2*getZoom()));
 	}
 
+	public void setSize(Dimension d) {
+		setSize(d.getWidth(), d.getHeight());
+	}
+
 	public void setCustomShape(Shape shape) {
 		this.shapeType = ShapeType.CUSTOM;
 		this.shape = shape;
+	}
+
+	@Override
+	public Dimension adjustAspectRatio(Dimension d) {
+		double ratio = d.getWidth() / d.getHeight();
+		double aspectRatio = shapeWidth/shapeHeight;
+		double width, height;
+		if (aspectRatio >= ratio) {
+			width = d.getWidth();
+			height = width / aspectRatio;
+		} else {
+			height = d.getHeight();
+			width = height * aspectRatio;
+		}
+		d.setSize(width, height);
+		return d;
 	}
 
 	public JDialog getModifyDialog() {

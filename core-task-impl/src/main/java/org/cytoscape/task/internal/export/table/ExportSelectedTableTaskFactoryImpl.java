@@ -29,8 +29,8 @@ import org.cytoscape.io.write.CyTableWriterManager;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.task.write.ExportSelectedTableTaskFactory;
-import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.AbstractTaskFactory;
+import org.cytoscape.work.TaskIterator;
 
 public class ExportSelectedTableTaskFactoryImpl extends AbstractTaskFactory implements ExportSelectedTableTaskFactory{
 
@@ -38,9 +38,9 @@ public class ExportSelectedTableTaskFactoryImpl extends AbstractTaskFactory impl
 	private final CyTableManager cyTableManagerServiceRef;
 	private final CyNetworkManager cyNetworkManagerServiceRef;
 
-
 	
-	public ExportSelectedTableTaskFactoryImpl(CyTableWriterManager writerManager, CyTableManager cyTableManagerServiceRef, CyNetworkManager cyNetworkManagerServiceRef) {
+	public ExportSelectedTableTaskFactoryImpl(CyTableWriterManager writerManager,
+			CyTableManager cyTableManagerServiceRef, CyNetworkManager cyNetworkManagerServiceRef) {
 		this.writerManager = writerManager;
 		this.cyTableManagerServiceRef = cyTableManagerServiceRef;
 		this.cyNetworkManagerServiceRef = cyNetworkManagerServiceRef;
@@ -50,6 +50,4 @@ public class ExportSelectedTableTaskFactoryImpl extends AbstractTaskFactory impl
 	public TaskIterator createTaskIterator() {
 		return new TaskIterator(new SelectExportTableTask(this.writerManager, this.cyTableManagerServiceRef, this.cyNetworkManagerServiceRef));
 	}
-
-
 }

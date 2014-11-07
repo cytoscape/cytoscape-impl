@@ -32,6 +32,7 @@ import java.awt.event.ActionListener;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.text.DecimalFormat;
 
 import javax.swing.BorderFactory;
 import javax.swing.JLabel;
@@ -87,9 +88,9 @@ public class BoundedHandler<T extends AbstractBounded, N> extends AbstractGUITun
 	private String title = null;
 
 	// Standard format
-	java.text.DecimalFormat df = new java.text.DecimalFormat("##.###");
+	DecimalFormat df = new java.text.DecimalFormat("##.###");
 	// Scientific notation
-	java.text.DecimalFormat sdf = new java.text.DecimalFormat("#.###E0");
+	DecimalFormat sdf = new java.text.DecimalFormat("#.###E0");
 
 	/**
 	 * Construction of the <code>GUIHandler</code> for the <code>Bounded</code> type
@@ -140,13 +141,19 @@ public class BoundedHandler<T extends AbstractBounded, N> extends AbstractGUITun
 	}
 
 	private void initPanel (T bounded) {
+		double min = ((Number)bounded.getUpperBound()).doubleValue();
+		double max = ((Number)bounded.getLowerBound()).doubleValue();
+		double range = max - min;
+		DecimalFormat format = getDecimalFormat(range);
+
 		if (useSlider) {
 			JLabel label = new JLabel(title);
 			label.setFont(GUIDefaults.LABEL_FONT);
 			// label.setBorder(BorderFactory.createEmptyBorder(5, 5, 0, 5));
 			panel.add(label,BorderLayout.WEST);
 			slider = new mySlider(title, (Number)bounded.getLowerBound(), (Number)bounded.getUpperBound(),
-			                      (Number)bounded.getValue(), bounded.isLowerBoundStrict(), bounded.isUpperBoundStrict());
+			                      (Number)bounded.getValue(), bounded.isLowerBoundStrict(), bounded.isUpperBoundStrict(),
+			                      format);
 			slider.addChangeListener(this);
 			panel.add(slider,BorderLayout.SOUTH);
 			// panel.setBorder(BorderFactory.createLineBorder(Color.BLACK));
@@ -157,13 +164,6 @@ public class BoundedHandler<T extends AbstractBounded, N> extends AbstractGUITun
 		} else {
 			// Do something reasonable for max and min...
 			// At some point, we should use superscripts for scientific notation...
-			double min = ((Number)bounded.getUpperBound()).doubleValue();
-			double max = ((Number)bounded.getLowerBound()).doubleValue();
-			double range = max - min;
-			java.text.DecimalFormat format = df;
-			if (range < 0.001 || range > 10000) {
-				format = sdf;
-			}
 
 			final JLabel label =
 				new JLabel(title + " (max: " + format.format((Number)bounded.getLowerBound())
@@ -283,5 +283,14 @@ public class BoundedHandler<T extends AbstractBounded, N> extends AbstractGUITun
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		handle();
+	}
+
+	private DecimalFormat getDecimalFormat(double range) {
+		if (getFormat() != null && getFormat().length() > 0)
+			return new DecimalFormat(getFormat());
+		if (range < 0.001 || range > 10000) {
+			return sdf;
+		}
+		return df;
 	}
 }

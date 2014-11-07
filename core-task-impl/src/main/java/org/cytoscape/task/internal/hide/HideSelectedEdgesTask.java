@@ -63,7 +63,7 @@ public class HideSelectedEdgesTask extends AbstractNetworkViewTask {
 		HideUtils.setVisibleEdges(selectedEdges, false, view);
 		e.setProgress(0.7);
 		
-		vmMgr.getVisualStyle(view).apply(view);
+		// vmMgr.getVisualStyle(view).apply(view);
 		view.updateView();
 		e.setProgress(1.0);
 	} 

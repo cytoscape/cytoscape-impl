@@ -59,7 +59,8 @@ public class RenderingEngineManagerImpl implements RenderingEngineManager, Netwo
 	
 	private final CyEventHelper eventHelper;
 	
-
+	private final Object lock = new Object();
+	
 	/**
 	 * Create an instance of rendering engine manager. This implementation
 	 * listens to Presentation events and update its map based on them.
@@ -78,18 +79,22 @@ public class RenderingEngineManagerImpl implements RenderingEngineManager, Netwo
 	 */
 	@Override
 	public Collection<RenderingEngine<?>> getRenderingEngines(final View<?> viewModel) {
-		if(renderingEngineMap.containsKey(viewModel) == false)
-			return Collections.emptySet();
-		else
-			return renderingEngineMap.get(viewModel);
+		synchronized (lock) {
+			if(renderingEngineMap.containsKey(viewModel) == false)
+				return Collections.emptySet();
+			else
+				return renderingEngineMap.get(viewModel);
+		}
 	}
 
 	@Override
 	public Collection<RenderingEngine<?>> getAllRenderingEngines() {
 		final Set<RenderingEngine<?>> allEngines = new HashSet<RenderingEngine<?>>();
 		
-		for(Collection<RenderingEngine<?>> engines: renderingEngineMap.values())
-			allEngines.addAll(engines);
+		synchronized (lock) {
+			for(Collection<RenderingEngine<?>> engines: renderingEngineMap.values())
+				allEngines.addAll(engines);
+		}
 		
 		return allEngines;
 	}
@@ -98,14 +103,16 @@ public class RenderingEngineManagerImpl implements RenderingEngineManager, Netwo
 	@Override
 	public void addRenderingEngine(final RenderingEngine<?> renderingEngine) {
 		final View<?> viewModel = renderingEngine.getViewModel();
-		Collection<RenderingEngine<?>> currentVals = renderingEngineMap.get(viewModel);
-		
-		if(currentVals == null)
-			currentVals = new HashSet<RenderingEngine<?>>();
-		
-		currentVals.add(renderingEngine);
-		
-		this.renderingEngineMap.put(viewModel, currentVals);
+		synchronized (lock) {
+			Collection<RenderingEngine<?>> currentVals = renderingEngineMap.get(viewModel);
+			
+			if(currentVals == null)
+				currentVals = new HashSet<RenderingEngine<?>>();
+			
+			currentVals.add(renderingEngine);
+			
+			this.renderingEngineMap.put(viewModel, currentVals);
+		}
 	}
 	
 
@@ -113,10 +120,12 @@ public class RenderingEngineManagerImpl implements RenderingEngineManager, Netwo
 	public void removeRenderingEngine(final RenderingEngine<?> renderingEngine) {
 		eventHelper.fireEvent(new RenderingEngineAboutToBeRemovedEvent(this, renderingEngine));
 		
-		final View<?> viewModel = renderingEngine.getViewModel();
-		final Collection<RenderingEngine<?>> currentEngines = renderingEngineMap.get(viewModel);
-		if (currentEngines != null) {
-			currentEngines.remove(renderingEngine);
+		synchronized (lock) {
+			final View<?> viewModel = renderingEngine.getViewModel();
+			final Collection<RenderingEngine<?>> currentEngines = renderingEngineMap.get(viewModel);
+			if (currentEngines != null) {
+				currentEngines.remove(renderingEngine);
+			}
 		}
 		
 		renderingEngine.dispose();
@@ -125,10 +134,12 @@ public class RenderingEngineManagerImpl implements RenderingEngineManager, Netwo
 
 	@Override
 	public VisualLexicon getDefaultVisualLexicon() {
-		if(defaultLexicon == null)
-			throw new IllegalStateException("Lexicon is not ready yet.");
-		
-		return this.defaultLexicon;
+		synchronized (lock) {
+			if(defaultLexicon == null)
+				throw new IllegalStateException("Lexicon is not ready yet.");
+			
+			return this.defaultLexicon;
+		}
 	}
 	
 	
@@ -142,11 +153,13 @@ public class RenderingEngineManagerImpl implements RenderingEngineManager, Netwo
 
 		final String id = idObject.toString();
 
-		this.factoryMap.put(id, factory);
-		
-		// Register default lexicon
-		if(id.equals(DEFAULT_FACTORY_ID))
-			defaultLexicon = factory.getVisualLexicon();
+		synchronized (lock) {
+			this.factoryMap.put(id, factory);
+			
+			// Register default lexicon
+			if(id.equals(DEFAULT_FACTORY_ID))
+				defaultLexicon = factory.getVisualLexicon();
+		}
 		
 		logger.debug("New engine registered: " + factory.getClass());
 	}
@@ -161,15 +174,17 @@ public class RenderingEngineManagerImpl implements RenderingEngineManager, Netwo
 
 		final String id = idObject.toString();
 
-		RenderingEngineFactory<?> toBeRemoved = this.factoryMap.remove(id);
-
-		toBeRemoved = null;
-
+		synchronized (lock) {
+			this.factoryMap.remove(id);
+		}
 	}
 
 	@Override
 	public void handleEvent(NetworkViewAboutToBeDestroyedEvent e) {
-		Collection<RenderingEngine<?>> engines = renderingEngineMap.remove(e.getNetworkView());
+		Collection<RenderingEngine<?>> engines;
+		synchronized (lock) {
+			engines = renderingEngineMap.remove(e.getNetworkView());
+		}
 		if (engines == null)
 			return;
 		for (RenderingEngine<?> engine : engines)

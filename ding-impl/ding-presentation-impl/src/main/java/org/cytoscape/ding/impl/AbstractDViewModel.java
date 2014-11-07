@@ -27,24 +27,31 @@ package org.cytoscape.ding.impl;
 import java.awt.Color;
 import java.awt.Paint;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.SUIDFactory;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualLexiconNode;
 import org.cytoscape.view.model.VisualProperty;
+import org.cytoscape.view.model.events.ViewChangeRecord;
+import org.cytoscape.view.model.events.ViewChangedEvent;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 
-public abstract class AbstractDViewModel<M> implements View<M> {
+public abstract class AbstractDViewModel<M extends CyIdentifiable> implements View<M> {
 
 	// Both of them are immutable.
 	protected final M model;
 	protected final Long suid;
 	protected final VisualLexicon lexicon;
+	protected final CyEventHelper eventHelper;
 
 	protected final Map<VisualProperty<?>, Object> visualProperties;
 	protected final Map<VisualProperty<?>, Object> directLocks;
@@ -55,18 +62,19 @@ public abstract class AbstractDViewModel<M> implements View<M> {
 	 * 
 	 * @param model
 	 */
-	public AbstractDViewModel(final M model, final VisualLexicon lexicon) {
+	public AbstractDViewModel(final M model, final VisualLexicon lexicon, final CyEventHelper eventHelper) {
 		if (model == null)
 			throw new IllegalArgumentException("Data model cannot be null.");
 
 		this.suid = Long.valueOf(SUIDFactory.getNextSUID());
 		this.model = model;
 		this.lexicon = lexicon;
+		this.eventHelper = eventHelper;
 
 		// All access to these maps should go through "lock" field
-		this.visualProperties = new IdentityHashMap<VisualProperty<?>, Object>();
-		this.directLocks = new IdentityHashMap<VisualProperty<?>, Object>();
-		allLocks = new IdentityHashMap<VisualProperty<?>, Object>();
+		this.visualProperties = Collections.synchronizedMap(new IdentityHashMap<VisualProperty<?>, Object>());
+		this.directLocks = Collections.synchronizedMap(new IdentityHashMap<VisualProperty<?>, Object>());
+		allLocks = Collections.synchronizedMap(new IdentityHashMap<VisualProperty<?>, Object>());
 	}
 
 	@Override
@@ -88,8 +96,18 @@ public abstract class AbstractDViewModel<M> implements View<M> {
 				visualProperties.put(vp, value);
 		}
 
-		if (!isValueLocked(vp))
-			applyVisualProperty(vp, value);
+		// Ding has it's own listener for selection events.  If we
+		// don't do this, we might get into a deadlock state
+		if (vp == BasicVisualLexicon.NODE_SELECTED || vp == BasicVisualLexicon.EDGE_SELECTED)
+			return;
+
+		if (!isValueLocked(vp)) {
+			synchronized (getDGraphView().m_lock) {
+				applyVisualProperty(vp, value);
+			}
+		}
+		
+		fireViewChangedEvent(vp, value, false);
 	}
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
@@ -105,7 +123,9 @@ public abstract class AbstractDViewModel<M> implements View<M> {
 			if (!isDirectlyLocked(vp)) {
 				if (parent.getClass() == vp.getClass()) { // Preventing ClassCastExceptions
 					// Caller should already have write lock to modify this
-					allLocks.put(vp, value);
+					synchronized (getDGraphView().m_lock) {
+						allLocks.put(vp, value);
+					}
 					applyVisualProperty(vp, value);
 				}
 				
@@ -131,6 +151,8 @@ public abstract class AbstractDViewModel<M> implements View<M> {
 			VisualLexiconNode node = lexicon.getVisualLexiconNode(vp);
 			propagateLockedVisualProperty(vp, node.getChildren(), value);
 		}
+		
+		fireViewChangedEvent(vp, value, true);
 	}
 
 	@Override
@@ -149,6 +171,7 @@ public abstract class AbstractDViewModel<M> implements View<M> {
 			VisualLexiconNode root = lexicon.getVisualLexiconNode(vp);
 			LinkedList<VisualLexiconNode> nodes = new LinkedList<VisualLexiconNode>();
 			nodes.add(root);
+			
 			while (!nodes.isEmpty()) {
 				VisualLexiconNode node = nodes.pop();
 				VisualProperty visualProperty = node.getVisualProperty();
@@ -169,9 +192,12 @@ public abstract class AbstractDViewModel<M> implements View<M> {
 						nodes.add(child);
 					}
 				}
+				
 				nodes.addAll(node.getChildren());
 			}
 		}
+		
+		fireViewChangedEvent(vp, null, true);
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -240,4 +266,10 @@ public abstract class AbstractDViewModel<M> implements View<M> {
 	}
 	
 	protected abstract DGraphView getDGraphView();
+	
+	protected <T, V extends T> void fireViewChangedEvent(final VisualProperty<? extends T> vp, final V value,
+			final boolean lockedValue) {
+		final ViewChangeRecord record = new ViewChangeRecord(this, vp, value, lockedValue);
+		eventHelper.addEventPayload(getDGraphView(), record, ViewChangedEvent.class);
+	}
 }

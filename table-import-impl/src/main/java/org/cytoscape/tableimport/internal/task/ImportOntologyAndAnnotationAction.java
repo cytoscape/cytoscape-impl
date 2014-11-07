@@ -145,5 +145,4 @@ public class ImportOntologyAndAnnotationAction extends AbstractCyAction {
 
 		return dialog;
 	}
-
 }

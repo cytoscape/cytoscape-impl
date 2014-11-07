@@ -519,8 +519,12 @@ public class NetworkPanel extends JPanel implements CytoPanelComponent2,
 				final NetworkTreeNode node = treeNodeMap.get(netView.getModel().getSUID());
 				
 				if (node != null) {
-					node.setNodeColor(Color.red);
-					treeTable.repaint();
+					final Collection<CyNetworkView> views = netViewMgr.getNetworkViews(netView.getModel());
+					
+					if (views.isEmpty()) {
+						node.setNodeColor(NetworkTreeNode.DEF_NODE_COLOR);
+						treeTable.repaint();
+					}
 				}
 			}
 		});
@@ -970,9 +974,20 @@ public class NetworkPanel extends JPanel implements CytoPanelComponent2,
 					if (selectedList == null || !selectedList.contains(network)) {
 						appMgr.setCurrentNetwork(network);
 						appMgr.setSelectedNetworks(Arrays.asList(new CyNetwork[]{ network }));
-						final Collection<CyNetworkView> netViews = netViewMgr.getNetworkViews(network);
-						appMgr.setSelectedNetworkViews(new ArrayList<CyNetworkView>(netViews));
+//						final Collection<CyNetworkView> netViews = netViewMgr.getNetworkViews(network);
+//						appMgr.setSelectedNetworkViews(new ArrayList<CyNetworkView>(netViews));
 					}
+					
+					// Make sure all network views of selected networks are selected as well,
+					// so tasks/actions are executed on all of them
+					final List<CyNetworkView> selectedViews = new ArrayList<CyNetworkView>();
+					
+					for (final CyNetwork n : appMgr.getSelectedNetworks()) {
+						if (netMgr.networkExists(n.getSUID()))
+							selectedViews.addAll(netViewMgr.getNetworkViews(n));
+					}
+					
+					appMgr.setSelectedNetworkViews(selectedViews);
 					
 					// Always repaint, because the rendering of the tree selection
 					// may be out of sync with the AppManager one

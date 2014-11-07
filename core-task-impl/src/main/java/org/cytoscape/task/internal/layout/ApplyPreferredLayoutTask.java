@@ -52,7 +52,7 @@ public class ApplyPreferredLayoutTask extends AbstractNetworkViewCollectionTask 
 	private final CyNetworkViewManager viewMgr;
 
 	@Tunable(description="Network view to apply layout to", context="nogui")
-	public CyNetwork network = null;
+	public CyNetwork networkSelected = null;
 
 	public ApplyPreferredLayoutTask(final Collection<CyNetworkView> networkViews,
 			final CyLayoutAlgorithmManager layouts, final Properties props) {
@@ -85,8 +85,8 @@ public class ApplyPreferredLayoutTask extends AbstractNetworkViewCollectionTask 
 		tm.setStatusMessage("Applying Default Layout...");
 
 		Collection<CyNetworkView> views = networkViews;
-		if (network != null)
-			views = viewMgr.getNetworkViews(network);
+		if (networkSelected != null)
+			views = viewMgr.getNetworkViews(networkSelected);
 
 		int i = 0;
 		int viewCount = views.size();

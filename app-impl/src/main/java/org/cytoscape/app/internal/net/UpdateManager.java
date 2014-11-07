@@ -28,9 +28,11 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Calendar;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.TimeZone;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.cytoscape.app.internal.event.UpdatesChangedEvent;
 import org.cytoscape.app.internal.event.UpdatesChangedListener;
@@ -40,9 +42,9 @@ import org.cytoscape.app.internal.exception.AppParsingException;
 import org.cytoscape.app.internal.exception.AppUninstallException;
 import org.cytoscape.app.internal.exception.AppUpdateException;
 import org.cytoscape.app.internal.manager.App;
-import org.cytoscape.app.internal.manager.SimpleApp;
-import org.cytoscape.app.internal.manager.AppManager;
 import org.cytoscape.app.internal.manager.App.AppStatus;
+import org.cytoscape.app.internal.manager.AppManager;
+import org.cytoscape.app.internal.manager.SimpleApp;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,13 +52,15 @@ public class UpdateManager {
 	
 	private static final Logger logger = LoggerFactory.getLogger(UpdateManager.class);
 	
-	private Set<UpdatesChangedListener> updatesChangedListeners;
+	private List<UpdatesChangedListener> updatesChangedListeners;
 	private Set<Update> updates;
 	
 	private Calendar lastUpdateCheckTime;
 	
+	private Object updateMutex = new Object();
+	
 	public UpdateManager() {
-		this.updatesChangedListeners = new HashSet<UpdatesChangedListener>();
+		this.updatesChangedListeners = new CopyOnWriteArrayList<UpdatesChangedListener>();
 		this.updates = null;
 		
 		lastUpdateCheckTime = null;
@@ -71,10 +75,13 @@ public class UpdateManager {
 		
 		Set<Update> potentialUpdates = webQuerier.checkForUpdates(apps, appManager);
 		
-		this.updates = potentialUpdates;
+		synchronized (updateMutex) {
+			this.updates = potentialUpdates;
+			
+			// Update last update check time
+			lastUpdateCheckTime = Calendar.getInstance(TimeZone.getDefault(), Locale.getDefault());
+		}
 		
-		// Update last update check time
-		lastUpdateCheckTime = Calendar.getInstance(TimeZone.getDefault(), Locale.getDefault());
 		
 		fireUpdatesChangedEvent();
 	}
@@ -82,8 +89,10 @@ public class UpdateManager {
 	public Set<Update> getUpdates() {
 		Set<Update> updatesCopy = new HashSet<Update>();
 		
-		for (Update update : updates) {
-			updatesCopy.add(update);
+		synchronized (updateMutex) {
+			for (Update update : updates) {
+				updatesCopy.add(update);
+			}
 		}
 		
 		return updatesCopy;
@@ -149,7 +158,7 @@ public class UpdateManager {
 					appManager.installApp(parsedApp);
 				}				
 				
-				if (this.updates.contains(update)) {
+				synchronized (updates) {
 					this.updates.remove(update);
 				}
 				

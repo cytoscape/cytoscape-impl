@@ -25,6 +25,7 @@ package org.cytoscape.group.internal;
  */
 
 import java.util.List;
+
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.group.CyGroup;
 import org.cytoscape.group.CyGroupFactory;
@@ -33,13 +34,12 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.service.util.CyServiceRegistrar;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 
 public class CyGroupFactoryImpl implements CyGroupFactory {
+	
 	private final CyEventHelper help;
 	private final CyGroupManagerImpl mgr;
+	private final LockedVisualPropertiesManager lvpMgr;
 	private final CyServiceRegistrar serviceRegistrar;
 
 	/**
@@ -48,19 +48,20 @@ public class CyGroupFactoryImpl implements CyGroupFactory {
 	 * @param help An instance of CyEventHelper. 
 	 */
 	public CyGroupFactoryImpl(final CyEventHelper help, final CyGroupManagerImpl mgr,
-				    final CyServiceRegistrar serviceRegistrar)
+			final LockedVisualPropertiesManager lvpMgr, final CyServiceRegistrar serviceRegistrar)
 	{
 		if (help == null)
 			throw new NullPointerException("CyEventHelper is null.");
-
 		if (mgr == null)
 			throw new NullPointerException("CyGroupManager is null.");
-
+		if (lvpMgr == null)
+			throw new NullPointerException("LockedVisualPropertiesManager is null.");
 		if (serviceRegistrar == null)
 			throw new NullPointerException("CyServiceRegistrar is null.");
 
 		this.help             = help;
 		this.mgr              = mgr;
+		this.lvpMgr         = lvpMgr;
 		this.serviceRegistrar = serviceRegistrar;
 	}
 
@@ -87,7 +88,7 @@ public class CyGroupFactoryImpl implements CyGroupFactory {
 	@Override
 	public CyGroup createGroup(CyNetwork network, CyNode node, 
 	                           List<CyNode> nodes, List<CyEdge> edges, boolean register) {
-		CyGroup group = new CyGroupImpl(help, mgr, network, node, nodes, edges);
+		CyGroup group = new CyGroupImpl(help, mgr, lvpMgr, serviceRegistrar, network, node, nodes, edges);
 		if (register)
 			mgr.addGroup(group);
 		return group;
@@ -98,7 +99,7 @@ public class CyGroupFactoryImpl implements CyGroupFactory {
 	 */
 	@Override
 	public CyGroup createGroup(CyNetwork network, CyNode node, boolean register) {
-		CyGroup group = new CyGroupImpl(help, mgr, network, node, null, null);
+		CyGroup group = new CyGroupImpl(help, mgr, lvpMgr, serviceRegistrar, network, node, null, null);
 		if (register)
 			mgr.addGroup(group);
 		return group;

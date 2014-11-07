@@ -26,9 +26,15 @@ package org.cytoscape.command.internal.tunables;
 
 import java.util.Map;
 
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
+
 import org.cytoscape.command.StringTunableHandler;
 import org.cytoscape.command.StringTunableHandlerFactory;
+import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.AbstractTunableInterceptor;
+import org.cytoscape.work.TunableValidator;
+import org.cytoscape.work.TunableValidator.ValidationState;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -89,6 +95,39 @@ public class CommandTunableInterceptorImpl extends AbstractTunableInterceptor<St
 			logger.warn("Exception processing tunables", e);
 			throw new RuntimeException("Error processing arguments: "+e.getMessage());
 		}
+		return true;
+	}
+	
+	/**
+	 * Check if the conditions set in validate method from <code>TunableValidator</code> are met
+	 *
+	 * If an exception is thrown, or something's wrong, it will be displayed to the user
+	 *
+	 * @return success(true) or failure(false) for the validation
+	 */
+	public boolean validateTunableInput(final Object objectWithTunables,TaskMonitor tm) {
+		if (!(objectWithTunables instanceof TunableValidator))
+			return true;
+
+		final Appendable errMsg = new StringBuilder();
+		try {
+			final ValidationState validationState = ((TunableValidator)objectWithTunables).getValidationState(errMsg);
+			if (validationState == ValidationState.INVALID) {
+				tm.showMessage(TaskMonitor.Level.ERROR, "[ERROR] " + errMsg.toString());
+				return false;
+			} else if (validationState == ValidationState.REQUEST_CONFIRMATION) {
+				if (JOptionPane.showConfirmDialog(new JFrame(), errMsg.toString(),
+								  "Confirmation",
+								  JOptionPane.YES_NO_OPTION)
+				    == JOptionPane.NO_OPTION)
+				{
+					return false;
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
 		return true;
 	}
 

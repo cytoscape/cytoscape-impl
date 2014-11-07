@@ -47,6 +47,7 @@ final class NetworkTreeTableModel extends AbstractTreeTableModel {
 		this.networkPanel = networkPanel;
 	}
 
+	@Override
 	public Object getChild(Object parent, int index) {
 		Enumeration<?> tree_node_enum = ((DefaultMutableTreeNode) getRoot()).breadthFirstEnumeration();
 
@@ -60,6 +61,7 @@ final class NetworkTreeTableModel extends AbstractTreeTableModel {
 		return null;
 	}
 
+	@Override
 	public int getChildCount(Object parent) {
 		Enumeration tree_node_enum = ((DefaultMutableTreeNode) getRoot()).breadthFirstEnumeration();
 
@@ -74,23 +76,21 @@ final class NetworkTreeTableModel extends AbstractTreeTableModel {
 		return 0;
 	}
 
+	@Override
 	public int getColumnCount() {
 		return COLUMNS.length;
 	}
 
-	
 	@Override
 	public String getColumnName(final int columnIdx) {
 		return COLUMNS[columnIdx];
 	}
 
-	
 	@Override
 	public Class<?> getColumnClass(int column) {
 		return COLUMN_CLASSES[column];
 	}
 
-	
 	@Override
 	public Object getValueAt(final Object value, final int column) {
 		if(value instanceof NetworkTreeNode == false)
@@ -99,32 +99,32 @@ final class NetworkTreeTableModel extends AbstractTreeTableModel {
 		final NetworkTreeNode node = (NetworkTreeNode) value;
 		final CyNetwork network = node.getNetwork();
 		
-		if(network == null) {
+		if (network == null) {
 			// This is root network node
 			return null;
 		}
 		
-		if (column == 0)
+		if (column == 0) {
 			return node.getUserObject();
-		else if (column == 1) {
-			final CyNetwork cyNetwork = this.networkPanel.netMgr.getNetwork(node.getNetwork().getSUID());
-			if(cyNetwork == null)
+		} else {
+			final CyNetwork net = this.networkPanel.netMgr.getNetwork(node.getNetwork().getSUID());
+			
+			if (net == null)
 				return null;
 			
-			return "" + cyNetwork.getNodeCount() + "("
-				+ cyNetwork.getDefaultNodeTable().getMatchingRows(CyNetwork.SELECTED, true).size() + ")";
-		} else if (column == 2) {
-			final CyNetwork cyNetwork = this.networkPanel.netMgr.getNetwork(((NetworkTreeNode) node).getNetwork().getSUID());
-			if(cyNetwork == null)
-				return null;
-			
-			return "" + cyNetwork.getEdgeCount() + "("
-				+ cyNetwork.getDefaultEdgeTable().getMatchingRows(CyNetwork.SELECTED, true).size() + ")";
+			if (column == 1) {
+				return "" + net.getNodeCount() + "("
+				+ net.getDefaultNodeTable().getMatchingRows(CyNetwork.SELECTED, true).size() + ")";
+			} else if (column == 2) {
+				return "" + net.getEdgeCount() + "("
+					+ net.getDefaultEdgeTable().getMatchingRows(CyNetwork.SELECTED, true).size() + ")";
+			}
 		}
 
 		return "";
 	}
 
+	@Override
 	public void setValueAt(Object aValue, Object node, int column) {
 		if (column == 0) {
 			((DefaultMutableTreeNode) node).setUserObject(aValue);

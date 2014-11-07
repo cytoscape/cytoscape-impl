@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
 	<parent>
 		<artifactId>impl-parent</artifactId>
 		<groupId>org.cytoscape</groupId>
-		<version>3.1.1</version>
+		<version>3.2.0</version>
 	</parent>
 
 	<properties>
@@ -14,7 +15,6 @@
 
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>scripting-impl</artifactId>
-  <version>3.1.1</version>
 
 	<name>Cytoscape Scripting Impl (${project.artifactId})</name>
 
@@ -43,6 +43,12 @@
 				<configuration>
 					<instructions>
 						<Bundle-SymbolicName>${bundle.symbolicName}</Bundle-SymbolicName>
+						<Import-Package>
+							org.apache.felix.service.command,
+							org.apache.felix.gogo.commands,
+							org.apache.karaf.shell.console,
+							*
+						</Import-Package>
 						<DynamicImport-Package>*</DynamicImport-Package>
 						<Bundle-Version>${project.version}</Bundle-Version>
 						<Export-Package>!${bundle.namespace}.*</Export-Package>
@@ -54,32 +60,6 @@
 		</plugins>
 	</build>
 
-	<repositories>
-		<repository>
-			<id>cytoscape_snapshots</id>
-			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
-			<releases>
-				<enabled>false</enabled>
-			</releases>
-			<name>Cytoscape Snapshots</name>
-			<url>http://code.cytoscape.org/nexus/content/repositories/snapshots/</url>
-		</repository>
-		<repository>
-			<id>cytoscape_releases</id>
-			<snapshots>
-				<enabled>false</enabled>
-			</snapshots>
-			<releases>
-				<enabled>true</enabled>
-			</releases>
-			<name>Cytoscape Releases</name>
-			<url>http://code.cytoscape.org/nexus/content/repositories/releases/</url>
-		</repository>
-	</repositories>
-	
-	
 	<dependencies>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
@@ -97,10 +77,10 @@
 		<dependency>
 			<groupId>org.apache.karaf.shell</groupId>
 			<artifactId>org.apache.karaf.shell.console</artifactId>
-			<version>2.2.3</version>
-			<scope>provided</scope>
+			<version>${karaf.version}</version>
+			<scope>compile</scope>
 		</dependency>
-		
+
 		<!-- Testing -->
 		<dependency>
 			<groupId>junit</groupId>
@@ -114,6 +94,4 @@
 		</dependency>
 
 	</dependencies>
-
-
 </project>

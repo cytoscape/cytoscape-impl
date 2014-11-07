@@ -38,6 +38,7 @@ import org.cytoscape.work.TaskIterator;
 
 
 public class DestroyNetworkTaskFactoryImpl extends AbstractNetworkCollectionTaskFactory implements DestroyNetworkTaskFactory, TaskFactory {
+	
 	private CyNetworkManager netmgr;
 
 	public DestroyNetworkTaskFactoryImpl(CyNetworkManager netmgr) {
@@ -45,13 +46,18 @@ public class DestroyNetworkTaskFactoryImpl extends AbstractNetworkCollectionTask
 		this.netmgr = netmgr;
 	}
 
+	@Override
 	public TaskIterator createTaskIterator(Collection<CyNetwork> networks) {
 		return new TaskIterator(new DestroyNetworkTask(networks, netmgr));
 	} 
 
+	@Override
 	public TaskIterator createTaskIterator() {
 		return new TaskIterator(new DestroyNetworkTask(new ArrayList<CyNetwork>(), netmgr));
 	} 
-
-	public boolean isReady() { return true; }
+	
+	@Override
+	public boolean isReady() {
+		return true;
+	}
 }

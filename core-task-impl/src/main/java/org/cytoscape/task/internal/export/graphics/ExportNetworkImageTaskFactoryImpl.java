@@ -39,11 +39,13 @@ public class ExportNetworkImageTaskFactoryImpl extends AbstractNetworkViewTaskFa
 	private final PresentationWriterManager presentationWriterMgr; 
 	private final CyApplicationManager applicationManager;
 
-	public ExportNetworkImageTaskFactoryImpl(final PresentationWriterManager presentationWriterMgr, final CyApplicationManager applicationManager) {
+	public ExportNetworkImageTaskFactoryImpl(final PresentationWriterManager presentationWriterMgr,
+			final CyApplicationManager applicationManager) {
 		this.presentationWriterMgr = presentationWriterMgr;
 		this.applicationManager = applicationManager;
 	}
 
+	@Override
 	public TaskIterator createTaskIterator(CyNetworkView view) {
 		return new TaskIterator(2, new ViewWriter( presentationWriterMgr, view, applicationManager.getCurrentRenderingEngine() ) );
 	}

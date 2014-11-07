@@ -29,8 +29,6 @@ import java.util.Properties;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.group.CyGroupFactory;
 import org.cytoscape.group.CyGroupManager;
-import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.osgi.framework.BundleContext;
@@ -44,15 +42,20 @@ public class CyActivator extends AbstractCyActivator {
 	public void start(BundleContext bc) {
 		CyEventHelper cyEventHelperServiceRef = getService(bc,CyEventHelper.class);
 		CyServiceRegistrar cyServiceRegistrarServiceRef = getService(bc,CyServiceRegistrar.class);
-		CyNetworkManager cyNetworkManagerServiceRef = getService(bc,CyNetworkManager.class);
-		CyRootNetworkManager cyRootNetworkManagerServiceRef = getService(bc,CyRootNetworkManager.class);
+		
+		LockedVisualPropertiesManager lockedVisualPropertiesManager =
+				new LockedVisualPropertiesManager(cyServiceRegistrarServiceRef);
 		
 		CyGroupManagerImpl cyGroupManager = new CyGroupManagerImpl(cyEventHelperServiceRef);
 		CyGroupFactoryImpl cyGroupFactory = new CyGroupFactoryImpl(cyEventHelperServiceRef, 
 		                                                           cyGroupManager, 
+		                                                           lockedVisualPropertiesManager,
 		                                                           cyServiceRegistrarServiceRef);
 		registerService(bc,cyGroupManager,CyGroupManager.class, new Properties());
 		registerService(bc,cyGroupFactory,CyGroupFactory.class, new Properties());
+		
+		GroupIO groupIO = new GroupIO(cyGroupManager, lockedVisualPropertiesManager, cyServiceRegistrarServiceRef);
+		registerAllServices(bc, groupIO, new Properties());
 
 /*
 		// Move this to a separate module

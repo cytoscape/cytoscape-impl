@@ -50,6 +50,7 @@ public class DingGraphLOD extends GraphLOD implements PropertyUpdatedListener {
 	private final CyProperty<Properties> cyProp;
 
 	private final CyApplicationManager appManager;
+	private boolean drawEdges = true;
 
 
 	public DingGraphLOD(final CyProperty<Properties> defaultProps, final CyApplicationManager appManager) {
@@ -60,6 +61,20 @@ public class DingGraphLOD extends GraphLOD implements PropertyUpdatedListener {
 		this.cyProp = defaultProps;
 		this.appManager = appManager;
 		init();
+	}
+
+	// Copy constructor.
+	public DingGraphLOD(DingGraphLOD source) {
+		this.props = source.props;
+		this.cyProp = source.cyProp;
+		this.appManager = source.appManager;
+
+		this.coarseDetailThreshold = source.coarseDetailThreshold;
+		this.nodeBorderThreshold = source.nodeBorderThreshold;
+		this.nodeLabelThreshold = source.nodeLabelThreshold;
+		this.edgeArrowThreshold = source.edgeArrowThreshold;
+		this.edgeLabelThreshold = source.edgeLabelThreshold;
+		this.drawEdges = source.drawEdges;
 	}
 
 	private void init() {
@@ -83,6 +98,16 @@ public class DingGraphLOD extends GraphLOD implements PropertyUpdatedListener {
 		return value;
 	}
 
+	/**
+	 * For dense networks we don't want to draw edges during
+	 * pan and zoom operations.  This flag controls that.
+	 *
+	 * @param drawEdges if true edges will not be drawn
+	 */
+	@Override
+	public void setDrawEdges(boolean drawEdges) {
+		this.drawEdges = drawEdges;
+	}
 
 	@Override
 	public void handleEvent(PropertyUpdatedEvent e) {
@@ -94,6 +119,9 @@ public class DingGraphLOD extends GraphLOD implements PropertyUpdatedListener {
 		appManager.getCurrentNetworkView().updateView();
 
 	}
+
+	@Override
+	public boolean getDrawEdges() { return drawEdges; }
 
 	/**
 	 * Determines whether or not to render all edges in a graph, no edges, or
@@ -123,7 +151,13 @@ public class DingGraphLOD extends GraphLOD implements PropertyUpdatedListener {
 	 */
 	public byte renderEdges(final int visibleNodeCount, final int totalNodeCount, final int totalEdgeCount) {
 		if (totalEdgeCount >= Math.min(edgeArrowThreshold, edgeLabelThreshold)) {
-			return (byte) 0;
+			// Since we don't know the visible edge count, use visible node count as a proxy
+			// System.out.println("DingGraphLOD: renderEdges("+visibleNodeCount+","+totalNodeCount+","+totalEdgeCount+")");
+			// System.out.println("DingGraphLOD: drawEdges = "+drawEdges);
+			if (drawEdges || visibleNodeCount <= Math.max(edgeArrowThreshold, edgeLabelThreshold)/2 ) {
+				return (byte) 0;
+			}
+			return (byte) (-1);
 		} else {
 			return (byte) 1;
 		}
@@ -333,7 +367,7 @@ public class DingGraphLOD extends GraphLOD implements PropertyUpdatedListener {
 	 * @see #edgeLabels(int, int)
 	 */
 	public boolean textAsShape(final int renderNodeCount, final int renderEdgeCount) {
-		return false;
+		return true;
 	}
 
 	public double getNestedNetworkImageScaleFactor() {

@@ -68,7 +68,6 @@ public class RecentSessionManager implements SessionLoadedListener, CyShutdownLi
 
 	private final RecentlyOpenedTracker tracker;
 	private final CyServiceRegistrar registrar;
-
 	private final CySessionManager sessionManager;
 	private final CySessionReaderManager readerManager;
 	private final CyApplicationManager appManager;

@@ -53,7 +53,8 @@ public class NewEmptyNetworkTaskFactoryImpl extends AbstractTaskFactory implemen
 	public NewEmptyNetworkTaskFactoryImpl(final CyNetworkFactory cnf, final CyNetworkViewFactory cnvf, 
 			final CyNetworkManager netMgr, final CyNetworkViewManager networkViewManager, 
 			final CyNetworkNaming namingUtil, final SynchronousTaskManager<?> syncTaskMgr,
-			final VisualMappingManager vmm, final CyRootNetworkManager cyRootNetworkManager, final CyApplicationManager cyApplicationManager) {
+			final VisualMappingManager vmm, final CyRootNetworkManager cyRootNetworkManager,
+			final CyApplicationManager cyApplicationManager) {
 		this.cnf = cnf;
 		this.cnvf = cnvf;
 		this.netMgr = netMgr;
@@ -73,6 +74,7 @@ public class NewEmptyNetworkTaskFactoryImpl extends AbstractTaskFactory implemen
 		return new NewEmptyNetworkTask(cnf, cnvf, netMgr, networkViewMgr, namingUtil, vmm, cyRootNetworkManager, cyApplicationManager);
 	}
 	
+	@Override
 	public CyNetworkView createNewEmptyNetworkView() {
 		// no tunables, so no need to set the execution context
 		NewEmptyNetworkTask task = createTask();

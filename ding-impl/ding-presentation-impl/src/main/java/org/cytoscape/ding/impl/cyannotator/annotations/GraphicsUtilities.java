@@ -24,8 +24,10 @@ package org.cytoscape.ding.impl.cyannotator.annotations;
  * #L%
  */
 
+import java.awt.AlphaComposite;
 import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.Composite;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Paint;
@@ -49,7 +51,7 @@ import org.cytoscape.view.presentation.annotations.ArrowAnnotation.ArrowEnd;
 
 // import org.cytoscape.ding.impl.cyannotator.api.ShapeAnnotation;
 
-import org.cytoscape.ding.impl.cyannotator.annotations.ShapeAnnotationImpl.ShapeType;
+import org.cytoscape.view.presentation.annotations.ShapeAnnotation.ShapeType;
 import org.cytoscape.ding.impl.cyannotator.annotations.ArrowAnnotationImpl.ArrowType;
 
 // import org.cytoscape.ding.impl.cyannotator.api.ArrowAnnotation;
@@ -125,10 +127,11 @@ class GraphicsUtilities {
 	static public ShapeType getShapeType(Map<String, String> argMap, String key, ShapeType defValue) {
 		if (!argMap.containsKey(key) || argMap.get(key) == null)
 			return defValue;
-		int shapeNumber = Integer.parseInt(argMap.get(key));
-		for (ShapeType type: supportedShapes) {
-			if (shapeNumber == type.ordinal())
-				return type;
+		String shapeString = argMap.get(key);
+		for (ShapeType type: ShapeType.values()) {
+			if (shapeString.equalsIgnoreCase(type.shapeName()) || shapeString.equalsIgnoreCase(type.name())) {
+        return type;
+      }
 		}
 		return defValue;
 	}
@@ -147,49 +150,69 @@ class GraphicsUtilities {
 
 		// Get the stroke
 		float border = (float)(annotation.getBorderWidth()*annotation.getZoom());
-		if (!isPrinting && border < 1.0f) border = 1.0f;
+		//if (!isPrinting && border < 1.0f) border = 1.0f;
 		// System.out.println("Border width = "+border+", isPrinting = "+isPrinting);
 
 		Shape shape = null;
-		if (annotation.getShapeType().equals(ShapeType.CUSTOM)) {
+		if (annotation.getShapeType().equals(ShapeType.CUSTOM.shapeName())) {
+      final double destX = x + border;
+      final double destY = y + border;
+      final double destW = width - border;
+      final double destH = height - border;
+
 			shape = annotation.getShape();
+      if (shape == null)
+        return;
 			// Scale the shape appropriately
 			Rectangle2D originalBounds = shape.getBounds2D();
-			double widthScale = (width-border)/originalBounds.getWidth();
-			double heightScale = (height-border)/originalBounds.getHeight();
-			AffineTransform transform = AffineTransform.getScaleInstance(widthScale, heightScale);
-			transform.translate(x+border, y+border);
+			double widthScale = destW/originalBounds.getWidth();
+			double heightScale = destH/originalBounds.getHeight();
+
+			AffineTransform transform = new AffineTransform();
+      transform.translate(destX, destY);
+      transform.scale(widthScale, heightScale);
+      transform.translate(-originalBounds.getX(), -originalBounds.getY());
 			shape = transform.createTransformedShape(shape);
 		} else {
 			// Get the shape
 			shape = getShape(annotation.getShapeType(), x+border, y+border, width-border, height-border);
 		}
 
-		// System.out.println("drawShape: shape = "+shape.toString());
+		//System.out.println("drawShape: shape = " + serializeShape(shape));
 
 		// Set our fill color
 		if (annotation.getFillColor() != null) {
 			// System.out.println("drawShape: fill color = "+annotation.getFillColor());
-			g2.setPaint(annotation.getFillColor());
+      g2.setPaint(annotation.getFillColor());
+      float opacity = (float) (annotation.getFillOpacity() / 100.0);
+      if (opacity < 0.0f)
+        opacity = 0.0f;
+      else if (opacity > 1.0f)
+        opacity = 1.0f;
+      final Composite originalComposite = g2.getComposite();
+      g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, opacity));
 			g2.fill(shape);
+      g2.setComposite(originalComposite);
 		}
 
-		if (annotation.getBorderColor() != null && !annotation.isSelected()) {
-			// System.out.println("drawShape: border color = "+annotation.getBorderColor());
-			g2.setPaint(annotation.getBorderColor());
-			g2.setStroke(new BasicStroke(border));
-			g2.draw(shape);
-		} else if (annotation.isSelected()) {
-			// Create a yellow border around the shape
-			BasicStroke stroke = new BasicStroke(border);
-			Shape strokedShape = stroke.createStrokedShape(shape);
-			g2.setPaint(Color.YELLOW);
-			g2.draw(strokedShape);
-		} else {
-			g2.setPaint(Color.BLACK);
-			g2.setStroke(new BasicStroke(border));
-			g2.draw(shape);
-		}
+    if (border > 0.0f) { // only paint a border if the border thickness is greater than zero
+  		if (annotation.getBorderColor() != null && !annotation.isSelected()) {
+  			// System.out.println("drawShape: border color = "+annotation.getBorderColor());
+  			g2.setPaint(annotation.getBorderColor());
+  			g2.setStroke(new BasicStroke(border));
+  			g2.draw(shape);
+  		} else if (annotation.isSelected()) {
+  			// Create a yellow border around the shape
+  			BasicStroke stroke = new BasicStroke(border);
+  			Shape strokedShape = stroke.createStrokedShape(shape);
+  			g2.setPaint(Color.YELLOW);
+  			g2.draw(strokedShape);
+  		} else {
+  			g2.setPaint(Color.BLACK);
+  			g2.setStroke(new BasicStroke(border));
+  			g2.draw(shape);
+  		}
+    }
 	}
 
 	static public String serializeShape(final Shape s) {
@@ -261,25 +284,16 @@ class GraphicsUtilities {
         final Path2D.Double path = new Path2D.Double();
 
         final String[] pieces = str.split("\\p{Space}+");
-        if (pieces.length < 1) {
-            return path;
-        }
-
-        final String windingRule = pieces[0];
-        if (windingRule.equalsIgnoreCase("eo")) {
-            path.setWindingRule(Path2D.WIND_EVEN_ODD);
-        } else if (windingRule.equalsIgnoreCase("nz")) {
-            path.setWindingRule(Path2D.WIND_NON_ZERO);
-        } else {
-            throw new IllegalArgumentException(String.format("Winding rule must be either 'eo' or 'nz': %s", str));
-        }
-
         final double[] nums = new double[6];
-        for (int i = 1; i < pieces.length; /* increment based on command */) {
+        for (int i = 0; i < pieces.length; /* increment based on command */) {
             final String cmd = pieces[i];
             i++; // move past the command
             if (cmd.equalsIgnoreCase("z")) {
                 path.closePath();
+            } else if (cmd.equalsIgnoreCase("eo")) {
+              path.setWindingRule(Path2D.WIND_EVEN_ODD);
+            } else if (cmd.equalsIgnoreCase("nz")) {
+              path.setWindingRule(Path2D.WIND_NON_ZERO);
             } else if (cmd.equalsIgnoreCase("m")) {
                 i += parseDoubles(pieces, i, 2, nums);
                 path.moveTo(nums[0], nums[1]);

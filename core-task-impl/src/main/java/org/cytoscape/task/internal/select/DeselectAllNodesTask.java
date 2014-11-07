@@ -58,7 +58,7 @@ public class DeselectAllNodesTask extends AbstractSelectTask {
 		undoSupport.postEdit(new SelectionEdit(eventHelper, "Deselect All Nodes", network, view,
 				SelectionEdit.SelectionFilter.NODES_ONLY));
 		tm.setProgress(0.2);
-		selectUtils.setSelectedNodes(network, CyTableUtil.getNodesInState(network, CyNetwork.SELECTED, true), false);
+		selectUtils.setSelectedNodes(network, network.getNodeList(), false);
 		tm.setProgress(0.7);
 		updateView();
 		tm.setProgress(1.0);

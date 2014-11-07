@@ -26,7 +26,9 @@ package org.cytoscape.model.internal;
 
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.cytoscape.model.internal.tsort.TopoGraphNode;
 
@@ -40,7 +42,7 @@ public class AttribTopoGraphNode implements TopoGraphNode {
 
 	public AttribTopoGraphNode(final String nodeName, final Collection<String> dependents) {
 		this.nodeName = nodeName;
-		this.dependents = new HashSet<TopoGraphNode>();
+		this.dependents = Collections.newSetFromMap(new ConcurrentHashMap<TopoGraphNode, Boolean>(16, 0.75f, 2));
 
 		for (final String dependent : dependents)
 			this.dependents.add(new AttribTopoGraphNode(dependent));

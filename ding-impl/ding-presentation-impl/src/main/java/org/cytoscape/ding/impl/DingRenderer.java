@@ -1,7 +1,7 @@
 package org.cytoscape.ding.impl;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.cytoscape.application.NetworkViewRenderer;
 import org.cytoscape.model.CyNetwork;
@@ -9,7 +9,9 @@ import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.presentation.RenderingEngineFactory;
 
 public class DingRenderer implements NetworkViewRenderer {
+	
 	public static final String ID = "org.cytoscape.ding";
+	public static final String DISPLAY_NAME = "Cytoscape 2D";
 	
 	private static DingRenderer instance = new DingRenderer();
 	
@@ -21,7 +23,7 @@ public class DingRenderer implements NetworkViewRenderer {
 	private Map<String, RenderingEngineFactory<CyNetwork>> renderingEngineFactories;
 
 	private DingRenderer() {
-		renderingEngineFactories = new HashMap<String, RenderingEngineFactory<CyNetwork>>();
+		renderingEngineFactories = new ConcurrentHashMap<String, RenderingEngineFactory<CyNetwork>>(16, 0.75f, 2);
 	}
 
 	public void registerNetworkViewFactory(CyNetworkViewFactory viewFactory) {
@@ -49,5 +51,10 @@ public class DingRenderer implements NetworkViewRenderer {
 	@Override
 	public String getId() {
 		return ID;
+	}
+	
+	@Override
+	public String toString() {
+		return DISPLAY_NAME;
 	}
 }

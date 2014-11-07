@@ -51,10 +51,6 @@ import java.awt.image.BufferedImage;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
-import org.cytoscape.view.presentation.customgraphics.ImageCustomGraphicLayer;
-import org.cytoscape.view.presentation.customgraphics.PaintedShape;
-
 import org.cytoscape.graph.render.immed.arrow.Arrow;
 import org.cytoscape.graph.render.immed.arrow.ArrowheadArrow;
 import org.cytoscape.graph.render.immed.arrow.DeltaArrow;
@@ -75,6 +71,13 @@ import org.cytoscape.graph.render.immed.nodeshape.RectangleNodeShape;
 import org.cytoscape.graph.render.immed.nodeshape.RoundedRectangleNodeShape;
 import org.cytoscape.graph.render.immed.nodeshape.TriangleNodeShape;
 import org.cytoscape.graph.render.immed.nodeshape.VeeNodeShape;
+import org.cytoscape.model.CyNode;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.View;
+import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
+import org.cytoscape.view.presentation.customgraphics.ImageCustomGraphicLayer;
+import org.cytoscape.view.presentation.customgraphics.Cy2DGraphicLayer;
+import org.cytoscape.view.presentation.customgraphics.PaintedShape;
 
 
 /**
@@ -334,6 +337,7 @@ public final class GraphGraphics {
 
 		m_g2d = (Graphics2D) image.getGraphics();
 
+
 		if (m_clear) {
 			final Composite origComposite = m_g2d.getComposite();
 			m_g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC));
@@ -506,6 +510,14 @@ public final class GraphGraphics {
 		m_gMinimal = (Graphics2D) image.getGraphics();
 		m_gMinimal.setRenderingHint(RenderingHints.KEY_RENDERING,
 				RenderingHints.VALUE_RENDER_SPEED);
+		m_gMinimal.setRenderingHint(RenderingHints.KEY_COLOR_RENDERING,
+		 		RenderingHints.VALUE_COLOR_RENDER_SPEED);
+		m_gMinimal.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION,
+				RenderingHints.VALUE_ALPHA_INTERPOLATION_SPEED);
+		m_gMinimal.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+				RenderingHints.VALUE_ANTIALIAS_OFF);
+		m_gMinimal.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
+				RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
 	}
 
 	/**
@@ -606,6 +618,10 @@ public final class GraphGraphics {
 			
 			m_g2d.draw(sx);
 		}
+
+		// System.out.println("Node shape = "+sx);
+		// System.out.println("Node bounds = "+sx.getBounds2D());
+		// System.out.println("Paint = "+fillPaint);
 
 		m_g2d.setPaint(fillPaint);
 		m_g2d.fill(sx);
@@ -1963,6 +1979,11 @@ public final class GraphGraphics {
 
 		m_g2d.setPaint(paint);
 
+		// NOTE: Java 7 seems to have broken the antialiasing of text
+		// on translucent backgrounds.  In our case, the network canvas
+		// is transparent, so we fall into this category.  For the monment
+		// the "drawTextAsShape" path is the default path as it avoids
+		// this problem.
 		if (drawTextAsShape) {
 			final GlyphVector glyphV;
 
@@ -2038,7 +2059,8 @@ public final class GraphGraphics {
 	 *            in node coordinates, a value to add to the Y coordinates of
 	 *            the shape's definition.
 	 */
-	public final void drawCustomGraphicFull(final Shape nodeShape, final CustomGraphicLayer cg,
+	public final void drawCustomGraphicFull(final CyNetworkView netView, final CyNode node,
+											final Shape nodeShape, final CustomGraphicLayer cg,
 	                                        final float xOffset, final float yOffset) {
 		if (m_debug) {
 			checkDispatchThread();
@@ -2059,7 +2081,12 @@ public final class GraphGraphics {
 			}
 			m_g2d.setPaint(ps.getPaint());
 			m_g2d.fill(shape);
-		} else if(cg instanceof ImageCustomGraphicLayer) {
+		} else if (cg instanceof Cy2DGraphicLayer) {
+			m_g2d.translate(xOffset, yOffset);
+			Cy2DGraphicLayer layer = (Cy2DGraphicLayer)cg;
+			final View<CyNode> view = (netView != null && node != null) ? netView.getNodeView(node) : null;
+			layer.draw(m_g2d, nodeShape, netView, view);
+		} else if (cg instanceof ImageCustomGraphicLayer) {
 			m_g2d.translate(xOffset, yOffset);
 			Rectangle bounds = cg.getBounds2D().getBounds();
 			final BufferedImage bImg = ((ImageCustomGraphicLayer)cg).getPaint(bounds).getImage();

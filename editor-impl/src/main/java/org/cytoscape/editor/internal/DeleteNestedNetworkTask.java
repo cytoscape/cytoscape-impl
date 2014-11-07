@@ -56,7 +56,7 @@ public class DeleteNestedNetworkTask extends AbstractNodeViewTask {
 		setNestedNetwork(node, null);
 		
 		final VisualStyle style = vmMgr.getVisualStyle(netView);
-		style.apply(netView);
+		style.apply(netView.getModel().getRow(node), nodeView);
 		netView.updateView();
 	}
 

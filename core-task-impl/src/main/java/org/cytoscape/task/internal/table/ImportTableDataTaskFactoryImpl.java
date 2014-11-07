@@ -53,13 +53,13 @@ public class ImportTableDataTaskFactoryImpl extends AbstractTableTaskFactory imp
 	private final CyRootNetworkManager rootNetMgr;
 	private final CyTableManager tableMgr;
 	
-	public ImportTableDataTaskFactoryImpl( final CyNetworkManager networkManager, final CyTableManager tableMgr,final TunableSetter tunableSetter, final CyRootNetworkManager rootNetMgr){
+	public ImportTableDataTaskFactoryImpl(final CyNetworkManager networkManager, final CyTableManager tableMgr,
+			final TunableSetter tunableSetter, final CyRootNetworkManager rootNetMgr){
 		this.networkManager = networkManager;
 		this.tunableSetter = tunableSetter;
 		this.rootNetMgr = rootNetMgr;
 		this.tableMgr = tableMgr;
 	}
-	
 	
 	@Override
 	public TaskIterator createTaskIterator(CyTable table) {
@@ -137,7 +137,7 @@ public class ImportTableDataTaskFactoryImpl extends AbstractTableTaskFactory imp
 		return tunableSetter.createTaskIterator(createTaskIterator(globalTable), m);
 		
 	}
-
+	
 	private TableType getTableType( Class<? extends CyIdentifiable> type) {
 		if (type.equals(TableType.EDGE_ATTR.getType()))
 			return TableType.EDGE_ATTR;

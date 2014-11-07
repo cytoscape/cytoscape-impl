@@ -146,8 +146,8 @@ public class CreditScreen {
 		protected void paintComponent(Graphics g) {
 			g.drawImage(background.getImage(), 0, 0, null);
 			((Graphics2D) g).setPaint(Color.black);
-
-			g.drawString(version,xPos,35);
+			g.drawString("Java version: " +System.getProperty("java.version"),xPos+50,20);
+			g.drawString(version,xPos,120);
 
 			int i = 1;
 			int y = yPos;
@@ -155,7 +155,7 @@ public class CreditScreen {
 			for ( String sub : lines ) {
 				y = yPos + (12 * i);
 
-				if (y > 120)
+				if (y > 150)
 					g.drawString(sub, xPos, y);
 
 				i++;

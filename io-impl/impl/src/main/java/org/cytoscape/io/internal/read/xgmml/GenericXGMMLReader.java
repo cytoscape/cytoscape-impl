@@ -40,6 +40,7 @@ import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.NetworkViewRenderer;
 import org.cytoscape.io.internal.read.xgmml.handler.ReadDataManager;
 import org.cytoscape.io.internal.util.UnrecognizedVisualPropertyManager;
 import org.cytoscape.io.internal.util.session.SessionUtil;
@@ -80,6 +81,7 @@ public class GenericXGMMLReader extends AbstractCyNetworkReader {
 	protected final XGMMLParser parser;
 	protected final UnrecognizedVisualPropertyManager unrecognizedVisualPropertyMgr;
 	protected final VisualLexicon visualLexicon;
+	protected final CyApplicationManager appMgr;
 	
 	private static final Map<String, String> legacyArrowShapes = new HashMap<String, String>();
 	private static final Logger logger = LoggerFactory.getLogger(GenericXGMMLReader.class);
@@ -121,6 +123,7 @@ public class GenericXGMMLReader extends AbstractCyNetworkReader {
 		super(inputStream, cyNetworkViewFactory, cyNetworkFactory, cyNetworkManager, cyRootNetworkManager);
 		this.readDataMgr = readDataMgr;
 		this.parser = parser;
+		this.appMgr = cyApplicationManager;
 		this.unrecognizedVisualPropertyMgr = unrecognizedVisualPropertyMgr;
 		this.visualLexicon = renderingEngineMgr.getDefaultVisualLexicon();
 		
@@ -168,7 +171,18 @@ public class GenericXGMMLReader extends AbstractCyNetworkReader {
 
 	@Override
 	public CyNetworkView buildCyNetworkView(final CyNetwork network) {
-		final CyNetworkView netView = cyNetworkViewFactory.createNetworkView(network);
+		NetworkViewRenderer networkViewRenderer = null;
+		
+		if (readDataMgr.getRendererId() != null)
+			networkViewRenderer = appMgr.getNetworkViewRenderer(readDataMgr.getRendererId());
+		
+		// If the XGMML has no renderer ID info or a NetworkViewRenderer with that ID can't be found,
+		// just use the passed CyNetworkViewFactory. 
+		// Otherwise use the factory provided by the specified NetworkViewRenderer.
+		final CyNetworkViewFactory netViewFactory = networkViewRenderer != null ? 
+				networkViewRenderer.getNetworkViewFactory() : cyNetworkViewFactory;
+				
+		final CyNetworkView netView = netViewFactory.createNetworkView(network);
 		setNetworkViewProperties(netView);
 		
 		if (netView.getModel().getNodeCount() > 0) {
@@ -187,7 +201,6 @@ public class GenericXGMMLReader extends AbstractCyNetworkReader {
 		return netView;
 	}
 	
-	
 	protected void init(final TaskMonitor tm) {
 		readDataMgr.init();
 		readDataMgr.setViewFormat(false); // TODO: refactor readDataMgr and delete this line
@@ -200,12 +213,10 @@ public class GenericXGMMLReader extends AbstractCyNetworkReader {
 		readDataMgr.setParentNetwork(networkCollection);
 	}
 
-
 	protected void complete(TaskMonitor tm) {
 		final Set<CyNetwork> netSet = readDataMgr.getPublicNetworks();
 		this.networks = netSet.toArray(new CyNetwork[netSet.size()]);
 	}
-
 
 	/**
 	 * Actual method to read XGMML documents.

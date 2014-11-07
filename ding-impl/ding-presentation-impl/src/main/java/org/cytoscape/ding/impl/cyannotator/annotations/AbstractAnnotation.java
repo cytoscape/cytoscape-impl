@@ -26,6 +26,7 @@ package org.cytoscape.ding.impl.cyannotator.annotations;
 
 import java.awt.AlphaComposite;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -83,10 +84,6 @@ public class AbstractAnnotation extends JComponent implements DingAnnotation {
 	protected CyAnnotator cyAnnotator;
 
 	protected static final String ID="id";
-	protected static final String ZOOM="zoom";
-	protected static final String X="x";
-	protected static final String Y="y";
-	protected static final String CANVAS="canvas";
 	protected static final String TYPE="type";
 	protected static final String ANNOTATION_ID="uuid";
 	protected static final String PARENT_ID="parent";
@@ -462,10 +459,10 @@ public class AbstractAnnotation extends JComponent implements DingAnnotation {
 		return new Color(Integer.parseInt(argMap.get(key)));
 	}
 
-  protected Double getDouble(Map<String, String> argMap, String key, double defValue) {
+  protected String getString(Map<String, String> argMap, String key, String defValue) {
 		if (!argMap.containsKey(key) || argMap.get(key) == null)
 			return defValue;
-		return Double.parseDouble(argMap.get(key));
+		return argMap.get(key);
 	}
 
   protected Float getFloat(Map<String, String> argMap, String key, float defValue) {
@@ -490,6 +487,13 @@ public class AbstractAnnotation extends JComponent implements DingAnnotation {
 		String family = getString(argMap, TextAnnotationImpl.FONTFAMILY, defFamily);
 		int size = getInteger(argMap, TextAnnotationImpl.FONTSIZE, defSize);
 		int style = getInteger(argMap, TextAnnotationImpl.FONTSTYLE, defStyle);
+		return new Font(family, style, size);
+	}
+
+	protected Font getArgFont(Map<String, String> argMap, String defFamily, int defStyle, int defSize) {
+		String family = getString(argMap, TextAnnotation.FONTFAMILY, defFamily);
+		int size = getInteger(argMap, TextAnnotation.FONTSIZE, defSize);
+		int style = getInteger(argMap, TextAnnotation.FONTSTYLE, defStyle);
 		return new Font(family, style, size);
 	}
 
@@ -540,6 +544,15 @@ public class AbstractAnnotation extends JComponent implements DingAnnotation {
 		final ContentChangeListener lis = view.getContentChangeListener();
 		if (lis != null)
 			lis.contentChanged();
+	}
+
+	/**
+	 * Adjust the the size to correspond to the aspect ratio of the
+	 * current annotation.  This should be overloaded by annotations that
+	 * have an aspect ratio (e.g. Shape, Image, etc.)
+	 */
+	public Dimension adjustAspectRatio(Dimension d) {
+		return d;
 	}
 
 }

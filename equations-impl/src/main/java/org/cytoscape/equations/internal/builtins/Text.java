@@ -25,6 +25,7 @@ package org.cytoscape.equations.internal.builtins;
  */
 
 
+import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;
@@ -64,10 +65,16 @@ public class Text extends AbstractFunction {
 	 *  @throws IllegalArgumentException thrown if any of the arguments is not of type Boolean
 	 */
 	public Object evaluateFunction(final Object[] args) throws IllegalArgumentException, ArithmeticException {
-		final double value = FunctionUtil.getArgAsDouble(args[0]);
+		final Double doubleValue = FunctionUtil.getArgAsDouble(args[0]);
+		final Number value;
+		
+		// use double if value can't be represented by BigDecimal
+		if(doubleValue.isInfinite() || doubleValue.isNaN())
+			value = doubleValue;
+		else value = new BigDecimal(doubleValue.toString());
 
 		if (args.length == 1)
-			return Double.toString(value);
+			return value.toString();
 		else {
 			final String format = FunctionUtil.getArgAsString(args[1]);
 			if (!isValidFormat(format))

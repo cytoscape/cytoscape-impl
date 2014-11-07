@@ -37,7 +37,6 @@ import javax.swing.tree.DefaultTreeCellRenderer;
 
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
-import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.util.swing.JTreeTable;
 
 final class TreeCellRenderer extends DefaultTreeCellRenderer {
@@ -91,8 +90,7 @@ final class TreeCellRenderer extends DefaultTreeCellRenderer {
 		if (selected) {
 			this.setFont(TABLE_FONT_SELECTED);
 			this.setBackgroundSelectionColor( new Color(0, 100, 255, 40));		
-			}
-		else {
+		} else {
 			this.setFont(TABLE_FONT);
 			this.setBackgroundNonSelectionColor(Color.white); 
 		}

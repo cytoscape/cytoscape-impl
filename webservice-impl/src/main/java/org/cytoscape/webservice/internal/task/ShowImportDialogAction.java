@@ -43,11 +43,11 @@ public class ShowImportDialogAction extends AbstractCyAction {
 
 
 	private WebServiceImportDialog<?> dialog;
-
 	private final Window parent;
 
 	public ShowImportDialogAction(final CySwingApplication app,
-			final WebServiceImportDialog<?> dialog, final String menuLocation, final String menuLabel, final KeyStroke shortcut) {
+			final WebServiceImportDialog<?> dialog, final String menuLocation, final String menuLabel,
+			final KeyStroke shortcut) {
 		super(menuLabel);
 
 		if (dialog == null)
@@ -75,5 +75,4 @@ public class ShowImportDialogAction extends AbstractCyAction {
 		dialog.setLocationRelativeTo(parent);
 		dialog.setVisible(true);
 	}
-
 }

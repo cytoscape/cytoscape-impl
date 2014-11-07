@@ -73,7 +73,6 @@ public class CyTableManagerTest extends AbstractCyTableManagerTest {
 		assertNotNull(globalTable);
 		assertNotNull(goodNetwork);
 
-		assertEquals(15, mgr.getAllTables(true).size());
 		assertEquals(1, networkManager.getNetworkSet().size());
 	}
 

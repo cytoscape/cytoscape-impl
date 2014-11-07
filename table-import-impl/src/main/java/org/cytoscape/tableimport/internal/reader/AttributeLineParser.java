@@ -72,8 +72,26 @@ public class AttributeLineParser {
 		//System.out.println("Entering AttributeLineParser.parseAll()....");
 
 		// Get key
-		final String primaryKey = parts[mapping.getKeyIndex()].trim();
+		final Object primaryKey ;
 		final int partsLen = parts.length;
+		final Byte typeKey = mapping.getAttributeTypes()[mapping.getKeyIndex()];
+		
+		switch (typeKey) {
+			case AttributeTypes.TYPE_BOOLEAN:
+				primaryKey = Boolean.valueOf(parts[mapping.getKeyIndex()].trim());
+				break;
+			case AttributeTypes.TYPE_INTEGER:
+				primaryKey = Integer.valueOf(parts[mapping.getKeyIndex()].trim());
+				break;
+			case AttributeTypes.TYPE_FLOATING:
+				primaryKey = Double.valueOf(parts[mapping.getKeyIndex()].trim());
+				break;
+			case AttributeTypes.TYPE_STRING:
+				primaryKey = parts[mapping.getKeyIndex()].trim();
+				break;
+			default:
+				primaryKey = parts[mapping.getKeyIndex()].trim();
+		}
 
 		if (partsLen==1)
 			table.getRow(parts[0]);
@@ -100,7 +118,7 @@ public class AttributeLineParser {
 	 * @param entry
 	 * @param index
 	 */
-	private void mapAttribute(CyTable table, final String key, final String entry, final int index) {
+	private void mapAttribute(CyTable table, final Object key, final String entry, final int index) {
 
 		final Byte type = mapping.getAttributeTypes()[index];
 
@@ -117,7 +135,7 @@ public class AttributeLineParser {
 					//mapping.getAttributes()
 					 //      .setAttribute(key, mapping.getAttributeNames()[index], newBool);
 				} catch (Exception e) {
-					invalid.put(key, entry);
+					invalid.put(key.toString(), entry);
 				}
 
 				break;
@@ -133,7 +151,7 @@ public class AttributeLineParser {
 					//mapping.getAttributes()
 					 //      .setAttribute(key, mapping.getAttributeNames()[index], newInt);
 				} catch (Exception e) {
-					invalid.put(key, entry);
+					invalid.put(key.toString(), entry);
 				}
 
 				break;
@@ -148,7 +166,7 @@ public class AttributeLineParser {
 					//mapping.getAttributes()
 					 //      .setAttribute(key, mapping.getAttributeNames()[index], newDouble);
 				} catch (Exception e) {
-					invalid.put(key, entry);
+					invalid.put(key.toString(), entry);
 				}
 
 				break;
@@ -159,7 +177,7 @@ public class AttributeLineParser {
 					//mapping.setAttribute(key, mapping.getAttributeNames()[index], entry);
 					//mapping.getAttributes().setAttribute(key, mapping.getAttributeNames()[index], entry);
 				} catch (Exception e) {
-					invalid.put(key, entry);
+					invalid.put(key.toString(), entry);
 				}
 
 				break;
@@ -195,7 +213,7 @@ public class AttributeLineParser {
 					//mapping.getAttributes()
 					//       .setListAttribute(key, mapping.getAttributeNames()[index], curList);
 				} catch (Exception e) {
-					invalid.put(key, entry);
+					invalid.put(key.toString(), entry);
 				}
 
 				break;
@@ -204,12 +222,12 @@ public class AttributeLineParser {
 				try {
 					//mapping.getAttributes().setAttribute(key, mapping.getAttributeNames()[index], entry);
 				} catch (Exception e) {
-					invalid.put(key, entry);
+					invalid.put(key.toString(), entry);
 				}
 		}
 	}
 
-	public static void setAttributeForType(CyTable tbl, byte type, String key, String attributeName, String val){
+	public static void setAttributeForType(CyTable tbl, byte type, Object key, String attributeName, String val){
 		if (tbl.getColumn(attributeName) == null) {
 			if (type == AttributeTypes.TYPE_INTEGER)
 				tbl.createColumn(attributeName, Integer.class, false);
@@ -233,7 +251,7 @@ public class AttributeLineParser {
 			row.set(attributeName, new String(val));
 	}
 
-	public static void setListAttribute(CyTable tbl, byte type, String key, String attributeName, final ArrayList elmsBuff) {
+	public static void setListAttribute(CyTable tbl, byte type, Object key, String attributeName, final ArrayList elmsBuff) {
 		if (tbl.getColumn(attributeName) == null) {
 			if (type == AttributeTypes.TYPE_INTEGER)
 				tbl.createListColumn(attributeName, Integer.class, false);

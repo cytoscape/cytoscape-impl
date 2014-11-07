@@ -135,13 +135,14 @@ public interface SpacialIndex2D {
 	 * @param yMin the minimum Y coordinate of the entry's extents rectangle.
 	 * @param xMax the maximum X coordinate of the entry's extents rectangle.
 	 * @param yMax the maximum Y coordinate of the entry's extents rectangle.
+	 * @param z the z order of this entry
 	 * @exception IllegalStateException if objKey is already used for an
 	 *   existing entry in this structure.
 	 * @exception IllegalArgumentException if objKey is negative,
 	 *   if xMin is not less than or equal to xMax, or
 	 *   if yMin is not less than or equal to yMax.
 	 */
-	public void insert(long objKey, float xMin, float yMin, float xMax, float yMax);
+	public void insert(long objKey, float xMin, float yMin, float xMax, float yMax, double z);
 
 	/**
 	 * Deletes the specified data entry from this structure.
@@ -151,4 +152,24 @@ public interface SpacialIndex2D {
 	 *   method invocation.
 	 */
 	public boolean delete(long objKey);
+
+	/**
+	 * Gets the z-Order associated with this entry.  Note that this is for information
+	 * only -- the underlying spacial indexing will ignore Z-Order.  These getters and
+	 * setters are merely for convenience during rendering.
+	 *
+	 * @param objKey a user-defined identifier
+	 * @return the zorder for this identifier
+	 */
+	public double getZOrder(long objKey);
+
+	/**
+	 * Sets the z-Order associated with this entry.  Note that this is for information
+	 * only -- the underlying spacial indexing will ignore Z-Order.  These getters and
+	 * setters are merely for convenience during rendering.
+	 *
+	 * @param objKey a user-defined identifier
+	 * @param z the zorder for this identifier
+	 */
+	public void setZOrder(long objKey, double z);
 }

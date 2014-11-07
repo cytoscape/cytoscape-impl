@@ -83,13 +83,16 @@ public final class BrowserTableModel extends AbstractTableModel
 
 	public BrowserTableModel(final CyTable dataTable, final Class<? extends CyIdentifiable> tableType,
 			final EquationCompiler compiler) {
+		if (dataTable == null)
+			throw new IllegalArgumentException("'dataTable' must not be null");
+		
 		this.dataTable = dataTable;
 		this.compiler = compiler;
 		this.viewMode = ViewMode.ALL; 
 		this.tableType = tableType;
 
 		attrNames = getAttributeNames(dataTable);
-		lock = new ReentrantReadWriteLock(true);
+		lock = new ReentrantReadWriteLock();
 		
 		// add each row to an array to allow fast lookup from an index
 		final Collection<CyRow> rows = dataTable.getAllRows();
@@ -109,11 +112,7 @@ public final class BrowserTableModel extends AbstractTableModel
 		return names;
 	}
 
-	CyTable getDataTable() {
-		return dataTable;
-	}
-
-	public CyTable getAttributes() {
+	public CyTable getDataTable() {
 		return dataTable;
 	}
 

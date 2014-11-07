@@ -60,6 +60,8 @@ public class CommandExecutorImpl {
 
 	private final DynamicTaskFactoryProvisioner factoryProvisioner;
 	
+	private final Object lock = new Object();
+	
 	public CommandExecutorImpl(CyApplicationManager appMgr, CommandTunableInterceptorImpl interceptor, 
 	                           AvailableCommands avc, DynamicTaskFactoryProvisioner factoryProvisioner) {
 		this.appMgr = appMgr;
@@ -114,12 +116,14 @@ public class CommandExecutorImpl {
 		if ( command == null && namespace == null ) 
 			return;
 
-		Map<String, Executor> map = commandExecutorMap.get(namespace);
-		if ( map == null ) {
-			map = new HashMap<String,Executor>();
-			commandExecutorMap.put(namespace, map);
+		synchronized (lock) {
+			Map<String, Executor> map = commandExecutorMap.get(namespace);
+			if ( map == null ) {
+				map = new HashMap<String,Executor>();
+				commandExecutorMap.put(namespace, map);
+			}
+			map.put(command,ex);
 		}
-		map.put(command,ex);
 	}
 
 	private void removeTF(Map props) {
@@ -128,11 +132,13 @@ public class CommandExecutorImpl {
 		if ( command == null && namespace == null ) 
 			return;
 
-		Map<String,Executor> ce = commandExecutorMap.get(namespace);
-		if ( ce != null ) {
-			ce.remove(command);
-			if ( ce.size() == 0 )
-				commandExecutorMap.remove(namespace);
+		synchronized (lock) {
+			Map<String,Executor> ce = commandExecutorMap.get(namespace);
+			if ( ce != null ) {
+				ce.remove(command);
+				if ( ce.size() == 0 )
+					commandExecutorMap.remove(namespace);
+			}
 		}
 	}
 
@@ -158,16 +164,127 @@ public class CommandExecutorImpl {
 
 	public void executeCommand(String namespace, String command, Map<String, Object> args, 
 	                           TaskMonitor tm, TaskObserver observer) throws Exception {
+			
+		Executor ex;
+		synchronized (lock) {
 			Map<String,Executor> commandMap = commandExecutorMap.get(namespace);
 
 			if ( commandMap == null )
 				throw new RuntimeException("Failed to find command namespace: '" + namespace +"'");	
 
-			Executor ex = commandMap.get(command);
+			ex = commandMap.get(command);
+		}
+		
+		if ( ex == null )
+			throw new RuntimeException("Failed to find command: '" + command +"' (from namespace: " + namespace + ")");	
+		ex.execute(args, observer);
+	}
 
-			if ( ex == null )
-				throw new RuntimeException("Failed to find command: '" + command +"' (from namespace: " + namespace + ")");	
-			ex.execute(args, observer);
+	private void handleCommand(String commandLine, TaskMonitor tm, TaskObserver observer) throws Exception {
+		String ns = null;
+		if ((ns = isNamespace(commandLine)) == null) {
+			throw new RuntimeException("Failed to find command namespace: '"+commandLine+"'");
+		}
+
+		Map<String, Object> settings = new HashMap<String, Object>();
+		String comm = parseInput(commandLine.substring(ns.length()).trim(), settings);
+
+		String sub = null;
+		// We do this rather than just looking it up so we can do case-independent matches
+		for (String command: availableCommands.getCommands(ns)) {
+			if (command.equalsIgnoreCase(comm)) {
+				sub = command;
+				break;
+			}
+		}
+
+		if (sub == null && (comm != null && comm.length() > 0))
+			throw new RuntimeException("Failed to find command: '" + comm +"' (from namespace: " + ns + ")");
+
+		Map<String, Object> modifiedSettings = new HashMap<String, Object>();
+		// Now check the arguments
+		List<String> argList = availableCommands.getArguments(ns, comm);
+		for (String inputArg: settings.keySet()) {
+			boolean found = false;
+			for (String arg: argList) {
+				String[] bareArg = arg.split("=");
+				if (bareArg[0].trim().equalsIgnoreCase(inputArg)) {
+					found = true;
+					modifiedSettings.put(bareArg[0].trim(), settings.get(inputArg));
+					break;
+				}
+			}	
+			if (!found)
+				throw new RuntimeException("Argument: '"+inputArg+" isn't applicable to command: '"+ns+" "+comm+"'");	
+		}
+
+		executeCommand(ns, sub, modifiedSettings, tm, observer);
+		return;
+	}
+
+	private String isNamespace(String input) {
+		String namespace = null;
+		// Namespaces must always be single word
+		String [] splits = input.split(" ");
+		for (String ns: availableCommands.getNamespaces()) {
+			if (splits[0].equalsIgnoreCase(ns) && 
+			    (namespace == null || ns.length() > namespace.length()))
+				namespace = ns;
+		}
+		return namespace;
+	}
+
+	private String parseInput(String input, Map<String,Object> settings) {
+		// Tokenize
+		StringReader reader = new StringReader(input);
+		StreamTokenizer st = new StreamTokenizer(reader);
+
+		// We don't really want to parse numbers as numbers...
+		st.ordinaryChar('/');
+		st.ordinaryChar('_');
+		st.ordinaryChar('-');
+		st.ordinaryChar('.');
+		st.ordinaryChars('0', '9');
+
+		st.wordChars('/', '/');
+		st.wordChars('_', '_');
+		st.wordChars('-', '-');
+		st.wordChars('.', '.');
+		st.wordChars('0', '9');
+
+		List<String> tokenList = new ArrayList<String>();
+		int tokenIndex = 0;
+		int i;
+		try {
+			while ((i = st.nextToken()) != StreamTokenizer.TT_EOF) {
+				switch(i) {
+					case '=':
+						// Get the next token
+						i = st.nextToken();
+						if (i == StreamTokenizer.TT_WORD || i == '"') {
+							tokenIndex--;
+							String key = tokenList.get(tokenIndex);
+							settings.put(key, st.sval);
+							tokenList.remove(tokenIndex);
+						}
+						break;
+					case '"':
+					case StreamTokenizer.TT_WORD:
+						tokenList.add(st.sval);
+						tokenIndex++;
+						break;
+					default:
+						break;
+				}
+			} 
+		} catch (Exception e) { return ""; }
+
+		// Concatenate the commands together
+		String command = "";
+		for (String word: tokenList) command += word+" ";
+
+		// Now, the last token of the args goes with the first setting
+		return command.trim();
 	}
 
 	private void handleCommand(String commandLine, TaskMonitor tm, TaskObserver observer) throws Exception {

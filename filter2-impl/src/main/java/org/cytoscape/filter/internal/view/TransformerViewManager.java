@@ -2,10 +2,10 @@ package org.cytoscape.filter.internal.view;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.swing.JComponent;
 
@@ -23,9 +23,11 @@ public class TransformerViewManager {
 	private List<TransformerViewElement> chainTransformerViewElements;
 	private TransformerManager transformerManager;
 
+	private final Object lock = new Object();
+	
 	public TransformerViewManager(TransformerManager transformerManager) {
 		this.transformerManager = transformerManager;
-		viewFactories = new HashMap<String, TransformerViewFactory>();
+		viewFactories = new ConcurrentHashMap<String, TransformerViewFactory>(16, 0.75f, 2);
 		filterConditionViewElements = new ArrayList<TransformerViewElement>();
 		chainTransformerViewElements = new ArrayList<TransformerViewElement>();
 	}
@@ -47,24 +49,32 @@ public class TransformerViewManager {
 			return;
 		}
 		
-		List<TransformerViewElement> list;
-		if (transformer instanceof Filter) {
-			list = filterConditionViewElements;
-		} else {
-			list = chainTransformerViewElements;
+		synchronized (lock) {
+			List<TransformerViewElement> list;
+			if (transformer instanceof Filter) {
+				list = filterConditionViewElements;
+			} else {
+				list = chainTransformerViewElements;
+			}
+			
+			TransformerViewElement element = new TransformerViewElement(transformer.getName(), factory.getId());
+			viewFactories.put(factory.getId(), factory);
+			list.add(element);
+			Collections.sort(list);
 		}
-		
-		TransformerViewElement element = new TransformerViewElement(transformer.getName(), factory.getId());
-		viewFactories.put(factory.getId(), factory);
-		list.add(element);
-		Collections.sort(list);
 	}
 	
 	public void unregisterTransformerViewFactory(TransformerViewFactory factory, Map<String, String> properties) {
 		String id = factory.getId();
 		viewFactories.remove(id);
-		
-		Iterator<TransformerViewElement> iterator = filterConditionViewElements.iterator();
+		synchronized (lock) {
+			removeTransformerViewElement(id, filterConditionViewElements);
+			removeTransformerViewElement(id, chainTransformerViewElements);
+		}
+	}
+	
+	void removeTransformerViewElement(String id, List<TransformerViewElement> elements) {
+		Iterator<TransformerViewElement> iterator = elements.iterator();
 		while (iterator.hasNext()) {
 			TransformerViewElement element = iterator.next();
 			if (id.equals(element.getId())) {
@@ -74,11 +84,15 @@ public class TransformerViewManager {
 	}
 	
 	List<TransformerViewElement> getFilterConditionViewElements() {
-		return filterConditionViewElements;
+		synchronized (lock) {
+			return new ArrayList<TransformerViewElement>(filterConditionViewElements);
+		}
 	}
 	
 	List<TransformerViewElement> getChainTransformerViewElements() {
-		return chainTransformerViewElements;
+		synchronized (lock) {
+			return new ArrayList<TransformerViewElement>(chainTransformerViewElements);
+		}
 	}
 	
 	class TransformerViewElement implements Comparable<TransformerViewElement> {

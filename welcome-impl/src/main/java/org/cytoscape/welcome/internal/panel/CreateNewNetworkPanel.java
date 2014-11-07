@@ -25,14 +25,11 @@ package org.cytoscape.welcome.internal.panel;
  */
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -44,24 +41,23 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
-import java.util.SortedSet;
 import java.util.TreeMap;
-import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.imageio.ImageIO;
 import javax.swing.BorderFactory;
+import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.ButtonModel;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.SwingConstants;
-import javax.swing.border.LineBorder;
 
 import org.cytoscape.application.swing.CyAction;
 import org.cytoscape.io.DataCategory;
@@ -87,7 +83,6 @@ public class CreateNewNetworkPanel extends AbstractWelcomeScreenChildPanel {
 	private static final Logger logger = LoggerFactory.getLogger(CreateNewNetworkPanel.class);
 	
 	private static final Icon NEW_ICON;
-	private static final Icon PRESET_ICON;
 	private static final Icon DATABASE_ICON;
 	private static final Icon OPEN_ICON;
 	
@@ -103,7 +98,6 @@ public class CreateNewNetworkPanel extends AbstractWelcomeScreenChildPanel {
 		BufferedImage newImage = null;
 		BufferedImage databaseImage = null;
 		BufferedImage loadImage = null;
-		BufferedImage presetImage = null;
 
 		try {
 			newImage = ImageIO.read(WelcomeScreenDialog.class.getClassLoader().getResource("images/Icons/empty.png"));
@@ -112,8 +106,7 @@ public class CreateNewNetworkPanel extends AbstractWelcomeScreenChildPanel {
 		}
 
 		try {
-			databaseImage = ImageIO.read(WelcomeScreenDialog.class.getClassLoader().getResource(
-					"images/Icons/remote.png"));
+			databaseImage = ImageIO.read(WelcomeScreenDialog.class.getClassLoader().getResource("images/Icons/remote.png"));
 		} catch (IOException e) {
 			logger.warn("Could not create Icon.", e);
 		}
@@ -123,12 +116,6 @@ public class CreateNewNetworkPanel extends AbstractWelcomeScreenChildPanel {
 			logger.warn("Could not create Icon.", e);
 		}
 		
-		try {
-			presetImage = ImageIO.read(WelcomeScreenDialog.class.getClassLoader().getResource("images/Icons/logo48.png"));
-		} catch (IOException e) {
-			logger.warn("Could not create Icon.", e);
-		}
-
 		if (newImage != null)
 			NEW_ICON = new ImageIcon(newImage);
 		else
@@ -144,11 +131,6 @@ public class CreateNewNetworkPanel extends AbstractWelcomeScreenChildPanel {
 		else
 			OPEN_ICON = null;
 		
-		if (presetImage != null)
-			PRESET_ICON = new ImageIcon(presetImage);
-		else
-			PRESET_ICON = null;
-
 		// Species ICON
 		try {
 			SPECIES_ICON.put("H. sapiens", new ImageIcon(ImageIO.read(
@@ -235,7 +217,6 @@ public class CreateNewNetworkPanel extends AbstractWelcomeScreenChildPanel {
 
 						final JButton button = new JButton(sourceLabel);
 						buttonMap.put(sourceLabel, button);
-						button.setPreferredSize(new Dimension(50, 20));
 						button.setHorizontalAlignment(SwingConstants.LEFT);
 						button.setToolTipText(tooltip);
 						if(sourceLabel.contains(".")) {
@@ -260,7 +241,6 @@ public class CreateNewNetworkPanel extends AbstractWelcomeScreenChildPanel {
 
 		bGroup = new ButtonGroup();
 		sourceButtons = new JPanel();
-		sourceButtons.setOpaque(false);
 		
 		// Determine Size of Grid
 		final List<JButton> buttonList = new ArrayList<JButton>(buttonMap.values());
@@ -269,23 +249,23 @@ public class CreateNewNetworkPanel extends AbstractWelcomeScreenChildPanel {
 		sourceButtons.setLayout(new GridLayout(rowCount+mod, 2));
 		for(JButton rb: buttonList) {
 			sourceButtons.add(rb);
-			sourceButtons.setOpaque(false);
 			bGroup.add(rb);
 		}
 	}
 
 	private void initComponents() {
 		// Basic layout of this panel (2 rows)
-		this.setLayout(new GridLayout(2,1));
-		
-		// Label border
-		this.setBorder(new LineBorder(new Color(0, 0, 0, 0), 10));
+		this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+		this.setBorder(BorderFactory.createEmptyBorder(5, 5, 3, 5));
 
+		final int BT_HEIGHT = 52;
+		
 		final JButton createEmptySessionButton = new JButton();
-		createEmptySessionButton.setText("New/Empty Network");
+		createEmptySessionButton.setText("With Empty Network");
 		createEmptySessionButton.setIcon(NEW_ICON);
 		createEmptySessionButton.setHorizontalAlignment(SwingConstants.LEFT);
 		createEmptySessionButton.setIconTextGap(20);
+		createEmptySessionButton.setPreferredSize(new Dimension(createEmptySessionButton.getPreferredSize().width, BT_HEIGHT));
 		createEmptySessionButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
@@ -299,22 +279,21 @@ public class CreateNewNetworkPanel extends AbstractWelcomeScreenChildPanel {
 		importFromFileButton.setIcon(OPEN_ICON);
 		importFromFileButton.setHorizontalAlignment(SwingConstants.LEFT);
 		importFromFileButton.setIconTextGap(20);
+		importFromFileButton.setPreferredSize(new Dimension(importFromFileButton.getPreferredSize().width, BT_HEIGHT));
 		importFromFileButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				loadFromFile();
 			}
 		});
+		
 
-		JPanel dbButtonPanel = new JPanel();
-		dbButtonPanel.setLayout(new GridLayout(1,1));
-		dbButtonPanel.setOpaque(false);
 		JButton dbButton = new JButton("From Network Database...");
 		dbButton.setIcon(DATABASE_ICON);
 		dbButton.setIconTextGap(20);
 		dbButton.setHorizontalAlignment(SwingConstants.LEFT);
+		dbButton.setPreferredSize(new Dimension(dbButton.getPreferredSize().width, BT_HEIGHT));
 		dbButton.addActionListener(new ActionListener() {
-
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				// Load network from web service.
@@ -333,15 +312,20 @@ public class CreateNewNetworkPanel extends AbstractWelcomeScreenChildPanel {
 		buttonPanel.add(createEmptySessionButton);
 		buttonPanel.add(importFromFileButton);
 		buttonPanel.add(dbButton);
-		this.add(buttonPanel);
+		
+		final JLabel orgNetTitle = new JLabel("From Organism Network");
+		orgNetTitle.setHorizontalAlignment(JLabel.CENTER);
+		orgNetTitle.setBorder(BorderFactory.createEmptyBorder(4, 0, 4, 0));
 
 		final JPanel presetPanel = new JPanel();
-		presetPanel.setBorder(BorderFactory.createTitledBorder("From Organism Network"));
-		presetPanel.setOpaque(false);
 		presetPanel.setLayout(new BorderLayout());
 		JScrollPane buttonScrollPane = new JScrollPane();
+		buttonScrollPane.setBorder(BorderFactory.createEmptyBorder());
 		buttonScrollPane.setViewportView(sourceButtons);
+		presetPanel.add(orgNetTitle, BorderLayout.NORTH);
 		presetPanel.add(buttonScrollPane, BorderLayout.CENTER);
+		
+		this.add(buttonPanel);
 		this.add(presetPanel);
 		
 		createPresetTasks();

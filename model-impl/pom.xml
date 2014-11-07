@@ -3,11 +3,11 @@
 	<parent>
 		<groupId>org.cytoscape</groupId>
 		<artifactId>impl-parent</artifactId>
-		<version>3.1.1</version>
+		<version>3.2.0</version>
 	</parent>
 
 	<artifactId>model-impl-parent</artifactId>
-  <version>3.1.1</version>
+  <version>3.2.0</version>
 	<packaging>pom</packaging>
 	<name>Cytoscape Model Impl Parent (${project.artifactId})</name>
 
@@ -114,9 +114,9 @@
 			<artifactId>mockito-all</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>com.googlecode.guava-osgi</groupId>
-			<artifactId>guava-osgi</artifactId>
-			<version>9.0.0</version>
+			<groupId>com.google.guava</groupId>
+			<artifactId>guava</artifactId>
+			<version>r09</version>
 		</dependency>
 		<dependency>
 			<groupId>cytoscape-temp</groupId>

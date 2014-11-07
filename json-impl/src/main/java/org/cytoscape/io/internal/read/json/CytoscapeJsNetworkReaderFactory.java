@@ -24,9 +24,8 @@ public class CytoscapeJsNetworkReaderFactory extends AbstractReaderFactory {
 	}
 
 	@Override
-	public TaskIterator createTaskIterator(InputStream is, String inputName) {
-		return new TaskIterator(new CytoscapeJsNetworkReader(is, cyNetworkViewFactory, cyNetworkFactory,
+	public TaskIterator createTaskIterator(InputStream is, String collectionName) {
+		return new TaskIterator(new CytoscapeJsNetworkReader(collectionName, is, cyNetworkViewFactory, cyNetworkFactory,
 				cyNetworkManager, cyRootNetworkManager));
 	}
-
 }

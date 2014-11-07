@@ -54,6 +54,8 @@ public class CyEventHelperImpl implements CyEventHelper {
 	private final Map<Object, Object> silencedSources;
 	private boolean havePayload;
 	
+	private final Object lock = new Object();
+	
 	public CyEventHelperImpl(final CyListenerAdapter normal) {
 		this.normal = normal;
 		sourceAccMap = new LinkedHashMap<Object,Map<Class<?>,PayloadAccumulator<?,?,?>>>();
@@ -88,7 +90,9 @@ public class CyEventHelperImpl implements CyEventHelper {
 			return;
 		logger.info("silencing event source: " + eventSource.toString());
 		normal.silenceEventSource(eventSource);
-		silencedSources.put(eventSource, DUMMY);
+		synchronized (lock) {
+			silencedSources.put(eventSource, DUMMY);
+		}
 	}
 
 	@Override 
@@ -97,7 +101,9 @@ public class CyEventHelperImpl implements CyEventHelper {
 			return;
 		logger.info("unsilencing event source: " + eventSource.toString());
 		normal.unsilenceEventSource(eventSource);
-		silencedSources.remove(eventSource);
+		synchronized (lock) {
+			silencedSources.remove(eventSource);
+		}
 	}
 
 	@Override 
@@ -109,10 +115,10 @@ public class CyEventHelperImpl implements CyEventHelper {
 			return;
 		}
 		
-		if ( silencedSources.containsKey(source))
-			return;
+		synchronized (lock) {
+			if ( silencedSources.containsKey(source))
+				return;
 
-		synchronized (this) {
 			Map<Class<?>,PayloadAccumulator<?,?,?>> cmap = sourceAccMap.get(source);
 			if ( cmap == null ) { 
 				cmap = new LinkedHashMap<Class<?>,PayloadAccumulator<?,?,?>>();
@@ -139,7 +145,7 @@ public class CyEventHelperImpl implements CyEventHelper {
 	public void flushPayloadEvents() {
 		List<CyPayloadEvent<?,?>> flushList;
 		
-		synchronized (this) {
+		synchronized (lock) {
 
 			if ( !havePayload )
 				return;

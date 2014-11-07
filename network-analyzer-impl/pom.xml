@@ -3,11 +3,11 @@
 	<parent>
 		<groupId>org.cytoscape</groupId>
 		<artifactId>impl-parent</artifactId>
-		<version>3.1.1</version>
+		<version>3.2.0</version>
 	</parent>
 
 	<artifactId>network-analyzer-impl</artifactId>
-  <version>3.1.1</version>
+  <version>3.2.0</version>
 	<packaging>bundle</packaging>
     <name>Cytoscape NetworkAnalyzer Impl (${project.artifactId})</name>
 
@@ -95,8 +95,8 @@
 		</dependency>		
 
 		<dependency>
-			<groupId>cytoscape-temp</groupId>
-			<artifactId>org.apache.lucene</artifactId>
+			<groupId>org.apache.lucene</groupId>
+			<artifactId>lucene-core</artifactId>
 			<version>3.0.2</version>
 		</dependency>
 		<dependency>
@@ -111,8 +111,8 @@
 		</dependency>
 		<dependency>
 			<groupId>org.jdom</groupId>
-			<artifactId>com.springsource.org.jdom</artifactId>
-			<version>1.1.0</version>
+			<artifactId>jdom</artifactId>
+			<version>1.1</version>
 		</dependency>
         <dependency>
             <groupId>cytoscape-temp</groupId>

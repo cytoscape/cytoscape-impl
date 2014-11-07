@@ -40,6 +40,7 @@ import org.cytoscape.view.vizmap.VisualMappingFunction;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualPropertyDependency;
 import org.cytoscape.view.vizmap.VisualStyle;
+import org.cytoscape.view.vizmap.gui.internal.model.VizMapperProxy;
 import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
@@ -49,7 +50,6 @@ import org.slf4j.LoggerFactory;
 public class ImportDefaultVizmapTask extends AbstractTask {
 
 	private static final Logger logger = LoggerFactory.getLogger(ImportDefaultVizmapTask.class);
-	private static final String PRESET_VIZMAP_FILE = "default_vizmap.xml";
 
 	private final ServicesUtil servicesUtil;
 	private final File vizmapFile;
@@ -58,7 +58,7 @@ public class ImportDefaultVizmapTask extends AbstractTask {
 		this.servicesUtil = servicesUtil;
 
 		final CyApplicationConfiguration config = servicesUtil.get(CyApplicationConfiguration.class);
-		this.vizmapFile = new File(config.getConfigurationDirectoryLocation(), PRESET_VIZMAP_FILE);
+		this.vizmapFile = new File(config.getConfigurationDirectoryLocation(), VizMapperProxy.PRESET_VIZMAP_FILE);
 	}
 
 	@Override
@@ -68,7 +68,7 @@ public class ImportDefaultVizmapTask extends AbstractTask {
 
 		if (vizmapFile.exists() == false) {
 			// get the file from resource
-			final URL url = this.getClass().getClassLoader().getResource(PRESET_VIZMAP_FILE);
+			final URL url = this.getClass().getClassLoader().getResource(VizMapperProxy.PRESET_VIZMAP_FILE);
 			reader = vizmapReaderMgr.getReader(url.toURI(), url.getPath());
 		} else {
 			reader = vizmapReaderMgr.getReader(vizmapFile.toURI(), vizmapFile.getName());

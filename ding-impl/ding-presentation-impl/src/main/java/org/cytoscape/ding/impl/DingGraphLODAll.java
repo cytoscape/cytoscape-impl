@@ -40,7 +40,7 @@ public class DingGraphLODAll extends PrintLOD {
      * @return true if text should be converted to shapes, false otherwise
      */
     public boolean textAsShape(int renderNodeCount, int renderEdgeCount) {
-	return false;
+			return true;
     }
 
 }

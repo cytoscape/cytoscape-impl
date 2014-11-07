@@ -4,7 +4,7 @@
 	<parent>
 		<artifactId>impl-parent</artifactId>
 		<groupId>org.cytoscape</groupId>
-		<version>3.1.1</version>
+		<version>3.2.0</version>
 	</parent>
 
 	<properties>
@@ -14,7 +14,7 @@
 
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>vizmap-gui-impl</artifactId>
-  <version>3.1.1</version>
+  <version>3.2.0</version>
 
 	<name>Cytoscape VizMap GUI Impl (${project.artifactId})</name>
 
@@ -72,6 +72,10 @@
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>io-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>swing-util-api</artifactId>
 		</dependency>
 		
 		<!-- 3rd party libs  -->	

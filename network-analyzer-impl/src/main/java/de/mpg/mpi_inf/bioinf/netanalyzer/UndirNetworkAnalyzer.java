@@ -93,7 +93,7 @@ public class UndirNetworkAnalyzer extends NetworkAnalyzer {
 		roundingDigits = 8;
 		computeNB = true;
 		AttributeSetup.createUndirectedNodeAttributes(aNetwork.getTable(CyNode.class, CyNetwork.LOCAL_ATTRS));
-		AttributeSetup.createEdgeAttributes(aNetwork.getTable(CyEdge.class, CyNetwork.LOCAL_ATTRS));
+		AttributeSetup.createEdgeBetweennessAttribute(aNetwork.getTable(CyEdge.class, CyNetwork.LOCAL_ATTRS));
 	}
 
 	/*

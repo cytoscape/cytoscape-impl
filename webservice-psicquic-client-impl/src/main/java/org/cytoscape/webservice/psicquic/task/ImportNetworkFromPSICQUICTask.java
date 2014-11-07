@@ -63,6 +63,8 @@ public class ImportNetworkFromPSICQUICTask extends AbstractTask implements Obser
 	private String query;
 	private Collection<String> targetServices;
 
+	private final String defaultSearchResultURL = "http://www.ebi.ac.uk/Tools/webservices/psicquic/intact/webservices/current/search/";
+
 	private Set<String> searchResult;
 	private Map<String, CyNetwork> result;
 
@@ -123,7 +125,13 @@ public class ImportNetworkFromPSICQUICTask extends AbstractTask implements Obser
 			targetServices = searchResult;
 
 		if (searchResult == null)
-			throw new NullPointerException("Could not find search result");
+		{
+			searchResult = new HashSet<String>();
+			searchResult.add(defaultSearchResultURL);
+			targetServices = searchResult;
+			//throw new NullPointerException("Could not find search result");
+		}
+
 		if (query == null)
 			throw new NullPointerException("Query is null");
 		if (targetServices == null)

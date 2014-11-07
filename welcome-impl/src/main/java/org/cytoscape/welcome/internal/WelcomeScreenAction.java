@@ -29,12 +29,12 @@ import java.util.Properties;
 
 import javax.swing.SwingUtilities;
 
+import org.cytoscape.application.CyVersion;
 import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.property.CyProperty;
-import org.cytoscape.welcome.internal.panel.CreateNewNetworkPanel;
-import org.cytoscape.welcome.internal.panel.NewsAndLinkPanel;
-import org.cytoscape.welcome.internal.panel.OpenPanel;
+import org.cytoscape.util.swing.OpenBrowser;
+import org.cytoscape.welcome.internal.panel.AbstractWelcomeScreenChildPanel;
 
 public class WelcomeScreenAction extends AbstractCyAction {
 
@@ -48,24 +48,32 @@ public class WelcomeScreenAction extends AbstractCyAction {
 	private boolean hide = false;
 
 	// Child Panels
-	private final CreateNewNetworkPanel importPanel;
-	private final OpenPanel openPanel;
-	private final NewsAndLinkPanel helpPanel;
+	private final AbstractWelcomeScreenChildPanel importPanel;
+	private final AbstractWelcomeScreenChildPanel openPanel;
+	private final AbstractWelcomeScreenChildPanel newsPanel;
 
 	private final CyProperty<Properties> cyProps;
 	private final CySwingApplication cytoscapeDesktop;
+	private final OpenBrowser openBrowser;
+	private final CyVersion version;
 
-	public WelcomeScreenAction(final CreateNewNetworkPanel importPanel, final OpenPanel openPanel,
-			final NewsAndLinkPanel helpPanel, final CyProperty<Properties> cyProps,
-			final CySwingApplication cytoscapeDesktop) {
+	public WelcomeScreenAction(final AbstractWelcomeScreenChildPanel importPanel,
+							   final AbstractWelcomeScreenChildPanel openPanel,
+							   final AbstractWelcomeScreenChildPanel newsPanel,
+							   final CyProperty<Properties> cyProps,
+							   final CySwingApplication cytoscapeDesktop,
+							   final OpenBrowser openBrowser,
+							   final CyVersion version) {
 		super(MENU_NAME);
 		setPreferredMenu(PARENT_NAME);
 		this.setMenuGravity(1.5f);
 
 		this.importPanel = importPanel;
 		this.openPanel = openPanel;
-		this.helpPanel = helpPanel;
+		this.newsPanel = newsPanel;
 		this.cytoscapeDesktop = cytoscapeDesktop;
+		this.openBrowser = openBrowser;
+		this.version = version;
 
 		this.cyProps = cyProps;
 
@@ -79,8 +87,8 @@ public class WelcomeScreenAction extends AbstractCyAction {
 
 	@Override
 	public void actionPerformed(ActionEvent ae) {
-		final WelcomeScreenDialog welcomeScreen = new WelcomeScreenDialog(importPanel, openPanel, helpPanel, cyProps,
-				hide);
+		final WelcomeScreenDialog welcomeScreen = new WelcomeScreenDialog(importPanel, openPanel, newsPanel,
+				cyProps, hide, openBrowser, version);
 		welcomeScreen.setLocationRelativeTo(cytoscapeDesktop.getJFrame());
 		welcomeScreen.setVisible(true);
 		welcomeScreen.setModal(true);

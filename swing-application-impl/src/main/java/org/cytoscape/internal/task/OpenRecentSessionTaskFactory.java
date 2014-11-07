@@ -103,7 +103,7 @@ public class OpenRecentSessionTaskFactory extends AbstractTaskFactory {
 		
 		return new TaskIterator(new LoadSessionFromURLTask(reader));
 	}
-	
+
 	private final class LoadSessionFromURLTask extends AbstractTask {
 
 		private final CySessionReader reader;

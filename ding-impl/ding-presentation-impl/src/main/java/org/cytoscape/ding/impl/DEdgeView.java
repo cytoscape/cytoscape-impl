@@ -36,6 +36,7 @@ import org.cytoscape.ding.DVisualLexicon;
 import org.cytoscape.ding.EdgeView;
 import org.cytoscape.ding.GraphView;
 import org.cytoscape.ding.Label;
+import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.graph.render.immed.EdgeAnchors;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.view.model.VisualLexicon;
@@ -59,9 +60,16 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 
 	private LineType lineType;
 	private boolean selected;
+
+	// Cached visibility information
+	private boolean isVisible = true;
 	
-	DEdgeView(final DGraphView graphView, final CyEdge model, final HandleFactory handleFactory, final VisualLexicon lexicon) {
-		super(model, lexicon);
+	DEdgeView(final DGraphView graphView,
+			  final CyEdge model,
+			  final HandleFactory handleFactory,
+			  final VisualLexicon lexicon,
+			  final CyEventHelper eventHelper) {
+		super(model, lexicon, eventHelper);
 
 		if (graphView == null)
 			throw new IllegalArgumentException("Constructor needs its parent DGraphView.");
@@ -120,9 +128,9 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 				throw new NullPointerException("paint is null");
 			
 			final Paint transpColor = getTransparentColor(paint, graphView.m_edgeDetails.getTransparency(model));
+			graphView.m_edgeDetails.setUnselectedPaint(model, transpColor);
 			
 			if (!isSelected()) {
-				graphView.m_edgeDetails.setUnselectedPaint(model, transpColor);
 				graphView.m_contentChanged = true;
 			}
 		}
@@ -136,9 +144,9 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 				throw new NullPointerException("paint is null");
 
 			final Paint transpColor = getTransparentColor(paint, graphView.m_edgeDetails.getTransparency(model));
+			graphView.m_edgeDetails.setSelectedPaint(model, transpColor);
 			
 			if (isSelected()) {
-				graphView.m_edgeDetails.setSelectedPaint(model, transpColor);
 				graphView.m_contentChanged = true;
 			}
 		}
@@ -151,8 +159,9 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 				throw new NullPointerException("paint is null");
 
 			final Paint transpColor = getTransparentColor(paint, graphView.m_edgeDetails.getTransparency(model));
+			graphView.m_edgeDetails.overrideSourceArrowSelectedPaint(model, transpColor);
+			
 			if (isSelected()) {
-				graphView.m_edgeDetails.overrideSourceArrowSelectedPaint(model, transpColor);
 				graphView.m_contentChanged = true;
 			}
 		}
@@ -165,8 +174,9 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 				throw new NullPointerException("paint is null");
 
 			final Paint transpColor = getTransparentColor(paint, graphView.m_edgeDetails.getTransparency(model));
+			graphView.m_edgeDetails.overrideTargetArrowSelectedPaint(model, transpColor);
+			
 			if (isSelected()) {
-				graphView.m_edgeDetails.overrideTargetArrowSelectedPaint(model, transpColor);
 				graphView.m_contentChanged = true;
 			}
 		}
@@ -179,9 +189,9 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 				throw new NullPointerException("paint is null");
 
 			final Paint transpColor = getTransparentColor(paint, graphView.m_edgeDetails.getTransparency(model));
+			graphView.m_edgeDetails.overrideSourceArrowPaint(model, transpColor);
 			
 			if (!isSelected()) {
-				graphView.m_edgeDetails.overrideSourceArrowPaint(model, transpColor);
 				graphView.m_contentChanged = true;
 			}
 		}
@@ -208,8 +218,8 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 		synchronized (graphView.m_lock) {
 			somethingChanged = selectInternal(false);
 
-			if (somethingChanged)
-				graphView.m_contentChanged = true;
+			// if (somethingChanged)
+			// 	graphView.m_contentChanged = true;
 		}
 	}
 
@@ -232,7 +242,7 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 			
 			graphView.m_spacialA.insert((model.getSUID() << 6) | j,
 					(float) (x - halfSize), (float) (y - halfSize),
-					(float) (x + halfSize), (float) (y + halfSize));
+					(float) (x + halfSize), (float) (y + halfSize), 0.0);
 
 			if (selectAnchors)
 				graphView.m_selectedAnchors.insert((model.getSUID() << 6) | j);
@@ -246,8 +256,8 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 		synchronized (graphView.m_lock) {
 			somethingChanged = unselectInternal();
 
-			if (somethingChanged)
-				graphView.m_contentChanged = true;
+			// if (somethingChanged)
+			// 	graphView.m_contentChanged = true;
 		}
 	}
 
@@ -376,7 +386,7 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 					(float) (x - (graphView.getAnchorSize() / 2.0d)),
 					(float) (y - (graphView.getAnchorSize() / 2.0d)),
 					(float) (x + (graphView.getAnchorSize() / 2.0d)),
-					(float) (y + (graphView.getAnchorSize() / 2.0d)));
+					(float) (y + (graphView.getAnchorSize() / 2.0d)), 0.0);
 	}
 
 	/**
@@ -455,7 +465,7 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 					graphView.m_spacialA.delete((model.getSUID() << 6) | (j - 1));
 					graphView.m_spacialA.insert((model.getSUID() << 6) | j,
 							graphView.m_extentsBuff[0], graphView.m_extentsBuff[1],
-							graphView.m_extentsBuff[2], graphView.m_extentsBuff[3]);
+							graphView.m_extentsBuff[2], graphView.m_extentsBuff[3], 0.0);
 
 					if (graphView.m_selectedAnchors.delete((model.getSUID() << 6) | (j - 1)))
 						graphView.m_selectedAnchors.insert((model.getSUID() << 6) | j);
@@ -465,7 +475,7 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 						(float) (handleLocation.getX() - (graphView.getAnchorSize() / 2.0d)),
 						(float) (handleLocation.getY() - (graphView.getAnchorSize() / 2.0d)),
 						(float) (handleLocation.getX() + (graphView.getAnchorSize() / 2.0d)),
-						(float) (handleLocation.getY() + (graphView.getAnchorSize() / 2.0d)));
+						(float) (handleLocation.getY() + (graphView.getAnchorSize() / 2.0d)), 0.0);
 			}
 
 			graphView.m_contentChanged = true;
@@ -488,7 +498,7 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 					graphView.m_spacialA.delete((model.getSUID() << 6) | (j + 1));
 					graphView.m_spacialA.insert((model.getSUID() << 6) | j,
 							graphView.m_extentsBuff[0], graphView.m_extentsBuff[1],
-							graphView.m_extentsBuff[2], graphView.m_extentsBuff[3]);
+							graphView.m_extentsBuff[2], graphView.m_extentsBuff[3], 0.0);
 
 					if (graphView.m_selectedAnchors.delete((model.getSUID() << 6) | (j + 1)))
 						graphView.m_selectedAnchors.insert((model.getSUID() << 6) | j);
@@ -631,6 +641,10 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 	protected <T, V extends T> void applyVisualProperty(final VisualProperty<? extends T> vpOriginal, V value) {
 		VisualProperty<?> vp = vpOriginal;
 
+		// Check to make sure our view hasn't gotten disconnected somewhere along the line
+		if (graphView.getEdgeView(this.getModel()) == null)
+			return;
+
 		// If value is null, simply use the VP's default value.
 		if (value == null)
 			value = (V) vp.getDefault();
@@ -688,10 +702,13 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 		} else if (vp == BasicVisualLexicon.EDGE_LABEL_COLOR) {
 			setTextPaint((Paint) value);
 		} else if (vp == BasicVisualLexicon.EDGE_VISIBLE) {
-			if (((Boolean) value).booleanValue())
+			if (((Boolean) value).booleanValue()) {
 				graphView.showGraphObject(this);
-			else
+				isVisible = true;
+			} else {
 				graphView.hideGraphObject(this);
+				isVisible = false;
+			}
 		} else if (vp == DVisualLexicon.EDGE_CURVED) {
 			final Boolean curved = (Boolean) value;
 			if (curved)
@@ -712,4 +729,6 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 	protected DGraphView getDGraphView() {
 		return graphView;
 	}
+
+	public boolean isVisible() { return isVisible; }
 }

@@ -1,17 +1,21 @@
 package org.cytoscape.task.internal.group;
 
+import static org.mockito.Mockito.when;
+
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.group.CyGroup;
 import org.cytoscape.group.CyGroupFactory;
-import org.cytoscape.group.CyGroupManager;
 import org.cytoscape.group.internal.CyGroupFactoryImpl;
 import org.cytoscape.group.internal.CyGroupManagerImpl;
+import org.cytoscape.group.internal.LockedVisualPropertiesManager;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.NetworkTestSupport;
 import org.cytoscape.model.internal.CyRootNetworkManagerImpl;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.view.model.CyNetworkViewManager;
+import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.work.TaskMonitor;
 import org.junit.Assert;
 import org.junit.Before;
@@ -33,6 +37,10 @@ public class AbstractGroupTaskTest {
 	
 	@Mock
 	CyServiceRegistrar registrar;
+	@Mock
+	CyNetworkViewManager netViewMgr;
+	@Mock
+	VisualMappingManager vmMgr;
 	
 	@Mock
 	private CyEventHelper eventHelper;
@@ -47,8 +55,13 @@ public class AbstractGroupTaskTest {
 		CyRootNetworkManager rootNetworkManager = new CyRootNetworkManagerImpl();
 		rootNetwork = rootNetworkManager.getRootNetwork(network);
 		
+		when(registrar.getService(VisualMappingManager.class)).thenReturn(vmMgr);
+		when(registrar.getService(CyNetworkViewManager.class)).thenReturn(netViewMgr);
+		
+		final LockedVisualPropertiesManager lvpCache = new LockedVisualPropertiesManager(registrar);
+		
 		groupManager = new CyGroupManagerImpl(eventHelper);
-		groupFactory = new CyGroupFactoryImpl(eventHelper, groupManager, registrar);
+		groupFactory = new CyGroupFactoryImpl(eventHelper, groupManager, lvpCache, registrar);
 		
 		group1 = groupFactory.createGroup(network, true);
 		rootNetwork.getRow(group1.getGroupNode(), CyRootNetwork.SHARED_ATTRS).set(CyRootNetwork.SHARED_NAME, "group1");

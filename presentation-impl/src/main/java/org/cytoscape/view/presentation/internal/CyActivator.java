@@ -29,15 +29,18 @@ import java.util.Properties;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.view.presentation.RenderingEngineFactory;
+import org.cytoscape.view.presentation.internal.property.values.CyColumnIdentifierFactoryImpl;
+import org.cytoscape.view.presentation.property.values.CyColumnIdentifierFactory;
 import org.osgi.framework.BundleContext;
 
 public class CyActivator extends AbstractCyActivator {
+	
 	public CyActivator() {
 		super();
 	}
 
+	@Override
 	public void start(BundleContext bc) {
-		
 		final CyEventHelper eventHelper = getService(bc, CyEventHelper.class);
 		RenderingEngineManagerImpl renderingEngineManager = new RenderingEngineManagerImpl(eventHelper);
 
@@ -48,5 +51,7 @@ public class CyActivator extends AbstractCyActivator {
 		registerServiceListener(bc, renderingEngineManager, "addRenderingEngineFactory",
 				"removeRenderingEngineFactory", RenderingEngineFactory.class);
 		
+		CyColumnIdentifierFactory cyColumnIdentifierFactory = new CyColumnIdentifierFactoryImpl();
+		registerAllServices(bc, cyColumnIdentifierFactory, new Properties());
 	}
 }

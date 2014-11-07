@@ -25,107 +25,96 @@ package org.cytoscape.tableimport.internal.tunable;
  */
 
 import java.awt.BorderLayout;
-import java.io.InputStream;
+import java.awt.Color;
+import java.awt.Font;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.List;
-import java.util.Map;
+import java.util.logging.Logger;
 
-import javax.swing.GroupLayout;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
-import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.tableimport.internal.reader.AttributeMappingParameters;
-import org.cytoscape.tableimport.internal.reader.TextTableReader.ObjectType;
 import org.cytoscape.tableimport.internal.ui.ImportTablePanel;
 import org.cytoscape.tableimport.internal.util.CytoscapeServices;
 import org.cytoscape.util.swing.FileUtil;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.swing.AbstractGUITunableHandler;
 
-public class AttributeMappingParametersHandler  extends AbstractGUITunableHandler {
-	
-	private int dialogType;
-    private CyTableManager tableManager;
-    
-	private ImportTablePanel importTablePanel;
+public class AttributeMappingParametersHandler extends AbstractGUITunableHandler {
 
-	AttributeMappingParameters amp;
+	private int dialogType;
+	private CyTableManager tableManager;
+	private ImportTablePanel importTablePanel;
+	private AttributeMappingParameters amp;
 	private final FileUtil fileUtil;
+
 
 	protected AttributeMappingParametersHandler(final Field field, final Object obj, final Tunable t,
 			final int dialogType, final CyTableManager tableManager) {
-		
 		super(field, obj, t);
+		
 		this.dialogType = dialogType;
 		this.tableManager = tableManager;
-		//importTablePanel = null;
 		this.fileUtil = CytoscapeServices.fileUtil;
 		init();
-		
-		
 	}
-	
-	protected AttributeMappingParametersHandler(final Method getter, final Method setter, final Object instance, final Tunable tunable,
-			final int dialogType,final CyTableManager tableManager){
-		
+
+
+	protected AttributeMappingParametersHandler(final Method getter, final Method setter, final Object instance,
+			final Tunable tunable, final int dialogType, final CyTableManager tableManager) {
 		super(getter, setter, instance, tunable);
+		
 		this.dialogType = dialogType;
 		this.tableManager = tableManager;
 		this.fileUtil = CytoscapeServices.fileUtil;
-		
 		init();
-		
 	}
 
-	
 	private void init() {
-
 		try {
 			amp = (AttributeMappingParameters) getValue();
 		} catch (IllegalAccessException e1) {
-			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		} catch (InvocationTargetException e1) {
-			// TODO Auto-generated catch block
 			e1.printStackTrace();
-		} 
-		
-		try {
-			importTablePanel =
-				new ImportTablePanel(dialogType, amp.is,
-				                     amp.fileType, null,null, null, null,
-				                     null, null, null, tableManager, fileUtil); 
-		} catch (Exception e) {
-			throw new IllegalStateException("Could not initialize ImportTablePanel.", e);
 		}
-		
-		panel = new JPanel(new BorderLayout(10,10));
+
+		panel = new JPanel(new BorderLayout(10, 10));
+
+		try {
+			importTablePanel = new ImportTablePanel(dialogType, amp.is, amp.fileType, null, null, null, null, null,
+					null, null, tableManager, fileUtil);
+		} catch (Exception e) {
+			JLabel errorLabel1 = new JLabel("<html><h2>Error: Could not Initialize Preview.</h2>  <p>The selected file may contain invalid entries.  "
+					+ "  Please check the contents of original file.</p></html>");
+			errorLabel1.setForeground(Color.RED);
+			errorLabel1.setHorizontalTextPosition(JLabel.CENTER);
+			errorLabel1.setHorizontalAlignment(JLabel.CENTER);
+
+			panel.add(errorLabel1);
+			return;
+		}
+
 		panel.add(importTablePanel, BorderLayout.CENTER);
-		
-		
 	}
+
 	@Override
-	public void handle(){ 
-		// TODO Auto-generated method stub
+	public void handle() {
 		try {
 			amp = importTablePanel.getAttributeMappingParameters();
-		
 			setValue(amp);
 		} catch (IllegalAccessException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (InvocationTargetException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
+
 	}
-	
 
 }

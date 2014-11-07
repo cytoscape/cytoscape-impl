@@ -221,7 +221,10 @@ public class CyNetworkBuilder {
 
 		// Hub node to be expanded.
 		final CyNode hub = hubNode.getModel();
-		final String hubName = network.getRow(hub).get(CyNetwork.NAME, String.class);
+		String hubName = network.getRow(hub).get(CyNetwork.NAME, String.class);
+		CyTable hubNodeTable = network.getDefaultNodeTable();
+		if( hubNodeTable.getColumn("identifier") != null )
+			hubName = network.getRow(hub).get("identifier",String.class);
 		mapper.ensureInitialized();
 		nodeMap = new HashMap<String, CyNode>();
 		nodeMap.put(hubName, hub);

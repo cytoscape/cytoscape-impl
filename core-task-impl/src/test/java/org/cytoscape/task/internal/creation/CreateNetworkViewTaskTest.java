@@ -79,12 +79,12 @@ public class CreateNetworkViewTaskTest {
 		final Set<CyNetwork> networks = new HashSet<CyNetwork>();
 		networks.add(support.getNetwork());
 		final CreateNetworkViewTask task = new CreateNetworkViewTask(undoSupport, networks, viewFactory,
-				networkViewManager, null, eventHelper, vmm, renderingEngineManager);
+				networkViewManager, null, eventHelper, vmm, renderingEngineManager, null);
 
 		task.run(tm);
 		verify(networkViewManager, times(1)).addNetworkView(any(CyNetworkView.class));
 	}
-	
+
 	@Test
 	public void testShouldNotCreateMultipleViewsPerNetwork() throws Exception {
 		final Set<CyNetwork> networks = new HashSet<CyNetwork>();
@@ -94,7 +94,7 @@ public class CreateNetworkViewTaskTest {
 		when(networkViewManager.getNetworkViews(view.getModel())).thenReturn(Arrays.asList(new CyNetworkView[]{ view }));
 		
 		final CreateNetworkViewTask task = new CreateNetworkViewTask(undoSupport, networks, viewFactory,
-				networkViewManager, null, eventHelper, vmm, renderingEngineManager);
+				networkViewManager, null, eventHelper, vmm, renderingEngineManager, null);
 		
 		task.run(tm);
 		verify(networkViewManager, times(1)).addNetworkView(any(CyNetworkView.class));

@@ -33,6 +33,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import org.cytoscape.application.NetworkViewRenderer;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.task.AbstractNetworkCollectionTask;
@@ -42,14 +43,16 @@ import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.presentation.RenderingEngineManager;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.work.ObservableTask;
+import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskMonitor;
-import org.cytoscape.work.TaskObserver;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.undo.UndoSupport;
+import org.cytoscape.work.util.ListSingleSelection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -60,7 +63,8 @@ public class CreateNetworkViewTask extends AbstractNetworkCollectionTask
 
 	private final UndoSupport undoSupport;
 	private final CyNetworkViewManager netViewMgr;
-	private final CyNetworkViewFactory viewFactory;
+	private CyNetworkViewFactory viewFactory;
+	private final Set<NetworkViewRenderer> viewRenderers;
 	private final CyLayoutAlgorithmManager layoutMgr;
 	private final CyEventHelper eventHelper;
 	private final VisualMappingManager vmm;
@@ -74,13 +78,22 @@ public class CreateNetworkViewTask extends AbstractNetworkCollectionTask
 	@Tunable(description="Layout the resulting view?", context="nogui")
 	public boolean layout = true;
 
-	public CreateNetworkViewTask(final UndoSupport undoSupport, final Collection<CyNetwork> networks,
-			final CyNetworkViewFactory viewFactory, final CyNetworkViewManager netViewMgr,
-			final CyLayoutAlgorithmManager layoutMgr, final CyEventHelper eventHelper, 
-			final VisualMappingManager vmm,
-			final RenderingEngineManager renderingEngineMgr) {
-		this(undoSupport, networks, viewFactory, netViewMgr, 
-		     layoutMgr, eventHelper, vmm, renderingEngineMgr, null);
+	public CreateNetworkViewTask(final UndoSupport undoSupport,
+								 final Collection<CyNetwork> networks,
+								 final CyNetworkViewManager netViewMgr,
+								 final CyLayoutAlgorithmManager layoutMgr,
+								 final CyEventHelper eventHelper,
+								 final VisualMappingManager vmm,
+								 final RenderingEngineManager renderingEngineMgr,
+								 final Set<NetworkViewRenderer> viewRenderers) {
+		this(undoSupport, networks, null, netViewMgr, layoutMgr, eventHelper, vmm, renderingEngineMgr, null);
+		
+		if (viewRenderers != null) {
+			this.viewRenderers.addAll(viewRenderers);
+			
+			if (viewRenderers.size() == 1)
+				viewFactory = viewRenderers.iterator().next().getNetworkViewFactory();
+		}
 	}
 
 	public CreateNetworkViewTask(final UndoSupport undoSupport, final Collection<CyNetwork> networks,
@@ -99,6 +112,7 @@ public class CreateNetworkViewTask extends AbstractNetworkCollectionTask
 		this.renderingEngineMgr = renderingEngineMgr;
 		this.sourceView = sourceView;
 		this.result = new ArrayList<CyNetworkView>();
+		this.viewRenderers = new HashSet<NetworkViewRenderer>();
 	}
 
 	@Override
@@ -106,26 +120,35 @@ public class CreateNetworkViewTask extends AbstractNetworkCollectionTask
 		taskMonitor.setProgress(0.0);
 		taskMonitor.setTitle("Creating Network View");
 		taskMonitor.setStatusMessage("Creating network view...");
-
-		final VisualStyle style = vmm.getCurrentVisualStyle();
-
-		Collection<CyNetwork> graphs = networks;
-
-		if (network != null)
-			graphs = Collections.singletonList(network);
 		
-		int i = 0;
-		int viewCount = graphs.size();
-		for (final CyNetwork n : graphs) {
-			if (netViewMgr.getNetworkViews(n).isEmpty()) {
-				result.add(createView(n, style, taskMonitor));
-				taskMonitor.setStatusMessage("Network view successfully created for:  "
-						+ n.getRow(n).get(CyNetwork.NAME, String.class));
-				i++;
-				taskMonitor.setProgress((i / (double) viewCount));
+		if (viewFactory == null && viewRenderers.size() > 1) {
+			// Let the user choose the network view renderer first
+			final ChooseViewRendererTask chooseRendererTask = new ChooseViewRendererTask(networks);
+			insertTasksAfterCurrentTask(chooseRendererTask);
+		} else {
+			final VisualStyle style = vmm.getCurrentVisualStyle();
+			Collection<CyNetwork> graphs = networks;
+	
+			if (network != null)
+				graphs = Collections.singletonList(network);
+			
+			int i = 0;
+			int viewCount = graphs.size();
+			
+			for (final CyNetwork n : graphs) {
+				if (netViewMgr.getNetworkViews(n).isEmpty()) { // TODO delete this check when multiple views per network is supported
+					result.add(createView(n, style, taskMonitor));
+					taskMonitor.setStatusMessage("Network view successfully created for:  "
+							+ n.getRow(n).get(CyNetwork.NAME, String.class));
+					i++;
+					taskMonitor.setProgress((i / (double) viewCount));
+				}
+				else
+					taskMonitor.setStatusMessage("Network view already present for:  "
+							+ n.getRow(n).get(CyNetwork.NAME, String.class));
 			}
 		}
-
+	
 		taskMonitor.setProgress(1.0);
 	}
 
@@ -133,9 +156,16 @@ public class CreateNetworkViewTask extends AbstractNetworkCollectionTask
 		final long start = System.currentTimeMillis();
 
 		try {
-			// By calling this task, actual view will be created even if it's a
-			// large network.
+			// By calling this task, actual view will be created even if it's a large network.
 			final CyNetworkView view = viewFactory.createNetworkView(network);
+			
+			// Create a default title
+			final Collection<CyNetworkView> netViews = netViewMgr.getNetworkViews(network);
+			String title = network.getDefaultNetworkTable().getRow(network.getSUID()).get(CyNetwork.NAME, String.class);
+			title += (" View" + (netViews.isEmpty() ? "" : " (" + (netViews.size() + 1) + ")")); // TODO
+			
+			view.setVisualProperty(BasicVisualLexicon.NETWORK_TITLE, title);
+			
 			netViewMgr.addNetworkView(view);
 
 			// Apply visual style
@@ -156,6 +186,7 @@ public class CreateNetworkViewTask extends AbstractNetworkCollectionTask
 				insertTasksAfterCurrentTask(new ApplyPreferredLayoutTask(views, layoutMgr));
 //				executeInParallel(view, style, new ApplyPreferredLayoutTask(views, layoutMgr), tMonitor);
 			}
+			
 			return view;
 		} catch (Exception e) {
 			throw new Exception("Could not create network view for network: "
@@ -199,7 +230,10 @@ public class CreateNetworkViewTask extends AbstractNetworkCollectionTask
 			for (CyNetworkView nv: result) {
 				strRes += nv.toString()+"\n";
 			}
-			return strRes.substring(0, strRes.length()-1); // This strips the trailing tab
+			if(strRes.length() > 0)
+				return strRes.substring(0, strRes.length()-1); // This strips the trailing tab
+			else
+				return strRes;
 		} else
 			return result;
 	}
@@ -237,5 +271,31 @@ public class CreateNetworkViewTask extends AbstractNetworkCollectionTask
 			}
 		}
 	}
+	
+	public class ChooseViewRendererTask extends AbstractNetworkCollectionTask {
 
+		@Tunable(description = "Network View Renderer")
+		public ListSingleSelection<NetworkViewRenderer> renderers;
+		
+		public ChooseViewRendererTask(final Collection<CyNetwork> networks) {
+			super(networks);
+			renderers = new ListSingleSelection<NetworkViewRenderer>(new ArrayList<NetworkViewRenderer>(viewRenderers));
+		}
+
+		@ProvidesTitle
+		public String getTitle() {
+			return "Choose a Network View Renderer";
+		}
+		
+		@Override
+		public void run(final TaskMonitor taskMonitor) throws Exception {
+			// Try again, now with the selected view factory
+			final CyNetworkViewFactory factory = renderers.getSelectedValue().getNetworkViewFactory();
+			final CreateNetworkViewTask createViewTask = new CreateNetworkViewTask(undoSupport, networks, factory, 
+					netViewMgr, layoutMgr, eventHelper, vmm, renderingEngineMgr, null);
+			
+			if (!cancelled)
+				insertTasksAfterCurrentTask(createViewTask);
+		}
+	}
 }

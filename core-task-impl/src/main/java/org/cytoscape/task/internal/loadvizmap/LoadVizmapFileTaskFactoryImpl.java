@@ -57,7 +57,6 @@ public class LoadVizmapFileTaskFactoryImpl extends AbstractTaskFactory implement
 	private final VizmapReaderManager vizmapReaderMgr;
 	private final VisualMappingManager vmMgr;
 	private final SynchronousTaskManager<?> syncTaskManager;
-
 	private final TunableSetter tunableSetter;
 
 	public LoadVizmapFileTaskFactoryImpl(VizmapReaderManager vizmapReaderMgr, VisualMappingManager vmMgr,
@@ -77,6 +76,7 @@ public class LoadVizmapFileTaskFactoryImpl extends AbstractTaskFactory implement
 		return new LoadVizmapFileTask(vizmapReaderMgr, vmMgr);
 	}
 
+	@Override
 	public Set<VisualStyle> loadStyles(File f) {
 		// Set up map containing values to be assigned to tunables.
 		// The name "file" is the name of the tunable field in
@@ -91,6 +91,7 @@ public class LoadVizmapFileTaskFactoryImpl extends AbstractTaskFactory implement
 		return task.getStyles();
 	}
 
+	@Override
 	public Set<VisualStyle> loadStyles(final InputStream is) {
 		// Save the contents of inputStream in a tmp file
 		File f = null;
@@ -120,7 +121,7 @@ public class LoadVizmapFileTaskFactoryImpl extends AbstractTaskFactory implement
 
 		return tunableSetter.createTaskIterator(this.createTaskIterator(), m, observer);
 	}
-
+	
 	// Read the inputStream and save the content in a tmp file
 	private File getFileFromStream(final InputStream is) throws IOException {
 

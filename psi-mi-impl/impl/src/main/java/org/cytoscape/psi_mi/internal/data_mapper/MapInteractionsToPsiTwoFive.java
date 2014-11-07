@@ -40,6 +40,7 @@ import org.cytoscape.psi_mi.internal.schema.mi25.BibrefType;
 import org.cytoscape.psi_mi.internal.schema.mi25.CvType;
 import org.cytoscape.psi_mi.internal.schema.mi25.DbReferenceType;
 import org.cytoscape.psi_mi.internal.schema.mi25.EntrySet;
+import org.cytoscape.psi_mi.internal.schema.mi25.EntrySet.Entry.Source;
 import org.cytoscape.psi_mi.internal.schema.mi25.ExperimentType;
 import org.cytoscape.psi_mi.internal.schema.mi25.InteractionElementType;
 import org.cytoscape.psi_mi.internal.schema.mi25.InteractorElementType;
@@ -108,9 +109,20 @@ public class MapInteractionsToPsiTwoFive implements SchemaMapper<EntrySet> {
 		EntrySet.Entry.InteractionList interactionList = getInteractionList();
 
 		//  Add to Entry node
+		
+		entry.setSource(getSource());
+		
 		entry.setInteractorList(interactorList);
 		entry.setInteractionList(interactionList);
 		entrySet.getEntry().add(entry);
+	}
+	
+	private final Source getSource() {
+		final Source source = new EntrySet.Entry.Source();
+		NamesType names = new NamesType();
+		names.setShortLabel("Cytoscape Generated Network");
+		source.setNames(names);
+		return source;
 	}
 
 	/**
@@ -137,6 +149,7 @@ public class MapInteractionsToPsiTwoFive implements SchemaMapper<EntrySet> {
 			setNameId(interactor, jaxbInteractor);
 			setOrganism(interactor, jaxbInteractor);
 			setSequence(interactor, jaxbInteractor);
+			setCv(interactor, jaxbInteractor);
 
 			XrefType xref = createExternalRefs(interactor);
 
@@ -149,6 +162,19 @@ public class MapInteractionsToPsiTwoFive implements SchemaMapper<EntrySet> {
 		}
 
 		return interactorList;
+	}
+	
+	private final void setCv(Interactor interactor, InteractorElementType jaxbInteractor) {
+		CvType cv = new CvType();
+		NamesType names = new NamesType();
+		
+		final XrefType xrefs = new XrefType();
+		final DbReferenceType dbRef = new DbReferenceType();
+//		dbRef.setId("def");
+		xrefs.setPrimaryRef(dbRef);
+		cv.setXref(xrefs);
+		cv.setNames(names);
+		jaxbInteractor.setInteractorType(cv);
 	}
 
 	/**

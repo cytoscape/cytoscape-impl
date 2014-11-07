@@ -4,7 +4,7 @@
 	<parent>
 		<artifactId>impl-parent</artifactId>
 		<groupId>org.cytoscape</groupId>
-		<version>3.1.1</version>
+		<version>3.2.0</version>
 	</parent>
 
 	<properties>
@@ -14,7 +14,7 @@
 
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>app-impl</artifactId>
-  <version>3.1.1</version>
+  <version>3.2.0</version>
 
 	<name>Cytoscape App Impl (${project.artifactId})</name>
 
@@ -143,7 +143,7 @@
 		<!-- dependency for Http server, uses the Apache HttpComponents library -->
 		<dependency>
 		    <groupId>org.apache.httpcomponents</groupId>
-  			<artifactId>httpcore-osgi</artifactId>
+  			<artifactId>httpcore</artifactId>
  		 	<version>4.2</version>
 		</dependency>
 
@@ -157,7 +157,7 @@
 
 		<dependency>
 			<groupId>org.apache.xmlbeans</groupId>
-			<artifactId>com.springsource.org.apache.xmlbeans</artifactId>
+			<artifactId>xmlbeans</artifactId>
 			<version>2.4.0</version>
 		</dependency>
 		
@@ -175,20 +175,20 @@
 		</dependency>
 
 		<dependency>
-			<groupId>cytoscape-temp</groupId>
-			<artifactId>org.apache.lucene</artifactId>
+			<groupId>org.apache.lucene</groupId>
+			<artifactId>lucene-core</artifactId>
 			<version>3.0.2</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.jdom</groupId>
-			<artifactId>com.springsource.org.jdom</artifactId>
-			<version>1.1.0</version>
+			<artifactId>jdom</artifactId>
+			<version>1.1</version>
 		</dependency>
 
 		<dependency>
-			<groupId>cytoscape-temp</groupId>
-			<artifactId>org.swinglabs.swing-layout</artifactId>
+			<groupId>org.swinglabs</groupId>
+			<artifactId>swing-layout</artifactId>
 			<version>1.0.3</version>
 		</dependency>
 

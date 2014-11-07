@@ -60,6 +60,8 @@ class SimpleNetwork {
 	private int edgeCount;
 	
 	private NodePointer firstNode;
+	
+	private Object lock = new Object();
 
 	SimpleNetwork(final long suid) {
 		this.suid = suid; 
@@ -74,113 +76,131 @@ class SimpleNetwork {
 		return suid;
 	}
 
-	public synchronized int getNodeCount() {
-		return nodeCount; 
-	}
-
-	public synchronized int getEdgeCount() {
-		return edgeCount; 
-	}
-
-	public synchronized CyEdge getEdge(final long e) {
-		final EdgePointer ep = (EdgePointer)edgePointers.get(e);
-		if ( ep != null )
-			return ep.cyEdge;
-		else
-			return null;
-	}
-
-	public synchronized CyNode getNode(final long n) {
-		final NodePointer np = (NodePointer)nodePointers.get(n);
-		if ( np != null )
-			return np.cyNode;
-		else
-			return null;
-	}
-
-	public synchronized List<CyNode> getNodeList() {
-		final List<CyNode> ret = new ArrayList<CyNode>(nodeCount);
-		int numRemaining = nodeCount;
-		NodePointer node = firstNode;
-
-		while (numRemaining > 0) {
-			// possible NPE here if the linked list isn't constructed correctly
-			// this is the correct behavior
-			final CyNode toAdd = node.cyNode;
-			node = node.nextNode;
-			ret.add(toAdd);
-			numRemaining--;
+	public int getNodeCount() {
+		synchronized (lock) {
+			return nodeCount;
 		}
-
-		return ret;
 	}
 
-	public synchronized List<CyEdge> getEdgeList() {
-		final List<CyEdge> ret = new ArrayList<CyEdge>(edgeCount);
-		EdgePointer edge = null;
+	public int getEdgeCount() {
+		synchronized (lock) {
+			return edgeCount;
+		}
+	}
 
-		int numRemaining = edgeCount;
-		NodePointer node = firstNode;
-		while (numRemaining > 0) {
-			final CyEdge retEdge;
+	public CyEdge getEdge(final long e) {
+		synchronized (lock) {
+			final EdgePointer ep = (EdgePointer)edgePointers.get(e);
+			if ( ep != null )
+				return ep.cyEdge;
+			else
+				return null;
+		}
+	}
 
-			if (edge != null) {
-				retEdge = edge.cyEdge;
-			} else {
-				for (edge = node.firstOutEdge; 
-				     edge == null; 
-				     node = node.nextNode, edge = node.firstOutEdge);
+	public CyNode getNode(final long n) {
+		synchronized (lock) {
+			final NodePointer np = (NodePointer)nodePointers.get(n);
+			if ( np != null )
+				return np.cyNode;
+			else
+				return null;
+		}
+	}
 
+	public List<CyNode> getNodeList() {
+		synchronized (lock) {
+			final List<CyNode> ret = new ArrayList<CyNode>(nodeCount);
+			int numRemaining = nodeCount;
+			NodePointer node = firstNode;
+	
+			while (numRemaining > 0) {
+				// possible NPE here if the linked list isn't constructed correctly
+				// this is the correct behavior
+				final CyNode toAdd = node.cyNode;
 				node = node.nextNode;
-				retEdge = edge.cyEdge;
+				ret.add(toAdd);
+				numRemaining--;
 			}
-
-			edge = edge.nextOutEdge;
-			numRemaining--;
-
-			ret.add(retEdge);
+	
+			return ret;
 		}
-
-		return ret;
 	}
 
-	public synchronized List<CyNode> getNeighborList(final CyNode n, final CyEdge.Type e) {
-		if (!containsNode(n)) 
-			return Collections.emptyList(); 
-
-		final NodePointer np = getNodePointer(n);
-		final List<CyNode> ret = new ArrayList<CyNode>(countEdges(np, e));
-		final Iterator<EdgePointer> it = edgesAdjacent(np, e);
-		while (it.hasNext()) {
-			final EdgePointer edge = it.next();
-			final long neighborIndex = np.index ^ edge.source.index ^ edge.target.index;
-			ret.add(getNode(neighborIndex));
+	public List<CyEdge> getEdgeList() {
+		synchronized (lock) {
+			final List<CyEdge> ret = new ArrayList<CyEdge>(edgeCount);
+			EdgePointer edge = null;
+	
+			int numRemaining = edgeCount;
+			NodePointer node = firstNode;
+			while (numRemaining > 0) {
+				final CyEdge retEdge;
+	
+				if (edge != null) {
+					retEdge = edge.cyEdge;
+				} else {
+					for (edge = node.firstOutEdge; 
+					     edge == null; 
+					     node = node.nextNode, edge = node.firstOutEdge);
+	
+					node = node.nextNode;
+					retEdge = edge.cyEdge;
+				}
+	
+				edge = edge.nextOutEdge;
+				numRemaining--;
+	
+				ret.add(retEdge);
+			}
+	
+			return ret;
 		}
-
-		return ret;
 	}
 
-	public synchronized List<CyEdge> getAdjacentEdgeList(final CyNode n, final CyEdge.Type e) {
-		if (!containsNode(n)) 
-			return Collections.emptyList(); 
-
-		final NodePointer np = getNodePointer(n);
-		final List<CyEdge> ret = new ArrayList<CyEdge>(countEdges(np, e));
-		final Iterator<EdgePointer> it = edgesAdjacent(np, e);
-
-		while (it.hasNext()) {
-			ret.add(it.next().cyEdge);
+	public List<CyNode> getNeighborList(final CyNode n, final CyEdge.Type e) {
+		synchronized (lock) {
+			if (!containsNode(n)) 
+				return Collections.emptyList(); 
+	
+			final NodePointer np = getNodePointer(n);
+			final List<CyNode> ret = new ArrayList<CyNode>(countEdges(np, e));
+			final Iterator<EdgePointer> it = edgesAdjacent(np, e);
+			while (it.hasNext()) {
+				final EdgePointer edge = it.next();
+				final long neighborIndex = np.index ^ edge.source.index ^ edge.target.index;
+				ret.add(getNode(neighborIndex));
+			}
+	
+			return ret;
 		}
-
-		return ret;
 	}
 
-	public synchronized Iterable<CyEdge> getAdjacentEdgeIterable(final CyNode n, final CyEdge.Type e) {
-		if (!containsNode(n)) 
-			return Collections.emptyList();
+	public List<CyEdge> getAdjacentEdgeList(final CyNode n, final CyEdge.Type e) {
+		synchronized (lock) {
+			if (!containsNode(n)) 
+				return Collections.emptyList(); 
+	
+			final NodePointer np = getNodePointer(n);
+			final List<CyEdge> ret = new ArrayList<CyEdge>(countEdges(np, e));
+			final Iterator<EdgePointer> it = edgesAdjacent(np, e);
+	
+			while (it.hasNext()) {
+				ret.add(it.next().cyEdge);
+			}
+	
+			return ret;
+		}
+	}
 
-		final NodePointer np = getNodePointer(n);
-		return new IterableEdgeIterator( edgesAdjacent(np, e) ); 
+	public Iterable<CyEdge> getAdjacentEdgeIterable(final CyNode n, final CyEdge.Type e) {
+		synchronized (lock) {
+			if (!containsNode(n)) 
+				return Collections.emptyList();
+	
+			final NodePointer np = getNodePointer(n);
+			return new IterableEdgeIterator( edgesAdjacent(np, e) ); 
+		}
 	}
 
 
@@ -193,24 +213,26 @@ class SimpleNetwork {
 		public Iterator<CyEdge> iterator() { return this; }
 	}
 
-	public synchronized List<CyEdge> getConnectingEdgeList(final CyNode src, final CyNode trg, final CyEdge.Type e) {
-		if (!containsNode(src)) 
-			return Collections.emptyList(); 
-
-		if (!containsNode(trg)) 
-			return Collections.emptyList(); 
-
-		final NodePointer srcP = getNodePointer(src);
-		final NodePointer trgP = getNodePointer(trg);
-
-		final List<CyEdge> ret = new ArrayList<CyEdge>(Math.min(countEdges(srcP, e), 
-		                                                        countEdges(trgP, e)));
-		final Iterator<EdgePointer> it = edgesConnecting(srcP, trgP, e);
-
-		while (it.hasNext())
-			ret.add(it.next().cyEdge);
-
-		return ret;
+	public List<CyEdge> getConnectingEdgeList(final CyNode src, final CyNode trg, final CyEdge.Type e) {
+		synchronized (lock) {
+			if (!containsNode(src)) 
+				return Collections.emptyList(); 
+	
+			if (!containsNode(trg)) 
+				return Collections.emptyList(); 
+	
+			final NodePointer srcP = getNodePointer(src);
+			final NodePointer trgP = getNodePointer(trg);
+	
+			final List<CyEdge> ret = new ArrayList<CyEdge>(Math.min(countEdges(srcP, e), 
+			                                                        countEdges(trgP, e)));
+			final Iterator<EdgePointer> it = edgesConnecting(srcP, trgP, e);
+	
+			while (it.hasNext())
+				ret.add(it.next().cyEdge);
+	
+			return ret;
+		}
 	}
 
 	/**
@@ -235,7 +257,7 @@ class SimpleNetwork {
 			return false;
 
 		boolean madeChanges = false;
-		synchronized (this) {
+		synchronized (lock) {
 			for ( CyNode n : nodes ) {
 				if (!containsNode(n)) 
 					continue;
@@ -259,7 +281,7 @@ class SimpleNetwork {
 
 		final EdgePointer e;
 
-		synchronized (this) {
+		synchronized (lock) {
 			// here we check with possible sub node, not just root node
 			if (!containsNode(s))
 				throw new IllegalArgumentException("source node is not a member of this network");
@@ -290,7 +312,7 @@ class SimpleNetwork {
 			return false;
 
 		boolean madeChanges = false;
-		synchronized (this) {
+		synchronized (lock) {
 			for (CyEdge edge : edges) {
 				if (!containsEdge(edge))
 					continue;
@@ -314,7 +336,7 @@ class SimpleNetwork {
 
 		final NodePointer thisNode; 
 
-		synchronized (this) {
+		synchronized (lock) {
 			thisNode = (NodePointer)nodePointers.get(node.getSUID());
 		}
 
@@ -330,7 +352,7 @@ class SimpleNetwork {
 
 		final EdgePointer thisEdge; 
 
-		synchronized (this) {
+		synchronized (lock) {
 			thisEdge = (EdgePointer)edgePointers.get(edge.getSUID());
 		}
 
@@ -340,21 +362,23 @@ class SimpleNetwork {
 		return thisEdge.cyEdge.equals(edge);
 	}
 
-	public synchronized boolean containsEdge(final CyNode n1, final CyNode n2) {
-		//System.out.println("private containsEdge");
-		if (!containsNode(n1)) {
-			//System.out.println("private containsEdge doesn't contain node1 " + inId);
-			return false;
+	public boolean containsEdge(final CyNode n1, final CyNode n2) {
+		synchronized (lock) {
+			//System.out.println("private containsEdge");
+			if (!containsNode(n1)) {
+				//System.out.println("private containsEdge doesn't contain node1 " + inId);
+				return false;
+			}
+	
+			if (!containsNode(n2)) {
+				//System.out.println("private containsEdge doesn't contain node2 " + inId);
+				return false;
+			}
+	
+			final Iterator<EdgePointer> it = edgesConnecting(getNodePointer(n1), getNodePointer(n2), CyEdge.Type.ANY);
+	
+			return it.hasNext();
 		}
-
-		if (!containsNode(n2)) {
-			//System.out.println("private containsEdge doesn't contain node2 " + inId);
-			return false;
-		}
-
-		final Iterator<EdgePointer> it = edgesConnecting(getNodePointer(n1), getNodePointer(n2), CyEdge.Type.ANY);
-
-		return it.hasNext();
 	}
 
 	private Iterator<EdgePointer> edgesAdjacent(final NodePointer n, final CyEdge.Type edgeType) {

@@ -26,7 +26,6 @@ package org.cytoscape.task.internal.loadnetwork;
 
 
 import java.io.File;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -37,7 +36,6 @@ import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.session.CyNetworkNaming;
 import org.cytoscape.task.read.LoadNetworkFileTaskFactory;
-import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.vizmap.VisualMappingManager;
@@ -75,6 +73,7 @@ public class LoadNetworkFileTaskFactoryImpl extends AbstractTaskFactory implemen
 		this.nullNetworkViewFactory = nullNetworkViewFactory;
 	}
 	
+	@Override
 	public TaskIterator createTaskIterator() {
 		// Load, visualize, and layout.
 		return new TaskIterator(3, new LoadNetworkFileTask(mgr, netmgr, networkViewManager, props, cyNetworkNaming, vmm, nullNetworkViewFactory));

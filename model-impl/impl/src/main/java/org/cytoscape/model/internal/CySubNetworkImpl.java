@@ -226,13 +226,13 @@ public final class CySubNetworkImpl extends DefaultTablesNetwork implements CySu
 			return false;
 		eventHelper.fireEvent(new AboutToRemoveNodesEvent(this, nodes));
 
+		for(CyNode node: nodes)
+			if (this.containsNode(node))
+				getRow(node).set(CyNetwork.SELECTED, false);
+
 		boolean ret = removeNodesInternal(nodes);
 
 		if ( ret ){
-			for(CyNode node: nodes)
-				if (this.containsNode(node))
-					getRow(node).set(CyNetwork.SELECTED, false);
-
 			eventHelper.fireEvent(new RemovedNodesEvent(this));
 		}
 
@@ -248,13 +248,13 @@ public final class CySubNetworkImpl extends DefaultTablesNetwork implements CySu
 		// since this is only a notification, maybe that's OK.
 		eventHelper.fireEvent(new AboutToRemoveEdgesEvent(this, edges));
 
+		for(CyEdge edge: edges)
+			if (this.containsEdge(edge))
+				getRow(edge).set(CyNetwork.SELECTED, false);
+
 		boolean ret = removeEdgesInternal(edges);
 
 		if ( ret ){
-			for(CyEdge edge: edges)
-				if (this.containsEdge(edge))
-					getRow(edge).set(CyNetwork.SELECTED, false);
-			
 			eventHelper.fireEvent(new RemovedEdgesEvent(this));
 		}
 

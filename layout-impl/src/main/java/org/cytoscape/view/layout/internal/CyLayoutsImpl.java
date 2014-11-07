@@ -41,6 +41,7 @@ import org.cytoscape.work.TaskFactory;
 
 import static org.cytoscape.work.ServiceProperties.COMMAND;
 import static org.cytoscape.work.ServiceProperties.COMMAND_NAMESPACE;
+import static org.cytoscape.work.ServiceProperties.COMMAND_DESCRIPTION;
 
 import org.cytoscape.view.layout.internal.task.LayoutTaskFactoryWrapper;
 
@@ -60,8 +61,8 @@ public class CyLayoutsImpl implements CyLayoutAlgorithmManager {
 	public CyLayoutsImpl(CyServiceRegistrar serviceRegistrar, final CyProperty<Properties> p, CyLayoutAlgorithm defaultLayout) {
 		this.cyProps = p;
 		this.serviceRegistrar = serviceRegistrar;
-		layoutMap = new ConcurrentHashMap<String,CyLayoutAlgorithm>();
-		serviceMap = new ConcurrentHashMap<String,TaskFactory>();
+		layoutMap = new ConcurrentHashMap<String,CyLayoutAlgorithm>(16, 0.75f, 2);
+		serviceMap = new ConcurrentHashMap<String,TaskFactory>(16, 0.75f, 2);
 
 		// Get some services that we'll need.  
 		// NOTE: This creates a loader-order dependency for application-impl.  We
@@ -96,6 +97,7 @@ public class CyLayoutsImpl implements CyLayoutAlgorithmManager {
 				Properties layoutProps = new Properties();
 				layoutProps.setProperty(COMMAND, layout.getName());
 				layoutProps.setProperty(COMMAND_NAMESPACE, "layout");
+				layoutProps.setProperty(COMMAND_DESCRIPTION, "Execute the " + layout.toString() + " on a network");
 				TaskFactory service = new LayoutTaskFactoryWrapper(appManager, viewManager, layout);
 				// Register the service as a TaskFactory for commands
 				serviceRegistrar.registerService(service, TaskFactory.class, layoutProps);

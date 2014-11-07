@@ -57,7 +57,7 @@ public class DeselectAllEdgesTask extends AbstractSelectTask {
 		undoSupport.postEdit(new SelectionEdit(eventHelper, "Deselect All Edges", network, view,
 				SelectionEdit.SelectionFilter.EDGES_ONLY));
 		tm.setProgress(0.2);
-		selectUtils.setSelectedEdges(network, CyTableUtil.getEdgesInState(network, CyNetwork.SELECTED, true), false);
+		selectUtils.setSelectedEdges(network, network.getEdgeList(), false);
 		tm.setProgress(0.6);
 		updateView();
 		tm.setProgress(1.0);

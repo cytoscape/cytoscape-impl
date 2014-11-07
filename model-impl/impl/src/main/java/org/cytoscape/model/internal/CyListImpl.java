@@ -41,13 +41,15 @@ public class CyListImpl<T> implements List<T> {
 	private CyEventHelper eventHelper;
 	private CyRow row;
 	private CyColumn column;
+	private CyTableImpl table;
 	
-	public CyListImpl(Class<T> elementType, List<T> delegate, CyEventHelper eventHelper, CyRow row, CyColumn column) {
+	public CyListImpl(Class<T> elementType, List<T> delegate, CyEventHelper eventHelper, CyRow row, CyColumn column, CyTableImpl table) {
 		this.elementType = elementType;
 		this.delegate = delegate;
 		this.eventHelper = eventHelper;
 		this.row = row;
 		this.column = column;
+		this.table = table;
 	}
 	
 	public Class<T> getListElementType() {
@@ -73,7 +75,8 @@ public class CyListImpl<T> implements List<T> {
 	private void fireEvent() {
 		// TODO: If this is a virtual column, we need to ensure all dependents
 		// fire events.
-		eventHelper.addEventPayload(row.getTable(), new RowSetRecord(row, column.getName(), this, this), RowsSetEvent.class);
+		if(table.eventsEnabled())
+			eventHelper.addEventPayload(row.getTable(), new RowSetRecord(row, column.getName(), this, this), RowsSetEvent.class);
 	}
 
 	@Override
@@ -267,7 +270,7 @@ public class CyListImpl<T> implements List<T> {
 
 	@Override
 	public List<T> subList(int fromIndex, int toIndex) {
-		return new CyListImpl<T>(elementType, delegate.subList(fromIndex, toIndex), eventHelper, row, column);
+		return new CyListImpl<T>(elementType, delegate.subList(fromIndex, toIndex), eventHelper, row, column, table);
 	}
 
 	@Override

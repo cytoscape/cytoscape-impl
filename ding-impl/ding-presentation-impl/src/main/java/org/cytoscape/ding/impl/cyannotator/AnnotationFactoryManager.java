@@ -25,8 +25,8 @@ package org.cytoscape.ding.impl.cyannotator;
  */
 
 import java.util.List;
-import java.util.ArrayList;
 import java.util.Map;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.cytoscape.view.model.CyNetworkView; 
 import org.cytoscape.ding.impl.DGraphView;
@@ -51,7 +51,7 @@ public class AnnotationFactoryManager {
 	List<AnnotationFactory> annotationFactories;
 
 	public AnnotationFactoryManager() {
-		annotationFactories = new ArrayList<AnnotationFactory>();
+		annotationFactories = new CopyOnWriteArrayList<AnnotationFactory>();
 	}
 
 	// This method is used to create annotations when we're reading the serialization from a saved

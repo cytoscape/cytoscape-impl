@@ -42,6 +42,7 @@ import org.cytoscape.group.events.GroupAddedListener;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * This class provides the context for both the global group settings and the
@@ -75,6 +76,8 @@ public class CyGroupSettingsImpl implements GroupAddedListener {
 	boolean useNestedNetworks = false;
 	boolean hideGroupNode = true;
 	double groupNodeOpacity = 100.0;
+	
+	private final Object lock = new Object();
 
 	public CyGroupSettingsImpl(CyGroupManager mgr, 
 	                           CyGroupAggregationManager aggMgr,
@@ -86,11 +89,12 @@ public class CyGroupSettingsImpl implements GroupAddedListener {
 		allGroupDefaultMap = new HashMap<Class,Aggregator>();
 		allGroupOverrideMap = new HashMap<CyColumn,Aggregator>();
 		groupMap = new HashMap<CyGroup,GroupSpecificMaps>();
-		groupActionMap = new HashMap<CyGroup, DoubleClickAction>();
-		enableMap = new HashMap<CyGroup, Boolean>();
-		nestedNetworkMap = new HashMap<CyGroup, Boolean>();
-		hideGroupMap = new HashMap<CyGroup, Boolean>();
-		opacityMap = new HashMap<CyGroup, Double>();
+		
+		groupActionMap = new ConcurrentHashMap<CyGroup, DoubleClickAction>(16, 0.75f, 2);
+		enableMap = new ConcurrentHashMap<CyGroup, Boolean>(16, 0.75f, 2);
+		nestedNetworkMap = new ConcurrentHashMap<CyGroup, Boolean>(16, 0.75f, 2);
+		hideGroupMap = new ConcurrentHashMap<CyGroup, Boolean>(16, 0.75f, 2);
+		opacityMap = new ConcurrentHashMap<CyGroup, Double>(16, 0.75f, 2);
 	}
 
 	/***************************************************************************
@@ -120,10 +124,16 @@ public class CyGroupSettingsImpl implements GroupAddedListener {
 
 	public boolean getUseNestedNetworks() { return useNestedNetworks; }
 
-  public boolean getUseNestedNetworks(CyGroup group) {
-		if (nestedNetworkMap.containsKey(group))
-			return nestedNetworkMap.get(group);
-		return useNestedNetworks;
+	private <K, V> V get(Map<K, V> map, K key, V defaultValue) {
+		V value = map.get(key);
+		if (value != null) {
+			return value;
+		}
+		return defaultValue;
+	}
+	
+    public boolean getUseNestedNetworks(CyGroup group) {
+    	return get(nestedNetworkMap, group, useNestedNetworks);
 	}
 
   public void setUseNestedNetworks(boolean useNN) {
@@ -140,9 +150,7 @@ public class CyGroupSettingsImpl implements GroupAddedListener {
   public boolean getHideGroupNode() { return hideGroupNode; }
 
   public boolean getHideGroupNode(CyGroup group) {
-		if (hideGroupMap.containsKey(group))
-			return hideGroupMap.get(group);
-		return hideGroupNode;
+	    return get(hideGroupMap, group, hideGroupNode); 
 	}
 
   public void setHideGroupNode(boolean hideGroup) {
@@ -159,9 +167,7 @@ public class CyGroupSettingsImpl implements GroupAddedListener {
   public double getGroupNodeOpacity() { return groupNodeOpacity; }
 
   public double getGroupNodeOpacity(CyGroup group) {
-		if (opacityMap.containsKey(group))
-			return opacityMap.get(group);
-		return groupNodeOpacity;
+	    return get(opacityMap, group, groupNodeOpacity);
 	}
 
   public void setGroupNodeOpacity(double opacity) {
@@ -186,9 +192,7 @@ public class CyGroupSettingsImpl implements GroupAddedListener {
 	}
 
 	public boolean getEnableAttributeAggregation(CyGroup group) {
-		if (enableMap.containsKey(group))
-			return enableMap.get(group);
-		return enableAttributeAggregation;
+		return get(enableMap, group, enableAttributeAggregation);
 	}
 
 	public void setEnableAttributeAggregation(boolean aggregate) {
@@ -205,71 +209,96 @@ public class CyGroupSettingsImpl implements GroupAddedListener {
 
 	public Aggregator getAggregator(CyGroup group, CyColumn column) {
 		Class type = column.getType();
-		Map<Class, Aggregator> defaultMap = allGroupDefaultMap;
-		Map<CyColumn, Aggregator> overrideMap = allGroupOverrideMap;
-		if (groupMap.containsKey(group)) {
-			defaultMap = groupMap.get(group).getDefaults();
-			overrideMap = groupMap.get(group).getOverrides();
+		synchronized (lock) {
+			Map<Class, Aggregator> defaultMap = allGroupDefaultMap;
+			Map<CyColumn, Aggregator> overrideMap = allGroupOverrideMap;
+			GroupSpecificMaps groupSpecificMaps = groupMap.get(group);
+			if (groupSpecificMaps != null) {
+				defaultMap = groupSpecificMaps.getDefaults();
+				overrideMap = groupSpecificMaps.getOverrides();
+			}
+			Aggregator aggregator = overrideMap.get(column);
+			if (aggregator != null) {
+				return aggregator;
+			}
+			return defaultMap.get(column.getType());
 		}
-		if (overrideMap.containsKey(column))
-			return overrideMap.get(column);
-		return defaultMap.get(column.getType());
 	}
 
 	public void setDefaultAggregation(CyGroup group, 
 	                                  Class ovClass, Aggregator agg) {
-		if (!groupMap.containsKey(group)) {
-			groupMap.put(group, new GroupSpecificMaps());
+		synchronized (lock) {
+			GroupSpecificMaps groupSpecificMaps = groupMap.get(group);
+			if (groupSpecificMaps == null) {
+				groupSpecificMaps = new GroupSpecificMaps();
+				groupMap.put(group, groupSpecificMaps);
+			}
+			groupSpecificMaps.setDefault(ovClass, agg);
 		}
-		groupMap.get(group).setDefault(ovClass, agg);
 	}
 	public Aggregator getDefaultAggregation(CyGroup group, Class ovClass) {
-		if (groupMap.containsKey(group))
-			return groupMap.get(group).getDefault(ovClass);
-		return null;
+		synchronized (lock) {
+			GroupSpecificMaps groupSpecificMaps = groupMap.get(group);
+			if (groupSpecificMaps != null)
+				return groupSpecificMaps.getDefault(ovClass);
+			return null;
+		}
 	}
 
 	public void setDefaultAggregation(Class ovClass, Aggregator agg) {
-		allGroupDefaultMap.put(ovClass, agg);
+		synchronized (lock) {
+			allGroupDefaultMap.put(ovClass, agg);
+		}
 	}
 
 	public Aggregator getDefaultAggregation(Class ovClass) {
-		if (allGroupDefaultMap.containsKey(ovClass))
-			return allGroupDefaultMap.get(ovClass);
-		return null;
+		synchronized (lock) {
+			return get(allGroupDefaultMap, ovClass, null);
+		}
 	}
 
 	public void setOverrideAggregation(CyGroup group, 
 	                                   CyColumn column, Aggregator agg) {
-		if (!groupMap.containsKey(group)) {
-			groupMap.put(group, new GroupSpecificMaps());
+		synchronized (lock) {
+			GroupSpecificMaps groupSpecificMaps = groupMap.get(group);
+			if (groupSpecificMaps == null) {
+				groupSpecificMaps = new GroupSpecificMaps();
+				groupMap.put(group, groupSpecificMaps);
+			}
+			groupSpecificMaps.setOverride(column, agg);
 		}
-		groupMap.get(group).setOverride(column, agg);
 	}
 	public Aggregator getOverrideAggregation(CyGroup group, CyColumn column) {
-		if (groupMap.containsKey(group))
-			return groupMap.get(group).getOverride(column);
-		return null;
+		synchronized (lock) {
+			GroupSpecificMaps groupSpecificMaps = groupMap.get(group);
+			if (groupSpecificMaps != null)
+				return groupSpecificMaps.getOverride(column);
+			return null;
+		}
 	}
 
 	public void setOverrideAggregation(CyColumn column, Aggregator agg) {
-		allGroupOverrideMap.put(column, agg);
+		synchronized (lock) {
+			allGroupOverrideMap.put(column, agg);
+		}
 	}
 	public Aggregator getOverrideAggregation(CyColumn column) {
-		if (allGroupOverrideMap.containsKey(column))
-			return allGroupOverrideMap.get(column);
-		return null;
+		synchronized (lock) {
+			return get(allGroupOverrideMap, column, null);
+		}
 	}
 
 	public void handleEvent(GroupAddedEvent e) {
 		CyGroup addedGroup = e.getGroup();
 		Map<Class,Aggregator> defMap = new HashMap<Class, Aggregator>();
-		for (Class cKey: allGroupDefaultMap.keySet())
-			defMap.put(cKey, allGroupDefaultMap.get(cKey));
-		Map<CyColumn,Aggregator> ovMap = new HashMap<CyColumn, Aggregator>();
-		for (CyColumn cKey: allGroupOverrideMap.keySet())
-			ovMap.put(cKey, allGroupOverrideMap.get(cKey));
-		groupMap.put(addedGroup, new GroupSpecificMaps(defMap, ovMap));
+		synchronized (lock) {
+			for (Class cKey: allGroupDefaultMap.keySet())
+				defMap.put(cKey, allGroupDefaultMap.get(cKey));
+			Map<CyColumn,Aggregator> ovMap = new HashMap<CyColumn, Aggregator>();
+			for (CyColumn cKey: allGroupOverrideMap.keySet())
+				ovMap.put(cKey, allGroupOverrideMap.get(cKey));
+			groupMap.put(addedGroup, new GroupSpecificMaps(defMap, ovMap));
+		}
 	}
 
 	class GroupSpecificMaps {

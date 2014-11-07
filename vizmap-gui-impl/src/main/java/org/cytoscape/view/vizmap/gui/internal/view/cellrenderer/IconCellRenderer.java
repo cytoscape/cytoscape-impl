@@ -24,14 +24,23 @@ package org.cytoscape.view.vizmap.gui.internal.view.cellrenderer;
  * #L%
  */
 
+import java.awt.Color;
 import java.awt.Component;
-import java.awt.Graphics;
+import java.awt.Font;
+import java.lang.reflect.Method;
 import java.util.Map;
 
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.Icon;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JPanel;
 import javax.swing.JTable;
-
-import com.l2fprod.common.swing.renderer.DefaultCellRenderer;
+import javax.swing.ListCellRenderer;
+import javax.swing.border.Border;
+import javax.swing.table.TableCellRenderer;
 
 /**
  * Renderer for cells with icon.
@@ -39,50 +48,92 @@ import com.l2fprod.common.swing.renderer.DefaultCellRenderer;
  * Icon size is fixed, so caller of this class is responsible for passing proper
  * icons.
  */
-public class IconCellRenderer<T> extends DefaultCellRenderer {
+public class IconCellRenderer<T> extends JPanel implements TableCellRenderer, ListCellRenderer {
+	
+	private static final long serialVersionUID = 8942821990143018260L;
+	
+	private static final Color BG_COLOR = Color.WHITE;
+	private static final Color SELECTED_BG_COLOR = new Color(222, 234, 252);
+	private static final Font SELECTED_FONT = new Font("SansSerif", Font.ITALIC, 14);
+	private static final Font NORMAL_FONT = new Font("SansSerif", Font.PLAIN, 14);
+	private static final Color BORDER_COLOR = new Color(200, 200, 200);
+	private static final Border BORDER = BorderFactory.createCompoundBorder(
+			BorderFactory.createMatteBorder(0, 0, 1, 0, BORDER_COLOR),
+			BorderFactory.createEmptyBorder(4, 4, 4, 4));
 
-	private static final long serialVersionUID = -616290814339403108L;
-
+	final JLabel iconLbl;
+	final JLabel textLbl;
+	
 	private Map<? extends T, Icon> icons;
-
-	public IconCellRenderer(Map<? extends T, Icon> icons) {
+	
+	public IconCellRenderer(final Map<? extends T, Icon> icons) {
 		this.icons = icons;
+		iconLbl = new JLabel();
+		iconLbl.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
+		textLbl = new JLabel();
+		
+		setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
+		add(iconLbl);
+		add(Box.createHorizontalStrut(20));
+		add(textLbl);
+		add(Box.createHorizontalGlue());
 	}
 
 	@Override
-	public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus,
-			int row, int column) {
-		if (isSelected) {
-			setBackground(table.getSelectionBackground());
-			setForeground(table.getSelectionForeground());
-		} else {
-			setBackground(table.getBackground());
-			setForeground(table.getForeground());
-		}
-
-		if (value != null) {
-			final Icon valueIcon = icons.get(value);
-
-			if (valueIcon != null)
-				this.setIcon(valueIcon);
-
-			this.setIconTextGap(20);
-			this.setVerticalAlignment(CENTER);
-		} else {
-			this.setIcon(null);
-			this.setText(null);
-		}
+	public Component getListCellRendererComponent(final JList list,
+												  final Object value,
+												  final int index,
+												  final boolean isSelected,
+												  final boolean cellHasFocus) {
+		update(value, isSelected, cellHasFocus);
+		setBackground(isSelected ? SELECTED_BG_COLOR : BG_COLOR);
+		textLbl.setFont(isSelected ? SELECTED_FONT : NORMAL_FONT);
+		setBorder(BORDER);
+		
+		return this;
+	}
+	
+	@Override
+	public Component getTableCellRendererComponent(final JTable table, final Object value, final boolean isSelected, final boolean hasFocus,
+			final int row, final int column) {
+		update(value, isSelected, hasFocus);
+		setBackground(isSelected ? table.getSelectionBackground() : table.getBackground());
+		iconLbl.setForeground(isSelected ? table.getSelectionForeground() : table.getForeground());
+		textLbl.setForeground(isSelected ? table.getSelectionForeground() : table.getForeground());
 
 		return this;
 	}
 	
-	/**
-	 * Adjust icon location.
-	 * TODO: Optimize Icon Renderers and unify look.
-	 */
-	@Override
-	public void paint(Graphics g) {
-		g.translate(10, 0);
-		super.paint(g);
+	@SuppressWarnings("unchecked")
+	private void update(final Object value, final boolean isSelected, final boolean hasFocus) {
+		setBackground(isSelected ? SELECTED_BG_COLOR : BG_COLOR);
+		final String label = getLabel((T)value);
+		final Icon icon = icons.get(value);
+		
+		iconLbl.setIcon(icon);
+		textLbl.setText(label);
+		textLbl.setToolTipText(label);
+	}
+	
+	private String getLabel(final T value) {
+		String text = null;
+		
+		if (value != null) {
+			// Use reflection to check existence of "getDisplayName" method
+			final Class<? extends Object> valueClass = value.getClass();
+			
+			try {
+				final Method displayMethod = valueClass.getMethod("getDisplayName", (Class<?>)null);
+				final Object returnVal = displayMethod.invoke(value, (Class<?>)null);
+				
+				if (returnVal != null)
+					text = returnVal.toString();
+			} catch (Exception e) {
+				// Use toString is failed.
+				text = value.toString();
+			}
+		}
+		
+		return text;
 	}
 }

@@ -52,7 +52,6 @@ import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.service.util.CyServiceRegistrar;
@@ -107,7 +106,6 @@ public abstract class AbstractTableBrowser extends JPanel
 	
 	AbstractTableBrowser(final String tabTitle,
 						 final CyTableManager tableManager,
-						 final CyNetworkTableManager networkTableManager,
 						 final CyServiceRegistrar serviceRegistrar,
 						 final EquationCompiler compiler,
 						 final CyNetworkManager networkManager,
@@ -167,7 +165,7 @@ public abstract class AbstractTableBrowser extends JPanel
 	 * Delete the given table from the JTable
 	 * @param cyTable
 	 */
-	public void deleteTable(final CyTable cyTable){
+	public void deleteTable(final CyTable cyTable) {
 		final BrowserTable table = browserTables.remove(cyTable);
 		
 		if (table == null)
@@ -199,7 +197,6 @@ public abstract class AbstractTableBrowser extends JPanel
 			repaint();
 
 		currentScrollPane = newScrollPane;
-		applicationManager.setCurrentTable(currentTable);
 		attributeBrowserToolBar.setBrowserTable(currentBrowserTable);
 	
 		/* 
@@ -237,7 +234,7 @@ public abstract class AbstractTableBrowser extends JPanel
 							browserTableModel.mapColumnNameToColumnIndex(CyNetwork.SELECTED)), 1);
 				
 				attrList.remove(CyNetwork.SUID);
-				attrList.remove( CyNetwork.SELECTED);
+				attrList.remove(CyNetwork.SELECTED);
 				browserTable.setVisibleAttributeNames(attrList);
 				
 				scrollPane = new JScrollPane(browserTable);
@@ -260,10 +257,11 @@ public abstract class AbstractTableBrowser extends JPanel
 			
 			return table;
 		}
+		
 		return table;
 	}
 	
-	protected Map<CyTable, BrowserTable>  getAllBrowserTablesMap (){
+	protected Map<CyTable, BrowserTable> getAllBrowserTablesMap() {
 		return browserTables;
 	}
 

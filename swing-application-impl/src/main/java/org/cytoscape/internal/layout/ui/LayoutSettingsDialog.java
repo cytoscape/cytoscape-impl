@@ -428,22 +428,23 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 				TaskFactory provisioner = factoryProvisioner.createFor(wrapWithContext(currentLayout, context));
 				JPanel tunablePanel = taskManager.getConfiguration(provisioner, context);
 
+				// Create the layoutAttributePanel (we'll add it later)
+				layoutAttributePanel = new JPanel();
+				layoutAttributePanel.setLayout(new GridLayout());
+				CyNetworkView view = appMgr.getCurrentNetworkView();
+				setNetworkView(view);
+
 				int row = 0;
 				if (tunablePanel == null){
 					JOptionPane.showMessageDialog(LayoutSettingsDialog.this, "Can not change setting for this algorithm, because tunable info is not available.", "Warning", JOptionPane.WARNING_MESSAGE);
 					algorithmPanel.removeAll();
+					algorithmPanel.add(layoutAttributePanel, new GridBagConstraints(0, row++, 1, 1, 1, 1, GridBagConstraints.PAGE_START, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
 				}
 				else {
 					algorithmPanel.removeAll();
+					algorithmPanel.add(layoutAttributePanel, new GridBagConstraints(0, row++, 1, 1, 1, 1, GridBagConstraints.PAGE_START, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
 					algorithmPanel.add(tunablePanel, new GridBagConstraints(0, row++, 1, 1, 1, 1, GridBagConstraints.PAGE_START, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));					
 				}
-				
-				layoutAttributePanel = new JPanel();
-				layoutAttributePanel.setLayout(new GridLayout());
-				algorithmPanel.add(layoutAttributePanel, new GridBagConstraints(0, row++, 1, 1, 1, 1, GridBagConstraints.PAGE_START, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
-				
-				CyNetworkView view = appMgr.getCurrentNetworkView();
-				setNetworkView(view);
 				
 				if (currentLayout.getSupportsSelectedOnly() && hasSelectedNodes(view)) {
 					selectedTunable.selectedNodesOnly =  true;
@@ -585,7 +586,7 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 	}
 	
 	public static class LayoutAttributeTunable {
-		@Tunable(description="Weight using")
+		@Tunable(description="The edge attribute that contains the weights", gravity=1.0)
 		public ListSingleSelection<String> layoutAttribute;
 	}
 }

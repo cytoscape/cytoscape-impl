@@ -24,6 +24,7 @@ package org.cytoscape.model.internal;
  * #L%
  */
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -68,6 +69,7 @@ public class CyTableManagerImpl implements CyTableManager, NetworkAboutToBeDestr
 	
 	private final Map<Long, CyTable> tables;
 
+	private final Object lock = new Object();
 
 	public CyTableManagerImpl(final CyEventHelper eventHelper, final CyNetworkTableManager networkTableManager,
 			final CyNetworkManager networkManager) {
@@ -87,48 +89,63 @@ public class CyTableManagerImpl implements CyTableManager, NetworkAboutToBeDestr
 
 
 	@Override
-	public synchronized void reset() {
-		
-		for (CyTable table : tables.values()){
+	public void reset() {
+		Collection<CyTable> values;
+		synchronized (lock) {
+			values = tables.values();
+		}
+		for (CyTable table : values){
 			eventHelper.fireEvent(new TableAboutToBeDeletedEvent(this, table));
 		}
-		tables.clear();
+		synchronized (lock) {
+			tables.clear();
+		}
 	}
 
 	@Override
-	public synchronized void addTable(final CyTable t) {
-		if (t == null)
-			throw new NullPointerException("added table is null");
-
-		final Long suid = t.getSUID();
-		
-		if (tables.get(suid) == null) {
-			tables.put(suid, t);
+	public void addTable(final CyTable t) {
+		boolean fireEvent = false;
+		synchronized (lock) {
+			if (t == null)
+				throw new NullPointerException("added table is null");
+	
+			final Long suid = t.getSUID();
+	
+			if (tables.get(suid) == null) {
+				tables.put(suid, t);
+				fireEvent = true;
+			}
+		}
+		if (fireEvent) {
 			eventHelper.fireEvent(new TableAddedEvent(this, t));
 		}
 	}
 
 	@Override
-	public synchronized Set<CyTable> getAllTables(final boolean includePrivate) {
-		final Set<CyTable> res = new HashSet<CyTable>();
-
-		for (final Long key : tables.keySet()) {
-			if (includePrivate || tables.get(key).isPublic())
-				res.add(tables.get(key));
+	public Set<CyTable> getAllTables(final boolean includePrivate) {
+		synchronized (lock) {
+			final Set<CyTable> res = new HashSet<CyTable>();
+	
+			for (final Long key : tables.keySet()) {
+				if (includePrivate || tables.get(key).isPublic())
+					res.add(tables.get(key));
+			}
+	
+			return res;
 		}
-
-		return res;
 	}
 
 	@Override
-	public synchronized CyTable getTable(final long suid) {
-		return tables.get(suid);
+	public CyTable getTable(final long suid) {
+		synchronized (lock) {
+			return tables.get(suid);
+		}
 	}
 
 	void deleteTableInternal(final long suid, boolean force) {
 		CyTable table;
 
-		synchronized (this) {
+		synchronized (lock) {
 			table = tables.get(suid);
 
 			if (table == null) {
@@ -138,7 +155,7 @@ public class CyTableManagerImpl implements CyTableManager, NetworkAboutToBeDestr
 
 		eventHelper.fireEvent(new TableAboutToBeDeletedEvent(this, table));
 
-		synchronized (this) {
+		synchronized (lock) {
 			table = tables.get(suid);
 
 			if (table == null) {

@@ -50,6 +50,8 @@ public class CyGroupAggregationManagerImpl
 	Map<Class, List<Aggregator>>aggMap = 
 		new HashMap<Class, List<Aggregator>>();
 
+	private final Object lock = new Object();
+	
 	public CyGroupAggregationManagerImpl(CyGroupManager mgr) {
 		this.cyGroupManager = mgr;
 	}
@@ -58,43 +60,53 @@ public class CyGroupAggregationManagerImpl
 	public void addAggregator(Aggregator aggregator) {
 		Class type = aggregator.getSupportedType();
 		List<Aggregator> aggList = null;
-		if (aggMap.containsKey(type))
-			aggList = aggMap.get(type);
-		else {
-			aggList = new ArrayList<Aggregator>();
-			aggMap.put(type, aggList);
+		synchronized (lock) {
+			if (aggMap.containsKey(type))
+				aggList = aggMap.get(type);
+			else {
+				aggList = new ArrayList<Aggregator>();
+				aggMap.put(type, aggList);
+			}
+	
+			aggList.add(aggregator);
 		}
-
-		aggList.add(aggregator);
 	}
 
 	@Override
 	public void removeAggregator(Aggregator aggregator) {
 		Class type = aggregator.getSupportedType();
-		if (aggMap.containsKey(type)) {
-			List<Aggregator> aggList = aggMap.get(type);
-			aggList.remove(aggregator);
+		synchronized (lock) {
+			if (aggMap.containsKey(type)) {
+				List<Aggregator> aggList = aggMap.get(type);
+				aggList.remove(aggregator);
+			}
 		}
 	}
 
 	@Override
 	public List<Aggregator> getAggregators(Class type) {
-		if (aggMap.containsKey(type))
-			return aggMap.get(type);
-		return new ArrayList<Aggregator>();
+		synchronized (lock) {
+			if (aggMap.containsKey(type))
+				return aggMap.get(type);
+			return new ArrayList<Aggregator>();
+		}
 	}
 
 	@Override
 	public List<Aggregator> getAggregators() {
-		List<Aggregator> allAggs = new ArrayList<Aggregator>();
-		for (Class c: aggMap.keySet()) {
-			allAggs.addAll(getAggregators(c));
+		synchronized (lock) {
+			List<Aggregator> allAggs = new ArrayList<Aggregator>();
+			for (Class c: aggMap.keySet()) {
+				allAggs.addAll(getAggregators(c));
+			}
+			return allAggs;
 		}
-		return allAggs;
 	}
 
 	@Override
 	public List<Class> getSupportedClasses() {
-		return new ArrayList<Class>(aggMap.keySet());
+		synchronized (lock) {
+			return new ArrayList<Class>(aggMap.keySet());
+		}
 	}
 }

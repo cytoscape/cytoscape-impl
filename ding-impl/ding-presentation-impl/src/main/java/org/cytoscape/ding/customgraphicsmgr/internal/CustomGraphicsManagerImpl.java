@@ -59,6 +59,7 @@ import org.cytoscape.session.events.SessionLoadedEvent;
 import org.cytoscape.session.events.SessionLoadedListener;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.vizmap.VisualMappingManager;
+import org.cytoscape.work.SynchronousTaskManager;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.swing.DialogTaskManager;
 import org.slf4j.Logger;
@@ -72,19 +73,18 @@ public final class CustomGraphicsManagerImpl implements CustomGraphicsManager, C
 	private static final String IMAGE_DIR_NAME = "images3";
 	private static final String APP_NAME = "org.cytoscape.ding.customgraphicsmgr";
 
-	private final Map<Long, CyCustomGraphics> graphicsMap = new ConcurrentHashMap<Long, CyCustomGraphics>();
+	private final Map<Long, CyCustomGraphics> graphicsMap = new ConcurrentHashMap<Long, CyCustomGraphics>(16, 0.75f, 2);
 
 	// URL to hash code map. For images associated with URL.
-	protected final Map<URL, Long> sourceMap = new ConcurrentHashMap<URL, Long>();
+	protected final Map<URL, Long> sourceMap = new ConcurrentHashMap<URL, Long>(16, 0.75f, 2);
 
 	// Null Object
-	private static final CyCustomGraphics NULL = NullCustomGraphics.getNullObject();
-
 	private final File imageHomeDirectory;
 	private final Map<CyCustomGraphics, Boolean> isUsedCustomGraphics;
 	private final Map<String, CyCustomGraphicsFactory> factoryMap;
 	private final Map<CyCustomGraphicsFactory, Map> factoryPropsMap;
 	private final DialogTaskManager taskManager;
+	private final SynchronousTaskManager<?> syncTaskManager;
 
 	private final CyEventHelper eventHelper;
 
@@ -98,6 +98,7 @@ public final class CustomGraphicsManagerImpl implements CustomGraphicsManager, C
 	 */
 	public CustomGraphicsManagerImpl(final CyProperty<Properties> properties, 
 	                                 final DialogTaskManager taskManager, 
+	                                 final SynchronousTaskManager<?> syncTaskManager, 
 	                                 final CyApplicationConfiguration config, 
 	                                 final CyEventHelper eventHelper, 
 	                                 final VisualMappingManager vmm, 
@@ -105,6 +106,7 @@ public final class CustomGraphicsManagerImpl implements CustomGraphicsManager, C
 	                                 final Set<URL> defaultImageURLs) {
 
 		this.taskManager = taskManager;
+		this.syncTaskManager = syncTaskManager;
 		this.eventHelper = eventHelper;
 		this.vmm = vmm;
 		this.applicationManager = applicationManager;
@@ -122,10 +124,6 @@ public final class CustomGraphicsManagerImpl implements CustomGraphicsManager, C
 
 		// Usually, this is USER_HOME/.cytoscape/images3
 		this.imageHomeDirectory = new File(config.getConfigurationDirectoryLocation(), IMAGE_DIR_NAME);
-
-		// Add NULL graphics.  This will be used to reset Custom Graphics.
-		graphicsMap.put(NULL.getIdentifier(), NULL);
-		this.isUsedCustomGraphics.put(NULL, false);
 
 		// Restore Custom Graphics from the directory.
 		final RestoreImageTaskFactory taskFactory = 
@@ -201,7 +199,7 @@ public final class CustomGraphicsManagerImpl implements CustomGraphicsManager, C
 	@Override
 	public void removeCustomGraphics(final Long id) {
 		final CyCustomGraphics cg = graphicsMap.get(id);
-		if (cg != null && cg != NULL) {
+		if (cg != null && cg != NullCustomGraphics.getNullObject()) {
 			graphicsMap.remove(id);
 			this.isUsedCustomGraphics.remove(cg);
 		}
@@ -289,10 +287,6 @@ public final class CustomGraphicsManagerImpl implements CustomGraphicsManager, C
 		this.graphicsMap.clear();
 		this.sourceMap.clear();
 		this.isUsedCustomGraphics.clear();
-
-		// Null Graphics should not be removed.
-		this.graphicsMap.put(NULL.getIdentifier(), NULL);
-
 	}
 
 	/**
@@ -302,9 +296,6 @@ public final class CustomGraphicsManagerImpl implements CustomGraphicsManager, C
 	 */
 	@Override
 	public Properties getMetadata() {
-		// Null graphics object should not be in this property.
-		graphicsMap.remove(NULL.getIdentifier());
-
 		final Properties props = new Properties();
 		// Use hash code as the key, and value will be a string returned by
 		// toString() method.
@@ -314,7 +305,7 @@ public final class CustomGraphicsManagerImpl implements CustomGraphicsManager, C
 			props.setProperty(graphics.getIdentifier().toString(), 
 			                  graphics.getClass().getCanonicalName()+","+graphics.toSerializableString());
 		}
-		graphicsMap.put(NULL.getIdentifier(), NULL);
+		
 		return props;
 	}
 
@@ -372,7 +363,8 @@ public final class CustomGraphicsManagerImpl implements CustomGraphicsManager, C
 				e);
 
 		try {
-			taskManager.execute(factory.createTaskIterator());
+			// Make sure this task is executed synchronously in the current thread!
+			syncTaskManager.execute(factory.createTaskIterator());
 		} catch (Exception ex) {
 			logger.error("Could not save images to .", ex);
 		}

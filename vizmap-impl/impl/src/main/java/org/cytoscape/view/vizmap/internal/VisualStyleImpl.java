@@ -71,6 +71,8 @@ public class VisualStyleImpl implements VisualStyle, VisualMappingFunctionChange
 
 	private final Set<VisualPropertyDependency<?>> dependencies;
 
+	private final Object lock = new Object();
+	
 	/**
 	 * 
 	 * @param title
@@ -118,7 +120,9 @@ public class VisualStyleImpl implements VisualStyle, VisualMappingFunctionChange
 
 	@Override
 	public void addVisualMappingFunction(final VisualMappingFunction<?, ?> mapping) {
-		mappings.put(mapping.getVisualProperty(), mapping);
+		synchronized (lock) {
+			mappings.put(mapping.getVisualProperty(), mapping);
+		}
 		eventHelper.addEventPayload((VisualStyle) this, new VisualStyleChangeRecord(),
 				VisualStyleChangedEvent.class);
 	}
@@ -126,12 +130,16 @@ public class VisualStyleImpl implements VisualStyle, VisualMappingFunctionChange
 	@Override
 	@SuppressWarnings("unchecked")
 	public <V> VisualMappingFunction<?, V> getVisualMappingFunction(VisualProperty<V> t) {
-		return (VisualMappingFunction<?, V>) mappings.get(t);
+		synchronized (lock) {
+			return (VisualMappingFunction<?, V>) mappings.get(t);
+		}
 	}
 
 	@Override
 	public void removeVisualMappingFunction(VisualProperty<?> t) {
-		mappings.remove(t);
+		synchronized (lock) {
+			mappings.remove(t);
+		}
 		eventHelper.addEventPayload((VisualStyle) this, new VisualStyleChangeRecord(),
 				VisualStyleChangedEvent.class);
 	}
@@ -139,12 +147,16 @@ public class VisualStyleImpl implements VisualStyle, VisualMappingFunctionChange
 	@SuppressWarnings("unchecked")
 	@Override
 	public <V> V getDefaultValue(final VisualProperty<V> vp) {
-		return (V) styleDefaults.get(vp);
+		synchronized (lock) {
+			return (V) styleDefaults.get(vp);
+		}
 	}
 
 	@Override
 	public <V, S extends V> void setDefaultValue(final VisualProperty<V> vp, final S value) {
-		styleDefaults.put(vp, value);
+		synchronized (lock) {
+			styleDefaults.put(vp, value);
+		}
 		eventHelper.addEventPayload((VisualStyle) this, new VisualStyleChangeRecord(),
 				VisualStyleChangedEvent.class);
 	}
@@ -153,7 +165,10 @@ public class VisualStyleImpl implements VisualStyle, VisualMappingFunctionChange
 	public void apply(final CyNetworkView networkView) {
 		@SuppressWarnings("unchecked")
 		// This is always safe.
-		final ApplyHandler<CyNetwork> networkViewHandler = applyHandlersMap.get(CyNetwork.class);
+		final ApplyHandler<CyNetwork> networkViewHandler;
+		synchronized (lock) {
+			networkViewHandler = applyHandlersMap.get(CyNetwork.class);
+		}
 		networkViewHandler.apply(null, networkView);
 	}
 
@@ -167,10 +182,12 @@ public class VisualStyleImpl implements VisualStyle, VisualMappingFunctionChange
 
 		ApplyHandler handler = null;
 
-		for (final Class<?> viewType : applyHandlersMap.keySet()) {
-			if (viewType.isAssignableFrom(view.getModel().getClass())) {
-				handler = applyHandlersMap.get(viewType);
-				break;
+		synchronized (lock) {
+			for (final Class<?> viewType : applyHandlersMap.keySet()) {
+				if (viewType.isAssignableFrom(view.getModel().getClass())) {
+					handler = applyHandlersMap.get(viewType);
+					break;
+				}
 			}
 		}
 
@@ -197,7 +214,9 @@ public class VisualStyleImpl implements VisualStyle, VisualMappingFunctionChange
 
 	@Override
 	public Collection<VisualMappingFunction<?, ?>> getAllVisualMappingFunctions() {
-		return mappings.values();
+		synchronized (lock) {
+			return mappings.values();
+		}
 	}
 
 	Map<VisualProperty<?>, Object> getStyleDefaults() {
@@ -214,14 +233,18 @@ public class VisualStyleImpl implements VisualStyle, VisualMappingFunctionChange
 	 */
 	@Override
 	public void addVisualPropertyDependency(VisualPropertyDependency<?> dependency) {
-		dependencies.add(dependency);
+		synchronized (lock) {
+			dependencies.add(dependency);
+		}
 		eventHelper.addEventPayload((VisualStyle) this, new VisualStyleChangeRecord(),
 				VisualStyleChangedEvent.class);
 	}
 
 	@Override
 	public void removeVisualPropertyDependency(VisualPropertyDependency<?> dependency) {
-		dependencies.remove(dependency);
+		synchronized (lock) {
+			dependencies.remove(dependency);
+		}
 		eventHelper.addEventPayload((VisualStyle) this, new VisualStyleChangeRecord(),
 				VisualStyleChangedEvent.class);
 	}
@@ -246,7 +269,11 @@ public class VisualStyleImpl implements VisualStyle, VisualMappingFunctionChange
 	@Override
 	public void handleEvent(VisualMappingFunctionChangedEvent e) {
 		final VisualMappingFunction<?, ?> mapping = e.getSource();
-		if (this.mappings.containsValue(mapping)) {
+		boolean hasMapping;
+		synchronized (lock) {
+			hasMapping = mappings.containsValue(mapping);
+		}
+		if (hasMapping) {
 			eventHelper.addEventPayload((VisualStyle)this, new VisualStyleChangeRecord(), VisualStyleChangedEvent.class);
 		}
 	}

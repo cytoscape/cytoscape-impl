@@ -1,20 +1,23 @@
 package org.cytoscape.io.internal.read.json;
 
 import java.io.InputStream;
+import java.util.Collection;
 import java.util.Map;
 
 import org.cytoscape.io.read.AbstractCyNetworkReader;
-import org.cytoscape.io.read.CyNetworkReader;
+import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
+import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
-import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.util.ListSingleSelection;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -27,17 +30,20 @@ public class CytoscapeJsNetworkReader extends AbstractCyNetworkReader {
 	private CyNetwork network = null;
 
 	private final InputStream is;
+	private final String networkCollectionName;
 
-	public CytoscapeJsNetworkReader(InputStream is, CyNetworkViewFactory cyNetworkViewFactory,
+	public CytoscapeJsNetworkReader(final String networkCollectionName, final InputStream is, CyNetworkViewFactory cyNetworkViewFactory,
 			CyNetworkFactory cyNetworkFactory, CyNetworkManager cyNetworkManager,
 			CyRootNetworkManager cyRootNetworkManager) {
 		super(is, cyNetworkViewFactory, cyNetworkFactory, cyNetworkManager, cyRootNetworkManager);
+
+		this.networkCollectionName = networkCollectionName;
 		
 		if (is == null) {
 			throw new NullPointerException("Input Stream cannot be null.");
 		}
 
-		this.mapper = new CytoscapejsMapper(cyNetworkFactory);
+		this.mapper = new CytoscapejsMapper();
 		this.is = is;
 	}
 
@@ -69,6 +75,29 @@ public class CytoscapeJsNetworkReader extends AbstractCyNetworkReader {
 		final ObjectMapper objMapper = new ObjectMapper();
 		final JsonNode rootNode = objMapper.readValue(is, JsonNode.class);
 
-		this.network = this.mapper.createNetwork(rootNode);
+		// Select the root collection name from the list.
+		if(networkCollectionName != null) {
+			ListSingleSelection<String> rootList = getRootNetworkList();
+			if(rootList.getPossibleValues().contains(networkCollectionName)) {
+				// Collection already exists.
+				rootList.setSelectedValue(networkCollectionName);
+			}
+		}
+		
+		CyRootNetwork rootNetwork = getRootNetwork();
+
+		// Select Network Collection
+		// 1. Check from Tunable
+		// 2. If not available, use optional parameter
+		CySubNetwork subNetwork;
+		if (rootNetwork != null) {
+			// Root network exists
+			subNetwork = rootNetwork.addSubNetwork();
+			this.network = this.mapper.createNetwork(rootNode, subNetwork, null);
+		} else {
+			// Need to create new network with new root.
+			subNetwork = (CySubNetwork) cyNetworkFactory.createNetwork();
+			this.network = this.mapper.createNetwork(rootNode, subNetwork, networkCollectionName);
+		}
 	}
 }

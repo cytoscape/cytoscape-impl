@@ -43,7 +43,6 @@ public class SaveSessionAsTaskFactoryImpl extends AbstractTaskFactory implements
 	private CySessionWriterManager writerMgr;
 	private final RecentlyOpenedTracker tracker;
 	private final CyEventHelper cyEventHelper;
-	
 	private final TunableSetter tunableSetter;
 
 	public SaveSessionAsTaskFactoryImpl(CySessionWriterManager writerMgr, CySessionManager sessionMgr,
@@ -55,6 +54,7 @@ public class SaveSessionAsTaskFactoryImpl extends AbstractTaskFactory implements
 		this.tunableSetter = tunableSetter;
 	}
 
+	@Override
 	public TaskIterator createTaskIterator() {
 		return new TaskIterator(2, new SaveSessionAsTask(writerMgr, sessionMgr, tracker, cyEventHelper));
 	}

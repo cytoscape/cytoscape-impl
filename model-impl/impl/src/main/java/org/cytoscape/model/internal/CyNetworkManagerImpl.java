@@ -54,7 +54,7 @@ public class CyNetworkManagerImpl implements CyNetworkManager {
 	private final Map<Long, CyNetwork> networkMap;
 	private final CyEventHelper cyEventHelper;
 	
-	private final ReadWriteLock lock;
+	private final Object lock = new Object();
 
     /**
      * 
@@ -63,36 +63,26 @@ public class CyNetworkManagerImpl implements CyNetworkManager {
 	public CyNetworkManagerImpl(final CyEventHelper cyEventHelper) {
 		this.networkMap = new HashMap<Long, CyNetwork>();
 		this.cyEventHelper = cyEventHelper;
-		lock = new ReentrantReadWriteLock(true);
 	}
 
 	@Override
 	public Set<CyNetwork> getNetworkSet() {
-		lock.readLock().lock();
-		try {
+		synchronized (lock) {
 			return new HashSet<CyNetwork>(networkMap.values());
-		} finally {
-			lock.readLock().unlock();
 		}
 	}
 
 	@Override
 	public CyNetwork getNetwork(long id) {
-		lock.readLock().lock();
-		try {
+		synchronized (lock) {
 			return networkMap.get(id);
-		} finally {
-			lock.readLock().unlock();
 		}
 	}
 
 	@Override
 	public boolean networkExists(long network_id) {
-		lock.readLock().lock();
-		try {
+		synchronized (lock) {
 			return networkMap.containsKey(network_id);
-		} finally {
-			lock.readLock().unlock();
 		}
 	}
 
@@ -103,20 +93,15 @@ public class CyNetworkManagerImpl implements CyNetworkManager {
 
 		final Long networkId = network.getSUID();
 
-		// check outside the write lock so that we fail early
-		lock.readLock().lock();
-		try {
+		synchronized (lock) {
 			if (!networkMap.containsKey(networkId))
 				throw new IllegalArgumentException("network is not recognized by this NetworkManager");
-		} finally {
-			lock.readLock().unlock();
 		}
 		
 		// let everyone know!
 		cyEventHelper.fireEvent(new NetworkAboutToBeDestroyedEvent(CyNetworkManagerImpl.this, network));
 
-		lock.writeLock().lock();
-		try {
+		synchronized (lock) {
 			// check again within the lock in case something has changed
 			if (!networkMap.containsKey(networkId))
 				throw new IllegalArgumentException("network is not recognized by this NetworkManager");
@@ -127,8 +112,6 @@ public class CyNetworkManagerImpl implements CyNetworkManager {
 				network.getRow(e).set(CyNetwork.SELECTED, false);
 
 			networkMap.remove(networkId);
-		} finally {
-			lock.writeLock().unlock();
 		}
 
 		if (network instanceof CySubNetwork) {
@@ -152,8 +135,7 @@ public class CyNetworkManagerImpl implements CyNetworkManager {
 	}
 
 	private boolean hasRegisteredNetworks(final CyRootNetwork rootNetwork) {
-		lock.readLock().lock();
-		try {
+		synchronized (lock) {
 			for (CySubNetwork network : rootNetwork.getSubNetworkList()) {
 				if (networkMap.containsKey(network.getSUID())) {
 					return true;
@@ -161,8 +143,6 @@ public class CyNetworkManagerImpl implements CyNetworkManager {
 			}
 			
 			return false;
-		} finally {
-			lock.readLock().unlock();
 		}
 	}
 
@@ -171,12 +151,9 @@ public class CyNetworkManagerImpl implements CyNetworkManager {
 		if (network == null)
 			throw new NullPointerException("Network is null");
 
-		lock.writeLock().lock();
-		try {
+		synchronized (lock) {
 			logger.debug("Adding new Network Model: Model ID = " + network.getSUID());
 			networkMap.put(network.getSUID(), network);
-		} finally {
-			lock.writeLock().unlock();
 		}
 
 		cyEventHelper.fireEvent(new NetworkAddedEvent(CyNetworkManagerImpl.this, network));
@@ -184,11 +161,8 @@ public class CyNetworkManagerImpl implements CyNetworkManager {
 
 	@Override
 	public void reset() {
-		lock.writeLock().lock();
-		try {
+		synchronized (lock) {
 			networkMap.clear();
-		} finally {
-			lock.writeLock().unlock();
 		}
 	}
 }

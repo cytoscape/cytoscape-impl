@@ -25,7 +25,8 @@ package org.cytoscape.task.internal.session;
  */
 
 
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.io.util.RecentlyOpenedTracker;

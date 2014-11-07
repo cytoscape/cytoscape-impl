@@ -24,26 +24,61 @@ package org.cytoscape.task.internal.select;
  * #L%
  */
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 import org.cytoscape.model.CyEdge;
+import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyIdentifiable;
+import org.cytoscape.model.CyRow;
+import org.cytoscape.model.CyTable;
+import org.cytoscape.model.events.RowSetRecord;
+import org.cytoscape.model.events.RowsSetEvent;
 
 final class SelectUtils {
+	final CyEventHelper eventHelper;
+
+	public SelectUtils(CyEventHelper helper) {
+		this.eventHelper = helper;
+	}
 
 	void setSelectedNodes(final CyNetwork network, final Collection<CyNode> nodes, final boolean select) {
-		setSelected(network,nodes, select);
+		setSelected(network,nodes, select, network.getDefaultNodeTable());
 	}
 
 	void setSelectedEdges(final CyNetwork network, final Collection<CyEdge> edges, final boolean select) {
-		setSelected(network,edges, select);
+		setSelected(network,edges, select, network.getDefaultEdgeTable());
 	}
 
-	private void setSelected(final CyNetwork network, final Collection<? extends CyIdentifiable> objects, final boolean select) {
+	private void setSelected(final CyNetwork network, final Collection<? extends CyIdentifiable> objects, 
+	                         final boolean select, final CyTable table) {
 
-		for (final CyIdentifiable nodeOrEdge : objects)
-			network.getRow(nodeOrEdge).set(CyNetwork.SELECTED, select);
+		// Don't autobox
+		Boolean value;
+		if (select)
+			value = Boolean.TRUE;
+		else
+			value = Boolean.FALSE;
+
+		// Disable all events from our table
+		eventHelper.silenceEventSource(table);
+
+		// Create the RowSetRecord collection
+		List<RowSetRecord> rowsChanged = new ArrayList<RowSetRecord>();
+
+		for (final CyIdentifiable nodeOrEdge : objects) {
+			CyRow row = network.getRow(nodeOrEdge);
+			row.set(CyNetwork.SELECTED, value);
+			rowsChanged.add(new RowSetRecord(row, CyNetwork.SELECTED, value, value));
+		}
+
+		// Enable all events from our table
+		eventHelper.unsilenceEventSource(table);
+
+		RowsSetEvent event = new RowsSetEvent(table, rowsChanged);
+		eventHelper.fireEvent(event);
 	}
 }

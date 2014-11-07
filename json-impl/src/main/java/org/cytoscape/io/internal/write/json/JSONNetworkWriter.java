@@ -51,7 +51,7 @@ public class JSONNetworkWriter extends AbstractNetworkTask implements CyWriter {
 			taskMonitor.setProgress(0);
 		}
 		network2jsonMapper.writeValue(outputStream, network);
-		outputStream.close();
+//		outputStream.close();
 	}
 
 }

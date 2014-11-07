@@ -48,14 +48,6 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 	private String text;
 	private boolean shapeIsFit = false;
 
-	public static final String FONTCOLOR="fontColor";
-	public static final String TEXT="text";
-	public static final String COLOR="color";
-	public static final String FONTFAMILY="fontFamily";
-	public static final String FONTSIZE="fontSize";
-	public static final String FONTSTYLE="fontStyle";
-
-	private Font scaledFont = null;
 	private double lastScaleFactor = -1;
 
 	protected float fontSize = 0.0f;
@@ -104,8 +96,9 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 		this.font = getArgFont(argMap, "Arial", Font.PLAIN, initialFontSize);
     this.textColor = getColor(argMap, COLOR, Color.BLACK);
 		this.text = getString(argMap, TEXT, "");
- 		this.fontSize = font.getSize2D();
-		if (!argMap.containsKey(ShapeAnnotationImpl.WIDTH)) {
+		this.fontSize = font.getSize2D();
+
+		if (!argMap.containsKey(BoundedTextAnnotation.WIDTH)) {
 			double width = getTextWidth((Graphics2D)this.getGraphics())+8;
 			double height = getTextHeight((Graphics2D)this.getGraphics())+8;
 			super.setSize(width, height);
@@ -240,7 +233,7 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 	@Override
 	public void setFontSize(double size) {
 		this.fontSize = (float)size;
-		scaledFont = font.deriveFont((float)(fontSize*getSpecificZoom()));
+		font = font.deriveFont((float)(fontSize*getSpecificZoom()));
 		updateBounds();
 	}
 
@@ -250,8 +243,7 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 
 	@Override
 	public void setFontStyle(int style) {
-		font = font.deriveFont(style, fontSize);
-		scaledFont = font.deriveFont((float)(fontSize*getSpecificZoom()));
+		font = font.deriveFont(style, (float)(fontSize*getSpecificZoom()));
 	}
 
 	@Override
@@ -262,7 +254,7 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 	@Override
 	public void setFontFamily(String family) {
 		font = new Font(family, font.getStyle(), (int)fontSize);
-		scaledFont = font.deriveFont((float)(fontSize*getSpecificZoom()));
+		font = font.deriveFont((float)(fontSize*getSpecificZoom()));
 	}
 
 	@Override

@@ -32,7 +32,10 @@ import java.awt.Stroke;
 import java.awt.TexturePaint;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.PathIterator;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
 
 import org.cytoscape.graph.render.immed.EdgeAnchors;
 import org.cytoscape.graph.render.immed.GraphGraphics;
@@ -42,6 +45,7 @@ import org.cytoscape.model.CyNode;
 import org.cytoscape.spacial.SpacialEntry2DEnumerator;
 import org.cytoscape.spacial.SpacialIndex2D;
 import org.cytoscape.util.intr.LongHash;
+import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
 
 
@@ -101,7 +105,7 @@ public final class GraphRenderer {
 
 	/**
 	 * Renders a graph.
-	 * @param graph the graph topology; nodes in this graph must correspond to
+	 * @param netView the network view; nodes in this graph must correspond to
 	 *   objKeys in nodePositions (the SpacialIndex2D parameter) and vice versa.
 	 * @param nodePositions defines the positions and extents of nodes in graph;
 	 *   each entry (objKey) in this structure must correspond to a node in graph
@@ -130,15 +134,22 @@ public final class GraphRenderer {
 	 * @return bits representing the level of detail that was rendered; the
 	 *   return value is a bitwise-or'ed value of the LOD_* constants.
 	 */
-	public final static int renderGraph(final CyNetwork graph, final SpacialIndex2D nodePositions,
-	                                    final GraphLOD lod, final NodeDetails nodeDetails,
-	                                    final EdgeDetails edgeDetails, final LongHash nodeBuff,
-	                                    final GraphGraphics grafx, final Paint bgPaint,
-	                                    final double xCenter, final double yCenter,
-	                                    final double scaleFactor) {
-	
+	public final static int renderGraph(final CyNetworkView netView,
+										final SpacialIndex2D nodePositions,
+	                                    final GraphLOD lod,
+	                                    final NodeDetails nodeDetails,
+	                                    final EdgeDetails edgeDetails,
+	                                    final LongHash nodeBuff,
+	                                    final GraphGraphics grafx,
+	                                    final Paint bgPaint,
+	                                    final double xCenter,
+	                                    final double yCenter,
+	                                    final double scaleFactor,
+	                                    final boolean haveZOrder) {
 		nodeBuff.empty(); // Make sure we keep our promise.
 
+		final CyNetwork graph = netView.getModel();
+		
 		// Define the visible window in node coordinate space.
 		final float xMin;
 
@@ -190,6 +201,7 @@ public final class GraphRenderer {
 		final int renderNodeCount;
 		final int renderEdgeCount;
 		final byte renderEdges;
+		long start = System.currentTimeMillis();
 
 		{
 			final SpacialEntry2DEnumerator nodeHits = nodePositions.queryOverlap(xMin, yMin, xMax,
@@ -237,6 +249,8 @@ public final class GraphRenderer {
 					final Iterable<CyEdge> touchingEdges = graph.getAdjacentEdgeIterable(graph.getNode(node),CyEdge.Type.ANY);
 
 					for ( CyEdge e : touchingEdges ) {
+						if (!edgeDetails.isVisible(e))
+							continue;
 						final long edge = e.getSUID(); 
 						final long otherNode = node ^ e.getSource().getSUID() ^ e.getTarget().getSUID();
 
@@ -251,7 +265,9 @@ public final class GraphRenderer {
 				renderEdgeCount = runningEdgeCount;
 				nodeBuff.empty();
 			}
-		}
+		}	
+		// System.out.println("renderEdgeCount: "+renderEdgeCount);
+		// System.out.println("time: "+(System.currentTimeMillis()-start)+"ms");
 
 		// Based on number of objects we are going to render, determine LOD.
 		final int lodBits;
@@ -292,7 +308,8 @@ public final class GraphRenderer {
 		}
 		// Clear the background.
 		{
-			grafx.clear(bgPaint, xCenter, yCenter, scaleFactor);
+			if (bgPaint != null)
+				grafx.clear(bgPaint, xCenter, yCenter, scaleFactor);
 		}
 
 		// Render the edges first.  No edge shall be rendered twice.  Render edge
@@ -300,6 +317,9 @@ public final class GraphRenderer {
 		// on top of the edge it belongs to.
 		if (renderEdges >= 0) {
 			final SpacialEntry2DEnumerator nodeHits;
+
+			// System.out.println("Rendering edges: high detail = "+(lodBits & LOD_HIGH_DETAIL));
+			// System.out.println("time: "+(System.currentTimeMillis()-start)+"ms");
 
 			if (renderEdges > 0)
 				// We want to render edges in the same order (back to front) that
@@ -327,6 +347,8 @@ public final class GraphRenderer {
 					Iterable<CyEdge> touchingEdges = graph.getAdjacentEdgeIterable(graph.getNode(node),CyEdge.Type.ANY);
 
 					for ( CyEdge edge : touchingEdges ) {
+						if (!edgeDetails.isVisible(edge))
+							continue;
 						final long otherNode = node ^ edge.getSource().getSUID() ^ edge.getTarget().getSUID();
 
 						if (nodeBuff.get(otherNode) < 0) { // Has not yet been rendered.
@@ -344,11 +366,13 @@ public final class GraphRenderer {
 				}
 			} else { // High detail.
 				while (nodeHits.numRemaining() > 0) {
-					final long node = nodeHits.nextExtents(floatBuff1, 0);
+					final long node =nodeHits.nextExtents(floatBuff1, 0);
 					final CyNode cyNode = graph.getNode(node);
 					final byte nodeShape = nodeDetails.getShape(cyNode);
 					Iterable<CyEdge> touchingEdges = graph.getAdjacentEdgeIterable(cyNode,CyEdge.Type.ANY);
 					for (final CyEdge edge : touchingEdges ) {
+						if (!edgeDetails.isVisible(edge))
+							continue;
 						final long otherNode = node ^ edge.getSource().getSUID()
 							^ edge.getTarget().getSUID();
 						final CyNode otherCyNode = graph.getNode(otherNode);
@@ -356,7 +380,8 @@ public final class GraphRenderer {
 						if (nodeBuff.get(otherNode) < 0) { // Has not yet been rendered.
 
 							if (!nodePositions.exists(otherNode, floatBuff2, 0))
-								throw new IllegalStateException("nodePositions not recognizing node that exists in graph");
+								continue;
+								// throw new IllegalStateException("nodePositions not recognizing node that exists in graph: "+otherCyNode.toString());
 
 							final byte otherNodeShape = nodeDetails.getShape(otherCyNode);
 
@@ -628,6 +653,8 @@ public final class GraphRenderer {
 			final SpacialEntry2DEnumerator nodeHits = nodePositions.queryOverlap(xMin, yMin, xMax,
 			                                                                     yMax, null, 0,
 			                                                                     false);
+			// System.out.println("Rendering nodes: high detail = "+(lodBits & LOD_HIGH_DETAIL));
+			// System.out.println("time: "+(System.currentTimeMillis()-start)+"ms");
 
 			if ((lodBits & LOD_HIGH_DETAIL) == 0) { // Low detail.
 
@@ -641,12 +668,16 @@ public final class GraphRenderer {
 						                  floatBuff1[3], nodeDetails.getColorLowDetail(node));
 				}
 			} else { // High detail.
-				while (nodeHits.numRemaining() > 0) {
-					final long node = nodeHits.nextExtents(floatBuff1, 0);
+				SpacialEntry2DEnumerator zHits = nodeHits;
+				if (haveZOrder) {
+					zHits = new SpacialEntry2DEnumeratorZSort(nodePositions, nodeHits);
+				}
+				while (zHits.numRemaining() > 0) {
+					final long node = zHits.nextExtents(floatBuff1, 0);
 					final CyNode cyNode = graph.getNode(node);
-					
-					renderNodeHigh(graph, grafx, node, cyNode, floatBuff1, doubleBuff1, doubleBuff2, nodeDetails, lodBits);
-				
+
+					renderNodeHigh(netView, grafx, cyNode, floatBuff1, doubleBuff1, doubleBuff2,
+							nodeDetails, lodBits);
 
 					// Take care of label rendering.
 					if ((lodBits & LOD_NODE_LABELS) != 0) { // Potential label rendering.
@@ -707,6 +738,7 @@ public final class GraphRenderer {
 				}
 			}
 		}
+		// System.out.println("total time: "+(System.currentTimeMillis()-start)+"ms");
 		return lodBits;
 	}
 
@@ -1029,20 +1061,15 @@ public final class GraphRenderer {
 	
 	/**
 	 * Render node view with details, including custom graphics.
-	 * 
-	 * @param graph
-	 * @param grafx
-	 * @param node
-	 * @param floatBuff1
-	 * @param doubleBuff1
-	 * @param doubleBuff2
-	 * @param nodeDetails
-	 * @param lodBits
 	 */
-	private static final void renderNodeHigh(final CyNetwork graph, final GraphGraphics grafx, 
-			final long node, final CyNode cyNode, final float[] floatBuff1, final double[] doubleBuff1, 
-			final double[] doubleBuff2, final NodeDetails nodeDetails, final int lodBits) {
-
+	private static final void renderNodeHigh(final CyNetworkView netView,
+											 final GraphGraphics grafx,
+											 final CyNode cyNode,
+											 final float[] floatBuff1,
+											 final double[] doubleBuff1,
+											 final double[] doubleBuff2,
+											 final NodeDetails nodeDetails,
+											 final int lodBits) {
 		Shape nodeShape = null;
 
 		if ((floatBuff1[0] != floatBuff1[2]) && (floatBuff1[1] != floatBuff1[3])) {
@@ -1054,14 +1081,14 @@ public final class GraphRenderer {
 			// Compute node border information.
 			final float borderWidth;
 			final Paint borderPaint;
-			Stroke borserStroke = null;
+			Stroke borderStroke = null;
 
 			if ((lodBits & LOD_NODE_BORDERS) == 0) { // Not rendering borders.
 				borderWidth = 0.0f;
 				borderPaint = null;
 			} else { // Rendering node borders.
 				borderWidth = nodeDetails.getBorderWidth(cyNode);
-				borserStroke = nodeDetails.getBorderStroke(cyNode);
+				borderStroke = nodeDetails.getBorderStroke(cyNode);
 				if (borderWidth == 0.0f)
 					borderPaint = null;
 				else
@@ -1070,7 +1097,7 @@ public final class GraphRenderer {
 
 			// Draw the node.
 			nodeShape = grafx.drawNodeFull(shape, floatBuff1[0], floatBuff1[1], floatBuff1[2], floatBuff1[3], 
-			                               fillPaint, borderWidth, borserStroke, borderPaint);
+			                               fillPaint, borderWidth, borderStroke, borderPaint);
 		}
 
 		// Take care of custom graphic rendering.
@@ -1105,11 +1132,67 @@ public final class GraphRenderer {
 					doubleBuff1[2] = floatBuff1[2];
 					doubleBuff1[3] = floatBuff1[3];
 					lemma_computeAnchor(NodeDetails.ANCHOR_CENTER, doubleBuff1, doubleBuff2);
-					grafx.drawCustomGraphicFull(nodeShape, cg, (float) (doubleBuff2[0] + offsetVectorX), 
+					grafx.drawCustomGraphicFull(netView, cyNode, nodeShape, cg,
+												(float) (doubleBuff2[0] + offsetVectorX), 
 					                            (float) (doubleBuff2[1] + offsetVectorY));
 					graphicInx++;
 				}
 			}
+		}
+	}
+
+	private static class SpacialEntry2DEnumeratorZSort implements SpacialEntry2DEnumerator {
+		List<ZSpacialEntry> entryList;
+		int nextEntry = 0;
+
+		public SpacialEntry2DEnumeratorZSort (SpacialIndex2D nodePositions, SpacialEntry2DEnumerator nodeHits) {
+			// Get arrays of SUIDs, extents, Z
+			this.entryList = new ArrayList<ZSpacialEntry>();
+			while (nodeHits.numRemaining() > 0) {
+				float[] extents = new float[4];
+				long suid = nodeHits.nextExtents(extents, 0);
+				// Create an index
+				ZSpacialEntry entry = new ZSpacialEntry(suid, extents, nodePositions.getZOrder(suid));
+				entryList.add(entry);
+			}
+			// System.out.println("Sorting list: "+entryList);
+			Collections.sort(entryList);
+			// System.out.println("Sorted list: "+entryList);
+		}
+
+		public long nextLong() { return entryList.get(nextEntry++).getSUID(); }
+		public int numRemaining() { return (entryList.size()-nextEntry); }
+		public long nextExtents(final float[] extentsArr, final int offset) {
+			ZSpacialEntry entry = entryList.get(nextEntry++);
+			float[] extents = entry.getExtents();
+			extentsArr[offset] = extents[0];
+			extentsArr[offset+1] = extents[1];
+			extentsArr[offset+2] = extents[2];
+			extentsArr[offset+3] = extents[3];
+			return entry.getSUID();
+		}
+	}
+
+	private static class ZSpacialEntry implements Comparable<ZSpacialEntry> {
+		private long suid;
+		private float[] extentsArr;
+		private double z;
+
+		public ZSpacialEntry(long suid, float[] extentsArr, double z) {
+			this.suid = suid;
+			this.extentsArr = extentsArr;
+			this.z = z;
+		}
+
+		public long getSUID() { return this.suid; }
+		public float[] getExtents() { return this.extentsArr; }
+		public double getZ() { return this.z; }
+		public String toString() { return "Suid: "+suid+" z = "+z; }
+
+		public int compareTo(ZSpacialEntry other) {
+			if (other == null || z == other.getZ()) return 0;
+			if (z < other.getZ()) return -1;
+			return 1;
 		}
 	}
 }

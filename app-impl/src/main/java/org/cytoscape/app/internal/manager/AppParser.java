@@ -189,6 +189,12 @@ public class AppParser {
 			manifest = jarFile.getManifest();
 		} catch (IOException e) {
 			throw new AppParsingException("Error obtaining manifest from app jar: " + e.getMessage());
+		} finally {
+			try {
+				jarFile.close();
+			} catch (IOException e) {
+				throw new AppParsingException("Error closing file: " + e.getMessage());
+			}
 		}
 		
 		// Make sure the getManifest() call didn't return null

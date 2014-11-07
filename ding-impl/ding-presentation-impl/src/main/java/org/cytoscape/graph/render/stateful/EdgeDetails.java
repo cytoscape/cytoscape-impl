@@ -370,4 +370,6 @@ public abstract class EdgeDetails {
 		return 100.0;
 	}
 
+	public boolean isVisible(final CyEdge edge) {return true;}
+
 }

@@ -3,12 +3,12 @@
 	<parent>
 		<groupId>org.cytoscape</groupId>
 		<artifactId>impl-parent</artifactId>
-		<version>3.1.1</version>
+		<version>3.2.0</version>
 	</parent>
 
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>datasource-biogrid-impl</artifactId>
-  <version>3.1.1</version>
+  <version>3.2.0</version>
 	<name>Cytoscape BioGrid Datasource Impl (${project.artifactId})</name>
 
 	<properties>

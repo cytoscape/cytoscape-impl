@@ -101,7 +101,7 @@ public class RTreeUpdatePerformance {
 			int inx = 0;
 
 			while (objKey < N) {
-				tree.insert(objKey++, data[inx++], data[inx++], data[inx++], data[inx++]);
+				tree.insert(objKey++, data[inx++], data[inx++], data[inx++], data[inx++], 0.0);
 			}
 
 			final long millisEnd = System.currentTimeMillis();
@@ -178,7 +178,7 @@ public class RTreeUpdatePerformance {
 
 				while (objKey < N) {
 					tree.delete(objKey);
-					tree.insert(objKey++, data[inx++], data[inx++], data[inx++], data[inx++]);
+					tree.insert(objKey++, data[inx++], data[inx++], data[inx++], data[inx++], 0.0);
 				}
 
 				final long millisEnd = System.currentTimeMillis();

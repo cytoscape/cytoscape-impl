@@ -26,6 +26,7 @@ package org.cytoscape.command.internal;
 
 import java.util.Map;
 
+import org.cytoscape.work.FinishStatus;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskFactory;
@@ -58,6 +59,12 @@ class TFExecutor implements Executor {
 			Task t = ti.next();
 			interceptor.setConfigurationContext(args);
 			interceptor.validateAndWriteBackTunables(t);
+			if(!interceptor.validateTunableInput(t, tm))
+			{
+				if(observer != null)
+					observer.allFinished(FinishStatus.newCancelled(t));
+				return;
+			}
 			tm.setTask(t);
 			t.run(tm);
 			if (observer != null && t instanceof ObservableTask) {
@@ -73,6 +80,12 @@ class TFExecutor implements Executor {
 			Task t = ti.next();
 			interceptor.setConfigurationContext(args);
 			interceptor.validateAndWriteBackTunables(t);
+			if(!interceptor.validateTunableInput(t, tm))
+			{
+				if(observer != null)
+					observer.allFinished(FinishStatus.newCancelled(t));
+				return;
+			}
 			tm.setTask(t);
 			t.run(tm);
 			if (observer != null && t instanceof ObservableTask) {

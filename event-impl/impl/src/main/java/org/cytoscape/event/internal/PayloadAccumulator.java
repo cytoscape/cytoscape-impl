@@ -37,6 +37,8 @@ class PayloadAccumulator<S,P,E extends CyPayloadEvent<S,P>> {
 	private final Constructor<E> constructor;
 	private Class<?> sourceClass;
 
+	private final Object lock = new Object();
+	
 	PayloadAccumulator(S source, Class<E> eventType) throws NoSuchMethodException {
 		//System.out.println(" payload accumulator: source.getClass():  " + source + "   " + source.getClass());
 
@@ -66,17 +68,21 @@ class PayloadAccumulator<S,P,E extends CyPayloadEvent<S,P>> {
 		return constructor.newInstance( sourceClass.cast(source), coll );			
 	}
 
-	synchronized void addPayload(P t) {
-		if ( t != null ) 
-			payloadList.add(t);
+	void addPayload(P t) {
+		synchronized (lock) {
+			if ( t != null ) 
+				payloadList.add(t);
+		}
 	}
 
-	synchronized private Collection<P> getPayloadCollection() {
-		if ( payloadList.isEmpty() )
-			return null;
-
-		List<P> ret = payloadList;
-		payloadList = new ArrayList<P>();
-		return ret; 
+	private Collection<P> getPayloadCollection() {
+		synchronized (lock) {
+			if ( payloadList.isEmpty() )
+				return null;
+	
+			List<P> ret = payloadList;
+			payloadList = new ArrayList<P>();
+			return ret;
+		}
 	}
 }

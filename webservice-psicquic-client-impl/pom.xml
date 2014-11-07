@@ -4,7 +4,7 @@
 	<parent>
 		<artifactId>impl-parent</artifactId>
 		<groupId>org.cytoscape</groupId>
-		<version>3.1.1</version>
+		<version>3.2.0</version>
 	</parent>
 
 	<properties>
@@ -14,7 +14,7 @@
 
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>webservice-psicquic-client-impl</artifactId>
-  <version>3.1.1</version>
+  <version>3.2.0</version>
 
 	<name>Cytoscape PSIQUIC Web Service Impl (${project.artifactId})</name>
 
@@ -103,12 +103,12 @@
 			<artifactId>layout-api</artifactId>
 		</dependency>
 
-		<!-- MI Cluster dependency -->
-		<dependency>
-			<groupId>cytoscape-temp</groupId>
-			<artifactId>uk.ac.ebi.enfin.mi.cluster.micluster</artifactId>
-			<version>1.6</version>
-		</dependency>
+        <!-- MI Cluster dependency -->
+        <dependency>
+            <groupId>cytoscape-temp</groupId>
+            <artifactId>uk.ac.ebi.enfin.mi.cluster.micluster</artifactId>
+            <version>1.6</version>
+        </dependency>
 
 		<!-- Testing -->
 		<dependency>

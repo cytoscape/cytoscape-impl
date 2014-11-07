@@ -65,6 +65,7 @@ import java.util.Properties;
 import static org.cytoscape.io.DataCategory.NETWORK;
 import static org.cytoscape.io.DataCategory.TABLE;
 import static org.cytoscape.work.ServiceProperties.COMMAND;
+import static org.cytoscape.work.ServiceProperties.COMMAND_DESCRIPTION;
 import static org.cytoscape.work.ServiceProperties.COMMAND_NAMESPACE;
 
 
@@ -97,7 +98,7 @@ public class CyActivator extends AbstractCyActivator {
         CytoscapeServices.streamUtil = getService(bc,StreamUtil.class);
         CytoscapeServices.cyEventHelper = getService(bc,CyEventHelper.class);
         CytoscapeServices.mapGlobalToLocalTableTaskFactory = getService(bc, MapGlobalToLocalTableTaskFactory.class);
-
+        
         StreamUtil streamUtilServiceRef = getService(bc, StreamUtil.class);
         ImportDataTableTaskFactory importAttrTFServiceRef = getService(bc,ImportDataTableTaskFactory.class);
         VisualMappingManager visualMappingManagerServiceRef = getService(bc,VisualMappingManager.class);
@@ -177,6 +178,7 @@ public class CyActivator extends AbstractCyActivator {
         Properties importFileTablesProps = new Properties();
         importFileTablesProps.setProperty(COMMAND, "import file");
         importFileTablesProps.setProperty(COMMAND_NAMESPACE, "table");
+        importFileTablesProps.setProperty(COMMAND_DESCRIPTION,"Import a table from a file");
         TaskFactory importFileTableFactory = new ImportNoGuiTableReaderFactory(streamUtilServiceRef,importAttrTFServiceRef,false);
         // Register the service as a TaskFactory for commands
         registerService(bc,importFileTableFactory, TaskFactory.class, importFileTablesProps);
@@ -184,6 +186,7 @@ public class CyActivator extends AbstractCyActivator {
         Properties importURLTablesProps = new Properties();
         importURLTablesProps.setProperty(COMMAND, "import url");
         importURLTablesProps.setProperty(COMMAND_NAMESPACE, "table");
+        importURLTablesProps.setProperty(COMMAND_DESCRIPTION,"Import a table from a URL");
         TaskFactory importURLTableFactory = new ImportNoGuiTableReaderFactory(streamUtilServiceRef,importAttrTFServiceRef,true);
         // Register the service as a TaskFactory for commands
         registerService(bc,importURLTableFactory, TaskFactory.class, importURLTablesProps);
@@ -191,6 +194,7 @@ public class CyActivator extends AbstractCyActivator {
         Properties importFileNetworksProps = new Properties();
         importFileNetworksProps.setProperty(COMMAND, "import file");
         importFileNetworksProps.setProperty(COMMAND_NAMESPACE, "network");
+        importFileNetworksProps.setProperty(COMMAND_DESCRIPTION,"Import a network from a file");
         TaskFactory importFileNetworkFactory = new ImportNoGuiNetworkReaderFactory(streamUtilServiceRef,false,CytoscapeServices.cyNetworkManager,
                 CytoscapeServices.cyNetworkViewManager,CytoscapeServices.cyProperties,CytoscapeServices.cyNetworkNaming,
                 visualMappingManagerServiceRef,nullNetworkViewFactory,networkReaderManagerServiceRef);
@@ -200,6 +204,7 @@ public class CyActivator extends AbstractCyActivator {
         Properties importURLNetworksProps = new Properties();
         importURLNetworksProps.setProperty(COMMAND, "import url");
         importURLNetworksProps.setProperty(COMMAND_NAMESPACE, "network");
+        importURLNetworksProps.setProperty(COMMAND_DESCRIPTION,"Import a network from a URL");
         TaskFactory importURLNetworkFactory = new ImportNoGuiNetworkReaderFactory(streamUtilServiceRef,true,CytoscapeServices.cyNetworkManager,
                 CytoscapeServices.cyNetworkViewManager,CytoscapeServices.cyProperties,CytoscapeServices.cyNetworkNaming,
                 visualMappingManagerServiceRef,nullNetworkViewFactory, networkReaderManagerServiceRef);

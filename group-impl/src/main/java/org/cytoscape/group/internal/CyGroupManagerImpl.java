@@ -25,6 +25,7 @@ package org.cytoscape.group.internal;
  */
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -36,13 +37,10 @@ import org.cytoscape.group.CyGroup;
 import org.cytoscape.group.CyGroupManager;
 import org.cytoscape.group.events.GroupAboutToBeDestroyedEvent;
 import org.cytoscape.group.events.GroupAddedEvent;
-
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * An implementation of CyNetworkManager.
@@ -53,6 +51,9 @@ public class CyGroupManagerImpl implements CyGroupManager {
 	private Set<CyGroup> groupSet;
 	private Map<CyRootNetwork, Set<CyGroup>> rootMap;
 	private static final String GROUP_LIST_ATTRIBUTE = "__groupList.SUID";
+	
+	private final Object lock = new Object();
+	
 	/**
 	 * 
 	 * @param cyEventHelper
@@ -64,32 +65,40 @@ public class CyGroupManagerImpl implements CyGroupManager {
 	}
 
 	@Override
-	public synchronized Set<CyGroup> getGroupSet(CyNetwork network) {
-		Set<CyGroup> groupNetSet = new HashSet<CyGroup>();
-		for (CyGroup group: groupSet) {
-			if (group.isInNetwork(network))
-				groupNetSet.add(group);
-		}
-		return groupNetSet;
-	}
-
-	@Override
-	public synchronized void addGroup(final CyGroup group) {
-		if (!groupSet.contains(group)) {
-			groupSet.add(group);
-			addGroupToRootMap(group);
-			// updateGroupAttribute(group);
-			cyEventHelper.fireEvent(new GroupAddedEvent(CyGroupManagerImpl.this, group));
+	public Set<CyGroup> getGroupSet(CyNetwork network) {
+		synchronized (lock) {
+			Set<CyGroup> groupNetSet = new HashSet<CyGroup>();
+			for (CyGroup group: groupSet) {
+				if (group.isInNetwork(network))
+					groupNetSet.add(group);
+			}
+			return groupNetSet;
 		}
 	}
 
 	@Override
-	public synchronized void addGroups(final List<CyGroup> groups) {
-		for (CyGroup group: groups) {
-			if (!groupSet.contains(group)) {
+	public void addGroup(final CyGroup group) {
+		synchronized (lock) {
+			if (groupSet.contains(group)) {
+				return;
+			} else {
 				groupSet.add(group);
 				addGroupToRootMap(group);
 				// updateGroupAttribute(group);
+			}
+		}
+		cyEventHelper.fireEvent(new GroupAddedEvent(CyGroupManagerImpl.this, group));
+	}
+
+	@Override
+	public void addGroups(final List<CyGroup> groups) {
+		synchronized (lock) {
+			for (CyGroup group: groups) {
+				if (!groupSet.contains(group)) {
+					groupSet.add(group);
+					addGroupToRootMap(group);
+					// updateGroupAttribute(group);
+				}
 			}
 		}
 		// Fire GroupsAddedEvent?
@@ -97,74 +106,91 @@ public class CyGroupManagerImpl implements CyGroupManager {
 	}
 
 	@Override
-	public synchronized List<CyGroup> getGroupsForNode(CyNode node) {
-		List<CyGroup> returnList = new ArrayList<CyGroup>();
-
-		// This is a little inefficient....
-		for (CyGroup group: groupSet) {
-			if (group.getGroupNetwork().containsNode(node))
-				returnList.add(group);
+	public List<CyGroup> getGroupsForNode(CyNode node) {
+		synchronized (lock) {
+			List<CyGroup> returnList = new ArrayList<CyGroup>();
+	
+			// This is a little inefficient....
+			for (CyGroup group: groupSet) {
+				if (group.getGroupNetwork().containsNode(node))
+					returnList.add(group);
+			}
+	
+			return returnList;
 		}
-
-		return returnList;
 	}
 
 	@Override
-	public synchronized List<CyGroup> getGroupsForNode(CyNode node, CyNetwork network) {
-		List<CyGroup> returnList = new ArrayList<CyGroup>();
-		for (CyGroup group: groupSet) {
-			if (group.isInNetwork(network) &&
-			    group.getGroupNetwork().containsNode(node))
-				returnList.add(group);
+	public List<CyGroup> getGroupsForNode(CyNode node, CyNetwork network) {
+		synchronized (lock) {
+			List<CyGroup> returnList = new ArrayList<CyGroup>();
+			for (CyGroup group: groupSet) {
+				if (group.isInNetwork(network) &&
+				    group.getGroupNetwork().containsNode(node))
+					returnList.add(group);
+			}
+			return returnList;
 		}
-		return returnList;
 	}
 
 	@Override
-	public synchronized CyGroup getGroup(CyNode node, CyNetwork network) {
-		for (CyGroup group: groupSet) {
-			if (group.isInNetwork(network) && group.getGroupNode().equals(node))
-				return group;
+	public CyGroup getGroup(CyNode node, CyNetwork network) {
+		synchronized (lock) {
+			for (CyGroup group: groupSet) {
+				if (group.isInNetwork(network) && group.getGroupNode().equals(node))
+					return group;
+			}
+			return null;
 		}
-		return null;
 	}
 
 	@Override
-	public synchronized boolean isGroup(CyNode node, CyNetwork network) {
-		for (CyGroup group: groupSet) {
-			if (group.isInNetwork(network) && group.getGroupNode().equals(node))
-				return true;
+	public boolean isGroup(CyNode node, CyNetwork network) {
+		synchronized (lock) {
+			for (CyGroup group: groupSet) {
+				if (group.isInNetwork(network) && group.getGroupNode().equals(node))
+					return true;
+			}
+	
+			return false;
 		}
-
-		return false;
 	}
 
 	@Override
-	public synchronized void destroyGroup(CyGroup group) {
-		if (!groupSet.contains(group))
-			return;
+	public void destroyGroup(CyGroup group) {
+		synchronized (lock) {
+			if (!groupSet.contains(group))
+				return;
+		}
 
 		cyEventHelper.fireEvent(new GroupAboutToBeDestroyedEvent(CyGroupManagerImpl.this, group));
-		if (rootMap.containsKey(group.getRootNetwork()))
-			rootMap.get(group.getRootNetwork()).remove(group);
-		groupSet.remove(group);
+		
+		synchronized (lock) {
+			if (rootMap.containsKey(group.getRootNetwork()))
+				rootMap.get(group.getRootNetwork()).remove(group);
+			groupSet.remove(group);
+		}
 		((CyGroupImpl)group).destroyGroup();
 		// updateGroupAttribute(group);
 	}
 
 	@Override
-	public synchronized void reset() {
-		this.groupSet = new HashSet<CyGroup>();
+	public void reset() {
+		synchronized (lock) {
+			this.groupSet = new HashSet<CyGroup>();
+		}
 	}
 
 	public Set<CyGroup> getAllGroups() {
-		return groupSet;
+		synchronized (lock) {
+			return Collections.unmodifiableSet(groupSet);
+		}
 	}
 
 	public Set<CyGroup> getGroupSet(CyRootNetwork root) {
-		if (rootMap.containsKey(root))
+		synchronized (lock) {
 			return rootMap.get(root);
-		return null;
+		}
 	}
 
 	/**
@@ -180,12 +206,14 @@ public class CyGroupManagerImpl implements CyGroupManager {
 	}
 
 	private void addGroupToRootMap(CyGroup group) {
-		if (rootMap.containsKey(group.getRootNetwork()))
-			rootMap.get(group.getRootNetwork()).add(group);
-		else {
-			Set<CyGroup>groupNetSet = new HashSet<CyGroup>();
-			groupNetSet.add(group);
-			rootMap.put(group.getRootNetwork(),groupNetSet);
+		synchronized (lock) {
+			if (rootMap.containsKey(group.getRootNetwork()))
+				rootMap.get(group.getRootNetwork()).add(group);
+			else {
+				Set<CyGroup>groupNetSet = new HashSet<CyGroup>();
+				groupNetSet.add(group);
+				rootMap.put(group.getRootNetwork(),groupNetSet);
+			}
 		}
 	}
 

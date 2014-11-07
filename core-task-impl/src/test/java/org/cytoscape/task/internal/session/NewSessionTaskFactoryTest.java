@@ -46,8 +46,7 @@ public class NewSessionTaskFactoryTest {
 	
 	@Test
 	public void testRun() throws Exception {
-
-		CySessionManager mgr = mock(CySessionManager.class);;
+		CySessionManager mgr = mock(CySessionManager.class);
 
 		NewSessionTaskFactoryImpl factory = new NewSessionTaskFactoryImpl(mgr, ts, eh);
 		
