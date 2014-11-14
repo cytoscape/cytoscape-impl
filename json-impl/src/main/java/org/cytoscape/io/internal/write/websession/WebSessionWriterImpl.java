@@ -171,6 +171,7 @@ public class WebSessionWriterImpl extends AbstractTask implements CyWriter, WebS
 				addDir(file.listFiles(), out);
 				continue;
 			}
+			System.out.println("ABS == " + file.getAbsolutePath());
 			final FileInputStream in = new FileInputStream(file.getAbsolutePath());
 			
 			if(file.getName().startsWith(FILE_LIST_NAME)) {
@@ -229,6 +230,7 @@ public class WebSessionWriterImpl extends AbstractTask implements CyWriter, WebS
 			JSONNetworkViewWriter writer = (JSONNetworkViewWriter) cytoscapejsWriterFactory.createWriter(
 					new FileOutputStream(tempFile), view);
 			writer.run(taskMonitor);
+			
 			networkFiles.add(tempFile);
 			name2fileMap.put(networkName, tempFile);
 		}

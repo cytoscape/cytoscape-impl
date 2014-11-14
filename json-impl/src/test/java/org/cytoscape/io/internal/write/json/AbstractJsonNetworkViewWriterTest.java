@@ -26,10 +26,15 @@ public abstract class AbstractJsonNetworkViewWriterTest {
 	protected Map<Long, CyEdge> suid2edgeMap;
 	
 	protected CyNetworkView view;
+	
+	public AbstractJsonNetworkViewWriterTest() {
+		this.tm = mock(TaskMonitor.class);
+		suid2nodeMap = new HashMap<Long, CyNode>();
+		suid2edgeMap = new HashMap<Long, CyEdge>();
+	}
 
 	@Before
 	public void setUp() throws Exception {
-		this.tm = mock(TaskMonitor.class);
 		suid2nodeMap = new HashMap<Long, CyNode>();
 		suid2edgeMap = new HashMap<Long, CyEdge>();
 		
@@ -41,7 +46,7 @@ public abstract class AbstractJsonNetworkViewWriterTest {
 	public void tearDown() throws Exception {
 	}
 
-	protected CyNetworkView generateNetworkView() throws Exception {
+	public CyNetworkView generateNetworkView() throws Exception {
 		final CyNetwork network1 = support.getNetwork();
 
 		network1.getRow(network1).set(CyNetwork.NAME, "Sample Network1");
