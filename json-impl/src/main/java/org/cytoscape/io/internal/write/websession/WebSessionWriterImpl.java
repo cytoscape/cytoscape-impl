@@ -5,6 +5,8 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -36,10 +38,12 @@ public class WebSessionWriterImpl extends AbstractTask implements CyWriter, WebS
 
 	private static final Logger logger = LoggerFactory.getLogger(WebSessionWriterImpl.class);
 
-	protected static final String FOLDER_NAME = "/web_session/";
+	protected static final String FOLDER_NAME = "web_session";
 	private static final String FILE_LIST_NAME = "filelist";
 	
-	protected static final String WEB_RESOURCE_NAME = "/web";
+	protected static final String WEB_RESOURCE_NAME = "web";
+	
+	private static final String JSON_EXT = ".json";
 
 	protected File webResourceDirectory;
 	
@@ -55,6 +59,7 @@ public class WebSessionWriterImpl extends AbstractTask implements CyWriter, WebS
 	private final Map<String, File> name2fileMap;
 	
 	protected final String exportType;
+	private final Path absResourcePath;
 	
 
 	public WebSessionWriterImpl(final OutputStream outputStream, final String exportType, final VizmapWriterFactory jsonStyleWriterFactory,
@@ -69,7 +74,10 @@ public class WebSessionWriterImpl extends AbstractTask implements CyWriter, WebS
 		this.webResourceDirectory = appConfig.getConfigurationDirectoryLocation();
 		this.name2fileMap = new HashMap<String, File>();
 		this.exportType = exportType;
-
+		
+		final File resourceDir = new File(WEB_RESOURCE_NAME, exportType);
+		File resourceDirectoryFile = new File(webResourceDirectory.getAbsolutePath(), resourceDir.getPath());
+		this.absResourcePath = Paths.get(resourceDirectoryFile.getAbsolutePath());
 	}
 
 
@@ -143,8 +151,8 @@ public class WebSessionWriterImpl extends AbstractTask implements CyWriter, WebS
 		files.add(fileList);
 		
 		// Phase 4: Zip everything
-		final File webResourceFiles = new File(webResourceDirectory, WEB_RESOURCE_NAME + "/" + exportType);
-		files.add(webResourceFiles);
+		Path resourceFilePath = Paths.get(webResourceDirectory.getAbsolutePath(), WEB_RESOURCE_NAME, exportType);
+		files.add(resourceFilePath.toFile());
 		zipAll(files);
 
 		if (cancelled)
@@ -171,18 +179,25 @@ public class WebSessionWriterImpl extends AbstractTask implements CyWriter, WebS
 				addDir(file.listFiles(), out);
 				continue;
 			}
-			System.out.println("ABS == " + file.getAbsolutePath());
-			final FileInputStream in = new FileInputStream(file.getAbsolutePath());
 			
-			if(file.getName().startsWith(FILE_LIST_NAME)) {
-				// Rename File List
-				out.putNextEntry(new ZipEntry(FOLDER_NAME + "/" + FILE_LIST_NAME + ".json"));
-			} else if(file.getAbsolutePath().contains(webResourceDirectory.getAbsolutePath() + WEB_RESOURCE_NAME) == false) {
-				final String newFileName = FOLDER_NAME + "data/" + file.getName();
-				out.putNextEntry(new ZipEntry(newFileName));
+			final Path filePath = file.toPath();
+			
+			final FileInputStream in = new FileInputStream(file);
+			
+			if(filePath.getFileName().toString().startsWith(FILE_LIST_NAME)) {
+				// This is the data file list JSON file.
+				final Path fileListPath = Paths.get(FOLDER_NAME, FILE_LIST_NAME + JSON_EXT);
+				final ZipEntry fileListEntry = new ZipEntry(fileListPath.toString());
+				out.putNextEntry(fileListEntry);
+			} else if(filePath.getParent().toString().contains(absResourcePath.toString()) == false) {
+				// These are data files (style & network)
+				final Path dataFilePath = Paths.get(FOLDER_NAME, "data", file.getName());
+				out.putNextEntry(new ZipEntry(dataFilePath.toString()));
 			} else {
-				final String newFileName = file.getAbsolutePath().replace(webResourceDirectory.getAbsolutePath() + WEB_RESOURCE_NAME + "/" + exportType, "");
-				out.putNextEntry(new ZipEntry(FOLDER_NAME + newFileName));
+				// Web resource files in web directory
+				final Path relPath = absResourcePath.relativize(filePath);
+				Path newResourceFilePath = Paths.get(FOLDER_NAME, relPath.toString());
+				out.putNextEntry(new ZipEntry(newResourceFilePath.toString()));
 			}
 			
 			int len;
@@ -203,7 +218,7 @@ public class WebSessionWriterImpl extends AbstractTask implements CyWriter, WebS
 	protected final File createStyleFile() throws Exception {
 		// Write all Styles into one JSON file.
 		final Set<VisualStyle> styles = vmm.getAllVisualStyles();
-		File styleFile = File.createTempFile("style_", ".json");
+		File styleFile = File.createTempFile("style_", JSON_EXT);
 		CyWriter vizmapWriter = jsonStyleWriterFactory.createWriter(new FileOutputStream(styleFile), styles);
 		vizmapWriter.run(taskMonitor);
 		return styleFile;
@@ -226,7 +241,7 @@ public class WebSessionWriterImpl extends AbstractTask implements CyWriter, WebS
 
 			final String jsonFileName = networkName + "-" + networkSUID.toString();
 
-			File tempFile = File.createTempFile(jsonFileName + "_", ".json");
+			File tempFile = File.createTempFile(jsonFileName + "_", JSON_EXT);
 			JSONNetworkViewWriter writer = (JSONNetworkViewWriter) cytoscapejsWriterFactory.createWriter(
 					new FileOutputStream(tempFile), view);
 			writer.run(taskMonitor);
