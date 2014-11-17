@@ -184,21 +184,30 @@ public class WebSessionWriterImpl extends AbstractTask implements CyWriter, WebS
 			
 			final FileInputStream in = new FileInputStream(file);
 			
+			String zipFilePath = null;
 			if(filePath.getFileName().toString().startsWith(FILE_LIST_NAME)) {
 				// This is the data file list JSON file.
 				final Path fileListPath = Paths.get(FOLDER_NAME, FILE_LIST_NAME + JSON_EXT);
-				final ZipEntry fileListEntry = new ZipEntry(fileListPath.toString());
-				out.putNextEntry(fileListEntry);
+				zipFilePath = fileListPath.toString();
 			} else if(filePath.getParent().toString().contains(absResourcePath.toString()) == false) {
 				// These are data files (style & network)
 				final Path dataFilePath = Paths.get(FOLDER_NAME, "data", file.getName());
-				out.putNextEntry(new ZipEntry(dataFilePath.toString()));
+				zipFilePath = dataFilePath.toString();
 			} else {
 				// Web resource files in web directory
 				final Path relPath = absResourcePath.relativize(filePath);
 				Path newResourceFilePath = Paths.get(FOLDER_NAME, relPath.toString());
-				out.putNextEntry(new ZipEntry(newResourceFilePath.toString()));
+				zipFilePath = newResourceFilePath.toString();
 			}
+			
+			// This is for Windows System:  Replace file separator to slash.
+			if (File.separatorChar != '/') {
+				zipFilePath = zipFilePath.replace('\\', '/');
+			}
+			
+			// Add normalized path name;
+			final ZipEntry entry = new ZipEntry(zipFilePath);
+			out.putNextEntry(entry);
 			
 			int len;
 			while ((len = in.read(buffer)) > 0) {
