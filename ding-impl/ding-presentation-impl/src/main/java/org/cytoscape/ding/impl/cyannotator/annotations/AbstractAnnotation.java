@@ -477,17 +477,10 @@ public class AbstractAnnotation extends JComponent implements DingAnnotation {
 		return Integer.parseInt(argMap.get(key));
 	}
 
-  protected String getString(Map<String, String> argMap, String key, String defValue) {
+  protected Double getDouble(Map<String, String> argMap, String key, double defValue) {
 		if (!argMap.containsKey(key) || argMap.get(key) == null)
 			return defValue;
-		return argMap.get(key);
-	}
- 
-	protected Font getArgFont(Map<String, String> argMap, String defFamily, int defStyle, int defSize) {
-		String family = getString(argMap, TextAnnotationImpl.FONTFAMILY, defFamily);
-		int size = getInteger(argMap, TextAnnotationImpl.FONTSIZE, defSize);
-		int style = getInteger(argMap, TextAnnotationImpl.FONTSTYLE, defStyle);
-		return new Font(family, style, size);
+		return Double.parseDouble(argMap.get(key));
 	}
 
 	protected Font getArgFont(Map<String, String> argMap, String defFamily, int defStyle, int defSize) {

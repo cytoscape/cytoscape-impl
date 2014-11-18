@@ -77,7 +77,6 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 		setSize(getAnnotationWidth(), getAnnotationHeight());
 	}
 
-	// Need to make sure all arguments have reasonable options
 	// This constructor is used to construct a text annotation from an
 	// argument map.
 	// Need to make sure all arguments have reasonable options

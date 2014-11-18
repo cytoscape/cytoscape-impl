@@ -89,12 +89,10 @@ public abstract class AbstractDViewModel<M extends CyIdentifiable> implements Vi
 
 	@Override
 	public <T, V extends T> void setVisualProperty(final VisualProperty<? extends T> vp, V value) {
-		synchronized (getDGraphView().m_lock) {
-			if (value == null)
-				visualProperties.remove(vp);
-			else
-				visualProperties.put(vp, value);
-		}
+		if (value == null)
+			visualProperties.remove(vp);
+		else
+			visualProperties.put(vp, value);
 
 		// Ding has it's own listener for selection events.  If we
 		// don't do this, we might get into a deadlock state
@@ -136,9 +134,7 @@ public abstract class AbstractDViewModel<M extends CyIdentifiable> implements Vi
 
 	@Override
 	public boolean isDirectlyLocked(VisualProperty<?> visualProperty) {
-		synchronized (getDGraphView().m_lock) {
-			return directLocks.get(visualProperty) != null;
-		}
+		return directLocks.get(visualProperty) != null;
 	}
 	
 	@Override
@@ -157,9 +153,7 @@ public abstract class AbstractDViewModel<M extends CyIdentifiable> implements Vi
 
 	@Override
 	public boolean isValueLocked(final VisualProperty<?> vp) {
-		synchronized (getDGraphView().m_lock) {
-			return allLocks.get(vp) != null;
-		}
+		return allLocks.get(vp) != null;
 	}
 
 	@Override

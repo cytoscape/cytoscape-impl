@@ -126,15 +126,8 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 		brightness = getInteger(argMap, LIGHTNESS, 0);
 		contrast = getInteger(argMap, CONTRAST, 0);
 
-		opacity = getFloat(argMap, OPACITY, 1.0f);
-		brightness = getInteger(argMap, LIGHTNESS, 0);
-		contrast = getInteger(argMap, CONTRAST, 0);
- 
- 		this.image = null;
- 		this.resizedImage = null;
- 
-		if (!argMap.containsKey(URL))
-			return;
+		this.image = null;
+		this.resizedImage = null;
 
 		if (!argMap.containsKey(URL))
 			return;

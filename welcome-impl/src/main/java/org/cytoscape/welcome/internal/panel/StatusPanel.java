@@ -72,12 +72,6 @@ public final class StatusPanel extends AbstractWelcomeScreenChildPanel {
 		final JPanel panel = new JPanel();
 		panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
 
-		JPanel panel = new JPanel();
-		panel.setAlignmentX(Component.LEFT_ALIGNMENT);
-		panel.setLayout( new BorderLayout(0,3));
-
-
-		this.setLayout( new BorderLayout(0,3) );
 		final JLabel status = new JLabel();
 		status.setAlignmentX(Component.LEFT_ALIGNMENT);
 		status.setBackground(this.getBackground());

@@ -54,7 +54,6 @@ public class CytoscapeJsNetworkReader extends AbstractCyNetworkReader {
 		return result;
 	}
 
-
 	@Override
 	public CyNetworkView buildCyNetworkView(CyNetwork network) {
 		final CyNetworkView view = cyNetworkViewFactory.createNetworkView(network);
@@ -68,7 +67,6 @@ public class CytoscapeJsNetworkReader extends AbstractCyNetworkReader {
 
 		return view;
 	}
-
 
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {

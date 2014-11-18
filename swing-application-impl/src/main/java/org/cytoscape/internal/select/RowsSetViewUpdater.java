@@ -156,7 +156,7 @@ public class RowsSetViewUpdater implements RowsSetListener {
 		}
 
 		if (refreshView) {
-			// vs.apply(networkView);
+			vs.apply(networkView);
 			networkView.updateView();
 			
 			if (refreshOtherViews) {

@@ -51,8 +51,6 @@ public class CyActivator extends AbstractCyActivator {
 		final CyNetworkViewManager viewManager = getService(bc, CyNetworkViewManager.class);
 		final VisualMappingManager vmm = getService(bc, VisualMappingManager.class);
 
-		
-		
 		// ///////////////// Readers ////////////////////////////
 		final BasicCyFileFilter cytoscapejsReaderFilter = new BasicCyFileFilter(new String[] { "cyjs", "json" },
 				new String[] { "application/json" }, "Cytoscape.js JSON", DataCategory.NETWORK, streamUtil);
