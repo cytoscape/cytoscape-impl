@@ -60,7 +60,7 @@ public class WebSessionWriterImpl extends AbstractTask implements CyWriter, WebS
 	
 	protected final String exportType;
 	private final Path absResourcePath;
-	
+
 
 	public WebSessionWriterImpl(final OutputStream outputStream, final String exportType, final VizmapWriterFactory jsonStyleWriterFactory,
 			final VisualMappingManager vmm, final CytoscapeJsNetworkWriterFactory cytoscapejsWriterFactory,
