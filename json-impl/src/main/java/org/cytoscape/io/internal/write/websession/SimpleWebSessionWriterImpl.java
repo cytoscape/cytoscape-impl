@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
@@ -22,6 +24,7 @@ import org.cytoscape.work.TaskMonitor;
 public class SimpleWebSessionWriterImpl extends WebSessionWriterImpl {
 
 	private final CyApplicationManager applicationManager;
+	private Path resourceFilePath;
 
 	public SimpleWebSessionWriterImpl(OutputStream outputStream, String exportType,
 			VizmapWriterFactory jsonStyleWriterFactory, VisualMappingManager vmm,
@@ -56,9 +59,8 @@ public class SimpleWebSessionWriterImpl extends WebSessionWriterImpl {
 		tm.setProgress(0.9);
 
 		// Phase 3: Zip everything
-		final File webResourceFiles = new File(webResourceDirectory, WEB_RESOURCE_NAME + "/"
-				+ WebSessionWriterFactoryImpl.SIMPLE_EXPORT);
-		files.add(webResourceFiles);
+		this.resourceFilePath = Paths.get(webResourceDirectory.getAbsolutePath(), WEB_RESOURCE_NAME, exportType);
+		files.add(resourceFilePath.toFile());
 		zipAll(files);
 
 		if (cancelled)
@@ -84,24 +86,37 @@ public class SimpleWebSessionWriterImpl extends WebSessionWriterImpl {
 				addDir(file.listFiles(), out);
 				continue;
 			}
-			final FileInputStream in = new FileInputStream(file.getAbsolutePath());
-
-			if (file.getAbsolutePath().contains(webResourceDirectory.getAbsolutePath() + WEB_RESOURCE_NAME) == false) {
-				final String currentFuileName = file.getName();
+			
+			final FileInputStream in = new FileInputStream(file);
+			final Path filePath = file.toPath();
+			String zipFilePath = null;
+			
+			if (file.getAbsolutePath().contains(resourceFilePath.toString()) == false) {
+				final String currentFileName = file.getName();
 
 				final String fileName;
-				if (currentFuileName.startsWith("style")) {
+				if (currentFileName.startsWith("style")) {
 					fileName = "style.json";
 				} else {
 					fileName = "network.json";
 				}
-				final String newFileName = FOLDER_NAME + fileName;
-				out.putNextEntry(new ZipEntry(newFileName));
+				final Path dataFilePath = Paths.get(FOLDER_NAME, fileName);
+				zipFilePath = dataFilePath.toString();
 			} else {
-				final String newFileName = file.getAbsolutePath().replace(
-						webResourceDirectory.getAbsolutePath() + WEB_RESOURCE_NAME + "/" + exportType, "");
-				out.putNextEntry(new ZipEntry(FOLDER_NAME + newFileName));
+				final Path relPath = resourceFilePath.relativize(filePath);
+				Path newResourceFilePath = Paths.get(FOLDER_NAME, relPath.toString());
+				zipFilePath = newResourceFilePath.toString();
 			}
+			
+			
+			// This is for Windows System:  Replace file separator to slash.
+			if (File.separatorChar != '/') {
+				zipFilePath = zipFilePath.replace('\\', '/');
+			}
+			
+			// Add normalized path name;
+			final ZipEntry entry = new ZipEntry(zipFilePath);
+			out.putNextEntry(entry);
 
 			int len;
 			while ((len = in.read(buffer)) > 0) {
