@@ -17,7 +17,7 @@ import org.cytoscape.work.TaskMonitor;
  * This class is thread-safe.
  * </p>
  */
-public class TaskHistory implements Iterable<TaskHistory.History> {
+public class TaskHistory implements Iterable<Object> {
   public static interface FinishListener {
     public void taskFinished(History history);
   }
@@ -95,7 +95,7 @@ public class TaskHistory implements Iterable<TaskHistory.History> {
     }
   }
 
-  final ConcurrentLinkedQueue<History> histories = new ConcurrentLinkedQueue<History>();
+  final ConcurrentLinkedQueue<Object> histories = new ConcurrentLinkedQueue<Object>();
   volatile FinishListener finishListener = null;
 
   /**
@@ -110,7 +110,7 @@ public class TaskHistory implements Iterable<TaskHistory.History> {
   /**
    * Return all {@code History}'s contained in this instance.
    */
-  public Iterator<History> iterator() {
+  public Iterator<Object> iterator() {
     return histories.iterator();
   }
 
@@ -123,5 +123,9 @@ public class TaskHistory implements Iterable<TaskHistory.History> {
 
   public void setFinishListener(final FinishListener finishListener) {
     this.finishListener = finishListener;
+  }
+
+  public void addUnnestedMessage(final TaskMonitor.Level level, final String message) {
+    histories.add(new Message(level, message));
   }
 }

@@ -116,63 +116,77 @@ public class TaskHistoryWindow {
     return TaskDialog.ICON_URLS.get(name).toString();
   }
 
+  private void generateMessage(final TaskHistory.Message message, final StringBuffer buffer) {
+    final TaskMonitor.Level level = message.level();
+    final String levelIconURL = getIconURL(level);
+    if (levelIconURL != null) {
+      buffer.append("<li style=\"margin-top: 5px;\">");
+      buffer.append("<img src=\"");
+      buffer.append(levelIconURL);
+      buffer.append("\">&nbsp;");
+    } else {
+      buffer.append("<li style=\"margin-top: 10px;\">");
+      buffer.append("<b>");
+    }
+    buffer.append(message.message());
+    if (level == null) {
+      buffer.append("</b>");
+    }
+    buffer.append("</li>");
+  }
+
+  private void generateHistory(final TaskHistory.History history, final StringBuffer buffer) {
+    if (history.getFirstTaskClass() == null) {
+      // skip task iterators that never called history.setFirstTaskClass() -- these
+      // iterators were never started because they were cancelled by its first tunable dialog
+      return;
+    }
+
+    buffer.append("<p>");
+    buffer.append("<h1 style=\"margin-top: 0px; margin-bottom: 0px;\">&nbsp;");
+
+    final FinishStatus.Type finishType = history.getFinishType();
+    final String finishIconURL = getIconURL(finishType);
+    if (finishIconURL != null) {
+      buffer.append("<img src=\"");
+      buffer.append(finishIconURL);
+      buffer.append("\">&nbsp;");
+    }
+
+    final String title = history.getTitle();
+    if (title == null || title.length() == 0) {
+      buffer.append("<i>Untitled</i>");
+      final Class<?> klass = history.getFirstTaskClass();
+      if (klass != null) {
+        buffer.append(" <font size=\"-1\">(");
+        buffer.append(klass.getName());
+        buffer.append(")</font>");
+      }
+    } else {
+      buffer.append(title);
+    }
+    buffer.append("</h1>");
+
+    buffer.append("<ul style=\"margin-top: 0px; margin-bottom: 0px;\">");
+    for (final TaskHistory.Message message : history) {
+      generateMessage(message, buffer);
+    }
+    buffer.append("</ul>");
+    buffer.append("</p>");
+  }
 
   private String generateHistoryHTML() {
     final StringBuffer buffer = new StringBuffer();
     buffer.append("<html>");
 
-    for (final TaskHistory.History history : taskHistory) {
-      if (history.getFirstTaskClass() == null) {
-        // skip task iterators that never called history.setFirstTaskClass() -- these
-        // iterators were never started because they were cancelled by its first tunable dialog
-        continue;
+    for (final Object element : taskHistory) {
+      if (element instanceof TaskHistory.History) {
+        generateHistory((TaskHistory.History) element, buffer);
+      } else if (element instanceof TaskHistory.Message) {
+        buffer.append("<ul style=\"margin-top: 0px; margin-bottom: 0px; margin-left: 0px; padding-left: 0px;\">");
+        generateMessage((TaskHistory.Message) element, buffer);
+        buffer.append("</ul>");
       }
-
-      buffer.append("<p>");
-      buffer.append("<h1 style=\"margin-top: 0px; margin-bottom: 0px;\">&nbsp;");
-
-      final FinishStatus.Type finishType = history.getFinishType();
-      final String finishIconURL = getIconURL(finishType);
-      if (finishIconURL != null) {
-        buffer.append("<img src=\"");
-        buffer.append(finishIconURL);
-        buffer.append("\">&nbsp;");
-      }
-
-      final String title = history.getTitle();
-      if (title == null || title.length() == 0) {
-        buffer.append("<i>Untitled</i>");
-        final Class<?> klass = history.getFirstTaskClass();
-        if (klass != null) {
-          buffer.append(" <font size=\"-1\">(");
-          buffer.append(klass.getName());
-          buffer.append(")</font>");
-        }
-      } else {
-        buffer.append(title);
-      }
-      buffer.append("</h1>");
-
-      buffer.append("<ul style=\"margin-top: 0px; margin-bottom: 0px;\">");
-      for (final TaskHistory.Message message : history) {
-        final TaskMonitor.Level level = message.level();
-        final String levelIconURL = getIconURL(level);
-        if (levelIconURL != null) {
-          buffer.append("<li style=\"margin-top: 5px;\">");
-          buffer.append("<img src=\"");
-          buffer.append(levelIconURL);
-          buffer.append("\">&nbsp;");
-        } else {
-          buffer.append("<li style=\"margin-top: 10px;\">");
-          buffer.append("<b>");
-        }
-        buffer.append(message.message());
-        if (level == null) {
-          buffer.append("</b>");
-        }
-        buffer.append("</li>");
-      }
-      buffer.append("</p>");
     }
     buffer.append("</html>");
     return buffer.toString();

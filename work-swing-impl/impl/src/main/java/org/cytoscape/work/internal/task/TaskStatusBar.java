@@ -14,6 +14,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 
 import org.cytoscape.work.FinishStatus;
+import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.swing.TaskStatusPanelFactory;
 
 /**
@@ -79,6 +80,23 @@ public class TaskStatusBar extends JPanel implements TaskStatusPanelFactory {
 	  }
 	  this.setTitle(icon, title);
 	}
+
+
+  public void setTitle(final TaskMonitor.Level level, final String title) {
+    String name = null;
+    Icon icon = null;
+    if (level != null) {
+	    switch (level) {
+	      case INFO:  name = "info"; break;
+	      case WARN:  name = "warn"; break;
+	      case ERROR: name = "error"; break;
+	    }
+	  }
+    if (name != null) {
+	  	icon = TaskDialog.ICONS.get(name);
+		}
+	  this.setTitle(icon, title);
+  }
 
 	public void setTitle(final Icon icon, final String title) {
 		if (!SwingUtilities.isEventDispatchThread()) {

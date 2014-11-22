@@ -27,6 +27,7 @@ package org.cytoscape.work.internal;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Properties;
+import java.util.logging.LogManager;
 
 import javax.swing.SwingUtilities;
 
@@ -44,6 +45,7 @@ import org.cytoscape.work.internal.task.JPanelTaskManager;
 import org.cytoscape.work.internal.task.TaskHistory;
 import org.cytoscape.work.internal.task.TaskHistoryWindow;
 import org.cytoscape.work.internal.task.TaskStatusBar;
+import org.cytoscape.work.internal.task.CyUserLogHandler;
 import org.cytoscape.work.internal.tunables.BooleanHandler;
 import org.cytoscape.work.internal.tunables.BoundedHandler;
 import org.cytoscape.work.internal.tunables.DoubleHandler;
@@ -74,7 +76,6 @@ import org.cytoscape.work.util.ListSingleSelection;
 import org.osgi.framework.BundleContext;
 
 
-
 public class CyActivator extends AbstractCyActivator {
 	public CyActivator() {
 		super();
@@ -103,6 +104,8 @@ public class CyActivator extends AbstractCyActivator {
 				window.open();
 			}
 		});
+
+		LogManager.getLogManager().getLogger("org.cytoscape.application.userlog").addHandler(new CyUserLogHandler(taskStatusBar, taskHistory));
 
 		JDialogTaskManager jDialogTaskManager = new JDialogTaskManager(jDialogTunableMutator, cyPropertyServiceRef, taskStatusBar, taskHistory);
 		PanelTaskManager jPanelTaskManager = new JPanelTaskManager(jPanelTunableMutator, jDialogTaskManager);
