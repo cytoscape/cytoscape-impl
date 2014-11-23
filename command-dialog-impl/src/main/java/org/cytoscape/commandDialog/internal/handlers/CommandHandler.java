@@ -38,6 +38,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
 
 import org.cytoscape.command.AvailableCommands;
 import org.cytoscape.command.CommandExecutorTaskFactory;
@@ -60,7 +63,8 @@ import org.ops4j.pax.logging.spi.PaxAppender;
 import org.ops4j.pax.logging.spi.PaxLevel;
 import org.ops4j.pax.logging.spi.PaxLoggingEvent;
 
-public class CommandHandler implements PaxAppender, TaskObserver {
+public class CommandHandler extends Handler
+                            implements PaxAppender, TaskObserver {
 	boolean processingCommand = false;
 	AvailableCommands availableCommands;
 	CommandExecutorTaskFactory commandExecutor;
@@ -428,5 +432,23 @@ public class CommandHandler implements PaxAppender, TaskObserver {
 		processingCommand = false;
 		resultsText.appendCommand(status.getType().toString());
 	}
-	
+
+	// Handler methods
+	public void close() {}
+	public void flush() {}
+
+	public void publish(final LogRecord record) {
+		if (record == null) {
+			return;
+		}
+
+		Level level = record.getLevel();
+
+		if (level.equals(Level.SEVERE))
+			resultsText.appendError(record.getMessage());
+		else if (level.equals(Level.WARNING))
+			resultsText.appendWarning(record.getMessage());
+		else if (level.equals(Level.INFO))
+			resultsText.appendMessage(record.getMessage());
+	}
 }
