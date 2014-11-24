@@ -27,7 +27,8 @@ package org.cytoscape.work.internal;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Properties;
-import java.util.logging.LogManager;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 
 import javax.swing.SwingUtilities;
 
@@ -77,6 +78,8 @@ import org.osgi.framework.BundleContext;
 
 
 public class CyActivator extends AbstractCyActivator {
+  private Logger cyUserLog = null; // maintain a strong reference to the user log to prevent it from being garbage collected
+
 	public CyActivator() {
 		super();
 	}
@@ -105,7 +108,9 @@ public class CyActivator extends AbstractCyActivator {
 			}
 		});
 
-		LogManager.getLogManager().getLogger("org.cytoscape.application.userlog").addHandler(new CyUserLogHandler(taskStatusBar, taskHistory));
+    cyUserLog = Logger.getLogger("org.cytoscape.application.userlog");
+    cyUserLog.setLevel(Level.INFO);
+		cyUserLog.addHandler(new CyUserLogHandler(taskStatusBar, taskHistory));
 
 		JDialogTaskManager jDialogTaskManager = new JDialogTaskManager(jDialogTunableMutator, cyPropertyServiceRef, taskStatusBar, taskHistory);
 		PanelTaskManager jPanelTaskManager = new JPanelTaskManager(jPanelTunableMutator, jDialogTaskManager);
@@ -117,6 +122,7 @@ public class CyActivator extends AbstractCyActivator {
 				IntegerHandler.class, Integer.class, int.class);
 		SimpleGUITunableHandlerFactory<FloatHandler> floatHandlerFactory = new SimpleGUITunableHandlerFactory<FloatHandler>(
 				FloatHandler.class, Float.class, float.class);
+
 		SimpleGUITunableHandlerFactory<DoubleHandler> doubleHandlerFactory = new SimpleGUITunableHandlerFactory<DoubleHandler>(
 				DoubleHandler.class, Double.class, double.class);
 		SimpleGUITunableHandlerFactory<LongHandler> longHandlerFactory = new SimpleGUITunableHandlerFactory<LongHandler>(
