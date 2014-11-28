@@ -24,36 +24,30 @@ package org.cytoscape.network.merge.internal.ui;
  * #L%
  */
 
-import java.awt.BorderLayout;
-import java.awt.Color;
+import static javax.swing.GroupLayout.DEFAULT_SIZE;
+import static javax.swing.GroupLayout.PREFERRED_SIZE;
+
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.Frame;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.GridLayout;
-import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.Vector;
 
+import javax.swing.AbstractButton;
 import javax.swing.AbstractListModel;
 import javax.swing.BorderFactory;
+import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
-import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
-import javax.swing.ImageIcon;
+import javax.swing.GroupLayout;
+import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -63,9 +57,13 @@ import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JTabbedPane;
+import javax.swing.JToggleButton;
+import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.ListCellRenderer;
 import javax.swing.ListSelectionModel;
 import javax.swing.WindowConstants;
+import javax.swing.border.Border;
+import javax.swing.border.EmptyBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
@@ -82,709 +80,801 @@ import org.cytoscape.network.merge.internal.model.AttributeMappingImpl;
 import org.cytoscape.network.merge.internal.model.MatchingAttribute;
 import org.cytoscape.network.merge.internal.model.MatchingAttributeImpl;
 import org.cytoscape.network.merge.internal.task.NetworkMergeTask;
+import org.cytoscape.network.merge.internal.util.IconManager;
+import org.cytoscape.network.merge.internal.util.Utils;
 import org.cytoscape.session.CyNetworkNaming;
 import org.cytoscape.task.create.CreateNetworkViewTaskFactory;
+import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskManager;
 
 /**
- * 
  * Main dialog for advance network merge
  */
 public class NetworkMergeDialog extends JDialog {
 	
 	private static final long serialVersionUID = 1013626339762545400L;
-	private boolean altDifferenceIsChecked = false;
+	
+	private static final Border PANEL_BORDER = new EmptyBorder(4, 4, 4, 4);
+	
 	private final CyNetworkManager cnm;
 	private final CyNetworkFactory cnf;
 	private final CyNetworkNaming cnn;
 	private final TaskManager<?, ?> taskManager;
+	private final IconManager iconMgr;
 	private CreateNetworkViewTaskFactory netViewCreator;
-
+	
+	private JPanel operationPnl;
+	private ButtonGroup operationGroup;
+	private JPanel differencePnl;
+	private JRadioButton difference1Btn;
+	private JRadioButton difference2Btn;
+	private ButtonGroup differenceGroup;
+	private JPanel selectNetPnl;
+	private JPanel selectNetBtnPnl;
+	private JButton moveRightBtn;
+	private JButton moveLeftBtn;
+	private JButton moveUpBtn;
+	private JButton moveDownBtn;
+	private JList<CyNetwork> unselectedNetLs;
+	private JList<CyNetwork> selectedNetLs;
+	private CollapsiblePanel advancedOptionsPnl;
+	private JScrollPane attrScr;
+	private NetworkListModel selectedNetData;
+	private SortedNetworkListModel unselectedNetData;
+	private JTabbedPane mergeAttrTp;
+	private JPanel mergeNodeAttrPnl;
+	private JPanel mergeEdgeAttrPnl;
+	private MatchNodeTable matchNodeTbl;
+	private MergeAttributeTable mergeNodeAttrTbl;
+	private MergeAttributeTable mergeEdgeAttrTbl;
+	private JCheckBox idMappingCkb;
+	private JCheckBox inNetMergeCkb;
+	private JPanel buttonPnl;
+	private JButton cancelBtn;
+	private JButton okBtn;
+	
+	private final TreeMap<Operation, AbstractButton> operationButtons;
+	private Map<String, Map<String, Set<String>>> selectedNetAttrIDType;
+	
+	private final AttributeMapping nodeAttrMapping;
+	private final AttributeMapping edgeAttrMapping;
+	private final MatchingAttribute matchingAttr;
+//	boolean checkCyThesaurus;
+	
+	private String tgtType;
+	private Operation selectedOperation;
+	
 	/** Creates new form NetworkMergeDialog */
-	public NetworkMergeDialog(CyNetworkManager cnm, CyNetworkFactory cnf, CyNetworkNaming cnn, TaskManager taskManager,
-			CreateNetworkViewTaskFactory netViewCreator) {
+	public NetworkMergeDialog(final CyNetworkManager cnm,
+							  final CyNetworkFactory cnf,
+							  final CyNetworkNaming cnn,
+							  final TaskManager<?, ?> taskManager,
+							  final IconManager iconMgr,
+							  final CreateNetworkViewTaskFactory netViewCreator) {
 		this.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 
 		this.cnm = cnm;
 		this.cnf = cnf;
 		this.cnn = cnn;
 		this.taskManager = taskManager;
+		this.iconMgr = iconMgr;
 		this.netViewCreator = netViewCreator;
 
-		checkCyThesaurus = checkCyThesaurus();
-
-		selectedNetworkAttributeIDType = null;
-		tgtType = null;
-		matchingAttribute = new MatchingAttributeImpl();
-		nodeAttributeMapping = new AttributeMappingImpl();
-		edgeAttributeMapping = new AttributeMappingImpl();
-
-		advancedNetworkMergeCollapsiblePanel = new CollapsiblePanel("Advanced Network Merge");
-		advancedNetworkMergeCollapsiblePanel.addCollapeListener(new CollapsiblePanel.CollapeListener() {
-			public void collaped() {
-				updateOKButtonEnable();
-				updateSize();
-			}
-
-			public void expanded() {
-				updateOKButtonEnable();
-				updateSize();
-			}
-		});
-
-		advancedOptionCollapsiblePanel = new CollapsiblePanel("Advanced Option");
+//		checkCyThesaurus = checkCyThesaurus();
+		
+		operationButtons = new TreeMap<>();
+		matchingAttr = new MatchingAttributeImpl();
+		nodeAttrMapping = new AttributeMappingImpl();
+		edgeAttrMapping = new AttributeMappingImpl();
 
 		initComponents();
-
-		updateOKButtonEnable();
+		updateOKButton();
 	}
 
-	/**
-	 * This method is called from within the constructor to initialize the form.
-	 * WARNING: Do NOT modify this code. The content of this method is always
-	 * regenerated by the Form Editor.
-	 */
 	private void initComponents() {
-		GridBagConstraints gridBagConstraints;
-
-		JPanel operationPanel = new JPanel();
-		JLabel operationLabel = new JLabel();
-		operationComboBox = new JComboBox();
-		operationIcon = new JLabel();
-		differenceButton = new JRadioButton("Only remove nodes if all their edges are being subtracted, too.");
-		difference2Button = new JRadioButton("Remove all nodes that are in the 2nd network.");
-		differenceGroup = new ButtonGroup();
-		differenceGroup.add(differenceButton);
-		differenceGroup.add(difference2Button);
-		JSeparator jSeparator1 = new JSeparator();
-		JPanel selectNetworkPanel = new JPanel();
-		JScrollPane unselectedNetworkScrollPane = new JScrollPane();
-		unselectedNetworkData = new SortedNetworkListModel();
-		unselectedNetworkList = new JList(unselectedNetworkData);
-		JPanel lrButtonPanel = new JPanel();
-		rightButton = new JButton();
-		leftButton = new JButton();
-		JScrollPane selectedNetworkScrollPane = new JScrollPane();
-		selectedNetworkData = new NetworkListModel();
-		selectedNetworkList = new JList(selectedNetworkData);
-		udButtonPanel = new JPanel();
-		upButton = new JButton();
-		downButton = new JButton();
-		collapsiblePanelAgent = advancedNetworkMergeCollapsiblePanel;
-		advancedPanel = new JPanel();
-		attributePanel = new JPanel();
-		matchNodeTable = new MatchNodeTable(matchingAttribute);
-		attributeScrollPane = new JScrollPane();
-		idmappingCheckBox = new JCheckBox();
-		JLabel idmappingLabel = new JLabel();
-		JSeparator jSeparator3 = new JSeparator();
-		JPanel mergeAttributePanel = new JPanel();
-		JTabbedPane mergeAttributeTabbedPane = new JTabbedPane();
-		JPanel mergeNodeAttributePanel = new JPanel();
-		JScrollPane mergeNodeAttributeScrollPane = new JScrollPane();
-		JPanel mergeEdgeAttributePanel = new JPanel();
-		JScrollPane mergeEdgeAttributeScrollPane = new JScrollPane();
-		advancedOptionCollapsiblePanelAgent = advancedOptionCollapsiblePanel;
-		optionPanel = new JPanel();
-		inNetworkMergeCheckBox = new JCheckBox();
-		JSeparator jSeparator4 = new JSeparator();
-		JPanel okPanel = new JPanel();
-		okButton = new JButton();
-		cancelButton = new JButton();
-
 		setTitle("Advanced Network Merge");
-		getContentPane().setLayout(new GridBagLayout());
+		getContentPane().setLayout(new BoxLayout(getContentPane(), BoxLayout.PAGE_AXIS));
+		setResizable(false);
+		
+		operationGroup = new ButtonGroup();
+		
+		differenceGroup = new ButtonGroup();
+		differenceGroup.add(getDifference1Btn());
+		differenceGroup.add(getDifference2Btn());
+		
+		getContentPane().add(getOperationPnl());
+		getContentPane().add(getDifferencePnl());
+		getContentPane().add(getSelectNetPnl());
+		getContentPane().add(getAdvancedOptionsPnl());
+		getContentPane().add(new JSeparator());
+		getContentPane().add(getButtonPnl());
 
-		operationPanel.setMinimumSize(new Dimension(211, 20));
-		operationPanel.setLayout(new BoxLayout(operationPanel, BoxLayout.LINE_AXIS));
+		pack();
+	}
+	
+	private JPanel getOperationPnl() {
+		if (operationPnl == null) {
+			operationPnl = new JPanel();
+			operationPnl.setBorder(new EmptyBorder(4, 4, 0, 4));
+			operationPnl.setAlignmentX(Component.CENTER_ALIGNMENT);
+			operationPnl.setLayout(new BoxLayout(operationPnl, BoxLayout.LINE_AXIS));
+			
+			operationPnl.add(Box.createHorizontalGlue());
+			
+			int count = 0;
+			final Operation[] values = Operation.values();
+			
+			for (Operation op : values) {
+				final JToggleButton btn = new JToggleButton(op.toString(), op.getIcon());
+				btn.setActionCommand(op.name());
+				operationGroup.add(btn);
+				operationButtons.put(op, btn);
+				
+				// Mac OS properties:
+				btn.putClientProperty("JComponent.sizeVariant", "regular");
+				btn.putClientProperty("JButton.buttonType", "segmented");
+					
+				if (count == 0)
+					btn.putClientProperty("JButton.segmentPosition", "first");
+				else if (count == values.length - 1)
+					btn.putClientProperty("JButton.segmentPosition", "last");
+				else
+					btn.putClientProperty("JButton.segmentPosition", "middle");
+					
+				btn.addActionListener(new ActionListener() {
+					@Override
+					public void actionPerformed(ActionEvent evt) {
+						final String actionCommand = evt.getActionCommand();
+						final Operation selectOp = Operation.valueOf(actionCommand);
+						final int nSelectedNetwork = selectedNetData.getSize();
+						
+						if (selectOp == Operation.DIFFERENCE && nSelectedNetwork > 2) {
+							final int ioption = JOptionPane
+									.showConfirmDialog(
+											NetworkMergeDialog.this,
+											"Only the first two networks in the selected network list will be merged for difference operation. All the other selected networks will be removed. Are you sure?",
+											"Warning: only two networks will be kept", JOptionPane.YES_NO_OPTION);
+							if (ioption == JOptionPane.NO_OPTION && selectedOperation != null) {
+								operationGroup.setSelected(operationButtons.get(selectedOperation).getModel(), true);
+								return;
+							}
 
-		operationLabel.setText("Operation:   ");
-		operationPanel.add(operationLabel);
+							for (int is = nSelectedNetwork - 1; is >= 2; is--) {
+								CyNetwork removed = selectedNetData.removeElement(is);
+								unselectedNetData.add(removed);
+								addRemoveAttributeMapping(removed, false);
+							}
+							
+							getSelectedNetLs().repaint();
+							getUnselectedNetLs().repaint();
+							updateAttributeTable();
+							updateMergeAttributeTable();
+						}
 
-		operationComboBox.setModel(new DefaultComboBoxModel(new Operation[] { Operation.UNION, Operation.INTERSECTION,
-				Operation.DIFFERENCE }));
-		selectedOperation = (Operation) operationComboBox.getSelectedItem();
-		operationComboBox.setPreferredSize(new Dimension(150, 20));
-		operationComboBox.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent evt) {
-				Operation selectOp = (Operation) operationComboBox.getSelectedItem();
-				int nSelectedNetwork = selectedNetworkData.getSize();
-				if (selectOp == Operation.DIFFERENCE && nSelectedNetwork > 2) {
-					final int ioption = JOptionPane
-							.showConfirmDialog(
-									NetworkMergeDialog.this,
-									"Only the first two networks in the selected network list will be merged for difference operation. All the other selected networks will be removed. Are you sure?",
-									"Warning: only two networks will be kept", JOptionPane.YES_NO_OPTION);
-					if (ioption == JOptionPane.NO_OPTION) {
-						operationComboBox.setSelectedItem(selectedOperation);
+						selectedOperation = selectOp;
+
+						updateDifferencePanel();
+						updateUpDownButtons();
+						updateOKButton();
+					}
+				});
+				
+				operationPnl.add(btn);
+				count++;
+			}
+			
+			operationPnl.add(Box.createHorizontalGlue());
+			
+			operationGroup.setSelected(operationButtons.get(Operation.values()[0]).getModel(), true);
+		}
+		
+		return operationPnl;
+	}
+	
+	private JPanel getDifferencePnl() {
+		if (differencePnl == null) {
+			differencePnl = new JPanel();
+			differencePnl.setAlignmentX(Component.CENTER_ALIGNMENT);
+			
+			final Border border = LookAndFeelUtil.createPanelBorder();
+			differencePnl.setBorder(border);
+			
+			differencePnl.setLayout(new BoxLayout(differencePnl, BoxLayout.PAGE_AXIS));
+			differencePnl.add(getDifference1Btn());
+			differencePnl.add(getDifference2Btn());
+			
+			updateDifferencePanel();
+		}
+		
+		return differencePnl;
+	}
+	
+	private JRadioButton getDifference1Btn() {
+		if (difference1Btn == null) {
+			difference1Btn = new JRadioButton("Only remove nodes if all their edges are being subtracted, too");
+			difference1Btn.setSelected(true);
+		}
+		
+		return difference1Btn;
+	}
+	
+	private JRadioButton getDifference2Btn() {
+		if (difference2Btn == null) {
+			difference2Btn = new JRadioButton("Remove all nodes that are in the 2\u207F\u1D48 network");
+		}
+		
+		return difference2Btn;
+	}
+	
+	private JPanel getSelectNetPnl() {
+		if (selectNetPnl == null) {
+			selectNetPnl = new JPanel();
+			selectNetPnl.setBorder(PANEL_BORDER);
+			selectNetPnl.setAlignmentX(Component.CENTER_ALIGNMENT);
+			
+			final JLabel allNetsLbl = new JLabel("Available Networks:");
+			final JLabel selNetsLbl = new JLabel("Networks to Merge:");
+			
+			final JScrollPane listScr1 = new JScrollPane(getUnselectedNetLs());
+			listScr1.setPreferredSize(new Dimension(260, 72));
+			final JScrollPane listScr2 = new JScrollPane(getSelectedNetLs());
+			listScr2.setPreferredSize(new Dimension(260, 72));
+			
+			final GroupLayout layout = new GroupLayout(selectNetPnl);
+			selectNetPnl.setLayout(layout);
+			layout.setAutoCreateContainerGaps(true);
+			
+			layout.setHorizontalGroup(layout.createSequentialGroup()
+					.addGroup(layout.createParallelGroup(Alignment.LEADING, true)
+						.addComponent(allNetsLbl)
+						.addComponent(listScr1, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+					)
+					.addComponent(getSelectNetBtnPnl(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addGroup(layout.createParallelGroup(Alignment.LEADING, true)
+						.addGroup(layout.createSequentialGroup()
+								.addComponent(selNetsLbl, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+								.addPreferredGap(ComponentPlacement.UNRELATED)
+								.addComponent(getMoveUpBtn())
+								.addPreferredGap(ComponentPlacement.RELATED)
+								.addComponent(getMoveDownBtn())
+							)
+						.addComponent(listScr2, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+					)
+			);
+			layout.setVerticalGroup(layout.createParallelGroup(Alignment.BASELINE, true)
+					.addGroup(layout.createSequentialGroup()
+						.addComponent(allNetsLbl)
+						.addComponent(listScr1)
+					)
+					.addComponent(getSelectNetBtnPnl(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+					.addGroup(layout.createSequentialGroup()
+						.addGroup(layout.createParallelGroup(Alignment.BASELINE, true)
+							.addComponent(selNetsLbl)
+							.addComponent(getMoveUpBtn())
+							.addComponent(getMoveDownBtn())
+						)
+						.addComponent(listScr2)
+					)
+			);
+		}
+		
+		return selectNetPnl;
+	}
+	
+	private JList<CyNetwork> getUnselectedNetLs() {
+		if (unselectedNetLs == null) {
+			unselectedNetData = new SortedNetworkListModel();
+			unselectedNetLs = new JList<>(unselectedNetData);
+			
+			for (CyNetwork network : cnm.getNetworkSet()) {
+				unselectedNetData.add(network);
+			}
+			
+			unselectedNetLs.setCellRenderer(new ListCellRenderer<CyNetwork>() {
+				private DefaultListCellRenderer defaultRenderer = new DefaultListCellRenderer();
+
+				public Component getListCellRendererComponent(JList<? extends CyNetwork> list, CyNetwork value,
+						int index, boolean isSelected, boolean cellHasFocus) {
+					JLabel renderer = (JLabel) defaultRenderer.getListCellRendererComponent(list, value, index, isSelected,
+							cellHasFocus);
+					renderer.setText(value.toString());
+					
+					return renderer;
+				}
+			});
+
+			unselectedNetLs.addListSelectionListener(new ListSelectionListener() {
+				@Override
+				public void valueChanged(ListSelectionEvent evt) {
+					int index = unselectedNetLs.getMinSelectionIndex();
+					if (index > -1) {
+						selectedNetLs.getSelectionModel().clearSelection();
+						getMoveRightBtn().setEnabled(true);
+					} else {
+						getMoveRightBtn().setEnabled(false);
+					}
+				}
+			});
+		}
+		
+		return unselectedNetLs;
+	}
+	
+	private JList<CyNetwork> getSelectedNetLs() {
+		if (selectedNetLs == null) {
+			selectedNetData = new NetworkListModel();
+			selectedNetLs = new JList<>(selectedNetData);
+			selectedNetLs.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
+			
+			selectedNetLs.setCellRenderer(new ListCellRenderer<CyNetwork>() {
+				private DefaultListCellRenderer defaultRenderer = new DefaultListCellRenderer();
+
+				@Override
+				public Component getListCellRendererComponent(JList<? extends CyNetwork> list, CyNetwork value,
+						int index, boolean isSelected, boolean cellHasFocus) {
+					JLabel renderer = (JLabel) defaultRenderer.getListCellRendererComponent(list, value, index,
+							isSelected, cellHasFocus);
+					renderer.setText(value.toString());
+					
+					return renderer;
+				}
+			});
+			selectedNetLs.addListSelectionListener(new ListSelectionListener() {
+				@Override
+				public void valueChanged(ListSelectionEvent evt) {
+					int index = selectedNetLs.getMinSelectionIndex();
+					if (index > -1) {
+						getUnselectedNetLs().getSelectionModel().clearSelection();
+						getMoveLeftBtn().setEnabled(true);
+					} else {
+						getMoveLeftBtn().setEnabled(false);
+					}
+					updateUpDownButtons();
+				}
+			});
+		}
+		
+		return selectedNetLs;
+	}
+	
+	private JPanel getSelectNetBtnPnl() {
+		if (selectNetBtnPnl == null) {
+			selectNetBtnPnl = new JPanel();
+			selectNetBtnPnl.setLayout(new BoxLayout(selectNetBtnPnl, BoxLayout.Y_AXIS));
+			
+			selectNetBtnPnl.add(Box.createVerticalGlue());
+			selectNetBtnPnl.add(getMoveRightBtn());
+			selectNetBtnPnl.add(Box.createVerticalStrut(10));
+			selectNetBtnPnl.add(getMoveLeftBtn());
+		}
+		
+		return selectNetBtnPnl;
+	}
+	
+	private JButton getMoveRightBtn() {
+		if (moveRightBtn == null) {
+			moveRightBtn = new JButton(IconManager.ICON_ANGLE_RIGHT);
+			moveRightBtn.setFont(iconMgr.getIconFont(14.0f));
+			moveRightBtn.setToolTipText("Add Selected");
+			moveRightBtn.setEnabled(false);
+			moveRightBtn.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent evt) {
+					int[] indices = getUnselectedNetLs().getSelectedIndices();
+					if (indices == null || indices.length == 0) {
 						return;
 					}
 
-					for (int is = nSelectedNetwork - 1; is >= 2; is--) {
-						CyNetwork removed = selectedNetworkData.removeElement(is);
-						unselectedNetworkData.add(removed);
-						addRemoveAttributeMapping(removed, false);
+					if (getOperation() == Operation.DIFFERENCE && selectedNetData.getSize() + indices.length > 2) {
+						JOptionPane
+								.showMessageDialog(
+										NetworkMergeDialog.this,
+										"Difference operation only supports two networks. If you need to replace the selected network, remove it first and select the new one.",
+										"Warning", JOptionPane.WARNING_MESSAGE);
+						return;
 					}
-					selectedNetworkList.repaint();
-					unselectedNetworkList.repaint();
+
+					for (int i = indices.length - 1; i >= 0; i--) {
+						CyNetwork removed = unselectedNetData.removeElement(indices[i]);
+						selectedNetData.add(removed);
+						addRemoveAttributeMapping(removed, true);
+					}
+
+					if (unselectedNetData.getSize() == 0) {
+						getUnselectedNetLs().clearSelection();
+						moveRightBtn.setEnabled(false);
+					} else {
+						int minindex = getUnselectedNetLs().getMinSelectionIndex();
+						if (minindex >= unselectedNetData.getSize()) {
+							minindex = 0;
+						}
+						getUnselectedNetLs().setSelectedIndex(minindex);
+					}
+
+					getSelectedNetLs().repaint();
+					getUnselectedNetLs().repaint();
+					updateOKButton();
 					updateAttributeTable();
 					updateMergeAttributeTable();
 				}
-
-				selectedOperation = selectOp;
-				operationIcon.setIcon(OPERATION_ICONS[operationComboBox.getSelectedIndex()]);
-
-				if (selectOp == Operation.DIFFERENCE) {
-					differenceButton.setVisible(true);
-					difference2Button.setVisible(true);
-					differenceButton.setSelected(true);
-				} else {
-					differenceButton.setVisible(false);
-					difference2Button.setVisible(false);
-				}
-
-				updateUpDownButtonEnable();
-				updateSize();
-				udButtonPanel.setVisible(getOperation() == Operation.DIFFERENCE);
-			}
-		});
-		operationPanel.add(operationComboBox);
-
-		int contentPaneGridY = 0;
-		gridBagConstraints = new GridBagConstraints();
-		gridBagConstraints.gridx = 0;
-		gridBagConstraints.gridy = contentPaneGridY++;
-		gridBagConstraints.anchor = GridBagConstraints.LINE_START;
-		gridBagConstraints.insets = new Insets(5, 5, 5, 5);
-		getContentPane().add(operationPanel, gridBagConstraints);
-
-		operationIcon.setIcon(UNION_ICON);
-		gridBagConstraints = new GridBagConstraints();
-		gridBagConstraints.gridx = 0;
-		gridBagConstraints.gridy = contentPaneGridY++;
-		gridBagConstraints.anchor = GridBagConstraints.LINE_START;
-		gridBagConstraints.insets = new Insets(5, 5, 5, 5);
-		getContentPane().add(operationIcon, gridBagConstraints);
-
-		gridBagConstraints = new GridBagConstraints();
-		gridBagConstraints.gridx = 0;
-		gridBagConstraints.gridy = contentPaneGridY++;
-		gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
-		gridBagConstraints.weightx = 1.0;
-		gridBagConstraints.insets = new Insets(5, 5, 5, 5);
-		getContentPane().add(differenceButton, gridBagConstraints);
-		differenceButton.setVisible(false);
-
-		gridBagConstraints = new GridBagConstraints();
-		gridBagConstraints.gridx = 0;
-		gridBagConstraints.gridy = contentPaneGridY++;
-		gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
-		gridBagConstraints.weightx = 1.0;
-		gridBagConstraints.insets = new Insets(5, 5, 5, 5);
-		getContentPane().add(difference2Button, gridBagConstraints);
-		difference2Button.setVisible(false);
-		difference2Button.addItemListener(new ItemListener() {
-			public void itemStateChanged(ItemEvent evt) {
-				altDifferenceIsChecked = evt.getStateChange() == ItemEvent.SELECTED;
-				if (altDifferenceIsChecked)
-					operationIcon.setIcon(DIFFERENCE2_ICON);
-				else
-					operationIcon.setIcon(DIFFERENCE_ICON);
-			}
-		});
-
-		gridBagConstraints = new GridBagConstraints();
-		gridBagConstraints.gridx = 0;
-		gridBagConstraints.gridy = contentPaneGridY++;
-		gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
-		gridBagConstraints.weightx = 1.0;
-		gridBagConstraints.insets = new Insets(5, 5, 5, 5);
-		getContentPane().add(jSeparator1, gridBagConstraints);
-
-		selectNetworkPanel.setBorder(BorderFactory.createTitledBorder("Networks to merge"));
-		selectNetworkPanel.setMinimumSize(new Dimension(490, 100));
-		selectNetworkPanel.setPreferredSize(new Dimension(490, 130));
-		selectNetworkPanel.setLayout(new GridBagLayout());
-
-		unselectedNetworkScrollPane.setPreferredSize(new Dimension(200, 100));
-
-		unselectedNetworkList.setBorder(BorderFactory.createTitledBorder("Available networks"));
-		for (CyNetwork network : cnm.getNetworkSet()) {
-			unselectedNetworkData.add(network);
+			});
 		}
-
-		unselectedNetworkList.setCellRenderer(new ListCellRenderer() {
-			private DefaultListCellRenderer defaultRenderer = new DefaultListCellRenderer();
-
-			public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected,
-					boolean cellHasFocus) {
-				JLabel renderer = (JLabel) defaultRenderer.getListCellRendererComponent(list, value, index, isSelected,
-						cellHasFocus);
-				renderer.setText(((CyNetwork) value).toString()); // TODO:
-																	// network
-																	// title
-				return renderer;
-			}
-		});
-
-		unselectedNetworkList.addListSelectionListener(new ListSelectionListener() {
-			public void valueChanged(ListSelectionEvent evt) {
-				int index = unselectedNetworkList.getMinSelectionIndex();
-				if (index > -1) {
-					selectedNetworkList.getSelectionModel().clearSelection();
-					rightButton.setEnabled(true);
-				} else {
-					rightButton.setEnabled(false);
-				}
-			}
-		});
-		unselectedNetworkScrollPane.setViewportView(unselectedNetworkList);
-
-		gridBagConstraints = new GridBagConstraints();
-		gridBagConstraints.gridx = 0;
-		gridBagConstraints.gridy = 0;
-		gridBagConstraints.fill = GridBagConstraints.BOTH;
-		gridBagConstraints.weightx = 0.5;
-		gridBagConstraints.weighty = 1.0;
-		gridBagConstraints.insets = new Insets(3, 3, 3, 3);
-		selectNetworkPanel.add(unselectedNetworkScrollPane, gridBagConstraints);
-
-		lrButtonPanel.setLayout(new GridLayout(0, 1, 0, 2));
-
-		rightButton.setIcon(new ImageIcon(getClass().getResource("/images/right16.gif"))); // NOI18N
-		rightButton.setEnabled(false);
-		rightButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent evt) {
-				int[] indices = unselectedNetworkList.getSelectedIndices();
-				if (indices == null || indices.length == 0) {
-					return;
-				}
-
-				if (getOperation() == Operation.DIFFERENCE && selectedNetworkData.getSize() + indices.length > 2) {
-					JOptionPane
-							.showMessageDialog(
-									NetworkMergeDialog.this,
-									"Difference operation only supports two networks. If you need to replace the selected network, remove it first and select the new one.",
-									"Warning", JOptionPane.WARNING_MESSAGE);
-					return;
-				}
-
-				for (int i = indices.length - 1; i >= 0; i--) {
-					CyNetwork removed = unselectedNetworkData.removeElement(indices[i]);
-					selectedNetworkData.add(removed);
-					addRemoveAttributeMapping(removed, true);
-				}
-
-				if (unselectedNetworkData.getSize() == 0) {
-					unselectedNetworkList.clearSelection();
-					rightButton.setEnabled(false);
-				} else {
-					int minindex = unselectedNetworkList.getMinSelectionIndex();
-					if (minindex >= unselectedNetworkData.getSize()) {
-						minindex = 0;
-					}
-					unselectedNetworkList.setSelectedIndex(minindex);
-				}
-
-				selectedNetworkList.repaint();
-				unselectedNetworkList.repaint();
-				updateOKButtonEnable();
-				updateAttributeTable();
-				updateMergeAttributeTable();
-			}
-		});
-		lrButtonPanel.add(rightButton);
-
-		leftButton.setIcon(new ImageIcon(getClass().getResource("/images/left16.gif"))); // NOI18N
-		leftButton.setEnabled(false);
-		leftButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent evt) {
-				int[] indices = selectedNetworkList.getSelectedIndices();
-				if (indices == null || indices.length == 0) {
-					return;
-				}
-
-				for (int i = indices.length - 1; i >= 0; i--) {
-					CyNetwork removed = selectedNetworkData.removeElement(indices[i]);
-					unselectedNetworkData.add(removed);
-					addRemoveAttributeMapping(removed, false);
-				}
-
-				if (selectedNetworkData.getSize() == 0) {
-					selectedNetworkList.clearSelection();
-					leftButton.setEnabled(false);
-				} else {
-					int minindex = selectedNetworkList.getMinSelectionIndex();
-					if (minindex >= selectedNetworkData.getSize()) {
-						minindex = 0;
-					}
-					selectedNetworkList.setSelectedIndex(minindex);
-				}
-
-				selectedNetworkList.repaint();
-				unselectedNetworkList.repaint();
-				updateOKButtonEnable();
-				updateAttributeTable();
-				updateMergeAttributeTable();
-			}
-		});
-		lrButtonPanel.add(leftButton);
-
-		gridBagConstraints = new GridBagConstraints();
-		gridBagConstraints.gridx = 1;
-		gridBagConstraints.gridy = 0;
-		gridBagConstraints.insets = new Insets(3, 3, 3, 3);
-		selectNetworkPanel.add(lrButtonPanel, gridBagConstraints);
-
-		selectedNetworkScrollPane.setPreferredSize(new Dimension(200, 100));
-
-		selectedNetworkList.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
-		selectedNetworkList.setBorder(BorderFactory.createTitledBorder("Selected networks"));
-		selectedNetworkList.setCellRenderer(new ListCellRenderer() {
-			private DefaultListCellRenderer defaultRenderer = new DefaultListCellRenderer();
-
-			public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected,
-					boolean cellHasFocus) {
-				JLabel renderer = (JLabel) defaultRenderer.getListCellRendererComponent(list, value, index, isSelected,
-						cellHasFocus);
-				renderer.setText(((CyNetwork) value).toString()); // TODO:
-																	// network
-																	// title
-				return renderer;
-			}
-		});
-		selectedNetworkList.addListSelectionListener(new ListSelectionListener() {
-			public void valueChanged(ListSelectionEvent evt) {
-				int index = selectedNetworkList.getMinSelectionIndex();
-				if (index > -1) {
-					unselectedNetworkList.getSelectionModel().clearSelection();
-					leftButton.setEnabled(true);
-				} else {
-					leftButton.setEnabled(false);
-				}
-				updateUpDownButtonEnable();
-			}
-		});
-		selectedNetworkScrollPane.setViewportView(selectedNetworkList);
-
-		gridBagConstraints = new GridBagConstraints();
-		gridBagConstraints.gridx = 2;
-		gridBagConstraints.gridy = 0;
-		gridBagConstraints.fill = GridBagConstraints.BOTH;
-		gridBagConstraints.weightx = 0.5;
-		gridBagConstraints.weighty = 1.0;
-		gridBagConstraints.insets = new Insets(3, 3, 3, 3);
-		selectNetworkPanel.add(selectedNetworkScrollPane, gridBagConstraints);
-
-		udButtonPanel.setLayout(new GridLayout(0, 1, 0, 2));
-		udButtonPanel.setVisible(false);
-
-		upButton.setIcon(new ImageIcon(getClass().getResource("/images/up16.gif"))); // NOI18N
-		upButton.setEnabled(false);
-		upButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent evt) {
-				int[] indices = selectedNetworkList.getSelectedIndices();
-				if (indices == null || indices.length == 0) {
-					return;
-				}
-
-				int imin = selectedNetworkList.getMinSelectionIndex();
-				int imax = selectedNetworkList.getMaxSelectionIndex();
-
-				if (imin < 1)
-					return;
-
-				CyNetwork removed = selectedNetworkData.removeElement(imin - 1);
-				selectedNetworkData.add(imax, removed);
-
-				for (int ii = 0; ii < indices.length; ii++) {
-					indices[ii]--;
-				}
-				selectedNetworkList.setSelectedIndices(indices);
-
-				updateUpDownButtonEnable();
-				selectedNetworkList.repaint();
-				unselectedNetworkList.repaint();
-				updateOKButtonEnable();
-				updateAttributeTable();
-				updateMergeAttributeTable();
-			}
-		});
-		udButtonPanel.add(upButton);
-
-		downButton.setIcon(new ImageIcon(getClass().getResource("/images/down16.gif"))); // NOI18N
-		downButton.setEnabled(false);
-		downButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent evt) {
-				int[] indices = selectedNetworkList.getSelectedIndices();
-				if (indices == null || indices.length == 0) {
-					return;
-				}
-
-				int imin = selectedNetworkList.getMinSelectionIndex();
-				int imax = selectedNetworkList.getMaxSelectionIndex();
-
-				if (imax >= selectedNetworkData.getSize() - 1)
-					return;
-
-				CyNetwork removed = selectedNetworkData.removeElement(imax + 1);
-				selectedNetworkData.add(imin, removed);
-
-				for (int ii = 0; ii < indices.length; ii++) {
-					indices[ii]++;
-				}
-				selectedNetworkList.setSelectedIndices(indices);
-
-				updateUpDownButtonEnable();
-				selectedNetworkList.repaint();
-				unselectedNetworkList.repaint();
-				updateOKButtonEnable();
-				updateAttributeTable();
-				updateMergeAttributeTable();
-			}
-		});
-		udButtonPanel.add(downButton);
-
-		gridBagConstraints = new GridBagConstraints();
-		gridBagConstraints.gridx = 3;
-		gridBagConstraints.gridy = 0;
-		gridBagConstraints.insets = new Insets(3, 3, 3, 3);
-		selectNetworkPanel.add(udButtonPanel, gridBagConstraints);
-
-		gridBagConstraints = new GridBagConstraints();
-		gridBagConstraints.gridx = 0;
-		gridBagConstraints.gridy = contentPaneGridY++;
-		gridBagConstraints.fill = GridBagConstraints.BOTH;
-		gridBagConstraints.weightx = 1.0;
-		gridBagConstraints.weighty = 0.5;
-		gridBagConstraints.insets = new Insets(5, 5, 5, 5);
-		getContentPane().add(selectNetworkPanel, gridBagConstraints);
-
-		collapsiblePanelAgent.setLayout(new BorderLayout());
-
-		advancedPanel.setPreferredSize(new Dimension(690, 400));
-		advancedPanel.setLayout(new GridBagLayout());
-
-		attributePanel.setBorder(BorderFactory
-				.createTitledBorder("Matching columns (table columns to match nodes between networks)"));
-		attributePanel.setLayout(new GridBagLayout());
-
-		attributeScrollPane.setMinimumSize(new Dimension(100, 50));
-		attributeScrollPane.setPreferredSize(new Dimension(450, 50));
-		matchNodeTable.getModel().addTableModelListener(new TableModelListener() {
-			public void tableChanged(TableModelEvent e) {
-				mergeNodeAttributeTable.updateMatchingAttribute();
-			}
-		});
-
-		attributeScrollPane.setViewportView(matchNodeTable);
-
-		gridBagConstraints = new GridBagConstraints();
-		gridBagConstraints.gridx = 0;
-		gridBagConstraints.gridy = 0;
-		gridBagConstraints.fill = GridBagConstraints.BOTH;
-		gridBagConstraints.weightx = 1.0;
-		gridBagConstraints.weighty = 1.0;
-		attributePanel.add(attributeScrollPane, gridBagConstraints);
-
-		idmappingCheckBox.setText("Map IDs between the matching columns");
-		// idmappingCheckBox.setVisible(checkCyThesaurus);
-		idmappingCheckBox.setVisible(false);
-		gridBagConstraints = new GridBagConstraints();
-		gridBagConstraints.gridx = 0;
-		gridBagConstraints.gridy = 1;
-		gridBagConstraints.anchor = GridBagConstraints.LINE_START;
-		gridBagConstraints.insets = new Insets(5, 5, 5, 5);
-		attributePanel.add(idmappingCheckBox, gridBagConstraints);
-
-		idmappingLabel.setForeground(new Color(255, 0, 51));
-		idmappingLabel
-				.setText("If you want to map identifiers between the matching columns, please install CyThesaurus app version "
-						+ requiredCyThesaursServiceVersion + " or above.");
-		// idmappingLabel.setVisible(!checkCyThesaurus);
-		idmappingLabel.setVisible(false);
-		gridBagConstraints = new GridBagConstraints();
-		gridBagConstraints.gridx = 0;
-		gridBagConstraints.gridy = 1;
-		gridBagConstraints.anchor = GridBagConstraints.LINE_START;
-		gridBagConstraints.insets = new Insets(5, 5, 5, 5);
-		attributePanel.add(idmappingLabel, gridBagConstraints);
-
-		gridBagConstraints = new GridBagConstraints();
-		gridBagConstraints.gridx = 0;
-		gridBagConstraints.gridy = 0;
-		gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
-		gridBagConstraints.weightx = 1.0;
-		gridBagConstraints.insets = new Insets(5, 5, 5, 5);
-		advancedPanel.add(attributePanel, gridBagConstraints);
-		gridBagConstraints = new GridBagConstraints();
-		gridBagConstraints.gridx = 0;
-		gridBagConstraints.gridy = 2;
-		gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
-		gridBagConstraints.weightx = 1.0;
-		gridBagConstraints.insets = new Insets(5, 5, 5, 5);
-		advancedPanel.add(jSeparator3, gridBagConstraints);
-
-		mergeAttributePanel.setBorder(BorderFactory.createTitledBorder("How to merge columns?"));
-		mergeAttributePanel.setMinimumSize(new Dimension(400, 200));
-		mergeAttributePanel.setPreferredSize(new Dimension(600, 200));
-		mergeAttributePanel.setLayout(new BoxLayout(mergeAttributePanel, BoxLayout.LINE_AXIS));
-
-		mergeAttributeTabbedPane.setMinimumSize(new Dimension(450, 150));
-		mergeAttributeTabbedPane.setPreferredSize(new Dimension(450, 200));
-
-		mergeNodeAttributePanel.setLayout(new BoxLayout(mergeNodeAttributePanel, BoxLayout.LINE_AXIS));
-
-		mergeNodeAttributeTable = new MergeAttributeTable(nodeAttributeMapping, matchingAttribute);
-		mergeNodeAttributeScrollPane.setViewportView(mergeNodeAttributeTable);
-
-		mergeNodeAttributePanel.add(mergeNodeAttributeScrollPane);
-
-		mergeAttributeTabbedPane.addTab("Node", mergeNodeAttributePanel);
-
-		mergeEdgeAttributePanel.setLayout(new BoxLayout(mergeEdgeAttributePanel, BoxLayout.LINE_AXIS));
-
-		mergeEdgeAttributeTable = new MergeAttributeTable(edgeAttributeMapping);
-		mergeEdgeAttributeScrollPane.setViewportView(mergeEdgeAttributeTable);
-
-		mergeEdgeAttributePanel.add(mergeEdgeAttributeScrollPane);
-
-		mergeAttributeTabbedPane.addTab("Edge", mergeEdgeAttributePanel);
-
-		mergeAttributePanel.add(mergeAttributeTabbedPane);
-
-		gridBagConstraints = new GridBagConstraints();
-		gridBagConstraints.gridx = 0;
-		gridBagConstraints.gridy = 3;
-		gridBagConstraints.fill = GridBagConstraints.BOTH;
-		gridBagConstraints.weightx = 1.0;
-		gridBagConstraints.weighty = 1.0;
-		gridBagConstraints.insets = new Insets(5, 5, 5, 5);
-		advancedPanel.add(mergeAttributePanel, gridBagConstraints);
-
-		advancedOptionCollapsiblePanelAgent.setLayout(new BorderLayout());
-
-		optionPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
-
-		inNetworkMergeCheckBox.setSelected(true);
-		inNetworkMergeCheckBox.setText("Enable merging nodes/edges in the same network");
-		inNetworkMergeCheckBox.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent evt) {
-				inNetworkMergeCheckBoxActionPerformed(evt);
-			}
-		});
-		optionPanel.add(inNetworkMergeCheckBox);
-
-		/*
-		 * 
-		 * advancedOptionCollapsiblePanelAgent.add(optionPanel,
-		 * BorderLayout.PAGE_START);
-		 */
-		advancedOptionCollapsiblePanel.getContentPane().add(optionPanel, BorderLayout.CENTER);
-
-		gridBagConstraints = new GridBagConstraints();
-		gridBagConstraints.gridx = 0;
-		gridBagConstraints.gridy = 4;
-		gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
-		gridBagConstraints.anchor = GridBagConstraints.LINE_START;
-		gridBagConstraints.insets = new Insets(5, 5, 5, 5);
-		advancedPanel.add(advancedOptionCollapsiblePanelAgent, gridBagConstraints);
-
-		/*
-		 * 
-		 * collapsiblePanelAgent.add(advancedPanel, BorderLayout.CENTER);
-		 */
-		advancedNetworkMergeCollapsiblePanel.getContentPane().add(advancedPanel, BorderLayout.CENTER);
-
-		gridBagConstraints = new GridBagConstraints();
-		gridBagConstraints.gridx = 0;
-		gridBagConstraints.gridy = contentPaneGridY++;
-		gridBagConstraints.fill = GridBagConstraints.BOTH;
-		gridBagConstraints.weightx = 1.0;
-		gridBagConstraints.weighty = 1.0;
-		getContentPane().add(collapsiblePanelAgent, gridBagConstraints);
-
-		gridBagConstraints = new GridBagConstraints();
-		gridBagConstraints.gridx = 0;
-		gridBagConstraints.gridy = contentPaneGridY++;
-		gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
-		gridBagConstraints.weightx = 1.0;
-		gridBagConstraints.insets = new Insets(5, 5, 5, 5);
-		getContentPane().add(jSeparator4, gridBagConstraints);
-
-		okPanel.setDoubleBuffered(false);
-		okPanel.setLayout(new BoxLayout(okPanel, BoxLayout.LINE_AXIS));
-
-		okButton.setText(" Merge ");
-		okButton.setEnabled(false);
-		okButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent evt) {
-				okButtonActionPerformed(evt);
-			}
-		});
-		okPanel.add(okButton);
-
-		cancelButton.setText("Cancel");
-		cancelButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent evt) {
-				setVisible(false);
-				dispose();
-			}
-		});
-		okPanel.add(cancelButton);
-
-		gridBagConstraints = new GridBagConstraints();
-		gridBagConstraints.gridx = 0;
-		gridBagConstraints.gridy = contentPaneGridY++;
-		gridBagConstraints.anchor = GridBagConstraints.LINE_END;
-		gridBagConstraints.weightx = 1.0;
-		gridBagConstraints.insets = new Insets(5, 5, 5, 5);
-		getContentPane().add(okPanel, gridBagConstraints);
-
-		pack();
-	}// </editor-fold>
-
-	private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_okButtonActionPerformed
 		
-		if (this.idmappingCheckBox.isSelected()) {
-			// TODO: implement this option
+		return moveRightBtn;
+	}
+	
+	private JButton getMoveLeftBtn() {
+		if (moveLeftBtn == null) {
+			moveLeftBtn = new JButton(IconManager.ICON_ANGLE_LEFT);
+			moveLeftBtn.setFont(iconMgr.getIconFont(14.0f));
+			moveLeftBtn.setToolTipText("Remove Selected");
+			moveLeftBtn.setEnabled(false);
+			moveLeftBtn.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent evt) {
+					int[] indices = getSelectedNetLs().getSelectedIndices();
+					if (indices == null || indices.length == 0) {
+						return;
+					}
+
+					for (int i = indices.length - 1; i >= 0; i--) {
+						CyNetwork removed = selectedNetData.removeElement(indices[i]);
+						unselectedNetData.add(removed);
+						addRemoveAttributeMapping(removed, false);
+					}
+
+					if (selectedNetData.getSize() == 0) {
+						getSelectedNetLs().clearSelection();
+						moveLeftBtn.setEnabled(false);
+					} else {
+						int minindex = getSelectedNetLs().getMinSelectionIndex();
+						if (minindex >= selectedNetData.getSize()) {
+							minindex = 0;
+						}
+						getSelectedNetLs().setSelectedIndex(minindex);
+					}
+
+					getSelectedNetLs().repaint();
+					getUnselectedNetLs().repaint();
+					updateOKButton();
+					updateAttributeTable();
+					updateMergeAttributeTable();
+				}
+			});
+		}
+		
+		return moveLeftBtn;
+	}
+	
+	private JButton getMoveUpBtn() {
+		if (moveUpBtn == null) {
+			moveUpBtn = new JButton(IconManager.ICON_CARET_UP);
+			moveUpBtn.setFont(iconMgr.getIconFont(17.0f));
+			moveUpBtn.setToolTipText("Move Selected Up");
+			moveUpBtn.setBorderPainted(false);
+			moveUpBtn.setContentAreaFilled(false);
+			moveUpBtn.setOpaque(false);
+			moveUpBtn.setFocusPainted(false);
+			moveUpBtn.setBorder(BorderFactory.createEmptyBorder(2, 4, 2, 4));
+			moveUpBtn.setEnabled(false);
+			moveUpBtn.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent evt) {
+					int[] indices = getSelectedNetLs().getSelectedIndices();
+					
+					if (indices == null || indices.length == 0)
+						return;
+
+					int imin = getSelectedNetLs().getMinSelectionIndex();
+					int imax = getSelectedNetLs().getMaxSelectionIndex();
+
+					if (imin < 1)
+						return;
+
+					CyNetwork removed = selectedNetData.removeElement(imin - 1);
+					selectedNetData.add(imax, removed);
+
+					for (int ii = 0; ii < indices.length; ii++) {
+						indices[ii]--;
+					}
+					getSelectedNetLs().setSelectedIndices(indices);
+
+					updateUpDownButtons();
+					getSelectedNetLs().repaint();
+					getUnselectedNetLs().repaint();
+					updateOKButton();
+					updateAttributeTable();
+					updateMergeAttributeTable();
+				}
+			});
+		}
+		
+		return moveUpBtn;
+	}
+	
+	private JButton getMoveDownBtn() {
+		if (moveDownBtn == null) {
+			moveDownBtn = new JButton(IconManager.ICON_CARET_DOWN);
+			moveDownBtn.setFont(iconMgr.getIconFont(17.0f));
+			moveDownBtn.setToolTipText("Move Selected Down");
+			moveDownBtn.setBorderPainted(false);
+			moveDownBtn.setContentAreaFilled(false);
+			moveDownBtn.setOpaque(false);
+			moveDownBtn.setFocusPainted(false);
+			moveDownBtn.setBorder(BorderFactory.createEmptyBorder(2, 4, 2, 4));
+			moveDownBtn.setEnabled(false);
+			moveDownBtn.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent evt) {
+					int[] indices = getSelectedNetLs().getSelectedIndices();
+					
+					if (indices == null || indices.length == 0)
+						return;
+
+					int imin = getSelectedNetLs().getMinSelectionIndex();
+					int imax = getSelectedNetLs().getMaxSelectionIndex();
+
+					if (imax >= selectedNetData.getSize() - 1)
+						return;
+
+					CyNetwork removed = selectedNetData.removeElement(imax + 1);
+					selectedNetData.add(imin, removed);
+
+					for (int ii = 0; ii < indices.length; ii++) {
+						indices[ii]++;
+					}
+					getSelectedNetLs().setSelectedIndices(indices);
+
+					updateUpDownButtons();
+					getSelectedNetLs().repaint();
+					getUnselectedNetLs().repaint();
+					updateOKButton();
+					updateAttributeTable();
+					updateMergeAttributeTable();
+				}
+			});
+		}
+		
+		return moveDownBtn;
+	}
+	
+	private CollapsiblePanel getAdvancedOptionsPnl() {
+		if (advancedOptionsPnl == null) {
+			advancedOptionsPnl = new CollapsiblePanel("Advanced Options");
+			advancedOptionsPnl.setAlignmentX(Component.CENTER_ALIGNMENT);
+			advancedOptionsPnl.addCollapseListener(new CollapsiblePanel.CollapseListener() {
+				@Override
+				public void collapsed() {
+					updateOKButton();
+					pack();
+				}
+				@Override
+				public void expanded() {
+					updateOKButton();
+					pack();
+				}
+			});
+			
+			final JLabel matchingColumnsLbl = new JLabel("Matching Columns (table columns to match nodes between networks):");
+			
+//			JLabel idmappingLabel = new JLabel();
+//			idmappingLabel.setForeground(new Color(255, 0, 51));
+//			idmappingLabel
+//					.setText("If you want to map identifiers between the matching columns, please install CyThesaurus app version "
+//							+ requiredCyThesaursServiceVersion + " or above.");
+//			idmappingLabel.setVisible(false);
+//			attrPnl.add(idmappingLabel);
+			
+			final JLabel howLbl = new JLabel("How to merge columns:");
+			
+			final GroupLayout layout = new GroupLayout(advancedOptionsPnl.getContentPane());
+			advancedOptionsPnl.getContentPane().setLayout(layout);
+			layout.setAutoCreateContainerGaps(true);
+			layout.setAutoCreateGaps(true);
+			
+			layout.setHorizontalGroup(layout.createParallelGroup(Alignment.LEADING, true)
+					.addComponent(matchingColumnsLbl)
+					.addComponent(getAttrScr(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+					.addComponent(getIdMappingCkb())
+					.addComponent(howLbl)
+					.addComponent(getMergeAttrTp(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+					.addComponent(getInNetMergeCkb())
+			);
+			layout.setVerticalGroup(layout.createSequentialGroup()
+					.addComponent(matchingColumnsLbl)
+					.addComponent(getAttrScr(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+					.addComponent(getIdMappingCkb())
+					.addComponent(howLbl)
+					.addComponent(getMergeAttrTp(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+					.addComponent(getInNetMergeCkb())
+			);
 		}
 
-		final String netName = cnn.getSuggestedNetworkTitle(mergeNodeAttributeTable.getMergedNetworkName());
-		final AttributeConflictCollector conflictCollector = new AttributeConflictCollectorImpl();
-
-		// network merge task
-		final NetworkMergeTask nmTask = new NetworkMergeTask(cnf, cnm, netName, this.matchingAttribute, this.nodeAttributeMapping,
-				this.edgeAttributeMapping, this.selectedNetworkData.getNetworkList(), getOperation(),
-				conflictCollector, selectedNetworkAttributeIDType, tgtType, this.inNetworkMergeCheckBox.isSelected(),
-				netViewCreator);
-
-		final TaskIterator ti = new TaskIterator(nmTask);
-
-		// Execute Task in New Thread; pop open JTask Dialog Box.
-		taskManager.execute(ti);
-
-		setVisible(false);
-		dispose();
-	}// GEN-LAST:event_okButtonActionPerformed
-
-	private void inNetworkMergeCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_inNetworkMergeCheckBoxActionPerformed
-		this.updateOKButtonEnable();
-	}// GEN-LAST:event_inNetworkMergeCheckBoxActionPerformed
-
-	private double requiredCyThesaursServiceVersion = 1.01;
-
-	private boolean checkCyThesaurus() {
-		// CyThesaurusServiceClient client = new
-		// CyThesaurusServiceMessageBasedClient("AdvanceNetworkMerge");
-		// if (!client.isServiceAvailable())
-		// return false;
-		//
-		// double version = client.serviceVersion();
-		// return version >= requiredCyThesaursServiceVersion;
-		return false;
+		return advancedOptionsPnl;
 	}
+	
+	private JScrollPane getAttrScr() {
+		if (attrScr == null) {
+			attrScr = new JScrollPane();
+			attrScr.setAlignmentX(Component.LEFT_ALIGNMENT);
+			attrScr.setMinimumSize(new Dimension(100, 50));
+			attrScr.setPreferredSize(new Dimension(450, 50));
+			attrScr.setViewportView(getMatchNodeTbl());
+		}
+		
+		return attrScr;
+	}
+	
+	private MatchNodeTable getMatchNodeTbl() {
+		if (matchNodeTbl == null) {
+			matchNodeTbl = new MatchNodeTable(matchingAttr);
+			matchNodeTbl.getModel().addTableModelListener(new TableModelListener() {
+				@Override
+				public void tableChanged(TableModelEvent e) {
+					getMergeNodeAttrTbl().updateMatchingAttribute();
+				}
+			});
+		}
+		
+		return matchNodeTbl;
+	}
+	
+	private MergeAttributeTable getMergeNodeAttrTbl() {
+		if (mergeNodeAttrTbl == null) {
+			mergeNodeAttrTbl = new MergeAttributeTable(nodeAttrMapping, matchingAttr);
+		}
+		
+		return mergeNodeAttrTbl;
+	}
+	
+	private MergeAttributeTable getMergeEdgeAttrTbl() {
+		if (mergeEdgeAttrTbl == null) {
+			mergeEdgeAttrTbl = new MergeAttributeTable(edgeAttrMapping);
+		}
+		
+		return mergeEdgeAttrTbl;
+	}
+	
+	private JCheckBox getIdMappingCkb() {
+		if (idMappingCkb == null) {
+			idMappingCkb = new JCheckBox("Map IDs between the matching columns");
+			idMappingCkb.setAlignmentX(Component.LEFT_ALIGNMENT);
+			idMappingCkb.setVisible(false);
+		}
+		
+		return idMappingCkb;
+	}
+	
+	private JTabbedPane getMergeAttrTp() {
+		if (mergeAttrTp == null) {
+			mergeAttrTp = new JTabbedPane();
+			mergeAttrTp.setTabPlacement(JTabbedPane.BOTTOM);
+			mergeAttrTp.setMinimumSize(new Dimension(450, 150));
+			mergeAttrTp.setPreferredSize(new Dimension(450, 200));
+			mergeAttrTp.setAlignmentX(Component.LEFT_ALIGNMENT);
+			
+			mergeAttrTp.addTab("Node", getMergeNodeAttrPnl());
+			mergeAttrTp.addTab("Edge", getMergeEdgeAttrPnl());
+		}
+		
+		return mergeAttrTp;
+	}
+	
+	private JPanel getMergeNodeAttrPnl() {
+		if (mergeNodeAttrPnl == null) {
+			mergeNodeAttrPnl = new JPanel();
+			mergeNodeAttrPnl.setLayout(new BoxLayout(mergeNodeAttrPnl, BoxLayout.LINE_AXIS));
+			
+			final JScrollPane mergeNodeAttributeScrollPane = new JScrollPane();
+			mergeNodeAttributeScrollPane.setViewportView(getMergeNodeAttrTbl());
+			
+			mergeNodeAttrPnl.add(mergeNodeAttributeScrollPane);
+		}
+		
+		return mergeNodeAttrPnl;
+	}
+	
+	private JPanel getMergeEdgeAttrPnl() {
+		if (mergeEdgeAttrPnl == null) {
+			mergeEdgeAttrPnl = new JPanel();
+			mergeEdgeAttrPnl.setLayout(new BoxLayout(mergeEdgeAttrPnl, BoxLayout.LINE_AXIS));
+			
+			final JScrollPane mergeEdgeAttributeScrollPane = new JScrollPane();
+			mergeEdgeAttributeScrollPane.setViewportView(getMergeEdgeAttrTbl());
+			
+			mergeEdgeAttrPnl.add(mergeEdgeAttributeScrollPane);
+		}
+		
+		return mergeEdgeAttrPnl;
+	}
+	
+	private JCheckBox getInNetMergeCkb() {
+		if (inNetMergeCkb == null) {
+			inNetMergeCkb = new JCheckBox("Enable merging nodes/edges in the same network");
+			inNetMergeCkb.setSelected(true);
+			inNetMergeCkb.setAlignmentX(Component.LEFT_ALIGNMENT);
+			inNetMergeCkb.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent evt) {
+					updateOKButton();
+				}
+			});
+		}
+		
+		return inNetMergeCkb;
+	}
+	
+	private JPanel getButtonPnl() {
+		if (buttonPnl == null) {
+			buttonPnl = Utils.createButtonsPanel(getOkBtn(), getCancelBtn());
+			buttonPnl.setAlignmentX(Component.CENTER_ALIGNMENT);
+			buttonPnl.setDoubleBuffered(false);
+		}
+		
+		return buttonPnl;
+	}
+	
+	private JButton getOkBtn() {
+		if (okBtn == null) {
+			okBtn = new JButton("Merge");
+			okBtn.setEnabled(false);
+			okBtn.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent evt) {
+					if (idMappingCkb.isSelected()) {
+						// TODO: implement this option
+					}
+
+					final String netName = cnn.getSuggestedNetworkTitle(getMergeNodeAttrTbl().getMergedNetworkName());
+					final AttributeConflictCollector conflictCollector = new AttributeConflictCollectorImpl();
+
+					// Network merge task
+					final NetworkMergeTask nmTask = new NetworkMergeTask(cnf, cnm, netName, matchingAttr,
+							nodeAttrMapping, edgeAttrMapping, selectedNetData.getNetworkList(),
+							getOperation(), conflictCollector, selectedNetAttrIDType, tgtType,
+							getInNetMergeCkb().isSelected(), netViewCreator);
+
+					final TaskIterator ti = new TaskIterator(nmTask);
+
+					// Execute Task in New Thread; pop open JTask Dialog Box.
+					taskManager.execute(ti);
+
+					setVisible(false);
+					dispose();
+				}
+			});
+		}
+		
+		return okBtn;
+	}
+	
+	private JButton getCancelBtn() {
+		if (cancelBtn == null) {
+			cancelBtn = new JButton("Cancel");
+			cancelBtn.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent evt) {
+					setVisible(false);
+					dispose();
+				}
+			});
+		}
+		
+		return cancelBtn;
+	}
+
+//	private double requiredCyThesaursServiceVersion = 1.01;
+//
+//	private boolean checkCyThesaurus() {
+//		// CyThesaurusServiceClient client = new
+//		// CyThesaurusServiceMessageBasedClient("AdvanceNetworkMerge");
+//		// if (!client.isServiceAvailable())
+//		// return false;
+//		//
+//		// double version = client.serviceVersion();
+//		// return version >= requiredCyThesaursServiceVersion;
+//		return false;
+//	}
 
 	/*
 	 * Call when adding or removing a network to/from selected network list
@@ -792,80 +882,55 @@ public class NetworkMergeDialog extends JDialog {
 	private void addRemoveAttributeMapping(CyNetwork network, boolean isAdd) {
 
 		if (isAdd) {
-			nodeAttributeMapping.addNetwork(network, network.getDefaultNodeTable()); // TODO:
+			nodeAttrMapping.addNetwork(network, network.getDefaultNodeTable()); // TODO:
 																						// make
 																						// the
 																						// table
 																						// an
 																						// user
 																						// option?
-			edgeAttributeMapping.addNetwork(network, network.getDefaultEdgeTable());
-			matchingAttribute.addNetwork(network);
+			edgeAttrMapping.addNetwork(network, network.getDefaultEdgeTable());
+			matchingAttr.addNetwork(network);
 		} else {
-			nodeAttributeMapping.removeNetwork(network);
-			edgeAttributeMapping.removeNetwork(network);
-			matchingAttribute.removeNetwork(network);
+			nodeAttrMapping.removeNetwork(network);
+			edgeAttrMapping.removeNetwork(network);
+			matchingAttr.removeNetwork(network);
 		}
 	}
 
-	private void updateOKButtonEnable() {
-		int n = !advancedNetworkMergeCollapsiblePanel.isCollapsed() && inNetworkMergeCheckBox.isSelected()
+	private void updateOKButton() {
+		int n = !getAdvancedOptionsPnl().isCollapsed() && getInNetMergeCkb().isSelected()
 				&& getOperation() == Operation.UNION ? 1 : 2;
 
-		if (selectedNetworkData.getSize() < n) {
-			okButton.setToolTipText("Select at least " + n + " networks to merge");
-			okButton.setEnabled(false);
-			return;
+		if (selectedNetData.getSize() < n) {
+			getOkBtn().setToolTipText("Select at least " + n + " networks to merge");
+			getOkBtn().setEnabled(false);
+		} else {
+			getOkBtn().setToolTipText(null);
+			getOkBtn().setEnabled(true);
 		}
-
-		okButton.setToolTipText(null);
-		okButton.setEnabled(true);
 	}
 
-	private void updateUpDownButtonEnable() {
-		int imin = selectedNetworkList.getMinSelectionIndex();
-		int imax = selectedNetworkList.getMaxSelectionIndex();
-		upButton.setEnabled(0 < imin && imax <= selectedNetworkData.getSize() - 1);
-		downButton.setEnabled(0 <= imin && imax < selectedNetworkData.getSize() - 1);
+	private void updateUpDownButtons() {
+		boolean diff = selectedOperation == Operation.DIFFERENCE;
+		int imin = getSelectedNetLs().getMinSelectionIndex();
+		int imax = getSelectedNetLs().getMaxSelectionIndex();
+		getMoveUpBtn().setEnabled(diff && 0 < imin && imax <= selectedNetData.getSize() - 1);
+		getMoveDownBtn().setEnabled(diff && 0 <= imin && imax < selectedNetData.getSize() - 1);
 	}
 
+	private void updateDifferencePanel() {
+		getDifferencePnl().setVisible(selectedOperation == Operation.DIFFERENCE);
+		pack();
+	}
+	
 	private void updateAttributeTable() {
-		matchNodeTable.fireTableStructureChanged();
+		getMatchNodeTbl().fireTableStructureChanged();
 	}
 
 	private void updateMergeAttributeTable() {
-		mergeNodeAttributeTable.fireTableStructureChanged();
-		mergeEdgeAttributeTable.fireTableStructureChanged();
-	}
-
-	private void updateSize() {
-		Dimension dim;
-		if (advancedNetworkMergeCollapsiblePanel.isCollapsed()) {
-			if (getOperation() != Operation.DIFFERENCE) {
-				dim = new Dimension(500, 380);
-			} else {
-				dim = new Dimension(500, 450);
-			}
-		} else {
-			Dimension dim_curr = this.getSize(); // current dim
-			int width_curr = dim_curr.width;
-			int height_curr = dim_curr.height;
-
-			int width = 700;
-			int height = getOperation() == Operation.DIFFERENCE ? 800 : 720;
-
-			if (width < width_curr) {
-				width = width_curr;
-			}
-
-			if (height < height_curr) {
-				height = height_curr;
-			}
-
-			dim = new Dimension(width, height);
-		}
-
-		this.setSize(dim);
+		getMergeNodeAttrTbl().fireTableStructureChanged();
+		getMergeEdgeAttrTbl().fireTableStructureChanged();
 	}
 
 	/*
@@ -874,70 +939,23 @@ public class NetworkMergeDialog extends JDialog {
 	private Operation getOperation() {
 		return this.selectedOperation;
 	}
-
-	private MergeAttributeTable mergeNodeAttributeTable;
-	private MergeAttributeTable mergeEdgeAttributeTable;
-	private MatchNodeTable matchNodeTable;
-	private AttributeMapping nodeAttributeMapping;
-	private AttributeMapping edgeAttributeMapping;
-	private MatchingAttribute matchingAttribute;
-	private Map<String, Map<String, Set<String>>> selectedNetworkAttributeIDType;
-	private String tgtType;
-
-	private final ImageIcon UNION_ICON = new ImageIcon(getClass().getResource("/images/union.png"));
-	private final ImageIcon INTERSECTION_ICON = new ImageIcon(getClass().getResource("/images/intersection.png"));
-	private final ImageIcon DIFFERENCE_ICON = new ImageIcon(getClass().getResource("/images/difference.png"));
-	private final ImageIcon DIFFERENCE2_ICON = new ImageIcon(getClass().getResource("/images/difference2.png"));
-	private final ImageIcon[] OPERATION_ICONS = { UNION_ICON, INTERSECTION_ICON, DIFFERENCE_ICON };
-
-	private CollapsiblePanel advancedNetworkMergeCollapsiblePanel;
-	private CollapsiblePanel advancedOptionCollapsiblePanel;
-
-	boolean checkCyThesaurus;
-
-	// Variables declaration - do not modify//GEN-BEGIN:variables
-	private javax.swing.JPanel advancedOptionCollapsiblePanelAgent;
-	private javax.swing.JPanel advancedPanel;
-	private javax.swing.JPanel attributePanel;
-	private javax.swing.JScrollPane attributeScrollPane;
-	private javax.swing.JButton cancelButton;
-	private javax.swing.JPanel collapsiblePanelAgent;
-	private javax.swing.JButton downButton;
-	private javax.swing.JCheckBox idmappingCheckBox;
-	private javax.swing.JCheckBox inNetworkMergeCheckBox;
-	private javax.swing.JButton leftButton;
-	private javax.swing.JButton okButton;
-	private javax.swing.JComboBox operationComboBox;
-	private Operation selectedOperation;
-	private javax.swing.JLabel operationIcon;
-	private javax.swing.JRadioButton differenceButton;
-	private javax.swing.JRadioButton difference2Button;
-	private javax.swing.ButtonGroup differenceGroup;
-	private javax.swing.JPanel optionPanel;
-	private javax.swing.JButton rightButton;
-	private javax.swing.JList selectedNetworkList;
-	private NetworkListModel selectedNetworkData;
-	private javax.swing.JPanel udButtonPanel;
-	private javax.swing.JList unselectedNetworkList;
-	private SortedNetworkListModel unselectedNetworkData;
-	private javax.swing.JButton upButton;
-	// End of variables declaration//GEN-END:variables
-
 }
 
-class NetworkListModel extends AbstractListModel {
+@SuppressWarnings("serial")
+class NetworkListModel extends AbstractListModel<CyNetwork> {
+	
 	Vector<CyNetwork> model;
 
 	public NetworkListModel() {
 		model = new Vector<CyNetwork>();
 	}
 
-	// @Override
+	@Override
 	public int getSize() {
 		return model.size();
 	}
 
-	// @Override
+	@Override
 	public CyNetwork getElementAt(int index) {
 		return model.get(index);
 	}
@@ -965,20 +983,21 @@ class NetworkListModel extends AbstractListModel {
 	}
 }
 
-class SortedNetworkListModel extends AbstractListModel {
-	// Using a SortedMap from String to network
+@SuppressWarnings("serial")
+class SortedNetworkListModel extends AbstractListModel<CyNetwork> {
+	
 	TreeMap<String, CyNetwork> model;
 
 	public SortedNetworkListModel() {
 		model = new TreeMap<String, CyNetwork>();
 	}
 
-	// @Override
+	@Override
 	public int getSize() {
 		return model.size();
 	}
 
-	// @Override
+	@Override
 	public CyNetwork getElementAt(int index) {
 		return (CyNetwork) model.values().toArray()[index];
 	}

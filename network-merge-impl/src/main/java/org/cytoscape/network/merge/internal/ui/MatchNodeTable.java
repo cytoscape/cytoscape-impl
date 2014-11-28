@@ -26,11 +26,13 @@ package org.cytoscape.network.merge.internal.ui;
 
 import java.util.ArrayList;
 import java.util.Vector;
+
 import javax.swing.DefaultCellEditor;
 import javax.swing.JComboBox;
 import javax.swing.JTable;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableColumn;
+
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyTable;
@@ -38,47 +40,45 @@ import org.cytoscape.network.merge.internal.model.MatchingAttribute;
 
 /**
  * Table for selecting which attribute to use for matching nodes 
- * 
  */
-class MatchNodeTable extends JTable{ 
-    private MatchingAttribute matchingAttribute;
-    private MatchNodeTableModel model;
+@SuppressWarnings("serial")
+class MatchNodeTable extends JTable {
+	
+    private final MatchingAttribute matchingAttribute;
+    private final MatchNodeTableModel model;
 
-    public MatchNodeTable(MatchingAttribute matchingAttribute) {
-        super();
+    public MatchNodeTable(final MatchingAttribute matchingAttribute) {
         this.matchingAttribute = matchingAttribute;
         model = new MatchNodeTableModel();
         setModel(model);
-        setRowHeight(20);
     }
     
     protected void setColumnEditorAndCellRenderer() {
         int n = getColumnCount();
+        
         for (int i=0; i<n; i++) {
             TableColumn column = getColumnModel().getColumn(i);
-            
             CyNetwork net = model.getNetork(i);
             CyTable table = net.getDefaultNodeTable();
             
             Vector<String> colNames = new Vector<String>();
+            
             for (CyColumn cyCol : table.getColumns()) {
                 String colName = cyCol.getName();
-                if (!colName.equals("SUID")) {
+                
+                if (!colName.equals("SUID"))
                     colNames.add(colName);
-                }
             }
             
             CyColumn cyCol = matchingAttribute.getAttributeForMatching(net);
+            JComboBox<String> comboBox = new JComboBox<String>(colNames);
             
-            JComboBox comboBox = new JComboBox(colNames);
-            ComboBoxTableCellRenderer comboRenderer = new ComboBoxTableCellRenderer(colNames);
             if (cyCol!=null) {
                 String colName = cyCol.getName();
                 comboBox.setSelectedItem(colName);
-                comboRenderer.setSelectedItem(colName);
             }
+            
             column.setCellEditor(new DefaultCellEditor(comboBox));
-            column.setCellRenderer(comboRenderer);
         }
     }
 
@@ -88,6 +88,7 @@ class MatchNodeTable extends JTable{
     }
 
     private class MatchNodeTableModel extends AbstractTableModel {
+    	
         ArrayList<CyNetwork> networks;
 
         public MatchNodeTableModel() {
@@ -102,7 +103,7 @@ class MatchNodeTable extends JTable{
         @Override
         public int getRowCount() {
             int n = matchingAttribute.getSizeNetwork();
-            return n==0?0:1;
+			return n == 0 ? 0 : 1;
         }
 
         @Override
@@ -116,8 +117,7 @@ class MatchNodeTable extends JTable{
         }
 
         @Override
-        public Class getColumnClass(int c) {
-            //return JComboBox.class;
+        public Class<?> getColumnClass(int c) {
             return String.class;
         }
 
@@ -155,7 +155,4 @@ class MatchNodeTable extends JTable{
         }
 
     }
-
 }
-
-

@@ -28,9 +28,25 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.*;
-import javax.swing.*;
-import javax.swing.table.*;
+import java.util.ArrayList;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
+import java.util.Vector;
+
+import javax.swing.DefaultCellEditor;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JTable;
+import javax.swing.ListSelectionModel;
+import javax.swing.table.AbstractTableModel;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.JTableHeader;
+import javax.swing.table.TableColumn;
+
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyTable;
@@ -39,11 +55,9 @@ import org.cytoscape.network.merge.internal.model.MatchingAttribute;
 import org.cytoscape.network.merge.internal.util.ColumnType;
 
 /**
- * Table for customizing attribute mapping from original netowrks to resulting
- * network
- * 
- * 
+ * Table for customizing attribute mapping from original networks to resulting network
  */
+@SuppressWarnings("serial")
 class MergeAttributeTable extends JTable {
 
 	private final String nullAttr = "[DELETE THIS]";
@@ -52,9 +66,8 @@ class MergeAttributeTable extends JTable {
 	private String mergedNetworkName;
 	private MergeAttributeTableModel model;
 	private boolean isNode;
-	private int indexMatchingAttr; // the index of matching attribute in the
-									// attribute mapping
-									// only used when isNode==true
+	private int indexMatchingAttr; // the index of matching attribute in the attribute mapping
+								   // only used when isNode==true
 
 	public MergeAttributeTable(final AttributeMapping attributeMapping, final MatchingAttribute matchingAttribute) {
 		super();
@@ -65,7 +78,7 @@ class MergeAttributeTable extends JTable {
 		this.matchingAttribute = matchingAttribute;
 		model = new MergeAttributeTableModel();
 		setModel(model);
-		setRowHeight(20);
+		setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 	}
 
 	public MergeAttributeTable(final AttributeMapping attributeMapping) {
@@ -75,7 +88,6 @@ class MergeAttributeTable extends JTable {
 		model = new MergeAttributeTableModel();
 		isNode = false;
 		setModel(model);
-		setRowHeight(24);
 	}
 
 	public String getMergedNetworkName() {
@@ -97,104 +109,66 @@ class MergeAttributeTable extends JTable {
 	}
 
 	protected void setColumnEditorAndRenderer() {
-		// final TreeSet<String> attrset = new TreeSet<String>();
-		// attrset.addAll(Arrays.asList(attributeMapping.getCyAttributes().getAttributeNames()));
-
-		// final Vector<String> attrs = new Vector<String>(attrset);
-		// attrs.add(nullAttr);
-
-		// final int nnet = attributeMapping.getSizeNetwork();
-
-		final int n = this.getColumnCount();// attributeMapping.getSizeNetwork();
+		final int n = this.getColumnCount();
+		
 		for (int i = 0; i < n; i++) { // for each network
 			final TableColumn column = getColumnModel().getColumn(i);
 
 			if (this.isColumnOriginalNetwork(i)) {
 				final Vector<String> attrs = getComboboxOption(i);
-				final JComboBox comboBox = new JComboBox(attrs);
+				final JComboBox<String> comboBox = new JComboBox<>(attrs);
 				column.setCellEditor(new DefaultCellEditor(comboBox));
-				column.setCellRenderer(new TableCellRenderer() {
-					private DefaultTableCellRenderer defaultRenderer = new DefaultTableCellRenderer();
-					private ComboBoxTableCellRenderer comboBoxRenderer = new ComboBoxTableCellRenderer(attrs);
-
+				
+				column.setCellRenderer(new DefaultTableCellRenderer() {
 					@Override
 					public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,
 							boolean hasFocus, int row, int column) {
-
+						final JLabel label = (JLabel) super.getTableCellRendererComponent(table, value,
+								isSelected, hasFocus, row, column);
+						
 						if (row < (isNode ? 1 : 0)) {// TODO Cytoscape3
-							JLabel label = (JLabel) defaultRenderer.getTableCellRendererComponent(table, value,
-									isSelected, hasFocus, row, column);
-							label.setBackground(Color.LIGHT_GRAY);
 							label.setToolTipText("Change this in the matching node table above");
-							return label;
-						} else {
-							Component renderer = comboBoxRenderer.getTableCellRendererComponent(table, value,
-									isSelected, hasFocus, row, column);
-							if (isSelected) {
-								renderer.setForeground(table.getSelectionForeground());
-								renderer.setBackground(table.getSelectionBackground());
-							} else {
-								renderer.setForeground(table.getForeground());
-								renderer.setBackground(table.getBackground());
-							}
-							return renderer;
 						}
+						
+						return label;
 					}
 				});
-
 			} else if (this.isColumnMergedNetwork(i)) {
-				column.setCellRenderer(new TableCellRenderer() {
-					private DefaultTableCellRenderer defaultRenderer = new DefaultTableCellRenderer();
-
+				column.setCellRenderer(new DefaultTableCellRenderer() {
 					@Override
 					public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,
 							boolean hasFocus, int row, int column) {
-
+						final JLabel label = (JLabel) super.getTableCellRendererComponent(table, value,
+								isSelected, hasFocus, row, column);
+						
+						if (isSelected) {
+							label.setForeground(table.getSelectionForeground());
+							label.setBackground(table.getSelectionBackground());
+						} else {
+							label.setForeground(table.getForeground());
+							label.setBackground(table.getBackground());
+						}
+						
 						if (row >= table.getRowCount() - 1) {
-							JLabel label = (JLabel) defaultRenderer.getTableCellRendererComponent(table, value,
-									isSelected, hasFocus, row, column);
 							label.setBackground(Color.LIGHT_GRAY);
-							if (isSelected) {
-								label.setForeground(table.getSelectionForeground());
-							} else {
-								label.setForeground(table.getForeground());
-							}
-							return label;
 						} else {
 							if (isNode && row == 0) {
-								JLabel label = (JLabel) defaultRenderer.getTableCellRendererComponent(table, value,
-										isSelected, hasFocus, row, column);
 								label.setForeground(Color.RED);
-								if (isSelected) {
-									label.setBackground(table.getSelectionBackground());
-								} else {
-									label.setBackground(table.getBackground());
-								}
-								label.setToolTipText("CHANGE ME.");
-								return label;
+								label.setToolTipText("Change me!");
 							} else {
-								JLabel label = (JLabel) defaultRenderer.getTableCellRendererComponent(table, value,
-										isSelected, hasFocus, row, column);
-								label.setToolTipText("Double click to change");
-								if (isSelected) {
-									label.setForeground(table.getSelectionForeground());
-									label.setBackground(table.getSelectionBackground());
-								} else {
-									label.setForeground(table.getForeground());
-									label.setBackground(table.getBackground());
-								}
-								return label;
+								label.setToolTipText("Click to change...");
 							}
 						}
+						
+						return label;
 					}
 				});
 			} else if (this.isColumnMergedType(i)) {
 				// set editor
 				RowTableCellEditor rowEditor = new RowTableCellEditor(this);
 				int nr = this.getRowCount();
-				// List<JComboBox> combos = new Vector<JComboBox>(nr); // save
-				// for render
 				final Vector<ColumnType>[] cbvalues = new Vector[nr];
+				
 				for (int ir = 0; ir < nr - 1; ir++) {
 					int iAttr = ir;
 
@@ -205,74 +179,46 @@ class MergeAttributeTable extends JTable {
 						types.add(ColumnType.getType(cyTable.getColumn(entry.getValue())));
 					}
 					ColumnType reasonalbeType = ColumnType.getResonableCompatibleConvertionType(types);
-					Vector<ColumnType> convertiableTypes = new Vector<ColumnType>(
+					Vector<ColumnType> convertiableTypes = new Vector<>(
 							ColumnType.getConvertibleTypes(reasonalbeType));
 
 					cbvalues[ir] = convertiableTypes;
 
-					JComboBox cb = new JComboBox(convertiableTypes);
+					JComboBox<ColumnType> cb = new JComboBox<>(convertiableTypes);
 					cb.setSelectedItem(attributeMapping.getMergedAttributeType(iAttr));
 
 					rowEditor.setEditorAt(ir, new DefaultCellEditor(cb));
-					// combos.add(cb);
 				}
 				column.setCellEditor(rowEditor);
 
 				// set renderer
-				column.setCellRenderer(new TableCellRenderer() {
-					private DefaultTableCellRenderer defaultRenderer = new DefaultTableCellRenderer();
-
-					// private ComboBoxTableCellRenderer comboBoxRenderer = new
-					// ComboBoxTableCellRenderer(attrs);
-
-					// @Override
+				column.setCellRenderer(new DefaultTableCellRenderer() {
+					@Override
 					public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,
 							boolean hasFocus, int row, int column) {
-
-						if (row >= table.getRowCount() - 1) {
-							JLabel label = (JLabel) defaultRenderer.getTableCellRendererComponent(table, value,
-									isSelected, hasFocus, row, column);
-							label.setBackground(Color.LIGHT_GRAY);
-							if (isSelected) {
-								label.setForeground(table.getSelectionForeground());
-							} else {
-								label.setForeground(table.getForeground());
-							}
-							return label;
+						final JLabel label = (JLabel) super.getTableCellRendererComponent(table, value,
+								isSelected, hasFocus, row, column);
+						
+						if (isSelected) {
+							label.setForeground(table.getSelectionForeground());
+							label.setBackground(table.getSelectionBackground());
 						} else {
-							if (!table.isCellEditable(row, column)) {
-								JLabel label = (JLabel) defaultRenderer.getTableCellRendererComponent(table, value,
-										isSelected, hasFocus, row, column);
-								label.setBackground(Color.LIGHT_GRAY);
-								label.setToolTipText("Only types of new columns are changeable");
-								if (isSelected) {
-									label.setForeground(table.getSelectionForeground());
-								} else {
-									label.setForeground(table.getForeground());
-								}
-								return label;
-							} else {
-								ComboBoxTableCellRenderer comboBoxRenderer = new ComboBoxTableCellRenderer(
-										cbvalues[row]);
-								Component renderer = comboBoxRenderer.getTableCellRendererComponent(table, value,
-										isSelected, hasFocus, row, column);
-								if (isSelected) {
-									renderer.setForeground(table.getSelectionForeground());
-									renderer.setBackground(table.getSelectionBackground());
-								} else {
-									renderer.setForeground(table.getForeground());
-									renderer.setBackground(table.getBackground());
-								}
-								return renderer;
-							}
+							label.setForeground(table.getForeground());
+							label.setBackground(table.getBackground());
 						}
+						
+						if (row >= table.getRowCount() - 1) {
+							label.setBackground(Color.LIGHT_GRAY);
+						} else if (!table.isCellEditable(row, column)) {
+							label.setBackground(Color.LIGHT_GRAY);
+							label.setToolTipText("Only types of new columns are changeable");
+						}
+						
+						return label;
 					}
-
 				});
-
 			}
 		}
-
 	}
 
 	protected void setMergedNetworkNameTableHeaderListener() {
@@ -282,20 +228,15 @@ class MergeAttributeTable extends JTable {
 				JTableHeader header = (JTableHeader) e.getSource();
 				JTable table = header.getTable();
 				int columnIndex = header.columnAtPoint(e.getPoint());
-				if (columnIndex == attributeMapping.getSizeNetwork()) { // the
-																		// merged
-																		// network
+				if (columnIndex == attributeMapping.getSizeNetwork()) { // the merged network
 					String title = JOptionPane.showInputDialog(table.getParent(),
 							"Input the title for the merged network");
 					if (title != null && title.length() != 0) {
 						mergedNetworkName = title;
 						fireTableHeaderChanged();
 					} else {
-						fireTableHeaderChanged(); // TODO: this is just for
-													// remove the duplicate
-													// click event
-													// there should be better
-													// ways
+						// TODO: this is just for remove the duplicate click event; there should be better ways
+						fireTableHeaderChanged();
 					}
 				}
 			}
@@ -303,7 +244,6 @@ class MergeAttributeTable extends JTable {
 	}
 
 	public void fireTableStructureChanged() {
-		// pack();
 		model.fireTableStructureChanged();
 		setColumnEditorAndRenderer();
 		setMergedNetworkNameTableHeaderListener();
@@ -387,10 +327,7 @@ class MergeAttributeTable extends JTable {
 
 		// @Override
 		public int getRowCount() {
-			int n = attributeMapping.getSizeMergedAttributes() + 1; // +1: add
-																	// an empty
-																	// row in
-																	// the end
+			int n = attributeMapping.getSizeMergedAttributes() + 1; // +1: add an empty row in the end
 			return attributeMapping.getSizeNetwork() == 0 ? 0 : n;
 		}
 

@@ -33,6 +33,7 @@ import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.network.merge.internal.ui.NetworkMergeDialog;
+import org.cytoscape.network.merge.internal.util.IconManager;
 import org.cytoscape.session.CyNetworkNaming;
 import org.cytoscape.task.create.CreateNetworkViewTaskFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
@@ -51,11 +52,13 @@ public class NetworkMergeAction extends AbstractCyAction {
 	private final CyNetworkFactory cnf;
 	private final CyNetworkNaming cnn;
 	private final TaskManager taskManager;
+	private final IconManager iconMgr;
 	private final CreateNetworkViewTaskFactory netViewCreator;
+
 
 	public NetworkMergeAction(CySwingApplication swingApp, CyApplicationManager cam, CyNetworkManager cnm,
 			CyNetworkViewManager cnvm, CyNetworkFactory cnf, CyNetworkNaming cnn, TaskManager taskManager,
-			CreateNetworkViewTaskFactory netViewCreator) {
+			IconManager iconMgr, CreateNetworkViewTaskFactory netViewCreator) {
 		super(APP_MENU_TITLE, cam, "network", cnvm);
 		setPreferredMenu(PARENT_MENU);
 		setMenuGravity((float)0.0);
@@ -65,6 +68,7 @@ public class NetworkMergeAction extends AbstractCyAction {
 		this.cnf = cnf;
 		this.cnn = cnn;
 		this.taskManager = taskManager;
+		this.iconMgr = iconMgr;
 		this.netViewCreator = netViewCreator;
 	}
 
@@ -74,7 +78,7 @@ public class NetworkMergeAction extends AbstractCyAction {
 	@Override
 	public void actionPerformed(final ActionEvent ae) {
 
-		final NetworkMergeDialog dialog = new NetworkMergeDialog(cnm, cnf, cnn, taskManager, netViewCreator);
+		final NetworkMergeDialog dialog = new NetworkMergeDialog(cnm, cnf, cnn, taskManager, iconMgr, netViewCreator);
 		dialog.setLocationRelativeTo(swingApp.getJFrame());
 		dialog.setModalityType(Dialog.DEFAULT_MODALITY_TYPE);
 		dialog.setVisible(true);
