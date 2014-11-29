@@ -24,10 +24,8 @@ package org.cytoscape.internal.view;
  * #L%
  */
 
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.Font;
 import java.awt.Image;
 import java.awt.Toolkit;
 
@@ -36,7 +34,7 @@ import javax.swing.JTree;
 import javax.swing.tree.DefaultTreeCellRenderer;
 
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.subnetwork.CyRootNetwork;
+import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.util.swing.JTreeTable;
 
 final class TreeCellRenderer extends DefaultTreeCellRenderer {
@@ -46,10 +44,6 @@ final class TreeCellRenderer extends DefaultTreeCellRenderer {
 	private static final String NETWORK_ICON = "/images/network_16.png";
 	private static final String NETWORK_LEAF_ICON = "/images/blank_icon_16.png";
 
-	private static final Font TABLE_FONT = new Font("SansSerif", Font.PLAIN, 12);
-	private static final Font TABLE_FONT_SELECTED = new Font("SansSerif", Font.BOLD, 12);
-	private static final Font TABLE_FONT_ROOT = new Font("SansSerif", Font.ITALIC, 12);
-	
 	private static final Dimension CELL_SIZE = new Dimension(1200, 40);
 
 	private final JTreeTable treeTable;
@@ -74,40 +68,28 @@ final class TreeCellRenderer extends DefaultTreeCellRenderer {
 			boolean leaf, int row, boolean hasFocus) {
 		super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
 
-		this.setPreferredSize(CELL_SIZE);
-		this.setSize(CELL_SIZE);
+		setPreferredSize(CELL_SIZE);
+		setSize(CELL_SIZE);
 		
-		if (value instanceof NetworkTreeNode == false)
-			return this;
-
-		final NetworkTreeNode treeNode = (NetworkTreeNode) value;
-
-		this.setForeground(NetworkPanel.FONT_COLOR);
-		treeTable.setForeground(NetworkPanel.FONT_COLOR);
-		this.setBackground(treeTable.getBackground());
-		this.setBackgroundSelectionColor(treeTable.getSelectionBackground());
+		final NetworkTreeNode treeNode = value instanceof NetworkTreeNode ? (NetworkTreeNode) value : null;
 
 		if (selected) {
-			this.setFont(TABLE_FONT_SELECTED);
-			this.setBackgroundSelectionColor( new Color(0, 100, 255, 40));		
+			setBackground(treeTable.getSelectionBackground());		
+			setForeground(treeTable.getSelectionForeground());		
 		} else {
-			this.setFont(TABLE_FONT);
-			this.setBackgroundNonSelectionColor(Color.white); 
+			setBackground(treeTable.getBackground());
+			setForeground(treeTable.getForeground());
 		}
 
-		if(treeNode.getNetwork() == null || (treeNode.getNetwork() instanceof CyRootNetwork) ) {
-			setForeground(treeTable.getForeground());
-			this.setFont(TABLE_FONT_ROOT);
-			return this;
-		}
+		if (treeNode != null && treeNode.getNetwork() instanceof CySubNetwork) {
+			if (!selected)
+				setForeground(treeNode.getNodeColor());
 			
-		
-		setForeground(treeNode.getNodeColor());
-		try {
-			setToolTipText(treeNode.getNetwork().getRow(treeNode.getNetwork()).get(CyNetwork.NAME, String.class));
-		} catch (NullPointerException e) {
-			// It's possible that the network got deleted but we haven't been
-			// notified yet.
+			try {
+				setToolTipText(treeNode.getNetwork().getRow(treeNode.getNetwork()).get(CyNetwork.NAME, String.class));
+			} catch (NullPointerException e) {
+				// It's possible that the network got deleted but we haven't been notified yet.
+			}
 		}
 
 		return this;

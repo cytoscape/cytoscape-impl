@@ -28,6 +28,7 @@ import java.awt.Color;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 
+import javax.swing.UIManager;
 import javax.swing.tree.DefaultMutableTreeNode;
 
 import org.cytoscape.model.CyNetwork;
@@ -39,7 +40,9 @@ import org.cytoscape.model.CyNetwork;
 final class NetworkTreeNode extends DefaultMutableTreeNode {
 
 	private final static long serialVersionUID = 1213748836736485L;
-	public static final Color DEF_NODE_COLOR = Color.RED;
+	
+	public static final Color NO_VIEWS_NODE_COLOR = UIManager.getColor("Label.disabledForeground");
+	public static final Color VIEWS_NODE_COLOR = UIManager.getColor("Label.foreground");
 
 	private final Reference<CyNetwork> network;
 	private Color nodeColor;
@@ -47,7 +50,7 @@ final class NetworkTreeNode extends DefaultMutableTreeNode {
 	NetworkTreeNode(final Object userobj, final CyNetwork network) {
 		super(userobj.toString());
 		this.network = new WeakReference<CyNetwork>(network);
-		this.nodeColor = DEF_NODE_COLOR;
+		this.nodeColor = NO_VIEWS_NODE_COLOR;
 	}
 
 	CyNetwork getNetwork() {

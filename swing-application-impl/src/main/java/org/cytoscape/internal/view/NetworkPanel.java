@@ -49,7 +49,6 @@ import java.util.WeakHashMap;
 
 import javax.swing.BorderFactory;
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import javax.swing.InputMap;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
@@ -61,6 +60,7 @@ import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
+import javax.swing.UIManager;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultTreeSelectionModel;
@@ -118,7 +118,7 @@ public class NetworkPanel extends JPanel implements CytoPanelComponent2,
 	private static final String TITLE = "Network";
 	private static final String ID = "org.cytoscape.Network";
 	
-	static final Color FONT_COLOR = new Color(20, 20, 20);
+	static final Color BG_COLOR = UIManager.getColor("Table.background");
 	private static final int TABLE_ROW_HEIGHT = 16;
 	private static final Dimension PANEL_SIZE = new Dimension(400, 700);
 
@@ -154,8 +154,6 @@ public class NetworkPanel extends JPanel implements CytoPanelComponent2,
 	private CyRootNetwork selectedRoot;
 	private Set<CyRootNetwork> selectedRootSet;
 
-	private final Icon icon;
-	
 	/**
 	 * 
 	 * @param appMgr
@@ -184,8 +182,6 @@ public class NetworkPanel extends JPanel implements CytoPanelComponent2,
 		root = new NetworkTreeNode("Network Root", null);
 		treeTableModel = new NetworkTreeTableModel(this, root);
 		treeTable = new JTreeTable(treeTableModel);
-		
-		icon = new ImageIcon(getClass().getResource("/images/class_hi.gif"));
 		
 		initialize();
 
@@ -260,7 +256,7 @@ public class NetworkPanel extends JPanel implements CytoPanelComponent2,
 
 	@Override
 	public Icon getIcon() {
-		return icon;
+		return null;
 	}
 	
 	protected void initialize() {
@@ -274,17 +270,14 @@ public class NetworkPanel extends JPanel implements CytoPanelComponent2,
 		ToolTipManager.sharedInstance().registerComponent(treeTable);
 
 		treeTable.getTree().setCellRenderer(new TreeCellRenderer(treeTable));
-		treeTable.setBackground(Color.white);
 		treeTable.setSelectionBackground(new Color(200, 200, 200, 150));
 
 		treeTable.getColumn("Network").setPreferredWidth(250);
 		treeTable.getColumn("Nodes").setPreferredWidth(45);
 		treeTable.getColumn("Edges").setPreferredWidth(45);
 
-		treeTable.setBackground(Color.WHITE);
+		treeTable.setBackground(BG_COLOR);
 		treeTable.setRowHeight(TABLE_ROW_HEIGHT);
-		treeTable.setForeground(FONT_COLOR);
-		treeTable.setSelectionForeground(FONT_COLOR);
 		treeTable.setCellSelectionEnabled(false);
 		treeTable.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 		treeTable.getTree().setSelectionModel(new DefaultTreeSelectionModel());
@@ -293,7 +286,7 @@ public class NetworkPanel extends JPanel implements CytoPanelComponent2,
 		navigatorPanel.setLayout(new BorderLayout());
 		navigatorPanel.setPreferredSize(new Dimension(280, 280));
 		navigatorPanel.setSize(new Dimension(280, 280));
-		navigatorPanel.setBackground(Color.white);
+		navigatorPanel.setBackground(BG_COLOR);
 
 		JScrollPane scroll = new JScrollPane(treeTable);
 
@@ -522,7 +515,7 @@ public class NetworkPanel extends JPanel implements CytoPanelComponent2,
 					final Collection<CyNetworkView> views = netViewMgr.getNetworkViews(netView.getModel());
 					
 					if (views.isEmpty()) {
-						node.setNodeColor(NetworkTreeNode.DEF_NODE_COLOR);
+						node.setNodeColor(NetworkTreeNode.NO_VIEWS_NODE_COLOR);
 						treeTable.repaint();
 					}
 				}
@@ -541,7 +534,7 @@ public class NetworkPanel extends JPanel implements CytoPanelComponent2,
 				final NetworkTreeNode node = treeNodeMap.get(netView.getModel().getSUID());
 				
 				if (node != null) {
-					node.setNodeColor(Color.black);
+					node.setNodeColor(NetworkTreeNode.VIEWS_NODE_COLOR);
 					treeTable.repaint();
 				}
 			}
@@ -671,7 +664,7 @@ public class NetworkPanel extends JPanel implements CytoPanelComponent2,
 				treeNodeMap.put(parentNetwork.getSUID(), parentTreeNode);
 
 			if (netViewMgr.viewExists(network))
-				dmtn.setNodeColor(Color.black);
+				dmtn.setNodeColor(NetworkTreeNode.VIEWS_NODE_COLOR);
 
 			treeNodeMap.put(network.getSUID(), dmtn);
 			

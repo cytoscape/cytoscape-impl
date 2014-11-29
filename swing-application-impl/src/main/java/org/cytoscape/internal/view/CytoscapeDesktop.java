@@ -35,10 +35,12 @@ import java.awt.event.WindowEvent;
 import java.util.Dictionary;
 import java.util.Properties;
 
+import javax.swing.BorderFactory;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JPanel;
+import javax.swing.JSeparator;
 import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JToolBar;
@@ -184,6 +186,8 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 	private JToolBar setupStatusPanel(TaskStatusPanelFactory taskStatusPanelFactory) {
 		final JPanel statusPanel = new JPanel(new GridBagLayout());
 		statusPanel.setOpaque(false);
+		statusPanel.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, (new JSeparator()).getForeground()));
+		
 		final GridBagConstraints c = new GridBagConstraints();
 		final JToolBar statusToolBar = new JToolBar();
 		statusToolBar.setOpaque(false);
