@@ -24,6 +24,8 @@ package org.cytoscape.view.vizmap.gui.internal.view;
  * #L%
  */
 
+import static org.cytoscape.util.swing.LookAndFeelUtil.isAquaLAF;
+
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -323,7 +325,7 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 
 	private void init() {
 		setMinimumSize(new Dimension(420, getMinimumSize().height));
-		setOpaque(false);
+		setOpaque(!isAquaLAF());
 		final GroupLayout layout = new GroupLayout(this);
 		this.setLayout(layout);
 		
@@ -340,7 +342,7 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 	private JPanel getStylesPnl() {
 		if (stylesPnl == null) {
 			stylesPnl = new JPanel();
-			stylesPnl.setOpaque(false);
+			stylesPnl.setOpaque(!isAquaLAF());
 			
 			final GroupLayout stylesPanelLayout = new GroupLayout(stylesPnl);
 			stylesPnl.setLayout(stylesPanelLayout);

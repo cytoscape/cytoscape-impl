@@ -1,5 +1,7 @@
 package org.cytoscape.filter.internal.view;
 
+import static org.cytoscape.util.swing.LookAndFeelUtil.isAquaLAF;
+
 import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -26,7 +28,7 @@ public class TransformerPanel extends AbstractPanel<TransformerElement, Transfor
 	
 	public TransformerPanel(final TransformerPanelController controller, IconManager iconManager, TransformerWorker worker) {
 		super(controller, iconManager);
-		setOpaque(false);
+		setOpaque(!isAquaLAF());
 
 		worker.setView(this);
 		
@@ -58,7 +60,7 @@ public class TransformerPanel extends AbstractPanel<TransformerElement, Transfor
 
 	private JPanel createStartWithPanel() {
 		JPanel panel = new JPanel();
-		panel.setOpaque(false);
+		panel.setOpaque(!isAquaLAF());
 		panel.setLayout(new GridBagLayout());
 		panel.add(new JLabel("Start with"), new GridBagConstraints(0, 0, 1, 1, 0, 0, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
 		panel.add(startWithComboBox, new GridBagConstraints(1, 0, 1, 1, 1, 0, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));

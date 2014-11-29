@@ -1,5 +1,7 @@
 package org.cytoscape.filter.internal.view;
 
+import static org.cytoscape.util.swing.LookAndFeelUtil.isAquaLAF;
+
 import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -25,7 +27,7 @@ public class FilterPanel extends AbstractPanel<FilterElement, FilterPanelControl
 
 	public FilterPanel(final FilterPanelController controller, IconManager iconManager, final FilterWorker worker) {
 		super(controller, iconManager);
-		setOpaque(false);
+		setOpaque(!isAquaLAF());
 		
 		worker.setView(this);
 		
@@ -36,7 +38,7 @@ public class FilterPanel extends AbstractPanel<FilterElement, FilterPanelControl
 				controller.setInteractive(applyAutomaticallyCheckBox.isSelected(), FilterPanel.this);
 			}
 		});
-		applyAutomaticallyCheckBox.setOpaque(false);
+		applyAutomaticallyCheckBox.setOpaque(!isAquaLAF());
 		
 		JPanel applyPanel = createApplyPanel();
 		

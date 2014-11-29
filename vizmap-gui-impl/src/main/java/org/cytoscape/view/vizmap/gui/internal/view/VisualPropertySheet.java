@@ -1,6 +1,7 @@
 package org.cytoscape.view.vizmap.gui.internal.view;
 
-import java.awt.Color;
+import static org.cytoscape.util.swing.LookAndFeelUtil.isAquaLAF;
+
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
@@ -264,7 +265,7 @@ public class VisualPropertySheet extends JPanel{
 	// ==[ PRIVATE METHODS ]============================================================================================
 	
 	private void init() {
-		setOpaque(false);
+		setOpaque(!isAquaLAF());
 		final GroupLayout layout = new GroupLayout(this);
 		setLayout(layout);
 		
@@ -348,6 +349,7 @@ public class VisualPropertySheet extends JPanel{
 			vpsBtn.setToolTipText("Show/Hide Properties...");
 			vpsBtn.setHorizontalAlignment(DropDownMenuButton.LEFT);
 			vpsBtn.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
+			vpsBtn.setContentAreaFilled(false);
 		}
 		
 		return vpsBtn;
@@ -379,7 +381,6 @@ public class VisualPropertySheet extends JPanel{
 			expandAllBtn.setToolTipText("Expand all mappings");
 			expandAllBtn.setBorderPainted(false);
 			expandAllBtn.setContentAreaFilled(false);
-			expandAllBtn.setOpaque(false);
 			expandAllBtn.setFocusPainted(false);
 			expandAllBtn.setFont(themeMgr.getFont(CyFont.FONTAWESOME_FONT).deriveFont(17.0f));
 			expandAllBtn.setBorder(BorderFactory.createEmptyBorder(2, 4, 2, 4));
@@ -401,7 +402,6 @@ public class VisualPropertySheet extends JPanel{
 			collapseAllBtn.setToolTipText("Collapse all mappings");
 			collapseAllBtn.setBorderPainted(false);
 			collapseAllBtn.setContentAreaFilled(false);
-			collapseAllBtn.setOpaque(false);
 			collapseAllBtn.setFocusPainted(false);
 			collapseAllBtn.setFont(themeMgr.getFont(CyFont.FONTAWESOME_FONT).deriveFont(17.0f));
 			collapseAllBtn.setBorder(BorderFactory.createEmptyBorder(2, 4, 2, 4));
@@ -737,13 +737,9 @@ public class VisualPropertySheet extends JPanel{
 	
 	private static class HeaderLabel extends JLabel {
 		
-		final static Font FONT = new Font("Arial", Font.BOLD, 10);
-		final static Color FG_COLOR = Color.DARK_GRAY;
-		
 		HeaderLabel(final String text) {
 			super(text);
-			setFont(FONT);
-			setForeground(FG_COLOR);
+			setFont(getFont().deriveFont(Font.BOLD).deriveFont(10.0f));
 			setHorizontalAlignment(CENTER);
 			setVerticalAlignment(BOTTOM);
 			

@@ -34,16 +34,6 @@ import javax.swing.ImageIcon;
 public class ThemeManager {
 	
 	public enum CyIcon {
-		EDIT_ICON,
-		LEGEND_ICON,
-		COPY_ICON,
-		RENAME_ICON,
-		RND_ICON,
-		ADD_ICON,
-		DEL_ICON,
-		OPTION_ICON,
-		COLLAPSE_ALL_ICON,
-		EXPAND_ALL_ICON,
 		INFO_ICON,
 		WARN_ICON,
 		ERROR_ICON
@@ -79,16 +69,6 @@ public class ThemeManager {
 	// ==[ PRIVATE METHODS ]============================================================================================
 	
 	private void loadIcons() {
-		iconMap.put(CyIcon.OPTION_ICON, new ImageIcon(getClass().getResource("/images/icons/stock_form-properties.png")));
-		iconMap.put(CyIcon.DEL_ICON, new ImageIcon(getClass().getResource("/images/icons/stock_delete-16.png")));
-		iconMap.put(CyIcon.ADD_ICON, new ImageIcon(getClass().getResource("/images/icons/stock_data-new-table-16.png")));
-		iconMap.put(CyIcon.RND_ICON, new ImageIcon(getClass().getResource("/images/icons/stock_filters-16.png")));
-		iconMap.put(CyIcon.RENAME_ICON, new ImageIcon(getClass().getResource("/images/icons/stock_redo-16.png")));
-		iconMap.put(CyIcon.COPY_ICON, new ImageIcon(getClass().getResource("/images/icons/stock_slide-duplicate.png")));
-		iconMap.put(CyIcon.LEGEND_ICON, new ImageIcon(getClass().getResource("/images/icons/stock_graphic-styles-16.png")));
-		iconMap.put(CyIcon.EDIT_ICON, new ImageIcon(getClass().getResource("/images/icons/stock_edit-16.png")));
-		iconMap.put(CyIcon.EXPAND_ALL_ICON, new ImageIcon(getClass().getResource("/images/icons/expand_all-16.gif")));
-		iconMap.put(CyIcon.COLLAPSE_ALL_ICON, new ImageIcon(getClass().getResource("/images/icons/collapse_all-16.gif")));
 		iconMap.put(CyIcon.INFO_ICON, new ImageIcon(getClass().getResource("/images/icons/info-icon.png")));
 		iconMap.put(CyIcon.WARN_ICON, new ImageIcon(getClass().getResource("/images/icons/warn-icon.png")));
 		iconMap.put(CyIcon.ERROR_ICON, new ImageIcon(getClass().getResource("/images/icons/error-icon.png")));
