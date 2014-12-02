@@ -82,20 +82,22 @@ class EqnSupport {
 		if (columnType == String.class)
 			return result.toString();
 
-		if (columnType == Double.class && resultType == Long.class)
-			return (double)(Long)result;
-
+		if (Number.class.isAssignableFrom(resultType)) {
+			if (columnType == Number.class || columnType == Double.class)
+				return ((Number)result).doubleValue();
+			
+			if (columnType == Long.class)
+				return ((Number)result).longValue();
+			
+			if (columnType == Integer.class)
+				return ((Number)result).intValue();
+		}
+		
 		if (columnType == Boolean.class && resultType == Long.class)
 			return (Long)result == 0 ? Boolean.FALSE : Boolean.TRUE;
 
 		if (columnType == Boolean.class && resultType == Double.class)
 			return (Double)result == 0.0 ? Boolean.FALSE : Boolean.TRUE;
-
-		if (columnType == Integer.class && resultType == Double.class)
-			return ((Double)result).intValue();
-
-		if (columnType == Integer.class && resultType == Long.class)
-			return ((Long)result).intValue();
 
 		throw new IllegalArgumentException("unexpected equation result type " + resultType
 						   + " for a column of type " + columnType + ".");
