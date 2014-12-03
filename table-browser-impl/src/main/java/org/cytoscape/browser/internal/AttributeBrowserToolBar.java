@@ -31,6 +31,7 @@ import static org.cytoscape.browser.internal.IconManager.ICON_FILE_ALT;
 import static org.cytoscape.browser.internal.IconManager.ICON_REMOVE_SIGN;
 import static org.cytoscape.browser.internal.IconManager.ICON_TABLE;
 import static org.cytoscape.browser.internal.IconManager.ICON_TRASH;
+import static org.cytoscape.util.swing.LookAndFeelUtil.isAquaLAF;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -285,6 +286,7 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 	
 	private void initializeGUI() {
 		setLayout(new BorderLayout());
+		setOpaque(!isAquaLAF());
 		add(getToolBar(), BorderLayout.CENTER);
 
 		// Add buttons
@@ -312,6 +314,8 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 		btn.setFont(font);
 		btn.setBorder(null);
 		btn.setEnabled(false);
+		btn.setContentAreaFilled(false);
+		btn.setBorderPainted(false);
 		btn.setMinimumSize(new Dimension(32, 32));
 	}
 	
@@ -589,6 +593,7 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 			toolBar.setSize(TOOLBAR_SIZE);
 			toolBar.setFloatable(false);
 			toolBar.setOrientation(JToolBar.HORIZONTAL);
+			toolBar.setOpaque(!isAquaLAF());
 
 			final GroupLayout buttonBarLayout = new GroupLayout(toolBar);
 			toolBar.setLayout(buttonBarLayout);

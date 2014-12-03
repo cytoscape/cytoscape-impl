@@ -24,6 +24,7 @@ package org.cytoscape.browser.internal;
  * #L%
  */
 
+import static org.cytoscape.util.swing.LookAndFeelUtil.isAquaLAF;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -128,6 +129,7 @@ public abstract class AbstractTableBrowser extends JPanel
 		this.browserTables = new HashMap<CyTable,BrowserTable>();
 		
 		this.setLayout(new BorderLayout());
+		this.setOpaque(!isAquaLAF());
 		this.setPreferredSize(PANEL_SIZE);
 		this.setSize(PANEL_SIZE);
 	}
