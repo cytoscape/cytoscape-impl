@@ -81,7 +81,6 @@ import org.cytoscape.network.merge.internal.model.MatchingAttribute;
 import org.cytoscape.network.merge.internal.model.MatchingAttributeImpl;
 import org.cytoscape.network.merge.internal.task.NetworkMergeTask;
 import org.cytoscape.network.merge.internal.util.IconManager;
-import org.cytoscape.network.merge.internal.util.Utils;
 import org.cytoscape.session.CyNetworkNaming;
 import org.cytoscape.task.create.CreateNetworkViewTaskFactory;
 import org.cytoscape.util.swing.LookAndFeelUtil;
@@ -806,7 +805,7 @@ public class NetworkMergeDialog extends JDialog {
 	
 	private JPanel getButtonPnl() {
 		if (buttonPnl == null) {
-			buttonPnl = Utils.createButtonsPanel(getOkBtn(), getCancelBtn());
+			buttonPnl = LookAndFeelUtil.createOkCancelPanel(getOkBtn(), getCancelBtn());
 			buttonPnl.setAlignmentX(Component.CENTER_ALIGNMENT);
 			buttonPnl.setDoubleBuffered(false);
 		}

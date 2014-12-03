@@ -116,7 +116,6 @@ public abstract class Utils {
 		JButton button = new JButton(aText);
 		button.setToolTipText(aTooltip);
 		button.addActionListener(aListener);
-		button.setMaximumSize(new Dimension(Short.MAX_VALUE, button.getHeight()));
 		return button;
 	}
 

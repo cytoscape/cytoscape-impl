@@ -404,8 +404,6 @@ public abstract class Messages {
 
 	public static String DI_CINTERSECTION = "Compute Intersection";
 
-	public static String DI_CONNCOMP = "List of connected components";
-
 	public static String DI_COMP = "Component";
 
 	public static String DI_CORR = "Correlation = ";

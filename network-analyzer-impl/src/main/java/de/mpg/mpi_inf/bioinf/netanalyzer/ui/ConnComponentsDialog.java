@@ -27,9 +27,9 @@ package de.mpg.mpi_inf.bioinf.netanalyzer.ui;
  */
 
 
-import java.awt.BorderLayout;
+import static javax.swing.GroupLayout.DEFAULT_SIZE;
+
 import java.awt.Component;
-import java.awt.FlowLayout;
 import java.awt.Frame;
 import java.awt.HeadlessException;
 import java.awt.event.ActionEvent;
@@ -38,17 +38,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
+import javax.swing.GroupLayout;
+import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JList;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -58,12 +55,10 @@ import javax.swing.event.ListSelectionListener;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyTable;
 import org.cytoscape.task.create.NewNetworkSelectedNodesAndEdgesTaskFactory;
-import org.cytoscape.work.AbstractTask;
+import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskManager;
-import org.cytoscape.work.TaskMonitor;
 
 import de.mpg.mpi_inf.bioinf.netanalyzer.ConnComponentAnalyzer;
 import de.mpg.mpi_inf.bioinf.netanalyzer.CyNetworkUtils;
@@ -113,7 +108,7 @@ public class ConnComponentsDialog extends JDialog
 	 */
 	public void actionPerformed(ActionEvent e) {
 		Object src = e.getSource();
-		if (btnClose == src) {
+		if (btnCancel == src) {
 			setVisible(false);
 			dispose();
 		} else if (btnExtract == src) {
@@ -200,53 +195,54 @@ public class ConnComponentsDialog extends JDialog
 	 * </p>
 	 */
 	private void initControls() {
-		Box contentPane = new Box(BoxLayout.PAGE_AXIS);
-		Utils.setStandardBorder(contentPane);
+		// Title
+		final String tt = "<html>" + Messages.DI_CCOF + "<b>" + network.getRow(network).get("name", String.class) + "</b>:";
+		final JLabel title = new JLabel(tt);
+		title.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-		String tt = "<html>" + Messages.DI_CCOF + "<b>" + network.getRow(network).get("name", String.class) + "</b>";
-		JPanel panTitle = new JPanel();
-		panTitle.setAlignmentX(Component.CENTER_ALIGNMENT);
-		panTitle.add(new JLabel(tt));
-		contentPane.add(panTitle);
-
+		// List of Components
 		final int compCount = components.length;
-		String[] ccItems = new String[compCount];
+		final String[] ccItems = new String[compCount];
+		
 		for (int i = 0; i < compCount; ++i) {
 			ccItems[i] = Messages.DI_COMP + " " + (i + 1) + " (" + components[i].getSize() + ")";
 		}
+		
 		listComp = new JList(ccItems);
 		listComp.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		listComp.addListSelectionListener(this);
+		
 		if (compCount < 8) {
 			listComp.setVisibleRowCount(compCount);
 		}
-		JScrollPane scrollList = new JScrollPane(listComp);
-		scrollList.setAlignmentX(Component.CENTER_ALIGNMENT);
-		JPanel panList = new JPanel();
-		panList.setBorder(BorderFactory.createTitledBorder(Messages.DI_CONNCOMP));
-		panList.add(scrollList);
-		contentPane.add(panList);
+		
+		final JScrollPane scrollList = new JScrollPane(listComp);
+		scrollList.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-//		JPanel panExtract = new JPanel(new BorderLayout());
-//		panExtract.setBorder(BorderFactory.createTitledBorder(Messages.DI_EXTRCOMP));
-//		panExtract.add(new JLabel(Messages.DI_EXTRCOMPLONG), BorderLayout.NORTH);
-//		fieldNetName = new JTextField();
-//		fieldNetName.getDocument().addDocumentListener(this);
-//		panExtract.add(fieldNetName, BorderLayout.CENTER);
 		btnExtract = Utils.createButton(Messages.DI_EXTR, null, this);
 		btnExtract.setEnabled(false);
-//		JPanel panExtr = new JPanel(new FlowLayout(FlowLayout.TRAILING));
-//		panExtr.add(btnExtract);
-//		panExtract.add(panExtr, BorderLayout.SOUTH);
-//		contentPane.add(panExtract);
+		btnCancel = Utils.createButton(Messages.DI_CANCEL, null, this);
 
-		JPanel panButtons = new JPanel();
-		panButtons.setAlignmentX(Component.CENTER_ALIGNMENT);
-		btnClose = Utils.createButton(Messages.DI_CLOSE, null, this);
-		panButtons.add(btnExtract);
-		panButtons.add(btnClose);
-		contentPane.add(panButtons);
-		setContentPane(contentPane);
+		// Buttons Panel
+		final JPanel panButtons = LookAndFeelUtil.createOkCancelPanel(btnExtract, btnCancel);
+		panButtons.setAlignmentX(Component.LEFT_ALIGNMENT);
+		
+		// Layout
+		final GroupLayout layout = new GroupLayout(getContentPane());
+		getContentPane().setLayout(layout);
+		layout.setAutoCreateContainerGaps(true);
+		layout.setAutoCreateGaps(true);
+		
+		layout.setHorizontalGroup(layout.createParallelGroup(Alignment.CENTER, true)
+				.addComponent(title, Alignment.CENTER, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				.addComponent(scrollList, Alignment.CENTER, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				.addComponent(panButtons, Alignment.CENTER, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+		);
+		layout.setVerticalGroup(layout.createSequentialGroup()
+				.addComponent(title)
+				.addComponent(scrollList, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				.addComponent(panButtons)
+		);
 	}
 
 	/**
@@ -271,9 +267,9 @@ public class ConnComponentsDialog extends JDialog
 	private CCInfo[] components;
 
 	/**
-	 * &quot;Close&quot; button.
+	 * &quot;Cancel&quot; button.
 	 */
-	private JButton btnClose;
+	private JButton btnCancel;
 
 	/**
 	 * &quot;Extract&quot; button.
