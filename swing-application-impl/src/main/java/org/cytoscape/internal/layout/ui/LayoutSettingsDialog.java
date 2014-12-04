@@ -25,24 +25,28 @@ package org.cytoscape.internal.layout.ui;
  */
 
 
+import static org.cytoscape.util.swing.LookAndFeelUtil.isAquaLAF;
+
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Font;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.GridLayout;
-import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
 import javax.swing.BorderFactory;
+import javax.swing.Box;
 import javax.swing.BoxLayout;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.GroupLayout;
+import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
@@ -50,11 +54,10 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.ListCellRenderer;
+import javax.swing.JSeparator;
+import javax.swing.JTabbedPane;
 import javax.swing.SwingUtilities;
-import javax.swing.border.Border;
-import javax.swing.border.EtchedBorder;
-import javax.swing.border.TitledBorder;
+import javax.swing.WindowConstants;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
@@ -84,27 +87,32 @@ import org.cytoscape.work.util.ListSingleSelection;
  * JPanel that provides all of its settings.
  */
 public class LayoutSettingsDialog extends JDialog implements ActionListener {
+	
 	private final static long serialVersionUID = 1202339874277105L;
+	
 	private CyLayoutAlgorithm currentLayout;
-	private TaskFactory currentAction = null;
+	private TaskFactory currentAction;
 
-	// Dialog components
-	private JLabel titleLabel; // Our title
-	private JPanel mainPanel; // The main content pane
-	private JPanel buttonBox; // Our action buttons (Save Settings, Cancel, Execute, Done)
-	private JComboBox algorithmSelector; // Which algorithm we're using
-	private JPanel algorithmPanel; // The panel this algorithm uses
+	private JTabbedPane tabbedPane;
+	private JPanel settingsPnl;
+	private JPanel prefLayoutPnl;
+	private JPanel buttonPnl;
+	private JPanel settingsButtonPnl;
+	private JComboBox<CyLayoutAlgorithm> algorithmCmb;
+	private JPanel algorithmPnl;
+	private JPanel layoutAttrPnl;
+    private JComboBox<CyLayoutAlgorithm> prefAlgorithmCmb;
 
-	private CyLayoutAlgorithmManager cyLayoutAlgorithmManager;
-	private CySwingApplication desktop;
+	private CyLayoutAlgorithmManager layoutAlgorithmMgr;
+	private CySwingApplication swingApp;
 	private CyApplicationManager appMgr;
-	private PanelTaskManager taskManager;
-	private CyProperty cytoscapePropertiesServiceRef;
+	private PanelTaskManager taskMgr;
+	private CyProperty<?> cyProperty;
 	private DynamicTaskFactoryProvisioner factoryProvisioner;
-	private boolean initialized;
-	private LayoutAttributeTunable layoutAttributeTunable;
-	private JPanel layoutAttributePanel;
+	private LayoutAttributeTunable layoutAttrTunable;
 	private final SelectedTunable selectedTunable;
+	
+	private boolean initialized;
 	
 	private static final String UNWEIGHTED = "(none)";
 
@@ -115,63 +123,37 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 	                            final CySwingApplication desktop,
 	                            final CyApplicationManager appMgr,
 	                            final PanelTaskManager taskManager,
-	                            final CyProperty cytoscapePropertiesServiceRef,
-	                            DynamicTaskFactoryProvisioner factoryProvisioner)
-	{
+	                            final CyProperty<?> cytoscapePropertiesServiceRef,
+	                            DynamicTaskFactoryProvisioner factoryProvisioner) {
 		super(desktop.getJFrame(), "Layout Settings", false);
 
-		initializeOnce(); // Initialize the components we only do once
-
-		initComponents();
-		
-		this.cyLayoutAlgorithmManager = cyLayoutAlgorithmManager;
-		this.desktop = desktop;
+		this.layoutAlgorithmMgr = cyLayoutAlgorithmManager;
+		this.swingApp = desktop;
 		this.appMgr = appMgr;
-		this.taskManager = taskManager;
-		this.cytoscapePropertiesServiceRef = cytoscapePropertiesServiceRef;
+		this.taskMgr = taskManager;
+		this.cyProperty = cytoscapePropertiesServiceRef;
 		this.factoryProvisioner = factoryProvisioner;
 		
+		initComponents();
 		selectedTunable = new SelectedTunable();
-		
-		Properties props = (Properties)this.cytoscapePropertiesServiceRef.getProperties();
-		
-		//
-		String pref = props.getProperty("preferredLayoutAlgorithm", "force-directed");		
-		this.lbSelectLayoutAlgorithm.setText("Default preferred layout algorithm is "+pref);
-
-		this.pack();
+		setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+		pack();
 	}
-
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @param e DOCUMENT ME!
-	 */
+	
+	@Override
 	public void actionPerformed(ActionEvent e) {
-		// Are we the source of the event?
-		String command = e.getActionCommand();
-
-		if (command.equals("done"))
-			setVisible(false);
-		else if (command.equals("execute")) {
-			Object context = currentLayout.getDefaultLayoutContext();
-			if (taskManager.validateAndApplyTunables(context)) {
-				taskManager.execute(currentAction.createTaskIterator());
-			}
+		// Initialize and display
+		if (isVisible()) {
+			requestFocus();
 		} else {
-			// OK, initialize and display
-			if (isVisible()) {
-				requestFocus();
-			} else {
-				if (!initialized) {
-					initialize();
-					setLocationRelativeTo(desktop.getJFrame());
-					pack();
-				}
-				setNetworkView(appMgr.getCurrentNetworkView());
-				setVisible(true);
-				initialized = true;
+			if (!initialized) {
+				initialize();
+				setLocationRelativeTo(swingApp.getJFrame());
+				pack();
 			}
+			setNetworkView(appMgr.getCurrentNetworkView());
+			setVisible(true);
+			initialized = true;
 		}
 	}
 
@@ -189,296 +171,277 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
     		@Override
     		public void run() {
     	    	if (currentLayout == layout) {
-    	    		algorithmPanel.removeAll();
+    	    		getAlgorithmPnl().removeAll();
     	    	}
     	    	initialize();
     		}
     	});
     }
 
-    /** This method is called from within the constructor to
-     * initialize the form.
-     * WARNING: Do NOT modify this code. The content of this method is
-     * always regenerated by the Form Editor.
-     */
-    @SuppressWarnings("unchecked")
-    // <editor-fold defaultstate="collapsed" desc="Generated Code">
     private void initComponents() {
-        java.awt.GridBagConstraints gridBagConstraints;
-
-        jTabbedPane1 = new javax.swing.JTabbedPane();
-        pnlLayoutSettings = new javax.swing.JPanel();
-        pnlSetPreferredLayout = new javax.swing.JPanel();
-        lbSelectLayoutAlgorithm = new javax.swing.JLabel();
-        cmbLayoutAlgorithms = new javax.swing.JComboBox();
-        pnlButtons = new javax.swing.JPanel();
-        btnOK = new javax.swing.JButton();
-        btnCancel = new javax.swing.JButton();
-
-        setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
-        setName("Form"); // NOI18N
-        getContentPane().setLayout(new java.awt.GridBagLayout());
-
-        jTabbedPane1.setName("tabPanelLayoutSettings"); // NOI18N
-
-        pnlLayoutSettings.setName("pnlLayoutSettings"); // NOI18N
-        pnlLayoutSettings.setLayout(new java.awt.GridBagLayout());
-//        org.jdesktop.application.ResourceMap resourceMap = org.jdesktop.application.Application.getInstance(cytoscape3gui.Cytoscape3GUIApp.class).getContext().getResourceMap(LayoutSettingsDialog.class);
-//        jTabbedPane1.addTab("Layout Settings", pnlLayoutSettings); // NOI18N
-        jTabbedPane1.addTab("Layout Settings", this.mainPanel);
-        
-
-        pnlSetPreferredLayout.setName("pnlSetPreferredLayout"); // NOI18N
-        pnlSetPreferredLayout.setLayout(new java.awt.GridBagLayout());
-
-        lbSelectLayoutAlgorithm.setText("Please select preferred layout algorithm."); // NOI18N
-        lbSelectLayoutAlgorithm.setName("lbSelectLayoutAlgorithm"); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(20, 10, 5, 0);
-        pnlSetPreferredLayout.add(lbSelectLayoutAlgorithm, gridBagConstraints);
-
-        cmbLayoutAlgorithms.setModel(new javax.swing.DefaultComboBoxModel(new String[] { " " }));
-        cmbLayoutAlgorithms.setName("cmbLayoutAlgorithms"); // NOI18N
-        cmbLayoutAlgorithms.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                cmbLayoutAlgorithmsItemStateChanged(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(5, 10, 10, 10);
-        pnlSetPreferredLayout.add(cmbLayoutAlgorithms, gridBagConstraints);
-
-        pnlButtons.setName("pnlButtons"); // NOI18N
-
-        btnOK.setText("OK"); // NOI18N
-        btnOK.setName("btnOK"); // NOI18N
-        btnOK.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnOKActionPerformed(evt);
-            }
-        });
-        pnlButtons.add(btnOK);
-
-        btnCancel.setText("Cancel"); // NOI18N
-        btnCancel.setName("btnCancel"); // NOI18N
-        btnCancel.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnCancelActionPerformed(evt);
-            }
-        });
-        pnlButtons.add(btnCancel);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(10, 10, 20, 10);
-        pnlSetPreferredLayout.add(pnlButtons, gridBagConstraints);
-
-        jTabbedPane1.addTab("Set preferred layout", pnlSetPreferredLayout); // NOI18N
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        getContentPane().add(jTabbedPane1, gridBagConstraints);
-
+        getContentPane().add(getTabbedPane(), BorderLayout.CENTER);
+        getContentPane().add(getButtonPnl(), BorderLayout.SOUTH);
         pack();
-    }// </editor-fold>
-
-    private void btnOKActionPerformed(java.awt.event.ActionEvent evt) {
-		CyLayoutAlgorithm layout = (CyLayoutAlgorithm) this.cmbLayoutAlgorithms.getSelectedItem();
-
-		String pref = layout.getName(); 
-		
-		Properties props = (Properties) this.cytoscapePropertiesServiceRef.getProperties();
-		if(props != null) 
-			props.setProperty("preferredLayoutAlgorithm", pref);
-
-		this.dispose();
     }
-
-    private void btnCancelActionPerformed(java.awt.event.ActionEvent evt) {
-    	// Cancel button is clicked
-    	this.dispose();
-    }
-
-    // Enable the OK button only if an algorithm is selected
-    private void cmbLayoutAlgorithmsItemStateChanged(java.awt.event.ItemEvent evt) {
-		Object o = this.cmbLayoutAlgorithms.getSelectedItem();
-		// if it's a string, that means it's the instructions
-		if (!(o instanceof String)) {
-			this.btnOK.setEnabled(true);
-		}
-		else {
-			this.btnOK.setEnabled(false);
-		}
-    }
-
-    // Variables declaration - do not modify
-    private javax.swing.JButton btnCancel;
-    private javax.swing.JButton btnOK;
-    private javax.swing.JComboBox cmbLayoutAlgorithms;
-    private javax.swing.JTabbedPane jTabbedPane1;
-    private javax.swing.JLabel lbSelectLayoutAlgorithm;
-    private javax.swing.JPanel pnlButtons;
-    private javax.swing.JPanel pnlLayoutSettings;
-    private javax.swing.JPanel pnlSetPreferredLayout;
-    // End of variables declaration
-
-	
-	
-	
-	private void initializeOnce() {
-		setDefaultCloseOperation(HIDE_ON_CLOSE);
-
-		// Create our main panel
-		mainPanel = new JPanel();
-		mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.PAGE_AXIS));
-		mainPanel.setAutoscrolls(true);
-
-		// Create a panel for the list of algorithms
-		JPanel algorithmSelectorPanel = new JPanel();
-		algorithmSelector = new JComboBox();
-		algorithmSelector.addActionListener(new AlgorithmActionListener());
-		algorithmSelectorPanel.add(algorithmSelector);
-
-		Border selBorder = BorderFactory.createEtchedBorder(EtchedBorder.LOWERED);
-		TitledBorder titleBorder = BorderFactory.createTitledBorder(selBorder, "Layout Algorithm");
-		titleBorder.setTitlePosition(TitledBorder.LEFT);
-		titleBorder.setTitlePosition(TitledBorder.TOP);
-		algorithmSelectorPanel.setBorder(titleBorder);
-		mainPanel.add(algorithmSelectorPanel);
-
-		// Create a panel for algorithm's content
-		this.algorithmPanel = new JPanel();
-		algorithmPanel.setAutoscrolls(true);
-		algorithmPanel.setLayout(new GridBagLayout());
-		mainPanel.add(algorithmPanel);
-
-		// Create a panel for our button box
-		this.buttonBox = new JPanel();
-
-		JButton doneButton = new JButton("Done");
-		doneButton.setActionCommand("done");
-		doneButton.addActionListener(this);
-
-		JButton executeButton = new JButton("Execute Layout");
-		executeButton.setActionCommand("execute");
-		executeButton.addActionListener(this);
-
-		buttonBox.add(executeButton);
-		buttonBox.add(doneButton);
-		buttonBox.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
-		mainPanel.add(buttonBox);
-//		setContentPane(mainPanel);
-	}
 
 	private void initialize() {
-		// Populate the algorithm selector
-		algorithmSelector.removeAllItems();
-
-		// Add the "instructions"
-		algorithmSelector.setRenderer(new MyItemRenderer());
-		algorithmSelector.addItem("Select algorithm to view settings");
-
-		for ( CyLayoutAlgorithm algo : cyLayoutAlgorithmManager.getAllLayouts()) 
-			algorithmSelector.addItem(algo);
+		final Properties props = (Properties) cyProperty.getProperties();
+		final String pref = props.getProperty("preferredLayoutAlgorithm", "force-directed");
 		
-		if (currentLayout != null) {
-			algorithmSelector.setSelectedItem(currentLayout);
-		}
+		// Populate the algorithm selector
+		getAlgorithmCmb().removeAllItems();
+
+		for (CyLayoutAlgorithm algo : layoutAlgorithmMgr.getAllLayouts()) 
+			getAlgorithmCmb().addItem(algo);
+		
+		getAlgorithmCmb().setSelectedItem(currentLayout);
 
 		// For the tabbedPanel "Set preferred Layout"
-		this.cmbLayoutAlgorithms.removeAllItems();
+		getPrefAlgorithmCmb().removeAllItems();
+		getPrefAlgorithmCmb().setRenderer(new LayoutAlgorithmListCellRenderer("Select preferred algorithm"));
+
+		CyLayoutAlgorithm prefAlgo = null;
 		
-		// Add the "instructions"
-		this.cmbLayoutAlgorithms.setRenderer(new MyItemRenderer());
-		this.cmbLayoutAlgorithms.addItem("Select preferred algorithm");
-
-		for ( CyLayoutAlgorithm algo : cyLayoutAlgorithmManager.getAllLayouts()) 
-			this.cmbLayoutAlgorithms.addItem(algo);
-	}
-
-	private class AlgorithmActionListener implements ActionListener {
-		public void actionPerformed(ActionEvent e) {
-			Object o = algorithmSelector.getSelectedItem();
-			if (o == null) {
-				return;
-			}
+		for (CyLayoutAlgorithm algo : layoutAlgorithmMgr.getAllLayouts()) { 
+			getPrefAlgorithmCmb().addItem(algo);
 			
-			// if it's a string, that means it's the instructions
-			if (!(o instanceof String)) {
-				currentLayout = (CyLayoutAlgorithm)o;
-				//Checking if the context has already been charged, if so there is no need to do it again
-				Object context = currentLayout.getDefaultLayoutContext();
-
-				TaskFactory provisioner = factoryProvisioner.createFor(wrapWithContext(currentLayout, context));
-				JPanel tunablePanel = taskManager.getConfiguration(provisioner, context);
-
-				// Create the layoutAttributePanel (we'll add it later)
-				layoutAttributePanel = new JPanel();
-				layoutAttributePanel.setLayout(new GridLayout());
-				CyNetworkView view = appMgr.getCurrentNetworkView();
-				setNetworkView(view);
-
-				int row = 0;
-				if (tunablePanel == null){
-					JOptionPane.showMessageDialog(LayoutSettingsDialog.this, "Can not change setting for this algorithm, because tunable info is not available.", "Warning", JOptionPane.WARNING_MESSAGE);
-					algorithmPanel.removeAll();
-					algorithmPanel.add(layoutAttributePanel, new GridBagConstraints(0, row++, 1, 1, 1, 1, GridBagConstraints.PAGE_START, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
-				}
-				else {
-					algorithmPanel.removeAll();
-					algorithmPanel.add(layoutAttributePanel, new GridBagConstraints(0, row++, 1, 1, 1, 1, GridBagConstraints.PAGE_START, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
-					algorithmPanel.add(tunablePanel, new GridBagConstraints(0, row++, 1, 1, 1, 1, GridBagConstraints.PAGE_START, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));					
-				}
-				
-				if (currentLayout.getSupportsSelectedOnly() && hasSelectedNodes(view)) {
-					selectedTunable.selectedNodesOnly =  true;
-					JPanel panel = taskManager.getConfiguration(null, selectedTunable);
-					algorithmPanel.add(panel, new GridBagConstraints(0, row++, 1, 1, 1, 1, GridBagConstraints.PAGE_START, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
-				}
-				currentAction = provisioner;
-				LayoutSettingsDialog.this.pack();
-			}
+			if (algo.getName().equals(pref))
+				prefAlgo = algo;
 		}
+		
+		getPrefAlgorithmCmb().setSelectedItem(prefAlgo);
+	}
+	
+	private JTabbedPane getTabbedPane() {
+		if (tabbedPane == null) {
+			tabbedPane = new JTabbedPane();
+	        tabbedPane.addTab("Layout Settings", getSettingsPnl());
+	        tabbedPane.addTab("Preferred Layout", getPrefLayoutPnl());
+		}
+		
+		return tabbedPane;
 	}
 
-	void setNetworkView(CyNetworkView view) {
-		if (layoutAttributePanel == null) {
-			return;
+	private JPanel getSettingsPnl() {
+		if (settingsPnl == null) {
+			settingsPnl = new JPanel();
+			settingsPnl.setLayout(new BoxLayout(settingsPnl, BoxLayout.PAGE_AXIS));
+			settingsPnl.setAutoscrolls(true);
+			settingsPnl.setOpaque(false);
+			settingsPnl.setBorder(BorderFactory.createEmptyBorder(2, 5, 2, 5));
+			
+			// Create a panel for the list of algorithms
+			final JPanel algorithmSelectorPnl = new JPanel();
+			algorithmSelectorPnl.setLayout(new BoxLayout(algorithmSelectorPnl, BoxLayout.LINE_AXIS));
+			algorithmSelectorPnl.setAlignmentX(Component.CENTER_ALIGNMENT);
+			algorithmSelectorPnl.setOpaque(false);
+			
+			algorithmSelectorPnl.add(new JLabel("Layout Algorithm"));
+			algorithmSelectorPnl.add(getAlgorithmCmb());
+			
+			settingsPnl.add(Box.createVerticalStrut(5));
+			settingsPnl.add(algorithmSelectorPnl);
+			settingsPnl.add(Box.createVerticalStrut(5));
+			settingsPnl.add(new JSeparator());
+			settingsPnl.add(Box.createVerticalStrut(5));
+			settingsPnl.add(getAlgorithmPnl());
+			settingsPnl.add(Box.createVerticalStrut(5));
+			settingsPnl.add(new JSeparator());
+			settingsPnl.add(getSettingsButtonPnl());
 		}
-		layoutAttributePanel.removeAll();
-		layoutAttributeTunable = new LayoutAttributeTunable();
+		
+		return settingsPnl;
+	}
+	
+	private JPanel getPrefLayoutPnl() {
+		if (prefLayoutPnl == null) {
+			prefLayoutPnl = new JPanel();
+	        prefLayoutPnl.setOpaque(false);
+	        
+	        final GroupLayout layout = new GroupLayout(prefLayoutPnl);
+	        prefLayoutPnl.setLayout(layout);
+			layout.setAutoCreateContainerGaps(true);
+			
+			final JLabel label = new JLabel("Preferred Layout Algorithm");
+			
+			layout.setHorizontalGroup(layout.createSequentialGroup()
+					.addComponent(label)
+					.addComponent(getPrefAlgorithmCmb())
+			);
+			layout.setVerticalGroup(layout.createParallelGroup(Alignment.CENTER, false)
+					.addComponent(label)
+					.addComponent(getPrefAlgorithmCmb())
+			);
+		}
+		
+		return prefLayoutPnl;
+	}
+	
+	private JPanel getAlgorithmPnl() {
+		if (algorithmPnl == null) {
+			algorithmPnl = new JPanel();
+			algorithmPnl.setLayout(new BoxLayout(algorithmPnl, BoxLayout.PAGE_AXIS));
+			algorithmPnl.setAutoscrolls(true);
+			algorithmPnl.setOpaque(false);
+		}
+		
+		return algorithmPnl;
+	}
+	
+	private JPanel getSettingsButtonPnl() {
+		if (settingsButtonPnl == null) {
+			settingsButtonPnl = new JPanel();
+			settingsButtonPnl.setLayout(new BoxLayout(settingsButtonPnl, BoxLayout.LINE_AXIS));
+			settingsButtonPnl.setAlignmentX(Component.CENTER_ALIGNMENT);
+			settingsButtonPnl.setOpaque(false);
+			
+			final JButton applyBtn = new JButton("Apply Layout");
+			applyBtn.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					final Object context = currentLayout.getDefaultLayoutContext();
+					
+					if (taskMgr.validateAndApplyTunables(context))
+						taskMgr.execute(currentAction.createTaskIterator());
+				}
+			});
+
+			settingsButtonPnl.add(Box.createHorizontalGlue());
+			settingsButtonPnl.add(applyBtn);
+			settingsButtonPnl.add(Box.createHorizontalGlue());
+		}
+		
+		return settingsButtonPnl;
+	}
+	
+	public JPanel getButtonPnl() {
+		if (buttonPnl == null) {
+			buttonPnl = new JPanel();
+			buttonPnl.setLayout(new BoxLayout(buttonPnl, BoxLayout.LINE_AXIS));
+			buttonPnl.setAlignmentX(Component.CENTER_ALIGNMENT);
+			buttonPnl.setOpaque(false);
+			buttonPnl.setBorder(BorderFactory.createEmptyBorder(2, 2, 5, 2));
+			
+			final JButton doneBtn = new JButton("Done");
+			doneBtn.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					setVisible(false);
+				}
+			});
+			
+			buttonPnl.add(Box.createHorizontalGlue());
+			buttonPnl.add(doneBtn);
+		}
+		
+		return buttonPnl;
+	}
+	
+	private JComboBox<CyLayoutAlgorithm> getAlgorithmCmb() {
+		if (algorithmCmb == null) {
+			algorithmCmb = new JComboBox<CyLayoutAlgorithm>();
+			algorithmCmb.setRenderer(new LayoutAlgorithmListCellRenderer("Select algorithm to view settings"));
+			
+			algorithmCmb.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					final Object o = algorithmCmb.getSelectedItem();
+					
+					if (o instanceof CyLayoutAlgorithm) {
+						currentLayout = (CyLayoutAlgorithm) o;
+						//Checking if the context has already been charged, if so there is no need to do it again
+						final Object context = currentLayout.getDefaultLayoutContext();
+
+						final TaskFactory provisioner = factoryProvisioner.createFor(wrapWithContext(currentLayout, context));
+						final JPanel tunablePnl = taskMgr.getConfiguration(provisioner, context);
+
+						layoutAttrPnl = new JPanel();
+						layoutAttrPnl.setLayout(new BoxLayout(layoutAttrPnl, BoxLayout.PAGE_AXIS));
+						layoutAttrPnl.setOpaque(false);
+						
+						final CyNetworkView view = appMgr.getCurrentNetworkView();
+						setNetworkView(view);
+
+						getAlgorithmPnl().removeAll();
+						getAlgorithmPnl().add(layoutAttrPnl);
+						
+						if (tunablePnl == null){
+							JOptionPane.showMessageDialog(LayoutSettingsDialog.this, "Can not change settings for this algorithm, because tunable info is not available.", "Warning", JOptionPane.WARNING_MESSAGE);
+						} else {
+							tunablePnl.setAlignmentX(Component.CENTER_ALIGNMENT);
+							setPanelsTransparent(tunablePnl);
+							getAlgorithmPnl().add(tunablePnl);
+						}
+						
+						if (currentLayout.getSupportsSelectedOnly() && hasSelectedNodes(view)) {
+							selectedTunable.selectedNodesOnly = true;
+							final JPanel panel = taskMgr.getConfiguration(null, selectedTunable);
+							setPanelsTransparent(panel);
+							getAlgorithmPnl().add(panel);
+						}
+						
+						currentAction = provisioner;
+						LayoutSettingsDialog.this.pack();
+					}
+				}
+			});
+		}
+		
+		return algorithmCmb;
+	}
+	
+	private JComboBox<CyLayoutAlgorithm> getPrefAlgorithmCmb() {
+		if (prefAlgorithmCmb == null) {
+			prefAlgorithmCmb = new JComboBox<CyLayoutAlgorithm>();
+	        prefAlgorithmCmb.setModel(new DefaultComboBoxModel<CyLayoutAlgorithm>());
+	        
+	        prefAlgorithmCmb.addItemListener(new ItemListener() {
+				@Override
+				public void itemStateChanged(ItemEvent e) {
+					final CyLayoutAlgorithm layout = (CyLayoutAlgorithm) prefAlgorithmCmb.getSelectedItem();
+					
+					if (layout != null) {
+						final String pref = layout.getName(); 
+						final Properties props = (Properties) cyProperty.getProperties();
+						
+						if (props != null && !pref.equals(props.get("preferredLayoutAlgorithm"))) 
+							props.setProperty("preferredLayoutAlgorithm", pref);
+		            }
+				}
+	        });
+		}
+		
+		return prefAlgorithmCmb;
+	}
+	
+	void setNetworkView(CyNetworkView view) {
+		if (layoutAttrPnl == null)
+			return;
+		
+		layoutAttrPnl.removeAll();
+		layoutAttrTunable = new LayoutAttributeTunable();
+		
 		if (view != null) {
 			List<String> attributeList = getAttributeList(view.getModel(), currentLayout.getSupportedNodeAttributeTypes(), currentLayout.getSupportedEdgeAttributeTypes());
+			
 			if (attributeList.size() > 0) {
-				layoutAttributeTunable.layoutAttribute = new ListSingleSelection<String>(attributeList);
-				layoutAttributeTunable.layoutAttribute.setSelectedValue(attributeList.get(0));
-				JPanel panel = taskManager.getConfiguration(null, layoutAttributeTunable);
-				layoutAttributePanel.add(panel);
+				layoutAttrTunable.layoutAttribute = new ListSingleSelection<String>(attributeList);
+				layoutAttrTunable.layoutAttribute.setSelectedValue(attributeList.get(0));
+				JPanel panel = taskMgr.getConfiguration(null, layoutAttrTunable);
+				setPanelsTransparent(panel);
+				layoutAttrPnl.add(panel);
 				panel.invalidate();
 			}
 		}
-		
 	}
 
-	private boolean hasSelectedNodes(CyNetworkView view) {
-		CyNetwork network = view.getModel();
-		CyTable table = network.getDefaultNodeTable();
+	private boolean hasSelectedNodes(final CyNetworkView view) {
+		if (view == null)
+			return false;
+		
+		final CyNetwork network = view.getModel();
+		final CyTable table = network.getDefaultNodeTable();
+		
 		return table.countMatchingRows(CyNetwork.SELECTED, Boolean.TRUE) > 0;
 	}
 	
@@ -508,12 +471,12 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 	}
 	
 	private String getLayoutAttribute() {
-		if (layoutAttributeTunable == null || layoutAttributeTunable.layoutAttribute == null) {
+		if (layoutAttrTunable == null || layoutAttrTunable.layoutAttribute == null)
 			return null;
-		}
-		if(layoutAttributeTunable.layoutAttribute.getSelectedValue().equals(UNWEIGHTED))
+		if (layoutAttrTunable.layoutAttribute.getSelectedValue().equals(UNWEIGHTED))
 			return null;
-		return layoutAttributeTunable.layoutAttribute.getSelectedValue();
+		
+		return layoutAttrTunable.layoutAttribute.getSelectedValue();
 	}
 
 	private Set<View<CyNode>> getLayoutNodes(CyLayoutAlgorithm layout, CyNetworkView networkView) {
@@ -545,38 +508,46 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 		};
 	}
 
-	private class MyItemRenderer extends JLabel implements ListCellRenderer {
+	private class LayoutAlgorithmListCellRenderer extends DefaultListCellRenderer {
+		
 		private final static long serialVersionUID = 1202339874266209L;
-		public MyItemRenderer() {
+		
+		private String defaultText;
+		
+		LayoutAlgorithmListCellRenderer(final String defaultText) {
+			this.defaultText = defaultText;
 		}
-
+		
+		@Override
 		public Component getListCellRendererComponent(JList list, Object value, int index,
 		                                              boolean isSelected, boolean cellHasFocus) {
+			super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+			
 			// If this is a String, we don't want to allow selection.  If this is
 			// index 0, we want to set the font 
-			Font f = getFont();
-
-			if (value.getClass() == String.class) {
-				setFont(f.deriveFont(Font.PLAIN));
-				setText((String) value);
+			if (value instanceof CyLayoutAlgorithm) {
+				setHorizontalAlignment(LEFT);
+				setText(value.toString());
+			} else {
+				setText(defaultText);
 				setHorizontalAlignment(CENTER);
 				setForeground(Color.GRAY);
-				setEnabled(false);
-			} else {
-				setForeground(list.getForeground());
-				setHorizontalAlignment(LEFT);
-				setEnabled(true);
-
-				if (isSelected) {
-					setFont(f.deriveFont(Font.BOLD));
-				} else {
-					setFont(f.deriveFont(Font.PLAIN));
-				}
-
-				setText(value.toString());
 			}
-
+			
 			return this;
+		}
+	}
+	
+	private void setPanelsTransparent(final JPanel panel) {
+		if (isAquaLAF()) {
+			panel.setOpaque(false);
+			
+			for (int i = 0; i < panel.getComponentCount(); i++) {
+				final Component c = panel.getComponent(i);
+				
+				if (c instanceof JPanel)
+					setPanelsTransparent((JPanel)c);
+			}
 		}
 	}
 	
@@ -586,7 +557,7 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 	}
 	
 	public static class LayoutAttributeTunable {
-		@Tunable(description="The edge attribute that contains the weights", gravity=1.0)
+		@Tunable(description="Edge attribute that contains the weights", gravity=1.0)
 		public ListSingleSelection<String> layoutAttribute;
 	}
 }
