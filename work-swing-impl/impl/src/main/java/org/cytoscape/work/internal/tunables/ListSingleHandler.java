@@ -25,19 +25,29 @@ package org.cytoscape.work.internal.tunables;
  */
 
 
-import java.lang.reflect.*;
-import javax.swing.*;
-
-import org.cytoscape.work.Tunable;
-import org.cytoscape.work.internal.tunables.utils.GUIDefaults;
-import org.cytoscape.work.swing.AbstractGUITunableHandler;
-import org.cytoscape.work.util.ListSelection;
-import org.cytoscape.work.util.ListChangeListener;
-import org.cytoscape.work.util.ListSingleSelection;
-
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+
+import javax.swing.BorderFactory;
+import javax.swing.BoxLayout;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.SwingConstants;
+import javax.swing.ToolTipManager;
+
+import org.cytoscape.work.Tunable;
+import org.cytoscape.work.swing.AbstractGUITunableHandler;
+import org.cytoscape.work.util.ListChangeListener;
+import org.cytoscape.work.util.ListSelection;
+import org.cytoscape.work.util.ListSingleSelection;
 
 
 /**
@@ -98,7 +108,6 @@ public class ListSingleHandler<T> extends AbstractGUITunableHandler
 		panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
 		final JLabel textArea = new JLabel(getDescription());
 		textArea.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
-		textArea.setFont(GUIDefaults.LABEL_FONT);
 		textArea.setVerticalTextPosition(SwingConstants.CENTER);
 		panel.add(textArea);
 

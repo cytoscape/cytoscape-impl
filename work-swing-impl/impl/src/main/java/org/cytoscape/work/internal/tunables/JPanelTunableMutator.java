@@ -370,7 +370,6 @@ public class JPanelTunableMutator extends AbstractTunableInterceptor<GUITunableH
 	private JPanel createSimplePanel(final String title, final Boolean vertical, final Boolean displayed) {
 		JPanel outPanel = new JPanel();
 		TitledBorder titleborder = BorderFactory.createTitledBorder(title);
-		titleborder.setTitleColor(Color.BLUE);
 
 		if (displayed == null || displayed)
 			outPanel.setBorder(titleborder);

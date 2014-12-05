@@ -78,11 +78,10 @@ public class BooleanHandler extends AbstractGUITunableHandler implements ActionL
 
 	private void init() {
 		//setup GUI
-		panel = new JPanel(new BorderLayout(GUIDefaults.hGap, GUIDefaults.vGap));
+		panel = new JPanel(new BorderLayout(GUIDefaults.H_GAP, GUIDefaults.V_GAP));
 		checkBox = new JCheckBox();
 		checkBox.setSelected(getBoolean());
 		JLabel label = new JLabel(getDescription());
-		label.setFont(GUIDefaults.LABEL_FONT);
 		label.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 		checkBox.addActionListener(this);
 

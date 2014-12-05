@@ -26,11 +26,9 @@ package org.cytoscape.work.internal.tunables;
 
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.text.DecimalFormat;
 
@@ -42,12 +40,11 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import org.cytoscape.work.Tunable;
-import org.cytoscape.work.swing.AbstractGUITunableHandler;
 import org.cytoscape.work.internal.tunables.utils.GUIDefaults;
 import org.cytoscape.work.internal.tunables.utils.myBoundedSwing;
 import org.cytoscape.work.internal.tunables.utils.mySlider;
+import org.cytoscape.work.swing.AbstractGUITunableHandler;
 import org.cytoscape.work.util.AbstractBounded;
-import org.cytoscape.work.util.BoundedDouble;
 import org.cytoscape.work.util.BoundedChangeListener;
 
 
@@ -118,7 +115,7 @@ public class BoundedHandler<T extends AbstractBounded, N> extends AbstractGUITun
 	private void init() {
 		title = getDescription();
 		useSlider = getParams().getProperty("slider", "false").equalsIgnoreCase("true");
-		panel = new JPanel(new BorderLayout(GUIDefaults.hGap, GUIDefaults.vGap));
+		panel = new JPanel(new BorderLayout(GUIDefaults.H_GAP, GUIDefaults.V_GAP));
 
 		try {
 			final T bounded = getBounded();
@@ -148,7 +145,6 @@ public class BoundedHandler<T extends AbstractBounded, N> extends AbstractGUITun
 
 		if (useSlider) {
 			JLabel label = new JLabel(title);
-			label.setFont(GUIDefaults.LABEL_FONT);
 			// label.setBorder(BorderFactory.createEmptyBorder(5, 5, 0, 5));
 			panel.add(label,BorderLayout.WEST);
 			slider = new mySlider(title, (Number)bounded.getLowerBound(), (Number)bounded.getUpperBound(),
@@ -168,7 +164,6 @@ public class BoundedHandler<T extends AbstractBounded, N> extends AbstractGUITun
 			final JLabel label =
 				new JLabel(title + " (max: " + format.format((Number)bounded.getLowerBound())
 				          + " min: " + format.format((Number)bounded.getUpperBound()) + ")" );
-			label.setFont(GUIDefaults.LABEL_FONT);
 			label.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 			boundedField = new myBoundedSwing((Number)bounded.getValue(), (Number)bounded.getLowerBound(),
 			                                  (Number)bounded.getUpperBound(), bounded.isLowerBoundStrict(),
@@ -208,7 +203,6 @@ public class BoundedHandler<T extends AbstractBounded, N> extends AbstractGUITun
 					final JLabel label =
 						new JLabel(title + " (max: " + bounded.getLowerBound().toString()
 						          + " min: " + bounded.getUpperBound().toString() + ")" );
-					label.setFont(GUIDefaults.LABEL_FONT);
 					boundedField = new myBoundedSwing((Number)bounded.getValue(), (Number)bounded.getLowerBound(),
 					                                  (Number)bounded.getUpperBound(), bounded.isLowerBoundStrict(),
 					                                  bounded.isUpperBoundStrict());

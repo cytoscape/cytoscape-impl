@@ -30,16 +30,18 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.FocusAdapter;
-import java.awt.event.FocusEvent;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.text.DecimalFormat;
 import java.text.ParsePosition;
-import java.util.Properties;
-import javax.swing.*;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ListSelectionEvent;
+
+import javax.swing.BorderFactory;
+import javax.swing.JFormattedTextField;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
+import javax.swing.ToolTipManager;
 
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.internal.tunables.utils.GUIDefaults;
@@ -100,10 +102,9 @@ public abstract class AbstractNumberHandler extends AbstractGUITunableHandler im
 
 		//set Gui
 		textField = new JFormattedTextField(format.format(d));
-		textField.setPreferredSize(GUIDefaults.TEXT_BOX_DIMENSION);
-		panel = new JPanel(new BorderLayout(GUIDefaults.hGap, GUIDefaults.vGap));
+		textField.setPreferredSize(new Dimension(GUIDefaults.TEXT_BOX_WIDTH, textField.getPreferredSize().height));
+		panel = new JPanel(new BorderLayout(GUIDefaults.H_GAP, GUIDefaults.V_GAP));
 		JLabel label = new JLabel(getDescription());
-		label.setFont(GUIDefaults.LABEL_FONT);
 		label.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 		textField.setHorizontalAlignment(JTextField.RIGHT);
 		textField.addActionListener(this);

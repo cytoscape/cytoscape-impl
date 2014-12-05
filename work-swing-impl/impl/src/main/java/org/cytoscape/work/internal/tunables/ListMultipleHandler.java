@@ -26,34 +26,24 @@ package org.cytoscape.work.internal.tunables;
 
 
 import java.awt.BorderLayout;
-import java.awt.Component;
-import java.awt.Container;
-import java.awt.Dimension;
-import java.awt.LayoutManager;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
 
-import javax.swing.BorderFactory;
-import javax.swing.BoxLayout;
+import javax.swing.DefaultListModel;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.ListSelectionModel;
-import javax.swing.ScrollPaneLayout;
 import javax.swing.ToolTipManager;
-import javax.swing.border.Border;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import javax.swing.DefaultListModel;
-import javax.xml.ws.handler.MessageContext.Scope;
 
 import org.cytoscape.work.Tunable;
-import org.cytoscape.work.internal.tunables.utils.GUIDefaults;
 import org.cytoscape.work.swing.AbstractGUITunableHandler;
 import org.cytoscape.work.util.ListChangeListener;
 import org.cytoscape.work.util.ListMultipleSelection;
@@ -83,7 +73,6 @@ public class ListMultipleHandler<T> extends AbstractGUITunableHandler
 	 * @param o object contained in <code>f</code>
 	 * @param t tunable associated to <code>f</code>
 	 */
-	@SuppressWarnings("unchecked")
 	public ListMultipleHandler(Field f, Object o, Tunable t) {
 		super(f, o, t);
 		init();
@@ -130,7 +119,6 @@ public class ListMultipleHandler<T> extends AbstractGUITunableHandler
 		} else if (description != null && description.length() > 0) {
 			// Otherwise, use JLabel
 			final JLabel jLabel = new JLabel(description);
-			jLabel.setFont(GUIDefaults.LABEL_FONT);
 			panel.add(jLabel, BorderLayout.PAGE_START);
 		}
 
@@ -139,7 +127,6 @@ public class ListMultipleHandler<T> extends AbstractGUITunableHandler
 		for ( T value : getMultipleSelection().getPossibleValues() ) 
 			listModel.addElement(value);
 		
-		itemsContainerList.setFont(GUIDefaults.TEXT_FONT);
 		itemsContainerList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 		itemsContainerList.addListSelectionListener(this);
 		
@@ -164,7 +151,6 @@ public class ListMultipleHandler<T> extends AbstractGUITunableHandler
 		final JScrollPane scrollpane = new JScrollPane(itemsContainerList);
 		scrollpane.setAutoscrolls(true);
 		scrollpane.setOpaque(false);
-		scrollpane.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
 		panel.add(scrollpane, BorderLayout.CENTER);
 
 		// Set the tooltip.  Note that at this point, we're setting

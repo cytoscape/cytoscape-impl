@@ -26,16 +26,11 @@ package org.cytoscape.work.internal.tunables.utils;
 
 
 import java.awt.CardLayout;
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.event.ActionEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 
-import java.util.List;
 import java.util.Properties;
 
 import javax.swing.BorderFactory;
@@ -44,7 +39,6 @@ import javax.swing.JDialog;
 import javax.swing.JPanel;
 import javax.swing.border.TitledBorder;
 
-import org.cytoscape.work.TunableHandler;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.swing.GUITunableHandler;
 
@@ -67,7 +61,6 @@ public class XorPanel extends JPanel {
 		switchPanel = new JPanel();
 		contentPanel = new JPanel(new CyCardLayout());
 		TitledBorder titleborder = BorderFactory.createTitledBorder(title);
-		titleborder.setTitleColor(Color.GREEN);
 		setBorder(titleborder);
 		setLayout(new BoxLayout(this,BoxLayout.PAGE_AXIS));
 		//setBorder(BorderFactory.createTitledBorder(title));

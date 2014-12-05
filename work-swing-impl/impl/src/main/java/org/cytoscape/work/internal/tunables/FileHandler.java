@@ -25,25 +25,38 @@ package org.cytoscape.work.internal.tunables;
  */
 
 
-import org.cytoscape.io.DataCategory;
-import org.cytoscape.util.swing.FileChooserFilter;
-import org.cytoscape.util.swing.FileUtil;
-import org.cytoscape.work.Tunable;
-import org.cytoscape.work.internal.tunables.utils.GUIDefaults;
-import org.cytoscape.work.internal.tunables.utils.SupportedFileTypesManager;
-import org.cytoscape.work.swing.AbstractGUITunableHandler;
-import org.cytoscape.work.swing.DirectlyPresentableTunableHandler;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.*;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.Window;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.swing.BorderFactory;
+import javax.swing.GroupLayout;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JTextField;
+import javax.swing.LayoutStyle;
+import javax.swing.SwingUtilities;
+import javax.swing.ToolTipManager;
+
+import org.cytoscape.io.DataCategory;
+import org.cytoscape.util.swing.FileChooserFilter;
+import org.cytoscape.util.swing.FileUtil;
+import org.cytoscape.work.Tunable;
+import org.cytoscape.work.internal.tunables.utils.SupportedFileTypesManager;
+import org.cytoscape.work.swing.AbstractGUITunableHandler;
+import org.cytoscape.work.swing.DirectlyPresentableTunableHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**
@@ -178,7 +191,6 @@ public class FileHandler extends AbstractGUITunableHandler  implements DirectlyP
 	private void setGui() {
 		//titleSeparator = new JSeparator();
 		titleLabel = new JLabel();
-		titleLabel.setFont(GUIDefaults.LABEL_FONT);
 		titleLabel.setBorder(BorderFactory.createEmptyBorder(5, 0, 1, 5));
 		image = new ImageIcon(getClass().getResource("/images/ximian/stock_open.png"));
 		fileTextField = new JTextField();
