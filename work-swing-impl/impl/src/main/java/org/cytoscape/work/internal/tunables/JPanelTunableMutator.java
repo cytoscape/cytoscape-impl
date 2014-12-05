@@ -25,37 +25,34 @@ package org.cytoscape.work.internal.tunables;
  */
 
 
-import java.awt.Color;
 import java.awt.Container;
 import java.awt.Window;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
-import java.util.Arrays;
 
-import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.border.TitledBorder;
 
-import org.cytoscape.work.AbstractTunableInterceptor;
+import org.cytoscape.util.swing.BasicCollapsiblePanel;
 import org.cytoscape.work.AbstractTunableHandler;
+import org.cytoscape.work.AbstractTunableInterceptor;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TunableMutator;
 import org.cytoscape.work.TunableValidator;
 import org.cytoscape.work.TunableValidator.ValidationState;
+import org.cytoscape.work.internal.tunables.utils.SimplePanel;
+import org.cytoscape.work.internal.tunables.utils.TitledPanel;
 import org.cytoscape.work.internal.tunables.utils.XorPanel;
-import org.cytoscape.work.swing.GUITunableHandler;
 import org.cytoscape.work.swing.DirectlyPresentableTunableHandler;
-import org.cytoscape.util.swing.BasicCollapsiblePanel;
+import org.cytoscape.work.swing.GUITunableHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -83,6 +80,8 @@ import org.slf4j.LoggerFactory;
 public class JPanelTunableMutator extends AbstractTunableInterceptor<GUITunableHandler> 
 	implements TunableMutator<GUITunableHandler,JPanel> {
 
+	private static final String TOP_GROUP = "__CY_TOP_GROUP";
+	
 	private Map<List<GUITunableHandler>, JPanel> panelMap;
 	
 	/** A reference to the parent <code>JPanel</code>, if any. */
@@ -95,15 +94,12 @@ public class JPanelTunableMutator extends AbstractTunableInterceptor<GUITunableH
 	/** Do not ever modify this panel. Used for special case handling of files. */
 	protected final JPanel HANDLER_CANCEL_PANEL = new JPanel();
 
-	/**
-	 * Constructor.
-	 */
 	public JPanelTunableMutator() {
 		super();
 		panelMap = new HashMap<List<GUITunableHandler>, JPanel>();
 	}
 	
-	/** {@inheritDoc} */
+	@Override
 	public void setConfigurationContext(final Object tPanel){
 		if ( tPanel instanceof JPanel )
 			this.tunablePanel = (JPanel)tPanel;
@@ -112,7 +108,7 @@ public class JPanelTunableMutator extends AbstractTunableInterceptor<GUITunableH
 			                                   "set the configuration context to a JPanel");
 	}
 	
-	/** {@inheritDoc} */
+	@Override
 	public boolean hasTunables(final Object o) {
 		return super.hasTunables(o);
 	}
@@ -123,7 +119,7 @@ public class JPanelTunableMutator extends AbstractTunableInterceptor<GUITunableH
 		return (handlers.size() > 0);
 	}
 
-	/** {@inheritDoc} */
+	@Override
 	public boolean validateAndWriteBack(Object objectWithTunables) {
 
 		List<GUITunableHandler> handlers = getHandlers(objectWithTunables); 
@@ -134,7 +130,7 @@ public class JPanelTunableMutator extends AbstractTunableInterceptor<GUITunableH
 		return validateTunableInput(objectWithTunables); 
 	}
 
-	/** {@inheritDoc} */
+	@Override
 	public JPanel buildConfiguration(final Object objectWithTunables) {
 		return buildConfiguration(objectWithTunables,null);
 	}
@@ -145,9 +141,9 @@ public class JPanelTunableMutator extends AbstractTunableInterceptor<GUITunableH
 	 * which case we don't want to show the normal tunable dialog, just the file dialog.
 	 */
 	JPanel buildConfiguration(final Object objectWithTunables, Window possibleParent) {
-
 		int factoryCount = 0; // # of descendents of TaskFactory...
 		int otherCount = 0;   // ...everything else.  (Presumeably descendents of Task.)
+		
 		if (objectWithTunables instanceof TaskFactory)
 			++factoryCount;
 		else
@@ -169,9 +165,9 @@ public class JPanelTunableMutator extends AbstractTunableInterceptor<GUITunableH
 
 		if (providedGUI != null) {
 			//if no tunablePanel is defined, then create a new JDialog to display the Tunables' panels
-			if (tunablePanel == null)
+			if (tunablePanel == null) {
 				return providedGUI;
-			else { // add them to the "tunablePanel" JPanel
+			} else { // add them to the "tunablePanel" JPanel
 				tunablePanel.removeAll();
 				tunablePanel.add(providedGUI);
 				final JPanel retVal = tunablePanel;
@@ -202,12 +198,10 @@ public class JPanelTunableMutator extends AbstractTunableInterceptor<GUITunableH
 			}
 		} 
 
-		
 		if (!panelMap.containsKey(handlers)) {
-			final String MAIN = " ";
 			Map<String, JPanel> panels = new HashMap<String, JPanel>();
-			final JPanel topLevel = createSimplePanel(MAIN, null, /* displayed = */ false);
-			panels.put(MAIN, topLevel);
+			final JPanel topLevel = new SimplePanel(BoxLayout.PAGE_AXIS);
+			panels.put(TOP_GROUP, topLevel);
 
 			// construct the GUI
 			for (GUITunableHandler gh : handlers) {
@@ -240,23 +234,28 @@ public class JPanelTunableMutator extends AbstractTunableInterceptor<GUITunableH
 				final Map<String, Boolean> groupToDisplayedMap = processGroupParams(gh,"groupTitles","displayed"); 
 
 				// find the proper group to put the handler panel in given the Alignment/Group parameters
-				String lastGroup = MAIN;
+				String lastGroup = TOP_GROUP;
 				String groupNames = "";
+				
 				for (String g : gh.getGroups()) {
 					if (g.equals(""))
 						throw new IllegalArgumentException("A group's name must not be \"\".");
 					groupNames = groupNames + g;
+					
 					if (!panels.containsKey(groupNames)) {
 						panels.put(groupNames,
-						           createJPanel(g, gh, groupToVerticalMap.get(g),
-						                        groupToDisplayedMap.get(g)));
-						panels.get(lastGroup).add(panels.get(groupNames), gh.getChildKey());
+						           createJPanel(g, gh, groupToVerticalMap.get(g), groupToDisplayedMap.get(g)));
+						final JPanel pnl = panels.get(groupNames);
+						panels.get(lastGroup).add(pnl, gh.getChildKey());
 					}
+					
 					lastGroup = groupNames;
 				}
+				
 				panels.get(lastGroup).add(gh.getJPanel());
 			}
-			panelMap.put(handlers, panels.get(MAIN));
+			
+			panelMap.put(handlers, panels.get(TOP_GROUP));
 		}
 
 		// Get the GUI into the proper state
@@ -264,9 +263,9 @@ public class JPanelTunableMutator extends AbstractTunableInterceptor<GUITunableH
 			h.notifyDependents();
 
 		//if no tunablePane is defined, then create a new JDialog to display the Tunables' panels
-		if (tunablePanel == null)
+		if (tunablePanel == null) {
 			return panelMap.get(handlers);
-		else { // add them to the "tunablePanel" JPanel
+		} else { // add them to the "tunablePanel" JPanel
 			tunablePanel.removeAll();
 			tunablePanel.add(panelMap.get(handlers));
 			final JPanel retVal = tunablePanel;
@@ -316,42 +315,46 @@ public class JPanelTunableMutator extends AbstractTunableInterceptor<GUITunableH
 	private JPanel createJPanel(final String title, final GUITunableHandler gh, 
 			final Boolean vertical, final Boolean displayed) {
 		if (gh == null)
-			return createSimplePanel(title, vertical, displayed);
+			return createTitledPanel(title, vertical, displayed);
+		
 		// See if we need to create an XOR panel
 		if (gh.controlsMutuallyExclusiveNestedChildren()) {
 			return new XorPanel(title, gh);
 		} else {
 			// Figure out if the collapsable flag is set
 			final String displayState = gh.getParams().getProperty("displayState");
+			
 			if (displayState != null) {
 				final BasicCollapsiblePanel cp = new BasicCollapsiblePanel(title);
+				
 				if (displayState.equalsIgnoreCase("uncollapsed"))
 					cp.setCollapsed(false);	
 			
 				cp.addPropertyChangeListener(new PropertyChangeListener() {
 					@Override
-					public void propertyChange(PropertyChangeEvent arg0) {
+					public void propertyChange(PropertyChangeEvent evt) {
 						repackEnclosingDialog();
 					}
+					
 					/**
-					 * Attempts to locate the instance of the enclosing JDialog.  If successful we will call the pack() method on it.
+					 * Attempts to locate the instance of the enclosing JDialog.
+					 * If successful we will call the pack() method on it.
 					 */
 					private void repackEnclosingDialog() {
 						Container container = cp.getParent();
+						
 						while (container != null && !(container instanceof JDialog))
 							container = container.getParent();
+						
 						if (container != null)
-						{
 							((JDialog)container).pack();
-						}
 					}
 				});
 				
 				return cp;
-
-				// We're not collapsable, so return a normal jpanel
 			} else {
-				return createSimplePanel(title, vertical, displayed);
+				// We're not collapsable, so return a normal jpanel
+				return createTitledPanel(title, vertical, displayed);
 			}
 		}
 	}
@@ -367,17 +370,13 @@ public class JPanelTunableMutator extends AbstractTunableInterceptor<GUITunableH
 	 *
 	 * @return a container for <code>GUITunableHandler</code>' panels
 	 */
-	private JPanel createSimplePanel(final String title, final Boolean vertical, final Boolean displayed) {
-		JPanel outPanel = new JPanel();
-		TitledBorder titleborder = BorderFactory.createTitledBorder(title);
+	private TitledPanel createTitledPanel(final String title, final Boolean vertical, final Boolean displayed) {
+		final TitledPanel panel = new TitledPanel(
+				(displayed == null || displayed) ? title : null,
+				(vertical == null || vertical) ? BoxLayout.PAGE_AXIS : BoxLayout.LINE_AXIS
+		);
 
-		if (displayed == null || displayed)
-			outPanel.setBorder(titleborder);
-		if (vertical == null || vertical)
-			outPanel.setLayout(new BoxLayout(outPanel, BoxLayout.PAGE_AXIS));
-		else if (vertical != null)
-			outPanel.setLayout(new BoxLayout(outPanel, BoxLayout.LINE_AXIS));
-		return outPanel;
+		return panel;
 	}
 
 	/**
@@ -430,7 +429,9 @@ public class JPanelTunableMutator extends AbstractTunableInterceptor<GUITunableH
 		return "Set Parameters";
 	}
 
-	// Get information about the Groups and parameters to create the proper GUI
+	/**
+	 * Get information about the Groups and parameters to create the proper GUI.
+	 */
 	private Map<String, Boolean> processGroupParams(GUITunableHandler gh, String paramName, String defaultValue) {
 		final Map<String, Boolean> groupMap = new HashMap<String, Boolean>();
 

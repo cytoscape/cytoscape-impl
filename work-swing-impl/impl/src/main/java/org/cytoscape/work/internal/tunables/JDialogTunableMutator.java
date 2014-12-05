@@ -66,10 +66,10 @@ public class JDialogTunableMutator extends JPanelTunableMutator implements Tunab
 	/** Provides an initialised logger. */
 	private Logger logger = LoggerFactory.getLogger(JDialogTunableMutator.class);
 
-	private Window parent = null;
+	private Window parent;
 
 	private Dialog.ModalityType modality = Dialog.DEFAULT_MODALITY_TYPE;
-	private	Window dialogWindow = null;
+	private	Window dialogWindow;
 
 	/**
 	 * Constructor.
@@ -105,11 +105,12 @@ public class JDialogTunableMutator extends JPanelTunableMutator implements Tunab
 					+ win.getClass());
 	}
 
+	@Override
 	public JPanel buildConfiguration(Object objectWithTunables) {
 		return super.buildConfiguration(objectWithTunables, parent);
 	}
 
-	/** {@inheritDoc} */
+	@Override
 	public boolean validateAndWriteBack(Object objectWithTunables) {
 		final JPanel panel = buildConfiguration(objectWithTunables, parent);
 		return validateAndWriteBack(panel, objectWithTunables);
@@ -169,10 +170,12 @@ public class JDialogTunableMutator extends JPanelTunableMutator implements Tunab
 		}
 	}
 
+	@Override
 	public Window getParent() {
 		return dialogWindow;
 	}
 
+	@Override
 	public void setModality(Dialog.ModalityType modality) {
 		this.modality = modality;
 	}
