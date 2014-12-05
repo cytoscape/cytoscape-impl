@@ -39,9 +39,11 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.model.CyTable;
 import org.cytoscape.task.AbstractNetworkViewTask;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
@@ -49,6 +51,7 @@ import org.cytoscape.view.presentation.property.values.Bend;
 import org.cytoscape.view.presentation.property.values.BendFactory;
 import org.cytoscape.view.presentation.property.values.Handle;
 import org.cytoscape.view.presentation.property.values.HandleFactory;
+import org.cytoscape.view.vizmap.VisualMappingFunction;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
@@ -68,6 +71,8 @@ import org.slf4j.LoggerFactory;
 public class EdgeBundlerTask extends AbstractNetworkViewTask {
 
 	private static final Logger logger = LoggerFactory.getLogger(EdgeBundlerTask.class);
+	
+	private static final String BEND_MAP_COLUMN = "BEND_MAP_ID";
 
 	@Tunable(description = "Number of handles")
 	public int numNubs = 3;
@@ -98,6 +103,7 @@ public class EdgeBundlerTask extends AbstractNetworkViewTask {
 
 	private int numEdges;
 	private int selection;
+
 
 	EdgeBundlerTask(CyNetworkView v, HandleFactory hf, BendFactory bf, VisualMappingManager vmm,
 			VisualMappingFunctionFactory discreteFactory, int selection) {
@@ -260,20 +266,38 @@ public class EdgeBundlerTask extends AbstractNetworkViewTask {
 	}
 
 	private final void render(final Collection<View<CyEdge>> edges) {
-		// Create new discrete mapping for edge SUID to Edge Bend
-		final DiscreteMapping<String, Bend> function = (DiscreteMapping<String, Bend>) discreteFactory
-				.createVisualMappingFunction(CyNetwork.NAME, String.class, EDGE_BEND);
+		
 		final VisualStyle style = vmm.getVisualStyle(view);
-		style.addVisualMappingFunction(function);
+		// Check existing mapping
+		VisualMappingFunction<?, Bend> bendMapping = style.getVisualMappingFunction(EDGE_BEND);
+		final Map<Long, Bend> mappingValues;
+		Map<Long, Bend> existingMap = null;
+		
+		if(bendMapping != null && bendMapping instanceof DiscreteMapping) {
+			final String columnName = bendMapping.getMappingColumnName();
+			if(columnName.equals(BEND_MAP_COLUMN)) {
+				existingMap = ((DiscreteMapping<Long, Bend>) bendMapping).getAll();
+			} else {
+				bendMapping = (DiscreteMapping<Long, Bend>) discreteFactory
+						.createVisualMappingFunction(BEND_MAP_COLUMN, Long.class, EDGE_BEND);
+			}
+		}
+		mappingValues = new HashMap<>();
 
-		final Map<String, Bend> newMappingValues = new HashMap<>();
 		final CyNetwork network = view.getModel();
+		final CyTable edgeTable = network.getTable(CyEdge.class, CyNetwork.LOCAL_ATTRS);
+		final CyColumn bendMapColumn = edgeTable.getColumn(BEND_MAP_COLUMN);
+		if(bendMapColumn == null) {
+			edgeTable.createColumn(BEND_MAP_COLUMN, Long.class, false);
+		}
 		
 		int ei = 0;
 		for (final View<CyEdge> edge : edges) {
+			final Long edgeId = edge.getModel().getSUID();
 			final View<CyNode> eSource = view.getNodeView(edge.getModel().getSource());
 			final View<CyNode> eTarget = view.getNodeView(edge.getModel().getTarget());
-
+			network.getRow(edge.getModel()).set(BEND_MAP_COLUMN, edgeId);
+			
 			// Ignore self-edge
 			if (eSource.getSUID().equals(eTarget.getSUID()))
 				continue;
@@ -287,11 +311,22 @@ public class EdgeBundlerTask extends AbstractNetworkViewTask {
 				hlist.add(h);
 			}
 			
-			newMappingValues.put(network.getRow(edge.getModel()).get(CyNetwork.NAME, String.class), bend);
+			mappingValues.put(edgeId, bend);
 			ei++;
 		}
 
-		function.putAll(newMappingValues);
+		if(bendMapping == null) {
+			// Create new discrete mapping for edge SUID to Edge Bend
+			final DiscreteMapping<Long, Bend> function = (DiscreteMapping<Long, Bend>) discreteFactory
+				.createVisualMappingFunction(BEND_MAP_COLUMN, Long.class, EDGE_BEND);
+			style.addVisualMappingFunction(function);
+			function.putAll(mappingValues);
+		} else {
+			if(existingMap != null) {
+				mappingValues.putAll(existingMap);
+			}
+			((DiscreteMapping<Long, Bend>)bendMapping).putAll(mappingValues);
+		}
 	}
 
 	private void computeEdgeCompatability() {
