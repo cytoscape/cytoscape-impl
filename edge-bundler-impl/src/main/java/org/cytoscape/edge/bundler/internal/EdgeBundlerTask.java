@@ -40,8 +40,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyTable;
 import org.cytoscape.task.AbstractNetworkViewTask;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
@@ -261,12 +261,14 @@ public class EdgeBundlerTask extends AbstractNetworkViewTask {
 
 	private final void render(final Collection<View<CyEdge>> edges) {
 		// Create new discrete mapping for edge SUID to Edge Bend
-		final DiscreteMapping<Long, Bend> function = (DiscreteMapping<Long, Bend>) discreteFactory
-				.createVisualMappingFunction(CyTable.SUID, Long.class, EDGE_BEND);
+		final DiscreteMapping<String, Bend> function = (DiscreteMapping<String, Bend>) discreteFactory
+				.createVisualMappingFunction(CyNetwork.NAME, String.class, EDGE_BEND);
 		final VisualStyle style = vmm.getVisualStyle(view);
 		style.addVisualMappingFunction(function);
 
-		final Map<Long, Bend> newMappingValues = new HashMap<Long, Bend>();
+		final Map<String, Bend> newMappingValues = new HashMap<>();
+		final CyNetwork network = view.getModel();
+		
 		int ei = 0;
 		for (final View<CyEdge> edge : edges) {
 			final View<CyNode> eSource = view.getNodeView(edge.getModel().getSource());
@@ -285,7 +287,7 @@ public class EdgeBundlerTask extends AbstractNetworkViewTask {
 				hlist.add(h);
 			}
 			
-			newMappingValues.put(edge.getModel().getSUID(), bend);
+			newMappingValues.put(network.getRow(edge.getModel()).get(CyNetwork.NAME, String.class), bend);
 			ei++;
 		}
 
