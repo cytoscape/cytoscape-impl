@@ -26,12 +26,11 @@ package org.cytoscape.task.internal.table;
 
 import static org.cytoscape.work.TunableValidator.ValidationState.OK;
 
+import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.io.IOException;
 
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyEdge;
@@ -49,7 +48,6 @@ import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.TunableValidator;
-import org.cytoscape.work.TunableValidator.ValidationState;
 import org.cytoscape.work.util.ListMultipleSelection;
 import org.cytoscape.work.util.ListSingleSelection;
 import org.slf4j.Logger;
@@ -85,22 +83,21 @@ public class MergeTablesTask extends AbstractTask implements TunableValidator {
 	private static final String NO_NETWORKS = "No Networks Found";
 	public static final String NO_TABLES = "No Tables Found";
 	
-	public static final String NETWORK_COLLECTION = "To a network collection";
-	public static final String NETWORK_SELECTION = "To selected networks only";
-	public static final String UNASSIGNED_TABLE = "To an unassigned table";
+	public static final String NETWORK_COLLECTION = "a network collection";
+	public static final String NETWORK_SELECTION = "selected networks only";
+	public static final String UNASSIGNED_TABLE = "an unassigned table";
 	
 	public static final String COPY_COLUMNS = "Copy Columns";
 	public static final String LINK_COLUMNS = "Link To Columns";
 	
 	private CyRootNetworkManager rootNetworkManager;
-	private CyNetworkManager networkManager;
 	private CyTableManager tableMgr;
 	private Map<String, CyNetwork> name2NetworkMap;
 	private Map<String, CyRootNetwork> name2RootMap;
 	private Map<String, String> source2targetColumnMap;
 	
 	public ListSingleSelection<CyTable> sourceTable;
-	@Tunable(description="Source table to merge",gravity=0.1, groups={"Source Data Table"})
+	@Tunable(description="Source Table",gravity=0.1, groups={"Source"})
 	
 	public ListSingleSelection<CyTable> getSourceTable() {
 		return sourceTable;
@@ -114,9 +111,6 @@ public class MergeTablesTask extends AbstractTask implements TunableValidator {
 		{
 			sourceMergeColumns = tempList;
 			sourceMergeKey = getColumnsWithNames(table.getSelectedValue());
-			if(selectAllColumns)
-				sourceMergeColumns.setSelectedValues(sourceMergeColumns.getPossibleValues());
-			
 		}
 		
 		List<Object> listOfGlobal = getPublicGlobalTables();
@@ -163,7 +157,7 @@ public class MergeTablesTask extends AbstractTask implements TunableValidator {
 	}
 	
 	public ListMultipleSelection<String> sourceMergeColumns;
-	@Tunable(description="List of columns to merge",gravity=0.2, groups={"Source Data Table","Data Columns To Merge"},listenForChange={"SourceTable","SelectAllColumns"})
+	@Tunable(description="", gravity=0.2, groups={"Source","Columns To Merge"},listenForChange={"SourceTable","SelectAllColumns"})
 	public ListMultipleSelection<String> getSourceMergeColumns(){
 		
 		return sourceMergeColumns;
@@ -174,34 +168,8 @@ public class MergeTablesTask extends AbstractTask implements TunableValidator {
 		sourceMergeColumns = columns;
 	}
 	
-	public boolean selectAllColumns = false;
-	@Tunable(description="Select all columns",gravity=0.3, groups={"Source Data Table","Data Columns To Merge"},listenForChange={"SourceMergeColumns"})
-	
-	public boolean getSelectAllColumns (){		
-		
-		if(sourceMergeColumns.getPossibleValues().size() != sourceMergeColumns.getSelectedValues().size() && selectAllColumns)
-		    selectAllColumns = false;
-		
-		if(sourceMergeColumns.getPossibleValues().size() == sourceMergeColumns.getSelectedValues().size() && !selectAllColumns)
-		    selectAllColumns = true;
-		
-		return selectAllColumns;
-	}
-	
-	public void setSelectAllColumns ( boolean selected){
-		
-		if(selected != selectAllColumns)
-		{
-			selectAllColumns = selected;
-			if(selectAllColumns)
-				sourceMergeColumns.setSelectedValues(sourceMergeColumns.getPossibleValues());
-			else
-				sourceMergeColumns.setSelectedValues(new ArrayList<String>());
-		}
-	}
-	
 	public ListSingleSelection<String> sourceMergeKey;
-	@Tunable(description = "Key column to merge", groups={"Source Data Table"},gravity=0.4, listenForChange={"SourceTable"})
+	@Tunable(description = "Key column to merge", groups={"Source"},gravity=0.4, listenForChange={"SourceTable"})
 	public ListSingleSelection<String> getSourceMergeKey() {
 		return sourceMergeKey;
 	}
@@ -210,12 +178,12 @@ public class MergeTablesTask extends AbstractTask implements TunableValidator {
 		this.sourceMergeKey = key;
 	}
 	
-	@Tunable(description="Type of merge",gravity=0.5, groups={"Source Data Table"}, listenForChange={"SourceTable"})
+	@Tunable(description="Type of merge",gravity=0.5, groups={"Source"}, listenForChange={"SourceTable"})
 	public ListSingleSelection<String> mergeType;
 
 	
 	public ListSingleSelection<String> whereMergeTable ;
-	@Tunable(description="Where to merge the data table",gravity=1.0, groups={"Target Data Table"}, xorChildren=true)
+	@Tunable(description="Merge table to",gravity=1.0, groups={"Target"}, xorChildren=true)
 	
 	public ListSingleSelection<String> getWhereMergeTable() {
 		return whereMergeTable;
@@ -226,7 +194,7 @@ public class MergeTablesTask extends AbstractTask implements TunableValidator {
 	}
 
 	public ListSingleSelection<String> targetNetworkCollection;
-	@Tunable(description = "Network collection", groups = {"Target Data Table","Select Network Collection"},gravity=2.0,  xorKey=NETWORK_COLLECTION)
+	@Tunable(description = "Network Collection", groups = {"Target","Select Network Collection"},gravity=2.0,  xorKey=NETWORK_COLLECTION)
 	public ListSingleSelection<String> getTargetNetworkCollection() {
 		return targetNetworkCollection;
 	}
@@ -240,7 +208,7 @@ public class MergeTablesTask extends AbstractTask implements TunableValidator {
 	}
 
 	public ListSingleSelection<String> targetKeyNetworkCollection;
-	@Tunable(description = "Key column for network", groups = {"Target Data Table","Select Network Collection"},gravity=3.0, xorKey=NETWORK_COLLECTION, listenForChange = {
+	@Tunable(description = "Key column for network", groups = {"Target","Select Network Collection"},gravity=3.0, xorKey=NETWORK_COLLECTION, listenForChange = {
 			"DataTypeTargetForNetworkCollection", "TargetNetworkCollection" })
 	public ListSingleSelection<String> getTargetKeyNetworkCollection() {
 		return targetKeyNetworkCollection;
@@ -252,7 +220,7 @@ public class MergeTablesTask extends AbstractTask implements TunableValidator {
 	
 	public ListSingleSelection<TableType> dataTypeTargetForNetworkCollection;
 
-	@Tunable(description = "Merge data in", gravity=4.0, groups={"Target Data Table","Select Network Collection"}, xorKey=NETWORK_COLLECTION)
+	@Tunable(description = "Merge data in", gravity=4.0, groups={"Target","Select Network Collection"}, xorKey=NETWORK_COLLECTION)
 	public ListSingleSelection<TableType> getDataTypeTargetForNetworkCollection() {
 		return dataTypeTargetForNetworkCollection;
 	}
@@ -266,7 +234,7 @@ public class MergeTablesTask extends AbstractTask implements TunableValidator {
 	}
 
 	public ListMultipleSelection<String> targetNetworkList;
-	@Tunable(description = "Network list", groups = {"Target Data Table","Select Networks"},gravity=5.0, xorKey=NETWORK_SELECTION, params = "displayState=uncollapsed")
+	@Tunable(description = "", groups = {"Target","Select Networks"},gravity=5.0, xorKey=NETWORK_SELECTION)
 	public ListMultipleSelection<String> getTargetNetworkList() {
 		return targetNetworkList;
 	}
@@ -275,12 +243,12 @@ public class MergeTablesTask extends AbstractTask implements TunableValidator {
 		this.targetNetworkList = list;
 	}
 
-	@Tunable(description = "Merge data in", gravity=6.0, groups={"Target Data Table","Select Networks"}, xorKey=NETWORK_SELECTION)
+	@Tunable(description = "Merge data in", gravity=6.0, groups={"Target","Select Networks"}, xorKey=NETWORK_SELECTION)
 	public ListSingleSelection<TableType> dataTypeTargetForNetworkList;
 	
 	
 	public ListSingleSelection<Object> unassignedTable;
-	@Tunable(description = "Unassigned tables", groups = {"Target Data Table","Select Unassigned Table"},gravity=7.0,listenForChange={"SourceTable"}, xorKey=UNASSIGNED_TABLE)
+	@Tunable(description = "Unassigned table", groups = {"Target","Select Unassigned Table"},gravity=7.0,listenForChange={"SourceTable"}, xorKey=UNASSIGNED_TABLE)
 	public ListSingleSelection<Object> getUnassignedTable() {
 		return unassignedTable;
 	}
@@ -301,7 +269,7 @@ public class MergeTablesTask extends AbstractTask implements TunableValidator {
 	}
 	
 	public ListSingleSelection<String> targetMergeKey;
-	@Tunable(description = "Key column to merge", groups={"Target Data Table","Select Unassigned Table"},gravity=8.0, listenForChange={"UnassignedTable","SourceTable"})
+	@Tunable(description = "Key column to merge", groups={"Target","Select Unassigned Table"},gravity=8.0, listenForChange={"UnassignedTable","SourceTable"})
 	public ListSingleSelection<String> getTargetMergeKey() {
 		return targetMergeKey;
 	}
@@ -321,7 +289,6 @@ public class MergeTablesTask extends AbstractTask implements TunableValidator {
 	
 	private final void init( CyTableManager tableMgr,CyRootNetworkManager rootNetworkManeger, CyNetworkManager networkManager) {
 		this.rootNetworkManager = rootNetworkManeger;
-		this.networkManager = networkManager;
 		this.name2NetworkMap = new HashMap<String, CyNetwork>();
 		this.name2RootMap = new HashMap<String, CyRootNetwork>();
 		this.source2targetColumnMap = new HashMap<String, String>();
