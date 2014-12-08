@@ -24,102 +24,138 @@ package org.cytoscape.ding.customgraphicsmgr.internal.ui;
  * #L%
  */
 
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.Font;
 import java.awt.Image;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.swing.BorderFactory;
+import javax.swing.ImageIcon;
+import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu.Separator;
 import javax.swing.ListCellRenderer;
-import javax.swing.border.LineBorder;
-import javax.swing.border.TitledBorder;
+import javax.swing.border.Border;
 
 import org.cytoscape.ding.customgraphics.CustomGraphicsUtil;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
-import org.jdesktop.swingx.JXImagePanel;
 
 /**
  * Cell renderer for Custom Graphics Browser.
  *
  */
-public class CustomGraphicsCellRenderer extends JPanel implements
-		ListCellRenderer {
+public class CustomGraphicsCellRenderer extends JPanel implements ListCellRenderer {
 
 	private static final long serialVersionUID = 8040076496780883222L;
 
 	private static final int ICON_SIZE = 130;
-	
 	private static final int NAME_LENGTH_LIMIT = 24;
-
-	private static final Color SELECTED = Color.red;
-	private static final Color NOT_SELECTED = Color.darkGray;
-	
-	private static final Font LABEL_FONT = new Font("SansSerif", Font.PLAIN, 10);
-	private static final Font SELECTED_LABEL_FONT = new Font("SansSerif", Font.BOLD, 10);
-	
 	private static final Dimension CELL_SIZE = new Dimension(200, 150);
 
-	private final Map<CyCustomGraphics, Component> panelMap;
+	private final Map<CyCustomGraphics<?>, ImagePanel> panelMap;
 
 	public CustomGraphicsCellRenderer() {
-		panelMap = new HashMap<CyCustomGraphics, Component>();
+		panelMap = new HashMap<>();
 	}
 
-
-	public Component getListCellRendererComponent(JList list, Object value,
-			int index, boolean isSelected, boolean cellHasFocus) {
-
-		JPanel target = null;
+	@Override
+	public Component getListCellRendererComponent(final JList list, final Object value,
+			final int index, final boolean isSelected, final boolean cellHasFocus) {
+		ImagePanel target = null;
+		
 		if (value != null && value instanceof CyCustomGraphics) {
-			CyCustomGraphics cg = (CyCustomGraphics) value;
-			target = (JPanel) panelMap.get(cg);
+			final CyCustomGraphics<?> cg = (CyCustomGraphics<?>) value;
+			
+			target = panelMap.get(cg);
+			
 			if (target == null) {
-				target = createImagePanel(cg, isSelected);
+				final String name = cg.getDisplayName();
+				target = new ImagePanel(cg, name);
 				panelMap.put(cg, target);
 			}
-
-			// Set border if selected.
-			String name = cg.getDisplayName();
-			target.setToolTipText(name);
-			if(name.length() >NAME_LENGTH_LIMIT)
-				name = name.substring(0, NAME_LENGTH_LIMIT) + "...";
-				
-			if(isSelected) {
-				target.setBorder(new TitledBorder(new LineBorder(SELECTED),
-						name, TitledBorder.CENTER, TitledBorder.TOP, SELECTED_LABEL_FONT));
-			} else {
-				target.setBorder(new TitledBorder(new LineBorder(NOT_SELECTED),
-						name, TitledBorder.CENTER, TitledBorder.TOP, LABEL_FONT));
-			}
+			
+			target.setSelected(isSelected);
 		}
+		
 		return target;
 	}
 
-	private JPanel createImagePanel(final CyCustomGraphics cg,
-			boolean selected) {
-		final Image image = cg.getRenderedImage();
-		if (image == null)
-			return this;
-
-		final JXImagePanel imagePanel = new JXImagePanel();
-		imagePanel.setPreferredSize(new Dimension(ICON_SIZE, ICON_SIZE));
-		imagePanel.setStyle(JXImagePanel.Style.CENTERED);
-
-		if (image.getHeight(null) < ICON_SIZE && image.getWidth(null) < 200)
-			imagePanel.setImage(image);
-		else
-			imagePanel.setImage(CustomGraphicsUtil.getResizedImage(image, null,
-					ICON_SIZE, true));
+	@SuppressWarnings("serial")
+	private class ImagePanel extends JPanel {
 		
-		imagePanel.setBorder(new TitledBorder(new LineBorder(Color.DARK_GRAY),
-				cg.getDisplayName(), TitledBorder.CENTER, TitledBorder.TOP, LABEL_FONT));
-	
-		imagePanel.setPreferredSize(CELL_SIZE);
-		imagePanel.setBackground(Color.white);
-		return imagePanel;
+		private final JLabel nameLbl;
+		private final JLabel iconLbl;
+		
+		final Color BG_COLOR;
+		final Color FG_COLOR;
+		final Color SEL_BG_COLOR;
+		final Color SEL_FG_COLOR;
+		final Color BORDER_COLOR;
+		
+		ImagePanel(final CyCustomGraphics<?> cg, String name) {
+			super(new BorderLayout());
+			
+			final JList<?> list = new JList<>();
+			BG_COLOR = list.getBackground();
+			FG_COLOR = list.getForeground();
+			SEL_BG_COLOR = list.getSelectionBackground();
+			SEL_FG_COLOR = list.getSelectionForeground();
+			BORDER_COLOR = new Separator().getForeground();
+			
+			setPreferredSize(CELL_SIZE);
+			setToolTipText(name);
+			
+			if (name.length() > NAME_LENGTH_LIMIT)
+				name = name.substring(0, NAME_LENGTH_LIMIT) + "...";
+			
+			nameLbl = new JLabel(name);
+			nameLbl.setHorizontalAlignment(JLabel.CENTER);
+			nameLbl.setOpaque(true);
+			
+			iconLbl = new JLabel();
+			iconLbl.setHorizontalAlignment(JLabel.CENTER);
+			iconLbl.setOpaque(true);
+			iconLbl.setBackground(BG_COLOR);
+			
+			Image image = cg.getRenderedImage();
+			
+			if (image != null) {
+				if (image.getHeight(null) >= ICON_SIZE || image.getWidth(null) >= 200)
+					image = CustomGraphicsUtil.getResizedImage(image, null, ICON_SIZE, true);
+				
+				final ImageIcon icon = new ImageIcon(image);
+				
+				iconLbl.setIcon(icon);
+			}
+			
+			add(iconLbl, BorderLayout.CENTER);
+			add(nameLbl, BorderLayout.SOUTH);
+		}
+		
+		void setSelected(final boolean selected) {
+			final Border border;
+			
+			if (selected) {
+				border = BorderFactory.createCompoundBorder(
+						BorderFactory.createEmptyBorder(1,  1,  1,  1),
+						BorderFactory.createLineBorder(SEL_BG_COLOR, 2));
+				
+				nameLbl.setBackground(SEL_BG_COLOR);
+				nameLbl.setForeground(SEL_FG_COLOR);
+			} else {
+				border = BorderFactory.createCompoundBorder(
+						BorderFactory.createEmptyBorder(2,  2,  2,  2),
+						BorderFactory.createLineBorder(BORDER_COLOR, 1));
+				
+				nameLbl.setBackground(BG_COLOR);
+				nameLbl.setForeground(FG_COLOR);
+			}
+			
+			setBorder(border);
+		}
 	}
 }

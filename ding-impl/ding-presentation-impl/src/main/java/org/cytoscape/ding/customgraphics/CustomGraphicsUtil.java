@@ -26,8 +26,6 @@ package org.cytoscape.ding.customgraphics;
 
 import java.awt.Image;
 
-import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
-
 public class CustomGraphicsUtil {
 
 	public static Image getResizedImage(Image original, final Integer w, final Integer h, boolean keepAspectRatio) {

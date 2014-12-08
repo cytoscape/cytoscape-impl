@@ -169,6 +169,9 @@ import org.osgi.framework.BundleContext;
 
 
 public class CyActivator extends AbstractCyActivator {
+	
+	final IconManager iconManager = new IconManagerImpl();
+	
 	public CyActivator() {
 		super();
 	}
@@ -603,7 +606,7 @@ public class CyActivator extends AbstractCyActivator {
 		registerAllServices(bc, browser, new Properties());
 
 		CustomGraphicsManagerAction customGraphicsManagerAction = new CustomGraphicsManagerAction(
-				customGraphicsManager, cyApplicationManagerServiceRef, browser);
+				customGraphicsManager, cyApplicationManagerServiceRef, browser, iconManager);
 
 		registerAllServices(bc, customGraphicsManager, new Properties());
 		registerService(bc, customGraphicsManagerAction, CyAction.class, new Properties());
@@ -635,7 +638,6 @@ public class CyActivator extends AbstractCyActivator {
 	private void startCharts(BundleContext bc) {
 		// Register Chart Factories
 		final CyApplicationManager cyApplicationManagerServiceRef = getService(bc, CyApplicationManager.class);
-		final IconManager iconManager = new IconManagerImpl();
 		final CyColumnIdentifierFactory colIdFactory = getService(bc, CyColumnIdentifierFactory.class);
 		
 		final Properties factoryProps = new Properties();
