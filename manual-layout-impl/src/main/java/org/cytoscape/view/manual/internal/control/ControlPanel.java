@@ -24,17 +24,16 @@ package org.cytoscape.view.manual.internal.control;
  * #L%
  */
 
+import java.awt.GridLayout;
+
+import javax.swing.BorderFactory;
+
+import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.util.swing.LookAndFeelUtil;
+import org.cytoscape.view.manual.internal.common.AbstractManualPanel;
 import org.cytoscape.view.manual.internal.control.view.AlignPanel;
 import org.cytoscape.view.manual.internal.control.view.DistPanel;
 import org.cytoscape.view.manual.internal.control.view.StackPanel;
-import org.cytoscape.view.manual.internal.common.AbstractManualPanel;
-
-
-import javax.swing.JPanel;
-import javax.swing.BorderFactory;
-import java.awt.GridLayout;
-
-import org.cytoscape.application.CyApplicationManager;
 
 /**
  *
@@ -45,9 +44,6 @@ import org.cytoscape.application.CyApplicationManager;
  */
 public class ControlPanel extends AbstractManualPanel {
 	
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = -2098655182032300315L;
 
 	/**
@@ -55,6 +51,10 @@ public class ControlPanel extends AbstractManualPanel {
 	 */
 	public ControlPanel(CyApplicationManager app) {
 		super("Align and Distribute");
+		
+		if (LookAndFeelUtil.isAquaLAF())
+			setOpaque(false);
+		
 		setBorder(BorderFactory.createEmptyBorder(3, 3, 3, 3));
 		setLayout(new GridLayout(3,1));
 

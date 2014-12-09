@@ -24,23 +24,36 @@ package org.cytoscape.view.manual.internal.control.view;
  * #L%
  */
 
-import org.cytoscape.view.manual.internal.control.actions.stack.*;
+import java.awt.Dimension;
+import java.awt.GridLayout;
 
-import java.awt.*;
-
-import javax.swing.*;
-import javax.swing.border.*;
+import javax.swing.Action;
+import javax.swing.BorderFactory;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JPanel;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.util.swing.LookAndFeelUtil;
+import org.cytoscape.view.manual.internal.control.actions.stack.HStackBottom;
+import org.cytoscape.view.manual.internal.control.actions.stack.HStackCenter;
+import org.cytoscape.view.manual.internal.control.actions.stack.HStackTop;
+import org.cytoscape.view.manual.internal.control.actions.stack.VStackCenter;
+import org.cytoscape.view.manual.internal.control.actions.stack.VStackLeft;
+import org.cytoscape.view.manual.internal.control.actions.stack.VStackRight;
 
 /**
  *
  */
+@SuppressWarnings("serial")
 public class StackPanel extends JPanel {
+	
 	/**
 	 * Creates a new StackPanel object.
 	 */
 	public StackPanel(CyApplicationManager app) {
+		if (LookAndFeelUtil.isAquaLAF())
+			setOpaque(false);
 
 		ImageIcon vali = new ImageIcon(getClass().getResource("/images/V_STACK_LEFT.gif"));
 		ImageIcon vaci = new ImageIcon(getClass().getResource("/images/V_STACK_CENTER.gif"));
@@ -65,7 +78,7 @@ public class StackPanel extends JPanel {
 		add(createJButton(hac, "Horizontal Stack Center"));
 		add(createJButton(hab, "Horizontal Stack Bottom"));
 
-		setBorder(new TitledBorder("Stack"));
+		setBorder(LookAndFeelUtil.createTitledBorder("Stack"));
 	}
 
 	protected JButton createJButton(Action a, String tt) {

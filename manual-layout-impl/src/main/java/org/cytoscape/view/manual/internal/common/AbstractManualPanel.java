@@ -42,18 +42,22 @@ public abstract class AbstractManualPanel extends JPanel implements CytoPanelCom
 		this.title = title;
 	}
 
+	@Override
 	public CytoPanelName getCytoPanelName() {
 		return CytoPanelName.SOUTH_WEST;
 	}
 
+	@Override
 	public String getTitle() {
 		return title;
 	}
 
+	@Override
 	public Component getComponent() {
 		return this;
 	}
 
+	@Override
 	public Icon getIcon() {
 		return null;
 	}
