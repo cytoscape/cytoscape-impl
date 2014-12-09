@@ -35,13 +35,12 @@ import java.util.Stack;
 
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.model.subnetwork.CySubNetwork;
-import org.cytoscape.session.CyNetworkNaming;
 import org.cytoscape.work.TaskMonitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,13 +64,11 @@ public class GraphMLParser extends DefaultHandler {
 	private CyIdentifiable currentObject = null;
 
 	// Attribute values
-	private String currentAttributeID = null;
 	private String currentAttributeKey = null;
 	private String currentAttributeData = null;
 	private String currentAttributeType = null;
-	private String currentEdgeSourceName = null;
-	private String currentEdgeTargetName = null;
-	private String currentObjectTarget = null;
+	
+	private String currentTag = null;
 
 	private final CyNetworkFactory networkFactory;
 	private final CyRootNetworkManager rootNetworkManager;
@@ -88,6 +85,8 @@ public class GraphMLParser extends DefaultHandler {
 	
 	private String lastTag;
 	private CyNode lastNode;
+
+	private StringBuilder builder;
 
 	/**
 	 * Main constructor for our parser. Initialize any local arrays. Note that
@@ -130,33 +129,27 @@ public class GraphMLParser extends DefaultHandler {
 
 	@Override
 	public void startElement(String namespace, String localName, String qName, Attributes atts) throws SAXException {
-		if (qName.equals(GRAPH.getTag()))
+		// This is the buffer to save actual value for this tag.
+		builder = new StringBuilder();
+		currentTag = qName;
+		
+		if (qName.equals(GRAPH.getTag())) {
+			// Top of the network.
 			createGraph(atts);
-		else if (qName.equals(KEY.getTag())) {
-			// Attribute definition found:
+		} else if (qName.equals(KEY.getTag())) {
+			// Attribute definition.
 			datatypeMap.put(atts.getValue(ID.getTag()), atts.getValue(ATTRTYPE.getTag()));
 			datanameMap.put(atts.getValue(ID.getTag()), atts.getValue(ATTRNAME.getTag()));
-		} else if (qName.equals(NODE.getTag()))
+		} else if (qName.equals(NODE.getTag())) {
+			// Node tag.  Create new node.
 			createNode(atts);
-		else if (qName.equals(EDGE.getTag()))
+		} else if (qName.equals(EDGE.getTag())) {
+			// This is an edge tag.
 			createEdge(atts);
-		else if (qName.equals(DATA.getTag())) {
+		} else if (qName.equals(DATA.getTag())) {
+			// This is for table value.
 			currentAttributeKey = atts.getValue(KEY.getTag());
 			currentAttributeType = datatypeMap.get(currentAttributeKey);
-		}
-	}
-
-	@Override
-	public void endElement(String uri, String localName, String qName) throws SAXException {
-		lastTag = qName;
-
-		if (qName != DATA.getTag())
-			currentObjectTarget = null;
-
-		// Check nest
-		if (networkStack.size() > 1 && qName == GRAPH.getTag()) {
-			networkStack.pop();
-			currentNetwork = networkStack.peek();
 		}
 	}
 
@@ -188,8 +181,7 @@ public class GraphMLParser extends DefaultHandler {
 
 	private void createNode(final Attributes atts) {
 		// Parse node entry.
-		currentObjectTarget = NODE.getTag();
-		currentAttributeID = atts.getValue(ID.getTag());
+		String currentAttributeID = atts.getValue(ID.getTag());
 
 		// If nested, add them to all parent networks.
 		if (networkStack.size() > 1) {
@@ -221,9 +213,8 @@ public class GraphMLParser extends DefaultHandler {
 
 	private void createEdge(final Attributes atts) {
 		// Parse edge entry
-		currentObjectTarget = EDGE.getTag();
-		currentEdgeSourceName = atts.getValue(SOURCE.getTag());
-		currentEdgeTargetName = atts.getValue(TARGET.getTag());
+		final String currentEdgeSourceName = atts.getValue(SOURCE.getTag());
+		final String currentEdgeTargetName = atts.getValue(TARGET.getTag());
 		final CyNode sourceNode = (CyNode) nodeid2CyNodeMap.get(currentEdgeSourceName);
 		final CyNode targetNode = (CyNode) nodeid2CyNodeMap.get(currentEdgeTargetName);
 
@@ -247,27 +238,62 @@ public class GraphMLParser extends DefaultHandler {
 				logger.warn("Edge entry ignored: " + currentEdgeSourceName + " (-) " + currentEdgeTargetName, e);
 			}
 		}
-
 	}
 
+	
 	@Override
 	public void characters(char[] ch, int start, int length) {
-		currentAttributeData = new String(ch, start, length);
+		currentAttributeData = String.valueOf(ch, start, length);
+		builder.append(currentAttributeData);
+	}
 
-		if (currentObjectTarget != null) {
-			if (currentObjectTarget.equals(NODE.getTag()) || currentObjectTarget.equals(EDGE.getTag()) || currentObjectTarget.equals(GRAPH.getTag())) {
-				if (currentAttributeType != null && currentAttributeData.trim().length() != 0) {
-					final String columnName = datanameMap.get(currentAttributeKey);
-					final CyColumn column = currentNetwork.getRow(currentObject).getTable().getColumn(columnName);
-					final GraphMLToken attrTag = GraphMLToken.getType(currentAttributeType);
-					if (attrTag != null && attrTag.getDataType() != null) {
-						if (column == null)
-							currentNetwork.getRow(currentObject).getTable().createColumn(columnName, attrTag.getDataType(), false);
-						
-						currentNetwork.getRow(currentObject).set(columnName, attrTag.getObjectValue(currentAttributeData));
-					}
-				}
-			}
+
+	@Override
+	public void endElement(String uri, String localName, String qName) throws SAXException {
+		parseString();
+		lastTag = qName;
+
+		// Check nest
+		if (networkStack.size() > 1 && qName == GRAPH.getTag()) {
+			networkStack.pop();
+			currentNetwork = networkStack.peek();
+		}
+	}
+
+
+	private void parseString() {
+		final String finalString = builder.toString().trim();
+		if(finalString.isEmpty()) {
+			return;
+		}
+		
+		if(currentTag.equals(DATA.getTag())) {
+			parseData(finalString);
+		} else if (currentTag.equals(DEFAULT.getTag())) {
+		
+			// TODO support DEFAULT value
+		}
+	}
+	
+	private final void parseData(final String finalString) {
+		final GraphMLToken attrTag = GraphMLToken.getType(currentAttributeType);
+		if (attrTag == null || attrTag.getDataType() == null) {
+			return;
+		}
+		
+		final String columnName = datanameMap.get(currentAttributeKey);
+		final CyColumn column = currentNetwork.getRow(currentObject).getTable().getColumn(columnName);
+		if (column == null) {
+			// Need to create new column
+			currentNetwork.getRow(currentObject).getTable()
+					.createColumn(columnName, attrTag.getDataType(), false);
+		}
+
+		try {
+			final Object value = attrTag.getObjectValue(finalString);
+			currentNetwork.getRow(currentObject).set(columnName, value);
+		} catch (Exception e) {
+			logger.warn("Could not parse value: " + finalString, e);
 		}
 	}
 }

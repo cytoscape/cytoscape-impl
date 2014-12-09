@@ -25,7 +25,6 @@ package org.cytoscape.io.internal.read.graphml;
  */
 
 import java.io.InputStream;
-import java.net.URL;
 
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
@@ -38,20 +37,18 @@ import org.cytoscape.view.layout.CyLayoutAlgorithm;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
-import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskMonitor;
 import org.xml.sax.InputSource;
-import org.xml.sax.helpers.ParserAdapter;
+import org.xml.sax.XMLReader;
 
 /*
  * @author kozo.nishida
  */
 public class GraphMLReader extends AbstractTask implements CyNetworkReader {
 
-	private VisualStyle[] visualstyles;
 	private InputStream inputStream;
 
 	private final CyNetworkViewFactory cyNetworkViewFactory;
@@ -59,11 +56,6 @@ public class GraphMLReader extends AbstractTask implements CyNetworkReader {
 	
 	private final CyLayoutAlgorithmManager layouts;
 
-	private URL targetURL;
-
-	// GraphML file name to be loaded.
-	private String networkName;
-	
 	private GraphMLParser parser;
 	private TaskMonitor taskMonitor;
 
@@ -98,15 +90,15 @@ public class GraphMLReader extends AbstractTask implements CyNetworkReader {
 		this.taskMonitor = taskMonitor;
 		try {
 			final SAXParserFactory spf = SAXParserFactory.newInstance();
+			spf.setNamespaceAware(true);
 			final SAXParser sp = spf.newSAXParser();
-			final ParserAdapter pa = new ParserAdapter(sp.getParser());
+			final XMLReader xmlReader = sp.getXMLReader();
 			
 			parser = new GraphMLParser(taskMonitor, cyNetworkFactory, cyRootNetworkFactory);
-
-			pa.setContentHandler(parser);
-			pa.setErrorHandler(parser);
-			pa.parse(new InputSource(inputStream));
-
+			xmlReader.setContentHandler(parser);
+			final InputSource inputSource = new InputSource(inputStream);
+			inputSource.setEncoding("UTF-8");
+			xmlReader.parse(inputSource);
 		} finally {
 			if (inputStream != null) {
 				inputStream.close();
