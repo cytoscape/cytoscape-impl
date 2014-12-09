@@ -25,33 +25,31 @@ package org.cytoscape.view.manual.internal.scale;
  */
 
 
-import org.cytoscape.view.manual.internal.common.*;
-
-import org.cytoscape.view.manual.internal.layout.algorithm.MutablePolyEdgeGraphLayout;
-
-import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.application.CyApplicationManager;
-
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.GridLayout;
-import java.awt.Insets;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-
 import java.util.Hashtable;
 
 import javax.swing.AbstractAction;
 import javax.swing.ButtonGroup;
-import javax.swing.JCheckBox;
+import javax.swing.GroupLayout;
+import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JLabel;
-import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JSlider;
-import javax.swing.WindowConstants;
+import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+
+import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.util.swing.LookAndFeelUtil;
+import org.cytoscape.view.manual.internal.common.AbstractManualPanel;
+import org.cytoscape.view.manual.internal.common.CheckBoxTracker;
+import org.cytoscape.view.manual.internal.common.GraphConverter2;
+import org.cytoscape.view.manual.internal.common.PolymorphicSlider;
+import org.cytoscape.view.manual.internal.common.SliderStateTracker;
+import org.cytoscape.view.manual.internal.layout.algorithm.MutablePolyEdgeGraphLayout;
+import org.cytoscape.view.model.CyNetworkView;
 
 
 /**
@@ -59,9 +57,10 @@ import javax.swing.event.ChangeListener;
  * GUI for scale of manualLayout
  *
  *      Rewrite based on the class ScaleAction       9/13/2006        Peng-Liang Wang
- *
  */
+@SuppressWarnings("serial")
 public class ScalePanel extends AbstractManualPanel implements ChangeListener, PolymorphicSlider {
+	
 	private JCheckBox jCheckBox;
 	private JSlider jSlider;
 	private JRadioButton alongXAxisOnlyRadioButton;
@@ -77,20 +76,19 @@ public class ScalePanel extends AbstractManualPanel implements ChangeListener, P
 
 	public ScalePanel(CyApplicationManager appMgr) {
 		super("Scale");
+		
+		if (LookAndFeelUtil.isAquaLAF())
+			setOpaque(false);
+		
 		this.appMgr = appMgr;
-		JLabel jLabel = new JLabel();
-		jLabel.setText("Scale:");
 
 		jSlider = new JSlider();
-
 		jSlider.setMajorTickSpacing(100);
 		jSlider.setPaintTicks(true);
 		jSlider.setPaintLabels(true);
-
 		jSlider.setMaximum(300);
 		jSlider.setValue(0);
 		jSlider.setMinimum(-300);
-
 		jSlider.addChangeListener(this);
 
 		prevValue = jSlider.getValue();
@@ -117,74 +115,58 @@ public class ScalePanel extends AbstractManualPanel implements ChangeListener, P
 		radioButtonGroup.add(alongYAxisOnlyRadioButton);
 		radioButtonGroup.add(alongBothAxesRadioButton);
 
-		setLayout(new GridBagLayout());
-
-		GridBagConstraints gbc = new GridBagConstraints();
-
-		gbc.gridy = 0;
-		gbc.anchor = GridBagConstraints.WEST;
-		gbc.weightx = 1.0;
-		gbc.insets = new Insets(0, 15, 0, 15);
-		add(jLabel, gbc);
-
-		gbc.gridy = 1;
-		gbc.fill = GridBagConstraints.HORIZONTAL;
-		gbc.insets = new Insets(10, 15, 10, 15);
-		add(jSlider, gbc);
-
-		JButton clearButton = new JButton("Reset scale bar");
+		JButton clearButton = new JButton("Reset Scale Bar");
 		clearButton.addActionListener(new AbstractAction() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				updateSlider(0);
 			}
 		});
-		gbc.gridy = 2;
-		gbc.fill = GridBagConstraints.NONE;
-		gbc.anchor = GridBagConstraints.WEST;
-		gbc.insets = new Insets(5, 15, 5, 15);
-		add(clearButton, gbc);
-
-		gbc.gridy = 3;
-		gbc.anchor = GridBagConstraints.WEST;
-		gbc.fill = GridBagConstraints.NONE;
-		gbc.insets = new Insets(0, 15, 0, 15);
-		add(jCheckBox, gbc);
 
 		new SliderStateTracker(this);
 
-		gbc.gridy = 4;
-		gbc.anchor = GridBagConstraints.WEST;
-		gbc.fill = GridBagConstraints.NONE;
-		gbc.insets = new Insets(20, 15, 0, 15);
-		add(alongXAxisOnlyRadioButton, gbc);
-
-		gbc.gridy = 5;
-		gbc.anchor = GridBagConstraints.WEST;
-		gbc.fill = GridBagConstraints.NONE;
-		gbc.insets = new Insets(0, 15, 0, 15);
-		add(alongYAxisOnlyRadioButton, gbc);
-
-		gbc.gridy = 6;
-		gbc.anchor = GridBagConstraints.WEST;
-		gbc.fill = GridBagConstraints.NONE;
-		gbc.insets = new Insets(0, 15, 0, 15);
-		add(alongBothAxesRadioButton, gbc);
-		/*
-		setMinimumSize(new java.awt.Dimension(100,2200));
-		setPreferredSize(new java.awt.Dimension(100,2200));
-		setMaximumSize(new java.awt.Dimension(100,2200));
-		*/
+		final GroupLayout layout = new GroupLayout(this);
+		this.setLayout(layout);
+		layout.setAutoCreateContainerGaps(true);
+		layout.setAutoCreateGaps(true);
+		
+		layout.setHorizontalGroup(layout.createParallelGroup(Alignment.LEADING, true)
+				.addComponent(jSlider)
+				.addGroup(layout.createSequentialGroup()
+						.addComponent(jCheckBox)
+						.addGap(10, 10, Short.MAX_VALUE)
+						.addComponent(clearButton)
+				)
+				.addComponent(alongXAxisOnlyRadioButton)
+				.addComponent(alongYAxisOnlyRadioButton)
+				.addComponent(alongBothAxesRadioButton)
+		);
+		layout.setVerticalGroup(layout.createSequentialGroup()
+				.addComponent(jSlider)
+				.addPreferredGap(ComponentPlacement.UNRELATED)
+				.addGroup(layout.createParallelGroup(Alignment.CENTER, true)
+						.addComponent(jCheckBox)
+						.addComponent(clearButton)
+				)
+				.addPreferredGap(ComponentPlacement.UNRELATED)
+				.addComponent(alongXAxisOnlyRadioButton)
+				.addComponent(alongYAxisOnlyRadioButton)
+				.addComponent(alongBothAxesRadioButton)
+		);
 	} 
 
+	@Override
 	public void updateSlider(int x) {
 		prevValue = x;
 		jSlider.setValue(x);
 	}
 
+	@Override
 	public int getSliderValue() {
 		return jSlider.getValue();
 	}
 
+	@Override
 	public void stateChanged(ChangeEvent e) {
 		if (e.getSource() != jSlider)
 			return;

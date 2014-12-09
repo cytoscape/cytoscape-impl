@@ -32,6 +32,7 @@ import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
 import org.cytoscape.ding.customgraphicsmgr.internal.ui.CustomGraphicsBrowser;
 import org.cytoscape.ding.customgraphicsmgr.internal.ui.CustomGraphicsManagerDialog;
+import org.cytoscape.ding.internal.util.IconManager;
 
 
 public class CustomGraphicsManagerAction extends AbstractCyAction {
@@ -39,13 +40,15 @@ public class CustomGraphicsManagerAction extends AbstractCyAction {
 	private final CustomGraphicsManagerDialog dialog;
 
 	public CustomGraphicsManagerAction(final CustomGraphicsManager manager,
-	                                   final CyApplicationManager applicationManager, final CustomGraphicsBrowser browser)
+	                                   final CyApplicationManager applicationManager,
+	                                   final CustomGraphicsBrowser browser,
+	                                   final IconManager iconManager)
 	{
 		super("Open Custom Graphics Manager");
 		setPreferredMenu("View");
 		setMenuGravity(10.0f);
 		
-		this.dialog = new CustomGraphicsManagerDialog(manager, applicationManager, browser);
+		this.dialog = new CustomGraphicsManagerDialog(manager, applicationManager, browser, iconManager);
 	}
 
 	@Override

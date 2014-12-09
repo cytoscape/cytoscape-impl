@@ -24,24 +24,38 @@ package org.cytoscape.view.manual.internal.control.view;
  * #L%
  */
 
-import org.cytoscape.view.manual.internal.control.actions.align.*;
+import java.awt.Dimension;
+import java.awt.GridLayout;
+
+import javax.swing.Action;
+import javax.swing.BorderFactory;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JPanel;
 
 import org.cytoscape.application.CyApplicationManager;
-
-import java.awt.*;
-
-import javax.swing.*;
-import javax.swing.border.*;
+import org.cytoscape.util.swing.LookAndFeelUtil;
+import org.cytoscape.view.manual.internal.control.actions.align.HAlignCenter;
+import org.cytoscape.view.manual.internal.control.actions.align.HAlignLeft;
+import org.cytoscape.view.manual.internal.control.actions.align.HAlignRight;
+import org.cytoscape.view.manual.internal.control.actions.align.VAlignBottom;
+import org.cytoscape.view.manual.internal.control.actions.align.VAlignCenter;
+import org.cytoscape.view.manual.internal.control.actions.align.VAlignTop;
 
 
 /**
  *
  */
+@SuppressWarnings("serial")
 public class AlignPanel extends JPanel {
+	
 	/**
 	 * Creates a new AlignPanel object.
 	 */
 	public AlignPanel(CyApplicationManager app) {
+		if (LookAndFeelUtil.isAquaLAF())
+			setOpaque(false);
+		
 		ImageIcon hari = new ImageIcon(getClass().getResource("/images/H_ALIGN_RIGHT.gif"));
 		ImageIcon haci = new ImageIcon(getClass().getResource("/images/H_ALIGN_CENTER.gif"));
 		ImageIcon hali = new ImageIcon(getClass().getResource("/images/H_ALIGN_LEFT.gif"));
@@ -67,7 +81,7 @@ public class AlignPanel extends JPanel {
 		add(createJButton(vac, "Vertical Align Center"));
 		add(createJButton(vab, "Vertical Align Bottom"));
 
-		setBorder(new TitledBorder("Align"));
+		setBorder(LookAndFeelUtil.createTitledBorder("Align"));
 	}
 
 	protected JButton createJButton(Action a, String tt) {
