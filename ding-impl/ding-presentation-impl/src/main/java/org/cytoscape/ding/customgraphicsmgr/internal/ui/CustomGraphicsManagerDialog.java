@@ -29,6 +29,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.FileFilter;
 import java.io.IOException;
 import java.net.MalformedURLException;
 
@@ -42,6 +43,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.LayoutStyle;
 import javax.swing.WindowConstants;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
@@ -89,13 +91,6 @@ public class CustomGraphicsManagerDialog extends javax.swing.JDialog {
 		this.setModal(false);
 		initComponents();
 
-		// try {
-		// browser = new CustomGraphicsBrowser(this.manager);
-		// } catch (IOException e) {
-		// logger.error("Could not get an instance of CustomGraphicsBrowser.",
-		// e);
-		// }
-
 		detail = new CustomGraphicsDetailPanel(appManager);
 
 		this.leftScrollPane.setViewportView(browser);
@@ -119,9 +114,9 @@ public class CustomGraphicsManagerDialog extends javax.swing.JDialog {
 		
 		setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 
-		deleteButton.setText(IconManager.ICON_MINUS);
+		deleteButton.setText(IconManager.ICON_TRASH);
 		deleteButton.setFont(iconManager.getIconFont(12.0f));
-		deleteButton.setToolTipText("Remove selected graphics from library.");
+		deleteButton.setToolTipText("Remove Selected Graphics");
 		deleteButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent evt) {
@@ -129,9 +124,9 @@ public class CustomGraphicsManagerDialog extends javax.swing.JDialog {
 			}
 		});
 
-		addButton.setText(IconManager.ICON_PLUS);
+		addButton.setText(IconManager.ICON_FOLDER_OPEN_ALT);
 		addButton.setFont(iconManager.getIconFont(12.0f));
-		addButton.setToolTipText("Add a folder to Custom Graphics Library");
+		addButton.setToolTipText("Add Image(s)");
 		addButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent evt) {
@@ -179,18 +174,15 @@ public class CustomGraphicsManagerDialog extends javax.swing.JDialog {
 	private void addButtonActionPerformed(ActionEvent evt) {
 		// Add a directory
 		final JFileChooser chooser = new JFileChooser();
-		chooser.setDialogTitle("Select Image Directory");
-		chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+		
+		final FileNameExtensionFilter filter = new FileNameExtensionFilter("Image file (PNG, GIF or JPEG)", "jpg", "jpeg", "png", "gif");
+		chooser.setDialogTitle("Select Image Files");
 		chooser.setMultiSelectionEnabled(true);
-
+		chooser.setFileFilter(filter);
 		int returnVal = chooser.showOpenDialog(this);
-		if (returnVal == JFileChooser.APPROVE_OPTION)
-			importFromDirectories(chooser.getSelectedFiles());
-	}
-
-	private void importFromDirectories(final File[] directories) {
-		for (final File file : directories)
-			processFiles(file.listFiles());
+		if (returnVal == JFileChooser.APPROVE_OPTION) {
+			processFiles(chooser.getSelectedFiles());
+		}
 	}
 
 	private void processFiles(final File[] files) {
@@ -200,9 +192,7 @@ public class CustomGraphicsManagerDialog extends javax.swing.JDialog {
 				try {
 					img = ImageIO.read(file);
 				} catch (IOException e) {
-					System.err.println("Could not read file: "
-							+ file.toString());
-					e.printStackTrace();
+					logger.error("Could not read file: " + file.toString(), e);
 					continue;
 				}
 			}
