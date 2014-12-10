@@ -27,6 +27,9 @@ package org.cytoscape.linkout.internal;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import java.net.URLEncoder;
+import java.io.UnsupportedEncodingException;
+
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.util.swing.OpenBrowser;
@@ -94,7 +97,13 @@ public class LinkoutTask extends AbstractTask {
 				continue;
 
 			String attrValue = raw.toString();
-			url = url.replace("%" + replaceName + "%", attrValue);
+      String attrValueEscaped = null; 
+      try {
+        attrValueEscaped = URLEncoder.encode(attrValue, "UTF-8");
+      } catch (UnsupportedEncodingException e) {
+        throw new IllegalStateException(e);
+      }
+			url = url.replace("%" + replaceName + "%", attrValueEscaped);
 			mat = regexPattern.matcher(url);
 		}
 
