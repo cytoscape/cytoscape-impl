@@ -3,7 +3,7 @@
 ################# Node Links ################
 
 nodelinkouturl.Web\ Search.Google=http://www.google.com/search?hl=en&q=%ID%&btnG=Google+Search
-nodelinkouturl.Web\ Search.Wikipedia=http://en.wikipedia.org/wiki/%ID%
+nodelinkouturl.Web\ Search.Wikipedia=http://en.wikipedia.org/w/index.php?search=%ID%
 
 nodelinkouturl.Sequences\ and\ Proteins.Entrez\ Gene=http://www.ncbi.nlm.nih.gov/gene/%ID%
 nodelinkouturl.Sequences\ and\ Proteins.Entrez\ Genome=http://www.ncbi.nlm.nih.gov/genome?term=%ID%
