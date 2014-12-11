@@ -27,10 +27,10 @@ package org.cytoscape.work.internal;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Properties;
-import java.util.logging.Logger;
-import java.util.logging.Level;
 
 import javax.swing.SwingUtilities;
+
+import org.ops4j.pax.logging.spi.PaxAppender;
 
 import org.cytoscape.io.datasource.DataSourceManager;
 import org.cytoscape.io.read.InputStreamTaskFactory;
@@ -46,7 +46,7 @@ import org.cytoscape.work.internal.task.JPanelTaskManager;
 import org.cytoscape.work.internal.task.TaskHistory;
 import org.cytoscape.work.internal.task.TaskHistoryWindow;
 import org.cytoscape.work.internal.task.TaskStatusBar;
-import org.cytoscape.work.internal.task.CyUserLogHandler;
+import org.cytoscape.work.internal.task.CyUserLogAppender;
 import org.cytoscape.work.internal.tunables.BooleanHandler;
 import org.cytoscape.work.internal.tunables.BoundedHandler;
 import org.cytoscape.work.internal.tunables.DoubleHandler;
@@ -78,8 +78,6 @@ import org.osgi.framework.BundleContext;
 
 
 public class CyActivator extends AbstractCyActivator {
-  private Logger cyUserLog = null; // maintain a strong reference to the user log to prevent it from being garbage collected
-
 	public CyActivator() {
 		super();
 	}
@@ -108,9 +106,8 @@ public class CyActivator extends AbstractCyActivator {
 			}
 		});
 
-    cyUserLog = Logger.getLogger("org.cytoscape.application.userlog");
-    cyUserLog.setLevel(Level.INFO);
-		cyUserLog.addHandler(new CyUserLogHandler(taskStatusBar, taskHistory));
+    registerService(bc, new CyUserLogAppender(taskStatusBar, taskHistory), PaxAppender.class,
+        ezProps("org.ops4j.pax.logging.appender.name", "CyUserLog"));
 
 		JDialogTaskManager jDialogTaskManager = new JDialogTaskManager(jDialogTunableMutator, cyPropertyServiceRef, taskStatusBar, taskHistory);
 		PanelTaskManager jPanelTaskManager = new JPanelTaskManager(jPanelTunableMutator, jDialogTaskManager);
@@ -179,4 +176,11 @@ public class CyActivator extends AbstractCyActivator {
 		registerServiceListener(bc,jPanelTunableMutator,"addTunableHandlerFactory","removeTunableHandlerFactory",GUITunableHandlerFactory.class, TunableHandlerFactory.class);
 		registerServiceListener(bc,jDialogTunableMutator,"addTunableHandlerFactory","removeTunableHandlerFactory",GUITunableHandlerFactory.class, TunableHandlerFactory.class);
 	}
+
+  static Properties ezProps(String... args) {
+    final Properties props = new Properties();
+    for (int i = 0; i < args.length; i += 2)
+      props.setProperty(args[i], args[i + 1]);
+    return props;
+  }
 }
