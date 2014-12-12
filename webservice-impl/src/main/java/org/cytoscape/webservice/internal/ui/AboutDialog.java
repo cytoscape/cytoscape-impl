@@ -24,14 +24,19 @@ package org.cytoscape.webservice.internal.ui;
  * #L%
  */
 
+import static javax.swing.GroupLayout.DEFAULT_SIZE;
+import static javax.swing.GroupLayout.PREFERRED_SIZE;
+
 import java.awt.Dialog;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.Window;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 
 import javax.swing.GroupLayout;
+import javax.swing.GroupLayout.Alignment;
 import javax.swing.Icon;
 import javax.swing.JDialog;
 import javax.swing.JEditorPane;
@@ -121,64 +126,69 @@ public final class AboutDialog extends JDialog implements HyperlinkListener {
 	}
 
 	private void initComponents() {
-		titlePanel = new JPanel();
-		titleLabel = new JLabel();
-		mainPanel = new JPanel();
-		mainScrollPane = new JScrollPane();
-		mainEditorPane = new JEditorPane();
-
-		setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 		setTitle("About");
-
-		titlePanel.setBackground(new java.awt.Color(255, 255, 255));
-
-		titleLabel.setFont(new java.awt.Font("SansSerif", 0, 18));
+		setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+		
+		mainPanel = new JPanel();
+		
+		mainEditorPane = new JEditorPane();
+		mainEditorPane.setBorder(null);
+		mainEditorPane.setEditable(false);
+		
+		mainScrollPane = new JScrollPane();
+		mainScrollPane.setBorder(null);
+		mainScrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+		mainScrollPane.setViewportView(mainEditorPane);
+		
+		titleLabel = new JLabel();
+		titleLabel.setFont(new Font("SansSerif", Font.BOLD, 18));
 		titleLabel.setText("Client Name Here");
 
+		titlePanel = new JPanel();
+		
 		GroupLayout titlePanelLayout = new GroupLayout(titlePanel);
 		titlePanel.setLayout(titlePanelLayout);
-		titlePanelLayout.setHorizontalGroup(titlePanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
-				.addGroup(
-						titlePanelLayout.createSequentialGroup().addContainerGap()
-								.addComponent(titleLabel, GroupLayout.DEFAULT_SIZE, 340, Short.MAX_VALUE)
-								.addContainerGap()));
-		titlePanelLayout.setVerticalGroup(titlePanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING).addGroup(
-				titlePanelLayout.createSequentialGroup().addContainerGap()
-						.addComponent(titleLabel, GroupLayout.DEFAULT_SIZE, 32, Short.MAX_VALUE).addContainerGap()));
-
-		mainPanel.setBackground(new java.awt.Color(255, 255, 255));
-
-		mainScrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-		mainScrollPane.setFont(new java.awt.Font("SansSerif", 0, 12));
-
-		mainEditorPane.setEditable(false);
-		mainScrollPane.setViewportView(mainEditorPane);
+		
+		titlePanelLayout.setHorizontalGroup(titlePanelLayout.createParallelGroup(Alignment.LEADING)
+				.addGroup(titlePanelLayout.createSequentialGroup()
+						.addContainerGap()
+						.addComponent(titleLabel, DEFAULT_SIZE, 340, Short.MAX_VALUE)
+						.addContainerGap()));
+		titlePanelLayout.setVerticalGroup(titlePanelLayout.createParallelGroup(Alignment.LEADING)
+				.addGroup(titlePanelLayout.createSequentialGroup().addContainerGap()
+						.addComponent(titleLabel, DEFAULT_SIZE, 32, Short.MAX_VALUE)
+						.addContainerGap()));
 
 		final GroupLayout mainPanelLayout = new GroupLayout(mainPanel);
 		mainPanel.setLayout(mainPanelLayout);
-		mainPanelLayout.setHorizontalGroup(mainPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING).addGroup(
-				mainPanelLayout.createSequentialGroup().addContainerGap().addComponent(mainScrollPane)
+		
+		mainPanelLayout.setHorizontalGroup(mainPanelLayout.createParallelGroup(Alignment.LEADING)
+				.addGroup(mainPanelLayout.createSequentialGroup()
+						.addContainerGap()
+						.addComponent(mainScrollPane)
 						.addContainerGap()));
-		mainPanelLayout.setVerticalGroup(mainPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
-				.addGroup(
-						mainPanelLayout.createSequentialGroup().addContainerGap()
-								.addComponent(mainScrollPane, GroupLayout.DEFAULT_SIZE, 215, Short.MAX_VALUE)
-								.addContainerGap()));
+		mainPanelLayout.setVerticalGroup(mainPanelLayout.createParallelGroup(Alignment.LEADING)
+				.addGroup(mainPanelLayout.createSequentialGroup()
+						.addContainerGap()
+						.addComponent(mainScrollPane, DEFAULT_SIZE, 215, Short.MAX_VALUE)
+						.addContainerGap()));
 
 		GroupLayout layout = new GroupLayout(getContentPane());
 		getContentPane().setLayout(layout);
-		layout.setHorizontalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-				.addComponent(titlePanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-				.addComponent(mainPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE));
-		layout.setVerticalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING).addGroup(
-				layout.createSequentialGroup()
-						.addComponent(titlePanel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
-								GroupLayout.PREFERRED_SIZE).addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-						.addComponent(mainPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)));
+		
+		layout.setHorizontalGroup(layout.createParallelGroup(Alignment.LEADING)
+				.addComponent(titlePanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				.addComponent(mainPanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE));
+		layout.setVerticalGroup(layout.createParallelGroup(Alignment.LEADING)
+				.addGroup(layout.createSequentialGroup()
+						.addComponent(titlePanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+						.addComponent(mainPanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)));
 
 		pack();
-	} // </editor-fold>
+	}
 
+	@Override
 	public void hyperlinkUpdate(HyperlinkEvent e) {
 		if (e.getEventType() != HyperlinkEvent.EventType.ACTIVATED)
 			return;

@@ -24,10 +24,11 @@ package org.cytoscape.webservice.psicquic.ui;
  * #L%
  */
 
+import static javax.swing.GroupLayout.DEFAULT_SIZE;
+import static javax.swing.GroupLayout.PREFERRED_SIZE;
+
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Font;
-import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
@@ -38,22 +39,24 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
-import javax.swing.BorderFactory;
 import javax.swing.DefaultRowSorter;
 import javax.swing.GroupLayout;
+import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JComponent;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTable;
-import javax.swing.LayoutStyle;
 import javax.swing.RowSorter;
 import javax.swing.SortOrder;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
-import javax.swing.border.TitledBorder;
+import javax.swing.UIManager;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableModel;
 
 import org.cytoscape.application.swing.CyAction;
@@ -62,6 +65,7 @@ import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.create.CreateNetworkViewTaskFactory;
+import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.webservice.psicquic.PSICQUICRestClient;
 import org.cytoscape.webservice.psicquic.PSICQUICRestClient.SearchMode;
@@ -75,12 +79,13 @@ import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskManager;
 import org.cytoscape.work.TaskObserver;
 
+@SuppressWarnings("serial")
 public class SourceStatusPanel extends JPanel implements TaskObserver {
 
-	private static final long serialVersionUID = 6996385373168492882L;
+	private static final String ACTIVE = "Active";
+	private static final String INACTIVE = "Inactive";
 
-	private static final Color SELECTED_ROW = new Color(0xaa, 0xaa, 0xaa, 200);
-	private static final Font TITLE_FONT = new Font("SansSerif", Font.BOLD, 14);
+	private static final Color SELECTED_ROW = new Color(222, 234, 252);
 
 	private static final int IMPORT_COLUMN_INDEX = 0;
 	private static final int STATUS_COLUMN_INDEX = 1;
@@ -110,9 +115,16 @@ public class SourceStatusPanel extends JPanel implements TaskObserver {
 
 	private final CyServiceRegistrar registrar;
 
-	private int interactionsFound = 0;
+	private int interactionsFound;
 	
 	private final CyAction mergeAction;
+	
+	private JPanel buttonPanel;
+	private JButton selectNoneButton;
+	private JButton selectAllButton;
+	private JCheckBox clusterResultCheckBox;
+	private JScrollPane resultScrollPane;
+	private JTable resultTable;
 
 	/**
 	 * Creates new form PSICQUICResultDialog
@@ -142,13 +154,13 @@ public class SourceStatusPanel extends JPanel implements TaskObserver {
 		this.vsBuilder = vsBuilder;
 
 		setTableModel(result);
-
 		refreshGUI();
-		final TitledBorder titledBorder = BorderFactory.createTitledBorder(BorderFactory.createEmptyBorder(6, 3, 0, 3),
-				"2. Select Database");
-		titledBorder.setTitleFont(TITLE_FONT);
-		this.setBorder(titledBorder);
-		this.setOpaque(false);
+		
+		setBorder(LookAndFeelUtil.createTitledBorder("2. Select Databases"));
+		
+		if (LookAndFeelUtil.isAquaLAF())
+			setOpaque(false);
+		
 		resultTable.setEnabled(false);
 
 		this.registrar.registerService(this, TaskObserver.class, new Properties());
@@ -163,8 +175,7 @@ public class SourceStatusPanel extends JPanel implements TaskObserver {
 		this.resultTable.setEnabled(enable);
 		this.resultScrollPane.setEnabled(enable);
 		this.selectAllButton.setEnabled(enable);
-		this.importNetworkButton.setEnabled(enable);
-		this.clearSelectionButton.setEnabled(enable);
+		this.selectNoneButton.setEnabled(enable);
 		this.clusterResultCheckBox.setEnabled(enable);
 		this.setEnabled(enable);
 	}
@@ -199,7 +210,6 @@ public class SourceStatusPanel extends JPanel implements TaskObserver {
 	}
 
 	private void setCoumnWidth() {
-
 		resultTable.getTableHeader().setReorderingAllowed(false);
 		resultTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 		// Import?
@@ -214,6 +224,9 @@ public class SourceStatusPanel extends JPanel implements TaskObserver {
 		resultTable.getColumnModel().getColumn(TAG_COLUMN_INDEX).setPreferredWidth(280);
 
 		resultTable.setSelectionBackground(SELECTED_ROW);
+		
+		resultTable.setDefaultRenderer(Boolean.class,
+				new BooleanCellRenderer(resultTable.getDefaultRenderer(Boolean.class)));
 		resultTable.setDefaultRenderer(String.class, new StringCellRenderer());
 		resultTable.setDefaultRenderer(Number.class, new NumberCellRenderer());
 	}
@@ -272,23 +285,21 @@ public class SourceStatusPanel extends JPanel implements TaskObserver {
 				}
 			} else {
 				if (manager.isActive(serviceName)) {
-					rowValues[STATUS_COLUMN_INDEX] = "Active";
+					rowValues[STATUS_COLUMN_INDEX] = ACTIVE;
 					if (((Integer) rowValues[RECORD_COUNT_COLUMN_INDEX]) != 0)
 						rowValues[IMPORT_COLUMN_INDEX] = true;
 					else
 						rowValues[IMPORT_COLUMN_INDEX] = false;
 				} else {
 					rowValues[IMPORT_COLUMN_INDEX] = false;
-					rowValues[STATUS_COLUMN_INDEX] = "Inactive";
+					rowValues[STATUS_COLUMN_INDEX] = INACTIVE;
 				}
 			}
 			model.addRow(rowValues);
 
 		}
+		
 		this.resultTable = new JTable(model) {
-
-			private static final long serialVersionUID = 1804418707227880677L;
-
 			@Override
 			public String getToolTipText(MouseEvent e) {
 				final int row = convertRowIndexToModel(rowAtPoint(e.getPoint()));
@@ -319,55 +330,28 @@ public class SourceStatusPanel extends JPanel implements TaskObserver {
 		return nameString.substring(0, nameString.length() - 2);
 	}
 
-	/**
-	 * This method is called from within the constructor to initialize the form.
-	 * WARNING: Do NOT modify this code. The content of this method is always
-	 * regenerated by the Form Editor.
-	 */
-	@SuppressWarnings("unchecked")
-	// <editor-fold defaultstate="collapsed" desc="Generated Code">
 	private void initComponents() {
-		resultScrollPane = new javax.swing.JScrollPane();
+		resultScrollPane = new JScrollPane();
 
-		buttonPanel = new javax.swing.JPanel();
-		importNetworkButton = new javax.swing.JButton();
-		cancelButton = new javax.swing.JButton();
-		clearSelectionButton = new JButton();
-		selectAllButton = new JButton();
-		clusterResultCheckBox = new JCheckBox("Automatic Network Merge (Experimental)");
+		buttonPanel = new JPanel();
+		selectNoneButton = new JButton("Select None");
+		selectAllButton = new JButton("Select All");
+		clusterResultCheckBox = new JCheckBox("Automatic Network Merge");
 		clusterResultCheckBox.setSelected(false);
 
-		resultScrollPane.setBackground(java.awt.Color.white);
 		resultScrollPane.setViewportView(resultTable);
 
-		buttonPanel.setBackground(java.awt.Color.white);
-
-		importNetworkButton.setText("Import");
-		importNetworkButton.setFont(new Font("SansSerif", Font.PLAIN, 13));
-		importNetworkButton.setForeground(new Color(255, 0, 55));
-		importNetworkButton.setPreferredSize(new java.awt.Dimension(70, 28));
-		importNetworkButton.addActionListener(new java.awt.event.ActionListener() {
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
-				importButtonActionPerformed(evt);
-			}
-		});
-
-		cancelButton.setText("Close");
-		cancelButton.setPreferredSize(new java.awt.Dimension(70, 28));
-		cancelButton.addActionListener(new java.awt.event.ActionListener() {
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
-				cancelButtonActionPerformed(evt);
-			}
-		});
-
-		clearSelectionButton.setText("Clear");
-		clearSelectionButton.addActionListener(new java.awt.event.ActionListener() {
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+		if (LookAndFeelUtil.isAquaLAF())
+			buttonPanel.setOpaque(false);
+		
+		selectNoneButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent evt) {
 				clearButtonActionPerformed(evt);
 			}
 		});
-		selectAllButton.setText("Select All");
 		selectAllButton.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent evt) {
 				selectAllButtonActionPerformed(evt);
 			}
@@ -377,58 +361,37 @@ public class SourceStatusPanel extends JPanel implements TaskObserver {
 
 		GroupLayout buttonPanelLayout = new GroupLayout(buttonPanel);
 		buttonPanel.setLayout(buttonPanelLayout);
-		buttonPanelLayout.setHorizontalGroup(buttonPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
-				.addGroup(
-						GroupLayout.Alignment.TRAILING,
-						buttonPanelLayout.createSequentialGroup().addComponent(clearSelectionButton)
-								.addPreferredGap(LayoutStyle.ComponentPlacement.RELATED).addComponent(selectAllButton)
-								.addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-								.addComponent(clusterResultCheckBox).addContainerGap(100, Short.MAX_VALUE)
-								.addComponent(cancelButton).addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-								.addComponent(importNetworkButton).addContainerGap()));
-		buttonPanelLayout.setVerticalGroup(buttonPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
-				.addGroup(
-						GroupLayout.Alignment.TRAILING,
-						buttonPanelLayout
-								.createSequentialGroup()
-								.addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-								.addGroup(
-										buttonPanelLayout
-												.createParallelGroup(GroupLayout.Alignment.BASELINE)
-												.addComponent(clearSelectionButton, GroupLayout.PREFERRED_SIZE,
-														GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-												.addComponent(selectAllButton, GroupLayout.PREFERRED_SIZE,
-														GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-												.addComponent(clusterResultCheckBox, GroupLayout.PREFERRED_SIZE,
-														GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-												.addComponent(importNetworkButton, GroupLayout.PREFERRED_SIZE,
-														GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-												.addComponent(cancelButton, GroupLayout.PREFERRED_SIZE,
-														GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-								.addContainerGap()));
+		buttonPanelLayout.setAutoCreateContainerGaps(false);
+		buttonPanelLayout.setAutoCreateGaps(true);
+		
+		buttonPanelLayout.setHorizontalGroup(buttonPanelLayout.createSequentialGroup()
+				.addComponent(selectAllButton)
+				.addComponent(selectNoneButton)
+				.addContainerGap(20, Short.MAX_VALUE)
+				.addComponent(clusterResultCheckBox)
+		);
+		buttonPanelLayout.setVerticalGroup(buttonPanelLayout.createParallelGroup(Alignment.CENTER)
+				.addComponent(selectAllButton, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				.addComponent(selectNoneButton, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				.addComponent(clusterResultCheckBox, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+		);
 
 		GroupLayout layout = new GroupLayout(this);
 		setLayout(layout);
-		layout.setHorizontalGroup(layout
-				.createParallelGroup(GroupLayout.Alignment.LEADING)
-				// .addComponent(titlePanel, GroupLayout.DEFAULT_SIZE,
-				// GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-				.addComponent(resultScrollPane, GroupLayout.DEFAULT_SIZE, 300, Short.MAX_VALUE)
-				.addComponent(buttonPanel));
-		layout.setVerticalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING).addGroup(
-				layout.createSequentialGroup()
-						// .addComponent(titlePanel, GroupLayout.PREFERRED_SIZE,
-						// GroupLayout.DEFAULT_SIZE,
-						// GroupLayout.PREFERRED_SIZE)
-						.addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-						.addComponent(resultScrollPane, GroupLayout.DEFAULT_SIZE, 300, Short.MAX_VALUE)
-						.addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-						.addComponent(buttonPanel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
-								GroupLayout.PREFERRED_SIZE)));
-
+		layout.setAutoCreateContainerGaps(true);
+		layout.setAutoCreateGaps(true);
+		
+		layout.setHorizontalGroup(layout.createParallelGroup(Alignment.LEADING)
+				.addComponent(resultScrollPane, DEFAULT_SIZE, 300, Short.MAX_VALUE)
+				.addComponent(buttonPanel)
+		);
+		layout.setVerticalGroup(layout.createSequentialGroup()
+				.addComponent(resultScrollPane, DEFAULT_SIZE, 300, Short.MAX_VALUE)
+				.addComponent(buttonPanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+		);
 	}
 
-	private void importButtonActionPerformed(ActionEvent evt) {
+	void doImport() {
 		final boolean mergeNetwork = clusterResultCheckBox.isSelected();
 		final Set<String> targetSources = getSelected();
 		final Set<String> sourceURLs = new HashSet<String>();
@@ -446,15 +409,6 @@ public class SourceStatusPanel extends JPanel implements TaskObserver {
 				networkManager, manager, sourceURLs, mode, createViewTaskFactory, vsBuilder, vmm, mergeNetwork);
 
 		taskManager.execute(new TaskIterator(networkTask), this);
-
-//		final Window parentWindow = ((Window) getRootPane().getParent());
-//		parentWindow.pack();
-//		repaint();
-//		parentWindow.toFront();
-	}
-
-	private void cancelButtonActionPerformed(ActionEvent evt) {
-		((Window) this.getRootPane().getParent()).dispose();
 	}
 
 	private void clearButtonActionPerformed(ActionEvent evt) {
@@ -487,23 +441,7 @@ public class SourceStatusPanel extends JPanel implements TaskObserver {
 		}
 	}
 
-	// Variables declaration - do not modify
-	private javax.swing.JPanel buttonPanel;
-	private javax.swing.JButton cancelButton;
-	private javax.swing.JButton importNetworkButton;
-	private JButton clearSelectionButton;
-	private JButton selectAllButton;
-	private JCheckBox clusterResultCheckBox;
-
-	private javax.swing.JScrollPane resultScrollPane;
-	private javax.swing.JTable resultTable;
-
 	private final class StatusTableModel extends DefaultTableModel {
-		private static final long serialVersionUID = -7798626850196524108L;
-
-		StatusTableModel() {
-			super();
-		}
 
 		@Override
 		public boolean isCellEditable(int row, int column) {
@@ -525,31 +463,73 @@ public class SourceStatusPanel extends JPanel implements TaskObserver {
 				return String.class;
 		}
 	}
+	
+	private final class BooleanCellRenderer implements TableCellRenderer {
 
-	private final class StringCellRenderer extends DefaultTableCellRenderer {
-
-		private static final long serialVersionUID = 1694430839330920845L;
-
+		private final TableCellRenderer renderer;
+		
+		BooleanCellRenderer(final TableCellRenderer renderer) {
+			this.renderer = renderer;
+		}
+		
+		@Override
 		public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,
 				boolean hasFocus, int row, int column) {
+			final Component c = renderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+			
+			if (c instanceof JComponent) {
+				final JComponent jc = (JComponent) c;
+				jc.setEnabled(true);
+				
+				final String serviceName = (String) table.getValueAt(row, DB_NAME_COLUMN_INDEX);
+				
+				int count = 0;
+				try {
+					count = ((Number)table.getValueAt(row, RECORD_COUNT_COLUMN_INDEX)).intValue();
+				} catch (Exception e) {
+					count = 0;
+				}
+				
+				if (!table.isEnabled() ||
+						!manager.isActive(serviceName) ||
+						INACTIVE.equals(table.getValueAt(row, STATUS_COLUMN_INDEX)) ||
+						count == 0)
+					jc.setEnabled(false);
+			}
+			
+			return c;
+		}
+	}
+	
+	private final class StringCellRenderer extends DefaultTableCellRenderer {
 
+		@Override
+		public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,
+				boolean hasFocus, int row, int column) {
 			if (value == null) {
 				this.setEnabled(false);
 				return this;
 			}
-
+			this.setText(value.toString());
+			
 			final String serviceName = (String) table.getValueAt(row, DB_NAME_COLUMN_INDEX);
 			final String statusString = (String) table.getValueAt(row, STATUS_COLUMN_INDEX);
 
-			this.setText(value.toString());
-
-			if (!manager.isActive(serviceName) || statusString.equals("Active") == false) {
-				this.setForeground(Color.red);
+			int count = 0;
+			try {
+				count = ((Number)table.getValueAt(row, RECORD_COUNT_COLUMN_INDEX)).intValue();
+			} catch (Exception e) {
+				count = 0;
+			}
+			
+			if (!manager.isActive(serviceName) || statusString.equals(ACTIVE) == false || count == 0) {
+				this.setForeground(UIManager.getColor("Label.disabledForeground"));
 				this.setEnabled(false);
 			} else {
 				this.setForeground(table.getForeground());
 				this.setEnabled(true);
 			}
+			
 			if (isSelected)
 				this.setBackground(table.getSelectionBackground());
 			else
@@ -561,26 +541,23 @@ public class SourceStatusPanel extends JPanel implements TaskObserver {
 				this.setHorizontalAlignment(SwingConstants.CENTER);
 			}
 
-			if (table.isEnabled() == false) {
-				// Table is disabled. Grayed-out
-				this.setForeground(Color.LIGHT_GRAY);
+			if (!table.isEnabled())
 				this.setEnabled(false);
-			}
+			
 			return this;
 		}
 	}
 
 	private final class NumberCellRenderer extends DefaultTableCellRenderer {
 
-		private static final long serialVersionUID = 6889007019721032218L;
-
+		@Override
 		public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,
 				boolean hasFocus, int row, int column) {
-
 			if (value == null || value instanceof Number == false) {
 				this.setEnabled(false);
 				return this;
 			}
+			
 			this.setEnabled(true);
 
 			Integer count;
@@ -595,25 +572,24 @@ public class SourceStatusPanel extends JPanel implements TaskObserver {
 
 			this.setText(count.toString());
 
-			if (!manager.isActive(serviceName) || statusString.equals("Active") == false) {
-				this.setForeground(Color.red);
+			if (!manager.isActive(serviceName) || statusString.equals(ACTIVE) == false) {
+				this.setForeground(UIManager.getColor("Label.disabledForeground"));
 				this.setEnabled(false);
 			} else if (count == 0) {
-				this.setForeground(Color.LIGHT_GRAY);
+				this.setForeground(UIManager.getColor("Label.disabledForeground"));
 				this.setEnabled(false);
-			} else
+			} else {
 				this.setForeground(table.getForeground());
+			}
 
 			if (isSelected)
 				this.setBackground(table.getSelectionBackground());
 			else
 				this.setBackground(table.getBackground());
 
-			if (table.isEnabled() == false) {
-				// Table is disabled. Grayed-out
-				this.setForeground(Color.LIGHT_GRAY);
+			if (!table.isEnabled())
 				this.setEnabled(false);
-			}
+			
 			return this;
 		}
 	}
@@ -624,9 +600,11 @@ public class SourceStatusPanel extends JPanel implements TaskObserver {
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	void sort() {
 		RowSorter<? extends TableModel> sorter = this.resultTable.getRowSorter();
+		
 		if (sorter instanceof DefaultRowSorter) {
 			List list = new ArrayList<Object>();
-			list.add(new RowSorter.SortKey(3, SortOrder.DESCENDING));
+			list.add(new RowSorter.SortKey(STATUS_COLUMN_INDEX, SortOrder.ASCENDING));
+			list.add(new RowSorter.SortKey(RECORD_COUNT_COLUMN_INDEX, SortOrder.DESCENDING));
 			sorter.setSortKeys(list);
 			((DefaultRowSorter) sorter).sort();
 		}

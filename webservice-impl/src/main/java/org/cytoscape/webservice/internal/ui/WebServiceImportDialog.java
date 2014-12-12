@@ -24,19 +24,23 @@ package org.cytoscape.webservice.internal.ui;
  * #L%
  */
 
+import static javax.swing.GroupLayout.DEFAULT_SIZE;
+import static javax.swing.GroupLayout.PREFERRED_SIZE;
+
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import javax.swing.BorderFactory;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.GroupLayout;
+import javax.swing.GroupLayout.Alignment;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -96,15 +100,18 @@ public class WebServiceImportDialog<T> extends JDialog {
 	private int numClients;
 
 	private final TaskManager<?, ?> taskManager;
-	
 	private final Class<T> type;
-	
 	private final OpenBrowser openBrowser;
 	
 	boolean readyToShow;
 	
-	public WebServiceImportDialog(final Class<T> type, final String title, final CySwingApplication cySwingApplicationServiceRef, final TaskManager<?, ?> taskManager, final OpenBrowser openBrowser) {
+	public WebServiceImportDialog(final Class<T> type,
+								  final String title,
+								  final CySwingApplication cySwingApplicationServiceRef,
+								  final TaskManager<?, ?> taskManager,
+								  final OpenBrowser openBrowser) {
 		super(cySwingApplicationServiceRef.getJFrame(), false);
+		
 		if (taskManager == null)
 			throw new NullPointerException("TaskManager is null.");
 
@@ -217,9 +224,9 @@ public class WebServiceImportDialog<T> extends JDialog {
 
 		GroupLayout propertyPanelLayout = new GroupLayout(propertyPanel);
 		propertyPanel.setLayout(propertyPanelLayout);
-		propertyPanelLayout.setHorizontalGroup(propertyPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
+		propertyPanelLayout.setHorizontalGroup(propertyPanelLayout.createParallelGroup(Alignment.LEADING)
 				.addGap(0, 408, Short.MAX_VALUE));
-		propertyPanelLayout.setVerticalGroup(propertyPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
+		propertyPanelLayout.setVerticalGroup(propertyPanelLayout.createParallelGroup(Alignment.LEADING)
 				.addGap(0, 303, Short.MAX_VALUE));
 
 		propertyScrollPane = new JScrollPane();
@@ -241,128 +248,121 @@ public class WebServiceImportDialog<T> extends JDialog {
 
 		setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 
-		titlePanel.setBackground(new java.awt.Color(0, 0, 0));
-
-//		titleIconLabel.setIcon(NETWORK_IMPORT_ICON);
-
 		GroupLayout titlePanelLayout = new GroupLayout(titlePanel);
 		titlePanel.setLayout(titlePanelLayout);
-		titlePanelLayout.setHorizontalGroup(titlePanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
-				.addComponent(titleIconLabel, GroupLayout.PREFERRED_SIZE, 461, GroupLayout.PREFERRED_SIZE));
-		titlePanelLayout.setVerticalGroup(titlePanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
+		titlePanelLayout.setHorizontalGroup(titlePanelLayout.createParallelGroup(Alignment.LEADING)
+				.addComponent(titleIconLabel, PREFERRED_SIZE, 461, PREFERRED_SIZE));
+		titlePanelLayout.setVerticalGroup(titlePanelLayout.createParallelGroup(Alignment.LEADING)
 				.addComponent(titleIconLabel));
 
-		datasourceLabel.setFont(new java.awt.Font("SansSerif", 0, 12));
-		datasourceLabel.setText("Data Source");
+		datasourceLabel.setText("Data Source:");
 
-		datasourceComboBox.addActionListener(new java.awt.event.ActionListener() {
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+		datasourceComboBox.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent evt) {
 				datasourceComboBoxActionPerformed(evt);
 			}
 		});
 
 		aboutButton.setText("About");
-		aboutButton.setMargin(new java.awt.Insets(2, 5, 2, 5));
-		aboutButton.addActionListener(new java.awt.event.ActionListener() {
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+		aboutButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent evt) {
 				aboutButtonActionPerformed(evt);
 			}
 		});
 
-		GroupLayout datasourcePanelLayout = new GroupLayout(datasourcePanel);
-		datasourcePanel.setLayout(datasourcePanelLayout);
-		datasourcePanelLayout.setHorizontalGroup(datasourcePanelLayout.createParallelGroup(
-				GroupLayout.Alignment.LEADING).addGroup(
-				datasourcePanelLayout.createSequentialGroup().addContainerGap().addComponent(datasourceLabel)
-						.addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-						.addComponent(datasourceComboBox, 0, 301, Short.MAX_VALUE)
-						.addPreferredGap(LayoutStyle.ComponentPlacement.RELATED).addComponent(aboutButton)
-						.addContainerGap()));
-		datasourcePanelLayout.setVerticalGroup(datasourcePanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
-				.addGroup(
-						datasourcePanelLayout
-								.createSequentialGroup()
-								.addContainerGap()
-								.addGroup(
-										datasourcePanelLayout
-												.createParallelGroup(GroupLayout.Alignment.BASELINE)
-												.addComponent(datasourceLabel)
-												.addComponent(aboutButton)
-												.addComponent(datasourceComboBox, GroupLayout.PREFERRED_SIZE,
-														GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-								.addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)));
-
-		buttonPanel.setBorder(BorderFactory.createEtchedBorder());
+		GroupLayout dataSourceLayout = new GroupLayout(datasourcePanel);
+		datasourcePanel.setLayout(dataSourceLayout);
+		dataSourceLayout.setAutoCreateContainerGaps(false);
+		dataSourceLayout.setAutoCreateGaps(true);
+		
+		dataSourceLayout.setHorizontalGroup(dataSourceLayout.createParallelGroup(Alignment.LEADING)
+				.addGroup(dataSourceLayout.createSequentialGroup()
+						.addContainerGap()
+						.addComponent(datasourceLabel)
+						.addComponent(datasourceComboBox, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addGap(20, 20, Short.MAX_VALUE)
+						.addComponent(aboutButton)
+						.addContainerGap()
+				));
+		dataSourceLayout.setVerticalGroup(dataSourceLayout.createParallelGroup(Alignment.LEADING)
+				.addGroup(dataSourceLayout.createSequentialGroup()
+						.addGroup(dataSourceLayout.createParallelGroup(Alignment.BASELINE)
+									.addComponent(datasourceLabel)
+									.addComponent(aboutButton)
+									.addComponent(datasourceComboBox, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE))
+				));
 
 		searchButton.setText("Search");
-		searchButton.addActionListener(new java.awt.event.ActionListener() {
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+		searchButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent evt) {
 				searchButtonActionPerformed();
 			}
 		});
 
 		cancelButton.setText("Cancel");
-		cancelButton.addActionListener(new java.awt.event.ActionListener() {
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+		cancelButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent evt) {
 				cancelButtonActionPerformed(evt);
 			}
 		});
 
 		clearButton.setText("Clear");
-		clearButton.addActionListener(new java.awt.event.ActionListener() {
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+		clearButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent evt) {
 				clearButtonActionPerformed(evt);
 			}
 		});
 
 		GroupLayout buttonPanelLayout = new GroupLayout(buttonPanel);
 		buttonPanel.setLayout(buttonPanelLayout);
-		buttonPanelLayout.setHorizontalGroup(buttonPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
+		buttonPanelLayout.setHorizontalGroup(buttonPanelLayout.createParallelGroup(Alignment.LEADING)
 				.addGroup(
-						GroupLayout.Alignment.TRAILING,
+						Alignment.TRAILING,
 						buttonPanelLayout.createSequentialGroup().addContainerGap().addComponent(clearButton)
 								.addPreferredGap(LayoutStyle.ComponentPlacement.RELATED, 225, Short.MAX_VALUE)
 								.addComponent(cancelButton).addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
 								.addComponent(searchButton).addContainerGap()));
-		buttonPanelLayout.setVerticalGroup(buttonPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
+		buttonPanelLayout.setVerticalGroup(buttonPanelLayout.createParallelGroup(Alignment.LEADING)
 				.addGroup(
-						GroupLayout.Alignment.TRAILING,
+						Alignment.TRAILING,
 						buttonPanelLayout
 								.createSequentialGroup()
-								.addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+								.addContainerGap(DEFAULT_SIZE, Short.MAX_VALUE)
 								.addGroup(
-										buttonPanelLayout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+										buttonPanelLayout.createParallelGroup(Alignment.BASELINE)
 												.addComponent(searchButton).addComponent(cancelButton)
 												.addComponent(clearButton)).addContainerGap()));
 
 		GroupLayout dataQueryPanelLayout = new GroupLayout(dataQueryPanel);
 		dataQueryPanel.setLayout(dataQueryPanelLayout);
-		dataQueryPanelLayout.setHorizontalGroup(dataQueryPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
+		dataQueryPanelLayout.setHorizontalGroup(dataQueryPanelLayout.createParallelGroup(Alignment.LEADING)
 				.addGap(0, 461, Short.MAX_VALUE));
-		dataQueryPanelLayout.setVerticalGroup(dataQueryPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
+		dataQueryPanelLayout.setVerticalGroup(dataQueryPanelLayout.createParallelGroup(Alignment.LEADING)
 				.addGap(0, 247, Short.MAX_VALUE));
 
 		queryPanel = new JPanel();
 		GroupLayout layout = new GroupLayout(queryPanel);
 		queryPanel.setLayout(layout);
-		layout.setHorizontalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-				.addComponent(titlePanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-				.addComponent(datasourcePanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-				.addComponent(buttonPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-				.addComponent(dataQueryPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE));
-		layout.setVerticalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING).addGroup(
-				layout.createSequentialGroup()
-						.addComponent(titlePanel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
-								GroupLayout.PREFERRED_SIZE)
-						.addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-						.addComponent(datasourcePanel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
-								GroupLayout.PREFERRED_SIZE)
-						.addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-						.addComponent(dataQueryPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE,
-								Short.MAX_VALUE)
-						.addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-						.addComponent(buttonPanel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
-								GroupLayout.PREFERRED_SIZE)));
+		layout.setAutoCreateContainerGaps(true);
+		layout.setAutoCreateGaps(true);
+		
+		layout.setHorizontalGroup(layout.createParallelGroup(Alignment.LEADING)
+				.addComponent(titlePanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				.addComponent(datasourcePanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				.addComponent(buttonPanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				.addComponent(dataQueryPanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+		);
+		layout.setVerticalGroup(layout.createSequentialGroup()
+				.addComponent(titlePanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				.addComponent(datasourcePanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				.addComponent(dataQueryPanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				.addComponent(buttonPanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+		);
 
 		dataQueryPanel.setLayout(new BorderLayout());
 	}
@@ -394,12 +394,12 @@ public class WebServiceImportDialog<T> extends JDialog {
 	/**
 	 * Clear query text field.
 	 */
-	private void clearButtonActionPerformed(java.awt.event.ActionEvent evt) {
+	private void clearButtonActionPerformed(ActionEvent evt) {
 		// Just set empty string for the field.
 		queryTextPane.setText("");
 	}
 
-	private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {
+	private void cancelButtonActionPerformed(ActionEvent evt) {
 		// Do nothing. Just hide this window.
 		queryTextPane.setText("");
 		dispose();
@@ -457,7 +457,6 @@ public class WebServiceImportDialog<T> extends JDialog {
 		}
 		return container;
 	}
-
 
 	private void aboutButtonActionPerformed(ActionEvent evt) {
 

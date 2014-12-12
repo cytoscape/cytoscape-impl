@@ -24,9 +24,10 @@ package org.cytoscape.webservice.psicquic.ui;
  * #L%
  */
 
-import java.awt.Color;
+import static javax.swing.GroupLayout.DEFAULT_SIZE;
+import static javax.swing.GroupLayout.PREFERRED_SIZE;
+
 import java.awt.Dimension;
-import java.awt.Font;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -37,18 +38,15 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
-import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
+import javax.swing.GroupLayout;
+import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JEditorPane;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.SwingUtilities;
-import javax.swing.border.Border;
-import javax.swing.border.EmptyBorder;
-import javax.swing.border.TitledBorder;
 import javax.swing.event.AncestorEvent;
 import javax.swing.event.AncestorListener;
 import javax.swing.event.CaretEvent;
@@ -59,6 +57,7 @@ import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.create.CreateNetworkViewTaskFactory;
+import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.webservice.psicquic.PSICQUICRestClient;
 import org.cytoscape.webservice.psicquic.PSICQUICRestClient.SearchMode;
@@ -82,13 +81,6 @@ public class PSICQUICSearchUI extends JPanel {
 
 	private static final Dimension PANEL_SIZE = new Dimension(680, 500);
 
-	// Preset design elements for Search Panel
-	private static final Color SEARCH_BORDER_COLOR = new Color(0x1E, 0x90, 0xFF, 200);
-	private static final Border SEARCH_BORDER = BorderFactory.createLineBorder(SEARCH_BORDER_COLOR, 2);
-
-	// Color Scheme
-	private static final Font STRONG_FONT = new Font("SansSerif", Font.BOLD, 14);
-
 	// Property name for saving selection
 	static final String PROP_NAME = "psiqcuic.datasource.selection";
 
@@ -109,10 +101,7 @@ public class PSICQUICSearchUI extends JPanel {
 	private SourceStatusPanel statesPanel;
 	private JScrollPane queryScrollPane;
 
-	private JPanel searchPanel;
-	private JLabel modeLabel;
 	private JButton searchButton;
-	private JButton refreshButton;
 
 	private JPanel speciesPanel;
 
@@ -120,9 +109,12 @@ public class PSICQUICSearchUI extends JPanel {
 	private JComboBox speciesSelector;
 
 	private JPanel searchConditionPanel;
+	private JPanel buttonPanel;
+	
+	private JButton cancelButton;
+	private JButton importNetworkButton;
 
 	private SearchMode mode = SearchMode.MIQL;
-	private String searchAreaTitle = MIQL_MODE;
 
 	private boolean firstClick = true;
 
@@ -156,7 +148,7 @@ public class PSICQUICSearchUI extends JPanel {
 		final Properties cyProp = props.getProperties();
 		final String selectionListProp = cyProp.getProperty(PROP_NAME);
 		
-		if(selectionListProp == null) {
+		if (selectionListProp == null) {
 			// Create new one if there is no defaults.
 			cyProp.setProperty(PROP_NAME, "");
 		} else {
@@ -171,56 +163,220 @@ public class PSICQUICSearchUI extends JPanel {
 			public void ancestorRemoved(AncestorEvent ae) {}
 			@Override
 			public void ancestorMoved(AncestorEvent ae) {}
-			
 			@Override
 			public void ancestorAdded(AncestorEvent ae) {
-				queryArea.requestFocus();
+				getQueryArea().requestFocus();
 			}
 		});
 	}
 
 	private void init() {
 		// Background (Base Panel) settings
-		this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-		this.setBackground(Color.white);
-		this.setBorder(new EmptyBorder(10, 10, 10, 10));
-
-		searchConditionPanel = new JPanel();
-		searchConditionPanel.setBackground(Color.white);
-		searchConditionPanel.setLayout(new BoxLayout(searchConditionPanel, BoxLayout.Y_AXIS));
-		final TitledBorder searchConditionPanelBorder = BorderFactory.createTitledBorder(SEARCH_BORDER,
-				"1. Enter Search Conditions");
-		searchConditionPanelBorder.setTitleFont(STRONG_FONT);
-		searchConditionPanel.setBorder(searchConditionPanelBorder);
-
+		setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+		
 		createDBlistPanel();
-		createQueryPanel();
-		createQueryModePanel();
-		createSpeciesPanel();
 
 		queryModeChanged();
 
 		this.setSize(PANEL_SIZE);
 		this.setPreferredSize(PANEL_SIZE);
 
-		searchConditionPanel.add(queryScrollPane);
-		searchConditionPanel.add(searchPanel);
-
-		this.add(searchConditionPanel);
-		this.add(statesPanel);
-		
-		this.queryArea.addCaretListener(new CaretListener() {
+		getQueryArea().addCaretListener(new CaretListener() {
 			@Override
 			public void caretUpdate(CaretEvent ce) {
-				if(queryArea.getText().isEmpty()) {
-					searchButton.setEnabled(false);
-				} else {
-					searchButton.setEnabled(true);
-				}
+				getSearchButton().setEnabled(!getQueryArea().getText().isEmpty());
 			}
 		});
-		
+
+		this.add(getSearchConditionPanel());
+		this.add(statesPanel);
+		this.add(getButtonPanel());
 	}
+	
+	private JPanel getSearchConditionPanel() {
+		if (searchConditionPanel == null) {
+			searchConditionPanel = new JPanel();
+			searchConditionPanel.setBorder(LookAndFeelUtil.createTitledBorder("1. Enter Search Conditions"));
+			
+			final JLabel modeLabel = new JLabel("Search Mode:");
+			
+			final GroupLayout layout = new GroupLayout(searchConditionPanel);
+			searchConditionPanel.setLayout(layout);
+			layout.setAutoCreateContainerGaps(true);
+			layout.setAutoCreateGaps(true);
+			
+			layout.setHorizontalGroup(layout.createParallelGroup(Alignment.CENTER, true)
+					.addGroup(Alignment.LEADING, layout.createSequentialGroup()
+							.addComponent(modeLabel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+							.addComponent(getSearchModeSelector(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					)
+					.addComponent(getQueryScrollPane(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+					.addComponent(getSpeciesPanel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+					.addComponent(getSearchButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+			);
+			layout.setVerticalGroup(layout.createSequentialGroup()
+					.addGroup(layout.createParallelGroup(Alignment.CENTER, true)
+							.addComponent(modeLabel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+							.addComponent(getSearchModeSelector(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					)
+					.addComponent(getQueryScrollPane(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+					.addComponent(getSpeciesPanel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(getSearchButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+			);
+		}
+		
+		return searchConditionPanel;
+	}
+	
+	private JScrollPane getQueryScrollPane() {
+		if (queryScrollPane == null) {
+			queryScrollPane = new JScrollPane();
+			queryScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+			queryScrollPane.setPreferredSize(new Dimension(500, 150));
+			queryScrollPane.setViewportView(getQueryArea());
+		}
+		
+		return queryScrollPane;
+	}
+	
+	private JEditorPane getQueryArea() {
+		if (queryArea == null) {
+			queryArea = new JEditorPane();
+			queryArea.addMouseListener(new MouseAdapter() {
+				@Override
+				public void mouseClicked(MouseEvent arg0) {
+					if (firstClick) {
+						firstClick = false;
+						getSearchButton().setEnabled(true);
+					}
+				}
+			});
+		}
+		
+		return queryArea;
+	}
+	
+	private JPanel getSpeciesPanel() {
+		if (speciesPanel == null) {
+			speciesPanel = new JPanel();
+			
+			if (LookAndFeelUtil.isAquaLAF())
+				speciesPanel.setOpaque(false);
+			
+			final JLabel speciesLabel = new JLabel("Select Species:");
+			final SelectorBuilder speciesBuilder = new SelectorBuilder();
+			speciesSelector = speciesBuilder.getComboBox();
+			getSearchButton().setEnabled(true);
+			
+			final GroupLayout layout = new GroupLayout(speciesPanel);
+			speciesPanel.setLayout(layout);
+			layout.setAutoCreateContainerGaps(false);
+			layout.setAutoCreateGaps(true);
+			
+			layout.setHorizontalGroup(layout.createSequentialGroup()
+					.addComponent(speciesLabel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(speciesSelector, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+			);
+			layout.setVerticalGroup(layout.createParallelGroup(Alignment.CENTER, false)
+					.addComponent(speciesLabel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(speciesSelector, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+			);
+			
+			speciesSelector.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent arg0) {
+					getSearchButton().setEnabled(true);
+				}
+			});
+		}
+		
+		return speciesPanel;
+	}
+	
+	private JPanel getButtonPanel() {
+		if (buttonPanel == null) {
+			buttonPanel = LookAndFeelUtil.createOkCancelPanel(getImportNetworkButton(), getCancelButton());
+		}
+		
+		return buttonPanel;
+	}
+	
+	private JButton getImportNetworkButton() {
+		if (importNetworkButton == null) {
+			importNetworkButton = new JButton("Import");
+			importNetworkButton.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent evt) {
+					statesPanel.doImport();
+				}
+			});
+		}
+		
+		return importNetworkButton;
+	}
+	
+	private JButton getCancelButton() {
+		if (cancelButton == null) {
+			cancelButton = new JButton("Cancel");
+			cancelButton.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent evt) {
+					((Window)getRootPane().getParent()).dispose();
+				}
+			});
+		}
+		
+		return cancelButton;
+	}
+	
+	private JComboBox getSearchModeSelector() {
+		if (searchModeSelector == null) {
+			searchModeSelector = new JComboBox();
+			searchModeSelector.addItem(BY_SPECIES);
+			searchModeSelector.addItem(INTERACTOR_ID_LIST);
+			searchModeSelector.addItem(MIQL_MODE);
+			searchModeSelector.setSelectedItem(INTERACTOR_ID_LIST);
+
+			searchModeSelector.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					queryModeChanged();
+				}
+			});
+		}
+		
+		return searchModeSelector;
+	}
+	
+	private JButton getSearchButton() {
+		if (searchButton == null) {
+			searchButton = new JButton("Search");
+			searchButton.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					search();
+					enableComponents(true);
+				}
+			});
+			searchButton.setEnabled(false);
+		}
+		
+		return searchButton;
+	}
+	
+//	private JButton getRefreshButton() {
+//		if (refreshButton == null) {
+//			refreshButton = new JButton("Refresh");
+//			refreshButton.addActionListener(new ActionListener() {
+//				@Override
+//				public void actionPerformed(ActionEvent evt) {
+//					refreshButtonActionPerformed();
+//				}
+//			});
+//		}
+//		
+//		return refreshButton;
+//	}
 	
 	private final void setSelected(final String selected) {
 		final String[] sources = selected.split(",");
@@ -229,128 +385,27 @@ public class PSICQUICSearchUI extends JPanel {
 		}
 	}
 
-
 	private final void setSelected() {
 		this.sourceSet = statesPanel.getSelected();
 	}
 
+	private void enableComponents(final boolean enable) {
+		statesPanel.enableComponents(enable);
+		getImportNetworkButton().setEnabled(enable);
+	}
+	
 	private final void createDBlistPanel() {
 		// Source Status - list of remote databases
 		this.statesPanel = new SourceStatusPanel("", client, regManager, networkManager, null, taskManager, mode,
 				createViewTaskFactory, vsBuilder, vmm, tagManager, props, registrar, mergeAction);
-		statesPanel.enableComponents(false);
+		enableComponents(false);
 		statesPanel.setSelected(sourceSet);
-	}
-
-	private final void createQueryPanel() {
-		// Query text area
-		queryScrollPane = new JScrollPane();
-		queryScrollPane.setBackground(Color.white);
-		queryArea = new JEditorPane();
-
-		final TitledBorder border = new TitledBorder(searchAreaTitle);
-		border.setTitleFont(STRONG_FONT);
-		queryScrollPane.setBorder(border);
-		queryScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-		queryScrollPane.setPreferredSize(new Dimension(500, 150));
-		queryScrollPane.setViewportView(queryArea);
-		searchConditionPanel.add(queryScrollPane);
-
-		queryArea.addMouseListener(new MouseAdapter() {
-			@Override
-			public void mouseClicked(MouseEvent arg0) {
-				if (firstClick) {
-					firstClick = false;
-					searchButton.setEnabled(true);
-				}
-			}
-		});
-	}
-
-	private final void createQueryModePanel() {
-		// Query type selector - Gene ID, MIQL, or species
-		modeLabel = new JLabel("Search Mode:");
-		this.searchModeSelector = new JComboBox();
-		this.searchModeSelector.setPreferredSize(new Dimension(200, 30));
-		this.searchModeSelector.addItem(BY_SPECIES);
-		this.searchModeSelector.addItem(INTERACTOR_ID_LIST);
-		this.searchModeSelector.addItem(MIQL_MODE);
-		this.searchModeSelector.setSelectedItem(INTERACTOR_ID_LIST);
-
-		this.searchModeSelector.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				queryModeChanged();
-			}
-		});
-
-		searchPanel = new JPanel();
-		searchPanel.setBackground(Color.white);
-		searchPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
-		searchPanel.setLayout(new BoxLayout(searchPanel, BoxLayout.X_AXIS));
-
-		searchButton = new JButton("Search");
-		searchButton.setPreferredSize(new java.awt.Dimension(90, 28));
-		searchButton.setFont(new Font("SansSerif", Font.BOLD, 12));
-		searchButton.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				search();
-				statesPanel.enableComponents(true);
-			}
-		});
-		searchButton.setEnabled(false);
-
-		refreshButton = new JButton("Refresh");
-		refreshButton.setPreferredSize(new java.awt.Dimension(90, 28));
-		refreshButton.addActionListener(new java.awt.event.ActionListener() {
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
-				refreshButtonActionPerformed();
-			}
-		});
-
-		searchPanel.add(modeLabel);
-		searchPanel.add(searchModeSelector);
-		searchPanel.add(searchButton);
-		searchPanel.add(refreshButton);
-
-		searchConditionPanel.add(searchPanel);
-	}
-
-	private final void createSpeciesPanel() {
-		speciesPanel = new JPanel();
-		speciesPanel.setBackground(Color.white);
-		final JLabel speciesLabel = new JLabel("Select Species:");
-
-		final SelectorBuilder speciesBuilder = new SelectorBuilder();
-		speciesSelector = speciesBuilder.getComboBox();
-		speciesPanel.setLayout(new BoxLayout(speciesPanel, BoxLayout.X_AXIS));
-		speciesPanel.add(speciesLabel);
-		speciesPanel.add(speciesSelector);
-		searchButton.setEnabled(true);
-		
-		speciesSelector.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent arg0) {
-				searchButton.setEnabled(true);
-			}
-		});
-	}
-
-	private void refreshButtonActionPerformed() {
-		SwingUtilities.invokeLater(new Runnable() {
-			@Override
-			public void run() {
-				regManager.refresh();
-				queryModeChanged();
-			}
-		});
 	}
 
 	private void search() {
 		final SearchRecoredsTask searchTask = new SearchRecoredsTask(client, mode);
 		final Map<String, String> activeSource = regManager.getActiveServices();
-		String query = this.queryArea.getText();
+		String query = getQueryArea().getText();
 
 		// Query by species
 		if (mode == SearchMode.SPECIES)
@@ -372,11 +427,8 @@ public class PSICQUICSearchUI extends JPanel {
 		return "taxidA:\"" + species.toString() + "\" AND taxidB:\"" + species.toString() + "\"";
 	}
 
-
-
 	/**
 	 * Update table based on returned result
-	 *
 	 */
 	private final class SetTableTask extends AbstractTask {
 
@@ -395,33 +447,34 @@ public class PSICQUICSearchUI extends JPanel {
 			if (mode == SearchMode.SPECIES)
 				query = buildSpeciesQuery();
 			else {
-				query = queryArea.getText();
+				query = getQueryArea().getText();
 			}
 
 			statesPanel = new SourceStatusPanel(query, client, regManager, networkManager, result, taskManager, mode,
 					createViewTaskFactory, vsBuilder, vmm, tagManager, props, registrar, mergeAction);
 			statesPanel.sort();
 			updateGUILayout();
-			statesPanel.enableComponents(true);
+			enableComponents(true);
 			statesPanel.setSelected(sourceSet);
 		}
 	}
 
 	private final void updateGUILayout() {
-		searchConditionPanel.removeAll();
 		removeAll();
 
 		if (mode == SearchMode.SPECIES) {
-			searchConditionPanel.add(speciesPanel);
-			searchButton.setEnabled(true);
-		} else
-			searchConditionPanel.add(queryScrollPane);
-
-		searchConditionPanel.add(searchPanel);
-
+			getQueryScrollPane().setVisible(false);
+			getSpeciesPanel().setVisible(true);
+			getSearchButton().setEnabled(true);
+		} else {
+			getQueryScrollPane().setVisible(true);
+			getSpeciesPanel().setVisible(false);
+		}
+		
 		// Add to main panel
-		this.add(searchConditionPanel);
+		this.add(getSearchConditionPanel());
 		this.add(statesPanel);
+		this.add(getButtonPanel());
 
 		if (getRootPane() != null) {
 			Window parentWindow = ((Window) getRootPane().getParent());
@@ -432,41 +485,39 @@ public class PSICQUICSearchUI extends JPanel {
 	}
 
 	private final void queryModeChanged() {
-		final Object selectedObject = this.searchModeSelector.getSelectedItem();
+		final Object selectedObject = getSearchModeSelector().getSelectedItem();
+		
 		if (selectedObject == null)
 			return;
 
 		final String modeString = selectedObject.toString();
 		final String query;
+		
 		if (modeString.equals(MIQL_MODE)) {
 			mode = SearchMode.MIQL;
-			searchAreaTitle = MIQL_MODE;
-			query = queryArea.getText();
-			searchButton.setEnabled(false);
-			queryArea.requestFocus();
+			query = getQueryArea().getText();
+			getSearchButton().setEnabled(false);
+			getQueryArea().requestFocus();
 		} else if (modeString.equals(INTERACTOR_ID_LIST)) {
 			mode = SearchMode.INTERACTOR;
-			searchAreaTitle = INTERACTOR_ID_LIST;
-			query = queryArea.getText();
-			searchButton.setEnabled(false);
-			queryArea.requestFocus();
+			query = getQueryArea().getText();
+			getSearchButton().setEnabled(false);
+			getQueryArea().requestFocus();
 		} else {
 			mode = SearchMode.SPECIES;
-			searchAreaTitle = BY_SPECIES;
 			query = buildSpeciesQuery();
-			searchButton.setEnabled(true);
+			getSearchButton().setEnabled(true);
 		}
 
 		firstClick = true;
 
-		queryArea.setText("");
-		queryScrollPane.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+		getQueryArea().setText("");
 		statesPanel = new SourceStatusPanel(query, client, regManager, networkManager, null, taskManager, mode,
 				createViewTaskFactory, vsBuilder, vmm, tagManager, props, registrar, mergeAction);
 		statesPanel.sort();
 
 		updateGUILayout();
-		statesPanel.enableComponents(false);
+		enableComponents(false);
 		statesPanel.setSelected(sourceSet);
 	}
 }

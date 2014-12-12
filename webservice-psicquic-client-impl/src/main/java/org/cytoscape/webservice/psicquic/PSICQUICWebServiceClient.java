@@ -37,7 +37,6 @@ import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.create.CreateNetworkViewTaskFactory;
-import org.cytoscape.util.swing.OpenBrowser;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.webservice.psicquic.PSICQUICRestClient.SearchMode;
 import org.cytoscape.webservice.psicquic.mapper.CyNetworkBuilder;
@@ -66,7 +65,6 @@ public class PSICQUICWebServiceClient extends AbstractWebServiceGUIClient implem
 
 	private SearchRecoredsTask searchTask;
 
-	private final OpenBrowser openBrowser;
 	private final CyAction mergeAction;
 
 	private final PSIMI25VisualStyleBuilder vsBuilder;
@@ -77,18 +75,25 @@ public class PSICQUICWebServiceClient extends AbstractWebServiceGUIClient implem
 	
 	private final CyServiceRegistrar registrar;
 
-	public PSICQUICWebServiceClient(final String uri, final String displayName, final String description,
-			final CyNetworkFactory networkFactory, final CyNetworkManager networkManager,
-			final TaskManager<?, ?> tManager, final CreateNetworkViewTaskFactory createViewTaskFactory,
-			final OpenBrowser openBrowser, final CyNetworkBuilder builder, PSIMI25VisualStyleBuilder vsBuilder,
-			VisualMappingManager vmm, final PSIMITagManager tagManager, final CyProperty<Properties> props, 
-			final CyServiceRegistrar registrar, final CyAction mergeAction) {
+	public PSICQUICWebServiceClient(final String uri,
+									final String displayName,
+									final String description,
+									final CyNetworkFactory networkFactory,
+									final CyNetworkManager networkManager,
+									final TaskManager<?, ?> tManager,
+									final CreateNetworkViewTaskFactory createViewTaskFactory,
+									final CyNetworkBuilder builder,
+									final PSIMI25VisualStyleBuilder vsBuilder,
+									final VisualMappingManager vmm,
+									final PSIMITagManager tagManager,
+									final CyProperty<Properties> props,
+									final CyServiceRegistrar registrar,
+									final CyAction mergeAction) {
 		super(uri, displayName, description);
 
 		this.networkManager = networkManager;
 		this.tManager = tManager;
 		this.createViewTaskFactory = createViewTaskFactory;
-		this.openBrowser = openBrowser;
 		this.vsBuilder = vsBuilder;
 		this.vmm = vmm;
 		this.tagManager = tagManager;
@@ -96,11 +101,11 @@ public class PSICQUICWebServiceClient extends AbstractWebServiceGUIClient implem
 		this.registrar = registrar;
 		this.mergeAction = mergeAction;
 		
-		
 		regManager = new RegistryManager();
 		client = new PSICQUICRestClient(networkFactory, regManager, builder);
 	}
 
+	@Override
 	public TaskIterator createTaskIterator(Object query) {
 		if (regManager == null)
 			throw new NullPointerException("RegistryManager is null");
