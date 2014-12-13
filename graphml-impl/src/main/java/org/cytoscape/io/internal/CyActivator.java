@@ -32,6 +32,7 @@ import org.cytoscape.io.internal.read.graphml.GraphMLReaderFactory;
 import org.cytoscape.io.read.InputStreamTaskFactory;
 import org.cytoscape.io.util.StreamUtil;
 import org.cytoscape.model.CyNetworkFactory;
+import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
@@ -54,11 +55,12 @@ public class CyActivator extends AbstractCyActivator {
 		CyNetworkFactory cyNetworkFactoryServiceRef = getService(bc, CyNetworkFactory.class);
 		CyNetworkViewFactory cyNetworkViewFactoryServiceRef = getService(bc, CyNetworkViewFactory.class);
 		CyRootNetworkManager cyRootNetworkFactoryServiceRef = getService(bc, CyRootNetworkManager.class);
-
+		CyNetworkManager cyNetworkManager = getService(bc, CyNetworkManager.class);
+		
 		GraphMLFileFilter graphMLFilter = new GraphMLFileFilter(new String[] { "graphml", "xml" }, new String[] {
 				"text/graphml", "text/graphml+xml" }, "GraphML files", DataCategory.NETWORK, streamUtilRef);
 		GraphMLReaderFactory graphMLReaderFactory = new GraphMLReaderFactory(graphMLFilter, cyLayoutsServiceRef,
-				cyNetworkViewFactoryServiceRef, cyNetworkFactoryServiceRef, cyRootNetworkFactoryServiceRef);
+				cyNetworkViewFactoryServiceRef, cyNetworkFactoryServiceRef, cyNetworkManager, cyRootNetworkFactoryServiceRef);
 
 		registerService(bc, graphMLReaderFactory, InputStreamTaskFactory.class, new Properties());		
 	}
