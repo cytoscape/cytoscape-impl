@@ -364,20 +364,6 @@ public class PSICQUICSearchUI extends JPanel {
 		return searchButton;
 	}
 	
-//	private JButton getRefreshButton() {
-//		if (refreshButton == null) {
-//			refreshButton = new JButton("Refresh");
-//			refreshButton.addActionListener(new ActionListener() {
-//				@Override
-//				public void actionPerformed(ActionEvent evt) {
-//					refreshButtonActionPerformed();
-//				}
-//			});
-//		}
-//		
-//		return refreshButton;
-//	}
-	
 	private final void setSelected(final String selected) {
 		final String[] sources = selected.split(",");
 		for(String source:sources) {

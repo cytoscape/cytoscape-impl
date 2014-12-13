@@ -27,6 +27,7 @@ package org.cytoscape.io.webservice.biomart.ui;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -70,7 +71,7 @@ public class BiomartAttrMappingPanel extends AttributeImportPanel {
 	private static final long serialVersionUID = 3574198525811249639L;
 
 	private static final Icon LOGO = new ImageIcon(
-			BiomartAttrMappingPanel.class.getResource("/images/logo_biomart2.png"));
+			BiomartAttrMappingPanel.class.getResource("/images/BioMartLogo.png"));
 
 	private Map<String, String> datasourceMap;
 
@@ -96,7 +97,7 @@ public class BiomartAttrMappingPanel extends AttributeImportPanel {
 
 	public BiomartAttrMappingPanel(final DialogTaskManager taskManager, final CyApplicationManager appManager,
 			final CyTableManager tblManager, final CyNetworkManager netManager, WebServiceGUI webServiceGUI) {
-		super(tblManager, netManager, LOGO, "Biomart", "Import Settings");
+		super(tblManager, netManager, LOGO, null, "Import Settings");
 
 		this.taskManager = taskManager;
 		this.appManager = appManager;
@@ -167,10 +168,22 @@ public class BiomartAttrMappingPanel extends AttributeImportPanel {
 		fetchData(selectedDBName, SourceType.FILTER);
 	}
 
-	protected void resetButtonActionPerformed(ActionEvent e) {
-		updateAttributeList();
+	@Override
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	protected void selectAllButtonActionPerformed(ActionEvent e) {
+		final Object[] elements = ((DefaultListModel)attrCheckboxList.getModel()).toArray();
+		
+		if (elements != null && elements.length >= 0)
+			attrCheckboxList.setSelectedItems((List)Arrays.asList(elements));
+	}
+	
+	@Override
+	@SuppressWarnings("unchecked")
+	protected void selectNoneButtonActionPerformed(ActionEvent e) {
+		attrCheckboxList.setSelectedItems(Collections.EMPTY_LIST);
 	}
 
+	@Override
 	protected void databaseComboBoxActionPerformed(ActionEvent evt) {
 		updateAttributeList();
 		loadFilter();
@@ -215,6 +228,7 @@ public class BiomartAttrMappingPanel extends AttributeImportPanel {
 		}
 	}
 
+	@Override
 	protected void importButtonActionPerformed(ActionEvent evt) {
 		importAttributes();
 	}
@@ -266,7 +280,6 @@ public class BiomartAttrMappingPanel extends AttributeImportPanel {
 
 		return filterStr;
 	}
-
 
 	@Override
 	protected void importAttributes() {

@@ -24,16 +24,19 @@ package org.cytoscape.io.webservice.biomart.ui;
  * #L%
  */
 
-import java.awt.Color;
+import static javax.swing.GroupLayout.DEFAULT_SIZE;
+import static javax.swing.GroupLayout.PREFERRED_SIZE;
+
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.Collection;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import javax.swing.BorderFactory;
 import javax.swing.DefaultListModel;
 import javax.swing.GroupLayout;
+import javax.swing.GroupLayout.Alignment;
 import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -41,7 +44,6 @@ import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.LayoutStyle;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingUtilities;
 
@@ -57,6 +59,7 @@ import org.cytoscape.model.events.ColumnCreatedListener;
 import org.cytoscape.model.events.ColumnDeletedEvent;
 import org.cytoscape.model.events.ColumnDeletedListener;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
+import org.cytoscape.util.swing.LookAndFeelUtil;
 
 /**
  * General GUI component for importing attributes.<br>
@@ -72,10 +75,6 @@ public abstract class AttributeImportPanel extends JPanel implements ColumnCreat
 
 	private static final long serialVersionUID = 8665197023334496167L;
 
-	// Labels for the sub-panels.
-	private static final String DATASOURCE = "Data Source";
-	private static final String KEY_ATTR = "Key Column in Cytoscape";
-
 	// Swing components. Maybe accessed from child classes.
 	protected JComboBox columnNameComboBox;
 	protected JLabel attributeLabel;
@@ -90,7 +89,8 @@ public abstract class AttributeImportPanel extends JPanel implements ColumnCreat
 	protected JScrollPane availableAttrScrollPane;
 	protected JButton importButton;
 	protected JLabel titleLabel;
-	protected JButton resetButton;
+	protected JButton selectAllButton;
+	protected JButton selectNoneButton;
 	protected JButton refreshButton;
 	protected CheckBoxJList attrCheckboxList;
 
@@ -126,211 +126,186 @@ public abstract class AttributeImportPanel extends JPanel implements ColumnCreat
 		attrCheckboxListModel = new DefaultListModel();
 		attrCheckboxList.setModel(attrCheckboxListModel);
 
-		titleLabel = new JLabel();
+		titleLabel = new JLabel(panelTitle);
+		titleLabel.setIcon(logo);
+		
 		databasePanel = new JPanel();
 		databaseComboBox = new JComboBox();
 		attributePanel = new JPanel();
-		attributeLabel = new JLabel();
+		attributeLabel = new JLabel("Column:");
 		columnNameComboBox = new JComboBox();
-		attributeTypeLabel = new JLabel();
+		attributeTypeLabel = new JLabel("Data Type:");
 		attributeTypeComboBox = new JComboBox();
 		availableAttrPanel = new JPanel();
 		availableAttrScrollPane = new JScrollPane();
 		attrListPanel = new JPanel();
-		importButton = new JButton();
-		cancelButton = new JButton();
-		resetButton = new JButton();
-		refreshButton= new JButton();
+		importButton = new JButton("Import");
+		cancelButton = new JButton("Cancel");
+		selectAllButton = new JButton("Select All");
+		selectNoneButton = new JButton("Select None");
+		
+		refreshButton = new JButton("...");
+		refreshButton.setToolTipText("Select Services...");
 
-		setBackground(new java.awt.Color(255, 255, 255));
-		titleLabel.setBackground(new java.awt.Color(255, 255, 255));
-		titleLabel.setIcon(logo);
-		titleLabel.setText(panelTitle);
+		databasePanel.setBorder(LookAndFeelUtil.createTitledBorder("Service"));
 
-		databasePanel.setBackground(new java.awt.Color(255, 255, 255));
-		databasePanel.setBorder(BorderFactory.createTitledBorder(DATASOURCE));
-
-		columnNameComboBox.setBackground(Color.white);
-
-		databaseComboBox.addActionListener(new java.awt.event.ActionListener() {
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+		databaseComboBox.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent evt) {
 				databaseComboBoxActionPerformed(evt);
 			}
 		});
-		databaseComboBox.setBackground(Color.white);
-
-		GroupLayout databasePanelLayout = new GroupLayout(databasePanel);
-		databasePanel.setLayout(databasePanelLayout);
-		databasePanelLayout.setHorizontalGroup(databasePanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
-				.addGroup(
-						databasePanelLayout.createSequentialGroup().addContainerGap()
-								.addComponent(databaseComboBox, 0, 350, Short.MAX_VALUE).addContainerGap()));
-		databasePanelLayout.setVerticalGroup(databasePanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
-				.addGroup(
-						databasePanelLayout
-								.createSequentialGroup()
-								.addComponent(databaseComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
-										GroupLayout.PREFERRED_SIZE).addContainerGap(14, Short.MAX_VALUE)));
-
-		attributePanel.setBackground(new java.awt.Color(255, 255, 255));
-		attributePanel.setBorder(BorderFactory.createTitledBorder(KEY_ATTR));
-		attributeLabel.setText("Column:");
-
-		attributeTypeLabel.setText("Data Type:");
-
-		attributeTypeComboBox.addActionListener(new java.awt.event.ActionListener() {
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
-				attributeTypeComboBoxActionPerformed(evt);
-			}
-		});
-		attributeTypeComboBox.setBackground(Color.white);
-
-		GroupLayout attributePanelLayout = new GroupLayout(attributePanel);
-		attributePanel.setLayout(attributePanelLayout);
-		attributePanelLayout.setHorizontalGroup(attributePanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
-				.addGroup(
-						attributePanelLayout
-								.createSequentialGroup()
-								.addContainerGap()
-								.addGroup(
-										attributePanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
-												.addComponent(attributeLabel).addComponent(attributeTypeLabel))
-								.addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-								.addGroup(
-										attributePanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
-												.addComponent(attributeTypeComboBox, 0, 350, Short.MAX_VALUE)
-												.addComponent(columnNameComboBox, 0, 350, Short.MAX_VALUE))
-								.addContainerGap()));
-		attributePanelLayout.setVerticalGroup(attributePanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
-				.addGroup(
-						attributePanelLayout
-								.createSequentialGroup()
-								.addGroup(
-										attributePanelLayout
-												.createParallelGroup(GroupLayout.Alignment.BASELINE)
-												.addComponent(attributeLabel)
-												.addComponent(columnNameComboBox, GroupLayout.PREFERRED_SIZE,
-														GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-								.addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-								.addGroup(
-										attributePanelLayout
-												.createParallelGroup(GroupLayout.Alignment.BASELINE)
-												.addComponent(attributeTypeLabel)
-												.addComponent(attributeTypeComboBox, GroupLayout.PREFERRED_SIZE,
-														GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-								.addContainerGap(13, Short.MAX_VALUE)));
-
-		availableAttrPanel.setBackground(new java.awt.Color(255, 255, 255));
-		availableAttrPanel.setBorder(BorderFactory.createTitledBorder(attributePanelTitle));
-		availableAttrScrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-		availableAttrScrollPane.setViewportView(attrCheckboxList);
-
-		GroupLayout availableAttrPanelLayout = new GroupLayout(availableAttrPanel);
-		availableAttrPanel.setLayout(availableAttrPanelLayout);
-		availableAttrPanelLayout.setHorizontalGroup(availableAttrPanelLayout.createParallelGroup(
-				GroupLayout.Alignment.LEADING).addGroup(
-				availableAttrPanelLayout.createSequentialGroup().addContainerGap()
-						.addComponent(availableAttrScrollPane, GroupLayout.DEFAULT_SIZE, 350, Short.MAX_VALUE)
-						.addContainerGap()));
-		availableAttrPanelLayout.setVerticalGroup(availableAttrPanelLayout.createParallelGroup(
-				GroupLayout.Alignment.LEADING).addGroup(
-				GroupLayout.Alignment.TRAILING,
-				availableAttrPanelLayout.createSequentialGroup()
-						.addComponent(availableAttrScrollPane, GroupLayout.DEFAULT_SIZE, 362, Short.MAX_VALUE)
-						.addContainerGap()));
-
-		importButton.setText("Import");
-		importButton.addActionListener(new java.awt.event.ActionListener() {
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
-				importButtonActionPerformed(evt);
-			}
-		});
-		importButton.setBackground(Color.white);
-
-		cancelButton.setText("Cancel");
-		cancelButton.addActionListener(new java.awt.event.ActionListener() {
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
-				cancelButtonActionPerformed(evt);
-			}
-		});
-		cancelButton.setBackground(Color.white);
-
-		resetButton.setText("Clear");
-		resetButton.addActionListener(new java.awt.event.ActionListener() {
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
-				resetButtonActionPerformed(evt);
-			}
-		});
-		resetButton.setBackground(Color.white);
 		
-		refreshButton.setText("Refresh");
-		refreshButton.addActionListener(new java.awt.event.ActionListener() {
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+		refreshButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent evt) {
 				refreshButtonActionPerformed(evt);
 			}
 		});
-		refreshButton.setBackground(Color.white);
+
+		GroupLayout databasePanelLayout = new GroupLayout(databasePanel);
+		databasePanel.setLayout(databasePanelLayout);
+		databasePanelLayout.setAutoCreateContainerGaps(true);
+		databasePanelLayout.setAutoCreateGaps(true);
+		
+		databasePanelLayout.setHorizontalGroup(databasePanelLayout.createSequentialGroup()
+				.addComponent(databaseComboBox, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				.addComponent(refreshButton, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+		);
+		databasePanelLayout.setVerticalGroup(databasePanelLayout.createParallelGroup(Alignment.CENTER, true)
+				.addComponent(databaseComboBox, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				.addComponent(refreshButton, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+		);
+
+		attributePanel.setBorder(LookAndFeelUtil.createTitledBorder("Key Column in Cytoscape"));
+
+		attributeTypeComboBox.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent evt) {
+				attributeTypeComboBoxActionPerformed(evt);
+			}
+		});
+
+		GroupLayout attributePanelLayout = new GroupLayout(attributePanel);
+		attributePanel.setLayout(attributePanelLayout);
+		attributePanelLayout.setAutoCreateContainerGaps(true);
+		attributePanelLayout.setAutoCreateGaps(true);
+		
+		attributePanelLayout.setHorizontalGroup(attributePanelLayout.createSequentialGroup()
+				.addGroup(attributePanelLayout.createParallelGroup(Alignment.LEADING, false)
+						.addComponent(attributeLabel)
+						.addComponent(attributeTypeLabel)
+				)
+				.addGroup(attributePanelLayout.createParallelGroup(Alignment.LEADING, true)
+						.addComponent(attributeTypeComboBox, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+						.addComponent(columnNameComboBox, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				)
+		);
+		attributePanelLayout.setVerticalGroup(attributePanelLayout.createSequentialGroup()
+				.addGroup(attributePanelLayout.createParallelGroup(Alignment.BASELINE)
+						.addComponent(attributeLabel)
+						.addComponent(columnNameComboBox, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				)
+				.addGroup(attributePanelLayout.createParallelGroup(Alignment.BASELINE)
+						.addComponent(attributeTypeLabel)
+						.addComponent(attributeTypeComboBox, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				)
+		);
+
+		availableAttrPanel.setBorder(LookAndFeelUtil.createTitledBorder(attributePanelTitle));
+		availableAttrScrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+		availableAttrScrollPane.setViewportView(attrCheckboxList);
+
+		selectAllButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent evt) {
+				selectAllButtonActionPerformed(evt);
+			}
+		});
+		selectNoneButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent evt) {
+				selectNoneButtonActionPerformed(evt);
+			}
+		});
+		
+		GroupLayout availableAttrPanelLayout = new GroupLayout(availableAttrPanel);
+		availableAttrPanel.setLayout(availableAttrPanelLayout);
+		availableAttrPanelLayout.setAutoCreateContainerGaps(true);
+		availableAttrPanelLayout.setAutoCreateGaps(true);
+		
+		availableAttrPanelLayout.setHorizontalGroup(availableAttrPanelLayout.createParallelGroup(Alignment.LEADING, true)
+				.addComponent(availableAttrScrollPane, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				.addGroup(availableAttrPanelLayout.createSequentialGroup()
+						.addComponent(selectAllButton, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addComponent(selectNoneButton, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				)
+				
+		);
+		availableAttrPanelLayout.setVerticalGroup(availableAttrPanelLayout.createSequentialGroup()
+				.addComponent(availableAttrScrollPane, DEFAULT_SIZE, 280, Short.MAX_VALUE)
+				.addGroup(availableAttrPanelLayout.createParallelGroup(Alignment.CENTER)
+						.addComponent(selectAllButton, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addComponent(selectNoneButton, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				)
+		);
+
+		importButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent evt) {
+				importButtonActionPerformed(evt);
+			}
+		});
+		cancelButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent evt) {
+				cancelButtonActionPerformed(evt);
+			}
+		});
+		
+		final JPanel buttonPanel = LookAndFeelUtil.createOkCancelPanel(importButton, cancelButton);
 
 		GroupLayout layout = new GroupLayout(this);
 		this.setLayout(layout);
-		layout.setHorizontalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING).addGroup(
-				GroupLayout.Alignment.TRAILING,
-				layout.createSequentialGroup()
-						.addContainerGap()
-						.addGroup(
-								layout.createParallelGroup(GroupLayout.Alignment.TRAILING)
-										.addComponent(availableAttrPanel, GroupLayout.DEFAULT_SIZE,
-												GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-										.addComponent(attributePanel, GroupLayout.DEFAULT_SIZE,
-												GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-										.addComponent(databasePanel, GroupLayout.DEFAULT_SIZE,
-												GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-										.addComponent(titleLabel)
-										.addGroup(
-												layout.createSequentialGroup()
-														.addComponent(resetButton).addPreferredGap(LayoutStyle.ComponentPlacement.RELATED).addComponent(refreshButton)
-														.addPreferredGap(LayoutStyle.ComponentPlacement.RELATED, 343,
-																Short.MAX_VALUE).addComponent(cancelButton)
-														.addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-														.addComponent(importButton))).addContainerGap()));
-		layout.setVerticalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING).addGroup(
-				layout.createSequentialGroup()
-						.addContainerGap()
-						.addComponent(titleLabel)
-						.addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-						.addComponent(databasePanel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
-								GroupLayout.PREFERRED_SIZE)
-						.addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-						.addComponent(attributePanel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
-								GroupLayout.PREFERRED_SIZE)
-						.addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-						.addComponent(availableAttrPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE,
-								Short.MAX_VALUE)
-						.addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-						.addGroup(
-								layout.createParallelGroup(GroupLayout.Alignment.BASELINE).addComponent(importButton)
-										.addComponent(cancelButton).addComponent(resetButton).addComponent(refreshButton)).addContainerGap()));
-	} // </editor-fold>
+		layout.setAutoCreateContainerGaps(true);
+		layout.setAutoCreateGaps(true);
+		
+		layout.setHorizontalGroup(layout.createParallelGroup(Alignment.CENTER, true)
+				.addComponent(titleLabel)
+				.addComponent(databasePanel, DEFAULT_SIZE, 800, Short.MAX_VALUE)
+				.addComponent(attributePanel, DEFAULT_SIZE, 800, Short.MAX_VALUE)
+				.addComponent(availableAttrPanel, DEFAULT_SIZE, 800, Short.MAX_VALUE)
+				.addComponent(buttonPanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+		);
+		layout.setVerticalGroup(layout.createSequentialGroup()
+				.addComponent(titleLabel)
+				.addComponent(databasePanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				.addComponent(attributePanel, PREFERRED_SIZE, DEFAULT_SIZE,	PREFERRED_SIZE)
+				.addComponent(availableAttrPanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				.addComponent(buttonPanel, PREFERRED_SIZE, DEFAULT_SIZE,	PREFERRED_SIZE)
+		);
+	}
 
-	protected abstract void resetButtonActionPerformed(ActionEvent evt);
+	protected abstract void selectNoneButtonActionPerformed(ActionEvent evt);
+	protected abstract void selectAllButtonActionPerformed(ActionEvent evt);
 	protected abstract void refreshButtonActionPerformed(ActionEvent evt);
 
 	protected void importButtonActionPerformed(ActionEvent evt) {
 		importAttributes();
 	}
 
-	protected void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {
+	protected void cancelButtonActionPerformed(ActionEvent evt) {
 		// Close parent
 		final JDialog container = (JDialog) this.getRootPane().getParent();
 		// System.out.println("parent = " + container);
 		container.setVisible(false);
 	}
 
-	private void attributeTypeComboBoxActionPerformed(java.awt.event.ActionEvent evt) {
+	private void attributeTypeComboBoxActionPerformed(ActionEvent evt) {
 		// TODO add your handling code here:
 	}
 
-	abstract protected void databaseComboBoxActionPerformed(java.awt.event.ActionEvent evt);
+	abstract protected void databaseComboBoxActionPerformed(ActionEvent evt);
 
 	protected abstract void importAttributes();
 

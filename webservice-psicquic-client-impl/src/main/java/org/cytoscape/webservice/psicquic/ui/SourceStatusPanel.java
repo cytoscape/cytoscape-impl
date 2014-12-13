@@ -357,7 +357,7 @@ public class SourceStatusPanel extends JPanel implements TaskObserver {
 			}
 		});
 
-		clusterResultCheckBox.setToolTipText("<html><h3>Cluster all networks into single network</h3></html>");
+		clusterResultCheckBox.setToolTipText("Cluster all networks into single network");
 
 		GroupLayout buttonPanelLayout = new GroupLayout(buttonPanel);
 		buttonPanel.setLayout(buttonPanelLayout);

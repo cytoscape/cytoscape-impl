@@ -25,9 +25,7 @@ package org.cytoscape.io.webservice.biomart.ui;
  */
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Component;
-import java.awt.Font;
 import java.util.HashSet;
 import java.util.List;
 
@@ -36,8 +34,6 @@ import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JList;
 import javax.swing.ListCellRenderer;
-import javax.swing.UIDefaults;
-import javax.swing.UIManager;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
@@ -57,19 +53,7 @@ public class CheckBoxJList extends JList implements ListSelectionListener {
 	
 	private static final long serialVersionUID = 8204477191024405955L;
 	
-	private static final Color SELECTED_COLOR = new Color(0, 100, 250, 250);
-	private static final Color NORMAL_COLOR = new Color(100, 100, 100, 170);
-	
-	private static Color listBackground;
-	private static final Font NORMAL_FONT = new Font("SansSerif", Font.PLAIN, 12);
-	private static final Font SELECTED_FONT = new Font("SansSerif", Font.BOLD, 12);
-	
 	public static final String LIST_UPDATED = "LIST_UPDATED";
-
-	static {
-		UIDefaults uid = UIManager.getLookAndFeel().getDefaults();
-		listBackground = uid.getColor("List.background");
-	}
 
 	private HashSet<Integer> selectionCache = new HashSet<Integer>();
 
@@ -102,12 +86,10 @@ public class CheckBoxJList extends JList implements ListSelectionListener {
 		}
 	}
 
-	// ListSelectionListener implementation
 	/**
 	 *  Update the list items.
-	 *
-	 * @param lse DOCUMENT ME!
 	 */
+	@Override
 	public void valueChanged(ListSelectionEvent lse) {
 		
 		if (!lse.getValueIsAdjusting()) {
@@ -166,29 +148,20 @@ public class CheckBoxJList extends JList implements ListSelectionListener {
 			add(defaultComp, BorderLayout.CENTER);
 		}
 
+		@Override
 		public Component getListCellRendererComponent(JList list, Object value, int index,
 		                                              boolean isSelected, boolean cellHasFocus) {
 			defaultComp.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
 
 			checkbox.setSelected(isSelected);
-
-			if (isSelected) {
-				checkbox.setFont(SELECTED_FONT);
-				defaultComp.setFont(SELECTED_FONT);
-				checkbox.setForeground(SELECTED_COLOR);
-				defaultComp.setForeground(SELECTED_COLOR);
-			} else {
-				checkbox.setFont(NORMAL_FONT);
-				defaultComp.setFont(NORMAL_FONT);
-				checkbox.setForeground(NORMAL_COLOR);
-				defaultComp.setForeground(NORMAL_COLOR);
-			}
+			checkbox.setForeground(list.getForeground());
+			defaultComp.setForeground(list.getForeground());
 
 			final Component[] comps = getComponents();
 			final int length = comps.length;
 
 			for (int i = 0; i < length; i++) {
-				comps[i].setBackground(listBackground);
+				comps[i].setBackground(list.getBackground());
 			}
 
 			return this;

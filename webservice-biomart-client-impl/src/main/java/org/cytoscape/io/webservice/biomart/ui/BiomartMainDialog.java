@@ -24,7 +24,6 @@ package org.cytoscape.io.webservice.biomart.ui;
  * #L%
  */
 
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.GridLayout;
 
@@ -57,7 +56,6 @@ public final class BiomartMainDialog extends JDialog {
 		// Create a tabbed pane
 		final JTabbedPane tabs = new JTabbedPane();
 		final JPanel tunablePanel = new JPanel();
-		tunablePanel.setBackground(Color.white);
 		
 		final JPanel tPanel = new JPanel();
 		final Dimension panelSize = new Dimension(220, 250);
@@ -65,7 +63,6 @@ public final class BiomartMainDialog extends JDialog {
 		tPanel.setMaximumSize(panelSize);
 		tPanel.setSize(panelSize);
 
-		tPanel.setBackground(Color.white);
 		tPanel.setLayout(new GridLayout(0, 1));
 
 		tunablePanel.add(tPanel);
