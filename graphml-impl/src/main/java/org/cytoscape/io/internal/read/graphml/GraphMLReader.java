@@ -29,10 +29,14 @@ import java.io.InputStream;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
+import org.cytoscape.io.read.AbstractCyNetworkReader;
 import org.cytoscape.io.read.CyNetworkReader;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
+import org.cytoscape.model.CyNetworkManager;
+import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
+import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.view.layout.CyLayoutAlgorithm;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.model.CyNetworkView;
@@ -47,34 +51,25 @@ import org.xml.sax.XMLReader;
 /*
  * @author kozo.nishida
  */
-public class GraphMLReader extends AbstractTask implements CyNetworkReader {
+public class GraphMLReader extends AbstractCyNetworkReader {
 
 	private InputStream inputStream;
-
-	private final CyNetworkViewFactory cyNetworkViewFactory;
-	private final CyNetworkFactory cyNetworkFactory;
-	
 	private final CyLayoutAlgorithmManager layouts;
+	private final CyRootNetworkManager cyRootNetworkManager;
 
 	private GraphMLParser parser;
 	private TaskMonitor taskMonitor;
 
-	private final CyRootNetworkManager cyRootNetworkFactory;
-
 	public GraphMLReader(InputStream inputStream, final CyLayoutAlgorithmManager layouts,
-			final CyNetworkFactory cyNetworkFactory, final CyNetworkViewFactory cyNetworkViewFactory, final CyRootNetworkManager cyRootNetworkFactory) {
+			final CyNetworkFactory cyNetworkFactory, final CyNetworkViewFactory cyNetworkViewFactory, 
+			final CyNetworkManager cyNetworkManager, final CyRootNetworkManager cyRootNetworkManager) {
+		super(inputStream, cyNetworkViewFactory, cyNetworkFactory, cyNetworkManager, cyRootNetworkManager);
 		if (inputStream == null)
 			throw new NullPointerException("Input stream is null");
-		if (cyNetworkViewFactory == null)
-			throw new NullPointerException("CyNetworkViewFactory is null");
-		if (cyNetworkFactory == null)
-			throw new NullPointerException("CyNetworkFactory is null");
 
 		this.inputStream = inputStream;
-		this.cyNetworkViewFactory = cyNetworkViewFactory;
-		this.cyNetworkFactory = cyNetworkFactory;
-		this.cyRootNetworkFactory = cyRootNetworkFactory;
 		this.layouts = layouts;
+		this.cyRootNetworkManager = cyRootNetworkManager;
 	}
 
 	@Override
@@ -94,7 +89,14 @@ public class GraphMLReader extends AbstractTask implements CyNetworkReader {
 			final SAXParser sp = spf.newSAXParser();
 			final XMLReader xmlReader = sp.getXMLReader();
 			
-			parser = new GraphMLParser(taskMonitor, cyNetworkFactory, cyRootNetworkFactory);
+			CyRootNetwork root = getRootNetwork();
+			CySubNetwork newNetwork = null;
+			if(root== null) {
+				newNetwork = (CySubNetwork) cyNetworkFactory.createNetwork();
+				root = cyRootNetworkManager.getRootNetwork(newNetwork);
+			}
+			
+			parser = new GraphMLParser(taskMonitor, cyNetworkFactory, cyRootNetworkManager, root, newNetwork);
 			xmlReader.setContentHandler(parser);
 			final InputSource inputSource = new InputSource(inputStream);
 			inputSource.setEncoding("UTF-8");

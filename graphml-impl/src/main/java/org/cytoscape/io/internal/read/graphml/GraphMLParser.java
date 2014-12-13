@@ -39,6 +39,7 @@ import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.work.TaskMonitor;
@@ -87,6 +88,9 @@ public class GraphMLParser extends DefaultHandler {
 	private CyNode lastNode;
 
 	private StringBuilder builder;
+	
+	private final CyRootNetwork root;
+	private final CyNetwork newNetwork;
 
 	/**
 	 * Main constructor for our parser. Initialize any local arrays. Note that
@@ -94,7 +98,7 @@ public class GraphMLParser extends DefaultHandler {
 	 * result, a minimum number of local data structures
 	 */
 	GraphMLParser(final TaskMonitor tm, final CyNetworkFactory networkFactory,
-			final CyRootNetworkManager rootNetworkManager) {
+			final CyRootNetworkManager rootNetworkManager, final CyRootNetwork root, final CyNetwork newNetwork) {
 		this.networkFactory = networkFactory;
 		this.rootNetworkManager = rootNetworkManager;
 
@@ -105,6 +109,8 @@ public class GraphMLParser extends DefaultHandler {
 		datanameMap = new HashMap<String, String>();
 
 		this.nodeid2CyNodeMap = new HashMap<String, CyIdentifiable>();
+		this.root = root;
+		this.newNetwork = newNetwork;
 	}
 
 	CyNetwork[] getCyNetworks() {
@@ -158,7 +164,11 @@ public class GraphMLParser extends DefaultHandler {
 		
 		if (networkStack.size() == 0) {
 			// Root network.
-			currentNetwork = networkFactory.createNetwork();
+			if(newNetwork == null) {
+				currentNetwork = root.addSubNetwork();
+			} else {
+				currentNetwork = newNetwork;
+			}
 		} else {
 			final CyNetwork parentNetwork = networkStack.peek();
 			currentNetwork = rootNetworkManager.getRootNetwork(parentNetwork).addSubNetwork();
