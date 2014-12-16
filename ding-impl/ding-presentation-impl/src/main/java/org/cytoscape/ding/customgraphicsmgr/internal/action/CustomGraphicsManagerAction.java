@@ -36,24 +36,35 @@ import org.cytoscape.ding.internal.util.IconManager;
 
 
 public class CustomGraphicsManagerAction extends AbstractCyAction {
+	
 	private static final long serialVersionUID = -4582671383878015609L;
-	private final CustomGraphicsManagerDialog dialog;
+	
+	private CustomGraphicsManagerDialog dialog;
 
-	public CustomGraphicsManagerAction(final CustomGraphicsManager manager,
-	                                   final CyApplicationManager applicationManager,
+	private final CustomGraphicsManager cgManager;
+	private final CyApplicationManager appManager;
+	private final CustomGraphicsBrowser browser;
+	private final IconManager iconManager;
+
+	public CustomGraphicsManagerAction(final CustomGraphicsManager cgManager,
+	                                   final CyApplicationManager appManager,
 	                                   final CustomGraphicsBrowser browser,
-	                                   final IconManager iconManager)
-	{
+	                                   final IconManager iconManager) {
 		super("Open Custom Graphics Manager");
 		setPreferredMenu("View");
 		setMenuGravity(10.0f);
 		
-		this.dialog = new CustomGraphicsManagerDialog(manager, applicationManager, browser, iconManager);
+		this.cgManager = cgManager;
+		this.appManager = appManager;
+		this.browser = browser;
+		this.iconManager = iconManager;
 	}
 
 	@Override
-	public void actionPerformed(ActionEvent arg0) {
-		this.dialog.setVisible(true);
+	public void actionPerformed(ActionEvent evt) {
+		if (dialog == null)
+			dialog = new CustomGraphicsManagerDialog(cgManager, appManager, browser, iconManager);
+		
+		dialog.setVisible(true);
 	}
-
 }
