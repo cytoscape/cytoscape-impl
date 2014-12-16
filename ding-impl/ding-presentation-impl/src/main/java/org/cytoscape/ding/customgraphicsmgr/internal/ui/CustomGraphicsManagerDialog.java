@@ -29,7 +29,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.FileFilter;
 import java.io.IOException;
 import java.net.MalformedURLException;
 
@@ -115,7 +114,7 @@ public class CustomGraphicsManagerDialog extends javax.swing.JDialog {
 		setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 
 		deleteButton.setText(IconManager.ICON_TRASH);
-		deleteButton.setFont(iconManager.getIconFont(12.0f));
+		deleteButton.setFont(iconManager.getIconFont(16.0f));
 		deleteButton.setToolTipText("Remove Selected Graphics");
 		deleteButton.addActionListener(new ActionListener() {
 			@Override
@@ -125,7 +124,7 @@ public class CustomGraphicsManagerDialog extends javax.swing.JDialog {
 		});
 
 		addButton.setText(IconManager.ICON_FOLDER_OPEN_ALT);
-		addButton.setFont(iconManager.getIconFont(12.0f));
+		addButton.setFont(iconManager.getIconFont(16.0f));
 		addButton.setToolTipText("Add Image(s)");
 		addButton.addActionListener(new ActionListener() {
 			@Override
