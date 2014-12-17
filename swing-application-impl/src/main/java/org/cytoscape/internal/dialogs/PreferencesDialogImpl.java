@@ -24,9 +24,11 @@ package org.cytoscape.internal.dialogs;
  * #L%
  */
 
+import static javax.swing.GroupLayout.DEFAULT_SIZE;
+import static javax.swing.GroupLayout.PREFERRED_SIZE;
+
 import java.awt.BorderLayout;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -36,8 +38,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
-import javax.swing.BorderFactory;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.GroupLayout;
+import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
@@ -56,6 +59,7 @@ import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.property.PropertyUpdatedEvent;
 import org.cytoscape.property.SimpleCyProperty;
+import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -64,6 +68,7 @@ import org.slf4j.LoggerFactory;
  *
  */
 public class PreferencesDialogImpl extends JDialog implements ItemListener, ActionListener, ListSelectionListener {
+	
 	private final static long serialVersionUID = 1202339873396288L;
 	private static final Logger logger = LoggerFactory.getLogger(PreferencesDialogImpl.class);
 	private final CyEventHelper  eventHelper;
@@ -72,6 +77,14 @@ public class PreferencesDialogImpl extends JDialog implements ItemListener, Acti
 	private Map<String, CyProperty> cyPropMap;
 	private Map<String, Boolean> itemChangedMap = new HashMap<String, Boolean>();
 
+	private JComboBox cmbPropCategories = new JComboBox();	
+	private JScrollPane propsTablePane = new JScrollPane();
+	private JTable prefsTable = new JTable();
+	private JButton addPropBtn = new JButton("Add");
+	private JButton deletePropBtn = new JButton("Delete");
+	private JButton modifyPropBtn = new JButton("Modify");
+	private JButton closeButton = new JButton("Close");
+	
 	/**
 	 * Creates a new PreferencesDialog object.
 	 *
@@ -106,19 +119,19 @@ public class PreferencesDialogImpl extends JDialog implements ItemListener, Acti
 			e.printStackTrace();
 		}
 
-		this.setTitle("Cytoscape Preferences Editor");
+		setTitle("Cytoscape Preferences Editor");
 		pack();
 		// set location relative to owner/parent
-		this.setLocationRelativeTo(owner);
-		this.setModalityType(DEFAULT_MODALITY_TYPE);
+		setLocationRelativeTo(owner);
+		setModalityType(DEFAULT_MODALITY_TYPE);
+		setResizable(false);
 	}
 
-	
+	@Override
 	public void itemStateChanged(ItemEvent e) {	
 		updateTable();
 		
 	}
-
 
 	private void initCMB() {
 		Object[] keys = this.propMap.keySet().toArray();
@@ -175,6 +188,7 @@ public class PreferencesDialogImpl extends JDialog implements ItemListener, Acti
 	
 
 	// Handle action event from the buttons
+	@Override
 	public void actionPerformed(ActionEvent e) {
 		Object obj = e.getSource();
 		String selectedPropertyName = this.cmbPropCategories.getSelectedItem().toString();
@@ -235,7 +249,7 @@ public class PreferencesDialogImpl extends JDialog implements ItemListener, Acti
 		}
 	}
 	
-	
+	@Override
 	public void valueChanged(ListSelectionEvent e){
 	
 		if (this.prefsTable.getSelectedRowCount() == 0){
@@ -248,7 +262,6 @@ public class PreferencesDialogImpl extends JDialog implements ItemListener, Acti
 		}
 	}
 
-
 	private void addListeners() {
 		addPropBtn.addActionListener(this);
 		modifyPropBtn.addActionListener(this);
@@ -258,77 +271,58 @@ public class PreferencesDialogImpl extends JDialog implements ItemListener, Acti
 		cmbPropCategories.addItemListener(this);
 		prefsTable.getSelectionModel().addListSelectionListener(this);
 	}
-
     
-
 	private void initGUI() throws Exception {
-
-		java.awt.GridBagConstraints gridBagConstraints;
-
-		JPanel outerPanel = new JPanel(new java.awt.GridBagLayout());
-		
-		JPanel propsTablePanel = new JPanel(new java.awt.GridBagLayout());
-		propsTablePanel.setBorder(BorderFactory.createTitledBorder("Properties"));
-		
-		propsTablePane.setBorder(BorderFactory.createEmptyBorder(2, 9, 4, 9));
 		propsTablePane.getViewport().add(prefsTable, null);
 		prefsTable.setPreferredScrollableViewportSize(new Dimension(400, 200));
-		
-	    gridBagConstraints = new java.awt.GridBagConstraints();
-	    gridBagConstraints.gridx = 0;
-	    gridBagConstraints.gridy = 0;
-	    gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-	    gridBagConstraints.insets = new java.awt.Insets(5, 7, 5, 7);
-	    propsTablePanel.add(cmbPropCategories, gridBagConstraints);
-	    //
-		
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        propsTablePanel.add(propsTablePane, gridBagConstraints);
 
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(10, 0, 0, 0);
-        propsTablePanel.add(propBtnPane, gridBagConstraints);
+		final JPanel propsTablePanel = new JPanel();
+		propsTablePanel.setBorder(LookAndFeelUtil.createTitledBorder("Properties"));
 		
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(10, 10, 10, 10);
-        outerPanel.add(propsTablePanel, gridBagConstraints);
+		{
+			final GroupLayout layout = new GroupLayout(propsTablePanel);
+			propsTablePanel.setLayout(layout);
+			layout.setAutoCreateContainerGaps(true);
+			layout.setAutoCreateGaps(true);
+			
+			layout.setHorizontalGroup(layout.createParallelGroup(Alignment.CENTER, true)
+					.addComponent(cmbPropCategories, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+					.addComponent(propsTablePane, DEFAULT_SIZE, DEFAULT_SIZE, 460)
+					.addGroup(Alignment.CENTER, layout.createSequentialGroup()
+							.addComponent(addPropBtn)
+							.addComponent(modifyPropBtn)
+							.addComponent(deletePropBtn)
+					)
+			);
+			layout.setVerticalGroup(layout.createSequentialGroup()
+					.addComponent(cmbPropCategories, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+					.addComponent(propsTablePane, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addGroup(layout.createParallelGroup(Alignment.CENTER, true)
+							.addComponent(addPropBtn)
+							.addComponent(modifyPropBtn)
+							.addComponent(deletePropBtn)
+					)
+			);
+		}
 		
-        //
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridy = 4;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 10, 10, 10);
-        outerPanel.add(okButtonPane, gridBagConstraints);
-        
+		final JPanel outerPanel = new JPanel();
+		
+		{
+			final GroupLayout layout = new GroupLayout(outerPanel);
+			outerPanel.setLayout(layout);
+			layout.setAutoCreateContainerGaps(true);
+			layout.setAutoCreateGaps(true);
+			
+			layout.setHorizontalGroup(layout.createParallelGroup(Alignment.TRAILING, true)
+					.addComponent(propsTablePanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+					.addComponent(closeButton, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+			);
+			layout.setVerticalGroup(layout.createSequentialGroup()
+					.addComponent(propsTablePanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+					.addComponent(closeButton)
+			);
+		}
+		
 		this.getContentPane().add(outerPanel, BorderLayout.CENTER);
-		
-		//
-		propBtnPane.add(addPropBtn);
-		propBtnPane.add(modifyPropBtn);
-		propBtnPane.add(deletePropBtn);
-
-		okButtonPane.add(closeButton);
 	}
-
-
-	private JComboBox cmbPropCategories = new JComboBox();	
-	private JScrollPane propsTablePane = new JScrollPane();
-	private JTable prefsTable = new JTable();
-	private JPanel propBtnPane = new JPanel(new FlowLayout());
-	private JPanel okButtonPane = new JPanel(new FlowLayout());
-	//private JPanel cyPropsPane = new JPanel(new FlowLayout());
-	private JButton addPropBtn = new JButton("Add");
-	private JButton deletePropBtn = new JButton("Delete");
-	private JButton modifyPropBtn = new JButton("Modify");
-	private JButton closeButton = new JButton("Close");
-
 }
