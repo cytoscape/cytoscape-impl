@@ -152,7 +152,8 @@ public class GroupAttributesLayoutTask extends AbstractLayoutTask {
 		if (map == null)
 			return;
 		
-		for (CyNode node:network.getNodeList()){
+		for (View<CyNode> nv: nodesToLayOut) {
+			CyNode node = nv.getModel();
 			// TODO: support namespace
 			T key = network.getRow(node).get(layoutAttribute, klass);
 
