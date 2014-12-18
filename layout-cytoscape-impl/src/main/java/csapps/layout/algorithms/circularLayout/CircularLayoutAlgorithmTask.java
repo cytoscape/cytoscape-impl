@@ -83,7 +83,11 @@ public class CircularLayoutAlgorithmTask extends AbstractPartitionLayoutTask {
 
 		Iterator<LayoutNode> nodeIter = partition.getNodeList().iterator();
 		while (nodeIter.hasNext() && !cancelled) {
-			final View<CyNode> nv = nodeIter.next().getNodeView();
+			// final View<CyNode> nv = nodeIter.next().getNodeView();
+			LayoutNode ln = nodeIter.next();
+			if (ln.isLocked())
+				continue;
+			final View<CyNode> nv = ln.getNodeView();
 			nodeViews.put(nodeIndex, nv);
 			nodeIdexMap.put(nv.getModel(), nodeIndex);
 			nodeIndex++;
