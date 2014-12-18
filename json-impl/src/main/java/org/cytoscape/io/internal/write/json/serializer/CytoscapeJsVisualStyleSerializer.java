@@ -475,9 +475,11 @@ public class CytoscapeJsVisualStyleSerializer extends JsonSerializer<VisualStyle
 	 * 
 	 */
 	private final void writeLabelPosition(final JsonGenerator jg, final String valText) throws JsonGenerationException, IOException {
-			String[] parts = valText.split(" ");
+			String[] parts = valText.split("\\s+");
 			
 			final String position = parts[1];
+			final String positionObject = parts[3];
+			
 			if(position.equals("North") || position.equals("Northeast") || position.equals("Northwest")) {
 				jg.writeStringField(CytoscapeJsToken.TEXT_VALIGN.getTag(), "top");
 			} else if(position.equals("Center") || position.equals("East") || position.equals("West")) {
@@ -491,9 +493,17 @@ public class CytoscapeJsVisualStyleSerializer extends JsonSerializer<VisualStyle
 			} else if(position.equals("East") || position.equals("Northeast") || position.equals("Southeast")) {
 				jg.writeStringField(CytoscapeJsToken.TEXT_HALIGN.getTag(), "right");
 			} else {
-				jg.writeStringField(CytoscapeJsToken.TEXT_HALIGN.getTag(), "center");
+				// Need to check object anchor position if node anchor is center.
+				if(positionObject.equals("Northwest") || positionObject.equals("West") || positionObject.equals("Southwest")) {
+					jg.writeStringField(CytoscapeJsToken.TEXT_HALIGN.getTag(), "right");
+				} else if (positionObject.equals("East") || positionObject.equals("Northeast") || positionObject.equals("Southeast")){
+					jg.writeStringField(CytoscapeJsToken.TEXT_HALIGN.getTag(), "left");
+				} else {
+					jg.writeStringField(CytoscapeJsToken.TEXT_HALIGN.getTag(), "center");
+				}
 			}
 	}
+	
 
 	/**
 	 * Special value handlers.
