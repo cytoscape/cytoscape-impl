@@ -33,6 +33,7 @@ import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Arrays;
+import javax.swing.SwingUtilities;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.equations.EquationCompiler;
@@ -266,7 +267,15 @@ public class BrowserTableTest {
 		rscs.add(rsc);
 		
 		browserTable.handleEvent(new RowsSetEvent(table, rscs));
-		assertEquals(1, browserTable.getSelectedRowCount());
+		try {
+			SwingUtilities.invokeAndWait( new Runnable() {
+				public void run() {
+					assertEquals(1, browserTable.getSelectedRowCount());
+				}
+			});
+		} catch (Exception e) {
+			assertEquals(1, browserTable.getSelectedRowCount());
+		}
 
 		table.getRow((long)2).set(CyNetwork.SELECTED, true);
 		 rsc = new RowSetRecord  (table.getRow((long)2), CyNetwork.SELECTED, (Object) true , (Object) true );

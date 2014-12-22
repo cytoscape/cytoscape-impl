@@ -37,6 +37,7 @@ import java.util.Vector;
 
 import javax.swing.ComboBoxModel;
 import javax.swing.ListModel;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 
@@ -107,7 +108,16 @@ public class AttributeListModel
 		final Collator collator = Collator.getInstance(Locale.getDefault());
 		Collections.sort(attributeNames, collator);
 
-		notifyListeners(new ListDataEvent(this, ListDataEvent.CONTENTS_CHANGED, 0, attributeNames.size()));
+		// ListDataEvent listeners are arguably all Swing/UI, so notify them on the UI thread
+		if (SwingUtilities.isEventDispatchThread()) {
+			notifyListeners(new ListDataEvent(this, ListDataEvent.CONTENTS_CHANGED, 0, attributeNames.size()));
+		} else {
+			SwingUtilities.invokeLater (new Runnable() {
+				public void run () {
+					notifyListeners(new ListDataEvent(this, ListDataEvent.CONTENTS_CHANGED, 0, attributeNames.size()));
+				}
+			});
+		}
 	}
 
 	/**
