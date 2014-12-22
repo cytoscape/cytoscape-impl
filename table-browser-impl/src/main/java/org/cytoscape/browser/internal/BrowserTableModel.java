@@ -36,6 +36,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import javax.swing.JOptionPane;
 import javax.swing.event.TableModelEvent;
 import javax.swing.table.AbstractTableModel;
+import javax.swing.SwingUtilities;
 
 import org.cytoscape.browser.internal.util.TableBrowserUtil;
 import org.cytoscape.equations.Equation;
@@ -228,6 +229,34 @@ public final class BrowserTableModel extends AbstractTableModel
 		final String lastInternalError = dataTable.getLastInternalError();
 		
 		return new ValidatedObjectAndEditString(cooked, editString, lastInternalError, isEquation);
+	}
+
+	@Override
+	public void fireTableStructureChanged() {
+		if (SwingUtilities.isEventDispatchThread()) {
+			super.fireTableStructureChanged();
+		} else {
+			final AbstractTableModel model = (AbstractTableModel) this;
+			SwingUtilities.invokeLater (new Runnable () {
+				public void run() {
+					model.fireTableStructureChanged();
+				}
+			});
+		}
+	}
+
+	@Override
+	public void fireTableDataChanged() {
+		if (SwingUtilities.isEventDispatchThread()) {
+			super.fireTableDataChanged();
+		} else {
+			final AbstractTableModel model = (AbstractTableModel) this;
+			SwingUtilities.invokeLater (new Runnable () {
+				public void run() {
+					model.fireTableDataChanged();
+				}
+			});
+		}
 	}
 
 	private String createEditString(Object raw) {

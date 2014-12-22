@@ -505,7 +505,15 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 			return;
 		
 		renameColumnName(e.getOldColumnName(), e.getNewColumnName());
-		tableHeader.repaint();
+		if (SwingUtilities.isEventDispatchThread()) {
+			tableHeader.repaint();
+		} else {
+			SwingUtilities.invokeLater (new Runnable () {
+				public void run () {
+					tableHeader.repaint();
+				}
+			});
+		}
 	}
 	
 	@Override
