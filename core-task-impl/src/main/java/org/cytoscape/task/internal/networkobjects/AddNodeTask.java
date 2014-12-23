@@ -28,8 +28,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.CyNetworkViewManager;
+import org.cytoscape.view.model.View;
+import org.cytoscape.view.vizmap.VisualMappingManager;
+import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
@@ -37,6 +43,9 @@ import org.cytoscape.work.Tunable;
 
 public class AddNodeTask extends AbstractTask implements ObservableTask {
 	CyNode newNode;
+	CyEventHelper cyEventHelper;
+	CyNetworkViewManager networkViewManager;
+	VisualMappingManager visualMappingManager;
 
 	@Tunable(description="Network to add a node to", context="nogui")
 	public CyNetwork network = null;
@@ -44,7 +53,10 @@ public class AddNodeTask extends AbstractTask implements ObservableTask {
 	@Tunable(description="Name of the node to add", context="nogui")
 	public String name = null;
 
-	public AddNodeTask() {
+	public AddNodeTask(VisualMappingManager vmm, CyNetworkViewManager viewManager, CyEventHelper eventHelper) {
+		cyEventHelper = eventHelper;
+		networkViewManager = viewManager;
+		visualMappingManager = vmm;
 	}
 
 	@Override
@@ -58,6 +70,17 @@ public class AddNodeTask extends AbstractTask implements ObservableTask {
 		if (name != null) {
 			network.getRow(newNode).set(CyNetwork.NAME, name);
 		}
+		cyEventHelper.flushPayloadEvents();
+		if (networkViewManager.viewExists(network)) {
+			for (CyNetworkView view: networkViewManager.getNetworkViews(network)) {
+				View<CyNode> nodeView = view.getNodeView(newNode);
+				VisualStyle style = visualMappingManager.getVisualStyle(view);
+				if (style != null) {
+					style.apply(network.getRow(newNode), nodeView);
+				}
+			}
+		}
+		cyEventHelper.flushPayloadEvents();
 		taskMonitor.showMessage(TaskMonitor.Level.INFO, "Added node "+newNode.toString()+" to network");
 
 	}

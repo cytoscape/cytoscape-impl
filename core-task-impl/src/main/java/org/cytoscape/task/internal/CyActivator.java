@@ -1404,14 +1404,16 @@ public class CyActivator extends AbstractCyActivator {
 		addTaskFactoryProps.setProperty(COMMAND_DESCRIPTION, "Add nodes and edges to a network (they must be in the current collection)");
 		registerService(bc,addTaskFactory,TaskFactory.class,addTaskFactoryProps);
 
-		AddEdgeTaskFactory addEdgeTaskFactory = new AddEdgeTaskFactory();
+		AddEdgeTaskFactory addEdgeTaskFactory = new AddEdgeTaskFactory(visualMappingManagerServiceRef,
+		                                                               cyNetworkViewManagerServiceRef, cyEventHelperRef);
 		Properties addEdgeTaskFactoryProps = new Properties();
 		addEdgeTaskFactoryProps.setProperty(COMMAND, "add edge");
 		addEdgeTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "network");
 		addEdgeTaskFactoryProps.setProperty(COMMAND_DESCRIPTION, "Add an edge between two nodes");
 		registerService(bc,addEdgeTaskFactory,TaskFactory.class,addEdgeTaskFactoryProps);
 
-		AddNodeTaskFactory addNodeTaskFactory = new AddNodeTaskFactory();
+		AddNodeTaskFactory addNodeTaskFactory = new AddNodeTaskFactory(visualMappingManagerServiceRef,
+		                                                               cyNetworkViewManagerServiceRef, cyEventHelperRef);
 		Properties addNodeTaskFactoryProps = new Properties();
 		addNodeTaskFactoryProps.setProperty(COMMAND, "add node");
 		addNodeTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "network");

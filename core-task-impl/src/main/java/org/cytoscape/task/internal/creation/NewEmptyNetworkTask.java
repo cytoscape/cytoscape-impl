@@ -79,7 +79,7 @@ public class NewEmptyNetworkTask extends AbstractTask {
 	//******** tunables ********************
 
 	public ListSingleSelection<String> rootNetworkList;
-	@Tunable(description = "Network Collection" ,groups=" ")
+	@Tunable(description = "Network Collection" ,groups=" ", gravity=1.0)
 	public ListSingleSelection<String> getRootNetworkList(){
 		return rootNetworkList;
 	}
@@ -95,7 +95,7 @@ public class NewEmptyNetworkTask extends AbstractTask {
 	}
 	
 	public ListSingleSelection<String> targetColumnList;
-	@Tunable(description = "Node Identifier Mapping Column:",groups=" ", listenForChange={"RootNetworkList"})
+	@Tunable(description = "Node Identifier Mapping Column:",groups=" ", listenForChange={"RootNetworkList"}, gravity=2.0)
 	public ListSingleSelection<String> getTargetColumnList(){
 		return targetColumnList;
 	}
@@ -105,6 +105,9 @@ public class NewEmptyNetworkTask extends AbstractTask {
 		// looks like this does not have any effect, is this a bug?
 		this.targetColumnList.setSelectedValue("shared name");
 	}
+
+	@Tunable(description = "Name of network: ", groups=" ", gravity=3.0)
+	public String name = "Network";
 	
 	
 	@ProvidesTitle
@@ -208,7 +211,7 @@ public class NewEmptyNetworkTask extends AbstractTask {
 
 		tm.setProgress(0.2);
 		
-		final String networkName = namingUtil.getSuggestedNetworkTitle("Network");
+		final String networkName = namingUtil.getSuggestedNetworkTitle(name);
 		subNetwork.getRow(subNetwork).set(CyNetwork.NAME, networkName);
 
 		if (networkCollectionName.equalsIgnoreCase(CRERATE_NEW_COLLECTION_STRING)){
