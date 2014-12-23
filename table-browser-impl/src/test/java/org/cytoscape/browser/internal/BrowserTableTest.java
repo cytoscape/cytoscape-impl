@@ -30,6 +30,7 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 
 import java.awt.event.MouseEvent;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Arrays;
@@ -263,23 +264,25 @@ public class BrowserTableTest {
 		
 		btm.setViewMode(BrowserTableModel.ViewMode.ALL);
 		RowSetRecord rsc = new RowSetRecord  (table.getRow((long)1), CyNetwork.SELECTED, (Object) true , (Object) true );
-		List<RowSetRecord> rscs = new ArrayList<RowSetRecord>();
+		final List<RowSetRecord> rscs = new ArrayList<RowSetRecord>();
 		rscs.add(rsc);
 		
-		browserTable.handleEvent(new RowsSetEvent(table, rscs));
 		try {
 			SwingUtilities.invokeAndWait( new Runnable() {
 				public void run() {
+					browserTable.handleEvent(new RowsSetEvent(table, rscs));
 					assertEquals(1, browserTable.getSelectedRowCount());
 				}
 			});
-		} catch (Exception e) {
+		} catch (InterruptedException e) {
+			assertEquals(1, browserTable.getSelectedRowCount());
+		} catch (InvocationTargetException e) {
 			assertEquals(1, browserTable.getSelectedRowCount());
 		}
 
 		table.getRow((long)2).set(CyNetwork.SELECTED, true);
 		 rsc = new RowSetRecord  (table.getRow((long)2), CyNetwork.SELECTED, (Object) true , (Object) true );
-		 rscs = new ArrayList<RowSetRecord>();
+		 rscs.clear();
 		rscs.add(rsc);
 		
 		browserTable.handleEvent(new RowsSetEvent(table, rscs));
@@ -287,7 +290,7 @@ public class BrowserTableTest {
 		
 		table.getRow((long)2).set(CyNetwork.SELECTED, false);
 		 rsc = new RowSetRecord  (table.getRow((long)2), CyNetwork.SELECTED, (Object) false , (Object) false );
-		 rscs = new ArrayList<RowSetRecord>();
+		 rscs.clear();
 		rscs.add(rsc);
 		
 		browserTable.handleEvent(new RowsSetEvent(table, rscs));
