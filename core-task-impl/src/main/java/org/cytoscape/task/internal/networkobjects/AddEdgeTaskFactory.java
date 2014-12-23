@@ -25,17 +25,27 @@ package org.cytoscape.task.internal.networkobjects;
  */
 
 
+import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
+import org.cytoscape.view.model.CyNetworkViewManager;
+import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.TaskIterator;
 
 
 public class AddEdgeTaskFactory extends AbstractTaskFactory {
-	public AddEdgeTaskFactory() {
+	CyEventHelper cyEventHelper;
+	CyNetworkViewManager cyNetworkViewManager;
+	VisualMappingManager vmm;
+
+	public AddEdgeTaskFactory(VisualMappingManager vmm, CyNetworkViewManager viewManager, CyEventHelper eventHelper) {
+		cyEventHelper = eventHelper;
+		cyNetworkViewManager = viewManager;
+		this.vmm = vmm;
 	}
 
 	public TaskIterator createTaskIterator() {
-		return new TaskIterator(new AddEdgeTask());
+		return new TaskIterator(new AddEdgeTask(vmm, cyNetworkViewManager, cyEventHelper));
 	}
 }

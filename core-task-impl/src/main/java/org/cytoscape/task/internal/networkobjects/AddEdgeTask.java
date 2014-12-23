@@ -28,9 +28,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.CyNetworkViewManager;
+import org.cytoscape.view.vizmap.VisualMappingManager;
+import org.cytoscape.view.vizmap.VisualStyle;
+import org.cytoscape.view.model.View;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
@@ -38,6 +44,9 @@ import org.cytoscape.work.Tunable;
 
 public class AddEdgeTask extends AbstractTask implements ObservableTask {
 	CyEdge newEdge;
+	CyEventHelper cyEventHelper;
+	CyNetworkViewManager networkViewManager;
+	VisualMappingManager visualMappingManager;
 
 	@Tunable(description="Network to add a edge to", context="nogui")
 	public CyNetwork network = null;
@@ -54,7 +63,10 @@ public class AddEdgeTask extends AbstractTask implements ObservableTask {
 	@Tunable(description="Name of the edge to add", context="nogui")
 	public String name = null;
 
-	public AddEdgeTask() {
+	public AddEdgeTask(VisualMappingManager vmm, CyNetworkViewManager viewManager, CyEventHelper eventHelper) {
+		cyEventHelper = eventHelper;
+		networkViewManager = viewManager;
+		visualMappingManager = vmm;
 	}
 
 	@Override
@@ -103,6 +115,19 @@ public class AddEdgeTask extends AbstractTask implements ObservableTask {
 		if (name != null) {
 			network.getRow(newEdge).set(CyNetwork.NAME, name);
 		}
+		cyEventHelper.flushPayloadEvents();
+		if (networkViewManager.viewExists(network)) {
+			for (CyNetworkView view: networkViewManager.getNetworkViews(network)) {
+				View<CyEdge> edgeView = view.getEdgeView(newEdge);
+				VisualStyle style = visualMappingManager.getVisualStyle(view);
+				if (style != null) {
+					style.apply(network.getRow(newEdge), edgeView);
+				}
+				// Not sure why we need to refresh the view for edges and not nodes, but apparently we do
+				view.updateView();
+			}
+		}
+		cyEventHelper.flushPayloadEvents();
 		taskMonitor.showMessage(TaskMonitor.Level.INFO, "Added edge "+newEdge.toString()+" to network");
 
 	}
