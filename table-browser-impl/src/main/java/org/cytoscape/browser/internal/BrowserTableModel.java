@@ -259,6 +259,20 @@ public final class BrowserTableModel extends AbstractTableModel
 		}
 	}
 
+	@Override
+	public void fireTableChanged (final TableModelEvent event) {
+		if (SwingUtilities.isEventDispatchThread()) {
+			super.fireTableChanged(event);
+		} else {
+			final AbstractTableModel model = (AbstractTableModel) this;
+			SwingUtilities.invokeLater (new Runnable () {
+				public void run() {
+					model.fireTableChanged(event);
+				}
+			});
+		}
+	}
+
 	private String createEditString(Object raw) {
 		if (raw instanceof List) {
 			StringBuilder builder = new StringBuilder();
