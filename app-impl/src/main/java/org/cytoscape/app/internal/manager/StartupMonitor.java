@@ -14,16 +14,14 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleEvent;
 import org.osgi.framework.SynchronousBundleListener;
 import org.osgi.service.packageadmin.PackageAdmin;
+import org.osgi.service.startlevel.StartLevel;
 
 /**
  * Monitors for app state changes and notifies its listeners.
  */
 public class StartupMonitor implements SynchronousBundleListener {
-	/**
-	 * The number of times a bundle can fail to start before we consider it
-	 * permanent.
-	 */
-	private static final int FAILED_START_THRESHOLD = 5;
+	
+	private static final int APP_START_LEVEL = 200;
 	
 	/**
 	 * Determines whether StartupMonitor should check whether all installed
@@ -32,49 +30,41 @@ public class StartupMonitor implements SynchronousBundleListener {
 	 */
 	private boolean checkAllApps;
 	
+	private BundleContext context;
 	private PackageAdmin packageAdmin;
 	private Map<Long, BundleData> bundleData;
 	private List<AppStatusChangedListener> listeners;
 	private CyEventHelper eventHelper;
+	private StartLevel startLevel;
 	
-	public StartupMonitor(BundleContext context, PackageAdmin packageAdmin, CyEventHelper eventHelper) {
+	public StartupMonitor(BundleContext context, PackageAdmin packageAdmin, CyEventHelper eventHelper, StartLevel startLevel) {
+		
+		this.context = context;
 		this.packageAdmin = packageAdmin;
 		this.eventHelper = eventHelper;
+		this.startLevel = startLevel;
 		
 		listeners = new CopyOnWriteArrayList<AppStatusChangedListener>();
 		bundleData = new HashMap<Long, BundleData>();
-		
-		for (Bundle bundle : context.getBundles()) {
-			BundleData data = new BundleData();
-			data.lastState = bundle.getState();
-			switch (data.lastState) {
-			case Bundle.ACTIVE:
-				data.lastEvent = BundleEvent.STARTED;
-				break;
-			case Bundle.INSTALLED:
-				data.lastEvent = BundleEvent.INSTALLED;
-				break;
-			case Bundle.RESOLVED:
-				data.lastEvent = BundleEvent.RESOLVED;
-				break;
-			case Bundle.STARTING:
-				data.lastEvent = BundleEvent.STARTING;
-				break;
-			case Bundle.STOPPING:
-				data.lastEvent = Bundle.STOPPING;
-				break;
-			}
-		}
 	}
 	
 	public void setActive(boolean isActive) {
 		this.checkAllApps = isActive;
+		if(isActive) {
+			checkAllApps();
+		}
 	}
 	
 	@Override
 	public void bundleChanged(BundleEvent event) {
-		long id = event.getBundle().getBundleId();
+		Bundle currentBundle = event.getBundle();
+		String bundleName = (String) currentBundle.getHeaders().get("Bundle-Name");
 		
+		//skip bundles that are uninstalled or aren't apps
+		if(currentBundle.getState() == Bundle.UNINSTALLED || 
+				startLevel.getBundleStartLevel(currentBundle) != APP_START_LEVEL) return;
+		
+		long id = currentBundle.getBundleId();
 		BundleData data = bundleData.get(id);
 		int newEvent = event.getType();
 		
@@ -85,55 +75,44 @@ public class StartupMonitor implements SynchronousBundleListener {
 			bundleData.put(id, data);
 		}
 
-		Bundle currentBundle = event.getBundle();
-		String bundleName = (String) currentBundle.getHeaders().get("Bundle-Name");
 		if (data.lastEvent == BundleEvent.STARTING && newEvent == BundleEvent.STOPPING) {
-			data.failedStarts++;
-			
-			// Karaf uses an insane policy in which it attempts to restart a
-			// bundle continuously if it fails to start.  For bundles that
-			// actually work, this ends up resolving their dependencies
-			// eventually if they're started in the wrong order.  For broken
-			// bundles, this is an endless loop.
-			if (data.failedStarts == FAILED_START_THRESHOLD) {
-				// Fire this event only once per string of restart attempts.
-				notifyListeners(bundleName, currentBundle.getVersion().toString(), AppStatus.FAILED_TO_START);
-			}
+			data.failedToStart = true;
+			notifyListeners(bundleName, currentBundle.getVersion().toString(), AppStatus.FAILED_TO_START);
 		} else if (newEvent == BundleEvent.STARTED) {
+			data.failedToStart = false;
 			notifyListeners(bundleName, currentBundle.getVersion().toString(), AppStatus.INSTALLED);
-			data.failedStarts = 0;
 		} else if (data.lastState == Bundle.ACTIVE && newEvent == BundleEvent.STOPPING) {
+			data.failedToStart = false;
 			notifyListeners(bundleName, currentBundle.getVersion().toString(), AppStatus.DISABLED);
-			data.failedStarts = 0;
-		} else if (newEvent == BundleEvent.UNINSTALLED) {
+		} else if (newEvent == BundleEvent.UNINSTALLED || newEvent == BundleEvent.UNRESOLVED) {
+			data.failedToStart = false;
 			notifyListeners(bundleName, currentBundle.getVersion().toString(), AppStatus.UNINSTALLED);
-			data.failedStarts = 0;
-		} else if (newEvent == BundleEvent.UNRESOLVED) {
-			notifyListeners(bundleName, currentBundle.getVersion().toString(), AppStatus.UNINSTALLED);
-			data.failedStarts = 0;
 		}
 		
 		data.lastState = currentBundle.getState();
 		data.lastEvent = newEvent;
 		
-		if (!checkAllApps) {
-			return;
+		if (checkAllApps) {
+			checkAllApps();
 		}
-		
-		BundleContext context = currentBundle.getBundleContext();
-		if (context == null) {
-			return;
-		}
-		
-		int notStarted = 0;
+	}
+	
+	private void checkAllApps() {
+		int notFinished = 0;
 		for (Bundle bundle : context.getBundles()) {
+			//skip bundles that are uninstalled or aren't apps
+			if(bundle.getState() == Bundle.UNINSTALLED || 
+					startLevel.getBundleStartLevel(bundle) != APP_START_LEVEL) continue;
+			
+			BundleData data = bundleData.get(bundle.getBundleId());
+
 			boolean isFragment = packageAdmin.getBundleType(bundle) == PackageAdmin.BUNDLE_TYPE_FRAGMENT;
-			if (!isFragment && bundle.getState() != Bundle.ACTIVE) {
-				notStarted++;
+			if (!isFragment && bundle.getState() != Bundle.ACTIVE && (data == null || !data.failedToStart)) {
+				notFinished++;
 			}
 		}
 		
-		if (notStarted == 0) {
+		if (notFinished == 0) {
 			eventHelper.fireEvent(new AppsFinishedStartingEvent(this));
 			checkAllApps = false;
 		}
@@ -159,6 +138,6 @@ public class StartupMonitor implements SynchronousBundleListener {
 	static class BundleData {
 		Integer lastState;
 		Integer lastEvent;
-		int failedStarts; 
+		boolean failedToStart;
 	}
 }

@@ -219,8 +219,11 @@ public class AppManager implements FrameworkListener, AppStatusChangedListener {
 	void attemptInitialization() {
 		synchronized (lock ) {
 			if (!isInitialized && startLevel.getStartLevel() >= APP_START_LEVEL) {
-				startupMonitor.setActive(true);
+				// Initialize the apps list and start simple (non-OSGi) apps)
 				initializeApps();
+				// Monitor startup of all app bundles and scan to see if we're finished yet
+				// Note - this may run before FileInstall has scanned newly-installed bundles
+				startupMonitor.setActive(true);
 				isInitialized = true;
 			}
 		}
