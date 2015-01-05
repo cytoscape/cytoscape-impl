@@ -101,6 +101,8 @@ import org.cytoscape.view.vizmap.gui.internal.util.ServicePropertiesUtil;
 import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
 import org.cytoscape.view.vizmap.gui.internal.view.VisualPropertySheetItem.MessageType;
 import org.cytoscape.view.vizmap.gui.internal.view.VizMapperMainPanel.VisualStyleDropDownButton;
+import org.cytoscape.view.vizmap.gui.internal.view.editor.mappingeditor.ContinuousMappingEditorPanel;
+import org.cytoscape.view.vizmap.gui.internal.view.editor.mappingeditor.EditorValueRangeTracer;
 import org.cytoscape.view.vizmap.gui.util.DiscreteMappingGenerator;
 import org.cytoscape.view.vizmap.gui.util.PropertySheetUtil;
 import org.cytoscape.view.vizmap.mappings.ContinuousMapping;
@@ -733,6 +735,9 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 			@Override
 			public void run() {
 				final VisualStyle selectedVs = vizMapperMainPanel.getSelectedVisualStyle();
+
+				// Switching styles.  Need to reset the range tracer
+				ContinuousMappingEditorPanel.setTracer(new EditorValueRangeTracer(servicesUtil));
 				
 				if (vs != null && !vs.equals(selectedVs))
 					vizMapperMainPanel.setSelectedVisualStyle(vs);
