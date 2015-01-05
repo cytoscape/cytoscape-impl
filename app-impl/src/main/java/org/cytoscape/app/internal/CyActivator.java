@@ -339,7 +339,7 @@ public class CyActivator extends AbstractCyActivator {
 		
 		StartLevel startLevel = getService(bc, StartLevel.class);
 		PackageAdmin packageAdmin = getService(bc, PackageAdmin.class);
-		StartupMonitor startupMonitor = new StartupMonitor(bc, packageAdmin, cyEventHelperRef);
+		StartupMonitor startupMonitor = new StartupMonitor(bc, packageAdmin, cyEventHelperRef, startLevel);
 		bc.addBundleListener(startupMonitor);
 		
 		// Instantiate new manager
