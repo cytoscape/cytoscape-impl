@@ -105,7 +105,7 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 	protected Double lastSpinnerNumber = null;
 
 	// This should be injected.
-	protected final EditorValueRangeTracer tracer;
+	protected static EditorValueRangeTracer tracer = null;
 	protected final ServicesUtil servicesUtil;
 
 	protected final VisualStyle style;
@@ -131,7 +131,6 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 		if (style == null)
 			throw new NullPointerException("Visual Style should not be null.");
 
-		this.tracer = new EditorValueRangeTracer(servicesUtil);
 		this.mapping = mapping;
 		this.type = mapping.getVisualProperty();
 		this.style = style;
@@ -160,10 +159,17 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 			throw new IllegalArgumentException("Cannot support column data type.  Numerical values only: "
 					+ attrType);
 
+		if (tracer == null)
+			this.tracer = new EditorValueRangeTracer(servicesUtil);
+
 		initComponents();
 		initRangeValues();
 		setSpinner();
 		slider.addMouseListener(new ThumbMouseListener());
+	}
+
+	public static void setTracer(EditorValueRangeTracer t) {
+		tracer = t;
 	}
 
 	@SuppressWarnings("serial")

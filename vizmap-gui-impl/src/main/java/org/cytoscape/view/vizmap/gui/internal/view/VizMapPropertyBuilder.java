@@ -260,6 +260,7 @@ public class VizMapPropertyBuilder {
 
 			setDiscreteProps(vp, visualMapping, attrSet, vpEditor, propertySheetPanel);
 		} else if (visualMapping instanceof ContinuousMapping) {
+			// TODO: How do we decide when to reset the range tracer for this mapping?
 			final VizMapperProperty<String, VisualMappingFunction, VisualMappingFunction<K, V>> graphicalView = 
 					new VizMapperProperty<String, VisualMappingFunction, VisualMappingFunction<K, V>>(
 							CellType.CONTINUOUS,
@@ -353,8 +354,10 @@ public class VizMapPropertyBuilder {
 					final CellType cellType = ((VizMapperProperty<?, ?, ?>) p).getCellType();
 					
 					if (cellType == CellType.CONTINUOUS || cellType == CellType.DISCRETE) {
-						if (cellType == CellType.CONTINUOUS)
+						if (cellType == CellType.CONTINUOUS) {
+							// TODO: Update range trace?
 							rendReg.unregisterRenderer(p);
+						}
 						
 						propertySheetPanel.removeProperty(p);
 					}
