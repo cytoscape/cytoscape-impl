@@ -65,6 +65,7 @@ import org.cytoscape.view.vizmap.gui.internal.model.LockedValueState;
 import org.cytoscape.view.vizmap.gui.internal.theme.ThemeManager;
 import org.cytoscape.view.vizmap.gui.internal.theme.ThemeManager.CyFont;
 import org.cytoscape.view.vizmap.gui.internal.util.VisualPropertyUtil;
+import org.cytoscape.view.vizmap.gui.internal.view.editor.mappingeditor.ContinuousMappingEditorPanel;
 import org.cytoscape.view.vizmap.mappings.ContinuousMapping;
 import org.cytoscape.view.vizmap.mappings.DiscreteMapping;
 import org.cytoscape.view.vizmap.mappings.PassthroughMapping;
@@ -405,6 +406,11 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 		model.addPropertyChangeListener("visualMappingFunction", new PropertyChangeListener() {
 			@Override
 			public void propertyChange(final PropertyChangeEvent e) {
+				// Update our tracer
+				if (!model.isVisualMappingAllowed())
+					return;
+				// Note that if this isn't a Continuous mapper, this will just return
+				ContinuousMappingEditorPanel.resetTracer(model.getVisualProperty());
 				updateMapping();
 			}
 		});
