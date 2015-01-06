@@ -172,6 +172,12 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 		tracer = t;
 	}
 
+	public static void resetTracer(VisualProperty vp) {
+		if (tracer == null) return;
+		tracer.setMin(vp, 0.0);
+		tracer.setMax(vp, 0.0);
+	}
+
 	@SuppressWarnings("serial")
 	private JPanel createMainPanel() {
 		return new JPanel() {
