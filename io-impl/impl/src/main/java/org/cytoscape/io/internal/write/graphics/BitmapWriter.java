@@ -71,7 +71,7 @@ public class BitmapWriter extends AbstractTask implements CyWriter {
 
 	//****
 	public BoundedDouble zoom;
-	@Tunable(description = "Zoom (%)",groups={"Image Size"},params="alignments=vertical;slider=true",listenForChange={"WidthInPixels","HeightInPixels", "WidthInInches", "HeightInInches"}, format="###%")
+	@Tunable(description = "Zoom (%)",groups={"Image Size"},params="alignments=vertical;slider=true",listenForChange={"WidthInPixels","HeightInPixels", "WidthInInches", "HeightInInches"}, format="###'%'")
 	public BoundedDouble getZoom(){
 		return zoom;
 	}
