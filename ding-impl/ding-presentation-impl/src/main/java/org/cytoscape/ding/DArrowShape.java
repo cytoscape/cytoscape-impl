@@ -30,6 +30,7 @@ import java.util.Hashtable;
 import java.util.Map;
 
 import org.cytoscape.graph.render.immed.GraphGraphics;
+import org.cytoscape.view.presentation.property.ArrowShapeVisualProperty;
 import org.cytoscape.view.presentation.property.values.ArrowShape;
 
 
@@ -40,18 +41,19 @@ import org.cytoscape.view.presentation.property.values.ArrowShape;
  *
  */
 public enum DArrowShape {
-	NONE("None", "NONE", GraphGraphics.ARROW_NONE),
-	DIAMOND("Diamond", "DIAMOND", GraphGraphics.ARROW_DIAMOND),
-	DELTA("Delta", "DELTA", GraphGraphics.ARROW_DELTA),
-	ARROW("Arrow", "ARROW", GraphGraphics.ARROW_ARROWHEAD),
-	T("T", "T", GraphGraphics.ARROW_TEE),
-	CIRCLE("Circle", "CIRCLE", GraphGraphics.ARROW_DISC),
-	HALF_TOP("Half Top", "HALF_TOP", GraphGraphics.ARROW_HALF_TOP),
-	HALF_BOTTOM("Half Top", "HALF_BOTTOM", GraphGraphics.ARROW_HALF_BOTTOM);
+	NONE("None", "NONE", ArrowShapeVisualProperty.NONE, GraphGraphics.ARROW_NONE),
+	DIAMOND("Diamond", "DIAMOND", ArrowShapeVisualProperty.DIAMOND, GraphGraphics.ARROW_DIAMOND),
+	DELTA("Delta", "DELTA", ArrowShapeVisualProperty.DELTA, GraphGraphics.ARROW_DELTA),
+	ARROW("Arrow", "ARROW", ArrowShapeVisualProperty.ARROW, GraphGraphics.ARROW_ARROWHEAD),
+	T("T", "T", ArrowShapeVisualProperty.T, GraphGraphics.ARROW_TEE),
+	CIRCLE("Circle", "CIRCLE", ArrowShapeVisualProperty.CIRCLE, GraphGraphics.ARROW_DISC),
+	HALF_TOP("Half Top", "HALF_TOP", ArrowShapeVisualProperty.HALF_TOP, GraphGraphics.ARROW_HALF_TOP),
+	HALF_BOTTOM("Half Top", "HALF_BOTTOM", ArrowShapeVisualProperty.HALF_BOTTOM, GraphGraphics.ARROW_HALF_BOTTOM);
 	
 
 	private final String displayName;
 	private final String serializableString;
+	private final ArrowShape presentationShape;
 	private final byte rendererTypeID;
 	
 	private static final Map<Byte, Shape> ARROW_SHAPES;
@@ -71,10 +73,12 @@ public enum DArrowShape {
 	}
 	
 	
-	private DArrowShape(final String displayName, final String serializableString, final byte rendererTypeID) {
+	private DArrowShape(final String displayName, final String serializableString, 
+	                    final ArrowShape presentationShape, final byte rendererTypeID) {
 		this.displayName = displayName;
 		this.rendererTypeID = rendererTypeID;
 		this.serializableString = serializableString;
+		this.presentationShape = presentationShape;
 	}
 
 	/**
@@ -136,6 +140,14 @@ public enum DArrowShape {
 		return shape;
 	}
 
+	public static ArrowShape getArrowShape(final Byte rendererTypeID) {
+		for (DArrowShape shape : values()) {
+			if (shape.rendererTypeID == rendererTypeID) {
+				return shape.presentationShape;
+			}
+		}
+		return ArrowShapeVisualProperty.NONE;
+	}
 	
 	public static DArrowShape getArrowShape(final ArrowShape arrowShape) {
 		final String serializedString = arrowShape.getSerializableString();

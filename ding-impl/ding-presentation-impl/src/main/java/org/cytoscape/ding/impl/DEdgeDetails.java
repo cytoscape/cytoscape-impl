@@ -271,7 +271,7 @@ final class DEdgeDetails extends EdgeDetails {
 	void setSourceArrowDefault(byte arrow) {
 		m_sourceArrowDefault = arrow;
 		// FIXME
-//		defaultValues.put(DVisualLexicon.EDGE_SOURCE_ARROW_SHAPE, m_selectedPaintDefault);
+		defaultValues.put(DVisualLexicon.EDGE_SOURCE_ARROW_SHAPE, DArrowShape.getArrowShape(m_sourceArrowDefault));
 	}
 
 	/*
@@ -361,6 +361,7 @@ final class DEdgeDetails extends EdgeDetails {
 
 	void setTargetArrowDefault(final byte arrow) {
 		m_targetArrowDefault = arrow;
+		defaultValues.put(DVisualLexicon.EDGE_SOURCE_ARROW_SHAPE, DArrowShape.getArrowShape(m_sourceArrowDefault));
 	}
 
 	/*
