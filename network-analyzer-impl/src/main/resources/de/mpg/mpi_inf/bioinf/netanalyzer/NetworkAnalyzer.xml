@@ -6,9 +6,9 @@
 		<nodeattributes>true</nodeattributes>
 		<edgeattributes>true</edgeattributes>
 		<background>-3355393</background>
-		<brightcolor>-16711936</brightcolor>
-		<middlecolor>-256</middlecolor>
-		<darkcolor>-65536</darkcolor>
+		<brightcolor>16551257</brightcolor>
+		<middlecolor>16777151</middlecolor>
+		<darkcolor>9551835</darkcolor>
 		<helpurl>http://med.bioinf.mpi-inf.mpg.de/netanalyzer/help/3.0/</helpurl>
 		<helpfitting>index.html</helpfitting>
 		<helpinterpret>index.html#interpret</helpinterpret>
