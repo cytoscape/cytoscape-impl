@@ -24,30 +24,31 @@ package de.mpg.mpi_inf.bioinf.netanalyzer.ui;
  * #L%
  */
 
+import java.awt.Component;
+import java.awt.Dimension;
+
+import javax.swing.Icon;
+import javax.swing.JPanel;
+
 import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.application.swing.CytoPanelName;
 
-import javax.swing.*;
-import java.awt.*;
-
 public class ResultPanel extends JPanel implements CytoPanelComponent {
+	
+	private static final long serialVersionUID = -7824516315016600756L;
 	
 	private static final Dimension DEF_PANEL_SIZE = new Dimension(680, 520);
 	
 	private final String panelTitle;
 	
 	public ResultPanel(final String panelTitle) {
+		this.panelTitle = panelTitle;
+		
 		this.setPreferredSize(DEF_PANEL_SIZE);
 		this.setSize(DEF_PANEL_SIZE);
 		this.setMinimumSize(DEF_PANEL_SIZE);
-		
-		this.panelTitle = panelTitle;
 	}
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = -7824516315016600756L;
-
+	
 	@Override
 	public Component getComponent() {
 		return this;
@@ -67,6 +68,4 @@ public class ResultPanel extends JPanel implements CytoPanelComponent {
 	public Icon getIcon() {
 		return null;
 	}
-
-
 }

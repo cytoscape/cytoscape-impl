@@ -26,10 +26,13 @@ package de.mpg.mpi_inf.bioinf.netanalyzer.ui;
  * #L%
  */
 
+import static javax.swing.GroupLayout.DEFAULT_SIZE;
+import static javax.swing.GroupLayout.PREFERRED_SIZE;
+
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.FlowLayout;
-import java.awt.Frame;
+import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
@@ -38,18 +41,20 @@ import java.util.Collection;
 import java.util.HashMap;
 
 import javax.swing.ButtonGroup;
+import javax.swing.GroupLayout;
+import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.SwingConstants;
-import javax.swing.border.TitledBorder;
 
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.vizmap.VisualMappingManager;
@@ -111,7 +116,6 @@ public class MapParameterDialog extends VisualizeParameterDialog implements Acti
 		mapEdgeSize = Messages.DI_LOWTOSMALL;
 		mapEdgeColor = Messages.DI_LOWTOBRIGHT;
 	}
-
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
@@ -223,19 +227,11 @@ public class MapParameterDialog extends VisualizeParameterDialog implements Acti
 		if (nodeAttr[0].length > 0 || nodeAttr[1].length > 0) {
 			attrCalculated = true;
 			// Panel for node size mapping
-			final JPanel panNodeSize = new JPanel(new BorderLayout(BS, BS));
-			panNodeSize.setBorder(new TitledBorder(null, Messages.DI_MAPNODESIZE, TitledBorder.CENTER,
-					TitledBorder.CENTER));
-
-			final JPanel panNodeSizeAttr = new JPanel(new FlowLayout(FlowLayout.CENTER));
 			cbxNodeSize = new JComboBox(combineAttrArray(nodeAttr, true));
 			cbxNodeSize.setLightWeightPopupEnabled(false);
 			cbxNodeSize.addActionListener(this);
 			cbxNodeSize.setRenderer(new ComboBoxRenderer());
-			panNodeSizeAttr.add(cbxNodeSize);
-			panNodeSize.add(panNodeSizeAttr, BorderLayout.NORTH);
-
-			final JPanel panNodeSizeMap = new JPanel(new GridLayout(2, 2, BS, BS));
+			
 			btnNodeSize1 = new JRadioButton(Messages.DI_LOWTOSMALL, true);
 			btnNodeSize1.addActionListener(this);
 			btnNodeSize2 = new JRadioButton(Messages.DI_LOWTOLARGE, false);
@@ -243,27 +239,23 @@ public class MapParameterDialog extends VisualizeParameterDialog implements Acti
 			final ButtonGroup btngNodeSize = new ButtonGroup();
 			btngNodeSize.add(btnNodeSize1);
 			btngNodeSize.add(btnNodeSize2);
-			panNodeSizeMap.add(btnNodeSize1);
-			panNodeSizeMap.add(new NodeEdgeCanvas(true, true));
-			panNodeSizeMap.add(btnNodeSize2);
-			panNodeSizeMap.add(new NodeEdgeCanvas(false, true));
-			panNodeSize.add(panNodeSizeMap, BorderLayout.SOUTH);
+			
+			final JPanel panNodeSize = createVizmapOptionPanel(
+					Messages.DI_MAPNODESIZE,
+					cbxNodeSize,
+					btnNodeSize1,
+					btnNodeSize2,
+					new NodeEdgeCanvas(true, true),
+					new NodeEdgeCanvas(false, true));
+			
 			panNode.add(panNodeSize);
 
 			// Panel for node color mapping
-			final JPanel panNodeColor = new JPanel(new BorderLayout(BS, BS));
-			panNodeColor.setBorder(new TitledBorder(null, Messages.DI_MAPNODECOLOR, TitledBorder.CENTER,
-					TitledBorder.CENTER));
-
-			final JPanel panNodeColorAttr = new JPanel(new FlowLayout(FlowLayout.CENTER));
 			cbxNodeColor = new JComboBox(combineAttrArray(nodeAttr, true));
 			cbxNodeColor.setLightWeightPopupEnabled(false);
 			cbxNodeColor.addActionListener(this);
 			cbxNodeColor.setRenderer(new ComboBoxRenderer());
-			panNodeColorAttr.add(cbxNodeColor);
-			panNodeColor.add(panNodeColorAttr, BorderLayout.NORTH);
-
-			final JPanel panNodeColorMap = new JPanel(new GridLayout(2, 2, BS, BS));
+			
 			btnNodeColor1 = new JRadioButton(Messages.DI_LOWTOBRIGHT, true);
 			btnNodeColor1.addActionListener(this);
 			btnNodeColor2 = new JRadioButton(Messages.DI_LOWTODARK, false);
@@ -271,30 +263,27 @@ public class MapParameterDialog extends VisualizeParameterDialog implements Acti
 			final ButtonGroup btngNodeColor = new ButtonGroup();
 			btngNodeColor.add(btnNodeColor1);
 			btngNodeColor.add(btnNodeColor2);
-			panNodeColorMap.add(btnNodeColor1);
-			panNodeColorMap.add(new RainbowCanvas(new Color[] { c1, c2, c3 }));
-			panNodeColorMap.add(btnNodeColor2);
-			panNodeColorMap.add(new RainbowCanvas(new Color[] { c3, c2, c1 }));
-			panNodeColor.add(panNodeColorMap, BorderLayout.SOUTH);
+			
+			final JPanel panNodeColor = createVizmapOptionPanel(
+					Messages.DI_MAPNODECOLOR,
+					cbxNodeColor,
+					btnNodeColor1,
+					btnNodeColor2,
+					new RainbowCanvas(new Color[] { c1, c2, c3 }),
+					new RainbowCanvas(new Color[] { c3, c2, c1 }));
 
 			panNode.add(panNodeColor);
 		}
+		
 		if (edgeAttr[0].length > 0 || edgeAttr[1].length > 0) {
 			attrCalculated = true;
+			
 			// Panel for edge size mapping
-			final JPanel panEdgeSize = new JPanel(new BorderLayout(BS, BS));
-			panEdgeSize.setBorder(new TitledBorder(null, Messages.DI_MAPEDGESIZE, TitledBorder.CENTER,
-					TitledBorder.CENTER));
-
-			final JPanel panEdgeSizeAttr = new JPanel(new FlowLayout(FlowLayout.CENTER));
 			cbxEdgeSize = new JComboBox(combineAttrArray(edgeAttr, true));
 			cbxEdgeSize.setLightWeightPopupEnabled(false);
 			cbxEdgeSize.addActionListener(this);
 			cbxEdgeSize.setRenderer(new ComboBoxRenderer());
-			panEdgeSizeAttr.add(cbxEdgeSize);
-			panEdgeSize.add(panEdgeSizeAttr, BorderLayout.NORTH);
-
-			final JPanel panEdgeSizeMap = new JPanel(new GridLayout(2, 2, BS, BS));
+			
 			btnEdgeSize1 = new JRadioButton(Messages.DI_LOWTOSMALL, true);
 			btnEdgeSize1.addActionListener(this);
 			btnEdgeSize2 = new JRadioButton(Messages.DI_LOWTOLARGE, false);
@@ -302,27 +291,23 @@ public class MapParameterDialog extends VisualizeParameterDialog implements Acti
 			final ButtonGroup btngEdgeSize = new ButtonGroup();
 			btngEdgeSize.add(btnEdgeSize1);
 			btngEdgeSize.add(btnEdgeSize2);
-			panEdgeSizeMap.add(btnEdgeSize1);
-			panEdgeSizeMap.add(new NodeEdgeCanvas(true, false));
-			panEdgeSizeMap.add(btnEdgeSize2);
-			panEdgeSizeMap.add(new NodeEdgeCanvas(false, false));
-			panEdgeSize.add(panEdgeSizeMap, BorderLayout.SOUTH);
+			
+			final JPanel panEdgeSize = createVizmapOptionPanel(
+					Messages.DI_MAPEDGESIZE,
+					cbxEdgeSize,
+					btnEdgeSize1,
+					btnEdgeSize2,
+					new NodeEdgeCanvas(true, false),
+					new NodeEdgeCanvas(false, false));
+
 			panEdge.add(panEdgeSize);
 
 			// Panel for edge color mapping
-			final JPanel panEdgeColor = new JPanel(new BorderLayout(BS, BS));
-			panEdgeColor.setBorder(new TitledBorder(null, Messages.DI_MAPEDGECOLOR, TitledBorder.CENTER,
-					TitledBorder.CENTER));
-
-			final JPanel panEdgeColorAttr = new JPanel(new FlowLayout(FlowLayout.CENTER));
 			cbxEdgeColor = new JComboBox(combineAttrArray(edgeAttr, true));
 			cbxEdgeColor.setLightWeightPopupEnabled(false);
 			cbxEdgeColor.addActionListener(this);
 			cbxEdgeColor.setRenderer(new ComboBoxRenderer());
-			panEdgeColorAttr.add(cbxEdgeColor);
-			panEdgeColor.add(panEdgeColorAttr, BorderLayout.NORTH);
-
-			final JPanel panEdgeColorMap = new JPanel(new GridLayout(2, 2, BS, BS));
+			
 			btnEdgeColor1 = new JRadioButton(Messages.DI_LOWTOBRIGHT, true);
 			btnEdgeColor1.addActionListener(this);
 			btnEdgeColor2 = new JRadioButton(Messages.DI_LOWTODARK, false);
@@ -330,36 +315,78 @@ public class MapParameterDialog extends VisualizeParameterDialog implements Acti
 			final ButtonGroup btngEdgeColor = new ButtonGroup();
 			btngEdgeColor.add(btnEdgeColor1);
 			btngEdgeColor.add(btnEdgeColor2);
-			panEdgeColorMap.add(btnEdgeColor1);
-			panEdgeColorMap.add(new RainbowCanvas(new Color[] { c1, c2, c3 }));
-			panEdgeColorMap.add(btnEdgeColor2);
-			panEdgeColorMap.add(new RainbowCanvas(new Color[] { c3, c2, c1 }));
-
-			panEdgeColor.add(panEdgeColorMap, BorderLayout.SOUTH);
+			
+			final JPanel panEdgeColor = createVizmapOptionPanel(
+					Messages.DI_MAPEDGECOLOR,
+					cbxEdgeColor,
+					btnEdgeColor1,
+					btnEdgeColor2,
+					new RainbowCanvas(new Color[] { c1, c2, c3 }),
+					new RainbowCanvas(new Color[] { c3, c2, c1 }));
 
 			panEdge.add(panEdgeColor);
 		}
+		
 		if (attrCalculated == false) {
 			throw new IllegalArgumentException();
 		}
+		
 		panMapping.add(panNode, BorderLayout.PAGE_START);
 		panMapping.add(panEdge, BorderLayout.PAGE_END);
 		contentPane.add(panMapping, BorderLayout.CENTER);
 
 		// Add Apply and Cancel buttons
-		final JPanel panBottom = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));
-		final JPanel panButtons = new JPanel(new GridLayout(1, 2, BS, 0));
 		btnApply = Utils.createButton(Messages.DI_APPLY, null, this);
 		btnApply.setEnabled(false);
-		panButtons.add(btnApply);
-		btnClose = Utils.createButton(Messages.DI_CLOSE, null, this);
-		panButtons.add(btnClose);
-		panBottom.add(panButtons);
-
-		contentPane.add(panBottom, BorderLayout.PAGE_END);
+		btnClose = Utils.createButton(Messages.DI_CANCEL, null, this);
+		Utils.equalizeSize(btnApply, btnClose);
+		
+		final JPanel panButtons = LookAndFeelUtil.createOkCancelPanel(btnApply, btnClose);
+		contentPane.add(panButtons, BorderLayout.PAGE_END);
 
 		setContentPane(contentPane);
 		pack();
+	}
+	
+	private JPanel createVizmapOptionPanel(final String title, final JComboBox<?> cmb,
+			final JRadioButton radio1, final JRadioButton radio2, final Component canvas1, final Component canvas2) {
+		final JPanel panel = new JPanel();
+		panel.setBorder(LookAndFeelUtil.createTitledBorder(title));
+		
+		canvas1.setPreferredSize(new Dimension(180, radio1.getPreferredSize().height));
+		canvas2.setPreferredSize(new Dimension(180, radio2.getPreferredSize().height));
+		
+		final GroupLayout layout = new GroupLayout(panel);
+		panel.setLayout(layout);
+		layout.setAutoCreateContainerGaps(true);
+		layout.setAutoCreateGaps(true);
+		
+		layout.setHorizontalGroup(layout.createParallelGroup(Alignment.CENTER, true)
+				.addComponent(cmb, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				.addGroup(Alignment.CENTER, layout.createSequentialGroup()
+						.addComponent(radio1, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+						.addComponent(canvas1, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				)
+				.addGroup(Alignment.CENTER, layout.createSequentialGroup()
+						.addComponent(radio2, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+						.addComponent(canvas2, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				)
+		);
+		layout.setVerticalGroup(layout.createSequentialGroup()
+				.addComponent(cmb, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
+						.addGroup(Alignment.LEADING, layout.createSequentialGroup()
+								.addComponent(radio1, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+								.addComponent(radio2, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+						)
+						.addGroup(Alignment.TRAILING, layout.createSequentialGroup()
+								.addComponent(canvas1, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+								.addComponent(canvas2, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						)
+				)
+		);
+		
+		return panel;
 	}
 
 	/**

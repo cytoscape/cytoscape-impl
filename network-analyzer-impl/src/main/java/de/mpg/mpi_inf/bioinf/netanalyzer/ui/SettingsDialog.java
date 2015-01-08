@@ -36,11 +36,12 @@ import java.awt.event.ActionListener;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Stack;
 
-import javax.swing.Box;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
+
+import org.cytoscape.util.swing.LookAndFeelUtil;
 
 import de.mpg.mpi_inf.bioinf.netanalyzer.data.Messages;
 
@@ -175,15 +176,13 @@ public class SettingsDialog extends JDialog implements ActionListener {
 		contentPane.add(settingsPane);
 
 		// Add Save as Default, OK and Cancel buttons
-		JPanel buttonsPanel = new JPanel();
 		btnSaveDefault = Utils.createButton(Messages.DI_SAVEDEFAULT, null, this);
 		btnOK = Utils.createButton(Messages.DI_OK, null, this);
 		btnCancel = Utils.createButton(Messages.DI_CANCEL, null, this);
-		buttonsPanel.add(btnSaveDefault);
-		buttonsPanel.add(Box.createHorizontalStrut(10));
-		buttonsPanel.add(btnOK);
-		buttonsPanel.add(btnCancel);
-		Utils.equalizeSize(btnSaveDefault, btnOK, btnCancel);
+		Utils.equalizeSize(btnOK, btnCancel);
+		
+		final JPanel buttonsPanel = LookAndFeelUtil.createOkCancelPanel(btnOK, btnCancel, btnSaveDefault);
+		
 		contentPane.add(buttonsPanel, BorderLayout.SOUTH);
 	}
 

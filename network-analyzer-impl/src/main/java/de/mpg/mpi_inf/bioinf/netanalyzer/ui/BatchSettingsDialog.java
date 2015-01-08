@@ -26,18 +26,18 @@ package de.mpg.mpi_inf.bioinf.netanalyzer.ui;
  * #L%
  */
 
-import java.awt.BorderLayout;
+import static javax.swing.GroupLayout.DEFAULT_SIZE;
+import static javax.swing.GroupLayout.PREFERRED_SIZE;
+
 import java.awt.FlowLayout;
 import java.awt.Frame;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 
-import javax.swing.Box;
 import javax.swing.ButtonGroup;
+import javax.swing.GroupLayout;
+import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
@@ -45,7 +45,8 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JTextField;
-import javax.swing.border.TitledBorder;
+
+import org.cytoscape.util.swing.LookAndFeelUtil;
 
 import de.mpg.mpi_inf.bioinf.netanalyzer.data.Interpretations;
 import de.mpg.mpi_inf.bioinf.netanalyzer.data.Messages;
@@ -67,7 +68,7 @@ public class BatchSettingsDialog extends JDialog implements ActionListener {
 	 *            The <code>Frame</code> from which this dialog is displayed.
 	 */
 	public BatchSettingsDialog(Frame aOwner) {
-		super(aOwner, Messages.DT_BATCHSETTINGS, true);
+		super(aOwner, Messages.DT_BATCHANALYSIS, true);
 
 		inOutDirs = null;
 		initControls();
@@ -75,11 +76,7 @@ public class BatchSettingsDialog extends JDialog implements ActionListener {
 		setLocationRelativeTo(aOwner);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
-	 */
+	@Override
 	public void actionPerformed(ActionEvent e) {
 		final Object src = e.getSource();
 		if (src == btnInputDir) {
@@ -151,16 +148,8 @@ public class BatchSettingsDialog extends JDialog implements ActionListener {
 	 * </p>
 	 */
 	private void initControls() {
-
 		// Create the outer box and panel
-		Box contentPane = Box.createVerticalBox();
-		Utils.setStandardBorder(contentPane);
-
-		JPanel panTitle = new JPanel();
-		panTitle.add(new JLabel(Messages.DT_BATCHSETTINGS));
-		contentPane.add(panTitle);
 		final int BS = Utils.BORDER_SIZE / 2;
-		contentPane.add(Box.createVerticalStrut(BS));
 
 		// Create file choosers and pre-load with paths in settings
 		choInputDir = new JFileChooser();
@@ -171,36 +160,63 @@ public class BatchSettingsDialog extends JDialog implements ActionListener {
 		// choOutputDir.setSelectedFile(new File(outputDir));
 
 		// Initialize text fields for displaying currently selected paths
-		final int columnsCount = Utils.BORDER_SIZE * 6;
+		final int columnsCount = Utils.BORDER_SIZE * 5;
 		txfInputDir = new JTextField("", columnsCount);
+		txfInputDir.setEditable(false);
 		txfOutputDir = new JTextField("", columnsCount);
+		txfOutputDir.setEditable(false);
 
 		// Create buttons for changing the settings
-		JButton[] buttons = new JButton[2];
+		final JButton[] buttons = new JButton[2];
 		buttons[0] = btnInputDir = Utils.createButton(Messages.DI_SELECTDIR, null, this);
 		buttons[1] = btnOutputDir = Utils.createButton(Messages.DI_SELECTDIR, null, this);
 		Utils.equalizeSize(buttons);
 
 		// Add buttons for selecting paths and files
-		JPanel panTop = new JPanel();
-		JPanel panSelects = new JPanel(new GridBagLayout());
-		GridBagConstraints constr = new GridBagConstraints();
-		constr.insets.left = BS;
-		constr.insets.right = BS;
-		constr.gridx = constr.gridy = 0;
-
-		// Layout the controls in tabular form
-		addPathSelector(Messages.DI_INPUTDIR, txfInputDir, btnInputDir, panSelects, constr);
-		addPathSelector(Messages.DI_OUTPUTDIR, txfOutputDir, btnOutputDir, panSelects, constr);
-
-		panTop.add(panSelects);
-		contentPane.add(panTop);
-		contentPane.add(Box.createVerticalStrut(Utils.BORDER_SIZE));
+		final JPanel panSelects = new JPanel();
+		panSelects.setBorder(LookAndFeelUtil.createTitledBorder(Messages.DT_BATCHSETTINGS));
 		
+		{
+			final JLabel lblInput = new JLabel(Messages.DI_INPUTDIR);
+			final JLabel lblOutput = new JLabel(Messages.DI_OUTPUTDIR);
+			
+			final GroupLayout layout = new GroupLayout(panSelects);
+			panSelects.setLayout(layout);
+			layout.setAutoCreateContainerGaps(true);
+			layout.setAutoCreateGaps(true);
+			
+			layout.setHorizontalGroup(layout.createParallelGroup(Alignment.TRAILING, true)
+					.addGroup(layout.createSequentialGroup()
+							.addComponent(lblInput, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+							.addComponent(txfInputDir, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+							.addComponent(btnInputDir)
+					)
+					.addGroup(layout.createSequentialGroup()
+							.addComponent(lblOutput, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+							.addComponent(txfOutputDir, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+							.addComponent(btnOutputDir)
+					)
+			);
+			layout.setVerticalGroup(layout.createParallelGroup(Alignment.CENTER, false)
+					.addGroup(Alignment.TRAILING, layout.createSequentialGroup()
+							.addComponent(lblInput, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+							.addComponent(lblOutput, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+					)
+					.addGroup(Alignment.LEADING, layout.createSequentialGroup()
+							.addComponent(txfInputDir)
+							.addComponent(txfOutputDir)
+					)
+					.addGroup(Alignment.LEADING, layout.createSequentialGroup()
+							.addComponent(btnInputDir)
+							.addComponent(btnOutputDir)
+					)
+			);
+		}
+	
 		// Add radio buttons for network interpretations
-		final JPanel panCenter = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));
-		final JPanel panInterpr = new JPanel(new BorderLayout());
-		panInterpr.setBorder(new TitledBorder(Messages.DI_INTERPRS));
+		final JPanel panInterpr = new JPanel();
+		panInterpr.setBorder(LookAndFeelUtil.createTitledBorder(Messages.DI_INTERPRS));
+		
 		btnInterpretAll = new JRadioButton(Messages.DI_INTERPR_ALL, true);
 		btnInterpretDir = new JRadioButton(Messages.DI_INTERPR_DIRECTED);
 		btnInterpretUndir = new JRadioButton(Messages.DI_INTERPR_UNDIRECTED);
@@ -208,64 +224,63 @@ public class BatchSettingsDialog extends JDialog implements ActionListener {
 		group.add(btnInterpretAll);
 		group.add(btnInterpretDir);
 		group.add(btnInterpretUndir);
-		panInterpr.add(btnInterpretAll, BorderLayout.PAGE_START);
-		panInterpr.add(btnInterpretDir, BorderLayout.CENTER);
-		panInterpr.add(btnInterpretUndir, BorderLayout.PAGE_END);
-		panCenter.add(panInterpr);
-		contentPane.add(panCenter);
-		contentPane.add(Box.createVerticalStrut(Utils.BORDER_SIZE));
-
+		
+		{
+			final GroupLayout layout = new GroupLayout(panInterpr);
+			panInterpr.setLayout(layout);
+			layout.setAutoCreateContainerGaps(true);
+			layout.setAutoCreateGaps(true);
+			
+			layout.setHorizontalGroup(layout.createParallelGroup(Alignment.LEADING, true)
+					.addComponent(btnInterpretAll)
+					.addComponent(btnInterpretDir)
+					.addComponent(btnInterpretUndir)
+			);
+			layout.setVerticalGroup(layout.createSequentialGroup()
+					.addComponent(btnInterpretAll)
+					.addComponent(btnInterpretDir)
+					.addComponent(btnInterpretUndir)
+			);
+		}
+		
 		// Add info about node attributes
 		final JPanel panAttr = new JPanel(new FlowLayout(FlowLayout.CENTER, BS, BS));
-		if (SettingsSerializer.getPluginSettings().getUseNodeAttributes()) {
+		
+		if (SettingsSerializer.getPluginSettings().getUseNodeAttributes())
 			panAttr.add(new JLabel(Messages.DI_NODEATTR_SAVE));
-		} else {
+		else
 			panAttr.add(new JLabel(Messages.DI_NODEATTR_SAVENOT));
-		}
-		contentPane.add(panAttr);
-		contentPane.add(Box.createVerticalStrut(Utils.BORDER_SIZE));
 		
 		// Add Start Analysis and Cancel buttons
-		final JPanel panBottom = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));
-		final JPanel panButtons = new JPanel(new GridLayout(1, 2, Utils.BORDER_SIZE, 0));
-		panButtons.add(btnCancel = Utils.createButton(Messages.DI_CANCEL, null, this));
-		panButtons.add(btnStart = Utils.createButton(Messages.DI_STARTANALYSIS, null, this));
-		panBottom.add(panButtons);
+		btnCancel = Utils.createButton(Messages.DI_CANCEL, null, this);
+		btnStart = Utils.createButton(Messages.DI_STARTANALYSIS, null, this);
+		Utils.equalizeSize(btnStart, btnCancel);
 		updateStartButton();
-
-		contentPane.add(panBottom);
-		setContentPane(contentPane);
+		
+		// Button panel
+		final JPanel panBottom = LookAndFeelUtil.createOkCancelPanel(btnStart, btnCancel);
+		
+		{
+			final GroupLayout layout = new GroupLayout(getContentPane());
+			getContentPane().setLayout(layout);
+			layout.setAutoCreateContainerGaps(true);
+			layout.setAutoCreateGaps(true);
+			
+			layout.setHorizontalGroup(layout.createParallelGroup(Alignment.CENTER, true)
+					.addComponent(panSelects, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+					.addComponent(panInterpr, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+					.addComponent(panAttr)
+					.addComponent(panBottom, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+			);
+			layout.setVerticalGroup(layout.createSequentialGroup()
+					.addComponent(panSelects)
+					.addComponent(panInterpr)
+					.addComponent(panAttr)
+					.addComponent(panBottom)
+			);
+		}
+		
 		setResizable(false);
-	}
-
-	/**
-	 * Adds a path selector to the dialog.
-	 * 
-	 * @param aMessage
-	 *            Label of the path to be selected.
-	 * @param aField
-	 *            Field for the selected path name.
-	 * @param aButton
-	 *            Button to be pressed for choosing the path.
-	 * @param aPanel
-	 *            Panel to add aMessage, aField and aButton.
-	 * @param aConstr
-	 *            Constraints for visualization.
-	 */
-	private void addPathSelector(String aMessage, JTextField aField, JButton aButton, JPanel aPanel,
-			GridBagConstraints aConstr) {
-		aConstr.gridx = 0;
-		aConstr.anchor = GridBagConstraints.LINE_END;
-		aPanel.add(new JLabel(aMessage), aConstr);
-
-		aConstr.gridx = 1;
-		aConstr.anchor = GridBagConstraints.CENTER;
-		aField.setEditable(false);
-		aPanel.add(aField, aConstr);
-
-		aConstr.gridx = 2;
-		aPanel.add(aButton, aConstr);
-		aConstr.gridy++;
 	}
 
 	/**

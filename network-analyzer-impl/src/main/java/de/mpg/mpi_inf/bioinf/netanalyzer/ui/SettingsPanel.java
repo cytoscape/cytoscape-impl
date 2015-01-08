@@ -31,14 +31,10 @@ import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-import javax.swing.JButton;
 import javax.swing.JCheckBox;
-import javax.swing.JColorChooser;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -58,7 +54,7 @@ import de.mpg.mpi_inf.bioinf.netanalyzer.data.settings.Settings;
  * 
  * @author Yassen Assenov
  */
-public class SettingsPanel extends JPanel implements ActionListener {
+public class SettingsPanel extends JPanel {
 
 	/**
 	 * Initializes a new instance of <code>SettingsPanel</code>.
@@ -87,26 +83,6 @@ public class SettingsPanel extends JPanel implements ActionListener {
 		this(aSettings, true);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
-	 */
-	public void actionPerformed(ActionEvent e) {
-		if ("color".equals(e.getActionCommand())) {
-			JButton invoker = (JButton) e.getSource();
-			Color newColor = JColorChooser.showDialog(this, Messages.DI_SELECTCOLOR, invoker.getForeground());
-			if (newColor != null) {
-				invoker.setForeground(newColor);
-			}
-		}
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.awt.Component#setEnabled(boolean)
-	 */
 	@Override
 	public void setEnabled(boolean enabled) {
 		Component[] comps = getComponents();
@@ -129,10 +105,8 @@ public class SettingsPanel extends JPanel implements ActionListener {
 		for (int i = 0; i < comps.length; ++i) {
 			Component c = comps[i];
 			if (aPropName.equals(c.getName())) {
-				if (c instanceof JButton) {
-					if ("color".equals(((JButton) c).getActionCommand())) {
-						return c.getForeground();
-					}
+				if (c instanceof ColorButton) {
+					return ((ColorButton)c).getColor();
 				} else if (c instanceof JCheckBox) {
 					return new Boolean(((JCheckBox) c).isSelected());
 				} else if (c instanceof JTextField) {
@@ -297,10 +271,8 @@ public class SettingsPanel extends JPanel implements ActionListener {
 	 * @param aColor Value of the property in the form of a <code>Color</code> instance.
 	 */
 	private void addColorInput(String aPropName, Color aColor) {
-		final JButton colorButton = new JButton(Messages.SET_COLORBUTTON);
-		colorButton.addActionListener(this);
+		final ColorButton colorButton = new ColorButton(aColor);
 		colorButton.setActionCommand("color");
-		colorButton.setForeground(aColor);
 		colorButton.setName(aPropName);
 		lastColumn.fill = GridBagConstraints.NONE;
 		add(colorButton, lastColumn);

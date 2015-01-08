@@ -26,7 +26,6 @@ package de.mpg.mpi_inf.bioinf.netanalyzer.ui;
  * #L%
  */
 
-import java.awt.Component;
 import java.awt.Dialog;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -34,6 +33,7 @@ import java.lang.reflect.InvocationTargetException;
 import javax.swing.JComponent;
 import javax.swing.JTabbedPane;
 
+import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.jfree.chart.JFreeChart;
 
 import de.mpg.mpi_inf.bioinf.netanalyzer.InnerException;
@@ -164,7 +164,10 @@ public abstract class ComplexParamVisualizer {
 	 * @param aToolTip Tool-tip of the new tab. Set this to <code>null</code> if the tab title does not a
 	 *        have a tool-tip.
 	 */
-	protected static void addTab(JTabbedPane aPanel, String aTitle, Component aComp, String aToolTip) {
+	protected static void addTab(JTabbedPane aPanel, String aTitle, JComponent aComp, String aToolTip) {
+		if (LookAndFeelUtil.isAquaLAF())
+			aComp.setOpaque(false);
+		
 		aPanel.addTab(aTitle, null, aComp, aToolTip);
 	}
 

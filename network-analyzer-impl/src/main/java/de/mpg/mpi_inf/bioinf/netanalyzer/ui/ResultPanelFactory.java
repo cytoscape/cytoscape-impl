@@ -24,11 +24,14 @@ package de.mpg.mpi_inf.bioinf.netanalyzer.ui;
  * #L%
  */
 
-import org.cytoscape.service.util.CyServiceRegistrar;
-
-import javax.swing.*;
-import java.awt.*;
+import java.awt.BorderLayout;
 import java.util.Properties;
+
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.util.swing.LookAndFeelUtil;
 
 public class ResultPanelFactory {
 
@@ -38,21 +41,28 @@ public class ResultPanelFactory {
 		this.registrar = registrar;
 	}
 
-	public ResultPanel registerPanel(final Component panel, final String panelTitle) {
+	public ResultPanel registerPanel(final JPanel panel, final String panelTitle) {
 		final ResultPanel resPanel = new ResultPanel(panelTitle);
 		JScrollPane pane = new JScrollPane(panel);
-		//pane.setViewportView(panel);
+		pane.setBorder(null);
 		resPanel.setLayout(new BorderLayout());
 		resPanel.add(pane, BorderLayout.CENTER);
+		
+		if (LookAndFeelUtil.isAquaLAF()) {
+			resPanel.setOpaque(false);
+			pane.setOpaque(false);
+			pane.getViewport().setOpaque(false);
+			panel.setOpaque(false);
+		}
+		
 		registrar.registerAllServices(resPanel, new Properties());
 		
 		return resPanel;
 	}
 	
 	public void removePanel(ResultPanel panel) {
-		if(panel != null) {
+		if (panel != null) {
 			registrar.unregisterAllServices(panel);
 		}
 	}
-
 }

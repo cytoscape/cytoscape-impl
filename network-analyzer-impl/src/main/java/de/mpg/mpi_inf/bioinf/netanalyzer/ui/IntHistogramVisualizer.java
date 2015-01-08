@@ -37,6 +37,7 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 
+import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.XYBarRenderer;
@@ -70,11 +71,6 @@ public class IntHistogramVisualizer extends ComplexParamVisualizer {
 		general = settings.general;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see de.mpg.mpi_inf.bioinf.netanalyzer.ui.ComplexParamVisualizer#getComplexParam()
-	 */
 	@Override
 	public ComplexParam getComplexParam() {
 		return param;
@@ -110,21 +106,11 @@ public class IntHistogramVisualizer extends ComplexParamVisualizer {
 		param = (IntHistogram) aParam;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see de.mpg.mpi_inf.bioinf.netanalyzer.ui.ComplexParamVisualizer#createControl()
-	 */
 	@Override
 	public JFreeChart createControl() {
 		return JFreeChartConn.createChart(param, settings);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see de.mpg.mpi_inf.bioinf.netanalyzer.ui.ComplexParamVisualizer#updateControl(org.jfree.chart.JFreeChart)
-	 */
 	@Override
 	public JFreeChart updateControl(JFreeChart aControl) {
 		XYPlot plot = (XYPlot) aControl.getPlot();
@@ -150,14 +136,8 @@ public class IntHistogramVisualizer extends ComplexParamVisualizer {
 		return JFreeChartConn.createHistogram(param, settings);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see de.mpg.mpi_inf.bioinf.netanalyzer.ui.ComplexParamVisualizer#addSettingsPanels(javax.swing.JTabbedPane)
-	 */
 	@Override
 	protected JComponent addSettingsPanels(JTabbedPane aPanel) {
-
 		addTab(aPanel, Messages.DI_GENERAL, new SettingsPanel(general), Messages.TT_GENSETTINGS);
 		addTab(aPanel, Messages.DI_AXES, new SettingsPanel(settings.axes), Messages.TT_AXESSETTINGS);
 		addTab(aPanel, Messages.DI_GRID, new SettingsPanel(settings.grid), Messages.TT_GRIDSETTINGS);
@@ -170,42 +150,45 @@ public class IntHistogramVisualizer extends ComplexParamVisualizer {
 		final CardLayout innerLayout = new CardLayout();
 		final JPanel innerPanel = new JPanel(innerLayout);
 		histPanel.add(innerPanel);
+		
 		aPanel.addTab(Messages.DI_HISTOGRAM, null, histPanel, Messages.TT_HISTSETTINGS);
 
 		ItemListener listener = new ItemListener() {
-
+			@Override
 			public void itemStateChanged(ItemEvent e) {
 				if (e.getStateChange() == ItemEvent.SELECTED) {
 					innerLayout.next(innerPanel);
 				}
 			}
 		};
+		
 		choiceCombo.addItemListener(listener);
 
-		innerPanel.add(new SettingsPanel(settings.bars), "0");
-		innerPanel.add(new SettingsPanel(settings.scatter), "1");
+		final SettingsPanel barSetPanel = new SettingsPanel(settings.bars);
+		final SettingsPanel scatterSetPanel = new SettingsPanel(settings.scatter);
+		
+		innerPanel.add(barSetPanel, "0");
+		innerPanel.add(scatterSetPanel, "1");
+		
 		if (useScatter) {
 			innerLayout.next(innerPanel);
+		}
+		
+		if (LookAndFeelUtil.isAquaLAF()) {
+			histPanel.setOpaque(false);
+			innerPanel.setOpaque(false);
+			barSetPanel.setOpaque(false);
+			scatterSetPanel.setOpaque(false);
 		}
 
 		return choiceCombo;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see de.mpg.mpi_inf.bioinf.netanalyzer.ui.ComplexParamVisualizer#saveDefault()
-	 */
 	@Override
 	protected void saveDefault() throws IOException {
 		SettingsSerializer.setDefault(settings);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see de.mpg.mpi_inf.bioinf.netanalyzer.ui.ComplexParamVisualizer#updateSettings(javax.swing.JComponent)
-	 */
 	@Override
 	protected void updateSettings(JComponent aDataComp) {
 		settings.useScatter.setValue(((JComboBox) aDataComp).getSelectedIndex() == 1);
@@ -222,12 +205,18 @@ public class IntHistogramVisualizer extends ComplexParamVisualizer {
 	 */
 	private static JComboBox addChoice(Box aContainer, int aSelectedIndex) {
 		final String[] choices = new String[] { Messages.DI_SHOWHIST, Messages.DI_SHOWSCAT };
-		JComboBox choiceCombo = new JComboBox(choices);
+		final JComboBox choiceCombo = new JComboBox(choices);
 		choiceCombo.setSelectedIndex(aSelectedIndex);
 		choiceCombo.setEditable(false);
-		JPanel choicePanel = new JPanel();
+		
+		final JPanel choicePanel = new JPanel();
 		choicePanel.add(choiceCombo);
 		aContainer.add(choicePanel);
+		
+		if (LookAndFeelUtil.isAquaLAF()) {
+			choicePanel.setOpaque(false);
+		}
+		
 		return choiceCombo;
 	}
 

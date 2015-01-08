@@ -46,6 +46,8 @@ import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingConstants;
 import javax.swing.Timer;
 
+import org.cytoscape.util.swing.LookAndFeelUtil;
+
 import de.mpg.mpi_inf.bioinf.netanalyzer.BatchNetworkAnalyzer;
 import de.mpg.mpi_inf.bioinf.netanalyzer.data.Messages;
 
@@ -77,11 +79,7 @@ public class BatchAnalysisDialog extends JDialog implements ActionListener {
 		setLocationRelativeTo(aOwner);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
-	 */
+	@Override
 	public void actionPerformed(ActionEvent e) {
 		final Object src = e.getSource();
 		if (src == btnCancel) {
@@ -107,11 +105,6 @@ public class BatchAnalysisDialog extends JDialog implements ActionListener {
 		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.awt.Dialog#setVisible
-	 */
 	@Override
 	public void setVisible(boolean b) {
 		if (!analyzerStarted) {
@@ -197,13 +190,14 @@ public class BatchAnalysisDialog extends JDialog implements ActionListener {
 		contentPane.add(panConsole, BorderLayout.CENTER);
 
 		// Add Cancel and Results buttons
-		JPanel panBottom = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));
-		JPanel panButtons = new JPanel(new GridLayout(1, 2, BS, 0));
-		panButtons.add(btnCancel = Utils.createButton(Messages.DI_CANCEL, null, this));
-		panButtons.add(btnResults = Utils.createButton(Messages.DI_RESULTS, null, this));
+		btnCancel = Utils.createButton(Messages.DI_CANCEL, null, this);
+		btnResults = Utils.createButton(Messages.DI_RESULTS, null, this);
+		Utils.equalizeSize(btnResults, btnCancel);
 		btnResults.setEnabled(false);
-		panBottom.add(panButtons);
+		
+		final JPanel panBottom = LookAndFeelUtil.createOkCancelPanel(btnResults, btnCancel);
 		contentPane.add(panBottom, BorderLayout.SOUTH);
+		
 		setContentPane(contentPane);
 	}
 

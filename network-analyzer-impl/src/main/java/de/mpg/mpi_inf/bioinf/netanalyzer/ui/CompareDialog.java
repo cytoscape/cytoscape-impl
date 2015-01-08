@@ -41,10 +41,10 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.event.ListSelectionEvent;
 
-import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNetworkManager;
+import org.cytoscape.util.swing.LookAndFeelUtil;
 
-import de.mpg.mpi_inf.bioinf.netanalyzer.GOPTAlgorithm;
 import de.mpg.mpi_inf.bioinf.netanalyzer.data.Messages;
 
 /**
@@ -71,11 +71,7 @@ public class CompareDialog extends NetworkListDialog implements ActionListener {
 		setLocationRelativeTo(aOwner);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
-	 */
+	@Override
 	public void actionPerformed(ActionEvent e) {
 		Object src = e.getSource();
 		if (union == src || intersect == src || diff == src) {
@@ -96,11 +92,7 @@ public class CompareDialog extends NetworkListDialog implements ActionListener {
 		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see javax.swing.event.ListSelectionListener#valueChanged(javax.swing.event.ListSelectionEvent)
-	 */
+	@Override
 	public void valueChanged(ListSelectionEvent e) {
 		updateOKButton();
 	}
@@ -144,15 +136,14 @@ public class CompareDialog extends NetworkListDialog implements ActionListener {
 		contentPane.add(panChoices);
 
 		// Add OK and Cancel buttons
-		JPanel panBottom = new JPanel();
-		JPanel panButtons = new JPanel(new GridLayout(1, 2, Utils.BORDER_SIZE, 0));
 		btnOK = Utils.createButton(Messages.DI_OK, null, this);
 		btnOK.setEnabled(false);
-		panButtons.add(btnOK);
 		btnCancel = Utils.createButton(Messages.DI_CANCEL, null, this);
-		panButtons.add(btnCancel);
-		panBottom.add(panButtons);
+		Utils.equalizeSize(btnOK, btnCancel);
+		
+		final JPanel panBottom = LookAndFeelUtil.createOkCancelPanel(btnOK, btnCancel);
 		contentPane.add(panBottom);
+		
 		setContentPane(contentPane);
 	}
 

@@ -27,7 +27,6 @@ package de.mpg.mpi_inf.bioinf.netanalyzer.ui;
  */
 
 import java.awt.Dialog;
-import java.awt.Frame;
 import java.awt.Window;
 
 import javax.swing.JDialog;

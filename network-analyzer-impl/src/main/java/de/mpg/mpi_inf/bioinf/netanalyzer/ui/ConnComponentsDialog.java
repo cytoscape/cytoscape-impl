@@ -222,7 +222,8 @@ public class ConnComponentsDialog extends JDialog
 		btnExtract = Utils.createButton(Messages.DI_EXTR, null, this);
 		btnExtract.setEnabled(false);
 		btnCancel = Utils.createButton(Messages.DI_CANCEL, null, this);
-
+		Utils.equalizeSize(btnExtract, btnCancel);
+		
 		// Buttons Panel
 		final JPanel panButtons = LookAndFeelUtil.createOkCancelPanel(btnExtract, btnCancel);
 		panButtons.setAlignmentX(Component.LEFT_ALIGNMENT);

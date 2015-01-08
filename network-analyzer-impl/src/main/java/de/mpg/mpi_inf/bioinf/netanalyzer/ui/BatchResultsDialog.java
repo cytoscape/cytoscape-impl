@@ -98,11 +98,7 @@ public class BatchResultsDialog extends JDialog implements ActionListener, ListS
 		this.aOwner = aOwner;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
-	 */
+	@Override
 	public void actionPerformed(ActionEvent e) {
 		if (e.getSource() == btnClose) {
 			setVisible(false);
@@ -110,11 +106,7 @@ public class BatchResultsDialog extends JDialog implements ActionListener, ListS
 		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see javax.swing.event.ListSelectionListener#valueChanged(javax.swing.event.ListSelectionEvent)
-	 */
+	@Override
 	public void valueChanged(ListSelectionEvent e) {
 		if (!e.getValueIsAdjusting()) {
 			try {

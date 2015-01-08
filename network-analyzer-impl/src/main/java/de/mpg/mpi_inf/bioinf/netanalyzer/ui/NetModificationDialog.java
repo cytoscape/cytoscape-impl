@@ -27,11 +27,14 @@ package de.mpg.mpi_inf.bioinf.netanalyzer.ui;
  */
 
 import de.mpg.mpi_inf.bioinf.netanalyzer.data.Messages;
+
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
+import org.cytoscape.util.swing.LookAndFeelUtil;
 
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
+
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -92,11 +95,7 @@ public class NetModificationDialog extends NetworkListDialog implements ActionLi
 		setLocationRelativeTo(aOwner);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
-	 */
+	@Override
 	public void actionPerformed(ActionEvent e) {
 		final Object source = e.getSource();
 		if (source == btnCancel) {
@@ -126,11 +125,7 @@ public class NetModificationDialog extends NetworkListDialog implements ActionLi
 		return selectedNetworks;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see javax.swing.event.ListSelectionListener#valueChanged(javax.swing.event.ListSelectionEvent)
-	 */
+	@Override
 	public void valueChanged(ListSelectionEvent e) {
 		// Update the enabled status of the "OK" button.
 		btnOK.setEnabled(isNetNameSelected());
@@ -186,15 +181,13 @@ public class NetModificationDialog extends NetworkListDialog implements ActionLi
 		}
 
 		// Add OK and Cancel buttons
-		JPanel panButtons = new JPanel(new FlowLayout(FlowLayout.CENTER, Utils.BORDER_SIZE, 0));
 		btnOK = Utils.createButton(Messages.DI_OK, null, this);
 		btnOK.setEnabled(false);
 		btnCancel = Utils.createButton(Messages.DI_CANCEL, null, this);
 		Utils.equalizeSize(btnOK, btnCancel);
-		panButtons.add(btnOK);
-		panButtons.add(btnCancel);
-		panButtons.add(Box.createHorizontalStrut(Utils.BORDER_SIZE * 2));
-		contentPane.add(panButtons);
+		
+		final JPanel panBottom = LookAndFeelUtil.createOkCancelPanel(btnOK, btnCancel);
+		contentPane.add(panBottom);
 
 		// Add a warning message
 		if (aWarning) {
@@ -203,6 +196,7 @@ public class NetModificationDialog extends NetworkListDialog implements ActionLi
 			contentPane.add(Box.createVerticalStrut(Utils.BORDER_SIZE));
 			contentPane.add(panWarning);
 		}
+		
 		setContentPane(contentPane);
 	}
 

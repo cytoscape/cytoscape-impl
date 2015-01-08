@@ -29,13 +29,14 @@ package de.mpg.mpi_inf.bioinf.netanalyzer.ui.filter;
 import java.awt.BorderLayout;
 import java.awt.Dialog;
 import java.awt.FlowLayout;
-import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JPanel;
+
+import org.cytoscape.util.swing.LookAndFeelUtil;
 
 import de.mpg.mpi_inf.bioinf.netanalyzer.data.Messages;
 import de.mpg.mpi_inf.bioinf.netanalyzer.data.filter.ComplexParamFilter;
@@ -49,11 +50,7 @@ import de.mpg.mpi_inf.bioinf.netanalyzer.ui.Utils;
 public abstract class ComplexParamFilterDialog extends JDialog
 	implements ActionListener {
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
-	 */
+	@Override
 	public void actionPerformed(ActionEvent e) {
 		Object source = e.getSource();
 		if (btnOK == source) {
@@ -137,14 +134,13 @@ public abstract class ComplexParamFilterDialog extends JDialog
 		contentPane.add(centralPane, BorderLayout.CENTER);
 
 		// Add OK and Cancel Buttons
-		JPanel buttonsPanel = new JPanel(new GridLayout(1, 2, Utils.BORDER_SIZE, 0));
 		btnOK = Utils.createButton(Messages.DI_OK, null, this);
 		btnCancel = Utils.createButton(Messages.DI_CANCEL, null, this);
-		buttonsPanel.add(btnOK);
-		buttonsPanel.add(btnCancel);
-		JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));
-		bottomPanel.add(buttonsPanel);
-		contentPane.add(bottomPanel, BorderLayout.SOUTH);
+		Utils.equalizeSize(btnOK, btnCancel);
+		
+		final JPanel buttonsPanel = LookAndFeelUtil.createOkCancelPanel(btnOK, btnCancel);
+		contentPane.add(buttonsPanel, BorderLayout.SOUTH);
+		
 		setContentPane(contentPane);
 	}
 }

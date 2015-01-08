@@ -160,7 +160,7 @@ public abstract class Messages {
 
 	public static String DT_BATCHRESULTS = "Batch Analysis - Results";
 
-	public static String DT_BATCHSETTINGS = "Batch Analysis - Select Directories";
+	public static String DT_BATCHSETTINGS = "Select Directories";
 
 	public static String DT_CLOSEWARN = "Warning - Unsaved Data";
 
@@ -440,17 +440,17 @@ public abstract class Messages {
 
 	public static String DI_IMAGESIZE = "Image Size";
 
-	public static String DI_INPUTDIR = "Input Directory";
+	public static String DI_INPUTDIR = "Input Directory:";
 
 	public static String DI_INTERPR = "Interpretation";
 
 	public static String DI_INTERPRS = "Network Interpretations";
 
-	public static String DI_INTERPR_ALL = "Apply all possible interpretations.";
+	public static String DI_INTERPR_ALL = "Apply all possible interpretations";
 
-	public static String DI_INTERPR_DIRECTED = "Consider networks as directed.";
+	public static String DI_INTERPR_DIRECTED = "Consider networks as directed";
 
-	public static String DI_INTERPR_UNDIRECTED = "Consider networks as undirected.";
+	public static String DI_INTERPR_UNDIRECTED = "Consider networks as undirected";
 
 	public static String DI_LOWTOBRIGHT = "Low values to bright colors";
 
@@ -460,29 +460,29 @@ public abstract class Messages {
 
 	public static String DI_LOWTOSMALL = "Low values to small sizes";
 
-	public static String DI_MAPEDGECOLOR = "Map edge color to:";
+	public static String DI_MAPEDGECOLOR = "Map Edge Color to:";
 
-	public static String DI_MAPEDGESIZE = "Map edge size to:";
+	public static String DI_MAPEDGESIZE = "Map Edge Size to:";
 
-	public static String DI_MAPNODECOLOR = "Map node color to:";
+	public static String DI_MAPNODECOLOR = "Map Node Color to:";
 
-	public static String DI_MAPNODESIZE = "Map node size to:";
+	public static String DI_MAPNODESIZE = "Map Node Size to:";
 
-	public static String DI_MAPTYPE = "Mapping type:";
+	public static String DI_MAPTYPE = "Mapping Type:";
 
 	public static String DI_NETFILE = "Network";
 
 	public static String DI_NETSTATSFILE = "Network Statistics File";
 
-	public static String DI_NODEATTR_SAVE = "<html><i>Node parameters stored as node table data will be written to tab-delimited files. You can disable<br />"
-			+ "this option in the NetworkAnalyzer Settings dialog.</i></html>";
+	public static String DI_NODEATTR_SAVE = "<html><i>Node parameters stored as node table data will be written to tab-delimited files.<br />"
+			+ "You can disable this option in the NetworkAnalyzer Settings dialog.</i></html>";
 
-	public static String DI_NODEATTR_SAVENOT = "<html><i>Node parameters are not stored as node table data and will not be saved to files. You can enable<br />"
-			+ "this option in the NetworkAnalyzer Settings dialog.</i></html>";
+	public static String DI_NODEATTR_SAVENOT = "<html><i>Node parameters are not stored as node table data and will not be saved to files.<br />"
+			+ "You can enable this option in the NetworkAnalyzer Settings dialog.</i></html>";
 
 	public static String DI_OK = "OK";
 
-	public static String DI_OUTPUTDIR = "Output Directory";
+	public static String DI_OUTPUTDIR = "Output Directory:";
 
 	public static String DI_PIXELS = "pixels";
 
@@ -528,7 +528,7 @@ public abstract class Messages {
 
 	public static String DI_SIMPLEPARAMS = "Simple Parameters";
 
-	public static String DI_STARTANALYSIS = "Start Analysis >";
+	public static String DI_STARTANALYSIS = "Start Analysis";
 
 	public static String DI_UNDEF = "Undefined";
 

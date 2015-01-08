@@ -26,17 +26,25 @@ package de.mpg.mpi_inf.bioinf.netanalyzer.ui;
  * #L%
  */
 
-import de.mpg.mpi_inf.bioinf.netanalyzer.data.Messages;
-import de.mpg.mpi_inf.bioinf.netanalyzer.data.io.SettingsSerializer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.swing.*;
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.Dialog;
+import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+
+import javax.swing.JButton;
+import javax.swing.JDialog;
+import javax.swing.JPanel;
+import javax.swing.WindowConstants;
+
+import org.cytoscape.util.swing.LookAndFeelUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import de.mpg.mpi_inf.bioinf.netanalyzer.data.Messages;
+import de.mpg.mpi_inf.bioinf.netanalyzer.data.io.SettingsSerializer;
 
 /**
  * Dialog for viewing and editing plugin's settings.
@@ -79,11 +87,7 @@ public class PluginSettingsDialog extends JDialog implements ActionListener {
 		setLocationRelativeTo(aOwner);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
-	 */
+	@Override
 	public void actionPerformed(ActionEvent e) {
 		Object source = e.getSource();
 		if (source == btnOK) {
@@ -124,13 +128,10 @@ public class PluginSettingsDialog extends JDialog implements ActionListener {
 		contentPane.add(panSettings, BorderLayout.CENTER);
 
 		// Add OK, Cancel and Help buttons
-		JPanel panButtons = new JPanel(new FlowLayout(FlowLayout.CENTER, Utils.BORDER_SIZE, 0));
 		btnOK = Utils.createButton(Messages.DI_OK, null, this);
 		btnCancel = Utils.createButton(Messages.DI_CANCEL, null, this);
 		Utils.equalizeSize(btnOK, btnCancel);
-		panButtons.add(btnOK);
-		panButtons.add(btnCancel);
-		panButtons.add(Box.createHorizontalStrut(Utils.BORDER_SIZE * 2));
+		final JPanel panButtons = LookAndFeelUtil.createOkCancelPanel(btnOK, btnCancel);
 		contentPane.add(panButtons, BorderLayout.SOUTH);
 
 		setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);

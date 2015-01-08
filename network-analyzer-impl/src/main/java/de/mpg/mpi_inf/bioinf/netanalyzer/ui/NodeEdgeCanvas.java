@@ -26,19 +26,20 @@ package de.mpg.mpi_inf.bioinf.netanalyzer.ui;
  * #L%
  */
 
-import java.awt.Canvas;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 
+import javax.swing.JPanel;
+
 /**
  * Class displaying two circles with different sizes and an arrow between them.
  * 
  * @author Nadezhda Doncheva
  */
-public class NodeEdgeCanvas extends Canvas {
+public class NodeEdgeCanvas extends JPanel {
 
 	/**
 	 * Initializes a new instance of <code>NodeEdgeCanvas</code>
@@ -53,17 +54,14 @@ public class NodeEdgeCanvas extends Canvas {
 	public NodeEdgeCanvas(boolean aSmallToBig, boolean aNodeCanvas) {
 		smallToBig = aSmallToBig;
 		nodeCanvas = aNodeCanvas;
+		setOpaque(false);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.awt.Canvas#paint(java.awt.Graphics)
-	 */
 	@Override
 	public void paint(Graphics g) {
 		((Graphics2D)g).setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		final Dimension size = getSize();
+		
 		// Size of the circles depends on the height of the panel.
 		final int h = size.height;
 		final int bigR = h - 1;
@@ -75,6 +73,7 @@ public class NodeEdgeCanvas extends Canvas {
 		final int smallRightAlign = bigRightAlign + smallR/2;
 		final int edgeWidth1 = 2;
 		final int edgeWidth2 = 2*edgeWidth1;
+		
 		if (nodeCanvas) {
 			if (smallToBig) {
 				// Draw a small and a big pink circle

@@ -38,6 +38,7 @@ import de.mpg.mpi_inf.bioinf.netanalyzer.data.io.SettingsSerializer;
 import de.mpg.mpi_inf.bioinf.netanalyzer.data.io.StatsSerializer;
 import de.mpg.mpi_inf.bioinf.netanalyzer.data.settings.PluginSettings;
 import de.mpg.mpi_inf.bioinf.netanalyzer.dec.Decorator;
+
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.CytoPanel;
 import org.cytoscape.application.swing.CytoPanelName;
@@ -45,10 +46,12 @@ import org.cytoscape.application.swing.CytoPanelState;
 import org.cytoscape.application.swing.events.CytoPanelStateChangedEvent;
 import org.cytoscape.application.swing.events.CytoPanelStateChangedListener;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 
 import javax.swing.*;
+
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -118,11 +121,10 @@ public class AnalysisResultPanel extends JPanel implements ActionListener, CytoP
 		} else {
 			saved = true;
 		}
+		
 		initControls(paramMapping);
 		resultPanel = panelFactory.registerPanel(this, "Network Statistics of " + stats.getTitle());
 
-
-		
 		final CytoPanel cytoPanel = swingApplication.getCytoPanel(CytoPanelName.EAST);
 		oldState = cytoPanel.getState();
 		
@@ -143,7 +145,6 @@ public class AnalysisResultPanel extends JPanel implements ActionListener, CytoP
 			JDialog dialog = (JDialog) thisPanel.getTopLevelAncestor();
 			dialog.setSize(DEFAULT_WIDTH,DEFAULT_HEIGHT);
 		}
-
 	}
 
 	@Override
@@ -155,7 +156,6 @@ public class AnalysisResultPanel extends JPanel implements ActionListener, CytoP
 			visualizeParameter();
 		}
 	}
-
 
 	public void panelClosing() {
 		if (!saved) {
@@ -180,8 +180,6 @@ public class AnalysisResultPanel extends JPanel implements ActionListener, CytoP
 //		dispose();
 	}
 
-	
-
 	/**
 	 * Creates and lays out the controls inside this dialog.
 	 * <p>
@@ -197,7 +195,7 @@ public class AnalysisResultPanel extends JPanel implements ActionListener, CytoP
 
 		final JComponent simpleStatsPanel = new SimpleStatsPanel(stats);
 		if (useExpandable) {
-			simpleStatsPanel.setBorder(BorderFactory.createTitledBorder(Messages.DI_SIMPLEPARAMS));
+			simpleStatsPanel.setBorder(LookAndFeelUtil.createTitledBorder(Messages.DI_SIMPLEPARAMS));
 			this.add(simpleStatsPanel);
 		} else {
 			this.add(tabs);
@@ -226,6 +224,7 @@ public class AnalysisResultPanel extends JPanel implements ActionListener, CytoP
 		}
 
 		this.add(Box.createVerticalStrut(Utils.BORDER_SIZE));
+		
 		saveButton = new JButton(Messages.DI_SAVESTATISTICS);
 		saveButton.addActionListener(this);
 		visualizeButton = new JButton(Messages.DI_VISUALIZEPARAMETER);
@@ -235,25 +234,20 @@ public class AnalysisResultPanel extends JPanel implements ActionListener, CytoP
 		
 		closeButton = new JButton("Close Tab");
 		closeButton.addActionListener(new ActionListener() {
-			
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				panelClosing();
 			}
 		});
 		
-		JPanel buttonPane = new JPanel(new FlowLayout(FlowLayout.CENTER, Utils.BORDER_SIZE, 0));
-		Utils.equalizeSize(saveButton, visualizeButton);
-		buttonPane.add(saveButton);
-		buttonPane.add(Box.createHorizontalStrut(Utils.BORDER_SIZE * 2));
-		buttonPane.add(visualizeButton);
-		buttonPane.add(closeButton);
+		// Button panel
+		final JPanel buttonPane = LookAndFeelUtil.createOkCancelPanel(visualizeButton, closeButton, saveButton);
+		
+		if (LookAndFeelUtil.isAquaLAF())
+			buttonPane.setOpaque(false);
+		
 		this.add(buttonPane);
 		this.add(Box.createVerticalStrut(Utils.BORDER_SIZE));
-
-
-		
-		
 	}
 
 	/**
@@ -333,10 +327,6 @@ public class AnalysisResultPanel extends JPanel implements ActionListener, CytoP
 	
 	private JButton closeButton;
 
-
-
-
-
 	private CytoPanelState oldState = null;
 	private static final int DEFAULT_WIDTH = 680;
 	private static final int DEFAULT_HEIGHT = 540;
@@ -348,14 +338,12 @@ public class AnalysisResultPanel extends JPanel implements ActionListener, CytoP
 	 */
 	@Override
 	public void handleEvent(CytoPanelStateChangedEvent e) {
-
 		if( oldState != CytoPanelState.DOCK && e.getNewState() == CytoPanelState.DOCK )
 		{
 			final CytoPanel cytoPanel = swingApplication.getCytoPanel(CytoPanelName.EAST);
 			JPanel thisPanel = (JPanel)cytoPanel.getThisComponent();
 			int x = 5;
 		}
-
 
 		//If the oldState was already FLOAT, or the new state is not FLOAT, no need to do anything.
 		if( oldState == CytoPanelState.FLOAT || e.getNewState() != CytoPanelState.FLOAT )
