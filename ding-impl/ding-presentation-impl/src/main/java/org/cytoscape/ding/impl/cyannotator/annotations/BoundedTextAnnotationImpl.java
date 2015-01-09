@@ -266,6 +266,7 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 
 	public void setFont(Font font) { 
 		this.font = font; 
+		this.fontSize = font.getSize2D();
 		updateBounds();
 	}
 

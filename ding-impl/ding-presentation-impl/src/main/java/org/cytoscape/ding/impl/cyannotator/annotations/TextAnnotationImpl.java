@@ -178,6 +178,7 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 
 	public void setFont(Font font) { 
 		this.font = font; 
+		this.fontSize = font.getSize2D();
 		if(!usedForPreviews)
 			setSize(getAnnotationWidth(), getAnnotationHeight());
 	}
