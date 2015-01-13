@@ -26,8 +26,6 @@ package org.cytoscape.work.internal.tunables;
 
 
 import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.lang.reflect.Field;
@@ -59,10 +57,6 @@ import org.cytoscape.work.util.ListSingleSelection;
  */
 public class ListSingleHandler<T> extends AbstractGUITunableHandler
                                   implements ActionListener, ListChangeListener<T> {
-	
-	private static final Font COMBOBOX_FONT = new Font("SansSerif", Font.PLAIN, 12);
-//	private static final Dimension DEF_LABEL_SIZE = new Dimension(300, 25);
-	private static final Dimension DEF_COMBOBOX_SIZE = new Dimension(300, 25);
 	
 	private JComboBox combobox;
 
@@ -113,8 +107,6 @@ public class ListSingleHandler<T> extends AbstractGUITunableHandler
 
 		//add list's items to the combobox
 		combobox = new JComboBox(getSingleSelection().getPossibleValues().toArray());
-		//combobox.setPreferredSize(DEF_COMBOBOX_SIZE);
-		combobox.setFont(COMBOBOX_FONT);
 		combobox.addActionListener(this);
 		panel.add(combobox);
 		

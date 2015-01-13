@@ -68,7 +68,6 @@ public class FileHandler extends AbstractGUITunableHandler  implements DirectlyP
 	
 	private static final Logger logger = LoggerFactory.getLogger(FileHandler.class);
 	
-	private static final Font FILE_NAME_FONT = new Font("SansSerif", Font.PLAIN, 10);
 	private static final Dimension PANEL_SIZE_DIMENSION = new Dimension(500, 80);
 	
 	private final FileUtil fileUtil;
@@ -144,6 +143,7 @@ public class FileHandler extends AbstractGUITunableHandler  implements DirectlyP
 	 * It creates a new <code>File</code> from the selected file in the FileChooser, or from the path to a file, entered by the user in the field
 	 * The initial <code>File</code> object <code>o</code> is set with this new file
 	 */
+	@Override
 	public void handle() {
 		try {
 			if (fileTextField.getText().equals(defaultString) || fileTextField.getText().isEmpty() )
@@ -167,8 +167,8 @@ public class FileHandler extends AbstractGUITunableHandler  implements DirectlyP
 		}
 	}
 
+	@Override
 	public void update(){
-		
 		final int load_or_save = input ? FileUtil.LOAD : FileUtil.SAVE;
 
 		// Use the panel's parent if we have it, otherwise use the possible
@@ -294,6 +294,7 @@ public class FileHandler extends AbstractGUITunableHandler  implements DirectlyP
 
 	// Click on the "open" or "save" button action listener
 	private final class myFileActionListener implements ActionListener{
+		@Override
 		public void actionPerformed(ActionEvent ae) {
 			final int load_or_save = input ? FileUtil.LOAD : FileUtil.SAVE;
 				
@@ -320,12 +321,13 @@ public class FileHandler extends AbstractGUITunableHandler  implements DirectlyP
 	
 			final File file = fileUtil.getFile(parentComponent, titleLabel.getText(), load_or_save, filters);
 			if (file != null) {
-				fileTextField.setFont(FILE_NAME_FONT);
+				fileTextField.setFont(fileTextField.getFont().deriveFont(10.0f));
 				fileTextField.setText(file.getAbsolutePath());
 			}
 		}
 	}
 
+	@Override
 	public String getState(){
 		try{
 			return fileTextField.getText();
