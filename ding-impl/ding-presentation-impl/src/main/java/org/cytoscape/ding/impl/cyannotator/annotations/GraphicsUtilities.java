@@ -184,11 +184,7 @@ class GraphicsUtilities {
 		if (annotation.getFillColor() != null) {
 			// System.out.println("drawShape: fill color = "+annotation.getFillColor());
       g2.setPaint(annotation.getFillColor());
-      float opacity = (float) (annotation.getFillOpacity() / 100.0);
-      if (opacity < 0.0f)
-        opacity = 0.0f;
-      else if (opacity > 1.0f)
-        opacity = 1.0f;
+      float opacity = clamp((float) (annotation.getFillOpacity() / 100.0), 0.0f, 1.0f);
       final Composite originalComposite = g2.getComposite();
       g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, opacity));
 			g2.fill(shape);
@@ -196,9 +192,12 @@ class GraphicsUtilities {
 		}
 
     if (border > 0.0f) { // only paint a border if the border thickness is greater than zero
+      float opacity = clamp((float) (((ShapeAnnotationImpl)annotation).getBorderOpacity() / 100.0), 0.0f, 1.0f);
+      final Composite originalComposite = g2.getComposite();
   		if (annotation.getBorderColor() != null && !annotation.isSelected()) {
   			// System.out.println("drawShape: border color = "+annotation.getBorderColor());
   			g2.setPaint(annotation.getBorderColor());
+      	g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, opacity));
   			g2.setStroke(new BasicStroke(border));
   			g2.draw(shape);
   		} else if (annotation.isSelected()) {
@@ -209,9 +208,11 @@ class GraphicsUtilities {
   			g2.draw(strokedShape);
   		} else {
   			g2.setPaint(Color.BLACK);
+      	g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, opacity));
   			g2.setStroke(new BasicStroke(border));
   			g2.draw(shape);
   		}
+      g2.setComposite(originalComposite);
     }
 	}
 
@@ -604,6 +605,12 @@ class GraphicsUtilities {
 		if (p == null || !(p instanceof Color)) return p;
 		Color c = (Color)p;
 		return new Color(c.getRed(), c.getGreen(), c.getBlue(), ((int)value)*255/100);
+	}
+
+	static private float clamp(float value, float min, float max) {
+		if (value < min) return min;
+		if (value > max) return max;
+		return value;
 	}
 
 }

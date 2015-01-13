@@ -56,7 +56,7 @@ public class ShapeAnnotationPanel extends javax.swing.JPanel {
 
 
 	public ShapeAnnotationPanel(ShapeAnnotation mAnnotation, PreviewPanel previewPanel, int width, int height) {
-		this.mAnnotation=mAnnotation;
+		this.mAnnotation=(ShapeAnnotationImpl)mAnnotation;
 		this.previewPanel = previewPanel;
 		this.preview=(ShapeAnnotationImpl)previewPanel.getPreviewAnnotation();
 		this.WIDTH = width;
@@ -151,12 +151,13 @@ public class ShapeAnnotationPanel extends javax.swing.JPanel {
 			fillOValue.setMajorTickSpacing(100);
 			fillOValue.setPaintTicks(true);
 			fillOValue.setPaintLabels(true);
-			fillOValue.setValue(100);
 			fillOValue.setBounds(COLUMN2, y, RIGHT-COLUMN2, fillOValue.getPreferredSize().height);
-			fillOValue.setEnabled(false);
-			if (getOpacity(mAnnotation.getFillColor()) != 100.0) {
+			if (mAnnotation.getFillOpacity() != 100.0) {
 				fillOValue.setEnabled(true);
-				fillOValue.setValue(getOpacity(mAnnotation.getFillColor()));
+				fillOValue.setValue((int)mAnnotation.getFillOpacity());
+			} else {
+				fillOValue.setValue(100);
+				fillOValue.setEnabled(false);
 			}
 			fillOValue.addChangeListener(new ChangeListener() {
 				public void stateChanged(ChangeEvent evt) {
@@ -209,12 +210,13 @@ public class ShapeAnnotationPanel extends javax.swing.JPanel {
 			borderOValue.setMajorTickSpacing(100);
 			borderOValue.setPaintTicks(true);
 			borderOValue.setPaintLabels(true);
-			borderOValue.setValue(100);
 			borderOValue.setBounds(COLUMN2, y, RIGHT-COLUMN2, borderOValue.getPreferredSize().height);
-			borderOValue.setEnabled(false);
-			if (getOpacity(mAnnotation.getBorderColor()) != 100.0 || edgeColor.isSelected()) {
+			if (mAnnotation.getBorderOpacity() != 100.0 || edgeColor.isSelected()) {
 				borderOValue.setEnabled(true);
-				borderOValue.setValue(getOpacity(mAnnotation.getBorderColor()));
+				borderOValue.setValue((int)mAnnotation.getBorderOpacity());
+			} else {
+				borderOValue.setValue(100);
+				borderOValue.setEnabled(false);
 			}
 			borderOValue.addChangeListener(new ChangeListener() {
 				public void stateChanged(ChangeEvent evt) {
@@ -261,9 +263,9 @@ public class ShapeAnnotationPanel extends javax.swing.JPanel {
 		preview.setBorderWidth( Integer.parseInt( (String)(eThickness.getModel().getSelectedItem()) ) );		    	        	      
 		preview.setShapeType((String)sList.getSelectedValue());
 		preview.setFillColor(mAnnotation.getFillColor());
-		// preview.setFillOpacity(mAnnotation.getFillOpacity());
+		preview.setFillOpacity(mAnnotation.getFillOpacity());
 		preview.setBorderColor(mAnnotation.getBorderColor());
-		// preview.setBorderOpacity(mAnnotation.getBorderOpacity());
+		preview.setBorderOpacity(mAnnotation.getBorderOpacity());
 	
 		previewPanel.repaint();
 	}	
@@ -343,14 +345,14 @@ public class ShapeAnnotationPanel extends javax.swing.JPanel {
 	}
 
 	private void updateFillOpacity(int opacity) {
-		// preview.setFillOpacity((double)opacity);
-		preview.setFillColor(mixColor(preview.getFillColor(), opacity));
+		preview.setFillOpacity((double)opacity);
+		// preview.setFillColor(mixColor(preview.getFillColor(), opacity));
 		previewPanel.repaint();
 	}
 
 	private void updateBorderOpacity(int opacity) {
-		preview.setBorderColor(mixColor(preview.getBorderColor(), opacity));
-		// preview.setBorderOpacity((double)opacity);
+		preview.setBorderOpacity((double)opacity);
+		// preview.setBorderColor(mixColor(preview.getBorderColor(), opacity));
 		previewPanel.repaint();
 	}
 
@@ -378,6 +380,6 @@ public class ShapeAnnotationPanel extends javax.swing.JPanel {
 	private ShapeAnnotationImpl preview;
 	private PreviewPanel previewPanel;
 	
-	private ShapeAnnotation mAnnotation;
+	private ShapeAnnotationImpl mAnnotation;
 }
 

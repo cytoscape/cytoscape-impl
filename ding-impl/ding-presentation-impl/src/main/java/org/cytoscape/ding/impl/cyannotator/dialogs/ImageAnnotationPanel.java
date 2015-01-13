@@ -130,9 +130,15 @@ public class ImageAnnotationPanel extends javax.swing.JPanel {
 			borderOValue.setMajorTickSpacing(100);
 			borderOValue.setPaintTicks(true);
 			borderOValue.setPaintLabels(true);
-			borderOValue.setValue(100);
 			borderOValue.setBounds(COLUMN1, y, RIGHT-COLUMN1, borderOValue.getPreferredSize().height);
-			borderOValue.setEnabled(false);
+			if (mAnnotation.getBorderOpacity() != 100.0 || edgeColor.isSelected()) {
+				borderOValue.setEnabled(true);
+				// System.out.println("BorderOpacity = "+mAnnotation.getBorderOpacity());
+				borderOValue.setValue((int)mAnnotation.getBorderOpacity());
+			} else {
+				borderOValue.setValue(100);
+				borderOValue.setEnabled(false);
+			}
 			borderOValue.addChangeListener(new ChangeListener() {
 				public void stateChanged(ChangeEvent evt) {
 					updateBorderOpacity(borderOValue.getValue());
@@ -183,7 +189,12 @@ public class ImageAnnotationPanel extends javax.swing.JPanel {
 			opacityValue.setMajorTickSpacing(100);
 			opacityValue.setPaintTicks(true);
 			opacityValue.setPaintLabels(true);
-			opacityValue.setValue(100);
+			opacityValue.setEnabled(true);
+			if (mAnnotation.getImageOpacity() != 100.0 || edgeColor.isSelected()) {
+				opacityValue.setValue((int)(mAnnotation.getImageOpacity()*100));
+			} else {
+				opacityValue.setValue(100);
+			}
 			opacityValue.setBounds(COLUMN1, y, RIGHT-COLUMN1, opacityValue.getPreferredSize().height);
 			opacityValue.addChangeListener(new ChangeListener() {
 				public void stateChanged(ChangeEvent evt) {
@@ -280,7 +291,7 @@ public class ImageAnnotationPanel extends javax.swing.JPanel {
 		sASelectColor.setOKListener( new ActionListener() {
 			public void actionPerformed(ActionEvent evt) {
 				Color clr = sASelectColor.getColor();
-				preview.setBorderColor(mixColor(clr,borderOValue.getValue()));
+				preview.setBorderColor(clr);
 				previewPanel.repaint();
 			}
 		});
@@ -291,7 +302,7 @@ public class ImageAnnotationPanel extends javax.swing.JPanel {
 	}
 
 	private void updateBorderOpacity(int opacity) {
-		preview.setBorderColor(mixColor(preview.getBorderColor(),opacity));
+		preview.setBorderOpacity((double)opacity);
 		previewPanel.repaint();
 	}
 

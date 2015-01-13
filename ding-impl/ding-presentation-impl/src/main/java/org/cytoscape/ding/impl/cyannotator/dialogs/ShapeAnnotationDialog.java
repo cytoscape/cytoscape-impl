@@ -77,7 +77,8 @@ public class ShapeAnnotationDialog extends JDialog {
 		int PREVIEW_HEIGHT = 220;
 
 		// Create the preview panel
-		preview = new ShapeAnnotationImpl(cyAnnotator, view, 150, 150);
+		// preview = new ShapeAnnotationImpl(cyAnnotator, view, 150, 150);
+		preview = new ShapeAnnotationImpl(mAnnotation, 150, 150);
 		preview.setUsedForPreviews(true);
 		preview.getComponent().setSize(152,152);
 		PreviewPanel previewPanel = new PreviewPanel(preview, PREVIEW_WIDTH, PREVIEW_HEIGHT);

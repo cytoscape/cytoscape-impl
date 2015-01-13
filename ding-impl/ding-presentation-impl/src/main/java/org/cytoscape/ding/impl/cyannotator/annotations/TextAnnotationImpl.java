@@ -189,6 +189,7 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 
 
 	public void drawAnnotation(Graphics g, double x, double y, double scaleFactor) {
+		if (text == null) return;
 		super.drawAnnotation(g, x, y, scaleFactor);
 
 		Graphics2D g2 = (Graphics2D) g;
@@ -216,6 +217,7 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 	}
 
 	public void paint(Graphics g) {
+		if (text == null) return;
 		super.paint(g);
 
 		Graphics2D g2=(Graphics2D)g;
@@ -257,6 +259,7 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 	}
 
 	double getTextWidth(Graphics2D g2) {
+		if (text == null) return 0.0;
 		return font.getStringBounds(text, new FontRenderContext(null, true, true)).getWidth();
 /*
 		if (g2 != null) {
@@ -269,6 +272,7 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 	}
 
 	double getTextHeight(Graphics2D g2) {
+		if (text == null) return 0.0;
 		return font.getStringBounds(text, new FontRenderContext(null, true, true)).getHeight();
 /*
 		if (g2 != null) {

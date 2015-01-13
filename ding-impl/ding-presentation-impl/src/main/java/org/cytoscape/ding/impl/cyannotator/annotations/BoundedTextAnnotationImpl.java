@@ -30,6 +30,7 @@ import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Paint;
+import java.awt.font.FontRenderContext;
 import java.util.Map;
 
 import javax.swing.JDialog;
@@ -186,8 +187,8 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 		g2.setColor(textColor);
 		g2.setFont(font);
 
-		int halfWidth = (getWidth()-getTextWidth(g2))/2;
-		int halfHeight = (getHeight()+getTextHeight(g2)/2)/2; // Note, this is + because we start at the baseline
+		int halfWidth = (int)(getWidth()-getTextWidth(g2))/2;
+		int halfHeight = (int)(getHeight()+getTextHeight(g2)/2)/2; // Note, this is + because we start at the baseline
 
 		if(usedForPreviews) {
 			g2.drawString(text, halfWidth, halfHeight);
@@ -276,27 +277,33 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 			return;
 		}
 		// Our bounds should be the larger of the shape or the text
-		int xBound = Math.max(getTextWidth((Graphics2D)this.getGraphics()), (int)shapeWidth);
-		int yBound = Math.max(getTextHeight((Graphics2D)this.getGraphics()), (int)shapeHeight);
+		double xBound = Math.max(getTextWidth((Graphics2D)this.getGraphics()), shapeWidth);
+		double yBound = Math.max(getTextHeight((Graphics2D)this.getGraphics()), shapeHeight);
 		setSize(xBound+4, yBound+4);
 	}
 
-	int getTextWidth(Graphics2D g2) {
+	double getTextWidth(Graphics2D g2) {
+		return font.getStringBounds(text, new FontRenderContext(null, true, true)).getWidth();
+		/*
 		if (g2 != null) {
 			FontMetrics fontMetrics=g2.getFontMetrics(font);
 			return fontMetrics.stringWidth(text);
 		}
 		// If we don't have a graphics context, yet, make some assumptions
 		return (int)(text.length()*fontSize);
+		*/
 	}
 
-	int getTextHeight(Graphics2D g2) {
+	double getTextHeight(Graphics2D g2) {
+		return font.getStringBounds(text, new FontRenderContext(null, true, true)).getHeight();
+		/*
 		if (g2 != null) {
 			FontMetrics fontMetrics=g2.getFontMetrics(font);
 			return fontMetrics.getHeight();
 		}
 		// If we don't have a graphics context, yet, make some assumptions
 		return (int)(fontSize*1.5);
+		*/
 	}
 
 	Font getArgFont(Map<String, String> argMap) {
