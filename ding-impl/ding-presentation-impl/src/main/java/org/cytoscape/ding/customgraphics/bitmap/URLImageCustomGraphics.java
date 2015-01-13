@@ -46,7 +46,7 @@ public class URLImageCustomGraphics <ImageCustomGraphicLayer>
         extends AbstractDCustomGraphics {
 
 	private static final String DEF_IMAGE_FILE = "images/no_image.png";
-	private static BufferedImage DEF_IMAGE;
+	protected static BufferedImage DEF_IMAGE;
 	
 	static  {
 		try {
