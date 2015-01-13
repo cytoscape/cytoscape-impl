@@ -31,8 +31,6 @@ import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyIdentifiable;
 
 import org.cytoscape.view.model.CyNetworkView;
@@ -87,26 +85,32 @@ public abstract class AbstractDCustomGraphics<T extends CustomGraphicLayer>
 		//this.position = new ObjectPositionImpl();
 	}
 	
+	@Override
 	public Long getIdentifier() {
 		return id;
 	}
 	
+	@Override
 	public void setIdentifier(Long id) {
 		// For our uses, the id is always assigned in our constructor
 	}
 	
+	@Override
 	public void setWidth(final int width) {
 		this.width = width;
 	}
 	
+	@Override
 	public void setHeight(final int height) {
 		this.height = height;
 	}
 	
+	@Override
 	public int getWidth() {
 		return this.width;
 	}
 	
+	@Override
 	public int getHeight() {
 		return this.height;
 	}
@@ -116,10 +120,12 @@ public abstract class AbstractDCustomGraphics<T extends CustomGraphicLayer>
 		return layers;
 	}
 
+	@Override
 	public String getDisplayName() {
 		return displayName;
 	}
 
+	@Override
 	public void setDisplayName(final String displayName) {
 		this.displayName = displayName;
 	}
@@ -127,11 +133,12 @@ public abstract class AbstractDCustomGraphics<T extends CustomGraphicLayer>
 	@Override abstract public Image getRenderedImage();
 	@Override abstract public String toString();
 
-
+	@Override
 	public Collection<String> getTags() {
 		return tags;
 	}
 
+	@Override
 	abstract public String toSerializableString();
 
 	// This will be used prop file.
@@ -154,13 +161,19 @@ public abstract class AbstractDCustomGraphics<T extends CustomGraphicLayer>
 			name = name.replace(",", "___");
 		}
 
-		return this.getIdentifier() + DELIMITER + name + DELIMITER + tagStr;
+		return getTypeName() + DELIMITER + this.getIdentifier() + DELIMITER + name + DELIMITER + tagStr;
 	}
 	
+	protected String getTypeName() {
+		return this.getClass().getCanonicalName();
+	}
+	
+	@Override
 	public void setFitRatio(float fitRatio) {
 		this.fitRatio = fitRatio;
 	}
 	
+	@Override
 	public float getFitRatio() {
 		return fitRatio;
 	}

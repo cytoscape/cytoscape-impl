@@ -33,7 +33,6 @@ import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.view.model.AbstractVisualProperty;
 import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
-import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2Factory;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphicsFactory;
 
@@ -50,10 +49,7 @@ public class CustomGraphicsVisualProperty extends AbstractVisualProperty<CyCusto
 
 	@Override
 	public String toSerializableString(final CyCustomGraphics value) {
-		if (value instanceof CyCustomGraphics2 || value instanceof CyCustomGraphics2)
-			return value.toSerializableString();
-		
-		return value.getClass().getCanonicalName()+","+value.toSerializableString();
+		return value.toSerializableString();
 	}
 
 	// Parse the string associated with our visual property.  Note that we depend on the first

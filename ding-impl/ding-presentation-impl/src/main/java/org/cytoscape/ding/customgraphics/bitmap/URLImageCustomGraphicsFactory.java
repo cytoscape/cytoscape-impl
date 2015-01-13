@@ -30,6 +30,8 @@ import java.net.URL;
 import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphicsFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Create instance of URLImageCustomGraphics object from String.
@@ -41,6 +43,8 @@ public class URLImageCustomGraphicsFactory implements CyCustomGraphicsFactory {
 	private String entry[];
 
 	private final CustomGraphicsManager manager;
+	
+	private static final Logger logger = LoggerFactory.getLogger(URLImageCustomGraphicsFactory.class);
 	
 	public URLImageCustomGraphicsFactory(final CustomGraphicsManager manager) {
 		this.manager = manager;
@@ -79,14 +83,12 @@ public class URLImageCustomGraphicsFactory implements CyCustomGraphicsFactory {
 	 */
 	public CyCustomGraphics parseSerializableString(String entryStr) {
 		// Check this is URL or not
-		if(entryStr == null) return null;
-		
-		if (!validate(entryStr)) {
-			return null;
-		}
+		if (entryStr == null) return null;
+		if (!validate(entryStr)) return null;
 
 		final String imageName = entry[0];
 		final String sourceURL = entry[1];
+		
 		// Try using the URL first
 		if (sourceURL != null) {
 			try {
@@ -98,8 +100,24 @@ public class URLImageCustomGraphicsFactory implements CyCustomGraphicsFactory {
 				// This just means that "sourceURL" is malformed.  That may be OK.
 			}
 		}
-		CyCustomGraphics cg = manager.getCustomGraphicsByID(Long.parseLong(imageName));
+		
+		final Long imageId = Long.parseLong(imageName);
+		CyCustomGraphics cg = manager.getCustomGraphicsByID(imageId);
+		
+		if (cg == null) {
+			// Can't find image, maybe because it has not been added to the manager yet,
+			// so create a special "missing image" graphics that stores the original raw value.
+			// Cytoscape can then try to reload this missing custom graphics later.
+			try {
+				cg = new MissingImageCustomGraphics(entryStr, imageId, sourceURL, this);
+				manager.addMissingImageCustomGraphics((MissingImageCustomGraphics)cg);
+			} catch (IOException e) {
+				logger.error("Cannot create MissingImageCustomGraphics object", e);
+			}
+		}
+		
 		cg.setDisplayName(entry[1]);
+		
 		return cg;
 	}
 

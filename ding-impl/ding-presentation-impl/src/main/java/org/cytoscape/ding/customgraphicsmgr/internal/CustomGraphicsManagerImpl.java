@@ -24,6 +24,16 @@ package org.cytoscape.ding.customgraphicsmgr.internal;
  * #L%
  */
 
+import static org.cytoscape.ding.DVisualLexicon.NODE_CUSTOMGRAPHICS_1;
+import static org.cytoscape.ding.DVisualLexicon.NODE_CUSTOMGRAPHICS_2;
+import static org.cytoscape.ding.DVisualLexicon.NODE_CUSTOMGRAPHICS_3;
+import static org.cytoscape.ding.DVisualLexicon.NODE_CUSTOMGRAPHICS_4;
+import static org.cytoscape.ding.DVisualLexicon.NODE_CUSTOMGRAPHICS_5;
+import static org.cytoscape.ding.DVisualLexicon.NODE_CUSTOMGRAPHICS_6;
+import static org.cytoscape.ding.DVisualLexicon.NODE_CUSTOMGRAPHICS_7;
+import static org.cytoscape.ding.DVisualLexicon.NODE_CUSTOMGRAPHICS_8;
+import static org.cytoscape.ding.DVisualLexicon.NODE_CUSTOMGRAPHICS_9;
+
 import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
@@ -44,13 +54,13 @@ import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.events.CyShutdownEvent;
 import org.cytoscape.application.events.CyShutdownListener;
 import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
-import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
-import org.cytoscape.view.presentation.customgraphics.CyCustomGraphicsFactory;
 import org.cytoscape.ding.customgraphics.IDGenerator;
 import org.cytoscape.ding.customgraphics.NullCustomGraphics;
+import org.cytoscape.ding.customgraphics.bitmap.MissingImageCustomGraphics;
 import org.cytoscape.ding.customgraphics.bitmap.URLImageCustomGraphics;
 import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.model.CyNode;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.session.CySession;
 import org.cytoscape.session.events.SessionAboutToBeSavedEvent;
@@ -58,9 +68,22 @@ import org.cytoscape.session.events.SessionAboutToBeSavedListener;
 import org.cytoscape.session.events.SessionLoadedEvent;
 import org.cytoscape.session.events.SessionLoadedListener;
 import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.View;
+import org.cytoscape.view.model.VisualProperty;
+import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
+import org.cytoscape.view.presentation.customgraphics.CyCustomGraphicsFactory;
+import org.cytoscape.view.vizmap.VisualMappingFunction;
 import org.cytoscape.view.vizmap.VisualMappingManager;
+import org.cytoscape.view.vizmap.VisualStyle;
+import org.cytoscape.view.vizmap.mappings.BoundaryRangeValues;
+import org.cytoscape.view.vizmap.mappings.ContinuousMapping;
+import org.cytoscape.view.vizmap.mappings.ContinuousMappingPoint;
+import org.cytoscape.view.vizmap.mappings.DiscreteMapping;
+import org.cytoscape.view.vizmap.mappings.PassthroughMapping;
 import org.cytoscape.work.SynchronousTaskManager;
+import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.swing.DialogTaskManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -73,10 +96,12 @@ public final class CustomGraphicsManagerImpl implements CustomGraphicsManager, C
 	private static final String IMAGE_DIR_NAME = "images3";
 	private static final String APP_NAME = "org.cytoscape.ding.customgraphicsmgr";
 
-	private final Map<Long, CyCustomGraphics> graphicsMap = new ConcurrentHashMap<Long, CyCustomGraphics>(16, 0.75f, 2);
+	private final Map<Long, CyCustomGraphics> graphicsMap = new ConcurrentHashMap<>(16, 0.75f, 2);
 
 	// URL to hash code map. For images associated with URL.
-	protected final Map<URL, Long> sourceMap = new ConcurrentHashMap<URL, Long>(16, 0.75f, 2);
+	protected final Map<URL, Long> sourceMap = new ConcurrentHashMap<>(16, 0.75f, 2);
+	
+	private final Set<MissingImageCustomGraphics> missingImageCustomGraphicsSet = new HashSet<>();
 
 	// Null Object
 	private final File imageHomeDirectory;
@@ -110,9 +135,9 @@ public final class CustomGraphicsManagerImpl implements CustomGraphicsManager, C
 		this.eventHelper = eventHelper;
 		this.vmm = vmm;
 		this.applicationManager = applicationManager;
-		this.isUsedCustomGraphics = new HashMap<CyCustomGraphics, Boolean>();
-		this.factoryMap = new HashMap<String, CyCustomGraphicsFactory>();
-		this.factoryPropsMap = new HashMap<CyCustomGraphicsFactory, Map>();
+		this.isUsedCustomGraphics = new HashMap<>();
+		this.factoryMap = new HashMap<>();
+		this.factoryPropsMap = new HashMap<>();
 
 		if (properties == null)
 			throw new NullPointerException("Property object is null.");
@@ -127,8 +152,7 @@ public final class CustomGraphicsManagerImpl implements CustomGraphicsManager, C
 
 		// Restore Custom Graphics from the directory.
 		final RestoreImageTaskFactory taskFactory = 
-		                 new RestoreImageTaskFactory(defaultImageURLs, imageHomeDirectory, this, eventHelper,
-		                                             vmm, applicationManager);
+		                 new RestoreImageTaskFactory(defaultImageURLs, imageHomeDirectory, this, eventHelper);
 		taskManager.execute(taskFactory.createTaskIterator());
 		instance = this;
 	}
@@ -302,8 +326,7 @@ public final class CustomGraphicsManagerImpl implements CustomGraphicsManager, C
 		// This means all CyCustomGraphics implementations should have a special
 		// toString method.
 		for (final CyCustomGraphics graphics : graphicsMap.values()) {
-			props.setProperty(graphics.getIdentifier().toString(), 
-			                  graphics.getClass().getCanonicalName()+","+graphics.toSerializableString());
+			props.setProperty(graphics.getIdentifier().toString(), graphics.toSerializableString());
 		}
 		
 		return props;
@@ -385,11 +408,15 @@ public final class CustomGraphicsManagerImpl implements CustomGraphicsManager, C
 				if (files != null && files.size() != 0) {
 					// get parent directory
 					final File parent = files.get(0).getParentFile();
-					final RestoreImageTaskFactory taskFactory = new RestoreImageTaskFactory(new HashSet<URL>(), parent, this, eventHelper, vmm, applicationManager);
-					TaskIterator loadImagesIterator = taskFactory.createTaskIterator();
+					final RestoreImageTaskFactory taskFactory = new RestoreImageTaskFactory(new HashSet<URL>(), parent, this, eventHelper);
+					final TaskIterator loadImagesIterator = taskFactory.createTaskIterator();
+					
 					for (CyNetworkView networkView: sess.getNetworkViews()) {
 						loadImagesIterator.append(((DGraphView)networkView).getCyAnnotator().getReloadImagesTask());
 					}
+					
+					loadImagesIterator.append(new ReloadMissingImagesTask(sess.getNetworkViews()));
+					
 					taskManager.execute(loadImagesIterator);
 				}
 			}
@@ -405,5 +432,136 @@ public final class CustomGraphicsManagerImpl implements CustomGraphicsManager, C
 			key = IDGenerator.getIDGenerator().getNextId();
 		
 		return key;
+	}
+
+	@Override
+	public void addMissingImageCustomGraphics(final MissingImageCustomGraphics cg) {
+		missingImageCustomGraphicsSet.add(cg);
+	}
+
+	@Override
+	public Collection<MissingImageCustomGraphics> reloadMissingImageCustomGraphics() {
+		final Set<MissingImageCustomGraphics> reloadedSet = new HashSet<>();
+		
+		for (final MissingImageCustomGraphics mcg : missingImageCustomGraphicsSet) {
+			final CyCustomGraphics cg = mcg.reloadImage();
+			
+			if (cg != null)
+				reloadedSet.add(mcg);
+		}
+		
+		missingImageCustomGraphicsSet.removeAll(reloadedSet);
+		
+		return reloadedSet;
+	}
+	
+	private class ReloadMissingImagesTask implements Task {
+
+		private boolean canceled;
+		private final Set<CyNetworkView> networkViews;
+		
+		private final VisualProperty<?>[] cgProperties = new VisualProperty[] {
+				NODE_CUSTOMGRAPHICS_1,
+				NODE_CUSTOMGRAPHICS_2,
+				NODE_CUSTOMGRAPHICS_3,
+				NODE_CUSTOMGRAPHICS_4,
+				NODE_CUSTOMGRAPHICS_5,
+				NODE_CUSTOMGRAPHICS_6,
+				NODE_CUSTOMGRAPHICS_7,
+				NODE_CUSTOMGRAPHICS_8,
+				NODE_CUSTOMGRAPHICS_9,
+		};
+		
+		public ReloadMissingImagesTask(final Set<CyNetworkView> networkViews) {
+			this.networkViews = networkViews;
+		}
+
+		@Override
+		public void run(final TaskMonitor taskMonitor) throws Exception {
+			final Collection<MissingImageCustomGraphics> reloaded = reloadMissingImageCustomGraphics();
+			
+			if (!reloaded.isEmpty() && networkViews != null) {
+				// Create a set of visual styles that contain reloaded custom graphics
+				final Set<VisualStyle> updatedStyles = new HashSet<>();
+				
+				for (VisualStyle style : vmm.getAllVisualStyles()) {
+					for (VisualProperty<?> vp : cgProperties) {
+						// First check the default value
+						final Object defValue = style.getDefaultValue(vp);
+						
+						if (defValue != null && reloaded.contains(defValue)) {
+							updatedStyles.add(style);
+							break;
+						}
+						
+						if (canceled) return;
+						
+						// Then check the mapping
+						final VisualMappingFunction<?, ?> fn = style.getVisualMappingFunction(vp);
+						
+						if (fn instanceof PassthroughMapping) {
+							// Just add this style; we don't want to check all networks' mapped attributes
+							updatedStyles.add(style);
+							break;
+						} else if (fn instanceof DiscreteMapping) {
+							final DiscreteMapping<?, ?> dm = (DiscreteMapping<?, ?>) fn;
+							final Map<?, ?> map = dm.getAll();
+							
+							for (MissingImageCustomGraphics mcg : reloaded) {
+								if (map.containsValue(mcg)) {
+									updatedStyles.add(style);
+									break;
+								}
+							}
+						} else if (fn instanceof ContinuousMapping) {
+							final ContinuousMapping<?, ?> cm = (ContinuousMapping<?, ?>) fn;
+							
+							for (ContinuousMappingPoint point : cm.getAllPoints()) {
+								final BoundaryRangeValues range = point.getRange();
+								
+								if ( (range.equalValue != null && reloaded.contains(range.equalValue)) ||
+									 (range.lesserValue != null && reloaded.contains(range.lesserValue)) ||
+									 (range.greaterValue != null && reloaded.contains(range.greaterValue)) ) {
+									updatedStyles.add(style);
+									break;
+								}
+							}
+						}
+					}
+				}
+				
+				for (CyNetworkView networkView: networkViews) {
+					if (canceled) return;
+					
+					// Check bypass values
+					for (View<CyNode> nv : networkView.getNodeViews()) {
+						for (VisualProperty<?> vp : cgProperties) {
+							if (nv.isDirectlyLocked(vp)) {
+								final Object value = nv.getVisualProperty(vp);
+								
+								if (canceled) return;
+								
+								// Set the same value again to force the renderer to repaint the node image
+								if (value != null && reloaded.contains(value))
+									nv.setLockedValue(vp, value);
+							}
+						}
+					}
+					
+					// Only re-apply the styles that contain at least one reloaded image, as checked before
+					final VisualStyle style = vmm.getVisualStyle(networkView);
+					
+					if (updatedStyles.contains(style)) {
+						style.apply(networkView);
+						networkView.updateView();
+					}
+				}
+			}
+		}
+
+		@Override
+		public void cancel() {
+			canceled = true;
+		}
 	}
 }

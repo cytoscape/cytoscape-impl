@@ -28,9 +28,9 @@ import java.net.URL;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
 import java.util.SortedSet;
 
+import org.cytoscape.ding.customgraphics.bitmap.MissingImageCustomGraphics;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphicsFactory;
 
@@ -66,5 +66,7 @@ public interface CustomGraphicsManager {
 	 * @return 
 	 */
 	Long getNextAvailableID();
-		
+	
+	void addMissingImageCustomGraphics(MissingImageCustomGraphics cg);
+	Collection<MissingImageCustomGraphics> reloadMissingImageCustomGraphics();
 }
