@@ -74,11 +74,7 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 	private CyCustomGraphics cg = null;
 	protected CustomGraphicsManager customGraphicsManager;
 
-	private double borderWidth = 0.0;
-	private Paint borderColor = null;
-
 	private static final Logger logger = LoggerFactory.getLogger(ImageAnnotationImpl.class);
-
 
 	// XXX HACK to force the custom graphics manager to respect these graphics
 	public void preserveCustomGraphics() {
@@ -96,6 +92,10 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 		shapeWidth=image.getWidth();
 		shapeHeight=image.getHeight();
 		this.url = c.url;
+		this.opacity = c.opacity;
+		this.brightness = c.brightness;
+		this.contrast = c.contrast;
+		setBorderWidth(0.0); // Our default border width is 0
 	}
 
 	public ImageAnnotationImpl(CyAnnotator cyAnnotator, DGraphView view, double x, double y, 
@@ -263,24 +263,19 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 
 	public void setShapeType(String type) {}
 
-	public double getBorderWidth() {
-		return borderWidth;
-	}
-
-	public void setBorderWidth(double width) {
-		borderWidth = width*getZoom();
-	}
-
-	public Paint getBorderColor() {return borderColor;}
+	@Override
 	public Paint getFillColor() {return null;}
-	public double getFillOpacity() {return 100.0;}
-	public double getBorderOpacity() {return 100.0;}
 
-	public void setBorderColor(Paint border) {borderColor = border;}
+	@Override
+	public double getFillOpacity() {return 0.0;}
+
+	@Override
 	public void setFillColor(Paint fill) {}
-	public void setFillOpacity(double opacity) {}
-	public void setBorderOpacity(double opacity) {}
 
+	@Override
+	public void setFillOpacity(double opacity) {}
+
+	@Override
 	public Shape getShape() {
 		return new Rectangle2D.Double((double)getX(), (double)getY(), shapeWidth, shapeHeight);
 	}
@@ -361,51 +356,50 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 
 		Graphics2D g2=(Graphics2D)g;
 
-		int width = (int)Math.round(shapeWidth*scaleFactor/getZoom());
-		int height = (int)Math.round(shapeHeight*scaleFactor/getZoom());
+		// Get the stroke
+		int border = (int)Math.round(getBorderWidth()*scaleFactor);
+
+		int width = (int)Math.round(shapeWidth*scaleFactor/getZoom())-border*2+1;
+		int height = (int)Math.round(shapeHeight*scaleFactor/getZoom())-border*2+1;
+		int xInt = (int)Math.round(x*scaleFactor)+border+1;
+		int yInt = (int)Math.round(y*scaleFactor)+border+1;
+
+		// System.out.println("ImageAnnotationImpl: drawAnnotation - width="+width+", height="+height+", border="+border);
+		// System.out.println("ImageAnnotationImpl: drawAnnotation - x="+x+",y="+y+", xInt="+xInt+", yInt="+yInt);
 		BufferedImage newImage =resizeImage(width, height);
 		if (newImage == null) return;
 
-		boolean selected = isSelected();
-		setSelected(false);
-		g2.drawImage(newImage, (int)(x*scaleFactor), (int)(y*scaleFactor), null);
-		setSelected(selected);
+		// boolean selected = isSelected();
+		// setSelected(false);
+		g2.drawImage(newImage, xInt, yInt, null);
+		// GraphicsUtilities.drawShape(g, 0, 0,
+		//                             getWidth()-1, getHeight()-1, this, false);
+		// setSelected(selected);
 	}
 
 	@Override
 	public void paint(Graphics g) {				
-		super.paint(g);
 
 		Graphics2D g2=(Graphics2D)g;
 
 		if (image == null)
 			return;
 
-		if (resizedImage == null)
-			resizedImage = resizeImage((int)shapeWidth, (int)shapeHeight);
+		// Get the stroke
+		int border = (int)Math.round(getBorderWidth()*getZoom());
 
-		// int x = getX();
-		// int y = getY();
+		// Calculate the new width & height
+		int width = getWidth()-border;
+		int height = getHeight()-border;
+
+		if (resizedImage == null || resizedImage.getWidth() != width || resizedImage.getHeight() != height)
+			resizedImage = resizeImage(width, height);
+
 		int x = 0;
 		int y = 0;
 
-		if (usedForPreviews()) {
-			x = 0; y = 0;
-		}
-
-		g2.drawImage(resizedImage, x, y, this);
-
-		if (borderColor != null && borderWidth > 0.0) {
-			g2.setPaint(borderColor);
-			g2.setStroke(new BasicStroke((float)borderWidth));
-			g2.drawRect(x, y, getAnnotationWidth(), getAnnotationHeight());
-		}
-		
-		if(isSelected()) {
-			g2.setColor(Color.YELLOW);
-			g2.setStroke(new BasicStroke(2.0f));
-			g2.drawRect(x, y, getAnnotationWidth(), getAnnotationHeight());
-		}
+		g2.drawImage(resizedImage, x+border+1, y+border+1, this);
+		super.paint(g);
 	}
 
 	@Override

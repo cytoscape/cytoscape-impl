@@ -226,9 +226,10 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
 		int width = (int)(shapeWidth*scaleFactor/getZoom());
 		int height = (int)(shapeHeight*scaleFactor/getZoom());
 
+
 		double savedBorder = borderWidth;
-		borderWidth = borderWidth*scaleFactor;
 		boolean selected = isSelected();
+		borderWidth = borderWidth*scaleFactor/getZoom();
 		setSelected(false);
 		GraphicsUtilities.drawShape(g, (int)(x*scaleFactor), (int)(y*scaleFactor),
 		                            width, height, this, false);
@@ -238,6 +239,9 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
 
 	public void paint(Graphics g) {
 		super.paint(g);
+		// if (this instanceof ImageAnnotationImpl)
+	// 		return;
+
 		if (canvas.isPrinting()) {
 			GraphicsUtilities.drawShape(g, 0, 0, getWidth()-1, getHeight()-1, this, true);
 		} else {

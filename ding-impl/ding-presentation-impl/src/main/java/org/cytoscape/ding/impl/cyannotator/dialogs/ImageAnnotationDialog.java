@@ -78,7 +78,7 @@ public class ImageAnnotationDialog extends JDialog {
 		int PREVIEW_HEIGHT = 350;
 
 		// Create the preview panel
-		preview = new ImageAnnotationImpl(cyAnnotator, view);
+		preview = new ImageAnnotationImpl(mAnnotation);
 		Image img = mAnnotation.getImage();
 		double width = (double)img.getWidth(this);
 		double height = (double)img.getHeight(this);
@@ -140,6 +140,7 @@ public class ImageAnnotationDialog extends JDialog {
 
 		//Apply
 		mAnnotation.setBorderColor(preview.getBorderColor());
+		mAnnotation.setBorderOpacity(preview.getBorderOpacity());
 		mAnnotation.setBorderWidth((int)preview.getBorderWidth());
 		mAnnotation.setImageOpacity(preview.getImageOpacity());
 		mAnnotation.setImageBrightness(preview.getImageBrightness());
