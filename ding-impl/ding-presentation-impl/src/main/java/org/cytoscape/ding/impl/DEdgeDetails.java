@@ -270,7 +270,6 @@ final class DEdgeDetails extends EdgeDetails {
 
 	void setSourceArrowDefault(byte arrow) {
 		m_sourceArrowDefault = arrow;
-		// FIXME
 		defaultValues.put(DVisualLexicon.EDGE_SOURCE_ARROW_SHAPE, DArrowShape.getArrowShape(m_sourceArrowDefault));
 	}
 
