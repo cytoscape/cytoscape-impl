@@ -102,16 +102,6 @@ public abstract class AbstractChart<T extends CustomGraphicLayer> extends Abstra
 		// Doesn't need to do anything here, because charts are updated when layers are recreated.
 	}
 	
-	/**
-	 * Get values from a list of attributes. The attributesList can either be a
-	 * single list attribute with numeric values or a list of integer or
-	 * floating point attributes. At some point, it might be interesting to
-	 * think about other combinations, but this is a good starting point.
-	 * 
-	 * @param view the node we're getting the custom graphics from
-	 * @param attributelist the list of column names
-	 * @return the lists of values @ if the attributes aren't numeric
-	 */
 	public Map<String, List<Double>> getDataFromColumns(final CyNetwork network, final CyIdentifiable model,
 			final List<CyColumnIdentifier> columnNames) {
 		LinkedHashMap<String, List<Double>> data = new LinkedHashMap<>();
@@ -243,6 +233,39 @@ public abstract class AbstractChart<T extends CustomGraphicLayer> extends Abstra
 		}
 		
 		return labels;
+	}
+	
+	/**
+	 * @return The names of the data columns or an empty list if any of the data columns is of type List.
+	 */
+	protected List<String> getSingleValueColumnNames(final CyNetwork network, final CyIdentifiable model) {
+		final List<String> names = new ArrayList<>();
+		final CyRow row = network.getRow(model);
+		
+		if (row == null)
+			return names;
+		
+		final List<CyColumnIdentifier> dataColumns = getList(DATA_COLUMNS, CyColumnIdentifier.class);
+		final CyTable table = row.getTable();
+		
+		boolean invalid = false;
+		
+		for (final CyColumnIdentifier colId : dataColumns) {
+			final CyColumn column = table.getColumn(colId.getColumnName());
+			
+			if (column == null || column.getType() == List.class) {
+				// Not a single value column!
+				invalid = true;
+				break;
+			}
+			
+			names.add(colId.getColumnName());
+		}
+		
+		if (invalid)
+			names.clear();
+		
+		return names;
 	}
 
 	protected Map<String, List<Double>> getData(final CyNetwork network, final CyIdentifiable model) {

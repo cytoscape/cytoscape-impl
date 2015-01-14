@@ -60,7 +60,7 @@ public class LineChart extends AbstractChart<LineLayer> {
 		final CyIdentifiable model = view.getModel();
 		
 		final List<String> itemLabels = getItemLabels(network, model);
-		final List<String> domainLabels =
+		List<String> domainLabels =
 				getLabelsFromColumn(network, model, get(DOMAIN_LABELS_COLUMN, CyColumnIdentifier.class));
 		final List<String> rangeLabels =
 				getLabelsFromColumn(network, model, get(RANGE_LABELS_COLUMN, CyColumnIdentifier.class));
@@ -68,6 +68,9 @@ public class LineChart extends AbstractChart<LineLayer> {
 		final List<Double> range = global ? getList(RANGE, Double.class) : null;
 		
 		final Map<String, List<Double>> data = getData(network, model);
+		
+		if (domainLabels.isEmpty() && data.size() == 1)
+			domainLabels = getSingleValueColumnNames(network, model);
 		
 		final List<Color> colors = getColors(data);
 		final double size = 32;

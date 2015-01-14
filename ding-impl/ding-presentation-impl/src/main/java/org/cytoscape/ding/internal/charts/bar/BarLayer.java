@@ -75,9 +75,8 @@ public class BarLayer extends AbstractChartLayer<CategoryDataset> {
 	@Override
 	protected CategoryDataset createDataset() {
 		final boolean listIsSeries = (singleCategory && type != BarChartType.STACKED);
-		final List<String> labels = listIsSeries ? itemLabels : domainLabels;
 		
-		return createCategoryDataset(data, listIsSeries, labels);
+		return createCategoryDataset(data, listIsSeries, domainLabels);
 	}
     
 	@Override
@@ -124,9 +123,6 @@ public class BarLayer extends AbstractChartLayer<CategoryDataset> {
 		plot.setRangeAxisLocation(AxisLocation.BOTTOM_OR_LEFT);
 		
 		final BasicStroke axisStroke = new BasicStroke(axisWidth, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
-		
-		// Show item labels and there is only one category?
-        final boolean showItemLabelsAsDomain = showItemLabels && singleCategory;
 		
 		final CategoryAxis domainAxis = (CategoryAxis) plot.getDomainAxis();
         domainAxis.setVisible(showDomainAxis);
@@ -175,9 +171,7 @@ public class BarLayer extends AbstractChartLayer<CategoryDataset> {
 		renderer.setBarPainter(new StandardBarPainter());
 		renderer.setShadowVisible(false);
 		renderer.setDrawBarOutline(true);
-		renderer.setBaseItemLabelGenerator(
-				(showItemLabels && !showItemLabelsAsDomain) ?
-				new CustomCategoryItemLabelGenerator(itemLabels) : null);
+		renderer.setBaseItemLabelGenerator(showItemLabels ? new CustomCategoryItemLabelGenerator(itemLabels) : null);
 		renderer.setBaseItemLabelsVisible(showItemLabels);
 		renderer.setBaseItemLabelFont(renderer.getBaseItemLabelFont().deriveFont(labelFontSize));
 		renderer.setBaseItemLabelPaint(labelColor);

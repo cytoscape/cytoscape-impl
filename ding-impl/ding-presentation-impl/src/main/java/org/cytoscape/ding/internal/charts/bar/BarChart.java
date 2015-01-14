@@ -71,20 +71,23 @@ public class BarChart extends AbstractChart<BarLayer> {
 		final CyIdentifiable model = view.getModel();
 		
 		final List<String> itemLabels = getItemLabels(network, model);
-		final List<String> domainLabels =
+		List<String> domainLabels =
 				getLabelsFromColumn(network, model, get(DOMAIN_LABELS_COLUMN, CyColumnIdentifier.class));
 		final List<String> rangeLabels =
 				getLabelsFromColumn(network, model, get(RANGE_LABELS_COLUMN, CyColumnIdentifier.class));
 		final boolean global = get(GLOBAL_RANGE, Boolean.class, true);
 		final List<Double> range = global ? getList(RANGE, Double.class) : null;
+		final BarChartType type = get(TYPE, BarChartType.class, BarChartType.GROUPED);
 		
 		final Map<String, List<Double>> data = getData(network, model);
+		
+		if (domainLabels.isEmpty() && data.size() == 1 && type != BarChartType.STACKED)
+			domainLabels = getSingleValueColumnNames(network, model);
 		
 		final List<Color> colors = getColors(data);
 		final double size = 32;
 		final Rectangle2D bounds = new Rectangle2D.Double(-size / 2, -size / 2, size, size);
 		
-		final BarChartType type = get(TYPE, BarChartType.class, BarChartType.GROUPED);
 		final Orientation orientation = get(ORIENTATION, Orientation.class);
 		final boolean showLabels = get(SHOW_ITEM_LABELS, Boolean.class, false);
 		final boolean showDomainAxis = get(SHOW_DOMAIN_AXIS, Boolean.class, false);
