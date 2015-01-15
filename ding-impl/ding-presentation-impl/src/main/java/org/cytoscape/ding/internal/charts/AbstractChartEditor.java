@@ -1051,12 +1051,12 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 						min = mm[0];
 						max = mm[1];
 					}
-					
-					if (min != Double.POSITIVE_INFINITY && max != Double.NEGATIVE_INFINITY) {
-						range.add(min);
-						range.add(max);
-					}
 				}
+			}
+			
+			if (min != Double.POSITIVE_INFINITY && max != Double.NEGATIVE_INFINITY) {
+				range.add(min);
+				range.add(max);
 			}
 		}
 		
