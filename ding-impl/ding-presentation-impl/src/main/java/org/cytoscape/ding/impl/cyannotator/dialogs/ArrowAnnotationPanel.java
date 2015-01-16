@@ -419,8 +419,8 @@ public class ArrowAnnotationPanel extends javax.swing.JPanel {
 			}
 		});
 	
-		sLineSelectColor.setVisible(true);
 		sLineSelectColor.setSize(435, 420);
+		sLineSelectColor.setVisible(true);
 	}
 
 	private Paint mixColor(Paint p, int value) {
