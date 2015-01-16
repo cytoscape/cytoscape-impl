@@ -369,6 +369,8 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 
 		// boolean selected = isSelected();
 		// setSelected(false);
+		AlphaComposite ac = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, opacity);
+		g2.setComposite(ac);
 		g2.drawImage(newImage, xInt, yInt, null);
 		// GraphicsUtilities.drawShape(g, 0, 0,
 		//                             getWidth()-1, getHeight()-1, this, false);
@@ -377,7 +379,6 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 
 	@Override
 	public void paint(Graphics g) {				
-		super.paint(g);
 
 		Graphics2D g2=(Graphics2D)g;
 
@@ -400,6 +401,7 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 		AlphaComposite ac = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, opacity);
 		g2.setComposite(ac);
 		g2.drawImage(resizedImage, x+border+1, y+border+1, this);
+		super.paint(g);
 	}
 
 	@Override
