@@ -335,8 +335,6 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 		g.setRenderingHint(RenderingHints.KEY_RENDERING,RenderingHints.VALUE_RENDER_QUALITY);
 		g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_ON);
 
-		AlphaComposite ac = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, opacity);
-		g.setComposite(ac);
 		g.drawImage(adjustedImage, 0, 0, width, height, this);
 		g.dispose();
 		return newImage;
@@ -379,6 +377,7 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 
 	@Override
 	public void paint(Graphics g) {				
+		super.paint(g);
 
 		Graphics2D g2=(Graphics2D)g;
 
@@ -398,8 +397,9 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 		int x = 0;
 		int y = 0;
 
+		AlphaComposite ac = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, opacity);
+		g2.setComposite(ac);
 		g2.drawImage(resizedImage, x+border+1, y+border+1, this);
-		super.paint(g);
 	}
 
 	@Override
