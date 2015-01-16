@@ -53,7 +53,8 @@ import org.cytoscape.view.vizmap.mappings.DiscreteMapping;
 import org.cytoscape.view.vizmap.mappings.PassthroughMapping;
 import org.freehep.graphicsio.gif.GIFExportFileType;
 import org.freehep.graphicsio.svg.SVGExportFileType;
-import org.freehep.util.export.ExportDialog;
+import org.freehep.graphicsio.pdf.PDFExportFileType;
+import org.freehep.graphicsbase.util.export.ExportDialog;
 
 /**
  * Dialog for legend
@@ -179,6 +180,7 @@ public class LegendDialog extends JDialog {
 		final ExportDialog export = new ExportDialog();
 		export.addExportFileType(new SVGExportFileType());
 		export.addExportFileType(new GIFExportFileType());
+		export.addExportFileType(new PDFExportFileType());
 		
 		export.showExportDialog(null, "Export legend as ...", jPanel1, "export");
 		dispose();
