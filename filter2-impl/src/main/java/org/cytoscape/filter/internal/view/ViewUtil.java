@@ -5,10 +5,15 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.text.DecimalFormat;
+import java.text.Format;
 import java.text.NumberFormat;
 
 import javax.swing.BorderFactory;
 import javax.swing.JComponent;
+import javax.swing.JFormattedTextField;
+import javax.swing.JFormattedTextField.AbstractFormatter;
+import javax.swing.JFormattedTextField.AbstractFormatterFactory;
 import javax.swing.border.AbstractBorder;
 import javax.swing.border.Border;
 import javax.swing.text.NumberFormatter;
@@ -44,6 +49,35 @@ public class ViewUtil {
 		formatter.setValueClass(Double.class);
 		formatter.setCommitsOnValidEdit(true);
 		return formatter;
+	}
+	
+	public static NumberFormatterFactory createNumberFormatterFactory() {
+		return new NumberFormatterFactory();
+	}
+	
+	private static class NumberFormatterFactory extends AbstractFormatterFactory {
+		NumberFormatter decimal;
+		NumberFormatter scientific;
+		
+		public NumberFormatterFactory() {
+			decimal = createNumberFormatter();
+			scientific = createNumberFormatter();
+			
+			Format scientificFormat = scientific.getFormat();
+			
+			if(scientificFormat instanceof DecimalFormat)
+				((DecimalFormat) scientificFormat).applyPattern("0.0####E0");
+		}
+		@Override
+		public AbstractFormatter getFormatter(JFormattedTextField tf) {
+			Double dx = 0.0;
+			if(tf.getValue() != null && tf.getValue() instanceof Double)
+				dx = Math.abs((Double) tf.getValue());
+			if (dx != 0 && (dx > 1000000.0 || dx < 0.001))
+				return scientific;
+			else return decimal;
+		}
+		
 	}
 	
 	private static class DashedBorder extends AbstractBorder {

@@ -46,8 +46,8 @@ public abstract class RangeChooserController {
 		JFormattedTextField maximumField = chooser.getMaximumField();
 		
 		// Ensure that what we display is what actually makes it into the model
-		Number newLow = clampByFormat(minimumField.getFormatter(), (Number) sliderModel.getLowValue());
-		Number newHigh = clampByFormat(maximumField.getFormatter(), (Number) sliderModel.getHighValue());
+		Number newLow = clampByFormat(minimumField.getFormatterFactory().getFormatter(minimumField), (Number) sliderModel.getLowValue());
+		Number newHigh = clampByFormat(maximumField.getFormatterFactory().getFormatter(maximumField), (Number) sliderModel.getHighValue());
 		
 		if (newLow != null && newLow.equals(low) && newHigh != null && newHigh.equals(high)) {
 			return;

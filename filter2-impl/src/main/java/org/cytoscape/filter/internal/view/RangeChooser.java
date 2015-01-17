@@ -34,7 +34,7 @@ public class RangeChooser extends JPanel {
 			}
 		});
 		
-		minimumField = new JFormattedTextField(ViewUtil.createNumberFormatter());
+		minimumField = new JFormattedTextField(ViewUtil.createNumberFormatterFactory());
 		minimumField.setHorizontalAlignment(JTextField.TRAILING);
 		minimumField.setColumns(6);
 		minimumField.addPropertyChangeListener("value", new PropertyChangeListener() {
@@ -44,7 +44,7 @@ public class RangeChooser extends JPanel {
 			}
 		});
 
-		maximumField = new JFormattedTextField(ViewUtil.createNumberFormatter());
+		maximumField = new JFormattedTextField(ViewUtil.createNumberFormatterFactory());
 		maximumField.setHorizontalAlignment(JTextField.TRAILING);
 		maximumField.setColumns(6);
 		maximumField.addPropertyChangeListener("value", new PropertyChangeListener() {
