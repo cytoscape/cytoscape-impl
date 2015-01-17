@@ -34,6 +34,10 @@ import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Collection;
+import java.util.Iterator;
+
+import javax.imageio.spi.IIORegistry;
+import javax.imageio.spi.ImageWriterSpi;
 
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -54,6 +58,7 @@ import org.cytoscape.view.vizmap.mappings.PassthroughMapping;
 import org.freehep.graphicsio.gif.GIFExportFileType;
 import org.freehep.graphicsio.svg.SVGExportFileType;
 import org.freehep.graphicsio.pdf.PDFExportFileType;
+import org.freehep.graphicsio.raw.RawImageWriterSpi;
 import org.freehep.graphicsbase.util.export.ExportDialog;
 
 /**
@@ -84,6 +89,12 @@ public class LegendDialog extends JDialog {
 
 		initComponents();
 		this.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+		IIORegistry reg = IIORegistry.getDefaultInstance();
+		reg.registerApplicationClasspathSpis();
+
+		// We need the RawImageWriter for PDFs and it doesn't register properly
+		// through OSGi
+		reg.registerServiceProvider(new RawImageWriterSpi(), ImageWriterSpi.class);
 	}
 
 	public void showDialog(final Component parent) {
@@ -180,6 +191,7 @@ public class LegendDialog extends JDialog {
 		final ExportDialog export = new ExportDialog();
 		export.addExportFileType(new SVGExportFileType());
 		export.addExportFileType(new GIFExportFileType());
+		// This should work, but I always get an error
 		export.addExportFileType(new PDFExportFileType());
 		
 		export.showExportDialog(null, "Export legend as ...", jPanel1, "export");
