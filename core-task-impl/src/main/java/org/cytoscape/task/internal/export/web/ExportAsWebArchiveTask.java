@@ -28,7 +28,7 @@ public class ExportAsWebArchiveTask extends AbstractTask {
 		return "Export as Cytoscape.js Web Page";
 	}
 
-	@Tunable(description = "Export Networks and Styles As:", params = "fileCategory=session;input=false")
+	@Tunable(description = "Export Networks and Styles As:", params = "fileCategory=archive;input=false")
 	public File file;
 	
 	@Tunable(description = "Export as:")
