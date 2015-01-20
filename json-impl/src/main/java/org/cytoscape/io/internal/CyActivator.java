@@ -91,7 +91,7 @@ public class CyActivator extends AbstractCyActivator {
 		registerAllServices(bc, jsonVSWriterFactory, jsVisualStyleWriterFactoryProperties);
 
 		final BasicCyFileFilter webSessionFilter = new BasicCyFileFilter(new String[] { "zip" },
-				new String[] { "application/plain" }, "Web archive file (.zip)", DataCategory.UNSPECIFIED, streamUtil);
+				new String[] { "application/zip" }, "Zip archive file (.zip)", DataCategory.ARCHIVE, streamUtil);
 
 		final CySessionWriterFactory webSessionWriterFactory = new WebSessionWriterFactoryImpl(jsonVSWriterFactory,
 				vmm, cytoscapejsWriterFactory, viewManager, webSessionFilter, appConfig, applicationManager,
