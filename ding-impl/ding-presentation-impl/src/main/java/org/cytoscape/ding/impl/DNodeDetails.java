@@ -202,6 +202,10 @@ class DNodeDetails extends NodeDetails {
 		m_nestedNetworkImgVisible.remove(nodeIdx);
 	}
 
+	public <V> void setDefaultValue(final VisualProperty<V> vp, V value) {
+		defaultValues.put(vp, value);
+	}
+	
 	@Override
 	public Color getColorLowDetail(final CyNode node) {
 		boolean isSelected;

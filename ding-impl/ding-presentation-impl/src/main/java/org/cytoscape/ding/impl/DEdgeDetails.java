@@ -191,6 +191,10 @@ final class DEdgeDetails extends EdgeDetails {
 		m_edgeTansparencies.remove(edgeIdx);
 		m_edgeLabelTansparencies.remove(edgeIdx);
 	}
+	
+	public <V> void setDefaultValue(final VisualProperty<V> vp, V value) {
+		defaultValues.put(vp, value);
+	}
 
 	@Override
 	public Color getColorLowDetail(final CyEdge edge) {

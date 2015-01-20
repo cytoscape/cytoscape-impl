@@ -119,6 +119,10 @@ final class EdgeViewDefaultSupport extends AbstractViewDefaultSupport {
 			setCurved((Boolean) value);
 		} else if (vp == EDGE_BEND) {
 			setBend((Bend) value);
+		} else {
+			synchronized (lock) {
+				edgeDetails.setDefaultValue(vp, value);
+			}
 		}
 	}
 

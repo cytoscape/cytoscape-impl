@@ -93,6 +93,10 @@ final class NodeViewDefaultSupport extends AbstractViewDefaultSupport {
 			setLabelWidth(newSize);
 		} else if (vp == BasicVisualLexicon.NODE_NESTED_NETWORK_IMAGE_VISIBLE) {
 			setNestedNetworkImgVisible(Boolean.TRUE.equals(value));
+		} else {
+			synchronized (lock) {
+				nodeDetails.setDefaultValue(vp, value);
+			}
 		}
 	}
 
