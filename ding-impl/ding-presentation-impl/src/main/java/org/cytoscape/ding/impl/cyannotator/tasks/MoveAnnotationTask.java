@@ -62,6 +62,7 @@ public class MoveAnnotationTask extends AbstractNetworkViewTask {
 	public void run(TaskMonitor tm) throws Exception {
 		if ( view instanceof DGraphView ) {
 			annotation.moveAnnotation(start);
+			annotation.getCyAnnotator().moveAnnotation(annotation);
 		}
 	}
 }
