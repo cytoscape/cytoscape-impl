@@ -127,7 +127,9 @@ final class EdgeViewDefaultSupport extends AbstractViewDefaultSupport {
 	}
 
 	private void setBend(final Bend bend) {
-		edgeDetails.setEdgeBendDefault(bend);
+		synchronized (lock) {
+			edgeDetails.setEdgeBendDefault(bend);
+		}
 	}
 
 	private void setCurved(final Boolean curved) {
@@ -140,20 +142,25 @@ final class EdgeViewDefaultSupport extends AbstractViewDefaultSupport {
 	}
 
 	private void setTransparency(int trans) {
-		if (trans < 0 || trans > 255)
-			trans = DVisualLexicon.EDGE_TRANSPARENCY.getDefault();
-		
-		edgeDetails.setTransparencyDefault(trans);
+		synchronized (lock) {
+			if (trans < 0 || trans > 255)
+				trans = DVisualLexicon.EDGE_TRANSPARENCY.getDefault();
+			
+			edgeDetails.setTransparencyDefault(trans);
+		}
 
 		setSelectedPaint(edgeDetails.m_selectedPaintDefault);
 		setUnselectedPaint(edgeDetails.m_unselectedPaintDefault);
 	}
 	
 	private void setLabelTransparency(int trans) {
-		if (trans < 0 || trans > 255)
-			trans = DVisualLexicon.EDGE_LABEL_TRANSPARENCY.getDefault();
-
-		edgeDetails.setLabelTransparencyDefault(trans);
+		synchronized (lock) {
+			if (trans < 0 || trans > 255)
+				trans = DVisualLexicon.EDGE_LABEL_TRANSPARENCY.getDefault();
+	
+			edgeDetails.setLabelTransparencyDefault(trans);
+		}
+		
 		setTextPaint(edgeDetails.m_labelPaintDefault);
 	}
 

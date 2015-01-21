@@ -131,19 +131,27 @@ final class NodeViewDefaultSupport extends AbstractViewDefaultSupport {
 	}
 
 	void setTransparency(int trans) {
-		nodeDetails.setTransparencyDefault(trans);
+		synchronized (lock) {
+			nodeDetails.setTransparencyDefault(trans);
+		}
 
 		setSelectedPaint(nodeDetails.m_selectedPaintDefault);
 		setUnselectedPaint(nodeDetails.m_unselectedPaintDefault);
 	}
 	
 	void setBorderTransparency(int trans) {
-		nodeDetails.setBorderTransparencyDefault(trans);
+		synchronized (lock) {
+			nodeDetails.setBorderTransparencyDefault(trans);
+		}
+		
 		setBorderPaint(nodeDetails.m_borderPaintDefault);
 	}
 	
 	void setLabelTransparency(int trans) {
-		nodeDetails.setLabelTransparencyDefault(trans);
+		synchronized (lock) {
+			nodeDetails.setLabelTransparencyDefault(trans);
+		}
+		
 		setTextPaint(nodeDetails.m_labelPaintDefault);
 	}
 
