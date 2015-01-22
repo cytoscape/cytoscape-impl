@@ -289,7 +289,7 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
 			if (type.shapeName().equals(shapeName))
 				return type;
 		}
-		return null;
+		return ShapeType.RECTANGLE;
 	}
 
 }
