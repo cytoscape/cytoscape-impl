@@ -509,22 +509,24 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 				// If the current mapping already have points, start with the actual mapping's min/max values
 				Double max = VisualPropertyUtil.getMaxValue(mapping);
 				Double min = VisualPropertyUtil.getMinValue(mapping);
-				max = max == null ? Double.NEGATIVE_INFINITY : max;
-				min = min == null ? Double.POSITIVE_INFINITY : min;
+				if (max == null || min == null) {
+					max = max == null ? Double.NEGATIVE_INFINITY : max;
+					min = min == null ? Double.POSITIVE_INFINITY : min;
 				
-				final List<?> valueList = col.getValues(col.getType());
+					final List<?> valueList = col.getValues(col.getType());
 
-				for (Object o : valueList) {
-					if (o instanceof Number) {
-						Number val = (Number) o;
+					for (Object o : valueList) {
+						if (o instanceof Number) {
+							Number val = (Number) o;
+	
+							if (val.doubleValue() > max)
+								max = val.doubleValue();
+	
+							if (val.doubleValue() < min)
+								min = val.doubleValue();
+						}
 
-						if (val.doubleValue() > max)
-							max = val.doubleValue();
-
-						if (val.doubleValue() < min)
-							min = val.doubleValue();
 					}
-
 				}
 
 				tracer.setMax(type, max);
