@@ -230,26 +230,29 @@ public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurr
 	@Override
 	public void handleEvent(final SetCurrentNetworkEvent e) {
 		final CyNetwork currentNetwork = e.getNetwork();
+		// System.out.println("Handling SetCurrentNetworkEvent");
 		
-		if (currentNetwork != null) {
-			if (objType == CyNode.class) {
-				currentTable = currentNetwork.getDefaultNodeTable();
-			} else if (objType == CyEdge.class) {
-				currentTable = currentNetwork.getDefaultEdgeTable();
-			} else {
-				currentTable = currentNetwork.getDefaultNetworkTable();
-			}
-			currentTableType = objType;
-		} else {
-			currentTable = null;
-			currentTableType = null;
-		}
 		
-		final Set<CyTable> tables = getPublicTables(currentNetwork);
-		
-		SwingUtilities.invokeLater(new Runnable() {
+		invokeOnEDT(new Runnable() {
 			@Override
 			public void run() {
+				// System.out.println("Updating table "+currentTable+" to new network");
+				if (currentNetwork != null) {
+					if (objType == CyNode.class) {
+						currentTable = currentNetwork.getDefaultNodeTable();
+					} else if (objType == CyEdge.class) {
+						currentTable = currentNetwork.getDefaultEdgeTable();
+					} else {
+						currentTable = currentNetwork.getDefaultNetworkTable();
+					}
+					currentTableType = objType;
+				} else {
+					currentTable = null;
+					currentTableType = null;
+				}
+		
+				final Set<CyTable> tables = getPublicTables(currentNetwork);
+
 				ignoreSetCurrentTable = true;
 				
 				try {
@@ -265,13 +268,13 @@ public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurr
 				} finally {
 					ignoreSetCurrentTable = false;
 				}
+				if (currentTable != null)
+					applicationManager.setCurrentTable(currentTable);
+				showSelectedTable();
+				changeSelectionMode();
 			}
-		});
+		}, true);
 		
-		if (currentTable != null)
-			applicationManager.setCurrentTable(currentTable);
-		showSelectedTable();
-		changeSelectionMode();
 	}
 	
 	@Override
@@ -282,7 +285,7 @@ public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurr
 			final CyNetwork curNet = applicationManager.getCurrentNetwork();
 			
 			if (curNet != null && networkTableManager.getTables(curNet, objType).containsValue(newTable)) {
-				SwingUtilities.invokeLater(new Runnable() {
+				invokeOnEDT(new Runnable() {
 					@Override
 					public void run() {
 						if (((DefaultComboBoxModel)getTableChooser().getModel()).getIndexOf(newTable) < 0) {
@@ -290,7 +293,7 @@ public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurr
 							attributeBrowserToolBar.updateEnableState(getTableChooser());
 						}
 					}
-				});
+				}, false);
 			}
 		}
 	}
@@ -299,23 +302,28 @@ public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurr
 	public void handleEvent(final TableAboutToBeDeletedEvent e) {
 		final CyTable cyTable = e.getTable();
 		final BrowserTable table = getAllBrowserTablesMap().get(cyTable);
+		// System.out.println("Handling delete table event for table: "+cyTable);
 		
 		if (table != null) {
 			((DefaultComboBoxModel)getTableChooser().getModel()).removeElement(cyTable);
 			
-			SwingUtilities.invokeLater(new Runnable() {
+			// We need this to happen synchronously or we get royally messed up by the
+			// new table selection
+			invokeOnEDT(new Runnable() {
 				@Override
 				public void run() {
+					// System.out.println("Deleting table "+cyTable+" from browser");
 					attributeBrowserToolBar.updateEnableState(getTableChooser());
 					deleteTable(cyTable);
 				}
-			});
+			}, true);
 			
 			final CyNetwork network = networkTableManager.getNetworkForTable(cyTable);
 			final String namespace = networkTableManager.getTableNamespace(cyTable);
 			
-			if (network != null && namespace != null)
-				networkTableManager.removeTable(network, objType, namespace);
+			// FIXME: why is the table browser removing the table??????
+			// if (network != null && namespace != null)
+			// 	networkTableManager.removeTable(network, objType, namespace);
 		}
 	}
 	
@@ -365,6 +373,7 @@ public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurr
 	
 	private Set<CyTable> getPublicTables(CyNetwork currentNetwork) {
 		final Set<CyTable> tables = new LinkedHashSet<CyTable>();
+		if (currentNetwork == null) return tables;
 		final Map<String, CyTable> map = networkTableManager.getTables(currentNetwork, objType);
 		
 		for (final CyTable tbl : map.values()) {
@@ -373,5 +382,25 @@ public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurr
 		}
 		
 		return tables;
+	}
+
+	private void invokeOnEDT(Runnable doRun, boolean wait) {
+		if (SwingUtilities.isEventDispatchThread()) {
+			doRun.run();
+			return;
+		}
+
+		if (wait) {
+			try {
+				SwingUtilities.invokeAndWait(doRun);
+			} catch (InterruptedException e) {
+				return;
+			} catch (java.lang.reflect.InvocationTargetException e) {
+				// FIXME: create rational message and log it
+				e.printStackTrace();
+			}
+		} else {
+			SwingUtilities.invokeLater(doRun);
+		}
 	}
 }
