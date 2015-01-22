@@ -71,7 +71,14 @@ public class CanvasMouseMotionListener implements MouseMotionListener{
 		int mouseY = e.getY();
 
 		if (moveAnnotation != null) {
-			moveAnnotation.moveAnnotation(new Point2D.Double((double)mouseX, (double)mouseY));
+    	// Get our current transform
+			double[] nextLocn = new double[2];
+			nextLocn[0] = (double)mouseX;
+			nextLocn[1] = (double)mouseY;
+			view.xformComponentToNodeCoords(nextLocn);
+
+			// OK, now update
+			moveAnnotation.moveAnnotation(new Point2D.Double(nextLocn[0], nextLocn[1]));
 			moveAnnotation.update();
 			moveAnnotation.getCanvas().repaint();
 		} else if (resizeAnnotation != null) {
