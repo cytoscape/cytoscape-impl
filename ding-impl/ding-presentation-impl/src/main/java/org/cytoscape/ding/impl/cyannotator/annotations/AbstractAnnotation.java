@@ -294,8 +294,10 @@ public class AbstractAnnotation extends JComponent implements DingAnnotation {
 	}
     
 	public void moveAnnotation(Point2D location) {
+		// Location is in "node coordinates"
+		Point2D coords = getComponentCoordinates(location.getX(), location.getY());
 		if (!(this instanceof ArrowAnnotationImpl)) {
-			setLocation((int)location.getX(), (int)location.getY());
+			setLocation((int)coords.getX(), (int)coords.getY());
 			// cyAnnotator.moveAnnotation(this);
 		} // else {
 			// cyAnnotator.positionArrow((ArrowAnnotationImpl)this);
