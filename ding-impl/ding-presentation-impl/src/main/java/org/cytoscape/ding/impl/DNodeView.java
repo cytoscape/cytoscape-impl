@@ -506,10 +506,9 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 
 	@Override
 	public void setXPosition(final double xPos) {
-		
-		final double wDiv2;
-		
+
 		synchronized (graphView.m_lock) {
+			double wDiv2;
 			isVisible = graphView.m_spacial.exists(modelIdx, graphView.m_extentsBuff, 0);
 
 			if (isVisible)
@@ -517,11 +516,16 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 			else
 				wDiv2 = 	(m_hiddenXMax - m_hiddenXMin) / 2.0d;
 
+			if (wDiv2 <= 0)
+				wDiv2 = 0.00001; // Some epsilon value
+
 			final float xMin = (float) (xPos - wDiv2);
 			final float xMax = (float) (xPos + wDiv2);
 
-			if (!(xMax > xMin))
-				throw new IllegalStateException("width of node has degenerated to zero after rounding");
+			// Rather than throw an exception, we fix things up with an epsilon
+			// if (!(xMax > xMin)) {
+				// throw new IllegalStateException("width of node has degenerated to zero after rounding");
+			// }
 
 			// If the node is visible, set the extents.
 			if (isVisible) {
@@ -579,10 +583,10 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 	}
 
 	public void setYPosition(final double yPos) {
-		final double hDiv2;
 		
 		synchronized (graphView.m_lock) {
-			
+			double hDiv2;
+
 			isVisible = graphView.m_spacial.exists(modelIdx, graphView.m_extentsBuff, 0);
 
 			if (isVisible)
@@ -590,11 +594,14 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 			else
 				hDiv2 = (m_hiddenYMax - m_hiddenYMin) / 2.0d;
 
+			if (hDiv2 <= 0)
+				hDiv2 = 0.00001; // Some epsilon value
+
 			final float yMin = (float) (yPos - hDiv2);
 			final float yMax = (float) (yPos + hDiv2);
 
-			if (!(yMax > yMin))
-				throw new IllegalStateException("height of node has degenerated to zero after " + "rounding");
+			// if (!(yMax > yMin))
+			// 	throw new IllegalStateException("height of node has degenerated to zero after " + "rounding");
 
 			// If the node is visible, set the extents.
 			if (isVisible) {
