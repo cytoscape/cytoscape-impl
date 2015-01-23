@@ -27,6 +27,8 @@ package org.cytoscape.welcome.internal.panel;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
 
 import javax.swing.BorderFactory;
@@ -39,6 +41,10 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.ScrollPaneConstants;
+import javax.swing.text.AttributeSet;
+import javax.swing.text.html.HTML;
+import javax.swing.text.html.HTMLDocument;
+import javax.swing.text.html.HTMLDocument.Iterator;
 
 import org.cytoscape.application.CyVersion;
 import org.cytoscape.welcome.internal.WelcomeScreenDialog;
@@ -47,20 +53,20 @@ public final class StatusPanel extends AbstractWelcomeScreenChildPanel {
 
 	private static final long serialVersionUID = 54718654342142203L;
 	
-	private static final String UP_TO_DATE_ICON_LOCATION = "images/Icons/check-circle-icon.png";
-	private static final String NEW_VER_AVAILABLE_ICON_LOCATION = "images/Icons/warn-icon.png";
+	private static final String CHECK_ICON_LOCATION = "images/Icons/check-circle-icon.png";
+	private static final String WARNING_ICON_LOCATION = "images/Icons/warn-icon.png";
     private static final String NEWS_URL = "http://chianti.ucsd.edu/cytoscape-news/news.html";
 
 	private final CyVersion cyVersion;
 	
-	private final Icon upToDateIcon;
-	private final Icon newVersionAvailableIcon;
+	private final Icon checkIcon;
+	private final Icon warningIcon;
 
 	public StatusPanel(final CyVersion cyVersion) {
 		this.cyVersion = cyVersion;
 
-		upToDateIcon= new ImageIcon(WelcomeScreenDialog.class.getClassLoader().getResource(UP_TO_DATE_ICON_LOCATION));
-		newVersionAvailableIcon= new ImageIcon(WelcomeScreenDialog.class.getClassLoader().getResource(NEW_VER_AVAILABLE_ICON_LOCATION));
+		checkIcon= new ImageIcon(WelcomeScreenDialog.class.getClassLoader().getResource(CHECK_ICON_LOCATION));
+		warningIcon= new ImageIcon(WelcomeScreenDialog.class.getClassLoader().getResource(WARNING_ICON_LOCATION));
 		initComponents();
 	}
 
@@ -76,14 +82,6 @@ public final class StatusPanel extends AbstractWelcomeScreenChildPanel {
 		status.setAlignmentX(Component.LEFT_ALIGNMENT);
 		status.setBackground(this.getBackground());
 		status.setFont(REGULAR_FONT);
-
-        if (isUpToDate()) {
-			status.setIcon(upToDateIcon);
-			status.setText("Cytoscape " + versionStr + " is up to date.");
-		} else {
-			status.setIcon(newVersionAvailableIcon);
-			status.setText("New version is available: " + versionStr);
-		}
         
 		final JEditorPane news = new JEditorPane() {
 			@Override
@@ -114,6 +112,29 @@ public final class StatusPanel extends AbstractWelcomeScreenChildPanel {
 				}
 			}
 		};
+		news.addPropertyChangeListener("page", new PropertyChangeListener() {
+			@Override
+			public void propertyChange(PropertyChangeEvent evt) {
+				HTMLDocument doc = (HTMLDocument) news.getDocument();
+				for(Iterator i = doc.getIterator(HTML.Tag.META); i.isValid(); i.next() ) {
+					AttributeSet attrs = i.getAttributes();
+					if(attrs.containsAttribute(HTML.Attribute.NAME, "latestVersion")) {
+						String latestVersion = (String) attrs.getAttribute(HTML.Attribute.CONTENT);
+						if (versionStr.equals(latestVersion)) {
+							status.setIcon(checkIcon);
+							status.setText("Cytoscape " + versionStr + " is up to date.");
+						} else {
+							status.setIcon(warningIcon);
+							if(versionStr.contains("-")) 
+								status.setText("This is a pre-release version of Cytoscape.");
+							else
+								status.setText("New version is available: " + latestVersion);
+						}
+						break;
+					}
+				}
+			}
+		});
 		(new Thread(getNews)).start();
 		
 		panel.add(status);
@@ -127,15 +148,5 @@ public final class StatusPanel extends AbstractWelcomeScreenChildPanel {
 		sp.setViewportBorder(BorderFactory.createEmptyBorder());
 		
 		this.add(sp, BorderLayout.CENTER);
-	}
-	
-	private boolean isUpToDate() {
-		// TODO: Implement this!
-		return true;
-	}
-	
-	private String getNewVersionNumber() {
-		// TODO: implement this!
-		return "3.1.0";
 	}
 }
