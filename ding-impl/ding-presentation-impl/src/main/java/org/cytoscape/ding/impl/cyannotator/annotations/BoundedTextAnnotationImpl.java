@@ -97,7 +97,7 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 		this.font = getArgFont(argMap, "Arial", Font.PLAIN, initialFontSize);
     this.textColor = getColor(argMap, COLOR, Color.BLACK);
 		this.text = getString(argMap, TEXT, "");
-		this.fontSize = font.getSize2D()/(float)(getZoom()*getSpecificZoom());
+		this.fontSize = font.getSize();
 
 		if (!argMap.containsKey(BoundedTextAnnotation.WIDTH)) {
 			double width = getTextWidth((Graphics2D)this.getGraphics())+8;
@@ -200,13 +200,15 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 
 	@Override
 	public void setSpecificZoom(double zoom) {
-		font=font.deriveFont(((float)(zoom/getSpecificZoom()))*font.getSize2D());
+		fontSize = (float)((zoom/getSpecificZoom())*fontSize);
+		font=font.deriveFont(fontSize);
 		super.setSpecificZoom(zoom);		
 	}
 
 	@Override
 	public void setZoom(double zoom) {
-		font=font.deriveFont(((float)(zoom/getZoom()))*font.getSize2D());
+		fontSize = (float)((zoom/getZoom())*fontSize);
+		font=font.deriveFont(fontSize);
 		super.setZoom(zoom);
 	}
 
@@ -234,7 +236,7 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 	@Override
 	public void setFontSize(double size) {
 		this.fontSize = (float)size;
-		font = font.deriveFont((float)(fontSize*getSpecificZoom()*getZoom()));
+		font = font.deriveFont((float)(fontSize));
 		updateBounds();
 	}
 
@@ -244,7 +246,7 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 
 	@Override
 	public void setFontStyle(int style) {
-		font = font.deriveFont(style, (float)(fontSize*getSpecificZoom()*getZoom()));
+		font = font.deriveFont(style, (float)(fontSize));
 	}
 
 	@Override
@@ -255,7 +257,6 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 	@Override
 	public void setFontFamily(String family) {
 		font = new Font(family, font.getStyle(), (int)fontSize);
-		font = font.deriveFont((float)(fontSize*getSpecificZoom()*getZoom()));
 	}
 
 	@Override
