@@ -30,12 +30,15 @@ import java.awt.Paint;
 import java.awt.Shape;
 import java.awt.Stroke;
 import java.awt.TexturePaint;
+import java.awt.geom.AffineTransform;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.PathIterator;
+import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.cytoscape.graph.render.immed.EdgeAnchors;
 import org.cytoscape.graph.render.immed.GraphGraphics;
@@ -46,7 +49,11 @@ import org.cytoscape.spacial.SpacialEntry2DEnumerator;
 import org.cytoscape.spacial.SpacialIndex2D;
 import org.cytoscape.util.intr.LongHash;
 import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.View;
+import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
+import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
+import org.cytoscape.view.vizmap.VisualPropertyDependency;
 
 
 /**
@@ -131,6 +138,7 @@ public final class GraphRenderer {
 	 * @param yCenter the yCenter parameter to use when calling grafx.clear().
 	 * @param scaleFactor the scaleFactor parameter to use when calling
 	 *   grafx.clear().
+	 * @param dependencies 
 	 * @return bits representing the level of detail that was rendered; the
 	 *   return value is a bitwise-or'ed value of the LOD_* constants.
 	 */
@@ -145,7 +153,8 @@ public final class GraphRenderer {
 	                                    final double xCenter,
 	                                    final double yCenter,
 	                                    final double scaleFactor,
-	                                    final boolean haveZOrder) {
+	                                    final boolean haveZOrder,
+	                                    final Set<VisualPropertyDependency<?>> dependencies) {
 		nodeBuff.empty(); // Make sure we keep our promise.
 
 		final CyNetwork graph = netView.getModel();
@@ -677,7 +686,7 @@ public final class GraphRenderer {
 					final CyNode cyNode = graph.getNode(node);
 
 					renderNodeHigh(netView, grafx, cyNode, floatBuff1, doubleBuff1, doubleBuff2,
-							nodeDetails, lodBits);
+							nodeDetails, lodBits, dependencies);
 
 					// Take care of label rendering.
 					if ((lodBits & LOD_NODE_LABELS) != 0) { // Potential label rendering.
@@ -1062,6 +1071,7 @@ public final class GraphRenderer {
 	/**
 	 * Render node view with details, including custom graphics.
 	 */
+	@SuppressWarnings("rawtypes")
 	private static final void renderNodeHigh(final CyNetworkView netView,
 											 final GraphGraphics grafx,
 											 final CyNode cyNode,
@@ -1069,7 +1079,8 @@ public final class GraphRenderer {
 											 final double[] doubleBuff1,
 											 final double[] doubleBuff2,
 											 final NodeDetails nodeDetails,
-											 final int lodBits) {
+											 final int lodBits,
+											 final Set<VisualPropertyDependency<?>> dependencies) {
 		Shape nodeShape = null;
 
 		if ((floatBuff1[0] != floatBuff1[2]) && (floatBuff1[1] != floatBuff1[3])) {
@@ -1117,28 +1128,50 @@ public final class GraphRenderer {
 			// draw custom graphics on top of nested networks 
 			// don't allow our custom graphics to mutate while we iterate over them:
 			synchronized (nodeDetails.customGraphicsLock(cyNode)) {
-				// This iterator will return CustomGraphicLayers in rendering order:
-				Iterator<CustomGraphicLayer> dNodeIt = nodeDetails.getCustomGraphics(cyNode);
-				CustomGraphicLayer cg = null;
-				// The graphic index used to retrieve non custom graphic info corresponds to the zero-based
-				// index of the CustomGraphicLayer returned by the iterator:
-				int graphicInx = 0;
-				while (dNodeIt.hasNext()) {
-					cg = dNodeIt.next();
-					final float offsetVectorX = nodeDetails.graphicOffsetVectorX(cyNode, graphicInx);
-					final float offsetVectorY = nodeDetails.graphicOffsetVectorY(cyNode, graphicInx);
-					doubleBuff1[0] = floatBuff1[0];
-					doubleBuff1[1] = floatBuff1[1];
-					doubleBuff1[2] = floatBuff1[2];
-					doubleBuff1[3] = floatBuff1[3];
-					lemma_computeAnchor(NodeDetails.ANCHOR_CENTER, doubleBuff1, doubleBuff2);
-					grafx.drawCustomGraphicFull(netView, cyNode, nodeShape, cg,
-												(float) (doubleBuff2[0] + offsetVectorX), 
-					                            (float) (doubleBuff2[1] + offsetVectorY));
-					graphicInx++;
+				final View<CyNode> nodeView = netView.getNodeView(cyNode);
+				
+				// This method should return CustomGraphics in rendering order:
+				final Map<VisualProperty<CyCustomGraphics>, CustomGraphicsInfo> cgMap = nodeDetails.getCustomGraphics(cyNode);
+				final List<CustomGraphicsInfo> infoList = new ArrayList<>(cgMap.values());
+				
+				for (final CustomGraphicsInfo cgInfo : infoList) {
+					final List<CustomGraphicLayer> layers = cgInfo.createLayers(netView, nodeView, nodeDetails, dependencies);
+					
+					// The graphic index used to retrieve non custom graphic info corresponds to the zero-based
+					// index of the CustomGraphicLayer returned by the iterator:
+					int graphicInx = 0;
+					
+					for (final CustomGraphicLayer layer : layers) {
+						final float offsetVectorX = nodeDetails.graphicOffsetVectorX(cyNode, graphicInx);
+						final float offsetVectorY = nodeDetails.graphicOffsetVectorY(cyNode, graphicInx);
+						doubleBuff1[0] = floatBuff1[0];
+						doubleBuff1[1] = floatBuff1[1];
+						doubleBuff1[2] = floatBuff1[2];
+						doubleBuff1[3] = floatBuff1[3];
+						lemma_computeAnchor(NodeDetails.ANCHOR_CENTER, doubleBuff1, doubleBuff2);
+						
+						float xOffset = (float) (doubleBuff2[0] + offsetVectorX);
+						float yOffset = (float) (doubleBuff2[1] + offsetVectorY);
+						nodeShape = createCustomGraphicsShape(nodeShape, layer, -xOffset, -yOffset);
+						
+						grafx.drawCustomGraphicFull(netView, cyNode, nodeShape, layer, xOffset, yOffset);
+						graphicInx++;
+					}
 				}
 			}
 		}
+	}
+
+	private static Shape createCustomGraphicsShape(final Shape nodeShape, final CustomGraphicLayer layer,
+			                                       float xOffset, float yOffset) {
+		final Rectangle2D nsb = nodeShape.getBounds2D();
+		final Rectangle2D cgb = layer.getBounds2D();
+		
+		final AffineTransform xform = new AffineTransform();
+		xform.scale(cgb.getWidth() / nsb.getWidth(), cgb.getHeight() / nsb.getHeight());
+		xform.translate(xOffset, yOffset);
+		
+		return xform.createTransformedShape(nodeShape);
 	}
 
 	private static class SpacialEntry2DEnumeratorZSort implements SpacialEntry2DEnumerator {

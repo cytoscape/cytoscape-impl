@@ -29,10 +29,9 @@ import java.awt.Font;
 import java.awt.Paint;
 import java.awt.Stroke;
 import java.awt.TexturePaint;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -43,11 +42,11 @@ import org.cytoscape.ding.Justification;
 import org.cytoscape.ding.Label;
 import org.cytoscape.ding.ObjectPosition;
 import org.cytoscape.ding.Position;
+import org.cytoscape.graph.render.stateful.CustomGraphicsInfo;
 import org.cytoscape.graph.render.stateful.NodeDetails;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualProperty;
-import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
+import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.presentation.property.values.LineType;
 import org.cytoscape.view.presentation.property.values.NodeShape;
@@ -56,10 +55,10 @@ import org.cytoscape.view.presentation.property.values.NodeShape;
  * Access to the methods of this class should be synchronized externally if
  * there is a threat of multiple threads.
  */
-class DNodeDetails extends NodeDetails {
+public class DNodeDetails extends NodeDetails {
 
 	// Parent Network View
-	private final DGraphView dGraphView;
+	protected final DGraphView dGraphView;
 	private final Object m_deletedEntry = new Object();
 	
 	private final Map<VisualProperty<?>, Object> defaultValues;
@@ -84,8 +83,6 @@ class DNodeDetails extends NodeDetails {
 	Map<CyNode, Integer> m_labelJustifys = new ConcurrentHashMap<CyNode, Integer>(16, 0.75f, 2);
 	Map<CyNode, Double> m_labelOffsetXs = new ConcurrentHashMap<CyNode, Double>(16, 0.75f, 2);
 	Map<CyNode, Double> m_labelOffsetYs = new ConcurrentHashMap<CyNode, Double>(16, 0.75f, 2);
-	Map<CyNode, Double> m_width = new ConcurrentHashMap<CyNode, Double>(16, 0.75f, 2);
-	Map<CyNode, List<CustomGraphicLayer>> m_customGraphics = new ConcurrentHashMap<CyNode, List<CustomGraphicLayer>>(16, 0.75f, 2);
 	Map<CyNode, Integer> m_nodeTansparencies = new ConcurrentHashMap<CyNode, Integer>(16, 0.75f, 2);
 	Map<CyNode, Integer> m_nodeBorderTansparencies = new ConcurrentHashMap<CyNode, Integer>(16, 0.75f, 2);
 	Map<CyNode, Integer> m_nodeLabelTansparencies = new ConcurrentHashMap<CyNode, Integer>(16, 0.75f, 2);
@@ -148,18 +145,12 @@ class DNodeDetails extends NodeDetails {
 		m_labelJustifys = new ConcurrentHashMap<CyNode, Integer>(16, 0.75f, 2);
 		m_labelOffsetXs = new ConcurrentHashMap<CyNode, Double>(16, 0.75f, 2);
 		m_labelOffsetYs = new ConcurrentHashMap<CyNode, Double>(16, 0.75f, 2);
-		m_width = new ConcurrentHashMap<CyNode, Double>(16, 0.75f, 2);
 		m_selectedPaints = new ConcurrentHashMap<CyNode, Paint>(16, 0.75f, 2);
-		m_customGraphics = new ConcurrentHashMap<CyNode, List<CustomGraphicLayer>>(16, 0.75f, 2);
 		this.m_nodeTansparencies = new ConcurrentHashMap<CyNode, Integer>(16, 0.75f, 2);
 		this.m_nodeBorderTansparencies = new ConcurrentHashMap<CyNode, Integer>(16, 0.75f, 2);
 		this.m_nodeLabelTansparencies = new ConcurrentHashMap<CyNode, Integer>(16, 0.75f, 2);
 		m_nodeZ = new ConcurrentHashMap<CyNode, Double>(16, 0.75f, 2);
 		m_nestedNetworkImgVisible = new ConcurrentHashMap<CyNode, Boolean>(16, 0.75f, 2);
-
-		// Clear all Custom Graphics
-		for (final View<CyNode> nv : dGraphView.getNodeViews())
-			((DNodeView) nv).removeAllCustomGraphics();
 
 		isCleared = true;
 	}
@@ -405,6 +396,20 @@ class DNodeDetails extends NodeDetails {
 		}
 	}
 
+	@Override
+	public double getWidth(final CyNode node) {
+		final DNodeView dnv = dGraphView.getDNodeView(node);
+		
+		return dnv.getWidth();
+	}
+	
+	@Override
+	public double getHeight(final CyNode node) {
+		final DNodeView dnv = dGraphView.getDNodeView(node);
+		
+		return dnv.getHeight();
+	}
+	
 	@Override
 	public float getBorderWidth(final CyNode node) {
 		// Check bypass
@@ -726,17 +731,13 @@ class DNodeDetails extends NodeDetails {
 	}
 
 	@Override
-	public int getCustomGraphicCount(final CyNode node) {
-		final DNodeView dnv = (DNodeView) dGraphView.getDNodeView(node);
-		return dnv.getNumCustomGraphics();
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	public Map<VisualProperty<CyCustomGraphics>, CustomGraphicsInfo> getCustomGraphics(final CyNode node) {
+		final DNodeView dnv = dGraphView.getDNodeView(node);
+		
+		return dnv != null ? dnv.getCustomGraphics() : Collections.EMPTY_MAP;
 	}
-
-	@Override
-	public Iterator<CustomGraphicLayer> getCustomGraphics(final CyNode node) {
-		final DNodeView dnv = (DNodeView) dGraphView.getDNodeView(node);
-		return dnv.customGraphicIterator();
-	}
-
+	
 	@Override
 	public byte getLabelTextAnchor(final CyNode node, final int labelInx) {
 		// Check bypass

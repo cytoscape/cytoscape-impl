@@ -2067,8 +2067,9 @@ public final class GraphGraphics {
 			checkCleared();
 		}
 
+		m_g2d.translate(xOffset, yOffset);
+		
 		if (cg instanceof PaintedShape) {
-			m_g2d.translate(xOffset, yOffset);
 			PaintedShape ps = (PaintedShape)cg;
 			Shape shape = ps.getShape();
 
@@ -2079,15 +2080,14 @@ public final class GraphGraphics {
 				m_g2d.setStroke(ps.getStroke());
 				m_g2d.draw(shape);
 			}
+			
 			m_g2d.setPaint(ps.getPaint());
 			m_g2d.fill(shape);
 		} else if (cg instanceof Cy2DGraphicLayer) {
-			m_g2d.translate(xOffset, yOffset);
 			Cy2DGraphicLayer layer = (Cy2DGraphicLayer)cg;
 			final View<CyNode> view = (netView != null && node != null) ? netView.getNodeView(node) : null;
 			layer.draw(m_g2d, nodeShape, netView, view);
 		} else if (cg instanceof ImageCustomGraphicLayer) {
-			m_g2d.translate(xOffset, yOffset);
 			Rectangle bounds = cg.getBounds2D().getBounds();
 			final BufferedImage bImg = ((ImageCustomGraphicLayer)cg).getPaint(bounds).getImage();
 			m_g2d.drawImage(bImg, bounds.x, bounds.y, bounds.width, bounds.height, null);
@@ -2095,43 +2095,6 @@ public final class GraphGraphics {
 			Rectangle2D bounds = nodeShape.getBounds2D();
 			m_g2d.setPaint(cg.getPaint(bounds));
 			m_g2d.fill(nodeShape);
-		}
-
-		m_g2d.setTransform(m_currNativeXform);
-	}
-
-	/**
-	 * Fills an arbitrary graphical shape with high detail.
-	 * <p>
-	 * This method will not work unless clear() has been called at least once
-	 * previously.
-	 * 
-	 * @param shape
-	 *            the shape to fill; the shape is specified in node coordinates.
-	 * @param xOffset
-	 *            in node coordinates, a value to add to the X coordinates of
-	 *            the shape's definition.
-	 * @param yOffset
-	 *            in node coordinates, a value to add to the Y coordinates of
-	 *            the shape's definition.
-	 * @param paint
-	 *            the paint to use when filling the shape.
-	 */
-	public final void drawCustomGraphicFull(final Shape shape,
-			final float xOffset, final float yOffset, final Paint paint) {
-		if (m_debug) {
-			checkDispatchThread();
-			checkCleared();
-		}
-		
-		m_g2d.translate(xOffset, yOffset);
-		if(paint instanceof TexturePaint) {
-			final BufferedImage bImg = ((TexturePaint) paint).getImage();
-			Rectangle bounds = shape.getBounds();
-			m_g2d.drawImage(bImg, bounds.x, bounds.y, bounds.width, bounds.height, null);
-		} else {
-			m_g2d.setPaint(paint);
-			m_g2d.fill(shape);
 		}
 
 		m_g2d.setTransform(m_currNativeXform);

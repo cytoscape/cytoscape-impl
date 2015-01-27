@@ -34,7 +34,6 @@ import java.util.Set;
 
 import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
 import org.cytoscape.ding.customgraphics.CustomGraphicsRange;
-import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
 import org.cytoscape.ding.customgraphics.NullCustomGraphics;
 import org.cytoscape.ding.impl.DLineType;
 import org.cytoscape.ding.impl.ObjectPositionImpl;
@@ -56,6 +55,7 @@ import org.cytoscape.view.model.DiscreteRange;
 import org.cytoscape.view.model.NullDataType;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.model.Visualizable;
+import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.presentation.property.BooleanVisualProperty;
 import org.cytoscape.view.presentation.property.DefaultVisualizableVisualProperty;
@@ -67,12 +67,16 @@ import org.cytoscape.view.presentation.property.values.NodeShape;
 
 
 public class DVisualLexicon extends BasicVisualLexicon {
+	
 	// Set of custom graphics positions.
-	private static final Set<VisualProperty<?>> CG_POSITIONS = new HashSet<VisualProperty<?>>();
-	private static final Set<VisualProperty<CyCustomGraphics>> CG = new HashSet<VisualProperty<CyCustomGraphics>>();
-	private static final Set<VisualProperty<?>> CG_SIZE = new HashSet<VisualProperty<?>>();
-	private static final Map<VisualProperty<?>, VisualProperty<Double>> CG_TO_SIZE = new HashMap<VisualProperty<?>, VisualProperty<Double>>();
-	private static final Map<VisualProperty<?>, VisualProperty<ObjectPosition>> CG_TO_POSITION = new HashMap<VisualProperty<?>, VisualProperty<ObjectPosition>>();
+	private static final Set<VisualProperty<ObjectPosition>> CG_POSITIONS = new HashSet<>();
+	private static final Set<VisualProperty<CyCustomGraphics>> CG = new HashSet<>();
+	private static final Set<VisualProperty<Double>> CG_SIZE = new HashSet<>();
+	
+	private static final Map<VisualProperty<CyCustomGraphics>, VisualProperty<Double>> CG_TO_SIZE = new HashMap<>();
+	private static final Map<VisualProperty<CyCustomGraphics>, VisualProperty<ObjectPosition>> CG_TO_POSITION = new HashMap<>();
+	private static final Map<VisualProperty<Double>, VisualProperty<CyCustomGraphics>> SIZE_TO_CG = new HashMap<>();
+
 
 	// Root of Ding's VP tree.
 	public static final VisualProperty<NullDataType> DING_ROOT = new NullVisualProperty(
@@ -307,24 +311,25 @@ public class DVisualLexicon extends BasicVisualLexicon {
 		CG_TO_SIZE.put(NODE_CUSTOMGRAPHICS_8, NODE_CUSTOMGRAPHICS_SIZE_8);
 		CG_TO_SIZE.put(NODE_CUSTOMGRAPHICS_9, NODE_CUSTOMGRAPHICS_SIZE_9);
 
-		CG_TO_POSITION.put(NODE_CUSTOMGRAPHICS_1,
-				NODE_CUSTOMGRAPHICS_POSITION_1);
-		CG_TO_POSITION.put(NODE_CUSTOMGRAPHICS_2,
-				NODE_CUSTOMGRAPHICS_POSITION_2);
-		CG_TO_POSITION.put(NODE_CUSTOMGRAPHICS_3,
-				NODE_CUSTOMGRAPHICS_POSITION_3);
-		CG_TO_POSITION.put(NODE_CUSTOMGRAPHICS_4,
-				NODE_CUSTOMGRAPHICS_POSITION_4);
-		CG_TO_POSITION.put(NODE_CUSTOMGRAPHICS_5,
-				NODE_CUSTOMGRAPHICS_POSITION_5);
-		CG_TO_POSITION.put(NODE_CUSTOMGRAPHICS_6,
-				NODE_CUSTOMGRAPHICS_POSITION_6);
-		CG_TO_POSITION.put(NODE_CUSTOMGRAPHICS_7,
-				NODE_CUSTOMGRAPHICS_POSITION_7);
-		CG_TO_POSITION.put(NODE_CUSTOMGRAPHICS_8,
-				NODE_CUSTOMGRAPHICS_POSITION_8);
-		CG_TO_POSITION.put(NODE_CUSTOMGRAPHICS_9,
-				NODE_CUSTOMGRAPHICS_POSITION_9);
+		CG_TO_POSITION.put(NODE_CUSTOMGRAPHICS_1, NODE_CUSTOMGRAPHICS_POSITION_1);
+		CG_TO_POSITION.put(NODE_CUSTOMGRAPHICS_2, NODE_CUSTOMGRAPHICS_POSITION_2);
+		CG_TO_POSITION.put(NODE_CUSTOMGRAPHICS_3, NODE_CUSTOMGRAPHICS_POSITION_3);
+		CG_TO_POSITION.put(NODE_CUSTOMGRAPHICS_4, NODE_CUSTOMGRAPHICS_POSITION_4);
+		CG_TO_POSITION.put(NODE_CUSTOMGRAPHICS_5, NODE_CUSTOMGRAPHICS_POSITION_5);
+		CG_TO_POSITION.put(NODE_CUSTOMGRAPHICS_6, NODE_CUSTOMGRAPHICS_POSITION_6);
+		CG_TO_POSITION.put(NODE_CUSTOMGRAPHICS_7, NODE_CUSTOMGRAPHICS_POSITION_7);
+		CG_TO_POSITION.put(NODE_CUSTOMGRAPHICS_8, NODE_CUSTOMGRAPHICS_POSITION_8);
+		CG_TO_POSITION.put(NODE_CUSTOMGRAPHICS_9, NODE_CUSTOMGRAPHICS_POSITION_9);
+		
+		SIZE_TO_CG.put(NODE_CUSTOMGRAPHICS_SIZE_1, NODE_CUSTOMGRAPHICS_1);
+		SIZE_TO_CG.put(NODE_CUSTOMGRAPHICS_SIZE_2, NODE_CUSTOMGRAPHICS_2);
+		SIZE_TO_CG.put(NODE_CUSTOMGRAPHICS_SIZE_3, NODE_CUSTOMGRAPHICS_3);
+		SIZE_TO_CG.put(NODE_CUSTOMGRAPHICS_SIZE_4, NODE_CUSTOMGRAPHICS_4);
+		SIZE_TO_CG.put(NODE_CUSTOMGRAPHICS_SIZE_5, NODE_CUSTOMGRAPHICS_5);
+		SIZE_TO_CG.put(NODE_CUSTOMGRAPHICS_SIZE_6, NODE_CUSTOMGRAPHICS_6);
+		SIZE_TO_CG.put(NODE_CUSTOMGRAPHICS_SIZE_7, NODE_CUSTOMGRAPHICS_7);
+		SIZE_TO_CG.put(NODE_CUSTOMGRAPHICS_SIZE_8, NODE_CUSTOMGRAPHICS_8);
+		SIZE_TO_CG.put(NODE_CUSTOMGRAPHICS_SIZE_9, NODE_CUSTOMGRAPHICS_9);
 	}
 
 	public DVisualLexicon(final CustomGraphicsManager manager) {
@@ -439,24 +444,28 @@ public class DVisualLexicon extends BasicVisualLexicon {
 		addIdentifierMapping(CyEdge.class, "edgeCurved", EDGE_CURVED);
 	}
 
-	static Set<VisualProperty<?>> getGraphicsPositionVP() {
+	static Set<VisualProperty<ObjectPosition>> getGraphicsPositionVP() {
 		return CG_POSITIONS;
 	}
 
-	static Set<VisualProperty<?>> getGraphicsSizeVP() {
+	static Set<VisualProperty<Double>> getGraphicsSizeVP() {
 		return CG_SIZE;
 	}
 
-	public static VisualProperty<Double> getAssociatedCustomGraphicsSizeVP(
-			VisualProperty<?> cgVP) {
+	public static VisualProperty<Double> getAssociatedCustomGraphicsSizeVP(VisualProperty<?> cgVP) {
 		return CG_TO_SIZE.get(cgVP);
 	}
 
-	public static VisualProperty<ObjectPosition> getAssociatedCustomGraphicsPositionVP(
-			VisualProperty<?> cgVP) {
+	public static VisualProperty<ObjectPosition> getAssociatedCustomGraphicsPositionVP(VisualProperty<?> cgVP) {
 		return CG_TO_POSITION.get(cgVP);
 	}
 	
+	@SuppressWarnings("rawtypes")
+	public static VisualProperty<CyCustomGraphics> getAssociatedCustomGraphicsVP(VisualProperty<Double> cgSizeVP) {
+		return SIZE_TO_CG.get(cgSizeVP);
+	}
+	
+	@SuppressWarnings("rawtypes")
 	public static Set<VisualProperty<CyCustomGraphics>> getCustomGraphicsVisualProperties() {
 		return CG;
 	}

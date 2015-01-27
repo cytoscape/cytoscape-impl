@@ -2,11 +2,8 @@ package org.cytoscape.ding.internal.gradients;
 
 import java.awt.Color;
 import java.awt.Paint;
-import java.awt.Shape;
-import java.awt.geom.AffineTransform;
-import java.awt.geom.Rectangle2D;
-import java.util.Map.Entry;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.TreeMap;
 
 import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
@@ -18,7 +15,6 @@ public abstract class AbstractGradientLayer implements CustomGraphicLayer {
 	protected final float[] fractionArray;
 	protected final Color[] colorArray;
 	
-	protected Rectangle2D bounds = new Rectangle2D.Double(0, 0, 100, 100);
 	protected Paint paint;
 	
 	// ==[ CONSTRUCTORS ]===============================================================================================
@@ -53,16 +49,11 @@ public abstract class AbstractGradientLayer implements CustomGraphicLayer {
 	
 	// ==[ PUBLIC METHODS ]=============================================================================================
 	
-	@Override
-	public Rectangle2D getBounds2D() {
-		return bounds;
-	}
-
-	@Override
-	public CustomGraphicLayer transform(final AffineTransform xform) {
-		final Shape s = xform.createTransformedShape(bounds);
-		bounds = s.getBounds2D();
-		
-		return this;
-	}
+//	@Override
+//	public void draw(final Graphics2D g, final Shape shape, final CyNetworkView networkView,
+//			final View<? extends CyIdentifiable> view) {
+//		final Paint paint = getPaint(shape.getBounds2D());
+//		g.setPaint(paint);
+//		g.fill(shape);
+//	}
 }
