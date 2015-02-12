@@ -83,6 +83,7 @@ import org.cytoscape.network.merge.internal.task.NetworkMergeTask;
 import org.cytoscape.network.merge.internal.util.IconManager;
 import org.cytoscape.session.CyNetworkNaming;
 import org.cytoscape.task.create.CreateNetworkViewTaskFactory;
+import org.cytoscape.util.swing.BasicCollapsiblePanel;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskManager;
@@ -117,7 +118,7 @@ public class NetworkMergeDialog extends JDialog {
 	private JButton moveDownBtn;
 	private JList<CyNetwork> unselectedNetLs;
 	private JList<CyNetwork> selectedNetLs;
-	private CollapsiblePanel advancedOptionsPnl;
+	private BasicCollapsiblePanel advancedOptionsPnl;
 	private JScrollPane attrScr;
 	private NetworkListModel selectedNetData;
 	private SortedNetworkListModel unselectedNetData;
@@ -637,11 +638,11 @@ public class NetworkMergeDialog extends JDialog {
 		return moveDownBtn;
 	}
 	
-	private CollapsiblePanel getAdvancedOptionsPnl() {
+	private BasicCollapsiblePanel getAdvancedOptionsPnl() {
 		if (advancedOptionsPnl == null) {
-			advancedOptionsPnl = new CollapsiblePanel("Advanced Options");
+			advancedOptionsPnl = new BasicCollapsiblePanel("Advanced Options");
 			advancedOptionsPnl.setAlignmentX(Component.CENTER_ALIGNMENT);
-			advancedOptionsPnl.addCollapseListener(new CollapsiblePanel.CollapseListener() {
+			advancedOptionsPnl.addCollapseListener(new BasicCollapsiblePanel.CollapseListener() {
 				@Override
 				public void collapsed() {
 					updateOKButton();
