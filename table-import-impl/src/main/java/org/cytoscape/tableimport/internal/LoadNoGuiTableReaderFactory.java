@@ -25,71 +25,61 @@ package org.cytoscape.tableimport.internal;
  */
 
 
-
-import java.io.InputStream;
-
 import org.cytoscape.io.read.CyTableReader;
 import org.cytoscape.io.util.StreamUtil;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableManager;
+import org.cytoscape.tableimport.internal.ui.theme.IconManager;
 import org.cytoscape.work.AbstractTask;
-import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.AbstractTaskFactory;
+import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskMonitor;
 
 
-
 public class LoadNoGuiTableReaderFactory extends AbstractTaskFactory {
-	private final static long serialVersionUID = 12023139869460898L;
 	
 	protected final StreamUtil streamUtil;
 	private boolean fromURL;
 	private final CyTableManager tableMgr;
+	private final IconManager iconManager;
 
 	/**
 	 * Creates a new ImportAttributeTableReaderFactory object.
 	 */
-	public LoadNoGuiTableReaderFactory(final StreamUtil streamUtil,final CyTableManager tableMgr, boolean fromURL)
-	{
+	public LoadNoGuiTableReaderFactory(final StreamUtil streamUtil,final CyTableManager tableMgr, boolean fromURL,
+			final IconManager iconManager) {
 		this.streamUtil = streamUtil;
 		this.fromURL = fromURL;
 		this.tableMgr = tableMgr;
+		this.iconManager = iconManager;
 	}
 
+	@Override
 	public TaskIterator createTaskIterator() {
+		LoadTableReaderTask readerTask = new LoadTableReaderTask(iconManager);
 		
-		LoadTableReaderTask readerTask = new LoadTableReaderTask();
-		
-		if(fromURL)
-		{
-			return new TaskIterator(new SelectURLTableTask(readerTask,streamUtil ),readerTask, new AddLoadedTableTask(readerTask));
+		if (fromURL) {
+			return new TaskIterator(new SelectURLTableTask(readerTask, streamUtil, iconManager),
+					readerTask, new AddLoadedTableTask(readerTask));
+		} else {
+			return new TaskIterator(new SelectFileTableTask(readerTask, streamUtil, iconManager),
+					readerTask, new AddLoadedTableTask(readerTask));
 		}
-		else
-		{
-			return new TaskIterator(new SelectFileTableTask(readerTask,streamUtil ),readerTask, new AddLoadedTableTask(readerTask));
-		}
-		
 	}
 	
 	class AddLoadedTableTask extends AbstractTask {
-
-		
 		
 		private final CyTableReader reader;
 		
-		AddLoadedTableTask(	 final CyTableReader reader){
-			
+		AddLoadedTableTask(final CyTableReader reader){
 			this.reader = reader;
 		}
 		
 		@Override
 		public void run(TaskMonitor taskMonitor) throws Exception {
-			if( this.reader != null && this.reader.getTables() != null)
+			if (this.reader != null && this.reader.getTables() != null)
 				for (CyTable table : reader.getTables())
 					tableMgr.addTable(table);
-			
-
 		}
-
 	}
 }

@@ -25,14 +25,13 @@ package org.cytoscape.tableimport.internal.task;
  */
 
 import java.awt.BorderLayout;
-import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 
-import javax.swing.Box;
 import javax.swing.JButton;
 import javax.swing.JDialog;
+import javax.swing.JPanel;
 import javax.xml.bind.JAXBException;
 
 import org.cytoscape.application.swing.AbstractCyAction;
@@ -44,13 +43,16 @@ import org.cytoscape.property.CyProperty;
 import org.cytoscape.property.bookmark.Bookmarks;
 import org.cytoscape.property.bookmark.BookmarksUtil;
 import org.cytoscape.tableimport.internal.ui.ImportTablePanel;
+import org.cytoscape.tableimport.internal.ui.theme.IconManager;
 import org.cytoscape.tableimport.internal.util.CytoscapeServices;
 import org.cytoscape.util.swing.FileUtil;
+import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.work.TaskManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class ImportOntologyAndAnnotationAction extends AbstractCyAction {
+	
 	private static final long serialVersionUID = 3000065764000826333L;
 
 	private static final Logger logger = LoggerFactory.getLogger(ImportOntologyAndAnnotationAction.class);
@@ -66,8 +68,9 @@ public class ImportOntologyAndAnnotationAction extends AbstractCyAction {
 	private final CyTableFactory tableFactory;
 	private final CyTableManager tableManager;
 	private final FileUtil fileUtil;
+	private final IconManager iconManager;
 
-	public ImportOntologyAndAnnotationAction() {
+	public ImportOntologyAndAnnotationAction(final IconManager iconManager) {
 		super("Ontology and Annotation...");
 		setPreferredMenu("File.Import");
 		setMenuGravity(4.0f);
@@ -80,6 +83,7 @@ public class ImportOntologyAndAnnotationAction extends AbstractCyAction {
 		this.tableFactory = CytoscapeServices.cyTableFactory;
 		this.tableManager = CytoscapeServices.cyTableManager;
 		this.fileUtil = CytoscapeServices.fileUtil;
+		this.iconManager = iconManager;
 	}
 
 	@Override
@@ -88,7 +92,8 @@ public class ImportOntologyAndAnnotationAction extends AbstractCyAction {
 
 		try {
 			ontologyPanel = new ImportTablePanel(ImportTablePanel.ONTOLOGY_AND_ANNOTATION_IMPORT, null, null,
-					bookmarksProp, bkUtil, taskManager, factory, manager, tableFactory, tableManager, fileUtil);
+					bookmarksProp, bkUtil, taskManager, factory, manager, tableFactory, tableManager, fileUtil,
+					iconManager);
 			dialog.add(ontologyPanel, BorderLayout.CENTER);
 			dialog.pack();
 			dialog.setLocationRelativeTo(CytoscapeServices.cySwingApplication.getJFrame());
@@ -104,11 +109,11 @@ public class ImportOntologyAndAnnotationAction extends AbstractCyAction {
 	private JDialog layout() {
 		final JDialog dialog = new JDialog(CytoscapeServices.cySwingApplication.getJFrame(), true);
 		dialog.setTitle("Import Ontology and Annotation");
+		
 		final JButton importButton = new JButton("Import");
 		importButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent ae) {
-				logger.debug("Ontology Import task start");
 				dialog.dispose();
 
 				// Call Import
@@ -124,24 +129,12 @@ public class ImportOntologyAndAnnotationAction extends AbstractCyAction {
 		cancelButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent ae) {
-				logger.debug("Import canceled.");
 				dialog.dispose();
 			}
 		});
 
-		final Dimension dim = importButton.getPreferredSize();
-		importButton.setPreferredSize(new Dimension(120, dim.height));
-		cancelButton.setPreferredSize(new Dimension(120, dim.height));
-
-		final Box box1 = Box.createHorizontalBox();
-		box1.add(Box.createHorizontalGlue());
-		box1.add(importButton);
-		box1.add(Box.createHorizontalStrut(5));
-		box1.add(cancelButton);
-		box1.add(Box.createHorizontalStrut(5));
-		box1.add(Box.createRigidArea(new Dimension(0, dim.height + 10)));
-
-		dialog.add(box1, BorderLayout.SOUTH);
+		final JPanel boxPnl = LookAndFeelUtil.createOkCancelPanel(importButton, cancelButton);
+		dialog.add(boxPnl, BorderLayout.SOUTH);
 
 		return dialog;
 	}

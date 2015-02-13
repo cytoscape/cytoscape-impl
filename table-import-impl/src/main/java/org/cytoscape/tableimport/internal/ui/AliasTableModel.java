@@ -44,7 +44,7 @@ class AliasTableModel extends DefaultTableModel {
 
 	@Override
 	public Class<?> getColumnClass(int col) {
-		if(this.getColumnCount()<col || this.getRowCount() == 0)
+		if (this.getColumnCount() < col || this.getRowCount() == 0)
 			return null;
 		
 		return getValueAt(0, col).getClass();
@@ -52,10 +52,6 @@ class AliasTableModel extends DefaultTableModel {
 
 	@Override
 	public boolean isCellEditable(int row, int column) {
-		if (column == 0) {
-			return true;
-		} else {
-			return false;
-		}
+		return (column == 0);
 	}
 }

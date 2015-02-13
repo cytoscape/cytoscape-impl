@@ -25,17 +25,15 @@ package org.cytoscape.tableimport.internal;
  */
 
 
-
-import java.io.InputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.net.URI;
-import java.net.URL;
 
 import javax.swing.table.DefaultTableModel;
 
@@ -43,23 +41,22 @@ import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
-import org.cytoscape.io.read.CyNetworkReaderManager;
 import org.cytoscape.io.read.CyNetworkReader;
+import org.cytoscape.io.read.CyNetworkReaderManager;
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNetworkFactory;
-import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
-import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.tableimport.internal.reader.ExcelNetworkSheetReader;
 import org.cytoscape.tableimport.internal.reader.GraphReader;
 import org.cytoscape.tableimport.internal.reader.NetworkTableMappingParameters;
 import org.cytoscape.tableimport.internal.reader.NetworkTableReader;
 import org.cytoscape.tableimport.internal.reader.SupportedFileType;
 import org.cytoscape.tableimport.internal.reader.TextFileDelimiters;
+import org.cytoscape.tableimport.internal.ui.PreviewTablePanel;
+import org.cytoscape.tableimport.internal.ui.theme.IconManager;
+import org.cytoscape.tableimport.internal.util.CytoscapeServices;
 import org.cytoscape.view.layout.CyLayoutAlgorithm;
 import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskIterator;
@@ -68,11 +65,10 @@ import org.cytoscape.work.Tunable;
 import org.cytoscape.work.TunableValidator;
 import org.cytoscape.work.util.ListMultipleSelection;
 import org.cytoscape.work.util.ListSingleSelection;
-import org.cytoscape.tableimport.internal.ui.PreviewTablePanel;
-import org.cytoscape.tableimport.internal.util.CytoscapeServices;
 
 
 public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkReader, TunableValidator {
+	
 	private  InputStream is;
 	private String fileType;
 	private CyNetwork[] networks;
@@ -133,14 +129,14 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 		this.networkReaderManager = networkReaderManager;
 	}
 	
-	public void setInputFile(final InputStream is, final String fileType,final String inputName, final URI uriName)
-	{
-		this.is           = is;
-		this.fileType     = fileType;
-		this.inputName    = inputName;
+	public void setInputFile(final InputStream is, final String fileType,final String inputName, final URI uriName,
+			final IconManager iconManager) {
+		this.is = is;
+		this.fileType = fileType;
+		this.inputName = inputName;
 		this.uri = uriName;
 		
-		previewPanel = new PreviewTablePanel();
+		previewPanel = new PreviewTablePanel(iconManager);
 
 		try{
 			tempFile = File.createTempFile("temp", this.fileType);

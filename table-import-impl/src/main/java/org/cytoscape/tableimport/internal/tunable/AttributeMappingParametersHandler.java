@@ -26,19 +26,17 @@ package org.cytoscape.tableimport.internal.tunable;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Font;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.logging.Logger;
 
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.tableimport.internal.reader.AttributeMappingParameters;
 import org.cytoscape.tableimport.internal.ui.ImportTablePanel;
+import org.cytoscape.tableimport.internal.ui.theme.IconManager;
 import org.cytoscape.tableimport.internal.util.CytoscapeServices;
 import org.cytoscape.util.swing.FileUtil;
 import org.cytoscape.work.Tunable;
@@ -51,26 +49,29 @@ public class AttributeMappingParametersHandler extends AbstractGUITunableHandler
 	private ImportTablePanel importTablePanel;
 	private AttributeMappingParameters amp;
 	private final FileUtil fileUtil;
+	private final IconManager iconManager;
 
 
-	protected AttributeMappingParametersHandler(final Field field, final Object obj, final Tunable t,
-			final int dialogType, final CyTableManager tableManager) {
-		super(field, obj, t);
+	protected AttributeMappingParametersHandler(final Field field, final Object obj, final Tunable tunable,
+			final int dialogType, final CyTableManager tableManager, final IconManager iconManager) {
+		super(field, obj, tunable);
 		
 		this.dialogType = dialogType;
 		this.tableManager = tableManager;
 		this.fileUtil = CytoscapeServices.fileUtil;
+		this.iconManager = iconManager;
 		init();
 	}
 
 
 	protected AttributeMappingParametersHandler(final Method getter, final Method setter, final Object instance,
-			final Tunable tunable, final int dialogType, final CyTableManager tableManager) {
+			final Tunable tunable, final int dialogType, final CyTableManager tableManager, final IconManager iconManager) {
 		super(getter, setter, instance, tunable);
 		
 		this.dialogType = dialogType;
 		this.tableManager = tableManager;
 		this.fileUtil = CytoscapeServices.fileUtil;
+		this.iconManager = iconManager;
 		init();
 	}
 
@@ -83,11 +84,11 @@ public class AttributeMappingParametersHandler extends AbstractGUITunableHandler
 			e1.printStackTrace();
 		}
 
-		panel = new JPanel(new BorderLayout(10, 10));
+		panel = new JPanel(new BorderLayout());
 
 		try {
 			importTablePanel = new ImportTablePanel(dialogType, amp.is, amp.fileType, null, null, null, null, null,
-					null, null, tableManager, fileUtil);
+					null, null, tableManager, fileUtil, iconManager);
 		} catch (Exception e) {
 			JLabel errorLabel1 = new JLabel("<html><h2>Error: Could not Initialize Preview.</h2>  <p>The selected file may contain invalid entries.  "
 					+ "  Please check the contents of original file.</p></html>");
@@ -114,7 +115,5 @@ public class AttributeMappingParametersHandler extends AbstractGUITunableHandler
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-
 	}
-
 }

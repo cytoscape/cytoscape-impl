@@ -24,49 +24,40 @@ package org.cytoscape.tableimport.internal;
  * #L%
  */
 
-
-
-import java.io.InputStream;
-
 import org.cytoscape.io.util.StreamUtil;
-import org.cytoscape.work.TaskIterator;
+import org.cytoscape.tableimport.internal.ui.theme.IconManager;
+import org.cytoscape.task.edit.ImportDataTableTaskFactory;
 import org.cytoscape.work.AbstractTaskFactory;
-import org.cytoscape.task.edit.*;
-
+import org.cytoscape.work.TaskIterator;
 
 
 public class ImportNoGuiTableReaderFactory extends AbstractTaskFactory {
-	private final static long serialVersionUID = 12023139869460898L;
 	
 	protected final StreamUtil streamUtil;
-	private boolean fromURL;
-	private ImportDataTableTaskFactory importFactory;
+	private final boolean fromURL;
+	private final ImportDataTableTaskFactory importFactory;
+	private final IconManager iconManager;
 
 	/**
 	 * Creates a new ImportAttributeTableReaderFactory object.
 	 */
-	public ImportNoGuiTableReaderFactory(final StreamUtil streamUtil,ImportDataTableTaskFactory importFactory, boolean fromURL)
-	{
+	public ImportNoGuiTableReaderFactory(final StreamUtil streamUtil,ImportDataTableTaskFactory importFactory,
+			boolean fromURL, final IconManager iconManager) {
 		this.streamUtil = streamUtil;
 		this.fromURL = fromURL;
 		this.importFactory = importFactory;
+		this.iconManager = iconManager;
 	}
 
+	@Override
 	public TaskIterator createTaskIterator() {
-		
-		LoadTableReaderTask readerTask = new LoadTableReaderTask();
+		LoadTableReaderTask readerTask = new LoadTableReaderTask(iconManager);
 		TaskIterator importTaskIterator = importFactory.createTaskIterator(readerTask);
 		
-		if(fromURL)
-		{
-			return new TaskIterator(new SelectURLTableTask(readerTask,streamUtil ),readerTask, importTaskIterator.next());
+		if (fromURL) {
+			return new TaskIterator(new SelectURLTableTask(readerTask,streamUtil,iconManager), readerTask, importTaskIterator.next());
+		} else {
+			return new TaskIterator(new SelectFileTableTask(readerTask,streamUtil,iconManager), readerTask,importTaskIterator.next());
 		}
-		else
-		{
-			return new TaskIterator(new SelectFileTableTask(readerTask,streamUtil ),readerTask,importTaskIterator.next());
-		}
-		
 	}
-	
-	
 }

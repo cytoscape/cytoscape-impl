@@ -24,21 +24,27 @@ package org.cytoscape.tableimport.internal.ui;
  * #L%
  */
 
-import static org.cytoscape.tableimport.internal.ui.theme.ImportDialogColorTheme.*;
-import static org.cytoscape.tableimport.internal.ui.theme.ImportDialogFontTheme.*;
-import static org.cytoscape.tableimport.internal.ui.theme.ImportDialogIconSets.*;
-import org.cytoscape.tableimport.internal.util.CytoscapeServices;
+import static javax.swing.GroupLayout.DEFAULT_SIZE;
+import static javax.swing.GroupLayout.PREFERRED_SIZE;
+import static org.cytoscape.tableimport.internal.ui.theme.SourceColumnSemantics.INTERACTION;
+import static org.cytoscape.tableimport.internal.ui.theme.SourceColumnSemantics.SOURCE;
+import static org.cytoscape.tableimport.internal.ui.theme.SourceColumnSemantics.TARGET;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.HashMap;
 
+import javax.swing.GroupLayout;
+import javax.swing.GroupLayout.Alignment;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.SwingConstants;
+
+import org.cytoscape.tableimport.internal.ui.theme.IconManager;
+import org.cytoscape.util.swing.LookAndFeelUtil;
 
 /**
  * GUI Component for specify options for network table import.<br>
@@ -48,164 +54,159 @@ import javax.swing.SwingConstants;
  * @author Keiichiro Ono
  */
 public class NetworkImportOptionsPanel extends JPanel {
-	//private PropertyChangeSupport changes = new PropertyChangeSupport(this);
+	
+	private static final long serialVersionUID = 2708007951959440414L;
+	
 	private final PropertyChangeSupport changes;
+	
+	private JLabel edgeAttributesLabel;
+	private JLabel iconLabel1;
+	private JLabel iconLabel2;
+	private JComboBox<String> interactionComboBox;
+	private JLabel interactionLabel;
+	private JLabel interactionIconLabel;
+	private JComboBox<String> sourceComboBox;
+	private JLabel sourceLabel;
+	private JLabel sourceIconLabel;
+	private JComboBox<String> targetComboBox;
+	private JLabel targetLabel;
+	private JLabel targetIconLabel;
+
+	private final IconManager iconManager;
+
+	private boolean ignoreColumnsComboBoxActionEvent;
 
 	/**
 	 * Creates a new NetworkImportOptionsPanel object.
 	 */
-	public NetworkImportOptionsPanel() {
+	public NetworkImportOptionsPanel(final IconManager iconManager) {
+		this.iconManager = iconManager;
 		initComponents();
 
 		initializeUIStates();
 		changes = new PropertyChangeSupport(this);
 	}
 
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @param l DOCUMENT ME!
-	 */
+	@Override
 	public void addPropertyChangeListener(PropertyChangeListener l) {
-		if(changes != null)
+		if (changes != null)
 			changes.addPropertyChangeListener(l);
 	}
 
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @param l DOCUMENT ME!
-	 */
+	@Override
 	public void removePropertyChangeListener(PropertyChangeListener l) {
 		changes.removePropertyChangeListener(l);
 	}
 
 	private void initComponents() {
-		sourceLabel = new javax.swing.JLabel();
-		sourceComboBox = new javax.swing.JComboBox();
-		interactionLabel = new javax.swing.JLabel();
-		interactionComboBox = new javax.swing.JComboBox();
-		targetLabel = new javax.swing.JLabel();
-		targetComboBox = new javax.swing.JComboBox();
-		iconLabel1 = new javax.swing.JLabel();
-		iconLabel2 = new javax.swing.JLabel();
-		edgeAttributesLabel = new javax.swing.JLabel();
+		sourceLabel = new JLabel("Source Interaction:");
+		sourceComboBox = new JComboBox<>();
+		interactionLabel = new JLabel("Interaction Type:");
+		interactionComboBox = new JComboBox<>();
+		targetLabel = new JLabel("Target Interaction:");
+		targetComboBox = new JComboBox<>();
+		iconLabel1 = new JLabel(IconManager.ICON_DOUBLE_ANGLE_LEFT);
+		iconLabel2 = new JLabel(IconManager.ICON_DOUBLE_ANGLE_RIGHT);
+		edgeAttributesLabel = new JLabel();
+		
+		sourceIconLabel = new JLabel(SOURCE.getText());
+		sourceIconLabel.setFont(iconManager.getIconFont(14.0f));
+		sourceIconLabel.setForeground(SOURCE.getForeground());
+		
+		interactionIconLabel = new JLabel(INTERACTION.getText());
+		interactionIconLabel.setFont(iconManager.getIconFont(14.0f));
+		interactionIconLabel.setForeground(INTERACTION.getForeground());
+		
+		targetIconLabel = new JLabel(TARGET.getText());
+		targetIconLabel.setFont(iconManager.getIconFont(14.0f));
+		targetIconLabel.setForeground(TARGET.getForeground());
 
-		setBorder(javax.swing.BorderFactory.createTitledBorder("Interaction Definition"));
+		setBorder(LookAndFeelUtil.createPanelBorder());
 
-		sourceLabel.setText("Source Interaction");
-		sourceLabel.setForeground(SOURCE_COLOR.getColor());
-		sourceLabel.setFont(LABEL_FONT.getFont());
-		sourceComboBox.setName("sourceComboBox");
-		sourceComboBox.setForeground(SOURCE_COLOR.getColor());
-		sourceComboBox.setFont(ITEM_FONT_LARGE.getFont());
-		sourceComboBox.addActionListener(new java.awt.event.ActionListener() {
-				public void actionPerformed(java.awt.event.ActionEvent evt) {
-					networkColumnsComboBoxActionPerformed(evt);
-				}
-			});
+		sourceComboBox.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent evt) {
+				networkColumnsComboBoxActionPerformed(evt);
+			}
+		});
 
-		interactionLabel.setText("Interaction Type");
-		interactionLabel.setForeground(INTERACTION_COLOR.getColor());
-		interactionLabel.setFont(LABEL_FONT.getFont());
+		interactionComboBox.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent evt) {
+				networkColumnsComboBoxActionPerformed(evt);
+			}
+		});
 
-		interactionComboBox.setName("interactionComboBox");
-		interactionComboBox.setForeground(INTERACTION_COLOR.getColor());
-		interactionComboBox.setFont(ITEM_FONT_LARGE.getFont());
-		interactionComboBox.addActionListener(new java.awt.event.ActionListener() {
-				public void actionPerformed(java.awt.event.ActionEvent evt) {
-					networkColumnsComboBoxActionPerformed(evt);
-				}
-			});
+		targetComboBox.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent evt) {
+				networkColumnsComboBoxActionPerformed(evt);
+			}
+		});
 
-		targetLabel.setText("Target Interaction");
-		targetLabel.setForeground(TARGET_COLOR.getColor());
-		targetLabel.setFont(LABEL_FONT.getFont());
+		iconLabel1.setFont(iconManager.getIconFont(14.0f));
+		iconLabel2.setFont(iconManager.getIconFont(14.0f));
+		
+		edgeAttributesLabel.setFont(edgeAttributesLabel.getFont().deriveFont(11.0f));
+		edgeAttributesLabel.setText("The other columns will be imported as EDGE ATTRIBUTES.");
 
-		targetComboBox.setName("targetComboBox");
-		targetComboBox.setForeground(TARGET_COLOR.getColor());
-		targetComboBox.setFont(ITEM_FONT_LARGE.getFont());
-		targetComboBox.addActionListener(new java.awt.event.ActionListener() {
-				public void actionPerformed(java.awt.event.ActionEvent evt) {
-					networkColumnsComboBoxActionPerformed(evt);
-				}
-			});
-
-		iconLabel1.setIcon(INTERACTION_ICON.getIcon());
-		iconLabel2.setIcon(INTERACTION_ICON.getIcon());
-
-		edgeAttributesLabel.setFont(LABEL_ITALIC_FONT.getFont());
-		edgeAttributesLabel.setForeground(EDGE_ATTR_COLOR.getColor());
-		edgeAttributesLabel.setHorizontalAlignment(SwingConstants.CENTER);
-		edgeAttributesLabel.setIcon(CAUTION_ICON.getIcon());
-		edgeAttributesLabel.setText("Columns in BLUE will be loaded as EDGE ATTRIBUTES.");
-
-		org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
+		final GroupLayout layout = new GroupLayout(this);
 		this.setLayout(layout);
-		layout.setHorizontalGroup(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-		                                .add(layout.createSequentialGroup().addContainerGap()
-		                                           .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-		                                                      .add(layout.createSequentialGroup()
-		                                                                 .add(sourceComboBox, 0,
-		                                                                      100, Short.MAX_VALUE)
-		                                                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-		                                                                 .add(iconLabel1)
-		                                                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED))
-		                                                      .add(layout.createSequentialGroup()
-		                                                                 .add(sourceLabel)
-		                                                                 .add(100, 100, 100)))
-		                                           .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-		                                                      .add(layout.createSequentialGroup()
-		                                                                 .add(interactionComboBox,
-		                                                                      0, 100,
-		                                                                      Short.MAX_VALUE)
-		                                                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-		                                                                 .add(iconLabel2)
-		                                                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED))
-		                                                      .add(layout.createSequentialGroup()
-		                                                                 .add(interactionLabel)
-		                                                                 .add(100, 100, 100)))
-		                                           .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-		                                                      .add(layout.createSequentialGroup()
-		                                                                 .add(targetLabel)
-		                                                                 .addContainerGap(100,
-		                                                                                  Short.MAX_VALUE))
-		                                                      .add(layout.createSequentialGroup()
-		                                                                 .add(targetComboBox, 0,
-		                                                                      100, Short.MAX_VALUE)
-		                                                                 .add(22, 22, 22))))
-		                                .add(org.jdesktop.layout.GroupLayout.TRAILING,
-		                                     edgeAttributesLabel,
-		                                     org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 100,
-		                                     Short.MAX_VALUE));
-		layout.setVerticalGroup(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-		                              .add(layout.createSequentialGroup()
-		                                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-		                                                    .add(sourceLabel).add(interactionLabel)
-		                                                    .add(targetLabel))
-		                                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-		                                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-		                                                    .add(sourceComboBox,
-		                                                         org.jdesktop.layout.GroupLayout.PREFERRED_SIZE,
-		                                                         org.jdesktop.layout.GroupLayout.DEFAULT_SIZE,
-		                                                         org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-		                                                    .add(iconLabel1)
-		                                                    .add(interactionComboBox,
-		                                                         org.jdesktop.layout.GroupLayout.PREFERRED_SIZE,
-		                                                         org.jdesktop.layout.GroupLayout.DEFAULT_SIZE,
-		                                                         org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-		                                                    .add(iconLabel2)
-		                                                    .add(targetComboBox,
-		                                                         org.jdesktop.layout.GroupLayout.PREFERRED_SIZE,
-		                                                         org.jdesktop.layout.GroupLayout.DEFAULT_SIZE,
-		                                                         org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-		                                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-		                                         .add(edgeAttributesLabel)
-		                                         .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE,
-		                                                          Short.MAX_VALUE)));
-	} // </editor-fold>
+		layout.setAutoCreateContainerGaps(true);
+		layout.setAutoCreateGaps(true);
+		
+		layout.setHorizontalGroup(layout.createParallelGroup(Alignment.CENTER)
+				.addGroup(layout.createSequentialGroup()
+					.addGroup(layout.createParallelGroup(Alignment.LEADING)
+							.addGroup(layout.createSequentialGroup()
+									.addComponent(sourceIconLabel)
+									.addComponent(sourceLabel)
+							)
+							.addComponent(sourceComboBox, 0, 220, Short.MAX_VALUE)
+					)
+	                .addComponent(iconLabel1)
+	                .addGroup(layout.createParallelGroup(Alignment.LEADING)
+	                		.addGroup(layout.createSequentialGroup()
+									.addComponent(interactionIconLabel)
+									.addComponent(interactionLabel)
+							)
+	                		.addComponent(interactionComboBox, 0, 220, Short.MAX_VALUE)
+	                )
+	                .addComponent(iconLabel2)
+	                .addGroup(layout.createParallelGroup(Alignment.LEADING)
+	                		.addGroup(layout.createSequentialGroup()
+									.addComponent(targetIconLabel)
+									.addComponent(targetLabel)
+							)
+	                		.addComponent(targetComboBox, 0, 220, Short.MAX_VALUE)
+	                )
+				)
+				.addComponent(edgeAttributesLabel, DEFAULT_SIZE, 100, Short.MAX_VALUE)
+		);
+		layout.setVerticalGroup(layout.createSequentialGroup()
+				.addGroup(layout.createParallelGroup(Alignment.CENTER)
+						.addComponent(sourceIconLabel)
+						.addComponent(sourceLabel)
+						.addComponent(interactionIconLabel)
+						.addComponent(interactionLabel)
+						.addComponent(targetIconLabel)
+						.addComponent(targetLabel)
+				)
+				.addGroup(layout.createParallelGroup(Alignment.BASELINE)
+						.addComponent(sourceComboBox, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addComponent(iconLabel1)
+						.addComponent(interactionComboBox, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addComponent(iconLabel2)
+						.addComponent(targetComboBox, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				)
+				.addComponent(edgeAttributesLabel)
+		);
+	}
 
-	private void networkColumnsComboBoxActionPerformed(java.awt.event.ActionEvent e) {
+	private void networkColumnsComboBoxActionPerformed(ActionEvent e) {
+		if (ignoreColumnsComboBoxActionEvent)
+			return;
+		
 		final int sIdx = sourceComboBox.getSelectedIndex() - 1;
 		final int tIdx = targetComboBox.getSelectedIndex() - 1;
 		final int iIdx = interactionComboBox.getSelectedIndex() - 1;
@@ -216,89 +217,57 @@ public class NetworkImportOptionsPanel extends JPanel {
 		colIdx.add(tIdx);
 		colIdx.add(iIdx);
 
-		changes.firePropertyChange(ImportTablePanel.NETWORK_IMPORT_TEMPLATE_CHANGED, null,
-		                           colIdx);
+		changes.firePropertyChange(ImportTablePanel.NETWORK_IMPORT_TEMPLATE_CHANGED, null, colIdx);
 	}
 
-	/* ============================================================================================== */
 	private void initializeUIStates() {
 		sourceComboBox.setEnabled(false);
 		targetComboBox.setEnabled(false);
 		interactionComboBox.setEnabled(false);
 	}
 
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @param columnNames DOCUMENT ME!
-	 */
 	public void setComboBoxes(String[] columnNames) {
-		/*
-		 * Cleanup the combo boxes
-		 */
-		sourceComboBox.removeAllItems();
-		targetComboBox.removeAllItems();
-		interactionComboBox.removeAllItems();
-
-		for (String item : columnNames) {
-			sourceComboBox.addItem(item);
-			targetComboBox.addItem(item);
-			interactionComboBox.addItem(item);
+		ignoreColumnsComboBoxActionEvent = true;
+		
+		try {
+			sourceComboBox.removeAllItems();
+			targetComboBox.removeAllItems();
+			interactionComboBox.removeAllItems();
+	
+			interactionComboBox.addItem("-- Default Interaction --");
+			sourceComboBox.addItem("-- Select Column --");
+			targetComboBox.addItem("-- Select Column --");
+			
+			for (String item : columnNames) {
+				sourceComboBox.addItem(item);
+				targetComboBox.addItem(item);
+				interactionComboBox.addItem(item);
+			}
+	
+			sourceComboBox.setEnabled(true);
+			targetComboBox.setEnabled(true);
+			interactionComboBox.setEnabled(true);
+	
+			sourceComboBox.setSelectedIndex(0);
+			targetComboBox.setSelectedIndex(0);
+			interactionComboBox.setSelectedIndex(0);
+		} finally {
+			ignoreColumnsComboBoxActionEvent = false;
 		}
-
-		interactionComboBox.insertItemAt("Default Interaction", 0);
-		sourceComboBox.insertItemAt("Select Source node column...", 0);
-		targetComboBox.insertItemAt("Select Target node column...", 0);
-
-		sourceComboBox.setEnabled(true);
-		targetComboBox.setEnabled(true);
-		interactionComboBox.setEnabled(true);
-
-		sourceComboBox.setSelectedIndex(0);
-		targetComboBox.setSelectedIndex(0);
-		interactionComboBox.setSelectedIndex(0);
 	}
 
-	/*
-	 * Get index from combo boxes.
-	 */
 	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @return  DOCUMENT ME!
+	 * Get index from combo boxes.
 	 */
 	public int getSourceIndex() {
 		return sourceComboBox.getSelectedIndex() - 1;
 	}
 
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @return  DOCUMENT ME!
-	 */
 	public int getTargetIndex() {
 		return targetComboBox.getSelectedIndex() - 1;
 	}
 
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @return  DOCUMENT ME!
-	 */
 	public int getInteractionIndex() {
 		return interactionComboBox.getSelectedIndex() - 1;
 	}
-
-	// Variables declaration - do not modify
-	private javax.swing.JLabel edgeAttributesLabel;
-	private javax.swing.JLabel iconLabel1;
-	private javax.swing.JLabel iconLabel2;
-	private javax.swing.JComboBox interactionComboBox;
-	private javax.swing.JLabel interactionLabel;
-	private javax.swing.JComboBox sourceComboBox;
-	private javax.swing.JLabel sourceLabel;
-	private javax.swing.JComboBox targetComboBox;
-	private javax.swing.JLabel targetLabel;
-
-	// End of variables declaration
 }

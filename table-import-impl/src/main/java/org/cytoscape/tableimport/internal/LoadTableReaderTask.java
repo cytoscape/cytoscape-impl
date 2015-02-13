@@ -26,60 +26,39 @@ package org.cytoscape.tableimport.internal;
 
 
 
-import static org.cytoscape.tableimport.internal.ui.theme.ImportDialogIconSets.SPREADSHEET_ICON;
-import static org.cytoscape.tableimport.internal.ui.theme.ImportDialogIconSets.TEXT_FILE_ICON;
-import static org.cytoscape.tableimport.internal.reader.TextFileDelimiters.PIPE;
-
-import java.awt.Color;
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.channels.IllegalSelectorException;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.Vector;
 
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableCellRenderer;
-import javax.swing.table.TableModel;
 
-
-import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.cytoscape.io.read.CyTableReader;
-import org.cytoscape.model.CyEdge;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.model.CyIdentifiable;
-import org.cytoscape.model.CyTableManager;
 import org.cytoscape.tableimport.internal.reader.AttributeMappingParameters;
 import org.cytoscape.tableimport.internal.reader.DefaultAttributeTableReader;
 import org.cytoscape.tableimport.internal.reader.ExcelAttributeSheetReader;
 import org.cytoscape.tableimport.internal.reader.SupportedFileType;
-import org.cytoscape.tableimport.internal.reader.TextTableReader;
-import org.cytoscape.tableimport.internal.reader.TextTableReader.ObjectType;
-import org.cytoscape.tableimport.internal.ui.PreviewTablePanel;
-import org.cytoscape.tableimport.internal.util.CytoscapeServices;
 import org.cytoscape.tableimport.internal.reader.TextFileDelimiters;
+import org.cytoscape.tableimport.internal.reader.TextTableReader;
+import org.cytoscape.tableimport.internal.ui.PreviewTablePanel;
+import org.cytoscape.tableimport.internal.ui.theme.IconManager;
+import org.cytoscape.tableimport.internal.util.CytoscapeServices;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.TunableValidator;
-import org.cytoscape.work.util.*;
+import org.cytoscape.work.util.ListMultipleSelection;
+import org.cytoscape.work.util.ListSingleSelection;
 
 
 
@@ -116,9 +95,12 @@ public class LoadTableReaderTask extends AbstractTask implements CyTableReader ,
 	
 	@Tunable(description="First row used for column names", context="both")
 	public boolean firstRowAsColumnNames = false;
+	
+	private final IconManager iconManager;
 
-	public LoadTableReaderTask()
-	{
+	public LoadTableReaderTask(final IconManager iconManager) {
+		this.iconManager = iconManager;
+		
 		List<String> tempList = new ArrayList<String>();
 		tempList.add(TextFileDelimiters.COMMA.toString());
 		tempList.add(TextFileDelimiters.SEMICOLON.toString());
@@ -133,32 +115,18 @@ public class LoadTableReaderTask extends AbstractTask implements CyTableReader ,
 		delimitersForDataList = new ListSingleSelection<String>(tempList);
 	}
 	
-	public LoadTableReaderTask(final InputStream is, final String fileType,final String inputName)
-	{
-		List<String> tempList = new ArrayList<String>();
-		tempList.add(TextFileDelimiters.COMMA.toString());
-		tempList.add(TextFileDelimiters.SEMICOLON.toString());
-		tempList.add(TextFileDelimiters.SPACE.toString());
-		tempList.add(TextFileDelimiters.TAB.toString());
-		delimiters = new ListMultipleSelection<String>(tempList);
-	    tempList = new ArrayList<String>();
-		tempList.add(TextFileDelimiters.PIPE.toString());
-		tempList.add(TextFileDelimiters.BACKSLASH.toString());
-		tempList.add(TextFileDelimiters.SLASH.toString());
-		tempList.add(TextFileDelimiters.COMMA.toString());
-		delimitersForDataList = new ListSingleSelection<String>(tempList);
-		
-		setInputFile(is,fileType,inputName);
-		
+	public LoadTableReaderTask(final InputStream is, final String fileType,final String inputName,
+			final IconManager iconManager) {
+		this(iconManager);
+		setInputFile(is, fileType, inputName);
 	}
 	
-	public void setInputFile(final InputStream is, final String fileType,final String inputName)
-	{
+	public void setInputFile(final InputStream is, final String fileType,final String inputName) {
 		this.fileType     = fileType;
 		this.inputName = inputName;
 		this.isStart = is;
 		
-		previewPanel = new PreviewTablePanel();
+		previewPanel = new PreviewTablePanel(iconManager);
 				
 		try {
 	

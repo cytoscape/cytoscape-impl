@@ -29,6 +29,7 @@ import java.lang.reflect.Method;
 
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.tableimport.internal.reader.NetworkTableMappingParameters;
+import org.cytoscape.tableimport.internal.ui.theme.IconManager;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.TunableHandler;
 import org.cytoscape.work.swing.GUITunableHandler;
@@ -38,19 +39,22 @@ public class NetworkTableMappingParametersHandlerFactory implements GUITunableHa
 
 	private final int dialogType;
     private final CyTableManager tableManager;
+	private final IconManager iconManager;
     
     
-    public NetworkTableMappingParametersHandlerFactory(final int dialogType, final CyTableManager tableManager) {
+    public NetworkTableMappingParametersHandlerFactory(final int dialogType, final CyTableManager tableManager,
+    		final IconManager iconManager) {
 		this.dialogType = dialogType;
 		this.tableManager = tableManager;
-		
+		this.iconManager = iconManager;
 	}
 	@Override
 	public GUITunableHandler createTunableHandler(Field field, Object instance,Tunable tunable) {
 		if (!NetworkTableMappingParameters.class.isAssignableFrom(field.getType()))
 			return null;
 
-		return new NetworkTableMappingParametersHandler(field, instance, tunable, dialogType, tableManager);
+		return new NetworkTableMappingParametersHandler(field, instance, tunable, dialogType, tableManager,
+				iconManager);
 	}
 
 	@Override
@@ -58,7 +62,7 @@ public class NetworkTableMappingParametersHandlerFactory implements GUITunableHa
 			Object instance, Tunable tunable) {
 		if (!NetworkTableMappingParameters.class.isAssignableFrom(getter.getReturnType()))
 			return null;
-		return new NetworkTableMappingParametersHandler(getter, setter, instance, tunable, dialogType, tableManager);
+		return new NetworkTableMappingParametersHandler(getter, setter, instance, tunable, dialogType, tableManager,
+				iconManager);
 	}
-
 }

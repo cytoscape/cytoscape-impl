@@ -56,7 +56,7 @@ public class NetworkCollectionHelper extends AbstractTask {
 	//******** tunables ********************
 
 	public ListSingleSelection<String> rootNetworkList;
-	@Tunable(description = "Network Collection" ,groups="Select a Network Collection")
+	@Tunable(description = "Network Collection:" ,groups="Select a Network Collection")
 	public ListSingleSelection<String> getRootNetworkList(){
 		return rootNetworkList;
 	}

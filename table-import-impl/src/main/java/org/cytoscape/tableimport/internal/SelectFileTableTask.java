@@ -32,6 +32,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import org.cytoscape.io.util.StreamUtil;
+import org.cytoscape.tableimport.internal.ui.theme.IconManager;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.AbstractTask;
@@ -41,6 +42,7 @@ import org.slf4j.LoggerFactory;
 
 
 public class SelectFileTableTask extends AbstractTask {
+	
 	@Tunable(description="Data Table file", params="fileCategory=table;input=true", gravity=0.0)
 	public File file;
 	
@@ -48,44 +50,43 @@ public class SelectFileTableTask extends AbstractTask {
 	private LoadNetworkReaderTask networkReader;
 	protected final StreamUtil streamUtil;
 	private InputStream stream;
+	private final IconManager iconManager;
 	
 	private static final Logger logger = LoggerFactory.getLogger( SelectFileTableTask.class ); 
 
-	public SelectFileTableTask(Task readerTask,final StreamUtil streamUtil) {
-		if(readerTask instanceof LoadTableReaderTask)
-		{
+	public SelectFileTableTask(Task readerTask,final StreamUtil streamUtil, final IconManager iconManager) {
+		if (readerTask instanceof LoadTableReaderTask) {
 			tableReader = (LoadTableReaderTask)readerTask;
 			networkReader = null;
 		}
-		if(readerTask instanceof LoadNetworkReaderTask)
-		{
+		
+		if (readerTask instanceof LoadNetworkReaderTask) {
 			tableReader = null;
 			networkReader = (LoadNetworkReaderTask) readerTask;
 		}
+		
 		this.streamUtil = streamUtil;
+		this.iconManager = iconManager;
 	}
 
-	/**
-	 * Executes Task.
-	 */
+	@Override
 	public void run(final TaskMonitor taskMonitor) throws Exception {
 		
 		try{
 			stream = streamUtil.getInputStream(file.toURI().toURL());
+			
 			if (!stream.markSupported()) {
 				stream = new BufferedInputStream(stream);
 			}
-		}
-		catch (IOException e) {
+		} catch (IOException e) {
 			logger.warn("Error opening stream to URI: " + file.toString(), e);
 		}
 
 		String fileFormat = file.toURI().toString().substring(file.toURI().toString().lastIndexOf('.'));
-		if(tableReader != null)
+		if (tableReader != null)
 			tableReader.setInputFile(stream, fileFormat, file.toURI().toString());
 		
-		if(networkReader != null)
-			networkReader.setInputFile(stream, fileFormat, file.toURI().toString(),file.toURI());
+		if (networkReader != null)
+			networkReader.setInputFile(stream, fileFormat, file.toURI().toString(),file.toURI(), iconManager);
 	}
 }
-

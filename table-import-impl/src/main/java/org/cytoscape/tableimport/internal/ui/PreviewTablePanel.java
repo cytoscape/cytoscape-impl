@@ -24,25 +24,27 @@ package org.cytoscape.tableimport.internal.ui;
  * #L%
  */
 
-import static org.cytoscape.tableimport.internal.ui.theme.ImportDialogColorTheme.ALIAS_COLOR;
-import static org.cytoscape.tableimport.internal.ui.theme.ImportDialogColorTheme.ONTOLOGY_COLOR;
-import static org.cytoscape.tableimport.internal.ui.theme.ImportDialogColorTheme.PRIMARY_KEY_COLOR;
-import static org.cytoscape.tableimport.internal.ui.theme.ImportDialogColorTheme.SPECIES_COLOR;
-import static org.cytoscape.tableimport.internal.ui.theme.ImportDialogFontTheme.LABEL_FONT;
-import static org.cytoscape.tableimport.internal.ui.theme.ImportDialogIconSets.RIGHT_ARROW_ICON;
-import static org.cytoscape.tableimport.internal.ui.theme.ImportDialogIconSets.SPREADSHEET_ICON;
-import static org.cytoscape.tableimport.internal.ui.theme.ImportDialogIconSets.TEXT_FILE_ICON;
+import static javax.swing.GroupLayout.DEFAULT_SIZE;
+import static javax.swing.GroupLayout.PREFERRED_SIZE;
+import static javax.swing.GroupLayout.Alignment.CENTER;
+import static javax.swing.GroupLayout.Alignment.LEADING;
+import static javax.swing.GroupLayout.Alignment.TRAILING;
+import static javax.swing.LayoutStyle.ComponentPlacement.UNRELATED;
+import static org.cytoscape.tableimport.internal.ui.theme.SourceColumnSemantics.ALIAS;
+import static org.cytoscape.tableimport.internal.ui.theme.SourceColumnSemantics.INTERACTION;
+import static org.cytoscape.tableimport.internal.ui.theme.SourceColumnSemantics.ONTOLOGY;
+import static org.cytoscape.tableimport.internal.ui.theme.SourceColumnSemantics.PRIMARY_KEY;
+import static org.cytoscape.tableimport.internal.ui.theme.SourceColumnSemantics.SOURCE;
+import static org.cytoscape.tableimport.internal.ui.theme.SourceColumnSemantics.TARGET;
+import static org.cytoscape.tableimport.internal.ui.theme.SourceColumnSemantics.TAXON;
 
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
-import java.awt.Font;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.Insets;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.awt.geom.AffineTransform;
+import java.awt.event.MouseWheelEvent;
+import java.awt.event.MouseWheelListener;
 import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -62,18 +64,27 @@ import java.util.Vector;
 
 import javax.imageio.ImageIO;
 import javax.swing.BorderFactory;
+import javax.swing.ButtonGroup;
 import javax.swing.DefaultListModel;
+import javax.swing.GroupLayout;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
+import javax.swing.JSeparator;
+import javax.swing.JSpinner;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
-import javax.swing.ListCellRenderer;
-import javax.swing.SwingConstants;
+import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import javax.swing.border.Border;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellRenderer;
@@ -85,10 +96,11 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.cytoscape.tableimport.internal.reader.SupportedFileType;
 import org.cytoscape.tableimport.internal.reader.TextFileDelimiters;
+import org.cytoscape.tableimport.internal.ui.theme.IconManager;
 import org.cytoscape.tableimport.internal.util.AttributeTypes;
 import org.cytoscape.tableimport.internal.util.URLUtil;
 import org.cytoscape.util.swing.ColumnResizer;
-import org.jdesktop.layout.GroupLayout;
+import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -99,32 +111,18 @@ import au.com.bytecode.opencsv.CSVReader;
  */
 public class PreviewTablePanel extends JPanel {
 
+	private static final float ICON_FONT_SIZE = 14.0f;
+
 	private static final long serialVersionUID = -7779176856705540150L;
 
-	/**
-	 *
-	 */
 	public static final int ATTRIBUTE_PREVIEW = 1;
-
-	/**
-	 *
-	 */
 	public static final int ONTOLOGY_PREVIEW = 2;
-
-	/**
-	 *
-	 */
 	public static final int NETWORK_PREVIEW = 3;
-
-	/*
-	 * Default messages
-	 */
-	private static final String DEF_MESSAGE = "Legend:";
+	
 	private static final String DEF_TAB_MESSAGE = "Data File Preview Window";
 
 	// Lines start with this char will be ignored.
 	private String commentChar;
-	private final String message;
 	private boolean loadFlag = false;
 
 	// Tracking attribute data type.
@@ -135,14 +133,6 @@ public class PreviewTablePanel extends JPanel {
 	/*
 	 * GUI Components
 	 */
-	private JLabel legendLabel;
-	private JLabel aliasLabel;
-	private JLabel primaryKeyLabel;
-	private JLabel ontologyTermLabel;
-	private JLabel taxonomyLabel;
-	private JLabel instructionLabel;
-	private JLabel rightArrowLabel;
-	private JLabel fileTypeLabel;
 	private JScrollPane previewScrollPane;
 	private JTable previewTable;
 
@@ -152,69 +142,43 @@ public class PreviewTablePanel extends JPanel {
 	private JScrollPane keyPreviewScrollPane;
 	private JList keyPreviewList;
 	private DefaultListModel keyListModel;
+	
+	private JRadioButton showAllRadioButton;
+	private JRadioButton counterRadioButton;
+	private JSpinner counterSpinner;
+	private JButton reloadButton;
+	
+	private ButtonGroup importTypeButtonGroup;
+	
 	private PropertyChangeSupport changes = new PropertyChangeSupport(this);
 	private int panelType;
 	private String listDelimiter;
-	private InputStream is = null;
+
+	private final IconManager iconManager;
 
 	private static final Logger logger = LoggerFactory.getLogger(PreviewTablePanel.class);
 
 	/**
 	 * Creates a new PreviewTablePanel object.
 	 */
-	public PreviewTablePanel() {
-		this(DEF_MESSAGE, ATTRIBUTE_PREVIEW);
+	public PreviewTablePanel(final IconManager iconManager) {
+		this(ATTRIBUTE_PREVIEW, iconManager);
 	}
-
 
 	/**
 	 * Creates a new PreviewTablePanel object.
-	 * 
-	 * @param message
-	 *            DOCUMENT ME!
-	 * @param panelType
-	 *            DOCUMENT ME!
 	 */
-	public PreviewTablePanel(String message, int panelType) {
-		if (message == null) {
-			this.message = DEF_MESSAGE;
-		} else {
-			this.message = message;
-		}
-
+	public PreviewTablePanel(int panelType, final IconManager iconManager) {
 		this.panelType = panelType;
+		this.iconManager = iconManager;
 
 		dataTypeMap = new HashMap<String, Byte[]>();
 		listDataTypeMap = new HashMap<String, Byte[]>();
 
 		initComponents();
-		hideUnnecessaryComponents();
 	}
 
-
-	private void hideUnnecessaryComponents() {
-		fileTypeLabel.setVisible(false);
-
-		if (panelType == NETWORK_PREVIEW || panelType == ATTRIBUTE_PREVIEW) {
-			keyPreviewScrollPane.setVisible(false);
-			rightArrowLabel.setVisible(false);
-			legendLabel.setVisible(false);
-			primaryKeyLabel.setVisible(false);
-			aliasLabel.setVisible(false);
-			ontologyTermLabel.setVisible(false);
-			taxonomyLabel.setVisible(false);
-		}
-		repaint();
-	}
-
-	/**
-	 * DOCUMENT ME!
-	 * 
-	 * @param data
-	 *            DOCUMENT ME!
-	 */
 	public void setKeyAttributeList(Set data) {
-		keyPreviewScrollPane.setBackground(Color.white);
 		keyListModel.clear();
 
 		for (Object item : data) {
@@ -224,12 +188,7 @@ public class PreviewTablePanel extends JPanel {
 		keyPreviewList.repaint();
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 * 
-	 * @param l
-	 *            DOCUMENT ME!
-	 */
+	@Override
 	public void addPropertyChangeListener(PropertyChangeListener l) {
 		if (changes == null)
 			return;
@@ -237,26 +196,43 @@ public class PreviewTablePanel extends JPanel {
 		changes.addPropertyChangeListener(l);
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 * 
-	 * @param l
-	 *            DOCUMENT ME!
-	 */
+	@Override
 	public void removePropertyChangeListener(PropertyChangeListener l) {
 		changes.removePropertyChangeListener(l);
 	}
 
 	private void initComponents() {
-		legendLabel = new JLabel();
-		instructionLabel = new javax.swing.JLabel();
-
-		primaryKeyLabel = new javax.swing.JLabel();
-		aliasLabel = new javax.swing.JLabel();
-		ontologyTermLabel = new JLabel();
-		taxonomyLabel = new JLabel();
+		final JLabel legendLabel = new JLabel("Legend:");
+		final JLabel pkLabel = new JLabel("Key");
+		final JLabel aliasLabel = new JLabel("Alias");
+		final JLabel ontologyLabel = new JLabel("Ontology");
+		final JLabel taxonLabel = new JLabel("Taxon");
+		final JLabel keyColumnsLabel = new JLabel("Key Columns:");
+		
+		final JLabel instructionLabel = new JLabel("<html><b>Right-click</b> to edit column.</html>");
+		instructionLabel.setFont(instructionLabel.getFont().deriveFont(11.0f));
+		
+		final JLabel rightArrowLabel = new JLabel(IconManager.ICON_ARROW_RIGHT);
+		rightArrowLabel.setFont(iconManager.getIconFont(16.0f));
+		
+		final JLabel pkIconLabel = new JLabel(PRIMARY_KEY.getText());
+		pkIconLabel.setFont(iconManager.getIconFont(ICON_FONT_SIZE));
+		
+		final JLabel aliasIconLabel = new JLabel(ALIAS.getText());
+		aliasIconLabel.setFont(iconManager.getIconFont(ICON_FONT_SIZE));
+		aliasIconLabel.setForeground(ALIAS.getForeground());
+		
+		final JLabel ontologyIconLabel = new JLabel(ONTOLOGY.getText());
+		ontologyIconLabel.setFont(iconManager.getIconFont(ICON_FONT_SIZE));
+		ontologyIconLabel.setForeground(ONTOLOGY.getForeground());
+		
+		final JLabel taxonIconLabel = new JLabel(TAXON.getText());
+		taxonIconLabel.setFont(iconManager.getIconFont(ICON_FONT_SIZE));
+		taxonIconLabel.setForeground(TAXON.getForeground());
+		
+		final JLabel counterLabel = new JLabel("entries");
+		
 		previewScrollPane = new JScrollPane();
-		rightArrowLabel = new JLabel();
 		tableTabbedPane = new JTabbedPane();
 		keyListModel = new DefaultListModel();
 		keyPreviewList = new JList(keyListModel);
@@ -264,47 +240,23 @@ public class PreviewTablePanel extends JPanel {
 
 		previewTables = new HashMap<String, JTable>();
 		previewTable = new JTable();
-		previewTable.setName("previewTable");
 		previewTable.setOpaque(false);
-		previewTable.setBackground(Color.white);
 
-		fileTypeLabel = new JLabel();
-		fileTypeLabel.setFont(new Font("Sans-Serif", Font.BOLD, 14));
-
-		keyPreviewScrollPane.setBorder(javax.swing.BorderFactory.createTitledBorder("Key Columns"));
-
-		keyPreviewList.setOpaque(false);
-		keyPreviewList.setCellRenderer(new KeyAttributeListRenderer());
 		keyPreviewScrollPane.setViewportView(keyPreviewList);
-
-		previewScrollPane.setOpaque(false);
 		previewScrollPane.setViewportView(previewTable);
-		previewScrollPane.setBackground(Color.WHITE);
 
-		final BufferedImage datasourceImage = getBufferedImage(getClass().getResource(
-				"/images/ximian/data_sources_trans.png"));
-
-		final BufferedImage bi = getBufferedImage(getClass().getResource("/images/icon100_trans.png"));
-
-		tableTabbedPane.setBackground(Color.white);
-		tableTabbedPane.addChangeListener(new javax.swing.event.ChangeListener() {
-			public void stateChanged(javax.swing.event.ChangeEvent evt) {
+		tableTabbedPane.addChangeListener(new ChangeListener() {
+			@Override
+			public void stateChanged(ChangeEvent evt) {
 				tableTabbedPaneStateChanged(evt);
 			}
 		});
 
-		previewScrollPane.getViewport().setOpaque(false);
-		previewScrollPane.setViewportBorder(new CentredBackgroundBorder(datasourceImage));
-		keyPreviewScrollPane.getViewport().setOpaque(false);
-		keyPreviewScrollPane.setViewportBorder(new CentredBackgroundBorder(bi));
-
 		tableTabbedPane.addTab(DEF_TAB_MESSAGE, previewScrollPane);
-
-		rightArrowLabel.setIcon(RIGHT_ARROW_ICON.getIcon());
-
+		
 		JTableHeader hd = previewTable.getTableHeader();
 		hd.setReorderingAllowed(false);
-		hd.setDefaultRenderer(new HeaderRenderer(hd.getDefaultRenderer(), null));
+		hd.setDefaultRenderer(new HeaderRenderer());
 
 		/*
 		 * Setting table properties
@@ -313,105 +265,106 @@ public class PreviewTablePanel extends JPanel {
 		previewTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 		previewTable.setDefaultEditor(Object.class, null);
 
-		this.setBorder(BorderFactory.createTitledBorder(
-				javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), "Preview",
-				javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION,
-				javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Dialog", 1, 11)));
+		this.setBorder(LookAndFeelUtil.createTitledBorder("Preview"));
 
-		instructionLabel.setHorizontalAlignment(SwingConstants.CENTER);
-		instructionLabel.setText("Left Click: Enable/Disable Column, Right Click: Edit Column");
-		instructionLabel.setFont(LABEL_FONT.getFont());
-		instructionLabel.setForeground(Color.red);
+		importTypeButtonGroup = new ButtonGroup();
+		importTypeButtonGroup.add(getShowAllRadioButton());
+		importTypeButtonGroup.add(getCounterRadioButton());
+		importTypeButtonGroup.setSelected(getCounterRadioButton().getModel(), true);
+		
+		final GroupLayout layout = new GroupLayout(this);
+		this.setLayout(layout);
+		layout.setAutoCreateContainerGaps(true);
+		layout.setAutoCreateGaps(true);
+		
+		final JSeparator sep = new JSeparator();
 
-		legendLabel.setFont(LABEL_FONT.getFont());
-		legendLabel.setHorizontalAlignment(SwingConstants.RIGHT);
-		legendLabel.setText(message);
-
-		primaryKeyLabel.setFont(LABEL_FONT.getFont());
-		primaryKeyLabel.setForeground(Color.WHITE);
-		primaryKeyLabel.setBackground(PRIMARY_KEY_COLOR.getColor());
-		primaryKeyLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-		primaryKeyLabel.setText("Key");
-		primaryKeyLabel.setToolTipText("Column in this color is the Primary Key.");
-		primaryKeyLabel.setOpaque(true);
-
-		aliasLabel.setFont(LABEL_FONT.getFont());
-		aliasLabel.setForeground(Color.WHITE);
-		aliasLabel.setBackground(ALIAS_COLOR.getColor());
-		aliasLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-		aliasLabel.setText("Alias");
-		aliasLabel.setToolTipText("Columns in this color are Aliases.");
-		aliasLabel.setOpaque(true);
-
-		ontologyTermLabel.setFont(LABEL_FONT.getFont());
-		ontologyTermLabel.setForeground(Color.WHITE);
-		ontologyTermLabel.setBackground(ONTOLOGY_COLOR.getColor());
-		ontologyTermLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-		ontologyTermLabel.setText("Ontology");
-		ontologyTermLabel.setToolTipText("Column in this color is Ontology Term.");
-		ontologyTermLabel.setOpaque(true);
-
-		taxonomyLabel.setFont(LABEL_FONT.getFont());
-		taxonomyLabel.setForeground(Color.WHITE);
-		taxonomyLabel.setBackground(SPECIES_COLOR.getColor());
-		taxonomyLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-		taxonomyLabel.setText("Taxon");
-		taxonomyLabel.setToolTipText("Columns in this color is Taxon (for Gene Association files only).");
-		taxonomyLabel.setOpaque(true);
-
-		GroupLayout previewPanelLayout = new GroupLayout(this);
-		this.setLayout(previewPanelLayout);
-
-		previewPanelLayout.setHorizontalGroup(previewPanelLayout
-				.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-				.add(org.jdesktop.layout.GroupLayout.TRAILING,
-						previewPanelLayout
-								.createSequentialGroup()
-								.add(tableTabbedPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 250,
-										Short.MAX_VALUE)
-								.addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-								.add(rightArrowLabel)
-								.addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-								.add(keyPreviewScrollPane, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 180,
-										org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-				.add(previewPanelLayout
-						.createSequentialGroup()
-						.add(fileTypeLabel)
-						.addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-						.add(instructionLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 60, Short.MAX_VALUE)
-						.addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-						.add(legendLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 60,
-								org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-						.addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-						.add(primaryKeyLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 60,
-								org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-						.addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-						.add(aliasLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 60,
-								org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-						.addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-						.add(ontologyTermLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 70,
-								org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-						.addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-						.add(taxonomyLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 60,
-								org.jdesktop.layout.GroupLayout.PREFERRED_SIZE).addContainerGap()));
-		previewPanelLayout.setVerticalGroup(previewPanelLayout.createParallelGroup(
-				org.jdesktop.layout.GroupLayout.LEADING).add(
-				previewPanelLayout
-						.createSequentialGroup()
-						.add(previewPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-								.add(fileTypeLabel).add(primaryKeyLabel).add(aliasLabel).add(ontologyTermLabel)
-								.add(taxonomyLabel).add(legendLabel).add(instructionLabel))
-						.addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-						.add(previewPanelLayout
-								.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-								.add(tableTabbedPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 200,
-										Short.MAX_VALUE)
-								.add(keyPreviewScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 200,
-										Short.MAX_VALUE)
-								.add(org.jdesktop.layout.GroupLayout.LEADING, rightArrowLabel,
-										org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 200, Short.MAX_VALUE))));
+		layout.setHorizontalGroup(layout.createParallelGroup(LEADING)
+				.addComponent(instructionLabel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				.addGroup(CENTER, layout.createSequentialGroup()
+						.addGroup(layout.createParallelGroup(LEADING, true)
+								.addComponent(tableTabbedPane, DEFAULT_SIZE, 250, Short.MAX_VALUE)
+								.addGroup(layout.createSequentialGroup()
+									.addComponent(getShowAllRadioButton())
+									.addComponent(getCounterRadioButton())
+									.addComponent(getCounterSpinner(), PREFERRED_SIZE, 60, PREFERRED_SIZE)
+									.addComponent(counterLabel)
+									.addGap(20, 20, Short.MAX_VALUE)
+									.addComponent(getReloadButton())
+								)
+								.addComponent(sep, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+								.addGroup(layout.createSequentialGroup()
+										.addComponent(legendLabel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+										.addPreferredGap(UNRELATED)
+										.addComponent(pkIconLabel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+										.addComponent(pkLabel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+										.addPreferredGap(UNRELATED)
+										.addComponent(aliasIconLabel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+										.addComponent(aliasLabel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+										.addPreferredGap(UNRELATED)
+										.addComponent(ontologyIconLabel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+										.addComponent(ontologyLabel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+										.addPreferredGap(UNRELATED)
+										.addComponent(taxonIconLabel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+										.addComponent(taxonLabel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+								)
+						)
+						.addComponent(rightArrowLabel)
+						.addGroup(layout.createParallelGroup(LEADING, true)
+								.addComponent(keyColumnsLabel)
+								.addComponent(keyPreviewScrollPane, PREFERRED_SIZE, 180, PREFERRED_SIZE)
+						)
+				)
+		);
+		layout.setVerticalGroup(layout.createSequentialGroup()
+				.addComponent(instructionLabel)
+				.addGroup(layout.createParallelGroup(TRAILING)
+						.addGroup(layout.createSequentialGroup()
+								.addComponent(tableTabbedPane, DEFAULT_SIZE, 200, Short.MAX_VALUE)
+								.addGroup(layout.createParallelGroup(CENTER)
+										.addComponent(getShowAllRadioButton())
+										.addComponent(getCounterRadioButton())
+										.addComponent(getCounterSpinner(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+										.addComponent(counterLabel)
+										.addComponent(getReloadButton())
+								)
+								.addComponent(sep, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+								.addGroup(layout.createParallelGroup(CENTER)
+										.addComponent(legendLabel)
+										.addComponent(pkIconLabel)
+										.addComponent(pkLabel)
+										.addComponent(aliasIconLabel)
+										.addComponent(aliasLabel)
+										.addComponent(ontologyIconLabel)
+										.addComponent(ontologyLabel)
+										.addComponent(taxonIconLabel)
+										.addComponent(taxonLabel)
+								)
+						)
+						.addComponent(rightArrowLabel, LEADING, DEFAULT_SIZE, 200, Short.MAX_VALUE)
+						.addGroup(layout.createSequentialGroup()
+								.addComponent(keyColumnsLabel)
+								.addComponent(keyPreviewScrollPane, DEFAULT_SIZE, 200, Short.MAX_VALUE)
+						)
+				)
+		);
+		
+		if (panelType != ONTOLOGY_PREVIEW) {
+			sep.setVisible(false);
+			keyColumnsLabel.setVisible(false);
+			keyPreviewScrollPane.setVisible(false);
+			rightArrowLabel.setVisible(false);
+			legendLabel.setVisible(false);
+			pkIconLabel.setVisible(false);
+			pkLabel.setVisible(false);
+			aliasIconLabel.setVisible(false);
+			aliasLabel.setVisible(false);
+			ontologyIconLabel.setVisible(false);
+			ontologyLabel.setVisible(false);
+			taxonIconLabel.setVisible(false);
+			taxonLabel.setVisible(false);
+		}
 	}
-
 
 	public JTable getPreviewTable() {
 		JScrollPane selected = (JScrollPane) tableTabbedPane.getSelectedComponent();
@@ -423,58 +376,26 @@ public class PreviewTablePanel extends JPanel {
 		return (JTable) selected.getViewport().getComponent(0);
 	}
 
-
 	public int getTableCount() {
 		return tableTabbedPane.getTabCount();
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 * 
-	 * @param index
-	 *            DOCUMENT ME!
-	 * 
-	 * @return DOCUMENT ME!
-	 */
 	public String getSheetName(int index) {
 		return tableTabbedPane.getTitleAt(index);
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 * 
-	 * @param selectedTabName
-	 *            DOCUMENT ME!
-	 * 
-	 * @return DOCUMENT ME!
-	 */
 	public Byte[] getDataTypes(final String selectedTabName) {
 		return dataTypeMap.get(selectedTabName);
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 * 
-	 * @return DOCUMENT ME!
-	 */
 	public Byte[] getCurrentDataTypes() {
 		return dataTypeMap.get(getSelectedSheetName());
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 * 
-	 * @return DOCUMENT ME!
-	 */
 	public Byte[] getCurrentListDataTypes() {
 		return listDataTypeMap.get(getSelectedSheetName());
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 * 
-	 * @return DOCUMENT ME!
-	 */
 	public FileTypes getFileType() {
 		final String sheetName = getSheetName(tableTabbedPane.getSelectedIndex());
 
@@ -494,21 +415,13 @@ public class PreviewTablePanel extends JPanel {
 		return tableTabbedPane.getTitleAt(tableTabbedPane.getSelectedIndex());
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 * 
-	 * @param index
-	 *            DOCUMENT ME!
-	 * 
-	 * @return DOCUMENT ME!
-	 */
 	public JTable getPreviewTable(int index) {
 		JScrollPane selected = (JScrollPane) tableTabbedPane.getComponentAt(index);
 
 		return (JTable) selected.getViewport().getComponent(0);
 	}
 
-	private void tableTabbedPaneStateChanged(javax.swing.event.ChangeEvent evt) {
+	private void tableTabbedPaneStateChanged(ChangeEvent evt) {
 		if ((tableTabbedPane.getSelectedComponent() != null)
 				&& (((JScrollPane) tableTabbedPane.getSelectedComponent()).getViewport().getComponent(0) != null)
 				&& (loadFlag == true)) {
@@ -517,10 +430,7 @@ public class PreviewTablePanel extends JPanel {
 	}
 
 	/**
-	 * Get backgroung images for table & list.
-	 * 
-	 * @param url
-	 * @return
+	 * Get background images for table & list.
 	 */
 	private BufferedImage getBufferedImage(URL url) {
 		BufferedImage image;
@@ -538,20 +448,6 @@ public class PreviewTablePanel extends JPanel {
 
 	/**
 	 * Load file and show preview.
-	 * 
-	 * @param wb
-	 * @param fileType
-	 * @param fileFullName
-	 * @param tempIs
-	 * @param delimiters
-	 * @param renderer
-	 *            renderer for this table. Can be null.
-	 * @param size
-	 * @param commentLineChar
-	 *            TODO
-	 * @param startLine
-	 *            TODO
-	 * @throws IOException
 	 */
 	public void setPreviewTable(final Workbook wb, String fileType, String fileFullName, InputStream tempIs,
 			List<String> delimiters, TableCellRenderer renderer, int size, final String commentLineChar,
@@ -572,7 +468,7 @@ public class PreviewTablePanel extends JPanel {
 		if (curRenderer == null) {
 			curRenderer = new AttributePreviewTableCellRenderer(0, new ArrayList<Integer>(),
 					AttributePreviewTableCellRenderer.PARAMETER_NOT_EXIST,
-					AttributePreviewTableCellRenderer.PARAMETER_NOT_EXIST, null, TextFileDelimiters.PIPE.toString());
+					AttributePreviewTableCellRenderer.PARAMETER_NOT_EXIST, null);
 		}
 
 		for (int i = 0; i < tableTabbedPane.getTabCount(); i++)
@@ -582,16 +478,11 @@ public class PreviewTablePanel extends JPanel {
 
 		TableModel newModel;
 
-		fileTypeLabel.setVisible(true);
-
 		boolean isTable = false;
 		if (fileType != null) {
 			if (fileType.equalsIgnoreCase(SupportedFileType.EXCEL.getExtension())
 					|| fileType.equalsIgnoreCase(SupportedFileType.OOXML.getExtension())) {
-
 				isTable = true;
-				fileTypeLabel.setIcon(SPREADSHEET_ICON.getIcon());
-				fileTypeLabel.setText("Excel" + '\u2122' + " Workbook");
 
 				if (wb.getNumberOfSheets() == 0)
 					throw new IllegalStateException("No sheet found in the workbook.");
@@ -616,8 +507,6 @@ public class PreviewTablePanel extends JPanel {
 		}
 
 		if (!isTable) {
-			fileTypeLabel.setText("Text File");
-			fileTypeLabel.setIcon(TEXT_FILE_ICON.getIcon());
 			newModel = parseText(tempIs, size, curRenderer, delimiters, startLine);
 
 			String tabName;
@@ -631,14 +520,8 @@ public class PreviewTablePanel extends JPanel {
 			addTableTab(newModel, tabName, curRenderer);
 		}
 
-		if (getFileType() == FileTypes.GENE_ASSOCIATION_FILE) {
-			fileTypeLabel.setText("Gene Association");
-			fileTypeLabel.setToolTipText("This is a fixed-format Gene Association file.");
-		}
-
 		loadFlag = true;
 	}
-
 
 	protected boolean isCytoscapeAttributeFile(final URL sourceURL) throws IOException {
 		InputStream is = null;
@@ -703,7 +586,6 @@ public class PreviewTablePanel extends JPanel {
 
 		JScrollPane newScrollPane = new JScrollPane();
 		newScrollPane.setViewportView(newTable);
-		newScrollPane.setBackground(Color.WHITE);
 
 		tableTabbedPane.add(tabName, newScrollPane);
 
@@ -733,8 +615,7 @@ public class PreviewTablePanel extends JPanel {
 			TableCellRenderer netRenderer = new AttributePreviewTableCellRenderer(
 					AttributePreviewTableCellRenderer.PARAMETER_NOT_EXIST, new ArrayList<Integer>(),
 					AttributePreviewTableCellRenderer.PARAMETER_NOT_EXIST,
-					AttributePreviewTableCellRenderer.PARAMETER_NOT_EXIST, importFlag,
-					TextFileDelimiters.PIPE.toString());
+					AttributePreviewTableCellRenderer.PARAMETER_NOT_EXIST, importFlag);
 
 			newTable.setDefaultRenderer(Object.class, netRenderer);
 		} else {
@@ -743,7 +624,7 @@ public class PreviewTablePanel extends JPanel {
 
 		JTableHeader hd = newTable.getTableHeader();
 		hd.setReorderingAllowed(false);
-		hd.setDefaultRenderer(new HeaderRenderer(hd.getDefaultRenderer(), dataTypeMap.get(tabName)));
+		hd.setDefaultRenderer(new HeaderRenderer());
 
 		newTable.getTableHeader().addMouseListener(new TableHeaderListener());
 
@@ -766,8 +647,6 @@ public class PreviewTablePanel extends JPanel {
 
 	/**
 	 * Based on the file type, setup the initial column names.
-	 * <p>
-	 * </p>
 	 * 
 	 * @param colCount
 	 * @return
@@ -963,14 +842,6 @@ public class PreviewTablePanel extends JPanel {
 		return new DefaultTableModel(data, this.getDefaultColumnNames(maxCol));
 	}
 
-	/**
-	 * Not yet implemented.
-	 * <p>
-	 * </p>
-	 * 
-	 * @param targetColumn
-	 * @return
-	 */
 	public int checkKeyMatch(final int targetColumn) {
 		final DefaultListModel listModel = (DefaultListModel) keyPreviewList.getModel();
 		final Object[] data = listModel.toArray();
@@ -996,14 +867,6 @@ public class PreviewTablePanel extends JPanel {
 		return matched;
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 * 
-	 * @param column
-	 *            DOCUMENT ME!
-	 * @param flag
-	 *            DOCUMENT ME!
-	 */
 	public void setAliasColumn(int column, boolean flag) {
 		AttributePreviewTableCellRenderer rend = (AttributePreviewTableCellRenderer) getPreviewTable().getCellRenderer(
 				0, column);
@@ -1013,7 +876,62 @@ public class PreviewTablePanel extends JPanel {
 		getPreviewTable().repaint();
 	}
 
-	private final class TableHeaderListener implements MouseListener {
+	protected JRadioButton getShowAllRadioButton() {
+		if (showAllRadioButton == null) {
+			showAllRadioButton = new JRadioButton("Show all entries in the file");
+		}
+		
+		return showAllRadioButton;
+	}
+	
+	protected JRadioButton getCounterRadioButton() {
+		if (counterRadioButton == null) {
+			counterRadioButton = new JRadioButton("Show first");
+		}
+		
+		return counterRadioButton;
+	}
+	
+	protected JSpinner getCounterSpinner() {
+		if (counterSpinner == null) {
+			final SpinnerNumberModel spinnerModel = new SpinnerNumberModel(100, 1, 10000000, 10);
+			counterSpinner = new JSpinner(spinnerModel);
+			counterSpinner.setToolTipText(
+					"<html><body>Click <strong><i>Refresh Preview</i></strong> button to update the table</body></html>");
+			
+			counterSpinner.addMouseWheelListener(new MouseWheelListener() {
+				@Override
+				public void mouseWheelMoved(final MouseWheelEvent evt) {
+					final JSpinner source = (JSpinner) evt.getSource();
+
+					final SpinnerNumberModel model = (SpinnerNumberModel) source.getModel();
+					final Integer oldValue = (Integer) source.getValue();
+					final int intValue = oldValue.intValue() - (evt.getWheelRotation() * model.getStepSize().intValue());
+					final Integer newValue = new Integer(intValue);
+
+					if (model.getMaximum().compareTo(newValue) >= 0
+							&& model.getMinimum().compareTo(newValue) <= 0)
+						source.setValue(newValue);
+				}
+			});
+		}
+		
+		return counterSpinner;
+	}
+	
+	protected JButton getReloadButton() {
+		if (reloadButton == null) {
+			reloadButton = new JButton(IconManager.ICON_REFRESH);
+			reloadButton.setFont(iconManager.getIconFont(12.0f));
+			reloadButton.setToolTipText("Refresh Preview");
+		}
+		
+		return reloadButton;
+	}
+	
+	private final class TableHeaderListener extends MouseAdapter {
+		
+		@Override
 		public void mouseClicked(MouseEvent e) {
 			final JTable targetTable = getPreviewTable();
 			final String selectedTabName = getSelectedSheetName();
@@ -1079,124 +997,125 @@ public class PreviewTablePanel extends JPanel {
 
 					dataTypes[column] = newType;
 
-					targetTable.getTableHeader().setDefaultRenderer(
-							new HeaderRenderer(targetTable.getTableHeader().getDefaultRenderer(), dataTypes));
+					targetTable.getTableHeader().setDefaultRenderer(new HeaderRenderer());
 					dataTypeMap.put(selectedTabName, dataTypes);
 				}
-			} else if (SwingUtilities.isLeftMouseButton(e) && (e.getClickCount() == 1)) {
+			} else if (SwingUtilities.isLeftMouseButton(e) && e.getClickCount() == 1) {
 				final AttributePreviewTableCellRenderer rend = (AttributePreviewTableCellRenderer) targetTable
 						.getCellRenderer(0, column);
-				rend.setImportFlag(column, !rend.getImportFlag(column));
+				
+				if (column == rend.getSourceIndex() || column == rend.getTargetIndex()
+						|| column == rend.getInteractionIndex() || column == rend.getPrimaryKeyIndex()
+						|| column == rend.getTaxonIndex() || column == rend.getOntologyIndex()
+						|| rend.isAlias(column))
+					return;
+				
+				rend.setImportFlag(column, !rend.isImportFlag(column));
 				targetTable.getTableHeader().resizeAndRepaint();
 				targetTable.repaint();
 			}
 		}
+	}
+	
+	class HeaderRenderer extends JPanel implements TableCellRenderer {
+		
+		private static final long serialVersionUID = 3380290649336997187L;
+		
+		private final Border BORDER = BorderFactory.createMatteBorder(0, 1, 0, 0, UIManager.getColor("Label.disabledForeground"));
+		
+		private final JCheckBox checkBox;
+		private final JLabel iconLabel;
+		private final Color defForeground;
 
-		public void mouseEntered(MouseEvent arg0) {
+		HeaderRenderer() {
+			checkBox = new JCheckBox();
+			
+			iconLabel = new JLabel();
+			iconLabel.setFont(iconManager.getIconFont(ICON_FONT_SIZE));
+			
+			defForeground = checkBox.getForeground();
+			
+			final GroupLayout layout = new GroupLayout(this);
+			this.setLayout(layout);
+			layout.setAutoCreateContainerGaps(false);
+			layout.setAutoCreateGaps(true);
+			
+			layout.setHorizontalGroup(layout.createSequentialGroup()
+					.addContainerGap()
+					.addComponent(iconLabel)
+					.addComponent(checkBox)
+					.addContainerGap()
+			);
+			layout.setVerticalGroup(layout.createParallelGroup(CENTER, true)
+					.addComponent(iconLabel)
+					.addComponent(checkBox)
+			);
+		}
+		
+		@Override
+		public Component getTableCellRendererComponent(JTable tbl, Object val, boolean isS,
+		                                               boolean hasF, int row, int col) {
+			final AttributePreviewTableCellRenderer rend = (AttributePreviewTableCellRenderer) tbl.getCellRenderer(0, col);
+			
+			final int source = rend.getSourceIndex();
+			final int interaction = rend.getInteractionIndex();
+			final int target = rend.getTargetIndex();
+			
+			final boolean importFlag = rend.isImportFlag(col) || source == col || target == col || interaction == col;
+			checkBox.setSelected(importFlag);
+			checkBox.setText(val != null ? val.toString() : "");
+			
+			// Set icon
+			if (col == rend.getPrimaryKeyIndex()) {
+				iconLabel.setForeground(defForeground);
+				iconLabel.setText(PRIMARY_KEY.getText());
+			} else if (col == source) {
+				iconLabel.setForeground(SOURCE.getForeground());
+				iconLabel.setText(SOURCE.getText());
+			} else if (col == target) {
+				iconLabel.setForeground(TARGET.getForeground());
+				iconLabel.setText(TARGET.getText());
+			} else if (col == interaction) {
+				iconLabel.setForeground(INTERACTION.getForeground());
+				iconLabel.setText(INTERACTION.getText());
+			} else if (col == rend.getOntologyIndex()) {
+				iconLabel.setForeground(ONTOLOGY.getForeground());
+				iconLabel.setText(ONTOLOGY.getText());
+			} else if (rend.isAlias(col)) {
+				iconLabel.setForeground(ALIAS.getForeground());
+				iconLabel.setText(ALIAS.getText());
+			} else if (col == rend.getTaxonIndex()) {
+				iconLabel.setForeground(TAXON.getForeground());
+				iconLabel.setText(TAXON.getText());
+			} else {
+				iconLabel.setForeground(defForeground);
+				iconLabel.setText("");
+			}
+			
+			setBorder(col == 0 ? null : BORDER);
+			this.invalidate();
+
+			return this;
 		}
 
-		public void mouseExited(MouseEvent arg0) {
+		/*
+		private static ImageIcon getDataTypeIcon(byte dataType) {
+			ImageIcon dataTypeIcon = null;
+
+			if (dataType == String.class) { //CyAttributes.TYPE_STRING) {
+				dataTypeIcon = STRING_ICON.getIcon();
+			} else if (dataType == CyAttributes.TYPE_INTEGER) {
+				dataTypeIcon = INTEGER_ICON.getIcon();
+			} else if (dataType == CyAttributes.TYPE_FLOATING) {
+				dataTypeIcon = FLOAT_ICON.getIcon();
+			} else if (dataType == CyAttributes.TYPE_BOOLEAN) {
+				dataTypeIcon = BOOLEAN_ICON.getIcon();
+			} else if (dataType == CyAttributes.TYPE_SIMPLE_LIST) {
+				dataTypeIcon = LIST_ICON.getIcon();
+			}
+
+			return dataTypeIcon;
 		}
-
-		public void mousePressed(MouseEvent arg0) {
-		}
-
-		public void mouseReleased(MouseEvent arg0) {
-		}
-	}
-}
-
-class KeyAttributeListRenderer extends JLabel implements ListCellRenderer {
-	private static final Font KEY_LIST_FONT = new Font("Sans-Serif", Font.BOLD, 16);
-	private static final Color FONT_COLOR = Color.BLACK;
-
-	/**
-	 * Creates a new KeyAttributeListRenderer object.
-	 */
-	public KeyAttributeListRenderer() {
-	}
-
-	/**
-	 * DOCUMENT ME!
-	 * 
-	 * @param list
-	 *            DOCUMENT ME!
-	 * @param value
-	 *            DOCUMENT ME!
-	 * @param index
-	 *            DOCUMENT ME!
-	 * @param isSelected
-	 *            DOCUMENT ME!
-	 * @param cellHasFocus
-	 *            DOCUMENT ME!
-	 * 
-	 * @return DOCUMENT ME!
-	 */
-	public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected,
-			boolean cellHasFocus) {
-		setFont(KEY_LIST_FONT);
-		setForeground(FONT_COLOR);
-		setText(value.toString());
-
-		this.setOpaque(false);
-
-		return this;
-	}
-}
-
-class CentredBackgroundBorder implements Border {
-	private final BufferedImage image;
-
-	/**
-	 * Creates a new CentredBackgroundBorder object.
-	 * 
-	 * @param image
-	 *            DOCUMENT ME!
-	 */
-	public CentredBackgroundBorder(BufferedImage image) {
-		this.image = image;
-	}
-
-	/**
-	 * DOCUMENT ME!
-	 * 
-	 * @param c
-	 *            DOCUMENT ME!
-	 * @param g
-	 *            DOCUMENT ME!
-	 * @param x
-	 *            DOCUMENT ME!
-	 * @param y
-	 *            DOCUMENT ME!
-	 * @param width
-	 *            DOCUMENT ME!
-	 * @param height
-	 *            DOCUMENT ME!
-	 */
-	public void paintBorder(Component c, Graphics g, int x, int y, int width, int height) {
-		x += ((width - image.getWidth()) / 2);
-		y += ((height - image.getHeight()) / 2);
-		((Graphics2D) g).drawRenderedImage(image, AffineTransform.getTranslateInstance(x, y));
-	}
-
-	/**
-	 * DOCUMENT ME!
-	 * 
-	 * @param c
-	 *            DOCUMENT ME!
-	 * 
-	 * @return DOCUMENT ME!
-	 */
-	public Insets getBorderInsets(Component c) {
-		return new Insets(0, 0, 0, 0);
-	}
-
-	/**
-	 * DOCUMENT ME!
-	 * 
-	 * @return DOCUMENT ME!
-	 */
-	public boolean isBorderOpaque() {
-		return true;
+		*/
 	}
 }

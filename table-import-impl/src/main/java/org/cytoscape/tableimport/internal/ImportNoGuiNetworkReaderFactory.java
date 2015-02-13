@@ -26,7 +26,6 @@ package org.cytoscape.tableimport.internal;
 
 
 
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Properties;
@@ -35,12 +34,12 @@ import org.cytoscape.io.read.CyNetworkReader;
 import org.cytoscape.io.read.CyNetworkReaderManager;
 import org.cytoscape.io.util.StreamUtil;
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
-import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.property.CyProperty;
+import org.cytoscape.session.CyNetworkNaming;
+import org.cytoscape.tableimport.internal.ui.theme.IconManager;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
@@ -48,10 +47,9 @@ import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.work.AbstractTask;
-import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.AbstractTaskFactory;
+import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskMonitor;
-import org.cytoscape.session.CyNetworkNaming;
 
 
 
@@ -65,6 +63,7 @@ public class ImportNoGuiNetworkReaderFactory extends AbstractTaskFactory {
 	private final VisualMappingManager vmm;
 	private final CyNetworkViewFactory nullNetworkViewFactory;
 	private final CyNetworkReaderManager networkReaderManager;
+	private final IconManager iconManager;
 	private Properties props;
 
 	/**
@@ -73,8 +72,7 @@ public class ImportNoGuiNetworkReaderFactory extends AbstractTaskFactory {
 	public ImportNoGuiNetworkReaderFactory(final StreamUtil streamUtil, boolean fromURL,
 			final CyNetworkManager networkManager, final CyNetworkViewManager networkViewManager, CyProperty<Properties> props,
 			final CyNetworkNaming namingUtil, final VisualMappingManager vmm,final CyNetworkViewFactory nullNetworkViewFactory,
-			final CyNetworkReaderManager networkReaderManager)
-	{
+			final CyNetworkReaderManager networkReaderManager, final IconManager iconManager) {
 		this.streamUtil = streamUtil;
 		this.fromURL = fromURL;
 		this.networkManager = networkManager;
@@ -83,24 +81,21 @@ public class ImportNoGuiNetworkReaderFactory extends AbstractTaskFactory {
 		this.vmm = vmm;
 		this.nullNetworkViewFactory = nullNetworkViewFactory;
 		this.networkReaderManager = networkReaderManager;
+		this.iconManager = iconManager;
 		this.props = props.getProperties();
 	}
 
+	@Override
 	public TaskIterator createTaskIterator() {
-		
 		LoadNetworkReaderTask readerTask = new LoadNetworkReaderTask(networkReaderManager);
 		NetworkCollectionHelper networkCollectionHelperTask = new NetworkCollectionHelper(readerTask);
 		GenerateNetworkViewsTask generateViewTask = new GenerateNetworkViewsTask(readerTask,networkManager,networkViewManager,props,namingUtil,vmm,nullNetworkViewFactory);
 		
-		if(fromURL)
-		{
-			return new TaskIterator(new SelectURLTableTask(readerTask,streamUtil ),networkCollectionHelperTask,readerTask,generateViewTask);
+		if (fromURL) {
+			return new TaskIterator(new SelectURLTableTask(readerTask,streamUtil,iconManager),networkCollectionHelperTask,readerTask,generateViewTask);
+		} else {
+			return new TaskIterator(new SelectFileTableTask(readerTask,streamUtil,iconManager),networkCollectionHelperTask,readerTask,generateViewTask);
 		}
-		else
-		{
-			return new TaskIterator(new SelectFileTableTask(readerTask,streamUtil ),networkCollectionHelperTask,readerTask,generateViewTask);
-		}
-		
 	}
 	
 	class GenerateNetworkViewsTask extends AbstractTask  {

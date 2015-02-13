@@ -25,27 +25,20 @@ package org.cytoscape.tableimport.internal.tunable;
  */
 
 import java.awt.BorderLayout;
-import java.awt.LayoutManager;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-import javax.swing.GroupLayout;
 import javax.swing.JPanel;
-import javax.swing.GroupLayout.Alignment;
-import javax.swing.LayoutStyle;
 
 import org.cytoscape.model.CyTableManager;
-import org.cytoscape.tableimport.internal.reader.AttributeMappingParameters;
 import org.cytoscape.tableimport.internal.reader.NetworkTableMappingParameters;
 import org.cytoscape.tableimport.internal.ui.ImportTablePanel;
-import org.cytoscape.work.Tunable;
-import org.cytoscape.work.swing.AbstractGUITunableHandler;
-
+import org.cytoscape.tableimport.internal.ui.theme.IconManager;
 import org.cytoscape.tableimport.internal.util.CytoscapeServices;
 import org.cytoscape.util.swing.FileUtil;
-import java.util.Map;
-import java.util.HashMap;
+import org.cytoscape.work.Tunable;
+import org.cytoscape.work.swing.AbstractGUITunableHandler;
 
 public class NetworkTableMappingParametersHandler extends AbstractGUITunableHandler {
 
@@ -55,28 +48,29 @@ public class NetworkTableMappingParametersHandler extends AbstractGUITunableHand
 	private ImportTablePanel importTablePanel;
 	private NetworkTableMappingParameters ntmp;
 	private final FileUtil fileUtil;
+	private final IconManager iconManager;
     
 	protected NetworkTableMappingParametersHandler(Field field,Object instance, Tunable tunable, 
-			final int dialogType, final CyTableManager tableManager) {
+			final int dialogType, final CyTableManager tableManager, final IconManager iconManager) {
 		super(field, instance, tunable);
 		this.dialogType = dialogType;
 		this.tableManager = tableManager;
 		this.fileUtil = CytoscapeServices.fileUtil;
+		this.iconManager = iconManager;
 		init();
 	}
 	
-	
 	protected NetworkTableMappingParametersHandler(final Method getter, final Method setter, final Object instance, final Tunable tunable,
-			final int dialogType, final CyTableManager tableManager) {
+			final int dialogType, final CyTableManager tableManager, final IconManager iconManager) {
 		super(getter, setter, instance, tunable);
 		this.dialogType = dialogType;
 		this.tableManager = tableManager;
 		this.fileUtil = CytoscapeServices.fileUtil;
+		this.iconManager = iconManager;
 		init();
 	}
 	
 	private void init(){
-		
 		try {
 			ntmp = (NetworkTableMappingParameters) getValue();
 		} catch (IllegalAccessException e1) {
@@ -91,11 +85,12 @@ public class NetworkTableMappingParametersHandler extends AbstractGUITunableHand
 			importTablePanel =
 				new ImportTablePanel(dialogType, ntmp.is,
 				                     ntmp.fileType, null,null, null, null,
-				                     null, null, null, tableManager, fileUtil); 
+				                     null, null, null, tableManager, fileUtil, iconManager); 
 		} catch (Exception e) {
 			throw new IllegalStateException("Could not initialize ImportTablePanel.", e);
 		}
-		panel = new JPanel(new BorderLayout(10, 10));
+		
+		panel = new JPanel(new BorderLayout());
 		panel.add(importTablePanel, BorderLayout.CENTER);
 	}
 	
@@ -114,7 +109,5 @@ public class NetworkTableMappingParametersHandler extends AbstractGUITunableHand
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
 	}
-
 }

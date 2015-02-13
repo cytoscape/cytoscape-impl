@@ -24,12 +24,21 @@ package org.cytoscape.tableimport.internal;
  * #L%
  */
 
+import static org.cytoscape.io.DataCategory.NETWORK;
+import static org.cytoscape.io.DataCategory.TABLE;
+import static org.cytoscape.work.ServiceProperties.COMMAND;
+import static org.cytoscape.work.ServiceProperties.COMMAND_DESCRIPTION;
+import static org.cytoscape.work.ServiceProperties.COMMAND_NAMESPACE;
+
+import java.util.Properties;
+
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CyAction;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.io.BasicCyFileFilter;
-import org.cytoscape.io.read.*;
+import org.cytoscape.io.read.CyNetworkReaderManager;
+import org.cytoscape.io.read.InputStreamTaskFactory;
 import org.cytoscape.io.util.StreamUtil;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
@@ -46,6 +55,8 @@ import org.cytoscape.tableimport.internal.task.ImportOntologyAndAnnotationAction
 import org.cytoscape.tableimport.internal.tunable.AttributeMappingParametersHandlerFactory;
 import org.cytoscape.tableimport.internal.tunable.NetworkTableMappingParametersHandlerFactory;
 import org.cytoscape.tableimport.internal.ui.ImportTablePanel;
+import org.cytoscape.tableimport.internal.ui.theme.IconManager;
+import org.cytoscape.tableimport.internal.ui.theme.IconManagerImpl;
 import org.cytoscape.tableimport.internal.util.CytoscapeServices;
 import org.cytoscape.task.edit.ImportDataTableTaskFactory;
 import org.cytoscape.task.edit.MapGlobalToLocalTableTaskFactory;
@@ -59,14 +70,6 @@ import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.swing.DialogTaskManager;
 import org.cytoscape.work.swing.GUITunableHandlerFactory;
 import org.osgi.framework.BundleContext;
-
-import java.util.Properties;
-
-import static org.cytoscape.io.DataCategory.NETWORK;
-import static org.cytoscape.io.DataCategory.TABLE;
-import static org.cytoscape.work.ServiceProperties.COMMAND;
-import static org.cytoscape.work.ServiceProperties.COMMAND_DESCRIPTION;
-import static org.cytoscape.work.ServiceProperties.COMMAND_NAMESPACE;
 
 
 
@@ -99,6 +102,8 @@ public class CyActivator extends AbstractCyActivator {
         CytoscapeServices.cyEventHelper = getService(bc,CyEventHelper.class);
         CytoscapeServices.mapGlobalToLocalTableTaskFactory = getService(bc, MapGlobalToLocalTableTaskFactory.class);
         
+        final IconManager iconManager = new IconManagerImpl();
+        
         StreamUtil streamUtilServiceRef = getService(bc, StreamUtil.class);
         ImportDataTableTaskFactory importAttrTFServiceRef = getService(bc,ImportDataTableTaskFactory.class);
         VisualMappingManager visualMappingManagerServiceRef = getService(bc,VisualMappingManager.class);
@@ -116,7 +121,7 @@ public class CyActivator extends AbstractCyActivator {
         ImportAttributeTableReaderFactory importAttributeTableReaderFactory_xls = new ImportAttributeTableReaderFactory(attrsTableFilter_xls); //,".xls");
 
         // Action to add menu item to the Desktop Menu
-        ImportOntologyAndAnnotationAction ontologyAction = new ImportOntologyAndAnnotationAction();
+        ImportOntologyAndAnnotationAction ontologyAction = new ImportOntologyAndAnnotationAction(iconManager);
         WildCardCyFileFilter networkTableFilter_txt = new WildCardCyFileFilter(new String[]{"csv","tsv", "txt",""}, new String[]{"text/csv","text/tab-separated-values"},"Comma or Tab Separated Value Files",NETWORK,CytoscapeServices.streamUtil);
 		networkTableFilter_txt.setBlacklist("xml","rdf","owl","cys");
 		WildCardCyFileFilter networkTableFilter_xls = new WildCardCyFileFilter(new String[]{"xls","xlsx"}, new String[]{"application/excel"},"Excel Files",NETWORK,CytoscapeServices.streamUtil);
@@ -152,12 +157,12 @@ public class CyActivator extends AbstractCyActivator {
 
         int dialogTypeAttribute = ImportTablePanel.SIMPLE_ATTRIBUTE_IMPORT;
         CyTableManager tableManager= CytoscapeServices.cyTableManager;
-        AttributeMappingParametersHandlerFactory attributeMappingParametersHandlerFactory = new AttributeMappingParametersHandlerFactory(dialogTypeAttribute, tableManager);
+        AttributeMappingParametersHandlerFactory attributeMappingParametersHandlerFactory = new AttributeMappingParametersHandlerFactory(dialogTypeAttribute, tableManager, iconManager);
         registerService(bc,attributeMappingParametersHandlerFactory,GUITunableHandlerFactory.class, new Properties());
 
         int dialogTypeNetwork = ImportTablePanel.NETWORK_IMPORT;
         CyTableManager tableManagerNetwork= CytoscapeServices.cyTableManager;
-        NetworkTableMappingParametersHandlerFactory networkTableMappingParametersHandlerFactory = new NetworkTableMappingParametersHandlerFactory(dialogTypeNetwork, tableManagerNetwork);
+        NetworkTableMappingParametersHandlerFactory networkTableMappingParametersHandlerFactory = new NetworkTableMappingParametersHandlerFactory(dialogTypeNetwork, tableManagerNetwork, iconManager);
         registerService(bc,networkTableMappingParametersHandlerFactory,GUITunableHandlerFactory.class, new Properties());
 
         //Remove load table from command this option should be available in import command. To be removed if everything works as expected
@@ -179,7 +184,7 @@ public class CyActivator extends AbstractCyActivator {
         importFileTablesProps.setProperty(COMMAND, "import file");
         importFileTablesProps.setProperty(COMMAND_NAMESPACE, "table");
         importFileTablesProps.setProperty(COMMAND_DESCRIPTION,"Import a table from a file");
-        TaskFactory importFileTableFactory = new ImportNoGuiTableReaderFactory(streamUtilServiceRef,importAttrTFServiceRef,false);
+        TaskFactory importFileTableFactory = new ImportNoGuiTableReaderFactory(streamUtilServiceRef,importAttrTFServiceRef,false,iconManager);
         // Register the service as a TaskFactory for commands
         registerService(bc,importFileTableFactory, TaskFactory.class, importFileTablesProps);
 
@@ -187,7 +192,7 @@ public class CyActivator extends AbstractCyActivator {
         importURLTablesProps.setProperty(COMMAND, "import url");
         importURLTablesProps.setProperty(COMMAND_NAMESPACE, "table");
         importURLTablesProps.setProperty(COMMAND_DESCRIPTION,"Import a table from a URL");
-        TaskFactory importURLTableFactory = new ImportNoGuiTableReaderFactory(streamUtilServiceRef,importAttrTFServiceRef,true);
+        TaskFactory importURLTableFactory = new ImportNoGuiTableReaderFactory(streamUtilServiceRef,importAttrTFServiceRef,true,iconManager);
         // Register the service as a TaskFactory for commands
         registerService(bc,importURLTableFactory, TaskFactory.class, importURLTablesProps);
 
@@ -197,7 +202,7 @@ public class CyActivator extends AbstractCyActivator {
         importFileNetworksProps.setProperty(COMMAND_DESCRIPTION,"Import a network from a file");
         TaskFactory importFileNetworkFactory = new ImportNoGuiNetworkReaderFactory(streamUtilServiceRef,false,CytoscapeServices.cyNetworkManager,
                 CytoscapeServices.cyNetworkViewManager,CytoscapeServices.cyProperties,CytoscapeServices.cyNetworkNaming,
-                visualMappingManagerServiceRef,nullNetworkViewFactory,networkReaderManagerServiceRef);
+                visualMappingManagerServiceRef,nullNetworkViewFactory,networkReaderManagerServiceRef,iconManager);
         // Register the service as a TaskFactory for commands
         registerService(bc,importFileNetworkFactory, TaskFactory.class, importFileNetworksProps);
 
@@ -207,7 +212,7 @@ public class CyActivator extends AbstractCyActivator {
         importURLNetworksProps.setProperty(COMMAND_DESCRIPTION,"Import a network from a URL");
         TaskFactory importURLNetworkFactory = new ImportNoGuiNetworkReaderFactory(streamUtilServiceRef,true,CytoscapeServices.cyNetworkManager,
                 CytoscapeServices.cyNetworkViewManager,CytoscapeServices.cyProperties,CytoscapeServices.cyNetworkNaming,
-                visualMappingManagerServiceRef,nullNetworkViewFactory, networkReaderManagerServiceRef);
+                visualMappingManagerServiceRef,nullNetworkViewFactory, networkReaderManagerServiceRef,iconManager);
         // Register the service as a TaskFactory for commands
         registerService(bc,importURLNetworkFactory, TaskFactory.class, importURLNetworksProps);
     }

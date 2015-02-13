@@ -24,13 +24,12 @@ package org.cytoscape.tableimport.internal.tunable;
  * #L%
  */
 
-import java.io.File;
-import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.tableimport.internal.reader.AttributeMappingParameters;
+import org.cytoscape.tableimport.internal.ui.theme.IconManager;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.swing.GUITunableHandler;
 import org.cytoscape.work.swing.GUITunableHandlerFactory;
@@ -39,25 +38,28 @@ public class AttributeMappingParametersHandlerFactory implements GUITunableHandl
 	
 	private final int dialogType;
     private final CyTableManager tableManager;
+	private final IconManager iconManager;
     
-	public AttributeMappingParametersHandlerFactory( final int dialogType, final CyTableManager tableManager) {
+	public AttributeMappingParametersHandlerFactory(final int dialogType, final CyTableManager tableManager,
+			final IconManager iconManager) {
 		this.dialogType = dialogType;
 		this.tableManager = tableManager;
-		
+		this.iconManager = iconManager;
 	}
 
+	@Override
 	public GUITunableHandler createTunableHandler(Field field, Object instance, Tunable t) {
 		if (!AttributeMappingParameters.class.isAssignableFrom(field.getType()))
 			return null;
 
-		return new AttributeMappingParametersHandler(field, instance, t, dialogType, tableManager);
+		return new AttributeMappingParametersHandler(field, instance, t, dialogType, tableManager, iconManager);
 	}
 
 	public GUITunableHandler createTunableHandler(Method getter, Method setter, Object instance, Tunable tunable) {
 		if (!AttributeMappingParameters.class.isAssignableFrom(getter.getReturnType()))
 			return null;
 
-		return new AttributeMappingParametersHandler(getter, setter, instance, tunable, dialogType, tableManager);
+		return new AttributeMappingParametersHandler(getter, setter, instance, tunable, dialogType, tableManager,
+				iconManager);
 	}
-
 }
