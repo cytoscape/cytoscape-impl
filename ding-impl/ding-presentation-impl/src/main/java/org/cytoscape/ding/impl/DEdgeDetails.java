@@ -112,7 +112,7 @@ final class DEdgeDetails extends EdgeDetails {
 	String m_labelTextDefault;
 	Font m_labelFontDefault = EDGE_LABEL_FONT_FACE.getDefault();
 	Paint m_labelPaintDefault = EDGE_LABEL_COLOR.getDefault();
-	Double m_labelWidthDefault;
+	Double m_labelWidthDefault = DVisualLexicon.EDGE_LABEL_WIDTH.getDefault();
 	Paint m_selectedPaintDefault = EDGE_SELECTED_PAINT.getDefault();
 	Paint m_unselectedPaintDefault = EDGE_UNSELECTED_PAINT.getDefault();
 	Paint m_colorLowDetailDefault = EDGE_UNSELECTED_PAINT.getDefault();
@@ -880,11 +880,8 @@ final class DEdgeDetails extends EdgeDetails {
 
 	@Override
 	public double getLabelWidth(final CyEdge edge) {
-		// Check bypass
-		final DEdgeView dev = dGraphView.getDEdgeView(edge);
-		// TODO: Edge Label width?
-
 		final Double width = m_labelWidths.get(edge);
+		
 		if (width == null) {
 			if (m_labelWidthDefault == null)
 				return super.getLabelWidth(edge);
@@ -897,11 +894,11 @@ final class DEdgeDetails extends EdgeDetails {
 
 	void setLabelWidthDefault(double width) {
 		m_labelWidthDefault = width;
+		defaultValues.put(DVisualLexicon.EDGE_LABEL_WIDTH, m_labelWidthDefault);
 	}
 
-	/*
-	 * A negative width value has the special meaning to remove overridden
-	 * width.
+	/**
+	 * A negative width value has the special meaning to remove overridden width.
 	 */
 	void overrideLabelWidth(final CyEdge edge, final double width) {
 		if ((width < 0.0) || (width == super.getLabelWidth(edge)))

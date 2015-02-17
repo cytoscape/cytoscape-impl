@@ -557,7 +557,6 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 		}
 	}
 
-
 	@Override
 	public void setTransparency(final int trans) {
 		synchronized (graphView.m_lock) {
@@ -686,6 +685,8 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 			setSourceEdgeEnd(DArrowShape.parseArrowText(shapeID).getRendererTypeID());
 		} else if (vp == BasicVisualLexicon.EDGE_LABEL) {
 			setText(value.toString());
+		} else if (vp == BasicVisualLexicon.EDGE_LABEL_WIDTH) {
+			setLabelWidth(((Number) value).doubleValue());
 		} else if (vp == DVisualLexicon.EDGE_TOOLTIP) {
 			setToolTip(value.toString());
 		} else if (vp == DVisualLexicon.EDGE_LABEL_FONT_FACE) {
