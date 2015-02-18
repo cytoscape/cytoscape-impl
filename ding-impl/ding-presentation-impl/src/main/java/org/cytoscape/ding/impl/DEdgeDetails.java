@@ -880,6 +880,12 @@ final class DEdgeDetails extends EdgeDetails {
 
 	@Override
 	public double getLabelWidth(final CyEdge edge) {
+		// Check bypass first
+		final DEdgeView dev = dGraphView.getDEdgeView(edge);
+		
+		if (dev.isValueLocked(DVisualLexicon.EDGE_LABEL_WIDTH))
+			return dev.getVisualProperty(DVisualLexicon.EDGE_LABEL_WIDTH);
+		
 		final Double width = m_labelWidths.get(edge);
 		
 		if (width == null) {

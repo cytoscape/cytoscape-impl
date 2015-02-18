@@ -908,13 +908,20 @@ public class DNodeDetails extends NodeDetails {
 
 	@Override
 	public double getLabelWidth(CyNode node) {
+		// Check bypass first
+		final DNodeView dnv = dGraphView.getDNodeView(node);
+		
+		if (dnv.isValueLocked(DVisualLexicon.NODE_LABEL_WIDTH))
+			return dnv.getVisualProperty(DVisualLexicon.NODE_LABEL_WIDTH);
+		
 		final Double o = m_labelWidths.get(node);
 
-		if (o == null)
+		if (o == null) {
 			if (m_labelWidthDefault == null)
 				return super.getLabelWidth(node);
 			else
 				return m_labelWidthDefault.doubleValue();
+		}
 
 		return o;
 	}
