@@ -192,7 +192,7 @@ public class FileHandler extends AbstractGUITunableHandler  implements DirectlyP
 		//titleSeparator = new JSeparator();
 		titleLabel = new JLabel();
 		titleLabel.setBorder(BorderFactory.createEmptyBorder(5, 0, 1, 5));
-		image = new ImageIcon(getClass().getResource("/images/ximian/stock_open.png"));
+		image = new ImageIcon(getClass().getResource("/images/open-file-24.png"));
 		fileTextField = new JTextField();
 		fileTextField.setEditable(false);
 		fileTextField.setBackground(Color.LIGHT_GRAY);

@@ -99,18 +99,18 @@ public class CreateNewNetworkPanel extends AbstractWelcomeScreenChildPanel {
 		BufferedImage loadImage = null;
 
 		try {
-			newImage = ImageIO.read(WelcomeScreenDialog.class.getClassLoader().getResource("images/Icons/empty.png"));
+			newImage = ImageIO.read(WelcomeScreenDialog.class.getClassLoader().getResource("images/Icons/new-empty-32.png"));
 		} catch (IOException e) {
 			logger.warn("Could not create Icon.", e);
 		}
 
 		try {
-			databaseImage = ImageIO.read(WelcomeScreenDialog.class.getClassLoader().getResource("images/Icons/remote.png"));
+			databaseImage = ImageIO.read(WelcomeScreenDialog.class.getClassLoader().getResource("images/Icons/import-net-db-32.png"));
 		} catch (IOException e) {
 			logger.warn("Could not create Icon.", e);
 		}
 		try {
-			loadImage = ImageIO.read(WelcomeScreenDialog.class.getClassLoader().getResource("images/Icons/open.png"));
+			loadImage = ImageIO.read(WelcomeScreenDialog.class.getClassLoader().getResource("images/Icons/import-net-32.png"));
 		} catch (IOException e) {
 			logger.warn("Could not create Icon.", e);
 		}
@@ -133,21 +133,21 @@ public class CreateNewNetworkPanel extends AbstractWelcomeScreenChildPanel {
 		// Species ICON
 		try {
 			SPECIES_ICON.put("H. sapiens", new ImageIcon(ImageIO.read(
-					WelcomeScreenDialog.class.getClassLoader().getResource("images/Icons/taxonomy/Homo_sapiens_NS.png"))));
+					WelcomeScreenDialog.class.getClassLoader().getResource("images/Icons/taxonomy/human-32.png"))));
 			SPECIES_ICON.put("S. cerevisiae", new ImageIcon(ImageIO.read(
-					WelcomeScreenDialog.class.getClassLoader().getResource("images/Icons/taxonomy/Saccharomyces_cerevisiae_NS.png"))));
+					WelcomeScreenDialog.class.getClassLoader().getResource("images/Icons/taxonomy/yeast-32.png"))));
 			SPECIES_ICON.put("D. melanogaster", new ImageIcon(ImageIO.read(
-					WelcomeScreenDialog.class.getClassLoader().getResource("images/Icons/taxonomy/Drosophila_melanogaster_NS.png"))));
+					WelcomeScreenDialog.class.getClassLoader().getResource("images/Icons/taxonomy/fly-32.png"))));
 			SPECIES_ICON.put("M. musculus", new ImageIcon(ImageIO.read(
-					WelcomeScreenDialog.class.getClassLoader().getResource("images/Icons/taxonomy/Mus_musculus_NS.png"))));
+					WelcomeScreenDialog.class.getClassLoader().getResource("images/Icons/taxonomy/mouse-32.png"))));
 			SPECIES_ICON.put("C. elegans", new ImageIcon(ImageIO.read(
-					WelcomeScreenDialog.class.getClassLoader().getResource("images/Icons/taxonomy/Caenorhabditis_elegans_NS.png"))));
+					WelcomeScreenDialog.class.getClassLoader().getResource("images/Icons/taxonomy/worm-32.png"))));
 			SPECIES_ICON.put("A. thaliana", new ImageIcon(ImageIO.read(
-					WelcomeScreenDialog.class.getClassLoader().getResource("images/Icons/taxonomy/Arabidopsis_thaliana_NS.png"))));
+					WelcomeScreenDialog.class.getClassLoader().getResource("images/Icons/taxonomy/plant-32.png"))));
 			SPECIES_ICON.put("D. rerio", new ImageIcon(ImageIO.read(
-					WelcomeScreenDialog.class.getClassLoader().getResource("images/Icons/taxonomy/Danio_rerio_NS.png"))));
+					WelcomeScreenDialog.class.getClassLoader().getResource("images/Icons/taxonomy/fish-32.png"))));
 			SPECIES_ICON.put("E. coli", new ImageIcon(ImageIO.read(
-					WelcomeScreenDialog.class.getClassLoader().getResource("images/Icons/taxonomy/Escherichia_coli_NS.png"))));
+					WelcomeScreenDialog.class.getClassLoader().getResource("images/Icons/taxonomy/bacteria-32.png"))));
 		} catch (IOException e) {
 			logger.warn("Could not create Icon.", e);
 		}
