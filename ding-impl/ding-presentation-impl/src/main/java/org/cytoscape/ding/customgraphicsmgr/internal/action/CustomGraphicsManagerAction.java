@@ -32,7 +32,7 @@ import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
 import org.cytoscape.ding.customgraphicsmgr.internal.ui.CustomGraphicsBrowser;
 import org.cytoscape.ding.customgraphicsmgr.internal.ui.CustomGraphicsManagerDialog;
-import org.cytoscape.ding.internal.util.IconManager;
+import org.cytoscape.util.swing.IconManager;
 
 
 public class CustomGraphicsManagerAction extends AbstractCyAction {

@@ -25,10 +25,10 @@ package org.cytoscape.internal.view;
  */
 
 import java.awt.BorderLayout;
-import java.awt.GridBagLayout;
-import java.awt.GridBagConstraints;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.Toolkit;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -64,6 +64,7 @@ import org.cytoscape.session.events.SessionLoadedEvent;
 import org.cytoscape.session.events.SessionLoadedListener;
 import org.cytoscape.session.events.SessionSavedEvent;
 import org.cytoscape.session.events.SessionSavedListener;
+import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.work.swing.DialogTaskManager;
 import org.cytoscape.work.swing.TaskStatusPanelFactory;
 import org.slf4j.Logger;

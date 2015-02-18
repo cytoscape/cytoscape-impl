@@ -27,7 +27,6 @@ import org.cytoscape.filter.internal.view.DragHandler;
 import org.cytoscape.filter.internal.view.DynamicComboBoxModel;
 import org.cytoscape.filter.internal.view.FilterPanel;
 import org.cytoscape.filter.internal.view.FilterPanelController;
-import org.cytoscape.filter.internal.view.IconManager;
 import org.cytoscape.filter.internal.view.Matcher;
 import org.cytoscape.filter.internal.view.TransformerElementViewModel;
 import org.cytoscape.filter.internal.view.ViewUtil;
@@ -36,6 +35,7 @@ import org.cytoscape.filter.model.CompositeFilter.Type;
 import org.cytoscape.filter.model.Filter;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.util.swing.IconManager;
 
 @SuppressWarnings("serial")
 public class CompositeFilterPanel extends JPanel {

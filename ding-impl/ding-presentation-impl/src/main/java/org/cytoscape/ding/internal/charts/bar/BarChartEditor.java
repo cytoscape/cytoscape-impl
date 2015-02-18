@@ -29,8 +29,8 @@ import org.cytoscape.ding.internal.charts.AbstractChartEditor;
 import org.cytoscape.ding.internal.charts.ColorSchemeEditor;
 import org.cytoscape.ding.internal.charts.bar.BarChart.BarChartType;
 import org.cytoscape.ding.internal.charts.util.ColorGradient;
-import org.cytoscape.ding.internal.util.IconManager;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.view.presentation.property.values.CyColumnIdentifierFactory;
 
 public class BarChartEditor extends AbstractChartEditor<BarChart> {

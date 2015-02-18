@@ -90,7 +90,6 @@ import org.cytoscape.internal.view.CytoscapeMenuBar;
 import org.cytoscape.internal.view.CytoscapeMenuPopulator;
 import org.cytoscape.internal.view.CytoscapeMenus;
 import org.cytoscape.internal.view.CytoscapeToolBar;
-import org.cytoscape.internal.view.IconManagerImpl;
 import org.cytoscape.internal.view.MacFullScreenEnabler;
 import org.cytoscape.internal.view.NetworkPanel;
 import org.cytoscape.internal.view.NetworkViewManager;
@@ -122,6 +121,7 @@ import org.cytoscape.task.TableTaskFactory;
 import org.cytoscape.task.edit.EditNetworkTitleTaskFactory;
 import org.cytoscape.task.write.SaveSessionAsTaskFactory;
 import org.cytoscape.util.swing.FileUtil;
+import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.OpenBrowser;
 import org.cytoscape.view.layout.CyLayoutAlgorithm;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
@@ -146,6 +146,7 @@ import org.slf4j.LoggerFactory;
  *
  */
 public class CyActivator extends AbstractCyActivator {
+	
 	private static final String CONTEXT_MENU_FILTER = "(" + ServiceProperties.IN_NETWORK_PANEL_CONTEXT_MENU + "=true)";
 
 	/**
@@ -177,6 +178,7 @@ public class CyActivator extends AbstractCyActivator {
 		PanelTaskManager panelTaskManagerServiceRef = getService(bc, PanelTaskManager.class);
 		TaskStatusPanelFactory taskStatusPanelFactoryRef = getService(bc, TaskStatusPanelFactory.class);
 		CyColumnIdentifierFactory cyColumnIdentifierFactory = getService(bc, CyColumnIdentifierFactory.class);
+		IconManager iconManagerServiceRef = getService(bc, IconManager.class);
 
 		RenderingEngineFactory dingNavigationPresentationFactoryServiceRef = getService(bc,
 		                                                                                RenderingEngineFactory.class,
@@ -238,8 +240,6 @@ public class CyActivator extends AbstractCyActivator {
 		                                             dynamicTaskFactoryProvisionerServiceRef,
 		                                             editNetworkTitleTFServiceRef);
 
-		final IconManagerImpl iconManager = new IconManagerImpl();
-		
 		CytoscapeDesktop cytoscapeDesktop = new CytoscapeDesktop(cytoscapeMenus,
 		                                                         networkViewManager,
 		                                                         cytoscapeShutdownServiceRef,
@@ -247,7 +247,7 @@ public class CyActivator extends AbstractCyActivator {
 		                                                         cyServiceRegistrarServiceRef,
 		                                                         dialogTaskManagerServiceRef,
 		                                                         taskStatusPanelFactoryRef,
-		                                                         iconManager);
+		                                                         iconManagerServiceRef);
 
 		CyDesktopManager cyDesktopManager = new CyDesktopManager(cytoscapeDesktop, networkViewManager);
 

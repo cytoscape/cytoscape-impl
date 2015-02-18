@@ -32,10 +32,10 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import org.cytoscape.io.util.StreamUtil;
-import org.cytoscape.tableimport.internal.ui.theme.IconManager;
-import org.cytoscape.work.TaskMonitor;
-import org.cytoscape.work.Task;
+import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.Task;
+import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

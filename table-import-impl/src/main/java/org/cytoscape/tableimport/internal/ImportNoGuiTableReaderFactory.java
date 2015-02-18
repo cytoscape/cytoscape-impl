@@ -25,8 +25,8 @@ package org.cytoscape.tableimport.internal;
  */
 
 import org.cytoscape.io.util.StreamUtil;
-import org.cytoscape.tableimport.internal.ui.theme.IconManager;
 import org.cytoscape.task.edit.ImportDataTableTaskFactory;
+import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.TaskIterator;
 

@@ -47,7 +47,7 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
 import org.cytoscape.ding.customgraphics.bitmap.URLImageCustomGraphics;
-import org.cytoscape.ding.internal.util.IconManager;
+import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -113,7 +113,7 @@ public class CustomGraphicsManagerDialog extends javax.swing.JDialog {
 		
 		setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 
-		deleteButton.setText(IconManager.ICON_TRASH);
+		deleteButton.setText(IconManager.ICON_TRASH_O);
 		deleteButton.setFont(iconManager.getIconFont(16.0f));
 		deleteButton.setToolTipText("Remove Selected Graphics");
 		deleteButton.addActionListener(new ActionListener() {
@@ -123,7 +123,7 @@ public class CustomGraphicsManagerDialog extends javax.swing.JDialog {
 			}
 		});
 
-		addButton.setText(IconManager.ICON_FOLDER_OPEN_ALT);
+		addButton.setText(IconManager.ICON_FOLDER_OPEN_O);
 		addButton.setFont(iconManager.getIconFont(16.0f));
 		addButton.setToolTipText("Add Image(s)");
 		addButton.addActionListener(new ActionListener() {

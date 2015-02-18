@@ -24,6 +24,7 @@ import org.cytoscape.filter.model.NamedTransformer;
 import org.cytoscape.filter.model.Transformer;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.work.TaskManager;
 
 public class TransformerPanelController extends AbstractPanelController<TransformerElement, TransformerPanel> {

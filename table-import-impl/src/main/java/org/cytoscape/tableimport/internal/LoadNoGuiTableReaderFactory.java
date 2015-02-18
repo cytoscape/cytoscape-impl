@@ -29,7 +29,7 @@ import org.cytoscape.io.read.CyTableReader;
 import org.cytoscape.io.util.StreamUtil;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableManager;
-import org.cytoscape.tableimport.internal.ui.theme.IconManager;
+import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.TaskIterator;

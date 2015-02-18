@@ -34,13 +34,13 @@ import javax.swing.border.Border;
 import org.cytoscape.ding.customgraphics.AbstractCustomGraphics2;
 import org.cytoscape.ding.customgraphics.ColorScheme;
 import org.cytoscape.ding.internal.charts.util.ColorUtil;
-import org.cytoscape.ding.internal.util.IconManager;
 import org.cytoscape.ding.internal.util.IconUtil;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
+import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.view.presentation.property.values.CyColumnIdentifier;
 
 public class ColorSchemeEditor<T extends AbstractCustomGraphics2<?>> extends JPanel {

@@ -24,7 +24,7 @@ package org.cytoscape.browser.internal;
  * #L%
  */
 
-import static org.cytoscape.browser.internal.IconManager.ICON_COG;
+import static org.cytoscape.util.swing.IconManager.ICON_COG;
 
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
@@ -69,6 +69,7 @@ import org.cytoscape.model.events.TableAddedEvent;
 import org.cytoscape.model.events.TableAddedListener;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.destroy.DeleteTableTaskFactory;
+import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.work.swing.DialogTaskManager;
 
 

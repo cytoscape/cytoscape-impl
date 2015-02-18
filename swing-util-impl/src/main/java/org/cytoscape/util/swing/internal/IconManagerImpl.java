@@ -1,8 +1,10 @@
-package org.cytoscape.ding.internal.util;
+package org.cytoscape.util.swing.internal;
 
 import java.awt.Font;
 import java.awt.FontFormatException;
 import java.io.IOException;
+
+import org.cytoscape.util.swing.IconManager;
 
 public class IconManagerImpl implements IconManager {
 
@@ -12,9 +14,9 @@ public class IconManagerImpl implements IconManager {
 		try {
 			iconFont = Font.createFont(Font.TRUETYPE_FONT, getClass().getResourceAsStream("/fonts/fontawesome-webfont.ttf"));
 		} catch (FontFormatException e) {
-			throw new RuntimeException(e);
+			throw new RuntimeException();
 		} catch (IOException e) {
-			throw new RuntimeException(e);
+			throw new RuntimeException();
 		}
 	}
 	

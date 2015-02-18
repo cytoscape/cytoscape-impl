@@ -28,6 +28,8 @@ import java.awt.Color;
 
 import javax.swing.UIManager;
 
+import org.cytoscape.util.swing.IconManager;
+
 /**
  * Provides color and icon text (Font Awesome) for imported columns that have a special meaning.
  */
@@ -43,7 +45,7 @@ public enum SourceColumnSemantics {
 	// Color Brewer - 3-class Dark2 (qualitative):
 	SOURCE(new Color(117, 112, 179), IconManager.ICON_CIRCLE), 
 	INTERACTION(new Color(217, 95, 2), IconManager.ICON_PLAY),
-	TARGET(new Color(27, 158, 119), IconManager.ICON_BULLSEYE);
+	TARGET(new Color(27, 158, 119), IconManager.ICON_DOT_CIRCLE_O);
 	
 	private final Color foreground;
 	private final String text;

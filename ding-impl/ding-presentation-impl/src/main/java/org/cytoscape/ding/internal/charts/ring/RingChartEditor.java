@@ -14,7 +14,7 @@ import javax.swing.JTextField;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.ding.internal.charts.AbstractChartEditor;
 import org.cytoscape.ding.internal.charts.pie.PieChart;
-import org.cytoscape.ding.internal.util.IconManager;
+import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.view.presentation.property.values.CyColumnIdentifierFactory;
 
 public class RingChartEditor extends AbstractChartEditor<RingChart> {

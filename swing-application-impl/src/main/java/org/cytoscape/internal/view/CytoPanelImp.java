@@ -24,9 +24,9 @@ package org.cytoscape.internal.view;
  * #L%
  */
 
-import static org.cytoscape.internal.view.IconManager.ICON_CHECK_EMPTY;
-import static org.cytoscape.internal.view.IconManager.ICON_PUSHPIN;
-import static org.cytoscape.internal.view.IconManager.ICON_REMOVE;
+import static org.cytoscape.util.swing.IconManager.ICON_SQUARE_O;
+import static org.cytoscape.util.swing.IconManager.ICON_THUMB_TACK;
+import static org.cytoscape.util.swing.IconManager.ICON_REMOVE;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -67,6 +67,7 @@ import org.cytoscape.application.swing.CytoPanelState;
 import org.cytoscape.application.swing.events.CytoPanelComponentSelectedEvent;
 import org.cytoscape.application.swing.events.CytoPanelStateChangedEvent;
 import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.util.swing.IconManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -601,7 +602,7 @@ public class CytoPanelImp extends JPanel implements CytoPanel, ChangeListener {
 	 */
 	private void initButtons() {
 		// Create Float / Dock Button
-		floatButton = new JButton(ICON_CHECK_EMPTY);
+		floatButton = new JButton(ICON_SQUARE_O);
 		floatButton.setToolTipText(TOOL_TIP_FLOAT);
 		styleButton(floatButton);
 		floatButton.setFont(iconManager.getIconFont(12));
@@ -659,7 +660,7 @@ public class CytoPanelImp extends JPanel implements CytoPanel, ChangeListener {
 			externalWindow.setTitle(getTitle());
 
 			// set proper button icon/text
-			floatButton.setText(ICON_PUSHPIN);
+			floatButton.setText(ICON_THUMB_TACK);
 			floatButton.setToolTipText(TOOL_TIP_DOCK);
 
 			// set float label text

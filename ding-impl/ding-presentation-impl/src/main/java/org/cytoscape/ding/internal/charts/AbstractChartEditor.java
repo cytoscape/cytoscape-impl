@@ -88,7 +88,6 @@ import org.cytoscape.ding.customgraphics.ColorScheme;
 import org.cytoscape.ding.customgraphics.Orientation;
 import org.cytoscape.ding.internal.charts.heatmap.HeatMapChart;
 import org.cytoscape.ding.internal.charts.util.ColorUtil;
-import org.cytoscape.ding.internal.util.IconManager;
 import org.cytoscape.ding.internal.util.SortedListModel;
 import org.cytoscape.ding.internal.util.SortedListModel.SortOrder;
 import org.cytoscape.model.CyColumn;
@@ -97,6 +96,7 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
+import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.view.presentation.property.values.CyColumnIdentifier;
 import org.cytoscape.view.presentation.property.values.CyColumnIdentifierFactory;
 
@@ -1414,7 +1414,7 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 		
 		private JButton getAddAllBtn() {
 			if (addAllBtn == null) {
-				addAllBtn = new JButton(IconManager.ICON_DOUBLE_ANGLE_RIGHT);
+				addAllBtn = new JButton(IconManager.ICON_ANGLE_DOUBLE_RIGHT);
 				addAllBtn.setFont(iconMgr.getIconFont(14.0f));
 				addAllBtn.setToolTipText("Add All");
 				
@@ -1448,7 +1448,7 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 		
 		private JButton getRemoveAllBtn() {
 			if (removeAllBtn == null) {
-				removeAllBtn = new JButton(IconManager.ICON_DOUBLE_ANGLE_LEFT);
+				removeAllBtn = new JButton(IconManager.ICON_ANGLE_DOUBLE_LEFT);
 				removeAllBtn.setFont(iconMgr.getIconFont(14.0f));
 				removeAllBtn.setToolTipText("Remove All");
 				

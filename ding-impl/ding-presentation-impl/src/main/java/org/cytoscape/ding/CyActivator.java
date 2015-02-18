@@ -116,8 +116,6 @@ import org.cytoscape.ding.internal.charts.pie.PieChartFactory;
 import org.cytoscape.ding.internal.charts.ring.RingChartFactory;
 import org.cytoscape.ding.internal.gradients.linear.LinearGradientFactory;
 import org.cytoscape.ding.internal.gradients.radial.RadialGradientFactory;
-import org.cytoscape.ding.internal.util.IconManager;
-import org.cytoscape.ding.internal.util.IconManagerImpl;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkTableManager;
@@ -134,6 +132,7 @@ import org.cytoscape.task.NetworkTaskFactory;
 import org.cytoscape.task.NetworkViewLocationTaskFactory;
 import org.cytoscape.task.NetworkViewTaskFactory;
 import org.cytoscape.task.NodeViewTaskFactory;
+import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.VisualLexicon;
@@ -169,8 +168,6 @@ import org.osgi.framework.BundleContext;
 
 
 public class CyActivator extends AbstractCyActivator {
-	
-	final IconManager iconManager = new IconManagerImpl();
 	
 	public CyActivator() {
 		super();
@@ -596,6 +593,7 @@ public class CyActivator extends AbstractCyActivator {
 		CyApplicationConfiguration cyApplicationConfigurationServiceRef = getService(bc,
 				CyApplicationConfiguration.class);
 		CyEventHelper eventHelperServiceRef = getService(bc, CyEventHelper.class);
+		IconManager iconManagerServiceRef = getService(bc, IconManager.class);
 
 		VisualMappingManager vmmServiceRef = getService(bc, VisualMappingManager.class);
 		
@@ -606,7 +604,7 @@ public class CyActivator extends AbstractCyActivator {
 		registerAllServices(bc, browser, new Properties());
 
 		CustomGraphicsManagerAction customGraphicsManagerAction = new CustomGraphicsManagerAction(
-				customGraphicsManager, cyApplicationManagerServiceRef, browser, iconManager);
+				customGraphicsManager, cyApplicationManagerServiceRef, browser, iconManagerServiceRef);
 
 		registerAllServices(bc, customGraphicsManager, new Properties());
 		registerService(bc, customGraphicsManagerAction, CyAction.class, new Properties());
@@ -639,26 +637,27 @@ public class CyActivator extends AbstractCyActivator {
 		// Register Chart Factories
 		final CyApplicationManager cyApplicationManagerServiceRef = getService(bc, CyApplicationManager.class);
 		final CyColumnIdentifierFactory colIdFactory = getService(bc, CyColumnIdentifierFactory.class);
+		final IconManager iconManagerServiceRef = getService(bc, IconManager.class);
 		
 		final Properties factoryProps = new Properties();
 		factoryProps.setProperty(CyCustomGraphics2Factory.GROUP, CyCustomGraphics2Manager.GROUP_CHARTS);
 		{
-			final BarChartFactory factory = new BarChartFactory(cyApplicationManagerServiceRef, iconManager, colIdFactory);
+			final BarChartFactory factory = new BarChartFactory(cyApplicationManagerServiceRef, iconManagerServiceRef, colIdFactory);
 			registerService(bc, factory, CyCustomGraphics2Factory.class, factoryProps);
 		}{
-			final BoxChartFactory factory = new BoxChartFactory(cyApplicationManagerServiceRef, iconManager, colIdFactory);
+			final BoxChartFactory factory = new BoxChartFactory(cyApplicationManagerServiceRef, iconManagerServiceRef, colIdFactory);
 			registerService(bc, factory, CyCustomGraphics2Factory.class, factoryProps);
 		}{
-			final PieChartFactory factory = new PieChartFactory(cyApplicationManagerServiceRef, iconManager, colIdFactory);
+			final PieChartFactory factory = new PieChartFactory(cyApplicationManagerServiceRef, iconManagerServiceRef, colIdFactory);
 			registerService(bc, factory, CyCustomGraphics2Factory.class, factoryProps);
 		}{
-			final RingChartFactory factory = new RingChartFactory(cyApplicationManagerServiceRef, iconManager, colIdFactory);
+			final RingChartFactory factory = new RingChartFactory(cyApplicationManagerServiceRef, iconManagerServiceRef, colIdFactory);
 			registerService(bc, factory, CyCustomGraphics2Factory.class, factoryProps);
 		}{
-			final LineChartFactory factory = new LineChartFactory(cyApplicationManagerServiceRef, iconManager, colIdFactory);
+			final LineChartFactory factory = new LineChartFactory(cyApplicationManagerServiceRef, iconManagerServiceRef, colIdFactory);
 			registerService(bc, factory, CyCustomGraphics2Factory.class, factoryProps);
 		}{
-			final HeatMapChartFactory factory = new HeatMapChartFactory(cyApplicationManagerServiceRef, iconManager, colIdFactory);
+			final HeatMapChartFactory factory = new HeatMapChartFactory(cyApplicationManagerServiceRef, iconManagerServiceRef, colIdFactory);
 			registerService(bc, factory, CyCustomGraphics2Factory.class, factoryProps);
 		}
 	}

@@ -33,9 +33,9 @@ import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.network.merge.internal.ui.NetworkMergeDialog;
-import org.cytoscape.network.merge.internal.util.IconManager;
 import org.cytoscape.session.CyNetworkNaming;
 import org.cytoscape.task.create.CreateNetworkViewTaskFactory;
+import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.work.TaskManager;
 

@@ -43,7 +43,7 @@ import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
-import org.cytoscape.tableimport.internal.ui.theme.IconManager;
+import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 
 /**
@@ -105,8 +105,8 @@ public class NetworkImportOptionsPanel extends JPanel {
 		interactionComboBox = new JComboBox<>();
 		targetLabel = new JLabel("Target Interaction:");
 		targetComboBox = new JComboBox<>();
-		iconLabel1 = new JLabel(IconManager.ICON_DOUBLE_ANGLE_LEFT);
-		iconLabel2 = new JLabel(IconManager.ICON_DOUBLE_ANGLE_RIGHT);
+		iconLabel1 = new JLabel(IconManager.ICON_ANGLE_DOUBLE_LEFT);
+		iconLabel2 = new JLabel(IconManager.ICON_ANGLE_DOUBLE_RIGHT);
 		edgeAttributesLabel = new JLabel();
 		
 		sourceIconLabel = new JLabel(SOURCE.getText());

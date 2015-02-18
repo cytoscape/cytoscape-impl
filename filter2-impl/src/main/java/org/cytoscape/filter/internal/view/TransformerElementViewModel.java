@@ -10,6 +10,7 @@ import javax.swing.JButton;
 import javax.swing.JComponent;
 
 import org.cytoscape.filter.internal.composite.CompositeSeparator;
+import org.cytoscape.util.swing.IconManager;
 
 public class TransformerElementViewModel<V extends SelectPanelComponent> {
 	public final JComponent view;

@@ -39,8 +39,8 @@ import javax.swing.JTable;
 import javax.swing.SwingConstants;
 import javax.swing.table.DefaultTableCellRenderer;
 
-import org.cytoscape.tableimport.internal.ui.theme.IconManager;
 import org.cytoscape.tableimport.internal.util.AttributeTypes;
+import org.cytoscape.util.swing.IconManager;
 
 
 /**

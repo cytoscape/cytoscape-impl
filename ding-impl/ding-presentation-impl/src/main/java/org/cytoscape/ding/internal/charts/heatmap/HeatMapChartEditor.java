@@ -13,8 +13,8 @@ import org.cytoscape.ding.internal.charts.AbstractChartEditor;
 import org.cytoscape.ding.internal.charts.ColorSchemeEditor;
 import org.cytoscape.ding.internal.charts.LabelPosition;
 import org.cytoscape.ding.internal.charts.util.ColorGradient;
-import org.cytoscape.ding.internal.util.IconManager;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.view.presentation.property.values.CyColumnIdentifierFactory;
 
 public class HeatMapChartEditor extends AbstractChartEditor<HeatMapChart> {
@@ -110,7 +110,7 @@ public class HeatMapChartEditor extends AbstractChartEditor<HeatMapChart> {
 				label = IconManager.ICON_ARROW_DOWN;
 				toolTip = "Lower Bound";
 			} else if (index == 3) {
-				label = IconManager.ICON_BAN_CIRCLE;
+				label = IconManager.ICON_BAN;
 				toolTip = "Not Available";
 			}
 			

@@ -26,8 +26,6 @@ import org.cytoscape.filter.internal.topology.TopologyFilterViewFactory;
 import org.cytoscape.filter.internal.view.FilterPanel;
 import org.cytoscape.filter.internal.view.FilterPanelController;
 import org.cytoscape.filter.internal.view.FilterWorker;
-import org.cytoscape.filter.internal.view.IconManager;
-import org.cytoscape.filter.internal.view.IconManagerImpl;
 import org.cytoscape.filter.internal.view.LazyWorkQueue;
 import org.cytoscape.filter.internal.view.SelectPanel;
 import org.cytoscape.filter.internal.view.TransformerPanel;
@@ -38,6 +36,7 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.NetworkTestSupport;
+import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.work.TaskManager;
 import org.mockito.Mock;
@@ -49,6 +48,7 @@ public class UiScaffold {
 	
 	@Mock CyApplicationManager applicationManager;
 	@Mock CyNetworkView networkView;
+	@Mock IconManager iconManager;
 	
 	void start() {
 		MockitoAnnotations.initMocks(this);
@@ -91,8 +91,6 @@ public class UiScaffold {
 		ModelMonitor modelMonitor = new ModelMonitor();
 		modelMonitor.handleEvent(new SetCurrentNetworkEvent(applicationManager, network));
 		
-		IconManager iconManager = new IconManagerImpl();
-
 		TransformerViewManager transformerViewManager = new TransformerViewManager(transformerManager);
 		transformerViewManager.registerTransformerViewFactory(new ColumnFilterViewFactory(modelMonitor, iconManager), properties);
 		transformerViewManager.registerTransformerViewFactory(new DegreeFilterViewFactory(modelMonitor), properties);

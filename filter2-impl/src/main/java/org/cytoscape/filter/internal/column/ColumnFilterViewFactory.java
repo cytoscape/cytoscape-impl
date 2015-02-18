@@ -28,7 +28,6 @@ import org.cytoscape.filter.internal.column.ColumnFilterView.ColumnComboBoxEleme
 import org.cytoscape.filter.internal.column.ColumnFilterView.PredicateElement;
 import org.cytoscape.filter.internal.prefuse.NumberRangeModel;
 import org.cytoscape.filter.internal.view.DynamicComboBoxModel;
-import org.cytoscape.filter.internal.view.IconManager;
 import org.cytoscape.filter.internal.view.Matcher;
 import org.cytoscape.filter.internal.view.RangeChooser;
 import org.cytoscape.filter.internal.view.RangeChooserController;
@@ -41,6 +40,7 @@ import org.cytoscape.filter.view.TransformerViewFactory;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.util.swing.IconManager;
 
 public class ColumnFilterViewFactory implements TransformerViewFactory {
 

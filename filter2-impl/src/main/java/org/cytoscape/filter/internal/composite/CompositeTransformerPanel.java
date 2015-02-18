@@ -19,7 +19,6 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 
 import org.cytoscape.filter.internal.view.DragHandler;
-import org.cytoscape.filter.internal.view.IconManager;
 import org.cytoscape.filter.internal.view.TransformerElementViewModel;
 import org.cytoscape.filter.internal.view.TransformerPanel;
 import org.cytoscape.filter.internal.view.TransformerPanelController;
@@ -27,6 +26,7 @@ import org.cytoscape.filter.internal.view.ViewUtil;
 import org.cytoscape.filter.model.Transformer;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.util.swing.IconManager;
 
 @SuppressWarnings("serial")
 public class CompositeTransformerPanel extends JPanel {

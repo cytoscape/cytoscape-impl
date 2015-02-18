@@ -29,7 +29,7 @@ import java.lang.reflect.Method;
 
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.tableimport.internal.reader.AttributeMappingParameters;
-import org.cytoscape.tableimport.internal.ui.theme.IconManager;
+import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.swing.GUITunableHandler;
 import org.cytoscape.work.swing.GUITunableHandlerFactory;

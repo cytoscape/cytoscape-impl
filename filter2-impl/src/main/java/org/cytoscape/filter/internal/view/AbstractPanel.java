@@ -21,6 +21,8 @@ import javax.swing.JPopupMenu;
 import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
 
+import org.cytoscape.util.swing.IconManager;
+
 @SuppressWarnings({ "serial", "rawtypes" })
 public abstract class AbstractPanel<T extends NamedElement, C extends AbstractPanelController> extends JPanel implements SelectPanelComponent {
 	protected IconManager iconManager;
@@ -126,7 +128,7 @@ public abstract class AbstractPanel<T extends NamedElement, C extends AbstractPa
 			}
 		});
 		
-		cancelApplyButton = new JLabel(IconManager.ICON_BAN_CIRCLE);
+		cancelApplyButton = new JLabel(IconManager.ICON_BAN);
 		cancelApplyButton.setFont(iconManager.getIconFont(17.0f));
 		cancelApplyButton.addMouseListener(new MouseAdapter() {
 			@SuppressWarnings("unchecked")

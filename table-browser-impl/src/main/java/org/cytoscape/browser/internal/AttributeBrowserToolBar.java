@@ -24,13 +24,13 @@ package org.cytoscape.browser.internal;
  * #L%
  */
 
-import static org.cytoscape.browser.internal.IconManager.ICON_CHECK;
-import static org.cytoscape.browser.internal.IconManager.ICON_CHECK_EMPTY;
-import static org.cytoscape.browser.internal.IconManager.ICON_COLUMNS;
-import static org.cytoscape.browser.internal.IconManager.ICON_FILE_ALT;
-import static org.cytoscape.browser.internal.IconManager.ICON_REMOVE_SIGN;
-import static org.cytoscape.browser.internal.IconManager.ICON_TABLE;
-import static org.cytoscape.browser.internal.IconManager.ICON_TRASH;
+import static org.cytoscape.util.swing.IconManager.ICON_CHECK_SQUARE_O;;
+import static org.cytoscape.util.swing.IconManager.ICON_SQUARE_O;
+import static org.cytoscape.util.swing.IconManager.ICON_COLUMNS;
+import static org.cytoscape.util.swing.IconManager.ICON_FILE_O;
+import static org.cytoscape.util.swing.IconManager.ICON_TIMES_CIRCLE;
+import static org.cytoscape.util.swing.IconManager.ICON_TABLE;
+import static org.cytoscape.util.swing.IconManager.ICON_TRASH_O;
 import static org.cytoscape.util.swing.LookAndFeelUtil.isAquaLAF;
 
 import java.awt.BorderLayout;
@@ -90,7 +90,9 @@ import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.destroy.DeleteTableTaskFactory;
 import org.cytoscape.util.swing.CheckBoxJList;
+import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.work.swing.DialogTaskManager;
+
 
 
 /**
@@ -704,7 +706,7 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 
 	private JButton getDeleteButton() {
 		if (deleteAttributeButton == null) {
-			deleteAttributeButton = new JButton(ICON_TRASH);
+			deleteAttributeButton = new JButton(ICON_TRASH_O);
 			deleteAttributeButton.setToolTipText("Delete Columns...");
 			styleButton(deleteAttributeButton, iconMgr.getIconFont(ICON_FONT_SIZE));
 			
@@ -723,7 +725,7 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 
 	private JButton getDeleteTableButton() {
 		if (deleteTableButton == null) {
-			deleteTableButton = new JButton(ICON_TABLE + "" + ICON_REMOVE_SIGN);
+			deleteTableButton = new JButton(ICON_TABLE + "" + ICON_TIMES_CIRCLE);
 			deleteTableButton.setToolTipText("Delete Table...");
 			styleButton(deleteTableButton, iconMgr.getIconFont(ICON_FONT_SIZE / 2.0f));
 			
@@ -743,7 +745,7 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 	
 	private JButton getSelectAllButton() {
 		if (selectAllAttributesButton == null) {
-			selectAllAttributesButton = new JButton(ICON_CHECK + " " + ICON_CHECK);
+			selectAllAttributesButton = new JButton(ICON_CHECK_SQUARE_O + " " + ICON_CHECK_SQUARE_O);
 			selectAllAttributesButton.setToolTipText("Show All Columns");
 			styleButton(selectAllAttributesButton, iconMgr.getIconFont(ICON_FONT_SIZE / 2.0f));
 
@@ -771,7 +773,7 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 
 	private JButton getUnselectAllButton() {
 		if (unselectAllAttributesButton == null) {
-			unselectAllAttributesButton = new JButton(ICON_CHECK_EMPTY + " " + ICON_CHECK_EMPTY);
+			unselectAllAttributesButton = new JButton(ICON_SQUARE_O + " " + ICON_SQUARE_O);
 			unselectAllAttributesButton.setToolTipText("Hide All Columns");
 			styleButton(unselectAllAttributesButton, iconMgr.getIconFont(ICON_FONT_SIZE / 2.0f));
 
@@ -861,7 +863,7 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 	 */
 	private JButton getNewButton() {
 		if (createNewAttributeButton == null) {
-			createNewAttributeButton = new JButton(ICON_FILE_ALT);
+			createNewAttributeButton = new JButton(ICON_FILE_O);
 			createNewAttributeButton.setToolTipText("Create New Column");
 			styleButton(createNewAttributeButton, iconMgr.getIconFont(ICON_FONT_SIZE));
 			

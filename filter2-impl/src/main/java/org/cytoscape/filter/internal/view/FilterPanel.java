@@ -18,6 +18,7 @@ import org.cytoscape.filter.internal.composite.CompositeFilterPanel;
 import org.cytoscape.filter.model.CompositeFilter;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.util.swing.IconManager;
 
 @SuppressWarnings("serial")
 public class FilterPanel extends AbstractPanel<FilterElement, FilterPanelController> {

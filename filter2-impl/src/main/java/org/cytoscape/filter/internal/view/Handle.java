@@ -6,6 +6,8 @@ import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 
+import org.cytoscape.util.swing.IconManager;
+
 @SuppressWarnings("serial")
 public class Handle<V extends SelectPanelComponent> extends JLabel {
 	JComponent sibling;

@@ -7,9 +7,9 @@ import javax.swing.JComponent;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.ding.internal.charts.ViewUtils;
-import org.cytoscape.ding.internal.util.IconManager;
-import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2Factory;
+import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2;
+import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2Factory;
 import org.cytoscape.view.presentation.property.values.CyColumnIdentifierFactory;
 
 public class LineChartFactory implements CyCustomGraphics2Factory<LineLayer> {

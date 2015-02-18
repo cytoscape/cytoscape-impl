@@ -57,6 +57,7 @@ import org.cytoscape.model.events.TablePrivacyChangedEvent;
 import org.cytoscape.model.events.TablePrivacyChangedListener;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.destroy.DeleteTableTaskFactory;
+import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.work.swing.DialogTaskManager;
 
 public class GlobalTableBrowser extends AbstractTableBrowser 

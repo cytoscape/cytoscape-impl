@@ -41,8 +41,6 @@ import org.cytoscape.filter.internal.topology.TopologyFilterViewFactory;
 import org.cytoscape.filter.internal.view.FilterPanel;
 import org.cytoscape.filter.internal.view.FilterPanelController;
 import org.cytoscape.filter.internal.view.FilterWorker;
-import org.cytoscape.filter.internal.view.IconManager;
-import org.cytoscape.filter.internal.view.IconManagerImpl;
 import org.cytoscape.filter.internal.view.LazyWorkQueue;
 import org.cytoscape.filter.internal.view.TransformerPanel;
 import org.cytoscape.filter.internal.view.TransformerPanelController;
@@ -61,10 +59,12 @@ import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.session.events.SessionAboutToBeLoadedListener;
 import org.cytoscape.session.events.SessionAboutToBeSavedListener;
 import org.cytoscape.session.events.SessionLoadedListener;
+import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.work.TaskManager;
 import org.osgi.framework.BundleContext;
 
-public class CyActivator extends AbstractCyActivator {	
+public class CyActivator extends AbstractCyActivator {
+	
 	public void start(BundleContext context) {
 		TransformerManager transformerManager = new TransformerManagerImpl();
 		registerService(context, transformerManager, TransformerManager.class, new Properties());
@@ -91,7 +91,7 @@ public class CyActivator extends AbstractCyActivator {
 		ModelMonitor modelMonitor = new ModelMonitor();
 		registerAllServices(context, modelMonitor, new Properties());
 		
-		IconManager iconManager = new IconManagerImpl();
+		IconManager iconManager = getService(context, IconManager.class);
 		
 		registerService(context, new DegreeFilterViewFactory(modelMonitor), TransformerViewFactory.class, new Properties());
 		registerService(context, new ColumnFilterViewFactory(modelMonitor, iconManager), TransformerViewFactory.class, new Properties());
