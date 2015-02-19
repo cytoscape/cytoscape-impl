@@ -141,7 +141,6 @@ public class PreviewTablePanel extends JPanel {
 	private JTabbedPane tableTabbedPane;
 	private JScrollPane keyPreviewScrollPane;
 	private JList keyPreviewList;
-	private DefaultListModel keyListModel;
 	
 	private JRadioButton showAllRadioButton;
 	private JRadioButton counterRadioButton;
@@ -179,13 +178,13 @@ public class PreviewTablePanel extends JPanel {
 	}
 
 	public void setKeyAttributeList(Set data) {
+		final DefaultListModel keyListModel = (DefaultListModel) getKeyPreviewList().getModel();
 		keyListModel.clear();
 
-		for (Object item : data) {
+		for (Object item : data)
 			keyListModel.addElement(item);
-		}
 
-		keyPreviewList.repaint();
+		getKeyPreviewList().repaint();
 	}
 
 	@Override
@@ -234,15 +233,13 @@ public class PreviewTablePanel extends JPanel {
 		
 		previewScrollPane = new JScrollPane();
 		tableTabbedPane = new JTabbedPane();
-		keyListModel = new DefaultListModel();
-		keyPreviewList = new JList(keyListModel);
 		keyPreviewScrollPane = new JScrollPane();
 
 		previewTables = new HashMap<String, JTable>();
 		previewTable = new JTable();
 		previewTable.setOpaque(false);
 
-		keyPreviewScrollPane.setViewportView(keyPreviewList);
+		keyPreviewScrollPane.setViewportView(getKeyPreviewList());
 		previewScrollPane.setViewportView(previewTable);
 
 		tableTabbedPane.addChangeListener(new ChangeListener() {
@@ -364,6 +361,17 @@ public class PreviewTablePanel extends JPanel {
 			taxonIconLabel.setVisible(false);
 			taxonLabel.setVisible(false);
 		}
+	}
+	
+	private JList getKeyPreviewList() {
+		if (keyPreviewList == null) {
+			final DefaultListModel keyListModel = new DefaultListModel();
+			keyPreviewList = new JList(keyListModel);
+			keyPreviewList.setFont(keyPreviewList.getFont().deriveFont(11.0f));
+			keyPreviewList.setEnabled(false);
+		}
+		
+		return keyPreviewList;
 	}
 
 	public JTable getPreviewTable() {
@@ -843,7 +851,7 @@ public class PreviewTablePanel extends JPanel {
 	}
 
 	public int checkKeyMatch(final int targetColumn) {
-		final DefaultListModel listModel = (DefaultListModel) keyPreviewList.getModel();
+		final DefaultListModel listModel = (DefaultListModel) getKeyPreviewList().getModel();
 		final Object[] data = listModel.toArray();
 
 		final List<Object> fileKeyList = Arrays.asList(data);
