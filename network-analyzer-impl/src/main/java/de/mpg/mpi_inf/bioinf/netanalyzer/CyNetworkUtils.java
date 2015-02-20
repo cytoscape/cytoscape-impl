@@ -36,6 +36,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import org.cytoscape.model.CyColumn;
@@ -55,6 +56,7 @@ import de.mpg.mpi_inf.bioinf.netanalyzer.data.NetworkInspection;
  *
  * @author Yassen Assenov
  * @author Sven-Eric Schelhorn
+ * @author Speed improved by Dimitry Tegunov
  */
 public abstract class CyNetworkUtils {
 	/**
@@ -425,67 +427,50 @@ public abstract class CyNetworkUtils {
 	 *
 	 * @return Number of edges removed from the network.
 	 */
-	public static int removeDuplEdges(CyNetwork aNetwork, boolean aIgnoreDir, boolean aCreateEdgeAttr) {
-		final Set<CyNode> visited = new HashSet<CyNode>(aNetwork.getNodeCount());
-		int removedCount = 0;
-
-		for ( CyNode n1 : aNetwork.getNodeList()) {
-			final List<CyEdge> incEdges = aNetwork.getAdjacentEdgeList(n1,CyEdge.Type.ANY);
-			final Map<CyNode, MutInteger> neighborMap = CyNetworkUtils.getNeighborMap(aNetwork, n1, incEdges);
-			// Check all neighbors of the node for multiple edges
-			for (final Map.Entry<CyNode, MutInteger> nf : neighborMap.entrySet()) {
-				final CyNode n2 = nf.getKey();
-				if (!visited.contains(n2)) {
-					CyEdge undirEdge = null;
-					CyEdge dir12Edge = null;
-					CyEdge dir21Edge = null;
-					int numUndir = 0;
-					int numDir12 = 0;
-					int numDir21 = 0;
-
-					// Traverse all edges connecting n1 and n2
-					for (final CyEdge e : aNetwork.getConnectingEdgeList(n1,n2,CyEdge.Type.ANY)) {
-						final CyNode source = e.getSource();
-						final CyNode target = e.getTarget();
-						if (source != target) {
-							if (aIgnoreDir == false && e.isDirected()) {
-								if (source == n1) {
-									if (dir12Edge != null) {
-										aNetwork.removeEdges(Collections.singletonList(e));
-										removedCount++;
-									} else {
-										dir12Edge = e;
-									}
-									numDir12++;
-								} else if (dir21Edge != null) {
-									aNetwork.removeEdges(Collections.singletonList(e));
-									removedCount++;
-									numDir21++;
-								} else {
-									dir21Edge = e;
-									numDir21++;
-								}
-							} else if (undirEdge != null) {
-								aNetwork.removeEdges(Collections.singletonList(e));
-								removedCount++;
-								numUndir++;
-							} else {
-								undirEdge = e;
-								numUndir++;
-							}
-						}
-					}
-					// store the number of removed edges as edge attribute
-					if (aCreateEdgeAttr) {
-						saveNumDuplEdges(aNetwork,undirEdge, numUndir);
-						saveNumDuplEdges(aNetwork,dir12Edge, numDir12);
-						saveNumDuplEdges(aNetwork,dir21Edge, numDir21);
-					}
-				}
+	public static int removeDuplEdges(CyNetwork aNetwork, boolean aIgnoreDir, boolean aCreateEdgeAttr) 
+	{
+		// Give each node an Int32 ID, so edge IDs can be generated quickly
+		HashMap<CyNode, Integer> node2id = new HashMap<>();
+		for (CyNode n : aNetwork.getNodeList())
+			node2id.put(n, node2id.size());
+		
+		HashMap<Long, CyEdge> uniqueEdges = new HashMap<>();
+		HashMap<Long, Integer> numDuplicates = new HashMap<>();
+		List<CyEdge> forRemoval = new ArrayList<>();
+		
+		for (CyEdge edge : aNetwork.getEdgeList())
+		{
+			int id1 = node2id.get(edge.getSource()), id2 = node2id.get(edge.getTarget());
+			if (id1 == id2)
+				continue;			// Ignore self-loop
+			
+			long edgeId = 0;
+			// Respect the present ordering, or if id1 < id2
+			if ((!aIgnoreDir && edge.isDirected()) || id1 < id2)
+				edgeId = (((long)id1) << 32) + (long)id2;
+			// Only case left is id2 < id1 && (aIgnoreDir || !edge.isDirected())
+			else
+				edgeId = (((long)id2) << 32) + (long)id1;
+			
+			if (!uniqueEdges.containsKey(edgeId))
+			{
+				uniqueEdges.put(edgeId, edge);
+				numDuplicates.put(edgeId, 1);
 			}
-			visited.add(n1);
+			else
+			{
+				forRemoval.add(edge);
+				numDuplicates.put(edgeId, numDuplicates.get(edgeId) + 1);
+			}
 		}
-		return removedCount;
+		
+		aNetwork.removeEdges(forRemoval);
+		
+		if (aCreateEdgeAttr)
+			for (Entry<Long, CyEdge> entry : uniqueEdges.entrySet())
+				saveNumDuplEdges(aNetwork, entry.getValue(), numDuplicates.get(entry.getKey()));
+		
+		return forRemoval.size();
 	}
 
 	/**

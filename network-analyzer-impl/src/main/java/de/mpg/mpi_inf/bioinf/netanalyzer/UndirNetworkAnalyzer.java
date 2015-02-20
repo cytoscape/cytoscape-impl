@@ -34,11 +34,19 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyRow;
+
 import de.mpg.mpi_inf.bioinf.netanalyzer.data.CCInfo;
 import de.mpg.mpi_inf.bioinf.netanalyzer.data.DegreeDistribution;
 import de.mpg.mpi_inf.bioinf.netanalyzer.data.LogBinDistribution;
@@ -60,9 +68,10 @@ import de.mpg.mpi_inf.bioinf.netanalyzer.data.io.SettingsSerializer;
  * @author Yassen Assenov
  * @author Sven-Eric Schelhorn
  * @author Nadezhda Doncheva
+ * @author Speed improved by Dimitry Tegunov
  */
-public class UndirNetworkAnalyzer extends NetworkAnalyzer {
-
+public class UndirNetworkAnalyzer extends NetworkAnalyzer
+{
 	/**
 	 * Initializes a new instance of <code>UndirNetworkAnalyzer</code>.
 	 * 
@@ -75,12 +84,11 @@ public class UndirNetworkAnalyzer extends NetworkAnalyzer {
 	 * @param aInterpr
 	 *            Interpretation of the network edges.
 	 */
-	public UndirNetworkAnalyzer(CyNetwork aNetwork, Set<CyNode> aNodeSet,
-			NetworkInterpretation aInterpr) {
+	public UndirNetworkAnalyzer(CyNetwork aNetwork, Set<CyNode> aNodeSet, NetworkInterpretation aInterpr) 
+	{
 		super(aNetwork, aNodeSet, aInterpr);
-		if (nodeSet != null) {
+		if (nodeSet != null) 
 			stats.set("nodeCount", nodeSet.size());
-		}
 		nodeCount = stats.getInt("nodeCount");
 		sPathLengths = new long[nodeCount];
 		sharedNeighborsHist = new long[nodeCount];
@@ -102,176 +110,309 @@ public class UndirNetworkAnalyzer extends NetworkAnalyzer {
 	 * @see de.mpg.mpi_inf.bioinf.netanalyzer.NetworkAnalyzer#computeAll()
 	 */
 	@Override
-	public void computeAll() {
-
+	public void computeAll() 
+	{
 		long time = System.currentTimeMillis();
 		analysisStarting();
-		int edgeCount = 0;
-		SimpleUndirParams params = new SimpleUndirParams();
-		int maxConnectivity = 0;
-		DegreeDistribution degreeDist = new DegreeDistribution(nodeCount);
+		networkEdgeCount = 0;
+		params = new SimpleUndirParams();
+		maxConnectivity = 0;
+		degreeDist = new DegreeDistribution(nodeCount);
 		// clustering coefficients
-		HashMap<Integer, SumCountPair> CCps = new HashMap<Integer, SumCountPair>();
+		CCps = new HashMap<Integer, SumCountPair>();
 		// topological coefficients
-		ArrayList<Point2D.Double> topCoefs = new ArrayList<Point2D.Double>(nodeCount);
+		topCoefs = new ArrayList<Point2D.Double>(nodeCount);
 		// closeness centrality
-		ArrayList<Point2D.Double> closenessCent = new ArrayList<Point2D.Double>(nodeCount);
+		closenessCent = new ArrayList<Point2D.Double>(nodeCount);
 		// node betweenness
-		ArrayList<Point2D.Double> nodeBetweennessArray = new ArrayList<Point2D.Double>(nodeCount);
+		nodeBetweennessArray = new ArrayList<Point2D.Double>(nodeCount);
 		// neighborhood connectivity
-		HashMap<Integer, SumCountPair> NCps = new HashMap<Integer, SumCountPair>();
+		NCps = new HashMap<Integer, SumCountPair>();
 		// average shortest path length
-		Map<CyNode, Double> aplMap = new HashMap<CyNode, Double>();
+		aplMap = new HashMap<CyNode, Double>();
 		// stress
-		LogBinDistribution stressDist = new LogBinDistribution();
+		stressDist = new LogBinDistribution();
 		// Compute number of connected components
-		ConnComponentAnalyzer cca = new ConnComponentAnalyzer(network);
+		cca = new ConnComponentAnalyzer(network);
+		
 		Set<CCInfo> components = cca.findComponents();
 		params.connectedComponentCount = components.size();
 
-		for (CCInfo aCompInfo : components) {
+		for (CCInfo aCompInfo : components) 
+		{
 			// Get nodes of connected component
-			Set<CyNode> connNodes = cca.getNodesOf(aCompInfo);
-			// Set<CyNode> connNodes = new HashSet<CyNode>(connNodes);
+			final Set<CyNode> connNodes = cca.getNodesOf(aCompInfo);
+			final Set<CyEdge> connEdges = new HashSet<CyEdge>();
 			if (nodeSet != null) {
 				connNodes.retainAll(nodeSet);
 			} 
 			
-			// Initialize the parameters for node and edge betweenness calculation
-			if (nodeSet == null && computeNB) {
-				nodeBetweenness.clear();
-				edgeBetweenness.clear();
-				stress.clear();
-				aplMap.clear();
-				for (CyNode n : connNodes) {
-					nodeBetweenness.put(n, new NodeBetweenInfo(0, -1, 0.0));
-					stress.put(n, Long.valueOf(0));
+			final int numNodes = connNodes.size();
+			final int[] edgeOffsets = new int[numNodes + 1];
+			final HashMap<CyNode, Integer> node2Int = new HashMap<>();
+			int numEdgesLocal = 0;
+			for (CyNode node : connNodes)
+			{
+				edgeOffsets[node2Int.size()] = numEdgesLocal;
+				node2Int.put(node, node2Int.size());
+				numEdgesLocal += getNeighbors(node).size();
+				for (CyEdge edge : getIncidentEdges(node))
+					connEdges.add(edge);
+			}
+			final int numEdges = numEdgesLocal;
+			edgeOffsets[numNodes] = numEdges;
+			final int[] edges = new int[numEdges];
+			final int[] edgeIDs = new int[numEdges];
+			final HashMap<Long, Integer> edgeHash2Int = new HashMap<>();
+			{
+				int e = 0;
+				for (CyNode node : connNodes)
+				{
+					int nodeID = node2Int.get(node);
+					int offset = edgeOffsets[nodeID];
+					for (CyNode neighbor : getNeighbors(node))
+					{
+						int neighborID = node2Int.get(neighbor);
+						long edgeHash = computeEdgeHash(nodeID, neighborID);
+						if (!edgeHash2Int.containsKey(edgeHash))
+							edgeHash2Int.put(edgeHash, e++);
+						int edgeID = edgeHash2Int.get(edgeHash);
+						edgeIDs[offset] = edgeID;
+						edges[offset++] = neighborID;
+					}
+				}
+			}
+			
+			nodeBetweennessLean = new double[numNodes];
+			edgeBetweennessLean = new double[numEdges];
+			stressLean = new long[numNodes];
+
+			componentDiameter = 0;
+			
+			final Queue<CyNode> nodesLeft = new LinkedList<>();
+			for (CyNode node : connNodes)
+				nodesLeft.add(node);
+			
+			class NodeTask implements Runnable
+			{
+				UndirNetworkAnalyzer parent;
+				int threadID;
+				
+				public NodeTask(UndirNetworkAnalyzer p, int id)	{ parent = p; threadID = id; }
+				
+				@Override
+				public void run() 
+				{
+					int localNetworkEdgeCount = 0;	
+					int localMaxConnectivity = 0;
+					int localComponentDiameter = 0;
+					long[] localSharedNeighborsHist = new long[parent.sharedNeighborsHist.length];
+					long[] localSPathLengths = new long[parent.sPathLengths.length];
+					double[] localNodeBetweenness = new double[parent.nodeBetweennessLean.length];
+					double[] localEdgeBetweenness = new double[parent.edgeBetweennessLean.length];
+					long[] localStress = new long[parent.stressLean.length];
+					
+					while (nodesLeft.size() > 0)
+					{
+						CyNode node = null;
+						synchronized (parent)
+						{
+							if (nodesLeft.size() == 0)
+								break;
+							node = nodesLeft.remove();
+							parent.progress++;
+						}
+						
+						long timeStart = System.nanoTime();
+						int nodeID = node2Int.get(node);
+						List<CyEdge> incEdges = getIncidentEdges(node);
+						Map<CyNode, MutInteger> neighborMap = CyNetworkUtils.getNeighborMap(parent.network, node, incEdges);
+						CyRow nodeRow = parent.network.getRow(node);
+						int firstEdge = edgeOffsets[nodeID], lastEdge = edgeOffsets[nodeID + 1];
+		
+						// Degree distribution calculation
+						int degree = getDegree(node, incEdges);
+						
+						localNetworkEdgeCount += degree;
+						synchronized (parent.degreeDist)
+						{
+							parent.degreeDist.addObservation(degree);
+						}
+						if (useNodeAttributes) {
+							nodeRow.set(Messages.getAttr("deg"),degree);
+						}
+						int neighborCount = calcSimple(node, incEdges, neighborMap, parent.params);
+						localMaxConnectivity = Math.max(localMaxConnectivity, neighborCount);
+						
+		
+						if (neighborCount > 0) 
+						{
+							int[] neighbors = new int[lastEdge - firstEdge];
+							for (int ei = firstEdge; ei < lastEdge; ei++)
+								neighbors[ei - firstEdge] = edges[ei];
+		
+							// Neighborhood connectivity computation
+							final double neighborConnect = averageNeighbors(neighbors, edgeOffsets);
+							synchronized (parent.NCps)
+							{
+								accumulate(parent.NCps, neighborCount, neighborConnect);
+							}
+		
+							if (neighborCount > 1) 
+							{
+								// Topological coefficients computation
+								double topCoef = computeTC(nodeID, numNodes, edges, edgeOffsets);
+								if (!Double.isNaN(topCoef)) 
+									synchronized (parent.topCoefs)
+									{
+										parent.topCoefs.add(new Point2D.Double(neighborCount, topCoef));
+									}
+								else 
+									topCoef = 0.0;
+		
+								// Clustering coefficients computation
+								final double nodeCCp = computeCC(neighbors, numNodes, edges, edgeOffsets);
+								synchronized (parent.CCps)
+								{
+									accumulate(parent.CCps, neighborCount, nodeCCp);
+								}
+								if (useNodeAttributes) 
+								{
+									synchronized (parent.network)
+									{
+										nodeRow.set( Messages.getAttr("cco"), Utils.roundTo(nodeCCp, roundingDigits));
+										nodeRow.set( Messages.getAttr("tco"), Utils.roundTo(topCoef, roundingDigits));
+									}
+								}
+		
+							} 
+							else if (useNodeAttributes) 
+							{
+								synchronized (parent.network)
+								{
+									nodeRow.set( Messages.getAttr("cco"), 0.0);
+									nodeRow.set( Messages.getAttr("tco"), 0.0);
+								}
+							}
+							synchronized (parent.network)
+							{
+								nodeRow.set( Messages.getAttr("nco"), Utils.roundTo(neighborConnect, roundingDigits));
+							}
+						} 
+						else if (useNodeAttributes) 
+						{
+							synchronized (parent.network)
+							{
+								nodeRow.set( Messages.getAttr("nco"), 0.0);
+								nodeRow.set( Messages.getAttr("cco"), 0.0);
+								nodeRow.set( Messages.getAttr("tco"), 0.0);
+							}
+						}
+						if (parent.cancelled) 
+							break;
+		
+						// Shortest path lengths computation
+						if (parent.nodeSet != null)
+							continue;
+						
+						PathLengthData pathLengths = computeSPandSN(nodeID, numNodes, edges, edgeOffsets, localSharedNeighborsHist, localSPathLengths);
+						
+						int eccentricity = pathLengths.getMaxLength();
+						synchronized (parent.params)
+						{
+							if (parent.params.diameter < eccentricity)
+								parent.params.diameter = eccentricity;
+							if (0 < eccentricity && eccentricity < parent.params.radius)
+								parent.params.radius = eccentricity;
+						}
+						localComponentDiameter = Math.max(localComponentDiameter, eccentricity);
+						
+						double apl = (pathLengths.getCount() > 0) ? pathLengths.getAverageLength() : 0;
+						synchronized (parent.aplMap)
+						{
+							parent.aplMap.put(node, Double.valueOf(apl));
+						}
+						double closeness = (apl > 0.0) ? 1 / apl : 0.0;
+						synchronized (parent.closenessCent)
+						{
+							parent.closenessCent.add(new Point2D.Double(neighborCount, closeness));
+						}
+		
+						// Store max. and avg. shortest path lengths, and closeness in
+						// node attributes
+						if (useNodeAttributes) 
+						{
+							synchronized (parent.network)
+							{
+								nodeRow.set( Messages.getAttr("spl"), eccentricity);
+								nodeRow.set( Messages.getAttr("apl"), Utils.roundTo(apl, roundingDigits));
+								nodeRow.set( Messages.getAttr("clc"), Utils.roundTo(closeness, roundingDigits));
+							}
+						}
+		
+						// CyNode and edge betweenness calculation
+						if (computeNB) 
+							computeNBandEB(nodeID, numNodes, edges, edgeOffsets, edgeIDs, localNodeBetweenness, localStress, localEdgeBetweenness);
+		
+						if (parent.cancelled)
+							break;
+					} // end node iteration
+
+					// Reduce results into global (parent's) variables
+					synchronized (parent)
+					{
+						parent.networkEdgeCount += localNetworkEdgeCount;
+						parent.maxConnectivity = Math.max(parent.maxConnectivity, localMaxConnectivity);
+						parent.componentDiameter = Math.max(parent.componentDiameter, localComponentDiameter);
+						for (int i = 0; i < localSharedNeighborsHist.length; i++)
+							parent.sharedNeighborsHist[i] += localSharedNeighborsHist[i];
+						for (int i = 0; i < localSPathLengths.length; i++)
+							parent.sPathLengths[i] += localSPathLengths[i];
+						for (int i = 0; i < localNodeBetweenness.length; i++)
+							parent.nodeBetweennessLean[i] += localNodeBetweenness[i];
+						for (int i = 0; i < localEdgeBetweenness.length; i++)
+							parent.edgeBetweennessLean[i] += localEdgeBetweenness[i];
+						for (int i = 0; i < localStress.length; i++)
+							parent.stressLean[i] += localStress[i];
+					}
 				}
 			}
 
-			int componentDiameter = 0;
-			for (final CyNode node : connNodes) {
-				++progress;
-				final List<CyEdge> incEdges = getIncidentEdges(node);
-				final Map<CyNode, MutInteger> neighborMap = CyNetworkUtils.getNeighborMap(network,
-						node, incEdges);
-
-				// Degree distribution calculation
-				final int degree = getDegree(node, incEdges);
-				edgeCount += degree;
-				degreeDist.addObservation(degree);
-				if (useNodeAttributes) {
-					network.getRow(node).set(Messages.getAttr("deg"),degree);
-				}
-				final int neighborCount = calcSimple(node, incEdges, neighborMap, params);
-				if (maxConnectivity < neighborCount) {
-					maxConnectivity = neighborCount;
-				}
-
-				if (neighborCount > 0) {
-					final Set<CyNode> neighbors = neighborMap.keySet();
-
-					// Neighborhood connectivity computation
-					final double neighborConnect = averageNeighbors(neighbors);
-					accumulate(NCps, neighborCount, neighborConnect);
-
-					if (neighborCount > 1) {
-
-						// Topological coefficients computation
-						double topCoef = computeTC(node, neighbors);
-						if (!Double.isNaN(topCoef)) {
-							topCoefs.add(new Point2D.Double(neighborCount, topCoef));
-						} else {
-							topCoef = 0.0;
-						}
-
-						// Clustering coefficients computation
-						final double nodeCCp = computeCC(neighbors);
-						accumulate(CCps, neighborCount, nodeCCp);
-						if (useNodeAttributes) {
-							network.getRow(node).set( Messages.getAttr("cco"), Utils.roundTo(nodeCCp, roundingDigits));
-							network.getRow(node).set( Messages.getAttr("tco"), Utils.roundTo(topCoef, roundingDigits));
-						}
-
-					} else if (useNodeAttributes) {
-						network.getRow(node).set( Messages.getAttr("cco"), 0.0);
-						network.getRow(node).set( Messages.getAttr("tco"), 0.0);
-					}
-					network.getRow(node).set( Messages.getAttr("nco"), Utils.roundTo(neighborConnect, roundingDigits));
-				} else if (useNodeAttributes) {
-					network.getRow(node).set( Messages.getAttr("nco"), 0.0);
-					network.getRow(node).set( Messages.getAttr("cco"), 0.0);
-					network.getRow(node).set( Messages.getAttr("tco"), 0.0);
-				}
-				if (cancelled) {
-					analysisFinished();
-					return;
-				}
-
-				// Shortest path lengths computation
-				if (nodeSet != null) {
-					continue;
-				}
-				PathLengthData pathLengths = computeSPandSN(node);
-				final int eccentricity = pathLengths.getMaxLength();
-				if (params.diameter < eccentricity) {
-					params.diameter = eccentricity;
-				}
-				if (0 < eccentricity && eccentricity < params.radius) {
-					params.radius = eccentricity;
-				}
-				if (componentDiameter < eccentricity) {
-					componentDiameter = eccentricity;
-				}
-				final double apl = (pathLengths.getCount() > 0) ? pathLengths.getAverageLength()
-						: 0;
-				aplMap.put(node, Double.valueOf(apl));
-				final double closeness = (apl > 0.0) ? 1 / apl : 0.0;
-				closenessCent.add(new Point2D.Double(neighborCount, closeness));
-
-				// Store max. and avg. shortest path lengths, and closeness in
-				// node attributes
-				if (useNodeAttributes) {
-					network.getRow(node).set( Messages.getAttr("spl"), eccentricity);
-					network.getRow(node).set( Messages.getAttr("apl"), Utils.roundTo(apl, roundingDigits));
-					network.getRow(node).set( Messages.getAttr("clc"), Utils.roundTo(closeness, roundingDigits));
-				}
-
-				// CyNode and edge betweenness calculation
-				if (computeNB) {
-					computeNBandEB(node);
-					// Reset everything except the betweenness value
-					for (final CyNode n : connNodes) {
-						NodeBetweenInfo nodeInfo = nodeBetweenness.get(n);
-						nodeInfo.reset();
-					}
-				}
-
-				if (cancelled) {
-					analysisFinished();
-					return;
-				}
-			} // end node iteration
+			int numThreads = Runtime.getRuntime().availableProcessors();
+			ExecutorService threadPool = Executors.newFixedThreadPool(numThreads);
+			List<Future<?>> futures = new LinkedList<Future<?>>();
+			for (int i = 0; i < numThreads; i++)
+				futures.add(threadPool.submit(new NodeTask(this, i)));
+			for (Future<?> future : futures)
+				try {
+					future.get();
+				} catch (Exception e) { } 
+						
+			if (cancelled)
+			{
+				analysisFinished();
+				return;
+			}
 
 			if (nodeSet == null) {
 				// Normalize and save node betweenness
-				final double nNormFactor = computeNormFactor(nodeBetweenness.size());
-				for (final CyNode n : connNodes) {
+				for (final CyNode n : connNodes) 
+				{
+					int nodeID = node2Int.get(n);
 					// Compute node radiality
-					final double rad = (componentDiameter + 1.0 - aplMap.get(n).doubleValue())
-							/ componentDiameter;
-					if (useNodeAttributes) {
+					final double rad = (componentDiameter + 1.0 - aplMap.get(n).doubleValue()) / componentDiameter;
+					if (useNodeAttributes)
 						network.getRow(n).set( Messages.getAttr("rad"), Utils.roundTo(rad, roundingDigits));
-					}
+
 					if (computeNB) {
-						final NodeBetweenInfo nbi = nodeBetweenness.get(n);
-						double nb = nbi.getBetweenness() * nNormFactor;
+						final double nNormFactor = computeNormFactor(numNodes);
+						double nb = nodeBetweennessLean[nodeID] * nNormFactor;
 						if (Double.isNaN(nb)) {
 							nb = 0.0;
 						}
 						final int degree = getDegree(n, getIncidentEdges(n));
 						nodeBetweennessArray.add(new Point2D.Double(degree, nb));
-						final long nodeStress = stress.get(n).longValue();
+						final long nodeStress = stressLean[nodeID];
 						stressDist.addObservation(nodeStress);
 						if (useNodeAttributes) {
 							network.getRow(n).set( Messages.getAttr("nbt"), Utils.roundTo(nb, roundingDigits));
@@ -281,14 +422,21 @@ public class UndirNetworkAnalyzer extends NetworkAnalyzer {
 				} // end iterate over nodes
 				
 				// Save edge betweenness
-				if (useEdgeAttributes && computeNB) {
-					for (final Map.Entry<CyEdge, Double> betEntry : edgeBetweenness.entrySet()) {
-						double eb = betEntry.getValue().doubleValue();
+				if (useEdgeAttributes && computeNB) 
+				{
+					for (CyEdge edge : connEdges)
+					{
+						int sourceID = node2Int.get(edge.getSource());
+						int targetID = node2Int.get(edge.getTarget());
+						long edgeHash = computeEdgeHash(sourceID, targetID);						
+						double eb = Double.NaN;
+						if (edgeHash2Int.containsKey(edgeHash))
+							eb = edgeBetweennessLean[edgeHash2Int.get(edgeHash)];
+						
 						if (Double.isNaN(eb)) {
 							eb = 0.0;
 						}
-						network.getRow(betEntry.getKey()).set( Messages.getAttr("ebt"),
-								Utils.roundTo(eb, roundingDigits));
+						network.getRow(edge).set( Messages.getAttr("ebt"), Utils.roundTo(eb, roundingDigits));
 					}
 				}
 			}
@@ -331,7 +479,7 @@ public class UndirNetworkAnalyzer extends NetworkAnalyzer {
 		stats.set("nsl", params.selfLoopCount);
 		stats.set("mnp", params.multiEdgePartners / 2);
 		if (interpr.isPaired()) {
-			stats.set("edgeCount", edgeCount / 2);
+			stats.set("edgeCount", networkEdgeCount / 2);
 		}
 
 		if (nodeSet == null) {
@@ -405,76 +553,98 @@ public class UndirNetworkAnalyzer extends NetworkAnalyzer {
 	 *            Instance to accumulate the computed values.
 	 * @return Number of neighbors of the node of interest.
 	 */
-	private int calcSimple(CyNode aNode, List<CyEdge> aIncEdges, Map<CyNode, MutInteger> aNeMap,
-			SimpleUndirParams aParams) {
+	private int calcSimple(CyNode aNode, List<CyEdge> aIncEdges, Map<CyNode, MutInteger> aNeMap, SimpleUndirParams aParams) 
+	{
 		final int neighborCount = aNeMap.size();
 
-		// Avg. number of neighbors, density & centralization calculation
-		if (aParams.connectivityAccum != null) {
-			aParams.connectivityAccum.add(neighborCount);
-		} else {
-			aParams.connectivityAccum = new SumCountPair(neighborCount);
-		}
-		// Heterogeneity calculation
-		if (aParams.sqConnectivityAccum != null) {
-			aParams.sqConnectivityAccum.add(neighborCount * neighborCount);
-		} else {
-			aParams.sqConnectivityAccum = new SumCountPair(neighborCount * neighborCount);
-		}
-
-		// Number of unconnected nodes calculation
-		if (neighborCount == 0) {
-			aParams.unconnectedNodeCount++;
+		synchronized (aParams)
+		{
+			// Avg. number of neighbors, density & centralization calculation
+			if (aParams.connectivityAccum != null)
+				aParams.connectivityAccum.add(neighborCount);
+			else
+				aParams.connectivityAccum = new SumCountPair(neighborCount);
+			
+			// Heterogeneity calculation
+			if (aParams.sqConnectivityAccum != null)
+				aParams.sqConnectivityAccum.add(neighborCount * neighborCount);
+			else
+				aParams.sqConnectivityAccum = new SumCountPair(neighborCount * neighborCount);
+	
+			// Number of unconnected nodes calculation
+			if (neighborCount == 0)
+				aParams.unconnectedNodeCount++;
 		}
 
 		// Number of self-loops and number of directed/undireceted edges
 		// calculation
 		int selfLoops = 0;
 		int dirEdges = 0;
-		for (int j = 0; j < aIncEdges.size(); j++) {
+		for (int j = 0; j < aIncEdges.size(); j++) 
+		{
 			CyEdge e = aIncEdges.get(j);
-			if (e.isDirected()) {
+			if (e.isDirected())
 				dirEdges++;
-			}
-			if (e.getSource() == e.getTarget()) {
+			if (e.getSource() == e.getTarget())
 				selfLoops++;
-			}
 		}
-		aParams.selfLoopCount += selfLoops;
+		synchronized (aParams)
+		{
+			aParams.selfLoopCount += selfLoops;
+		}
 		int undirEdges = aIncEdges.size() - dirEdges;
 
 		// Number of multi-edge node partners calculation
 		int partnerOfMultiEdgeNodePairs = 0;
-		for (final MutInteger freq : aNeMap.values()) {
-			if (freq.value > 1) {
+		for (final MutInteger freq : aNeMap.values()) 
+			if (freq.value > 1)
 				partnerOfMultiEdgeNodePairs++;
-			}
+		synchronized (aParams)
+		{
+			aParams.multiEdgePartners += partnerOfMultiEdgeNodePairs;
 		}
-		aParams.multiEdgePartners += partnerOfMultiEdgeNodePairs;
 
 		// Storing the values in attributes
-		if (useNodeAttributes) {
-			network.getRow(aNode).set( Messages.getAttr("slo"), selfLoops);
-			network.getRow(aNode).set( Messages.getAttr("isn"), (neighborCount == 0));
-			network.getRow(aNode).set( Messages.getAttr("nue"), undirEdges);
-			network.getRow(aNode).set( Messages.getAttr("nde"), dirEdges);
-			network.getRow(aNode).set( Messages.getAttr("pmn"), partnerOfMultiEdgeNodePairs);
+		if (useNodeAttributes) 
+		{
+			CyRow nodeRow = network.getRow(aNode);
+			synchronized (network) 
+			{
+				nodeRow.set(Messages.getAttr("slo"), selfLoops);
+				nodeRow.set(Messages.getAttr("isn"), (neighborCount == 0));
+				nodeRow.set(Messages.getAttr("nue"), undirEdges);
+				nodeRow.set(Messages.getAttr("nde"), dirEdges);
+				nodeRow.set(Messages.getAttr("pmn"), partnerOfMultiEdgeNodePairs);
+			}
 		}
 		return neighborCount;
 	}
 
 	/**
-	 * Computes the clustering coefficient of a node.
-	 * 
-	 * @param aNeighborIndices
-	 *            Array of the indices of all the neighbors of the node of interest.
-	 * @return Clustering coefficient of <code>aNode</code> as a value in the range
-	 *         <code>[0,1]</code>.
+	 * Computes the clustering coefficient of a node's neighborhood.
+	 * @param neighbors Array with neighbor indices.
+	 * @param numNodes Overall number of nodes in the graph.
+	 * @param edges Array with every node's neighbor indices.
+	 * @param edgeOffsets Array with the indices of each node's first neighbor in <code>edges</code>.
+	 * @return Clustering coefficient in the range [0; 1].
 	 */
-	private double computeCC(Collection<CyNode> aNeighborIndices) {
-		int edgeCount = CyNetworkUtils.getPairConnCount(network, aNeighborIndices, true);
-		int neighborsCount = aNeighborIndices.size();
-		return (double) 2 * edgeCount / (neighborsCount * (neighborsCount - 1));
+	public static double computeCC(int[] neighbors, int numNodes, int[] edges, int[] edgeOffsets)
+	{
+		boolean[] isNeighbor = new boolean[numNodes];
+		for (int neighbor : neighbors)
+			isNeighbor[neighbor] = true;
+		
+		int edgeCount = 0;
+		for (int neighbor : neighbors)
+		{
+			int firstEdge = edgeOffsets[neighbor], lastEdge = edgeOffsets[neighbor + 1];
+			for (int ei = firstEdge; ei < lastEdge; ei++)
+				if (isNeighbor[edges[ei]])
+					edgeCount++;
+		}
+		
+		long neighborsCount = (long)neighbors.length;
+		return (double)edgeCount / (double)(neighborsCount * (neighborsCount - 1));
 	}
 
 	/**
@@ -499,39 +669,60 @@ public class UndirNetworkAnalyzer extends NetworkAnalyzer {
 	 * @return Data on the shortest path lengths from the current node to all other reachable nodes
 	 *         in the network.
 	 */
-	private PathLengthData computeSPandSN(CyNode aNode) {
-		visited.clear();
-		visited.add(aNode);
-		Set<CyNode> nbs = null;
-		LinkedList<CyNode> reachedNodes = new LinkedList<CyNode>();
-		reachedNodes.add(aNode);
-		reachedNodes.add(null);
-		int currentDist = 1;
+	public static PathLengthData computeSPandSN(int node, int numNodes, int[] edges, int[] edgeOffsets, long[] outSharedNeighborsHist, long[] outSPathLengths) 
+	{
+		boolean[] visited = new boolean[numNodes];
+		visited[node] = true;
+		int[] frontier = new int[numNodes];
+		int[] nextFrontier = new int[numNodes];
+		frontier[0] = node;
+		int frontierSize = 1;
+		int length = 1;
+		boolean[] startNeighbors = new boolean[numNodes];
+		{
+			int firstNeighbor = edgeOffsets[node], lastNeighbor = edgeOffsets[node + 1];
+			for (int ni = firstNeighbor; ni < lastNeighbor; ni++)
+				startNeighbors[edges[ni]] = true;
+		}
+		
 		PathLengthData result = new PathLengthData();
-
-		for (CyNode currentNode = reachedNodes.removeFirst(); !reachedNodes.isEmpty(); currentNode = reachedNodes
-				.removeFirst()) {
-			if (currentNode == null) {
-				// Next level of the BFS tree
-				currentDist++;
-				reachedNodes.add(null);
-			} else {
-				// Traverse next reached node
-				final Set<CyNode> neighbors = getNeighbors(currentNode);
-				if (nbs == null) {
-					nbs = neighbors;
-				}
-				for (final CyNode neighbor : neighbors) {
-					if (visited.add(neighbor)) {
-						final int snCount = (currentDist > 2) ? 0 : countNeighborsIn(nbs, neighbor);
-						sharedNeighborsHist[snCount]++;
-						sPathLengths[currentDist]++;
-						result.addSPL(currentDist);
-						reachedNodes.add(neighbor);
+		
+		while (frontierSize > 0)
+		{
+			int nextFrontierSize = 0;
+			
+			for (int fi = 0; fi < frontierSize; fi++)
+			{
+				int n = frontier[fi];
+				int firstNeighbor = edgeOffsets[n], lastNeighbor = edgeOffsets[n + 1];
+				int sharedNeighbors = 0;
+				
+				for (int ni = firstNeighbor; ni < lastNeighbor; ni++)
+				{
+					int neighbor = edges[ni];
+					if (startNeighbors[neighbor])
+						sharedNeighbors++;
+					if (!visited[neighbor])
+					{
+						visited[neighbor] = true;
+						nextFrontier[nextFrontierSize++] = neighbor;
 					}
 				}
+				
+				outSharedNeighborsHist[length > 2 ? sharedNeighbors : 0]++;
 			}
+			
+			for (int nfi = 0; nfi < nextFrontierSize; nfi++)
+			{
+				frontier[nfi] = nextFrontier[nfi];
+				result.addSPL(length);
+			}
+
+			outSPathLengths[length] += nextFrontierSize;
+			frontierSize = nextFrontierSize;
+			length++;
 		}
+		
 		return result;
 	}
 
@@ -553,116 +744,120 @@ public class UndirNetworkAnalyzer extends NetworkAnalyzer {
 	 *            CyNode where a run of breadth-first search is started, in order to accumulate the
 	 *            node and edge betweenness of all other nodes
 	 */
-	private void computeNBandEB(CyNode source) {
-		LinkedList<CyNode> done_nodes = new LinkedList<CyNode>();
-		LinkedList<CyNode> reached = new LinkedList<CyNode>();
-		HashMap<CyEdge, Double> edgeDependency = new HashMap<CyEdge, Double>();
-		HashMap<CyNode, Long> stressDependency = new HashMap<CyNode, Long>();
+	public static void computeNBandEB(int source, int numNodes, int[] edges, int[] edgeOffsets, int[] edgeIDs,
+								double[] outNodeBetweenness, 
+								long[] outStress, 
+								double[] outEdgeBetweenness)
+	{		
+		int[] Q = new int[numNodes];		// Serves as queue for the first part, as stack for the second part
+		Q[0] = source;
+		int Qlow = 0, Qhigh = 1;			// Keep track of queue's first and last element / stack size
 
-		final NodeBetweenInfo sourceNBInfo = nodeBetweenness.get(source);
-		sourceNBInfo.setSource();
-		reached.add(source);
-		stressDependency.put(source, Long.valueOf(0));
-
-		// Use BFS to find shortest paths from source to all nodes in the
-		// network
-		while (!reached.isEmpty()) {
-			final CyNode current = reached.removeFirst();
-			done_nodes.addFirst(current);
-			final NodeBetweenInfo currentNBInfo = nodeBetweenness.get(current);
-			final Set<CyNode> neighbors = getNeighbors(current);
-			for (CyNode neighbor : neighbors) {
-				final NodeBetweenInfo neighborNBInfo = nodeBetweenness.get(neighbor);
-				final List<CyEdge> edges = network.getConnectingEdgeList(current,neighbor,CyEdge.Type.ANY);
-				final int expectSPLength = currentNBInfo.getSPLength() + 1;
-				if (neighborNBInfo.getSPLength() < 0) {
-					// Neighbor traversed for the first time
-					reached.add(neighbor);
-					neighborNBInfo.setSPLength(expectSPLength);
-					stressDependency.put(neighbor, Long.valueOf(0));
+		int[] P = new int[edges.length];	// Predecessors
+		int[] Pedge = new int[edges.length];
+		int[] Pcount = new int[numNodes];	// Predecessor count, for each node at most its edge count
+		
+		int[] Dedge = new int[edges.length];	// Edges to descendants
+		int[] Dcount = new int[numNodes];
+		
+		int[] sigma = new int[numNodes];	// Sigma in Brandes paper, W in Newman
+		sigma[source] = 1;
+		
+		int[] d = new int[numNodes];		// Distance from source, with source having d = 0
+		for (int i = 0; i < numNodes; i++)
+			d[i] = -1;
+		d[source] = 0;
+		
+		double[] delta = new double[numNodes];	// Delta in Brandes paper
+		
+		long[] stressDependency = new long[numNodes];		// Keep track of node stress metric
+		double[] edgeDependency = new double[edges.length];	// This round's edge betweenness values
+		
+		while (Qlow < Qhigh)	// While query.size > 0
+		{
+			int node = Q[Qlow++];	// Dequeue
+			int firstEdge = edgeOffsets[node], lastEdge = edgeOffsets[node + 1];
+			int dnodeplus = d[node] + 1;
+			int sigmanode = sigma[node];
+			
+			for (int ei = firstEdge; ei < lastEdge; ei++)	// For each neighbor of node
+			{
+				int neighbor = edges[ei];
+				
+				if (d[neighbor] < 0)	// Has not been found yet
+				{
+					Q[Qhigh++] = neighbor;		// Enqueue
+					d[neighbor] = dnodeplus;	// d[node] + 1
 				}
-				// shortest path via current to neighbor found
-				if (neighborNBInfo.getSPLength() == expectSPLength) {
-					neighborNBInfo.addSPCount(currentNBInfo.getSPCount());
-					// check for long overflow 
-					if (neighborNBInfo.getSPCount() < 0) {
-						computeNB = false;
-					}
-					// add predecessors and outgoing edges, needed for
-					// accumulation of betweenness scores
-					neighborNBInfo.addPredecessor(current);
-					for (final CyEdge edge : edges) {
-						currentNBInfo.addOutedge(edge);
-					}
-				}
-				// initialize edge dependency
-				for (final CyEdge edge : edges) {
-					edgeDependency.put(edge, new Double(0.0));
+				
+				if (d[neighbor] == dnodeplus)	// Is descendant
+				{
+					sigma[neighbor] += sigmanode;
+					int pi = edgeOffsets[neighbor] + Pcount[neighbor];	// Predecessor number
+					P[pi] = node;	// Store node as its neighbor's predecessor
+					Pedge[pi] = edgeIDs[ei];	// Also remember the edge from predecessor for edge betweenness later
+					Pcount[neighbor]++;	// Got one more predecessor
+					
+					int di = edgeOffsets[node] + Dcount[node];
+					Dedge[di] = edgeIDs[ei];
+					Dcount[node]++;
 				}
 			}
 		}
+		
+		while (Qhigh > 0)	// While stack.size > 0
+		{
+			int w = Q[--Qhigh];				// Pop from stack
+			int firstP = edgeOffsets[w];	// First predecessor number
+			int lastP = firstP + Pcount[w];	// Last predecessor number
+			double sigmaw = 1.0 / (double)sigma[w], deltaw = delta[w];	// Precalc for later
+			long stressw = stressDependency[w];
 
-		// Return nodes in order of non-increasing distance from source
-		while (!done_nodes.isEmpty()) {
-			final CyNode current = done_nodes.removeFirst();
-			final NodeBetweenInfo currentNBInfo = nodeBetweenness.get(current);
-			if (currentNBInfo != null) {
-				final long currentStress = stressDependency.get(current).longValue();
-				while (!currentNBInfo.isEmptyPredecessors()) {
-					final CyNode predecessor = currentNBInfo.pullPredecessor();
-					final NodeBetweenInfo predecessorNBInfo = nodeBetweenness.get(predecessor);
-					predecessorNBInfo.addDependency((1.0 + currentNBInfo.getDependency())
-							* ((double) predecessorNBInfo.getSPCount() / (double) currentNBInfo
-									.getSPCount()));
-					// accumulate all sp count
-					final long oldStress = stressDependency.get(predecessor).longValue();
-					stressDependency.put(predecessor, new Long(oldStress + 1 + currentStress));
-					// accumulate edge betweenness
-					final List<CyEdge> edges = network.getConnectingEdgeList(predecessor,current,CyEdge.Type.ANY);
-					if (edges.size() != 0) {
-						final CyEdge compEdge = edges.get(0);
-						final LinkedList<CyEdge> currentedges = currentNBInfo.getOutEdges();
-						double oldbetweenness = 0.0;
-						double newbetweenness = 0.0;
-						for (final CyEdge edge : edges) {
-							Double betweenness = edgeBetweenness.get(edge);
-							if (betweenness != null) {
-								oldbetweenness = betweenness;
-								break;
-							}
-						}
-						// if the node is a leaf node in this search tree
-						if (currentedges.size() == 0) {
-							newbetweenness = (double) predecessorNBInfo.getSPCount()
-									/ (double) currentNBInfo.getSPCount();
-						} else {
-							double neighbourbetw = 0.0;
-							for (CyEdge neighbouredge : currentedges) {
-								if (!edges.contains(neighbouredge)) {
-									neighbourbetw += edgeDependency.get(neighbouredge)
-											.doubleValue();
-								}
-							}
-							newbetweenness = (1 + neighbourbetw)
-									* ((double) predecessorNBInfo.getSPCount() / (double) currentNBInfo
-											.getSPCount());
-						}
-						edgeDependency.put(compEdge, new Double(newbetweenness));
-						for (final CyEdge edge : edges) {
-							edgeBetweenness.put(edge, new Double(newbetweenness + oldbetweenness));
-						}
-					}
-				}
-				// accumulate node betweenness in each run
-				if (!current.equals(source)) {
-					currentNBInfo.addBetweenness(currentNBInfo.getDependency());
-					// accumulate number of shortest paths
-					final long allSpPaths = stress.get(current).longValue();
-					stress.put(current, new Long(allSpPaths + currentNBInfo.getSPCount()
-							* currentStress));
-				}
+			double Dbetweenness = 0.0;		// Precalc 
+			int firstD = edgeOffsets[w];
+			int lastD = firstD + Dcount[w];
+			boolean isLeaf = lastD - firstD == 0;
+			for (int di = firstD; di < lastD; di++)
+				Dbetweenness += edgeDependency[Dedge[di]];
+			
+			for (int pi = firstP; pi < lastP; pi++)	// For each predecessor
+			{
+				int v = P[pi];	// v is predecessor
+				double sigmavw = (double)sigma[v] * sigmaw;	// Precalc
+				delta[v] += sigmavw * (1 + deltaw);
+				stressDependency[v] += 1 + stressw;
+				
+				double edgeBetweenness = 0;
+				int edgeID = Pedge[pi];
+				if (isLeaf)
+					edgeBetweenness = sigmavw;
+				else
+					edgeBetweenness = (1.0 + Dbetweenness) * sigmavw;
+				
+				edgeDependency[edgeID] = edgeBetweenness;
+				outEdgeBetweenness[edgeID] += edgeBetweenness;
+			}
+			
+			if (w != source)
+			{
+				outNodeBetweenness[w] += deltaw;
+				outStress[w] += sigma[w] * stressw;
 			}
 		}
+	}
+	
+	/**
+	 * Computes a direction-invariant 64 bit hash of an edge (represented by its two nodes' IDs).
+	 * @param ID of the first node
+	 * @param ID of the second node
+	 * @return 64 bit hash, where the left 32 bit are the smaller ID, and the right 32 bit the larger ID
+	 */
+	public static long computeEdgeHash(int id1, int id2)
+	{
+		int smaller = id1 < id2 ? id1 : id2;
+		int bigger = id1 > id2 ? id1 : id2;
+		
+		return (((long)smaller) << 32) + (long)bigger;
 	}
 
 	/**
@@ -672,7 +867,8 @@ public class UndirNetworkAnalyzer extends NetworkAnalyzer {
 	 *            Number of nodes for which betweenness has been computed.
 	 * @return Normalization factor for node betweenness normalization.
 	 */
-	protected double computeNormFactor(int count) {
+	public static double computeNormFactor(int count) 
+	{
 		return (count > 2) ? (1.0 / ((count - 1) * (count - 2))) : 1.0;
 	}
 
@@ -684,58 +880,93 @@ public class UndirNetworkAnalyzer extends NetworkAnalyzer {
 	 *            parameter results in throwing an exception.
 	 * @return Average number of neighbors of the nodes in <code>aNodes</code>.
 	 */
-	private double averageNeighbors(Set<CyNode> aNodes) {
+	private double averageNeighbors(int[] nodes, int[] edgeOffsets)
+	{
 		int neighbors = 0;
-		for (final CyNode node : aNodes) {
-			neighbors += getNeighbors(node).size();
-		}
-		return (double) neighbors / aNodes.size();
-	}
-
-	/**
-	 * Counts the number of neighbors of the given node that occur in the given set of nodes.
-	 * 
-	 * @param aSet
-	 *            Set of nodes to be searched in.
-	 * @param aNode
-	 *            CyNode whose neighbors will be searched in <code>aSet</code>.
-	 * @return Number of nodes in <code>aSet</code> that are neighbors of <code>aNode</code>.
-	 */
-	private int countNeighborsIn(Set<CyNode> aSet, CyNode aNode) {
-		Set<CyNode> nbs = CyNetworkUtils.getNeighbors(network, aNode, getIncidentEdges(aNode));
-		nbs.retainAll(aSet);
-		return nbs.size();
+		for (int node : nodes)
+			neighbors += edgeOffsets[node + 1] - edgeOffsets[node];
+		
+		return (double)neighbors / (double)nodes.length;
 	}
 
 	/**
 	 * Computes the topological coefficient of the given node.
-	 * 
-	 * @param aNode
-	 *            CyNode to get the topological coefficient of.
-	 * @param aNeighbors
-	 *            Set of all the neighbors of the given node.
-	 * @return Topological coefficient of the <code>aNode</code> as a number in the range [0, 1];
-	 *         <code>NaN</code> if the topological coefficient function is not defined for the given
-	 *         node.
+	 * @param node The node's index.
+	 * @param numNodes Number of nodes in the graph.
+	 * @param edges Array with every node's neighbor indices.
+	 * @param edgeOffsets Array with the indices of each node's first neighbor in <code>edges</code>.
+	 * @return	The node's topological coefficient in the range [0; 1];
+	 *          <code>NaN</code> in case the topological coefficient is not defined for this case.
 	 */
-	private double computeTC(CyNode aNode, Set<CyNode> aNeighbors) {
-		Set<CyNode> comNeNodes = new HashSet<CyNode>(); // nodes that share common
-		// neighbor with aNode
+	public static double computeTC(int node, int numNodes, int[] edges, int[] edgeOffsets)
+	{
+		boolean[] commNNodes = new boolean[numNodes];
+		int commNNodesSize = 0;
+		boolean[] isNeighbor = new boolean[numNodes];
 		int tc = 0;
-		for (final CyNode nb : aNeighbors) {
-			Set<CyNode> currentComNeNodes = getNeighbors(nb);
-			for (final CyNode n : currentComNeNodes) {
-				if (n != aNode) {
-					tc++;
-					if (comNeNodes.add(n)) {
-						if (aNeighbors.contains(n)) {
-							tc++;
-						}
-					}
+		
+		int firstEdge = edgeOffsets[node], lastEdge = edgeOffsets[node + 1];
+		
+		for (int ni = firstEdge; ni < lastEdge; ni++)
+			isNeighbor[edges[ni]] = true;
+		
+		for (int ni = firstEdge; ni < lastEdge; ni++)
+		{
+			int neighbor = edges[ni];
+			int firstNEdge = edgeOffsets[neighbor], lastNEdge = edgeOffsets[neighbor + 1];
+			for (int nni = firstNEdge; nni < lastNEdge; nni++)
+			{
+				int nneighbor = edges[nni];
+				if (nneighbor == node)
+					continue;
+				tc++;
+				if (!commNNodes[nneighbor])
+				{
+					commNNodes[nneighbor] = true;
+					commNNodesSize++;
+					if (isNeighbor[nneighbor])
+						tc++;
 				}
 			}
 		}
-		return (double) tc / (double) (comNeNodes.size() * aNeighbors.size());
+		
+		return (double)tc / ((double)commNNodesSize * (double)(lastEdge - firstEdge));
+	}
+	
+	private double[] computePageRank(int numNodes, int[] edges, int[] edgeOffsets, double d, double epsilon)
+	{
+		double[] rank = new double[numNodes], oldRank = new double[numNodes];
+		double startRank = 1.0 / (double)numNodes;
+		for (int i = 0; i < numNodes; i++)
+			rank[i] = startRank;
+		double updateConstant = (1.0 - d) / (double)numNodes;
+		double[] invDegree = new double[numNodes];
+		for (int i = 0; i < numNodes; i++)
+			invDegree[i] = 1.0 / (double)(edgeOffsets[i + 1] - edgeOffsets[i]);
+		
+		double diff = epsilon * 2.0;
+		while (diff > epsilon)
+		{
+			System.arraycopy(rank, 0, oldRank, 0, numNodes);
+			
+			for (int i = 0; i < numNodes; i++)
+			{
+				int firstEdge = edgeOffsets[i], lastEdge = edgeOffsets[i + 1];
+				double nodeRank = 0.0;
+				for (int e = firstEdge; e < lastEdge; e++)
+				{
+					int neighbor = edges[e];
+					nodeRank += oldRank[neighbor] * invDegree[neighbor];
+				}
+				rank[i] = updateConstant + d * nodeRank;
+			}
+			
+			diff = 0.0;
+			for (int i = 0; i < numNodes; i++)
+				diff += Math.abs(rank[i] - oldRank[i]);
+		}
+		
+		return rank;
 	}
 
 	/**
@@ -847,4 +1078,30 @@ public class UndirNetworkAnalyzer extends NetworkAnalyzer {
 	private Map<CyNode, Long> stress;
 
 	private int nodeCount;
+	
+	// Starting from here are variables initialized and used in computeAll()
+	private int networkEdgeCount;
+	private SimpleUndirParams params;
+	private int maxConnectivity;
+	private DegreeDistribution degreeDist;
+	// clustering coefficients
+	private HashMap<Integer, SumCountPair> CCps;
+	// topological coefficients
+	private ArrayList<Point2D.Double> topCoefs;
+	// closeness centrality
+	private ArrayList<Point2D.Double> closenessCent;
+	// node betweenness
+	private ArrayList<Point2D.Double> nodeBetweennessArray;
+	// neighborhood connectivity
+	private HashMap<Integer, SumCountPair> NCps;
+	// average shortest path length
+	private Map<CyNode, Double> aplMap;
+	// stress
+	private LogBinDistribution stressDist;
+	// Compute number of connected components
+	private ConnComponentAnalyzer cca;
+	private double[] nodeBetweennessLean;
+	private double[] edgeBetweennessLean;
+	private long[] stressLean;
+	private int componentDiameter;
 }

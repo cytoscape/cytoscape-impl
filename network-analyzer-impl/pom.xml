@@ -18,6 +18,7 @@
 
 
 	<build>
+    	<testSourceDirectory>src/test/java</testSourceDirectory>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.felix</groupId>
@@ -151,6 +152,12 @@
             <version>2.4</version>
 						<scope>provided</scope>
         </dependency>
+        
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 
 
