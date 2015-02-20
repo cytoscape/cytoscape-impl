@@ -81,6 +81,9 @@ public class BioLayoutFRContext extends BioLayoutContext implements TunableValid
 
 	@Tunable(description="Don't partition graph before layout", groups="Standard settings")
 	public boolean singlePartition;
+	
+	@Tunable(description="Layout nodes in 3D")
+	public boolean layout3D;
 
 	@Override // TODO
 	public ValidationState getValidationState(final Appendable errMsg) {
