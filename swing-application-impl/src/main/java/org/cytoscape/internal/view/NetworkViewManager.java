@@ -414,10 +414,18 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 		}
 		
 		iFrameMap.put(iframe, view);
+		
+		
+		NetworkViewRenderer renderer;
+		String rendererId = view.getRendererId();
+		if(rendererId == null)
+			renderer = appMgr.getDefaultNetworkViewRenderer();
+		renderer = appMgr.getNetworkViewRenderer(rendererId);
+		if(renderer == null)
+			renderer = appMgr.getDefaultNetworkViewRenderer();
 
 		final long start = System.currentTimeMillis();
 		logger.debug("Rendering start: view model = " + view.getSUID());
-		NetworkViewRenderer renderer = appMgr.getCurrentNetworkViewRenderer();
 		RenderingEngineFactory<CyNetwork> engineFactory = renderer.getRenderingEngineFactory(NetworkViewRenderer.DEFAULT_CONTEXT);
 		final RenderingEngine<CyNetwork> renderingEngine = engineFactory.createRenderingEngine(iframe, view);
 		renderingEngineMgr.addRenderingEngine(renderingEngine);

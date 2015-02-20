@@ -27,8 +27,10 @@ package org.cytoscape.task.internal.creation;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -112,7 +114,11 @@ public class CreateNetworkViewTask extends AbstractNetworkCollectionTask
 		this.renderingEngineMgr = renderingEngineMgr;
 		this.sourceView = sourceView;
 		this.result = new ArrayList<CyNetworkView>();
-		this.viewRenderers = new HashSet<NetworkViewRenderer>();
+		this.viewRenderers = new TreeSet<NetworkViewRenderer>(new Comparator<NetworkViewRenderer>() {
+			@Override public int compare(NetworkViewRenderer r1, NetworkViewRenderer r2) {
+				return r1.toString().compareToIgnoreCase(r2.toString());
+			}
+		});
 	}
 
 	@Override

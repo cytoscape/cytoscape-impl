@@ -111,4 +111,10 @@ public class NullCyNetworkViewImpl implements NullCyNetworkView {
 	@Override
 	public void dispose() {
 	}
+
+	@Override
+	public String getRendererId() {
+		return null;
+	}
+	
 }
