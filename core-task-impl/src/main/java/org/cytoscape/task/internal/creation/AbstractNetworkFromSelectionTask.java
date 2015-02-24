@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.NetworkViewRenderer;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.group.CyGroup;
 import org.cytoscape.group.CyGroupManager;
@@ -165,8 +166,18 @@ abstract class AbstractNetworkFromSelectionTask extends AbstractCreationTask {
 		// create the view in a separate task
 		final Set<CyNetwork> networks = new HashSet<CyNetwork>();
 		networks.add(newNet);
+		
+		// Pick a CyNetworkViewFactory that is appropriate for the sourceView
+		CyNetworkViewFactory sourceViewFactory = viewFactory;
+		if(sourceView != null) {
+			NetworkViewRenderer networkViewRenderer = appManager.getNetworkViewRenderer(sourceView.getRendererId());
+			if(networkViewRenderer != null) {
+				sourceViewFactory = networkViewRenderer.getNetworkViewFactory();
+			}
+		}
+		
 		final CreateNetworkViewTask createViewTask = 
-			new CreateNetworkViewTask(undoSupport, networks, viewFactory, networkViewManager,
+			new CreateNetworkViewTask(undoSupport, networks, sourceViewFactory, networkViewManager,
 				                        null, eventHelper, vmm, renderingEngineMgr, sourceView);
 		insertTasksAfterCurrentTask(createViewTask);
 		
