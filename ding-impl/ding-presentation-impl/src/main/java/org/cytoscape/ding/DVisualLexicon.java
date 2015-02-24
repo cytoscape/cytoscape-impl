@@ -76,6 +76,8 @@ public class DVisualLexicon extends BasicVisualLexicon {
 	private static final Map<VisualProperty<CyCustomGraphics>, VisualProperty<Double>> CG_TO_SIZE = new HashMap<>();
 	private static final Map<VisualProperty<CyCustomGraphics>, VisualProperty<ObjectPosition>> CG_TO_POSITION = new HashMap<>();
 	private static final Map<VisualProperty<Double>, VisualProperty<CyCustomGraphics>> SIZE_TO_CG = new HashMap<>();
+	
+	private static final Set<VisualProperty<?>> UNSUPPORTED_VP_SET = new HashSet<VisualProperty<?>>();
 
 
 	// Root of Ding's VP tree.
@@ -269,7 +271,6 @@ public class DVisualLexicon extends BasicVisualLexicon {
 			"Separate Arrow", "SEPARATE_ARROW", new SeparateArrowStroke(1.0f));
 	
 	
-
 	static {
 		CG.add(NODE_CUSTOMGRAPHICS_1);
 		CG.add(NODE_CUSTOMGRAPHICS_2);
@@ -330,6 +331,12 @@ public class DVisualLexicon extends BasicVisualLexicon {
 		SIZE_TO_CG.put(NODE_CUSTOMGRAPHICS_SIZE_7, NODE_CUSTOMGRAPHICS_7);
 		SIZE_TO_CG.put(NODE_CUSTOMGRAPHICS_SIZE_8, NODE_CUSTOMGRAPHICS_8);
 		SIZE_TO_CG.put(NODE_CUSTOMGRAPHICS_SIZE_9, NODE_CUSTOMGRAPHICS_9);
+		
+		UNSUPPORTED_VP_SET.add(BasicVisualLexicon.NODE_SELECTED);
+		UNSUPPORTED_VP_SET.add(BasicVisualLexicon.EDGE_SELECTED);
+		UNSUPPORTED_VP_SET.add(BasicVisualLexicon.NODE_DEPTH);
+		UNSUPPORTED_VP_SET.add(BasicVisualLexicon.NETWORK_CENTER_Z_LOCATION);
+		UNSUPPORTED_VP_SET.add(BasicVisualLexicon.NETWORK_DEPTH);
 	}
 
 	public DVisualLexicon(final CustomGraphicsManager manager) {
@@ -468,5 +475,13 @@ public class DVisualLexicon extends BasicVisualLexicon {
 	@SuppressWarnings("rawtypes")
 	public static Set<VisualProperty<CyCustomGraphics>> getCustomGraphicsVisualProperties() {
 		return CG;
+	}
+	
+	@Override
+	public boolean isSupported(final VisualProperty<?> vp) {
+		if (UNSUPPORTED_VP_SET.contains(vp))
+			return false;
+		
+		return super.isSupported(vp);
 	}
 }

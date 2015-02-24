@@ -19,6 +19,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.NetworkViewRenderer;
 import org.cytoscape.application.events.SetCurrentNetworkEvent;
 import org.cytoscape.application.events.SetCurrentNetworkListener;
 import org.cytoscape.application.events.SetCurrentNetworkViewEvent;
@@ -156,27 +157,43 @@ public class VizMapperProxy extends Proxy
 	}
 	
 	public RenderingEngine<CyNetwork> getCurrentRenderingEngine() {
-		RenderingEngine<CyNetwork> engine = servicesUtil.get(CyApplicationManager.class).getCurrentRenderingEngine();
-		
-		if (engine == null)
-			getDefaultRenderingEngine(getCurrentVisualStyle());
-		
-		return engine;
+		return servicesUtil.get(CyApplicationManager.class).getCurrentRenderingEngine();
 	}
 	
-	public RenderingEngineFactory<CyNetwork> getCurrentRenderingEngineFactory() {// TODO How to get the current one?
+	public RenderingEngineFactory<CyNetwork> getCurrentRenderingEngineFactory() {
+		final NetworkViewRenderer nvRenderer =
+				servicesUtil.get(CyApplicationManager.class).getCurrentNetworkViewRenderer();
+		
+		if (nvRenderer != null)
+			return nvRenderer.getRenderingEngineFactory(NetworkViewRenderer.DEFAULT_CONTEXT);
+		
 		return servicesUtil.get(RenderingEngineFactory.class);
 	}
 	
-	public void getDefaultRenderingEngine(final VisualStyle style) {
-		// TODO Auto-generated method stub
-		
+	public NetworkViewRenderer getNetworkViewRenderer(final CyNetworkView netView) {
+		return getNetworkViewRenderer(netView.getRendererId());
+	}
+	
+	public NetworkViewRenderer getNetworkViewRenderer(final String rendererId) {
+		return servicesUtil.get(CyApplicationManager.class).getNetworkViewRenderer(rendererId);
+	}
+	
+	public RenderingEngineFactory<CyNetwork> getRenderingEngineFactory(final CyNetworkView netView) {
+		return getNetworkViewRenderer(netView).getRenderingEngineFactory(NetworkViewRenderer.DEFAULT_CONTEXT);
 	}
 	
 	public VisualLexicon getCurrentVisualLexicon() {
-		final RenderingEngine<CyNetwork> engine = getCurrentRenderingEngine();
-		final VisualLexicon lexicon = engine != null ? 
-				engine.getVisualLexicon() : servicesUtil.get(RenderingEngineManager.class).getDefaultVisualLexicon();
+		VisualLexicon lexicon = null;
+		final RenderingEngineFactory<CyNetwork> curRenderingEngineFactory = getCurrentRenderingEngineFactory();
+		
+		if (curRenderingEngineFactory != null)
+			lexicon = curRenderingEngineFactory.getVisualLexicon();
+		
+		if (lexicon == null) {
+			final RenderingEngine<CyNetwork> engine = getCurrentRenderingEngine();
+			lexicon = engine != null ? 
+					engine.getVisualLexicon() : servicesUtil.get(RenderingEngineManager.class).getDefaultVisualLexicon();
+		}
 		
 		return lexicon;
 	}
