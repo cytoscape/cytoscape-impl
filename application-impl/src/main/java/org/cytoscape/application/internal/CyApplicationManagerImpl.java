@@ -88,7 +88,6 @@ public class CyApplicationManagerImpl implements CyApplicationManager,
 	private RenderingEngine<CyNetwork> currentRenderingEngine;
 	private CyTable currentTable;
 
-	private NetworkViewRenderer currentRenderer;
 	private Map<String, NetworkViewRenderer> renderers;
 
 	private NetworkViewRenderer defaultRenderer;
@@ -362,12 +361,6 @@ public class CyApplicationManagerImpl implements CyApplicationManager,
 					  || (engine != null && !engine.equals(currentRenderingEngine));
 			
 			this.currentRenderingEngine = engine;
-			
-			if (engine != null) {
-				currentRenderer = getNetworkViewRenderer(engine.getRendererId());
-			} else {
-				currentRenderer = null;
-			}
 		}
 		
 		if (changed)
@@ -425,10 +418,15 @@ public class CyApplicationManagerImpl implements CyApplicationManager,
 	@Override
 	public NetworkViewRenderer getCurrentNetworkViewRenderer() {
 		synchronized (lock) {
-			if (currentRenderer != null) {
-				return currentRenderer;
-			}
-			return getDefaultRenderer();
+			NetworkViewRenderer netViewRenderer = null;
+			
+			if (currentNetworkView != null)
+				netViewRenderer = getNetworkViewRenderer(currentNetworkView.getRendererId());
+			
+			if (netViewRenderer == null)
+				netViewRenderer = getDefaultRenderer();
+			
+			return netViewRenderer;
 		}
 	}
 
