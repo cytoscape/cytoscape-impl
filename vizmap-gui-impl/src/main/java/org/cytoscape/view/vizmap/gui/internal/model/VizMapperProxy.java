@@ -38,10 +38,12 @@ import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualLexicon;
+import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.view.presentation.RenderingEngineFactory;
 import org.cytoscape.view.presentation.RenderingEngineManager;
 import org.cytoscape.view.vizmap.VisualMappingManager;
+import org.cytoscape.view.vizmap.VisualPropertyDependency;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.events.SetCurrentVisualStyleEvent;
 import org.cytoscape.view.vizmap.events.SetCurrentVisualStyleListener;
@@ -52,6 +54,7 @@ import org.cytoscape.view.vizmap.events.VisualStyleAddedListener;
 import org.cytoscape.view.vizmap.events.VisualStyleChangedEvent;
 import org.cytoscape.view.vizmap.events.VisualStyleChangedListener;
 import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
+import org.cytoscape.view.vizmap.gui.util.PropertySheetUtil;
 import org.puremvc.java.multicore.patterns.proxy.Proxy;
 
 @SuppressWarnings("unchecked")
@@ -248,6 +251,22 @@ public class VizMapperProxy extends Proxy
 		}
 		
 		return views;
+	}
+	
+	public boolean isSupported(final VisualProperty<?> vp) {
+		return PropertySheetUtil.isCompatible(vp) && getCurrentVisualLexicon().isSupported(vp);
+	}
+	
+	public boolean isSupported(final VisualPropertyDependency<?> dependency) {
+		if (!isSupported(dependency.getParentVisualProperty()))
+			return false;
+		
+		for (final VisualProperty<?> vp : dependency.getVisualProperties()) {
+			if (!isSupported(vp))
+				return false;
+		}
+		
+		return true;
 	}
 	
 	// --- Cytoscape EVENTS ---

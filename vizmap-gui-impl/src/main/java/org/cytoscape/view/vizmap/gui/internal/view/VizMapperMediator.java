@@ -104,7 +104,6 @@ import org.cytoscape.view.vizmap.gui.internal.view.VizMapperMainPanel.VisualStyl
 import org.cytoscape.view.vizmap.gui.internal.view.editor.mappingeditor.ContinuousMappingEditorPanel;
 import org.cytoscape.view.vizmap.gui.internal.view.editor.mappingeditor.EditorValueRangeTracer;
 import org.cytoscape.view.vizmap.gui.util.DiscreteMappingGenerator;
-import org.cytoscape.view.vizmap.gui.util.PropertySheetUtil;
 import org.cytoscape.view.vizmap.mappings.ContinuousMapping;
 import org.cytoscape.view.vizmap.mappings.DiscreteMapping;
 import org.cytoscape.work.ServiceProperties;
@@ -906,7 +905,7 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 		for (final VisualProperty<?> vp : vpList) {
 			if (vp.getTargetDataType() != type || vp instanceof DefaultVisualizableVisualProperty)
 				continue;
-			if (!lexicon.isSupported(vp) || !PropertySheetUtil.isCompatible(vp))
+			if (!vmProxy.isSupported(vp))
 				continue;
 			
 			// Create model
@@ -968,6 +967,8 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 		
 		for (final VisualPropertyDependency<?> dep : dependencies) {
 			if (dep.getParentVisualProperty().getTargetDataType() != type)
+				continue;
+			if (!vmProxy.isSupported(dep))
 				continue;
 			
 			final VisualPropertySheetItemModel<?> model = new VisualPropertySheetItemModel(dep, style, engine, lexicon);
