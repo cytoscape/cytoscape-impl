@@ -26,12 +26,10 @@ package org.cytoscape.task.internal.loadnetwork;
 
 
 import java.io.File;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Properties;
 
-import org.cytoscape.io.read.CyNetworkReaderManager;
 import org.cytoscape.io.read.CyNetworkReader;
+import org.cytoscape.io.read.CyNetworkReaderManager;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.session.CyNetworkNaming;
@@ -42,7 +40,6 @@ import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskObserver;
-import org.cytoscape.work.TunableSetter;
 
 /**
  * Task to load a new network.

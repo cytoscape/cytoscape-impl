@@ -26,10 +26,8 @@ package org.cytoscape.task.internal.creation;
 
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.work.AbstractTask;
-import org.cytoscape.work.ObservableTask;
 
 /**
  * Task to create new sub network from an original (parent) network.

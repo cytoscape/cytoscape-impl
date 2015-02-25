@@ -35,6 +35,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.ding.NetworkViewTestSupport;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyNetwork;
@@ -65,6 +66,7 @@ public class CreateNetworkViewTaskTest {
 	@Mock private TaskMonitor tm;
 	@Mock private CyEventHelper eventHelper;
 	@Mock private VisualMappingManager vmm;
+	@Mock private CyApplicationManager appManager;
 	@Mock private VisualStyle currentStyle;
 
 	@Before
@@ -79,7 +81,7 @@ public class CreateNetworkViewTaskTest {
 		final Set<CyNetwork> networks = new HashSet<CyNetwork>();
 		networks.add(support.getNetwork());
 		final CreateNetworkViewTask task = new CreateNetworkViewTask(undoSupport, networks, viewFactory,
-				networkViewManager, null, eventHelper, vmm, renderingEngineManager, null);
+				networkViewManager, null, eventHelper, vmm, renderingEngineManager, appManager, null);
 
 		task.run(tm);
 		verify(networkViewManager, times(1)).addNetworkView(any(CyNetworkView.class));
@@ -94,7 +96,7 @@ public class CreateNetworkViewTaskTest {
 		when(networkViewManager.getNetworkViews(view.getModel())).thenReturn(Arrays.asList(new CyNetworkView[]{ view }));
 		
 		final CreateNetworkViewTask task = new CreateNetworkViewTask(undoSupport, networks, viewFactory,
-				networkViewManager, null, eventHelper, vmm, renderingEngineManager, null);
+				networkViewManager, null, eventHelper, vmm, renderingEngineManager, appManager, null);
 		
 		task.run(tm);
 		verify(networkViewManager, times(1)).addNetworkView(any(CyNetworkView.class));

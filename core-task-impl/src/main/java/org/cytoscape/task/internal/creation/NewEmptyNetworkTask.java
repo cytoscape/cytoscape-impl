@@ -29,8 +29,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.NetworkViewRenderer;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
@@ -60,29 +62,26 @@ import org.cytoscape.work.util.ListSingleSelection;
 public class NewEmptyNetworkTask extends AbstractTask {
 
 	private final CyNetworkNaming namingUtil; 
-	private final CyNetworkViewManager networkViewManager;
-	private final VisualMappingManager vmm;
-	private final CyApplicationManager cyApplicationManager;
+	private final CyNetworkViewManager netViewMgr;
+	private final VisualMappingManager vmMgr;
+	private final CyApplicationManager appMgr;
+	protected final CyNetworkFactory netFactory;
+	protected final CyNetworkManager netMgr;
+	protected final CyRootNetworkManager rootNetMgr;
 	
 	private boolean cancel;
 	private CyNetworkView view;
 
-	//
-	public static final String CRERATE_NEW_COLLECTION_STRING ="Create new network collection";
-
-	protected final CyNetworkViewFactory cyNetworkViewFactory;
-	protected final CyNetworkFactory cyNetworkFactory;
-
-	protected final CyNetworkManager cyNetworkManager;
-	protected final CyRootNetworkManager cyRootNetworkManager;
+	public static final String CRERATE_NEW_COLLECTION_STRING = "Create new network collection";
 
 	//******** tunables ********************
 
 	public ListSingleSelection<String> rootNetworkList;
-	@Tunable(description = "Network Collection" ,groups=" ", gravity=1.0)
+	@Tunable(description = "Network Collection:", gravity=1.0)
 	public ListSingleSelection<String> getRootNetworkList(){
 		return rootNetworkList;
 	}
+	
 	public void setRootNetworkList (ListSingleSelection<String> roots){
 		if (rootNetworkList.getSelectedValue().equalsIgnoreCase(CRERATE_NEW_COLLECTION_STRING)){
 			// set default
@@ -95,10 +94,11 @@ public class NewEmptyNetworkTask extends AbstractTask {
 	}
 	
 	public ListSingleSelection<String> targetColumnList;
-	@Tunable(description = "Node Identifier Mapping Column:",groups=" ", listenForChange={"RootNetworkList"}, gravity=2.0)
+	@Tunable(description = "Node Identifier Mapping Column:", listenForChange={"RootNetworkList"}, gravity=2.0)
 	public ListSingleSelection<String> getTargetColumnList(){
 		return targetColumnList;
 	}
+	
 	public void setTargetColumnList(ListSingleSelection<String> colList){
 		this.targetColumnList = colList;
 
@@ -106,15 +106,16 @@ public class NewEmptyNetworkTask extends AbstractTask {
 		this.targetColumnList.setSelectedValue("shared name");
 	}
 
-	@Tunable(description = "Name of network: ", groups=" ", gravity=3.0)
+	@Tunable(description = "Network Name:", gravity=3.0)
 	public String name = "Network";
 	
+	@Tunable(description = "Network View Renderer:", gravity=4.0)
+	public ListSingleSelection<NetworkViewRenderer> renderers;
 	
 	@ProvidesTitle
 	public String getTitle() {
 		return "Create New Network ";
 	}
-
 	
 	public ListSingleSelection<String> getTargetColumns (CyNetwork network) {
 		CyTable selectedTable = network.getTable(CyNode.class, CyRootNetwork.SHARED_ATTRS);
@@ -146,25 +147,28 @@ public class NewEmptyNetworkTask extends AbstractTask {
 		
 		return columns;
 	}
-
 	
 	protected HashMap<String, CyRootNetwork> name2RootMap;
 	protected Map<Object, CyNode> nMap = new HashMap<Object, CyNode>(10000);
 
-	public NewEmptyNetworkTask(CyNetworkFactory cnf, CyNetworkViewFactory cnvf, CyNetworkManager netmgr,
-				   final CyNetworkViewManager networkViewManager, final CyNetworkNaming namingUtil,
-				   final VisualMappingManager vmm, final CyRootNetworkManager cyRootNetworkManager, final CyApplicationManager cyApplicationManager) {
-		this.cyNetworkManager = netmgr;
-		this.networkViewManager = networkViewManager;
-		this.cyNetworkFactory = cnf;
-		this.cyNetworkViewFactory = cnvf;
+	public NewEmptyNetworkTask(final CyNetworkFactory netFactory,
+							   final CyNetworkManager netMgr,
+							   final CyNetworkViewManager netViewMgr,
+							   final CyNetworkNaming namingUtil,
+							   final VisualMappingManager vmMgr,
+							   final CyRootNetworkManager rootNetMgr,
+							   final CyApplicationManager appMgr,
+							   final Set<NetworkViewRenderer> viewRenderers) {
+		this.netMgr = netMgr;
+		this.netViewMgr = netViewMgr;
+		this.netFactory = netFactory;
 		this.namingUtil = namingUtil;
-		this.vmm = vmm;
-		this.cyRootNetworkManager = cyRootNetworkManager;
-		this.cyApplicationManager = cyApplicationManager;
+		this.vmMgr = vmMgr;
+		this.rootNetMgr = rootNetMgr;
+		this.appMgr = appMgr;
 		
 		// initialize the network Collection
-		this.name2RootMap = getRootNetworkMap(this.cyNetworkManager, this.cyRootNetworkManager);
+		this.name2RootMap = getRootNetworkMap(this.netMgr, this.rootNetMgr);
 		
 		List<String> rootNames = new ArrayList<String>();
 		rootNames.add(CRERATE_NEW_COLLECTION_STRING);
@@ -172,10 +176,10 @@ public class NewEmptyNetworkTask extends AbstractTask {
 		rootNetworkList = new ListSingleSelection<String>(rootNames);
 		rootNetworkList.setSelectedValue(rootNames.get(0));
 		
-		final List<CyNetwork> selectedNetworks = cyApplicationManager.getSelectedNetworks();
+		final List<CyNetwork> selectedNetworks = appMgr.getSelectedNetworks();
 
 		if (selectedNetworks != null && selectedNetworks.size() > 0){
-			CyNetwork selectedNetwork = this.cyApplicationManager.getSelectedNetworks().get(0);
+			CyNetwork selectedNetwork = this.appMgr.getSelectedNetworks().get(0);
 			String rootName = "";
 			if (selectedNetwork instanceof CySubNetwork){
 				CySubNetwork subnet = (CySubNetwork) selectedNetwork;
@@ -193,8 +197,16 @@ public class NewEmptyNetworkTask extends AbstractTask {
 		List<String> colNames_target = new ArrayList<String>();
 		colNames_target.add("shared name");
 		this.targetColumnList = new ListSingleSelection<String>(colNames_target);
+		
+		renderers = new ListSingleSelection<NetworkViewRenderer>(new ArrayList<NetworkViewRenderer>(viewRenderers));
+		
+		final NetworkViewRenderer defViewRenderer = appMgr.getDefaultNetworkViewRenderer();
+		
+		if (defViewRenderer != null && viewRenderers.contains(defViewRenderer))
+			renderers.setSelectedValue(defViewRenderer);
 	}
 
+	@Override
 	public void run(final TaskMonitor tm) {
 		tm.setProgress(0.0);
 		
@@ -203,7 +215,7 @@ public class NewEmptyNetworkTask extends AbstractTask {
 		
 		if (networkCollectionName.equalsIgnoreCase(CRERATE_NEW_COLLECTION_STRING)){
 			// This is a new network collection, create a root network and a subnetwork, which is a base subnetwork
-			subNetwork = (CySubNetwork) cyNetworkFactory.createNetwork();
+			subNetwork = (CySubNetwork) netFactory.createNetwork();
 		} else {
 			// Add a new subNetwork to the given collection
 			subNetwork = this.name2RootMap.get(networkCollectionName).addSubNetwork();
@@ -220,13 +232,15 @@ public class NewEmptyNetworkTask extends AbstractTask {
 			rootNetwork.getRow(rootNetwork).set(CyNetwork.NAME, networkName);
 		}
 		
+		final CyNetworkViewFactory netViewFactory = renderers.getSelectedValue().getNetworkViewFactory();
+		
 		tm.setProgress(0.4);
-		view = cyNetworkViewFactory.createNetworkView(subNetwork);		
+		view = netViewFactory.createNetworkView(subNetwork);		
 		tm.setProgress(0.6);
-		cyNetworkManager.addNetwork(subNetwork);
+		netMgr.addNetwork(subNetwork);
 		tm.setProgress(0.8);
-		final VisualStyle style = vmm.getCurrentVisualStyle(); // get the current style before registering the view!
-		networkViewManager.addNetworkView(view);
+		final VisualStyle style = vmMgr.getCurrentVisualStyle(); // get the current style before registering the view!
+		netViewMgr.addNetworkView(view);
 		tm.setProgress(0.9);
 		applyVisualStyle(style);
 		tm.setProgress(1.0);
@@ -243,7 +257,7 @@ public class NewEmptyNetworkTask extends AbstractTask {
 	
 	private void applyVisualStyle(final VisualStyle style) {
 		if (style != null) {
-			vmm.setVisualStyle(style, view);
+			vmMgr.setVisualStyle(style, view);
 			style.apply(view);
 			view.updateView();
 		}

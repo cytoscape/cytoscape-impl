@@ -31,7 +31,10 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.Collections;
+
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.NetworkViewRenderer;
 import org.cytoscape.ding.NetworkViewTestSupport;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
@@ -55,32 +58,29 @@ public class NewEmptyNetworkTaskTest {
 	private final NetworkTestSupport support = new NetworkTestSupport();
 	private final NetworkViewTestSupport viewSupport = new NetworkViewTestSupport();
 
-	private CyNetworkFactory cnf = support.getNetworkFactory();
-	private CyNetworkViewFactory cnvf = viewSupport.getNetworkViewFactory();
+	private CyNetworkFactory netFactory = support.getNetworkFactory();
+	private CyNetworkViewFactory netViewFactory = viewSupport.getNetworkViewFactory();
 	private CyRootNetworkManager cyroot = support.getRootNetworkFactory();
 	
-	private CyApplicationManager appManager = mock(CyApplicationManager.class);
-	
-	@Mock
-	private CyNetworkManager netMgr;
-	@Mock
-	private CyNetworkViewManager netViewMgr;
-	@Mock
-	private CyNetworkNaming namingUtil;
-	@Mock
-	private VisualMappingManager vmm;
-	@Mock
-	private VisualStyle currentStyle;
+	@Mock private CyNetworkManager netMgr;
+	@Mock private CyNetworkViewManager netViewMgr;
+	@Mock private CyNetworkNaming namingUtil;
+	@Mock private VisualMappingManager vmm;
+	@Mock private CyApplicationManager appManager;
+	@Mock private NetworkViewRenderer netViewRender;
+	@Mock private VisualStyle currentStyle;
 
 	@Before
 	public void initMocks() {
 		MockitoAnnotations.initMocks(this);
 		when(vmm.getCurrentVisualStyle()).thenReturn(currentStyle);
+		when(netViewRender.getNetworkViewFactory()).thenReturn(netViewFactory);
 	}
 
 	@Test
 	public void testNewEmptyNetworkTask() throws Exception {
-		final NewEmptyNetworkTask task = new NewEmptyNetworkTask(cnf, cnvf, netMgr, netViewMgr, namingUtil, vmm, cyroot, appManager);
+		final NewEmptyNetworkTask task = new NewEmptyNetworkTask(netFactory, netMgr, netViewMgr, namingUtil, vmm,
+				cyroot, appManager, Collections.singleton(netViewRender));
 		final TaskMonitor taskMonitor = mock(TaskMonitor.class);
 		task.run(taskMonitor);
 
