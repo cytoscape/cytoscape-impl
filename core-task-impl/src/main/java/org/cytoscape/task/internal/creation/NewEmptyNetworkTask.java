@@ -26,6 +26,7 @@ package org.cytoscape.task.internal.creation;
 
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -151,6 +152,7 @@ public class NewEmptyNetworkTask extends AbstractTask {
 	protected HashMap<String, CyRootNetwork> name2RootMap;
 	protected Map<Object, CyNode> nMap = new HashMap<Object, CyNode>(10000);
 
+	@SuppressWarnings("unchecked")
 	public NewEmptyNetworkTask(final CyNetworkFactory netFactory,
 							   final CyNetworkManager netMgr,
 							   final CyNetworkViewManager netViewMgr,
@@ -198,12 +200,17 @@ public class NewEmptyNetworkTask extends AbstractTask {
 		colNames_target.add("shared name");
 		this.targetColumnList = new ListSingleSelection<String>(colNames_target);
 		
-		renderers = new ListSingleSelection<NetworkViewRenderer>(new ArrayList<NetworkViewRenderer>(viewRenderers));
-		
-		final NetworkViewRenderer defViewRenderer = appMgr.getDefaultNetworkViewRenderer();
-		
-		if (defViewRenderer != null && viewRenderers.contains(defViewRenderer))
-			renderers.setSelectedValue(defViewRenderer);
+		// If there is only one registered renderer, we don't want to add it to the List Selection,
+		// so the combo-box does not appear to the user, since there is nothing to select anyway.
+		if (viewRenderers.size() > 1) {
+			renderers = new ListSingleSelection<NetworkViewRenderer>(new ArrayList<NetworkViewRenderer>(viewRenderers));
+			final NetworkViewRenderer defViewRenderer = appMgr.getDefaultNetworkViewRenderer();
+			
+			if (defViewRenderer != null && viewRenderers.contains(defViewRenderer))
+				renderers.setSelectedValue(defViewRenderer);
+		} else {
+			renderers = new ListSingleSelection<NetworkViewRenderer>(Collections.EMPTY_LIST);
+		}
 	}
 
 	@Override
@@ -232,7 +239,12 @@ public class NewEmptyNetworkTask extends AbstractTask {
 			rootNetwork.getRow(rootNetwork).set(CyNetwork.NAME, networkName);
 		}
 		
-		final CyNetworkViewFactory netViewFactory = renderers.getSelectedValue().getNetworkViewFactory();
+		NetworkViewRenderer nvRenderer = renderers.getSelectedValue();
+		
+		if (nvRenderer == null)
+			nvRenderer = appMgr.getDefaultNetworkViewRenderer();
+		
+		final CyNetworkViewFactory netViewFactory = nvRenderer.getNetworkViewFactory();
 		
 		tm.setProgress(0.4);
 		view = netViewFactory.createNetworkView(subNetwork);		

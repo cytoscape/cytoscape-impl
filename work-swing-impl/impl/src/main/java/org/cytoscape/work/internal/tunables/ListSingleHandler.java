@@ -90,10 +90,13 @@ public class ListSingleHandler<T> extends AbstractGUITunableHandler
 	}
 
 	private void init() {
-
-		if ( getSingleSelection().getPossibleValues().isEmpty() ) {
+		final ListSingleSelection<T> singleSelection = getSingleSelection();
+		
+		if (singleSelection == null || singleSelection.getPossibleValues().isEmpty()) {
 			panel = new JPanel();
+			panel.setVisible(false);
 			combobox = null;
+			
 			return;
 		}
 
@@ -123,6 +126,7 @@ public class ListSingleHandler<T> extends AbstractGUITunableHandler
 		}
 	}
 
+	@Override
 	public void update() {
 		combobox.setModel(new DefaultComboBoxModel(getSingleSelection().getPossibleValues().toArray()));
 		combobox.setSelectedItem(getSingleSelection().getSelectedValue());
