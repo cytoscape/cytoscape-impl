@@ -411,10 +411,19 @@ class GraphicsUtilities {
 		if (paint != null)
 			g2.setPaint(paint);
 
+		// Handle opacity
+		final Composite originalComposite = g2.getComposite();
+		if (paint instanceof Color) {
+			int alpha = ((Color)paint).getAlpha();
+			float opacity = (float)alpha/(float)255;
+			g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, opacity));
+		}
+
 		if (type != ArrowType.OPEN && type != ArrowType.TSHAPE)
 			g2.fill(arrow); 
 
 		g2.draw(arrow);	// We're relying on the stroke to be done by the caller
+		g2.setComposite(originalComposite);
 	}
 
 	// Shapes.

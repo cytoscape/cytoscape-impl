@@ -24,8 +24,10 @@ package org.cytoscape.ding.impl.cyannotator.annotations;
  * #L%
  */
 
+import java.awt.AlphaComposite;
 import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.Composite;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
@@ -195,7 +197,8 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 		super.drawAnnotation(g, x, y, scaleFactor);
 
 		Graphics2D g2 = (Graphics2D) g;
-		g2.setColor(textColor);
+		System.out.println("drawAnnotation: setting text color to: "+textColor);
+		g2.setPaint(textColor);
 		// Font tFont = font.deriveFont(((float)(scaleFactor/getZoom()))*font.getSize2D());
 		Font tFont = font.deriveFont(((float)(scaleFactor/getZoom()))*font.getSize2D());
 		FontMetrics fontMetrics=g.getFontMetrics(tFont);
@@ -211,7 +214,14 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 		int yLoc = (int)(y*scaleFactor + halfHeight);
 
 		g2.setFont(tFont);
+
+		// Handle opacity
+		int alpha = textColor.getAlpha();
+		float opacity = (float)alpha/(float)255;
+		final Composite originalComposite = g2.getComposite();
+		g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, opacity));
 		g2.drawString(text, xLoc, yLoc);
+		g2.setComposite(originalComposite);
 	}
 
 	public Rectangle getBounds() {
@@ -223,8 +233,15 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 		super.paint(g);
 
 		Graphics2D g2=(Graphics2D)g;
-		g2.setColor(textColor);
+
+		g2.setPaint(textColor);
 		g2.setFont(font);
+
+		// Handle opacity
+		int alpha = textColor.getAlpha();
+		float opacity = (float)alpha/(float)255;
+		final Composite originalComposite = g2.getComposite();
+		g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, opacity));
 
 		int halfWidth = (int)((double)getWidth()-getTextWidth(g2))/2;
 		int halfHeight = (int)((double)getHeight()+getTextHeight(g2)/2.0)/2; // Note, this is + because we start at the baseline
@@ -243,6 +260,7 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 			// g2.drawRect(getX()-4, getY()-4, getTextWidth(g2)+8, getTextHeight(g2)+8);
 			g2.drawRect(0, 0, getAnnotationWidth(), getAnnotationHeight());
 		}
+		g2.setComposite(originalComposite);
 	}
 
 	public void print(Graphics g) {

@@ -24,7 +24,9 @@ package org.cytoscape.ding.impl.cyannotator.annotations;
  * #L%
  */
 
+import java.awt.AlphaComposite;
 import java.awt.Color;
+import java.awt.Composite;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
@@ -176,7 +178,14 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 		int yLoc = (int)(y*scaleFactor) + halfHeight;
 
 		g2.setFont(tFont);
+
+		// Handle opacity
+		int alpha = textColor.getAlpha();
+		float opacity = (float)alpha/(float)255;
+		final Composite originalComposite = g2.getComposite();
+		g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, opacity));
 		g2.drawString(text, xLoc, yLoc);
+		g2.setComposite(originalComposite);
 	}
 
 	@Override
@@ -187,15 +196,23 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 		g2.setColor(textColor);
 		g2.setFont(font);
 
+		// Handle opacity
+		int alpha = textColor.getAlpha();
+		float opacity = (float)alpha/(float)255;
+		final Composite originalComposite = g2.getComposite();
+		g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, opacity));
+
 		int halfWidth = (int)(getWidth()-getTextWidth(g2))/2;
 		int halfHeight = (int)(getHeight()+getTextHeight(g2)/2)/2; // Note, this is + because we start at the baseline
 
 		if(usedForPreviews) {
 			g2.drawString(text, halfWidth, halfHeight);
+			g2.setComposite(originalComposite);
 			return;
 		}
 
 		g2.drawString(text, halfWidth, halfHeight);
+		g2.setComposite(originalComposite);
 	}
 
 	@Override
