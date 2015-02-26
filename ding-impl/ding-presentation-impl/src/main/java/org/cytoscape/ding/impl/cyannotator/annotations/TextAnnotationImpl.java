@@ -197,7 +197,7 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 		super.drawAnnotation(g, x, y, scaleFactor);
 
 		Graphics2D g2 = (Graphics2D) g;
-		System.out.println("drawAnnotation: setting text color to: "+textColor);
+		// System.out.println("drawAnnotation: setting text color to: "+textColor);
 		g2.setPaint(textColor);
 		// Font tFont = font.deriveFont(((float)(scaleFactor/getZoom()))*font.getSize2D());
 		Font tFont = font.deriveFont(((float)(scaleFactor/getZoom()))*font.getSize2D());
