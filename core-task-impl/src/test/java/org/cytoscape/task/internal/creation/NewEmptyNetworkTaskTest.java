@@ -75,6 +75,7 @@ public class NewEmptyNetworkTaskTest {
 		MockitoAnnotations.initMocks(this);
 		when(vmm.getCurrentVisualStyle()).thenReturn(currentStyle);
 		when(netViewRender.getNetworkViewFactory()).thenReturn(netViewFactory);
+		when(appManager.getDefaultNetworkViewRenderer()).thenReturn(netViewRender);
 	}
 
 	@Test
