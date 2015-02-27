@@ -51,7 +51,6 @@ import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualProperty;
@@ -186,14 +185,13 @@ public class GMLNetworkReader extends AbstractCyNetworkReader {
 
 	public GMLNetworkReader(
 			final InputStream inputStream,
+			final CyApplicationManager cyApplicationManager,
 			final CyNetworkFactory networkFactory,
-			final CyNetworkViewFactory viewFactory,
 			final RenderingEngineManager renderingEngineManager,
 			final UnrecognizedVisualPropertyManager unrecognizedVisualPropertyMgr,
 			final CyNetworkManager cyNetworkManager,
 			final CyRootNetworkManager cyRootNetworkManager) {
-		
-		super(inputStream, viewFactory, networkFactory, cyNetworkManager, cyRootNetworkManager);
+		super(inputStream, cyApplicationManager, networkFactory, cyNetworkManager, cyRootNetworkManager);
 		this.renderingEngineManager = renderingEngineManager;
 		this.unrecognizedVisualPropertyMgr = unrecognizedVisualPropertyMgr;
 
@@ -235,7 +233,7 @@ public class GMLNetworkReader extends AbstractCyNetworkReader {
 
 	@Override
 	public CyNetworkView buildCyNetworkView(CyNetwork network) {
-		view = cyNetworkViewFactory.createNetworkView(network);
+		view = getNetworkViewFactory().createNetworkView(network);
 
 		releaseStructures();
 		layout(view);

@@ -34,6 +34,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.io.read.AbstractCyNetworkReader;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
@@ -44,7 +45,6 @@ import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.view.layout.CyLayoutAlgorithm;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskMonitor;
@@ -56,6 +56,7 @@ import org.slf4j.LoggerFactory;
  * provides the graph and attributes objects constructed from the file.
  */
 public class NNFNetworkReader extends AbstractCyNetworkReader {
+	
 	private static final Logger logger = LoggerFactory.getLogger(NNFNetworkReader.class);
 
 	private final CyLayoutAlgorithmManager layouts;	
@@ -64,10 +65,13 @@ public class NNFNetworkReader extends AbstractCyNetworkReader {
 	private NNFParser parser;
 	private TaskMonitor parentTaskMonitor;
 
-	public NNFNetworkReader(InputStream is, CyLayoutAlgorithmManager layouts,
-			CyNetworkViewFactory cyNetworkViewFactory, CyNetworkFactory cyNetworkFactory,
-			CyNetworkManager cyNetworkManagerServiceRef, CyRootNetworkManager cyRootNetworkFactory) {
-		super(is, cyNetworkViewFactory, cyNetworkFactory, cyNetworkManagerServiceRef, cyRootNetworkFactory);
+	public NNFNetworkReader(final InputStream is,
+							final CyLayoutAlgorithmManager layouts,
+							final CyApplicationManager cyApplicationManager,
+							final CyNetworkFactory cyNetworkFactory,
+							final CyNetworkManager cyNetworkManager,
+							final CyRootNetworkManager cyRootNetworkManager) {
+		super(is, cyApplicationManager, cyNetworkFactory, cyNetworkManager, cyRootNetworkManager);
 		this.layouts = layouts;
 	}
 
@@ -88,7 +92,6 @@ public class NNFNetworkReader extends AbstractCyNetworkReader {
 			}
 		}
 	}
-	
 	
 	private void readInput(TaskMonitor tm) throws IOException {
 		this.parentTaskMonitor = tm;
@@ -201,7 +204,7 @@ public class NNFNetworkReader extends AbstractCyNetworkReader {
 
 	@Override
 	public CyNetworkView buildCyNetworkView(CyNetwork network) {
-		final CyNetworkView view = cyNetworkViewFactory.createNetworkView(network);
+		final CyNetworkView view = getNetworkViewFactory().createNetworkView(network);
 
 		final CyLayoutAlgorithm layout = layouts.getDefaultLayout();
 		TaskIterator itr = layout.createTaskIterator(view, layout.getDefaultLayoutContext(), CyLayoutAlgorithm.ALL_NODE_VIEWS, "");

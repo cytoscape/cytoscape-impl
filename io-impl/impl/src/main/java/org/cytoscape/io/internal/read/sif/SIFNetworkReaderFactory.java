@@ -33,28 +33,25 @@ import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
-import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.work.TaskIterator;
 
 public class SIFNetworkReaderFactory extends AbstractNetworkReaderFactory {
 
 	private final CyLayoutAlgorithmManager layouts;
-
-	private final CyNetworkManager cyNetworkManager;;
-	private final CyRootNetworkManager cyRootNetworkManager;
 	
-	public SIFNetworkReaderFactory(CyFileFilter filter, CyLayoutAlgorithmManager layouts,
-			CyNetworkViewFactory cyNetworkViewFactory, CyNetworkFactory cyNetworkFactory,
-			final CyNetworkManager cyNetworkManager, CyRootNetworkManager cyRootNetworkManager,
-			CyApplicationManager cyApplicationManager) {
-		super(filter, cyNetworkViewFactory, cyNetworkFactory);
+	public SIFNetworkReaderFactory(final CyFileFilter filter,
+								   final CyLayoutAlgorithmManager layouts,
+								   final CyApplicationManager cyApplicationManager,
+								   final CyNetworkFactory cyNetworkFactory,
+								   final CyNetworkManager cyNetworkManager,
+								   final CyRootNetworkManager cyRootNetworkManager) {
+		super(filter, cyApplicationManager, cyNetworkFactory, cyNetworkManager, cyRootNetworkManager);
 		this.layouts = layouts;
-		this.cyNetworkManager = cyNetworkManager;
-		this.cyRootNetworkManager = cyRootNetworkManager;
 	}
-
-	public TaskIterator createTaskIterator(InputStream inputStream, String inputName) {
-		return new TaskIterator(new SIFNetworkReader(inputStream, layouts, cyNetworkViewFactory, cyNetworkFactory,
-				this.cyNetworkManager, this.cyRootNetworkManager));
+	
+	@Override
+	public TaskIterator createTaskIterator(final InputStream inputStream, final String inputName) {
+		return new TaskIterator(new SIFNetworkReader(inputStream, layouts, cyApplicationManager, cyNetworkFactory,
+				cyNetworkManager, cyRootNetworkManager));
 	}
 }

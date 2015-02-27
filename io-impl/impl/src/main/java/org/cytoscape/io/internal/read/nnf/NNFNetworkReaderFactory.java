@@ -26,32 +26,34 @@ package org.cytoscape.io.internal.read.nnf;
 
 import java.io.InputStream;
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.io.CyFileFilter;
 import org.cytoscape.io.internal.read.AbstractNetworkReaderFactory;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
-import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.work.TaskIterator;
 
 public class NNFNetworkReaderFactory extends AbstractNetworkReaderFactory {
 
 	private final CyLayoutAlgorithmManager layouts;
-	private final CyNetworkManager cyNetworkManagerServiceRef;
 	private final CyRootNetworkManager cyRootNetworkFactory;
 
-	public NNFNetworkReaderFactory(CyFileFilter filter, CyLayoutAlgorithmManager layouts,
-			CyNetworkViewFactory cyNetworkViewFactory, CyNetworkFactory cyNetworkFactory,
-			 CyNetworkManager cyNetworkManagerServiceRef,CyRootNetworkManager cyRootNetworkFactory) {
-		super(filter, cyNetworkViewFactory, cyNetworkFactory);
+	public NNFNetworkReaderFactory(final CyFileFilter filter,
+								   final CyLayoutAlgorithmManager layouts,
+								   final CyApplicationManager cyApplicationManager,
+								   final CyNetworkFactory cyNetworkFactory,
+								   final CyNetworkManager cyNetworkManager,
+								   final CyRootNetworkManager cyRootNetworkFactory) {
+		super(filter, cyApplicationManager, cyNetworkFactory, cyNetworkManager, cyRootNetworkFactory);
 		this.layouts = layouts;
-		this.cyNetworkManagerServiceRef = cyNetworkManagerServiceRef;
 		this.cyRootNetworkFactory = cyRootNetworkFactory;
 	}
 
+	@Override
 	public TaskIterator createTaskIterator(InputStream inputStream, String inputName) {
-		return new TaskIterator(new NNFNetworkReader(inputStream, layouts, cyNetworkViewFactory, cyNetworkFactory,
-				 cyNetworkManagerServiceRef, cyRootNetworkFactory));
+		return new TaskIterator(new NNFNetworkReader(inputStream, layouts, cyApplicationManager, cyNetworkFactory,
+				 cyNetworkManager, cyRootNetworkFactory));
 	}
 }

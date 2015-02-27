@@ -34,7 +34,6 @@ import org.cytoscape.io.internal.util.UnrecognizedVisualPropertyManager;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
-import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.presentation.RenderingEngineManager;
 import org.cytoscape.work.TaskIterator;
 
@@ -44,13 +43,8 @@ public class SessionXGMMLNetworkViewReaderFactory extends AbstractNetworkReaderF
 	private final XGMMLParser parser;
 	private final ReadDataManager readDataMgr;
 	private final UnrecognizedVisualPropertyManager unrecognizedVisualPropertyMgr;
-
-	private final CyNetworkManager cyNetworkManager;;
-	private final CyRootNetworkManager cyRootNetworkManager;
-	private final CyApplicationManager cyApplicationManager;
 	
 	public SessionXGMMLNetworkViewReaderFactory(final CyFileFilter filter,
-												final CyNetworkViewFactory cyNetworkViewFactory,
 												final CyNetworkFactory cyNetworkFactory,
 												final RenderingEngineManager renderingEngineMgr,
 												final ReadDataManager readDataMgr,
@@ -59,19 +53,17 @@ public class SessionXGMMLNetworkViewReaderFactory extends AbstractNetworkReaderF
 												final CyNetworkManager cyNetworkManager,
 												final CyRootNetworkManager cyRootNetworkManager,
 												final CyApplicationManager cyApplicationManager) {
-		super(filter, cyNetworkViewFactory, cyNetworkFactory);
+		super(filter, cyApplicationManager, cyNetworkFactory, cyNetworkManager, cyRootNetworkManager);
 		this.renderingEngineMgr = renderingEngineMgr;
 		this.readDataMgr = readDataMgr;
 		this.parser = parser;
 		this.unrecognizedVisualPropertyMgr = unrecognizedVisualPropertyMgr;
-		this.cyNetworkManager = cyNetworkManager;
-		this.cyRootNetworkManager = cyRootNetworkManager;
-		this.cyApplicationManager = cyApplicationManager;
 	}
 
 	@Override
 	public TaskIterator createTaskIterator(InputStream inputStream, String inputName) {
-		return new TaskIterator(new SessionXGMMLNetworkViewReader(inputStream, cyNetworkViewFactory, cyNetworkFactory,
-				renderingEngineMgr, readDataMgr, parser, unrecognizedVisualPropertyMgr, cyNetworkManager, cyRootNetworkManager, this.cyApplicationManager));
+		return new TaskIterator(new SessionXGMMLNetworkViewReader(inputStream, cyNetworkFactory, renderingEngineMgr,
+				readDataMgr, parser, unrecognizedVisualPropertyMgr, cyNetworkManager, cyRootNetworkManager,
+				cyApplicationManager));
 	}
 }

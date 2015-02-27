@@ -27,10 +27,13 @@ package org.cytoscape.data.reader.graphml;
 import static org.cytoscape.model.CyNetwork.NAME;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.io.InputStream;
 
+import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.NetworkViewRenderer;
 import org.cytoscape.ding.NetworkViewTestSupport;
 import org.cytoscape.io.internal.read.graphml.GraphMLReader;
 import org.cytoscape.model.CyColumn;
@@ -57,22 +60,17 @@ public class GraphMLReaderTest {
 	private CyNetworkFactory netFactory;
 	private CyRootNetworkManager rootFactory;
 	private CyNetworkViewFactory viewFactory;
-	
-	@Mock
-	private CyLayoutAlgorithmManager layouts;
-	
-	@Mock
-	private TaskMonitor tm;
 	private CyNetworkManager networkManager;
 	
-	
-	@Before
-	public void initMocks() {
-		MockitoAnnotations.initMocks(this);
-	}
+	@Mock private CyApplicationManager appManager;
+	@Mock private NetworkViewRenderer netViewRenderer;
+	@Mock private CyLayoutAlgorithmManager layouts;
+	@Mock private TaskMonitor tm;
 	
 	@Before
 	public void setUp() throws Exception {
+		MockitoAnnotations.initMocks(this);
+		
 		testSupport = new NetworkTestSupport();
 		nvts = new NetworkViewTestSupport();
 		
@@ -80,8 +78,10 @@ public class GraphMLReaderTest {
 		netFactory = testSupport.getNetworkFactory();
 		viewFactory = nvts.getNetworkViewFactory();
 		networkManager = testSupport.getNetworkManager();
+		
+		when(netViewRenderer.getNetworkViewFactory()).thenReturn(viewFactory);
+		when(appManager.getDefaultNetworkViewRenderer()).thenReturn(netViewRenderer);
 	}
-	
 
 	@After
 	public void tearDown() throws Exception {
@@ -91,7 +91,7 @@ public class GraphMLReaderTest {
 	public void testReadSimpleGraph() throws Exception {
 		File file = new File("src/test/resources/testGraph1.xml");
 		InputStream stream = file.toURI().toURL().openStream();
-		GraphMLReader reader = new GraphMLReader(stream, layouts, netFactory, viewFactory, networkManager, rootFactory);
+		GraphMLReader reader = new GraphMLReader(stream, layouts, appManager, netFactory, networkManager, rootFactory);
 		assertNotNull(reader);
 		reader.run(tm);
 		final CyNetwork[] networks = reader.getNetworks();
@@ -106,7 +106,7 @@ public class GraphMLReaderTest {
 	public void testReadAttrGraph() throws Exception {
 		File file = new File("src/test/resources/simpleWithAttributes.xml");
 		InputStream stream = file.toURI().toURL().openStream();
-		GraphMLReader reader = new GraphMLReader(stream, layouts, netFactory, viewFactory, networkManager, rootFactory);
+		GraphMLReader reader = new GraphMLReader(stream, layouts, appManager, netFactory, networkManager, rootFactory);
 		assertNotNull(reader);
 		reader.run(tm);
 		final CyNetwork[] networks = reader.getNetworks();
@@ -156,7 +156,7 @@ public class GraphMLReaderTest {
 	public void testReadAttedOutput() throws Exception {
 		File file = new File("src/test/resources/atted.graphml");
 		InputStream stream = file.toURI().toURL().openStream();
-		GraphMLReader reader = new GraphMLReader(stream, layouts, netFactory, viewFactory, networkManager, rootFactory);
+		GraphMLReader reader = new GraphMLReader(stream, layouts, appManager, netFactory, networkManager, rootFactory);
 		assertNotNull(reader);
 		reader.run(tm);
 		final CyNetwork[] networks = reader.getNetworks();
@@ -178,7 +178,7 @@ public class GraphMLReaderTest {
 	public void testReadNestedSubgraphs() throws Exception {
 		File file = new File("src/test/resources/nested.xml");
 		InputStream stream = file.toURI().toURL().openStream();
-		GraphMLReader reader = new GraphMLReader(stream, layouts, netFactory, viewFactory, networkManager, rootFactory);
+		GraphMLReader reader = new GraphMLReader(stream, layouts, appManager, netFactory, networkManager, rootFactory);
 		assertNotNull(reader);
 		reader.run(tm);
 		final CyNetwork[] networks = reader.getNetworks();
@@ -209,7 +209,7 @@ public class GraphMLReaderTest {
 	public void testReadNestedSubgraphs2() throws Exception {
 		File file = new File("src/test/resources/nested2.xml");
 		InputStream stream = file.toURI().toURL().openStream();
-		GraphMLReader reader = new GraphMLReader(stream, layouts, netFactory, viewFactory, networkManager, rootFactory);
+		GraphMLReader reader = new GraphMLReader(stream, layouts, appManager, netFactory, networkManager, rootFactory);
 		assertNotNull(reader);
 		reader.run(tm);
 		final CyNetwork[] networks = reader.getNetworks();

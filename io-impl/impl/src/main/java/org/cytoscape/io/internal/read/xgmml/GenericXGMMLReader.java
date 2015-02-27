@@ -81,7 +81,6 @@ public class GenericXGMMLReader extends AbstractCyNetworkReader {
 	protected final XGMMLParser parser;
 	protected final UnrecognizedVisualPropertyManager unrecognizedVisualPropertyMgr;
 	protected final VisualLexicon visualLexicon;
-	protected final CyApplicationManager appMgr;
 	
 	private static final Map<String, String> legacyArrowShapes = new HashMap<String, String>();
 	private static final Logger logger = LoggerFactory.getLogger(GenericXGMMLReader.class);
@@ -110,7 +109,6 @@ public class GenericXGMMLReader extends AbstractCyNetworkReader {
 	}
 	
 	public GenericXGMMLReader(final InputStream inputStream,
-							  final CyNetworkViewFactory cyNetworkViewFactory,
 							  final CyNetworkFactory cyNetworkFactory,
 							  final RenderingEngineManager renderingEngineMgr,
 							  final ReadDataManager readDataMgr,
@@ -118,12 +116,10 @@ public class GenericXGMMLReader extends AbstractCyNetworkReader {
 							  final UnrecognizedVisualPropertyManager unrecognizedVisualPropertyMgr,
 							  final CyNetworkManager cyNetworkManager, 
 							  final CyRootNetworkManager cyRootNetworkManager,
-							  final CyApplicationManager cyApplicationManager
-							  ) {
-		super(inputStream, cyNetworkViewFactory, cyNetworkFactory, cyNetworkManager, cyRootNetworkManager);
+							  final CyApplicationManager cyApplicationManager) {
+		super(inputStream, cyApplicationManager, cyNetworkFactory, cyNetworkManager, cyRootNetworkManager);
 		this.readDataMgr = readDataMgr;
 		this.parser = parser;
-		this.appMgr = cyApplicationManager;
 		this.unrecognizedVisualPropertyMgr = unrecognizedVisualPropertyMgr;
 		this.visualLexicon = renderingEngineMgr.getDefaultVisualLexicon();
 		
@@ -174,13 +170,13 @@ public class GenericXGMMLReader extends AbstractCyNetworkReader {
 		NetworkViewRenderer networkViewRenderer = null;
 		
 		if (readDataMgr.getRendererId() != null)
-			networkViewRenderer = appMgr.getNetworkViewRenderer(readDataMgr.getRendererId());
+			networkViewRenderer = cyApplicationManager.getNetworkViewRenderer(readDataMgr.getRendererId());
 		
 		// If the XGMML has no renderer ID info or a NetworkViewRenderer with that ID can't be found,
 		// just use the passed CyNetworkViewFactory. 
 		// Otherwise use the factory provided by the specified NetworkViewRenderer.
 		final CyNetworkViewFactory netViewFactory = networkViewRenderer != null ? 
-				networkViewRenderer.getNetworkViewFactory() : cyNetworkViewFactory;
+				networkViewRenderer.getNetworkViewFactory() : getNetworkViewFactory();
 				
 		final CyNetworkView netView = netViewFactory.createNetworkView(network);
 		setNetworkViewProperties(netView);

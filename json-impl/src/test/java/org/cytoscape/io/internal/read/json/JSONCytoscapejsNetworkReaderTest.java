@@ -1,8 +1,12 @@
 package org.cytoscape.io.internal.read.json;
 
 import static org.cytoscape.model.CyEdge.Type.DIRECTED;
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.mock;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -10,6 +14,8 @@ import java.io.InputStream;
 import java.util.Collection;
 import java.util.List;
 
+import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.NetworkViewRenderer;
 import org.cytoscape.ding.NetworkViewTestSupport;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyEdge;
@@ -30,20 +36,26 @@ import org.cytoscape.work.TaskMonitor;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
 public class JSONCytoscapejsNetworkReaderTest {
 
 	private NetworkViewTestSupport support = new NetworkViewTestSupport();
 	private final CyNetworkFactory networkFactory = support.getNetworkFactory();
 	private final CyNetworkViewFactory viewFactory = support.getNetworkViewFactory();
-	private final CyRootNetworkManager rootNetworkManager = mock(CyRootNetworkManager.class);
 	private final CyNetworkManager networkManager = support.getNetworkManager();
 
-	private TaskMonitor tm;
+	@Mock private TaskMonitor tm;
+	@Mock private CyApplicationManager appManager;
+	@Mock private NetworkViewRenderer netViewRenderer;
+	@Mock private CyRootNetworkManager rootNetworkManager;
 
 	@Before
 	public void setUp() throws Exception {
-		this.tm = mock(TaskMonitor.class);
+		MockitoAnnotations.initMocks(this);
+		when(netViewRenderer.getNetworkViewFactory()).thenReturn(viewFactory);
+		when(appManager.getDefaultNetworkViewRenderer()).thenReturn(netViewRenderer);
 	}
 
 	@After
@@ -53,8 +65,8 @@ public class JSONCytoscapejsNetworkReaderTest {
 	private CyNetworkView loadNetwork(final File testFile) throws Exception {
 
 		InputStream is = new FileInputStream(testFile);
-		CytoscapeJsNetworkReader reader = new CytoscapeJsNetworkReader(null, is, viewFactory, networkFactory, networkManager,
-				rootNetworkManager);
+		CytoscapeJsNetworkReader reader = new CytoscapeJsNetworkReader(null, is, appManager, networkFactory,
+				networkManager, rootNetworkManager);
 		reader.run(tm);
 		is.close();
 		final CyNetwork[] networks = reader.getNetworks();

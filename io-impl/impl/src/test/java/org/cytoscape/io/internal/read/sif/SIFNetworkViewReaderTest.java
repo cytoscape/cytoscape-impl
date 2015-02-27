@@ -24,15 +24,13 @@ package org.cytoscape.io.internal.read.sif;
  * #L%
  */
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.io.internal.read.AbstractNetworkReaderTest;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
@@ -101,9 +99,9 @@ public class SIFNetworkViewReaderTest extends AbstractNetworkReaderTest {
 		findInteraction(net, "TRAF6", "HJKOL coltrane", "interactsWith", 13);
 	}
 
-	private  SIFNetworkReader readFile(String file) throws Exception {
+	private SIFNetworkReader readFile(String file) throws Exception {
 		File f = new File("./src/test/resources/testData/sif/" + file);
-		SIFNetworkReader snvp = new SIFNetworkReader(new FileInputStream(f), layouts, viewFactory, netFactory, this.networkManager, this.rootNetworkManager);
+		SIFNetworkReader snvp = new SIFNetworkReader(new FileInputStream(f), layouts, applicationManager, netFactory, networkManager, rootNetworkManager);
 		new TaskIterator(snvp);
 		snvp.run(taskMonitor);
 

@@ -25,7 +25,6 @@ package org.cytoscape.io.internal.read;
  */
 
 import static org.cytoscape.model.CyNetwork.NAME;
-import static org.cytoscape.model.subnetwork.CyRootNetwork.SHARED_NAME;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -33,10 +32,13 @@ import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.NetworkViewRenderer;
 import org.cytoscape.ding.NetworkViewTestSupport;
 import org.cytoscape.io.internal.util.ReadUtils;
 import org.cytoscape.io.internal.util.StreamUtilImpl;
@@ -46,7 +48,6 @@ import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.NetworkTestSupport;
-import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.property.CyProperty.SavePolicy;
@@ -76,14 +77,15 @@ public class AbstractNetworkReaderTest {
 	protected CyLayoutAlgorithmManager layouts;
 	protected CyNetworkManager networkManager;
 	protected CyRootNetworkManager rootNetworkManager;
-	protected CyApplicationManager cyApplicationManager;
+	protected CyApplicationManager applicationManager;
+	protected NetworkViewRenderer defRenderer;
 	
 	private Properties properties;
 
 	@Before
 	public void setUp() throws Exception {
 		taskMonitor = mock(TaskMonitor.class);
-
+		
 		CyLayoutAlgorithm def = mock(CyLayoutAlgorithm.class);
 		Object context = new Object();
 		when(def.createLayoutContext()).thenReturn(context);
@@ -99,8 +101,6 @@ public class AbstractNetworkReaderTest {
 		networkManager = nts.getNetworkManager();
 		rootNetworkManager = nts.getRootNetworkFactory();
 		
-		cyApplicationManager = mock(CyApplicationManager.class);
-				
 		properties = new Properties();
 		CyProperty<Properties> cyProperties = new SimpleCyProperty<Properties>("Test", properties, Properties.class, SavePolicy.DO_NOT_SAVE);		
 		NetworkViewTestSupport nvts = new NetworkViewTestSupport();
@@ -108,6 +108,12 @@ public class AbstractNetworkReaderTest {
 		
 		viewFactory = nvts.getNetworkViewFactory();
 		readUtil = new ReadUtils(new StreamUtilImpl(cyProperties));
+		
+		defRenderer = mock(NetworkViewRenderer.class);
+		when(defRenderer.getNetworkViewFactory()).thenReturn(viewFactory);
+		
+		applicationManager = mock(CyApplicationManager.class);
+		when(applicationManager.getDefaultNetworkViewRenderer()).thenReturn(defRenderer);
 	}
 
 	protected void setViewThreshold(int threshold) {

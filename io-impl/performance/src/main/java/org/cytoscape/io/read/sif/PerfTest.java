@@ -37,8 +37,8 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.NetworkViewRenderer;
 import org.cytoscape.ding.NetworkViewTestSupport;
-import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.io.internal.read.sif.SIFNetworkReader;
 import org.cytoscape.io.internal.util.ReadUtils;
 import org.cytoscape.io.internal.util.StreamUtilImpl;
@@ -59,7 +59,9 @@ import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskMonitor;
+import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
 
 
 public class PerfTest {
@@ -70,31 +72,30 @@ public class PerfTest {
 
     protected static final int DEF_THRESHOLD = 10000;
     
-    protected TaskMonitor taskMonitor;
+    @Mock protected TaskMonitor taskMonitor;
+    @Mock protected CyApplicationManager cyApplicationManager;
+    @Mock protected NetworkViewRenderer netViewRenderer;
+    @Mock protected CyLayoutAlgorithmManager layouts;
     protected CyNetworkFactory netFactory;
     protected CyNetworkViewFactory viewFactory;
     protected ReadUtils readUtil;
-    protected CyLayoutAlgorithmManager layouts;
     protected CyRootNetworkManager rootMgr;
     protected CyNetworkManager netMgr;
-	protected CyApplicationManager cyApplicationManager;
 	
 	private Properties properties;
 
 	public PerfTest() {
-		taskMonitor = mock(TaskMonitor.class);
+		MockitoAnnotations.initMocks(this);
 
 		CyLayoutAlgorithm def = mock(CyLayoutAlgorithm.class);
 		when(def.createTaskIterator(Mockito.any(CyNetworkView.class), Mockito.any(Object.class), Mockito.anySet(), Mockito.any(String.class))).thenReturn(new TaskIterator(new SimpleTask()));
 
-		layouts = mock(CyLayoutAlgorithmManager.class);
 		when(layouts.getDefaultLayout()).thenReturn(def);
 
 		NetworkTestSupport nts = new NetworkTestSupport();
 		netFactory = nts.getNetworkFactory();
 		rootMgr = nts.getRootNetworkFactory();
 		netMgr = nts.getNetworkManager();
-		cyApplicationManager = mock(CyApplicationManager.class);
 		
 		properties = new Properties();
 		CyProperty<Properties> cyProperties = new SimpleCyProperty<Properties>("Test", properties, Properties.class, DO_NOT_SAVE);	
@@ -104,11 +105,14 @@ public class PerfTest {
 		viewFactory = nvts.getNetworkViewFactory();
 
 		readUtil = new ReadUtils(new StreamUtilImpl(cyProperties));
+		
+		when(netViewRenderer.getNetworkViewFactory()).thenReturn(viewFactory);
+		when(cyApplicationManager.getDefaultNetworkViewRenderer()).thenReturn(netViewRenderer);
 	}
 
 	private  SIFNetworkReader readFile(String file) throws Exception {
 		InputStream is = getClass().getResource("/testData/sif/" + file).openStream();
-		SIFNetworkReader snvp = new SIFNetworkReader(is, layouts, viewFactory, netFactory, netMgr, rootMgr);
+		SIFNetworkReader snvp = new SIFNetworkReader(is, layouts, cyApplicationManager, netFactory, netMgr, rootMgr);
 		new TaskIterator(snvp);
 		snvp.run(taskMonitor);
 

@@ -26,9 +26,9 @@ package org.cytoscape.io.internal.read.gml;
 
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_LINE_TYPE;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_SOURCE_ARROW_SHAPE;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_UNSELECTED_PAINT;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_TARGET_ARROW_SHAPE;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_UNSELECTED_PAINT;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_WIDTH;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NETWORK_TITLE;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_BORDER_PAINT;
@@ -47,7 +47,6 @@ import static org.mockito.Mockito.when;
 import java.awt.Color;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 
 import org.cytoscape.io.internal.read.AbstractNetworkReaderTest;
 import org.cytoscape.io.internal.util.UnrecognizedVisualPropertyManager;
@@ -304,7 +303,7 @@ public class GMLNetworkReaderTest extends AbstractNetworkReaderTest {
 	
 	private GMLNetworkReader readGML(final String filename) throws Exception {
 		final File file = new File(filename);
-		GMLNetworkReader reader = new GMLNetworkReader(new FileInputStream(file), netFactory, viewFactory,
+		GMLNetworkReader reader = new GMLNetworkReader(new FileInputStream(file), applicationManager, netFactory,
 													   renderingEngineManager, unrecognizedVisualPropertyMgr, 
 													   networkManager, rootNetworkManager);
 		reader.run(taskMonitor);

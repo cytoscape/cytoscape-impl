@@ -24,20 +24,29 @@ package org.cytoscape.io.internal.read;
  * #L%
  */
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.io.CyFileFilter;
 import org.cytoscape.io.read.AbstractInputStreamTaskFactory;
 import org.cytoscape.model.CyNetworkFactory;
-import org.cytoscape.view.model.CyNetworkViewFactory;
+import org.cytoscape.model.CyNetworkManager;
+import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 
 public abstract class AbstractNetworkReaderFactory extends AbstractInputStreamTaskFactory {
 
-	protected final CyNetworkViewFactory cyNetworkViewFactory;
+	protected final CyApplicationManager cyApplicationManager;
 	protected final CyNetworkFactory cyNetworkFactory;
+	protected final CyNetworkManager cyNetworkManager;
+	protected final CyRootNetworkManager cyRootNetworkManager;
 
-	public AbstractNetworkReaderFactory(CyFileFilter filter, CyNetworkViewFactory cyNetworkViewFactory,
-			CyNetworkFactory cyNetworkFactory) {
+	public AbstractNetworkReaderFactory(final CyFileFilter filter,
+										final CyApplicationManager cyApplicationManager,
+										final CyNetworkFactory cyNetworkFactory,
+										final CyNetworkManager cyNetworkManager,
+										final CyRootNetworkManager cyRootNetworkManager) {
 		super(filter);
-		this.cyNetworkViewFactory = cyNetworkViewFactory;
+		this.cyApplicationManager = cyApplicationManager;
 		this.cyNetworkFactory = cyNetworkFactory;
+		this.cyNetworkManager = cyNetworkManager;
+		this.cyRootNetworkManager = cyRootNetworkManager;
 	}
 }

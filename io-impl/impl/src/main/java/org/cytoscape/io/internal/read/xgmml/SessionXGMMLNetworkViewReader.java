@@ -37,7 +37,6 @@ import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.RenderingEngineManager;
 import org.cytoscape.work.TaskMonitor;
@@ -50,7 +49,6 @@ public class SessionXGMMLNetworkViewReader extends GenericXGMMLReader {
 	private boolean settingLockedVisualProperties;
 	
 	public SessionXGMMLNetworkViewReader(final InputStream inputStream,
-										 final CyNetworkViewFactory cyNetworkViewFactory,
 										 final CyNetworkFactory cyNetworkFactory,
 										 final RenderingEngineManager renderingEngineMgr,
 										 final ReadDataManager readDataMgr,
@@ -59,8 +57,8 @@ public class SessionXGMMLNetworkViewReader extends GenericXGMMLReader {
 										 final CyNetworkManager cyNetworkManager, 
 										 final CyRootNetworkManager cyRootNetworkManager,
 										 final CyApplicationManager cyApplicationManager) {
-		super(inputStream, cyNetworkViewFactory, cyNetworkFactory, renderingEngineMgr, readDataMgr, parser,
-				unrecognizedVisualPropertyMgr, cyNetworkManager, cyRootNetworkManager, cyApplicationManager);
+		super(inputStream, cyNetworkFactory, renderingEngineMgr, readDataMgr, parser, unrecognizedVisualPropertyMgr,
+				cyNetworkManager, cyRootNetworkManager, cyApplicationManager);
 	}
 
 	public String getVisualStyleName() {

@@ -67,21 +67,21 @@ public class NewEmptyNetworkTaskTest {
 	@Mock private CyNetworkNaming namingUtil;
 	@Mock private VisualMappingManager vmm;
 	@Mock private CyApplicationManager appManager;
-	@Mock private NetworkViewRenderer netViewRender;
+	@Mock private NetworkViewRenderer netViewRenderer;
 	@Mock private VisualStyle currentStyle;
 
 	@Before
 	public void initMocks() {
 		MockitoAnnotations.initMocks(this);
 		when(vmm.getCurrentVisualStyle()).thenReturn(currentStyle);
-		when(netViewRender.getNetworkViewFactory()).thenReturn(netViewFactory);
-		when(appManager.getDefaultNetworkViewRenderer()).thenReturn(netViewRender);
+		when(netViewRenderer.getNetworkViewFactory()).thenReturn(netViewFactory);
+		when(appManager.getDefaultNetworkViewRenderer()).thenReturn(netViewRenderer);
 	}
 
 	@Test
 	public void testNewEmptyNetworkTask() throws Exception {
 		final NewEmptyNetworkTask task = new NewEmptyNetworkTask(netFactory, netMgr, netViewMgr, namingUtil, vmm,
-				cyroot, appManager, Collections.singleton(netViewRender));
+				cyroot, appManager, Collections.singleton(netViewRenderer));
 		final TaskMonitor taskMonitor = mock(TaskMonitor.class);
 		task.run(taskMonitor);
 

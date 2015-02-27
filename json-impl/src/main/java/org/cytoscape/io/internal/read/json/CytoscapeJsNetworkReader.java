@@ -1,11 +1,10 @@
 package org.cytoscape.io.internal.read.json;
 
 import java.io.InputStream;
-import java.util.Collection;
 import java.util.Map;
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.io.read.AbstractCyNetworkReader;
-import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
@@ -14,7 +13,6 @@ import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.util.ListSingleSelection;
@@ -32,10 +30,13 @@ public class CytoscapeJsNetworkReader extends AbstractCyNetworkReader {
 	private final InputStream is;
 	private final String networkCollectionName;
 
-	public CytoscapeJsNetworkReader(final String networkCollectionName, final InputStream is, CyNetworkViewFactory cyNetworkViewFactory,
-			CyNetworkFactory cyNetworkFactory, CyNetworkManager cyNetworkManager,
-			CyRootNetworkManager cyRootNetworkManager) {
-		super(is, cyNetworkViewFactory, cyNetworkFactory, cyNetworkManager, cyRootNetworkManager);
+	public CytoscapeJsNetworkReader(final String networkCollectionName,
+									final InputStream is,
+									final CyApplicationManager cyApplicationManager,
+									final CyNetworkFactory cyNetworkFactory,
+									final CyNetworkManager cyNetworkManager,
+									final CyRootNetworkManager cyRootNetworkManager) {
+		super(is, cyApplicationManager, cyNetworkFactory, cyNetworkManager, cyRootNetworkManager);
 
 		this.networkCollectionName = networkCollectionName;
 		
@@ -56,7 +57,7 @@ public class CytoscapeJsNetworkReader extends AbstractCyNetworkReader {
 
 	@Override
 	public CyNetworkView buildCyNetworkView(CyNetwork network) {
-		final CyNetworkView view = cyNetworkViewFactory.createNetworkView(network);
+		final CyNetworkView view = getNetworkViewFactory().createNetworkView(network);
 
 		final Map<CyNode, Double[]> positionMap = mapper.getNodePosition();
 		for (final CyNode node : positionMap.keySet()) {
