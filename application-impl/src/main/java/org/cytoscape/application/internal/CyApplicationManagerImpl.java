@@ -424,29 +424,12 @@ public class CyApplicationManagerImpl implements CyApplicationManager,
 				netViewRenderer = getNetworkViewRenderer(currentNetworkView.getRendererId());
 			
 			if (netViewRenderer == null)
-				netViewRenderer = getDefaultRenderer();
+				netViewRenderer = getDefaultNetworkViewRenderer();
 			
 			return netViewRenderer;
 		}
 	}
 
-	private NetworkViewRenderer getDefaultRenderer() {
-		synchronized (lock) {
-			if (defaultRenderer != null) {
-				return defaultRenderer;
-			}
-			
-			if (renderers.isEmpty()) {
-				return null;
-			}
-			
-			// Since renderers is a LinkedHashSet, the iterator gives back entries
-			// in insertion order.
-			defaultRenderer = renderers.entrySet().iterator().next().getValue();
-			return defaultRenderer;
-		}
-	}
-	
 	public void addNetworkViewRenderer(NetworkViewRenderer renderer, Map<?, ?> properties) {
 		synchronized (lock) {
 			renderers.put(renderer.getId(), renderer);
@@ -464,13 +447,31 @@ public class CyApplicationManagerImpl implements CyApplicationManager,
 	
 	@Override
 	public NetworkViewRenderer getDefaultNetworkViewRenderer() {
-		return getDefaultRenderer();
+		synchronized (lock) {
+			if (defaultRenderer != null)
+				return defaultRenderer;
+			
+			if (renderers.isEmpty())
+				return null;
+			
+			// Since renderers is a LinkedHashSet, the iterator gives back entries in insertion order.
+			defaultRenderer = renderers.entrySet().iterator().next().getValue();
+			
+			return defaultRenderer;
+		}
 	}
 	
 	@Override
 	public void setDefaultNetworkViewRenderer(NetworkViewRenderer renderer) {
 		synchronized (lock) {
 			defaultRenderer = renderer;
+		}
+	}
+	
+	@Override
+	public Set<NetworkViewRenderer> getNetworkViewRendererSet() {
+		synchronized (lock) {
+			return new LinkedHashSet<>(renderers.values());
 		}
 	}
 }

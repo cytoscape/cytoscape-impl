@@ -35,6 +35,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.cytoscape.application.NetworkViewRenderer;
 import org.cytoscape.ding.NetworkViewTestSupport;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyNetwork;
@@ -320,6 +321,23 @@ public class CyApplicationManagerImplTest {
 		final CyTable tbl = mock(CyTable.class);
 		appMgr.setCurrentTable(tbl);
 		assertEquals(tbl, appMgr.getCurrentTable());
+	}
+	
+	@Test
+	public void testGetDefaultNetworkViewRenderer() {
+		NetworkViewRenderer renderer1 = mock(NetworkViewRenderer.class);
+		when(renderer1.getId()).thenReturn("C");
+		NetworkViewRenderer renderer2 = mock(NetworkViewRenderer.class);
+		when(renderer2.getId()).thenReturn("B");
+		NetworkViewRenderer renderer3 = mock(NetworkViewRenderer.class);
+		when(renderer3.getId()).thenReturn("A");
+		
+		appMgr.addNetworkViewRenderer(renderer1, Collections.EMPTY_MAP);
+		appMgr.addNetworkViewRenderer(renderer2, Collections.EMPTY_MAP);
+		appMgr.addNetworkViewRenderer(renderer3, Collections.EMPTY_MAP);
+		
+		assertEquals(3, appMgr.getNetworkViewRendererSet().size());
+		assertEquals(renderer1, appMgr.getDefaultNetworkViewRenderer());
 	}
 
 	// PRIVATE METHODS
