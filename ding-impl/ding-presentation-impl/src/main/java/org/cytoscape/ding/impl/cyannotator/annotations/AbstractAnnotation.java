@@ -42,6 +42,7 @@ import java.util.UUID;
 
 import javax.swing.JComponent;
 import javax.swing.JDialog;
+import javax.swing.SwingUtilities;
 
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.presentation.annotations.Annotation;
@@ -214,11 +215,20 @@ public class AbstractAnnotation extends JComponent implements DingAnnotation {
 	}
 
 	@Override
-	public void changeCanvas(String cnvs) {
+	public void changeCanvas(final String cnvs) {
 		// Are we really changing anything?
 		if ((cnvs.equals(BACKGROUND) && canvasName.equals(DGraphView.Canvas.BACKGROUND_CANVAS)) ||
 		    (cnvs.equals(FOREGROUND) && canvasName.equals(DGraphView.Canvas.FOREGROUND_CANVAS)))
 			return;
+
+		if (!SwingUtilities.isEventDispatchThread()) {
+			SwingUtilities.invokeLater( new Runnable() {
+				public void run () {
+					changeCanvas(cnvs);
+				}
+			});
+			return;
+		}
 
 		if (!(this instanceof ArrowAnnotationImpl)) {
 			for (ArrowAnnotation arrow: arrowList) {
@@ -260,7 +270,14 @@ public class AbstractAnnotation extends JComponent implements DingAnnotation {
 	}
 
 	@Override
-	public void addComponent(JComponent cnvs) {
+	public void addComponent(final JComponent cnvs) {
+		if (!SwingUtilities.isEventDispatchThread()) {
+			SwingUtilities.invokeLater( new Runnable () {
+				public void run() { addComponent(cnvs); }
+			});
+			return;
+		}
+
 		if (cnvs == null && canvas != null) {
 
 		} else if (cnvs == null) {
@@ -298,15 +315,28 @@ public class AbstractAnnotation extends JComponent implements DingAnnotation {
 		Point2D coords = getComponentCoordinates(location.getX(), location.getY());
 		if (!(this instanceof ArrowAnnotationImpl)) {
 			setLocation((int)coords.getX(), (int)coords.getY());
-			// cyAnnotator.moveAnnotation(this);
-		} // else {
-			// cyAnnotator.positionArrow((ArrowAnnotationImpl)this);
-		// }
+		}
 	}
 
-	public void setLocation(int x, int y) {
+	public void setLocation(final int x, final int y) {
+		if (!SwingUtilities.isEventDispatchThread()) {
+			SwingUtilities.invokeLater( new Runnable () {
+				public void run() { setLocation(x, y); }
+			});
+			return;
+		}
 		super.setLocation(x, y);
 		canvas.modifyComponentLocation(x, y, this);
+	}
+
+	public void setSize(final int width, final int height) {
+		if (!SwingUtilities.isEventDispatchThread()) {
+			SwingUtilities.invokeLater( new Runnable () {
+				public void run() { setSize(width, height); }
+			});
+			return;
+		}
+		super.setSize(width, height);
 	}
 
 	public Point getLocation() { return super.getLocation(); }
@@ -318,6 +348,13 @@ public class AbstractAnnotation extends JComponent implements DingAnnotation {
 	}
 
 	public void removeAnnotation() {
+		if (!SwingUtilities.isEventDispatchThread()) {
+			SwingUtilities.invokeLater( new Runnable () {
+				public void run() { removeAnnotation(); }
+			});
+			return;
+		}
+
 		canvas.remove(this);
 		cyAnnotator.removeAnnotation(this);
 		for (ArrowAnnotation arrow: arrowList) {
@@ -432,11 +469,6 @@ public class AbstractAnnotation extends JComponent implements DingAnnotation {
 	protected void updateAnnotationAttributes() {
 		if (!usedForPreviews) {
 			cyAnnotator.addAnnotation(this);
-			// if (arrowList != null) {
-			// 	for (ArrowAnnotation annotation: arrowList) {
-			// 		cyAnnotator.addAnnotation(annotation);
-			// 	}
-			// }
 			contentChanged();
 		}
 	}

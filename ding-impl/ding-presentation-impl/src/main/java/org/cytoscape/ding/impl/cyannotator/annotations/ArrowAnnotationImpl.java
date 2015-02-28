@@ -338,6 +338,7 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 		else
 			return this.targetColor; 
 	}
+
 	public void setArrowColor(ArrowEnd end, Paint color) { 
 		if (end == ArrowEnd.SOURCE)
 			this.sourceColor = color; 

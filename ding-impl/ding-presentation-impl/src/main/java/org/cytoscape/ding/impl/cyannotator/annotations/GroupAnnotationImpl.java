@@ -41,6 +41,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import javax.swing.JDialog;
+import javax.swing.SwingUtilities;
 
 import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.annotations.GroupAnnotation;
@@ -100,7 +101,18 @@ public class GroupAnnotationImpl extends AbstractAnnotation implements GroupAnno
 	}
 
 	@Override
-	public void addMember(Annotation member) {
+	public void addMember(final Annotation member) {
+		// We muck with the ZOrder directly, so we need
+		// to make sure we're on the EDT
+		if (!SwingUtilities.isEventDispatchThread()) {
+			SwingUtilities.invokeLater( new Runnable() {
+				public void run() {
+					addMember(member);
+				}
+			});
+			return;
+		}
+
 		if (member instanceof DingAnnotation) {
 			if (annotations == null) annotations = new ArrayList<DingAnnotation>();
 			DingAnnotation dMember = (DingAnnotation)member;
@@ -238,6 +250,12 @@ public class GroupAnnotationImpl extends AbstractAnnotation implements GroupAnno
 	}
 
 	private void updateBounds() {
+		if (!SwingUtilities.isEventDispatchThread()) {
+			SwingUtilities.invokeLater( new Runnable() {
+				public void run() { updateBounds(); }
+			});
+			return;
+		}
 		// Calculate the bounding box of all of our children
 		double xMin = Double.MAX_VALUE;
 		double yMin = Double.MAX_VALUE;
