@@ -322,8 +322,7 @@ public class EditorManagerImpl implements EditorManager {
 	
 				if (range instanceof DiscreteRange<?>) {
 					if (this.getValueEditor(range.getType()) == null) {
-						final DiscreteValueEditor<?> valEditor = new DiscreteValueEditor(range.getType(),
-								((DiscreteRange) range).values(), vp, servicesUtil);
+						final DiscreteValueEditor<?> valEditor = new DiscreteValueEditor(vp, servicesUtil);
 						this.addValueEditor(valEditor, null);
 					}
 	

@@ -55,7 +55,12 @@ import javax.swing.ListSelectionModel;
 import javax.swing.SortOrder;
 import javax.swing.WindowConstants;
 
+import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.NetworkViewRenderer;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.view.model.DiscreteRange;
+import org.cytoscape.view.model.Range;
+import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
@@ -100,8 +105,27 @@ public class DiscreteValueEditor<T> extends JDialog implements ValueEditor<T> {
 	protected JScrollPane iconListScrollPane;
 	protected JPanel mainPanel;
 	
-	public DiscreteValueEditor(final Class<T> type, Set<T> values, final VisualProperty<T> vp,
-			final ServicesUtil servicesUtil) {
+	@SuppressWarnings("unchecked")
+	public DiscreteValueEditor(final VisualProperty<T> vp, final ServicesUtil servicesUtil) {
+		if (vp == null)
+			throw new NullPointerException("'vp' must not be null.");
+		if (servicesUtil == null)
+			throw new NullPointerException("'servicesUtil' must not be null.");
+		
+		final Range<?> range = vp.getRange();
+		
+		if (range instanceof DiscreteRange == false)
+			throw new IllegalArgumentException("Visual Property's range must be a DiscreteRange.");
+
+		this.values = ((DiscreteRange<T>) range).values();
+		this.type = ((DiscreteRange<T>) range).getType();
+		this.vp = vp;
+		this.servicesUtil = servicesUtil;
+
+		init();
+	}
+	
+	protected DiscreteValueEditor(final Class<T> type, final Set<T> values, final ServicesUtil servicesUtil) {
 		if (type == null)
 			throw new NullPointerException("'type' must not be null.");
 		if (values == null)
@@ -111,14 +135,10 @@ public class DiscreteValueEditor<T> extends JDialog implements ValueEditor<T> {
 
 		this.values = values;
 		this.type = type;
-		this.vp = vp;
+		this.vp = null;
 		this.servicesUtil = servicesUtil;
-
+		
 		init();
-	}
-	
-	protected DiscreteValueEditor(final Class<T> type, Set<T> values, final ServicesUtil servicesUtil) {
-		this(type, values, null, servicesUtil);
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -133,7 +153,9 @@ public class DiscreteValueEditor<T> extends JDialog implements ValueEditor<T> {
 	@Override
 	@SuppressWarnings("unchecked")
 	public <S extends T> T showEditor(final Component parent, final S initialValue) {
-		getDiscreteValueList().setListItems(values, initialValue);
+		final Set<T> supportedValues = getSupportedValues();
+		
+		getDiscreteValueList().setListItems(supportedValues, initialValue);
 		setLocationRelativeTo(parent);
 		setVisible(true);
 		
@@ -245,6 +267,18 @@ public class DiscreteValueEditor<T> extends JDialog implements ValueEditor<T> {
 	private void cancelButtonActionPerformed(ActionEvent evt) {
 		dispose();
 		canceled = true;
+	}
+	
+	private Set<T> getSupportedValues() {
+		if (vp == null)
+			return values;
+		
+		final CyApplicationManager appMgr = servicesUtil.get(CyApplicationManager.class);
+		final VisualLexicon lexicon = appMgr.getCurrentNetworkViewRenderer()
+				.getRenderingEngineFactory(NetworkViewRenderer.DEFAULT_CONTEXT)
+				.getVisualLexicon();
+		
+		return lexicon.getSupportedValueRange(vp);
 	}
 
 	static class DiscreteValueList<T> extends JXList {
