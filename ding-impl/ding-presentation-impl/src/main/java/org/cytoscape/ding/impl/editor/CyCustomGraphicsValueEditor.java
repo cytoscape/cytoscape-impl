@@ -36,15 +36,16 @@ import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
 import org.cytoscape.ding.customgraphics.CyCustomGraphics2Manager;
 import org.cytoscape.ding.customgraphics.NullCustomGraphics;
 import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2Factory;
 import org.cytoscape.view.vizmap.gui.DefaultViewPanel;
-import org.cytoscape.view.vizmap.gui.editor.ValueEditor;
+import org.cytoscape.view.vizmap.gui.editor.VisualPropertyValueEditor;
 
 @SuppressWarnings({ "rawtypes", "unchecked" })
-public class CyCustomGraphicsValueEditor extends JPanel implements ValueEditor<CyCustomGraphics> {
+public class CyCustomGraphicsValueEditor extends JPanel implements VisualPropertyValueEditor<CyCustomGraphics> {
 
 	private static final long serialVersionUID = 3276556808025021859L;
 
@@ -84,7 +85,7 @@ public class CyCustomGraphicsValueEditor extends JPanel implements ValueEditor<C
 	
 	@Override
 	public <S extends CyCustomGraphics> CyCustomGraphics<? extends CustomGraphicLayer> showEditor(
-			final Component parent, final S initialValue) {
+			final Component parent, final S initialValue, final VisualProperty<S> vp) {
 		oldCustomGraphics = initialValue;
 		
 		// Make sure it initializes only after the Cytoscape UI (specially DefaultViewPanel) is ready

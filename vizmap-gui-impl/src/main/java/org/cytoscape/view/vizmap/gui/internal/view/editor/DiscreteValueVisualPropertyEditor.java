@@ -24,6 +24,7 @@ package org.cytoscape.view.vizmap.gui.internal.view.editor;
  * #L%
  */
 
+import java.beans.PropertyEditor;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -33,9 +34,11 @@ import javax.swing.Icon;
 
 import org.cytoscape.application.events.SetCurrentRenderingEngineEvent;
 import org.cytoscape.application.events.SetCurrentRenderingEngineListener;
+import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.view.vizmap.gui.editor.ContinuousEditorType;
 import org.cytoscape.view.vizmap.gui.editor.ContinuousMappingCellRendererFactory;
+import org.cytoscape.view.vizmap.gui.editor.VisualPropertyEditor2;
 import org.cytoscape.view.vizmap.gui.internal.view.cellrenderer.IconCellRenderer;
 import org.cytoscape.view.vizmap.gui.internal.view.editor.propertyeditor.CyDiscreteValuePropertyEditor;
 
@@ -45,8 +48,8 @@ import org.cytoscape.view.vizmap.gui.internal.view.editor.propertyeditor.CyDiscr
  * 
  * @param <T>
  */
-public class DiscreteValueVisualPropertyEditor<T> extends BasicVisualPropertyEditor<T> implements
-		SetCurrentRenderingEngineListener {
+public class DiscreteValueVisualPropertyEditor<T> extends BasicVisualPropertyEditor<T>
+												  implements VisualPropertyEditor2<T>, SetCurrentRenderingEngineListener {
 
 	private final Set<T> values;
 	private final int iconW;
@@ -81,5 +84,23 @@ public class DiscreteValueVisualPropertyEditor<T> extends BasicVisualPropertyEdi
 			iconMap.put(value, engine.createIcon(null, value, iconW, iconH));
 
 		this.discreteTableCellRenderer = new IconCellRenderer<T>(iconMap);
+	}
+
+	@Override
+	@SuppressWarnings("unchecked")
+	public PropertyEditor getPropertyEditor() {
+		CyDiscreteValuePropertyEditor<T> pe = (CyDiscreteValuePropertyEditor<T>) super.getPropertyEditor();
+		pe.setVisualProperty(null);
+		
+		return pe;
+	}
+	
+	@Override
+	@SuppressWarnings("unchecked")
+	public PropertyEditor getPropertyEditor(final VisualProperty<T> vp) {
+		final CyDiscreteValuePropertyEditor<T> pe = (CyDiscreteValuePropertyEditor<T>) super.getPropertyEditor();
+		pe.setVisualProperty(vp);
+		
+		return pe;
 	}
 }

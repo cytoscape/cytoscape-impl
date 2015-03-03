@@ -25,32 +25,26 @@ package org.cytoscape.view.vizmap.gui.internal.view.editor.valueeditor;
  */
 
 import java.awt.Component;
-import java.math.BigDecimal;
-import java.math.BigInteger;
-
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JDialog;
-import javax.swing.JLabel;
-import javax.swing.JButton;
-import javax.swing.JSlider;
-import javax.swing.JSpinner;
-import javax.swing.JTextField;
-
-import java.awt.GridBagLayout;
-import java.awt.GridBagConstraints;
-import java.awt.Insets;
 import java.awt.FlowLayout;
-import java.awt.event.ActionListener;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import javax.swing.event.DocumentListener;
-import javax.swing.event.DocumentEvent;
 
-import org.cytoscape.view.model.VisualProperty;
-import org.cytoscape.view.model.Range;
+import javax.swing.JButton;
+import javax.swing.JDialog;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+
 import org.cytoscape.view.model.ContinuousRange;
+import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.vizmap.gui.editor.VisualPropertyValueEditor;
 
 public class NumericValueEditor<V extends Number> implements VisualPropertyValueEditor<V> {
@@ -61,6 +55,7 @@ public class NumericValueEditor<V extends Number> implements VisualPropertyValue
 		this.type = type;
 	}
 
+	@Override
 	public Class<V> getValueType() {
 		return type;
 	}
@@ -68,7 +63,8 @@ public class NumericValueEditor<V extends Number> implements VisualPropertyValue
 	/**
 	 * Generic editor for all kinds of numbers.
 	 */
-	@Override public <S extends V> V showEditor(final Component parent, S initialValue, VisualProperty<S> vizProp) {
+	@Override
+	public <S extends V> V showEditor(final Component parent, S initialValue, VisualProperty<S> vizProp) {
 		final NumberValueDialog d = new NumberValueDialog(parent, vizProp, initialValue);
 		if (d.getValue() == null)
 			return null;

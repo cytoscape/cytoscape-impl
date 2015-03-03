@@ -53,12 +53,14 @@ public class NumberVisualPropertyEditor<T extends Number> extends BasicVisualPro
 		return new NumberContinuousCellRenderer((ContinuousMappingEditor<?, ?>) continuousMappingEditor);
 	}
 
+	@Override
 	public PropertyEditor getPropertyEditor() {
 		final CyNumberPropertyEditor<T> propertyEditor = (CyNumberPropertyEditor<T>) super.getPropertyEditor();
 		propertyEditor.setVisualProperty(null);
 		return propertyEditor;
 	}
 
+	@Override
 	public PropertyEditor getPropertyEditor(VisualProperty<T> vizProp) {
 		final CyNumberPropertyEditor<T> propertyEditor = (CyNumberPropertyEditor<T>) super.getPropertyEditor();
 		propertyEditor.setVisualProperty(vizProp);

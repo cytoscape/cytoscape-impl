@@ -30,6 +30,7 @@ import java.awt.event.MouseEvent;
 
 import javax.swing.JPanel;
 
+import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.vizmap.gui.internal.view.editor.valueeditor.DiscreteValueEditor;
 
 import com.l2fprod.common.beans.editor.AbstractPropertyEditor;
@@ -39,6 +40,7 @@ public class CyDiscreteValuePropertyEditor<T> extends AbstractPropertyEditor {
 	protected final DiscreteValueEditor<T> valEditor;
 	protected T currentValue;
 	protected Component parent;
+	private VisualProperty<T> visualProperty;
 	
 	public CyDiscreteValuePropertyEditor(final DiscreteValueEditor<T> valEditor) {
 		this.valEditor = valEditor;
@@ -67,11 +69,15 @@ public class CyDiscreteValuePropertyEditor<T> extends AbstractPropertyEditor {
 	public Object getValue() {
 		return currentValue;
 	}
+	
+	public void setVisualProperty(final VisualProperty<T> visualProperty) {
+		this.visualProperty = visualProperty;
+	}
 
 	@SuppressWarnings("unchecked")
 	private final void selectValue() {
 		final T val = (T) getValue();
-		final T selectedVal = valEditor.showEditor(parent, val);
+		final T selectedVal = valEditor.showEditor(parent, val, visualProperty);
 
 		if (selectedVal != null) {
 			final T oldVal = val;

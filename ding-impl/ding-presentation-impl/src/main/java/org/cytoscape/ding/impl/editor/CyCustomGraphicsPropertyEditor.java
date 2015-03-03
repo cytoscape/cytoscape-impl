@@ -30,8 +30,8 @@ import java.awt.event.ActionListener;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 
+import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
-import org.cytoscape.view.vizmap.gui.editor.ValueEditor;
 
 import com.l2fprod.common.beans.editor.AbstractPropertyEditor;
 import com.l2fprod.common.swing.ComponentFactory;
@@ -40,13 +40,14 @@ import com.l2fprod.common.swing.PercentLayout;
 
 public class CyCustomGraphicsPropertyEditor extends AbstractPropertyEditor {
 
-	private final ValueEditor<CyCustomGraphics> valueEditor;
+	private final CyCustomGraphicsValueEditor valueEditor;
 	private CyCustomGraphicsCellRenderer label;
 	private JButton button;
+	private VisualProperty<CyCustomGraphics> visualProperty;
 	private CyCustomGraphics customGraphics;
 	private CyCustomGraphics oldCustomGraphics;
 	
-	public CyCustomGraphicsPropertyEditor(final ValueEditor<CyCustomGraphics> valueEditor) {
+	public CyCustomGraphicsPropertyEditor(final CyCustomGraphicsValueEditor valueEditor) {
 		this.valueEditor = valueEditor;
 
 // TODO just use double-click to open editor--remove buttons!!!		
@@ -88,9 +89,13 @@ public class CyCustomGraphicsPropertyEditor extends AbstractPropertyEditor {
 		label.setValue(value);
 	}
 	
+	public void setVisualProperty(final VisualProperty<CyCustomGraphics> visualProperty) {
+		this.visualProperty = visualProperty;
+	}
+	
 	private void editChart() {
 		//TODO: set correct parent
-		final CyCustomGraphics newVal = valueEditor.showEditor(null, customGraphics);
+		final CyCustomGraphics newVal = valueEditor.showEditor(null, customGraphics, visualProperty);
 
 		if (newVal != null) {
 			setValue(newVal);
