@@ -610,11 +610,48 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 	private void addViewListeners(final VisualPropertySheet vpSheet, final VisualPropertySheetItem<?> vpSheetItem) {
 		if (vpSheetItem.getModel().getVisualPropertyDependency() == null) {
 			// It's a regular VisualProperty Editor...
+			
 			// Default value button clicked
 			vpSheetItem.getDefaultBtn().addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(final ActionEvent e) {
 					openDefaultValueEditor(e, vpSheetItem);
+				}
+			});
+			
+			// Default value button right-clicked
+			vpSheetItem.getDefaultBtn().addMouseListener(new MouseAdapter() {
+				@Override
+				public void mousePressed(final MouseEvent e) {
+					maybeShowContextMenu(e);
+				}
+				@Override
+				public void mouseReleased(final MouseEvent e) {
+					maybeShowContextMenu(e);
+				}
+				@SuppressWarnings("rawtypes")
+				private void maybeShowContextMenu(final MouseEvent e) {
+					if (!e.isPopupTrigger())
+						return;
+					
+					final JPopupMenu contextMenu = new JPopupMenu();
+					
+					contextMenu.add(new JMenuItem(new AbstractAction("Reset Default Value") {
+						@Override
+						public void actionPerformed(final ActionEvent e) {
+							final VisualPropertySheetItemModel vpsiModel = vpSheetItem.getModel();
+							vpsiModel.setDefaultValue(vpsiModel.getVisualProperty().getDefault());
+						}
+					}));
+					
+					invokeOnEDT(new Runnable() {
+						@Override
+						public void run() {
+							// Show context menu
+							final Component parent = (Component) e.getSource();
+							contextMenu.show(parent, e.getX(), e.getY());
+						}
+					});
 				}
 			});
 			
