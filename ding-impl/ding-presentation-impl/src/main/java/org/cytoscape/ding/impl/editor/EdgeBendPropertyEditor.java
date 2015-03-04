@@ -30,6 +30,7 @@ import java.awt.event.ActionListener;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 
+import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.view.presentation.property.values.Bend;
 import org.cytoscape.view.vizmap.gui.editor.ValueEditor;
 
@@ -40,44 +41,49 @@ public class EdgeBendPropertyEditor extends com.l2fprod.common.beans.editor.Abst
 	
 	private JButton button;
 	private Bend bend;
+	private EdgeBendCellRenderer label;
 	
 	private final ValueEditor<Bend> valueEditor;
 		
 	/**
 	 * Creates a new CyLabelPositionLabelEditor object.
 	 */
-	public EdgeBendPropertyEditor(final ValueEditor<Bend> valueEditor) {
+	public EdgeBendPropertyEditor(final ValueEditor<Bend> valueEditor, final IconManager iconManager) {
 		this.valueEditor = valueEditor;
 					
 		editor = new JPanel(new PercentLayout(PercentLayout.HORIZONTAL, 0));
-		//((JPanel) editor).add("*");
-//		label.setOpaque(false);
-		((JPanel) editor).add(button = ComponentFactory.Helper.getFactory()
-				.createMiniButton());
+		((JPanel) editor).setOpaque(false);
+		
+		((JPanel) editor).add("*", label = new EdgeBendCellRenderer());
+		label.setOpaque(false);
+		
+		((JPanel) editor).add(button = ComponentFactory.Helper.getFactory().createMiniButton());
+		button.setText(IconManager.ICON_ELLIPSIS_H);
+		button.setFont(iconManager.getIconFont(13.0f));
 		button.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				editBend();
 			}
 		});
-		((JPanel) editor).add(button = ComponentFactory.Helper.getFactory()
-				.createMiniButton());
-		button.setText("X");
+		
+		((JPanel) editor).add(button = ComponentFactory.Helper.getFactory().createMiniButton());
+		button.setText(IconManager.ICON_REMOVE);
+		button.setFont(iconManager.getIconFont(13.0f));
 		button.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				Bend old = bend;
 				bend = null;
 				firePropertyChange(old, null);
 			}
 		});
-		((JPanel) editor).setOpaque(false);
 	}
 
-	
 	@Override
 	public Object getValue() {
 		return bend;
 	}
-
 	
 	@Override
 	public void setValue(Object value) {

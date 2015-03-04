@@ -160,12 +160,6 @@ import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.swing.DialogTaskManager;
 import org.cytoscape.work.undo.UndoSupport;
 import org.osgi.framework.BundleContext;
-//
-// Annotation api
-//
-// Annotation creation
-// Annotation edits and changes
-
 
 public class CyActivator extends AbstractCyActivator {
 	
@@ -200,6 +194,7 @@ public class CyActivator extends AbstractCyActivator {
 		CyNetworkTableManager cyNetworkTableManagerServiceRef = getService(bc, CyNetworkTableManager.class);
 		CyNetworkViewManager cyNetworkViewManagerServiceRef = getService(bc, CyNetworkViewManager.class);
 		CyNetworkFactory cyNetworkFactory = getService(bc, CyNetworkFactory.class);
+		IconManager iconManagerServiceRef = getService(bc, IconManager.class);
 
 		DVisualLexicon dVisualLexicon = new DVisualLexicon(customGraphicsManagerServiceRef);
 
@@ -238,7 +233,7 @@ public class CyActivator extends AbstractCyActivator {
 
 		// Object Position Editor
 		ObjectPositionValueEditor objectPositionValueEditor = new ObjectPositionValueEditor();
-		ObjectPositionEditor objectPositionEditor = new ObjectPositionEditor(objectPositionValueEditor, continuousMappingCellRendererFactory);
+		ObjectPositionEditor objectPositionEditor = new ObjectPositionEditor(objectPositionValueEditor, continuousMappingCellRendererFactory, iconManagerServiceRef);
 
 		DingViewModelFactory dingNetworkViewFactory = new DingViewModelFactory(cyDataTableFactoryServiceRef,
 				cyRootNetworkFactoryServiceRef, undoSupportServiceRef, spacialIndex2DFactoryServiceRef, dVisualLexicon,
@@ -255,7 +250,7 @@ public class CyActivator extends AbstractCyActivator {
 		// Edge Bend editor
 		EdgeBendValueEditor edgeBendValueEditor = new EdgeBendValueEditor(cyNetworkFactory, dingNetworkViewFactory,
 				dingRenderingEngineFactory);
-		EdgeBendEditor edgeBendEditor = new EdgeBendEditor(edgeBendValueEditor, continuousMappingCellRendererFactory);
+		EdgeBendEditor edgeBendEditor = new EdgeBendEditor(edgeBendValueEditor, continuousMappingCellRendererFactory, iconManagerServiceRef);
 
 		
 		Properties dingRenderingEngineFactoryProps = new Properties();
@@ -581,7 +576,7 @@ public class CyActivator extends AbstractCyActivator {
 		final CyCustomGraphicsValueEditor customGraphicsValueEditor = new CyCustomGraphicsValueEditor(customGraphicsManagerServiceRef, cyCustomGraphics2ManagerServiceRef, cyServiceRegistrarRef);
 		registerAllServices(bc, customGraphicsValueEditor, new Properties());
 		
-		final CustomGraphicsVisualPropertyEditor customGraphicsVisualPropertyEditor = new CustomGraphicsVisualPropertyEditor(CyCustomGraphics.class, customGraphicsValueEditor, continuousMappingCellRendererFactory);
+		final CustomGraphicsVisualPropertyEditor customGraphicsVisualPropertyEditor = new CustomGraphicsVisualPropertyEditor(CyCustomGraphics.class, customGraphicsValueEditor, continuousMappingCellRendererFactory, iconManagerServiceRef);
 		registerService(bc, customGraphicsVisualPropertyEditor, VisualPropertyEditor.class, new Properties());
 	}
 

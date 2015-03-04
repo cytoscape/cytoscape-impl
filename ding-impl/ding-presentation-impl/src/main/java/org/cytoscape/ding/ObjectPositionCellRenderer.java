@@ -45,21 +45,9 @@ public class ObjectPositionCellRenderer extends DefaultCellRenderer {
 	private static final int ICON_WIDTH = 32;
 	private static final int ICON_HEIGHT = 32;
 
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @param table DOCUMENT ME!
-	 * @param value DOCUMENT ME!
-	 * @param isSelected DOCUMENT ME!
-	 * @param hasFocus DOCUMENT ME!
-	 * @param row DOCUMENT ME!
-	 * @param column DOCUMENT ME!
-	 *
-	 * @return  DOCUMENT ME!
-	 */
+	@Override
 	public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,
 	                                               boolean hasFocus, int row, int column) {
-		
 		final JLabel label = new JLabel();
 		
 		if (isSelected) {
@@ -71,8 +59,6 @@ public class ObjectPositionCellRenderer extends DefaultCellRenderer {
 		}
 
 		if ((value != null) && value instanceof ObjectPosition) {
-			
-			
 			final ObjectPosition lp = (ObjectPosition) value;
 			
 			label.setIcon(VisualPropertyIconFactory.createIcon(lp, ICON_WIDTH, ICON_HEIGHT));

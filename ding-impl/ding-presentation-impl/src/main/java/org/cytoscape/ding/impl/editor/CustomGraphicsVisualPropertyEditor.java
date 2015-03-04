@@ -26,6 +26,7 @@ package org.cytoscape.ding.impl.editor;
 
 import java.beans.PropertyEditor;
 
+import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
 import org.cytoscape.view.vizmap.gui.editor.AbstractVisualPropertyEditor;
@@ -40,8 +41,10 @@ public class CustomGraphicsVisualPropertyEditor extends AbstractVisualPropertyEd
 	
 	public CustomGraphicsVisualPropertyEditor(final Class<CyCustomGraphics> type,
 											  final CyCustomGraphicsValueEditor valueEditor,
-											  final ContinuousMappingCellRendererFactory cellRendererFactory) {
-		super(type, new CyCustomGraphicsPropertyEditor(valueEditor), ContinuousEditorType.DISCRETE, cellRendererFactory);
+											  final ContinuousMappingCellRendererFactory cellRendererFactory,
+											  final IconManager iconManager) {
+		super(type, new CyCustomGraphicsPropertyEditor(valueEditor, iconManager), ContinuousEditorType.DISCRETE,
+				cellRendererFactory);
 		discreteTableCellRenderer = new CyCustomGraphicsCellRenderer();
 	}
 

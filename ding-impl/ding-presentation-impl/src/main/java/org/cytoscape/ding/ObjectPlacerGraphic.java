@@ -48,8 +48,7 @@ import javax.swing.JPanel;
 
 import org.cytoscape.ding.impl.ObjectPositionImpl;
 
-public class ObjectPlacerGraphic extends JPanel implements
-		PropertyChangeListener {
+public class ObjectPlacerGraphic extends JPanel implements PropertyChangeListener {
 
 	private static final long serialVersionUID = -1091948204116900740L;
 	
@@ -233,7 +232,7 @@ public class ObjectPlacerGraphic extends JPanel implements
 		else
 			g.setStroke(lowStroke);
 
-		g.setColor(Color.blue);
+		g.setColor(Color.BLUE);
 		g.drawLine(x, y, x + nxy, y);
 		g.drawLine(x + nxy, y, x + nxy, y + nxy);
 		g.drawLine(x + nxy, y + nxy, x, y + nxy);
@@ -243,7 +242,7 @@ public class ObjectPlacerGraphic extends JPanel implements
 			g.drawString(targetLabel, center - (nxy / 12), center - (nxy / 6));
 
 			// draw the node box points
-			g.setColor(Color.black);
+			g.setColor(Color.BLACK);
 			int gd = (int) ((GRAVITY_DISTANCE * 2) + (dot / 2));
 
 			for (int i = 0; i < npoints.length; i++)
@@ -251,9 +250,9 @@ public class ObjectPlacerGraphic extends JPanel implements
 					g.setColor(transparentMagenta);
 					g.fillOval(npoints[i] - (gd / 2), npoints[j] - (gd / 2), gd, gd);
 					if ((i == bestNodeX) && (j == bestNodeY) && !beenDragged)
-						g.setColor(Color.yellow);
+						g.setColor(Color.YELLOW);
 					else
-						g.setColor(Color.black);
+						g.setColor(Color.BLACK);
 					g.fillOval(npoints[i] - (dot / 2), npoints[j] - (dot / 2), dot, dot);
 				}
 		}
@@ -262,7 +261,7 @@ public class ObjectPlacerGraphic extends JPanel implements
 		g.setColor(transparentRed);
 		g.fillRect(xOffset + xPos, yOffset + yPos, lx, ly);
 
-		g.setColor(Color.red);
+		g.setColor(Color.RED);
 		g.drawLine(xOffset + xPos, yOffset + yPos, xOffset + xPos + lx, yOffset + yPos);
 		g.drawLine(xOffset + xPos + lx, yOffset + yPos, xOffset + xPos + lx, yOffset + yPos + ly);
 		g.drawLine(xOffset + xPos + lx, yOffset + yPos + ly, xOffset + xPos, yOffset + yPos + ly);
@@ -285,7 +284,7 @@ public class ObjectPlacerGraphic extends JPanel implements
 						+ (2 * (vspace + ascent)));
 			}
 		} else {
-			g.setColor(Color.gray);
+			g.setColor(Color.GRAY);
 
 			if (justify == JUSTIFY_LEFT)
 				g.drawLine(xOffset + xPos + lowStrokeWidth, yOffset + yPos + (ly / 2), xOffset + xPos + (lx / 3),
@@ -300,18 +299,18 @@ public class ObjectPlacerGraphic extends JPanel implements
 
 		if (renderDetail) {
 			// draw the label box points
-			g.setColor(Color.black);
+			g.setColor(Color.BLACK);
 
 			for (int i = 0; i < lxpoints.length; i++)
 				for (int j = 0; j < lypoints.length; j++) {
 					if ((i == bestLabelX) && (j == bestLabelY) && !beenDragged)
-						g.setColor(Color.yellow);
+						g.setColor(Color.YELLOW);
 
 					g.fillOval((xPos + xOffset + lxpoints[i]) - (dot / 2), (yPos + yOffset + lypoints[j]) - (dot / 2),
 							dot, dot);
 
 					if ((i == bestLabelX) && (j == bestLabelY))
-						g.setColor(Color.black);
+						g.setColor(Color.BLACK);
 				}
 		}
 	}

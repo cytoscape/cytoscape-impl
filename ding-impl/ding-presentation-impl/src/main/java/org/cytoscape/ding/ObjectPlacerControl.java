@@ -24,16 +24,18 @@ package org.cytoscape.ding;
  * #L%
  */
 
+import static javax.swing.GroupLayout.Alignment.LEADING;
+import static javax.swing.GroupLayout.Alignment.TRAILING;
 import static org.cytoscape.ding.Position.NONE;
 
-import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Collection;
 
-import javax.swing.BoxLayout;
+import javax.swing.GroupLayout;
+import javax.swing.GroupLayout.Alignment;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -48,69 +50,83 @@ public class ObjectPlacerControl extends JPanel implements ActionListener,
 	
 	private ObjectPosition lp;
 	
-	private JComboBox justifyCombo;
+	private JComboBox<String> justifyCombo;
 	private JTextField xoffsetBox;
 	private JTextField yoffsetBox;
-	private JComboBox nodeAnchors;
-	private JComboBox labelAnchors;
+	private JComboBox<String> nodeAnchors;
+	private JComboBox<String> objAnchors;
 	private boolean ignoreEvents;
 
 	public ObjectPlacerControl() {
 		super();
 		
 		lp = new ObjectPositionImpl();
-
-		ignoreEvents = false;
-
-		setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-
-		JPanel anchorNames = new JPanel();
-		anchorNames.setLayout(new GridLayout(2, 2));
-
 		final Collection<String> points = Position.getDisplayNames();
 
-		JLabel nodeAnchorLabel = new JLabel("Node Anchor Points ");
-		nodeAnchors = new JComboBox(points.toArray());
+		final JLabel nodeAnchorLabel = new JLabel("Node Anchor Points:");
+		nodeAnchors = new JComboBox<>(points.toArray(new String[points.size()]));
 		nodeAnchors.addActionListener(this);
-		anchorNames.add(nodeAnchorLabel);
-		anchorNames.add(nodeAnchors);
 
-		JLabel labelAnchorLabel = new JLabel("Object Anchor Points");
-		labelAnchors = new JComboBox(points.toArray());
-		labelAnchors.addActionListener(this);
-		anchorNames.add(labelAnchorLabel);
-		anchorNames.add(labelAnchors);
+		final JLabel objAnchorLabel = new JLabel("Object Anchor Points:");
+		objAnchors = new JComboBox<>(points.toArray(new String[points.size()]));
+		objAnchors.addActionListener(this);
 
-		add(anchorNames);
-
-		JPanel justifyPanel = new JPanel();
-		justifyPanel.setLayout(new GridLayout(1, 2));
-
-		JLabel justifyLabel = new JLabel("Label Justification");
+		final JLabel justifyLabel = new JLabel("Label Justification:");
 		final String[] justifyTypes = Justification.getNames();
-		justifyCombo = new JComboBox(justifyTypes);
+		justifyCombo = new JComboBox<>(justifyTypes);
 		justifyCombo.addActionListener(this);
-		justifyPanel.add(justifyLabel);
-		justifyPanel.add(justifyCombo);
 
-		add(justifyPanel);
-
-		JPanel offsetPanel = new JPanel();
-		offsetPanel.setLayout(new GridLayout(2, 2));
-
-		JLabel xoffsetLabel = new JLabel("X Offset Value (can be negative)");
+		final JLabel xoffsetLabel = new JLabel("X Offset Value (can be negative):");
 		xoffsetBox = new JTextField("0", 8);
 		xoffsetBox.addActionListener(this);
-		offsetPanel.add(xoffsetLabel);
-		offsetPanel.add(xoffsetBox);
 
-		JLabel yoffsetLabel = new JLabel("Y Offset Value (can be negative)");
+		final JLabel yoffsetLabel = new JLabel("Y Offset Value (can be negative):");
 		yoffsetBox = new JTextField("0", 8);
 		yoffsetBox.addActionListener(this);
-		offsetPanel.add(yoffsetLabel);
-		offsetPanel.add(yoffsetBox);
-
-		add(offsetPanel);
+		
+		final GroupLayout layout = new GroupLayout(this);
+		this.setLayout(layout);
+		layout.setAutoCreateContainerGaps(true);
+		layout.setAutoCreateGaps(true);
+		
+		layout.setHorizontalGroup(layout.createSequentialGroup()
+				.addGroup(layout.createParallelGroup(TRAILING, true)
+						.addComponent(nodeAnchorLabel)
+						.addComponent(objAnchorLabel)
+						.addComponent(justifyLabel)
+						.addComponent(xoffsetLabel)
+						.addComponent(yoffsetLabel)
+				)
+				.addGroup(layout.createParallelGroup(LEADING, true)
+						.addComponent(nodeAnchors)
+						.addComponent(objAnchors)
+						.addComponent(justifyCombo)
+						.addComponent(xoffsetBox)
+						.addComponent(yoffsetBox)
+				)
+		);
+		layout.setVerticalGroup(layout.createSequentialGroup()
+				.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
+						.addComponent(nodeAnchorLabel)
+						.addComponent(nodeAnchors)
+				)
+				.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
+						.addComponent(objAnchorLabel)
+						.addComponent(objAnchors)
+				)
+				.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
+						.addComponent(justifyLabel)
+						.addComponent(justifyCombo)
+				)
+				.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
+						.addComponent(xoffsetLabel)
+						.addComponent(xoffsetBox)
+				)
+				.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
+						.addComponent(yoffsetLabel)
+						.addComponent(yoffsetBox)
+				)
+		);
 
 		applyPosition();
 	}
@@ -121,8 +137,7 @@ public class ObjectPlacerControl extends JPanel implements ActionListener,
 	}
 
 	void applyPosition() {
-		ignoreEvents = true; // so that we don't pay attention to events
-								// generated from these calls
+		ignoreEvents = true; // so that we don't pay attention to events generated from these calls
 
 		Position nodeAnchor = lp.getTargetAnchor();
 		Position labelAnchor = lp.getAnchor();
@@ -133,9 +148,9 @@ public class ObjectPlacerControl extends JPanel implements ActionListener,
 			nodeAnchors.setSelectedItem(nodeAnchor.getName());
 		
 		if (labelAnchor.equals(NONE))
-			labelAnchors.setSelectedIndex(-1);
+			objAnchors.setSelectedIndex(-1);
 		else
-			labelAnchors.setSelectedItem(labelAnchor.getName());
+			objAnchors.setSelectedItem(labelAnchor.getName());
 
 		justifyCombo.setSelectedItem(lp.getJustify().getName());
 		xoffsetBox.setText(Integer.valueOf((int)lp.getOffsetX()).toString());
@@ -144,15 +159,9 @@ public class ObjectPlacerControl extends JPanel implements ActionListener,
 		repaint();
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 * 
-	 * @param e
-	 *            DOCUMENT ME!
-	 */
+	@Override
 	public void actionPerformed(ActionEvent e) {
-		// ignore events that are generated by setting values to match
-		// the graphic
+		// ignore events that are generated by setting values to match the graphic
 		if (ignoreEvents)
 			return;
 
@@ -165,8 +174,8 @@ public class ObjectPlacerControl extends JPanel implements ActionListener,
 			changed = true;
 		}
 
-		if (source == labelAnchors) {
-			lp.setAnchor(Position.parse(labelAnchors.getSelectedItem()
+		if (source == objAnchors) {
+			lp.setAnchor(Position.parse(objAnchors.getSelectedItem()
 					.toString()));
 			changed = true;
 		}
@@ -202,12 +211,7 @@ public class ObjectPlacerControl extends JPanel implements ActionListener,
 		}
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 * 
-	 * @param e
-	 *            DOCUMENT ME!
-	 */
+	@Override
 	public void propertyChange(PropertyChangeEvent e) {
 		String type = e.getPropertyName();
 

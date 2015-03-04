@@ -24,32 +24,56 @@ package org.cytoscape.ding.impl.editor;
  * #L%
  */
 
+import static javax.swing.GroupLayout.Alignment.LEADING;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_BEND;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_TARGET_ARROW_SHAPE;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_WIDTH;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_FILL_COLOR;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_HEIGHT;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_LABEL;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_LABEL_COLOR;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_LABEL_FONT_SIZE;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_SHAPE;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_WIDTH;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_X_LOCATION;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_Y_LOCATION;
+
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+
+import javax.swing.BorderFactory;
+import javax.swing.GroupLayout;
+import javax.swing.JButton;
+import javax.swing.JDialog;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.UIManager;
+
 import org.cytoscape.ding.DVisualLexicon;
 import org.cytoscape.ding.impl.BendImpl;
 import org.cytoscape.ding.impl.DEdgeView;
 import org.cytoscape.ding.impl.InnerCanvas;
-import org.cytoscape.model.*;
+import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNetworkFactory;
+import org.cytoscape.model.CyNode;
+import org.cytoscape.model.SavePolicy;
+import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.view.presentation.RenderingEngineFactory;
 import org.cytoscape.view.presentation.property.ArrowShapeVisualProperty;
-import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.presentation.property.NodeShapeVisualProperty;
 import org.cytoscape.view.presentation.property.values.Bend;
 import org.cytoscape.view.vizmap.gui.editor.ValueEditor;
-
-import javax.swing.*;
-import javax.swing.border.TitledBorder;
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.WindowEvent;
-import java.awt.event.WindowListener;
-
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_X_LOCATION;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_Y_LOCATION;
 
 public class EdgeBendValueEditor extends JDialog implements ValueEditor<Bend> {
 
@@ -61,19 +85,20 @@ public class EdgeBendValueEditor extends JDialog implements ValueEditor<Bend> {
 	private static final Color EDGE_COLOR = Color.BLACK;
 	private static final Color BACKGROUND_COLOR = Color.white;
 	
-	private DEdgeView edgeView;
+	private JPanel innerPanel;
+	private CyNetworkView dummyView;
+	private View<CyEdge> edgeView;
 
 	private final CyNetworkFactory cyNetworkFactory;
 	private final CyNetworkViewFactory cyNetworkViewFactory;
 	private final RenderingEngineFactory<CyNetwork> presentationFactory;
 
-	private boolean editCancelled = false;
+	private boolean editCancelled;
+	private boolean bendRemoved;
 
 	public EdgeBendValueEditor(final CyNetworkFactory cyNetworkFactory,
-			final CyNetworkViewFactory cyNetworkViewFactory, final RenderingEngineFactory<CyNetwork> presentationFactory) {
-		super();
-		
-		// Null check
+							   final CyNetworkViewFactory cyNetworkViewFactory,
+							   final RenderingEngineFactory<CyNetwork> presentationFactory) {
 		if (cyNetworkFactory == null)
 			throw new NullPointerException("CyNetworkFactory is null.");
 		if (cyNetworkViewFactory == null)
@@ -85,155 +110,147 @@ public class EdgeBendValueEditor extends JDialog implements ValueEditor<Bend> {
 		this.cyNetworkViewFactory = cyNetworkViewFactory;
 		this.presentationFactory = presentationFactory;
 		
-		
 		this.setModal(true);
+		this.setResizable(false);
 
-		this.addWindowListener( new WindowListener()
-		{
+		this.addWindowListener(new WindowAdapter() {
 			@Override
-			public void windowOpened(WindowEvent e)
-			{
-
-			}
-
-			@Override
-			public void windowClosing(WindowEvent e)
-			{
+			public void windowClosing(WindowEvent e) {
 				editCancelled = true;
 			}
-
-			@Override
-			public void windowClosed(WindowEvent e)
-			{
-
-			}
-
-			@Override
-			public void windowIconified(WindowEvent e)
-			{
-
-			}
-
-			@Override
-			public void windowDeiconified(WindowEvent e)
-			{
-
-			}
-
-			@Override
-			public void windowActivated(WindowEvent e)
-			{
-
-			}
-
-			@Override
-			public void windowDeactivated(WindowEvent e)
-			{
-
-			}
 		});
+		
+		init();
 	}
 
-	private void initUI(final CyNetworkFactory cyNetworkFactory,
-			final CyNetworkViewFactory cyNetworkViewFactory, final RenderingEngineFactory<CyNetwork> presentationFactory,
-			Bend startBend) {
-		
-		this.getContentPane().removeAll();
-		
+	private void init() {
 		setTitle("Edge Bend Editor");
-
-		// Create Dummy View for this editor
-		JPanel innerPanel = new JPanel();
-		final String osName = System.getProperty("os.name").toLowerCase();
-		if(osName.contains("windows"))
-			innerPanel.setBorder(new TitledBorder("Alt-Click to add new Edge Handle / Drag Handles to adjust Bend"));
-		else if(osName.contains("mac"))
-			innerPanel.setBorder(new TitledBorder("Option-click to add new Edge Handle / Drag Handles to adjust Bend"));
-		else
-			innerPanel.setBorder(new TitledBorder("Ctrl-Alt-Click to add new Edge Handle / Drag Handles to adjust Bend"));
-
-
 		setPreferredSize(DEF_PANEL_SIZE);
-		setLayout(new BorderLayout());
-		add(innerPanel, BorderLayout.CENTER);
 
+		final String osName = System.getProperty("os.name").toLowerCase();
+		String newHandleAction = "Ctrl-Alt-click";
+		
+		if (osName.contains("windows"))
+			newHandleAction = "Alt-click";
+		else if (osName.contains("mac"))
+			newHandleAction = "Option-click";
+		
+		final JLabel infoLabel = new JLabel(
+				"<html><b>1. <i>" + newHandleAction + "</i></b> the edge to add a new handle.<br />" +
+				"<b>2. </b>Drag handles to bend (select the edge first).</html>"
+		);
+		infoLabel.setFont(infoLabel.getFont().deriveFont(11.0f));
+		
+		innerPanel = new JPanel();
+		innerPanel.setBackground(BACKGROUND_COLOR);
+		innerPanel.setBorder(BorderFactory.createLineBorder(UIManager.getColor("Label.disabledForeground")));
+
+		final JButton okButton = new JButton("OK");
+		okButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				editCancelled = false;
+				dispose();
+			}
+		});
+		
+		final JButton cancelButton = new JButton("Cancel");
+		cancelButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				editCancelled = true;
+				dispose();
+			}
+		});
+		
+		final JButton removeBendButton = new JButton("Remove Bend");
+		removeBendButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				bendRemoved = true;
+				editCancelled = false;
+				dispose();
+			}
+		});
+		
+		final JPanel buttonPanel = LookAndFeelUtil.createOkCancelPanel(okButton, cancelButton, removeBendButton);
+		
+		final GroupLayout layout = new GroupLayout(getContentPane());
+		getContentPane().setLayout(layout);
+		layout.setAutoCreateContainerGaps(true);
+		layout.setAutoCreateGaps(true);
+		
+		layout.setHorizontalGroup(layout.createParallelGroup(LEADING, true)
+				.addComponent(infoLabel)
+				.addComponent(innerPanel)
+				.addComponent(buttonPanel)
+		);
+		layout.setVerticalGroup(layout.createSequentialGroup()
+				.addComponent(infoLabel)
+				.addComponent(innerPanel)
+				.addComponent(buttonPanel)
+		);
+	}
+	
+	private void updateUI(Bend startBend) {
+		innerPanel.removeAll();
+		
 		// Create very simple dummy view.
 		final CyNetwork dummyNet = cyNetworkFactory.createNetworkWithPrivateTables(SavePolicy.DO_NOT_SAVE);
 		final CyNode source = dummyNet.addNode();
 		final CyNode target = dummyNet.addNode();
 		final CyEdge edge = dummyNet.addEdge(source, target, true);
-
+		
+		// TODO Unfortunately, handles cannot be clicked when the edge is selected like this
+		//dummyNet.getRow(edge, CyNetwork.DEFAULT_ATTRS).set(CyNetwork.SELECTED, true);
+		
 		// Create View
-		final CyNetworkView dummyview = cyNetworkViewFactory.createNetworkView(dummyNet);
+		dummyView = cyNetworkViewFactory.createNetworkView(dummyNet);
 
 		// Set appearances of the view
-		final View<CyNode> sourceView = dummyview.getNodeView(source);
-		final View<CyNode> targetView = dummyview.getNodeView(target);
-		edgeView = (DEdgeView) dummyview.getEdgeView(edge);
+		final View<CyNode> sourceView = dummyView.getNodeView(source);
+		final View<CyNode> targetView = dummyView.getNodeView(target);
+		edgeView = dummyView.getEdgeView(edge);
 		
-		sourceView.setVisualProperty(BasicVisualLexicon.NODE_FILL_COLOR, NODE_COLOR);
-		targetView.setVisualProperty(BasicVisualLexicon.NODE_FILL_COLOR, NODE_COLOR);
-		sourceView.setVisualProperty(BasicVisualLexicon.NODE_LABEL_COLOR, Color.WHITE);
-		targetView.setVisualProperty(BasicVisualLexicon.NODE_LABEL_COLOR, Color.WHITE);
-		sourceView.setVisualProperty(BasicVisualLexicon.NODE_LABEL_FONT_SIZE, 16);
-		targetView.setVisualProperty(BasicVisualLexicon.NODE_LABEL_FONT_SIZE, 16);
-		sourceView.setVisualProperty(BasicVisualLexicon.NODE_LABEL, "S");
-		targetView.setVisualProperty(BasicVisualLexicon.NODE_LABEL, "T");
+		sourceView.setVisualProperty(NODE_FILL_COLOR, NODE_COLOR);
+		targetView.setVisualProperty(NODE_FILL_COLOR, NODE_COLOR);
+		sourceView.setVisualProperty(NODE_LABEL_COLOR, Color.WHITE);
+		targetView.setVisualProperty(NODE_LABEL_COLOR, Color.WHITE);
+		sourceView.setVisualProperty(NODE_LABEL_FONT_SIZE, 16);
+		targetView.setVisualProperty(NODE_LABEL_FONT_SIZE, 16);
+		sourceView.setVisualProperty(NODE_LABEL, "S");
+		targetView.setVisualProperty(NODE_LABEL, "T");
 		
-		sourceView.setVisualProperty(BasicVisualLexicon.NODE_SHAPE, NodeShapeVisualProperty.ELLIPSE);
-		targetView.setVisualProperty(BasicVisualLexicon.NODE_SHAPE, NodeShapeVisualProperty.ELLIPSE);
+		sourceView.setVisualProperty(NODE_SHAPE, NodeShapeVisualProperty.ELLIPSE);
+		targetView.setVisualProperty(NODE_SHAPE, NodeShapeVisualProperty.ELLIPSE);
 		
-		sourceView.setVisualProperty(BasicVisualLexicon.NODE_WIDTH, 40d);
-		sourceView.setVisualProperty(BasicVisualLexicon.NODE_HEIGHT, 40d);
-		targetView.setVisualProperty(BasicVisualLexicon.NODE_WIDTH, 40d);
-		targetView.setVisualProperty(BasicVisualLexicon.NODE_HEIGHT, 40d);
+		sourceView.setVisualProperty(NODE_WIDTH, 40d);
+		sourceView.setVisualProperty(NODE_HEIGHT, 40d);
+		targetView.setVisualProperty(NODE_WIDTH, 40d);
+		targetView.setVisualProperty(NODE_HEIGHT, 40d);
 		
-		edgeView.setVisualProperty(BasicVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT, EDGE_COLOR);
-		edgeView.setVisualProperty(BasicVisualLexicon.EDGE_WIDTH, 4d);
-		edgeView.setVisualProperty(BasicVisualLexicon.EDGE_TARGET_ARROW_SHAPE, ArrowShapeVisualProperty.ARROW);
+		edgeView.setVisualProperty(EDGE_STROKE_UNSELECTED_PAINT, EDGE_COLOR);
+		edgeView.setVisualProperty(EDGE_WIDTH, 4d);
+		edgeView.setVisualProperty(EDGE_TARGET_ARROW_SHAPE, ArrowShapeVisualProperty.ARROW);
 		edgeView.setVisualProperty(DVisualLexicon.EDGE_TARGET_ARROW_UNSELECTED_PAINT, EDGE_COLOR);
 		edgeView.setVisualProperty(DVisualLexicon.EDGE_CURVED, true);
-
-		//TODO: Here is where we can start re-using the existing edge bends and trying to display them properly in the editor.
-//		if( startBend == null )
-        startBend = new BendImpl();
-		edgeView.setVisualProperty(DVisualLexicon.EDGE_BEND, startBend);
 		
+		if (startBend == null || startBend.equals(EDGE_BEND.getDefault()))
+			startBend = new BendImpl();
 		
-		dummyview.getNodeView(source).setVisualProperty(NODE_X_LOCATION, 0d);
-		dummyview.getNodeView(source).setVisualProperty(NODE_Y_LOCATION, 100d);
-		dummyview.getNodeView(target).setVisualProperty(NODE_X_LOCATION, 400d);
-		dummyview.getNodeView(target).setVisualProperty(NODE_Y_LOCATION, 120d);
+		edgeView.setVisualProperty(EDGE_BEND, startBend);
+		
+		sourceView.setVisualProperty(NODE_X_LOCATION, 0d);
+		sourceView.setVisualProperty(NODE_Y_LOCATION, 100d);
+		targetView.setVisualProperty(NODE_X_LOCATION, 400d);
+		targetView.setVisualProperty(NODE_Y_LOCATION, 120d);
 
-		innerPanel.setBackground(BACKGROUND_COLOR);
 		// Render it in this panel.  It is not necessary to register this engine to manager.
-		final RenderingEngine<CyNetwork> renderingEngine = presentationFactory.createRenderingEngine(innerPanel, dummyview);
-		dummyview.fitContent();
+		final RenderingEngine<CyNetwork> engine = presentationFactory.createRenderingEngine(innerPanel, dummyView);
+		dummyView.fitContent();
 		
-		InnerCanvas innerCanvas = (InnerCanvas)innerPanel.getComponent(0);
+		final InnerCanvas innerCanvas = (InnerCanvas) innerPanel.getComponent(0);
 		innerCanvas.disablePopupMenu();
-				
-		final JPanel buttonPanel = new JPanel();
-		final BoxLayout buttonLayout = new BoxLayout(buttonPanel, BoxLayout.X_AXIS);
-		buttonPanel.setLayout(buttonLayout);
-		final JButton okButton = new JButton("OK");
-		okButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				dispose();
-			}
-		});
-		final JButton cancelButton = new JButton("Cancel");
-		cancelButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				editCancelled = true;
-				dispose();
-			}
-		});
-
-		buttonPanel.add(okButton);
-		buttonPanel.add(cancelButton);
-
-		this.add(buttonPanel, BorderLayout.SOUTH);
 		
 		pack();
 	}
@@ -241,12 +258,21 @@ public class EdgeBendValueEditor extends JDialog implements ValueEditor<Bend> {
 	@Override
 	public <S extends Bend> Bend showEditor(Component parent, S initialValue) {
 		editCancelled = false;
-		initUI(cyNetworkFactory, cyNetworkViewFactory, presentationFactory, initialValue);
+		bendRemoved = false;
+		updateUI(initialValue);
+		
 		EditMode.setMode(true);
-		this.setLocationRelativeTo(parent);
-		this.setVisible(true);
+		setLocationRelativeTo(parent);
+		setVisible(true);
 		EditMode.setMode(false);
-		return editCancelled ? null : edgeView.getBend();
+		
+		if (bendRemoved)
+			return EDGE_BEND.getDefault();
+		
+		if (!editCancelled && edgeView instanceof DEdgeView)
+			return ((DEdgeView)edgeView).getBend();
+		
+		return null;
 	}
 
 	@Override

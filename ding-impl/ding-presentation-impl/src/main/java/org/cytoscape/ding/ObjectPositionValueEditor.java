@@ -24,32 +24,34 @@ package org.cytoscape.ding;
  * #L%
  */
 
+import static javax.swing.GroupLayout.Alignment.LEADING;
+
+import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-import javax.swing.BoxLayout;
+import javax.swing.BorderFactory;
+import javax.swing.GroupLayout;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JPanel;
+import javax.swing.UIManager;
 
 import org.cytoscape.ding.impl.ObjectPositionImpl;
+import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.vizmap.gui.editor.ValueEditor;
 
 /**
  * Swing implementation of Object Position editor.
- * 
  */
 public class ObjectPositionValueEditor extends JDialog implements ValueEditor<ObjectPosition> {
 
 	private static final long serialVersionUID = 7146654020668346430L;
 
-	// Current position
 	private String label;
-	
 	private ObjectPosition oldValue;
-	
-	private boolean canceled = false;
+	private boolean canceled;
 	
 	private ObjectPlacerGraphic graphic;
 	private ObjectPlacerControl control;
@@ -59,61 +61,66 @@ public class ObjectPositionValueEditor extends JDialog implements ValueEditor<Ob
 		this.label = "Object";
 		
 		this.setModal(true);
+		this.setResizable(false);
 		init();
 	}
 
 	private void init() {
-		
 		setTitle("Select Position");
-
-		final JPanel placer = new JPanel();
-		
-		placer.setLayout(new BoxLayout(placer, BoxLayout.Y_AXIS));
-		placer.setOpaque(true); // content panes must be opaque
 
 		// Set up and connect the gui components.
 		graphic = new ObjectPlacerGraphic(null, true, label);
+		
 		control = new ObjectPlacerControl();
-
 		control.addPropertyChangeListener(graphic);
-		//control.addPropertyChangeListener(this);
-
 		graphic.addPropertyChangeListener(control);
-		//graphic.addPropertyChangeListener(this);
 
-		placer.add(graphic);
-		placer.add(control);
-
-		final JPanel buttonPanel = new JPanel();
-		final JButton ok = new JButton("OK");
-		ok.addActionListener(new ActionListener() {
+		final JPanel graphicPanel = new JPanel();
+		graphicPanel.setBorder(BorderFactory.createLineBorder(UIManager.getColor("Label.disabledForeground")));
+		graphicPanel.setLayout(new BorderLayout());
+		graphicPanel.add(graphic);
+		
+		final JButton okButton = new JButton("OK");
+		okButton.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
-				
 				dispose();
 			}
 		});
-		ok.addActionListener(control);
+		okButton.addActionListener(control);
 
-		final JButton cancel = new JButton("Cancel");
-		cancel.addActionListener(new ActionListener() {
+		final JButton cancelButton = new JButton("Cancel");
+		cancelButton.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				canceled = true;
 				dispose();
 			}
 		});
 
-		buttonPanel.add(ok);
-		buttonPanel.add(cancel);
-		placer.add(buttonPanel);
-		add(placer);
+		final JPanel buttonPanel = LookAndFeelUtil.createOkCancelPanel(okButton, cancelButton);
 
+		final GroupLayout layout = new GroupLayout(getContentPane());
+		getContentPane().setLayout(layout);
+		layout.setAutoCreateContainerGaps(true);
+		layout.setAutoCreateGaps(true);
+		
+		layout.setHorizontalGroup(layout.createParallelGroup(LEADING, true)
+				.addComponent(graphicPanel)
+				.addComponent(control)
+				.addComponent(buttonPanel)
+		);
+		layout.setVerticalGroup(layout.createSequentialGroup()
+				.addComponent(graphicPanel)
+				.addComponent(control)
+				.addComponent(buttonPanel)
+		);
+		
 		pack();
 	}
 
-
 	@Override
 	public <S extends ObjectPosition> ObjectPosition showEditor(Component parent, S initialValue) {
-
 		ObjectPosition pos;
 
 		if (initialValue == null) {
@@ -141,7 +148,6 @@ public class ObjectPositionValueEditor extends JDialog implements ValueEditor<Ob
 			return control.getPosition();
 		}
 	}
-
 
 	@Override
 	public Class<ObjectPosition> getValueType() {
