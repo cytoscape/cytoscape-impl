@@ -629,35 +629,25 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 				public void mouseReleased(final MouseEvent e) {
 					maybeShowContextMenu(e);
 				}
-				@SuppressWarnings("rawtypes")
 				private void maybeShowContextMenu(final MouseEvent e) {
-					if (!e.isPopupTrigger())
-						return;
-					
-					final JPopupMenu contextMenu = new JPopupMenu();
-					
-					contextMenu.add(new JMenuItem(new AbstractAction("Reset Default Value") {
-						@Override
-						public void actionPerformed(final ActionEvent e) {
-							final VisualPropertySheetItemModel vpsiModel = vpSheetItem.getModel();
-							vpsiModel.setDefaultValue(vpsiModel.getVisualProperty().getDefault());
-						}
-					}));
-					
-					invokeOnEDT(new Runnable() {
-						@Override
-						public void run() {
-							// Show context menu
-							final Component parent = (Component) e.getSource();
-							contextMenu.show(parent, e.getX(), e.getY());
-						}
-					});
+					if (e.isPopupTrigger()) {
+						final JPopupMenu contextMenu = new JPopupMenu();
+						contextMenu.add(new JMenuItem(new AbstractAction("Reset Default Value") {
+							@Override
+							public void actionPerformed(final ActionEvent e) {
+								vpSheetItem.getModel().resetDefaultValue();
+							}
+						}));
+						showContextMenu(contextMenu, e);
+					}
 				}
 			});
 			
-			// Bypass popup menu items
+			// Bypass button clicked
 			if (vpSheetItem.getModel().isLockedValueAllowed()) {
+				// Create context menu
 				final JPopupMenu bypassMenu = new JPopupMenu();
+				final JMenuItem removeBypassMenuItem;
 				
 				bypassMenu.add(new JMenuItem(new AbstractAction("Set Bypass...") {
 					@Override
@@ -665,13 +655,33 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 						openLockedValueEditor(e, vpSheetItem);
 					}
 				}));
-				bypassMenu.add(new JMenuItem(new AbstractAction("Remove Bypass") {
+				bypassMenu.add(removeBypassMenuItem = new JMenuItem(new AbstractAction("Remove Bypass") {
 					@Override
 					public void actionPerformed(final ActionEvent e) {
 						removeLockedValue(e, vpSheetItem);
 					}
 				}));
 				
+				// Right-clicked
+				vpSheetItem.getBypassBtn().addMouseListener(new MouseAdapter() {
+					@Override
+					public void mousePressed(final MouseEvent e) {
+						maybeShowContextMenu(e);
+					}
+					@Override
+					public void mouseReleased(final MouseEvent e) {
+						maybeShowContextMenu(e);
+					}
+					private void maybeShowContextMenu(final MouseEvent e) {
+						if (vpSheetItem.getBypassBtn().isEnabled() && e.isPopupTrigger()) {
+							final LockedValueState state = vpSheetItem.getModel().getLockedValueState();
+							removeBypassMenuItem.setEnabled(state != LockedValueState.ENABLED_NOT_SET);
+							showContextMenu(bypassMenu, e);
+						}
+					}
+				});
+				
+				// Left-clicked
 				vpSheetItem.getBypassBtn().addActionListener(new ActionListener() {
 					@Override
 					public void actionPerformed(final ActionEvent e) {
@@ -1410,6 +1420,16 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 		}
 	}
 	
+	private void showContextMenu(final JPopupMenu contextMenu, final MouseEvent e) {
+		invokeOnEDT(new Runnable() {
+			@Override
+			public void run() {
+				final Component parent = (Component) e.getSource();
+				contextMenu.show(parent, e.getX(), e.getY());
+			}
+		});
+	}
+	
 	/**
 	 * Utility method that invokes the code in Runnable.run on the AWT Event Dispatch Thread.
 	 * @param runnable
@@ -1478,9 +1498,7 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 						}
 					}
 					
-					// Show context menu
-					final Component parent = (Component) e.getSource();
-					contextMenu.show(parent, e.getX(), e.getY());
+					showContextMenu(contextMenu, e);
 				}
 			});
 		}
