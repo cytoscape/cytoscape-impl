@@ -25,7 +25,6 @@ package org.cytoscape.view.vizmap.gui.internal.view.editor.valueeditor;
  */
 
 import java.awt.Component;
-import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -34,6 +33,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
+import javax.swing.AbstractAction;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
@@ -43,6 +43,7 @@ import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
+import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.model.ContinuousRange;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.vizmap.gui.editor.VisualPropertyValueEditor;
@@ -73,19 +74,24 @@ public class NumericValueEditor<V extends Number> implements VisualPropertyValue
 	}
 }
 
+@SuppressWarnings("serial")
 class NumberValueDialog extends JDialog {
+	
 	private Number value = null;
 
 	public <S extends Number> NumberValueDialog(final Component parent, final VisualProperty<S> vizProp, final S initialValue) {
 		super(JOptionPane.getFrameForComponent(parent), vizProp.getDisplayName(), true);
 		super.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
 		super.addWindowListener(new WindowAdapter() {
+			@Override
 			public void windowClosing(WindowEvent e) {
 				value = null;
 				dispose();
 			}
 		});
+		
 		super.setLayout(new GridBagLayout());
+		
 		final GridBagConstraints c = new GridBagConstraints();
 
 		final ContinuousRange<S> range = (ContinuousRange<S>) vizProp.getRange();
@@ -93,36 +99,36 @@ class NumberValueDialog extends JDialog {
 		final JLabel errorLabel = new JLabel("<html><font color=\"red\">Not valid</font></html>");
 		errorLabel.setVisible(false);
 		final JTextField field = new JTextField(6);
+		
 		if (initialValue != null)
 			field.setText(initialValue.toString());
-		final JButton okBtn = new JButton("   OK   ");
-		final JButton cancelBtn = new JButton("Cancel");
-		cancelBtn.addActionListener(new ActionListener() {
+		
+		final JButton okBtn = new JButton(new AbstractAction("OK") {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				onOkAction(range, errorLabel, field);
+			}
+		});
+		final JButton cancelBtn = new JButton(new AbstractAction("Cancel") {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				value = null;
 				dispose();
 			}
 		});
-		final ActionListener okAction = new ActionListener() {
+		
+		field.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
-				value = parseNumber(field.getText(), range.getType());
-				if (value != null) {
-					if (!range.inRange(range.getType().cast(value)))
-						value = null;
-				}
-				if (value == null) {
-					errorLabel.setVisible(true);
-					pack();
-				} else {
-					dispose();
-				}
+				onOkAction(range, errorLabel, field);
 			}
-		};
-		okBtn.addActionListener(okAction);
-		field.addActionListener(okAction);
+		});
 		field.getDocument().addDocumentListener(new DocumentListener() {
+			@Override
 			public void changedUpdate(DocumentEvent e) { clear(); }
+			@Override
 			public void removeUpdate(DocumentEvent e) { clear(); }
+			@Override
 			public void insertUpdate(DocumentEvent e) { clear(); }
 
 			void clear() {
@@ -153,11 +159,12 @@ class NumberValueDialog extends JDialog {
 		c.weightx = 1.0;		c.weighty = 0.0;
 		c.fill = GridBagConstraints.HORIZONTAL;
 		c.insets = new Insets(0, 10, 10, 10);
-		final JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-		btnPanel.add(cancelBtn);
-		btnPanel.add(okBtn);
+		
+		final JPanel btnPanel = LookAndFeelUtil.createOkCancelPanel(okBtn, cancelBtn);
 		super.add(btnPanel, c);
 
+		LookAndFeelUtil.setDefaultOkCancelKeyStrokes(getRootPane(), okBtn.getAction(), cancelBtn.getAction());
+		
 		super.setLocationRelativeTo(parent);
 		super.pack();
 		super.setVisible(true);
@@ -167,6 +174,23 @@ class NumberValueDialog extends JDialog {
 		return value;
 	}
 
+	private <S extends Number> void onOkAction(final ContinuousRange<S> range, final JLabel errorLabel,
+			final JTextField field) {
+		value = parseNumber(field.getText(), range.getType());
+		
+		if (value != null) {
+			if (!range.inRange(range.getType().cast(value)))
+				value = null;
+		}
+		
+		if (value == null) {
+			errorLabel.setVisible(true);
+			pack();
+		} else {
+			dispose();
+		}
+	}
+	
 	private static boolean isUnbounded(final Number value, final Class<?> type) {
 		if (type.equals(Integer.class)) {
 			return (value.equals(Integer.MIN_VALUE) || value.equals(Integer.MAX_VALUE));

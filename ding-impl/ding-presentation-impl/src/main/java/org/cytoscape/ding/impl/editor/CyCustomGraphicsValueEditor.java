@@ -18,9 +18,8 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
 import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -36,6 +35,7 @@ import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
 import org.cytoscape.ding.customgraphics.CyCustomGraphics2Manager;
 import org.cytoscape.ding.customgraphics.NullCustomGraphics;
 import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
@@ -129,6 +129,9 @@ public class CyCustomGraphicsValueEditor extends JPanel implements VisualPropert
 		
 		add(getGroupTpn(), BorderLayout.CENTER);
 		add(getBottomPnl(), BorderLayout.SOUTH);
+		
+		LookAndFeelUtil.setDefaultOkCancelKeyStrokes(dialog.getRootPane(), getApplyBtn().getAction(),
+				getCancelBtn().getAction());
 	}
 	
 	private void refreshUI() {
@@ -197,13 +200,7 @@ public class CyCustomGraphicsValueEditor extends JPanel implements VisualPropert
 	
 	private JPanel getBottomPnl() {
 		if (bottomPnl == null) {
-			bottomPnl = new JPanel();
-			bottomPnl.setLayout(new BoxLayout(bottomPnl, BoxLayout.X_AXIS));
-			bottomPnl.add(getRemoveBtn());
-			bottomPnl.add(Box.createVerticalStrut(35));
-			bottomPnl.add(Box.createHorizontalGlue());
-			bottomPnl.add(getCancelBtn());
-			bottomPnl.add(getApplyBtn());
+			bottomPnl = LookAndFeelUtil.createOkCancelPanel(getApplyBtn(), getCancelBtn(), getRemoveBtn());
 		}
 		
 		return bottomPnl;
@@ -243,10 +240,10 @@ public class CyCustomGraphicsValueEditor extends JPanel implements VisualPropert
 		return removeBtn;
 	}
 	
+	@SuppressWarnings("serial")
 	private JButton getCancelBtn() {
 		if (cancelBtn == null) {
-			cancelBtn = new JButton("Cancel");
-			cancelBtn.addActionListener(new ActionListener() {
+			cancelBtn = new JButton(new AbstractAction("Cancel") {
 				@Override
 				public void actionPerformed(final ActionEvent e) {
 					cancel();
@@ -257,10 +254,10 @@ public class CyCustomGraphicsValueEditor extends JPanel implements VisualPropert
 		return cancelBtn;
 	}
 	
+	@SuppressWarnings("serial")
 	private JButton getApplyBtn() {
 		if (applyBtn == null) {
-			applyBtn = new JButton("Apply");
-			applyBtn.addActionListener(new ActionListener() {
+			applyBtn = new JButton(new AbstractAction("Apply") {
 				@Override
 				public void actionPerformed(final ActionEvent e) {
 					apply();

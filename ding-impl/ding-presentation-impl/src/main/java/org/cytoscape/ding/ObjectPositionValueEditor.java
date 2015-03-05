@@ -31,6 +31,7 @@ import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.GroupLayout;
 import javax.swing.JButton;
@@ -65,6 +66,7 @@ public class ObjectPositionValueEditor extends JDialog implements ValueEditor<Ob
 		init();
 	}
 
+	@SuppressWarnings("serial")
 	private void init() {
 		setTitle("Select Position");
 
@@ -80,8 +82,7 @@ public class ObjectPositionValueEditor extends JDialog implements ValueEditor<Ob
 		graphicPanel.setLayout(new BorderLayout());
 		graphicPanel.add(graphic);
 		
-		final JButton okButton = new JButton("OK");
-		okButton.addActionListener(new ActionListener() {
+		final JButton okButton = new JButton(new AbstractAction("OK") {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				dispose();
@@ -89,8 +90,7 @@ public class ObjectPositionValueEditor extends JDialog implements ValueEditor<Ob
 		});
 		okButton.addActionListener(control);
 
-		final JButton cancelButton = new JButton("Cancel");
-		cancelButton.addActionListener(new ActionListener() {
+		final JButton cancelButton = new JButton(new AbstractAction("Cancel") {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				canceled = true;
@@ -99,6 +99,7 @@ public class ObjectPositionValueEditor extends JDialog implements ValueEditor<Ob
 		});
 
 		final JPanel buttonPanel = LookAndFeelUtil.createOkCancelPanel(okButton, cancelButton);
+		LookAndFeelUtil.setDefaultOkCancelKeyStrokes(getRootPane(), okButton.getAction(), cancelButton.getAction());
 
 		final GroupLayout layout = new GroupLayout(getContentPane());
 		getContentPane().setLayout(layout);

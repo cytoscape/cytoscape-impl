@@ -29,7 +29,6 @@ import java.awt.Cursor;
 import java.awt.Font;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.text.Collator;
@@ -39,6 +38,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
+import javax.swing.AbstractAction;
 import javax.swing.DefaultListModel;
 import javax.swing.GroupLayout;
 import javax.swing.Icon;
@@ -55,6 +55,7 @@ import javax.swing.WindowConstants;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.NetworkViewRenderer;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.RenderingEngine;
@@ -186,6 +187,9 @@ public class DiscreteValueEditor<T> extends JDialog implements VisualPropertyVal
 				.addComponent(mainPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE));
 		
 		pack();
+		
+		LookAndFeelUtil.setDefaultOkCancelKeyStrokes(getRootPane(), getApplyButton().getAction(),
+				getCancelButton().getAction());
 	}
 	
 	private DiscreteValueList<T> getDiscreteValueList() {
@@ -204,11 +208,10 @@ public class DiscreteValueEditor<T> extends JDialog implements VisualPropertyVal
 		return discreteValueList;
 	}
 	
+	@SuppressWarnings("serial")
 	private JButton getApplyButton() {
 		if (applyButton == null) {
-			applyButton = new JButton();
-			applyButton.setText("Apply");
-			applyButton.addActionListener(new ActionListener() {
+			applyButton = new JButton(new AbstractAction("Apply") {
 				@Override
 				public void actionPerformed(ActionEvent evt) {
 					applyButtonActionPerformed(evt);
@@ -219,11 +222,10 @@ public class DiscreteValueEditor<T> extends JDialog implements VisualPropertyVal
 		return applyButton;
 	}
 	
+	@SuppressWarnings("serial")
 	private JButton getCancelButton() {
 		if (cancelButton == null) {
-			cancelButton = new JButton();
-			cancelButton.setText("Cancel");
-			cancelButton.addActionListener(new ActionListener() {
+			cancelButton = new JButton(new AbstractAction("Cancel") {
 				@Override
 				public void actionPerformed(ActionEvent evt) {
 					cancelButtonActionPerformed(evt);

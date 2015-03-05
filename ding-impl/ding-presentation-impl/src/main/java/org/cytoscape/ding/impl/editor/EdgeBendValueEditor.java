@@ -43,10 +43,10 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
+import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.GroupLayout;
 import javax.swing.JButton;
@@ -123,6 +123,7 @@ public class EdgeBendValueEditor extends JDialog implements ValueEditor<Bend> {
 		init();
 	}
 
+	@SuppressWarnings("serial")
 	private void init() {
 		setTitle("Edge Bend Editor");
 		setPreferredSize(DEF_PANEL_SIZE);
@@ -145,8 +146,7 @@ public class EdgeBendValueEditor extends JDialog implements ValueEditor<Bend> {
 		innerPanel.setBackground(BACKGROUND_COLOR);
 		innerPanel.setBorder(BorderFactory.createLineBorder(UIManager.getColor("Label.disabledForeground")));
 
-		final JButton okButton = new JButton("OK");
-		okButton.addActionListener(new ActionListener() {
+		final JButton okButton = new JButton(new AbstractAction("OK") {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				editCancelled = false;
@@ -154,8 +154,7 @@ public class EdgeBendValueEditor extends JDialog implements ValueEditor<Bend> {
 			}
 		});
 		
-		final JButton cancelButton = new JButton("Cancel");
-		cancelButton.addActionListener(new ActionListener() {
+		final JButton cancelButton = new JButton(new AbstractAction("Cancel") {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				editCancelled = true;
@@ -163,8 +162,7 @@ public class EdgeBendValueEditor extends JDialog implements ValueEditor<Bend> {
 			}
 		});
 		
-		final JButton removeBendButton = new JButton("Remove Bend");
-		removeBendButton.addActionListener(new ActionListener() {
+		final JButton removeBendButton = new JButton(new AbstractAction("Remove Bend") {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				bendRemoved = true;
@@ -174,6 +172,7 @@ public class EdgeBendValueEditor extends JDialog implements ValueEditor<Bend> {
 		});
 		
 		final JPanel buttonPanel = LookAndFeelUtil.createOkCancelPanel(okButton, cancelButton, removeBendButton);
+		LookAndFeelUtil.setDefaultOkCancelKeyStrokes(getRootPane(), okButton.getAction(), cancelButton.getAction());
 		
 		final GroupLayout layout = new GroupLayout(getContentPane());
 		getContentPane().setLayout(layout);
