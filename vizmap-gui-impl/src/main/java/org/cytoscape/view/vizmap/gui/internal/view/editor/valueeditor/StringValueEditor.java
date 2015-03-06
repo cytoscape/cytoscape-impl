@@ -30,7 +30,8 @@ import javax.swing.JOptionPane;
 
 public class StringValueEditor extends AbstractValueEditor<String> {
 
-	private static final String MESSAGE = "Please enter new text value";
+	private static final String MESSAGE = "Enter a new text value:";
+	private static final String TITLE = "Text Input";
 
 	public StringValueEditor() {
 		super(String.class);
@@ -38,6 +39,7 @@ public class StringValueEditor extends AbstractValueEditor<String> {
 
 	@Override
 	public String showEditor(Component parent, String initialValue) {
-		return JOptionPane.showInputDialog(parent, MESSAGE, initialValue);
+		return (String) JOptionPane.showInputDialog(parent, MESSAGE, TITLE, JOptionPane.PLAIN_MESSAGE, null,
+				null, initialValue);
 	}
 }

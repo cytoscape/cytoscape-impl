@@ -318,7 +318,7 @@ public class ColorSchemeEditor<T extends AbstractCustomGraphics2<?>> extends JPa
 		private void chooseColor() {
 			final JDialog dialog = JColorChooser.createDialog(
 					ColorSchemeEditor.this,
-					"Please pick a color",
+					"Colors",
 					true,
 					colorChooser, 
 					new ActionListener() {

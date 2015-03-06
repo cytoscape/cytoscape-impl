@@ -94,7 +94,7 @@ public class RandomNumberMappingGenerator extends AbstractDiscreteMappingGenerat
 
 	private void getRange(final String[] range) {
 		// Ask user to input number range
-		final String s = JOptionPane.showInputDialog(null, "Please enter the value range (example: 30-100)",
+		final String s = JOptionPane.showInputDialog(null, "Please enter the value range (example: 30-100):",
 				"Assign Random Numbers", JOptionPane.PLAIN_MESSAGE);
 		
 		final String[] split = s.split("-");

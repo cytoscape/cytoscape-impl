@@ -24,16 +24,17 @@ package org.cytoscape.view.vizmap.gui.internal.view.editor.valueeditor;
  * #L%
  */
 
+import static javax.swing.GroupLayout.DEFAULT_SIZE;
+
 import java.awt.Component;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
 import javax.swing.AbstractAction;
+import javax.swing.GroupLayout;
+import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
@@ -77,6 +78,9 @@ public class NumericValueEditor<V extends Number> implements VisualPropertyValue
 @SuppressWarnings("serial")
 class NumberValueDialog extends JDialog {
 	
+	private final String NO_ERROR_MSG = "<html>&nbsp;</html>";
+	private final String ERROR_MSG = "<html><font color=\"red\">Invalid number!</font></html>";
+	
 	private Number value = null;
 
 	public <S extends Number> NumberValueDialog(final Component parent, final VisualProperty<S> vizProp, final S initialValue) {
@@ -90,14 +94,12 @@ class NumberValueDialog extends JDialog {
 			}
 		});
 		
-		super.setLayout(new GridBagLayout());
-		
-		final GridBagConstraints c = new GridBagConstraints();
-
 		final ContinuousRange<S> range = (ContinuousRange<S>) vizProp.getRange();
 		final JLabel titleLabel = new JLabel(String.format("Enter %s:", readableRange(range)));
-		final JLabel errorLabel = new JLabel("<html><font color=\"red\">Not valid</font></html>");
-		errorLabel.setVisible(false);
+		
+		final JLabel errorLabel = new JLabel(NO_ERROR_MSG);
+		errorLabel.setHorizontalAlignment(JLabel.CENTER);
+		
 		final JTextField field = new JTextField(6);
 		
 		if (initialValue != null)
@@ -132,38 +134,40 @@ class NumberValueDialog extends JDialog {
 			public void insertUpdate(DocumentEvent e) { clear(); }
 
 			void clear() {
-				errorLabel.setVisible(false);
+				errorLabel.setText(NO_ERROR_MSG);
 				pack();
 			}
 		});
 
-		c.gridx = 0;				c.gridy = 0;
-		c.gridwidth = 2;		c.gridheight = 1;
-		c.weightx = 0.0;		c.weighty = 0.0;
-		c.anchor = GridBagConstraints.WEST;
-		c.fill = GridBagConstraints.NONE;
-		c.insets = new Insets(10, 10, 5, 10);
-		super.add(titleLabel, c);
-
-		c.gridx = 0;				c.gridy = 1;
-		c.gridwidth = 1;		c.gridheight = 1;
-		c.insets = new Insets(0, 30, 20, 10);
-		super.add(field, c);
-
-		c.gridx = 1;				c.gridy = 1;
-		c.insets = new Insets(0, 0, 20, 10);
-		super.add(errorLabel, c);
-
-		c.gridx = 0;				c.gridy = 2;
-		c.gridwidth = 2;		c.gridheight = 1;
-		c.weightx = 1.0;		c.weighty = 0.0;
-		c.fill = GridBagConstraints.HORIZONTAL;
-		c.insets = new Insets(0, 10, 10, 10);
-		
 		final JPanel btnPanel = LookAndFeelUtil.createOkCancelPanel(okBtn, cancelBtn);
-		super.add(btnPanel, c);
-
 		LookAndFeelUtil.setDefaultOkCancelKeyStrokes(getRootPane(), okBtn.getAction(), cancelBtn.getAction());
+		
+		final GroupLayout layout = new GroupLayout(getContentPane());
+		getContentPane().setLayout(layout);
+		layout.setAutoCreateContainerGaps(false);
+		layout.setAutoCreateGaps(true);
+		
+		final int HGAP = 20;
+		final int VGAP = 10;
+		
+		layout.setHorizontalGroup(layout.createSequentialGroup()
+				.addContainerGap(HGAP, HGAP)
+				.addGroup(layout.createParallelGroup(Alignment.CENTER, true)
+					.addComponent(titleLabel, DEFAULT_SIZE, 248, Short.MAX_VALUE)
+					.addComponent(field)
+					.addComponent(errorLabel)
+					.addComponent(btnPanel)
+				)
+				.addContainerGap(HGAP, HGAP)
+		);
+		layout.setVerticalGroup(layout.createSequentialGroup()
+				.addContainerGap(VGAP, VGAP)
+				.addComponent(titleLabel)
+				.addComponent(field)
+				.addComponent(errorLabel)
+				.addComponent(btnPanel)
+				.addContainerGap(VGAP, VGAP)
+		);
 		
 		super.setLocationRelativeTo(parent);
 		super.pack();
@@ -184,7 +188,7 @@ class NumberValueDialog extends JDialog {
 		}
 		
 		if (value == null) {
-			errorLabel.setVisible(true);
+			errorLabel.setText(ERROR_MSG);
 			pack();
 		} else {
 			dispose();

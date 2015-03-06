@@ -1768,7 +1768,7 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 					// Open color chooser
 					final JDialog dialog = JColorChooser.createDialog(
 							ColorButton.this,
-							"Please pick a color",
+							"Colors",
 							true,
 							colorChooser, 
 							new ActionListener() {
