@@ -67,7 +67,6 @@ public class ObjectPlacerGraphic extends JPanel implements PropertyChangeListene
 	private static final Color transparentBlue = new Color(0.0f, 0.0f, 1.0f, 0.1f);
 	private static final Color transparentMagenta = new Color(0.0f, 0.0f, 1.0f, 0.05f);
 	
-	private int xy;
 	private int center;
 	private float offsetRatio;
 
@@ -131,6 +130,8 @@ public class ObjectPlacerGraphic extends JPanel implements PropertyChangeListene
 	private int lowStrokeWidth = 1;
 	private Stroke detailStroke = new BasicStroke(detailStrokeWidth);
 	private Stroke lowStroke = new BasicStroke(lowStrokeWidth);
+
+	private Integer graphicSize;
 	
 
 	/**
@@ -138,23 +139,24 @@ public class ObjectPlacerGraphic extends JPanel implements PropertyChangeListene
 	 * 
 	 * @param pos
 	 *            initial label position
-	 * @param windowSize
+	 * @param graphicSize
 	 *            number of pixels square the that graphic should be
 	 * @param fullDetail
 	 *            whether or not to render at full detail or not
 	 */
-	public ObjectPlacerGraphic(final Integer windowSize, boolean fullDetail, final String objectName) {
+	public ObjectPlacerGraphic(final Integer graphicSize, boolean fullDetail, final String objectName) {
 		super();
 		this.p = new ObjectPositionImpl();
 		this.objectLabel = objectName;
 		renderDetail = fullDetail;
 
-		if (windowSize == null)
+		this.graphicSize = graphicSize;
+		
+		if (graphicSize == null)
 			initSize(DEFAULT_WINDOW_SIZE);
 		else
-			initSize(windowSize);
+			initSize(graphicSize);
 
-		setPreferredSize(new Dimension(xy, xy));
 		setBackground(Color.WHITE);
 
 		addMouseListener(new MouseClickHandler());
@@ -170,21 +172,23 @@ public class ObjectPlacerGraphic extends JPanel implements PropertyChangeListene
 
 	private void initSize(int size) {
 		// dimensions of panel
-		xy = size;
-		center = xy / 2;
+		setMinimumSize(new Dimension(size, size));
+		setPreferredSize(new Dimension(size, size));
+		
+		center = size / 2;
 
-		offsetRatio = (float) xy / DEFAULT_WINDOW_SIZE;
+		offsetRatio = (float) size / DEFAULT_WINDOW_SIZE;
 
 		// dimensions for node box
-		nxy = (int) (0.3 * xy);
+		nxy = (int) (0.3 * size);
 
 		// locations of node points
 		int[] tnpoints = { center - (nxy / 2), center, center + (nxy / 2) };
 		npoints = tnpoints;
 
 		// dimensions for object box
-		lx = (int) (0.4 * xy);
-		ly = (int) (0.1 * xy);
+		lx = (int) (0.4 * size);
+		ly = (int) (0.1 * size);
 
 		// locations for label points
 		int[] tlxpoints = { 0, lx / 2, lx };
@@ -193,7 +197,7 @@ public class ObjectPlacerGraphic extends JPanel implements PropertyChangeListene
 		lypoints = tlypoints;
 
 		// diameter of a point
-		dot = (int) (0.02 * xy);
+		dot = (int) (0.02 * size);
 
 		// x/y positions for label box, initially offset
 		xPos = dot;
@@ -205,6 +209,9 @@ public class ObjectPlacerGraphic extends JPanel implements PropertyChangeListene
 	 */
 	@Override
 	public void paint(Graphics gin) {
+		int w = graphicSize != null ? graphicSize : getSize().width;
+		int h = graphicSize != null ? graphicSize : getSize().height;
+		
 		final Graphics2D g = (Graphics2D) gin;
 		g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
@@ -218,7 +225,7 @@ public class ObjectPlacerGraphic extends JPanel implements PropertyChangeListene
 
 		// clear the screen
 		g.setColor(Color.WHITE);
-		g.fillRect(0, 0, xy, xy);
+		g.fillRect(0, 0, w, h);
 
 		// draw the node box
 		int x = center - (nxy / 2);

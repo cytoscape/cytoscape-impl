@@ -1,5 +1,7 @@
 package org.cytoscape.ding.impl.editor;
 
+import static javax.swing.GroupLayout.DEFAULT_SIZE;
+
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dialog.ModalityType;
@@ -20,6 +22,8 @@ import java.util.Map.Entry;
 
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
+import javax.swing.GroupLayout;
+import javax.swing.GroupLayout.Alignment;
 import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -125,10 +129,19 @@ public class CyCustomGraphicsValueEditor extends JPanel implements VisualPropert
 			}
 		});
 		
-		setLayout(new BorderLayout());
+		final GroupLayout layout = new GroupLayout(this);
+		this.setLayout(layout);
+		layout.setAutoCreateContainerGaps(true);
+		layout.setAutoCreateGaps(true);
 		
-		add(getGroupTpn(), BorderLayout.CENTER);
-		add(getBottomPnl(), BorderLayout.SOUTH);
+		layout.setHorizontalGroup(layout.createParallelGroup(Alignment.CENTER, true)
+				.addComponent(getGroupTpn(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				.addComponent(getBottomPnl(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+		);
+		layout.setVerticalGroup(layout.createSequentialGroup()
+				.addComponent(getGroupTpn(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				.addComponent(getBottomPnl())
+		);
 		
 		LookAndFeelUtil.setDefaultOkCancelKeyStrokes(dialog.getRootPane(), getApplyBtn().getAction(),
 				getCancelBtn().getAction());

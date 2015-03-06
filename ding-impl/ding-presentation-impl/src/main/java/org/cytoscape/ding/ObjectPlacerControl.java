@@ -86,7 +86,7 @@ public class ObjectPlacerControl extends JPanel implements ActionListener,
 		
 		final GroupLayout layout = new GroupLayout(this);
 		this.setLayout(layout);
-		layout.setAutoCreateContainerGaps(true);
+		layout.setAutoCreateContainerGaps(false);
 		layout.setAutoCreateGaps(true);
 		
 		layout.setHorizontalGroup(layout.createSequentialGroup()

@@ -28,8 +28,12 @@ import static javax.swing.GroupLayout.Alignment.LEADING;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Window;
+import java.awt.Dialog.ModalityType;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
@@ -37,6 +41,7 @@ import javax.swing.GroupLayout;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
 import org.cytoscape.ding.impl.ObjectPositionImpl;
@@ -46,7 +51,7 @@ import org.cytoscape.view.vizmap.gui.editor.ValueEditor;
 /**
  * Swing implementation of Object Position editor.
  */
-public class ObjectPositionValueEditor extends JDialog implements ValueEditor<ObjectPosition> {
+public class ObjectPositionValueEditor extends JPanel implements ValueEditor<ObjectPosition> {
 
 	private static final long serialVersionUID = 7146654020668346430L;
 
@@ -54,21 +59,32 @@ public class ObjectPositionValueEditor extends JDialog implements ValueEditor<Ob
 	private ObjectPosition oldValue;
 	private boolean canceled;
 	
+	private JDialog dialog;
 	private ObjectPlacerGraphic graphic;
 	private ObjectPlacerControl control;
+	
+	private boolean initialized;
 	
 	public ObjectPositionValueEditor() {
 		super();
 		this.label = "Object";
-		
-		this.setModal(true);
-		this.setResizable(false);
-		init();
 	}
 
 	@SuppressWarnings("serial")
-	private void init() {
-		setTitle("Select Position");
+	private void init(final Component parent) {
+		final Window owner = parent != null ? SwingUtilities.getWindowAncestor(parent) : null;
+		dialog = new JDialog(owner, ModalityType.APPLICATION_MODAL);
+		dialog.setMinimumSize(new Dimension(400, 600));
+		dialog.add(this);
+		dialog.setTitle("Position");
+		dialog.setResizable(false);
+		
+		dialog.addWindowListener(new WindowAdapter() {
+			@Override
+			public void windowClosing(WindowEvent e) {
+				cancel();
+			}
+		});
 
 		// Set up and connect the gui components.
 		graphic = new ObjectPlacerGraphic(null, true, label);
@@ -85,7 +101,7 @@ public class ObjectPositionValueEditor extends JDialog implements ValueEditor<Ob
 		final JButton okButton = new JButton(new AbstractAction("OK") {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				dispose();
+				dialog.dispose();
 			}
 		});
 		okButton.addActionListener(control);
@@ -93,16 +109,15 @@ public class ObjectPositionValueEditor extends JDialog implements ValueEditor<Ob
 		final JButton cancelButton = new JButton(new AbstractAction("Cancel") {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				canceled = true;
-				dispose();
+				cancel();
 			}
 		});
 
 		final JPanel buttonPanel = LookAndFeelUtil.createOkCancelPanel(okButton, cancelButton);
 		LookAndFeelUtil.setDefaultOkCancelKeyStrokes(getRootPane(), okButton.getAction(), cancelButton.getAction());
 
-		final GroupLayout layout = new GroupLayout(getContentPane());
-		getContentPane().setLayout(layout);
+		final GroupLayout layout = new GroupLayout(this);
+		this.setLayout(layout);
 		layout.setAutoCreateContainerGaps(true);
 		layout.setAutoCreateGaps(true);
 		
@@ -116,12 +131,15 @@ public class ObjectPositionValueEditor extends JDialog implements ValueEditor<Ob
 				.addComponent(control)
 				.addComponent(buttonPanel)
 		);
-		
-		pack();
 	}
 
 	@Override
-	public <S extends ObjectPosition> ObjectPosition showEditor(Component parent, S initialValue) {
+	public <S extends ObjectPosition> ObjectPosition showEditor(final Component parent, final S initialValue) {
+		if (!initialized) {
+			init(parent);
+			initialized = true;
+		}
+		
 		ObjectPosition pos;
 
 		if (initialValue == null) {
@@ -134,13 +152,14 @@ public class ObjectPositionValueEditor extends JDialog implements ValueEditor<Ob
 
 		control.setPosition(pos);
 		graphic.setPosition(pos);
-
+		
 		if (parent != null)
-			this.setLocationRelativeTo(parent);
+			dialog.setLocationRelativeTo(parent);
 		else
-			this.setLocationByPlatform(true);
+			dialog.setLocationByPlatform(true);
 
-		this.setVisible(true);
+		dialog.pack();
+		dialog.setVisible(true);
 
 		if (canceled) {
 			canceled = false;
@@ -153,5 +172,10 @@ public class ObjectPositionValueEditor extends JDialog implements ValueEditor<Ob
 	@Override
 	public Class<ObjectPosition> getValueType() {
 		return ObjectPosition.class;
+	}
+	
+	private void cancel() {
+		canceled = true;
+		dialog.dispose();
 	}
 }

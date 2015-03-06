@@ -41,7 +41,9 @@ import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_Y
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dialog.ModalityType;
 import java.awt.Dimension;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -53,6 +55,7 @@ import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
 import org.cytoscape.ding.DVisualLexicon;
@@ -75,16 +78,17 @@ import org.cytoscape.view.presentation.property.NodeShapeVisualProperty;
 import org.cytoscape.view.presentation.property.values.Bend;
 import org.cytoscape.view.vizmap.gui.editor.ValueEditor;
 
-public class EdgeBendValueEditor extends JDialog implements ValueEditor<Bend> {
+public class EdgeBendValueEditor extends JPanel implements ValueEditor<Bend> {
 
 	private static final long serialVersionUID = 9145223127932839836L;
 
-	private static final Dimension DEF_PANEL_SIZE = new Dimension(600, 350);
+	private static final Dimension DEF_PANEL_SIZE = new Dimension(600, 400);
 	
 	private static final Color NODE_COLOR = Color.gray;
 	private static final Color EDGE_COLOR = Color.BLACK;
 	private static final Color BACKGROUND_COLOR = Color.white;
 	
+	private JDialog dialog;
 	private JPanel innerPanel;
 	private CyNetworkView dummyView;
 	private View<CyEdge> edgeView;
@@ -93,6 +97,7 @@ public class EdgeBendValueEditor extends JDialog implements ValueEditor<Bend> {
 	private final CyNetworkViewFactory cyNetworkViewFactory;
 	private final RenderingEngineFactory<CyNetwork> presentationFactory;
 
+	private boolean initialized;
 	private boolean editCancelled;
 	private boolean bendRemoved;
 
@@ -109,24 +114,23 @@ public class EdgeBendValueEditor extends JDialog implements ValueEditor<Bend> {
 		this.cyNetworkFactory = cyNetworkFactory;
 		this.cyNetworkViewFactory = cyNetworkViewFactory;
 		this.presentationFactory = presentationFactory;
-		
-		this.setModal(true);
-		this.setResizable(false);
+	}
 
-		this.addWindowListener(new WindowAdapter() {
+	@SuppressWarnings("serial")
+	private void init(final Component parent) {
+		final Window owner = parent != null ? SwingUtilities.getWindowAncestor(parent) : null;
+		dialog = new JDialog(owner, ModalityType.APPLICATION_MODAL);
+		dialog.add(this);
+		dialog.setTitle("Edge Bend Editor");
+		dialog.setResizable(false);
+		
+		dialog.addWindowListener(new WindowAdapter() {
 			@Override
 			public void windowClosing(WindowEvent e) {
 				editCancelled = true;
 			}
 		});
-		
-		init();
-	}
-
-	@SuppressWarnings("serial")
-	private void init() {
-		setTitle("Edge Bend Editor");
-		setPreferredSize(DEF_PANEL_SIZE);
+		dialog.setPreferredSize(DEF_PANEL_SIZE);
 
 		final String osName = System.getProperty("os.name").toLowerCase();
 		String newHandleAction = "Ctrl-Alt-click";
@@ -150,7 +154,7 @@ public class EdgeBendValueEditor extends JDialog implements ValueEditor<Bend> {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				editCancelled = false;
-				dispose();
+				dialog.dispose();
 			}
 		});
 		
@@ -158,7 +162,7 @@ public class EdgeBendValueEditor extends JDialog implements ValueEditor<Bend> {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				editCancelled = true;
-				dispose();
+				dialog.dispose();
 			}
 		});
 		
@@ -167,15 +171,15 @@ public class EdgeBendValueEditor extends JDialog implements ValueEditor<Bend> {
 			public void actionPerformed(ActionEvent e) {
 				bendRemoved = true;
 				editCancelled = false;
-				dispose();
+				dialog.dispose();
 			}
 		});
 		
 		final JPanel buttonPanel = LookAndFeelUtil.createOkCancelPanel(okButton, cancelButton, removeBendButton);
 		LookAndFeelUtil.setDefaultOkCancelKeyStrokes(getRootPane(), okButton.getAction(), cancelButton.getAction());
 		
-		final GroupLayout layout = new GroupLayout(getContentPane());
-		getContentPane().setLayout(layout);
+		final GroupLayout layout = new GroupLayout(this);
+		this.setLayout(layout);
 		layout.setAutoCreateContainerGaps(true);
 		layout.setAutoCreateGaps(true);
 		
@@ -250,19 +254,29 @@ public class EdgeBendValueEditor extends JDialog implements ValueEditor<Bend> {
 		
 		final InnerCanvas innerCanvas = (InnerCanvas) innerPanel.getComponent(0);
 		innerCanvas.disablePopupMenu();
-		
-		pack();
 	}
 
 	@Override
-	public <S extends Bend> Bend showEditor(Component parent, S initialValue) {
+	public <S extends Bend> Bend showEditor(final Component parent, S initialValue) {
+		if (!initialized) {
+			init(parent);
+			initialized = true;
+		}
+		
 		editCancelled = false;
 		bendRemoved = false;
 		updateUI(initialValue);
 		
 		EditMode.setMode(true);
-		setLocationRelativeTo(parent);
-		setVisible(true);
+		
+		if (parent != null)
+			dialog.setLocationRelativeTo(parent);
+		else
+			dialog.setLocationByPlatform(true);
+
+		dialog.pack();
+		dialog.setVisible(true);
+		
 		EditMode.setMode(false);
 		
 		if (bendRemoved)

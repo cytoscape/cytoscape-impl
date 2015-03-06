@@ -55,15 +55,12 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
-import javax.swing.JSeparator;
 import javax.swing.JTabbedPane;
 import javax.swing.JToggleButton;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.ListCellRenderer;
 import javax.swing.ListSelectionModel;
 import javax.swing.WindowConstants;
-import javax.swing.border.Border;
-import javax.swing.border.EmptyBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
@@ -94,8 +91,6 @@ import org.cytoscape.work.TaskManager;
 public class NetworkMergeDialog extends JDialog {
 	
 	private static final long serialVersionUID = 1013626339762545400L;
-	
-	private static final Border PANEL_BORDER = new EmptyBorder(4, 4, 4, 4);
 	
 	private final CyNetworkManager cnm;
 	private final CyNetworkFactory cnf;
@@ -174,7 +169,6 @@ public class NetworkMergeDialog extends JDialog {
 
 	private void initComponents() {
 		setTitle("Advanced Network Merge");
-		getContentPane().setLayout(new BoxLayout(getContentPane(), BoxLayout.PAGE_AXIS));
 		setResizable(false);
 		
 		operationGroup = new ButtonGroup();
@@ -183,21 +177,33 @@ public class NetworkMergeDialog extends JDialog {
 		differenceGroup.add(getDifference1Btn());
 		differenceGroup.add(getDifference2Btn());
 		
-		getContentPane().add(getOperationPnl());
-		getContentPane().add(getDifferencePnl());
-		getContentPane().add(getSelectNetPnl());
-		getContentPane().add(getAdvancedOptionsPnl());
-		getContentPane().add(new JSeparator());
-		getContentPane().add(getButtonPnl());
-
+		final GroupLayout layout = new GroupLayout(getContentPane());
+		getContentPane().setLayout(layout);
+		layout.setAutoCreateContainerGaps(true);
+		layout.setAutoCreateGaps(true);
+		
+		layout.setHorizontalGroup(layout.createParallelGroup(Alignment.CENTER, true)
+				.addComponent(getOperationPnl(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				.addComponent(getDifferencePnl(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				.addComponent(getSelectNetPnl(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				.addComponent(getAdvancedOptionsPnl(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				.addComponent(getButtonPnl(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+		);
+		layout.setVerticalGroup(layout.createSequentialGroup()
+				.addComponent(getOperationPnl(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				.addComponent(getDifferencePnl(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				.addComponent(getSelectNetPnl(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				.addComponent(getAdvancedOptionsPnl(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				.addComponent(getButtonPnl(),  PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+		);
+		
+		updateDifferencePanel();
 		pack();
 	}
 	
 	private JPanel getOperationPnl() {
 		if (operationPnl == null) {
 			operationPnl = new JPanel();
-			operationPnl.setBorder(new EmptyBorder(4, 4, 0, 4));
-			operationPnl.setAlignmentX(Component.CENTER_ALIGNMENT);
 			operationPnl.setLayout(new BoxLayout(operationPnl, BoxLayout.LINE_AXIS));
 			
 			operationPnl.add(Box.createHorizontalGlue());
@@ -275,16 +281,20 @@ public class NetworkMergeDialog extends JDialog {
 	private JPanel getDifferencePnl() {
 		if (differencePnl == null) {
 			differencePnl = new JPanel();
-			differencePnl.setAlignmentX(Component.CENTER_ALIGNMENT);
 			
-			final Border border = LookAndFeelUtil.createPanelBorder();
-			differencePnl.setBorder(border);
+			final GroupLayout layout = new GroupLayout(differencePnl);
+			differencePnl.setLayout(layout);
+			layout.setAutoCreateContainerGaps(true);
+			layout.setAutoCreateGaps(true);
 			
-			differencePnl.setLayout(new BoxLayout(differencePnl, BoxLayout.PAGE_AXIS));
-			differencePnl.add(getDifference1Btn());
-			differencePnl.add(getDifference2Btn());
-			
-			updateDifferencePanel();
+			layout.setHorizontalGroup(layout.createParallelGroup(Alignment.LEADING, false)
+					.addComponent(getDifference1Btn())
+					.addComponent(getDifference2Btn())
+			);
+			layout.setVerticalGroup(layout.createSequentialGroup()
+					.addComponent(getDifference1Btn())
+					.addComponent(getDifference2Btn())
+			);
 		}
 		
 		return differencePnl;
@@ -310,8 +320,6 @@ public class NetworkMergeDialog extends JDialog {
 	private JPanel getSelectNetPnl() {
 		if (selectNetPnl == null) {
 			selectNetPnl = new JPanel();
-			selectNetPnl.setBorder(PANEL_BORDER);
-			selectNetPnl.setAlignmentX(Component.CENTER_ALIGNMENT);
 			
 			final JLabel allNetsLbl = new JLabel("Available Networks:");
 			final JLabel selNetsLbl = new JLabel("Networks to Merge:");
@@ -641,7 +649,6 @@ public class NetworkMergeDialog extends JDialog {
 	private BasicCollapsiblePanel getAdvancedOptionsPnl() {
 		if (advancedOptionsPnl == null) {
 			advancedOptionsPnl = new BasicCollapsiblePanel("Advanced Options");
-			advancedOptionsPnl.setAlignmentX(Component.CENTER_ALIGNMENT);
 			advancedOptionsPnl.addCollapseListener(new BasicCollapsiblePanel.CollapseListener() {
 				@Override
 				public void collapsed() {
@@ -696,7 +703,6 @@ public class NetworkMergeDialog extends JDialog {
 	private JScrollPane getAttrScr() {
 		if (attrScr == null) {
 			attrScr = new JScrollPane();
-			attrScr.setAlignmentX(Component.LEFT_ALIGNMENT);
 			attrScr.setMinimumSize(new Dimension(100, 50));
 			attrScr.setPreferredSize(new Dimension(450, 50));
 			attrScr.setViewportView(getMatchNodeTbl());
@@ -738,7 +744,6 @@ public class NetworkMergeDialog extends JDialog {
 	private JCheckBox getIdMappingCkb() {
 		if (idMappingCkb == null) {
 			idMappingCkb = new JCheckBox("Map IDs between the matching columns");
-			idMappingCkb.setAlignmentX(Component.LEFT_ALIGNMENT);
 			idMappingCkb.setVisible(false);
 		}
 		
@@ -751,7 +756,6 @@ public class NetworkMergeDialog extends JDialog {
 			mergeAttrTp.setTabPlacement(JTabbedPane.BOTTOM);
 			mergeAttrTp.setMinimumSize(new Dimension(450, 150));
 			mergeAttrTp.setPreferredSize(new Dimension(450, 200));
-			mergeAttrTp.setAlignmentX(Component.LEFT_ALIGNMENT);
 			
 			mergeAttrTp.addTab("Node", getMergeNodeAttrPnl());
 			mergeAttrTp.addTab("Edge", getMergeEdgeAttrPnl());
@@ -792,7 +796,6 @@ public class NetworkMergeDialog extends JDialog {
 		if (inNetMergeCkb == null) {
 			inNetMergeCkb = new JCheckBox("Enable merging nodes/edges in the same network");
 			inNetMergeCkb.setSelected(true);
-			inNetMergeCkb.setAlignmentX(Component.LEFT_ALIGNMENT);
 			inNetMergeCkb.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent evt) {
@@ -807,7 +810,6 @@ public class NetworkMergeDialog extends JDialog {
 	private JPanel getButtonPnl() {
 		if (buttonPnl == null) {
 			buttonPnl = LookAndFeelUtil.createOkCancelPanel(getOkBtn(), getCancelBtn());
-			buttonPnl.setAlignmentX(Component.CENTER_ALIGNMENT);
 			buttonPnl.setDoubleBuffered(false);
 		}
 		
