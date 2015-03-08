@@ -29,6 +29,7 @@ import org.cytoscape.ding.EdgeView;
 import org.cytoscape.ding.GraphViewChangeListener;
 import org.cytoscape.ding.NodeView;
 import org.cytoscape.ding.ViewChangeEdit;
+import org.cytoscape.ding.impl.DNodeView;
 import org.cytoscape.ding.impl.events.*;
 import org.cytoscape.graph.render.export.ImageImposter;
 import org.cytoscape.graph.render.immed.EdgeAnchors;
@@ -374,7 +375,20 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 		                                     (m_lastRenderDetail
 		                                     & GraphRenderer.LOD_HIGH_DETAIL) == 0,
 		                                     m_stack);
-		long chosenNode = (m_stack.size() > 0) ? m_stack.peek() : -1;
+		// Need to Z-sort this
+		long chosenNode = -1;
+		if (m_stack.size() > 0) {
+			LongEnumerator le = m_stack.elements();
+			DNodeView nv = null;
+			while (le.numRemaining() > 0) {
+				long thisNode = le.nextLong();
+				DNodeView dnv = m_view.getDNodeView(thisNode);
+				if (nv == null || dnv.getZPosition() > nv.getZPosition()) {
+					nv = dnv;
+					chosenNode = thisNode;
+				}
+			}
+		}
 		return chosenNode;
 	}
 

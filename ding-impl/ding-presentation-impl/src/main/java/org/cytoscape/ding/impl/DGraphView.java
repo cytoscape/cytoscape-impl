@@ -2179,7 +2179,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	 * @param pt
 	 */
 	public NodeView getPickedNodeView(Point2D pt) {
-		NodeView nv = null;
+		DNodeView nv = null;
 		double[] locn = new double[2];
 		locn[0] = pt.getX();
 		locn[1] = pt.getY();
@@ -2196,12 +2196,15 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 				(m_networkCanvas.getLastRenderDetail() & GraphRenderer.LOD_HIGH_DETAIL) == 0,
 				nodeStack);
 
-		chosenNode = (nodeStack.size() > 0) ? nodeStack.peek() : -1;
-
-		if (chosenNode >= 0) {
-			nv = getDNodeView(chosenNode);
+		// Sort the nodeStack by Z
+		if (nodeStack.size() > 0) {
+			LongEnumerator le = nodeStack.elements();
+			while (le.numRemaining() > 0) {
+				DNodeView dnv = getDNodeView(le.nextLong());
+				if (nv == null || dnv.getZPosition() > nv.getZPosition())
+					nv = dnv;
+			}
 		}
-
 		return nv;
 	}
 
