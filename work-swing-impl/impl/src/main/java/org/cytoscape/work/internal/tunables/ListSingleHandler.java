@@ -128,6 +128,7 @@ public class ListSingleHandler<T> extends AbstractGUITunableHandler
 
 	@Override
 	public void update() {
+		if (combobox == null) return;
 		combobox.setModel(new DefaultComboBoxModel(getSingleSelection().getPossibleValues().toArray()));
 		combobox.setSelectedItem(getSingleSelection().getSelectedValue());
 	}
