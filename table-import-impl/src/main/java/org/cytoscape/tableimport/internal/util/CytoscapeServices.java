@@ -45,6 +45,7 @@ import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.work.swing.DialogTaskManager;
 
+@SuppressWarnings("rawtypes")
 public class CytoscapeServices {
 
 	public static CyLayoutAlgorithmManager cyLayouts;
@@ -55,10 +56,8 @@ public class CytoscapeServices {
 	public static CyNetworkManager cyNetworkManager;
 	public static CyTableManager cyTableManager;
 	public static DialogTaskManager dialogTaskManager;
-	@SuppressWarnings("rawtypes")
 	public static CyProperty bookmark;
 	public static BookmarksUtil bookmarksUtil;
-	@SuppressWarnings("rawtypes")
 	public static CyProperty cyProperties;
 	public static FileUtil fileUtil;
 	public static OpenBrowser openBrowser;

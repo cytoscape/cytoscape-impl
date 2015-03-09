@@ -57,7 +57,6 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.tableimport.internal.util.OntologyDAGManager;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
@@ -109,11 +108,9 @@ public class OBOReader extends AbstractTask implements CyNetworkReader {
 		networks = new CyNetwork[1];
 		interactionList = new ArrayList<String[]>();
 	}
-
 	
 	@Override
 	public void run(TaskMonitor tm) throws Exception {
-
 		BufferedReader bufRd = new BufferedReader(new InputStreamReader(inputStream));
 		String line;
 
@@ -147,7 +144,6 @@ public class OBOReader extends AbstractTask implements CyNetworkReader {
 		OntologyDAGManager.addOntologyDAG(dagName, ontologyDAG);
 		logger.debug("Number of terms loaded = " + this.termID2nodeMap.size());
 		termID2nodeMap.clear();
-		
 	}
 
 	private void parseHeader(final String line) {
@@ -177,7 +173,6 @@ public class OBOReader extends AbstractTask implements CyNetworkReader {
 		networkTable.getRow(ontologyDAG.getSUID()).set(DAG_ATTR, true);
 		ontologyDAG.getRow(ontologyDAG).set(CyNetwork.NAME, dagName);
 	}
-
 
 	private void readEntry(final BufferedReader rd) throws IOException {
 		String id = "";
@@ -349,7 +344,7 @@ public class OBOReader extends AbstractTask implements CyNetworkReader {
 	}
 
 	@Override
-	public CyNetworkView buildCyNetworkView(CyNetwork arg0) {
+	public CyNetworkView buildCyNetworkView(CyNetwork net) {
 		final CyNetworkView view = cyNetworkViewFactory.createNetworkView(ontologyDAG);
 		return view;
 	}

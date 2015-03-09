@@ -47,14 +47,15 @@ import org.cytoscape.tableimport.internal.reader.NetworkTableMappingParameters;
 import org.cytoscape.tableimport.internal.reader.NetworkTableReader;
 import org.cytoscape.tableimport.internal.reader.SupportedFileType;
 import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.TunableValidator;
-import org.cytoscape.tableimport.internal.util.CytoscapeServices;
 
 
 public class ImportNetworkTableReaderTask extends AbstractTask implements CyNetworkReader, TunableValidator {
+	
 	private  InputStream is;
 	private final String fileType;
 	private CyNetwork[] networks;
@@ -63,16 +64,18 @@ public class ImportNetworkTableReaderTask extends AbstractTask implements CyNetw
 	
 	@Tunable(description="Network table Mapping Parameter")
 	public NetworkTableMappingParameters ntmp;
-
 	
-	public ImportNetworkTableReaderTask(final InputStream is, final String fileType,
-					    final String inputName)
-	{
-		this.is           = is;
-		this.fileType     = fileType;
-		this.inputName    = inputName;
+	// support import network in different collection
+	private CyRootNetwork rootNetwork;
+	private Map<Object, CyNode> nMap;
+	private CyNetworkViewFactory networkViewFactory;
+	
+	public ImportNetworkTableReaderTask(final InputStream is, final String fileType, final String inputName) {
+		this.is        = is;
+		this.fileType  = fileType;
+		this.inputName = inputName;
 
-		try{
+		try  {
 			File tempFile = File.createTempFile("temp", this.fileType);
 			tempFile.deleteOnExit();
 			FileOutputStream os = new FileOutputStream(tempFile);
@@ -87,29 +90,25 @@ public class ImportNetworkTableReaderTask extends AbstractTask implements CyNetw
 			
 			ntmp = new NetworkTableMappingParameters(new FileInputStream(tempFile) , fileType);
 			this.is = new FileInputStream(tempFile);
-		}catch(Exception e){
+		} catch(Exception e) {
 			e.printStackTrace();
 		}
 	}
 
-
 	@Override
 	public void run(TaskMonitor monitor) throws Exception {
-
 		monitor.setTitle("Loading network from table");
 		monitor.setProgress(0.0);
 		monitor.setStatusMessage("Loading network...");
 
 		Workbook workbook = null;
 		// Load Spreadsheet data for preview.
-		if(fileType != null && (fileType.equalsIgnoreCase(
-				SupportedFileType.EXCEL.getExtension())
-				|| fileType.equalsIgnoreCase(
-						SupportedFileType.OOXML.getExtension())) && workbook == null) {
+		if (fileType != null && 
+				(fileType.equalsIgnoreCase(SupportedFileType.EXCEL.getExtension())
+				|| fileType.equalsIgnoreCase(SupportedFileType.OOXML.getExtension())) && workbook == null) {
 			try {
 				workbook = WorkbookFactory.create(is);
 			} catch (InvalidFormatException e) {
-				//e.printStackTrace();
 				throw new IllegalArgumentException("Could not read Excel file.  Maybe the file is broken?" , e);
 			} finally {
 				if (is != null) {
@@ -118,11 +117,10 @@ public class ImportNetworkTableReaderTask extends AbstractTask implements CyNetw
 			}
 		}
 		
-		String networkName;
+		final String networkName;
 
 		if (this.fileType.equalsIgnoreCase(SupportedFileType.EXCEL.getExtension()) ||
-		    this.fileType.equalsIgnoreCase(SupportedFileType.OOXML.getExtension()))
-		{
+		    this.fileType.equalsIgnoreCase(SupportedFileType.OOXML.getExtension())) {
 			Sheet sheet = workbook.getSheetAt(0);
 			networkName = workbook.getSheetName(0);
 			
@@ -131,39 +129,32 @@ public class ImportNetworkTableReaderTask extends AbstractTask implements CyNetw
 			networkName = this.inputName;
 			reader = new NetworkTableReader(networkName, this.is, ntmp, this.nMap, this.rootNetwork);
 		}
+		
 		loadNetwork(monitor);
-
 		monitor.setProgress(1.0);
 	}
 
 	private void loadNetwork(TaskMonitor tm) throws IOException {
-		
-		
-		final CyNetwork network = this.rootNetwork.addSubNetwork(); //CytoscapeServices.cyNetworkFactory.createNetwork();
+		final CyNetwork network = this.rootNetwork.addSubNetwork();
 		tm.setProgress(0.10);
 		this.reader.setNetwork(network);
 
-		if (this.cancelled){
+		if (this.cancelled)
 			return;
-		}
 
 		this.reader.read();
-
 		tm.setProgress(0.80);
 
-		if (this.cancelled){
+		if (this.cancelled)
 			return;
-		}
 		
 		networks = new CyNetwork[]{network};
-
 		tm.setProgress(1.0);
-		
 	}
 
 	@Override
-	public CyNetworkView buildCyNetworkView(CyNetwork arg0) {
-		final CyNetworkView view = CytoscapeServices.cyNetworkViewFactory.createNetworkView(arg0);
+	public CyNetworkView buildCyNetworkView(CyNetwork net) {
+		final CyNetworkView view = networkViewFactory.createNetworkView(net);
 		return view;
 	}
 
@@ -172,41 +163,40 @@ public class ImportNetworkTableReaderTask extends AbstractTask implements CyNetw
 		return networks;
 	}
 
-
 	@Override
 	public ValidationState getValidationState(Appendable errMsg) {
-		try{
-		if (ntmp.getSourceIndex() == -1){
-			if (ntmp.getTargetIndex() == -1){
-				errMsg.append("The network cannot be created without selecting the source and target columns.");
-				return ValidationState.INVALID;
-			}else{
-				errMsg.append("No edges will be created in the network; the target column is not selected.\nDo you want to continue?");
-				return ValidationState.REQUEST_CONFIRMATION;
+		try {
+			if (ntmp.getSourceIndex() == -1) {
+				if (ntmp.getTargetIndex() == -1) {
+					errMsg.append("The network cannot be created without selecting the source and target columns.");
+					return ValidationState.INVALID;
+				} else {
+					errMsg.append("No edges will be created in the network; the target column is not selected.\nDo you want to continue?");
+					return ValidationState.REQUEST_CONFIRMATION;
+				}
+			} else {
+				if (ntmp.getTargetIndex() == -1){
+					errMsg.append("No edges will be created in the network; the source column is not selected.\nDo you want to continue?");
+					return ValidationState.REQUEST_CONFIRMATION;
+				} else {
+					return ValidationState.OK;
+				}
 			}
-		}else{
-			if (ntmp.getTargetIndex() == -1){
-				errMsg.append("No edges will be created in the network; the source column is not selected.\nDo you want to continue?");
-				return ValidationState.REQUEST_CONFIRMATION;
-			}else
-				return ValidationState.OK;
-		}
-		}catch(IOException ioe){
+		} catch(IOException ioe) {
 			ioe.printStackTrace();
 			return ValidationState.INVALID;
 		}
 	}
 	
-	//
-	// support import network in different collection
-	private CyRootNetwork rootNetwork;
-	public void setRootNetwork(CyRootNetwork rootNetwork){
+	public void setRootNetwork(CyRootNetwork rootNetwork) {
 		this.rootNetwork = rootNetwork;
 	}
 	
-	private Map<Object, CyNode> nMap;
-	public void setNodeMap(Map<Object, CyNode> nMap){
+	public void setNodeMap(Map<Object, CyNode> nMap) {
 		this.nMap = nMap;
 	}
 
+	public void setNetworkViewFactory(CyNetworkViewFactory networkViewFactory) {
+		this.networkViewFactory = networkViewFactory;
+	}
 }

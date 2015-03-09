@@ -40,9 +40,6 @@ import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.TunableValidator;
-//import org.cytoscape.task.internal.table.MapTableToNetworkTablesTask;
-//import org.cytoscape.task.internal.table.JoinTablesTask;
-//import org.cytoscape.task.internal.table.UpdateAddedNetworkAttributes;
 
 public class CombineReaderAndMappingTask extends AbstractTask implements CyNetworkReader, TunableValidator {
 
@@ -58,10 +55,8 @@ public class CombineReaderAndMappingTask extends AbstractTask implements CyNetwo
 	
 	@ContainsTunables
 	public ImportNetworkTableReaderTask importTask;
-
 	
-	public CombineReaderAndMappingTask(final InputStream is, final String fileType,
-		    final String inputName){
+	public CombineReaderAndMappingTask(final InputStream is, final String fileType, final String inputName){
 		this.importTask = new ImportNetworkTableReaderTask(is, fileType, inputName);
 		this.networkCollectionHelperTask = new NetworkCollectionHelper();
 	}
@@ -82,18 +77,19 @@ public class CombineReaderAndMappingTask extends AbstractTask implements CyNetwo
 	public void run(TaskMonitor taskMonitor) throws Exception {
 		this.taskMonitor = taskMonitor;
 		this.networkCollectionHelperTask.run(taskMonitor);
-		this.importTask.setNodeMap(this.networkCollectionHelperTask.getNodeMap());
-		this.importTask.setRootNetwork(this.networkCollectionHelperTask.getRootNetwork());
+		this.importTask.setNodeMap(networkCollectionHelperTask.getNodeMap());
+		this.importTask.setRootNetwork(networkCollectionHelperTask.getRootNetwork());
+		this.importTask.setNetworkViewFactory(networkCollectionHelperTask.getNetworkViewFactory());
 		this.importTask.run(taskMonitor);
 	}
-
 	
 	@Override
 	public CyNetworkView buildCyNetworkView(CyNetwork network) {
-		final CyNetworkView view = CytoscapeServices.cyNetworkViewFactory.createNetworkView(network);
+		final CyNetworkView view = networkCollectionHelperTask.getNetworkViewFactory().createNetworkView(network);
 		final CyLayoutAlgorithm layout = CytoscapeServices.cyLayouts.getDefaultLayout();
 		TaskIterator itr = layout.createTaskIterator(view, layout.getDefaultLayoutContext(), CyLayoutAlgorithm.ALL_NODE_VIEWS,"");
 		Task nextTask = itr.next();
+		
 		try {
 			nextTask.run(taskMonitor);
 		} catch (Exception e) {
@@ -108,5 +104,4 @@ public class CombineReaderAndMappingTask extends AbstractTask implements CyNetwo
 	public CyNetwork[] getNetworks() {
 		return this.importTask.getNetworks();
 	}
-
 }

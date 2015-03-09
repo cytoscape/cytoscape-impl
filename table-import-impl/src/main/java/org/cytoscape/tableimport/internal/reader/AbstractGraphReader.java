@@ -25,20 +25,17 @@ package org.cytoscape.tableimport.internal.reader;
  */
 
 import java.io.File;
-import java.io.IOException;
 
 import org.cytoscape.tableimport.internal.util.CytoscapeServices;
 
 public abstract class AbstractGraphReader implements GraphReader {
 
 	protected String fileName;
-	protected String title = null;
+	protected String title;
 
 	public AbstractGraphReader(String fileName) {
 		this.fileName = fileName;
 	}
-
-	public abstract void read() throws IOException;
 
 	public Long[] getNodeIndicesArray() {
 		return null;
@@ -48,8 +45,8 @@ public abstract class AbstractGraphReader implements GraphReader {
 		return null;
 	}
 
+	@Override
 	public String getNetworkName() {
-
 		String t = "";
 
 		if (title != null) {

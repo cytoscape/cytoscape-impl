@@ -57,6 +57,7 @@ import org.cytoscape.tableimport.internal.util.CytoscapeServices;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.view.layout.CyLayoutAlgorithm;
 import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskIterator;
@@ -167,10 +168,8 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 		delimitersForDataList.setSelectedValue(TextFileDelimiters.PIPE.toString());
 	}
 
-
 	@Override
 	public void run(TaskMonitor monitor) throws Exception {
-
 		monitor.setTitle("Loading network from table");
 		monitor.setProgress(0.0);
 		monitor.setStatusMessage("Loading network...");
@@ -280,8 +279,7 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 			
 			
 			if (this.fileType.equalsIgnoreCase(SupportedFileType.EXCEL.getExtension()) ||
-			    this.fileType.equalsIgnoreCase(SupportedFileType.OOXML.getExtension()))
-			{
+			    this.fileType.equalsIgnoreCase(SupportedFileType.OOXML.getExtension())) {
 				Sheet sheet = workbook.getSheetAt(0);
 				networkName = workbook.getSheetName(0);
 				
@@ -290,19 +288,16 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 				networkName = this.inputName;
 				reader = new NetworkTableReader(networkName, new FileInputStream(tempFile), ntmp, this.nMap, this.rootNetwork);
 			}
+			
 			loadNetwork(monitor);
-	
 			monitor.setProgress(1.0);
-		}
-		else
-		{
+		} else {
 			networkName = this.inputName;
 			insertTasksAfterCurrentTask(netReader);
 		}
 	}
 	
-	public void setFirstRowAsColumnNames()
-	{
+	public void setFirstRowAsColumnNames() {
 		final DefaultTableModel model = (DefaultTableModel) previewPanel.getPreviewTable().getModel();
 		String[] columnHeaders;
 		
@@ -321,40 +316,33 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 	}
 
 	private void loadNetwork(TaskMonitor tm) throws IOException {
-		
-		
 		final CyNetwork network = this.rootNetwork.addSubNetwork(); //CytoscapeServices.cyNetworkFactory.createNetwork();
 		tm.setProgress(0.10);
 		this.reader.setNetwork(network);
 
-		if (this.cancelled){
+		if (this.cancelled)
 			return;
-		}
 
 		this.reader.read();
-
 		tm.setProgress(0.80);
 
-		if (this.cancelled){
+		if (this.cancelled)
 			return;
-		}
 		
 		networks = new CyNetwork[]{network};
-
 		tm.setProgress(1.0);
-		
 	}
 
 	@Override
-	public CyNetworkView buildCyNetworkView(CyNetwork arg0) {
-		if(netReader != null)
-			return netReader.buildCyNetworkView(arg0);
-		else
-		{
-			final CyNetworkView view = CytoscapeServices.cyNetworkViewFactory.createNetworkView(arg0);
+	public CyNetworkView buildCyNetworkView(CyNetwork net) {
+		if (netReader != null) {
+			return netReader.buildCyNetworkView(net);
+		} else {
+			final CyNetworkView view = networkViewFactory.createNetworkView(net);
 			final CyLayoutAlgorithm layout = CytoscapeServices.cyLayouts.getDefaultLayout();
 			TaskIterator itr = layout.createTaskIterator(view, layout.getDefaultLayoutContext(), CyLayoutAlgorithm.ALL_NODE_VIEWS,"");
 			Task nextTask = itr.next();
+			
 			try {
 				nextTask.run(taskMonitor);
 			} catch (Exception e) {
@@ -403,7 +391,6 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 		}
 	}
 	
-	//
 	// support import network in different collection
 	private CyRootNetwork rootNetwork;
 	public void setRootNetwork(CyRootNetwork rootNetwork){
@@ -415,4 +402,8 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 		this.nMap = nMap;
 	}
 
+	private CyNetworkViewFactory networkViewFactory;
+	public void setNetworkViewFactory(CyNetworkViewFactory networkViewFactory) {
+		this.networkViewFactory = networkViewFactory;
+	}
 }

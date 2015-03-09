@@ -28,29 +28,28 @@ package org.cytoscape.tableimport.internal;
 
 import java.io.InputStream;
 
-
 import org.apache.commons.io.FilenameUtils;
-import org.cytoscape.tableimport.internal.util.CytoscapeServices;
-import org.cytoscape.work.TaskIterator;
 import org.cytoscape.io.CyFileFilter;
+import org.cytoscape.io.read.AbstractInputStreamTaskFactory;
+import org.cytoscape.work.TaskIterator;
 
 
-public class ImportNetworkTableReaderFactory extends AbstractNetworkReaderFactory {
-    private final static long serialVersionUID = 12023139869460154L;
+public class ImportNetworkTableReaderFactory extends AbstractInputStreamTaskFactory {
 
     /**
      * Creates a new ImportNetworkTableReaderFactory object.
      */
     public ImportNetworkTableReaderFactory(final CyFileFilter filter){
-        super(filter, CytoscapeServices.cyNetworkViewFactory, CytoscapeServices.cyNetworkFactory);
-
+        super(filter);
     }
 
+    @Override
     public TaskIterator createTaskIterator(InputStream inputStream, String inputName) {
         String fileFormat = FilenameUtils.getExtension(inputName);
+        
         if(!fileFormat.isEmpty()) 
         	fileFormat = "." + fileFormat; //"." is surprisingly required somewhere withing CombineReaderAndMappingTask
-        return new TaskIterator(new CombineReaderAndMappingTask(inputStream, fileFormat,
-                inputName));
+        
+        return new TaskIterator(new CombineReaderAndMappingTask(inputStream, fileFormat, inputName));
     }
 }

@@ -26,11 +26,15 @@ package org.cytoscape.tableimport.internal;
 
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
+import org.cytoscape.application.NetworkViewRenderer;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
@@ -39,6 +43,7 @@ import org.cytoscape.model.CyTable;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.tableimport.internal.util.CytoscapeServices;
+import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
@@ -56,7 +61,7 @@ public class NetworkCollectionHelper extends AbstractTask {
 	//******** tunables ********************
 
 	public ListSingleSelection<String> rootNetworkList;
-	@Tunable(description = "Network Collection:" ,groups="Select a Network Collection")
+	@Tunable(description = "Network Collection:", groups="Network", gravity=1.0)
 	public ListSingleSelection<String> getRootNetworkList(){
 		return rootNetworkList;
 	}
@@ -68,7 +73,7 @@ public class NetworkCollectionHelper extends AbstractTask {
 	}
 	
 	public ListSingleSelection<String> targetColumnList;
-	@Tunable(description = "Node Identifier Mapping Column:",groups="Select a Network Collection", listenForChange={"RootNetworkList"})
+	@Tunable(description = "Node Identifier Mapping Column:", groups="Network", gravity=2.0, listenForChange={"RootNetworkList"})
 	public ListSingleSelection<String> getTargetColumnList(){
 		return targetColumnList;
 	}
@@ -76,12 +81,20 @@ public class NetworkCollectionHelper extends AbstractTask {
 		this.targetColumnList = colList;
 	}
 	
+	public ListSingleSelection<NetworkViewRenderer> rendererList;
+	@Tunable(description = "Network View Renderer:", groups="Network", gravity=3.0)
+	public ListSingleSelection<NetworkViewRenderer> getNetworkViewRendererList() {
+		return rendererList;
+	}
+	
+	public void setNetworkViewRendererList(final ListSingleSelection<NetworkViewRenderer> rendererList) {
+		this.rendererList = rendererList;
+	}
 	
 //	@ProvidesTitle
 //	public String getTitle() {
 //		return "Import Network ";
 //	}
-
 	
 	public ListSingleSelection<String> getTargetColumns (CyNetwork network) {
 		CyTable selectedTable = network.getTable(CyNode.class, CyRootNetwork.SHARED_ATTRS);
@@ -105,21 +118,15 @@ public class NetworkCollectionHelper extends AbstractTask {
 
 	
 	public NetworkCollectionHelper(){
-
-		this.importTask = null;
-		initTunables();
+		this(null);
 	}
 	
 	public NetworkCollectionHelper(LoadNetworkReaderTask importTask){
-		
 		this.importTask = importTask;
 		initTunables();
-		
 	}
 	
 	void initTunables(){
-		// init tunables
-		
 		// initialize the network Collection
 		this.name2RootMap = getRootNetworkMap(CytoscapeServices.cyNetworkManager, CytoscapeServices.cyRootNetworkFactory);
 				
@@ -128,12 +135,29 @@ public class NetworkCollectionHelper extends AbstractTask {
 		rootNames.addAll(name2RootMap.keySet());
 		rootNetworkList = new ListSingleSelection<String>(rootNames);
 		rootNetworkList.setSelectedValue(rootNames.get(0));
-				
 
 		// initialize target attribute list
 		List<String> colNames_target = new ArrayList<String>();
 		colNames_target.add("shared name");
 		this.targetColumnList = new ListSingleSelection<String>(colNames_target);
+		
+		// initialize renderer list
+		final List<NetworkViewRenderer> renderers = new ArrayList<>();
+		final Set<NetworkViewRenderer> rendererSet = CytoscapeServices.cyApplicationManager.getNetworkViewRendererSet();
+		
+		// If there is only one registered renderer, we don't want to add it to the List Selection,
+		// so the combo-box does not appear to the user, since there is nothing to select anyway.
+		if (rendererSet.size() > 1) {
+			renderers.addAll(rendererSet);
+			Collections.sort(renderers, new Comparator<NetworkViewRenderer>() {
+				@Override
+				public int compare(NetworkViewRenderer r1, NetworkViewRenderer r2) {
+					return r1.toString().compareToIgnoreCase(r2.toString());
+				}
+			});
+		}
+		
+		rendererList = new ListSingleSelection<>(renderers);
 	}
 	
 	// Return the rootNetwork based on user selection, if not existed yet, create a new one
@@ -147,6 +171,13 @@ public class NetworkCollectionHelper extends AbstractTask {
 		}
 
 		return rootNetwork;
+	}
+	
+	public CyNetworkViewFactory getNetworkViewFactory() {
+		if (rendererList != null && rendererList.getSelectedValue() != null)
+			return rendererList.getSelectedValue().getNetworkViewFactory();
+		
+		return CytoscapeServices.cyNetworkViewFactory;
 	}
 	
 	// Build the key-node map for the entire root network
@@ -176,7 +207,6 @@ public class NetworkCollectionHelper extends AbstractTask {
 	}
 
 	private static HashMap<String, CyRootNetwork> getRootNetworkMap(CyNetworkManager cyNetworkManager, CyRootNetworkManager cyRootNetworkManager) {
-
 		HashMap<String, CyRootNetwork> name2RootMap = new HashMap<String, CyRootNetwork>();
 
 		for (CyNetwork net : cyNetworkManager.getNetworkSet()){
@@ -188,18 +218,17 @@ public class NetworkCollectionHelper extends AbstractTask {
 		return name2RootMap;
 	}
 
-	
 	@Override
 	public void run(TaskMonitor monitor) throws Exception {
-		this.initNodeMap();		
-		if(importTask != null)
-		{
+		this.initNodeMap();
+		
+		if (importTask != null) {
 			importTask.setNodeMap(getNodeMap());
 			importTask.setRootNetwork(getRootNetwork());
+			importTask.setNetworkViewFactory(getNetworkViewFactory());
 		}
 	}
 	
-	//
 	public Map<Object, CyNode> getNodeMap(){
 		return this.nMap;
 	}

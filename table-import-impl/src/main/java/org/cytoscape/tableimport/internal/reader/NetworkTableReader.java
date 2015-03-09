@@ -26,44 +26,35 @@ package org.cytoscape.tableimport.internal.reader;
 
 //import cytoscape.data.readers.AbstractGraphReader;
 
-import org.cytoscape.tableimport.internal.util.CytoscapeServices;
-import org.cytoscape.tableimport.internal.util.URLUtil;
-import org.cytoscape.work.TaskMonitor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-
-import java.net.URL;
 import java.nio.charset.Charset;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
+
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**
- * Network text table reader. This implemets GraphReader just like other network
+ * Network text table reader. This implements GraphReader just like other network
  * file readers.<br>
  *
  * @since Cytoscape 2.4
  * @version 0.8
  * @author Keiichiro Ono
- *
  */
 public class NetworkTableReader extends AbstractGraphReader implements TextTableReader {
+	
 	protected static final String COMMENT_CHAR = "!";
 	protected final NetworkTableMappingParameters nmp;
-	//protected final URL sourceURL;
 	protected final NetworkLineParser parser;
 	protected final List<Long> nodeList;
 	protected final List<Long> edgeList;
@@ -72,25 +63,15 @@ public class NetworkTableReader extends AbstractGraphReader implements TextTable
 	protected final InputStream is;
 
 	protected CyNetwork network;
-//	private Map<Object, CyNode> nMap;
 	
 	private static final Logger logger = LoggerFactory.getLogger(NetworkTableReader.class);
 
-	/**
-	 * Creates a new NetworkTableReader object.
-	 *
-	 * @param networkName  DOCUMENT ME!
-	 * @param sourceURL  DOCUMENT ME!
-	 * @param nmp  DOCUMENT ME!
-	 * @param startLineNumber  DOCUMENT ME!
-	 * @param commentChar  DOCUMENT ME!
-	 */
 	public NetworkTableReader(final String networkName, final InputStream is,
 	                          final NetworkTableMappingParameters nmp,
-	                          final Map<Object, CyNode> nMap, final CyRootNetwork rootNetwork) 
-	{
+	                          final Map<Object, CyNode> nMap,
+	                          final CyRootNetwork rootNetwork) {
 		super(networkName);
-		//this.sourceURL = sourceURL;
+		
 		this.is = is;
 		this.nmp = nmp;
 		this.startLineNumber = nmp.getStartLineNumber();
@@ -101,13 +82,8 @@ public class NetworkTableReader extends AbstractGraphReader implements TextTable
 		parser = new NetworkLineParser(nodeList, edgeList, nmp, nMap, rootNetwork);
 	}
 
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @return  DOCUMENT ME!
-	 */
-	public List getColumnNames() {
-		List<String> colNames = new ArrayList<String>();
+	public List<String> getColumnNames() {
+		List<String> colNames = new ArrayList<>();
 
 		for (String name : nmp.getAttributeNames()) {
 			colNames.add(name);
@@ -116,11 +92,7 @@ public class NetworkTableReader extends AbstractGraphReader implements TextTable
 		return colNames;
 	}
 
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @throws IOException DOCUMENT ME!
-	 */
+	@Override
 	public void readTable(CyTable table) throws IOException {
 		//InputStream is = null;
 		String line;
@@ -172,25 +144,13 @@ public class NetworkTableReader extends AbstractGraphReader implements TextTable
 		}
 	}
 
-
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @throws IOException DOCUMENT ME!
-	 */
-	//@Override
+	@Override
 	public void read() throws IOException {
 		readTable(null);
 	}
 
-
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @return  DOCUMENT ME!
-	 */
+	@Override
 	public String getReport() {
-
 		final StringBuffer sb = new StringBuffer();
 		sb.append(network.getNodeCount() + " nodes and " + network.getEdgeCount() + " edges are loaded.\n");
 		sb.append("New network name is " + super.getNetworkName() + "\n\n");
@@ -198,10 +158,12 @@ public class NetworkTableReader extends AbstractGraphReader implements TextTable
 		return sb.toString();		
 	}
 	
+	@Override
 	public void setNetwork(CyNetwork network){
 		this.network = network;
 	}
 	
+	@Override
 	public MappingParameter getMappingParameter(){
 		return nmp;
 	}
