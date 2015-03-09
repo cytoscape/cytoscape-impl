@@ -24,37 +24,39 @@ package org.cytoscape.psi_mi.internal;
  * #L%
  */
 
+import static org.cytoscape.psi_mi.internal.plugin.SchemaVersion.LEVEL_1;
+import static org.cytoscape.psi_mi.internal.plugin.SchemaVersion.LEVEL_2_5;
+
+import java.util.Properties;
+
+import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.io.read.InputStreamTaskFactory;
+import org.cytoscape.io.util.StreamUtil;
+import org.cytoscape.io.write.CyNetworkViewWriterFactory;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
-import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
-import org.cytoscape.io.util.StreamUtil;
-import org.cytoscape.view.model.CyNetworkViewFactory;
-
 import org.cytoscape.property.CyProperty;
-import org.cytoscape.psi_mi.internal.plugin.PsiMiNetworkViewTaskFactory;
-import org.cytoscape.psi_mi.internal.plugin.PsiMiTabReaderFactory;
 import org.cytoscape.psi_mi.internal.plugin.PsiMiCyFileFilter;
-import static org.cytoscape.psi_mi.internal.plugin.SchemaVersion.*;
-import org.cytoscape.psi_mi.internal.plugin.PsiMiTabCyFileFilter;
+import org.cytoscape.psi_mi.internal.plugin.PsiMiNetworkViewTaskFactory;
 import org.cytoscape.psi_mi.internal.plugin.PsiMiNetworkWriterFactory;
-
-import org.cytoscape.io.write.CyNetworkViewWriterFactory;
-import org.cytoscape.io.read.InputStreamTaskFactory;
-import org.osgi.framework.BundleContext;
+import org.cytoscape.psi_mi.internal.plugin.PsiMiTabCyFileFilter;
+import org.cytoscape.psi_mi.internal.plugin.PsiMiTabReaderFactory;
 import org.cytoscape.service.util.AbstractCyActivator;
-import java.util.Properties;
-
+import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
+import org.cytoscape.view.model.CyNetworkViewFactory;
+import org.osgi.framework.BundleContext;
 
 
 public class CyActivator extends AbstractCyActivator {
+	
 	public CyActivator() {
 		super();
 	}
 
-
+	@Override
 	public void start(BundleContext bc) {
-
+		CyApplicationManager cyApplicationManagerServiceRef = getService(bc,CyApplicationManager.class);
 		CyLayoutAlgorithmManager cyLayoutsServiceRef = getService(bc,CyLayoutAlgorithmManager.class);
 		CyNetworkFactory cyNetworkFactoryServiceRef = getService(bc,CyNetworkFactory.class);
 		CyNetworkViewFactory cyNetworkViewFactoryServiceRef = getService(bc,CyNetworkViewFactory.class);
@@ -73,15 +75,16 @@ public class CyActivator extends AbstractCyActivator {
 		PsiMiTabCyFileFilter psiMiTabFilter = new PsiMiTabCyFileFilter();
 		
 		PsiMiNetworkViewTaskFactory psiMi25NetworkViewTaskFactory = new PsiMiNetworkViewTaskFactory(
-				PsiMiCyFileFilter.PSIMIVersion.PSIMI25, psiMi25Filter, cyNetworkFactoryServiceRef,
+				PsiMiCyFileFilter.PSIMIVersion.PSIMI25, psiMi25Filter, cyApplicationManagerServiceRef, cyNetworkFactoryServiceRef,
 				cyNetworkViewFactoryServiceRef, cyLayoutsServiceRef, cyNetworkManagerServiceRef, cyRootNetworkManagerServiceRef);
 		PsiMiNetworkViewTaskFactory psiMi10NetworkViewTaskFactory = new PsiMiNetworkViewTaskFactory(
-				PsiMiCyFileFilter.PSIMIVersion.PXIMI10, psiMi1Filter, cyNetworkFactoryServiceRef,
+				PsiMiCyFileFilter.PSIMIVersion.PXIMI10, psiMi1Filter, cyApplicationManagerServiceRef, cyNetworkFactoryServiceRef,
 				cyNetworkViewFactoryServiceRef, cyLayoutsServiceRef, cyNetworkManagerServiceRef, cyRootNetworkManagerServiceRef);
 
 		PsiMiNetworkWriterFactory psiMi1NetworkViewWriterFactory = new PsiMiNetworkWriterFactory(LEVEL_1,psiMi1Filter);
 		PsiMiNetworkWriterFactory psiMi25NetworkViewWriterFactory = new PsiMiNetworkWriterFactory(LEVEL_2_5,psiMi25Filter);
-		PsiMiTabReaderFactory psiMiTabReaderFactory = new PsiMiTabReaderFactory(psiMiTabFilter,cyNetworkViewFactoryServiceRef,cyNetworkFactoryServiceRef,cyLayoutsServiceRef, cyPropertyServiceRef,
+		PsiMiTabReaderFactory psiMiTabReaderFactory = new PsiMiTabReaderFactory(psiMiTabFilter,cyApplicationManagerServiceRef,
+				cyNetworkViewFactoryServiceRef,cyNetworkFactoryServiceRef,cyLayoutsServiceRef, cyPropertyServiceRef,
 				cyNetworkManagerServiceRef,cyRootNetworkManagerServiceRef);
 		
 		// For level 1

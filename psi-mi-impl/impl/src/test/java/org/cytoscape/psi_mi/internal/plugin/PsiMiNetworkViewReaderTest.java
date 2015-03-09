@@ -32,6 +32,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 
+import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.NetworkViewRenderer;
 import org.cytoscape.ding.NetworkViewTestSupport;
 import org.cytoscape.io.read.CyNetworkReader;
 import org.cytoscape.model.CyNetwork;
@@ -60,6 +62,10 @@ public class PsiMiNetworkViewReaderTest {
 	private static final Logger logger = LoggerFactory.getLogger(PsiMiNetworkViewReaderTest.class);
 
 	@Mock
+	CyApplicationManager cyApplicationManager;
+	@Mock
+	NetworkViewRenderer netViewRenderer;
+	@Mock
 	CyLayoutAlgorithmManager layouts;
 	@Mock
 	CyLayoutAlgorithm layout;
@@ -87,17 +93,19 @@ public class PsiMiNetworkViewReaderTest {
 		cyNetworkManager = new NetworkViewTestSupport().getNetworkManager();
 		cyRootNetworkManager = new NetworkViewTestSupport().getRootNetworkFactory();
 		
+		when(netViewRenderer.getNetworkViewFactory()).thenReturn(networkViewFactory);
+		when(cyApplicationManager.getDefaultNetworkViewRenderer()).thenReturn(netViewRenderer);
 	}
 
 	CyNetworkReader createReader(File file, PsiMiCyFileFilter.PSIMIVersion version) throws IOException {
 		if (version == PSIMIVersion.PSIMI25) {
 			PSIMI25XMLNetworkViewReader reader = new PSIMI25XMLNetworkViewReader(new FileInputStream(file),
-					networkFactory, networkViewFactory, layouts, cyNetworkManager, cyRootNetworkManager);
+					cyApplicationManager, networkFactory, networkViewFactory, layouts, cyNetworkManager, cyRootNetworkManager);
 			reader.setTaskIterator(new TaskIterator(reader));
 			return reader;
 		} else {
 			PSIMI10XMLNetworkViewReader reader = new PSIMI10XMLNetworkViewReader(new FileInputStream(file),
-					networkFactory, networkViewFactory, layouts, cyNetworkManager, cyRootNetworkManager);
+					cyApplicationManager, networkFactory, networkViewFactory, layouts, cyNetworkManager, cyRootNetworkManager);
 			reader.setTaskIterator(new TaskIterator(reader));
 			return reader;
 		}

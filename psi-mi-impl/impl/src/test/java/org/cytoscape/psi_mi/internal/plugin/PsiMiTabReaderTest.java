@@ -34,6 +34,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
+import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.NetworkViewRenderer;
 import org.cytoscape.ding.NetworkViewTestSupport;
 import org.cytoscape.io.read.CyNetworkReader;
 import org.cytoscape.model.CyNetwork;
@@ -59,6 +61,10 @@ import org.mockito.MockitoAnnotations;
 public class PsiMiTabReaderTest {
 
 	@Mock
+	CyApplicationManager cyApplicationManager;
+	@Mock
+	NetworkViewRenderer netViewRenderer;
+	@Mock
 	CyLayoutAlgorithmManager layouts;
 	@Mock
 	CyLayoutAlgorithm layout;
@@ -66,7 +72,6 @@ public class PsiMiTabReaderTest {
 	TaskMonitor taskMonitor;
 	@Mock
 	Task task;
-	
 	@Mock
 	CyProperty<Properties> props;
 
@@ -88,6 +93,9 @@ public class PsiMiTabReaderTest {
 		
 		cyNetworkManager = new NetworkViewTestSupport().getNetworkManager();
 		cyRootNetworkManager = new NetworkViewTestSupport().getRootNetworkFactory();
+		
+		when(netViewRenderer.getNetworkViewFactory()).thenReturn(networkViewFactory);
+		when(cyApplicationManager.getDefaultNetworkViewRenderer()).thenReturn(netViewRenderer);
 	}
 
 	@After
@@ -116,7 +124,7 @@ public class PsiMiTabReaderTest {
 	
 	private CyNetworkReader createReader(File file) throws IOException {
 		final InputStream is = new FileInputStream(file);
-		PsiMiTabReader reader = new PsiMiTabReader(is, networkViewFactory,
+		PsiMiTabReader reader = new PsiMiTabReader(is, cyApplicationManager, networkViewFactory,
 				networkFactory, layouts, props, cyNetworkManager, cyRootNetworkManager);
 		reader.setTaskIterator(new TaskIterator(reader));
 		return reader;

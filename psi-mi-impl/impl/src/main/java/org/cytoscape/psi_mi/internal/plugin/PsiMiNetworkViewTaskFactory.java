@@ -26,6 +26,7 @@ package org.cytoscape.psi_mi.internal.plugin;
 
 import java.io.InputStream;
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.io.CyFileFilter;
 import org.cytoscape.io.read.AbstractInputStreamTaskFactory;
 import org.cytoscape.model.CyNetworkFactory;
@@ -36,7 +37,9 @@ import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.work.TaskIterator;
 
-public class PsiMiNetworkViewTaskFactory extends AbstractInputStreamTaskFactory {	
+public class PsiMiNetworkViewTaskFactory extends AbstractInputStreamTaskFactory {
+	
+	private final CyApplicationManager cyApplicationManager;
 	private final CyNetworkViewFactory networkViewFactory;
 	private final CyNetworkFactory networkFactory;
 	private final CyLayoutAlgorithmManager layouts;
@@ -45,17 +48,24 @@ public class PsiMiNetworkViewTaskFactory extends AbstractInputStreamTaskFactory 
 	
 	private final PSIMIVersion version;
 
-	public PsiMiNetworkViewTaskFactory(final PSIMIVersion version, CyFileFilter filter, CyNetworkFactory networkFactory, 
-			CyNetworkViewFactory networkViewFactory, CyLayoutAlgorithmManager layouts,
-			final CyNetworkManager cyNetworkManager, CyRootNetworkManager cyRootNetworkManager) {
+	public PsiMiNetworkViewTaskFactory(
+			final PSIMIVersion version,
+			final CyFileFilter filter,
+			final CyApplicationManager cyApplicationManager,
+			final CyNetworkFactory networkFactory, 
+			final CyNetworkViewFactory networkViewFactory,
+			final CyLayoutAlgorithmManager layouts,
+			final CyNetworkManager cyNetworkManager,
+			final CyRootNetworkManager cyRootNetworkManager
+		) {
 		super(filter);
+		this.cyApplicationManager = cyApplicationManager;
 		this.networkFactory = networkFactory;
 		this.networkViewFactory = networkViewFactory;
 		this.layouts = layouts;
 		this.version = version;
 		this.cyNetworkManager= cyNetworkManager;
 		this.cyRootNetworkManager = cyRootNetworkManager;
-		
 	}
 	
 	@Override
@@ -63,9 +73,8 @@ public class PsiMiNetworkViewTaskFactory extends AbstractInputStreamTaskFactory 
 		// Usually 3 tasks: load, visualize, and layout.
 		
 		if(version == PSIMIVersion.PSIMI25)
-			return new TaskIterator(3, new PSIMI25XMLNetworkViewReader(inputStream, networkFactory, networkViewFactory, layouts, cyNetworkManager, cyRootNetworkManager));
+			return new TaskIterator(3, new PSIMI25XMLNetworkViewReader(inputStream, cyApplicationManager, networkFactory, networkViewFactory, layouts, cyNetworkManager, cyRootNetworkManager));
 		else
-			return new TaskIterator(3, new PSIMI10XMLNetworkViewReader(inputStream, networkFactory, networkViewFactory, layouts, cyNetworkManager, cyRootNetworkManager));
+			return new TaskIterator(3, new PSIMI10XMLNetworkViewReader(inputStream, cyApplicationManager, networkFactory, networkViewFactory, layouts, cyNetworkManager, cyRootNetworkManager));
 	}
-
 }

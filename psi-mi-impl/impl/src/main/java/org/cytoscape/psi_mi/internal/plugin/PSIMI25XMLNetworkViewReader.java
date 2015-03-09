@@ -26,11 +26,16 @@ package org.cytoscape.psi_mi.internal.plugin;
 
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
+import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.NetworkViewRenderer;
 import org.cytoscape.io.read.CyNetworkReader;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetwork;
@@ -40,7 +45,6 @@ import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
-import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.psi_mi.internal.data_mapper.PSIMI25EntryMapper;
 import org.cytoscape.view.layout.CyLayoutAlgorithm;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
@@ -89,7 +93,7 @@ public class PSIMI25XMLNetworkViewReader extends AbstractTask implements CyNetwo
 	//******** tunables ********************
 
 	public ListSingleSelection<String> rootNetworkList;
-	@Tunable(description = "Network Collection" ,groups=" ")
+	@Tunable(description = "Network Collection:", gravity = 1.0)
 	public ListSingleSelection<String> getRootNetworkList(){
 		return rootNetworkList;
 	}
@@ -101,12 +105,22 @@ public class PSIMI25XMLNetworkViewReader extends AbstractTask implements CyNetwo
 	}
 	
 	public ListSingleSelection<String> targetColumnList;
-	@Tunable(description = "Node Identifier Mapping Column:",groups=" ", listenForChange={"RootNetworkList"})
+	@Tunable(description = "Node Identifier Mapping Column:", gravity = 2.0, listenForChange={"RootNetworkList"})
 	public ListSingleSelection<String> getTargetColumnList(){
 		return targetColumnList;
 	}
 	public void setTargetColumnList(ListSingleSelection<String> colList){
 		this.targetColumnList = colList;
+	}
+	
+	private ListSingleSelection<NetworkViewRenderer> rendererList;
+	@Tunable(description = "Network View Renderer:", gravity = 3.0)
+	public ListSingleSelection<NetworkViewRenderer> getNetworkViewRendererList() {
+		return rendererList;
+	}
+	
+	public void setNetworkViewRendererList(final ListSingleSelection<NetworkViewRenderer> rendererList) {
+		this.rendererList = rendererList;
 	}
 	
 	
@@ -119,7 +133,7 @@ public class PSIMI25XMLNetworkViewReader extends AbstractTask implements CyNetwo
 	public ListSingleSelection<String> getTargetColumns (CyNetwork network) {
 		CyTable selectedTable = network.getTable(CyNode.class, CyRootNetwork.SHARED_ATTRS);
 		
-		List<String> colNames = new ArrayList<String>();
+		List<String> colNames = new ArrayList<>();
 		for(CyColumn col: selectedTable.getColumns()) {
 			// Exclude SUID from the mapping key list
 			if (col.getName().equalsIgnoreCase("SUID")){
@@ -136,7 +150,7 @@ public class PSIMI25XMLNetworkViewReader extends AbstractTask implements CyNetwo
 
 	
 	protected HashMap<String, CyRootNetwork> name2RootMap;
-	protected Map<Object, CyNode> nMap = new HashMap<Object, CyNode>(10000);
+	protected Map<Object, CyNode> nMap = new HashMap<>(10000);
 
 	
 	// Return the rootNetwork based on user selection, if not existed yet, create a new one
@@ -180,7 +194,6 @@ public class PSIMI25XMLNetworkViewReader extends AbstractTask implements CyNetwo
 
 	
 	private static HashMap<String, CyRootNetwork> getRootNetworkMap(CyNetworkManager cyNetworkManager, CyRootNetworkManager cyRootNetworkManager) {
-
 		HashMap<String, CyRootNetwork> name2RootMap = new HashMap<String, CyRootNetwork>();
 
 		for (CyNetwork net : cyNetworkManager.getNetworkSet()){
@@ -192,10 +205,23 @@ public class PSIMI25XMLNetworkViewReader extends AbstractTask implements CyNetwo
 		return name2RootMap;
 	}
 
+	private CyNetworkViewFactory getNetworkViewFactory() {
+		if (rendererList != null && rendererList.getSelectedValue() != null)
+			return rendererList.getSelectedValue().getNetworkViewFactory();
+		
+		return networkViewFactory;
+	}
 
 	
-	public PSIMI25XMLNetworkViewReader(InputStream inputStream, CyNetworkFactory networkFactory, CyNetworkViewFactory networkViewFactory, 
-			CyLayoutAlgorithmManager layouts, final CyNetworkManager cyNetworkManager, CyRootNetworkManager cyRootNetworkManager) {
+	public PSIMI25XMLNetworkViewReader(
+			final InputStream inputStream,
+			final CyApplicationManager cyApplicationManager,
+			final CyNetworkFactory networkFactory,
+			final CyNetworkViewFactory networkViewFactory, 
+			final CyLayoutAlgorithmManager layouts,
+			final CyNetworkManager cyNetworkManager,
+			final CyRootNetworkManager cyRootNetworkManager
+		) {
 		this.inputStream = inputStream;
 		this.cyNetworkFactory = networkFactory;
 		this.networkViewFactory = networkViewFactory;
@@ -206,17 +232,36 @@ public class PSIMI25XMLNetworkViewReader extends AbstractTask implements CyNetwo
 		// initialize the network Collection
 		this.name2RootMap = getRootNetworkMap(cyNetworkManager, cyRootNetworkManager);
 		
-		List<String> rootNames = new ArrayList<String>();
+		List<String> rootNames = new ArrayList<>();
 		rootNames.add(CRERATE_NEW_COLLECTION_STRING);
 		rootNames.addAll(name2RootMap.keySet());
-		rootNetworkList = new ListSingleSelection<String>(rootNames);
+		rootNetworkList = new ListSingleSelection<>(rootNames);
 		rootNetworkList.setSelectedValue(rootNames.get(0));
 		
 		// initialize target attribute list
-		List<String> colNames_target = new ArrayList<String>();
+		List<String> colNames_target = new ArrayList<>();
 		colNames_target.add("shared name");
-		this.targetColumnList = new ListSingleSelection<String>(colNames_target);
+		this.targetColumnList = new ListSingleSelection<>(colNames_target);
 		targetColumnList.setSelectedValue("shared name");
+		
+		// initialize renderer list
+		final List<NetworkViewRenderer> renderers = new ArrayList<>();
+		
+		final Set<NetworkViewRenderer> rendererSet = cyApplicationManager.getNetworkViewRendererSet();
+		
+		// If there is only one registered renderer, we don't want to add it to the List Selection,
+		// so the combo-box does not appear to the user, since there is nothing to select anyway.
+		if (rendererSet.size() > 1) {
+			renderers.addAll(rendererSet);
+			Collections.sort(renderers, new Comparator<NetworkViewRenderer>() {
+				@Override
+				public int compare(NetworkViewRenderer r1, NetworkViewRenderer r2) {
+					return r1.toString().compareToIgnoreCase(r2.toString());
+				}
+			});
+		}
+		
+		rendererList = new ListSingleSelection<>(renderers);
 	}
 
 	@Override
@@ -244,7 +289,7 @@ public class PSIMI25XMLNetworkViewReader extends AbstractTask implements CyNetwo
 		}
 		
 		//network = cyNetworkFactory.createNetwork();
-		String networkCollectionName =  this.rootNetworkList.getSelectedValue().toString();
+		String networkCollectionName =  rootNetworkList.getSelectedValue().toString();
 		if (networkCollectionName.equalsIgnoreCase(CRERATE_NEW_COLLECTION_STRING)){
 			// This is a new network collection, create a root network and a subnetwork, which is a base subnetwork
 			network = cyNetworkFactory.createNetwork();
@@ -269,7 +314,7 @@ public class PSIMI25XMLNetworkViewReader extends AbstractTask implements CyNetwo
 
 	@Override
 	public CyNetworkView buildCyNetworkView(final CyNetwork network) {
-		final CyNetworkView view = networkViewFactory.createNetworkView(network);
+		final CyNetworkView view = getNetworkViewFactory().createNetworkView(network);
 		final CyLayoutAlgorithm layout = layouts.getDefaultLayout();
 		TaskIterator itr = layout.createTaskIterator(view, layout.getDefaultLayoutContext(), CyLayoutAlgorithm.ALL_NODE_VIEWS,"");
 		Task nextTask = itr.next();
