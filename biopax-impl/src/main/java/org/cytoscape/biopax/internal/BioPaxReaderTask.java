@@ -33,10 +33,13 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringEscapeUtils;
@@ -45,6 +48,7 @@ import org.biopax.paxtools.model.BioPAXElement;
 import org.biopax.paxtools.model.Model;
 import org.biopax.paxtools.model.level3.Entity;
 import org.biopax.paxtools.model.level3.EntityReference;
+import org.cytoscape.application.NetworkViewRenderer;
 import org.cytoscape.biopax.internal.util.AttributeUtil;
 import org.cytoscape.biopax.internal.util.BioPaxReaderError;
 import org.cytoscape.biopax.internal.util.VisualStyleUtil;
@@ -53,6 +57,7 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
@@ -100,14 +105,14 @@ public class BioPaxReaderTask extends AbstractTask implements CyNetworkReader {
 		 * some of dependent utility class objects and simple properties are used to
 		 * generate node attributes.
 		 */
-		DEFAULT,
+		DEFAULT("Default"),
 		
 		/**
 		 * BioPAX to SIF, and then to Cytoscape mapping:
 		 * first, it converts BioPAX to SIF (using Paxtools library); next, 
 		 * delegates network/view creation to the first available SIF anotherReader.
 		 */
-		SIF,
+		SIF("SIF"),
 		
 		/**
 		 * BioPAX to SBGN, and then to Cytoscape network/view mapping:
@@ -115,7 +120,18 @@ public class BioPaxReaderTask extends AbstractTask implements CyNetworkReader {
 		 * delegates network/view creation to the first available SBGN anotherReader,
 		 * e.g., CySBGN (if present).
 		 */
-		SBGN;
+		SBGN("SBGN");
+		
+		private final String name;
+
+		private ReaderMode(String name) {
+			this.name = name;
+		}
+		
+		@Override
+		public String toString() {
+			return name;
+		}
 		
 		static String[] names() {
 			ReaderMode vals[] = ReaderMode.values();
@@ -132,32 +148,34 @@ public class BioPaxReaderTask extends AbstractTask implements CyNetworkReader {
 		return "BioPAX Reader Task";
 	}
 	
-	@Tunable(description = "Model mapping", groups = {"Options"}, 
+	@Tunable(description = "Model Mapping:", groups = {"Options"}, 
 			tooltip="<html>Choose how to read BioPAX:" +
 					"<ul>" +
-					"<li><strong>DEFAULT</strong>: map states, interactions to nodes; properties - to edges, attributes;</li>"+
+					"<li><strong>Default</strong>: map states, interactions to nodes; properties - to edges, attributes;</li>"+
 					"<li><strong>SIF</strong>: convert BioPAX to SIF, use a SIF reader, add attributes;</li>" +
 					"<li><strong>SBGN</strong>: convert BioPAX to SBGN, find a SBGN reader, etc.</li>" +
 					"</ul></html>"
 			, gravity=500, xorChildren=true)
-	public ListSingleSelection<String> readerMode;
+	public ListSingleSelection<ReaderMode> readerMode;
 		
-	@Tunable(description = "Networks collection" , groups = {"Options","DEFAULT"}, tooltip="Choose a root network", 
-			dependsOn="readerMode=DEFAULT", 
-			gravity=700, xorKey="DEFAULT")
+	@Tunable(description = "Network Collection:" , groups = {"Options","Default"}, tooltip="Choose a Network Collection", 
+			dependsOn="readerMode=Default", 
+			gravity=701, xorKey="Default")
 	public ListSingleSelection<String> rootNetworkSelection;
+	
+	@Tunable(description = "Network View Renderer:", groups = {"Options","Default"}, gravity=702, xorKey="Default", dependsOn="readerMode=Default")
+	public ListSingleSelection<NetworkViewRenderer> rendererList;
 
 	//TODO select inference rules (multi-selection) for the SIF converter
 	//TODO migrate from sif-converter to new biopax pattern module
-	@Tunable(description = "Binary interactions to infer" , groups = {"Options","SIF"}, tooltip="Select inference rules", 
-			gravity=701, xorKey="SIF")
+	@Tunable(description = "Binary interactions to infer:" , groups = {"Options","SIF"}, tooltip="Select inference rules", 
+			gravity=703, xorKey="SIF")
 	public ListMultipleSelection<String> sifSelection;
 	
 	//TODO init SBGN options if required
-	@Tunable(description = "SBGN options" , groups = {"Options","SBGN"}, tooltip="Currently not available", 
-			gravity=701, xorKey="SBGN")
+	@Tunable(description = "SBGN Options:" , groups = {"Options","SBGN"}, tooltip="Currently not available", 
+			gravity=704, xorKey="SBGN")
 	public ListSingleSelection<String> sbgnSelection;
-	
 	
 	/**
 	 * Constructor
@@ -188,14 +206,33 @@ public class BioPaxReaderTask extends AbstractTask implements CyNetworkReader {
 		rootNetworkSelection = new ListSingleSelection<String>(rootNames);
 		rootNetworkSelection.setSelectedValue(CREATE_NEW_COLLECTION);
 		
-		readerMode = new ListSingleSelection<String>(ReaderMode.names());
-		readerMode.setSelectedValue(ReaderMode.DEFAULT.toString());	
+		readerMode = new ListSingleSelection<>(ReaderMode.values());
+		readerMode.setSelectedValue(ReaderMode.DEFAULT);	
 		
 		sifSelection = new ListMultipleSelection<String>();
 		sbgnSelection = new ListSingleSelection<String>();
+		
+		// initialize renderer list
+		final List<NetworkViewRenderer> renderers = new ArrayList<>();
+		
+		final Set<NetworkViewRenderer> rendererSet = cyServices.applicationManager.getNetworkViewRendererSet();
+		
+		// If there is only one registered renderer, we don't want to add it to the List Selection,
+		// so the combo-box does not appear to the user, since there is nothing to select anyway.
+		if (rendererSet.size() > 1) {
+			renderers.addAll(rendererSet);
+			Collections.sort(renderers, new Comparator<NetworkViewRenderer>() {
+				@Override
+				public int compare(NetworkViewRenderer r1, NetworkViewRenderer r2) {
+					return r1.toString().compareToIgnoreCase(r2.toString());
+				}
+			});
+		}
+		
+		rendererList = new ListSingleSelection<>(renderers);
 	}
 	
-	
+	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception 
 	{
 		taskMonitor.setTitle("BioPAX reader");
@@ -227,7 +264,7 @@ public class BioPaxReaderTask extends AbstractTask implements CyNetworkReader {
 		
 		final BioPaxMapper mapper = new BioPaxMapper(model, cyServices.networkFactory);
 			
-		ReaderMode selectedMode = ReaderMode.valueOf(readerMode.getSelectedValue());
+		ReaderMode selectedMode = readerMode.getSelectedValue();
 		switch (selectedMode) {
 		case DEFAULT:
 			anotherReader = null;
@@ -429,15 +466,14 @@ public class BioPaxReaderTask extends AbstractTask implements CyNetworkReader {
 	 */
 	@Override
 	public CyNetworkView buildCyNetworkView(final CyNetwork network) {
-		
 		CyNetworkView view;		
 		//visual style depends on the tunable
 //		VisualStyle style = null; 		
-		ReaderMode currentMode = ReaderMode.valueOf(readerMode.getSelectedValue());
+		ReaderMode currentMode = readerMode.getSelectedValue();
 		switch (currentMode) {
 		case DEFAULT:
 //			style = visualStyleUtil.getBioPaxVisualStyle();
-			view = cyServices.networkViewFactory.createNetworkView(network);
+			view = getNetworkViewFactory().createNetworkView(network);
 			break;
 		case SIF:
 //			style = visualStyleUtil.getBinarySifVisualStyle();
@@ -456,4 +492,10 @@ public class BioPaxReaderTask extends AbstractTask implements CyNetworkReader {
 		return view;
 	}
 
+	private CyNetworkViewFactory getNetworkViewFactory() {
+		if (rendererList != null && rendererList.getSelectedValue() != null)
+			return rendererList.getSelectedValue().getNetworkViewFactory();
+		
+		return cyServices.networkViewFactory;
+	}
 }
