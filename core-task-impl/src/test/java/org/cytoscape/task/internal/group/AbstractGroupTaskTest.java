@@ -60,8 +60,8 @@ public class AbstractGroupTaskTest {
 		
 		final LockedVisualPropertiesManager lvpCache = new LockedVisualPropertiesManager(registrar);
 		
-		groupManager = new CyGroupManagerImpl(eventHelper);
-		groupFactory = new CyGroupFactoryImpl(eventHelper, groupManager, lvpCache, registrar);
+		groupManager = new CyGroupManagerImpl(registrar, eventHelper);
+		groupFactory = new CyGroupFactoryImpl(groupManager, lvpCache, eventHelper);
 		
 		group1 = groupFactory.createGroup(network, true);
 		rootNetwork.getRow(group1.getGroupNode(), CyRootNetwork.SHARED_ATTRS).set(CyRootNetwork.SHARED_NAME, "group1");
