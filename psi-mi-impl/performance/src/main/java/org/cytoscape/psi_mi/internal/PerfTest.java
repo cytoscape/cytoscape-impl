@@ -33,6 +33,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.ding.NetworkViewTestSupport;
 import org.cytoscape.io.read.CyNetworkReader;
 import org.cytoscape.model.CyNetwork;
@@ -111,7 +112,10 @@ public class PerfTest {
 	
 	private CyNetworkReader createReader(String file) throws IOException {
 		final InputStream is = getClass().getResource("/testData/mitab/" + file).openStream(); 
-		PsiMiTabReader reader = new PsiMiTabReader(is, networkViewFactory, networkFactory, layouts, props, cyNetworkManager, cyRootNetworkManager);
+		CyApplicationManager appManager = mock(CyApplicationManager.class);
+		PsiMiTabReader reader = new PsiMiTabReader(is, appManager, networkViewFactory, 
+		                                           networkFactory, layouts, props, cyNetworkManager, 
+																               cyRootNetworkManager);
 		reader.setTaskIterator(new TaskIterator(reader));
 		return reader;
 	}
