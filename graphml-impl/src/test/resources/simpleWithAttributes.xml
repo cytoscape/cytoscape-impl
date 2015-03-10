@@ -13,7 +13,19 @@
 	<key id="d5" for="node" attr.name="tagged" attr.type="boolean">
 		<default>false</default>
 	</key>
+	
+	<!-- Network Table Data -->
+	<key id="d6" for="graph" attr.name="name" attr.type="string">
+		<default>Sample Network</default>
+	</key>
+	<key id="d7" for="graph" attr.name="number_test" attr.type="double">
+		<default>1.234</default>
+	</key>
+	
 	<graph id="G" edgedefault="undirected">
+		<data key="d6">Small GraphML Network</data>
+		<data key="d7">100.123</data>
+
 		<node id="n0">
 			<data key="d0">green</data>
 			<data key="d2">3</data>

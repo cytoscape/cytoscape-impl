@@ -43,6 +43,7 @@ import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.NetworkTestSupport;
+import org.cytoscape.model.internal.NetworkNameSetListener;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.model.CyNetworkViewFactory;
@@ -116,6 +117,12 @@ public class GraphMLReaderTest {
 		final CyNetwork net = networks[0];
 		assertEquals(6, net.getNodeCount());
 		assertEquals(7, net.getEdgeCount());
+		
+		// Check Network Attributes
+		final String networkName = net.getDefaultNetworkTable().getRow(net.getSUID()).get(NAME, String.class);
+		final Number networkNumber = net.getDefaultNetworkTable().getRow(net.getSUID()).get("number_test", Double.class);
+		assertEquals("Small GraphML Network", networkName);
+		assertEquals(100.123, networkNumber);
 
 		final CyNode n1 = getNodeByName(net, "n0");
 		assertNotNull(n1);
