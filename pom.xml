@@ -34,8 +34,8 @@
 		<module>filter2-impl</module>
 		<module>graphml-impl</module>
 		<module>group-impl</module>
-		<module>group-data-impl</module>
-		<module>group-view-impl</module>
+		<!--module>group-data-impl</module-->
+		<!--module>group-view-impl</module-->
 		<module>io-impl</module>
 		<module>json-impl</module>
 		<module>layout-cytoscape-impl</module>
