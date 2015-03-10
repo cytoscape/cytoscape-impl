@@ -41,12 +41,14 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
+import org.cytoscape.service.util.CyServiceRegistrar;
 
 /**
  * An implementation of CyNetworkManager.
  */
 public class CyGroupManagerImpl implements CyGroupManager {
-	private final CyEventHelper cyEventHelper;
+	private final CyServiceRegistrar cyServiceRegistrar;
+	private CyEventHelper cyEventHelper;
 
 	private Set<CyGroup> groupSet;
 	private Map<CyRootNetwork, Set<CyGroup>> rootMap;
@@ -58,9 +60,11 @@ public class CyGroupManagerImpl implements CyGroupManager {
 	 * 
 	 * @param cyEventHelper
 	 */
-	public CyGroupManagerImpl(final CyEventHelper cyEventHelper) {
+	public CyGroupManagerImpl(final CyServiceRegistrar cyServiceRegistrar, 
+		                        final CyEventHelper cyEventHelper) {
 		this.groupSet = new HashSet<CyGroup>();
 		this.rootMap = new HashMap<CyRootNetwork, Set<CyGroup>>();
+		this.cyServiceRegistrar = cyServiceRegistrar;
 		this.cyEventHelper = cyEventHelper;
 	}
 
@@ -203,6 +207,14 @@ public class CyGroupManagerImpl implements CyGroupManager {
 			return null;
 		}
 		return rhRow.getList(GROUP_LIST_ATTRIBUTE, Long.class);
+	}
+
+	/**
+	 * Method to get a service.  This is only called from within the group-impl
+	 * bundle and is not part of the API.
+	 */
+	public <S> S getService(Class<S> serviceClass) {
+		return cyServiceRegistrar.getService(serviceClass);
 	}
 
 	private void addGroupToRootMap(CyGroup group) {

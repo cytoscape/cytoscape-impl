@@ -13,14 +13,12 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.cytoscape.group.CyGroup;
-import org.cytoscape.group.CyGroupManager;
 import org.cytoscape.group.internal.LockedVisualPropertiesManager.Key;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.CySession;
 import org.cytoscape.session.events.SessionAboutToBeLoadedEvent;
 import org.cytoscape.session.events.SessionAboutToBeLoadedListener;
@@ -80,19 +78,16 @@ public class GroupIO implements SessionAboutToBeSavedListener, SessionAboutToBeL
 	private static final String NAMESPACE = "org.cytoscape.group";
 	private final static String FILENAME = "lockedVisualProperties.json";
 	
-	private final CyGroupManager groupMgr;
+	private final CyGroupManagerImpl groupMgr;
 	private final LockedVisualPropertiesManager lvpMgr;
-	private final CyServiceRegistrar serviceRegistrar;
 	private final ObjectMapper mapper;
 	
 	private static final Logger logger = LoggerFactory.getLogger(GroupIO.class);
 	
-	public GroupIO(final CyGroupManager groupMgr,
-					 final LockedVisualPropertiesManager lvpMgr,
-					 final CyServiceRegistrar serviceRegistrar) {
+	public GroupIO(final CyGroupManagerImpl groupMgr,
+					 final LockedVisualPropertiesManager lvpMgr) {
 		this.groupMgr = groupMgr;
 		this.lvpMgr = lvpMgr;
-		this.serviceRegistrar = serviceRegistrar;
 		this.mapper = new ObjectMapper();
 		
 		final SimpleModule module = new SimpleModule();
@@ -104,7 +99,7 @@ public class GroupIO implements SessionAboutToBeSavedListener, SessionAboutToBeL
 	
 	@Override
 	public void handleEvent(final SessionAboutToBeSavedEvent event) {
-		final CyNetworkManager netMgr = serviceRegistrar.getService(CyNetworkManager.class);
+		final CyNetworkManager netMgr = groupMgr.getService(CyNetworkManager.class);
 		final Set<CyNetwork> networkSet = netMgr.getNetworkSet();
 		final Set<CyGroup> allGroups = new LinkedHashSet<>();
 		
@@ -165,7 +160,7 @@ public class GroupIO implements SessionAboutToBeSavedListener, SessionAboutToBeL
 	
 	private void writeLockedVisualPropertiesMap(final File file, final Set<CyGroup> groups)
 			throws JsonGenerationException, JsonMappingException, IOException {
-		final CyNetworkViewManager netViewMgr = serviceRegistrar.getService(CyNetworkViewManager.class);
+		final CyNetworkViewManager netViewMgr = groupMgr.getService(CyNetworkViewManager.class);
 		final Set<CyIdentifiable> grElements = new HashSet<>();
 		
 		for (final CyGroup gr : groups) {
@@ -327,7 +322,7 @@ public class GroupIO implements SessionAboutToBeSavedListener, SessionAboutToBeL
 	}
 	
 	private VisualLexicon getVisualLexicon(final CyNetworkView netView) {
-		final RenderingEngineManager rendererMgr = serviceRegistrar.getService(RenderingEngineManager.class);
+		final RenderingEngineManager rendererMgr = groupMgr.getService(RenderingEngineManager.class);
     	final Collection<RenderingEngine<?>> renderingEngines = rendererMgr.getRenderingEngines(netView);
     	
     	if (renderingEngines != null && !renderingEngines.isEmpty())

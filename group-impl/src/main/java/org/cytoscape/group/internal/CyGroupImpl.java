@@ -64,13 +64,12 @@ import org.slf4j.LoggerFactory;
 
 public class CyGroupImpl implements CyGroup {
 	
-	final private static String CHILDREN_ATTR = "NumChildren";
-	final private static String DESCENDENTS_ATTR = "NumDescendents";
-	final private static String ISMETA_EDGE_ATTR = "__isMetaEdge";
+	final public static String CHILDREN_ATTR = "NumChildren";
+	final public static String DESCENDENTS_ATTR = "NumDescendents";
+	final public static String ISMETA_EDGE_ATTR = "__isMetaEdge";
 
 	final private CyEventHelper cyEventHelper;
-	final private CyGroupManager mgr;
-	final private CyServiceRegistrar serviceRegistrar;
+	final private CyGroupManagerImpl mgr;
 	final private LockedVisualPropertiesManager lvpMgr;
 
 	private CyNode groupNode;
@@ -89,9 +88,8 @@ public class CyGroupImpl implements CyGroup {
 	private final Object lock = new Object();
 
 	CyGroupImpl(final CyEventHelper eventHelper, 
-				final CyGroupManager mgr,
+				final CyGroupManagerImpl mgr,
 				final LockedVisualPropertiesManager lvpMgr,
-				final CyServiceRegistrar serviceRegistrar,
 				CyNetwork network,
 				CyNode node,
 				List<CyNode>nodes,
@@ -99,7 +97,6 @@ public class CyGroupImpl implements CyGroup {
 		this.cyEventHelper = eventHelper;
 		this.mgr = mgr;
 		this.lvpMgr = lvpMgr;
-		this.serviceRegistrar = serviceRegistrar;
 
 		// long timeStamp = System.currentTimeMillis();
 
@@ -650,7 +647,7 @@ public class CyGroupImpl implements CyGroup {
 
 		// Remove all of the nodes from the target network:
 		// But first, Save their locked visual properties values...
-		final CyNetworkViewManager netViewMgr = serviceRegistrar.getService(CyNetworkViewManager.class);
+		final CyNetworkViewManager netViewMgr = mgr.getService(CyNetworkViewManager.class);
 		final Collection<CyNetworkView> netViewList = netViewMgr.getNetworkViews(subnet);
 		
 		for (CyNode n: nodes) {
@@ -755,7 +752,7 @@ public class CyGroupImpl implements CyGroup {
 		
 		// Expand it.
 
-		final CyNetworkViewManager netViewMgr = serviceRegistrar.getService(CyNetworkViewManager.class);
+		final CyNetworkViewManager netViewMgr = mgr.getService(CyNetworkViewManager.class);
 		final Collection<CyNetworkView> netViewList = netViewMgr.getNetworkViews(net);
 		final Set<CyIdentifiable> addedElements = new HashSet<CyIdentifiable>();
 		
@@ -899,7 +896,7 @@ public class CyGroupImpl implements CyGroup {
 		}
 	}
 
-	protected Collection<CyEdge> getMetaEdgeList() {
+	public Collection<CyEdge> getMetaEdgeList() {
 		synchronized (lock) {
 			return metaEdges.values();
 		}
