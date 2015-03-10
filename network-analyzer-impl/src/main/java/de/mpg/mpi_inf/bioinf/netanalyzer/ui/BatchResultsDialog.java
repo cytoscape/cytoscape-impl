@@ -32,12 +32,12 @@ import java.awt.FlowLayout;
 import java.awt.Frame;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.File;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import javax.swing.AbstractAction;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
@@ -53,6 +53,7 @@ import org.cytoscape.io.read.CyNetworkReader;
 import org.cytoscape.io.read.CyNetworkReaderManager;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
+import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
 
@@ -67,7 +68,7 @@ import de.mpg.mpi_inf.bioinf.netanalyzer.data.NetworkInterpretation;
  * 
  * @author Yassen Assenov
  */
-public class BatchResultsDialog extends JDialog implements ActionListener, ListSelectionListener {
+public class BatchResultsDialog extends JDialog implements ListSelectionListener {
 
 	private final CyNetworkReaderManager cyNetworkViewReaderMgr;
 	private final CyNetworkManager cyNetworkMgr;
@@ -96,14 +97,6 @@ public class BatchResultsDialog extends JDialog implements ActionListener, ListS
 		this.cyNetworkMgr = cyNetworkMgr;
 		this.netViewMgr = netViewMgr;
 		this.aOwner = aOwner;
-	}
-
-	@Override
-	public void actionPerformed(ActionEvent e) {
-		if (e.getSource() == btnClose) {
-			setVisible(false);
-			dispose();
-		}
 	}
 
 	@Override
@@ -183,6 +176,7 @@ public class BatchResultsDialog extends JDialog implements ActionListener, ListS
 	 * @param aReports
 	 *            List of analysis reports to be listed in a table.
 	 */
+	@SuppressWarnings("serial")
 	private void init(List<NetworkAnalysisReport> aReports) {
 		lastSelected = new Point(-1, -1);
 		final int BS = Utils.BORDER_SIZE;
@@ -211,12 +205,24 @@ public class BatchResultsDialog extends JDialog implements ActionListener, ListS
 		contentPane.add(new JScrollPane(tabResults), BorderLayout.CENTER);
 
 		// Add Close button
-		btnClose = Utils.createButton(Messages.DI_CLOSE, null, this);
-		final JPanel panButton = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));
+		btnClose = Utils.createButton(new AbstractAction(Messages.DI_CLOSE) {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				setVisible(false);
+				dispose();
+			}
+		}, null);
+		
+		final JPanel panButton = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
 		panButton.add(btnClose);
 		contentPane.add(panButton, BorderLayout.PAGE_END);
 
 		setContentPane(contentPane);
+		
+		LookAndFeelUtil.setDefaultOkCancelKeyStrokes(getRootPane(), null, btnClose.getAction());
+		getRootPane().setDefaultButton(btnClose);
+		btnClose.requestFocusInWindow();
+		
 		pack();
 		setResizable(true);
 	}

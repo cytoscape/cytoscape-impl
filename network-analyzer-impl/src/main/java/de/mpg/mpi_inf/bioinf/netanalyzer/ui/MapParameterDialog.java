@@ -40,6 +40,7 @@ import java.awt.event.ActionListener;
 import java.util.Collection;
 import java.util.HashMap;
 
+import javax.swing.AbstractAction;
 import javax.swing.ButtonGroup;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
@@ -120,21 +121,15 @@ public class MapParameterDialog extends VisualizeParameterDialog implements Acti
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		final Object src = e.getSource();
-		if (src == btnApply) {
-			apply();
-			setVisible(false);
-			dispose();
-		} else if (src == btnClose) {
-			setVisible(false);
-			dispose();
-		} else if (src == cbxEdgeColor) {
-			btnApply.setEnabled(isMappingSelected());
+		
+		if (src == cbxEdgeColor) {
+			btnApply.getAction().setEnabled(isMappingSelected());
 		} else if (src == cbxEdgeSize) {
-			btnApply.setEnabled(isMappingSelected());
+			btnApply.getAction().setEnabled(isMappingSelected());
 		} else if (src == cbxNodeColor) {
-			btnApply.setEnabled(isMappingSelected());
+			btnApply.getAction().setEnabled(isMappingSelected());
 		} else if (src == cbxNodeSize) {
-			btnApply.setEnabled(isMappingSelected());
+			btnApply.getAction().setEnabled(isMappingSelected());
 		} else if (src == btnNodeSize1) {
 			mapNodeSize = btnNodeSize1.getText();
 		} else if (src == btnNodeSize2) {
@@ -203,6 +198,7 @@ public class MapParameterDialog extends VisualizeParameterDialog implements Acti
 	 * @throws NullPointerException
 	 *             If {@link #network} is <code>null</code>.
 	 */
+	@SuppressWarnings("serial")
 	private void init() {
 		final int BS = Utils.BORDER_SIZE;
 		final JPanel contentPane = new JPanel(new BorderLayout(BS, BS));
@@ -336,15 +332,32 @@ public class MapParameterDialog extends VisualizeParameterDialog implements Acti
 		contentPane.add(panMapping, BorderLayout.CENTER);
 
 		// Add Apply and Cancel buttons
-		btnApply = Utils.createButton(Messages.DI_APPLY, null, this);
-		btnApply.setEnabled(false);
-		btnClose = Utils.createButton(Messages.DI_CANCEL, null, this);
+		btnApply = Utils.createButton(new AbstractAction(Messages.DI_APPLY) {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if (btnApply.getAction().isEnabled()) {
+					apply();
+					setVisible(false);
+					dispose();
+				}
+			}
+		}, null);
+		btnClose = Utils.createButton(new AbstractAction(Messages.DI_CANCEL) {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				setVisible(false);
+				dispose();
+			}
+		}, null);
+		
 		Utils.equalizeSize(btnApply, btnClose);
+		btnApply.getAction().setEnabled(false);
 		
 		final JPanel panButtons = LookAndFeelUtil.createOkCancelPanel(btnApply, btnClose);
 		contentPane.add(panButtons, BorderLayout.PAGE_END);
 
 		setContentPane(contentPane);
+		LookAndFeelUtil.setDefaultOkCancelKeyStrokes(getRootPane(), btnApply.getAction(), btnClose.getAction());
 		pack();
 	}
 	
@@ -468,9 +481,9 @@ public class MapParameterDialog extends VisualizeParameterDialog implements Acti
 	 * and mean hash maps, respectively.
 	 */
 	private void getMinMaxMeanValues() {
-		minAttrValue = new HashMap<String, Double>(32);
-		maxAttrValue = new HashMap<String, Double>(32);
-		meanAttrValue = new HashMap<String, Double>(32);
+		minAttrValue = new HashMap<>(32);
+		maxAttrValue = new HashMap<>(32);
+		meanAttrValue = new HashMap<>(32);
 
 		// Find min, max and mean for each node attribute
 		// TODO: [Cytoscape 2.8] Check if the returned iterator is parameterized

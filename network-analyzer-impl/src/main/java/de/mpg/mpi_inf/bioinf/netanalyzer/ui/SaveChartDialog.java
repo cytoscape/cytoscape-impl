@@ -31,10 +31,10 @@ import static javax.swing.GroupLayout.PREFERRED_SIZE;
 
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 
+import javax.swing.AbstractAction;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
@@ -63,8 +63,7 @@ import de.mpg.mpi_inf.bioinf.netanalyzer.ui.charts.JFreeChartConn;
  * 
  * @author Yassen Assenov
  */
-public class SaveChartDialog extends JDialog
-	implements ActionListener {
+public class SaveChartDialog extends JDialog {
 
 	/**
 	 * Initializes a new instance of <code>SaveChartDialog</code>. The constructor creates and
@@ -85,72 +84,6 @@ public class SaveChartDialog extends JDialog
 		setModal(true);
 		setResizable(false);
 		setLocationRelativeTo(aOwner);
-	}
-
-	@Override
-	public void actionPerformed(ActionEvent e) {
-		Object source = e.getSource();
-		if (source == btnCancel) {
-			// Cancel button pressed -> close the window
-			this.setVisible(false);
-			this.dispose();
-		} else if (source == btnSave) {
-			// Save button pressed -> choose file name and save the chart
-			int saveIt = saveFileDialog.showSaveDialog(this);
-			if (saveIt == JFileChooser.APPROVE_OPTION) {
-
-				// Choose file name
-				File file = saveFileDialog.getSelectedFile();
-				int width = getChosenWidth();
-				int height = getChosenHeight();
-				ExtensionFileFilter filter = null;
-				try {
-					filter = (ExtensionFileFilter) saveFileDialog.getFileFilter();
-					if (!filter.hasExtension(file)) {
-						file = filter.appendExtension(file);
-					}
-				} catch (ClassCastException ex) {
-					// Try to infer the type of file by its extension
-					FileFilter[] filters = saveFileDialog.getChoosableFileFilters();
-					for (int i = 0; i < filters.length; ++i) {
-						if (filters[i] instanceof ExtensionFileFilter) {
-							filter = (ExtensionFileFilter) filters[i];
-							if (filter.hasExtension(file)) {
-								break;
-							}
-							filter = null;
-						}
-					}
-
-					if (filter == null) {
-						// Could not infer the type
-						Utils.showErrorBox(this, Messages.DT_IOERROR, Messages.SM_AMBIGUOUSFTYPE);
-						return;
-					}
-				}
-
-				// Save the chart to the specified file name
-				try {
-					if (Utils.canSave(file, this)) {
-						String ext = filter.getExtension();
-						if (ext.equals("jpeg")) {
-							JFreeChartConn.saveAsJpeg(file, chart, width, height);
-						} else if (ext.equals("png")) {
-							JFreeChartConn.saveAsPng(file, chart, width, height);
-						} else { // ext.equals("svg")
-							JFreeChartConn.saveAsSvg(file, chart, width, height);
-						}
-					}
-				} catch (IOException ex) {
-					Utils.showErrorBox(this, Messages.DT_IOERROR, Messages.SM_OERROR);
-					return;
-				}
-				this.setVisible(false);
-				this.dispose();
-			} else if (saveIt == JFileChooser.ERROR_OPTION) {
-				Utils.showErrorBox(this, Messages.DT_GUIERROR, Messages.SM_GUIERROR);
-			}
-		}
 	}
 
 	/**
@@ -251,10 +184,21 @@ public class SaveChartDialog extends JDialog
 		}
 		
 		// Add Save and Cancel buttons
-		btnSave = Utils.createButton(Messages.DI_SAVE, null, this);
-		btnCancel = Utils.createButton(Messages.DI_CANCEL, null, this);
-		Utils.equalizeSize(btnSave, btnCancel);
+		btnSave = Utils.createButton(new AbstractAction(Messages.DI_SAVE) {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				save();
+			}
+		}, null);
+		btnCancel = Utils.createButton(new AbstractAction(Messages.DI_CANCEL) {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				setVisible(false);
+				dispose();
+			}
+		}, null);
 		
+		Utils.equalizeSize(btnSave, btnCancel);
 		final JPanel buttons = LookAndFeelUtil.createOkCancelPanel(btnSave, btnCancel);
 		
 		{
@@ -273,7 +217,67 @@ public class SaveChartDialog extends JDialog
 			);
 		}
 		
+		LookAndFeelUtil.setDefaultOkCancelKeyStrokes(getRootPane(), btnSave.getAction(), btnCancel.getAction());
+		
 		setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+	}
+	
+	private void save() {
+		// Save button pressed -> choose file name and save the chart
+		int saveIt = saveFileDialog.showSaveDialog(this);
+		if (saveIt == JFileChooser.APPROVE_OPTION) {
+
+			// Choose file name
+			File file = saveFileDialog.getSelectedFile();
+			int width = getChosenWidth();
+			int height = getChosenHeight();
+			ExtensionFileFilter filter = null;
+			try {
+				filter = (ExtensionFileFilter) saveFileDialog.getFileFilter();
+				if (!filter.hasExtension(file)) {
+					file = filter.appendExtension(file);
+				}
+			} catch (ClassCastException ex) {
+				// Try to infer the type of file by its extension
+				FileFilter[] filters = saveFileDialog.getChoosableFileFilters();
+				for (int i = 0; i < filters.length; ++i) {
+					if (filters[i] instanceof ExtensionFileFilter) {
+						filter = (ExtensionFileFilter) filters[i];
+						if (filter.hasExtension(file)) {
+							break;
+						}
+						filter = null;
+					}
+				}
+
+				if (filter == null) {
+					// Could not infer the type
+					Utils.showErrorBox(this, Messages.DT_IOERROR, Messages.SM_AMBIGUOUSFTYPE);
+					return;
+				}
+			}
+
+			// Save the chart to the specified file name
+			try {
+				if (Utils.canSave(file, this)) {
+					String ext = filter.getExtension();
+					if (ext.equals("jpeg")) {
+						JFreeChartConn.saveAsJpeg(file, chart, width, height);
+					} else if (ext.equals("png")) {
+						JFreeChartConn.saveAsPng(file, chart, width, height);
+					} else { // ext.equals("svg")
+						JFreeChartConn.saveAsSvg(file, chart, width, height);
+					}
+				}
+			} catch (IOException ex) {
+				Utils.showErrorBox(this, Messages.DT_IOERROR, Messages.SM_OERROR);
+				return;
+			}
+			this.setVisible(false);
+			this.dispose();
+		} else if (saveIt == JFileChooser.ERROR_OPTION) {
+			Utils.showErrorBox(this, Messages.DT_GUIERROR, Messages.SM_GUIERROR);
+		}
 	}
 
 	/**

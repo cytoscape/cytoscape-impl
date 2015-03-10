@@ -30,10 +30,10 @@ import java.awt.BorderLayout;
 import java.awt.Dialog;
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 
+import javax.swing.AbstractAction;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JPanel;
@@ -51,7 +51,7 @@ import de.mpg.mpi_inf.bioinf.netanalyzer.data.io.SettingsSerializer;
  * 
  * @author Yassen Assenov
  */
-public class PluginSettingsDialog extends JDialog implements ActionListener {
+public class PluginSettingsDialog extends JDialog {
 
 	private static final Logger logger = LoggerFactory.getLogger(PluginSettingsDialog.class);
 
@@ -87,28 +87,6 @@ public class PluginSettingsDialog extends JDialog implements ActionListener {
 		setLocationRelativeTo(aOwner);
 	}
 
-	@Override
-	public void actionPerformed(ActionEvent e) {
-		Object source = e.getSource();
-		if (source == btnOK) {
-			try {
-				panSettings.updateData();
-				SettingsSerializer.save();
-			} catch (InvocationTargetException ex) {
-				// NetworkAnalyzer internal error
-				logger.error(Messages.SM_LOGERROR, ex);
-			} catch (IOException ex) {
-				Utils.showErrorBox(this,Messages.DT_IOERROR, Messages.SM_DEFFAILED);
-			} finally {
-				this.setVisible(false);
-				this.dispose();
-			}
-		} else if (source == btnCancel) {
-			this.setVisible(false);
-			this.dispose();
-		}
-	}
-
 	/**
 	 * Unique ID for this version of this class. It is used in serialization.
 	 */
@@ -120,6 +98,7 @@ public class PluginSettingsDialog extends JDialog implements ActionListener {
 	 * This method is called upon initialization only.
 	 * </p>
 	 */
+	@SuppressWarnings("serial")
 	private void initControls() {
 		JPanel contentPane = new JPanel(new BorderLayout(0, Utils.BORDER_SIZE));
 		Utils.setStandardBorder(contentPane);
@@ -128,14 +107,39 @@ public class PluginSettingsDialog extends JDialog implements ActionListener {
 		contentPane.add(panSettings, BorderLayout.CENTER);
 
 		// Add OK, Cancel and Help buttons
-		btnOK = Utils.createButton(Messages.DI_OK, null, this);
-		btnCancel = Utils.createButton(Messages.DI_CANCEL, null, this);
+		btnOK = Utils.createButton(new AbstractAction(Messages.DI_OK) {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				try {
+					panSettings.updateData();
+					SettingsSerializer.save();
+				} catch (InvocationTargetException ex) {
+					// NetworkAnalyzer internal error
+					logger.error(Messages.SM_LOGERROR, ex);
+				} catch (IOException ex) {
+					Utils.showErrorBox(PluginSettingsDialog.this, Messages.DT_IOERROR, Messages.SM_DEFFAILED);
+				} finally {
+					setVisible(false);
+					dispose();
+				}
+			}
+		}, null);
+		btnCancel = Utils.createButton(new AbstractAction(Messages.DI_CANCEL) {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				setVisible(false);
+				dispose();
+			}
+		}, null);
+		
 		Utils.equalizeSize(btnOK, btnCancel);
 		final JPanel panButtons = LookAndFeelUtil.createOkCancelPanel(btnOK, btnCancel);
 		contentPane.add(panButtons, BorderLayout.SOUTH);
 
 		setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 		getContentPane().add(contentPane);
+		
+		LookAndFeelUtil.setDefaultOkCancelKeyStrokes(getRootPane(), btnOK.getAction(), btnCancel.getAction());
 		getRootPane().setDefaultButton(btnOK);
 		btnOK.requestFocusInWindow();
 	}

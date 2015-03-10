@@ -26,25 +26,33 @@ package de.mpg.mpi_inf.bioinf.netanalyzer.ui;
  * #L%
  */
 
-import de.mpg.mpi_inf.bioinf.netanalyzer.data.Messages;
+import java.awt.FlowLayout;
+import java.awt.Frame;
+import java.awt.HeadlessException;
+import java.awt.event.ActionEvent;
+
+import javax.swing.AbstractAction;
+import javax.swing.Box;
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.SwingConstants;
+import javax.swing.event.ListSelectionEvent;
 
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 
-import javax.swing.*;
-import javax.swing.event.ListSelectionEvent;
-
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import de.mpg.mpi_inf.bioinf.netanalyzer.data.Messages;
 
 /**
  * Dialog for selecting networks on which to apply analysis or a basic modification.
  * 
  * @author Yassen Assenov
  */
-public class NetModificationDialog extends NetworkListDialog implements ActionListener {
+public class NetModificationDialog extends NetworkListDialog {
 
 	/**
 	 * Initializes a new instance of <code>NetworkModificationDialog</code> with a modification warning.
@@ -95,26 +103,6 @@ public class NetModificationDialog extends NetworkListDialog implements ActionLi
 		setLocationRelativeTo(aOwner);
 	}
 
-	@Override
-	public void actionPerformed(ActionEvent e) {
-		final Object source = e.getSource();
-		if (source == btnCancel) {
-			setVisible(false);
-			dispose();
-		} else if (source == btnOK) {
-			// Store the list of networks selected by the user
-			final int[] indices = listNetNames.getSelectedIndices();
-			final int size = indices.length;
-			selectedNetworks = new CyNetwork[size];
-			for (int i = 0; i < size; ++i) {
-				selectedNetworks[i] = networks.get(indices[i]);
-			}
-
-			setVisible(false);
-			dispose();
-		}
-	}
-
 	/**
 	 * Gets an array of all networks selected by the user.
 	 * 
@@ -128,7 +116,7 @@ public class NetModificationDialog extends NetworkListDialog implements ActionLi
 	@Override
 	public void valueChanged(ListSelectionEvent e) {
 		// Update the enabled status of the "OK" button.
-		btnOK.setEnabled(isNetNameSelected());
+		btnOK.getAction().setEnabled(isNetNameSelected());
 	}
 
 	/**
@@ -156,6 +144,7 @@ public class NetModificationDialog extends NetworkListDialog implements ActionLi
 	 *            Flag indicating if a modification warning must be displayed. The text of the modification
 	 *            warning is {@link Messages#SM_NETMODIFICATION}.
 	 */
+	@SuppressWarnings("serial")
 	protected void initControls(String aLabel, boolean aWarning) {
 		Box contentPane = Box.createVerticalBox();
 		Utils.setStandardBorder(contentPane);
@@ -181,10 +170,31 @@ public class NetModificationDialog extends NetworkListDialog implements ActionLi
 		}
 
 		// Add OK and Cancel buttons
-		btnOK = Utils.createButton(Messages.DI_OK, null, this);
-		btnOK.setEnabled(false);
-		btnCancel = Utils.createButton(Messages.DI_CANCEL, null, this);
+		btnOK = Utils.createButton(new AbstractAction(Messages.DI_OK) {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				// Store the list of networks selected by the user
+				final int[] indices = listNetNames.getSelectedIndices();
+				final int size = indices.length;
+				selectedNetworks = new CyNetwork[size];
+				for (int i = 0; i < size; ++i) {
+					selectedNetworks[i] = networks.get(indices[i]);
+				}
+
+				setVisible(false);
+				dispose();
+			}
+		}, null);
+		btnCancel = Utils.createButton(new AbstractAction(Messages.DI_CANCEL) {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				setVisible(false);
+				dispose();
+			}
+		}, null);
+		
 		Utils.equalizeSize(btnOK, btnCancel);
+		btnOK.getAction().setEnabled(false);
 		
 		final JPanel panBottom = LookAndFeelUtil.createOkCancelPanel(btnOK, btnCancel);
 		contentPane.add(panBottom);
@@ -198,6 +208,7 @@ public class NetModificationDialog extends NetworkListDialog implements ActionLi
 		}
 		
 		setContentPane(contentPane);
+		LookAndFeelUtil.setDefaultOkCancelKeyStrokes(getRootPane(), btnOK.getAction(), btnCancel.getAction());
 	}
 
 	/**

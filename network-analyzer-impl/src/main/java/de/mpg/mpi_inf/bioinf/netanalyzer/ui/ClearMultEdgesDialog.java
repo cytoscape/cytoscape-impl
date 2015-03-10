@@ -29,6 +29,7 @@ package de.mpg.mpi_inf.bioinf.netanalyzer.ui;
 import java.awt.Frame;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
@@ -44,7 +45,7 @@ import de.mpg.mpi_inf.bioinf.netanalyzer.sconnect.HelpConnector;
  * 
  * @author Yassen Assenov
  */
-public class ClearMultEdgesDialog extends NetModificationDialog {
+public class ClearMultEdgesDialog extends NetModificationDialog implements ActionListener {
 
 	/**
 	 * Initializes a new instance of <code>ClearMultEdgesDialog</code>.
@@ -59,19 +60,12 @@ public class ClearMultEdgesDialog extends NetModificationDialog {
 		createEdgeAttr = false;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see de.mpg.mpi_inf.bioinf.netanalyzer.ui.NetModificationDialog#actionPerformed(java.awt.event.ActionEvent)
-	 */
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		if (e.getSource() == cbxIgnoreDirection) {
 			ignoreDirection = cbxIgnoreDirection.isSelected();
 		} else if (e.getSource() == cbxCreateEdgeAttr) {
 			createEdgeAttr = cbxCreateEdgeAttr.isSelected();
-		} else {
-			super.actionPerformed(e);
 		}
 	}
 
@@ -95,11 +89,6 @@ public class ClearMultEdgesDialog extends NetModificationDialog {
 		return createEdgeAttr;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see de.mpg.mpi_inf.bioinf.netanalyzer.ui.NetModificationDialog#initAdditionalControls()
-	 */
 	@Override
 	protected JComponent initAdditionalControls() {
 		final JPanel panel = new JPanel(new GridLayout(2, 1));

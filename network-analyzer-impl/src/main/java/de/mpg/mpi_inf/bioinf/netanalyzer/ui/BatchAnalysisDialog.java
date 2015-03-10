@@ -27,13 +27,12 @@ package de.mpg.mpi_inf.bioinf.netanalyzer.ui;
  */
 
 import java.awt.BorderLayout;
-import java.awt.FlowLayout;
 import java.awt.Frame;
-import java.awt.GridLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JDialog;
@@ -57,7 +56,7 @@ import de.mpg.mpi_inf.bioinf.netanalyzer.data.Messages;
  * @author Yassen Assenov
  * @author Nadezhda Doncheva
  */
-public class BatchAnalysisDialog extends JDialog implements ActionListener {
+public class BatchAnalysisDialog extends JDialog {
 
 	/**
 	 * Initializes a new instance of <code>BatchAnalysisDialog</code>.
@@ -80,36 +79,16 @@ public class BatchAnalysisDialog extends JDialog implements ActionListener {
 	}
 
 	@Override
-	public void actionPerformed(ActionEvent e) {
-		final Object src = e.getSource();
-		if (src == btnCancel) {
-			synchronized (this) {
-				if (timer == null) {
-					setVisible(false);
-					dispose();
-				} else {
-					btnCancel.setEnabled(false);
-					btnCancel.setText(Messages.DI_CLOSE);
-					timer.stop();
-					timer = null;
-					batchAnalyzer.cancel();
-				}
-			}
-		} else if (src == btnResults) {
-			resultsPressed = true;
-			setVisible(false);
-			dispose();
-		} else if (src == timer && timer != null) {
-			proAnalysis.setValue(batchAnalyzer.getCurrentProgress());
-			repaint();
-		}
-	}
-
-	@Override
 	public void setVisible(boolean b) {
 		if (!analyzerStarted) {
 			analyzerStarted = true;
-			timer = new Timer(1000, this);
+			timer = new Timer(1000, new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					proAnalysis.setValue(batchAnalyzer.getCurrentProgress());
+					repaint();
+				}
+			});
 			timer.start();
 			batchAnalyzer.start();
 		}
@@ -126,9 +105,9 @@ public class BatchAnalysisDialog extends JDialog implements ActionListener {
 				timer = null;
 				proAnalysis.setValue(proAnalysis.getMaximum());
 				btnCancel.setText(Messages.DI_CLOSE);
-				btnResults.setEnabled(true);
+				btnResults.getAction().setEnabled(true);
 			}
-			btnCancel.setEnabled(true);
+			btnCancel.getAction().setEnabled(true);
 		}
 	}
 
@@ -160,6 +139,7 @@ public class BatchAnalysisDialog extends JDialog implements ActionListener {
 	 * This method is called upon initialization only.
 	 * </p>
 	 */
+	@SuppressWarnings("serial")
 	private void initControls() {
 		final int BS = Utils.BORDER_SIZE;
 		final JPanel contentPane = new JPanel(new BorderLayout(BS, BS));
@@ -190,15 +170,42 @@ public class BatchAnalysisDialog extends JDialog implements ActionListener {
 		contentPane.add(panConsole, BorderLayout.CENTER);
 
 		// Add Cancel and Results buttons
-		btnCancel = Utils.createButton(Messages.DI_CANCEL, null, this);
-		btnResults = Utils.createButton(Messages.DI_RESULTS, null, this);
+		btnCancel = Utils.createButton(new AbstractAction(Messages.DI_CANCEL) {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				synchronized (this) {
+					if (timer == null) {
+						setVisible(false);
+						dispose();
+					} else {
+						btnCancel.getAction().setEnabled(false);
+						btnCancel.setText(Messages.DI_CLOSE);
+						timer.stop();
+						timer = null;
+						batchAnalyzer.cancel();
+					}
+				}
+			}
+		}, null);
+		btnResults = Utils.createButton(new AbstractAction(Messages.DI_RESULTS) {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				resultsPressed = true;
+				setVisible(false);
+				dispose();
+			}
+		}, null);
+				
 		Utils.equalizeSize(btnResults, btnCancel);
-		btnResults.setEnabled(false);
+		btnResults.getAction().setEnabled(false);
 		
 		final JPanel panBottom = LookAndFeelUtil.createOkCancelPanel(btnResults, btnCancel);
-		contentPane.add(panBottom, BorderLayout.SOUTH);
 		
+		contentPane.add(panBottom, BorderLayout.SOUTH);
 		setContentPane(contentPane);
+		
+		LookAndFeelUtil.setDefaultOkCancelKeyStrokes(getRootPane(), btnResults.getAction(), btnCancel.getAction());
+		getRootPane().setDefaultButton(btnResults);
 	}
 
 	/**

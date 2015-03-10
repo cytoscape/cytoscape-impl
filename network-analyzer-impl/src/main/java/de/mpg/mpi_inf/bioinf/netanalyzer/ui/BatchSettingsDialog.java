@@ -38,6 +38,7 @@ import java.io.File;
 import javax.swing.ButtonGroup;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
+import javax.swing.AbstractAction;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
@@ -90,7 +91,6 @@ public class BatchSettingsDialog extends JDialog implements ActionListener {
 				}
 				updateStartButton();
 			}
-
 		} else if (src == btnOutputDir) {
 			final File file = updateSetting(choOutputDir);
 			if (file != null) {
@@ -103,15 +103,6 @@ public class BatchSettingsDialog extends JDialog implements ActionListener {
 				updateStartButton();
 			}
 
-		} else if (src == btnStart) {
-			this.inOutDirs = new File[2];
-			inOutDirs[0] = choInputDir.getSelectedFile();
-			inOutDirs[1] = choOutputDir.getSelectedFile();
-			setVisible(false);
-			dispose();
-		} else if (src == btnCancel) {
-			setVisible(false);
-			dispose();
 		}
 	}
 
@@ -147,6 +138,7 @@ public class BatchSettingsDialog extends JDialog implements ActionListener {
 	 * This method is called upon initialization only.
 	 * </p>
 	 */
+	@SuppressWarnings("serial")
 	private void initControls() {
 		// Create the outer box and panel
 		final int BS = Utils.BORDER_SIZE / 2;
@@ -252,8 +244,24 @@ public class BatchSettingsDialog extends JDialog implements ActionListener {
 			panAttr.add(new JLabel(Messages.DI_NODEATTR_SAVENOT));
 		
 		// Add Start Analysis and Cancel buttons
-		btnCancel = Utils.createButton(Messages.DI_CANCEL, null, this);
-		btnStart = Utils.createButton(Messages.DI_STARTANALYSIS, null, this);
+		btnCancel = Utils.createButton(new AbstractAction(Messages.DI_CANCEL) {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				setVisible(false);
+				dispose();
+			}
+		}, null);
+		btnStart = Utils.createButton(new AbstractAction(Messages.DI_STARTANALYSIS) {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				inOutDirs = new File[2];
+				inOutDirs[0] = choInputDir.getSelectedFile();
+				inOutDirs[1] = choOutputDir.getSelectedFile();
+				setVisible(false);
+				dispose();
+			}
+		}, null);
+		
 		Utils.equalizeSize(btnStart, btnCancel);
 		updateStartButton();
 		
@@ -280,6 +288,7 @@ public class BatchSettingsDialog extends JDialog implements ActionListener {
 			);
 		}
 		
+		LookAndFeelUtil.setDefaultOkCancelKeyStrokes(getRootPane(), btnStart.getAction(), btnCancel.getAction());
 		setResizable(false);
 	}
 
@@ -288,9 +297,9 @@ public class BatchSettingsDialog extends JDialog implements ActionListener {
 	 */
 	private void updateStartButton() {
 		if ("".equals(txfInputDir.getText()) || "".equals(txfOutputDir.getText())) {
-			btnStart.setEnabled(false);
+			btnStart.getAction().setEnabled(false);
 		} else {
-			btnStart.setEnabled(true);
+			btnStart.getAction().setEnabled(true);
 		}
 	}
 

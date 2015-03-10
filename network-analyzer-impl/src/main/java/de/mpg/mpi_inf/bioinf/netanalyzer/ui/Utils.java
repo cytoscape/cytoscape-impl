@@ -32,6 +32,7 @@ import java.awt.Dimension;
 import java.awt.event.ActionListener;
 import java.io.File;
 
+import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -116,6 +117,12 @@ public abstract class Utils {
 		JButton button = new JButton(aText);
 		button.setToolTipText(aTooltip);
 		button.addActionListener(aListener);
+		return button;
+	}
+	
+	public static JButton createButton(Action action, String aTooltip) {
+		JButton button = new JButton(action);
+		button.setToolTipText(aTooltip);
 		return button;
 	}
 

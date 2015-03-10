@@ -95,15 +95,7 @@ public final class InterpretationDialog extends JDialog implements ActionListene
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		Object source = e.getSource();
-		if (source == btnOK) {
-			pressedOK = true;
-			this.setVisible(false);
-			this.dispose();
-		} else if (source == btnCancel) {
-			userChoice = -1;
-			this.setVisible(false);
-			this.dispose();
-		} else if (radOptions != null) {
+		if (radOptions != null) {
 			for (int i = 0; i < radOptions.length; ++i) {
 				if (source == radOptions[i]) {
 					userChoice = i;
@@ -158,6 +150,7 @@ public final class InterpretationDialog extends JDialog implements ActionListene
 	 * @param aStatus
 	 *            Status of the network to be analyzed.
 	 */
+	@SuppressWarnings("serial")
 	private void initControls(NetworkStatus aStatus) {
 		JPanel contentPane = new JPanel(new BorderLayout(0, Utils.BORDER_SIZE));
 		Utils.setStandardBorder(contentPane);
@@ -173,15 +166,34 @@ public final class InterpretationDialog extends JDialog implements ActionListene
 		contentPane.add(interprPanel, BorderLayout.CENTER);
 
 		// Add OK, Cancel and Help buttons
-		btnOK = Utils.createButton(Messages.DI_OK, null, this);
-		btnCancel = Utils.createButton(Messages.DI_CANCEL, null, this);
+		btnOK = Utils.createButton(new AbstractAction(Messages.DI_OK) {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				pressedOK = true;
+				setVisible(false);
+				dispose();
+			}
+		}, null);
+		btnCancel = Utils.createButton(new AbstractAction(Messages.DI_CANCEL) {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				userChoice = -1;
+				setVisible(false);
+				dispose();
+			}
+		}, null);
+		
 		Utils.equalizeSize(btnOK, btnCancel);
-		JPanel panButtons = LookAndFeelUtil.createOkCancelPanel(btnOK, btnCancel);
+		
+		final JPanel panButtons = LookAndFeelUtil.createOkCancelPanel(btnOK, btnCancel);
 		
 		contentPane.add(panButtons, BorderLayout.SOUTH);
 
 		setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 		getContentPane().add(contentPane);
+		
+		LookAndFeelUtil.setDefaultOkCancelKeyStrokes(getRootPane(), btnOK.getAction(), btnCancel.getAction());
+		
 		getRootPane().setDefaultButton(btnOK);
 		btnOK.requestFocusInWindow();
 	}

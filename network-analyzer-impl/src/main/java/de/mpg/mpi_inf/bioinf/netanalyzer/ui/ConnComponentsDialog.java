@@ -33,11 +33,11 @@ import java.awt.Component;
 import java.awt.Frame;
 import java.awt.HeadlessException;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import javax.swing.AbstractAction;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
@@ -71,8 +71,7 @@ import de.mpg.mpi_inf.bioinf.netanalyzer.data.Messages;
  * 
  * @author Yassen Assenov
  */
-public class ConnComponentsDialog extends JDialog
-	implements ActionListener, DocumentListener, ListSelectionListener {
+public class ConnComponentsDialog extends JDialog implements DocumentListener, ListSelectionListener {
 
 	private final NewNetworkSelectedNodesAndEdgesTaskFactory tf;
 	private final TaskManager<?, ?> tm;
@@ -101,47 +100,12 @@ public class ConnComponentsDialog extends JDialog
 		setLocationRelativeTo(aOwner);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
-	 */
-	public void actionPerformed(ActionEvent e) {
-		Object src = e.getSource();
-		if (btnCancel == src) {
-			setVisible(false);
-			dispose();
-		} else if (btnExtract == src) {
-			// Reset
-			for(CyNode node: network.getNodeList())
-				network.getRow(node).set(CyNetwork.SELECTED, false);
-			for(CyEdge edge: network.getEdgeList())
-				network.getRow(edge).set(CyNetwork.SELECTED, false);
-			
-			CCInfo comp = components[listComp.getSelectedIndex()];
-			final List<CyNode> nodes = new ArrayList<CyNode>(ConnComponentAnalyzer.getNodesOf(network, comp));
-			final Set<CyEdge> edges = CyNetworkUtils.getAllConnectingEdges(network,nodes);
-			
-			for(CyNode node: nodes)
-				network.getRow(node).set(CyNetwork.SELECTED, true);
-			for(CyEdge edge: edges)
-				network.getRow(edge).set(CyNetwork.SELECTED, true);
-			
-			final TaskIterator itr = tf.createTaskIterator(network);
-			tm.execute(itr);
-			//fieldNetName.getText();
-		}
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see javax.swing.event.ListSelectionListener#valueChanged(javax.swing.event.ListSelectionEvent)
-	 */
+	@Override
 	public void valueChanged(ListSelectionEvent e) {
 		int i = listComp.getSelectedIndex() + 1;
 		boolean enabled = (i != 0);
-		btnExtract.setEnabled(enabled);
+		btnExtract.getAction().setEnabled(enabled);
+		
 		if (enabled) {
 			String title = network.getRow(network).get("name", String.class);
 			if (title == null) {
@@ -156,29 +120,17 @@ public class ConnComponentsDialog extends JDialog
 		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see javax.swing.event.DocumentListener#insertUpdate(javax.swing.event.DocumentEvent)
-	 */
+	@Override
 	public void insertUpdate(DocumentEvent e) {
 		updateBtnExtract();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see javax.swing.event.DocumentListener#removeUpdate(javax.swing.event.DocumentEvent)
-	 */
+	@Override
 	public void removeUpdate(DocumentEvent e) {
 		updateBtnExtract();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see javax.swing.event.DocumentListener#changedUpdate(javax.swing.event.DocumentEvent)
-	 */
+	@Override
 	public void changedUpdate(DocumentEvent e) {
 		// Event is not processed
 	}
@@ -194,6 +146,7 @@ public class ConnComponentsDialog extends JDialog
 	 * This method is called upon initialization only.
 	 * </p>
 	 */
+	@SuppressWarnings("serial")
 	private void initControls() {
 		// Title
 		final String tt = "<html>" + Messages.DI_CCOF + "<b>" + network.getRow(network).get("name", String.class) + "</b>:";
@@ -219,10 +172,39 @@ public class ConnComponentsDialog extends JDialog
 		final JScrollPane scrollList = new JScrollPane(listComp);
 		scrollList.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-		btnExtract = Utils.createButton(Messages.DI_EXTR, null, this);
-		btnExtract.setEnabled(false);
-		btnCancel = Utils.createButton(Messages.DI_CANCEL, null, this);
+		btnExtract = Utils.createButton(new AbstractAction(Messages.DI_EXTR) {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				// Reset
+				for(CyNode node: network.getNodeList())
+					network.getRow(node).set(CyNetwork.SELECTED, false);
+				for(CyEdge edge: network.getEdgeList())
+					network.getRow(edge).set(CyNetwork.SELECTED, false);
+				
+				CCInfo comp = components[listComp.getSelectedIndex()];
+				final List<CyNode> nodes = new ArrayList<CyNode>(ConnComponentAnalyzer.getNodesOf(network, comp));
+				final Set<CyEdge> edges = CyNetworkUtils.getAllConnectingEdges(network,nodes);
+				
+				for(CyNode node: nodes)
+					network.getRow(node).set(CyNetwork.SELECTED, true);
+				for(CyEdge edge: edges)
+					network.getRow(edge).set(CyNetwork.SELECTED, true);
+				
+				final TaskIterator itr = tf.createTaskIterator(network);
+				tm.execute(itr);
+				//fieldNetName.getText();
+			}
+		}, null);
+		btnCancel = Utils.createButton(new AbstractAction(Messages.DI_CANCEL) {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				setVisible(false);
+				dispose();
+			}
+		}, null);
+		
 		Utils.equalizeSize(btnExtract, btnCancel);
+		btnExtract.getAction().setEnabled(false);
 		
 		// Buttons Panel
 		final JPanel panButtons = LookAndFeelUtil.createOkCancelPanel(btnExtract, btnCancel);
@@ -244,6 +226,8 @@ public class ConnComponentsDialog extends JDialog
 				.addComponent(scrollList, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 				.addComponent(panButtons)
 		);
+		
+		LookAndFeelUtil.setDefaultOkCancelKeyStrokes(getRootPane(), btnExtract.getAction(), btnCancel.getAction());
 	}
 
 	/**
@@ -251,9 +235,9 @@ public class ConnComponentsDialog extends JDialog
 	 */
 	private void updateBtnExtract() {
 		if (listComp.getSelectedIndex() == -1) {
-			btnExtract.setEnabled(false);
+			btnExtract.getAction().setEnabled(false);
 		} else {
-			btnExtract.setEnabled(true);
+			btnExtract.getAction().setEnabled(true);
 		}
 	}
 
