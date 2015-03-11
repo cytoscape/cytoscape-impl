@@ -25,9 +25,10 @@ package org.cytoscape.internal.layout.ui;
  */
 
 
+import static javax.swing.GroupLayout.DEFAULT_SIZE;
+import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static org.cytoscape.util.swing.LookAndFeelUtil.isAquaLAF;
 
-import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
@@ -40,6 +41,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
+import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -68,6 +70,7 @@ import org.cytoscape.model.CyTable;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.task.DynamicTaskFactoryProvisioner;
 import org.cytoscape.task.NetworkViewTaskFactory;
+import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.layout.CyLayoutAlgorithm;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.model.CyNetworkView;
@@ -179,8 +182,20 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
     }
 
     private void initComponents() {
-        getContentPane().add(getTabbedPane(), BorderLayout.CENTER);
-        getContentPane().add(getButtonPnl(), BorderLayout.SOUTH);
+    	final GroupLayout layout = new GroupLayout(getContentPane());
+		getContentPane().setLayout(layout);
+		layout.setAutoCreateContainerGaps(true);
+		layout.setAutoCreateGaps(true);
+		
+		layout.setHorizontalGroup(layout.createParallelGroup(Alignment.CENTER, true)
+				.addComponent(getTabbedPane(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				.addComponent(getButtonPnl(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+		);
+		layout.setVerticalGroup(layout.createSequentialGroup()
+				.addComponent(getTabbedPane(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				.addComponent(getButtonPnl(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+		);
+    	
         pack();
     }
 
@@ -314,16 +329,14 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 		return settingsButtonPnl;
 	}
 	
+	@SuppressWarnings("serial")
 	public JPanel getButtonPnl() {
 		if (buttonPnl == null) {
 			buttonPnl = new JPanel();
 			buttonPnl.setLayout(new BoxLayout(buttonPnl, BoxLayout.LINE_AXIS));
-			buttonPnl.setAlignmentX(Component.CENTER_ALIGNMENT);
-			buttonPnl.setOpaque(false);
 			buttonPnl.setBorder(BorderFactory.createEmptyBorder(2, 2, 5, 2));
 			
-			final JButton doneBtn = new JButton("Done");
-			doneBtn.addActionListener(new ActionListener() {
+			final JButton doneBtn = new JButton(new AbstractAction("Done") {
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					setVisible(false);
@@ -332,6 +345,8 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 			
 			buttonPnl.add(Box.createHorizontalGlue());
 			buttonPnl.add(doneBtn);
+			
+			LookAndFeelUtil.setDefaultOkCancelKeyStrokes(getRootPane(), null, doneBtn.getAction());
 		}
 		
 		return buttonPnl;

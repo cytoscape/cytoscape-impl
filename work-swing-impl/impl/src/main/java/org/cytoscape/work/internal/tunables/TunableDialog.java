@@ -25,15 +25,17 @@ package org.cytoscape.work.internal.tunables;
  */
 
 
+import static javax.swing.GroupLayout.DEFAULT_SIZE;
+import static javax.swing.GroupLayout.PREFERRED_SIZE;
+
 import java.awt.Component;
 import java.awt.Dialog;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
+import javax.swing.AbstractAction;
+import javax.swing.GroupLayout;
+import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JPanel;
@@ -88,51 +90,46 @@ public final class TunableDialog extends JDialog {
 		return userInput;
 	}
 
+	@SuppressWarnings("serial")
 	private void initComponents() {
 		setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-		getContentPane().setLayout(new GridBagLayout());
-		
-		GridBagConstraints gridBagConstraints;
 		
 		jScrollPane1 = new JScrollPane();
 		jScrollPane1.setViewportView(optionPanel);
 		jScrollPane1.setBorder(null);
-		gridBagConstraints = new GridBagConstraints();
-		gridBagConstraints.gridx = 0;
-		gridBagConstraints.gridy = 0;
-		gridBagConstraints.fill = GridBagConstraints.BOTH;
-		gridBagConstraints.anchor = GridBagConstraints.CENTER;
-		gridBagConstraints.weightx = 1.0;
-		gridBagConstraints.weighty = 1.0;
-		gridBagConstraints.insets = new Insets(2, 2, 2, 2);
-		getContentPane().add(jScrollPane1, gridBagConstraints);
 
-		btnOK = new JButton("OK");
-		btnOK.addActionListener(new ActionListener() {
+		btnOK = new JButton(new AbstractAction("OK") {
 			@Override
-			public void actionPerformed(ActionEvent evt) {
-				btnOKActionPerformed(evt);
+			public void actionPerformed(ActionEvent e) {
+				if (btnOK.isEnabled());
+					btnOKActionPerformed(e);
 			}
 		});
-
-		btnCancel = new JButton("Cancel");
-		btnCancel.addActionListener(new ActionListener() {
+		btnCancel = new JButton(new AbstractAction("Cancel") {
 			@Override
-			public void actionPerformed(ActionEvent evt) {
-				btnCancelActionPerformed(evt);
+			public void actionPerformed(ActionEvent e) {
+				btnCancelActionPerformed(e);
 			}
 		});
 		
-		// TODO create utility method that creates a proper OK+Cancel+etc panel
 		pnlButtons = LookAndFeelUtil.createOkCancelPanel(btnOK, btnCancel);
-		gridBagConstraints = new GridBagConstraints();
-		gridBagConstraints.gridx = 0;
-		gridBagConstraints.gridy = 1;
-		gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
-		gridBagConstraints.anchor = GridBagConstraints.NORTHWEST;
-		gridBagConstraints.weightx = 1.0;
-		gridBagConstraints.insets = new Insets(2, 0, 2, 0);
-		getContentPane().add(pnlButtons, gridBagConstraints);
+		
+		final GroupLayout layout = new GroupLayout(getContentPane());
+		getContentPane().setLayout(layout);
+		layout.setAutoCreateContainerGaps(true);
+		layout.setAutoCreateGaps(true);
+		
+		layout.setHorizontalGroup(layout.createParallelGroup(Alignment.CENTER, true)
+				.addComponent(jScrollPane1, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				.addComponent(pnlButtons, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+		);
+		layout.setVerticalGroup(layout.createSequentialGroup()
+				.addComponent(jScrollPane1, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				.addComponent(pnlButtons, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+		);
+		
+		LookAndFeelUtil.setDefaultOkCancelKeyStrokes(getRootPane(), btnOK.getAction(), btnCancel.getAction());
+		getRootPane().setDefaultButton(btnOK);
 		
 		pack();
 		// Shouldn't call setSize after we pack.  Leads to really ugly dialogs if we only have a single tunable
