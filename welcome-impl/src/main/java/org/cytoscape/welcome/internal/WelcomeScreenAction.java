@@ -24,6 +24,7 @@ package org.cytoscape.welcome.internal;
  * #L%
  */
 
+import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.util.Properties;
 
@@ -88,10 +89,10 @@ public class WelcomeScreenAction extends AbstractCyAction {
 	@Override
 	public void actionPerformed(ActionEvent ae) {
 		final WelcomeScreenDialog welcomeScreen = new WelcomeScreenDialog(importPanel, openPanel, newsPanel,
-				cyProps, hide, openBrowser, version);
+				cyProps, hide, openBrowser, version, cytoscapeDesktop.getJFrame());
 		welcomeScreen.setLocationRelativeTo(cytoscapeDesktop.getJFrame());
+		welcomeScreen.setModalityType(Dialog.ModalityType.APPLICATION_MODAL);
 		welcomeScreen.setVisible(true);
-		welcomeScreen.setModal(true);
 
 		// Update property
 		this.hide = welcomeScreen.getHideStatus();

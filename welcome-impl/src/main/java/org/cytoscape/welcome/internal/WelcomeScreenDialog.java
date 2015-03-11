@@ -32,6 +32,7 @@ import java.awt.Container;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.GridLayout;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -42,6 +43,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -56,6 +58,7 @@ import javax.swing.border.EmptyBorder;
 
 import org.cytoscape.application.CyVersion;
 import org.cytoscape.property.CyProperty;
+import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.util.swing.OpenBrowser;
 import org.cytoscape.welcome.internal.panel.AbstractWelcomeScreenChildPanel;
 import org.cytoscape.welcome.internal.panel.WelcomeScreenChildPanel;
@@ -95,7 +98,9 @@ public class WelcomeScreenDialog extends JDialog {
 							   final CyProperty<Properties> cyProps,
 							   final boolean hide,
 							   final OpenBrowser openBrowser,
-							   final CyVersion version) {
+							   final CyVersion version,
+							   final Window owner) {
+		super(owner);
 		this.importPanel = importPanel;
 		this.openPanel = openPanel;
 		this.helpPanel = helpPanel;
@@ -130,6 +135,7 @@ public class WelcomeScreenDialog extends JDialog {
 		return checkBox.isSelected();
 	}
 
+	@SuppressWarnings("serial")
 	private void initComponents() {
 		linksPanel = new JPanel();
 		linksPanel.setBackground(PANEL_COLOR);
@@ -178,8 +184,7 @@ public class WelcomeScreenDialog extends JDialog {
 			}
 		});
 
-		JButton closeButton = new JButton("Close");
-		closeButton.addActionListener(new ActionListener() {
+		final JButton closeButton = new JButton(new AbstractAction("Close") {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				dispose();
@@ -188,8 +193,7 @@ public class WelcomeScreenDialog extends JDialog {
 		
 		final JPanel bottomPanel = new JPanel();
 		bottomPanel.setLayout(new BoxLayout(bottomPanel, BoxLayout.X_AXIS));
-		bottomPanel.setBorder(new EmptyBorder(2, 10, 2, 10));
-		bottomPanel.setPreferredSize(new Dimension(900, 30));
+		bottomPanel.setBorder(new EmptyBorder(10, 10, 5, 10));
 		bottomPanel.add(checkBox);
 		bottomPanel.add(Box.createHorizontalGlue());
 		bottomPanel.add(closeButton);
@@ -210,6 +214,11 @@ public class WelcomeScreenDialog extends JDialog {
 		pane.add(southPanel, BorderLayout.SOUTH);
 		
 		createChildPanels();
+		
+		LookAndFeelUtil.setDefaultOkCancelKeyStrokes(getRootPane(), closeButton.getAction(), closeButton.getAction());
+		getRootPane().setDefaultButton(closeButton);
+		closeButton.requestFocusInWindow();
+		
 		pack();
 	}
 
