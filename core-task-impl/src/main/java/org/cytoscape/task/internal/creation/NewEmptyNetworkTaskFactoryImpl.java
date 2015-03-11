@@ -26,7 +26,6 @@ package org.cytoscape.task.internal.creation;
  
 
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;

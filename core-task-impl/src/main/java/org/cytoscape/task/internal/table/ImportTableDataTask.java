@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.io.IOException;
 
+import org.cytoscape.application.NetworkViewRenderer;
 import org.cytoscape.io.read.CyTableReader;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyEdge;
@@ -108,7 +109,7 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 	}
 
 	public ListSingleSelection<String> targetNetworkCollection;
-	@Tunable(description = "Network Collection", groups = {"Target Table Data","Select a Network Collection"},gravity=2.0,  xorKey=NETWORK_COLLECTION)
+	@Tunable(description = "Network Collection:", groups = {"Target Table Data","Select a Network Collection"},gravity=2.0,  xorKey=NETWORK_COLLECTION)
 	public ListSingleSelection<String> getTargetNetworkCollection() {
 		return targetNetworkCollection;
 	}
@@ -150,7 +151,7 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 	}
 
 	public ListMultipleSelection<String> targetNetworkList;
-	@Tunable(description = "Network List", groups = {"Target Table Data","Select Networks"},gravity=4.0, xorKey=NETWORK_SELECTION, params = "displayState=collapsed")
+	@Tunable(description = "Network List:", groups = {"Target Table Data","Select Networks"},gravity=4.0, xorKey=NETWORK_SELECTION, params = "displayState=collapsed")
 	public ListMultipleSelection<String> getTargetNetworkList() {
 		return targetNetworkList;
 	}
@@ -159,19 +160,19 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 		this.targetNetworkList = list;
 	}
 	
-	@Tunable(description = "Import Data as:",groups = {"Target Table Data","Select Networks","Importing Type"}, gravity=5.0,  xorKey=NETWORK_SELECTION)
+	@Tunable(description = "Import Data as:",groups = {"Target Table Data","Select Networks","Importing Type"}, gravity=5.0, xorKey=NETWORK_SELECTION)
 	public ListSingleSelection<TableType> dataTypeTargetForNetworkList;
 	
-	@Tunable(description = "New Table Name", groups = {"Target Table Data","Set New Table Name"},gravity=6.0,  xorKey=UNASSIGNED_TABLE)
+	@Tunable(description = "New Table Name:", groups = {"Target Table Data","Set New Table Name"}, gravity=6.0, xorKey=UNASSIGNED_TABLE)
 	public String newTableName;
 	
-
+	@Tunable(description = "Network View Renderer:", groups = {"Target Table Data","Select Renderer"}, gravity=7.0)
+	public ListSingleSelection<NetworkViewRenderer> renderers;
+	
 	@ProvidesTitle
 	public String getTitle() {
-		return "Import Data ";
+		return "Import Data";
 	}
-
-
 
 	public ImportTableDataTask(CyTableReader reader, CyTableManager tableMgr, CyRootNetworkManager rootNetworkManeger, CyNetworkManager networkManager) {
 		this.reader = reader;
