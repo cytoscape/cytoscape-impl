@@ -32,48 +32,36 @@
  */
 package org.cytoscape.commandDialog.internal.ui;
 
-import org.ops4j.pax.logging.spi.PaxAppender;
-import org.ops4j.pax.logging.spi.PaxLoggingEvent;
+import static javax.swing.GroupLayout.DEFAULT_SIZE;
+import static javax.swing.GroupLayout.PREFERRED_SIZE;
 
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-
-import java.io.StreamTokenizer;
-import java.io.StringReader;
-
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.LinkedBlockingQueue;
-
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.ActionMap;
-import javax.swing.BorderFactory;
-import javax.swing.BoxLayout;
-import javax.swing.InputMap;
+import javax.swing.GroupLayout;
+import javax.swing.GroupLayout.Alignment;
+import javax.swing.JButton;
 import javax.swing.JDialog;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JTextPane;
 import javax.swing.JTextField;
-import javax.swing.JButton;
 import javax.swing.KeyStroke;
-
-import javax.swing.border.Border;
-import javax.swing.border.EtchedBorder;
 
 import org.cytoscape.commandDialog.internal.handlers.CommandHandler;
 import org.cytoscape.commandDialog.internal.handlers.MessageHandler;
+import org.cytoscape.util.swing.LookAndFeelUtil;
 
-public class CommandToolDialog extends JDialog 
-                             implements ActionListener {
+public class CommandToolDialog extends JDialog implements ActionListener {
 
+	private static final long serialVersionUID = -8571008312289041096L;
+	
 	private List<String> commandList;
 	private int commandIndex = 0;
 
@@ -82,14 +70,15 @@ public class CommandToolDialog extends JDialog
 	private JTextField inputField;
 	private CommandHandler commandHandler;
 
-	public CommandToolDialog (Frame parent, CommandHandler commandHandler) {
+	public CommandToolDialog (final Frame parent, final CommandHandler commandHandler) {
 		super(parent, false);
-		commandList = new ArrayList();
+		commandList = new ArrayList<>();
 		this.commandHandler = commandHandler;
 		
 		initComponents();
 	}
 
+	@Override
 	public void setVisible(boolean tf) {
 		super.setVisible(tf);
 		inputField.requestFocusInWindow();
@@ -98,61 +87,94 @@ public class CommandToolDialog extends JDialog
 	/**
 	 * Initialize all of the graphical components of the dialog
 	 */
+	@SuppressWarnings("serial")
 	private void initComponents() {
-		this.setTitle("Command Line Dialog");
-
+		setTitle("Command Line Dialog");
 		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 
 		// Create a panel for the main content
-		JPanel dataPanel = new JPanel();
-		BoxLayout layout = new BoxLayout(dataPanel, BoxLayout.PAGE_AXIS);
-		dataPanel.setLayout(layout);
+		final JPanel dataPanel = new JPanel();
 
-		Border etchedBorder = BorderFactory.createEtchedBorder(EtchedBorder.LOWERED);
-
+		final JLabel resultsLabel = new JLabel("Reply Log:");
+		final JLabel inputLabel = new JLabel("Command:");
+		
 		resultsText = new JResultsPane(this, dataPanel);
 		resultsText.setEditable(false);
-		resultsText.setPreferredSize(new Dimension(900, 200));
-		JScrollPane scrollPane = new JScrollPane(resultsText);
+		resultsText.setPreferredSize(new Dimension(880, 200));
+		
+		final JScrollPane scrollPane = new JScrollPane(resultsText);
 		// scrollPane.getVerticalScrollBar().addAdjustmentListener(resultsText);
 		resultsText.setScrollPane(scrollPane); // So we can update the scroll position
 
-		scrollPane.setBorder(BorderFactory.createTitledBorder(etchedBorder, "Reply Log"));
-		dataPanel.add(scrollPane);
-
-		inputField = new JTextField(80);
-		inputField.setBorder(BorderFactory.createTitledBorder(etchedBorder, "Command"));
+		inputField = new JTextField();
 		// Set up our up-arrow/down-arrow actions
-		Action previousAction = new LineAction("previous");
+		final Action previousAction = new LineAction("previous");
 		inputField.getInputMap().put(KeyStroke.getKeyStroke("UP"), "previous");
 		inputField.getActionMap().put("previous", previousAction);
 
-		Action nextAction = new LineAction("next");
+		final Action nextAction = new LineAction("next");
 		inputField.getInputMap().put(KeyStroke.getKeyStroke("DOWN"), "next");
 		inputField.getActionMap().put("next", nextAction);
-
 		inputField.addActionListener(this);
-		dataPanel.add(inputField);
-		inputField.setMaximumSize(new Dimension(1000,45));
 
 		// Create the button box
-		JPanel buttonBox = new JPanel();
-		JButton doneButton = new JButton("Done");
-		doneButton.setActionCommand("done");
-		doneButton.addActionListener(this);
+		final JButton doneButton = new JButton(new AbstractAction("Close") {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				dispose();
+			}
+		});
 
-		JButton clearButton = new JButton("Clear");
+		final JButton clearButton = new JButton("Clear");
+		clearButton.setToolTipText("Clear Log");
 		clearButton.setActionCommand("clear");
 		clearButton.addActionListener(this);
+		clearButton.putClientProperty("JButton.buttonType", "gradient");
 
+		final JPanel buttonBox = LookAndFeelUtil.createOkCancelPanel(null, doneButton);
 		buttonBox.add(clearButton);
 		buttonBox.add(doneButton);
-		buttonBox.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
-		buttonBox.setMaximumSize(new Dimension(1000,45));
 		
-		dataPanel.add(buttonBox);
+		final GroupLayout layout = new GroupLayout(dataPanel);
+		dataPanel.setLayout(layout);
+		layout.setAutoCreateContainerGaps(true);
+		layout.setAutoCreateGaps(true);
+		
+		layout.setHorizontalGroup(layout.createParallelGroup(Alignment.CENTER, true)
+				.addGroup(layout.createSequentialGroup()
+						.addGroup(layout.createParallelGroup(Alignment.TRAILING, false)
+								.addComponent(resultsLabel)
+								.addComponent(clearButton, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+								.addComponent(inputLabel)
+						)
+						.addGroup(layout.createParallelGroup(Alignment.LEADING, true)
+								.addComponent(scrollPane, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+								.addComponent(inputField, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+						)
+				)
+				.addComponent(buttonBox, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+		);
+		layout.setVerticalGroup(layout.createSequentialGroup()
+				.addGroup(layout.createParallelGroup(Alignment.LEADING, true)
+						.addGroup(layout.createSequentialGroup()
+								.addComponent(resultsLabel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+								.addGap(1, 1, Short.MAX_VALUE)
+								.addComponent(clearButton, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						)
+						.addComponent(scrollPane, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				)
+				.addGroup(layout.createParallelGroup(Alignment.LEADING, true)
+						.addComponent(inputLabel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addComponent(inputField, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				)
+				.addComponent(buttonBox, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+		);
+		
 		setContentPane(dataPanel);
-		setMaximumSize(new Dimension(1000,1000));
+		setMaximumSize(new Dimension(1000, 1000));
+		LookAndFeelUtil.setDefaultOkCancelKeyStrokes(getRootPane(), null, doneButton.getAction());
+		
+		inputField.requestFocusInWindow();
 	}
 
 	/**
@@ -163,10 +185,9 @@ public class CommandToolDialog extends JDialog
 		commandHandler.handleCommand((MessageHandler) resultsText, command);
 	}
 
+	@Override
 	public void actionPerformed(ActionEvent e) {
-		if ("done".equals(e.getActionCommand())) {
-			this.dispose();
-		} else if ("clear".equals(e.getActionCommand())) {
+		if ("clear".equals(e.getActionCommand())) {
 			resultsText.clear();
 		} else {
 			String input = inputField.getText();
@@ -181,7 +202,9 @@ public class CommandToolDialog extends JDialog
 	}
 
 	class LineAction extends AbstractAction {
+		
 		String action = null;
+		
 		public LineAction(String action) {
 			super();
 			this.action = action;

@@ -104,6 +104,11 @@
 			<artifactId>service-api</artifactId>
 			<version>${cytoscape.api.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>swing-util-api</artifactId>
+			<version>${cytoscape.api.version}</version>
+		</dependency>
    	<dependency>
       <groupId>org.ops4j.pax.logging</groupId>
       <artifactId>pax-logging-api</artifactId>
