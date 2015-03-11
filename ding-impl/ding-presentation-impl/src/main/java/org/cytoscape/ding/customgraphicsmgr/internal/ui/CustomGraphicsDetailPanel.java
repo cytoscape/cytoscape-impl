@@ -24,6 +24,9 @@ package org.cytoscape.ding.customgraphicsmgr.internal.ui;
  * #L%
  */
 
+import static javax.swing.GroupLayout.DEFAULT_SIZE;
+import static javax.swing.GroupLayout.PREFERRED_SIZE;
+
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -31,6 +34,7 @@ import java.util.Collection;
 
 import javax.swing.BorderFactory;
 import javax.swing.GroupLayout;
+import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
@@ -44,6 +48,7 @@ import javax.swing.event.ListSelectionListener;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.ding.customgraphics.Taggable;
 import org.cytoscape.ding.customgraphics.bitmap.URLImageCustomGraphics;
+import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
 import org.jdesktop.swingx.JXImageView;
 
@@ -60,7 +65,6 @@ public class CustomGraphicsDetailPanel extends JPanel implements ListSelectionLi
 	private JTextField heightTextField;
 	private JXImageView imageViewPanel;
 	private JCheckBox lockCheckBox;
-	private JPanel modifyPanel;
 	private JLabel nameLabel;
 	private JTextField nameTextField;
 	private JButton resetButton;
@@ -86,7 +90,6 @@ public class CustomGraphicsDetailPanel extends JPanel implements ListSelectionLi
         nameTextField = new JTextField();
         tagTextField = new JTextField();
         imageViewPanel = new JXImageView();
-        modifyPanel = new JPanel();
         widthLabel = new JLabel();
         widthTextField = new JTextField();
         heightLabel = new JLabel();
@@ -95,7 +98,8 @@ public class CustomGraphicsDetailPanel extends JPanel implements ListSelectionLi
         resetButton = new JButton();
         searchButton = new JButton();
 
-        imageViewPanel.setBorder(BorderFactory.createLineBorder(UIManager.getColor("Label.foreground")));
+        this.setBorder(LookAndFeelUtil.createTitledBorder("Image"));
+        imageViewPanel.setBorder(BorderFactory.createLineBorder(UIManager.getColor("Label.disabledForeground")));
         
         nameLabel.setText("Name:");
         tagLabel.setText("Tags:");
@@ -114,15 +118,14 @@ public class CustomGraphicsDetailPanel extends JPanel implements ListSelectionLi
             }
         });
 
-        GroupLayout imageViewPanelLayout = new GroupLayout(imageViewPanel);
+        // Just to make the border visible
+        final GroupLayout imageViewPanelLayout = new GroupLayout(imageViewPanel);
         imageViewPanel.setLayout(imageViewPanelLayout);
-        imageViewPanelLayout.setHorizontalGroup(
-            imageViewPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
-            .addGap(0, 573, Short.MAX_VALUE)
+        imageViewPanelLayout.setHorizontalGroup(imageViewPanelLayout.createParallelGroup(Alignment.LEADING)
+            .addGap(0, 1, Short.MAX_VALUE)
         );
-        imageViewPanelLayout.setVerticalGroup(
-            imageViewPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
-            .addGap(0, 228, Short.MAX_VALUE)
+        imageViewPanelLayout.setVerticalGroup(imageViewPanelLayout.createParallelGroup(Alignment.LEADING)
+            .addGap(0, 1, Short.MAX_VALUE)
         );
 
         widthLabel.setText("Width:");
@@ -170,76 +173,59 @@ public class CustomGraphicsDetailPanel extends JPanel implements ListSelectionLi
             }
         });
 
-        GroupLayout modifyPanelLayout = new GroupLayout(modifyPanel);
-        modifyPanel.setLayout(modifyPanelLayout);
-        modifyPanelLayout.setHorizontalGroup(
-            modifyPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
-            .addGroup(modifyPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(widthLabel)
-                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(widthTextField, GroupLayout.PREFERRED_SIZE, 60, GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(heightLabel)
-                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(heightTextField, GroupLayout.PREFERRED_SIZE, 60, GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(lockCheckBox)
-                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(resetButton)
-                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(searchButton)
-                .addGap(8, 8, 8))
-        );
-        modifyPanelLayout.setVerticalGroup(
-            modifyPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
-            .addGroup(modifyPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(modifyPanelLayout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-                    .addComponent(widthLabel)
-                    .addComponent(widthTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                    .addComponent(heightLabel)
-                    .addComponent(heightTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                    .addComponent(lockCheckBox)
-                    .addComponent(resetButton)
-                    .addComponent(searchButton))
-                .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
-
         final JLabel imgViewLbl = new JLabel("Actual Size View:");
         
-        GroupLayout layout = new GroupLayout(this);
+        final GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
         layout.setAutoCreateContainerGaps(true);
         layout.setAutoCreateGaps(true);
         
-        layout.setHorizontalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+        layout.setHorizontalGroup(layout.createParallelGroup(Alignment.LEADING, true)
         		.addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                        .addGroup(layout.createParallelGroup(Alignment.LEADING)
                             .addComponent(tagLabel)
                             .addComponent(nameLabel)
                         )
-                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                            .addComponent(nameTextField, GroupLayout.DEFAULT_SIZE, 491, Short.MAX_VALUE)
-                            .addComponent(tagTextField, GroupLayout.DEFAULT_SIZE, 491, Short.MAX_VALUE)
+                        .addGroup(layout.createParallelGroup(Alignment.LEADING, true)
+                            .addComponent(nameTextField, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(tagTextField, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
                         )
                 )
-                .addComponent(imgViewLbl, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-        		.addComponent(imageViewPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-        		.addComponent(modifyPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(imgViewLbl, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+        		.addComponent(imageViewPanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+        		.addGroup(layout.createSequentialGroup()
+        				.addComponent(widthLabel)
+                        .addComponent(widthTextField, PREFERRED_SIZE, 60, PREFERRED_SIZE)
+                        .addComponent(heightLabel)
+                        .addComponent(heightTextField, PREFERRED_SIZE, 60, PREFERRED_SIZE)
+                        .addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(lockCheckBox)
+                        .addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(resetButton)
+                        .addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED, DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(searchButton)
+        		)
         );
         layout.setVerticalGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                .addGroup(layout.createParallelGroup(Alignment.CENTER, false)
                         .addComponent(nameLabel)
-                        .addComponent(nameTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                        .addComponent(nameTextField)
                 )
-                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                .addGroup(layout.createParallelGroup(Alignment.CENTER, false)
                         .addComponent(tagLabel)
-                        .addComponent(tagTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                        .addComponent(tagTextField)
                 )
-                .addComponent(imgViewLbl, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                .addComponent(imageViewPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(modifyPanel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                .addComponent(imgViewLbl, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+                .addComponent(imageViewPanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(Alignment.CENTER, false)
+                		.addComponent(widthLabel)
+                        .addComponent(widthTextField)
+                        .addComponent(heightLabel)
+                        .addComponent(heightTextField)
+                        .addComponent(lockCheckBox)
+                        .addComponent(resetButton)
+                        .addComponent(searchButton)
+                )
         );
 	}
 
