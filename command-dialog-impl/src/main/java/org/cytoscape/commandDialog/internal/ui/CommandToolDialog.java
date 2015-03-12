@@ -163,7 +163,7 @@ public class CommandToolDialog extends JDialog implements ActionListener {
 						)
 						.addComponent(scrollPane, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 				)
-				.addGroup(layout.createParallelGroup(Alignment.LEADING, true)
+				.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
 						.addComponent(inputLabel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 						.addComponent(inputField, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 				)
@@ -174,7 +174,7 @@ public class CommandToolDialog extends JDialog implements ActionListener {
 		setMaximumSize(new Dimension(1000, 1000));
 		LookAndFeelUtil.setDefaultOkCancelKeyStrokes(getRootPane(), null, doneButton.getAction());
 		
-		inputField.requestFocusInWindow();
+		pack();
 	}
 
 	/**
