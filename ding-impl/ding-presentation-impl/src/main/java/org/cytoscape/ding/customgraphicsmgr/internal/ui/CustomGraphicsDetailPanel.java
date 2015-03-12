@@ -99,7 +99,7 @@ public class CustomGraphicsDetailPanel extends JPanel implements ListSelectionLi
         searchButton = new JButton();
 
         this.setBorder(LookAndFeelUtil.createTitledBorder("Image"));
-        imageViewPanel.setBorder(BorderFactory.createLineBorder(UIManager.getColor("Label.disabledForeground")));
+        imageViewPanel.setBorder(BorderFactory.createLineBorder(UIManager.getColor("Separator.foreground")));
         
         nameLabel.setText("Name:");
         tagLabel.setText("Tags:");

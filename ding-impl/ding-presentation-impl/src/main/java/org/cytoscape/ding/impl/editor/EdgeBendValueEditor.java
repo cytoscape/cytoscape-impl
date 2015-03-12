@@ -148,7 +148,7 @@ public class EdgeBendValueEditor extends JPanel implements ValueEditor<Bend> {
 		
 		innerPanel = new JPanel();
 		innerPanel.setBackground(BACKGROUND_COLOR);
-		innerPanel.setBorder(BorderFactory.createLineBorder(UIManager.getColor("Label.disabledForeground")));
+		innerPanel.setBorder(BorderFactory.createLineBorder(UIManager.getColor("Separator.foreground")));
 
 		final JButton okButton = new JButton(new AbstractAction("OK") {
 			@Override

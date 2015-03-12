@@ -65,13 +65,13 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
-import javax.swing.JPopupMenu.Separator;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JTabbedPane;
 import javax.swing.KeyStroke;
 import javax.swing.LayoutStyle;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import javax.swing.border.Border;
 
 import org.cytoscape.application.swing.CyAction;
@@ -501,8 +501,7 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 			FG_COLOR = list.getForeground();
 			SEL_BG_COLOR = list.getSelectionBackground();
 			SEL_FG_COLOR = list.getSelectionForeground();
-			Separator sep = new Separator();
-			BORDER_COLOR = sep.getForeground();
+			BORDER_COLOR = UIManager.getColor("Separator.foreground");
 			
 			addActionListener(new ActionListener() {
 				@Override

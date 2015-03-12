@@ -94,7 +94,7 @@ public class ObjectPositionValueEditor extends JPanel implements ValueEditor<Obj
 		graphic.addPropertyChangeListener(control);
 
 		final JPanel graphicPanel = new JPanel();
-		graphicPanel.setBorder(BorderFactory.createLineBorder(UIManager.getColor("Label.disabledForeground")));
+		graphicPanel.setBorder(BorderFactory.createLineBorder(UIManager.getColor("Separator.foreground")));
 		graphicPanel.setLayout(new BorderLayout());
 		graphicPanel.add(graphic);
 		

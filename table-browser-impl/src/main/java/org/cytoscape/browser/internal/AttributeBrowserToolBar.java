@@ -24,7 +24,7 @@ package org.cytoscape.browser.internal;
  * #L%
  */
 
-import static org.cytoscape.util.swing.IconManager.ICON_CHECK_SQUARE_O;;
+import static org.cytoscape.util.swing.IconManager.ICON_CHECK_SQUARE_O;
 import static org.cytoscape.util.swing.IconManager.ICON_SQUARE_O;
 import static org.cytoscape.util.swing.IconManager.ICON_COLUMNS;
 import static org.cytoscape.util.swing.IconManager.ICON_FILE_O;

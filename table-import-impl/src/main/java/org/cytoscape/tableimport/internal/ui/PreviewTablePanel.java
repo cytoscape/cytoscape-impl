@@ -1029,7 +1029,7 @@ public class PreviewTablePanel extends JPanel {
 		
 		private static final long serialVersionUID = 3380290649336997187L;
 		
-		private final Border BORDER = BorderFactory.createMatteBorder(0, 1, 0, 0, UIManager.getColor("Label.disabledForeground"));
+		private final Border BORDER = BorderFactory.createMatteBorder(0, 1, 0, 0, UIManager.getColor("Separator.foreground"));
 		
 		private final JCheckBox checkBox;
 		private final JLabel iconLabel;

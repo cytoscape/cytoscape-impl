@@ -122,13 +122,13 @@ public class CustomGraphicsManagerDialog extends JDialog {
 		
 		mainSplitPane.setBorder(null);
 		rightScrollPane.setBorder(null);
-		leftScrollPane.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, UIManager.getColor("Label.disabledForeground")));
-		leftPanel.setBorder(BorderFactory.createLineBorder(UIManager.getColor("Label.disabledForeground")));
+		leftScrollPane.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, UIManager.getColor("Separator.foreground")));
+		leftPanel.setBorder(BorderFactory.createLineBorder(UIManager.getColor("Separator.foreground")));
 		
 		setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 
-		addButton.setText(IconManager.ICON_FOLDER_OPEN_O);
-		addButton.setFont(iconManager.getIconFont(17.0f));
+		addButton.setText(IconManager.ICON_PLUS);
+		addButton.setFont(iconManager.getIconFont(18.0f));
 		addButton.setToolTipText("Add Images");
 		addButton.putClientProperty("JButton.buttonType", "segmentedGradient"); // Mac OS only
 		addButton.putClientProperty("JButton.segmentPosition", "middle"); // Mac OS only
@@ -140,7 +140,7 @@ public class CustomGraphicsManagerDialog extends JDialog {
 		});
 		
 		deleteButton.setText(IconManager.ICON_TRASH_O);
-		deleteButton.setFont(iconManager.getIconFont(19.0f));
+		deleteButton.setFont(iconManager.getIconFont(18.0f));
 		deleteButton.setToolTipText("Remove Selected Images");
 		deleteButton.putClientProperty("JButton.buttonType", "segmentedGradient"); // Mac OS only
 		deleteButton.putClientProperty("JButton.segmentPosition", "only"); // Mac OS only
