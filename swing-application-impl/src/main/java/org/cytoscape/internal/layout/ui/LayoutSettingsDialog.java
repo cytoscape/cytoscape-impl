@@ -251,7 +251,7 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 			algorithmSelectorPnl.setAlignmentX(Component.CENTER_ALIGNMENT);
 			algorithmSelectorPnl.setOpaque(false);
 			
-			algorithmSelectorPnl.add(new JLabel("Layout Algorithm"));
+			algorithmSelectorPnl.add(new JLabel("Layout Algorithm:"));
 			algorithmSelectorPnl.add(getAlgorithmCmb());
 			
 			settingsPnl.add(Box.createVerticalStrut(5));
@@ -277,7 +277,7 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 	        prefLayoutPnl.setLayout(layout);
 			layout.setAutoCreateContainerGaps(true);
 			
-			final JLabel label = new JLabel("Preferred Layout Algorithm");
+			final JLabel label = new JLabel("Preferred Layout Algorithm:");
 			
 			layout.setHorizontalGroup(layout.createSequentialGroup()
 					.addComponent(label)
@@ -567,12 +567,12 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 	}
 	
 	public static class SelectedTunable {
-		@Tunable(description="Layout only selected nodes")
+		@Tunable(description="Layout only selected nodes:")
 		public boolean selectedNodesOnly;
 	}
 	
 	public static class LayoutAttributeTunable {
-		@Tunable(description="Edge attribute that contains the weights", gravity=1.0)
+		@Tunable(description="Edge attribute that contains the weights:", gravity=1.0)
 		public ListSingleSelection<String> layoutAttribute;
 	}
 }

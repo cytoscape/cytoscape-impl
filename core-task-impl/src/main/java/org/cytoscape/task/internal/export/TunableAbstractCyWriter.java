@@ -54,9 +54,10 @@ public abstract class TunableAbstractCyWriter<S extends CyWriterFactory,T extend
 	 * be set directly, but rather handled by the {@link org.cytoscape.work.Tunable}
 	 * processing.
 	 */
-	@Tunable(description = "Select the export file format")
+	@Tunable(description = "Select the export file format:")
 	public ListSingleSelection<String> options;
 
+	@Override
 	protected final String getExportFileFormat() {
 		return options.getSelectedValue();
 	}

@@ -42,7 +42,7 @@ import org.cytoscape.work.Tunable;
 
 public class SIFInterpreterTask extends AbstractNetworkViewTask {
 
-	@Tunable(description="Type in a nodes/edges expression in SIF format, e.g. A inhibits B")
+	@Tunable(description="Type in a nodes/edges expression in SIF format (e.g. A inhibits B):")
 	public String sifString;
 
 	private final VisualMappingManager vmm;

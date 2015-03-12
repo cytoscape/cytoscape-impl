@@ -45,7 +45,7 @@ public class SaveSessionAsTask extends AbstractTask {
 		return "Save Session";
 	}
 
-	@Tunable(description = "Save Session As:", params = "fileCategory=session;input=false")
+	@Tunable(description = "Save Session as:", params = "fileCategory=session;input=false")
 	public File file;
 
 	private final CySessionWriterManager writerMgr;

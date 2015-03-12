@@ -52,7 +52,7 @@ public class AddNestedNetworkTask extends AbstractNodeViewTask {
 
 	private final VisualMappingManager vmMgr;
 	
-	@Tunable(description="Network")
+	@Tunable(description="Network:")
 	public ListSingleSelection<CyNetwork> nestedNetwork;
 
 	@ProvidesTitle

@@ -81,10 +81,10 @@ public class LoadTableReaderTask extends AbstractTask implements CyTableReader ,
 	
 	TextTableReader reader;
 	
-	@Tunable(description="Text Delimiters", context="both")
+	@Tunable(description="Text Delimiters:", context="both")
 	public ListMultipleSelection<String> delimiters;
 	
-	@Tunable(description="Text Delimiters for data list type", context="both")
+	@Tunable(description="Text Delimiters for data list type:", context="both")
 	public ListSingleSelection<String> delimitersForDataList;
 	
 	@Tunable(description="Start Load Row:", context="both")
@@ -93,7 +93,7 @@ public class LoadTableReaderTask extends AbstractTask implements CyTableReader ,
 	@Tunable(description="Key Column Index", context="both")
 	public int keyColumnIndex = -1;
 	
-	@Tunable(description="First row used for column names", context="both")
+	@Tunable(description="First row used for column names:", context="both")
 	public boolean firstRowAsColumnNames = false;
 	
 	private final IconManager iconManager;

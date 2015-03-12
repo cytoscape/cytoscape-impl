@@ -43,7 +43,7 @@ import org.slf4j.LoggerFactory;
 
 public class SelectFileTableTask extends AbstractTask {
 	
-	@Tunable(description="Data Table file", params="fileCategory=table;input=true", gravity=0.0)
+	@Tunable(description="Data Table file:", params="fileCategory=table;input=true", gravity=0.0)
 	public File file;
 	
 	private LoadTableReaderTask tableReader;

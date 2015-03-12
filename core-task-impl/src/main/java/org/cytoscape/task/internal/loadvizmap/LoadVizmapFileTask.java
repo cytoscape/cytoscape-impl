@@ -46,7 +46,7 @@ public class LoadVizmapFileTask extends AbstractTask {
 		return "Import Style";
 	}
 	
-	@Tunable(description = "Style file", params = "fileCategory=vizmap;input=true")
+	@Tunable(description="Style file:", params = "fileCategory=vizmap;input=true")
 	public File file;
 
 	private final VisualMappingManager vmMgr;

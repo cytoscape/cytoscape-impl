@@ -39,7 +39,6 @@ import org.cytoscape.view.layout.CyLayoutAlgorithm;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
-import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.webservice.psicquic.PSICQUICRestClient;
@@ -59,7 +58,7 @@ public class ExpandFromSelectedSourcesTask extends AbstractTask {
 
 	private static final Logger logger = LoggerFactory.getLogger(ExpandFromSelectedSourcesTask.class);
 
-	@Tunable(description="Select Data Source")
+	@Tunable(description="Select Data Source:")
 	public ListMultipleSelection<String> services;
 	
 	private static final String DEFAULT_LAYOUT = "force-directed";

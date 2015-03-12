@@ -42,7 +42,7 @@ public class SVGWriter extends AbstractTask implements CyWriter {
 	
 	private static final Logger logger = LoggerFactory.getLogger(PDFWriter.class);
 
-	@Tunable(description="Export text as font")
+	@Tunable(description="Export text as font:")
 	public boolean exportTextAsFont = true;
 
 	@ProvidesTitle

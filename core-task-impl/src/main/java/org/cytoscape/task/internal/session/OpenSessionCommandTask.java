@@ -76,7 +76,7 @@ public class OpenSessionCommandTask extends AbstractTask {
 	
 	private CySessionReader reader;
 
-	@Tunable(description="Session file to load", params="fileCategory=session;input=true")
+	@Tunable(description="Session file to load:", params="fileCategory=session;input=true")
 	public File file;
 
 	private Set<CyNetwork> currentNetworkSet = new HashSet<CyNetwork>();

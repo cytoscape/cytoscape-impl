@@ -42,7 +42,7 @@ import org.slf4j.LoggerFactory;
 
 public class SelectURLTableTask extends AbstractTask {
 	
-	@Tunable(description="Data Table URL", params="fileCategory=table;input=true")
+	@Tunable(description="Data Table URL:", params="fileCategory=table;input=true")
 	public URL url;
 	
 	private LoadTableReaderTask tableReader;

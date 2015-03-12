@@ -10,7 +10,7 @@ public class SleepCommandTask extends AbstractTask {
 	@ProvidesTitle
 	public String getTitle() { return "Sleeping..."; }
 
-	@Tunable(description="Duration of sleep in seconds")
+	@Tunable(description="Duration of sleep in seconds:")
 	public double duration;
 
 	public SleepCommandTask() {

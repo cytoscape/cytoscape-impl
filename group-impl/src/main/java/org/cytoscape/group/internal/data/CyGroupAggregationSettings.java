@@ -24,33 +24,33 @@ package org.cytoscape.group.internal.data;
  * #L%
  */
 
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.model.CyColumn;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyTable;
-
-import org.cytoscape.work.AbstractTask;
-import org.cytoscape.work.TaskMonitor;
-import org.cytoscape.work.Tunable;
-import org.cytoscape.work.ContainsTunables;
-import org.cytoscape.work.util.ListSingleSelection;
-
-import org.cytoscape.group.CyGroup;
-import org.cytoscape.group.CyGroupManager;
-import org.cytoscape.group.data.Aggregator;
-import org.cytoscape.group.data.AttributeHandlingType;
-import org.cytoscape.group.data.CyGroupAggregationManager;
-import org.cytoscape.group.internal.CyGroupManagerImpl;
-import org.cytoscape.group.internal.data.aggregators.*;
-
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.group.data.Aggregator;
+import org.cytoscape.group.data.AttributeHandlingType;
+import org.cytoscape.group.data.CyGroupAggregationManager;
+import org.cytoscape.group.internal.CyGroupManagerImpl;
+import org.cytoscape.group.internal.data.aggregators.BooleanAggregator;
+import org.cytoscape.group.internal.data.aggregators.DoubleAggregator;
+import org.cytoscape.group.internal.data.aggregators.FloatAggregator;
+import org.cytoscape.group.internal.data.aggregators.IntegerAggregator;
+import org.cytoscape.group.internal.data.aggregators.ListAggregator;
+import org.cytoscape.group.internal.data.aggregators.LongAggregator;
+import org.cytoscape.group.internal.data.aggregators.NoneAggregator;
+import org.cytoscape.group.internal.data.aggregators.StringAggregator;
+import org.cytoscape.model.CyColumn;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyTable;
+import org.cytoscape.work.Tunable;
+import org.cytoscape.work.util.ListSingleSelection;
+
 public class CyGroupAggregationSettings {
+	
 	final CyGroupAggregationManager cyAggManager;
 	final CyGroupSettingsImpl settings;
 	final CyGroupManagerImpl cyGroupMgr;
@@ -63,49 +63,49 @@ public class CyGroupAggregationSettings {
 	 *********************************/
 	// Default aggregations
 
-	@Tunable(description="Enable attribute aggregation", 
+	@Tunable(description="Enable attribute aggregation:", 
 	         groups={"Attribute Aggregation Settings"}, gravity=10.0)
 	public boolean enableAttributeAggregation = false;
 
 	// Integer
-	@Tunable(description="Integer column aggregation default", 
+	@Tunable(description="Integer column aggregation default:", 
 	         groups={"Attribute Aggregation Settings", "Default Aggregation Settings"}, 
 	         params="displayState=collapsed",
 	         dependsOn="enableAttributeAggregation=true", gravity=11.0)
 	public ListSingleSelection<Aggregator> integerDefault;
 
 	// Long
-	@Tunable(description="Long column aggregation default", 
+	@Tunable(description="Long column aggregation default:", 
 	         groups={"Attribute Aggregation Settings", "Default Aggregation Settings"},
 	         dependsOn="enableAttributeAggregation=true", gravity=12.0)
 	public ListSingleSelection<Aggregator> longDefault;
 
 	// Float
-	@Tunable(description="Float column aggregation default", 
+	@Tunable(description="Float column aggregation default:", 
 	         groups={"Attribute Aggregation Settings", "Default Aggregation Settings"},
 	         dependsOn="enableAttributeAggregation=true", gravity=13.0)
 	public ListSingleSelection<Aggregator> floatDefault;
 
 	// Double
-	@Tunable(description="Double column aggregation default", 
+	@Tunable(description="Double column aggregation default:", 
 	         groups={"Attribute Aggregation Settings", "Default Aggregation Settings"},
 	         dependsOn="enableAttributeAggregation=true", gravity=14.0)
 	public ListSingleSelection<Aggregator> doubleDefault;
 
 	// List
-	@Tunable(description="List column aggregation default", 
+	@Tunable(description="List column aggregation default:", 
 	         groups={"Attribute Aggregation Settings", "Default Aggregation Settings"},
 	         dependsOn="enableAttributeAggregation=true", gravity=15.0)
 	public ListSingleSelection<Aggregator> listDefault;
 
 	// String
-	@Tunable(description="String column aggregation default", 
+	@Tunable(description="String column aggregation default:", 
 	         groups={"Attribute Aggregation Settings", "Default Aggregation Settings"},
 	         dependsOn="enableAttributeAggregation=true", gravity=16.0)
 	public ListSingleSelection<Aggregator> stringDefault;
 
 	// Boolean
-	@Tunable(description="Boolean column aggregation default", 
+	@Tunable(description="Boolean column aggregation default:", 
 	         groups={"Attribute Aggregation Settings", "Default Aggregation Settings"},
 	         dependsOn="enableAttributeAggregation=true", gravity=17.0)
 	public ListSingleSelection<Aggregator> booleanDefault;
@@ -116,7 +116,7 @@ public class CyGroupAggregationSettings {
 	public ListSingleSelection<String> attrSelection = 
 		new ListSingleSelection<String>(Collections.singletonList("No attributes available"));
 
-	@Tunable(description="Attribute to override", 
+	@Tunable(description="Attribute to override:", 
 	         groups={"Attribute Aggregation Settings", "Aggregation Overrides"},
 	         dependsOn="enableAttributeAggregation=true", 
 	         params="displayState=collapsed", gravity=20.0)
@@ -140,7 +140,7 @@ public class CyGroupAggregationSettings {
 		// Ignore because ListSingleSelection is set in the handler and not here.
 	}
 
-	@Tunable(description="Attribute Type",
+	@Tunable(description="Attribute Type:",
 	         groups={"Attribute Aggregation Settings", "Aggregation Overrides"},
 	         dependsOn="enableAttributeAggregation=true",
 	         listenForChange="AttrSelection", gravity=21.0)
@@ -173,7 +173,7 @@ public class CyGroupAggregationSettings {
 	}
 
 	private ListSingleSelection<Aggregator> aggregationType;
-	@Tunable(description="Aggregation Type",
+	@Tunable(description="Aggregation Type:",
 	         groups={"Attribute Aggregation Settings", "Aggregation Overrides"},
 	         dependsOn="enableAttributeAggregation=true",
 	         listenForChange="AttrSelection", gravity=22.0)

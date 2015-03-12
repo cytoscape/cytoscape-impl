@@ -24,30 +24,13 @@ package org.cytoscape.group.internal.data;
  * #L%
  */
 
-import org.cytoscape.model.CyColumn;
-
-import org.cytoscape.work.AbstractTask;
-import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.group.CyGroup;
+import org.cytoscape.group.internal.data.CyGroupSettingsImpl.DoubleClickAction;
 import org.cytoscape.work.Tunable;
-import org.cytoscape.work.util.BoundedDouble;
 import org.cytoscape.work.util.ListSingleSelection;
 
-import org.cytoscape.group.CyGroup;
-import org.cytoscape.group.CyGroupManager;
-import org.cytoscape.group.data.Aggregator;
-import org.cytoscape.group.data.AttributeHandlingType;
-import org.cytoscape.group.internal.data.CyGroupSettingsImpl.DoubleClickAction;
-import org.cytoscape.group.internal.data.aggregators.*;
-import org.cytoscape.group.events.GroupAddedEvent;
-import org.cytoscape.group.events.GroupAddedListener;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 public class CyGroupViewSettings {
+	
 	CyGroupSettingsImpl settings = null;
 	CyGroup group = null;
 
@@ -58,7 +41,7 @@ public class CyGroupViewSettings {
 
 	// We need to use getters and setters so we can update
 	// our settings object
-	@Tunable(description="Double-Click action", 
+	@Tunable(description="Double-Click action:", 
 	         groups={"Group View Settings","User Action Settings"}, gravity=1.0)
 	public ListSingleSelection<DoubleClickAction> getDCAction() {
 		return doubleClickAction;
@@ -67,7 +50,7 @@ public class CyGroupViewSettings {
 	}
 
 	private boolean useNestedNetworks = false;
-	@Tunable(description="Show collapsed node as a Nested Network",
+	@Tunable(description="Show collapsed node as a Nested Network:",
 	         groups={"Group View Settings"}, gravity=2.0)
 	public boolean getUseNestedNetwork() {
 		return useNestedNetworks;
@@ -80,7 +63,7 @@ public class CyGroupViewSettings {
 	}
 
 	private boolean hideGroupNode = true;
-	@Tunable(description="Hide group node on expand",
+	@Tunable(description="Hide group node on expand:",
 	         groups={"Group View Settings"}, gravity=3.0)
 	public boolean getHideGroupNode() {
 		return hideGroupNode;
@@ -93,7 +76,7 @@ public class CyGroupViewSettings {
 	}
 
 	private boolean showCompoundNode = false;
-	@Tunable(description="Show group as a compound node",
+	@Tunable(description="Show group as a compound node:",
 	         groups={"Group View Settings"}, gravity=4.0)
 	public boolean getShowCompoundNode() {
 		return showCompoundNode;

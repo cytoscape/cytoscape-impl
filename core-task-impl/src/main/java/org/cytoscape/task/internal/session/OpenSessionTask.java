@@ -117,7 +117,7 @@ public class OpenSessionTask extends AbstractTask {
 	
 	public final class OpenSessionWithoutWarningTask extends AbstractTask {
 		
-		@Tunable(description="Session file to load", params="fileCategory=session;input=true")
+		@Tunable(description="Session file to load:", params="fileCategory=session;input=true")
 		public File file;
 		
 		private Set<CyNetwork> currentNetworkSet = new HashSet<CyNetwork>();

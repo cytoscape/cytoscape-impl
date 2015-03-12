@@ -29,10 +29,10 @@ import org.cytoscape.work.TunableValidator;
 
 public class StackedNodeLayoutContext implements TunableValidator {
 
-	@Tunable(description="x_position")
+	@Tunable(description="X Position:")
 	public double x_position = 10.0;
 
-	@Tunable(description="y_start_position")
+	@Tunable(description="Y Start Position:")
 	public double y_start_position = 10.0;
 
 	//@Tunable(description="nodes")

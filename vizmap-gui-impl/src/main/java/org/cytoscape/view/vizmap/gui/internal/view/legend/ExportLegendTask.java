@@ -29,7 +29,7 @@ import org.cytoscape.work.TaskMonitor;
 
 public class ExportLegendTask implements Task {
 	
-//	@Tunable(description="Save Image As:", params="fileCategory=image;input=false")
+//	@Tunable(description="Save Image as:", params="fileCategory=image;input=false")
 //	public File getOutputFile() {
 //		return outputFile;
 //	}

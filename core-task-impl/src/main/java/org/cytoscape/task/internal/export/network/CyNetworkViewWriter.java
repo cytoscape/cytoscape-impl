@@ -93,7 +93,7 @@ public final class CyNetworkViewWriter extends TunableAbstractCyWriter<CyNetwork
 		return writerManager.getWriter(view,filter,file);
 	}
 	
-	@Tunable(description="Save Network (and View) As:", params="fileCategory=network;input=false", dependsOn="options!=")
+	@Tunable(description="Save Network (and View) as:", params="fileCategory=network;input=false", dependsOn="options!=")
 	public  File getOutputFile() {	
 		return outputFile;
 	}

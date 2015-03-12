@@ -22,7 +22,8 @@ public class RunCommandsTask extends AbstractTask {
 
 	@ProvidesTitle
 	public String getTitle() { return "Execute command file"; }
-	@Tunable(description="Command File", params="input=true;fileCategory=unspecified")
+	
+	@Tunable(description="Command File:", params="input=true;fileCategory=unspecified")
 	public File file;
 	
 	public RunCommandsTask(CommandToolDialog dialog, CommandHandler handler) {

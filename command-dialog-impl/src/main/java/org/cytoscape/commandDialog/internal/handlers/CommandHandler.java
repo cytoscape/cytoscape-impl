@@ -296,10 +296,19 @@ public class CommandHandler extends Handler
 				message += arg;
 			}
 			message += "="+getTypeString(namespace, command, arg);
-			message += ": "+availableCommands.getArgDescription(namespace, command, arg);
+			message += ": "+normalizeArgDescription(availableCommands.getArgDescription(namespace, command, arg));
 			message += "</li>\n";
 		}
 		resultsText.appendMessage(message+"</ul>");
+	}
+
+	private String normalizeArgDescription(String s) {
+		if (s != null) {
+			s = s.trim();
+			if (s.endsWith(":")) s = s.substring(0, s.length() - 1);
+		}
+		
+		return s;
 	}
 
 	private String getTypeString(String namespace, String command, String arg) {

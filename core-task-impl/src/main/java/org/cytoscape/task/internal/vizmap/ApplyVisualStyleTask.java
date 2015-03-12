@@ -46,7 +46,7 @@ public class ApplyVisualStyleTask extends AbstractNetworkViewCollectionTask {
 		return "Style to be applied";
 	}
 
-	@Tunable(description = "Style")
+	@Tunable(description="Style:")
 	public ListSingleSelection<VisualStyle> styles;
 
 	public ApplyVisualStyleTask(final Collection<CyNetworkView> views, final VisualMappingManager vmm) {
@@ -64,12 +64,12 @@ public class ApplyVisualStyleTask extends AbstractNetworkViewCollectionTask {
 
 	@Override
 	public void run(TaskMonitor tm) throws Exception {
-
 		tm.setProgress(0.0);
 
 		int i = 0;
 		int viewCount = networkViews.size();
 		final VisualStyle selected = styles.getSelectedValue();
+		
 		for (final CyNetworkView view : networkViews) {
 			selected.apply(view);
 			view.updateView();

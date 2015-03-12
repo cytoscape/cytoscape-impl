@@ -33,11 +33,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.work.ProvidesTitle;
@@ -47,6 +45,7 @@ import org.cytoscape.work.undo.UndoSupport;
 
 
 public class SelectFromFileListTask extends AbstractSelectTask {
+	
 	private final UndoSupport undoSupport;
 
 	@ProvidesTitle
@@ -54,7 +53,7 @@ public class SelectFromFileListTask extends AbstractSelectTask {
 		return "Select Nodes using ID File";
 	}
 	
-	@Tunable(description = "Node selection file",params="input=true")
+	@Tunable(description="Node selection file:", params="input=true")
 	public File file;
 
 	public SelectFromFileListTask(final UndoSupport undoSupport, final CyNetwork net,
@@ -65,6 +64,7 @@ public class SelectFromFileListTask extends AbstractSelectTask {
 		this.undoSupport = undoSupport;
 	}
 
+	@Override
 	public void run(final TaskMonitor tm) throws Exception {
 		tm.setProgress(0.0);
 		if (file == null)

@@ -87,16 +87,16 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 	private boolean[] importFlag;
 	private static final String DEF_INTERACTION = "pp";
 	
-	@Tunable(description="Text Delimiters", context="both")
+	@Tunable(description="Text Delimiters:", context="both")
 	public ListMultipleSelection<String> delimiters;
 	
-	@Tunable(description="Text Delimiters for data list type", context="both")
+	@Tunable(description="Text Delimiters for data list type:", context="both")
 	public ListSingleSelection<String> delimitersForDataList;
 	
 	@Tunable(description="Start Load Row:", context="both")
 	public int startLoadRow = -1;
 	
-	@Tunable(description="First row used for column names", context="both")
+	@Tunable(description="First row used for column names:", context="both")
 	public boolean firstRowAsColumnNames = false;
 	
 	@Tunable(description="Column for source interaction:", context="both")

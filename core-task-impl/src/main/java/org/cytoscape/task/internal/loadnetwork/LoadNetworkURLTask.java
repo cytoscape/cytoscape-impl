@@ -45,7 +45,8 @@ import org.cytoscape.work.Tunable;
  * Specific instance of AbstractLoadNetworkTask that loads a URL.
  */
 public class LoadNetworkURLTask extends AbstractLoadNetworkTask {
-	@Tunable(description="The URL to load", params = "fileCategory=network;input=true")
+	
+	@Tunable(description="The URL to load:", params = "fileCategory=network;input=true")
 	public URL url;
 	
 	StreamUtil streamUtil;
@@ -64,6 +65,7 @@ public class LoadNetworkURLTask extends AbstractLoadNetworkTask {
 	/**
 	 * Executes Task.
 	 */
+	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
 		if (url == null)
 			throw new NullPointerException("url is null");

@@ -31,28 +31,18 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.channels.IllegalSelectorException;
-import java.util.Set;
 
-
-import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.cytoscape.io.read.CyTableReader;
-import org.cytoscape.model.CyEdge;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.model.CyIdentifiable;
-import org.cytoscape.model.CyTableManager;
 import org.cytoscape.tableimport.internal.reader.AttributeMappingParameters;
 import org.cytoscape.tableimport.internal.reader.DefaultAttributeTableReader;
 import org.cytoscape.tableimport.internal.reader.ExcelAttributeSheetReader;
 import org.cytoscape.tableimport.internal.reader.SupportedFileType;
 import org.cytoscape.tableimport.internal.reader.TextTableReader;
-import org.cytoscape.tableimport.internal.reader.TextTableReader.ObjectType;
-import org.cytoscape.tableimport.internal.ui.ImportTablePanel;
 import org.cytoscape.tableimport.internal.util.AttributeTypes;
 import org.cytoscape.tableimport.internal.util.CytoscapeServices;
 import org.cytoscape.view.model.CyNetworkView;
@@ -74,7 +64,7 @@ public class ImportAttributeTableReaderTask extends AbstractTask implements CyTa
 	private CyTable[] cyTables;
 	private static int numImports = 0;
 	
-	@Tunable(description="Attribute Mapping Parameters")
+	@Tunable(description="Attribute Mapping Parameters:")
 	public AttributeMappingParameters amp ;
 	
 	TextTableReader reader;
@@ -113,7 +103,6 @@ public class ImportAttributeTableReaderTask extends AbstractTask implements CyTa
 			throw new IllegalStateException("Could not initialize object", e);
 		}
 	}
-
 
 	@Override
 	public void run(TaskMonitor tm) throws Exception {

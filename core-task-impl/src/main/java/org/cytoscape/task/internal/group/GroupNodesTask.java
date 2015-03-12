@@ -59,7 +59,7 @@ public class GroupNodesTask extends AbstractTask implements ObservableTask {
 	@ContainsTunables
 	public NodeTunable nodeTunable = null;
 
-	@Tunable(description="Enter group name: ")
+	@Tunable(description="Enter group name:")
 	public String groupName = null;
 
 	public GroupNodesTask(UndoSupport undoSupport, CyNetworkView netView, 

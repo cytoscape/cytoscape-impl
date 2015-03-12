@@ -70,7 +70,7 @@ public class LoadRepositoryTask extends AbstractTask {
 	private Map<String, String> datasourceMap;
 	private List<String> dsList;
 	
-	@Tunable(description="Please select services you want to use")
+	@Tunable(description="Please select services you want to use:")
 	public ListMultipleSelection<String> services;
 
 	public LoadRepositoryTask(final BiomartRestClient client) {

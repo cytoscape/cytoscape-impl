@@ -60,7 +60,7 @@ public class BuildQueryTask extends AbstractTask {
 		return "Extend Network by PSICQUIC Web Services";
 	}
 	
-	@Tunable(description = "Select query column:")
+	@Tunable(description = "Select Query Column:")
 	public ListSingleSelection<String> columnList;
 
 	private PSICQUICRestClient client;
