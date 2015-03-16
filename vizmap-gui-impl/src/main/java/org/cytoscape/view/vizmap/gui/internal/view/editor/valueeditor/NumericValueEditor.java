@@ -85,8 +85,9 @@ class NumberValueDialog extends JDialog {
 
 	public <S extends Number> NumberValueDialog(final Component parent, final VisualProperty<S> vizProp, final S initialValue) {
 		super(JOptionPane.getFrameForComponent(parent), vizProp.getDisplayName(), true);
-		super.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
-		super.addWindowListener(new WindowAdapter() {
+		setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+		setResizable(false);
+		addWindowListener(new WindowAdapter() {
 			@Override
 			public void windowClosing(WindowEvent e) {
 				value = null;
@@ -101,6 +102,7 @@ class NumberValueDialog extends JDialog {
 		errorLabel.setHorizontalAlignment(JLabel.CENTER);
 		
 		final JTextField field = new JTextField(6);
+		field.setHorizontalAlignment(JTextField.RIGHT);
 		
 		if (initialValue != null)
 			field.setText(initialValue.toString());
@@ -153,8 +155,10 @@ class NumberValueDialog extends JDialog {
 		layout.setHorizontalGroup(layout.createSequentialGroup()
 				.addContainerGap(HGAP, HGAP)
 				.addGroup(layout.createParallelGroup(Alignment.CENTER, true)
-					.addComponent(titleLabel, DEFAULT_SIZE, 248, Short.MAX_VALUE)
-					.addComponent(field)
+						.addGroup(layout.createSequentialGroup()
+								.addComponent(titleLabel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+								.addComponent(field)
+						)
 					.addComponent(errorLabel)
 					.addComponent(btnPanel)
 				)
@@ -162,16 +166,18 @@ class NumberValueDialog extends JDialog {
 		);
 		layout.setVerticalGroup(layout.createSequentialGroup()
 				.addContainerGap(VGAP, VGAP)
-				.addComponent(titleLabel)
-				.addComponent(field)
+				.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
+						.addComponent(titleLabel)
+						.addComponent(field)
+				)
 				.addComponent(errorLabel)
 				.addComponent(btnPanel)
 				.addContainerGap(VGAP, VGAP)
 		);
 		
-		super.setLocationRelativeTo(parent);
-		super.pack();
-		super.setVisible(true);
+		setLocationRelativeTo(parent);
+		pack();
+		setVisible(true);
 	}
 
 	public Number getValue() {
