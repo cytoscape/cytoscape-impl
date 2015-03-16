@@ -509,6 +509,8 @@ public class MapParameterDialog extends VisualizeParameterDialog implements Acti
 	private void calculateMean(int values, String[][] attr) {
 		for (int i = 0; i < attr.length; i++) {
 			for (int j = 0; j < attr[i].length; j++) {
+				if (attr[i][j] == null)
+					continue;
 				final double meanValue = meanAttrValue.get(attr[i][j]).doubleValue();
 				meanAttrValue.put(attr[i][j], new Double(meanValue / values));
 			}
