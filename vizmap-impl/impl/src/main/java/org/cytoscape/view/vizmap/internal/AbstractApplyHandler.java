@@ -31,10 +31,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.NetworkViewRenderer;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualLexiconNode;
@@ -50,7 +53,7 @@ public abstract class AbstractApplyHandler<T extends CyIdentifiable> implements 
 																				VisualStyleChangedListener {
 
 	protected final VisualStyle style;
-	protected final VisualLexiconManager lexManager;
+	protected final CyServiceRegistrar serviceRegistrar;
 	protected final Class<T> targetDataType;
 	protected final VisualProperty<?> rootVisualProperty;
 	
@@ -61,10 +64,13 @@ public abstract class AbstractApplyHandler<T extends CyIdentifiable> implements 
 	
 	protected volatile boolean updateDependencyMaps = true;
 
-	AbstractApplyHandler(final VisualStyle style, final VisualLexiconManager lexManager,
-			final Class<T> targetDataType) {
-		this.lexManager = lexManager;
+	AbstractApplyHandler(
+			final VisualStyle style,
+			final CyServiceRegistrar serviceRegistrar,
+			final Class<T> targetDataType
+	) {
 		this.style = style;
+		this.serviceRegistrar = serviceRegistrar;
 		this.targetDataType = targetDataType;
 		
 		if (targetDataType == CyNode.class)
@@ -91,8 +97,12 @@ public abstract class AbstractApplyHandler<T extends CyIdentifiable> implements 
 		// Clear visual properties first
 		view.clearVisualProperties();
 		
-		// TODO: what if there is another Lexicon?
-		final VisualLexicon lexicon = lexManager.getAllVisualLexicon().iterator().next();
+		// Get current Visual Lexicon
+		final CyApplicationManager appMgr = serviceRegistrar.getService(CyApplicationManager.class);
+		final VisualLexicon lexicon = appMgr.getCurrentNetworkViewRenderer()
+				.getRenderingEngineFactory(NetworkViewRenderer.DEFAULT_CONTEXT)
+				.getVisualLexicon();
+		
 		final LinkedList<VisualLexiconNode> descendants = new LinkedList<VisualLexiconNode>();
 		descendants.addAll(lexicon.getVisualLexiconNode(rootVisualProperty).getChildren());
 		

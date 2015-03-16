@@ -25,12 +25,13 @@ package org.cytoscape.view.vizmap.internal;
  */
 
 import org.cytoscape.model.CyEdge;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.vizmap.VisualStyle;
 
 public class ApplyToEdgeHandler extends AbstractApplyHandler<CyEdge> {
 
 
-	ApplyToEdgeHandler(final VisualStyle style, final VisualLexiconManager lexManager) {
-		super(style, lexManager, CyEdge.class);
+	ApplyToEdgeHandler(final VisualStyle style, final CyServiceRegistrar serviceRegistrar) {
+		super(style, serviceRegistrar, CyEdge.class);
 	}
 }

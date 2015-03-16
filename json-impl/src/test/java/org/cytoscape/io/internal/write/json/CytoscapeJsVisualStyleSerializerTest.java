@@ -16,7 +16,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -39,7 +38,6 @@ import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.VisualLexicon;
-import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.property.ArrowShapeVisualProperty;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.presentation.property.LineTypeVisualProperty;
@@ -49,7 +47,6 @@ import org.cytoscape.view.vizmap.VisualMappingFunction;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.VisualPropertyDependency;
 import org.cytoscape.view.vizmap.VisualStyle;
-import org.cytoscape.view.vizmap.internal.VisualLexiconManager;
 import org.cytoscape.view.vizmap.internal.VisualStyleFactoryImpl;
 import org.cytoscape.view.vizmap.internal.mappings.ContinuousMappingFactory;
 import org.cytoscape.view.vizmap.internal.mappings.DiscreteMappingFactory;
@@ -104,22 +101,17 @@ public class CytoscapeJsVisualStyleSerializerTest {
 	}
 
 	private final VisualStyle generateVisualStyle(final VisualLexicon lexicon) {
-
-		final VisualLexiconManager lexManager = mock(VisualLexiconManager.class);
 		final Set<VisualLexicon> lexSet = new HashSet<VisualLexicon>();
 		lexSet.add(lexicon);
-		final Collection<VisualProperty<?>> nodeVP = lexicon.getAllDescendants(BasicVisualLexicon.NODE);
-		final Collection<VisualProperty<?>> edgeVP = lexicon.getAllDescendants(BasicVisualLexicon.EDGE);
-		when(lexManager.getNodeVisualProperties()).thenReturn(nodeVP);
-		when(lexManager.getEdgeVisualProperties()).thenReturn(edgeVP);
 
-		when(lexManager.getAllVisualLexicon()).thenReturn(lexSet);
-
-		final CyServiceRegistrar serviceRegistrar = mock(CyServiceRegistrar.class);
-		final VisualMappingFunctionFactory ptFactory = mock(VisualMappingFunctionFactory.class);
 		final CyEventHelper eventHelper = mock(CyEventHelper.class);
-		final VisualStyleFactoryImpl visualStyleFactory = new VisualStyleFactoryImpl(lexManager, serviceRegistrar,
-				ptFactory, eventHelper);
+		
+		final CyServiceRegistrar serviceRegistrar = mock(CyServiceRegistrar.class);
+		when(serviceRegistrar.getService(CyEventHelper.class)).thenReturn(eventHelper);
+		
+		final VisualMappingFunctionFactory ptFactory = mock(VisualMappingFunctionFactory.class);
+		final VisualStyleFactoryImpl visualStyleFactory = new VisualStyleFactoryImpl(serviceRegistrar,
+				ptFactory);
 
 		return visualStyleFactory.createVisualStyle("vs1");
 	}

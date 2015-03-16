@@ -31,9 +31,11 @@ import java.util.Set;
 
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.vizmap.VisualMappingFunction;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
+import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.VisualStyleFactory;
 import org.cytoscape.view.vizmap.internal.mappings.ContinuousMappingImpl;
@@ -46,23 +48,20 @@ import org.cytoscape.view.vizmap.mappings.PassthroughMapping;
 
 public class VisualStyleFactoryImpl implements VisualStyleFactory {
 
-	private final VisualLexiconManager lexManager;
 	private final CyServiceRegistrar serviceRegistrar;
-	private final CyEventHelper eventHelper;
-
 	private final VisualMappingFunctionFactory passThroughFactory;
 
-	public VisualStyleFactoryImpl(final VisualLexiconManager lexManager, final CyServiceRegistrar serviceRegistrar,
-			final VisualMappingFunctionFactory passThroughFactory, final CyEventHelper eventHelper) {
-		this.lexManager = lexManager;
+	public VisualStyleFactoryImpl(
+			final CyServiceRegistrar serviceRegistrar,
+			final VisualMappingFunctionFactory passThroughFactory
+	) {
 		this.serviceRegistrar = serviceRegistrar;
 		this.passThroughFactory = passThroughFactory;
-		this.eventHelper = eventHelper;
 	}
 
 	@Override
 	public VisualStyle createVisualStyle(final VisualStyle original) {
-		final VisualStyle copy = new VisualStyleImpl(original.getTitle(), lexManager, serviceRegistrar, eventHelper);
+		final VisualStyle copy = new VisualStyleImpl(original.getTitle(), serviceRegistrar);
 
 		copyDefaultValues(original, copy);
 		copyMappingFunctions(original, copy);
@@ -72,14 +71,15 @@ public class VisualStyleFactoryImpl implements VisualStyleFactory {
 
 	@Override
 	public VisualStyle createVisualStyle(final String title) {
-		return new VisualStyleImpl(title, lexManager, serviceRegistrar, eventHelper);
+		return new VisualStyleImpl(title, serviceRegistrar);
 	}
 
 	private <V, S extends V> void copyDefaultValues(final VisualStyle original, final VisualStyle copy) {
-		Set<VisualProperty<?>> visualProps = new HashSet<VisualProperty<?>>();
-		visualProps.addAll(lexManager.getNetworkVisualProperties());
-		visualProps.addAll(lexManager.getNodeVisualProperties());
-		visualProps.addAll(lexManager.getEdgeVisualProperties());
+		final Set<VisualProperty<?>> visualProps = new HashSet<VisualProperty<?>>();
+		final VisualMappingManager vmMgr = serviceRegistrar.getService(VisualMappingManager.class);
+		
+		for (final VisualLexicon lexicon : vmMgr.getAllVisualLexicon())
+			visualProps.addAll(lexicon.getAllVisualProperties());
 
 		for (VisualProperty<?> vp : visualProps) {
 			S value = (S) original.getDefaultValue(vp);
@@ -129,6 +129,8 @@ public class VisualStyleFactoryImpl implements VisualStyleFactory {
 		final String attrName = originalMapping.getMappingColumnName();
 		final Class<?> colType = originalMapping.getMappingColumnType();
 
+		final CyEventHelper eventHelper = serviceRegistrar.getService(CyEventHelper.class);
+		
 		final ContinuousMapping<K, V> copyMapping = new ContinuousMappingImpl(attrName, colType,
 				originalMapping.getVisualProperty(), eventHelper);
 		List<ContinuousMappingPoint<K, V>> points = originalMapping.getAllPoints();
@@ -143,6 +145,8 @@ public class VisualStyleFactoryImpl implements VisualStyleFactory {
 		final String attrName = originalMapping.getMappingColumnName();
 		final Class<K> colType = originalMapping.getMappingColumnType();
 
+		final CyEventHelper eventHelper = serviceRegistrar.getService(CyEventHelper.class);
+		
 		final DiscreteMapping<K, V> copyMapping = new DiscreteMappingImpl(attrName, colType,
 				originalMapping.getVisualProperty(), eventHelper);
 

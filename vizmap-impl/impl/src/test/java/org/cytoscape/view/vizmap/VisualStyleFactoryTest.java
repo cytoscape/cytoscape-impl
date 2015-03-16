@@ -25,10 +25,15 @@ package org.cytoscape.view.vizmap;
  */
 
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+import java.util.Collections;
+import java.util.Set;
 
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.view.vizmap.internal.VisualLexiconManager;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
+import org.cytoscape.view.presentation.property.NullVisualProperty;
 import org.cytoscape.view.vizmap.internal.VisualStyleFactoryImpl;
 import org.junit.After;
 import org.junit.Before;
@@ -37,17 +42,26 @@ public class VisualStyleFactoryTest extends AbstractVisualStyleFactoryTest {
 
 
 	@Before
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public void setUp() throws Exception {
-		final VisualLexiconManager lexManager = mock(VisualLexiconManager.class);
-		final CyServiceRegistrar serviceRegistrar = mock(CyServiceRegistrar.class);
-		final VisualMappingFunctionFactory ptFactory = mock(VisualMappingFunctionFactory.class);
-		final CyEventHelper eventHelper = mock(CyEventHelper.class);
+		final Set lexiconSet =
+				Collections.singleton(
+						new BasicVisualLexicon(new NullVisualProperty("MINIMAL_ROOT", "Minimal Root Visual Property")));
 		
-		factory = new VisualStyleFactoryImpl(lexManager, serviceRegistrar, ptFactory, eventHelper );
+		final VisualMappingManager vmMgr = mock(VisualMappingManager.class);
+		when(vmMgr.getAllVisualLexicon()).thenReturn(lexiconSet);
+		
+		final VisualMappingFunctionFactory ptFactory = mock(VisualMappingFunctionFactory.class);
+		
+		final CyServiceRegistrar serviceRegistrar = mock(CyServiceRegistrar.class);
+		final CyEventHelper eventHelper = mock(CyEventHelper.class);
+		when(serviceRegistrar.getService(CyEventHelper.class)).thenReturn(eventHelper);
+		when(serviceRegistrar.getService(VisualMappingManager.class)).thenReturn(vmMgr);
+		
+		factory = new VisualStyleFactoryImpl(serviceRegistrar, ptFactory);
 	}
 
 	@After
 	public void tearDown() throws Exception {
 	}
-
 }

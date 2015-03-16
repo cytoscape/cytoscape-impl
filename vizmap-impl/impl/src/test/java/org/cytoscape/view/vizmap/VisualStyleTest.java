@@ -25,47 +25,43 @@ package org.cytoscape.view.vizmap;
  */
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.awt.Color;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Properties;
 import java.util.Set;
 
+import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.NetworkViewRenderer;
 import org.cytoscape.ding.DVisualLexicon;
 import org.cytoscape.ding.NetworkViewTestSupport;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.property.CyProperty;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualProperty;
+import org.cytoscape.view.presentation.RenderingEngineFactory;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.presentation.property.NullVisualProperty;
-import org.cytoscape.view.vizmap.internal.VisualLexiconManager;
 import org.cytoscape.view.vizmap.internal.VisualStyleFactoryImpl;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.asm.util.CheckAnnotationAdapter;
 
 public class VisualStyleTest extends AbstractVisualStyleTest {
 	
 	private static final int NETWORK_SIZE = 5000;
 
 	@Before
+	@SuppressWarnings("unchecked")
 	public void setUp() throws Exception {
-		
 		NetworkViewTestSupport nvts = new NetworkViewTestSupport();
 		network = nvts.getNetworkFactory().createNetwork();
 
@@ -83,24 +79,28 @@ public class VisualStyleTest extends AbstractVisualStyleTest {
 		networkView = nvts.getNetworkViewFactory().createNetworkView(network);
 
 		// Create root node.
-		final VisualLexiconManager lexManager = mock(VisualLexiconManager.class);
-
-		// Create root node.
 		final NullVisualProperty minimalRoot = new NullVisualProperty("MINIMAL_ROOT", "Minimal Root Visual Property");
 		final BasicVisualLexicon minimalLex = new BasicVisualLexicon(minimalRoot);
 		final Set<VisualLexicon> lexSet = new HashSet<VisualLexicon>();
 		lexSet.add(minimalLex);
-		final Collection<VisualProperty<?>> nodeVP = minimalLex.getAllDescendants(BasicVisualLexicon.NODE);
-		final Collection<VisualProperty<?>> edgeVP = minimalLex.getAllDescendants(BasicVisualLexicon.EDGE);
-		when(lexManager.getNodeVisualProperties()).thenReturn(nodeVP);
-		when(lexManager.getEdgeVisualProperties()).thenReturn(edgeVP);
 
-		when(lexManager.getAllVisualLexicon()).thenReturn(lexSet);
-
-		final CyServiceRegistrar serviceRegistrar = mock(CyServiceRegistrar.class);
 		final VisualMappingFunctionFactory ptFactory = mock(VisualMappingFunctionFactory.class);
 		final CyEventHelper eventHelper = mock(CyEventHelper.class);
-		final VisualStyleFactoryImpl visualStyleFactory = new VisualStyleFactoryImpl(lexManager, serviceRegistrar, ptFactory, eventHelper);
+		
+		final RenderingEngineFactory<CyNetwork> reFatory = mock(RenderingEngineFactory.class);
+		when(reFatory.getVisualLexicon()).thenReturn(minimalLex);
+		
+		final NetworkViewRenderer nvRenderer = mock(NetworkViewRenderer.class);
+		when(nvRenderer.getRenderingEngineFactory(NetworkViewRenderer.DEFAULT_CONTEXT)).thenReturn(reFatory);
+		
+		final CyApplicationManager appManager = mock(CyApplicationManager.class);
+		when(appManager.getCurrentNetworkViewRenderer()).thenReturn(nvRenderer);
+		
+		final CyServiceRegistrar serviceRegistrar = mock(CyServiceRegistrar.class);
+		when(serviceRegistrar.getService(CyEventHelper.class)).thenReturn(eventHelper);
+		when(serviceRegistrar.getService(CyApplicationManager.class)).thenReturn(appManager);
+		
+		final VisualStyleFactoryImpl visualStyleFactory = new VisualStyleFactoryImpl(serviceRegistrar, ptFactory);
 		originalTitle = "Style 1";
 		newTitle = "Style 2";
 		style = visualStyleFactory.createVisualStyle(originalTitle);
