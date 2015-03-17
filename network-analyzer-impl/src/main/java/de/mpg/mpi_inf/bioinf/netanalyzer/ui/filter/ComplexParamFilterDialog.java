@@ -26,12 +26,13 @@ package de.mpg.mpi_inf.bioinf.netanalyzer.ui.filter;
  * #L%
  */
 
-import java.awt.BorderLayout;
 import java.awt.Dialog;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
+import javax.swing.AbstractAction;
+import javax.swing.GroupLayout;
+import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JPanel;
@@ -47,19 +48,7 @@ import de.mpg.mpi_inf.bioinf.netanalyzer.ui.Utils;
  * 
  * @author Yassen Assenov
  */
-public abstract class ComplexParamFilterDialog extends JDialog
-	implements ActionListener {
-
-	@Override
-	public void actionPerformed(ActionEvent e) {
-		Object source = e.getSource();
-		if (btnOK == source) {
-			btnOK = null;
-			setVisible(false);
-		} else if (btnCancel == source) {
-			setVisible(false);
-		}
-	}
+public abstract class ComplexParamFilterDialog extends JDialog {
 
 	/**
 	 * Displays the dialog and initializes a filter based on user's input.
@@ -69,8 +58,8 @@ public abstract class ComplexParamFilterDialog extends JDialog
 	 *         &quot;Cancel&quot; button.
 	 */
 	public ComplexParamFilter showDialog() {
-		setModal(true); // make sure this window is modal
 		setVisible(true);
+		
 		if (btnOK == null) {
 			// User has pressed OK
 			return createFilter();
@@ -125,22 +114,46 @@ public abstract class ComplexParamFilterDialog extends JDialog
 	 * &quot;OK&quot; and &quot;Cancel&quot; buttons.
 	 * </p>
 	 */
+	@SuppressWarnings("serial")
 	private void initControls() {
-		final int BS = Utils.BORDER_SIZE;
-		final JPanel contentPane = new JPanel(new BorderLayout(BS, BS));
-		Utils.setStandardBorder(contentPane);
-
 		centralPane = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));
-		contentPane.add(centralPane, BorderLayout.CENTER);
 
 		// Add OK and Cancel Buttons
-		btnOK = Utils.createButton(Messages.DI_OK, null, this);
-		btnCancel = Utils.createButton(Messages.DI_CANCEL, null, this);
+		btnOK = Utils.createButton(new AbstractAction(Messages.DI_OK) {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				btnOK = null;
+				setVisible(false);
+			}
+		}, null);
+		btnCancel = Utils.createButton(new AbstractAction(Messages.DI_CANCEL) {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				setVisible(false);
+			}
+		}, null);
 		Utils.equalizeSize(btnOK, btnCancel);
 		
 		final JPanel buttonsPanel = LookAndFeelUtil.createOkCancelPanel(btnOK, btnCancel);
-		contentPane.add(buttonsPanel, BorderLayout.SOUTH);
+		
+		final JPanel contentPane = new JPanel();
+		final GroupLayout layout = new GroupLayout(contentPane);
+		contentPane.setLayout(layout);
+		layout.setAutoCreateContainerGaps(true);
+		layout.setAutoCreateGaps(true);
+		
+		layout.setHorizontalGroup(layout.createParallelGroup(Alignment.CENTER, true)
+				.addComponent(centralPane)
+				.addComponent(buttonsPanel)
+		);
+		layout.setVerticalGroup(layout.createSequentialGroup()
+				.addComponent(centralPane)
+				.addComponent(buttonsPanel)
+		);
 		
 		setContentPane(contentPane);
+		
+		LookAndFeelUtil.setDefaultOkCancelKeyStrokes(getRootPane(), btnOK.getAction(), btnCancel.getAction());
+		getRootPane().setDefaultButton(btnOK);
 	}
 }

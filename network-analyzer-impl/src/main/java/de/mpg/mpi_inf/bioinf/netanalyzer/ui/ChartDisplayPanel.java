@@ -26,20 +26,12 @@ package de.mpg.mpi_inf.bioinf.netanalyzer.ui;
  * #L%
  */
 
-import de.mpg.mpi_inf.bioinf.netanalyzer.InnerException;
-import de.mpg.mpi_inf.bioinf.netanalyzer.Plugin;
-import de.mpg.mpi_inf.bioinf.netanalyzer.data.ComplexParam;
-import de.mpg.mpi_inf.bioinf.netanalyzer.data.Messages;
-import de.mpg.mpi_inf.bioinf.netanalyzer.data.filter.ComplexParamFilter;
-import de.mpg.mpi_inf.bioinf.netanalyzer.dec.Decorator;
-import de.mpg.mpi_inf.bioinf.netanalyzer.ui.charts.JFreeChartConn;
-import de.mpg.mpi_inf.bioinf.netanalyzer.ui.filter.ComplexParamFilterDialog;
-import org.jfree.chart.JFreeChart;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static javax.swing.GroupLayout.DEFAULT_SIZE;
+import static javax.swing.GroupLayout.PREFERRED_SIZE;
 
-import javax.swing.*;
-import java.awt.*;
+import java.awt.Dialog.ModalityType;
+import java.awt.Dimension;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
@@ -48,6 +40,33 @@ import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.swing.BorderFactory;
+import javax.swing.GroupLayout;
+import javax.swing.GroupLayout.Alignment;
+import javax.swing.GroupLayout.ParallelGroup;
+import javax.swing.GroupLayout.SequentialGroup;
+import javax.swing.AbstractAction;
+import javax.swing.JButton;
+import javax.swing.JDialog;
+import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.UIManager;
+
+import org.cytoscape.util.swing.LookAndFeelUtil;
+import org.jfree.chart.JFreeChart;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import de.mpg.mpi_inf.bioinf.netanalyzer.InnerException;
+import de.mpg.mpi_inf.bioinf.netanalyzer.Plugin;
+import de.mpg.mpi_inf.bioinf.netanalyzer.data.ComplexParam;
+import de.mpg.mpi_inf.bioinf.netanalyzer.data.Messages;
+import de.mpg.mpi_inf.bioinf.netanalyzer.data.filter.ComplexParamFilter;
+import de.mpg.mpi_inf.bioinf.netanalyzer.dec.Decorator;
+import de.mpg.mpi_inf.bioinf.netanalyzer.ui.charts.JFreeChartConn;
+import de.mpg.mpi_inf.bioinf.netanalyzer.ui.filter.ComplexParamFilterDialog;
 
 /**
  * Panel used to display chart.
@@ -60,26 +79,81 @@ import java.util.List;
  */
 public class ChartDisplayPanel extends JPanel implements ActionListener {
 
+	private static final long serialVersionUID = 1662216221117859713L;
 	private static final Logger logger = LoggerFactory.getLogger(ChartDisplayPanel.class);
+	
+	private static Dimension preferred;
+
+	static {
+		final JButton b = new JButton("");
+		preferred = b.getPreferredSize();
+		final String[] texts = new String[] { Messages.DI_VIEWENLARGED, Messages.DI_FILTERDATA,
+				Messages.DI_EXPORTCHART, Messages.DI_EXPORTDATA, Messages.DI_CHARTSETTINGS,
+				Messages.DI_HELP, Messages.DI_FITLINE, Messages.DI_REMOVELINE, Messages.DI_FITPL, Messages.DI_REMOVEPL };
+		for (final String text : texts) {
+			b.setText(text);
+			Utils.ensureSize(preferred, b.getPreferredSize());
+		}
+	}
+
+	/** Decorators registered for the complex parameter instance visualized. */
+	private Decorator[] decorators;
+	
+	/** Original (unfiltered) complex parameter displayed in this panel. */
+	private ComplexParam originalParam;
+	
+	/** Chart to be displayed. */
+	private JFreeChart chart;
+
+	/** Swing control that displays the chart. */
+	private JPanel chartPanel;
+
+	/** &quot;View Enlarged&quot; button. */
+	private JButton btnEnlarged;
+
+	/** &quot;Save Chart&quot; button. */
+	private JButton btnSaveChart;
+
+	/** &quot;Save Data&quot; button. */
+	private JButton btnSaveData;
+
+	/** &quot;Filter Data&quot; / &quot;Remove Filter&quot; button. */
+	private JButton btnFilter;
+
+	/** Buttons for the decorators. */
+	private JButton[] btnsDec;
+
+	/** ID of the visualized complex parameter. */
+	private String id;
+	
+	/** Visualizer instance for the displayed parameter chart. Used for viewing/editing of visual settings. */
+	protected ComplexParamVisualizer visualizer;
+
+	/** Owner dialog of this panel. */
+	protected final Window owner;
+
+	/** &quot;Chart Settings&quot; button. */
+	protected JButton btnChartSettings;
+
 
 	/**
 	 * Initializes a new instance of <code>ChartDisplayPanel</code>.
 	 * 
-	 * @param aOwner
+	 * @param owner
 	 *            Owner dialog.
 	 * @param aID
 	 *            ID of complex parameter to be displayed.
 	 * @param aVisualizer
 	 *            Visualizer of the complex parameter to be displayed.
 	 */
-	public ChartDisplayPanel(Container aOwner, String aID, ComplexParamVisualizer aVisualizer) {
-		this(aOwner, aID, aVisualizer, null);
+	public ChartDisplayPanel(Window owner, String aID, ComplexParamVisualizer aVisualizer) {
+		this(owner, aID, aVisualizer, null);
 	}
 
 	/**
 	 * Initializes a new instance of <code>ChartDisplayPanel</code>.
 	 * 
-	 * @param aOwner
+	 * @param owner
 	 *            Owner dialog.
 	 * @param aID
 	 *            ID of complex parameter to be displayed.
@@ -88,7 +162,7 @@ public class ChartDisplayPanel extends JPanel implements ActionListener {
 	 * @param aDecorators
 	 *            Decorator instances for the complex parameter visualized.
 	 */
-	public ChartDisplayPanel(Container aOwner, String aID, ComplexParamVisualizer aVisualizer,
+	public ChartDisplayPanel(Window owner, String aID, ComplexParamVisualizer aVisualizer,
 			Decorator[] aDecorators) {
 		super();
 		visualizer = aVisualizer;
@@ -96,16 +170,12 @@ public class ChartDisplayPanel extends JPanel implements ActionListener {
 		decorators = aDecorators;
 		originalParam = aVisualizer.getComplexParam();
 		chart = aVisualizer.createControl();
-		//ownerDialog = aOwner;
+		this.owner = owner;
 
 		initControls();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
-	 */
+	@Override
 	public void actionPerformed(ActionEvent e) {
 		Object source = e.getSource();
 
@@ -113,7 +183,7 @@ public class ChartDisplayPanel extends JPanel implements ActionListener {
 			if (source == btnEnlarged) {
 				displayEnlarged();
 			} else if (source == btnSaveChart) {
-				SaveChartDialog dialog = new SaveChartDialog(ownerDialog, chart);
+				SaveChartDialog dialog = new SaveChartDialog(owner, chart);
 				dialog.setVisible(true);
 			} else if (source == btnSaveData) {
 				saveChartData();
@@ -130,7 +200,7 @@ public class ChartDisplayPanel extends JPanel implements ActionListener {
 						if (dec.isActive()) {
 							dec.undecorate(chart);
 						} else {
-							dec.decorate(ownerDialog, chart, visualizer, true);
+							dec.decorate(owner, chart, visualizer, true);
 						}
 						btnsDec[i].setText(dec.getButtonLabel());
 						btnsDec[i].setToolTipText(dec.getButtonToolTip());
@@ -152,124 +222,136 @@ public class ChartDisplayPanel extends JPanel implements ActionListener {
 	 */
 	protected boolean changeVisSettings() {
 		// Display dialog to view/edit the settings
-		if (visualizer.showSettingsDialog(ownerDialog) != SettingsDialog.STATUS_CANCEL) {
+		if (visualizer.showSettingsDialog(owner) != SettingsDialog.STATUS_CANCEL) {
 			// User has pressed SET DEFAULT or OK
 			final JFreeChart newChart = visualizer.updateControl(chart);
 			if (decorators != null) {
 				for (int i = 0; i < decorators.length; ++i) {
 					if (decorators[i].isActive()) {
-						decorators[i].decorate(ownerDialog, newChart, visualizer, false);
+						decorators[i].decorate(owner, newChart, visualizer, false);
 					}
 				}
 			}
-			JFreeChartConn.setChart(chartPanel, chart = newChart);
+			JFreeChartConn.setChart(getChartPanel(), chart = newChart);
 			return true;
 		}
 		return false;
 	}
 
 	/**
-	 * Visualizer instance for the displayed parameter chart. Used for viewing/editing of visual
-	 * settings.
-	 */
-	protected ComplexParamVisualizer visualizer;
-
-	/**
-	 * Owner dialog of this panel.
-	 */
-	protected JDialog ownerDialog;
-
-	/**
-	 * &quot;Chart Settings&quot; button.
-	 */
-	protected JButton btnChartSettings;
-
-	/**
-	 * Unique ID for this version of this class. It is used in serialization.
-	 */
-	private static final long serialVersionUID = 1662216221117859713L;
-
-	/**
 	 * Creates and lays out the controls inside this panel.
-	 * <p>
-	 * This method is called upon initialization only.
-	 * </p>
+	 * <p> This method is called upon initialization only.</p>
 	 */
 	private void initControls() {
-		setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
-
-		add(createChartPanel());
-
-		final Box buttonPanel = Box.createVerticalBox();
-		final List<JButton> buttons = new ArrayList<JButton>(8);
+		btnChartSettings = Utils.createButton(Messages.DI_CHARTSETTINGS, Messages.TT_CHARTSETTINGS, this);
 		btnEnlarged = Utils.createButton(Messages.DI_VIEWENLARGED, Messages.TT_VIEWENLARGED, this);
+		btnSaveChart = Utils.createButton(Messages.DI_EXPORTCHART, Messages.TT_SAVECHART, this);
+		btnSaveData = Utils.createButton(Messages.DI_EXPORTDATA, Messages.TT_SAVEDATA, this);
+		
 		if (Plugin.hasFilter(originalParam.getClass())) {
 			btnFilter = Utils.createButton(Messages.DI_FILTERDATA, Messages.TT_FILTERDATA, this);
 		} else {
 			btnFilter = null;
 		}
-		btnSaveChart = Utils.createButton(Messages.DI_EXPORTCHART, Messages.TT_SAVECHART, this);
-		btnSaveData = Utils.createButton(Messages.DI_EXPORTDATA, Messages.TT_SAVEDATA, this);
-		btnChartSettings = Utils.createButton(Messages.DI_CHARTSETTINGS, Messages.TT_CHARTSETTINGS,
-				this);
+		
+		final GroupLayout layout = new GroupLayout(this);
+		setLayout(layout);
+		layout.setAutoCreateContainerGaps(true);
+		layout.setAutoCreateGaps(true);
+		
+		final ParallelGroup hBtnGroup;
+		final SequentialGroup vBtnGroup;
+		
+		layout.setHorizontalGroup(layout.createSequentialGroup()
+				.addComponent(getChartPanel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				.addGroup(hBtnGroup = layout.createParallelGroup(Alignment.CENTER, true))
+		);
+		layout.setVerticalGroup(layout.createParallelGroup(Alignment.CENTER, true)
+				.addComponent(getChartPanel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				.addGroup(vBtnGroup = layout.createSequentialGroup())
+		);
 
-		buttonPanel.add(btnChartSettings);
+		final List<JButton> buttons = new ArrayList<JButton>(8);
 		buttons.add(btnChartSettings);
-		buttonPanel.add(btnEnlarged);
 		buttons.add(btnEnlarged);
+		if (btnFilter != null) buttons.add(btnFilter);
+		buttons.add(btnSaveChart);
+		buttons.add(btnSaveData);
+		
+		// Add buttons to panel
+		hBtnGroup.addComponent(btnChartSettings, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE);
+		vBtnGroup.addComponent(btnChartSettings, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE);
+		
+		hBtnGroup.addComponent(btnEnlarged, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE);
+		vBtnGroup.addComponent(btnEnlarged, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE);
+		
 		if (btnFilter != null) {
-			buttonPanel.add(btnFilter);
-			buttons.add(btnFilter);
+			hBtnGroup.addComponent(btnFilter, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE);
+			vBtnGroup.addComponent(btnFilter, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE);
 		}
-		buttonPanel.add(Box.createVerticalStrut(Utils.BORDER_SIZE * 2));
+		
+		vBtnGroup.addGap(10, 20, Short.MAX_VALUE);
+		
 		if (decorators != null) {
 			btnsDec = new JButton[decorators.length];
+			
 			for (int i = 0; i < decorators.length; ++i) {
 				Decorator d = decorators[i];
 				btnsDec[i] = Utils.createButton(d.getButtonLabel(), d.getButtonToolTip(), this);
-				buttonPanel.add(btnsDec[i]);
 				buttons.add(btnsDec[i]);
+				
+				hBtnGroup.addComponent(btnsDec[i], DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE);
+				vBtnGroup.addComponent(btnsDec[i], PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE);
 			}
-			buttonPanel.add(Box.createVerticalStrut(Utils.BORDER_SIZE * 2));
 		}
-		buttonPanel.add(btnSaveChart);
-		buttons.add(btnSaveChart);
-		buttonPanel.add(btnSaveData);
-		buttons.add(btnSaveData);
-		buttonPanel.add(Box.createVerticalStrut(Utils.BORDER_SIZE * 2));
-		buttonPanel.add(Box.createVerticalGlue());
+		
+		vBtnGroup.addGap(10, 20, Short.MAX_VALUE);
+		
+		hBtnGroup.addComponent(btnSaveChart, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE);
+		vBtnGroup.addComponent(btnSaveChart, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE);
+		
+		hBtnGroup.addComponent(btnSaveData, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE);
+		vBtnGroup.addComponent(btnSaveData, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE);
+		
 		// Ensure buttons are large enough to fit all possible messages
 		final JButton[] btnsArray = new JButton[buttons.size()];
 		Utils.setSizes(buttons.toArray(btnsArray), preferred, preferred);
-		add(buttonPanel);
-		add(Box.createHorizontalGlue());
 	}
 
-	/**
-	 * Creates a Swing control that displays this panel's chart.
-	 * <p>
-	 * The newly created panel is stored in the {@link #chartPanel} field.
-	 * </p>
-	 * 
-	 * @return The newly created panel instance that displays the chart.
-	 */
-	private JPanel createChartPanel() {
-		chartPanel = JFreeChartConn.createPanel(chart);
-		Dimension size = chartPanel.getPreferredSize();
-		size.setSize(size.getWidth() / 3 * 2, size.getHeight() / 3 * 2);
-		chartPanel.setPreferredSize(size);
+	private JPanel getChartPanel() {
+		if (chartPanel == null) {
+			chartPanel = JFreeChartConn.createPanel(chart);
+			chartPanel.setBorder(BorderFactory.createLineBorder(UIManager.getColor("Separator.foreground")));
+			
+			final Dimension size = chartPanel.getPreferredSize();
+			size.setSize(size.getWidth() / 3 * 2, size.getHeight() / 3 * 2);
+			chartPanel.setPreferredSize(size);
+		}
+		
 		return chartPanel;
 	}
 
 	/**
 	 * Creates a dialog window which contains the chart in its preferred size.
 	 */
+	@SuppressWarnings("serial")
 	private void displayEnlarged() {
-		JDialog dialog = new JDialog(ownerDialog, visualizer.getTitle(), false);
+		final JDialog dialog = new JDialog(owner, visualizer.getTitle());
 		dialog.getContentPane().add(JFreeChartConn.createPanel(chart));
 		dialog.pack();
-		dialog.setLocationRelativeTo(ownerDialog);
+		dialog.setModalityType(ModalityType.MODELESS);
+		dialog.setLocationRelativeTo(owner);
 		dialog.setVisible(true);
+		
+		LookAndFeelUtil.setDefaultOkCancelKeyStrokes(
+				dialog.getRootPane(),
+				null,
+				new AbstractAction() {
+					@Override
+					public void actionPerformed(ActionEvent e) {
+						dialog.dispose();
+					}
+				});
 	}
 
 	/**
@@ -286,16 +368,18 @@ public class ChartDisplayPanel extends JPanel implements ActionListener {
 				final Class<?> paramClass = originalParam.getClass();
 				final Class<?> filterClass = Plugin.getFilterDialogClass(paramClass);
 				final Constructor<?> constr = filterClass.getConstructors()[0];
-				Object[] cParams = new Object[] { ownerDialog, Messages.DT_FILTERDATA,
+				
+				Object[] cParams = new Object[] { owner, Messages.DT_FILTERDATA,
 						originalParam, visualizer.getSettings() };
 				ComplexParamFilterDialog d = (ComplexParamFilterDialog) constr.newInstance(cParams);
 				ComplexParamFilter filter = d.showDialog();
+				
 				if (filter != null) {
 					btnFilter.setText(Messages.DI_REMOVEFILTER);
 					btnFilter.setToolTipText(Messages.TT_REMOVEFILTER);
 					visualizer.setComplexParam(filter.filter(originalParam));
 					chart = visualizer.createControl();
-					JFreeChartConn.setChart(chartPanel, chart);
+					JFreeChartConn.setChart(getChartPanel(), chart);
 				}
 			} catch (InnerException ex) {
 				// NetworkAnalyzer internal error
@@ -308,7 +392,6 @@ public class ChartDisplayPanel extends JPanel implements ActionListener {
 				// NetworkAnalyzer internal error
 				logger.error(Messages.SM_LOGERROR, ex);
 			}
-
 		} else {
 			// Remove filter
 			int res = JOptionPane.showConfirmDialog(this, Messages.SM_REMOVEFILTER,
@@ -318,7 +401,7 @@ public class ChartDisplayPanel extends JPanel implements ActionListener {
 				btnFilter.setToolTipText(Messages.TT_FILTERDATA);
 				visualizer.setComplexParam(originalParam);
 				chart = visualizer.createControl();
-				JFreeChartConn.setChart(chartPanel, chart);
+				JFreeChartConn.setChart(getChartPanel(), chart);
 			}
 		}
 	}
@@ -354,68 +437,4 @@ public class ChartDisplayPanel extends JPanel implements ActionListener {
 			}
 		}
 	}
-
-	private static Dimension preferred = null;
-
-	static {
-		final JButton b = new JButton("");
-		preferred = b.getPreferredSize();
-		final String[] texts = new String[] { Messages.DI_VIEWENLARGED, Messages.DI_FILTERDATA,
-				Messages.DI_EXPORTCHART, Messages.DI_EXPORTDATA, Messages.DI_CHARTSETTINGS,
-				Messages.DI_HELP, Messages.DI_FITLINE, Messages.DI_REMOVELINE, Messages.DI_FITPL, Messages.DI_REMOVEPL };
-		for (final String text : texts) {
-			b.setText(text);
-			Utils.ensureSize(preferred, b.getPreferredSize());
-		}
-	}
-
-	/**
-	 * Decorators registered for the complex parameter instance visualized.
-	 */
-	private Decorator[] decorators;
-
-	/**
-	 * Original (unfiltered) complex parameter displayed in this panel.
-	 */
-	private ComplexParam originalParam;
-
-	/**
-	 * Chart to be displayed.
-	 */
-	private JFreeChart chart;
-
-	/**
-	 * Swing control that displays the chart.
-	 */
-	private JPanel chartPanel;
-
-	/**
-	 * &quot;View Enlarged&quot; button.
-	 */
-	private JButton btnEnlarged;
-
-	/**
-	 * &quot;Save Chart&quot; button.
-	 */
-	private JButton btnSaveChart;
-
-	/**
-	 * &quot;Save Data&quot; button.
-	 */
-	private JButton btnSaveData;
-
-	/**
-	 * &quot;Filter Data&quot; / &quot;Remove Filter&quot; button.
-	 */
-	private JButton btnFilter;
-
-	/**
-	 * Buttons for the decorators.
-	 */
-	private JButton[] btnsDec;
-
-	/**
-	 * ID of the visualized complex parameter.
-	 */
-	private String id;
 }

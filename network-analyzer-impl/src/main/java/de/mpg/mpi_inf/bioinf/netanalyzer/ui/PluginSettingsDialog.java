@@ -26,7 +26,6 @@ package de.mpg.mpi_inf.bioinf.netanalyzer.ui;
  * #L%
  */
 
-import java.awt.BorderLayout;
 import java.awt.Dialog;
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
@@ -34,6 +33,8 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 
 import javax.swing.AbstractAction;
+import javax.swing.GroupLayout;
+import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JPanel;
@@ -53,8 +54,15 @@ import de.mpg.mpi_inf.bioinf.netanalyzer.data.io.SettingsSerializer;
  */
 public class PluginSettingsDialog extends JDialog {
 
+	private static final long serialVersionUID = 7118008694414543131L;
 	private static final Logger logger = LoggerFactory.getLogger(PluginSettingsDialog.class);
 
+	private JButton btnCancel;
+	private JButton btnOK;
+
+	/** Panel that contains the controls for adjusting the plugin's settings. */
+	private SettingsPanel panSettings;
+	
 	/**
 	 * Initializes a new instance of <code>PluginSettingsDialog</code>.
 	 * <p>
@@ -65,10 +73,9 @@ public class PluginSettingsDialog extends JDialog {
 	 * </p>
 	 * 
 	 * @param aOwner The <code>Dialog</code> from which this dialog is displayed.
-	 * 
 	 */
 	public PluginSettingsDialog(Dialog aOwner) {
-		super(aOwner, Messages.DT_SETTINGS, true);
+		super(aOwner, Messages.DT_SETTINGS);
 		initControls();
 		pack();
 		setLocationRelativeTo(aOwner);
@@ -78,19 +85,13 @@ public class PluginSettingsDialog extends JDialog {
 	 * Initializes a new instance of <code>PluginSettingsDialog</code>.
 	 * 
 	 * @param aOwner The <code>Dialog</code> from which this dialog is displayed.
-	 * 
 	 */
 	public PluginSettingsDialog(Frame aOwner) {
-		super(aOwner, Messages.DT_SETTINGS, true);
+		super(aOwner, Messages.DT_SETTINGS);
 		initControls();
 		pack();
 		setLocationRelativeTo(aOwner);
 	}
-
-	/**
-	 * Unique ID for this version of this class. It is used in serialization.
-	 */
-	private static final long serialVersionUID = 7118008694414543131L;
 
 	/**
 	 * Creates and lays out the controls inside this dialog.
@@ -100,12 +101,8 @@ public class PluginSettingsDialog extends JDialog {
 	 */
 	@SuppressWarnings("serial")
 	private void initControls() {
-		JPanel contentPane = new JPanel(new BorderLayout(0, Utils.BORDER_SIZE));
-		Utils.setStandardBorder(contentPane);
-
 		panSettings = new SettingsPanel(SettingsSerializer.getPluginSettings());
-		contentPane.add(panSettings, BorderLayout.CENTER);
-
+		
 		// Add OK, Cancel and Help buttons
 		btnOK = Utils.createButton(new AbstractAction(Messages.DI_OK) {
 			@Override
@@ -134,28 +131,27 @@ public class PluginSettingsDialog extends JDialog {
 		
 		Utils.equalizeSize(btnOK, btnCancel);
 		final JPanel panButtons = LookAndFeelUtil.createOkCancelPanel(btnOK, btnCancel);
-		contentPane.add(panButtons, BorderLayout.SOUTH);
-
+		
+		final JPanel contentPane = new JPanel();
+		final GroupLayout layout = new GroupLayout(contentPane);
+		contentPane.setLayout(layout);
+		layout.setAutoCreateContainerGaps(true);
+		layout.setAutoCreateGaps(true);
+		
+		layout.setHorizontalGroup(layout.createParallelGroup(Alignment.CENTER, true)
+				.addComponent(panSettings)
+				.addComponent(panButtons)
+		);
+		layout.setVerticalGroup(layout.createSequentialGroup()
+				.addComponent(panSettings)
+				.addComponent(panButtons)
+		);
+		
+		setContentPane(contentPane);
 		setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-		getContentPane().add(contentPane);
 		
 		LookAndFeelUtil.setDefaultOkCancelKeyStrokes(getRootPane(), btnOK.getAction(), btnCancel.getAction());
 		getRootPane().setDefaultButton(btnOK);
 		btnOK.requestFocusInWindow();
 	}
-
-	/**
-	 * &quot;Cancel&quot; button.
-	 */
-	private JButton btnCancel;
-
-	/**
-	 * &quot;OK&quot; button.
-	 */
-	private JButton btnOK;
-
-	/**
-	 * Panel that contains the controls for adjusting the plugin's settings.
-	 */
-	private SettingsPanel panSettings;
 }

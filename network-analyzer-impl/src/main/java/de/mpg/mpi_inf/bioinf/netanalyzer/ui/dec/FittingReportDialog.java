@@ -26,25 +26,41 @@ package de.mpg.mpi_inf.bioinf.netanalyzer.ui.dec;
  * #L%
  */
 
-import de.mpg.mpi_inf.bioinf.netanalyzer.data.Messages;
-import de.mpg.mpi_inf.bioinf.netanalyzer.ui.Utils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.swing.*;
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.FlowLayout;
+import java.awt.Frame;
+import java.awt.GridLayout;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.geom.Point2D;
 import java.net.MalformedURLException;
 import java.net.URL;
 
+import javax.swing.AbstractAction;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.JButton;
+import javax.swing.JDialog;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
+import javax.swing.SwingConstants;
+
+import org.cytoscape.util.swing.LookAndFeelUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import de.mpg.mpi_inf.bioinf.netanalyzer.data.Messages;
+import de.mpg.mpi_inf.bioinf.netanalyzer.ui.Utils;
+
 /**
  * Dialog window which reports the results after fitting a function.
  * 
  * @author Yassen Assenov
  */
-public class FittingReportDialog extends JDialog implements ActionListener {
+public class FittingReportDialog extends JDialog {
 
 	private static final Logger logger = LoggerFactory.getLogger(FittingReportDialog.class);
 	/**
@@ -67,23 +83,10 @@ public class FittingReportDialog extends JDialog implements ActionListener {
 	 * @param aTitle Dialog's title.
 	 * @param aData Fit data to be displayed, encapsulated in a <code>FitData</code> instance.
 	 */
-	public FittingReportDialog(Dialog aOwner, String aTitle, FitData aData) {
-		super(aOwner, aTitle, true);
+	public FittingReportDialog(Window aOwner, String aTitle, FitData aData) {
+		super(aOwner, aTitle);
 		initControls(aData);
 		setLocationRelativeTo(aOwner);
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
-	 */
-	public void actionPerformed(ActionEvent e) {
-		final Object src = e.getSource();
-		if (src == btnOK) {
-			setVisible(false);
-			dispose();
-		}
 	}
 
 	/**
@@ -99,6 +102,7 @@ public class FittingReportDialog extends JDialog implements ActionListener {
 	 * 
 	 * @param aData Fit data to be displayed.
 	 */
+	@SuppressWarnings("serial")
 	private void initControls(FitData aData) {
 		final int bs = Utils.BORDER_SIZE;
 		final JPanel contentPane = new JPanel(new BorderLayout(0, bs));
@@ -153,20 +157,29 @@ public class FittingReportDialog extends JDialog implements ActionListener {
 			boxData.add(Box.createVerticalStrut(bs * 2));
 		}
 
-		// Add "OK" and "Help" buttons
-		JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, bs, 0));
-		btnOK = Utils.createButton(Messages.DI_OK, null, this);
+		// Add "Close" and "Help" buttons
+		btnClose = Utils.createButton(new AbstractAction(Messages.DI_CLOSE) {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				setVisible(false);
+				dispose();
+			}
+		}, null);
+		
 		try {
 			helpURL = new URL(aData.getHelpURL());
 		} catch (MalformedURLException e) {
-			// TODO Auto-generated catch block
 			logger.warn("bad url: " + aData.getHelpURL(), e);
 		}
-		bottomPanel.add(btnOK);
+		
+		final JPanel bottomPanel = LookAndFeelUtil.createOkCancelPanel(null, btnClose);
 		contentPane.add(bottomPanel, BorderLayout.SOUTH);
 
 		setContentPane(contentPane);
 		pack();
+		
+		LookAndFeelUtil.setDefaultOkCancelKeyStrokes(rootPane, btnClose.getAction(), btnClose.getAction());
+		getRootPane().setDefaultButton(btnClose);
 	}
 
 	private void createReport(JPanel aPanel, String aMessage, Double aValue) {
@@ -180,7 +193,7 @@ public class FittingReportDialog extends JDialog implements ActionListener {
 	/**
 	 * &quot;OK&quot; button.
 	 */
-	private JButton btnOK;
+	private JButton btnClose;
 
 	/**
 	 * URL to be visited when the user clicks on the &quot;Help&quot; button.

@@ -26,6 +26,7 @@ package de.mpg.mpi_inf.bioinf.netanalyzer;
  * #L%
  */
 
+import java.awt.Dialog.ModalityType;
 import java.awt.event.ActionEvent;
 
 import org.slf4j.Logger;
@@ -43,35 +44,27 @@ import de.mpg.mpi_inf.bioinf.netanalyzer.ui.PluginSettingsDialog;
  */
 public class SettingsAction extends NetAnalyzerAction {
 
+	private static final long serialVersionUID = 7321507757114057304L;
 	private static final Logger logger = LoggerFactory.getLogger(SettingsAction.class);
 
 	/**
 	 * Initializes a new instance of <code>SettingsAction</code>.
 	 */
 	public SettingsAction(CyApplicationManager appMgr,CySwingApplication swingApp) {
-		super(Messages.AC_SETTINGS,appMgr,swingApp);
+		super(Messages.AC_SETTINGS, appMgr, swingApp);
 		setPreferredMenu(NetworkAnalyzer.PARENT_MENU + Messages.AC_MENU_ANALYSIS);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
-	 */
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		try {
 			// Display settings dialog
-			PluginSettingsDialog d = new PluginSettingsDialog(swingApp.getJFrame());
+			final PluginSettingsDialog d = new PluginSettingsDialog(swingApp.getJFrame());
+			d.setModalityType(ModalityType.APPLICATION_MODAL);
 			d.setVisible(true);
 		} catch (InnerException ex) {
 			// NetworkAnalyzer internal error
 			logger.error(Messages.SM_LOGERROR, ex);
 		}
 	}
-
-	/**
-	 * Unique ID for this version of this class. It is used in serialization.
-	 */
-	private static final long serialVersionUID = 7321507757114057304L;
 }

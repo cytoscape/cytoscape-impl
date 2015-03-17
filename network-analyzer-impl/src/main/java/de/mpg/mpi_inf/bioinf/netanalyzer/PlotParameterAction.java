@@ -59,11 +59,6 @@ public class PlotParameterAction extends NetAnalyzerAction implements AnalysisLi
 		setPreferredMenu(NetworkAnalyzer.PARENT_MENU + Messages.AC_MENU_ANALYSIS);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see cytoscape.util.CytoscapeAction#actionPerformed(java.awt.event.ActionEvent)
-	 */
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		try {
@@ -100,21 +95,12 @@ public class PlotParameterAction extends NetAnalyzerAction implements AnalysisLi
 		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see de.mpg.mpi_inf.bioinf.netanalyzer.AnalysisListener#analysisCancelled()
-	 */
+	@Override
 	public void analysisCancelled() {
 		// No specific action is required
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see de.mpg.mpi_inf.bioinf.netanalyzer.AnalysisListener#analysisCompleted(de.mpg.mpi_inf.bioinf
-	 * .netanalyzer.NetworkAnalyzer)
-	 */
+	@Override
 	public void analysisCompleted(NetworkAnalyzer analyzer) {
 		openDialog();
 	}

@@ -29,7 +29,7 @@ package de.mpg.mpi_inf.bioinf.netanalyzer.ui;
 import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
 
-import java.awt.Dialog;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
@@ -65,17 +65,19 @@ import de.mpg.mpi_inf.bioinf.netanalyzer.ui.charts.JFreeChartConn;
  */
 public class SaveChartDialog extends JDialog {
 
+	private static final long serialVersionUID = -6256113953155955101L;
+	
 	/**
 	 * Initializes a new instance of <code>SaveChartDialog</code>. The constructor creates and
 	 * lays out all the controls of the dialog. It also positions the window according to its
 	 * parent, so no subsequent calls to <code>pack</code> or <code>setLocation(...)</code> are
 	 * necessary.
 	 * 
-	 * @param aOwner The <code>Dialog</code> from which this dialog is displayed.
+	 * @param owner The <code>Dialog</code> from which this dialog is displayed.
 	 * @param aChart Chart instance to be saved to a file.
 	 */
-	public SaveChartDialog(Dialog aOwner, JFreeChart aChart) {
-		super(aOwner, Messages.DT_SAVECHART, false);
+	public SaveChartDialog(final Window owner, JFreeChart aChart) {
+		super(owner, Messages.DT_SAVECHART);
 
 		chart = aChart;
 
@@ -83,13 +85,8 @@ public class SaveChartDialog extends JDialog {
 		pack();
 		setModal(true);
 		setResizable(false);
-		setLocationRelativeTo(aOwner);
+		setLocationRelativeTo(owner);
 	}
-
-	/**
-	 * Unique ID for this version of this class. It is used in serialization.
-	 */
-	private static final long serialVersionUID = -6256113953155955101L;
 
 	/**
 	 * &qout;Save file&qout; dialog, reused by the instances of this class.
@@ -218,6 +215,7 @@ public class SaveChartDialog extends JDialog {
 		}
 		
 		LookAndFeelUtil.setDefaultOkCancelKeyStrokes(getRootPane(), btnSave.getAction(), btnCancel.getAction());
+		getRootPane().setDefaultButton(btnSave);
 		
 		setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 	}

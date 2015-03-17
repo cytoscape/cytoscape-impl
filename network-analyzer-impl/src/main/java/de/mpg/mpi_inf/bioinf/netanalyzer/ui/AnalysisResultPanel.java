@@ -26,18 +26,23 @@ package de.mpg.mpi_inf.bioinf.netanalyzer.ui;
  * #L%
  */
 
-import de.mpg.mpi_inf.bioinf.netanalyzer.CyNetworkUtils;
-import de.mpg.mpi_inf.bioinf.netanalyzer.InnerException;
-import de.mpg.mpi_inf.bioinf.netanalyzer.NetworkAnalyzer;
-import de.mpg.mpi_inf.bioinf.netanalyzer.Plugin;
-import de.mpg.mpi_inf.bioinf.netanalyzer.data.ComplexParam;
-import de.mpg.mpi_inf.bioinf.netanalyzer.data.Decorators;
-import de.mpg.mpi_inf.bioinf.netanalyzer.data.Messages;
-import de.mpg.mpi_inf.bioinf.netanalyzer.data.NetworkStats;
-import de.mpg.mpi_inf.bioinf.netanalyzer.data.io.SettingsSerializer;
-import de.mpg.mpi_inf.bioinf.netanalyzer.data.io.StatsSerializer;
-import de.mpg.mpi_inf.bioinf.netanalyzer.data.settings.PluginSettings;
-import de.mpg.mpi_inf.bioinf.netanalyzer.dec.Decorator;
+import java.awt.Component;
+import java.awt.Window;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.File;
+import java.io.IOException;
+import java.lang.reflect.Constructor;
+
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JDialog;
+import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JTabbedPane;
 
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.CytoPanel;
@@ -50,14 +55,18 @@ import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 
-import javax.swing.*;
-
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.io.File;
-import java.io.IOException;
-import java.lang.reflect.Constructor;
+import de.mpg.mpi_inf.bioinf.netanalyzer.CyNetworkUtils;
+import de.mpg.mpi_inf.bioinf.netanalyzer.InnerException;
+import de.mpg.mpi_inf.bioinf.netanalyzer.NetworkAnalyzer;
+import de.mpg.mpi_inf.bioinf.netanalyzer.Plugin;
+import de.mpg.mpi_inf.bioinf.netanalyzer.data.ComplexParam;
+import de.mpg.mpi_inf.bioinf.netanalyzer.data.Decorators;
+import de.mpg.mpi_inf.bioinf.netanalyzer.data.Messages;
+import de.mpg.mpi_inf.bioinf.netanalyzer.data.NetworkStats;
+import de.mpg.mpi_inf.bioinf.netanalyzer.data.io.SettingsSerializer;
+import de.mpg.mpi_inf.bioinf.netanalyzer.data.io.StatsSerializer;
+import de.mpg.mpi_inf.bioinf.netanalyzer.data.settings.PluginSettings;
+import de.mpg.mpi_inf.bioinf.netanalyzer.dec.Decorator;
 
 /**
  * Dialog presenting results of network analysis.
@@ -82,7 +91,7 @@ public class AnalysisResultPanel extends JPanel implements ActionListener, CytoP
 		netstatsDialog.addChoosableFileFilter(SupportedExtensions.netStatsFilter);
 	}
 
-	private final Window aOwner;
+	private final Window owner;
 
 	private CySwingApplication swingApplication;
 	
@@ -95,7 +104,7 @@ public class AnalysisResultPanel extends JPanel implements ActionListener, CytoP
 	 * subsequent calls to <code>pack</code> or <code>setLocation(...)</code> are necessary.
 	 * </p>
 	 * 
-	 * @param aOwner
+	 * @param owner
 	 *            The <code>Frame</code> from which this dialog is displayed.
 	 * @param aStats
 	 *            Network statistics to be visualized.
@@ -103,9 +112,16 @@ public class AnalysisResultPanel extends JPanel implements ActionListener, CytoP
 	 *            Analyzer class that performed the topological analysis. Set this to <code>null</code> if the
 	 *            results were loaded from a file rather than just computed.
 	 */
-	public AnalysisResultPanel(final CySwingApplication swingApplication, Window aOwner, final ResultPanelFactory panelFactory, NetworkStats aStats, NetworkAnalyzer aAnalyzer,
-			final CyNetworkViewManager viewManager, final VisualStyleBuilder vsBuilder, final VisualMappingManager vmm) {
-		this.aOwner = aOwner;
+	public AnalysisResultPanel(
+			final CySwingApplication swingApplication,
+			final Window owner,
+			final ResultPanelFactory panelFactory,
+			final NetworkStats aStats,
+			final NetworkAnalyzer aAnalyzer,
+			final CyNetworkViewManager viewManager,
+			final VisualStyleBuilder vsBuilder,
+			final VisualMappingManager vmm) {
+		this.owner = owner;
 		this.viewManager = viewManager;
 		this.vmm = vmm;
 		this.vsBuilder = vsBuilder;
@@ -214,9 +230,9 @@ public class AnalysisResultPanel extends JPanel implements ActionListener, CytoP
 				ComplexParamVisualizer v = (ComplexParamVisualizer) con.newInstance(conParams);
 				final Decorator[] decs = Decorators.get(id);
 				if (useExpandable) {
-					this.add(new ChartExpandablePanel(this, id, v, (i == 0), decs));
+					this.add(new ChartExpandablePanel(owner, id, v, (i == 0), decs));
 				} else {
-					tabs.addTab(v.getTitle(), new ChartDisplayPanel(this, id, v, decs));
+					tabs.addTab(v.getTitle(), new ChartDisplayPanel(owner, id, v, decs));
 				}
 			} catch (Exception ex) {
 				throw new InnerException(ex);
@@ -289,7 +305,7 @@ public class AnalysisResultPanel extends JPanel implements ActionListener, CytoP
 			final String[][] edgeAttr = CyNetworkUtils.getComputedEdgeAttributes(network);
 			if ((nodeAttr[0].length > 0) || (nodeAttr[1].length > 0) || (edgeAttr[0].length > 0)
 					|| (edgeAttr[1].length > 0)) {
-				final MapParameterDialog d = new MapParameterDialog(aOwner, network, viewManager, vsBuilder, vmm,
+				final MapParameterDialog d = new MapParameterDialog(owner, network, viewManager, vsBuilder, vmm,
 						nodeAttr, edgeAttr);
 				d.setVisible(true);
 				return;

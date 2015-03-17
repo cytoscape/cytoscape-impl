@@ -49,21 +49,11 @@ import de.mpg.mpi_inf.bioinf.netanalyzer.data.settings.SettingsGroup;
  */
 public abstract class TwoCoefsDecorator extends Decorator {
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see de.mpg.mpi_inf.bioinf.netanalyzer.dec.Decorator#isActive()
-	 */
 	@Override
 	public boolean isActive() {
 		return coefs != null;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see de.mpg.mpi_inf.bioinf.netanalyzer.data.settings.XMLSerializable#toXmlNode()
-	 */
 	public Element toXmlNode() {
 		return new Element(this.getClass().getSimpleName());
 	}

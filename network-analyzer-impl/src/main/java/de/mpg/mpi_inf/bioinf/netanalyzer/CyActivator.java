@@ -24,10 +24,16 @@ package de.mpg.mpi_inf.bioinf.netanalyzer;
  * #L%
  */
 
-import de.mpg.mpi_inf.bioinf.netanalyzer.data.Messages;
-import de.mpg.mpi_inf.bioinf.netanalyzer.task.AnalyzeNetworkByNetworkAnalyzerTaskFactory;
-import de.mpg.mpi_inf.bioinf.netanalyzer.ui.ResultPanelFactory;
-import de.mpg.mpi_inf.bioinf.netanalyzer.ui.VisualStyleBuilder;
+import static org.cytoscape.work.ServiceProperties.ENABLE_FOR;
+import static org.cytoscape.work.ServiceProperties.ID;
+import static org.cytoscape.work.ServiceProperties.IN_TOOL_BAR;
+import static org.cytoscape.work.ServiceProperties.MENU_GRAVITY;
+import static org.cytoscape.work.ServiceProperties.TITLE;
+import static org.cytoscape.work.ServiceProperties.TOOL_BAR_GRAVITY;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CyAction;
@@ -44,11 +50,10 @@ import org.cytoscape.view.vizmap.VisualStyleFactory;
 import org.cytoscape.work.swing.DialogTaskManager;
 import org.osgi.framework.BundleContext;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
-
-import static org.cytoscape.work.ServiceProperties.*;
+import de.mpg.mpi_inf.bioinf.netanalyzer.data.Messages;
+import de.mpg.mpi_inf.bioinf.netanalyzer.task.AnalyzeNetworkByNetworkAnalyzerTaskFactory;
+import de.mpg.mpi_inf.bioinf.netanalyzer.ui.ResultPanelFactory;
+import de.mpg.mpi_inf.bioinf.netanalyzer.ui.VisualStyleBuilder;
 
 
 
@@ -91,8 +96,6 @@ public class CyActivator extends AbstractCyActivator {
 		analyzerActionProps.put(TITLE, Messages.AC_ANALYZE);
 		analyzerActionProps.put(MENU_GRAVITY,"9.0");
 		analyzerActionProps.put(TOOL_BAR_GRAVITY,"9.8");
-		analyzerActionProps.put(LARGE_ICON_URL,getClass().getResource("/networkAnalyzer24.png").toString());
-		analyzerActionProps.put(SMALL_ICON_URL,getClass().getResource("/networkAnalyzer16.png").toString());
 		analyzerActionProps.put(IN_TOOL_BAR, "false");
 		analyzerActionProps.put(ENABLE_FOR, "network");
 		AnalyzeNetworkAction analyzeNetworkAction = new AnalyzeNetworkAction(cyApplicationManagerServiceRef,cySwingApplicationServiceRef, viewManagerServiceRef, vsBuilder, vmmServiceRef, analyzerActionProps, viewManagerServiceRef, resultPanel, cyServiceRegistrarServiceRef);

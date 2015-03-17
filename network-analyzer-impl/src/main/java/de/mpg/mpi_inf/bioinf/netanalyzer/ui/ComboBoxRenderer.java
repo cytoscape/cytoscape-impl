@@ -42,6 +42,8 @@ import javax.swing.border.EmptyBorder;
  */
 class ComboBoxRenderer extends JLabel implements ListCellRenderer {
 
+	private static final long serialVersionUID = 1977983924324671280L;
+	
 	/**
 	 * Default constructor for creation of a ComboBoxRenderer.
 	 */
@@ -54,11 +56,7 @@ class ComboBoxRenderer extends JLabel implements ListCellRenderer {
 				.getPreferredSize().height * 12 / 10;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see javax.swing.ListCellRenderer#getListCellRenderer
-	 */
+	@Override
 	public Component getListCellRendererComponent(JList list, Object value, int index,
 			boolean isSelected, boolean cellHasFocus) {
 		String str = (value == null) ? null : value.toString();
@@ -77,11 +75,6 @@ class ComboBoxRenderer extends JLabel implements ListCellRenderer {
 		updateHeight();
 		return this;
 	}
-
-	/**
-	 * Unique ID for this version of this class. It is used in serialization.
-	 */
-	private static final long serialVersionUID = 1977983924324671280L;
 
 	private void updateHeight() {
 		setPreferredSize(null);

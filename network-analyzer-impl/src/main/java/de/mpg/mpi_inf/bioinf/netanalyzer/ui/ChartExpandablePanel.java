@@ -29,15 +29,14 @@ package de.mpg.mpi_inf.bioinf.netanalyzer.ui;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 
 import javax.swing.BorderFactory;
-import javax.swing.JComponent;
 import javax.swing.border.TitledBorder;
-
 
 import de.mpg.mpi_inf.bioinf.netanalyzer.data.Messages;
 import de.mpg.mpi_inf.bioinf.netanalyzer.dec.Decorator;
@@ -50,56 +49,87 @@ import de.mpg.mpi_inf.bioinf.netanalyzer.dec.Decorator;
  * 
  * @author Yassen Assenov
  */
-public class ChartExpandablePanel extends ChartDisplayPanel
-	implements MouseListener, MouseMotionListener {
+public class ChartExpandablePanel extends ChartDisplayPanel implements MouseListener, MouseMotionListener {
 
+	private static final long serialVersionUID = 8700420732833264603L;
+	
+	/**
+	 * Mouse cursor when over the top border of this panel.
+	 */
+	private static Cursor onTitleCursor = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR);
+	
+	/**
+	 * Border of the panel.
+	 */
+	private TitledBorder title;
+
+	/**
+	 * Title text when this panel is expanded, that is, when the controls inside it are visible.
+	 */
+	private String titleExpanded;
+
+	/**
+	 * Title text when this panel is hidden, that is, when the controls inside it are invisible.
+	 */
+	private String titleHidden;
+
+	/**
+	 * Color of title text when mouse cursor is <b>not</b> over the top border of this panel.
+	 */
+	private Color normalTitleColor;
+
+	/**
+	 * Color of title text when mouse cursor is over the top border of this panel.
+	 */
+	private Color selTitleColor;
+
+	/**
+	 * Height, in pixels, of the top border of this panel.
+	 */
+	private int titleHeight;
+	
 	/**
 	 * Initializes a new instance of <code>ChartExpandablePanel</code>.
 	 * <p>
 	 * The panel is initially expanded.
 	 * </p>
 	 * 
-	 * @param aOwner Owner dialog.
+	 * @param owner Owner dialog.
 	 * @param aID ID of complex parameter to be displayed.
 	 * @param aVisualizer Visualizer of the complex parameter to be displayed.
 	 */
-	public ChartExpandablePanel(JComponent aOwner, String aID, ComplexParamVisualizer aVisualizer) {
-		this(aOwner, aID, aVisualizer, true, null);
+	public ChartExpandablePanel(Window owner, String aID, ComplexParamVisualizer aVisualizer) {
+		this(owner, aID, aVisualizer, true, null);
 	}
 
 	/**
 	 * Initializes a new instance of <code>ChartExpandablePanel</code>.
 	 * 
-	 * @param aOwner Owner dialog.
+	 * @param owner Owner dialog.
 	 * @param aID ID of complex parameter to be displayed.
 	 * @param aVisualizer Visualizer of the complex parameter to be displayed.
 	 * @param aExpanded Flag indicating if the panel must be initially expanded or hidden.
 	 */
-	public ChartExpandablePanel(JComponent aOwner, String aID, ComplexParamVisualizer aVisualizer, boolean aExpanded) {
-		this(aOwner, aID, aVisualizer, aExpanded, null);
+	public ChartExpandablePanel(Window owner, String aID, ComplexParamVisualizer aVisualizer, boolean aExpanded) {
+		this(owner, aID, aVisualizer, aExpanded, null);
 	}
 
 	/**
 	 * Initializes a new instance of <code>ChartBorderPanel</code>.
 	 * 
-	 * @param aOwner Owner dialog.
+	 * @param owner Owner dialog.
 	 * @param aID ID of complex parameter to be displayed.
 	 * @param aVisualizer Visualizer of the complex parameter to be displayed.
 	 * @param aExpanded Flag indicating if the panel must be initially expanded or hidden.
 	 * @param aDecorators Decorator instances for the complex parameter visualized.
 	 */
-	public ChartExpandablePanel(JComponent aOwner, String aID, ComplexParamVisualizer aVisualizer, boolean aExpanded,
+	public ChartExpandablePanel(Window owner, String aID, ComplexParamVisualizer aVisualizer, boolean aExpanded,
 		Decorator[] aDecorators) {
-		super(aOwner, aID, aVisualizer, aDecorators);
+		super(owner, aID, aVisualizer, aDecorators);
 
 		initControls(aExpanded);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
-	 */
 	@Override
 	public void actionPerformed(ActionEvent e) {
 
@@ -129,50 +159,30 @@ public class ChartExpandablePanel extends ChartDisplayPanel
 		return getComponent(0).isVisible();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.awt.event.MouseListener#mouseClicked(java.awt.event.MouseEvent)
-	 */
+	@Override
 	public void mouseClicked(MouseEvent e) {
 		if (e.getY() <= titleHeight) {
 			setExpanded(!isExpanded());
-			ownerDialog.pack();
+			owner.pack();
 		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.awt.event.MouseListener#mousePressed(java.awt.event.MouseEvent)
-	 */
+	@Override
 	public void mousePressed(MouseEvent e) {
 		// Event is not processed
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.awt.event.MouseListener#mouseReleased(java.awt.event.MouseEvent)
-	 */
+	@Override
 	public void mouseReleased(MouseEvent e) {
 		// Event is not processed
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.awt.event.MouseListener#mouseEntered(java.awt.event.MouseEvent)
-	 */
+	@Override
 	public void mouseEntered(MouseEvent e) {
 		// Event is not processed
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.awt.event.MouseListener#mouseExited(java.awt.event.MouseEvent)
-	 */
+	@Override
 	public void mouseExited(MouseEvent e) {
 		if (getCursor() == onTitleCursor) {
 			setCursor(null);
@@ -182,20 +192,12 @@ public class ChartExpandablePanel extends ChartDisplayPanel
 		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.awt.event.MouseMotionListener#mouseDragged(java.awt.event.MouseEvent)
-	 */
+	@Override
 	public void mouseDragged(MouseEvent e) {
 		// Event is not processed
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.awt.event.MouseMotionListener#mouseMoved(java.awt.event.MouseEvent)
-	 */
+	@Override
 	public void mouseMoved(MouseEvent e) {
 		if (e.getY() <= titleHeight) {
 			if (getCursor() != onTitleCursor) {
@@ -217,16 +219,6 @@ public class ChartExpandablePanel extends ChartDisplayPanel
 			}
 		}
 	}
-
-	/**
-	 * Unique ID for this version of this class. It is used in serialization.
-	 */
-	private static final long serialVersionUID = 8700420732833264603L;
-
-	/**
-	 * Mouse cursor when over the top border of this panel.
-	 */
-	private static Cursor onTitleCursor = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR);
 
 	/**
 	 * Creates and lays out the controls inside this panel.
@@ -265,34 +257,4 @@ public class ChartExpandablePanel extends ChartDisplayPanel
 		}
 		((TitledBorder) getBorder()).setTitle(aExpanded ? titleExpanded : titleHidden);
 	}
-
-	/**
-	 * Border of the panel.
-	 */
-	private TitledBorder title;
-
-	/**
-	 * Title text when this panel is expanded, that is, when the controls inside it are visible.
-	 */
-	private String titleExpanded;
-
-	/**
-	 * Title text when this panel is hidden, that is, when the controls inside it are invisible.
-	 */
-	private String titleHidden;
-
-	/**
-	 * Color of title text when mouse cursor is <b>not</b> over the top border of this panel.
-	 */
-	private Color normalTitleColor;
-
-	/**
-	 * Color of title text when mouse cursor is over the top border of this panel.
-	 */
-	private Color selTitleColor;
-
-	/**
-	 * Height, in pixels, of the top border of this panel.
-	 */
-	private int titleHeight;
 }

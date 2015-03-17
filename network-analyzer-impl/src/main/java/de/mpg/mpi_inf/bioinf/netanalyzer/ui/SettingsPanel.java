@@ -28,12 +28,14 @@ package de.mpg.mpi_inf.bioinf.netanalyzer.ui;
 
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.Insets;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
+import javax.swing.GroupLayout;
+import javax.swing.GroupLayout.Alignment;
+import javax.swing.GroupLayout.ParallelGroup;
+import javax.swing.GroupLayout.SequentialGroup;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
@@ -56,18 +58,50 @@ import de.mpg.mpi_inf.bioinf.netanalyzer.data.settings.Settings;
  */
 public class SettingsPanel extends JPanel {
 
+	private static final long serialVersionUID = -610827874488404038L;
+
+	/** Preferred width, in pixels, for labels spanning a whole column. */
+	private static final int CHECKBOX_INDENT = 15;
+
+	/** Preferred width, in pixels, for controls spanning a whole column. */
+	private static final int CONTROL_COLUMN_WIDTH = 200;
+
+	/**
+	 * Horizontal spacing for every control.
+	 * <p>
+	 * Settings this field to <i>k</i> results in effective horizontal spacing of <i>2k</i> pixels between
+	 * controls.
+	 * </p>
+	 */
+	private static final int HOR_INSETS = 6;
+
+	/**
+	 * Vertical spacing for every control.
+	 * <p>
+	 * Settings this field to <i>k</i> results in effective vertical spacing of <i>2k</i> pixels between
+	 * controls.
+	 * </p>
+	 */
+	private static final int VER_INSETS = 4;
+
+	/** Settings instance, whose properties are presented in this panel. */
+	private Settings data;
+	
+	private GroupLayout layout;
+	private ParallelGroup hLabelGroup;
+	private ParallelGroup hControlGroup;
+	private SequentialGroup vGroup;
+
 	/**
 	 * Initializes a new instance of <code>SettingsPanel</code>.
 	 * 
 	 * @param aSettings Settings instance, whose editable properties are to be presented in the panel.
 	 * @param aIsDoubleBuffered Flag indicating if double buffering for this panel must be enabled.
 	 */
-	public SettingsPanel(Settings aSettings, boolean aIsDoubleBuffered) {
+	public SettingsPanel(final Settings aSettings, final boolean aIsDoubleBuffered) {
 		super(new GridBagLayout(), aIsDoubleBuffered);
-
-		initLayout();
+		
 		data = aSettings;
-
 		populate();
 	}
 
@@ -85,10 +119,12 @@ public class SettingsPanel extends JPanel {
 
 	@Override
 	public void setEnabled(boolean enabled) {
-		Component[] comps = getComponents();
+		final Component[] comps = getComponents();
+		
 		for (int i = 0; i < comps.length; ++i) {
 			comps[i].setEnabled(enabled);
 		}
+		
 		super.setEnabled(enabled);
 	}
 
@@ -101,9 +137,11 @@ public class SettingsPanel extends JPanel {
 	 *         not be found.
 	 */
 	public Object getValueOf(String aPropName) {
-		Component[] comps = getComponents();
+		final Component[] comps = getComponents();
+		
 		for (int i = 0; i < comps.length; ++i) {
-			Component c = comps[i];
+			final Component c = comps[i];
+			
 			if (aPropName.equals(c.getName())) {
 				if (c instanceof ColorButton) {
 					return ((ColorButton)c).getColor();
@@ -128,14 +166,17 @@ public class SettingsPanel extends JPanel {
 	 * @throws InvocationTargetException If an internal error occurs.
 	 */
 	public void updateData() throws InvocationTargetException {
-		Method[] getters = Settings.propertyGetters(data);
+		final Method[] getters = Settings.propertyGetters(data);
+		
 		for (int i = 0; i < getters.length; ++i) {
-			Method setter = Settings.findSetter(getters[i]);
-			if (setter == null) {
+			final Method setter = Settings.findSetter(getters[i]);
+			
+			if (setter == null)
 				continue;
-			}
-			String propName = Settings.propertyName(getters[i]);
-			Object[] value = new Object[] { getValueOf(propName) };
+			
+			final String propName = Settings.propertyName(getters[i]);
+			final Object[] value = new Object[] { getValueOf(propName) };
+			
 			try {
 				setter.invoke(data, value);
 			} catch (InvocationTargetException ex) {
@@ -149,44 +190,38 @@ public class SettingsPanel extends JPanel {
 	}
 
 	/**
-	 * Initializes the properties of the <code>GridBagLayout</code> used by this panel.
-	 * <p>
-	 * This method is called upon initialization only.
-	 * </p>
-	 */
-	private void initLayout() {
-		layout = (GridBagLayout) getLayout();
-		firstColumn = new GridBagConstraints();
-		firstColumn.anchor = GridBagConstraints.LINE_END;
-		firstColumn.weightx = firstColumn.weighty = 0.2;
-		firstColumn.fill = GridBagConstraints.NONE;
-		firstColumn.insets = new Insets(VER_INSETS, HOR_INSETS, VER_INSETS, HOR_INSETS);
-		lastColumn = new GridBagConstraints();
-		lastColumn.anchor = GridBagConstraints.LINE_START;
-		lastColumn.weightx = lastColumn.weighty = 1.0;
-		lastColumn.fill = GridBagConstraints.HORIZONTAL;
-		lastColumn.insets = new Insets(VER_INSETS, HOR_INSETS, VER_INSETS, HOR_INSETS);
-		lastColumn.gridwidth = GridBagConstraints.REMAINDER;
-	}
-
-	/**
 	 * Populates the panel with all the controls for the editable properties.
 	 * <p>
 	 * This method is only called upon initialization.
 	 * </p>
 	 */
 	private void populate() {
+		layout = new GroupLayout(this);
+		setLayout(layout);
+		layout.setAutoCreateContainerGaps(true);
+		layout.setAutoCreateGaps(true);
+		
+		layout.setHorizontalGroup(layout.createSequentialGroup()
+				.addGroup(hLabelGroup = layout.createParallelGroup(Alignment.TRAILING, false))
+				.addGroup(hControlGroup = layout.createParallelGroup(Alignment.LEADING, false))
+		);
+		layout.setVerticalGroup(vGroup = layout.createSequentialGroup());
+		
 		final Method[] getters = Settings.propertyGetters(data);
+		
 		for (int i = 0; i < getters.length; ++i) {
-			Method m = getters[i];
+			final Method m = getters[i];
+			
 			if (Settings.findSetter(m) == null) {
 				// Ignore read-only properties
 				continue;
 			}
+			
 			try {
-				Object value = m.invoke(data, (Object[]) null);
-				String propName = Settings.propertyName(m);
-				Class<?> propType = m.getReturnType();
+				final Object value = m.invoke(data, (Object[]) null);
+				final String propName = Settings.propertyName(m);
+				final Class<?> propType = m.getReturnType();
+				
 				addControls(propName, propType, value);
 			} catch (InnerException ex) {
 				throw ex;
@@ -198,7 +233,17 @@ public class SettingsPanel extends JPanel {
 			}
 		}
 	}
-
+	
+	private void addToPanel(final JLabel label, final Component c) {
+		hLabelGroup.addComponent(label);
+		hControlGroup.addComponent(c);
+		
+		vGroup.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
+				.addComponent(label)
+				.addComponent(c)
+		);
+	}
+	
 	/**
 	 * Adds a control or a pair of controls for presenting the given property.
 	 * 
@@ -208,22 +253,28 @@ public class SettingsPanel extends JPanel {
 	 */
 	private void addControls(String aPropName, Class<?> aPropType, Object aValue) {
 		try {
-			String labelID = Messages.SET_PREFIX + aPropName.toUpperCase();
-			String labelText = (String) Messages.class.getField(labelID).get(null);
-			String typeName = aPropType.getName();
+			final String labelID = Messages.SET_PREFIX + aPropName.toUpperCase();
+			final String labelText = (String) Messages.class.getField(labelID).get(null);
+			final String typeName = aPropType.getName();
+			
+			final JLabel label = new JLabel(" ", SwingConstants.TRAILING);
+			Component c = null;
+			
 			if (boolean.class.getName().equals(typeName)) {
-				addBooleanInput(aPropName, labelText, (Boolean) aValue);
+				c = createBooleanInput(aPropName, labelText, (Boolean) aValue);
 			} else {
-				JLabel label = new JLabel(labelText, SwingConstants.TRAILING);
-				add(label, firstColumn);
-				if (String.class.getName().equals(typeName)) {
-					addStringInput(aPropName, (String) aValue);
-				} else if (Color.class.getName().equals(typeName)) {
-					addColorInput(aPropName, (Color) aValue);
-				} else if (PointShape.class.getName().equals(typeName)) {
-					addPointShapeInput(aPropName, (PointShape) aValue);
-				}
+				label.setText(labelText);
+				
+				if (String.class.getName().equals(typeName))
+					c = createStringInput(aPropName, (String) aValue);
+				else if (Color.class.getName().equals(typeName))
+					c = createColorInput(aPropName, (Color) aValue);
+				else if (PointShape.class.getName().equals(typeName))
+					c = createPointShapeInput(aPropName, (PointShape) aValue);
 			}
+			
+			if (c != null)
+				addToPanel(label, c);
 		} catch (Exception ex) {
 			throw new InnerException(ex);
 		}
@@ -237,17 +288,12 @@ public class SettingsPanel extends JPanel {
 	 * @param aValue Value of the property to be presented. Settings this parameter to <code>true</code>
 	 *        results in the checkbox being selected.
 	 */
-	private void addBooleanInput(String aPropName, String aButtonLabel, Boolean aValue) {
-		JCheckBox checkBox = new JCheckBox(aButtonLabel);
+	private JCheckBox createBooleanInput(String aPropName, String aButtonLabel, Boolean aValue) {
+		final JCheckBox checkBox = new JCheckBox(aButtonLabel);
 		checkBox.setName(aPropName);
 		checkBox.setSelected(aValue.booleanValue());
-		lastColumn.fill = GridBagConstraints.NONE;
-		lastColumn.insets.left += CHECKBOX_INDENT;
-		lastColumn.insets.right += CHECKBOX_INDENT;
-		add(checkBox, lastColumn);
-		lastColumn.insets.left -= CHECKBOX_INDENT;
-		lastColumn.insets.right -= CHECKBOX_INDENT;
-		lastColumn.fill = GridBagConstraints.HORIZONTAL;
+		
+		return checkBox;
 	}
 
 	/**
@@ -256,12 +302,12 @@ public class SettingsPanel extends JPanel {
 	 * @param aPropName Name of the property to be presented.
 	 * @param aValue Value of the property in the form of a <code>String</code> instance.
 	 */
-	private void addStringInput(String aPropName, String aValue) {
-		JTextField inputField = new JTextField(aValue);
+	private JTextField createStringInput(String aPropName, String aValue) {
+		final JTextField inputField = new JTextField(aValue);
 		inputField.setName(aPropName);
 		Utils.adjustWidth(inputField, CONTROL_COLUMN_WIDTH);
-		layout.setConstraints(inputField, lastColumn);
-		add(inputField);
+		
+		return inputField;
 	}
 
 	/**
@@ -270,13 +316,12 @@ public class SettingsPanel extends JPanel {
 	 * @param aPropName Name of the property to be presented.
 	 * @param aColor Value of the property in the form of a <code>Color</code> instance.
 	 */
-	private void addColorInput(String aPropName, Color aColor) {
+	private ColorButton createColorInput(String aPropName, Color aColor) {
 		final ColorButton colorButton = new ColorButton(aColor);
 		colorButton.setActionCommand("color");
 		colorButton.setName(aPropName);
-		lastColumn.fill = GridBagConstraints.NONE;
-		add(colorButton, lastColumn);
-		lastColumn.fill = GridBagConstraints.HORIZONTAL;
+		
+		return colorButton;
 	}
 
 	/**
@@ -285,66 +330,11 @@ public class SettingsPanel extends JPanel {
 	 * @param aPropName Name of the property to be presented.
 	 * @param aShape Value of the property in the form of a <code>PointShape</code> instance.
 	 */
-	private void addPointShapeInput(String aPropName, PointShape aShape) {
-		final JComboBox comShapes = new JComboBox(PointShape.Texts);
+	private JComboBox<String> createPointShapeInput(String aPropName, PointShape aShape) {
+		final JComboBox<String> comShapes = new JComboBox<>(PointShape.Texts);
 		comShapes.setSelectedItem(aShape.getDescription());
 		comShapes.setName(aPropName);
-		lastColumn.fill = GridBagConstraints.NONE;
-		add(comShapes, lastColumn);
-		lastColumn.fill = GridBagConstraints.HORIZONTAL;
+		
+		return comShapes;
 	}
-
-	/**
-	 * Unique ID for this version of this class. It is used in serialization.
-	 */
-	private static final long serialVersionUID = -610827874488404038L;
-
-	/**
-	 * Preferred width, in pixels, for labels spanning a whole column.
-	 */
-	private static final int CHECKBOX_INDENT = 15;
-
-	/**
-	 * Preferred width, in pixels, for controls spanning a whole column.
-	 */
-	private static final int CONTROL_COLUMN_WIDTH = 200;
-
-	/**
-	 * Horizontal spacing for every control.
-	 * <p>
-	 * Settings this field to <i>k</i> results in effective horizontal spacing of <i>2k</i> pixels between
-	 * controls.
-	 * </p>
-	 */
-	private static final int HOR_INSETS = 6;
-
-	/**
-	 * Vertical spacing for every control.
-	 * <p>
-	 * Settings this field to <i>k</i> results in effective vertical spacing of <i>2k</i> pixels between
-	 * controls.
-	 * </p>
-	 */
-	private static final int VER_INSETS = 4;
-
-	/**
-	 * Layout manager for the controls in the panel.
-	 */
-	private GridBagLayout layout;
-
-	/**
-	 * Constraints for the first column of the grid. This column contains labels.
-	 */
-	private GridBagConstraints firstColumn;
-
-	/**
-	 * Constraints for the last (second) column of the grid. This column contains input controls, such as text
-	 * boxes and buttons.
-	 */
-	private GridBagConstraints lastColumn;
-
-	/**
-	 * Settings instance, whose properties are presented in this panel.
-	 */
-	private Settings data;
 }

@@ -55,6 +55,13 @@ import de.mpg.mpi_inf.bioinf.netanalyzer.ui.Utils;
  */
 public class Points2DFilterDialog extends ComplexParamFilterDialog implements PropertyChangeListener {
 
+	private static final long serialVersionUID = 4746985046081748678L;
+
+	/**
+	 * Number formatting style used in the text fields.
+	 */
+	private static final NumberFormat formatter = NumberFormat.getInstance(Locale.US);
+	
 	/**
 	 * Initializes a new instance of <code>Points2DFilterDialog</code> based on the given
 	 * <code>Points2D</code> instance.
@@ -74,20 +81,11 @@ public class Points2DFilterDialog extends ComplexParamFilterDialog implements Pr
 		setLocationRelativeTo(aOwner);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.beans.PropertyChangeListener#propertyChange(java.beans.PropertyChangeEvent)
-	 */
+	@Override
 	public void propertyChange(PropertyChangeEvent evt) {
 		updateStatus();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see de.mpg.mpi_inf.bioinf.netanalyzer.ui.filter.ComplexParamFilterDialog#createFilter()
-	 */
 	@Override
 	protected ComplexParamFilter createFilter() {
 		try {
@@ -98,16 +96,6 @@ public class Points2DFilterDialog extends ComplexParamFilterDialog implements Pr
 			throw new InnerException(ex);
 		}
 	}
-
-	/**
-	 * Unique ID for this version of this class. It is used in serialization.
-	 */
-	private static final long serialVersionUID = 4746985046081748678L;
-
-	/**
-	 * Number formatting style used in the text fields.
-	 */
-	private static final NumberFormat formatter = NumberFormat.getInstance(Locale.US);
 
 	/**
 	 * 
@@ -128,6 +116,7 @@ public class Points2DFilterDialog extends ComplexParamFilterDialog implements Pr
 		final Dimension size = txfXMin.getPreferredSize();
 		size.width = 70;
 		txfXMin.setPreferredSize(size);
+		txfXMin.setHorizontalAlignment(JFormattedTextField.RIGHT);
 		txfXMin.setValue(new Double(xMin = rangeX[0]));
 		txfXMin.addPropertyChangeListener("value", this);
 
@@ -135,6 +124,7 @@ public class Points2DFilterDialog extends ComplexParamFilterDialog implements Pr
 		centralPane.add(new JLabel(aSettings.filter.getMaxXLabel() + ":", SwingConstants.RIGHT));
 		centralPane.add(txfXMax = new JFormattedTextField(formatter));
 		txfXMax.setPreferredSize(size);
+		txfXMax.setHorizontalAlignment(JFormattedTextField.RIGHT);
 		txfXMax.setValue(new Double(xMax = rangeX[1]));
 		txfXMax.addPropertyChangeListener("value", this);
 

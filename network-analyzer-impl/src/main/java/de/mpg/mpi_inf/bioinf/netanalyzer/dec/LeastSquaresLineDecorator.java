@@ -26,9 +26,8 @@ package de.mpg.mpi_inf.bioinf.netanalyzer.dec;
  * #L%
  */
 
+import java.awt.Window;
 import java.awt.geom.Point2D;
-
-import javax.swing.JDialog;
 
 import org.jdom.Element;
 import org.jfree.chart.ChartPanel;
@@ -66,25 +65,13 @@ public class LeastSquaresLineDecorator extends TwoCoefsDecorator {
 		super(null);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see de.mpg.mpi_inf.bioinf.netanalyzer.dec.Decorator#clone()
-	 */
 	@Override
 	public Object clone() {
 		return new LeastSquaresLineDecorator(coefs);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see de.mpg.mpi_inf.bioinf.netanalyzer.dec.Decorator#decorate(javax.swing.JDialog,
-	 *      org.jfree.chart.JFreeChart, de.mpg.mpi_inf.bioinf.netanalyzer.ui.ComplexParamVisualizer,
-	 *      boolean)
-	 */
 	@Override
-	public void decorate(JDialog aOwner, JFreeChart aChart, ComplexParamVisualizer aVisualizer,
+	public void decorate(Window aOwner, JFreeChart aChart, ComplexParamVisualizer aVisualizer,
 			boolean aVerbose) {
 		clearDataset(aChart, LeastSquaresLineDecorator.seriesName);
 
@@ -254,11 +241,11 @@ public class LeastSquaresLineDecorator extends TwoCoefsDecorator {
 	 * @param aCorr Correlation between the original and the fitted data points.
 	 * @param aRSquared R-Squared value for goodness of the fit.
 	 */
-	private void showReport(JDialog aOwner, Double aCorr, Double aRSquared) {
+	private void showReport(Window aOwner, Double aCorr, Double aRSquared) {
 		final String linearSection = "#linear";
 		final String helpURL = HelpConnector.getFittingURL() + linearSection;
 		final FitData data = new FitData(Messages.SM_FITLINE, coefs, aCorr, aRSquared, helpURL);
-		FittingReportDialog d = new FittingReportDialog(aOwner, Messages.DT_FITTED, data);
+		final FittingReportDialog d = new FittingReportDialog(aOwner, Messages.DT_FITTED, data);
 		d.setVisible(true);
 	}
 

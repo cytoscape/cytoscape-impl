@@ -26,9 +26,9 @@ package de.mpg.mpi_inf.bioinf.netanalyzer.dec;
  * #L%
  */
 
+import java.awt.Window;
 import java.awt.geom.Point2D;
 
-import javax.swing.JDialog;
 import javax.swing.JOptionPane;
 
 import org.jdom.Element;
@@ -67,25 +67,13 @@ public class LeastSquaresPowerLawDecorator extends TwoCoefsDecorator {
 		super(null);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.lang.Object#clone()
-	 */
 	@Override
 	public Object clone() {
 		return new LeastSquaresPowerLawDecorator(coefs);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see de.mpg.mpi_inf.bioinf.netanalyzer.dec.Decorator#decorate(javax.swing.JDialog,
-	 *      org.jfree.chart.JFreeChart, de.mpg.mpi_inf.bioinf.netanalyzer.ui.ComplexParamVisualizer,
-	 *      boolean)
-	 */
 	@Override
-	public void decorate(JDialog aOwner, JFreeChart aChart, ComplexParamVisualizer aVisualizer, boolean aVerbose) {
+	public void decorate(Window aOwner, JFreeChart aChart, ComplexParamVisualizer aVisualizer, boolean aVerbose) {
 		clearDataset(aChart, seriesName);
 		final Point2D.Double[] dataPoints = JFreeChartConn.extractData(aChart);
 		final Point2D.Double[] posPoints = keepPositive(dataPoints);
@@ -265,7 +253,7 @@ public class LeastSquaresPowerLawDecorator extends TwoCoefsDecorator {
 	 * @param aCorr Correlation between the original and the fitted data points.
 	 * @param aRSquared R-Squared value, as computed on a logarithmized data.
 	 */
-	private void showReport(JDialog aOwner, Double aCorr, Double aRSquared) {
+	private void showReport(Window aOwner, Double aCorr, Double aRSquared) {
 		final String powerLawSection = "#powerlaw";
 		final String helpURL = HelpConnector.getFittingURL() + powerLawSection;
 		final String note = "R-squared is computed on logarithmized values.";
