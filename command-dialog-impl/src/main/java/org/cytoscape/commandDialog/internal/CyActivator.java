@@ -120,7 +120,7 @@ public class CyActivator extends AbstractCyActivator {
 		TaskFactory runCommand = new RunCommandsTaskFactory(dialog, commandHandler);
 		Properties runCommandProps = new Properties();
 		runCommandProps.setProperty(PREFERRED_MENU, "Tools");
-		runCommandProps.setProperty(TITLE, "Execute Command File");
+		runCommandProps.setProperty(TITLE, "Execute Command File...");
 		runCommandProps.setProperty(COMMAND, "run");
 		runCommandProps.setProperty(COMMAND_NAMESPACE, "command");
 		runCommandProps.setProperty(COMMAND_DESCRIPTION, "Run a series of commands from a file");

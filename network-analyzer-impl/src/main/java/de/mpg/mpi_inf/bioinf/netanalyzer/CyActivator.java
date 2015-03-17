@@ -24,9 +24,11 @@ package de.mpg.mpi_inf.bioinf.netanalyzer;
  * #L%
  */
 
+import de.mpg.mpi_inf.bioinf.netanalyzer.data.Messages;
 import de.mpg.mpi_inf.bioinf.netanalyzer.task.AnalyzeNetworkByNetworkAnalyzerTaskFactory;
 import de.mpg.mpi_inf.bioinf.netanalyzer.ui.ResultPanelFactory;
 import de.mpg.mpi_inf.bioinf.netanalyzer.ui.VisualStyleBuilder;
+
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CyAction;
 import org.cytoscape.application.swing.CySwingApplication;
@@ -51,14 +53,13 @@ import static org.cytoscape.work.ServiceProperties.*;
 
 
 public class CyActivator extends AbstractCyActivator {
+	
 	public CyActivator() {
 		super();
 	}
-
 	
 	@Override
 	public void start(BundleContext bc) {
-
 		CyServiceRegistrar cyServiceRegistrarServiceRef = getService(bc,CyServiceRegistrar.class);
 		CyApplicationManager cyApplicationManagerServiceRef = getService(bc,CyApplicationManager.class);
 		CySwingApplication cySwingApplicationServiceRef = getService(bc,CySwingApplication.class);
@@ -86,14 +87,13 @@ public class CyActivator extends AbstractCyActivator {
 		VisualStyleBuilder vsBuilder = new VisualStyleBuilder(vsFactoryServiceRef, passthroughMappingFactoryRef, continuousMappingFactoryRef);
 
 		Map<String,String> analyzerActionProps = new HashMap<String, String>();
-		analyzerActionProps.put(ID,"analyzeNetworkAction");
-		analyzerActionProps.put(TITLE,"Analyze Network");
+		analyzerActionProps.put(ID, "analyzeNetworkAction");
+		analyzerActionProps.put(TITLE, Messages.AC_ANALYZE);
 		analyzerActionProps.put(MENU_GRAVITY,"9.0");
 		analyzerActionProps.put(TOOL_BAR_GRAVITY,"9.8");
 		analyzerActionProps.put(LARGE_ICON_URL,getClass().getResource("/networkAnalyzer24.png").toString());
 		analyzerActionProps.put(SMALL_ICON_URL,getClass().getResource("/networkAnalyzer16.png").toString());
-		analyzerActionProps.put(IN_TOOL_BAR,"false");
-		analyzerActionProps.put(TOOLTIP,"Analyze Network");
+		analyzerActionProps.put(IN_TOOL_BAR, "false");
 		analyzerActionProps.put(ENABLE_FOR, "network");
 		AnalyzeNetworkAction analyzeNetworkAction = new AnalyzeNetworkAction(cyApplicationManagerServiceRef,cySwingApplicationServiceRef, viewManagerServiceRef, vsBuilder, vmmServiceRef, analyzerActionProps, viewManagerServiceRef, resultPanel, cyServiceRegistrarServiceRef);
 
@@ -117,8 +117,6 @@ public class CyActivator extends AbstractCyActivator {
 		RemDupEdgesAction remDupEdgesAction = new RemDupEdgesAction(cyApplicationManagerServiceRef,cySwingApplicationServiceRef,cyNetworkManagerServiceRef);
 		RemoveSelfLoopsAction removeSelfLoopsAction = new RemoveSelfLoopsAction(cyApplicationManagerServiceRef,cySwingApplicationServiceRef,cyNetworkManagerServiceRef);
 		SettingsAction settingsAction = new SettingsAction(cyApplicationManagerServiceRef,cySwingApplicationServiceRef);
-		
-		
 		
 		registerService(bc,analyzeNetworkAction,CyAction.class, new Properties());
 		registerService(bc,analyzeSubsetAction,CyAction.class, new Properties());

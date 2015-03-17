@@ -125,7 +125,6 @@ public class WelcomeScreenDialog extends JDialog {
 		this.setMinimumSize(DEF_SIZE);
 		this.setMaximumSize(DEF_SIZE);
 		this.setResizable(false);
-		this.setModalityType(DEFAULT_MODALITY_TYPE);
 		this.setModalExclusionType(ModalExclusionType.APPLICATION_EXCLUDE);
 
 		checkBox.setSelected(hide);

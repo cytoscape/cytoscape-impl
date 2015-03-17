@@ -118,10 +118,10 @@ public class FittingReportDialog extends JDialog implements ActionListener {
 		txfB.setEditable(false);
 		txfB.setColumns(9);
 		final Box boxCoefs = new Box(BoxLayout.LINE_AXIS);
-		boxCoefs.add(new JLabel("a = "));
+		boxCoefs.add(new JLabel("a:"));
 		boxCoefs.add(txfA);
 		boxCoefs.add(Box.createHorizontalStrut(bs * 2));
-		boxCoefs.add(new JLabel("b = "));
+		boxCoefs.add(new JLabel("b:"));
 		boxCoefs.add(txfB);
 		boxCoefs.add(Box.createHorizontalGlue());
 		boxCoefs.setAlignmentX(Component.CENTER_ALIGNMENT);
