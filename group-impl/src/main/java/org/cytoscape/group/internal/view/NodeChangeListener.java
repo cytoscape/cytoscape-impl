@@ -24,6 +24,7 @@ package org.cytoscape.group.internal.view;
  * #L%
  */
 import java.awt.Dimension;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -34,6 +35,7 @@ import java.util.Set;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.group.CyGroup;
 import org.cytoscape.group.internal.CyGroupManagerImpl;
+import org.cytoscape.group.internal.data.CyGroupSettingsImpl;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.session.events.SessionLoadedEvent;
 import org.cytoscape.session.events.SessionLoadedListener;
@@ -53,6 +55,7 @@ public class NodeChangeListener implements ViewChangedListener, SessionLoadedLis
 {
 	private final CyGroupManagerImpl cyGroupManager;
 	private final CyEventHelper cyEventHelper;
+	private final CyGroupSettingsImpl cyGroupSettings;
 	private VisualMappingManager cyStyleManager = null;
 
 	// This is a CyNode to make it faster to reject events we don't
@@ -67,9 +70,11 @@ public class NodeChangeListener implements ViewChangedListener, SessionLoadedLis
 	boolean ignoreChanges = false;
 
 	public NodeChangeListener(final CyGroupManagerImpl groupManager,
-	                          final CyEventHelper eventHelper) {
+	                          final CyEventHelper eventHelper,
+	                          final CyGroupSettingsImpl cyGroupSettings) {
 		this.cyGroupManager = groupManager;
 		this.cyEventHelper = eventHelper;
+		this.cyGroupSettings = cyGroupSettings;
 		groupMap = new HashMap<>();
 		nodeMap = new HashMap<>();
 		node2GroupMap = new HashMap<>();
@@ -191,6 +196,7 @@ public class NodeChangeListener implements ViewChangedListener, SessionLoadedLis
 		double yOffset = lastPosition.getHeight() - groupY;
 
 		// System.out.println("Group node offset = "+xOffset+","+yOffset);
+		List<View<CyNode>> groupNodeList = new ArrayList<>();
 
 		boolean lastIgnoreChanges = ignoreChanges;
 		ignoreChanges = true;
@@ -206,11 +212,18 @@ public class NodeChangeListener implements ViewChangedListener, SessionLoadedLis
 			// System.out.println("Moving node to "+(x-xOffset)+","+(y-yOffset));
 			d.setSize(x-xOffset, y-yOffset);
 			ViewUtils.moveNode(networkView, node, d);
+			if (cyGroupManager.isGroup(node, networkView.getModel()))
+				groupNodeList.add(nv);
 		}
 		cyEventHelper.flushPayloadEvents();
 		ignoreChanges = lastIgnoreChanges;
 
 		ViewUtils.updateGroupLocation(networkView.getModel(), group, groupX, groupY);
+		if (groupNodeList.size() > 0) {
+			for (View<CyNode> nv: groupNodeList) {
+				updateGroupLocation(networkView, nv);
+			}
+		}
 		cyEventHelper.flushPayloadEvents();
 	}
 
@@ -239,7 +252,8 @@ public class NodeChangeListener implements ViewChangedListener, SessionLoadedLis
 
 		boolean lastIgnoreChanges = ignoreChanges;
 		ignoreChanges = true;
-		ViewUtils.styleCompoundNode(group, networkView, cyGroupManager, cyStyleManager);
+		ViewUtils.styleCompoundNode(group, networkView, cyGroupManager, cyStyleManager, 
+		                            cyGroupSettings.getGroupViewType(group));
 		cyEventHelper.flushPayloadEvents();
 		ignoreChanges = lastIgnoreChanges;
 
@@ -251,7 +265,8 @@ public class NodeChangeListener implements ViewChangedListener, SessionLoadedLis
 			// updateNodeLocation(networkView, networkView.getNodeView(group.getGroupNode()));
 			CyGroup g = getGroupForNode(group.getGroupNode(), networkView);
 			if (g != null) {
-				ViewUtils.styleCompoundNode(g, networkView, cyGroupManager, cyStyleManager);
+				ViewUtils.styleCompoundNode(g, networkView, cyGroupManager, cyStyleManager, 
+		                                cyGroupSettings.getGroupViewType(group));
 				cyEventHelper.flushPayloadEvents();
 			}
 		}

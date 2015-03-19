@@ -33,6 +33,7 @@ import java.util.List;
 
 import org.cytoscape.group.CyGroup;
 import org.cytoscape.group.CyGroupManager;
+import org.cytoscape.group.CyGroupSettingsManager.GroupViewType;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyEdge.Type;
 import org.cytoscape.model.CyIdentifiable;
@@ -97,8 +98,11 @@ public class ViewUtils {
 	// center of the node!
 	public static void styleCompoundNode(CyGroup group, CyNetworkView view,
 	                                     CyGroupManager groupManager,
-	                                     VisualMappingManager cyStyleManager) {
+	                                     VisualMappingManager cyStyleManager,
+	                                     GroupViewType viewType) {
 		double z = Z_OFFSET;
+		if (viewType.equals(GroupViewType.SINGLENODE))
+			z = -Z_OFFSET;
 
 		List<CyGroup> restyleList = new ArrayList<>();
 
@@ -123,28 +127,39 @@ public class ViewUtils {
 
 		View<CyNode> groupView = view.getNodeView(group.getGroupNode());
 
-		/*
-		System.out.println("styleCompoundNode: group node current at: "+
-			groupView.getVisualProperty(xLoc)+","+
-			groupView.getVisualProperty(yLoc));
-		*/
-		Rectangle2D bounds = calculateBounds(group.getNodeList(), view);
-		// System.out.println("styleCompoundNode: bounds = "+bounds);
+		if (groupView != null) {
 
-		double xLocation = bounds.getX()+bounds.getWidth()/2;
-		double yLocation = bounds.getY()+bounds.getHeight()/2;
+			/*
+			System.out.println("styleCompoundNode: group node current at: "+
+				groupView.getVisualProperty(xLoc)+","+
+				groupView.getVisualProperty(yLoc));
+			*/
+			Rectangle2D bounds = calculateBounds(group.getNodeList(), view);
+			// System.out.println("styleCompoundNode: bounds = "+bounds);
+	
+			double xLocation = bounds.getX()+bounds.getWidth()/2;
+			double yLocation = bounds.getY()+bounds.getHeight()/2;
+	
+			groupView.setVisualProperty(xLoc, xLocation);
+			groupView.setVisualProperty(yLoc, yLocation);
+			groupView.setVisualProperty(BasicVisualLexicon.NODE_HEIGHT, bounds.getHeight());
+			groupView.setVisualProperty(BasicVisualLexicon.NODE_WIDTH, bounds.getWidth());
+			if (!viewType.equals(GroupViewType.SINGLENODE)) {
+				groupView.setVisualProperty(BasicVisualLexicon.NODE_SHAPE, 
+				                            NodeShapeVisualProperty.ROUND_RECTANGLE);
+				groupView.setVisualProperty(BasicVisualLexicon.NODE_TRANSPARENCY, 
+				                            COMPOUND_NODE_TRANSPARENCY); 
+			} else {
+				groupView.setVisualProperty(BasicVisualLexicon.NODE_TRANSPARENCY, 10); 
+				groupView.setVisualProperty(BasicVisualLexicon.NODE_SHAPE,
+				                            NodeShapeVisualProperty.RECTANGLE);
+				groupView.setVisualProperty(BasicVisualLexicon.NODE_BORDER_WIDTH, 1.0);
+			}
+	
+			groupView.setVisualProperty(BasicVisualLexicon.NODE_Z_LOCATION, z);
 
-		groupView.setVisualProperty(xLoc, xLocation);
-		groupView.setVisualProperty(yLoc, yLocation);
-		groupView.setVisualProperty(BasicVisualLexicon.NODE_HEIGHT, bounds.getHeight());
-		groupView.setVisualProperty(BasicVisualLexicon.NODE_WIDTH, bounds.getWidth());
-		groupView.setVisualProperty(BasicVisualLexicon.NODE_SHAPE, 
-		                            NodeShapeVisualProperty.ROUND_RECTANGLE);
-		groupView.setVisualProperty(BasicVisualLexicon.NODE_TRANSPARENCY, 
-		                            COMPOUND_NODE_TRANSPARENCY); 
-
-		groupView.setVisualProperty(BasicVisualLexicon.NODE_Z_LOCATION, z);
-		updateGroupLocation(view.getModel(), group, xLocation, yLocation); 
+			updateGroupLocation(view.getModel(), group, xLocation, yLocation); 
+		}
 
 		// OK, now restyle any child compound nodes
 		/*

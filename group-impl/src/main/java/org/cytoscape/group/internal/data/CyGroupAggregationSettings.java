@@ -183,7 +183,8 @@ public class CyGroupAggregationSettings {
 	}
 
 	public void setAggregationType(ListSingleSelection<Aggregator> input) {
-		if (aggregationType == null || aggregationType.getSelectedValue() == null) return;
+		if (currentNetwork == null ||
+		    aggregationType == null || aggregationType.getSelectedValue() == null) return;
 		
 		String columnName = attrSelection.getSelectedValue();
 		CyTable nodeTable = currentNetwork.getDefaultNodeTable();

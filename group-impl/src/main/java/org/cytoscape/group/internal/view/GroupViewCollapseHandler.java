@@ -32,13 +32,17 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.group.CyGroup;
+import org.cytoscape.group.CyGroupSettingsManager.GroupViewType;
 import org.cytoscape.group.internal.CyGroupImpl;
 import org.cytoscape.group.internal.CyGroupManagerImpl;
 import org.cytoscape.group.internal.data.CyGroupSettingsImpl;
 import org.cytoscape.group.events.GroupAboutToCollapseEvent;
 import org.cytoscape.group.events.GroupAboutToCollapseListener;
+import org.cytoscape.group.events.GroupAddedEvent;
+import org.cytoscape.group.events.GroupAddedListener;
 import org.cytoscape.group.events.GroupCollapsedEvent;
 import org.cytoscape.group.events.GroupCollapsedListener;
 import org.cytoscape.model.CyEdge;
@@ -66,6 +70,7 @@ import org.slf4j.LoggerFactory;
  * Handle the view portion of group collapse/expand
  */
 public class GroupViewCollapseHandler implements GroupAboutToCollapseListener,
+                                                 GroupAddedListener,
                                                  GroupCollapsedListener
 {
 
@@ -73,6 +78,7 @@ public class GroupViewCollapseHandler implements GroupAboutToCollapseListener,
 	private final CyGroupSettingsImpl cyGroupSettings;
 	private final CyEventHelper cyEventHelper;
 	private final NodeChangeListener nodeChangeListener;
+	private final CyApplicationManager appMgr;
 	private CyNetworkManager cyNetworkManager = null;
 	private CyNetworkViewManager cyNetworkViewManager = null;
 	private CyNetworkViewFactory cyNetworkViewFactory = null;
@@ -99,6 +105,7 @@ public class GroupViewCollapseHandler implements GroupAboutToCollapseListener,
 		this.cyGroupSettings = groupSettings;
 		this.nodeChangeListener = nodeChangeListener;
 		this.cyEventHelper = cyEventHelper;
+		this.appMgr = cyGroupManager.getService(CyApplicationManager.class);
 	}
 
 	public void handleEvent(GroupAboutToCollapseEvent e) {
@@ -120,6 +127,8 @@ public class GroupViewCollapseHandler implements GroupAboutToCollapseListener,
 
 		if (view == null)
 			return;
+		
+		GroupViewType groupViewType = cyGroupSettings.getGroupViewType(group);
 		
 		if (e.collapsing()) {
 			// Calculate the center position of all of the
@@ -170,12 +179,16 @@ public class GroupViewCollapseHandler implements GroupAboutToCollapseListener,
 		
 		CyRootNetwork rootNetwork = group.getRootNetwork();
 
+		GroupViewType groupViewType = cyGroupSettings.getGroupViewType(group);
+
 		if (e.collapsed()) {
 			// System.out.println("Got collapse event for "+group);
 			// Get the location to move the group node to
 			Dimension d = ViewUtils.getLocation(network, group);
-			// Move it.
-			ViewUtils.moveNode(view, group.getGroupNode(), d);
+			if (d != null) {
+				// Move it.
+				ViewUtils.moveNode(view, group.getGroupNode(), d);
+			}
 			View<CyNode> nView = view.getNodeView(group.getGroupNode());
 
 			if (cyGroupSettings.getUseNestedNetworks(group)) {
@@ -195,7 +208,7 @@ public class GroupViewCollapseHandler implements GroupAboutToCollapseListener,
 			}
 
 			// If we were showing this as a compound node, we need to restyle
-			if (cyGroupSettings.getShowCompoundNode(group)) {
+			if (groupViewType.equals(GroupViewType.COMPOUND)) {
 				deActivateCompoundNode(group, view);
 			}
 			
@@ -214,12 +227,11 @@ public class GroupViewCollapseHandler implements GroupAboutToCollapseListener,
 
 			// Get the location of the group node before it went away
 			Dimension center = ViewUtils.getLocation(network, group);
-			ViewUtils.moveNodes(group, view, center);
+			if (center != null)
+				ViewUtils.moveNodes(group, view, center);
 
 			// If we're asked to, show the group node
-			if (!cyGroupSettings.getHideGroupNode(group) || 
-			    cyGroupSettings.getShowCompoundNode(group)) {
-
+			if (!groupViewType.equals(GroupViewType.NONE)) {
 				CySubNetwork subnet = (CySubNetwork)network;
 
 				subnet.addNode(group.getGroupNode()); // Add the node back
@@ -236,7 +248,8 @@ public class GroupViewCollapseHandler implements GroupAboutToCollapseListener,
 					}
 				}
 
-				if (!cyGroupSettings.getShowCompoundNode(group)) {
+				if (!groupViewType.equals(GroupViewType.COMPOUND) &&
+				    !groupViewType.equals(GroupViewType.SINGLENODE)) {
 					// If this is the first time, we need to add our member
 					// edges in.
 					addMemberEdges(group, network);
@@ -250,7 +263,8 @@ public class GroupViewCollapseHandler implements GroupAboutToCollapseListener,
 				// Now, call ourselves as if we had been collapsed
 				handleEvent(new GroupCollapsedEvent(group, network, true));
 
-				if (cyGroupSettings.getShowCompoundNode(group)) {
+				if (groupViewType.equals(GroupViewType.COMPOUND) ||
+				    groupViewType.equals(GroupViewType.SINGLENODE)) {
 					activateCompoundNode(group, view);
 				}
 	
@@ -280,11 +294,38 @@ public class GroupViewCollapseHandler implements GroupAboutToCollapseListener,
 		
 		view.updateView();
 	}
+
+	public void handleEvent(GroupAddedEvent e) {
+		CyGroup group = e.getGroup();
+		GroupViewType groupViewType = cyGroupSettings.getGroupViewType(group);
+
+		try {
+		// When we add a group, we may want to reflect the state
+		// of the group visually immediately
+		if (groupViewType.equals(GroupViewType.COMPOUND) || 
+		    groupViewType.equals(GroupViewType.SINGLENODE)) {
+			CyNetwork network = appMgr.getCurrentNetwork();
+			if (network == null) return;
+
+/*
+			// Assume we're in the current network
+			Dimension d = ViewUtils.getLocation(view.getModel(), group);
+			// Move it.
+			ViewUtils.moveNode(view, group.getGroupNode(), d);
+*/
+
+			GroupCollapsedEvent ev = new GroupCollapsedEvent(group, network, false);
+			handleEvent(ev);
+		}
+		} catch (Exception ex) {ex.printStackTrace();}
+		return;
+	}
 	
 	private void activateCompoundNode(CyGroup group, CyNetworkView view) {
 		// System.out.println("Activating listener for "+group);
 		// Style the group node
-		ViewUtils.styleCompoundNode(group, view, cyGroupManager, cyStyleManager);
+		ViewUtils.styleCompoundNode(group, view, cyGroupManager, cyStyleManager,
+		                            cyGroupSettings.getGroupViewType(group));
 		// Style the member nodes (set appropriate Z)
 		// Add ourselves to the listeners for node movement
 		nodeChangeListener.addGroup(group, view);

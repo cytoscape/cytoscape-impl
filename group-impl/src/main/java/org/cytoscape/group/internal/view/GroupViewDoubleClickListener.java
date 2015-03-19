@@ -27,9 +27,9 @@ package org.cytoscape.group.internal.view;
 import java.util.List;
 
 import org.cytoscape.group.CyGroup;
+import org.cytoscape.group.CyGroupSettingsManager.DoubleClickAction;
 import org.cytoscape.group.internal.CyGroupManagerImpl;
 import org.cytoscape.group.internal.data.CyGroupSettingsImpl;
-import org.cytoscape.group.internal.data.CyGroupSettingsImpl.DoubleClickAction;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
@@ -84,12 +84,12 @@ public class GroupViewDoubleClickListener extends AbstractNodeViewTaskFactory
 		}
 		DoubleClickAction action = cyGroupSettings.getDoubleClickAction(group);
 
-		if (action == DoubleClickAction.ExpandContract) {
+		if (action == DoubleClickAction.EXPANDCONTRACT) {
 			// Collapse/expand: if we double-click on a collapsed node, expand it.  
 			// if we double-click on a node that is a member of a group, collapse
 			// that group.
 			return new TaskIterator(new CollapseGroupTask(nodeView, networkView));
-		} else if (action == DoubleClickAction.Select) {
+		} else if (action == DoubleClickAction.SELECT) {
 			// Select/deselect: if we double-click on a node that is a member of a group
 			// and any member of the group is not selected, select all members of that group.  
 			// If all members of the group are selected, deselect that group

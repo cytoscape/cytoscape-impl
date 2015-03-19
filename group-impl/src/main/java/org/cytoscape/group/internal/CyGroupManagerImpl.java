@@ -217,6 +217,14 @@ public class CyGroupManagerImpl implements CyGroupManager {
 		return cyServiceRegistrar.getService(serviceClass);
 	}
 
+	/**
+	 * Method to get a service.  This is only called from within the group-impl
+	 * bundle and is not part of the API.
+	 */
+	public <S> S getService(Class<S> serviceClass, String search) {
+		return cyServiceRegistrar.getService(serviceClass, search);
+	}
+
 	private void addGroupToRootMap(CyGroup group) {
 		synchronized (lock) {
 			if (rootMap.containsKey(group.getRootNetwork()))

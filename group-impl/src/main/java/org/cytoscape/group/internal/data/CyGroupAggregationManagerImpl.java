@@ -92,6 +92,14 @@ public class CyGroupAggregationManagerImpl
 		}
 	}
 
+	public Aggregator getAggregator(Class type, String name) {
+		for (Aggregator agg: getAggregators(type)) {
+			if (agg.toString().equals(name))
+				return agg;
+		}
+		return null;
+	}
+
 	@Override
 	public List<Aggregator> getAggregators() {
 		synchronized (lock) {

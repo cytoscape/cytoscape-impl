@@ -25,7 +25,8 @@ package org.cytoscape.group.internal.data;
  */
 
 import org.cytoscape.group.CyGroup;
-import org.cytoscape.group.internal.data.CyGroupSettingsImpl.DoubleClickAction;
+import org.cytoscape.group.CyGroupSettingsManager.DoubleClickAction;
+import org.cytoscape.group.CyGroupSettingsManager.GroupViewType;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.util.ListSingleSelection;
 
@@ -35,59 +36,46 @@ public class CyGroupViewSettings {
 	CyGroup group = null;
 
   public ListSingleSelection<DoubleClickAction> doubleClickAction = 
-		new ListSingleSelection<DoubleClickAction>(DoubleClickAction.None,
-		                                           DoubleClickAction.ExpandContract,
-		                                           DoubleClickAction.Select);
+		new ListSingleSelection<DoubleClickAction>(DoubleClickAction.NONE,
+		                                           DoubleClickAction.EXPANDCONTRACT,
+		                                           DoubleClickAction.SELECT);
 
 	// We need to use getters and setters so we can update
 	// our settings object
 	@Tunable(description="Double-Click action:", 
-	         groups={"Group View Settings","User Action Settings"}, gravity=1.0)
+	         groups={"Group View Settings"}, gravity=1.0)
 	public ListSingleSelection<DoubleClickAction> getDCAction() {
 		return doubleClickAction;
 	}
 	public void setDCAction(ListSingleSelection<DoubleClickAction> input) {
 	}
 
+  public ListSingleSelection<GroupViewType> groupViewType = 
+		new ListSingleSelection<GroupViewType>(GroupViewType.NONE,
+		                                       GroupViewType.COMPOUND,
+		                                       GroupViewType.SHOWGROUPNODE,
+		                                       GroupViewType.SINGLENODE);
+
+	// We need to use getters and setters so we can update
+	// our settings object
+	@Tunable(description="Visualization for group:", 
+	         groups={"Group View Settings"}, gravity=2.0)
+	public ListSingleSelection<GroupViewType> getGVtype() {
+		return groupViewType;
+	}
+	public void setGVtype(ListSingleSelection<GroupViewType> input) {
+	}
+
 	private boolean useNestedNetworks = false;
 	@Tunable(description="Show collapsed node as a Nested Network:",
-	         groups={"Group View Settings"}, gravity=2.0)
+	         groups={"Group View Settings"}, gravity=3.0)
 	public boolean getUseNestedNetwork() {
 		return useNestedNetworks;
 	}
 	public void setUseNestedNetwork(boolean nestedNetworks) {
-		if (nestedNetworks) {
-			showCompoundNode = false;
-		}
 		useNestedNetworks = nestedNetworks;
 	}
 
-	private boolean hideGroupNode = true;
-	@Tunable(description="Hide group node on expand:",
-	         groups={"Group View Settings"}, gravity=3.0)
-	public boolean getHideGroupNode() {
-		return hideGroupNode;
-	}
-	public void setHideGroupNode(boolean groupNode) {
-		if (groupNode) {
-			showCompoundNode = false;
-		}
-		hideGroupNode = groupNode;
-	}
-
-	private boolean showCompoundNode = false;
-	@Tunable(description="Show group as a compound node:",
-	         groups={"Group View Settings"}, gravity=4.0)
-	public boolean getShowCompoundNode() {
-		return showCompoundNode;
-	}
-	public void setShowCompoundNode(boolean compoundNode) {
-		if (compoundNode) {
-			useNestedNetworks = false;
-			hideGroupNode = false;
-		}
-		showCompoundNode = compoundNode;
-	}
 
 /*
 	@Tunable(description="Opacity of the group node", params="slider=true",
@@ -101,24 +89,32 @@ public class CyGroupViewSettings {
 
 		if (group == null) {
 			if (settings.getDoubleClickAction() == null) {
-				doubleClickAction.setSelectedValue(DoubleClickAction.ExpandContract);
+				doubleClickAction.setSelectedValue(DoubleClickAction.EXPANDCONTRACT);
 			} else {
 				doubleClickAction.setSelectedValue(settings.getDoubleClickAction());
 			}
+
+			if (settings.getGroupViewType() == null) {
+				groupViewType.setSelectedValue(GroupViewType.NONE);
+			} else {
+				groupViewType.setSelectedValue(settings.getGroupViewType());
+			}
 	
 			useNestedNetworks = settings.getUseNestedNetworks();
-			hideGroupNode = settings.getHideGroupNode();
-			showCompoundNode = settings.getShowCompoundNode();
 		} else {
 			if (settings.getDoubleClickAction(group) == null) {
-				doubleClickAction.setSelectedValue(DoubleClickAction.ExpandContract);
+				doubleClickAction.setSelectedValue(DoubleClickAction.EXPANDCONTRACT);
 			} else {
 				doubleClickAction.setSelectedValue(settings.getDoubleClickAction(group));
 			}
+
+			if (settings.getGroupViewType(group) == null) {
+				groupViewType.setSelectedValue(GroupViewType.NONE);
+			} else {
+				groupViewType.setSelectedValue(settings.getGroupViewType(group));
+			}
 	
 			useNestedNetworks = settings.getUseNestedNetworks(group);
-			hideGroupNode = settings.getHideGroupNode(group);
-			showCompoundNode = settings.getShowCompoundNode(group);
 		}
 	}
 
@@ -126,16 +122,12 @@ public class CyGroupViewSettings {
 		return doubleClickAction.getSelectedValue();
 	}
 
+	public GroupViewType getGroupViewType() {
+		return groupViewType.getSelectedValue();
+	}
+
 	public boolean useNestedNetworks() {
 		return useNestedNetworks;
-	}
-
-	public boolean hideGroupNode() {
-		return hideGroupNode;
-	}
-
-	public boolean showCompoundNode() {
-		return showCompoundNode;
 	}
 
 /*

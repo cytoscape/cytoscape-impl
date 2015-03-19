@@ -69,7 +69,7 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc,cyGroupFactory,CyGroupFactory.class, new Properties());
 
 		// Create the aggregation manager
-		CyGroupAggregationManager cyAggMgr = 
+		CyGroupAggregationManagerImpl cyAggMgr = 
 			new CyGroupAggregationManagerImpl(cyGroupManager);
     registerService(bc,cyAggMgr,CyGroupAggregationManager.class, new Properties());
 		
@@ -78,7 +78,7 @@ public class CyActivator extends AbstractCyActivator {
 
 		// Get our Settings object
 		CyGroupSettingsImpl cyGroupSettings = 
-			new CyGroupSettingsImpl(cyGroupManager, cyAggMgr);
+			new CyGroupSettingsImpl(cyGroupManager, cyAggMgr, cyServiceRegistrarServiceRef);
 
 		// Register our settings menu
     CyGroupSettingsTaskFactory settingsFactory = 
@@ -117,7 +117,8 @@ public class CyActivator extends AbstractCyActivator {
 		                CyGroupSettingsImpl.class, new Properties());
 
 		// Set up listener for node movement
-		NodeChangeListener nodeChangeListener = new NodeChangeListener(cyGroupManager, cyEventHelper);
+		NodeChangeListener nodeChangeListener = new NodeChangeListener(cyGroupManager, cyEventHelper, cyGroupSettings);
+		registerService(bc,nodeChangeListener,ViewChangedListener.class, new Properties());
 
 		GroupViewCollapseHandler gvcHandler = 
 			new GroupViewCollapseHandler(cyGroupManager, cyGroupSettings,
@@ -125,7 +126,7 @@ public class CyActivator extends AbstractCyActivator {
 
 		registerService(bc,gvcHandler,GroupAboutToCollapseListener.class, new Properties());
 		registerService(bc,gvcHandler,GroupCollapsedListener.class, new Properties());
-		registerService(bc,nodeChangeListener,ViewChangedListener.class, new Properties());
+    registerService(bc,gvcHandler, GroupAddedListener.class, new Properties());
 
 		// Listen for double-click
 		GroupViewDoubleClickListener gvsListener =
@@ -137,5 +138,6 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc,gvsListener,NodeViewTaskFactory.class, doubleClickProperties);
 
 	}
+
 }
 
