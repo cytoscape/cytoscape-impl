@@ -35,8 +35,9 @@ public class DegreeFilterViewFactory implements TransformerViewFactory {
 		
 		edgeTypeComboBoxModel = new ArrayList<EdgeTypeElement>();
 		edgeTypeComboBoxModel.add(new EdgeTypeElement(Type.ANY, "In + Out"));
-		edgeTypeComboBoxModel.add(new EdgeTypeElement(Type.INCOMING, "In"));
-		edgeTypeComboBoxModel.add(new EdgeTypeElement(Type.OUTGOING, "Out"));
+// The individual In or Out options do not work. Commenting them out until when/if a real solution is implemented:
+//		edgeTypeComboBoxModel.add(new EdgeTypeElement(Type.INCOMING, "In"));
+//		edgeTypeComboBoxModel.add(new EdgeTypeElement(Type.OUTGOING, "Out"));
 	}
 	
 	@Override
