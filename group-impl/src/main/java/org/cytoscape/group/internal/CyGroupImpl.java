@@ -371,7 +371,7 @@ public class CyGroupImpl implements CyGroup {
 						updateMeta = true;
 					}
 				} else {
-					System.out.println("WARNING: Attempted to add edge '"+edge.toString()+"' which has no node in the group");
+					// System.out.println("WARNING: Attempted to add edge '"+edge.toString()+"' which has no node in the group");
 					// throwIllegalArgumentException("Attempted to add edge '"+edge.toString()+"' which has no node in the group");
 					continue;
 				}
@@ -1145,14 +1145,14 @@ public class CyGroupImpl implements CyGroup {
 		// partner.printGroup();
 	}
 
-	private boolean isMeta(CyEdge edge) {
+	public boolean isMeta(CyEdge edge) {
 		Boolean meta = rootNetwork.getRow(edge, CyNetwork.HIDDEN_ATTRS).
 								get(ISMETA_EDGE_ATTR, Boolean.class, Boolean.FALSE);
 
 		return meta.booleanValue();
 	}
 
-	private boolean isConnectingEdge(CyEdge edge) {
+	public boolean isConnectingEdge(CyEdge edge) {
 		CyNode source = edge.getSource();
 		CyNode target = edge.getTarget();
 		if (getGroupNetwork().containsNode(source) || getGroupNetwork().containsNode(target))
@@ -1160,7 +1160,7 @@ public class CyGroupImpl implements CyGroup {
 		return false;
 	}
 
-	private boolean isIncoming(CyEdge edge) {
+	public boolean isIncoming(CyEdge edge) {
 		CyNode source = edge.getSource();
 		if (source.equals(groupNode) || getGroupNetwork().containsNode(source))
 			return false;

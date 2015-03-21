@@ -25,6 +25,7 @@ package org.cytoscape.group.internal;
  */
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -37,16 +38,19 @@ import org.cytoscape.group.CyGroup;
 import org.cytoscape.group.CyGroupManager;
 import org.cytoscape.group.events.GroupAboutToBeDestroyedEvent;
 import org.cytoscape.group.events.GroupAddedEvent;
+import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
+import org.cytoscape.model.events.AddedEdgesEvent;
+import org.cytoscape.model.events.AddedEdgesListener;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
 
 /**
  * An implementation of CyNetworkManager.
  */
-public class CyGroupManagerImpl implements CyGroupManager {
+public class CyGroupManagerImpl implements CyGroupManager, AddedEdgesListener {
 	private final CyServiceRegistrar cyServiceRegistrar;
 	private CyEventHelper cyEventHelper;
 
@@ -223,6 +227,24 @@ public class CyGroupManagerImpl implements CyGroupManager {
 	 */
 	public <S> S getService(Class<S> serviceClass, String search) {
 		return cyServiceRegistrar.getService(serviceClass, search);
+	}
+
+	public void handleEvent(AddedEdgesEvent addedEdgesEvent) {
+		CyNetwork net = addedEdgesEvent.getSource();
+		Collection<CyEdge> edges = addedEdgesEvent.getPayloadCollection();
+
+		Set<CyGroup> groups = getGroupSet(net);
+		if (groups == null || groups.size() == 0) return;
+
+		List<CyEdge> edgesToAdd = new ArrayList<>();
+		for (CyGroup group: groups) {
+			CyGroupImpl gImpl = (CyGroupImpl)group;
+			for (CyEdge edge: edges) {
+				if (!gImpl.isMeta(edge) && gImpl.isConnectingEdge(edge))
+					edgesToAdd.add(edge);
+			}
+			group.addEdges(edgesToAdd);
+		}
 	}
 
 	private void addGroupToRootMap(CyGroup group) {

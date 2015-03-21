@@ -33,6 +33,7 @@ import org.cytoscape.group.data.CyGroupAggregationManager;
 import org.cytoscape.group.events.GroupAddedListener;
 import org.cytoscape.group.events.GroupAboutToCollapseListener;
 import org.cytoscape.group.events.GroupCollapsedListener;
+import org.cytoscape.model.events.AddedEdgesListener;
 import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.NodeViewTaskFactory;
@@ -66,6 +67,7 @@ public class CyActivator extends AbstractCyActivator {
 		CyGroupFactoryImpl cyGroupFactory = new CyGroupFactoryImpl(cyGroupManager, lockedVisualPropertiesManager,
 		                                                           cyEventHelper);
 		registerService(bc,cyGroupManager,CyGroupManager.class, new Properties());
+		registerService(bc,cyGroupManager,AddedEdgesListener.class, new Properties());
 		registerService(bc,cyGroupFactory,CyGroupFactory.class, new Properties());
 
 		// Create the aggregation manager
