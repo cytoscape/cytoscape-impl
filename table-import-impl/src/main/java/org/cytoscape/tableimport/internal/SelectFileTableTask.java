@@ -32,6 +32,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import org.cytoscape.io.util.StreamUtil;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.Task;
@@ -48,13 +49,12 @@ public class SelectFileTableTask extends AbstractTask {
 	
 	private LoadTableReaderTask tableReader;
 	private LoadNetworkReaderTask networkReader;
-	protected final StreamUtil streamUtil;
 	private InputStream stream;
-	private final IconManager iconManager;
+	private final CyServiceRegistrar serviceRegistrar;
 	
-	private static final Logger logger = LoggerFactory.getLogger( SelectFileTableTask.class ); 
+	private static final Logger logger = LoggerFactory.getLogger(SelectFileTableTask.class); 
 
-	public SelectFileTableTask(Task readerTask,final StreamUtil streamUtil, final IconManager iconManager) {
+	public SelectFileTableTask(final Task readerTask, final CyServiceRegistrar serviceRegistrar) {
 		if (readerTask instanceof LoadTableReaderTask) {
 			tableReader = (LoadTableReaderTask)readerTask;
 			networkReader = null;
@@ -65,15 +65,14 @@ public class SelectFileTableTask extends AbstractTask {
 			networkReader = (LoadNetworkReaderTask) readerTask;
 		}
 		
-		this.streamUtil = streamUtil;
-		this.iconManager = iconManager;
+		this.serviceRegistrar = serviceRegistrar;
 	}
 
 	@Override
 	public void run(final TaskMonitor taskMonitor) throws Exception {
 		
 		try{
-			stream = streamUtil.getInputStream(file.toURI().toURL());
+			stream = serviceRegistrar.getService(StreamUtil.class).getInputStream(file.toURI().toURL());
 			
 			if (!stream.markSupported()) {
 				stream = new BufferedInputStream(stream);
@@ -87,6 +86,7 @@ public class SelectFileTableTask extends AbstractTask {
 			tableReader.setInputFile(stream, fileFormat, file.toURI().toString());
 		
 		if (networkReader != null)
-			networkReader.setInputFile(stream, fileFormat, file.toURI().toString(),file.toURI(), iconManager);
+			networkReader.setInputFile(stream, fileFormat, file.toURI().toString(),file.toURI(),
+					serviceRegistrar.getService(IconManager.class));
 	}
 }

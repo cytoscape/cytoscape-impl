@@ -41,6 +41,7 @@ import org.cytoscape.io.read.CyNetworkReader;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.tableimport.internal.reader.ExcelNetworkSheetReader;
 import org.cytoscape.tableimport.internal.reader.GraphReader;
 import org.cytoscape.tableimport.internal.reader.NetworkTableMappingParameters;
@@ -69,11 +70,14 @@ public class ImportNetworkTableReaderTask extends AbstractTask implements CyNetw
 	private CyRootNetwork rootNetwork;
 	private Map<Object, CyNode> nMap;
 	private CyNetworkViewFactory networkViewFactory;
+	private final CyServiceRegistrar serviceRegistrar;
 	
-	public ImportNetworkTableReaderTask(final InputStream is, final String fileType, final String inputName) {
-		this.is        = is;
-		this.fileType  = fileType;
+	public ImportNetworkTableReaderTask(final InputStream is, final String fileType, final String inputName,
+			final CyServiceRegistrar serviceRegistrar) {
+		this.is = is;
+		this.fileType = fileType;
 		this.inputName = inputName;
+		this.serviceRegistrar = serviceRegistrar;
 
 		try  {
 			File tempFile = File.createTempFile("temp", this.fileType);
@@ -124,10 +128,10 @@ public class ImportNetworkTableReaderTask extends AbstractTask implements CyNetw
 			Sheet sheet = workbook.getSheetAt(0);
 			networkName = workbook.getSheetName(0);
 			
-			reader = new ExcelNetworkSheetReader(networkName, sheet, ntmp, this.nMap, this.rootNetwork);
+			reader = new ExcelNetworkSheetReader(networkName, sheet, ntmp, nMap, rootNetwork, serviceRegistrar);
 		} else {
 			networkName = this.inputName;
-			reader = new NetworkTableReader(networkName, this.is, ntmp, this.nMap, this.rootNetwork);
+			reader = new NetworkTableReader(networkName, this.is, ntmp, nMap, rootNetwork, serviceRegistrar);
 		}
 		
 		loadNetwork(monitor);

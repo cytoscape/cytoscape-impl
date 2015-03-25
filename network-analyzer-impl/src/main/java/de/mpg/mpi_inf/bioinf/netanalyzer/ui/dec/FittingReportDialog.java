@@ -28,12 +28,10 @@ package de.mpg.mpi_inf.bioinf.netanalyzer.ui.dec;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
-import java.awt.FlowLayout;
 import java.awt.Frame;
 import java.awt.GridLayout;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.geom.Point2D;
 import java.net.MalformedURLException;
 import java.net.URL;

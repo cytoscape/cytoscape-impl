@@ -27,6 +27,7 @@ package org.cytoscape.tableimport.internal.task;
 import org.cytoscape.io.read.CyNetworkReader;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 import org.slf4j.Logger;
@@ -37,15 +38,14 @@ public class RegisterOntologyTask extends AbstractTask {
 	private static final Logger logger = LoggerFactory.getLogger(RegisterOntologyTask.class);
 	
 	private final CyNetworkReader reader;
-	private final CyNetworkManager manager;
+	private final CyServiceRegistrar serviceRegistrar;
 	private final String name;
 	
-	RegisterOntologyTask(final CyNetworkReader reader, final CyNetworkManager manager, final String name) {
+	RegisterOntologyTask(final CyNetworkReader reader, final CyServiceRegistrar serviceRegistrar, final String name) {
 		this.reader = reader;
-		this.manager = manager;
+		this.serviceRegistrar = serviceRegistrar;
 		this.name = name;
 	}
-
 
 	@Override
 	public void run(TaskMonitor tm) throws Exception {
@@ -54,13 +54,12 @@ public class RegisterOntologyTask extends AbstractTask {
 		final CyNetwork[] networks = reader.getNetworks();
 		final CyNetwork network = networks[0];
 		
-		if(network == null)
+		if (network == null)
 			throw new NullPointerException("No Ontology DAG loaded");
 		
 		network.getRow(network).set(CyNetwork.NAME, name);
-		manager.addNetwork(network);
+		serviceRegistrar.getService(CyNetworkManager.class).addNetwork(network);
 		
 		logger.debug("New Ontology DAG Registered: model ID = " + network.getSUID());
 	}
-
 }

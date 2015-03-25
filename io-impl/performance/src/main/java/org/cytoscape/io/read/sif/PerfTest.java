@@ -52,6 +52,7 @@ import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.property.SimpleCyProperty;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.layout.CyLayoutAlgorithm;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.model.CyNetworkView;
@@ -104,7 +105,10 @@ public class PerfTest {
 	
 		viewFactory = nvts.getNetworkViewFactory();
 
-		readUtil = new ReadUtils(new StreamUtilImpl(cyProperties));
+		CyServiceRegistrar serviceRegistrar = mock(CyServiceRegistrar.class);
+		when(serviceRegistrar.getService(CyProperty.class, "(cyPropertyName=cytoscape3.props)")).thenReturn(cyProperties);
+		
+		readUtil = new ReadUtils(new StreamUtilImpl(serviceRegistrar));
 		
 		when(netViewRenderer.getNetworkViewFactory()).thenReturn(viewFactory);
 		when(cyApplicationManager.getDefaultNetworkViewRenderer()).thenReturn(netViewRenderer);

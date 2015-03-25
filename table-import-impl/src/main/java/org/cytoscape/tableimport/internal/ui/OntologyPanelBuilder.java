@@ -39,24 +39,22 @@ import java.util.List;
 import java.util.Map;
 import java.util.zip.GZIPInputStream;
 
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.ListCellRenderer;
 import javax.xml.bind.JAXBException;
 
+import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.io.read.InputStreamTaskFactory;
-import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.model.CyTableFactory;
-import org.cytoscape.model.CyTableManager;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.property.bookmark.Attribute;
 import org.cytoscape.property.bookmark.Bookmarks;
 import org.cytoscape.property.bookmark.BookmarksUtil;
 import org.cytoscape.property.bookmark.DataSource;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.tableimport.internal.task.ImportOntologyAndAnnotationTaskFactory;
-import org.cytoscape.tableimport.internal.util.CytoscapeServices;
-import org.cytoscape.util.swing.FileUtil;
-import org.cytoscape.work.TaskManager;
+import org.cytoscape.work.swing.DialogTaskManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -81,30 +79,17 @@ public class OntologyPanelBuilder {
 			+ "<td rowspan=\"1\" colspan=\"1\">%Description%</td></tr></table></p></body></html>";
 
 	private final ImportTablePanel panel;
-	private final CyProperty<Bookmarks> bookmarksProp;
-	private final BookmarksUtil bkUtil;
-	private final InputStreamTaskFactory factory;
-	private final TaskManager taskManager;
+	private final InputStreamTaskFactory isTaskFactory;
+	private final CyServiceRegistrar serviceRegistrar;
 
-	private final CyNetworkManager manager;
-	private final CyTableFactory tableFactory;
-	private final CyTableManager tableManager;
-
-	private final FileUtil fileUtil;
-
-	OntologyPanelBuilder(final ImportTablePanel panel, final CyProperty<Bookmarks> bookmarksProp,
-			final BookmarksUtil bkUtil, final TaskManager taskManager, final InputStreamTaskFactory factory,
-			final CyNetworkManager manager, final CyTableFactory tableFactory, final CyTableManager tableManager,
-			final FileUtil fileUtil) {
+	OntologyPanelBuilder(
+			final ImportTablePanel panel,
+			final InputStreamTaskFactory isTaskFactory,
+			final CyServiceRegistrar serviceRegistrar
+	) {
 		this.panel = panel;
-		this.bookmarksProp = bookmarksProp;
-		this.bkUtil = bkUtil;
-		this.taskManager = taskManager;
-		this.factory = factory;
-		this.manager = manager;
-		this.tableFactory = tableFactory;
-		this.tableManager = tableManager;
-		this.fileUtil = fileUtil;
+		this.isTaskFactory = isTaskFactory;
+		this.serviceRegistrar = serviceRegistrar;
 	}
 
 	protected void buildPanel() {
@@ -277,9 +262,11 @@ public class OntologyPanelBuilder {
 	}
 
 	private void browseAnnotationButtonActionPerformed(ActionEvent evt) {
+		final JFrame parentFrame = serviceRegistrar.getService(CySwingApplication.class).getJFrame();
+		
 		DataSourceSelectDialog dssd = new DataSourceSelectDialog(DataSourceSelectDialog.ANNOTATION_TYPE,
-				CytoscapeServices.cySwingApplication.getJFrame(), Dialog.ModalityType.APPLICATION_MODAL, fileUtil);
-		dssd.setLocationRelativeTo(CytoscapeServices.cySwingApplication.getJFrame());
+				parentFrame, Dialog.ModalityType.APPLICATION_MODAL, serviceRegistrar);
+		dssd.setLocationRelativeTo(parentFrame);
 		dssd.setVisible(true);
 
 		String key = dssd.getSourceName();
@@ -293,9 +280,11 @@ public class OntologyPanelBuilder {
 	}
 
 	private void browseOntologyButtonActionPerformed(ActionEvent evt) {
+		final JFrame parentFrame = serviceRegistrar.getService(CySwingApplication.class).getJFrame();
+		
 		DataSourceSelectDialog dssd = new DataSourceSelectDialog(DataSourceSelectDialog.ONTOLOGY_TYPE,
-				CytoscapeServices.cySwingApplication.getJFrame(), Dialog.ModalityType.APPLICATION_MODAL, fileUtil);
-		dssd.setLocationRelativeTo(CytoscapeServices.cySwingApplication.getJFrame());
+				parentFrame, Dialog.ModalityType.APPLICATION_MODAL, serviceRegistrar);
+		dssd.setLocationRelativeTo(parentFrame);
 		dssd.setVisible(true);
 
 		String key = dssd.getSourceName();
@@ -308,7 +297,12 @@ public class OntologyPanelBuilder {
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	protected void setOntologyComboBox() {
+		final CyProperty<Bookmarks> bookmarksProp =
+				serviceRegistrar.getService(CyProperty.class, "(cyPropertyName=bookmarks)");
+		final BookmarksUtil bkUtil = serviceRegistrar.getService(BookmarksUtil.class);
+		
 		final Bookmarks bookmarks = bookmarksProp.getProperties();
 		final List<DataSource> annotations = bkUtil.getDataSourceList("ontology", bookmarks.getCategory());
 		String key = null;
@@ -324,7 +318,12 @@ public class OntologyPanelBuilder {
 		panel.ontologyComboBox.setToolTipText(getOntologyTooltip());
 	}
 
+	@SuppressWarnings("unchecked")
 	protected void setAnnotationComboBox() throws JAXBException, IOException {
+		final CyProperty<Bookmarks> bookmarksProp =
+				serviceRegistrar.getService(CyProperty.class, "(cyPropertyName=bookmarks)");
+		final BookmarksUtil bkUtil = serviceRegistrar.getService(BookmarksUtil.class);
+		
 		final Bookmarks bookmarks = bookmarksProp.getProperties();
 		final List<DataSource> annotations = bkUtil.getDataSourceList("annotation", bookmarks.getCategory());
 		String key = null;
@@ -368,9 +367,11 @@ public class OntologyPanelBuilder {
 			is = annotationSourceUrl.openStream();
 		}
 		
-		ImportOntologyAndAnnotationTaskFactory taskFactory = new ImportOntologyAndAnnotationTaskFactory(manager,
-				factory, url.openStream(), ontologyName, tableFactory, is, annotationSource, tableManager);
-		taskManager.execute(taskFactory.createTaskIterator());
+		ImportOntologyAndAnnotationTaskFactory taskFactory =
+				new ImportOntologyAndAnnotationTaskFactory(isTaskFactory, url.openStream(), ontologyName, is,
+						annotationSource, serviceRegistrar);
+		
+		serviceRegistrar.getService(DialogTaskManager.class).execute(taskFactory.createTaskIterator());
 	}
 
 	protected void importOntologyAndAnnotation() throws IOException {

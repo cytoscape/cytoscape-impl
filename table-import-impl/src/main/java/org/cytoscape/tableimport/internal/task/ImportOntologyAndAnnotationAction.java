@@ -24,30 +24,25 @@ package org.cytoscape.tableimport.internal.task;
  * #L%
  */
 
-import java.awt.BorderLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.io.IOException;
+import static javax.swing.GroupLayout.DEFAULT_SIZE;
+import static javax.swing.GroupLayout.PREFERRED_SIZE;
+import static javax.swing.GroupLayout.Alignment.LEADING;
 
+import java.awt.Dialog.ModalityType;
+import java.awt.event.ActionEvent;
+
+import javax.swing.AbstractAction;
+import javax.swing.GroupLayout;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JPanel;
-import javax.xml.bind.JAXBException;
 
 import org.cytoscape.application.swing.AbstractCyAction;
+import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.io.read.InputStreamTaskFactory;
-import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.model.CyTableFactory;
-import org.cytoscape.model.CyTableManager;
-import org.cytoscape.property.CyProperty;
-import org.cytoscape.property.bookmark.Bookmarks;
-import org.cytoscape.property.bookmark.BookmarksUtil;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.tableimport.internal.ui.ImportTablePanel;
-import org.cytoscape.tableimport.internal.util.CytoscapeServices;
-import org.cytoscape.util.swing.FileUtil;
-import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
-import org.cytoscape.work.TaskManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,66 +52,42 @@ public class ImportOntologyAndAnnotationAction extends AbstractCyAction {
 
 	private static final Logger logger = LoggerFactory.getLogger(ImportOntologyAndAnnotationAction.class);
 
-	private final CyProperty<Bookmarks> bookmarksProp;
-	private final BookmarksUtil bkUtil;
-
 	private ImportTablePanel ontologyPanel;
 
-	private final InputStreamTaskFactory factory;
-	private final TaskManager taskManager;
-	private final CyNetworkManager manager;
-	private final CyTableFactory tableFactory;
-	private final CyTableManager tableManager;
-	private final FileUtil fileUtil;
-	private final IconManager iconManager;
+	private final InputStreamTaskFactory isTaskfactory;
+	private final CyServiceRegistrar serviceRegistrar;
 
-	public ImportOntologyAndAnnotationAction(final IconManager iconManager) {
+	public ImportOntologyAndAnnotationAction(
+			final InputStreamTaskFactory isTaskfactory,
+			final CyServiceRegistrar serviceRegistrar
+	) {
 		super("Ontology and Annotation...");
 		setPreferredMenu("File.Import");
 		setMenuGravity(4.0f);
 
-		this.bookmarksProp = CytoscapeServices.bookmark;
-		this.bkUtil = CytoscapeServices.bookmarksUtil;
-		this.taskManager = CytoscapeServices.dialogTaskManager;
-		this.factory = CytoscapeServices.inputStreamTaskFactory;
-		this.manager = CytoscapeServices.cyNetworkManager;
-		this.tableFactory = CytoscapeServices.cyTableFactory;
-		this.tableManager = CytoscapeServices.cyTableManager;
-		this.fileUtil = CytoscapeServices.fileUtil;
-		this.iconManager = iconManager;
+		this.isTaskfactory = isTaskfactory;
+		this.serviceRegistrar = serviceRegistrar;
 	}
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		final JDialog dialog = layout();
-
-		try {
-			ontologyPanel = new ImportTablePanel(ImportTablePanel.ONTOLOGY_AND_ANNOTATION_IMPORT, null, null,
-					bookmarksProp, bkUtil, taskManager, factory, manager, tableFactory, tableManager, fileUtil,
-					iconManager);
-			dialog.add(ontologyPanel, BorderLayout.CENTER);
-			dialog.pack();
-			dialog.setLocationRelativeTo(CytoscapeServices.cySwingApplication.getJFrame());
-		} catch (JAXBException e1) {
-			e1.printStackTrace();
-		} catch (IOException e1) {
-			e1.printStackTrace();
-		}
-
+		dialog.pack();
+		dialog.setLocationRelativeTo(serviceRegistrar.getService(CySwingApplication.class).getJFrame());
 		dialog.setVisible(true);
 	}
 
+	@SuppressWarnings("serial")
 	private JDialog layout() {
-		final JDialog dialog = new JDialog(CytoscapeServices.cySwingApplication.getJFrame(), true);
+		final JDialog dialog = new JDialog(serviceRegistrar.getService(CySwingApplication.class).getJFrame());
+		dialog.setModalityType(ModalityType.APPLICATION_MODAL);
 		dialog.setTitle("Import Ontology and Annotation");
 		
-		final JButton importButton = new JButton("Import");
-		importButton.addActionListener(new ActionListener() {
+		final JButton importButton = new JButton(new AbstractAction("Import") {
 			@Override
 			public void actionPerformed(ActionEvent ae) {
 				dialog.dispose();
 
-				// Call Import
 				try {
 					ontologyPanel.importTable();
 				} catch (Exception e) {
@@ -125,17 +96,44 @@ public class ImportOntologyAndAnnotationAction extends AbstractCyAction {
 			}
 		});
 
-		final JButton cancelButton = new JButton("Cancel");
-		cancelButton.addActionListener(new ActionListener() {
+		final JButton cancelButton = new JButton(new AbstractAction("Cancel") {
 			@Override
 			public void actionPerformed(ActionEvent ae) {
 				dialog.dispose();
 			}
 		});
 
-		final JPanel boxPnl = LookAndFeelUtil.createOkCancelPanel(importButton, cancelButton);
-		dialog.add(boxPnl, BorderLayout.SOUTH);
-
+		final JPanel contentPane = new JPanel();
+		final GroupLayout layout = new GroupLayout(contentPane);
+		contentPane.setLayout(layout);
+		layout.setAutoCreateContainerGaps(true);
+		layout.setAutoCreateGaps(true);
+		
+		try {
+			ontologyPanel = new ImportTablePanel(ImportTablePanel.ONTOLOGY_AND_ANNOTATION_IMPORT, null, null,
+					isTaskfactory, serviceRegistrar);
+			
+			final JPanel buttonPanel = LookAndFeelUtil.createOkCancelPanel(importButton, cancelButton);
+			
+			layout.setHorizontalGroup(layout.createParallelGroup(LEADING, true)
+					.addComponent(ontologyPanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+					.addComponent(buttonPanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+			);
+			layout.setVerticalGroup(layout.createSequentialGroup()
+					.addComponent(ontologyPanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(buttonPanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+			);
+			
+			dialog.getRootPane().setDefaultButton(importButton);
+		} catch (Exception e) {
+			logger.error("Cannot create Ontology Import Panel", e);
+		}
+		
+		dialog.setContentPane(contentPane);
+		
+		LookAndFeelUtil.setDefaultOkCancelKeyStrokes(dialog.getRootPane(), importButton.getAction(),
+				cancelButton.getAction());
+		
 		return dialog;
 	}
 }

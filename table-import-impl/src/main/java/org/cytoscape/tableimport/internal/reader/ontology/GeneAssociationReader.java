@@ -43,6 +43,7 @@ import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.CyTableManager;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.tableimport.internal.util.OntologyDAGManager;
 import org.cytoscape.tableimport.internal.util.OntologyUtil;
 import org.cytoscape.work.AbstractTask;
@@ -88,7 +89,6 @@ public class GeneAssociationReader extends AbstractTask implements CyTableReader
 	private InputStream is;
 	private Map<String, String> speciesMap;
 	private CyNetwork ontologyDAG;
-	private final CyTableFactory tableFactory;
 
 	private final String tableName;
 
@@ -98,21 +98,18 @@ public class GeneAssociationReader extends AbstractTask implements CyTableReader
 
 	private final String ontologyDagName;
 	private List<String> termIDList;
-	private final CyTableManager tableManager;
+	private final CyServiceRegistrar serviceRegistrar;
 
 	/**
 	 * Package protected because only in unit testing do we need to specify the
 	 * taxon resource file. Normal operation should use one of the other
 	 * constructors.
 	 */
-	public GeneAssociationReader(final CyTableFactory tableFactory, final String ontologyDagName, final InputStream is,
-			final String tableName, final CyTableManager tableManager) throws IOException {
-		
-		logger.debug("DAG Manager key = " + ontologyDagName);
+	public GeneAssociationReader(final String ontologyDagName, final InputStream is,
+			final String tableName, final CyServiceRegistrar serviceRegistrar) throws IOException {
 		this.ontologyDagName = ontologyDagName;
-		this.tableFactory = tableFactory;
 		this.is = is;
-		this.tableManager = tableManager;
+		this.serviceRegistrar = serviceRegistrar;
 
 		this.tableName = tableName;
 		// Load taxonomy map
@@ -163,7 +160,8 @@ public class GeneAssociationReader extends AbstractTask implements CyTableReader
 		}
 
 		// Create result table
-		table = tableFactory.createTable(tableName, CyNetwork.NAME, String.class, true, true);
+		table = serviceRegistrar.getService(CyTableFactory.class)
+				.createTable(tableName, CyNetwork.NAME, String.class, true, true);
 		createColumns();
 
 		while ((line = bufRd.readLine()) != null) {
@@ -184,7 +182,7 @@ public class GeneAssociationReader extends AbstractTask implements CyTableReader
 		tables = new CyTable[1];
 		tables[0] = table;
 
-		tableManager.addTable(table);
+		serviceRegistrar.getService(CyTableManager.class).addTable(table);
 	}
 
 	private void createColumns() {

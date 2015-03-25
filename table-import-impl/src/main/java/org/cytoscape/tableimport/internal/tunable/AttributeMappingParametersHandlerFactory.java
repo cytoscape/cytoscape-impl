@@ -27,9 +27,8 @@ package org.cytoscape.tableimport.internal.tunable;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
-import org.cytoscape.model.CyTableManager;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.tableimport.internal.reader.AttributeMappingParameters;
-import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.swing.GUITunableHandler;
 import org.cytoscape.work.swing.GUITunableHandlerFactory;
@@ -37,14 +36,11 @@ import org.cytoscape.work.swing.GUITunableHandlerFactory;
 public class AttributeMappingParametersHandlerFactory implements GUITunableHandlerFactory {
 	
 	private final int dialogType;
-    private final CyTableManager tableManager;
-	private final IconManager iconManager;
+    private final CyServiceRegistrar serviceRegistrar;
     
-	public AttributeMappingParametersHandlerFactory(final int dialogType, final CyTableManager tableManager,
-			final IconManager iconManager) {
+	public AttributeMappingParametersHandlerFactory(final int dialogType, final CyServiceRegistrar serviceRegistrar) {
 		this.dialogType = dialogType;
-		this.tableManager = tableManager;
-		this.iconManager = iconManager;
+		this.serviceRegistrar = serviceRegistrar;
 	}
 
 	@Override
@@ -52,14 +48,13 @@ public class AttributeMappingParametersHandlerFactory implements GUITunableHandl
 		if (!AttributeMappingParameters.class.isAssignableFrom(field.getType()))
 			return null;
 
-		return new AttributeMappingParametersHandler(field, instance, t, dialogType, tableManager, iconManager);
+		return new AttributeMappingParametersHandler(field, instance, t, dialogType, serviceRegistrar);
 	}
 
 	public GUITunableHandler createTunableHandler(Method getter, Method setter, Object instance, Tunable tunable) {
 		if (!AttributeMappingParameters.class.isAssignableFrom(getter.getReturnType()))
 			return null;
 
-		return new AttributeMappingParametersHandler(getter, setter, instance, tunable, dialogType, tableManager,
-				iconManager);
+		return new AttributeMappingParametersHandler(getter, setter, instance, tunable, dialogType, serviceRegistrar);
 	}
 }

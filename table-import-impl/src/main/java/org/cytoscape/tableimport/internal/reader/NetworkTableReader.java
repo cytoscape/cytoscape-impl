@@ -39,6 +39,7 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -66,11 +67,13 @@ public class NetworkTableReader extends AbstractGraphReader implements TextTable
 	
 	private static final Logger logger = LoggerFactory.getLogger(NetworkTableReader.class);
 
-	public NetworkTableReader(final String networkName, final InputStream is,
+	public NetworkTableReader(final String networkName,
+							  final InputStream is,
 	                          final NetworkTableMappingParameters nmp,
 	                          final Map<Object, CyNode> nMap,
-	                          final CyRootNetwork rootNetwork) {
-		super(networkName);
+	                          final CyRootNetwork rootNetwork,
+	                          final CyServiceRegistrar serviceRegistrar) {
+		super(networkName, serviceRegistrar);
 		
 		this.is = is;
 		this.nmp = nmp;

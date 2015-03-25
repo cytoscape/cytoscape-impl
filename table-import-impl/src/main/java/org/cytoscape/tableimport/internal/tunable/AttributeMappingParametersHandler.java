@@ -33,45 +33,35 @@ import java.lang.reflect.Method;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
-import org.cytoscape.model.CyTableManager;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.tableimport.internal.reader.AttributeMappingParameters;
 import org.cytoscape.tableimport.internal.ui.ImportTablePanel;
-import org.cytoscape.tableimport.internal.util.CytoscapeServices;
-import org.cytoscape.util.swing.FileUtil;
-import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.swing.AbstractGUITunableHandler;
 
 public class AttributeMappingParametersHandler extends AbstractGUITunableHandler {
 
 	private int dialogType;
-	private CyTableManager tableManager;
 	private ImportTablePanel importTablePanel;
 	private AttributeMappingParameters amp;
-	private final FileUtil fileUtil;
-	private final IconManager iconManager;
+	private final CyServiceRegistrar serviceRegistrar;
 
 
 	protected AttributeMappingParametersHandler(final Field field, final Object obj, final Tunable tunable,
-			final int dialogType, final CyTableManager tableManager, final IconManager iconManager) {
+			final int dialogType, final CyServiceRegistrar serviceRegistrar) {
 		super(field, obj, tunable);
 		
 		this.dialogType = dialogType;
-		this.tableManager = tableManager;
-		this.fileUtil = CytoscapeServices.fileUtil;
-		this.iconManager = iconManager;
+		this.serviceRegistrar = serviceRegistrar;
 		init();
 	}
 
-
 	protected AttributeMappingParametersHandler(final Method getter, final Method setter, final Object instance,
-			final Tunable tunable, final int dialogType, final CyTableManager tableManager, final IconManager iconManager) {
+			final Tunable tunable, final int dialogType, final CyServiceRegistrar serviceRegistrar) {
 		super(getter, setter, instance, tunable);
 		
 		this.dialogType = dialogType;
-		this.tableManager = tableManager;
-		this.fileUtil = CytoscapeServices.fileUtil;
-		this.iconManager = iconManager;
+		this.serviceRegistrar = serviceRegistrar;
 		init();
 	}
 
@@ -87,16 +77,17 @@ public class AttributeMappingParametersHandler extends AbstractGUITunableHandler
 		panel = new JPanel(new BorderLayout());
 
 		try {
-			importTablePanel = new ImportTablePanel(dialogType, amp.is, amp.fileType, null, null, null, null, null,
-					null, null, tableManager, fileUtil, iconManager);
+			importTablePanel = new ImportTablePanel(dialogType, amp.is, amp.fileType, null, serviceRegistrar);
 		} catch (Exception e) {
-			JLabel errorLabel1 = new JLabel("<html><h2>Error: Could not Initialize Preview.</h2>  <p>The selected file may contain invalid entries.  "
+			JLabel errorLabel1 = new JLabel(
+					"<html><h2>Error: Could not Initialize Preview.</h2>  <p>The selected file may contain invalid entries.  "
 					+ "  Please check the contents of original file.</p></html>");
 			errorLabel1.setForeground(Color.RED);
 			errorLabel1.setHorizontalTextPosition(JLabel.CENTER);
 			errorLabel1.setHorizontalAlignment(JLabel.CENTER);
 
 			panel.add(errorLabel1);
+			
 			return;
 		}
 

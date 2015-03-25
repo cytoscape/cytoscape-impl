@@ -31,15 +31,13 @@ import java.util.Collection;
 import java.util.Properties;
 
 import org.cytoscape.io.read.CyNetworkReader;
-import org.cytoscape.io.read.CyNetworkReaderManager;
-import org.cytoscape.io.util.StreamUtil;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.property.CyProperty;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.CyNetworkNaming;
-import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
@@ -55,109 +53,89 @@ import org.cytoscape.work.TaskMonitor;
 
 public class ImportNoGuiNetworkReaderFactory extends AbstractTaskFactory {
 	
-	protected final StreamUtil streamUtil;
-	private boolean fromURL;
-	private final CyNetworkManager networkManager;
-	private final CyNetworkViewManager networkViewManager;
-	private final CyNetworkNaming namingUtil;
-	private final VisualMappingManager vmm;
-	private final CyNetworkViewFactory nullNetworkViewFactory;
-	private final CyNetworkReaderManager networkReaderManager;
-	private final IconManager iconManager;
-	private Properties props;
+	private final boolean fromURL;
+	private final CyServiceRegistrar serviceRegistrar;
 
 	/**
 	 * Creates a new ImportAttributeTableReaderFactory object.
 	 */
-	public ImportNoGuiNetworkReaderFactory(final StreamUtil streamUtil, boolean fromURL,
-			final CyNetworkManager networkManager, final CyNetworkViewManager networkViewManager, CyProperty<Properties> props,
-			final CyNetworkNaming namingUtil, final VisualMappingManager vmm,final CyNetworkViewFactory nullNetworkViewFactory,
-			final CyNetworkReaderManager networkReaderManager, final IconManager iconManager) {
-		this.streamUtil = streamUtil;
+	public ImportNoGuiNetworkReaderFactory(final boolean fromURL, final CyServiceRegistrar serviceRegistrar) {
 		this.fromURL = fromURL;
-		this.networkManager = networkManager;
-		this.networkViewManager = networkViewManager;
-		this.namingUtil = namingUtil;
-		this.vmm = vmm;
-		this.nullNetworkViewFactory = nullNetworkViewFactory;
-		this.networkReaderManager = networkReaderManager;
-		this.iconManager = iconManager;
-		this.props = props.getProperties();
+		this.serviceRegistrar = serviceRegistrar;
 	}
 
 	@Override
 	public TaskIterator createTaskIterator() {
-		LoadNetworkReaderTask readerTask = new LoadNetworkReaderTask(networkReaderManager);
-		NetworkCollectionHelper networkCollectionHelperTask = new NetworkCollectionHelper(readerTask);
-		GenerateNetworkViewsTask generateViewTask = new GenerateNetworkViewsTask(readerTask,networkManager,networkViewManager,props,namingUtil,vmm,nullNetworkViewFactory);
+		final LoadNetworkReaderTask readerTask = new LoadNetworkReaderTask(serviceRegistrar);
+		final NetworkCollectionHelper networkCollectionHelperTask = new NetworkCollectionHelper(readerTask, serviceRegistrar);
+		final GenerateNetworkViewsTask generateViewTask = new GenerateNetworkViewsTask(readerTask);
 		
 		if (fromURL) {
-			return new TaskIterator(new SelectURLTableTask(readerTask,streamUtil,iconManager),networkCollectionHelperTask,readerTask,generateViewTask);
+			return new TaskIterator(new SelectURLTableTask(readerTask, serviceRegistrar), networkCollectionHelperTask,
+					readerTask, generateViewTask);
 		} else {
-			return new TaskIterator(new SelectFileTableTask(readerTask,streamUtil,iconManager),networkCollectionHelperTask,readerTask,generateViewTask);
+			return new TaskIterator(new SelectFileTableTask(readerTask, serviceRegistrar),
+					networkCollectionHelperTask, readerTask, generateViewTask);
 		}
 	}
 	
-	class GenerateNetworkViewsTask extends AbstractTask  {
+	class GenerateNetworkViewsTask extends AbstractTask {
+		
 		private String name;
-		private final CyNetworkReader viewReader;
-		private final CyNetworkManager networkManager;
-		private final CyNetworkViewManager networkViewManager;
-		private final CyNetworkNaming namingUtil;
+		private final CyNetworkReader netReader;
 		private int viewThreshold;
-		private final VisualMappingManager vmm;
-		private final CyNetworkViewFactory nullNetworkViewFactory;
 		private	Collection<CyNetworkView> results;
-		private Properties props;
 		
 		private final String VIEW_THRESHOLD = "viewThreshold";
 		private static final int DEF_VIEW_THRESHOLD = 3000;
 
-		public GenerateNetworkViewsTask( final CyNetworkReader viewReader,
-					final CyNetworkManager networkManager, final CyNetworkViewManager networkViewManager,final Properties props,
-					final CyNetworkNaming namingUtil, final VisualMappingManager vmm,
-					final CyNetworkViewFactory nullNetworkViewFactory) {
+		public GenerateNetworkViewsTask(final CyNetworkReader netReader) {
 			name = null;
-			this.viewReader = viewReader;
-			this.networkManager = networkManager;
-			this.networkViewManager = networkViewManager;
-			this.namingUtil = namingUtil;
-			this.vmm = vmm;
-			this.nullNetworkViewFactory = nullNetworkViewFactory;
-			this.props = props;
+			this.netReader = netReader;
 		}
 
+		@Override
 		public void run(final TaskMonitor taskMonitor) throws Exception {
 			taskMonitor.setProgress(0.0);
+			
+			final VisualMappingManager vmManager = serviceRegistrar.getService(VisualMappingManager.class);
+			final CyNetworkNaming netNaming = serviceRegistrar.getService(CyNetworkNaming.class);
+			final CyNetworkManager netManager = serviceRegistrar.getService(CyNetworkManager.class);
+			final CyNetworkViewManager netViewManager = serviceRegistrar.getService(CyNetworkViewManager.class);
+			final CyNetworkViewFactory nullNetViewFactory = serviceRegistrar.getService(CyNetworkViewFactory.class, "(id=NullCyNetworkViewFactory)");
 
-			final VisualStyle style = vmm.getCurrentVisualStyle(); // get the current style before registering the views!
-			final CyNetwork[] networks = viewReader.getNetworks();
+			final VisualStyle style = vmManager.getCurrentVisualStyle(); // get the current style before registering the views!
+			final CyNetwork[] networks = netReader.getNetworks();
 			double numNets = (double)(networks.length);
 			int i = 0;
 			
-			if(viewReader instanceof LoadNetworkReaderTask)
-				name = ((LoadNetworkReaderTask)viewReader).getName();
+			if (netReader instanceof LoadNetworkReaderTask)
+				name = ((LoadNetworkReaderTask)netReader).getName();
 			
 			viewThreshold = getViewThreshold();
-
 			results = new ArrayList<CyNetworkView>();
+			
 			for (CyNetwork network : networks) {
 				// Use original name if exists
 				String networkName = network.getRow(network).get(CyNetwork.NAME, String.class);
+				
 				if (networkName == null || networkName.trim().length() == 0) {
 					networkName = name;
+					
 					if (networkName == null)
 						networkName = "? (Name is missing)";
 					
-					network.getRow(network).set(CyNetwork.NAME, namingUtil.getSuggestedNetworkTitle(networkName));
+					network.getRow(network).set(CyNetwork.NAME, netNaming.getSuggestedNetworkTitle(networkName));
 				}
-				networkManager.addNetwork(network);
+				
+				netManager.addNetwork(network);
 
 				final int numGraphObjects = network.getNodeCount() + network.getEdgeCount();
+				
 				if (numGraphObjects < viewThreshold) {
-					final CyNetworkView view = viewReader.buildCyNetworkView(network);
-					networkViewManager.addNetworkView(view);
-					vmm.setVisualStyle(style, view);
+					final CyNetworkView view = netReader.buildCyNetworkView(network);
+					netViewManager.addNetworkView(view);
+					vmManager.setVisualStyle(style, view);
 					style.apply(view);
 					
 					if (!view.isSet(BasicVisualLexicon.NETWORK_CENTER_X_LOCATION)
@@ -166,8 +144,9 @@ public class ImportNoGuiNetworkReaderFactory extends AbstractTaskFactory {
 						view.fitContent();
 					results.add(view);
 				} else {
-					results.add(nullNetworkViewFactory.createNetworkView(network));
+					results.add(nullNetViewFactory.createNetworkView(network));
 				}
+				
 				taskMonitor.setProgress((double)(++i)/numNets);
 			}
 
@@ -199,15 +178,19 @@ public class ImportNoGuiNetworkReaderFactory extends AbstractTaskFactory {
 						if(networkName == null)
 							networkName = "? (Name is missing)";
 						
-						rootNet.getRow(rootNet).set(CyNetwork.NAME, namingUtil.getSuggestedNetworkTitle(networkName));
+						rootNet.getRow(rootNet).set(CyNetwork.NAME, netNaming.getSuggestedNetworkTitle(networkName));
 					}
 				}			
 			}
 		}
 		
+		@SuppressWarnings("unchecked")
 		private int getViewThreshold() {
-			final String vts = props.getProperty(VIEW_THRESHOLD);
+			final CyProperty<Properties> cyProperties =
+					serviceRegistrar.getService(CyProperty.class, "(cyPropertyName=cytoscape3.props)");
+			final String vts = cyProperties.getProperties().getProperty(VIEW_THRESHOLD);
 			int threshold;
+			
 			try {
 				threshold = Integer.parseInt(vts);
 			} catch (Exception e) {
@@ -216,8 +199,5 @@ public class ImportNoGuiNetworkReaderFactory extends AbstractTaskFactory {
 
 			return threshold;
 		}
-
 	}
-	
-	
 }

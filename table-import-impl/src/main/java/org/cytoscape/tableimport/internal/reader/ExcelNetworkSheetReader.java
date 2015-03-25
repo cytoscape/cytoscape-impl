@@ -32,12 +32,13 @@ import java.util.Map;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.tableimport.internal.util.AttributeTypes;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.tableimport.internal.util.AttributeTypes;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Reader for Network file in Excel (.xls) format.<br>
@@ -51,32 +52,26 @@ import org.cytoscape.model.subnetwork.CyRootNetwork;
  * @author Keiichiro Ono
  */
 public class ExcelNetworkSheetReader extends NetworkTableReader {
+	
 	private final Sheet sheet;
 	private static final Logger logger = LoggerFactory.getLogger(ExcelNetworkSheetReader.class);
-	//private Map<Object, CyNode> nMap;
 	
 	/*
 	 * Reader will read entries from this line.
 	 */
 	/**
 	 * Creates a new ExcelNetworkSheetReader object.
-	 *
-	 * @param networkName  DOCUMENT ME!
-	 * @param sheet  DOCUMENT ME!
-	 * @param nmp  DOCUMENT ME!
 	 */
-	public ExcelNetworkSheetReader(final String networkName, final Sheet sheet,
+	public ExcelNetworkSheetReader(final String networkName,
+								   final Sheet sheet,
 	                               final NetworkTableMappingParameters nmp, 
-	                               final Map<Object, CyNode> nMap, final CyRootNetwork rootNetwork) {
-		super(networkName, null, nmp, nMap, rootNetwork);
+	                               final Map<Object, CyNode> nMap,
+	                               final CyRootNetwork rootNetwork,
+	                               final CyServiceRegistrar serviceRegistrar) {
+		super(networkName, null, nmp, nMap, rootNetwork, serviceRegistrar);
 		this.sheet = sheet;
 	}
 
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @throws IOException DOCUMENT ME!
-	 */
 	@Override
 	public void readTable(CyTable table) throws IOException {
 		network.getRow(network).set("name", this.getNetworkName());		
@@ -137,18 +132,14 @@ public class ExcelNetworkSheetReader extends NetworkTableReader {
 		return cells;
 	}
 
-	private static String convertDoubleToString(Double v)
-	{
+	private static String convertDoubleToString(Double v) {
 		BigDecimal bd = new BigDecimal(v);
-		try
-		{
+		
+		try {
 			BigInteger bi = bd.toBigIntegerExact();
 			return bi.toString();
-		}
-		catch( ArithmeticException e )
-		{
+		} catch( ArithmeticException e ) {
 			return v.toString();
 		}
 	}
-
 }

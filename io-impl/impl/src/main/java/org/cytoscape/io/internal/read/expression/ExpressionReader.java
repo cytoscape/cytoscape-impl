@@ -26,11 +26,9 @@ package org.cytoscape.io.internal.read.expression;
 
 
 import java.io.BufferedReader;
-import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.IOException;
-import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -39,13 +37,11 @@ import java.util.StringTokenizer;
 import java.util.Vector;
 
 import org.cytoscape.io.internal.read.AbstractTableReader;
-import org.cytoscape.model.CyTable;
-import org.cytoscape.model.CyIdentifiable;
-import org.cytoscape.model.CyTableFactory;
-import org.cytoscape.model.CyTableManager;
+import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
-import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyTable;
+import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.work.TaskMonitor;
 
 

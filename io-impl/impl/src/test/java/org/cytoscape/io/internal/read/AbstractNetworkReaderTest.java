@@ -32,10 +32,8 @@ import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
-import java.util.Set;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.NetworkViewRenderer;
@@ -52,6 +50,7 @@ import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.property.CyProperty.SavePolicy;
 import org.cytoscape.property.SimpleCyProperty;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.layout.CyLayoutAlgorithm;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.model.CyNetworkView;
@@ -63,7 +62,9 @@ import org.junit.Before;
 import org.mockito.Mockito;
 
 public class AbstractNetworkReaderTest {
+	
 	static class SimpleTask extends AbstractTask {
+		@Override
 		public void run(final TaskMonitor tm) {
 		}
 	}
@@ -79,6 +80,7 @@ public class AbstractNetworkReaderTest {
 	protected CyRootNetworkManager rootNetworkManager;
 	protected CyApplicationManager applicationManager;
 	protected NetworkViewRenderer defRenderer;
+	protected CyServiceRegistrar serviceRegistrar;
 	
 	private Properties properties;
 
@@ -106,8 +108,11 @@ public class AbstractNetworkReaderTest {
 		NetworkViewTestSupport nvts = new NetworkViewTestSupport();
 		setViewThreshold(DEF_THRESHOLD);
 		
+		serviceRegistrar = mock(CyServiceRegistrar.class);
+		when(serviceRegistrar.getService(CyProperty.class, "(cyPropertyName=cytoscape3.props)")).thenReturn(cyProperties);
+		
 		viewFactory = nvts.getNetworkViewFactory();
-		readUtil = new ReadUtils(new StreamUtilImpl(cyProperties));
+		readUtil = new ReadUtils(new StreamUtilImpl(serviceRegistrar));
 		
 		defRenderer = mock(NetworkViewRenderer.class);
 		when(defRenderer.getNetworkViewFactory()).thenReturn(viewFactory);

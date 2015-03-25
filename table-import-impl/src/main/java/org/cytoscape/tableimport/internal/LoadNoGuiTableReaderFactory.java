@@ -26,10 +26,9 @@ package org.cytoscape.tableimport.internal;
 
 
 import org.cytoscape.io.read.CyTableReader;
-import org.cytoscape.io.util.StreamUtil;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableManager;
-import org.cytoscape.util.swing.IconManager;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.TaskIterator;
@@ -38,31 +37,26 @@ import org.cytoscape.work.TaskMonitor;
 
 public class LoadNoGuiTableReaderFactory extends AbstractTaskFactory {
 	
-	protected final StreamUtil streamUtil;
-	private boolean fromURL;
-	private final CyTableManager tableMgr;
-	private final IconManager iconManager;
+	private final boolean fromURL;
+	private final CyServiceRegistrar serviceRegistrar;
 
 	/**
 	 * Creates a new ImportAttributeTableReaderFactory object.
 	 */
-	public LoadNoGuiTableReaderFactory(final StreamUtil streamUtil,final CyTableManager tableMgr, boolean fromURL,
-			final IconManager iconManager) {
-		this.streamUtil = streamUtil;
+	public LoadNoGuiTableReaderFactory(boolean fromURL, final CyServiceRegistrar serviceRegistrar) {
 		this.fromURL = fromURL;
-		this.tableMgr = tableMgr;
-		this.iconManager = iconManager;
+		this.serviceRegistrar = serviceRegistrar;
 	}
 
 	@Override
 	public TaskIterator createTaskIterator() {
-		LoadTableReaderTask readerTask = new LoadTableReaderTask(iconManager);
+		LoadTableReaderTask readerTask = new LoadTableReaderTask(serviceRegistrar);
 		
 		if (fromURL) {
-			return new TaskIterator(new SelectURLTableTask(readerTask, streamUtil, iconManager),
+			return new TaskIterator(new SelectURLTableTask(readerTask, serviceRegistrar),
 					readerTask, new AddLoadedTableTask(readerTask));
 		} else {
-			return new TaskIterator(new SelectFileTableTask(readerTask, streamUtil, iconManager),
+			return new TaskIterator(new SelectFileTableTask(readerTask, serviceRegistrar),
 					readerTask, new AddLoadedTableTask(readerTask));
 		}
 	}
@@ -77,9 +71,12 @@ public class LoadNoGuiTableReaderFactory extends AbstractTaskFactory {
 		
 		@Override
 		public void run(TaskMonitor taskMonitor) throws Exception {
-			if (this.reader != null && this.reader.getTables() != null)
+			if (this.reader != null && this.reader.getTables() != null) {
+				final CyTableManager tableMgr = serviceRegistrar.getService(CyTableManager.class);
+				
 				for (CyTable table : reader.getTables())
 					tableMgr.addTable(table);
+			}
 		}
 	}
 }

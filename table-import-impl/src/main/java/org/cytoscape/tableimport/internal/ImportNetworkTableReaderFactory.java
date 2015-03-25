@@ -31,16 +31,20 @@ import java.io.InputStream;
 import org.apache.commons.io.FilenameUtils;
 import org.cytoscape.io.CyFileFilter;
 import org.cytoscape.io.read.AbstractInputStreamTaskFactory;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.work.TaskIterator;
 
 
 public class ImportNetworkTableReaderFactory extends AbstractInputStreamTaskFactory {
 
-    /**
+    private final CyServiceRegistrar serviceRegistrar;
+
+	/**
      * Creates a new ImportNetworkTableReaderFactory object.
      */
-    public ImportNetworkTableReaderFactory(final CyFileFilter filter){
+    public ImportNetworkTableReaderFactory(final CyFileFilter filter, final CyServiceRegistrar serviceRegistrar){
         super(filter);
+        this.serviceRegistrar = serviceRegistrar;
     }
 
     @Override
@@ -50,6 +54,6 @@ public class ImportNetworkTableReaderFactory extends AbstractInputStreamTaskFact
         if(!fileFormat.isEmpty()) 
         	fileFormat = "." + fileFormat; //"." is surprisingly required somewhere withing CombineReaderAndMappingTask
         
-        return new TaskIterator(new CombineReaderAndMappingTask(inputStream, fileFormat, inputName));
+        return new TaskIterator(new CombineReaderAndMappingTask(inputStream, fileFormat, inputName, serviceRegistrar));
     }
 }

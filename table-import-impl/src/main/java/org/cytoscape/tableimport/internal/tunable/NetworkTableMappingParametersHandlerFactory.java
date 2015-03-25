@@ -27,9 +27,8 @@ package org.cytoscape.tableimport.internal.tunable;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
-import org.cytoscape.model.CyTableManager;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.tableimport.internal.reader.NetworkTableMappingParameters;
-import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.TunableHandler;
 import org.cytoscape.work.swing.GUITunableHandler;
@@ -38,23 +37,19 @@ import org.cytoscape.work.swing.GUITunableHandlerFactory;
 public class NetworkTableMappingParametersHandlerFactory implements GUITunableHandlerFactory {
 
 	private final int dialogType;
-    private final CyTableManager tableManager;
-	private final IconManager iconManager;
+    private final CyServiceRegistrar serviceRegistrar;
     
-    
-    public NetworkTableMappingParametersHandlerFactory(final int dialogType, final CyTableManager tableManager,
-    		final IconManager iconManager) {
+    public NetworkTableMappingParametersHandlerFactory(final int dialogType, final CyServiceRegistrar serviceRegistrar) {
 		this.dialogType = dialogType;
-		this.tableManager = tableManager;
-		this.iconManager = iconManager;
+		this.serviceRegistrar = serviceRegistrar;
 	}
+    
 	@Override
 	public GUITunableHandler createTunableHandler(Field field, Object instance,Tunable tunable) {
 		if (!NetworkTableMappingParameters.class.isAssignableFrom(field.getType()))
 			return null;
 
-		return new NetworkTableMappingParametersHandler(field, instance, tunable, dialogType, tableManager,
-				iconManager);
+		return new NetworkTableMappingParametersHandler(field, instance, tunable, dialogType, serviceRegistrar);
 	}
 
 	@Override
@@ -62,7 +57,7 @@ public class NetworkTableMappingParametersHandlerFactory implements GUITunableHa
 			Object instance, Tunable tunable) {
 		if (!NetworkTableMappingParameters.class.isAssignableFrom(getter.getReturnType()))
 			return null;
-		return new NetworkTableMappingParametersHandler(getter, setter, instance, tunable, dialogType, tableManager,
-				iconManager);
+		
+		return new NetworkTableMappingParametersHandler(getter, setter, instance, tunable, dialogType, serviceRegistrar);
 	}
 }

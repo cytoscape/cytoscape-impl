@@ -39,6 +39,7 @@ import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.AbstractAction;
 import javax.swing.GroupLayout;
 import javax.swing.JButton;
 import javax.swing.JDialog;
@@ -47,6 +48,7 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.WindowConstants;
 
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.FileChooserFilter;
 import org.cytoscape.util.swing.FileUtil;
 import org.cytoscape.util.swing.LookAndFeelUtil;
@@ -73,26 +75,26 @@ public class DataSourceSelectDialog extends JDialog {
 	private String sourceFileName;
 	private String sourceUrlString;
 
-	private final FileUtil fileUtil;
+	private final CyServiceRegistrar serviceRegistrar;
 
 	public final static int ANNOTATION_TYPE = 1;
 	public final static int ONTOLOGY_TYPE = 2;
 
-	public DataSourceSelectDialog(int sourceType, Window parent, Dialog.ModalityType modal, final FileUtil fileUtil) {
+	public DataSourceSelectDialog(int sourceType, Window parent, Dialog.ModalityType modal,
+			final CyServiceRegistrar serviceRegistrar) {
 		super(parent, modal);
 		this.sourceType = sourceType;
 		sourceName = null;
 		sourceUrlString = null;
 		sourceFileName = null;
-		this.fileUtil = fileUtil;
+		this.serviceRegistrar = serviceRegistrar;
 		initComponents();
 	}
 
+	@SuppressWarnings("serial")
 	private void initComponents() {
 		ontologyNameTextField = new JTextField();
 		dataSourceTextField = new JTextField();
-		cancelButton = new JButton("Cancel");
-		addButton = new JButton("Add");
 		browseButton = new JButton("Browse Local Files");
 		nameLabel = new JLabel("Data Source Name:");
 		sourceLabel = new JLabel("Data Source URL:");
@@ -105,17 +107,16 @@ public class DataSourceSelectDialog extends JDialog {
 		dataSourceTextField.setText("http://");
 		dataSourceTextField.setToolTipText("http, ftp, and file are supported.");
 
-		cancelButton.addActionListener(new ActionListener() {
+		cancelButton = new JButton(new AbstractAction("Cancel") {
 			@Override
-			public void actionPerformed(ActionEvent evt) {
-				cancelButtonActionPerformed(evt);
+			public void actionPerformed(ActionEvent e) {
+				cancelButtonActionPerformed(e);
 			}
 		});
-
-		addButton.addActionListener(new ActionListener() {
+		addButton = new JButton(new AbstractAction("Add") {
 			@Override
-			public void actionPerformed(ActionEvent evt) {
-				addButtonActionPerformed(evt);
+			public void actionPerformed(ActionEvent e) {
+				addButtonActionPerformed(e);
 			}
 		});
 
@@ -127,8 +128,9 @@ public class DataSourceSelectDialog extends JDialog {
 			}
 		});
 
-		final GroupLayout layout = new GroupLayout(getContentPane());
-		getContentPane().setLayout(layout);
+		final JPanel contentPane = new JPanel();
+		final GroupLayout layout = new GroupLayout(contentPane);
+		contentPane.setLayout(layout);
 		layout.setAutoCreateContainerGaps(true);
 		layout.setAutoCreateGaps(true);
 		
@@ -141,6 +143,7 @@ public class DataSourceSelectDialog extends JDialog {
 				.addComponent(getButtonPanel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 		);
 		
+		setContentPane(contentPane);
 		pack();
 	}
 	
@@ -185,6 +188,8 @@ public class DataSourceSelectDialog extends JDialog {
 	private JPanel getButtonPanel() {
 		if (buttonPanel == null) {
 			buttonPanel = LookAndFeelUtil.createOkCancelPanel(addButton, cancelButton);
+			LookAndFeelUtil.setDefaultOkCancelKeyStrokes(getRootPane(), addButton.getAction(), cancelButton.getAction());
+			getRootPane().setDefaultButton(addButton);
 		}
 		
 		return buttonPanel;
@@ -210,6 +215,7 @@ public class DataSourceSelectDialog extends JDialog {
 
 	private void browseButtonActionPerformed(ActionEvent evt) {
 		File file = null;
+		final FileUtil fileUtil = serviceRegistrar.getService(FileUtil.class);
 
 		if (sourceType == ONTOLOGY_TYPE) {
 			final FileChooserFilter filter = new FileChooserFilter("OBO File", "obo");

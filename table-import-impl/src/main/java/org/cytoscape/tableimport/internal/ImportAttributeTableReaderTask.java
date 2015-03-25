@@ -38,13 +38,14 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.cytoscape.io.read.CyTableReader;
 import org.cytoscape.model.CyTable;
+import org.cytoscape.model.CyTableFactory;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.tableimport.internal.reader.AttributeMappingParameters;
 import org.cytoscape.tableimport.internal.reader.DefaultAttributeTableReader;
 import org.cytoscape.tableimport.internal.reader.ExcelAttributeSheetReader;
 import org.cytoscape.tableimport.internal.reader.SupportedFileType;
 import org.cytoscape.tableimport.internal.reader.TextTableReader;
 import org.cytoscape.tableimport.internal.util.AttributeTypes;
-import org.cytoscape.tableimport.internal.util.CytoscapeServices;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.work.AbstractTask;
@@ -54,12 +55,12 @@ import org.cytoscape.work.TunableValidator;
 
 
 public class ImportAttributeTableReaderTask extends AbstractTask implements CyTableReader , TunableValidator {
+	
 	private  InputStream is;
 	private final String fileType;
 	protected CyNetworkView[] cyNetworkViews;
 	protected VisualStyle[] visualstyles;
 	private final String inputName;
-
 
 	private CyTable[] cyTables;
 	private static int numImports = 0;
@@ -68,14 +69,16 @@ public class ImportAttributeTableReaderTask extends AbstractTask implements CyTa
 	public AttributeMappingParameters amp ;
 	
 	TextTableReader reader;
+	
+	private final CyServiceRegistrar serviceRegistrar;
 
 	public ImportAttributeTableReaderTask(final InputStream is, final String fileType,
-			final String inputName)
-	{
+			final String inputName, final CyServiceRegistrar serviceRegistrar) {
 		
-		this.fileType     = fileType;
+		this.fileType = fileType;
 		this.inputName = inputName;
 		this.is = is;
+		this.serviceRegistrar = serviceRegistrar;
 		
 		try {
 	
@@ -106,7 +109,6 @@ public class ImportAttributeTableReaderTask extends AbstractTask implements CyTa
 
 	@Override
 	public void run(TaskMonitor tm) throws Exception {
-		
 		tm.setTitle("Loading table data");
 		tm.setProgress(0.0);
 		tm.setStatusMessage("Loading table...");
@@ -159,9 +161,7 @@ public class ImportAttributeTableReaderTask extends AbstractTask implements CyTa
 		return cyTables;
 	}
 	
-	
 	private void loadAnnotation( TaskMonitor tm){
-
 		tm.setProgress(0.0);
 		
 		TextTableReader reader = this.reader;
@@ -169,6 +169,7 @@ public class ImportAttributeTableReaderTask extends AbstractTask implements CyTa
 		String primaryKey = readerAMP.getAttributeNames()[readerAMP.getKeyIndex()];
 		Byte type = readerAMP.getAttributeTypes()[readerAMP.getKeyIndex()];
 		Class<?> keyType;
+		
 		switch (type) {
 			case AttributeTypes.TYPE_BOOLEAN:
 				keyType = Boolean.class;
@@ -185,13 +186,14 @@ public class ImportAttributeTableReaderTask extends AbstractTask implements CyTa
 			default:
 				keyType = String.class;
 		}
+		
 		tm.setProgress(0.1);
 
 		final CyTable table =
-			CytoscapeServices.cyTableFactory.createTable("AttrTable " + inputName.substring(inputName.lastIndexOf('/') + 1) + " "
-			                                           + Integer.toString(numImports++),
-			                                           primaryKey,keyType, true,
-			                                           true);
+				serviceRegistrar.getService(CyTableFactory.class).createTable(
+						"AttrTable " + inputName.substring(inputName.lastIndexOf('/') + 1) + " " + Integer.toString(numImports++),
+			             primaryKey, keyType, true, true);
+		
 		cyTables = new CyTable[] { table };
 		tm.setProgress(0.2);
 
@@ -204,7 +206,6 @@ public class ImportAttributeTableReaderTask extends AbstractTask implements CyTa
 		}
 		tm.setProgress(1.0);
 	}
-
 
 	@Override
 	public ValidationState getValidationState(Appendable errMsg) {

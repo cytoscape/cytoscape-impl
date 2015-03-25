@@ -25,29 +25,27 @@ package org.cytoscape.tableimport.internal;
  */
 
 
-import org.cytoscape.io.CyFileFilter;
-import org.cytoscape.tableimport.internal.util.CytoscapeServices;
-import org.cytoscape.work.TaskIterator;
-
 import java.io.InputStream;
+
+import org.cytoscape.io.CyFileFilter;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.work.TaskIterator;
 
 
 public class ImportAttributeTableReaderFactory extends AbstractTableReaderFactory {
-	private final static long serialVersionUID = 12023139869460898L;
-
+	
 	/**
 	 * Creates a new ImportAttributeTableReaderFactory object.
 	 */
-	public ImportAttributeTableReaderFactory(CyFileFilter filter)
-	{
-		super(filter, CytoscapeServices.cyTableFactory);
-		
+	public ImportAttributeTableReaderFactory(final CyFileFilter filter, final CyServiceRegistrar serviceRegistrar) {
+		super(filter, serviceRegistrar);
 	}
 
+	@Override
 	public TaskIterator createTaskIterator(InputStream inputStream, String inputName) {
 		int lastIndex = inputName.lastIndexOf('.');
 		String fileFormat = lastIndex == -1 ? "" : inputName.substring(lastIndex);
-		return new TaskIterator(
-			new ImportAttributeTableReaderTask(inputStream, fileFormat, inputName));
+		
+		return new TaskIterator(new ImportAttributeTableReaderTask(inputStream, fileFormat, inputName, serviceRegistrar));
 	}
 }

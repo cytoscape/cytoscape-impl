@@ -24,31 +24,11 @@ package org.cytoscape.tableimport.internal.reader;
  * #L%
  */
 
-import org.cytoscape.model.CyNetwork;
-
-//import cytoscape.data.CyAttributesUtils;
-
-//import cytoscape.data.synonyms.Aliases;
-import static org.cytoscape.tableimport.internal.reader.TextFileDelimiters.*;
-import org.cytoscape.tableimport.internal.reader.TextTableReader.ObjectType;
-import static org.cytoscape.tableimport.internal.reader.TextTableReader.ObjectType.*;
-
-import org.cytoscape.model.CyEdge;
-import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyTableManager;
-
 import java.io.IOException;
 import java.io.InputStream;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
+
 import org.cytoscape.tableimport.internal.util.AttributeTypes;
-import org.cytoscape.tableimport.internal.util.CytoscapeServices;
-import org.cytoscape.model.CyTable;
 
 /**
  * Parameter object for text table <---> CyAttributes mapping.<br>
@@ -59,11 +39,9 @@ import org.cytoscape.model.CyTable;
  * @since Cytoscape 2.4
  * @version 0.9
  * @author Keiichiro Ono
- *
  */
 public class AttributeMappingParameters extends AbstractMappingParameters {
 
-	
 	private String[] attributeNames;
 	private Byte[] attributeTypes;
 	private Byte[] listAttributeTypes;
@@ -75,27 +53,37 @@ public class AttributeMappingParameters extends AbstractMappingParameters {
 		super(is, fileType);
 
 		this.keyIndex = -1;
-		}
+	}
 	
-	public AttributeMappingParameters( final List<String> delimiters,
-	                                  final String listDelimiter, final int keyIndex, final String[] attrNames,
-	                                  Byte[] attributeTypes, Byte[] listAttributeTypes,
-	                                  boolean[] importFlag, boolean caseSensitive) throws Exception {
-		this( delimiters, listDelimiter, keyIndex, attrNames, attributeTypes, listAttributeTypes, importFlag, 
+	public AttributeMappingParameters(
+			final List<String> delimiters,
+			final String listDelimiter,
+			final int keyIndex,
+			final String[] attrNames,
+	        Byte[] attributeTypes,
+	        Byte[] listAttributeTypes,
+	        boolean[] importFlag,
+	        boolean caseSensitive
+	) throws Exception {
+		this(delimiters, listDelimiter, keyIndex, attrNames, attributeTypes, listAttributeTypes, importFlag, 
 				caseSensitive, 0, null);
 	}
 	
-	public AttributeMappingParameters(final List<String> delimiters,
-            final String listDelimiter, final int keyIndex,
+	public AttributeMappingParameters(
+			final List<String> delimiters,
+            final String listDelimiter,
+            final int keyIndex,
             final String[] attrNames,
-            Byte[] attributeTypes, Byte[] listAttributeTypes,
-            boolean[] importFlag, Boolean caseSensitive, int startNumber, String commentChar)
-throws Exception {
-		
+            Byte[] attributeTypes,
+            Byte[] listAttributeTypes,
+            boolean[] importFlag,
+            Boolean caseSensitive,
+            int startNumber,
+            String commentChar
+    ) throws Exception {
 		super(delimiters, listDelimiter, attrNames, attributeTypes,listAttributeTypes, importFlag, startNumber, commentChar);
 		
 		this.caseSensitive = caseSensitive;
-		
 		
 		if (attrNames == null) {
 			throw new Exception("attributeNames should not be null.");
@@ -139,57 +127,28 @@ throws Exception {
 		} else {
 			this.importFlag = importFlag;
 		}
-
-		
 	}
 	
-	
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @return  DOCUMENT ME!
-	 */
+	@Override
 	public String[] getAttributeNames() {
-		// TODO Auto-generated method stub
 		return attributeNames;
 	}
 
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @return  DOCUMENT ME!
-	 */
+	@Override
 	public Byte[] getAttributeTypes() {
 		return attributeTypes;
 	}
 
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @return  DOCUMENT ME!
-	 */
+	@Override
 	public Byte[] getListAttributeTypes() {
 		return listAttributeTypes;
 	}
 
-	
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @return  DOCUMENT ME!
-	 */
 	public int getKeyIndex() {
-		// TODO Auto-generated method stub
 		return keyIndex;
 	}
 	
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @return  DOCUMENT ME!
-	 */
 	public Boolean getCaseSensitive() {
 		return caseSensitive;
 	}
-	
 }

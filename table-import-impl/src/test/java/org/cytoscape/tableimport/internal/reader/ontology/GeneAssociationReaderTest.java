@@ -30,59 +30,57 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.util.List;
 
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.ding.NetworkViewTestSupport;
-import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
-import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.NetworkTestSupport;
 import org.cytoscape.model.TableTestSupport;
-import org.cytoscape.view.model.CyNetworkViewFactory;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.work.TaskMonitor;
 import org.junit.Before;
 import org.junit.Test;
 
 
 public class GeneAssociationReaderTest {
+	
 	private static final String GA_YEAST = "gene_association.sgd";
 
+	private CyServiceRegistrar serviceRegistrar;
 	private CyTableFactory tableFactory;
-	private CyApplicationManager appManager;
-	private CyNetworkManager networkManager;
+	private CyTableManager tableManager;
 	private CyNetwork dag;
 	private TaskMonitor tm;
 
 	@Before
 	public void setUp() throws Exception {
-		NetworkViewTestSupport viewSupport = new NetworkViewTestSupport();
 		NetworkTestSupport netSupport = new NetworkTestSupport();
 		TableTestSupport tableSupport = new TableTestSupport();
 
-		CyNetworkViewFactory cyNetworkViewFactory = viewSupport.getNetworkViewFactory();
 		CyNetworkFactory cyNetworkFactory = netSupport.getNetworkFactory();
+		
 		tableFactory = tableSupport.getTableFactory();
+		tableManager = mock(CyTableManager.class);
 		dag = cyNetworkFactory.createNetwork();
-		CyEventHelper eventHelper = mock(CyEventHelper.class);
 		tm = mock(TaskMonitor.class);
+		
+		serviceRegistrar = mock(CyServiceRegistrar.class);
+		when(serviceRegistrar.getService(CyTableFactory.class)).thenReturn(tableFactory);
+		when(serviceRegistrar.getService(CyTableManager.class)).thenReturn(tableManager);
 	}
 
 	@Test
 	public void gaReaderTest() throws Exception {
 		File file = new File("./src/test/resources/" + GA_YEAST);
 		GeneAssociationReader reader =
-			new GeneAssociationReader(tableFactory, "dummy dag",
-			                          file.toURI().toURL().openStream(), "yeast GA",
-			                          mock(CyTableManager.class));
-
+			new GeneAssociationReader("dummy dag", file.toURI().toURL().openStream(), "yeast GA", serviceRegistrar);
 		
 		System.out.print("Start read: ");
 		reader.run(tm);

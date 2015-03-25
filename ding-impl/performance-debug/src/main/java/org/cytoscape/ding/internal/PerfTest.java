@@ -26,6 +26,7 @@ package org.cytoscape.ding.internal;
 
 
 import static org.cytoscape.property.CyProperty.SavePolicy.DO_NOT_SAVE;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.awt.Color;
@@ -51,6 +52,7 @@ import org.cytoscape.model.NetworkTestSupport;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.property.SimpleCyProperty;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.layout.CyLayoutAlgorithm;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.layout.internal.CyLayoutsImpl;
@@ -96,7 +98,11 @@ public class PerfTest {
 
 		Properties properties = new Properties();
 		CyProperty<Properties> cyProperties = new SimpleCyProperty<Properties>("Test",properties,Properties.class,DO_NOT_SAVE);	
-		readUtil = new ReadUtils(new StreamUtilImpl(cyProperties));
+		
+		CyServiceRegistrar serviceRegistrar = mock(CyServiceRegistrar.class);
+		when(serviceRegistrar.getService(CyProperty.class, "(cyPropertyName=cytoscape3.props)")).thenReturn(cyProperties);
+		
+		readUtil = new ReadUtils(new StreamUtilImpl(serviceRegistrar));
 		
 		when(netViewRenderer.getNetworkViewFactory()).thenReturn(viewFactory);
 		when(appMgr.getDefaultNetworkViewRenderer()).thenReturn(netViewRenderer);

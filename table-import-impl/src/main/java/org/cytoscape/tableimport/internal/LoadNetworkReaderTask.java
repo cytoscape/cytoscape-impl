@@ -46,6 +46,7 @@ import org.cytoscape.io.read.CyNetworkReaderManager;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.tableimport.internal.reader.ExcelNetworkSheetReader;
 import org.cytoscape.tableimport.internal.reader.GraphReader;
 import org.cytoscape.tableimport.internal.reader.NetworkTableMappingParameters;
@@ -53,9 +54,9 @@ import org.cytoscape.tableimport.internal.reader.NetworkTableReader;
 import org.cytoscape.tableimport.internal.reader.SupportedFileType;
 import org.cytoscape.tableimport.internal.reader.TextFileDelimiters;
 import org.cytoscape.tableimport.internal.ui.PreviewTablePanel;
-import org.cytoscape.tableimport.internal.util.CytoscapeServices;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.view.layout.CyLayoutAlgorithm;
+import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.work.AbstractTask;
@@ -70,20 +71,19 @@ import org.cytoscape.work.util.ListSingleSelection;
 
 public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkReader, TunableValidator {
 	
-	private  InputStream is;
+	private InputStream is;
 	private String fileType;
 	private CyNetwork[] networks;
 	private String inputName;
 	private GraphReader reader;
-	private CyNetworkReader netReader = null;
-	private CyNetworkReaderManager networkReaderManager;
+	private CyNetworkReader netReader;
+	private CyServiceRegistrar serviceRegistrar;
 	private PreviewTablePanel previewPanel;
 	private String networkName;
 	private URI uri;
 	private File tempFile;
 	private TaskMonitor taskMonitor;
 	
-	private static int numImports = 0;
 	private boolean[] importFlag;
 	private static final String DEF_INTERACTION = "pp";
 	
@@ -113,8 +113,7 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 	
 	private NetworkTableMappingParameters ntmp;
 
-	public LoadNetworkReaderTask(final CyNetworkReaderManager networkReaderManager)
-	{
+	public LoadNetworkReaderTask(final CyServiceRegistrar serviceRegistrar) {
 		List<String> tempList = new ArrayList<String>();
 		tempList.add(TextFileDelimiters.COMMA.toString());
 		tempList.add(TextFileDelimiters.SEMICOLON.toString());
@@ -127,7 +126,8 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 		tempList.add(TextFileDelimiters.SLASH.toString());
 		tempList.add(TextFileDelimiters.COMMA.toString());
 		delimitersForDataList = new ListSingleSelection<String>(tempList);
-		this.networkReaderManager = networkReaderManager;
+		
+		this.serviceRegistrar = serviceRegistrar;
 	}
 	
 	public void setInputFile(final InputStream is, final String fileType,final String inputName, final URI uriName,
@@ -180,16 +180,16 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 		int colCount;
 		String[] attributeNames;
 		
+		final CyNetworkReaderManager networkReaderManager = serviceRegistrar.getService(CyNetworkReaderManager.class);
 		
-		if(is != null)
+		if (is != null)
 			netReader = networkReaderManager.getReader(is, inputName);
 		
-		if(netReader == null)				
+		if (netReader == null)				
 			netReader = networkReaderManager.getReader(uri, inputName);
 
 		
-		if(netReader instanceof CombineReaderAndMappingTask)
-		{
+		if(netReader instanceof CombineReaderAndMappingTask) {
 			Workbook workbook = null;
 			// Load Spreadsheet data for preview.
 			if(fileType != null && (fileType.equalsIgnoreCase(
@@ -219,8 +219,7 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 			importFlag = new boolean[colCount];
 			Object curName = null;
 			
-			if(firstRowAsColumnNames)
-			{
+			if (firstRowAsColumnNames) {
 				setFirstRowAsColumnNames();
 				startLoadRow++;
 			}
@@ -283,10 +282,10 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 				Sheet sheet = workbook.getSheetAt(0);
 				networkName = workbook.getSheetName(0);
 				
-				reader = new ExcelNetworkSheetReader(networkName, sheet, ntmp, this.nMap, this.rootNetwork);
+				reader = new ExcelNetworkSheetReader(networkName, sheet, ntmp, nMap, rootNetwork, serviceRegistrar);
 			} else {
 				networkName = this.inputName;
-				reader = new NetworkTableReader(networkName, new FileInputStream(tempFile), ntmp, this.nMap, this.rootNetwork);
+				reader = new NetworkTableReader(networkName, new FileInputStream(tempFile), ntmp, nMap, rootNetwork, serviceRegistrar);
 			}
 			
 			loadNetwork(monitor);
@@ -339,7 +338,7 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 			return netReader.buildCyNetworkView(net);
 		} else {
 			final CyNetworkView view = networkViewFactory.createNetworkView(net);
-			final CyLayoutAlgorithm layout = CytoscapeServices.cyLayouts.getDefaultLayout();
+			final CyLayoutAlgorithm layout = serviceRegistrar.getService(CyLayoutAlgorithmManager.class).getDefaultLayout();
 			TaskIterator itr = layout.createTaskIterator(view, layout.getDefaultLayoutContext(), CyLayoutAlgorithm.ALL_NODE_VIEWS,"");
 			Task nextTask = itr.next();
 			

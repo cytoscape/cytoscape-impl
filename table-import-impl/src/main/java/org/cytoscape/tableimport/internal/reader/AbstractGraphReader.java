@@ -26,15 +26,19 @@ package org.cytoscape.tableimport.internal.reader;
 
 import java.io.File;
 
-import org.cytoscape.tableimport.internal.util.CytoscapeServices;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.session.CyNetworkNaming;
 
 public abstract class AbstractGraphReader implements GraphReader {
 
 	protected String fileName;
 	protected String title;
+	
+	private final CyServiceRegistrar serviceRegistrar;
 
-	public AbstractGraphReader(String fileName) {
+	public AbstractGraphReader(final String fileName, final CyServiceRegistrar serviceRegistrar) {
 		this.fileName = fileName;
+		this.serviceRegistrar = serviceRegistrar;
 	}
 
 	public Long[] getNodeIndicesArray() {
@@ -56,6 +60,6 @@ public abstract class AbstractGraphReader implements GraphReader {
 			t = tempFile.getName();
 		}
 
-		return CytoscapeServices.cyNetworkNaming.getSuggestedNetworkTitle(t);
+		return serviceRegistrar.getService(CyNetworkNaming.class).getSuggestedNetworkTitle(t);
 	}
 }

@@ -90,6 +90,7 @@ import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
@@ -115,31 +116,25 @@ import javax.xml.bind.JAXBException;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
+import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.io.read.InputStreamTaskFactory;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.model.CyTableFactory;
-import org.cytoscape.model.CyTableManager;
-import org.cytoscape.property.CyProperty;
-import org.cytoscape.property.bookmark.Bookmarks;
-import org.cytoscape.property.bookmark.BookmarksUtil;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.tableimport.internal.reader.AttributeMappingParameters;
 import org.cytoscape.tableimport.internal.reader.NetworkTableMappingParameters;
 import org.cytoscape.tableimport.internal.reader.SupportedFileType;
 import org.cytoscape.tableimport.internal.reader.TextFileDelimiters;
 import org.cytoscape.tableimport.internal.util.AttributeTypes;
-import org.cytoscape.tableimport.internal.util.CytoscapeServices;
 import org.cytoscape.tableimport.internal.util.URLUtil;
 import org.cytoscape.util.swing.ColumnResizer;
-import org.cytoscape.util.swing.FileUtil;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.JStatusBar;
 import org.cytoscape.util.swing.LookAndFeelUtil;
-import org.cytoscape.work.TaskManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -282,45 +277,35 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 
 	private final String fileType;
 
-	private Workbook workbook = null;
+	private Workbook workbook;
 
 	private OntologyPanelBuilder panelBuilder;
 
-	private CyProperty<Bookmarks> bookmarksProp;
-	private BookmarksUtil bkUtil;
 	private final InputStreamTaskFactory factory;
-	private final TaskManager taskManager;
-	private final CyNetworkManager manager;
-	private final CyTableFactory tableFactory;
-	private final CyTableManager tableManager;
+	private final CyServiceRegistrar serviceRegistrar;
 	private File tempFile;
-	private final FileUtil fileUtil;
-	private final IconManager iconManager;
 
-	public ImportTablePanel(final int dialogType, final InputStream is, final String fileType, final String inputName,
-			final CyProperty<Bookmarks> bookmarksProp, final BookmarksUtil bkUtil, final TaskManager taskManager,
-			final InputStreamTaskFactory factory, final CyNetworkManager manager, final CyTableFactory tableFactory,
-			final CyTableManager tableManager, final FileUtil fileUtil, final IconManager iconManager)
-					throws JAXBException, IOException {
-		this(dialogType, is, fileType, bookmarksProp, bkUtil, taskManager, factory, manager, tableFactory,
-				tableManager, fileUtil, iconManager);
+	public ImportTablePanel(
+			final int dialogType,
+			final InputStream is,
+			final String fileType,
+			final String inputName,
+			final InputStreamTaskFactory factory,
+			final CyServiceRegistrar serviceRegistrar
+	) throws JAXBException, IOException {
+		this(dialogType, is, fileType, factory, serviceRegistrar);
 	}
 
-	public ImportTablePanel(final int dialogType, final InputStream is, final String fileType,
-			final CyProperty<Bookmarks> bookmarksProp, final BookmarksUtil bkUtil, final TaskManager taskManager,
-			final InputStreamTaskFactory factory, final CyNetworkManager manager, final CyTableFactory tableFactory,
-			final CyTableManager tableManager, final FileUtil fileUtil, final IconManager iconManager)
-					throws JAXBException, IOException {
-		this.bookmarksProp = null;
-		this.bkUtil = null;
-		this.taskManager = taskManager;
+	public ImportTablePanel(
+			final int dialogType,
+			final InputStream is,
+			final String fileType,
+			final InputStreamTaskFactory factory,
+			final CyServiceRegistrar serviceRegistrar
+	) throws JAXBException, IOException {
 		this.factory = factory;
-		this.manager = manager;
-		this.tableFactory = tableFactory;
-		this.tableManager = tableManager;
-		this.fileUtil = fileUtil;
+		this.serviceRegistrar = serviceRegistrar;
 		this.fileType = fileType;
-		this.iconManager = iconManager;
 
 		if (dialogType != ONTOLOGY_AND_ANNOTATION_IMPORT) {
 			// Before, this.fileType was always null.
@@ -336,21 +321,12 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 			
 			os.flush();
 			os.close();
-		} else if (is == null) {
-			if (dialogType == ONTOLOGY_AND_ANNOTATION_IMPORT) {
-				if (bookmarksProp == null)
-					throw new NullPointerException("Bookmark Property is null.");
-				if (bkUtil == null)
-					throw new NullPointerException("Bookmark Utility is null.");
-
-				this.bookmarksProp = bookmarksProp;
-				this.bkUtil = bkUtil;
-			}
 		}
 		
 		selectedAttributes = null;
 
-		network = CytoscapeServices.cyApplicationManager.getCurrentNetwork();
+		network = serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetwork();
+		
 		if (network != null) {
 			selectedAttributes = network.getDefaultNodeTable();
 		}
@@ -449,7 +425,8 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 			if (dialogType != NETWORK_IMPORT) {
 				final JTable curTable = aliasTableMap.get(getPreviewPanel().getSelectedSheetName());
 				curTable.setDefaultRenderer(Object.class,
-						new AliasTableRenderer(attributeDataTypes, primaryKeyComboBox.getSelectedIndex(), iconManager));
+						new AliasTableRenderer(attributeDataTypes, primaryKeyComboBox.getSelectedIndex(),
+								serviceRegistrar.getService(IconManager.class)));
 				curTable.repaint();
 			}
 		} else if (evt.getPropertyName().equals(ATTRIBUTE_NAME_CHANGED)) {
@@ -605,8 +582,7 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 		}
 
 		if (dialogType == ONTOLOGY_AND_ANNOTATION_IMPORT) {
-			panelBuilder = new OntologyPanelBuilder(this, bookmarksProp, bkUtil, taskManager, factory, manager,
-					tableFactory, tableManager, fileUtil);
+			panelBuilder = new OntologyPanelBuilder(this, factory, serviceRegistrar);
 			panelBuilder.buildPanel();
 		}
 
@@ -621,11 +597,10 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 					try {
 						setPreviewPanel(false);
 					} catch (Exception e) {
-						JOptionPane
-								.showMessageDialog(
-										ImportTablePanel.this,
+						JOptionPane.showMessageDialog(
+										serviceRegistrar.getService(CySwingApplication.class).getJFrame(),
 										"<html>Could not read selected file.<p>See <b>Help->Error Dialog</b> for further details.</html>",
-										"ERROR", JOptionPane.ERROR_MESSAGE);
+										"Error", JOptionPane.ERROR_MESSAGE);
 						logger.warn("Could not read selected file.", e);
 					}
 				}
@@ -903,7 +878,7 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 	
 	private NetworkImportOptionsPanel getNetworkImportPanel() {
 		if (networkImportPanel == null) {
-			networkImportPanel = new NetworkImportOptionsPanel(iconManager);
+			networkImportPanel = new NetworkImportOptionsPanel(serviceRegistrar.getService(IconManager.class));
 			networkImportPanel.addPropertyChangeListener(this);
 		}
 		
@@ -1034,6 +1009,8 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 	
 	private JPanel getAnnotationTblMappingPanel() {
 		if (annotationTblMappingPanel == null) {
+			final IconManager iconManager = serviceRegistrar.getService(IconManager.class);
+			
 			annotationTblMappingPanel = new JPanel();
 			annotationTblMappingPanel.setBorder(LookAndFeelUtil.createTitledBorder("Annotation File to Table Mapping"));
 		
@@ -1108,6 +1085,8 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 	
 	protected JPanel getAnnotationOntologyMappingPanel() {
 		if (annotationOntologyMappingPanel == null) {
+			final IconManager iconManager = serviceRegistrar.getService(IconManager.class);
+			
 			annotationOntologyMappingPanel = new JPanel();
 			annotationOntologyMappingPanel.setBorder(
 					LookAndFeelUtil.createTitledBorder("Annotation File to Ontology Mapping"));
@@ -1181,6 +1160,8 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 	
 	protected PreviewTablePanel getPreviewPanel() {
 		if (previewPanel == null) {
+			final IconManager iconManager = serviceRegistrar.getService(IconManager.class);
+			
 			if (dialogType == NETWORK_IMPORT) {
 				previewPanel = new PreviewTablePanel(PreviewTablePanel.NETWORK_PREVIEW, iconManager);
 			} else if (dialogType == ONTOLOGY_AND_ANNOTATION_IMPORT) {
@@ -1254,7 +1235,7 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 		}
 
 		advancedDialog.pack();
-		advancedDialog.setLocationRelativeTo(CytoscapeServices.cySwingApplication.getJFrame());
+		advancedDialog.setLocationRelativeTo(serviceRegistrar.getService(CySwingApplication.class).getJFrame());
 		advancedDialog.setVisible(true);
 	}
 
@@ -1305,7 +1286,7 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 	}
 
 	private void attributeRadioButtonActionPerformed(ActionEvent evt) {
-		CyNetwork network = CytoscapeServices.cyApplicationManager.getCurrentNetwork();
+		final CyNetwork network = serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetwork();
 
 		if (nodeRadioButton.isSelected()) {
 			// selectedAttributes = Cytoscape.getNodeAttributes();
@@ -1449,7 +1430,8 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 				if (importFlag[i] && importFlag[dupIndex]) {
 					final JLabel label = new JLabel("Duplicate Column Name Found: " + curName);
 					label.setForeground(Color.RED);
-					JOptionPane.showMessageDialog(this, label);
+					JOptionPane.showMessageDialog(
+							serviceRegistrar.getService(CySwingApplication.class).getJFrame(), label);
 
 					return;
 				}
@@ -2006,13 +1988,10 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 	 * Update the list of mapping attributes.
 	 */
 	private void setKeyList() {
-		if (mappingAttributeComboBox.getSelectedItem() == null) {
+		if (mappingAttributeComboBox.getSelectedItem() == null)
 			return;
-		}
-
-		if (CytoscapeServices.cyApplicationManager.getCurrentNetwork() == null) {
+		if (serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetwork() == null)
 			return;
-		}
 
 		String selectedKeyAttribute = mappingAttributeComboBox.getSelectedItem().toString();
 
@@ -2039,14 +2018,15 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 				}
 			}
 		}
+		
 		getPreviewPanel().setKeyAttributeList(valueSet);
-
 	}
 
 	private void updateAliasTableCell(String name, int columnIndex) {
 		JTable curTable = aliasTableMap.get(getPreviewPanel().getSelectedSheetName());
 		curTable.setDefaultRenderer(Object.class,
-				new AliasTableRenderer(attributeDataTypes, primaryKeyComboBox.getSelectedIndex(), iconManager));
+				new AliasTableRenderer(attributeDataTypes, primaryKeyComboBox.getSelectedIndex(),
+						serviceRegistrar.getService(IconManager.class)));
 
 		AliasTableModel curModel = aliasTableModelMap.get(getPreviewPanel().getSelectedSheetName());
 		curModel.setValueAt(name, columnIndex, 1);
@@ -2063,7 +2043,8 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 		JTable curTable = aliasTableMap.get(getPreviewPanel().getSelectedSheetName());
 
 		curTable.setDefaultRenderer(Object.class,
-				new AliasTableRenderer(attributeDataTypes, primaryKeyComboBox.getSelectedIndex(), iconManager));
+				new AliasTableRenderer(attributeDataTypes, primaryKeyComboBox.getSelectedIndex(),
+						serviceRegistrar.getService(IconManager.class)));
 
 		AliasTableModel curModel = aliasTableModelMap.get(getPreviewPanel().getSelectedSheetName());
 
@@ -2135,7 +2116,8 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 		aliasTableMap.put(tabName, curTable);
 
 		curTable.setDefaultRenderer(Object.class,
-				new AliasTableRenderer(attributeDataTypes, primaryKeyComboBox.getSelectedIndex(), iconManager));
+				new AliasTableRenderer(attributeDataTypes, primaryKeyComboBox.getSelectedIndex(),
+						serviceRegistrar.getService(IconManager.class)));
 		curTable.setEnabled(true);
 		curTable.setCellSelectionEnabled(false);
 		curTable.getTableHeader().setReorderingAllowed(false);
@@ -2170,7 +2152,7 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 
 		mappingAttributeComboBox.addItem(ID);
 
-		if (CytoscapeServices.cyApplicationManager.getCurrentNetwork() == null)
+		if (serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetwork() == null)
 			return;
 
 		for (final CyColumn column : selectedAttributes.getColumns()) {
@@ -2268,16 +2250,15 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 	 * @return true if table looks OK.
 	 */
 	private boolean checkDataSourceError() {
-
 		final JTable table = getPreviewPanel().getPreviewTable();
+		final JFrame parent = serviceRegistrar.getService(CySwingApplication.class).getJFrame();
 
 		if ((table == null) || (table.getModel() == null) || (table.getColumnCount() == 0)) {
-			JOptionPane
-					.showMessageDialog(this, "No table selected.", "Invalid Table.", JOptionPane.INFORMATION_MESSAGE);
+			JOptionPane.showMessageDialog(parent, "No table selected.", "Invalid Table", JOptionPane.WARNING_MESSAGE);
 
 			return false;
 		} else if ((table.getColumnCount() < 2) && (dialogType != NETWORK_IMPORT)) {
-			JOptionPane.showMessageDialog(this, "Table should contain at least 2 columns.", "Invalid Table.",
+			JOptionPane.showMessageDialog(parent, "Table should contain at least 2 columns.", "Invalid Table",
 					JOptionPane.INFORMATION_MESSAGE);
 
 			return false;
@@ -2289,9 +2270,9 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 			final int iIdx = getNetworkImportPanel().getInteractionIndex();
 
 			if ((sIdx == tIdx) || (((iIdx == sIdx) || (iIdx == tIdx)) && (iIdx != -1))) {
-				JOptionPane.showMessageDialog(this,
-						"Columns for source, target, and interaction type must be distinct.", "Same column index.",
-						JOptionPane.INFORMATION_MESSAGE);
+				JOptionPane.showMessageDialog(parent,
+						"Columns for source, target, and interaction type must be distinct.", "Same Column Index",
+						JOptionPane.WARNING_MESSAGE);
 
 				return false;
 			}
@@ -2412,7 +2393,8 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 				if (importFlag[i] && importFlag[dupIndex]) {
 					final JLabel label = new JLabel("Duplicate Column Name Found: " + curName);
 					label.setForeground(Color.RED);
-					JOptionPane.showMessageDialog(this, label);
+					JOptionPane.showMessageDialog(
+							serviceRegistrar.getService(CySwingApplication.class).getJFrame(), label);
 
 					return null;
 				}
@@ -2487,7 +2469,8 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 				if (importFlag[i] && importFlag[dupIndex]) {
 					final JLabel label = new JLabel("Duplicate Column Name Found: " + curName);
 					label.setForeground(Color.RED);
-					JOptionPane.showMessageDialog(this, label);
+					JOptionPane.showMessageDialog(
+							serviceRegistrar.getService(CySwingApplication.class).getJFrame(), label);
 
 					return null;
 				}

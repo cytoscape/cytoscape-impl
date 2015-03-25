@@ -27,22 +27,21 @@ package org.cytoscape.tableimport.internal;
 
 import org.cytoscape.io.CyFileFilter;
 import org.cytoscape.io.read.AbstractInputStreamTaskFactory;
-import org.cytoscape.model.CyTableFactory;
+import org.cytoscape.service.util.CyServiceRegistrar;
 
-// Copy from io-impl
 public abstract class AbstractTableReaderFactory extends AbstractInputStreamTaskFactory {
 
-	protected final CyTableFactory tableFactory;
+	protected final CyServiceRegistrar serviceRegistrar;
 
-
-	public AbstractTableReaderFactory(CyFileFilter filter, CyTableFactory tableFactory) {
+	public AbstractTableReaderFactory(final CyFileFilter filter, final CyServiceRegistrar serviceRegistrar) {
 		super(filter);
+		
 		if (filter == null)
 			throw new NullPointerException("filter is null");
-
-		if (tableFactory == null)
-			throw new NullPointerException("tableFactory is null");
-		this.tableFactory = tableFactory;
+		if (serviceRegistrar == null)
+			throw new NullPointerException("serviceRegistrar is null");
+		
+		this.serviceRegistrar = serviceRegistrar;
 	}
 }
 

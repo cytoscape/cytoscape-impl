@@ -31,6 +31,7 @@ import java.io.InputStream;
 import java.net.URL;
 
 import org.cytoscape.io.util.StreamUtil;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.Task;
@@ -47,13 +48,12 @@ public class SelectURLTableTask extends AbstractTask {
 	
 	private LoadTableReaderTask tableReader;
 	private LoadNetworkReaderTask networkReader;
-	protected final StreamUtil streamUtil;
 	private InputStream stream;
-	private final IconManager iconManager;
+	private final CyServiceRegistrar serviceRegistrar;
 	
 	private static final Logger logger = LoggerFactory.getLogger( SelectFileTableTask.class ); 
 
-	public SelectURLTableTask(Task readerTask,final StreamUtil streamUtil, final IconManager iconManager) {
+	public SelectURLTableTask(final Task readerTask, final CyServiceRegistrar serviceRegistrar) {
 		if (readerTask instanceof LoadTableReaderTask) {
 			tableReader = (LoadTableReaderTask)readerTask;
 			networkReader = null;
@@ -64,14 +64,13 @@ public class SelectURLTableTask extends AbstractTask {
 			networkReader = (LoadNetworkReaderTask) readerTask;
 		}
 		
-		this.streamUtil = streamUtil;
-		this.iconManager = iconManager;
+		this.serviceRegistrar = serviceRegistrar;
 	}
 
 	@Override
 	public void run(final TaskMonitor taskMonitor) throws Exception {
 		try{
-			stream = streamUtil.getInputStream(url.toURI().toURL());
+			stream = serviceRegistrar.getService(StreamUtil.class).getInputStream(url.toURI().toURL());
 		} catch (IOException e) {
 			logger.warn("Error opening stream to URI: " + url.toString(), e);
 		}
@@ -81,7 +80,8 @@ public class SelectURLTableTask extends AbstractTask {
 		if (tableReader != null)
 			tableReader.setInputFile(stream, fileFormat, url.toURI().toString());
 		if (networkReader != null)
-			networkReader.setInputFile(stream, fileFormat, url.toURI().toString(),url.toURI(), iconManager);
+			networkReader.setInputFile(stream, fileFormat, url.toURI().toString(), url.toURI(),
+					serviceRegistrar.getService(IconManager.class));
 	}
 }
 

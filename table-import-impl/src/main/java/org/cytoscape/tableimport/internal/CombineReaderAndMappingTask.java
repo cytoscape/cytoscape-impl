@@ -30,8 +30,9 @@ import java.io.InputStream;
 
 import org.cytoscape.io.read.CyNetworkReader;
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.tableimport.internal.util.CytoscapeServices;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.layout.CyLayoutAlgorithm;
+import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ContainsTunables;
@@ -44,6 +45,7 @@ import org.cytoscape.work.TunableValidator;
 public class CombineReaderAndMappingTask extends AbstractTask implements CyNetworkReader, TunableValidator {
 
 	private TaskMonitor taskMonitor;
+	private final CyServiceRegistrar serviceRegistrar;
 	
 	@ProvidesTitle
 	public String getTitle() {
@@ -55,18 +57,20 @@ public class CombineReaderAndMappingTask extends AbstractTask implements CyNetwo
 	
 	@ContainsTunables
 	public ImportNetworkTableReaderTask importTask;
-	
-	public CombineReaderAndMappingTask(final InputStream is, final String fileType, final String inputName){
-		this.importTask = new ImportNetworkTableReaderTask(is, fileType, inputName);
-		this.networkCollectionHelperTask = new NetworkCollectionHelper();
+
+	public CombineReaderAndMappingTask(final InputStream is, final String fileType, final String inputName,
+			final CyServiceRegistrar serviceRegistrar) {
+		this.importTask = new ImportNetworkTableReaderTask(is, fileType, inputName, serviceRegistrar);
+		this.networkCollectionHelperTask = new NetworkCollectionHelper(serviceRegistrar);
+		this.serviceRegistrar = serviceRegistrar;
 	}
 
 	@Override
 	public ValidationState getValidationState(Appendable errMsg) {
-		if ( importTask instanceof TunableValidator ) {
+		if (importTask instanceof TunableValidator) {
 			ValidationState readVS = ((TunableValidator)importTask).getValidationState(errMsg);
 
-			if ( readVS != OK )
+			if (readVS != OK)
 				return readVS;
 		}
 		
@@ -86,7 +90,7 @@ public class CombineReaderAndMappingTask extends AbstractTask implements CyNetwo
 	@Override
 	public CyNetworkView buildCyNetworkView(CyNetwork network) {
 		final CyNetworkView view = networkCollectionHelperTask.getNetworkViewFactory().createNetworkView(network);
-		final CyLayoutAlgorithm layout = CytoscapeServices.cyLayouts.getDefaultLayout();
+		final CyLayoutAlgorithm layout = serviceRegistrar.getService(CyLayoutAlgorithmManager.class).getDefaultLayout();
 		TaskIterator itr = layout.createTaskIterator(view, layout.getDefaultLayoutContext(), CyLayoutAlgorithm.ALL_NODE_VIEWS,"");
 		Task nextTask = itr.next();
 		

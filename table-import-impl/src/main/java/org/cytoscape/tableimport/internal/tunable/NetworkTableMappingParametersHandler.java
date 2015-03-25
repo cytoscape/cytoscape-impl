@@ -31,42 +31,44 @@ import java.lang.reflect.Method;
 
 import javax.swing.JPanel;
 
-import org.cytoscape.model.CyTableManager;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.tableimport.internal.reader.NetworkTableMappingParameters;
 import org.cytoscape.tableimport.internal.ui.ImportTablePanel;
-import org.cytoscape.tableimport.internal.util.CytoscapeServices;
-import org.cytoscape.util.swing.FileUtil;
-import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.swing.AbstractGUITunableHandler;
 
 public class NetworkTableMappingParametersHandler extends AbstractGUITunableHandler {
 
 	private final int dialogType;
-    private final CyTableManager tableManager;
+    private final CyServiceRegistrar serviceRegistrar;
     
 	private ImportTablePanel importTablePanel;
 	private NetworkTableMappingParameters ntmp;
-	private final FileUtil fileUtil;
-	private final IconManager iconManager;
     
-	protected NetworkTableMappingParametersHandler(Field field,Object instance, Tunable tunable, 
-			final int dialogType, final CyTableManager tableManager, final IconManager iconManager) {
+	protected NetworkTableMappingParametersHandler(
+			final Field field,
+			final Object instance,
+			final Tunable tunable, 
+			final int dialogType,
+			final CyServiceRegistrar serviceRegistrar
+	) {
 		super(field, instance, tunable);
 		this.dialogType = dialogType;
-		this.tableManager = tableManager;
-		this.fileUtil = CytoscapeServices.fileUtil;
-		this.iconManager = iconManager;
+		this.serviceRegistrar = serviceRegistrar;
 		init();
 	}
 	
-	protected NetworkTableMappingParametersHandler(final Method getter, final Method setter, final Object instance, final Tunable tunable,
-			final int dialogType, final CyTableManager tableManager, final IconManager iconManager) {
+	protected NetworkTableMappingParametersHandler(
+			final Method getter,
+			final Method setter,
+			final Object instance,
+			final Tunable tunable,
+			final int dialogType,
+			final CyServiceRegistrar serviceRegistrar
+	) {
 		super(getter, setter, instance, tunable);
 		this.dialogType = dialogType;
-		this.tableManager = tableManager;
-		this.fileUtil = CytoscapeServices.fileUtil;
-		this.iconManager = iconManager;
+		this.serviceRegistrar = serviceRegistrar;
 		init();
 	}
 	
@@ -83,9 +85,7 @@ public class NetworkTableMappingParametersHandler extends AbstractGUITunableHand
 		
 		try {
 			importTablePanel =
-				new ImportTablePanel(dialogType, ntmp.is,
-				                     ntmp.fileType, null,null, null, null,
-				                     null, null, null, tableManager, fileUtil, iconManager); 
+				new ImportTablePanel(dialogType, ntmp.is, ntmp.fileType, null, serviceRegistrar); 
 		} catch (Exception e) {
 			throw new IllegalStateException("Could not initialize ImportTablePanel.", e);
 		}

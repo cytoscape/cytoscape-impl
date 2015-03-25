@@ -42,6 +42,8 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.cytoscape.io.read.CyTableReader;
 import org.cytoscape.model.CyTable;
+import org.cytoscape.model.CyTableFactory;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.tableimport.internal.reader.AttributeMappingParameters;
 import org.cytoscape.tableimport.internal.reader.DefaultAttributeTableReader;
 import org.cytoscape.tableimport.internal.reader.ExcelAttributeSheetReader;
@@ -49,7 +51,6 @@ import org.cytoscape.tableimport.internal.reader.SupportedFileType;
 import org.cytoscape.tableimport.internal.reader.TextFileDelimiters;
 import org.cytoscape.tableimport.internal.reader.TextTableReader;
 import org.cytoscape.tableimport.internal.ui.PreviewTablePanel;
-import org.cytoscape.tableimport.internal.util.CytoscapeServices;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.vizmap.VisualStyle;
@@ -63,15 +64,15 @@ import org.cytoscape.work.util.ListSingleSelection;
 
 
 
-public class LoadTableReaderTask extends AbstractTask implements CyTableReader , TunableValidator {
-	private  InputStream isStart;
-	private  InputStream isEnd;
+public class LoadTableReaderTask extends AbstractTask implements CyTableReader, TunableValidator {
+	
+	private InputStream isStart;
+	private InputStream isEnd;
 	private String fileType;
 	protected CyNetworkView[] cyNetworkViews;
 	protected VisualStyle[] visualstyles;
 	private String inputName;
 	private PreviewTablePanel previewPanel;
-
 
 	private CyTable[] cyTables;
 	private static int numImports = 0;
@@ -96,10 +97,10 @@ public class LoadTableReaderTask extends AbstractTask implements CyTableReader ,
 	@Tunable(description="First row used for column names:", context="both")
 	public boolean firstRowAsColumnNames = false;
 	
-	private final IconManager iconManager;
+	private final CyServiceRegistrar serviceRegistrar;
 
-	public LoadTableReaderTask(final IconManager iconManager) {
-		this.iconManager = iconManager;
+	public LoadTableReaderTask(final CyServiceRegistrar serviceRegistrar) {
+		this.serviceRegistrar = serviceRegistrar;
 		
 		List<String> tempList = new ArrayList<String>();
 		tempList.add(TextFileDelimiters.COMMA.toString());
@@ -116,17 +117,17 @@ public class LoadTableReaderTask extends AbstractTask implements CyTableReader ,
 	}
 	
 	public LoadTableReaderTask(final InputStream is, final String fileType,final String inputName,
-			final IconManager iconManager) {
-		this(iconManager);
+			final CyServiceRegistrar serviceRegistrar) {
+		this(serviceRegistrar);
 		setInputFile(is, fileType, inputName);
 	}
 	
-	public void setInputFile(final InputStream is, final String fileType,final String inputName) {
-		this.fileType     = fileType;
+	public void setInputFile(final InputStream is, final String fileType, final String inputName) {
+		this.fileType = fileType;
 		this.inputName = inputName;
 		this.isStart = is;
 		
-		previewPanel = new PreviewTablePanel(iconManager);
+		previewPanel = new PreviewTablePanel(serviceRegistrar.getService(IconManager.class));
 				
 		try {
 	
@@ -295,7 +296,6 @@ public class LoadTableReaderTask extends AbstractTask implements CyTableReader ,
 		return cyTables;
 	}
 	
-	
 	private void loadAnnotation( TaskMonitor tm){
 
 		tm.setProgress(0.0);
@@ -305,11 +305,11 @@ public class LoadTableReaderTask extends AbstractTask implements CyTableReader ,
 		String primaryKey = readerAMP.getAttributeNames()[readerAMP.getKeyIndex()];
 		tm.setProgress(0.1);
 
-		final CyTable table =
-			CytoscapeServices.cyTableFactory.createTable("AttrTable " + inputName.substring(inputName.lastIndexOf('/') + 1) + " "
-			                                           + Integer.toString(numImports++),
-			                                           primaryKey, String.class, true,
-			                                           true);
+		final CyTableFactory tableFactory = serviceRegistrar.getService(CyTableFactory.class);
+		final CyTable table = tableFactory.createTable(
+				"AttrTable " + inputName.substring(inputName.lastIndexOf('/') + 1) + " " + Integer.toString(numImports++),
+			    primaryKey, String.class, true, true);
+		
 		cyTables = new CyTable[] { table };
 		tm.setProgress(0.2);
 
@@ -322,8 +322,6 @@ public class LoadTableReaderTask extends AbstractTask implements CyTableReader ,
 		}
 		tm.setProgress(1.0);
 	}
-
-	
 
 	@Override
 	public ValidationState getValidationState(Appendable errMsg) {
