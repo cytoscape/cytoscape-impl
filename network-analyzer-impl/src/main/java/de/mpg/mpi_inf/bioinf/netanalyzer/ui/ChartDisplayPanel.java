@@ -372,6 +372,7 @@ public class ChartDisplayPanel extends JPanel implements ActionListener {
 				Object[] cParams = new Object[] { owner, Messages.DT_FILTERDATA,
 						originalParam, visualizer.getSettings() };
 				ComplexParamFilterDialog d = (ComplexParamFilterDialog) constr.newInstance(cParams);
+				d.setMinimumSize(new Dimension(260, d.getMinimumSize().height));
 				ComplexParamFilter filter = d.showDialog();
 				
 				if (filter != null) {

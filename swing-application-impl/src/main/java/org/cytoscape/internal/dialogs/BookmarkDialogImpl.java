@@ -27,7 +27,6 @@ package org.cytoscape.internal.dialogs;
 import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
 
-import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
@@ -42,6 +41,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 
+import javax.swing.AbstractAction;
 import javax.swing.AbstractListModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.GroupLayout;
@@ -68,8 +68,7 @@ import org.cytoscape.util.swing.LookAndFeelUtil;
 /**
  *
  */
-public class BookmarkDialogImpl extends JDialog implements ActionListener,
-		ListSelectionListener, ItemListener {
+public class BookmarkDialogImpl extends JDialog implements ActionListener, ListSelectionListener, ItemListener {
 
 	private final static long serialVersionUID = 1202339873340615L;
 	
@@ -109,7 +108,13 @@ public class BookmarkDialogImpl extends JDialog implements ActionListener,
 		btnAddBookmark = new JButton("Add");
 		btnEditBookmark = new JButton("Modify");
 		btnDeleteBookmark = new JButton("Delete");
-		btnClose = new JButton("Close");
+		
+		btnClose = new JButton(new AbstractAction("Close") {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				dispose();
+			}
+		});
 
 		cmbCategory.setToolTipText("Bookmark Category");
 		
@@ -129,7 +134,6 @@ public class BookmarkDialogImpl extends JDialog implements ActionListener,
 		btnDeleteBookmark.setEnabled(false);
 
 		// add event listeners
-		btnClose.addActionListener(this);
 		btnAddBookmark.addActionListener(this);
 		btnEditBookmark.addActionListener(this);
 		btnDeleteBookmark.addActionListener(this);
@@ -167,11 +171,11 @@ public class BookmarkDialogImpl extends JDialog implements ActionListener,
 			);
 		}
 		
-		final JPanel outerPanel = new JPanel();
+		final JPanel contentPane = new JPanel();
 		
 		{
-			final GroupLayout layout = new GroupLayout(outerPanel);
-			outerPanel.setLayout(layout);
+			final GroupLayout layout = new GroupLayout(contentPane);
+			contentPane.setLayout(layout);
 			layout.setAutoCreateContainerGaps(true);
 			layout.setAutoCreateGaps(true);
 			
@@ -185,12 +189,15 @@ public class BookmarkDialogImpl extends JDialog implements ActionListener,
 			);
 		}
 		
-		this.getContentPane().add(outerPanel, BorderLayout.CENTER);
+		setContentPane(contentPane);
+		
+		LookAndFeelUtil.setDefaultOkCancelKeyStrokes(getRootPane(), btnClose.getAction(), btnClose.getAction());
+		getRootPane().setDefaultButton(btnClose);
 	}
 
 	public void loadBookmarks() {
-
 		Collection<org.cytoscape.io.datasource.DataSource> theDataSourceCollection = new HashSet<org.cytoscape.io.datasource.DataSource>();
+		
 		if (this.cmbCategory.getSelectedItem().equals("network")){
 			theDataSourceCollection = this.dsManagerServiceRef.getDataSources(org.cytoscape.io.DataCategory.NETWORK); 			
 		}
@@ -244,9 +251,7 @@ public class BookmarkDialogImpl extends JDialog implements ActionListener,
 		if (_actionObject instanceof JButton) {
 			JButton _btn = (JButton) _actionObject;
 
-			if (_btn == btnClose) {
-				this.dispose();
-			} else if (_btn == btnAddBookmark) {
+			if (_btn == btnAddBookmark) {
 				EditBookmarkDialog theNewDialog = new EditBookmarkDialog(this, true, bookmarkCategory, "new", null);
 				theNewDialog.setLocationRelativeTo(this);
 				theNewDialog.setVisible(true);
@@ -347,7 +352,7 @@ public class BookmarkDialogImpl extends JDialog implements ActionListener,
 		}
 	}
 
-	public class EditBookmarkDialog extends JDialog implements ActionListener {
+	public class EditBookmarkDialog extends JDialog {
 		
 		private final static long serialVersionUID = 1202339873325728L;
 		
@@ -399,93 +404,75 @@ public class BookmarkDialogImpl extends JDialog implements ActionListener,
 			this.pack();
 		}
 
-		@Override
-		public void actionPerformed(ActionEvent e) {
-			Object _actionObject = e.getSource();
+		private void onOKButtonActionPerformed(ActionEvent e) {
+			if (mode.equalsIgnoreCase("new")) {
+				name = tfName.getText();
+				URLstr = tfURL.getText();
+				provider = tfProvider.getText().trim();
 
-			// handle Button events
-			if (_actionObject instanceof JButton) {
-				JButton _btn = (JButton) _actionObject;
+				if (name.trim().equals("") || URLstr.trim().equals("")) {
+					String msg = "Please provide a name/URL.";
+					// display info dialog
+					JOptionPane.showMessageDialog(parent, msg, "Warning",
+							JOptionPane.INFORMATION_MESSAGE);
 
-				if ((_btn == btnOK) && (mode.equalsIgnoreCase("new"))) {
-					name = tfName.getText();
-					URLstr = tfURL.getText();
-					provider = tfProvider.getText().trim();
-
-					if (name.trim().equals("") || URLstr.trim().equals("")) {
-						String msg = "Please provide a name/URL.";
-						// display info dialog
-						JOptionPane.showMessageDialog(parent, msg, "Warning",
-								JOptionPane.INFORMATION_MESSAGE);
-
-						return;
-					}
-
-					URL newURL;
-					try {
-						newURL = new URL(URLstr);
-					}
-					catch (MalformedURLException ex){
-						JOptionPane.showMessageDialog(parent, "Invalid URL", "Warning",
-								JOptionPane.INFORMATION_MESSAGE);
-						return;
-					}
-
-					org.cytoscape.io.datasource.DataSource theDataSource = new DefaultDataSource(name, 
-							provider, "", getCategoryByName(this.categoryName), newURL);
-
-					
-					if (BookmarkDialogImpl.this.dsManagerServiceRef.containsDataSource(theDataSource)){
-						String msg = "Bookmark already existed.";
-						// display info dialog
-						JOptionPane.showMessageDialog(parent, msg, "Warning",
-								JOptionPane.INFORMATION_MESSAGE);
-						return;						
-					}
-										
-					BookmarkDialogImpl.this.dsManagerServiceRef.saveDataSource(theDataSource);	
-					this.dispose();
+					return;
 				}
 
-				if ((_btn == btnOK) && (mode.equalsIgnoreCase("edit"))) {
-					name = tfName.getText();
-					URLstr = tfURL.getText();
-					provider = tfProvider.getText().trim();
-					URL newURL;
-					
-					if (URLstr.trim().equals("")) {
-						String msg = "URL is empty.";
-						// display info dialog
-						JOptionPane.showMessageDialog(parent, msg, "Warning",
-								JOptionPane.INFORMATION_MESSAGE);
-						return;
-					}
-
-					try {
-						newURL = new URL(URLstr);
-					}
-					catch (MalformedURLException ex){
-						JOptionPane.showMessageDialog(parent, "Invalid URL", "Warning",
-								JOptionPane.INFORMATION_MESSAGE);
-						return;
-					}
-
-					org.cytoscape.io.datasource.DataSource theDataSource = new DefaultDataSource(name, 
-							provider, this.dataSource.getDescription(), this.dataSource.getDataCategory(), newURL);
-					
-					BookmarkDialogImpl.this.dsManagerServiceRef.deleteDataSource(this.dataSource);
-					BookmarkDialogImpl.this.dsManagerServiceRef.saveDataSource(theDataSource);		
-
-					this.dispose();
-					
-				} else if (_btn == btnCancel) {
-					this.dispose();
+				URL newURL;
+				try {
+					newURL = new URL(URLstr);
+				} catch (MalformedURLException ex){
+					JOptionPane.showMessageDialog(parent, "Invalid URL", "Warning",
+							JOptionPane.INFORMATION_MESSAGE);
+					return;
 				}
+
+				org.cytoscape.io.datasource.DataSource theDataSource = new DefaultDataSource(name, 
+						provider, "", getCategoryByName(this.categoryName), newURL);
+
+				if (BookmarkDialogImpl.this.dsManagerServiceRef.containsDataSource(theDataSource)){
+					String msg = "Bookmark already existed.";
+					// display info dialog
+					JOptionPane.showMessageDialog(parent, msg, "Warning", JOptionPane.INFORMATION_MESSAGE);
+					return;						
+				}
+									
+				BookmarkDialogImpl.this.dsManagerServiceRef.saveDataSource(theDataSource);
+				
+				this.dispose();
+			} else if (mode.equalsIgnoreCase("edit")) {
+				name = tfName.getText();
+				URLstr = tfURL.getText();
+				provider = tfProvider.getText().trim();
+				URL newURL;
+				
+				if (URLstr.trim().equals("")) {
+					String msg = "URL is empty.";
+					// display info dialog
+					JOptionPane.showMessageDialog(parent, msg, "Warning", JOptionPane.INFORMATION_MESSAGE);
+					return;
+				}
+
+				try {
+					newURL = new URL(URLstr);
+				} catch (MalformedURLException ex){
+					JOptionPane.showMessageDialog(parent, "Invalid URL", "Warning",
+							JOptionPane.INFORMATION_MESSAGE);
+					return;
+				}
+
+				org.cytoscape.io.datasource.DataSource theDataSource = new DefaultDataSource(name, 
+						provider, this.dataSource.getDescription(), this.dataSource.getDataCategory(), newURL);
+				
+				BookmarkDialogImpl.this.dsManagerServiceRef.deleteDataSource(this.dataSource);
+				BookmarkDialogImpl.this.dsManagerServiceRef.saveDataSource(theDataSource);		
+
+				this.dispose();
 			}
-		} // End of actionPerformed()
+		}
 
 		private DataCategory getCategoryByName(String categoryName){
-
 			if (categoryName.equalsIgnoreCase("network")){
 				return DataCategory.NETWORK;
 			}
@@ -513,7 +500,8 @@ public class BookmarkDialogImpl extends JDialog implements ActionListener,
 			return DataCategory.UNSPECIFIED;
 		}
 		
-	    private void initComponents() {
+	    @SuppressWarnings("serial")
+		private void initComponents() {
 	        lbCategory = new JLabel("Category:");
 	        lbCategoryValue = new JLabel("network");
 	        lbProvider = new JLabel("Provider:");
@@ -523,12 +511,20 @@ public class BookmarkDialogImpl extends JDialog implements ActionListener,
 	        lbURL = new JLabel("URL:");
 	        tfURL = new JTextField();
 	        formPnl = new JPanel();
-	        btnOK = new JButton("OK");
-	        btnCancel = new JButton("Cancel");
+	        
+	        btnOK = new JButton(new AbstractAction("OK") {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					onOKButtonActionPerformed(e);
+				}
+			});
+	        btnCancel = new JButton(new AbstractAction("Cancel") {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					dispose();
+				}
+			});
 
-			btnOK.addActionListener(this);
-			btnCancel.addActionListener(this);
-			
 			{
 				final GroupLayout layout = new GroupLayout(formPnl);
 				formPnl.setLayout(layout);
@@ -570,11 +566,11 @@ public class BookmarkDialogImpl extends JDialog implements ActionListener,
 			}
 			
 			final JPanel buttonPnl = LookAndFeelUtil.createOkCancelPanel(btnOK, btnCancel);
-			final JPanel outerPanel = new JPanel();
+			final JPanel contentPane = new JPanel();
 			
 			{
-				final GroupLayout layout = new GroupLayout(outerPanel);
-				outerPanel.setLayout(layout);
+				final GroupLayout layout = new GroupLayout(contentPane);
+				contentPane.setLayout(layout);
 				layout.setAutoCreateContainerGaps(true);
 				layout.setAutoCreateGaps(true);
 				
@@ -588,7 +584,10 @@ public class BookmarkDialogImpl extends JDialog implements ActionListener,
 				);
 			}
 			
-			this.getContentPane().add(outerPanel, BorderLayout.CENTER);
+			setContentPane(contentPane);
+			
+			LookAndFeelUtil.setDefaultOkCancelKeyStrokes(getRootPane(), btnOK.getAction(), btnCancel.getAction());
+			getRootPane().setDefaultButton(btnOK);
 	    }
 	}
 	

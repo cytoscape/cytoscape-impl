@@ -27,7 +27,6 @@ package org.cytoscape.internal.dialogs;
 import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
 
-import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
@@ -38,6 +37,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
+import javax.swing.AbstractAction;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
@@ -83,7 +83,7 @@ public class PreferencesDialogImpl extends JDialog implements ItemListener, Acti
 	private JButton addPropBtn = new JButton("Add");
 	private JButton deletePropBtn = new JButton("Delete");
 	private JButton modifyPropBtn = new JButton("Modify");
-	private JButton closeButton = new JButton("Close");
+	private JButton closeButton;
 	
 	/**
 	 * Creates a new PreferencesDialog object.
@@ -98,23 +98,20 @@ public class PreferencesDialogImpl extends JDialog implements ItemListener, Acti
 		this.cyPropMap = cyPropMap;
 		this.eventHelper = eh;
 		
-		for(String key: propMap.keySet())
+		for (String key: propMap.keySet())
 			itemChangedMap.put(key, false);
 		
 		try {
 			initGUI();
 			addListeners();
 
-			//
 			modifyPropBtn.setEnabled(false);
 			deletePropBtn.setEnabled(false);
 			
-
 			initTable();
 			initCMB();
 
 			updateTable();
-			
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -130,7 +127,6 @@ public class PreferencesDialogImpl extends JDialog implements ItemListener, Acti
 	@Override
 	public void itemStateChanged(ItemEvent e) {	
 		updateTable();
-		
 	}
 
 	private void initCMB() {
@@ -153,7 +149,6 @@ public class PreferencesDialogImpl extends JDialog implements ItemListener, Acti
 	}
 
 	private void initTable() {
-	
 		DefaultTableColumnModel cm = new DefaultTableColumnModel();
 		
 		for (int i = 0; i < PreferenceTableModel.columnHeader.length; i++) {
@@ -170,11 +165,9 @@ public class PreferencesDialogImpl extends JDialog implements ItemListener, Acti
 		prefsTable.setColumnModel(cm);
 		prefsTable.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 	}
-
 	
 	private void updateTable(){
-		
-		if (this.cmbPropCategories.getSelectedItem() == null){
+		if (this.cmbPropCategories.getSelectedItem() == null) {
 			return;
 		}
 				
@@ -195,17 +188,8 @@ public class PreferencesDialogImpl extends JDialog implements ItemListener, Acti
 
 		if (obj instanceof JButton){
 			JButton btn = (JButton) obj;
-			if (btn == this.closeButton){
-				for(String key: itemChangedMap.keySet()){
-					if (itemChangedMap.get(key)){
-						PropertyUpdatedEvent event = new PropertyUpdatedEvent(this.cyPropMap.get(key));
-						eventHelper.fireEvent(event );
-						itemChangedMap.put(key, false);
-					}
-				}
-				this.dispose();
-			}
-			else if (btn == this.deletePropBtn){			
+			
+			if (btn == this.deletePropBtn){			
 				int[] selectedIndices = this.prefsTable.getSelectedRows();
 				for (int i = selectedIndices.length-1; i >= 0; i--) {					
 					String name = new String((String) (this.prefsTable.getModel().getValueAt(selectedIndices[i], 0)));
@@ -213,8 +197,7 @@ public class PreferencesDialogImpl extends JDialog implements ItemListener, Acti
 					m.deleteProperty(name);
 					itemChangedMap.put(selectedPropertyName, true);
 				}
-			}
-			else if (btn == this.modifyPropBtn){				
+			} else if (btn == this.modifyPropBtn){				
 				int[] selectedIndices = this.prefsTable.getSelectedRows();
 				for (int i = selectedIndices.length-1; i >= 0; i--) {					
 					String name = new String((String) (this.prefsTable.getModel().getValueAt(selectedIndices[i], 0)));
@@ -226,8 +209,7 @@ public class PreferencesDialogImpl extends JDialog implements ItemListener, Acti
 					if (pd.itemChanged)
 						itemChangedMap.put(selectedPropertyName, true);
 				}
-			}
-			else if (btn == this.addPropBtn){
+			} else if (btn == this.addPropBtn){
 				String key = JOptionPane.showInputDialog(addPropBtn, "Enter property name:",
                        "Add Property", JOptionPane.QUESTION_MESSAGE);
 
@@ -251,12 +233,10 @@ public class PreferencesDialogImpl extends JDialog implements ItemListener, Acti
 	
 	@Override
 	public void valueChanged(ListSelectionEvent e){
-	
 		if (this.prefsTable.getSelectedRowCount() == 0){
 			this.modifyPropBtn.setEnabled(false);
 			this.deletePropBtn.setEnabled(false);
-		}
-		else {
+		} else {
 			this.modifyPropBtn.setEnabled(true);
 			this.deletePropBtn.setEnabled(true);
 		}
@@ -266,13 +246,27 @@ public class PreferencesDialogImpl extends JDialog implements ItemListener, Acti
 		addPropBtn.addActionListener(this);
 		modifyPropBtn.addActionListener(this);
 		deletePropBtn.addActionListener(this);
-		closeButton.addActionListener(this);
 
 		cmbPropCategories.addItemListener(this);
 		prefsTable.getSelectionModel().addListSelectionListener(this);
 	}
     
+	@SuppressWarnings("serial")
 	private void initGUI() throws Exception {
+		closeButton = new JButton(new AbstractAction("Close") {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				for (String key: itemChangedMap.keySet()){
+					if (itemChangedMap.get(key)){
+						PropertyUpdatedEvent event = new PropertyUpdatedEvent(cyPropMap.get(key));
+						eventHelper.fireEvent(event);
+						itemChangedMap.put(key, false);
+					}
+				}
+				dispose();
+			}
+		});
+		
 		propsTablePane.getViewport().add(prefsTable, null);
 		prefsTable.setPreferredScrollableViewportSize(new Dimension(400, 200));
 
@@ -305,11 +299,11 @@ public class PreferencesDialogImpl extends JDialog implements ItemListener, Acti
 			);
 		}
 		
-		final JPanel outerPanel = new JPanel();
+		final JPanel contentPane = new JPanel();
 		
 		{
-			final GroupLayout layout = new GroupLayout(outerPanel);
-			outerPanel.setLayout(layout);
+			final GroupLayout layout = new GroupLayout(contentPane);
+			contentPane.setLayout(layout);
 			layout.setAutoCreateContainerGaps(true);
 			layout.setAutoCreateGaps(true);
 			
@@ -323,6 +317,9 @@ public class PreferencesDialogImpl extends JDialog implements ItemListener, Acti
 			);
 		}
 		
-		this.getContentPane().add(outerPanel, BorderLayout.CENTER);
+		setContentPane(contentPane);
+		
+		LookAndFeelUtil.setDefaultOkCancelKeyStrokes(getRootPane(), closeButton.getAction(), closeButton.getAction());
+		getRootPane().setDefaultButton(closeButton);
 	}
 }
