@@ -52,6 +52,7 @@ import org.cytoscape.model.SavePolicy;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.property.CyProperty;
+import org.cytoscape.property.SimpleCyProperty;
 import org.cytoscape.property.bookmark.Bookmarks;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.CySession;
@@ -97,7 +98,7 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 	private final CyServiceRegistrar registrar;
 	private final UndoSupport undo;
 
-	private final Set<CyProperty<?>> sessionProperties;
+	private final Map<String, CyProperty<?>> sessionProperties;
 	private CyProperty<Bookmarks> bookmarks;
 	private final Object lock = new Object();
 
@@ -126,7 +127,7 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 		this.renderingEngineMgr = renderingEngineMgr;
 		this.grMgr = grMgr;
 		this.registrar = registrar;
-		this.sessionProperties = new HashSet<CyProperty<?>>();
+		this.sessionProperties = new HashMap<>();
 		this.undo = undo;
 	}
 
@@ -294,7 +295,7 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 				if (Bookmarks.class.isAssignableFrom(newCyProperty.getPropertyType()))
 					bookmarks = (CyProperty<Bookmarks>) newCyProperty;
 				else
-					sessionProperties.add(newCyProperty);
+					sessionProperties.put(newCyProperty.getName(), newCyProperty);
 			}
 		}
 	}
@@ -307,15 +308,16 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 				if (Bookmarks.class.isAssignableFrom(oldCyProperty.getPropertyType()))
 					bookmarks = null;
 				else
-					sessionProperties.remove(oldCyProperty);
+					sessionProperties.remove(oldCyProperty.getName());
 			}
 		}
 	}
 
 	private Set<CyProperty<?>> getAllProperties() {
 		final Set<CyProperty<?>> set;
+		
 		synchronized (lock) {
-			set = new HashSet<CyProperty<?>>(sessionProperties);
+			set = new HashSet<>(sessionProperties.values());
 		}
 		
 		if (bookmarks != null)
@@ -326,6 +328,15 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 
 	private void restoreProperties(final CySession sess) {
 		for (CyProperty<?> cyProps : sess.getProperties()) {
+			final CyProperty<?> oldCyProps = sessionProperties.get(cyProps.getName());
+			
+			if (oldCyProps != null && oldCyProps.getSavePolicy() == CyProperty.SavePolicy.SESSION_FILE_AND_CONFIG_DIR) {
+				// So the old CyProperty with the same name can be correctly replaced,
+				// which means that the new CyProperty save policy is now SESSION_FILE_AND_CONFIG_DIR
+				cyProps = new SimpleCyProperty<>(cyProps.getName(), cyProps.getProperties(), cyProps.getPropertyType(),
+						CyProperty.SavePolicy.SESSION_FILE_AND_CONFIG_DIR);
+			}
+			
 			final Properties serviceProps = new Properties();
 			serviceProps.setProperty("cyPropertyName", cyProps.getName());
 			registrar.registerAllServices(cyProps, serviceProps);
@@ -578,7 +589,7 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 		for (CyProperty<?> cyProps : cyPropsClone) {
 			if (cyProps.getSavePolicy().equals(CyProperty.SavePolicy.SESSION_FILE)) {
 				registrar.unregisterAllServices(cyProps);
-				sessionProperties.remove(cyProps);
+				sessionProperties.remove(cyProps.getName());
 			}
 		}
 		
