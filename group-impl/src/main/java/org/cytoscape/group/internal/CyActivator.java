@@ -33,7 +33,9 @@ import org.cytoscape.group.data.CyGroupAggregationManager;
 import org.cytoscape.group.events.GroupAddedListener;
 import org.cytoscape.group.events.GroupAboutToCollapseListener;
 import org.cytoscape.group.events.GroupCollapsedListener;
+import org.cytoscape.model.events.AboutToRemoveEdgesListener;
 import org.cytoscape.model.events.AddedEdgesListener;
+import org.cytoscape.model.events.NetworkAddedListener;
 import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.NodeViewTaskFactory;
@@ -68,19 +70,20 @@ public class CyActivator extends AbstractCyActivator {
 		                                                           cyEventHelper);
 		registerService(bc,cyGroupManager,CyGroupManager.class, new Properties());
 		registerService(bc,cyGroupManager,AddedEdgesListener.class, new Properties());
+		registerService(bc,cyGroupManager,AboutToRemoveEdgesListener.class, new Properties());
 		registerService(bc,cyGroupFactory,CyGroupFactory.class, new Properties());
 
 		// Create the aggregation manager
 		CyGroupAggregationManagerImpl cyAggMgr = 
 			new CyGroupAggregationManagerImpl(cyGroupManager);
     registerService(bc,cyAggMgr,CyGroupAggregationManager.class, new Properties());
-		
-		GroupIO groupIO = new GroupIO(cyGroupManager, lockedVisualPropertiesManager);
-		registerAllServices(bc, groupIO, new Properties());
 
 		// Get our Settings object
 		CyGroupSettingsImpl cyGroupSettings = 
 			new CyGroupSettingsImpl(cyGroupManager, cyAggMgr, cyServiceRegistrarServiceRef);
+		
+		GroupIO groupIO = new GroupIO(cyGroupManager, lockedVisualPropertiesManager, cyGroupSettings);
+		registerAllServices(bc, groupIO, new Properties());
 
 		// Register our settings menu
     CyGroupSettingsTaskFactory settingsFactory = 
@@ -116,10 +119,13 @@ public class CyActivator extends AbstractCyActivator {
     registerService(bc,cyGroupSettings, 
 		                GroupAddedListener.class, new Properties());
     registerService(bc,cyGroupSettings, 
+		                NetworkAddedListener.class, new Properties());
+    registerService(bc,cyGroupSettings, 
 		                CyGroupSettingsImpl.class, new Properties());
 
 		// Set up listener for node movement
-		NodeChangeListener nodeChangeListener = new NodeChangeListener(cyGroupManager, cyEventHelper, cyGroupSettings);
+		NodeChangeListener nodeChangeListener = 
+						new NodeChangeListener(cyGroupManager, cyEventHelper, cyGroupSettings);
 		registerService(bc,nodeChangeListener,ViewChangedListener.class, new Properties());
 
 		GroupViewCollapseHandler gvcHandler = 

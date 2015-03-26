@@ -82,6 +82,8 @@ public class CyGroupImpl implements CyGroup {
 	private Map<Long, List<CyNode>> collapsedNodes = null;
 	private Set<CyEdge> externalEdgeProcessed = null;
 	private boolean nodeProvided = false;  // We'll need this when we destroy ourselves
+	private boolean collapsing = false;
+	private boolean expanding = false;
 	
 	private static final Logger logger = LoggerFactory.getLogger(CyGroupImpl.class);
 	
@@ -431,6 +433,9 @@ public class CyGroupImpl implements CyGroup {
 				} else if (memberEdges.contains(edge))
 					memberEdges.remove(edge);
 			}
+			if (netEdges.size() > 0) {
+				getGroupNetwork().removeEdges(netEdges);
+			}
 		}
 		cyEventHelper.fireEvent(new GroupEdgesRemovedEvent(CyGroupImpl.this, edges));
 	}
@@ -529,6 +534,7 @@ public class CyGroupImpl implements CyGroup {
 
 		// Now collapse ourselves
 		cyEventHelper.fireEvent(new GroupAboutToCollapseEvent(CyGroupImpl.this, net, true));
+		collapsing = true;
 
 		// Since we're going to hide our nodes and edges, we probably shouldn't
 		// force these to redraw while we're collapsing.  It causes a significant
@@ -705,8 +711,9 @@ public class CyGroupImpl implements CyGroup {
 
 		// Restore locked visual property values of added nodes/edges
 		lvpMgr.setLockedValues(netViewList, addedElements);
-		
+
 		// OK, all done
+		collapsing = false;
 		cyEventHelper.fireEvent(new GroupCollapsedEvent(CyGroupImpl.this, net, true));
 		// System.out.println("collapsed "+this.toString()+" in net "+net.toString()+": isCollapsed = "+isCollapsed(net));
 		// printGroup();
@@ -728,6 +735,7 @@ public class CyGroupImpl implements CyGroup {
 		}
 		
 		cyEventHelper.fireEvent(new GroupAboutToCollapseEvent(CyGroupImpl.this, net, false));
+		expanding = true;
 
 		CySubNetwork subnet = (CySubNetwork) net;
 		List<CyNode> nodes;
@@ -827,6 +835,7 @@ public class CyGroupImpl implements CyGroup {
 		}
 
 		// Finish up
+		expanding = false;
 		cyEventHelper.fireEvent(new GroupCollapsedEvent(CyGroupImpl.this, net, false));
 	}
 
@@ -1223,6 +1232,9 @@ public class CyGroupImpl implements CyGroup {
 		}
 		return false;
 	}
+
+	public boolean isCollapsing() { return collapsing; }
+	public boolean isExpanding() { return expanding; }
 	
 	protected void printGroup() {
 		System.out.println("Group "+this);

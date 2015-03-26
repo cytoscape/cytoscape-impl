@@ -142,21 +142,21 @@ public class ViewUtils {
 	
 			groupView.setVisualProperty(xLoc, xLocation);
 			groupView.setVisualProperty(yLoc, yLocation);
-			groupView.setVisualProperty(BasicVisualLexicon.NODE_HEIGHT, bounds.getHeight());
-			groupView.setVisualProperty(BasicVisualLexicon.NODE_WIDTH, bounds.getWidth());
+			groupView.setLockedValue(BasicVisualLexicon.NODE_HEIGHT, bounds.getHeight());
+			groupView.setLockedValue(BasicVisualLexicon.NODE_WIDTH, bounds.getWidth());
 			if (!viewType.equals(GroupViewType.SINGLENODE)) {
-				groupView.setVisualProperty(BasicVisualLexicon.NODE_SHAPE, 
-				                            NodeShapeVisualProperty.ROUND_RECTANGLE);
-				groupView.setVisualProperty(BasicVisualLexicon.NODE_TRANSPARENCY, 
-				                            COMPOUND_NODE_TRANSPARENCY); 
+				groupView.setLockedValue(BasicVisualLexicon.NODE_SHAPE, 
+				                         NodeShapeVisualProperty.ROUND_RECTANGLE);
+				groupView.setLockedValue(BasicVisualLexicon.NODE_TRANSPARENCY, 
+				                         COMPOUND_NODE_TRANSPARENCY); 
 			} else {
-				groupView.setVisualProperty(BasicVisualLexicon.NODE_TRANSPARENCY, 10); 
-				groupView.setVisualProperty(BasicVisualLexicon.NODE_SHAPE,
-				                            NodeShapeVisualProperty.RECTANGLE);
-				groupView.setVisualProperty(BasicVisualLexicon.NODE_BORDER_WIDTH, 1.0);
+				groupView.setLockedValue(BasicVisualLexicon.NODE_TRANSPARENCY, 10); 
+				groupView.setLockedValue(BasicVisualLexicon.NODE_SHAPE,
+				                         NodeShapeVisualProperty.RECTANGLE);
+				groupView.setLockedValue(BasicVisualLexicon.NODE_BORDER_WIDTH, 1.0);
 			}
 	
-			groupView.setVisualProperty(BasicVisualLexicon.NODE_Z_LOCATION, z);
+			groupView.setLockedValue(BasicVisualLexicon.NODE_Z_LOCATION, z);
 
 			updateGroupLocation(view.getModel(), group, xLocation, yLocation); 
 		}

@@ -44,13 +44,16 @@ import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.events.AddedEdgesEvent;
 import org.cytoscape.model.events.AddedEdgesListener;
+import org.cytoscape.model.events.AboutToRemoveEdgesEvent;
+import org.cytoscape.model.events.AboutToRemoveEdgesListener;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
 
 /**
  * An implementation of CyNetworkManager.
  */
-public class CyGroupManagerImpl implements CyGroupManager, AddedEdgesListener {
+public class CyGroupManagerImpl implements CyGroupManager, AddedEdgesListener, 
+                                           AboutToRemoveEdgesListener {
 	private final CyServiceRegistrar cyServiceRegistrar;
 	private CyEventHelper cyEventHelper;
 
@@ -239,11 +242,33 @@ public class CyGroupManagerImpl implements CyGroupManager, AddedEdgesListener {
 		List<CyEdge> edgesToAdd = new ArrayList<>();
 		for (CyGroup group: groups) {
 			CyGroupImpl gImpl = (CyGroupImpl)group;
+			if (gImpl.isCollapsing() || gImpl.isExpanding()) 
+				continue;
 			for (CyEdge edge: edges) {
 				if (!gImpl.isMeta(edge) && gImpl.isConnectingEdge(edge))
 					edgesToAdd.add(edge);
 			}
 			group.addEdges(edgesToAdd);
+		}
+	}
+
+	public void handleEvent(AboutToRemoveEdgesEvent removedEdgesEvent) {
+		CyNetwork net = removedEdgesEvent.getSource();
+		Collection<CyEdge> edges = removedEdgesEvent.getEdges();
+
+		Set<CyGroup> groups = getGroupSet(net);
+		if (groups == null || groups.size() == 0) return;
+
+		List<CyEdge> edgesToRemove = new ArrayList<>();
+		for (CyGroup group: groups) {
+			CyGroupImpl gImpl = (CyGroupImpl)group;
+
+			if (gImpl.isCollapsing() || gImpl.isExpanding()) 
+				continue;
+			for (CyEdge edge: edges) {
+				edgesToRemove.add(edge);
+			}
+			group.removeEdges(edgesToRemove);
 		}
 	}
 

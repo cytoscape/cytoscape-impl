@@ -14,6 +14,7 @@ import java.util.Set;
 
 import org.cytoscape.group.CyGroup;
 import org.cytoscape.group.internal.LockedVisualPropertiesManager.Key;
+import org.cytoscape.group.internal.data.CyGroupSettingsImpl;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
@@ -79,14 +80,17 @@ public class GroupIO implements SessionAboutToBeSavedListener, SessionAboutToBeL
 	private final static String FILENAME = "lockedVisualProperties.json";
 	
 	private final CyGroupManagerImpl groupMgr;
+	private final CyGroupSettingsImpl settingsMgr;
 	private final LockedVisualPropertiesManager lvpMgr;
 	private final ObjectMapper mapper;
 	
 	private static final Logger logger = LoggerFactory.getLogger(GroupIO.class);
 	
 	public GroupIO(final CyGroupManagerImpl groupMgr,
-					 final LockedVisualPropertiesManager lvpMgr) {
+					 final LockedVisualPropertiesManager lvpMgr,
+					 final CyGroupSettingsImpl settingsMgr) {
 		this.groupMgr = groupMgr;
+		this.settingsMgr = settingsMgr;
 		this.lvpMgr = lvpMgr;
 		this.mapper = new ObjectMapper();
 		
@@ -151,6 +155,7 @@ public class GroupIO implements SessionAboutToBeSavedListener, SessionAboutToBeL
 				logger.error("Unexpected error", e);
 			}
 		}
+		settingsMgr.loadProperties();
 	}
 
 	@Override

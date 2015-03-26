@@ -29,6 +29,8 @@ import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
+import org.cytoscape.model.events.NetworkAddedEvent;
+import org.cytoscape.model.events.NetworkAddedListener;
 
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
@@ -56,13 +58,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * This class provides the context for both the global group settings and the
  * group-specific group settings.
  */
-public class CyGroupSettingsImpl implements GroupAddedListener, CyGroupSettingsManager {
+public class CyGroupSettingsImpl implements GroupAddedListener, 
+                                            NetworkAddedListener,
+                                            CyGroupSettingsManager {
 	final CyGroupManagerImpl cyGroupManager;
 	final CyGroupAggregationManagerImpl cyAggManager;
 	final CyServiceRegistrar cyServiceRegistrar;
@@ -136,13 +141,13 @@ public class CyGroupSettingsImpl implements GroupAddedListener, CyGroupSettingsM
 		// Create our properties reader
 		groupSettingsProperties = new PropsReader();
 
-		// Initialize our defaults from the properties
-		loadProperties();
-
 		Properties serviceProperties = new Properties();
 		serviceProperties.setProperty("cyPropertyName","groupSettings.props");
 
 		cyServiceRegistrar.registerService(groupSettingsProperties, CyProperty.class, serviceProperties);
+
+		// Initialize our defaults from the properties
+		loadProperties();
 	}
 
 	/***************************************************************************
@@ -295,6 +300,13 @@ public class CyGroupSettingsImpl implements GroupAddedListener, CyGroupSettingsM
 	public void handleEvent(GroupAddedEvent e) {
 		CyGroup addedGroup = e.getGroup();
 		Map<Class,Aggregator> defMap = new HashMap<Class, Aggregator>();
+		CyNetwork network = appMgr.getCurrentNetwork();
+		if (network == null || !addedGroup.isInNetwork(network)) {
+			for (CyNetwork net: addedGroup.getNetworkSet()) {
+				network = net;
+				break;
+			}
+		}
 		synchronized (lock) {
 			for (Class cKey: allGroupDefaultMap.keySet())
 				defMap.put(cKey, allGroupDefaultMap.get(cKey));
@@ -302,8 +314,17 @@ public class CyGroupSettingsImpl implements GroupAddedListener, CyGroupSettingsM
 			for (CyColumn cKey: allGroupOverrideMap.keySet())
 				ovMap.put(cKey, allGroupOverrideMap.get(cKey));
 			groupMap.put(addedGroup, new GroupSpecificMaps(defMap, ovMap));
-			// Now override these with any settings from the table
-			loadSettingsFromTable(addedGroup);
+		}
+		// Now override these with any settings from the table
+		loadSettingsFromTable(addedGroup, network);
+	}
+
+	public void handleEvent(NetworkAddedEvent e) {
+		CyNetwork net = e.getNetwork();
+		Set<CyGroup> groupSet = cyGroupManager.getGroupSet(net);
+		if (groupSet == null || groupSet.size() == 0) return;
+		for (CyGroup group: groupSet) {
+			loadSettingsFromTable(group, net);
 		}
 	}
 
@@ -562,21 +583,27 @@ public class CyGroupSettingsImpl implements GroupAddedListener, CyGroupSettingsM
 	 * Update the settings for a specific group
 	 */
 	public void updateSettingsInTable(CyGroup group) {
-		CyNetwork currentNetwork = appMgr.getCurrentNetwork();
+		CyNetwork network = appMgr.getCurrentNetwork();
+		if (network == null || !group.isInNetwork(network)) {
+			for (CyNetwork net: group.getNetworkSet()) {
+				network = net;
+				break;
+			}
+		}
 		List<String> viewSettings = new ArrayList<>();
 
 		// Update all of our view settings as a list
-		createColumnIfNeeded(currentNetwork, group.getGroupNode(), VIEW_SETTINGS, List.class, String.class);
+		createColumnIfNeeded(network, group.getGroupNode(), VIEW_SETTINGS, List.class, String.class);
 
 		addViewSetting(viewSettings, DOUBLE_CLICK_ACTION, getDoubleClickAction(group).toString());
 		addViewSetting(viewSettings, USE_NESTED_NETWORKS, ""+getUseNestedNetworks(group));
 		addViewSetting(viewSettings, GROUP_VIEW_TYPE, ""+getGroupViewType(group));
 		addViewSetting(viewSettings, GROUP_NODE_OPACITY, ""+getGroupNodeOpacity(group));
 		// currentNetwork.getRow(group.getGroupNode(), CyNetwork.HIDDEN_ATTRS).set(VIEW_SETTINGS, viewSettings);
-		currentNetwork.getRow(group.getGroupNode()).set(VIEW_SETTINGS, viewSettings);
+		network.getRow(group.getGroupNode()).set(VIEW_SETTINGS, viewSettings);
 
 		// Update default aggregations
-		createColumnIfNeeded(currentNetwork, group.getGroupNode(), AGGREGATION_SETTINGS, List.class, String.class);
+		createColumnIfNeeded(network, group.getGroupNode(), AGGREGATION_SETTINGS, List.class, String.class);
 		List<String> aggrSettings = new ArrayList<>();
 		aggrSettings.add(AGG_ENABLED+"="+getEnableAttributeAggregation(group));
 		addAggregationSetting(group, DEFAULT_INT_AGGREGATION, Integer.class, aggrSettings);
@@ -588,11 +615,11 @@ public class CyGroupSettingsImpl implements GroupAddedListener, CyGroupSettingsM
 		addAggregationSetting(group, DEFAULT_BOOLEAN_AGGREGATION, Boolean.class, aggrSettings);
 
 		// currentNetwork.getRow(group.getGroupNode(), CyNetwork.HIDDEN_ATTRS).set(AGGREGATION_SETTINGS, aggrSettings);
-		currentNetwork.getRow(group.getGroupNode()).set(AGGREGATION_SETTINGS, aggrSettings);
+		network.getRow(group.getGroupNode()).set(AGGREGATION_SETTINGS, aggrSettings);
 
 		if (groupMap.containsKey(group)) {
 			// Update overrides
-			createColumnIfNeeded(currentNetwork, group.getGroupNode(), AGGREGATION_OVERRIDE_SETTINGS, List.class, String.class);
+			createColumnIfNeeded(network, group.getGroupNode(), AGGREGATION_OVERRIDE_SETTINGS, List.class, String.class);
 			List<String> aggrOverrideSettings = new ArrayList<>();
 			GroupSpecificMaps gsm = groupMap.get(group);
 			Map<CyColumn,Aggregator> overrides = groupMap.get(group).getOverrides();
@@ -604,7 +631,7 @@ public class CyGroupSettingsImpl implements GroupAddedListener, CyGroupSettingsM
 			}
 
 			// currentNetwork.getRow(group.getGroupNode(), CyNetwork.HIDDEN_ATTRS).set(AGGREGATION_OVERRIDE_SETTINGS, aggrOverrideSettings);
-			currentNetwork.getRow(group.getGroupNode()).set(AGGREGATION_OVERRIDE_SETTINGS, aggrOverrideSettings);
+			network.getRow(group.getGroupNode()).set(AGGREGATION_OVERRIDE_SETTINGS, aggrOverrideSettings);
 		}
 	}
 
@@ -626,15 +653,19 @@ public class CyGroupSettingsImpl implements GroupAddedListener, CyGroupSettingsM
 	 * @param group the group we want to load settings for
 	 * @return true if we were able to load the settings, false otherwise
 	 */
-	public boolean loadSettingsFromTable(CyGroup group) {
-		CyNetwork currentNetwork = appMgr.getCurrentNetwork();
-		CyTable table = currentNetwork.getTable(CyNode.class, CyNetwork.DEFAULT_ATTRS);
-		if (table.getColumn(VIEW_SETTINGS) == null)
+	public boolean loadSettingsFromTable(CyGroup group, CyNetwork network) {
+		CyTable table = network.getTable(CyNode.class, CyNetwork.DEFAULT_ATTRS);
+		if (table.getColumn(VIEW_SETTINGS) == null) {
 			return false;
+		}
 
-		List<String> viewSettings = table.getRow(group.getGroupNode()).getList(VIEW_SETTINGS, String.class);
-		for (String setting: viewSettings) {
-			updateSetting(group, setting);
+		List<String> viewSettings = 
+			table.getRow(group.getGroupNode().getSUID()).getList(VIEW_SETTINGS, String.class);
+
+		if (viewSettings.size() > 0) {
+			for (String setting: viewSettings) {
+				updateSetting(group, setting);
+			}
 		}
 
 		List<String> aggrSettings = table.getRow(group.getGroupNode()).getList(AGGREGATION_SETTINGS, String.class);
@@ -652,6 +683,7 @@ public class CyGroupSettingsImpl implements GroupAddedListener, CyGroupSettingsM
 
 	void updateSetting(CyGroup group, String setting) {
 		String[] pair = setting.split("=");
+		if (pair.length != 2) return;
 		if (pair[0].equals(DOUBLE_CLICK_ACTION)) {
 			DoubleClickAction action = convertDoubleClick(pair[1]);
 			if (action != null)
@@ -730,7 +762,6 @@ public class CyGroupSettingsImpl implements GroupAddedListener, CyGroupSettingsM
 	public List<String[]> decodeAggregationOverrides(String overrides) {
 		List<String[]> results = new ArrayList<>();
 		for (String override: overrides.split("\t")) {
-			System.out.println("override: "+override);
 			String[] pair = override.split("=");
 			results.add(pair);
 		}
