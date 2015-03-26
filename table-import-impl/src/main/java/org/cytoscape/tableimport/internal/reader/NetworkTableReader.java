@@ -31,6 +31,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
+import java.nio.charset.MalformedInputException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -102,6 +103,10 @@ public class NetworkTableReader extends AbstractGraphReader implements TextTable
 
 		network.getRow(network).set("name", this.getNetworkName());
 		parser.setNetwork(network);
+
+		// TODO: it would be really useful to be able to try to recover from a UTF-8 decoder failure
+		// by resetting the stream and attempting to start over with ISO-8859-1.  Unfortunately, the
+		// way our reader code is structured, we can't easily do this.
 		
 		try {
 			BufferedReader bufRd = null;
@@ -133,6 +138,8 @@ public class NetworkTableReader extends AbstractGraphReader implements TextTable
 
 					lineCount++;
 				}
+			} catch (MalformedInputException mie) {
+				throw new IOException("Unable to import network: illegal character encoding in input");
 			}
 			finally {
 				if (bufRd != null) {
