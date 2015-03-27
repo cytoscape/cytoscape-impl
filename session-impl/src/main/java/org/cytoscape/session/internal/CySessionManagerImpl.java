@@ -330,12 +330,30 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 		for (CyProperty<?> cyProps : sess.getProperties()) {
 			final CyProperty<?> oldCyProps = sessionProperties.get(cyProps.getName());
 			
+			// Do we already have a CyProperty with the same name and SESSION_FILE_AND_CONFIG_DIR policy?
 			if (oldCyProps != null && oldCyProps.getSavePolicy() == CyProperty.SavePolicy.SESSION_FILE_AND_CONFIG_DIR) {
-				// So the old CyProperty with the same name can be correctly replaced,
-				// which means that the new CyProperty save policy is now SESSION_FILE_AND_CONFIG_DIR
-				cyProps = new SimpleCyProperty<>(cyProps.getName(), cyProps.getProperties(), cyProps.getPropertyType(),
-						CyProperty.SavePolicy.SESSION_FILE_AND_CONFIG_DIR);
-				registrar.unregisterAllServices(oldCyProps);
+				if (oldCyProps.getPropertyType() == Properties.class && cyProps.getPropertyType() == Properties.class) {
+					// Simply overwrite the existing properties with the new ones from the session...
+					final Properties oldProps = (Properties) oldCyProps.getProperties();
+					final Properties newProps = (Properties) cyProps.getProperties();
+					
+					for (final String key : newProps.stringPropertyNames()) {
+						final String newValue = newProps.getProperty(key);
+						oldProps.setProperty(key, newValue);
+					}
+					
+					continue; // This new CyProperty does not need to be registered!
+				} else {
+					// The whole CyProperty object will have to be replaced...
+					
+					// But we need to keep the original SESSION_FILE_AND_CONFIG_DIR policy.
+					// Since there is no CyProperty.setProperty() method, we have to create a new CyProperty
+					cyProps = new SimpleCyProperty<>(cyProps.getName(), cyProps.getProperties(), cyProps.getPropertyType(),
+							CyProperty.SavePolicy.SESSION_FILE_AND_CONFIG_DIR);
+					
+					// The new CyProperty will replace this one, which has to be unregistered first
+					registrar.unregisterAllServices(oldCyProps);
+				}
 			}
 			
 			final Properties serviceProps = new Properties();
