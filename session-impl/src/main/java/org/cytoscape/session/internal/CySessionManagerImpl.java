@@ -335,6 +335,7 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 				// which means that the new CyProperty save policy is now SESSION_FILE_AND_CONFIG_DIR
 				cyProps = new SimpleCyProperty<>(cyProps.getName(), cyProps.getProperties(), cyProps.getPropertyType(),
 						CyProperty.SavePolicy.SESSION_FILE_AND_CONFIG_DIR);
+				registrar.unregisterAllServices(oldCyProps);
 			}
 			
 			final Properties serviceProps = new Properties();
