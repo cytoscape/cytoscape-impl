@@ -142,7 +142,7 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 		final Set<CyNetworkView> netViews = nvMgr.getNetworkViewSet();
 
 		// Visual Styles Map
-		final Map<CyNetworkView, String> stylesMap = new HashMap<CyNetworkView, String>();
+		final Map<CyNetworkView, String> stylesMap = new HashMap<>();
 
 		if (netViews != null) {
 			for (final CyNetworkView nv : netViews) {
@@ -170,7 +170,7 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 	private static Class<? extends CyIdentifiable>[] TYPES = new Class[] { CyNetwork.class, CyNode.class, CyEdge.class };
 	
 	private Set<CyNetwork> getSerializableNetworks() {
-		final Set<CyNetwork> serializableNetworks = new HashSet<CyNetwork>();
+		final Set<CyNetwork> serializableNetworks = new HashSet<>();
 		final Set<CyNetwork> allNetworks = netTblMgr.getNetworkSet();
 		
 		for (final CyNetwork net : allNetworks) {
@@ -242,7 +242,7 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 			logger.debug("Restoring the session...");
 
 			// Save the selected networks first, so the selection state can be restored later.
-			final List<CyNetwork> selectedNetworks = new ArrayList<CyNetwork>();
+			final List<CyNetwork> selectedNetworks = new ArrayList<>();
 			final Set<CyNetwork> networks = sess.getNetworks();
 
 			for (CyNetwork n : networks) {
@@ -374,7 +374,7 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 	private void restoreNetworkViews(final CySession sess, List<CyNetwork> selectedNetworks) {
 		logger.debug("Restoring network views...");
 		Set<CyNetworkView> netViews = sess.getNetworkViews();
-		List<CyNetworkView> selectedViews = new ArrayList<CyNetworkView>();
+		List<CyNetworkView> selectedViews = new ArrayList<>();
 		
 		for (CyNetworkView nv : netViews) {
 			CyNetwork network = nv.getModel();
@@ -384,15 +384,14 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 			}
 		}
 		
-		Map<CyNetworkView, Map<VisualProperty<?>, Object>> viewVPMap = 
-				new HashMap<CyNetworkView, Map<VisualProperty<?>,Object>>();
+		Map<CyNetworkView, Map<VisualProperty<?>, Object>> viewVPMap = new HashMap<>();
 		
 		if (netViews != null) {
 			for (CyNetworkView nv : netViews) {
 				if (nv != null) {
 					// Save the original values of these visual properties,
 					// because we will have to set them again after the views are rendered
-					Map<VisualProperty<?>, Object> vpMap = new HashMap<VisualProperty<?>, Object>();
+					Map<VisualProperty<?>, Object> vpMap = new HashMap<>();
 					viewVPMap.put(nv, vpMap);
 					vpMap.put(BasicVisualLexicon.NETWORK_HEIGHT, nv.getVisualProperty(BasicVisualLexicon.NETWORK_HEIGHT));
 					vpMap.put(BasicVisualLexicon.NETWORK_WIDTH, nv.getVisualProperty(BasicVisualLexicon.NETWORK_WIDTH));
@@ -418,7 +417,7 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 	}
 
 	private void restoreTables(final CySession sess) {
-		final Set<CyTable> allTables = new HashSet<CyTable>();
+		final Set<CyTable> allTables = new HashSet<>();
 		
 		// Register all tables sent through the CySession, if not already registered
 		for (final CyTableMetadata metadata : sess.getTables()) {
@@ -454,7 +453,7 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 		final String DEFAULT_STYLE_NAME = defStyle.getTitle();
 		
 		final Set<VisualStyle> styles = sess.getVisualStyles();
-		final Map<String, VisualStyle> stylesMap = new HashMap<String, VisualStyle>();
+		final Map<String, VisualStyle> stylesMap = new HashMap<>();
 
 		if (styles != null) {
 			for (VisualStyle vs : styles) {
@@ -498,8 +497,7 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	private void updateVisualStyle(final VisualStyle source, final VisualStyle target) {
 		// First clean up the target
-		final HashSet<VisualMappingFunction<?, ?>> mapingSet = 
-				new HashSet<VisualMappingFunction<?, ?>>(target.getAllVisualMappingFunctions());
+		final HashSet<VisualMappingFunction<?, ?>> mapingSet = new HashSet<>(target.getAllVisualMappingFunctions());
 		
 		for (final VisualMappingFunction<?, ?> mapping : mapingSet)
 			target.removeVisualMappingFunction(mapping.getVisualProperty());
@@ -561,7 +559,7 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 		logger.debug("Disposing current session...");
 		
 		// Destroy groups
-		final Set<CyGroup> groups = new HashSet<CyGroup>();
+		final Set<CyGroup> groups = new HashSet<>();
 		
 		for (final CyNetwork n : netMgr.getNetworkSet())
 			groups.addAll(grMgr.getGroupSet(n));
@@ -592,7 +590,7 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 		// Destroy styles
 		logger.debug("Removing current visual styles...");
 		final VisualStyle defaultStyle = vmMgr.getDefaultVisualStyle();
-		final List<VisualStyle> allStyles = new ArrayList<VisualStyle>(vmMgr.getAllVisualStyles());
+		final List<VisualStyle> allStyles = new ArrayList<>(vmMgr.getAllVisualStyles());
 
 		for (final VisualStyle vs : allStyles) {
 			if (!vs.equals(defaultStyle))
