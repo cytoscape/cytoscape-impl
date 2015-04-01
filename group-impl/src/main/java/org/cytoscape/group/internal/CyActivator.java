@@ -29,6 +29,7 @@ import java.util.Properties;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.group.CyGroupFactory;
 import org.cytoscape.group.CyGroupManager;
+import org.cytoscape.group.CyGroupSettingsManager;
 import org.cytoscape.group.data.CyGroupAggregationManager;
 import org.cytoscape.group.events.GroupAddedListener;
 import org.cytoscape.group.events.GroupAboutToCollapseListener;
@@ -36,6 +37,7 @@ import org.cytoscape.group.events.GroupCollapsedListener;
 import org.cytoscape.model.events.AboutToRemoveEdgesListener;
 import org.cytoscape.model.events.AddedEdgesListener;
 import org.cytoscape.model.events.NetworkAddedListener;
+import org.cytoscape.property.PropertyUpdatedListener;
 import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.events.SessionLoadedListener;
@@ -122,7 +124,9 @@ public class CyActivator extends AbstractCyActivator {
     registerService(bc,cyGroupSettings, 
 		                NetworkAddedListener.class, new Properties());
     registerService(bc,cyGroupSettings, 
-		                CyGroupSettingsImpl.class, new Properties());
+		                CyGroupSettingsManager.class, new Properties());
+    registerService(bc,cyGroupSettings, 
+		                PropertyUpdatedListener.class, new Properties());
 
 		// Set up listener for node movement
 		NodeChangeListener nodeChangeListener = 

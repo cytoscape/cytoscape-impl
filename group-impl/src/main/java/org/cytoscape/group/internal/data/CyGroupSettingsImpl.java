@@ -51,6 +51,8 @@ import org.cytoscape.property.CyProperty;
 import org.cytoscape.property.CyProperty.SavePolicy;
 import org.cytoscape.property.SimpleCyProperty;
 import org.cytoscape.property.AbstractConfigDirPropsReader;
+import org.cytoscape.property.PropertyUpdatedEvent;
+import org.cytoscape.property.PropertyUpdatedListener;
 import org.cytoscape.service.util.CyServiceRegistrar;
 
 import java.util.ArrayList;
@@ -67,6 +69,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class CyGroupSettingsImpl implements GroupAddedListener, 
                                             NetworkAddedListener,
+                                            PropertyUpdatedListener,
                                             CyGroupSettingsManager {
 	final CyGroupManagerImpl cyGroupManager;
 	final CyGroupAggregationManagerImpl cyAggManager;
@@ -325,6 +328,13 @@ public class CyGroupSettingsImpl implements GroupAddedListener,
 		if (groupSet == null || groupSet.size() == 0) return;
 		for (CyGroup group: groupSet) {
 			loadSettingsFromTable(group, net);
+		}
+	}
+
+	public void handleEvent(PropertyUpdatedEvent e) {
+		if (e.getSource() != null && e.getSource().getName().equals("groupSettings")) {
+			groupSettingsProperties = (CyProperty<Properties>)e.getSource();
+			loadProperties();
 		}
 	}
 
