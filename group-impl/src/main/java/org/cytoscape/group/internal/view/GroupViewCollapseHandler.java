@@ -39,10 +39,10 @@ import org.cytoscape.group.CyGroupSettingsManager.GroupViewType;
 import org.cytoscape.group.internal.CyGroupImpl;
 import org.cytoscape.group.internal.CyGroupManagerImpl;
 import org.cytoscape.group.internal.data.CyGroupSettingsImpl;
-import org.cytoscape.group.events.GroupAboutToCollapseEvent;
-import org.cytoscape.group.events.GroupAboutToCollapseListener;
 import org.cytoscape.group.events.GroupAddedEvent;
 import org.cytoscape.group.events.GroupAddedListener;
+import org.cytoscape.group.events.GroupAboutToCollapseEvent;
+import org.cytoscape.group.events.GroupAboutToCollapseListener;
 import org.cytoscape.group.events.GroupCollapsedEvent;
 import org.cytoscape.group.events.GroupCollapsedListener;
 import org.cytoscape.model.CyEdge;
@@ -55,6 +55,8 @@ import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CySubNetwork;
+import org.cytoscape.session.events.SessionLoadedEvent;
+import org.cytoscape.session.events.SessionLoadedListener;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
@@ -70,8 +72,9 @@ import org.slf4j.LoggerFactory;
  * Handle the view portion of group collapse/expand
  */
 public class GroupViewCollapseHandler implements GroupAboutToCollapseListener,
-                                                 GroupAddedListener,
-                                                 GroupCollapsedListener
+                                                 GroupCollapsedListener,
+                                                 SessionLoadedListener,
+                                                 GroupAddedListener
 {
 
 	private final CyGroupManagerImpl cyGroupManager;
@@ -127,9 +130,9 @@ public class GroupViewCollapseHandler implements GroupAboutToCollapseListener,
 
 		if (view == null)
 			return;
-		
+
 		GroupViewType groupViewType = cyGroupSettings.getGroupViewType(group);
-		
+
 		if (e.collapsing()) {
 			// Calculate the center position of all of the
 			// member nodes
@@ -151,6 +154,7 @@ public class GroupViewCollapseHandler implements GroupAboutToCollapseListener,
 		} else {
 			// Get the current position of the groupNode
 			View<CyNode>nView = view.getNodeView(group.getGroupNode());
+			if (nView == null) return;
 			double x = nView.getVisualProperty(xLoc);
 			double y = nView.getVisualProperty(yLoc);
 			// Save it in the groupNode attribute
@@ -176,7 +180,7 @@ public class GroupViewCollapseHandler implements GroupAboutToCollapseListener,
 
 		if (view == null)
 			return;
-		
+
 		CyRootNetwork rootNetwork = group.getRootNetwork();
 
 		GroupViewType groupViewType = cyGroupSettings.getGroupViewType(group);
@@ -211,7 +215,7 @@ public class GroupViewCollapseHandler implements GroupAboutToCollapseListener,
 			if (groupViewType.equals(GroupViewType.COMPOUND)) {
 				deActivateCompoundNode(group, view);
 			}
-			
+
 			// Handle opacity
 			double opacity = cyGroupSettings.getGroupNodeOpacity(group);
 			if (opacity != 100.0)
@@ -265,16 +269,18 @@ public class GroupViewCollapseHandler implements GroupAboutToCollapseListener,
 
 				if (groupViewType.equals(GroupViewType.COMPOUND) ||
 				    groupViewType.equals(GroupViewType.SINGLENODE)) {
+					// May be redundant, but just to make sure
+					((CyGroupImpl)group).setGroupNodeShown(network, true);
 					activateCompoundNode(group, view);
 				}
-	
+
 				cyEventHelper.flushPayloadEvents();
 				view.updateView();
 				return;
 			}
 
 			final List<CyNode> nodeList = group.getNodeList();
-			
+
 			// TODO: turn off stupid nested network thing
 			for (CyNode node: nodeList) {
 				if (!network.containsNode(node)) continue;
@@ -285,27 +291,28 @@ public class GroupViewCollapseHandler implements GroupAboutToCollapseListener,
 					}
 				}
 			}
-			
+
 			// Apply visual property to added graph elements
 			ViewUtils.applyStyle(nodeList, views, cyStyleManager);
 			ViewUtils.applyStyle(group.getInternalEdgeList(), views, cyStyleManager);
 			ViewUtils.applyStyle(group.getExternalEdgeList(), views, cyStyleManager);
 		}
-		
+
 		view.updateView();
 	}
 
 	public void handleEvent(GroupAddedEvent e) {
 		CyGroup group = e.getGroup();
 		GroupViewType groupViewType = cyGroupSettings.getGroupViewType(group);
+		// System.out.println("Group added: "+group);
 
 		try {
 		// When we add a group, we may want to reflect the state
 		// of the group visually immediately
 		if (groupViewType.equals(GroupViewType.COMPOUND) || 
 		    groupViewType.equals(GroupViewType.SINGLENODE)) {
-			CyNetwork network = appMgr.getCurrentNetwork();
-			if (network == null) return;
+			Set<CyNetwork> networkSet = group.getNetworkSet();
+			if (networkSet == null || networkSet.size() == 0) return;
 
 /*
 			// Assume we're in the current network
@@ -314,13 +321,56 @@ public class GroupViewCollapseHandler implements GroupAboutToCollapseListener,
 			ViewUtils.moveNode(view, group.getGroupNode(), d);
 */
 
-			GroupCollapsedEvent ev = new GroupCollapsedEvent(group, network, false);
-			handleEvent(ev);
+			for (CyNetwork network: networkSet) {
+				((CyGroupImpl)group).setGroupNodeShown(network, true);
+				GroupCollapsedEvent ev = new GroupCollapsedEvent(group, network, false);
+				handleEvent(ev);
+			}
 		}
 		} catch (Exception ex) {ex.printStackTrace();}
 		return;
 	}
-	
+
+
+	/**
+	 * We need to do some fixup after we load the session for compound nodes.
+	 * When the session gets loaded, we don't (yet) have a view.  We need to 
+	 * go through and kick update things to work properly if we have a view
+	 * after the session gets loaded.
+	 */
+	public void handleEvent(SessionLoadedEvent e) {
+		try {
+		// For each network
+		for (CyNetworkView networkView: e.getLoadedSession().getNetworkViews()) {
+			CyNetwork network = networkView.getModel();
+			// For each group
+			for (CyGroup group: cyGroupManager.getGroupSet(network)) {
+				GroupViewType groupViewType = cyGroupSettings.getGroupViewType(group);
+
+				// If the group is a compound node and if it is expanded,
+				if (groupViewType.equals(GroupViewType.COMPOUND) ||
+				    groupViewType.equals(GroupViewType.SINGLENODE)) {
+					if (network.containsNode(group.getGroupNode())) {
+						// At this point, because of the way we create the
+						// group, it will think it's collapsed.  Change
+						// that.
+						((CyGroupImpl)group).setCollapsed(network, false);
+						((CyGroupImpl)group).setGroupNodeShown(network, true);
+
+						try {
+							// OK, now activate the group
+							activateCompoundNode(group, networkView);
+						} catch (Exception rtree) {
+							// We may get an RTree exception under rare
+							// circumstances.
+						}
+					}
+				}
+			}
+		}
+		} catch (Exception ex) { ex.printStackTrace(); }
+	}
+
 	private void activateCompoundNode(CyGroup group, CyNetworkView view) {
 		// System.out.println("Activating listener for "+group);
 		// Style the group node

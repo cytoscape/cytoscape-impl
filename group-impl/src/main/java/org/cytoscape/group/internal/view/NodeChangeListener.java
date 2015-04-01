@@ -93,6 +93,7 @@ public class NodeChangeListener implements ViewChangedListener, SessionLoadedLis
 		Set<CyNode> groupNodes = groupMap.get(networkView);
 		Set<CyNode> nodes = nodeMap.get(networkView);
 
+
 		Collection<?> payload = e.getPayloadCollection();
 		for (ViewChangeRecord vcr: (Collection<ViewChangeRecord>)payload) {
 			// Only care about nodes
@@ -190,7 +191,7 @@ public class NodeChangeListener implements ViewChangedListener, SessionLoadedLis
 		double groupY = nodeView.getVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION);
 		CyGroup group = cyGroupManager.getGroup(nodeView.getModel(), networkView.getModel());
 
-		//System.out.println("Updating group "+group+" location");
+		// System.out.println("Updating group "+group+" location");
 		Dimension lastPosition = ViewUtils.getLocation(networkView.getModel(), group);
 		double xOffset = lastPosition.getWidth() - groupX;
 		double yOffset = lastPosition.getHeight() - groupY;
@@ -216,7 +217,6 @@ public class NodeChangeListener implements ViewChangedListener, SessionLoadedLis
 				groupNodeList.add(nv);
 		}
 		cyEventHelper.flushPayloadEvents();
-		ignoreChanges = lastIgnoreChanges;
 
 		ViewUtils.updateGroupLocation(networkView.getModel(), group, groupX, groupY);
 		if (groupNodeList.size() > 0) {
@@ -224,11 +224,12 @@ public class NodeChangeListener implements ViewChangedListener, SessionLoadedLis
 				updateGroupLocation(networkView, nv);
 			}
 		}
+		ignoreChanges = lastIgnoreChanges;
 		cyEventHelper.flushPayloadEvents();
 	}
 
 	private void updateNodeLocation(CyNetworkView networkView, View<CyNode> nodeView) {
-		//System.out.println("Updating node "+nodeView.getModel()+" location");
+		// System.out.println("Updating node "+nodeView.getModel()+" location");
 		// double groupX = nodeView.getVisualProperty(BasicVisualLexicon.NODE_X_LOCATION);
 		// double groupY = nodeView.getVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION);
 		if (nodeView == null)
@@ -236,7 +237,6 @@ public class NodeChangeListener implements ViewChangedListener, SessionLoadedLis
 
 		CyNode node = nodeView.getModel();
 
-		// System.out.println("UpdateNodeLocation for: "+node);
 		CyGroup group = node2GroupMap.get(networkView).get(node);
 		if (group == null) {
 			// System.out.println("Lost group: "+node);
@@ -255,21 +255,21 @@ public class NodeChangeListener implements ViewChangedListener, SessionLoadedLis
 		ViewUtils.styleCompoundNode(group, networkView, cyGroupManager, cyStyleManager, 
 		                            cyGroupSettings.getGroupViewType(group));
 		cyEventHelper.flushPayloadEvents();
-		ignoreChanges = lastIgnoreChanges;
 
 		// OK, a little trickery here.  If our group is itself a node in another group, we
 		// won't restyle appropriately because we were ignoring changes.  Deal with it here,
 		// but only if our group is also a node in another group
-		List<CyGroup> groupList = cyGroupManager.getGroupsForNode(group.getGroupNode());
-		if (groupList != null || groupList.size() > 0) {
-			// updateNodeLocation(networkView, networkView.getNodeView(group.getGroupNode()));
-			CyGroup g = getGroupForNode(group.getGroupNode(), networkView);
-			if (g != null) {
-				ViewUtils.styleCompoundNode(g, networkView, cyGroupManager, cyStyleManager, 
-		                                cyGroupSettings.getGroupViewType(group));
+		CyGroup g = getGroupForNode(group.getGroupNode(), networkView);
+		if (g != null) {
+			View<CyNode> nv = networkView.getNodeView(group.getGroupNode());
+			if (nv != null) {
+				updateNodeLocation(networkView, nv);
+				// ViewUtils.styleCompoundNode(g, networkView, cyGroupManager, cyStyleManager, 
+	 	   //                             cyGroupSettings.getGroupViewType(group));
 				cyEventHelper.flushPayloadEvents();
 			}
 		}
+		ignoreChanges = lastIgnoreChanges;
 	}
 
 	private CyGroup getGroupForNode(CyNode node, CyNetworkView networkView) {

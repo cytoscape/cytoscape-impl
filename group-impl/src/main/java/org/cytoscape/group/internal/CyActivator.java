@@ -38,6 +38,7 @@ import org.cytoscape.model.events.AddedEdgesListener;
 import org.cytoscape.model.events.NetworkAddedListener;
 import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.session.events.SessionLoadedListener;
 import org.cytoscape.task.NodeViewTaskFactory;
 import org.cytoscape.view.model.events.ViewChangedListener;
 import static org.cytoscape.work.ServiceProperties.*;
@@ -134,7 +135,8 @@ public class CyActivator extends AbstractCyActivator {
 
 		registerService(bc,gvcHandler,GroupAboutToCollapseListener.class, new Properties());
 		registerService(bc,gvcHandler,GroupCollapsedListener.class, new Properties());
-    registerService(bc,gvcHandler, GroupAddedListener.class, new Properties());
+		registerService(bc,gvcHandler,SessionLoadedListener.class, new Properties());
+    registerService(bc,gvcHandler,GroupAddedListener.class, new Properties());
 
 		// Listen for double-click
 		GroupViewDoubleClickListener gvsListener =

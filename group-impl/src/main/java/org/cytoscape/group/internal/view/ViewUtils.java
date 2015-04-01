@@ -75,19 +75,19 @@ public class ViewUtils {
 	                              final VisualMappingManager cyStyleManager) {
 		if (elements == null || networkViews == null)
 			return;
-		
+
 		for (CyNetworkView netView : networkViews) {
 			final CyNetwork net = netView.getModel();
 			final VisualStyle style = cyStyleManager.getVisualStyle(netView);
-			
+
 			for (CyIdentifiable entry : elements) {
 				View<? extends CyIdentifiable> view = null;
-				
+
 				if (entry instanceof CyNode)
 					view = netView.getNodeView((CyNode)entry);
 				else if (entry instanceof CyEdge)
 					view = netView.getEdgeView((CyEdge)entry);
-				
+
 				if (view != null)
 					style.apply(net.getRow(entry), view);
 			}
@@ -129,17 +129,17 @@ public class ViewUtils {
 
 		if (groupView != null) {
 
-			/*
-			System.out.println("styleCompoundNode: group node current at: "+
-				groupView.getVisualProperty(xLoc)+","+
-				groupView.getVisualProperty(yLoc));
-			*/
+			// System.out.println("styleCompoundNode: group "+group+" currently at: "+
+			// 	groupView.getVisualProperty(xLoc)+","+
+			// 	groupView.getVisualProperty(yLoc));
 			Rectangle2D bounds = calculateBounds(group.getNodeList(), view);
 			// System.out.println("styleCompoundNode: bounds = "+bounds);
 	
-			double xLocation = bounds.getX()+bounds.getWidth()/2;
-			double yLocation = bounds.getY()+bounds.getHeight()/2;
+			double xLocation = bounds.getX()+bounds.getWidth()/2.0;
+			double yLocation = bounds.getY()+bounds.getHeight()/2.0;
 	
+			// System.out.println("Moving to "+xLocation+","+yLocation);
+			// System.out.println("Resizing to "+bounds.getWidth()+"x"+bounds.getHeight());
 			groupView.setVisualProperty(xLoc, xLocation);
 			groupView.setVisualProperty(yLoc, yLocation);
 			groupView.setLockedValue(BasicVisualLexicon.NODE_HEIGHT, bounds.getHeight());
@@ -188,7 +188,7 @@ public class ViewUtils {
 			yCenter += (nView.getVisualProperty(yLoc));
 			
 		}
-		return getDim(xCenter/size, yCenter/size);
+		return getDim(xCenter/(double)size, yCenter/(double)size);
 	}
 
 	public static void moveNodes(CyGroup group, CyNetworkView view, Dimension center) {
@@ -247,6 +247,7 @@ public class ViewUtils {
 
 	public static void moveNode(CyNetworkView view, CyNode node, Dimension location) {
 		View<CyNode>nView = view.getNodeView(node);
+		// System.out.println("Moving node to "+location.getWidth()+","+location.getHeight());
 		nView.setVisualProperty(xLoc, location.getWidth());
 		nView.setVisualProperty(yLoc, location.getHeight());
 	}
