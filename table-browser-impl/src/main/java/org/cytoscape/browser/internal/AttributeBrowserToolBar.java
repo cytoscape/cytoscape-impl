@@ -794,7 +794,7 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 
 	private void removeAttribute() {
 		final JFrame frame = (JFrame)SwingUtilities.getRoot(this);
-		final DeletionDialog dDialog = new DeletionDialog(frame, browserTableModel.getDataTable(), browserTable);
+		final DeletionDialog dDialog = new DeletionDialog(frame, browserTableModel.getDataTable());
 
 		dDialog.pack();
 		dDialog.setLocationRelativeTo(toolBar);
