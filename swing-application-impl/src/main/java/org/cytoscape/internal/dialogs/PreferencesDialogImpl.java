@@ -204,8 +204,7 @@ public class PreferencesDialogImpl extends JDialog implements ItemListener, Acti
 					String value = new String((String) (this.prefsTable.getModel().getValueAt(selectedIndices[i], 1)));
 					
 					PreferenceTableModel m = (PreferenceTableModel)this.prefsTable.getModel();
-					PreferenceValueDialog pd = new PreferenceValueDialog(this, name,  value, m,
-						                                                     "Modify value...");
+					PreferenceValueDialog pd = new PreferenceValueDialog(this, name,  value, m, "Modify Property Value");
 					if (pd.itemChanged)
 						itemChangedMap.put(selectedPropertyName, true);
 				}

@@ -24,94 +24,107 @@ package org.cytoscape.internal.dialogs;
  * #L%
  */
 
-import javax.swing.*;
-import javax.swing.table.TableModel;
-import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+
+import javax.swing.AbstractAction;
+import javax.swing.GroupLayout;
+import javax.swing.GroupLayout.Alignment;
+import javax.swing.JButton;
+import javax.swing.JDialog;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
+
+import org.cytoscape.util.swing.LookAndFeelUtil;
 
 
 /**
  *
  */
-public class PreferenceValueDialog extends JDialog implements ActionListener {
+public class PreferenceValueDialog extends JDialog {
+	
 	private final static long serialVersionUID = 1202339873382923L;
-	String preferenceName = null;
-	String preferenceValue = null;
-	//String title = null;
-	JLabel preferenceNameL = null;
-	JTextField value = null;
-	JButton okButton = null;
-	JButton cancelButton = null;
-	PreferenceTableModel tableModel = null;
-	boolean itemChanged = false;
+	
+	private String preferenceName;
+	private String preferenceValue;
+	private JLabel preferenceNameLbl;
+	private JTextField valueTxt;
+	private JButton okBtn;
+	private JButton cancelBtn;
+	private PreferenceTableModel tableModel;
+	boolean itemChanged;
 
 	/**
 	 * Creates a new PreferenceValueDialog object.
-	 *
-	 * @param owner  DOCUMENT ME!
-	 * @param name  DOCUMENT ME!
-	 * @param value  DOCUMENT ME!
-	 * @param caller  DOCUMENT ME!
-	 * @param tm  DOCUMENT ME!
-	 * @param title  DOCUMENT ME!
 	 */
-	public PreferenceValueDialog(JDialog owner, String name, String value,
-			PreferenceTableModel tm, String title) {
-		super(owner, true);
-		//callerRef = caller;
+	public PreferenceValueDialog(
+			final JDialog owner,
+			final String name,
+			final String value,
+			final PreferenceTableModel tm,
+			final String title
+	) {
+		super(owner, title, ModalityType.APPLICATION_MODAL);
+		
 		tableModel = tm;
-		
-		preferenceName = new String(name);
-		preferenceValue = new String(value);
+		preferenceName = name;
+		preferenceValue = value;
 
-		initDialog(owner);
+		init();
 
-		this.okButton.addActionListener(this);
-		this.cancelButton.addActionListener(this);
-		
-		this.setTitle(title);
-		// popup relative to owner/parent
-		this.setLocationRelativeTo(owner);
-		this.setVisible(true);
+		setResizable(false);
+		setLocationRelativeTo(owner);
+		setVisible(true);
 	}
 
-	protected void initDialog(Dialog owner) {
-		preferenceNameL = new JLabel(preferenceName);
-		value = new JTextField(preferenceValue, 32);
-		okButton = new JButton("OK");
-		cancelButton = new JButton("Cancel");
+	@SuppressWarnings("serial")
+	protected void init() {
+		preferenceNameLbl = new JLabel(preferenceName + ":");
+		valueTxt = new JTextField(preferenceValue, 32);
+		
+		okBtn = new JButton(new AbstractAction("OK") {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				tableModel.setProperty(preferenceName, valueTxt.getText());
+				itemChanged = true;
+				dispose();	
+			}
+		});
+		cancelBtn = new JButton(new AbstractAction("Cancel") {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				dispose();
+			}
+		});
 
-		JPanel outerPanel = new JPanel(new BorderLayout());
-		JPanel valuePanel = new JPanel(new FlowLayout());
-		JPanel buttonPanel = new JPanel(new FlowLayout());
-		valuePanel.add(preferenceNameL);
-		valuePanel.add(value);
+		final JPanel buttonPnl = LookAndFeelUtil.createOkCancelPanel(okBtn, cancelBtn);
+		
+		final JPanel contentPane = new JPanel();
+		final GroupLayout layout = new GroupLayout(contentPane);
+		contentPane.setLayout(layout);
+		layout.setAutoCreateContainerGaps(true);
+		layout.setAutoCreateGaps(true);
+		
+		layout.setHorizontalGroup(layout.createParallelGroup(Alignment.CENTER, true)
+				.addGroup(layout.createSequentialGroup()
+						.addComponent(preferenceNameLbl)
+						.addComponent(valueTxt)
+				)
+				.addComponent(buttonPnl)
+		);
+		layout.setVerticalGroup(layout.createSequentialGroup()
+				.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
+						.addComponent(preferenceNameLbl)
+						.addComponent(valueTxt)
+				)
+				.addComponent(buttonPnl)
+		);
 
-		buttonPanel.add(okButton);
-		buttonPanel.add(cancelButton);
-		outerPanel.add(valuePanel, BorderLayout.NORTH);
-		outerPanel.add(buttonPanel, BorderLayout.SOUTH);
-
-		this.getContentPane().add(outerPanel, BorderLayout.CENTER);
+		setContentPane(contentPane);
+		
+		LookAndFeelUtil.setDefaultOkCancelKeyStrokes(getRootPane(), okBtn.getAction(), cancelBtn.getAction());
+		getRootPane().setDefaultButton(okBtn);
+		
 		pack();
-	}
-
-
-	public void actionPerformed(ActionEvent e) {
-		Object src = e.getSource();
-		
-		if (src instanceof JButton){
-
-			JButton btn = (JButton) src;
-			if (btn == this.okButton){
-				this.tableModel.setProperty(preferenceName, value.getText());
-				this.itemChanged = true;
-				this.dispose();	
-			}
-			else if (btn == this.cancelButton){
-				this.dispose();	
-			}
-		}
 	}
 }

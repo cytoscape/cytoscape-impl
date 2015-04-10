@@ -86,7 +86,7 @@ public class BookmarkDialogImpl extends JDialog implements ActionListener, ListS
 	private JList listBookmark;
 	
 	public BookmarkDialogImpl(Frame pParent, DataSourceManager dsManagerServiceRef) {
-		super(pParent, true);
+		super(pParent, ModalityType.APPLICATION_MODAL);
 		this.dsManagerServiceRef = dsManagerServiceRef;
 		
 		this.setTitle("Bookmark Manager");
@@ -252,14 +252,14 @@ public class BookmarkDialogImpl extends JDialog implements ActionListener, ListS
 			JButton _btn = (JButton) _actionObject;
 
 			if (_btn == btnAddBookmark) {
-				EditBookmarkDialog theNewDialog = new EditBookmarkDialog(this, true, bookmarkCategory, "new", null);
+				EditBookmarkDialog theNewDialog = new EditBookmarkDialog(this, bookmarkCategory, "new", null);
 				theNewDialog.setLocationRelativeTo(this);
 				theNewDialog.setVisible(true);
 				loadBookmarks(); // reload is required to update the GUI
 			} else if (_btn == btnEditBookmark) {
 				org.cytoscape.io.datasource.DataSource theDataSource = 
 						(org.cytoscape.io.datasource.DataSource) listBookmark.getSelectedValue();
-				EditBookmarkDialog theEditDialog = new EditBookmarkDialog(this,	true, bookmarkCategory, "edit",
+				EditBookmarkDialog theEditDialog = new EditBookmarkDialog(this, bookmarkCategory, "edit",
 						theDataSource);
 				theEditDialog.setLocationRelativeTo(this);
 				theEditDialog.setVisible(true);
@@ -352,7 +352,7 @@ public class BookmarkDialogImpl extends JDialog implements ActionListener, ListS
 		}
 	}
 
-	public class EditBookmarkDialog extends JDialog {
+	class EditBookmarkDialog extends JDialog {
 		
 		private final static long serialVersionUID = 1202339873325728L;
 		
@@ -377,9 +377,9 @@ public class BookmarkDialogImpl extends JDialog implements ActionListener, ListS
 		private JTextField tfURL;
 
 		/** Creates new form NewBookmarkDialog */
-		public EditBookmarkDialog(JDialog parent, boolean modal, String categoryName, String pMode,
+		EditBookmarkDialog(JDialog parent, String categoryName, String pMode,
 				org.cytoscape.io.datasource.DataSource pDataSource) {
-			super(parent, modal);
+			super(parent, ModalityType.APPLICATION_MODAL);
 			this.parent = parent;
 			this.categoryName = categoryName;
 			this.mode = pMode;
@@ -392,15 +392,16 @@ public class BookmarkDialogImpl extends JDialog implements ActionListener, ListS
 			lbCategoryValue.setText(categoryName);
 
 			if (pMode.equalsIgnoreCase("new")) {
-				this.setTitle("Add new bookmark");
+				this.setTitle("Add New Bookmark");
 			} else if (pMode.equalsIgnoreCase("edit")) {
-				this.setTitle("Edit bookmark");
+				this.setTitle("Edit Bookmark");
 				tfName.setText(dataSource.getName());
 				tfName.setEditable(false);
 				tfURL.setText(dataSource.getLocation().toString());
 				tfProvider.setText(dataSource.getProvider());				
 			}
 			
+			this.setResizable(false);
 			this.pack();
 		}
 
@@ -413,8 +414,7 @@ public class BookmarkDialogImpl extends JDialog implements ActionListener, ListS
 				if (name.trim().equals("") || URLstr.trim().equals("")) {
 					String msg = "Please provide a name/URL.";
 					// display info dialog
-					JOptionPane.showMessageDialog(parent, msg, "Warning",
-							JOptionPane.INFORMATION_MESSAGE);
+					JOptionPane.showMessageDialog(parent, msg, "Warning", JOptionPane.INFORMATION_MESSAGE);
 
 					return;
 				}

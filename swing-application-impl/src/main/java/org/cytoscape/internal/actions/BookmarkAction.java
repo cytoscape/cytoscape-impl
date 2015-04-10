@@ -27,15 +27,16 @@ package org.cytoscape.internal.actions;
 
 import java.awt.event.ActionEvent;
 
-import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.AbstractCyAction;
-import org.cytoscape.internal.dialogs.BookmarkDialogImpl;
+import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.internal.dialogs.BookmarkDialogFactoryImpl;
-import org.cytoscape.io.datasource.DataSourceManager;
+import org.cytoscape.internal.dialogs.BookmarkDialogImpl;
 
 
 public class BookmarkAction extends AbstractCyAction {
+	
 	private final static long serialVersionUID = 120233986993206L;
+	
 	private CySwingApplication desktop;
 
 	private BookmarkDialogFactoryImpl bookmarkDialogFactory;
@@ -51,12 +52,7 @@ public class BookmarkAction extends AbstractCyAction {
 		this.desktop = desktop;
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 * 
-	 * @param e
-	 *            DOCUMENT ME!
-	 */
+	@Override
 	public void actionPerformed(ActionEvent e) {
 		final BookmarkDialogImpl bookmarkDialog = bookmarkDialogFactory.getBookmarkDialog(desktop.getJFrame());
 		bookmarkDialog.showDialog();
