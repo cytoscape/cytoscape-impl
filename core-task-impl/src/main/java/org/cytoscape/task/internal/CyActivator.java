@@ -450,10 +450,10 @@ public class CyActivator extends AbstractCyActivator {
 		loadNetworkURLTaskFactoryProps.setProperty(PREFERRED_MENU,"File.Import.Network[1.0]");
 		loadNetworkURLTaskFactoryProps.setProperty(ACCELERATOR,"cmd shift l");
 		loadNetworkURLTaskFactoryProps.setProperty(MENU_GRAVITY,"2.0");
-		loadNetworkURLTaskFactoryProps.setProperty(TOOL_BAR_GRAVITY,"2.1");
+//		loadNetworkURLTaskFactoryProps.setProperty(TOOL_BAR_GRAVITY,"2.1");
 		loadNetworkURLTaskFactoryProps.setProperty(TITLE,"URL...");
-		loadNetworkURLTaskFactoryProps.setProperty(LARGE_ICON_URL,getClass().getResource("/images/icons/import-net-url-32.png").toString());
-		loadNetworkURLTaskFactoryProps.setProperty(IN_TOOL_BAR,"true");
+//		loadNetworkURLTaskFactoryProps.setProperty(LARGE_ICON_URL,getClass().getResource("/images/icons/import-net-url-32.png").toString());
+//		loadNetworkURLTaskFactoryProps.setProperty(IN_TOOL_BAR,"true");
 		loadNetworkURLTaskFactoryProps.setProperty(TOOLTIP,"Import Network From URL");
 		loadNetworkURLTaskFactoryProps.setProperty(COMMAND,"load url");
 		loadNetworkURLTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"network");
@@ -489,10 +489,10 @@ public class CyActivator extends AbstractCyActivator {
 		Properties importAttrsURLTaskFactoryProps = new Properties();
 		importAttrsURLTaskFactoryProps.setProperty(PREFERRED_MENU,"File.Import.Table[2.0]");
 		importAttrsURLTaskFactoryProps.setProperty(MENU_GRAVITY,"2.0");
-		importAttrsURLTaskFactoryProps.setProperty(TOOL_BAR_GRAVITY,"2.3");
+//		importAttrsURLTaskFactoryProps.setProperty(TOOL_BAR_GRAVITY,"2.3");
 		importAttrsURLTaskFactoryProps.setProperty(TITLE,"URL...");
-		importAttrsURLTaskFactoryProps.setProperty(LARGE_ICON_URL,getClass().getResource("/images/icons/import-table-url-32.png").toString());
-		importAttrsURLTaskFactoryProps.setProperty(IN_TOOL_BAR,"true");
+//		importAttrsURLTaskFactoryProps.setProperty(LARGE_ICON_URL,getClass().getResource("/images/icons/import-table-url-32.png").toString());
+//		importAttrsURLTaskFactoryProps.setProperty(IN_TOOL_BAR,"true");
 		importAttrsURLTaskFactoryProps.setProperty(TOOLTIP,"Import Table From URL");
 		//importAttrsURLTaskFactoryProps.setProperty(COMMAND,"load url");
 		//importAttrsURLTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"table");
