@@ -85,6 +85,7 @@ import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.GroupLayout.ParallelGroup;
 import javax.swing.GroupLayout.SequentialGroup;
+import javax.swing.AbstractAction;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -1191,6 +1192,7 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 		return advancedButton;
 	}
 	
+	@SuppressWarnings("serial")
 	protected void showAdvancedDialog() {
 		if (advancedDialog == null) {
 			advancedDialog = new JDialog(SwingUtilities.getWindowAncestor(this), ModalityType.DOCUMENT_MODAL);
@@ -1198,16 +1200,16 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 			advancedDialog.setResizable(false);
 			advancedDialog.setTitle("Import - Advanced Options");
 			
-			final JButton okButton = new JButton("OK");
-			okButton.addActionListener(new ActionListener() {
+			final JButton okButton = new JButton(new AbstractAction("OK") {
 				@Override
-				public void actionPerformed(ActionEvent ae) {
+				public void actionPerformed(ActionEvent e) {
 					advancedDialog.setVisible(false);
 				}
 			});
 			
-			final GroupLayout layout = new GroupLayout(advancedDialog.getContentPane());
-			advancedDialog.getContentPane().setLayout(layout);
+			final JPanel contentPane = new JPanel();
+			final GroupLayout layout = new GroupLayout(contentPane);
+			contentPane.setLayout(layout);
 			layout.setAutoCreateContainerGaps(true);
 			layout.setAutoCreateGaps(true);
 			
@@ -1232,6 +1234,12 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 			
 			hGroup.addComponent(okButton, TRAILING, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE);
 			vGroup.addComponent(okButton, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE);
+			
+			advancedDialog.setContentPane(contentPane);
+			
+			LookAndFeelUtil.setDefaultOkCancelKeyStrokes(advancedDialog.getRootPane(),
+					okButton.getAction(), okButton.getAction());
+			advancedDialog.getRootPane().setDefaultButton(okButton);
 		}
 
 		advancedDialog.pack();

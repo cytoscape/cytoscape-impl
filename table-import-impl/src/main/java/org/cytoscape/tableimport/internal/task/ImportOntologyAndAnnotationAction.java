@@ -130,6 +130,7 @@ public class ImportOntologyAndAnnotationAction extends AbstractCyAction {
 		}
 		
 		dialog.setContentPane(contentPane);
+		dialog.setResizable(false);
 		
 		LookAndFeelUtil.setDefaultOkCancelKeyStrokes(dialog.getRootPane(), importButton.getAction(),
 				cancelButton.getAction());
