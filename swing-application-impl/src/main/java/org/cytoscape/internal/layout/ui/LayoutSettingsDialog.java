@@ -140,6 +140,7 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 		initComponents();
 		selectedTunable = new SelectedTunable();
 		setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+		setResizable(false);
 		pack();
 	}
 	
@@ -182,8 +183,9 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
     }
 
     private void initComponents() {
-    	final GroupLayout layout = new GroupLayout(getContentPane());
-		getContentPane().setLayout(layout);
+    	final JPanel contentPane = new JPanel();
+    	final GroupLayout layout = new GroupLayout(contentPane);
+    	contentPane.setLayout(layout);
 		layout.setAutoCreateContainerGaps(true);
 		layout.setAutoCreateGaps(true);
 		
@@ -196,6 +198,7 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 				.addComponent(getButtonPnl(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 		);
     	
+		setContentPane(contentPane);
         pack();
     }
 

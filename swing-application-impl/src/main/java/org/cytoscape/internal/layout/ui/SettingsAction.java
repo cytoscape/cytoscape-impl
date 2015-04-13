@@ -42,6 +42,7 @@ import java.util.Map;
 
 
 public class SettingsAction extends AbstractCyAction implements SetCurrentNetworkViewListener {
+	
 	private final static long serialVersionUID = 1202339874289357L;
 
 	private CyLayoutAlgorithmManager cyl;
@@ -52,10 +53,16 @@ public class SettingsAction extends AbstractCyAction implements SetCurrentNetwor
 
 	private LayoutSettingsDialog settingsDialog;
 
-	public SettingsAction(final CyLayoutAlgorithmManager cyl, final CySwingApplication desk, final CyApplicationManager appMgr, final CyNetworkViewManager networkViewManager,
-			final PanelTaskManager tm, CyProperty cytoscapePropertiesServiceRef, DynamicTaskFactoryProvisioner factoryProvisioner)
-	{
-		super("Settings...",appMgr,"networkAndView", networkViewManager);
+	public SettingsAction(
+			final CyLayoutAlgorithmManager cyl,
+			final CySwingApplication desk,
+			final CyApplicationManager appMgr,
+			final CyNetworkViewManager networkViewManager,
+			final PanelTaskManager tm,
+			final CyProperty cytoscapePropertiesServiceRef,
+			final DynamicTaskFactoryProvisioner factoryProvisioner
+	) {
+		super("Settings...", appMgr, "networkAndView", networkViewManager);
 		this.appMgr = appMgr;
 		setPreferredMenu("Layout");
 		setMenuGravity(3.0f);
@@ -64,9 +71,11 @@ public class SettingsAction extends AbstractCyAction implements SetCurrentNetwor
 		this.tm = tm;
 		this.cytoscapePropertiesServiceRef = cytoscapePropertiesServiceRef;
 		
-		settingsDialog = new LayoutSettingsDialog(cyl, desk, appMgr, tm, this.cytoscapePropertiesServiceRef, factoryProvisioner );
+		settingsDialog = new LayoutSettingsDialog(cyl, desk, appMgr, tm, this.cytoscapePropertiesServiceRef,
+				factoryProvisioner );
 	}
 
+	@Override
 	public void actionPerformed(ActionEvent e) {
 		settingsDialog.actionPerformed(e);
 	}

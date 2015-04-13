@@ -117,8 +117,8 @@ public class CyCustomGraphicsValueEditor extends JPanel implements VisualPropert
 	private void init(final Component parent) {
 		final Window owner = parent != null ? SwingUtilities.getWindowAncestor(parent) : null;
 		dialog = new JDialog(owner, ModalityType.APPLICATION_MODAL);
+		dialog.setContentPane(this);
 		dialog.setMinimumSize(new Dimension(400, 600));
-		dialog.add(this);
 		dialog.setTitle("Graphics");
 		dialog.setResizable(false);
 		
@@ -145,6 +145,7 @@ public class CyCustomGraphicsValueEditor extends JPanel implements VisualPropert
 		
 		LookAndFeelUtil.setDefaultOkCancelKeyStrokes(dialog.getRootPane(), getApplyBtn().getAction(),
 				getCancelBtn().getAction());
+		dialog.getRootPane().setDefaultButton(getApplyBtn());
 	}
 	
 	private void refreshUI() {

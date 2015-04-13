@@ -120,9 +120,9 @@ public class EdgeBendValueEditor extends JPanel implements ValueEditor<Bend> {
 	private void init(final Component parent) {
 		final Window owner = parent != null ? SwingUtilities.getWindowAncestor(parent) : null;
 		dialog = new JDialog(owner, ModalityType.APPLICATION_MODAL);
-		dialog.add(this);
 		dialog.setTitle("Edge Bend Editor");
 		dialog.setResizable(false);
+		dialog.setContentPane(this);
 		
 		dialog.addWindowListener(new WindowAdapter() {
 			@Override
@@ -177,6 +177,7 @@ public class EdgeBendValueEditor extends JPanel implements ValueEditor<Bend> {
 		
 		final JPanel buttonPanel = LookAndFeelUtil.createOkCancelPanel(okButton, cancelButton, removeBendButton);
 		LookAndFeelUtil.setDefaultOkCancelKeyStrokes(getRootPane(), okButton.getAction(), cancelButton.getAction());
+		getRootPane().setDefaultButton(okButton);
 		
 		final GroupLayout layout = new GroupLayout(this);
 		this.setLayout(layout);

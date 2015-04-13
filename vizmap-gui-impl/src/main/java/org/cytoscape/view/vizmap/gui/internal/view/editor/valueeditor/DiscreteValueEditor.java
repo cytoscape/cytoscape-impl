@@ -158,7 +158,7 @@ public class DiscreteValueEditor<T> extends JDialog implements VisualPropertyVal
 		iconListScrollPane.setViewportView(getDiscreteValueList());
 
 		mainPanel = new JPanel();
-		GroupLayout mainPanelLayout = new GroupLayout(mainPanel);
+		final GroupLayout mainPanelLayout = new GroupLayout(mainPanel);
 		mainPanel.setLayout(mainPanelLayout);
 		
 		mainPanelLayout.setHorizontalGroup(mainPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
@@ -178,18 +178,21 @@ public class DiscreteValueEditor<T> extends JDialog implements VisualPropertyVal
 								.addComponent(getCancelButton()))
 						.addContainerGap()));
 
-		GroupLayout layout = new GroupLayout(getContentPane());
-		getContentPane().setLayout(layout);
+		final JPanel contentPane = new JPanel();
+		final GroupLayout layout = new GroupLayout(contentPane);
+		contentPane.setLayout(layout);
 		
 		layout.setHorizontalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
 				.addComponent(mainPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE));
 		layout.setVerticalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
 				.addComponent(mainPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE));
 		
+		setContentPane(contentPane);
 		pack();
 		
 		LookAndFeelUtil.setDefaultOkCancelKeyStrokes(getRootPane(), getApplyButton().getAction(),
 				getCancelButton().getAction());
+		getRootPane().setDefaultButton(getApplyButton());
 	}
 	
 	private DiscreteValueList<T> getDiscreteValueList() {

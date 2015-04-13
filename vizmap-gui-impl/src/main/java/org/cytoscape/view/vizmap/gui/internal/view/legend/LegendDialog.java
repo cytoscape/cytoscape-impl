@@ -32,14 +32,14 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.Collection;
-import java.util.Iterator;
 
 import javax.imageio.spi.IIORegistry;
 import javax.imageio.spi.ImageWriterSpi;
-
+import javax.swing.AbstractAction;
 import javax.swing.BoxLayout;
+import javax.swing.GroupLayout;
+import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JPanel;
@@ -49,17 +49,18 @@ import javax.swing.border.LineBorder;
 import javax.swing.border.TitledBorder;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.vizmap.VisualMappingFunction;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
 import org.cytoscape.view.vizmap.mappings.ContinuousMapping;
 import org.cytoscape.view.vizmap.mappings.DiscreteMapping;
 import org.cytoscape.view.vizmap.mappings.PassthroughMapping;
+import org.freehep.graphicsbase.util.export.ExportDialog;
 import org.freehep.graphicsio.gif.GIFExportFileType;
-import org.freehep.graphicsio.svg.SVGExportFileType;
 import org.freehep.graphicsio.pdf.PDFExportFileType;
 import org.freehep.graphicsio.raw.RawImageWriterSpi;
-import org.freehep.graphicsbase.util.export.ExportDialog;
+import org.freehep.graphicsio.svg.SVGExportFileType;
 
 /**
  * Dialog for legend
@@ -75,8 +76,8 @@ public class LegendDialog extends JDialog {
 	private final VisualStyle visualStyle;
 
 	private JPanel jPanel1;
-	private JButton jButton1;
-	private JButton jButton2;
+	private JButton exportBtn;
+	private JButton cancelBtn;
 	private JScrollPane jScrollPane1;
 
 	private final ServicesUtil servicesUtil;
@@ -147,41 +148,49 @@ public class LegendDialog extends JDialog {
 		}
 	}
 
+	@SuppressWarnings("serial")
 	private void initComponents() {
-		this.setBackground(Color.white);
+		this.setBackground(Color.WHITE);
 		this.setTitle("Visual Legend for " + visualStyle.getTitle());
 
 		jPanel1 = generateLegendPanel(visualStyle);
+		jScrollPane1 = new JScrollPane(jPanel1);
 
-		jScrollPane1 = new JScrollPane();
-		jScrollPane1.setViewportView(jPanel1);
-
-		jButton1 = new JButton();
-		jButton1.setText("Export");
-		jButton1.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent evt) {
+		exportBtn = new JButton(new AbstractAction("Export") {
+			@Override
+			public void actionPerformed(ActionEvent e) {
 				export();
 			}
 		});
-
-		jButton2 = new JButton();
-		jButton2.setText("Done");
-		jButton2.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent evt) {
+		cancelBtn = new JButton(new AbstractAction("Cancel") {
+			@Override
+			public void actionPerformed(ActionEvent e) {
 				dispose();
 			}
 		});
 
-		JPanel buttonPanel = new JPanel();
-		buttonPanel.add(jButton1);
-		buttonPanel.add(jButton2);
+		final JPanel buttonPanel = LookAndFeelUtil.createOkCancelPanel(exportBtn, cancelBtn);
 
-		JPanel containerPanel = new JPanel();
-		containerPanel.setLayout(new BoxLayout(containerPanel, BoxLayout.Y_AXIS));
-		containerPanel.add(jScrollPane1);
-		containerPanel.add(buttonPanel);
-
-		setContentPane(containerPanel);
+		final JPanel contentPane = new JPanel();
+		final GroupLayout layout = new GroupLayout(contentPane);
+    	contentPane.setLayout(layout);
+		layout.setAutoCreateContainerGaps(true);
+		layout.setAutoCreateGaps(true);
+		
+		layout.setHorizontalGroup(layout.createParallelGroup(Alignment.CENTER, true)
+				.addComponent(jScrollPane1)
+				.addComponent(buttonPanel)
+		);
+		layout.setVerticalGroup(layout.createSequentialGroup()
+				.addComponent(jScrollPane1)
+				.addComponent(buttonPanel)
+		);
+		
+		setContentPane(contentPane);
+		
+		LookAndFeelUtil.setDefaultOkCancelKeyStrokes(getRootPane(), exportBtn.getAction(), cancelBtn.getAction());
+		getRootPane().setDefaultButton(exportBtn);
+		
 		setPreferredSize(new Dimension(650, 500));
 		pack();
 		repaint();

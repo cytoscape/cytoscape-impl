@@ -75,9 +75,9 @@ public class ObjectPositionValueEditor extends JPanel implements ValueEditor<Obj
 		final Window owner = parent != null ? SwingUtilities.getWindowAncestor(parent) : null;
 		dialog = new JDialog(owner, ModalityType.APPLICATION_MODAL);
 		dialog.setMinimumSize(new Dimension(400, 600));
-		dialog.add(this);
 		dialog.setTitle("Position");
 		dialog.setResizable(false);
+		dialog.setContentPane(this);
 		
 		dialog.addWindowListener(new WindowAdapter() {
 			@Override
@@ -115,6 +115,7 @@ public class ObjectPositionValueEditor extends JPanel implements ValueEditor<Obj
 
 		final JPanel buttonPanel = LookAndFeelUtil.createOkCancelPanel(okButton, cancelButton);
 		LookAndFeelUtil.setDefaultOkCancelKeyStrokes(getRootPane(), okButton.getAction(), cancelButton.getAction());
+		getRootPane().setDefaultButton(okButton);
 
 		final GroupLayout layout = new GroupLayout(this);
 		this.setLayout(layout);

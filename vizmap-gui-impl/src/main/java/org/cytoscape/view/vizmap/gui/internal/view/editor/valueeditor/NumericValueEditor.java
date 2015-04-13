@@ -143,9 +143,11 @@ class NumberValueDialog extends JDialog {
 
 		final JPanel btnPanel = LookAndFeelUtil.createOkCancelPanel(okBtn, cancelBtn);
 		LookAndFeelUtil.setDefaultOkCancelKeyStrokes(getRootPane(), okBtn.getAction(), cancelBtn.getAction());
+		getRootPane().setDefaultButton(okBtn);
 		
-		final GroupLayout layout = new GroupLayout(getContentPane());
-		getContentPane().setLayout(layout);
+		final JPanel contentPane = new JPanel();
+		final GroupLayout layout = new GroupLayout(contentPane);
+		contentPane.setLayout(layout);
 		layout.setAutoCreateContainerGaps(false);
 		layout.setAutoCreateGaps(true);
 		
@@ -175,6 +177,7 @@ class NumberValueDialog extends JDialog {
 				.addContainerGap(VGAP, VGAP)
 		);
 		
+		setContentPane(contentPane);
 		setLocationRelativeTo(parent);
 		pack();
 		setVisible(true);
