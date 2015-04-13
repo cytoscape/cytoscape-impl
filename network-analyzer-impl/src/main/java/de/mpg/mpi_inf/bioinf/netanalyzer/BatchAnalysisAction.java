@@ -58,6 +58,8 @@ import de.mpg.mpi_inf.bioinf.netanalyzer.ui.Utils;
  */
 public class BatchAnalysisAction extends NetAnalyzerAction {
 
+	private static final long serialVersionUID = -1228030064334629585L;
+	
 	private static final Logger logger = LoggerFactory.getLogger(BatchAnalysisAction.class);
 	
 	private final CyNetworkReaderManager cyNetworkViewReaderMgr;
@@ -77,11 +79,6 @@ public class BatchAnalysisAction extends NetAnalyzerAction {
 		setPreferredMenu(NetworkAnalyzer.PARENT_MENU + Messages.AC_MENU_ANALYSIS);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see cytoscape.util.CytoscapeAction#actionPerformed(java.awt.event.ActionEvent)
-	 */
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		try {
@@ -94,14 +91,18 @@ public class BatchAnalysisAction extends NetAnalyzerAction {
 			// Step 2 - Run the analysis
 			if (inOutDirs != null) {
 				final List<File> files = getInputFiles(inOutDirs[0]);
+				
 				if (files.size() > 0) {
 					final Interpretations ins = d1.getInterpretations();
-					final BatchNetworkAnalyzer analyzer = new BatchNetworkAnalyzer(inOutDirs[1], files, ins,netMgr,cyNetworkViewReaderMgr );
+					final BatchNetworkAnalyzer analyzer =
+							new BatchNetworkAnalyzer(inOutDirs[1], files, ins,netMgr, cyNetworkViewReaderMgr );
 					final BatchAnalysisDialog d2 = new BatchAnalysisDialog(desktop, analyzer);
 					d2.setVisible(true);
+					
 					if (d2.resultsPressed()) {
 						// Step 3 - Show results
-						BatchResultsDialog d3 = new BatchResultsDialog(swingApp.getJFrame(),analyzer.getReports(),cyNetworkViewReaderMgr, netMgr, netViewMgr, action);
+						BatchResultsDialog d3 = new BatchResultsDialog(swingApp.getJFrame(), analyzer.getReports(),
+								cyNetworkViewReaderMgr, netMgr, netViewMgr, action);
 						d3.setVisible(true);
 					}
 				} else {
@@ -126,26 +127,27 @@ public class BatchAnalysisAction extends NetAnalyzerAction {
 	 */
 	private List<File> getInputFiles(File inputDir) {
 		final FileFilter inputFileFilter = new FileFilter() {
-
+			@Override
 			public boolean accept(File aPathname) {
-				if (aPathname.isFile() && aPathname.canRead()) {
+				CyNetworkReader reader = null;
+				
+				if (aPathname.isFile() && aPathname.canRead() && !aPathname.isHidden()) {
 					final String name = aPathname.getAbsolutePath();
-					CyNetworkReader reader =  cyNetworkViewReaderMgr.getReader(aPathname.toURI(), name); 
-					if (reader != null) {
-						return true;
+					
+					try {
+						reader = cyNetworkViewReaderMgr.getReader(aPathname.toURI(), name);
+					} catch (Exception e) {
+						// No need to log it...
 					}
 				}
-				return false;
+				
+				return reader != null;
 			}
 		};
 
 		final List<File> inputFiles = Arrays.asList(inputDir.listFiles(inputFileFilter));
 		Collections.sort(inputFiles);
+		
 		return inputFiles;
 	}
-
-	/**
-	 * Unique ID for this version of this class. It is used in serialization.
-	 */
-	private static final long serialVersionUID = -1228030064334629585L;
 }
