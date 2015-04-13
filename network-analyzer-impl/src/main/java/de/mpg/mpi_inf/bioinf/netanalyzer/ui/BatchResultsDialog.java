@@ -26,9 +26,9 @@ package de.mpg.mpi_inf.bioinf.netanalyzer.ui;
  * #L%
  */
 
-import java.awt.BorderLayout;
+import static javax.swing.GroupLayout.DEFAULT_SIZE;
+
 import java.awt.Dimension;
-import java.awt.FlowLayout;
 import java.awt.Frame;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
@@ -38,6 +38,8 @@ import java.util.List;
 import java.util.Set;
 
 import javax.swing.AbstractAction;
+import javax.swing.GroupLayout;
+import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
@@ -70,6 +72,26 @@ import de.mpg.mpi_inf.bioinf.netanalyzer.data.NetworkInterpretation;
  */
 public class BatchResultsDialog extends JDialog implements ListSelectionListener {
 
+	private static final long serialVersionUID = -4513989513140591013L;
+
+	/**
+	 * Maximum height, in pixels, of the table control as initially displayed in this dialog.
+	 */
+	private static final int TAB_HEIGHT_MAX = 400;
+	
+	/**
+	 * &quot;Close&quot; button for closing this dialog.
+	 */
+	private JButton btnClose;
+	/**
+	 * Last selected table cell.
+	 */
+	private Point lastSelected;
+	/**
+	 * Table listing the analysis reports.
+	 */
+	private JTable tblResults;
+	
 	private final CyNetworkReaderManager cyNetworkViewReaderMgr;
 	private final CyNetworkManager cyNetworkMgr;
 	private final CyNetworkViewManager netViewMgr;
@@ -86,26 +108,33 @@ public class BatchResultsDialog extends JDialog implements ListSelectionListener
 	 * @param aReports
 	 *            List of analysis reports to be visualized.
 	 */
-	public BatchResultsDialog(Frame aOwner, List<NetworkAnalysisReport> aReports, CyNetworkReaderManager cyNetworkViewReaderMgr, CyNetworkManager cyNetworkMgr,
-			CyNetworkViewManager netViewMgr, final LoadNetstatsAction action) {
-		super(aOwner, Messages.DT_BATCHRESULTS, false);
+	public BatchResultsDialog(
+			final Frame aOwner,
+			final List<NetworkAnalysisReport> aReports,
+			final CyNetworkReaderManager cyNetworkViewReaderMgr,
+			final CyNetworkManager cyNetworkMgr,
+			final CyNetworkViewManager netViewMgr,
+			final LoadNetstatsAction action
+	) {
+		super(aOwner, Messages.DT_BATCHRESULTS, ModalityType.MODELESS);
 		this.action = action;
-		
-		init(aReports);
-		setLocationRelativeTo(aOwner);
 		this.cyNetworkViewReaderMgr = cyNetworkViewReaderMgr;
 		this.cyNetworkMgr = cyNetworkMgr;
 		this.netViewMgr = netViewMgr;
 		this.aOwner = aOwner;
+		
+		init(aReports);
+		setResizable(false);
+		setLocationRelativeTo(aOwner);
 	}
 
 	@Override
 	public void valueChanged(ListSelectionEvent e) {
 		if (!e.getValueIsAdjusting()) {
 			try {
-				final AnalysisTableModel model = (AnalysisTableModel) tabResults.getModel();
-				final int r = tabResults.getSelectedRow();
-				final int c = tabResults.getSelectedColumn();
+				final AnalysisTableModel model = (AnalysisTableModel) tblResults.getModel();
+				final int r = tblResults.getSelectedRow();
+				final int c = tblResults.getSelectedColumn();
 				if (lastSelected.x == c && lastSelected.y == r) {
 					return;
 				}
@@ -161,16 +190,6 @@ public class BatchResultsDialog extends JDialog implements ListSelectionListener
 	}
 
 	/**
-	 * Unique ID for this version of this class. It is used in serialization.
-	 */
-	private static final long serialVersionUID = -4513989513140591013L;
-
-	/**
-	 * Maximum height, in pixels, of the table control as initially displayed in this dialog.
-	 */
-	private static final int TAB_HEIGHT_MAX = 400;
-
-	/**
 	 * Initializes and lays out the controls in this dialog.
 	 * 
 	 * @param aReports
@@ -179,31 +198,30 @@ public class BatchResultsDialog extends JDialog implements ListSelectionListener
 	@SuppressWarnings("serial")
 	private void init(List<NetworkAnalysisReport> aReports) {
 		lastSelected = new Point(-1, -1);
-		final int BS = Utils.BORDER_SIZE;
-		final JPanel contentPane = new JPanel(new BorderLayout(BS, BS));
-		Utils.setStandardBorder(contentPane);
 
 		// Add title label
-		final String netCount = String.valueOf(getNetworkCount(aReports));
-		final JLabel label = new JLabel(netCount + Messages.DI_BATCHREPORT, SwingConstants.CENTER);
-		contentPane.add(label, BorderLayout.PAGE_START);
+		final int netCount = getNetworkCount(aReports);
+		final String msg = netCount + (netCount == 1 ? " network was" : " networks were") + " analyzed:";
+		final JLabel label = new JLabel(msg, SwingConstants.CENTER);
 
 		// Add results table
 		final AnalysisTableModel model = new AnalysisTableModel(aReports);
-		tabResults = new JTable(model);
-		tabResults.setDefaultRenderer(File.class, new FileCellRenderer());
-		tabResults.setDefaultRenderer(NetworkInterpretation.class, new InterpretationCellRenderer());
-		tabResults.getColumnModel().getSelectionModel().addListSelectionListener(this);
-		tabResults.getSelectionModel().addListSelectionListener(this);
-		tabResults.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-		model.adjustDimensions(tabResults);
-		final Dimension size = tabResults.getPreferredSize();
-		if (size.height > TAB_HEIGHT_MAX) {
+		tblResults = new JTable(model);
+		tblResults.setDefaultRenderer(File.class, new FileCellRenderer());
+		tblResults.setDefaultRenderer(NetworkInterpretation.class, new InterpretationCellRenderer());
+		tblResults.getColumnModel().getSelectionModel().addListSelectionListener(this);
+		tblResults.getSelectionModel().addListSelectionListener(this);
+		tblResults.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		model.adjustDimensions(tblResults);
+		
+		final Dimension size = tblResults.getPreferredSize();
+		
+		if (size.height > TAB_HEIGHT_MAX)
 			size.height = TAB_HEIGHT_MAX;
-		}
-		tabResults.setPreferredScrollableViewportSize(size);
-		contentPane.add(new JScrollPane(tabResults), BorderLayout.CENTER);
-
+		
+		tblResults.setPreferredScrollableViewportSize(size);
+		final JScrollPane scrPane = new JScrollPane(tblResults);
+		
 		// Add Close button
 		btnClose = Utils.createButton(new AbstractAction(Messages.DI_CLOSE) {
 			@Override
@@ -213,10 +231,25 @@ public class BatchResultsDialog extends JDialog implements ListSelectionListener
 			}
 		}, null);
 		
-		final JPanel panButton = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
-		panButton.add(btnClose);
-		contentPane.add(panButton, BorderLayout.PAGE_END);
+		final JPanel panButton = LookAndFeelUtil.createOkCancelPanel(null, btnClose);
 
+		final JPanel contentPane = new JPanel();
+		final GroupLayout layout = new GroupLayout(contentPane);
+		contentPane.setLayout(layout);
+		layout.setAutoCreateContainerGaps(true);
+		layout.setAutoCreateGaps(true);
+		
+		layout.setHorizontalGroup(layout.createParallelGroup(Alignment.CENTER, true)
+				.addComponent(label)
+				.addComponent(scrPane, DEFAULT_SIZE, DEFAULT_SIZE, 680)
+				.addComponent(panButton)
+		);
+		layout.setVerticalGroup(layout.createSequentialGroup()
+				.addComponent(label)
+				.addComponent(scrPane, DEFAULT_SIZE, DEFAULT_SIZE, 480)
+				.addComponent(panButton)
+		);
+		
 		setContentPane(contentPane);
 		
 		LookAndFeelUtil.setDefaultOkCancelKeyStrokes(getRootPane(), null, btnClose.getAction());
@@ -224,21 +257,5 @@ public class BatchResultsDialog extends JDialog implements ListSelectionListener
 		btnClose.requestFocusInWindow();
 		
 		pack();
-		setResizable(true);
 	}
-
-	/**
-	 * &quot;Close&quot; button for closing this dialog.
-	 */
-	private JButton btnClose;
-
-	/**
-	 * Last selected table cell.
-	 */
-	private Point lastSelected;
-
-	/**
-	 * Table listing the analysis reports.
-	 */
-	private JTable tabResults;
 }

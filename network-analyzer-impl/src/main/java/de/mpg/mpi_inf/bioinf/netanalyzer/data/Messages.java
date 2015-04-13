@@ -388,8 +388,6 @@ public abstract class Messages {
 
 	public static String DI_AXES = "Axes";
 
-	public static String DI_BATCHREPORT = " networks were analyzed. The results are shown below.";
-
 	public static String DI_CANCEL = "Cancel";
 
 	public static String DI_CHARTSETTINGS = "Chart Settings";
