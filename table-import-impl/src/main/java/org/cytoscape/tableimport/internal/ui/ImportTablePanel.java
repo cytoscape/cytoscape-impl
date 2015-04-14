@@ -504,9 +504,9 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 		edgeRadioButton = new JRadioButton("Edge");
 		networkRadioButton = new JRadioButton("Network");
 		ontologyComboBox = new JComboBox();
-		browseOntologyButton = new JButton();
+		browseOntologyButton = new JButton("Browse...");
 		annotationComboBox = new JComboBox();
-		browseAnnotationButton = new JButton();
+		browseAnnotationButton = new JButton("Browse...");
 
 		targetDataSourceTextField = new JTextField();
 		selectAttributeFileButton = new JButton();

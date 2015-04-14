@@ -129,8 +129,7 @@ public class OntologyPanelBuilder {
 			}
 		});
 
-		panel.browseOntologyButton.setText("Browse");
-		panel.browseOntologyButton.setToolTipText("Browse local ontology file");
+		panel.browseOntologyButton.setToolTipText("Browse local ontology file...");
 		panel.browseOntologyButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent evt) {
@@ -169,7 +168,6 @@ public class OntologyPanelBuilder {
 			}
 		});
 
-		panel.browseAnnotationButton.setText("Browse");
 		panel.browseAnnotationButton.setToolTipText("Browse local annotation file...");
 		panel.browseAnnotationButton.addActionListener(new ActionListener() {
 			@Override

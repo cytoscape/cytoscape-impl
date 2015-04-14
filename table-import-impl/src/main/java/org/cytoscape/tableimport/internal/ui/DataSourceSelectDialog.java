@@ -95,7 +95,7 @@ public class DataSourceSelectDialog extends JDialog {
 	private void initComponents() {
 		ontologyNameTextField = new JTextField();
 		dataSourceTextField = new JTextField();
-		browseButton = new JButton("Browse Local Files");
+		browseButton = new JButton("Browse Local Files...");
 		nameLabel = new JLabel("Data Source Name:");
 		sourceLabel = new JLabel("Data Source URL:");
 
