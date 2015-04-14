@@ -98,7 +98,7 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 	
 	
 	public ListSingleSelection<String> whereImportTable ;
-	@Tunable(description="Where to Import Table Data",gravity=1.0, groups={"Target Table Data"}, xorChildren=true)
+	@Tunable(description="Where to Import Table Data:", gravity=1.0, groups={"Target Table Data"}, xorChildren=true)
 	
 	public ListSingleSelection<String> getWhereImportTable() {
 		return whereImportTable;
