@@ -52,6 +52,7 @@ import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualLexiconNode;
 import org.cytoscape.view.model.VisualProperty;
@@ -282,7 +283,7 @@ public class VisualPropertySheet extends JPanel{
 	private JPanel getToolBarPnl() {
 		if (toolBarPnl == null) {
 			toolBarPnl = new JPanel();
-			toolBarPnl.setOpaque(false);
+			toolBarPnl.setOpaque(!LookAndFeelUtil.isAquaLAF()); // Transparent if Aqua
 			toolBarPnl.setLayout(new BoxLayout(toolBarPnl, BoxLayout.X_AXIS));
 			toolBarPnl.add(getVpsBtn());
 			toolBarPnl.add(Box.createHorizontalGlue());

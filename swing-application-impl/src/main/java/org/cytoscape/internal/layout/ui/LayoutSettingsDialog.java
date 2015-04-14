@@ -245,14 +245,14 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 			settingsPnl = new JPanel();
 			settingsPnl.setLayout(new BoxLayout(settingsPnl, BoxLayout.PAGE_AXIS));
 			settingsPnl.setAutoscrolls(true);
-			settingsPnl.setOpaque(false);
+			settingsPnl.setOpaque(!LookAndFeelUtil.isAquaLAF()); // Transparent if Aqua
 			settingsPnl.setBorder(BorderFactory.createEmptyBorder(2, 5, 2, 5));
 			
 			// Create a panel for the list of algorithms
 			final JPanel algorithmSelectorPnl = new JPanel();
 			algorithmSelectorPnl.setLayout(new BoxLayout(algorithmSelectorPnl, BoxLayout.LINE_AXIS));
 			algorithmSelectorPnl.setAlignmentX(Component.CENTER_ALIGNMENT);
-			algorithmSelectorPnl.setOpaque(false);
+			algorithmSelectorPnl.setOpaque(!LookAndFeelUtil.isAquaLAF()); // Transparent if Aqua
 			
 			algorithmSelectorPnl.add(new JLabel("Layout Algorithm:"));
 			algorithmSelectorPnl.add(getAlgorithmCmb());
@@ -274,7 +274,7 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 	private JPanel getPrefLayoutPnl() {
 		if (prefLayoutPnl == null) {
 			prefLayoutPnl = new JPanel();
-	        prefLayoutPnl.setOpaque(false);
+	        prefLayoutPnl.setOpaque(!LookAndFeelUtil.isAquaLAF()); // Transparent if Aqua
 	        
 	        final GroupLayout layout = new GroupLayout(prefLayoutPnl);
 	        prefLayoutPnl.setLayout(layout);
@@ -300,7 +300,7 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 			algorithmPnl = new JPanel();
 			algorithmPnl.setLayout(new BoxLayout(algorithmPnl, BoxLayout.PAGE_AXIS));
 			algorithmPnl.setAutoscrolls(true);
-			algorithmPnl.setOpaque(false);
+			algorithmPnl.setOpaque(!LookAndFeelUtil.isAquaLAF()); // Transparent if Aqua
 		}
 		
 		return algorithmPnl;
@@ -311,7 +311,7 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 			settingsButtonPnl = new JPanel();
 			settingsButtonPnl.setLayout(new BoxLayout(settingsButtonPnl, BoxLayout.LINE_AXIS));
 			settingsButtonPnl.setAlignmentX(Component.CENTER_ALIGNMENT);
-			settingsButtonPnl.setOpaque(false);
+			settingsButtonPnl.setOpaque(!LookAndFeelUtil.isAquaLAF()); // Transparent if Aqua
 			
 			final JButton applyBtn = new JButton("Apply Layout");
 			applyBtn.addActionListener(new ActionListener() {
@@ -375,7 +375,7 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 
 						layoutAttrPnl = new JPanel();
 						layoutAttrPnl.setLayout(new BoxLayout(layoutAttrPnl, BoxLayout.PAGE_AXIS));
-						layoutAttrPnl.setOpaque(false);
+						layoutAttrPnl.setOpaque(!LookAndFeelUtil.isAquaLAF()); // Transparent if Aqua
 						
 						final CyNetworkView view = appMgr.getCurrentNetworkView();
 						setNetworkView(view);

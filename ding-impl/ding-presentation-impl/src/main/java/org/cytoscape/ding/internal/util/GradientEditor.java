@@ -21,6 +21,8 @@ import javax.swing.JButton;
 import javax.swing.JColorChooser;
 import javax.swing.JPanel;
 
+import org.cytoscape.util.swing.LookAndFeelUtil;
+
 /**
  * A generic editor for configuring a multiple point varying gradient.
  * Adapted from: 
@@ -265,7 +267,7 @@ public class GradientEditor extends JPanel {
 	
 	private void init() {
 		setLayout(null);
-		setOpaque(false);
+		setOpaque(!LookAndFeelUtil.isAquaLAF()); // Transparent if Aqua
 		
 		addBtn.setBounds(20, 70, 75, 20);
 		add(addBtn);

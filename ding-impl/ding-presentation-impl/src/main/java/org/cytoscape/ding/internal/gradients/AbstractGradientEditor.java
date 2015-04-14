@@ -16,6 +16,7 @@ import javax.swing.JSeparator;
 
 import org.cytoscape.ding.customgraphics.AbstractCustomGraphics2;
 import org.cytoscape.ding.internal.util.GradientEditor;
+import org.cytoscape.util.swing.LookAndFeelUtil;
 
 public abstract class AbstractGradientEditor<T extends AbstractCustomGraphics2<?>> extends JPanel {
 
@@ -39,7 +40,7 @@ public abstract class AbstractGradientEditor<T extends AbstractCustomGraphics2<?
 	protected void init() {
 		createLabels();
 		
-		setOpaque(false);
+		setOpaque(!LookAndFeelUtil.isAquaLAF()); // Transparent if Aqua
 		
 		final GroupLayout layout = new GroupLayout(this);
 		setLayout(layout);
@@ -96,7 +97,7 @@ public abstract class AbstractGradientEditor<T extends AbstractCustomGraphics2<?
 	protected JPanel getOtherOptionsPnl() {
 		if (otherOptionsPnl == null) {
 			otherOptionsPnl = new JPanel();
-			otherOptionsPnl.setOpaque(false);
+			otherOptionsPnl.setOpaque(!LookAndFeelUtil.isAquaLAF()); // Transparent if Aqua
 			otherOptionsPnl.setVisible(false);
 		}
 		

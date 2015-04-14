@@ -590,6 +590,7 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 	protected JCheckBox getDependencyCkb() {
 		if (dependencyCkb == null) {
 			dependencyCkb = new JCheckBox();
+			dependencyCkb.setOpaque(false);
 			dependencyCkb.setSelected(model.isDependencyEnabled());
 		}
 		

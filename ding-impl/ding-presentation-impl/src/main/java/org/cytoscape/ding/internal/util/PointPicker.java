@@ -23,6 +23,7 @@ import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 
 import org.cytoscape.ding.internal.charts.AbstractChartEditor.DoubleInputVerifier;
+import org.cytoscape.util.swing.LookAndFeelUtil;
 
 /**
  * Editor that allows users to select a coordinate on a square with the mouse.
@@ -97,7 +98,7 @@ public class PointPicker extends JPanel {
     	xLbl = new JLabel("x");
     	yLbl = new JLabel("y");
     	
-    	setOpaque(false);
+    	setOpaque(!LookAndFeelUtil.isAquaLAF()); // Transparent if Aqua
     	
     	final GroupLayout layout = new GroupLayout(this);
 		this.setLayout(layout);
@@ -148,7 +149,7 @@ public class PointPicker extends JPanel {
     		    }
     		};
     		
-    		canvas.setOpaque(false);
+    		canvas.setOpaque(!LookAndFeelUtil.isAquaLAF()); // Transparent if Aqua
     		canvas.setMinimumSize(new Dimension((int) size, (int) size));
     		canvas.setPreferredSize(new Dimension((int) size, (int) size));
     		

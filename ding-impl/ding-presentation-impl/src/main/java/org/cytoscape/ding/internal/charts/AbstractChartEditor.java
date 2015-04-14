@@ -97,6 +97,7 @@ import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.util.swing.IconManager;
+import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.presentation.property.values.CyColumnIdentifier;
 import org.cytoscape.view.presentation.property.values.CyColumnIdentifierFactory;
 
@@ -243,7 +244,7 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 		
 		try {
 			createLabels();
-			setOpaque(false);
+			setOpaque(!LookAndFeelUtil.isAquaLAF()); // Transparent if Aqua
 			setLayout(new BorderLayout());
 			add(getOptionsTpn(), BorderLayout.CENTER);
 		} finally {
@@ -274,14 +275,14 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 			JScrollPane scr1 = new JScrollPane(getBasicOptionsPnl(), 
 					JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 			scr1.setBorder(BorderFactory.createEmptyBorder());
-			scr1.setOpaque(false);
-			scr1.getViewport().setOpaque(false);
+			scr1.setOpaque(!LookAndFeelUtil.isAquaLAF()); // Transparent if Aqua
+			scr1.getViewport().setOpaque(!LookAndFeelUtil.isAquaLAF());
 			
 			JScrollPane scr2 = new JScrollPane(getAdvancedOptionsPnl(), 
 					JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 			scr2.setBorder(BorderFactory.createEmptyBorder());
-			scr2.setOpaque(false);
-			scr2.getViewport().setOpaque(false);
+			scr2.setOpaque(!LookAndFeelUtil.isAquaLAF());
+			scr2.getViewport().setOpaque(!LookAndFeelUtil.isAquaLAF());
 			
 			optionsTpn.addTab("Data", scr1);
 			optionsTpn.addTab("Options", scr2);
@@ -293,7 +294,7 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 	protected JPanel getBasicOptionsPnl() {
 		if (basicOptionsPnl == null) {
 			basicOptionsPnl = new JPanel();
-			basicOptionsPnl.setOpaque(false);
+			basicOptionsPnl.setOpaque(!LookAndFeelUtil.isAquaLAF()); // Transparent if Aqua
 			
 			final GroupLayout layout = new GroupLayout(basicOptionsPnl);
 			basicOptionsPnl.setLayout(layout);
@@ -320,7 +321,7 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 	protected JPanel getAdvancedOptionsPnl() {
 		if (advancedOptionsPnl == null) {
 			advancedOptionsPnl = new JPanel();
-			advancedOptionsPnl.setOpaque(false);
+			advancedOptionsPnl.setOpaque(!LookAndFeelUtil.isAquaLAF()); // Transparent if Aqua
 			
 			final GroupLayout layout = new GroupLayout(advancedOptionsPnl);
 			advancedOptionsPnl.setLayout(layout);
@@ -350,7 +351,7 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 	protected DataPanel getDataPnl() {
 		if (dataPnl == null) {
 			dataPnl = new DataPanel();
-			dataPnl.setOpaque(false);
+			dataPnl.setOpaque(!LookAndFeelUtil.isAquaLAF()); // Transparent if Aqua
 			dataPnl.refresh();
 		}
 		
@@ -360,7 +361,7 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 	protected JPanel getRangePnl() {
 		if (rangePnl == null) {
 			rangePnl = new JPanel();
-			rangePnl.setOpaque(false);
+			rangePnl.setOpaque(!LookAndFeelUtil.isAquaLAF()); // Transparent if Aqua
 			rangePnl.setVisible(setRange);
 			
 			if (!rangePnl.isVisible())
@@ -404,7 +405,7 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 	protected JPanel getLabelsPnl() {
 		if (labelsPnl == null) {
 			labelsPnl = new JPanel();
-			labelsPnl.setOpaque(false);
+			labelsPnl.setOpaque(!LookAndFeelUtil.isAquaLAF()); // Transparent if Aqua
 			labelsPnl.setVisible(setItemLabels || setDomainLabels || setRangeLabels);
 			
 			if (!labelsPnl.isVisible())
@@ -473,7 +474,7 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 	protected JPanel getOrientationPnl() {
 		if (orientationPnl == null) {
 			orientationPnl = new JPanel();
-			orientationPnl.setOpaque(false);
+			orientationPnl.setOpaque(!LookAndFeelUtil.isAquaLAF()); // Transparent if Aqua
 			orientationPnl.setVisible(setOrientation);
 			
 			if (!orientationPnl.isVisible())
@@ -506,7 +507,7 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 	protected JPanel getAxesPnl() {
 		if (axesPnl == null) {
 			axesPnl = new JPanel();
-			axesPnl.setOpaque(false);
+			axesPnl.setOpaque(!LookAndFeelUtil.isAquaLAF()); // Transparent if Aqua
 			axesPnl.setVisible(hasAxes);
 			
 			if (!axesPnl.isVisible())
@@ -569,7 +570,7 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 	protected JPanel getBorderPnl() {
 		if (borderPnl == null) {
 			borderPnl = new JPanel();
-			borderPnl.setOpaque(false);
+			borderPnl.setOpaque(!LookAndFeelUtil.isAquaLAF()); // Transparent if Aqua
 			
 			final GroupLayout layout = new GroupLayout(borderPnl);
 			borderPnl.setLayout(layout);
@@ -620,7 +621,7 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 	protected JPanel getOtherBasicOptionsPnl() {
 		if (otherBasicOptionsPnl == null) {
 			otherBasicOptionsPnl = new JPanel();
-			otherBasicOptionsPnl.setOpaque(false);
+			otherBasicOptionsPnl.setOpaque(!LookAndFeelUtil.isAquaLAF()); // Transparent if Aqua
 			otherBasicOptionsPnl.setVisible(false);
 		}
 		
@@ -634,7 +635,7 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 	protected JPanel getOtherAdvancedOptionsPnl() {
 		if (otherAdvancedOptionsPnl == null) {
 			otherAdvancedOptionsPnl = new JPanel();
-			otherAdvancedOptionsPnl.setOpaque(false);
+			otherAdvancedOptionsPnl.setOpaque(!LookAndFeelUtil.isAquaLAF()); // Transparent if Aqua
 			otherAdvancedOptionsPnl.setVisible(false);
 		}
 		
@@ -1379,7 +1380,7 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 		private JPanel getBtnPnl() {
 			if (btnPnl == null) {
 				btnPnl = new JPanel();
-				btnPnl.setOpaque(false);
+				btnPnl.setOpaque(!LookAndFeelUtil.isAquaLAF()); // Transparent if Aqua
 				
 				final BoxLayout layout = new BoxLayout(btnPnl, BoxLayout.Y_AXIS);
 				btnPnl.setLayout(layout);

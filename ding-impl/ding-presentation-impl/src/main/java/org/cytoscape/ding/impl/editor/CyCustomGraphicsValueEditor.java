@@ -233,7 +233,7 @@ public class CyCustomGraphicsValueEditor extends JPanel implements VisualPropert
 		
 		if (cg2Pnl == null) {
 			cg2Pnl = new CustomGraphics2Panel(group);
-			cg2Pnl.setOpaque(false);
+			cg2Pnl.setOpaque(!LookAndFeelUtil.isAquaLAF()); // Transparent if Aqua
 			cg2PnlMap.put(group, cg2Pnl);
 		}
 		
@@ -469,8 +469,8 @@ public class CyCustomGraphicsValueEditor extends JPanel implements VisualPropert
 			CustomGraphics2EditorPane(final CyCustomGraphics2Factory<?> factory) {
 				this.factory = factory;
 				this.setBorder(BorderFactory.createEmptyBorder());
-				this.setOpaque(false);
-				this.getViewport().setOpaque(false);
+				this.setOpaque(!LookAndFeelUtil.isAquaLAF()); // Transparent if Aqua
+				this.getViewport().setOpaque(!LookAndFeelUtil.isAquaLAF());
 			}
 			
 			void update(final CyCustomGraphics2 initialCg2) {
