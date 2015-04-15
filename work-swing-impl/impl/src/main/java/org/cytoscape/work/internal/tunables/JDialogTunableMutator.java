@@ -31,7 +31,7 @@ import javax.swing.JPanel;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
+import org.cytoscape.work.internal.tunables.utils.TunableDialog;
 import org.cytoscape.work.swing.RequestsUIHelper;
 import org.cytoscape.work.swing.TunableUIHelper;
 
@@ -90,11 +90,11 @@ public class JDialogTunableMutator extends JPanelTunableMutator implements Tunab
 	 */
 	public void setConfigurationContext(Object win, boolean resetContext) {
 		if (win == null) {
-			if(resetContext)
-			{
+			if (resetContext) {
 				handlerMap.clear();
 				titleProviderMap.clear();
 			}
+			
 			return;
 		}
 

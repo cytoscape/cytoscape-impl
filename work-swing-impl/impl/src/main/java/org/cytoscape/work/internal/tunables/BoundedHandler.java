@@ -25,24 +25,22 @@ package org.cytoscape.work.internal.tunables;
  */
 
 
-import java.awt.BorderLayout;
+import static org.cytoscape.work.internal.tunables.utils.GUIDefaults.updateFieldPanel;
+import static org.cytoscape.work.internal.tunables.utils.GUIDefaults.setTooltip;
+
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.text.DecimalFormat;
 
-import javax.swing.BorderFactory;
 import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.ToolTipManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import org.cytoscape.work.Tunable;
-import org.cytoscape.work.internal.tunables.utils.GUIDefaults;
-import org.cytoscape.work.internal.tunables.utils.myBoundedSwing;
-import org.cytoscape.work.internal.tunables.utils.mySlider;
+import org.cytoscape.work.internal.tunables.utils.TunableBoundedField;
+import org.cytoscape.work.internal.tunables.utils.TunableSlider;
 import org.cytoscape.work.swing.AbstractGUITunableHandler;
 import org.cytoscape.work.util.AbstractBounded;
 import org.cytoscape.work.util.BoundedChangeListener;
@@ -68,14 +66,13 @@ public class BoundedHandler<T extends AbstractBounded, N> extends AbstractGUITun
 	 * 1st representation of this <code>Bounded</code> object in 
 	 * its <code>GUIHandler</code>'s JPanel : a <code>JSlider</code>
 	 */
-	private mySlider slider;
+	private TunableSlider slider;
 
 	/**
 	 * 2nd representation of this <code>Bounded</code> object : a <code>JTextField</code> 
 	 * that will display to the user all the informations about the bounds
 	 */
-	private myBoundedSwing boundedField;
-
+	private TunableBoundedField boundedField;
 
 	/**
  	 * Save the last object we fetched.  This will allow us to detect that we're
@@ -115,7 +112,6 @@ public class BoundedHandler<T extends AbstractBounded, N> extends AbstractGUITun
 	private void init() {
 		title = getDescription();
 		useSlider = getParams().getProperty("slider", "false").equalsIgnoreCase("true");
-		panel = new JPanel(new BorderLayout(GUIDefaults.H_GAP, GUIDefaults.V_GAP));
 
 		try {
 			final T bounded = getBounded();
@@ -125,53 +121,43 @@ public class BoundedHandler<T extends AbstractBounded, N> extends AbstractGUITun
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-
-		// Set the tooltip.  Note that at this point, we're setting
-		// the tooltip on the entire panel.  This may or may not be
-		// the right thing to do.
-		if (getTooltip() != null && getTooltip().length() > 0) {
-			final ToolTipManager tipManager = ToolTipManager.sharedInstance();
-			tipManager.setInitialDelay(1);
-			tipManager.setDismissDelay(7500);
-			panel.setToolTipText(getTooltip());
-		}
 	}
 
-	private void initPanel (T bounded) {
+	private void initPanel(T bounded) {
 		double min = ((Number)bounded.getLowerBound()).doubleValue();
 		double max = ((Number)bounded.getUpperBound()).doubleValue();
 		double range = max - min;
-		DecimalFormat format = getDecimalFormat(range);
-
+		final DecimalFormat format = getDecimalFormat(range);
+		final JLabel label = new JLabel();
+		
 		if (useSlider) {
-			JLabel label = new JLabel(title);
-			// label.setBorder(BorderFactory.createEmptyBorder(5, 5, 0, 5));
-			panel.add(label,BorderLayout.WEST);
-			slider = new mySlider(title, (Number)bounded.getLowerBound(), (Number)bounded.getUpperBound(),
+			label.setText(title);
+			
+			slider = new TunableSlider(title, (Number)bounded.getLowerBound(), (Number)bounded.getUpperBound(),
 			                      (Number)bounded.getValue(), bounded.isLowerBoundStrict(), bounded.isUpperBoundStrict(),
 			                      format);
 			slider.addChangeListener(this);
-			panel.add(slider,BorderLayout.SOUTH);
-			// panel.setBorder(BorderFactory.createLineBorder(Color.BLACK));
-			panel.setBorder(
-				BorderFactory.createCompoundBorder(BorderFactory.createEtchedBorder(), 
-				                                   BorderFactory.createEmptyBorder(3,3,3,3)));
+			
+			updateFieldPanel(panel, label, slider, horizontal);
 			panel.validate();
+			
+			setTooltip(getTooltip(), label, slider);
 		} else {
 			// Do something reasonable for max and min...
 			// At some point, we should use superscripts for scientific notation...
-
-			final JLabel label =
-				new JLabel(title + " (max: " + format.format((Number)bounded.getLowerBound())
-				          + " min: " + format.format((Number)bounded.getUpperBound()) + ")" );
-			label.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
-			boundedField = new myBoundedSwing((Number)bounded.getValue(), (Number)bounded.getLowerBound(),
+			label.setText(
+					title + " (max: " + format.format((Number)bounded.getLowerBound()) +
+					" min: " + format.format((Number)bounded.getUpperBound()) + ")"
+			);
+			boundedField = new TunableBoundedField((Number)bounded.getValue(), (Number)bounded.getLowerBound(),
 			                                  (Number)bounded.getUpperBound(), bounded.isLowerBoundStrict(),
 			                                  bounded.isUpperBoundStrict());
-			panel.add(label, BorderLayout.WEST);
-			panel.add(boundedField, BorderLayout.CENTER);
 			boundedField.addActionListener(this);
+			
+			updateFieldPanel(panel, label, boundedField, horizontal);
 			panel.validate();
+			
+			setTooltip(getTooltip(), label, boundedField);
 		}
 	}
 
@@ -203,7 +189,7 @@ public class BoundedHandler<T extends AbstractBounded, N> extends AbstractGUITun
 					final JLabel label =
 						new JLabel(title + " (max: " + bounded.getLowerBound().toString()
 						          + " min: " + bounded.getUpperBound().toString() + ")" );
-					boundedField = new myBoundedSwing((Number)bounded.getValue(), (Number)bounded.getLowerBound(),
+					boundedField = new TunableBoundedField((Number)bounded.getValue(), (Number)bounded.getLowerBound(),
 					                                  (Number)bounded.getUpperBound(), bounded.isLowerBoundStrict(),
 					                                  bounded.isUpperBoundStrict());
 				}

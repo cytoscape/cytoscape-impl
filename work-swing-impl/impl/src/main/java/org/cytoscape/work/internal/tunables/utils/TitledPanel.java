@@ -5,25 +5,18 @@ import static org.cytoscape.util.swing.LookAndFeelUtil.isAquaLAF;
 
 import java.awt.Component;
 
-import javax.swing.BoxLayout;
 import javax.swing.JPanel;
-import javax.swing.border.Border;
 
 @SuppressWarnings("serial")
 public class TitledPanel extends SimplePanel {
 
-	/**
-	 * @param title Panel title
-	 * @param axis {@link BoxLayout} axis
-	 */
-	public TitledPanel(final String title, int axis) {
-		super(axis, title);
+	public TitledPanel(final String title, boolean vertical) {
+		super(vertical, title);
 	}
 	
 	@Override
 	protected void initComponents() {
-		final Border border = createTitledBorder(title);
-		setBorder(border);
+		setBorder(createTitledBorder(title));
 		
 		if (isAquaLAF() && !(title == null || title.trim().isEmpty()))
 			addStrutToRoot(10);

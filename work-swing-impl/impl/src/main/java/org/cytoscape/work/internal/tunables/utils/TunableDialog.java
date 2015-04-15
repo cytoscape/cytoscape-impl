@@ -1,4 +1,4 @@
-package org.cytoscape.work.internal.tunables;
+package org.cytoscape.work.internal.tunables.utils;
 
 /*
  * #%L
@@ -65,6 +65,7 @@ public final class TunableDialog extends JDialog {
 		this.setModalityType(Dialog.ModalityType.APPLICATION_MODAL);
 		this.optionPanel = optionPanel;
 		initComponents();
+		setResizable(false);
 	}
 
 	/** Set the text to replace the "OK" string on OK button. 

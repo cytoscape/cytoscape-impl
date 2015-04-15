@@ -25,21 +25,22 @@ package org.cytoscape.work.internal.tunables;
  */
 
 
+import static org.cytoscape.work.internal.tunables.utils.GUIDefaults.updateFieldPanel;
+import static org.cytoscape.work.internal.tunables.utils.GUIDefaults.setTooltip;
+
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
-import javax.swing.BorderFactory;
-import javax.swing.BoxLayout;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
-import javax.swing.ToolTipManager;
+import javax.swing.UIManager;
 
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.swing.AbstractGUITunableHandler;
@@ -58,7 +59,7 @@ import org.cytoscape.work.util.ListSingleSelection;
 public class ListSingleHandler<T> extends AbstractGUITunableHandler
                                   implements ActionListener, ListChangeListener<T> {
 	
-	private JComboBox combobox;
+	private JComboBox<T> combobox;
 
 	/**
 	 * Constructs the <code>GUIHandler</code> for the <code>ListSingleSelection</code> type
@@ -70,7 +71,6 @@ public class ListSingleHandler<T> extends AbstractGUITunableHandler
 	 * @param o object contained in <code>f</code>
 	 * @param t tunable associated to <code>f</code>
 	 */
-	@SuppressWarnings("unchecked")
 	public ListSingleHandler(Field f, Object o, Tunable t) {
 		super(f, o, t);
 		init();
@@ -81,6 +81,7 @@ public class ListSingleHandler<T> extends AbstractGUITunableHandler
 		init();
 	}
 
+	@SuppressWarnings("unchecked")
 	private ListSingleSelection<T> getSingleSelection() {
 		try {
 			return (ListSingleSelection<T>)getValue();
@@ -89,6 +90,7 @@ public class ListSingleHandler<T> extends AbstractGUITunableHandler
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	private void init() {
 		final ListSingleSelection<T> singleSelection = getSingleSelection();
 		
@@ -101,58 +103,47 @@ public class ListSingleHandler<T> extends AbstractGUITunableHandler
 		}
 
 		//set Gui
-		panel = new JPanel();
-		panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
-		final JLabel textArea = new JLabel(getDescription());
-		textArea.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
-		textArea.setVerticalTextPosition(SwingConstants.CENTER);
-		panel.add(textArea);
+		final JLabel label = new JLabel(getDescription());
+		label.setVerticalTextPosition(SwingConstants.CENTER);
 
 		//add list's items to the combobox
-		combobox = new JComboBox(getSingleSelection().getPossibleValues().toArray());
+		combobox = new JComboBox<>((T[])getSingleSelection().getPossibleValues().toArray());
 		combobox.addActionListener(this);
-		panel.add(combobox);
-		
 		combobox.getModel().setSelectedItem(getSingleSelection().getSelectedValue());
-
-		// Set the tooltip.  Note that at this point, we're setting
-		// the tooltip on the entire panel.  This may or may not be
-		// the right thing to do.
-		if (getTooltip() != null && getTooltip().length() > 0) {
-			final ToolTipManager tipManager = ToolTipManager.sharedInstance();
-			tipManager.setInitialDelay(1);
-			tipManager.setDismissDelay(7500);
-			panel.setToolTipText(getTooltip());
-		}
+		
+		updateFieldPanel(panel, label, combobox, horizontal);
+		setTooltip(getTooltip(), label, combobox);
 	}
 
 	@Override
+	@SuppressWarnings("unchecked")
 	public void update() {
 		if (combobox == null) return;
-		combobox.setModel(new DefaultComboBoxModel(getSingleSelection().getPossibleValues().toArray()));
+		combobox.setModel(new DefaultComboBoxModel<T>((T[])getSingleSelection().getPossibleValues().toArray()));
 		combobox.setSelectedItem(getSingleSelection().getSelectedValue());
 	}
 
 	/**
 	 * set the item that is currently selected in the ComboBox as the only possible item selected in <code>listSingleSelection</code>
 	 */
-	@SuppressWarnings("unchecked")
 	@Override
+	@SuppressWarnings("unchecked")
 	public void handle() {
-		if ( combobox == null )
+		if (combobox == null)
 			return;
 		
 		final T selectedItem = (T) combobox.getSelectedItem();
+		
 		if (selectedItem != null){
 			getSingleSelection().setSelectedValue(selectedItem);
+			
 			try {
 				setValue(getSingleSelection());
-				
 			} catch (final Exception e) {
-				combobox.setBackground(Color.red);
+				combobox.setBackground(Color.RED);
 				e.printStackTrace();
 				JOptionPane.showMessageDialog(null, "The value entered cannot be set for " + getName() + "!", "Error", JOptionPane.ERROR_MESSAGE);
-				combobox.setBackground(Color.white);
+				combobox.setBackground(UIManager.getColor("ComboBox.background"));
 				return;
 			}
 		}
@@ -161,8 +152,10 @@ public class ListSingleHandler<T> extends AbstractGUITunableHandler
 	/**
 	 * To get the item that is currently selected
 	 */
+	@Override
+	@SuppressWarnings("unchecked")
 	public String getState() {
-		if ( combobox == null )
+		if (combobox == null)
 			return "";
 
 		final T selectedItem = (T)combobox.getSelectedItem();

@@ -25,7 +25,9 @@ package org.cytoscape.work.internal.tunables;
  */
 
 
-import java.awt.BorderLayout;
+import static org.cytoscape.work.internal.tunables.utils.GUIDefaults.updateFieldPanel;
+import static org.cytoscape.work.internal.tunables.utils.GUIDefaults.setTooltip;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -39,7 +41,6 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.ListSelectionModel;
-import javax.swing.ToolTipManager;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
@@ -59,8 +60,9 @@ import org.cytoscape.work.util.ListSelection;
  */
 public class ListMultipleHandler<T> extends AbstractGUITunableHandler 
                                             implements ListSelectionListener, ListChangeListener<T> {
-	private JList itemsContainerList;
-	private DefaultListModel listModel;
+	
+	private JList<T> itemsContainerList;
+	private DefaultListModel<T> listModel;
 	private ListMultipleSelection<T> listMultipleSelection;
 
 	/**
@@ -83,6 +85,7 @@ public class ListMultipleHandler<T> extends AbstractGUITunableHandler
 		init();
 	}
 	
+	@SuppressWarnings("unchecked")
 	private ListMultipleSelection<T> getMultipleSelection() {
 		try {
 			return (ListMultipleSelection<T>)getValue();
@@ -92,39 +95,20 @@ public class ListMultipleHandler<T> extends AbstractGUITunableHandler
 	}
 
 	private void init() {
-		
 		listMultipleSelection = getMultipleSelection();
-		listModel = new DefaultListModel();
+		listModel = new DefaultListModel<>();
 
-		//create GUI
-		if ( listMultipleSelection.getPossibleValues().isEmpty() ) {
+		// create GUI
+		if (listMultipleSelection.getPossibleValues().isEmpty()) {
 			panel = new JPanel();
 			itemsContainerList = null;
 			return;
 		}
 
-		panel = new JPanel();
-		BorderLayout layout = new BorderLayout();
-		panel.setLayout(layout);
-		String description = getDescription();
-		if (description != null && description.length() > 80) {
-			// Use JTextArea for long descriptions
-			final JTextArea jta = new JTextArea(description);
-
-			jta.setLineWrap(true);
-			jta.setWrapStyleWord(true);
-			panel.add(jta, BorderLayout.PAGE_START);
-			jta.setBackground(panel.getBackground());
-			jta.setEditable(false);
-		} else if (description != null && description.length() > 0) {
-			// Otherwise, use JLabel
-			final JLabel jLabel = new JLabel(description);
-			panel.add(jLabel, BorderLayout.PAGE_START);
-		}
-
 		//put the items in a list
-		itemsContainerList = new JList(listModel);//new JList(listMultipleSelection.getPossibleValues().toArray());
-		for ( T value : getMultipleSelection().getPossibleValues() ) 
+		itemsContainerList = new JList<>(listModel);//new JList(listMultipleSelection.getPossibleValues().toArray());
+		
+		for (T value : getMultipleSelection().getPossibleValues()) 
 			listModel.addElement(value);
 		
 		itemsContainerList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
@@ -136,64 +120,65 @@ public class ListMultipleHandler<T> extends AbstractGUITunableHandler
 		
 		final int[] selectedIdx = new int[selectedVals.size()];
 		int index = 0;
-		for(T selected: selectedVals) {
-			for(int i = 0; i<allValues.size(); i++) {
-				if(itemsContainerList.getModel().getElementAt(i).equals(selected)) {
+		
+		for (T selected: selectedVals) {
+			for (int i = 0; i<allValues.size(); i++) {
+				if (itemsContainerList.getModel().getElementAt(i).equals(selected)) {
 					selectedIdx[index] = i;
 					index++;
 				}
 			}
 		}
+		
 		itemsContainerList.setSelectedIndices(selectedIdx);
 		
-		//use a JscrollPane to visualize the items
-		
+		// use a JscrollPane to visualize the items
 		final JScrollPane scrollpane = new JScrollPane(itemsContainerList);
 		scrollpane.setAutoscrolls(true);
 		scrollpane.setOpaque(false);
-		panel.add(scrollpane, BorderLayout.CENTER);
-
-		// Set the tooltip.  Note that at this point, we're setting
-		// the tooltip on the entire panel.  This may or may not be
-		// the right thing to do.
-		if (getTooltip() != null && getTooltip().length() > 0) {
-			final ToolTipManager tipManager = ToolTipManager.sharedInstance();
-			tipManager.setInitialDelay(1);
-			tipManager.setDismissDelay(7500);
-			panel.setToolTipText(getTooltip());
+		
+		String description = getDescription();
+		
+		if (description != null && description.length() > 80) {
+			// Use JTextArea for long descriptions
+			final JTextArea textArea = new JTextArea(description);
+			updateFieldPanel(panel, textArea, scrollpane, horizontal);
+			setTooltip(getTooltip(), textArea, scrollpane);
+		} else if (description != null && description.length() > 0) {
+			// Otherwise, use JLabel
+			final JLabel label = new JLabel(description);
+			updateFieldPanel(panel, label, scrollpane, horizontal);
+			setTooltip(getTooltip(), label, scrollpane);
 		}
 	}
-
 	
 	@Override
 	public void update(){
-		
 		boolean reloadSelection = false;
 		
 		listMultipleSelection = getMultipleSelection();
 		
 		//If the list of elements has changed, remove old elements and add new ones
-		if(!Arrays.equals(listModel.toArray(),listMultipleSelection.getPossibleValues().toArray()))
-		{
+		if (!Arrays.equals(listModel.toArray(),listMultipleSelection.getPossibleValues().toArray())) {
 			listModel.removeAllElements();
 			reloadSelection = true;
+			
 			for ( T value : listMultipleSelection.getPossibleValues() ) 
 				listModel.addElement(value);
-		}
-		else
-		{
+		} else {
 			//if the list is the same but the selection has changed, remove all selections and select new ones
 			if(!Arrays.equals(itemsContainerList.getSelectedValues(),listMultipleSelection.getSelectedValues().toArray()))
 				reloadSelection = true;
 		}
-		if(reloadSelection )
-		{
+		
+		if (reloadSelection) {
 			// selected items
 			final List<T> selectedVals = listMultipleSelection.getSelectedValues();
 			final List<T> allValues = listMultipleSelection.getPossibleValues();
 			
 			final int[] selectedIdx = new int[selectedVals.size()];
 			int index = 0;
+			
 			for(T selected: selectedVals) {
 				for(int i = 0; i<allValues.size(); i++) {
 					if(itemsContainerList.getModel().getElementAt(i).equals(selected)) {
@@ -202,6 +187,7 @@ public class ListMultipleHandler<T> extends AbstractGUITunableHandler
 					}
 				}
 			}
+			
 			itemsContainerList.removeSelectionInterval(0, allValues.size()-1);
 			itemsContainerList.setSelectedIndices(selectedIdx);
 		}
@@ -210,6 +196,7 @@ public class ListMultipleHandler<T> extends AbstractGUITunableHandler
 	/**
 	 * set the items that are currently selected in the <code>itemsContainerList</code> as the selected items in <code>listMultipleSelection</code>
 	 */
+	@Override
 	public void handle() {
 		if ( itemsContainerList == null )
 			return;
@@ -233,6 +220,7 @@ public class ListMultipleHandler<T> extends AbstractGUITunableHandler
 	/**
 	 * returns a string representation of all the selected items of <code>listMultipleSelection</code>
 	 */
+	@Override
 	public String getState() {
 		if ( itemsContainerList == null )
 			return "";

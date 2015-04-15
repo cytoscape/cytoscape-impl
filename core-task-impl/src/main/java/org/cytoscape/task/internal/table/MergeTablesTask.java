@@ -104,8 +104,8 @@ public class MergeTablesTask extends AbstractTask implements TunableValidator {
 	}
 	
 	public void setSourceTable(ListSingleSelection<CyTable> table) {
-		
 		ListMultipleSelection<String> tempList = getColumns(table.getSelectedValue());
+		
 		if(!sourceMergeColumns.getPossibleValues().containsAll(tempList.getPossibleValues()) 
 				|| sourceMergeColumns.getPossibleValues().size() != tempList.getPossibleValues().size())
 		{
@@ -157,14 +157,12 @@ public class MergeTablesTask extends AbstractTask implements TunableValidator {
 	}
 	
 	public ListMultipleSelection<String> sourceMergeColumns;
-	@Tunable(description="", gravity=0.2, groups={"Source","Columns To Merge"},listenForChange={"SourceTable","SelectAllColumns"})
+	@Tunable(description="Select Columns:", gravity=0.2, groups={"Source","Columns To Merge"},listenForChange={"SourceTable","SelectAllColumns"})
 	public ListMultipleSelection<String> getSourceMergeColumns(){
-		
 		return sourceMergeColumns;
 	}
 	
 	public void setSourceMergeColumns(ListMultipleSelection<String> columns){
-		
 		sourceMergeColumns = columns;
 	}
 	
@@ -298,9 +296,9 @@ public class MergeTablesTask extends AbstractTask implements TunableValidator {
 	}
 
 	private final void initTunable(CyTableManager tabelMgr,CyNetworkManager networkManager) {
-		
 		List<CyTable> listOfTables = new ArrayList<CyTable>();
 		List<Object> listOfUTables = new ArrayList<Object>();
+		
 		for ( CyTable tempTable : tabelMgr.getGlobalTables()) 
 		{
 			if(tempTable.isPublic())

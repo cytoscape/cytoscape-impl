@@ -25,6 +25,7 @@ package org.cytoscape.work.internal.tunables;
  */
 
 
+import java.awt.Component;
 import java.awt.Container;
 import java.awt.Window;
 import java.beans.PropertyChangeEvent;
@@ -35,7 +36,8 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 
-import javax.swing.BoxLayout;
+import javax.swing.BorderFactory;
+import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
@@ -51,6 +53,8 @@ import org.cytoscape.work.TunableValidator.ValidationState;
 import org.cytoscape.work.internal.tunables.utils.SimplePanel;
 import org.cytoscape.work.internal.tunables.utils.TitledPanel;
 import org.cytoscape.work.internal.tunables.utils.XorPanel;
+import org.cytoscape.work.swing.AbstractGUITunableHandler;
+import org.cytoscape.work.swing.AbstractGUITunableHandler.TunableFieldPanel;
 import org.cytoscape.work.swing.DirectlyPresentableTunableHandler;
 import org.cytoscape.work.swing.GUITunableHandler;
 import org.slf4j.Logger;
@@ -101,7 +105,7 @@ public class JPanelTunableMutator extends AbstractTunableInterceptor<GUITunableH
 	
 	@Override
 	public void setConfigurationContext(final Object tPanel){
-		if ( tPanel instanceof JPanel )
+		if (tPanel instanceof JPanel)
 			this.tunablePanel = (JPanel)tPanel;
 		else
 			throw new IllegalArgumentException("this tunable mutator only works with JPanels - " +
@@ -114,14 +118,13 @@ public class JPanelTunableMutator extends AbstractTunableInterceptor<GUITunableH
 	}
 
 	public boolean hasTunables(final Object o, String context) {
-		List<GUITunableHandler> handlers = 
-			getApplicableHandlers(o, context);
+		List<GUITunableHandler> handlers = getApplicableHandlers(o, context);
+		
 		return (handlers.size() > 0);
 	}
 
 	@Override
 	public boolean validateAndWriteBack(Object objectWithTunables) {
-
 		List<GUITunableHandler> handlers = getHandlers(objectWithTunables); 
 
 		for (final GUITunableHandler h : handlers)
@@ -172,6 +175,7 @@ public class JPanelTunableMutator extends AbstractTunableInterceptor<GUITunableH
 				tunablePanel.add(providedGUI);
 				final JPanel retVal = tunablePanel;
 				tunablePanel = null;
+				
 				return retVal;
 			}
 		} 
@@ -179,8 +183,10 @@ public class JPanelTunableMutator extends AbstractTunableInterceptor<GUITunableH
 		if (handlers.isEmpty()) {
 			if (tunablePanel != null) {
 				tunablePanel.removeAll();
+				
 				return tunablePanel;
 			}
+			
 			return null; 
 		}
 
@@ -189,24 +195,27 @@ public class JPanelTunableMutator extends AbstractTunableInterceptor<GUITunableH
 		// and all of the extra clicks, instead we just want to show the special dialog.
 		if ( handlers.size() == 1 && handlers.get(0) instanceof DirectlyPresentableTunableHandler ) {
 			DirectlyPresentableTunableHandler fh = (DirectlyPresentableTunableHandler) handlers.get(0);
+			
 			if (fh.isForcedToSetDirectly()){
 				boolean fileFound = fh.setTunableDirectly(possibleParent);
-				if ( fileFound )
-					return null; 
-				else
-					return HANDLER_CANCEL_PANEL;
+				
+				return fileFound ? null : HANDLER_CANCEL_PANEL; 
 			}
-		} 
+		}
 
+		int maxLeftWidth = 0, maxRightWidth = 0;
+		boolean updateMargins = false;
+		
 		if (!panelMap.containsKey(handlers)) {
 			Map<String, JPanel> panels = new HashMap<String, JPanel>();
-			final JPanel topLevel = new SimplePanel(BoxLayout.PAGE_AXIS);
+			final JPanel topLevel = new SimplePanel(true);
 			panels.put(TOP_GROUP, topLevel);
 
 			// construct the GUI
 			for (GUITunableHandler gh : handlers) {
 				// hook up dependency listeners
 				String dep = gh.getDependency();
+				
 				if (dep != null && !dep.equals("")) {
 					for (GUITunableHandler gh2 : handlers) {
 						if (gh2.getName().equals(dep)) {
@@ -217,7 +226,7 @@ public class JPanelTunableMutator extends AbstractTunableInterceptor<GUITunableH
 				}
 
 				// hook up change listeners
-				for ( String cs : gh.getChangeSources() ) {
+				for (String cs : gh.getChangeSources()) {
 					if (cs != null && !cs.equals("")) {
 						for (GUITunableHandler gh2 : handlers) {
 							if (gh2.getName().equals(cs)) {
@@ -240,6 +249,7 @@ public class JPanelTunableMutator extends AbstractTunableInterceptor<GUITunableH
 				for (String g : gh.getGroups()) {
 					if (g.equals(""))
 						throw new IllegalArgumentException("A group's name must not be \"\".");
+					
 					groupNames = groupNames + g;
 					
 					if (!panels.containsKey(groupNames)) {
@@ -253,16 +263,51 @@ public class JPanelTunableMutator extends AbstractTunableInterceptor<GUITunableH
 				}
 				
 				panels.get(lastGroup).add(gh.getJPanel());
+				
+				// Update max left/right margin values if vertical form
+				if (gh instanceof AbstractGUITunableHandler && !((AbstractGUITunableHandler)gh).isHorizontal()) {
+					updateMargins = true;
+					final JPanel p = gh.getJPanel();
+					
+					if (p instanceof TunableFieldPanel) {
+						final TunableFieldPanel tfp = (TunableFieldPanel) p;
+						final JComponent label = tfp.getLabel() != null ? tfp.getLabel() : tfp.getMultiLineLabel();
+						final Component control = tfp.getControl();
+						
+						if (label != null)
+							maxLeftWidth = Math.max(maxLeftWidth, label.getPreferredSize().width);
+						if (control != null)
+							maxRightWidth = Math.max(maxRightWidth, control.getPreferredSize().width);
+					}
+				}
 			}
 			
 			panelMap.put(handlers, panels.get(TOP_GROUP));
 		}
 
 		// Get the GUI into the proper state
-		for (GUITunableHandler h : handlers)
-			h.notifyDependents();
+		for (GUITunableHandler gh : handlers) {
+			if (updateMargins) {
+				final JPanel p = gh.getJPanel();
+				
+				if (p instanceof TunableFieldPanel) {
+					// Update panel's left/right margin by setting an empty border
+					final TunableFieldPanel tfp = (TunableFieldPanel) p;
+					final JComponent label = tfp.getLabel() != null ? tfp.getLabel() : tfp.getMultiLineLabel();
+					final Component control = tfp.getControl();
+					
+					int left = label == null ? 0 : maxLeftWidth - label.getPreferredSize().width;
+					int right = control == null ? 0 : maxRightWidth - control.getPreferredSize().width;
+					
+					tfp.setBorder(BorderFactory.createEmptyBorder(1, left, 1, right)); // TODO Do not set top/bottom
+				}
+			}
+			
+			// Also notify all dependents
+			gh.notifyDependents();
+		}
 
-		//if no tunablePane is defined, then create a new JDialog to display the Tunables' panels
+		// if no tunablePane is defined, then create a new JDialog to display the Tunables' panels
 		if (tunablePanel == null) {
 			return panelMap.get(handlers);
 		} else { // add them to the "tunablePanel" JPanel
@@ -270,6 +315,7 @@ public class JPanelTunableMutator extends AbstractTunableInterceptor<GUITunableH
 			tunablePanel.add(panelMap.get(handlers));
 			final JPanel retVal = tunablePanel;
 			tunablePanel = null;
+			
 			return retVal;
 		}
 	}
@@ -280,9 +326,11 @@ public class JPanelTunableMutator extends AbstractTunableInterceptor<GUITunableH
 		if (handlers != null ) {
 			// Remove any tunables that aren't appropriate for a GUI context
 			ListIterator<GUITunableHandler> li = handlers.listIterator();
+			
 			while (li.hasNext()) {
 				GUITunableHandler gh = li.next();
 				String context = gh.getParams().get(AbstractTunableHandler.CONTEXT).toString();
+				
 				if (desiredContext.equalsIgnoreCase("gui")) {
 					if (context.equalsIgnoreCase("nogui"))
 						li.remove();
@@ -292,6 +340,7 @@ public class JPanelTunableMutator extends AbstractTunableInterceptor<GUITunableH
 				}
 			}
 		}
+		
 		return handlers;
 	}
 
@@ -373,7 +422,7 @@ public class JPanelTunableMutator extends AbstractTunableInterceptor<GUITunableH
 	private TitledPanel createTitledPanel(final String title, final Boolean vertical, final Boolean displayed) {
 		final TitledPanel panel = new TitledPanel(
 				(displayed == null || displayed) ? title : null,
-				(vertical == null || vertical) ? BoxLayout.PAGE_AXIS : BoxLayout.LINE_AXIS
+				vertical == Boolean.TRUE
 		);
 
 		return panel;
@@ -416,16 +465,18 @@ public class JPanelTunableMutator extends AbstractTunableInterceptor<GUITunableH
 
 	protected String getTitle(Object objectWithTunables) {
 		Method method = titleProviderMap.get(objectWithTunables);
+		
 		if (method != null) {
 			try {
 				String title = (String) method.invoke(objectWithTunables);
-				if (title != null) {
+				
+				if (title != null)
 					return title;
-				}
 			} catch (final Exception e) {
 				logger.error("Can't retrieve @ProvidesTitle String: ", e);
 			}
 		}
+		
 		return "Set Parameters";
 	}
 

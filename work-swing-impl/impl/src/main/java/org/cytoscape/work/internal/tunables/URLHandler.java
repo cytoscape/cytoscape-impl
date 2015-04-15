@@ -24,6 +24,9 @@ package org.cytoscape.work.internal.tunables;
  * #L%
  */
 
+import static org.cytoscape.work.internal.tunables.utils.GUIDefaults.updateFieldPanel;
+import static org.cytoscape.work.internal.tunables.utils.GUIDefaults.setTooltip;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.URL;
@@ -33,11 +36,8 @@ import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import javax.swing.GroupLayout;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
-import javax.swing.JSeparator;
-import javax.swing.LayoutStyle;
 import javax.swing.ToolTipManager;
 
 import org.cytoscape.io.DataCategory;
@@ -55,8 +55,7 @@ public class URLHandler extends AbstractGUITunableHandler {
 
 	private static final Logger logger = LoggerFactory.getLogger(URLHandler.class);
 
-	private JComboBox networkFileComboBox;
-	private JLabel titleLabel;
+	private JComboBox<String> networkFileComboBox;
 
 	private final Map<String, String> dataSourceMap;
 
@@ -87,15 +86,15 @@ public class URLHandler extends AbstractGUITunableHandler {
 	}
 
 	private void init(final DataSourceManager dsManager) {
-
 		// creation of the GUI and layout
 		initGUI();
 		
-		//Get the DataSources of the appropriate DataCategory from the tunable parameters.
+		// Get the DataSources of the appropriate DataCategory from the tunable parameters.
 		final Collection<DataSource> dataSources = dsManager.getDataSources(
 				DataCategory.valueOf(((String)getParams().get("fileCategory")).toUpperCase()));
 		
 		final SortedSet<String> labelSet = new TreeSet<String>();
+		
 		if (dataSources != null) {
 			for (DataSource ds : dataSources) {
 				String link = null;
@@ -119,12 +118,13 @@ public class URLHandler extends AbstractGUITunableHandler {
 	@Override
 	public void handle() {
 		final Object selected = networkFileComboBox.getSelectedItem();
+		
 		if (selected == null)
 			return;
 
 		final String selectedString = selected.toString();
-
 		final String urlString;
+		
 		if (selectedString.startsWith("http:") == false)
 			urlString = dataSourceMap.get(selectedString);
 		else
@@ -147,38 +147,18 @@ public class URLHandler extends AbstractGUITunableHandler {
 		tipManager.setInitialDelay(1);
 		tipManager.setDismissDelay(7500);
 
-		titleLabel = new JLabel("Import data from URL: ");
-
-		networkFileComboBox = new JComboBox();
+		networkFileComboBox = new JComboBox<>();
 		networkFileComboBox.setEditable(true);
 		networkFileComboBox.setName("networkFileComboBox");
-		networkFileComboBox
-				.setToolTipText("<html><body>You can specify URL by the following:<ul><li>Type URL</li><li>Select from pull down menu</li><li>Drag & Drop URL from Web Browser</li></ul></body><html>");
+		networkFileComboBox.setToolTipText(
+				"<html><body>You can specify URL by the following:" +
+				"<ul><li>Type URL</li><li>Select from pull down menu</li>" +
+				"<li>Drag & Drop URL from Web Browser</li></ul></body><html>"
+		);
 
-		this.panel.setLayout(getLayout());
-	}
-
-	// diplays the panel's component in a good view
-	private GroupLayout getLayout() {
-		final GroupLayout layout = new GroupLayout(panel);
-
-		layout.setHorizontalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING).addGroup(
-				layout.createSequentialGroup()
-						.addContainerGap()
-						.addGroup(
-								layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-										.addComponent(networkFileComboBox, 0, 450, Short.MAX_VALUE)
-										.addComponent(titleLabel, GroupLayout.PREFERRED_SIZE, 350,
-												GroupLayout.PREFERRED_SIZE)).addContainerGap()));
-
-		layout.setVerticalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING).addGroup(
-				layout.createSequentialGroup()
-						.addContainerGap()
-						.addComponent(titleLabel)
-						.addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-						.addComponent(networkFileComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
-								GroupLayout.PREFERRED_SIZE)));
-
-		return layout;
+		final JLabel label = new JLabel("Import data from URL:");
+		
+		updateFieldPanel(panel, label, networkFileComboBox, horizontal);
+		setTooltip(getTooltip(), label, networkFileComboBox);
 	}
 }

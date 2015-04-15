@@ -10,27 +10,24 @@ import javax.swing.JPanel;
 @SuppressWarnings("serial")
 public class SimplePanel extends JPanel {
 
-	protected final int axis;
+	protected final boolean vertical;
 	protected final String title;
 	
 	protected JPanel contentPane;
 	
-	/**
-	 * @param axis {@link BoxLayout} axis
-	 */
-	public SimplePanel(final int axis) {
-		this(axis, null);
+	public SimplePanel(final boolean vertical) {
+		this(vertical, null);
 	}
 	
-	protected SimplePanel(final int axis, final String title) {
-		this.axis = axis;
+	protected SimplePanel(final boolean vertical, final String title) {
+		this.vertical = vertical;
 		this.title = title;
 		init();
 		initComponents();
 	}
 	
 	protected void init() {
-		setLayout(new BoxLayout(this, axis));
+		setLayout(new BoxLayout(this, vertical ? BoxLayout.Y_AXIS : BoxLayout.X_AXIS));
 		setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 	}
 	
@@ -61,7 +58,7 @@ public class SimplePanel extends JPanel {
 	}
 	
 	protected void addStrutToRoot(int size) {
-		if (axis == BoxLayout.PAGE_AXIS || axis == BoxLayout.Y_AXIS)
+		if (vertical)
 			addToRoot(Box.createVerticalStrut(size));
 		else
 			addToRoot(Box.createHorizontalStrut(size));
@@ -75,7 +72,7 @@ public class SimplePanel extends JPanel {
 	protected JPanel getContentPane() {
 		if (contentPane == null) {
 			contentPane = new JPanel();
-			contentPane.setLayout(new BoxLayout(contentPane, axis));
+			contentPane.setLayout(new BoxLayout(contentPane, vertical ? BoxLayout.Y_AXIS : BoxLayout.X_AXIS));
 		}
 		
 		return contentPane;

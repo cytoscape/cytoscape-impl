@@ -54,7 +54,7 @@ public class XorPanel extends TitledPanel {
 	 * @param g
 	 */
 	public XorPanel(final String title, final GUITunableHandler g) {
-		super(title, BoxLayout.PAGE_AXIS);
+		super(title, true);
 		gh = g;
 		gh.addDependent(new GUITunableHandlerSwitchListener());
 	}
@@ -111,7 +111,7 @@ public class XorPanel extends TitledPanel {
 	protected JPanel getSwitchPanel() {
 		if (switchPanel == null) {
 			switchPanel = new JPanel();
-			switchPanel.setLayout(new BoxLayout(switchPanel, axis));
+			switchPanel.setLayout(new BoxLayout(switchPanel, vertical ? BoxLayout.Y_AXIS : BoxLayout.X_AXIS));
 		}
 		
 		return switchPanel;

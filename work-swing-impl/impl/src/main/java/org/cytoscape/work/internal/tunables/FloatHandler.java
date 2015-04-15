@@ -27,7 +27,6 @@ package org.cytoscape.work.internal.tunables;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.text.DecimalFormat;
 
 import org.cytoscape.work.Tunable;
 
@@ -35,10 +34,8 @@ import org.cytoscape.work.Tunable;
 public class FloatHandler extends AbstractNumberHandler {
 
 	/**
-	 * Constructs the <code>GUIHandler</code> for the <code>Float</code> type
-	 *
-	 * It creates the Swing component for this Object (JTextField) that contains the initial value of the Float Object annotated as <code>Tunable</code>, its description, and displays it in a proper way
-	 *
+	 * It creates the Swing component for this Object (JTextField) that contains the initial value
+	 * of the Float Object annotated as <code>Tunable</code>, its description, and displays it in a proper way.
 	 *
 	 * @param field a field that has been annotated
 	 * @param o object containing <code>field</code>
@@ -52,13 +49,14 @@ public class FloatHandler extends AbstractNumberHandler {
 		super(getter, setter, instance, tunable);
 	}
 
+	@Override
 	public Number getFieldValue(String value) throws NumberFormatException {
 		Float f = Float.valueOf(value);
 		return (Number) f;
 	}
 
+	@Override
 	public Number getTypedValue(Number number) {
 		return new Float(number.toString());
 	}
-
 }

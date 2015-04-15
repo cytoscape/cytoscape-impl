@@ -24,24 +24,22 @@ package org.cytoscape.work.internal.tunables;
  * #L%
  */
 
-import java.awt.BorderLayout;
+import static org.cytoscape.work.internal.tunables.utils.GUIDefaults.TEXT_BOX_WIDTH;
+import static org.cytoscape.work.internal.tunables.utils.GUIDefaults.updateFieldPanel;
+import static org.cytoscape.work.internal.tunables.utils.GUIDefaults.setTooltip;
+
 import java.awt.Dimension;
-import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
-import javax.swing.BorderFactory;
 import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
-import javax.swing.JPanel;
 import javax.swing.JTextField;
-import javax.swing.ToolTipManager;
 import javax.swing.text.DefaultFormatter;
 
 import org.cytoscape.work.Tunable;
-import org.cytoscape.work.internal.tunables.utils.GUIDefaults;
 import org.cytoscape.work.swing.AbstractGUITunableHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,10 +57,8 @@ public class StringHandler extends AbstractGUITunableHandler implements ActionLi
 	private JFormattedTextField textField;
 
 	/**
-	 * Constructs the <code>GUIHandler</code> for the <code>String</code> type
-	 *
-	 * It creates the Swing component for this Object (JTextField) that contains the initial string, adds its description, and displays it in a proper way
-	 *
+	 * It creates the Swing component for this Object (JTextField) that contains the initial string,
+	 * adds its description, and displays it in a proper way.
 	 *
 	 * @param f field that has been annotated
 	 * @param o object contained in <code>f</code>
@@ -80,6 +76,7 @@ public class StringHandler extends AbstractGUITunableHandler implements ActionLi
 
 	private void init() {
 		String s = null;
+		
 		try {
 			s = (String)getValue();
 		} catch (final Exception e) {
@@ -91,32 +88,17 @@ public class StringHandler extends AbstractGUITunableHandler implements ActionLi
 		formatter.setOverwriteMode(false);
 		textField = new JFormattedTextField(formatter);
 		textField.setValue(s);
-		textField.setPreferredSize(new Dimension(GUIDefaults.TEXT_BOX_WIDTH, textField.getPreferredSize().height));
-		panel = new JPanel(new BorderLayout(GUIDefaults.H_GAP, GUIDefaults.V_GAP));
-		final JLabel label = new JLabel(getDescription());
-		label.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+		textField.setPreferredSize(new Dimension(TEXT_BOX_WIDTH, textField.getPreferredSize().height));
 		textField.setHorizontalAlignment(JTextField.LEFT);
 		textField.addActionListener(this);
 
-		if (horizontal) {
-			panel.add(label, BorderLayout.NORTH);
-			panel.add(textField, BorderLayout.SOUTH);
-		} else {
-			panel.add(label, BorderLayout.WEST );
-			panel.add(textField, BorderLayout.EAST);
-		}
-
-		// Set the tooltip.  Note that at this point, we're setting
-		// the tooltip on the entire panel.  This may or may not be
-		// the right thing to do.
-		if (getTooltip() != null && getTooltip().length() > 0) {
-			final ToolTipManager tipManager = ToolTipManager.sharedInstance();
-			tipManager.setInitialDelay(1);
-			tipManager.setDismissDelay(7500);
-			panel.setToolTipText(getTooltip());
-		}
+		final JLabel label = new JLabel(getDescription());
+		
+		updateFieldPanel(panel, label, textField, horizontal);
+		setTooltip(getTooltip(), label, textField);
 	}
 	
+	@Override
 	public void update(){
 		String s = null;
 		try {
@@ -127,11 +109,11 @@ public class StringHandler extends AbstractGUITunableHandler implements ActionLi
 		}
 	}
 	
-
 	/**
 	 * Catches the value inserted in the JTextField, and tries to set it to the initial object. If it can't, throws an
 	 * exception that displays the source error to the user
 	 */
+	@Override
 	public void handle() {
 		final String string = textField.getText();
 		try {
@@ -145,6 +127,7 @@ public class StringHandler extends AbstractGUITunableHandler implements ActionLi
 	/**
 	 * To get the item that is currently selected
 	 */
+	@Override
 	public String getState() {
 		if ( textField == null )
 			return "";

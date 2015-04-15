@@ -40,9 +40,9 @@ import java.util.Hashtable;
  * @author <a href="http://jheer.org">jeffrey heer</a>
  */
 @SuppressWarnings("unchecked")
-public class stringLib {
+public final class StringUtil {
 
-    private stringLib() {
+    private StringUtil() {
         // prevent instantiation
     }
 
@@ -246,4 +246,4 @@ public class stringLib {
         return outString.toString();
     }
     
-} // end of class StringLib
+}
