@@ -46,6 +46,7 @@ import javax.swing.ButtonGroup;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
+import javax.swing.AbstractAction;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JDialog;
@@ -198,6 +199,10 @@ public class NetworkMergeDialog extends JDialog {
 		);
 		
 		updateDifferencePanel();
+		
+		LookAndFeelUtil.setDefaultOkCancelKeyStrokes(getRootPane(), getOkBtn().getAction(), getCancelBtn().getAction());
+		getRootPane().setDefaultButton(getOkBtn());
+		
 		pack();
 	}
 	
@@ -816,13 +821,12 @@ public class NetworkMergeDialog extends JDialog {
 		return buttonPnl;
 	}
 	
+	@SuppressWarnings("serial")
 	private JButton getOkBtn() {
 		if (okBtn == null) {
-			okBtn = new JButton("Merge");
-			okBtn.setEnabled(false);
-			okBtn.addActionListener(new ActionListener() {
+			okBtn = new JButton(new AbstractAction("Merge") {
 				@Override
-				public void actionPerformed(ActionEvent evt) {
+				public void actionPerformed(ActionEvent e) {
 					if (idMappingCkb.isSelected()) {
 						// TODO: implement this option
 					}
@@ -845,15 +849,16 @@ public class NetworkMergeDialog extends JDialog {
 					dispose();
 				}
 			});
+			okBtn.getAction().setEnabled(false);
 		}
 		
 		return okBtn;
 	}
 	
+	@SuppressWarnings("serial")
 	private JButton getCancelBtn() {
 		if (cancelBtn == null) {
-			cancelBtn = new JButton("Cancel");
-			cancelBtn.addActionListener(new ActionListener() {
+			cancelBtn = new JButton(new AbstractAction("Cancel") {
 				@Override
 				public void actionPerformed(ActionEvent evt) {
 					setVisible(false);
@@ -906,10 +911,10 @@ public class NetworkMergeDialog extends JDialog {
 
 		if (selectedNetData.getSize() < n) {
 			getOkBtn().setToolTipText("Select at least " + n + " networks to merge");
-			getOkBtn().setEnabled(false);
+			getOkBtn().getAction().setEnabled(false);
 		} else {
 			getOkBtn().setToolTipText(null);
-			getOkBtn().setEnabled(true);
+			getOkBtn().getAction().setEnabled(true);
 		}
 	}
 

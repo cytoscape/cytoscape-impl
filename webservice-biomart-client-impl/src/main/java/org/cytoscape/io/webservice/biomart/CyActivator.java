@@ -40,12 +40,13 @@ import org.osgi.framework.BundleContext;
 
 
 public class CyActivator extends AbstractCyActivator {
+	
 	public CyActivator() {
 		super();
 	}
 
+	@Override
 	public void start(BundleContext bc) {
-
 		// Import services
 		DialogTaskManager taskManagerServiceRef = getService(bc,DialogTaskManager.class);
 		CyNetworkManager cyNetworkManagerServiceRef = getService(bc,CyNetworkManager.class);

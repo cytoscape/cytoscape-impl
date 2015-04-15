@@ -52,12 +52,12 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextPane;
-import javax.swing.LayoutStyle;
 import javax.swing.WindowConstants;
 
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.io.webservice.WebServiceClient;
 import org.cytoscape.io.webservice.swing.WebServiceGUIClient;
+import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.util.swing.OpenBrowser;
 import org.cytoscape.work.TaskManager;
 import org.slf4j.Logger;
@@ -130,14 +130,12 @@ public class WebServiceImportDialog<T> extends JDialog {
 		this.setTitle(title);
 	}
 	
-	
-	public void addClient(
-			final WebServiceClient client, @SuppressWarnings("rawtypes") Map props) {
-		
-		if(!typeCheck(client))
+	@SuppressWarnings("rawtypes")
+	public void addClient(final WebServiceClient client, Map props) {
+		if (!typeCheck(client))
 			return;
 		
-		if(this.numClients == 0)
+		if (this.numClients == 0)
 			this.datasourceComboBox.removeAllItems();
 		
 		datasourceComboBox.addItem(client);
@@ -149,17 +147,15 @@ public class WebServiceImportDialog<T> extends JDialog {
 			serviceUIPanels.put((WebServiceClient) client, null);
 		}
 //		datasourceComboBox.setSelectedItem(client);
-		if(datasourceComboBox.getModel().getSize() != 0)
+		if (datasourceComboBox.getModel().getSize() != 0)
 			datasourceComboBox.setSelectedIndex(0);
 		datasourceComboBoxActionPerformed(null);
 		logger.info("New network import client registered: " + client);
 	}
 	
-	
-	public void removeClient(
-			final WebServiceClient client, @SuppressWarnings("rawtypes") Map props) {
-		
-		if(!typeCheck(client))
+	@SuppressWarnings("rawtypes")
+	public void removeClient(final WebServiceClient client, Map props) {
+		if (!typeCheck(client))
 			return;
 		
 		datasourceComboBox.removeItem(client);
@@ -167,13 +163,12 @@ public class WebServiceImportDialog<T> extends JDialog {
 		serviceUIPanels.remove(client);
 		numClients--;
 		
-		if(numClients == 0) {
+		if (numClients == 0) {
 			this.datasourceComboBox.removeAllItems();
 			this.datasourceComboBox.addItem(NO_CLIENT);
 			setComponentsEnabled(false);
 		}
 	}
-
 
 	private boolean typeCheck(final WebServiceClient client) {
 		final Class<?>[] interfaces = client.getClass().getInterfaces();
@@ -186,10 +181,8 @@ public class WebServiceImportDialog<T> extends JDialog {
 		}
 		return found;
 	}
-	
-	
-	private void initGUI() {
 
+	private void initGUI() {
 		initComponents();
 
 		// If we have no data sources, show the install panel
@@ -208,8 +201,6 @@ public class WebServiceImportDialog<T> extends JDialog {
 		this.cancelButton.setEnabled(enable);
 	}
 
-
-	
 	private void initComponents() {
 		mainTabbedPane = new JTabbedPane();
 		searchTermScrollPane = new JScrollPane();
@@ -240,7 +231,6 @@ public class WebServiceImportDialog<T> extends JDialog {
 		datasourceComboBox = new JComboBox();
 		datasourceComboBox.setRenderer(new ClientComboBoxCellRenderer());
 		aboutButton = new JButton();
-		buttonPanel = new JPanel();
 		searchButton = new JButton();
 		cancelButton = new JButton();
 		clearButton = new JButton();
@@ -318,26 +308,8 @@ public class WebServiceImportDialog<T> extends JDialog {
 			}
 		});
 
-		GroupLayout buttonPanelLayout = new GroupLayout(buttonPanel);
-		buttonPanel.setLayout(buttonPanelLayout);
-		buttonPanelLayout.setHorizontalGroup(buttonPanelLayout.createParallelGroup(Alignment.LEADING)
-				.addGroup(
-						Alignment.TRAILING,
-						buttonPanelLayout.createSequentialGroup().addContainerGap().addComponent(clearButton)
-								.addPreferredGap(LayoutStyle.ComponentPlacement.RELATED, 225, Short.MAX_VALUE)
-								.addComponent(cancelButton).addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-								.addComponent(searchButton).addContainerGap()));
-		buttonPanelLayout.setVerticalGroup(buttonPanelLayout.createParallelGroup(Alignment.LEADING)
-				.addGroup(
-						Alignment.TRAILING,
-						buttonPanelLayout
-								.createSequentialGroup()
-								.addContainerGap(DEFAULT_SIZE, Short.MAX_VALUE)
-								.addGroup(
-										buttonPanelLayout.createParallelGroup(Alignment.BASELINE)
-												.addComponent(searchButton).addComponent(cancelButton)
-												.addComponent(clearButton)).addContainerGap()));
-
+		buttonPanel = LookAndFeelUtil.createOkCancelPanel(searchButton, cancelButton, clearButton);
+		
 		GroupLayout dataQueryPanelLayout = new GroupLayout(dataQueryPanel);
 		dataQueryPanel.setLayout(dataQueryPanelLayout);
 		dataQueryPanelLayout.setHorizontalGroup(dataQueryPanelLayout.createParallelGroup(Alignment.LEADING)
@@ -354,8 +326,8 @@ public class WebServiceImportDialog<T> extends JDialog {
 		layout.setHorizontalGroup(layout.createParallelGroup(Alignment.LEADING)
 				.addComponent(titlePanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 				.addComponent(datasourcePanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-				.addComponent(buttonPanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 				.addComponent(dataQueryPanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				.addComponent(buttonPanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 		);
 		layout.setVerticalGroup(layout.createSequentialGroup()
 				.addComponent(titlePanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
@@ -383,12 +355,11 @@ public class WebServiceImportDialog<T> extends JDialog {
 		if (selected instanceof WebServiceClient) {
 			client = (WebServiceClient) selected;
 		} else {
-			throw new IllegalStateException("Selected cleint is not a compatible client.");
+			throw new IllegalStateException("Selected client is not a compatible one.");
 		}
 
 		// Set query. Just pass the text in the panel.
 		taskManager.execute(client.createTaskIterator(this.queryTextPane.getText()));
-
 	}
 
 	/**
@@ -459,7 +430,6 @@ public class WebServiceImportDialog<T> extends JDialog {
 	}
 
 	private void aboutButtonActionPerformed(ActionEvent evt) {
-
 		final WebServiceClient wsc = (WebServiceClient) datasourceComboBox.getSelectedItem();
 
 		final String clientName = wsc.getDisplayName();

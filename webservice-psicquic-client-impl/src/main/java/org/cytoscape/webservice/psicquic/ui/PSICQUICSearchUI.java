@@ -31,6 +31,8 @@ import java.awt.Dimension;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ContainerEvent;
+import java.awt.event.ContainerListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.HashSet;
@@ -38,6 +40,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import javax.swing.AbstractAction;
 import javax.swing.BoxLayout;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
@@ -112,11 +115,12 @@ public class PSICQUICSearchUI extends JPanel {
 	private JPanel buttonPanel;
 	
 	private JButton cancelButton;
-	private JButton importNetworkButton;
+	private JButton importButton;
 
 	private SearchMode mode = SearchMode.MIQL;
 
 	private boolean firstClick = true;
+	private boolean defKeyStrokesAdded;
 
 	private Set<String> sourceSet = new HashSet<String>();
 	
@@ -127,11 +131,19 @@ public class PSICQUICSearchUI extends JPanel {
 	private final CyServiceRegistrar registrar;
 
 
-	public PSICQUICSearchUI(final CyNetworkManager networkManager, final RegistryManager regManager,
-			final PSICQUICRestClient client, final TaskManager<?, ?> tmManager,
-			final CreateNetworkViewTaskFactory createViewTaskFactory, final PSIMI25VisualStyleBuilder vsBuilder,
-			final VisualMappingManager vmm, final PSIMITagManager tagManager, final CyProperty<Properties> props, 
-			final CyServiceRegistrar registrar, final CyAction mergeAction) {
+	public PSICQUICSearchUI(
+			final CyNetworkManager networkManager,
+			final RegistryManager regManager,
+			final PSICQUICRestClient client,
+			final TaskManager<?, ?> tmManager,
+			final CreateNetworkViewTaskFactory createViewTaskFactory,
+			final PSIMI25VisualStyleBuilder vsBuilder,
+			final VisualMappingManager vmm,
+			final PSIMITagManager tagManager,
+			final CyProperty<Properties> props, 
+			final CyServiceRegistrar registrar,
+			final CyAction mergeAction
+	) {
 		this.regManager = regManager;
 		this.client = client;
 		this.taskManager = tmManager;
@@ -157,16 +169,26 @@ public class PSICQUICSearchUI extends JPanel {
 
 		init();
 
-		// Set focus to query area.
 		this.addAncestorListener(new AncestorListener() {
+			@Override
+			public void ancestorAdded(AncestorEvent ae) {
+				// Set focus to query area.
+				getQueryArea().requestFocus();
+				
+				// Set ESC/ENTER default key strokes
+				if (getRootPane() != null) {
+					getRootPane().setDefaultButton(getImportButton());
+					
+					if (!defKeyStrokesAdded) {
+						LookAndFeelUtil.setDefaultOkCancelKeyStrokes(getRootPane(), getImportButton().getAction(),
+								getCancelButton().getAction());
+					}
+				}
+			}
 			@Override
 			public void ancestorRemoved(AncestorEvent ae) {}
 			@Override
 			public void ancestorMoved(AncestorEvent ae) {}
-			@Override
-			public void ancestorAdded(AncestorEvent ae) {
-				getQueryArea().requestFocus();
-			}
 		});
 	}
 
@@ -191,6 +213,16 @@ public class PSICQUICSearchUI extends JPanel {
 		this.add(getSearchConditionPanel());
 		this.add(statesPanel);
 		this.add(getButtonPanel());
+		
+		this.addContainerListener(new ContainerListener() {
+			@Override
+			public void componentAdded(ContainerEvent e) {
+				
+			}
+			@Override
+			public void componentRemoved(ContainerEvent e) {
+			}
+		});
 	}
 	
 	private JPanel getSearchConditionPanel() {
@@ -295,32 +327,32 @@ public class PSICQUICSearchUI extends JPanel {
 	
 	private JPanel getButtonPanel() {
 		if (buttonPanel == null) {
-			buttonPanel = LookAndFeelUtil.createOkCancelPanel(getImportNetworkButton(), getCancelButton());
+			buttonPanel = LookAndFeelUtil.createOkCancelPanel(getImportButton(), getCancelButton());
 		}
 		
 		return buttonPanel;
 	}
 	
-	private JButton getImportNetworkButton() {
-		if (importNetworkButton == null) {
-			importNetworkButton = new JButton("Import");
-			importNetworkButton.addActionListener(new ActionListener() {
+	@SuppressWarnings("serial")
+	private JButton getImportButton() {
+		if (importButton == null) {
+			importButton = new JButton(new AbstractAction("Import") {
 				@Override
-				public void actionPerformed(ActionEvent evt) {
+				public void actionPerformed(ActionEvent e) {
 					statesPanel.doImport();
 				}
 			});
 		}
 		
-		return importNetworkButton;
+		return importButton;
 	}
 	
+	@SuppressWarnings("serial")
 	private JButton getCancelButton() {
 		if (cancelButton == null) {
-			cancelButton = new JButton("Cancel");
-			cancelButton.addActionListener(new ActionListener() {
+			cancelButton = new JButton(new AbstractAction("Cancel") {
 				@Override
-				public void actionPerformed(ActionEvent evt) {
+				public void actionPerformed(ActionEvent e) {
 					((Window)getRootPane().getParent()).dispose();
 				}
 			});
@@ -377,7 +409,7 @@ public class PSICQUICSearchUI extends JPanel {
 
 	private void enableComponents(final boolean enable) {
 		statesPanel.enableComponents(enable);
-		getImportNetworkButton().setEnabled(enable);
+		getImportButton().getAction().setEnabled(enable);
 	}
 	
 	private final void createDBlistPanel() {

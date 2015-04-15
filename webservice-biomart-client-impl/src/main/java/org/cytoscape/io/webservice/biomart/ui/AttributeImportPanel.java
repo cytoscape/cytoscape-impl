@@ -29,14 +29,19 @@ import static javax.swing.GroupLayout.PREFERRED_SIZE;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ContainerEvent;
+import java.awt.event.ContainerListener;
 import java.util.Collection;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import javax.swing.AbstractAction;
 import javax.swing.DefaultListModel;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
+import javax.swing.event.AncestorEvent;
+import javax.swing.event.AncestorListener;
 import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -107,6 +112,8 @@ public abstract class AttributeImportPanel extends JPanel implements ColumnCreat
 
 	protected final CyTableManager tblManager;
 	private final CyNetworkManager netManager;
+	
+	private boolean defKeyStrokesAdded;
 
 	protected AttributeImportPanel(final CyTableManager tblManager, final CyNetworkManager netManager, Icon logo,
 			String title, String attrPanelTitle) {
@@ -119,8 +126,29 @@ public abstract class AttributeImportPanel extends JPanel implements ColumnCreat
 		initComponents();
 
 		setAttributeComboBox();
+		
+		this.addAncestorListener(new AncestorListener() {
+			@Override
+			public void ancestorAdded(AncestorEvent ae) {
+				// Set ESC/ENTER default key strokes
+				if (getRootPane() != null) {
+					getRootPane().setDefaultButton(getImportButton());
+					
+					if (!defKeyStrokesAdded) {
+						LookAndFeelUtil.setDefaultOkCancelKeyStrokes(getRootPane(), getImportButton().getAction(),
+								getCancelButton().getAction());
+						defKeyStrokesAdded = true;
+					}
+				}
+			}
+			@Override
+			public void ancestorRemoved(AncestorEvent ae) {}
+			@Override
+			public void ancestorMoved(AncestorEvent ae) {}
+		});
 	}
 
+	@SuppressWarnings("serial")
 	private void initComponents() {
 		attrCheckboxList = new CheckBoxJList();
 		attrCheckboxListModel = new DefaultListModel();
@@ -139,14 +167,12 @@ public abstract class AttributeImportPanel extends JPanel implements ColumnCreat
 		availableAttrPanel = new JPanel();
 		availableAttrScrollPane = new JScrollPane();
 		attrListPanel = new JPanel();
-		importButton = new JButton("Import");
-		cancelButton = new JButton("Cancel");
 		selectAllButton = new JButton("Select All");
 		selectNoneButton = new JButton("Select None");
 		
 		refreshButton = new JButton("...");
 		refreshButton.setToolTipText("Select Services...");
-
+		
 		databasePanel.setBorder(LookAndFeelUtil.createTitledBorder("Service"));
 
 		databaseComboBox.addActionListener(new ActionListener() {
@@ -250,20 +276,7 @@ public abstract class AttributeImportPanel extends JPanel implements ColumnCreat
 				)
 		);
 
-		importButton.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent evt) {
-				importButtonActionPerformed(evt);
-			}
-		});
-		cancelButton.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent evt) {
-				cancelButtonActionPerformed(evt);
-			}
-		});
-		
-		final JPanel buttonPanel = LookAndFeelUtil.createOkCancelPanel(importButton, cancelButton);
+		final JPanel buttonPanel = LookAndFeelUtil.createOkCancelPanel(getImportButton(), getCancelButton());
 
 		GroupLayout layout = new GroupLayout(this);
 		this.setLayout(layout);
@@ -284,22 +297,21 @@ public abstract class AttributeImportPanel extends JPanel implements ColumnCreat
 				.addComponent(availableAttrPanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 				.addComponent(buttonPanel, PREFERRED_SIZE, DEFAULT_SIZE,	PREFERRED_SIZE)
 		);
+		
+		this.addContainerListener(new ContainerListener() {
+			@Override
+			public void componentAdded(ContainerEvent e) {
+				
+			}
+			@Override
+			public void componentRemoved(ContainerEvent e) {
+			}
+		});
 	}
 
 	protected abstract void selectNoneButtonActionPerformed(ActionEvent evt);
 	protected abstract void selectAllButtonActionPerformed(ActionEvent evt);
 	protected abstract void refreshButtonActionPerformed(ActionEvent evt);
-
-	protected void importButtonActionPerformed(ActionEvent evt) {
-		importAttributes();
-	}
-
-	protected void cancelButtonActionPerformed(ActionEvent evt) {
-		// Close parent
-		final JDialog container = (JDialog) this.getRootPane().getParent();
-		// System.out.println("parent = " + container);
-		container.setVisible(false);
-	}
 
 	private void attributeTypeComboBoxActionPerformed(ActionEvent evt) {
 		// TODO add your handling code here:
@@ -389,6 +401,35 @@ public abstract class AttributeImportPanel extends JPanel implements ColumnCreat
 		});
 	}
 	
+	@SuppressWarnings("serial")
+	private JButton getCancelButton() {
+		if (cancelButton == null) {
+			cancelButton = new JButton(new AbstractAction("Cancel") {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					// Close parent
+					final JDialog container = (JDialog) getRootPane().getParent();
+					container.setVisible(false);
+				}
+			});
+		}
+		
+		return cancelButton;
+	}
+	
+	private JButton getImportButton() {
+		if (importButton == null) {
+			importButton = new JButton(new AbstractAction("Import") {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					importAttributes();
+				}
+			});
+		}
+		
+		return importButton;
+	}
+	
 	private void updateColumnList(final CyTable currentNodeTable) {
 		final SortedSet<String> attrNameSet = new TreeSet<String>();
 		
@@ -406,5 +447,4 @@ public abstract class AttributeImportPanel extends JPanel implements ColumnCreat
 		
 		columnNameComboBox.setSelectedItem(CyRootNetwork.SHARED_NAME);
 	}
-
 }

@@ -213,7 +213,6 @@ public class BiomartAttrMappingPanel extends AttributeImportPanel {
 	}
 
 	private void fetchData(final String datasourceName, final SourceType type) {
-
 		taskManager.setExecutionContext(null);
 
 		if (type.equals(SourceType.ATTRIBUTE)) {
@@ -228,13 +227,7 @@ public class BiomartAttrMappingPanel extends AttributeImportPanel {
 		}
 	}
 
-	@Override
-	protected void importButtonActionPerformed(ActionEvent evt) {
-		importAttributes();
-	}
-
 	private String getIDFilterString(final String keyAttrName) {
-
 		// TODO fix tunables
 		// final Tunable tunable =
 		// WebServiceClientManager.getClient("biomart").getProps().get("selected_only");
@@ -283,13 +276,19 @@ public class BiomartAttrMappingPanel extends AttributeImportPanel {
 
 	@Override
 	protected void importAttributes() {
-		// taskManager.setParent(parent);
-		TaskIterator ti = client.createTaskIterator(getTableImportQuery());
-		ti.append(new ResetAttributesTask());
-		taskManager.execute(ti);
+		final BiomartQuery query = getTableImportQuery();
+		
+		if (query != null) {
+			TaskIterator ti = client.createTaskIterator(query);
+			ti.append(new ResetAttributesTask());
+			taskManager.execute(ti);
+		}
 	}
 
 	public BiomartQuery getTableImportQuery() {
+		if (datasourceMap == null)
+			return null;
+		
 		final String datasource = datasourceMap.get(databaseComboBox.getSelectedItem());
 		final Map<String, String> attrMap = this.attrNameMap.get(datasource);
 		final Map<String, String> fMap = filterMap.get(datasource);
@@ -454,5 +453,4 @@ public class BiomartAttrMappingPanel extends AttributeImportPanel {
 	protected void refreshButtonActionPerformed(ActionEvent evt) {
 		initPanel();
 	}
-
 }

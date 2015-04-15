@@ -31,12 +31,14 @@ import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Window;
+import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
+import javax.swing.AbstractAction;
 import javax.swing.Icon;
 import javax.swing.JDialog;
 import javax.swing.JEditorPane;
@@ -49,6 +51,7 @@ import javax.swing.WindowConstants;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 
+import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.util.swing.OpenBrowser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -125,6 +128,7 @@ public final class AboutDialog extends JDialog implements HyperlinkListener {
 		}
 	}
 
+	@SuppressWarnings("serial")
 	private void initComponents() {
 		setTitle("About");
 		setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
@@ -186,6 +190,14 @@ public final class AboutDialog extends JDialog implements HyperlinkListener {
 						.addComponent(mainPanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)));
 
 		pack();
+		
+		LookAndFeelUtil.setDefaultOkCancelKeyStrokes(getRootPane(), null,
+				new AbstractAction() {
+					@Override
+					public void actionPerformed(ActionEvent e) {
+						dispose();
+					}
+				});
 	}
 
 	@Override
