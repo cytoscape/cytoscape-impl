@@ -49,7 +49,9 @@ import de.mpg.mpi_inf.bioinf.netanalyzer.ui.Utils;
  */
 public class RemoveSelfLoopsAction extends NetAnalyzerAction {
 
+	private static final long serialVersionUID = -7465036491341908005L;
 	private static final Logger logger = LoggerFactory.getLogger(RemoveSelfLoopsAction.class);
+	
 	private final CyNetworkManager netMgr;
 
 	/**
@@ -62,11 +64,6 @@ public class RemoveSelfLoopsAction extends NetAnalyzerAction {
 		this.netMgr = netMgr;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
-	 */
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		try {
@@ -82,18 +79,19 @@ public class RemoveSelfLoopsAction extends NetAnalyzerAction {
 
 			// Remove the self-loops from all networks selected by the user
 			final CyNetwork[] networks = d.getSelectedNetworks();
+			
 			if (networks != null) {
 				final int size = networks.length;
 				int[] removedLoops = new int[size];
 				String[] networkNames = new String[size];
+				
 				for (int i = 0; i < size; ++i) {
 					final CyNetwork currentNet = networks[i];
 					networkNames[i] = currentNet.getRow(currentNet).get("name",String.class);
 					removedLoops[i] = CyNetworkUtils.removeSelfLoops(currentNet);
 				}
 
-				final String r = Messages.constructReport(removedLoops, Messages.SM_REMSELFLOOPS,
-						networkNames);
+				final String r = Messages.constructReport(removedLoops, Messages.SM_REMSELFLOOPS, networkNames);
 				Utils.showInfoBox(desktop, Messages.DT_REMSELFLOOPS, r);
 			}
 		} catch (InnerException ex) {
@@ -101,9 +99,4 @@ public class RemoveSelfLoopsAction extends NetAnalyzerAction {
 			logger.error(Messages.SM_LOGERROR, ex);
 		}
 	}
-
-	/**
-	 * Unique ID for this version of this class. It is used in serialization.
-	 */
-	private static final long serialVersionUID = -7465036491341908005L;
 }

@@ -44,23 +44,20 @@ import de.mpg.mpi_inf.bioinf.netanalyzer.ui.CompareDialog;
  */
 public class CompareAction extends NetAnalyzerAction {
 
+	private static final long serialVersionUID = -8249265620304925132L;
 	private static final Logger logger = LoggerFactory.getLogger(CompareAction.class);
+	
 	private final CyNetworkManager netMgr;
 
 	/**
 	 * Initializes a new instance of <code>GOPTRunAlgorithm</code>.
 	 */
-	public CompareAction(CyApplicationManager appMgr,CySwingApplication swingApp, CyNetworkManager netMgr) {
-		super(Messages.AC_COMPARE,appMgr,swingApp);
+	public CompareAction(CyApplicationManager appMgr, CySwingApplication swingApp, CyNetworkManager netMgr) {
+		super(Messages.AC_COMPARE, appMgr, swingApp);
 		setPreferredMenu(NetworkAnalyzer.PARENT_MENU + Messages.AC_MENU_MODIFICATION);
 		this.netMgr = netMgr;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
-	 */
 	@Override
 	public void actionPerformed(ActionEvent event) {
 		try {
@@ -71,9 +68,4 @@ public class CompareAction extends NetAnalyzerAction {
 			logger.error(Messages.SM_LOGERROR, ex);
 		}
 	}
-
-	/**
-	 * Unique ID for this version of this class. It is used in serialization.
-	 */
-	private static final long serialVersionUID = -8249265620304925132L;
 }

@@ -26,13 +26,18 @@ package de.mpg.mpi_inf.bioinf.netanalyzer.ui;
  * #L%
  */
 
-import java.awt.FlowLayout;
+import static javax.swing.GroupLayout.DEFAULT_SIZE;
+import static javax.swing.GroupLayout.PREFERRED_SIZE;
+
+import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.HeadlessException;
 import java.awt.event.ActionEvent;
 
 import javax.swing.AbstractAction;
-import javax.swing.Box;
+import javax.swing.GroupLayout;
+import javax.swing.GroupLayout.Alignment;
+import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -138,38 +143,34 @@ public class NetModificationDialog extends NetworkListDialog {
 	 * This method is called upon initialization only.
 	 * </p>
 	 * 
-	 * @param aLabel
+	 * @param title
 	 *            Label to be displayed on top of the network list.
-	 * @param aWarning
+	 * @param showWarning
 	 *            Flag indicating if a modification warning must be displayed. The text of the modification
 	 *            warning is {@link Messages#SM_NETMODIFICATION}.
 	 */
 	@SuppressWarnings("serial")
-	protected void initControls(String aLabel, boolean aWarning) {
-		Box contentPane = Box.createVerticalBox();
-		Utils.setStandardBorder(contentPane);
+	protected void initControls(final String title, final boolean showWarning) {
+		// Labels
+		final JLabel titleLbl = new JLabel(title);
+		
+		final JLabel warningLbl = new JLabel(Messages.SM_NETMODIFICATION, SwingConstants.LEADING);
+		warningLbl.setFont(warningLbl.getFont().deriveFont(11.0f));
+		warningLbl.setBorder(BorderFactory.createEmptyBorder(5, 0, 5, 0));
+		warningLbl.setVisible(showWarning);
 
-		// Add the main message
-		final JPanel panTitle = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));
-		panTitle.add(new JLabel(aLabel));
-		contentPane.add(panTitle);
-		contentPane.add(Box.createVerticalStrut(Utils.BORDER_SIZE));
-
-		// Add a list of loaded networks to select from
-		final JScrollPane scroller = new JScrollPane(listNetNames);
-		final JPanel panNetList = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));
-		panNetList.add(scroller);
-		contentPane.add(panNetList);
-		contentPane.add(Box.createVerticalStrut(Utils.BORDER_SIZE));
-
-		final JComponent additional = initAdditionalControls();
-		if (additional != null) {
-			additional.setAlignmentX(0.5f);
-			contentPane.add(additional);
-			contentPane.add(Box.createVerticalStrut(Utils.BORDER_SIZE));
+		// List of loaded networks to select from
+		final JScrollPane networkListScr = new JScrollPane(listNetNames);
+		networkListScr.setMinimumSize(new Dimension(80, 120));
+		
+		JComponent additionalControls = initAdditionalControls();
+		
+		if (additionalControls == null) {
+			additionalControls = new JPanel();
+			additionalControls.setVisible(false);
 		}
-
-		// Add OK and Cancel buttons
+		
+		// OK and Cancel buttons
 		btnOK = Utils.createButton(new AbstractAction(Messages.DI_OK) {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -196,19 +197,33 @@ public class NetModificationDialog extends NetworkListDialog {
 		Utils.equalizeSize(btnOK, btnCancel);
 		btnOK.getAction().setEnabled(false);
 		
-		final JPanel panBottom = LookAndFeelUtil.createOkCancelPanel(btnOK, btnCancel);
-		contentPane.add(panBottom);
+		final JPanel buttonPnl = LookAndFeelUtil.createOkCancelPanel(btnOK, btnCancel);
 
-		// Add a warning message
-		if (aWarning) {
-			final JPanel panWarning = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));
-			panWarning.add(new JLabel(Messages.SM_NETMODIFICATION, SwingConstants.LEADING));
-			contentPane.add(Box.createVerticalStrut(Utils.BORDER_SIZE));
-			contentPane.add(panWarning);
-		}
+		// Layout
+		final JPanel contentPane = new JPanel();
+		final GroupLayout layout = new GroupLayout(contentPane);
+		contentPane.setLayout(layout);
+		layout.setAutoCreateContainerGaps(true);
+		layout.setAutoCreateGaps(true);
+		
+		layout.setHorizontalGroup(layout.createParallelGroup(Alignment.LEADING, true)
+				.addComponent(titleLbl)
+				.addComponent(networkListScr, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				.addComponent(additionalControls)
+				.addComponent(warningLbl)
+				.addComponent(buttonPnl)
+		);
+		layout.setVerticalGroup(layout.createSequentialGroup()
+				.addComponent(titleLbl, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				.addComponent(networkListScr, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				.addComponent(additionalControls, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				.addComponent(warningLbl, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				.addComponent(buttonPnl, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+		);
 		
 		setContentPane(contentPane);
 		LookAndFeelUtil.setDefaultOkCancelKeyStrokes(getRootPane(), btnOK.getAction(), btnCancel.getAction());
+		getRootPane().setDefaultButton(btnOK);
 	}
 
 	/**

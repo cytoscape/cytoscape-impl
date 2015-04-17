@@ -26,13 +26,17 @@ package de.mpg.mpi_inf.bioinf.netanalyzer.ui;
  * #L%
  */
 
+import static javax.swing.GroupLayout.DEFAULT_SIZE;
+import static javax.swing.GroupLayout.PREFERRED_SIZE;
+
 import java.awt.Frame;
-import java.awt.GridLayout;
 import java.awt.HeadlessException;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-import javax.swing.Box;
+import javax.swing.AbstractAction;
+import javax.swing.GroupLayout;
+import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
@@ -41,7 +45,6 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.event.ListSelectionEvent;
 
-import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 
@@ -55,6 +58,19 @@ import de.mpg.mpi_inf.bioinf.netanalyzer.data.Messages;
  */
 public class CompareDialog extends NetworkListDialog implements ActionListener {
 
+	private static final long serialVersionUID = 5093100205881455450L;
+	
+	/** &quot;OK&quot; button. */
+	private JButton btnOK;
+	/** &quot;Cancel&quot; button. */
+	private JButton btnCancel;
+	/** &quot;Compute Intersection&quot; check box. */
+	private JCheckBox intersect;
+	/** &quot;Compute Union&quot; check box. */
+	private JCheckBox union;
+	/** &quot;Compute Difference&quot; check box. */
+	private JCheckBox diff;
+	
 	/**
 	 * Initializes a new instance of <code>CompareDialog</code>.
 	 * 
@@ -73,23 +89,7 @@ public class CompareDialog extends NetworkListDialog implements ActionListener {
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		Object src = e.getSource();
-		if (union == src || intersect == src || diff == src) {
-			updateOKButton();
-		} else if (btnCancel == src) {
-			setVisible(false);
-			dispose();
-		} else if (btnOK == src) {
-			final int[] indices = listNetNames.getSelectedIndices();
-			final CyNetwork network1 = networks.get(indices[0]);
-			final CyNetwork network2 = networks.get(indices[1]);
-			// TODO use Advanced Network Merge once that becomes available.
-			//GOPTAlgorithm algorithm = new GOPTAlgorithm(network1, network2);
-			//algorithm.computeNetworks(intersect.isSelected(), union.isSelected(), diff.isSelected());
-			JOptionPane.showMessageDialog(aOwner, "This functionality is currently disabled");
-			setVisible(false);
-			dispose();
-		}
+		updateOKButton();
 	}
 
 	@Override
@@ -98,51 +98,73 @@ public class CompareDialog extends NetworkListDialog implements ActionListener {
 	}
 
 	/**
-	 * Unique ID for this version of this class. It is used in serialization.
-	 */
-	private static final long serialVersionUID = 5093100205881455450L;
-
-	/**
 	 * Creates and lays out the controls inside this dialog.
 	 * <p>
 	 * This method is called upon initialization only.
 	 * </p>
 	 */
+	@SuppressWarnings("serial")
 	private void initControls() {
-		Box contentPane = Box.createVerticalBox();
-		Utils.setStandardBorder(contentPane);
-
-		JLabel title = new JLabel(Messages.DI_CNETWORKS);
-		JPanel panTitle = new JPanel();
-		panTitle.add(title);
-		contentPane.add(panTitle);
-		contentPane.add(Box.createVerticalStrut(Utils.BORDER_SIZE / 2));
-
-		final JScrollPane scroller = new JScrollPane(listNetNames);
-		final JPanel panNetList = new JPanel();
-		panNetList.add(scroller);
-		contentPane.add(panNetList);
+		final JLabel titleLbl = new JLabel(Messages.DI_CNETWORKS);
+		final JScrollPane networkListScr = new JScrollPane(listNetNames);
 
 		// Add checkboxes for the functions
-		JPanel panCheckBoxes = new JPanel(new GridLayout(0, 1));
 		union = Utils.createCheckBox(Messages.DI_CUNION, null, this);
-		panCheckBoxes.add(union);
 		intersect = Utils.createCheckBox(Messages.DI_CINTERSECTION, null, this);
-		panCheckBoxes.add(intersect);
 		diff = Utils.createCheckBox(Messages.DI_CDIFF, null, this);
-		panCheckBoxes.add(diff);
-		JPanel panChoices = new JPanel();
-		panChoices.add(panCheckBoxes);
-		contentPane.add(panChoices);
-
+		
 		// Add OK and Cancel buttons
-		btnOK = Utils.createButton(Messages.DI_OK, null, this);
-		btnOK.setEnabled(false);
-		btnCancel = Utils.createButton(Messages.DI_CANCEL, null, this);
+		btnOK = Utils.createButton(new AbstractAction(Messages.DI_OK) {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				// TODO use Advanced Network Merge once that becomes available.
+//				final int[] indices = listNetNames.getSelectedIndices();
+//				final CyNetwork network1 = networks.get(indices[0]);
+//				final CyNetwork network2 = networks.get(indices[1]);
+//				GOPTAlgorithm algorithm = new GOPTAlgorithm(network1, network2);
+//				algorithm.computeNetworks(intersect.isSelected(), union.isSelected(), diff.isSelected());
+				JOptionPane.showMessageDialog(aOwner, "This functionality is currently disabled");
+				setVisible(false);
+				dispose();
+			}
+		}, null);
+		btnOK.getAction().setEnabled(false);
+		
+		btnCancel = Utils.createButton(new AbstractAction(Messages.DI_CANCEL) {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				setVisible(false);
+				dispose();
+			}
+		}, null);
+		
 		Utils.equalizeSize(btnOK, btnCancel);
 		
-		final JPanel panBottom = LookAndFeelUtil.createOkCancelPanel(btnOK, btnCancel);
-		contentPane.add(panBottom);
+		final JPanel buttonPnl = LookAndFeelUtil.createOkCancelPanel(btnOK, btnCancel);
+
+		// Layout
+		final JPanel contentPane = new JPanel();
+		final GroupLayout layout = new GroupLayout(contentPane);
+		contentPane.setLayout(layout);
+		layout.setAutoCreateContainerGaps(true);
+		layout.setAutoCreateGaps(true);
+		
+		layout.setHorizontalGroup(layout.createParallelGroup(Alignment.LEADING, true)
+				.addComponent(titleLbl)
+				.addComponent(networkListScr, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				.addComponent(union)
+				.addComponent(intersect)
+				.addComponent(diff)
+				.addComponent(buttonPnl)
+		);
+		layout.setVerticalGroup(layout.createSequentialGroup()
+				.addComponent(titleLbl, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				.addComponent(networkListScr, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				.addComponent(union, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				.addComponent(intersect, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				.addComponent(diff, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				.addComponent(buttonPnl, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+		);
 		
 		setContentPane(contentPane);
 	}
@@ -152,35 +174,12 @@ public class CompareDialog extends NetworkListDialog implements ActionListener {
 	 */
 	private void updateOKButton() {
 		boolean enable = false;
+		
 		if (union.isEnabled() || intersect.isEnabled() || diff.isEnabled()) {
 			int[] indices = listNetNames.getSelectedIndices();
 			enable = (indices.length == 2);
 		}
-		btnOK.setEnabled(enable);
+		
+		btnOK.getAction().setEnabled(enable);
 	}
-
-	/**
-	 * &quot;OK&quot; button.
-	 */
-	private JButton btnOK;
-
-	/**
-	 * &quot;Cancel&quot; button.
-	 */
-	private JButton btnCancel;
-
-	/**
-	 * &quot;Compute Intersection&quot; check box.
-	 */
-	private JCheckBox intersect;
-
-	/**
-	 * &quot;Compute Union&quot; check box.
-	 */
-	private JCheckBox union;
-
-	/**
-	 * &quot;Compute Difference&quot; check box.
-	 */
-	private JCheckBox diff;
 }

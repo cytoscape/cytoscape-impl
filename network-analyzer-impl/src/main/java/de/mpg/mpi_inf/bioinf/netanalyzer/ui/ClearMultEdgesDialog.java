@@ -47,6 +47,28 @@ import de.mpg.mpi_inf.bioinf.netanalyzer.sconnect.HelpConnector;
  */
 public class ClearMultEdgesDialog extends NetModificationDialog implements ActionListener {
 
+	private static final long serialVersionUID = -2207325147812076427L;
+
+	/**
+	 * Check box control for selecting if edge direction should be ignored.
+	 */
+	private JCheckBox cbxIgnoreDirection;
+	/**
+	 * Check box control for selecting if an edge attribute representing the number of duplicated edges should
+	 * be created.
+	 */
+	private JCheckBox cbxCreateEdgeAttr;
+
+	/**
+	 * Flag indicating if edge direction should be ignored, that is, if all edges are to be treated as
+	 * undirected.
+	 */
+	private boolean ignoreDirection;
+	/**
+	 * Flag indicating if an edge attribute representing the number of duplicated edges should be created.
+	 */
+	private boolean createEdgeAttr;
+	
 	/**
 	 * Initializes a new instance of <code>ClearMultEdgesDialog</code>.
 	 * 
@@ -55,9 +77,6 @@ public class ClearMultEdgesDialog extends NetModificationDialog implements Actio
 	 */
 	public ClearMultEdgesDialog(Frame aOwner, CyNetworkManager netMgr) {
 		super(aOwner, Messages.DT_REMDUPEDGES, Messages.DI_REMDUPEDGES, HelpConnector.getRemDuplicatesURL(), netMgr);
-
-		ignoreDirection = false;
-		createEdgeAttr = false;
 	}
 
 	@Override
@@ -96,33 +115,7 @@ public class ClearMultEdgesDialog extends NetModificationDialog implements Actio
 		panel.add(cbxIgnoreDirection);
 		cbxCreateEdgeAttr = Utils.createCheckBox(Messages.DI_SAVENUMBEREDGES, Messages.TT_SAVENUMBEREDGES, this);
 		panel.add(cbxCreateEdgeAttr);
+		
 		return panel;
 	}
-
-	/**
-	 * Unique ID for this version of this class. It is used in serialization.
-	 */
-	private static final long serialVersionUID = -2207325147812076427L;
-
-	/**
-	 * Check box control for selecting if edge direction should be ignored.
-	 */
-	private JCheckBox cbxIgnoreDirection;
-
-	/**
-	 * Flag indicating if edge direction should be ignored, that is, if all edges are to be treated as
-	 * undirected.
-	 */
-	private boolean ignoreDirection;
-
-	/**
-	 * Check box control for selecting if an edge attribute representing the number of duplicated edges should
-	 * be created.
-	 */
-	private JCheckBox cbxCreateEdgeAttr;
-
-	/**
-	 * Flag indicating if an edge attribute representing the number of duplicated edges should be created.
-	 */
-	private boolean createEdgeAttr;
 }
