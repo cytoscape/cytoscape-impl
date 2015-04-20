@@ -83,7 +83,7 @@ public class BarChartEditor extends AbstractChartEditor<BarChart> {
 	@Override
 	protected void createLabels() {
 		super.createLabels();
-		separationLbl = new JLabel("Separation (0.0-0.5)");
+		separationLbl = new JLabel("Separation (0.0-0.5):");
 	}
 	
 	@Override

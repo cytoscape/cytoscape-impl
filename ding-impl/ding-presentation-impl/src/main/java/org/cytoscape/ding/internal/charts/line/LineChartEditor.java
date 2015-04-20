@@ -38,7 +38,7 @@ public class LineChartEditor extends AbstractChartEditor<LineChart> {
 	@Override
 	protected void createLabels() {
 		super.createLabels();
-		lineWidthLbl = new JLabel("Line Width");
+		lineWidthLbl = new JLabel("Line Width:");
 	}
 	
 	@Override

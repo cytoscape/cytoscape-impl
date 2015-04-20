@@ -32,7 +32,7 @@ public class RadialGradientEditor extends AbstractGradientEditor<RadialGradient>
 	@Override
 	protected void createLabels() {
 		super.createLabels();
-		centerLbl = new JLabel("Center");
+		centerLbl = new JLabel("Center:");
 	}
 	
 	@Override

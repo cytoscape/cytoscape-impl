@@ -255,16 +255,16 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 	}
 	
 	protected void createLabels() {
-		itemLabelsColumnLbl = new JLabel("Column");
-		domainLabelsColumnLbl = new JLabel("Domain Labels Column");
-		rangeLabelsColumnLbl = new JLabel("Range Labels Column");
-		domainLabelPositionLbl = new JLabel("Domain Label Position");
-		rangeMinLbl = new JLabel("Min");
-		rangeMaxLbl = new JLabel("Max");
-		axisWidthLbl = new JLabel("Axis Width");
-		axisColorLbl = new JLabel("Axis Color");
-		borderWidthLbl = new JLabel("Border Width");
-		borderColorLbl = new JLabel("Border Color");
+		itemLabelsColumnLbl = new JLabel("Column:");
+		domainLabelsColumnLbl = new JLabel("Domain Labels Column:");
+		rangeLabelsColumnLbl = new JLabel("Range Labels Column:");
+		domainLabelPositionLbl = new JLabel("Domain Label Position:");
+		rangeMinLbl = new JLabel("Min:");
+		rangeMaxLbl = new JLabel("Max:");
+		axisWidthLbl = new JLabel("Axis Width:");
+		axisColorLbl = new JLabel("Axis Color:");
+		borderWidthLbl = new JLabel("Border Width:");
+		borderColorLbl = new JLabel("Border Color:");
 	}
 
 	protected JTabbedPane getOptionsTpn() {
@@ -1241,8 +1241,8 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 					dataColumns.add(colId);
 			}
 			
-			final JLabel allColumnsLbl = new JLabel("Available Columns");
-			final JLabel selColumnsLbl = new JLabel("Selected Columns");
+			final JLabel allColumnsLbl = new JLabel("Available Columns:");
+			final JLabel selColumnsLbl = new JLabel("Selected Columns:");
 			
 			final JScrollPane listScr1 = new JScrollPane(getAllColumnsLs());
 			listScr1.setPreferredSize(new Dimension(200, listScr1.getPreferredSize().height));

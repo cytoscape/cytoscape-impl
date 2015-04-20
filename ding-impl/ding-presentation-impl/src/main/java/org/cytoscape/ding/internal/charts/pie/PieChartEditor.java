@@ -47,7 +47,7 @@ public class PieChartEditor extends AbstractChartEditor<PieChart> {
 	@Override
 	protected void createLabels() {
 		super.createLabels();
-		startAngleLbl = new JLabel("Start Angle (degrees)");
+		startAngleLbl = new JLabel("Start Angle (degrees):");
 	}
 	
 	@Override

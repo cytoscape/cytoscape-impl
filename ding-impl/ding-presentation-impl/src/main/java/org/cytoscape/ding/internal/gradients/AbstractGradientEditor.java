@@ -64,7 +64,7 @@ public abstract class AbstractGradientEditor<T extends AbstractCustomGraphics2<?
 	}
 	
 	protected void createLabels() {
-		colorsLbl = new JLabel("Colors");
+		colorsLbl = new JLabel("Colors:");
 	}
 
 	protected GradientEditor getGrEditor() {

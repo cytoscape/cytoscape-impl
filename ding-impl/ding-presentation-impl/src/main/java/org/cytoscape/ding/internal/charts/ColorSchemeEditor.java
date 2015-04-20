@@ -108,7 +108,7 @@ public class ColorSchemeEditor<T extends AbstractCustomGraphics2<?>> extends JPa
 	// ==[ PRIVATE METHODS ]============================================================================================
 
 	private void init() {
-		colorSchemeLbl = new JLabel("Color Scheme");
+		colorSchemeLbl = new JLabel("Color Scheme:");
 		
 		setOpaque(false);
 		

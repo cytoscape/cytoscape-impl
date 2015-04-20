@@ -43,8 +43,8 @@ public class RingChartEditor extends AbstractChartEditor<RingChart> {
 	@Override
 	protected void createLabels() {
 		super.createLabels();
-		startAngleLbl = new JLabel("Start Angle (degrees)");
-		holeLbl = new JLabel("Hole Size (0.0-1.0)");
+		startAngleLbl = new JLabel("Start Angle (degrees):");
+		holeLbl = new JLabel("Hole Size (0.0-1.0):");
 	}
 	
 	@Override
