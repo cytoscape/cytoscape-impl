@@ -157,7 +157,7 @@ public class CheckForUpdatesPanel extends javax.swing.JPanel {
         descriptionTextArea.setFocusable(false);
         descriptionScrollPane.setViewportView(descriptionTextArea);
 
-        manageUpdateSites.setText("Manage Sites");
+        manageUpdateSites.setText("Manage Sites...");
         manageUpdateSites.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 manageUpdateSitesActionPerformed(evt);

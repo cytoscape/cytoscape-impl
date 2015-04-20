@@ -26,14 +26,8 @@ package org.cytoscape.app.internal.action;
 
 import java.awt.event.ActionEvent;
 import java.util.Properties;
-import java.util.Set;
-import java.util.concurrent.Executors;
-
-import javax.swing.SwingUtilities;
 
 import org.cytoscape.app.internal.manager.AppManager;
-import org.cytoscape.app.internal.net.WebApp;
-import org.cytoscape.app.internal.net.WebQuerier;
 import org.cytoscape.app.internal.ui.AppManagerDialog;
 import org.cytoscape.app.internal.ui.downloadsites.DownloadSitesManager;
 import org.cytoscape.application.events.CyShutdownEvent;
@@ -42,14 +36,10 @@ import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.FileUtil;
-import org.cytoscape.work.Task;
-import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskManager;
-import org.cytoscape.work.TaskMonitor;
 
 public class AppManagerAction extends AbstractCyAction {
 
-	/** Long serial version identifier required by the Serializable class */
 	private static final long serialVersionUID = -9145570324785249730L;
 	
 	/**
@@ -94,7 +84,7 @@ public class AppManagerAction extends AbstractCyAction {
 			FileUtil fileUtil, 
 			TaskManager taskManager, 
 			CyServiceRegistrar serviceRegistrar) {
-		super("App Manager");
+		super("App Manager...");
 		
 		setPreferredMenu("Apps");
 		setMenuGravity(1.0f);
