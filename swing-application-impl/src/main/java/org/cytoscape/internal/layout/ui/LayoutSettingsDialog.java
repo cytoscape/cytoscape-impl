@@ -56,7 +56,6 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JSeparator;
 import javax.swing.JTabbedPane;
 import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
@@ -243,29 +242,28 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 	private JPanel getSettingsPnl() {
 		if (settingsPnl == null) {
 			settingsPnl = new JPanel();
-			settingsPnl.setLayout(new BoxLayout(settingsPnl, BoxLayout.PAGE_AXIS));
 			settingsPnl.setAutoscrolls(true);
 			settingsPnl.setOpaque(!LookAndFeelUtil.isAquaLAF()); // Transparent if Aqua
-			settingsPnl.setBorder(BorderFactory.createEmptyBorder(2, 5, 2, 5));
 			
-			// Create a panel for the list of algorithms
-			final JPanel algorithmSelectorPnl = new JPanel();
-			algorithmSelectorPnl.setLayout(new BoxLayout(algorithmSelectorPnl, BoxLayout.LINE_AXIS));
-			algorithmSelectorPnl.setAlignmentX(Component.CENTER_ALIGNMENT);
-			algorithmSelectorPnl.setOpaque(!LookAndFeelUtil.isAquaLAF()); // Transparent if Aqua
+			final JLabel algoLbl = new JLabel("Layout Algorithm:");
 			
-			algorithmSelectorPnl.add(new JLabel("Layout Algorithm:"));
-			algorithmSelectorPnl.add(getAlgorithmCmb());
+			final GroupLayout layout = new GroupLayout(settingsPnl);
+			settingsPnl.setLayout(layout);
+			layout.setAutoCreateGaps(true);
+			layout.setAutoCreateContainerGaps(true);
 			
-			settingsPnl.add(Box.createVerticalStrut(5));
-			settingsPnl.add(algorithmSelectorPnl);
-			settingsPnl.add(Box.createVerticalStrut(5));
-			settingsPnl.add(new JSeparator());
-			settingsPnl.add(Box.createVerticalStrut(5));
-			settingsPnl.add(getAlgorithmPnl());
-			settingsPnl.add(Box.createVerticalStrut(5));
-			settingsPnl.add(new JSeparator());
-			settingsPnl.add(getSettingsButtonPnl());
+			layout.setHorizontalGroup(layout.createParallelGroup(Alignment.LEADING, true)
+					.addComponent(algoLbl)
+					.addComponent(getAlgorithmCmb())
+					.addComponent(getAlgorithmPnl())
+					.addComponent(getSettingsButtonPnl())
+			);
+			layout.setVerticalGroup(layout.createSequentialGroup()
+					.addComponent(algoLbl)
+					.addComponent(getAlgorithmCmb(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(getAlgorithmPnl(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+					.addComponent(getSettingsButtonPnl(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+			);
 		}
 		
 		return settingsPnl;
@@ -278,17 +276,18 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 	        
 	        final GroupLayout layout = new GroupLayout(prefLayoutPnl);
 	        prefLayoutPnl.setLayout(layout);
+			layout.setAutoCreateGaps(true);
 			layout.setAutoCreateContainerGaps(true);
 			
 			final JLabel label = new JLabel("Preferred Layout Algorithm:");
 			
-			layout.setHorizontalGroup(layout.createSequentialGroup()
+			layout.setHorizontalGroup(layout.createParallelGroup(Alignment.LEADING, true)
 					.addComponent(label)
 					.addComponent(getPrefAlgorithmCmb())
 			);
-			layout.setVerticalGroup(layout.createParallelGroup(Alignment.CENTER, false)
-					.addComponent(label)
-					.addComponent(getPrefAlgorithmCmb())
+			layout.setVerticalGroup(layout.createSequentialGroup()
+					.addComponent(label, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(getPrefAlgorithmCmb(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 			);
 		}
 		
@@ -300,6 +299,7 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 			algorithmPnl = new JPanel();
 			algorithmPnl.setLayout(new BoxLayout(algorithmPnl, BoxLayout.PAGE_AXIS));
 			algorithmPnl.setAutoscrolls(true);
+			algorithmPnl.setBorder(LookAndFeelUtil.createPanelBorder());
 			algorithmPnl.setOpaque(!LookAndFeelUtil.isAquaLAF()); // Transparent if Aqua
 		}
 		
