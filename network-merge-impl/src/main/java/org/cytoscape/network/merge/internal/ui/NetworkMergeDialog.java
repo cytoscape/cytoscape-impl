@@ -139,7 +139,7 @@ public class NetworkMergeDialog extends JDialog {
 //	boolean checkCyThesaurus;
 	
 	private String tgtType;
-	private Operation selectedOperation;
+	private Operation selectedOperation = Operation.UNION;
 	
 	/** Creates new form NetworkMergeDialog */
 	public NetworkMergeDialog(final CyNetworkManager cnm,

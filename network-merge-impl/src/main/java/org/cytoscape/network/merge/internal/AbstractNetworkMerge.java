@@ -235,8 +235,14 @@ public abstract class AbstractNetworkMerge implements NetworkMerge {
 	@Override
 	public CyNetwork mergeNetwork(final CyNetwork mergedNetwork, final List<CyNetwork> fromNetworks, final Operation op) {
 		// Null checks for required fields...
-		if (mergedNetwork == null || fromNetworks == null || op == null) {
-			throw new NullPointerException("Required parameter is missing.");
+		if (mergedNetwork == null) { 
+			throw new NullPointerException("Merged networks wasn't created.");
+		}
+		if (fromNetworks == null) {
+			throw new NullPointerException("No networks selected.");
+		}
+		if (op == null) {
+			throw new NullPointerException("Operation parameter is missing.");
 		}
 		if (fromNetworks.isEmpty()) {
 			throw new IllegalArgumentException("No source networks!");
