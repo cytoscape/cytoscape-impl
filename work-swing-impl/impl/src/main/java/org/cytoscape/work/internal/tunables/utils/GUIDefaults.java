@@ -122,7 +122,7 @@ public final class GUIDefaults {
 		layout.setAutoCreateGaps(true);
 		
 		if (horizontalForm) {
-			p.setBorder(BorderFactory.createEmptyBorder(0, 1, 0, 1));
+			p.setBorder(BorderFactory.createEmptyBorder(0, 2, 0, 2));
 			
 			layout.setHorizontalGroup(layout.createParallelGroup(Alignment.LEADING, true)
 					.addComponent(label, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
@@ -133,7 +133,7 @@ public final class GUIDefaults {
 					.addComponent(control, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 			);
 		} else {
-			p.setBorder(BorderFactory.createEmptyBorder(1, 0, 1, 0));
+			p.setBorder(BorderFactory.createEmptyBorder(2, 0, 2, 0));
 			
 			final Alignment vAlign = control instanceof JPanel || control instanceof JScrollPane ? 
 					Alignment.LEADING : Alignment.CENTER;
