@@ -35,11 +35,15 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.text.Collator;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Properties;
 import java.util.Set;
+import java.util.TreeSet;
 
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
@@ -205,10 +209,19 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 		final Properties props = (Properties) cyProperty.getProperties();
 		final String pref = props.getProperty("preferredLayoutAlgorithm", "force-directed");
 		
+		final Collator collator = Collator.getInstance(Locale.getDefault());
+		final TreeSet<CyLayoutAlgorithm> allLayouts = new TreeSet<>(new Comparator<CyLayoutAlgorithm>() {
+			@Override
+			public int compare(CyLayoutAlgorithm o1, CyLayoutAlgorithm o2) {
+				return collator.compare(o1.toString(), o2.toString());
+			}
+		});
+		allLayouts.addAll(layoutAlgorithmMgr.getAllLayouts());
+		
 		// Populate the algorithm selector
 		getAlgorithmCmb().removeAllItems();
-
-		for (CyLayoutAlgorithm algo : layoutAlgorithmMgr.getAllLayouts()) 
+		
+		for (CyLayoutAlgorithm algo : allLayouts) 
 			getAlgorithmCmb().addItem(algo);
 		
 		getAlgorithmCmb().setSelectedItem(currentLayout);
@@ -219,7 +232,7 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 
 		CyLayoutAlgorithm prefAlgo = null;
 		
-		for (CyLayoutAlgorithm algo : layoutAlgorithmMgr.getAllLayouts()) { 
+		for (CyLayoutAlgorithm algo : allLayouts) { 
 			getPrefAlgorithmCmb().addItem(algo);
 			
 			if (algo.getName().equals(pref))
@@ -384,7 +397,11 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 						getAlgorithmPnl().add(layoutAttrPnl);
 						
 						if (tunablePnl == null){
-							JOptionPane.showMessageDialog(LayoutSettingsDialog.this, "Can not change settings for this algorithm, because tunable info is not available.", "Warning", JOptionPane.WARNING_MESSAGE);
+							JOptionPane.showMessageDialog(
+									LayoutSettingsDialog.this,
+									"Can not change settings for this algorithm, because tunable info is not available.",
+									"Warning",
+									JOptionPane.WARNING_MESSAGE);
 						} else {
 							tunablePnl.setAlignmentX(Component.CENTER_ALIGNMENT);
 							setPanelsTransparent(tunablePnl);
