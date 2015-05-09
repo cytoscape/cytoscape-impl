@@ -1157,7 +1157,7 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 		synchronized(lock) {
 			for (Object key : primaryKeys) {
 				checkKey(key);
-		
+
 				CyRow row = rows.remove(key);
 				if (row != null) {
 					rowList.remove(row);
@@ -1165,13 +1165,13 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 				}
 
 				for (CyColumn col : getColumns()) {
-		            final String normalizedColName = normalizeColumnName(col.getName());
-		            final Map<Object, Object> keyToValueMap = attributes.get(normalizedColName);
-		            if (keyToValueMap != null) {
-		                keyToValueMap.remove(key);
-		            }
+					final String normalizedColName = normalizeColumnName(col.getName());
+					final Map<Object, Object> keyToValueMap = attributes.get(normalizedColName);
+					if (keyToValueMap != null) {
+						keyToValueMap.remove(key);
+					}
 				}
-	        }
+			}
 		}
 		if(changed)
 			eventHelper.fireEvent(new RowsDeletedEvent( this,  (Collection<Object>) primaryKeys));

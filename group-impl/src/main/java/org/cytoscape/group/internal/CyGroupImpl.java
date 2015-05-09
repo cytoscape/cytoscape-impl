@@ -82,9 +82,12 @@ public class CyGroupImpl implements CyGroup {
 	private Set<Long> nodeShownSet = null;
 	private Map<Long, List<CyNode>> collapsedNodes = null;
 	private Set<CyEdge> externalEdgeProcessed = null;
+	private Set<CyEdge> groupNodeEdges = null;
 	private boolean nodeProvided = false;  // We'll need this when we destroy ourselves
 	private boolean collapsing = false;
 	private boolean expanding = false;
+	private Map<CyIdentifiable, Map<String, Object>> savedLocalValuesMap;
+	private Map<CyIdentifiable, Map<String, Object>> savedHiddenValuesMap;
 
 	private static final Logger logger = LoggerFactory.getLogger(CyGroupImpl.class);
 
@@ -121,6 +124,9 @@ public class CyGroupImpl implements CyGroup {
 		this.nodeShownSet = new HashSet<Long>();
 		this.collapsedNodes = new HashMap<Long, List<CyNode>>();
 		this.externalEdgeProcessed = new HashSet<CyEdge>();
+		this.groupNodeEdges = new HashSet<CyEdge>();
+		this.savedLocalValuesMap = new HashMap<>();
+		this.savedHiddenValuesMap = new HashMap<>();
 
 		networkSet.add(rootNetwork);
 		networkSet.add(network);
@@ -370,7 +376,7 @@ public class CyGroupImpl implements CyGroup {
 				} else if (groupNode != null && (source.equals(groupNode) || target.equals(groupNode))) {
 					memberEdges.add(edge);
 				} else if (getGroupNetwork().containsNode(source) || getGroupNetwork().containsNode(target)) {
-					if (!metaEdges.values().contains(edge)) {
+					if (!metaEdges.containsValue(edge)) {
 						externalEdges.add(edge);
 						updateMeta = true;
 					}
@@ -426,11 +432,14 @@ public class CyGroupImpl implements CyGroup {
 		synchronized (lock) {
 			List<CyEdge> netEdges = new ArrayList<CyEdge>();
 			for (CyEdge edge: edges) {
-				if (getGroupNetwork().containsEdge(edge))
+				if (getGroupNetwork().containsEdge(edge)) {
 					netEdges.add(edge);
-				else if (externalEdges.contains(edge))
+				} else if (externalEdges.contains(edge)) {
 					externalEdges.remove(edge);
-				else if (metaEdges.values().contains(edge)) {
+					if (metaEdges.containsKey(edge)) {
+						metaEdges.remove(edge);
+					}
+				} else if (metaEdges.containsValue(edge)) {
 					removeMetaEdge(edge);
 				} else if (memberEdges.contains(edge))
 					memberEdges.remove(edge);
@@ -439,6 +448,7 @@ public class CyGroupImpl implements CyGroup {
 				getGroupNetwork().removeEdges(netEdges);
 			}
 		}
+
 		cyEventHelper.fireEvent(new GroupEdgesRemovedEvent(CyGroupImpl.this, edges));
 	}
 
@@ -660,9 +670,12 @@ public class CyGroupImpl implements CyGroup {
 
 		for (CyNode n: nodes) {
 			lvpMgr.saveLockedValues(n, netViewList);
+			saveLocalAttributes(net, n);
 
-			for (CyEdge e : subnet.getAdjacentEdgeList(n, CyEdge.Type.ANY))
+			for (CyEdge e : subnet.getAdjacentEdgeList(n, CyEdge.Type.ANY)) {
 				lvpMgr.saveLockedValues(e, netViewList);
+				saveLocalAttributes(net, e);
+			}
 		}
 
 		subnet.removeNodes(nodes);
@@ -682,13 +695,14 @@ public class CyGroupImpl implements CyGroup {
 				addedElements.add(groupNode);
 
 				// Now add the edges for the group node
-				List<CyEdge> groupNodeEdges = rootNetwork.getAdjacentEdgeList(groupNode, CyEdge.Type.ANY);
+				// List<CyEdge> groupNodeEdges = rootNetwork.getAdjacentEdgeList(groupNode, CyEdge.Type.ANY);
 
 				for (CyEdge e: groupNodeEdges) {
 					// I have no idea why this would be necessary, but it is....
 					if (subnet.containsEdge(e)) {
 						// Save edge's locked visual properties values before they are removed
 						lvpMgr.saveLockedValues(e, netViewList);
+						saveLocalAttributes(net, e);
 						subnet.removeEdges(Collections.singletonList(e));
 					}
 
@@ -717,6 +731,7 @@ public class CyGroupImpl implements CyGroup {
 
 		// Restore locked visual property values of added nodes/edges
 		lvpMgr.setLockedValues(netViewList, addedElements);
+		restoreLocalAttributes(net, addedElements);
 
 		// OK, all done
 		collapsing = false;
@@ -777,11 +792,24 @@ public class CyGroupImpl implements CyGroup {
 			// there are no member edges. If there were member edges,
 			// the group node did not go away.
 			if (memberEdges.size() == 0 && !groupNodeShown) {
+				// First, get all of the group node's edges
+				List<CyEdge> groupEdges = subnet.getAdjacentEdgeList(groupNode, CyEdge.Type.ANY);
+
 				// Save group node's locked visual properties values before they are removed
 				lvpMgr.saveLockedValues(groupNode, netViewList);
+				saveLocalAttributes(net, groupNode);
 
-				for (CyEdge e : subnet.getAdjacentEdgeList(groupNode, CyEdge.Type.ANY))
+				for (CyEdge e : groupEdges) {
 					lvpMgr.saveLockedValues(e, netViewList);
+					saveLocalAttributes(net, e);
+				}
+
+				groupNodeEdges = new HashSet<CyEdge>();
+				// Now, see which of these groupEdges aren't meta-edges
+				for (CyEdge edge: groupEdges) {
+					if (!isMeta(edge))
+						groupNodeEdges.add(edge);
+				}
 
 				subnet.removeNodes(Collections.singletonList(groupNode));
 			}
@@ -836,6 +864,7 @@ public class CyGroupImpl implements CyGroup {
 
 		// Restore locked visual property values of added nodes/edges
 		lvpMgr.setLockedValues(netViewList, addedElements);
+		restoreLocalAttributes(net, addedElements);
 
 		synchronized (lock) {
 			collapseSet.remove(net.getSUID());
@@ -935,7 +964,7 @@ public class CyGroupImpl implements CyGroup {
 
 	protected void removeMetaEdge(CyEdge edge) {
 		synchronized (lock) {
-			if (!metaEdges.values().contains(edge))
+			if (!metaEdges.containsValue(edge))
 				for (CyEdge metaKey: metaEdges.keySet()) {
 					if (metaEdges.get(metaKey).equals(edge))
 						metaEdges.remove(metaKey);
@@ -1273,6 +1302,41 @@ public class CyGroupImpl implements CyGroup {
 
 	public boolean isCollapsing() { return collapsing; }
 	public boolean isExpanding() { return expanding; }
+
+	private void saveLocalAttributes(CyNetwork net, CyIdentifiable cyObject) {
+		CyRow localRow = net.getRow(cyObject, CyNetwork.LOCAL_ATTRS);
+		savedLocalValuesMap.put(cyObject, new HashMap<String, Object>(localRow.getAllValues()));
+		CyRow hiddenRow = net.getRow(cyObject, CyNetwork.HIDDEN_ATTRS);
+		savedHiddenValuesMap.put(cyObject, new HashMap<String, Object>(hiddenRow.getAllValues()));
+	}
+
+	private void restoreLocalAttributes(CyNetwork net, Set<CyIdentifiable> cyObjects) {
+		for (CyIdentifiable cyObject: cyObjects) {
+			if (savedLocalValuesMap.containsKey(cyObject)) {
+				copyAttributes(net, cyObject, savedLocalValuesMap.get(cyObject),
+				               net.getRow(cyObject, CyNetwork.LOCAL_ATTRS));
+			}
+
+			if (savedHiddenValuesMap.containsKey(cyObject)) {
+				copyAttributes(net, cyObject, savedHiddenValuesMap.get(cyObject),
+				               net.getRow(cyObject, CyNetwork.HIDDEN_ATTRS));
+			}
+		}
+	}
+
+	private void copyAttributes(CyNetwork net, CyIdentifiable object, Map<String, Object> values, CyRow row) {
+		CyTable table = row.getTable();
+		for (CyColumn column: table.getColumns()) {
+			if (column.getVirtualColumnInfo().isVirtual() || 
+			    column.getVirtualColumnInfo().isImmutable())
+				continue;
+
+			if (values.containsKey(column.getName())) {
+				row.set(column.getName(), values.get(column.getName()));
+			}
+		}
+	}
+
 
 	protected void printGroup() {
 		System.out.println("Group "+this);

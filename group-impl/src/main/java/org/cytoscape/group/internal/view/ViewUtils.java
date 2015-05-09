@@ -171,6 +171,16 @@ public class ViewUtils {
 
 	public static void unStyleCompoundNode(CyGroup group, CyNetworkView view,
 	                                       VisualMappingManager cyStyleManager) {
+		View<CyNode> groupView = view.getNodeView(group.getGroupNode());
+
+		if (groupView != null) {
+			groupView.clearValueLock(BasicVisualLexicon.NODE_HEIGHT);
+			groupView.clearValueLock(BasicVisualLexicon.NODE_WIDTH);
+			groupView.clearValueLock(BasicVisualLexicon.NODE_TRANSPARENCY); 
+			groupView.clearValueLock(BasicVisualLexicon.NODE_SHAPE);
+			groupView.clearValueLock(BasicVisualLexicon.NODE_BORDER_WIDTH);
+			groupView.clearValueLock(BasicVisualLexicon.NODE_Z_LOCATION);
+		}
 	}
 	
 	public static Dimension calculateCenter(CyNetworkView view, List<CyNode> nodeList) {
