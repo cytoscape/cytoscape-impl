@@ -86,8 +86,8 @@ public class CyGroupImpl implements CyGroup {
 	private boolean nodeProvided = false;  // We'll need this when we destroy ourselves
 	private boolean collapsing = false;
 	private boolean expanding = false;
-	private Map<CyIdentifiable, Map<String, Object>> savedLocalValuesMap;
-	private Map<CyIdentifiable, Map<String, Object>> savedHiddenValuesMap;
+	private Map<Long, Map<CyIdentifiable, Map<String, Object>>> savedLocalValuesMap;
+	private Map<Long, Map<CyIdentifiable, Map<String, Object>>> savedHiddenValuesMap;
 
 	private static final Logger logger = LoggerFactory.getLogger(CyGroupImpl.class);
 
@@ -950,6 +950,8 @@ public class CyGroupImpl implements CyGroup {
 
 			networkSet.clear();
 			collapseSet.clear();
+			savedLocalValuesMap.clear();
+			savedHiddenValuesMap.clear();
 		}
 		cyEventHelper.flushPayloadEvents();
 	}
@@ -1305,20 +1307,28 @@ public class CyGroupImpl implements CyGroup {
 
 	private void saveLocalAttributes(CyNetwork net, CyIdentifiable cyObject) {
 		CyRow localRow = net.getRow(cyObject, CyNetwork.LOCAL_ATTRS);
-		savedLocalValuesMap.put(cyObject, new HashMap<String, Object>(localRow.getAllValues()));
+		Long netSuid = net.getSUID();
+		if (!savedLocalValuesMap.containsKey(net.getSUID()))
+			savedLocalValuesMap.put(netSuid, new HashMap<CyIdentifiable, Map<String, Object>>());
+		savedLocalValuesMap.get(netSuid).put(cyObject, new HashMap<String, Object>(localRow.getAllValues()));
 		CyRow hiddenRow = net.getRow(cyObject, CyNetwork.HIDDEN_ATTRS);
-		savedHiddenValuesMap.put(cyObject, new HashMap<String, Object>(hiddenRow.getAllValues()));
+		if (!savedHiddenValuesMap.containsKey(net.getSUID()))
+			savedHiddenValuesMap.put(netSuid, new HashMap<CyIdentifiable, Map<String, Object>>());
+		savedHiddenValuesMap.get(netSuid).put(cyObject, new HashMap<String, Object>(hiddenRow.getAllValues()));
 	}
 
 	private void restoreLocalAttributes(CyNetwork net, Set<CyIdentifiable> cyObjects) {
+		Long netSuid = net.getSUID();
 		for (CyIdentifiable cyObject: cyObjects) {
-			if (savedLocalValuesMap.containsKey(cyObject)) {
-				copyAttributes(net, cyObject, savedLocalValuesMap.get(cyObject),
+			if (savedLocalValuesMap.containsKey(netSuid) &&
+			    savedLocalValuesMap.get(netSuid).containsKey(cyObject)) {
+				copyAttributes(net, cyObject, savedLocalValuesMap.get(netSuid).get(cyObject),
 				               net.getRow(cyObject, CyNetwork.LOCAL_ATTRS));
 			}
 
-			if (savedHiddenValuesMap.containsKey(cyObject)) {
-				copyAttributes(net, cyObject, savedHiddenValuesMap.get(cyObject),
+			if (savedHiddenValuesMap.containsKey(cyObject) &&
+			    savedHiddenValuesMap.get(netSuid).containsKey(cyObject)) {
+				copyAttributes(net, cyObject, savedHiddenValuesMap.get(netSuid).get(cyObject),
 				               net.getRow(cyObject, CyNetwork.HIDDEN_ATTRS));
 			}
 		}
