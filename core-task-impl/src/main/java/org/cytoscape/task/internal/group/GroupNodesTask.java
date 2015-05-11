@@ -106,6 +106,7 @@ public class GroupNodesTask extends AbstractTask implements ObservableTask {
 		// both the NAME and SHARED_NAME columns
 		CyRow groupRow = ((CySubNetwork)net).getRootNetwork().getRow(newGroup.getGroupNode(), CyRootNetwork.SHARED_ATTRS);
 		groupRow.set(CyRootNetwork.SHARED_NAME, groupName);
+		net.getRow(newGroup.getGroupNode()).set(CyNetwork.NAME, groupName);
 
 		tm.showMessage(TaskMonitor.Level.INFO, "Created group "+groupName+" with "+selNodes.size()+" nodes");
 		// mgr.addGroup(group);
