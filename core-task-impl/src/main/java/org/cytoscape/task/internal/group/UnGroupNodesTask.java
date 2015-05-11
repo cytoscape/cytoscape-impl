@@ -34,6 +34,7 @@ import org.cytoscape.group.CyGroupManager;
 
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.view.model.CyNetworkView;
 
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ContainsTunables;
@@ -48,15 +49,17 @@ public class UnGroupNodesTask extends AbstractGroupTask {
 	private CyGroupFactory factory = null;
 	private	Set<CyGroup>groupSet = null;
 	private UndoSupport undoSupport = null;
+	private CyNetworkView netView = null;
 
 	@ContainsTunables
 	public NodeTunable nodeTunable = null;
 
 	public UnGroupNodesTask(UndoSupport undoSupport, CyNetwork net, CyGroupFactory factory,
-	                        Set<CyGroup>groups, CyGroupManager mgr) {
+	                        Set<CyGroup>groups, CyGroupManager mgr, CyNetworkView netView) {
 		if (net == null)
 			throw new NullPointerException("network is null");
 		this.net = net;
+		this.netView = netView;
 		this.groupMgr = mgr;
 		this.factory = factory;
 		this.groupSet = groups;
@@ -86,6 +89,9 @@ public class UnGroupNodesTask extends AbstractGroupTask {
 		}
 		if (undoSupport != null)
 			undoSupport.postEdit(edit);
+
+		if (netView != null)
+			netView.updateView();
 
 		tm.showMessage(TaskMonitor.Level.INFO, "Ungrouped "+groupSet.size()+" groups");
 		tm.setProgress(1.0d);

@@ -55,6 +55,8 @@ import org.cytoscape.view.presentation.property.values.NodeShape;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
 
+import org.cytoscape.group.internal.ModelUtils;
+
 /**
  * Handle the view portion of group collapse/expand
  */
@@ -282,14 +284,14 @@ public class ViewUtils {
 		List<Double> yLocations;
 
 		// Make sure our three columns are available
-		createListColumnIfNeeded(table, NETWORK_SUID_ATTR, Long.class);
-		createListColumnIfNeeded(table, X_LOCATION_ATTR, Double.class);
-		createListColumnIfNeeded(table, Y_LOCATION_ATTR, Double.class);
+		ModelUtils.createListColumnIfNeeded(table, NETWORK_SUID_ATTR, Long.class);
+		ModelUtils.createListColumnIfNeeded(table, X_LOCATION_ATTR, Double.class);
+		ModelUtils.createListColumnIfNeeded(table, Y_LOCATION_ATTR, Double.class);
 
 		CyRow row = table.getRow(suid);
-		networkSUIDs = getList(row, NETWORK_SUID_ATTR, Long.class);
-		xLocations = getList(row, X_LOCATION_ATTR, Double.class);
-		yLocations = getList(row, Y_LOCATION_ATTR, Double.class);
+		networkSUIDs = ModelUtils.getList(row, NETWORK_SUID_ATTR, Long.class);
+		xLocations = ModelUtils.getList(row, X_LOCATION_ATTR, Double.class);
+		yLocations = ModelUtils.getList(row, Y_LOCATION_ATTR, Double.class);
 
 		int index = networkSUIDs.indexOf(network.getSUID());
 		if (index == -1) {
@@ -311,30 +313,13 @@ public class ViewUtils {
 			return null;
 
 		CyRow row = table.getRow(suid);
-		List<Long> networkSUIDs = getList(row, NETWORK_SUID_ATTR, Long.class);
-		List<Double>xLocations = getList(row, X_LOCATION_ATTR, Double.class);
-		List<Double>yLocations = getList(row, Y_LOCATION_ATTR, Double.class);
+		List<Long> networkSUIDs = ModelUtils.getList(row, NETWORK_SUID_ATTR, Long.class);
+		List<Double>xLocations = ModelUtils.getList(row, X_LOCATION_ATTR, Double.class);
+		List<Double>yLocations = ModelUtils.getList(row, Y_LOCATION_ATTR, Double.class);
 		int index = networkSUIDs.indexOf(network.getSUID());
 		if (index == -1)
 			return null;
 		return getDim(xLocations.get(index), yLocations.get(index));
-	}
-
-	public static void createColumnIfNeeded(CyTable table, String name, Class type) {
-		if (table.getColumn(name) == null)
-			table.createColumn(name, type, false);
-	}
-
-	public static void createListColumnIfNeeded(CyTable table, String name, Class type) {
-		if (table.getColumn(name) == null)
-			table.createListColumn(name, type, false);
-	}
-
-	public static <T> List<T> getList(CyRow row, String column, Class<T> type) {
-		List<T> l = row.getList(column, type);
-		if (l == null)
-			l = new ArrayList<T>();
-		return l;
 	}
 
 	public static Dimension getDim(double x, double y) {

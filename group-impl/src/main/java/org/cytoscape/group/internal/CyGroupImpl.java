@@ -107,11 +107,31 @@ public class CyGroupImpl implements CyGroup {
 		// long timeStamp = System.currentTimeMillis();
 
 		this.rootNetwork = ((CySubNetwork)network).getRootNetwork();
-		if (node == null)
+		if (node == null) {
 			this.groupNode = this.rootNetwork.addNode();
-		else {
-			nodeProvided = true;
+			ModelUtils.createColumnIfNeeded(this.rootNetwork.getTable(CyNode.class, CyNetwork.HIDDEN_ATTRS),
+			                                "GroupNodeProvided", Boolean.class);
+			this.rootNetwork.getRow(groupNode, CyNetwork.HIDDEN_ATTRS).set("GroupNodeProvided", false);
+		} else {
 			this.groupNode = node;
+
+			// Either an app has provided a node, or we've just loaded
+			// this from a session and the session prvoded the node.  We
+			// need to know the difference for when we delete the group
+			Boolean np = null;
+			if (this.rootNetwork.getTable(CyNode.class, CyNetwork.HIDDEN_ATTRS).getColumn("GroupNodeProvided") != null &&
+					this.rootNetwork.getRow(groupNode, CyNetwork.HIDDEN_ATTRS) != null)
+				np = this.rootNetwork.getRow(groupNode, CyNetwork.HIDDEN_ATTRS).get("GroupNodeProvided", Boolean.class);
+
+			if (np == null || np == true) {
+				nodeProvided = true;
+			} else {
+				nodeProvided = false;
+			}
+
+			ModelUtils.createColumnIfNeeded(this.rootNetwork.getTable(CyNode.class, CyNetwork.HIDDEN_ATTRS),
+			                                "GroupNodeProvided", Boolean.class);
+			this.rootNetwork.getRow(groupNode, CyNetwork.HIDDEN_ATTRS).set("GroupNodeProvided", nodeProvided);
 		}
 
 		// System.out.println("Creating new group: "+this.groupNode);
@@ -186,7 +206,7 @@ public class CyGroupImpl implements CyGroup {
 		// If we already have a network pointer and we didn't get
 		// nodes or edges, and the network pointer points to the same
 		// root network, then it may have been provided by the session loader
-		if (np != null && nodeProvided && 
+		if (np != null && 
 			edges.size() == 0 && nodes.size() == 0 &&
 			np.getRootNetwork().equals(this.rootNetwork)) {
 
@@ -944,6 +964,8 @@ public class CyGroupImpl implements CyGroup {
 
 				// If our group node was not provided, destroy it if it doesn't have any member edges
 				if (!nodeProvided && rootNetwork.containsNode(groupNode) && memberEdges.size() == 0) {
+					for (CyNetwork net: networkSet)
+						net.removeNodes(Collections.singletonList(groupNode));
 					rootNetwork.removeNodes(Collections.singletonList(groupNode));
 				}
 			}

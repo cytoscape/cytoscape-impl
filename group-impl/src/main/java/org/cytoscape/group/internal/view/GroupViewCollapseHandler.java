@@ -41,6 +41,8 @@ import org.cytoscape.group.internal.CyGroupManagerImpl;
 import org.cytoscape.group.internal.data.CyGroupSettingsImpl;
 import org.cytoscape.group.events.GroupAddedEvent;
 import org.cytoscape.group.events.GroupAddedListener;
+import org.cytoscape.group.events.GroupAboutToBeDestroyedEvent;
+import org.cytoscape.group.events.GroupAboutToBeDestroyedListener;
 import org.cytoscape.group.events.GroupAboutToCollapseEvent;
 import org.cytoscape.group.events.GroupAboutToCollapseListener;
 import org.cytoscape.group.events.GroupCollapsedEvent;
@@ -74,6 +76,7 @@ import org.slf4j.LoggerFactory;
 public class GroupViewCollapseHandler implements GroupAboutToCollapseListener,
                                                  GroupCollapsedListener,
                                                  SessionLoadedListener,
+                                                 GroupAboutToBeDestroyedListener,
                                                  GroupAddedListener
 {
 
@@ -331,6 +334,36 @@ public class GroupViewCollapseHandler implements GroupAboutToCollapseListener,
 		return;
 	}
 
+	/**
+	 * If a group is destroyed, and it's a compound node, we need to fix up a
+	 * bunch of things.
+	 */
+	public void handleEvent(GroupAboutToBeDestroyedEvent e) {
+		CyGroup group = e.getGroup();
+		GroupViewType groupViewType = cyGroupSettings.getGroupViewType(group);
+		if (groupViewType.equals(GroupViewType.COMPOUND)) {
+			for (CyNetwork network: group.getNetworkSet()) {
+				final Collection<CyNetworkView> views = cyNetworkViewManager.getNetworkViews(network);
+				CyNetworkView view = null;
+				if(views.size() == 0) {
+					return;
+				}
+
+				for (CyNetworkView v: views) {
+					if (v.getRendererId().equals("org.cytoscape.ding")) {
+						view = v;
+					}
+				}
+
+				if (view == null)
+					continue;
+
+				ViewUtils.unStyleCompoundNode(group, view, cyStyleManager);
+				nodeChangeListener.removeGroup(group, view);
+			}
+		}
+	}
+
 
 	/**
 	 * We need to do some fixup after we load the session for compound nodes.
@@ -376,6 +409,12 @@ public class GroupViewCollapseHandler implements GroupAboutToCollapseListener,
 		// Style the group node
 		ViewUtils.styleCompoundNode(group, view, cyGroupManager, cyStyleManager,
 		                            cyGroupSettings.getGroupViewType(group));
+
+		// Apply visual property to added graph elements
+		ViewUtils.applyStyle(group.getNodeList(), Collections.singleton(view), cyStyleManager);
+		ViewUtils.applyStyle(group.getInternalEdgeList(), Collections.singleton(view), cyStyleManager);
+		ViewUtils.applyStyle(group.getExternalEdgeList(), Collections.singleton(view), cyStyleManager);
+
 		// Style the member nodes (set appropriate Z)
 		// Add ourselves to the listeners for node movement
 		nodeChangeListener.addGroup(group, view);

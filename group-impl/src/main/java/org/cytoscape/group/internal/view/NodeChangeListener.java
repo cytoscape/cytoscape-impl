@@ -113,7 +113,7 @@ public class NodeChangeListener implements ViewChangedListener, SessionLoadedLis
 				if (groupNodes.contains(node)) {
 					// System.out.println("It's a group: "+node);
 					try {
-					updateGroupLocation(networkView, nodeView);
+						updateGroupLocation(networkView, nodeView);
 					} catch (Exception ee) { ee.printStackTrace(); }
 				}
 
@@ -190,6 +190,7 @@ public class NodeChangeListener implements ViewChangedListener, SessionLoadedLis
 		double groupX = nodeView.getVisualProperty(BasicVisualLexicon.NODE_X_LOCATION);
 		double groupY = nodeView.getVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION);
 		CyGroup group = cyGroupManager.getGroup(nodeView.getModel(), networkView.getModel());
+		if (group == null) return;
 
 		// System.out.println("Updating group "+group+" location");
 		Dimension lastPosition = ViewUtils.getLocation(networkView.getModel(), group);

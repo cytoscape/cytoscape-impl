@@ -32,6 +32,7 @@ import org.cytoscape.group.CyGroupManager;
 import org.cytoscape.group.CyGroupSettingsManager;
 import org.cytoscape.group.data.CyGroupAggregationManager;
 import org.cytoscape.group.events.GroupAddedListener;
+import org.cytoscape.group.events.GroupAboutToBeDestroyedListener;
 import org.cytoscape.group.events.GroupAboutToCollapseListener;
 import org.cytoscape.group.events.GroupCollapsedListener;
 import org.cytoscape.model.events.AboutToRemoveEdgesListener;
@@ -138,6 +139,7 @@ public class CyActivator extends AbstractCyActivator {
 			                             nodeChangeListener, cyEventHelper);
 
 		registerService(bc,gvcHandler,GroupAboutToCollapseListener.class, new Properties());
+		registerService(bc,gvcHandler,GroupAboutToBeDestroyedListener.class, new Properties());
 		registerService(bc,gvcHandler,GroupCollapsedListener.class, new Properties());
 		registerService(bc,gvcHandler,SessionLoadedListener.class, new Properties());
     registerService(bc,gvcHandler,GroupAddedListener.class, new Properties());

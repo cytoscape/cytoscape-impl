@@ -101,14 +101,14 @@ public class UnGroupNodesTaskFactoryImpl implements NetworkViewTaskFactory,
 		nodeList.addAll(CyTableUtil.getNodesInState(net, CyNetwork.SELECTED, true));
 		Set<CyGroup> groups = getGroups(net, nodeList);
 
-		return new TaskIterator(new UnGroupNodesTask(undoSupport, net, factory, groups, mgr));
+		return new TaskIterator(new UnGroupNodesTask(undoSupport, net, factory, groups, mgr, netView));
 	}
 
 	public TaskIterator createTaskIterator(CyNetworkView netView) {
 		CyNetwork net = netView.getModel();
 		final List<CyNode> selNodes = CyTableUtil.getNodesInState(net, CyNetwork.SELECTED, true);
 		Set<CyGroup> groups = getGroups(net, selNodes);
-		return new TaskIterator(new UnGroupNodesTask(undoSupport, netView.getModel(), factory, groups, mgr));
+		return new TaskIterator(new UnGroupNodesTask(undoSupport, netView.getModel(), factory, groups, mgr, netView));
 	}
 
 	public TaskIterator createTaskIterator() {
