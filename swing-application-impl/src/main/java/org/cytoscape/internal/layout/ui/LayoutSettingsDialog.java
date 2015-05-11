@@ -92,9 +92,8 @@ import org.cytoscape.work.util.ListSingleSelection;
  * various settings for layout algorithms.  Each CyLayoutAlgorithm must return a single
  * JPanel that provides all of its settings.
  */
+@SuppressWarnings("serial")
 public class LayoutSettingsDialog extends JDialog implements ActionListener {
-	
-	private final static long serialVersionUID = 1202339874277105L;
 	
 	private CyLayoutAlgorithm currentLayout;
 	private TaskFactory currentAction;
@@ -108,6 +107,8 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 	private JPanel algorithmPnl;
 	private JPanel layoutAttrPnl;
     private JComboBox<CyLayoutAlgorithm> prefAlgorithmCmb;
+    private JButton applyBtn;
+    private JButton doneBtn;
 
 	private CyLayoutAlgorithmManager layoutAlgorithmMgr;
 	private CySwingApplication swingApp;
@@ -202,6 +203,10 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 		);
     	
 		setContentPane(contentPane);
+		
+		LookAndFeelUtil.setDefaultOkCancelKeyStrokes(getRootPane(), getApplyBtn().getAction(), getDoneBtn().getAction());
+		getRootPane().setDefaultButton(getApplyBtn());
+		
         pack();
     }
 
@@ -326,8 +331,30 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 			settingsButtonPnl.setAlignmentX(Component.CENTER_ALIGNMENT);
 			settingsButtonPnl.setOpaque(!LookAndFeelUtil.isAquaLAF()); // Transparent if Aqua
 			
-			final JButton applyBtn = new JButton("Apply Layout");
-			applyBtn.addActionListener(new ActionListener() {
+			settingsButtonPnl.add(Box.createHorizontalGlue());
+			settingsButtonPnl.add(getApplyBtn());
+			settingsButtonPnl.add(Box.createHorizontalGlue());
+		}
+		
+		return settingsButtonPnl;
+	}
+	
+	public JPanel getButtonPnl() {
+		if (buttonPnl == null) {
+			buttonPnl = new JPanel();
+			buttonPnl.setLayout(new BoxLayout(buttonPnl, BoxLayout.LINE_AXIS));
+			buttonPnl.setBorder(BorderFactory.createEmptyBorder(2, 2, 5, 2));
+			
+			buttonPnl.add(Box.createHorizontalGlue());
+			buttonPnl.add(getDoneBtn());
+		}
+		
+		return buttonPnl;
+	}
+	
+	private JButton getApplyBtn() {
+		if (applyBtn == null) {
+			applyBtn = new JButton(new AbstractAction("Apply Layout") {
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					final Object context = currentLayout.getDefaultLayoutContext();
@@ -336,36 +363,22 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 						taskMgr.execute(currentAction.createTaskIterator());
 				}
 			});
-
-			settingsButtonPnl.add(Box.createHorizontalGlue());
-			settingsButtonPnl.add(applyBtn);
-			settingsButtonPnl.add(Box.createHorizontalGlue());
 		}
 		
-		return settingsButtonPnl;
+		return applyBtn;
 	}
 	
-	@SuppressWarnings("serial")
-	public JPanel getButtonPnl() {
-		if (buttonPnl == null) {
-			buttonPnl = new JPanel();
-			buttonPnl.setLayout(new BoxLayout(buttonPnl, BoxLayout.LINE_AXIS));
-			buttonPnl.setBorder(BorderFactory.createEmptyBorder(2, 2, 5, 2));
-			
-			final JButton doneBtn = new JButton(new AbstractAction("Done") {
+	public JButton getDoneBtn() {
+		if (doneBtn == null) {
+			doneBtn = new JButton(new AbstractAction("Done") {
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					setVisible(false);
 				}
 			});
-			
-			buttonPnl.add(Box.createHorizontalGlue());
-			buttonPnl.add(doneBtn);
-			
-			LookAndFeelUtil.setDefaultOkCancelKeyStrokes(getRootPane(), null, doneBtn.getAction());
 		}
 		
-		return buttonPnl;
+		return doneBtn;
 	}
 	
 	private JComboBox<CyLayoutAlgorithm> getAlgorithmCmb() {
