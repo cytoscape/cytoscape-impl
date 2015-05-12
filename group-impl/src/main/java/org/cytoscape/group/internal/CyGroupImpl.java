@@ -1076,7 +1076,6 @@ public class CyGroupImpl implements CyGroup {
 				// System.out.println(this.toString()+" outer edge = "+edge.toString());
 
 				if (ignoreMetaEdges && isMeta(edge)) {
-					// System.out.println("...ignoring");
 					this.addMetaEdge(edge, edge);
 					continue;
 				}
@@ -1089,12 +1088,16 @@ public class CyGroupImpl implements CyGroup {
 				// be adding a new edge from the XGMML reader.  Not a clean special case,
 				// but there you have it...
 				if (rootNetwork.containsEdge(edge.getSource(), groupNode)
-					  && metaAlreadyExists(edge.getSource(), groupNode))
-						continue;
+					  && metaAlreadyExists(edge.getSource(), groupNode)) {
+					this.addMetaEdge(edge, getMetaEdge(edge.getSource(), groupNode));
+					continue;
+				}
 
 				if (rootNetwork.containsEdge(groupNode, edge.getTarget())
-					  && metaAlreadyExists(groupNode, edge.getTarget()))
-						continue;
+					  && metaAlreadyExists(groupNode, edge.getTarget())) {
+					this.addMetaEdge(edge, getMetaEdge(groupNode, edge.getTarget()));
+					continue;
+				}
 
 				// Create the meta-edge to the external node, but maintain the directionality
 				// of the original edge
@@ -1340,6 +1343,16 @@ public class CyGroupImpl implements CyGroup {
 			}
 		}
 		return false;
+	}
+
+	private CyEdge getMetaEdge(CyNode source, CyNode target) {
+		List<CyEdge> edges = rootNetwork.getConnectingEdgeList(source, target, CyEdge.Type.ANY);
+		for (CyEdge groupEdge: edges) {
+			if (isMeta(groupEdge)) {
+				return groupEdge;
+			}
+		}
+		return null;
 	}
 
 	public boolean isCollapsing() { return collapsing; }
