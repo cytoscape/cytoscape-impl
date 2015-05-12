@@ -25,6 +25,7 @@ package org.cytoscape.io.internal.util;
  */
 
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.Authenticator;
@@ -44,18 +45,18 @@ import java.util.zip.ZipInputStream;
 
 import javax.xml.bind.DatatypeConverter;
 
+import org.cytoscape.application.CyUserLog;
 import org.cytoscape.io.util.StreamUtil;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.service.util.CyServiceRegistrar;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.log4j.Logger;
 
 /**
  * 
  */
 public class StreamUtilImpl implements StreamUtil {
 
-	private static final Logger logger = LoggerFactory.getLogger(StreamUtilImpl.class);
+	private static final Logger logger = Logger.getLogger(CyUserLog.NAME);
 	
 	private static final String GZIP = ".gz";
 	private static final String ZIP = ".zip";
@@ -85,10 +86,15 @@ public class StreamUtilImpl implements StreamUtil {
 
 	@Override
 	public InputStream getInputStream(String name) throws IOException {
-		if (name.matches(StreamUtil.URL_PATTERN)) 
-			return getInputStream(new URL(name));
-		else 
-			return new FileInputStream(name);
+		try {
+			if (name.matches(StreamUtil.URL_PATTERN)) 
+				return getInputStream(new URL(name));
+			else 
+				return new FileInputStream(name);
+		} catch (FileNotFoundException fnf) {
+			logger.error("The file "+name+" doesn't exist or can't be opened: "+fnf.getMessage());
+			return null;
+		}
 	}
 	
 	/**
