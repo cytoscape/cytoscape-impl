@@ -183,20 +183,24 @@ public final class BrowserTableModel extends AbstractTableModel
 	}
 
 	public CyRow getCyRow(final int rowIndex) {
-		switch (viewMode) {
-			case SELECTED:
-				if (selectedRows == null)
-					selectedRows = new ArrayList<CyRow>(dataTable.getMatchingRows(CyNetwork.SELECTED, true));
-				return selectedRows.get(rowIndex);
-			case ALL:
-				return dataTable.getRow(rowIndexToPrimaryKey[rowIndex]);
-			case AUTO:
-				if (selectedRows == null)
-					selectedRows = new ArrayList<CyRow>(dataTable.getMatchingRows(CyNetwork.SELECTED, true));
-				if (selectedRows.size() > 0)
+		try {
+			switch (viewMode) {
+				case SELECTED:
+					if (selectedRows == null)
+						selectedRows = new ArrayList<CyRow>(dataTable.getMatchingRows(CyNetwork.SELECTED, true));
 					return selectedRows.get(rowIndex);
-				else
+				case ALL:
 					return dataTable.getRow(rowIndexToPrimaryKey[rowIndex]);
+				case AUTO:
+					if (selectedRows == null)
+						selectedRows = new ArrayList<CyRow>(dataTable.getMatchingRows(CyNetwork.SELECTED, true));
+					if (selectedRows.size() > 0)
+						return selectedRows.get(rowIndex);
+					else
+						return dataTable.getRow(rowIndexToPrimaryKey[rowIndex]);
+			}
+		} catch (ArrayIndexOutOfBoundsException e) {
+			return null;
 		}
 		
 		return null;
