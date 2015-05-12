@@ -434,7 +434,6 @@ public class GroupViewCollapseHandler implements GroupAboutToCollapseListener,
 						((CyGroupImpl)group).setCollapsed(network, false);
 						((CyGroupImpl)group).setGroupNodeShown(network, true);
 
-						System.out.println("Activating compound node");
 						try {
 							// OK, now activate the group
 							activateCompoundNode(group, networkView);

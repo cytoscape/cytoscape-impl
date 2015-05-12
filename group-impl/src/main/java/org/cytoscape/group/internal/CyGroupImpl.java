@@ -320,7 +320,6 @@ public class CyGroupImpl implements CyGroup {
 
 	private void addMemberEdge(CyEdge edge) {
 		synchronized (lock) {
-			System.out.println("edge "+edge+" added as member edge to "+this.toString());
 			if (!rootNetwork.containsEdge(edge))
 				throwIllegalArgumentException("Can only add an edge in the same network tree");
 			if (groupNode == null)
@@ -811,7 +810,6 @@ public class CyGroupImpl implements CyGroup {
 			// Remove the group node from the target network only if
 			// there are no member edges. If there were member edges,
 			// the group node did not go away.
-			System.out.println("We have "+memberEdges.size()+" edges and groupNodeShown = "+groupNodeShown);
 			if (memberEdges.size() == 0 && !groupNodeShown) {
 				// First, get all of the group node's edges
 				List<CyEdge> groupEdges = subnet.getAdjacentEdgeList(groupNode, CyEdge.Type.ANY);
@@ -832,7 +830,6 @@ public class CyGroupImpl implements CyGroup {
 						groupNodeEdges.add(edge);
 				}
 
-				System.out.println("Removing group node");
 				subnet.removeNodes(Collections.singletonList(groupNode));
 			}
 
