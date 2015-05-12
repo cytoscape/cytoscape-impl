@@ -39,6 +39,8 @@ import org.cytoscape.group.CyGroupSettingsManager.GroupViewType;
 import org.cytoscape.group.internal.CyGroupImpl;
 import org.cytoscape.group.internal.CyGroupManagerImpl;
 import org.cytoscape.group.internal.data.CyGroupSettingsImpl;
+import org.cytoscape.group.internal.data.GroupViewTypeChangedEvent;
+import org.cytoscape.group.internal.data.GroupViewTypeChangedListener;
 import org.cytoscape.group.events.GroupAddedEvent;
 import org.cytoscape.group.events.GroupAddedListener;
 import org.cytoscape.group.events.GroupAboutToBeDestroyedEvent;
@@ -77,6 +79,7 @@ public class GroupViewCollapseHandler implements GroupAboutToCollapseListener,
                                                  GroupCollapsedListener,
                                                  SessionLoadedListener,
                                                  GroupAboutToBeDestroyedListener,
+                                                 GroupViewTypeChangedListener,
                                                  GroupAddedListener
 {
 
@@ -112,6 +115,61 @@ public class GroupViewCollapseHandler implements GroupAboutToCollapseListener,
 		this.nodeChangeListener = nodeChangeListener;
 		this.cyEventHelper = cyEventHelper;
 		this.appMgr = cyGroupManager.getService(CyApplicationManager.class);
+	}
+
+
+	/**
+	 * This is called when the user changes the view type for a particular
+	 * group.  We want to respond and change the visualization right away,
+	 * from the old visual type to the new visual type.
+	 */
+	public void handleEvent(GroupViewTypeChangedEvent e) {
+		getServices();
+		GroupViewType oldType = e.getOldType();
+		GroupViewType newType = e.getNewType();
+		CyGroup group = e.getGroup();
+
+		if (group == null || oldType.equals(newType))
+			return;
+
+		if (oldType == GroupViewType.COMPOUND) {
+			removeCompoundNode(group);
+		} else if (oldType == GroupViewType.SINGLENODE) {
+			removeCompoundNode(group);
+		} else if (oldType == GroupViewType.SHOWGROUPNODE) {
+			((CyGroupImpl)group).removeMemberEdges();
+		}
+
+		for (CyNetwork net: group.getNetworkSet()) {
+			// Careful -- the network set includes the root
+			if (net.equals(group.getRootNetwork()))
+				continue;
+
+			// If we're moving to NONE for the visualization, then
+			// we want to disable the group node visibility in the
+			// expanded state and we need to leave the group in the
+			// collapsed state no matter what we started as.  This is
+			// necessary to make sure we can update other settings.
+			if (newType == GroupViewType.NONE) {
+				((CyGroupImpl)group).setGroupNodeShown(net, false);
+				// If we're expanded and the group node is shown, remove it
+				if (!group.isCollapsed(net) && net.containsNode(group.getGroupNode())) {
+					net.removeNodes(Collections.singletonList(group.getGroupNode()));
+					group.collapse(net);
+				}
+			} else {
+				// For all of the other visualization types,
+				// do a collapse (if necessary)/expand to make sure
+				// the group is appropriately restyled
+				if (!group.isCollapsed(net)) {
+					group.collapse(net);
+					group.expand(net);
+				} else {
+					group.expand(net);
+				}
+			}
+		}
+
 	}
 
 	public void handleEvent(GroupAboutToCollapseEvent e) {
@@ -247,6 +305,8 @@ public class GroupViewCollapseHandler implements GroupAboutToCollapseListener,
 				List<CyEdge> groupNodeEdges = rootNetwork.getAdjacentEdgeList(groupNode, CyEdge.Type.ANY);
 				for (CyEdge edge: groupNodeEdges) {
 					CyRow row = rootNetwork.getRow(edge, CyNetwork.HIDDEN_ATTRS);
+					// System.out.println("Group node edge: "+edge+"("+
+					//                    rootNetwork.getRow(edge).get(CyNetwork.NAME, String.class)+")");
 					// Only add non-meta edges
 					if (row != null && 
 							(!row.isSet(CyGroupImpl.ISMETA_EDGE_ATTR) ||
@@ -255,8 +315,7 @@ public class GroupViewCollapseHandler implements GroupAboutToCollapseListener,
 					}
 				}
 
-				if (!groupViewType.equals(GroupViewType.COMPOUND) &&
-				    !groupViewType.equals(GroupViewType.SINGLENODE)) {
+				if (groupViewType.equals(GroupViewType.SHOWGROUPNODE)) {
 					// If this is the first time, we need to add our member
 					// edges in.
 					addMemberEdges(group, network);
@@ -305,6 +364,7 @@ public class GroupViewCollapseHandler implements GroupAboutToCollapseListener,
 	}
 
 	public void handleEvent(GroupAddedEvent e) {
+		getServices();
 		CyGroup group = e.getGroup();
 		GroupViewType groupViewType = cyGroupSettings.getGroupViewType(group);
 		// System.out.println("Group added: "+group);
@@ -339,28 +399,11 @@ public class GroupViewCollapseHandler implements GroupAboutToCollapseListener,
 	 * bunch of things.
 	 */
 	public void handleEvent(GroupAboutToBeDestroyedEvent e) {
+		getServices();
 		CyGroup group = e.getGroup();
 		GroupViewType groupViewType = cyGroupSettings.getGroupViewType(group);
 		if (groupViewType.equals(GroupViewType.COMPOUND)) {
-			for (CyNetwork network: group.getNetworkSet()) {
-				final Collection<CyNetworkView> views = cyNetworkViewManager.getNetworkViews(network);
-				CyNetworkView view = null;
-				if(views.size() == 0) {
-					return;
-				}
-
-				for (CyNetworkView v: views) {
-					if (v.getRendererId().equals("org.cytoscape.ding")) {
-						view = v;
-					}
-				}
-
-				if (view == null)
-					continue;
-
-				ViewUtils.unStyleCompoundNode(group, view, cyStyleManager);
-				nodeChangeListener.removeGroup(group, view);
-			}
+			removeCompoundNode(group);
 		}
 	}
 
@@ -372,6 +415,7 @@ public class GroupViewCollapseHandler implements GroupAboutToCollapseListener,
 	 * after the session gets loaded.
 	 */
 	public void handleEvent(SessionLoadedEvent e) {
+		getServices();
 		try {
 		// For each network
 		for (CyNetworkView networkView: e.getLoadedSession().getNetworkViews()) {
@@ -390,12 +434,14 @@ public class GroupViewCollapseHandler implements GroupAboutToCollapseListener,
 						((CyGroupImpl)group).setCollapsed(network, false);
 						((CyGroupImpl)group).setGroupNodeShown(network, true);
 
+						System.out.println("Activating compound node");
 						try {
 							// OK, now activate the group
 							activateCompoundNode(group, networkView);
 						} catch (Exception rtree) {
 							// We may get an RTree exception under rare
 							// circumstances.
+							rtree.printStackTrace();
 						}
 					}
 				}
@@ -451,6 +497,28 @@ public class GroupViewCollapseHandler implements GroupAboutToCollapseListener,
 		}
 		if (newEdges.size() > 0)
 			group.addEdges(newEdges);
+	}
+
+	private void removeCompoundNode(CyGroup group) {
+		for (CyNetwork network: group.getNetworkSet()) {
+			final Collection<CyNetworkView> views = cyNetworkViewManager.getNetworkViews(network);
+			CyNetworkView view = null;
+			if(views.size() == 0) {
+				return;
+			}
+
+			for (CyNetworkView v: views) {
+				if (v.getRendererId().equals("org.cytoscape.ding")) {
+					view = v;
+				}
+			}
+
+			if (view == null)
+				continue;
+
+			ViewUtils.unStyleCompoundNode(group, view, cyStyleManager);
+			nodeChangeListener.removeGroup(group, view);
+		}
 	}
 
 	private String getNodeName(CyNode node, CyNetwork network) {

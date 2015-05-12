@@ -37,6 +37,7 @@ import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.ContainsTunables;
 
+import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.group.CyGroup;
 import org.cytoscape.group.CyGroupSettingsManager;
 import org.cytoscape.group.CyGroupSettingsManager.DoubleClickAction;
@@ -75,6 +76,7 @@ public class CyGroupSettingsImpl implements GroupAddedListener,
 	final CyGroupAggregationManagerImpl cyAggManager;
 	final CyServiceRegistrar cyServiceRegistrar;
 	final CyApplicationManager appMgr;
+	final CyEventHelper eventHelper;
 
 	CyProperty<Properties> groupSettingsProperties = null;
 
@@ -119,6 +121,7 @@ public class CyGroupSettingsImpl implements GroupAddedListener,
 	boolean useNestedNetworks = false;
 	double groupNodeOpacity = 100.0;
 	GroupViewType groupViewType = GroupViewType.NONE;
+	boolean loadingNewGroup = false;
 	
 	private final Object lock = new Object();
 
@@ -129,6 +132,7 @@ public class CyGroupSettingsImpl implements GroupAddedListener,
 		this.cyAggManager = aggMgr;
 		this.cyServiceRegistrar = registrar;
 		this.appMgr = cyGroupManager.getService(CyApplicationManager.class);
+		this.eventHelper = cyGroupManager.getService(CyEventHelper.class);
 
 		allGroupDefaultMap = new HashMap<Class,Aggregator>();
 		allGroupOverrideMap = new HashMap<CyColumn,Aggregator>();
@@ -207,8 +211,11 @@ public class CyGroupSettingsImpl implements GroupAddedListener,
 	@Override
 	public void setGroupViewType(CyGroup group, GroupViewType groupViewType) {
 		if (group != null) {
+			GroupViewType oldType = getGroupViewType(group);
 			groupViewTypeMap.put(group, groupViewType);
 			updateSettingsInTable(group);
+			if (!loadingNewGroup)
+				eventHelper.fireEvent(new GroupViewTypeChangedEvent(group, oldType, groupViewType));
 		} else {
 			this.groupViewType = groupViewType;
 			updateProperties();
@@ -318,8 +325,10 @@ public class CyGroupSettingsImpl implements GroupAddedListener,
 				ovMap.put(cKey, allGroupOverrideMap.get(cKey));
 			groupMap.put(addedGroup, new GroupSpecificMaps(defMap, ovMap));
 		}
+		loadingNewGroup = true; // Flag to indicate that we don't want to trigger visualization changes
 		// Now override these with any settings from the table
 		loadSettingsFromTable(addedGroup, network);
+		loadingNewGroup = false;
 	}
 
 	public void handleEvent(NetworkAddedEvent e) {

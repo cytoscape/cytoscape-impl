@@ -183,6 +183,8 @@ public class ViewUtils {
 			groupView.clearValueLock(BasicVisualLexicon.NODE_BORDER_WIDTH);
 			groupView.clearValueLock(BasicVisualLexicon.NODE_Z_LOCATION);
 		}
+
+		cyStyleManager.getVisualStyle(view).apply(view.getModel().getRow(group.getGroupNode()), groupView);
 	}
 	
 	public static Dimension calculateCenter(CyNetworkView view, List<CyNode> nodeList) {

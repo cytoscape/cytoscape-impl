@@ -86,6 +86,8 @@ public class CyGroupImpl implements CyGroup {
 	private boolean nodeProvided = false;  // We'll need this when we destroy ourselves
 	private boolean collapsing = false;
 	private boolean expanding = false;
+	private boolean neverCollapsed = true;
+
 	private Map<Long, Map<CyIdentifiable, Map<String, Object>>> savedLocalValuesMap;
 	private Map<Long, Map<CyIdentifiable, Map<String, Object>>> savedHiddenValuesMap;
 
@@ -125,6 +127,7 @@ public class CyGroupImpl implements CyGroup {
 
 			if (np == null || np == true) {
 				nodeProvided = true;
+				neverCollapsed = false;  // If someone gave us the node, they are reponsible for the NAME
 			} else {
 				nodeProvided = false;
 			}
@@ -317,7 +320,7 @@ public class CyGroupImpl implements CyGroup {
 
 	private void addMemberEdge(CyEdge edge) {
 		synchronized (lock) {
-			// System.out.println("edge "+edge+" added as member edge to "+this.toString());
+			System.out.println("edge "+edge+" added as member edge to "+this.toString());
 			if (!rootNetwork.containsEdge(edge))
 				throwIllegalArgumentException("Can only add an edge in the same network tree");
 			if (groupNode == null)
@@ -593,9 +596,6 @@ public class CyGroupImpl implements CyGroup {
 			}
 		}
 
-		// Inform the views that we've deselected things
-		// cyEventHelper.flushPayloadEvents();
-
 		List<CyNode> nodes;
 		synchronized (lock) {
 			// Deselect all of our external edges, and check for any possible
@@ -811,6 +811,7 @@ public class CyGroupImpl implements CyGroup {
 			// Remove the group node from the target network only if
 			// there are no member edges. If there were member edges,
 			// the group node did not go away.
+			System.out.println("We have "+memberEdges.size()+" edges and groupNodeShown = "+groupNodeShown);
 			if (memberEdges.size() == 0 && !groupNodeShown) {
 				// First, get all of the group node's edges
 				List<CyEdge> groupEdges = subnet.getAdjacentEdgeList(groupNode, CyEdge.Type.ANY);
@@ -831,6 +832,7 @@ public class CyGroupImpl implements CyGroup {
 						groupNodeEdges.add(edge);
 				}
 
+				System.out.println("Removing group node");
 				subnet.removeNodes(Collections.singletonList(groupNode));
 			}
 
@@ -931,8 +933,9 @@ public class CyGroupImpl implements CyGroup {
 		synchronized (lock) {
 			if (showGroupNode && !nodeShownSet.contains(net.getSUID()))
 				nodeShownSet.add(net.getSUID());
-			if (!showGroupNode && nodeShownSet.contains(net.getSUID()))
+			if (!showGroupNode && nodeShownSet.contains(net.getSUID())) {
 				nodeShownSet.remove(net.getSUID());
+			}
 		}
 	}
 
@@ -1000,6 +1003,17 @@ public class CyGroupImpl implements CyGroup {
 		synchronized (lock) {
 			return metaEdges.values();
 		}
+	}
+
+	public void removeMemberEdges() {
+		Set<CyEdge> edgesToRemove = new HashSet<>(memberEdges);
+
+		for (CyNetwork network: networkSet) {
+			network.removeEdges(edgesToRemove);
+		}
+
+		rootNetwork.removeEdges(edgesToRemove);
+		memberEdges.clear();
 	}
 
 	protected CyEdge getMetaEdge(CyEdge edge) {
@@ -1296,6 +1310,13 @@ public class CyGroupImpl implements CyGroup {
 			return;
 		}
 		CyRow groupRow = nodeTable.getRow(groupNode.getSUID());
+
+		// Fix up the NAME
+		if (neverCollapsed) {
+			groupRow.set(CyNetwork.NAME, groupRow.get(CyRootNetwork.SHARED_NAME, String.class));
+			neverCollapsed = false;
+		}
+
 		groupRow.set(CHILDREN_ATTR, getGroupNetwork().getNodeCount());
 
 		CyColumn descendentsColumn = nodeTable.getColumn(DESCENDENTS_ATTR);
@@ -1326,6 +1347,11 @@ public class CyGroupImpl implements CyGroup {
 
 	public boolean isCollapsing() { return collapsing; }
 	public boolean isExpanding() { return expanding; }
+
+	// We need this to determine if the group node has ever been
+	// shown.  The first time it's shown, we need to add the name
+	// in the NAME column;
+	public boolean neverCollapsed() { return neverCollapsed; }
 
 	private void saveLocalAttributes(CyNetwork net, CyIdentifiable cyObject) {
 		CyRow localRow = net.getRow(cyObject, CyNetwork.LOCAL_ATTRS);
