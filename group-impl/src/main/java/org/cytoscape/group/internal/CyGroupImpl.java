@@ -740,6 +740,7 @@ public class CyGroupImpl implements CyGroup {
 				if (subnet.containsNode(e.getSource()) && subnet.containsNode(e.getTarget())) {
 					subnet.addEdge(e);
 					addedElements.add(e);
+					nameMetaEdge(e, e.getSource(), e.getTarget());
 					copyEdgeName(subnet, e);
 				}
 			}
@@ -1216,25 +1217,29 @@ public class CyGroupImpl implements CyGroup {
 
 	private CyEdge createMetaEdge(CyEdge edge, CyNode node, CyNode groupNode) {
 		CyEdge metaEdge = null;
+		CyNode source = null;
+		CyNode target = null;
 		if (isIncoming(edge)) {
 			if (rootNetwork.containsEdge(node, groupNode))
 				return rootNetwork.getConnectingEdgeList(node, groupNode, CyEdge.Type.ANY).get(0);
 			metaEdge = rootNetwork.addEdge(node, groupNode, edge.isDirected());
+			source = node;
+			target = groupNode;
 		} else {
 			if (rootNetwork.containsEdge(groupNode, node)) {
 				// System.out.println("Found metaEdge(s): "+rootNetwork.getConnectingEdgeList(groupNode, node, CyEdge.Type.ANY));
 				return rootNetwork.getConnectingEdgeList(groupNode, node, CyEdge.Type.ANY).get(0);
 			}
 			metaEdge = rootNetwork.addEdge(groupNode, node, edge.isDirected());
+			source = groupNode;
+			target = node;
 		}
 
-		// Add the name and mark this as a meta-edge
-		String edgeName = rootNetwork.getRow(edge).get(CyRootNetwork.SHARED_NAME, String.class);
-		rootNetwork.getRow(metaEdge).set(CyRootNetwork.SHARED_NAME, "meta-"+edgeName);
+		nameMetaEdge(metaEdge, source, target);
 		createIfNecessary(metaEdge, CyNetwork.HIDDEN_ATTRS, ISMETA_EDGE_ATTR, Boolean.class);
 		rootNetwork.getRow(metaEdge, CyNetwork.HIDDEN_ATTRS).set(ISMETA_EDGE_ATTR, Boolean.TRUE);
-		// System.out.println("Created metaEdge: "+metaEdge);
 
+		// System.out.println("Created metaEdge: "+metaEdge);
 		return metaEdge;
 	}
 
@@ -1419,8 +1424,27 @@ public class CyGroupImpl implements CyGroup {
 			net.getRow(edge).set(CyNetwork.NAME, 
 			                     rootNetwork.getRow(edge).get(CyRootNetwork.SHARED_NAME, String.class));
 		}
+		String localInteraction = net.getRow(edge).get(CyEdge.INTERACTION, String.class);
+		if (localInteraction == null || localInteraction.length() == 0) {
+			net.getRow(edge).set(CyEdge.INTERACTION, 
+			                     rootNetwork.getRow(edge).get(CyRootNetwork.SHARED_INTERACTION, String.class));
+		}
 	}
 
+	private void nameMetaEdge(CyEdge edge, CyNode source, CyNode target) {
+		// Add the name and mark this as a meta-edge
+		String sourceName = rootNetwork.getRow(source).get(CyRootNetwork.SHARED_NAME, String.class);
+		String targetName = rootNetwork.getRow(target).get(CyRootNetwork.SHARED_NAME, String.class);
+
+		if (sourceName == null || targetName == null) return;
+
+		// Already done?
+		if (rootNetwork.getRow(edge).get(CyRootNetwork.SHARED_NAME, String.class) != null)
+			return;
+
+		rootNetwork.getRow(edge).set(CyRootNetwork.SHARED_NAME, sourceName+" (meta) "+targetName);
+		rootNetwork.getRow(edge).set(CyRootNetwork.SHARED_INTERACTION, "meta");
+	}
 
 	protected void printGroup() {
 		System.out.println("Group "+this);
