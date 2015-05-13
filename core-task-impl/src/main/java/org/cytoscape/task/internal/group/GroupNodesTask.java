@@ -55,6 +55,7 @@ public class GroupNodesTask extends AbstractTask implements ObservableTask {
 	private CyGroupFactory factory;
 	private UndoSupport undoSupport;
 	private CyGroup newGroup;
+	private static int groupNumber = 1;
 
 	@ContainsTunables
 	public NodeTunable nodeTunable = null;
@@ -68,6 +69,11 @@ public class GroupNodesTask extends AbstractTask implements ObservableTask {
 		this.mgr = mgr;
 		this.factory = factory;
 		this.undoSupport = undoSupport;
+		if (groupName == null) {
+			groupName = "Group "+groupNumber;
+			groupNumber++;
+		}
+
 	}
 
 	public GroupNodesTask(UndoSupport undoSupport, CyApplicationManager appMgr, 
@@ -105,7 +111,7 @@ public class GroupNodesTask extends AbstractTask implements ObservableTask {
 		// Now some trickery to actually name the group.  Note that we need to change
 		// both the NAME and SHARED_NAME columns
 		CyRow groupRow = ((CySubNetwork)net).getRootNetwork().getRow(newGroup.getGroupNode(), CyRootNetwork.SHARED_ATTRS);
-		groupRow.set(CyRootNetwork.SHARED_NAME, groupName);
+ 		groupRow.set(CyRootNetwork.SHARED_NAME, groupName);
 
 		tm.showMessage(TaskMonitor.Level.INFO, "Created group "+groupName+" with "+selNodes.size()+" nodes");
 		// mgr.addGroup(group);
