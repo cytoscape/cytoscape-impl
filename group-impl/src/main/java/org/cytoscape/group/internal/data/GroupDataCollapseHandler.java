@@ -74,6 +74,15 @@ public class GroupDataCollapseHandler implements GroupAboutToCollapseListener
 			for (CyColumn column: nodeTable.getColumns()) {
 				Class type = column.getType();
 				if (column.isPrimaryKey()) continue;
+
+				// Skip over our own columns
+				if (CyGroupSettingsImpl.AGGREGATION_SETTINGS.equals(column.getName()))
+					continue;
+				if (CyGroupSettingsImpl.AGGREGATION_OVERRIDE_SETTINGS.equals(column.getName()))
+					continue;
+				if (CyGroupSettingsImpl.VIEW_SETTINGS.equals(column.getName()))
+					continue;
+
 				// Do we have an override for this group and column?
 				Aggregator agg = cyGroupSettings.getAggregator(group, column);
 				if (agg == null) continue;

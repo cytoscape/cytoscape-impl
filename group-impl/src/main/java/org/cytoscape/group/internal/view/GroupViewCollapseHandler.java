@@ -129,6 +129,8 @@ public class GroupViewCollapseHandler implements GroupAboutToCollapseListener,
 		GroupViewType newType = e.getNewType();
 		CyGroup group = e.getGroup();
 
+		// System.out.println("GroupViewTypeChange for group "+group+" from "+oldType+" to "+newType);
+
 		if (group == null || oldType.equals(newType))
 			return;
 
@@ -154,8 +156,11 @@ public class GroupViewCollapseHandler implements GroupAboutToCollapseListener,
 				((CyGroupImpl)group).setGroupNodeShown(net, false);
 				// If we're expanded and the group node is shown, remove it
 				if (!group.isCollapsed(net) && net.containsNode(group.getGroupNode())) {
-					net.removeNodes(Collections.singletonList(group.getGroupNode()));
 					group.collapse(net);
+					// We need to do this again because our group node was "noticed" when we
+					// collapsed.  If we remove the group node ourselves, it messes up the
+					// restyling
+					((CyGroupImpl)group).setGroupNodeShown(net, false);
 				}
 			} else {
 				// For all of the other visualization types,
@@ -277,15 +282,7 @@ public class GroupViewCollapseHandler implements GroupAboutToCollapseListener,
 				deActivateCompoundNode(group, view);
 			}
 
-			// Handle opacity
-			double opacity = cyGroupSettings.getGroupNodeOpacity(group);
-			if (opacity != 100.0)
-				nView.setVisualProperty(BasicVisualLexicon.NODE_TRANSPARENCY, (int)(opacity*255.0/100.0));
-
-			// Apply visual property to added graph elements
-			ViewUtils.applyStyle(Collections.singleton(nView.getModel()), views, cyStyleManager);
-			ViewUtils.applyStyle(network.getAdjacentEdgeList(group.getGroupNode(), Type.ANY), 
-			                     views, cyStyleManager);
+			styleGroupNode(group, view, views);
 		} else {
 			// System.out.println("Got expand event for "+group);
 			CyNode groupNode = group.getGroupNode();
@@ -321,6 +318,7 @@ public class GroupViewCollapseHandler implements GroupAboutToCollapseListener,
 					addMemberEdges(group, network);
 
 					// Style our member edges
+					styleGroupNode(group, view, views);
 				}
 
 				// Flush events so that the view hears about it
@@ -367,7 +365,7 @@ public class GroupViewCollapseHandler implements GroupAboutToCollapseListener,
 		getServices();
 		CyGroup group = e.getGroup();
 		GroupViewType groupViewType = cyGroupSettings.getGroupViewType(group);
-		// System.out.println("Group added: "+group);
+		// System.out.println("Group added: "+group+" with view type: "+groupViewType);
 
 		try {
 		// When we add a group, we may want to reflect the state
@@ -449,6 +447,20 @@ public class GroupViewCollapseHandler implements GroupAboutToCollapseListener,
 		} catch (Exception ex) { ex.printStackTrace(); }
 	}
 
+	private void styleGroupNode(CyGroup group, CyNetworkView view, Collection<CyNetworkView> views) {
+		View<CyNode> nView = view.getNodeView(group.getGroupNode());
+
+		// Handle opacity
+		double opacity = cyGroupSettings.getGroupNodeOpacity(group);
+		if (opacity != 100.0)
+			nView.setVisualProperty(BasicVisualLexicon.NODE_TRANSPARENCY, (int)(opacity*255.0/100.0));
+
+		// Apply visual property to added graph elements
+		ViewUtils.applyStyle(Collections.singleton(nView.getModel()), views, cyStyleManager);
+		ViewUtils.applyStyle(view.getModel().getAdjacentEdgeList(group.getGroupNode(), Type.ANY), 
+		                     views, cyStyleManager);
+	}
+
 	private void activateCompoundNode(CyGroup group, CyNetworkView view) {
 		// System.out.println("Activating listener for "+group);
 		// Style the group node
@@ -503,7 +515,7 @@ public class GroupViewCollapseHandler implements GroupAboutToCollapseListener,
 			final Collection<CyNetworkView> views = cyNetworkViewManager.getNetworkViews(network);
 			CyNetworkView view = null;
 			if(views.size() == 0) {
-				return;
+				continue;
 			}
 
 			for (CyNetworkView v: views) {

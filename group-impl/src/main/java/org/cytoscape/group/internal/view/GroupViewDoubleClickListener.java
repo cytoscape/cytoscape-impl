@@ -177,8 +177,11 @@ public class GroupViewDoubleClickListener extends AbstractNodeViewTaskFactory
 			
 			if (cyGroupManager.isGroup(node, network)) {
 				CyGroup group = cyGroupManager.getGroup(node, network);
-				if (group.isCollapsed(network))
+				if (group.isCollapsed(network)) {
 					group.expand(network);
+				} else {
+					group.collapse(network);
+				}
 				// Not sure how we can double click on a node that's a group, but not
 				// collapsed, so just fall through
 			} else {

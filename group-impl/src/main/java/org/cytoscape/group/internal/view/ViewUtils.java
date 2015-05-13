@@ -200,7 +200,6 @@ public class ViewUtils {
 			size++;
 			xCenter += (nView.getVisualProperty(xLoc));
 			yCenter += (nView.getVisualProperty(yLoc));
-			
 		}
 		return getDim(xCenter/(double)size, yCenter/(double)size);
 	}
@@ -228,7 +227,9 @@ public class ViewUtils {
 	public static Dimension getLocation(CyNetwork network, CyGroup group) {
 		CyNetwork groupNetwork = group.getGroupNetwork();
 		CyTable netTable = groupNetwork.getTable(CyNetwork.class, CyNetwork.HIDDEN_ATTRS);
-		return getNodeLocation(netTable, network, groupNetwork.getSUID());
+		Dimension dim =  getNodeLocation(netTable, network, groupNetwork.getSUID());
+		// System.out.println("Group node should be at: "+dim);
+		return dim;
 	}
 
 	/**
@@ -256,6 +257,9 @@ public class ViewUtils {
 	public static void updateGroupLocation(CyNetwork network, CyGroup group, Dimension offset) {
 		CyNetwork groupNetwork = group.getGroupNetwork();
 		CyTable netTable = groupNetwork.getTable(CyNetwork.class, CyNetwork.HIDDEN_ATTRS);
+		// System.out.println("Updating group node location to: "+offset);
+		// if (offset.getWidth() == 0.0 && offset.getHeight() == 0.0)
+		// 	Thread.dumpStack();
 		updateNodeLocation(netTable, network, groupNetwork.getSUID(), offset);
 	}
 

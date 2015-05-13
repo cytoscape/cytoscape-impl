@@ -702,13 +702,16 @@ public class CyGroupImpl implements CyGroup {
 		final Set<CyIdentifiable> addedElements = new HashSet<CyIdentifiable>();
 
 		synchronized (lock) {
-			if (net.containsNode(groupNode))
+			if (net.containsNode(groupNode)) {
+				// System.out.println("Network contains group node!");
 				nodeShownSet.add(net.getSUID());
+			}
 
 			// Add the group node and its edges to the target network.
 			// If we have member edges, or the node already exists in
 			// the network, then the group node didn't
 			// go away so we don't have to add it back in here
+			// System.out.println("Adding group node.  memberEdges.size() = "+memberEdges.size()+" and nodeShownSet = "+nodeShownSet.contains(net.getSUID()));
 			if (memberEdges.size() == 0 && !nodeShownSet.contains(net.getSUID())) {
 				subnet.addNode(groupNode);
 				addedElements.add(groupNode);
@@ -737,6 +740,7 @@ public class CyGroupImpl implements CyGroup {
 				if (subnet.containsNode(e.getSource()) && subnet.containsNode(e.getTarget())) {
 					subnet.addEdge(e);
 					addedElements.add(e);
+					copyEdgeName(subnet, e);
 				}
 			}
 
@@ -830,7 +834,9 @@ public class CyGroupImpl implements CyGroup {
 						groupNodeEdges.add(edge);
 				}
 
-				subnet.removeNodes(Collections.singletonList(groupNode));
+				// Remove the group node, if we're supposed to
+				if (!nodeShownSet.contains(subnet.getSUID()))
+					subnet.removeNodes(Collections.singletonList(groupNode));
 			}
 
 			// Add all of the member nodes and edges in
@@ -928,8 +934,10 @@ public class CyGroupImpl implements CyGroup {
 	 */
 	public void setGroupNodeShown(CyNetwork net, boolean showGroupNode) {
 		synchronized (lock) {
-			if (showGroupNode && !nodeShownSet.contains(net.getSUID()))
+			if (showGroupNode && !nodeShownSet.contains(net.getSUID())) {
+				// System.out.println("Setting node shown to true");
 				nodeShownSet.add(net.getSUID());
+			}
 			if (!showGroupNode && nodeShownSet.contains(net.getSUID())) {
 				nodeShownSet.remove(net.getSUID());
 			}
@@ -1221,8 +1229,8 @@ public class CyGroupImpl implements CyGroup {
 		}
 
 		// Add the name and mark this as a meta-edge
-		String edgeName = rootNetwork.getRow(edge).get(CyNetwork.NAME, String.class);
-		rootNetwork.getRow(metaEdge).set(CyNetwork.NAME, "meta-"+edgeName);
+		String edgeName = rootNetwork.getRow(edge).get(CyRootNetwork.SHARED_NAME, String.class);
+		rootNetwork.getRow(metaEdge).set(CyRootNetwork.SHARED_NAME, "meta-"+edgeName);
 		createIfNecessary(metaEdge, CyNetwork.HIDDEN_ATTRS, ISMETA_EDGE_ATTR, Boolean.class);
 		rootNetwork.getRow(metaEdge, CyNetwork.HIDDEN_ATTRS).set(ISMETA_EDGE_ATTR, Boolean.TRUE);
 		// System.out.println("Created metaEdge: "+metaEdge);
@@ -1402,6 +1410,14 @@ public class CyGroupImpl implements CyGroup {
 			if (values.containsKey(column.getName())) {
 				row.set(column.getName(), values.get(column.getName()));
 			}
+		}
+	}
+
+	private void copyEdgeName(CyNetwork net, CyEdge edge) {
+		String localName = net.getRow(edge).get(CyNetwork.NAME, String.class);
+		if (localName == null || localName.length() == 0) {
+			net.getRow(edge).set(CyNetwork.NAME, 
+			                     rootNetwork.getRow(edge).get(CyRootNetwork.SHARED_NAME, String.class));
 		}
 	}
 

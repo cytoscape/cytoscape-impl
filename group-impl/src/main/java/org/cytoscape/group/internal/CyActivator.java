@@ -52,6 +52,7 @@ import org.cytoscape.group.internal.data.CyGroupAggregationManagerImpl;
 import org.cytoscape.group.internal.data.CyGroupSettingsImpl;
 import org.cytoscape.group.internal.data.CyGroupSettingsTaskFactory;
 import org.cytoscape.group.internal.data.CyGroupNodeSettingsTaskFactory;
+import org.cytoscape.group.internal.data.GroupDataCollapseHandler;
 import org.cytoscape.group.internal.data.GroupViewTypeChangedListener;
 
 import org.cytoscape.group.internal.view.NodeChangeListener;
@@ -145,6 +146,10 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc,gvcHandler,SessionLoadedListener.class, new Properties());
     registerService(bc,gvcHandler,GroupAddedListener.class, new Properties());
     registerService(bc,gvcHandler,GroupViewTypeChangedListener.class, new Properties());
+
+		GroupDataCollapseHandler gdcHandler =
+			new GroupDataCollapseHandler(cyGroupManager, cyGroupSettings);
+		registerService(bc,gdcHandler,GroupAboutToCollapseListener.class, new Properties());
 
 		// Listen for double-click
 		GroupViewDoubleClickListener gvsListener =
