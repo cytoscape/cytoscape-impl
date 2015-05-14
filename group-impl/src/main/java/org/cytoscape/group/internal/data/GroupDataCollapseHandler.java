@@ -82,6 +82,11 @@ public class GroupDataCollapseHandler implements GroupAboutToCollapseListener
 					continue;
 				if (CyGroupSettingsImpl.VIEW_SETTINGS.equals(column.getName()))
 					continue;
+				// Don't aggregate the name column by default
+				if (CyNetwork.NAME.equals(column.getName()) && 
+				    cyGroupSettings.getOverrideAggregation(column) == null) {
+					continue;
+				}
 
 				// Do we have an override for this group and column?
 				Aggregator agg = cyGroupSettings.getAggregator(group, column);
