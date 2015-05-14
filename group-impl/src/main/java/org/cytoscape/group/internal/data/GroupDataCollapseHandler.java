@@ -35,6 +35,7 @@ import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
+import org.cytoscape.model.subnetwork.CyRootNetwork;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -82,8 +83,12 @@ public class GroupDataCollapseHandler implements GroupAboutToCollapseListener
 					continue;
 				if (CyGroupSettingsImpl.VIEW_SETTINGS.equals(column.getName()))
 					continue;
-				// Don't aggregate the name column by default
+				// Don't aggregate the name or shared name columns by default
 				if (CyNetwork.NAME.equals(column.getName()) && 
+				    cyGroupSettings.getOverrideAggregation(column) == null) {
+					continue;
+				}
+				if (CyRootNetwork.SHARED_NAME.equals(column.getName()) && 
 				    cyGroupSettings.getOverrideAggregation(column) == null) {
 					continue;
 				}

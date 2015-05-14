@@ -172,13 +172,17 @@ public class CyGroupAggregationSettings {
 	public void setAttrType(String t) {
 	}
 
-	private ListSingleSelection<Aggregator> aggregationType;
+	private ListSingleSelection<Aggregator> aggregationType = null;
 	@Tunable(description="Aggregation Type:",
 	         groups={"Attribute Aggregation Settings", "Aggregation Overrides"},
 	         dependsOn="enableAttributeAggregation=true",
 	         listenForChange="AttrSelection", gravity=22.0)
 	public ListSingleSelection<Aggregator> getAggregationType() {   
 		// System.out.println("getAggregationType: "+aggregationType);
+		// We need to do this because Cytoscape's Tunables processing doesn't correctly
+		// order listenForChange initializations
+		if (aggregationType == null)
+			aggregationType = new ListSingleSelection<Aggregator>(cyAggManager.getAggregators(NoneAggregator.class));
 		return aggregationType;
 	}
 
