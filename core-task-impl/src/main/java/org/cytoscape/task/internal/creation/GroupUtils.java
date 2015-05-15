@@ -82,6 +82,15 @@ public class GroupUtils {
 		row.set(NETWORK_SUID_ATTR, networkSUIDs);
 		row.set(X_LOCATION_ATTR, xLocations);
 		row.set(Y_LOCATION_ATTR, yLocations);
+		// System.out.println("Setting position for node "+suid+" to "+location);
+	}
+
+	public static void initializePositions(CyNetwork net, CyGroup group, Long suid, Class tableClass) {
+		CyTable table = group.getGroupNetwork().getTable(tableClass, CyNetwork.HIDDEN_ATTRS);
+		CyRow row = table.getRow(suid);
+		row.set(NETWORK_SUID_ATTR, new ArrayList<Long>());
+		row.set(X_LOCATION_ATTR, new ArrayList<Double>());
+		row.set(Y_LOCATION_ATTR, new ArrayList<Double>());
 	}
 
 

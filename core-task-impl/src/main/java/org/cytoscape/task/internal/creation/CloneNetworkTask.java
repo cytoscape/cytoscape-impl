@@ -225,7 +225,7 @@ public class CloneNetworkTask extends AbstractCreationTask implements Observable
 			// rather than pointing to the original one.
 			if (origNet.equals(netPointer))
 				netPointer = newNet;
-			
+
 			newNode.setNetworkPointer(netPointer);
 		}
 	}
@@ -296,6 +296,10 @@ public class CloneNetworkTask extends AbstractCreationTask implements Observable
 		// We need to update all of our positions hints
 		cloneGroupTables(origNet, newNet, origGroup, newGroup);
 
+		// Because we're providing a group node with a network pointer, the groups code
+		// is going to think we're coming from a session.  We need to remove the group node
+		newNet.removeNodes(Collections.singletonList(newNode));
+
 		if (collapsed) {
 			//  ...and collapse it...
 			origGroup.collapse(origNet);
@@ -323,12 +327,15 @@ public class CloneNetworkTask extends AbstractCreationTask implements Observable
 		Long groupNetworkSUID = origGroup.getGroupNetwork().getSUID();
 		Dimension d = GroupUtils.getPosition(origNet, origGroup, 
 		                                     groupNetworkSUID, CyNetwork.class);
+		GroupUtils.initializePositions(newNet, newGroup, groupNetworkSUID, CyNetwork.class);
 		GroupUtils.updatePosition(newNet, newGroup, groupNetworkSUID, CyNetwork.class, d);
 
 		// Clone the node table
 		for (CyNode node: origGroup.getNodeList()) {
 			Long nodeSUID = node.getSUID();
 			d = GroupUtils.getPosition(origNet, origGroup, nodeSUID, CyNode.class);
+			// System.out.println("Position of node "+node+" is "+d);
+			GroupUtils.initializePositions(newNet, newGroup, orig2NewNodeMap.get(node).getSUID(), CyNode.class);
 			GroupUtils.updatePosition(newNet, newGroup, orig2NewNodeMap.get(node).getSUID(), CyNode.class, d);
 		}
 	}
