@@ -118,14 +118,20 @@ public class CyGroupImpl implements CyGroup {
 			this.groupNode = node;
 
 			// Either an app has provided a node, or we've just loaded
-			// this from a session and the session prvoded the node.  We
+			// this from a session and the session provided the node.  We
 			// need to know the difference for when we delete the group
-			Boolean np = null;
+			CySubNetwork nPointer = (CySubNetwork)groupNode.getNetworkPointer();
+
+			Boolean nProvided = null;
 			if (this.rootNetwork.getTable(CyNode.class, CyNetwork.HIDDEN_ATTRS).getColumn("GroupNodeProvided") != null &&
 					this.rootNetwork.getRow(groupNode, CyNetwork.HIDDEN_ATTRS) != null)
-				np = this.rootNetwork.getRow(groupNode, CyNetwork.HIDDEN_ATTRS).get("GroupNodeProvided", Boolean.class);
+				nProvided = this.rootNetwork.getRow(groupNode, CyNetwork.HIDDEN_ATTRS).get("GroupNodeProvided", Boolean.class);
 
-			if (np == null || np == true) {
+			if (nProvided == null && nPointer != null) { 
+				// This (probably) came from a session.
+				nodeProvided = false;
+				neverCollapsed = false;
+			} else if (nProvided == null || nProvided == true) {
 				nodeProvided = true;
 				neverCollapsed = false;  // If someone gave us the node, they are reponsible for the NAME
 			} else {
