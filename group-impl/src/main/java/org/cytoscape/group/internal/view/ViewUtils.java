@@ -48,13 +48,17 @@ import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.View;
+import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualProperty;
+import org.cytoscape.view.presentation.RenderingEngine;
+import org.cytoscape.view.presentation.RenderingEngineManager;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.presentation.property.NodeShapeVisualProperty;
 import org.cytoscape.view.presentation.property.values.NodeShape;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
 
+import org.cytoscape.group.internal.CyGroupManagerImpl;
 import org.cytoscape.group.internal.ModelUtils;
 
 /**
@@ -122,33 +126,61 @@ public class ViewUtils {
 			}
 		}
 		// TODO: Go through the list of our children and update z?
-		for (CyNode node: group.getNodeList()) {
-			View<CyNode> nv = view.getNodeView(group.getGroupNode());
-
-		}
+		// for (CyNode node: group.getNodeList()) {
+		// 	View<CyNode> nv = view.getNodeView(group.getGroupNode());
+		//
+		// }
 
 		View<CyNode> groupView = view.getNodeView(group.getGroupNode());
+
+		// Get the visual lexicon
+		VisualLexicon lex = getVisualLexicon((CyGroupManagerImpl)groupManager, view);
+		VisualProperty<?> paddingProperty = lex.lookup(CyNode.class, "COMPOUND_NODE_PADDING");
+		double padding = 5.0;
+		if (paddingProperty != null)
+			padding = (Double)groupView.getVisualProperty(paddingProperty);
+
+		VisualProperty<?> shapeProperty = lex.lookup(CyNode.class, "COMPOUND_NODE_SHAPE");
+		NodeShape shape = NodeShapeVisualProperty.ROUND_RECTANGLE;
+		if (shapeProperty != null)
+			shape = (NodeShape)groupView.getVisualProperty(shapeProperty);
 
 		if (groupView != null) {
 
 			// System.out.println("styleCompoundNode: group "+group+" currently at: "+
 			// 	groupView.getVisualProperty(xLoc)+","+
 			// 	groupView.getVisualProperty(yLoc));
-			Rectangle2D bounds = calculateBounds(group.getNodeList(), view);
+			Rectangle2D bounds = calculateBounds(group.getNodeList(), view, padding);
+			double height = bounds.getHeight();
+			double width = bounds.getWidth();
+
 			// System.out.println("styleCompoundNode: bounds = "+bounds);
+			//
+			double xLocation = bounds.getX()+width/2.0;
+			double yLocation = bounds.getY()+height/2.0;
 	
-			double xLocation = bounds.getX()+bounds.getWidth()/2.0;
-			double yLocation = bounds.getY()+bounds.getHeight()/2.0;
+			// Adjust bounds for some of the shapes
+			if (shape.equals(NodeShapeVisualProperty.ELLIPSE)||
+			    shape.equals(NodeShapeVisualProperty.HEXAGON)||
+					shape.equals(NodeShapeVisualProperty.OCTAGON)) {
+				// Note that in general, the correct forumla is height * Math.sqrt(2), but
+				// I'm fudging a little since the correct formula only applies when the
+				// nodes are at the bounding box
+				height = height*Math.sqrt(1.5);
+				width = width*Math.sqrt(1.5);
+			} else if(shape.equals(NodeShapeVisualProperty.DIAMOND)) {
+				height = height*Math.sqrt(2);
+				width = width*Math.sqrt(2);
+			}
 	
 			// System.out.println("Moving to "+xLocation+","+yLocation);
 			// System.out.println("Resizing to "+bounds.getWidth()+"x"+bounds.getHeight());
 			groupView.setVisualProperty(xLoc, xLocation);
 			groupView.setVisualProperty(yLoc, yLocation);
-			groupView.setLockedValue(BasicVisualLexicon.NODE_HEIGHT, bounds.getHeight());
-			groupView.setLockedValue(BasicVisualLexicon.NODE_WIDTH, bounds.getWidth());
+			groupView.setLockedValue(BasicVisualLexicon.NODE_HEIGHT, height);
+			groupView.setLockedValue(BasicVisualLexicon.NODE_WIDTH, width);
 			if (!viewType.equals(GroupViewType.SINGLENODE)) {
-				groupView.setLockedValue(BasicVisualLexicon.NODE_SHAPE, 
-				                         NodeShapeVisualProperty.ROUND_RECTANGLE);
+				groupView.setLockedValue(BasicVisualLexicon.NODE_SHAPE, shape);
 				groupView.setLockedValue(BasicVisualLexicon.NODE_TRANSPARENCY, 
 				                         COMPOUND_NODE_TRANSPARENCY); 
 			} else {
@@ -334,7 +366,7 @@ public class ViewUtils {
 		return d;
 	}
 
-	public static Rectangle2D calculateBounds(List<CyNode> nodes, CyNetworkView view) {
+	public static Rectangle2D calculateBounds(List<CyNode> nodes, CyNetworkView view, double padding) {
 		double x1 = Double.POSITIVE_INFINITY, y1 = Double.POSITIVE_INFINITY;
 	 	double x2 = Double.NEGATIVE_INFINITY, y2 = Double.NEGATIVE_INFINITY;
 		for (CyNode node: nodes) {
@@ -361,6 +393,16 @@ public class ViewUtils {
 			// System.out.println("Max bounds = "+x2+","+y2);
 		}
 
-		return new Rectangle2D.Double(x1-5.0, y1-5.0, (x2-x1)+10.0, (y2-y1)+10.0);
+		return new Rectangle2D.Double(x1-padding, y1-padding, (x2-x1)+(padding*2), (y2-y1)+(padding*2));
+	}
+
+	public static VisualLexicon getVisualLexicon(final CyGroupManagerImpl groupMgr, final CyNetworkView netView) {
+		final RenderingEngineManager rendererMgr = groupMgr.getService(RenderingEngineManager.class);
+		final Collection<RenderingEngine<?>> renderingEngines = rendererMgr.getRenderingEngines(netView);
+
+		if (renderingEngines != null && !renderingEngines.isEmpty())
+			return renderingEngines.iterator().next().getVisualLexicon();
+
+		return rendererMgr.getDefaultVisualLexicon();
 	}
 }

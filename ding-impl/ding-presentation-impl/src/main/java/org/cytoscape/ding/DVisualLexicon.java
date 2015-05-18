@@ -60,6 +60,7 @@ import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.presentation.property.BooleanVisualProperty;
 import org.cytoscape.view.presentation.property.DefaultVisualizableVisualProperty;
 import org.cytoscape.view.presentation.property.DoubleVisualProperty;
+import org.cytoscape.view.presentation.property.NodeShapeVisualProperty;
 import org.cytoscape.view.presentation.property.NullVisualProperty;
 import org.cytoscape.view.presentation.property.PaintVisualProperty;
 import org.cytoscape.view.presentation.property.values.LineType;
@@ -221,6 +222,13 @@ public class DVisualLexicon extends BasicVisualLexicon {
 			"NODE_CUSTOMGRAPHICS_POSITION_9",
 			"Node Custom Graphics Position 9", CyNode.class);
 
+	// Compound Node VPs
+	public static final VisualProperty<NodeShape> COMPOUND_NODE_SHAPE = 
+	 	new NodeShapeVisualProperty(NodeShapeVisualProperty.ROUND_RECTANGLE, "COMPOUND_NODE_SHAPE", "CompoundNode Node Shape", CyNode.class);
+	public static final VisualProperty<Double> COMPOUND_NODE_PADDING = 
+		new DoubleVisualProperty(10.0, ARBITRARY_DOUBLE_RANGE, "COMPOUND_NODE_PADDING", "CompoundNode Node Padding", CyNode.class);
+	// TODO: transarency?
+
 	// Edge VPs
 	public static final VisualProperty<Paint> EDGE_SOURCE_ARROW_SELECTED_PAINT = new PaintVisualProperty(
 			Color.YELLOW, BasicVisualLexicon.PAINT_RANGE,
@@ -361,6 +369,9 @@ public class DVisualLexicon extends BasicVisualLexicon {
 		addVisualProperty(NETWORK_EDGE_SELECTION, NETWORK);
 
 		addVisualProperty(NODE_LABEL_POSITION, NODE);
+		addVisualProperty(COMPOUND_NODE_SHAPE, NODE);
+		addVisualProperty(COMPOUND_NODE_PADDING, NODE);
+		// addVisualProperty(COMPOUND_NODE_TRANSPARENCY, NODE);
 
 		// Parent of Custom Graphics related
 		addVisualProperty(NODE_CUSTOMPAINT_1, NODE_PAINT);
