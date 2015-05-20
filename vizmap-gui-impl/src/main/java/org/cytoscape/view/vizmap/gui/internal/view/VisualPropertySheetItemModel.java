@@ -180,7 +180,13 @@ public class VisualPropertySheetItemModel<T> extends AbstractVizMapperModel {
 	}
 
 	public static String createTitle(final VisualProperty<?> vp) {
-		return vp.getDisplayName().replaceFirst(vp.getTargetDataType().getSimpleName().replace("Cy", ""), "").trim();
+		String title = vp.getDisplayName();
+		final String targetName = vp.getTargetDataType().getSimpleName().replace("Cy", "") + " ";
+		
+		if (title.startsWith(targetName))
+			title = title.replaceFirst(targetName, "");
+		
+		return title.trim();
 	}
 	
 	// ==[ PRIVATE METHODS ]============================================================================================

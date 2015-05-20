@@ -224,9 +224,9 @@ public class DVisualLexicon extends BasicVisualLexicon {
 
 	// Compound Node VPs
 	public static final VisualProperty<NodeShape> COMPOUND_NODE_SHAPE = 
-	 	new NodeShapeVisualProperty(NodeShapeVisualProperty.ROUND_RECTANGLE, "COMPOUND_NODE_SHAPE", "CompoundNode Node Shape", CyNode.class);
+	 	new NodeShapeVisualProperty(NodeShapeVisualProperty.ROUND_RECTANGLE, "COMPOUND_NODE_SHAPE", "Shape (Compound Node)", CyNode.class);
 	public static final VisualProperty<Double> COMPOUND_NODE_PADDING = 
-		new DoubleVisualProperty(10.0, ARBITRARY_DOUBLE_RANGE, "COMPOUND_NODE_PADDING", "CompoundNode Node Padding", CyNode.class);
+		new DoubleVisualProperty(10.0, ARBITRARY_DOUBLE_RANGE, "COMPOUND_NODE_PADDING", "Padding (Compound Node)", CyNode.class);
 	// TODO: transarency?
 
 	// Edge VPs
