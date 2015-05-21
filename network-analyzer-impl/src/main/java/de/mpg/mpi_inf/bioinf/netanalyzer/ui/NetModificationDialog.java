@@ -155,7 +155,7 @@ public class NetModificationDialog extends NetworkListDialog {
 		final JLabel titleLbl = new JLabel(title);
 		
 		final JLabel warningLbl = new JLabel(Messages.SM_NETMODIFICATION, SwingConstants.LEADING);
-		warningLbl.setFont(warningLbl.getFont().deriveFont(11.0f));
+		warningLbl.setFont(warningLbl.getFont().deriveFont(LookAndFeelUtil.INFO_FONT_SIZE));
 		warningLbl.setBorder(BorderFactory.createEmptyBorder(5, 0, 5, 0));
 		warningLbl.setVisible(showWarning);
 

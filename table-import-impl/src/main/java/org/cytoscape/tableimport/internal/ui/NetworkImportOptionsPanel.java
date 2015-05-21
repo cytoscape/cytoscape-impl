@@ -147,7 +147,7 @@ public class NetworkImportOptionsPanel extends JPanel {
 		iconLabel1.setFont(iconManager.getIconFont(14.0f));
 		iconLabel2.setFont(iconManager.getIconFont(14.0f));
 		
-		edgeAttributesLabel.setFont(edgeAttributesLabel.getFont().deriveFont(11.0f));
+		edgeAttributesLabel.setFont(edgeAttributesLabel.getFont().deriveFont(LookAndFeelUtil.INFO_FONT_SIZE));
 		edgeAttributesLabel.setText("The other columns will be imported as EDGE ATTRIBUTES.");
 
 		final GroupLayout layout = new GroupLayout(this);

@@ -53,6 +53,7 @@ import javax.swing.UIManager;
 import org.cytoscape.io.DataCategory;
 import org.cytoscape.util.swing.FileChooserFilter;
 import org.cytoscape.util.swing.FileUtil;
+import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.internal.tunables.utils.SupportedFileTypesManager;
 import org.cytoscape.work.swing.AbstractGUITunableHandler;
@@ -187,7 +188,7 @@ public class FileHandler extends AbstractGUITunableHandler implements DirectlyPr
 		textField = new JTextField();
 		textField.setEditable(false);
 		textField.setForeground(UIManager.getColor("Label.disabledForeground"));
-		textField.setFont(textField.getFont().deriveFont(11.0f));
+		textField.setFont(textField.getFont().deriveFont(LookAndFeelUtil.INFO_FONT_SIZE));
 		
 		browseButton = new JButton( (input ? "Open File..." : "Browse..."), (input ? image : null) );
 		browseButton.setActionCommand(input ? "open" : "save");

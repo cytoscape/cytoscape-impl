@@ -209,7 +209,7 @@ public class PreviewTablePanel extends JPanel {
 		final JLabel keyColumnsLabel = new JLabel("Key Columns:");
 		
 		final JLabel instructionLabel = new JLabel("<html><b>Right-click</b> to edit column.</html>");
-		instructionLabel.setFont(instructionLabel.getFont().deriveFont(11.0f));
+		instructionLabel.setFont(instructionLabel.getFont().deriveFont(LookAndFeelUtil.INFO_FONT_SIZE));
 		
 		final JLabel rightArrowLabel = new JLabel(IconManager.ICON_ARROW_RIGHT);
 		rightArrowLabel.setFont(iconManager.getIconFont(16.0f));
@@ -367,7 +367,7 @@ public class PreviewTablePanel extends JPanel {
 		if (keyPreviewList == null) {
 			final DefaultListModel keyListModel = new DefaultListModel();
 			keyPreviewList = new JList(keyListModel);
-			keyPreviewList.setFont(keyPreviewList.getFont().deriveFont(11.0f));
+			keyPreviewList.setFont(keyPreviewList.getFont().deriveFont(LookAndFeelUtil.INFO_FONT_SIZE));
 			keyPreviewList.setEnabled(false);
 		}
 		
