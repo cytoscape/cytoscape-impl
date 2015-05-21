@@ -31,11 +31,15 @@ import static org.cytoscape.work.internal.tunables.utils.GUIDefaults.updateField
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
 import javax.swing.JCheckBox;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.swing.AbstractGUITunableHandler;
@@ -74,18 +78,24 @@ public class BooleanHandler extends AbstractGUITunableHandler
 	}
 
 	private void init() {
-		String description = getDescription().trim();
-		
-		if (description.endsWith(":"))
-			description = description.substring(0, description.length() - 1);
-		
-		//setup GUI
-		checkBox = new JCheckBox(description);
+		// setup GUI
+		checkBox = new JCheckBox();
 		checkBox.setSelected(getBoolean());
 		checkBox.addActionListener(this);
+		
+		final JLabel label = new JLabel(getDescription());
+		label.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseReleased(final MouseEvent e) {
+				if (checkBox.isEnabled() && SwingUtilities.isLeftMouseButton(e)) {
+					checkBox.doClick();
+					checkBox.requestFocusInWindow();
+				}
+			}
+		});
 
-		updateFieldPanel(panel, checkBox, horizontal);
-		setTooltip(getTooltip(), checkBox);
+		updateFieldPanel(panel, label, checkBox, horizontal);
+		setTooltip(getTooltip(), label, checkBox);
 	}
 
 	private boolean getBoolean() {
