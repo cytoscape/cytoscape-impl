@@ -43,6 +43,15 @@ import org.cytoscape.group.CyGroupManager;
 import org.cytoscape.group.data.Aggregator;
 import org.cytoscape.group.data.CyGroupAggregationManager;
 
+import org.cytoscape.group.internal.data.aggregators.BooleanAggregator;
+import org.cytoscape.group.internal.data.aggregators.DoubleAggregator;
+import org.cytoscape.group.internal.data.aggregators.FloatAggregator;
+import org.cytoscape.group.internal.data.aggregators.IntegerAggregator;
+import org.cytoscape.group.internal.data.aggregators.ListAggregator;
+import org.cytoscape.group.internal.data.aggregators.LongAggregator;
+import org.cytoscape.group.internal.data.aggregators.NoneAggregator;
+import org.cytoscape.group.internal.data.aggregators.StringAggregator;
+
 public class CyGroupAggregationManagerImpl 
 	implements CyGroupAggregationManager {
 
@@ -54,6 +63,15 @@ public class CyGroupAggregationManagerImpl
 	
 	public CyGroupAggregationManagerImpl(CyGroupManager mgr) {
 		this.cyGroupManager = mgr;
+
+		IntegerAggregator.registerAggregators(this);
+		LongAggregator.registerAggregators(this);
+		FloatAggregator.registerAggregators(this);
+		DoubleAggregator.registerAggregators(this);
+		StringAggregator.registerAggregators(this);
+		ListAggregator.registerAggregators(this);
+		BooleanAggregator.registerAggregators(this);
+		NoneAggregator.registerAggregators(this);
 	}
 
 	@Override

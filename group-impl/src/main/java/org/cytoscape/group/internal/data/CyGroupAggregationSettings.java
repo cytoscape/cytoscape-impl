@@ -148,7 +148,10 @@ public class CyGroupAggregationSettings {
 		if (currentNetwork == null || attrSelection == null || 
 		    attrSelection.getSelectedValue() == null ||
 		    attrSelection.getSelectedValue().length() == 0) {
-			aggregationType = new ListSingleSelection<Aggregator>(cyAggManager.getAggregators(NoneAggregator.class));
+			if (aggregationType != null)
+				aggregationType.setPossibleValues(cyAggManager.getAggregators(NoneAggregator.class));
+			else
+				aggregationType = new ListSingleSelection<Aggregator>(cyAggManager.getAggregators(NoneAggregator.class));
 			return "-- No Network --";
 		}
 
@@ -158,7 +161,10 @@ public class CyGroupAggregationSettings {
 		CyColumn column = nodeTable.getColumn(columnName);
 		if (column == null) return "-- No Such Column -- ";
 
-		aggregationType = new ListSingleSelection<Aggregator>(cyAggManager.getAggregators(column.getType()));
+		if (aggregationType != null)
+			aggregationType.setPossibleValues(cyAggManager.getAggregators(column.getType()));
+		else
+			aggregationType = new ListSingleSelection<Aggregator>(cyAggManager.getAggregators(column.getType()));
 		// Now, if we already have an override for this attribute, make sure that
 		// it's reflected in what the user sees
 		if (aggregationType.getSelectedValue() == null) {
@@ -178,11 +184,11 @@ public class CyGroupAggregationSettings {
 	         dependsOn="enableAttributeAggregation=true",
 	         listenForChange="AttrSelection", gravity=22.0)
 	public ListSingleSelection<Aggregator> getAggregationType() {   
-		// System.out.println("getAggregationType: "+aggregationType);
 		// We need to do this because Cytoscape's Tunables processing doesn't correctly
 		// order listenForChange initializations
-		if (aggregationType == null)
+		if (aggregationType == null) {
 			aggregationType = new ListSingleSelection<Aggregator>(cyAggManager.getAggregators(NoneAggregator.class));
+		}
 		return aggregationType;
 	}
 
@@ -237,15 +243,6 @@ public class CyGroupAggregationSettings {
 	}
 
 	private void initializeDefaults() {
-		IntegerAggregator.registerAggregators(cyAggManager);
-		LongAggregator.registerAggregators(cyAggManager);
-		FloatAggregator.registerAggregators(cyAggManager);
-		DoubleAggregator.registerAggregators(cyAggManager);
-		StringAggregator.registerAggregators(cyAggManager);
-		ListAggregator.registerAggregators(cyAggManager);
-		BooleanAggregator.registerAggregators(cyAggManager);
-		NoneAggregator.registerAggregators(cyAggManager);
-
 		// Create the selections
 		integerDefault = createDefaults(Integer.class, AttributeHandlingType.AVG);
 		longDefault = createDefaults(Long.class, AttributeHandlingType.NONE);
