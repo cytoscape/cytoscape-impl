@@ -28,6 +28,8 @@ package org.cytoscape.work.internal.tunables;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Window;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.reflect.Method;
@@ -82,25 +84,50 @@ import org.slf4j.LoggerFactory;
  * @author pasteur
  */
 public class JPanelTunableMutator extends AbstractTunableInterceptor<GUITunableHandler> 
-	implements TunableMutator<GUITunableHandler,JPanel> {
+								  implements TunableMutator<GUITunableHandler, JPanel> {
 
 	private static final String TOP_GROUP = "__CY_TOP_GROUP";
 	
 	private Map<List<GUITunableHandler>, JPanel> panelMap;
 	
 	/** A reference to the parent <code>JPanel</code>, if any. */
-	private JPanel tunablePanel = null;
-	private JPanel providedGUI = null;
+	private JPanel tunablePanel;
+	private JPanel providedGUI;
 
 	/** Provides an initialised logger. */
 	private final Logger logger = LoggerFactory.getLogger(JPanelTunableMutator.class);
 
 	/** Do not ever modify this panel. Used for special case handling of files. */
 	protected final JPanel HANDLER_CANCEL_PANEL = new JPanel();
+	
+	private boolean updatingMargins;
+	private final ComponentListener controlComponentListener;
+	private List<GUITunableHandler> handlers;
+	
+	private final Object lock = new Object();
 
 	public JPanelTunableMutator() {
 		super();
 		panelMap = new HashMap<List<GUITunableHandler>, JPanel>();
+		
+		controlComponentListener = new ComponentListener() {
+			@Override
+			public void componentShown(ComponentEvent e) {
+				updateTunableFieldPanelMargins();
+			}
+			@Override
+			public void componentResized(ComponentEvent e) {
+				updateTunableFieldPanelMargins();
+			}
+			@Override
+			public void componentMoved(ComponentEvent e) {
+				updateTunableFieldPanelMargins();
+			}
+			@Override
+			public void componentHidden(ComponentEvent e) {
+				updateTunableFieldPanelMargins();
+			}
+		};
 	}
 	
 	@Override
@@ -118,9 +145,7 @@ public class JPanelTunableMutator extends AbstractTunableInterceptor<GUITunableH
 	}
 
 	public boolean hasTunables(final Object o, String context) {
-		List<GUITunableHandler> handlers = getApplicableHandlers(o, context);
-		
-		return (handlers.size() > 0);
+		return getApplicableHandlers(o, context).size() > 0;
 	}
 
 	@Override
@@ -152,171 +177,136 @@ public class JPanelTunableMutator extends AbstractTunableInterceptor<GUITunableH
 		else
 			++otherCount;
 
-		List<GUITunableHandler> handlers = 
-			getApplicableHandlers(objectWithTunables, "gui");
+		synchronized (lock) {
+			handlers = getApplicableHandlers(objectWithTunables, "gui");
 
-		// Sanity check:
-		if (factoryCount > 0) {
-			if (factoryCount != 1) {
-				logger.error("More than one annotated TaskFactory found.");
-				return null;
-			} else if (otherCount != 0) {
-				logger.error("Found annotated Task objects in addition to an annotated TaskFactory.");
-				return null;
+			// Sanity check:
+			if (factoryCount > 0) {
+				if (factoryCount != 1) {
+					logger.error("More than one annotated TaskFactory found.");
+					return null;
+				} else if (otherCount != 0) {
+					logger.error("Found annotated Task objects in addition to an annotated TaskFactory.");
+					return null;
+				}
 			}
-		}
-
-		if (providedGUI != null) {
-			//if no tunablePanel is defined, then create a new JDialog to display the Tunables' panels
+	
+			if (providedGUI != null) {
+				//if no tunablePanel is defined, then create a new JDialog to display the Tunables' panels
+				if (tunablePanel == null) {
+					return providedGUI;
+				} else { // add them to the "tunablePanel" JPanel
+					tunablePanel.removeAll();
+					tunablePanel.add(providedGUI);
+					final JPanel retVal = tunablePanel;
+					tunablePanel = null;
+					
+					return retVal;
+				}
+			} 
+	
+			if (handlers.isEmpty()) {
+				if (tunablePanel != null) {
+					tunablePanel.removeAll();
+					
+					return tunablePanel;
+				}
+				
+				return null; 
+			}
+	
+			// This is special case handling for when there is only one tunable specified
+			// in a task, in which case we don't want a full tunable dialog
+			// and all of the extra clicks, instead we just want to show the special dialog.
+			if ( handlers.size() == 1 && handlers.get(0) instanceof DirectlyPresentableTunableHandler ) {
+				DirectlyPresentableTunableHandler fh = (DirectlyPresentableTunableHandler) handlers.get(0);
+				
+				if (fh.isForcedToSetDirectly()){
+					boolean fileFound = fh.setTunableDirectly(possibleParent);
+					
+					return fileFound ? null : HANDLER_CANCEL_PANEL; 
+				}
+			}
+	
+			if (!panelMap.containsKey(handlers)) {
+				Map<String, JPanel> panels = new HashMap<String, JPanel>();
+				final JPanel topLevel = new SimplePanel(true);
+				panels.put(TOP_GROUP, topLevel);
+	
+				// construct the GUI
+				for (GUITunableHandler gh : handlers) {
+					// hook up dependency listeners
+					String dep = gh.getDependency();
+					
+					if (dep != null && !dep.equals("")) {
+						for (GUITunableHandler gh2 : handlers) {
+							if (gh2.getName().equals(dep)) {
+								gh2.addDependent(gh);
+								break;
+							}
+						}
+					}
+	
+					// hook up change listeners
+					for (String cs : gh.getChangeSources()) {
+						if (cs != null && !cs.equals("")) {
+							for (GUITunableHandler gh2 : handlers) {
+								if (gh2.getName().equals(cs)) {
+									gh2.addChangeListener(gh);
+									break;
+								}
+							}
+						}
+					}
+	
+					// Get information about the Groups and alignment from Tunables Annotations 
+					// in order to create the proper GUI
+					final Map<String, Boolean> groupToVerticalMap = processGroupParams(gh,"alignments","vertical"); 
+					final Map<String, Boolean> groupToDisplayedMap = processGroupParams(gh,"groupTitles","displayed"); 
+	
+					// find the proper group to put the handler panel in given the Alignment/Group parameters
+					String lastGroup = TOP_GROUP;
+					String groupNames = "";
+					
+					for (String g : gh.getGroups()) {
+						if (g.equals(""))
+							throw new IllegalArgumentException("A group's name must not be \"\".");
+						
+						groupNames = groupNames + g;
+						
+						if (!panels.containsKey(groupNames)) {
+							panels.put(groupNames,
+							           createJPanel(g, gh, groupToVerticalMap.get(g), groupToDisplayedMap.get(g)));
+							final JPanel pnl = panels.get(groupNames);
+							panels.get(lastGroup).add(pnl, gh.getChildKey());
+						}
+						
+						lastGroup = groupNames;
+					}
+					
+					panels.get(lastGroup).add(gh.getJPanel());
+				}
+				
+				panelMap.put(handlers, panels.get(TOP_GROUP));
+			}
+	
+			updateTunableFieldPanelMargins();
+			
+			// Get the GUI into the proper state
+			for (GUITunableHandler gh : handlers)
+				gh.notifyDependents();
+	
+			// if no tunablePane is defined, then create a new JDialog to display the Tunables' panels
 			if (tunablePanel == null) {
-				return providedGUI;
+				return panelMap.get(handlers);
 			} else { // add them to the "tunablePanel" JPanel
 				tunablePanel.removeAll();
-				tunablePanel.add(providedGUI);
+				tunablePanel.add(panelMap.get(handlers));
 				final JPanel retVal = tunablePanel;
 				tunablePanel = null;
 				
 				return retVal;
 			}
-		} 
-
-		if (handlers.isEmpty()) {
-			if (tunablePanel != null) {
-				tunablePanel.removeAll();
-				
-				return tunablePanel;
-			}
-			
-			return null; 
-		}
-
-		// This is special case handling for when there is only one tunable specified
-		// in a task, in which case we don't want a full tunable dialog
-		// and all of the extra clicks, instead we just want to show the special dialog.
-		if ( handlers.size() == 1 && handlers.get(0) instanceof DirectlyPresentableTunableHandler ) {
-			DirectlyPresentableTunableHandler fh = (DirectlyPresentableTunableHandler) handlers.get(0);
-			
-			if (fh.isForcedToSetDirectly()){
-				boolean fileFound = fh.setTunableDirectly(possibleParent);
-				
-				return fileFound ? null : HANDLER_CANCEL_PANEL; 
-			}
-		}
-
-		int maxLeftWidth = 0, maxRightWidth = 0;
-		boolean updateMargins = false;
-		
-		if (!panelMap.containsKey(handlers)) {
-			Map<String, JPanel> panels = new HashMap<String, JPanel>();
-			final JPanel topLevel = new SimplePanel(true);
-			panels.put(TOP_GROUP, topLevel);
-
-			// construct the GUI
-			for (GUITunableHandler gh : handlers) {
-				// hook up dependency listeners
-				String dep = gh.getDependency();
-				
-				if (dep != null && !dep.equals("")) {
-					for (GUITunableHandler gh2 : handlers) {
-						if (gh2.getName().equals(dep)) {
-							gh2.addDependent(gh);
-							break;
-						}
-					}
-				}
-
-				// hook up change listeners
-				for (String cs : gh.getChangeSources()) {
-					if (cs != null && !cs.equals("")) {
-						for (GUITunableHandler gh2 : handlers) {
-							if (gh2.getName().equals(cs)) {
-								gh2.addChangeListener(gh);
-								break;
-							}
-						}
-					}
-				}
-
-				// Get information about the Groups and alignment from Tunables Annotations 
-				// in order to create the proper GUI
-				final Map<String, Boolean> groupToVerticalMap = processGroupParams(gh,"alignments","vertical"); 
-				final Map<String, Boolean> groupToDisplayedMap = processGroupParams(gh,"groupTitles","displayed"); 
-
-				// find the proper group to put the handler panel in given the Alignment/Group parameters
-				String lastGroup = TOP_GROUP;
-				String groupNames = "";
-				
-				for (String g : gh.getGroups()) {
-					if (g.equals(""))
-						throw new IllegalArgumentException("A group's name must not be \"\".");
-					
-					groupNames = groupNames + g;
-					
-					if (!panels.containsKey(groupNames)) {
-						panels.put(groupNames,
-						           createJPanel(g, gh, groupToVerticalMap.get(g), groupToDisplayedMap.get(g)));
-						final JPanel pnl = panels.get(groupNames);
-						panels.get(lastGroup).add(pnl, gh.getChildKey());
-					}
-					
-					lastGroup = groupNames;
-				}
-				
-				panels.get(lastGroup).add(gh.getJPanel());
-				
-				// Update max left/right margin values if vertical form
-				if (gh instanceof AbstractGUITunableHandler && !((AbstractGUITunableHandler)gh).isHorizontal()) {
-					updateMargins = true;
-					final JPanel p = gh.getJPanel();
-					
-					if (p instanceof TunableFieldPanel) {
-						final TunableFieldPanel tfp = (TunableFieldPanel) p;
-						final JComponent label = tfp.getLabel() != null ? tfp.getLabel() : tfp.getMultiLineLabel();
-						final Component control = tfp.getControl();
-						
-						if (label != null)
-							maxLeftWidth = Math.max(maxLeftWidth, label.getPreferredSize().width);
-						if (control != null)
-							maxRightWidth = Math.max(maxRightWidth, control.getPreferredSize().width);
-					}
-				}
-			}
-			
-			panelMap.put(handlers, panels.get(TOP_GROUP));
-		}
-
-		// Get the GUI into the proper state
-		for (GUITunableHandler gh : handlers) {
-			if (updateMargins) {
-				final JPanel p = gh.getJPanel();
-				
-				if (p instanceof TunableFieldPanel) {
-					// Update panel's left/right margin by setting an empty border
-					final TunableFieldPanel tfp = (TunableFieldPanel) p;
-					final JComponent label = tfp.getLabel() != null ? tfp.getLabel() : tfp.getMultiLineLabel();
-					final Component control = tfp.getControl();
-					
-					int left = label == null ? 0 : maxLeftWidth - label.getPreferredSize().width;
-					int right = control == null ? 0 : maxRightWidth - control.getPreferredSize().width;
-					
-					tfp.setBorder(BorderFactory.createEmptyBorder(1, left, 1, right)); // TODO Do not set top/bottom
-				}
-			}
-			
-			// Also notify all dependents
-			gh.notifyDependents();
-		}
-
-		// if no tunablePane is defined, then create a new JDialog to display the Tunables' panels
-		if (tunablePanel == null) {
-			return panelMap.get(handlers);
-		} else { // add them to the "tunablePanel" JPanel
-			tunablePanel.removeAll();
-			tunablePanel.add(panelMap.get(handlers));
-			final JPanel retVal = tunablePanel;
-			tunablePanel = null;
-			
-			return retVal;
 		}
 	}
 
@@ -344,6 +334,71 @@ public class JPanelTunableMutator extends AbstractTunableInterceptor<GUITunableH
 		return handlers;
 	}
 
+	private void updateTunableFieldPanelMargins() {
+		synchronized (lock) {
+			if (updatingMargins || handlers == null)
+				return;
+			
+			updatingMargins = true;
+			int maxLeftWidth = 0, maxRightWidth = 0;
+			boolean updateMargins = true;
+			
+			try {
+				// 1st Pass: Get max left/right margin values if vertical form
+				for (GUITunableHandler gh : handlers) {
+					if (gh instanceof AbstractGUITunableHandler && !((AbstractGUITunableHandler)gh).isHorizontal()) {
+						final JPanel p = gh.getJPanel();
+						
+						if (updateMargins && p instanceof TunableFieldPanel) {
+							final TunableFieldPanel tfp = (TunableFieldPanel) p;
+							final JComponent label = tfp.getLabel() != null ? tfp.getLabel() : tfp.getMultiLineLabel();
+							final Component control = tfp.getControl();
+							
+							if (label != null)
+								maxLeftWidth = Math.max(maxLeftWidth, label.getPreferredSize().width);
+							if (control != null)
+								maxRightWidth = Math.max(maxRightWidth, control.getPreferredSize().width);
+						} else {
+							updateMargins = false;
+						}
+					}
+				}
+				
+				if (updateMargins) {
+					// 2nd Pass: Use empty borders to properly align all fields and labels
+					for (GUITunableHandler gh : handlers) {
+						final JPanel p = gh.getJPanel();
+						
+						if (p instanceof TunableFieldPanel) {
+							// Update panel's left/right margin by setting an empty border
+							final TunableFieldPanel tfp = (TunableFieldPanel) p;
+							final JComponent label = tfp.getLabel() != null ? tfp.getLabel() : tfp.getMultiLineLabel();
+							final Component control = tfp.getControl();
+							
+							if (control != null)
+								control.removeComponentListener(controlComponentListener);
+							
+							int left = label == null ? 0 : maxLeftWidth - label.getPreferredSize().width;
+							int right = control == null ? 0 : maxRightWidth - control.getPreferredSize().width;
+							
+							tfp.setBorder(BorderFactory.createEmptyBorder(2, left, 2, right)); // TODO Do not set top/bottom
+							
+							// Also notify all dependents
+							gh.notifyDependents();
+							
+							if (control != null)
+								control.addComponentListener(controlComponentListener);
+						}
+					}
+					
+					repackEnclosingDialog(panelMap.get(handlers));
+				}
+			} finally {
+				updatingMargins = false;
+			}
+		}
+	}
+	
 	/**
 	 * Creation of a JPanel that will contain panels of <code>GUITunableHandler</code>
 	 * This panel will have special features like, ability to collapse, ability to be displayed 
@@ -382,21 +437,7 @@ public class JPanelTunableMutator extends AbstractTunableInterceptor<GUITunableH
 				cp.addPropertyChangeListener(new PropertyChangeListener() {
 					@Override
 					public void propertyChange(PropertyChangeEvent evt) {
-						repackEnclosingDialog();
-					}
-					
-					/**
-					 * Attempts to locate the instance of the enclosing JDialog.
-					 * If successful we will call the pack() method on it.
-					 */
-					private void repackEnclosingDialog() {
-						Container container = cp.getParent();
-						
-						while (container != null && !(container instanceof JDialog))
-							container = container.getParent();
-						
-						if (container != null)
-							((JDialog)container).pack();
+						repackEnclosingDialog(cp);
 					}
 				});
 				
@@ -406,6 +447,23 @@ public class JPanelTunableMutator extends AbstractTunableInterceptor<GUITunableH
 				return createTitledPanel(title, vertical, displayed);
 			}
 		}
+	}
+	
+	/**
+	 * Attempts to locate the instance of the enclosing JDialog.
+	 * If successful we will call the pack() method on it.
+	 */
+	private void repackEnclosingDialog(final Component cp) {
+		if (cp == null)
+			return;
+		
+		Container container = cp.getParent();
+		
+		while (container != null && !(container instanceof JDialog))
+			container = container.getParent();
+		
+		if (container != null)
+			((JDialog)container).pack();
 	}
 
 	/**
@@ -443,16 +501,18 @@ public class JPanelTunableMutator extends AbstractTunableInterceptor<GUITunableH
 		try {
 			final ValidationState validationState = ((TunableValidator)objectWithTunables).getValidationState(errMsg);
 			if (validationState == ValidationState.INVALID) {
-				JOptionPane.showMessageDialog(new JFrame(), errMsg.toString(),
-				                              "Input Validation Problem",
-				                              JOptionPane.ERROR_MESSAGE);
+				JOptionPane.showMessageDialog(
+						new JFrame(),
+						errMsg.toString(),
+				        "Input Validation Problem",
+				        JOptionPane.ERROR_MESSAGE);
 				return false;
 			} else if (validationState == ValidationState.REQUEST_CONFIRMATION) {
-				if (JOptionPane.showConfirmDialog(new JFrame(), errMsg.toString(),
-								  "Confirmation",
-								  JOptionPane.YES_NO_OPTION)
-				    == JOptionPane.NO_OPTION)
-				{
+				if (JOptionPane.showConfirmDialog(
+						new JFrame(),
+						errMsg.toString(),
+						"Confirmation",
+						JOptionPane.YES_NO_OPTION) == JOptionPane.NO_OPTION) {
 					return false;
 				}
 			}

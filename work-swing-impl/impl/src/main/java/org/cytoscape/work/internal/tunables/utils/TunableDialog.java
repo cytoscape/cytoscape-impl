@@ -64,6 +64,7 @@ public final class TunableDialog extends JDialog {
 		super(parent);
 		this.setModalityType(Dialog.ModalityType.APPLICATION_MODAL);
 		this.optionPanel = optionPanel;
+		
 		initComponents();
 		setResizable(false);
 	}
@@ -98,6 +99,7 @@ public final class TunableDialog extends JDialog {
 		jScrollPane1 = new JScrollPane();
 		jScrollPane1.setViewportView(optionPanel);
 		jScrollPane1.setBorder(null);
+		jScrollPane1.setDoubleBuffered(true);
 
 		btnOK = new JButton(new AbstractAction("OK") {
 			@Override
