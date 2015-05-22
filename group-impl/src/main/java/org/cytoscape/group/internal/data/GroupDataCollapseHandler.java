@@ -27,6 +27,7 @@ package org.cytoscape.group.internal.data;
 import org.cytoscape.group.CyGroup;
 import org.cytoscape.group.CyGroupManager;
 import org.cytoscape.group.data.Aggregator;
+import org.cytoscape.group.data.AttributeHandlingType;
 import org.cytoscape.group.events.GroupAboutToCollapseEvent;
 import org.cytoscape.group.events.GroupAboutToCollapseListener;
 
@@ -91,13 +92,14 @@ public class GroupDataCollapseHandler implements GroupAboutToCollapseListener
 					continue;
 
 				// Don't aggregate the name or shared name columns by default
-				if (CyNetwork.NAME.equals(column.getName()) && 
-				    cyGroupSettings.getOverrideAggregation(group, column) == null) {
-					continue;
+				if (CyNetwork.NAME.equals(column.getName())) {
+					if (!haveOverride(group, column))
+						continue;
 				}
-				if (CyRootNetwork.SHARED_NAME.equals(column.getName()) && 
-				    cyGroupSettings.getOverrideAggregation(group, column) == null) {
-					continue;
+
+				if (CyRootNetwork.SHARED_NAME.equals(column.getName())) {
+					if (!haveOverride(group, column))
+						continue;
 				}
 
 				// Do we have an override for this group and column?
@@ -108,5 +110,19 @@ public class GroupDataCollapseHandler implements GroupAboutToCollapseListener
 				agg.aggregate(nodeTable, group, column);
 			}
 		}
+	}
+
+	/**
+	 * Determine if we have a non-NONE override for this group/column
+	 */
+	private boolean haveOverride(CyGroup group, CyColumn column) {
+		if (cyGroupSettings.getOverrideAggregation(group, column) == null)
+			return false;
+
+		Aggregator agg = cyGroupSettings.getOverrideAggregation(group, column);
+		if (agg.toString().equals("None"))
+			return false;
+
+		return true;
 	}
 }

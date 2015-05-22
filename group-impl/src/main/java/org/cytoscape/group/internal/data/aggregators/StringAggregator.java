@@ -26,8 +26,10 @@ package org.cytoscape.group.internal.data.aggregators;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.cytoscape.group.CyGroup;
 import org.cytoscape.group.data.Aggregator;
@@ -42,7 +44,8 @@ public class StringAggregator extends AbstractAggregator {
 			AttributeHandlingType.NONE,
 			AttributeHandlingType.CSV,
 			AttributeHandlingType.TSV,
-			AttributeHandlingType.MCV
+			AttributeHandlingType.MCV,
+			AttributeHandlingType.UNIQUE
 		};
 		static boolean registered = false;
 
@@ -64,6 +67,7 @@ public class StringAggregator extends AbstractAggregator {
 		public String aggregate(CyTable table, CyGroup group, CyColumn column) {
 			String aggregation = null;
 			Map<String, Integer> histo = null;
+			Set<String> unique = null;
 
 			if (type == AttributeHandlingType.NONE) return null;
 
@@ -95,6 +99,11 @@ public class StringAggregator extends AbstractAggregator {
 					else
 						histo.put(value, 1);
 					break;
+				case UNIQUE:
+					if (unique == null)
+						unique = new HashSet<String>();
+					unique.add(value);
+					break;
 				}
 			}
 
@@ -109,6 +118,13 @@ public class StringAggregator extends AbstractAggregator {
 					}
 				}
 				if (aggregation == null) aggregation = "";
+			} else if (type == AttributeHandlingType.UNIQUE) {
+				for (String value: unique) {
+					if (aggregation == null)
+						aggregation = value;
+					else
+						aggregation += ","+value;
+				}
 			}
 
 			table.getRow(group.getGroupNode().getSUID()).set(column.getName(), aggregation);
