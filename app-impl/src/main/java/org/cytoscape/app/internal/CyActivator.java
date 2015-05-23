@@ -28,7 +28,6 @@ import org.cytoscape.app.CyAppAdapter;
 import org.cytoscape.app.internal.action.AppManagerAction;
 import org.cytoscape.app.internal.action.CitationsAction;
 import org.cytoscape.app.internal.manager.AppManager;
-import org.cytoscape.app.internal.manager.StartupMonitor;
 import org.cytoscape.app.internal.net.WebQuerier;
 import org.cytoscape.app.internal.net.server.*;
 import org.cytoscape.app.internal.tunable.AppInstallationConflictHandlerFactory;
@@ -339,12 +338,10 @@ public class CyActivator extends AbstractCyActivator {
 		
 		StartLevel startLevel = getService(bc, StartLevel.class);
 		PackageAdmin packageAdmin = getService(bc, PackageAdmin.class);
-		StartupMonitor startupMonitor = new StartupMonitor(bc, packageAdmin, cyEventHelperRef, startLevel);
-		bc.addBundleListener(startupMonitor);
 		
 		// Instantiate new manager
 		final AppManager appManager = new AppManager(cyAppAdapter, 
-				cyApplicationConfigurationServiceRef, webQuerier, startLevel, startupMonitor);
+				cyApplicationConfigurationServiceRef, cyEventHelperRef, webQuerier, startLevel, bc);
 		registerService(bc, appManager, AppManager.class, new Properties());
 		bc.addFrameworkListener(appManager);
 		

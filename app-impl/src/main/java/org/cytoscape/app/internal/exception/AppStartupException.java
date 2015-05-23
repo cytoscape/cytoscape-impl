@@ -24,18 +24,20 @@ package org.cytoscape.app.internal.exception;
  * #L%
  */
 
-/**
- * An exception thrown while attempting to create an instance of an app.
- */
-public class AppInstanceException extends Exception {
-	
-	private static final long serialVersionUID = 6812138000684313342L;
 
-	public AppInstanceException(String message) {
+/**
+ * An exception thrown signal errors found while attempting to start an app.
+ */
+public class AppStartupException extends Exception {
+
+	private static final long serialVersionUID = 5799194018659112606L;
+
+	
+	public AppStartupException(String message) {
 		super(message);
 	}
 	
-	public AppInstanceException(String message, Throwable cause) {
+	public AppStartupException(String message, Throwable cause) {
 		super(message, cause);
 	}
 }

@@ -32,29 +32,16 @@ import java.io.InputStream;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.ArrayList;
-import java.util.Stack;
-import java.util.jar.JarEntry;
+import java.util.List;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.regex.Pattern;
 
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParserFactory;
 import org.cytoscape.app.internal.exception.AppParsingException;
 import org.cytoscape.app.internal.util.DebugHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.xml.sax.Attributes;
-import org.xml.sax.ContentHandler;
-import org.xml.sax.InputSource;
-import org.xml.sax.Locator;
-import org.xml.sax.SAXException;
-import org.xml.sax.XMLReader;
 
 /**
  * This class represents an app parser that is capable of parsing given {@link File}
@@ -188,12 +175,12 @@ public class AppParser {
 		try {
 			manifest = jarFile.getManifest();
 		} catch (IOException e) {
-			throw new AppParsingException("Error obtaining manifest from app jar: " + e.getMessage());
+			throw new AppParsingException("Error obtaining manifest from app jar", e);
 		} finally {
 			try {
 				jarFile.close();
 			} catch (IOException e) {
-				throw new AppParsingException("Error closing file: " + e.getMessage());
+				throw new AppParsingException("Error closing file", e);
 			}
 		}
 		
@@ -202,13 +189,20 @@ public class AppParser {
 			throw new AppParsingException("No manifest was found in the jar file.");
 		}
 		
-		String entryClassName = null;
 		// Bundle apps are instantiated by OSGi using their activator classes
+		String entryClassName = null;
 		if (!bundleApp) {
 			// Obtain the fully-qualified name of the class to instantiate upon app installation
 			entryClassName = manifest.getMainAttributes().getValue(APP_CLASS_TAG);
 			if (entryClassName == null || entryClassName.trim().length() == 0) {
 				throw new AppParsingException("Jar is missing value for entry " + APP_CLASS_TAG + " in its manifest file.");
+			}
+		}
+		else {
+			// Obtain the fully-qualified name of the class to instantiate upon app installation
+			entryClassName = manifest.getMainAttributes().getValue("Bundle-Activator");
+			if (entryClassName == null || entryClassName.trim().length() == 0) {
+				throw new AppParsingException("Jar is missing value for entry Bundle-Activator");
 			}
 		}
 		
@@ -300,8 +294,8 @@ public class AppParser {
 		}
 		
 		parsedApp.setAppFile(file);
-		parsedApp.setEntryClassName(entryClassName);
 		parsedApp.setAppName(readableName);
+		parsedApp.setEntryClassName(entryClassName);
 		parsedApp.setVersion(appVersion);
 		parsedApp.setCompatibleVersions(compatibleVersions);
 		parsedApp.setAppValidated(true);
@@ -309,101 +303,6 @@ public class AppParser {
 		
 		return parsedApp;
 	}
-
-    private static List<__Unused__KarafArchiveApp.KarafFeature> getFeaturesXmlFromJar(final JarFile jarFile) throws AppParsingException
-    {
-        final List<__Unused__KarafArchiveApp.KarafFeature> featuresList = new LinkedList<__Unused__KarafArchiveApp.KarafFeature>();
-		final Enumeration<JarEntry> entries = jarFile.entries();
-		while (entries.hasMoreElements()) {
-			JarEntry jarEntry = entries.nextElement();
-			
-			if (jarEntry.getName().endsWith("xml")) {
-
-				try {
-					SAXParserFactory spf = SAXParserFactory.newInstance();
-				    spf.setNamespaceAware(true);
-				    XMLReader xmlReader = spf.newSAXParser().getXMLReader();
-
-				    xmlReader.setContentHandler(new ContentHandler() {
-						
-				    	private Stack<String> qNames = new Stack<String>();
-				    	
-						@Override
-						public void startPrefixMapping(String arg0, String arg1) throws SAXException { }
-						
-						@Override
-						public void startElement(String uri, String localName, String qName,
-								Attributes atts) throws SAXException {
-							
-							qNames.push(qName);
-
-							if (qNames.size() == 2
-									&& qNames.get(0).equalsIgnoreCase("features")
-									&& qNames.get(1).equalsIgnoreCase("feature")) {
-								
-								__Unused__KarafArchiveApp.KarafFeature feature = new __Unused__KarafArchiveApp.KarafFeature();
-								
-								// Obtain the feature name and version
-								feature.featureName = atts.getValue("name");
-								feature.featureVersion = atts.getValue("version");
-								
-								featuresList.add(feature);
-							}
-						}
-						
-						@Override
-						public void startDocument() throws SAXException { }
-						
-						@Override
-						public void skippedEntity(String arg0) throws SAXException { }
-						
-						@Override
-						public void setDocumentLocator(Locator arg0) { }
-						
-						@Override
-						public void processingInstruction(String arg0, String arg1) throws SAXException { }
-						
-						@Override
-						public void ignorableWhitespace(char[] arg0, int arg1, int arg2) throws SAXException { }
-						
-						@Override
-						public void endPrefixMapping(String arg0) throws SAXException { }
-						
-						@Override
-						public void endElement(String arg0, String arg1, String arg2) throws SAXException {
-							qNames.pop();
-						}
-						
-						@Override
-						public void endDocument() throws SAXException { }
-						
-						@Override
-						public void characters(char[] arg0, int arg1, int arg2) throws SAXException { }
-					});
-				    
-				    InputStream inputStream = null;
-				    try {
-				    	inputStream = jarFile.getInputStream(jarEntry);
-				    	xmlReader.parse(new InputSource(inputStream));
-				    	
-				    } finally {
-				    	if (inputStream != null) {
-				    		inputStream.close();
-				    	}
-				    }
-				    
-				} catch (SAXException e) {
-					throw new AppParsingException("Failed to read features.xml", e);
-				} catch (IOException e) {
-					throw new AppParsingException("Failed to read features.xml", e);
-				} catch (ParserConfigurationException e) {
-					throw new AppParsingException("Failed to read features.xml", e);
-				}
-			}
-		}
-
-        return featuresList;
-    }
     
     public class ChecksumException extends Exception {
 		private static final long serialVersionUID = 7022699404764909882L;

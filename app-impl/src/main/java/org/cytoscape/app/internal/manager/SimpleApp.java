@@ -36,26 +36,51 @@ import java.util.LinkedList;
 import org.apache.commons.io.FileUtils;
 import org.cytoscape.app.AbstractCyApp;
 import org.cytoscape.app.CyAppAdapter;
-import org.cytoscape.app.internal.exception.AppDisableException;
-import org.cytoscape.app.internal.exception.AppInstallException;
-import org.cytoscape.app.internal.exception.AppInstanceException;
-import org.cytoscape.app.internal.exception.AppUninstallException;
+import org.cytoscape.app.internal.exception.AppLoadingException;
+import org.cytoscape.app.internal.exception.AppStartupException;
+import org.cytoscape.app.internal.exception.AppStoppingException;
+import org.cytoscape.app.internal.exception.AppUnloadingException;
 import org.cytoscape.app.swing.CySwingAppAdapter;
 
 public class SimpleApp extends App {
+	
+	/**
+	 * The temporary file corresponding to the app that is used to load classes from.
+	 */
+	private File appTemporaryInstallFile;
+	
+	/**
+	 * A reference to the app's constructor.
+	 */
+	private Constructor<?> appConstructor;
+	
+	/**
+	 * The app's entry class. 
+	 */
+	private Class<?> appEntryClass;
+	
+	/**
+	 * A reference to the instance of the app's class that extends {@link AbstractCyApp}.
+	 */
+	private AbstractCyApp app;
+	
+	@Override
+	public boolean isDetached() {
+		return(super.isDetached() && app == null);
+	}
 
 	@Override
 	public String getReadableStatus() {
 		switch (this.getStatus()) {
 		
 		case DISABLED:
-			if (this.getAppInstance() != null) {
+			if (app != null) {
 				return "Disable on Restart";
 			} else {
 				return "Disabled";
 			}
 		case UNINSTALLED:
-			if (this.getAppInstance() != null) {
+			if (app != null) {
 				return "Uninstall on Restart";
 			} else {
 				return "Uninstalled";
@@ -67,128 +92,100 @@ public class SimpleApp extends App {
 		
 		}
 	}
+
+
+	@Override
+	public void load(AppManager appManager) throws AppLoadingException {
+		if (appConstructor != null) return;
+			// Make a copy used to create app instance
+			LinkedList<String> uniqueNameDirectory = new LinkedList<String>();
+			uniqueNameDirectory.add(appManager.getTemporaryInstallPath());
+			
+			try {
+				if (appTemporaryInstallFile == null) {
+					File targetFile = new File(appManager.getTemporaryInstallPath() + File.separator 
+							+ suggestFileName(uniqueNameDirectory, this.getAppFile().getName()));
+					FileUtils.copyFile(this.getAppFile(), targetFile);
+					appTemporaryInstallFile = targetFile;
+				}
+			} catch (IOException e) {
+				throw new AppLoadingException("Unable to make copy of app jar for instancing", e);
+			}
+			
+			File installFile = appTemporaryInstallFile;
+			if (installFile == null) {
+				throw new AppLoadingException("No copy of app jar for instancing was found");
+			}
+			
+			URL appURL = null;
+			try {
+				appURL = installFile.toURI().toURL();
+			} catch (MalformedURLException e) {
+				throw new AppLoadingException("Unable to obtain URL for file: " 
+						+ installFile, e );
+			}
+			
+			// TODO: Currently uses the CyAppAdapter's loader to load apps' classes. Is there reason to use a different one?
+			ClassLoader appClassLoader = new URLClassLoader(
+					new URL[]{appURL}, appManager.getSwingAppAdapter().getClass().getClassLoader());
+			
+			// Attempt to load the class
+			try {
+				 appEntryClass = appClassLoader.loadClass(this.getEntryClassName());
+			} catch (ClassNotFoundException e) {
+				throw new AppLoadingException("Class " + this.getEntryClassName() + " not found in URL: " + appURL, e);
+			}
+			
+			// Attempt to obtain the constructor
+			try {
+				try {
+					appConstructor = appEntryClass.getConstructor(CyAppAdapter.class);
+				} catch (SecurityException e) {
+					throw new AppLoadingException("Access to the constructor for " + appEntryClass + " denied.", e);
+				} catch (NoSuchMethodException e) {
+					throw new AppLoadingException("Unable to find a constructor for " + appEntryClass 
+							+ " that takes a CyAppAdapter as its argument.", e);
+				}
+			} catch (AppLoadingException e) {
+				try {
+					appConstructor = appEntryClass.getConstructor(CySwingAppAdapter.class);
+				} catch (SecurityException e2) {
+					throw new AppLoadingException("Access to the constructor for " + appEntryClass 
+							+ " taking a CySwingAppAdapter as its argument denied.", e2);
+				} catch (NoSuchMethodException e2) {
+					throw new AppLoadingException("Unable to find an accessible constructor that takes either" 
+							+ " a CyAppAdapter or a CySwingAppAdapter as its argument.", e2);
+				}
+			}
+	}
 	
 	@Override
-	public Object createAppInstance(CySwingAppAdapter appAdapter)
-			throws AppInstanceException {
-		File installFile = this.getAppTemporaryInstallFile();
-		if (installFile == null) {
-			throw new AppInstanceException("No copy of app jar for instancing was found");
-		}
-		
-		URL appURL = null;
+	public void start(AppManager appManager) throws AppStartupException {
+		// Only create new instance if none created
+		if (app != null) return;
 		try {
-			appURL = installFile.toURI().toURL();
-		} catch (MalformedURLException e) {
-			throw new AppInstanceException("Unable to obtain URL for file: " 
-					+ installFile + ". Reason: " + e.getMessage());
+			app = (AbstractCyApp) appConstructor.newInstance(appManager.getSwingAppAdapter());
+		} 
+		catch (IllegalArgumentException e) {
+			throw new AppStartupException("Illegal arguments passed to the constructor for the app's entry class", e);
+		} 
+		catch (InstantiationException e) {
+			throw new AppStartupException("Error instantiating the class " + appEntryClass, e);
+		} 
+		catch (IllegalAccessException e) {
+			throw new AppStartupException("Access to constructor denied", e);
+		} 
+		catch (InvocationTargetException e) {
+			throw new AppStartupException("App constructor threw exception", e);
 		}
-		
-		// TODO: Currently uses the CyAppAdapter's loader to load apps' classes. Is there reason to use a different one?
-		ClassLoader appClassLoader = new URLClassLoader(
-				new URL[]{appURL}, appAdapter.getClass().getClassLoader());
-		
-		// Attempt to load the class
-		Class<?> appEntryClass = null;
-		try {
-			 appEntryClass = appClassLoader.loadClass(this.getEntryClassName());
-		} catch (ClassNotFoundException e) {
-			
-			throw new AppInstanceException("Class " + this.getEntryClassName() + " not found in URL: " + appURL);
-		}
-		
-		// Attempt to obtain the constructor
-		Constructor<?> constructor = null;
-		try {
-			try {
-				constructor = appEntryClass.getConstructor(CyAppAdapter.class);
-			} catch (SecurityException e) {
-				throw new AppInstanceException("Access to the constructor for " + appEntryClass + " denied.");
-			} catch (NoSuchMethodException e) {
-				throw new AppInstanceException("Unable to find a constructor for " + appEntryClass 
-						+ " that takes a CyAppAdapter as its argument.");
-			}
-		} catch (AppInstanceException e) {
-			try {
-				constructor = appEntryClass.getConstructor(CySwingAppAdapter.class);
-			} catch (SecurityException e2) {
-				throw new AppInstanceException("Access to the constructor for " + appEntryClass 
-						+ " taking a CySwingAppAdapter as its argument denied.");
-			} catch (NoSuchMethodException e2) {
-				throw new AppInstanceException("Unable to find an accessible constructor that takes either" 
-						+ " a CyAppAdapter or a CySwingAppAdapter as its argument.");
-			}
-		}
-		
-		// Attempt to instantiate the app's class that extends AbstractCyApp or AbstractCySwingApp.
-		Object appInstance = null;
-		try {
-			appInstance = constructor.newInstance(appAdapter);
-		} catch (IllegalArgumentException e) {
-			throw new AppInstanceException("Illegal arguments passed to the constructor for the app's entry class: " + e.getMessage());
-		} catch (InstantiationException e) {
-			throw new AppInstanceException("Error instantiating the class " + appEntryClass + ": " + e.getMessage());
-		} catch (IllegalAccessException e) {
-			throw new AppInstanceException("Access to constructor denied: " + e.getMessage());
-		} catch (InvocationTargetException e) {
-			e.printStackTrace();
-			throw new AppInstanceException("App constructor threw exception: " + e.toString());
-		}
-		
-		return appInstance;
 	}
 
 	@Override
-	public void install(AppManager appManager) throws AppInstallException {
-		if (this.getStatus() == AppStatus.INSTALLED) {
-			return;
-		}
-		
-		/*
-		try {
-			moveAppFile(appManager, new File(appManager.getKarafDeployDirectory()));
-		} catch (IOException e) {
-			throw new AppInstallException("Failed to move app file, " + e.getMessage());
-		}
-		*/
-		
-		// Make a copy used to create app instance
-		LinkedList<String> uniqueNameDirectory = new LinkedList<String>();
-		uniqueNameDirectory.add(appManager.getTemporaryInstallPath());
-		
-		try {
-			if (this.getAppTemporaryInstallFile() == null) {
-				File targetFile = new File(appManager.getTemporaryInstallPath() + File.separator 
-						+ suggestFileName(uniqueNameDirectory, this.getAppFile().getName()));
-				FileUtils.copyFile(this.getAppFile(), targetFile);
-				this.setAppTemporaryInstallFile(targetFile);
-			}
-		} catch (IOException e) {
-			throw new AppInstallException("Unable to make copy of app jar for instancing, " + e.getMessage());
-		}
-		
-		try {
-			// Only create new instance if none created
-			if (this.getAppInstance() == null) {
-				Object appInstance = this.createAppInstance(appManager.getSwingAppAdapter());
-				this.setAppInstance((AbstractCyApp) appInstance);
-			}
-		} catch (AppInstanceException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
-		this.setStatus(AppStatus.INSTALLED);
+	public void unload(AppManager appManager) throws AppUnloadingException {
 	}
 
 	@Override
-	public void uninstall(AppManager appManager) throws AppUninstallException {
-		this.setStatus(AppStatus.UNINSTALLED);
-	}
-
-	@Override
-	public void disable(AppManager appManager) throws AppDisableException {
-		this.setStatus(AppStatus.DISABLED);
+	public void stop(AppManager appManager) throws AppStoppingException {
 	}
 
 }

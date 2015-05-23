@@ -120,7 +120,8 @@ public class CurrentlyInstalledAppsPanel extends javax.swing.JPanel {
         appsAvailableTable.setDefaultRenderer(Object.class, new DefaultTableCellRenderer() {
 			private static final long serialVersionUID = 1L;
 			public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-				if(table.getValueAt(row, 2) == AppStatus.FAILED_TO_START)
+				if(table.getValueAt(row, 2).equals(AppStatus.FAILED_TO_LOAD.toString()) || 
+						table.getValueAt(row, 2).equals(AppStatus.FAILED_TO_START.toString()))
 					setForeground(Color.RED);
 				else
 					setForeground(null);
@@ -268,6 +269,7 @@ public class CurrentlyInstalledAppsPanel extends javax.swing.JPanel {
         	// Only uninstall apps that are installed
         	if (app.getStatus() == AppStatus.INSTALLED
         			|| app.getStatus() == AppStatus.DISABLED
+        			|| app.getStatus() == AppStatus.FAILED_TO_LOAD
         			|| app.getStatus() == AppStatus.FAILED_TO_START) {
         		try {
 					appManager.uninstallApp(app);
@@ -364,7 +366,7 @@ public class CurrentlyInstalledAppsPanel extends javax.swing.JPanel {
 						app,
 						app.getAppFile() != null ? app.getAppName() : app.getAppName() + " (File moved)",
 						app.getVersion(),
-						app.getStatus()
+						app.getReadableStatus()
 				});
     		}
     	}
@@ -439,7 +441,9 @@ public class CurrentlyInstalledAppsPanel extends javax.swing.JPanel {
     		descriptionTextArea.setText(type + text);
     		
     		// Enable/disable the appropriate button
-    		if (selectedApp.getStatus() == AppStatus.INSTALLED) {
+    		if (selectedApp.getStatus() == AppStatus.INSTALLED || 
+    				selectedApp.getStatus() == AppStatus.FAILED_TO_LOAD || 
+    				selectedApp.getStatus() == AppStatus.FAILED_TO_START ) {
     			enableSelectedButton.setEnabled(false);
     			disableSelectedButton.setEnabled(true);
     			uninstallSelectedButton.setEnabled(true);

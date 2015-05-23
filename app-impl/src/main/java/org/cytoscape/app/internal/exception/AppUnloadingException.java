@@ -24,20 +24,17 @@ package org.cytoscape.app.internal.exception;
  * #L%
  */
 
-
 /**
- * An exception thrown to signal errors found while attempting to perform 
- * an update on an app
+ * An exception thrown to signal errors found while unloading an app.
  */
-public class AppUpdateException extends Exception {
+public class AppUnloadingException extends Exception {
+	private static final long serialVersionUID = -3531148903526122035L;
 
-	private static final long serialVersionUID = 4741554087496424850L;
-
-	public AppUpdateException(String message) {
+	public AppUnloadingException(String message) {
 		super(message);
 	}
 	
-	public AppUpdateException(String message, Throwable cause) {
+	public AppUnloadingException(String message, Throwable cause) {
 		super(message, cause);
 	}
 }

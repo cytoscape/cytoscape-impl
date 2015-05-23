@@ -1,12 +1,10 @@
 package org.cytoscape.app.internal.task;
 
 import java.io.File;
-import java.util.HashSet;
 import java.util.Set;
 
 import org.cytoscape.app.internal.manager.App;
 import org.cytoscape.app.internal.manager.AppManager;
-import org.cytoscape.app.internal.manager.BundleApp;
 import org.cytoscape.app.internal.net.WebApp;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
@@ -26,13 +24,13 @@ public class InstallAppFromFileTask extends AbstractTask {
 		taskMonitor.setTitle("Installing app from file: " + appFile);
 		// Parse app
 		App appToInstall = appManager.getAppParser().parseApp(appFile);
+		insertTasksAfterCurrentTask(new InstallAppTask(appToInstall, appManager));
 
 		// Download dependencies
 		final Set<WebApp> webApps = appManager.getWebQuerier().getAllApps();
 		if (webApps != null && appToInstall.getDependencies() != null) {
 			// Only attempt to install dependencies if the app has dependencies and
 			// the App Manager can connect to the App Store.
-			final Set<App> installedApps = appManager.getApps();
 			for (final App.Dependency dep : appToInstall.getDependencies()) {
 				final WebApp webApp = findWebAppForDep(dep, webApps);
 				if (webApp == null) {
@@ -46,17 +44,6 @@ public class InstallAppFromFileTask extends AbstractTask {
 				}
 			}
 		}
-		
-		// Check for name collisions
-		Set<App> conflictingApps = checkAppNameCollision(appToInstall.getAppName());
-		if (conflictingApps.size() == 1 && conflictingApps.iterator().next() instanceof BundleApp) {
-			App conflictingApp = conflictingApps.iterator().next();
-			insertTasksAfterCurrentTask(new ResolveAppInstallationConflictTask(appToInstall, conflictingApp, appManager));
-		}
-		else
-		{
-			appManager.installApp(appToInstall);
-		}
 	}
 
 	private WebApp findWebAppForDep(final App.Dependency dep, final Set<WebApp> webApps) {
@@ -69,20 +56,4 @@ public class InstallAppFromFileTask extends AbstractTask {
 		}
 		return null;
 	}
-	
-	private Set<App> checkAppNameCollision(String appName) {
-		Set<App> collidingApps = new HashSet<App>();
-		
-		for (App app : appManager.getApps()) {
-			if (appName.equalsIgnoreCase(app.getAppName())) {
-				
-				if (app.isDetached() == false) {
-					collidingApps.add(app);
-				}
-			}
-		}
-		
-		return collidingApps;
-	}
-
 }
