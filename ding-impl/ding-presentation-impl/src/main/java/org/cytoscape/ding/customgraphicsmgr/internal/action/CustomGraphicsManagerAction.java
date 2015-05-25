@@ -27,44 +27,38 @@ package org.cytoscape.ding.customgraphicsmgr.internal.action;
 
 import java.awt.event.ActionEvent;
 
-import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
 import org.cytoscape.ding.customgraphicsmgr.internal.ui.CustomGraphicsBrowser;
 import org.cytoscape.ding.customgraphicsmgr.internal.ui.CustomGraphicsManagerDialog;
-import org.cytoscape.util.swing.IconManager;
+import org.cytoscape.service.util.CyServiceRegistrar;
 
 
 public class CustomGraphicsManagerAction extends AbstractCyAction {
 	
 	private static final long serialVersionUID = -4582671383878015609L;
 	
-	private CustomGraphicsManagerDialog dialog;
-
 	private final CustomGraphicsManager cgManager;
-	private final CyApplicationManager appManager;
 	private final CustomGraphicsBrowser browser;
-	private final IconManager iconManager;
+	private final CyServiceRegistrar serviceRegistrar;
 
-	public CustomGraphicsManagerAction(final CustomGraphicsManager cgManager,
-	                                   final CyApplicationManager appManager,
-	                                   final CustomGraphicsBrowser browser,
-	                                   final IconManager iconManager) {
-		super("Open Custom Graphics Manager");
+	public CustomGraphicsManagerAction(
+			final CustomGraphicsManager cgManager,
+	        final CustomGraphicsBrowser browser,
+	        final CyServiceRegistrar serviceRegistrar
+	) {
+		super("Open Image Manager...");
 		setPreferredMenu("View");
 		setMenuGravity(10.0f);
 		
 		this.cgManager = cgManager;
-		this.appManager = appManager;
 		this.browser = browser;
-		this.iconManager = iconManager;
+		this.serviceRegistrar = serviceRegistrar;
 	}
 
 	@Override
 	public void actionPerformed(ActionEvent evt) {
-		if (dialog == null)
-			dialog = new CustomGraphicsManagerDialog(cgManager, appManager, browser, iconManager);
-		
+		final CustomGraphicsManagerDialog dialog = new CustomGraphicsManagerDialog(cgManager, browser, serviceRegistrar);
 		dialog.setVisible(true);
 	}
 }

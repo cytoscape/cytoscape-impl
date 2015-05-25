@@ -121,106 +121,106 @@ public class DVisualLexicon extends BasicVisualLexicon {
 
 	public static final VisualProperty<Double> NODE_CUSTOMGRAPHICS_SIZE_1 = new DoubleVisualProperty(
 			0.0, NONE_ZERO_POSITIVE_DOUBLE_RANGE,
-			"NODE_CUSTOMGRAPHICS_SIZE_1", "Node Custom Graphics Size 1",
+			"NODE_CUSTOMGRAPHICS_SIZE_1", "Node Image/Chart Size 1",
 			CyNode.class);
 	public static final VisualProperty<Double> NODE_CUSTOMGRAPHICS_SIZE_2 = new DoubleVisualProperty(
 			0.0, NONE_ZERO_POSITIVE_DOUBLE_RANGE,
-			"NODE_CUSTOMGRAPHICS_SIZE_2", "Node Custom Graphics Size 2",
+			"NODE_CUSTOMGRAPHICS_SIZE_2", "Node Image/Chart Size 2",
 			CyNode.class);
 	public static final VisualProperty<Double> NODE_CUSTOMGRAPHICS_SIZE_3 = new DoubleVisualProperty(
 			0.0, NONE_ZERO_POSITIVE_DOUBLE_RANGE,
-			"NODE_CUSTOMGRAPHICS_SIZE_3", "Node Custom Graphics Size 3",
+			"NODE_CUSTOMGRAPHICS_SIZE_3", "Node Image/Chart Size 3",
 			CyNode.class);
 	public static final VisualProperty<Double> NODE_CUSTOMGRAPHICS_SIZE_4 = new DoubleVisualProperty(
 			0.0, NONE_ZERO_POSITIVE_DOUBLE_RANGE,
-			"NODE_CUSTOMGRAPHICS_SIZE_4", "Node Custom Graphics Size 4",
+			"NODE_CUSTOMGRAPHICS_SIZE_4", "Node Image/Chart Size 4",
 			CyNode.class);
 	public static final VisualProperty<Double> NODE_CUSTOMGRAPHICS_SIZE_5 = new DoubleVisualProperty(
 			0.0, NONE_ZERO_POSITIVE_DOUBLE_RANGE,
-			"NODE_CUSTOMGRAPHICS_SIZE_5", "Node Custom Graphics Size 5",
+			"NODE_CUSTOMGRAPHICS_SIZE_5", "Node Image/Chart Size 5",
 			CyNode.class);
 	public static final VisualProperty<Double> NODE_CUSTOMGRAPHICS_SIZE_6 = new DoubleVisualProperty(
 			0.0, NONE_ZERO_POSITIVE_DOUBLE_RANGE,
-			"NODE_CUSTOMGRAPHICS_SIZE_6", "Node Custom Graphics Size 6",
+			"NODE_CUSTOMGRAPHICS_SIZE_6", "Node Image/Chart Size 6",
 			CyNode.class);
 	public static final VisualProperty<Double> NODE_CUSTOMGRAPHICS_SIZE_7 = new DoubleVisualProperty(
 			0.0, NONE_ZERO_POSITIVE_DOUBLE_RANGE,
-			"NODE_CUSTOMGRAPHICS_SIZE_7", "Node Custom Graphics Size 7",
+			"NODE_CUSTOMGRAPHICS_SIZE_7", "Node Image/Chart Size 7",
 			CyNode.class);
 	public static final VisualProperty<Double> NODE_CUSTOMGRAPHICS_SIZE_8 = new DoubleVisualProperty(
 			0.0, NONE_ZERO_POSITIVE_DOUBLE_RANGE,
-			"NODE_CUSTOMGRAPHICS_SIZE_8", "Node Custom Graphics Size 8",
+			"NODE_CUSTOMGRAPHICS_SIZE_8", "Node Image/Chart Size 8",
 			CyNode.class);
 	public static final VisualProperty<Double> NODE_CUSTOMGRAPHICS_SIZE_9 = new DoubleVisualProperty(
 			0.0, NONE_ZERO_POSITIVE_DOUBLE_RANGE,
-			"NODE_CUSTOMGRAPHICS_SIZE_9", "Node Custom Graphics Size 9",
+			"NODE_CUSTOMGRAPHICS_SIZE_9", "Node Image/Chart Size 9",
 			CyNode.class);
 
 	public static final VisualProperty<CyCustomGraphics> NODE_CUSTOMGRAPHICS_1 = new CustomGraphicsVisualProperty(
 			NullCustomGraphics.getNullObject(), CG_RANGE,
-			"NODE_CUSTOMGRAPHICS_1", "Node Custom Graphics 1", CyNode.class);
+			"NODE_CUSTOMGRAPHICS_1", "Node Image/Chart 1", CyNode.class);
 	public static final VisualProperty<CyCustomGraphics> NODE_CUSTOMGRAPHICS_2 = new CustomGraphicsVisualProperty(
 			NullCustomGraphics.getNullObject(), CG_RANGE,
-			"NODE_CUSTOMGRAPHICS_2", "Node Custom Graphics 2", CyNode.class);
+			"NODE_CUSTOMGRAPHICS_2", "Node Image/Chart 2", CyNode.class);
 	public static final VisualProperty<CyCustomGraphics> NODE_CUSTOMGRAPHICS_3 = new CustomGraphicsVisualProperty(
 			NullCustomGraphics.getNullObject(), CG_RANGE,
-			"NODE_CUSTOMGRAPHICS_3", "Node Custom Graphics 3", CyNode.class);
+			"NODE_CUSTOMGRAPHICS_3", "Node Image/Chart 3", CyNode.class);
 	public static final VisualProperty<CyCustomGraphics> NODE_CUSTOMGRAPHICS_4 = new CustomGraphicsVisualProperty(
 			NullCustomGraphics.getNullObject(), CG_RANGE,
-			"NODE_CUSTOMGRAPHICS_4", "Node Custom Graphics 4", CyNode.class);
+			"NODE_CUSTOMGRAPHICS_4", "Node Image/Chart 4", CyNode.class);
 	public static final VisualProperty<CyCustomGraphics> NODE_CUSTOMGRAPHICS_5 = new CustomGraphicsVisualProperty(
 			NullCustomGraphics.getNullObject(), CG_RANGE,
-			"NODE_CUSTOMGRAPHICS_5", "Node Custom Graphics 5", CyNode.class);
+			"NODE_CUSTOMGRAPHICS_5", "Node Image/Chart 5", CyNode.class);
 	public static final VisualProperty<CyCustomGraphics> NODE_CUSTOMGRAPHICS_6 = new CustomGraphicsVisualProperty(
 			NullCustomGraphics.getNullObject(), CG_RANGE,
-			"NODE_CUSTOMGRAPHICS_6", "Node Custom Graphics 6", CyNode.class);
+			"NODE_CUSTOMGRAPHICS_6", "Node Image/Chart 6", CyNode.class);
 	public static final VisualProperty<CyCustomGraphics> NODE_CUSTOMGRAPHICS_7 = new CustomGraphicsVisualProperty(
 			NullCustomGraphics.getNullObject(), CG_RANGE,
-			"NODE_CUSTOMGRAPHICS_7", "Node Custom Graphics 7", CyNode.class);
+			"NODE_CUSTOMGRAPHICS_7", "Node Image/Chart 7", CyNode.class);
 	public static final VisualProperty<CyCustomGraphics> NODE_CUSTOMGRAPHICS_8 = new CustomGraphicsVisualProperty(
 			NullCustomGraphics.getNullObject(), CG_RANGE,
-			"NODE_CUSTOMGRAPHICS_8", "Node Custom Graphics 8", CyNode.class);
+			"NODE_CUSTOMGRAPHICS_8", "Node Image/Chart 8", CyNode.class);
 	public static final VisualProperty<CyCustomGraphics> NODE_CUSTOMGRAPHICS_9 = new CustomGraphicsVisualProperty(
 			NullCustomGraphics.getNullObject(), CG_RANGE,
-			"NODE_CUSTOMGRAPHICS_9", "Node Custom Graphics 9", CyNode.class);
+			"NODE_CUSTOMGRAPHICS_9", "Node Image/Chart 9", CyNode.class);
 
 	// Location of custom graphics
 	public static final VisualProperty<ObjectPosition> NODE_CUSTOMGRAPHICS_POSITION_1 = new ObjectPositionVisualProperty(
 			ObjectPositionImpl.DEFAULT_POSITION,
 			"NODE_CUSTOMGRAPHICS_POSITION_1",
-			"Node Custom Graphics Position 1", CyNode.class);
+			"Node Image/Chart Position 1", CyNode.class);
 	public static final VisualProperty<ObjectPosition> NODE_CUSTOMGRAPHICS_POSITION_2 = new ObjectPositionVisualProperty(
 			ObjectPositionImpl.DEFAULT_POSITION,
 			"NODE_CUSTOMGRAPHICS_POSITION_2",
-			"Node Custom Graphics Position 2", CyNode.class);
+			"Node Image/Chart Position 2", CyNode.class);
 	public static final VisualProperty<ObjectPosition> NODE_CUSTOMGRAPHICS_POSITION_3 = new ObjectPositionVisualProperty(
 			ObjectPositionImpl.DEFAULT_POSITION,
 			"NODE_CUSTOMGRAPHICS_POSITION_3",
-			"Node Custom Graphics Position 3", CyNode.class);
+			"Node Image/Chart Position 3", CyNode.class);
 	public static final VisualProperty<ObjectPosition> NODE_CUSTOMGRAPHICS_POSITION_4 = new ObjectPositionVisualProperty(
 			ObjectPositionImpl.DEFAULT_POSITION,
 			"NODE_CUSTOMGRAPHICS_POSITION_4",
-			"Node Custom Graphics Position 4", CyNode.class);
+			"Node Image/Chart Position 4", CyNode.class);
 	public static final VisualProperty<ObjectPosition> NODE_CUSTOMGRAPHICS_POSITION_5 = new ObjectPositionVisualProperty(
 			ObjectPositionImpl.DEFAULT_POSITION,
 			"NODE_CUSTOMGRAPHICS_POSITION_5",
-			"Node Custom Graphics Position 5", CyNode.class);
+			"Node Image/Chart Position 5", CyNode.class);
 	public static final VisualProperty<ObjectPosition> NODE_CUSTOMGRAPHICS_POSITION_6 = new ObjectPositionVisualProperty(
 			ObjectPositionImpl.DEFAULT_POSITION,
 			"NODE_CUSTOMGRAPHICS_POSITION_6",
-			"Node Custom Graphics Position 6", CyNode.class);
+			"Node Image/Chart Position 6", CyNode.class);
 	public static final VisualProperty<ObjectPosition> NODE_CUSTOMGRAPHICS_POSITION_7 = new ObjectPositionVisualProperty(
 			ObjectPositionImpl.DEFAULT_POSITION,
 			"NODE_CUSTOMGRAPHICS_POSITION_7",
-			"Node Custom Graphics Position 7", CyNode.class);
+			"Node Image/Chart Position 7", CyNode.class);
 	public static final VisualProperty<ObjectPosition> NODE_CUSTOMGRAPHICS_POSITION_8 = new ObjectPositionVisualProperty(
 			ObjectPositionImpl.DEFAULT_POSITION,
 			"NODE_CUSTOMGRAPHICS_POSITION_8",
-			"Node Custom Graphics Position 8", CyNode.class);
+			"Node Image/Chart Position 8", CyNode.class);
 	public static final VisualProperty<ObjectPosition> NODE_CUSTOMGRAPHICS_POSITION_9 = new ObjectPositionVisualProperty(
 			ObjectPositionImpl.DEFAULT_POSITION,
 			"NODE_CUSTOMGRAPHICS_POSITION_9",
-			"Node Custom Graphics Position 9", CyNode.class);
+			"Node Image/Chart Position 9", CyNode.class);
 
 	// Compound Node VPs
 	public static final VisualProperty<NodeShape> COMPOUND_NODE_SHAPE = 

@@ -37,9 +37,9 @@ import java.net.MalformedURLException;
 
 import javax.imageio.ImageIO;
 import javax.swing.AbstractAction;
+import javax.swing.BorderFactory;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
-import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
@@ -52,8 +52,10 @@ import javax.swing.WindowConstants;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
 import org.cytoscape.ding.customgraphics.bitmap.URLImageCustomGraphics;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
@@ -80,7 +82,6 @@ public class CustomGraphicsManagerDialog extends JDialog {
 	private JPanel leftPanel;
 	private JPanel buttonPanel;
 	
-	
 	// List of graphics available
 	private final CustomGraphicsBrowser browser;
 	// Panel for displaying actual size image
@@ -88,24 +89,28 @@ public class CustomGraphicsManagerDialog extends JDialog {
 	private final CustomGraphicsManager manager;
 	private final IconManager iconManager;
 
-	public CustomGraphicsManagerDialog(final CustomGraphicsManager manager, final CyApplicationManager appManager,
-			final CustomGraphicsBrowser browser, final IconManager iconManager) {
+	public CustomGraphicsManagerDialog(
+			final CustomGraphicsManager manager,
+			final CustomGraphicsBrowser browser,
+			final CyServiceRegistrar serviceRegistrar
+	) {
+		super(serviceRegistrar.getService(CySwingApplication.class).getJFrame(), ModalityType.APPLICATION_MODAL);
+		
 		if (browser == null)
 			throw new NullPointerException("CustomGraphicsBrowser is null.");
 
 		this.manager = manager;
 		this.browser = browser;
-		this.iconManager = iconManager;
+		this.iconManager = serviceRegistrar.getService(IconManager.class);
 		
-		this.setModal(false);
 		initComponents();
 
-		detail = new CustomGraphicsDetailPanel(appManager);
+		detail = new CustomGraphicsDetailPanel(serviceRegistrar.getService(CyApplicationManager.class));
 
 		this.leftScrollPane.setViewportView(browser);
 		this.rightScrollPane.setViewportView(detail);
 		this.setPreferredSize(new Dimension(880, 580));
-		this.setTitle("Custom Graphics Manager");
+		this.setTitle("Image Manager");
 
 		this.browser.addListSelectionListener(detail);
 		pack();

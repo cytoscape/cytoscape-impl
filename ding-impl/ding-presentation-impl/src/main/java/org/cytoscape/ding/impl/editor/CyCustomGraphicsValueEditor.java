@@ -1,6 +1,7 @@
 package org.cytoscape.ding.impl.editor;
 
 import static javax.swing.GroupLayout.DEFAULT_SIZE;
+import static javax.swing.GroupLayout.PREFERRED_SIZE;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -38,6 +39,8 @@ import javax.swing.event.ChangeListener;
 import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
 import org.cytoscape.ding.customgraphics.CyCustomGraphics2Manager;
 import org.cytoscape.ding.customgraphics.NullCustomGraphics;
+import org.cytoscape.ding.customgraphicsmgr.internal.ui.CustomGraphicsBrowser;
+import org.cytoscape.ding.customgraphicsmgr.internal.ui.CustomGraphicsManagerDialog;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.model.VisualProperty;
@@ -70,6 +73,7 @@ public class CyCustomGraphicsValueEditor extends JPanel implements VisualPropert
 
 	private final CustomGraphicsManager customGraphicsMgr;
 	private final CyCustomGraphics2Manager customGraphics2Mgr;
+	private final CustomGraphicsBrowser browser;
 	private final CyServiceRegistrar serviceRegistrar;
 	
 	private JDialog dialog;
@@ -78,9 +82,11 @@ public class CyCustomGraphicsValueEditor extends JPanel implements VisualPropert
 	
 	public CyCustomGraphicsValueEditor(final CustomGraphicsManager customGraphicsMgr,
 									   final CyCustomGraphics2Manager customGraphics2Mgr,
+									   final CustomGraphicsBrowser browser,
 									   final CyServiceRegistrar serviceRegistrar) {
 		this.customGraphicsMgr = customGraphicsMgr;
 		this.customGraphics2Mgr = customGraphics2Mgr;
+		this.browser = browser;
 		this.serviceRegistrar = serviceRegistrar;
 		cg2PnlMap = new HashMap<>();
 	}
@@ -290,12 +296,35 @@ public class CyCustomGraphicsValueEditor extends JPanel implements VisualPropert
 		
 		private DiscreteValueList<CyCustomGraphics> graphicsList;
 		
+		@SuppressWarnings("serial")
 		public GraphicsPanel() {
-			JScrollPane scrollPane = new JScrollPane();
+			final JScrollPane scrollPane = new JScrollPane();
 			scrollPane.setViewportView(getGraphicsList());
 			
-			setLayout(new BorderLayout());
-			add(scrollPane);
+			final JButton openImgMgrBtn = new JButton(new AbstractAction("Open Image Manager...") {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					final CustomGraphicsManagerDialog dialog = 
+							new CustomGraphicsManagerDialog(customGraphicsMgr, browser, serviceRegistrar);
+					dialog.setVisible(true);
+					
+					updateList();
+				}
+			});
+			
+			final GroupLayout layout = new GroupLayout(this);
+			this.setLayout(layout);
+			layout.setAutoCreateContainerGaps(false);
+			layout.setAutoCreateGaps(true);
+			
+			layout.setHorizontalGroup(layout.createParallelGroup(Alignment.CENTER, true)
+					.addComponent(scrollPane, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+					.addComponent(openImgMgrBtn, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+			);
+			layout.setVerticalGroup(layout.createSequentialGroup()
+					.addComponent(scrollPane, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+					.addComponent(openImgMgrBtn, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+			);
 		}
 		
 		public void updateList() {

@@ -170,13 +170,13 @@ public class CyActivator extends AbstractCyActivator {
 	@Override
 	public void start(BundleContext bc) {
 		startSpacial(bc); 
-		startCustomGraphicsMgr(bc);
+		CustomGraphicsBrowser cgbBrowser = startCustomGraphicsMgr(bc);
 		startCharts(bc);
 		startGradients(bc);
-		startPresentationImpl(bc);
+		startPresentationImpl(bc, cgbBrowser);
 	}
 
-	private void startPresentationImpl(BundleContext bc) {
+	private void startPresentationImpl(BundleContext bc, CustomGraphicsBrowser cgbBrowser) {
 		VisualMappingManager vmmServiceRef = getService(bc, VisualMappingManager.class);
 		CyServiceRegistrar cyServiceRegistrarServiceRef = getService(bc, CyServiceRegistrar.class);
 		CyApplicationManager cyApplicationManagerServiceRef = getService(bc, CyApplicationManager.class);
@@ -573,14 +573,16 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc, customGraphicsSizeDependencyFactory, VisualPropertyDependencyFactory.class, new Properties());
 		
 		// Custom Graphics Editors
-		final CyCustomGraphicsValueEditor customGraphicsValueEditor = new CyCustomGraphicsValueEditor(customGraphicsManagerServiceRef, cyCustomGraphics2ManagerServiceRef, cyServiceRegistrarRef);
+		final CyCustomGraphicsValueEditor customGraphicsValueEditor = new CyCustomGraphicsValueEditor(
+				customGraphicsManagerServiceRef, cyCustomGraphics2ManagerServiceRef, cgbBrowser, cyServiceRegistrarRef);
 		registerAllServices(bc, customGraphicsValueEditor, new Properties());
 		
 		final CustomGraphicsVisualPropertyEditor customGraphicsVisualPropertyEditor = new CustomGraphicsVisualPropertyEditor(CyCustomGraphics.class, customGraphicsValueEditor, continuousMappingCellRendererFactory, iconManagerServiceRef);
 		registerService(bc, customGraphicsVisualPropertyEditor, VisualPropertyEditor.class, new Properties());
 	}
 
-	private void startCustomGraphicsMgr(BundleContext bc) {
+	private CustomGraphicsBrowser startCustomGraphicsMgr(BundleContext bc) {
+		CyServiceRegistrar cyServiceRegistrarServiceRef = getService(bc, CyServiceRegistrar.class);
 		DialogTaskManager dialogTaskManagerServiceRef = getService(bc, DialogTaskManager.class);
 		SynchronousTaskManager<?> syncTaskManagerServiceRef = getService(bc, SynchronousTaskManager.class);
 		CyProperty coreCyPropertyServiceRef = getService(bc, CyProperty.class, "(cyPropertyName=cytoscape3.props)");
@@ -588,18 +590,17 @@ public class CyActivator extends AbstractCyActivator {
 		CyApplicationConfiguration cyApplicationConfigurationServiceRef = getService(bc,
 				CyApplicationConfiguration.class);
 		CyEventHelper eventHelperServiceRef = getService(bc, CyEventHelper.class);
-		IconManager iconManagerServiceRef = getService(bc, IconManager.class);
 
 		VisualMappingManager vmmServiceRef = getService(bc, VisualMappingManager.class);
 		
 		CustomGraphicsManagerImpl customGraphicsManager = new CustomGraphicsManagerImpl(coreCyPropertyServiceRef,
 				dialogTaskManagerServiceRef, syncTaskManagerServiceRef, cyApplicationConfigurationServiceRef, 
 				eventHelperServiceRef, vmmServiceRef, cyApplicationManagerServiceRef, getdefaultImageURLs(bc));
-		CustomGraphicsBrowser browser = new CustomGraphicsBrowser(customGraphicsManager);
-		registerAllServices(bc, browser, new Properties());
+		CustomGraphicsBrowser cgBrowser = new CustomGraphicsBrowser(customGraphicsManager);
+		registerAllServices(bc, cgBrowser, new Properties());
 
 		CustomGraphicsManagerAction customGraphicsManagerAction = new CustomGraphicsManagerAction(
-				customGraphicsManager, cyApplicationManagerServiceRef, browser, iconManagerServiceRef);
+				customGraphicsManager, cgBrowser, cyServiceRegistrarServiceRef);
 
 		registerAllServices(bc, customGraphicsManager, new Properties());
 		registerService(bc, customGraphicsManagerAction, CyAction.class, new Properties());
@@ -626,6 +627,8 @@ public class CyActivator extends AbstractCyActivator {
 		final CyCustomGraphics2Manager chartFactoryManager = CyCustomGraphics2ManagerImpl.getInstance();
 		registerAllServices(bc, chartFactoryManager, new Properties());
 		registerServiceListener(bc, chartFactoryManager, "addFactory", "removeFactory", CyCustomGraphics2Factory.class);
+		
+		return cgBrowser;
 	}
 	
 	private void startCharts(BundleContext bc) {
