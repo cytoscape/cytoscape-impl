@@ -51,6 +51,7 @@ public class AttributeMappingParametersHandlerFactory implements GUITunableHandl
 		return new AttributeMappingParametersHandler(field, instance, t, dialogType, serviceRegistrar);
 	}
 
+	@Override
 	public GUITunableHandler createTunableHandler(Method getter, Method setter, Object instance, Tunable tunable) {
 		if (!AttributeMappingParameters.class.isAssignableFrom(getter.getReturnType()))
 			return null;

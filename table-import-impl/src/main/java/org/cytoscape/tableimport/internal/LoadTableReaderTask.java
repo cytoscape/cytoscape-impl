@@ -78,7 +78,7 @@ public class LoadTableReaderTask extends AbstractTask implements CyTableReader, 
 	private static int numImports = 0;
 	private boolean[] importFlag;
 	
-	public AttributeMappingParameters amp ;
+	public AttributeMappingParameters amp;
 	
 	TextTableReader reader;
 	

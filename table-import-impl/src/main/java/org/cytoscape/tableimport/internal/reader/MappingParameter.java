@@ -24,9 +24,6 @@ package org.cytoscape.tableimport.internal.reader;
  * #L%
  */
 
-import org.cytoscape.tableimport.internal.reader.TextTableReader.ObjectType;
-
-import java.util.List;
 
 
 /**

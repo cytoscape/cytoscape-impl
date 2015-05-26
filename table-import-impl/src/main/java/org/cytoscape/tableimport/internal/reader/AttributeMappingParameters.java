@@ -81,7 +81,8 @@ public class AttributeMappingParameters extends AbstractMappingParameters {
             int startNumber,
             String commentChar
     ) throws Exception {
-		super(delimiters, listDelimiter, attrNames, attributeTypes,listAttributeTypes, importFlag, startNumber, commentChar);
+		super(delimiters, listDelimiter, attrNames, attributeTypes, listAttributeTypes, importFlag, startNumber,
+				commentChar);
 		
 		this.caseSensitive = caseSensitive;
 		
@@ -148,7 +149,7 @@ public class AttributeMappingParameters extends AbstractMappingParameters {
 		return keyIndex;
 	}
 	
-	public Boolean getCaseSensitive() {
+	public Boolean isCaseSensitive() {
 		return caseSensitive;
 	}
 }

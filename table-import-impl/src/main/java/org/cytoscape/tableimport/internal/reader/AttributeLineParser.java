@@ -25,19 +25,13 @@ package org.cytoscape.tableimport.internal.reader;
  */
 
 
-import org.cytoscape.tableimport.internal.reader.TextTableReader.ObjectType;
-
-import org.cytoscape.model.CyEdge;
-import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyRow;
-import org.cytoscape.model.CyTable;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
+
+import org.cytoscape.model.CyRow;
+import org.cytoscape.model.CyTable;
 import org.cytoscape.tableimport.internal.util.AttributeTypes;
 
 
@@ -50,6 +44,7 @@ import org.cytoscape.tableimport.internal.util.AttributeTypes;
  *
  */
 public class AttributeLineParser {
+	
 	private AttributeMappingParameters mapping;
 	private Map<String, Object> invalid = new HashMap<String, Object>();
 
@@ -68,9 +63,6 @@ public class AttributeLineParser {
 	 * @param parts entries in a line.
 	 */
 	public void parseAll(CyTable table, String[] parts) {
-
-		//System.out.println("Entering AttributeLineParser.parseAll()....");
-
 		// Get key
 		final Object primaryKey ;
 		final int partsLen = parts.length;
@@ -93,9 +85,9 @@ public class AttributeLineParser {
 				primaryKey = parts[mapping.getKeyIndex()].trim();
 		}
 
-		if (partsLen==1)
+		if (partsLen == 1) {
 			table.getRow(parts[0]);
-		else{
+		} else {
 			for (int i = 0; i < partsLen; i++) {
 				if ((i != mapping.getKeyIndex()) && mapping.getImportFlag()[i]) {
 					if (parts[i] == null) {
@@ -108,9 +100,6 @@ public class AttributeLineParser {
 		}
 	}
 
-	
-	
-
 	/**
 	 * Based on the attribute types, map the entry to CyAttributes.<br>
 	 *
@@ -119,7 +108,6 @@ public class AttributeLineParser {
 	 * @param index
 	 */
 	private void mapAttribute(CyTable table, final Object key, final String entry, final int index) {
-
 		final Byte type = mapping.getAttributeTypes()[index];
 
 		switch (type) {
@@ -259,12 +247,10 @@ public class AttributeLineParser {
 				tbl.createListColumn(attributeName, Boolean.class, false);
 			else if (type == AttributeTypes.TYPE_FLOATING)
 				tbl.createListColumn(attributeName, Double.class, false);
-			else if (type == AttributeTypes.TYPE_STRING){
+			else if (type == AttributeTypes.TYPE_STRING)
 				tbl.createListColumn(attributeName, String.class, false);
-			}
-			else
-				;//invalid type
 		}
+		
 		CyRow row = tbl.getRow(key);
 		row.set(attributeName, elmsBuff);
 	}

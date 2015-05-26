@@ -79,13 +79,13 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.Vector;
 
+import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.GroupLayout.ParallelGroup;
 import javax.swing.GroupLayout.SequentialGroup;
-import javax.swing.AbstractAction;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -491,10 +491,6 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 		caseSensitiveCheckBox.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent evt) {
-				ignoreCaseCheckBoxActionPerformed(evt);
-			}
-
-			private void ignoreCaseCheckBoxActionPerformed(ActionEvent evt) {
 				caseSensitive = caseSensitiveCheckBox.isSelected();
 			}
 		});
@@ -2363,10 +2359,6 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 		return primaryKeyComboBox.getSelectedIndex();
 	}
 
-	public boolean isCaseSansitive() {
-		return caseSensitive;
-	}
-
 	public AttributeMappingParameters getAttributeMappingParameters() throws Exception {
 		/*
 		 * Get import flags
@@ -2432,8 +2424,8 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 		keyInFile = primaryKeyComboBox.getSelectedIndex();
 
 		// Build mapping parameter object.
-		List<String> del = checkDelimiter();
-		AttributeMappingParameters mapping = new AttributeMappingParameters(del, listDelimiter, keyInFile,
+		final List<String> del = checkDelimiter();
+		final AttributeMappingParameters mapping = new AttributeMappingParameters(del, listDelimiter, keyInFile,
 				attributeNames, attributeTypes, listDataTypes, importFlag, caseSensitive, startLineNumber, commentChar);
 
 		return mapping;
