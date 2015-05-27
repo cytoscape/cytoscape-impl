@@ -341,7 +341,7 @@ public class JPanelTunableMutator extends AbstractTunableInterceptor<GUITunableH
 			
 			updatingMargins = true;
 			int maxLeftWidth = 0, maxRightWidth = 0;
-			boolean updateMargins = true;
+			boolean updateMargins = false;
 			
 			try {
 				// 1st Pass: Get max left/right margin values if vertical form
@@ -349,7 +349,9 @@ public class JPanelTunableMutator extends AbstractTunableInterceptor<GUITunableH
 					if (gh instanceof AbstractGUITunableHandler && !((AbstractGUITunableHandler)gh).isHorizontal()) {
 						final JPanel p = gh.getJPanel();
 						
-						if (updateMargins && p instanceof TunableFieldPanel) {
+						if (p instanceof TunableFieldPanel) {
+							updateMargins = true;
+							
 							final TunableFieldPanel tfp = (TunableFieldPanel) p;
 							final JComponent label = tfp.getLabel() != null ? tfp.getLabel() : tfp.getMultiLineLabel();
 							final Component control = tfp.getControl();
@@ -358,8 +360,6 @@ public class JPanelTunableMutator extends AbstractTunableInterceptor<GUITunableH
 								maxLeftWidth = Math.max(maxLeftWidth, label.getPreferredSize().width);
 							if (control != null)
 								maxRightWidth = Math.max(maxRightWidth, control.getPreferredSize().width);
-						} else {
-							updateMargins = false;
 						}
 					}
 				}
