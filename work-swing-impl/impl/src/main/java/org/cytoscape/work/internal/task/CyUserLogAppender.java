@@ -1,14 +1,8 @@
 package org.cytoscape.work.internal.task;
 
-import java.util.logging.Handler;
-import java.util.logging.LogRecord;
-import java.util.logging.Level;
-
-import org.ops4j.pax.logging.spi.PaxAppender;
-import org.ops4j.pax.logging.spi.PaxLevel;
-import org.ops4j.pax.logging.spi.PaxLoggingEvent;
-
 import org.cytoscape.work.TaskMonitor;
+import org.ops4j.pax.logging.spi.PaxAppender;
+import org.ops4j.pax.logging.spi.PaxLoggingEvent;
 
 public class CyUserLogAppender implements PaxAppender {
   final TaskStatusBar statusBar;
@@ -25,6 +19,11 @@ public class CyUserLogAppender implements PaxAppender {
 
     history.addUnnestedMessage(level, message);
     statusBar.setTitle(level, message);
+    
+    if(event.getThrowableStrRep() != null) {
+    	for(String line: event.getThrowableStrRep())
+    		System.err.println(line);
+    }
   }
 
   private static TaskMonitor.Level getCorrespondingLevel(final int level) {
