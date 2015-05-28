@@ -39,7 +39,10 @@ import org.cytoscape.ding.impl.DLineType;
 import org.cytoscape.ding.impl.ObjectPositionImpl;
 import org.cytoscape.ding.impl.strokes.BackwardSlashStroke;
 import org.cytoscape.ding.impl.strokes.ContiguousArrowStroke;
+import org.cytoscape.ding.impl.strokes.DashDotStroke;
+import org.cytoscape.ding.impl.strokes.EqualDashStroke;
 import org.cytoscape.ding.impl.strokes.ForwardSlashStroke;
+import org.cytoscape.ding.impl.strokes.LongDashStroke;
 import org.cytoscape.ding.impl.strokes.ParallelStroke;
 import org.cytoscape.ding.impl.strokes.PipeStroke;
 import org.cytoscape.ding.impl.strokes.SeparateArrowStroke;
@@ -277,6 +280,47 @@ public class DVisualLexicon extends BasicVisualLexicon {
 					1.0f));
 	private static final DLineType SEPARATE_ARROW = new DLineType(
 			"Separate Arrow", "SEPARATE_ARROW", new SeparateArrowStroke(1.0f));
+
+	// For marquee or marching ants animations.  Not sure what the
+	// right number of these
+	private static final DLineType MARQUEE_DASH_1 = new DLineType(
+			"Marquee Dash 1", "MARQUEE_DASH_1", 
+			new LongDashStroke(1.0f,0.0f));
+	private static final DLineType MARQUEE_DASH_2 = new DLineType(
+			"Marquee Dash 2", "MARQUEE_DASH_2",
+			new LongDashStroke(1.0f,0.25f));
+	private static final DLineType MARQUEE_DASH_3 = new DLineType(
+			"Marquee Dash 3", "MARQUEE_DASH_3",
+			new LongDashStroke(1.0f,0.50f));
+	private static final DLineType MARQUEE_DASH_4 = new DLineType(
+			"Marquee Dash 4", "MARQUEE_DASH_4",
+			new LongDashStroke(1.0f,0.75f));
+
+	private static final DLineType MARQUEE_EQUAL_1 = new DLineType(
+			"Marquee Equal Dash 1", "MARQUEE_EQUAL_1", 
+			new EqualDashStroke(1.0f,0.0f));
+	private static final DLineType MARQUEE_EQUAL_2 = new DLineType(
+			"Marquee Equal Dash 2", "MARQUEE_EQUAL_2",
+			new EqualDashStroke(1.0f,0.25f));
+	private static final DLineType MARQUEE_EQUAL_3 = new DLineType(
+			"Marquee Equal Dash 3", "MARQUEE_EQUAL_3",
+			new EqualDashStroke(1.0f,0.50f));
+	private static final DLineType MARQUEE_EQUAL_4 = new DLineType(
+			"Marquee Equal Dash 4", "MARQUEE_EQUAL_4",
+			new EqualDashStroke(1.0f,0.75f));
+
+	private static final DLineType MARQUEE_DASH_DOT_1 = new DLineType(
+			"Marquee Dash Dot 1", "MARQUEE_DASH_DOT_1", 
+			new DashDotStroke(1.0f, 0.0f));
+	private static final DLineType MARQUEE_DASH_DOT_2 = new DLineType(
+			"Marquee Dash Dot 2", "MARQUEE_DASH_DOT_2", 
+			new DashDotStroke(1.0f, 0.25f));
+	private static final DLineType MARQUEE_DASH_DOT_3 = new DLineType(
+			"Marquee Dash Dot 3", "MARQUEE_DASH_DOT_3",
+			new DashDotStroke(1.0f, 0.50f));
+	private static final DLineType MARQUEE_DASH_DOT_4 = new DLineType(
+			"Marquee Dash Dot 4", "MARQUEE_DASH_DOT_4",
+			new DashDotStroke(1.0f, 0.75f));
 	
 	
 	static {
@@ -359,6 +403,21 @@ public class DVisualLexicon extends BasicVisualLexicon {
 		((DiscreteRange<LineType>) EDGE_LINE_TYPE.getRange()).addRangeValue(SEPARATE_ARROW);
 		((DiscreteRange<LineType>) EDGE_LINE_TYPE.getRange()).addRangeValue(SINEWAVE);
 		((DiscreteRange<LineType>) EDGE_LINE_TYPE.getRange()).addRangeValue(VERTICAL_SLASH);
+
+		((DiscreteRange<LineType>) EDGE_LINE_TYPE.getRange()).addRangeValue(MARQUEE_DASH_1);
+		((DiscreteRange<LineType>) EDGE_LINE_TYPE.getRange()).addRangeValue(MARQUEE_DASH_2);
+		((DiscreteRange<LineType>) EDGE_LINE_TYPE.getRange()).addRangeValue(MARQUEE_DASH_3);
+		((DiscreteRange<LineType>) EDGE_LINE_TYPE.getRange()).addRangeValue(MARQUEE_DASH_4);
+
+		((DiscreteRange<LineType>) EDGE_LINE_TYPE.getRange()).addRangeValue(MARQUEE_EQUAL_1);
+		((DiscreteRange<LineType>) EDGE_LINE_TYPE.getRange()).addRangeValue(MARQUEE_EQUAL_2);
+		((DiscreteRange<LineType>) EDGE_LINE_TYPE.getRange()).addRangeValue(MARQUEE_EQUAL_3);
+		((DiscreteRange<LineType>) EDGE_LINE_TYPE.getRange()).addRangeValue(MARQUEE_EQUAL_4);
+
+		((DiscreteRange<LineType>) EDGE_LINE_TYPE.getRange()).addRangeValue(MARQUEE_DASH_DOT_1);
+		((DiscreteRange<LineType>) EDGE_LINE_TYPE.getRange()).addRangeValue(MARQUEE_DASH_DOT_2);
+		((DiscreteRange<LineType>) EDGE_LINE_TYPE.getRange()).addRangeValue(MARQUEE_DASH_DOT_3);
+		((DiscreteRange<LineType>) EDGE_LINE_TYPE.getRange()).addRangeValue(MARQUEE_DASH_DOT_4);
 		
 		// Add Ding-dependent node shapes.
 		((DiscreteRange<NodeShape>) NODE_SHAPE.getRange()).addRangeValue(DNodeShape.VEE);

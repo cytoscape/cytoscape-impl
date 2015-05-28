@@ -29,16 +29,29 @@ import java.awt.BasicStroke;
 public class EqualDashStroke extends BasicStroke implements WidthStroke {
 
 	private float width;
+	private float offset;
 
 	public EqualDashStroke(float width) {
 		super(width, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 
 		      10.0f, new float[]{width * 2f,width * 2f}, 0.0f);
 
 		this.width = width;
+		this.offset = -1;
+	}
+
+	public EqualDashStroke(float width, float offset) {
+		super(width, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 
+		      10.0f, new float[]{width * 2f,width * 2f}, width*4f*offset);
+
+		this.width = width;
+		this.offset = offset;
 	}
 
 	public WidthStroke newInstanceForWidth(float w) {
-		return new EqualDashStroke(w);
+		if (offset >= 0.0f)
+			return new EqualDashStroke(w, offset);
+		else
+			return new EqualDashStroke(w);
 	}
 
 	@Override public String toString() { return this.getClass().getSimpleName() + " " + Float.toString(width); }
