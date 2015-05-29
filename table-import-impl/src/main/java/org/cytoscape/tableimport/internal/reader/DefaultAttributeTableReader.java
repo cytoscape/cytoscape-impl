@@ -33,14 +33,13 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Vector;
-
-import au.com.bytecode.opencsv.CSVReader;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import org.cytoscape.model.CyTable;
 import org.cytoscape.tableimport.internal.util.URLUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import au.com.bytecode.opencsv.CSVReader;
 
 /**
  * Basic text table reader for attributes.<br>
@@ -53,51 +52,31 @@ import org.cytoscape.tableimport.internal.util.URLUtil;
  *
  */
 public class DefaultAttributeTableReader implements TextTableReader {
-	/**
-	 * Lines begin with this charactor will be considered as comment lines.
-	 */
+	
+	private static final Logger logger = LoggerFactory.getLogger(DefaultAttributeTableReader.class);
+	
+	/** Lines begin with this character will be considered as comment lines. */
 	private static final int DEF_KEY_COLUMN = 0;
+	
 	private final URL source;
 	private AttributeMappingParameters mapping;
 	private final AttributeLineParser parser;
-	private static final Logger logger = LoggerFactory.getLogger(DefaultAttributeTableReader.class);
 	
-	// Number of mapped attributes.
+	/** Number of mapped attributes. */
 	private int globalCounter = 0;
 
-	/*
-	 * Reader will read entries from this line.
-	 */
+	/** Reader will read entries from this line. */
 	private final int startLineNumber;
 	private String commentChar = null;
 	
 	
 	private InputStream is = null;
 	
-	/**
-	 * Constructor.<br>
-	 *
-	 * @param source
-	 * @param objectType
-	 * @param delimiters
-	 * @throws Exception
-	 */
 	public DefaultAttributeTableReader(final URL source, final ObjectType objectType,
 	                                   final List<String> delimiters) throws Exception {
 		this(source, objectType, delimiters, null, DEF_KEY_COLUMN, null, null, null, null, null, 0);
 	}
 
-	/**
-	 * Creates a new DefaultAttributeTableReader object.
-	 *
-	 * @param source  DOCUMENT ME!
-	 * @param objectType  DOCUMENT ME!
-	 * @param delimiters  DOCUMENT ME!
-	 * @param key  DOCUMENT ME!
-	 * @param columnNames  DOCUMENT ME!
-	 *
-	 * @throws Exception  DOCUMENT ME!
-	 */
 	public DefaultAttributeTableReader(final URL source, final ObjectType objectType,
 	                                   final List<String> delimiters, final int key,
 	                                   final String[] columnNames) throws Exception {
@@ -108,8 +87,7 @@ public class DefaultAttributeTableReader implements TextTableReader {
 	/**
 	 * Constructor with full options.<br>
 	 *
-	 * @param source
-	 *            Source file URL (can be remote or local)
+	 * @param source Source file URL (can be remote or local)
 	 * @param objectType
 	 * @param delimiters
 	 * @param listDelimiter
@@ -165,14 +143,9 @@ public class DefaultAttributeTableReader implements TextTableReader {
 
 		this.is = is;
 	}
-
 	
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @return  DOCUMENT ME!
-	 */
-	public List getColumnNames() {
+	@Override
+	public List<String> getColumnNames() {
 		List<String> colNamesList = new ArrayList<String>();
 
 		for (String name : mapping.getAttributeNames()) {
@@ -185,9 +158,8 @@ public class DefaultAttributeTableReader implements TextTableReader {
 	/**
 	 * Read table from the data source.
 	 */
+	@Override
 	public void readTable(CyTable table) throws IOException {
-		//InputStream is = null;
-
 		try {
 			BufferedReader bufRd = null;
 
@@ -271,11 +243,7 @@ public class DefaultAttributeTableReader implements TextTableReader {
 		}
 	}
 
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @return  DOCUMENT ME!
-	 */
+	@Override
 	public String getReport() {
 		final StringBuilder sb = new StringBuilder();
 		final Map<String, Object> invalid = parser.getInvalidMap();
@@ -296,6 +264,7 @@ public class DefaultAttributeTableReader implements TextTableReader {
 		return sb.toString();
 	}
 	
+	@Override
 	public MappingParameter getMappingParameter() {
 		return mapping;
 	}

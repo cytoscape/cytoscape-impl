@@ -50,6 +50,7 @@ import org.cytoscape.model.CyTable;
  *
  */
 public class ExcelAttributeSheetReader implements TextTableReader {
+	
 	private final Sheet sheet;
 	private final AttributeMappingParameters mapping;
 	private final AttributeLineParser parser;
@@ -61,11 +62,6 @@ public class ExcelAttributeSheetReader implements TextTableReader {
 	
 	/**
 	 * Creates a new ExcelAttributeSheetReader object.
-	 *
-	 * @param sheet  DOCUMENT ME!
-	 * @param mapping  DOCUMENT ME!
-	 * @param startLineNumber  DOCUMENT ME!
-	 * @param importAll  DOCUMENT ME!
 	 */
 	public ExcelAttributeSheetReader(final Sheet sheet,
 	                                 final AttributeMappingParameters mapping){
@@ -75,20 +71,12 @@ public class ExcelAttributeSheetReader implements TextTableReader {
 		this.parser = new AttributeLineParser(mapping);
 	}
 
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @return  DOCUMENT ME!
-	 */
+	@Override
 	public List<String> getColumnNames() {
 		return Arrays.asList(mapping.getAttributeNames());
 	}
 
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @throws IOException DOCUMENT ME!
-	 */
+	@Override
 	public void readTable(CyTable table) throws IOException {
 		Row row;
 		int rowCount = startLineNumber;
@@ -111,7 +99,7 @@ public class ExcelAttributeSheetReader implements TextTableReader {
 	}
 
 	/**
-	 * For a given Excell row, convert the cells into String.
+	 * For a given Excel row, convert the cells into String.
 	 *
 	 * @param row
 	 * @return
@@ -148,11 +136,7 @@ public class ExcelAttributeSheetReader implements TextTableReader {
 		return cells;
 	}
 
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @return  DOCUMENT ME!
-	 */
+	@Override
 	public String getReport() {
 		final StringBuilder sb = new StringBuilder();
 		final Map<String, Object> invalid = parser.getInvalidMap();
@@ -176,6 +160,7 @@ public class ExcelAttributeSheetReader implements TextTableReader {
 		return sb.toString();
 	}
 	
+	@Override
 	public MappingParameter getMappingParameter(){
 		return mapping;
 	}

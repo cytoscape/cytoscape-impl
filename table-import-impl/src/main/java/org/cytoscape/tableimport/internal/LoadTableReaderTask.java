@@ -24,8 +24,6 @@ package org.cytoscape.tableimport.internal;
  * #L%
  */
 
-
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -60,9 +58,6 @@ import org.cytoscape.work.Tunable;
 import org.cytoscape.work.TunableValidator;
 import org.cytoscape.work.util.ListMultipleSelection;
 import org.cytoscape.work.util.ListSingleSelection;
-
-
-
 
 public class LoadTableReaderTask extends AbstractTask implements CyTableReader, TunableValidator {
 	
@@ -130,7 +125,6 @@ public class LoadTableReaderTask extends AbstractTask implements CyTableReader, 
 		previewPanel = new PreviewTablePanel(serviceRegistrar.getService(IconManager.class));
 				
 		try {
-	
 			File tempFile = File.createTempFile("temp", this.fileType);
 			tempFile.deleteOnExit();
 			FileOutputStream os = new FileOutputStream(tempFile);
@@ -142,7 +136,6 @@ public class LoadTableReaderTask extends AbstractTask implements CyTableReader, 
 			}
 			os.flush();
 			os.close();
-			
 			
 			this.isStart = new FileInputStream(tempFile);
 			this.isEnd = new FileInputStream(tempFile);
@@ -165,10 +158,8 @@ public class LoadTableReaderTask extends AbstractTask implements CyTableReader, 
 		delimitersForDataList.setSelectedValue(TextFileDelimiters.PIPE.toString());
 	}
 
-
 	@Override
 	public void run(TaskMonitor tm) throws Exception {
-		
 		tm.setTitle("Loading table data");
 		tm.setProgress(0.0);
 		tm.setStatusMessage("Loading table...");
@@ -180,10 +171,10 @@ public class LoadTableReaderTask extends AbstractTask implements CyTableReader, 
 		
 		Workbook workbook = null;
 		// Load Spreadsheet data for preview.
-		if(fileType != null && (fileType.equalsIgnoreCase(
-				SupportedFileType.EXCEL.getExtension())
-				|| fileType.equalsIgnoreCase(
-						SupportedFileType.OOXML.getExtension())) && workbook == null) {
+		if (fileType != null && 
+				(fileType.equalsIgnoreCase(SupportedFileType.EXCEL.getExtension())
+				|| fileType.equalsIgnoreCase(SupportedFileType.OOXML.getExtension())) &&
+				workbook == null) {
 			try {
 				workbook = WorkbookFactory.create(isStart);
 			} catch (InvalidFormatException e) {
@@ -195,20 +186,23 @@ public class LoadTableReaderTask extends AbstractTask implements CyTableReader, 
 				}
 			}
 		}
-		if(startLoadRow > 0)
+		
+		if (startLoadRow > 0)
 			startLoadRow--;
+		
 		startLoadRowTemp = startLoadRow;
-		if(firstRowAsColumnNames)
+		
+		if (firstRowAsColumnNames)
 			startLoadRowTemp = 0;
 		
-		previewPanel.setPreviewTable(workbook, fileType,inputName, isStart, delimiters.getSelectedValues(), null, 50, null, startLoadRowTemp);
+		previewPanel.setPreviewTable(workbook, fileType,inputName, isStart, delimiters.getSelectedValues(), null, 50,
+				null, startLoadRowTemp);
 		
 		colCount = previewPanel.getPreviewTable().getColumnModel().getColumnCount();
 		importFlag = new boolean[colCount];
 		Object curName = null;
 		
-		if(firstRowAsColumnNames)
-		{
+		if (firstRowAsColumnNames) {
 			setFirstRowAsColumnNames();
 			startLoadRow++;
 		}
@@ -250,30 +244,28 @@ public class LoadTableReaderTask extends AbstractTask implements CyTableReader, 
 			attributeTypes[i] = test[i];
 		}
 		
-		if(keyColumnIndex >0)
+		if (keyColumnIndex >0)
 			keyColumnIndex--;
 
-		amp = new AttributeMappingParameters(delimiters.getSelectedValues(),delimitersForDataList.getSelectedValue(),keyColumnIndex,attributeNames,attributeTypes,
-				previewPanel.getCurrentListDataTypes(),importFlag,true,startLoadRow,null);
+		amp = new AttributeMappingParameters(delimiters.getSelectedValues(), delimitersForDataList.getSelectedValue(),
+				keyColumnIndex, attributeNames, attributeTypes, previewPanel.getCurrentListDataTypes(), importFlag,
+				startLoadRow, null);
 		
 		if (this.fileType.equalsIgnoreCase(SupportedFileType.EXCEL.getExtension()) ||
-			    this.fileType.equalsIgnoreCase(SupportedFileType.OOXML.getExtension()))
-			{
-
-				// Fixed bug# 1668, Only load data from the first sheet, ignore the rest sheets
-				if (workbook.getNumberOfSheets() >0){
-					final Sheet sheet = workbook.getSheetAt(0);
-					this.reader = new ExcelAttributeSheetReader(sheet, amp);
-					loadAnnotation(tm);
-				}
-			} else {
-				this.reader = new DefaultAttributeTableReader(null,amp,this.isEnd); 
+		    this.fileType.equalsIgnoreCase(SupportedFileType.OOXML.getExtension())) {
+			// Fixed bug# 1668, Only load data from the first sheet, ignore the rest sheets
+			if (workbook.getNumberOfSheets() > 0) {
+				final Sheet sheet = workbook.getSheetAt(0);
+				this.reader = new ExcelAttributeSheetReader(sheet, amp);
 				loadAnnotation(tm);
 			}
+		} else {
+			this.reader = new DefaultAttributeTableReader(null, amp, this.isEnd); 
+			loadAnnotation(tm);
+		}
 	}
 
-	public void setFirstRowAsColumnNames()
-	{
+	public void setFirstRowAsColumnNames() {
 		final DefaultTableModel model = (DefaultTableModel) previewPanel.getPreviewTable().getModel();
 		String[] columnHeaders;
 		
@@ -287,7 +279,6 @@ public class LoadTableReaderTask extends AbstractTask implements CyTableReader, 
 			}
 	
 			model.removeRow(0);
-			
 		}
 	}
 
@@ -296,8 +287,7 @@ public class LoadTableReaderTask extends AbstractTask implements CyTableReader, 
 		return cyTables;
 	}
 	
-	private void loadAnnotation( TaskMonitor tm){
-
+	private void loadAnnotation(TaskMonitor tm) {
 		tm.setProgress(0.0);
 		
 		TextTableReader reader = this.reader;
@@ -325,26 +315,28 @@ public class LoadTableReaderTask extends AbstractTask implements CyTableReader, 
 
 	@Override
 	public ValidationState getValidationState(Appendable errMsg) {
-		if (keyColumnIndex <= 0){
+		if (keyColumnIndex <= 0) {
 			try {
 				errMsg.append("The primary key column needs to be selected. Please select values from 1 to the number of columns");
 			} catch (IOException e) {
 				e.printStackTrace();
 				return ValidationState.INVALID;
 			}
+			
 			return ValidationState.INVALID;
 		}
 		
-		if (startLoadRow < 0){
+		if (startLoadRow < 0) {
 			try {
 				errMsg.append("The row that will be used as starting point needs to be selected.");
 			} catch (IOException e) {
 				e.printStackTrace();
 				return ValidationState.INVALID;
 			}
+			
 			return ValidationState.INVALID;
 		}
-			return ValidationState.OK;
+		
+		return ValidationState.OK;
 	}
-	
 }

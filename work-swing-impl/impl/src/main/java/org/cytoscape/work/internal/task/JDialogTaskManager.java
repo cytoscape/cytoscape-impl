@@ -26,7 +26,6 @@ package org.cytoscape.work.internal.task;
 
 
 import java.awt.Window;
-import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -40,13 +39,13 @@ import javax.swing.SwingUtilities;
 
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.work.AbstractTaskManager;
+import org.cytoscape.work.FinishStatus;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.TaskObserver;
-import org.cytoscape.work.FinishStatus;
 import org.cytoscape.work.TunableRecorder;
 import org.cytoscape.work.internal.tunables.JDialogTunableMutator;
 import org.cytoscape.work.swing.DialogTaskManager;

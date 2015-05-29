@@ -111,17 +111,10 @@ public class AttributeLineParser {
 		final Byte type = mapping.getAttributeTypes()[index];
 
 		switch (type) {
-		case AttributeTypes.TYPE_BOOLEAN:
-
-				Boolean newBool;
-
+			case AttributeTypes.TYPE_BOOLEAN:
+				
 				try {
-					//newBool = new Boolean(entry);
-
-					setAttributeForType(table,AttributeTypes.TYPE_BOOLEAN,key, mapping.getAttributeNames()[index], entry);
-					//mapping.setAttribute(key, mapping.getAttributeNames()[index], newBool);
-					//mapping.getAttributes()
-					 //      .setAttribute(key, mapping.getAttributeNames()[index], newBool);
+					setAttributeForType(table, AttributeTypes.TYPE_BOOLEAN, key, mapping.getAttributeNames()[index], entry);
 				} catch (Exception e) {
 					invalid.put(key.toString(), entry);
 				}
@@ -129,15 +122,9 @@ public class AttributeLineParser {
 				break;
 
 			case AttributeTypes.TYPE_INTEGER:
-
-				//Integer newInt;
-
+				
 				try {
-					//newInt = new Integer(entry);
-					setAttributeForType(table,AttributeTypes.TYPE_INTEGER,key, mapping.getAttributeNames()[index], entry);
-					//mapping.setAttribute(key, mapping.getAttributeNames()[index], newInt);
-					//mapping.getAttributes()
-					 //      .setAttribute(key, mapping.getAttributeNames()[index], newInt);
+					setAttributeForType(table, AttributeTypes.TYPE_INTEGER, key, mapping.getAttributeNames()[index], entry);
 				} catch (Exception e) {
 					invalid.put(key.toString(), entry);
 				}
@@ -145,14 +132,9 @@ public class AttributeLineParser {
 				break;
 
 			case AttributeTypes.TYPE_FLOATING:
-
-				//Double newDouble;
-
+				
 				try {
-					//newDouble = new Double(entry);
-					setAttributeForType(table,AttributeTypes.TYPE_FLOATING,key, mapping.getAttributeNames()[index], entry);
-					//mapping.getAttributes()
-					 //      .setAttribute(key, mapping.getAttributeNames()[index], newDouble);
+					setAttributeForType(table, AttributeTypes.TYPE_FLOATING, key, mapping.getAttributeNames()[index], entry);
 				} catch (Exception e) {
 					invalid.put(key.toString(), entry);
 				}
@@ -160,10 +142,9 @@ public class AttributeLineParser {
 				break;
 
 			case AttributeTypes.TYPE_STRING:
+				
 				try {
-					setAttributeForType(table,AttributeTypes.TYPE_STRING,key, mapping.getAttributeNames()[index], entry);
-					//mapping.setAttribute(key, mapping.getAttributeNames()[index], entry);
-					//mapping.getAttributes().setAttribute(key, mapping.getAttributeNames()[index], entry);
+					setAttributeForType(table, AttributeTypes.TYPE_STRING, key, mapping.getAttributeNames()[index], entry);
 				} catch (Exception e) {
 					invalid.put(key.toString(), entry);
 				}
@@ -189,17 +170,11 @@ public class AttributeLineParser {
 					listType = AttributeTypes.TYPE_STRING;
 				}
 
-				ArrayList curList = new ArrayList();//mapping.getAttributes()
-				                     // .getListAttribute(key, mapping.getAttributeNames()[index]);
-
+				final ArrayList<Object> curList = new ArrayList<>();
 				curList.addAll(buildList(entry, listType));
+				
 				try {
-					setListAttribute(table,mapping.getListAttributeTypes()[index],key, mapping.getAttributeNames()[index], curList);
-
-					//mapping.setAttribute(key, mapping.getAttributeNames()[index], curList);
-
-					//mapping.getAttributes()
-					//       .setListAttribute(key, mapping.getAttributeNames()[index], curList);
+					setListAttribute(table, mapping.getListAttributeTypes()[index], key, mapping.getAttributeNames()[index], curList);
 				} catch (Exception e) {
 					invalid.put(key.toString(), entry);
 				}
@@ -207,6 +182,7 @@ public class AttributeLineParser {
 				break;
 
 			default:
+				
 				try {
 					//mapping.getAttributes().setAttribute(key, mapping.getAttributeNames()[index], entry);
 				} catch (Exception e) {
@@ -215,7 +191,7 @@ public class AttributeLineParser {
 		}
 	}
 
-	public static void setAttributeForType(CyTable tbl, byte type, Object key, String attributeName, String val){
+	public static void setAttributeForType(CyTable tbl, byte type, Object key, String attributeName, String val) {
 		if (tbl.getColumn(attributeName) == null) {
 			if (type == AttributeTypes.TYPE_INTEGER)
 				tbl.createColumn(attributeName, Integer.class, false);
@@ -227,7 +203,7 @@ public class AttributeLineParser {
 				tbl.createColumn(attributeName, String.class, false);
 		}
 
-		CyRow row = tbl.getRow(key);
+		final CyRow row = tbl.getRow(key);
 
 		if (type == AttributeTypes.TYPE_INTEGER)
 			row.set(attributeName, new Integer(val));
@@ -239,7 +215,7 @@ public class AttributeLineParser {
 			row.set(attributeName, new String(val));
 	}
 
-	public static void setListAttribute(CyTable tbl, byte type, Object key, String attributeName, final ArrayList elmsBuff) {
+	public static void setListAttribute(CyTable tbl, byte type, Object key, String attributeName, final ArrayList<?> elmsBuff) {
 		if (tbl.getColumn(attributeName) == null) {
 			if (type == AttributeTypes.TYPE_INTEGER)
 				tbl.createListColumn(attributeName, Integer.class, false);
@@ -251,7 +227,7 @@ public class AttributeLineParser {
 				tbl.createListColumn(attributeName, String.class, false);
 		}
 		
-		CyRow row = tbl.getRow(key);
+		final CyRow row = tbl.getRow(key);
 		row.set(attributeName, elmsBuff);
 	}
 
@@ -264,10 +240,10 @@ public class AttributeLineParser {
 	 *
 	 * @return
 	 */
-	private List buildList(final String entry, final Byte dataType) {
-		if (entry == null) {
+	private List<?> buildList(final String entry, final Byte dataType) {
+		if (entry == null)
 			return null;
-		}
+		
 		String delimiter = mapping.getListDelimiter();
 		
 		if(delimiter.isEmpty())
@@ -275,11 +251,9 @@ public class AttributeLineParser {
 		
 		final String[] parts = (entry.replace("\"", "")).split(delimiter);
 
-		final List listAttr = new ArrayList();
+		final List<Object> listAttr = new ArrayList<>();
 
 		for (String listItem : parts) {
-
-
 			switch (dataType) {
 				case AttributeTypes.TYPE_BOOLEAN:
 					listAttr.add(Boolean.parseBoolean(listItem.trim()));

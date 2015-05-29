@@ -70,7 +70,6 @@ public class SelectFileTableTask extends AbstractTask {
 
 	@Override
 	public void run(final TaskMonitor taskMonitor) throws Exception {
-		
 		try{
 			stream = serviceRegistrar.getService(StreamUtil.class).getInputStream(file.toURI().toURL());
 			

@@ -329,6 +329,7 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 		/**
 		 * Will be called when something is changed in the main view.
 		 */
+		@Override
 		public void contentChanged() {
 			// System.out.println("ContentChanged: ");
 			imageUpdated = true;
@@ -342,6 +343,7 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 		/**
 		 * Update the view if panned.
 		 */
+		@Override
 		public void viewportChanged(int w, int h, double newXCenter, double newYCenter, double newScaleFactor) {
 			m_viewWidth = w;
 			m_viewHeight = h;

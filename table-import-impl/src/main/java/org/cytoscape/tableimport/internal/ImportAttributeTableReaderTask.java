@@ -54,7 +54,7 @@ import org.cytoscape.work.Tunable;
 import org.cytoscape.work.TunableValidator;
 
 
-public class ImportAttributeTableReaderTask extends AbstractTask implements CyTableReader , TunableValidator {
+public class ImportAttributeTableReaderTask extends AbstractTask implements CyTableReader, TunableValidator {
 	
 	private  InputStream is;
 	private final String fileType;
@@ -66,22 +66,24 @@ public class ImportAttributeTableReaderTask extends AbstractTask implements CyTa
 	private static int numImports = 0;
 	
 	@Tunable(description="Attribute Mapping Parameters:")
-	public AttributeMappingParameters amp ;
+	public AttributeMappingParameters amp;
 	
 	TextTableReader reader;
 	
 	private final CyServiceRegistrar serviceRegistrar;
 
-	public ImportAttributeTableReaderTask(final InputStream is, final String fileType,
-			final String inputName, final CyServiceRegistrar serviceRegistrar) {
-		
+	public ImportAttributeTableReaderTask(
+			final InputStream is,
+			final String fileType,
+			final String inputName,
+			final CyServiceRegistrar serviceRegistrar
+	) {
 		this.fileType = fileType;
 		this.inputName = inputName;
 		this.is = is;
 		this.serviceRegistrar = serviceRegistrar;
 		
 		try {
-	
 			File tempFile = File.createTempFile("temp", this.fileType);
 			tempFile.deleteOnExit();
 			FileOutputStream os = new FileOutputStream(tempFile);
@@ -114,61 +116,56 @@ public class ImportAttributeTableReaderTask extends AbstractTask implements CyTa
 		tm.setStatusMessage("Loading table...");
 		
 		Workbook workbook = null;
+		
 		// Load Spreadsheet data for preview.
-		if(fileType != null && (fileType.equalsIgnoreCase(
-				SupportedFileType.EXCEL.getExtension())
-				|| fileType.equalsIgnoreCase(
-						SupportedFileType.OOXML.getExtension())) && workbook == null) {
+		if (fileType != null &&
+				(fileType.equalsIgnoreCase(SupportedFileType.EXCEL.getExtension())
+				|| fileType.equalsIgnoreCase(SupportedFileType.OOXML.getExtension())) &&
+				workbook == null) {
 			try {
 				workbook = WorkbookFactory.create(is);
 			} catch (InvalidFormatException e) {
 				e.printStackTrace();
 				throw new IllegalArgumentException("Could not read Excel file.  Maybe the file is broken?");
 			} finally {
-				if (is != null) {
-					is.close();
-				}
+				if (is != null) is.close();
 			}
 		}
 		
-		
 		if (this.fileType.equalsIgnoreCase(SupportedFileType.EXCEL.getExtension()) ||
-			    this.fileType.equalsIgnoreCase(SupportedFileType.OOXML.getExtension()))
-			{
-				
-//				for (int i = 0; i < workbook.getNumberOfSheets(); i++) {
-//					final Sheet sheet = workbook.getSheetAt(i);
+		    this.fileType.equalsIgnoreCase(SupportedFileType.OOXML.getExtension())) {
+//			for (int i = 0; i < workbook.getNumberOfSheets(); i++) {
+//				final Sheet sheet = workbook.getSheetAt(i);
 //
-//					this.reader = new ExcelAttributeSheetReader(sheet, amp);
-//					loadAnnotation(tm);
-//				}
+//				this.reader = new ExcelAttributeSheetReader(sheet, amp);
+//				loadAnnotation(tm);
+//			}
 
-				// Fixed bug# 1668, Only load data from the first sheet, ignore the rest sheets
-				if (workbook.getNumberOfSheets() >0){
-					final Sheet sheet = workbook.getSheetAt(0);
-					this.reader = new ExcelAttributeSheetReader(sheet, amp);
-					loadAnnotation(tm);
-				}
-			} else {
-				this.reader = new DefaultAttributeTableReader(null,amp,this.is); 
+			// Fixed bug# 1668, Only load data from the first sheet, ignore the rest sheets
+			if (workbook.getNumberOfSheets() > 0) {
+				final Sheet sheet = workbook.getSheetAt(0);
+				this.reader = new ExcelAttributeSheetReader(sheet, amp);
 				loadAnnotation(tm);
 			}
+		} else {
+			this.reader = new DefaultAttributeTableReader(null, amp, this.is); 
+			loadAnnotation(tm);
+		}
 	}
-
 
 	@Override
 	public CyTable[] getTables() {
 		return cyTables;
 	}
 	
-	private void loadAnnotation( TaskMonitor tm){
+	private void loadAnnotation(TaskMonitor tm) {
 		tm.setProgress(0.0);
 		
-		TextTableReader reader = this.reader;
-		AttributeMappingParameters readerAMP = (AttributeMappingParameters) reader.getMappingParameter();
-		String primaryKey = readerAMP.getAttributeNames()[readerAMP.getKeyIndex()];
-		Byte type = readerAMP.getAttributeTypes()[readerAMP.getKeyIndex()];
-		Class<?> keyType;
+		final TextTableReader reader = this.reader;
+		final AttributeMappingParameters readerAMP = (AttributeMappingParameters) reader.getMappingParameter();
+		final String primaryKey = readerAMP.getAttributeNames()[readerAMP.getKeyIndex()];
+		final Byte type = readerAMP.getAttributeTypes()[readerAMP.getKeyIndex()];
+		final Class<?> keyType;
 		
 		switch (type) {
 			case AttributeTypes.TYPE_BOOLEAN:
@@ -209,13 +206,14 @@ public class ImportAttributeTableReaderTask extends AbstractTask implements CyTa
 
 	@Override
 	public ValidationState getValidationState(Appendable errMsg) {
-		if (amp.getKeyIndex() == -1){
+		if (amp.getKeyIndex() == -1) {
 			try {
 				errMsg.append("The primary key column needs to be selected.");
 			} catch (IOException e) {
 				e.printStackTrace();
 				return ValidationState.INVALID;
 			}
+			
 			return ValidationState.INVALID;
 		}
 		
@@ -226,9 +224,10 @@ public class ImportAttributeTableReaderTask extends AbstractTask implements CyTa
 				e.printStackTrace();
 				return ValidationState.INVALID;
 			}
+			
 			return ValidationState.INVALID;
 		}
-			return ValidationState.OK;
+		
+		return ValidationState.OK;
 	}
-	
 }

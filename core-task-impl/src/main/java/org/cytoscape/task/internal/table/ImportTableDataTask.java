@@ -94,7 +94,7 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 	private Map<String, CyNetwork> name2NetworkMap;
 	private Map<String, CyRootNetwork> name2RootMap;
 	private Map<String, String> source2targetColumnMap;
-	private boolean networksPresent = false;
+	private boolean networksPresent;
 	
 	
 	public ListSingleSelection<String> whereImportTable ;

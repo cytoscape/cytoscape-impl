@@ -51,9 +51,14 @@ public class CombineReaderAndMappingTask extends AbstractTask implements Tunable
 	public CyTableReader readerTask;
 
 	
-	public CombineReaderAndMappingTask(CyTableReader readerTask ,final CyTableManager tabelMgr, CyNetworkManager networkManager, final CyRootNetworkManager rootNetMgr){
+	public CombineReaderAndMappingTask(
+			CyTableReader readerTask,
+			final CyTableManager tabelMgr,
+			final CyNetworkManager networkManager,
+			final CyRootNetworkManager rootNetMgr
+	){
 		this.readerTask = readerTask;
-		this.importTableDataTask = new ImportTableDataTask(readerTask, tabelMgr,rootNetMgr, networkManager);
+		this.importTableDataTask = new ImportTableDataTask(readerTask, tabelMgr, rootNetMgr, networkManager);
 	}
 
 	@Override
@@ -78,7 +83,6 @@ public class CombineReaderAndMappingTask extends AbstractTask implements Tunable
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
 		readerTask.run(taskMonitor);
-		this.importTableDataTask.run(taskMonitor);
+		importTableDataTask.run(taskMonitor);
 	}
-
 }

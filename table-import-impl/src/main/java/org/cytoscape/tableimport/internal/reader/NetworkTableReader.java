@@ -56,6 +56,7 @@ import org.slf4j.LoggerFactory;
 public class NetworkTableReader extends AbstractGraphReader implements TextTableReader {
 	
 	protected static final String COMMENT_CHAR = "!";
+	
 	protected final NetworkTableMappingParameters nmp;
 	protected final NetworkLineParser parser;
 	protected final List<Long> nodeList;
@@ -86,6 +87,7 @@ public class NetworkTableReader extends AbstractGraphReader implements TextTable
 		parser = new NetworkLineParser(nodeList, edgeList, nmp, nMap, rootNetwork);
 	}
 
+	@Override
 	public List<String> getColumnNames() {
 		List<String> colNames = new ArrayList<>();
 
@@ -97,8 +99,7 @@ public class NetworkTableReader extends AbstractGraphReader implements TextTable
 	}
 
 	@Override
-	public void readTable(CyTable table) throws IOException {
-		//InputStream is = null;
+	public void readTable(final CyTable table) throws IOException {
 		String line;
 
 		network.getRow(network).set("name", this.getNetworkName());
@@ -111,7 +112,6 @@ public class NetworkTableReader extends AbstractGraphReader implements TextTable
 		try {
 			BufferedReader bufRd = null;
 
-			//is = URLUtil.getInputStream(sourceURL);
 			try {
 				bufRd = new BufferedReader(new InputStreamReader(is,Charset.forName("UTF-8").newDecoder()));
 				/*
@@ -140,11 +140,9 @@ public class NetworkTableReader extends AbstractGraphReader implements TextTable
 				}
 			} catch (MalformedInputException mie) {
 				throw new IOException("Unable to import network: illegal character encoding in input");
-			}
-			finally {
-				if (bufRd != null) {
+			} finally {
+				if (bufRd != null)
 					bufRd.close();
-				}
 			}
 		}
 		finally {
