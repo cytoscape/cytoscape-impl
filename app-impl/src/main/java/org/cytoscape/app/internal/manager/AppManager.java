@@ -412,6 +412,12 @@ public class AppManager implements FrameworkListener {
 
 					if (app.getAppFile().equals(file)) {
 						app.setStatus(AppStatus.FILE_MOVED);
+						try {
+							app.unload(appManager);
+						}
+						catch (AppUnloadingException e) {
+							userLogger.warn("Failed to unload app " + app.getAppName(), e);
+						}
 					}
 				}
 				
@@ -467,14 +473,8 @@ public class AppManager implements FrameworkListener {
 					app = registeredApp;
 				}
 				
-				try {
-					app.setStatus(AppStatus.DISABLED);
-					app.unload(appManager);
-					fireAppsChangedEvent();
-				} 
-				catch (AppUnloadingException e) {
-					userLogger.warn("Failed to unload app " + app.getAppName(), e);
-				}
+				app.setStatus(AppStatus.DISABLED);	
+				fireAppsChangedEvent();
 				
 				// System.out.println(file + " on create");
 			}
@@ -553,14 +553,9 @@ public class AppManager implements FrameworkListener {
 				} else {
 					app = registeredApp;
 				}
-				try {
-					// Checks if the app file moved here belonged to a known app, if so, uninstall it.
-					app.setStatus(AppStatus.UNINSTALLED);
-					app.unload(appManager);
-					fireAppsChangedEvent();
-				} catch (AppUnloadingException e) {
-					userLogger.warn("Failed to unload app " + app.getAppName(), e);
-				}
+
+				app.setStatus(AppStatus.UNINSTALLED);
+				fireAppsChangedEvent();
 				
 				// System.out.println(file + " on create");
 			}
