@@ -165,6 +165,14 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 	public void setKeyColumnForMapping(ListSingleSelection<String> colList) {
 		this.keyColumnForMapping = colList;
 	}
+	
+	@Tunable(
+			description = "Case Sensitive Key Values:",
+			groups = { "Target Table Data", "Select a Network Collection" },
+			gravity = 3.3,
+			xorKey = NETWORK_COLLECTION
+	)
+	public boolean caseSensitiveNetworCollectionKeys = true;
 
 	/* --- [ NETWORK_SELECTION ]------------------------------------------------------------------------------------- */
 	
@@ -199,6 +207,14 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 	public void setDataTypeTargetForNetworkList(ListSingleSelection<TableType> options) {
 		dataTypeTargetForNetworkList = options;
 	}
+	
+	@Tunable(
+			description = "Case Sensitive Key Values:",
+			groups = { "Target Table Data", "Select Networks" },
+			gravity = 3.4,
+			xorKey = NETWORK_SELECTION
+	)
+	public boolean caseSensitiveNetworkKeys = true;
 	
 	/* --- [ UNASSIGNED_TABLE ]-------------------------------------------------------------------------------------- */
 	
@@ -365,7 +381,7 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 				|| keyColumnForMapping.getPossibleValues().size() != tempList.getPossibleValues().size())
 			keyColumnForMapping = tempList;
 	}
-
+	
 	private void mapTableToLocalAttrs(final TableType tableType) {
 		final List<CyNetwork> networks = new ArrayList<CyNetwork>();
 
@@ -380,16 +396,16 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 			CyTable targetTable = getTable(network, tableType, CyNetwork.LOCAL_ATTRS);
 			
 			if (targetTable != null)
-				applyMapping(targetTable);
+				applyMapping(targetTable, caseSensitiveNetworkKeys);
 		}
 	}
 
 	private void mapTableToDefaultAttrs(final TableType tableType) {
-		CyTable targetTable = getTable(name2RootMap.get(targetNetworkCollection.getSelectedValue()), tableType,
+		final CyTable targetTable = getTable(name2RootMap.get(targetNetworkCollection.getSelectedValue()), tableType,
 				CyRootNetwork.SHARED_DEFAULT_ATTRS);
 		
 		if (targetTable != null)
-			applyMapping(targetTable);
+			applyMapping(targetTable, caseSensitiveNetworCollectionKeys);
 	}
 
 	private CyTable getTable(CyNetwork network, TableType tableType, String namespace) {
@@ -406,22 +422,22 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 		return null;
 	}
 
-	private void applyMapping(final CyTable targetTable) {
+	private void applyMapping(final CyTable targetTable, final boolean caseSensitive) {
 		ArrayList<CyColumn> columns = new ArrayList<CyColumn>();
 		
 		if (byReader) {
 			if (reader.getTables() != null && reader.getTables().length > 0) {
 				for (CyTable sourceTable : reader.getTables()) {
 					columns.addAll(sourceTable.getColumns());
-					copyColumns(sourceTable,columns, targetTable,false);
-					copyRows(sourceTable,columns, targetTable);
+					copyColumns(sourceTable, columns, targetTable, false);
+					copyRows(sourceTable, columns, targetTable, caseSensitive);
 				}
 			}
 		} else {
 			if (globalTable != null) {
 				columns.addAll(globalTable.getColumns());
 				copyColumns(globalTable, columns, targetTable, true);
-				copyRows(globalTable, columns, targetTable);
+				copyRows(globalTable, columns, targetTable, caseSensitive);
 			}
 		}
 	}
@@ -435,16 +451,37 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 		return targetTable.getColumn(joinKeyName);
 	}
 
-	private void copyRows(CyTable sourceTable, List<CyColumn> sourceColumns, CyTable targetTable) {
-		CyColumn targetKeyColumn = getJoinTargetColumn(targetTable);
-
+	private void copyRows(final CyTable sourceTable, final List<CyColumn> sourceColumns, final CyTable targetTable,
+			final boolean caseSensitive) {
+		final CyColumn targetKeyColumn = getJoinTargetColumn(targetTable);
+		final Map<String, String> normalizedSourceKeys = new HashMap<>();
+		
+		if (!caseSensitive) {
+			final CyColumn pk = sourceTable.getPrimaryKey();
+			
+			if (pk.getType() == String.class) {
+				for (CyRow row : sourceTable.getAllRows()) {
+					final String key = row.get(pk.getName(), String.class);
+					
+					if (key != null)
+						normalizedSourceKeys.put(key.toLowerCase().trim(), key);
+				}
+			}
+		}
+		
 		for (CyRow targetRow : targetTable.getAllRows()) {
 			Object key = targetRow.get(targetKeyColumn.getName(), targetKeyColumn.getType());
+			
+			if (key == null)
+				continue; // Should never happen!
 
-			if (!sourceTable.rowExists(key))
+			if (!caseSensitive)
+				key = normalizedSourceKeys.get(key.toString().toLowerCase().trim());
+			
+			if (key == null || !sourceTable.rowExists(key))
 				continue;
-
-			CyRow sourceRow = sourceTable.getRow(key);
+				
+			final CyRow sourceRow = sourceTable.getRow(key);
 
 			if (sourceRow == null)
 				continue;

@@ -184,8 +184,6 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 
 	private JDialog advancedDialog;
 	
-	protected JCheckBox caseSensitiveCheckBox;
-	
 	// protected JTable aliasTable;
 	protected JScrollPane aliasScrollPane;
 	protected JCheckBox transferNameCheckBox;
@@ -241,9 +239,6 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 	
 	// Key column index
 	protected int keyInFile;
-
-	// Case sensitivity
-	private Boolean caseSensitive = true;
 
 	// Data Type
 	private org.cytoscape.tableimport.internal.reader.TextTableReader.ObjectType objType;
@@ -481,17 +476,6 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 			@Override
 			public void actionPerformed(ActionEvent evt) {
 				importAllCheckBoxActionPerformed(evt);
-			}
-		});
-
-		caseSensitiveCheckBox = new JCheckBox("Case Sensitive");
-		caseSensitiveCheckBox
-				.setToolTipText("<html><font color=\"red\"><strong>Caution!</strong> If you uncheck this, import can be extremely slow.</font></html>");
-		caseSensitiveCheckBox.setSelected(true);
-		caseSensitiveCheckBox.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent evt) {
-				caseSensitive = caseSensitiveCheckBox.isSelected();
 			}
 		});
 
@@ -947,13 +931,11 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 									.addComponent(startRowLabel, PREFERRED_SIZE, lw, PREFERRED_SIZE)
 									.addComponent(commentLineLabel, PREFERRED_SIZE, lw, PREFERRED_SIZE)
 									.addGap(lw)
-									.addGap(lw)
 							)
 							.addGroup(layout.createParallelGroup(Alignment.LEADING, true)
 									.addComponent(transferNameCheckBox, rw, rw, Short.MAX_VALUE)
 									.addComponent(startRowSpinner, PREFERRED_SIZE, 54, PREFERRED_SIZE)
 									.addComponent(commentLineTextField, PREFERRED_SIZE, 54, PREFERRED_SIZE)
-									.addComponent(caseSensitiveCheckBox, rw, rw, Short.MAX_VALUE)
 									.addComponent(importAllCheckBox, rw, rw, Short.MAX_VALUE)
 							)
 					)
@@ -985,13 +967,10 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 							.addComponent(commentLineLabel)
 							.addComponent(commentLineTextField)
 					)
-					.addComponent(caseSensitiveCheckBox)
 					.addComponent(importAllCheckBox)
 			);
 			
-			if (dialogType == NETWORK_IMPORT) {
-				caseSensitiveCheckBox.setVisible(false);
-			} else {
+			if (dialogType != NETWORK_IMPORT) {
 				sep1.setVisible(false);
 				defaultInteractionLabel.setVisible(false);
 				defaultInteractionTextField.setVisible(false);
@@ -2426,7 +2405,7 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 		// Build mapping parameter object.
 		final List<String> del = checkDelimiter();
 		final AttributeMappingParameters mapping = new AttributeMappingParameters(del, listDelimiter, keyInFile,
-				attributeNames, attributeTypes, listDataTypes, importFlag, caseSensitive, startLineNumber, commentChar);
+				attributeNames, attributeTypes, listDataTypes, importFlag, startLineNumber, commentChar);
 
 		return mapping;
 	}

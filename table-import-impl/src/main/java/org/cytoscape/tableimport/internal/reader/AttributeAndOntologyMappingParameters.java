@@ -26,92 +26,40 @@ package org.cytoscape.tableimport.internal.reader;
 
 //import cytoscape.Cytoscape;
 
-import org.cytoscape.tableimport.internal.reader.TextTableReader.ObjectType;
-
-//import org.biojava.ontology.Ontology;
-
 import java.util.List;
+
+import org.cytoscape.tableimport.internal.reader.TextTableReader.ObjectType;
 
 
 /**
  *
  */
 public class AttributeAndOntologyMappingParameters extends AttributeMappingParameters {
+	
 	private final int ontologyIndex;
 	private final String ontologyName;
 
-	/**
-	 * Creates a new AttributeAndOntologyMappingParameters object.
-	 *
-	 * @param objectType  DOCUMENT ME!
-	 * @param delimiters  DOCUMENT ME!
-	 * @param listDelimiter  DOCUMENT ME!
-	 * @param keyIndex  DOCUMENT ME!
-	 * @param mappingAttribute  DOCUMENT ME!
-	 * @param aliasIndex  DOCUMENT ME!
-	 * @param attributeNames  DOCUMENT ME!
-	 * @param attributeTypes  DOCUMENT ME!
-	 * @param listAttributeTypes  DOCUMENT ME!
-	 * @param importFlag  DOCUMENT ME!
-	 * @param ontologyIndex  DOCUMENT ME!
-	 * @param ontologyName  DOCUMENT ME!
-	 *
-	 * @throws Exception  DOCUMENT ME!
-	 */
-	public AttributeAndOntologyMappingParameters(ObjectType objectType, List<String> delimiters,
-	                                             String listDelimiter, int keyIndex,
-	                                             String mappingAttribute, List<Integer> aliasIndex,
-	                                             String[] attributeNames, Byte[] attributeTypes,
-	                                             Byte[] listAttributeTypes, boolean[] importFlag,
-	                                             int ontologyIndex, final String ontologyName)
-	    throws Exception {
-		this(objectType, delimiters, listDelimiter, keyIndex, mappingAttribute,
-			 aliasIndex, attributeNames, attributeTypes, listAttributeTypes,
-			 importFlag, ontologyIndex, ontologyName, true);
-	}
-
-	/**
-	 * Creates a new AttributeAndOntologyMappingParameters object.
-	 * This constructor takes an additional parameter to allow case sensitivity
-	 * to be specified.
-	 *
-	 * @param objectType  DOCUMENT ME!
-	 * @param delimiters  DOCUMENT ME!
-	 * @param listDelimiter  DOCUMENT ME!
-	 * @param keyIndex  DOCUMENT ME!
-	 * @param mappingAttribute  DOCUMENT ME!
-	 * @param aliasIndex  DOCUMENT ME!
-	 * @param attributeNames  DOCUMENT ME!
-	 * @param attributeTypes  DOCUMENT ME!
-	 * @param listAttributeTypes  DOCUMENT ME!
-	 * @param importFlag  DOCUMENT ME!
-	 * @param ontologyIndex  DOCUMENT ME!
-	 * @param ontologyName  DOCUMENT ME!
-	 * @param caseSensitive  DOCUMENT ME!
-	 *
-	 * @throws Exception  DOCUMENT ME!
-	 */
-	public AttributeAndOntologyMappingParameters(ObjectType objectType, List<String> delimiters,
-	                                             String listDelimiter, int keyIndex,
-	                                             String mappingAttribute, List<Integer> aliasIndex,
-	                                             String[] attributeNames, Byte[] attributeTypes,
-	                                             Byte[] listAttributeTypes, boolean[] importFlag,
-	                                             int ontologyIndex, final String ontologyName,
-												 boolean caseSensitive)
-	    throws Exception {
-		super( delimiters, listDelimiter, keyIndex,
-		      attributeNames, attributeTypes, listAttributeTypes, importFlag, caseSensitive);
+	public AttributeAndOntologyMappingParameters(
+			final ObjectType objectType,
+			final List<String> delimiters,
+			final String listDelimiter,
+			final int keyIndex,
+			final String mappingAttribute,
+			final List<Integer> aliasIndex,
+			final String[] attributeNames,
+			final Byte[] attributeTypes,
+			final Byte[] listAttributeTypes,
+			final boolean[] importFlag,
+			final int ontologyIndex,
+			final String ontologyName
+	) throws Exception {
+		super(delimiters, listDelimiter, keyIndex, attributeNames, attributeTypes, listAttributeTypes, importFlag);
+		
 		this.ontologyName = ontologyName;
 		this.ontologyIndex = ontologyIndex;
 	}
 
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @return  DOCUMENT ME!
-	 */
 	public int getOntologyIndex() {
 		return ontologyIndex;
 	}
-
 }

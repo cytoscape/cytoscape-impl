@@ -109,21 +109,10 @@ public class DefaultAttributeTableReader implements TextTableReader {
 	    throws Exception {
 		this.source = source;
 		this.startLineNumber = startLineNumber;
-		this.mapping = new AttributeMappingParameters( delimiters, listDelimiter,
-		                                             keyIndex,
-		                                            attributeNames, attributeTypes, null,
-		                                           importFlag, true);
+		this.mapping = new AttributeMappingParameters(delimiters, listDelimiter, keyIndex, attributeNames,
+				attributeTypes, null, importFlag);
 		this.parser = new AttributeLineParser(mapping);
 	}
-
-	/**
-	 * Creates a new DefaultAttributeTableReader object.
-	 *
-	 * @param source  DOCUMENT ME!
-	 * @param mapping  DOCUMENT ME!
-	 * @param startLineNumber  DOCUMENT ME!
-	 * @param commentChar  DOCUMENT ME!
-	 */
 
 	public DefaultAttributeTableReader(final URL source, AttributeMappingParameters mapping,
             final int startLineNumber, final String commentChar) {

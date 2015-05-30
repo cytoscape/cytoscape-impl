@@ -47,7 +47,6 @@ public class AttributeMappingParameters extends AbstractMappingParameters {
 	private Byte[] listAttributeTypes;
 	private final int keyIndex;
 	private boolean[] importFlag;
-	private boolean caseSensitive;
 	
 	public AttributeMappingParameters(InputStream is, String fileType) {
 		super(is, fileType);
@@ -62,11 +61,10 @@ public class AttributeMappingParameters extends AbstractMappingParameters {
 			final String[] attrNames,
 	        Byte[] attributeTypes,
 	        Byte[] listAttributeTypes,
-	        boolean[] importFlag,
-	        boolean caseSensitive
+	        boolean[] importFlag
 	) throws Exception {
 		this(delimiters, listDelimiter, keyIndex, attrNames, attributeTypes, listAttributeTypes, importFlag, 
-				caseSensitive, 0, null);
+				0, null);
 	}
 	
 	public AttributeMappingParameters(
@@ -77,18 +75,14 @@ public class AttributeMappingParameters extends AbstractMappingParameters {
             Byte[] attributeTypes,
             Byte[] listAttributeTypes,
             boolean[] importFlag,
-            Boolean caseSensitive,
             int startNumber,
             String commentChar
     ) throws Exception {
 		super(delimiters, listDelimiter, attrNames, attributeTypes, listAttributeTypes, importFlag, startNumber,
 				commentChar);
 		
-		this.caseSensitive = caseSensitive;
-		
-		if (attrNames == null) {
+		if (attrNames == null)
 			throw new Exception("attributeNames should not be null.");
-		}
 
 		/*
 		 * Error check: Key column number should be smaller than actual number
@@ -147,9 +141,5 @@ public class AttributeMappingParameters extends AbstractMappingParameters {
 
 	public int getKeyIndex() {
 		return keyIndex;
-	}
-	
-	public Boolean isCaseSensitive() {
-		return caseSensitive;
 	}
 }
