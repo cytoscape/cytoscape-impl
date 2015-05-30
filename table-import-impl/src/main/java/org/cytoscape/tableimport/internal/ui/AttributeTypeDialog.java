@@ -39,6 +39,7 @@ import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+import javax.swing.AbstractAction;
 import javax.swing.ButtonGroup;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.GroupLayout;
@@ -104,6 +105,7 @@ public class AttributeTypeDialog extends JDialog {
 		updateComponents(delimiter);
 	}
 
+	@SuppressWarnings("serial")
 	private void initComponents() {
 		setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 		setTitle("Edit Column");
@@ -114,8 +116,18 @@ public class AttributeTypeDialog extends JDialog {
 		listDelimiterButtonGroup = new ButtonGroup();
 
 		attributeNameTextField = new JTextField();
-		cancelButton = new JButton("Cancel");
-		okButton = new JButton("OK");
+		cancelButton = new JButton(new AbstractAction("Cancel") {
+			@Override
+			public void actionPerformed(ActionEvent evt) {
+				cancelButtonActionPerformed(evt);
+			}
+		});
+		okButton = new JButton(new AbstractAction("OK") {
+			@Override
+			public void actionPerformed(ActionEvent evt) {
+				okButtonActionPerformed(evt);
+			}
+		});
 		stringRadioButton = new JRadioButton("String");
 		integerRadioButton = new JRadioButton("Integer");
 		floatingPointRadioButton = new JRadioButton("Floating Point");
@@ -127,47 +139,40 @@ public class AttributeTypeDialog extends JDialog {
 		otherTextField = new JTextField();
 		listDelimiterRadioButton = new JRadioButton();
 
-		cancelButton.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent evt) {
-					cancelButtonActionPerformed(evt);
-				}
-			});
-
-		okButton.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent evt) {
-					okButtonActionPerformed(evt);
-				}
-			});
-
 		stringRadioButton.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent evt) {
-					dataTypeRadioButtonActionPerformed(evt);
-				}
-			});
+			@Override
+			public void actionPerformed(ActionEvent evt) {
+				dataTypeRadioButtonActionPerformed(evt);
+			}
+		});
 
 		integerRadioButton.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent evt) {
-					dataTypeRadioButtonActionPerformed(evt);
-				}
-			});
+			@Override
+			public void actionPerformed(ActionEvent evt) {
+				dataTypeRadioButtonActionPerformed(evt);
+			}
+		});
 
 		floatingPointRadioButton.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent evt) {
-					dataTypeRadioButtonActionPerformed(evt);
-				}
-			});
+			@Override
+			public void actionPerformed(ActionEvent evt) {
+				dataTypeRadioButtonActionPerformed(evt);
+			}
+		});
 
 		booleanRadioButton.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent evt) {
-					dataTypeRadioButtonActionPerformed(evt);
-				}
-			});
+			@Override
+			public void actionPerformed(ActionEvent evt) {
+				dataTypeRadioButtonActionPerformed(evt);
+			}
+		});
 
 		listRadioButton.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent evt) {
-					listRadioButtonActionPerformed(evt);
-				}
-			});
+			@Override
+			public void actionPerformed(ActionEvent evt) {
+				listRadioButtonActionPerformed(evt);
+			}
+		});
 
 		listTypeComboBox.setModel(new DefaultComboBoxModel<String>(LIST_DATA_TYPES));
 
@@ -180,16 +185,18 @@ public class AttributeTypeDialog extends JDialog {
                         COMMA.toString()
                     }));
 		otherRadioButton.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent evt) {
-					otherRadioButtonActionPerformed(evt);
-				}
-			});
+			@Override
+			public void actionPerformed(ActionEvent evt) {
+				otherRadioButtonActionPerformed(evt);
+			}
+		});
 
 		listDelimiterRadioButton.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent evt) {
-					listDelimiterRadioButtonActionPerformed(evt);
-				}
-			});
+			@Override
+			public void actionPerformed(ActionEvent evt) {
+				listDelimiterRadioButtonActionPerformed(evt);
+			}
+		});
 		listDelimiterRadioButton.setSelected(true);
 
 		listDelimiterButtonGroup.add(listDelimiterRadioButton);
@@ -197,8 +204,9 @@ public class AttributeTypeDialog extends JDialog {
 
 		final JPanel buttonPanel = LookAndFeelUtil.createOkCancelPanel(okButton, cancelButton);
 		
-		final GroupLayout layout = new GroupLayout(getContentPane());
-		getContentPane().setLayout(layout);
+		final JPanel contents = new JPanel();
+		final GroupLayout layout = new GroupLayout(contents);
+		contents.setLayout(layout);
 		layout.setAutoCreateContainerGaps(true);
 		layout.setAutoCreateGaps(true);
 
@@ -210,6 +218,10 @@ public class AttributeTypeDialog extends JDialog {
 				.addComponent(getMainPanel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 				.addComponent(buttonPanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 		);
+		
+		getContentPane().add(contents);
+		LookAndFeelUtil.setDefaultOkCancelKeyStrokes(getRootPane(), okButton.getAction(), cancelButton.getAction());
+		getRootPane().setDefaultButton(okButton);
 		
 		pack();
 	}
