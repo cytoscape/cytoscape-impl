@@ -28,13 +28,17 @@ public class TaskStatusBar extends JPanel implements TaskStatusPanelFactory {
 
 	final JLabel titleLabel = new JLabel();
 	final Timer clearingTimer;
+	final JButton showBtn;
+	final Icon defaultIcon;
 
 	public TaskStatusBar() {
 		super.setOpaque(false);
 		titleLabel.setOpaque(false);
-		final JButton showBtn = new JButton(new ImageIcon(getClass().getResource("/images/tasks-icon.png")));
+		defaultIcon = new ImageIcon(getClass().getResource("/images/tasks-icon.png"));
+		showBtn = new JButton(defaultIcon);
 		showBtn.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				showBtn.setIcon(defaultIcon);
 				firePropertyChange(TASK_HISTORY_CLICK, null, null);
 			}
 		});
@@ -66,37 +70,42 @@ public class TaskStatusBar extends JPanel implements TaskStatusPanelFactory {
 	}
 
 	public void setTitle(final FinishStatus.Type finishType, final String title) {
-		String name = null;
-		Icon icon = null;
-    if (finishType != null) {
-	    switch (finishType) {
-	      case SUCCEEDED: name = "finished"; break;
-	      case FAILED:    name = "error"; break;
-	      case CANCELLED: name = "cancelled"; break;
-	    }
-	  }
-	  if (name != null) {
-	  	icon = TaskDialog.ICONS.get(name);
-	  }
-	  this.setTitle(icon, title);
+		String type = null;
+		if (finishType != null) {
+			switch (finishType) {
+			case SUCCEEDED: type = "finished"; break;
+			case FAILED:    type = "error"; break;
+			case CANCELLED: type = "cancelled"; break;
+			}
+		}
+		this.setTitle(type, title);
 	}
 
 
-  public void setTitle(final TaskMonitor.Level level, final String title) {
-    String name = null;
-    Icon icon = null;
-    if (level != null) {
-	    switch (level) {
-	      case INFO:  name = "info"; break;
-	      case WARN:  name = "warn"; break;
-	      case ERROR: name = "error"; break;
-	    }
-	  }
-    if (name != null) {
-	  	icon = TaskDialog.ICONS.get(name);
+	public void setTitle(final TaskMonitor.Level level, final String title) {
+		String type = null;
+		if (level != null) {
+			switch (level) {
+			case INFO:  type = "info"; break;
+			case WARN:  type = "warn"; break;
+			case ERROR: type = "error"; break;
+			}
 		}
-	  this.setTitle(icon, title);
-  }
+		this.setTitle(type, title);
+	}
+	
+	public void setTitle(final String type, final String title) {
+		Icon icon = null;
+		if (type != null) {
+			icon = TaskDialog.ICONS.get(type);
+			// set button icon based on error/warning status
+			if((type.equals("error") && showBtn.getIcon() != icon || 
+					type.equals("warn") && showBtn.getIcon() == defaultIcon) ) {
+				showBtn.setIcon(icon);
+			}
+		}
+		this.setTitle(icon, title);
+	}
 
 	public void setTitle(final Icon icon, final String title) {
 		if (!SwingUtilities.isEventDispatchThread()) {
