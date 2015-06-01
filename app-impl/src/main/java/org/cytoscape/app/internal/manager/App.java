@@ -480,24 +480,27 @@ public abstract class App {
 		moveDirectories.add(installDirectoryPath);
 		moveDirectories.add(disabledDirectoryPath);
 		moveDirectories.add(uninstallDirectoryPath);
-
-		File targetFile = new File(targetDirectory.getCanonicalPath() + File.separator 
-				+ suggestFileName(uniqueNameDirectories, this.getAppFile().getName()));
+		
+		String targetFilePath = targetDirectory.getCanonicalPath() + File.separator 
+				+ suggestFileName(uniqueNameDirectories, this.getAppFile().getName());
+		File tempFile = new File(targetFilePath + ".tmp");
+		File targetFile = new File(targetFilePath);
 		
 		if (!targetDirectory.equals(parentPath)) {
 			if (moveDirectories.contains(parentPath)) {
-				FileUtils.moveFile(this.getAppFile(), targetFile);
+				FileUtils.moveFile(this.getAppFile(), tempFile);
 				//System.out.println("Moving: " + this.getAppFile() + " -> " + targetFile);
 				
 				// ** Disabled to let directory observers assign file reference
 				// this.setAppFile(targetFile);
 			} else {
-				FileUtils.copyFile(this.getAppFile(), targetFile);
+				FileUtils.copyFile(this.getAppFile(), tempFile);
 				//System.out.println("Copying: " + this.getAppFile() + " -> " + targetFile);
 				
 				// ** Disabled to let directory observers assign file reference
 				// this.setAppFile(targetFile);
 			}
+			tempFile.renameTo(targetFile);
 		}
 	}
 	

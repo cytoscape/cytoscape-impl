@@ -345,7 +345,6 @@ public class AppManager implements FrameworkListener {
 					parsedApp = appParser
 							.parseApp(file);
 				} catch (AppParsingException e) {
-					userLogger.error("Failed to parse app file: " + file.getName(), e);
 					return;
 				}
 				
@@ -436,7 +435,6 @@ public class AppManager implements FrameworkListener {
 				try {
 					parsedApp = appParser.parseApp(file);
 				} catch (AppParsingException e) {
-					userLogger.error("Failed to parse app file: " + file.getName(), e);
 					return;
 				}
 				
@@ -517,7 +515,6 @@ public class AppManager implements FrameworkListener {
 				try {
 					parsedApp = appParser.parseApp(file);
 				} catch (AppParsingException e) {
-					userLogger.error("Failed to parse app file: " + file.getName(), e);
 					return;
 				}
 				
@@ -929,7 +926,6 @@ public class AppManager implements FrameworkListener {
 			try {
 				app = appParser.parseApp(file);
 			} catch (AppParsingException e) {
-				userLogger.error("Failed to parse app file: " + file.getName(), e);
 				app = null;
 			} finally {
 				if (app != null) {
