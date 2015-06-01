@@ -186,13 +186,15 @@ public class InstallAppsPanel extends JPanel {
 		appManager.addAppListener(new AppsChangedListener() {
 			@Override
 			public void appsChanged(AppsChangedEvent event) {
-				TreePath[] selectionPaths = resultsTree.getSelectionPaths();
-
-				updateDescriptionBox();
-				
-				fillResultsTree(resultsTreeApps);
-				
-				resultsTree.setSelectionPaths(selectionPaths);
+				SwingUtilities.invokeLater(new Runnable() {
+					@Override
+					public void run() {
+						TreePath[] selectionPaths = resultsTree.getSelectionPaths();
+						updateDescriptionBox();
+						fillResultsTree(resultsTreeApps);
+						resultsTree.setSelectionPaths(selectionPaths);
+					}
+				});
 			}
 		});
 
