@@ -30,6 +30,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -49,6 +50,8 @@ import org.cytoscape.model.internal.CyNetworkManagerImpl;
 import org.cytoscape.model.internal.CyRootNetworkManagerImpl;
 import org.cytoscape.model.internal.CyTableImpl;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.session.CyNetworkNaming;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskMonitor;
@@ -57,6 +60,7 @@ import org.cytoscape.work.internal.sync.SyncTunableMutator;
 import org.cytoscape.work.internal.sync.SyncTunableMutatorFactory;
 import org.cytoscape.work.internal.sync.TunableRecorderManager;
 import org.cytoscape.work.internal.sync.TunableSetterImpl;
+import org.junit.Before;
 import org.junit.Test;
 
 public class JoinTablesTaskTest {
@@ -73,7 +77,9 @@ public class JoinTablesTaskTest {
 	private String node2Name = "node2";
 
 	private CyEventHelper eventHelper = new DummyCyEventHelper();
-	private CyNetworkManagerImpl netMgr = new CyNetworkManagerImpl(eventHelper);
+	private CyNetworkNaming namingUtil = mock(CyNetworkNaming.class);
+    private CyServiceRegistrar serviceRegistrar = mock(CyServiceRegistrar.class);
+	private CyNetworkManagerImpl netMgr = new CyNetworkManagerImpl(serviceRegistrar);
 	private CyRootNetworkManagerImpl rootNetMgr = new CyRootNetworkManagerImpl();
 
 	private SyncTunableMutator stm = new SyncTunableMutator();
@@ -81,10 +87,14 @@ public class JoinTablesTaskTest {
 	private TunableSetterImpl ts = new TunableSetterImpl(new SyncTunableMutatorFactory(syncTunableHandlerFactory), new TunableRecorderManager());
 	Properties syncFactoryProp = new Properties();
 
-
+	@Before
+	public void setUp() throws Exception {
+		when(serviceRegistrar.getService(CyEventHelper.class)).thenReturn(eventHelper);
+        when(serviceRegistrar.getService(CyNetworkNaming.class)).thenReturn(namingUtil);
+	}
+	
 	@Test
 	public void testJoinTableToRootNetwork() throws Exception {
-
 		stm.addTunableHandlerFactory(syncTunableHandlerFactory, syncFactoryProp);
 		creatNetwork();
 		

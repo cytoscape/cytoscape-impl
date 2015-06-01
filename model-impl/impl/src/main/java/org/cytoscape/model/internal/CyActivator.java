@@ -50,19 +50,20 @@ import java.util.Properties;
 
 
 public class CyActivator extends AbstractCyActivator {
+	
 	public CyActivator() {
 		super();
 	}
 
+	@Override
 	public void start(BundleContext bc) {
-
 		CyEventHelper cyEventHelperServiceRef = getService(bc,CyEventHelper.class);
 		Interpreter InterpreterRef = getService(bc,Interpreter.class);
 		CyServiceRegistrar cyServiceRegistrarServiceRef = getService(bc,CyServiceRegistrar.class);
 
 		TableEventHelperFacade tableEventHelper = new TableEventHelperFacade(cyEventHelperServiceRef);
 		
-		CyNetworkManagerImpl cyNetworkManager = new CyNetworkManagerImpl(cyEventHelperServiceRef);
+		CyNetworkManagerImpl cyNetworkManager = new CyNetworkManagerImpl(cyServiceRegistrarServiceRef);
 		CyNetworkTableManagerImpl cyNetworkTableManager = new CyNetworkTableManagerImpl();
 		CyTableManagerImpl cyTableManager = new CyTableManagerImpl(cyEventHelperServiceRef,cyNetworkTableManager,cyNetworkManager);
 		CyTableFactoryImpl cyTableFactory = new CyTableFactoryImpl(tableEventHelper,InterpreterRef,cyServiceRegistrarServiceRef);
@@ -76,7 +77,5 @@ public class CyActivator extends AbstractCyActivator {
 		registerAllServices(bc,cyNetworkTableManager, new Properties());
 		registerService(bc,cyTableManager,NetworkAboutToBeDestroyedListener.class, new Properties());
 		registerService(bc,cyNetworkManager,CyNetworkManager.class, new Properties());
-
 	}
 }
-

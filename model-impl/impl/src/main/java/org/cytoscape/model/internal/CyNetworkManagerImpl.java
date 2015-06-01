@@ -28,19 +28,20 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.model.CyRow;
 import org.cytoscape.model.events.NetworkAboutToBeDestroyedEvent;
 import org.cytoscape.model.events.NetworkAddedEvent;
 import org.cytoscape.model.events.NetworkDestroyedEvent;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CySubNetwork;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.session.CyNetworkNaming;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,10 +50,10 @@ import org.slf4j.LoggerFactory;
  */
 public class CyNetworkManagerImpl implements CyNetworkManager {
 
-	private static final Logger logger = LoggerFactory .getLogger(CyNetworkManagerImpl.class);
+	private static final Logger logger = LoggerFactory.getLogger(CyNetworkManagerImpl.class);
 
 	private final Map<Long, CyNetwork> networkMap;
-	private final CyEventHelper cyEventHelper;
+	private final CyServiceRegistrar serviceRegistrar;
 	
 	private final Object lock = new Object();
 
@@ -60,9 +61,9 @@ public class CyNetworkManagerImpl implements CyNetworkManager {
      * 
      * @param cyEventHelper
      */
-	public CyNetworkManagerImpl(final CyEventHelper cyEventHelper) {
+	public CyNetworkManagerImpl(final CyServiceRegistrar serviceRegistrar) {
 		this.networkMap = new HashMap<Long, CyNetwork>();
-		this.cyEventHelper = cyEventHelper;
+		this.serviceRegistrar = serviceRegistrar;
 	}
 
 	@Override
@@ -97,6 +98,8 @@ public class CyNetworkManagerImpl implements CyNetworkManager {
 			if (!networkMap.containsKey(networkId))
 				throw new IllegalArgumentException("network is not recognized by this NetworkManager");
 		}
+		
+		final CyEventHelper cyEventHelper = serviceRegistrar.getService(CyEventHelper.class);
 		
 		// let everyone know!
 		cyEventHelper.fireEvent(new NetworkAboutToBeDestroyedEvent(CyNetworkManagerImpl.this, network));
@@ -153,9 +156,28 @@ public class CyNetworkManagerImpl implements CyNetworkManager {
 
 		synchronized (lock) {
 			logger.debug("Adding new Network Model: Model ID = " + network.getSUID());
+			
+			// Make sure the network has a name
+			final CyRow row = network.getRow(network);
+			final String name = row.get(CyNetwork.NAME, String.class);
+			final String sharedName = row.get(CyRootNetwork.SHARED_NAME, String.class);
+			
+			if (name != null && !name.trim().isEmpty() && (sharedName == null || sharedName.trim().isEmpty())) {
+				row.set(CyRootNetwork.SHARED_NAME, name);
+			} else if (sharedName != null && !sharedName.trim().isEmpty() && (name == null || name.trim().isEmpty())) {
+				row.set(CyNetwork.NAME, sharedName);
+			} else if ((sharedName == null || sharedName.trim().isEmpty()) && (name == null || name.trim().isEmpty())) {
+				final CyNetworkNaming namingUtil = serviceRegistrar.getService(CyNetworkNaming.class);
+				final String newName = namingUtil.getSuggestedNetworkTitle("Network");
+				row.set(CyNetwork.NAME, newName);
+				row.set(CyRootNetwork.SHARED_NAME, newName);
+			}
+			
+			// Add the new network to the internal map
 			networkMap.put(network.getSUID(), network);
 		}
 
+		final CyEventHelper cyEventHelper = serviceRegistrar.getService(CyEventHelper.class);
 		cyEventHelper.fireEvent(new NetworkAddedEvent(CyNetworkManagerImpl.this, network));
 	}
 

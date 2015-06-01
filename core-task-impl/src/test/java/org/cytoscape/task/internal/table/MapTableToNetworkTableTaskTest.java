@@ -29,6 +29,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,22 +42,23 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.NetworkTestSupport;
 import org.cytoscape.model.SavePolicy;
 import org.cytoscape.model.internal.CyNetworkManagerImpl;
 import org.cytoscape.model.internal.CyRootNetworkManagerImpl;
 import org.cytoscape.model.internal.CyTableImpl;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.session.CyNetworkNaming;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskMonitor;
-import org.cytoscape.work.internal.sync.SyncTaskManager;
 import org.cytoscape.work.internal.sync.SyncTunableHandlerFactory;
 import org.cytoscape.work.internal.sync.SyncTunableMutator;
 import org.cytoscape.work.internal.sync.SyncTunableMutatorFactory;
 import org.cytoscape.work.internal.sync.TunableRecorderManager;
 import org.cytoscape.work.internal.sync.TunableSetterImpl;
+import org.junit.Before;
 import org.junit.Test;
 
 
@@ -77,7 +79,9 @@ public class MapTableToNetworkTableTaskTest {
 	private CyTableImpl table1;
 
 	private static CyEventHelper eventHelper = new DummyCyEventHelper();
-	private static CyNetworkManagerImpl netMgr = new CyNetworkManagerImpl(eventHelper);	
+	private static CyNetworkNaming namingUtil = mock(CyNetworkNaming.class);
+    private static CyServiceRegistrar serviceRegistrar = mock(CyServiceRegistrar.class);
+	private static CyNetworkManagerImpl netMgr = new CyNetworkManagerImpl(serviceRegistrar);
 	private static CyRootNetworkManagerImpl rootNetMgr = new CyRootNetworkManagerImpl();
 	
 	private static SyncTunableMutator stm = new SyncTunableMutator();
@@ -85,9 +89,14 @@ public class MapTableToNetworkTableTaskTest {
 	private static TunableSetterImpl ts =new TunableSetterImpl(new SyncTunableMutatorFactory(syncTunableHandlerFactory),  new TunableRecorderManager());
 	Properties syncFactoryProp = new Properties();
 	
+	@Before
+	public void setUp() throws Exception {
+		when(serviceRegistrar.getService(CyEventHelper.class)).thenReturn(eventHelper);
+        when(serviceRegistrar.getService(CyNetworkNaming.class)).thenReturn(namingUtil);
+	}
+	
 	@Test
 	public void testMappingTableToNetwork() throws Exception{
-		
 		stm.addTunableHandlerFactory(syncTunableHandlerFactory, syncFactoryProp);
 		
 		net1 = support.getNetwork();

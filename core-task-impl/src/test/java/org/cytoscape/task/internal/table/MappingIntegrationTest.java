@@ -60,6 +60,7 @@ import org.cytoscape.model.internal.CySubNetworkImpl;
 import org.cytoscape.model.internal.CyTableImpl;
 import org.cytoscape.model.internal.CyTableManagerImpl;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.CyNetworkNaming;
 import org.cytoscape.task.internal.creation.NewNetworkSelectedNodesOnlyTask;
 import org.cytoscape.view.model.CyNetworkViewManager;
@@ -87,7 +88,9 @@ public class MappingIntegrationTest {
 	private CyRootNetwork root;
 
 	private CyEventHelper eventHelper = new DummyCyEventHelper();
-	private CyNetworkManagerImpl netMgr = new CyNetworkManagerImpl(eventHelper);	
+	private CyNetworkNaming namingUtil = mock(CyNetworkNaming.class);
+    private CyServiceRegistrar serviceRegistrar = mock(CyServiceRegistrar.class);
+	private CyNetworkManagerImpl netMgr = new CyNetworkManagerImpl(serviceRegistrar);
 	private final CyRootNetworkManagerImpl rootNetMgr = new CyRootNetworkManagerImpl();
 	
 	private SyncTunableMutator stm = new SyncTunableMutator();
@@ -102,6 +105,9 @@ public class MappingIntegrationTest {
 
 	@Before
 	public void setUp() throws Exception {
+		when(serviceRegistrar.getService(CyEventHelper.class)).thenReturn(eventHelper);
+        when(serviceRegistrar.getService(CyNetworkNaming.class)).thenReturn(namingUtil);
+		
 		when(renderingEngineManager.getRenderingEngines(any(View.class))).thenReturn(Collections.EMPTY_LIST);
 	}
 	

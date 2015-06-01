@@ -25,8 +25,10 @@ package org.cytoscape.model;
  */
 
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import org.cytoscape.equations.Interpreter;
 import org.cytoscape.equations.internal.interpreter.InterpreterImpl;
@@ -38,6 +40,7 @@ import org.cytoscape.model.internal.CyNetworkTableManagerImpl;
 import org.cytoscape.model.internal.CyTableFactoryImpl;
 import org.cytoscape.model.internal.CyTableManagerImpl;
 import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.session.CyNetworkNaming;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -52,15 +55,19 @@ public class CyNetworkTableManagerTest extends AbstractCyNetworkTableManagerTest
 	private CyNetworkManager networkManager;
 	
 	private CyEventHelper eh = new DummyCyEventHelper();
-	private  CyServiceRegistrar serviceRegistrar = mock(CyServiceRegistrar.class);
+	private CyNetworkNaming namingUtil = mock(CyNetworkNaming.class);
+	private CyServiceRegistrar serviceRegistrar = mock(CyServiceRegistrar.class);
 
 	@Before
 	public void setUp() {
 		super.setUp();
 		
+		when(serviceRegistrar.getService(CyEventHelper.class)).thenReturn(eh);
+		when(serviceRegistrar.getService(CyNetworkNaming.class)).thenReturn(namingUtil);
+		
 		final Interpreter interpreter = new InterpreterImpl();
 		this.mgr = new CyNetworkTableManagerImpl();
-		this.networkManager = new CyNetworkManagerImpl(eh);
+		this.networkManager = new CyNetworkManagerImpl(serviceRegistrar);
 		this.tableManager = new CyTableManagerImpl(eh, mgr, networkManager);
 		this.tableFactory = new CyTableFactoryImpl(eh, interpreter, serviceRegistrar);
 		

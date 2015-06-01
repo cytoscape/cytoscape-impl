@@ -37,6 +37,7 @@ import org.cytoscape.equations.internal.EquationCompilerImpl;
 import org.cytoscape.equations.internal.EquationParserImpl;
 import org.cytoscape.equations.internal.StringList;
 import org.cytoscape.equations.internal.interpreter.InterpreterImpl;
+import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.event.DummyCyEventHelper;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.internal.CyNetworkManagerImpl;
@@ -45,19 +46,32 @@ import org.cytoscape.model.internal.CyTableImpl;
 import org.cytoscape.model.internal.CyTableManagerImpl;
 import org.cytoscape.model.events.RowSetRecord;
 import org.cytoscape.model.events.TableAddedEvent;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.session.CyNetworkNaming;
 
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 
 public class CyTableTest extends AbstractCyTableTest {
+	
+	private CyNetworkNaming namingUtil = mock(CyNetworkNaming.class);
+	private CyServiceRegistrar serviceRegistrar = mock(CyServiceRegistrar.class);
+	
 	private final EquationCompiler compiler = new EquationCompilerImpl(new EquationParserImpl());
 
 	@Before
 	public void setUp() {
 		eventHelper = new DummyCyEventHelper();
+		
+		when(serviceRegistrar.getService(CyEventHelper.class)).thenReturn(eventHelper);
+		when(serviceRegistrar.getService(CyNetworkNaming.class)).thenReturn(namingUtil);
+		
 		final Interpreter interpreter = new InterpreterImpl();
 		table = new CyTableImpl("homer", CyIdentifiable.SUID, Long.class, false, true, SavePolicy.SESSION_FILE,
 					eventHelper, interpreter, 1000);
@@ -65,7 +79,7 @@ public class CyTableTest extends AbstractCyTableTest {
 		table2 = new CyTableImpl("marge", CyIdentifiable.SUID, Long.class, false, true, SavePolicy.SESSION_FILE,
 					 eventHelper, interpreter, 1000);
 		
-		CyTableManagerImpl tblMgr = new CyTableManagerImpl(eventHelper,new CyNetworkTableManagerImpl(), new CyNetworkManagerImpl(eventHelper));
+		CyTableManagerImpl tblMgr = new CyTableManagerImpl(eventHelper,new CyNetworkTableManagerImpl(), new CyNetworkManagerImpl(serviceRegistrar));
 		tblMgr.addTable(table);
 		((CyTableImpl)table).handleEvent(new TableAddedEvent(tblMgr, table));
 		tblMgr.addTable(table2);
