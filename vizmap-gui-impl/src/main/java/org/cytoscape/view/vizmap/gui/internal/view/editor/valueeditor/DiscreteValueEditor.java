@@ -28,6 +28,7 @@ import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Font;
 import java.awt.Image;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -45,6 +46,7 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JDialog;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.LayoutStyle;
@@ -80,9 +82,7 @@ import org.jdesktop.swingx.JXList;
  * <li>etc.</li>
  * </ul>
  */
-public class DiscreteValueEditor<T> extends JDialog implements VisualPropertyValueEditor<T> {
-	
-	private final static long serialVersionUID = 1202339876950593L;
+public class DiscreteValueEditor<T> implements VisualPropertyValueEditor<T> {
 	
 	// Value data type for this chooser.
 	protected final Class<T> type;
@@ -94,11 +94,7 @@ public class DiscreteValueEditor<T> extends JDialog implements VisualPropertyVal
 	
 	protected boolean canceled;
 	
-	protected JButton applyButton;
-	protected JButton cancelButton;
-	protected DiscreteValueList<T> discreteValueList;
-	protected JScrollPane iconListScrollPane;
-	protected JPanel mainPanel;
+	protected DiscreteValueDialog dialog;
 	
 	public DiscreteValueEditor(final Class<T> type, final Set<T> values, final ServicesUtil servicesUtil) {
 		if (type == null)
@@ -111,30 +107,31 @@ public class DiscreteValueEditor<T> extends JDialog implements VisualPropertyVal
 		this.values = values;
 		this.type = type;
 		this.servicesUtil = servicesUtil;
-		
-		init();
 	}
 	
 	@SuppressWarnings("unchecked")
 	public T getValue() {
-		return canceled != true ? (T) getDiscreteValueList().getSelectedValue() : null;
+		return canceled != true ? (T) dialog.getDiscreteValueList().getSelectedValue() : null;
 	}
 	
 	public void setValue(final T value) {
-		getDiscreteValueList().setSelectedValue(value, true);
+		dialog.getDiscreteValueList().setSelectedValue(value, true);
 	}
 	
 	@Override
 	@SuppressWarnings("unchecked")
 	public <S extends T> T showEditor(final Component parent, final S initialValue, final VisualProperty<S> vp) {
-		setTitle(vp != null ? vp.getDisplayName() : "Select New Value");
+		if (dialog == null)
+			dialog = new DiscreteValueDialog(JOptionPane.getFrameForComponent(parent));
+		
+		dialog.setTitle(vp != null ? vp.getDisplayName() : "Select New Value");
 		
 		final Set<T> supportedValues = getSupportedValues(vp);
 		
-		getDiscreteValueList().setVisualProperty((VisualProperty<T>) vp);
-		getDiscreteValueList().setListItems(supportedValues, initialValue);
-		setLocationRelativeTo(parent);
-		setVisible(true);
+		dialog.getDiscreteValueList().setVisualProperty((VisualProperty<T>) vp);
+		dialog.getDiscreteValueList().setListItems(supportedValues, initialValue);
+		dialog.setLocationRelativeTo(parent);
+		dialog.setVisible(true);
 		
 		T newValue = getValue();
 		canceled = false;
@@ -150,105 +147,7 @@ public class DiscreteValueEditor<T> extends JDialog implements VisualPropertyVal
 		return type;
 	}
 	
-	private void init() {
-		setModal(true);
-		setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-		
-		iconListScrollPane = new JScrollPane();
-		iconListScrollPane.setViewportView(getDiscreteValueList());
-
-		mainPanel = new JPanel();
-		final GroupLayout mainPanelLayout = new GroupLayout(mainPanel);
-		mainPanel.setLayout(mainPanelLayout);
-		
-		mainPanelLayout.setHorizontalGroup(mainPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
-				.addGroup(GroupLayout.Alignment.TRAILING, mainPanelLayout.createSequentialGroup()
-						.addContainerGap(128, Short.MAX_VALUE)
-						.addComponent(getCancelButton())
-						.addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-						.addComponent(getApplyButton())
-						.addContainerGap())
-				.addComponent(iconListScrollPane, GroupLayout.DEFAULT_SIZE, 291, Short.MAX_VALUE));
-		mainPanelLayout.setVerticalGroup(mainPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
-				.addGroup(GroupLayout.Alignment.TRAILING, mainPanelLayout.createSequentialGroup()
-						.addComponent(iconListScrollPane, GroupLayout.DEFAULT_SIZE, 312, Short.MAX_VALUE)
-						.addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-						.addGroup(mainPanelLayout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-								.addComponent(getApplyButton())
-								.addComponent(getCancelButton()))
-						.addContainerGap()));
-
-		final JPanel contentPane = new JPanel();
-		final GroupLayout layout = new GroupLayout(contentPane);
-		contentPane.setLayout(layout);
-		
-		layout.setHorizontalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-				.addComponent(mainPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE));
-		layout.setVerticalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-				.addComponent(mainPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE));
-		
-		setContentPane(contentPane);
-		pack();
-		
-		LookAndFeelUtil.setDefaultOkCancelKeyStrokes(getRootPane(), getApplyButton().getAction(),
-				getCancelButton().getAction());
-		getRootPane().setDefaultButton(getApplyButton());
-	}
-	
-	private DiscreteValueList<T> getDiscreteValueList() {
-		if (discreteValueList == null) {
-			discreteValueList = new DiscreteValueList<T>(type, servicesUtil);
-			discreteValueList.addMouseListener(new MouseAdapter() {
-				@Override
-				public void mouseClicked(final MouseEvent evt) {
-					if (evt.getClickCount() == 2) {
-						getApplyButton().doClick();
-					}
-				}
-			});
-		}
-		
-		return discreteValueList;
-	}
-	
-	@SuppressWarnings("serial")
-	private JButton getApplyButton() {
-		if (applyButton == null) {
-			applyButton = new JButton(new AbstractAction("Apply") {
-				@Override
-				public void actionPerformed(ActionEvent evt) {
-					applyButtonActionPerformed(evt);
-				}
-			});
-		}
-		
-		return applyButton;
-	}
-	
-	@SuppressWarnings("serial")
-	private JButton getCancelButton() {
-		if (cancelButton == null) {
-			cancelButton = new JButton(new AbstractAction("Cancel") {
-				@Override
-				public void actionPerformed(ActionEvent evt) {
-					cancelButtonActionPerformed(evt);
-				}
-			});
-			cancelButton.setVisible(true);
-		}
-		
-		return cancelButton;
-	}
-
-	private void applyButtonActionPerformed(ActionEvent evt) {
-		dispose();
-	}
-	
-	private void cancelButtonActionPerformed(ActionEvent evt) {
-		dispose();
-		canceled = true;
-	}
-	
+	@SuppressWarnings("unchecked")
 	private <S extends T> Set<T> getSupportedValues(final VisualProperty<S> vp) {
 		if (vp == null)
 			return values;
@@ -261,6 +160,106 @@ public class DiscreteValueEditor<T> extends JDialog implements VisualPropertyVal
 		return (Set<T>) lexicon.getSupportedValueRange(vp);
 	}
 
+	@SuppressWarnings("serial")
+	protected class DiscreteValueDialog extends JDialog {
+		
+		protected JButton applyButton;
+		protected JButton cancelButton;
+		protected DiscreteValueList<T> discreteValueList;
+		protected JScrollPane iconListScrollPane;
+		protected JPanel mainPanel;
+		
+		protected DiscreteValueDialog(final Window owner) {
+			super(owner, ModalityType.APPLICATION_MODAL);
+			setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+			
+			iconListScrollPane = new JScrollPane();
+			iconListScrollPane.setViewportView(getDiscreteValueList());
+
+			mainPanel = new JPanel();
+			final GroupLayout mainPanelLayout = new GroupLayout(mainPanel);
+			mainPanel.setLayout(mainPanelLayout);
+			
+			mainPanelLayout.setHorizontalGroup(mainPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
+					.addGroup(GroupLayout.Alignment.TRAILING, mainPanelLayout.createSequentialGroup()
+							.addContainerGap(128, Short.MAX_VALUE)
+							.addComponent(getCancelButton())
+							.addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+							.addComponent(getApplyButton())
+							.addContainerGap())
+					.addComponent(iconListScrollPane, GroupLayout.DEFAULT_SIZE, 291, Short.MAX_VALUE));
+			mainPanelLayout.setVerticalGroup(mainPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
+					.addGroup(GroupLayout.Alignment.TRAILING, mainPanelLayout.createSequentialGroup()
+							.addComponent(iconListScrollPane, GroupLayout.DEFAULT_SIZE, 312, Short.MAX_VALUE)
+							.addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+							.addGroup(mainPanelLayout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+									.addComponent(getApplyButton())
+									.addComponent(getCancelButton()))
+							.addContainerGap()));
+
+			final JPanel contentPane = new JPanel();
+			final GroupLayout layout = new GroupLayout(contentPane);
+			contentPane.setLayout(layout);
+			
+			layout.setHorizontalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+					.addComponent(mainPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE));
+			layout.setVerticalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+					.addComponent(mainPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE));
+			
+			setContentPane(contentPane);
+			pack();
+			
+			LookAndFeelUtil.setDefaultOkCancelKeyStrokes(getRootPane(), getApplyButton().getAction(),
+					getCancelButton().getAction());
+			getRootPane().setDefaultButton(getApplyButton());
+			
+		}
+		
+		private DiscreteValueList<T> getDiscreteValueList() {
+			if (discreteValueList == null) {
+				discreteValueList = new DiscreteValueList<T>(type, servicesUtil);
+				discreteValueList.addMouseListener(new MouseAdapter() {
+					@Override
+					public void mouseClicked(final MouseEvent evt) {
+						if (evt.getClickCount() == 2) {
+							getApplyButton().doClick();
+						}
+					}
+				});
+			}
+			
+			return discreteValueList;
+		}
+		
+		private JButton getApplyButton() {
+			if (applyButton == null) {
+				applyButton = new JButton(new AbstractAction("Apply") {
+					@Override
+					public void actionPerformed(ActionEvent evt) {
+						dialog.dispose();
+					}
+				});
+			}
+			
+			return applyButton;
+		}
+		
+		private JButton getCancelButton() {
+			if (cancelButton == null) {
+				cancelButton = new JButton(new AbstractAction("Cancel") {
+					@Override
+					public void actionPerformed(ActionEvent evt) {
+						dialog.dispose();
+						canceled = true;
+					}
+				});
+				cancelButton.setVisible(true);
+			}
+			
+			return cancelButton;
+		}
+	}
+	
 	static class DiscreteValueList<T> extends JXList {
 		
 		private static final long serialVersionUID = 391558018818678186L;

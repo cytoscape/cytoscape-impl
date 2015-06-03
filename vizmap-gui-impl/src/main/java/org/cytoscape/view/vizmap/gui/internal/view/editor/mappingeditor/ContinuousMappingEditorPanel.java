@@ -24,25 +24,26 @@ package org.cytoscape.view.vizmap.gui.internal.view.editor.mappingeditor;
  * #L%
  */
 
-import java.awt.BorderLayout;
+import static javax.swing.GroupLayout.DEFAULT_SIZE;
+import static javax.swing.GroupLayout.PREFERRED_SIZE;
+
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics2D;
-import java.awt.Insets;
 import java.awt.Paint;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
 import java.util.List;
 
-import javax.swing.BorderFactory;
-import javax.swing.BoxLayout;
+import javax.swing.AbstractAction;
 import javax.swing.GroupLayout;
+import javax.swing.GroupLayout.Alignment;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -51,13 +52,13 @@ import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSpinner;
-import javax.swing.LayoutStyle;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyTable;
+import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.VisualStyle;
@@ -75,22 +76,45 @@ import org.slf4j.LoggerFactory;
 /**
  * Abstract class for all Continuous Mapping Editors. This is the mapping from
  * Number to visual property value.
- * 
  */
+@SuppressWarnings("serial")
 public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends JPanel {
 
-	private static final long serialVersionUID = 2077889066171872186L;
 	private static final Logger logger = LoggerFactory.getLogger(ContinuousMappingEditorPanel.class);
 
-	protected static final Color BACKGROUND = Color.WHITE;
-	private static final Dimension BUTTON_SIZE = new Dimension(120, 1);
 	private static final Dimension SPINNER_SIZE = new Dimension(100, 25);
-	private static final Dimension EDITOR_SIZE = new Dimension(850, 350);
-
-	private static final Font SMALL_FONT = new Font("SansSerif", 1, 10);
 
 	protected static final String BELOW_VALUE_CHANGED = "BELOW_VALUE_CHANGED";
 	protected static final String ABOVE_VALUE_CHANGED = "ABOVE_VALUE_CHANGED";
+
+	private JLabel attrNameLabel;
+	private JLabel handlePositionSpinnerLabel;
+
+	private JButton addButton;
+	private JButton colorButton;
+	private JButton deleteButton;
+	private JButton minMaxButton;
+
+	private JButton cancelButton;
+	private JButton okButton;
+
+	private JPanel mainPanel;
+	private JPanel editorPanel;
+	private JPanel formPanel;
+	private JPanel iconPanel;
+	
+	/*
+	 * For Gradient panel only.
+	 */
+	private BelowAndAbovePanel abovePanel;
+	private BelowAndAbovePanel belowPanel;
+	
+	private JXMultiThumbSlider<V> slider;
+	private JSpinner valueSpinner;
+
+	private JSpinner propertySpinner;
+	private JLabel propertyLabel;
+	private JComponent propertyComponent;
 
 	// Only accepts Continuous Mapping
 	protected final ContinuousMapping<K, V> mapping;
@@ -102,15 +126,13 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 	protected V below;
 	protected V above;
 
-	protected Double lastSpinnerNumber = null;
+	protected Double lastSpinnerNumber;
 
 	// This should be injected.
-	protected static EditorValueRangeTracer tracer = null;
+	protected static EditorValueRangeTracer tracer;
 	protected final ServicesUtil servicesUtil;
 
 	protected final VisualStyle style;
-
-	final JPanel mainPanel;
 
 	protected final Class<K> columnType;
 	protected final Class<V> vpValueType;
@@ -119,8 +141,7 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 	boolean commitChanges;
 
 	/**
-	 * Creates new form ContinuousMapperEditorPanel Accepts only one visual
-	 * property type T.
+	 * Creates new form ContinuousMapperEditorPanel Accepts only one visual property type T.
 	 */
 	public ContinuousMappingEditorPanel(final VisualStyle style, final ContinuousMapping<K, V> mapping,
 			final CyTable table, final ServicesUtil servicesUtil) {
@@ -134,7 +155,6 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 		this.mapping = mapping;
 		this.type = mapping.getVisualProperty();
 		this.style = style;
-		this.mainPanel = createMainPanel();
 		this.dataTable = table;
 		this.servicesUtil = servicesUtil;
 		this.original = createCopy(mapping);
@@ -147,81 +167,35 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 		// TODO more error checking
 		final CyColumn col = table.getColumn(controllingAttrName);
 
-		if (col == null) {
+		if (col == null)
 			logger.info("The column \"" + controllingAttrName + "\" does not exist in the \"" + table.getTitle()
 					+ "\" table");
-		}
 
 		final Class<?> attrType = mapping.getMappingColumnType();
-		logger.debug("Selected attr type is " + attrType);
 
 		if (!Number.class.isAssignableFrom(attrType))
 			throw new IllegalArgumentException("Cannot support column data type.  Numerical values only: "
 					+ attrType);
 
 		if (tracer == null)
-			this.tracer = new EditorValueRangeTracer(servicesUtil);
+			tracer = new EditorValueRangeTracer(servicesUtil);
 
 		initComponents();
 		initRangeValues();
 		setSpinner();
-		slider.addMouseListener(new ThumbMouseListener());
+		getSlider().addMouseListener(new ThumbMouseListener());
 	}
 
 	public static void setTracer(EditorValueRangeTracer t) {
 		tracer = t;
 	}
 
-	public static void resetTracer(VisualProperty vp) {
+	public static void resetTracer(VisualProperty<?> vp) {
 		if (tracer == null) return;
 		tracer.setMin(vp, 0.0);
 		tracer.setMax(vp, 0.0);
 	}
-
-	@SuppressWarnings("serial")
-	private JPanel createMainPanel() {
-		return new JPanel() {
-			@Override
-			public void addNotify() {
-				super.addNotify();
-				
-				final JDialog dialog = (JDialog) getRootPane().getParent();
-				dialog.addWindowListener(new WindowListener() {
-					@Override
-					public void windowOpened(WindowEvent event) {
-					}
-					
-					@Override
-					public void windowIconified(WindowEvent event) {
-					}
-					
-					@Override
-					public void windowDeiconified(WindowEvent event) {
-					}
-					
-					@Override
-					public void windowDeactivated(WindowEvent event) {
-					}
-					
-					@Override
-					public void windowClosing(WindowEvent event) {
-					}
-					
-					@Override
-					public void windowClosed(WindowEvent event) {
-						if (!commitChanges) {
-							cancelChangesInternal();
-						}
-					}
-					
-					@Override
-					public void windowActivated(WindowEvent arg0) {
-					}
-				});
-			}
-		};
-	}
-
+	
 	@SuppressWarnings("unchecked")
 	private ContinuousMapping<K, V> createCopy(final ContinuousMapping<K, V> source) {
 		final String attribute = source.getMappingColumnName();
@@ -244,7 +218,7 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 	private void setSpinner() {
 		spinnerModel = new SpinnerNumberModel(0.0d, Float.NEGATIVE_INFINITY, Float.POSITIVE_INFINITY, 0.01d);
 		spinnerModel.addChangeListener(new SpinnerChangeListener());
-		valueSpinner.setModel(spinnerModel);
+		getValueSpinner().setModel(spinnerModel);
 	}
 
 	protected void reset() {
@@ -253,236 +227,311 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 		repaint();
 	}
 
-	// <editor-fold defaultstate="collapsed" desc=" Generated Code ">
 	private void initComponents() {
-		// Add margin
-		this.setOpaque(true);
-		this.setBackground(BACKGROUND);
-		this.setBorder(BorderFactory.createLineBorder(BACKGROUND, 5));
-
-		this.setSize(EDITOR_SIZE);
-		this.setMinimumSize(EDITOR_SIZE);
-		this.setPreferredSize(EDITOR_SIZE);
-
-		mainPanel.setBackground(BACKGROUND);
-
-		abovePanel = new BelowAndAbovePanel(Color.yellow, false, mapping, this);
-		abovePanel.setName("abovePanel");
-		belowPanel = new BelowAndAbovePanel(Color.white, true, mapping, this);
-		belowPanel.setName("belowPanel");
-		abovePanel.setPreferredSize(new Dimension(20, 1));
-		belowPanel.setPreferredSize(new Dimension(20, 1));
-
-		rangeSettingPanel = new javax.swing.JPanel();
-		handlePositionSpinnerLabel = new JLabel();
-		addButton = new javax.swing.JButton();
-		deleteButton = new javax.swing.JButton();
-
-		// New in 2.6
-		minMaxButton = new javax.swing.JButton();
-		colorButton = new javax.swing.JButton();
-
-		okButton = new JButton();
-		cancelButton = new JButton();
-
-		slider = new JXMultiThumbSlider<V>();
-		attrNameLabel = new javax.swing.JLabel();
-		iconPanel = new YValueLegendPanel(type);
-		iconPanel.setBackground(BACKGROUND);
-
-		handlePositionSpinnerLabel.setFont(SMALL_FONT);
-		handlePositionSpinnerLabel.setText("Selected Handle Position:");
-		valueSpinner = new JSpinner();
-		valueSpinner.setPreferredSize(SPINNER_SIZE);
-		valueSpinner.setMaximumSize(SPINNER_SIZE);
-		valueSpinner.setEnabled(false);
-
-		iconPanel.setPreferredSize(new Dimension(25, 1));
-
-		addButton.setText("Add");
-		addButton.setPreferredSize(BUTTON_SIZE);
-		addButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
-		addButton.addActionListener(new java.awt.event.ActionListener() {
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
-				addButtonActionPerformed(evt);
-			}
-		});
-
-		deleteButton.setText("Delete");
-		deleteButton.setPreferredSize(BUTTON_SIZE);
-		deleteButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
-		deleteButton.addActionListener(new java.awt.event.ActionListener() {
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
-				deleteButtonActionPerformed(evt);
-			}
-		});
-
-		minMaxButton.setText("Min/Max");
-		minMaxButton.setPreferredSize(BUTTON_SIZE);
-		minMaxButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
-		minMaxButton.addActionListener(new java.awt.event.ActionListener() {
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
-				minMaxButtonActionPerformed(evt);
-			}
-		});
-
-		cancelButton.setText("Cancel");
-		cancelButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
-		cancelButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent evt) {
-				final JDialog dialog = (JDialog) mainPanel.getRootPane().getParent();
-				dialog.dispose();
-			}
-		});
-
-		okButton.setText("OK");
-		okButton.setMargin(new Insets(2, 2, 2, 2));
-		okButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent evt) {
-				commitChanges = true;
-				final JDialog dialog = (JDialog) mainPanel.getRootPane().getParent();
-				dialog.dispose();
-			}
-		});
+		attrNameLabel = new JLabel("Column Name");
+		attrNameLabel.setFont(attrNameLabel.getFont().deriveFont(Font.BOLD, 14));
 		
-		// Property value editor components
-		final JPanel propValuePanel = new JPanel();
-		propValuePanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
-		propValuePanel.setPreferredSize(new Dimension(400, 40));
-		propValuePanel.setLayout(new BoxLayout(propValuePanel, BoxLayout.X_AXIS));
-		propValuePanel.setBackground(BACKGROUND);
-		rangeSettingPanel.setBackground(BACKGROUND);
+		handlePositionSpinnerLabel = new JLabel("Handle Position:");
+		
+		final JPanel buttonPanel = LookAndFeelUtil.createOkCancelPanel(getOkButton(), getCancelButton());
+		
+		// add the main panel to the dialog.
+		final GroupLayout layout = new GroupLayout(this);
+		this.setLayout(layout);
+		layout.setAutoCreateContainerGaps(true);
+		layout.setAutoCreateGaps(true);
 
-		final Class<V> vpValueType = type.getRange().getType();
-		propertyLabel = new JLabel();
-		propertyLabel.setFont(SMALL_FONT);
+		layout.setHorizontalGroup(layout.createParallelGroup(Alignment.CENTER, true)
+				.addComponent(getMainPanel())
+				.addComponent(buttonPanel)
+		);
+		layout.setVerticalGroup(layout.createSequentialGroup()
+				.addComponent(getMainPanel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				.addComponent(buttonPanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+		);
+	}
+	
+	private JPanel getMainPanel() {
+		if (mainPanel == null) {
+			mainPanel = new JPanel() {
+				@Override
+				public void addNotify() {
+					super.addNotify();
+					
+					final JDialog dialog = (JDialog) getRootPane().getParent();
+					dialog.addWindowListener(new WindowAdapter() {
+						@Override
+						public void windowClosed(WindowEvent event) {
+							if (!commitChanges)
+								cancelChangesInternal();
+						}
+					});
+				}
+			};
+			
+			final GroupLayout layout = new GroupLayout(mainPanel);
+			mainPanel.setLayout(layout);
+			layout.setAutoCreateContainerGaps(true);
+			layout.setAutoCreateGaps(true);
 
-		if (Number.class.isAssignableFrom(vpValueType)) {
+			layout.setHorizontalGroup(layout.createParallelGroup(Alignment.LEADING)
+					.addComponent(getEditorPanel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+					.addComponent(getFormPanel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+			);
+			layout.setVerticalGroup(layout.createSequentialGroup()
+					.addComponent(getEditorPanel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+					.addGap(20)
+					.addComponent(getFormPanel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+			);
+		}
+		
+		return mainPanel;
+	}
+	
+	private JPanel getEditorPanel() {
+		if (editorPanel == null) {
+			editorPanel = new JPanel();
+			editorPanel.setMinimumSize(new Dimension(280, 240));
+			
+			final GroupLayout layout = new GroupLayout(editorPanel);
+			editorPanel.setLayout(layout);
+			layout.setAutoCreateContainerGaps(true);
+			layout.setAutoCreateGaps(false);
+			
+			layout.setHorizontalGroup(layout.createSequentialGroup()
+					.addComponent(getIconPanel(), 52, 52, PREFERRED_SIZE)
+					.addComponent(getBelowPanel(), 26, 26, PREFERRED_SIZE)
+					.addGap(2)
+					.addComponent(getSlider(), 120, 280, Short.MAX_VALUE)
+					.addGap(2)
+					.addComponent(getAbovePanel(), 26, 26, PREFERRED_SIZE)
+			);
+			layout.setVerticalGroup(layout.createParallelGroup(Alignment.TRAILING)
+					.addComponent(getIconPanel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+					.addComponent(getBelowPanel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+					.addComponent(getSlider(), 120, 180, Short.MAX_VALUE)
+					.addComponent(getAbovePanel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+			);
+		}
+		
+		return editorPanel;
+	}
+	
+	private JPanel getFormPanel() {
+		if (formPanel == null) {
+			formPanel = new JPanel();
+			formPanel.setBorder(LookAndFeelUtil.createTitledBorder("Edit Handle Positions and Values"));
+			
+			final GroupLayout layout = new GroupLayout(formPanel);
+			formPanel.setLayout(layout);
+			layout.setAutoCreateContainerGaps(true);
+			layout.setAutoCreateGaps(true);
+			
+			layout.setHorizontalGroup(layout.createParallelGroup(Alignment.LEADING)
+					.addGroup(layout.createSequentialGroup()
+							.addComponent(handlePositionSpinnerLabel)
+							.addComponent(getValueSpinner())
+							.addGap(10, 20, Short.MAX_VALUE)
+							.addComponent(getMinMaxButton())
+							.addGap(10, 20, Short.MAX_VALUE)
+							.addComponent(getAddButton())
+							.addComponent(getDeleteButton())
+					)
+					.addGroup(layout.createSequentialGroup()
+							.addComponent(getPropertyLabel())
+							.addComponent(getPropertyComponent())
+					)
+			);
+			layout.setVerticalGroup(layout.createSequentialGroup()
+					.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
+							.addComponent(handlePositionSpinnerLabel)
+							.addComponent(getValueSpinner())
+							.addComponent(getMinMaxButton())
+							.addComponent(getDeleteButton())
+							.addComponent(getAddButton())
+					)
+					.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
+							.addComponent(getPropertyLabel())
+							.addComponent(getPropertyComponent())
+					)
+			);
+		}
+		
+		return formPanel;
+	}
+	
+	protected JPanel getIconPanel() {
+		if (iconPanel == null) {
+			iconPanel = new YValueLegendPanel(type);
+		}
+		
+		return iconPanel;
+	}
+	
+	protected JXMultiThumbSlider<V> getSlider() {
+		if (slider == null) {
+			slider = new JXMultiThumbSlider<V>();
+			slider.setMaximumValue(100.0F);
+		}
+		
+		return slider;
+	}
+	
+	protected BelowAndAbovePanel getBelowPanel() {
+		if (belowPanel == null) {
+			belowPanel = new BelowAndAbovePanel(Color.WHITE, true, mapping, this);
+			belowPanel.setName("belowPanel");
+		}
+		
+		return belowPanel;
+	}
+	
+	protected BelowAndAbovePanel getAbovePanel() {
+		if (abovePanel == null) {
+			abovePanel = new BelowAndAbovePanel(Color.YELLOW, false, mapping, this);
+			abovePanel.setName("abovePanel");
+		}
+		
+		return abovePanel;
+	}
+	
+	private JLabel getPropertyLabel() {
+		if (propertyLabel == null) {
+			propertyLabel = new JLabel();
+			
+			if (Number.class.isAssignableFrom(vpValueType) || Paint.class.isAssignableFrom(vpValueType)) {
+				propertyLabel.setText(type.getDisplayName() + ":");
+				propertyLabel.setLabelFor(getPropertyComponent());
+			} else {
+				propertyLabel.setText("Double-click on icon to change " + type.getDisplayName());
+				propertyLabel.setFont(propertyLabel.getFont().deriveFont(LookAndFeelUtil.INFO_FONT_SIZE));
+			}
+		}
+		
+		return propertyLabel;
+	}
+	
+	private JComponent getPropertyComponent() {
+		if (propertyComponent == null) {
+			if (Number.class.isAssignableFrom(vpValueType)) {
+				propertyComponent = getPropertySpinner();
+			} else if (Paint.class.isAssignableFrom(vpValueType)) {
+				// We use the colorButton for both discrete and color
+				propertyComponent = getColorButton();
+			} else {
+				propertyComponent = new JLabel();
+			}
+		}
+
+		return propertyComponent;
+	}
+	
+	protected JSpinner getPropertySpinner() {
+		if (propertySpinner == null) {
 			propertySpinner = new JSpinner();
 			propertySpinner.setPreferredSize(SPINNER_SIZE);
 			propertySpinner.setMaximumSize(SPINNER_SIZE);
 			propertySpinner.setEnabled(false);
-			propertyComponent = propertySpinner;
-			propertyLabel.setText(type.getDisplayName());
-			propertyLabel.setLabelFor(propertyComponent);
-		} else if (Paint.class.isAssignableFrom(vpValueType)) {
-			// We use the colorButton for both discrete and color
-			colorButton = new javax.swing.JButton("Change");
-			colorButton.setPreferredSize(BUTTON_SIZE);
-			colorButton.setMargin(new Insets(2, 2, 2, 2));
-			colorButton.setEnabled(false);
-			propertyComponent = colorButton;
-			propertyLabel.setText(type.getDisplayName());
-			propertyLabel.setLabelFor(propertyComponent);
-		} else {
-			propertyComponent = new JLabel();
-			propertyLabel.setText("Double-click on icon to change " + type.getDisplayName());
 		}
-
-		propValuePanel.add(propertyLabel);
-		propValuePanel.add(propertyComponent);
-
-		final JPanel editorPanel = new JPanel();
-		editorPanel.setLayout(new BorderLayout());
-		editorPanel.setBorder(BorderFactory.createTitledBorder(null, "Edit Handle Positions and Values",
-				javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION,
-				javax.swing.border.TitledBorder.DEFAULT_POSITION, SMALL_FONT, new java.awt.Color(0, 0, 0)));
-		editorPanel.setBackground(BACKGROUND);
-
-		final JPanel buttonPanel = new JPanel();
-		buttonPanel.setBackground(BACKGROUND);
-		GroupLayout buttonPanelLayout = new GroupLayout(buttonPanel);
-		buttonPanel.setLayout(buttonPanelLayout);
-		buttonPanelLayout.setHorizontalGroup(buttonPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
-				.addGroup(
-						GroupLayout.Alignment.TRAILING,
-						buttonPanelLayout.createSequentialGroup().addContainerGap(200, Short.MAX_VALUE)
-								.addComponent(cancelButton).addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-								.addComponent(okButton).addContainerGap()));
-		buttonPanelLayout.setVerticalGroup(buttonPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
-				.addGroup(
-						GroupLayout.Alignment.TRAILING,
-						buttonPanelLayout
-								.createSequentialGroup()
-								.addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-								.addGroup(
-										buttonPanelLayout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-												.addComponent(okButton).addComponent(cancelButton)).addContainerGap()));
-
-		slider.setMaximumValue(100.0F);
-
-		GroupLayout sliderLayout = new GroupLayout(slider);
-		slider.setLayout(sliderLayout);
-		sliderLayout.setHorizontalGroup(sliderLayout.createParallelGroup(GroupLayout.Alignment.LEADING).addGap(0, 486,
-				Short.MAX_VALUE));
-		sliderLayout.setVerticalGroup(sliderLayout.createParallelGroup(GroupLayout.Alignment.LEADING).addGap(0, 116,
-				Short.MAX_VALUE));
-
-		attrNameLabel.setFont(new java.awt.Font("SansSerif", 1, 14));
-		attrNameLabel.setForeground(java.awt.Color.darkGray);
-		attrNameLabel.setText("Column Name");
-
-		GroupLayout rangeSettingPanelLayout = new GroupLayout(rangeSettingPanel);
-		rangeSettingPanel.setLayout(rangeSettingPanelLayout);
-		rangeSettingPanelLayout.setHorizontalGroup(rangeSettingPanelLayout.createParallelGroup(
-				GroupLayout.Alignment.LEADING).addGroup(
-				rangeSettingPanelLayout.createSequentialGroup().addContainerGap()
-						.addComponent(handlePositionSpinnerLabel)
-						.addPreferredGap(LayoutStyle.ComponentPlacement.RELATED).addComponent(valueSpinner)
-						.addPreferredGap(LayoutStyle.ComponentPlacement.RELATED, 50, Short.MAX_VALUE)
-						.addComponent(minMaxButton).addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-						.addComponent(addButton).addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-						.addComponent(deleteButton).addGap(10, 10, 10)));
-		rangeSettingPanelLayout.setVerticalGroup(rangeSettingPanelLayout.createParallelGroup(
-				GroupLayout.Alignment.LEADING).addGroup(
-				rangeSettingPanelLayout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-						.addComponent(handlePositionSpinnerLabel).addComponent(valueSpinner).addComponent(minMaxButton)
-						.addComponent(deleteButton).addComponent(addButton)));
-
-		editorPanel.add(rangeSettingPanel, BorderLayout.CENTER);
-		editorPanel.add(propValuePanel, BorderLayout.SOUTH);
-
-		GroupLayout layout = new GroupLayout(mainPanel);
-		mainPanel.setLayout(layout);
-
-		layout.setHorizontalGroup(layout
-				.createParallelGroup(GroupLayout.Alignment.LEADING)
-				.addComponent(editorPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-				.addGroup(
-						layout.createSequentialGroup()
-								.addComponent(iconPanel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
-										GroupLayout.PREFERRED_SIZE)
-								.addComponent(belowPanel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
-										GroupLayout.PREFERRED_SIZE)
-								.addComponent(slider, GroupLayout.DEFAULT_SIZE, 243, Short.MAX_VALUE)
-								.addComponent(abovePanel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
-										GroupLayout.PREFERRED_SIZE)));
-		layout.setVerticalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING).addGroup(
-				layout.createSequentialGroup()
-						.addGroup(
-								layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-										.addComponent(slider, GroupLayout.Alignment.TRAILING, GroupLayout.DEFAULT_SIZE,
-												145, Short.MAX_VALUE)
-										.addComponent(iconPanel, GroupLayout.Alignment.TRAILING,
-												GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-										.addComponent(belowPanel, GroupLayout.Alignment.TRAILING,
-												GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-										.addComponent(abovePanel, GroupLayout.Alignment.TRAILING,
-												GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-						.addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-						.addComponent(editorPanel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
-								GroupLayout.PREFERRED_SIZE)));
-
-		// add the main panel to the dialog.
-		this.setLayout(new BorderLayout());
-		this.add(mainPanel, BorderLayout.CENTER);
-		this.add(buttonPanel, BorderLayout.SOUTH);
-	} // </editor-fold>
+		
+		return propertySpinner;
+	}
+	
+	protected JButton getColorButton() {
+		if (colorButton == null) {
+			colorButton = new JButton();
+			colorButton.setEnabled(false);
+			colorButton.setMinimumSize(new Dimension(36, colorButton.getMinimumSize().height));
+		}
+		
+		return colorButton;
+	}
+	
+	private JButton getAddButton() {
+		if (addButton == null) {
+			addButton = new JButton("Add");
+			addButton.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent evt) {
+					addButtonActionPerformed(evt);
+				}
+			});
+		}
+		
+		return addButton;
+	}
+	
+	private JButton getDeleteButton() {
+		if (deleteButton == null) {
+			deleteButton = new JButton("Delete");
+			deleteButton.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent evt) {
+					deleteButtonActionPerformed(evt);
+				}
+			});
+		}
+		
+		return deleteButton;
+	}
+	
+	private JButton getMinMaxButton() {
+		if (minMaxButton == null) {
+			minMaxButton = new JButton("Set Min and Max...");
+			minMaxButton.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent evt) {
+					minMaxButtonActionPerformed(evt);
+				}
+			});
+		}
+		
+		return minMaxButton;
+	}
+	
+	protected JButton getCancelButton() {
+		if (cancelButton == null) {
+			cancelButton = new JButton(new AbstractAction("Cancel") {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					final JDialog dialog = (JDialog) getMainPanel().getRootPane().getParent();
+					dialog.dispose();
+				}
+			});
+		}
+		
+		return cancelButton;
+	}
+	
+	protected JButton getOkButton() {
+		if (okButton == null) {
+			okButton = new JButton(new AbstractAction("OK"){
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					commitChanges = true;
+					final JDialog dialog = (JDialog) getMainPanel().getRootPane().getParent();
+					dialog.dispose();
+				}
+			});
+		}
+		
+		return okButton;
+	}
+	
+	private JSpinner getValueSpinner() {
+		if (valueSpinner == null) {
+			valueSpinner = new JSpinner();
+			valueSpinner.setPreferredSize(SPINNER_SIZE);
+			valueSpinner.setMaximumSize(SPINNER_SIZE);
+			valueSpinner.setEnabled(false);
+		}
+		
+		return valueSpinner;
+	}
 
 	// ///////////////// Action Listeners //////////////////////
 
 	protected void minMaxButtonActionPerformed(ActionEvent evt) {
-		final Double[] newVal = MinMaxDialog.getMinMax(tracer.getMin(type), tracer.getMax(type), this);
+		final JDialog dialog = (JDialog) getMainPanel().getRootPane().getParent();
+		
+		final Double[] newVal = MinMaxDialog.getMinMax(tracer.getMin(type), tracer.getMax(type), dialog);
 
 		if (newVal == null)
 			return;
@@ -493,9 +542,9 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 		this.repaint();
 	}
 
-	abstract protected void deleteButtonActionPerformed(java.awt.event.ActionEvent evt);
+	abstract protected void deleteButtonActionPerformed(ActionEvent evt);
 
-	abstract protected void addButtonActionPerformed(java.awt.event.ActionEvent evt);
+	abstract protected void addButtonActionPerformed(ActionEvent evt);
 
 	// Generate icon from current mapping.
 	abstract public ImageIcon drawIcon(int iconWidth, int iconHeight, boolean detail);
@@ -536,42 +585,14 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 	}
 
 	protected void setSidePanelIconColor(Color below, Color above) {
-		this.abovePanel.setColor(above);
-		this.belowPanel.setColor(below);
+		this.getAbovePanel().setColor(above);
+		this.getBelowPanel().setColor(below);
 		repaint();
 	}
 
-	// Variables declaration - do not modify
-
-	private JLabel attrNameLabel;
-	private JLabel handlePositionSpinnerLabel;
-
-	protected JButton addButton;
-	protected JButton colorButton;
-	protected JButton deleteButton;
-	protected JButton minMaxButton;
-
-	protected JButton cancelButton;
-	protected JButton okButton;
-
-	protected javax.swing.JPanel iconPanel;
-	private javax.swing.JPanel rangeSettingPanel;
-	protected JXMultiThumbSlider<V> slider;
-	protected JSpinner valueSpinner;
-
-	protected JSpinner propertySpinner;
-	private JLabel propertyLabel;
-	private JComponent propertyComponent;
-
-	/*
-	 * For Gradient panel only.
-	 */
-	protected BelowAndAbovePanel abovePanel;
-	protected BelowAndAbovePanel belowPanel;
-
 	protected int getSelectedPoint(int selectedIndex) {
-		final List<Thumb<V>> thumbs = slider.getModel().getSortedThumbs();
-		final Thumb<V> selected = slider.getModel().getThumbAt(selectedIndex);
+		final List<Thumb<V>> thumbs = getSlider().getModel().getSortedThumbs();
+		final Thumb<V> selected = getSlider().getModel().getThumbAt(selectedIndex);
 
 		for (int i = 0; i < thumbs.size(); i++) {
 			if (thumbs.get(i) == selected)
@@ -580,11 +601,9 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 
 		return -1;
 	}
-
-	
 	
 	protected void updateMap() {
-		final List<Thumb<V>> thumbs = slider.getModel().getSortedThumbs();
+		final List<Thumb<V>> thumbs = getSlider().getModel().getSortedThumbs();
 		final double min = tracer.getMin(type);
 		final double range = tracer.getRange(type);
 
@@ -667,10 +686,10 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 
 	private final void enableValueEditor(final V newObject) {
 		if (Number.class.isAssignableFrom(vpValueType)) {
-			propertySpinner.setEnabled(true);
-			propertySpinner.setValue(newObject);
+			getPropertySpinner().setEnabled(true);
+			getPropertySpinner().setValue(newObject);
 		} else if (Paint.class.isAssignableFrom(vpValueType)) {
-			colorButton.setEnabled(true);
+			getColorButton().setEnabled(true);
 			setButtonColor((Color) newObject);
 		}
 	}
@@ -684,9 +703,8 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 		g2.setColor(newColor);
 		g2.fillRect(0, 0, iconWidth, iconHeight);
 
-		Icon colorIcon = new ImageIcon(bi);
-		colorButton.setIcon(colorIcon);
-		colorButton.setIconTextGap(10);
+		final Icon colorIcon = new ImageIcon(bi);
+		getColorButton().setIcon(colorIcon);
 	}
 
 	void cancelChangesInternal() {
@@ -697,8 +715,9 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 		for (ContinuousMappingPoint<K, V> point : original.getAllPoints()) {
 			mapping.addPoint(point.getValue(), point.getRange());
 		}
+		
 		cancelChanges();
-		slider.repaint();
+		getSlider().repaint();
 	}
 	
 	protected abstract void cancelChanges();
@@ -710,29 +729,29 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 		 * Updates GUI when user moves & releases the handle.
 		 */
 		public void mouseReleased(MouseEvent e) {
-			final int selectedIndex = slider.getSelectedIndex();
-			final int tCount = slider.getModel().getThumbCount();
+			final int selectedIndex = getSlider().getSelectedIndex();
+			final int tCount = getSlider().getModel().getThumbCount();
 			
 			if ((0 <= selectedIndex) && (tCount> 0)) {
-				final Thumb<V> handle = slider.getModel().getThumbAt(selectedIndex);
+				final Thumb<V> handle = getSlider().getModel().getThumbAt(selectedIndex);
 				final Double handlePosition = ((handle.getPosition() / 100) * tracer.getRange(type)) + tracer.getMin(type);
 
 				updateMap();
-				slider.repaint();
+				getSlider().repaint();
 				repaint();
 				
 				// Updates spinner values
 				spinnerModel = new SpinnerNumberModel(handlePosition.doubleValue(), Float.NEGATIVE_INFINITY, Float.POSITIVE_INFINITY, 0.01d);
 				spinnerModel.addChangeListener(new SpinnerChangeListener());
-				valueSpinner.setModel(spinnerModel);
-				valueSpinner.setEnabled(true);
+				getValueSpinner().setModel(spinnerModel);
+				getValueSpinner().setEnabled(true);
 
 				V object = handle.getObject();
 				enableValueEditor(object);
 				
 			} else {
-				valueSpinner.setEnabled(false);
-				valueSpinner.setValue(0);
+				getValueSpinner().setEnabled(false);
+				getValueSpinner().setValue(0);
 			}
 		}
 	}
@@ -741,36 +760,33 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 		@Override
 		public void stateChanged(ChangeEvent e) {
 			final Number newVal = spinnerModel.getNumber();
-			if( lastSpinnerNumber == null )
-			{
+			
+			if (lastSpinnerNumber == null)
 				lastSpinnerNumber = newVal.doubleValue();
-			}
-			else if ( newVal.equals(lastSpinnerNumber) )
-			{
+			else if (newVal.equals(lastSpinnerNumber))
 				return;
-			}
 		
-			int selectedIndex = slider.getSelectedIndex();
+			int selectedIndex = getSlider().getSelectedIndex();
 
-			if ((0 <= selectedIndex) && (slider.getModel().getThumbCount() >= 1)) {
+			if ((0 <= selectedIndex) && (getSlider().getModel().getThumbCount() >= 1)) {
 				if ((newVal.doubleValue() < tracer.getMin(type)) || (newVal.doubleValue() > tracer.getMax(type))) {
-					if ((lastSpinnerNumber > tracer.getMin(type)) && (lastSpinnerNumber < tracer.getMax(type))) {
+					if ((lastSpinnerNumber > tracer.getMin(type)) && (lastSpinnerNumber < tracer.getMax(type)))
 						spinnerModel.setValue(lastSpinnerNumber);
-					} else {
+					else
 						spinnerModel.setValue(0);
-					}
+					
 					return;
 				}
 
 				final Double newPosition = ((newVal.floatValue() - tracer.getMin(type)) / tracer.getRange(type));
 
-				slider.getModel().getThumbAt(selectedIndex).setPosition(newPosition.floatValue() * 100);
-				slider.getSelectedThumb().setLocation((int) ((slider.getSize().width - 12) * newPosition), 0);
+				getSlider().getModel().getThumbAt(selectedIndex).setPosition(newPosition.floatValue() * 100);
+				getSlider().getSelectedThumb().setLocation((int) ((getSlider().getSize().width - 12) * newPosition), 0);
 
 				updateMap();
-				slider.getSelectedThumb().repaint();
-				slider.getParent().repaint();
-				slider.repaint();
+				getSlider().getSelectedThumb().repaint();
+				getSlider().getParent().repaint();
+				getSlider().repaint();
 				lastSpinnerNumber = newVal.doubleValue();
 			}
 		}
