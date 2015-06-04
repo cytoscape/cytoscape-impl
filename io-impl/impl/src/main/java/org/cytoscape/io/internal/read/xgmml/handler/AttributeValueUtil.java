@@ -37,11 +37,11 @@ import org.cytoscape.io.internal.read.xgmml.ParseState;
 import org.cytoscape.io.internal.util.SUIDUpdater;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.VirtualColumnInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -244,7 +244,7 @@ public class AttributeValueUtil {
         }
         
         Object value = null;
-        ObjectType objType = typeMap.getType(type);
+        final ObjectType objType = typeMap.getType(type);
 
         if (isEquation) {
         	// It is an equation...
