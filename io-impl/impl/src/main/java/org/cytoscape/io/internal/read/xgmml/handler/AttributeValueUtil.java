@@ -24,6 +24,7 @@ package org.cytoscape.io.internal.read.xgmml.handler;
  * #L%
  */
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -165,7 +166,8 @@ public class AttributeValueUtil {
             return atts.getValue(key);
     }
 
-    protected ParseState handleAttribute(Attributes atts) throws SAXParseException {
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+	protected ParseState handleAttribute(Attributes atts) throws SAXParseException {
     	ParseState parseState = ParseState.NONE;
     	
     	final String name = atts.getValue("name");
@@ -274,6 +276,7 @@ public class AttributeValueUtil {
 				if (name != null) setAttribute(row, name, Integer.class, (Integer) value);
 				break;
 			case STRING:
+			case NONE:
 				if (name != null) setAttribute(row, name, String.class, (String) value);
 				break;
 			// We need to be *very* careful. Because we duplicate attributes for
@@ -288,6 +291,20 @@ public class AttributeValueUtil {
 				
 				if (column != null && List.class.isAssignableFrom(column.getType()))
 					row.set(name, null);
+				
+				if (column == null) {
+					final String elementType = atts.getValue("cy:elementType"); // Since Cytoscape v3.3
+					
+					if (elementType != null) {
+						final ObjectType elementObjType = typeMap.getType(elementType);
+			        	final Class<?> clazz = typeMap.getClass(elementObjType, name);
+			            
+			        	table.createListColumn(name, clazz, false, new ArrayList());
+			            column = row.getTable().getColumn(name);
+			            
+			            manager.listAttrHolder = new ArrayList<Object>();
+					}
+		        }
 				
 				return ParseState.LIST_ATT;
 		}

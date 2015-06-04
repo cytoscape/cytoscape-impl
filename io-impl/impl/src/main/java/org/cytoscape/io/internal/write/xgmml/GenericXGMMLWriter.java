@@ -783,7 +783,9 @@ public class GenericXGMMLWriter extends AbstractTask implements CyWriter {
             writeAttributeXML(attName, ObjectType.BOOLEAN, ObjectTypeMap.toXGMMLBoolean(bAttr), hidden, true);
         } else if (attType == List.class) {
             final List<?> listAttr = row.getList(attName, column.getListElementType());
-            writeAttributeXML(attName, ObjectType.LIST, null, hidden, false);
+            final ObjectType elementType = getObjectType(column.getListElementType());
+            
+            writeAttributeXML(attName, ObjectType.LIST, elementType, null, hidden, false);
 
             if (listAttr != null) {
                 depth++;
@@ -802,7 +804,7 @@ public class GenericXGMMLWriter extends AbstractTask implements CyWriter {
                         }
                     }
                     // set child attribute value & label
-                    writeAttributeXML(attName, checkType(obj), sAttr, hidden, true);
+                    writeAttributeXML(attName, getObjectType(obj), sAttr, hidden, true);
                 }
                 depth--;
             }
@@ -820,7 +822,23 @@ public class GenericXGMMLWriter extends AbstractTask implements CyWriter {
      * @param end is a flag to tell us if the attribute should include a tag end
      * @throws IOException
      */
-    protected void writeAttributeXML(String name, ObjectType type, Object value, boolean hidden, boolean end) throws IOException {
+    protected void writeAttributeXML(String name, ObjectType type, Object value, boolean hidden, boolean end)
+    		throws IOException {
+    	writeAttributeXML(name, type, null, value, hidden, end);
+    }
+    
+	/**
+     * writeAttributeXML outputs an XGMML attribute
+     *
+     * @param name is the name of the attribute we are outputting
+     * @param type is the XGMML type of the attribute
+     * @param listType is the XGMML type of the list elements
+     * @param value is the value of the attribute we're outputting
+     * @param end is a flag to tell us if the attribute should include a tag end
+     * @throws IOException
+     */
+    protected void writeAttributeXML(String name, ObjectType type, ObjectType listType, Object value, boolean hidden, 
+    		boolean end) throws IOException {
         if (name == null && type == null)
             writeElement("</att>\n");
         else {
@@ -832,6 +850,9 @@ public class GenericXGMMLWriter extends AbstractTask implements CyWriter {
                 writeAttributePair("value", value);
 
             writeAttributePair("type", type);
+            
+            if (type == ObjectType.LIST && listType != null)
+            	writeAttributePair("cy:elementType", listType); // Since Cytoscape v3.3
             
             if (hidden)
                 writeAttributePair("cy:hidden", ObjectTypeMap.toXGMMLBoolean(hidden));
@@ -878,14 +899,16 @@ public class GenericXGMMLWriter extends AbstractTask implements CyWriter {
     }
 
     /**
-     * Check the type of Attributes.
-     *
-     * @param obj
-     * @return Attribute type in string.
+     * Return the type of an attribute value.
      */
-    private ObjectType checkType(final Object obj) {
-        final Class<?> type = obj.getClass();
-        
+    private ObjectType getObjectType(final Object obj) {
+        return getObjectType(obj.getClass());
+    }
+    
+    /**
+     * Return the type corresponding to a class.
+     */
+    private ObjectType getObjectType(final Class<?> type) {
         if (type == String.class)
             return ObjectType.STRING;
         else if (type == Integer.class)
@@ -894,6 +917,8 @@ public class GenericXGMMLWriter extends AbstractTask implements CyWriter {
             return ObjectType.REAL;
         else if (type == Boolean.class)
             return ObjectType.BOOLEAN;
+        else if (type == List.class)
+            return ObjectType.LIST;
 
         return null;
     }

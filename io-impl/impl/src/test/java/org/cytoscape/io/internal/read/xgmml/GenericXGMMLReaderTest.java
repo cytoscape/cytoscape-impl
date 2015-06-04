@@ -172,15 +172,33 @@ public class GenericXGMMLReaderTest extends AbstractNetworkReaderTest {
 		List<CyNetworkView> views = getViews("listAtt.xgmml");
 		CyNetwork net = checkSingleNetwork(views, 0, 0);
 		// The column should not be created, because the List type is not known
-		assertNull(net.getDefaultNetworkTable().getColumn("empty_list"));
+		assertNull(net.getDefaultNetworkTable().getColumn("null_value_list"));
 	}
 	
 	@Test
-	public void testCreateEmptyListAtt() throws Exception {
+	public void testCreateEmptyList1Att() throws Exception {
 		List<CyNetworkView> views = getViews("listAtt.xgmml");
 		CyNetwork net = checkSingleNetwork(views, 0, 0);
-		// The column should not be created, because the List type is not known
-		assertTrue(net.getRow(net).getList("null_value_list", String.class).isEmpty());
+		// In this case, it must contain an empty list: []
+		assertTrue(net.getRow(net).getList("empty_list_1", String.class).isEmpty());
+	}
+	
+	@Test
+	public void testCreateEmptyList2Att() throws Exception {
+		List<CyNetworkView> views = getViews("listAtt.xgmml");
+		CyNetwork net = checkSingleNetwork(views, 0, 0);
+		// In this case, it must contain an empty list as well: []
+		assertTrue(net.getRow(net).getList("empty_list_2", String.class).isEmpty());
+	}
+	
+	@Test
+	public void testCreateListAttWithEmptyString() throws Exception {
+		List<CyNetworkView> views = getViews("listAtt.xgmml");
+		CyNetwork net = checkSingleNetwork(views, 0, 0);
+		// In this case, it must contain a list with one element (an empty String): [""]
+		List<String> list = net.getRow(net).getList("list_with_empty_string", String.class);
+		assertEquals(1, list.size());
+		assertTrue(list.get(0).isEmpty());
 	}
 	
 	@Test

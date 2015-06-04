@@ -24,10 +24,10 @@ package org.cytoscape.io.internal.read.xgmml;
  * #L%
  */
 
+import java.awt.List;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.regex.Pattern;
 
 import org.cytoscape.io.internal.util.SUIDUpdater;
 
@@ -50,6 +50,25 @@ public class ObjectTypeMap {
         else
             return ObjectType.NONE;
     }
+    
+    /**
+     * Return the Java class of the passed ObjectType.
+     * 
+     * @param type the ObjectType of the value
+     * @param name the attribute name
+     * @return the Java class
+     */
+    public Class<?> getClass(final ObjectType objType, final String name) {
+		switch (objType) {
+	        case LIST:    return List.class;
+	        case BOOLEAN: return Boolean.class;
+	        case REAL:    return SUIDUpdater.isUpdatable(name) ? Long.class : Double.class;
+	        case INTEGER: return Integer.class;
+	        case STRING:
+	        case NONE:
+	        default:      return String.class;
+	    }
+	}
 
     /**
      * Return the typed value for the passed value.

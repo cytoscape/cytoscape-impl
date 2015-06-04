@@ -29,7 +29,6 @@ import java.util.List;
 
 import org.cytoscape.io.internal.read.xgmml.ObjectType;
 import org.cytoscape.io.internal.read.xgmml.ParseState;
-import org.cytoscape.io.internal.util.SUIDUpdater;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyRow;
 import org.xml.sax.Attributes;
@@ -37,35 +36,21 @@ import org.xml.sax.SAXException;
 
 public class HandleListAttribute extends AbstractHandler {
 
-    @Override
+	@Override
+	@SuppressWarnings({ "unchecked", "rawtypes" })
     public ParseState handle(String tag, Attributes atts, ParseState current) throws SAXException {
         final String type = atts.getValue("type");
         final String name = manager.currentAttributeID;
         final ObjectType objType = typeMap.getType(type);
         final Object value = attributeValueUtil.getTypedAttributeValue(objType, atts, name);
-        Class<?> clazz = null;
-
-        switch (objType) {
-            case BOOLEAN:
-                clazz = Boolean.class;
-                break;
-            case REAL:
-                clazz = SUIDUpdater.isUpdatable(name) ? Long.class : Double.class;
-                break;
-            case INTEGER:
-                clazz = Integer.class;
-                break;
-            case STRING:
-            default:
-                clazz = String.class;
-                break;
-        }
 
         final CyRow row = manager.getCurrentRow();
         CyColumn column = row.getTable().getColumn(name);
 
         if (column == null) {
-            row.getTable().createListColumn(name, clazz, false, new ArrayList());
+        	final Class<?> clazz = typeMap.getClass(objType, name);
+            
+        	row.getTable().createListColumn(name, clazz, false, new ArrayList());
             column = row.getTable().getColumn(name);
         }
 

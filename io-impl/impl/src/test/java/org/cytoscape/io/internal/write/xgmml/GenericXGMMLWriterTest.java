@@ -142,6 +142,21 @@ public class GenericXGMMLWriterTest extends AbstractXGMMLWriterTest {
 	}
 	
 	@Test
+	public void testListAttributeSavedAsTypedList() { // Even if the value is null or an empty list!
+		net.getRow(net).getTable().createListColumn("test_list_int", Integer.class, false);
+		net.getRow(net).getTable().createListColumn("test_list_long", Long.class, false);
+		net.getRow(net).getTable().createListColumn("test_list_double", Double.class, false);
+		net.getRow(net).getTable().createListColumn("test_list_str", String.class, false);
+		net.getRow(net).getTable().createListColumn("test_list_bool", Boolean.class, false);
+		write(net);
+		assertEquals("integer", evalString("/x:graph/x:att[@name=\"test_list_int\"]/@cy:elementType"));
+		assertEquals("real", evalString("/x:graph/x:att[@name=\"test_list_long\"]/@cy:elementType"));
+		assertEquals("real", evalString("/x:graph/x:att[@name=\"test_list_double\"]/@cy:elementType"));
+		assertEquals("string", evalString("/x:graph/x:att[@name=\"test_list_str\"]/@cy:elementType"));
+		assertEquals("boolean", evalString("/x:graph/x:att[@name=\"test_list_bool\"]/@cy:elementType"));
+	}
+	
+	@Test
 	public void testSUIDAttNotSaved() throws UnsupportedEncodingException {
 		CyNetwork net = netFactory.createNetwork();
 		CyNode n1 = net.addNode();
