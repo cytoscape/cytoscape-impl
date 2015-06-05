@@ -72,7 +72,7 @@ public abstract class TunableAbstractCyWriter<S extends CyWriterFactory, T exten
 	}
 
 	@Override
-	public final ValidationState getValidationState(final Appendable msg) {
+	public ValidationState getValidationState(final Appendable msg) {
 		if (getExportFileFormat() == null) {
 			try {
 				msg.append("Select a file type.");

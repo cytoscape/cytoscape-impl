@@ -66,7 +66,6 @@ import org.cytoscape.io.write.CySessionWriterFactory;
 import org.cytoscape.io.write.CySessionWriterManager;
 import org.cytoscape.io.write.CyTableWriterManager;
 import org.cytoscape.io.write.PresentationWriterManager;
-import org.cytoscape.io.write.VizmapWriterManager;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
@@ -78,6 +77,7 @@ import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.service.util.AbstractCyActivator;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.CyNetworkNaming;
 import org.cytoscape.session.CySessionManager;
 import org.cytoscape.task.NetworkCollectionTaskFactory;
@@ -279,6 +279,7 @@ public class CyActivator extends AbstractCyActivator {
 
 	@Override
 	public void start(BundleContext bc) {
+		CyServiceRegistrar serviceRegistrar = getService(bc, CyServiceRegistrar.class);
 		CyEventHelper cyEventHelperRef = getService(bc,CyEventHelper.class);
 		RecentlyOpenedTracker recentlyOpenedTrackerServiceRef = getService(bc,RecentlyOpenedTracker.class);
 		CyNetworkNaming cyNetworkNamingServiceRef = getService(bc,CyNetworkNaming.class);
@@ -293,7 +294,6 @@ public class CyActivator extends AbstractCyActivator {
 		StreamUtil streamUtilRef = getService(bc,StreamUtil.class);
 		PresentationWriterManager viewWriterManagerServiceRef = getService(bc,PresentationWriterManager.class);
 		CyNetworkViewWriterManager networkViewWriterManagerServiceRef = getService(bc,CyNetworkViewWriterManager.class);
-		VizmapWriterManager vizmapWriterManagerServiceRef = getService(bc,VizmapWriterManager.class);
 		CySessionWriterManager sessionWriterManagerServiceRef = getService(bc,CySessionWriterManager.class);
 		CySessionReaderManager sessionReaderManagerServiceRef = getService(bc,CySessionReaderManager.class);
 		CyNetworkManager cyNetworkManagerServiceRef = getService(bc,CyNetworkManager.class);
@@ -380,7 +380,7 @@ public class CyActivator extends AbstractCyActivator {
 		CopyValueToColumnTaskFactoryImpl copyValueToSelectedEdgesTaskFactory = new CopyValueToColumnTaskFactoryImpl(undoSupportServiceRef, true, "Apply to selected edges");
 
 		DeleteTableTaskFactoryImpl deleteTableTaskFactory = new DeleteTableTaskFactoryImpl(cyTableManagerServiceRef);
-		ExportVizmapTaskFactoryImpl exportVizmapTaskFactory = new ExportVizmapTaskFactoryImpl(vizmapWriterManagerServiceRef,visualMappingManagerServiceRef, tunableSetterServiceRef);
+		ExportVizmapTaskFactoryImpl exportVizmapTaskFactory = new ExportVizmapTaskFactoryImpl(serviceRegistrar);
 		ConnectSelectedNodesTaskFactoryImpl connectSelectedNodesTaskFactory = new ConnectSelectedNodesTaskFactoryImpl(undoSupportServiceRef, cyEventHelperRef, visualMappingManagerServiceRef, cyNetworkViewManagerServiceRef);
 		MapGlobalToLocalTableTaskFactoryImpl mapGlobal = new MapGlobalToLocalTableTaskFactoryImpl(cyTableManagerServiceRef, cyNetworkManagerServiceRef, tunableSetterServiceRef);
 		
@@ -397,7 +397,7 @@ public class CyActivator extends AbstractCyActivator {
 		applyVisualStyleProps.setProperty(TITLE, "Apply Style...");
 		applyVisualStyleProps.setProperty(COMMAND,"apply");
 		applyVisualStyleProps.setProperty(COMMAND_NAMESPACE,"vizmap");
-		applyVisualStyleProps.setProperty(COMMAND_DESCRIPTION,"Apply the visual style");
+		applyVisualStyleProps.setProperty(COMMAND_DESCRIPTION,"Apply the style");
 		applyVisualStyleProps.setProperty(IN_NETWORK_PANEL_CONTEXT_MENU,"true");
 		applyVisualStyleProps.setProperty(ENABLE_FOR,"networkAndView");
 		
@@ -464,10 +464,10 @@ public class CyActivator extends AbstractCyActivator {
 		Properties loadVizmapFileTaskFactoryProps = new Properties();
 		loadVizmapFileTaskFactoryProps.setProperty(PREFERRED_MENU,"File.Import");
 		loadVizmapFileTaskFactoryProps.setProperty(MENU_GRAVITY,"3.0");
-		loadVizmapFileTaskFactoryProps.setProperty(TITLE,"Style...");
+		loadVizmapFileTaskFactoryProps.setProperty(TITLE,"Styles...");
 		loadVizmapFileTaskFactoryProps.setProperty(COMMAND,"load file");
 		loadVizmapFileTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"vizmap");
-		loadVizmapFileTaskFactoryProps.setProperty(COMMAND_DESCRIPTION,"Load visual styles from a file");
+		loadVizmapFileTaskFactoryProps.setProperty(COMMAND_DESCRIPTION,"Load styles from a file");
 		registerService(bc,loadVizmapFileTaskFactory,TaskFactory.class, loadVizmapFileTaskFactoryProps);
 		registerService(bc,loadVizmapFileTaskFactory,LoadVizmapFileTaskFactory.class, new Properties());
 
@@ -987,10 +987,10 @@ public class CyActivator extends AbstractCyActivator {
 		exportVizmapTaskFactoryProps.setProperty(ENABLE_FOR,"vizmap");
 		exportVizmapTaskFactoryProps.setProperty(PREFERRED_MENU,"File.Export");
 		exportVizmapTaskFactoryProps.setProperty(MENU_GRAVITY,"1.4");
-		exportVizmapTaskFactoryProps.setProperty(TITLE,"Style...");
+		exportVizmapTaskFactoryProps.setProperty(TITLE,"Styles...");
 		exportVizmapTaskFactoryProps.setProperty(COMMAND,"export");
 		exportVizmapTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"vizmap");
-		exportVizmapTaskFactoryProps.setProperty(COMMAND_DESCRIPTION,"Export a visual style to a file");
+		exportVizmapTaskFactoryProps.setProperty(COMMAND_DESCRIPTION,"Export styles to a file");
 		registerService(bc,exportVizmapTaskFactory,TaskFactory.class, exportVizmapTaskFactoryProps);
 		registerService(bc,exportVizmapTaskFactory,ExportVizmapTaskFactory.class, exportVizmapTaskFactoryProps);
 		
