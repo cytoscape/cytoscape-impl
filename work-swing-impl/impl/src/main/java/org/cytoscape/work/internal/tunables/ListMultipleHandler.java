@@ -25,9 +25,13 @@ package org.cytoscape.work.internal.tunables;
  */
 
 
-import static org.cytoscape.work.internal.tunables.utils.GUIDefaults.updateFieldPanel;
+import static javax.swing.GroupLayout.DEFAULT_SIZE;
+import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static org.cytoscape.work.internal.tunables.utils.GUIDefaults.setTooltip;
+import static org.cytoscape.work.internal.tunables.utils.GUIDefaults.updateFieldPanel;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -35,6 +39,9 @@ import java.util.Arrays;
 import java.util.List;
 
 import javax.swing.DefaultListModel;
+import javax.swing.GroupLayout;
+import javax.swing.GroupLayout.Alignment;
+import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
@@ -44,6 +51,7 @@ import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
+import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.swing.AbstractGUITunableHandler;
 import org.cytoscape.work.util.ListChangeListener;
@@ -97,17 +105,52 @@ public class ListMultipleHandler<T> extends AbstractGUITunableHandler
 	private void init() {
 		listMultipleSelection = getMultipleSelection();
 		listModel = new DefaultListModel<>();
-
-		// create GUI
+		itemsContainerList = new JList<>(listModel);
+		
 		if (listMultipleSelection.getPossibleValues().isEmpty()) {
 			panel = new JPanel();
-			itemsContainerList = null;
 			return;
 		}
-
-		//put the items in a list
-		itemsContainerList = new JList<>(listModel);//new JList(listMultipleSelection.getPossibleValues().toArray());
 		
+		// Select All/None buttons
+		final JButton selectAllButton = new JButton("Select All");
+		selectAllButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(final ActionEvent e) {
+				if (listModel.getSize() > 0)
+					itemsContainerList.getSelectionModel().setSelectionInterval(0, listModel.getSize() - 1);
+			}
+		});
+		selectAllButton.putClientProperty("JButton.buttonType", "gradient"); // Mac OS X only
+		selectAllButton.putClientProperty("JComponent.sizeVariant", "small"); // Mac OS X only
+		
+		final JButton selectNoneButton = new JButton("Select None");
+		selectNoneButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(final ActionEvent e) {
+				itemsContainerList.clearSelection();
+			}
+		});
+		selectNoneButton.putClientProperty("JButton.buttonType", "gradient"); // Mac OS X only
+		selectNoneButton.putClientProperty("JComponent.sizeVariant", "small"); // Mac OS X only
+		selectNoneButton.setEnabled(false);
+		
+		LookAndFeelUtil.equalizeSize(selectAllButton, selectNoneButton);
+		
+		// Enable/disable buttons when list selection changes
+		itemsContainerList.addListSelectionListener(new ListSelectionListener() {
+			@Override
+			public void valueChanged(ListSelectionEvent e) {
+				if (!e.getValueIsAdjusting()) {
+					final int total = listModel.getSize();
+					final int selected = itemsContainerList.getSelectedIndices().length;
+					selectAllButton.setEnabled(selected < total);
+					selectNoneButton.setEnabled(selected > 0);
+				}
+			}
+		});
+		
+		// put the items in a list
 		for (T value : getMultipleSelection().getPossibleValues()) 
 			listModel.addElement(value);
 		
@@ -122,7 +165,7 @@ public class ListMultipleHandler<T> extends AbstractGUITunableHandler
 		int index = 0;
 		
 		for (T selected: selectedVals) {
-			for (int i = 0; i<allValues.size(); i++) {
+			for (int i = 0; i < allValues.size(); i++) {
 				if (itemsContainerList.getModel().getElementAt(i).equals(selected)) {
 					selectedIdx[index] = i;
 					index++;
@@ -137,17 +180,40 @@ public class ListMultipleHandler<T> extends AbstractGUITunableHandler
 		scrollpane.setAutoscrolls(true);
 		scrollpane.setOpaque(false);
 		
+		final JPanel controlPanel = new JPanel();
+		if (LookAndFeelUtil.isAquaLAF()) controlPanel.setOpaque(false);
+		
+		final GroupLayout layout = new GroupLayout(controlPanel);
+		controlPanel.setLayout(layout);
+		layout.setAutoCreateGaps(LookAndFeelUtil.isWinLAF());
+		layout.setAutoCreateContainerGaps(false);
+		
+		layout.setHorizontalGroup(layout.createSequentialGroup()
+				.addComponent(scrollpane, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				.addGroup(layout.createParallelGroup(Alignment.LEADING, false)
+						.addComponent(selectAllButton)
+						.addComponent(selectNoneButton)
+				)
+		);
+		layout.setVerticalGroup(layout.createParallelGroup(Alignment.LEADING, true)
+				.addComponent(scrollpane, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				.addGroup(layout.createSequentialGroup()
+						.addComponent(selectAllButton)
+						.addComponent(selectNoneButton)
+				)
+		);
+		
 		String description = getDescription();
 		
 		if (description != null && description.length() > 80) {
 			// Use JTextArea for long descriptions
 			final JTextArea textArea = new JTextArea(description);
-			updateFieldPanel(panel, textArea, scrollpane, horizontal);
+			updateFieldPanel(panel, textArea, controlPanel, horizontal);
 			setTooltip(getTooltip(), textArea, scrollpane);
 		} else if (description != null && description.length() > 0) {
 			// Otherwise, use JLabel
 			final JLabel label = new JLabel(description);
-			updateFieldPanel(panel, label, scrollpane, horizontal);
+			updateFieldPanel(panel, label, controlPanel, horizontal);
 			setTooltip(getTooltip(), label, scrollpane);
 		}
 	}
@@ -179,17 +245,19 @@ public class ListMultipleHandler<T> extends AbstractGUITunableHandler
 			final int[] selectedIdx = new int[selectedVals.size()];
 			int index = 0;
 			
-			for(T selected: selectedVals) {
-				for(int i = 0; i<allValues.size(); i++) {
-					if(itemsContainerList.getModel().getElementAt(i).equals(selected)) {
+			for (T selected: selectedVals) {
+				for (int i = 0; i<allValues.size(); i++) {
+					if (itemsContainerList.getModel().getElementAt(i).equals(selected)) {
 						selectedIdx[index] = i;
 						index++;
 					}
 				}
 			}
 			
-			itemsContainerList.removeSelectionInterval(0, allValues.size()-1);
-			itemsContainerList.setSelectedIndices(selectedIdx);
+			if (!allValues.isEmpty()) {
+				itemsContainerList.removeSelectionInterval(0, allValues.size()-1);
+				itemsContainerList.setSelectedIndices(selectedIdx);
+			}
 		}
 	}
 	
@@ -198,7 +266,7 @@ public class ListMultipleHandler<T> extends AbstractGUITunableHandler
 	 */
 	@Override
 	public void handle() {
-		if ( itemsContainerList == null )
+		if ( itemsContainerList == null || itemsContainerList.getModel().getSize() == 0)
 			return;
 
 		List selectedItems = Arrays.asList(itemsContainerList.getSelectedValues());
