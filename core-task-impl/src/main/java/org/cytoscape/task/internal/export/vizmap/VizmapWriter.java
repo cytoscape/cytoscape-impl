@@ -71,7 +71,7 @@ public class VizmapWriter extends TunableAbstractCyWriter<VizmapWriterFactory,Vi
 		return writerManager.getWriter(styles, filter, file);
 	}
 	
-	@Tunable(description="Save Style as:", params="fileCategory=vizmap;input=false")
+	@Tunable(description="Save Styles as:", params="fileCategory=vizmap;input=false")
 	@Override
 	public File getOutputFile() {
 		return outputFile;

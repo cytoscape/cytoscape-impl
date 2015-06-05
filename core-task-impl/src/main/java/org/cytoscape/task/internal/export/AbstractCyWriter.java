@@ -25,21 +25,17 @@ package org.cytoscape.task.internal.export;
  */
 
 
-import org.cytoscape.work.AbstractTask;
-import org.cytoscape.work.TaskMonitor;
-import org.cytoscape.work.Tunable;
-import org.cytoscape.work.util.ListSingleSelection;
+import java.io.File;
+import java.util.Collection;
+import java.util.Map;
+import java.util.TreeMap;
+
 import org.cytoscape.io.CyFileFilter;
 import org.cytoscape.io.write.CyWriter;
 import org.cytoscape.io.write.CyWriterFactory;
 import org.cytoscape.io.write.CyWriterManager;
-
-import java.io.File;
-
-import java.util.Map;
-import java.util.TreeMap;
-import java.util.ArrayList;
-import java.util.Collection;
+import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.TaskMonitor;
 
 
 /**

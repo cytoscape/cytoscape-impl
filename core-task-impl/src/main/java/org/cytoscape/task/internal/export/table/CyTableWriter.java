@@ -51,41 +51,42 @@ public final class CyTableWriter extends TunableAbstractCyWriter<CyTableWriterFa
 	 * {@link org.cytoscape.io.write.CyTableWriterFactory} to use to write the file.
 	 * @param table The {@link org.cytoscape.model.CyTable} to be written out. 
  	 */
-	public CyTableWriter(CyTableWriterManager writerManager, CyTable table ) {
+	public CyTableWriter(final CyTableWriterManager writerManager, final CyTable table ) {
 		super(writerManager);
-		if ( table == null )
+		
+		if (table == null)
 			throw new NullPointerException("Table is null");
+		
 		this.table = table;
-		final List<String> availableFormats = new ArrayList<String>();
-		for(String format: options.getPossibleValues()){
-			if(!format.contains(".cytable")) {
+		final List<String> availableFormats = new ArrayList<>();
+		
+		for (String format : options.getPossibleValues()) {
+			if (!format.contains(".cytable"))
 				availableFormats.add(format);
-			}
 		}
+		
 		options = new ListSingleSelection<String>(availableFormats);
 	}
 	
-	void setDefaultFileFormatUsingFileExt(File file) {
+	void setDefaultFileFormatUsingFileExt(final File file) {
 		String ext = FilenameUtils.getExtension(file.getName());
 		ext = ext.toLowerCase().trim();
 		String searchDesc = "*." + ext;
-		//Use the EXT to determine the default file format
-		for(String fileTypeDesc: this.getFileFilterDescriptions() )
-			if(fileTypeDesc.contains(searchDesc) )
-			{
+		
+		// Use the EXT to determine the default file format
+		for (String fileTypeDesc : this.getFileFilterDescriptions())
+			if (fileTypeDesc.contains(searchDesc)) {
 				options.setSelectedValue(fileTypeDesc);
 				break;
 			}
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
-	protected CyWriter getWriter(CyFileFilter filter, File file)  throws Exception{
+	@Override
+	protected CyWriter getWriter(final CyFileFilter filter, File file) throws Exception {
 		if (!fileExtensionIsOk(file))
 			file = addOrReplaceExtension(outputFile);
 
-		return writerManager.getWriter(table,filter,file);
+		return writerManager.getWriter(table, filter, file);
 	}
 
 	@Tunable(description="Save Table as:", params="fileCategory=table;input=false", dependsOn="options!=")
