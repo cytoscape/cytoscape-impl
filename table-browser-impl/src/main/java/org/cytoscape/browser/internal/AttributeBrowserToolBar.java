@@ -25,11 +25,11 @@ package org.cytoscape.browser.internal;
  */
 
 import static org.cytoscape.util.swing.IconManager.ICON_CHECK_SQUARE_O;
-import static org.cytoscape.util.swing.IconManager.ICON_SQUARE_O;
 import static org.cytoscape.util.swing.IconManager.ICON_COLUMNS;
-import static org.cytoscape.util.swing.IconManager.ICON_FILE_O;
-import static org.cytoscape.util.swing.IconManager.ICON_TIMES_CIRCLE;
+import static org.cytoscape.util.swing.IconManager.ICON_PLUS;
+import static org.cytoscape.util.swing.IconManager.ICON_SQUARE_O;
 import static org.cytoscape.util.swing.IconManager.ICON_TABLE;
+import static org.cytoscape.util.swing.IconManager.ICON_TIMES_CIRCLE;
 import static org.cytoscape.util.swing.IconManager.ICON_TRASH_O;
 import static org.cytoscape.util.swing.LookAndFeelUtil.isAquaLAF;
 
@@ -863,7 +863,7 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 	 */
 	private JButton getNewButton() {
 		if (createNewAttributeButton == null) {
-			createNewAttributeButton = new JButton(ICON_FILE_O);
+			createNewAttributeButton = new JButton(ICON_PLUS);
 			createNewAttributeButton.setToolTipText("Create New Column");
 			styleButton(createNewAttributeButton, iconMgr.getIconFont(ICON_FONT_SIZE));
 			
