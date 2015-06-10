@@ -80,8 +80,8 @@ public class VizmapWriter extends TunableAbstractCyWriter<VizmapWriterFactory, V
 		});
 		
 		styles = new ListMultipleSelection<>(allStyles);
-		// Select all styles by default
-		styles.setSelectedValues(allStyles);
+		// Select the current style by default
+		styles.setSelectedValues(Collections.singletonList(vmMgr.getCurrentVisualStyle()));
 	}
 	
 	void setDefaultFileFormatUsingFileExt(final File file) {
