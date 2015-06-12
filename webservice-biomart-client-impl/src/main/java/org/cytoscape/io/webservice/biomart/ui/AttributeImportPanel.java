@@ -148,7 +148,6 @@ public abstract class AttributeImportPanel extends JPanel implements ColumnCreat
 		});
 	}
 
-	@SuppressWarnings("serial")
 	private void initComponents() {
 		attrCheckboxList = new CheckBoxJList();
 		attrCheckboxListModel = new DefaultListModel();
@@ -167,8 +166,16 @@ public abstract class AttributeImportPanel extends JPanel implements ColumnCreat
 		availableAttrPanel = new JPanel();
 		availableAttrScrollPane = new JScrollPane();
 		attrListPanel = new JPanel();
+		
 		selectAllButton = new JButton("Select All");
+		selectAllButton.putClientProperty("JButton.buttonType", "gradient"); // Mac OS X only
+		selectAllButton.putClientProperty("JComponent.sizeVariant", "small"); // Mac OS X only
+		
 		selectNoneButton = new JButton("Select None");
+		selectNoneButton.putClientProperty("JButton.buttonType", "gradient"); // Mac OS X only
+		selectNoneButton.putClientProperty("JComponent.sizeVariant", "small"); // Mac OS X only
+		
+		LookAndFeelUtil.equalizeSize(selectAllButton, selectNoneButton);
 		
 		refreshButton = new JButton("...");
 		refreshButton.setToolTipText("Select Services...");

@@ -334,8 +334,17 @@ public class SourceStatusPanel extends JPanel implements TaskObserver {
 		resultScrollPane = new JScrollPane();
 
 		buttonPanel = new JPanel();
-		selectNoneButton = new JButton("Select None");
+		
 		selectAllButton = new JButton("Select All");
+		selectAllButton.putClientProperty("JButton.buttonType", "gradient"); // Mac OS X only
+		selectAllButton.putClientProperty("JComponent.sizeVariant", "small"); // Mac OS X only
+		
+		selectNoneButton = new JButton("Select None");
+		selectNoneButton.putClientProperty("JButton.buttonType", "gradient"); // Mac OS X only
+		selectNoneButton.putClientProperty("JComponent.sizeVariant", "small"); // Mac OS X only
+		
+		LookAndFeelUtil.equalizeSize(selectAllButton, selectNoneButton);
+		
 		clusterResultCheckBox = new JCheckBox("Automatic Network Merge");
 		clusterResultCheckBox.setSelected(false);
 
