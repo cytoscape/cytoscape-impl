@@ -32,8 +32,6 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.table.DefaultTableModel;
-
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -195,21 +193,30 @@ public class LoadTableReaderTask extends AbstractTask implements CyTableReader, 
 		if (firstRowAsColumnNames)
 			startLoadRowTemp = 0;
 		
-		previewPanel.setPreviewTable(workbook, fileType,inputName, isStart, delimiters.getSelectedValues(), null, 50,
-				null, startLoadRowTemp);
+		previewPanel.setPreviewTable(
+				workbook,
+				fileType,
+				inputName,
+				isStart,
+				delimiters.getSelectedValues(),
+				null,
+				50,
+				null,
+				startLoadRowTemp
+		);
 		
-		colCount = previewPanel.getPreviewTable().getColumnModel().getColumnCount();
+		colCount = previewPanel.getSelectedPreviewTable().getColumnModel().getColumnCount();
 		importFlag = new boolean[colCount];
 		Object curName = null;
 		
 		if (firstRowAsColumnNames) {
-			setFirstRowAsColumnNames();
+			previewPanel.setFirstRowAsColumnNames();
 			startLoadRow++;
 		}
 
 		for (int i = 0; i < colCount; i++) {
 			importFlag[i] = true;
-			curName = previewPanel.getPreviewTable().getColumnModel().getColumn(i).getHeaderValue();
+			curName = previewPanel.getSelectedPreviewTable().getColumnModel().getColumn(i).getHeaderValue();
 			
 			if (attrNameList.contains(curName)) {
 				int dupIndex = 0;
@@ -228,23 +235,20 @@ public class LoadTableReaderTask extends AbstractTask implements CyTableReader, 
 				}
 			}
 
-			if (curName == null) {
+			if (curName == null)
 				attrNameList.add("Column " + i);
-			} else {
+			else
 				attrNameList.add(curName.toString());
-			}
 		}
 		attributeNames = attrNameList.toArray(new String[0]);
 		
-		final Byte[] test = previewPanel.getDataTypes(previewPanel.getSelectedSheetName());
-
+		final Byte[] test = previewPanel.getDataTypes(previewPanel.getSelectedTabName());
 		final Byte[] attributeTypes = new Byte[test.length];
 
-		for (int i = 0; i < test.length; i++) {
+		for (int i = 0; i < test.length; i++)
 			attributeTypes[i] = test[i];
-		}
 		
-		if (keyColumnIndex >0)
+		if (keyColumnIndex > 0)
 			keyColumnIndex--;
 
 		amp = new AttributeMappingParameters(delimiters.getSelectedValues(), delimitersForDataList.getSelectedValue(),
@@ -262,23 +266,6 @@ public class LoadTableReaderTask extends AbstractTask implements CyTableReader, 
 		} else {
 			this.reader = new DefaultAttributeTableReader(null, amp, this.isEnd); 
 			loadAnnotation(tm);
-		}
-	}
-
-	public void setFirstRowAsColumnNames() {
-		final DefaultTableModel model = (DefaultTableModel) previewPanel.getPreviewTable().getModel();
-		String[] columnHeaders;
-		
-		if ((previewPanel.getPreviewTable() != null) && (model != null)) {
-			columnHeaders = new String[previewPanel.getPreviewTable().getColumnCount()];
-	
-			for (int i = 0; i < columnHeaders.length; i++) {
-				// Save the header
-				columnHeaders[i] = model.getValueAt(0, i).toString();
-				previewPanel.getPreviewTable().getColumnModel().getColumn(i).setHeaderValue(columnHeaders[i]);
-			}
-	
-			model.removeRow(0);
 		}
 	}
 
@@ -301,15 +288,15 @@ public class LoadTableReaderTask extends AbstractTask implements CyTableReader, 
 			    primaryKey, String.class, true, true);
 		
 		cyTables = new CyTable[] { table };
-		tm.setProgress(0.2);
-
 		tm.setProgress(0.3);
+		
 		try {
 			this.reader.readTable(table);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		
 		tm.setProgress(1.0);
 	}
 

@@ -25,7 +25,7 @@ package org.cytoscape.tableimport.internal.reader;
  */
 
 
-import org.cytoscape.tableimport.internal.util.AttributeTypes;
+import org.cytoscape.tableimport.internal.util.AttributeDataTypes;
 //import cytoscape.data.Semantics;
 
 import org.cytoscape.model.CyEdge;
@@ -182,7 +182,7 @@ public class NetworkLineParser {
 		}
 			
 		switch (type) {
-			case AttributeTypes.TYPE_BOOLEAN:
+			case AttributeDataTypes.TYPE_BOOLEAN:
 				//nmp.getAttributes()
 				//   .setAttribute(key, nmp.getAttributeNames()[index], new Boolean(entry));
 				createColumn(edge, nmp.getAttributeNames()[index],Boolean.class);
@@ -190,7 +190,7 @@ public class NetworkLineParser {
 
 				break;
 
-			case AttributeTypes.TYPE_INTEGER:
+			case AttributeDataTypes.TYPE_INTEGER:
 				//nmp.getAttributes()
 				//   .setAttribute(key, nmp.getAttributeNames()[index], new Integer(entry));
 				createColumn(edge, nmp.getAttributeNames()[index],Integer.class);
@@ -198,7 +198,7 @@ public class NetworkLineParser {
 
 				break;
 
-			case AttributeTypes.TYPE_FLOATING:
+			case AttributeDataTypes.TYPE_FLOATING:
 				//nmp.getAttributes()
 				//   .setAttribute(key, nmp.getAttributeNames()[index], new Double(entry));
 				createColumn(edge, nmp.getAttributeNames()[index],Double.class);
@@ -206,26 +206,26 @@ public class NetworkLineParser {
 
 				break;
 
-			case AttributeTypes.TYPE_STRING:
+			case AttributeDataTypes.TYPE_STRING:
 				//nmp.getAttributes().setAttribute(key, nmp.getAttributeNames()[index], entry);
 				createColumn(edge, nmp.getAttributeNames()[index],String.class);
 				network.getRow(edge).set(nmp.getAttributeNames()[index], entry.trim());
 
 				break;
 
-			case AttributeTypes.TYPE_SIMPLE_LIST:
+			case AttributeDataTypes.TYPE_SIMPLE_LIST:
 
 				Byte elementType = nmp.getListAttributeTypes()[index];
 				
 				// If the column does not exist, create it
 				if (network.getRow(edge).getTable().getColumn(nmp.getAttributeNames()[index]) == null) {
-					if (elementType == AttributeTypes.TYPE_BOOLEAN){
+					if (elementType == AttributeDataTypes.TYPE_BOOLEAN){
 						network.getRow(edge).getTable().createListColumn(nmp.getAttributeNames()[index], Boolean.class, false);
 					}
-					else if (elementType == AttributeTypes.TYPE_INTEGER) {
+					else if (elementType == AttributeDataTypes.TYPE_INTEGER) {
 						network.getRow(edge).getTable().createListColumn(nmp.getAttributeNames()[index], Integer.class, false);
 					}
-					else if (elementType == AttributeTypes.TYPE_FLOATING) {
+					else if (elementType == AttributeDataTypes.TYPE_FLOATING) {
 						network.getRow(edge).getTable().createListColumn(nmp.getAttributeNames()[index], Double.class, false);
 					}
 					else { // TYPE_STRING or undefined
@@ -274,13 +274,13 @@ public class NetworkLineParser {
 		final String[] parts = (entry.replace("\"", "")).split(nmp.getListDelimiter());
 
 		for (String listItem : parts) {
-			if (type == AttributeTypes.TYPE_BOOLEAN){
+			if (type == AttributeDataTypes.TYPE_BOOLEAN){
 				listAttr.add(new Boolean(listItem.trim()));
 			}
-			else if (type == AttributeTypes.TYPE_INTEGER){
+			else if (type == AttributeDataTypes.TYPE_INTEGER){
 				listAttr.add(new Integer(listItem.trim()));
 			}
-			else if (type == AttributeTypes.TYPE_FLOATING){
+			else if (type == AttributeDataTypes.TYPE_FLOATING){
 				listAttr.add(new Double(listItem.trim()));
 			}
 			else {// TYPE_STRING or unknown

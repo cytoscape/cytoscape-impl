@@ -29,16 +29,18 @@ import java.lang.reflect.Method;
 
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.tableimport.internal.reader.AttributeMappingParameters;
+import org.cytoscape.tableimport.internal.ui.ImportType;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.swing.GUITunableHandler;
 import org.cytoscape.work.swing.GUITunableHandlerFactory;
 
 public class AttributeMappingParametersHandlerFactory implements GUITunableHandlerFactory {
 	
-	private final int dialogType;
+	private final ImportType dialogType;
     private final CyServiceRegistrar serviceRegistrar;
     
-	public AttributeMappingParametersHandlerFactory(final int dialogType, final CyServiceRegistrar serviceRegistrar) {
+	public AttributeMappingParametersHandlerFactory(final ImportType dialogType,
+			final CyServiceRegistrar serviceRegistrar) {
 		this.dialogType = dialogType;
 		this.serviceRegistrar = serviceRegistrar;
 	}

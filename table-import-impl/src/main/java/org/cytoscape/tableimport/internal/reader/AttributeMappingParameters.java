@@ -28,7 +28,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 
-import org.cytoscape.tableimport.internal.util.AttributeTypes;
+import org.cytoscape.tableimport.internal.util.AttributeDataTypes;
 
 /**
  * Parameter object for text table <---> CyAttributes mapping.<br>
@@ -104,7 +104,7 @@ public class AttributeMappingParameters extends AbstractMappingParameters {
 			this.attributeTypes = new Byte[attrNames.length];
 
 			for (int i = 0; i < attrNames.length; i++) {
-				this.attributeTypes[i] = AttributeTypes.TYPE_STRING;
+				this.attributeTypes[i] = AttributeDataTypes.TYPE_STRING;
 			}
 		} else {
 			this.attributeTypes = attributeTypes;

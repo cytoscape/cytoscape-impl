@@ -24,7 +24,8 @@ package org.cytoscape.tableimport.internal.util;
  * #L%
  */
 
-public class AttributeTypes {
+// TODO Make it an enum
+public class AttributeDataTypes {
 	
     /**
      * This type corresponds to java.lang.Boolean.

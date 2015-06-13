@@ -43,7 +43,7 @@ import org.cytoscape.tableimport.internal.reader.ontology.OBONetworkReaderFactor
 import org.cytoscape.tableimport.internal.task.ImportOntologyAndAnnotationAction;
 import org.cytoscape.tableimport.internal.tunable.AttributeMappingParametersHandlerFactory;
 import org.cytoscape.tableimport.internal.tunable.NetworkTableMappingParametersHandlerFactory;
-import org.cytoscape.tableimport.internal.ui.ImportTablePanel;
+import org.cytoscape.tableimport.internal.ui.ImportType;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.swing.GUITunableHandlerFactory;
 import org.osgi.framework.BundleContext;
@@ -104,13 +104,11 @@ public class CyActivator extends AbstractCyActivator {
         importNetworkTableReaderFactoryXLSProps.setProperty("readerId","networkTableReader_xls");
         registerService(bc,importNetworkTableReaderFactoryXLS,InputStreamTaskFactory.class, importNetworkTableReaderFactoryXLSProps);
 
-        int dialogTypeAttribute = ImportTablePanel.SIMPLE_ATTRIBUTE_IMPORT;
-        AttributeMappingParametersHandlerFactory attributeMappingParametersHandlerFactory = new AttributeMappingParametersHandlerFactory(dialogTypeAttribute, serviceRegistrar);
-        registerService(bc,attributeMappingParametersHandlerFactory, GUITunableHandlerFactory.class, new Properties());
+        AttributeMappingParametersHandlerFactory attributeMappingParametersHandlerFactory = new AttributeMappingParametersHandlerFactory(ImportType.TABLE_IMPORT, serviceRegistrar);
+        registerService(bc, attributeMappingParametersHandlerFactory, GUITunableHandlerFactory.class, new Properties());
 
-        int dialogTypeNetwork = ImportTablePanel.NETWORK_IMPORT;
-        NetworkTableMappingParametersHandlerFactory networkTableMappingParametersHandlerFactory = new NetworkTableMappingParametersHandlerFactory(dialogTypeNetwork, serviceRegistrar);
-        registerService(bc,networkTableMappingParametersHandlerFactory, GUITunableHandlerFactory.class, new Properties());
+        NetworkTableMappingParametersHandlerFactory networkTableMappingParametersHandlerFactory = new NetworkTableMappingParametersHandlerFactory(ImportType.NETWORK_IMPORT, serviceRegistrar);
+        registerService(bc, networkTableMappingParametersHandlerFactory, GUITunableHandlerFactory.class, new Properties());
 
         //Remove load table from command this option should be available in import command. To be removed if everything works as expected
        /* Properties loadFileTablesProps = new Properties();

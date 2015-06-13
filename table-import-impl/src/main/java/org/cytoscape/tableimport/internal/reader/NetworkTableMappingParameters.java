@@ -28,17 +28,12 @@ import java.io.InputStream;
 import java.util.List;
 
 /**
- * Text table <---> CyAttribute & CyNetwork mapping parameters for network
- * table.
- *
- * @since Cytoscape 2.4
- * @version 0.9
- *
- * @author Keiichiro Ono
+ * Text table <---> CyAttribute & CyNetwork mapping parameters for network table.
  */
 public class NetworkTableMappingParameters extends AbstractMappingParameters {
 	
 	private static final String DEF_INTERACTION = "pp";
+	
 	private final Integer source;
 	private final Integer target;
 	private final Integer interaction;
@@ -47,13 +42,20 @@ public class NetworkTableMappingParameters extends AbstractMappingParameters {
 	/**
 	 * Creates a new NetworkTableMappingParameters object.
 	 */
-	public NetworkTableMappingParameters(List<String> delimiters, String listDelimiter,
-	                                     String[] attributeNames, Byte[] attributeTypes,
-	                                     Byte[] listAttributeTypes,
-	                                     boolean[] importFlag,
-	                                     Integer source, Integer target, Integer interaction,
-	                                     final String defInteraction, 
-	                                     int startNumber, String commentChar) throws Exception {
+	public NetworkTableMappingParameters(
+			List<String> delimiters,
+			String listDelimiter,
+			String[] attributeNames,
+			Byte[] attributeTypes,
+			Byte[] listAttributeTypes,
+			boolean[] importFlag,
+			Integer source,
+			Integer target,
+			Integer interaction,
+			final String defInteraction,
+			int startNumber,
+			String commentChar
+	) throws Exception {
 		super(delimiters, listDelimiter,attributeNames , attributeTypes, listAttributeTypes, importFlag, startNumber, commentChar);
 
 		this.source = source;
@@ -68,7 +70,6 @@ public class NetworkTableMappingParameters extends AbstractMappingParameters {
 		this.target = -1;
 		this.interaction = -1;
 		this.defInteraction = "";
-		
 	}
 
 	public Integer getSourceIndex() {
@@ -84,10 +85,6 @@ public class NetworkTableMappingParameters extends AbstractMappingParameters {
 	}
 
 	public String getDefaultInteraction() {
-		if (defInteraction == null) {
-			return DEF_INTERACTION;
-		} else {
-			return defInteraction;
-		}
+		return defInteraction == null ? DEF_INTERACTION : defInteraction;
 	}
 }

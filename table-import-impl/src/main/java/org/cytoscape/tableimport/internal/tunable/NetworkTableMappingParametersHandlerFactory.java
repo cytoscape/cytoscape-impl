@@ -29,6 +29,7 @@ import java.lang.reflect.Method;
 
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.tableimport.internal.reader.NetworkTableMappingParameters;
+import org.cytoscape.tableimport.internal.ui.ImportType;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.TunableHandler;
 import org.cytoscape.work.swing.GUITunableHandler;
@@ -36,10 +37,11 @@ import org.cytoscape.work.swing.GUITunableHandlerFactory;
 
 public class NetworkTableMappingParametersHandlerFactory implements GUITunableHandlerFactory {
 
-	private final int dialogType;
+	private final ImportType dialogType;
     private final CyServiceRegistrar serviceRegistrar;
     
-    public NetworkTableMappingParametersHandlerFactory(final int dialogType, final CyServiceRegistrar serviceRegistrar) {
+    public NetworkTableMappingParametersHandlerFactory(final ImportType dialogType,
+    		final CyServiceRegistrar serviceRegistrar) {
 		this.dialogType = dialogType;
 		this.serviceRegistrar = serviceRegistrar;
 	}

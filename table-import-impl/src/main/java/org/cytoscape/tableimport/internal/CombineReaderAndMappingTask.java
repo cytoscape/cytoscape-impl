@@ -31,6 +31,7 @@ import java.io.InputStream;
 import org.cytoscape.io.read.CyNetworkReader;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.tableimport.internal.ui.ImportType;
 import org.cytoscape.view.layout.CyLayoutAlgorithm;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.model.CyNetworkView;
@@ -49,7 +50,7 @@ public class CombineReaderAndMappingTask extends AbstractTask implements CyNetwo
 	
 	@ProvidesTitle
 	public String getTitle() {
-		return "Import Network From Table";
+		return ImportType.NETWORK_IMPORT.getTitle();
 	}	
 
 	@ContainsTunables

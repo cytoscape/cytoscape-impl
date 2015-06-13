@@ -27,34 +27,27 @@ package org.cytoscape.tableimport.internal.reader;
 import static org.cytoscape.tableimport.internal.reader.TextFileDelimiters.PIPE;
 import static org.cytoscape.tableimport.internal.reader.TextFileDelimiters.TAB;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.cytoscape.model.CyTable;
-import org.cytoscape.tableimport.internal.reader.TextTableReader.ObjectType;
-import org.cytoscape.tableimport.internal.util.AttributeTypes;
+import org.cytoscape.tableimport.internal.util.AttributeDataTypes;
 
 public abstract class AbstractMappingParameters implements MappingParameter{
 	
 	public static final String ID = "name";
 	private static final String DEF_LIST_DELIMITER = PIPE.toString();
 	private static final String DEF_DELIMITER = TAB.toString();
-	//private final int keyIndex;
-	//private final List<Integer> aliasIndex;
 	private String[] attributeNames;
 	private Byte[] attributeTypes;
 	private Byte[] listAttributeTypes;
-	//private final String mappingAttribute;
 	private List<String> delimiters;
 	private String listDelimiter;
 	private boolean[] importFlag;
+	
 	private Map<String, List<String>> attr2id;
-	//private CyTable attributes;
-	//private Aliases existingAliases;
-	private Map<String, String> networkTitle2ID = null;
+	private Map<String, String> networkTitle2ID;
 
 	// Case sensitivity
 	private int startLineNumber;
@@ -63,12 +56,7 @@ public abstract class AbstractMappingParameters implements MappingParameter{
 	public InputStream is;
 	public String fileType;
 	
-	public AbstractMappingParameters( InputStream is, String fileType){	
-	
-		/*this.keyIndex = -1;
-		this.aliasIndex = null;
-		this.mappingAttribute = null;
-		*/
+	public AbstractMappingParameters(InputStream is, String fileType) {
 		this.delimiters = new ArrayList<String>();
 		this.delimiters.add(DEF_DELIMITER);
 		this.listDelimiter = DEF_DELIMITER;
@@ -76,22 +64,6 @@ public abstract class AbstractMappingParameters implements MappingParameter{
 		this.fileType = fileType;
 	}
 
-	/**
-	 * Creates a new AttributeMappingParameters object.
-	 *
-	 * @param objectType  DOCUMENT ME!
-	 * @param delimiters  DOCUMENT ME!
-	 * @param listDelimiter  DOCUMENT ME!
-	 * @param keyIndex  DOCUMENT ME!
-	 * @param mappingAttribute  DOCUMENT ME!
-	 * @param aliasIndex  DOCUMENT ME!
-	 * @param attrNames  DOCUMENT ME!
-	 * @param attributeTypes  DOCUMENT ME!
-	 * @param listAttributeTypes  DOCUMENT ME!
-	 * @param importFlag  DOCUMENT ME!
-	 *
-	 * @throws Exception  DOCUMENT ME!
-	 */
 	public AbstractMappingParameters( final List<String> delimiters,
 	                                  final String listDelimiter, //final int keyIndex,
 	                                 // final String mappingAttribute,
@@ -99,30 +71,9 @@ public abstract class AbstractMappingParameters implements MappingParameter{
 	                                  final String[] attrNames, Byte[] attributeTypes, Byte[] listAttributeTypes,
 	                                  boolean[] importFlag,
 	                                  boolean caseSensitive) throws Exception {
-		this( delimiters, listDelimiter,
-				//keyIndex, mappingAttribute, aliasIndex,
-		     attrNames, attributeTypes, listAttributeTypes, 
-		     importFlag, 
-			 0, null);
+		this(delimiters, listDelimiter, attrNames, attributeTypes, listAttributeTypes, importFlag, 0, null);
 	}
 
-	/**
-	 * Creates a new AttributeMappingParameters object.
-	 *
-	 * @param objectType  DOCUMENT ME!
-	 * @param delimiters  DOCUMENT ME!
-	 * @param listDelimiter  DOCUMENT ME!
-	 * @param keyIndex  DOCUMENT ME!
-	 * @param mappingAttribute  DOCUMENT ME!
-	 * @param aliasIndex  DOCUMENT ME!
-	 * @param attrNames  DOCUMENT ME!
-	 * @param attributeTypes  DOCUMENT ME!
-	 * @param listAttributeTypes  DOCUMENT ME!
-	 * @param importFlag  DOCUMENT ME!
-	 *
-	 * @throws Exception  DOCUMENT ME!
-	 * @throws IOException  DOCUMENT ME!
-	 */
 	public AbstractMappingParameters( final List<String> delimiters,
 	                                  final String listDelimiter, //final int keyIndex,
 	                                  //final String mappingAttribute,
@@ -197,7 +148,7 @@ public abstract class AbstractMappingParameters implements MappingParameter{
 			this.attributeTypes = new Byte[attrNames.length];
 
 			for (int i = 0; i < attrNames.length; i++) {
-				this.attributeTypes[i] = AttributeTypes.TYPE_STRING;
+				this.attributeTypes[i] = AttributeDataTypes.TYPE_STRING;
 			}
 		} else {
 			this.attributeTypes = attributeTypes;
@@ -218,117 +169,36 @@ public abstract class AbstractMappingParameters implements MappingParameter{
 
 	}
 
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @return  DOCUMENT ME!
-	 */
-	//public Aliases getAlias() {
-	//	return existingAliases;
-	//}
-
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @return  DOCUMENT ME!
-	 */
-	//public CyAttributes getAttributes() {
-	//	return attributes;
-	//}
-
-
- 
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @return  DOCUMENT ME!
-	 */
-/*	public List<Integer> getAliasIndexList() {
-		return aliasIndex;
-	}
-*/
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @return  DOCUMENT ME!
-	 */
+	@Override
 	public String[] getAttributeNames() {
 		// TODO Auto-generated method stub
 		return attributeNames;
 	}
 	
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @return  DOCUMENT ME!
-	 */
+	@Override
 	public Byte[] getAttributeTypes() {
 		return attributeTypes;
 	}
 
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @return  DOCUMENT ME!
-	 */
 	public Byte[] getListAttributeTypes() {
 		return listAttributeTypes;
 	}
 	
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @return  DOCUMENT ME!
-	 */
+	@Override
 	public boolean[] getImportFlag() {
 		// TODO Auto-generated method stub
 		return importFlag;
 	}
 
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @return  DOCUMENT ME!
-	 */
-/*	public int getKeyIndex() {
-		// TODO Auto-generated method stub
-		return keyIndex;
-	}
-*/
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @return  DOCUMENT ME!
-	 */
 	public String getListDelimiter() {
 		// TODO Auto-generated method stub
 		return listDelimiter;
 	}
 
-	/**
-	 *  Returns attribute name for mapping.
-	 *
-	 * @return  Key CyAttribute name for mapping.
-	 */
-/*	public String getMappingAttribute() {
-		return mappingAttribute;
-	}
-*/
-
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @return  DOCUMENT ME!
-	 */
 	public List<String> getDelimiters() {
 		return delimiters;
 	}
 
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @return  DOCUMENT ME!
-	 */
 	public String getDelimiterRegEx() {
 		StringBuffer delimiterBuffer = new StringBuffer();
 		delimiterBuffer.append("[");
@@ -346,27 +216,13 @@ public abstract class AbstractMappingParameters implements MappingParameter{
 		return delimiterBuffer.toString();
 	}
 
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @param attributeValue DOCUMENT ME!
-	 *
-	 * @return  DOCUMENT ME!
-	 */
 	public List<String> toID(String attributeValue) {
 		return attr2id.get(attributeValue);
 	}
 
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @return  DOCUMENT ME!
-	 */
 	public Map<String, List<String>> getAttributeToIDMap() {
 		return attr2id;
 	}
-
-
 
 	private void putAttrValue(String attributeValue, String objectID) {
 		List<String> objIdList = attr2id.get(attributeValue);
@@ -378,11 +234,7 @@ public abstract class AbstractMappingParameters implements MappingParameter{
 		attr2id.put(attributeValue, objIdList);
 	}
 
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @return  DOCUMENT ME!
-	 */
+	@Override
 	public int getColumnCount() {
 		// TODO Auto-generated method stub
 		if (attributeNames == null)
@@ -404,24 +256,11 @@ public abstract class AbstractMappingParameters implements MappingParameter{
 		return networkTitle2ID;
 	}
 
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @return  DOCUMENT ME!
-	 */
 	public int getStartLineNumber(){
 		return startLineNumber;
 	}
 	
-	
-
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @return  DOCUMENT ME!
-	 */
 	public String getCommentChar(){
 		return commentChar;
 	}
-
 }

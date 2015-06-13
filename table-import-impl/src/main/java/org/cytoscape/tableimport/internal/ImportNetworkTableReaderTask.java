@@ -63,7 +63,7 @@ public class ImportNetworkTableReaderTask extends AbstractTask implements CyNetw
 	private final String inputName;
 	private GraphReader reader;
 	
-	@Tunable(description="Network table Mapping Parameter:")
+	@Tunable(description="Network Table Mapping Parameter:")
 	public NetworkTableMappingParameters ntmp;
 	
 	// support import network in different collection

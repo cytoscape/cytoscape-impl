@@ -45,7 +45,7 @@ import org.cytoscape.tableimport.internal.reader.DefaultAttributeTableReader;
 import org.cytoscape.tableimport.internal.reader.ExcelAttributeSheetReader;
 import org.cytoscape.tableimport.internal.reader.SupportedFileType;
 import org.cytoscape.tableimport.internal.reader.TextTableReader;
-import org.cytoscape.tableimport.internal.util.AttributeTypes;
+import org.cytoscape.tableimport.internal.util.AttributeDataTypes;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.work.AbstractTask;
@@ -168,16 +168,16 @@ public class ImportAttributeTableReaderTask extends AbstractTask implements CyTa
 		final Class<?> keyType;
 		
 		switch (type) {
-			case AttributeTypes.TYPE_BOOLEAN:
+			case AttributeDataTypes.TYPE_BOOLEAN:
 				keyType = Boolean.class;
 				break;
-			case AttributeTypes.TYPE_INTEGER:
+			case AttributeDataTypes.TYPE_INTEGER:
 				keyType = Integer.class;
 				break;
-			case AttributeTypes.TYPE_FLOATING:
+			case AttributeDataTypes.TYPE_FLOATING:
 				keyType = Double.class;
 				break;
-			case AttributeTypes.TYPE_STRING:
+			case AttributeDataTypes.TYPE_STRING:
 				keyType = String.class;
 				break;
 			default:

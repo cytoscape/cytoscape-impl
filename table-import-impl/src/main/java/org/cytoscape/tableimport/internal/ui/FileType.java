@@ -24,34 +24,9 @@ package org.cytoscape.tableimport.internal.ui;
  * #L%
  */
 
-import javax.swing.table.DefaultTableModel;
-
-class AliasTableModel extends DefaultTableModel {
-	
-	private static final long serialVersionUID = -4934304431569268487L;
-
-	AliasTableModel(String[] columnNames, int rowNum) {
-		super(columnNames, rowNum);
-	}
-
-	AliasTableModel(Object[][] data, Object[] colNames) {
-		super(data, colNames);
-	}
-
-	AliasTableModel() {
-		super();
-	}
-
-	@Override
-	public Class<?> getColumnClass(int col) {
-		if (this.getColumnCount() < col || this.getRowCount() == 0)
-			return null;
-		
-		return getValueAt(0, col).getClass();
-	}
-
-	@Override
-	public boolean isCellEditable(int row, int column) {
-		return (column == 0);
-	}
+enum FileType {
+	ATTRIBUTE_FILE,
+	NETWORK_FILE,
+	GENE_ASSOCIATION_FILE,
+	CUSTOM_ANNOTATION_FILE;
 }

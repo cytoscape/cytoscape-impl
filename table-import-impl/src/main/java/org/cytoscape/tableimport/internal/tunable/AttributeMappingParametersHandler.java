@@ -36,19 +36,20 @@ import javax.swing.JPanel;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.tableimport.internal.reader.AttributeMappingParameters;
 import org.cytoscape.tableimport.internal.ui.ImportTablePanel;
+import org.cytoscape.tableimport.internal.ui.ImportType;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.swing.AbstractGUITunableHandler;
 
 public class AttributeMappingParametersHandler extends AbstractGUITunableHandler {
 
-	private int dialogType;
+	private ImportType dialogType;
 	private ImportTablePanel importTablePanel;
 	private AttributeMappingParameters amp;
 	private final CyServiceRegistrar serviceRegistrar;
 
 
 	protected AttributeMappingParametersHandler(final Field field, final Object obj, final Tunable tunable,
-			final int dialogType, final CyServiceRegistrar serviceRegistrar) {
+			final ImportType dialogType, final CyServiceRegistrar serviceRegistrar) {
 		super(field, obj, tunable);
 		
 		this.dialogType = dialogType;
@@ -57,7 +58,7 @@ public class AttributeMappingParametersHandler extends AbstractGUITunableHandler
 	}
 
 	protected AttributeMappingParametersHandler(final Method getter, final Method setter, final Object instance,
-			final Tunable tunable, final int dialogType, final CyServiceRegistrar serviceRegistrar) {
+			final Tunable tunable, final ImportType dialogType, final CyServiceRegistrar serviceRegistrar) {
 		super(getter, setter, instance, tunable);
 		
 		this.dialogType = dialogType;

@@ -42,6 +42,7 @@ import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.io.read.InputStreamTaskFactory;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.tableimport.internal.ui.ImportTablePanel;
+import org.cytoscape.tableimport.internal.ui.ImportType;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -81,7 +82,7 @@ public class ImportOntologyAndAnnotationAction extends AbstractCyAction {
 	private JDialog layout() {
 		final JDialog dialog = new JDialog(serviceRegistrar.getService(CySwingApplication.class).getJFrame());
 		dialog.setModalityType(ModalityType.APPLICATION_MODAL);
-		dialog.setTitle("Import Ontology and Annotation");
+		dialog.setTitle(ImportType.ONTOLOGY_IMPORT.getTitle());
 		
 		final JButton importButton = new JButton(new AbstractAction("Import") {
 			@Override
@@ -110,8 +111,8 @@ public class ImportOntologyAndAnnotationAction extends AbstractCyAction {
 		layout.setAutoCreateGaps(true);
 		
 		try {
-			ontologyPanel = new ImportTablePanel(ImportTablePanel.ONTOLOGY_AND_ANNOTATION_IMPORT, null, null,
-					isTaskfactory, serviceRegistrar);
+			ontologyPanel =
+					new ImportTablePanel(ImportType.ONTOLOGY_IMPORT, null, null, isTaskfactory, serviceRegistrar);
 			
 			final JPanel buttonPanel = LookAndFeelUtil.createOkCancelPanel(importButton, cancelButton);
 			

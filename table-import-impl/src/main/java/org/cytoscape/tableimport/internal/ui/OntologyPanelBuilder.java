@@ -24,8 +24,8 @@ package org.cytoscape.tableimport.internal.ui;
  * #L%
  */
 
-import static org.cytoscape.tableimport.internal.ui.theme.ImportDialogIconSets.LOCAL_SOURCE_ICON;
-import static org.cytoscape.tableimport.internal.ui.theme.ImportDialogIconSets.REMOTE_SOURCE_ICON;
+import static org.cytoscape.tableimport.internal.ui.theme.ImportDialogIcons.LOCAL_SOURCE_ICON;
+import static org.cytoscape.tableimport.internal.ui.theme.ImportDialogIcons.REMOTE_SOURCE_ICON;
 
 import java.awt.Component;
 import java.awt.Dialog;
@@ -179,7 +179,6 @@ public class OntologyPanelBuilder {
 
 	private void ontologyComboBoxActionPerformed(ActionEvent evt) {
 		panel.ontologyComboBox.setToolTipText(getOntologyTooltip());
-		panel.ontologyTextField.setText(panel.ontologyComboBox.getSelectedItem().toString());
 	}
 
 	private String getOntologyTooltip() {

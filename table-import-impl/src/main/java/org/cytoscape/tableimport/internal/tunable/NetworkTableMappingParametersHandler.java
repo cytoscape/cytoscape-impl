@@ -34,12 +34,13 @@ import javax.swing.JPanel;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.tableimport.internal.reader.NetworkTableMappingParameters;
 import org.cytoscape.tableimport.internal.ui.ImportTablePanel;
+import org.cytoscape.tableimport.internal.ui.ImportType;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.swing.AbstractGUITunableHandler;
 
 public class NetworkTableMappingParametersHandler extends AbstractGUITunableHandler {
 
-	private final int dialogType;
+	private final ImportType dialogType;
     private final CyServiceRegistrar serviceRegistrar;
     
 	private ImportTablePanel importTablePanel;
@@ -49,7 +50,7 @@ public class NetworkTableMappingParametersHandler extends AbstractGUITunableHand
 			final Field field,
 			final Object instance,
 			final Tunable tunable, 
-			final int dialogType,
+			final ImportType dialogType,
 			final CyServiceRegistrar serviceRegistrar
 	) {
 		super(field, instance, tunable);
@@ -63,7 +64,7 @@ public class NetworkTableMappingParametersHandler extends AbstractGUITunableHand
 			final Method setter,
 			final Object instance,
 			final Tunable tunable,
-			final int dialogType,
+			final ImportType dialogType,
 			final CyServiceRegistrar serviceRegistrar
 	) {
 		super(getter, setter, instance, tunable);
@@ -72,7 +73,7 @@ public class NetworkTableMappingParametersHandler extends AbstractGUITunableHand
 		init();
 	}
 	
-	private void init(){
+	private void init() {
 		try {
 			ntmp = (NetworkTableMappingParameters) getValue();
 		} catch (IllegalAccessException e1) {
@@ -84,8 +85,7 @@ public class NetworkTableMappingParametersHandler extends AbstractGUITunableHand
 		} 
 		
 		try {
-			importTablePanel =
-				new ImportTablePanel(dialogType, ntmp.is, ntmp.fileType, null, serviceRegistrar); 
+			importTablePanel = new ImportTablePanel(dialogType, ntmp.is, ntmp.fileType, null, serviceRegistrar); 
 		} catch (Exception e) {
 			throw new IllegalStateException("Could not initialize ImportTablePanel.", e);
 		}
@@ -96,7 +96,7 @@ public class NetworkTableMappingParametersHandler extends AbstractGUITunableHand
 	
 	@Override
 	public void handle() {
-		try{
+		try {
 			ntmp = importTablePanel.getNetworkTableMappingParameters();
 			setValue(ntmp);
 		} catch (IllegalAccessException e) {

@@ -27,7 +27,6 @@ package org.cytoscape.tableimport.internal.reader;
 
 /**
  * Define text file delimiters as enum.
- *
  */
 public enum TextFileDelimiters {
 	TAB("\\t"),
@@ -45,11 +44,7 @@ public enum TextFileDelimiters {
 		this.delimiter = delimiter;
 	}
 
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @return  DOCUMENT ME!
-	 */
+	@Override
 	public String toString() {
 		return delimiter;
 	}

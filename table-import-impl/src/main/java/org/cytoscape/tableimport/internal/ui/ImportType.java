@@ -24,12 +24,19 @@ package org.cytoscape.tableimport.internal.ui;
  * #L%
  */
 
-/**
- * Enums for file types.
- */
-enum FileTypes {
-	ATTRIBUTE_FILE,
-	NETWORK_FILE,
-	GENE_ASSOCIATION_FILE,
-	CUSTOM_ANNOTATION_FILE;
+public enum ImportType {
+
+	TABLE_IMPORT("Import Columns From Table"),
+	NETWORK_IMPORT("Import Network From Table"),
+	ONTOLOGY_IMPORT("Import Ontology and Annotation");
+	
+	private final String title;
+
+	private ImportType(final String title) {
+		this.title = title;
+	}
+
+	public String getTitle() {
+		return title;
+	}
 }

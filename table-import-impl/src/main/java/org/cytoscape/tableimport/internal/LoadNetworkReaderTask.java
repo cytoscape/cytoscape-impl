@@ -35,8 +35,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import javax.swing.table.DefaultTableModel;
-
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -189,10 +187,10 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 			netReader = networkReaderManager.getReader(uri, inputName);
 
 		
-		if(netReader instanceof CombineReaderAndMappingTask) {
+		if (netReader instanceof CombineReaderAndMappingTask) {
 			Workbook workbook = null;
 			// Load Spreadsheet data for preview.
-			if(fileType != null && (fileType.equalsIgnoreCase(
+			if (fileType != null && (fileType.equalsIgnoreCase(
 					SupportedFileType.EXCEL.getExtension())
 					|| fileType.equalsIgnoreCase(
 							SupportedFileType.OOXML.getExtension())) && workbook == null) {
@@ -207,26 +205,39 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 			}
 			
 			netReader = null;
-			if(startLoadRow > 0)
+			
+			if (startLoadRow > 0)
 				startLoadRow--;
+			
 			startLoadRowTemp = startLoadRow;
-			if(firstRowAsColumnNames)
+			
+			if (firstRowAsColumnNames)
 				startLoadRowTemp = 0;
 			
-			previewPanel.setPreviewTable(workbook, fileType,tempFile.getAbsolutePath(), new FileInputStream(tempFile), delimiters.getSelectedValues(), null, 50, null, startLoadRowTemp);
+			previewPanel.setPreviewTable(
+					workbook,
+					fileType,
+					tempFile.getAbsolutePath(),
+					new FileInputStream(tempFile),
+					delimiters.getSelectedValues(),
+					null,
+					50,
+					null,
+					startLoadRowTemp
+			);
 			
-			colCount = previewPanel.getPreviewTable().getColumnModel().getColumnCount();
+			colCount = previewPanel.getSelectedPreviewTable().getColumnModel().getColumnCount();
 			importFlag = new boolean[colCount];
 			Object curName = null;
 			
 			if (firstRowAsColumnNames) {
-				setFirstRowAsColumnNames();
+				previewPanel.setFirstRowAsColumnNames();
 				startLoadRow++;
 			}
 	
 			for (int i = 0; i < colCount; i++) {
 				importFlag[i] = true;
-				curName = previewPanel.getPreviewTable().getColumnModel().getColumn(i).getHeaderValue();
+				curName = previewPanel.getSelectedPreviewTable().getColumnModel().getColumn(i).getHeaderValue();
 				
 				if (attrNameList.contains(curName)) {
 					int dupIndex = 0;
@@ -240,7 +251,7 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 					}
 	
 					if (importFlag[i] && importFlag[dupIndex]) {
-	//TODO add message to user
+						// TODO add message to user
 						return;
 					}
 				}
@@ -254,28 +265,26 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 			
 			attributeNames = attrNameList.toArray(new String[0]);
 			
-			final Byte[] test = previewPanel.getDataTypes(previewPanel.getSelectedSheetName());
-	
+			final Byte[] test = previewPanel.getDataTypes(previewPanel.getSelectedTabName());
 			final Byte[] attributeTypes = new Byte[test.length];
 	
 			for (int i = 0; i < test.length; i++) {
 				attributeTypes[i] = test[i];
 			}
 			
-			if(indexColumnSourceInteraction >0)
+			if (indexColumnSourceInteraction > 0)
 				indexColumnSourceInteraction--;
-			
-			if(indexColumnTargetInteraction >0)
+
+			if (indexColumnTargetInteraction > 0)
 				indexColumnTargetInteraction--;
-			
-			if(indexColumnTypeInteraction >0)
+
+			if (indexColumnTypeInteraction > 0)
 				indexColumnTypeInteraction--;
 			
-			
-			ntmp = new NetworkTableMappingParameters(delimiters.getSelectedValues(),delimitersForDataList.getSelectedValue(),attributeNames,attributeTypes,
-					previewPanel.getCurrentListDataTypes(),importFlag,indexColumnSourceInteraction,indexColumnTargetInteraction,indexColumnTypeInteraction,
-					defaultInteraction,startLoadRow,null);
-			
+			ntmp = new NetworkTableMappingParameters(delimiters.getSelectedValues(),
+					delimitersForDataList.getSelectedValue(), attributeNames, attributeTypes,
+					previewPanel.getCurrentListDataTypes(), importFlag, indexColumnSourceInteraction,
+					indexColumnTargetInteraction, indexColumnTypeInteraction, defaultInteraction, startLoadRow, null);
 			
 			if (this.fileType.equalsIgnoreCase(SupportedFileType.EXCEL.getExtension()) ||
 			    this.fileType.equalsIgnoreCase(SupportedFileType.OOXML.getExtension())) {
@@ -296,24 +305,6 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 		}
 	}
 	
-	public void setFirstRowAsColumnNames() {
-		final DefaultTableModel model = (DefaultTableModel) previewPanel.getPreviewTable().getModel();
-		String[] columnHeaders;
-		
-		if ((previewPanel.getPreviewTable() != null) && (model != null)) {
-			columnHeaders = new String[previewPanel.getPreviewTable().getColumnCount()];
-	
-			for (int i = 0; i < columnHeaders.length; i++) {
-				// Save the header
-				columnHeaders[i] = model.getValueAt(0, i).toString();
-				previewPanel.getPreviewTable().getColumnModel().getColumn(i).setHeaderValue(columnHeaders[i]);
-			}
-	
-			model.removeRow(0);
-			
-		}
-	}
-
 	private void loadNetwork(TaskMonitor tm) throws IOException {
 		final CyNetwork network = this.rootNetwork.addSubNetwork(); //CytoscapeServices.cyNetworkFactory.createNetwork();
 		tm.setProgress(0.10);

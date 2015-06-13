@@ -27,16 +27,9 @@ package org.cytoscape.tableimport.internal.ui.theme;
 import javax.swing.ImageIcon;
 
 /**
- * Iconset for Import Dialog GUI.<br>
- *
- * <p>
- *  By sharing these enums among GUIs, we can define Theme for the dialog.
- * </p>
- *
- * @author kono
- *
+ * Icon set for Import Dialog GUI.
  */
-public enum ImportDialogIconSets {
+public enum ImportDialogIcons {
 	STRING_ICON("images/ximian/stock_font-16.png"),
 	INTEGER_ICON("images/ximian/stock_sort-row-ascending-16.png"),
 	FLOAT_ICON("images/ximian/stock_format-scientific-16.png"),
@@ -50,7 +43,7 @@ public enum ImportDialogIconSets {
 
 	private String resourceLoc;
 
-	private ImportDialogIconSets(String resourceLocation) {
+	private ImportDialogIcons(String resourceLocation) {
 		this.resourceLoc = resourceLocation;
 	}
 

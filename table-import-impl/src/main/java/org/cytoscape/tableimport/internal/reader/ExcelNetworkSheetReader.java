@@ -36,7 +36,7 @@ import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.tableimport.internal.util.AttributeTypes;
+import org.cytoscape.tableimport.internal.util.AttributeDataTypes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -112,7 +112,7 @@ public class ExcelNetworkSheetReader extends NetworkTableReader {
 			} else if (cell.getCellType() == Cell.CELL_TYPE_STRING) {
 				cells[i] = cell.getRichStringCellValue().getString();
 			} else if (cell.getCellType() == Cell.CELL_TYPE_NUMERIC) {
-				if (nmp.getAttributeTypes()[i] == AttributeTypes.TYPE_INTEGER) {
+				if (nmp.getAttributeTypes()[i] == AttributeDataTypes.TYPE_INTEGER) {
 					Double dblValue = cell.getNumericCellValue();
 					Integer intValue = dblValue.intValue();
 					cells[i] = intValue.toString();

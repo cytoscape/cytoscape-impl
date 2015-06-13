@@ -32,7 +32,7 @@ import java.util.Map;
 
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.tableimport.internal.util.AttributeTypes;
+import org.cytoscape.tableimport.internal.util.AttributeDataTypes;
 
 
 /**
@@ -69,16 +69,16 @@ public class AttributeLineParser {
 		final Byte typeKey = mapping.getAttributeTypes()[mapping.getKeyIndex()];
 		
 		switch (typeKey) {
-			case AttributeTypes.TYPE_BOOLEAN:
+			case AttributeDataTypes.TYPE_BOOLEAN:
 				primaryKey = Boolean.valueOf(parts[mapping.getKeyIndex()].trim());
 				break;
-			case AttributeTypes.TYPE_INTEGER:
+			case AttributeDataTypes.TYPE_INTEGER:
 				primaryKey = Integer.valueOf(parts[mapping.getKeyIndex()].trim());
 				break;
-			case AttributeTypes.TYPE_FLOATING:
+			case AttributeDataTypes.TYPE_FLOATING:
 				primaryKey = Double.valueOf(parts[mapping.getKeyIndex()].trim());
 				break;
-			case AttributeTypes.TYPE_STRING:
+			case AttributeDataTypes.TYPE_STRING:
 				primaryKey = parts[mapping.getKeyIndex()].trim();
 				break;
 			default:
@@ -111,47 +111,47 @@ public class AttributeLineParser {
 		final Byte type = mapping.getAttributeTypes()[index];
 
 		switch (type) {
-			case AttributeTypes.TYPE_BOOLEAN:
+			case AttributeDataTypes.TYPE_BOOLEAN:
 				
 				try {
-					setAttributeForType(table, AttributeTypes.TYPE_BOOLEAN, key, mapping.getAttributeNames()[index], entry);
+					setAttributeForType(table, AttributeDataTypes.TYPE_BOOLEAN, key, mapping.getAttributeNames()[index], entry);
 				} catch (Exception e) {
 					invalid.put(key.toString(), entry);
 				}
 
 				break;
 
-			case AttributeTypes.TYPE_INTEGER:
+			case AttributeDataTypes.TYPE_INTEGER:
 				
 				try {
-					setAttributeForType(table, AttributeTypes.TYPE_INTEGER, key, mapping.getAttributeNames()[index], entry);
+					setAttributeForType(table, AttributeDataTypes.TYPE_INTEGER, key, mapping.getAttributeNames()[index], entry);
 				} catch (Exception e) {
 					invalid.put(key.toString(), entry);
 				}
 
 				break;
 
-			case AttributeTypes.TYPE_FLOATING:
+			case AttributeDataTypes.TYPE_FLOATING:
 				
 				try {
-					setAttributeForType(table, AttributeTypes.TYPE_FLOATING, key, mapping.getAttributeNames()[index], entry);
+					setAttributeForType(table, AttributeDataTypes.TYPE_FLOATING, key, mapping.getAttributeNames()[index], entry);
 				} catch (Exception e) {
 					invalid.put(key.toString(), entry);
 				}
 
 				break;
 
-			case AttributeTypes.TYPE_STRING:
+			case AttributeDataTypes.TYPE_STRING:
 				
 				try {
-					setAttributeForType(table, AttributeTypes.TYPE_STRING, key, mapping.getAttributeNames()[index], entry);
+					setAttributeForType(table, AttributeDataTypes.TYPE_STRING, key, mapping.getAttributeNames()[index], entry);
 				} catch (Exception e) {
 					invalid.put(key.toString(), entry);
 				}
 
 				break;
 
-			case AttributeTypes.TYPE_SIMPLE_LIST:
+			case AttributeDataTypes.TYPE_SIMPLE_LIST:
 
 				/*
 				 * In case of list, not overwrite the attribute. Get the existing
@@ -167,7 +167,7 @@ public class AttributeLineParser {
 				if (listTypes != null) {
 					listType = listTypes[index];
 				} else {
-					listType = AttributeTypes.TYPE_STRING;
+					listType = AttributeDataTypes.TYPE_STRING;
 				}
 
 				final ArrayList<Object> curList = new ArrayList<>();
@@ -193,11 +193,11 @@ public class AttributeLineParser {
 
 	public static void setAttributeForType(CyTable tbl, byte type, Object key, String attributeName, String val) {
 		if (tbl.getColumn(attributeName) == null) {
-			if (type == AttributeTypes.TYPE_INTEGER)
+			if (type == AttributeDataTypes.TYPE_INTEGER)
 				tbl.createColumn(attributeName, Integer.class, false);
-			else if (type == AttributeTypes.TYPE_BOOLEAN)
+			else if (type == AttributeDataTypes.TYPE_BOOLEAN)
 				tbl.createColumn(attributeName, Boolean.class, false);
-			else if (type == AttributeTypes.TYPE_FLOATING)
+			else if (type == AttributeDataTypes.TYPE_FLOATING)
 				tbl.createColumn(attributeName, Double.class, false);
 			else // type is String
 				tbl.createColumn(attributeName, String.class, false);
@@ -205,11 +205,11 @@ public class AttributeLineParser {
 
 		final CyRow row = tbl.getRow(key);
 
-		if (type == AttributeTypes.TYPE_INTEGER)
+		if (type == AttributeDataTypes.TYPE_INTEGER)
 			row.set(attributeName, new Integer(val));
-		else if (type == AttributeTypes.TYPE_BOOLEAN)
+		else if (type == AttributeDataTypes.TYPE_BOOLEAN)
 			row.set(attributeName, new Boolean(val));
-		else if (type == AttributeTypes.TYPE_FLOATING)
+		else if (type == AttributeDataTypes.TYPE_FLOATING)
 			row.set(attributeName, (new Double(val)));
 		else // type is String
 			row.set(attributeName, new String(val));
@@ -217,13 +217,13 @@ public class AttributeLineParser {
 
 	public static void setListAttribute(CyTable tbl, byte type, Object key, String attributeName, final ArrayList<?> elmsBuff) {
 		if (tbl.getColumn(attributeName) == null) {
-			if (type == AttributeTypes.TYPE_INTEGER)
+			if (type == AttributeDataTypes.TYPE_INTEGER)
 				tbl.createListColumn(attributeName, Integer.class, false);
-			else if (type == AttributeTypes.TYPE_BOOLEAN)
+			else if (type == AttributeDataTypes.TYPE_BOOLEAN)
 				tbl.createListColumn(attributeName, Boolean.class, false);
-			else if (type == AttributeTypes.TYPE_FLOATING)
+			else if (type == AttributeDataTypes.TYPE_FLOATING)
 				tbl.createListColumn(attributeName, Double.class, false);
-			else if (type == AttributeTypes.TYPE_STRING)
+			else if (type == AttributeDataTypes.TYPE_STRING)
 				tbl.createListColumn(attributeName, String.class, false);
 		}
 		
@@ -255,22 +255,22 @@ public class AttributeLineParser {
 
 		for (String listItem : parts) {
 			switch (dataType) {
-				case AttributeTypes.TYPE_BOOLEAN:
+				case AttributeDataTypes.TYPE_BOOLEAN:
 					listAttr.add(Boolean.parseBoolean(listItem.trim()));
 
 					break;
 
-				case AttributeTypes.TYPE_INTEGER:
+				case AttributeDataTypes.TYPE_INTEGER:
 					listAttr.add(Integer.parseInt(listItem.trim()));
 
 					break;
 
-				case AttributeTypes.TYPE_FLOATING:
+				case AttributeDataTypes.TYPE_FLOATING:
 					listAttr.add(Double.parseDouble(listItem.trim()));
 
 					break;
 
-				case AttributeTypes.TYPE_STRING:
+				case AttributeDataTypes.TYPE_STRING:
 					listAttr.add(listItem.trim());
 
 					break;
