@@ -42,7 +42,7 @@ import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.io.read.InputStreamTaskFactory;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.tableimport.internal.ui.ImportTablePanel;
-import org.cytoscape.tableimport.internal.ui.ImportType;
+import org.cytoscape.tableimport.internal.util.ImportType;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

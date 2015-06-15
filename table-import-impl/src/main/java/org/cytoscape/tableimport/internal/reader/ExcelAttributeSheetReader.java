@@ -33,7 +33,7 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.cytoscape.tableimport.internal.util.AttributeDataTypes;
+import org.cytoscape.tableimport.internal.util.AttributeDataType;
 import org.cytoscape.model.CyTable;
 
 /**
@@ -116,7 +116,7 @@ public class ExcelAttributeSheetReader implements TextTableReader {
 			} else if (cell.getCellType() == Cell.CELL_TYPE_STRING) {
 				cells[i] = cell.getRichStringCellValue().getString();
 			} else if (cell.getCellType() == Cell.CELL_TYPE_NUMERIC) {
-				if (mapping.getAttributeTypes()[i] == AttributeDataTypes.TYPE_INTEGER) {
+				if (mapping.getAttributeTypes()[i] == AttributeDataType.TYPE_INTEGER) {
 					Double dblValue = cell.getNumericCellValue();
 					Integer intValue = dblValue.intValue();
 					cells[i] = intValue.toString();

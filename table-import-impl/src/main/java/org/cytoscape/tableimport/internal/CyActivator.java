@@ -43,7 +43,7 @@ import org.cytoscape.tableimport.internal.reader.ontology.OBONetworkReaderFactor
 import org.cytoscape.tableimport.internal.task.ImportOntologyAndAnnotationAction;
 import org.cytoscape.tableimport.internal.tunable.AttributeMappingParametersHandlerFactory;
 import org.cytoscape.tableimport.internal.tunable.NetworkTableMappingParametersHandlerFactory;
-import org.cytoscape.tableimport.internal.ui.ImportType;
+import org.cytoscape.tableimport.internal.util.ImportType;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.swing.GUITunableHandlerFactory;
 import org.osgi.framework.BundleContext;

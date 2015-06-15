@@ -1,4 +1,4 @@
-package org.cytoscape.tableimport.internal.ui;
+package org.cytoscape.tableimport.internal.util;
 
 /*
  * #%L

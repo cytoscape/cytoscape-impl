@@ -30,16 +30,18 @@ import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static javax.swing.GroupLayout.Alignment.CENTER;
 import static javax.swing.GroupLayout.Alignment.LEADING;
 import static javax.swing.LayoutStyle.ComponentPlacement.UNRELATED;
-import static org.cytoscape.tableimport.internal.ui.ImportType.NETWORK_IMPORT;
-import static org.cytoscape.tableimport.internal.ui.ImportType.ONTOLOGY_IMPORT;
-import static org.cytoscape.tableimport.internal.ui.ImportType.TABLE_IMPORT;
-import static org.cytoscape.tableimport.internal.ui.theme.SourceColumnSemantic.ALIAS;
-import static org.cytoscape.tableimport.internal.ui.theme.SourceColumnSemantic.ATTR;
-import static org.cytoscape.tableimport.internal.ui.theme.SourceColumnSemantic.KEY;
-import static org.cytoscape.tableimport.internal.ui.theme.SourceColumnSemantic.NONE;
-import static org.cytoscape.tableimport.internal.ui.theme.SourceColumnSemantic.ONTOLOGY;
-import static org.cytoscape.tableimport.internal.ui.theme.SourceColumnSemantic.TAXON;
-import static org.cytoscape.tableimport.internal.util.AttributeDataTypes.*;
+import static org.cytoscape.tableimport.internal.util.AttributeDataType.TYPE_BOOLEAN;
+import static org.cytoscape.tableimport.internal.util.AttributeDataType.TYPE_FLOATING;
+import static org.cytoscape.tableimport.internal.util.AttributeDataType.TYPE_INTEGER;
+import static org.cytoscape.tableimport.internal.util.ImportType.NETWORK_IMPORT;
+import static org.cytoscape.tableimport.internal.util.ImportType.ONTOLOGY_IMPORT;
+import static org.cytoscape.tableimport.internal.util.ImportType.TABLE_IMPORT;
+import static org.cytoscape.tableimport.internal.util.SourceColumnSemantic.ALIAS;
+import static org.cytoscape.tableimport.internal.util.SourceColumnSemantic.ATTR;
+import static org.cytoscape.tableimport.internal.util.SourceColumnSemantic.KEY;
+import static org.cytoscape.tableimport.internal.util.SourceColumnSemantic.NONE;
+import static org.cytoscape.tableimport.internal.util.SourceColumnSemantic.ONTOLOGY;
+import static org.cytoscape.tableimport.internal.util.SourceColumnSemantic.TAXON;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -113,7 +115,11 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.cytoscape.tableimport.internal.reader.SupportedFileType;
 import org.cytoscape.tableimport.internal.reader.TextFileDelimiters;
-import org.cytoscape.tableimport.internal.ui.theme.SourceColumnSemantic;
+import org.cytoscape.tableimport.internal.util.AttributeDataType;
+import org.cytoscape.tableimport.internal.util.FileType;
+import org.cytoscape.tableimport.internal.util.ImportType;
+import org.cytoscape.tableimport.internal.util.SourceColumnSemantic;
+import org.cytoscape.tableimport.internal.util.TypeUtil;
 import org.cytoscape.tableimport.internal.util.URLUtil;
 import org.cytoscape.util.swing.ColumnResizer;
 import org.cytoscape.util.swing.IconManager;
@@ -138,8 +144,7 @@ public class PreviewTablePanel extends JPanel {
 
 	// Tracking attribute data type.
 	private Map<String, SourceColumnSemantic[]> typeMap;
-	private Map<String, Byte[]> dataTypeMap;
-	private Map<String, Byte[]> listDataTypeMap;
+	private Map<String, AttributeDataType[]> dataTypeMap;
 	
 	private Set<?> keySet;
 
@@ -186,7 +191,6 @@ public class PreviewTablePanel extends JPanel {
 
 		typeMap = new HashMap<>();
 		dataTypeMap = new HashMap<>();
-		listDataTypeMap = new HashMap<>();
 
 		initComponents();
 	}
@@ -417,16 +421,16 @@ public class PreviewTablePanel extends JPanel {
 		}
 	}
 	
-	public Byte[] getDataTypes(final String tabName) {
+	public AttributeDataType[] getDataTypes(final String tabName) {
 		return dataTypeMap.get(tabName);
 	}
 	
-	public Byte[] getCurrentDataTypes() {
+	public AttributeDataType[] getCurrentDataTypes() {
 		return getDataTypes(getSelectedTabName());
 	}
 
-	public Byte getDataType(final String tabName, final int index) {
-		final Byte[] dataTypes = getDataTypes(tabName);
+	public AttributeDataType getDataType(final String tabName, final int index) {
+		final AttributeDataType[] dataTypes = getDataTypes(tabName);
 		
 		if (dataTypes != null && dataTypes.length > index)
 			return dataTypes[index];
@@ -434,11 +438,11 @@ public class PreviewTablePanel extends JPanel {
 		return null;
 	}
 	
-	public void setDataType(final String tabName, final int index, final Byte newValue) {
+	public void setDataType(final String tabName, final int index, final AttributeDataType newValue) {
 		if (index < 0)
 			return;
 		
-		final Byte[] dataTypes = getDataTypes(tabName);
+		final AttributeDataType[] dataTypes = getDataTypes(tabName);
 		
 		if (dataTypes != null && dataTypes.length > index && dataTypes[index] != newValue) {
 			dataTypes[index] = newValue;
@@ -446,26 +450,6 @@ public class PreviewTablePanel extends JPanel {
 		}
 	}
 	
-	public Byte[] getListDataTypes(final String tabName) {
-		return listDataTypeMap.get(tabName);
-	}
-	
-	public Byte[] getCurrentListDataTypes() {
-		return getListDataTypes(getSelectedTabName());
-	}
-	
-	public void setListDataType(final String tabName, final int index, final Byte newValue) {
-		if (index < 0)
-			return;
-		
-		final Byte[] listDataTypes = getListDataTypes(tabName);
-		
-		if (listDataTypes != null && listDataTypes.length > index && listDataTypes[index] != newValue) {
-			listDataTypes[index] = newValue;
-			changes.firePropertyChange(ImportTablePanel.LIST_DATA_TYPE_CHANGED, null, listDataTypes);
-		}
-	}
-
 	public FileType getFileType() {
 		final String sheetName = getSheetName(previewTabbedPane.getSelectedIndex());
 
@@ -539,7 +523,6 @@ public class PreviewTablePanel extends JPanel {
 				
 				typeMap.put(sheetName, TypeUtil.guessTypes(importType, newModel));
 				dataTypeMap.put(sheetName, TypeUtil.guessDataTypes(newModel));
-				listDataTypeMap.put(sheetName, new Byte[newModel.getColumnCount()]);
 				addTableTab(newModel, sheetName, curRenderer);
 			}
 		}
@@ -557,7 +540,6 @@ public class PreviewTablePanel extends JPanel {
 			
 			typeMap.put(tabName, TypeUtil.guessTypes(importType, newModel));
 			dataTypeMap.put(tabName, TypeUtil.guessDataTypes(newModel));
-			listDataTypeMap.put(tabName, new Byte[newModel.getColumnCount()]);
 			addTableTab(newModel, tabName, curRenderer);
 		}
 
@@ -967,7 +949,7 @@ public class PreviewTablePanel extends JPanel {
 			final Window parent = SwingUtilities.getWindowAncestor(PreviewTablePanel.this);
 			
 			final SourceColumnSemantic[] types = getCurrentTypes();
-			final Byte[] dataTypes = getCurrentDataTypes();
+			final AttributeDataType[] dataTypes = getCurrentDataTypes();
 
 			/*
 			 * Right click: This action pops up an dialog to edit the attribute type and name.
@@ -1065,20 +1047,17 @@ public class PreviewTablePanel extends JPanel {
 			
 			final String name = attrEditorPanel.getName();
 			final SourceColumnSemantic newType = attrEditorPanel.getType();
-			final byte newDataType = attrEditorPanel.getDataType();
-			final byte newListDataType = attrEditorPanel.getListDataType();
+			final AttributeDataType newDataType = attrEditorPanel.getDataType();
 
 			if (name != null) {
 				column.setHeaderValue(name);
 				hd.resizeAndRepaint();
 
-				if (newDataType == TYPE_SIMPLE_LIST) {
+				if (newDataType.isList()) {
 					listDelimiter = attrEditorPanel.getListDelimiterType();
 
 					changes.firePropertyChange(ImportTablePanel.LIST_DELIMITER_CHANGED, null,
 							attrEditorPanel.getListDelimiterType());
-
-					setListDataType(tabName, colIdx, newListDataType);
 				}
 
 				final Vector<Object> colNamePair = new Vector<>();
@@ -1300,7 +1279,7 @@ public class PreviewTablePanel extends JPanel {
 			else
 				setForeground(UIManager.getColor("Label.disabledForeground"));
 			
-			final Byte dataType = getDataType(table.getName(), column);
+			final AttributeDataType dataType = getDataType(table.getName(), column);
 			
 			if (dataType == TYPE_INTEGER || dataType == TYPE_FLOATING)
 				setHorizontalAlignment(JLabel.RIGHT);

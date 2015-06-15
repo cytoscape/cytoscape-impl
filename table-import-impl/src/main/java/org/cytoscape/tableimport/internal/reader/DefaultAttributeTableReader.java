@@ -35,6 +35,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.cytoscape.model.CyTable;
+import org.cytoscape.tableimport.internal.util.AttributeDataType;
 import org.cytoscape.tableimport.internal.util.URLUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -67,50 +68,42 @@ public class DefaultAttributeTableReader implements TextTableReader {
 
 	/** Reader will read entries from this line. */
 	private final int startLineNumber;
-	private String commentChar = null;
+	private String commentChar;
 	
+	private InputStream is;
 	
-	private InputStream is = null;
-	
-	public DefaultAttributeTableReader(final URL source, final ObjectType objectType,
-	                                   final List<String> delimiters) throws Exception {
+	public DefaultAttributeTableReader(final URL source, final ObjectType objectType, final List<String> delimiters)
+			throws Exception {
 		this(source, objectType, delimiters, null, DEF_KEY_COLUMN, null, null, null, null, null, 0);
 	}
 
-	public DefaultAttributeTableReader(final URL source, final ObjectType objectType,
-	                                   final List<String> delimiters, final int key,
-	                                   final String[] columnNames) throws Exception {
-		this(source, objectType, delimiters, null, DEF_KEY_COLUMN, null, null, columnNames, null,
-		     null, 0);
+	public DefaultAttributeTableReader(
+			final URL source,
+			final ObjectType objectType,
+			final List<String> delimiters,
+			final int key,
+			final String[] columnNames
+	) throws Exception {
+		this(source, objectType, delimiters, null, DEF_KEY_COLUMN, null, null, columnNames, null, null, 0);
 	}
 
-	/**
-	 * Constructor with full options.<br>
-	 *
-	 * @param source Source file URL (can be remote or local)
-	 * @param objectType
-	 * @param delimiters
-	 * @param listDelimiter
-	 * @param keyIndex
-	 * @param mappingAttribute
-	 * @param aliasIndexList
-	 * @param attributeNames
-	 * @param attributeTypes
-	 * @param importFlag
-	 * @param startLineNumber
-	 * @throws Exception
-	 */
-	public DefaultAttributeTableReader(final URL source, final ObjectType objectType,
-	                                   final List<String> delimiters, final String listDelimiter,
-	                                   final int keyIndex, final String mappingAttribute,
-	                                   final List<Integer> aliasIndexList,
-	                                   final String[] attributeNames, final Byte[] attributeTypes,
-	                                   final boolean[] importFlag, final int startLineNumber)
-	    throws Exception {
+	public DefaultAttributeTableReader(
+			final URL source,
+			final ObjectType objectType,
+			final List<String> delimiters,
+			final String listDelimiter,
+			final int keyIndex,
+			final String mappingAttribute,
+			final List<Integer> aliasIndexList,
+			final String[] attributeNames,
+			final AttributeDataType[] attributeTypes,
+			final boolean[] importFlag,
+			final int startLineNumber
+	) throws Exception {
 		this.source = source;
 		this.startLineNumber = startLineNumber;
 		this.mapping = new AttributeMappingParameters(delimiters, listDelimiter, keyIndex, attributeNames,
-				attributeTypes, null, importFlag);
+				attributeTypes, importFlag);
 		this.parser = new AttributeLineParser(mapping);
 	}
 

@@ -1,4 +1,4 @@
-package org.cytoscape.tableimport.internal.ui;
+package org.cytoscape.tableimport.internal.util;
 
 /*
  * #%L
@@ -24,7 +24,7 @@ package org.cytoscape.tableimport.internal.ui;
  * #L%
  */
 
-enum FileType {
+public enum FileType {
 	ATTRIBUTE_FILE,
 	NETWORK_FILE,
 	GENE_ASSOCIATION_FILE,

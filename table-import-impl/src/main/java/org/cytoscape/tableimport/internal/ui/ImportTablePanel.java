@@ -36,23 +36,18 @@ import static org.cytoscape.tableimport.internal.reader.TextTableReader.ObjectTy
 import static org.cytoscape.tableimport.internal.reader.TextTableReader.ObjectType.NODE;
 import static org.cytoscape.tableimport.internal.reader.ontology.GeneAssociationTag.DB_OBJECT_SYNONYM;
 import static org.cytoscape.tableimport.internal.reader.ontology.GeneAssociationTag.TAXON;
-import static org.cytoscape.tableimport.internal.ui.ImportType.NETWORK_IMPORT;
-import static org.cytoscape.tableimport.internal.ui.ImportType.ONTOLOGY_IMPORT;
-import static org.cytoscape.tableimport.internal.ui.ImportType.TABLE_IMPORT;
-import static org.cytoscape.tableimport.internal.ui.theme.ImportDialogIcons.BOOLEAN_ICON;
-import static org.cytoscape.tableimport.internal.ui.theme.ImportDialogIcons.FLOAT_ICON;
 import static org.cytoscape.tableimport.internal.ui.theme.ImportDialogIcons.ID_ICON;
-import static org.cytoscape.tableimport.internal.ui.theme.ImportDialogIcons.INT_ICON;
-import static org.cytoscape.tableimport.internal.ui.theme.ImportDialogIcons.LIST_ICON;
-import static org.cytoscape.tableimport.internal.ui.theme.ImportDialogIcons.STRING_ICON;
-import static org.cytoscape.tableimport.internal.ui.theme.SourceColumnSemantic.ATTR;
-import static org.cytoscape.tableimport.internal.ui.theme.SourceColumnSemantic.INTERACTION;
-import static org.cytoscape.tableimport.internal.ui.theme.SourceColumnSemantic.KEY;
-import static org.cytoscape.tableimport.internal.ui.theme.SourceColumnSemantic.NONE;
-import static org.cytoscape.tableimport.internal.ui.theme.SourceColumnSemantic.SOURCE;
-import static org.cytoscape.tableimport.internal.ui.theme.SourceColumnSemantic.SOURCE_ATTR;
-import static org.cytoscape.tableimport.internal.ui.theme.SourceColumnSemantic.TARGET;
-import static org.cytoscape.tableimport.internal.ui.theme.SourceColumnSemantic.TARGET_ATTR;
+import static org.cytoscape.tableimport.internal.util.ImportType.NETWORK_IMPORT;
+import static org.cytoscape.tableimport.internal.util.ImportType.ONTOLOGY_IMPORT;
+import static org.cytoscape.tableimport.internal.util.ImportType.TABLE_IMPORT;
+import static org.cytoscape.tableimport.internal.util.SourceColumnSemantic.ATTR;
+import static org.cytoscape.tableimport.internal.util.SourceColumnSemantic.INTERACTION;
+import static org.cytoscape.tableimport.internal.util.SourceColumnSemantic.KEY;
+import static org.cytoscape.tableimport.internal.util.SourceColumnSemantic.NONE;
+import static org.cytoscape.tableimport.internal.util.SourceColumnSemantic.SOURCE;
+import static org.cytoscape.tableimport.internal.util.SourceColumnSemantic.SOURCE_ATTR;
+import static org.cytoscape.tableimport.internal.util.SourceColumnSemantic.TARGET;
+import static org.cytoscape.tableimport.internal.util.SourceColumnSemantic.TARGET_ATTR;
 
 import java.awt.Component;
 import java.awt.Dialog.ModalityType;
@@ -89,7 +84,6 @@ import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.GroupLayout.ParallelGroup;
 import javax.swing.GroupLayout.SequentialGroup;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
@@ -130,8 +124,10 @@ import org.cytoscape.tableimport.internal.reader.NetworkTableMappingParameters;
 import org.cytoscape.tableimport.internal.reader.SupportedFileType;
 import org.cytoscape.tableimport.internal.reader.TextFileDelimiters;
 import org.cytoscape.tableimport.internal.reader.TextTableReader.ObjectType;
-import org.cytoscape.tableimport.internal.ui.theme.SourceColumnSemantic;
-import org.cytoscape.tableimport.internal.util.AttributeDataTypes;
+import org.cytoscape.tableimport.internal.util.AttributeDataType;
+import org.cytoscape.tableimport.internal.util.FileType;
+import org.cytoscape.tableimport.internal.util.ImportType;
+import org.cytoscape.tableimport.internal.util.SourceColumnSemantic;
 import org.cytoscape.tableimport.internal.util.URLUtil;
 import org.cytoscape.util.swing.ColumnResizer;
 import org.cytoscape.util.swing.IconManager;
@@ -158,7 +154,6 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener {
 	 * Signals used among Swing components in this dialog:
 	 */
 	public static final String LIST_DELIMITER_CHANGED = "listDelimiterChanged";
-	public static final String LIST_DATA_TYPE_CHANGED = "listDataTypeChanged";
 	public static final String ATTR_DATA_TYPE_CHANGED = "attrDataTypeChanged";
 	public static final String ATTRIBUTE_NAME_CHANGED = "aliasTableChanged";
 	public static final String SHEET_CHANGED = "sheetChanged";
@@ -223,12 +218,7 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener {
 	protected Map<String, String> ontologyUrlMap;
 	protected Map<String, String> ontologyTypeMap;
 	protected Map<String, String> ontologyDescriptionMap;
-	private List<Byte> attributeDataTypes;
-
-	/*
-	 * This is for storing data type in the list object.
-	 */
-	private Byte[] listDataTypes;
+	private List<AttributeDataType> attributeDataTypes;
 
 	/*
 	 * Tracking multiple sheets.
@@ -309,7 +299,7 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener {
 		ontologyDescriptionMap = new HashMap<>();
 		ontologyTypeMap = new HashMap<>();
 
-		attributeDataTypes = new ArrayList<Byte>();
+		attributeDataTypes = new ArrayList<>();
 
 		initComponents();
 
@@ -364,13 +354,11 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener {
 			 * List delimiter has been changed by preview table GUI.
 			 */
 			listDelimiter = evt.getNewValue().toString();
-		} else if (evt.getPropertyName().equals(LIST_DATA_TYPE_CHANGED)) {
-			listDataTypes = (Byte[]) evt.getNewValue();
 		} else if (evt.getPropertyName().equals(ATTR_DATA_TYPE_CHANGED)) {
 			/*
 			 * Data type of an attribute has been changed.
 			 */
-			final Byte[] dataTypes = (Byte[]) evt.getNewValue();
+			final AttributeDataType[] dataTypes = (AttributeDataType[]) evt.getNewValue();
 
 			if (dataTypes != null && dataTypes.length > attributeDataTypes.size())
 				attributeDataTypes = Arrays.asList(dataTypes);
@@ -1190,24 +1178,6 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener {
 			parent.pack();
 	}
 
-	protected static ImageIcon getDataTypeIcon(Byte dataType) {
-		ImageIcon dataTypeIcon = null;
-
-		if (dataType == AttributeDataTypes.TYPE_STRING) {
-			dataTypeIcon = STRING_ICON.getIcon();
-		} else if (dataType == AttributeDataTypes.TYPE_INTEGER) {
-			dataTypeIcon = INT_ICON.getIcon();
-		} else if (dataType == AttributeDataTypes.TYPE_FLOATING) {
-			dataTypeIcon = FLOAT_ICON.getIcon();
-		} else if (dataType == AttributeDataTypes.TYPE_BOOLEAN) {
-			dataTypeIcon = BOOLEAN_ICON.getIcon();
-		} else if (dataType == AttributeDataTypes.TYPE_SIMPLE_LIST) {
-			dataTypeIcon = LIST_ICON.getIcon();
-		}
-
-		return dataTypeIcon;
-	}
-
 	private void setRadioButtonGroup() {
 		attrTypeButtonGroup.add(nodeRadioButton);
 		attrTypeButtonGroup.add(edgeRadioButton);
@@ -1264,8 +1234,6 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener {
 			importFlag[i] = true;
 		}
 
-		listDataTypes = getPreviewPanel().getCurrentListDataTypes();
-
 		for (int i = 0; i < getPreviewPanel().getTableCount(); i++) {
 			if (getPreviewPanel().getFileType() == FileType.GENE_ASSOCIATION_FILE) {
 				TableModel previewModel = getPreviewPanel().getPreviewTable(i).getModel();
@@ -1283,8 +1251,8 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener {
 //				ontologyInAnnotationComboBox.setSelectedIndex(GO_ID.getPosition());
 
 			attributeRadioButtonActionPerformed(null);
-
 			Window parent = SwingUtilities.getWindowAncestor(this);
+			
 			if (parent != null)
 				parent.pack();
 		}
@@ -1349,8 +1317,6 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener {
 		final int colSize = getPreviewPanel().getSelectedPreviewTable().getColumnCount();
 		importFlag = new boolean[colSize];
 		Arrays.fill(importFlag, true);
-
-		listDataTypes = getPreviewPanel().getCurrentListDataTypes();
 
 		if (dialogType == NETWORK_IMPORT) {
 			if (fileType.equalsIgnoreCase(SupportedFileType.EXCEL.getExtension())
@@ -1768,13 +1734,11 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener {
 
 		attributeNames = attrNameList.toArray(new String[0]);
 
-		final Byte[] test = getPreviewPanel().getDataTypes(getPreviewPanel().getSelectedTabName());
+		final AttributeDataType[] test = getPreviewPanel().getDataTypes(getPreviewPanel().getSelectedTabName());
+		final AttributeDataType[] attributeTypes = new AttributeDataType[test.length];
 
-		final Byte[] attributeTypes = new Byte[test.length];
-
-		for (int i = 0; i < test.length; i++) {
+		for (int i = 0; i < test.length; i++)
 			attributeTypes[i] = test[i];
-		}
 
 		int startLineNumber = getStartLineNumber();
 		String commentChar = null;
@@ -1785,7 +1749,7 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener {
 		// Build mapping parameter object.
 		final List<String> del = checkDelimiter();
 		final AttributeMappingParameters mapping = new AttributeMappingParameters(del, listDelimiter, keyInFile,
-				attributeNames, attributeTypes, listDataTypes, importFlag, startLineNumber, commentChar);
+				attributeNames, attributeTypes, importFlag, startLineNumber, commentChar);
 
 		return mapping;
 	}
@@ -1845,12 +1809,11 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener {
 
 		final String tabName = getPreviewPanel().getSelectedTabName();
 		
-		final Byte[] test = getPreviewPanel().getDataTypes(tabName);
-		final Byte[] attributeTypes = new Byte[test.length];
+		final AttributeDataType[] test = getPreviewPanel().getDataTypes(tabName);
+		final AttributeDataType[] attributeTypes = new AttributeDataType[test.length];
 
-		for (int i = 0; i < test.length; i++) {
+		for (int i = 0; i < test.length; i++)
 			attributeTypes[i] = test[i];
-		}
 
 		int startLineNumber = getStartLineNumber();
 
@@ -1868,10 +1831,9 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener {
 
 		// Build mapping parameter object.
 		final List<String> del = checkDelimiter();
-		NetworkTableMappingParameters mapping = new NetworkTableMappingParameters(
-				del, listDelimiter, attributeNames, attributeTypes, listDataTypes,
-				importFlag, sourceColumnIndex, targetColumnIndex, interactionColumnIndex, defaultInteraction,
-				startLineNumber, commentChar);
+		NetworkTableMappingParameters mapping = new NetworkTableMappingParameters(del, listDelimiter, attributeNames,
+				attributeTypes, importFlag, sourceColumnIndex, targetColumnIndex, interactionColumnIndex,
+				defaultInteraction, startLineNumber, commentChar);
 
 		return mapping;
 	}

@@ -28,25 +28,15 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 
-import org.cytoscape.tableimport.internal.util.AttributeDataTypes;
+import org.cytoscape.tableimport.internal.util.AttributeDataType;
 
 /**
- * Parameter object for text table <---> CyAttributes mapping.<br>
- * <p>
- *  This object will be used by all attribute readers.
- * </p>
- *
- * @since Cytoscape 2.4
- * @version 0.9
- * @author Keiichiro Ono
+ * Parameter object for text table <---> CyAttributes mapping.
+ * This object will be used by all attribute readers.
  */
 public class AttributeMappingParameters extends AbstractMappingParameters {
 
-	private String[] attributeNames;
-	private Byte[] attributeTypes;
-	private Byte[] listAttributeTypes;
 	private final int keyIndex;
-	private boolean[] importFlag;
 	
 	public AttributeMappingParameters(InputStream is, String fileType) {
 		super(is, fileType);
@@ -59,12 +49,10 @@ public class AttributeMappingParameters extends AbstractMappingParameters {
 			final String listDelimiter,
 			final int keyIndex,
 			final String[] attrNames,
-	        Byte[] attributeTypes,
-	        Byte[] listAttributeTypes,
+			AttributeDataType[] attributeTypes,
 	        boolean[] importFlag
 	) throws Exception {
-		this(delimiters, listDelimiter, keyIndex, attrNames, attributeTypes, listAttributeTypes, importFlag, 
-				0, null);
+		this(delimiters, listDelimiter, keyIndex, attrNames, attributeTypes, importFlag, 0, null);
 	}
 	
 	public AttributeMappingParameters(
@@ -72,14 +60,12 @@ public class AttributeMappingParameters extends AbstractMappingParameters {
             final String listDelimiter,
             final int keyIndex,
             final String[] attrNames,
-            Byte[] attributeTypes,
-            Byte[] listAttributeTypes,
+            AttributeDataType[] attributeTypes,
             boolean[] importFlag,
             int startNumber,
             String commentChar
     ) throws Exception {
-		super(delimiters, listDelimiter, attrNames, attributeTypes, listAttributeTypes, importFlag, startNumber,
-				commentChar);
+		super(delimiters, listDelimiter, attrNames, attributeTypes, importFlag, startNumber, commentChar);
 		
 		if (attrNames == null)
 			throw new Exception("attributeNames should not be null.");
@@ -88,23 +74,19 @@ public class AttributeMappingParameters extends AbstractMappingParameters {
 		 * Error check: Key column number should be smaller than actual number
 		 * of columns in the text table.
 		 */
-		if (attrNames.length < keyIndex) {
+		if (attrNames.length < keyIndex)
 			throw new IOException("Key is out of range.");
-		}
 		
-		this.listAttributeTypes = listAttributeTypes;
-
 		this.keyIndex = keyIndex;
-		this.attributeNames = attrNames;
 		
 		/*
 		 * If not specified, import everything as String attributes.
 		 */
 		if (attributeTypes == null) {
-			this.attributeTypes = new Byte[attrNames.length];
+			this.attributeTypes = new AttributeDataType[attrNames.length];
 
 			for (int i = 0; i < attrNames.length; i++) {
-				this.attributeTypes[i] = AttributeDataTypes.TYPE_STRING;
+				this.attributeTypes[i] = AttributeDataType.TYPE_STRING;
 			}
 		} else {
 			this.attributeTypes = attributeTypes;
@@ -124,21 +106,6 @@ public class AttributeMappingParameters extends AbstractMappingParameters {
 		}
 	}
 	
-	@Override
-	public String[] getAttributeNames() {
-		return attributeNames;
-	}
-
-	@Override
-	public Byte[] getAttributeTypes() {
-		return attributeTypes;
-	}
-
-	@Override
-	public Byte[] getListAttributeTypes() {
-		return listAttributeTypes;
-	}
-
 	public int getKeyIndex() {
 		return keyIndex;
 	}

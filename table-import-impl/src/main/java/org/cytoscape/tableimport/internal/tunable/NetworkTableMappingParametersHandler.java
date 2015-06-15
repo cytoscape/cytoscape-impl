@@ -34,7 +34,7 @@ import javax.swing.JPanel;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.tableimport.internal.reader.NetworkTableMappingParameters;
 import org.cytoscape.tableimport.internal.ui.ImportTablePanel;
-import org.cytoscape.tableimport.internal.ui.ImportType;
+import org.cytoscape.tableimport.internal.util.ImportType;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.swing.AbstractGUITunableHandler;
 

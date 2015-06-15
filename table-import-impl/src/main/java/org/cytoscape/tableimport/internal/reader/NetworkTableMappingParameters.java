@@ -27,6 +27,8 @@ package org.cytoscape.tableimport.internal.reader;
 import java.io.InputStream;
 import java.util.List;
 
+import org.cytoscape.tableimport.internal.util.AttributeDataType;
+
 /**
  * Text table <---> CyAttribute & CyNetwork mapping parameters for network table.
  */
@@ -46,8 +48,7 @@ public class NetworkTableMappingParameters extends AbstractMappingParameters {
 			List<String> delimiters,
 			String listDelimiter,
 			String[] attributeNames,
-			Byte[] attributeTypes,
-			Byte[] listAttributeTypes,
+			AttributeDataType[] attributeTypes,
 			boolean[] importFlag,
 			Integer source,
 			Integer target,
@@ -56,7 +57,7 @@ public class NetworkTableMappingParameters extends AbstractMappingParameters {
 			int startNumber,
 			String commentChar
 	) throws Exception {
-		super(delimiters, listDelimiter,attributeNames , attributeTypes, listAttributeTypes, importFlag, startNumber, commentChar);
+		super(delimiters, listDelimiter, attributeNames , attributeTypes, importFlag, startNumber, commentChar);
 
 		this.source = source;
 		this.target = target;

@@ -47,6 +47,7 @@ import org.cytoscape.tableimport.internal.reader.SupportedFileType;
 import org.cytoscape.tableimport.internal.reader.TextFileDelimiters;
 import org.cytoscape.tableimport.internal.reader.TextTableReader;
 import org.cytoscape.tableimport.internal.ui.PreviewTablePanel;
+import org.cytoscape.tableimport.internal.util.AttributeDataType;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.vizmap.VisualStyle;
@@ -242,8 +243,8 @@ public class LoadTableReaderTask extends AbstractTask implements CyTableReader, 
 		}
 		attributeNames = attrNameList.toArray(new String[0]);
 		
-		final Byte[] test = previewPanel.getDataTypes(previewPanel.getSelectedTabName());
-		final Byte[] attributeTypes = new Byte[test.length];
+		final AttributeDataType[] test = previewPanel.getDataTypes(previewPanel.getSelectedTabName());
+		final AttributeDataType[] attributeTypes = new AttributeDataType[test.length];
 
 		for (int i = 0; i < test.length; i++)
 			attributeTypes[i] = test[i];
@@ -252,8 +253,7 @@ public class LoadTableReaderTask extends AbstractTask implements CyTableReader, 
 			keyColumnIndex--;
 
 		amp = new AttributeMappingParameters(delimiters.getSelectedValues(), delimitersForDataList.getSelectedValue(),
-				keyColumnIndex, attributeNames, attributeTypes, previewPanel.getCurrentListDataTypes(), importFlag,
-				startLoadRow, null);
+				keyColumnIndex, attributeNames, attributeTypes, importFlag, startLoadRow, null);
 		
 		if (this.fileType.equalsIgnoreCase(SupportedFileType.EXCEL.getExtension()) ||
 		    this.fileType.equalsIgnoreCase(SupportedFileType.OOXML.getExtension())) {

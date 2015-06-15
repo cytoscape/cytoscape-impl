@@ -32,19 +32,19 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.cytoscape.tableimport.internal.util.AttributeDataTypes;
+import org.cytoscape.tableimport.internal.util.AttributeDataType;
 
 public abstract class AbstractMappingParameters implements MappingParameter{
 	
 	public static final String ID = "name";
 	private static final String DEF_LIST_DELIMITER = PIPE.toString();
 	private static final String DEF_DELIMITER = TAB.toString();
-	private String[] attributeNames;
-	private Byte[] attributeTypes;
-	private Byte[] listAttributeTypes;
-	private List<String> delimiters;
-	private String listDelimiter;
-	private boolean[] importFlag;
+	
+	protected String[] attributeNames;
+	protected AttributeDataType[] attributeTypes;
+	protected List<String> delimiters;
+	protected String listDelimiter;
+	protected boolean[] importFlag;
 	
 	private Map<String, List<String>> attr2id;
 	private Map<String, String> networkTitle2ID;
@@ -56,7 +56,7 @@ public abstract class AbstractMappingParameters implements MappingParameter{
 	public InputStream is;
 	public String fileType;
 	
-	public AbstractMappingParameters(InputStream is, String fileType) {
+	public AbstractMappingParameters(final InputStream is, final String fileType) {
 		this.delimiters = new ArrayList<String>();
 		this.delimiters.add(DEF_DELIMITER);
 		this.listDelimiter = DEF_DELIMITER;
@@ -64,56 +64,37 @@ public abstract class AbstractMappingParameters implements MappingParameter{
 		this.fileType = fileType;
 	}
 
-	public AbstractMappingParameters( final List<String> delimiters,
-	                                  final String listDelimiter, //final int keyIndex,
-	                                 // final String mappingAttribute,
-	                                 //final List<Integer> aliasIndex, 
-	                                  final String[] attrNames, Byte[] attributeTypes, Byte[] listAttributeTypes,
-	                                  boolean[] importFlag,
-	                                  boolean caseSensitive) throws Exception {
-		this(delimiters, listDelimiter, attrNames, attributeTypes, listAttributeTypes, importFlag, 0, null);
+	public AbstractMappingParameters( 
+			final List<String> delimiters,
+			final String listDelimiter,
+			final String[] attrNames,
+			final AttributeDataType[] attributeTypes,
+			final boolean[] importFlag,
+			final boolean caseSensitive
+	) throws Exception {
+		this(delimiters, listDelimiter, attrNames, attributeTypes, importFlag, 0, null);
 	}
 
-	public AbstractMappingParameters( final List<String> delimiters,
-	                                  final String listDelimiter, //final int keyIndex,
-	                                  //final String mappingAttribute,
-	                                  //final List<Integer> aliasIndex, 
-	                                  final String[] attrNames,Byte[] attributeTypes, 
-	                                  Byte[] listAttributeTypes, 
-	                                  boolean[] importFlag, int startNumber, String commentChar)
-	    throws Exception {
-		this.listAttributeTypes = listAttributeTypes;
+	public AbstractMappingParameters(
+			final List<String> delimiters,
+			final String listDelimiter,
+			final String[] attrNames,
+			final AttributeDataType[] attributeTypes,
+			final boolean[] importFlag,
+			final int startNumber,
+			final String commentChar
+	) throws Exception {
 		this.startLineNumber= startNumber;
 		this.commentChar = commentChar;
 
-		if (attrNames == null) {
+		if (attrNames == null)
 			throw new Exception("attributeNames should not be null.");
-		}
-
+		
 		/*
-		 * Error check: Key column number should be smaller than actual number
-		 * of columns in the text table.
+		 * These values should not be null!
 		 */
-/*		if (attrNames.length < keyIndex) {
-			throw new IOException("Key is out of range.");
-		}
-*/
-		/*
-		 * These calues should not be null!
-		 */
-		//this.keyIndex = keyIndex;
 		this.attributeNames = attrNames;
 
-		/*
-		 * If attribute mapping is null, use ID for mapping.
-		 */
-		/*
-		if (mappingAttribute == null) {
-			this.mappingAttribute = ID; // Note: ID = 'name'
-		} else {
-			this.mappingAttribute = mappingAttribute;
-		}
-*/
 		/*
 		 * If delimiter is not available, use default value (TAB)
 		 */
@@ -134,21 +115,13 @@ public abstract class AbstractMappingParameters implements MappingParameter{
 		}
 
 		/*
-		if (aliasIndex == null) {
-			this.aliasIndex = new ArrayList<Integer>();
-		} else {
-			this.aliasIndex = aliasIndex;
-		}
-		*/
-
-		/*
 		 * If not specified, import everything as String attributes.
 		 */
 		if (attributeTypes == null) {
-			this.attributeTypes = new Byte[attrNames.length];
+			this.attributeTypes = new AttributeDataType[attrNames.length];
 
 			for (int i = 0; i < attrNames.length; i++) {
-				this.attributeTypes[i] = AttributeDataTypes.TYPE_STRING;
+				this.attributeTypes[i] = AttributeDataType.TYPE_STRING;
 			}
 		} else {
 			this.attributeTypes = attributeTypes;
@@ -171,27 +144,20 @@ public abstract class AbstractMappingParameters implements MappingParameter{
 
 	@Override
 	public String[] getAttributeNames() {
-		// TODO Auto-generated method stub
 		return attributeNames;
 	}
 	
 	@Override
-	public Byte[] getAttributeTypes() {
+	public AttributeDataType[] getAttributeTypes() {
 		return attributeTypes;
-	}
-
-	public Byte[] getListAttributeTypes() {
-		return listAttributeTypes;
 	}
 	
 	@Override
 	public boolean[] getImportFlag() {
-		// TODO Auto-generated method stub
 		return importFlag;
 	}
 
 	public String getListDelimiter() {
-		// TODO Auto-generated method stub
 		return listDelimiter;
 	}
 
@@ -224,19 +190,8 @@ public abstract class AbstractMappingParameters implements MappingParameter{
 		return attr2id;
 	}
 
-	private void putAttrValue(String attributeValue, String objectID) {
-		List<String> objIdList = attr2id.get(attributeValue);
-		if (objIdList == null) {
-			objIdList = new ArrayList<String>();
-		}
-
-		objIdList.add(objectID);
-		attr2id.put(attributeValue, objIdList);
-	}
-
 	@Override
 	public int getColumnCount() {
-		// TODO Auto-generated method stub
 		if (attributeNames == null)
 			return -1;
 		return attributeNames.length;

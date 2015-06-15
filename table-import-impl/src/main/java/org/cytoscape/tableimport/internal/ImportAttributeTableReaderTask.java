@@ -45,7 +45,7 @@ import org.cytoscape.tableimport.internal.reader.DefaultAttributeTableReader;
 import org.cytoscape.tableimport.internal.reader.ExcelAttributeSheetReader;
 import org.cytoscape.tableimport.internal.reader.SupportedFileType;
 import org.cytoscape.tableimport.internal.reader.TextTableReader;
-import org.cytoscape.tableimport.internal.util.AttributeDataTypes;
+import org.cytoscape.tableimport.internal.util.AttributeDataType;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.work.AbstractTask;
@@ -63,7 +63,7 @@ public class ImportAttributeTableReaderTask extends AbstractTask implements CyTa
 	private final String inputName;
 
 	private CyTable[] cyTables;
-	private static int numImports = 0;
+	private static int numImports;
 	
 	@Tunable(description="Attribute Mapping Parameters:")
 	public AttributeMappingParameters amp;
@@ -164,20 +164,20 @@ public class ImportAttributeTableReaderTask extends AbstractTask implements CyTa
 		final TextTableReader reader = this.reader;
 		final AttributeMappingParameters readerAMP = (AttributeMappingParameters) reader.getMappingParameter();
 		final String primaryKey = readerAMP.getAttributeNames()[readerAMP.getKeyIndex()];
-		final Byte type = readerAMP.getAttributeTypes()[readerAMP.getKeyIndex()];
+		final AttributeDataType type = readerAMP.getAttributeTypes()[readerAMP.getKeyIndex()];
 		final Class<?> keyType;
 		
 		switch (type) {
-			case AttributeDataTypes.TYPE_BOOLEAN:
+			case TYPE_BOOLEAN:
 				keyType = Boolean.class;
 				break;
-			case AttributeDataTypes.TYPE_INTEGER:
+			case TYPE_INTEGER:
 				keyType = Integer.class;
 				break;
-			case AttributeDataTypes.TYPE_FLOATING:
+			case TYPE_FLOATING:
 				keyType = Double.class;
 				break;
-			case AttributeDataTypes.TYPE_STRING:
+			case TYPE_STRING:
 				keyType = String.class;
 				break;
 			default:
@@ -192,15 +192,15 @@ public class ImportAttributeTableReaderTask extends AbstractTask implements CyTa
 			             primaryKey, keyType, true, true);
 		
 		cyTables = new CyTable[] { table };
-		tm.setProgress(0.2);
-
 		tm.setProgress(0.3);
+		
 		try {
 			this.reader.readTable(table);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		
 		tm.setProgress(1.0);
 	}
 

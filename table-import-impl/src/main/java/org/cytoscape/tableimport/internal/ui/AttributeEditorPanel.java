@@ -8,7 +8,15 @@ import static org.cytoscape.tableimport.internal.reader.TextFileDelimiters.COLON
 import static org.cytoscape.tableimport.internal.reader.TextFileDelimiters.COMMA;
 import static org.cytoscape.tableimport.internal.reader.TextFileDelimiters.PIPE;
 import static org.cytoscape.tableimport.internal.reader.TextFileDelimiters.SLASH;
-import static org.cytoscape.tableimport.internal.ui.theme.SourceColumnSemantic.NONE;
+import static org.cytoscape.tableimport.internal.util.AttributeDataType.TYPE_BOOLEAN;
+import static org.cytoscape.tableimport.internal.util.AttributeDataType.TYPE_BOOLEAN_LIST;
+import static org.cytoscape.tableimport.internal.util.AttributeDataType.TYPE_FLOATING;
+import static org.cytoscape.tableimport.internal.util.AttributeDataType.TYPE_FLOATING_LIST;
+import static org.cytoscape.tableimport.internal.util.AttributeDataType.TYPE_INTEGER;
+import static org.cytoscape.tableimport.internal.util.AttributeDataType.TYPE_INTEGER_LIST;
+import static org.cytoscape.tableimport.internal.util.AttributeDataType.TYPE_STRING;
+import static org.cytoscape.tableimport.internal.util.AttributeDataType.TYPE_STRING_LIST;
+import static org.cytoscape.tableimport.internal.util.SourceColumnSemantic.NONE;
 
 import java.awt.Font;
 import java.awt.Window;
@@ -26,7 +34,6 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.ParallelGroup;
 import javax.swing.GroupLayout.SequentialGroup;
-import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -34,8 +41,8 @@ import javax.swing.JTextField;
 import javax.swing.JToggleButton;
 import javax.swing.LayoutStyle.ComponentPlacement;
 
-import org.cytoscape.tableimport.internal.ui.theme.SourceColumnSemantic;
-import org.cytoscape.tableimport.internal.util.AttributeDataTypes;
+import org.cytoscape.tableimport.internal.util.AttributeDataType;
+import org.cytoscape.tableimport.internal.util.SourceColumnSemantic;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 
@@ -50,6 +57,7 @@ public class AttributeEditorPanel extends JPanel {
 	private JTextField attributeNameTextField;
 	
 	private final Map<SourceColumnSemantic, JToggleButton> typeButtons = new LinkedHashMap<>();
+	private final Map<AttributeDataType, JToggleButton> dataTypeButtons = new LinkedHashMap<>();
 	
 	private JToggleButton stringButton;
 	private JToggleButton booleanButton;
@@ -70,7 +78,8 @@ public class AttributeEditorPanel extends JPanel {
 	private final String name;
 	private final SourceColumnSemantic type;
 	private final List<SourceColumnSemantic> availableTypes;
-	private final byte dataType;
+	private final AttributeDataType dataType;
+	private final String listDelimiter;
 	
 	private final IconManager iconManager;
 
@@ -79,23 +88,65 @@ public class AttributeEditorPanel extends JPanel {
 			final String name,
 			final List<SourceColumnSemantic> availableTypes,
 			final SourceColumnSemantic type,
-			final byte dataType,
-			final String delimiter,
+			final AttributeDataType dataType,
+			final String listDelimiter,
 			final IconManager iconManager
 	) {
 		this.name = name;
 		this.availableTypes = availableTypes;
 		this.type = type;
 		this.dataType = dataType;
+		this.listDelimiter = listDelimiter;
 		this.iconManager = iconManager;
 		
 		if (!availableTypes.contains(NONE))
 			availableTypes.add(0, NONE);
 		
 		initComponents();
-		updateComponents(delimiter);
+		updateComponents();
 	}
 
+	@Override
+	public String getName() {
+		return attributeNameTextField.getText().trim();
+	}
+	
+	public SourceColumnSemantic getType() {
+		final ButtonModel model = typeButtonGroup.getSelection();
+		
+		for (Entry<SourceColumnSemantic, JToggleButton> entry : typeButtons.entrySet()) {
+			final JToggleButton btn = entry.getValue();
+			
+			if (btn.getModel().equals(model))
+				return entry.getKey();
+		}
+		
+		return NONE;
+	}
+
+	public AttributeDataType getDataType() {
+		final ButtonModel model = dataTypeButtonGroup.getSelection();
+		
+		for (Entry<AttributeDataType, JToggleButton> entry : dataTypeButtons.entrySet()) {
+			final JToggleButton btn = entry.getValue();
+			
+			if (btn.getModel().equals(model))
+				return entry.getKey();
+		}
+		
+		return TYPE_STRING;
+	}
+	
+	public String getListDelimiterType() {
+		if (isOtherDelimiterSelected())
+			return otherTextField.getText().trim();
+
+		if (listDelimiterComboBox.getSelectedItem().toString().equals("|"))
+			return PIPE.toString();
+		
+		return listDelimiterComboBox.getSelectedItem().toString();
+	}
+	
 	private void initComponents() {
 		listDelimiterLabel = new JLabel("List Delimiter:");
 		listDelimiterLabel.putClientProperty("JComponent.sizeVariant", "small");
@@ -103,29 +154,25 @@ public class AttributeEditorPanel extends JPanel {
 		typeButtonGroup = new ButtonGroup();
 		dataTypeButtonGroup = new ButtonGroup();
 
-		attributeNameTextField = new JTextField();
+		attributeNameTextField = new JTextField(name);
 		attributeNameTextField.setToolTipText("Column Name");
 		attributeNameTextField.putClientProperty("JComponent.sizeVariant", "small");
 		
 		final List<JToggleButton> dataTypeBtnList = new ArrayList<>();
 		
-		dataTypeBtnList.add(stringButton = createDataTypeButton("ab", "String", false));
-		dataTypeBtnList.add(integerButton = createDataTypeButton("1", "Integer", false));
-		dataTypeBtnList.add(floatingPointButton = createDataTypeButton("1.0", "Floating Point", false));
-		dataTypeBtnList.add(booleanButton = createDataTypeButton("y/n", "Boolean", false));
-		dataTypeBtnList.add(stringListButton = createDataTypeButton("[ ab ]", "List of Strings", true));
-		dataTypeBtnList.add(integerListButton = createDataTypeButton("[ 1 ]", "List of Integers", true));
-		dataTypeBtnList.add(floatingPointListButton = createDataTypeButton("[ 1.0 ]", "List of Floating Point Numbers", true));
-		dataTypeBtnList.add(booleanListButton = createDataTypeButton("[ y/n ]", "List of Booleans", true));
+		dataTypeBtnList.add(stringButton = createDataTypeButton(TYPE_STRING));
+		dataTypeBtnList.add(integerButton = createDataTypeButton(TYPE_INTEGER));
+		dataTypeBtnList.add(floatingPointButton = createDataTypeButton(TYPE_FLOATING));
+		dataTypeBtnList.add(booleanButton = createDataTypeButton(TYPE_BOOLEAN));
+		dataTypeBtnList.add(stringListButton = createDataTypeButton(TYPE_STRING_LIST));
+		dataTypeBtnList.add(integerListButton = createDataTypeButton(TYPE_INTEGER_LIST));
+		dataTypeBtnList.add(floatingPointListButton = createDataTypeButton(TYPE_FLOATING_LIST));
+		dataTypeBtnList.add(booleanListButton = createDataTypeButton(TYPE_BOOLEAN_LIST));
 		
 		setStyles(dataTypeBtnList);
 		
 		listDelimiterComboBox = new JComboBox<>();
 		listDelimiterComboBox.putClientProperty("JComponent.sizeVariant", "small");
-		
-		otherTextField = new JTextField();
-		otherTextField.putClientProperty("JComponent.sizeVariant", "small");
-		
 		listDelimiterComboBox.setModel(
 				new DefaultComboBoxModel<String>(new String[] {
 						"|",
@@ -135,7 +182,16 @@ public class AttributeEditorPanel extends JPanel {
                         COMMA.toString(),
                         OTHER
                     }));
-
+		listDelimiterComboBox.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				otherTextField.setEnabled(isOtherDelimiterSelected());
+			}
+		});
+		
+		otherTextField = new JTextField();
+		otherTextField.putClientProperty("JComponent.sizeVariant", "small");
+		
 		final GroupLayout layout = new GroupLayout(this);
 		this.setLayout(layout);
 		layout.setAutoCreateContainerGaps(true);
@@ -215,27 +271,11 @@ public class AttributeEditorPanel extends JPanel {
 		LookAndFeelUtil.equalizeSize(btnList.toArray(new JToggleButton[btnList.size()]));
 	}
 	
-	private void updateComponents(String delimiter) {
-		attributeNameTextField.setText(name);
-		listDelimiterComboBox.setEnabled(false);
-
-		if (delimiter == null) {
-			listDelimiterComboBox.setSelectedIndex(0);
-		} else {
-			for (int i = 0; i < listDelimiterComboBox.getItemCount(); i++) {
-				if (delimiter.equals(listDelimiterComboBox.getItemAt(i))) {
-					listDelimiterComboBox.setSelectedIndex(i);
-
-					break;
-				}
-			}
-		}
-
-		listDelimiterLabel.setEnabled(false);
-		otherTextField.setEnabled(false);
-		
+	private void updateComponents() {
 		updateTypeButtonGroup();
 		updateDataTypeButtonGroup();
+		updateListDelimiterComboBox();
+		updateOtherTextField();
 	}
 
 	private void updateTypeButtonGroup() {
@@ -248,75 +288,37 @@ public class AttributeEditorPanel extends JPanel {
 	}
 	
 	private void updateDataTypeButtonGroup() {
-		if (dataType == AttributeDataTypes.TYPE_STRING) {
-			dataTypeButtonGroup.setSelected(stringButton.getModel(), true);
-		} else if (dataType == AttributeDataTypes.TYPE_INTEGER) {
-			dataTypeButtonGroup.setSelected(integerButton.getModel(), true);
-		} else if (dataType == AttributeDataTypes.TYPE_FLOATING) {
-			dataTypeButtonGroup.setSelected(floatingPointButton.getModel(), true);
-		} else if (dataType == AttributeDataTypes.TYPE_BOOLEAN) {
-			dataTypeButtonGroup.setSelected(booleanButton.getModel(), true);
-		} else if (dataType == AttributeDataTypes.TYPE_SIMPLE_LIST) {
-			// FIXME
-//			dataTypeButtonGroup.setSelected(listButton.getModel(), true);
-			listDelimiterComboBox.setEnabled(true);
-			otherTextField.setEnabled(false);
-		}
-	}
-
-	@Override
-	public String getName() {
-		return attributeNameTextField.getText().trim();
+		final JToggleButton button = dataTypeButtons.get(dataType);
+		final ButtonModel model = button != null ? button.getModel() : null;
+		
+		if (model != null)
+			dataTypeButtonGroup.setSelected(model, true);
 	}
 	
-	public SourceColumnSemantic getType() {
-		final ButtonModel model = typeButtonGroup.getSelection();
+	private void updateListDelimiterComboBox() {
+		listDelimiterLabel.setEnabled(dataType.isList());
+		listDelimiterComboBox.setEnabled(dataType.isList());
 		
-		for (Entry<SourceColumnSemantic, JToggleButton> entry : typeButtons.entrySet()) {
-			final JToggleButton btn = entry.getValue();
+		if (listDelimiter == null || listDelimiter.isEmpty()) {
+			listDelimiterComboBox.setSelectedIndex(0);
+		} else {
+			for (int i = 0; i < listDelimiterComboBox.getItemCount(); i++) {
+				if (listDelimiter.equals(listDelimiterComboBox.getItemAt(i))) {
+					listDelimiterComboBox.setSelectedIndex(i);
+
+					return;
+				}
+			}
 			
-			if (btn.getModel().equals(model))
-				return entry.getKey();
+			listDelimiterComboBox.setSelectedItem(OTHER);
 		}
-		
-		return NONE;
-	}
-
-	public byte getDataType() {
-		final ButtonModel model = dataTypeButtonGroup.getSelection();
-		
-		if (model.equals(stringButton.getModel()))        return AttributeDataTypes.TYPE_STRING;
-		if (model.equals(integerButton.getModel()))       return AttributeDataTypes.TYPE_INTEGER;
-		if (model.equals(floatingPointButton.getModel())) return AttributeDataTypes.TYPE_FLOATING;
-		if (model.equals(booleanButton.getModel()))       return AttributeDataTypes.TYPE_BOOLEAN;
-
-		return AttributeDataTypes.TYPE_STRING;
-	}
-
-	/**
-	 * Returns data type of the entries in the list object.
-	 * Complex type is not supported.
-	 *
-	 * @return
-	 */
-	public byte getListDataType() {
-		final ButtonModel model = dataTypeButtonGroup.getSelection();
-		
-		if (model.equals(integerListButton.getModel()))       return AttributeDataTypes.TYPE_INTEGER;
-		if (model.equals(floatingPointListButton.getModel())) return AttributeDataTypes.TYPE_FLOATING;
-		if (model.equals(booleanListButton.getModel()))       return AttributeDataTypes.TYPE_BOOLEAN;
-
-		return AttributeDataTypes.TYPE_STRING;
 	}
 	
-	public String getListDelimiterType() {
-		if (isOtherDelimiterSelected())
-			return otherTextField.getText().trim();
-
-		if (listDelimiterComboBox.getSelectedItem().toString().equals("|"))
-			return PIPE.toString();
+	private void updateOtherTextField() {
+		otherTextField.setEnabled(dataType.isList() && isOtherDelimiterSelected());
 		
-		return listDelimiterComboBox.getSelectedItem().toString();
+		if (listDelimiter != null && !listDelimiter.isEmpty() && isOtherDelimiterSelected())
+			otherTextField.setText(listDelimiter);
 	}
 	
 	private boolean isOtherDelimiterSelected() {
@@ -329,7 +331,6 @@ public class AttributeEditorPanel extends JPanel {
 		btn.setFont(iconManager.getIconFont(ICON_FONT_SIZE));
 		btn.setForeground(type.getForeground());
 		btn.setName(type.toString());
-//		btn.addActionListener(new TypeButtonActionListener(isList));
 		
 		typeButtonGroup.add(btn);
 		typeButtons.put(type, btn);
@@ -337,13 +338,14 @@ public class AttributeEditorPanel extends JPanel {
 		return btn;
 	}
 	
-	private JToggleButton createDataTypeButton(final String text, final String toolTip, final boolean isList) {
-		final JToggleButton btn = new JToggleButton(text);
-		btn.setToolTipText(toolTip);
+	private JToggleButton createDataTypeButton(final AttributeDataType dataType) {
+		final JToggleButton btn = new JToggleButton(dataType.getText());
+		btn.setToolTipText(dataType.getDescription());
 		btn.setFont(new Font("Serif", Font.BOLD, 11));
-		btn.addActionListener(new DataTypeButtonActionListener(isList));
+		btn.addActionListener(new DataTypeButtonActionListener(dataType.isList()));
 		
 		dataTypeButtonGroup.add(btn);
+		dataTypeButtons.put(dataType, btn);
 		
 		return btn;
 	}

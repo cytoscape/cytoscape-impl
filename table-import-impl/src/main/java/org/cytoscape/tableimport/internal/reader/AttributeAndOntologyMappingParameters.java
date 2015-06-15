@@ -29,6 +29,7 @@ package org.cytoscape.tableimport.internal.reader;
 import java.util.List;
 
 import org.cytoscape.tableimport.internal.reader.TextTableReader.ObjectType;
+import org.cytoscape.tableimport.internal.util.AttributeDataType;
 
 
 /**
@@ -47,13 +48,12 @@ public class AttributeAndOntologyMappingParameters extends AttributeMappingParam
 			final String mappingAttribute,
 			final List<Integer> aliasIndex,
 			final String[] attributeNames,
-			final Byte[] attributeTypes,
-			final Byte[] listAttributeTypes,
+			final AttributeDataType[] attributeTypes,
 			final boolean[] importFlag,
 			final int ontologyIndex,
 			final String ontologyName
 	) throws Exception {
-		super(delimiters, listDelimiter, keyIndex, attributeNames, attributeTypes, listAttributeTypes, importFlag);
+		super(delimiters, listDelimiter, keyIndex, attributeNames, attributeTypes, importFlag);
 		
 		this.ontologyName = ontologyName;
 		this.ontologyIndex = ontologyIndex;
@@ -61,5 +61,9 @@ public class AttributeAndOntologyMappingParameters extends AttributeMappingParam
 
 	public int getOntologyIndex() {
 		return ontologyIndex;
+	}
+	
+	public String getOntologyName() {
+		return ontologyName;
 	}
 }

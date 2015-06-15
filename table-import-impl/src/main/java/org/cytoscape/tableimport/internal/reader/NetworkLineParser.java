@@ -25,41 +25,34 @@ package org.cytoscape.tableimport.internal.reader;
  */
 
 
-import org.cytoscape.tableimport.internal.util.AttributeDataTypes;
-//import cytoscape.data.Semantics;
+import static org.cytoscape.tableimport.internal.util.AttributeDataType.TYPE_BOOLEAN;
+import static org.cytoscape.tableimport.internal.util.AttributeDataType.TYPE_FLOATING;
+import static org.cytoscape.tableimport.internal.util.AttributeDataType.TYPE_INTEGER;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
-
-import java.util.ArrayList;
-import java.util.List;
-//import java.util.HashMap;
-import java.util.Map;
-import org.cytoscape.model.subnetwork.CySubNetwork;
+import org.cytoscape.model.CyTable;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
+import org.cytoscape.model.subnetwork.CySubNetwork;
+import org.cytoscape.tableimport.internal.util.AttributeDataType;
+
 /**
  * Parse one line for network text table
- *
- * @author kono
- *
  */
 public class NetworkLineParser {
+	
 	private final NetworkTableMappingParameters nmp;
 	private final List<Long> nodeList;
 	private final List<Long> edgeList;
 	private CyNetwork network;
-//	private HashMap<String, CyNode> nodeMap = new HashMap<String, CyNode>();
 	private Map<Object, CyNode> nMap;
 	private final CyRootNetwork rootNetwork;
 	
-	/**
-	 * Creates a new NetworkLineParser object.
-	 *
-	 * @param nodeList  DOCUMENT ME!
-	 * @param edgeList  DOCUMENT ME!
-	 * @param nmp  DOCUMENT ME!
-	 */
 	public NetworkLineParser(List<Long> nodeList, List<Long> edgeList,
 	                         final NetworkTableMappingParameters nmp,final Map<Object, CyNode> nMap, CyRootNetwork rootNetwork) {
 		this.nmp = nmp;
@@ -69,11 +62,6 @@ public class NetworkLineParser {
 		this.rootNetwork = rootNetwork;
 	}
 
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @param parts DOCUMENT ME!
-	 */
 	public void parseEntry(String[] parts) {
 		final CyEdge edge = addNodeAndEdge(parts);
 
@@ -81,14 +69,12 @@ public class NetworkLineParser {
 			addEdgeAttributes(edge, parts);
 	}
 
-
 	private CyEdge addNodeAndEdge(final String[] parts) {
-
 		final CyNode source = createNode(parts, nmp.getSourceIndex());
 		final CyNode target = createNode(parts, nmp.getTargetIndex());
 
 		// Single column nodes list.  Just add nodes.
-		if(source == null || target == null)
+		if (source == null || target == null)
 			return null;
 
 		final String interaction;
@@ -96,8 +82,9 @@ public class NetworkLineParser {
 		if ((nmp.getInteractionIndex() == -1) || (nmp.getInteractionIndex() > (parts.length - 1))
 		    || (parts[nmp.getInteractionIndex()] == null)) {
 			interaction = nmp.getDefaultInteraction();
-		} else
+		} else {
 			interaction = parts[nmp.getInteractionIndex()];
+		}
 
 		//edge = Cytoscape.getCyEdge(source, target, Semantics.INTERACTION, interaction, true, true);
 		CyEdge edge = network.addEdge(source, target, true);
@@ -166,126 +153,87 @@ public class NetworkLineParser {
 	}
 
 	/**
-	 * Based on the attribute types, map the entry to CyAttributes.<br>
-	 *
-	 * @param key
-	 * @param entry
-	 * @param index
+	 * Based on the attribute types, map the entry to CyAttributes.
 	 */
-	//private void mapAttribute(final String key, final String entry, final int index) {
+	@SuppressWarnings("unchecked")
 	private void mapAttribute(final CyEdge edge, final String entry, final int index) {
 
-		Byte type = nmp.getAttributeTypes()[index];
+		final AttributeDataType type = nmp.getAttributeTypes()[index];
 
-		if (entry == null || entry.length() == 0) {
+		if (entry == null || entry.length() == 0)
 			return;
-		}
 			
 		switch (type) {
-			case AttributeDataTypes.TYPE_BOOLEAN:
-				//nmp.getAttributes()
-				//   .setAttribute(key, nmp.getAttributeNames()[index], new Boolean(entry));
-				createColumn(edge, nmp.getAttributeNames()[index],Boolean.class);
+			case TYPE_BOOLEAN:
+				createColumn(edge, nmp.getAttributeNames()[index], Boolean.class);
 				network.getRow(edge).set(nmp.getAttributeNames()[index], new Boolean(entry));
 
 				break;
 
-			case AttributeDataTypes.TYPE_INTEGER:
-				//nmp.getAttributes()
-				//   .setAttribute(key, nmp.getAttributeNames()[index], new Integer(entry));
-				createColumn(edge, nmp.getAttributeNames()[index],Integer.class);
+			case TYPE_INTEGER:
+				createColumn(edge, nmp.getAttributeNames()[index], Integer.class);
 				network.getRow(edge).set(nmp.getAttributeNames()[index], new Integer(entry));
 
 				break;
 
-			case AttributeDataTypes.TYPE_FLOATING:
-				//nmp.getAttributes()
-				//   .setAttribute(key, nmp.getAttributeNames()[index], new Double(entry));
-				createColumn(edge, nmp.getAttributeNames()[index],Double.class);
+			case TYPE_FLOATING:
+				createColumn(edge, nmp.getAttributeNames()[index], Double.class);
 				network.getRow(edge).set(nmp.getAttributeNames()[index], new Double(entry));
 
 				break;
 
-			case AttributeDataTypes.TYPE_STRING:
-				//nmp.getAttributes().setAttribute(key, nmp.getAttributeNames()[index], entry);
-				createColumn(edge, nmp.getAttributeNames()[index],String.class);
+			case TYPE_STRING:
+				createColumn(edge, nmp.getAttributeNames()[index], String.class);
 				network.getRow(edge).set(nmp.getAttributeNames()[index], entry.trim());
 
 				break;
 
-			case AttributeDataTypes.TYPE_SIMPLE_LIST:
+			case TYPE_BOOLEAN_LIST:
+			case TYPE_INTEGER_LIST:
+			case TYPE_FLOATING_LIST:
+			case TYPE_STRING_LIST:
+				final CyTable table = network.getRow(edge).getTable();
+				
+				if (table.getColumn(nmp.getAttributeNames()[index]) == null)
+					table.createListColumn(nmp.getAttributeNames()[index], type.getListType(), false);
 
-				Byte elementType = nmp.getListAttributeTypes()[index];
-				
-				// If the column does not exist, create it
-				if (network.getRow(edge).getTable().getColumn(nmp.getAttributeNames()[index]) == null) {
-					if (elementType == AttributeDataTypes.TYPE_BOOLEAN){
-						network.getRow(edge).getTable().createListColumn(nmp.getAttributeNames()[index], Boolean.class, false);
-					}
-					else if (elementType == AttributeDataTypes.TYPE_INTEGER) {
-						network.getRow(edge).getTable().createListColumn(nmp.getAttributeNames()[index], Integer.class, false);
-					}
-					else if (elementType == AttributeDataTypes.TYPE_FLOATING) {
-						network.getRow(edge).getTable().createListColumn(nmp.getAttributeNames()[index], Double.class, false);
-					}
-					else { // TYPE_STRING or undefined
-						network.getRow(edge).getTable().createListColumn(nmp.getAttributeNames()[index], String.class, false);
-					}
-				}
-				
 				/*
-				 * In case of list, not overwrite the attribute. Get the existing
-				 * list, and add it to the list.
+				 * In case of list, not overwrite the attribute. Get the existing list, and add it to the list.
 				 */
-				//List curList = nmp.getAttributes()
-		        //          .getListAttribute(key, nmp.getAttributeNames()[index]);
+				List<Object> curList = network.getRow(edge).get(nmp.getAttributeNames()[index], List.class);
 
-				List curList = network.getRow(edge).get(nmp.getAttributeNames()[index], List.class);
+				if (curList == null)
+					curList = new ArrayList<Object>();
 
-				if (curList == null) {
-					curList = new ArrayList();
-				}
-
-				curList.addAll(buildList(entry, elementType));
+				curList.addAll(buildList(entry, type));
 
 				//nmp.getAttributes().setListAttribute(key, nmp.getAttributeNames()[index], curList);
 				network.getRow(edge).set(nmp.getAttributeNames()[index], curList);
 				
 				break;
-
-			default:
-				//nmp.getAttributes().setAttribute(key, nmp.getAttributeNames()[index], entry);
 		}
-
 	}
 
 	/**
 	 * If an entry is a list, split the string and create new List Attribute.
-	 *
-	 * @return
 	 */
-	private List buildList(final String entry, Byte type) {
-		if (entry == null) {
+	private List<Object> buildList(final String entry, final AttributeDataType type) {
+		if (entry == null)
 			return null;
-		}
 
-		final List listAttr = new ArrayList();
+		final List<Object> listAttr = new ArrayList<>();
 
 		final String[] parts = (entry.replace("\"", "")).split(nmp.getListDelimiter());
 
 		for (String listItem : parts) {
-			if (type == AttributeDataTypes.TYPE_BOOLEAN){
+			if (type == TYPE_BOOLEAN)
 				listAttr.add(new Boolean(listItem.trim()));
-			}
-			else if (type == AttributeDataTypes.TYPE_INTEGER){
+			else if (type == TYPE_INTEGER)
 				listAttr.add(new Integer(listItem.trim()));
-			}
-			else if (type == AttributeDataTypes.TYPE_FLOATING){
+			else if (type == TYPE_FLOATING)
 				listAttr.add(new Double(listItem.trim()));
-			}
-			else {// TYPE_STRING or unknown
+			else // TYPE_STRING or unknown
 				listAttr.add(listItem.trim());				
-			}
 		}
 
 		return listAttr;

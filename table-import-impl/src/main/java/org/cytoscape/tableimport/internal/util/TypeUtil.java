@@ -1,4 +1,4 @@
-package org.cytoscape.tableimport.internal.ui;
+package org.cytoscape.tableimport.internal.util;
 
 /*
  * #%L
@@ -25,18 +25,18 @@ package org.cytoscape.tableimport.internal.ui;
  */
 
 //import cytoscape.Cytoscape;
-import static org.cytoscape.tableimport.internal.ui.ImportType.NETWORK_IMPORT;
-import static org.cytoscape.tableimport.internal.ui.ImportType.ONTOLOGY_IMPORT;
-import static org.cytoscape.tableimport.internal.ui.theme.SourceColumnSemantic.ALIAS;
-import static org.cytoscape.tableimport.internal.ui.theme.SourceColumnSemantic.ATTR;
-import static org.cytoscape.tableimport.internal.ui.theme.SourceColumnSemantic.EDGE_ATTR;
-import static org.cytoscape.tableimport.internal.ui.theme.SourceColumnSemantic.INTERACTION;
-import static org.cytoscape.tableimport.internal.ui.theme.SourceColumnSemantic.KEY;
-import static org.cytoscape.tableimport.internal.ui.theme.SourceColumnSemantic.NONE;
-import static org.cytoscape.tableimport.internal.ui.theme.SourceColumnSemantic.ONTOLOGY;
-import static org.cytoscape.tableimport.internal.ui.theme.SourceColumnSemantic.SOURCE;
-import static org.cytoscape.tableimport.internal.ui.theme.SourceColumnSemantic.TARGET;
-import static org.cytoscape.tableimport.internal.ui.theme.SourceColumnSemantic.TAXON;
+import static org.cytoscape.tableimport.internal.util.ImportType.NETWORK_IMPORT;
+import static org.cytoscape.tableimport.internal.util.ImportType.ONTOLOGY_IMPORT;
+import static org.cytoscape.tableimport.internal.util.SourceColumnSemantic.ALIAS;
+import static org.cytoscape.tableimport.internal.util.SourceColumnSemantic.ATTR;
+import static org.cytoscape.tableimport.internal.util.SourceColumnSemantic.EDGE_ATTR;
+import static org.cytoscape.tableimport.internal.util.SourceColumnSemantic.INTERACTION;
+import static org.cytoscape.tableimport.internal.util.SourceColumnSemantic.KEY;
+import static org.cytoscape.tableimport.internal.util.SourceColumnSemantic.NONE;
+import static org.cytoscape.tableimport.internal.util.SourceColumnSemantic.ONTOLOGY;
+import static org.cytoscape.tableimport.internal.util.SourceColumnSemantic.SOURCE;
+import static org.cytoscape.tableimport.internal.util.SourceColumnSemantic.TARGET;
+import static org.cytoscape.tableimport.internal.util.SourceColumnSemantic.TAXON;
 
 import java.util.Arrays;
 import java.util.List;
@@ -44,13 +44,10 @@ import java.util.regex.Pattern;
 
 import javax.swing.table.TableModel;
 
-import org.cytoscape.tableimport.internal.ui.theme.SourceColumnSemantic;
-import org.cytoscape.tableimport.internal.util.AttributeDataTypes;
-
 /**
  *
  */
-class TypeUtil {
+public class TypeUtil {
 
 	private static final List<SourceColumnSemantic> TABLE_IMPORT_TYPES = Arrays.asList(
 			NONE, KEY, ATTR
@@ -91,18 +88,18 @@ class TypeUtil {
 	
 	private TypeUtil() {}
 	
-	static List<SourceColumnSemantic> getAvailableTypes(final ImportType importType) {
+	public static List<SourceColumnSemantic> getAvailableTypes(final ImportType importType) {
 		if (importType == NETWORK_IMPORT) return NETWORK_IMPORT_TYPES;
 		if (importType == ONTOLOGY_IMPORT) return ONTOLOGY_IMPORT_TYPES;
 		
 		return TABLE_IMPORT_TYPES;
 	}
 	
-	static SourceColumnSemantic getDefaultType(final ImportType importType) {
+	public static SourceColumnSemantic getDefaultType(final ImportType importType) {
 		return importType == NETWORK_IMPORT ? EDGE_ATTR : ATTR;
 	}
 	
-	static SourceColumnSemantic[] guessTypes(final ImportType importType, final TableModel model) {
+	public static SourceColumnSemantic[] guessTypes(final ImportType importType, final TableModel model) {
 		final int size = model.getColumnCount();
 		
 		final SourceColumnSemantic[] types = new SourceColumnSemantic[size];
@@ -168,7 +165,7 @@ class TypeUtil {
 		return types;
 	}
 	
-	static Byte[] guessDataTypes(final TableModel model) {
+	public static AttributeDataType[] guessDataTypes(final TableModel model) {
 		// 0 = Boolean,  1 = Integer,  2 = Double,  3 = String
 		final Integer[][] typeChecker = new Integer[4][model.getColumnCount()];
 
@@ -215,7 +212,7 @@ class TypeUtil {
 			}
 		}
 
-		final Byte[] dataTypes = new Byte[model.getColumnCount()];
+		final AttributeDataType[] dataTypes = new AttributeDataType[model.getColumnCount()];
 
 		for (int i = 0; i < dataTypes.length; i++) {
 			int maxVal = 0;
@@ -229,13 +226,13 @@ class TypeUtil {
 			}
 	
 			if (maxIndex == 0)
-				dataTypes[i] = AttributeDataTypes.TYPE_BOOLEAN;
+				dataTypes[i] = AttributeDataType.TYPE_BOOLEAN;
 			else if (maxIndex == 1)
-				dataTypes[i] = AttributeDataTypes.TYPE_INTEGER;
+				dataTypes[i] = AttributeDataType.TYPE_INTEGER;
 			else if (maxIndex == 2)
-				dataTypes[i] = AttributeDataTypes.TYPE_FLOATING;
+				dataTypes[i] = AttributeDataType.TYPE_FLOATING;
 			else
-				dataTypes[i] = AttributeDataTypes.TYPE_STRING;
+				dataTypes[i] = AttributeDataType.TYPE_STRING;
 		}
 
 		return dataTypes;

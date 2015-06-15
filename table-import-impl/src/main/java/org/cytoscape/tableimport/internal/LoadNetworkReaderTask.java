@@ -52,6 +52,7 @@ import org.cytoscape.tableimport.internal.reader.NetworkTableReader;
 import org.cytoscape.tableimport.internal.reader.SupportedFileType;
 import org.cytoscape.tableimport.internal.reader.TextFileDelimiters;
 import org.cytoscape.tableimport.internal.ui.PreviewTablePanel;
+import org.cytoscape.tableimport.internal.util.AttributeDataType;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.view.layout.CyLayoutAlgorithm;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
@@ -265,12 +266,11 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 			
 			attributeNames = attrNameList.toArray(new String[0]);
 			
-			final Byte[] test = previewPanel.getDataTypes(previewPanel.getSelectedTabName());
-			final Byte[] attributeTypes = new Byte[test.length];
+			final AttributeDataType[] test = previewPanel.getDataTypes(previewPanel.getSelectedTabName());
+			final AttributeDataType[] attributeTypes = new AttributeDataType[test.length];
 	
-			for (int i = 0; i < test.length; i++) {
+			for (int i = 0; i < test.length; i++)
 				attributeTypes[i] = test[i];
-			}
 			
 			if (indexColumnSourceInteraction > 0)
 				indexColumnSourceInteraction--;
@@ -282,9 +282,9 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 				indexColumnTypeInteraction--;
 			
 			ntmp = new NetworkTableMappingParameters(delimiters.getSelectedValues(),
-					delimitersForDataList.getSelectedValue(), attributeNames, attributeTypes,
-					previewPanel.getCurrentListDataTypes(), importFlag, indexColumnSourceInteraction,
-					indexColumnTargetInteraction, indexColumnTypeInteraction, defaultInteraction, startLoadRow, null);
+					delimitersForDataList.getSelectedValue(), attributeNames, attributeTypes, importFlag,
+					indexColumnSourceInteraction, indexColumnTargetInteraction, indexColumnTypeInteraction,
+					defaultInteraction, startLoadRow, null);
 			
 			if (this.fileType.equalsIgnoreCase(SupportedFileType.EXCEL.getExtension()) ||
 			    this.fileType.equalsIgnoreCase(SupportedFileType.OOXML.getExtension())) {
