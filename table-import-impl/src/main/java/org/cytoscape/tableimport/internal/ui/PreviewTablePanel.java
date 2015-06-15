@@ -939,7 +939,7 @@ public class PreviewTablePanel extends JPanel {
 	private final class TableHeaderListener extends MouseAdapter {
 		
 		@Override
-		public void mouseClicked(MouseEvent e) {
+		public void mousePressed(MouseEvent e) {
 			final JTable table = getSelectedPreviewTable();
 			final JTableHeader hd = table.getTableHeader();
 			final TableColumnModel columnModel = table.getColumnModel();
