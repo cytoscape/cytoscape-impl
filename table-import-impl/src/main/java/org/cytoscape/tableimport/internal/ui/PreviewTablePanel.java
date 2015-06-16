@@ -169,6 +169,7 @@ public class PreviewTablePanel extends JPanel {
 	private String listDelimiter;
 	
 	private VetoableChangeListener vetoableChangeListener;
+	private int editingColumnIndex = -1;
 
 	private final IconManager iconManager;
 
@@ -978,12 +979,14 @@ public class PreviewTablePanel extends JPanel {
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					dialog.dispose();
+					editingColumnIndex = -1;
 				}
 			});
 			actionMap.put("VK_ENTER", new AbstractAction("VK_ENTER") {
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					dialog.dispose();
+					editingColumnIndex = -1;
 					updateTable(colIdx, attrEditorPanel);
 				}
 			});
@@ -1007,6 +1010,7 @@ public class PreviewTablePanel extends JPanel {
 							@Override
 							public void run() {
 								dialog.dispose();
+								editingColumnIndex = -1;
 								updateTable(colIdx, attrEditorPanel);
 							}
 						});
@@ -1033,6 +1037,9 @@ public class PreviewTablePanel extends JPanel {
 		    // Show the dialog right below the column header
 		    dialog.setLocation(pt);
 			dialog.pack();
+			
+			editingColumnIndex = colIdx;
+			
 			dialog.setVisible(true);
 			dialog.requestFocus();
 		}
@@ -1199,6 +1206,7 @@ public class PreviewTablePanel extends JPanel {
 		
 		private final JLabel typeLabel;
 		private final JLabel nameLabel;
+		private final JLabel editLabel;
 		
 		PreviewTableHeaderRenderer() {
 			nameLabel = new JLabel();
@@ -1206,6 +1214,15 @@ public class PreviewTablePanel extends JPanel {
 			
 			typeLabel = new JLabel();
 			typeLabel.setFont(iconManager.getIconFont(ICON_FONT_SIZE));
+			
+			editLabel = new JLabel(IconManager.ICON_CARET_LEFT);
+			editLabel.setFont(iconManager.getIconFont(12.0f));
+			editLabel.setHorizontalAlignment(JLabel.CENTER);
+			
+			// Forces the edit label to always have the same size, no matter its state
+			final JLabel tempLabel = new JLabel(IconManager.ICON_CARET_DOWN);
+			tempLabel.setFont(iconManager.getIconFont(12.0f));
+			LookAndFeelUtil.equalizeSize(editLabel, tempLabel);
 			
 			final GroupLayout layout = new GroupLayout(this);
 			this.setLayout(layout);
@@ -1216,10 +1233,13 @@ public class PreviewTablePanel extends JPanel {
 					.addComponent(typeLabel)
 					.addPreferredGap(ComponentPlacement.RELATED)
 					.addComponent(nameLabel)
+					.addGap(2, 4, Short.MAX_VALUE)
+					.addComponent(editLabel)
 			);
 			layout.setVerticalGroup(layout.createParallelGroup(CENTER, false)
 					.addComponent(typeLabel)
 					.addComponent(nameLabel)
+					.addComponent(editLabel)
 			);
 		}
 		
@@ -1248,6 +1268,11 @@ public class PreviewTablePanel extends JPanel {
 			} else {
 				fgColor = UIManager.getColor("Label.disabledForeground");
 			}
+			
+			if (editingColumnIndex == col)
+				editLabel.setText(IconManager.ICON_CARET_DOWN);
+			else
+				editLabel.setText(IconManager.ICON_CARET_LEFT);
 			
 			nameLabel.setForeground(fgColor);
 			setBorder(col == 0 ? null : BORDER);
