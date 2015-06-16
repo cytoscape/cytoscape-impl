@@ -30,6 +30,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
@@ -241,19 +242,18 @@ public class LoadTableReaderTask extends AbstractTask implements CyTableReader, 
 			else
 				attrNameList.add(curName.toString());
 		}
+		
 		attributeNames = attrNameList.toArray(new String[0]);
 		
-		final AttributeDataType[] test = previewPanel.getDataTypes(previewPanel.getSelectedTabName());
-		final AttributeDataType[] attributeTypes = new AttributeDataType[test.length];
-
-		for (int i = 0; i < test.length; i++)
-			attributeTypes[i] = test[i];
+		final String tabName = previewPanel.getSelectedTabName();
+		final AttributeDataType[] dataTypes = previewPanel.getDataTypes(tabName);
+		final AttributeDataType[] dataTypesCopy = Arrays.copyOf(dataTypes, dataTypes.length);
 		
 		if (keyColumnIndex > 0)
 			keyColumnIndex--;
 
 		amp = new AttributeMappingParameters(delimiters.getSelectedValues(), delimitersForDataList.getSelectedValue(),
-				keyColumnIndex, attributeNames, attributeTypes, importFlag, startLoadRow, null);
+				keyColumnIndex, attributeNames, dataTypesCopy, importFlag, startLoadRow, null);
 		
 		if (this.fileType.equalsIgnoreCase(SupportedFileType.EXCEL.getExtension()) ||
 		    this.fileType.equalsIgnoreCase(SupportedFileType.OOXML.getExtension())) {

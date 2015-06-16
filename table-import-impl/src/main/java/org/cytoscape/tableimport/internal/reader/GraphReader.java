@@ -25,9 +25,9 @@ package org.cytoscape.tableimport.internal.reader;
  */
 
 
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.view.layout.CyLayoutAlgorithm;
 import java.io.IOException;
+
+import org.cytoscape.model.CyNetwork;
 
 
 
@@ -37,6 +37,7 @@ import java.io.IOException;
 * @author Cytoscape Development Group.
 */
 public interface GraphReader {
+	
 	/**
 	 * Reads/imports the graph.
 	 *
@@ -45,37 +46,10 @@ public interface GraphReader {
 	public void read() throws IOException;
 
 	/**
-	 * Returns the CyLayoutAlgorithm used to layout the graph
-	 *
-	 * @param myView
-	 */
-	//public CyLayoutAlgorithm getLayoutAlgorithm();
-
-	/**
-	 * Gets an array of node indices that participate in the newly created graph.
-	 *
-	 * @return array of node indices from the root graph.
-	 */
-	//public Long[] getNodeIndicesArray();
-
-	/**
-	 * Gets an array of edges indices that participate in the newly created graph.
-	 *
-	 * @return array of edges indices from the root graph.
-	 */
-	//public Long[] getEdgeIndicesArray();
-
-	/**
-	 * Execute whatever post-processing is required.
-	 */
-	//public void doPostProcessing(CyNetwork network);
-
-	/**
 	 * Gets the name of the network.
 	 * @return network name.
 	 */
 	public String getNetworkName();
-	
 	
 	public void setNetwork(CyNetwork network);
 }

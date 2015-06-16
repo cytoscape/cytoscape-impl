@@ -1734,11 +1734,9 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener {
 
 		attributeNames = attrNameList.toArray(new String[0]);
 
-		final AttributeDataType[] test = getPreviewPanel().getDataTypes(getPreviewPanel().getSelectedTabName());
-		final AttributeDataType[] attributeTypes = new AttributeDataType[test.length];
-
-		for (int i = 0; i < test.length; i++)
-			attributeTypes[i] = test[i];
+		final String tabName = getPreviewPanel().getSelectedTabName();
+		final AttributeDataType[] dataTypes = getPreviewPanel().getDataTypes(tabName);
+		final AttributeDataType[] dataTypesCopy = Arrays.copyOf(dataTypes, dataTypes.length);
 
 		int startLineNumber = getStartLineNumber();
 		String commentChar = null;
@@ -1749,7 +1747,7 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener {
 		// Build mapping parameter object.
 		final List<String> del = checkDelimiter();
 		final AttributeMappingParameters mapping = new AttributeMappingParameters(del, listDelimiter, keyInFile,
-				attributeNames, attributeTypes, importFlag, startLineNumber, commentChar);
+				attributeNames, dataTypesCopy, importFlag, startLineNumber, commentChar);
 
 		return mapping;
 	}
@@ -1808,12 +1806,8 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener {
 		attributeNames = attrNameList.toArray(new String[0]);
 
 		final String tabName = getPreviewPanel().getSelectedTabName();
-		
-		final AttributeDataType[] test = getPreviewPanel().getDataTypes(tabName);
-		final AttributeDataType[] attributeTypes = new AttributeDataType[test.length];
-
-		for (int i = 0; i < test.length; i++)
-			attributeTypes[i] = test[i];
+		final AttributeDataType[] dataTypes = getPreviewPanel().getDataTypes(tabName);
+		final AttributeDataType[] dataTypesCopy = Arrays.copyOf(dataTypes, dataTypes.length);
 
 		int startLineNumber = getStartLineNumber();
 
@@ -1832,7 +1826,7 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener {
 		// Build mapping parameter object.
 		final List<String> del = checkDelimiter();
 		NetworkTableMappingParameters mapping = new NetworkTableMappingParameters(del, listDelimiter, attributeNames,
-				attributeTypes, importFlag, sourceColumnIndex, targetColumnIndex, interactionColumnIndex,
+				dataTypesCopy, importFlag, sourceColumnIndex, targetColumnIndex, interactionColumnIndex,
 				defaultInteraction, startLineNumber, commentChar);
 
 		return mapping;

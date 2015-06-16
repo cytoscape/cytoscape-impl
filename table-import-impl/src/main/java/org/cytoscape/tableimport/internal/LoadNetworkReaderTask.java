@@ -32,6 +32,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -266,11 +267,9 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 			
 			attributeNames = attrNameList.toArray(new String[0]);
 			
-			final AttributeDataType[] test = previewPanel.getDataTypes(previewPanel.getSelectedTabName());
-			final AttributeDataType[] attributeTypes = new AttributeDataType[test.length];
-	
-			for (int i = 0; i < test.length; i++)
-				attributeTypes[i] = test[i];
+			final String tabName = previewPanel.getSelectedTabName();
+			final AttributeDataType[] dataTypes = previewPanel.getDataTypes(tabName);
+			final AttributeDataType[] dataTypesCopy = Arrays.copyOf(dataTypes, dataTypes.length);
 			
 			if (indexColumnSourceInteraction > 0)
 				indexColumnSourceInteraction--;
@@ -282,7 +281,7 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 				indexColumnTypeInteraction--;
 			
 			ntmp = new NetworkTableMappingParameters(delimiters.getSelectedValues(),
-					delimitersForDataList.getSelectedValue(), attributeNames, attributeTypes, importFlag,
+					delimitersForDataList.getSelectedValue(), attributeNames, dataTypesCopy, importFlag,
 					indexColumnSourceInteraction, indexColumnTargetInteraction, indexColumnTypeInteraction,
 					defaultInteraction, startLoadRow, null);
 			
