@@ -30,12 +30,13 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
 import org.cytoscape.model.CyTable;
 import org.cytoscape.tableimport.internal.util.AttributeDataType;
+import org.cytoscape.tableimport.internal.util.SourceColumnSemantic;
 import org.cytoscape.tableimport.internal.util.URLUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,15 +57,12 @@ public class DefaultAttributeTableReader implements TextTableReader {
 	
 	private static final Logger logger = LoggerFactory.getLogger(DefaultAttributeTableReader.class);
 	
-	/** Lines begin with this character will be considered as comment lines. */
-	private static final int DEF_KEY_COLUMN = 0;
-	
 	private final URL source;
 	private AttributeMappingParameters mapping;
 	private final AttributeLineParser parser;
 	
 	/** Number of mapped attributes. */
-	private int globalCounter = 0;
+	private int globalCounter;
 
 	/** Reader will read entries from this line. */
 	private final int startLineNumber;
@@ -72,21 +70,6 @@ public class DefaultAttributeTableReader implements TextTableReader {
 	
 	private InputStream is;
 	
-	public DefaultAttributeTableReader(final URL source, final ObjectType objectType, final List<String> delimiters)
-			throws Exception {
-		this(source, objectType, delimiters, null, DEF_KEY_COLUMN, null, null, null, null, null, 0);
-	}
-
-	public DefaultAttributeTableReader(
-			final URL source,
-			final ObjectType objectType,
-			final List<String> delimiters,
-			final int key,
-			final String[] columnNames
-	) throws Exception {
-		this(source, objectType, delimiters, null, DEF_KEY_COLUMN, null, null, columnNames, null, null, 0);
-	}
-
 	public DefaultAttributeTableReader(
 			final URL source,
 			final ObjectType objectType,
@@ -96,14 +79,14 @@ public class DefaultAttributeTableReader implements TextTableReader {
 			final String mappingAttribute,
 			final List<Integer> aliasIndexList,
 			final String[] attributeNames,
-			final AttributeDataType[] attributeTypes,
-			final boolean[] importFlag,
+			final AttributeDataType[] dataTypes,
+			final SourceColumnSemantic[] types,
 			final int startLineNumber
 	) throws Exception {
 		this.source = source;
 		this.startLineNumber = startLineNumber;
 		this.mapping = new AttributeMappingParameters(delimiters, listDelimiter, keyIndex, attributeNames,
-				attributeTypes, importFlag);
+				dataTypes, types);
 		this.parser = new AttributeLineParser(mapping);
 	}
 
@@ -122,19 +105,12 @@ public class DefaultAttributeTableReader implements TextTableReader {
 		this.startLineNumber = mapping.getStartLineNumber();
 		this.parser = new AttributeLineParser(mapping);
 		this.commentChar = mapping.getCommentChar();
-
 		this.is = is;
 	}
 	
 	@Override
 	public List<String> getColumnNames() {
-		List<String> colNamesList = new ArrayList<String>();
-
-		for (String name : mapping.getAttributeNames()) {
-			colNamesList.add(name);
-		}
-
-		return colNamesList;
+		return Arrays.asList(mapping.getAttributeNames());
 	}
 
 	/**
@@ -145,12 +121,11 @@ public class DefaultAttributeTableReader implements TextTableReader {
 		try {
 			BufferedReader bufRd = null;
 
-			if (is == null){
+			if (is == null)
 				is = URLUtil.getInputStream(source);				
-			}
+			
 			try {
-
-				//This data is shared by both the OpenCSV and the old method of reading files.
+				// This data is shared by both the OpenCSV and the old method of reading files.
 				int lineCount = 0;
 				bufRd = new BufferedReader(new InputStreamReader(is,Charset.forName("UTF-8").newDecoder()));
 				/*
@@ -159,33 +134,30 @@ public class DefaultAttributeTableReader implements TextTableReader {
 				final String delimiter = mapping.getDelimiterRegEx();
 
 				//If the delimiter contains a comma, treat the file as a CSV file.
-				if( delimiter.contains(TextFileDelimiters.COMMA.toString()) && mapping.getDelimiters().size() == 1 )
-				{
+				if ( delimiter.contains(TextFileDelimiters.COMMA.toString()) && mapping.getDelimiters().size() == 1 ) {
 					//Use OpenCSV.. New method...
 					CSVReader reader = new CSVReader(bufRd);
 					String [] rowData; //Note that rowData is roughly equivalent to "parts" in the old code.
-					while ((rowData = reader.readNext()) != null)
-					{
+					
+					while ((rowData = reader.readNext()) != null) {
 						// If key dos not exists, ignore the line.
-						if(lineCount >= startLineNumber && rowData.length>=mapping.getKeyIndex()+1) {
+						if (lineCount >= startLineNumber && rowData.length >= mapping.getKeyIndex() + 1) {
 							try {
-								//if(importAll) {
 								parser.parseAll(table, rowData);
-								//} else
-								//	parser.parseEntry(table, parts);
 							} catch (Exception ex) {
 								logger.warn("Couldn't parse row from OpenCSV: "+ lineCount);
 							}
+							
 							globalCounter++;
 						}
+						
 						lineCount++;
 					}
 
-				}
-				else //Use the "old" method for splitting the lines.
-				{
+				} else { //Use the "old" method for splitting the lines.
 					String line;
 					String[] parts = null;
+					
 					while ((line = bufRd.readLine()) != null) {
 						/*
 						 * Ignore Empty & Commnet lines.
@@ -194,16 +166,15 @@ public class DefaultAttributeTableReader implements TextTableReader {
 							// Do nothing
 						} else if ((lineCount >= startLineNumber) && (line.trim().length() > 0)) {
 							parts = line.split(delimiter);
+							
 							// If key dos not exists, ignore the line.
-							if(parts.length>=mapping.getKeyIndex()+1) {
+							if (parts.length >= mapping.getKeyIndex() + 1) {
 								try {
-								//if(importAll) {
 									parser.parseAll(table, parts);
-								//} else
-								//	parser.parseEntry(table, parts);
 								} catch (Exception ex) {
 									logger.warn("Couldn't parse row: "+ lineCount);
 								}
+								
 								globalCounter++;
 							}
 						}
@@ -211,17 +182,13 @@ public class DefaultAttributeTableReader implements TextTableReader {
 						lineCount++;
 					}
 				}
-			}
-			finally {
-				if (bufRd != null) {
+			} finally {
+				if (bufRd != null)
 					bufRd.close();
-				}
 			}
-		}
-		finally {
-			if (is != null) {
+		} finally {
+			if (is != null)
 				is.close();
-			}
 		}
 	}
 
@@ -231,18 +198,20 @@ public class DefaultAttributeTableReader implements TextTableReader {
 		final Map<String, Object> invalid = parser.getInvalidMap();
 		sb.append(globalCounter + " entries are loaded and mapped into table.");
 		
-		if(invalid.size() > 0) {
+		if (invalid.size() > 0) {
 			sb.append("\n\nThe following enties are invalid and were not imported:\n");
 			int limit = 10;
-			for(String key: invalid.keySet()) {
+			
+			for (String key : invalid.keySet()) {
 				sb.append(key + " = " + invalid.get(key) + "\n");
-				if ( limit-- <= 0 ) {
-					sb.append("Approximately " + (invalid.size() - 10) + 
-					          " additional entries were not imported...");
+				
+				if (limit-- <= 0) {
+					sb.append("Approximately " + (invalid.size() - 10) + " additional entries were not imported...");
 					break;
 				}
 			}
 		}
+		
 		return sb.toString();
 	}
 	

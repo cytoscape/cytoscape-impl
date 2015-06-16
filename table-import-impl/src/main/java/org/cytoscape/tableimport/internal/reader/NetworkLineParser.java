@@ -34,157 +34,141 @@ import java.util.List;
 import java.util.Map;
 
 import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.tableimport.internal.util.AttributeDataType;
+import org.cytoscape.tableimport.internal.util.SourceColumnSemantic;
 
 /**
  * Parse one line for network text table
  */
 public class NetworkLineParser {
 	
-	private final NetworkTableMappingParameters nmp;
+	private final NetworkTableMappingParameters mapping;
 	private final List<Long> nodeList;
 	private final List<Long> edgeList;
 	private CyNetwork network;
 	private Map<Object, CyNode> nMap;
 	private final CyRootNetwork rootNetwork;
 	
-	public NetworkLineParser(List<Long> nodeList, List<Long> edgeList,
-	                         final NetworkTableMappingParameters nmp,final Map<Object, CyNode> nMap, CyRootNetwork rootNetwork) {
-		this.nmp = nmp;
+	public NetworkLineParser(
+			final List<Long> nodeList,
+			final List<Long> edgeList,
+			final NetworkTableMappingParameters mapping,
+			final Map<Object, CyNode> nMap,
+			final CyRootNetwork rootNetwork
+	) {
+		this.mapping = mapping;
 		this.nodeList = nodeList;
 		this.edgeList = edgeList;
 		this.nMap = nMap;
 		this.rootNetwork = rootNetwork;
 	}
 
-	public void parseEntry(String[] parts) {
-		final CyEdge edge = addNodeAndEdge(parts);
+	public void parseEntry(final String[] parts) {
+		final CyNode source = createNode(parts, mapping.getSourceIndex());
+		final CyNode target = createNode(parts, mapping.getTargetIndex());
 
-		if (edge != null)
-			addEdgeAttributes(edge, parts);
-	}
-
-	private CyEdge addNodeAndEdge(final String[] parts) {
-		final CyNode source = createNode(parts, nmp.getSourceIndex());
-		final CyNode target = createNode(parts, nmp.getTargetIndex());
-
+		final SourceColumnSemantic[] types = mapping.getTypes();
+		final List<Integer> edgeAttrIdxs = new ArrayList<>();
+		
+		for (int i = 0; i < types.length; i++) {
+			if (types[i] == SourceColumnSemantic.EDGE_ATTR || types[i] == SourceColumnSemantic.ATTR)
+				edgeAttrIdxs.add(i);
+		}
+		
 		// Single column nodes list.  Just add nodes.
 		if (source == null || target == null)
-			return null;
+			return;
 
 		final String interaction;
 
-		if ((nmp.getInteractionIndex() == -1) || (nmp.getInteractionIndex() > (parts.length - 1))
-		    || (parts[nmp.getInteractionIndex()] == null)) {
-			interaction = nmp.getDefaultInteraction();
+		if ((mapping.getInteractionIndex() == -1) || (mapping.getInteractionIndex() > (parts.length - 1))
+		    || (parts[mapping.getInteractionIndex()] == null)) {
+			interaction = mapping.getDefaultInteraction();
 		} else {
-			interaction = parts[nmp.getInteractionIndex()];
+			interaction = parts[mapping.getInteractionIndex()];
 		}
 
-		//edge = Cytoscape.getCyEdge(source, target, Semantics.INTERACTION, interaction, true, true);
-		CyEdge edge = network.addEdge(source, target, true);
+		final CyEdge edge = network.addEdge(source, target, true);
 		network.getRow(edge).set("interaction", interaction);
 		String edgeName = network.getRow(source).get("name", String.class)+ " ("+interaction+") "+ network.getRow(target).get("name", String.class);
 		network.getRow(edge).set("name", edgeName);
 
 		edgeList.add(edge.getSUID());
 
-		return edge;
+		if (edge != null)
+			addAttributes(edge, parts, edgeAttrIdxs);
 	}
 
-
 	private CyNode createNode(final String[] parts, final Integer nodeIndex) {
-
 		CyNode node = null;
-
+		
 		if (nodeIndex.equals(-1) == false && (nodeIndex <= (parts.length - 1)) && (parts[nodeIndex] != null)) {
-			//node = Cytoscape.getCyNode(parts[nodeIndex], true);
-
-//			CyNode existingNode = nodeMap.get(parts[nodeIndex]);
-//			if (existingNode != null) {
-//				return existingNode;
-//			}
-//			node = network.addNode();
-//			network.getRow(node).set("name", parts[nodeIndex]);
-//
-//			nodeMap.put(parts[nodeIndex], node);
-
-			CyNode existingNode;
-			if (this.nMap.get(parts[nodeIndex]) == null){
-				// node does not exist yet, create it
+			if (this.nMap.get(parts[nodeIndex]) == null) {
+				// Node does not exist yet, create it
 				node = network.addNode();
 				network.getRow(node).set("name", parts[nodeIndex]);
-				this.nMap.put(parts[nodeIndex], this.rootNetwork.getNode(node.getSUID()));
-			}
-			else {// already existed in parent network
+				nMap.put(parts[nodeIndex], rootNetwork.getNode(node.getSUID()));
+				nodeList.add(node.getSUID());
+			} else {
+				// Node already exists in parent network
 				CyNode parentNode = this.nMap.get(parts[nodeIndex]);
 				CySubNetwork subnet = (CySubNetwork) network;
 				subnet.addNode(parentNode);
-				existingNode = subnet.getNode(parentNode.getSUID());
-				return existingNode;
+				node = subnet.getNode(parentNode.getSUID());
 			}
-			
-			nodeList.add(node.getSUID());
 		}
 
 		return node;
 	}
-
-	private void addEdgeAttributes(final CyEdge edge, final String[] parts) {
-		for (int i = 0; i < parts.length; i++) {
-			if ((i != nmp.getSourceIndex()) && (i != nmp.getTargetIndex())
-			    && (i != nmp.getInteractionIndex()) && parts[i] != null ) {
-				if ((nmp.getImportFlag().length > i) && (nmp.getImportFlag()[i] == true)) {
-					mapAttribute(edge, parts[i].trim(), i);
-				}
-			}
+	
+	private <T extends CyIdentifiable> void addAttributes(final T element, final String[] parts,
+			final List<Integer> attrIdxs) {
+		for (int i = 0; i < attrIdxs.size(); i++) {
+			final int idx = attrIdxs.get(i);
+			
+			if (parts.length > idx && parts[idx] != null)
+				mapAttribute(element, parts[idx].trim(), idx);
 		}
 	}
 
-	private void createColumn(final CyEdge edge, final String attributeName, Class<?> theType){
-		// If attribute does not exist, create it
-		if (network.getRow(edge).getTable().getColumn(attributeName) == null)
-			network.getRow(edge).getTable().createColumn(attributeName, theType, false);
-	}
-
 	/**
-	 * Based on the attribute types, map the entry to CyAttributes.
+	 * Based on the attribute types, map the entry to Node or Edge tables.
 	 */
 	@SuppressWarnings("unchecked")
-	private void mapAttribute(final CyEdge edge, final String entry, final int index) {
-
-		final AttributeDataType type = nmp.getAttributeTypes()[index];
-
+	private <T extends CyIdentifiable> void mapAttribute(final T element, final String entry, final int index) {
 		if (entry == null || entry.length() == 0)
 			return;
-			
+		
+		final AttributeDataType type = mapping.getDataTypes()[index];
+		
 		switch (type) {
 			case TYPE_BOOLEAN:
-				createColumn(edge, nmp.getAttributeNames()[index], Boolean.class);
-				network.getRow(edge).set(nmp.getAttributeNames()[index], new Boolean(entry));
+				createColumn(element, mapping.getAttributeNames()[index], Boolean.class);
+				network.getRow(element).set(mapping.getAttributeNames()[index], new Boolean(entry));
 
 				break;
 
 			case TYPE_INTEGER:
-				createColumn(edge, nmp.getAttributeNames()[index], Integer.class);
-				network.getRow(edge).set(nmp.getAttributeNames()[index], new Integer(entry));
+				createColumn(element, mapping.getAttributeNames()[index], Integer.class);
+				network.getRow(element).set(mapping.getAttributeNames()[index], new Integer(entry));
 
 				break;
 
 			case TYPE_FLOATING:
-				createColumn(edge, nmp.getAttributeNames()[index], Double.class);
-				network.getRow(edge).set(nmp.getAttributeNames()[index], new Double(entry));
+				createColumn(element, mapping.getAttributeNames()[index], Double.class);
+				network.getRow(element).set(mapping.getAttributeNames()[index], new Double(entry));
 
 				break;
 
 			case TYPE_STRING:
-				createColumn(edge, nmp.getAttributeNames()[index], String.class);
-				network.getRow(edge).set(nmp.getAttributeNames()[index], entry.trim());
+				createColumn(element, mapping.getAttributeNames()[index], String.class);
+				network.getRow(element).set(mapping.getAttributeNames()[index], entry.trim());
 
 				break;
 
@@ -192,26 +176,32 @@ public class NetworkLineParser {
 			case TYPE_INTEGER_LIST:
 			case TYPE_FLOATING_LIST:
 			case TYPE_STRING_LIST:
-				final CyTable table = network.getRow(edge).getTable();
+				final CyTable table = network.getRow(element).getTable();
 				
-				if (table.getColumn(nmp.getAttributeNames()[index]) == null)
-					table.createListColumn(nmp.getAttributeNames()[index], type.getListType(), false);
+				if (table.getColumn(mapping.getAttributeNames()[index]) == null)
+					table.createListColumn(mapping.getAttributeNames()[index], type.getListType(), false);
 
 				/*
 				 * In case of list, not overwrite the attribute. Get the existing list, and add it to the list.
 				 */
-				List<Object> curList = network.getRow(edge).get(nmp.getAttributeNames()[index], List.class);
+				List<Object> curList = network.getRow(element).get(mapping.getAttributeNames()[index], List.class);
 
 				if (curList == null)
-					curList = new ArrayList<Object>();
+					curList = new ArrayList<>();
 
 				curList.addAll(buildList(entry, type));
 
-				//nmp.getAttributes().setListAttribute(key, nmp.getAttributeNames()[index], curList);
-				network.getRow(edge).set(nmp.getAttributeNames()[index], curList);
+				//mapping.getAttributes().setListAttribute(key, mapping.getAttributeNames()[index], curList);
+				network.getRow(element).set(mapping.getAttributeNames()[index], curList);
 				
 				break;
 		}
+	}
+	
+	private <T extends CyIdentifiable> void createColumn(final T element, final String attributeName, Class<?> type){
+		// If attribute does not exist, create it
+		if (network.getRow(element).getTable().getColumn(attributeName) == null)
+			network.getRow(element).getTable().createColumn(attributeName, type, false);
 	}
 
 	/**
@@ -223,7 +213,7 @@ public class NetworkLineParser {
 
 		final List<Object> listAttr = new ArrayList<>();
 
-		final String[] parts = (entry.replace("\"", "")).split(nmp.getListDelimiter());
+		final String[] parts = (entry.replace("\"", "")).split(mapping.getListDelimiter());
 
 		for (String listItem : parts) {
 			if (type == TYPE_BOOLEAN)

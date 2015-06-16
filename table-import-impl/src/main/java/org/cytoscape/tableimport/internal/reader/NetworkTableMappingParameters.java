@@ -28,6 +28,7 @@ import java.io.InputStream;
 import java.util.List;
 
 import org.cytoscape.tableimport.internal.util.AttributeDataType;
+import org.cytoscape.tableimport.internal.util.SourceColumnSemantic;
 
 /**
  * Text table <---> CyAttribute & CyNetwork mapping parameters for network table.
@@ -45,19 +46,19 @@ public class NetworkTableMappingParameters extends AbstractMappingParameters {
 	 * Creates a new NetworkTableMappingParameters object.
 	 */
 	public NetworkTableMappingParameters(
-			List<String> delimiters,
-			String listDelimiter,
-			String[] attributeNames,
-			AttributeDataType[] attributeTypes,
-			boolean[] importFlag,
-			Integer source,
-			Integer target,
-			Integer interaction,
+			final List<String> delimiters,
+			final String listDelimiter,
+			final String[] attributeNames,
+			final AttributeDataType[] dataTypes,
+			final SourceColumnSemantic[] types,
+			final Integer source,
+			final Integer target,
+			final Integer interaction,
 			final String defInteraction,
-			int startNumber,
-			String commentChar
+			final int startNumber,
+			final String commentChar
 	) throws Exception {
-		super(delimiters, listDelimiter, attributeNames , attributeTypes, importFlag, startNumber, commentChar);
+		super(delimiters, listDelimiter, attributeNames , dataTypes, types, startNumber, commentChar);
 
 		this.source = source;
 		this.target = target;
@@ -65,7 +66,7 @@ public class NetworkTableMappingParameters extends AbstractMappingParameters {
 		this.defInteraction = defInteraction;
 	}
 
-	public NetworkTableMappingParameters(InputStream is, String fileType) throws Exception {
+	public NetworkTableMappingParameters(final InputStream is, final String fileType) throws Exception {
 		super(is, fileType);
 		this.source = -1;
 		this.target = -1;

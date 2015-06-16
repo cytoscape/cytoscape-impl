@@ -99,12 +99,12 @@ public class ExcelNetworkSheetReader extends NetworkTableReader {
 	 * @return
 	 */
 	private String[] createElementStringArray(final Row row) {
-		if (nmp.getColumnCount() == -1)
+		if (mapping.getColumnCount() == -1)
 			return null;
-		String[] cells = new String[nmp.getColumnCount()];
+		String[] cells = new String[mapping.getColumnCount()];
 		Cell cell;
 
-		for (short i = 0; i < nmp.getColumnCount(); i++) {
+		for (short i = 0; i < mapping.getColumnCount(); i++) {
 			cell = row.getCell(i);
 
 			if (cell == null) {
@@ -112,7 +112,7 @@ public class ExcelNetworkSheetReader extends NetworkTableReader {
 			} else if (cell.getCellType() == Cell.CELL_TYPE_STRING) {
 				cells[i] = cell.getRichStringCellValue().getString();
 			} else if (cell.getCellType() == Cell.CELL_TYPE_NUMERIC) {
-				if (nmp.getAttributeTypes()[i] == AttributeDataType.TYPE_INTEGER) {
+				if (mapping.getDataTypes()[i] == AttributeDataType.TYPE_INTEGER) {
 					Double dblValue = cell.getNumericCellValue();
 					Integer intValue = dblValue.intValue();
 					cells[i] = intValue.toString();

@@ -1,6 +1,7 @@
 package org.cytoscape.tableimport.internal.reader;
 
 import org.cytoscape.tableimport.internal.util.AttributeDataType;
+import org.cytoscape.tableimport.internal.util.SourceColumnSemantic;
 
 /*
  * #%L
@@ -31,11 +32,11 @@ public interface MappingParameter {
 	
 	public int getColumnCount();
 	
-	public boolean[] getImportFlag();
-	
 	public String[] getAttributeNames();
 
-	public AttributeDataType[] getAttributeTypes();
+	public AttributeDataType[] getDataTypes();
+	
+	public SourceColumnSemantic[] getTypes();
 
 	public String getListDelimiter();
 }

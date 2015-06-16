@@ -225,7 +225,6 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener {
 	 */
 	private String[] columnHeaders;
 	protected String listDelimiter;
-	boolean[] importFlag;
 	private CyTable selectedAttributes;
 	private PropertyChangeSupport changes = new PropertyChangeSupport(this);
 
@@ -1056,10 +1055,6 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener {
 		 * Get import flags
 		 */
 		final int colCount = getPreviewPanel().getSelectedPreviewTable().getColumnModel().getColumnCount();
-		importFlag = new boolean[colCount];
-
-		for (int i = 0; i < colCount; i++)
-			importFlag[i] = getPreviewPanel().isImported(i);
 
 		/*
 		 * Get Attribute Names
@@ -1068,6 +1063,9 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener {
 
 		Object curName = null;
 
+		final String tabName = getPreviewPanel().getSelectedTabName();
+		final SourceColumnSemantic[] types = getPreviewPanel().getTypes(tabName);
+		
 		for (int i = 0; i < colCount; i++) {
 			curName = getPreviewPanel().getSelectedPreviewTable().getColumnModel().getColumn(i).getHeaderValue();
 
@@ -1082,7 +1080,7 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener {
 					}
 				}
 
-				if (importFlag[i] && importFlag[dupIndex]) {
+				if (types[i] != SourceColumnSemantic.NONE && types[dupIndex] != SourceColumnSemantic.NONE) {
 					JOptionPane.showMessageDialog(
 							serviceRegistrar.getService(CySwingApplication.class).getJFrame(), 
 							"Duplicate Column Name Found: " + curName,
@@ -1226,14 +1224,6 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener {
 		if (getPreviewPanel().getSelectedPreviewTable() == null)
 			return;
 
-		// Initialize import flags.
-		final int colSize = getPreviewPanel().getSelectedPreviewTable().getColumnCount();
-		importFlag = new boolean[colSize];
-
-		for (int i = 0; i < colSize; i++) {
-			importFlag[i] = true;
-		}
-
 		for (int i = 0; i < getPreviewPanel().getTableCount(); i++) {
 			if (getPreviewPanel().getFileType() == FileType.GENE_ASSOCIATION_FILE) {
 				TableModel previewModel = getPreviewPanel().getPreviewTable(i).getModel();
@@ -1312,11 +1302,6 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener {
 
 		if (getPreviewPanel().getSelectedPreviewTable() == null)
 			return;
-
-		// Initialize import flags.
-		final int colSize = getPreviewPanel().getSelectedPreviewTable().getColumnCount();
-		importFlag = new boolean[colSize];
-		Arrays.fill(importFlag, true);
 
 		if (dialogType == NETWORK_IMPORT) {
 			if (fileType.equalsIgnoreCase(SupportedFileType.EXCEL.getExtension())
@@ -1524,12 +1509,11 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener {
 
 	private void updateTypes(final FileType type) {
 		final String tabName = getPreviewPanel().getSelectedTabName();
+		final SourceColumnSemantic[] types = getPreviewPanel().getTypes(tabName);
 		
-		if (importFlag != null) {
-			for (int i = 0; i < importFlag.length; i++) {
-				final boolean b = importFlag[i];
-				getPreviewPanel().setType(tabName, i, (b ? ATTR : NONE));
-			}
+		if (types != null) {
+			for (int i = 0; i < types.length; i++)
+				getPreviewPanel().setType(tabName, i, (types[i] != NONE ? ATTR : NONE));
 		}
 
 		if (type == FileType.GENE_ASSOCIATION_FILE) {
@@ -1689,14 +1673,13 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener {
 		 * Get import flags
 		 */
 		final int colCount = getPreviewPanel().getSelectedPreviewTable().getColumnModel().getColumnCount();
-		importFlag = new boolean[colCount];
-
-		for (int i = 0; i < colCount; i++)
-			importFlag[i] = getPreviewPanel().isImported(i);
 
 		final String[] attributeNames;
 		final List<String> attrNameList = new ArrayList<String>();
 
+		final String tabName = getPreviewPanel().getSelectedTabName();
+		final SourceColumnSemantic[] types = getPreviewPanel().getTypes(tabName);
+		
 		Object curName = null;
 
 		for (int i = 0; i < colCount; i++) {
@@ -1713,7 +1696,7 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener {
 					}
 				}
 
-				if (importFlag[i] && importFlag[dupIndex]) {
+				if (types[i] != SourceColumnSemantic.NONE && types[dupIndex] != SourceColumnSemantic.NONE) {
 					JOptionPane.showMessageDialog(
 							serviceRegistrar.getService(CySwingApplication.class).getJFrame(), 
 							"Duplicate Column Name Found: " + curName,
@@ -1734,9 +1717,9 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener {
 
 		attributeNames = attrNameList.toArray(new String[0]);
 
-		final String tabName = getPreviewPanel().getSelectedTabName();
 		final AttributeDataType[] dataTypes = getPreviewPanel().getDataTypes(tabName);
 		final AttributeDataType[] dataTypesCopy = Arrays.copyOf(dataTypes, dataTypes.length);
+		final SourceColumnSemantic[] typesCopy = Arrays.copyOf(types, types.length);
 
 		int startLineNumber = getStartLineNumber();
 		String commentChar = null;
@@ -1747,20 +1730,13 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener {
 		// Build mapping parameter object.
 		final List<String> del = checkDelimiter();
 		final AttributeMappingParameters mapping = new AttributeMappingParameters(del, listDelimiter, keyInFile,
-				attributeNames, dataTypesCopy, importFlag, startLineNumber, commentChar);
+				attributeNames, dataTypesCopy, typesCopy, startLineNumber, commentChar);
 
 		return mapping;
 	}
 
 	public NetworkTableMappingParameters getNetworkTableMappingParameters() throws Exception {
-		/*
-		 * Get import flags
-		 */
 		final int colCount = getPreviewPanel().getSelectedPreviewTable().getColumnModel().getColumnCount();
-		importFlag = new boolean[colCount];
-
-		for (int i = 0; i < colCount; i++)
-			importFlag[i] = getPreviewPanel().isImported(i);
 
 		/*
 		 * Get Attribute Names
@@ -1769,6 +1745,9 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener {
 		final String[] attributeNames;
 		final List<String> attrNameList = new ArrayList<String>();
 
+		final String tabName = getPreviewPanel().getSelectedTabName();
+		final SourceColumnSemantic[] types = getPreviewPanel().getTypes(tabName);
+		
 		Object curName = null;
 
 		for (int i = 0; i < colCount; i++) {
@@ -1785,7 +1764,7 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener {
 					}
 				}
 
-				if (importFlag[i] && importFlag[dupIndex]) {
+				if (types[i] != SourceColumnSemantic.NONE && types[dupIndex] != SourceColumnSemantic.NONE) {
 					JOptionPane.showMessageDialog(
 							serviceRegistrar.getService(CySwingApplication.class).getJFrame(), 
 							"Duplicate Column Name Found: " + curName,
@@ -1805,9 +1784,9 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener {
 
 		attributeNames = attrNameList.toArray(new String[0]);
 
-		final String tabName = getPreviewPanel().getSelectedTabName();
 		final AttributeDataType[] dataTypes = getPreviewPanel().getDataTypes(tabName);
 		final AttributeDataType[] dataTypesCopy = Arrays.copyOf(dataTypes, dataTypes.length);
+		final SourceColumnSemantic[] typesCopy = Arrays.copyOf(types, types.length);
 
 		int startLineNumber = getStartLineNumber();
 
@@ -1826,7 +1805,7 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener {
 		// Build mapping parameter object.
 		final List<String> del = checkDelimiter();
 		NetworkTableMappingParameters mapping = new NetworkTableMappingParameters(del, listDelimiter, attributeNames,
-				dataTypesCopy, importFlag, sourceColumnIndex, targetColumnIndex, interactionColumnIndex,
+				dataTypesCopy, typesCopy, sourceColumnIndex, targetColumnIndex, interactionColumnIndex,
 				defaultInteraction, startLineNumber, commentChar);
 
 		return mapping;

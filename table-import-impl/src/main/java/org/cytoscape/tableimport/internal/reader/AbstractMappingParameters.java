@@ -29,10 +29,12 @@ import static org.cytoscape.tableimport.internal.reader.TextFileDelimiters.TAB;
 
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
 import org.cytoscape.tableimport.internal.util.AttributeDataType;
+import org.cytoscape.tableimport.internal.util.SourceColumnSemantic;
 
 public abstract class AbstractMappingParameters implements MappingParameter{
 	
@@ -41,10 +43,10 @@ public abstract class AbstractMappingParameters implements MappingParameter{
 	private static final String DEF_DELIMITER = TAB.toString();
 	
 	protected String[] attributeNames;
-	protected AttributeDataType[] attributeTypes;
+	protected AttributeDataType[] dataTypes;
+	protected SourceColumnSemantic[] types;
 	protected List<String> delimiters;
 	protected String listDelimiter;
-	protected boolean[] importFlag;
 	
 	private Map<String, List<String>> attr2id;
 	private Map<String, String> networkTitle2ID;
@@ -68,19 +70,19 @@ public abstract class AbstractMappingParameters implements MappingParameter{
 			final List<String> delimiters,
 			final String listDelimiter,
 			final String[] attrNames,
-			final AttributeDataType[] attributeTypes,
-			final boolean[] importFlag,
+			final AttributeDataType[] dataTypes,
+			final SourceColumnSemantic[] types,
 			final boolean caseSensitive
 	) throws Exception {
-		this(delimiters, listDelimiter, attrNames, attributeTypes, importFlag, 0, null);
+		this(delimiters, listDelimiter, attrNames, dataTypes, types, 0, null);
 	}
 
 	public AbstractMappingParameters(
 			final List<String> delimiters,
 			final String listDelimiter,
 			final String[] attrNames,
-			final AttributeDataType[] attributeTypes,
-			final boolean[] importFlag,
+			final AttributeDataType[] dataTypes,
+			final SourceColumnSemantic[] types,
 			final int startNumber,
 			final String commentChar
 	) throws Exception {
@@ -99,7 +101,7 @@ public abstract class AbstractMappingParameters implements MappingParameter{
 		 * If delimiter is not available, use default value (TAB)
 		 */
 		if (delimiters == null) {
-			this.delimiters = new ArrayList<String>();
+			this.delimiters = new ArrayList<>();
 			this.delimiters.add(DEF_DELIMITER);
 		} else {
 			this.delimiters = delimiters;
@@ -117,29 +119,22 @@ public abstract class AbstractMappingParameters implements MappingParameter{
 		/*
 		 * If not specified, import everything as String attributes.
 		 */
-		if (attributeTypes == null) {
-			this.attributeTypes = new AttributeDataType[attrNames.length];
-
-			for (int i = 0; i < attrNames.length; i++) {
-				this.attributeTypes[i] = AttributeDataType.TYPE_STRING;
-			}
+		if (dataTypes == null) {
+			this.dataTypes = new AttributeDataType[attrNames.length];
+			Arrays.fill(this.dataTypes, AttributeDataType.TYPE_STRING);
 		} else {
-			this.attributeTypes = attributeTypes;
+			this.dataTypes = dataTypes;
 		}
 
 		/*
-		 * If not specified, import everything.
+		 * If not specified, do not import anything.
 		 */
-		if (importFlag == null) {
-			this.importFlag = new boolean[attrNames.length];
-
-			for (int i = 0; i < this.importFlag.length; i++) {
-				this.importFlag[i] = true;
-			}
+		if (types == null) {
+			this.types = new SourceColumnSemantic[attrNames.length];
+			Arrays.fill(types, SourceColumnSemantic.NONE);
 		} else {
-			this.importFlag = importFlag;
+			this.types = types;
 		}
-
 	}
 
 	@Override
@@ -148,13 +143,13 @@ public abstract class AbstractMappingParameters implements MappingParameter{
 	}
 	
 	@Override
-	public AttributeDataType[] getAttributeTypes() {
-		return attributeTypes;
+	public AttributeDataType[] getDataTypes() {
+		return dataTypes;
 	}
 	
 	@Override
-	public boolean[] getImportFlag() {
-		return importFlag;
+	public SourceColumnSemantic[] getTypes() {
+		return types;
 	}
 
 	public String getListDelimiter() {
@@ -200,10 +195,14 @@ public abstract class AbstractMappingParameters implements MappingParameter{
 	public int getSelectedColumnCount(){
 		if (attributeNames == null)
 			return -1;
+		
 		int count = 0;
-		for (boolean b : importFlag)
-			if (b)
+		
+		for (SourceColumnSemantic t : types) {
+			if (t != SourceColumnSemantic.NONE)
 				count++;
+		}
+		
 		return count;
 	}
 

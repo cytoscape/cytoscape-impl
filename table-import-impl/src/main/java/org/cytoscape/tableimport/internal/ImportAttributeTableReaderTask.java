@@ -164,7 +164,7 @@ public class ImportAttributeTableReaderTask extends AbstractTask implements CyTa
 		final TextTableReader reader = this.reader;
 		final AttributeMappingParameters readerAMP = (AttributeMappingParameters) reader.getMappingParameter();
 		final String primaryKey = readerAMP.getAttributeNames()[readerAMP.getKeyIndex()];
-		final AttributeDataType type = readerAMP.getAttributeTypes()[readerAMP.getKeyIndex()];
+		final AttributeDataType type = readerAMP.getDataTypes()[readerAMP.getKeyIndex()];
 		final Class<?> keyType;
 		
 		switch (type) {

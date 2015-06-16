@@ -49,6 +49,7 @@ import org.cytoscape.tableimport.internal.reader.TextFileDelimiters;
 import org.cytoscape.tableimport.internal.reader.TextTableReader;
 import org.cytoscape.tableimport.internal.ui.PreviewTablePanel;
 import org.cytoscape.tableimport.internal.util.AttributeDataType;
+import org.cytoscape.tableimport.internal.util.SourceColumnSemantic;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.vizmap.VisualStyle;
@@ -71,7 +72,6 @@ public class LoadTableReaderTask extends AbstractTask implements CyTableReader, 
 
 	private CyTable[] cyTables;
 	private static int numImports = 0;
-	private boolean[] importFlag;
 	
 	public AttributeMappingParameters amp;
 	
@@ -208,7 +208,6 @@ public class LoadTableReaderTask extends AbstractTask implements CyTableReader, 
 		);
 		
 		colCount = previewPanel.getSelectedPreviewTable().getColumnModel().getColumnCount();
-		importFlag = new boolean[colCount];
 		Object curName = null;
 		
 		if (firstRowAsColumnNames) {
@@ -216,8 +215,10 @@ public class LoadTableReaderTask extends AbstractTask implements CyTableReader, 
 			startLoadRow++;
 		}
 
+		final String tabName = previewPanel.getSelectedTabName();
+		final SourceColumnSemantic[] types = previewPanel.getTypes(tabName);
+		
 		for (int i = 0; i < colCount; i++) {
-			importFlag[i] = true;
 			curName = previewPanel.getSelectedPreviewTable().getColumnModel().getColumn(i).getHeaderValue();
 			
 			if (attrNameList.contains(curName)) {
@@ -231,7 +232,7 @@ public class LoadTableReaderTask extends AbstractTask implements CyTableReader, 
 					}
 				}
 
-				if (importFlag[i] && importFlag[dupIndex]) {
+				if (types[i] != SourceColumnSemantic.NONE && types[dupIndex] != SourceColumnSemantic.NONE) {
 //TODO add message to user
 					return;
 				}
@@ -245,15 +246,15 @@ public class LoadTableReaderTask extends AbstractTask implements CyTableReader, 
 		
 		attributeNames = attrNameList.toArray(new String[0]);
 		
-		final String tabName = previewPanel.getSelectedTabName();
 		final AttributeDataType[] dataTypes = previewPanel.getDataTypes(tabName);
 		final AttributeDataType[] dataTypesCopy = Arrays.copyOf(dataTypes, dataTypes.length);
+		final SourceColumnSemantic[] typesCopy = Arrays.copyOf(types, types.length);
 		
 		if (keyColumnIndex > 0)
 			keyColumnIndex--;
 
 		amp = new AttributeMappingParameters(delimiters.getSelectedValues(), delimitersForDataList.getSelectedValue(),
-				keyColumnIndex, attributeNames, dataTypesCopy, importFlag, startLoadRow, null);
+				keyColumnIndex, attributeNames, dataTypesCopy, typesCopy, startLoadRow, null);
 		
 		if (this.fileType.equalsIgnoreCase(SupportedFileType.EXCEL.getExtension()) ||
 		    this.fileType.equalsIgnoreCase(SupportedFileType.OOXML.getExtension())) {

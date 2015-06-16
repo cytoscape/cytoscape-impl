@@ -26,9 +26,11 @@ package org.cytoscape.tableimport.internal.reader;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
 import java.util.List;
 
 import org.cytoscape.tableimport.internal.util.AttributeDataType;
+import org.cytoscape.tableimport.internal.util.SourceColumnSemantic;
 
 /**
  * Parameter object for text table <---> CyAttributes mapping.
@@ -49,10 +51,10 @@ public class AttributeMappingParameters extends AbstractMappingParameters {
 			final String listDelimiter,
 			final int keyIndex,
 			final String[] attrNames,
-			AttributeDataType[] attributeTypes,
-	        boolean[] importFlag
+			final AttributeDataType[] dataTypes,
+	        final SourceColumnSemantic[] types
 	) throws Exception {
-		this(delimiters, listDelimiter, keyIndex, attrNames, attributeTypes, importFlag, 0, null);
+		this(delimiters, listDelimiter, keyIndex, attrNames, dataTypes, types, 0, null);
 	}
 	
 	public AttributeMappingParameters(
@@ -60,12 +62,12 @@ public class AttributeMappingParameters extends AbstractMappingParameters {
             final String listDelimiter,
             final int keyIndex,
             final String[] attrNames,
-            AttributeDataType[] attributeTypes,
-            boolean[] importFlag,
-            int startNumber,
-            String commentChar
+            final AttributeDataType[] dataTypes,
+            final SourceColumnSemantic[] types,
+            final int startNumber,
+            final String commentChar
     ) throws Exception {
-		super(delimiters, listDelimiter, attrNames, attributeTypes, importFlag, startNumber, commentChar);
+		super(delimiters, listDelimiter, attrNames, dataTypes, types, startNumber, commentChar);
 		
 		if (attrNames == null)
 			throw new Exception("attributeNames should not be null.");
@@ -82,27 +84,21 @@ public class AttributeMappingParameters extends AbstractMappingParameters {
 		/*
 		 * If not specified, import everything as String attributes.
 		 */
-		if (attributeTypes == null) {
-			this.attributeTypes = new AttributeDataType[attrNames.length];
-
-			for (int i = 0; i < attrNames.length; i++) {
-				this.attributeTypes[i] = AttributeDataType.TYPE_STRING;
-			}
+		if (dataTypes == null) {
+			this.dataTypes = new AttributeDataType[attrNames.length];
+			Arrays.fill(this.dataTypes, AttributeDataType.TYPE_STRING);
 		} else {
-			this.attributeTypes = attributeTypes;
+			this.dataTypes = dataTypes;
 		}
 
 		/*
 		 * If not specified, import everything.
 		 */
-		if (importFlag == null) {
-			this.importFlag = new boolean[attrNames.length];
-
-			for (int i = 0; i < this.importFlag.length; i++) {
-				this.importFlag[i] = true;
-			}
+		if (types == null) {
+			this.types = new SourceColumnSemantic[attrNames.length];
+			Arrays.fill(this.types, SourceColumnSemantic.ATTR);
 		} else {
-			this.importFlag = importFlag;
+			this.types = types;
 		}
 	}
 	

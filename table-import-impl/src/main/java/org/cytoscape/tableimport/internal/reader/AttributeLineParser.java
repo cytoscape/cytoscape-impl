@@ -42,6 +42,7 @@ import java.util.Map;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.tableimport.internal.util.AttributeDataType;
+import org.cytoscape.tableimport.internal.util.SourceColumnSemantic;
 
 /**
  * Take a line of data, analyze it, and map to CyAttributes.
@@ -49,7 +50,7 @@ import org.cytoscape.tableimport.internal.util.AttributeDataType;
 public class AttributeLineParser {
 	
 	private AttributeMappingParameters mapping;
-	private Map<String, Object> invalid = new HashMap<String, Object>();
+	private Map<String, Object> invalid = new HashMap<>();
 
 	/**
 	 * Creates a new AttributeLineParser object.
@@ -66,7 +67,7 @@ public class AttributeLineParser {
 		// Get key
 		final Object primaryKey ;
 		final int partsLen = parts.length;
-		final AttributeDataType typeKey = mapping.getAttributeTypes()[mapping.getKeyIndex()];
+		final AttributeDataType typeKey = mapping.getDataTypes()[mapping.getKeyIndex()];
 		
 		switch (typeKey) {
 			case TYPE_BOOLEAN:
@@ -88,13 +89,14 @@ public class AttributeLineParser {
 		if (partsLen == 1) {
 			table.getRow(parts[0]);
 		} else {
+			final SourceColumnSemantic[] types = mapping.getTypes();
+			
 			for (int i = 0; i < partsLen; i++) {
-				if ((i != mapping.getKeyIndex()) && mapping.getImportFlag()[i]) {
-					if (parts[i] == null) {
+				if (i != mapping.getKeyIndex() && types[i] != SourceColumnSemantic.NONE) {
+					if (parts[i] == null)
 						continue;
-					} else {
+					else
 						mapAttribute(table, primaryKey, parts[i].trim(), i);
-					}
 				}
 			}
 		}
@@ -104,7 +106,7 @@ public class AttributeLineParser {
 	 * Based on the attribute types, map the entry to CyAttributes.<br>
 	 */
 	private void mapAttribute(CyTable table, final Object key, final String entry, final int index) {
-		final AttributeDataType type = mapping.getAttributeTypes()[index];
+		final AttributeDataType type = mapping.getDataTypes()[index];
 
 		switch (type) {
 			case TYPE_BOOLEAN:

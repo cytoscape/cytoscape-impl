@@ -33,6 +33,7 @@ import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.nio.charset.MalformedInputException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -46,18 +47,13 @@ import org.slf4j.LoggerFactory;
 
 
 /**
- * Network text table reader. This implements GraphReader just like other network
- * file readers.<br>
- *
- * @since Cytoscape 2.4
- * @version 0.8
- * @author Keiichiro Ono
+ * Network text table reader. This implements GraphReader just like other network file readers.
  */
 public class NetworkTableReader extends AbstractGraphReader implements TextTableReader {
 	
 	protected static final String COMMENT_CHAR = "!";
 	
-	protected final NetworkTableMappingParameters nmp;
+	protected final NetworkTableMappingParameters mapping;
 	protected final NetworkLineParser parser;
 	protected final List<Long> nodeList;
 	protected final List<Long> edgeList;
@@ -71,31 +67,25 @@ public class NetworkTableReader extends AbstractGraphReader implements TextTable
 
 	public NetworkTableReader(final String networkName,
 							  final InputStream is,
-	                          final NetworkTableMappingParameters nmp,
+	                          final NetworkTableMappingParameters mapping,
 	                          final Map<Object, CyNode> nMap,
 	                          final CyRootNetwork rootNetwork,
 	                          final CyServiceRegistrar serviceRegistrar) {
 		super(networkName, serviceRegistrar);
 		
 		this.is = is;
-		this.nmp = nmp;
-		this.startLineNumber = nmp.getStartLineNumber();
+		this.mapping = mapping;
+		this.startLineNumber = mapping.getStartLineNumber();
 		this.nodeList = new ArrayList<Long>();
 		this.edgeList = new ArrayList<Long>();
-		this.commentChar = nmp.getCommentChar();
+		this.commentChar = mapping.getCommentChar();
 		
-		parser = new NetworkLineParser(nodeList, edgeList, nmp, nMap, rootNetwork);
+		parser = new NetworkLineParser(nodeList, edgeList, mapping, nMap, rootNetwork);
 	}
 
 	@Override
 	public List<String> getColumnNames() {
-		List<String> colNames = new ArrayList<>();
-
-		for (String name : nmp.getAttributeNames()) {
-			colNames.add(name);
-		}
-
-		return colNames;
+		return Arrays.asList(mapping.getAttributeNames());
 	}
 
 	@Override
@@ -128,7 +118,7 @@ public class NetworkTableReader extends AbstractGraphReader implements TextTable
 						&& line.startsWith(commentChar)) {
 						skipped++;
 					} else if ((line.trim().length() > 0) && ((startLineNumber + skipped) <= lineCount)) {
-						String[] parts = line.split(nmp.getDelimiterRegEx());
+						String[] parts = line.split(mapping.getDelimiterRegEx());
 						try {
 							parser.parseEntry(parts);
 						} catch (Exception ex) {
@@ -173,6 +163,6 @@ public class NetworkTableReader extends AbstractGraphReader implements TextTable
 	
 	@Override
 	public MappingParameter getMappingParameter(){
-		return nmp;
+		return mapping;
 	}
 }
