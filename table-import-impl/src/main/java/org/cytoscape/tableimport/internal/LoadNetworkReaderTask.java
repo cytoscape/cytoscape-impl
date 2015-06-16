@@ -54,7 +54,9 @@ import org.cytoscape.tableimport.internal.reader.SupportedFileType;
 import org.cytoscape.tableimport.internal.reader.TextFileDelimiters;
 import org.cytoscape.tableimport.internal.ui.PreviewTablePanel;
 import org.cytoscape.tableimport.internal.util.AttributeDataType;
+import org.cytoscape.tableimport.internal.util.ImportType;
 import org.cytoscape.tableimport.internal.util.SourceColumnSemantic;
+import org.cytoscape.tableimport.internal.util.TypeUtil;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.view.layout.CyLayoutAlgorithm;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
@@ -253,7 +255,7 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 						}
 					}
 	
-					if (types[i] != SourceColumnSemantic.NONE && types[dupIndex] != SourceColumnSemantic.NONE) {
+					if (!TypeUtil.allowsDuplicateName(ImportType.NETWORK_IMPORT, types[i], types[dupIndex])) {
 						// TODO add message to user (Duplicate Column Name Found)
 						return;
 					}

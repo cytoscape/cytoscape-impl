@@ -35,7 +35,9 @@ import static org.cytoscape.tableimport.internal.util.SourceColumnSemantic.KEY;
 import static org.cytoscape.tableimport.internal.util.SourceColumnSemantic.NONE;
 import static org.cytoscape.tableimport.internal.util.SourceColumnSemantic.ONTOLOGY;
 import static org.cytoscape.tableimport.internal.util.SourceColumnSemantic.SOURCE;
+import static org.cytoscape.tableimport.internal.util.SourceColumnSemantic.SOURCE_ATTR;
 import static org.cytoscape.tableimport.internal.util.SourceColumnSemantic.TARGET;
+import static org.cytoscape.tableimport.internal.util.SourceColumnSemantic.TARGET_ATTR;
 import static org.cytoscape.tableimport.internal.util.SourceColumnSemantic.TAXON;
 
 import java.util.Arrays;
@@ -53,7 +55,7 @@ public class TypeUtil {
 			NONE, KEY, ATTR
 	);
 	private static final List<SourceColumnSemantic> NETWORK_IMPORT_TYPES = Arrays.asList(
-			NONE, SOURCE, INTERACTION, TARGET, EDGE_ATTR
+			NONE, SOURCE, INTERACTION, TARGET, EDGE_ATTR, SOURCE_ATTR, TARGET_ATTR
 	);
 	private static final List<SourceColumnSemantic> ONTOLOGY_IMPORT_TYPES = Arrays.asList(
 			NONE, KEY, ALIAS, ONTOLOGY, TAXON, ATTR
@@ -236,6 +238,26 @@ public class TypeUtil {
 		}
 
 		return dataTypes;
+	}
+	
+	/**
+	 * Returns true if columns of the passed column type can have duplicate names in the source file or table.
+	 * @param types 
+	 */
+	public static boolean allowsDuplicateName(final ImportType importType, final SourceColumnSemantic type1,
+			SourceColumnSemantic type2) {
+		boolean b = type1 == NONE || type2 == NONE;
+		
+		if (importType == NETWORK_IMPORT) {
+			b = b || (type1 == SOURCE_ATTR && type2 != SOURCE_ATTR && type2 != SOURCE && type2 != TARGET);
+			b = b || (type2 == SOURCE_ATTR && type1 != SOURCE_ATTR && type1 != SOURCE && type1 != TARGET);
+			b = b || (type1 == TARGET_ATTR && type2 != TARGET_ATTR && type2 != SOURCE && type2 != TARGET);
+			b = b || (type2 == TARGET_ATTR && type1 != TARGET_ATTR && type1 != SOURCE && type1 != TARGET);
+			b = b || (type1 == EDGE_ATTR && type2 != EDGE_ATTR && type2 != INTERACTION);
+			b = b || (type2 == EDGE_ATTR && type1 != EDGE_ATTR && type1 != INTERACTION);
+		}
+		
+		return b;
 	}
 	
 	private static boolean matches(String name, final String[] preferredNames, final boolean exact) {

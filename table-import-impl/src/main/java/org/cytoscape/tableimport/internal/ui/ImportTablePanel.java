@@ -128,6 +128,7 @@ import org.cytoscape.tableimport.internal.util.AttributeDataType;
 import org.cytoscape.tableimport.internal.util.FileType;
 import org.cytoscape.tableimport.internal.util.ImportType;
 import org.cytoscape.tableimport.internal.util.SourceColumnSemantic;
+import org.cytoscape.tableimport.internal.util.TypeUtil;
 import org.cytoscape.tableimport.internal.util.URLUtil;
 import org.cytoscape.util.swing.ColumnResizer;
 import org.cytoscape.util.swing.IconManager;
@@ -1045,8 +1046,6 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener {
 
 	/**
 	 * Load from the data source.<br>
-	 * 
-	 * @throws Exception
 	 */
 	public void importTable() throws Exception {
 		if (checkDataSourceError() == false)
@@ -1080,7 +1079,7 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener {
 					}
 				}
 
-				if (types[i] != SourceColumnSemantic.NONE && types[dupIndex] != SourceColumnSemantic.NONE) {
+				if (!TypeUtil.allowsDuplicateName(dialogType, types[i], types[dupIndex])) {
 					JOptionPane.showMessageDialog(
 							serviceRegistrar.getService(CySwingApplication.class).getJFrame(), 
 							"Duplicate Column Name Found: " + curName,
@@ -1696,7 +1695,7 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener {
 					}
 				}
 
-				if (types[i] != SourceColumnSemantic.NONE && types[dupIndex] != SourceColumnSemantic.NONE) {
+				if (!TypeUtil.allowsDuplicateName(dialogType, types[i], types[dupIndex])) {
 					JOptionPane.showMessageDialog(
 							serviceRegistrar.getService(CySwingApplication.class).getJFrame(), 
 							"Duplicate Column Name Found: " + curName,
@@ -1764,7 +1763,7 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener {
 					}
 				}
 
-				if (types[i] != SourceColumnSemantic.NONE && types[dupIndex] != SourceColumnSemantic.NONE) {
+				if (!TypeUtil.allowsDuplicateName(dialogType, types[i], types[dupIndex])) {
 					JOptionPane.showMessageDialog(
 							serviceRegistrar.getService(CySwingApplication.class).getJFrame(), 
 							"Duplicate Column Name Found: " + curName,

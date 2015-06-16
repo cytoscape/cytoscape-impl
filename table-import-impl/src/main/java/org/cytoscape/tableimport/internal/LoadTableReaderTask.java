@@ -49,7 +49,9 @@ import org.cytoscape.tableimport.internal.reader.TextFileDelimiters;
 import org.cytoscape.tableimport.internal.reader.TextTableReader;
 import org.cytoscape.tableimport.internal.ui.PreviewTablePanel;
 import org.cytoscape.tableimport.internal.util.AttributeDataType;
+import org.cytoscape.tableimport.internal.util.ImportType;
 import org.cytoscape.tableimport.internal.util.SourceColumnSemantic;
+import org.cytoscape.tableimport.internal.util.TypeUtil;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.vizmap.VisualStyle;
@@ -232,7 +234,7 @@ public class LoadTableReaderTask extends AbstractTask implements CyTableReader, 
 					}
 				}
 
-				if (types[i] != SourceColumnSemantic.NONE && types[dupIndex] != SourceColumnSemantic.NONE) {
+				if (!TypeUtil.allowsDuplicateName(ImportType.TABLE_IMPORT, types[i], types[dupIndex])) {
 //TODO add message to user
 					return;
 				}

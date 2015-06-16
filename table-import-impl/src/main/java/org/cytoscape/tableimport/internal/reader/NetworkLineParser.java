@@ -74,12 +74,23 @@ public class NetworkLineParser {
 		final CyNode target = createNode(parts, mapping.getTargetIndex());
 
 		final SourceColumnSemantic[] types = mapping.getTypes();
+		final List<Integer> srcAttrIdxs = new ArrayList<>();
+		final List<Integer> tgtAttrIdxs = new ArrayList<>();
 		final List<Integer> edgeAttrIdxs = new ArrayList<>();
 		
 		for (int i = 0; i < types.length; i++) {
-			if (types[i] == SourceColumnSemantic.EDGE_ATTR || types[i] == SourceColumnSemantic.ATTR)
+			if (types[i] == SourceColumnSemantic.SOURCE_ATTR)
+				srcAttrIdxs.add(i);
+			else if (types[i] == SourceColumnSemantic.TARGET_ATTR)
+				tgtAttrIdxs.add(i);
+			else if (types[i] == SourceColumnSemantic.EDGE_ATTR || types[i] == SourceColumnSemantic.ATTR)
 				edgeAttrIdxs.add(i);
 		}
+		
+		if (source != null)
+			addAttributes(source, parts, srcAttrIdxs);
+		if (target != null)
+			addAttributes(target, parts, tgtAttrIdxs);
 		
 		// Single column nodes list.  Just add nodes.
 		if (source == null || target == null)
