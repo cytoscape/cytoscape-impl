@@ -70,8 +70,10 @@ import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Vector;
 
@@ -124,8 +126,6 @@ import org.cytoscape.tableimport.internal.util.URLUtil;
 import org.cytoscape.util.swing.ColumnResizer;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import au.com.bytecode.opencsv.CSVReader;
 
@@ -168,13 +168,11 @@ public class PreviewTablePanel extends JPanel {
 	private ImportType importType;
 	private String listDelimiter;
 	
-	private VetoableChangeListener vetoableChangeListener;
-	private int editingColumnIndex = -1;
+	private Map<Integer, PreviewVetoableChangeListener> vetoableChangeListeners;
 
 	private final IconManager iconManager;
 
-	@SuppressWarnings("unused")
-	private static final Logger logger = LoggerFactory.getLogger(PreviewTablePanel.class);
+	private final Object lock = new Object();
 
 	/**
 	 * Creates a new PreviewTablePanel object.
@@ -192,6 +190,7 @@ public class PreviewTablePanel extends JPanel {
 
 		typeMap = new HashMap<>();
 		dataTypeMap = new HashMap<>();
+		vetoableChangeListeners = new HashMap<>();
 
 		initComponents();
 	}
@@ -937,146 +936,163 @@ public class PreviewTablePanel extends JPanel {
 		}
 	}
 	
-	private final class TableHeaderListener extends MouseAdapter {
+	private void showEditDialog(final JTable table, final int colIdx) {
+		final JTableHeader hd = table.getTableHeader();
+		final TableColumnModel columnModel = table.getColumnModel();
+		final TableColumn column = columnModel.getColumn(colIdx);
+
+		final Window parent = SwingUtilities.getWindowAncestor(PreviewTablePanel.this);
 		
-		@Override
-		public void mousePressed(MouseEvent e) {
-			final JTable table = getSelectedPreviewTable();
-			final JTableHeader hd = table.getTableHeader();
-			final TableColumnModel columnModel = table.getColumnModel();
-			final int colIdx = columnModel.getColumnIndexAtX(e.getX());
-			final TableColumn column = columnModel.getColumn(colIdx);
+		final SourceColumnSemantic[] types = getCurrentTypes();
+		final AttributeDataType[] dataTypes = getCurrentDataTypes();
 
-			final Window parent = SwingUtilities.getWindowAncestor(PreviewTablePanel.this);
-			
-			final SourceColumnSemantic[] types = getCurrentTypes();
-			final AttributeDataType[] dataTypes = getCurrentDataTypes();
+		final AttributeEditorPanel attrEditorPanel = new AttributeEditorPanel(
+				parent,
+				column.getHeaderValue().toString(),
+				TypeUtil.getAvailableTypes(importType),
+				types[colIdx],
+				dataTypes[colIdx],
+				listDelimiter,
+				iconManager
+		);
+		
+		final JDialog dialog = new JDialog(parent, ModalityType.MODELESS);
+		dialog.setUndecorated(true);
+		dialog.add(attrEditorPanel);
+		
+		final ActionMap actionMap = attrEditorPanel.getActionMap();
+		final InputMap inputMap = attrEditorPanel.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
 
-			/*
-			 * Right click: This action pops up an dialog to edit the attribute type and name.
-			 */
-			final AttributeEditorPanel attrEditorPanel = new AttributeEditorPanel(
-					parent,
-					column.getHeaderValue().toString(),
-					TypeUtil.getAvailableTypes(importType),
-					types[colIdx],
-					dataTypes[colIdx],
-					listDelimiter,
-					iconManager
-			);
-			
-			final JDialog dialog = new JDialog(parent, ModalityType.MODELESS);
-			dialog.setUndecorated(true);
-			dialog.add(attrEditorPanel);
-			
-			final ActionMap actionMap = attrEditorPanel.getActionMap();
-			final InputMap inputMap = attrEditorPanel.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
+		inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "VK_ESCAPE");
+		inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "VK_ENTER");
+		
+		actionMap.put("VK_ESCAPE", new AbstractAction("VK_ESCAPE") {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				disposeEditDialog(dialog, colIdx);
+			}
+		});
+		actionMap.put("VK_ENTER", new AbstractAction("VK_ENTER") {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				disposeEditDialog(dialog, colIdx);
+				updateTable(colIdx, attrEditorPanel);
+			}
+		});
+		
+		// This allows to switch focus between the different text fields in the dialog
+		// and only dispose it if the user clicks outside the dialog
+		final PreviewVetoableChangeListener pvcListener = new PreviewVetoableChangeListener(dialog, colIdx,
+				attrEditorPanel);
+		KeyboardFocusManager.getCurrentKeyboardFocusManager().addVetoableChangeListener("focusedWindow", pvcListener);
+		
+		// Get the column header location
+		// (see: https://bugs.openjdk.java.net/browse/JDK-4408424)
+		final AccessibleComponent ac = hd.getAccessibleContext().getAccessibleChild(colIdx)
+				.getAccessibleContext().getAccessibleComponent();
+		
+		final Point screenPt = ac.getLocationOnScreen();
+		final Point compPt = ac.getLocation();
+		int xOffset = screenPt.x - compPt.x;
+		int yOffset = screenPt.y - compPt.y + hd.getBounds().height;
 
-			inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "VK_ESCAPE");
-			inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "VK_ENTER");
+	    final Point pt = ac.getBounds().getLocation();
+	    pt.translate(xOffset, yOffset);
+		
+	    // Show the dialog right below the column header
+	    dialog.setLocation(pt);
+	    dialog.pack();
+		dialog.setVisible(true);
+		dialog.requestFocus();
+	}
+	
+	private void disposeEditDialog(final JDialog dialog, final int colIdx) {
+		if (dialog == null)
+			return;
+		
+		synchronized (lock) {
+			final PreviewVetoableChangeListener listener = vetoableChangeListeners.get(colIdx);
 			
-			actionMap.put("VK_ESCAPE", new AbstractAction("VK_ESCAPE") {
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					dialog.dispose();
-					editingColumnIndex = -1;
-				}
-			});
-			actionMap.put("VK_ENTER", new AbstractAction("VK_ENTER") {
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					dialog.dispose();
-					editingColumnIndex = -1;
-					updateTable(colIdx, attrEditorPanel);
-				}
-			});
+			if (listener != null && dialog == listener.dialog) {
+				KeyboardFocusManager.getCurrentKeyboardFocusManager().removeVetoableChangeListener(
+						"focusedWindow", listener);
+				vetoableChangeListeners.remove(colIdx);
+			}
 			
-			// This allows to switch focus between the different text fields in the dialog
-			// and only dispose it if the user clicks outside the dialog
-			vetoableChangeListener = new VetoableChangeListener() {
-				private boolean gained;
-				
-				@Override
-				public void vetoableChange(PropertyChangeEvent evt) throws PropertyVetoException {
-					if (evt.getNewValue() == dialog)
-						gained = true;
-					
-					if (gained && evt.getNewValue() != dialog) {
-						if (vetoableChangeListener != null)
-							KeyboardFocusManager.getCurrentKeyboardFocusManager().removeVetoableChangeListener(
-									"focusedWindow", vetoableChangeListener);
-						
-						SwingUtilities.invokeLater(new Runnable() {
-							@Override
-							public void run() {
-								dialog.dispose();
-								editingColumnIndex = -1;
-								updateTable(colIdx, attrEditorPanel);
-							}
-						});
-						vetoableChangeListener = null;
-					}
-				}
-			};
-			KeyboardFocusManager.getCurrentKeyboardFocusManager()
-					.addVetoableChangeListener("focusedWindow", vetoableChangeListener);
-			
-			// Get the column header location
-			// (see: https://bugs.openjdk.java.net/browse/JDK-4408424)
-			final AccessibleComponent ac = hd.getAccessibleContext().getAccessibleChild(colIdx)
-					.getAccessibleContext().getAccessibleComponent();
-			
-			final Point screenPt = ac.getLocationOnScreen();
-			final Point compPt = ac.getLocation();
-			int xOffset = screenPt.x - compPt.x;
-			int yOffset = screenPt.y - compPt.y + hd.getBounds().height;
+			dialog.dispose();
+		}
+	}
 
-		    final Point pt = ac.getBounds().getLocation();
-		    pt.translate(xOffset, yOffset);
-			
-		    // Show the dialog right below the column header
-		    dialog.setLocation(pt);
-			dialog.pack();
-			
-			editingColumnIndex = colIdx;
-			
-			dialog.setVisible(true);
-			dialog.requestFocus();
+	private void updateTable(final int colIdx, final AttributeEditorPanel attrEditorPanel) {
+		final JTable table = getSelectedPreviewTable();
+		final JTableHeader hd = table.getTableHeader();
+		final TableColumnModel columnModel = table.getColumnModel();
+		final TableColumn column = columnModel.getColumn(colIdx);
+
+		final String tabName = getSelectedTabName();
+		
+		final String name = attrEditorPanel.getName();
+		final SourceColumnSemantic newType = attrEditorPanel.getType();
+		final AttributeDataType newDataType = attrEditorPanel.getDataType();
+
+		if (name != null) {
+			column.setHeaderValue(name);
+			hd.resizeAndRepaint();
+
+			if (newDataType.isList()) {
+				listDelimiter = attrEditorPanel.getListDelimiterType();
+
+				changes.firePropertyChange(ImportTablePanel.LIST_DELIMITER_CHANGED, null,
+						attrEditorPanel.getListDelimiterType());
+			}
+
+			final Vector<Object> colNamePair = new Vector<>();
+			colNamePair.add(colIdx);
+			colNamePair.add(name);
+			changes.firePropertyChange(ImportTablePanel.ATTRIBUTE_NAME_CHANGED, null, colNamePair);
+
+			setType(tabName, colIdx, newType);
+			setDataType(tabName, colIdx, newDataType);
+
+			if (getSelectedPreviewTab() != null)
+				getSelectedPreviewTab().update();
+		}
+	}
+	
+	private class PreviewVetoableChangeListener implements VetoableChangeListener {
+
+		private final JDialog dialog;
+		private final int colIdx;
+		private final AttributeEditorPanel attrEditorPanel;
+		private boolean gained;
+		
+		private PreviewVetoableChangeListener(final JDialog dialog, final int colIdx,
+				final AttributeEditorPanel attrEditorPanel) {
+			this.dialog = dialog;
+			this.colIdx = colIdx;
+			this.attrEditorPanel = attrEditorPanel;
+			vetoableChangeListeners.put(colIdx, this);
 		}
 
-		private void updateTable(final int colIdx, final AttributeEditorPanel attrEditorPanel) {
-			final JTable table = getSelectedPreviewTable();
-			final JTableHeader hd = table.getTableHeader();
-			final TableColumnModel columnModel = table.getColumnModel();
-			final TableColumn column = columnModel.getColumn(colIdx);
-
-			final String tabName = getSelectedTabName();
-			
-			final String name = attrEditorPanel.getName();
-			final SourceColumnSemantic newType = attrEditorPanel.getType();
-			final AttributeDataType newDataType = attrEditorPanel.getDataType();
-
-			if (name != null) {
-				column.setHeaderValue(name);
-				hd.resizeAndRepaint();
-
-				if (newDataType.isList()) {
-					listDelimiter = attrEditorPanel.getListDelimiterType();
-
-					changes.firePropertyChange(ImportTablePanel.LIST_DELIMITER_CHANGED, null,
-							attrEditorPanel.getListDelimiterType());
+		@Override
+		public void vetoableChange(final PropertyChangeEvent evt) throws PropertyVetoException {
+			synchronized (lock) {
+				if (evt.getNewValue() == dialog)
+					gained = true;
+					
+				if (gained && evt.getNewValue() != dialog) {
+					KeyboardFocusManager.getCurrentKeyboardFocusManager().removeVetoableChangeListener(
+							"focusedWindow", this);
+					vetoableChangeListeners.remove(this);
+					
+					SwingUtilities.invokeLater(new Runnable() {
+						@Override
+						public void run() {
+							disposeEditDialog(dialog, colIdx);
+							updateTable(colIdx, attrEditorPanel);
+						}
+					});
 				}
-
-				final Vector<Object> colNamePair = new Vector<>();
-				colNamePair.add(colIdx);
-				colNamePair.add(name);
-				changes.firePropertyChange(ImportTablePanel.ATTRIBUTE_NAME_CHANGED, null, colNamePair);
-
-				setType(tabName, colIdx, newType);
-				setDataType(tabName, colIdx, newDataType);
-
-				if (getSelectedPreviewTab() != null)
-					getSelectedPreviewTab().update();
 			}
 		}
 	}
@@ -1163,8 +1179,27 @@ public class PreviewTablePanel extends JPanel {
 			final JTableHeader hd = table.getTableHeader();
 			hd.setReorderingAllowed(false);
 			hd.setDefaultRenderer(new PreviewTableHeaderRenderer());
-
-			table.getTableHeader().addMouseListener(new TableHeaderListener());
+			hd.addMouseListener(new MouseAdapter() {
+				@Override
+				public void mousePressed(final MouseEvent e) {
+					synchronized (lock) {
+						// If there are previous dialogs that have not been disposed yet, dispose them first!
+						final Iterator<Entry<Integer, PreviewVetoableChangeListener>> iterator = 
+								vetoableChangeListeners.entrySet().iterator();
+						
+						while (iterator.hasNext()) {
+							final Entry<Integer, PreviewVetoableChangeListener> entry = iterator.next();
+							iterator.remove();
+							final PreviewVetoableChangeListener listener = entry.getValue();
+							final JDialog dialog = listener.dialog;
+							dialog.dispose();
+						}
+						
+						final TableColumnModel columnModel = table.getColumnModel();
+						showEditDialog(table, columnModel.getColumnIndexAtX(e.getX()));
+					}
+				}
+			});
 
 			ColumnResizer.adjustColumnPreferredWidths(table);
 
@@ -1233,7 +1268,7 @@ public class PreviewTablePanel extends JPanel {
 					.addComponent(typeLabel)
 					.addPreferredGap(ComponentPlacement.RELATED)
 					.addComponent(nameLabel)
-					.addGap(2, 4, Short.MAX_VALUE)
+					.addGap(5, 5, Short.MAX_VALUE)
 					.addComponent(editLabel)
 			);
 			layout.setVerticalGroup(layout.createParallelGroup(CENTER, false)
@@ -1269,10 +1304,14 @@ public class PreviewTablePanel extends JPanel {
 				fgColor = UIManager.getColor("Label.disabledForeground");
 			}
 			
-			if (editingColumnIndex == col)
-				editLabel.setText(IconManager.ICON_CARET_DOWN);
-			else
-				editLabel.setText(IconManager.ICON_CARET_LEFT);
+			synchronized (lock) {
+				final PreviewVetoableChangeListener listener = vetoableChangeListeners.get(col);
+				
+				if (listener != null && listener.dialog.isVisible())
+					editLabel.setText(IconManager.ICON_CARET_DOWN);
+				else
+					editLabel.setText(IconManager.ICON_CARET_LEFT);
+			}
 			
 			nameLabel.setForeground(fgColor);
 			setBorder(col == 0 ? null : BORDER);
