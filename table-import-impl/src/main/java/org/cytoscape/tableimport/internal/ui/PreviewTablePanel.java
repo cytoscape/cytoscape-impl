@@ -1031,7 +1031,7 @@ public class PreviewTablePanel extends JPanel {
 
 		final String tabName = getSelectedTabName();
 		
-		final String name = attrEditorPanel.getName();
+		final String name = attrEditorPanel.getAttributeName();
 		final SourceColumnSemantic newType = attrEditorPanel.getType();
 		final AttributeDataType newDataType = attrEditorPanel.getDataType();
 

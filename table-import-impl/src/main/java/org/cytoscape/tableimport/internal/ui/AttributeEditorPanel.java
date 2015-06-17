@@ -75,7 +75,7 @@ public class AttributeEditorPanel extends JPanel {
 	private ButtonGroup typeButtonGroup;
 	private ButtonGroup dataTypeButtonGroup;
 	
-	private final String name;
+	private final String attrName;
 	private final SourceColumnSemantic type;
 	private final List<SourceColumnSemantic> availableTypes;
 	private final AttributeDataType dataType;
@@ -85,14 +85,14 @@ public class AttributeEditorPanel extends JPanel {
 
 	public AttributeEditorPanel(
 			final Window parent,
-			final String name,
+			final String attrName,
 			final List<SourceColumnSemantic> availableTypes,
 			final SourceColumnSemantic type,
 			final AttributeDataType dataType,
 			final String listDelimiter,
 			final IconManager iconManager
 	) {
-		this.name = name;
+		this.attrName = attrName;
 		this.availableTypes = availableTypes;
 		this.type = type;
 		this.dataType = dataType;
@@ -106,9 +106,8 @@ public class AttributeEditorPanel extends JPanel {
 		updateComponents();
 	}
 
-	@Override
-	public String getName() {
-		return attributeNameTextField.getText().trim();
+	public String getAttributeName() {
+		return getAttributeNameTextField().getText().trim();
 	}
 	
 	public SourceColumnSemantic getType() {
@@ -139,12 +138,12 @@ public class AttributeEditorPanel extends JPanel {
 	
 	public String getListDelimiterType() {
 		if (isOtherDelimiterSelected())
-			return otherTextField.getText().trim();
+			return getOtherTextField().getText().trim();
 
-		if (listDelimiterComboBox.getSelectedItem().toString().equals("|"))
+		if (getListDelimiterComboBox().getSelectedItem().toString().equals("|"))
 			return PIPE.toString();
 		
-		return listDelimiterComboBox.getSelectedItem().toString();
+		return getListDelimiterComboBox().getSelectedItem().toString();
 	}
 	
 	private void initComponents() {
@@ -154,10 +153,6 @@ public class AttributeEditorPanel extends JPanel {
 		typeButtonGroup = new ButtonGroup();
 		dataTypeButtonGroup = new ButtonGroup();
 
-		attributeNameTextField = new JTextField(name);
-		attributeNameTextField.setToolTipText("Column Name");
-		attributeNameTextField.putClientProperty("JComponent.sizeVariant", "small");
-		
 		final List<JToggleButton> dataTypeBtnList = new ArrayList<>();
 		
 		dataTypeBtnList.add(stringButton = createDataTypeButton(TYPE_STRING));
@@ -170,27 +165,6 @@ public class AttributeEditorPanel extends JPanel {
 		dataTypeBtnList.add(booleanListButton = createDataTypeButton(TYPE_BOOLEAN_LIST));
 		
 		setStyles(dataTypeBtnList);
-		
-		listDelimiterComboBox = new JComboBox<>();
-		listDelimiterComboBox.putClientProperty("JComponent.sizeVariant", "small");
-		listDelimiterComboBox.setModel(
-				new DefaultComboBoxModel<String>(new String[] {
-						"|",
-                        COLON.toString(),
-                        SLASH.toString(),
-                        BACKSLASH.toString(),
-                        COMMA.toString(),
-                        OTHER
-                    }));
-		listDelimiterComboBox.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				otherTextField.setEnabled(isOtherDelimiterSelected());
-			}
-		});
-		
-		otherTextField = new JTextField();
-		otherTextField.putClientProperty("JComponent.sizeVariant", "small");
 		
 		final GroupLayout layout = new GroupLayout(this);
 		this.setLayout(layout);
@@ -209,7 +183,7 @@ public class AttributeEditorPanel extends JPanel {
 		setStyles(new ArrayList<JToggleButton>(typeButtons.values()));
 		
 		layout.setHorizontalGroup(layout.createParallelGroup(CENTER, true)
-				.addComponent(attributeNameTextField, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				.addComponent(getAttributeNameTextField(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 				.addGroup(typeHGroup)
 				.addGroup(layout.createSequentialGroup()
 						.addComponent(stringButton, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
@@ -226,12 +200,12 @@ public class AttributeEditorPanel extends JPanel {
 				.addGroup(layout.createSequentialGroup()
 						.addComponent(listDelimiterLabel)
 						.addPreferredGap(ComponentPlacement.RELATED)
-						.addComponent(listDelimiterComboBox, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-						.addComponent(otherTextField, 12, 36, Short.MAX_VALUE)
+						.addComponent(getListDelimiterComboBox(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addComponent(getOtherTextField(), 12, 36, Short.MAX_VALUE)
 				)
 		);
 		layout.setVerticalGroup(layout.createSequentialGroup()
-				.addComponent(attributeNameTextField, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				.addComponent(getAttributeNameTextField(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 				.addPreferredGap(ComponentPlacement.UNRELATED)
 				.addGroup(typeVGroup)
 				.addPreferredGap(ComponentPlacement.UNRELATED)
@@ -251,11 +225,54 @@ public class AttributeEditorPanel extends JPanel {
 						.addPreferredGap(ComponentPlacement.RELATED)
 						.addGroup(layout.createParallelGroup(CENTER)
 								.addComponent(listDelimiterLabel)
-								.addComponent(listDelimiterComboBox, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-								.addComponent(otherTextField, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+								.addComponent(getListDelimiterComboBox(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+								.addComponent(getOtherTextField(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 						)
 				)
 		);
+	}
+	
+	private JTextField getAttributeNameTextField() {
+		if (attributeNameTextField == null) {
+			attributeNameTextField = new JTextField(attrName);
+			attributeNameTextField.setToolTipText("Column Name");
+			attributeNameTextField.putClientProperty("JComponent.sizeVariant", "small");
+		}
+		
+		return attributeNameTextField;
+	}
+	
+	private JComboBox<String> getListDelimiterComboBox() {
+		if (listDelimiterComboBox == null) {
+			listDelimiterComboBox = new JComboBox<>();
+			listDelimiterComboBox.putClientProperty("JComponent.sizeVariant", "small");
+			listDelimiterComboBox.setModel(
+					new DefaultComboBoxModel<String>(new String[] {
+							"|",
+	                        COLON.toString(),
+	                        SLASH.toString(),
+	                        BACKSLASH.toString(),
+	                        COMMA.toString(),
+	                        OTHER
+	                    }));
+			listDelimiterComboBox.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					getOtherTextField().setEnabled(isOtherDelimiterSelected());
+				}
+			});
+		}
+		
+		return listDelimiterComboBox;
+	}
+	
+	private JTextField getOtherTextField() {
+		if (otherTextField == null) {
+			otherTextField = new JTextField();
+			otherTextField.putClientProperty("JComponent.sizeVariant", "small");
+		}
+		
+		return otherTextField;
 	}
 
 	private void setStyles(final List<JToggleButton> btnList) {
@@ -297,32 +314,32 @@ public class AttributeEditorPanel extends JPanel {
 	
 	private void updateListDelimiterComboBox() {
 		listDelimiterLabel.setEnabled(dataType.isList());
-		listDelimiterComboBox.setEnabled(dataType.isList());
+		getListDelimiterComboBox().setEnabled(dataType.isList());
 		
 		if (listDelimiter == null || listDelimiter.isEmpty()) {
-			listDelimiterComboBox.setSelectedIndex(0);
+			getListDelimiterComboBox().setSelectedIndex(0);
 		} else {
-			for (int i = 0; i < listDelimiterComboBox.getItemCount(); i++) {
-				if (listDelimiter.equals(listDelimiterComboBox.getItemAt(i))) {
-					listDelimiterComboBox.setSelectedIndex(i);
+			for (int i = 0; i < getListDelimiterComboBox().getItemCount(); i++) {
+				if (listDelimiter.equals(getListDelimiterComboBox().getItemAt(i))) {
+					getListDelimiterComboBox().setSelectedIndex(i);
 
 					return;
 				}
 			}
 			
-			listDelimiterComboBox.setSelectedItem(OTHER);
+			getListDelimiterComboBox().setSelectedItem(OTHER);
 		}
 	}
 	
 	private void updateOtherTextField() {
-		otherTextField.setEnabled(dataType.isList() && isOtherDelimiterSelected());
+		getOtherTextField().setEnabled(dataType.isList() && isOtherDelimiterSelected());
 		
 		if (listDelimiter != null && !listDelimiter.isEmpty() && isOtherDelimiterSelected())
-			otherTextField.setText(listDelimiter);
+			getOtherTextField().setText(listDelimiter);
 	}
 	
 	private boolean isOtherDelimiterSelected() {
-		return OTHER.equals(listDelimiterComboBox.getSelectedItem().toString());
+		return OTHER.equals(getListDelimiterComboBox().getSelectedItem().toString());
 	}
 
 	private JToggleButton createTypeButton(final SourceColumnSemantic type) {
@@ -361,8 +378,8 @@ public class AttributeEditorPanel extends JPanel {
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			listDelimiterLabel.setEnabled(isList);
-			listDelimiterComboBox.setEnabled(isList);
-			otherTextField.setEnabled(isList && isOtherDelimiterSelected());
+			getListDelimiterComboBox().setEnabled(isList);
+			getOtherTextField().setEnabled(isList && isOtherDelimiterSelected());
 		}
 	}
 }
