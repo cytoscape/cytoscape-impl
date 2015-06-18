@@ -1,4 +1,4 @@
-package org.cytoscape.tableimport.internal;
+package org.cytoscape.tableimport.internal.task;
 
 /*
  * #%L
@@ -25,27 +25,35 @@ package org.cytoscape.tableimport.internal;
  */
 
 
+
 import java.io.InputStream;
 
+import org.apache.commons.io.FilenameUtils;
 import org.cytoscape.io.CyFileFilter;
+import org.cytoscape.io.read.AbstractInputStreamTaskFactory;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.work.TaskIterator;
 
 
-public class ImportAttributeTableReaderFactory extends AbstractTableReaderFactory {
-	
-	/**
-	 * Creates a new ImportAttributeTableReaderFactory object.
-	 */
-	public ImportAttributeTableReaderFactory(final CyFileFilter filter, final CyServiceRegistrar serviceRegistrar) {
-		super(filter, serviceRegistrar);
-	}
+public class ImportNetworkTableReaderFactory extends AbstractInputStreamTaskFactory {
 
-	@Override
-	public TaskIterator createTaskIterator(InputStream inputStream, String inputName) {
-		int lastIndex = inputName.lastIndexOf('.');
-		String fileFormat = lastIndex == -1 ? "" : inputName.substring(lastIndex);
-		
-		return new TaskIterator(new ImportAttributeTableReaderTask(inputStream, fileFormat, inputName, serviceRegistrar));
-	}
+    private final CyServiceRegistrar serviceRegistrar;
+
+	/**
+     * Creates a new ImportNetworkTableReaderFactory object.
+     */
+    public ImportNetworkTableReaderFactory(final CyFileFilter filter, final CyServiceRegistrar serviceRegistrar){
+        super(filter);
+        this.serviceRegistrar = serviceRegistrar;
+    }
+
+    @Override
+    public TaskIterator createTaskIterator(InputStream inputStream, String inputName) {
+        String fileFormat = FilenameUtils.getExtension(inputName);
+        
+        if(!fileFormat.isEmpty()) 
+        	fileFormat = "." + fileFormat; //"." is surprisingly required somewhere withing CombineReaderAndMappingTask
+        
+        return new TaskIterator(new CombineReaderAndMappingTask(inputStream, fileFormat, inputName, serviceRegistrar));
+    }
 }

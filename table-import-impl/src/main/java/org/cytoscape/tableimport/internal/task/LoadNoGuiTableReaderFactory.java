@@ -1,4 +1,4 @@
-package org.cytoscape.tableimport.internal;
+package org.cytoscape.tableimport.internal.task;
 
 /*
  * #%L
