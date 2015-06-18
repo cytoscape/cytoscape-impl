@@ -25,11 +25,16 @@ package org.cytoscape.task.internal.table;
  */
 
 import java.io.IOException;
+import java.text.Collator;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.NetworkViewRenderer;
 import org.cytoscape.io.read.CyTableReader;
 import org.cytoscape.model.CyColumn;
@@ -297,10 +302,34 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 			final List<String> names = new ArrayList<>();
 			names.addAll(name2NetworkMap.keySet());
 			
+			final Collator collator = Collator.getInstance(Locale.getDefault());
+			
+			Collections.sort(names, new Comparator<String>() {
+				@Override
+				public int compare(String s1, String s2) {
+					if (s1 == null || s2 == null) {
+						if (s2 != null) return -1;
+						if (s1 != null) return 1;
+						return 0;
+					}
+					return collator.compare(s1, s2);
+				}
+			});
+			
 			if (names.isEmpty()) {
 				targetNetworkList = new ListMultipleSelection<String>(NO_NETWORKS);
 			} else {
 				targetNetworkList = new ListMultipleSelection<String>(names);
+				
+				final CyApplicationManager appMgr = serviceRegistrar.getService(CyApplicationManager.class);
+				final CyNetwork currNet = appMgr.getCurrentNetwork();
+				
+				if (currNet != null) {
+					final String currName = currNet.getRow(currNet).get(CyNetwork.NAME, String.class);
+					
+					if (currName != null && targetNetworkList.getPossibleValues().contains(currName))
+					targetNetworkList.setSelectedValues(Collections.singletonList(currName));
+				}
 			}
 	
 			final CyRootNetworkManager rootNetMgr = serviceRegistrar.getService(CyRootNetworkManager.class);
