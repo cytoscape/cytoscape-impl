@@ -45,13 +45,13 @@ import org.cytoscape.event.DummyCyEventHelper;
 import org.cytoscape.group.CyGroupManager;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.NetworkTestSupport;
 import org.cytoscape.model.SavePolicy;
-import org.cytoscape.model.TableTestSupport;
 import org.cytoscape.model.events.NetworkAddedEvent;
 import org.cytoscape.model.internal.CyNetworkManagerImpl;
 import org.cytoscape.model.internal.CyNetworkTableManagerImpl;
@@ -60,6 +60,7 @@ import org.cytoscape.model.internal.CySubNetworkImpl;
 import org.cytoscape.model.internal.CyTableImpl;
 import org.cytoscape.model.internal.CyTableManagerImpl;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
+import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.CyNetworkNaming;
 import org.cytoscape.task.internal.creation.NewNetworkSelectedNodesOnlyTask;
@@ -70,6 +71,7 @@ import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.TunableSetter;
 import org.cytoscape.work.internal.sync.SyncTunableHandlerFactory;
 import org.cytoscape.work.internal.sync.SyncTunableMutator;
 import org.cytoscape.work.internal.sync.SyncTunableMutatorFactory;
@@ -84,11 +86,11 @@ public class MappingIntegrationTest {
 
 	private final NetworkTestSupport support = new NetworkTestSupport();
 	private final NetworkViewTestSupport viewSupport = new NetworkViewTestSupport();
-	private final TableTestSupport tableSupport = new TableTestSupport();
 	private CyRootNetwork root;
 
 	private CyEventHelper eventHelper = new DummyCyEventHelper();
 	private CyNetworkNaming namingUtil = mock(CyNetworkNaming.class);
+	private CyApplicationManager appMgr = mock(CyApplicationManager.class);
     private CyServiceRegistrar serviceRegistrar = mock(CyServiceRegistrar.class);
 	private CyNetworkManagerImpl netMgr = new CyNetworkManagerImpl(serviceRegistrar);
 	private final CyRootNetworkManagerImpl rootNetMgr = new CyRootNetworkManagerImpl();
@@ -107,7 +109,12 @@ public class MappingIntegrationTest {
 	public void setUp() throws Exception {
 		when(serviceRegistrar.getService(CyEventHelper.class)).thenReturn(eventHelper);
         when(serviceRegistrar.getService(CyNetworkNaming.class)).thenReturn(namingUtil);
-		
+        when(serviceRegistrar.getService(CyNetworkManager.class)).thenReturn(netMgr);
+        when(serviceRegistrar.getService(CyRootNetworkManager.class)).thenReturn(rootNetMgr);
+        when(serviceRegistrar.getService(CyTableManager.class)).thenReturn(tabMgr);
+        when(serviceRegistrar.getService(TunableSetter.class)).thenReturn(ts);
+        when(serviceRegistrar.getService(CyApplicationManager.class)).thenReturn(appMgr);
+        
 		when(renderingEngineManager.getRenderingEngines(any(View.class))).thenReturn(Collections.EMPTY_LIST);
 	}
 	
@@ -226,8 +233,6 @@ public class MappingIntegrationTest {
 		newNetTask2.setTaskIterator(new TaskIterator(newNetTask2));
 		newNetTask2.run(mock(TaskMonitor.class));
 		
-	
-		
 		
 		List<CyNetwork> thirdNetList  = new ArrayList<CyNetwork>(netMgr.getNetworkSet());
 		thirdNetList.removeAll(secondNetList);
@@ -246,12 +251,10 @@ public class MappingIntegrationTest {
 		//hence the nodes are there but the related rows in the table are empty
 		assertEquals(table1sRow1, subnet2.getRow(node1).get(table1sCol, String.class) );
 		assertEquals(table2sRow1, subnet2.getRow(node1).get(table2sCol, String.class) );
-	
 	}
 	
-	public void mapping(CyTable table, CyNetwork net,CyRootNetwork rootNet, CyColumn col, boolean selectedOnly) throws Exception{
-		
-		ImportTableDataTaskFactoryImpl mappingTF = new ImportTableDataTaskFactoryImpl(netMgr,tabMgr, ts, rootNetMgr);
+	public void mapping(CyTable table, CyNetwork net, CyRootNetwork rootNet, CyColumn col, boolean selectedOnly) throws Exception{
+		ImportTableDataTaskFactoryImpl mappingTF = new ImportTableDataTaskFactoryImpl(serviceRegistrar);
 		List<CyNetwork> nets = new ArrayList<CyNetwork>();
 		nets.add(net);
 		
@@ -262,6 +265,5 @@ public class MappingIntegrationTest {
 		Task t = ti.next();
 		assertNotNull("task is null", t);
 		t.run(mock(TaskMonitor.class));
-	
 	}
 }

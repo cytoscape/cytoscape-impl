@@ -28,10 +28,7 @@ package org.cytoscape.task.internal.loaddatatable;
 
 import java.net.URL;
 
-import org.cytoscape.io.read.CyTableReaderManager;
-import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.model.CyTableManager;
-import org.cytoscape.model.subnetwork.CyRootNetworkManager;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
@@ -39,12 +36,11 @@ import org.cytoscape.work.Tunable;
 
 public class LoadTableURLTask extends AbstractLoadTableTask {
 	
-	@Tunable(description="Data Table URL:", params="fileCategory=table;input=true")
+	@Tunable(description = "Data Table URL:", params = "fileCategory=table;input=true")
 	public URL url;
 
-	public LoadTableURLTask(final CyTableReaderManager mgr,  final CyNetworkManager netMgr, final CyTableManager tableMgr, 
-			final CyRootNetworkManager rootNetMgr) {
-		super(mgr, netMgr, tableMgr, rootNetMgr);
+	public LoadTableURLTask(final CyServiceRegistrar serviceRegistrar) {
+		super(serviceRegistrar);
 	}
 
 	/**
@@ -52,9 +48,9 @@ public class LoadTableURLTask extends AbstractLoadTableTask {
 	 */
 	@Override
 	public void run(final TaskMonitor taskMonitor) throws Exception {
-		loadTable(url.toString(), url.toURI(),true, taskMonitor);
+		loadTable(url.toString(), url.toURI(), true, taskMonitor);
 	}
-	
+
 	@ProvidesTitle
 	public String getTitle() {
 		return "Import Table";

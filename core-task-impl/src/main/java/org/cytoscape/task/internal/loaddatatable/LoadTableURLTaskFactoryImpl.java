@@ -32,48 +32,38 @@ import java.net.URL;
 
 import org.cytoscape.io.read.CyTableReader;
 import org.cytoscape.io.read.CyTableReaderManager;
-import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.model.CyTableManager;
-import org.cytoscape.model.subnetwork.CyRootNetworkManager;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.read.LoadTableURLTaskFactory;
 import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.TaskIterator;
-import org.cytoscape.work.TunableSetter;
 
 
 public class LoadTableURLTaskFactoryImpl extends AbstractTaskFactory implements LoadTableURLTaskFactory {
-	
-	private final CyTableReaderManager mgr;
-	private  final CyNetworkManager netMgr;
-	private final CyTableManager tableMgr;
-	private final CyRootNetworkManager rootNetMgr;
-	
-	public LoadTableURLTaskFactoryImpl(CyTableReaderManager mgr,  final CyNetworkManager netMgr,
-			final CyTableManager tabelMgr, final CyRootNetworkManager rootNetMgr) {
-		this.mgr = mgr;
-		this.netMgr = netMgr;
-		this.tableMgr = tabelMgr;
-		this.rootNetMgr = rootNetMgr;
+
+	private final CyServiceRegistrar serviceRegistrar;
+
+	public LoadTableURLTaskFactoryImpl(final CyServiceRegistrar serviceRegistrar) {
+		this.serviceRegistrar = serviceRegistrar;
 	}
 
 	@Override
 	public TaskIterator createTaskIterator() {
-		return new TaskIterator(2, new LoadTableURLTask(mgr, netMgr, tableMgr, rootNetMgr));
+		return new TaskIterator(2, new LoadTableURLTask(serviceRegistrar));
 	}
 
 	@Override
 	public TaskIterator createTaskIterator(URL url) {
-		
-	    URI uri = null;
+		URI uri = null;
+
 		try {
 			uri = url.toURI();
 		} catch (URISyntaxException e) {
 			e.printStackTrace();
 		}
-		
-		CyTableReader reader = mgr.getReader(uri, uri.toString());
-		
-		return new TaskIterator(new CombineReaderAndMappingTask( reader,tableMgr, netMgr, rootNetMgr));
 
+		final CyTableReaderManager tableReaderMgr = serviceRegistrar.getService(CyTableReaderManager.class);
+		final CyTableReader reader = tableReaderMgr.getReader(uri, uri.toString());
+
+		return new TaskIterator(new CombineReaderAndMappingTask(reader, serviceRegistrar));
 	}
 }

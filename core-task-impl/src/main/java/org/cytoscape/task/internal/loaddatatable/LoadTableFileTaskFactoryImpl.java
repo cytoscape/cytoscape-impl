@@ -30,41 +30,29 @@ import java.io.File;
 
 import org.cytoscape.io.read.CyTableReader;
 import org.cytoscape.io.read.CyTableReaderManager;
-import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.model.CyTableManager;
-import org.cytoscape.model.subnetwork.CyRootNetworkManager;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.read.LoadTableFileTaskFactory;
 import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.TaskIterator;
-import org.cytoscape.work.TunableSetter;
 
 
-public class LoadTableFileTaskFactoryImpl extends AbstractTaskFactory implements LoadTableFileTaskFactory{
-	
-	private final CyTableReaderManager mgr;
-	private final CyNetworkManager netMgr;
-	private final CyTableManager tableMgr;
-	private final CyRootNetworkManager rootNetMgr;
-	
-	public LoadTableFileTaskFactoryImpl(CyTableReaderManager mgr,   final CyNetworkManager netMgr, 
-			final CyTableManager tabelMgr,final CyRootNetworkManager rootNetMgr) {
-		this.mgr = mgr;
-		this.netMgr = netMgr;
-		this.tableMgr = tabelMgr;
-		this.rootNetMgr = rootNetMgr;
+public class LoadTableFileTaskFactoryImpl extends AbstractTaskFactory implements LoadTableFileTaskFactory {
+
+	private final CyServiceRegistrar serviceRegistrar;
+
+	public LoadTableFileTaskFactoryImpl(final CyServiceRegistrar serviceRegistrar) {
+		this.serviceRegistrar = serviceRegistrar;
 	}
 
 	public TaskIterator createTaskIterator() {
-		return new TaskIterator(2, new LoadTableFileTask(mgr, netMgr, tableMgr, rootNetMgr));
+		return new TaskIterator(2, new LoadTableFileTask(serviceRegistrar));
 	}
 
 	@Override
-	public TaskIterator createTaskIterator(File file) {
-		
-		
-		CyTableReader reader = mgr.getReader(file.toURI(), file.toURI().toString());
-		
-		return new TaskIterator(new CombineReaderAndMappingTask( reader, tableMgr,netMgr, rootNetMgr));
+	public TaskIterator createTaskIterator(final File file) {
+		final CyTableReaderManager tableReaderMgr = serviceRegistrar.getService(CyTableReaderManager.class);
+		final CyTableReader reader = tableReaderMgr.getReader(file.toURI(), file.toURI().toString());
 
+		return new TaskIterator(new CombineReaderAndMappingTask(reader, serviceRegistrar));
 	}
 }

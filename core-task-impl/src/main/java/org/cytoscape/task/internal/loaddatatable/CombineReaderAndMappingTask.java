@@ -27,9 +27,7 @@ package org.cytoscape.task.internal.loaddatatable;
 import static org.cytoscape.work.TunableValidator.ValidationState.OK;
 
 import org.cytoscape.io.read.CyTableReader;
-import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.model.CyTableManager;
-import org.cytoscape.model.subnetwork.CyRootNetworkManager;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.internal.table.ImportTableDataTask;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ContainsTunables;
@@ -48,41 +46,36 @@ public class CombineReaderAndMappingTask extends AbstractTask implements Tunable
 	public ImportTableDataTask importTableDataTask;
 	
 	@ContainsTunables
-	public CyTableReader readerTask;
+	public CyTableReader tableReader;
 
 	
-	public CombineReaderAndMappingTask(
-			CyTableReader readerTask,
-			final CyTableManager tabelMgr,
-			final CyNetworkManager networkManager,
-			final CyRootNetworkManager rootNetMgr
-	){
-		this.readerTask = readerTask;
-		this.importTableDataTask = new ImportTableDataTask(readerTask, tabelMgr, rootNetMgr, networkManager);
+	public CombineReaderAndMappingTask(final CyTableReader tableReader, final CyServiceRegistrar serviceRegistrar) {
+		this.tableReader = tableReader;
+		this.importTableDataTask = new ImportTableDataTask(tableReader, serviceRegistrar);
 	}
 
 	@Override
 	public ValidationState getValidationState(Appendable errMsg) {
-		if ( readerTask instanceof TunableValidator ) {
-			ValidationState readVS = ((TunableValidator)readerTask).getValidationState(errMsg);
+		if (tableReader instanceof TunableValidator) {
+			ValidationState readVS = ((TunableValidator) tableReader).getValidationState(errMsg);
 
-			if ( readVS != OK )
+			if (readVS != OK)
 				return readVS;
 		}
-		
-		if ( importTableDataTask instanceof TunableValidator ) {
-			ValidationState readVS = ((TunableValidator)importTableDataTask).getValidationState(errMsg);
 
-			if ( readVS != OK )
+		if (importTableDataTask instanceof TunableValidator) {
+			ValidationState readVS = ((TunableValidator) importTableDataTask).getValidationState(errMsg);
+
+			if (readVS != OK)
 				return readVS;
 		}
-		
+
 		return OK;
 	}
 
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
-		readerTask.run(taskMonitor);
+		tableReader.run(taskMonitor);
 		importTableDataTask.run(taskMonitor);
 	}
 }

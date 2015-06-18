@@ -27,6 +27,7 @@ package org.cytoscape.task.internal.loaddatatable;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.when;
 
 import java.net.URL;
 
@@ -34,6 +35,7 @@ import org.cytoscape.io.read.CyTableReaderManager;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskMonitor;
@@ -45,34 +47,27 @@ import org.mockito.MockitoAnnotations;
 
 public class LoadAttributesURLTaskFactoryImplTest {
 	
-	@Mock
-	private CyTableReaderManager rmgr;
-	
-	@Mock
-	private TaskMonitor tm;
-	
-	@Mock
-	TunableSetter ts;
-	
-	@Mock
-	CyNetworkManager netMgr;
-	
-	@Mock
-	CyTableManager tabMgr;
-
-	@Mock
-	CyRootNetworkManager rootNetMgr;
+	@Mock CyServiceRegistrar serviceRegistrar;
+	@Mock CyTableReaderManager rmgr;
+	@Mock TaskMonitor tm;
+	@Mock TunableSetter ts;
+	@Mock CyNetworkManager netMgr;
+	@Mock CyTableManager tabMgr;
+	@Mock CyRootNetworkManager rootNetMgr;
 	
 	@Before
 	public void initMocks() {
 		MockitoAnnotations.initMocks(this);
 		
+		when(serviceRegistrar.getService(CyNetworkManager.class)).thenReturn(netMgr);
+        when(serviceRegistrar.getService(CyRootNetworkManager.class)).thenReturn(rootNetMgr);
+        when(serviceRegistrar.getService(CyTableManager.class)).thenReturn(tabMgr);
+        when(serviceRegistrar.getService(TunableSetter.class)).thenReturn(ts);
 	}
 	
 	@Test(expected = NullPointerException.class)
 	public void testLoadAttributesURLTaskFactory() throws Exception {
-
-		final LoadTableURLTaskFactoryImpl factory = new LoadTableURLTaskFactoryImpl(rmgr, netMgr, tabMgr, rootNetMgr);
+		final LoadTableURLTaskFactoryImpl factory = new LoadTableURLTaskFactoryImpl(serviceRegistrar);
 		
 		final TaskIterator ti = factory.createTaskIterator();
 		assertNotNull(ti);
