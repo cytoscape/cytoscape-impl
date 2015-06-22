@@ -200,7 +200,7 @@ public class NetworkLineParser {
 				if (curList == null)
 					curList = new ArrayList<>();
 
-				curList.addAll(buildList(entry, type));
+				curList.addAll(buildList(entry, type, index));
 
 				//mapping.getAttributes().setListAttribute(key, mapping.getAttributeNames()[index], curList);
 				network.getRow(element).set(mapping.getAttributeNames()[index], curList);
@@ -218,13 +218,20 @@ public class NetworkLineParser {
 	/**
 	 * If an entry is a list, split the string and create new List Attribute.
 	 */
-	private List<Object> buildList(final String entry, final AttributeDataType type) {
+	private List<Object> buildList(final String entry, final AttributeDataType type, final int index) {
 		if (entry == null)
 			return null;
 
 		final List<Object> listAttr = new ArrayList<>();
+		
+		final String[] delimiters = mapping.getListDelimiters();
+		String delimiter = delimiters != null && delimiters.length > index ?
+				delimiters[index] : AbstractMappingParameters.DEF_LIST_DELIMITER;
+				
+		if (delimiter == null || delimiter.isEmpty())
+			delimiter = AbstractMappingParameters.DEF_LIST_DELIMITER;
 
-		final String[] parts = (entry.replace("\"", "")).split(mapping.getListDelimiter());
+		final String[] parts = (entry.replace("\"", "")).split(delimiter);
 
 		for (String listItem : parts) {
 			if (type == TYPE_BOOLEAN)

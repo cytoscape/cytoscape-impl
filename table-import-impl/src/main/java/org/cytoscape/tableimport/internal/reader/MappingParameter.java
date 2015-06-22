@@ -38,5 +38,5 @@ public interface MappingParameter {
 	
 	public SourceColumnSemantic[] getTypes();
 
-	public String getListDelimiter();
+	public String[] getListDelimiters();
 }

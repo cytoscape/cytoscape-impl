@@ -30,11 +30,11 @@ import static javax.swing.GroupLayout.Alignment.BASELINE;
 import static javax.swing.GroupLayout.Alignment.CENTER;
 import static javax.swing.GroupLayout.Alignment.LEADING;
 import static javax.swing.GroupLayout.Alignment.TRAILING;
-import static org.cytoscape.tableimport.internal.reader.TextFileDelimiters.PIPE;
 import static org.cytoscape.tableimport.internal.reader.TextTableReader.ObjectType.EDGE;
 import static org.cytoscape.tableimport.internal.reader.TextTableReader.ObjectType.NETWORK;
 import static org.cytoscape.tableimport.internal.reader.TextTableReader.ObjectType.NODE;
 import static org.cytoscape.tableimport.internal.reader.ontology.GeneAssociationTag.DB_OBJECT_SYNONYM;
+import static org.cytoscape.tableimport.internal.reader.ontology.GeneAssociationTag.GO_ID;
 import static org.cytoscape.tableimport.internal.reader.ontology.GeneAssociationTag.TAXON;
 import static org.cytoscape.tableimport.internal.ui.theme.ImportDialogIcons.ID_ICON;
 import static org.cytoscape.tableimport.internal.util.ImportType.NETWORK_IMPORT;
@@ -44,6 +44,7 @@ import static org.cytoscape.tableimport.internal.util.SourceColumnSemantic.ATTR;
 import static org.cytoscape.tableimport.internal.util.SourceColumnSemantic.INTERACTION;
 import static org.cytoscape.tableimport.internal.util.SourceColumnSemantic.KEY;
 import static org.cytoscape.tableimport.internal.util.SourceColumnSemantic.NONE;
+import static org.cytoscape.tableimport.internal.util.SourceColumnSemantic.ONTOLOGY;
 import static org.cytoscape.tableimport.internal.util.SourceColumnSemantic.SOURCE;
 import static org.cytoscape.tableimport.internal.util.SourceColumnSemantic.SOURCE_ATTR;
 import static org.cytoscape.tableimport.internal.util.SourceColumnSemantic.TARGET;
@@ -59,6 +60,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
+import java.beans.IndexedPropertyChangeEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -68,6 +70,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -103,7 +106,8 @@ import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
 import javax.swing.WindowConstants;
-import javax.swing.table.DefaultTableModel;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.table.TableModel;
 import javax.xml.bind.JAXBException;
 
@@ -124,6 +128,7 @@ import org.cytoscape.tableimport.internal.reader.NetworkTableMappingParameters;
 import org.cytoscape.tableimport.internal.reader.SupportedFileType;
 import org.cytoscape.tableimport.internal.reader.TextFileDelimiters;
 import org.cytoscape.tableimport.internal.reader.TextTableReader.ObjectType;
+import org.cytoscape.tableimport.internal.ui.PreviewTablePanel.PreviewTableModel;
 import org.cytoscape.tableimport.internal.util.AttributeDataType;
 import org.cytoscape.tableimport.internal.util.FileType;
 import org.cytoscape.tableimport.internal.util.ImportType;
@@ -140,10 +145,9 @@ import org.slf4j.LoggerFactory;
 /**
  * Main panel for Table Import.
  */
-public class ImportTablePanel extends JPanel implements PropertyChangeListener {
+@SuppressWarnings("serial")
+public class ImportTablePanel extends JPanel implements PropertyChangeListener, DataEvents {
 	
-	private static final long serialVersionUID = 7356378931577386260L;
-
 	private static final Logger logger = LoggerFactory.getLogger(ImportTablePanel.class);
 
 	/*
@@ -151,19 +155,10 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener {
 	 */
 	private static final String DEFAULT_INTERACTION = "pp";
 
-	/*
-	 * Signals used among Swing components in this dialog:
-	 */
-	public static final String LIST_DELIMITER_CHANGED = "listDelimiterChanged";
-	public static final String ATTR_DATA_TYPE_CHANGED = "attrDataTypeChanged";
-	public static final String ATTRIBUTE_NAME_CHANGED = "aliasTableChanged";
-	public static final String SHEET_CHANGED = "sheetChanged";
-
 	private static final String ID = CyNetwork.NAME;
 
 	private JDialog advancedDialog;
 	
-	protected JCheckBox transferNameCheckBox;
 	protected ButtonGroup attrTypeButtonGroup;
 	protected JLabel attributeFileLabel;
 	protected JButton browseAnnotationButton;
@@ -199,6 +194,8 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener {
 	protected JCheckBox spaceCheckBox;
 	protected JCheckBox otherCheckBox;
 	protected JTextField otherDelimiterTextField;
+	
+	private JCheckBox transferNameCheckBox;
 
 	JStatusBar statusBar;
 
@@ -211,21 +208,18 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener {
 
 	// Data Type
 	private ObjectType objType;
-	private final ImportType dialogType;
-
+	private final ImportType importType;
+	
 	protected Map<String, String> annotationUrlMap;
 	protected Map<String, String> annotationFormatMap;
 	protected Map<String, Map<String, String>> annotationAttributesMap;
 	protected Map<String, String> ontologyUrlMap;
 	protected Map<String, String> ontologyTypeMap;
 	protected Map<String, String> ontologyDescriptionMap;
-	private List<AttributeDataType> attributeDataTypes;
 
 	/*
 	 * Tracking multiple sheets.
 	 */
-	private String[] columnHeaders;
-	protected String listDelimiter;
 	private CyTable selectedAttributes;
 	private PropertyChangeSupport changes = new PropertyChangeSupport(this);
 
@@ -242,18 +236,18 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener {
 	private File tempFile;
 
 	public ImportTablePanel(
-			final ImportType dialogType,
+			final ImportType importType,
 			final InputStream is,
 			final String fileType,
 			final String inputName,
 			final InputStreamTaskFactory factory,
 			final CyServiceRegistrar serviceRegistrar
 	) throws JAXBException, IOException {
-		this(dialogType, is, fileType, factory, serviceRegistrar);
+		this(importType, is, fileType, factory, serviceRegistrar);
 	}
 
 	public ImportTablePanel(
-			final ImportType dialogType,
+			final ImportType importType,
 			final InputStream is,
 			final String fileType,
 			final InputStreamTaskFactory factory,
@@ -263,7 +257,7 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener {
 		this.serviceRegistrar = serviceRegistrar;
 		this.fileType = fileType;
 
-		if (dialogType != ONTOLOGY_IMPORT) {
+		if (importType != ONTOLOGY_IMPORT) {
 			// Before, this.fileType was always null.
 			tempFile = File.createTempFile("temp", this.fileType);
 			tempFile.deleteOnExit();
@@ -271,9 +265,8 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener {
 			int read = 0;
 			byte[] bytes = new byte[1024];
 
-			while ((read = is.read(bytes)) != -1) {
+			while ((read = is.read(bytes)) != -1)
 				os.write(bytes, 0, read);
-			}
 			
 			os.flush();
 			os.close();
@@ -283,13 +276,11 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener {
 
 		network = serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetwork();
 		
-		if (network != null) {
+		if (network != null)
 			selectedAttributes = network.getDefaultNodeTable();
-		}
 		
 		this.objType = NODE;
-		this.dialogType = dialogType;
-		this.listDelimiter = PIPE.toString();
+		this.importType = importType;
 
 		annotationUrlMap = new HashMap<>();
 		annotationFormatMap = new HashMap<>();
@@ -299,10 +290,7 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener {
 		ontologyDescriptionMap = new HashMap<>();
 		ontologyTypeMap = new HashMap<>();
 
-		attributeDataTypes = new ArrayList<>();
-
 		initComponents();
-
 		updateComponents();
 
 		getPreviewPanel().addPropertyChangeListener(this);
@@ -313,19 +301,17 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener {
 		this.targetDataSourceTextField.setVisible(false);
 
 		// Case import network
-		if (this.dialogType == NETWORK_IMPORT) {
+		if (this.importType == NETWORK_IMPORT) {
 			this.edgeRadioButton.setVisible(false);
 			this.nodeRadioButton.setVisible(false);
 		}
 
 		// Case import node/edge attribute
-		if (this.dialogType == TABLE_IMPORT)
+		if (this.importType == TABLE_IMPORT)
 			this.networkRadioButton.setVisible(false);
 
-		boolean useFirstRow = dialogType == NETWORK_IMPORT || dialogType == TABLE_IMPORT;
-		
 		try {
-			setPreviewPanel(useFirstRow);
+			setPreviewPanel();
 		} catch (Exception e) {
 			logger.error("Failed to create preview.  (Invalid input file)", e);
 			throw new IOException("Fialed to create preview.", e);
@@ -334,9 +320,8 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener {
 
 	@Override
 	public void addPropertyChangeListener(PropertyChangeListener l) {
-		if (changes == null)
-			return;
-		changes.addPropertyChangeListener(l);
+		if (changes != null)
+			changes.addPropertyChangeListener(l);
 	}
 
 	@Override
@@ -348,33 +333,42 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener {
 	 * Listening to local signals used among Swing components in this dialog.
 	 */
 	@Override
-	public void propertyChange(PropertyChangeEvent evt) {
-		if (evt.getPropertyName().equals(LIST_DELIMITER_CHANGED)) {
-			/*
-			 * List delimiter has been changed by preview table GUI.
-			 */
-			listDelimiter = evt.getNewValue().toString();
-		} else if (evt.getPropertyName().equals(ATTR_DATA_TYPE_CHANGED)) {
-			/*
-			 * Data type of an attribute has been changed.
-			 */
-			final AttributeDataType[] dataTypes = (AttributeDataType[]) evt.getNewValue();
-
-			if (dataTypes != null && dataTypes.length > attributeDataTypes.size())
-				attributeDataTypes = Arrays.asList(dataTypes);
+	public void propertyChange(final PropertyChangeEvent evt) {
+		if (evt.getPropertyName().equals(ATTR_TYPE_CHANGED)) {
+			SourceColumnSemantic type = null;
+			int index = -1;
+			
+			if (evt instanceof IndexedPropertyChangeEvent) {
+				type = (SourceColumnSemantic) ((IndexedPropertyChangeEvent)evt).getNewValue();
+				index = ((IndexedPropertyChangeEvent)evt).getIndex();
+			}
+			
+			// Update UI based on the primary key selection
+			if (type == KEY && index >= 0 && importType != NETWORK_IMPORT) {
+				// Update primary key index.
+				keyInFile = index;
+	
+				// Update
+				try {
+					if (importType == ONTOLOGY_IMPORT)
+						setStatusBar(new URL(annotationUrlMap.get(annotationComboBox.getSelectedItem().toString())));
+				} catch (MalformedURLException e) {
+					e.printStackTrace();
+				}
+	
+				getPreviewPanel().repaint();
+	
+				final JTable table = getPreviewPanel().getSelectedPreviewTable();
+	
+				// Update table view
+				ColumnResizer.adjustColumnPreferredWidths(table);
+				table.repaint();
+			}
 		}
 	}
 
 	private void initComponents() {
 		statusBar = new JStatusBar();
-
-		importAllCheckBox = new JCheckBox("Import everything (Key is always ID)");
-		importAllCheckBox.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent evt) {
-				importAllCheckBoxActionPerformed(evt);
-			}
-		});
 
 		attrTypeButtonGroup = new ButtonGroup();
 		nodeRadioButton = new JRadioButton("Node");
@@ -395,7 +389,6 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener {
 		spaceCheckBox = new JCheckBox();
 		otherCheckBox = new JCheckBox();
 		otherDelimiterTextField = new JTextField();
-		transferNameCheckBox = new JCheckBox("Transfer first line as column names");
 
 		defaultInteractionTextField = new JTextField();
 
@@ -413,7 +406,7 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener {
 		tp.setInitialDelay(40);
 		tp.setDismissDelay(50000);
 
-		if (dialogType == ONTOLOGY_IMPORT) {
+		if (importType == ONTOLOGY_IMPORT) {
 			/*
 			 * Data Source Panel Layouts.
 			 */
@@ -446,12 +439,12 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener {
 			});
 		}
 
-		if (dialogType == ONTOLOGY_IMPORT) {
+		if (importType == ONTOLOGY_IMPORT) {
 			panelBuilder = new OntologyPanelBuilder(this, factory, serviceRegistrar);
 			panelBuilder.buildPanel();
 		}
 
-		if ((dialogType == TABLE_IMPORT) || (dialogType == NETWORK_IMPORT)) {
+		if ((importType == TABLE_IMPORT) || (importType == NETWORK_IMPORT)) {
 			// titleIconLabel.setIcon(SPREADSHEET_ICON_LARGE.getIcon());
 			attributeFileLabel.setText("Input File");
 			
@@ -460,7 +453,7 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener {
 				@Override
 				public void actionPerformed(ActionEvent evt) {
 					try {
-						setPreviewPanel(false);
+						setPreviewPanel();
 					} catch (Exception e) {
 						JOptionPane.showMessageDialog(
 								serviceRegistrar.getService(CySwingApplication.class).getJFrame(),
@@ -477,78 +470,42 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener {
 		/*
 		 * Layout data for advanced panel
 		 */
-		if ((dialogType == TABLE_IMPORT) || (dialogType == ONTOLOGY_IMPORT)) {
-			if (dialogType == ONTOLOGY_IMPORT) {
-				mappingAttributeComboBox.setEnabled(false);
-				mappingAttributeComboBox.addActionListener(new ActionListener() {
-					@Override
-					public void actionPerformed(ActionEvent evt) {
-						nodeKeyComboBoxActionPerformed(evt);
-					}
-				});
-			}
+		if (importType == ONTOLOGY_IMPORT) {
+			mappingAttributeComboBox.setEnabled(true);
+			mappingAttributeComboBox.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent evt) {
+					updateTypes(getPreviewPanel().getFileType());
+					setKeyList();
+				}
+			});
 		}
 
-		tabCheckBox.setText("<html><b><font size=+1>\u21b9 <font></b><font size=-2>(tab)</font><html>");
-		tabCheckBox.addActionListener(new ActionListener() {
+		final ChangeListener delimitersChangeListener = new ChangeListener() {
 			@Override
-			public void actionPerformed(ActionEvent evt) {
+			public void stateChanged(ChangeEvent evt) {
 				try {
-					delimiterCheckBoxActionPerformed(evt);
+					displayPreview();
 				} catch (IOException e) {
-					logger.error("Error on tabCheckBox.actionPerformed", e);
+					logger.error("Error on ChangeEvent of checkbox " + ((JCheckBox)evt.getSource()).getText(), e);
 				}
 			}
-		});
+		};
+		
+		tabCheckBox.setText("<html><b><font size=+1>\u21b9 <font></b><font size=-2>(tab)</font><html>");
+		tabCheckBox.addChangeListener(delimitersChangeListener);
 
 		commaCheckBox.setText("<html><b><font size=+1>, <font></b><font size=-2>(comma)</font><html>");
-		commaCheckBox.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent evt) {
-				try {
-					delimiterCheckBoxActionPerformed(evt);
-				} catch (IOException e) {
-					logger.error("Error on commaCheckBox.actionPerformed", e);
-				}
-			}
-		});
+		commaCheckBox.addChangeListener(delimitersChangeListener);
 
 		semicolonCheckBox.setText("<html><b><font size=+1>; <font></b><font size=-2>(semicolon)</font><html>");
-		semicolonCheckBox.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent evt) {
-				try {
-					delimiterCheckBoxActionPerformed(evt);
-				} catch (IOException e) {
-					logger.error("Error on semicolonCheckBox.actionPerformed", e);
-				}
-			}
-		});
+		semicolonCheckBox.addChangeListener(delimitersChangeListener);
 
 		spaceCheckBox.setText("<html><b><font size=+1>\u2423 <font></b><font size=-2>(space)</font><html>");
-		spaceCheckBox.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent evt) {
-				try {
-					delimiterCheckBoxActionPerformed(evt);
-				} catch (IOException e) {
-					logger.error("Error on spaceCheckBox.actionPerformed", e);
-				}
-			}
-		});
+		spaceCheckBox.addChangeListener(delimitersChangeListener);
 
 		otherCheckBox.setText("Other:");
-		otherCheckBox.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent evt) {
-				try {
-					otherDelimiterTextField.requestFocus();
-					delimiterCheckBoxActionPerformed(evt);
-				} catch (Exception e) {
-					logger.error("Error on otherCheckBox.actionPerformed", e);
-				}
-			}
-		});
+		otherCheckBox.addChangeListener(delimitersChangeListener);
 
 		otherDelimiterTextField.addKeyListener(new KeyListener() {
 			@Override
@@ -574,9 +531,6 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener {
 			public void actionPerformed(ActionEvent evt) {
 				try {
 					displayPreview();
-
-					if (transferNameCheckBox.isSelected())
-						transferNameCheckBoxActionPerformed(null);
 				} catch (IOException e) {
 					logger.error("Error on reloadButton.actionPerformed", e);
 					throw new IllegalStateException("Could not reload target file.");
@@ -584,14 +538,6 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener {
 			}
 		});
 		
-		transferNameCheckBox.setEnabled(false);
-		transferNameCheckBox.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent evt) {
-				transferNameCheckBoxActionPerformed(evt);
-			}
-		});
-
 		startRowSpinner.setName("startRowSpinner");
 
 		final SpinnerNumberModel startRowSpinnerModel = new SpinnerNumberModel(1, 1, 10000000, 1);
@@ -632,10 +578,10 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener {
 			layout.setHorizontalGroup(hGroup);
 			layout.setVerticalGroup(vGroup);
 			
-			if (dialogType == ONTOLOGY_IMPORT) {
+			if (importType == ONTOLOGY_IMPORT) {
 				hGroup.addComponent(getDataSourcesPanel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE);
 				vGroup.addComponent(getDataSourcesPanel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE);
-			} else if (dialogType == TABLE_IMPORT || dialogType == NETWORK_IMPORT) {
+			} else if (importType == TABLE_IMPORT || importType == NETWORK_IMPORT) {
 				hGroup.addComponent(getSimpleAttributeImportPanel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE);
 				vGroup.addComponent(getSimpleAttributeImportPanel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE);
 			}
@@ -756,7 +702,7 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener {
 			
 			// Get the width of the largest left and right components
 			final int lw = commentLineLabel.getPreferredSize().width; // to align all left-side components
-			final int rw = transferNameCheckBox.getPreferredSize().width; // to align all right-side components
+			final int rw = getTransferNameCheckBox().getPreferredSize().width; // to align all right-side components
 
 			layout.setHorizontalGroup(layout.createParallelGroup(Alignment.LEADING, true)
 					.addGroup(layout.createSequentialGroup()
@@ -796,10 +742,10 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener {
 									.addGap(lw)
 							)
 							.addGroup(layout.createParallelGroup(Alignment.LEADING, true)
-									.addComponent(transferNameCheckBox, rw, rw, Short.MAX_VALUE)
+									.addComponent(getTransferNameCheckBox(), rw, rw, Short.MAX_VALUE)
 									.addComponent(startRowSpinner, PREFERRED_SIZE, 54, PREFERRED_SIZE)
 									.addComponent(commentLineTextField, PREFERRED_SIZE, 54, PREFERRED_SIZE)
-									.addComponent(importAllCheckBox, rw, rw, Short.MAX_VALUE)
+									.addComponent(getImportAllCheckBox(), rw, rw, Short.MAX_VALUE)
 							)
 					)
 			);
@@ -821,7 +767,7 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener {
 							.addComponent(defaultInteractionTextField)
 					)
 					.addComponent(sep2, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addComponent(transferNameCheckBox)
+					.addComponent(getTransferNameCheckBox())
 					.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
 							.addComponent(startRowLabel)
 							.addComponent(startRowSpinner)
@@ -830,17 +776,17 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener {
 							.addComponent(commentLineLabel)
 							.addComponent(commentLineTextField)
 					)
-					.addComponent(importAllCheckBox)
+					.addComponent(getImportAllCheckBox())
 			);
 			
-			if (dialogType != NETWORK_IMPORT) {
+			if (importType != NETWORK_IMPORT) {
 				sep1.setVisible(false);
 				defaultInteractionLabel.setVisible(false);
 				defaultInteractionTextField.setVisible(false);
 			}
 			
-			if (dialogType != ONTOLOGY_IMPORT)
-				importAllCheckBox.setVisible(false);
+			if (importType != ONTOLOGY_IMPORT)
+				getImportAllCheckBox().setVisible(false);
 		}
 		
 		return textImportOptionPanel;
@@ -867,7 +813,7 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener {
 					.addComponent(mappingAttributeComboBox, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 			);
 			
-			annotationTblMappingPanel.setVisible(dialogType == ONTOLOGY_IMPORT);
+			annotationTblMappingPanel.setVisible(importType == ONTOLOGY_IMPORT);
 		}
 		
 		return annotationTblMappingPanel;
@@ -875,12 +821,12 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener {
 	
 	protected PreviewTablePanel getPreviewPanel() {
 		if (previewPanel == null) {
-			if (dialogType == ONTOLOGY_IMPORT) {
+			if (importType == ONTOLOGY_IMPORT) {
 				commentLineTextField.setText("!");
-				importAllCheckBox.setEnabled(false);
+				getImportAllCheckBox().setEnabled(false);
 			}
 			
-			previewPanel = new PreviewTablePanel(dialogType, serviceRegistrar.getService(IconManager.class));
+			previewPanel = new PreviewTablePanel(importType, serviceRegistrar.getService(IconManager.class));
 		}
 		
 		return previewPanel;
@@ -901,7 +847,6 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener {
 		return advancedButton;
 	}
 	
-	@SuppressWarnings("serial")
 	protected void showAdvancedDialog() {
 		if (advancedDialog == null) {
 			advancedDialog = new JDialog(SwingUtilities.getWindowAncestor(this), ModalityType.DOCUMENT_MODAL);
@@ -928,7 +873,7 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener {
 			layout.setHorizontalGroup(hGroup);
 			layout.setVerticalGroup(vGroup);
 			
-			if (dialogType == TABLE_IMPORT || dialogType == ONTOLOGY_IMPORT) {
+			if (importType == TABLE_IMPORT || importType == ONTOLOGY_IMPORT) {
 				hGroup.addComponent(getAnnotationTblMappingPanel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE);
 				vGroup.addComponent(getAnnotationTblMappingPanel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE);
 			}
@@ -945,10 +890,10 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener {
 					okButton.getAction(), okButton.getAction());
 			advancedDialog.getRootPane().setDefaultButton(okButton);
 			
-			if (dialogType == ONTOLOGY_IMPORT) {
+			if (importType == ONTOLOGY_IMPORT) {
 				// Disable unnecessary components
-				importAllCheckBox.setSelected(true);
-				importAllCheckBox.setEnabled(false);
+				getImportAllCheckBox().setSelected(true);
+				getImportAllCheckBox().setEnabled(false);
 			}
 		}
 
@@ -957,25 +902,57 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener {
 		advancedDialog.setVisible(true);
 	}
 
+	private JCheckBox getImportAllCheckBox() {
+		if (importAllCheckBox == null) {
+			importAllCheckBox = new JCheckBox("Import everything (Key is always ID)");
+			importAllCheckBox.addChangeListener(new ChangeListener() {
+				@Override
+				public void stateChanged(ChangeEvent e) {
+					// If Import All selected, ID combo box should be set to ID
+					if (importAllCheckBox.isSelected()) {
+						// Lock key to ID
+						mappingAttributeComboBox.setSelectedItem(ID);
+						mappingAttributeComboBox.setEnabled(false);
+					} else {
+						mappingAttributeComboBox.setEnabled(true);
+					}
+				}
+			});
+		}
+		
+		return importAllCheckBox;
+	}
+	
+	private JCheckBox getTransferNameCheckBox() {
+		if (transferNameCheckBox == null) {
+			transferNameCheckBox = new JCheckBox("Use first line as column names");
+			transferNameCheckBox.setSelected(isFirstRowNames());
+			transferNameCheckBox.addChangeListener(new ChangeListener() {
+				@Override
+				public void stateChanged(ChangeEvent e) {
+					useFirstRowAsNames(transferNameCheckBox.isSelected());
+					repaint();
+				}
+			});
+		}
+		
+		return transferNameCheckBox;
+	}
+	
 	private void attributeRadioButtonActionPerformed(ActionEvent evt) {
 		final CyNetwork network = serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetwork();
 
 		if (nodeRadioButton.isSelected()) {
-			// selectedAttributes = Cytoscape.getNodeAttributes();
-			if (network != null) {
+			if (network != null)
 				selectedAttributes = network.getDefaultNodeTable();
-			}
 
 			objType = NODE;
 		} else if (edgeRadioButton.isSelected()) {
-			// selectedAttributes = Cytoscape.getEdgeAttributes();
-			if (network != null) {
+			if (network != null)
 				selectedAttributes = network.getDefaultEdgeTable();
-			}
 
 			objType = EDGE;
 		} else {
-			// selectedAttributes = Cytoscape.getNetworkAttributes();
 			logger.info("\nNote: ImportTextTableFDialog.attributeRadioButtonActionPerformed():Import network table not implemented yet!\n");
 			objType = NETWORK;
 		}
@@ -985,147 +962,48 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener {
 	}
 
 	/**
-	 * If Import All selected, ID combo box should be set to ID
-	 */
-	private void importAllCheckBoxActionPerformed(ActionEvent evt) {
-		if (importAllCheckBox.isSelected()) {
-			// Lock key to ID
-			mappingAttributeComboBox.setSelectedItem(ID);
-			mappingAttributeComboBox.setEnabled(false);
-		} else {
-			mappingAttributeComboBox.setEnabled(true);
-		}
-	}
-
-	private void nodeKeyComboBoxActionPerformed(ActionEvent evt) {
-		updateTypes(getPreviewPanel().getFileType());
-		setKeyList();
-	}
-
-	/*
 	 * This method indicates whether the first row of a file that is being
 	 * imported as a table should be used to populate column names.
 	 */
-	private void useFirstRow(boolean useFirstRow) {
+	private void useFirstRowAsNames(final boolean b) {
 		final JTable table = getPreviewPanel().getSelectedPreviewTable();
 		
-		if (table == null)
-			return;
-		
-		final DefaultTableModel model = (DefaultTableModel) table.getModel();
-		
-		if (useFirstRow) {
-			// Save the current header first
-			columnHeaders = new String[table.getColumnCount()];
-
-			for (int i = 0; i < columnHeaders.length; i++)
-				columnHeaders[i] = table.getColumnModel().getColumn(i).getHeaderValue().toString();
-
-			getPreviewPanel().setFirstRowAsColumnNames();
-		} else {
-			// Restore row
-			String currentName = null;
-			Object headerVal = null;
-
-			for (int i = 0; i < columnHeaders.length; i++) {
-				headerVal = table.getColumnModel().getColumn(i).getHeaderValue();
-				currentName = headerVal == null ? "" : headerVal.toString();
-				table.getColumnModel().getColumn(i).setHeaderValue(columnHeaders[i]);
-				columnHeaders[i] = currentName;
-			}
-
-			model.insertRow(0, columnHeaders);
-			table.getTableHeader().resizeAndRepaint();
+		if (table != null) {
+			final PreviewTableModel model = (PreviewTableModel) table.getModel();
+			model.setFirstRowNames(b);
+			ColumnResizer.adjustColumnPreferredWidths(table);
 		}
-	}
-
-	private void transferNameCheckBoxActionPerformed(ActionEvent evt) {
-		useFirstRow(transferNameCheckBox.isSelected());
-		repaint();
 	}
 
 	/**
 	 * Load from the data source.<br>
 	 */
 	public void importTable() throws Exception {
-		if (checkDataSourceError() == false)
+		if (!isInputTableValid())
 			return;
-		/*
-		 * Get import flags
-		 */
-		final int colCount = getPreviewPanel().getSelectedPreviewTable().getColumnModel().getColumnCount();
-
-		/*
-		 * Get Attribute Names
-		 */
-		final List<String> attrNameList = new ArrayList<String>();
-
-		Object curName = null;
-
+		
 		final String tabName = getPreviewPanel().getSelectedTabName();
+		final String[] attrNames = getPreviewPanel().getAttributeNames(tabName);
 		final SourceColumnSemantic[] types = getPreviewPanel().getTypes(tabName);
 		
-		for (int i = 0; i < colCount; i++) {
-			curName = getPreviewPanel().getSelectedPreviewTable().getColumnModel().getColumn(i).getHeaderValue();
+		if (!isAttributeNamesValid(attrNames, types))
+			return;
 
-			if (attrNameList.contains(curName)) {
-				int dupIndex = 0;
-
-				for (int idx = 0; idx < attrNameList.size(); idx++) {
-					if (curName.equals(attrNameList.get(idx))) {
-						dupIndex = idx;
-
-						break;
-					}
-				}
-
-				if (!TypeUtil.allowsDuplicateName(dialogType, types[i], types[dupIndex])) {
-					JOptionPane.showMessageDialog(
-							serviceRegistrar.getService(CySwingApplication.class).getJFrame(), 
-							"Duplicate Column Name Found: " + curName,
-							"Import Error",
-							JOptionPane.ERROR_MESSAGE
-					);
-
-					return;
-				}
-			}
-
-			if (curName == null) {
-				attrNameList.add("Column " + i);
-			} else {
-				attrNameList.add(curName.toString());
-			}
-		}
-
-		if (dialogType == ONTOLOGY_IMPORT)
+		if (importType == ONTOLOGY_IMPORT)
 			panelBuilder.importOntologyAndAnnotation();
 	}
 
-	private final void setPreviewPanel(final boolean useFirstRow) throws IOException {
+	private final void setPreviewPanel() throws IOException {
 		try {
 			readAnnotationForPreview(checkDelimiter());
 		} catch (Exception e) {
 			throw new IOException("Could not read table file for preview.  The source file may contain invalid values.", e);
 		}
-
-		transferNameCheckBox.setEnabled(true);
-		transferNameCheckBox.setSelected(true);
 		
-		if (useFirstRow)
-			useFirstRow(true);
-
-		if (getPreviewPanel().getSelectedPreviewTable() == null) {
-			return;
-		} else {
+		if (getPreviewPanel().getSelectedPreviewTable() != null) {
 			ColumnResizer.adjustColumnPreferredWidths(getPreviewPanel().getSelectedPreviewTable());
 			getPreviewPanel().getSelectedPreviewTable().repaint();
 		}
-	}
-
-	private void delimiterCheckBoxActionPerformed(ActionEvent evt) throws IOException {
-		transferNameCheckBox.setSelected(false);
-		displayPreview();
 	}
 
 	/**
@@ -1151,7 +1029,7 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener {
 	}
 
 	private void updateComponents() throws JAXBException, IOException {
-		if (dialogType == ONTOLOGY_IMPORT) {
+		if (importType == ONTOLOGY_IMPORT) {
 			// Update available file lists.
 			panelBuilder.setOntologyComboBox();
 			panelBuilder.setAnnotationComboBox();
@@ -1162,15 +1040,14 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener {
 		getPreviewPanel().getSelectedPreviewTable().getTableHeader().setReorderingAllowed(false);
 		setRadioButtonGroup();
 
-		if (dialogType == NETWORK_IMPORT) {
-			// do nothing
-		} else { // attribute import
+		if (importType != NETWORK_IMPORT) {
+			// attribute import
 			updateMappingAttributeComboBox();
 		}
 
 		setStatusBar("", "", "File Size: Unknown");
-
 		Window parent = SwingUtilities.getWindowAncestor(this);
+		
 		if (parent != null)
 			parent.pack();
 	}
@@ -1189,19 +1066,14 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener {
 		tabCheckBox.setEnabled(false);
 		commaCheckBox.setEnabled(false);
 		spaceCheckBox.setEnabled(false);
-
-		if (dialogType == NETWORK_IMPORT) {
-			spaceCheckBox.setSelected(true);
-		} else {
-			spaceCheckBox.setSelected(false);
-		}
+		spaceCheckBox.setSelected(importType == NETWORK_IMPORT);
 
 		semicolonCheckBox.setEnabled(false);
 		otherCheckBox.setEnabled(false);
 		otherDelimiterTextField.setEnabled(false);
 	}
 
-	protected void readAnnotationForPreviewOntology(URL sourceURL, List<String> delimiters) throws IOException {
+	protected void readAnnotationForPreviewOntology(final URL sourceURL, List<String> delimiters) throws IOException {
 		final int previewSize;
 
 		if (getPreviewPanel().getShowAllRadioButton().isSelected())
@@ -1212,9 +1084,9 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener {
 		/*
 		 * Load data from the given URL.
 		 */
-		final String commentChar = commentLineTextField.getText();
-		int startLine = getStartLineNumber();
-		InputStream tempIs = URLUtil.getInputStream(sourceURL);
+		final String commentChar = getCommentLinePrefix();
+		final int startLine = getStartLineNumber();
+		final InputStream tempIs = URLUtil.getInputStream(sourceURL);
 		getPreviewPanel().setPreviewTable(workbook, this.fileType, sourceURL.toString(), tempIs, delimiters, null,
 				previewSize, commentChar, startLine - 1);
 
@@ -1223,24 +1095,25 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener {
 		if (getPreviewPanel().getSelectedPreviewTable() == null)
 			return;
 
-		for (int i = 0; i < getPreviewPanel().getTableCount(); i++) {
+		final int tableCount = getPreviewPanel().getTableCount();
+		
+		for (int i = 0; i < tableCount; i++) {
+			final JTable table = getPreviewPanel().getPreviewTable(i);
+			
 			if (getPreviewPanel().getFileType() == FileType.GENE_ASSOCIATION_FILE) {
-				TableModel previewModel = getPreviewPanel().getPreviewTable(i).getModel();
-				String[] columnNames = new String[previewModel.getColumnCount()];
+				final TableModel previewModel = table.getModel();
+				final String[] columnNames = new String[previewModel.getColumnCount()];
 
-				for (int j = 0; j < columnNames.length; j++) {
+				for (int j = 0; j < columnNames.length; j++)
 					columnNames[j] = previewModel.getColumnName(j);
-				}
 
 				disableComponentsForGA();
 			}
 
-// TODO
-//			if (GO_ID.getPosition() < ontologyInAnnotationComboBox.getItemCount())
-//				ontologyInAnnotationComboBox.setSelectedIndex(GO_ID.getPosition());
+			getPreviewPanel().setType(table.getName(), GO_ID.getPosition(), ONTOLOGY);
 
 			attributeRadioButtonActionPerformed(null);
-			Window parent = SwingUtilities.getWindowAncestor(this);
+			final Window parent = SwingUtilities.getWindowAncestor(this);
 			
 			if (parent != null)
 				parent.pack();
@@ -1264,7 +1137,7 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener {
 		/*
 		 * Load data from the given URL.
 		 */
-		final String commentChar = commentLineTextField.getText();
+		final String commentChar = getCommentLinePrefix();
 		int startLine = getStartLineNumber();
 
 		// creating the IS copy
@@ -1302,7 +1175,7 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener {
 		if (getPreviewPanel().getSelectedPreviewTable() == null)
 			return;
 
-		if (dialogType == NETWORK_IMPORT) {
+		if (importType == NETWORK_IMPORT) {
 			if (fileType.equalsIgnoreCase(SupportedFileType.EXCEL.getExtension())
 					|| fileType.equalsIgnoreCase(SupportedFileType.OOXML.getExtension())) {
 				setDelimitersEnabled(false);
@@ -1310,14 +1183,16 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener {
 				setDelimitersEnabled(true);
 			}
 		} else {
-			for (int i = 0; i < getPreviewPanel().getTableCount(); i++) {
+			final int tableCount = getPreviewPanel().getTableCount();
+			
+			for (int i = 0; i < tableCount; i++) {
 				if (getPreviewPanel().getFileType() == FileType.GENE_ASSOCIATION_FILE) {
-					TableModel previewModel = getPreviewPanel().getPreviewTable(i).getModel();
-					String[] columnNames = new String[previewModel.getColumnCount()];
+					final JTable table = getPreviewPanel().getPreviewTable(i);
+					final TableModel previewModel = table.getModel();
+					final String[] columnNames = new String[previewModel.getColumnCount()];
 
-					for (int j = 0; j < columnNames.length; j++) {
+					for (int j = 0; j < columnNames.length; j++)
 						columnNames[j] = previewModel.getColumnName(j);
-					}
 
 					disableComponentsForGA();
 				}
@@ -1326,12 +1201,15 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener {
 			/*
 			 * If this is not an Excel file, enable delimiter checkboxes.
 			 */
-			FileType type = checkFileType();
+			final FileType type = checkFileType();
 
 			if (fileType != null) {
 				if (type == FileType.GENE_ASSOCIATION_FILE) {
-// TODO					
-//					ontologyInAnnotationComboBox.setSelectedIndex(GO_ID.getPosition());
+					for (int i = 0; i < tableCount; i++) {
+						final JTable table = getPreviewPanel().getPreviewTable(i);
+						getPreviewPanel().setType(table.getName(), GO_ID.getPosition(), ONTOLOGY);
+					}
+					
 					disableComponentsForGA();
 				} else if (this.fileType.equalsIgnoreCase(SupportedFileType.EXCEL.getExtension()) == false
 						|| this.fileType.equalsIgnoreCase(SupportedFileType.OOXML.getExtension()) == false) {
@@ -1339,9 +1217,9 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener {
 					nodeRadioButton.setEnabled(true);
 					edgeRadioButton.setEnabled(true);
 					networkRadioButton.setEnabled(true);
-					importAllCheckBox.setEnabled(false);
+					getImportAllCheckBox().setEnabled(false);
 				} else {
-					importAllCheckBox.setEnabled(false);
+					getImportAllCheckBox().setEnabled(false);
 				}
 			}
 
@@ -1351,7 +1229,7 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener {
 		getPreviewPanel().getReloadButton().setEnabled(true);
 		startRowSpinner.setEnabled(true);
 
-		Window parent = SwingUtilities.getWindowAncestor(this);
+		final Window parent = SwingUtilities.getWindowAncestor(this);
 		
 		if (parent != null)
 			parent.pack();
@@ -1375,7 +1253,7 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener {
 		otherCheckBox.setSelected(false);
 		otherDelimiterTextField.setEnabled(false);
 
-		importAllCheckBox.setEnabled(false);
+		getImportAllCheckBox().setEnabled(false);
 	}
 
 	private void setDelimitersEnabled(final boolean enabled) {
@@ -1388,53 +1266,13 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener {
 	}
 
 	private FileType checkFileType() {
-		if (dialogType == ONTOLOGY_IMPORT)
+		if (importType == ONTOLOGY_IMPORT)
 			return FileType.CUSTOM_ANNOTATION_FILE;
 		
-		if (dialogType == NETWORK_IMPORT)
+		if (importType == NETWORK_IMPORT)
 			return FileType.NETWORK_FILE;
 
 		return FileType.ATTRIBUTE_FILE;
-	}
-
-	// TODO
-	private void setStatusBar(URL sourceURL) {
-		final String centerMessage;
-		final String rightMessage;
-
-		if (getPreviewPanel().getShowAllRadioButton().isSelected()) {
-			centerMessage = "All entries are loaded for preview";
-		} else {
-			centerMessage = "First " + 
-							getPreviewPanel().getCounterSpinner().getValue().toString() +
-							" entries are loaded for preview";
-		}
-
-		if (sourceURL.toString().startsWith("file:")) {
-			int fileSize = 0;
-
-			BufferedInputStream fis = null;
-			try {
-				fis = (BufferedInputStream) sourceURL.openStream();
-				fileSize = fis.available();
-				fis.close();
-			} catch (IOException e) {
-				if (fis != null)
-					try {
-						fis.close();
-					} catch (IOException e1) { }
-			}
-
-			if ((fileSize / 1000) == 0) {
-				rightMessage = "File Size: " + fileSize + " Bytes";
-			} else {
-				rightMessage = "File Size: " + (fileSize / 1000) + " KBytes";
-			}
-		} else {
-			rightMessage = "File Size: Unknown (remote data source)";
-		}
-
-		setStatusBar("Key-Value Matched: " + getPreviewPanel().checkKeyMatch(keyInFile), centerMessage, rightMessage);
 	}
 
 	/**
@@ -1476,6 +1314,7 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener {
 		final ListCellRenderer<? super String> lcr = mappingAttributeComboBox.getRenderer();
 		
 		mappingAttributeComboBox.setRenderer(new ListCellRenderer<String>() {
+			@Override
 			public Component getListCellRendererComponent(JList<? extends String> list, String value, int index,
 					boolean isSelected, boolean cellHasFocus) {
 				JLabel cmp = (JLabel) lcr.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
@@ -1529,6 +1368,41 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener {
 		statusBar.setCenterLabel(message2);
 		statusBar.setRightLabel(message3);
 	}
+	
+	private void setStatusBar(final URL sourceURL) {
+		final String centerMessage;
+		final String rightMessage;
+
+		if (getPreviewPanel().getShowAllRadioButton().isSelected())
+			centerMessage = "All entries are loaded for preview";
+		else
+			centerMessage = "First " + getPreviewPanel().getCounterSpinner().getValue() + " entries are loaded for preview";
+
+		if (sourceURL.toString().startsWith("file:")) {
+			int fileSize = 0;
+			BufferedInputStream fis = null;
+			
+			try {
+				fis = (BufferedInputStream) sourceURL.openStream();
+				fileSize = fis.available();
+				fis.close();
+			} catch (IOException e) {
+				try {
+					if (fis != null) fis.close();
+				} catch (IOException e1) {
+				}
+			}
+
+			if ((fileSize / 1000) == 0)
+				rightMessage = "File Size: " + fileSize + " Bytes";
+			else
+				rightMessage = "File Size: " + (fileSize / 1000) + " KBytes";
+		} else {
+			rightMessage = "File Size: Unknown (remote data source)";
+		}
+
+		setStatusBar("Key-Value Matched: " + getPreviewPanel().checkKeyMatch(keyInFile), centerMessage, rightMessage);
+	}
 
 	public List<String> checkDelimiter() {
 		final List<String> delList = new ArrayList<String>();
@@ -1555,7 +1429,7 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener {
 	 * Error checker for input table.
 	 * @return true if table looks OK.
 	 */
-	private boolean checkDataSourceError() {
+	private boolean isInputTableValid() {
 		final JTable table = getPreviewPanel().getSelectedPreviewTable();
 		final JFrame parent = serviceRegistrar.getService(CySwingApplication.class).getJFrame();
 
@@ -1563,14 +1437,14 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener {
 			JOptionPane.showMessageDialog(parent, "No table selected.", "Invalid Table", JOptionPane.WARNING_MESSAGE);
 
 			return false;
-		} else if ((table.getColumnCount() < 2) && (dialogType != NETWORK_IMPORT)) {
+		} else if ((table.getColumnCount() < 2) && (importType != NETWORK_IMPORT)) {
 			JOptionPane.showMessageDialog(parent, "Table should contain at least 2 columns.", "Invalid Table",
 					JOptionPane.INFORMATION_MESSAGE);
 
 			return false;
 		}
 
-		if (dialogType == NETWORK_IMPORT) {
+		if (importType == NETWORK_IMPORT) {
 			final String tabName = getPreviewPanel().getSelectedTabName();
 			
 			final int sIdx = getPreviewPanel().getColumnIndex(tabName, SOURCE_ATTR);
@@ -1605,7 +1479,7 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener {
 		/*
 		 * Case 1: Simple Attribute Import
 		 */
-		if (dialogType == TABLE_IMPORT) {
+		if (importType == TABLE_IMPORT) {
 			layout.setHorizontalGroup(layout.createParallelGroup(LEADING)
 					.addComponent(getBasicPanel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 					.addComponent(getPreviewPanel(), DEFAULT_SIZE, 680, Short.MAX_VALUE)
@@ -1622,7 +1496,7 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener {
 					)
 					.addComponent(getAdvancedButton())
 			);
-		} else if (dialogType == ONTOLOGY_IMPORT) {
+		} else if (importType == ONTOLOGY_IMPORT) {
 			layout.setHorizontalGroup(layout.createParallelGroup(LEADING)
 					.addComponent(getBasicPanel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 					.addComponent(getPreviewPanel(), DEFAULT_SIZE, 680, Short.MAX_VALUE)
@@ -1639,7 +1513,7 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener {
 					)
 					.addComponent(getAdvancedButton())
 			);
-		} else if (dialogType == NETWORK_IMPORT) {
+		} else if (importType == NETWORK_IMPORT) {
 			layout.setHorizontalGroup(layout.createParallelGroup(LEADING)
 					.addComponent(getBasicPanel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 					.addComponent(getPreviewPanel(), DEFAULT_SIZE, 680, Short.MAX_VALUE)
@@ -1653,146 +1527,101 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener {
 		}
 	}
 
-	public boolean isFirstRowTitle() {
-		return transferNameCheckBox.isSelected();
+	private boolean isFirstRowNames() {
+		final JTable table = getPreviewPanel().getSelectedPreviewTable();
+		
+		if (table != null)	
+			return ((PreviewTableModel) table.getModel()).isFirstRowNames();
+				
+		return false;
 	}
 
-	public int getStartLineNumber() {
-		if (isFirstRowTitle())
+	private int getStartLineNumber() {
+		if (isFirstRowNames())
 			return Integer.parseInt(startRowSpinner.getValue().toString());
+		
 		return Integer.parseInt(startRowSpinner.getValue().toString()) - 1;
 	}
 
-	public String getCommentlinePrefix() {
+	private String getCommentLinePrefix() {
 		return commentLineTextField.getText();
 	}
 
 	public AttributeMappingParameters getAttributeMappingParameters() throws Exception {
-		/*
-		 * Get import flags
-		 */
-		final int colCount = getPreviewPanel().getSelectedPreviewTable().getColumnModel().getColumnCount();
-
-		final String[] attributeNames;
-		final List<String> attrNameList = new ArrayList<String>();
-
 		final String tabName = getPreviewPanel().getSelectedTabName();
+		final String[] attrNames = getPreviewPanel().getAttributeNames(tabName);
 		final SourceColumnSemantic[] types = getPreviewPanel().getTypes(tabName);
 		
-		Object curName = null;
+		if (!isAttributeNamesValid(attrNames, types))
+			return null;
 
-		for (int i = 0; i < colCount; i++) {
-			curName = getPreviewPanel().getSelectedPreviewTable().getColumnModel().getColumn(i).getHeaderValue();
-
-			if (attrNameList.contains(curName)) {
-				int dupIndex = 0;
-
-				for (int idx = 0; idx < attrNameList.size(); idx++) {
-					if (curName.equals(attrNameList.get(idx))) {
-						dupIndex = idx;
-
-						break;
-					}
-				}
-
-				if (!TypeUtil.allowsDuplicateName(dialogType, types[i], types[dupIndex])) {
-					JOptionPane.showMessageDialog(
-							serviceRegistrar.getService(CySwingApplication.class).getJFrame(), 
-							"Duplicate Column Name Found: " + curName,
-							"Import Error",
-							JOptionPane.ERROR_MESSAGE
-					);
-
-					return null;
-				}
-			}
-
-			if (curName == null) {
-				attrNameList.add("Column " + i);
-			} else {
-				attrNameList.add(curName.toString());
-			}
-		}
-
-		attributeNames = attrNameList.toArray(new String[0]);
-
+		final SourceColumnSemantic[] typesCopy = Arrays.copyOf(types, types.length);
+		
 		final AttributeDataType[] dataTypes = getPreviewPanel().getDataTypes(tabName);
 		final AttributeDataType[] dataTypesCopy = Arrays.copyOf(dataTypes, dataTypes.length);
-		final SourceColumnSemantic[] typesCopy = Arrays.copyOf(types, types.length);
+		
+		final String[] listDelimiters = getPreviewPanel().getListDelimiters(tabName);
+		final String[] listDelimitersCopy = Arrays.copyOf(listDelimiters, listDelimiters.length);
 
 		int startLineNumber = getStartLineNumber();
 		String commentChar = null;
 		
-		if (!commentLineTextField.getText().isEmpty())
-			commentChar = commentLineTextField.getText();
+		if (!getCommentLinePrefix().isEmpty())
+			commentChar = getCommentLinePrefix();
 
 		// Build mapping parameter object.
 		final List<String> del = checkDelimiter();
-		final AttributeMappingParameters mapping = new AttributeMappingParameters(del, listDelimiter, keyInFile,
-				attributeNames, dataTypesCopy, typesCopy, startLineNumber, commentChar);
+		
+		final AttributeMappingParameters mapping = new AttributeMappingParameters(del, listDelimitersCopy, keyInFile,
+				attrNames, dataTypesCopy, typesCopy, startLineNumber, commentChar);
 
 		return mapping;
 	}
 
-	public NetworkTableMappingParameters getNetworkTableMappingParameters() throws Exception {
-		final int colCount = getPreviewPanel().getSelectedPreviewTable().getColumnModel().getColumnCount();
+	private boolean isAttributeNamesValid(final String[] attrNames, final SourceColumnSemantic[] types) {
+		for (int i = 0; i < attrNames.length; i++) {
+			final String name = attrNames[i];
 
-		/*
-		 * Get Attribute Names
-		 */
-
-		final String[] attributeNames;
-		final List<String> attrNameList = new ArrayList<String>();
-
-		final String tabName = getPreviewPanel().getSelectedTabName();
-		final SourceColumnSemantic[] types = getPreviewPanel().getTypes(tabName);
-		
-		Object curName = null;
-
-		for (int i = 0; i < colCount; i++) {
-			curName = getPreviewPanel().getSelectedPreviewTable().getColumnModel().getColumn(i).getHeaderValue();
-
-			if (attrNameList.contains(curName)) {
-				int dupIndex = 0;
-
-				for (int idx = 0; idx < attrNameList.size(); idx++) {
-					if (curName.equals(attrNameList.get(idx))) {
-						dupIndex = idx;
-
-						break;
-					}
-				}
-
-				if (!TypeUtil.allowsDuplicateName(dialogType, types[i], types[dupIndex])) {
+			for (int j = 0; j < attrNames.length; j++) {
+				if (i != j && name.equals(attrNames[j]) &&
+						!TypeUtil.allowsDuplicateName(importType, types[i], types[j])) {
 					JOptionPane.showMessageDialog(
 							serviceRegistrar.getService(CySwingApplication.class).getJFrame(), 
-							"Duplicate Column Name Found: " + curName,
+							"Duplicate Column Name Found: " + name,
 							"Import Error",
 							JOptionPane.ERROR_MESSAGE
 					);
-
-					return null;
+	
+					return false;
 				}
 			}
-
-			if (curName == null)
-				attrNameList.add("Column " + i);
-			else
-				attrNameList.add(curName.toString());
 		}
+		
+		return true;
+	}
 
-		attributeNames = attrNameList.toArray(new String[0]);
+	public NetworkTableMappingParameters getNetworkTableMappingParameters() throws Exception {
+		final String tabName = getPreviewPanel().getSelectedTabName();
+		final String[] attrNames = getPreviewPanel().getAttributeNames(tabName);
+		final SourceColumnSemantic[] types = getPreviewPanel().getTypes(tabName);
+		
+		if (!isAttributeNamesValid(attrNames, types))
+			return null;
 
+		final SourceColumnSemantic[] typesCopy = Arrays.copyOf(types, types.length);
+		
 		final AttributeDataType[] dataTypes = getPreviewPanel().getDataTypes(tabName);
 		final AttributeDataType[] dataTypesCopy = Arrays.copyOf(dataTypes, dataTypes.length);
-		final SourceColumnSemantic[] typesCopy = Arrays.copyOf(types, types.length);
+		
+		final String[] listDelimiters = getPreviewPanel().getListDelimiters(tabName);
+		final String[] listDelimitersCopy = Arrays.copyOf(listDelimiters, listDelimiters.length);
 
 		int startLineNumber = getStartLineNumber();
 
 		String commentChar = null;
 		
-		if (!commentLineTextField.getText().isEmpty())
-			commentChar = commentLineTextField.getText();
+		if (!getCommentLinePrefix().isEmpty())
+			commentChar = getCommentLinePrefix();
 		
 		keyInFile = getPreviewPanel().getColumnIndex(tabName, KEY);
 		final int sourceColumnIndex = getPreviewPanel().getColumnIndex(tabName, SOURCE);
@@ -1803,8 +1632,8 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener {
 
 		// Build mapping parameter object.
 		final List<String> del = checkDelimiter();
-		NetworkTableMappingParameters mapping = new NetworkTableMappingParameters(del, listDelimiter, attributeNames,
-				dataTypesCopy, typesCopy, sourceColumnIndex, targetColumnIndex, interactionColumnIndex,
+		final NetworkTableMappingParameters mapping = new NetworkTableMappingParameters(del, listDelimitersCopy,
+				attrNames, dataTypesCopy, typesCopy, sourceColumnIndex, targetColumnIndex, interactionColumnIndex,
 				defaultInteraction, startLineNumber, commentChar);
 
 		return mapping;

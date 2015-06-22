@@ -136,7 +136,7 @@ public class AttributeEditorPanel extends JPanel {
 		return TYPE_STRING;
 	}
 	
-	public String getListDelimiterType() {
+	public String getListDelimiter() {
 		if (isOtherDelimiterSelected())
 			return getOtherTextField().getText().trim();
 

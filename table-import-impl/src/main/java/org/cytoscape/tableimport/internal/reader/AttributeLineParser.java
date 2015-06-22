@@ -149,7 +149,7 @@ public class AttributeLineParser {
 				 * In case of list, do not overwrite the attribute. Get the existing list, and add it to the list.
 				 */
 				final ArrayList<Object> curList = new ArrayList<>();
-				curList.addAll(buildList(entry, type));
+				curList.addAll(buildList(entry, type, index));
 				
 				try {
 					setListAttribute(table, type, key, mapping.getAttributeNames()[index], curList);
@@ -211,15 +211,18 @@ public class AttributeLineParser {
 
 	/**
 	 * If an entry is a list, split the string and create new List Attribute.
+	 * @param index 
 	 */
-	private List<?> buildList(final String entry, final AttributeDataType dataType) {
+	private List<?> buildList(final String entry, final AttributeDataType dataType, final int index) {
 		if (entry == null)
 			return null;
 		
-		String delimiter = mapping.getListDelimiter();
-		
-		if (delimiter.isEmpty())
-			delimiter = " ";
+		final String[] delimiters = mapping.getListDelimiters();
+		String delimiter = delimiters != null && delimiters.length > index ?
+				delimiters[index] : AbstractMappingParameters.DEF_LIST_DELIMITER;
+				
+		if (delimiter == null || delimiter.isEmpty())
+			delimiter = AbstractMappingParameters.DEF_LIST_DELIMITER;
 		
 		final String[] parts = (entry.replace("\"", "")).split(delimiter);
 		final List<Object> listAttr = new ArrayList<>();

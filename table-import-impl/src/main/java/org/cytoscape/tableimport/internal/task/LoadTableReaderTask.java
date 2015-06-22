@@ -248,14 +248,24 @@ public class LoadTableReaderTask extends AbstractTask implements CyTableReader, 
 		
 		attributeNames = attrNameList.toArray(new String[0]);
 		
+		final SourceColumnSemantic[] typesCopy = Arrays.copyOf(types, types.length);
+		
 		final AttributeDataType[] dataTypes = previewPanel.getDataTypes(tabName);
 		final AttributeDataType[] dataTypesCopy = Arrays.copyOf(dataTypes, dataTypes.length);
-		final SourceColumnSemantic[] typesCopy = Arrays.copyOf(types, types.length);
+		
+		String[] listDelimiters = previewPanel.getListDelimiters(tabName);
+		
+		if (listDelimiters == null || listDelimiters.length == 0) {
+			listDelimiters = new String[dataTypes.length];
+			
+			if (delimitersForDataList.getSelectedValue() != null)
+				Arrays.fill(listDelimiters, delimitersForDataList.getSelectedValue());
+		}
 		
 		if (keyColumnIndex > 0)
 			keyColumnIndex--;
 
-		amp = new AttributeMappingParameters(delimiters.getSelectedValues(), delimitersForDataList.getSelectedValue(),
+		amp = new AttributeMappingParameters(delimiters.getSelectedValues(), listDelimiters,
 				keyColumnIndex, attributeNames, dataTypesCopy, typesCopy, startLoadRow, null);
 		
 		if (this.fileType.equalsIgnoreCase(SupportedFileType.EXCEL.getExtension()) ||

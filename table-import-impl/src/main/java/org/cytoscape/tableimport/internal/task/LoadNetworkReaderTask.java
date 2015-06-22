@@ -189,7 +189,6 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 		
 		if (netReader == null)				
 			netReader = networkReaderManager.getReader(uri, inputName);
-
 		
 		if (netReader instanceof CombineReaderAndMappingTask) {
 			Workbook workbook = null;
@@ -261,18 +260,27 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 					}
 				}
 	
-				if (curName == null) {
+				if (curName == null)
 					attrNameList.add("Column " + i);
-				} else {
+				else
 					attrNameList.add(curName.toString());
-				}
 			}
 			
 			attributeNames = attrNameList.toArray(new String[0]);
 			
+			final SourceColumnSemantic[] typesCopy = Arrays.copyOf(types, types.length);
+			
 			final AttributeDataType[] dataTypes = previewPanel.getDataTypes(tabName);
 			final AttributeDataType[] dataTypesCopy = Arrays.copyOf(dataTypes, dataTypes.length);
-			final SourceColumnSemantic[] typesCopy = Arrays.copyOf(types, types.length);
+			
+			String[] listDelimiters = previewPanel.getListDelimiters(tabName);
+			
+			if (listDelimiters == null || listDelimiters.length == 0) {
+				listDelimiters = new String[dataTypes.length];
+				
+				if (delimitersForDataList.getSelectedValue() != null)
+					Arrays.fill(listDelimiters, delimitersForDataList.getSelectedValue());
+			}
 			
 			if (indexColumnSourceInteraction > 0)
 				indexColumnSourceInteraction--;
@@ -284,7 +292,7 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 				indexColumnTypeInteraction--;
 			
 			ntmp = new NetworkTableMappingParameters(delimiters.getSelectedValues(),
-					delimitersForDataList.getSelectedValue(), attributeNames, dataTypesCopy, typesCopy,
+					listDelimiters, attributeNames, dataTypesCopy, typesCopy,
 					indexColumnSourceInteraction, indexColumnTargetInteraction, indexColumnTypeInteraction,
 					defaultInteraction, startLoadRow, null);
 			
@@ -348,36 +356,35 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 
 	@Override
 	public CyNetwork[] getNetworks() {
-		if(netReader != null)
+		if (netReader != null)
 			return netReader.getNetworks();
 		else
 			return networks;
 	}
 
 	public String getName(){
-		
 		return networkName;
 	}
 
 	@Override
 	public ValidationState getValidationState(Appendable errMsg) {
-		try{
-			if (indexColumnSourceInteraction <= 0){
-			if (indexColumnTargetInteraction <= 0){
-				errMsg.append("The network cannot be created without selecting the source and target columns.");
-				return ValidationState.INVALID;
-			}else{
-				errMsg.append("No edges will be created in the network; the source column is not selected.\nDo you want to continue?");
-				return ValidationState.REQUEST_CONFIRMATION;
+		try {
+			if (indexColumnSourceInteraction <= 0) {
+				if (indexColumnTargetInteraction <= 0) {
+					errMsg.append("The network cannot be created without selecting the source and target columns.");
+					return ValidationState.INVALID;
+				} else {
+					errMsg.append("No edges will be created in the network; the source column is not selected.\nDo you want to continue?");
+					return ValidationState.REQUEST_CONFIRMATION;
+				}
+			} else {
+				if (indexColumnTargetInteraction <= 0) {
+					errMsg.append("No edges will be created in the network; the target column is not selected.\nDo you want to continue?");
+					return ValidationState.REQUEST_CONFIRMATION;
+				} else
+					return ValidationState.OK;
 			}
-		}else{
-			if (indexColumnTargetInteraction <= 0){
-				errMsg.append("No edges will be created in the network; the target column is not selected.\nDo you want to continue?");
-				return ValidationState.REQUEST_CONFIRMATION;
-			}else
-				return ValidationState.OK;
-		}
-		}catch(IOException ioe){
+		} catch (IOException ioe) {
 			ioe.printStackTrace();
 			return ValidationState.INVALID;
 		}

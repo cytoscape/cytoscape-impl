@@ -39,14 +39,14 @@ import org.cytoscape.tableimport.internal.util.SourceColumnSemantic;
 public abstract class AbstractMappingParameters implements MappingParameter{
 	
 	public static final String ID = "name";
-	private static final String DEF_LIST_DELIMITER = PIPE.toString();
+	public static final String DEF_LIST_DELIMITER = PIPE.toString();
 	private static final String DEF_DELIMITER = TAB.toString();
 	
 	protected String[] attributeNames;
 	protected AttributeDataType[] dataTypes;
 	protected SourceColumnSemantic[] types;
 	protected List<String> delimiters;
-	protected String listDelimiter;
+	protected String[] listDelimiters;
 	
 	private Map<String, List<String>> attr2id;
 	private Map<String, String> networkTitle2ID;
@@ -61,25 +61,24 @@ public abstract class AbstractMappingParameters implements MappingParameter{
 	public AbstractMappingParameters(final InputStream is, final String fileType) {
 		this.delimiters = new ArrayList<String>();
 		this.delimiters.add(DEF_DELIMITER);
-		this.listDelimiter = DEF_DELIMITER;
 		this.is = is;
 		this.fileType = fileType;
 	}
 
 	public AbstractMappingParameters( 
 			final List<String> delimiters,
-			final String listDelimiter,
+			final String[] listDelimiters,
 			final String[] attrNames,
 			final AttributeDataType[] dataTypes,
 			final SourceColumnSemantic[] types,
 			final boolean caseSensitive
 	) throws Exception {
-		this(delimiters, listDelimiter, attrNames, dataTypes, types, 0, null);
+		this(delimiters, listDelimiters, attrNames, dataTypes, types, 0, null);
 	}
 
 	public AbstractMappingParameters(
 			final List<String> delimiters,
-			final String listDelimiter,
+			final String[] listDelimiters,
 			final String[] attrNames,
 			final AttributeDataType[] dataTypes,
 			final SourceColumnSemantic[] types,
@@ -107,14 +106,7 @@ public abstract class AbstractMappingParameters implements MappingParameter{
 			this.delimiters = delimiters;
 		}
 
-		/*
-		 * If list delimiter is null, use default "|"
-		 */
-		if (listDelimiter == null) {
-			this.listDelimiter = DEF_LIST_DELIMITER;
-		} else {
-			this.listDelimiter = listDelimiter;
-		}
+		this.listDelimiters = listDelimiters;
 
 		/*
 		 * If not specified, import everything as String attributes.
@@ -152,8 +144,8 @@ public abstract class AbstractMappingParameters implements MappingParameter{
 		return types;
 	}
 
-	public String getListDelimiter() {
-		return listDelimiter;
+	public String[] getListDelimiters() {
+		return listDelimiters;
 	}
 
 	public List<String> getDelimiters() {

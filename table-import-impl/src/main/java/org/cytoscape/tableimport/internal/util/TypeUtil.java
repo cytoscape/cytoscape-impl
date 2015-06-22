@@ -172,9 +172,8 @@ public class TypeUtil {
 		final Integer[][] typeChecker = new Integer[4][model.getColumnCount()];
 
 		for (int i = 0; i < 4; i++) {
-			for (int j = 0; j < model.getColumnCount(); j++) {
+			for (int j = 0; j < model.getColumnCount(); j++)
 				typeChecker[i][j] = 0;
-			}
 		}
 
 		String cell = null;

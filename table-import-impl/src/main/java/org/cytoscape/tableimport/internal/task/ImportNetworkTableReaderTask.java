@@ -170,6 +170,8 @@ public class ImportNetworkTableReaderTask extends AbstractTask implements CyNetw
 	@Override
 	public ValidationState getValidationState(Appendable errMsg) {
 		try {
+			// TODO: check duplicate columns here!!!
+			
 			if (ntmp.getSourceIndex() == -1) {
 				if (ntmp.getTargetIndex() == -1) {
 					errMsg.append("The network cannot be created without selecting the source and target columns.");

@@ -74,7 +74,7 @@ public class DefaultAttributeTableReader implements TextTableReader {
 			final URL source,
 			final ObjectType objectType,
 			final List<String> delimiters,
-			final String listDelimiter,
+			final String[] listDelimiters,
 			final int keyIndex,
 			final String mappingAttribute,
 			final List<Integer> aliasIndexList,
@@ -85,7 +85,7 @@ public class DefaultAttributeTableReader implements TextTableReader {
 	) throws Exception {
 		this.source = source;
 		this.startLineNumber = startLineNumber;
-		this.mapping = new AttributeMappingParameters(delimiters, listDelimiter, keyIndex, attributeNames,
+		this.mapping = new AttributeMappingParameters(delimiters, listDelimiters, keyIndex, attributeNames,
 				dataTypes, types);
 		this.parser = new AttributeLineParser(mapping);
 	}

@@ -346,19 +346,14 @@ public class OntologyPanelBuilder {
 
 	/**
 	 * Create task for ontology reader and run the task.<br>
-	 * 
-	 * @param dataSource
-	 * @param ontologyName
-	 * @throws IOException
 	 */
 	private void loadOntology(final String dataSource, final String ontologyName, final String annotationSource)
 			throws IOException {
-
 		final URL url = new URL(dataSource);
 		final URL annotationSourceUrl = new URL(annotationSource);
-
 		InputStream is = null;
-		if(annotationSourceUrl.toString().endsWith("gz")) {
+		
+		if (annotationSourceUrl.toString().endsWith("gz")) {
 			is = new GZIPInputStream(annotationSourceUrl.openStream());
 		} else {
 			is = annotationSourceUrl.openStream();
@@ -372,7 +367,6 @@ public class OntologyPanelBuilder {
 	}
 
 	protected void importOntologyAndAnnotation() throws IOException {
-
 		final String selectedOntologyName = panel.ontologyComboBox.getSelectedItem().toString();
 		final String ontologySourceLocation = panel.ontologyUrlMap.get(selectedOntologyName);
 		final String annotationSource = panel.annotationUrlMap.get(panel.annotationComboBox.getSelectedItem());

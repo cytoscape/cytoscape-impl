@@ -33,6 +33,7 @@ import static javax.swing.LayoutStyle.ComponentPlacement.UNRELATED;
 import static org.cytoscape.tableimport.internal.util.AttributeDataType.TYPE_BOOLEAN;
 import static org.cytoscape.tableimport.internal.util.AttributeDataType.TYPE_FLOATING;
 import static org.cytoscape.tableimport.internal.util.AttributeDataType.TYPE_INTEGER;
+import static org.cytoscape.tableimport.internal.util.AttributeDataType.TYPE_STRING;
 import static org.cytoscape.tableimport.internal.util.ImportType.NETWORK_IMPORT;
 import static org.cytoscape.tableimport.internal.util.ImportType.ONTOLOGY_IMPORT;
 import static org.cytoscape.tableimport.internal.util.ImportType.TABLE_IMPORT;
@@ -98,15 +99,14 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.TableColumnModelEvent;
 import javax.swing.event.TableColumnModelListener;
+import javax.swing.event.TableModelEvent;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellRenderer;
-import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 
@@ -139,11 +139,11 @@ public class PreviewTablePanel extends JPanel {
 	
 	// Lines start with this char will be ignored.
 	private String commentChar;
-	private boolean loadFlag;
 
 	// Tracking attribute data type.
-	private Map<String, SourceColumnSemantic[]> typeMap;
-	private Map<String, AttributeDataType[]> dataTypeMap;
+	private final Map<String, SourceColumnSemantic[]> typeMap;
+	private final Map<String, AttributeDataType[]> dataTypeMap;
+	private final Map<String, String[]> listDelimiterMap;
 	
 	private Set<?> keySet;
 
@@ -165,7 +165,6 @@ public class PreviewTablePanel extends JPanel {
 	
 	private PropertyChangeSupport changes = new PropertyChangeSupport(this);
 	private ImportType importType;
-	private String listDelimiter;
 	
 	private final IconManager iconManager;
 	
@@ -187,6 +186,7 @@ public class PreviewTablePanel extends JPanel {
 
 		typeMap = new HashMap<>();
 		dataTypeMap = new HashMap<>();
+		listDelimiterMap = new HashMap<>();
 
 		initComponents();
 	}
@@ -238,20 +238,13 @@ public class PreviewTablePanel extends JPanel {
 		previewTabbedPane = new JTabbedPane();
 
 		previewTables = new HashMap<String, JTable>();
-		previewTable = new JTable();
+		previewTable = new JTable(new PreviewTableModel(new Vector<Vector<String>>(), new Vector<String>(), false));
 		previewTable.setName(DEF_TAB_MESSAGE);
 		previewTable.setOpaque(false);
 		
 		final JTableHeader hd = previewTable.getTableHeader();
 		hd.setReorderingAllowed(false);
 		hd.setDefaultRenderer(new PreviewTableHeaderRenderer());
-
-		previewTabbedPane.addChangeListener(new ChangeListener() {
-			@Override
-			public void stateChanged(ChangeEvent evt) {
-				tableTabbedPaneStateChanged(evt);
-			}
-		});
 
 		previewTabbedPane.addTab(DEF_TAB_MESSAGE, new PreviewTab(previewTable, null));
 		
@@ -364,18 +357,38 @@ public class PreviewTablePanel extends JPanel {
 		return index >= 0 ? previewTabbedPane.getTitleAt(index) : null;
 	}
 
-	public JTable getPreviewTable(int index) {
+	public JTable getPreviewTable(final int index) {
 		return ((PreviewTab) previewTabbedPane.getComponentAt(index)).table;
+	}
+	
+	public JTable getPreviewTable(final String name) {
+		return previewTables.get(name);
 	}
 
 	public int getTableCount() {
 		return previewTabbedPane.getTabCount();
 	}
 
-	public String getSheetName(final int index) {
+	public String getTabName(final int index) {
 		return previewTabbedPane.getTitleAt(index);
 	}
 
+	public String[] getAttributeNames(final String tabName) {
+		String[] names = null;
+		final JTable table = getPreviewTable(tabName);
+		
+		if (table != null) {
+			final PreviewTableModel model = (PreviewTableModel) table.getModel();
+			final int columnCount = model.getColumnCount();
+			names = new String[columnCount];
+			
+			for (int i = 0; i < columnCount; i++)
+				names[i] = model.getColumnName(i);
+		}
+		
+		return names;
+	}
+	
 	public SourceColumnSemantic[] getTypes(final String tabName) {
 		return typeMap.get(tabName);
 	}
@@ -384,7 +397,7 @@ public class PreviewTablePanel extends JPanel {
 		return getTypes(getSelectedTabName());
 	}
 	
-	public void setType(final String tabName, final int index, SourceColumnSemantic type) {
+	public void setType(final String tabName, final int index, final SourceColumnSemantic newType) {
 		if (index < 0)
 			return;
 		
@@ -392,10 +405,14 @@ public class PreviewTablePanel extends JPanel {
 		
 		if (types != null && types.length > index) {
 			// First replace the index that currently has this unique type by the default type
-			if (type.isUnique())
-				replaceType(tabName, type, TypeUtil.getDefaultType(importType));
+			if (newType.isUnique())
+				replaceType(tabName, newType, TypeUtil.getDefaultType(importType));
 			
-			types[index] = type;
+			final SourceColumnSemantic oldType = types[index];
+			types[index] = newType;
+			
+			if (newType != oldType)
+				changes.fireIndexedPropertyChange(DataEvents.ATTR_TYPE_CHANGED, index, oldType, newType);
 		}
 	}
 	
@@ -412,7 +429,7 @@ public class PreviewTablePanel extends JPanel {
 		if (types != null) {
 			for (int i = 0; i < types.length; i++) {
 				if (types[i] == type1)
-					types[i] = type2;
+					setType(tabName, i, type2);
 			}
 		}
 	}
@@ -440,27 +457,36 @@ public class PreviewTablePanel extends JPanel {
 		
 		final AttributeDataType[] dataTypes = getDataTypes(tabName);
 		
-		if (dataTypes != null && dataTypes.length > index && dataTypes[index] != newValue) {
+		if (dataTypes != null && dataTypes.length > index) {
+			final AttributeDataType oldValue = dataTypes[index];
 			dataTypes[index] = newValue;
-			changes.firePropertyChange(ImportTablePanel.ATTR_DATA_TYPE_CHANGED, null, dataTypes);
+			
+			if (newValue != oldValue)
+				changes.fireIndexedPropertyChange(DataEvents.ATTR_DATA_TYPE_CHANGED, index, oldValue, newValue);
 		}
 	}
 	
+	public String[] getListDelimiters(final String tabName) {
+		return listDelimiterMap.get(tabName);
+	}
+	
+	public void setListDelimiter(final String tabName, final int index, final String newValue) {
+		if (index < 0)
+			return;
+		
+		final String[] delimiters = getListDelimiters(tabName);
+		
+		if (delimiters != null && delimiters.length > index)
+			delimiters[index] = newValue;
+	}
+	
 	public FileType getFileType() {
-		final String sheetName = getSheetName(previewTabbedPane.getSelectedIndex());
+		final String tabName = getTabName(previewTabbedPane.getSelectedIndex());
 
-		if (sheetName.startsWith("gene_association"))
+		if (tabName.startsWith("gene_association"))
 			return FileType.GENE_ASSOCIATION_FILE;
 
 		return FileType.ATTRIBUTE_FILE;
-	}
-
-	private void tableTabbedPaneStateChanged(ChangeEvent evt) {
-		if ((previewTabbedPane.getSelectedComponent() != null)
-				&& getSelectedPreviewTable() != null
-				&& (loadFlag == true)) {
-			changes.firePropertyChange(ImportTablePanel.SHEET_CHANGED, null, null);
-		}
 	}
 
 	/**
@@ -495,7 +521,7 @@ public class PreviewTablePanel extends JPanel {
 
 		previewTables = new HashMap<String, JTable>();
 
-		TableModel newModel;
+		PreviewTableModel newModel = null;
 		boolean isTable = false;
 		
 		if (fileType != null) {
@@ -519,6 +545,8 @@ public class PreviewTablePanel extends JPanel {
 				
 				typeMap.put(sheetName, TypeUtil.guessTypes(importType, newModel));
 				dataTypeMap.put(sheetName, TypeUtil.guessDataTypes(newModel));
+				listDelimiterMap.put(sheetName, new String[newModel.getColumnCount()]);
+				
 				addTableTab(newModel, sheetName, curRenderer);
 			}
 		}
@@ -536,10 +564,10 @@ public class PreviewTablePanel extends JPanel {
 			
 			typeMap.put(tabName, TypeUtil.guessTypes(importType, newModel));
 			dataTypeMap.put(tabName, TypeUtil.guessDataTypes(newModel));
+			listDelimiterMap.put(tabName, new String[newModel.getColumnCount()]);
+			
 			addTableTab(newModel, tabName, curRenderer);
 		}
-
-		loadFlag = true;
 	}
 	
 	public void setFirstRowAsColumnNames() {
@@ -547,19 +575,13 @@ public class PreviewTablePanel extends JPanel {
 		final JTable table = tab != null ? tab.table : null;
 		
 		if (table != null) {
-			final DefaultTableModel model = (DefaultTableModel) table.getModel();
-			final Vector<String> colNames = new Vector<>();
-			
-			for (int i = 0; i < table.getColumnCount(); i++) {
-				String name = model.getValueAt(0, i).toString();
-				colNames.add(name);
-				table.getColumnModel().getColumn(i).setHeaderValue(name);
-			}
+			final PreviewTableModel model = (PreviewTableModel) table.getModel();
+			model.setFirstRowNames(true);
 	
-			model.removeRow(0);
-			model.setColumnIdentifiers(colNames);
 			typeMap.put(table.getName(), TypeUtil.guessTypes(importType, model));
 			tab.update();
+			
+			ColumnResizer.adjustColumnPreferredWidths(table);
 		}
 	}
 
@@ -615,25 +637,13 @@ public class PreviewTablePanel extends JPanel {
 		return testResult;
 	}
 
-	private void addTableTab(final TableModel newModel, final String tabName, final TableCellRenderer renderer) {
+	private void addTableTab(final PreviewTableModel newModel, final String tabName, final TableCellRenderer renderer) {
 		final JTable table = new JTable(newModel);
 		table.setName(tabName);
 		previewTables.put(tabName, table);
 
 		final PreviewTab tab = new PreviewTab(table, renderer);
 		previewTabbedPane.addTab(tabName, tab);
-	}
-
-	/**
-	 * Based on the file type, setup the initial column names.
-	 */
-	private Vector<String> getDefaultColumnNames(final int colCount) {
-		final Vector<String> colNames = new Vector<>();
-
-		for (int i = 0; i < colCount; i++)
-			colNames.add("Column " + (i + 1));
-
-		return colNames;
 	}
 
 	public int checkKeyMatch(final int targetColumn) {
@@ -750,20 +760,20 @@ public class PreviewTablePanel extends JPanel {
 		return reloadButton;
 	}
 	
-	private TableModel parseExcel(int size, TableCellRenderer renderer, final Sheet sheet, int startLine)
+	private PreviewTableModel parseExcel(int size, TableCellRenderer renderer, final Sheet sheet, int startLine)
 			throws IOException {
 		if (size == -1)
 			size = Integer.MAX_VALUE;
 
 		int maxCol = 0;
-		final Vector<Object> data = new Vector<>();
+		final Vector<Vector<String>> data = new Vector<>();
 
 		int rowCount = 0;
 		Row row;
 
 		while (((row = sheet.getRow(rowCount)) != null) && (rowCount < size)) {
 			if (rowCount >= startLine) {
-				final Vector<Object> rowVector = new Vector<>();
+				final Vector<String> rowVector = new Vector<>();
 
 				if (maxCol < row.getPhysicalNumberOfCells())
 					maxCol = row.getPhysicalNumberOfCells();
@@ -779,11 +789,10 @@ public class PreviewTablePanel extends JPanel {
 						final Double dblValue = cell.getNumericCellValue();
 						final Integer intValue = dblValue.intValue();
 
-						if (intValue.doubleValue() == dblValue) {
+						if (intValue.doubleValue() == dblValue)
 							rowVector.add(intValue.toString());
-						} else {
+						else
 							rowVector.add(dblValue.toString());
-						}
 					} else if (cell.getCellType() == Cell.CELL_TYPE_BOOLEAN) {
 						rowVector.add(Boolean.toString(cell.getBooleanCellValue()));
 					} else if ((cell.getCellType() == Cell.CELL_TYPE_BLANK)
@@ -800,14 +809,16 @@ public class PreviewTablePanel extends JPanel {
 			rowCount++;
 		}
 
-		return new DefaultTableModel(data, getDefaultColumnNames(maxCol));
+		final boolean firstRowNames = importType == NETWORK_IMPORT || importType == TABLE_IMPORT;
+		
+		return new PreviewTableModel(data, new Vector<String>(), firstRowNames);
 	}
 	
-	private TableModel parseText(InputStream tempIs, int size, TableCellRenderer renderer, List<String> delimiters,
+	private PreviewTableModel parseText(InputStream tempIs, int size, TableCellRenderer renderer, List<String> delimiters,
 			int startLine) throws IOException {
 		String line;
 		String attrName = "Attr1";
-		Vector<Vector<String>> data;
+		Vector<Vector<String>> data = null;
 		int maxColumn;
 
 		BufferedReader bufRd = new BufferedReader(new InputStreamReader(tempIs, Charset.forName("UTF-8").newDecoder()));
@@ -822,9 +833,8 @@ public class PreviewTablePanel extends JPanel {
 			if (delimiters.size() != 0) {
 				delimiterBuffer.append("[");
 
-				for (String delimiter : delimiters) {
+				for (String delimiter : delimiters)
 					delimiterBuffer.append(delimiter);
-				}
 
 				delimiterBuffer.append("]");
 			}
@@ -920,35 +930,39 @@ public class PreviewTablePanel extends JPanel {
 		if (tempIs != null)
 			tempIs.close();
 
+		final boolean firstRowNames = importType == NETWORK_IMPORT || importType == TABLE_IMPORT;
+		
 		if (delimiters == null) {
 			// Cytoscape attr file.
 			final Vector<String> columnNames = new Vector<>();
 			columnNames.add("Key");
 			columnNames.add(attrName);
 			
-			return new DefaultTableModel(data, columnNames);
+			return new PreviewTableModel(data, columnNames, firstRowNames);
 		} else {
-			return new DefaultTableModel(data, getDefaultColumnNames(maxColumn));
+			return new PreviewTableModel(data, new Vector<String>(), firstRowNames);
 		}
 	}
 	
 	private void showEditDialog(final PreviewTab tab, final int colIdx) {
 		final JTable table = tab.table;
-		final TableColumnModel columnModel = table.getColumnModel();
-		final TableColumn column = columnModel.getColumn(colIdx);
-
 		final Window parent = SwingUtilities.getWindowAncestor(PreviewTablePanel.this);
 		
-		final SourceColumnSemantic[] types = getCurrentTypes();
-		final AttributeDataType[] dataTypes = getCurrentDataTypes();
+		final SourceColumnSemantic[] types = getTypes(table.getName());
+		final AttributeDataType[] dataTypes = getDataTypes(table.getName());
+		final String[] listDelimiters = getListDelimiters(table.getName());
 
+		final PreviewTableModel model = (PreviewTableModel) table.getModel();
+		final String attrName = model.getColumnName(colIdx);
+		final List<SourceColumnSemantic> availableTypes = TypeUtil.getAvailableTypes(importType);
+		
 		final AttributeEditorPanel attrEditorPanel = new AttributeEditorPanel(
 				parent,
-				column.getHeaderValue().toString(),
-				TypeUtil.getAvailableTypes(importType),
+				attrName,
+				availableTypes,
 				types[colIdx],
 				dataTypes[colIdx],
-				listDelimiter,
+				listDelimiters[colIdx],
 				iconManager
 		);
 		
@@ -1018,39 +1032,28 @@ public class PreviewTablePanel extends JPanel {
 	}
 
 	private void updateTable(final int colIdx, final AttributeEditorPanel attrEditorPanel) {
-		final JTable table = getSelectedPreviewTable();
-		final JTableHeader hd = table.getTableHeader();
-		final TableColumnModel columnModel = table.getColumnModel();
-		final TableColumn column = columnModel.getColumn(colIdx);
-
 		final String tabName = getSelectedTabName();
-		
-		final String name = attrEditorPanel.getAttributeName();
+		final JTable table = getSelectedPreviewTable();
+		final String attrName = attrEditorPanel.getAttributeName();
 		final SourceColumnSemantic newType = attrEditorPanel.getType();
 		final AttributeDataType newDataType = attrEditorPanel.getDataType();
 
-		if (name != null) {
-			column.setHeaderValue(name);
-			hd.resizeAndRepaint();
-
-			if (newDataType.isList()) {
-				listDelimiter = attrEditorPanel.getListDelimiterType();
-
-				changes.firePropertyChange(ImportTablePanel.LIST_DELIMITER_CHANGED, null,
-						attrEditorPanel.getListDelimiterType());
-			}
-
-			final Vector<Object> colNamePair = new Vector<>();
-			colNamePair.add(colIdx);
-			colNamePair.add(name);
-			changes.firePropertyChange(ImportTablePanel.ATTRIBUTE_NAME_CHANGED, null, colNamePair);
-
-			setType(tabName, colIdx, newType);
-			setDataType(tabName, colIdx, newDataType);
-
-			if (getSelectedPreviewTab() != null)
-				getSelectedPreviewTab().update();
+		if (attrName != null) {
+			final PreviewTableModel model = (PreviewTableModel) table.getModel();
+			model.setColumnName(colIdx, attrName);
+			table.getColumnModel().getColumn(colIdx).setHeaderValue(attrName);
 		}
+
+		if (newDataType.isList())
+			setListDelimiter(tabName, colIdx, attrEditorPanel.getListDelimiter());
+
+		setType(tabName, colIdx, newType);
+		setDataType(tabName, colIdx, newDataType);
+		
+		ColumnResizer.adjustColumnPreferredWidth(table, colIdx);
+
+		if (getSelectedPreviewTab() != null)
+			getSelectedPreviewTab().update();
 	}
 	
 	private class EditDialog extends JDialog {
@@ -1225,6 +1228,99 @@ public class PreviewTablePanel extends JPanel {
 		}
 	}
 	
+	class PreviewTableModel extends DefaultTableModel {
+		
+		private boolean firstRowNames;
+
+		public PreviewTableModel(final Vector<Vector<String>> data, final Vector<String> columnNames,
+				final boolean firstRowNames) {
+			super(data, columnNames);
+			this.firstRowNames = firstRowNames;
+		}
+
+		@SuppressWarnings("unchecked")
+		public void setColumnName(final int column, final String name) {
+			if (columnIdentifiers.isEmpty())
+				columnIdentifiers.setSize(getColumnCount());
+			
+			if (columnIdentifiers.size() > column) {
+				columnIdentifiers.set(column, name);
+				this.fireTableChanged(new TableModelEvent(this));
+			}
+		}
+
+		public void setFirstRowNames(final boolean firstRowNames) {
+			this.firstRowNames = firstRowNames;
+			this.fireTableStructureChanged();
+		}
+		
+		public boolean isFirstRowNames() {
+			return firstRowNames;
+		}
+		
+		@Override
+		public int getRowCount() {
+			return firstRowNames ? dataVector.size() - 1 : dataVector.size();
+		}
+		
+		@Override
+		@SuppressWarnings("unchecked")
+		public int getColumnCount() {
+			return dataVector.size() > 0 ? ((Vector<String>) dataVector.get(0)).size() : 0;
+		}
+		
+		@Override
+		@SuppressWarnings("unchecked")
+		public String getColumnName(final int column) {
+			String colName = null;
+			
+			// First check is the name has been overwritten by the user
+			if (columnIdentifiers.size() > column)
+				colName = (String) columnIdentifiers.get(column);
+			
+			if (colName == null) {
+				if (firstRowNames && dataVector.size() > 0) {
+					// No overwritten name and should use the first data row as column names
+					final Vector<String> firstRow = (Vector<String>) dataVector.get(0);
+					
+					if (firstRow != null && firstRow.size() > column)
+						colName = firstRow.get(column);
+				} else {
+					// Just return a default name
+					colName = "Column " + (column + 1);
+				}
+			}
+			
+			return colName;
+		}
+
+		@Override
+		public Class<?> getColumnClass(final int column) {
+			return String.class;
+		}
+
+		@Override
+		public boolean isCellEditable(final int row, final int column) {
+			return false;
+		}
+
+		@Override
+		public Object getValueAt(int row, final int column) {
+			if (firstRowNames)
+				row++;
+			
+			return super.getValueAt(row, column);
+		}
+
+		@Override
+		public void setValueAt(final Object aValue, int row, final int column) {
+			if (firstRowNames)
+				row++;
+			
+			super.setValueAt(aValue, row, column);
+		}
+	}
+	
 	private class PreviewTableHeaderRenderer extends JPanel implements TableCellRenderer {
 		
 		private final Border BORDER = BorderFactory.createMatteBorder(0, 1, 0, 0, UIManager.getColor("Separator.foreground"));
@@ -1283,10 +1379,14 @@ public class PreviewTablePanel extends JPanel {
 				if (type == null)
 					type = NONE;
 				
+				 final AttributeDataType[] dataTypes = getDataTypes(tbl.getName());
+				 final AttributeDataType dataType = dataTypes != null && dataTypes.length > col ?
+						 dataTypes[col] : TYPE_STRING;
+				
 				typeLabel.setForeground(type.getForeground());
 				typeLabel.setText(type.getText());
 				
-				setToolTipText(type.getDescription());
+				setToolTipText("<html>" + type.getDescription() + " - <i>" + dataType.getDescription() + "</i></html>");
 				
 				if (type == NONE)
 					fgColor = UIManager.getColor("Label.disabledForeground");
