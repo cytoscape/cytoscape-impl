@@ -72,6 +72,8 @@ public class ListMultipleHandler<T> extends AbstractGUITunableHandler
 	private JList<T> itemsContainerList;
 	private DefaultListModel<T> listModel;
 	private ListMultipleSelection<T> listMultipleSelection;
+	private JButton selectAllButton;
+	private JButton selectNoneButton;
 
 	/**
 	 * Constructs the <code>GUIHandler</code> for the <code>ListMultipleSelection</code> type
@@ -113,7 +115,7 @@ public class ListMultipleHandler<T> extends AbstractGUITunableHandler
 		}
 		
 		// Select All/None buttons
-		final JButton selectAllButton = new JButton("Select All");
+		selectAllButton = new JButton("Select All");
 		selectAllButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(final ActionEvent e) {
@@ -124,11 +126,11 @@ public class ListMultipleHandler<T> extends AbstractGUITunableHandler
 		selectAllButton.putClientProperty("JButton.buttonType", "gradient"); // Mac OS X only
 		selectAllButton.putClientProperty("JComponent.sizeVariant", "small"); // Mac OS X only
 		
-		final JButton selectNoneButton = new JButton("Select None");
+		selectNoneButton = new JButton("Select None");
 		selectNoneButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(final ActionEvent e) {
-				itemsContainerList.clearSelection();
+				itemsContainerList.getSelectionModel().clearSelection();
 			}
 		});
 		selectNoneButton.putClientProperty("JButton.buttonType", "gradient"); // Mac OS X only
@@ -136,19 +138,6 @@ public class ListMultipleHandler<T> extends AbstractGUITunableHandler
 		selectNoneButton.setEnabled(false);
 		
 		LookAndFeelUtil.equalizeSize(selectAllButton, selectNoneButton);
-		
-		// Enable/disable buttons when list selection changes
-		itemsContainerList.addListSelectionListener(new ListSelectionListener() {
-			@Override
-			public void valueChanged(ListSelectionEvent e) {
-				if (!e.getValueIsAdjusting()) {
-					final int total = listModel.getSize();
-					final int selected = itemsContainerList.getSelectedIndices().length;
-					selectAllButton.setEnabled(selected < total);
-					selectNoneButton.setEnabled(selected > 0);
-				}
-			}
-		});
 		
 		// put the items in a list
 		for (T value : getMultipleSelection().getPossibleValues()) 
@@ -266,14 +255,21 @@ public class ListMultipleHandler<T> extends AbstractGUITunableHandler
 	 */
 	@Override
 	public void handle() {
-		if ( itemsContainerList == null || itemsContainerList.getModel().getSize() == 0)
+		// Enable/disable buttons when list selection changes
+		final int total = listModel.getSize();
+		final int selected = itemsContainerList != null ? itemsContainerList.getSelectedIndices().length : 0;
+		
+		if (selectAllButton != null)
+			selectAllButton.setEnabled(selected < total);
+		if (selectNoneButton != null)
+			selectNoneButton.setEnabled(selected > 0);
+		
+		if (itemsContainerList == null || itemsContainerList.getModel().getSize() == 0)
 			return;
 
-		List selectedItems = Arrays.asList(itemsContainerList.getSelectedValues());
-		if (!selectedItems.isEmpty()) {
-			getMultipleSelection().setSelectedValues(selectedItems);
-		}
-		
+		final List<T> selectedItems = itemsContainerList.getSelectedValuesList();
+		getMultipleSelection().setSelectedValues(selectedItems);
+			
 		try {
 			setValue(getMultipleSelection());
 		} catch (IllegalAccessException e) {
@@ -299,7 +295,8 @@ public class ListMultipleHandler<T> extends AbstractGUITunableHandler
 
 	@Override
 	public void valueChanged(ListSelectionEvent e) {
-		handle();
+		if (!e.getValueIsAdjusting())
+			handle();
 	}
 
 	@Override
