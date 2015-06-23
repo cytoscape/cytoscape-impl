@@ -27,12 +27,15 @@ package org.cytoscape.task.internal.table;
 import java.io.IOException;
 import java.text.Collator;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.NetworkViewRenderer;
@@ -195,6 +198,7 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 
 	public void setTargetNetworkList(ListMultipleSelection<String> list) {
 		this.targetNetworkList = list;
+		updateKeyColumnForMappingNetworkList();
 	}
 	
 	public ListSingleSelection<TableType> dataTypeTargetForNetworkList;
@@ -211,6 +215,24 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 
 	public void setDataTypeTargetForNetworkList(ListSingleSelection<TableType> options) {
 		dataTypeTargetForNetworkList = options;
+		updateKeyColumnForMappingNetworkList();
+	}
+	
+	public ListSingleSelection<String> keyColumnForMappingNetworkList;
+	
+	@Tunable(
+			description = "Key Column for Networks:",
+			groups = { "Target Table Data", "Select Networks" },
+			gravity = 3.3,
+			xorKey = NETWORK_SELECTION,
+			listenForChange = { "DataTypeTargetForNetworkList", "TargetNetworkList" }
+	)
+	public ListSingleSelection<String> getKeyColumnForMappingNetworkList() {
+		return keyColumnForMappingNetworkList;
+	}
+	
+	public void setKeyColumnForMappingNetworkList(ListSingleSelection<String> colList) {
+		this.keyColumnForMappingNetworkList = colList;
 	}
 	
 	@Tunable(
@@ -267,11 +289,11 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 		final CyNetworkManager netMgr = serviceRegistrar.getService(CyNetworkManager.class);
 		
 		if (netMgr.getNetworkSet().size() > 0) {
-			whereImportTable = new ListSingleSelection<String>(NETWORK_COLLECTION, NETWORK_SELECTION, UNASSIGNED_TABLE);
+			whereImportTable = new ListSingleSelection<>(NETWORK_COLLECTION, NETWORK_SELECTION, UNASSIGNED_TABLE);
 			whereImportTable.setSelectedValue(NETWORK_COLLECTION);
 			networksPresent = true;
 		} else {
-			whereImportTable = new ListSingleSelection<String>(UNASSIGNED_TABLE);
+			whereImportTable = new ListSingleSelection<>(UNASSIGNED_TABLE);
 			whereImportTable.setSelectedValue(UNASSIGNED_TABLE);
 		}
 		
@@ -283,15 +305,15 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 		}
 
 		if (networksPresent) {
-			final List<TableType> options = new ArrayList<TableType>();
+			final List<TableType> options = new ArrayList<>();
 			
 			for (TableType type : TableType.values())
 				options.add(type);
 			
-			dataTypeTargetForNetworkCollection = new ListSingleSelection<TableType>(options);
+			dataTypeTargetForNetworkCollection = new ListSingleSelection<>(options);
 			dataTypeTargetForNetworkCollection.setSelectedValue(TableType.NODE_ATTR);
 			
-			dataTypeTargetForNetworkList = new ListSingleSelection<TableType>(options);
+			dataTypeTargetForNetworkList = new ListSingleSelection<>(options);
 			dataTypeTargetForNetworkList.setSelectedValue(TableType.NODE_ATTR);
 	
 			for (CyNetwork net : netMgr.getNetworkSet()) {
@@ -301,25 +323,12 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 			
 			final List<String> names = new ArrayList<>();
 			names.addAll(name2NetworkMap.keySet());
-			
-			final Collator collator = Collator.getInstance(Locale.getDefault());
-			
-			Collections.sort(names, new Comparator<String>() {
-				@Override
-				public int compare(String s1, String s2) {
-					if (s1 == null || s2 == null) {
-						if (s2 != null) return -1;
-						if (s1 != null) return 1;
-						return 0;
-					}
-					return collator.compare(s1, s2);
-				}
-			});
+			sort(names);
 			
 			if (names.isEmpty()) {
-				targetNetworkList = new ListMultipleSelection<String>(NO_NETWORKS);
+				targetNetworkList = new ListMultipleSelection<>(NO_NETWORKS);
 			} else {
-				targetNetworkList = new ListMultipleSelection<String>(names);
+				targetNetworkList = new ListMultipleSelection<>(names);
 				
 				final CyApplicationManager appMgr = serviceRegistrar.getService(CyApplicationManager.class);
 				final CyNetwork currNet = appMgr.getCurrentNetwork();
@@ -328,8 +337,21 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 					final String currName = currNet.getRow(currNet).get(CyNetwork.NAME, String.class);
 					
 					if (currName != null && targetNetworkList.getPossibleValues().contains(currName))
-					targetNetworkList.setSelectedValues(Collections.singletonList(currName));
+						targetNetworkList.setSelectedValues(Collections.singletonList(currName));
 				}
+				
+				final List<CyNetwork> selectedNetworks = new ArrayList<>();
+				
+				for (String netName : targetNetworkList.getSelectedValues()) {
+					if (name2NetworkMap.containsKey(netName))
+						selectedNetworks.add(name2NetworkMap.get(netName));
+				}
+				
+				keyColumnForMappingNetworkList = getColumns(
+						selectedNetworks,
+						dataTypeTargetForNetworkList.getSelectedValue(),
+						CyRootNetwork.DEFAULT_ATTRS
+				);
 			}
 	
 			final CyRootNetworkManager rootNetMgr = serviceRegistrar.getService(CyRootNetworkManager.class);
@@ -341,34 +363,21 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 					name2RootMap.put(rootNet.getRow(rootNet).get(CyRootNetwork.NAME, String.class), rootNet);
 			}
 			
-			final List<String> rootNames = new ArrayList<String>();
+			final List<String> rootNames = new ArrayList<>();
 			rootNames.addAll(name2RootMap.keySet());
-			targetNetworkCollection = new ListSingleSelection<String>(rootNames);
+			sort(rootNames);
+			targetNetworkCollection = new ListSingleSelection<>(rootNames);
 			
 			if (!rootNames.isEmpty()) {
 				targetNetworkCollection.setSelectedValue(rootNames.get(0));
 		
-				keyColumnForMapping = getColumns(name2RootMap.get(targetNetworkCollection.getSelectedValue()),
-						dataTypeTargetForNetworkCollection.getSelectedValue(), CyRootNetwork.SHARED_ATTRS);
+				keyColumnForMapping = getColumns(
+						Collections.singletonList(name2RootMap.get(targetNetworkCollection.getSelectedValue())),
+						dataTypeTargetForNetworkCollection.getSelectedValue(),
+						CyRootNetwork.SHARED_ATTRS
+				);
 			}
 		}
-	}
-
-	public ListSingleSelection<String> getColumns(final CyNetwork network, TableType tableType, String namespace) {
-		CyTable selectedTable = getTable(network, tableType, CyRootNetwork.SHARED_ATTRS);
-		List<String> colNames = new ArrayList<String>();
-		
-		for (CyColumn col : selectedTable.getColumns()) {
-			if (col.getName().matches(CyNetwork.SUID))
-				continue;
-			
-			colNames.add(col.getName());
-		}
-
-		ListSingleSelection<String> columns = new ListSingleSelection<String>(colNames);
-		columns.setSelectedValue(CyRootNetwork.SHARED_NAME);
-		
-		return columns;
 	}
 
 	@Override
@@ -390,16 +399,85 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 	}
 	
 	private void updateKeyColumnForMapping() {
-		ListSingleSelection<String> tempList = getColumns(name2RootMap.get(targetNetworkCollection.getSelectedValue()),
-				dataTypeTargetForNetworkCollection.getSelectedValue(), CyRootNetwork.SHARED_ATTRS);
+		final ListSingleSelection<String> tempList = getColumns(
+				Collections.singletonList(name2RootMap.get(targetNetworkCollection.getSelectedValue())),
+				dataTypeTargetForNetworkCollection.getSelectedValue(),
+				CyRootNetwork.SHARED_ATTRS
+		);
 		
 		if (!keyColumnForMapping.getPossibleValues().containsAll(tempList.getPossibleValues())
 				|| keyColumnForMapping.getPossibleValues().size() != tempList.getPossibleValues().size())
 			keyColumnForMapping = tempList;
 	}
 	
+	private void updateKeyColumnForMappingNetworkList() {
+		final List<CyNetwork> selectedNetworks = new ArrayList<>();
+		
+		for (String netName : targetNetworkList.getSelectedValues()) {
+			if (name2NetworkMap.containsKey(netName))
+				selectedNetworks.add(name2NetworkMap.get(netName));
+		}
+		
+		final ListSingleSelection<String> tempList = getColumns(
+				selectedNetworks,
+				dataTypeTargetForNetworkList.getSelectedValue(),
+				CyRootNetwork.DEFAULT_ATTRS
+		);
+		
+		if (!keyColumnForMappingNetworkList.getPossibleValues().containsAll(tempList.getPossibleValues())
+				|| keyColumnForMappingNetworkList.getPossibleValues().size() != tempList.getPossibleValues().size())
+			keyColumnForMappingNetworkList = tempList;
+	}
+	
+	private ListSingleSelection<String> getColumns(final Collection<? extends CyNetwork> networkList,
+			final TableType tableType, final String namespace) {
+		Set<ColumnDescriptor> colDescSet = null;
+		
+		// Get set of columns with same name and type that are common to all networks
+		for (CyNetwork network : networkList) {
+			final CyTable table = getTable(network, tableType, namespace);
+			final Set<ColumnDescriptor> subSet = new HashSet<>();
+			
+			for (CyColumn col : table.getColumns()) {
+				if (isMappableColumn(col))
+					subSet.add(new ColumnDescriptor(col.getName(), col.getType()));
+			}
+			
+			if (colDescSet == null)
+				colDescSet = subSet; // First network? Just save the mappable columns...
+			else
+				colDescSet.retainAll(subSet); // From now on just keep the common columns...
+		}
+		
+		final List<String> columnNames = new ArrayList<>();
+		
+		if (colDescSet != null) {
+			for (ColumnDescriptor cd : colDescSet)
+				columnNames.add(cd.name);
+			
+			sort(columnNames);
+		}
+		
+		final ListSingleSelection<String> columns = new ListSingleSelection<>(columnNames);
+		
+		if (columns.getPossibleValues().contains(CyRootNetwork.SHARED_NAME))
+			columns.setSelectedValue(CyRootNetwork.SHARED_NAME);
+		
+		return columns;
+	}
+
+	private boolean isMappableColumn(final CyColumn col) {
+		final String name = col.getName();
+		final Class<?> type = col.getType();
+		
+		return type != List.class && 
+				!name.equals(CyNetwork.SUID) && 
+				!name.endsWith(".SUID") && 
+				!(name.equals(CyNetwork.SELECTED) && type == Boolean.class);
+	}
+	
 	private void mapTableToLocalAttrs(final TableType tableType) {
-		final List<CyNetwork> networks = new ArrayList<CyNetwork>();
+		final List<CyNetwork> networks = new ArrayList<>();
 
 		if (targetNetworkList.getSelectedValues().isEmpty())
 			return;
@@ -439,7 +517,7 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 	}
 
 	private void applyMapping(final CyTable targetTable, final boolean caseSensitive) {
-		ArrayList<CyColumn> columns = new ArrayList<CyColumn>();
+		ArrayList<CyColumn> columns = new ArrayList<>();
 		
 		if (byReader) {
 			if (reader.getTables() != null && reader.getTables().length > 0) {
@@ -463,6 +541,8 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 		
 		if (whereImportTable.getSelectedValue().matches(NETWORK_COLLECTION))
 			joinKeyName = keyColumnForMapping.getSelectedValue();
+		else if (whereImportTable.getSelectedValue().matches(NETWORK_SELECTION))
+			joinKeyName = keyColumnForMappingNetworkList.getSelectedValue();
 		
 		return targetTable.getColumn(joinKeyName);
 	}
@@ -610,6 +690,17 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 	
 	@Override
 	public ValidationState getValidationState(Appendable errMsg) {
+		if (whereImportTable.getSelectedValue().matches(NETWORK_SELECTION) && 
+				targetNetworkList.getSelectedValues().isEmpty()) {
+			try {
+				errMsg.append("Please select at least one network.");
+				return ValidationState.INVALID;
+			} catch (IOException e) {
+				e.printStackTrace();
+				return ValidationState.INVALID;
+			}
+		}
+		
 		if (!whereImportTable.getSelectedValue().matches(UNASSIGNED_TABLE) || newTableName.isEmpty())
 			return ValidationState.OK;
 
@@ -630,5 +721,63 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 		}
 
 		return ValidationState.OK;
+	}
+	
+	private void sort(final List<String> names) {
+		final Collator collator = Collator.getInstance(Locale.getDefault());
+		
+		Collections.sort(names, new Comparator<String>() {
+			@Override
+			public int compare(String s1, String s2) {
+				if (s1 == null || s2 == null) {
+					if (s2 != null) return -1;
+					if (s1 != null) return 1;
+					return 0;
+				}
+				return collator.compare(s1, s2);
+			}
+		});
+	}
+	
+	private static class ColumnDescriptor {
+		
+		private final String name;
+		private final Class<?> type;
+		
+		ColumnDescriptor(final String name, final Class<?> type) {
+			this.name = name;
+			this.type = type;
+		}
+
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = 7;
+			result = prime * result + ((name == null) ? 0 : name.hashCode());
+			result = prime * result + ((type == null || type.getCanonicalName() == null) ? 0 : type.getCanonicalName().hashCode());
+			return result;
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj) return true;
+			if (obj == null) return false;
+			if (!(obj instanceof ColumnDescriptor)) return false;
+			
+			ColumnDescriptor other = (ColumnDescriptor) obj;
+			
+			if (name == null) {
+				if (other.name != null) return false;
+			} else if (!name.equals(other.name)) {
+				return false;
+			}
+			if (type == null) {
+				if (other.type != null) return false;
+			} else if (type != other.type) {
+				return false;
+			}
+			
+			return true;
+		}
 	}
 }
