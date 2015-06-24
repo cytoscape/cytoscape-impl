@@ -51,6 +51,7 @@ import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
+import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ProvidesTitle;
@@ -321,6 +322,8 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 				name2NetworkMap.put(netName, net);
 			}
 			
+			final CyApplicationManager appMgr = serviceRegistrar.getService(CyApplicationManager.class);
+			
 			final List<String> names = new ArrayList<>();
 			names.addAll(name2NetworkMap.keySet());
 			sort(names);
@@ -329,8 +332,6 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 				targetNetworkList = new ListMultipleSelection<>(NO_NETWORKS);
 			} else {
 				targetNetworkList = new ListMultipleSelection<>(names);
-				
-				final CyApplicationManager appMgr = serviceRegistrar.getService(CyApplicationManager.class);
 				final CyNetwork currNet = appMgr.getCurrentNetwork();
 				
 				if (currNet != null) {
@@ -370,7 +371,17 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 			
 			if (!rootNames.isEmpty()) {
 				targetNetworkCollection.setSelectedValue(rootNames.get(0));
+				final CyNetwork currNet = appMgr.getCurrentNetwork();
+				final CyRootNetwork currRootNet = currNet instanceof CySubNetwork ?
+						rootNetMgr.getRootNetwork(currNet) : null;
 		
+				if (currRootNet != null) {
+					final String currName = currRootNet.getRow(currRootNet).get(CyNetwork.NAME, String.class);
+					
+					if (currName != null && targetNetworkCollection.getPossibleValues().contains(currName))
+						targetNetworkCollection.setSelectedValue(currName);
+				}
+						
 				keyColumnForMapping = getColumns(
 						Collections.singletonList(name2RootMap.get(targetNetworkCollection.getSelectedValue())),
 						dataTypeTargetForNetworkCollection.getSelectedValue(),
