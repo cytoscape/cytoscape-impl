@@ -58,6 +58,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import java.beans.IndexedPropertyChangeEvent;
@@ -234,17 +236,6 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 	private final InputStreamTaskFactory factory;
 	private final CyServiceRegistrar serviceRegistrar;
 	private File tempFile;
-
-	public ImportTablePanel(
-			final ImportType importType,
-			final InputStream is,
-			final String fileType,
-			final String inputName,
-			final InputStreamTaskFactory factory,
-			final CyServiceRegistrar serviceRegistrar
-	) throws JAXBException, IOException {
-		this(importType, is, fileType, factory, serviceRegistrar);
-	}
 
 	public ImportTablePanel(
 			final ImportType importType,
@@ -562,6 +553,13 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 
 		if (basicPanel != null)
 			basicPanel.repaint();
+		
+		this.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mousePressed(MouseEvent e) {
+				getPreviewPanel().disposeEditDialog(true);
+			}
+		});
 	}
 	
 	private JPanel getBasicPanel() {
