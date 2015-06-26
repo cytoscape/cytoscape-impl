@@ -35,7 +35,7 @@ import org.cytoscape.util.swing.IconManager;
  */
 public enum SourceColumnSemantic {
 	
-	NONE(Color.LIGHT_GRAY, IconManager.ICON_BAN, "Not Imported"),
+	NONE(UIManager.getColor("Label.foreground"), IconManager.ICON_BAN, "Not Imported"),
 	KEY(Color.BLACK, IconManager.ICON_KEY, "Key", true),
 	
 	// Color Brewer - 3-class Dark2 (qualitative):

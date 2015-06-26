@@ -27,6 +27,7 @@ package org.cytoscape.tableimport.internal.util;
 //import cytoscape.Cytoscape;
 import static org.cytoscape.tableimport.internal.util.ImportType.NETWORK_IMPORT;
 import static org.cytoscape.tableimport.internal.util.ImportType.ONTOLOGY_IMPORT;
+import static org.cytoscape.tableimport.internal.util.ImportType.TABLE_IMPORT;
 import static org.cytoscape.tableimport.internal.util.SourceColumnSemantic.ALIAS;
 import static org.cytoscape.tableimport.internal.util.SourceColumnSemantic.ATTR;
 import static org.cytoscape.tableimport.internal.util.SourceColumnSemantic.EDGE_ATTR;
@@ -62,18 +63,19 @@ public class TypeUtil {
 	);
 	
 	private static final String[] PREF_KEY_NAMES = new String[] {
-		"sharedname", "name", "identifier", "id", "node", "edge", "gene", "genename", "protein", "symbol"
+		"sharedname", "name", "identifier", "id", "node", "nodeid", "edge", "edgeid", "gene", "geneid", "genename",
+		"protein"
 	};
 	private static final String[] PREF_SOURCE_NAMES = new String[] {
 		"source", "sourcenode", "sourcename", "sourceid", "sourceidentifier",
 		"node1", "nodea", "identifier1", "identifiera", "id1", "ida", "name1", "namea",
-		"sourcegene", "gene1", "genename1", "geneid1",
-		"name", "sharedname", "node", "gene", "genename"
+		"sourcegene", "gene1", "geneid1", "genename1",
+		"name", "sharedname", "node", "gene", "geneid", "genename"
 	};
 	private static final String[] PREF_TARGET_NAMES = new String[] {
 		"target", "targetnode", "targetname", "targetid", "targetidentifier",
 		"node2", "nodeb", "identifier2", "identifierb", "id2", "idb", "name2", "nameb",
-		"targetgene", "gene2", "genename2", "geneid2"
+		"targetgene", "gene2", "geneid2", "genename2"
 	};
 	private static final String[] PREF_INTERACTION_NAMES = new String[] {
 		"interaction", "interactiontype", "edgetype"
@@ -156,13 +158,17 @@ public class TypeUtil {
 					if (keyFound && goFound && taxFound)
 						break MAIN_LOOP;
 				} else {
-					if (matches(name, PREF_KEY_NAMES, exact)) {
+					if (!keyFound && matches(name, PREF_KEY_NAMES, exact)) {
+						keyFound = true;
 						types[i] = KEY;
 						break MAIN_LOOP;
 					}
 				}
 			}
 		}
+		
+		if (importType == TABLE_IMPORT && !keyFound && types.length > 0)
+			types[0] = KEY; // Just use the first column as key then
 
 		return types;
 	}
@@ -261,7 +267,7 @@ public class TypeUtil {
 	
 	private static boolean matches(String name, final String[] preferredNames, final boolean exact) {
 		// Remove all special chars and spaces from column name
-		name = name.replaceAll("[^a-zA-Z0-1]", "").toLowerCase();
+		name = name.replaceAll("[^a-zA-Z0-9]", "").toLowerCase();
 		
 		for (final String s : preferredNames) {
 			if ( (exact && name.equals(s)) || (!exact && name.contains(s)) )
