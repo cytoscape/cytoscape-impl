@@ -143,6 +143,7 @@ public class GMLNetworkReader extends AbstractCyNetworkReader {
 	private Vector<String> nodeNames;
 	private List<Map<String, Object>> nodeAttributes;
 	private List<Map<String, Object>> edgeAttributes;
+	private boolean graphDirected = true; // use pre-3.0 cytoscape's as default
 
 	private final RenderingEngineManager renderingEngineManager;
 	private final UnrecognizedVisualPropertyManager unrecognizedVisualPropertyMgr;
@@ -409,6 +410,8 @@ public class GMLNetworkReader extends AbstractCyNetworkReader {
 				readNode((List<KeyValue>) keyVal.value);
 			else if (keyVal.key.equals(EDGE))
 				readEdge((List<KeyValue>) keyVal.value);
+			else if (keyVal.key.equals(IS_DIRECTED))
+				graphDirected = ((Integer)keyVal.value).intValue() ==  1;
 		}
 	}
 
@@ -476,7 +479,7 @@ public class GMLNetworkReader extends AbstractCyNetworkReader {
 		String label = DEFAULT_EDGE_INTERACTION;
 		boolean containsSource = false;
 		boolean containsTarget = false;
-		Boolean isDirected = Boolean.TRUE; // use pre-3.0 cytoscape's as default
+		boolean isDirected = graphDirected; // default to the graph setting
 		int source = 0;
 		int target = 0;
 		KeyValue rootIndexPair = null;
@@ -494,13 +497,20 @@ public class GMLNetworkReader extends AbstractCyNetworkReader {
 			} else if (keyVal.key.equals(ROOT_INDEX)) {
 				rootIndexPair = keyVal;
 			} else if (keyVal.key.equals(IS_DIRECTED)) {
-				if (((Integer) keyVal.value) == 1) {
-					isDirected = Boolean.FALSE;
-				} else {
-					isDirected = Boolean.TRUE;
+				// graph setting can be overridden by 'directed' attribute on an edge
+				if(keyVal.value instanceof Integer) {
+					isDirected = ((Integer)keyVal.value) == 1;
 				}
-			} else if (!keyVal.key.equals(GRAPHICS)
-					&& !keyVal.key.startsWith(VIZMAP_PREFIX)) {
+				else if(keyVal.value instanceof String) {
+					String v = (String)keyVal.value;
+					// custom to Cytoscape
+					isDirected = v.equalsIgnoreCase("y") || v.equalsIgnoreCase("yes") || v.equalsIgnoreCase("true") || v.equals("1");
+				}
+				else {
+					// if the 'directed' attribute exists but its value is not interpreted as 'true' then it is false
+					isDirected = false; 
+				}
+			} else if (!keyVal.key.equals(GRAPHICS) && !keyVal.key.startsWith(VIZMAP_PREFIX)) {
 				attr.put(keyVal.key, keyVal.value);
 			}
 		}

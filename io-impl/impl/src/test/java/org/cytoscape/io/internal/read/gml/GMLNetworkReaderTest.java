@@ -23,26 +23,9 @@ package org.cytoscape.io.internal.read.gml;
  * <http://www.gnu.org/licenses/lgpl-2.1.html>.
  * #L%
  */
-
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_LINE_TYPE;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_SOURCE_ARROW_SHAPE;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_TARGET_ARROW_SHAPE;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_UNSELECTED_PAINT;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_WIDTH;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NETWORK_TITLE;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_BORDER_PAINT;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_BORDER_WIDTH;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_FILL_COLOR;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_HEIGHT;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_SHAPE;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_WIDTH;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_X_LOCATION;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_Y_LOCATION;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.*;
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 
 import java.awt.Color;
 import java.io.File;
@@ -300,6 +283,41 @@ public class GMLNetworkReaderTest extends AbstractNetworkReaderTest {
 		assertEquals(ArrowShapeVisualProperty.NONE, ev2.getVisualProperty(EDGE_SOURCE_ARROW_SHAPE));
 		assertEquals(ArrowShapeVisualProperty.NONE, ev2.getVisualProperty(EDGE_TARGET_ARROW_SHAPE));
 	}
+	
+	@Test
+	public void testDirectedGraph() throws Exception {
+		final GMLNetworkReader reader = readGML("src/test/resources/testData/gml/example-directed1.gml");
+		final CyNetwork[] networks = reader.getNetworks();
+		assertEquals(1, networks.length);
+		final CyNetwork net = networks[0];
+		assertEquals(3, net.getEdgeCount());
+		
+		CyEdge e1 = getEdgeByName(net, "1 (pp) 2");
+		CyEdge e2 = getEdgeByName(net, "1 (pp) 3");
+		CyEdge e3 = getEdgeByName(net, "2 (pp) 3");
+		
+		assertFalse(e1.isDirected());
+		assertTrue(e2.isDirected());
+		assertTrue(e3.isDirected());
+	}
+	
+	@Test
+	public void testUndirectedGraph() throws Exception {
+		final GMLNetworkReader reader = readGML("src/test/resources/testData/gml/example-directed2.gml");
+		final CyNetwork[] networks = reader.getNetworks();
+		assertEquals(1, networks.length);
+		final CyNetwork net = networks[0];
+		assertEquals(3, net.getEdgeCount());
+		
+		CyEdge e1 = getEdgeByName(net, "1 (pp) 2");
+		CyEdge e2 = getEdgeByName(net, "1 (pp) 3");
+		CyEdge e3 = getEdgeByName(net, "2 (pp) 3");
+		
+		assertFalse(e1.isDirected());
+		assertTrue(e2.isDirected());
+		assertFalse(e3.isDirected());
+	}
+	
 	
 	private GMLNetworkReader readGML(final String filename) throws Exception {
 		final File file = new File(filename);
