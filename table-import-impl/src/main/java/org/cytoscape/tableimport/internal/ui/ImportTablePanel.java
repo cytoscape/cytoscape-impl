@@ -205,9 +205,6 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 	protected JTable aliasTable;
 	protected JCheckBox importAllCheckBox;
 	
-	// Key column index
-	protected int keyInFile;
-
 	// Data Type
 	private ObjectType objType;
 	private final ImportType importType;
@@ -336,9 +333,6 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 			
 			// Update UI based on the primary key selection
 			if (type == KEY && index >= 0 && importType != NETWORK_IMPORT) {
-				// Update primary key index.
-				keyInFile = index;
-	
 				// Update
 				try {
 					if (importType == ONTOLOGY_IMPORT)
@@ -1353,6 +1347,8 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 		}
 
 		if (type == FileType.GENE_ASSOCIATION_FILE) {
+			final int keyInFile = getPreviewPanel().getColumnIndex(tabName, KEY);
+			
 			getPreviewPanel().setAliasColumn(DB_OBJECT_SYNONYM.getPosition(), true);
 			getPreviewPanel().setType(tabName, TAXON.getPosition(), SourceColumnSemantic.TAXON);
 			getPreviewPanel().setType(tabName, keyInFile, KEY);
@@ -1399,6 +1395,8 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 			rightMessage = "File Size: Unknown (remote data source)";
 		}
 
+		final String tabName = getPreviewPanel().getSelectedTabName();
+		final int keyInFile = getPreviewPanel().getColumnIndex(tabName, KEY);
 		setStatusBar("Key-Value Matched: " + getPreviewPanel().checkKeyMatch(keyInFile), centerMessage, rightMessage);
 	}
 
@@ -1569,6 +1567,7 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 
 		// Build mapping parameter object.
 		final List<String> del = checkDelimiter();
+		final int keyInFile = getPreviewPanel().getColumnIndex(tabName, KEY);
 		
 		final AttributeMappingParameters mapping = new AttributeMappingParameters(del, listDelimitersCopy, keyInFile,
 				attrNames, dataTypesCopy, typesCopy, startLineNumber, commentChar);
@@ -1621,7 +1620,6 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 		if (!getCommentLinePrefix().isEmpty())
 			commentChar = getCommentLinePrefix();
 		
-		keyInFile = getPreviewPanel().getColumnIndex(tabName, KEY);
 		final int sourceColumnIndex = getPreviewPanel().getColumnIndex(tabName, SOURCE);
 		final int targetColumnIndex = getPreviewPanel().getColumnIndex(tabName, TARGET);
 		final int interactionColumnIndex = getPreviewPanel().getColumnIndex(tabName, INTERACTION);

@@ -167,7 +167,7 @@ public class DefaultAttributeTableReader implements TextTableReader {
 						} else if ((lineCount >= startLineNumber) && (line.trim().length() > 0)) {
 							parts = line.split(delimiter);
 							
-							// If key dos not exists, ignore the line.
+							// If key does not exists, ignore the line.
 							if (parts.length >= mapping.getKeyIndex() + 1) {
 								try {
 									parser.parseAll(table, parts);
