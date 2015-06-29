@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.cytoscape.ding.customgraphics.Orientation;
+import org.cytoscape.ding.impl.strokes.DotStroke;
 import org.cytoscape.ding.internal.charts.AbstractChartLayer;
 import org.cytoscape.ding.internal.charts.LabelPosition;
 import org.jfree.chart.ChartFactory;
@@ -26,6 +27,7 @@ import org.jfree.ui.RectangleInsets;
 
 public class BoxLayer extends AbstractChartLayer<BoxAndWhiskerCategoryDataset> {
 	
+	private final boolean showRangeZeroBaseline;
 	private final Orientation orientation;
 
 	// ==[ CONSTRUCTORS ]===============================================================================================
@@ -33,6 +35,7 @@ public class BoxLayer extends AbstractChartLayer<BoxAndWhiskerCategoryDataset> {
 	@SuppressWarnings("unchecked")
 	public BoxLayer(final Map<String/*series*/, List<Double>/*values*/> data,
 					final boolean showRangeAxis,
+					final boolean showRangeZeroBaseline,
 					final List<Color> colors,
 					final float axisWidth,
 					final Color axisColor,
@@ -44,6 +47,7 @@ public class BoxLayer extends AbstractChartLayer<BoxAndWhiskerCategoryDataset> {
         super(data, Collections.EMPTY_LIST, Collections.EMPTY_LIST, Collections.EMPTY_LIST,
         		false, false, showRangeAxis, LabelPosition.STANDARD, colors, axisWidth, axisColor, borderWidth,
         		borderColor, range, bounds);
+        this.showRangeZeroBaseline = showRangeZeroBaseline;
         this.orientation = orientation;
 	}
 	
@@ -85,6 +89,12 @@ public class BoxLayer extends AbstractChartLayer<BoxAndWhiskerCategoryDataset> {
 		plot.setBackgroundPaint(TRANSPARENT_COLOR);
 		plot.setBackgroundAlpha(0.0f);
 		plot.setRangeAxisLocation(AxisLocation.BOTTOM_OR_LEFT);
+		
+		if (showRangeZeroBaseline) {
+			plot.setRangeZeroBaselineVisible(true);
+			plot.setRangeZeroBaselinePaint(axisColor);
+			plot.setRangeZeroBaselineStroke(new DotStroke(axisWidth));
+		}
 		
 		final PlotOrientation plotOrientation = 
 				orientation == Orientation.HORIZONTAL ? PlotOrientation.HORIZONTAL : PlotOrientation.VERTICAL;

@@ -6,6 +6,7 @@ import java.awt.geom.Rectangle2D;
 import java.util.List;
 import java.util.Map;
 
+import org.cytoscape.ding.impl.strokes.DotStroke;
 import org.cytoscape.ding.internal.charts.AbstractChartLayer;
 import org.cytoscape.ding.internal.charts.CustomCategoryItemLabelGenerator;
 import org.cytoscape.ding.internal.charts.LabelPosition;
@@ -23,6 +24,7 @@ import org.jfree.ui.RectangleInsets;
 
 public class LineLayer extends AbstractChartLayer<CategoryDataset> {
 	
+	private final boolean showRangeZeroBaseline;
 	private final float lineWidth;
 
 	// ==[ CONSTRUCTORS ]===============================================================================================
@@ -34,6 +36,7 @@ public class LineLayer extends AbstractChartLayer<CategoryDataset> {
 					 final boolean showItemLabels,
 					 final boolean showDomainAxis,
 					 final boolean showRangeAxis,
+					 final boolean showRangeZeroBaseline,
 					 final LabelPosition domainLabelPosition,
 					 final List<Color> colors,
 					 final float axisWidth,
@@ -43,6 +46,7 @@ public class LineLayer extends AbstractChartLayer<CategoryDataset> {
 					 final Rectangle2D bounds) {
         super(data, itemLabels, domainLabels, rangeLabels, showItemLabels, showDomainAxis, showRangeAxis,
         		domainLabelPosition, colors, axisWidth, axisColor, 0.0f, TRANSPARENT_COLOR, range, bounds);
+        this.showRangeZeroBaseline = showRangeZeroBaseline;
         this.lineWidth = lineWidth >= 0 ? lineWidth : 1.0f;
 	}
 	
@@ -81,13 +85,18 @@ public class LineLayer extends AbstractChartLayer<CategoryDataset> {
 		plot.setBackgroundAlpha(0.0f);
 		plot.setRangeAxisLocation(AxisLocation.BOTTOM_OR_LEFT);
 		
+		if (showRangeZeroBaseline) {
+			plot.setRangeZeroBaselineVisible(true);
+			plot.setRangeZeroBaselinePaint(axisColor);
+			plot.setRangeZeroBaselineStroke(new DotStroke(axisWidth));
+		}
+		
+		final BasicStroke axisStroke = new BasicStroke(axisWidth, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
 		final BasicStroke gridLineStroke =
 				new BasicStroke(axisWidth, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND,
 						 0.5f, new float[]{ 0.5f }, 0.0f);
 		
 		plot.setRangeGridlineStroke(gridLineStroke);
-		
-		final BasicStroke axisStroke = new BasicStroke(axisWidth, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
 		
 		final CategoryAxis domainAxis = (CategoryAxis) plot.getDomainAxis();
         domainAxis.setVisible(showDomainAxis);

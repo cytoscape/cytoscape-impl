@@ -45,6 +45,7 @@ public class BarChartTest extends AbstractCustomGraphics2Test {
 		props1.put(SHOW_ITEM_LABELS, true);
 		props1.put(SHOW_DOMAIN_AXIS, true);
 		props1.put(SHOW_RANGE_AXIS, false);
+		props1.put(SHOW_RANGE_ZERO_BASELINE, true);
 		props1.put(AXIS_WIDTH, 1.5f);
 		props1.put(AXIS_COLOR, Color.YELLOW);
 	}
@@ -75,6 +76,7 @@ public class BarChartTest extends AbstractCustomGraphics2Test {
 		assertEquals(props1.get(SHOW_ITEM_LABELS), props2.get(SHOW_ITEM_LABELS));
 		assertEquals(props1.get(SHOW_DOMAIN_AXIS), props2.get(SHOW_DOMAIN_AXIS));
 		assertEquals(props1.get(SHOW_RANGE_AXIS), props2.get(SHOW_RANGE_AXIS));
+		assertEquals(props1.get(SHOW_RANGE_ZERO_BASELINE), props2.get(SHOW_RANGE_ZERO_BASELINE));
 		assertEquals(props1.get(AXIS_WIDTH), props2.get(AXIS_WIDTH));
 		assertEquals(props1.get(AXIS_COLOR), props2.get(AXIS_COLOR));
 		assertNull(props2.get(VALUES));
@@ -100,6 +102,7 @@ public class BarChartTest extends AbstractCustomGraphics2Test {
 		assertEquals(Boolean.TRUE, chart.get(SHOW_ITEM_LABELS, Boolean.class));
 		assertEquals(Boolean.TRUE, chart.get(SHOW_DOMAIN_AXIS, Boolean.class));
 		assertEquals(Boolean.FALSE, chart.get(SHOW_RANGE_AXIS, Boolean.class));
+		assertEquals(Boolean.TRUE, chart.get(SHOW_RANGE_ZERO_BASELINE, Boolean.class));
 		assertEquals(new Float(1.5f), chart.get(AXIS_WIDTH, Float.class));
 		assertEquals(Color.YELLOW, chart.get(AXIS_COLOR, Color.class));
 		assertTrue(chart.getList(VALUES, Double.class).isEmpty()); // Must never be null!

@@ -41,6 +41,7 @@ public abstract class AbstractChart<T extends CustomGraphicLayer> extends Abstra
 	public static final String SHOW_ITEM_LABELS = "cy_showItemLabels";
 	public static final String SHOW_DOMAIN_AXIS = "cy_showDomainAxis";
 	public static final String SHOW_RANGE_AXIS = "cy_showRangeAxis";
+	public static final String SHOW_RANGE_ZERO_BASELINE = "cy_showRangeZeroBaseline";
 	public static final String AXIS_WIDTH = "cy_axisWidth";
 	public static final String AXIS_COLOR = "cy_axisColor";
 	public static final String VALUES = "cy_values";
@@ -326,6 +327,7 @@ public abstract class AbstractChart<T extends CustomGraphicLayer> extends Abstra
 		if (key.equalsIgnoreCase(SHOW_ITEM_LABELS)) return Boolean.class;
 		if (key.equalsIgnoreCase(SHOW_RANGE_AXIS)) return Boolean.class;
 		if (key.equalsIgnoreCase(SHOW_DOMAIN_AXIS)) return Boolean.class;
+		if (key.equalsIgnoreCase(SHOW_RANGE_ZERO_BASELINE)) return Boolean.class;
 		if (key.equalsIgnoreCase(DOMAIN_LABEL_POSITION)) return LabelPosition.class;
 		if (key.equalsIgnoreCase(AXIS_WIDTH)) return Float.class;
 		if (key.equalsIgnoreCase(AXIS_COLOR)) return Color.class;

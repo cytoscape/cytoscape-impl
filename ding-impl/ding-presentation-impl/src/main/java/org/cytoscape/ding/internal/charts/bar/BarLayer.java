@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.cytoscape.ding.customgraphics.Orientation;
+import org.cytoscape.ding.impl.strokes.DotStroke;
 import org.cytoscape.ding.internal.charts.AbstractChartLayer;
 import org.cytoscape.ding.internal.charts.CustomCategoryItemLabelGenerator;
 import org.cytoscape.ding.internal.charts.LabelPosition;
@@ -33,6 +34,7 @@ import org.jfree.ui.TextAnchor;
 public class BarLayer extends AbstractChartLayer<CategoryDataset> {
 	
 	private final BarChartType type;
+	private final boolean showRangeZeroBaseline;
 	private final double separation;
 	private final Orientation orientation;
 	private final boolean singleCategory;
@@ -47,6 +49,7 @@ public class BarLayer extends AbstractChartLayer<CategoryDataset> {
 					final boolean showItemLabels,
 					final boolean showDomainAxis,
 					final boolean showRangeAxis,
+					final boolean showRangeZeroBaseline,
 					final LabelPosition domainLabelPosition,
 					final List<Color> colors,
 					final float axisWidth,
@@ -60,6 +63,7 @@ public class BarLayer extends AbstractChartLayer<CategoryDataset> {
         super(data, itemLabels, domainLabels, rangeLabels, showItemLabels, showDomainAxis, showRangeAxis,
         		domainLabelPosition, colors, axisWidth, axisColor, borderWidth, borderColor, range, bounds);
 		this.type = type;
+		this.showRangeZeroBaseline = showRangeZeroBaseline;
 		this.separation = separation;
 		this.orientation = orientation;
 		singleCategory = data.size() == 1;
@@ -121,6 +125,12 @@ public class BarLayer extends AbstractChartLayer<CategoryDataset> {
 		plot.setBackgroundPaint(TRANSPARENT_COLOR);
 		plot.setBackgroundAlpha(0.0f);
 		plot.setRangeAxisLocation(AxisLocation.BOTTOM_OR_LEFT);
+		
+		if (showRangeZeroBaseline) {
+			plot.setRangeZeroBaselineVisible(true);
+			plot.setRangeZeroBaselinePaint(axisColor);
+			plot.setRangeZeroBaselineStroke(new DotStroke(axisWidth));
+		}
 		
 		final BasicStroke axisStroke = new BasicStroke(axisWidth, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
 		

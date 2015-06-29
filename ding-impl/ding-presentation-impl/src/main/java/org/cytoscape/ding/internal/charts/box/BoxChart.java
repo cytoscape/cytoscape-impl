@@ -66,13 +66,14 @@ public class BoxChart extends AbstractChart<BoxLayer> {
 		
 		final Orientation orientation = get(ORIENTATION, Orientation.class);
 		final boolean showRangeAxis = get(SHOW_RANGE_AXIS, Boolean.class, false);
+		final boolean showRangeZeroBaseline = get(SHOW_RANGE_ZERO_BASELINE, Boolean.class, false);
 		final float axisWidth = get(AXIS_WIDTH, Float.class, 0.25f);
 		final Color axisColor = get(AXIS_COLOR, Color.class, Color.DARK_GRAY);
 		final float borderWidth = get(BORDER_WIDTH, Float.class, 0.25f);
 		final Color borderColor = get(BORDER_COLOR, Color.class, Color.DARK_GRAY);
 		
-		final BoxLayer layer = new BoxLayer(data, showRangeAxis, colors, axisWidth, axisColor, borderWidth, borderColor,
-				range, orientation, bounds);
+		final BoxLayer layer = new BoxLayer(data, showRangeAxis, showRangeZeroBaseline, colors, axisWidth, axisColor,
+				borderWidth, borderColor, range, orientation, bounds);
 		
 		return Collections.singletonList(layer);
 	}

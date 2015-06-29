@@ -1,5 +1,7 @@
 package org.cytoscape.ding.internal.charts;
 
+import static javax.swing.GroupLayout.DEFAULT_SIZE;
+import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static org.cytoscape.ding.customgraphics.AbstractCustomGraphics2.ORIENTATION;
 import static org.cytoscape.ding.customgraphics.ColorScheme.CONTRASTING;
 import static org.cytoscape.ding.customgraphics.ColorScheme.CUSTOM;
@@ -18,7 +20,10 @@ import static org.cytoscape.ding.internal.charts.AbstractChart.GLOBAL_RANGE;
 import static org.cytoscape.ding.internal.charts.AbstractChart.ITEM_LABELS_COLUMN;
 import static org.cytoscape.ding.internal.charts.AbstractChart.RANGE;
 import static org.cytoscape.ding.internal.charts.AbstractChart.RANGE_LABELS_COLUMN;
+import static org.cytoscape.ding.internal.charts.AbstractChart.SHOW_DOMAIN_AXIS;
 import static org.cytoscape.ding.internal.charts.AbstractChart.SHOW_ITEM_LABELS;
+import static org.cytoscape.ding.internal.charts.AbstractChart.SHOW_RANGE_AXIS;
+import static org.cytoscape.ding.internal.charts.AbstractChart.SHOW_RANGE_ZERO_BASELINE;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -86,7 +91,6 @@ import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.ding.customgraphics.AbstractCustomGraphics2;
 import org.cytoscape.ding.customgraphics.ColorScheme;
 import org.cytoscape.ding.customgraphics.Orientation;
-import org.cytoscape.ding.internal.charts.heatmap.HeatMapChart;
 import org.cytoscape.ding.internal.charts.util.ColorUtil;
 import org.cytoscape.ding.internal.util.SortedListModel;
 import org.cytoscape.ding.internal.util.SortedListModel.SortOrder;
@@ -143,6 +147,7 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 	private JCheckBox itemLabelsVisibleCkb;
 	private JCheckBox domainAxisVisibleCkb;
 	private JCheckBox rangeAxisVisibleCkb;
+	private JCheckBox rangeZeroBaselineVisibleCkb;
 	private JLabel axisWidthLbl;
 	private JTextField axisWidthTxt;
 	private JLabel axisColorLbl;
@@ -162,6 +167,7 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 	protected final boolean setDomainLabels;
 	protected final boolean setRangeLabels;
 	protected final boolean hasAxes;
+	protected final boolean hasZeroBaseline;
 	protected final Map<CyColumnIdentifier, CyColumn> columns;
 	protected final Map<CyColumnIdentifier, CyColumn> labelColumns;
 	protected final T chart;
@@ -183,6 +189,7 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 								  final boolean setDomainLabels,
 								  final boolean setRangeLabels,
 								  final boolean hasAxes,
+								  final boolean hasZeroBaseline,
 								  final CyApplicationManager appMgr,
 								  final IconManager iconMgr,
 								  final CyColumnIdentifierFactory colIdFactory) {
@@ -206,6 +213,7 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 		this.setDomainLabels = setDomainLabels;
 		this.setRangeLabels = setRangeLabels;
 		this.hasAxes = hasAxes;
+		this.hasZeroBaseline = hasZeroBaseline;
 		this.appMgr = appMgr;
 		this.iconMgr = iconMgr;
 		this.colIdFactory = colIdFactory;
@@ -306,12 +314,9 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 					.addComponent(getRangePnl())
 			);
 			layout.setVerticalGroup(layout.createSequentialGroup()
-					.addComponent(getOtherBasicOptionsPnl(), GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
-					          GroupLayout.PREFERRED_SIZE)
-					.addComponent(getDataPnl(), GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
-					          GroupLayout.PREFERRED_SIZE)
-					.addComponent(getRangePnl(), GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
-					          GroupLayout.PREFERRED_SIZE)
+					.addComponent(getOtherBasicOptionsPnl(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(getDataPnl(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(getRangePnl(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 			);
 		}
 		
@@ -394,8 +399,7 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 							.addComponent(rangeMaxLbl)
 							.addComponent(getRangeMaxTxt())
 							.addComponent(getRefreshRangeBtn())
-					).addComponent(sep, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
-				          GroupLayout.PREFERRED_SIZE)
+					).addComponent(sep, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 			);
 		}
 		
@@ -425,8 +429,7 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 						.addComponent(getItemLabelsVisibleCkb())
 						.addPreferredGap(ComponentPlacement.UNRELATED)
 						.addComponent(itemLabelsColumnLbl)
-						.addComponent(getItemLabelsColumnCmb(), GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
-								GroupLayout.PREFERRED_SIZE));
+						.addComponent(getItemLabelsColumnCmb(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE));
 				vGroup.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
 						.addComponent(getItemLabelsVisibleCkb())
 						.addComponent(itemLabelsColumnLbl)
@@ -436,8 +439,7 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 			if (setRangeLabels) {
 				hGroup.addGroup(layout.createSequentialGroup()
 						.addComponent(rangeLabelsColumnLbl)
-						.addComponent(getRangeLabelsColumnCmb(), GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
-						          GroupLayout.PREFERRED_SIZE));
+						.addComponent(getRangeLabelsColumnCmb(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE));
 				vGroup.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
 						.addComponent(rangeLabelsColumnLbl)
 						.addComponent(getRangeLabelsColumnCmb()));
@@ -447,8 +449,7 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 			if (setDomainLabels) {
 				hGroup.addGroup(layout.createSequentialGroup()
 						.addComponent(domainLabelsColumnLbl)
-						.addComponent(getDomainLabelsColumnCmb(), GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
-						          GroupLayout.PREFERRED_SIZE));
+						.addComponent(getDomainLabelsColumnCmb(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE));
 				vGroup.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
 						.addComponent(domainLabelsColumnLbl)
 						.addComponent(getDomainLabelsColumnCmb()));
@@ -456,8 +457,7 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 			
 			hGroup.addGroup(layout.createSequentialGroup()
 					.addComponent(domainLabelPositionLbl)
-					.addComponent(getDomainLabelPositionCmb(), GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
-					          GroupLayout.PREFERRED_SIZE));
+					.addComponent(getDomainLabelPositionCmb(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE));
 			vGroup.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
 					.addComponent(domainLabelPositionLbl)
 					.addComponent(getDomainLabelPositionCmb()));
@@ -465,7 +465,7 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 			final JSeparator sep = new JSeparator();
 			
 			hGroup.addComponent(sep);
-			vGroup.addComponent(sep, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE);
+			vGroup.addComponent(sep, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE);
 		}
 		
 		return labelsPnl;
@@ -496,8 +496,7 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 					.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
 							.addComponent(getVerticalRd())
 							.addComponent(getHorizontalRd())
-					).addComponent(sep, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
-					          GroupLayout.PREFERRED_SIZE)
+					).addComponent(sep, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 			);
 		}
 		
@@ -525,20 +524,18 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 						.addGroup(layout.createParallelGroup(Alignment.LEADING, true)
 							.addComponent(getDomainAxisVisibleCkb())
 							.addComponent(getRangeAxisVisibleCkb())
+							.addComponent(getRangeZeroBaselineVisibleCkb())
 						)
 						.addPreferredGap(ComponentPlacement.UNRELATED)
-						.addComponent(vsep, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
-						          GroupLayout.PREFERRED_SIZE)
+						.addComponent(vsep, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 						.addPreferredGap(ComponentPlacement.UNRELATED)
 						.addGroup(layout.createParallelGroup(Alignment.LEADING, true)
 							.addGroup(layout.createSequentialGroup()
 								.addComponent(axisWidthLbl)
-								.addComponent(getAxisWidthTxt(), GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
-										GroupLayout.PREFERRED_SIZE)
+								.addComponent(getAxisWidthTxt(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 							).addGroup(layout.createSequentialGroup()
 								.addComponent(axisColorLbl)
-								.addComponent(getAxisColorBtn(), GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
-										GroupLayout.PREFERRED_SIZE)
+								.addComponent(getAxisColorBtn(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 							)
 						)
 					).addComponent(sep)
@@ -548,19 +545,19 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 						.addGroup(layout.createSequentialGroup()
 							.addComponent(getDomainAxisVisibleCkb())
 							.addComponent(getRangeAxisVisibleCkb())
+							.addComponent(getRangeZeroBaselineVisibleCkb())
 						)
 						.addComponent(vsep)
 						.addGroup(layout.createSequentialGroup()
-							.addGroup(layout.createParallelGroup(Alignment.CENTER, true)
+							.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
 								.addComponent(axisWidthLbl)
-								.addComponent(getAxisWidthTxt())
+								.addComponent(getAxisWidthTxt(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 							).addGroup(layout.createParallelGroup(Alignment.CENTER, true)
 								.addComponent(axisColorLbl)
-								.addComponent(getAxisColorBtn())
+								.addComponent(getAxisColorBtn(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 							)
 						)
-					).addComponent(sep, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
-					          GroupLayout.PREFERRED_SIZE)
+					).addComponent(sep, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 			);
 		}
 		
@@ -581,13 +578,11 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 			layout.setHorizontalGroup(layout.createParallelGroup(Alignment.LEADING, true)
 					.addGroup(layout.createSequentialGroup()
 						.addComponent(borderWidthLbl)
-						.addComponent(getBorderWidthTxt(), GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
-								GroupLayout.PREFERRED_SIZE)
+						.addComponent(getBorderWidthTxt(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					)
 					.addGroup(layout.createSequentialGroup()
 						.addComponent(borderColorLbl)
-						.addComponent(getBorderColorBtn(), GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
-								GroupLayout.PREFERRED_SIZE)
+						.addComponent(getBorderColorBtn(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					).addComponent(sep)
 			);
 			layout.setVerticalGroup(layout.createSequentialGroup()
@@ -597,8 +592,7 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 					).addGroup(layout.createParallelGroup(Alignment.CENTER, false)
 						.addComponent(borderColorLbl)
 						.addComponent(getBorderColorBtn())
-					).addComponent(sep, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
-					          GroupLayout.PREFERRED_SIZE)
+					).addComponent(sep, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 			);
 		}
 		
@@ -821,11 +815,11 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 			domainAxisVisibleCkb.setVisible(hasAxes);
 			
 			if (hasAxes) {
-				domainAxisVisibleCkb.setSelected(chart.get(HeatMapChart.SHOW_DOMAIN_AXIS, Boolean.class, false));
+				domainAxisVisibleCkb.setSelected(chart.get(SHOW_DOMAIN_AXIS, Boolean.class, false));
 				domainAxisVisibleCkb.addActionListener(new ActionListener() {
 					@Override
 					public void actionPerformed(ActionEvent e) {
-						chart.set(HeatMapChart.SHOW_DOMAIN_AXIS, domainAxisVisibleCkb.isSelected());
+						chart.set(SHOW_DOMAIN_AXIS, domainAxisVisibleCkb.isSelected());
 					}
 				});
 			}
@@ -840,17 +834,36 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 			rangeAxisVisibleCkb.setVisible(hasAxes);
 			
 			if (hasAxes) {
-				rangeAxisVisibleCkb.setSelected(chart.get(HeatMapChart.SHOW_RANGE_AXIS, Boolean.class, false));
+				rangeAxisVisibleCkb.setSelected(chart.get(SHOW_RANGE_AXIS, Boolean.class, false));
 				rangeAxisVisibleCkb.addActionListener(new ActionListener() {
 					@Override
 					public void actionPerformed(ActionEvent e) {
-						chart.set(HeatMapChart.SHOW_RANGE_AXIS, rangeAxisVisibleCkb.isSelected());
+						chart.set(SHOW_RANGE_AXIS, rangeAxisVisibleCkb.isSelected());
 					}
 				});
 			}
 		}
 		
 		return rangeAxisVisibleCkb;
+	}
+	
+	protected JCheckBox getRangeZeroBaselineVisibleCkb() {
+		if (rangeZeroBaselineVisibleCkb == null) {
+			rangeZeroBaselineVisibleCkb = new JCheckBox("Show Zero Baseline");
+			rangeZeroBaselineVisibleCkb.setVisible(hasZeroBaseline);
+			
+			if (hasAxes) {
+				rangeZeroBaselineVisibleCkb.setSelected(chart.get(SHOW_RANGE_ZERO_BASELINE, Boolean.class, false));
+				rangeZeroBaselineVisibleCkb.addActionListener(new ActionListener() {
+					@Override
+					public void actionPerformed(ActionEvent e) {
+						chart.set(SHOW_RANGE_ZERO_BASELINE, rangeZeroBaselineVisibleCkb.isSelected());
+					}
+				});
+			}
+		}
+		
+		return rangeZeroBaselineVisibleCkb;
 	}
 	
 	@SuppressWarnings("serial")
@@ -1259,11 +1272,9 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 					.addGroup(layout.createSequentialGroup()
 						.addGroup(layout.createParallelGroup(Alignment.LEADING, true)
 							.addComponent(allColumnsLbl)
-							.addComponent(listScr1, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE,
-									Short.MAX_VALUE)
+							.addComponent(listScr1, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 						)
-						.addComponent(getBtnPnl(), GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
-									GroupLayout.PREFERRED_SIZE)
+						.addComponent(getBtnPnl(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 						.addGroup(layout.createParallelGroup(Alignment.LEADING, true)
 							.addGroup(layout.createSequentialGroup()
 									.addComponent(selColumnsLbl)
@@ -1272,11 +1283,10 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 									.addPreferredGap(ComponentPlacement.RELATED)
 									.addComponent(getMoveDownBtn())
 								)
-							.addComponent(listScr2, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE,
-									Short.MAX_VALUE)
+							.addComponent(listScr2, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 						)
 					)
-					.addComponent(sep, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+					.addComponent(sep, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 			);
 			layout.setVerticalGroup(layout.createSequentialGroup()
 					.addGroup(layout.createParallelGroup(Alignment.BASELINE, true)
@@ -1284,7 +1294,7 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 							.addComponent(allColumnsLbl)
 							.addComponent(listScr1)
 						)
-						.addComponent(getBtnPnl(), GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+						.addComponent(getBtnPnl(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 						.addGroup(layout.createSequentialGroup()
 							.addGroup(layout.createParallelGroup(Alignment.BASELINE, true)
 								.addComponent(selColumnsLbl)
@@ -1294,7 +1304,7 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 							.addComponent(listScr2)
 						)
 					)
-					.addComponent(sep, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+					.addComponent(sep, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 			);
 			
 			add(new JSeparator());
