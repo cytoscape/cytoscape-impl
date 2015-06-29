@@ -58,7 +58,6 @@ import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JList;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.SwingUtilities;
@@ -120,6 +119,7 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 	private final SelectedTunable selectedTunable;
 	
 	private boolean initialized;
+	private boolean initializing;
 	
 	private static final String UNWEIGHTED = "(none)";
 
@@ -211,40 +211,49 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
     }
 
 	private void initialize() {
-		final Properties props = (Properties) cyProperty.getProperties();
-		final String pref = props.getProperty("preferredLayoutAlgorithm", "force-directed");
+		initializing = true;
 		
-		final Collator collator = Collator.getInstance(Locale.getDefault());
-		final TreeSet<CyLayoutAlgorithm> allLayouts = new TreeSet<>(new Comparator<CyLayoutAlgorithm>() {
-			@Override
-			public int compare(CyLayoutAlgorithm o1, CyLayoutAlgorithm o2) {
-				return collator.compare(o1.toString(), o2.toString());
-			}
-		});
-		allLayouts.addAll(layoutAlgorithmMgr.getAllLayouts());
-		
-		// Populate the algorithm selector
-		getAlgorithmCmb().removeAllItems();
-		
-		for (CyLayoutAlgorithm algo : allLayouts) 
-			getAlgorithmCmb().addItem(algo);
-		
-		getAlgorithmCmb().setSelectedItem(currentLayout);
-
-		// For the tabbedPanel "Set preferred Layout"
-		getPrefAlgorithmCmb().removeAllItems();
-		getPrefAlgorithmCmb().setRenderer(new LayoutAlgorithmListCellRenderer("Select preferred algorithm"));
-
-		CyLayoutAlgorithm prefAlgo = null;
-		
-		for (CyLayoutAlgorithm algo : allLayouts) { 
-			getPrefAlgorithmCmb().addItem(algo);
+		try {
+			final Properties props = (Properties) cyProperty.getProperties();
+			final String pref = props.getProperty("preferredLayoutAlgorithm", "force-directed");
 			
-			if (algo.getName().equals(pref))
-				prefAlgo = algo;
+			final Collator collator = Collator.getInstance(Locale.getDefault());
+			final TreeSet<CyLayoutAlgorithm> allLayouts = new TreeSet<>(new Comparator<CyLayoutAlgorithm>() {
+				@Override
+				public int compare(CyLayoutAlgorithm o1, CyLayoutAlgorithm o2) {
+					return collator.compare(o1.toString(), o2.toString());
+				}
+			});
+			allLayouts.addAll(layoutAlgorithmMgr.getAllLayouts());
+			
+			// Populate the algorithm selector
+			getAlgorithmCmb().removeAllItems();
+			
+			for (CyLayoutAlgorithm algo : allLayouts) 
+				getAlgorithmCmb().addItem(algo);
+			
+			// For the tabbedPanel "Set preferred Layout"
+			getPrefAlgorithmCmb().removeAllItems();
+			getPrefAlgorithmCmb().setRenderer(new LayoutAlgorithmListCellRenderer("Select preferred algorithm"));
+	
+			CyLayoutAlgorithm prefAlgo = null;
+			
+			for (CyLayoutAlgorithm algo : allLayouts) { 
+				getPrefAlgorithmCmb().addItem(algo);
+				
+				if (algo.getName().equals(pref))
+					prefAlgo = algo;
+			}
+			
+			getPrefAlgorithmCmb().setSelectedItem(prefAlgo);
+		} finally {
+			initializing = false;
 		}
 		
-		getPrefAlgorithmCmb().setSelectedItem(prefAlgo);
+		if (currentLayout != null)
+			getAlgorithmCmb().setSelectedItem(currentLayout);
+		else if (getAlgorithmCmb().getModel().getSize() > 0)
+			getAlgorithmCmb().setSelectedIndex(0);
 	}
 	
 	private JTabbedPane getTabbedPane() {
@@ -273,7 +282,7 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 			layout.setHorizontalGroup(layout.createParallelGroup(Alignment.LEADING, true)
 					.addComponent(algoLbl)
 					.addComponent(getAlgorithmCmb())
-					.addComponent(getAlgorithmPnl())
+					.addComponent(getAlgorithmPnl(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 					.addComponent(getSettingsButtonPnl())
 			);
 			layout.setVerticalGroup(layout.createSequentialGroup()
@@ -389,6 +398,9 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 			algorithmCmb.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
+					if (initializing)
+						return;
+					
 					final Object o = algorithmCmb.getSelectedItem();
 					
 					if (o instanceof CyLayoutAlgorithm) {
@@ -409,13 +421,7 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 						getAlgorithmPnl().removeAll();
 						getAlgorithmPnl().add(layoutAttrPnl);
 						
-						if (tunablePnl == null){
-							JOptionPane.showMessageDialog(
-									LayoutSettingsDialog.this,
-									"Can not change settings for this algorithm, because tunable info is not available.",
-									"Warning",
-									JOptionPane.WARNING_MESSAGE);
-						} else {
+						if (tunablePnl != null) {
 							tunablePnl.setAlignmentX(Component.CENTER_ALIGNMENT);
 							setPanelsTransparent(tunablePnl);
 							getAlgorithmPnl().add(tunablePnl);
