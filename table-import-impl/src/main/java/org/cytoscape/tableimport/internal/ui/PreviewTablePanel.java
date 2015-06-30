@@ -559,8 +559,8 @@ public class PreviewTablePanel extends JPanel {
 
 				final String sheetName = wb.getSheetName(0);
 				
-				typeMap.put(sheetName, TypeUtil.guessTypes(importType, newModel));
 				dataTypeMap.put(sheetName, TypeUtil.guessDataTypes(newModel));
+				typeMap.put(sheetName, TypeUtil.guessTypes(importType, newModel, dataTypeMap.get(sheetName)));
 				listDelimiterMap.put(sheetName, new String[newModel.getColumnCount()]);
 				
 				addTableTab(newModel, sheetName, curRenderer);
@@ -578,8 +578,8 @@ public class PreviewTablePanel extends JPanel {
 			else
 				tabName = "Source Table";
 			
-			typeMap.put(tabName, TypeUtil.guessTypes(importType, newModel));
 			dataTypeMap.put(tabName, TypeUtil.guessDataTypes(newModel));
+			typeMap.put(tabName, TypeUtil.guessTypes(importType, newModel, dataTypeMap.get(tabName)));
 			listDelimiterMap.put(tabName, new String[newModel.getColumnCount()]);
 			
 			addTableTab(newModel, tabName, curRenderer);
@@ -594,7 +594,8 @@ public class PreviewTablePanel extends JPanel {
 			final PreviewTableModel model = (PreviewTableModel) table.getModel();
 			model.setFirstRowNames(true);
 	
-			typeMap.put(table.getName(), TypeUtil.guessTypes(importType, model));
+			final String tabName = table.getName();
+			typeMap.put(tabName, TypeUtil.guessTypes(importType, model, dataTypeMap.get(tabName)));
 			tab.update();
 			
 			ColumnResizer.adjustColumnPreferredWidths(table);
@@ -1001,7 +1002,7 @@ public class PreviewTablePanel extends JPanel {
 		actionMap.put("VK_ESCAPE", new AbstractAction("VK_ESCAPE") {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				disposeEditDialog(true);
+				disposeEditDialog(false);
 			}
 		});
 		actionMap.put("VK_ENTER", new AbstractAction("VK_ENTER") {

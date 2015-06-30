@@ -43,6 +43,7 @@ import javax.swing.LayoutStyle.ComponentPlacement;
 
 import org.cytoscape.tableimport.internal.util.AttributeDataType;
 import org.cytoscape.tableimport.internal.util.SourceColumnSemantic;
+import org.cytoscape.tableimport.internal.util.TypeUtil;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 
@@ -112,27 +113,27 @@ public class AttributeEditorPanel extends JPanel {
 	
 	public SourceColumnSemantic getType() {
 		final ButtonModel model = typeButtonGroup.getSelection();
-		
+
 		for (Entry<SourceColumnSemantic, JToggleButton> entry : typeButtons.entrySet()) {
 			final JToggleButton btn = entry.getValue();
-			
+
 			if (btn.getModel().equals(model))
 				return entry.getKey();
 		}
-		
+
 		return NONE;
 	}
 
 	public AttributeDataType getDataType() {
 		final ButtonModel model = dataTypeButtonGroup.getSelection();
-		
+
 		for (Entry<AttributeDataType, JToggleButton> entry : dataTypeButtons.entrySet()) {
 			final JToggleButton btn = entry.getValue();
-			
+
 			if (btn.getModel().equals(model))
 				return entry.getKey();
 		}
-		
+
 		return TYPE_STRING;
 	}
 	
@@ -293,11 +294,33 @@ public class AttributeEditorPanel extends JPanel {
 		updateDataTypeButtonGroup();
 		updateListDelimiterComboBox();
 		updateOtherTextField();
+		updateTypeButtons();
+		updateDataTypeButtons();
+	}
+	
+	private void updateTypeButtons() {
+		final AttributeDataType dataType = getDataType();
+
+		for (Entry<SourceColumnSemantic, JToggleButton> entry : typeButtons.entrySet()) {
+			final SourceColumnSemantic type = entry.getKey();
+			final JToggleButton btn = entry.getValue();
+			btn.setEnabled(TypeUtil.isValid(type, dataType));
+		}
 	}
 
+	private void updateDataTypeButtons() {
+		final SourceColumnSemantic type = getType();
+
+		for (Entry<AttributeDataType, JToggleButton> entry : dataTypeButtons.entrySet()) {
+			final AttributeDataType dataType = entry.getKey();
+			final JToggleButton btn = entry.getValue();
+			btn.setEnabled(TypeUtil.isValid(type, dataType));
+		}
+	}
+	
 	private void updateTypeButtonGroup() {
 		JToggleButton btn = typeButtons.get(type);
-		
+
 		if (btn == null)
 			btn = typeButtons.get(NONE);
 		if (btn != null)
@@ -348,6 +371,12 @@ public class AttributeEditorPanel extends JPanel {
 		btn.setFont(iconManager.getIconFont(ICON_FONT_SIZE));
 		btn.setForeground(type.getForeground());
 		btn.setName(type.toString());
+		btn.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				updateDataTypeButtons();
+			}
+		});
 		
 		typeButtonGroup.add(btn);
 		typeButtons.put(type, btn);
@@ -359,6 +388,7 @@ public class AttributeEditorPanel extends JPanel {
 		final JToggleButton btn = new JToggleButton(dataType.getText());
 		btn.setToolTipText(dataType.getDescription());
 		btn.setFont(new Font("Serif", Font.BOLD, 11));
+		btn.setName(dataType.toString());
 		btn.addActionListener(new DataTypeButtonActionListener(dataType.isList()));
 		
 		dataTypeButtonGroup.add(btn);
@@ -380,6 +410,7 @@ public class AttributeEditorPanel extends JPanel {
 			listDelimiterLabel.setEnabled(isList);
 			getListDelimiterComboBox().setEnabled(isList);
 			getOtherTextField().setEnabled(isList && isOtherDelimiterSelected());
+			updateTypeButtons();
 		}
 	}
 }

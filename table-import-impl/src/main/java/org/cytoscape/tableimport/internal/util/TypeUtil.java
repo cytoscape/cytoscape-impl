@@ -24,7 +24,10 @@ package org.cytoscape.tableimport.internal.util;
  * #L%
  */
 
-//import cytoscape.Cytoscape;
+import static org.cytoscape.tableimport.internal.util.AttributeDataType.TYPE_BOOLEAN;
+import static org.cytoscape.tableimport.internal.util.AttributeDataType.TYPE_FLOATING;
+import static org.cytoscape.tableimport.internal.util.AttributeDataType.TYPE_INTEGER;
+import static org.cytoscape.tableimport.internal.util.AttributeDataType.TYPE_STRING;
 import static org.cytoscape.tableimport.internal.util.ImportType.NETWORK_IMPORT;
 import static org.cytoscape.tableimport.internal.util.ImportType.ONTOLOGY_IMPORT;
 import static org.cytoscape.tableimport.internal.util.ImportType.TABLE_IMPORT;
@@ -42,7 +45,9 @@ import static org.cytoscape.tableimport.internal.util.SourceColumnSemantic.TARGE
 import static org.cytoscape.tableimport.internal.util.SourceColumnSemantic.TAXON;
 
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 import javax.swing.table.TableModel;
@@ -103,7 +108,8 @@ public class TypeUtil {
 		return importType == NETWORK_IMPORT ? EDGE_ATTR : ATTR;
 	}
 	
-	public static SourceColumnSemantic[] guessTypes(final ImportType importType, final TableModel model) {
+	public static SourceColumnSemantic[] guessTypes(final ImportType importType, final TableModel model,
+			final AttributeDataType[] dataTypes) {
 		final int size = model.getColumnCount();
 		
 		final SourceColumnSemantic[] types = new SourceColumnSemantic[size];
@@ -112,6 +118,9 @@ public class TypeUtil {
 			Arrays.fill(types, EDGE_ATTR);
 		else
 			Arrays.fill(types, ATTR);
+		
+		if (dataTypes == null || dataTypes.length != model.getColumnCount())
+			return types;
 		
 		boolean srcFound = false;
 		boolean tgtFound = false;
@@ -128,15 +137,17 @@ public class TypeUtil {
 			
 			for (int i = 0; i < size; i++) {
 				final String name = model.getColumnName(i);
+				final AttributeDataType dataType = dataTypes[i];
 				
 				if (importType == NETWORK_IMPORT) {
-					if (!srcFound && matches(name, PREF_SOURCE_NAMES, exact)) {
+					if (!srcFound && matches(name, PREF_SOURCE_NAMES, exact) && isValid(SOURCE, dataType)) {
 						srcFound = true;
 						types[i] = SOURCE;
-					} else if (!tgtFound && matches(name, PREF_TARGET_NAMES, exact)) {
+					} else if (!tgtFound && matches(name, PREF_TARGET_NAMES, exact) && isValid(TARGET, dataType)) {
 						tgtFound = true;
 						types[i] = TARGET;
-					} else if (!interactFound && matches(name, PREF_INTERACTION_NAMES, exact)) {
+					} else if (!interactFound && matches(name, PREF_INTERACTION_NAMES, exact) &&
+							isValid(INTERACTION, dataType)) {
 						interactFound = true;
 						types[i] = INTERACTION;
 					}
@@ -144,21 +155,21 @@ public class TypeUtil {
 					if (srcFound && tgtFound && interactFound)
 						break MAIN_LOOP;
 				} else if (importType == ONTOLOGY_IMPORT) {
-					if (!keyFound && matches(name, PREF_KEY_NAMES, exact)) {
+					if (!keyFound && matches(name, PREF_KEY_NAMES, exact) && canBeKey(model, i, dataType)) {
 						keyFound = true;
 						types[i] = KEY;
-					} else if (!goFound && matches(name, PREF_ONTOLOGY_NAMES, exact)) {
+					} else if (!goFound && matches(name, PREF_ONTOLOGY_NAMES, exact) && isValid(ONTOLOGY, dataType)) {
 						goFound = true;
 						types[i] = ONTOLOGY;
-					} else if (!taxFound && matches(name, PREF_TAXON_NAMES, exact)) {
+					} else if (!taxFound && matches(name, PREF_TAXON_NAMES, exact) && isValid(TAXON, dataType)) {
 						taxFound = true;
 						types[i] = TAXON;
 					}
 					
 					if (keyFound && goFound && taxFound)
 						break MAIN_LOOP;
-				} else {
-					if (!keyFound && matches(name, PREF_KEY_NAMES, exact)) {
+				} else if (!keyFound) {
+					if (canBeKey(model, i, dataType)) {
 						keyFound = true;
 						types[i] = KEY;
 						break MAIN_LOOP;
@@ -175,16 +186,12 @@ public class TypeUtil {
 	
 	public static AttributeDataType[] guessDataTypes(final TableModel model) {
 		// 0 = Boolean,  1 = Integer,  2 = Double,  3 = String
-		final Integer[][] typeChecker = new Integer[4][model.getColumnCount()];
-
-		for (int i = 0; i < 4; i++) {
-			for (int j = 0; j < model.getColumnCount(); j++)
-				typeChecker[i][j] = 0;
-		}
-
+		final int[][] typeChecker = new int[4][model.getColumnCount()];
 		String cell = null;
 
-		for (int i = 0; i < model.getRowCount(); i++) {
+		final int rowCount = Math.min(1000, model.getRowCount());
+		
+		for (int i = 0; i < rowCount; i++) {
 			for (int j = 0; j < model.getColumnCount(); j++) {
 				cell = (String) model.getValueAt(i, j);
 				boolean found = false;
@@ -214,8 +221,10 @@ public class TypeUtil {
 				}
 				
 				// default to string
-				if (found == false)
+				if (found == false) {
+					// TODO: try to detect List types by 
 					typeChecker[3][j]++;
+				}
 			}
 		}
 
@@ -233,13 +242,13 @@ public class TypeUtil {
 			}
 	
 			if (maxIndex == 0)
-				dataTypes[i] = AttributeDataType.TYPE_BOOLEAN;
+				dataTypes[i] = TYPE_BOOLEAN;
 			else if (maxIndex == 1)
-				dataTypes[i] = AttributeDataType.TYPE_INTEGER;
+				dataTypes[i] = TYPE_INTEGER;
 			else if (maxIndex == 2)
-				dataTypes[i] = AttributeDataType.TYPE_FLOATING;
+				dataTypes[i] = TYPE_FLOATING;
 			else
-				dataTypes[i] = AttributeDataType.TYPE_STRING;
+				dataTypes[i] = TYPE_STRING;
 		}
 
 		return dataTypes;
@@ -265,6 +274,16 @@ public class TypeUtil {
 		return b;
 	}
 	
+	public static boolean isValid(final SourceColumnSemantic type, final AttributeDataType dataType) {
+		if (type == KEY || type == SOURCE || type == TARGET)
+			return dataType == TYPE_INTEGER || dataType == TYPE_STRING;
+		
+		if (type == INTERACTION || type == ONTOLOGY || type == TAXON)
+			return dataType == TYPE_STRING;
+		
+		return true;
+	}
+	
 	private static boolean matches(String name, final String[] preferredNames, final boolean exact) {
 		// Remove all special chars and spaces from column name
 		name = name.replaceAll("[^a-zA-Z0-9]", "").toLowerCase();
@@ -275,5 +294,42 @@ public class TypeUtil {
 		}
 		
 		return false;
+	}
+	
+	private static boolean canBeKey(final TableModel model, final int col, final AttributeDataType dataType) {
+		if (dataType != TYPE_STRING && dataType != TYPE_INTEGER)
+			return false;
+		
+		final int rowCount = Math.min(1000, model.getRowCount());
+		final Set<Object> values = new HashSet<Object>();
+		
+		for (int row = 0; row < rowCount; row++) {
+			final Object val = model.getValueAt(row, col);
+			
+			if (val == null)
+				return false;
+			
+			if (dataType == TYPE_STRING) {
+				final String s = val.toString();
+				
+				if (values.contains(s))
+					return false;
+				
+				values.add(s);
+			} else {
+				try {
+					final Long n = Long.parseLong(val.toString());
+					
+					if (values.contains(n))
+						return false;
+					
+					values.add(n);
+				} catch (NumberFormatException e) {
+					return false;
+				}
+			}
+		}
+		
+		return true;
 	}
 }
