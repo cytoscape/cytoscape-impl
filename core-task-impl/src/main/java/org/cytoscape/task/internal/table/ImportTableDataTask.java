@@ -481,10 +481,9 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 		final String name = col.getName();
 		final Class<?> type = col.getType();
 		
-		return type != List.class && 
+		return (type == Integer.class || type == Long.class || type == String.class) && 
 				!name.equals(CyNetwork.SUID) && 
-				!name.endsWith(".SUID") && 
-				!(name.equals(CyNetwork.SELECTED) && type == Boolean.class);
+				!name.endsWith(".SUID");
 	}
 	
 	private void mapTableToLocalAttrs(final TableType tableType) {
