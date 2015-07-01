@@ -168,14 +168,8 @@ public class ImportAttributeTableReaderTask extends AbstractTask implements CyTa
 		final Class<?> keyType;
 		
 		switch (type) {
-			case TYPE_BOOLEAN:
-				keyType = Boolean.class;
-				break;
 			case TYPE_INTEGER:
 				keyType = Integer.class;
-				break;
-			case TYPE_FLOATING:
-				keyType = Double.class;
 				break;
 			case TYPE_STRING:
 				keyType = String.class;
@@ -209,6 +203,18 @@ public class ImportAttributeTableReaderTask extends AbstractTask implements CyTa
 		if (amp.getKeyIndex() == -1) {
 			try {
 				errMsg.append("The primary key column needs to be selected.");
+			} catch (IOException e) {
+				e.printStackTrace();
+				return ValidationState.INVALID;
+			}
+			
+			return ValidationState.INVALID;
+		}
+		
+		if((amp.getDataTypes()[amp.getKeyIndex()] != AttributeDataType.TYPE_INTEGER) && 
+				(amp.getDataTypes()[amp.getKeyIndex()] != AttributeDataType.TYPE_STRING)) {
+			try {
+				errMsg.append("The primary key column must be an Integer or String.");
 			} catch (IOException e) {
 				e.printStackTrace();
 				return ValidationState.INVALID;

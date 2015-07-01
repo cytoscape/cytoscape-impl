@@ -53,6 +53,7 @@ import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.task.internal.utils.DataUtils;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
@@ -393,12 +394,18 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
+		if (!checkKeys()) {
+			if(byReader)
+				throw new IllegalArgumentException("Types of keys selected for tables are not valid.\n"
+						+ "Keys must be of type Integer, Long, or String.");
+			else
+				throw new IllegalArgumentException("Types of keys selected for tables are not valid.\n"
+						+ "Keys must be of type Integer, Long, or String, and must be the same type for a soft merge.");
+		}
+		
 		if (networksPresent) {
 			if (name2RootMap.isEmpty())
 				return;
-		
-			if (!checkKeys())
-				throw new IllegalArgumentException("Types of keys selected for tables are not matching.");
 		}
 
 		if (whereImportTable.getSelectedValue().matches(NETWORK_COLLECTION))
@@ -541,7 +548,7 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 			if (globalTable != null) {
 				columns.addAll(globalTable.getColumns());
 				copyColumns(globalTable, columns, targetTable, true);
-				copyRows(globalTable, columns, targetTable, caseSensitive);
+				//copyRows(globalTable, columns, targetTable, caseSensitive);
 			}
 		}
 	}
@@ -579,10 +586,19 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 			Object key = targetRow.get(targetKeyColumn.getName(), targetKeyColumn.getType());
 			
 			if (key == null)
-				continue; // Should never happen!
+				continue; 
 
 			if (!caseSensitive)
 				key = normalizedSourceKeys.get(key.toString().toLowerCase().trim());
+			
+			if (key.getClass() != sourceTable.getPrimaryKey().getType() ) {
+				try {
+					key = DataUtils.convertString(key.toString(), sourceTable.getPrimaryKey().getType());
+				}
+				catch(Exception e) {
+					continue;
+				}
+			}
 			
 			if (key == null || !sourceTable.rowExists(key))
 				continue;
@@ -678,21 +694,43 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 	}
 
 	public boolean checkKeys() {
-		Class<?> joinTargetColumnType = String.class;
+		List<CyColumn> joinTargetColumns = new ArrayList<CyColumn>();
 
-		if (whereImportTable.getSelectedValue().matches(NETWORK_COLLECTION))
-			joinTargetColumnType = getJoinTargetColumn(
+		if (whereImportTable.getSelectedValue().matches(NETWORK_COLLECTION)) {
+			joinTargetColumns.add(getJoinTargetColumn(
 					getTable(name2RootMap.get(targetNetworkCollection.getSelectedValue()), getDataTypeOptions(),
-							CyNetwork.DEFAULT_ATTRS)).getType();
+							CyNetwork.DEFAULT_ATTRS)));
+		}
+		
+		else if (whereImportTable.getSelectedValue().matches(NETWORK_SELECTION)) {
+			for(String targetNetwork: targetNetworkList.getSelectedValues()) {
+				joinTargetColumns.add(getJoinTargetColumn(
+						getTable(name2NetworkMap.get(targetNetwork), getDataTypeOptions(),
+								CyNetwork.DEFAULT_ATTRS)));
+			}
+		}
 
 		if (byReader) {
 			for (CyTable readerTable : reader.getTables()) {
-				if (readerTable.getPrimaryKey().getType() != joinTargetColumnType)
+				if (!isMappableColumn(readerTable.getPrimaryKey()))
 					return false;
 			}
-		} else {
-			if (globalTable.getPrimaryKey().getType() != joinTargetColumnType)
+			
+			for(CyColumn joinTargetColumn : joinTargetColumns) {
+				if (!isMappableColumn(joinTargetColumn))
+					return false;
+			}
+		}
+		
+		else {
+			if (!isMappableColumn(globalTable.getPrimaryKey()))
 				return false;
+			
+			//Don't need to check if mappable since equality implies this
+			for(CyColumn joinTargetColumn: joinTargetColumns) {
+				if (joinTargetColumn.getType() != globalTable.getPrimaryKey().getType())
+					return false;
+			}
 		}
 
 		return true;

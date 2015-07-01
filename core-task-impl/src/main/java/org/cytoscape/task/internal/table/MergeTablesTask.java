@@ -48,6 +48,7 @@ import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
+import org.cytoscape.task.internal.utils.DataUtils;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
@@ -414,8 +415,14 @@ public class MergeTablesTask extends AbstractTask implements TunableValidator {
 				return;
 		}
 
-		if (!checkKeys())
-			throw new IllegalArgumentException("Types of keys selected for tables are not matching.");
+		if (!checkKeys()) {
+			if(!isNewColumnVirtual())
+				throw new IllegalArgumentException("Types of keys selected for tables are not valid.\n"
+						+ "Keys must be of type Integer, Long, or String.");
+			else
+				throw new IllegalArgumentException("Types of keys selected for tables are not valid.\n"
+						+ "Keys must be of type Integer, Long, or String, and must be the same type for a soft merge.");
+		}
 
 		if (whereMergeTable.getSelectedValue().matches(NETWORK_COLLECTION))
 			mapTableToDefaultAttrs(getDataTypeOptions());
@@ -423,6 +430,15 @@ public class MergeTablesTask extends AbstractTask implements TunableValidator {
 			mapTableToLocalAttrs(getDataTypeOptions());
 		else if (whereMergeTable.getSelectedValue().matches(UNASSIGNED_TABLE))
 			mapTableToUnassignedTable();
+	}
+	
+	private boolean isMappableColumn(final CyColumn col) {
+		final String name = col.getName();
+		final Class<?> type = col.getType();
+		
+		return (type == Integer.class || type == Long.class || type == String.class) && 
+				!name.equals(CyNetwork.SUID) && 
+				!name.endsWith(".SUID");
 	}
 	
 	private void mapTableToUnassignedTable() {
@@ -508,6 +524,18 @@ public class MergeTablesTask extends AbstractTask implements TunableValidator {
 
 		for (CyRow targetRow : targetTable.getAllRows()) {
 			Object key = targetRow.get(targetKeyColumn.getName(), targetKeyColumn.getType());
+			
+			if (key == null)
+				continue;
+			
+			if (key.getClass() != getMergeKeyColumn().getType() ) {
+				try {
+					key = DataUtils.convertString(key.toString(), getMergeKeyColumn().getType());
+				}
+				catch (Exception e) {
+					continue;
+				}
+			}
 
 			if (isMergeColumnKeyColumn()) {
 				if (!inputTable.rowExists(key))
@@ -580,22 +608,36 @@ public class MergeTablesTask extends AbstractTask implements TunableValidator {
 	}
 
 	public boolean checkKeys() {
-		Class<?> joinTargetColumnType = String.class;
+		CyColumn joinTargetColumn = null;
 		
 		if (whereMergeTable.getSelectedValue().matches(NETWORK_COLLECTION)) {
-			joinTargetColumnType = getJoinTargetColumn(
+			joinTargetColumn = getJoinTargetColumn(
 					getTable(name2RootMap.get(targetNetworkCollection.getSelectedValue()), getDataTypeOptions(),
-							CyNetwork.DEFAULT_ATTRS)).getType();
+							CyNetwork.DEFAULT_ATTRS));
 		}
 		
-		if (whereMergeTable.getSelectedValue().matches(UNASSIGNED_TABLE)) {
+		else if (whereMergeTable.getSelectedValue().matches(UNASSIGNED_TABLE)) {
 			if (!unassignedTable.getSelectedValue().equals(NO_TABLES))
-				joinTargetColumnType = getJoinTargetColumn((CyTable) unassignedTable.getSelectedValue()).getType();
+				joinTargetColumn = getJoinTargetColumn((CyTable) unassignedTable.getSelectedValue());
 		}
-
-		if (getMergeKeyColumn().getType() != joinTargetColumnType)
+		
+		
+		if (!isMappableColumn(getMergeKeyColumn()))
 			return false;
+		
+		if(joinTargetColumn != null) {
+			if(!isNewColumnVirtual()) {
+				if (!isMappableColumn(joinTargetColumn))
+					return false;
+			}
 
+			else {
+				//Don't need to check if mappable since equality implies this
+				if(joinTargetColumn.getType() != getMergeKeyColumn().getType())
+					return false;
+			}
+		}
+		
 		return true;
 	}
 	
@@ -618,17 +660,11 @@ public class MergeTablesTask extends AbstractTask implements TunableValidator {
 	}
 
 	private ListSingleSelection<String> getKeyColumnList(final CyTable table) {
-		String tempName = null;
 		final List<String> colNames = new ArrayList<>();
 		
-		for (CyColumn col : table.getColumns()) {
-			final Class<?> type = col.getType();
-			
-			if (type == String.class || type == Integer.class || type == Long.class) {
-				tempName = col.getName();
-				
-				if (!tempName.matches(CyRootNetwork.SUID) && !tempName.matches(CyRootNetwork.SELECTED))
-					colNames.add(tempName);
+		for (CyColumn col : table.getColumns()) {			
+			if (isMappableColumn(col)) {
+				colNames.add(col.getName());
 			}
 		}
 
