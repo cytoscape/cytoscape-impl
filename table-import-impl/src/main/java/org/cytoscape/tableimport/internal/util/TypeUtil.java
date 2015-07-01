@@ -119,7 +119,7 @@ public class TypeUtil {
 		else
 			Arrays.fill(types, ATTR);
 		
-		if (dataTypes == null || dataTypes.length != model.getColumnCount())
+		if (dataTypes == null || dataTypes.length == 0 || dataTypes.length != model.getColumnCount())
 			return types;
 		
 		boolean srcFound = false;
@@ -178,8 +178,15 @@ public class TypeUtil {
 			}
 		}
 		
-		if (importType == TABLE_IMPORT && !keyFound && types.length > 0)
-			types[0] = KEY; // Just use the first column as key then
+		if (importType == TABLE_IMPORT && !keyFound) {
+			// Just use the first String or Integer column as key then...
+			for (int i = 0; i < types.length; i++) {
+				if (dataTypes[i] == TYPE_STRING || dataTypes[i] == TYPE_INTEGER) {
+					types[i] = KEY;
+					break;
+				}
+			}
+		}
 
 		return types;
 	}
