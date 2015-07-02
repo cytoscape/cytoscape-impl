@@ -204,6 +204,9 @@ public class ListMultipleHandler<T> extends AbstractGUITunableHandler
 			final JLabel label = new JLabel(description);
 			updateFieldPanel(panel, label, controlPanel, horizontal);
 			setTooltip(getTooltip(), label, scrollpane);
+		} else {
+			updateFieldPanel(panel, controlPanel, horizontal);
+			setTooltip(getTooltip(), scrollpane);
 		}
 	}
 	

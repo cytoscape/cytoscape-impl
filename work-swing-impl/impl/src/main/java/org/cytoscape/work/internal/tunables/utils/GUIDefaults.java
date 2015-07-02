@@ -50,8 +50,8 @@ public final class GUIDefaults {
 
 	public static final int TEXT_BOX_WIDTH = 150;
 	
-	public static void updateFieldPanel(final JPanel p, final Component c, final boolean horizontalForm) {
-		updateFieldPanel(p, new JLabel(" "), c, horizontalForm);
+	public static void updateFieldPanel(final JPanel p, final Component control, final boolean horizontalForm) {
+		updateFieldPanel(p, new JLabel(" "), control, horizontalForm);
 	}
 	
 	public static void updateFieldPanel(final JPanel p, JLabel label, final Component control,
