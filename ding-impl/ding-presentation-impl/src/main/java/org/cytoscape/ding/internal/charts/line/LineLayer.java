@@ -6,7 +6,7 @@ import java.awt.geom.Rectangle2D;
 import java.util.List;
 import java.util.Map;
 
-import org.cytoscape.ding.impl.strokes.DotStroke;
+import org.cytoscape.ding.impl.strokes.EqualDashStroke;
 import org.cytoscape.ding.internal.charts.AbstractChartLayer;
 import org.cytoscape.ding.internal.charts.CustomCategoryItemLabelGenerator;
 import org.cytoscape.ding.internal.charts.LabelPosition;
@@ -88,7 +88,7 @@ public class LineLayer extends AbstractChartLayer<CategoryDataset> {
 		if (showRangeZeroBaseline) {
 			plot.setRangeZeroBaselineVisible(true);
 			plot.setRangeZeroBaselinePaint(axisColor);
-			plot.setRangeZeroBaselineStroke(new DotStroke(axisWidth));
+			plot.setRangeZeroBaselineStroke(new EqualDashStroke(axisWidth));
 		}
 		
 		final BasicStroke axisStroke = new BasicStroke(axisWidth, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);

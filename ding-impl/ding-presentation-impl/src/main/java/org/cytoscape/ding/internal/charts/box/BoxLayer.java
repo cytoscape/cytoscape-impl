@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.cytoscape.ding.customgraphics.Orientation;
-import org.cytoscape.ding.impl.strokes.DotStroke;
+import org.cytoscape.ding.impl.strokes.EqualDashStroke;
 import org.cytoscape.ding.internal.charts.AbstractChartLayer;
 import org.cytoscape.ding.internal.charts.LabelPosition;
 import org.jfree.chart.ChartFactory;
@@ -93,7 +93,7 @@ public class BoxLayer extends AbstractChartLayer<BoxAndWhiskerCategoryDataset> {
 		if (showRangeZeroBaseline) {
 			plot.setRangeZeroBaselineVisible(true);
 			plot.setRangeZeroBaselinePaint(axisColor);
-			plot.setRangeZeroBaselineStroke(new DotStroke(axisWidth));
+			plot.setRangeZeroBaselineStroke(new EqualDashStroke(axisWidth));
 		}
 		
 		final PlotOrientation plotOrientation = 
