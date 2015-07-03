@@ -121,22 +121,22 @@ public final class GUIDefaults {
 		layout.setAutoCreateContainerGaps(false);
 		layout.setAutoCreateGaps(true);
 		
+		final Alignment vAlign = control instanceof JPanel || control instanceof JScrollPane ? 
+				Alignment.LEADING : Alignment.CENTER;
+		
 		if (horizontalForm) {
-			p.setBorder(BorderFactory.createEmptyBorder(0, 2, 0, 2));
+			p.setBorder(BorderFactory.createEmptyBorder(0, 4, 0, 4));
 			
-			layout.setHorizontalGroup(layout.createParallelGroup(Alignment.LEADING, true)
-					.addComponent(label, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-					.addComponent(control, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-			);
-			layout.setVerticalGroup(layout.createSequentialGroup()
+			layout.setHorizontalGroup(layout.createSequentialGroup()
 					.addComponent(label, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(control, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 			);
+			layout.setVerticalGroup(layout.createParallelGroup(vAlign, false)
+					.addComponent(label)
+					.addComponent(control)
+			);
 		} else {
 			p.setBorder(BorderFactory.createEmptyBorder(2, 0, 2, 0));
-			
-			final Alignment vAlign = control instanceof JPanel || control instanceof JScrollPane ? 
-					Alignment.LEADING : Alignment.CENTER;
 			
 			int w = Math.max(label.getPreferredSize().width, control.getPreferredSize().width);
 			int gap = w - control.getPreferredSize().width; // So the label and control are centered

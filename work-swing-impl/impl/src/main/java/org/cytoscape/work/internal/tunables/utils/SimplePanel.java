@@ -27,7 +27,7 @@ public class SimplePanel extends JPanel {
 	}
 	
 	protected void init() {
-		setLayout(new BoxLayout(this, vertical ? BoxLayout.Y_AXIS : BoxLayout.X_AXIS));
+		setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 		setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 	}
 	
@@ -58,15 +58,16 @@ public class SimplePanel extends JPanel {
 	}
 	
 	protected void addStrutToRoot(int size) {
-		if (vertical)
-			addToRoot(Box.createVerticalStrut(size));
-		else
-			addToRoot(Box.createHorizontalStrut(size));
+		addToRoot(Box.createVerticalStrut(size));
 	}
 	
 	protected void adjust(final Component c) {
-		if (c instanceof JPanel)
+		if (c instanceof JPanel) {
 			((JPanel) c).setAlignmentX(Component.CENTER_ALIGNMENT);
+			
+			if (!vertical)
+				((JPanel) c).setAlignmentY(Component.TOP_ALIGNMENT);
+		}
 	}
 	
 	protected JPanel getContentPane() {
