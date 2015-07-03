@@ -109,11 +109,6 @@ public class ListMultipleHandler<T> extends AbstractGUITunableHandler
 		listModel = new DefaultListModel<>();
 		itemsContainerList = new JList<>(listModel);
 		
-		if (listMultipleSelection.getPossibleValues().isEmpty()) {
-			panel = new JPanel();
-			return;
-		}
-		
 		// Select All/None buttons
 		selectAllButton = new JButton("Select All");
 		selectAllButton.addActionListener(new ActionListener() {
@@ -208,6 +203,8 @@ public class ListMultipleHandler<T> extends AbstractGUITunableHandler
 			updateFieldPanel(panel, controlPanel, horizontal);
 			setTooltip(getTooltip(), scrollpane);
 		}
+		
+		panel.setVisible(itemsContainerList.getModel().getSize() > 0);
 	}
 	
 	@Override
@@ -221,11 +218,12 @@ public class ListMultipleHandler<T> extends AbstractGUITunableHandler
 			listModel.removeAllElements();
 			reloadSelection = true;
 			
-			for ( T value : listMultipleSelection.getPossibleValues() ) 
+			for (T value : listMultipleSelection.getPossibleValues()) 
 				listModel.addElement(value);
 		} else {
 			//if the list is the same but the selection has changed, remove all selections and select new ones
-			if(!Arrays.equals(itemsContainerList.getSelectedValues(),listMultipleSelection.getSelectedValues().toArray()))
+			if (!Arrays.equals(itemsContainerList.getSelectedValuesList().toArray(),
+					listMultipleSelection.getSelectedValues().toArray()))
 				reloadSelection = true;
 		}
 		
@@ -238,7 +236,7 @@ public class ListMultipleHandler<T> extends AbstractGUITunableHandler
 			int index = 0;
 			
 			for (T selected: selectedVals) {
-				for (int i = 0; i<allValues.size(); i++) {
+				for (int i = 0; i < allValues.size(); i++) {
 					if (itemsContainerList.getModel().getElementAt(i).equals(selected)) {
 						selectedIdx[index] = i;
 						index++;
@@ -251,6 +249,8 @@ public class ListMultipleHandler<T> extends AbstractGUITunableHandler
 				itemsContainerList.setSelectedIndices(selectedIdx);
 			}
 		}
+		
+		panel.setVisible(itemsContainerList.getModel().getSize() > 0);
 	}
 	
 	/**

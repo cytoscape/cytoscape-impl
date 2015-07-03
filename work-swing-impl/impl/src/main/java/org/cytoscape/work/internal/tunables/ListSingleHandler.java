@@ -92,16 +92,6 @@ public class ListSingleHandler<T> extends AbstractGUITunableHandler
 
 	@SuppressWarnings("unchecked")
 	private void init() {
-		final ListSingleSelection<T> singleSelection = getSingleSelection();
-		
-		if (singleSelection == null || singleSelection.getPossibleValues().isEmpty()) {
-			panel = new JPanel();
-			panel.setVisible(false);
-			combobox = null;
-			
-			return;
-		}
-
 		//set Gui
 		final JLabel label = new JLabel(getDescription());
 		label.setVerticalTextPosition(SwingConstants.CENTER);
@@ -113,6 +103,9 @@ public class ListSingleHandler<T> extends AbstractGUITunableHandler
 		
 		updateFieldPanel(panel, label, combobox, horizontal);
 		setTooltip(getTooltip(), label, combobox);
+		
+		combobox.setEnabled(combobox.getModel().getSize() > 1);
+		panel.setVisible(combobox.getModel().getSize() > 0);
 	}
 
 	@Override
@@ -121,6 +114,8 @@ public class ListSingleHandler<T> extends AbstractGUITunableHandler
 		if (combobox == null) return;
 		combobox.setModel(new DefaultComboBoxModel<T>((T[])getSingleSelection().getPossibleValues().toArray()));
 		combobox.setSelectedItem(getSingleSelection().getSelectedValue());
+		combobox.setEnabled(combobox.getModel().getSize() > 1);
+		panel.setVisible(combobox.getModel().getSize() > 0);
 	}
 
 	/**

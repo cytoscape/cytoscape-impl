@@ -108,7 +108,7 @@ public class JPanelTunableMutator extends AbstractTunableInterceptor<GUITunableH
 
 	public JPanelTunableMutator() {
 		super();
-		panelMap = new HashMap<List<GUITunableHandler>, JPanel>();
+		panelMap = new HashMap<>();
 		
 		controlComponentListener = new ComponentListener() {
 			@Override
