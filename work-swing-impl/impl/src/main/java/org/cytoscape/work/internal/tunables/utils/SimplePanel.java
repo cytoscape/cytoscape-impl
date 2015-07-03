@@ -1,14 +1,18 @@
 package org.cytoscape.work.internal.tunables.utils;
 
 import java.awt.Component;
+import java.awt.Container;
+import java.awt.event.HierarchyEvent;
+import java.awt.event.HierarchyListener;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
+import javax.swing.Box.Filler;
 import javax.swing.BoxLayout;
 import javax.swing.JPanel;
 
 @SuppressWarnings("serial")
-public class SimplePanel extends JPanel {
+public class SimplePanel extends JPanel implements HierarchyListener {
 
 	protected final boolean vertical;
 	protected final String title;
@@ -78,4 +82,54 @@ public class SimplePanel extends JPanel {
 		
 		return contentPane;
 	}
+	
+	@Override
+    public void addNotify() {
+        super.addNotify();
+        addHierarchyListener(this);
+    }
+
+	@Override
+    public void removeNotify() {
+        removeHierarchyListener(this);
+        super.removeNotify();
+    }
+
+	@Override
+    public void hierarchyChanged(HierarchyEvent e) {
+        if (isDisplayed() && !hasVisibleControls(this))
+        	setVisible(false);
+    }
+	
+	private boolean isDisplayed() {
+        Container c = getParent();
+        
+        while (c != null) {
+            if (!c.isVisible())
+                return false;
+            else
+                c = c.getParent();
+        }
+        
+        return true;
+    }
+	
+	private boolean hasVisibleControls(final JPanel panel) {
+		final int total = panel.getComponentCount();
+        
+        for (int i = 0; i < total; i++) {
+        	final Component c = panel.getComponent(i);
+    		
+        	if (c.isVisible()) {
+	    		if (c instanceof JPanel) {
+	    			if (hasVisibleControls((JPanel) c))
+	    				return true;
+	    		} else if (c instanceof Filler == false) {
+	    			return true;
+	    		}
+	    	}
+    	}
+        
+        return false;
+    }
 }
