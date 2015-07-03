@@ -452,6 +452,9 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 	        prefAlgorithmCmb.addItemListener(new ItemListener() {
 				@Override
 				public void itemStateChanged(ItemEvent e) {
+					if (initializing)
+						return;
+					
 					final CyLayoutAlgorithm layout = (CyLayoutAlgorithm) prefAlgorithmCmb.getSelectedItem();
 					
 					if (layout != null) {
