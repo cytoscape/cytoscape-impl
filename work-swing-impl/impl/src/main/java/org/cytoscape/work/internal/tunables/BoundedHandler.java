@@ -25,11 +25,13 @@ package org.cytoscape.work.internal.tunables;
  */
 
 
-import static org.cytoscape.work.internal.tunables.utils.GUIDefaults.updateFieldPanel;
 import static org.cytoscape.work.internal.tunables.utils.GUIDefaults.setTooltip;
+import static org.cytoscape.work.internal.tunables.utils.GUIDefaults.updateFieldPanel;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.text.DecimalFormat;
@@ -53,14 +55,13 @@ import org.cytoscape.work.util.BoundedChangeListener;
  *
  * @param <T> type of <code>AbstractBounded</code>
  */
-@SuppressWarnings("unchecked")
+@SuppressWarnings({ "unchecked", "rawtypes" })
 public class BoundedHandler<T extends AbstractBounded, N> extends AbstractGUITunableHandler 
-                                                          implements ChangeListener, ActionListener,
-                                                                     BoundedChangeListener<N> {
+                                                          implements BoundedChangeListener<N> {
 	/**
 	 * Representation of the <code>Bounded</code> in a <code>JSlider</code>
 	 */
-	private boolean useSlider = false;
+	private boolean useSlider;
 
 	/**
 	 * 1st representation of this <code>Bounded</code> object in 
@@ -78,8 +79,8 @@ public class BoundedHandler<T extends AbstractBounded, N> extends AbstractGUITun
  	 * Save the last object we fetched.  This will allow us to detect that we're
  	 * received a completely new object and reset the UI.
  	 */
-	private T lastBounded = null;
-	private String title = null;
+	private T lastBounded;
+	private String title;
 
 	// Standard format
 	DecimalFormat df = new java.text.DecimalFormat("##.###");
@@ -91,7 +92,7 @@ public class BoundedHandler<T extends AbstractBounded, N> extends AbstractGUITun
 	 *
 	 * If <code>useSlider</code> is set to <code>true</code> : displays the bounded 
 	 * object in a <code>JSlider</code> by using its bounds
-	 * else diplays it in a <code>JTextField</code> with informations about the bounds
+	 * else displays it in a <code>JTextField</code> with informations about the bounds
 	 *
 	 * The Swing representation is then added to the <code>JPanel</code> for GUI representation
 	 *
@@ -136,7 +137,12 @@ public class BoundedHandler<T extends AbstractBounded, N> extends AbstractGUITun
 			slider = new TunableSlider(title, (Number)bounded.getLowerBound(), (Number)bounded.getUpperBound(),
 			                      (Number)bounded.getValue(), bounded.isLowerBoundStrict(), bounded.isUpperBoundStrict(),
 			                      format);
-			slider.addChangeListener(this);
+			slider.addChangeListener(new ChangeListener() {
+				@Override
+				public void stateChanged(ChangeEvent e) {
+					handle();
+				}
+			});
 			
 			updateFieldPanel(panel, label, slider, horizontal);
 			panel.validate();
@@ -152,7 +158,18 @@ public class BoundedHandler<T extends AbstractBounded, N> extends AbstractGUITun
 			boundedField = new TunableBoundedField((Number)bounded.getValue(), (Number)bounded.getLowerBound(),
 			                                  (Number)bounded.getUpperBound(), bounded.isLowerBoundStrict(),
 			                                  bounded.isUpperBoundStrict());
-			boundedField.addActionListener(this);
+			boundedField.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					handle();
+				}
+			});
+			boundedField.addFocusListener(new FocusAdapter() {
+				@Override
+				public void focusLost(FocusEvent e) {
+					handle();
+				}
+			});
 			
 			updateFieldPanel(panel, label, boundedField, horizontal);
 			panel.validate();
@@ -170,10 +187,8 @@ public class BoundedHandler<T extends AbstractBounded, N> extends AbstractGUITun
 		}
 	}
 
+	@Override
 	public void update(){
-		
-		final String title = getDescription();
-
 		try {
 			final T bounded = getBounded();
 			if (lastBounded != bounded) {
@@ -182,13 +197,10 @@ public class BoundedHandler<T extends AbstractBounded, N> extends AbstractGUITun
 				panel.removeAll();
 				initPanel(bounded);
 			} else {
-				if (useSlider){
+				if (useSlider) {
 					Number n = (Number) bounded.getValue();
 					slider.setValue(n);
-				}else{
-					final JLabel label =
-						new JLabel(title + " (max: " + bounded.getLowerBound().toString()
-						          + " min: " + bounded.getUpperBound().toString() + ")" );
+				} else {
 					boundedField = new TunableBoundedField((Number)bounded.getValue(), (Number)bounded.getLowerBound(),
 					                                  (Number)bounded.getUpperBound(), bounded.isLowerBoundStrict(),
 					                                  bounded.isUpperBoundStrict());
@@ -206,13 +218,14 @@ public class BoundedHandler<T extends AbstractBounded, N> extends AbstractGUITun
 	 * The constraints of the bound values have to be respected : 
 	 * <code>lowerBound &lt; value &lt; upperBound</code> or <code>lowerBound &lti; value &lti; upperBound</code> ....
 	 */
+	@Override
 	public void handle() {
 		try {
 			final T bounded = getBounded();
 			final Number fieldValue = useSlider ? slider.getValue() : boundedField.getFieldValue();
-			if (fieldValue instanceof Double){
+			
+			if (fieldValue instanceof Double)
 				bounded.setValue((Double)fieldValue);
-			}
 			else if (fieldValue instanceof Float)
 				bounded.setValue((Float)fieldValue);
 			else if (fieldValue instanceof Integer)
@@ -232,6 +245,7 @@ public class BoundedHandler<T extends AbstractBounded, N> extends AbstractGUITun
 	 * To get the current value of the <code>Bounded</code> object
 	 * @return the value of the <code>Bounded</code> object
 	 */
+	@Override
 	public String getState() {
 		try {
 			return getBounded().getValue().toString();
@@ -240,37 +254,31 @@ public class BoundedHandler<T extends AbstractBounded, N> extends AbstractGUITun
 		}
 	}
 
-	
-	public void stateChanged(ChangeEvent e) {
-		handle();
-	}
-
+	@Override
 	public void boundsChanged(AbstractBounded changedObject) {
 		if (changedObject == lastBounded) {
 			panel.removeAll();
 			initPanel(lastBounded);
-		} else
+		} else {
 			((AbstractBounded)changedObject).removeListener(this);
-	}
-
-	public void valueChanged(AbstractBounded changedObject) {
-		if (changedObject == lastBounded) {
-			update();
-		} else
-			((AbstractBounded)changedObject).removeListener(this);
+		}
 	}
 
 	@Override
-	public void actionPerformed(ActionEvent e) {
-		handle();
+	public void valueChanged(AbstractBounded changedObject) {
+		if (changedObject == lastBounded) {
+			update();
+		} else {
+			((AbstractBounded)changedObject).removeListener(this);
+		}
 	}
 
 	private DecimalFormat getDecimalFormat(double range) {
 		if (getFormat() != null && getFormat().length() > 0)
 			return new DecimalFormat(getFormat());
-		if (range < 0.001 || range > 10000) {
+		if (range < 0.001 || range > 10000)
 			return sdf;
-		}
+		
 		return df;
 	}
 }

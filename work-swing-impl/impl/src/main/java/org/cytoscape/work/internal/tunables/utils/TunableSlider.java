@@ -32,6 +32,8 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
 import java.text.DecimalFormat;
 import java.text.ParsePosition;
 import java.util.ArrayList;
@@ -157,20 +159,13 @@ public class TunableSlider extends JPanel {
 		textField.addActionListener(new AbstractAction() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				if (ignore) return;
-				ignore = true;
-				Number v = getFieldValue();
-				
-				if (v != value) {
-					// update the value
-					value = v;
-					// set slider value
-					setSliderValue();
-				}
-				
-				// fire event
-				fireChangeEvent();
-				ignore = false;
+				textFieldValueChanged();
+			}
+		});
+		textField.addFocusListener(new FocusAdapter() {
+			@Override
+			public void focusLost(FocusEvent e) {
+				textFieldValueChanged();
 			}
 		});
 		
@@ -179,11 +174,11 @@ public class TunableSlider extends JPanel {
 		layout.setAutoCreateContainerGaps(false);
 		layout.setAutoCreateGaps(true);
 		
-		layout.setHorizontalGroup(layout.createParallelGroup(Alignment.TRAILING, true)
+		layout.setHorizontalGroup(layout.createSequentialGroup()
 				.addComponent(slider, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 				.addComponent(textField, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 		);
-		layout.setVerticalGroup(layout.createSequentialGroup()
+		layout.setVerticalGroup(layout.createParallelGroup(Alignment.LEADING, false)
 				.addComponent(slider)
 				.addComponent(textField, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 		);
@@ -376,5 +371,22 @@ public class TunableSlider extends JPanel {
 			ChangeListener cl = (ChangeListener) iter.next();
 			cl.stateChanged(evt);
 		}
-	}   
+	}
+	
+	private void textFieldValueChanged() {
+		if (ignore) return;
+		ignore = true;
+		Number v = getFieldValue();
+		
+		if (v != value) {
+			// update the value
+			value = v;
+			// set slider value
+			setSliderValue();
+		}
+		
+		// fire event
+		fireChangeEvent();
+		ignore = false;
+	}
 }
