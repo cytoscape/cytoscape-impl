@@ -28,12 +28,9 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.Reader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-
-import javax.xml.bind.DataBindingException;
 
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
@@ -76,36 +73,30 @@ public class PsiMiTabParser {
 	private static final String COMPOUND = "compound";
 
 	private final InputStream inputStream;
+	private Map<Object, CyNode> nMap;
 	
-	private volatile boolean cancelFlag = false;
+	private volatile boolean cancelFlag;
 
 	public PsiMiTabParser(final InputStream inputStream) {
 		this.inputStream = inputStream;
 	}
 
-	public CyNetwork parse(final TaskMonitor taskMonitor) throws IOException {
-
-		long start = System.currentTimeMillis();
-
+	public void parse(final CySubNetwork network, final TaskMonitor taskMonitor) throws IOException {
 		taskMonitor.setProgress(-1.0);
-
-		CyNetwork network = this.rootNetwork.addSubNetwork();
-
 		initColumns(network);
 
-		String line;
+		String line = null;
 		final BufferedReader br = new BufferedReader(new InputStreamReader(inputStream), BUFFER_SIZE);
 		final MITABLine25 mline = new MITABLine25();
 
 		long interactionCount = 0;
+		
 		while ((line = br.readLine()) != null) {
-			
 			// Check cancel state
 			if (cancelFlag) {
 				System.out.println("Loading canceld.");
 				br.close();
 				network.dispose();
-				network = null;
 				throw new IOException("Network loading process canceled by user.");
 			}
 
@@ -119,32 +110,30 @@ public class PsiMiTabParser {
 				logger.warn("Could not parse this line: " + line, ex);
 				continue;
 			}
+			
 			if (++interactionCount % 1000 == 0)
 				taskMonitor.setStatusMessage("parsed " + interactionCount + " interactions");
 		}
 
 		br.close();
-		logger.info("MITAB Parse finished in " + (System.currentTimeMillis() - start) + " msec.");
-
-		return network;
 	}
 
-
-	private void processFull(final CyNetwork network, final MITABLine25 mline, final String line) {
+	private void processFull(final CySubNetwork network, final MITABLine25 mline, final String line) {
 		mline.readLine(line);
-
 		final String primaryKeyName = mline.srcDBs.get(0);
-		if(network.getDefaultNodeTable().getColumn(primaryKeyName) == null) {
+		
+		if (network.getDefaultNodeTable().getColumn(primaryKeyName) == null)
 			network.getDefaultNodeTable().createColumn(primaryKeyName, String.class, true);
-		}
 		
 		final String sourceRawID = mline.sourceRawID;
 		final String targetRawID = mline.targetRawID;
 
-		CyNode source;
+		final CyRootNetwork rootNetwork = network.getRootNetwork();
+		final CyNode source;
+		
 		if (this.nMap.get(sourceRawID) == null){
 			source = network.addNode();
-			this.nMap.put(sourceRawID, this.rootNetwork.getNode(source.getSUID()));
+			this.nMap.put(sourceRawID, rootNetwork.getNode(source.getSUID()));
 		} else {
 			CyNode parentNode = this.nMap.get(sourceRawID);
 			CySubNetwork subnet = (CySubNetwork) network;
@@ -152,17 +141,17 @@ public class PsiMiTabParser {
 			source = subnet.getNode(parentNode.getSUID()); 
 		}
 
-		CyNode target;
+		final CyNode target;
+		
 		if (this.nMap.get(targetRawID) == null){
 			target = network.addNode();
-			this.nMap.put(targetRawID, this.rootNetwork.getNode(target.getSUID()));
+			this.nMap.put(targetRawID, rootNetwork.getNode(target.getSUID()));
 		} else {
 			CyNode parentNode = this.nMap.get(targetRawID);
 			CySubNetwork subnet = (CySubNetwork) network;
 			subnet.addNode(parentNode);
 			target = subnet.getNode(parentNode.getSUID()); 
 		}
-
 		
 		final CyRow sourceRow = network.getRow(source);
 		final CyRow targetRow = network.getRow(target);
@@ -174,9 +163,11 @@ public class PsiMiTabParser {
 		targetRow.set(primaryKeyName, targetRawID);
 		
 		final List<String> sDB = mline.sourceDBs;
+		
 		for(int i=0; i<sDB.size(); i++) {
 			String dbName = sDB.get(i);
-			if(sourceRow.getTable().getColumn(dbName) == null)
+			
+			if (sourceRow.getTable().getColumn(dbName) == null)
 				sourceRow.getTable().createColumn(dbName, String.class, true);
 			
 			sourceRow.set(dbName, mline.sourceIDs.get(i));
@@ -197,6 +188,7 @@ public class PsiMiTabParser {
 
 		// set various edge attrs
 		String interactionId = "unknown";
+		
 		if (mline.interactionIDs.size() > 0)
 			interactionId = mline.interactionIDs.get(0);
 
@@ -216,12 +208,6 @@ public class PsiMiTabParser {
 		row.set(TAXONIDS, taxonIDs);
 		row.set(TAXONDBS, taxonDBs);
 	}
-
-
-	private void setUniqueId(CyRow row, List<String> taxonIDs, List<String> taxonDBs) {
-		
-	}
-
 
 	private void setPublication(CyRow row, List<String> pubID, List<String> pubDB) {
 		for (int i = 0; i < pubID.size(); i++) {
@@ -331,13 +317,6 @@ public class PsiMiTabParser {
 			table.createListColumn(colName, String.class, false);
 	}
 
-	// support import network in different collection
-	private CyRootNetwork rootNetwork;
-	public void setRootNetwork(CyRootNetwork rootNetwork){
-		this.rootNetwork = rootNetwork;
-	}
-	
-	private Map<Object, CyNode> nMap;
 	public void setNodeMap(Map<Object, CyNode> nMap){
 		this.nMap = nMap;
 	}
