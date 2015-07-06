@@ -88,7 +88,7 @@ public class PSIMI25XMLNetworkViewReader extends AbstractTask implements CyNetwo
 	/**
 	 * If this option is selected, reader should create new CyRootNetwork.
 	 */
-	public static final String CRERATE_NEW_COLLECTION_STRING ="Create new network collection";
+	public static final String CRERATE_NEW_COLLECTION_STRING = "-- Create new network collection --";
 
 	//******** tunables ********************
 

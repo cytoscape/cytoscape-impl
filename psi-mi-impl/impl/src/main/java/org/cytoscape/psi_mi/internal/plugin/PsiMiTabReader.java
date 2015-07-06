@@ -82,7 +82,7 @@ public class PsiMiTabReader extends AbstractTask implements CyNetworkReader {
 	/**
 	 * If this option is selected, reader should create new CyRootNetwork.
 	 */
-	public static final String CRERATE_NEW_COLLECTION_STRING = "Create new network collection";
+	public static final String CRERATE_NEW_COLLECTION_STRING = "-- Create new network collection --";
 
 	//******** tunables ********************
 

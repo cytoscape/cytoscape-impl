@@ -88,20 +88,23 @@ public class PSIMI10XMLNetworkViewReader extends AbstractTask implements CyNetwo
 	//private final CyNetworkFactory cyNetworkFactory;
 	private final CyRootNetworkManager cyRootNetworkManager;
 	
+	protected HashMap<String, CyRootNetwork> name2RootMap;
+	protected Map<Object, CyNode> nMap = new HashMap<>(10000);
+	
 	/**
 	 * If this option is selected, reader should create new CyRootNetwork.
 	 */
-	public static final String CRERATE_NEW_COLLECTION_STRING ="Create new network collection";
+	public static final String CRERATE_NEW_COLLECTION_STRING = "-- Create new network collection --";
 
 	//******** tunables ********************
 
 	public ListSingleSelection<String> rootNetworkList;
 	@Tunable(description = "Network Collection:", gravity = 1.0)
-	public ListSingleSelection<String> getRootNetworkList(){
+	public ListSingleSelection<String> getRootNetworkList() {
 		return rootNetworkList;
 	}
 	public void setRootNetworkList (ListSingleSelection<String> roots){
-		if (rootNetworkList.getSelectedValue().equalsIgnoreCase(CRERATE_NEW_COLLECTION_STRING)){
+		if (rootNetworkList.getSelectedValue().equalsIgnoreCase(CRERATE_NEW_COLLECTION_STRING)) {
 			return;
 		}
 		targetColumnList = getTargetColumns(name2RootMap.get(rootNetworkList.getSelectedValue()));
@@ -109,10 +112,10 @@ public class PSIMI10XMLNetworkViewReader extends AbstractTask implements CyNetwo
 	
 	public ListSingleSelection<String> targetColumnList;
 	@Tunable(description = "Node Identifier Mapping Column:", gravity = 2.0, listenForChange={"RootNetworkList"})
-	public ListSingleSelection<String> getTargetColumnList(){
+	public ListSingleSelection<String> getTargetColumnList() {
 		return targetColumnList;
 	}
-	public void setTargetColumnList(ListSingleSelection<String> colList){
+	public void setTargetColumnList(ListSingleSelection<String> colList) {
 		this.targetColumnList = colList;
 	}
 	
@@ -126,17 +129,15 @@ public class PSIMI10XMLNetworkViewReader extends AbstractTask implements CyNetwo
 		this.rendererList = rendererList;
 	}
 	
-	
 	@ProvidesTitle
 	public String getTitle() {
 		return "Import Network ";
 	}
-
 	
 	public ListSingleSelection<String> getTargetColumns (CyNetwork network) {
 		CyTable selectedTable = network.getTable(CyNode.class, CyRootNetwork.SHARED_ATTRS);
 		
-		List<String> colNames = new ArrayList<String>();
+		List<String> colNames = new ArrayList<>();
 		for(CyColumn col: selectedTable.getColumns()) {
 			// Exclude SUID from the mapping key list
 			if (col.getName().equalsIgnoreCase("SUID")){
@@ -151,11 +152,6 @@ public class PSIMI10XMLNetworkViewReader extends AbstractTask implements CyNetwo
 		return columns;
 	}
 
-	
-	protected HashMap<String, CyRootNetwork> name2RootMap;
-	protected Map<Object, CyNode> nMap = new HashMap<Object, CyNode>(10000);
-
-	
 	// Return the rootNetwork based on user selection, if not existed yet, create a new one
 	private CyRootNetwork getRootNetwork(){
 		String networkCollectionName = this.rootNetworkList.getSelectedValue().toString();
