@@ -99,6 +99,8 @@ public final class TunableDialog extends JDialog {
 		jScrollPane1 = new JScrollPane();
 		jScrollPane1.setViewportView(optionPanel);
 		jScrollPane1.setBorder(null);
+		jScrollPane1.setOpaque(false);
+		jScrollPane1.getViewport().setOpaque(false);
 		jScrollPane1.setDoubleBuffered(true);
 
 		btnOK = new JButton(new AbstractAction("OK") {

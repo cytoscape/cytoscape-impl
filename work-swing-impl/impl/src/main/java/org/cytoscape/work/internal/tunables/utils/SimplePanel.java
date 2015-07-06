@@ -101,20 +101,7 @@ public class SimplePanel extends JPanel implements HierarchyListener {
         	setVisible(false);
     }
 	
-	private boolean isDisplayed() {
-        Container c = getParent();
-        
-        while (c != null) {
-            if (!c.isVisible())
-                return false;
-            else
-                c = c.getParent();
-        }
-        
-        return true;
-    }
-	
-	private boolean hasVisibleControls(final JPanel panel) {
+	public boolean hasVisibleControls(final JPanel panel) {
 		final int total = panel.getComponentCount();
         
         for (int i = 0; i < total; i++) {
@@ -131,5 +118,18 @@ public class SimplePanel extends JPanel implements HierarchyListener {
     	}
         
         return false;
+    }
+	
+	private boolean isDisplayed() {
+        Container c = getParent();
+        
+        while (c != null) {
+            if (!c.isVisible())
+                return false;
+            else
+                c = c.getParent();
+        }
+        
+        return true;
     }
 }
