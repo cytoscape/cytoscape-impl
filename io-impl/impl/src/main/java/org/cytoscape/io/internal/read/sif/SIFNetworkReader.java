@@ -97,15 +97,13 @@ public class SIFNetworkReader extends AbstractCyNetworkReader {
 		final BufferedReader br =
 			new BufferedReader(new InputStreamReader(inputStream, Charset.forName("UTF-8").newDecoder()), 128*1024);
 
-		CySubNetwork subNetwork = null;
-		final CyRootNetwork rootNetwork = getRootNetwork();
+		CyRootNetwork root = getRootNetwork();
+		final CySubNetwork newNetwork;
 		
-		if(rootNetwork != null) {
-			subNetwork = rootNetwork.addSubNetwork();
-		} else {
-			// Need to create new network with new root.
-			subNetwork = (CySubNetwork) cyNetworkFactory.createNetwork();
-		}
+		if (root != null)
+			newNetwork = root.addSubNetwork();
+		else // Need to create new network with new root.
+			newNetwork = (CySubNetwork) cyNetworkFactory.createNetwork();
 
 		Map<Object, CyNode> nMap = getNodeMap();
 		
@@ -114,17 +112,16 @@ public class SIFNetworkReader extends AbstractCyNetworkReader {
 		final String firstLine = br.readLine();
 		if (firstLine.contains(TAB))
 			delimiter = TAB;
-		createEdge(new Interaction(firstLine.trim(), delimiter), subNetwork, nMap);
+		createEdge(new Interaction(firstLine.trim(), delimiter), newNetwork, nMap);
 
 		tm.setProgress(0.15);
 		tm.setStatusMessage("Processing the interactions...");
 		int numInteractionsRead = 0;
+		
 		while ((line = br.readLine()) != null) {
 			if (cancelled) {
 				// Cancel called. Clean up the garbage.
 				nMap.clear();
-				nMap = null;
-				subNetwork = null;
 				br.close();
 				return;
 			}
@@ -134,7 +131,7 @@ public class SIFNetworkReader extends AbstractCyNetworkReader {
 
 			try {
 				final Interaction itr = new Interaction(line, delimiter);
-				createEdge(itr, subNetwork, nMap);
+				createEdge(itr, newNetwork, nMap);
 			} catch (Exception e) {
 				// Simply ignore invalid lines.
 				continue;
@@ -150,9 +147,8 @@ public class SIFNetworkReader extends AbstractCyNetworkReader {
 		nMap.clear();
 		nMap = null;
 
-		this.networks = new CyNetwork[] {subNetwork};
+		this.networks = new CyNetwork[] { newNetwork };
 		tm.setProgress(1.0);
-		logger.debug("SIF file loaded: ID = " + subNetwork.getSUID());
 	}
 	
 	private void createEdge(final Interaction itr, final CySubNetwork subNetwork, final Map<Object, CyNode> nMap) {

@@ -237,8 +237,6 @@ public class NNFParser {
 		return true;
 	}
 	
-	
-	@SuppressWarnings("unused")
 	private void setNestedNetwork(CyNetwork sourceNetwork, CyNode node, CyNetwork targetNetwork) {
 		// TODO: We should consider exposing a nested network API so we don't
 		// have to do this everywhere we establish this link.
@@ -246,6 +244,7 @@ public class NNFParser {
 		
 		CyTable nodeTable = sourceNetwork.getDefaultNodeTable();
 		boolean attributeExists = nodeTable.getColumn(HAS_NESTED_NETWORK_ATTRIBUTE) != null;
+		
 		if (targetNetwork == null && attributeExists) {
 			nodeTable.getRow(node.getSUID()).set(HAS_NESTED_NETWORK_ATTRIBUTE, false);
 		} else if (targetNetwork != null) {
@@ -257,12 +256,10 @@ public class NNFParser {
 		}
 	}
 
-
 	private CyNode getNodeByName(Map<String, CyNetwork> networkMap, String nodeName){
-		
 		CyNode retNode = null;
-		
 		Iterator<String> it = networkMap.keySet().iterator();
+		
 		while (it.hasNext()){
 			CyNetwork network = networkMap.get(it.next());
 			

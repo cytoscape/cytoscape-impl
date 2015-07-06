@@ -75,7 +75,7 @@ public class GraphMLReader extends AbstractCyNetworkReader {
 
 	@Override
 	public CyNetwork[] getNetworks() {
-		if(parser == null)
+		if (parser == null)
 			throw new IllegalStateException("Parser is not initialized.");
 		
 		return parser.getCyNetworks();
@@ -91,10 +91,14 @@ public class GraphMLReader extends AbstractCyNetworkReader {
 			final XMLReader xmlReader = sp.getXMLReader();
 			
 			CyRootNetwork root = getRootNetwork();
-			CySubNetwork newNetwork = null;
-			if(root== null) {
+			final CySubNetwork newNetwork;
+			
+			if (root != null) {
+				newNetwork = root.addSubNetwork();
+			} else {
+				// Need to create new network with new root.
 				newNetwork = (CySubNetwork) cyNetworkFactory.createNetwork();
-				root = cyRootNetworkManager.getRootNetwork(newNetwork);
+				root = newNetwork.getRootNetwork();
 			}
 			
 			parser = new GraphMLParser(taskMonitor, cyNetworkFactory, cyRootNetworkManager, root, newNetwork);

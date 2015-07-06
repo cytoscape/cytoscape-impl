@@ -206,12 +206,14 @@ public class GMLNetworkReader extends AbstractCyNetworkReader {
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
 		taskMonitor.setProgress(0.0);
+		
 		try {
 			keyVals = (new GMLParser(inputStream)).parseList();
 		} catch (Exception io) {
 			io.printStackTrace();
 			throw new RuntimeException(io.getMessage());
 		}
+		
 		taskMonitor.setProgress(0.05);
 		initializeStructures();
 		taskMonitor.setProgress(0.1);
@@ -219,7 +221,8 @@ public class GMLNetworkReader extends AbstractCyNetworkReader {
 		taskMonitor.setProgress(0.3);
 
 		final CyRootNetwork rootNetwork = getRootNetwork();
-		if(rootNetwork != null) {
+		
+		if (rootNetwork != null) {
 			this.network = rootNetwork.addSubNetwork();
 		} else {
 			// Need to create new network with new root.
@@ -228,6 +231,7 @@ public class GMLNetworkReader extends AbstractCyNetworkReader {
 
 		createGraph(taskMonitor);
 		taskMonitor.setProgress(0.8);
+		
 		this.networks = new CyNetwork[] { network };
 		taskMonitor.setProgress(1.0);
 	}

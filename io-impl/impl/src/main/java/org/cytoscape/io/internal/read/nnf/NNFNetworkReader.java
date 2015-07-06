@@ -77,7 +77,6 @@ public class NNFNetworkReader extends AbstractCyNetworkReader {
 
 	@Override
 	public void run(TaskMonitor tm) throws IOException {
-		
 		final CyRootNetwork rootNetwork = getRootNetwork();
 		Map<Object, CyNode> nMap = this.getNodeMap();
 		
@@ -142,14 +141,9 @@ public class NNFNetworkReader extends AbstractCyNetworkReader {
 		}
 		
 		tm.setProgress(1.0);
-
-		logger.debug("NNF file loaded!");
 	}
 
-	
-	
 	private String retriveOverviewNetworkName(final BufferedReader in) throws IOException {
-		
 		HashSet<String> networkSet = new HashSet<String>();
 		HashSet<String> nodeSet = new HashSet<String>();
 		
