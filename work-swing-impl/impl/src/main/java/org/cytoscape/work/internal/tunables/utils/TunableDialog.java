@@ -66,7 +66,6 @@ public final class TunableDialog extends JDialog {
 		this.optionPanel = optionPanel;
 		
 		initComponents();
-		setResizable(false);
 	}
 
 	/** Set the text to replace the "OK" string on OK button. 
