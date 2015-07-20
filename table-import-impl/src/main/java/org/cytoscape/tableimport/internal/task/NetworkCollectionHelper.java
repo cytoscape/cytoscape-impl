@@ -75,13 +75,20 @@ public class NetworkCollectionHelper extends AbstractTask {
 		return rootNetworkList;
 	}
 	public void setRootNetworkList(ListSingleSelection<String> roots) {
-		rootNetworkList = roots;
-		final String rootNetName = rootNetworkList.getSelectedValue();
+		final String rootNetName = roots.getSelectedValue();
 
-		if (rootNetName != null && !rootNetName.equalsIgnoreCase(CREATE_NEW_COLLECTION_STRING))
-			setTargetColumnList(getTargetColumns(name2RootMap.get(rootNetName)));
-		else
-			setTargetColumnList(new ListSingleSelection<String>());
+		if (rootNetName != null && !rootNetName.equalsIgnoreCase(CREATE_NEW_COLLECTION_STRING)) {
+			ListSingleSelection<String> tempList = getTargetColumns(name2RootMap.get(rootNetName));
+			if (!targetColumnList.getPossibleValues().containsAll(tempList.getPossibleValues())
+					|| targetColumnList.getPossibleValues().size() != tempList.getPossibleValues().size()) {
+				setTargetColumnList(tempList);
+			}	
+		}
+		else {
+			setTargetColumnList(new ListSingleSelection<>());
+		}
+
+		rootNetworkList = roots;
 	}
 	
 	public ListSingleSelection<String> targetColumnList;
@@ -91,9 +98,6 @@ public class NetworkCollectionHelper extends AbstractTask {
 	}
 	public void setTargetColumnList(ListSingleSelection<String> colList){
 		this.targetColumnList = colList;
-		
-		if (targetColumnList.getPossibleValues().contains(CyRootNetwork.SHARED_NAME))
-			targetColumnList.setSelectedValue(CyRootNetwork.SHARED_NAME);
 	}
 	
 	public ListSingleSelection<NetworkViewRenderer> rendererList;
@@ -118,11 +122,14 @@ public class NetworkCollectionHelper extends AbstractTask {
 		}
 		
 		if (colNames.isEmpty() || (colNames.size() == 1 && colNames.contains(CyRootNetwork.SHARED_NAME)))
-			return new ListSingleSelection<>();
+			return new ListSingleSelection<String>();
 		
 		sort(colNames);
+		ListSingleSelection<String> targetColumns = new ListSingleSelection<String>(colNames);
+		if (targetColumns.getPossibleValues().contains(CyRootNetwork.SHARED_NAME))
+			targetColumns.setSelectedValue(CyRootNetwork.SHARED_NAME);
 		
-		return new ListSingleSelection<>(colNames);
+		return targetColumns;
 	}
 
 	public NetworkCollectionHelper(final CyServiceRegistrar serviceRegistrar) {
@@ -150,19 +157,24 @@ public class NetworkCollectionHelper extends AbstractTask {
 			rootNames.add(0, CREATE_NEW_COLLECTION_STRING);
 		}
 		
-		final ListSingleSelection<String> rootNetList = new ListSingleSelection<>(rootNames);
+		rootNetworkList = new ListSingleSelection<>(rootNames);
 		
 		final CyNetwork net = appMgr != null ? appMgr.getCurrentNetwork() : null;
 		final CyRootNetwork rootNet = net != null ? rootNetMgr.getRootNetwork(net) : null;
-		final String name = rootNet != null ?
+		final String rootNetName = rootNet != null ?
 				rootNet.getRow(rootNet).get(CyRootNetwork.NAME, String.class) : CREATE_NEW_COLLECTION_STRING;
 		
-		if (rootNames.contains(name))
-			rootNetList.setSelectedValue(name);
+		if (rootNames.contains(rootNetName))
+			rootNetworkList.setSelectedValue(rootNetName);
 		else if (rootNames.contains(CREATE_NEW_COLLECTION_STRING))
-			rootNetList.setSelectedValue(CREATE_NEW_COLLECTION_STRING);
-
-		setRootNetworkList(rootNetList);
+			rootNetworkList.setSelectedValue(CREATE_NEW_COLLECTION_STRING);
+		
+		if(rootNet != null) {
+			targetColumnList = getTargetColumns(rootNet);
+		}
+		else {
+			targetColumnList = new ListSingleSelection<>();
+		}
 		
 		// initialize renderer list
 		final List<NetworkViewRenderer> renderers = new ArrayList<>();
@@ -233,7 +245,8 @@ public class NetworkCollectionHelper extends AbstractTask {
 		while (it.hasNext()) {
 			CyNode node = it.next();
 			Object keyValue = rootNetwork.getRow(node).getRaw(targetKeyColName);
-			nMap.put(keyValue, node);
+			if(keyValue != null)
+				nMap.put(keyValue.toString(), node);
 		}
 	}
 
