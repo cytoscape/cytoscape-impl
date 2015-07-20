@@ -25,18 +25,17 @@ package org.cytoscape.tableimport.internal.reader;
  */
 
 import java.io.IOException;
-import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.util.Map;
 
 import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.DataFormatter;
+import org.apache.poi.ss.usermodel.FormulaEvaluator;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.tableimport.internal.util.AttributeDataType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,6 +53,8 @@ import org.slf4j.LoggerFactory;
 public class ExcelNetworkSheetReader extends NetworkTableReader {
 	
 	private final Sheet sheet;
+	private final DataFormatter formatter;
+	private final FormulaEvaluator evaluator;
 	private static final Logger logger = LoggerFactory.getLogger(ExcelNetworkSheetReader.class);
 	
 	/*
@@ -70,6 +71,8 @@ public class ExcelNetworkSheetReader extends NetworkTableReader {
 	                               final CyServiceRegistrar serviceRegistrar) {
 		super(networkName, null, nmp, nMap, rootNetwork, serviceRegistrar);
 		this.sheet = sheet;
+		this.evaluator = sheet.getWorkbook().getCreationHelper().createFormulaEvaluator();
+		this.formatter = new DataFormatter();
 	}
 
 	@Override
@@ -107,39 +110,15 @@ public class ExcelNetworkSheetReader extends NetworkTableReader {
 		for (short i = 0; i < mapping.getColumnCount(); i++) {
 			cell = row.getCell(i);
 
-			if (cell == null) {
+			if (cell == null || cell.getCellType() == Cell.CELL_TYPE_ERROR || 
+					(cell.getCellType() == Cell.CELL_TYPE_FORMULA && cell.getCachedFormulaResultType() == Cell.CELL_TYPE_ERROR)) {
 				cells[i] = null;
-			} else if (cell.getCellType() == Cell.CELL_TYPE_STRING) {
-				cells[i] = cell.getRichStringCellValue().getString();
-			} else if (cell.getCellType() == Cell.CELL_TYPE_NUMERIC) {
-				if (mapping.getDataTypes()[i] == AttributeDataType.TYPE_INTEGER) {
-					Double dblValue = cell.getNumericCellValue();
-					Integer intValue = dblValue.intValue();
-					cells[i] = intValue.toString();
-				} else {
-					cells[i] = convertDoubleToString(cell.getNumericCellValue());
-				}
-			} else if (cell.getCellType() == Cell.CELL_TYPE_BOOLEAN) {
-				cells[i] = Boolean.toString(cell.getBooleanCellValue());
-			} else if (cell.getCellType() == Cell.CELL_TYPE_BLANK) {
-				cells[i] = null;
-			} else if (cell.getCellType() == Cell.CELL_TYPE_ERROR) {
-				cells[i] = null;
-				logger.warn("Error found when reading a cell.");
+			} 
+			else {
+				cells[i] = formatter.formatCellValue(cell, evaluator);
 			}
 		}
 
 		return cells;
-	}
-
-	private static String convertDoubleToString(Double v) {
-		BigDecimal bd = new BigDecimal(v);
-		
-		try {
-			BigInteger bi = bd.toBigIntegerExact();
-			return bi.toString();
-		} catch( ArithmeticException e ) {
-			return v.toString();
-		}
 	}
 }

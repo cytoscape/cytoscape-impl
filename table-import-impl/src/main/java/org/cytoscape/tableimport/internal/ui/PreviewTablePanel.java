@@ -113,6 +113,8 @@ import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 
 import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.DataFormatter;
+import org.apache.poi.ss.usermodel.FormulaEvaluator;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -793,6 +795,8 @@ public class PreviewTablePanel extends JPanel {
 		final Vector<Vector<String>> data = new Vector<>();
 
 		int rowCount = 0;
+		FormulaEvaluator evaluator = sheet.getWorkbook().getCreationHelper().createFormulaEvaluator();
+		DataFormatter formatter = new DataFormatter();
 		Row row;
 
 		while (((row = sheet.getRow(rowCount)) != null) && (rowCount < size)) {
@@ -804,26 +808,11 @@ public class PreviewTablePanel extends JPanel {
 
 				for (short j = 0; j < maxCol; j++) {
 					Cell cell = row.getCell(j);
-
-					if (cell == null) {
-						rowVector.add(null);
-					} else if (cell.getCellType() == Cell.CELL_TYPE_STRING) {
-						rowVector.add(cell.getRichStringCellValue().getString());
-					} else if (cell.getCellType() == Cell.CELL_TYPE_NUMERIC) {
-						final Double dblValue = cell.getNumericCellValue();
-						final Integer intValue = dblValue.intValue();
-
-						if (intValue.doubleValue() == dblValue)
-							rowVector.add(intValue.toString());
-						else
-							rowVector.add(dblValue.toString());
-					} else if (cell.getCellType() == Cell.CELL_TYPE_BOOLEAN) {
-						rowVector.add(Boolean.toString(cell.getBooleanCellValue()));
-					} else if ((cell.getCellType() == Cell.CELL_TYPE_BLANK)
-							|| (cell.getCellType() == Cell.CELL_TYPE_ERROR)) {
+					if (cell == null || cell.getCellType() == Cell.CELL_TYPE_ERROR || 
+							(cell.getCellType() == Cell.CELL_TYPE_FORMULA && cell.getCachedFormulaResultType() == Cell.CELL_TYPE_ERROR)) {
 						rowVector.add(null);
 					} else {
-						rowVector.add(null);
+						rowVector.add(formatter.formatCellValue(cell, evaluator));
 					}
 				}
 

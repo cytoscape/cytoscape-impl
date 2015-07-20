@@ -28,13 +28,15 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+
 import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.DataFormatter;
+import org.apache.poi.ss.usermodel.FormulaEvaluator;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
+import org.cytoscape.model.CyTable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.cytoscape.tableimport.internal.util.AttributeDataType;
-import org.cytoscape.model.CyTable;
 
 /**
  * Reader for Excel attribute workbook.<br>
@@ -54,6 +56,8 @@ public class ExcelAttributeSheetReader implements TextTableReader {
 	private final Sheet sheet;
 	private final AttributeMappingParameters mapping;
 	private final AttributeLineParser parser;
+	private final DataFormatter formatter;
+	private final FormulaEvaluator evaluator;
 	private final int startLineNumber;
 	private int globalCounter = 0;
 
@@ -69,6 +73,8 @@ public class ExcelAttributeSheetReader implements TextTableReader {
 		this.mapping = mapping;
 		this.startLineNumber = mapping.getStartLineNumber();
 		this.parser = new AttributeLineParser(mapping);
+		this.evaluator = sheet.getWorkbook().getCreationHelper().createFormulaEvaluator();
+		this.formatter = new DataFormatter();
 	}
 
 	@Override
@@ -111,25 +117,11 @@ public class ExcelAttributeSheetReader implements TextTableReader {
 		for (short i = 0; i < mapping.getColumnCount(); i++) {
 			cell = row.getCell(i);
 
-			if (cell == null) {
+			if (cell == null || cell.getCellType() == Cell.CELL_TYPE_ERROR || 
+					(cell.getCellType() == Cell.CELL_TYPE_FORMULA && cell.getCachedFormulaResultType() == Cell.CELL_TYPE_ERROR)) {
 				cells[i] = null;
-			} else if (cell.getCellType() == Cell.CELL_TYPE_STRING) {
-				cells[i] = cell.getRichStringCellValue().getString();
-			} else if (cell.getCellType() == Cell.CELL_TYPE_NUMERIC) {
-				if (mapping.getDataTypes()[i] == AttributeDataType.TYPE_INTEGER) {
-					Double dblValue = cell.getNumericCellValue();
-					Integer intValue = dblValue.intValue();
-					cells[i] = intValue.toString();
-				} else {
-					cells[i] = Double.toString(cell.getNumericCellValue());
-				}
-			} else if (cell.getCellType() == Cell.CELL_TYPE_BOOLEAN) {
-				cells[i] = Boolean.toString(cell.getBooleanCellValue());
-			} else if (cell.getCellType() == Cell.CELL_TYPE_BLANK) {
-				cells[i] = null;
-			} else if (cell.getCellType() == Cell.CELL_TYPE_ERROR) {
-				cells[i] = null;
-				logger.warn("Error found when reading a cell.");
+			} else {
+				cells[i] = formatter.formatCellValue(cell, evaluator);
 			}
 		}
 
