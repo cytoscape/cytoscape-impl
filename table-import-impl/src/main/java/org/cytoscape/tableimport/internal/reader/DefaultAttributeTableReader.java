@@ -35,8 +35,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.cytoscape.model.CyTable;
-import org.cytoscape.tableimport.internal.util.AttributeDataType;
-import org.cytoscape.tableimport.internal.util.SourceColumnSemantic;
 import org.cytoscape.tableimport.internal.util.URLUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,7 +49,6 @@ import au.com.bytecode.opencsv.CSVReader;
  * </p>
  *
  * @author kono
- *
  */
 public class DefaultAttributeTableReader implements TextTableReader {
 	
@@ -70,26 +67,6 @@ public class DefaultAttributeTableReader implements TextTableReader {
 	
 	private InputStream is;
 	
-	public DefaultAttributeTableReader(
-			final URL source,
-			final ObjectType objectType,
-			final List<String> delimiters,
-			final String[] listDelimiters,
-			final int keyIndex,
-			final String mappingAttribute,
-			final List<Integer> aliasIndexList,
-			final String[] attributeNames,
-			final AttributeDataType[] dataTypes,
-			final SourceColumnSemantic[] types,
-			final int startLineNumber
-	) throws Exception {
-		this.source = source;
-		this.startLineNumber = startLineNumber;
-		this.mapping = new AttributeMappingParameters(delimiters, listDelimiters, keyIndex, attributeNames,
-				dataTypes, types);
-		this.parser = new AttributeLineParser(mapping);
-	}
-
 	public DefaultAttributeTableReader(final URL source, AttributeMappingParameters mapping,
             final int startLineNumber, final String commentChar) {
 		this.source = source;

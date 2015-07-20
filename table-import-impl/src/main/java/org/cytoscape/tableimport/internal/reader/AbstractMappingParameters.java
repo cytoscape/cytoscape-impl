@@ -42,6 +42,7 @@ public abstract class AbstractMappingParameters implements MappingParameter{
 	public static final String DEF_LIST_DELIMITER = PIPE.toString();
 	private static final String DEF_DELIMITER = TAB.toString();
 	
+	private String name;
 	protected String[] attributeNames;
 	protected AttributeDataType[] dataTypes;
 	protected SourceColumnSemantic[] types;
@@ -66,6 +67,7 @@ public abstract class AbstractMappingParameters implements MappingParameter{
 	}
 
 	public AbstractMappingParameters( 
+			final String name,
 			final List<String> delimiters,
 			final String[] listDelimiters,
 			final String[] attrNames,
@@ -73,10 +75,11 @@ public abstract class AbstractMappingParameters implements MappingParameter{
 			final SourceColumnSemantic[] types,
 			final boolean caseSensitive
 	) throws Exception {
-		this(delimiters, listDelimiters, attrNames, dataTypes, types, 0, null);
+		this(name, delimiters, listDelimiters, attrNames, dataTypes, types, 0, null);
 	}
 
 	public AbstractMappingParameters(
+			final String name,
 			final List<String> delimiters,
 			final String[] listDelimiters,
 			final String[] attrNames,
@@ -85,7 +88,8 @@ public abstract class AbstractMappingParameters implements MappingParameter{
 			final int startNumber,
 			final String commentChar
 	) throws Exception {
-		this.startLineNumber= startNumber;
+		this.name = name;
+		this.startLineNumber = startNumber;
 		this.commentChar = commentChar;
 
 		if (attrNames == null)
@@ -129,6 +133,11 @@ public abstract class AbstractMappingParameters implements MappingParameter{
 		}
 	}
 
+	@Override
+	public String getName() {
+		return name;
+	}
+	
 	@Override
 	public String[] getAttributeNames() {
 		return attributeNames;

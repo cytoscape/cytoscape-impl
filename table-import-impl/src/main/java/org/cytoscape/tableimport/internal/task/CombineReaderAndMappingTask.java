@@ -61,15 +61,15 @@ public class CombineReaderAndMappingTask extends AbstractTask implements CyNetwo
 
 	public CombineReaderAndMappingTask(final InputStream is, final String fileType, final String inputName,
 			final CyServiceRegistrar serviceRegistrar) {
-		this.importTask = new ImportNetworkTableReaderTask(is, fileType, inputName, serviceRegistrar);
-		this.networkCollectionHelperTask = new NetworkCollectionHelper(serviceRegistrar);
+		importTask = new ImportNetworkTableReaderTask(is, fileType, inputName, serviceRegistrar);
+		networkCollectionHelperTask = new NetworkCollectionHelper(serviceRegistrar);
 		this.serviceRegistrar = serviceRegistrar;
 	}
 
 	@Override
 	public ValidationState getValidationState(Appendable errMsg) {
 		if (importTask instanceof TunableValidator) {
-			ValidationState readVS = ((TunableValidator)importTask).getValidationState(errMsg);
+			ValidationState readVS = ((TunableValidator) importTask).getValidationState(errMsg);
 
 			if (readVS != OK)
 				return readVS;
@@ -89,10 +89,11 @@ public class CombineReaderAndMappingTask extends AbstractTask implements CyNetwo
 	}
 	
 	@Override
-	public CyNetworkView buildCyNetworkView(CyNetwork network) {
+	public CyNetworkView buildCyNetworkView(final CyNetwork network) {
 		final CyNetworkView view = networkCollectionHelperTask.getNetworkViewFactory().createNetworkView(network);
 		final CyLayoutAlgorithm layout = serviceRegistrar.getService(CyLayoutAlgorithmManager.class).getDefaultLayout();
-		TaskIterator itr = layout.createTaskIterator(view, layout.getDefaultLayoutContext(), CyLayoutAlgorithm.ALL_NODE_VIEWS,"");
+		TaskIterator itr = layout.createTaskIterator(view, layout.getDefaultLayoutContext(),
+				CyLayoutAlgorithm.ALL_NODE_VIEWS, "");
 		Task nextTask = itr.next();
 		
 		try {
@@ -101,12 +102,13 @@ public class CombineReaderAndMappingTask extends AbstractTask implements CyNetwo
 			throw new RuntimeException("Could not finish layout", e);
 		}
 
-		taskMonitor.setProgress(1.0d);
+		taskMonitor.setProgress(1.0);
+		
 		return view;	
 	}
 
 	@Override
 	public CyNetwork[] getNetworks() {
-		return this.importTask.getNetworks();
+		return importTask.getNetworks();
 	}
 }

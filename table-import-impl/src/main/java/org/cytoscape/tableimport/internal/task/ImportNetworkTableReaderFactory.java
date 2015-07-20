@@ -42,7 +42,7 @@ public class ImportNetworkTableReaderFactory extends AbstractInputStreamTaskFact
 	/**
      * Creates a new ImportNetworkTableReaderFactory object.
      */
-    public ImportNetworkTableReaderFactory(final CyFileFilter filter, final CyServiceRegistrar serviceRegistrar){
+    public ImportNetworkTableReaderFactory(final CyFileFilter filter, final CyServiceRegistrar serviceRegistrar) {
         super(filter);
         this.serviceRegistrar = serviceRegistrar;
     }
@@ -52,7 +52,7 @@ public class ImportNetworkTableReaderFactory extends AbstractInputStreamTaskFact
         String fileFormat = FilenameUtils.getExtension(inputName);
         
         if(!fileFormat.isEmpty()) 
-        	fileFormat = "." + fileFormat; //"." is surprisingly required somewhere withing CombineReaderAndMappingTask
+        	fileFormat = "." + fileFormat; //"." is surprisingly required somewhere within CombineReaderAndMappingTask
         
         return new TaskIterator(new CombineReaderAndMappingTask(inputStream, fileFormat, inputName, serviceRegistrar));
     }

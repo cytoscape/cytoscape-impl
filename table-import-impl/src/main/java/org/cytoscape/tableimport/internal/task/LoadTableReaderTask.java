@@ -161,7 +161,7 @@ public class LoadTableReaderTask extends AbstractTask implements CyTableReader, 
 	}
 
 	@Override
-	public void run(TaskMonitor tm) throws Exception {
+	public void run(final TaskMonitor tm) throws Exception {
 		tm.setTitle("Loading table data");
 		tm.setProgress(0.0);
 		tm.setStatusMessage("Loading table...");
@@ -183,9 +183,8 @@ public class LoadTableReaderTask extends AbstractTask implements CyTableReader, 
 				e.printStackTrace();
 				throw new IllegalArgumentException("Could not read Excel file.  Maybe the file is broken?");
 			} finally {
-				if (isStart != null) {
+				if (isStart != null)
 					isStart.close();
-				}
 			}
 		}
 		
@@ -197,7 +196,7 @@ public class LoadTableReaderTask extends AbstractTask implements CyTableReader, 
 		if (firstRowAsColumnNames)
 			startLoadRowTemp = 0;
 		
-		previewPanel.setPreviewTable(
+		previewPanel.setPreviewTables(
 				workbook,
 				fileType,
 				inputName,
@@ -265,19 +264,22 @@ public class LoadTableReaderTask extends AbstractTask implements CyTableReader, 
 		if (keyColumnIndex > 0)
 			keyColumnIndex--;
 
-		amp = new AttributeMappingParameters(delimiters.getSelectedValues(), listDelimiters,
+		amp = new AttributeMappingParameters(tabName, delimiters.getSelectedValues(), listDelimiters,
 				keyColumnIndex, attributeNames, dataTypesCopy, typesCopy, startLoadRow, null);
 		
 		if (this.fileType.equalsIgnoreCase(SupportedFileType.EXCEL.getExtension()) ||
 		    this.fileType.equalsIgnoreCase(SupportedFileType.OOXML.getExtension())) {
+			
 			// Fixed bug# 1668, Only load data from the first sheet, ignore the rest sheets
-			if (workbook.getNumberOfSheets() > 0) {
-				final Sheet sheet = workbook.getSheetAt(0);
-				this.reader = new ExcelAttributeSheetReader(sheet, amp);
+			// UPDATE: From the user perspective it makes more sense to get the selected tab/sheet than the first one.
+			final Sheet sheet = workbook.getSheet(tabName);
+			
+			if (sheet != null) {
+				reader = new ExcelAttributeSheetReader(sheet, amp);
 				loadAnnotation(tm);
 			}
 		} else {
-			this.reader = new DefaultAttributeTableReader(null, amp, this.isEnd); 
+			reader = new DefaultAttributeTableReader(null, amp, this.isEnd); 
 			loadAnnotation(tm);
 		}
 	}
@@ -306,7 +308,6 @@ public class LoadTableReaderTask extends AbstractTask implements CyTableReader, 
 		try {
 			this.reader.readTable(table);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
@@ -320,7 +321,6 @@ public class LoadTableReaderTask extends AbstractTask implements CyTableReader, 
 				errMsg.append("The primary key column needs to be selected. Please select values from 1 to the number of columns");
 			} catch (IOException e) {
 				e.printStackTrace();
-				return ValidationState.INVALID;
 			}
 			
 			return ValidationState.INVALID;
@@ -331,7 +331,6 @@ public class LoadTableReaderTask extends AbstractTask implements CyTableReader, 
 				errMsg.append("The row that will be used as starting point needs to be selected.");
 			} catch (IOException e) {
 				e.printStackTrace();
-				return ValidationState.INVALID;
 			}
 			
 			return ValidationState.INVALID;

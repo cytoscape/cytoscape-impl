@@ -100,12 +100,13 @@ public class ImportNetworkTableReaderTask extends AbstractTask implements CyNetw
 	}
 
 	@Override
-	public void run(TaskMonitor monitor) throws Exception {
-		monitor.setTitle("Loading network from table");
-		monitor.setProgress(0.0);
-		monitor.setStatusMessage("Loading network...");
+	public void run(TaskMonitor tm) throws Exception {
+		tm.setTitle("Loading network from table");
+		tm.setProgress(0.0);
+		tm.setStatusMessage("Loading network...");
 
 		Workbook workbook = null;
+		
 		// Load Spreadsheet data for preview.
 		if (fileType != null && 
 				(fileType.equalsIgnoreCase(SupportedFileType.EXCEL.getExtension())
@@ -115,27 +116,27 @@ public class ImportNetworkTableReaderTask extends AbstractTask implements CyNetw
 			} catch (InvalidFormatException e) {
 				throw new IllegalArgumentException("Could not read Excel file.  Maybe the file is broken?" , e);
 			} finally {
-				if (is != null) {
+				if (is != null)
 					is.close();
-				}
 			}
 		}
 		
-		final String networkName;
-
 		if (this.fileType.equalsIgnoreCase(SupportedFileType.EXCEL.getExtension()) ||
 		    this.fileType.equalsIgnoreCase(SupportedFileType.OOXML.getExtension())) {
-			Sheet sheet = workbook.getSheetAt(0);
-			networkName = workbook.getSheetName(0);
+			String networkName = ntmp.getName();
+			
+			if (networkName == null)
+				networkName = workbook.getSheetName(0);
+			
+			final Sheet sheet = workbook.getSheet(networkName);
 			
 			reader = new ExcelNetworkSheetReader(networkName, sheet, ntmp, nMap, rootNetwork, serviceRegistrar);
 		} else {
-			networkName = this.inputName;
-			reader = new NetworkTableReader(networkName, this.is, ntmp, nMap, rootNetwork, serviceRegistrar);
+			reader = new NetworkTableReader(inputName, is, ntmp, nMap, rootNetwork, serviceRegistrar);
 		}
 		
-		loadNetwork(monitor);
-		monitor.setProgress(1.0);
+		loadNetwork(tm);
+		tm.setProgress(1.0);
 	}
 
 	private void loadNetwork(TaskMonitor tm) throws IOException {
@@ -152,7 +153,7 @@ public class ImportNetworkTableReaderTask extends AbstractTask implements CyNetw
 		if (this.cancelled)
 			return;
 		
-		networks = new CyNetwork[]{network};
+		networks = new CyNetwork[] { network };
 		tm.setProgress(1.0);
 	}
 

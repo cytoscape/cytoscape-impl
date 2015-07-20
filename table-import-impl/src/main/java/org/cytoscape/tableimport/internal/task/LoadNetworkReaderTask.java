@@ -116,20 +116,21 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 	private NetworkTableMappingParameters ntmp;
 
 	public LoadNetworkReaderTask(final CyServiceRegistrar serviceRegistrar) {
-		List<String> tempList = new ArrayList<String>();
+		this.serviceRegistrar = serviceRegistrar;
+		
+		List<String> tempList = new ArrayList<>();
 		tempList.add(TextFileDelimiters.COMMA.toString());
 		tempList.add(TextFileDelimiters.SEMICOLON.toString());
 		tempList.add(TextFileDelimiters.SPACE.toString());
 		tempList.add(TextFileDelimiters.TAB.toString());
 		delimiters = new ListMultipleSelection<String>(tempList);
-	    tempList = new ArrayList<String>();
+	    
+		tempList = new ArrayList<>();
 		tempList.add(TextFileDelimiters.PIPE.toString());
 		tempList.add(TextFileDelimiters.BACKSLASH.toString());
 		tempList.add(TextFileDelimiters.SLASH.toString());
 		tempList.add(TextFileDelimiters.COMMA.toString());
 		delimitersForDataList = new ListSingleSelection<String>(tempList);
-		
-		this.serviceRegistrar = serviceRegistrar;
 	}
 	
 	public void setInputFile(final InputStream is, final String fileType,final String inputName, final URI uriName,
@@ -171,14 +172,14 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 	}
 
 	@Override
-	public void run(TaskMonitor monitor) throws Exception {
-		monitor.setTitle("Loading network from table");
-		monitor.setProgress(0.0);
-		monitor.setStatusMessage("Loading network...");
-		taskMonitor = monitor;
+	public void run(final TaskMonitor tm) throws Exception {
+		tm.setTitle("Loading network from table");
+		tm.setProgress(0.0);
+		tm.setStatusMessage("Loading network...");
+		taskMonitor = tm;
 		int startLoadRowTemp;
 		
-		List<String> attrNameList = new ArrayList<String>();
+		final List<String> attrNameList = new ArrayList<String>();
 		int colCount;
 		String[] attributeNames;
 		
@@ -192,11 +193,11 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 		
 		if (netReader instanceof CombineReaderAndMappingTask) {
 			Workbook workbook = null;
+			
 			// Load Spreadsheet data for preview.
 			if (fileType != null && (fileType.equalsIgnoreCase(
 					SupportedFileType.EXCEL.getExtension())
-					|| fileType.equalsIgnoreCase(
-							SupportedFileType.OOXML.getExtension())) && workbook == null) {
+					|| fileType.equalsIgnoreCase(SupportedFileType.OOXML.getExtension())) && workbook == null) {
 				try {
 					workbook = WorkbookFactory.create(new FileInputStream(tempFile));
 				} catch (InvalidFormatException e) {
@@ -217,7 +218,7 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 			if (firstRowAsColumnNames)
 				startLoadRowTemp = 0;
 			
-			previewPanel.setPreviewTable(
+			previewPanel.setPreviewTables(
 					workbook,
 					fileType,
 					tempFile.getAbsolutePath(),
@@ -291,15 +292,15 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 			if (indexColumnTypeInteraction > 0)
 				indexColumnTypeInteraction--;
 			
-			ntmp = new NetworkTableMappingParameters(delimiters.getSelectedValues(),
+			ntmp = new NetworkTableMappingParameters(tabName, delimiters.getSelectedValues(),
 					listDelimiters, attributeNames, dataTypesCopy, typesCopy,
 					indexColumnSourceInteraction, indexColumnTargetInteraction, indexColumnTypeInteraction,
 					defaultInteraction, startLoadRow, null);
 			
 			if (this.fileType.equalsIgnoreCase(SupportedFileType.EXCEL.getExtension()) ||
 			    this.fileType.equalsIgnoreCase(SupportedFileType.OOXML.getExtension())) {
-				Sheet sheet = workbook.getSheetAt(0);
-				networkName = workbook.getSheetName(0);
+				final Sheet sheet = workbook.getSheet(tabName);
+				networkName = tabName;
 				
 				reader = new ExcelNetworkSheetReader(networkName, sheet, ntmp, nMap, rootNetwork, serviceRegistrar);
 			} else {
@@ -307,15 +308,15 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 				reader = new NetworkTableReader(networkName, new FileInputStream(tempFile), ntmp, nMap, rootNetwork, serviceRegistrar);
 			}
 			
-			loadNetwork(monitor);
-			monitor.setProgress(1.0);
+			loadNetwork(tm);
+			tm.setProgress(1.0);
 		} else {
 			networkName = this.inputName;
 			insertTasksAfterCurrentTask(netReader);
 		}
 	}
 	
-	private void loadNetwork(TaskMonitor tm) throws IOException {
+	private void loadNetwork(final TaskMonitor tm) throws IOException {
 		final CyNetwork network = this.rootNetwork.addSubNetwork(); //CytoscapeServices.cyNetworkFactory.createNetwork();
 		tm.setProgress(0.10);
 		this.reader.setNetwork(network);
@@ -329,7 +330,7 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 		if (this.cancelled)
 			return;
 		
-		networks = new CyNetwork[]{network};
+		networks = new CyNetwork[] { network };
 		tm.setProgress(1.0);
 	}
 
@@ -349,7 +350,7 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 				throw new RuntimeException("Could not finish layout", e);
 			}
 	
-			taskMonitor.setProgress(1.0d);
+			taskMonitor.setProgress(1.0);
 			return view;	
 		}
 	}
@@ -381,8 +382,9 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 				if (indexColumnTargetInteraction <= 0) {
 					errMsg.append("No edges will be created in the network; the target column is not selected.\nDo you want to continue?");
 					return ValidationState.REQUEST_CONFIRMATION;
-				} else
+				} else {
 					return ValidationState.OK;
+				}
 			}
 		} catch (IOException ioe) {
 			ioe.printStackTrace();

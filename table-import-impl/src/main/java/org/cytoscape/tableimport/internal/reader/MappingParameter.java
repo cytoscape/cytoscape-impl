@@ -30,6 +30,8 @@ import org.cytoscape.tableimport.internal.util.SourceColumnSemantic;
 
 public interface MappingParameter {
 	
+	public String getName();
+	
 	public int getColumnCount();
 	
 	public String[] getAttributeNames();

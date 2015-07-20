@@ -134,21 +134,22 @@ public class ImportAttributeTableReaderTask extends AbstractTask implements CyTa
 		
 		if (this.fileType.equalsIgnoreCase(SupportedFileType.EXCEL.getExtension()) ||
 		    this.fileType.equalsIgnoreCase(SupportedFileType.OOXML.getExtension())) {
-//			for (int i = 0; i < workbook.getNumberOfSheets(); i++) {
-//				final Sheet sheet = workbook.getSheetAt(i);
-//
-//				this.reader = new ExcelAttributeSheetReader(sheet, amp);
-//				loadAnnotation(tm);
-//			}
 
 			// Fixed bug# 1668, Only load data from the first sheet, ignore the rest sheets
-			if (workbook.getNumberOfSheets() > 0) {
-				final Sheet sheet = workbook.getSheetAt(0);
-				this.reader = new ExcelAttributeSheetReader(sheet, amp);
+			// UPDATE: From the user perspective it makes more sense to get the selected tab/sheet instead.
+			String networkName = amp.getName();
+			
+			if (networkName == null)
+				networkName = workbook.getSheetName(0);
+			
+			final Sheet sheet = workbook.getSheet(networkName);
+			
+			if (sheet != null) {
+				reader = new ExcelAttributeSheetReader(sheet, amp);
 				loadAnnotation(tm);
 			}
 		} else {
-			this.reader = new DefaultAttributeTableReader(null, amp, this.is); 
+			reader = new DefaultAttributeTableReader(null, amp, this.is); 
 			loadAnnotation(tm);
 		}
 	}

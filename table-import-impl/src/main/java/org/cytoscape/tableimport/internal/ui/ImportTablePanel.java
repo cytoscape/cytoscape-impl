@@ -233,6 +233,8 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 	private final InputStreamTaskFactory factory;
 	private final CyServiceRegistrar serviceRegistrar;
 	private File tempFile;
+	
+	private boolean updating;
 
 	public ImportTablePanel(
 			final ImportType importType,
@@ -470,7 +472,8 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 			@Override
 			public void stateChanged(ChangeEvent evt) {
 				try {
-					displayPreview();
+					if (!updating)
+						displayPreview();
 				} catch (IOException e) {
 					logger.error("Error on ChangeEvent of checkbox " + ((JCheckBox)evt.getSource()).getText(), e);
 				}
@@ -515,7 +518,8 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 			@Override
 			public void actionPerformed(ActionEvent evt) {
 				try {
-					displayPreview();
+					if (!updating)
+						displayPreview();
 				} catch (IOException e) {
 					logger.error("Error on reloadButton.actionPerformed", e);
 					throw new IllegalStateException("Could not reload target file.");
@@ -1021,20 +1025,24 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 	}
 
 	private void updateComponents() throws JAXBException, IOException {
-		if (importType == ONTOLOGY_IMPORT) {
-			// Update available file lists.
-			panelBuilder.setOntologyComboBox();
-			panelBuilder.setAnnotationComboBox();
-		}
-
-		getPreviewPanel().getReloadButton().setEnabled(false);
-		startRowSpinner.setEnabled(false);
-		getPreviewPanel().getSelectedPreviewTable().getTableHeader().setReorderingAllowed(false);
-		setRadioButtonGroup();
-
-		if (importType != NETWORK_IMPORT) {
-			// attribute import
-			updateMappingAttributeComboBox();
+		updating = true;
+		
+		try {
+			if (importType == ONTOLOGY_IMPORT) {
+				// Update available file lists.
+				panelBuilder.setOntologyComboBox();
+				panelBuilder.setAnnotationComboBox();
+			}
+	
+			getPreviewPanel().getReloadButton().setEnabled(false);
+			startRowSpinner.setEnabled(false);
+			getPreviewPanel().getSelectedPreviewTable().getTableHeader().setReorderingAllowed(false);
+			setRadioButtonGroup();
+	
+			if (importType != NETWORK_IMPORT)
+				updateMappingAttributeComboBox();
+		} finally {
+			updating = false;
 		}
 
 		setStatusBar("", "", "File Size: Unknown");
@@ -1079,7 +1087,7 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 		final String commentChar = getCommentLinePrefix();
 		final int startLine = getStartLineNumber();
 		final InputStream tempIs = URLUtil.getInputStream(sourceURL);
-		getPreviewPanel().setPreviewTable(workbook, this.fileType, sourceURL.toString(), tempIs, delimiters, null,
+		getPreviewPanel().setPreviewTables(workbook, this.fileType, sourceURL.toString(), tempIs, delimiters, null,
 				previewSize, commentChar, startLine - 1);
 
 		tempIs.close();
@@ -1158,7 +1166,7 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 		if (tempFile != null)
 			tempIs2 = new FileInputStream(tempFile);
 
-		getPreviewPanel().setPreviewTable(workbook, fileType, "", tempIs2, delimiters, null, previewSize, commentChar,
+		getPreviewPanel().setPreviewTables(workbook, fileType, "", tempIs2, delimiters, null, previewSize, commentChar,
 				startLine - 1);
 
 		if (tempIs2 != null)
@@ -1569,8 +1577,8 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 		final List<String> del = checkDelimiter();
 		final int keyInFile = getPreviewPanel().getColumnIndex(tabName, KEY);
 		
-		final AttributeMappingParameters mapping = new AttributeMappingParameters(del, listDelimitersCopy, keyInFile,
-				attrNames, dataTypesCopy, typesCopy, startLineNumber, commentChar);
+		final AttributeMappingParameters mapping = new AttributeMappingParameters(tabName, del, listDelimitersCopy,
+				keyInFile, attrNames, dataTypesCopy, typesCopy, startLineNumber, commentChar);
 
 		return mapping;
 	}
@@ -1628,9 +1636,9 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 
 		// Build mapping parameter object.
 		final List<String> del = checkDelimiter();
-		final NetworkTableMappingParameters mapping = new NetworkTableMappingParameters(del, listDelimitersCopy,
-				attrNames, dataTypesCopy, typesCopy, sourceColumnIndex, targetColumnIndex, interactionColumnIndex,
-				defaultInteraction, startLineNumber, commentChar);
+		final NetworkTableMappingParameters mapping = new NetworkTableMappingParameters(tabName, del,
+				listDelimitersCopy, attrNames, dataTypesCopy, typesCopy, sourceColumnIndex, targetColumnIndex,
+				interactionColumnIndex, defaultInteraction, startLineNumber, commentChar);
 
 		return mapping;
 	}
