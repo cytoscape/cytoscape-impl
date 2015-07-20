@@ -33,6 +33,7 @@ import static javax.swing.LayoutStyle.ComponentPlacement.UNRELATED;
 import static org.cytoscape.tableimport.internal.util.AttributeDataType.TYPE_BOOLEAN;
 import static org.cytoscape.tableimport.internal.util.AttributeDataType.TYPE_FLOATING;
 import static org.cytoscape.tableimport.internal.util.AttributeDataType.TYPE_INTEGER;
+import static org.cytoscape.tableimport.internal.util.AttributeDataType.TYPE_LONG;
 import static org.cytoscape.tableimport.internal.util.AttributeDataType.TYPE_STRING;
 import static org.cytoscape.tableimport.internal.util.ImportType.NETWORK_IMPORT;
 import static org.cytoscape.tableimport.internal.util.ImportType.ONTOLOGY_IMPORT;
@@ -1489,7 +1490,7 @@ public class PreviewTablePanel extends JPanel {
 			
 			final AttributeDataType dataType = getDataType(table.getName(), column);
 			
-			if (dataType == TYPE_INTEGER || dataType == TYPE_FLOATING)
+			if (dataType == TYPE_INTEGER || dataType == TYPE_LONG || dataType == TYPE_FLOATING)
 				setHorizontalAlignment(JLabel.RIGHT);
 			else if (dataType == TYPE_BOOLEAN)
 				setHorizontalAlignment(JLabel.CENTER);

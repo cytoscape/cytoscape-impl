@@ -29,10 +29,12 @@ import java.util.List;
 public enum AttributeDataType {
 	TYPE_STRING(String.class, null, "ab", "String"),
 	TYPE_INTEGER(Integer.class, null, "1", "Integer"),
+	TYPE_LONG(Long.class, null, "123", "Long Integer"),
 	TYPE_FLOATING(Double.class, null, "1.0", "Floating Point"),
 	TYPE_BOOLEAN(Boolean.class, null, "y/n", "Boolean"),
 	TYPE_STRING_LIST(List.class, String.class, "[ ab ]", "List of Strings"),
 	TYPE_INTEGER_LIST(List.class, Integer.class, "[ 1 ]", "List of Integers"),
+	TYPE_LONG_LIST(List.class, Long.class, "[ 123 ]", "List of Long Integers"),
 	TYPE_FLOATING_LIST(List.class, Double.class, "[ 1.0 ]", "List of Floating Point Numbers"),
 	TYPE_BOOLEAN_LIST(List.class, Boolean.class, "[ y/n ]", "List of Booleans");
 	

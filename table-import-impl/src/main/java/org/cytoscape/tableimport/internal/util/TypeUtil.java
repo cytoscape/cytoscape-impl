@@ -27,6 +27,7 @@ package org.cytoscape.tableimport.internal.util;
 import static org.cytoscape.tableimport.internal.util.AttributeDataType.TYPE_BOOLEAN;
 import static org.cytoscape.tableimport.internal.util.AttributeDataType.TYPE_FLOATING;
 import static org.cytoscape.tableimport.internal.util.AttributeDataType.TYPE_INTEGER;
+import static org.cytoscape.tableimport.internal.util.AttributeDataType.TYPE_LONG;
 import static org.cytoscape.tableimport.internal.util.AttributeDataType.TYPE_STRING;
 import static org.cytoscape.tableimport.internal.util.ImportType.NETWORK_IMPORT;
 import static org.cytoscape.tableimport.internal.util.ImportType.ONTOLOGY_IMPORT;
@@ -68,28 +69,35 @@ public class TypeUtil {
 	);
 	
 	private static final String[] PREF_KEY_NAMES = new String[] {
-		"sharedname", "name", "identifier", "id", "node", "nodeid", "edge", "edgeid", "gene", "geneid", "genename",
-		"protein"
+		"shared name", "name", "identifier", "id", "node", "node id", "edge", "edge id",
+		"names", "identifiers", "ids", "nodes", "node ids", "edges", "edge ids",
+		"gene", "gene id", "gene name", "protein",
 	};
 	private static final String[] PREF_SOURCE_NAMES = new String[] {
-		"source", "sourcenode", "sourcename", "sourceid", "sourceidentifier",
-		"node1", "nodea", "identifier1", "identifiera", "id1", "ida", "name1", "namea",
-		"sourcegene", "gene1", "geneid1", "genename1",
-		"name", "sharedname", "node", "gene", "geneid", "genename"
+		"source", "source node", "source name", "source id", "source identifier",
+		"node 1", "node a", "identifier 1", "identifier a", "id 1", "id a",
+		"key 1", "key a",
+		"source shared name", "name 1", "name a", "shared name 1", "shared name a",
+		"source gene", "gene 1", "gene id 1", "gene name 1", "id interactor a",
+		"name", "shared name", "node", "gene", "gene id", "gene name", "id", "identifier"
 	};
 	private static final String[] PREF_TARGET_NAMES = new String[] {
-		"target", "targetnode", "targetname", "targetid", "targetidentifier",
-		"node2", "nodeb", "identifier2", "identifierb", "id2", "idb", "name2", "nameb",
-		"targetgene", "gene2", "geneid2", "genename2"
+		"target", "target node", "target name", "target id", "target identifier",
+		"node 2", "node b", "identifier 2", "identifier b", "id 2", "id b",
+		"key 2", "key b",
+		"target shared name", "name 2", "name b", "shared name 2", "shared name b",
+		"target gene", "gene 2", "gene id 2", "gene name 2", "id interactor b"
 	};
 	private static final String[] PREF_INTERACTION_NAMES = new String[] {
-		"interaction", "interactiontype", "edgetype"
+		"interaction", "interaction type", "interaction types", "edge type", "edge types",
+		"interaction id", "interaction identifier",
+		"type"
 	};
 	private static final String[] PREF_ONTOLOGY_NAMES = new String[] {
 		"gene ontology", "ontology", "go"
 	};
 	private static final String[] PREF_TAXON_NAMES = new String[] {
-		"taxon", "taxid", "taxonomy", "organism"
+		"taxon", "tax id", "taxonomy", "organism"
 	};
 	
 	private static Pattern truePattern = Pattern.compile("^true$", Pattern.CASE_INSENSITIVE);
@@ -181,9 +189,16 @@ public class TypeUtil {
 		if (importType == TABLE_IMPORT && !keyFound) {
 			// Just use the first String or Integer column as key then...
 			for (int i = 0; i < types.length; i++) {
-				if (dataTypes[i] == TYPE_STRING || dataTypes[i] == TYPE_INTEGER) {
+				if (dataTypes[i] == TYPE_STRING || dataTypes[i] == TYPE_INTEGER || dataTypes[i] == TYPE_LONG) {
 					types[i] = KEY;
 					break;
+				}
+			}
+		} else if (importType == NETWORK_IMPORT) {
+			// Try to find good candidates for source/target node attributes
+			for (int i = 0; i < types.length; i++) {
+				if (types[i] == ATTR) { // Hasn't been chosen as KEY, SOURCE, TARGET or INTERACTION yet...
+					// TODO
 				}
 			}
 		}
@@ -283,7 +298,7 @@ public class TypeUtil {
 	
 	public static boolean isValid(final SourceColumnSemantic type, final AttributeDataType dataType) {
 		if (type == KEY || type == SOURCE || type == TARGET)
-			return dataType == TYPE_INTEGER || dataType == TYPE_STRING;
+			return dataType == TYPE_INTEGER || dataType == TYPE_LONG || dataType == TYPE_STRING;
 		
 		if (type == INTERACTION || type == ONTOLOGY || type == TAXON)
 			return dataType == TYPE_STRING;
@@ -293,22 +308,39 @@ public class TypeUtil {
 	
 	private static boolean matches(String name, final String[] preferredNames, final boolean exact) {
 		// Remove all special chars and spaces from column name
-		name = name.replaceAll("[^a-zA-Z0-9]", "").toLowerCase();
+		name = name.replaceAll("[^a-zA-Z0-9]", "").toLowerCase().trim();
 		
-		for (final String s : preferredNames) {
-			if ( (exact && name.equals(s)) || (!exact && name.contains(s)) )
+		PREFERRED_NAMES:
+		for (String s : preferredNames) {
+			if (exact) {
+				s = s.replaceAll(" ", "");
+				
+				if (name.equalsIgnoreCase(s))
+					return true;
+			} if (!exact) {
+				final String[] tokens = s.split(" ");
+				boolean b = false;
+				
+				for (final String t : tokens) {
+					b = b && name.contains(t.toLowerCase());
+					
+					if (!b)
+						continue PREFERRED_NAMES;
+				}
+				
 				return true;
+			}
 		}
 		
 		return false;
 	}
 	
 	private static boolean canBeKey(final TableModel model, final int col, final AttributeDataType dataType) {
-		if (dataType != TYPE_STRING && dataType != TYPE_INTEGER)
+		if (dataType != TYPE_STRING && dataType != TYPE_INTEGER && dataType != TYPE_LONG)
 			return false;
 		
 		final int rowCount = Math.min(1000, model.getRowCount());
-		final Set<Object> values = new HashSet<Object>();
+		final Set<Object> values = new HashSet<>();
 		
 		for (int row = 0; row < rowCount; row++) {
 			final Object val = model.getValueAt(row, col);

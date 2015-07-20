@@ -31,7 +31,8 @@ import static org.cytoscape.tableimport.internal.util.AttributeDataType.TYPE_FLO
 import static org.cytoscape.tableimport.internal.util.AttributeDataType.TYPE_FLOATING_LIST;
 import static org.cytoscape.tableimport.internal.util.AttributeDataType.TYPE_INTEGER;
 import static org.cytoscape.tableimport.internal.util.AttributeDataType.TYPE_INTEGER_LIST;
-import static org.cytoscape.tableimport.internal.util.AttributeDataType.TYPE_STRING;
+import static org.cytoscape.tableimport.internal.util.AttributeDataType.TYPE_LONG;
+import static org.cytoscape.tableimport.internal.util.AttributeDataType.TYPE_LONG_LIST;
 import static org.cytoscape.tableimport.internal.util.AttributeDataType.TYPE_STRING_LIST;
 
 import java.util.ArrayList;
@@ -76,11 +77,11 @@ public class AttributeLineParser {
 			case TYPE_INTEGER:
 				primaryKey = Integer.valueOf(parts[mapping.getKeyIndex()].trim());
 				break;
+			case TYPE_LONG:
+				primaryKey = Long.valueOf(parts[mapping.getKeyIndex()].trim());
+				break;
 			case TYPE_FLOATING:
 				primaryKey = Double.valueOf(parts[mapping.getKeyIndex()].trim());
-				break;
-			case TYPE_STRING:
-				primaryKey = parts[mapping.getKeyIndex()].trim();
 				break;
 			default:
 				primaryKey = parts[mapping.getKeyIndex()].trim();
@@ -108,58 +109,17 @@ public class AttributeLineParser {
 	private void mapAttribute(CyTable table, final Object key, final String entry, final int index) {
 		final AttributeDataType type = mapping.getDataTypes()[index];
 
-		switch (type) {
-			case TYPE_BOOLEAN:
-				try {
-					setAttributeForType(table, TYPE_BOOLEAN, key, mapping.getAttributeNames()[index], entry);
-				} catch (Exception e) {
-					invalid.put(key.toString(), entry);
-				}
-
-				break;
-			case TYPE_INTEGER:
-				try {
-					setAttributeForType(table, TYPE_INTEGER, key, mapping.getAttributeNames()[index], entry);
-				} catch (Exception e) {
-					invalid.put(key.toString(), entry);
-				}
-
-				break;
-			case TYPE_FLOATING:
-				try {
-					setAttributeForType(table, TYPE_FLOATING, key, mapping.getAttributeNames()[index], entry);
-				} catch (Exception e) {
-					invalid.put(key.toString(), entry);
-				}
-
-				break;
-			case TYPE_STRING:
-				try {
-					setAttributeForType(table, TYPE_STRING, key, mapping.getAttributeNames()[index], entry);
-				} catch (Exception e) {
-					invalid.put(key.toString(), entry);
-				}
-
-				break;
-			case TYPE_BOOLEAN_LIST:
-			case TYPE_INTEGER_LIST:
-			case TYPE_FLOATING_LIST:
-			case TYPE_STRING_LIST:
-				/*
-				 * In case of list, do not overwrite the attribute. Get the existing list, and add it to the list.
-				 */
+		try {
+			if (type.isList()) {
+				// In case of list, do not overwrite the attribute. Get the existing list, and add it to the list.
 				final ArrayList<Object> curList = new ArrayList<>();
 				curList.addAll(buildList(entry, type, index));
-				
-				try {
-					setListAttribute(table, type, key, mapping.getAttributeNames()[index], curList);
-				} catch (Exception e) {
-					invalid.put(key.toString(), entry);
-				}
-
-				break;
-			default:
-				break;
+				setListAttribute(table, type, key, mapping.getAttributeNames()[index], curList);
+			} else {
+				setAttributeForType(table, type, key, mapping.getAttributeNames()[index], entry);
+			}
+		} catch (Exception e) {
+			invalid.put(key.toString(), entry);
 		}
 	}
 
@@ -168,6 +128,8 @@ public class AttributeLineParser {
 		if (tbl.getColumn(attributeName) == null) {
 			if (type == TYPE_INTEGER)
 				tbl.createColumn(attributeName, Integer.class, false);
+			if (type == TYPE_LONG)
+				tbl.createColumn(attributeName, Long.class, false);
 			else if (type == TYPE_BOOLEAN)
 				tbl.createColumn(attributeName, Boolean.class, false);
 			else if (type == TYPE_FLOATING)
@@ -180,6 +142,8 @@ public class AttributeLineParser {
 
 		if (type == TYPE_INTEGER)
 			row.set(attributeName, new Integer(val));
+		else if (type == TYPE_LONG)
+			row.set(attributeName, new Long(val));
 		else if (type == TYPE_BOOLEAN)
 			row.set(attributeName, new Boolean(val));
 		else if (type == TYPE_FLOATING)
@@ -193,6 +157,8 @@ public class AttributeLineParser {
 		if (tbl.getColumn(attributeName) == null) {
 			if (type == TYPE_INTEGER_LIST)
 				tbl.createListColumn(attributeName, Integer.class, false);
+			else if (type == TYPE_LONG_LIST)
+				tbl.createListColumn(attributeName, Long.class, false);
 			else if (type == TYPE_BOOLEAN_LIST)
 				tbl.createListColumn(attributeName, Boolean.class, false);
 			else if (type == TYPE_FLOATING_LIST)
@@ -234,6 +200,9 @@ public class AttributeLineParser {
 					break;
 				case TYPE_INTEGER_LIST:
 					listAttr.add(Integer.parseInt(listItem.trim()));
+					break;
+				case TYPE_LONG_LIST:
+					listAttr.add(Long.parseLong(listItem.trim()));
 					break;
 				case TYPE_FLOATING_LIST:
 					listAttr.add(Double.parseDouble(listItem.trim()));

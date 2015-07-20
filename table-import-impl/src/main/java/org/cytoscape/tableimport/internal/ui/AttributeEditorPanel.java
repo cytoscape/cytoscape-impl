@@ -14,6 +14,8 @@ import static org.cytoscape.tableimport.internal.util.AttributeDataType.TYPE_FLO
 import static org.cytoscape.tableimport.internal.util.AttributeDataType.TYPE_FLOATING_LIST;
 import static org.cytoscape.tableimport.internal.util.AttributeDataType.TYPE_INTEGER;
 import static org.cytoscape.tableimport.internal.util.AttributeDataType.TYPE_INTEGER_LIST;
+import static org.cytoscape.tableimport.internal.util.AttributeDataType.TYPE_LONG;
+import static org.cytoscape.tableimport.internal.util.AttributeDataType.TYPE_LONG_LIST;
 import static org.cytoscape.tableimport.internal.util.AttributeDataType.TYPE_STRING;
 import static org.cytoscape.tableimport.internal.util.AttributeDataType.TYPE_STRING_LIST;
 import static org.cytoscape.tableimport.internal.util.SourceColumnSemantic.NONE;
@@ -64,10 +66,12 @@ public class AttributeEditorPanel extends JPanel {
 	private JToggleButton booleanButton;
 	private JToggleButton floatingPointButton;
 	private JToggleButton integerButton;
+	private JToggleButton longButton;
 	private JToggleButton stringListButton;
 	private JToggleButton booleanListButton;
 	private JToggleButton floatingPointListButton;
 	private JToggleButton integerListButton;
+	private JToggleButton longListButton;
 	
 	private JLabel listDelimiterLabel;
 	private JComboBox<String> listDelimiterComboBox;
@@ -158,10 +162,12 @@ public class AttributeEditorPanel extends JPanel {
 		
 		dataTypeBtnList.add(stringButton = createDataTypeButton(TYPE_STRING));
 		dataTypeBtnList.add(integerButton = createDataTypeButton(TYPE_INTEGER));
+		dataTypeBtnList.add(longButton = createDataTypeButton(TYPE_LONG));
 		dataTypeBtnList.add(floatingPointButton = createDataTypeButton(TYPE_FLOATING));
 		dataTypeBtnList.add(booleanButton = createDataTypeButton(TYPE_BOOLEAN));
 		dataTypeBtnList.add(stringListButton = createDataTypeButton(TYPE_STRING_LIST));
 		dataTypeBtnList.add(integerListButton = createDataTypeButton(TYPE_INTEGER_LIST));
+		dataTypeBtnList.add(longListButton = createDataTypeButton(TYPE_LONG_LIST));
 		dataTypeBtnList.add(floatingPointListButton = createDataTypeButton(TYPE_FLOATING_LIST));
 		dataTypeBtnList.add(booleanListButton = createDataTypeButton(TYPE_BOOLEAN_LIST));
 		
@@ -189,12 +195,14 @@ public class AttributeEditorPanel extends JPanel {
 				.addGroup(layout.createSequentialGroup()
 						.addComponent(stringButton, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 						.addComponent(integerButton, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+						.addComponent(longButton, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 						.addComponent(floatingPointButton, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 						.addComponent(booleanButton, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 				)
 				.addGroup(layout.createSequentialGroup()
 						.addComponent(stringListButton, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 						.addComponent(integerListButton, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+						.addComponent(longListButton, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 						.addComponent(floatingPointListButton, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 						.addComponent(booleanListButton, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 				)
@@ -213,12 +221,14 @@ public class AttributeEditorPanel extends JPanel {
 				.addGroup(layout.createParallelGroup(CENTER)
 						.addComponent(stringButton)
 						.addComponent(integerButton)
+						.addComponent(longButton)
 						.addComponent(floatingPointButton)
 						.addComponent(booleanButton)
 				)
 				.addGroup(layout.createParallelGroup(CENTER)
 						.addComponent(stringListButton)
 						.addComponent(integerListButton)
+						.addComponent(longListButton)
 						.addComponent(floatingPointListButton)
 						.addComponent(booleanListButton)
 						)

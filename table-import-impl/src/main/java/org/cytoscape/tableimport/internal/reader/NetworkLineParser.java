@@ -25,9 +25,10 @@ package org.cytoscape.tableimport.internal.reader;
  */
 
 
-import static org.cytoscape.tableimport.internal.util.AttributeDataType.TYPE_BOOLEAN;
-import static org.cytoscape.tableimport.internal.util.AttributeDataType.TYPE_FLOATING;
-import static org.cytoscape.tableimport.internal.util.AttributeDataType.TYPE_INTEGER;
+import static org.cytoscape.tableimport.internal.util.AttributeDataType.TYPE_BOOLEAN_LIST;
+import static org.cytoscape.tableimport.internal.util.AttributeDataType.TYPE_FLOATING_LIST;
+import static org.cytoscape.tableimport.internal.util.AttributeDataType.TYPE_INTEGER_LIST;
+import static org.cytoscape.tableimport.internal.util.AttributeDataType.TYPE_LONG_LIST;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -170,6 +171,12 @@ public class NetworkLineParser {
 				network.getRow(element).set(mapping.getAttributeNames()[index], new Integer(entry));
 
 				break;
+				
+			case TYPE_LONG:
+				createColumn(element, mapping.getAttributeNames()[index], Long.class);
+				network.getRow(element).set(mapping.getAttributeNames()[index], new Long(entry));
+				
+				break;
 
 			case TYPE_FLOATING:
 				createColumn(element, mapping.getAttributeNames()[index], Double.class);
@@ -185,6 +192,7 @@ public class NetworkLineParser {
 
 			case TYPE_BOOLEAN_LIST:
 			case TYPE_INTEGER_LIST:
+			case TYPE_LONG_LIST:
 			case TYPE_FLOATING_LIST:
 			case TYPE_STRING_LIST:
 				final CyTable table = network.getRow(element).getTable();
@@ -234,11 +242,13 @@ public class NetworkLineParser {
 		final String[] parts = (entry.replace("\"", "")).split(delimiter);
 
 		for (String listItem : parts) {
-			if (type == TYPE_BOOLEAN)
+			if (type == TYPE_BOOLEAN_LIST)
 				listAttr.add(new Boolean(listItem.trim()));
-			else if (type == TYPE_INTEGER)
+			else if (type == TYPE_INTEGER_LIST)
 				listAttr.add(new Integer(listItem.trim()));
-			else if (type == TYPE_FLOATING)
+			else if (type == TYPE_LONG_LIST)
+				listAttr.add(new Long(listItem.trim()));
+			else if (type == TYPE_FLOATING_LIST)
 				listAttr.add(new Double(listItem.trim()));
 			else // TYPE_STRING or unknown
 				listAttr.add(listItem.trim());				
