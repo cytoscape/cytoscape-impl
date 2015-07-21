@@ -62,7 +62,6 @@ import org.cytoscape.view.vizmap.gui.internal.task.RemoveVisualStyleTask;
 import org.cytoscape.view.vizmap.gui.internal.task.RemoveVisualStyleTaskFactory;
 import org.cytoscape.view.vizmap.gui.internal.task.RenameVisualStyleTask;
 import org.cytoscape.view.vizmap.gui.internal.task.RenameVisualStyleTaskFactory;
-import org.cytoscape.view.vizmap.gui.internal.theme.ThemeManager;
 import org.cytoscape.view.vizmap.gui.internal.util.ServicePropertiesUtil;
 import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
 import org.cytoscape.view.vizmap.gui.internal.util.mapgenerator.FitLabelMappingGenerator;
@@ -126,10 +125,8 @@ public class CyActivator extends AbstractCyActivator {
 		final BooleanValueEditor booleanValueEditor = new BooleanValueEditor();
 		final FontValueEditor fontValueEditor = new FontValueEditor(servicesUtil);
 		
-		final ThemeManager themeManager = new ThemeManager();
-		
 		final CyColorChooser colorChooser = new CyColorChooser();
-		final CyColorPropertyEditor cyColorPropertyEditor = new CyColorPropertyEditor(colorChooser, themeManager);
+		final CyColorPropertyEditor cyColorPropertyEditor = new CyColorPropertyEditor(colorChooser, servicesUtil);
 		final CyFontPropertyEditor cyFontPropertyEditor = new CyFontPropertyEditor();
 		
 		final ColorVisualPropertyEditor colorPropertyEditor = new ColorVisualPropertyEditor(Paint.class, editorManager, cyColorPropertyEditor, continuousMappingCellRendererFactory);
@@ -302,7 +299,7 @@ public class CyActivator extends AbstractCyActivator {
 		
 		// Create the main GUI component
 		// -------------------------------------------------------------------------------------------------------------
-		final VizMapperMainPanel vizMapperMainPanel = new VizMapperMainPanel(themeManager);
+		final VizMapperMainPanel vizMapperMainPanel = new VizMapperMainPanel(servicesUtil);
 		
 		// Start the PureMVC components
 		// -------------------------------------------------------------------------------------------------------------
@@ -313,8 +310,7 @@ public class CyActivator extends AbstractCyActivator {
 		
 		final VizMapperMediator vizMapperMediator = new VizMapperMediator(vizMapperMainPanel,
 																		  servicesUtil,
-																		  vizMapPropertyBuilder,
-																		  themeManager);
+																		  vizMapPropertyBuilder);
 		final VizMapperMenuMediator vizMapperMenuMediator = new VizMapperMenuMediator(vizMapperMainPanel, servicesUtil);
 		
 		final StartupCommand startupCommand = new StartupCommand(vizMapperProxy,

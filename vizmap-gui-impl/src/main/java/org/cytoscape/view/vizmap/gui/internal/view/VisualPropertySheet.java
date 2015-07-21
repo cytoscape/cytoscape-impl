@@ -52,14 +52,14 @@ import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualLexiconNode;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.vizmap.VisualPropertyDependency;
 import org.cytoscape.view.vizmap.VisualStyle;
-import org.cytoscape.view.vizmap.gui.internal.theme.ThemeManager;
-import org.cytoscape.view.vizmap.gui.internal.theme.ThemeManager.CyFont;
+import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
 import org.cytoscape.view.vizmap.gui.util.PropertySheetUtil;
 
 @SuppressWarnings("serial")
@@ -75,8 +75,6 @@ public class VisualPropertySheet extends JPanel{
 	
 	private final VisualPropertySheetModel model;
 	
-	private final ThemeManager themeMgr;
-	
 	private final TreeSet<VisualPropertySheetItem<?>> items;
 	private final Map<VisualProperty<?>, VisualPropertySheetItem<?>> vpItemMap;
 	private final Map<String/*dependency ID*/, VisualPropertySheetItem<?>> depItemMap;
@@ -85,22 +83,24 @@ public class VisualPropertySheet extends JPanel{
 	private VisualPropertySheetItem<?> selectionHead;
 	private VisualPropertySheetItem<?> selectionTail;
 	private boolean doNotUpdateCollapseExpandButtons;
+	
+	private final ServicesUtil servicesUtil;
 
 	// ==[ CONSTRUCTORS ]===============================================================================================
 	
-	public VisualPropertySheet(final VisualPropertySheetModel model, final ThemeManager themeMgr) {
+	public VisualPropertySheet(final VisualPropertySheetModel model, final ServicesUtil servicesUtil) {
 		if (model == null)
 			throw new IllegalArgumentException("'model' must not be null");
-		if (themeMgr == null)
-			throw new IllegalArgumentException("'themeMgr' must not be null");
+		if (servicesUtil == null)
+			throw new IllegalArgumentException("'servicesUtil' must not be null");
 		
 		this.model = model;
-		this.themeMgr = themeMgr;
+		this.servicesUtil = servicesUtil;
 		
-		items = new TreeSet<VisualPropertySheetItem<?>>();
-		vpItemMap = new HashMap<VisualProperty<?>, VisualPropertySheetItem<?>>();
-		depItemMap = new HashMap<String, VisualPropertySheetItem<?>>();
-		menuItemMap = new HashMap<VisualPropertySheetItem<?>, JCheckBoxMenuItem>();
+		items = new TreeSet<>();
+		vpItemMap = new HashMap<>();
+		depItemMap = new HashMap<>();
+		menuItemMap = new HashMap<>();
 		
 		init();
 	}
@@ -378,12 +378,14 @@ public class VisualPropertySheet extends JPanel{
 
 	protected JButton getExpandAllBtn() {
 		if (expandAllBtn == null) {
-			expandAllBtn = new JButton("\uF103"); // icon-double-angle-down
+			final IconManager iconManager = servicesUtil.get(IconManager.class);
+			
+			expandAllBtn = new JButton(IconManager.ICON_ANGLE_DOUBLE_DOWN);
 			expandAllBtn.setToolTipText("Expand all mappings");
 			expandAllBtn.setBorderPainted(false);
 			expandAllBtn.setContentAreaFilled(false);
 			expandAllBtn.setFocusPainted(false);
-			expandAllBtn.setFont(themeMgr.getFont(CyFont.FONTAWESOME_FONT).deriveFont(17.0f));
+			expandAllBtn.setFont(iconManager.getIconFont(17.0f));
 			expandAllBtn.setBorder(BorderFactory.createEmptyBorder(2, 4, 2, 4));
 			
 			expandAllBtn.addActionListener(new ActionListener() {
@@ -399,12 +401,14 @@ public class VisualPropertySheet extends JPanel{
 	
 	protected JButton getCollapseAllBtn() {
 		if (collapseAllBtn == null) {
-			collapseAllBtn = new JButton("\uF102"); // icon-double-angle-up
+			final IconManager iconManager = servicesUtil.get(IconManager.class);
+			
+			collapseAllBtn = new JButton(IconManager.ICON_ANGLE_DOUBLE_UP);
 			collapseAllBtn.setToolTipText("Collapse all mappings");
 			collapseAllBtn.setBorderPainted(false);
 			collapseAllBtn.setContentAreaFilled(false);
 			collapseAllBtn.setFocusPainted(false);
-			collapseAllBtn.setFont(themeMgr.getFont(CyFont.FONTAWESOME_FONT).deriveFont(17.0f));
+			collapseAllBtn.setFont(iconManager.getIconFont(17.0f));
 			collapseAllBtn.setBorder(BorderFactory.createEmptyBorder(2, 4, 2, 4));
 			
 			collapseAllBtn.addActionListener(new ActionListener() {

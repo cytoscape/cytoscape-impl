@@ -95,7 +95,6 @@ import org.cytoscape.view.vizmap.gui.internal.model.LockedValuesVO;
 import org.cytoscape.view.vizmap.gui.internal.model.MappingFunctionFactoryProxy;
 import org.cytoscape.view.vizmap.gui.internal.model.PropsProxy;
 import org.cytoscape.view.vizmap.gui.internal.model.VizMapperProxy;
-import org.cytoscape.view.vizmap.gui.internal.theme.ThemeManager;
 import org.cytoscape.view.vizmap.gui.internal.util.NotificationNames;
 import org.cytoscape.view.vizmap.gui.internal.util.ServicePropertiesUtil;
 import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
@@ -142,7 +141,6 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 	private final ServicesUtil servicesUtil;
 	private final VizMapperMainPanel vizMapperMainPanel;
 	private final VizMapPropertyBuilder vizMapPropertyBuilder;
-	private final ThemeManager themeMgr;
 	
 	private final Map<String, GenerateDiscreteValuesAction> mappingGenerators;
 	private final Map<TaskFactory, JMenuItem> taskFactories;
@@ -159,8 +157,7 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 	
 	public VizMapperMediator(final VizMapperMainPanel vizMapperMainPanel,
 							 final ServicesUtil servicesUtil,
-							 final VizMapPropertyBuilder vizMapPropertyBuilder,
-							 final ThemeManager themeMgr) {
+							 final VizMapPropertyBuilder vizMapPropertyBuilder) {
 		super(NAME, vizMapperMainPanel);
 		
 		if (vizMapperMainPanel == null)
@@ -169,13 +166,10 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 			throw new IllegalArgumentException("'servicesUtil' must not be null");
 		if (vizMapPropertyBuilder == null)
 			throw new IllegalArgumentException("'vizMapPropertyBuilder' must not be null");
-		if (themeMgr == null)
-			throw new IllegalArgumentException("'themeMgr' must not be null");
 		
 		this.vizMapperMainPanel = vizMapperMainPanel;
 		this.servicesUtil = servicesUtil;
 		this.vizMapPropertyBuilder = vizMapPropertyBuilder;
-		this.themeMgr = themeMgr;
 		
 		final Collator collator = Collator.getInstance(Locale.getDefault());
 		mappingGenerators = new TreeMap<String, GenerateDiscreteValuesAction>(new Comparator<String>() {
@@ -888,7 +882,7 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 				for (final Class<? extends CyIdentifiable> type : SHEET_TYPES) {
 					// Create Visual Property Sheet
 					final VisualPropertySheetModel model = new VisualPropertySheetModel(type, style, lexicon);
-					final VisualPropertySheet vpSheet = new VisualPropertySheet(model, themeMgr);
+					final VisualPropertySheet vpSheet = new VisualPropertySheet(model, servicesUtil);
 					vizMapperMainPanel.addVisualPropertySheet(vpSheet);
 					
 					// Create Visual Property Sheet Items
@@ -972,7 +966,7 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 			
 			// Create View
 			final VisualPropertySheetItem<?> sheetItem = new VisualPropertySheetItem(model, vizMapPropertyBuilder,
-					themeMgr);
+					servicesUtil);
 			items.add(sheetItem);
 			
 			// Add listeners to item and model:
@@ -1020,7 +1014,7 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 			
 			final VisualPropertySheetItemModel<?> model = new VisualPropertySheetItemModel(dep, style, engine, lexicon);
 			final VisualPropertySheetItem<?> sheetItem = new VisualPropertySheetItem(model, vizMapPropertyBuilder,
-					themeMgr);
+					servicesUtil);
 			items.add(sheetItem);
 		}
 		

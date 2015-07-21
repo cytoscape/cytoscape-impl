@@ -80,6 +80,7 @@ import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.util.swing.GravityTracker;
+import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.MenuGravityTracker;
 import org.cytoscape.util.swing.PopupMenuGravityTracker;
 import org.cytoscape.view.model.CyNetworkView;
@@ -90,8 +91,7 @@ import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.gui.DefaultViewEditor;
 import org.cytoscape.view.vizmap.gui.DefaultViewPanel;
 import org.cytoscape.view.vizmap.gui.VizMapGUI;
-import org.cytoscape.view.vizmap.gui.internal.theme.ThemeManager;
-import org.cytoscape.view.vizmap.gui.internal.theme.ThemeManager.CyFont;
+import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
 
 /**
  * VizMapper UI main panel.
@@ -110,8 +110,6 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 	protected VisualStyleDropDownButton stylesBtn;
 	protected DefaultComboBoxModel stylesCmbModel;
 
-	private final ThemeManager themeMgr;
-	
 	/** Menu items under the options button */
 	private JPopupMenu mainMenu;
 	private PopupMenuGravityTracker mainMenuGravityTracker;
@@ -126,6 +124,7 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 
 	private CyNetworkView previewNetView;
 	private RenderingEngineFactory<CyNetwork> engineFactory; // TODO refactor
+	private ServicesUtil servicesUtil;
 	
 	// ==[ CONSTRUCTORS ]===============================================================================================
 	
@@ -133,14 +132,14 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 	 * Create new instance of VizMapperMainPanel object. GUI layout is handled
 	 * by abstract class.
 	 */
-	public VizMapperMainPanel(final ThemeManager themeMgr) {
-		if (themeMgr == null)
-			throw new IllegalArgumentException("'themeMgr' must not be null");
+	public VizMapperMainPanel(final ServicesUtil servicesUtil) {
+		if (servicesUtil == null)
+			throw new IllegalArgumentException("'servicesUtil' must not be null");
 		
-		this.themeMgr = themeMgr;
+		this.servicesUtil = servicesUtil;
 		
-		vpSheetMap = new HashMap<Class<? extends CyIdentifiable>, VisualPropertySheet>();
-		defViewPanelsMap = new HashMap<String, JPanel>();
+		vpSheetMap = new HashMap<>();
+		defViewPanelsMap = new HashMap<>();
 
 		init();
 	}
@@ -382,10 +381,12 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 	
 	DropDownMenuButton getOptionsBtn() {
 		if (optionsBtn == null) {
+			final IconManager iconManager = servicesUtil.get(IconManager.class);
+			
 			optionsBtn = new DropDownMenuButton(getMainMenu(), false);
 			optionsBtn.setToolTipText("Options...");
-			optionsBtn.setFont(themeMgr.getFont(CyFont.FONTAWESOME_FONT).deriveFont(11.0f));
-			optionsBtn.setText("\uF0D7"); // icon-caret-down
+			optionsBtn.setFont(iconManager.getIconFont(11.0f));
+			optionsBtn.setText(IconManager.ICON_CARET_DOWN);
 		}
 		
 		return optionsBtn;
