@@ -173,14 +173,14 @@ public class ListMultipleHandler<T> extends AbstractGUITunableHandler
 		layout.setAutoCreateContainerGaps(false);
 		
 		layout.setHorizontalGroup(layout.createSequentialGroup()
-				.addComponent(scrollpane, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				.addComponent(scrollpane, 100, DEFAULT_SIZE, Short.MAX_VALUE)
 				.addGroup(layout.createParallelGroup(Alignment.LEADING, false)
 						.addComponent(selectAllButton)
 						.addComponent(selectNoneButton)
 				)
 		);
 		layout.setVerticalGroup(layout.createParallelGroup(Alignment.LEADING, true)
-				.addComponent(scrollpane, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				.addComponent(scrollpane, 80, 120, PREFERRED_SIZE)
 				.addGroup(layout.createSequentialGroup()
 						.addComponent(selectAllButton)
 						.addComponent(selectNoneButton)
