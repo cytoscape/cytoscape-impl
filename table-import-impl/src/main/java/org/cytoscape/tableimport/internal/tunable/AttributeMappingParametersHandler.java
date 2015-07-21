@@ -25,7 +25,6 @@ package org.cytoscape.tableimport.internal.tunable;
  */
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -37,6 +36,7 @@ import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.tableimport.internal.reader.AttributeMappingParameters;
 import org.cytoscape.tableimport.internal.ui.ImportTablePanel;
 import org.cytoscape.tableimport.internal.util.ImportType;
+import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.swing.AbstractGUITunableHandler;
 
@@ -80,14 +80,17 @@ public class AttributeMappingParametersHandler extends AbstractGUITunableHandler
 		try {
 			importTablePanel = new ImportTablePanel(dialogType, amp.is, amp.fileType, null, serviceRegistrar);
 		} catch (Exception e) {
-			JLabel errorLabel1 = new JLabel(
-					"<html><h2>Error: Could not Initialize Preview.</h2>  <p>The selected file may contain invalid entries.  "
-					+ "  Please check the contents of original file.</p></html>");
-			errorLabel1.setForeground(Color.RED);
-			errorLabel1.setHorizontalTextPosition(JLabel.CENTER);
-			errorLabel1.setHorizontalAlignment(JLabel.CENTER);
+			final JLabel errorLabel = new JLabel(
+					"<html><h3>Error: Could not Initialize Preview.</h3>" +
+					"<p>The selected file may be empty or contain invalid entries.<br>" +
+					"Please check the contents of the original file and try again.</p></html>"
+			);
+			errorLabel.setForeground(LookAndFeelUtil.ERROR_COLOR);
+			errorLabel.setHorizontalTextPosition(JLabel.CENTER);
+			errorLabel.setHorizontalAlignment(JLabel.CENTER);
+			errorLabel.setFont(errorLabel.getFont().deriveFont(LookAndFeelUtil.INFO_FONT_SIZE));
 
-			panel.add(errorLabel1);
+			panel.add(errorLabel, BorderLayout.CENTER);
 			
 			return;
 		}
@@ -98,8 +101,10 @@ public class AttributeMappingParametersHandler extends AbstractGUITunableHandler
 	@Override
 	public void handle() {
 		try {
-			amp = importTablePanel.getAttributeMappingParameters();
-			setValue(amp);
+			if (importTablePanel != null) {
+				amp = importTablePanel.getAttributeMappingParameters();
+				setValue(amp);
+			}
 		} catch (IllegalAccessException e) {
 			e.printStackTrace();
 		} catch (InvocationTargetException e) {

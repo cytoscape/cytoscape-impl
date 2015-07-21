@@ -29,12 +29,14 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.tableimport.internal.reader.NetworkTableMappingParameters;
 import org.cytoscape.tableimport.internal.ui.ImportTablePanel;
 import org.cytoscape.tableimport.internal.util.ImportType;
+import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.swing.AbstractGUITunableHandler;
 
@@ -84,21 +86,36 @@ public class NetworkTableMappingParametersHandler extends AbstractGUITunableHand
 			e1.printStackTrace();
 		} 
 		
+		panel = new JPanel(new BorderLayout());
+		
 		try {
 			importTablePanel = new ImportTablePanel(dialogType, ntmp.is, ntmp.fileType, null, serviceRegistrar); 
 		} catch (Exception e) {
-			throw new IllegalStateException("Could not initialize ImportTablePanel.", e);
+			final JLabel errorLabel = new JLabel(
+					"<html><h3>Error: Could not Initialize Preview.</h3>" +
+					"<p>The selected file may be empty or contain invalid entries.<br>" +
+					"Please check the contents of the original file and try again.</p></html>"
+			);
+			errorLabel.setForeground(LookAndFeelUtil.ERROR_COLOR);
+			errorLabel.setHorizontalTextPosition(JLabel.CENTER);
+			errorLabel.setHorizontalAlignment(JLabel.CENTER);
+			errorLabel.setFont(errorLabel.getFont().deriveFont(LookAndFeelUtil.INFO_FONT_SIZE));
+
+			panel.add(errorLabel, BorderLayout.CENTER);
+			
+			return;
 		}
 		
-		panel = new JPanel(new BorderLayout());
 		panel.add(importTablePanel, BorderLayout.CENTER);
 	}
 	
 	@Override
 	public void handle() {
 		try {
-			ntmp = importTablePanel.getNetworkTableMappingParameters();
-			setValue(ntmp);
+			if (importTablePanel != null) {
+				ntmp = importTablePanel.getNetworkTableMappingParameters();
+				setValue(ntmp);
+			}
 		} catch (IllegalAccessException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
