@@ -85,7 +85,7 @@ public class NetworkCollectionHelper extends AbstractTask {
 			}	
 		}
 		else {
-			setTargetColumnList(new ListSingleSelection<>());
+			setTargetColumnList(new ListSingleSelection<String>());
 		}
 
 		rootNetworkList = roots;

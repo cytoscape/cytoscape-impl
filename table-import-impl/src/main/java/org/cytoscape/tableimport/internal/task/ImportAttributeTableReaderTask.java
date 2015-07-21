@@ -46,6 +46,8 @@ import org.cytoscape.tableimport.internal.reader.ExcelAttributeSheetReader;
 import org.cytoscape.tableimport.internal.reader.SupportedFileType;
 import org.cytoscape.tableimport.internal.reader.TextTableReader;
 import org.cytoscape.tableimport.internal.util.AttributeDataType;
+import org.cytoscape.tableimport.internal.util.SourceColumnSemantic;
+import org.cytoscape.tableimport.internal.util.TypeUtil;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.work.AbstractTask;
@@ -165,15 +167,15 @@ public class ImportAttributeTableReaderTask extends AbstractTask implements CyTa
 		final TextTableReader reader = this.reader;
 		final AttributeMappingParameters readerAMP = (AttributeMappingParameters) reader.getMappingParameter();
 		final String primaryKey = readerAMP.getAttributeNames()[readerAMP.getKeyIndex()];
-		final AttributeDataType type = readerAMP.getDataTypes()[readerAMP.getKeyIndex()];
+		final AttributeDataType dataType = readerAMP.getDataTypes()[readerAMP.getKeyIndex()];
 		final Class<?> keyType;
 		
-		switch (type) {
+		switch (dataType) {
 			case TYPE_INTEGER:
 				keyType = Integer.class;
 				break;
-			case TYPE_STRING:
-				keyType = String.class;
+			case TYPE_LONG:
+				keyType = Long.class;
 				break;
 			default:
 				keyType = String.class;
@@ -212,10 +214,11 @@ public class ImportAttributeTableReaderTask extends AbstractTask implements CyTa
 			return ValidationState.INVALID;
 		}
 		
-		if((amp.getDataTypes()[amp.getKeyIndex()] != AttributeDataType.TYPE_INTEGER) && 
-				(amp.getDataTypes()[amp.getKeyIndex()] != AttributeDataType.TYPE_STRING)) {
+		final AttributeDataType keyDataType = amp.getDataTypes()[amp.getKeyIndex()];
+		
+		if (!TypeUtil.isValid(SourceColumnSemantic.KEY, keyDataType)) {
 			try {
-				errMsg.append("The primary key column must be an Integer or String.");
+				errMsg.append("The primary key column must be an Integer, Long or String.");
 			} catch (IOException e) {
 				e.printStackTrace();
 				return ValidationState.INVALID;

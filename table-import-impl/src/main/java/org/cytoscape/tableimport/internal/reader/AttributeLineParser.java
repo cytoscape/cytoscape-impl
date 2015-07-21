@@ -128,7 +128,7 @@ public class AttributeLineParser {
 		if (tbl.getColumn(attributeName) == null) {
 			if (type == TYPE_INTEGER)
 				tbl.createColumn(attributeName, Integer.class, false);
-			if (type == TYPE_LONG)
+			else if (type == TYPE_LONG)
 				tbl.createColumn(attributeName, Long.class, false);
 			else if (type == TYPE_BOOLEAN)
 				tbl.createColumn(attributeName, Boolean.class, false);
