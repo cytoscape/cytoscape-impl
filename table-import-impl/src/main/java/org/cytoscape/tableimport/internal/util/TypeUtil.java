@@ -29,6 +29,7 @@ import static org.cytoscape.tableimport.internal.util.AttributeDataType.TYPE_FLO
 import static org.cytoscape.tableimport.internal.util.AttributeDataType.TYPE_INTEGER;
 import static org.cytoscape.tableimport.internal.util.AttributeDataType.TYPE_LONG;
 import static org.cytoscape.tableimport.internal.util.AttributeDataType.TYPE_STRING;
+import static org.cytoscape.tableimport.internal.util.AttributeDataType.TYPE_STRING_LIST;
 import static org.cytoscape.tableimport.internal.util.ImportType.NETWORK_IMPORT;
 import static org.cytoscape.tableimport.internal.util.ImportType.ONTOLOGY_IMPORT;
 import static org.cytoscape.tableimport.internal.util.ImportType.TABLE_IMPORT;
@@ -207,75 +208,124 @@ public class TypeUtil {
 	}
 	
 	public static AttributeDataType[] guessDataTypes(final TableModel model) {
-		// 0 = Boolean,  1 = Integer,  2 = Double,  3 = String
-		final int[][] typeChecker = new int[4][model.getColumnCount()];
-		String cell = null;
-
+		final AttributeDataType[] dataTypes = new AttributeDataType[model.getColumnCount()];
 		final int rowCount = Math.min(1000, model.getRowCount());
 		
-		for (int i = 0; i < rowCount; i++) {
-			for (int j = 0; j < model.getColumnCount(); j++) {
-				cell = (String) model.getValueAt(i, j);
-				boolean found = false;
-
-				if (cell != null) { 
-					// boolean
-					if (truePattern.matcher(cell).matches() || falsePattern.matcher(cell).matches()) {
-						typeChecker[0][j]++;
-						found = true;
-					} else {
-						// integers
-						try {
-							Integer.valueOf(cell);
-							typeChecker[1][j]++;
-							found = true;
-						} catch (NumberFormatException e) {
-						}
+		COLUMN_LOOP:
+		for (int col = 0; col < model.getColumnCount(); col++) {
+			AttributeDataType dt = dataTypes[col];
 			
-						// floats
-						try {
-							Double.valueOf(cell);
-							typeChecker[2][j]++;
-							found = true;
-						} catch (NumberFormatException e) {
-						}
-					}
+			for (int row = 0; row < rowCount; row++) {
+				final String val = (String) model.getValueAt(row, col);
+				
+				if (val == null)
+					continue;
+
+				if (dt == TYPE_STRING || dt == TYPE_STRING_LIST) {
+					// If type detected as String, it can't be a number or boolean anymore...
+					// TODO: Try to detect List types
+					continue COLUMN_LOOP;
 				}
 				
-				// default to string
-				if (found == false) {
-					// TODO: try to detect List types by 
-					typeChecker[3][j]++;
+				if (dt == null) {
+					// Data Type not detected yet, so try everything (the order is important)...
+					if (isBoolean(val))
+						dt = TYPE_BOOLEAN;
+					else if (isInteger(val))
+						dt = TYPE_INTEGER;
+					else if (isLong(val))
+						dt = TYPE_LONG;
+					else if (isDouble(val))
+						dt = TYPE_FLOATING;
+					else
+						dt = TYPE_STRING; // Defaults to String!
+				} else {
+					// Previously detected as boolean?
+					if (dt == TYPE_BOOLEAN) {
+						// Just make sure the other rows are also compatible with boolean values...
+						if (!isBoolean(val)) {
+							// This row does not contain a boolean, so the column has to be a String
+							dt = TYPE_STRING;
+							break;
+						}
+					} else if (dt == TYPE_INTEGER) {
+						// Make sure the other rows are also integers...
+						if (!isInteger(val)) {
+							if (isLong(val))
+								dt = TYPE_LONG;
+							else if (isDouble(val))
+								dt = TYPE_FLOATING;
+							else
+								dt = TYPE_STRING;
+						}
+					} else if (dt == TYPE_LONG) {
+						// Make sure the other rows are also longs (no need to check for integers anymore)...
+						if (!isLong(val)) {
+							if (isDouble(val))
+								dt = TYPE_FLOATING;
+							else
+								dt = TYPE_STRING;
+						}
+					} else if (dt == TYPE_FLOATING) {
+						// Make sure the other rows are also doubles (no need to check for other numeric types)...
+						if (!isDouble(val))
+							dt = TYPE_STRING;
+					}
 				}
 			}
+			
+			dataTypes[col] = dt;
 		}
-
-		final AttributeDataType[] dataTypes = new AttributeDataType[model.getColumnCount()];
-
+		
+		// Non detected types default to String
 		for (int i = 0; i < dataTypes.length; i++) {
-			int maxVal = 0;
-			int maxIndex = 0;
-
-			for (int j = 0; j < 4; j++) {
-				if (maxVal < typeChecker[j][i]) {
-					maxVal = typeChecker[j][i];
-					maxIndex = j;
-				}
-			}
-	
-			if (maxIndex == 0)
-				dataTypes[i] = TYPE_BOOLEAN;
-			else if (maxIndex == 1)
-				dataTypes[i] = TYPE_INTEGER;
-			else if (maxIndex == 2)
-				dataTypes[i] = TYPE_FLOATING;
-			else
+			if (dataTypes[i] == null)
 				dataTypes[i] = TYPE_STRING;
 		}
 
 		return dataTypes;
 	}
 	
+	private static boolean isBoolean(final String val) {
+		return val != null && (truePattern.matcher(val).matches() || falsePattern.matcher(val).matches());
+	}
+	
+	private static boolean isInteger(final String val) {
+		if (val != null) {
+			try {
+				final long n = Long.parseLong(val);
+				return n <= Integer.MAX_VALUE && n >= Integer.MIN_VALUE;
+			} catch (NumberFormatException e) {
+			}
+		}
+		
+		return false;
+	}
+	
+	private static boolean isLong(final String val) {
+		if (val != null) {
+			try {
+				Long.parseLong(val);
+				return true;
+			} catch (NumberFormatException e) {
+			}
+		}
+		
+		return false;
+	}
+	
+	private static boolean isDouble(final String val) {
+		if (val != null) {
+			try {
+				Double.parseDouble(val);
+				return true;
+			} catch (NumberFormatException e) {
+			}
+		}
+		
+		return false;
+	}
+
 	/**
 	 * Returns true if columns of the passed column type can have duplicate names in the source file or table.
 	 * @param types 
