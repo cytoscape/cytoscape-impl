@@ -590,6 +590,9 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 
 			if (!caseSensitive)
 				key = normalizedSourceKeys.get(key.toString().toLowerCase().trim());
+
+			if (key == null)
+				continue;
 			
 			if (key.getClass() != sourceTable.getPrimaryKey().getType() ) {
 				try {
