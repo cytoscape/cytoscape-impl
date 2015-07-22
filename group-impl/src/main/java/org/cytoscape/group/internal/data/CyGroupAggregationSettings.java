@@ -143,7 +143,7 @@ public class CyGroupAggregationSettings {
 	@Tunable(description="Attribute Type:",
 	         groups={"Attribute Aggregation Settings", "Aggregation Overrides"},
 	         dependsOn="enableAttributeAggregation=true",
-	         listenForChange="AttrSelection", gravity=21.0)
+	         listenForChange={"AttrSelection"}, gravity=21.0)
   public String getAttrType() {
 		if (currentNetwork == null || attrSelection == null || 
 		    attrSelection.getSelectedValue() == null ||
@@ -182,7 +182,7 @@ public class CyGroupAggregationSettings {
 	@Tunable(description="Aggregation Type:",
 	         groups={"Attribute Aggregation Settings", "Aggregation Overrides"},
 	         dependsOn="enableAttributeAggregation=true",
-	         listenForChange="AttrSelection", gravity=22.0)
+	         listenForChange={"AttrSelection"}, gravity=22.0)
 	public ListSingleSelection<Aggregator> getAggregationType() {   
 		// We need to do this because Cytoscape's Tunables processing doesn't correctly
 		// order listenForChange initializations
