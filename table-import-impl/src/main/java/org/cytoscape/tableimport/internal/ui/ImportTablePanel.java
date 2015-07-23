@@ -190,6 +190,7 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 	protected JTextField commentLineTextField;
 
 	// Delimiter check boxes
+	private JLabel delimiterLabel;
 	protected JCheckBox tabCheckBox;
 	protected JCheckBox commaCheckBox;
 	protected JCheckBox semicolonCheckBox;
@@ -370,6 +371,9 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 		selectAttributeFileButton = new JButton();
 		mappingAttributeComboBox = new JComboBox<>();
 		
+		delimiterLabel = new JLabel("Delimiter:");
+		delimiterLabel.setHorizontalAlignment(JLabel.RIGHT);
+		
 		tabCheckBox = new JCheckBox();
 		commaCheckBox = new JCheckBox();
 		semicolonCheckBox = new JCheckBox();
@@ -386,6 +390,10 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 		commentLineTextField = new JTextField();
 		commentLineTextField.setName("commentLineTextField");
 
+		attrTypeButtonGroup.add(nodeRadioButton);
+		attrTypeButtonGroup.add(edgeRadioButton);
+		attrTypeButtonGroup.add(networkRadioButton);
+		
 		/*
 		 * Set tooltips options.
 		 */
@@ -471,6 +479,8 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 		final ChangeListener delimitersChangeListener = new ChangeListener() {
 			@Override
 			public void stateChanged(ChangeEvent evt) {
+				otherDelimiterTextField.setEnabled(otherCheckBox.isSelected());
+				
 				try {
 					if (!updating)
 						displayPreview();
@@ -674,10 +684,7 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 	private JPanel getTextImportOptionPanel() {
 		if (textImportOptionPanel == null) {
 			textImportOptionPanel = new JPanel();
-			textImportOptionPanel.setBorder(LookAndFeelUtil.createTitledBorder("Text File Import Options"));
-			
-			final JLabel delimiterLabel = new JLabel("Delimiter:");
-			delimiterLabel.setHorizontalAlignment(JLabel.RIGHT);
+			textImportOptionPanel.setBorder(LookAndFeelUtil.createTitledBorder("File Import Options"));
 			
 			final JLabel startRowLabel = new JLabel("Start Import Row:");
 			startRowLabel.setHorizontalAlignment(JLabel.RIGHT);
@@ -688,9 +695,6 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 			final JLabel defaultInteractionLabel = new JLabel("Default Interaction:");
 			defaultInteractionLabel.setHorizontalAlignment(JLabel.RIGHT);
 			
-			final JSeparator sep1 = new JSeparator();
-			final JSeparator sep2 = new JSeparator();
-			
 			final GroupLayout layout = new GroupLayout(textImportOptionPanel);
 			textImportOptionPanel.setLayout(layout);
 			layout.setAutoCreateContainerGaps(true);
@@ -700,7 +704,14 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 			final int lw = commentLineLabel.getPreferredSize().width; // to align all left-side components
 			final int rw = getTransferNameCheckBox().getPreferredSize().width; // to align all right-side components
 
-			layout.setHorizontalGroup(layout.createParallelGroup(Alignment.LEADING, true)
+			final ParallelGroup hGroup = layout.createParallelGroup(Alignment.LEADING, true);
+			final SequentialGroup vGroup = layout.createSequentialGroup();
+
+			if (!isSpreadsheetFile()) {
+				// These fields cannot be used with Excel files
+				final JSeparator sep = new JSeparator();
+				
+				hGroup
 					.addGroup(layout.createSequentialGroup()
 							.addGroup(layout.createParallelGroup(Alignment.TRAILING, true)
 									.addComponent(delimiterLabel, PREFERRED_SIZE, lw, PREFERRED_SIZE)
@@ -720,7 +731,27 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 									)
 							)
 					)
-					.addComponent(sep1, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+					.addComponent(sep, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE);
+				
+				vGroup
+					.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
+							.addComponent(delimiterLabel)
+							.addComponent(tabCheckBox)
+					)
+					.addComponent(commaCheckBox)
+					.addComponent(semicolonCheckBox)
+					.addComponent(spaceCheckBox)
+					.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
+							.addComponent(otherCheckBox)
+							.addComponent(otherDelimiterTextField)
+					)
+					.addComponent(sep, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE);
+			}
+			
+			if (importType == NETWORK_IMPORT) {
+				final JSeparator sep = new JSeparator();
+				
+				hGroup
 					.addGroup(layout.createSequentialGroup()
 							.addGroup(layout.createParallelGroup(Alignment.TRAILING, true)
 									.addComponent(defaultInteractionLabel, PREFERRED_SIZE, lw, PREFERRED_SIZE)
@@ -729,7 +760,17 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 									.addComponent(defaultInteractionTextField, rw, rw, Short.MAX_VALUE)
 							)
 					)
-					.addComponent(sep2, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+					.addComponent(sep, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE);
+				
+				vGroup
+					.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
+							.addComponent(defaultInteractionLabel)
+							.addComponent(defaultInteractionTextField)
+					)
+					.addComponent(sep, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE);
+			}
+			
+			layout.setHorizontalGroup(hGroup
 					.addGroup(layout.createSequentialGroup()
 							.addGroup(layout.createParallelGroup(Alignment.TRAILING, true)
 									.addGap(lw)
@@ -745,24 +786,7 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 							)
 					)
 			);
-			layout.setVerticalGroup(layout.createSequentialGroup()
-					.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
-							.addComponent(delimiterLabel)
-							.addComponent(tabCheckBox)
-					)
-					.addComponent(commaCheckBox)
-					.addComponent(semicolonCheckBox)
-					.addComponent(spaceCheckBox)
-					.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
-							.addComponent(otherCheckBox)
-							.addComponent(otherDelimiterTextField)
-					)
-					.addComponent(sep1, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
-							.addComponent(defaultInteractionLabel)
-							.addComponent(defaultInteractionTextField)
-					)
-					.addComponent(sep2, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+			layout.setVerticalGroup(vGroup
 					.addComponent(getTransferNameCheckBox())
 					.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
 							.addComponent(startRowLabel)
@@ -774,12 +798,6 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 					)
 					.addComponent(getImportAllCheckBox())
 			);
-			
-			if (importType != NETWORK_IMPORT) {
-				sep1.setVisible(false);
-				defaultInteractionLabel.setVisible(false);
-				defaultInteractionTextField.setVisible(false);
-			}
 			
 			if (importType != ONTOLOGY_IMPORT)
 				getImportAllCheckBox().setVisible(false);
@@ -1037,10 +1055,23 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 			getPreviewPanel().getReloadButton().setEnabled(false);
 			startRowSpinner.setEnabled(false);
 			getPreviewPanel().getSelectedPreviewTable().getTableHeader().setReorderingAllowed(false);
-			setRadioButtonGroup();
-	
+			
+			attrTypeButtonGroup.setSelected(nodeRadioButton.getModel(), true);
+
+			if (fileType != null && fileType.equalsIgnoreCase(SupportedFileType.CSV.getExtension())) {
+				commaCheckBox.setSelected(true);
+			} else {
+				tabCheckBox.setSelected(true);
+				spaceCheckBox.setSelected(importType == NETWORK_IMPORT);
+			}
+
+			otherDelimiterTextField.setEnabled(false);
+			
 			if (importType != NETWORK_IMPORT)
 				updateMappingAttributeComboBox();
+			
+			if (importType == ONTOLOGY_IMPORT)
+				disableComponentsForGA();
 		} finally {
 			updating = false;
 		}
@@ -1050,27 +1081,6 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 		
 		if (parent != null)
 			parent.pack();
-	}
-
-	private void setRadioButtonGroup() {
-		attrTypeButtonGroup.add(nodeRadioButton);
-		attrTypeButtonGroup.add(edgeRadioButton);
-		attrTypeButtonGroup.add(networkRadioButton);
-		attrTypeButtonGroup.setSelected(nodeRadioButton.getModel(), true);
-
-		if (fileType != null && fileType.equalsIgnoreCase(SupportedFileType.CSV.getExtension()))
-			commaCheckBox.setSelected(true);
-		else
-			tabCheckBox.setSelected(true);
-
-		tabCheckBox.setEnabled(false);
-		commaCheckBox.setEnabled(false);
-		spaceCheckBox.setEnabled(false);
-		spaceCheckBox.setSelected(importType == NETWORK_IMPORT);
-
-		semicolonCheckBox.setEnabled(false);
-		otherCheckBox.setEnabled(false);
-		otherDelimiterTextField.setEnabled(false);
 	}
 
 	protected void readAnnotationForPreviewOntology(final URL sourceURL, List<String> delimiters) throws IOException {
@@ -1106,8 +1116,6 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 
 				for (int j = 0; j < columnNames.length; j++)
 					columnNames[j] = previewModel.getColumnName(j);
-
-				disableComponentsForGA();
 			}
 
 			getPreviewPanel().setType(table.getName(), GO_ID.getPosition(), ONTOLOGY);
@@ -1118,6 +1126,8 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 			if (parent != null)
 				parent.pack();
 		}
+		
+		
 	}
 
 	/**
@@ -1147,9 +1157,7 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 			tempIs = new FileInputStream(tempFile);
 		
 		// Load Spreadsheet data for preview.
-		if (fileType != null
-				&& (fileType.equalsIgnoreCase(SupportedFileType.EXCEL.getExtension()) || fileType
-						.equalsIgnoreCase(SupportedFileType.OOXML.getExtension())) && workbook == null) {
+		if (isSpreadsheetFile() && workbook == null) {
 			try {
 				workbook = WorkbookFactory.create(tempIs);
 			} catch (InvalidFormatException e) {
@@ -1175,35 +1183,28 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 		if (getPreviewPanel().getSelectedPreviewTable() == null)
 			return;
 
-		if (importType == NETWORK_IMPORT) {
-			if (fileType.equalsIgnoreCase(SupportedFileType.EXCEL.getExtension())
-					|| fileType.equalsIgnoreCase(SupportedFileType.OOXML.getExtension())) {
-				setDelimitersEnabled(false);
-			} else {
-				setDelimitersEnabled(true);
-			}
-		} else {
+		if (importType != NETWORK_IMPORT) {
 			final int tableCount = getPreviewPanel().getTableCount();
 			
-			for (int i = 0; i < tableCount; i++) {
-				if (getPreviewPanel().getFileType() == FileType.GENE_ASSOCIATION_FILE) {
+			if (getPreviewPanel().getFileType() == FileType.GENE_ASSOCIATION_FILE) {
+				for (int i = 0; i < tableCount; i++) {
 					final JTable table = getPreviewPanel().getPreviewTable(i);
 					final TableModel previewModel = table.getModel();
 					final String[] columnNames = new String[previewModel.getColumnCount()];
 
 					for (int j = 0; j < columnNames.length; j++)
 						columnNames[j] = previewModel.getColumnName(j);
-
-					disableComponentsForGA();
 				}
+				
+				disableComponentsForGA();
 			}
 
 			/*
 			 * If this is not an Excel file, enable delimiter checkboxes.
 			 */
-			final FileType type = checkFileType();
-
 			if (fileType != null) {
+				final FileType type = checkFileType();
+				
 				if (type == FileType.GENE_ASSOCIATION_FILE) {
 					for (int i = 0; i < tableCount; i++) {
 						final JTable table = getPreviewPanel().getPreviewTable(i);
@@ -1211,9 +1212,7 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 					}
 					
 					disableComponentsForGA();
-				} else if (this.fileType.equalsIgnoreCase(SupportedFileType.EXCEL.getExtension()) == false
-						|| this.fileType.equalsIgnoreCase(SupportedFileType.OOXML.getExtension()) == false) {
-					setDelimitersEnabled(true);
+				} else if (!isSpreadsheetFile()) {
 					nodeRadioButton.setEnabled(true);
 					edgeRadioButton.setEnabled(true);
 					networkRadioButton.setEnabled(true);
@@ -1241,6 +1240,8 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 		edgeRadioButton.setEnabled(false);
 		networkRadioButton.setEnabled(false);
 
+		delimiterLabel.setEnabled(false);
+		
 		tabCheckBox.setEnabled(false);
 		tabCheckBox.setSelected(true);
 		commaCheckBox.setEnabled(false);
@@ -1254,15 +1255,6 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 		otherDelimiterTextField.setEnabled(false);
 
 		getImportAllCheckBox().setEnabled(false);
-	}
-
-	private void setDelimitersEnabled(final boolean enabled) {
-		tabCheckBox.setEnabled(enabled);
-		commaCheckBox.setEnabled(enabled);
-		spaceCheckBox.setEnabled(enabled);
-		semicolonCheckBox.setEnabled(enabled);
-		otherCheckBox.setEnabled(enabled);
-		otherDelimiterTextField.setEnabled(enabled);
 	}
 
 	private FileType checkFileType() {
@@ -1633,5 +1625,11 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 				interactionColumnIndex, defaultInteraction, startLineNumber, commentChar);
 
 		return mapping;
+	}
+	
+	private boolean isSpreadsheetFile() {
+		return fileType != null &&
+				(fileType.equalsIgnoreCase(SupportedFileType.EXCEL.getExtension()) ||
+				 fileType.equalsIgnoreCase(SupportedFileType.OOXML.getExtension()));
 	}
 }
