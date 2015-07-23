@@ -364,7 +364,7 @@ final class DEdgeDetails extends EdgeDetails {
 
 	void setTargetArrowDefault(final byte arrow) {
 		m_targetArrowDefault = arrow;
-		defaultValues.put(DVisualLexicon.EDGE_SOURCE_ARROW_SHAPE, DArrowShape.getArrowShape(m_sourceArrowDefault));
+		defaultValues.put(DVisualLexicon.EDGE_TARGET_ARROW_SHAPE, DArrowShape.getArrowShape(m_targetArrowDefault));
 	}
 
 	/*
