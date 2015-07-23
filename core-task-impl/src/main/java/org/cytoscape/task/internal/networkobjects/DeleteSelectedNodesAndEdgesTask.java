@@ -120,9 +120,9 @@ public class DeleteSelectedNodesAndEdgesTask extends AbstractTask {
 				       networkViewManager, visualMappingManager, eventHelper));
 
 		// Delete the actual nodes and edges:
-		network.removeNodes(selectedNodes);
-		taskMonitor.setProgress(0.7);
 		network.removeEdges(selectedEdges);
+		taskMonitor.setProgress(0.7);
+		network.removeNodes(selectedNodes);
 		taskMonitor.setProgress(0.9);
 		
 		// Update network views
