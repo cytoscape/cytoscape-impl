@@ -82,6 +82,10 @@ import org.cytoscape.model.events.NetworkAboutToBeDestroyedEvent;
 import org.cytoscape.model.events.NetworkAboutToBeDestroyedListener;
 import org.cytoscape.model.events.NetworkAddedEvent;
 import org.cytoscape.model.events.NetworkAddedListener;
+import org.cytoscape.model.events.RemovedEdgesEvent;
+import org.cytoscape.model.events.RemovedEdgesListener;
+import org.cytoscape.model.events.RemovedNodesEvent;
+import org.cytoscape.model.events.RemovedNodesListener;
 import org.cytoscape.model.events.RowSetRecord;
 import org.cytoscape.model.events.RowsSetEvent;
 import org.cytoscape.model.events.RowsSetListener;
@@ -109,7 +113,8 @@ import org.slf4j.LoggerFactory;
 public class NetworkPanel extends JPanel implements CytoPanelComponent2,
 		TreeSelectionListener, SetSelectedNetworksListener,
 		NetworkAddedListener, NetworkViewAddedListener, NetworkAboutToBeDestroyedListener,
-		NetworkViewAboutToBeDestroyedListener, RowsSetListener {
+		NetworkViewAboutToBeDestroyedListener, RowsSetListener,
+    RemovedEdgesListener, RemovedNodesListener {
 
 	private final static long serialVersionUID = 1213748836763243L;
 
@@ -494,6 +499,26 @@ public class NetworkPanel extends JPanel implements CytoPanelComponent2,
 				}
 			});
 		}
+	}
+
+	@Override
+	public void handleEvent(final RemovedNodesEvent e) {
+		SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				treeTable.repaint();
+			}
+		});
+	}
+
+	@Override
+	public void handleEvent(final RemovedEdgesEvent e) {
+		SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				treeTable.repaint();
+			}
+		});
 	}
 
 	@Override
