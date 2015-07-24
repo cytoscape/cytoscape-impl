@@ -32,7 +32,6 @@ import org.cytoscape.io.internal.util.UnrecognizedVisualPropertyManager;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
-import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
@@ -58,10 +57,9 @@ public class SessionXGMMLNetworkReader extends GenericXGMMLReader {
 									 final ReadDataManager readDataMgr,
 									 final XGMMLParser parser,
 									 final UnrecognizedVisualPropertyManager unrecognizedVisualPropertyMgr,
-									 final CyNetworkManager cyNetworkManager,
 									 final CyApplicationManager cyApplicationManager) {
 		super(inputStream, cyNetworkFactory, renderingEngineMgr, readDataMgr, parser,
-				unrecognizedVisualPropertyMgr, cyNetworkManager, cyRootNetworkManager, cyApplicationManager);
+				unrecognizedVisualPropertyMgr, null, cyRootNetworkManager, cyApplicationManager);
 
 		this.cyRootNetworkManager = cyRootNetworkManager;
 	}
