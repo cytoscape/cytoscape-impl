@@ -346,7 +346,7 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 	
 				getPreviewPanel().repaint();
 	
-				final JTable table = getPreviewPanel().getSelectedPreviewTable();
+				final JTable table = getPreviewPanel().getPreviewTable();
 	
 				// Update table view
 				ColumnResizer.adjustColumnPreferredWidths(table);
@@ -980,7 +980,7 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 	 * imported as a table should be used to populate column names.
 	 */
 	private void useFirstRowAsNames(final boolean b) {
-		final JTable table = getPreviewPanel().getSelectedPreviewTable();
+		final JTable table = getPreviewPanel().getPreviewTable();
 		
 		if (table != null) {
 			final PreviewTableModel model = (PreviewTableModel) table.getModel();
@@ -996,9 +996,8 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 		if (!isInputTableValid())
 			return;
 		
-		final String tabName = getPreviewPanel().getSelectedTabName();
-		final String[] attrNames = getPreviewPanel().getAttributeNames(tabName);
-		final SourceColumnSemantic[] types = getPreviewPanel().getTypes(tabName);
+		final String[] attrNames = getPreviewPanel().getAttributeNames();
+		final SourceColumnSemantic[] types = getPreviewPanel().getTypes();
 		
 		if (!isAttributeNamesValid(attrNames, types))
 			return;
@@ -1014,9 +1013,9 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 			throw new IOException("Could not read table file for preview.  The source file may contain invalid values.", e);
 		}
 		
-		if (getPreviewPanel().getSelectedPreviewTable() != null) {
-			ColumnResizer.adjustColumnPreferredWidths(getPreviewPanel().getSelectedPreviewTable());
-			getPreviewPanel().getSelectedPreviewTable().repaint();
+		if (getPreviewPanel().getPreviewTable() != null) {
+			ColumnResizer.adjustColumnPreferredWidths(getPreviewPanel().getPreviewTable());
+			getPreviewPanel().getPreviewTable().repaint();
 		}
 	}
 
@@ -1054,7 +1053,7 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 	
 			getPreviewPanel().getReloadButton().setEnabled(false);
 			startRowSpinner.setEnabled(false);
-			getPreviewPanel().getSelectedPreviewTable().getTableHeader().setReorderingAllowed(false);
+			getPreviewPanel().getPreviewTable().getTableHeader().setReorderingAllowed(false);
 			
 			attrTypeButtonGroup.setSelected(nodeRadioButton.getModel(), true);
 
@@ -1084,66 +1083,43 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 	}
 
 	protected void readAnnotationForPreviewOntology(final URL sourceURL, List<String> delimiters) throws IOException {
-		final int previewSize;
-
-		if (getPreviewPanel().getShowAllRadioButton().isSelected())
-			previewSize = -1;
-		else
-			previewSize = Integer.parseInt(getPreviewPanel().getCounterSpinner().getValue().toString());
-
 		/*
 		 * Load data from the given URL.
 		 */
 		final String commentChar = getCommentLinePrefix();
 		final int startLine = getStartLineNumber();
 		final InputStream tempIs = URLUtil.getInputStream(sourceURL);
-		getPreviewPanel().setPreviewTables(workbook, this.fileType, sourceURL.toString(), tempIs, delimiters, null,
-				previewSize, commentChar, startLine - 1);
+		getPreviewPanel().updatePreviewTable(workbook, this.fileType, sourceURL.toString(), tempIs, delimiters,
+				commentChar, startLine - 1);
 
 		tempIs.close();
 
-		if (getPreviewPanel().getSelectedPreviewTable() == null)
+		if (getPreviewPanel().getPreviewTable() == null)
 			return;
 
-		final int tableCount = getPreviewPanel().getTableCount();
+		final JTable table = getPreviewPanel().getPreviewTable();
 		
-		for (int i = 0; i < tableCount; i++) {
-			final JTable table = getPreviewPanel().getPreviewTable(i);
-			
-			if (getPreviewPanel().getFileType() == FileType.GENE_ASSOCIATION_FILE) {
-				final TableModel previewModel = table.getModel();
-				final String[] columnNames = new String[previewModel.getColumnCount()];
+		if (getPreviewPanel().getFileType() == FileType.GENE_ASSOCIATION_FILE) {
+			final TableModel previewModel = table.getModel();
+			final String[] columnNames = new String[previewModel.getColumnCount()];
 
-				for (int j = 0; j < columnNames.length; j++)
-					columnNames[j] = previewModel.getColumnName(j);
-			}
-
-			getPreviewPanel().setType(table.getName(), GO_ID.getPosition(), ONTOLOGY);
-
-			attributeRadioButtonActionPerformed(null);
-			final Window parent = SwingUtilities.getWindowAncestor(this);
-			
-			if (parent != null)
-				parent.pack();
+			for (int j = 0; j < columnNames.length; j++)
+				columnNames[j] = previewModel.getColumnName(j);
 		}
+
+		getPreviewPanel().setType(GO_ID.getPosition(), ONTOLOGY);
+
+		attributeRadioButtonActionPerformed(null);
+		final Window parent = SwingUtilities.getWindowAncestor(this);
 		
-		
+		if (parent != null)
+			parent.pack();
 	}
 
 	/**
 	 * Display preview table
 	 */
 	protected void readAnnotationForPreview(List<String> delimiters) throws IOException {
-		/*
-		 * Check number of lines we should load. if -1, load everything in the file.
-		 */
-		final int previewSize;
-
-		if (getPreviewPanel().getShowAllRadioButton().isSelected())
-			previewSize = -1;
-		else
-			previewSize = Integer.parseInt(getPreviewPanel().getCounterSpinner().getValue().toString());
-
 		/*
 		 * Load data from the given URL.
 		 */
@@ -1174,27 +1150,22 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 		if (tempFile != null)
 			tempIs2 = new FileInputStream(tempFile);
 
-		getPreviewPanel().setPreviewTables(workbook, fileType, "", tempIs2, delimiters, null, previewSize, commentChar,
-				startLine - 1);
+		getPreviewPanel().updatePreviewTable(workbook, fileType, "", tempIs2, delimiters, commentChar, startLine - 1);
 
 		if (tempIs2 != null)
 			tempIs2.close();
 
-		if (getPreviewPanel().getSelectedPreviewTable() == null)
+		if (getPreviewPanel().getPreviewTable() == null)
 			return;
 
 		if (importType != NETWORK_IMPORT) {
-			final int tableCount = getPreviewPanel().getTableCount();
-			
 			if (getPreviewPanel().getFileType() == FileType.GENE_ASSOCIATION_FILE) {
-				for (int i = 0; i < tableCount; i++) {
-					final JTable table = getPreviewPanel().getPreviewTable(i);
-					final TableModel previewModel = table.getModel();
-					final String[] columnNames = new String[previewModel.getColumnCount()];
+				final JTable table = getPreviewPanel().getPreviewTable();
+				final TableModel previewModel = table.getModel();
+				final String[] columnNames = new String[previewModel.getColumnCount()];
 
-					for (int j = 0; j < columnNames.length; j++)
-						columnNames[j] = previewModel.getColumnName(j);
-				}
+				for (int j = 0; j < columnNames.length; j++)
+					columnNames[j] = previewModel.getColumnName(j);
 				
 				disableComponentsForGA();
 			}
@@ -1206,11 +1177,7 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 				final FileType type = checkFileType();
 				
 				if (type == FileType.GENE_ASSOCIATION_FILE) {
-					for (int i = 0; i < tableCount; i++) {
-						final JTable table = getPreviewPanel().getPreviewTable(i);
-						getPreviewPanel().setType(table.getName(), GO_ID.getPosition(), ONTOLOGY);
-					}
-					
+					getPreviewPanel().setType(GO_ID.getPosition(), ONTOLOGY);
 					disableComponentsForGA();
 				} else if (!isSpreadsheetFile()) {
 					nodeRadioButton.setEnabled(true);
@@ -1338,23 +1305,22 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 	}
 
 	private void updateTypes(final FileType type) {
-		final String tabName = getPreviewPanel().getSelectedTabName();
-		final SourceColumnSemantic[] types = getPreviewPanel().getTypes(tabName);
+		final SourceColumnSemantic[] types = getPreviewPanel().getTypes();
 		
 		if (types != null) {
 			for (int i = 0; i < types.length; i++)
-				getPreviewPanel().setType(tabName, i, (types[i] != NONE ? ATTR : NONE));
+				getPreviewPanel().setType(i, (types[i] != NONE ? ATTR : NONE));
 		}
 
 		if (type == FileType.GENE_ASSOCIATION_FILE) {
-			final int keyInFile = getPreviewPanel().getColumnIndex(tabName, KEY);
+			final int keyInFile = getPreviewPanel().getColumnIndex(KEY);
 			
 			getPreviewPanel().setAliasColumn(DB_OBJECT_SYNONYM.getPosition(), true);
-			getPreviewPanel().setType(tabName, TAXON.getPosition(), SourceColumnSemantic.TAXON);
-			getPreviewPanel().setType(tabName, keyInFile, KEY);
+			getPreviewPanel().setType(TAXON.getPosition(), SourceColumnSemantic.TAXON);
+			getPreviewPanel().setType(keyInFile, KEY);
 		}
 		
-		getPreviewPanel().getSelectedPreviewTab().update();
+		getPreviewPanel().updatePreviewTable();
 	}
 
 	private void setStatusBar(String message1, String message2, String message3) {
@@ -1395,8 +1361,7 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 			rightMessage = "File Size: Unknown (remote data source)";
 		}
 
-		final String tabName = getPreviewPanel().getSelectedTabName();
-		final int keyInFile = getPreviewPanel().getColumnIndex(tabName, KEY);
+		final int keyInFile = getPreviewPanel().getColumnIndex(KEY);
 		setStatusBar("Key-Value Matched: " + getPreviewPanel().checkKeyMatch(keyInFile), centerMessage, rightMessage);
 	}
 
@@ -1426,7 +1391,7 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 	 * @return true if table looks OK.
 	 */
 	private boolean isInputTableValid() {
-		final JTable table = getPreviewPanel().getSelectedPreviewTable();
+		final JTable table = getPreviewPanel().getPreviewTable();
 		final JFrame parent = serviceRegistrar.getService(CySwingApplication.class).getJFrame();
 
 		if ((table == null) || (table.getModel() == null) || (table.getColumnCount() == 0)) {
@@ -1441,11 +1406,9 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 		}
 
 		if (importType == NETWORK_IMPORT) {
-			final String tabName = getPreviewPanel().getSelectedTabName();
-			
-			final int sIdx = getPreviewPanel().getColumnIndex(tabName, SOURCE_ATTR);
-			final int tIdx = getPreviewPanel().getColumnIndex(tabName, TARGET_ATTR);
-			final int iIdx = getPreviewPanel().getColumnIndex(tabName, INTERACTION);
+			final int sIdx = getPreviewPanel().getColumnIndex(SOURCE_ATTR);
+			final int tIdx = getPreviewPanel().getColumnIndex(TARGET_ATTR);
+			final int iIdx = getPreviewPanel().getColumnIndex(INTERACTION);
 
 			if ((sIdx == tIdx) || (((iIdx == sIdx) || (iIdx == tIdx)) && (iIdx != -1))) {
 				JOptionPane.showMessageDialog(
@@ -1516,9 +1479,9 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 	}
 
 	private boolean isFirstRowNames() {
-		final JTable table = getPreviewPanel().getSelectedPreviewTable();
+		final JTable table = getPreviewPanel().getPreviewTable();
 		
-		if (table != null)	
+		if (table != null && table.getModel() instanceof PreviewTableModel)	
 			return ((PreviewTableModel) table.getModel()).isFirstRowNames();
 				
 		return false;
@@ -1536,19 +1499,19 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 	}
 
 	public AttributeMappingParameters getAttributeMappingParameters() throws Exception {
-		final String tabName = getPreviewPanel().getSelectedTabName();
-		final String[] attrNames = getPreviewPanel().getAttributeNames(tabName);
-		final SourceColumnSemantic[] types = getPreviewPanel().getTypes(tabName);
+		final String sourceName = getPreviewPanel().getSourceName();
+		final String[] attrNames = getPreviewPanel().getAttributeNames();
+		final SourceColumnSemantic[] types = getPreviewPanel().getTypes();
 		
 		if (!isAttributeNamesValid(attrNames, types))
 			return null;
 
 		final SourceColumnSemantic[] typesCopy = Arrays.copyOf(types, types.length);
 		
-		final AttributeDataType[] dataTypes = getPreviewPanel().getDataTypes(tabName);
+		final AttributeDataType[] dataTypes = getPreviewPanel().getDataTypes();
 		final AttributeDataType[] dataTypesCopy = Arrays.copyOf(dataTypes, dataTypes.length);
 		
-		final String[] listDelimiters = getPreviewPanel().getListDelimiters(tabName);
+		final String[] listDelimiters = getPreviewPanel().getListDelimiters();
 		final String[] listDelimitersCopy = Arrays.copyOf(listDelimiters, listDelimiters.length);
 
 		int startLineNumber = getStartLineNumber();
@@ -1559,9 +1522,9 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 
 		// Build mapping parameter object.
 		final List<String> del = checkDelimiter();
-		final int keyInFile = getPreviewPanel().getColumnIndex(tabName, KEY);
+		final int keyInFile = getPreviewPanel().getColumnIndex(KEY);
 		
-		final AttributeMappingParameters mapping = new AttributeMappingParameters(tabName, del, listDelimitersCopy,
+		final AttributeMappingParameters mapping = new AttributeMappingParameters(sourceName, del, listDelimitersCopy,
 				keyInFile, attrNames, dataTypesCopy, typesCopy, startLineNumber, commentChar);
 
 		return mapping;
@@ -1590,19 +1553,19 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 	}
 
 	public NetworkTableMappingParameters getNetworkTableMappingParameters() throws Exception {
-		final String tabName = getPreviewPanel().getSelectedTabName();
-		final String[] attrNames = getPreviewPanel().getAttributeNames(tabName);
-		final SourceColumnSemantic[] types = getPreviewPanel().getTypes(tabName);
+		final String sourceName = getPreviewPanel().getSourceName();
+		final String[] attrNames = getPreviewPanel().getAttributeNames();
+		final SourceColumnSemantic[] types = getPreviewPanel().getTypes();
 		
 		if (!isAttributeNamesValid(attrNames, types))
 			return null;
 
 		final SourceColumnSemantic[] typesCopy = Arrays.copyOf(types, types.length);
 		
-		final AttributeDataType[] dataTypes = getPreviewPanel().getDataTypes(tabName);
+		final AttributeDataType[] dataTypes = getPreviewPanel().getDataTypes();
 		final AttributeDataType[] dataTypesCopy = Arrays.copyOf(dataTypes, dataTypes.length);
 		
-		final String[] listDelimiters = getPreviewPanel().getListDelimiters(tabName);
+		final String[] listDelimiters = getPreviewPanel().getListDelimiters();
 		final String[] listDelimitersCopy = Arrays.copyOf(listDelimiters, listDelimiters.length);
 
 		int startLineNumber = getStartLineNumber();
@@ -1612,15 +1575,15 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 		if (!getCommentLinePrefix().isEmpty())
 			commentChar = getCommentLinePrefix();
 		
-		final int sourceColumnIndex = getPreviewPanel().getColumnIndex(tabName, SOURCE);
-		final int targetColumnIndex = getPreviewPanel().getColumnIndex(tabName, TARGET);
-		final int interactionColumnIndex = getPreviewPanel().getColumnIndex(tabName, INTERACTION);
+		final int sourceColumnIndex = getPreviewPanel().getColumnIndex(SOURCE);
+		final int targetColumnIndex = getPreviewPanel().getColumnIndex(TARGET);
+		final int interactionColumnIndex = getPreviewPanel().getColumnIndex(INTERACTION);
 
 		final String defaultInteraction = defaultInteractionTextField.getText();
 
 		// Build mapping parameter object.
 		final List<String> del = checkDelimiter();
-		final NetworkTableMappingParameters mapping = new NetworkTableMappingParameters(tabName, del,
+		final NetworkTableMappingParameters mapping = new NetworkTableMappingParameters(sourceName, del,
 				listDelimitersCopy, attrNames, dataTypesCopy, typesCopy, sourceColumnIndex, targetColumnIndex,
 				interactionColumnIndex, defaultInteraction, startLineNumber, commentChar);
 

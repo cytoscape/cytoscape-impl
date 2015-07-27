@@ -177,7 +177,6 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 		tm.setProgress(0.0);
 		tm.setStatusMessage("Loading network...");
 		taskMonitor = tm;
-		int startLoadRowTemp;
 		
 		final List<String> attrNameList = new ArrayList<String>();
 		int colCount;
@@ -213,24 +212,19 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 			if (startLoadRow > 0)
 				startLoadRow--;
 			
-			startLoadRowTemp = startLoadRow;
+			final int startLoadRowTemp = firstRowAsColumnNames ? 0 : startLoadRow;
 			
-			if (firstRowAsColumnNames)
-				startLoadRowTemp = 0;
-			
-			previewPanel.setPreviewTables(
+			previewPanel.updatePreviewTable(
 					workbook,
 					fileType,
 					tempFile.getAbsolutePath(),
 					new FileInputStream(tempFile),
 					delimiters.getSelectedValues(),
 					null,
-					50,
-					null,
 					startLoadRowTemp
 			);
 			
-			colCount = previewPanel.getSelectedPreviewTable().getColumnModel().getColumnCount();
+			colCount = previewPanel.getPreviewTable().getColumnModel().getColumnCount();
 			Object curName = null;
 			
 			if (firstRowAsColumnNames) {
@@ -238,11 +232,10 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 				startLoadRow++;
 			}
 	
-			final String tabName = previewPanel.getSelectedTabName();
-			final SourceColumnSemantic[] types = previewPanel.getTypes(tabName);
+			final SourceColumnSemantic[] types = previewPanel.getTypes();
 			
 			for (int i = 0; i < colCount; i++) {
-				curName = previewPanel.getSelectedPreviewTable().getColumnModel().getColumn(i).getHeaderValue();
+				curName = previewPanel.getPreviewTable().getColumnModel().getColumn(i).getHeaderValue();
 				
 				if (attrNameList.contains(curName)) {
 					int dupIndex = 0;
@@ -271,10 +264,10 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 			
 			final SourceColumnSemantic[] typesCopy = Arrays.copyOf(types, types.length);
 			
-			final AttributeDataType[] dataTypes = previewPanel.getDataTypes(tabName);
+			final AttributeDataType[] dataTypes = previewPanel.getDataTypes();
 			final AttributeDataType[] dataTypesCopy = Arrays.copyOf(dataTypes, dataTypes.length);
 			
-			String[] listDelimiters = previewPanel.getListDelimiters(tabName);
+			String[] listDelimiters = previewPanel.getListDelimiters();
 			
 			if (listDelimiters == null || listDelimiters.length == 0) {
 				listDelimiters = new String[dataTypes.length];
@@ -292,15 +285,16 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 			if (indexColumnTypeInteraction > 0)
 				indexColumnTypeInteraction--;
 			
-			ntmp = new NetworkTableMappingParameters(tabName, delimiters.getSelectedValues(),
+			networkName = previewPanel.getSourceName();
+			
+			ntmp = new NetworkTableMappingParameters(networkName, delimiters.getSelectedValues(),
 					listDelimiters, attributeNames, dataTypesCopy, typesCopy,
 					indexColumnSourceInteraction, indexColumnTargetInteraction, indexColumnTypeInteraction,
 					defaultInteraction, startLoadRow, null);
 			
 			if (this.fileType.equalsIgnoreCase(SupportedFileType.EXCEL.getExtension()) ||
 			    this.fileType.equalsIgnoreCase(SupportedFileType.OOXML.getExtension())) {
-				final Sheet sheet = workbook.getSheet(tabName);
-				networkName = tabName;
+				final Sheet sheet = workbook.getSheet(networkName);
 				
 				reader = new ExcelNetworkSheetReader(networkName, sheet, ntmp, nMap, rootNetwork, serviceRegistrar);
 			} else {

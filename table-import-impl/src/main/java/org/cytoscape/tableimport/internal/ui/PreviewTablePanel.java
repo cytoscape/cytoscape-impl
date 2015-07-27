@@ -29,6 +29,7 @@ import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static javax.swing.GroupLayout.Alignment.CENTER;
 import static javax.swing.GroupLayout.Alignment.LEADING;
+import static javax.swing.LayoutStyle.ComponentPlacement.RELATED;
 import static javax.swing.LayoutStyle.ComponentPlacement.UNRELATED;
 import static org.cytoscape.tableimport.internal.util.AttributeDataType.TYPE_BOOLEAN;
 import static org.cytoscape.tableimport.internal.util.AttributeDataType.TYPE_FLOATING;
@@ -69,9 +70,7 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
 
@@ -80,18 +79,20 @@ import javax.swing.AbstractAction;
 import javax.swing.ActionMap;
 import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.GroupLayout;
 import javax.swing.InputMap;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JSpinner;
-import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.KeyStroke;
 import javax.swing.LayoutStyle.ComponentPlacement;
@@ -129,6 +130,8 @@ import org.cytoscape.tableimport.internal.util.URLUtil;
 import org.cytoscape.util.swing.ColumnResizer;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import au.com.bytecode.opencsv.CSVReader;
 
@@ -139,25 +142,27 @@ import au.com.bytecode.opencsv.CSVReader;
 public class PreviewTablePanel extends JPanel {
 
 	private static final float ICON_FONT_SIZE = 14.0f;
-	private static final String DEF_TAB_NAME = "Data File Preview Window";
 	
 	// Lines start with this char will be ignored.
 	private String commentChar;
+	private int startLine;
 
 	// Tracking attribute data type.
-	private final Map<String, SourceColumnSemantic[]> typeMap;
-	private final Map<String, AttributeDataType[]> dataTypeMap;
-	private final Map<String, String[]> listDelimiterMap;
+	private SourceColumnSemantic[] types;
+	private AttributeDataType[] dataTypes;
+	private String[] listDelimiters;
 	
 	private Set<?> keySet;
 
 	/*
 	 * GUI Components
 	 */
-	// Tables for each worksheet.
-	private Map<String, JTable> previewTables;
-	private JTabbedPane previewTabbedPane;
-	
+	private JLabel sheetLabel;
+	private JComboBox<Sheet> sheetComboBox;
+	private JTable previewTable;
+	private JButton selectAllButton;
+	private JButton selectNoneButton;
+	private JScrollPane tableScrollPane;
 	private JRadioButton showAllRadioButton;
 	private JRadioButton counterRadioButton;
 	private JSpinner counterSpinner;
@@ -172,7 +177,13 @@ public class PreviewTablePanel extends JPanel {
 	
 	private EditDialog editDialog;
 	
+	private boolean updating;
+	
 	private final Object lock = new Object();
+	
+	private static final Logger logger = LoggerFactory.getLogger(PreviewTablePanel.class);
+
+	protected static final String Sheet = null;
 
 	/**
 	 * Creates a new PreviewTablePanel object.
@@ -187,11 +198,6 @@ public class PreviewTablePanel extends JPanel {
 	public PreviewTablePanel(final ImportType importType, final IconManager iconManager) {
 		this.importType = importType;
 		this.iconManager = iconManager;
-
-		typeMap = new HashMap<>();
-		dataTypeMap = new HashMap<>();
-		listDelimiterMap = new HashMap<>();
-		previewTables = new HashMap<>();
 
 		initComponents();
 	}
@@ -215,6 +221,9 @@ public class PreviewTablePanel extends JPanel {
 
 	private void initComponents() {
 		setBorder(LookAndFeelUtil.createTitledBorder("Preview"));
+		
+		sheetLabel = new JLabel("Sheet:");
+		sheetLabel.setVisible(false);
 		
 		final JLabel legendLabel = new JLabel("Legend:");
 		final JLabel pkLabel = new JLabel("Key");
@@ -245,6 +254,11 @@ public class PreviewTablePanel extends JPanel {
 		importTypeButtonGroup.add(getCounterRadioButton());
 		importTypeButtonGroup.setSelected(getCounterRadioButton().getModel(), true);
 		
+		final JLabel instructionLabel = new JLabel("Click on a column to edit it.");
+		instructionLabel.setFont(instructionLabel.getFont().deriveFont(LookAndFeelUtil.INFO_FONT_SIZE));
+		
+		LookAndFeelUtil.equalizeSize(getSelectAllButton(), getSelectNoneButton());
+		
 		this.addMouseListener(new MouseAdapter() {
 			@Override
 		    public void mousePressed(MouseEvent e) {
@@ -260,7 +274,18 @@ public class PreviewTablePanel extends JPanel {
 		final JSeparator sep = new JSeparator();
 
 		layout.setHorizontalGroup(layout.createParallelGroup(LEADING, true)
-				.addComponent(getPreviewTabbedPane(), DEFAULT_SIZE, 250, Short.MAX_VALUE)
+				.addGroup(layout.createSequentialGroup()
+						.addComponent(sheetLabel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addPreferredGap(RELATED)
+						.addComponent(getSheetComboBox(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addPreferredGap(UNRELATED)
+						.addComponent(instructionLabel)
+						.addGap(20, 20, Short.MAX_VALUE)
+						.addComponent(getSelectAllButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addPreferredGap(RELATED)
+						.addComponent(getSelectNoneButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				)
+				.addComponent(getTableScrollPane(), DEFAULT_SIZE, 320, Short.MAX_VALUE)
 				.addGroup(layout.createSequentialGroup()
 					.addComponent(getShowAllRadioButton())
 					.addPreferredGap(ComponentPlacement.UNRELATED)
@@ -293,7 +318,16 @@ public class PreviewTablePanel extends JPanel {
 				)
 		);
 		layout.setVerticalGroup(layout.createSequentialGroup()
-				.addComponent(getPreviewTabbedPane(), DEFAULT_SIZE, 200, Short.MAX_VALUE)
+				.addGroup(layout.createParallelGroup(CENTER, false)
+						.addComponent(sheetLabel)
+						.addComponent(getSheetComboBox(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addComponent(instructionLabel)
+						.addComponent(getSelectAllButton())
+						.addComponent(getSelectNoneButton())
+				)
+				.addPreferredGap(RELATED)
+				.addComponent(getTableScrollPane(), 120, 160, Short.MAX_VALUE)
+				.addPreferredGap(RELATED)
 				.addGroup(layout.createParallelGroup(CENTER)
 						.addComponent(getShowAllRadioButton())
 						.addComponent(getCounterRadioButton())
@@ -327,78 +361,112 @@ public class PreviewTablePanel extends JPanel {
 			taxonIconLabel.setVisible(false);
 			taxonLabel.setVisible(false);
 		}
-	}
-	
-	public PreviewTab getSelectedPreviewTab() {
-		return (PreviewTab) getPreviewTabbedPane().getSelectedComponent();
-	}
-	
-	public JTable getSelectedPreviewTable() {
-		final PreviewTab tab = getSelectedPreviewTab();
-
-		return tab == null ? null : tab.table;
-	}
-	
-	/**
-	 * Get selected tab name.
-	 * @return name of the selected tab (i.e., sheet name)
-	 */
-	public String getSelectedTabName() {
-		final int index = getPreviewTabbedPane().getSelectedIndex();
 		
-		return index >= 0 ? getPreviewTabbedPane().getTitleAt(index) : null;
-	}
-
-	public JTable getPreviewTable(final int index) {
-		return ((PreviewTab) getPreviewTabbedPane().getComponentAt(index)).table;
+		ColumnResizer.adjustColumnPreferredWidths(getPreviewTable());
+		updatePreviewTable();
 	}
 	
-	public JTable getPreviewTable(final String name) {
-		return previewTables.get(name);
-	}
-
-	public int getTableCount() {
-		return getPreviewTabbedPane().getTabCount();
-	}
-
-	public String getTabName(final int index) {
-		return getPreviewTabbedPane().getTitleAt(index);
-	}
-
-	public String[] getAttributeNames(final String tabName) {
-		String[] names = null;
-		final JTable table = getPreviewTable(tabName);
-		
-		if (table != null) {
-			final PreviewTableModel model = (PreviewTableModel) table.getModel();
-			final int columnCount = model.getColumnCount();
-			names = new String[columnCount];
+	public JTable getPreviewTable() {
+		if (previewTable == null) {
+			previewTable = new JTable(new PreviewTableModel(new Vector<Vector<String>>(), new Vector<String>(), false));
 			
-			for (int i = 0; i < columnCount; i++)
-				names[i] = model.getColumnName(i);
+			previewTable.setCellSelectionEnabled(false);
+			previewTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+			previewTable.setDefaultEditor(Object.class, null);
+
+			if (importType == NETWORK_IMPORT) {
+				final TableCellRenderer netRenderer = new PreviewTableCellRenderer();
+				previewTable.setDefaultRenderer(Object.class, netRenderer);
+			} else {
+				previewTable.setDefaultRenderer(Object.class, new PreviewTableCellRenderer());
+			}
+
+			final JTableHeader hd = previewTable.getTableHeader();
+			hd.setReorderingAllowed(false);
+			hd.setDefaultRenderer(new PreviewTableHeaderRenderer());
+			hd.addMouseListener(new MouseAdapter() {
+				@Override
+				public void mousePressed(final MouseEvent e) {
+					final TableColumnModel columnModel = previewTable.getColumnModel();
+					final int newColIdx = columnModel.getColumnIndexAtX(e.getX());
+					final int idx = editDialog != null ? editDialog.index : -1;
+					
+					disposeEditDialog(true);
+						
+					if (idx != newColIdx)
+						showEditDialog(newColIdx);
+				}
+			});
+			
+			// Do not show editor dialog when the user is resizing the columns
+			previewTable.getColumnModel().addColumnModelListener(new TableColumnModelListener() {
+				@Override
+				public void columnMoved(TableColumnModelEvent e) {
+					disposeEditDialog(true);
+				}
+				@Override
+				public void columnMarginChanged(ChangeEvent e) {
+					disposeEditDialog(true);
+				}
+				@Override
+				public void columnSelectionChanged(ListSelectionEvent e) {
+				}
+				@Override
+				public void columnRemoved(TableColumnModelEvent e) {
+				}
+				@Override
+				public void columnAdded(TableColumnModelEvent e) {
+				}
+			});
+			// Also close the editor dialog when the table changes
+			previewTable.getModel().addTableModelListener(new TableModelListener() {
+				@Override
+				public void tableChanged(TableModelEvent e) {
+					disposeEditDialog(false);
+				}
+			});
+			// Finally, close the editor dialog and commit its changes when the user clicks anywhere else in the table
+			previewTable.addMouseListener(new MouseAdapter() {
+				@Override
+			    public void mousePressed(MouseEvent e) {
+					if (previewTable != null) {
+				        int row = previewTable.rowAtPoint(e.getPoint());
+				        int col = previewTable.columnAtPoint(e.getPoint());
+				        
+				        if (row >= 0 && col >= 0)
+							disposeEditDialog(true);
+					}
+			    }
+			});
 		}
+		
+		return previewTable;
+	}
+
+	public String[] getAttributeNames() {
+		String[] names = null;
+		final PreviewTableModel model = (PreviewTableModel) getPreviewTable().getModel();
+		final int columnCount = model.getColumnCount();
+		names = new String[columnCount];
+		
+		for (int i = 0; i < columnCount; i++)
+			names[i] = model.getColumnName(i);
 		
 		return names;
 	}
 	
-	public SourceColumnSemantic[] getTypes(final String tabName) {
-		return typeMap.get(tabName);
+	public SourceColumnSemantic[] getTypes() {
+		return types;
 	}
 	
-	public SourceColumnSemantic[] getCurrentTypes() {
-		return getTypes(getSelectedTabName());
-	}
-	
-	public void setType(final String tabName, final int index, final SourceColumnSemantic newType) {
+	public void setType(final int index, final SourceColumnSemantic newType) {
 		if (index < 0)
 			return;
-		
-		final SourceColumnSemantic[] types = getTypes(tabName);
 		
 		if (types != null && types.length > index) {
 			// First replace the index that currently has this unique type by the default type
 			if (newType.isUnique())
-				replaceType(tabName, newType, TypeUtil.getDefaultType(importType));
+				replaceType(newType, TypeUtil.getDefaultType(importType));
 			
 			final SourceColumnSemantic oldType = types[index];
 			types[index] = newType;
@@ -408,46 +476,34 @@ public class PreviewTablePanel extends JPanel {
 		}
 	}
 	
-	protected void fillTypes(final String tabName, final SourceColumnSemantic newValue) {
-		final SourceColumnSemantic[] types = getTypes(tabName);
-		
+	protected void fillTypes(final SourceColumnSemantic newValue) {
 		if (types != null)
 			Arrays.fill(types, newValue);
 	}
 	
-	protected void replaceType(final String tabName, final SourceColumnSemantic type1, final SourceColumnSemantic type2) {
-		final SourceColumnSemantic[] types = getTypes(tabName);
-		
+	protected void replaceType(final SourceColumnSemantic type1, final SourceColumnSemantic type2) {
 		if (types != null) {
 			for (int i = 0; i < types.length; i++) {
 				if (types[i] == type1)
-					setType(tabName, i, type2);
+					setType(i, type2);
 			}
 		}
 	}
 	
-	public AttributeDataType[] getDataTypes(final String tabName) {
-		return dataTypeMap.get(tabName);
+	public AttributeDataType[] getDataTypes() {
+		return dataTypes;
 	}
 	
-	public AttributeDataType[] getCurrentDataTypes() {
-		return getDataTypes(getSelectedTabName());
-	}
-
-	public AttributeDataType getDataType(final String tabName, final int index) {
-		final AttributeDataType[] dataTypes = getDataTypes(tabName);
-		
+	public AttributeDataType getDataType(final int index) {
 		if (dataTypes != null && dataTypes.length > index)
 			return dataTypes[index];
 		
 		return null;
 	}
 	
-	public void setDataType(final String tabName, final int index, final AttributeDataType newValue) {
+	public void setDataType(final int index, final AttributeDataType newValue) {
 		if (index < 0)
 			return;
-		
-		final AttributeDataType[] dataTypes = getDataTypes(tabName);
 		
 		if (dataTypes != null && dataTypes.length > index) {
 			final AttributeDataType oldValue = dataTypes[index];
@@ -458,120 +514,123 @@ public class PreviewTablePanel extends JPanel {
 		}
 	}
 	
-	public String[] getListDelimiters(final String tabName) {
-		return listDelimiterMap.get(tabName);
+	public String[] getListDelimiters() {
+		return listDelimiters;
 	}
 	
-	public void setListDelimiter(final String tabName, final int index, final String newValue) {
+	public void setListDelimiter(final int index, final String newValue) {
 		if (index < 0)
 			return;
 		
-		final String[] delimiters = getListDelimiters(tabName);
-		
-		if (delimiters != null && delimiters.length > index)
-			delimiters[index] = newValue;
+		if (listDelimiters != null && listDelimiters.length > index)
+			listDelimiters[index] = newValue;
 	}
 	
 	public FileType getFileType() {
-		final String tabName = getTabName(getPreviewTabbedPane().getSelectedIndex());
+		final String name = getSourceName();
 
-		if (tabName.startsWith("gene_association"))
+		if (name != null && name.startsWith("gene_association"))
 			return FileType.GENE_ASSOCIATION_FILE;
 
 		return FileType.ATTRIBUTE_FILE;
 	}
 
+	public String getSourceName() {
+		return getPreviewTable().getName();
+	}
+	
 	/**
 	 * Load file and show preview.
 	 */
-	public void setPreviewTables(
+	public void updatePreviewTable(
 			final Workbook workbook,
 			final String fileType,
 			final String fileFullName,
 			final InputStream tempIs,
 			final List<String> delimiters,
-			final TableCellRenderer renderer,
-			final int size,
 			final String commentLineChar,
 			final int startLine
 	) throws IOException {
 		if (tempIs == null)
 			return;
 
-		TableCellRenderer curRenderer = renderer;
-
 		if ((commentLineChar != null) && (commentLineChar.trim().length() != 0))
 			this.commentChar = commentLineChar;
 		else
 			this.commentChar = null;
 
-		if (curRenderer == null)
-			curRenderer = new PreviewTableCellRenderer();
+		this.startLine = startLine;
 
-		getPreviewTabbedPane().removeAll();
-		previewTables = new HashMap<>();
-		PreviewTableModel newModel = null;
+		updating = true;
 		
-		if (SupportedFileType.EXCEL.getExtension().equalsIgnoreCase(fileType)
-				|| SupportedFileType.OOXML.getExtension().equalsIgnoreCase(fileType)) {
-			final int numberOfSheets = workbook.getNumberOfSheets();
+		try {
+			getSheetComboBox().removeAllItems();
+			getSheetComboBox().setVisible(false);
+			sheetLabel.setVisible(false);
 			
-			if (numberOfSheets == 0)
-				throw new IllegalStateException("No sheet found in the workbook.");
-
-			/*
-			 * Load each sheet in the workbook.
-			 */
-			for (int i = 0; i < numberOfSheets; i++) {
-				final Sheet sheet = workbook.getSheetAt(i);
-				newModel = parseExcel(size, curRenderer, sheet, startLine);
-
-				if (newModel.getRowCount() > 0) {
-					final String sheetName = sheet.getSheetName();
+			PreviewTableModel newModel = null;
+			
+			if (SupportedFileType.EXCEL.getExtension().equalsIgnoreCase(fileType)
+					|| SupportedFileType.OOXML.getExtension().equalsIgnoreCase(fileType)) {
+				final int numberOfSheets = workbook.getNumberOfSheets();
+				
+				if (numberOfSheets == 0)
+					throw new IllegalStateException("No sheet found in the workbook.");
+	
+				for (int i = 0; i < numberOfSheets; i++) {
+					final Sheet sheet = workbook.getSheetAt(i);
 					
-					dataTypeMap.put(sheetName, TypeUtil.guessDataTypes(newModel));
-					typeMap.put(sheetName, TypeUtil.guessTypes(importType, newModel, dataTypeMap.get(sheetName)));
-					listDelimiterMap.put(sheetName, new String[newModel.getColumnCount()]);
-					
-					addTableTab(newModel, sheetName, curRenderer);
+					if (sheet.getPhysicalNumberOfRows() > 0)
+						getSheetComboBox().addItem(sheet);
 				}
+				
+				if (getSheetComboBox().getItemCount() > 0)
+					getSheetComboBox().setSelectedIndex(0);
+				
+				if (getSheetComboBox().getItemCount() > 1) {
+					sheetLabel.setVisible(true);
+					getSheetComboBox().setVisible(true);
+				}
+				
+				/*
+				 * Load each sheet in the workbook.
+				 */
+				if (getSheetComboBox().getItemCount() > 0) {
+					final Sheet sheet = workbook.getSheetAt(0);
+					updatePreviewTable(sheet);
+				} else {
+					throw new RuntimeException("No data found in the Excel sheets.");
+				}
+			} else {
+				newModel = parseText(tempIs, delimiters, startLine);
+	
+				String sourceName;
+				String[] urlParts = fileFullName.split("/");
+				
+				if (urlParts.length > 0 && !fileFullName.isEmpty())
+					sourceName = urlParts[urlParts.length - 1];
+				else
+					sourceName = "Source Table";
+				
+				dataTypes = TypeUtil.guessDataTypes(newModel);
+				types = TypeUtil.guessTypes(importType, newModel, dataTypes);
+				listDelimiters = new String[newModel.getColumnCount()];
+				
+				updatePreviewTable(newModel, sourceName);
 			}
-			
-			if (previewTables.isEmpty())
-				throw new IllegalStateException("No data found in the Excel sheets.");
-		} else {
-			newModel = parseText(tempIs, size, curRenderer, delimiters, startLine);
-
-			String tabName;
-			String[] urlParts = fileFullName.split("/");
-			
-			if (urlParts.length > 0 && !fileFullName.isEmpty())
-				tabName = urlParts[urlParts.length - 1];
-			else
-				tabName = "Source Table";
-			
-			dataTypeMap.put(tabName, TypeUtil.guessDataTypes(newModel));
-			typeMap.put(tabName, TypeUtil.guessTypes(importType, newModel, dataTypeMap.get(tabName)));
-			listDelimiterMap.put(tabName, new String[newModel.getColumnCount()]);
-			
-			addTableTab(newModel, tabName, curRenderer);
+		} finally {
+			updating = false;
 		}
 	}
-	
+
 	public void setFirstRowAsColumnNames() {
-		final PreviewTab tab = getSelectedPreviewTab();
-		final JTable table = tab != null ? tab.table : null;
+		final PreviewTableModel model = (PreviewTableModel) getPreviewTable().getModel();
+		model.setFirstRowNames(true);
+
+		types = TypeUtil.guessTypes(importType, model, dataTypes);
+		updatePreviewTable();
 		
-		if (table != null) {
-			final PreviewTableModel model = (PreviewTableModel) table.getModel();
-			model.setFirstRowNames(true);
-	
-			final String tabName = table.getName();
-			typeMap.put(tabName, TypeUtil.guessTypes(importType, model, dataTypeMap.get(tabName)));
-			tab.update();
-			
-			ColumnResizer.adjustColumnPreferredWidths(table);
-		}
+		ColumnResizer.adjustColumnPreferredWidths(getPreviewTable());
 	}
 
 	protected boolean isCytoscapeAttributeFile(final URL sourceURL) throws IOException {
@@ -626,20 +685,11 @@ public class PreviewTablePanel extends JPanel {
 		return testResult;
 	}
 
-	private void addTableTab(final PreviewTableModel newModel, final String tabName, final TableCellRenderer renderer) {
-		final JTable table = new JTable(newModel);
-		table.setName(tabName);
-		previewTables.put(tabName, table);
-
-		final PreviewTab tab = new PreviewTab(table, renderer);
-		getPreviewTabbedPane().addTab(tabName, tab);
-	}
-
 	public int checkKeyMatch(final int targetColumn) {
 		int matched = 0;
 
 		if (keySet != null && !keySet.isEmpty()) {
-			final TableModel curModel = getSelectedPreviewTable().getModel();
+			final TableModel curModel = getPreviewTable().getModel();
 	
 			try {
 				curModel.getValueAt(0, targetColumn);
@@ -660,12 +710,25 @@ public class PreviewTablePanel extends JPanel {
 		return matched;
 	}
 	
+	public int getPreviewSize() {
+		final int previewSize;
+
+		try {
+			if (getShowAllRadioButton().isSelected())
+				previewSize = -1;
+			else
+				previewSize = Integer.parseInt(getCounterSpinner().getValue().toString());
+		} catch (NumberFormatException e) {
+			return 0;
+		}
+		
+		return previewSize;
+	}
+	
 	/**
 	 * Returns the first index of the table column that has the passed type.
 	 */
-	protected int getColumnIndex(final String tabName, final SourceColumnSemantic type) {
-		final SourceColumnSemantic[] types = getTypes(tabName);
-		
+	protected int getColumnIndex(final SourceColumnSemantic type) {
 		if (types != null)
 			return Arrays.asList(types).indexOf(type);
 		
@@ -673,19 +736,13 @@ public class PreviewTablePanel extends JPanel {
 	}
 	
 	protected void setAliasColumn(final int index, final boolean flag) {
-		final SourceColumnSemantic[] types = getCurrentTypes();
-
 		if (types != null && types.length > index) {
 			types[index] = flag ? ALIAS : ATTR;
-			
-			if (getSelectedPreviewTab() != null)
-				getSelectedPreviewTab().update();
+			updatePreviewTable();
 		}
 	}
 	
 	protected boolean isImported(final int index) {
-		final SourceColumnSemantic[] types = getCurrentTypes();
-		
 		if (types != null && types.length > index)
 			return types[index] != NONE;
 
@@ -755,39 +812,10 @@ public class PreviewTablePanel extends JPanel {
 		return reloadButton;
 	}
 	
-	private JTabbedPane getPreviewTabbedPane() {
-		if (previewTabbedPane == null) {
-			previewTabbedPane = new JTabbedPane();
-			
-			final JTable tmpTable = new JTable(
-					new PreviewTableModel(new Vector<Vector<String>>(), new Vector<String>(), false));
-			tmpTable.setName(DEF_TAB_NAME);
-			tmpTable.setOpaque(false);
-			tmpTable.setVisible(false);
-			
-			final JTableHeader hd = tmpTable.getTableHeader();
-			hd.setReorderingAllowed(false);
-			hd.setDefaultRenderer(new PreviewTableHeaderRenderer());
-
-			tmpTable.setCellSelectionEnabled(false);
-			tmpTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-			tmpTable.setDefaultEditor(Object.class, null);
-			
-			previewTabbedPane.addTab(DEF_TAB_NAME, new PreviewTab(tmpTable, null));
-			
-			previewTabbedPane.addMouseListener(new MouseAdapter() {
-				@Override
-				public void mousePressed(MouseEvent e) {
-					disposeEditDialog(true);
-				}
-			});
-		}
-		
-		return previewTabbedPane;
-	}
-	
-	private PreviewTableModel parseExcel(int size, TableCellRenderer renderer, final Sheet sheet, int startLine)
+	private PreviewTableModel parseExcel(final Sheet sheet, int startLine)
 			throws IOException {
+		int size = getPreviewSize();
+		
 		if (size == -1)
 			size = Integer.MAX_VALUE;
 
@@ -827,8 +855,8 @@ public class PreviewTablePanel extends JPanel {
 		return new PreviewTableModel(data, new Vector<String>(), firstRowNames);
 	}
 	
-	private PreviewTableModel parseText(InputStream tempIs, int size, TableCellRenderer renderer, List<String> delimiters,
-			int startLine) throws IOException {
+	private PreviewTableModel parseText(InputStream tempIs, List<String> delimiters, int startLine)
+			throws IOException {
 		String line;
 		String attrName = "Attr1";
 		Vector<Vector<String>> data = null;
@@ -865,6 +893,7 @@ public class PreviewTablePanel extends JPanel {
 		/*
 		 * Read & extract one line at a time. The line can be Tab delimited,
 		 */
+		final int size = getPreviewSize();
 		boolean importAll = false;
 
 		if (size == -1)
@@ -957,15 +986,10 @@ public class PreviewTablePanel extends JPanel {
 		}
 	}
 	
-	private void showEditDialog(final PreviewTab tab, final int colIdx) {
-		final JTable table = tab.table;
+	private void showEditDialog(final int colIdx) {
 		final Window parent = SwingUtilities.getWindowAncestor(PreviewTablePanel.this);
 		
-		final SourceColumnSemantic[] types = getTypes(table.getName());
-		final AttributeDataType[] dataTypes = getDataTypes(table.getName());
-		final String[] listDelimiters = getListDelimiters(table.getName());
-
-		final PreviewTableModel model = (PreviewTableModel) table.getModel();
+		final PreviewTableModel model = (PreviewTableModel) getPreviewTable().getModel();
 		final String attrName = model.getColumnName(colIdx);
 		final List<SourceColumnSemantic> availableTypes = TypeUtil.getAvailableTypes(importType);
 		
@@ -1002,17 +1026,16 @@ public class PreviewTablePanel extends JPanel {
 			}
 		});
 		
-		positionEditDialog(tab);
+		positionEditDialog();
 		
 	    editDialog.pack();
 		editDialog.setVisible(true);
 		editDialog.requestFocus();
 	}
 	
-	private void positionEditDialog(final PreviewTab tab) {
-		if (tab != null && editDialog != null) {
-			final JTable table = tab.table;
-			final JTableHeader hd = table.getTableHeader();
+	private void positionEditDialog() {
+		if (editDialog != null) {
+			final JTableHeader hd = getPreviewTable().getTableHeader();
 			
 			// Get the column header location
 			// (see: https://bugs.openjdk.java.net/browse/JDK-4408424)
@@ -1028,8 +1051,8 @@ public class PreviewTablePanel extends JPanel {
 		    pt.translate(xOffset, yOffset);
 		    
 		    // This prevent the dialog from being positioned completely outside the parent panel
-		    pt.x = Math.max(pt.x, tab.tableScrollPane.getLocationOnScreen().x - editDialog.getBounds().width);
-		    pt.x = Math.min(pt.x, tab.tableScrollPane.getLocationOnScreen().x + tab.tableScrollPane.getBounds().width);
+		    pt.x = Math.max(pt.x, getTableScrollPane().getLocationOnScreen().x - editDialog.getBounds().width);
+		    pt.x = Math.min(pt.x, getTableScrollPane().getLocationOnScreen().x + getTableScrollPane().getBounds().width);
 			
 		    // Show the dialog right below the column header
 		    editDialog.setLocation(pt);
@@ -1045,143 +1068,159 @@ public class PreviewTablePanel extends JPanel {
 				editDialog = null;
 				
 				if (commitChanges)
-					updateTable(index, editPanel);
+					updatePreviewTable(index, editPanel);
 			}
 		}
 	}
 
-	private void updateTable(final int colIdx, final AttributeEditorPanel attrEditorPanel) {
-		final String tabName = getSelectedTabName();
-		final JTable table = getSelectedPreviewTable();
+	private void updatePreviewTable(final Sheet sheet) throws IOException {
+		final PreviewTableModel newModel = parseExcel(sheet, startLine);
+
+		if (newModel.getRowCount() > 0) {
+			final String sheetName = sheet.getSheetName();
+			
+			dataTypes = TypeUtil.guessDataTypes(newModel);
+			types = TypeUtil.guessTypes(importType, newModel, dataTypes);
+			listDelimiters = new String[newModel.getColumnCount()];
+			
+			updatePreviewTable(newModel, sheetName);
+		}
 		
-		if (table == null)
-			return;
-		
+		if (getPreviewTable() == null)
+			throw new IllegalStateException("No data found in the Excel sheets.");
+	}
+	
+	private void updatePreviewTable(final int colIdx, final AttributeEditorPanel attrEditorPanel) {
 		final String attrName = attrEditorPanel.getAttributeName();
 		final SourceColumnSemantic newType = attrEditorPanel.getType();
 		final AttributeDataType newDataType = attrEditorPanel.getDataType();
 
 		if (attrName != null) {
-			final PreviewTableModel model = (PreviewTableModel) table.getModel();
+			final PreviewTableModel model = (PreviewTableModel) getPreviewTable().getModel();
 			model.setColumnName(colIdx, attrName);
-			table.getColumnModel().getColumn(colIdx).setHeaderValue(attrName);
+			getPreviewTable().getColumnModel().getColumn(colIdx).setHeaderValue(attrName);
 		}
 
 		if (newDataType.isList())
-			setListDelimiter(tabName, colIdx, attrEditorPanel.getListDelimiter());
+			setListDelimiter(colIdx, attrEditorPanel.getListDelimiter());
 
-		setType(tabName, colIdx, newType);
-		setDataType(tabName, colIdx, newDataType);
+		setType(colIdx, newType);
+		setDataType(colIdx, newDataType);
 		
-		ColumnResizer.adjustColumnPreferredWidth(table, colIdx);
-
-		if (getSelectedPreviewTab() != null)
-			getSelectedPreviewTab().update();
+		ColumnResizer.adjustColumnPreferredWidth(getPreviewTable(), colIdx);
+		updatePreviewTable();
 	}
 	
-	private class EditDialog extends JDialog {
+	private void updatePreviewTable(final PreviewTableModel newModel, final String name) {
+		getPreviewTable().setName(name);
+		getPreviewTable().setModel(newModel);
 		
-		final int index;
-		final AttributeEditorPanel editPanel;
+		ColumnResizer.adjustColumnPreferredWidths(getPreviewTable());
+		updatePreviewTable();
+	}
+	
+	protected void updatePreviewTable() {
+		getPreviewTable().revalidate();
+		getPreviewTable().repaint();
+		getPreviewTable().getTableHeader().resizeAndRepaint();
 		
-		EditDialog(final Window parent, final ModalityType modType, int index, AttributeEditorPanel editPanel) {
-			super(parent, modType);
-			this.index = index;
-			this.editPanel = editPanel;
+		getSelectAllButton().setEnabled(false);
+		getSelectNoneButton().setEnabled(false);
+		
+		if (types != null) {
+			getSelectAllButton().setEnabled(Arrays.asList(types).contains(NONE));
+			
+			for (SourceColumnSemantic t : types) {
+				if (t != NONE) {
+					getSelectNoneButton().setEnabled(true);
+					break;
+				}
+			}
 		}
 	}
 	
-	class PreviewTab extends JPanel {
+	private JComboBox<Sheet> getSheetComboBox() {
+		if (sheetComboBox == null) {
+			sheetComboBox = new JComboBox<>();
+			sheetComboBox.setVisible(false);
+			sheetComboBox.setRenderer(new DefaultListCellRenderer() {
+				@Override
+				public Component getListCellRendererComponent(JList<?> list, Object value, int index,
+						boolean isSelected, boolean cellHasFocus) {
+					super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+					setText(((Sheet)value).getSheetName());
+					
+					return this;
+				}
+			});
+			sheetComboBox.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent evt) {
+					if (!updating) {
+						final Sheet sheet = (Sheet) sheetComboBox.getSelectedItem();
+						
+						try {
+							if (sheet != null)
+								updatePreviewTable(sheet);
+						} catch (IOException e) {
+							logger.error("Cannot preview Excel sheet '" + sheet.getSheetName() + "'.", e);
+						}
+					}
+				}
+			});
+		}
 		
-		private final JTable table;
-		private final JButton selectAllButton;
-		private final JButton selectNoneButton;
-		private final JScrollPane tableScrollPane;
-
-		PreviewTab(final JTable table, final TableCellRenderer renderer) {
-			this.table = table;
-			
-			if (LookAndFeelUtil.isAquaLAF())
-				this.setOpaque(false);
-			
-			final JLabel instructionLabel = new JLabel("Click on a column to edit it.");
-			instructionLabel.setFont(instructionLabel.getFont().deriveFont(LookAndFeelUtil.INFO_FONT_SIZE));
-			
+		return sheetComboBox;
+	}
+	
+	private JButton getSelectAllButton() {
+		if (selectAllButton == null) {
 			selectAllButton = new JButton("Select All");
 			selectAllButton.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(final ActionEvent e) {
 					disposeEditDialog(true);
-					replaceType(table.getName(), NONE, TypeUtil.getDefaultType(importType));
-					update();
+					replaceType(NONE, TypeUtil.getDefaultType(importType));
+					updatePreviewTable();
 				}
 			});
 			selectAllButton.putClientProperty("JButton.buttonType", "gradient"); // Mac OS X only
 			selectAllButton.putClientProperty("JComponent.sizeVariant", "small"); // Mac OS X only
 			selectAllButton.setEnabled(false);
-			
+		}
+		
+		return selectAllButton;
+	}
+	
+	private JButton getSelectNoneButton() {
+		if (selectNoneButton == null) {
 			selectNoneButton = new JButton("Select None");
 			selectNoneButton.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(final ActionEvent e) {
 					disposeEditDialog(true);
-					fillTypes(table.getName(), NONE);
-					update();
+					fillTypes(NONE);
+					updatePreviewTable();
 				}
 			});
 			selectNoneButton.putClientProperty("JButton.buttonType", "gradient"); // Mac OS X only
 			selectNoneButton.putClientProperty("JComponent.sizeVariant", "small"); // Mac OS X only
 			selectNoneButton.setEnabled(false);
-			
-			LookAndFeelUtil.equalizeSize(selectAllButton, selectNoneButton);
-			
-			tableScrollPane = new JScrollPane(table);
+		}
+		
+		return selectNoneButton;
+	}
+	
+	private JScrollPane getTableScrollPane() {
+		if (tableScrollPane == null) {
+			tableScrollPane = new JScrollPane(getPreviewTable());
 			tableScrollPane.getHorizontalScrollBar().addAdjustmentListener(new AdjustmentListener() {
 				@Override
 				public void adjustmentValueChanged(AdjustmentEvent e) {
 					// Realign the Attribute Editor Dialog if it is open
 					if (!e.getValueIsAdjusting())
-						positionEditDialog(PreviewTab.this);
+						positionEditDialog();
 				}
-			});
-			
-			// Do not show editor dialog when the user is resizing the columns
-			table.getColumnModel().addColumnModelListener(new TableColumnModelListener() {
-				@Override
-				public void columnMoved(TableColumnModelEvent e) {
-					disposeEditDialog(true);
-				}
-				@Override
-				public void columnMarginChanged(ChangeEvent e) {
-					disposeEditDialog(true);
-				}
-				@Override
-				public void columnSelectionChanged(ListSelectionEvent e) {
-				}
-				@Override
-				public void columnRemoved(TableColumnModelEvent e) {
-				}
-				@Override
-				public void columnAdded(TableColumnModelEvent e) {
-				}
-			});
-			// Also close the editor dialog when the table changes
-			table.getModel().addTableModelListener(new TableModelListener() {
-				@Override
-				public void tableChanged(TableModelEvent e) {
-					disposeEditDialog(false);
-				}
-			});
-			// Finally, close the editor dialog and commit its changes when the user clicks anywhere else in the table
-			table.addMouseListener(new MouseAdapter() {
-				@Override
-			    public void mousePressed(MouseEvent e) {
-			        int row = table.rowAtPoint(e.getPoint());
-			        int col = table.columnAtPoint(e.getPoint());
-			        
-			        if (row >= 0 && col >= 0)
-						disposeEditDialog(true);
-			    }
 			});
 			tableScrollPane.getViewport().addMouseListener(new MouseAdapter() {
 				@Override
@@ -1189,91 +1228,9 @@ public class PreviewTablePanel extends JPanel {
 		        	disposeEditDialog(true);
 			    }
 			});
-			this.addMouseListener(new MouseAdapter() {
-				@Override
-			    public void mousePressed(MouseEvent e) {
-		        	disposeEditDialog(true);
-			    }
-			});
-			
-			final GroupLayout layout = new GroupLayout(this);
-			this.setLayout(layout);
-			layout.setAutoCreateContainerGaps(false);
-			layout.setAutoCreateGaps(true);
-			
-			layout.setHorizontalGroup(layout.createParallelGroup(LEADING, true)
-					.addGroup(layout.createSequentialGroup()
-							.addContainerGap()
-							.addComponent(instructionLabel)
-							.addGap(20, 20, Short.MAX_VALUE)
-							.addComponent(selectAllButton, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-							.addComponent(selectNoneButton, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-							.addContainerGap()
-					)
-					.addComponent(tableScrollPane, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-			);
-			layout.setVerticalGroup(layout.createSequentialGroup()
-					.addGroup(layout.createParallelGroup(CENTER, false)
-							.addComponent(instructionLabel)
-							.addComponent(selectAllButton)
-							.addComponent(selectNoneButton)
-					)
-					.addComponent(tableScrollPane, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-			);
-			
-			table.setCellSelectionEnabled(false);
-			table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-			table.setDefaultEditor(Object.class, null);
-
-			if (importType == NETWORK_IMPORT) {
-				final TableCellRenderer netRenderer = new PreviewTableCellRenderer();
-				table.setDefaultRenderer(Object.class, netRenderer);
-			} else if (renderer != null) {
-				table.setDefaultRenderer(Object.class, renderer);
-			}
-
-			final JTableHeader hd = table.getTableHeader();
-			hd.setReorderingAllowed(false);
-			hd.setDefaultRenderer(new PreviewTableHeaderRenderer());
-			hd.addMouseListener(new MouseAdapter() {
-				@Override
-				public void mousePressed(final MouseEvent e) {
-					final TableColumnModel columnModel = table.getColumnModel();
-					final int newColIdx = columnModel.getColumnIndexAtX(e.getX());
-					final int idx = editDialog != null ? editDialog.index : -1;
-					
-					disposeEditDialog(true);
-						
-					if (idx != newColIdx)
-						showEditDialog(PreviewTab.this, newColIdx);
-				}
-			});
-
-			ColumnResizer.adjustColumnPreferredWidths(table);
-			update();
 		}
 		
-		protected void update() {
-			table.revalidate();
-			table.repaint();
-			table.getTableHeader().resizeAndRepaint();
-			
-			selectAllButton.setEnabled(false);
-			selectNoneButton.setEnabled(false);
-			
-			final SourceColumnSemantic[] types = getTypes(table.getName());
-			
-			if (types != null) {
-				selectAllButton.setEnabled(Arrays.asList(types).contains(NONE));
-				
-				for (SourceColumnSemantic t : types) {
-					if (t != NONE) {
-						selectNoneButton.setEnabled(true);
-						break;
-					}
-				}
-			}
-		}
+		return tableScrollPane;
 	}
 	
 	class PreviewTableModel extends DefaultTableModel {
@@ -1417,7 +1374,6 @@ public class PreviewTablePanel extends JPanel {
 		                                               boolean hasF, int row, int col) {
 			nameLabel.setText(val != null ? val.toString() : "");
 			
-			final SourceColumnSemantic[] types = getTypes(tbl.getName());
 			Color fgColor = UIManager.getColor("Label.foreground");
 			
 			// Set type icon
@@ -1427,7 +1383,6 @@ public class PreviewTablePanel extends JPanel {
 				if (type == null)
 					type = NONE;
 				
-				 final AttributeDataType[] dataTypes = getDataTypes(tbl.getName());
 				 final AttributeDataType dataType = dataTypes != null && dataTypes.length > col ?
 						 dataTypes[col] : TYPE_STRING;
 				
@@ -1468,7 +1423,7 @@ public class PreviewTablePanel extends JPanel {
 			setHorizontalAlignment(DefaultTableCellRenderer.CENTER);
 			
 			setFont(getFont().deriveFont(LookAndFeelUtil.INFO_FONT_SIZE));
-			setFont(getFont().deriveFont(getColumnIndex(table.getName(), KEY) == column ? Font.BOLD : Font.PLAIN));
+			setFont(getFont().deriveFont(getColumnIndex(KEY) == column ? Font.BOLD : Font.PLAIN));
 			
 			setText(value == null ? "" : value.toString());
 
@@ -1477,7 +1432,7 @@ public class PreviewTablePanel extends JPanel {
 			else
 				setForeground(UIManager.getColor("Label.disabledForeground"));
 			
-			final AttributeDataType dataType = getDataType(table.getName(), column);
+			final AttributeDataType dataType = getDataType(column);
 			
 			if (dataType == TYPE_INTEGER || dataType == TYPE_LONG || dataType == TYPE_FLOATING)
 				setHorizontalAlignment(JLabel.RIGHT);
@@ -1487,6 +1442,18 @@ public class PreviewTablePanel extends JPanel {
 				setHorizontalAlignment(JLabel.LEFT);
 			
 			return this;
+		}
+	}
+	
+	private class EditDialog extends JDialog {
+		
+		final int index;
+		final AttributeEditorPanel editPanel;
+		
+		EditDialog(final Window parent, final ModalityType modType, int index, AttributeEditorPanel editPanel) {
+			super(parent, modType);
+			this.index = index;
+			this.editPanel = editPanel;
 		}
 	}
 }

@@ -168,7 +168,6 @@ public class LoadTableReaderTask extends AbstractTask implements CyTableReader, 
 		
 		List<String> attrNameList = new ArrayList<String>();
 		int colCount;
-		int startLoadRowTemp;
 		String[] attributeNames;
 		
 		Workbook workbook = null;
@@ -191,24 +190,19 @@ public class LoadTableReaderTask extends AbstractTask implements CyTableReader, 
 		if (startLoadRow > 0)
 			startLoadRow--;
 		
-		startLoadRowTemp = startLoadRow;
+		final int startLoadRowTemp = firstRowAsColumnNames ? 0 : startLoadRow;
 		
-		if (firstRowAsColumnNames)
-			startLoadRowTemp = 0;
-		
-		previewPanel.setPreviewTables(
+		previewPanel.updatePreviewTable(
 				workbook,
 				fileType,
 				inputName,
 				isStart,
 				delimiters.getSelectedValues(),
 				null,
-				50,
-				null,
 				startLoadRowTemp
 		);
 		
-		colCount = previewPanel.getSelectedPreviewTable().getColumnModel().getColumnCount();
+		colCount = previewPanel.getPreviewTable().getColumnModel().getColumnCount();
 		Object curName = null;
 		
 		if (firstRowAsColumnNames) {
@@ -216,11 +210,11 @@ public class LoadTableReaderTask extends AbstractTask implements CyTableReader, 
 			startLoadRow++;
 		}
 
-		final String tabName = previewPanel.getSelectedTabName();
-		final SourceColumnSemantic[] types = previewPanel.getTypes(tabName);
+		final String sourceName = previewPanel.getSourceName();
+		final SourceColumnSemantic[] types = previewPanel.getTypes();
 		
 		for (int i = 0; i < colCount; i++) {
-			curName = previewPanel.getSelectedPreviewTable().getColumnModel().getColumn(i).getHeaderValue();
+			curName = previewPanel.getPreviewTable().getColumnModel().getColumn(i).getHeaderValue();
 			
 			if (attrNameList.contains(curName)) {
 				int dupIndex = 0;
@@ -249,10 +243,10 @@ public class LoadTableReaderTask extends AbstractTask implements CyTableReader, 
 		
 		final SourceColumnSemantic[] typesCopy = Arrays.copyOf(types, types.length);
 		
-		final AttributeDataType[] dataTypes = previewPanel.getDataTypes(tabName);
+		final AttributeDataType[] dataTypes = previewPanel.getDataTypes();
 		final AttributeDataType[] dataTypesCopy = Arrays.copyOf(dataTypes, dataTypes.length);
 		
-		String[] listDelimiters = previewPanel.getListDelimiters(tabName);
+		String[] listDelimiters = previewPanel.getListDelimiters();
 		
 		if (listDelimiters == null || listDelimiters.length == 0) {
 			listDelimiters = new String[dataTypes.length];
@@ -264,7 +258,7 @@ public class LoadTableReaderTask extends AbstractTask implements CyTableReader, 
 		if (keyColumnIndex > 0)
 			keyColumnIndex--;
 
-		amp = new AttributeMappingParameters(tabName, delimiters.getSelectedValues(), listDelimiters,
+		amp = new AttributeMappingParameters(sourceName, delimiters.getSelectedValues(), listDelimiters,
 				keyColumnIndex, attributeNames, dataTypesCopy, typesCopy, startLoadRow, null);
 		
 		if (this.fileType.equalsIgnoreCase(SupportedFileType.EXCEL.getExtension()) ||
@@ -272,7 +266,7 @@ public class LoadTableReaderTask extends AbstractTask implements CyTableReader, 
 			
 			// Fixed bug# 1668, Only load data from the first sheet, ignore the rest sheets
 			// UPDATE: From the user perspective it makes more sense to get the selected tab/sheet than the first one.
-			final Sheet sheet = workbook.getSheet(tabName);
+			final Sheet sheet = workbook.getSheet(sourceName);
 			
 			if (sheet != null) {
 				reader = new ExcelAttributeSheetReader(sheet, amp);
