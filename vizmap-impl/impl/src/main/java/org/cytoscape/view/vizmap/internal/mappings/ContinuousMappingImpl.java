@@ -210,6 +210,7 @@ public class ContinuousMappingImpl<K, V> extends AbstractVisualMappingFunction<K
 	 * lower boundary value (because the desired domain value is greater) and
 	 * the "lesser" field of the upper boundary value (semantic difficulties).
 	 */
+	@SuppressWarnings("unchecked")
 	private V getRangeValue(int index, K domainValue) {
 		// Get Lower Domain and Range
 		ContinuousMappingPoint<K, V> lowerBound = points.get(index - 1);
@@ -223,9 +224,35 @@ public class ContinuousMappingImpl<K, V> extends AbstractVisualMappingFunction<K
 		BoundaryRangeValues<V> gv = upperBound.getRange();
 		V upperRange = gv.lesserValue;
 		
-		V value = interpolator.getRangeValue(lowerDomain, lowerRange, upperDomain, upperRange, domainValue);
+		Object value = interpolator.getRangeValue(lowerDomain, lowerRange, upperDomain, upperRange, domainValue);
 		
-		return value;
+		if (value instanceof Number) {
+			// Number-To-Number Interpolators always return Numbers (or Doubles!),
+			// so let's see if it's necessary to convert it to the correct VisualProperty type
+			final Class<V> type = vp.getRange().getType();
+			
+			if (type == Long.class) {
+				if (value instanceof Long == false)
+					value = Math.round(((Number)value).doubleValue());
+			} else if (type == Integer.class) {
+				if (value instanceof Integer == false)
+					value = (int) Math.round(((Number)value).doubleValue());
+			} else if (type == Short.class) {
+				if (value instanceof Short == false)
+					value = (short) Math.round(((Number)value).doubleValue());
+			} else if (type == Byte.class) {
+				if (value instanceof Byte == false)
+					value = (byte) Math.round(((Number)value).doubleValue());
+			} else if (type == Double.class) {
+				if (value instanceof Double == false)
+					value = ((Number)value).doubleValue();
+			} else if (type == Float.class) {
+				if (value instanceof Float == false)
+					value = ((Number)value).floatValue();
+			}
+		}
+		
+		return (V) value;
 	}
 
 	/**
