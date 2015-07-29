@@ -175,7 +175,7 @@ public abstract class AbstractTableBrowser extends JPanel
 		
 		if (newScrollPane != null) {
 			add(newScrollPane, BorderLayout.CENTER);
-			ColumnResizer.adjustColumnPreferredWidths(currentBrowserTable);
+			ColumnResizer.adjustColumnPreferredWidths(currentBrowserTable, false);
 		} else {
 			repaint();
 		}
