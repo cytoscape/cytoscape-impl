@@ -99,6 +99,7 @@ import org.cytoscape.model.events.RowSetRecord;
 import org.cytoscape.model.events.RowsSetEvent;
 import org.cytoscape.model.events.RowsSetListener;
 import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.view.model.CyNetworkView;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -562,7 +563,7 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 	protected void init() {
 		final JTableHeader header = getTableHeader();
 		header.setOpaque(false);
-		header.setDefaultRenderer(new CustomHeaderRenderer());
+		header.setDefaultRenderer(new CustomHeaderRenderer(serviceRegistrar.getService(IconManager.class)));
 		header.getColumnModel().setColumnSelectionAllowed(true);
 		header.addMouseMotionListener(this);
 		header.addMouseListener(new MouseAdapter() {

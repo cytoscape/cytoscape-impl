@@ -38,6 +38,7 @@ import javax.swing.border.Border;
 import javax.swing.table.TableCellRenderer;
 
 import org.cytoscape.browser.internal.util.ValidatedObjectAndEditString;
+import org.cytoscape.util.swing.LookAndFeelUtil;
 
 
 /** Cell renderer for attribute browser table. */
@@ -73,6 +74,7 @@ class BrowserTableCellRenderer extends JLabel implements TableCellRenderer {
 		final ValidatedObjectAndEditString objEditStr = (ValidatedObjectAndEditString) value;
 		final Object validatedObj = objEditStr != null ? objEditStr.getValidatedObject() : null;
 		
+		setFont(getFont().deriveFont(LookAndFeelUtil.INFO_FONT_SIZE));
 		setBackground(table.getBackground());
 		setIcon(objEditStr != null && objEditStr.isEquation() ? EQUATION_ICON : null);
 		setVerticalTextPosition(JLabel.CENTER);

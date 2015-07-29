@@ -57,6 +57,7 @@ import org.cytoscape.session.events.SessionAboutToBeSavedEvent;
 import org.cytoscape.session.events.SessionAboutToBeSavedListener;
 import org.cytoscape.session.events.SessionLoadedEvent;
 import org.cytoscape.session.events.SessionLoadedListener;
+import org.cytoscape.util.swing.ColumnResizer;
 
 
 /**
@@ -172,10 +173,12 @@ public abstract class AbstractTableBrowser extends JPanel
 		final BrowserTable currentBrowserTable = getCurrentBrowserTable();
 		final JScrollPane newScrollPane = getScrollPane(currentBrowserTable);
 		
-		if (newScrollPane != null)
+		if (newScrollPane != null) {
 			add(newScrollPane, BorderLayout.CENTER);
-		else
+			ColumnResizer.adjustColumnPreferredWidths(currentBrowserTable);
+		} else {
 			repaint();
+		}
 
 		currentScrollPane = newScrollPane;
 		attributeBrowserToolBar.setBrowserTable(currentBrowserTable);
