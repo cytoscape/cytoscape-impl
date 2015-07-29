@@ -56,8 +56,9 @@ public class DownloadSitesManager {
 	
 	public DownloadSitesManager(CyProperty<Properties> cyProperty) {
 		this.cyProperty = cyProperty;
-		
 		this.downloadSitesChangedListeners = new HashSet<DownloadSitesChangedListener>();
+		
+		loadDownloadSites();
 	}
 	
 	/**

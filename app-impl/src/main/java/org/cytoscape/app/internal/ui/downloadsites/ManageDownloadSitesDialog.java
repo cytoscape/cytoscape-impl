@@ -110,9 +110,7 @@ public class ManageDownloadSitesDialog extends JDialog {
         DownloadSite site3 = new DownloadSite();
         site3.setSiteName("site3");
         site3.setSiteUrl("url3");
-        
-        downloadSitesManager.loadDownloadSites();
-        
+                
         // System.out.println("Sites loaded, count: " + downloadSitesManager.getDownloadSites().size());
         if (downloadSitesManager.getDownloadSites().size() == 0) {
         	for (DownloadSite downloadSite : WebQuerier.DEFAULT_DOWNLOAD_SITES) {

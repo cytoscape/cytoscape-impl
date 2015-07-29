@@ -82,10 +82,11 @@ public class CheckForUpdatesPanel extends javax.swing.JPanel {
     private TaskManager taskManager;
     
     public CheckForUpdatesPanel(AppManager appManager, 
-    		DownloadSitesManager downloadSitesManager, 
+    		DownloadSitesManager downloadSitesManager,
+    		UpdateManager updateManager,
     		TaskManager taskManager, Container parent) {
     	
-    	this.updateManager = new UpdateManager();
+    	this.updateManager = updateManager;
         this.appManager = appManager;
         this.downloadSitesManager = downloadSitesManager;
         this.taskManager = taskManager;
@@ -259,8 +260,8 @@ public class CheckForUpdatesPanel extends javax.swing.JPanel {
         		final Set<App> appsToCheckUpdates = new HashSet<App>();
         		
         		for (App app : appManager.getApps()) {
-        			if (app.getStatus() == AppStatus.INSTALLED
-        					|| app.getStatus() == AppStatus.DISABLED) {
+        			if (app.getStatus() != AppStatus.UNINSTALLED
+        					&& app.getStatus() != AppStatus.FILE_MOVED) {
         				appsToCheckUpdates.add(app);
         			}
         		}
@@ -300,9 +301,7 @@ public class CheckForUpdatesPanel extends javax.swing.JPanel {
 						taskMonitor.setStatusMessage("Reading listings for new versions");
 						taskMonitor.setProgress(0.98); // We're 98% done.
 						
-						updateManager.checkForUpdates(appManager.getWebQuerier(), 
-		        				appsToCheckUpdates, 
-		        				appManager);
+						updateManager.checkForUpdates(appsToCheckUpdates);
 					}
 					
 					@Override
@@ -342,7 +341,7 @@ public class CheckForUpdatesPanel extends javax.swing.JPanel {
 							+ " for " + update.getApp().getAppName() 
 							+ " (" + count + "/" + updateCount + ")");
 					
-		        	updateManager.installUpdate(update, appManager, status);
+		        	updateManager.installUpdate(update, status);
 		        }
 			}
 
@@ -379,7 +378,7 @@ public class CheckForUpdatesPanel extends javax.swing.JPanel {
 							+ " for " + update.getApp().getAppName() 
 							+ " (" + count + "/" + updateCount + ")");
 					
-		        	updateManager.installUpdate(update, appManager, status);
+		        	updateManager.installUpdate(update, status);
 		        }
 			}
 

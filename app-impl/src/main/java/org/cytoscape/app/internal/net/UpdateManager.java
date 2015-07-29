@@ -34,6 +34,8 @@ import java.util.Set;
 import java.util.TimeZone;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import org.cytoscape.app.event.AppsFinishedStartingEvent;
+import org.cytoscape.app.event.AppsFinishedStartingListener;
 import org.cytoscape.app.internal.event.UpdatesChangedEvent;
 import org.cytoscape.app.internal.event.UpdatesChangedListener;
 import org.cytoscape.app.internal.exception.AppDownloadException;
@@ -45,12 +47,19 @@ import org.cytoscape.app.internal.manager.App;
 import org.cytoscape.app.internal.manager.App.AppStatus;
 import org.cytoscape.app.internal.manager.AppManager;
 import org.cytoscape.app.internal.manager.SimpleApp;
+import org.cytoscape.app.internal.ui.downloadsites.DownloadSite;
+import org.cytoscape.app.internal.ui.downloadsites.DownloadSitesManager;
+import org.cytoscape.application.CyUserLog;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class UpdateManager {
+public class UpdateManager implements AppsFinishedStartingListener {
 	
-	private static final Logger logger = LoggerFactory.getLogger(UpdateManager.class);
+	private static final Logger sysLogger = LoggerFactory.getLogger(UpdateManager.class);
+	private static final Logger userLogger = LoggerFactory.getLogger(CyUserLog.NAME);
+	
+	private AppManager appManager;
+	private DownloadSitesManager downloadSitesManager;
 	
 	private List<UpdatesChangedListener> updatesChangedListeners;
 	private Set<Update> updates;
@@ -59,7 +68,10 @@ public class UpdateManager {
 	
 	private Object updateMutex = new Object();
 	
-	public UpdateManager() {
+	public UpdateManager(AppManager appManager, DownloadSitesManager downloadSitesManager) {
+		this.appManager = appManager;
+		this.downloadSitesManager = downloadSitesManager;
+		
 		this.updatesChangedListeners = new CopyOnWriteArrayList<UpdatesChangedListener>();
 		this.updates = null;
 		
@@ -71,9 +83,9 @@ public class UpdateManager {
 	 * @param webQuerier The {@link WebQuerier} used to access app store data
 	 * @param apps The set of apps to check for updates for
 	 */
-	public void checkForUpdates(WebQuerier webQuerier, Set<App> apps, AppManager appManager) {
+	public void checkForUpdates(Set<App> apps) {
 		
-		Set<Update> potentialUpdates = webQuerier.checkForUpdates(apps, appManager);
+		Set<Update> potentialUpdates = appManager.getWebQuerier().checkForUpdates(apps, appManager);
 		
 		synchronized (updateMutex) {
 			this.updates = potentialUpdates;
@@ -99,23 +111,20 @@ public class UpdateManager {
 	}
 	
 	/**
-	 * Installs the given {@link Update} via the given {@link AppManager}
+	 * Installs the given {@link Update}
 	 * @param update The update to install
-	 * @param appManager The {@link AppManager} keeping track of current apps
-	 * @param taskMonitor 
+	 * @param status The status object 
 	 */
-	public void installUpdate(Update update, AppManager appManager, DownloadStatus status) throws AppUpdateException {
-		
-		WebQuerier webQuerier = appManager.getWebQuerier();
-		
+	public void installUpdate(Update update, DownloadStatus status) throws AppUpdateException {
+				
 		File appFile = null;
 		try {
-			appFile = webQuerier.downloadApp(update.getWebApp(), 
+			appFile = appManager.getWebQuerier().downloadApp(update.getWebApp(), 
 					update.getRelease().getReleaseVersion(), 
 					new File(appManager.getDownloadedAppsPath()),
 					status);
 		} catch (AppDownloadException e) {
-			logger.warn("Failed to obtain update for " 
+			sysLogger.warn("Failed to obtain update for " 
 					+ update.getApp().getAppName() + ", " + e.getMessage());
 			return;
 		}
@@ -194,5 +203,17 @@ public class UpdateManager {
 	
 	public Calendar getLastUpdateCheckTime() {
 		return lastUpdateCheckTime;
+	}
+
+	@Override
+	public void handleEvent(AppsFinishedStartingEvent event) {
+		for (DownloadSite downloadSite : downloadSitesManager.getDownloadSites()) {
+			appManager.getWebQuerier().setCurrentAppStoreUrl(downloadSite.getSiteUrl());
+			appManager.getWebQuerier().getAllApps();
+		}
+		checkForUpdates(appManager.getApps());
+		if(updates.size() > 0)
+			userLogger.info(updates.size() + " " + 
+						(updates.size() == 1 ? "update" : "updates") + " available" );
 	}
 }

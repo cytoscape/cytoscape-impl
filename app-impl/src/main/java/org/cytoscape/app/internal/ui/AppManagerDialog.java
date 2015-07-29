@@ -44,6 +44,7 @@ import javax.swing.UIManager;
 import javax.swing.WindowConstants;
 
 import org.cytoscape.app.internal.manager.AppManager;
+import org.cytoscape.app.internal.net.UpdateManager;
 import org.cytoscape.app.internal.ui.downloadsites.DownloadSitesManager;
 import org.cytoscape.app.internal.ui.downloadsites.ManageDownloadSitesDialog;
 import org.cytoscape.util.swing.FileUtil;
@@ -67,12 +68,14 @@ public class AppManagerDialog extends JDialog {
     private DownloadSitesManager downloadSitesManager;
     
     private final AppManager appManager;
+    private final UpdateManager updateManager;
 	private final FileUtil fileUtil;
 	private final TaskManager taskManager;
     
     public AppManagerDialog(
     		final AppManager appManager, 
     		final DownloadSitesManager downloadSitesManager,
+    		final UpdateManager updateManager,
     		final FileUtil fileUtil, 
     		final TaskManager taskManager, 
     		final Frame parent, 
@@ -82,6 +85,7 @@ public class AppManagerDialog extends JDialog {
         
         this.appManager = appManager;
         this.downloadSitesManager = downloadSitesManager;
+        this.updateManager = updateManager;
         this.fileUtil = fileUtil;
         this.taskManager = taskManager;
         initComponents();
@@ -112,7 +116,7 @@ public class AppManagerDialog extends JDialog {
         currentlyInstalledAppsPanel = new CurrentlyInstalledAppsPanel(appManager);
         currentlyInstalledAppsPanel.setOpaque(!LookAndFeelUtil.isAquaLAF());
         
-        checkForUpdatesPanel = new CheckForUpdatesPanel(appManager, downloadSitesManager, taskManager, this);
+        checkForUpdatesPanel = new CheckForUpdatesPanel(appManager, downloadSitesManager, updateManager, taskManager, this);
         checkForUpdatesPanel.setOpaque(!LookAndFeelUtil.isAquaLAF());
 
         mainTabbedPane = new JTabbedPane();

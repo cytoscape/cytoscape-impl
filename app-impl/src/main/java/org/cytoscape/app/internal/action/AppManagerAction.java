@@ -28,6 +28,7 @@ import java.awt.event.ActionEvent;
 import java.util.Properties;
 
 import org.cytoscape.app.internal.manager.AppManager;
+import org.cytoscape.app.internal.net.UpdateManager;
 import org.cytoscape.app.internal.ui.AppManagerDialog;
 import org.cytoscape.app.internal.ui.downloadsites.DownloadSitesManager;
 import org.cytoscape.application.events.CyShutdownEvent;
@@ -58,6 +59,11 @@ public class AppManagerAction extends AbstractCyAction {
 	private DownloadSitesManager downloadSitesManager;
 	
 	/**
+	 * A reference to the {@link UpdateManager}
+	 */
+	private UpdateManager updateManager;
+	
+	/**
 	 * A reference to the {@link FileUtil} OSGi service used for displaying a filechooser dialog
 	 */
 	private FileUtil fileUtil;
@@ -80,6 +86,7 @@ public class AppManagerAction extends AbstractCyAction {
 	 */
 	public AppManagerAction(AppManager appManager, 
 			DownloadSitesManager downloadSitesManager,
+			UpdateManager updateManager,
 			CySwingApplication swingApplication, 
 			FileUtil fileUtil, 
 			TaskManager taskManager, 
@@ -91,6 +98,7 @@ public class AppManagerAction extends AbstractCyAction {
 		
 		this.appManager = appManager;
 		this.downloadSitesManager = downloadSitesManager;
+		this.updateManager = updateManager;
 		this.swingApplication = swingApplication;
 		this.fileUtil = fileUtil;
 		this.taskManager = taskManager;
@@ -123,7 +131,7 @@ public class AppManagerAction extends AbstractCyAction {
 				
 		// Create and display the App Manager dialog
 		if (appManagerDialog == null) {
-			appManagerDialog = new AppManagerDialog(appManager, downloadSitesManager, fileUtil, taskManager, swingApplication.getJFrame(), true);
+			appManagerDialog = new AppManagerDialog(appManager, downloadSitesManager, updateManager, fileUtil, taskManager, swingApplication.getJFrame(), true);
 		} 
 		appManagerDialog.pack();
 		appManagerDialog.setVisible(true);
