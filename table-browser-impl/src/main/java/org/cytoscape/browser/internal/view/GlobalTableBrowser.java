@@ -1,4 +1,4 @@
-package org.cytoscape.browser.internal;
+package org.cytoscape.browser.internal.view;
 
 /*
  * #%L
@@ -40,9 +40,6 @@ import javax.swing.SwingUtilities;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CytoPanelComponent;
-import org.cytoscape.equations.EquationCompiler;
-import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.events.RowsDeletedEvent;
@@ -56,9 +53,6 @@ import org.cytoscape.model.events.TableAddedListener;
 import org.cytoscape.model.events.TablePrivacyChangedEvent;
 import org.cytoscape.model.events.TablePrivacyChangedListener;
 import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.task.destroy.DeleteTableTaskFactory;
-import org.cytoscape.util.swing.IconManager;
-import org.cytoscape.work.swing.DialogTaskManager;
 
 public class GlobalTableBrowser extends AbstractTableBrowser 
                                 implements TableAboutToBeDeletedListener, RowsDeletedListener, RowsSetListener, 
@@ -68,19 +62,12 @@ public class GlobalTableBrowser extends AbstractTableBrowser
 
 	private final GlobalTableChooser tableChooser;
 
-	public GlobalTableBrowser(final String tabTitle,
-							  final CyTableManager tableManager,
-							  final CyServiceRegistrar serviceRegistrar,
-							  final EquationCompiler compiler,
-							  final CyNetworkManager networkManager,
-							  final DeleteTableTaskFactory deleteTableTaskFactoryService,
-							  final DialogTaskManager guiTaskManagerServiceRef,
-							  final PopupMenuHelper popupMenuHelper,
-							  final CyApplicationManager applicationManager,
-							  final CyEventHelper eventHelper,
-							  final IconManager iconManager){//, final MapGlobalToLocalTableTaskFactory mapGlobalTableTaskFactoryService) {
-		super(tabTitle, tableManager, serviceRegistrar, compiler, networkManager,
-				deleteTableTaskFactoryService, guiTaskManagerServiceRef, popupMenuHelper, applicationManager, eventHelper);
+	public GlobalTableBrowser(
+			final String tabTitle,
+			final CyServiceRegistrar serviceRegistrar,
+			final PopupMenuHelper popupMenuHelper
+	) {
+		super(tabTitle, serviceRegistrar, popupMenuHelper);
 		
 		tableChooser = new GlobalTableChooser();
 		tableChooser.addActionListener(this);
@@ -91,9 +78,7 @@ public class GlobalTableBrowser extends AbstractTableBrowser
 		tableChooser.setToolTipText("\"Tables\" are data tables not associated with specific networks.");
 		tableChooser.setEnabled(false);
 		
-		attributeBrowserToolBar = new AttributeBrowserToolBar(serviceRegistrar, compiler,
-				deleteTableTaskFactoryService, guiTaskManagerServiceRef, tableChooser, null, applicationManager,
-				iconManager);//, mapGlobalTableTaskFactoryService);
+		attributeBrowserToolBar = new AttributeBrowserToolBar(serviceRegistrar, tableChooser, null);
 
 		add(attributeBrowserToolBar, BorderLayout.NORTH);
 	}
@@ -106,7 +91,10 @@ public class GlobalTableBrowser extends AbstractTableBrowser
 			return;
 
 		currentTable = table;
+		
+		final CyApplicationManager applicationManager = serviceRegistrar.getService(CyApplicationManager.class);
 		applicationManager.setCurrentTable(table);
+		
 		showSelectedTable();
 	}
 
@@ -126,6 +114,10 @@ public class GlobalTableBrowser extends AbstractTableBrowser
 					@Override
 					public void run() {
 						serviceRegistrar.unregisterService(GlobalTableBrowser.this, CytoPanelComponent.class);
+						
+						final CyApplicationManager applicationManager =
+								serviceRegistrar.getService(CyApplicationManager.class);
+						
 						applicationManager.setCurrentTable(null);
 						showSelectedTable();
 					}
@@ -144,6 +136,8 @@ public class GlobalTableBrowser extends AbstractTableBrowser
 		final CyTable newTable = e.getTable();
 
 		if (newTable.isPublic()) {
+			final CyTableManager tableManager = serviceRegistrar.getService(CyTableManager.class);
+			
 			if (tableManager.getGlobalTables().contains(newTable)) {
 				final GlobalTableComboBoxModel comboBoxModel = (GlobalTableComboBoxModel) tableChooser.getModel();
 				comboBoxModel.addAndSetSelectedItem(newTable);
@@ -156,7 +150,6 @@ public class GlobalTableBrowser extends AbstractTableBrowser
 						public void run() {
 							serviceRegistrar.registerService(GlobalTableBrowser.this, CytoPanelComponent.class,
 									new Properties());
-							//applicationManager.setCurrentGlobalTable(newTable);
 						}
 					});
 			}
@@ -187,6 +180,7 @@ public class GlobalTableBrowser extends AbstractTableBrowser
 			comboBoxModel.addAndSetSelectedItem(table);
 		}
 		
+		final CyApplicationManager applicationManager = serviceRegistrar.getService(CyApplicationManager.class);
 		applicationManager.setCurrentTable(currentTable);
 	}
 	
@@ -221,7 +215,7 @@ public class GlobalTableBrowser extends AbstractTableBrowser
 		}
 	}
 	
-	private class GlobalTableChooser extends JComboBox {
+	private class GlobalTableChooser extends JComboBox<CyTable> {
 
 		private static final long serialVersionUID = 2952839169799310442L;
 		
@@ -234,7 +228,7 @@ public class GlobalTableBrowser extends AbstractTableBrowser
 		}
 	}
 	
-	private class GlobalTableComboBoxModel extends DefaultComboBoxModel {
+	private class GlobalTableComboBoxModel extends DefaultComboBoxModel<CyTable> {
 
 		private static final long serialVersionUID = -5435833047656563358L;
 
@@ -266,7 +260,7 @@ public class GlobalTableBrowser extends AbstractTableBrowser
 		}
 
 		@Override
-		public Object getElementAt(int index) {
+		public CyTable getElementAt(int index) {
 			return tables.get(index);
 		}
 

@@ -1,4 +1,4 @@
-package org.cytoscape.browser.internal;
+package org.cytoscape.browser.internal.io;
 
 /*
  * #%L
@@ -43,7 +43,8 @@ import org.cytoscape.session.events.SessionLoadedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-final class TableColumnStatFileIO {
+public final class TableColumnStatFileIO {
+	
 	private static final Logger logger = LoggerFactory.getLogger(TableColumnStatFileIO.class);
 	
 	static String APP_NAME = "org.cytoscape.browser";
@@ -75,7 +76,6 @@ final class TableColumnStatFileIO {
 		}
 	}
 	
-
 	public static Map<String, TableColumnStat>  read ( SessionLoadedEvent e, String className){
 		Map<String, TableColumnStat> tableColStats = new HashMap<String, TableColumnStat>();
 		CySession sess = e.getLoadedSession();
@@ -125,7 +125,7 @@ final class TableColumnStatFileIO {
 				break;
 			}
 		}
+		
 		return tableColStats;
 	}
-
 }

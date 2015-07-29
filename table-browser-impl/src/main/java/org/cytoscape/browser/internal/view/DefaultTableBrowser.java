@@ -1,4 +1,4 @@
-package org.cytoscape.browser.internal;
+package org.cytoscape.browser.internal.view;
 
 /*
  * #%L
@@ -47,13 +47,10 @@ import javax.swing.event.ListDataListener;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.events.SetCurrentNetworkEvent;
 import org.cytoscape.application.events.SetCurrentNetworkListener;
-import org.cytoscape.browser.internal.BrowserTableModel.ViewMode;
-import org.cytoscape.equations.EquationCompiler;
-import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.browser.internal.view.BrowserTableModel.ViewMode;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
@@ -68,9 +65,7 @@ import org.cytoscape.model.events.TableAboutToBeDeletedListener;
 import org.cytoscape.model.events.TableAddedEvent;
 import org.cytoscape.model.events.TableAddedListener;
 import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.task.destroy.DeleteTableTaskFactory;
 import org.cytoscape.util.swing.IconManager;
-import org.cytoscape.work.swing.DialogTaskManager;
 
 
 public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurrentNetworkListener,
@@ -80,38 +75,30 @@ public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurr
 
 	private JButton selectionModeButton;
 	private JPopupMenu displayMode;
-	private JComboBox tableChooser;
+	private JComboBox<CyTable> tableChooser;
 	
 	private final Class<? extends CyIdentifiable> objType;
-	private final CyNetworkTableManager networkTableManager;
 
 	private BrowserTableModel.ViewMode rowSelectionMode = BrowserTableModel.ViewMode.AUTO;
 	private boolean ignoreSetCurrentTable = true;
 
-	public DefaultTableBrowser(final String tabTitle,
-							   final Class<? extends CyIdentifiable> objType,
-							   final CyTableManager tableManager,
-							   final CyNetworkTableManager networkTableManager,
-							   final CyServiceRegistrar serviceRegistrar,
-							   final EquationCompiler compiler,
-							   final CyNetworkManager networkManager,
-							   final DeleteTableTaskFactory deleteTableTaskFactory,
-							   final DialogTaskManager guiTaskManager,
-							   final PopupMenuHelper popupMenuHelper,
-							   final CyApplicationManager applicationManager,
-							   final CyEventHelper eventHelper,
-							   final IconManager iconManager) {//, final MapGlobalToLocalTableTaskFactory mapGlobalTableTaskFactoryService) {
-		super(tabTitle, tableManager, serviceRegistrar, compiler, networkManager,
-				deleteTableTaskFactory, guiTaskManager, popupMenuHelper, applicationManager, eventHelper);
+	public DefaultTableBrowser(
+			final String tabTitle,
+			final Class<? extends CyIdentifiable> objType,
+			final CyServiceRegistrar serviceRegistrar,
+			final PopupMenuHelper popupMenuHelper
+	) {
+		super(tabTitle, serviceRegistrar, popupMenuHelper);
 
 		this.objType = objType;
-		this.networkTableManager = networkTableManager;
 
 		createPopupMenu();
 		
 		if (objType != CyNetwork.class) {
 			selectionModeButton = new JButton(ICON_COG);
 			selectionModeButton.setToolTipText("Change Table Mode");
+			
+			final IconManager iconManager = serviceRegistrar.getService(IconManager.class);
 			AttributeBrowserToolBar.styleButton(selectionModeButton,
 					iconManager.getIconFont(AttributeBrowserToolBar.ICON_FONT_SIZE * 4/5));
 			
@@ -123,11 +110,10 @@ public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurr
 				}
 			});
 			
-			attributeBrowserToolBar = new AttributeBrowserToolBar(serviceRegistrar, compiler, deleteTableTaskFactory,
-					guiTaskManager, getTableChooser(), selectionModeButton, objType, applicationManager, iconManager);// , mapGlobalTableTaskFactoryService);
+			attributeBrowserToolBar = new AttributeBrowserToolBar(serviceRegistrar, getTableChooser(),
+					selectionModeButton, objType);
 		} else {
-			attributeBrowserToolBar = new AttributeBrowserToolBar(serviceRegistrar, compiler, deleteTableTaskFactory,
-					guiTaskManager, getTableChooser(), objType, applicationManager, iconManager);
+			attributeBrowserToolBar = new AttributeBrowserToolBar(serviceRegistrar, getTableChooser(), objType);
 		}
 		
 		add(attributeBrowserToolBar, BorderLayout.NORTH);
@@ -217,10 +203,13 @@ public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurr
 			final CyTable table = (CyTable) getTableChooser().getSelectedItem();
 			currentTable = table;
 			
-			if (table != null
-					&& !table.equals(applicationManager.getCurrentTable())
-					&& tableManager.getTable(table.getSUID()) != null) {
-				applicationManager.setCurrentTable(table);
+			final CyApplicationManager applicationManager = serviceRegistrar.getService(CyApplicationManager.class);
+			
+			if (table != null && !table.equals(applicationManager.getCurrentTable())) {
+				final CyTableManager tableManager = serviceRegistrar.getService(CyTableManager.class);
+			
+				if (tableManager.getTable(table.getSUID()) != null)
+					applicationManager.setCurrentTable(table);
 			}
 			
 			showSelectedTable();
@@ -269,8 +258,12 @@ public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurr
 				} finally {
 					ignoreSetCurrentTable = false;
 				}
-				if (currentTable != null)
+				
+				if (currentTable != null) {
+					final CyApplicationManager applicationManager = serviceRegistrar.getService(CyApplicationManager.class);
 					applicationManager.setCurrentTable(currentTable);
+				}
+				
 				showSelectedTable();
 				changeSelectionMode();
 			}
@@ -283,13 +276,16 @@ public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurr
 		final CyTable newTable = e.getTable();
 
 		if (newTable.isPublic()) {
+			final CyApplicationManager applicationManager = serviceRegistrar.getService(CyApplicationManager.class);
+			final CyNetworkTableManager netTableManager = serviceRegistrar.getService(CyNetworkTableManager.class);
+			
 			final CyNetwork curNet = applicationManager.getCurrentNetwork();
 			
-			if (curNet != null && networkTableManager.getTables(curNet, objType).containsValue(newTable)) {
+			if (curNet != null && netTableManager.getTables(curNet, objType).containsValue(newTable)) {
 				invokeOnEDT(new Runnable() {
 					@Override
 					public void run() {
-						if (((DefaultComboBoxModel)getTableChooser().getModel()).getIndexOf(newTable) < 0) {
+						if (((DefaultComboBoxModel<CyTable>)getTableChooser().getModel()).getIndexOf(newTable) < 0) {
 							getTableChooser().addItem(newTable);
 							attributeBrowserToolBar.updateEnableState(getTableChooser());
 						}
@@ -306,7 +302,7 @@ public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurr
 		// System.out.println("Handling delete table event for table: "+cyTable);
 		
 		if (table != null) {
-			((DefaultComboBoxModel)getTableChooser().getModel()).removeElement(cyTable);
+			((DefaultComboBoxModel<CyTable>)getTableChooser().getModel()).removeElement(cyTable);
 			
 			// We need this to happen synchronously or we get royally messed up by the
 			// new table selection
@@ -319,8 +315,9 @@ public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurr
 				}
 			}, true);
 			
-			final CyNetwork network = networkTableManager.getNetworkForTable(cyTable);
-			final String namespace = networkTableManager.getTableNamespace(cyTable);
+//			final CyNetworkTableManager netTableManager = serviceRegistrar.getService(CyNetworkTableManager.class);
+//			final CyNetwork network = netTableManager.getNetworkForTable(cyTable);
+//			final String namespace = netTableManager.getTableNamespace(cyTable);
 			
 			// FIXME: why is the table browser removing the table??????
 			// if (network != null && namespace != null)
@@ -340,9 +337,9 @@ public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurr
 			attributeBrowserToolBar.updateEnableState();
 	}
 	
-	private JComboBox getTableChooser() {
+	private JComboBox<CyTable> getTableChooser() {
 		if (tableChooser == null) {
-			tableChooser = new JComboBox(new DefaultComboBoxModel());
+			tableChooser = new JComboBox<>(new DefaultComboBoxModel<CyTable>());
 			tableChooser.setRenderer(new TableChooserCellRenderer());
 			tableChooser.addActionListener(this);
 			tableChooser.setMaximumSize(SELECTOR_SIZE);
@@ -375,7 +372,9 @@ public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurr
 	private Set<CyTable> getPublicTables(CyNetwork currentNetwork) {
 		final Set<CyTable> tables = new LinkedHashSet<CyTable>();
 		if (currentNetwork == null) return tables;
-		final Map<String, CyTable> map = networkTableManager.getTables(currentNetwork, objType);
+		
+		final CyNetworkTableManager netTableManager = serviceRegistrar.getService(CyNetworkTableManager.class);
+		final Map<String, CyTable> map = netTableManager.getTables(currentNetwork, objType);
 		
 		for (final CyTable tbl : map.values()) {
 			if (tbl.isPublic())

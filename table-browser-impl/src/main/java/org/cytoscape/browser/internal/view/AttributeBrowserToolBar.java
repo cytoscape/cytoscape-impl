@@ -1,4 +1,4 @@
-package org.cytoscape.browser.internal;
+package org.cytoscape.browser.internal.view;
 
 /*
  * #%L
@@ -60,7 +60,6 @@ import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
-import javax.swing.JList;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
@@ -97,7 +96,6 @@ import org.cytoscape.work.swing.DialogTaskManager;
 
 /**
  * Toolbar for the Browser.  All buttons related to this should be placed here.
- *
  */
 public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener {
 	
@@ -121,7 +119,6 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 	
 	private JButton selectButton;
 	private CheckBoxJList attributeList;
-	private JList attrDeletionList;
 	
 	private JButton createNewAttributeButton;
 	private JButton deleteAttributeButton;
@@ -130,62 +127,40 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 	private JButton unselectAllAttributesButton;
 	private JButton formulaBuilderButton;
 	
-//	private JButton mapGlobalTableButton;
-//	private final MapGlobalToLocalTableTaskFactory mapGlobalTableTaskFactoryService;
-	
-	private final JComboBox tableChooser;
+	private final JComboBox<CyTable> tableChooser;
 
 	private AttributeListModel attrListModel;
-	private final EquationCompiler compiler;
-	private final DeleteTableTaskFactory deleteTableTaskFactory;
-	private final DialogTaskManager guiTaskMgr;
 	
 	private final JButton selectionModeButton;
-	
 	private final List<JComponent> components;
 	
 	private final Class<? extends CyIdentifiable> objType;
-	
-	private final CyApplicationManager appMgr;
-	private final IconManager iconMgr;
-	
 
-	public AttributeBrowserToolBar(final CyServiceRegistrar serviceRegistrar,
-								   final EquationCompiler compiler,
-								   final DeleteTableTaskFactory deleteTableTaskFactory,
-								   final DialogTaskManager guiTaskMgr,
-								   final JComboBox tableChooser,
-								   final Class<? extends CyIdentifiable> objType,
-								   final CyApplicationManager appMgr,
-								   final IconManager iconMgr) {//, final MapGlobalToLocalTableTaskFactory mapGlobalTableTaskFactoryService) {
-		
-		this(serviceRegistrar, compiler, deleteTableTaskFactory, guiTaskMgr, tableChooser,
-				new JButton(), objType, appMgr, iconMgr);//, mapGlobalTableTaskFactoryService);
+	private final CyServiceRegistrar serviceRegistrar;
+	private final IconManager iconMgr;
+
+	public AttributeBrowserToolBar(
+			final CyServiceRegistrar serviceRegistrar,
+			final JComboBox<CyTable> tableChooser,
+			final Class<? extends CyIdentifiable> objType
+	) {
+		this(serviceRegistrar, tableChooser, new JButton(), objType);
 		this.selectionModeButton.setVisible(false);
 	}
 	
-	public AttributeBrowserToolBar(final CyServiceRegistrar serviceRegistrar,
-								   final EquationCompiler compiler,
-								   final DeleteTableTaskFactory deleteTableTaskFactory,
-								   final DialogTaskManager guiTaskMgr,
-								   final JComboBox tableChooser,
-								   final JButton selectionModeButton,
-								   final Class<? extends CyIdentifiable> objType,
-								   final CyApplicationManager appMgr,
-								   final IconManager iconMgr) {// , final MapGlobalToLocalTableTaskFactory mapGlobalTableTaskFactoryService) {
-		this.compiler = compiler;
+	public AttributeBrowserToolBar(
+			final CyServiceRegistrar serviceRegistrar,
+			final JComboBox<CyTable> tableChooser,
+			final JButton selectionModeButton,
+			final Class<? extends CyIdentifiable> objType
+	) {
 		this.selectionModeButton = selectionModeButton;
-		this.appMgr = appMgr;
-//		this.mapGlobalTableTaskFactoryService = mapGlobalTableTaskFactoryService;
-		
-		this.components = new ArrayList<JComponent>();
-		
+		this.components = new ArrayList<>();
 		this.tableChooser = tableChooser;
-		this.deleteTableTaskFactory = deleteTableTaskFactory;
-		this.guiTaskMgr = guiTaskMgr;
 		this.attrListModel = new AttributeListModel(null);
 		this.objType = objType;
-		this.iconMgr = iconMgr;
+		this.serviceRegistrar = serviceRegistrar;
+		this.iconMgr = serviceRegistrar.getService(IconManager.class);
 		
 		serviceRegistrar.registerAllServices(attrListModel, new Properties());
 
@@ -226,8 +201,9 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 	public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
 		// Update actual table
 		try {
-			final Object[] selectedValues = getAttributeList().getSelectedValues();
+			final List<?> selectedValues = getAttributeList().getSelectedValuesList();
 			final Set<String> visibleAttributes = new HashSet<String>();
+			
 			for (final Object selectedValue : selectedValues)
 				visibleAttributes.add((String)selectedValue);
 
@@ -306,10 +282,6 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 		
 		if (tableChooser != null)
 			addComponent(tableChooser, ComponentPlacement.UNRELATED);
-	}
-
-	public String getToBeDeletedAttribute() {
-		return attrDeletionList.getSelectedValue().toString();
 	}
 
 	static void styleButton(final AbstractButton btn, final Font font) {
@@ -680,6 +652,9 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 						final Map<String, Class<?>> attribNameToTypeMap = new HashMap<String, Class<?>>();
 						final CyTable attrs = browserTableModel.getDataTable();
 						initAttribNameToTypeMap(attrs, attrName, attribNameToTypeMap);
+						
+						final EquationCompiler compiler = serviceRegistrar.getService(EquationCompiler.class);
+						
 						final FormulaBuilderDialog formulaBuilderDialog = new FormulaBuilderDialog(compiler,
 								browserTable, rootFrame, attrName);
 						formulaBuilderDialog.setLocationRelativeTo(rootFrame);
@@ -807,12 +782,17 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 		if (table.getMutability() == CyTable.Mutability.MUTABLE) {
 			String title = "Please confirm this action";
 			String msg = "Are you sure you want to delete this table?";
-			int _confirmValue = JOptionPane.showConfirmDialog(this, msg, title, JOptionPane.YES_NO_OPTION,
+			int confirmValue = JOptionPane.showConfirmDialog(this, msg, title, JOptionPane.YES_NO_OPTION,
 					JOptionPane.QUESTION_MESSAGE);
 
 			// if user selects yes delete the table
-			if (_confirmValue == JOptionPane.OK_OPTION)
-				guiTaskMgr.execute(deleteTableTaskFactory.createTaskIterator(table));
+			if (confirmValue == JOptionPane.OK_OPTION) {
+				final DialogTaskManager taskMgr = serviceRegistrar.getService(DialogTaskManager.class);
+				final DeleteTableTaskFactory deleteTableTaskFactory =
+						serviceRegistrar.getService(DeleteTableTaskFactory.class);
+				
+				taskMgr.execute(deleteTableTaskFactory.createTaskIterator(table));
+			}
 		} else if (table.getMutability() == CyTable.Mutability.PERMANENTLY_IMMUTABLE) {
 			String title = "Error";
 			String msg = "Can not delete this table, it is PERMANENTLY_IMMUTABLE";
@@ -831,6 +811,7 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 			attributeList.setModel(attrListModel);
 			attributeList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 			attributeList.addMouseListener(new MouseAdapter() {
+				@Override
 				public void mouseClicked(MouseEvent e) {
 					if (SwingUtilities.isRightMouseButton(e)) {
 						getAttributeSelectionPopupMenu().setVisible(false);
@@ -925,10 +906,12 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 			} while (newAttribName == null);
 	
 			final CyTable attrs;
-			if(isShared) {
-				final CyNetwork network = appMgr.getCurrentNetwork();
+			
+			if (isShared) {
+				final CyApplicationManager applicationMgr = serviceRegistrar.getService(CyApplicationManager.class);
+				final CyNetwork network = applicationMgr.getCurrentNetwork();
 							
-				if(network instanceof CySubNetwork) {
+				if (network instanceof CySubNetwork) {
 					final CyRootNetwork rootNetwork = ((CySubNetwork) network).getRootNetwork();
 					CyTable sharedTable = null;
 					if(this.objType == CyNode.class)
@@ -944,7 +927,6 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 				} else {
 					throw new IllegalArgumentException("This is not a CySubNetwork and there is no shared table.");
 				}
-				
 			} else {
 				attrs = browserTableModel.getDataTable();
 			}

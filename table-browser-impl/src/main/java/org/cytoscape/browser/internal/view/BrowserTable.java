@@ -1,4 +1,4 @@
-package org.cytoscape.browser.internal;
+package org.cytoscape.browser.internal.view;
 
 /*
  * #%L
@@ -80,6 +80,7 @@ import javax.swing.table.TableModel;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.browser.internal.util.TableBrowserUtil;
+import org.cytoscape.browser.internal.util.ValidatedObjectAndEditString;
 import org.cytoscape.equations.EquationCompiler;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyColumn;
@@ -97,6 +98,7 @@ import org.cytoscape.model.events.ColumnNameChangedListener;
 import org.cytoscape.model.events.RowSetRecord;
 import org.cytoscape.model.events.RowsSetEvent;
 import org.cytoscape.model.events.RowsSetListener;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkView;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -126,9 +128,7 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 
 	private final EquationCompiler compiler;
 	private final PopupMenuHelper popupMenuHelper;
-	private final CyApplicationManager applicationManager;
-	private final CyEventHelper eventHelper;
-	private final CyTableManager tableManager;
+	private final CyServiceRegistrar serviceRegistrar;
 	
 	private boolean ignoreRowSelectionEvents;
 	private boolean ignoreRowSetEvents;
@@ -138,13 +138,10 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 	// ==[ CONSTRUCTORS ]===============================================================================================
 	
 	public BrowserTable(final EquationCompiler compiler, final PopupMenuHelper popupMenuHelper,
-			final CyApplicationManager applicationManager, final CyEventHelper eventHelper,
-			final CyTableManager tableManager) {
+			final CyServiceRegistrar serviceRegistrar) {
 		this.compiler = compiler;
 		this.popupMenuHelper = popupMenuHelper;
-		this.applicationManager = applicationManager;
-		this.eventHelper = eventHelper;
-		this.tableManager = tableManager;
+		this.serviceRegistrar = serviceRegistrar;
 		
 		init();
 		setAutoCreateColumnsFromModel(false);
@@ -552,6 +549,8 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 					|| model.getViewMode() == BrowserTableModel.ViewMode.AUTO) {
 				model.fireTableDataChanged();
 			} else {
+				final CyTableManager tableManager = serviceRegistrar.getService(CyTableManager.class);
+				
 				if (!tableManager.getGlobalTables().contains(dataTable))
 					bulkUpdate(rows);
 			}
@@ -881,6 +880,8 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 		}
 
 		// Clear selection for non-global table
+		final CyTableManager tableManager = serviceRegistrar.getService(CyTableManager.class);
+		
 		if (tableManager.getGlobalTables().contains(table) == false) {
 			List<CyRow> allRows = btModel.getDataTable().getAllRows();
 			
@@ -899,9 +900,11 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 						row.set(CyNetwork.SELECTED, false);
 				}
 				
+				final CyApplicationManager applicationManager = serviceRegistrar.getService(CyApplicationManager.class);
 				final CyNetworkView curView = applicationManager.getCurrentNetworkView();
 				
 				if (curView != null) {
+					final CyEventHelper eventHelper = serviceRegistrar.getService(CyEventHelper.class);
 					eventHelper.flushPayloadEvents();
 					curView.updateView();
 				}

@@ -1,4 +1,4 @@
-package org.cytoscape.browser.internal;
+package org.cytoscape.browser.internal.view;
 
 /*
  * #%L
@@ -36,6 +36,8 @@ import javax.swing.JTable;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.table.TableCellRenderer;
+
+import org.cytoscape.browser.internal.util.ValidatedObjectAndEditString;
 
 
 /** Cell renderer for attribute browser table. */

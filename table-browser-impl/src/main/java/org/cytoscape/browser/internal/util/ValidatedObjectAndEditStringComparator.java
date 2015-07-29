@@ -1,4 +1,4 @@
-package org.cytoscape.browser.internal;
+package org.cytoscape.browser.internal.util;
 
 /*
  * #%L
@@ -29,6 +29,7 @@ import java.util.Comparator;
 
 
 public class ValidatedObjectAndEditStringComparator implements Comparator<ValidatedObjectAndEditString> {
+	
 	private final Class<?> internalColumnType;
 
 	ValidatedObjectAndEditStringComparator(final Class<?> internalColumnType) {

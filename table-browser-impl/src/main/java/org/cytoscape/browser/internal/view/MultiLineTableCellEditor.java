@@ -1,4 +1,4 @@
-package org.cytoscape.browser.internal;
+package org.cytoscape.browser.internal.view;
 
 /*
  * #%L
@@ -51,10 +51,11 @@ import javax.swing.text.Document;
 import javax.swing.text.Keymap;
 import javax.swing.text.TextAction;
 import javax.swing.text.JTextComponent;
-
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.table.TableCellEditor;
+
+import org.cytoscape.browser.internal.util.ValidatedObjectAndEditString;
 
 import java.util.EventObject;
 

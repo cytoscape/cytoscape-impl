@@ -1,4 +1,4 @@
-package org.cytoscape.browser.internal;
+package org.cytoscape.browser.internal.view;
 
 /*
  * #%L
@@ -34,7 +34,7 @@ import javax.swing.ListCellRenderer;
 
 import org.cytoscape.model.CyTable;
 
-public class TableChooserCellRenderer extends JLabel implements ListCellRenderer {
+public class TableChooserCellRenderer extends JLabel implements ListCellRenderer<CyTable> {
 
 	private static final long serialVersionUID = 3512300857227705136L;
 	
@@ -50,10 +50,8 @@ public class TableChooserCellRenderer extends JLabel implements ListCellRenderer
 	}
 
 	@Override
-	public Component getListCellRendererComponent(final JList list, final Object value, final int index,
-			final boolean isSelected, final boolean cellHasFocus) {
-		final CyTable table = (CyTable) value;
-		
+	public Component getListCellRendererComponent(final JList<? extends CyTable> list, final CyTable table,
+			final int index, final boolean isSelected, final boolean cellHasFocus) {
 		if (isSelected) {
 			setBackground(list.getSelectionBackground());
 			setForeground(list.getSelectionForeground());

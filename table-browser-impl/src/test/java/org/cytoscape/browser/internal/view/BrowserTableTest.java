@@ -1,4 +1,4 @@
-package org.cytoscape.browser.internal;
+package org.cytoscape.browser.internal.view;
 
 /*
  * #%L
@@ -28,12 +28,14 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.awt.event.MouseEvent;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Arrays;
+import java.util.List;
+
 import javax.swing.SwingUtilities;
 
 import org.cytoscape.application.CyApplicationManager;
@@ -50,29 +52,47 @@ import org.cytoscape.model.SavePolicy;
 import org.cytoscape.model.events.RowSetRecord;
 import org.cytoscape.model.events.RowsSetEvent;
 import org.cytoscape.model.internal.CyTableImpl;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.OpenBrowser;
-import org.cytoscape.work.TaskManager;
+import org.cytoscape.work.swing.DialogTaskManager;
 import org.junit.Test;
 
 public class BrowserTableTest {
-	static final String SHARED_NAME  = "shared name";
+	
+	static final String SHARED_NAME = "shared name";
 	
 	CyTable table;
 	CyTable sharedTable;
 	BrowserTable browserTable;
 	BrowserTableModel btm;
 	BrowserTableColumnModel btcm;
-	CyTableManager tableManager;
 	
+	CyTableManager tableManager;
 	CyEventHelper eventHelper;
 	
-	public BrowserTableTest(){
+	public BrowserTableTest() {
+		tableManager = mock(CyTableManager.class);
+		eventHelper = mock(CyEventHelper.class);
 		EquationCompiler equationCompiler = mock(EquationCompiler.class);
-		PopupMenuHelper popupMenuHelper = new PopupMenuHelper(mock(TaskManager.class), mock(OpenBrowser.class),
-				mock(CyApplicationManager.class), mock(CyEventHelper.class));
+		DialogTaskManager taskManager = mock(DialogTaskManager.class);
+		OpenBrowser openBrowser = mock(OpenBrowser.class);
+		CyApplicationManager applicationManager = mock(CyApplicationManager.class);
+		IconManager iconManager = mock(IconManager.class);
+		
+		CyServiceRegistrar serviceRegistrar = mock(CyServiceRegistrar.class);
+		when(serviceRegistrar.getService(EquationCompiler.class)).thenReturn(equationCompiler);
+		when(serviceRegistrar.getService(DialogTaskManager.class)).thenReturn(taskManager);
+		when(serviceRegistrar.getService(OpenBrowser.class)).thenReturn(openBrowser);
+		when(serviceRegistrar.getService(CyApplicationManager.class)).thenReturn(applicationManager);
+		when(serviceRegistrar.getService(IconManager.class)).thenReturn(iconManager);
+		when(serviceRegistrar.getService(CyEventHelper.class)).thenReturn(eventHelper);
+		when(serviceRegistrar.getService(CyTableManager.class)).thenReturn(tableManager);
+		
+		PopupMenuHelper popupMenuHelper = new PopupMenuHelper(serviceRegistrar);
 		tableManager = mock(CyTableManager.class);
 		eventHelper = new DummyCyEventHelper();
-		browserTable = new BrowserTable(equationCompiler, popupMenuHelper, mock(CyApplicationManager.class), eventHelper, tableManager);
+		browserTable = new BrowserTable(equationCompiler, popupMenuHelper, serviceRegistrar);
 		
 		createTable();
 		assertEquals(4, table.getColumns().size());
@@ -83,8 +103,7 @@ public class BrowserTableTest {
 		btcm.setAllColumnsVisible();
 	}
 	
-	
-	void createTable (){
+	void createTable() {
 		sharedTable = new CyTableImpl("shared table", CyNetwork.SUID, Long.class, false, true, SavePolicy.DO_NOT_SAVE, eventHelper, mock(Interpreter.class), 0);
 		sharedTable.createColumn(SHARED_NAME, String.class, true);
 		table = new CyTableImpl("test table", CyNetwork.SUID, Long.class, true, true, SavePolicy.DO_NOT_SAVE , eventHelper, mock(Interpreter.class), 0);
@@ -109,7 +128,6 @@ public class BrowserTableTest {
 		
 		CyRow sharedRow3 = sharedTable.getRow(id+2);
 		sharedRow3.set(SHARED_NAME,  "se");
-		
 	}
 	
 	@Test
@@ -120,7 +138,6 @@ public class BrowserTableTest {
 		
 		assertEquals(3, btm.getRowCount());
 		assertEquals(3, browserTable.getRowCount());
-
 	}
 	
 	@Test
@@ -131,7 +148,6 @@ public class BrowserTableTest {
 		int suidVIndex = browserTable.convertColumnIndexToView(suidMIndex);
 
 		assertFalse(browserTable.isCellEditable(1,suidVIndex));
-
 
 		int nameMIndex =  btm.mapColumnNameToColumnIndex(CyNetwork.NAME);
 		int nameVIndex = browserTable.convertColumnIndexToView(nameMIndex);
@@ -151,13 +167,10 @@ public class BrowserTableTest {
 		btcm.setColumnVisible( btcm.getColumn(nameVIndex) , false); //hiding name column
 		suidVIndex = browserTable.convertColumnIndexToView(suidMIndex);
 		assertFalse(browserTable.isCellEditable(1, suidVIndex));
-		
 	}
-	
 	
 	@Test
 	public void testColumnPlacement(){
-		
 		btcm.setAllColumnsVisible();
 		//to make sure the columns are not sorted based on model index move them around
 		btcm.moveColumn(1,3);
@@ -203,7 +216,6 @@ public class BrowserTableTest {
 		btcm.setAllColumnsVisible();
 		assertEquals(col2, btm.getColumnName( browserTable.convertColumnIndexToModel(2)));
 		assertEquals(col3, btm.getColumnName( browserTable.convertColumnIndexToModel(3)));
-	
 	}
 	
 	@Test
@@ -245,7 +257,6 @@ public class BrowserTableTest {
 	
 	@Test
 	public void testTableModeAndSelection(){
-		
 		browserTable.setModel(btm); //to reset the columns and rows
 
 		btm.setViewMode(BrowserTableModel.ViewMode.ALL);
@@ -302,6 +313,5 @@ public class BrowserTableTest {
 		
 		browserTable.selectAll();
 		assertEquals(3, browserTable.getSelectedRowCount());
-
 	}
 }

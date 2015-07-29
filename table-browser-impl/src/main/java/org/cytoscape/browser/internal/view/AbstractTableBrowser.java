@@ -1,4 +1,4 @@
-package org.cytoscape.browser.internal;
+package org.cytoscape.browser.internal.view;
 
 /*
  * #%L
@@ -44,24 +44,19 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.table.TableModel;
 
-import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.application.swing.CytoPanelName;
+import org.cytoscape.browser.internal.io.TableColumnStatFileIO;
 import org.cytoscape.browser.internal.util.TableColumnStat;
 import org.cytoscape.equations.EquationCompiler;
-import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.model.CyTableManager;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.events.SessionAboutToBeSavedEvent;
 import org.cytoscape.session.events.SessionAboutToBeSavedListener;
 import org.cytoscape.session.events.SessionLoadedEvent;
 import org.cytoscape.session.events.SessionLoadedListener;
-import org.cytoscape.task.TableTaskFactory;
-import org.cytoscape.work.swing.DialogTaskManager;
 
 
 /**
@@ -82,18 +77,13 @@ public abstract class AbstractTableBrowser extends JPanel
 	
 	private static final Dimension PANEL_SIZE = new Dimension(550, 400);
 	
-	protected final CyTableManager tableManager;
 	protected final CyServiceRegistrar serviceRegistrar;
-	private final EquationCompiler compiler;
 	
 	protected AttributeBrowserToolBar attributeBrowserToolBar;
 		
 	protected CyTable currentTable;
 	protected Class<? extends CyIdentifiable> currentTableType;
-	protected final CyApplicationManager applicationManager;
-	protected final CyNetworkManager networkManager;
 	private final PopupMenuHelper popupMenuHelper; 
-	private final CyEventHelper eventHelper;
 	
 
 	// Tab title for the CytoPanel
@@ -104,25 +94,14 @@ public abstract class AbstractTableBrowser extends JPanel
 	protected final String appFileName;
 
 
-	
-	AbstractTableBrowser(final String tabTitle,
-						 final CyTableManager tableManager,
-						 final CyServiceRegistrar serviceRegistrar,
-						 final EquationCompiler compiler,
-						 final CyNetworkManager networkManager,
-						 final TableTaskFactory deleteTableTaskFactory,
-						 final DialogTaskManager guiTaskManager,
-						 final PopupMenuHelper popupMenuHelper,
-						 final CyApplicationManager applicationManager,
-						 final CyEventHelper eventHelper) {
-		this.tableManager = tableManager;
+	AbstractTableBrowser(
+			final String tabTitle,
+			final CyServiceRegistrar serviceRegistrar,
+			final PopupMenuHelper popupMenuHelper
+	) {
 		this.serviceRegistrar = serviceRegistrar;
-		this.compiler = compiler;
 		this.tabTitle = tabTitle;
-		this.networkManager = networkManager;
-		this.applicationManager = applicationManager;
 		this.popupMenuHelper = popupMenuHelper;
-		this.eventHelper = eventHelper;
 		this.appFileName  = tabTitle.replaceAll(" ", "").concat(".props");
 
 		this.scrollPanes = new HashMap<BrowserTable,JScrollPane>();
@@ -251,8 +230,9 @@ public abstract class AbstractTableBrowser extends JPanel
 		BrowserTable table = browserTables.get(currentTable);
 		
 		if (table == null && currentTable != null) {
-			table = new BrowserTable(compiler, popupMenuHelper,
-					applicationManager, eventHelper, tableManager);
+			final EquationCompiler compiler = serviceRegistrar.getService(EquationCompiler.class);
+			
+			table = new BrowserTable(compiler, popupMenuHelper, serviceRegistrar);
 			BrowserTableModel model = new BrowserTableModel(currentTable, currentTableType, compiler);
 			table.setModel(model);
 			browserTables.put(currentTable, table);

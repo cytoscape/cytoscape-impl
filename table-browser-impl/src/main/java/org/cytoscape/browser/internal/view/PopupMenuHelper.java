@@ -1,4 +1,4 @@
-package org.cytoscape.browser.internal;
+package org.cytoscape.browser.internal.view;
 
 /*
  * #%L
@@ -40,6 +40,8 @@ import javax.swing.JSeparator;
 import javax.swing.JTable;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.browser.internal.task.StaticTaskFactoryProvisioner;
+import org.cytoscape.browser.internal.util.ValidatedObjectAndEditString;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyEdge;
@@ -48,6 +50,7 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.TableCellTaskFactory;
 import org.cytoscape.task.TableColumnTaskFactory;
 import org.cytoscape.util.swing.GravityTracker;
@@ -63,24 +66,17 @@ import org.cytoscape.work.TaskManager;
  */
 public class PopupMenuHelper {
 
-	private final TaskManager<?, ?> taskManager;
-	private final CyApplicationManager applicationManager;
-	private final CyEventHelper eventHelper;
 	private final Map<TableCellTaskFactory, Map<?, ?>> tableCellFactoryMap;
 	private final Map<TableColumnTaskFactory, Map<?, ?>> tableColumnFactoryMap;
 	private final StaticTaskFactoryProvisioner factoryProvisioner;
 	
-	private final OpenBrowser openBrowser;
+	private final CyServiceRegistrar serviceRegistrar;
 
-	public PopupMenuHelper(final TaskManager<?, ?> taskManager, final OpenBrowser openBrowser,
-			final CyApplicationManager applicationManager, final CyEventHelper eventHelper) {
-		this.taskManager = taskManager;
-		this.openBrowser = openBrowser;
-		this.applicationManager = applicationManager;
-		this.eventHelper = eventHelper;
+	public PopupMenuHelper(final CyServiceRegistrar serviceRegistrar) {
+		this.serviceRegistrar = serviceRegistrar;
 		
-		tableCellFactoryMap = new HashMap<TableCellTaskFactory, Map<?, ?>>();
-		tableColumnFactoryMap = new HashMap<TableColumnTaskFactory, Map<?, ?>>();
+		tableCellFactoryMap = new HashMap<>();
+		tableColumnFactoryMap = new HashMap<>();
 		factoryProvisioner = new StaticTaskFactoryProvisioner();
 	}
 
@@ -147,6 +143,9 @@ public class PopupMenuHelper {
 				
 				@Override
 				public boolean isEnabled() {
+					final CyApplicationManager applicationManager =
+							serviceRegistrar.getService(CyApplicationManager.class);
+					
 					return table.getSelectedRowCount() > 0 && applicationManager.getCurrentNetwork() != null;
 				}
 			});
@@ -231,6 +230,7 @@ public class PopupMenuHelper {
 
 		@Override
 		public void actionPerformed(ActionEvent ae) {
+			final TaskManager<?, ?> taskManager = serviceRegistrar.getService(TaskManager.class);
 			taskManager.execute(tf.createTaskIterator());
 		}
 	}
@@ -244,7 +244,9 @@ public class PopupMenuHelper {
 			openLinkItem.setEnabled(false);
 		} else {
 			openLinkItem.addActionListener(new ActionListener() {
+				@Override
 				public void actionPerformed(ActionEvent e) {
+					final OpenBrowser openBrowser = serviceRegistrar.getService(OpenBrowser.class);
 					openBrowser.openURL(urlString.toString());
 				}
 			});
@@ -257,6 +259,7 @@ public class PopupMenuHelper {
 		final Thread t = new Thread() {
 			@Override
 			public void run() {
+				final CyApplicationManager applicationManager = serviceRegistrar.getService(CyApplicationManager.class);
 				final CyNetwork net = applicationManager.getCurrentNetwork();
 				
 				if (net != null) {
@@ -281,6 +284,7 @@ public class PopupMenuHelper {
 					final CyNetworkView view = applicationManager.getCurrentNetworkView();
 					
 					if (view != null) {
+						final CyEventHelper eventHelper = serviceRegistrar.getService(CyEventHelper.class);
 						eventHelper.flushPayloadEvents();
 						view.updateView();
 					}

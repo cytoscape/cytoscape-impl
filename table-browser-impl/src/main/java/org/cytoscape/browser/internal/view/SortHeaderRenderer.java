@@ -22,7 +22,7 @@
 
 =====================================================================
 */
-package org.cytoscape.browser.internal;
+package org.cytoscape.browser.internal.view;
 
 import java.awt.Component;
 import java.util.List;

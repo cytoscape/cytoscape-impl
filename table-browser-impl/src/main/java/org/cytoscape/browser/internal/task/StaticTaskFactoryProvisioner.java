@@ -1,4 +1,4 @@
-package org.cytoscape.browser.internal;
+package org.cytoscape.browser.internal.task;
 
 /*
  * #%L
@@ -34,27 +34,33 @@ import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskIterator;
 
 public class StaticTaskFactoryProvisioner {
-	public  TaskFactory createFor(final TableCellTaskFactory factory, final CyColumn column, final Object primaryKeyValue) {
+	
+	public TaskFactory createFor(final TableCellTaskFactory factory, final CyColumn column,
+			final Object primaryKeyValue) {
 		final Reference<CyColumn> columnReference = new WeakReference<CyColumn>(column);
 		final Reference<Object> keyReference = new WeakReference<Object>(primaryKeyValue);
+		
 		return new TaskFactory() {
+			@Override
 			public TaskIterator createTaskIterator() {
 				return factory.createTaskIterator(columnReference.get(), keyReference.get());
 			}
-			
+			@Override
 			public boolean isReady() {
 				return factory.isReady(columnReference.get(), keyReference.get());
 			}
 		};
 	}
 	
-	public  TaskFactory createFor(final TableColumnTaskFactory factory, final CyColumn column) {
+	public TaskFactory createFor(final TableColumnTaskFactory factory, final CyColumn column) {
 		final Reference<CyColumn> columnReference = new WeakReference<CyColumn>(column);
+		
 		return new TaskFactory() {
+			@Override
 			public TaskIterator createTaskIterator() {
 				return factory.createTaskIterator(columnReference.get());
 			}
-			
+			@Override
 			public boolean isReady() {
 				return factory.isReady(columnReference.get());
 			}

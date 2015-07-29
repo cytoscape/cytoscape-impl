@@ -1,4 +1,4 @@
-package org.cytoscape.browser.internal;
+package org.cytoscape.browser.internal.view;
 
 /*
  * #%L
@@ -39,6 +39,7 @@ import javax.swing.table.AbstractTableModel;
 import javax.swing.SwingUtilities;
 
 import org.cytoscape.browser.internal.util.TableBrowserUtil;
+import org.cytoscape.browser.internal.util.ValidatedObjectAndEditString;
 import org.cytoscape.equations.Equation;
 import org.cytoscape.equations.EquationCompiler;
 import org.cytoscape.model.CyColumn;
