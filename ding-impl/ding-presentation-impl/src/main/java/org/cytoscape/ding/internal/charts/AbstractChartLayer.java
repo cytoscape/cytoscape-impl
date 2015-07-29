@@ -52,7 +52,7 @@ public abstract class AbstractChartLayer<T extends Dataset> implements Cy2DGraph
 	protected float labelFontSize = 2.0f;
 	protected float axisWidth;
 	protected Color axisColor;
-	protected float axisFontSize = 2.0f;
+	protected float axisFontSize;
 	protected List<Double> range;
 	
 	protected Rectangle2D bounds;
@@ -75,6 +75,7 @@ public abstract class AbstractChartLayer<T extends Dataset> implements Cy2DGraph
 								 final List<Color> colors,
 								 final float axisWidth,
 								 final Color axisColor,
+								 final float axisFontSize,
 								 final float borderWidth,
 								 final Color borderColor,
 								 final List<Double> range,
@@ -90,6 +91,7 @@ public abstract class AbstractChartLayer<T extends Dataset> implements Cy2DGraph
 		this.colors = colors;
 		this.axisWidth = axisWidth;
 		this.axisColor = axisColor;
+		this.axisFontSize = axisFontSize;
 		this.borderWidth = borderWidth;
 		this.borderColor = borderColor;
 		this.bounds = scaledBounds = bounds;

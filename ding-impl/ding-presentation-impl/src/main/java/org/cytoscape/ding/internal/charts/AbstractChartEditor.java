@@ -10,6 +10,7 @@ import static org.cytoscape.ding.customgraphics.ColorScheme.RAINBOW;
 import static org.cytoscape.ding.customgraphics.ColorScheme.RANDOM;
 import static org.cytoscape.ding.internal.charts.AbstractChart.AUTO_RANGE;
 import static org.cytoscape.ding.internal.charts.AbstractChart.AXIS_COLOR;
+import static org.cytoscape.ding.internal.charts.AbstractChart.AXIS_LABEL_FONT_SIZE;
 import static org.cytoscape.ding.internal.charts.AbstractChart.AXIS_WIDTH;
 import static org.cytoscape.ding.internal.charts.AbstractChart.BORDER_COLOR;
 import static org.cytoscape.ding.internal.charts.AbstractChart.BORDER_WIDTH;
@@ -151,6 +152,8 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 	private JLabel axisWidthLbl;
 	private JTextField axisWidthTxt;
 	private JLabel axisColorLbl;
+	private JLabel axisFontSizeLbl;
+	private JTextField axisFontSizeTxt;
 	private ColorButton axisColorBtn;
 	private ButtonGroup orientationGrp;
 	private JRadioButton verticalRd;
@@ -271,6 +274,7 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 		rangeMaxLbl = new JLabel("Max:");
 		axisWidthLbl = new JLabel("Axis Width:");
 		axisColorLbl = new JLabel("Axis Color:");
+		axisFontSizeLbl = new JLabel("Axis Font Size:");
 		borderWidthLbl = new JLabel("Border Width:");
 		borderColorLbl = new JLabel("Border Color:");
 	}
@@ -533,12 +537,17 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 							.addGroup(layout.createSequentialGroup()
 								.addComponent(axisWidthLbl)
 								.addComponent(getAxisWidthTxt(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-							).addGroup(layout.createSequentialGroup()
+							)
+							.addGroup(layout.createSequentialGroup()
 								.addComponent(axisColorLbl)
 								.addComponent(getAxisColorBtn(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+							).addGroup(layout.createSequentialGroup()
+								.addComponent(axisFontSizeLbl)
+								.addComponent(getAxisFontSizeTxt(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 							)
 						)
-					).addComponent(sep)
+					)
+					.addComponent(sep)
 			);
 			layout.setVerticalGroup(layout.createSequentialGroup()
 					.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
@@ -552,12 +561,18 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 							.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
 								.addComponent(axisWidthLbl)
 								.addComponent(getAxisWidthTxt(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-							).addGroup(layout.createParallelGroup(Alignment.CENTER, true)
+							)
+							.addGroup(layout.createParallelGroup(Alignment.CENTER, true)
 								.addComponent(axisColorLbl)
 								.addComponent(getAxisColorBtn(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 							)
+							.addGroup(layout.createParallelGroup(Alignment.CENTER, true)
+									.addComponent(axisFontSizeLbl)
+									.addComponent(getAxisFontSizeTxt(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+							)
 						)
-					).addComponent(sep, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					)
+					.addComponent(sep, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 			);
 		}
 		
@@ -906,7 +921,6 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 			axisWidthTxt.setPreferredSize(new Dimension(60, axisWidthTxt.getMinimumSize().height));
 			axisWidthTxt.setHorizontalAlignment(JTextField.TRAILING);
 			
-			
 			axisWidthTxt.addFocusListener(new FocusAdapter() {
 				@Override
 				public void focusLost(final FocusEvent e) {
@@ -938,6 +952,28 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 		}
 		
 		return axisColorBtn;
+	}
+	
+	protected JTextField getAxisFontSizeTxt() {
+		if (axisFontSizeTxt == null) {
+			axisFontSizeTxt = new JTextField("" + chart.get(AXIS_LABEL_FONT_SIZE, Integer.class, 1));
+			axisFontSizeTxt.setInputVerifier(new IntInputVerifier());
+			axisFontSizeTxt.setPreferredSize(new Dimension(60, axisFontSizeTxt.getMinimumSize().height));
+			axisFontSizeTxt.setHorizontalAlignment(JTextField.TRAILING);
+			
+			axisFontSizeTxt.addFocusListener(new FocusAdapter() {
+				@Override
+				public void focusLost(final FocusEvent e) {
+					try {
+						int v = Integer.parseInt(axisFontSizeTxt.getText());
+			            chart.set(AXIS_LABEL_FONT_SIZE, v);
+			        } catch (NumberFormatException nfe) {
+			        }
+				}
+			});
+		}
+		
+		return axisFontSizeTxt;
 	}
 	
 	private ButtonGroup getOrientationGrp() {

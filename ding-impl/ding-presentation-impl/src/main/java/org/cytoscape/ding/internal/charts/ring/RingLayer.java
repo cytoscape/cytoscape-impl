@@ -59,7 +59,7 @@ public class RingLayer extends AbstractChartLayer<PieDataset> {
 					 final Rotation rotation,
 					 final Rectangle2D bounds) {
         super(data, labels, null, null, showLabels, false, false, LabelPosition.STANDARD, colors, 0.0f,
-        		TRANSPARENT_COLOR, borderWidth, borderColor, null, bounds);
+        		TRANSPARENT_COLOR, 0.0f, borderWidth, borderColor, null, bounds);
         this.startAngle = startAngle;
         this.hole = hole;
         this.rotation = rotation;

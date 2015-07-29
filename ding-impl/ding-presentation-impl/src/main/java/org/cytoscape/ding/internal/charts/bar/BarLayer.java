@@ -54,6 +54,7 @@ public class BarLayer extends AbstractChartLayer<CategoryDataset> {
 					final List<Color> colors,
 					final float axisWidth,
 					final Color axisColor,
+					final float axisFontSize,
 					final float borderWidth,
 					final Color borderColor,
 					final double separation,
@@ -61,7 +62,8 @@ public class BarLayer extends AbstractChartLayer<CategoryDataset> {
 					final Orientation orientation,
 					final Rectangle2D bounds) {
         super(data, itemLabels, domainLabels, rangeLabels, showItemLabels, showDomainAxis, showRangeAxis,
-        		domainLabelPosition, colors, axisWidth, axisColor, borderWidth, borderColor, range, bounds);
+        		domainLabelPosition, colors, axisWidth, axisColor, axisFontSize, borderWidth, borderColor, range,
+        		bounds);
 		this.type = type;
 		this.showRangeZeroBaseline = showRangeZeroBaseline;
 		this.separation = separation;

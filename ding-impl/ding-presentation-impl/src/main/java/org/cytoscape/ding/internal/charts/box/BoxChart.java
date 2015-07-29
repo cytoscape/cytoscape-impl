@@ -69,11 +69,12 @@ public class BoxChart extends AbstractChart<BoxLayer> {
 		final boolean showRangeZeroBaseline = get(SHOW_RANGE_ZERO_BASELINE, Boolean.class, false);
 		final float axisWidth = get(AXIS_WIDTH, Float.class, 0.25f);
 		final Color axisColor = get(AXIS_COLOR, Color.class, Color.DARK_GRAY);
+		final float axisFontSize = convertFontSize(get(AXIS_LABEL_FONT_SIZE, Integer.class, 1));
 		final float borderWidth = get(BORDER_WIDTH, Float.class, 0.25f);
 		final Color borderColor = get(BORDER_COLOR, Color.class, Color.DARK_GRAY);
 		
 		final BoxLayer layer = new BoxLayer(data, showRangeAxis, showRangeZeroBaseline, colors, axisWidth, axisColor,
-				borderWidth, borderColor, range, orientation, bounds);
+				axisFontSize, borderWidth, borderColor, range, orientation, bounds);
 		
 		return Collections.singletonList(layer);
 	}

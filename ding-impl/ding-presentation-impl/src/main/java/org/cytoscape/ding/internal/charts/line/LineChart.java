@@ -83,11 +83,12 @@ public class LineChart extends AbstractChart<LineLayer> {
 		final LabelPosition domainLabelPosition = get(DOMAIN_LABEL_POSITION, LabelPosition.class);
 		final float axisWidth = get(AXIS_WIDTH, Float.class, 0.25f);
 		final Color axisColor = get(AXIS_COLOR, Color.class, Color.DARK_GRAY);
+		final float axisFontSize = convertFontSize(get(AXIS_LABEL_FONT_SIZE, Integer.class, 1));
 		final float lineWidth = get(LINE_WIDTH, Float.class, 1.0f);
 		
 		LineLayer layer = new LineLayer(data, itemLabels, domainLabels, rangeLabels, showItemLabels, showDomainAxis,
-				showRangeAxis, showRangeZeroBaseline, domainLabelPosition, colors, axisWidth, axisColor, range,
-				lineWidth, bounds);
+				showRangeAxis, showRangeZeroBaseline, domainLabelPosition, colors, axisWidth, axisColor, axisFontSize,
+				range, lineWidth, bounds);
 		
 		return Collections.singletonList(layer);
 	}

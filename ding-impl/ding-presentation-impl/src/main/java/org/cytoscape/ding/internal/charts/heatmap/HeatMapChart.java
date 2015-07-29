@@ -76,10 +76,12 @@ public class HeatMapChart extends AbstractChart<HeatMapLayer> {
 		final boolean showRangeAxis = get(SHOW_RANGE_AXIS, Boolean.class, false);
 		final LabelPosition domainLabelPosition = get(DOMAIN_LABEL_POSITION, LabelPosition.class);
 		final Color axisColor = get(AXIS_COLOR, Color.class, Color.DARK_GRAY);
+		final float axisFontSize = convertFontSize(get(AXIS_LABEL_FONT_SIZE, Integer.class, 1));
 		final Orientation orientation = get(ORIENTATION, Orientation.class);
 		
 		final HeatMapLayer layer = new HeatMapLayer(data, itemLabels, domainLabels, rangeLabels,
-				showDomainAxis, showRangeAxis, domainLabelPosition, colors, axisColor, range, orientation, bounds);
+				showDomainAxis, showRangeAxis, domainLabelPosition, colors, axisColor, axisFontSize, range, orientation,
+				bounds);
 		
 		return Collections.singletonList(layer);
 	}

@@ -41,11 +41,13 @@ public class LineLayer extends AbstractChartLayer<CategoryDataset> {
 					 final List<Color> colors,
 					 final float axisWidth,
 					 final Color axisColor,
+					 final float axisFontSize,
 					 final List<Double> range,
 					 final float lineWidth,
 					 final Rectangle2D bounds) {
         super(data, itemLabels, domainLabels, rangeLabels, showItemLabels, showDomainAxis, showRangeAxis,
-        		domainLabelPosition, colors, axisWidth, axisColor, 0.0f, TRANSPARENT_COLOR, range, bounds);
+        		domainLabelPosition, colors, axisWidth, axisColor, axisFontSize, 0.0f, TRANSPARENT_COLOR, range,
+        		bounds);
         this.showRangeZeroBaseline = showRangeZeroBaseline;
         this.lineWidth = lineWidth >= 0 ? lineWidth : 1.0f;
 	}
