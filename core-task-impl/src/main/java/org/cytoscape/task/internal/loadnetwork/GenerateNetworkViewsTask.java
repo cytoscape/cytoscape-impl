@@ -100,7 +100,6 @@ class GenerateNetworkViewsTask extends AbstractTask implements ObservableTask {
 				    // impossible.
                       		    vmm.setVisualStyle(style, view);
                 		}
-				vmm.setVisualStyle(style, view);
 				style.apply(view);
 				
 				if (!view.isSet(BasicVisualLexicon.NETWORK_CENTER_X_LOCATION)
