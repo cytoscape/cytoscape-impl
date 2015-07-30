@@ -524,19 +524,6 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 			}
 		});
 
-		getPreviewPanel().getReloadButton().addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent evt) {
-				try {
-					if (!updating)
-						displayPreview();
-				} catch (IOException e) {
-					logger.error("Error on reloadButton.actionPerformed", e);
-					throw new IllegalStateException("Could not reload target file.");
-				}
-			}
-		});
-		
 		startRowSpinner.setName("startRowSpinner");
 
 		final SpinnerNumberModel startRowSpinnerModel = new SpinnerNumberModel(1, 1, 10000000, 1);
@@ -1051,7 +1038,6 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 				panelBuilder.setAnnotationComboBox();
 			}
 	
-			getPreviewPanel().getReloadButton().setEnabled(false);
 			startRowSpinner.setEnabled(false);
 			getPreviewPanel().getPreviewTable().getTableHeader().setReorderingAllowed(false);
 			
@@ -1192,7 +1178,6 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 			attributeRadioButtonActionPerformed(null);
 		}
 
-		getPreviewPanel().getReloadButton().setEnabled(true);
 		startRowSpinner.setEnabled(true);
 
 		final Window parent = SwingUtilities.getWindowAncestor(this);
@@ -1330,13 +1315,8 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 	}
 	
 	private void setStatusBar(final URL sourceURL) {
-		final String centerMessage;
+		final String centerMessage = "First " + getPreviewPanel().getPreviewSize() + " entries are loaded for preview";
 		final String rightMessage;
-
-		if (getPreviewPanel().getShowAllRadioButton().isSelected())
-			centerMessage = "All entries are loaded for preview";
-		else
-			centerMessage = "First " + getPreviewPanel().getCounterSpinner().getValue() + " entries are loaded for preview";
 
 		if (sourceURL.toString().startsWith("file:")) {
 			int fileSize = 0;
@@ -1447,7 +1427,7 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 			);
 			layout.setVerticalGroup(layout.createSequentialGroup()
 					.addComponent(getBasicPanel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addComponent(getPreviewPanel(), DEFAULT_SIZE, 340, Short.MAX_VALUE)
+					.addComponent(getPreviewPanel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 					.addComponent(statusBar, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(getAdvancedButton())
 			);
@@ -1460,7 +1440,7 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 			);
 			layout.setVerticalGroup(layout.createSequentialGroup()
 					.addComponent(getBasicPanel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addComponent(getPreviewPanel(), DEFAULT_SIZE, 340, Short.MAX_VALUE)
+					.addComponent(getPreviewPanel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 					.addComponent(statusBar, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(getAdvancedButton())
 			);
@@ -1472,7 +1452,7 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 			);
 			layout.setVerticalGroup(layout.createSequentialGroup()
 					.addComponent(getBasicPanel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addComponent(getPreviewPanel(), DEFAULT_SIZE, 360, Short.MAX_VALUE)
+					.addComponent(getPreviewPanel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 					.addComponent(getAdvancedButton())
 			);
 		}

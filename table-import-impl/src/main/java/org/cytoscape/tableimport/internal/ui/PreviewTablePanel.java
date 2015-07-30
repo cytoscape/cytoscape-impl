@@ -59,8 +59,6 @@ import java.awt.event.AdjustmentListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseWheelEvent;
-import java.awt.event.MouseWheelListener;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.BufferedReader;
@@ -78,7 +76,6 @@ import javax.accessibility.AccessibleComponent;
 import javax.swing.AbstractAction;
 import javax.swing.ActionMap;
 import javax.swing.BorderFactory;
-import javax.swing.ButtonGroup;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.GroupLayout;
 import javax.swing.InputMap;
@@ -89,14 +86,10 @@ import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
-import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
-import javax.swing.JSeparator;
-import javax.swing.JSpinner;
 import javax.swing.JTable;
 import javax.swing.KeyStroke;
 import javax.swing.LayoutStyle.ComponentPlacement;
-import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
@@ -163,12 +156,6 @@ public class PreviewTablePanel extends JPanel {
 	private JButton selectAllButton;
 	private JButton selectNoneButton;
 	private JScrollPane tableScrollPane;
-	private JRadioButton showAllRadioButton;
-	private JRadioButton counterRadioButton;
-	private JSpinner counterSpinner;
-	private JButton reloadButton;
-	
-	private ButtonGroup importTypeButtonGroup;
 	
 	private PropertyChangeSupport changes = new PropertyChangeSupport(this);
 	private ImportType importType;
@@ -246,14 +233,6 @@ public class PreviewTablePanel extends JPanel {
 		taxonIconLabel.setFont(iconManager.getIconFont(ICON_FONT_SIZE));
 		taxonIconLabel.setForeground(TAXON.getForeground());
 		
-		final JLabel counterLabel = new JLabel("entries");
-		counterLabel.putClientProperty("JComponent.sizeVariant", "small"); // Mac OS X only
-		
-		importTypeButtonGroup = new ButtonGroup();
-		importTypeButtonGroup.add(getShowAllRadioButton());
-		importTypeButtonGroup.add(getCounterRadioButton());
-		importTypeButtonGroup.setSelected(getCounterRadioButton().getModel(), true);
-		
 		final JLabel instructionLabel = new JLabel("Click on a column to edit it.");
 		instructionLabel.setFont(instructionLabel.getFont().deriveFont(LookAndFeelUtil.INFO_FONT_SIZE));
 		
@@ -271,8 +250,6 @@ public class PreviewTablePanel extends JPanel {
 		layout.setAutoCreateContainerGaps(true);
 		layout.setAutoCreateGaps(false);
 		
-		final JSeparator sep = new JSeparator();
-
 		layout.setHorizontalGroup(layout.createParallelGroup(LEADING, true)
 				.addGroup(layout.createSequentialGroup()
 						.addComponent(sheetLabel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
@@ -286,17 +263,6 @@ public class PreviewTablePanel extends JPanel {
 						.addComponent(getSelectNoneButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 				)
 				.addComponent(getTableScrollPane(), DEFAULT_SIZE, 320, Short.MAX_VALUE)
-				.addGroup(layout.createSequentialGroup()
-					.addComponent(getShowAllRadioButton())
-					.addPreferredGap(ComponentPlacement.UNRELATED)
-					.addComponent(getCounterRadioButton())
-					.addPreferredGap(ComponentPlacement.RELATED)
-					.addComponent(getCounterSpinner(), PREFERRED_SIZE, 60, PREFERRED_SIZE)
-					.addComponent(counterLabel)
-					.addGap(20, 20, Short.MAX_VALUE)
-					.addComponent(getReloadButton())
-				)
-				.addComponent(sep, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 				.addGroup(layout.createSequentialGroup()
 						.addComponent(legendLabel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 						.addPreferredGap(UNRELATED)
@@ -329,14 +295,6 @@ public class PreviewTablePanel extends JPanel {
 				.addComponent(getTableScrollPane(), 120, 160, Short.MAX_VALUE)
 				.addPreferredGap(RELATED)
 				.addGroup(layout.createParallelGroup(CENTER)
-						.addComponent(getShowAllRadioButton())
-						.addComponent(getCounterRadioButton())
-						.addComponent(getCounterSpinner(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-						.addComponent(counterLabel)
-						.addComponent(getReloadButton())
-				)
-				.addComponent(sep, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-				.addGroup(layout.createParallelGroup(CENTER)
 						.addComponent(legendLabel)
 						.addComponent(pkIconLabel)
 						.addComponent(pkLabel)
@@ -350,7 +308,6 @@ public class PreviewTablePanel extends JPanel {
 		);
 		
 		if (importType != ONTOLOGY_IMPORT) {
-			sep.setVisible(false);
 			legendLabel.setVisible(false);
 			pkIconLabel.setVisible(false);
 			pkLabel.setVisible(false);
@@ -711,18 +668,7 @@ public class PreviewTablePanel extends JPanel {
 	}
 	
 	public int getPreviewSize() {
-		final int previewSize;
-
-		try {
-			if (getShowAllRadioButton().isSelected())
-				previewSize = -1;
-			else
-				previewSize = Integer.parseInt(getCounterSpinner().getValue().toString());
-		} catch (NumberFormatException e) {
-			return 0;
-		}
-		
-		return previewSize;
+		return 100;
 	}
 	
 	/**
@@ -749,69 +695,6 @@ public class PreviewTablePanel extends JPanel {
 		return false;
 	}
 
-	protected JRadioButton getShowAllRadioButton() {
-		if (showAllRadioButton == null) {
-			showAllRadioButton = new JRadioButton("Show all entries in the file");
-			showAllRadioButton.putClientProperty("JComponent.sizeVariant", "small"); // Mac OS X only
-		}
-		
-		return showAllRadioButton;
-	}
-	
-	protected JRadioButton getCounterRadioButton() {
-		if (counterRadioButton == null) {
-			counterRadioButton = new JRadioButton("Show first");
-			counterRadioButton.putClientProperty("JComponent.sizeVariant", "small"); // Mac OS X only
-		}
-		
-		return counterRadioButton;
-	}
-	
-	protected JSpinner getCounterSpinner() {
-		if (counterSpinner == null) {
-			final SpinnerNumberModel spinnerModel = new SpinnerNumberModel(100, 1, 10000000, 10);
-			counterSpinner = new JSpinner(spinnerModel);
-			counterSpinner.setToolTipText(
-					"<html><body>Click <strong><i>Reset</i></strong> button to update the table</body></html>");
-			counterSpinner.putClientProperty("JComponent.sizeVariant", "small"); // Mac OS X only
-			
-			counterSpinner.addMouseWheelListener(new MouseWheelListener() {
-				@Override
-				@SuppressWarnings("unchecked")
-				public void mouseWheelMoved(final MouseWheelEvent evt) {
-					final JSpinner source = (JSpinner) evt.getSource();
-
-					final SpinnerNumberModel model = (SpinnerNumberModel) source.getModel();
-					final Integer oldValue = (Integer) source.getValue();
-					final int intValue = oldValue.intValue() - (evt.getWheelRotation() * model.getStepSize().intValue());
-					final Integer newValue = new Integer(intValue);
-
-					if (model.getMaximum().compareTo(newValue) >= 0 && model.getMinimum().compareTo(newValue) <= 0)
-						source.setValue(newValue);
-				}
-			});
-		}
-		
-		return counterSpinner;
-	}
-	
-	protected JButton getReloadButton() {
-		if (reloadButton == null) {
-			reloadButton = new JButton(IconManager.ICON_REFRESH);
-			reloadButton.setFont(iconManager.getIconFont(12.0f));
-			reloadButton.setToolTipText("Reset");
-			reloadButton.putClientProperty("JComponent.sizeVariant", "small"); // Mac OS X only
-			reloadButton.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					disposeEditDialog(false);
-				}
-			});
-		}
-		
-		return reloadButton;
-	}
-	
 	private PreviewTableModel parseExcel(final Sheet sheet, int startLine)
 			throws IOException {
 		int size = getPreviewSize();
