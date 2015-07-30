@@ -94,6 +94,12 @@ class GenerateNetworkViewsTask extends AbstractTask implements ObservableTask {
 			if (numGraphObjects < viewThreshold) {
 				final CyNetworkView view = viewReader.buildCyNetworkView(network);
 				networkViewManager.addNetworkView(view);
+				if ("default").equals(vmm.getVisualStyle(view).getTitle()){
+				    // Only set current style when no style, i.e. default, is set for view.
+				    // This allows the viewReader to set custom styles, which is currently
+				    // impossible.
+                      		    vmm.setVisualStyle(style, view);
+                		}
 				vmm.setVisualStyle(style, view);
 				style.apply(view);
 				
