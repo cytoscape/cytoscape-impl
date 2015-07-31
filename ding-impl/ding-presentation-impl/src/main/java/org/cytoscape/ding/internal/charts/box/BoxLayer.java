@@ -45,9 +45,9 @@ public class BoxLayer extends AbstractChartLayer<BoxAndWhiskerCategoryDataset> {
 					final List<Double> range,
 					final Orientation orientation,
 					final Rectangle2D bounds) {
-        super(data, Collections.EMPTY_LIST, Collections.EMPTY_LIST, Collections.EMPTY_LIST,
-        		false, false, showRangeAxis, LabelPosition.STANDARD, colors, axisWidth, axisColor, axisFontSize,
-        		borderWidth, borderColor, range, bounds);
+        super(data, Collections.EMPTY_LIST, Collections.EMPTY_LIST, Collections.EMPTY_LIST, false, false,
+				showRangeAxis, 0.0f, LabelPosition.STANDARD, colors, axisWidth, axisColor, axisFontSize,
+				borderWidth, borderColor, range, bounds);
         this.showRangeZeroBaseline = showRangeZeroBaseline;
         this.orientation = orientation;
 	}

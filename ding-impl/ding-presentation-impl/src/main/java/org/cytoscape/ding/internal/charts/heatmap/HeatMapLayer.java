@@ -44,8 +44,8 @@ public class HeatMapLayer extends AbstractChartLayer<XYZDataset> {
 						final List<Double> range,
 						final Orientation orientation,
 						final Rectangle2D bounds) {
-        super(data, itemLabels, domainLabels, rangeLabels, false, showDomainAxis, showRangeAxis, domainLabelPosition,
-        		colors, 0.0f, axisColor, axisFontSize, 0.0f, TRANSPARENT_COLOR, range, bounds);
+		super(data, itemLabels, domainLabels, rangeLabels, false, showDomainAxis, showRangeAxis, 0.0f,
+				domainLabelPosition, colors, 0.0f, axisColor, axisFontSize, 0.0f, TRANSPARENT_COLOR, range, bounds);
         this.orientation = orientation;
         
         // Range cannot be null

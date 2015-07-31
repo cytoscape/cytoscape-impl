@@ -50,6 +50,7 @@ public class BarLayer extends AbstractChartLayer<CategoryDataset> {
 					final boolean showDomainAxis,
 					final boolean showRangeAxis,
 					final boolean showRangeZeroBaseline,
+					final float itemFontSize,
 					final LabelPosition domainLabelPosition,
 					final List<Color> colors,
 					final float axisWidth,
@@ -61,7 +62,7 @@ public class BarLayer extends AbstractChartLayer<CategoryDataset> {
 					final List<Double> range,
 					final Orientation orientation,
 					final Rectangle2D bounds) {
-        super(data, itemLabels, domainLabels, rangeLabels, showItemLabels, showDomainAxis, showRangeAxis,
+        super(data, itemLabels, domainLabels, rangeLabels, showItemLabels, showDomainAxis, showRangeAxis, itemFontSize,
         		domainLabelPosition, colors, axisWidth, axisColor, axisFontSize, borderWidth, borderColor, range,
         		bounds);
 		this.type = type;
@@ -185,7 +186,7 @@ public class BarLayer extends AbstractChartLayer<CategoryDataset> {
 		renderer.setDrawBarOutline(true);
 		renderer.setBaseItemLabelGenerator(showItemLabels ? new CustomCategoryItemLabelGenerator(itemLabels) : null);
 		renderer.setBaseItemLabelsVisible(showItemLabels);
-		renderer.setBaseItemLabelFont(renderer.getBaseItemLabelFont().deriveFont(labelFontSize));
+		renderer.setBaseItemLabelFont(renderer.getBaseItemLabelFont().deriveFont(itemFontSize));
 		renderer.setBaseItemLabelPaint(labelColor);
 		renderer.setItemMargin(separation);
 		

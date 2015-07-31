@@ -19,6 +19,7 @@ import static org.cytoscape.ding.internal.charts.AbstractChart.DOMAIN_LABELS_COL
 import static org.cytoscape.ding.internal.charts.AbstractChart.DOMAIN_LABEL_POSITION;
 import static org.cytoscape.ding.internal.charts.AbstractChart.GLOBAL_RANGE;
 import static org.cytoscape.ding.internal.charts.AbstractChart.ITEM_LABELS_COLUMN;
+import static org.cytoscape.ding.internal.charts.AbstractChart.ITEM_LABEL_FONT_SIZE;
 import static org.cytoscape.ding.internal.charts.AbstractChart.RANGE;
 import static org.cytoscape.ding.internal.charts.AbstractChart.RANGE_LABELS_COLUMN;
 import static org.cytoscape.ding.internal.charts.AbstractChart.SHOW_DOMAIN_AXIS;
@@ -149,6 +150,8 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 	private JCheckBox domainAxisVisibleCkb;
 	private JCheckBox rangeAxisVisibleCkb;
 	private JCheckBox rangeZeroBaselineVisibleCkb;
+	private JLabel itemFontSizeLbl;
+	private JTextField itemFontSizeTxt;
 	private JLabel axisWidthLbl;
 	private JTextField axisWidthTxt;
 	private JLabel axisColorLbl;
@@ -267,6 +270,7 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 	
 	protected void createLabels() {
 		itemLabelsColumnLbl = new JLabel("Column:");
+		itemFontSizeLbl = new JLabel("Font Size:");
 		domainLabelsColumnLbl = new JLabel("Domain Labels Column:");
 		rangeLabelsColumnLbl = new JLabel("Range Labels Column:");
 		domainLabelPositionLbl = new JLabel("Domain Label Position:");
@@ -433,11 +437,16 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 						.addComponent(getItemLabelsVisibleCkb())
 						.addPreferredGap(ComponentPlacement.UNRELATED)
 						.addComponent(itemLabelsColumnLbl)
-						.addComponent(getItemLabelsColumnCmb(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE));
+						.addComponent(getItemLabelsColumnCmb(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addPreferredGap(ComponentPlacement.UNRELATED)
+						.addComponent(itemFontSizeLbl)
+						.addComponent(getItemFontSizeTxt(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE));
 				vGroup.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
 						.addComponent(getItemLabelsVisibleCkb())
 						.addComponent(itemLabelsColumnLbl)
-						.addComponent(getItemLabelsColumnCmb()));
+						.addComponent(getItemLabelsColumnCmb())
+						.addComponent(itemFontSizeLbl)
+						.addComponent(getItemFontSizeTxt()));
 			}
 			
 			if (setRangeLabels) {
@@ -816,6 +825,9 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 						
 						itemLabelsColumnLbl.setEnabled(itemLabelsVisibleCkb.isSelected());
 						getItemLabelsColumnCmb().setEnabled(itemLabelsVisibleCkb.isSelected());
+						
+						itemFontSizeLbl.setEnabled(itemLabelsVisibleCkb.isSelected());
+						getItemFontSizeTxt().setEnabled(itemLabelsVisibleCkb.isSelected());
 					}
 				});
 			}
@@ -952,6 +964,28 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 		}
 		
 		return axisColorBtn;
+	}
+	
+	protected JTextField getItemFontSizeTxt() {
+		if (itemFontSizeTxt == null) {
+			itemFontSizeTxt = new JTextField("" + chart.get(ITEM_LABEL_FONT_SIZE, Integer.class, 1));
+			itemFontSizeTxt.setInputVerifier(new IntInputVerifier());
+			itemFontSizeTxt.setPreferredSize(new Dimension(40, itemFontSizeTxt.getMinimumSize().height));
+			itemFontSizeTxt.setHorizontalAlignment(JTextField.TRAILING);
+			
+			itemFontSizeTxt.addFocusListener(new FocusAdapter() {
+				@Override
+				public void focusLost(final FocusEvent e) {
+					try {
+						int v = Integer.parseInt(itemFontSizeTxt.getText());
+			            chart.set(ITEM_LABEL_FONT_SIZE, v);
+			        } catch (NumberFormatException nfe) {
+			        }
+				}
+			});
+		}
+		
+ 		return itemFontSizeTxt;
 	}
 	
 	protected JTextField getAxisFontSizeTxt() {
@@ -1128,14 +1162,12 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 	protected void update(final boolean recalculateRange) {
 		if (setOrientation)
 			updateOrientation();
+		
 		updateGlobalRange();
 		updateRangeMinMax(recalculateRange);
-		
-		final boolean showItemLabels = chart.get(SHOW_ITEM_LABELS, Boolean.class, Boolean.FALSE);
-		itemLabelsColumnLbl.setEnabled(showItemLabels);
-		getItemLabelsColumnCmb().setEnabled(showItemLabels);
+		updateItemLabel();
 	}
-	
+
 	protected void updateOrientation() {
 		final Orientation orientation = chart.get(ORIENTATION, Orientation.class, Orientation.VERTICAL);
 		final JRadioButton orientRd = orientation == Orientation.HORIZONTAL ? getHorizontalRd() : getVerticalRd();
@@ -1150,6 +1182,14 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 		getRangeMinTxt().setVisible(global);
 		getRangeMaxTxt().setVisible(global);
 		getRefreshRangeBtn().setVisible(global);
+	}
+	
+	protected void updateItemLabel() {
+		final boolean showItemLabels = chart.get(SHOW_ITEM_LABELS, Boolean.class, Boolean.FALSE);
+		itemLabelsColumnLbl.setEnabled(showItemLabels);
+		getItemLabelsColumnCmb().setEnabled(showItemLabels);
+		itemFontSizeLbl.setEnabled(showItemLabels);
+		getItemFontSizeTxt().setEnabled(showItemLabels);
 	}
 
 	protected void updateRangeMinMax(final boolean recalculate) {
