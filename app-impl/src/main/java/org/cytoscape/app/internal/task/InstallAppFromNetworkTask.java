@@ -12,15 +12,15 @@ import org.cytoscape.work.TaskMonitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class InstallAppFromAppStoreTask extends AbstractTask {
+public class InstallAppFromNetworkTask extends AbstractTask {
 	
-	private static final Logger logger = LoggerFactory.getLogger(InstallAppFromAppStoreTask.class);
+	private static final Logger logger = LoggerFactory.getLogger(InstallAppFromNetworkTask.class);
 	
 	private final WebApp webApp;
 	private final WebQuerier webQuerier;
 	private final AppManager appManager;
 	
-	public InstallAppFromAppStoreTask(final WebApp webApp, final WebQuerier webQuerier, final AppManager appManager){
+	public InstallAppFromNetworkTask(final WebApp webApp, final WebQuerier webQuerier, final AppManager appManager){
 		this.webApp = webApp;
 		this.webQuerier = webQuerier;
 		this.appManager = appManager;
@@ -29,12 +29,12 @@ public class InstallAppFromAppStoreTask extends AbstractTask {
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
 		DownloadStatus status = new DownloadStatus(taskMonitor);
-		taskMonitor.setTitle("Installing App from App Store: " + webApp.getFullName());
+		taskMonitor.setStatusMessage("Downloading " + webApp.getFullName() + "...");
 		
 		// Download app
 		File appFile = webQuerier.downloadApp(webApp, null, new File(appManager.getDownloadedAppsPath()), status);
 		if(appFile != null) {
-			insertTasksAfterCurrentTask(new InstallAppFromFileTask(appFile, appManager));
+			insertTasksAfterCurrentTask(new InstallAppFromJarTask(appFile, appManager));
 		}
 		else {
 			// Log error: no download links were found for app

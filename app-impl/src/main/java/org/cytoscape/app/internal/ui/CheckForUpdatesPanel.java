@@ -28,6 +28,7 @@ import java.awt.Container;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -46,12 +47,17 @@ import org.cytoscape.app.internal.net.Update;
 import org.cytoscape.app.internal.net.UpdateManager;
 import org.cytoscape.app.internal.net.WebApp;
 import org.cytoscape.app.internal.net.WebQuerier;
+import org.cytoscape.app.internal.task.InstallAppFromNetworkTask;
 import org.cytoscape.app.internal.ui.downloadsites.DownloadSite;
 import org.cytoscape.app.internal.ui.downloadsites.DownloadSitesManager;
+import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.FinishStatus;
+import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskManager;
 import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.TaskObserver;
 
 /**
  * This class represents the panel in the App Manager dialog's tab used for checking for app updates.
@@ -116,7 +122,7 @@ public class CheckForUpdatesPanel extends javax.swing.JPanel {
         installSelectedButton.setEnabled(false);
         installSelectedButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                installSelectedButtonActionPerformed(evt);
+            	installUpdates(getSelectedUpdates());
             }
         });
 
@@ -124,7 +130,7 @@ public class CheckForUpdatesPanel extends javax.swing.JPanel {
         installAllButton.setEnabled(false);
         installAllButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                installAllButtonActionPerformed(evt);
+            	installUpdates(updateManager.getUpdates());
             }
         });
 
@@ -256,140 +262,108 @@ public class CheckForUpdatesPanel extends javax.swing.JPanel {
 		
         	@Override
         	public void componentShown(ComponentEvent e) {
-        		
-        		final Set<App> appsToCheckUpdates = new HashSet<App>();
-        		
-        		for (App app : appManager.getApps()) {
-        			if (app.getStatus() != AppStatus.UNINSTALLED
-        					&& app.getStatus() != AppStatus.FILE_MOVED) {
-        				appsToCheckUpdates.add(app);
-        			}
-        		}
-        		
-        		taskManager.execute(new TaskIterator(new Task() {
-					
-					@Override
-					public void run(TaskMonitor taskMonitor) throws Exception {
-
-						taskMonitor.setTitle("Checking for updates");
-						
-						WebQuerier webQuerier = appManager.getWebQuerier();
-						
-						String siteName, siteUrl;
-						
-						double progress = 0.0;
-						
-//						System.out.println("dlsite mgr: " + downloadSitesManager);
-//						System.out.println("dlsite mgr's sites: " + downloadSitesManager.getDownloadSites());
-						
-						// Obtain apps listing from each site if not done so
-						for (DownloadSite downloadSite : downloadSitesManager.getDownloadSites()) {
-							
-							siteName = downloadSite.getSiteName();
-							siteUrl = downloadSite.getSiteUrl();
-							
-							taskMonitor.setStatusMessage("Obtaining apps listing from " 
-									+ siteName + "(" + siteUrl + ") ...");
-							taskMonitor.setProgress(progress);
-							
-							progress += 1.0 / (downloadSitesManager.getDownloadSites().size() + 1);
-							
-							webQuerier.setCurrentAppStoreUrl(siteUrl);
-							Set<WebApp> webApps = webQuerier.getAllApps();
-						}
-						
-						taskMonitor.setStatusMessage("Reading listings for new versions");
-						taskMonitor.setProgress(0.98); // We're 98% done.
-						
-						updateManager.checkForUpdates(appsToCheckUpdates);
-					}
-					
-					@Override
-					public void cancel() {
-						// TODO Auto-generated method stub
-						
-					}
-				}));
-        		
-        		
+        		checkUpdates();
         	}
         });
         
         setupDescriptionListener();
     }
-
-    private void installSelectedButtonActionPerformed(java.awt.event.ActionEvent evt) {
-        final Set<Update> selectedUpdates = getSelectedUpdates();
-        final int updateCount = selectedUpdates.size();
-        
-        taskManager.execute(new TaskIterator(new Task() {
-			private DownloadStatus status;
-
+    
+    private void checkUpdates() {
+    	final Set<App> appsToCheckUpdates = new HashSet<App>();
+		
+		for (App app : appManager.getApps()) {
+			if (app.getStatus() != AppStatus.UNINSTALLED
+					&& app.getStatus() != AppStatus.FILE_MOVED) {
+				appsToCheckUpdates.add(app);
+			}
+		}
+		
+		taskManager.execute(new TaskIterator(new Task() {
+			
 			@Override
 			public void run(TaskMonitor taskMonitor) throws Exception {
-				status = new DownloadStatus(taskMonitor);
-				taskMonitor.setTitle("Installing updates");
-				
-				double progress = 0;
-				int count = 0;
-				
-				for (Update update : selectedUpdates) {
-					count++;
-					
-					taskMonitor.setStatusMessage("Installing update " 
-							+ update.getRelease().getReleaseVersion() 
-							+ " for " + update.getApp().getAppName() 
-							+ " (" + count + "/" + updateCount + ")");
-					
-		        	updateManager.installUpdate(update, status);
-		        }
-			}
 
-			@Override
-			public void cancel() {	
-				if (status != null) {
-					status.cancel();
+				taskMonitor.setTitle("Checking for updates");
+				
+				WebQuerier webQuerier = appManager.getWebQuerier();
+				
+				String siteName, siteUrl;
+				
+				double progress = 0.0;
+				
+//				System.out.println("dlsite mgr: " + downloadSitesManager);
+//				System.out.println("dlsite mgr's sites: " + downloadSitesManager.getDownloadSites());
+				
+				// Obtain apps listing from each site if not done so
+				for (DownloadSite downloadSite : downloadSitesManager.getDownloadSites()) {
+					
+					siteName = downloadSite.getSiteName();
+					siteUrl = downloadSite.getSiteUrl();
+					
+					taskMonitor.setStatusMessage("Obtaining apps listing from " 
+							+ siteName + "(" + siteUrl + ") ...");
+					taskMonitor.setProgress(progress);
+					
+					progress += 1.0 / (downloadSitesManager.getDownloadSites().size() + 1);
+					
+					webQuerier.setCurrentAppStoreUrl(siteUrl);
+					Set<WebApp> webApps = webQuerier.getAllApps();
 				}
-			}
-        	
-        }));
-    }
-
-    private void installAllButtonActionPerformed(java.awt.event.ActionEvent evt) {
-        final Set<Update> updates = new HashSet<Update>(updateManager.getUpdates());
-        final int updateCount = updates.size();
-
-        taskManager.execute(new TaskIterator(new Task() {
-			private DownloadStatus status;
-
-			@Override
-			public void run(TaskMonitor taskMonitor) throws Exception {
-				status = new DownloadStatus(taskMonitor);
-				taskMonitor.setTitle("Installing updates");
 				
-				double progress = 0;
-				int count = 0;
+				taskMonitor.setStatusMessage("Reading listings for new versions");
+				taskMonitor.setProgress(0.98); // We're 98% done.
 				
-				for (Update update : updates) {
-					count++;
-					
-					taskMonitor.setStatusMessage("Installing update " 
-							+ update.getRelease().getReleaseVersion() 
-							+ " for " + update.getApp().getAppName() 
-							+ " (" + count + "/" + updateCount + ")");
-					
-		        	updateManager.installUpdate(update, status);
-		        }
+				updateManager.checkForUpdates(appsToCheckUpdates);
 			}
-
+			
 			@Override
 			public void cancel() {
-				if (status != null) {
-					status.cancel();
-				}
+				// TODO Auto-generated method stub
+				
 			}
+		}));
+    }
+    
+    private void installUpdates(final Set<Update> updates) {
+    	final int updateCount = updates.size();
+        int count = 0;
+        TaskIterator ti = new TaskIterator();
+        for (Update update: updates) {
+        	count++;
+        	final int currentCount = count;
+	        ti.append(new TaskIterator(new AbstractTask() {
+	
+				@Override
+				public void run(TaskMonitor taskMonitor) throws Exception {
+					taskMonitor.setTitle("Install Updates");
+					taskMonitor.setTitle("Installing update " 
+							+ update.getRelease().getReleaseVersion() 
+							+ " for " + update.getApp().getAppName() 
+							+ " (" + currentCount + "/" + updateCount + ")");
+					taskMonitor.setStatusMessage("Checking update status...");
+					
+					appManager.getWebQuerier().checkWebAppInstallStatus(Collections.singleton(update.getWebApp()), appManager);
+					
+					if(!update.getWebApp().getCorrespondingApp().getSha512Checksum().
+							equals(update.getRelease().getSha512Checksum())) {
+						// update not already installed
+						appManager.uninstallApp(update.getWebApp().getCorrespondingApp());
+						insertTasksAfterCurrentTask(new InstallAppFromNetworkTask(update.getWebApp(), appManager.getWebQuerier(), appManager));
+					}
+				}
         	
         }));
+        }
+        taskManager.execute(ti, new TaskObserver(){
+
+			@Override
+			public void taskFinished(ObservableTask task) {}
+
+			@Override
+			public void allFinished(FinishStatus finishStatus) {
+				checkUpdates();
+			}});
     }
     
     private void manageUpdateSitesActionPerformed(java.awt.event.ActionEvent evt) {
@@ -427,18 +401,14 @@ public class CheckForUpdatesPanel extends javax.swing.JPanel {
 				
 				DefaultTableModel tableModel = (DefaultTableModel) updatesTable.getModel();
 				
-				for (Update update : updateManager.getUpdates()) {
-					if (!update.getApp().isDetached()) {
-		    			
-						tableModel.addRow(new Object[]{
-		    				update,
-		    				update.getApp().getVersion(),
-		    				update.getUpdateVersion(),
-		    				(update.getRelease().getBaseUrl() 
-		    						+ update.getRelease().getRelativeUrl()).replaceAll("//+", "/").replaceFirst(":/", "://")				
-						});
-						
-					}
+				for (Update update : updateManager.getUpdates()) {		    			
+					tableModel.addRow(new Object[]{
+							update,
+							update.getApp().getVersion(),
+							update.getUpdateVersion(),
+							(update.getRelease().getBaseUrl() 
+									+ update.getRelease().getRelativeUrl()).replaceAll("//+", "/").replaceFirst(":/", "://")				
+					});	
 		    	}
 			}
     		

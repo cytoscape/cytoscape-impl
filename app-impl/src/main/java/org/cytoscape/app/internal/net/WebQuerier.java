@@ -683,6 +683,8 @@ public class WebQuerier {
 		
 		for (App app : appManager.getApps()) {
 			
+			if(app.isDetached()) continue;
+			
 			if (app.getSha512Checksum() == null) {
 				try {
 					app.setSha512Checksum(appManager.getAppParser().getChecksum(app.getAppFile()));
@@ -702,12 +704,13 @@ public class WebQuerier {
 						
 						if (release.getSha512Checksum().trim().length() > 0
 								&& sha512checksum.indexOf(release.getSha512Checksum()) != -1) {
-							
-							webApp.setCorrespondingApp(app);
-							
-							// For convenience, set the app's description field
-							if (app.getDescription() == null) {
-								app.setDescription(webApp.getDescription());
+							if(webApp.getCorrespondingApp() == null || webApp.getCorrespondingApp().isDetached() ||
+									compareVersions(webApp.getCorrespondingApp().getVersion(), app.getVersion()) > 0) {
+								webApp.setCorrespondingApp(app);
+								// For convenience, set the app's description field
+								if (app.getDescription() == null) {
+									app.setDescription(webApp.getDescription());
+								}
 							}
 						}
 					}

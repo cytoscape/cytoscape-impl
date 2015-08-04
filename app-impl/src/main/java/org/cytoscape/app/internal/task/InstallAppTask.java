@@ -22,6 +22,7 @@ public class InstallAppTask extends AbstractTask {
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
 		// Check for name collisions
+		taskMonitor.setStatusMessage("Installing " + appToInstall.getAppName() + "...");
 		Set<App> conflictingApps = checkAppNameCollision(appToInstall.getAppName());
 		if (conflictingApps.size() == 1 && conflictingApps.iterator().next() instanceof BundleApp) {
 			App conflictingApp = conflictingApps.iterator().next();

@@ -91,8 +91,8 @@ import org.cytoscape.app.internal.net.ResultsFilterer;
 import org.cytoscape.app.internal.net.WebApp;
 import org.cytoscape.app.internal.net.WebQuerier;
 import org.cytoscape.app.internal.net.WebQuerier.AppTag;
-import org.cytoscape.app.internal.task.InstallAppFromAppStoreTask;
-import org.cytoscape.app.internal.task.InstallAppFromFileTask;
+import org.cytoscape.app.internal.task.InstallAppFromNetworkTask;
+import org.cytoscape.app.internal.task.InstallAppFromJarTask;
 import org.cytoscape.app.internal.task.ShowInstalledAppsIfChangedTask;
 import org.cytoscape.app.internal.ui.downloadsites.DownloadSite;
 import org.cytoscape.app.internal.ui.downloadsites.DownloadSitesManager;
@@ -100,6 +100,7 @@ import org.cytoscape.app.internal.ui.downloadsites.DownloadSitesManager.Download
 import org.cytoscape.app.internal.ui.downloadsites.DownloadSitesManager.DownloadSitesChangedListener;
 import org.cytoscape.util.swing.FileChooserFilter;
 import org.cytoscape.util.swing.FileUtil;
+import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskManager;
@@ -546,7 +547,16 @@ public class InstallAppsPanel extends JPanel {
         if (files != null) {
         	TaskIterator ti = new TaskIterator();
         	for(File appFile: files) {
-        		ti.append(new InstallAppFromFileTask(appFile, appManager));
+        		ti.append(new TaskIterator(new AbstractTask() {
+        			@Override
+        			public void run(TaskMonitor taskMonitor) throws Exception {
+        				// TODO Auto-generated method stub
+        				taskMonitor.setTitle("Install from File");
+        				taskMonitor.setTitle("Installing app from file: " + appFile.getName());
+        				taskMonitor.setStatusMessage("Starting install...");
+        				insertTasksAfterCurrentTask(new InstallAppFromJarTask(appFile, appManager));
+        			}
+        		}));
         	}
         	ti.append(new ShowInstalledAppsIfChangedTask(appManager, parent));
         	taskManager.setExecutionContext(parent);
@@ -603,7 +613,16 @@ public class InstallAppsPanel extends JPanel {
     private void installButtonActionPerformed(ActionEvent evt) {
     	final WebQuerier webQuerier = appManager.getWebQuerier();
     	taskManager.setExecutionContext(parent);
-		taskManager.execute(new TaskIterator(new InstallAppFromAppStoreTask(selectedApp, webQuerier, appManager)));
+		taskManager.execute(new TaskIterator(new AbstractTask() {
+			@Override
+			public void run(TaskMonitor taskMonitor) throws Exception {
+				// TODO Auto-generated method stub
+				taskMonitor.setTitle("Install from App Store");
+				taskMonitor.setTitle("Installing app: " + selectedApp.getFullName());
+				taskMonitor.setStatusMessage("Starting install...");
+				insertTasksAfterCurrentTask(new InstallAppFromNetworkTask(selectedApp, webQuerier, appManager));
+			}
+		}));
     }
     
     private void buildTagsTree() {
