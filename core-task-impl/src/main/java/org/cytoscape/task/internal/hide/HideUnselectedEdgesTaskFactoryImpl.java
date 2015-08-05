@@ -1,4 +1,4 @@
-package org.cytoscape.task.internal.group;
+package org.cytoscape.task.internal.hide;
 
 /*
  * #%L
@@ -6,7 +6,7 @@ package org.cytoscape.task.internal.group;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2012 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2013 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -25,19 +25,12 @@ package org.cytoscape.task.internal.group;
  */
 
 import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.work.AbstractTaskFactory;
-import org.cytoscape.work.TaskIterator;
+import org.cytoscape.task.hide.HideUnselectedEdgesTaskFactory;
 
-public class AddToGroupTaskFactory extends AbstractTaskFactory {
-	
-	private final CyServiceRegistrar serviceRegistrar;
+public class HideUnselectedEdgesTaskFactoryImpl extends AbstractHideFromSelectionTaskFactory implements
+		HideUnselectedEdgesTaskFactory {
 
-	public AddToGroupTaskFactory(final CyServiceRegistrar serviceRegistrar) {
-		this.serviceRegistrar = serviceRegistrar;
-	}
-
-	@Override
-	public TaskIterator createTaskIterator() {
-		return new TaskIterator(new AddToGroupTask(serviceRegistrar));
+	public HideUnselectedEdgesTaskFactoryImpl(final CyServiceRegistrar serviceRegistrar) {
+		super("Hide unselected edges", false, true, false, serviceRegistrar);
 	}
 }

@@ -26,21 +26,15 @@ package org.cytoscape.task.internal.group;
 
 import java.util.List;
 
-import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.group.CyGroup;
 import org.cytoscape.group.CyGroupManager;
-
 import org.cytoscape.model.CyEdge;
-import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
-
-import org.cytoscape.work.AbstractTask;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.task.internal.utils.NodeAndEdgeTunable;
 import org.cytoscape.work.ContainsTunables;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
-
-import org.cytoscape.task.internal.utils.DataUtils;
-import org.cytoscape.task.internal.utils.NodeAndEdgeTunable;
 
 public class AddToGroupTask extends AbstractGroupTask {
 
@@ -50,11 +44,12 @@ public class AddToGroupTask extends AbstractGroupTask {
 	@ContainsTunables
 	public NodeAndEdgeTunable nodesAndEdges;
 
-	public AddToGroupTask(CyApplicationManager appMgr, CyGroupManager manager) {
-		this.groupMgr = manager;
-		nodesAndEdges = new NodeAndEdgeTunable(appMgr);
+	public AddToGroupTask(final CyServiceRegistrar serviceRegistrar) {
+		groupMgr = serviceRegistrar.getService(CyGroupManager.class);
+		nodesAndEdges = new NodeAndEdgeTunable(serviceRegistrar);
 	}
 
+	@Override
 	public void run(TaskMonitor tm) throws Exception {
 		net = nodesAndEdges.getNetwork();
 

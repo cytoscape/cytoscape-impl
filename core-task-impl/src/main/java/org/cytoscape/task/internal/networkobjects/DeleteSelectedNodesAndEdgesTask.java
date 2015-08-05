@@ -30,63 +30,47 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.command.util.EdgeList;
-import org.cytoscape.command.util.NodeList;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTableUtil;
 import org.cytoscape.model.subnetwork.CySubNetwork;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.task.internal.utils.NodeAndEdgeTunable;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ContainsTunables;
 import org.cytoscape.work.TaskMonitor;
-import org.cytoscape.work.Tunable;
 import org.cytoscape.work.undo.UndoSupport;
 
-import org.cytoscape.task.internal.utils.NodeAndEdgeTunable;
-
 public class DeleteSelectedNodesAndEdgesTask extends AbstractTask {
-	private final CyApplicationManager appMgr;
-	private final UndoSupport undoSupport;
-	private final CyNetworkViewManager networkViewManager;
-	private final CyEventHelper eventHelper;
-	private final VisualMappingManager visualMappingManager;
+	
 	private CyNetwork network;
+	private final CyServiceRegistrar serviceRegistrar;
 
 	@ContainsTunables
-	public NodeAndEdgeTunable tunables = null;
+	public NodeAndEdgeTunable tunables;
 
 
-	public DeleteSelectedNodesAndEdgesTask(final CyNetwork network,
-	                                       final CyApplicationManager appManager,
-	                                       final UndoSupport undoSupport, 
-	                                       final CyNetworkViewManager networkViewManager,
-	                                       final VisualMappingManager visualMappingManager, 
-	                                       final CyEventHelper eventHelper) {
-		this.network              = network;
-		this.undoSupport          = undoSupport;
-		this.networkViewManager   = networkViewManager;
-		this.visualMappingManager = visualMappingManager;
-		this.eventHelper          = eventHelper;
-		this.appMgr               = appManager;
-		tunables                  = new NodeAndEdgeTunable(appMgr);
+	public DeleteSelectedNodesAndEdgesTask(final CyNetwork network, final CyServiceRegistrar serviceRegistrar) {
+		this.network = network;
+		this.serviceRegistrar = serviceRegistrar;
+		tunables = new NodeAndEdgeTunable(serviceRegistrar);
 	}
 
 	@Override
 	public void run(final TaskMonitor taskMonitor) {
-
 		taskMonitor.setProgress(0.0);
 
-		List<CyNode> selectedNodes;
-		Set<CyEdge> selectedEdges;
+		final List<CyNode> selectedNodes;
+		final Set<CyEdge> selectedEdges;
 
 		List<CyNode> nodeList = tunables.getNodeList(false);
 		List<CyEdge> edgeList = tunables.getEdgeList(false);
+		
 		if (tunables.getNetwork() != null)
 			network = tunables.getNetwork();
 		
@@ -115,9 +99,13 @@ public class DeleteSelectedNodesAndEdgesTask extends AbstractTask {
 
 		taskMonitor.setProgress(0.3);
 		
+		final UndoSupport undoSupport = serviceRegistrar.getService(UndoSupport.class);
+		final CyNetworkViewManager netViewMgr = serviceRegistrar.getService(CyNetworkViewManager.class);
+		final VisualMappingManager vmMgr = serviceRegistrar.getService(VisualMappingManager.class);
+		final CyEventHelper eventHelper = serviceRegistrar.getService(CyEventHelper.class);
+		
 		undoSupport.postEdit(
-			new DeleteEdit((CySubNetwork)network, selectedNodes, selectedEdges,
-				       networkViewManager, visualMappingManager, eventHelper));
+				new DeleteEdit((CySubNetwork) network, selectedNodes, selectedEdges, netViewMgr, vmMgr, eventHelper));
 
 		// Delete the actual nodes and edges:
 		network.removeEdges(selectedEdges);
@@ -126,7 +114,7 @@ public class DeleteSelectedNodesAndEdgesTask extends AbstractTask {
 		taskMonitor.setProgress(0.9);
 		
 		// Update network views
-		final Collection<CyNetworkView> views = networkViewManager.getNetworkViews(network);
+		final Collection<CyNetworkView> views = netViewMgr.getNetworkViews(network);
 		
 		for (final CyNetworkView netView : views)
 			netView.updateView();

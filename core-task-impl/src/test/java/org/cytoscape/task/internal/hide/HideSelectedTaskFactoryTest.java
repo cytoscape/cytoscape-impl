@@ -28,8 +28,10 @@ package org.cytoscape.task.internal.hide;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.work.Task;
@@ -38,12 +40,19 @@ import org.cytoscape.work.undo.UndoSupport;
 import org.junit.Test;
 
 public class HideSelectedTaskFactoryTest {
+	
 	@Test
 	public void testRun() throws Exception {
 		UndoSupport undoSupport = mock(UndoSupport.class);
 		CyEventHelper eventHelper = mock(CyEventHelper.class);
 		VisualMappingManager vmMgr = mock(VisualMappingManager.class);
-		HideSelectedTaskFactoryImpl factory = new HideSelectedTaskFactoryImpl(undoSupport, eventHelper, vmMgr);
+		
+		CyServiceRegistrar serviceRegistrar = mock(CyServiceRegistrar.class);
+		when(serviceRegistrar.getService(UndoSupport.class)).thenReturn(undoSupport);
+		when(serviceRegistrar.getService(CyEventHelper.class)).thenReturn(eventHelper);
+		when(serviceRegistrar.getService(VisualMappingManager.class)).thenReturn(vmMgr);
+		
+		HideSelectedTaskFactoryImpl factory = new HideSelectedTaskFactoryImpl(serviceRegistrar);
 
 		CyNetworkView view = mock(CyNetworkView.class);
 

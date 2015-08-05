@@ -29,80 +29,96 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
+import org.cytoscape.model.CyTableUtil;
+import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.AbstractNetworkViewTask;
 import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.View;
 import org.cytoscape.view.vizmap.VisualMappingManager;
+import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.undo.UndoSupport;
 
 
-public class UnHideTask extends AbstractNetworkViewTask {
+public class HideFromSelectionTask extends AbstractNetworkViewTask {
 	
 	private final String description;
-	private final boolean unhideNodes;
-	private final boolean unhideEdges;
+	private final boolean hideNodes;
+	private final boolean hideEdges;
+	private final boolean selectionValue;
 	private final CyServiceRegistrar serviceRegistrar;
 
-	public UnHideTask(
+	public HideFromSelectionTask(
 			final String description,
-			final boolean unhideNodes,
-			final boolean unhideEdges,
+			final boolean hideNodes,
+			final boolean hideEdges,
+			final boolean selectionValue,
 			final CyNetworkView view,
 			final CyServiceRegistrar serviceRegistrar
 	) {
 		super(view);
 		this.description = description;
-		this.unhideNodes = unhideNodes;
-		this.unhideEdges = unhideEdges;
+		this.hideNodes = hideNodes;
+		this.hideEdges = hideEdges;
+		this.selectionValue = selectionValue;
 		this.serviceRegistrar = serviceRegistrar;
 	}
 
 	@Override
-	public void run(TaskMonitor e) {
-		e.setProgress(0.0);
-		
+	public void run(final TaskMonitor tm) {
+		tm.setProgress(0.0);
 		final CyNetwork network = view.getModel();
 		final List<CyIdentifiable> elements = new ArrayList<>();
 		List<CyNode> nodes = null;
 		List<CyEdge> edges = null;
-		e.setProgress(0.1);
 		
-		if (unhideNodes) {
-			nodes = network.getNodeList();
+		if (hideNodes) {
+			nodes = CyTableUtil.getNodesInState(network, CyNetwork.SELECTED, selectionValue);
 			elements.addAll(nodes);
 		}
 		
-		if (unhideEdges) {
-			edges = network.getEdgeList();
+		tm.setProgress(0.1);
+		
+		if (hideEdges) {
+			edges = CyTableUtil.getEdgesInState(network, CyNetwork.SELECTED, selectionValue);
 			elements.addAll(edges);
 		}
-		
-		e.setProgress(0.2);
 		
 		final UndoSupport undoSupport = serviceRegistrar.getService(UndoSupport.class);
 		final CyEventHelper eventHelper = serviceRegistrar.getService(CyEventHelper.class);
 		final VisualMappingManager vmMgr = serviceRegistrar.getService(VisualMappingManager.class);
 		
-		undoSupport.postEdit(new HideEdit(description, view, elements, true, eventHelper, vmMgr));
-		e.setProgress(0.3);
+		undoSupport.postEdit(new HideEdit(description, view, elements, false, eventHelper, vmMgr));
+		tm.setProgress(0.4);
 		
 		if (nodes != null)
-			HideUtils.setVisibleNodes(nodes, true, view);
+			HideUtils.setVisibleNodes(nodes, false, view);
 		
-		e.setProgress(0.5);
+		tm.setProgress(0.6);
 		
 		if (edges != null)
-			HideUtils.setVisibleEdges(edges, true, view);
+			HideUtils.setVisibleEdges(edges, false, view);
 		
-		e.setProgress(0.7);
+		tm.setProgress(0.8);
+		VisualStyle style = vmMgr.getVisualStyle(view);
 		
-		vmMgr.getVisualStyle(view).apply(view);
+		for (CyIdentifiable e: elements) {
+			View<? extends CyIdentifiable> ev = null;
+			
+			if (e instanceof CyNode)
+				ev = view.getNodeView((CyNode)e);
+			else if (e instanceof CyEdge)
+				ev = view.getEdgeView((CyEdge)e);
+			
+			if (ev != null)
+				style.apply(network.getRow(e), ev);
+		}
+
 		view.updateView();
-		e.setProgress(1.0);
-	} 
+		tm.setProgress(1.0);
+	}
 }

@@ -25,28 +25,14 @@ package org.cytoscape.task.internal.hide;
  */
 
 
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.view.model.CyNetworkViewManager;
-import org.cytoscape.view.vizmap.VisualMappingManager;
-import org.cytoscape.work.TaskIterator;
-import org.cytoscape.work.AbstractTaskFactory;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.task.hide.HideUnselectedTaskFactory;
 
 
-public class UnHideTaskFactory extends AbstractTaskFactory {
-	private final CyApplicationManager appMgr;
-	private final CyNetworkViewManager viewMgr;
-	private final VisualMappingManager vmMgr;
-
-	public UnHideTaskFactory(final CyApplicationManager appManager,
-	                       final CyNetworkViewManager viewManager,
-									       final VisualMappingManager vmMgr) {
-		super();
-		this.vmMgr = vmMgr;
-		this.viewMgr = viewManager;
-		this.appMgr = appManager;
+public class HideUnselectedTaskFactoryImpl extends AbstractHideFromSelectionTaskFactory implements
+		HideUnselectedTaskFactory {
+	
+	public HideUnselectedTaskFactoryImpl(final CyServiceRegistrar serviceRegistrar) {
+		super("Hide unselected nodes and edges", true, true, false, serviceRegistrar);
 	}
-
-	public TaskIterator createTaskIterator() {
-		return new TaskIterator(new UnHideTask(appMgr, viewMgr, vmMgr));
-	} 
 }

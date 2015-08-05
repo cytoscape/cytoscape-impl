@@ -1,4 +1,4 @@
-package org.cytoscape.task.internal.group;
+package org.cytoscape.task.internal.hide;
 
 /*
  * #%L
@@ -6,7 +6,7 @@ package org.cytoscape.task.internal.group;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2012 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2013 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,20 +24,22 @@ package org.cytoscape.task.internal.group;
  * #L%
  */
 
+
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.TaskIterator;
 
-public class AddToGroupTaskFactory extends AbstractTaskFactory {
+
+public class HideCommandTaskFactory extends AbstractTaskFactory {
 	
 	private final CyServiceRegistrar serviceRegistrar;
 
-	public AddToGroupTaskFactory(final CyServiceRegistrar serviceRegistrar) {
+	public HideCommandTaskFactory(final CyServiceRegistrar serviceRegistrar) {
 		this.serviceRegistrar = serviceRegistrar;
 	}
 
 	@Override
 	public TaskIterator createTaskIterator() {
-		return new TaskIterator(new AddToGroupTask(serviceRegistrar));
-	}
+		return new TaskIterator(new HideCommandTask(serviceRegistrar));
+	} 
 }

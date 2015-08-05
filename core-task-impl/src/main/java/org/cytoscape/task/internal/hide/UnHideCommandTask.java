@@ -27,38 +27,34 @@ package org.cytoscape.task.internal.hide;
 import java.util.Collection;
 import java.util.List;
 
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.model.CyTableUtil;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.work.AbstractTask;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.task.internal.utils.NodeAndEdgeTunable;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
+import org.cytoscape.view.model.View;
 import org.cytoscape.view.vizmap.VisualMappingManager;
+import org.cytoscape.view.vizmap.VisualStyle;
+import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ContainsTunables;
 import org.cytoscape.work.TaskMonitor;
 
-import org.cytoscape.task.internal.utils.NodeAndEdgeTunable;
 
-
-public class HideTask extends AbstractTask {
-	private CyApplicationManager appMgr;
-	private CyNetworkViewManager viewMgr;
-	private VisualMappingManager vmMgr;
+public class UnHideCommandTask extends AbstractTask {
+	
+	private CyServiceRegistrar serviceRegistrar;
 
 	@ContainsTunables
 	public NodeAndEdgeTunable tunable;
 
-	public HideTask(final CyApplicationManager appMgr, final CyNetworkViewManager viewManager,
-	                final VisualMappingManager vmMgr) {
-		super();
-		this.vmMgr = vmMgr;
-		this.viewMgr = viewManager;
-		this.appMgr = appMgr;
-		tunable = new NodeAndEdgeTunable(appMgr);
+	public UnHideCommandTask(final CyServiceRegistrar serviceRegistrar) {
+		this.serviceRegistrar = serviceRegistrar;
+		tunable = new NodeAndEdgeTunable(serviceRegistrar);
 	}
 
+	@Override
 	public void run(TaskMonitor e) {
 		e.setProgress(0.0);
 
@@ -67,11 +63,12 @@ public class HideTask extends AbstractTask {
 		CyNetwork net = tunable.getNetwork();
 
 		if ((edges == null||edges.size() == 0) && (nodes == null||nodes.size() == 0)) {
-			e.showMessage(TaskMonitor.Level.ERROR, "Must specify nodes or edges to hide");
+			e.showMessage(TaskMonitor.Level.ERROR, "Must specify nodes or edges to show");
 			return;
 		}
 
-		Collection<CyNetworkView> views = viewMgr.getNetworkViews(net);
+		Collection<CyNetworkView> views = serviceRegistrar.getService(CyNetworkViewManager.class).getNetworkViews(net);
+		
 		if (views == null || views.size() == 0) {
 			e.showMessage(TaskMonitor.Level.ERROR, "Network "+net.toString()+" doesn't have a view");
 			return;
@@ -81,39 +78,33 @@ public class HideTask extends AbstractTask {
 		// have to come up with a way to name views...
 		int nodeCount = 0;
 		int edgeCount = 0;
+		final VisualMappingManager vmMgr = serviceRegistrar.getService(VisualMappingManager.class);
+		
 		for (CyNetworkView view: views) {
+			VisualStyle style = vmMgr.getVisualStyle(view);
+			
 			if (nodes != null) {
-				HideUtils.setVisibleNodes(nodes, false, view);
+				HideUtils.setVisibleNodes(nodes, true, view);
 				nodeCount = nodes.size();
+				for (CyNode node: nodes) {
+					View<CyNode> nodeView = view.getNodeView(node);
+					style.apply(net.getRow(node), nodeView);
+				}
 			}
 			if (edges != null) {
-				HideUtils.setVisibleEdges(edges, false, view);
+				HideUtils.setVisibleEdges(edges, true, view);
 				edgeCount = edges.size();
+				for (CyEdge edge: edges) {
+					View<CyEdge> edgeView = view.getEdgeView(edge);
+					style.apply(net.getRow(edge), edgeView);
+				}
 			}
-			vmMgr.getVisualStyle(view).apply(view);
+			
 			view.updateView();
 		}
 
-		e.showMessage(TaskMonitor.Level.INFO, "Hid "+nodeCount+" nodes and "+edgeCount+" edges");
-		
-/*
-		final CyNetwork network = view.getModel();
-		undoSupport.postEdit(new HideEdit(eventHelper, "Hide Selected Nodes & Edges", network, view));
-		final List<CyNode> selectedNodes = CyTableUtil.getNodesInState(network, CyNetwork.SELECTED, true);
-		e.setProgress(0.2);
-		
-		final List<CyEdge> selectedEdges = CyTableUtil.getEdgesInState(network, CyNetwork.SELECTED, true);
-		e.setProgress(0.4);
-		
-		HideUtils.setVisibleNodes(selectedNodes, false, view);
-		e.setProgress(0.6);
-		
-		HideUtils.setVisibleEdges(selectedEdges, false, view);
-		e.setProgress(0.8);
-		
-		vmMgr.getVisualStyle(view).apply(view);
-		view.updateView();
-*/
+		e.showMessage(TaskMonitor.Level.INFO, "Showed "+nodeCount+" nodes and "+edgeCount+" edges");
+
 		e.setProgress(1.0);
 	}
 }
