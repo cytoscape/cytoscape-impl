@@ -33,13 +33,10 @@ import static org.cytoscape.application.swing.CytoPanelName.SOUTH;
 import static org.cytoscape.application.swing.CytoPanelName.SOUTH_WEST;
 import static org.cytoscape.application.swing.CytoPanelName.WEST;
 import static org.cytoscape.work.ServiceProperties.ACCELERATOR;
-import static org.cytoscape.work.ServiceProperties.IN_TOOL_BAR;
-import static org.cytoscape.work.ServiceProperties.LARGE_ICON_URL;
 import static org.cytoscape.work.ServiceProperties.MENU_GRAVITY;
 import static org.cytoscape.work.ServiceProperties.PREFERRED_MENU;
 import static org.cytoscape.work.ServiceProperties.TITLE;
 import static org.cytoscape.work.ServiceProperties.TOOLTIP;
-import static org.cytoscape.work.ServiceProperties.TOOL_BAR_GRAVITY;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Properties;
@@ -127,7 +124,6 @@ import org.cytoscape.view.layout.CyLayoutAlgorithm;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.events.NetworkViewDestroyedListener;
-import org.cytoscape.view.presentation.RenderingEngineFactory;
 import org.cytoscape.view.presentation.RenderingEngineManager;
 import org.cytoscape.view.presentation.property.values.CyColumnIdentifierFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
@@ -149,14 +145,8 @@ public class CyActivator extends AbstractCyActivator {
 	
 	private static final String CONTEXT_MENU_FILTER = "(" + ServiceProperties.IN_NETWORK_PANEL_CONTEXT_MENU + "=true)";
 
-	/**
-	 * Creates a new CyActivator object.
-	 */
-	public CyActivator() {
-		super();
-	}
-
 	@Override
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public void start(BundleContext bc) throws Exception {
 		setLookAndFeel();
 		
@@ -179,27 +169,17 @@ public class CyActivator extends AbstractCyActivator {
 		TaskStatusPanelFactory taskStatusPanelFactoryRef = getService(bc, TaskStatusPanelFactory.class);
 		CyColumnIdentifierFactory cyColumnIdentifierFactory = getService(bc, CyColumnIdentifierFactory.class);
 		IconManager iconManagerServiceRef = getService(bc, IconManager.class);
-
-		RenderingEngineFactory dingNavigationPresentationFactoryServiceRef = getService(bc,
-		                                                                                RenderingEngineFactory.class,
-		                                                                                "(id=dingNavigation)");
-		CyProperty bookmarkServiceRef = getService(bc, CyProperty.class, "(cyPropertyName=bookmarks)");
 		BookmarksUtil bookmarksUtilServiceRef = getService(bc, BookmarksUtil.class);
-		
 		CyLayoutAlgorithmManager cyLayoutsServiceRef = getService(bc, CyLayoutAlgorithmManager.class);
 		SwingUndoSupport undoSupportServiceRef = getService(bc, SwingUndoSupport.class);
 		CyEventHelper cyEventHelperServiceRef = getService(bc, CyEventHelper.class);
 		CyServiceRegistrar cyServiceRegistrarServiceRef = getService(bc, CyServiceRegistrar.class);
 		OpenBrowser openBrowserServiceRef = getService(bc, OpenBrowser.class);
-		
 		VisualMappingManager visualMappingManagerServiceRef  = getService(bc, VisualMappingManager.class);
 		FileUtil fileUtilServiceRef = getService(bc, FileUtil.class);
-
 		DynamicTaskFactoryProvisioner dynamicTaskFactoryProvisionerServiceRef = getService(bc, 
 		                                                                                   DynamicTaskFactoryProvisioner.class);
-		
 		DataSourceManager dsManagerServiceRef = getService(bc, DataSourceManager.class);
-		
 		EditNetworkTitleTaskFactory editNetworkTitleTFServiceRef  = getService(bc, EditNetworkTitleTaskFactory.class);
 		
 		//////////////		
@@ -209,8 +189,7 @@ public class CyActivator extends AbstractCyActivator {
 		                                                                              cyApplicationConfigurationServiceRef);
 		CyHelpBrokerImpl cyHelpBroker = new CyHelpBrokerImpl();
 		PreferencesDialogFactoryImpl preferencesDialogFactory = new PreferencesDialogFactoryImpl(cyEventHelperServiceRef);
-		BookmarkDialogFactoryImpl bookmarkDialogFactory = new BookmarkDialogFactoryImpl(/*bookmarkServiceRef,
-                              bookmarksUtilServiceRef,*/ dsManagerServiceRef);
+		BookmarkDialogFactoryImpl bookmarkDialogFactory = new BookmarkDialogFactoryImpl(dsManagerServiceRef);
 		
 		registerService(bc, bookmarkDialogFactory, SessionLoadedListener.class, new Properties());
 		
@@ -218,7 +197,8 @@ public class CyActivator extends AbstractCyActivator {
 		CytoscapeToolBar cytoscapeToolBar = new CytoscapeToolBar();
 		CytoscapeMenus cytoscapeMenus = new CytoscapeMenus(cytoscapeMenuBar, cytoscapeToolBar);
 
-		ToolBarEnableUpdater toolBarEnableUpdater = new ToolBarEnableUpdater(cytoscapeToolBar);
+		ToolBarEnableUpdater toolBarEnableUpdater =
+				new ToolBarEnableUpdater(cytoscapeToolBar, cyServiceRegistrarServiceRef);
 
 		NetworkViewManager networkViewManager = new NetworkViewManager(cyApplicationManagerServiceRef,
 		                                                               cyNetworkViewManagerServiceRef, 
