@@ -326,7 +326,7 @@ public class PreviewTablePanel extends JPanel {
 	public JTable getPreviewTable() {
 		if (previewTable == null) {
 			previewTable = new JTable(new PreviewTableModel(new Vector<Vector<String>>(), new Vector<String>(), false));
-			
+			previewTable.setShowGrid(false);
 			previewTable.setCellSelectionEnabled(false);
 			previewTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 			previewTable.setDefaultEditor(Object.class, null);
@@ -886,6 +886,14 @@ public class PreviewTablePanel extends JPanel {
 				iconManager
 		);
 		
+		if (LookAndFeelUtil.isWinLAF()) {
+			attrEditorPanel.setBorder(BorderFactory.createCompoundBorder(
+					BorderFactory.createMatteBorder(1, 1, 1, 1, new Color(236, 236, 236)),
+					BorderFactory.createMatteBorder(1, 1, 1, 1, new Color(225, 238, 250)))
+			);
+			attrEditorPanel.setBackground(new Color(251, 251, 251));
+		}
+		
 		editDialog = new EditDialog(parent, ModalityType.MODELESS, colIdx, attrEditorPanel);
 		editDialog.setUndecorated(true);
 		editDialog.add(attrEditorPanel);
@@ -1211,13 +1219,27 @@ public class PreviewTablePanel extends JPanel {
 	
 	private class PreviewTableHeaderRenderer extends JPanel implements TableCellRenderer {
 		
-		private final Border BORDER = BorderFactory.createMatteBorder(0, 1, 0, 0, UIManager.getColor("Separator.foreground"));
+		private final Border AQUA_BORDER =
+				BorderFactory.createMatteBorder(0, 0, 0, 1, UIManager.getColor("Separator.foreground"));
+		private final Border WIN_BORDER = BorderFactory.createCompoundBorder(
+				BorderFactory.createMatteBorder(0, 0, 1, 1, new Color(236, 236, 236)),
+				BorderFactory.createMatteBorder(0, 0, 1, 1, new Color(225, 238, 250)));
+		private final Border NIMBUS_BORDER = BorderFactory.createMatteBorder(0, 0, 1, 1, new Color(97, 102, 109));
 		
 		private final JLabel typeLabel;
 		private final JLabel nameLabel;
 		private final JLabel editLabel;
 		
 		PreviewTableHeaderRenderer() {
+			if (LookAndFeelUtil.isAquaLAF()) {
+				setBorder(AQUA_BORDER);
+			} else if (LookAndFeelUtil.isWinLAF()) {
+				setBorder(WIN_BORDER);
+				setBackground(new Color(251, 251, 251));
+			} else {
+				setBorder(NIMBUS_BORDER);
+			}
+			
 			nameLabel = new JLabel();
 			nameLabel.setFont(nameLabel.getFont().deriveFont(LookAndFeelUtil.INFO_FONT_SIZE));
 			
@@ -1235,20 +1257,26 @@ public class PreviewTablePanel extends JPanel {
 			
 			final GroupLayout layout = new GroupLayout(this);
 			this.setLayout(layout);
-			layout.setAutoCreateContainerGaps(true);
+			layout.setAutoCreateContainerGaps(false);
 			layout.setAutoCreateGaps(false);
 			
 			layout.setHorizontalGroup(layout.createSequentialGroup()
+					.addGap(6)
 					.addComponent(typeLabel)
 					.addPreferredGap(ComponentPlacement.RELATED)
 					.addComponent(nameLabel)
 					.addGap(5, 5, Short.MAX_VALUE)
 					.addComponent(editLabel)
+					.addGap(6)
 			);
-			layout.setVerticalGroup(layout.createParallelGroup(CENTER, false)
-					.addComponent(typeLabel)
-					.addComponent(nameLabel)
-					.addComponent(editLabel)
+			layout.setVerticalGroup(layout.createSequentialGroup()
+					.addGap(4)
+					.addGroup(layout.createParallelGroup(CENTER, false)
+							.addComponent(typeLabel)
+							.addComponent(nameLabel)
+							.addComponent(editLabel)
+					)
+					.addGap(4)
 			);
 		}
 		
@@ -1286,7 +1314,7 @@ public class PreviewTablePanel extends JPanel {
 				editLabel.setText(IconManager.ICON_CARET_LEFT);
 			
 			nameLabel.setForeground(fgColor);
-			setBorder(col == 0 ? null : BORDER);
+			
 			this.invalidate();
 
 			return this;
