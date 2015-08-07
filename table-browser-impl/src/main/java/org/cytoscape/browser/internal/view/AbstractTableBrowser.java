@@ -182,12 +182,6 @@ public abstract class AbstractTableBrowser extends JPanel
 
 		currentScrollPane = newScrollPane;
 		attributeBrowserToolBar.setBrowserTable(currentBrowserTable);
-	
-		/* 
-		// Never resize columns as they would reset the columns each time the view is changed
-		if (currentBrowserTableModel != null)
-			ColumnResizer.adjustColumnPreferredWidths(currentBrowserTableModel.getTable());
-		 */
 	}
 
 	private JScrollPane getScrollPane(final BrowserTable browserTable) {

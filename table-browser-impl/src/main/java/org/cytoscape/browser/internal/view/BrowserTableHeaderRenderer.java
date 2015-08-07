@@ -32,6 +32,7 @@ import static javax.swing.GroupLayout.Alignment.LEADING;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
+import java.awt.SystemColor;
 import java.util.List;
 
 import javax.swing.BorderFactory;
@@ -52,24 +53,38 @@ import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 
-final class CustomHeaderRenderer extends JPanel implements TableCellRenderer {
+final class BrowserTableHeaderRenderer extends JPanel implements TableCellRenderer {
 
 	private static final long serialVersionUID = 4656466166588715282L;
 
-	private final Border BORDER = BorderFactory.createMatteBorder(0, 1, 0, 0, UIManager.getColor("Separator.foreground"));
+	private final Border AQUA_BORDER =
+			BorderFactory.createMatteBorder(0, 0, 0, 1, UIManager.getColor("Separator.foreground"));
+	private final Border WIN_BORDER = BorderFactory.createCompoundBorder(
+			BorderFactory.createMatteBorder(0, 0, 1, 1, new Color(236, 236, 236)),
+			BorderFactory.createMatteBorder(0, 0, 1, 1, new Color(225, 238, 250)));
+	private final Border NIMBUS_BORDER = BorderFactory.createMatteBorder(0, 0, 1, 1, new Color(97, 102, 109));
 
 	private final JLabel nameLabel;
 	private final JLabel sharedLabel;
 	private final JLabel sortLabel;
 
-	CustomHeaderRenderer(final IconManager iconManager) {
+	BrowserTableHeaderRenderer(final IconManager iconManager) {
+		if (LookAndFeelUtil.isAquaLAF()) {
+			setBorder(AQUA_BORDER);
+		} else if (LookAndFeelUtil.isWinLAF()) {
+			setBorder(WIN_BORDER);
+			setBackground(new Color(251, 251, 251));
+		} else {
+			setBorder(NIMBUS_BORDER);
+		}
+		
 		nameLabel = new JLabel();
 		nameLabel.setFont(nameLabel.getFont().deriveFont(LookAndFeelUtil.INFO_FONT_SIZE));
 		nameLabel.setHorizontalAlignment(JLabel.CENTER);
 		
 		sharedLabel = new JLabel();
 		sharedLabel.setFont(iconManager.getIconFont(12.0f));
-		sharedLabel.setForeground(new Color(3, 82, 100));
+		sharedLabel.setForeground(SystemColor.textInactiveText);
 		
 		sortLabel = new JLabel();
 		sortLabel.setFont(iconManager.getIconFont(10.0f));
@@ -80,21 +95,21 @@ final class CustomHeaderRenderer extends JPanel implements TableCellRenderer {
 		layout.setAutoCreateGaps(true);
 		
 		layout.setHorizontalGroup(layout.createSequentialGroup()
-				.addContainerGap()
+				.addGap(2)
 				.addComponent(sharedLabel)
 				.addComponent(nameLabel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 				.addComponent(sortLabel)
-				.addContainerGap()
+				.addGap(6)
 		);
 		layout.setVerticalGroup(layout.createParallelGroup(LEADING, false)
 				.addComponent(sharedLabel)
 				.addGroup(layout.createSequentialGroup()
-						.addContainerGap()
+						.addGap(4)
 						.addGroup(layout.createParallelGroup(CENTER, false)
 								.addComponent(nameLabel)
 								.addComponent(sortLabel)
 						)
-						.addContainerGap()
+						.addGap(4)
 				)
 		);
 	}
@@ -119,9 +134,8 @@ final class CustomHeaderRenderer extends JPanel implements TableCellRenderer {
 		sortLabel.setText(IconManager.ICON_SORT);
 		sortLabel.setForeground(UIManager.getColor("Label.disabledForeground"));
 		
-		setBorder(col == 0 ? null : BORDER);
 		setToolTipText(colName);
-
+		
 		if (!(table.getModel() instanceof BrowserTableModel)) {
 			invalidate();
 			return this;
@@ -141,8 +155,8 @@ final class CustomHeaderRenderer extends JPanel implements TableCellRenderer {
 				toolTip += "<b>" + column.getName()+ "</b><br />(" + getMinimizedType(column.getType().getName()) + ")";
 			
 			if (column.getVirtualColumnInfo().isVirtual()) {
-				toolTip += "<br /><i>Shared Column</i></html>";
-				sharedLabel.setText(IconManager.ICON_SITEMAP);
+				toolTip += "<br /><i>Network Collection Column</i></html>";
+				sharedLabel.setText(ColumnSelector.SHARED_COL_ICON_TEXT);
 			} else {
 				toolTip +="</div></html>";
 			}

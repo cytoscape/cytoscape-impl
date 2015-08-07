@@ -47,7 +47,7 @@ class BrowserTableCellRenderer extends JLabel implements TableCellRenderer {
 	private static final long serialVersionUID = -4364566217397320318L;
 	
 	// Define fonts & colors for the cells
-	private static final Color SELECTED_ROW_BG_COLOR = new Color(0, 100, 255, 40);
+	public static final Color SELECTED_ROW_BG_COLOR = new Color(0, 100, 255, 40);
 	private static final Color ERROR_FG_COLOR = Color.RED;
 	private static final int H_PAD = 8;
 	private static final int V_PAD = 2;

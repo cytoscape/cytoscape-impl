@@ -24,7 +24,6 @@ package org.cytoscape.browser.internal.view;
  * #L%
  */
 
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -68,6 +67,7 @@ import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.TransferHandler;
+import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.ListSelectionEvent;
@@ -112,7 +112,7 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 
 	private static final Logger logger = LoggerFactory.getLogger(BrowserTable.class);
 
-	private static final Font BORDER_FONT = new Font("Sans-serif", Font.BOLD, 12);
+	private static final Font BORDER_FONT = UIManager.getFont("Label.font").deriveFont(11f);
 
 	private static final TableCellRenderer cellRenderer = new BrowserTableCellRenderer();
 	private static final String MAC_OS_ID = "mac";
@@ -120,7 +120,7 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 
 	private Clipboard systemClipboard;
 	private CellEditorRemover editorRemover = null;
-	private final HashMap<String, Integer> columnWidthMap = new HashMap<String, Integer>();
+	private final HashMap<String, Integer> columnWidthMap = new HashMap<>();
 
 	// For right-click menu
 	private JPopupMenu rightClickPopupMenu;
@@ -134,8 +134,6 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 	private boolean ignoreRowSelectionEvents;
 	private boolean ignoreRowSetEvents;
 
-	private JPopupMenu cellMenu;
-
 	// ==[ CONSTRUCTORS ]===============================================================================================
 	
 	public BrowserTable(final EquationCompiler compiler, final PopupMenuHelper popupMenuHelper,
@@ -148,6 +146,7 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 		setAutoCreateColumnsFromModel(false);
 		setAutoCreateRowSorter(true);
 		setCellSelectionEnabled(true);
+		setShowGrid(false);
 		setDefaultEditor(Object.class, new MultiLineTableCellEditor());
 		getPopupMenu();
 		getHeaderPopupMenu();
@@ -281,10 +280,8 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 			if (value != null) {
 				final List<?> list = (List<?>) value.getValidatedObject();
 				
-				if (list != null && !list.isEmpty()) {
-					cellMenu = new JPopupMenu();
-					getCellContentView(List.class, list, "List Contains:", e);
-				}
+				if (list != null && !list.isEmpty())
+					showCellMenu(List.class, list, "Entries", e);
 			}
 		}
 	}
@@ -406,7 +403,7 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 		}
 	}
 	
-	public void setVisibleAttributeNames(Collection<String> visibleAttributes) {
+	public void setVisibleAttributeNames(final Collection<String> visibleAttributes) {
 		BrowserTableModel model = (BrowserTableModel) getModel();
 		BrowserTableColumnModel columnModel = (BrowserTableColumnModel) getColumnModel();
 		
@@ -563,7 +560,7 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 	protected void init() {
 		final JTableHeader header = getTableHeader();
 		header.setOpaque(false);
-		header.setDefaultRenderer(new CustomHeaderRenderer(serviceRegistrar.getService(IconManager.class)));
+		header.setDefaultRenderer(new BrowserTableHeaderRenderer(serviceRegistrar.getService(IconManager.class)));
 		header.getColumnModel().setColumnSelectionAllowed(true);
 		header.addMouseMotionListener(this);
 		header.addMouseListener(new MouseAdapter() {
@@ -606,9 +603,13 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 		return rightClickHeaderPopupMenu;
 	}
 	
-	private void getCellContentView(final Class<?> type, final List<?> listItems, final String borderTitle,
+	private void showCellMenu(final Class<?> type, final List<?> listItems, final String borderTitle,
 			final MouseEvent e) {
-
+		final JPopupMenu cellMenu = new JPopupMenu();
+		final Border popupBorder = BorderFactory.createTitledBorder(null, borderTitle,
+				TitledBorder.DEFAULT_JUSTIFICATION, TitledBorder.DEFAULT_POSITION, BORDER_FONT);
+		cellMenu.setBorder(popupBorder);
+		
 		JMenu curItem = null;
 		String dispName;
 
@@ -620,10 +621,9 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 			}
 
 			curItem = new JMenu(dispName);
-			curItem.setBackground(Color.white);
 			curItem.add(getPopupMenu());
 
-			JMenuItem copyAll = new JMenuItem("Copy all");
+			JMenuItem copyAll = new JMenuItem("Copy all entries");
 			copyAll.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
@@ -638,7 +638,7 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 			});
 			curItem.add(copyAll);
 
-			JMenuItem copy = new JMenuItem("Copy one entry");
+			JMenuItem copy = new JMenuItem("Copy this entry");
 			copy.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
@@ -653,10 +653,6 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 			cellMenu.add(curItem);
 		}
 
-		final Border popupBorder = BorderFactory.createTitledBorder(null, borderTitle,
-				TitledBorder.DEFAULT_JUSTIFICATION, TitledBorder.DEFAULT_POSITION, BORDER_FONT, Color.BLUE);
-		cellMenu.setBorder(popupBorder);
-		cellMenu.setBackground(Color.WHITE);
 		cellMenu.show(e.getComponent(), e.getX(), e.getY());
 	}
 	

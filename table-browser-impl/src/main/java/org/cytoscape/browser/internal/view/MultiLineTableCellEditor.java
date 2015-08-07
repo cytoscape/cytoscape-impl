@@ -31,40 +31,28 @@ import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
+import java.util.EventObject;
 
 import javax.swing.AbstractCellEditor;
-import javax.swing.Action;
 import javax.swing.BorderFactory;
-import javax.swing.JComponent;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
-import javax.swing.KeyStroke;
-import javax.swing.text.Keymap;
-import javax.swing.SwingUtilities;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.SimpleAttributeSet;
-import javax.swing.text.Document;
-import javax.swing.text.Keymap;
-import javax.swing.text.TextAction;
-import javax.swing.text.JTextComponent;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.table.TableCellEditor;
 
 import org.cytoscape.browser.internal.util.ValidatedObjectAndEditString;
 
-import java.util.EventObject;
 
-
-public class MultiLineTableCellEditor extends AbstractCellEditor implements TableCellEditor,
-                                                                            ActionListener
-{
+@SuppressWarnings("serial")
+public class MultiLineTableCellEditor extends AbstractCellEditor implements TableCellEditor, ActionListener {
+	
 	private final static int CLICK_COUNT_TO_START = 2;
 	private ResizableTextArea textArea;
+	public static Object lastValueUserEntered;
 
 	public MultiLineTableCellEditor() {
 		textArea = new ResizableTextArea(this);
@@ -89,10 +77,9 @@ public class MultiLineTableCellEditor extends AbstractCellEditor implements Tabl
 		stopCellEditing();
 	}
 
-	public Component getTableCellEditorComponent(final JTable table, final Object value,
-						     final boolean isSelected, final int row,
-						     final int column)
-	{
+	@Override
+	public Component getTableCellEditorComponent(final JTable table, final Object value, final boolean isSelected,
+			final int row, final int column) {
 		final String text = (value != null) ? ((ValidatedObjectAndEditString)value).getEditString() : "";
 		textArea.setTable(table);
 		textArea.setText(text);
@@ -115,35 +102,40 @@ public class MultiLineTableCellEditor extends AbstractCellEditor implements Tabl
 			table = t;
 		}
 
+		@Override
 		public void setText(String text) {
 			super.setText(text);
 			updateBounds();
 		}
 
+		@Override
 		public void setBounds(int x, int y, int width, int height) {
 			if (Boolean.TRUE.equals(getClientProperty(UPDATE_BOUNDS)))
 				super.setBounds(x, y, width, height);
 		}
 
+		@Override
 		public void addNotify() {
 			super.addNotify();
 			getDocument().addDocumentListener(listener);
 		}
 
+		@Override
 		public void removeNotify() {
 			getDocument().removeDocumentListener(listener);
 			super.removeNotify();
 		}
 
 		DocumentListener listener = new DocumentListener() {
+			@Override
 			public void insertUpdate(DocumentEvent e) {
 				updateBounds();
 			}
-
+			@Override
 			public void removeUpdate(DocumentEvent e) {
 				updateBounds();
 			}
-
+			@Override
 			public void changedUpdate(DocumentEvent e) {
 				updateBounds();
 			}
@@ -171,12 +163,15 @@ public class MultiLineTableCellEditor extends AbstractCellEditor implements Tabl
 		// KeyListener Interface
 		//
 
+		@Override
 		public void keyTyped(KeyEvent e) {}
 
+		@Override
 		public void keyReleased(KeyEvent e) {
 			lastValueUserEntered = getCellEditorValue();
 		}
 
+		@Override
 		public void keyPressed(final KeyEvent event) {
 			if (event.getKeyCode() != KeyEvent.VK_ENTER)
 				return;
@@ -207,6 +202,4 @@ public class MultiLineTableCellEditor extends AbstractCellEditor implements Tabl
 			}
 		}
 	}
-	
-	public static Object lastValueUserEntered = null;
 }

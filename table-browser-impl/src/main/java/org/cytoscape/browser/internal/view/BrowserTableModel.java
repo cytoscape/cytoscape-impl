@@ -73,9 +73,7 @@ public final class BrowserTableModel extends AbstractTableModel
 	private ViewMode viewMode;
 
 	private List<String> attrNames;
-	
-	private List<CyRow> selectedRows = null;
-
+	private List<CyRow> selectedRows;
 	private Object[] rowIndexToPrimaryKey;
 	private int maxRowIndex;
 
@@ -101,15 +99,16 @@ public final class BrowserTableModel extends AbstractTableModel
 		this.rowIndexToPrimaryKey = new Object[rows.size()]; 
 		this.maxRowIndex = 0;
 		final String primaryKey = dataTable.getPrimaryKey().getName();
-		for ( CyRow row : rows ) 
+		
+		for (CyRow row : rows)
 			rowIndexToPrimaryKey[maxRowIndex++] = row.getRaw(primaryKey);
 	}
 
-	private List<String> getAttributeNames(CyTable table) {
-		ArrayList<String> names = new ArrayList<String>();
-		for (CyColumn column : table.getColumns()) {
+	private List<String> getAttributeNames(final CyTable table) {
+		ArrayList<String> names = new ArrayList<>();
+		
+		for (CyColumn column : table.getColumns())
 			names.add(column.getName());
-		}
 		
 		return names;
 	}
@@ -124,7 +123,7 @@ public final class BrowserTableModel extends AbstractTableModel
 	}
 	
 	List<String> getAllAttributeNames() {
-		return new ArrayList<String>(attrNames);
+		return new ArrayList<>(attrNames);
 	}
 
 	@Override
@@ -545,6 +544,7 @@ public final class BrowserTableModel extends AbstractTableModel
 		for (final CyColumn column : dataTable.getColumns()) {
 			final Class<?> type = column.getType();
 			final String columnName = column.getName();
+			
 			if (type == String.class)
 				variableNameToTypeMap.put(columnName, String.class);
 			else if (type == Double.class)
@@ -558,8 +558,7 @@ public final class BrowserTableModel extends AbstractTableModel
 			else if (type == List.class)
 				variableNameToTypeMap.put(columnName, List.class);
 			else
-				throw new IllegalStateException("unknown type \"" + type.getName()
-						+ "\".");
+				throw new IllegalStateException("unknown type \"" + type.getName() + "\".");
 		}
 	}
 
