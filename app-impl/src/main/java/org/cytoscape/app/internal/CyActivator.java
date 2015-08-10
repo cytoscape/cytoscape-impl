@@ -140,6 +140,7 @@ import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyleFactory;
 import org.cytoscape.work.TaskManager;
+import org.cytoscape.work.properties.TunablePropertySerializerFactory;
 import org.cytoscape.work.swing.DialogTaskManager;
 import org.cytoscape.work.swing.GUITunableHandlerFactory;
 import org.cytoscape.work.swing.PanelTaskManager;
@@ -186,6 +187,7 @@ public class CyActivator extends AbstractCyActivator {
 		RenderingEngineManager renderingEngineManagerRef = getService(bc,RenderingEngineManager.class);
 		TaskManager taskManagerRef = getService(bc,TaskManager.class);
 		UndoSupport undoSupportRef = getService(bc,UndoSupport.class);
+		TunablePropertySerializerFactory tunablePropertySerializerFactoryRef = getService(bc,TunablePropertySerializerFactory.class);
 		VisualMappingManager visualMappingManagerRef = getService(bc,VisualMappingManager.class);
 		VisualStyleFactory visualStyleFactoryRef = getService(bc,VisualStyleFactory.class);
 		CyVersion cytoscapeVersionService = getService(bc,CyVersion.class);
@@ -311,6 +313,7 @@ public class CyActivator extends AbstractCyActivator {
                  renderingEngineManagerRef,
                  taskManagerRef,
                  undoSupportRef, 
+                 tunablePropertySerializerFactoryRef,
                  vmfFactoryC, 
                  vmfFactoryD, 
                  vmfFactoryP, 

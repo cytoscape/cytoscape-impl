@@ -103,6 +103,7 @@ import org.cytoscape.view.vizmap.gui.util.DiscreteMappingGenerator;
 import org.cytoscape.view.vizmap.mappings.ContinuousMapping;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskManager;
+import org.cytoscape.work.properties.TunablePropertySerializerFactory;
 import org.cytoscape.work.swing.AbstractGUITunableHandler;
 import org.cytoscape.work.swing.DialogTaskManager;
 import org.cytoscape.work.swing.PanelTaskManager;
@@ -160,6 +161,7 @@ public class CyAppAdapterImpl implements CySwingAppAdapter {
 	private final RenderingEngineManager renderingEngineManager;
 	private final TaskManager taskManager;
 	private final UndoSupport undoSupport;
+	private final TunablePropertySerializerFactory tunablePropertySerializerFactory;
 	private final VisualMappingManager visualMappingManager;
 	private final VisualStyleFactory visualStyleFactory;
 	private final DataSourceManager dataSourceManager;
@@ -332,6 +334,7 @@ public class CyAppAdapterImpl implements CySwingAppAdapter {
 	                     final RenderingEngineManager renderingEngineManager,
 	                     final TaskManager taskManager,
 	                     final UndoSupport undoSupport,
+	                     final TunablePropertySerializerFactory tunablePropertySerializerFactory,
 	                     final VisualMappingFunctionFactory visualMappingFunctionContinuousFactory,
 	                     final VisualMappingFunctionFactory visualMappingFunctionDiscreteFactory,
 	                     final VisualMappingFunctionFactory visualMappingFunctionPassthroughFactory,
@@ -443,6 +446,7 @@ public class CyAppAdapterImpl implements CySwingAppAdapter {
 		this.renderingEngineManager = renderingEngineManager;
 		this.taskManager = taskManager;
 		this.undoSupport = undoSupport;
+		this.tunablePropertySerializerFactory = tunablePropertySerializerFactory;
 		this.visualMappingFunctionContinuousFactory = visualMappingFunctionContinuousFactory;
 		this.visualMappingFunctionDiscreteFactory = visualMappingFunctionDiscreteFactory;
 		this.visualMappingFunctionPassthroughFactory = visualMappingFunctionPassthroughFactory;
@@ -550,6 +554,7 @@ public class CyAppAdapterImpl implements CySwingAppAdapter {
 	public StreamUtil getStreamUtil(){ return streamUtil;}
 	public TaskManager getTaskManager() { return taskManager; }
 	public UndoSupport getUndoSupport() { return undoSupport; }
+	public TunablePropertySerializerFactory getTunablePropertySerializerFactory() { return tunablePropertySerializerFactory; }
 	@Override public VisualMappingFunctionFactory getVisualMappingFunctionContinuousFactory() { return visualMappingFunctionContinuousFactory; }
 	@Override public VisualMappingFunctionFactory getVisualMappingFunctionDiscreteFactory() { return visualMappingFunctionDiscreteFactory; }
 	@Override public VisualMappingFunctionFactory getVisualMappingFunctionPassthroughFactory() { return visualMappingFunctionPassthroughFactory; }
