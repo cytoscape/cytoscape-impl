@@ -51,7 +51,7 @@ public class CyActivator extends AbstractCyActivator {
 		CyServiceRegistrar cyServiceRegistrar = getService(bc,CyServiceRegistrar.class);
 		
 		GridNodeLayout gridNodeLayout = new GridNodeLayout(undoSupportServiceRef);
-		CyLayoutsImpl cyLayouts = new CyLayoutsImpl(cyServiceRegistrar, cyPropertyServiceRef, gridNodeLayout);
+		CyLayoutAlgorithmManagerImpl cyLayouts = new CyLayoutAlgorithmManagerImpl(cyServiceRegistrar, cyPropertyServiceRef, gridNodeLayout);
 		
 		registerService(bc,cyLayouts,CyLayoutAlgorithmManager.class, new Properties());
 

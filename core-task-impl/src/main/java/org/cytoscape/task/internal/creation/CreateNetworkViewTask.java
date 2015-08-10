@@ -31,9 +31,6 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.NetworkViewRenderer;
@@ -51,7 +48,6 @@ import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.ProvidesTitle;
-import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.undo.UndoSupport;
@@ -77,7 +73,7 @@ public class CreateNetworkViewTask extends AbstractNetworkCollectionTask
 	private	Collection<CyNetworkView> result;
 
 	@Tunable(description="Network to create a view for", context="nogui")
-	public CyNetwork network = null;
+	public CyNetwork network;
 
 	@Tunable(description="Layout the resulting view?", context="nogui")
 	public boolean layout = true;
@@ -215,28 +211,28 @@ public class CreateNetworkViewTask extends AbstractNetworkCollectionTask
 		}
 	}
 
-	private final void executeInParallel(final CyNetworkView view, final VisualStyle style, final Task task, final TaskMonitor tMonitor) {
-		final ExecutorService exe = Executors.newCachedThreadPool();
-		final long startTime = System.currentTimeMillis();
-
-		final ApplyVisualStyleTask applyTask = new ApplyVisualStyleTask(view, style);
-		final LayoutTask layoutTask = new LayoutTask(task, tMonitor);
-		exe.submit(applyTask);
-		exe.submit(layoutTask);
-
-		try {
-			exe.shutdown();
-			exe.awaitTermination(1000000, TimeUnit.SECONDS);
-
-			long endTime = System.currentTimeMillis();
-			double sec = (endTime - startTime) / (1000.0);
-			logger.info("Create View Finished in " + sec + " sec.");
-		} catch (Exception ex) {
-			logger.warn("Create view operation timeout", ex);
-		} finally {
-
-		}
-	}
+//	private final void executeInParallel(final CyNetworkView view, final VisualStyle style, final Task task, final TaskMonitor tMonitor) {
+//		final ExecutorService exe = Executors.newCachedThreadPool();
+//		final long startTime = System.currentTimeMillis();
+//
+//		final ApplyVisualStyleTask applyTask = new ApplyVisualStyleTask(view, style);
+//		final LayoutTask layoutTask = new LayoutTask(task, tMonitor);
+//		exe.submit(applyTask);
+//		exe.submit(layoutTask);
+//
+//		try {
+//			exe.shutdown();
+//			exe.awaitTermination(1000000, TimeUnit.SECONDS);
+//
+//			long endTime = System.currentTimeMillis();
+//			double sec = (endTime - startTime) / (1000.0);
+//			logger.info("Create View Finished in " + sec + " sec.");
+//		} catch (Exception ex) {
+//			logger.warn("Create view operation timeout", ex);
+//		} finally {
+//
+//		}
+//	}
 	
 	@Override
 	public Object getResults(Class requestedType) {
@@ -254,39 +250,39 @@ public class CreateNetworkViewTask extends AbstractNetworkCollectionTask
 			return result;
 	}
 
-	private static final class ApplyVisualStyleTask implements Runnable {
-		private final CyNetworkView view;
-		private final VisualStyle style;
-		
-		ApplyVisualStyleTask(final CyNetworkView view, final VisualStyle style) {
-			this.style = style;
-			this.view = view;
-		}
-
-		@Override
-		public void run() {
-			style.apply(view);
-		}
-	}
-
-	private static final class LayoutTask implements Runnable {
-
-		private final Task task;
-		private final TaskMonitor tMonitor;
-		
-		public LayoutTask(final Task task, final TaskMonitor tMonitor) {
-			this.task = task;
-			this.tMonitor = tMonitor;
-		}
-		@Override
-		public void run() {
-			try {
-				task.run(tMonitor);
-			} catch (Exception e) {
-				throw new RuntimeException("Could not run task", e);
-			}
-		}
-	}
+//	private static final class ApplyVisualStyleTask implements Runnable {
+//		private final CyNetworkView view;
+//		private final VisualStyle style;
+//		
+//		ApplyVisualStyleTask(final CyNetworkView view, final VisualStyle style) {
+//			this.style = style;
+//			this.view = view;
+//		}
+//
+//		@Override
+//		public void run() {
+//			style.apply(view);
+//		}
+//	}
+//
+//	private static final class LayoutTask implements Runnable {
+//
+//		private final Task task;
+//		private final TaskMonitor tMonitor;
+//		
+//		public LayoutTask(final Task task, final TaskMonitor tMonitor) {
+//			this.task = task;
+//			this.tMonitor = tMonitor;
+//		}
+//		@Override
+//		public void run() {
+//			try {
+//				task.run(tMonitor);
+//			} catch (Exception e) {
+//				throw new RuntimeException("Could not run task", e);
+//			}
+//		}
+//	}
 	
 	public class ChooseViewRendererTask extends AbstractNetworkCollectionTask {
 

@@ -24,9 +24,7 @@ package org.cytoscape.psi_mi.internal.plugin;
  * #L%
  */
 
-import java.io.IOException;
 import java.io.InputStream;
-import java.util.Properties;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.io.read.AbstractCyNetworkReader;
@@ -36,7 +34,6 @@ import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.model.subnetwork.CySubNetwork;
-import org.cytoscape.property.CyProperty;
 import org.cytoscape.view.layout.CyLayoutAlgorithm;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.model.CyNetworkView;
@@ -50,7 +47,6 @@ public class PsiMiTabReader extends AbstractCyNetworkReader {
 	private final CyLayoutAlgorithmManager layouts;
 	private final PsiMiTabParser parser;
 	private TaskMonitor parentTaskMonitor;
-	private final CyProperty<Properties> prop;
 	
 	public PsiMiTabReader(
 			final InputStream is,
@@ -58,13 +54,11 @@ public class PsiMiTabReader extends AbstractCyNetworkReader {
 			final CyNetworkViewFactory networkViewFactory,
 			final CyNetworkFactory networkFactory,
 			final CyLayoutAlgorithmManager layouts,
-			final CyProperty<Properties> prop, 
 			final CyNetworkManager networkManager,
 			final CyRootNetworkManager rootNetworkManager
 	) {
 		super(is, applicationManager, networkFactory, networkManager, rootNetworkManager);
 		this.layouts = layouts;
-		this.prop = prop;
 		parser = new PsiMiTabParser(is);
 	}
 
@@ -102,20 +96,16 @@ public class PsiMiTabReader extends AbstractCyNetworkReader {
 	@Override
 	public CyNetworkView buildCyNetworkView(CyNetwork network) {
 		if (cancelled) {
-			if(network != null) {
+			if (network != null) {
 				network.dispose();
 				network = null;
 			}
+			
 			throw new RuntimeException("Network loading canceled by user.");
 		}
 		
 		final CyNetworkView view = getNetworkViewFactory().createNetworkView(network);
-
-		String pref = CyLayoutAlgorithmManager.DEFAULT_LAYOUT_NAME;
-		if (prop != null)
-			pref = prop.getProperties().getProperty("preferredLayoutAlgorithm", pref);
-
-		final CyLayoutAlgorithm layout = layouts.getLayout(pref);
+		final CyLayoutAlgorithm layout = layouts.getDefaultLayout();
 		// Force to run this task here to avoid concurrency problem.
 		TaskIterator itr = layout.createTaskIterator(view, layout.getDefaultLayoutContext(),
 				CyLayoutAlgorithm.ALL_NODE_VIEWS, "");

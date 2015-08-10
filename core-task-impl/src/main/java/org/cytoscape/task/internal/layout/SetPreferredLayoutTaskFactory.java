@@ -24,28 +24,20 @@ package org.cytoscape.task.internal.layout;
  * #L%
  */
 
-import java.util.Collection;
-import java.util.Properties;
-
-import org.cytoscape.property.CyProperty;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
-import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.TaskIterator;
 
 public class SetPreferredLayoutTaskFactory extends AbstractTaskFactory {
 
 	private final CyLayoutAlgorithmManager layouts;
-	private final Properties props;
 
-	public SetPreferredLayoutTaskFactory(final CyLayoutAlgorithmManager layouts, CyProperty<Properties> p) {
+	public SetPreferredLayoutTaskFactory(final CyLayoutAlgorithmManager layouts) {
 		this.layouts = layouts;
-		this.props = p.getProperties();
 	}
-
 
 	@Override
 	public TaskIterator createTaskIterator() {
-		return new TaskIterator(new SetPreferredLayoutTask(layouts, props));
+		return new TaskIterator(new SetPreferredLayoutTask(layouts));
 	}
 }

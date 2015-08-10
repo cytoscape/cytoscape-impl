@@ -41,9 +41,6 @@ import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.NetworkTestSupport;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
-import org.cytoscape.property.CyProperty;
-import org.cytoscape.property.CyProperty.SavePolicy;
-import org.cytoscape.property.SimpleCyProperty;
 import org.cytoscape.psi_mi.internal.plugin.PsiMiTabReader;
 import org.cytoscape.view.layout.CyLayoutAlgorithm;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
@@ -60,8 +57,6 @@ public class PerfTest {
 	CyLayoutAlgorithm layout;
 	TaskMonitor taskMonitor;
 	
-	CyProperty<Properties> props;
-
 	private CyNetworkFactory networkFactory;
 	private CyNetworkViewFactory networkViewFactory;
 	private CyRootNetworkManager cyRootNetworkManager;
@@ -85,7 +80,6 @@ public class PerfTest {
 
 		Properties properties = new Properties();
 		properties.setProperty("viewThreshold", "1000000");
-		props = new SimpleCyProperty<Properties>("Test", properties, Properties.class, SavePolicy.DO_NOT_SAVE);
 
 		networkFactory = new NetworkTestSupport().getNetworkFactory();
 		networkViewFactory = new NetworkViewTestSupport().getNetworkViewFactory();
@@ -114,8 +108,7 @@ public class PerfTest {
 		final InputStream is = getClass().getResource("/testData/mitab/" + file).openStream(); 
 		CyApplicationManager appManager = mock(CyApplicationManager.class);
 		PsiMiTabReader reader = new PsiMiTabReader(is, appManager, networkViewFactory, 
-		                                           networkFactory, layouts, props, cyNetworkManager, 
-																               cyRootNetworkManager);
+		                                           networkFactory, layouts, cyNetworkManager, cyRootNetworkManager);
 		reader.setTaskIterator(new TaskIterator(reader));
 		return reader;
 	}

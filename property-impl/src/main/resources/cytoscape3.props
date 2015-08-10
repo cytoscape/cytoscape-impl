@@ -7,6 +7,7 @@ render.nodeBorderThreshold=400
 render.nodeLabelThreshold=200
 render.edgeArrowThreshold=600
 render.edgeLabelThreshold=200
+layout.default=force-directed
 maximizeViewOnCreate=false
 proxy.server=
 proxy.server.port=

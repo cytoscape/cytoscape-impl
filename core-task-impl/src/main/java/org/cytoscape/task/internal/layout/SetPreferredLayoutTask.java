@@ -25,46 +25,43 @@ package org.cytoscape.task.internal.layout;
  */
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
-import java.util.Properties;
 
 import org.cytoscape.view.layout.CyLayoutAlgorithm;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.work.AbstractTask;
-import org.cytoscape.work.ObservableTask;
-import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.util.ListSingleSelection;
 
 public class SetPreferredLayoutTask extends AbstractTask {
 
-	private Properties props;
 	private final CyLayoutAlgorithmManager layouts;
 
 	@Tunable(description="Layout to use as preferred", context="nogui")
 	public ListSingleSelection<String> preferredLayout;
 
-	public SetPreferredLayoutTask(final CyLayoutAlgorithmManager layouts, final Properties props) {
+	public SetPreferredLayoutTask(final CyLayoutAlgorithmManager layouts) {
 		this.layouts = layouts;
-		this.props = props;
 		List<String> layoutNames = new ArrayList<String>();
+		
 		for (CyLayoutAlgorithm alg: layouts.getAllLayouts()) {
 			layoutNames.add(alg.getName());
 		}
+		
 		preferredLayout = new ListSingleSelection<String>(layoutNames);
 	}
 
 	@Override
 	public void run(TaskMonitor tm) {
-		String prefName = preferredLayout.getSelectedValue();
+		final String prefName = preferredLayout.getSelectedValue();
+		final CyLayoutAlgorithm prefLayout = layouts.getLayout(prefName);
 
-		if (props != null) {
-			props.setProperty("preferredLayoutAlgorithm", prefName);
-			tm.showMessage(TaskMonitor.Level.INFO, "Preferred layout set to "+prefName);
+		if (prefLayout != null) {
+			layouts.setDefaultLayout(prefLayout);
+			tm.showMessage(TaskMonitor.Level.INFO, "Preferred layout set to " + prefName);
 		} else {
-			tm.showMessage(TaskMonitor.Level.WARN, "Can't set preferred layout -- no properties");
+			tm.showMessage(TaskMonitor.Level.WARN, "Can't set preferred layout -- invalid layout name");
 		}
 	}
 }

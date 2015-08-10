@@ -3,6 +3,18 @@ package org.cytoscape.internal.layout.ui;
 import java.awt.event.ActionEvent;
 import java.util.Map;
 
+import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.events.SetCurrentNetworkViewEvent;
+import org.cytoscape.application.events.SetCurrentNetworkViewListener;
+import org.cytoscape.application.swing.AbstractCyAction;
+import org.cytoscape.application.swing.CySwingApplication;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.task.DynamicTaskFactoryProvisioner;
+import org.cytoscape.view.layout.CyLayoutAlgorithm;
+import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
+import org.cytoscape.view.model.CyNetworkViewManager;
+import org.cytoscape.work.properties.TunablePropertySerializerFactory;
+import org.cytoscape.work.swing.PanelTaskManager;
 /*
  * #%L
  * Cytoscape Swing Application Impl (swing-application-impl)
@@ -28,25 +40,9 @@ import java.util.Map;
  */
 
 
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.application.events.SetCurrentNetworkViewEvent;
-import org.cytoscape.application.events.SetCurrentNetworkViewListener;
-import org.cytoscape.application.swing.AbstractCyAction;
-import org.cytoscape.application.swing.CySwingApplication;
-import org.cytoscape.property.CyProperty;
-import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.task.DynamicTaskFactoryProvisioner;
-import org.cytoscape.view.layout.CyLayoutAlgorithm;
-import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
-import org.cytoscape.view.model.CyNetworkViewManager;
-import org.cytoscape.work.properties.TunablePropertySerializerFactory;
-import org.cytoscape.work.swing.PanelTaskManager;
-
-
 public class SettingsAction extends AbstractCyAction implements SetCurrentNetworkViewListener {
 	
 	private final static long serialVersionUID = 1202339874289357L;
-
 
 	private LayoutSettingsDialog settingsDialog;
 
@@ -58,14 +54,13 @@ public class SettingsAction extends AbstractCyAction implements SetCurrentNetwor
 			final TunablePropertySerializerFactory serializerFactory,
 			final CyNetworkViewManager networkViewManager,
 			final PanelTaskManager tm,
-			final CyProperty cytoscapePropertiesServiceRef,
 			final DynamicTaskFactoryProvisioner factoryProvisioner
 	) {
 		super("Settings...", appMgr, "networkAndView", networkViewManager);
 		setPreferredMenu("Layout");
 		setMenuGravity(3.0f);
-		
-		settingsDialog = new LayoutSettingsDialog(cyl, desk, appMgr, serviceRegistrar, serializerFactory, tm, cytoscapePropertiesServiceRef, factoryProvisioner);
+		settingsDialog = new LayoutSettingsDialog(cyl, desk, appMgr, serviceRegistrar, serializerFactory, tm,
+				factoryProvisioner);
 	}
 
 	@Override

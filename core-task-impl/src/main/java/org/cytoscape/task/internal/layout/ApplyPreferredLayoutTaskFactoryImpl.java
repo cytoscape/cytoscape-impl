@@ -25,10 +25,8 @@ package org.cytoscape.task.internal.layout;
  */
 
 import java.util.Collection;
-import java.util.Properties;
 
 import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.property.CyProperty;
 import org.cytoscape.task.AbstractNetworkViewCollectionTaskFactory;
 import org.cytoscape.task.visualize.ApplyPreferredLayoutTaskFactory;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
@@ -41,27 +39,24 @@ public class ApplyPreferredLayoutTaskFactoryImpl extends AbstractNetworkViewColl
 		ApplyPreferredLayoutTaskFactory, TaskFactory {
 
 	private final CyLayoutAlgorithmManager layouts;
-	private final Properties props;
 	private final CyNetworkViewManager viewMgr;
 	private final CyApplicationManager appMgr;
 
 	public ApplyPreferredLayoutTaskFactoryImpl(final CyApplicationManager appMgr, final CyNetworkViewManager viewMgr,
-	                                           final CyLayoutAlgorithmManager layouts, final CyProperty<Properties> p) {
+	                                           final CyLayoutAlgorithmManager layouts) {
 		this.layouts = layouts;
-		this.props = p.getProperties();
 		this.appMgr = appMgr;
 		this.viewMgr = viewMgr;
 	}
 
-
 	@Override
 	public TaskIterator createTaskIterator(final Collection<CyNetworkView> networkViews) {
-		return new TaskIterator(2, new ApplyPreferredLayoutTask(networkViews, layouts, props));
+		return new TaskIterator(2, new ApplyPreferredLayoutTask(networkViews, layouts));
 	}
 
 	@Override
 	public TaskIterator createTaskIterator() {
-		return new TaskIterator(2, new ApplyPreferredLayoutTask(appMgr, viewMgr, layouts, props));
+		return new TaskIterator(2, new ApplyPreferredLayoutTask(appMgr, viewMgr, layouts));
 	}
 
 	@Override

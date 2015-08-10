@@ -24,45 +24,35 @@ package org.cytoscape.task.internal.layout;
  * #L%
  */
 
-import java.util.Collection;
-import java.util.Properties;
-
 import org.cytoscape.view.layout.CyLayoutAlgorithm;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ObservableTask;
-import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskMonitor;
 
 public class GetPreferredLayoutTask extends AbstractTask implements ObservableTask {
 
-	private static final String DEF_LAYOUT = "force-directed";
-
-	private Properties props;
 	private final CyLayoutAlgorithmManager layouts;
 	private CyLayoutAlgorithm preferredLayout;
 
-	public GetPreferredLayoutTask(final CyLayoutAlgorithmManager layouts, final Properties props) {
+	public GetPreferredLayoutTask(final CyLayoutAlgorithmManager layouts) {
 		this.layouts = layouts;
-		this.props = props;
 	}
 
 	@Override
 	public void run(TaskMonitor tm) {
-		
-		String pref = CyLayoutAlgorithmManager.DEFAULT_LAYOUT_NAME;
-		if (props != null)
-			pref = props.getProperty("preferredLayoutAlgorithm", DEF_LAYOUT);
-		tm.showMessage(TaskMonitor.Level.INFO, "Preferred layout is "+pref);
-		preferredLayout = layouts.getLayout(pref);
-		if (preferredLayout == null) {
+		preferredLayout = layouts.getDefaultLayout();
+
+		if (preferredLayout != null)
+			tm.showMessage(TaskMonitor.Level.INFO, "Preferred layout is " + preferredLayout.getName());
+		else
 			tm.showMessage(TaskMonitor.Level.WARN, "...but it's not available!");
-		}
 	}
 
 	@Override
 	public Object getResults(Class type) {
-		if (preferredLayout == null) return null;
+		if (preferredLayout == null)
+			return null;
 
 		if (type.equals(String.class))
 			return preferredLayout.getName();

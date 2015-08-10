@@ -55,7 +55,7 @@ import org.cytoscape.property.SimpleCyProperty;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.layout.CyLayoutAlgorithm;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
-import org.cytoscape.view.layout.internal.CyLayoutsImpl;
+import org.cytoscape.view.layout.internal.CyLayoutAlgorithmManagerImpl;
 import org.cytoscape.view.layout.internal.algorithms.GridNodeLayout;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
@@ -187,7 +187,7 @@ public class PerfTest {
 		Properties p = new Properties();
 		CyProperty<Properties> props = new SimpleCyProperty<Properties>("Test",p,Properties.class,DO_NOT_SAVE);
 		CyLayoutAlgorithm gridNodeLayout = new GridNodeLayout(null);
-		CyLayoutsImpl cyLayouts = new CyLayoutsImpl(null, props, gridNodeLayout);
+		CyLayoutAlgorithmManagerImpl cyLayouts = new CyLayoutAlgorithmManagerImpl(null, props, gridNodeLayout);
 		return cyLayouts;
 	}
 }

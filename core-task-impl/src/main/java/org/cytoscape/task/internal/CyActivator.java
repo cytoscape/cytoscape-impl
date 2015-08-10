@@ -369,7 +369,7 @@ public class CyActivator extends AbstractCyActivator {
 		ExportNetworkViewTaskFactoryImpl exportNetworkViewTaskFactory = new ExportNetworkViewTaskFactoryImpl(networkViewWriterManagerServiceRef, tunableSetterServiceRef);
 		ExportSelectedTableTaskFactoryImpl exportCurrentTableTaskFactory = new ExportSelectedTableTaskFactoryImpl(cyTableWriterManagerRef, cyTableManagerServiceRef, cyNetworkManagerServiceRef);
 		ExportNoGuiSelectedTableTaskFactoryImpl exportNoGuiCurrentTableTaskFactory = new ExportNoGuiSelectedTableTaskFactoryImpl(cyTableWriterManagerRef, cyTableManagerServiceRef, cyNetworkManagerServiceRef);
-		ApplyPreferredLayoutTaskFactoryImpl applyPreferredLayoutTaskFactory = new ApplyPreferredLayoutTaskFactoryImpl(cyApplicationManagerServiceRef, cyNetworkViewManagerServiceRef, cyLayoutsServiceRef,cyPropertyServiceRef);
+		ApplyPreferredLayoutTaskFactoryImpl applyPreferredLayoutTaskFactory = new ApplyPreferredLayoutTaskFactoryImpl(cyApplicationManagerServiceRef, cyNetworkViewManagerServiceRef, cyLayoutsServiceRef);
 		DeleteColumnTaskFactoryImpl deleteColumnTaskFactory = new DeleteColumnTaskFactoryImpl(undoSupportServiceRef);
 		RenameColumnTaskFactoryImpl renameColumnTaskFactory = new RenameColumnTaskFactoryImpl(undoSupportServiceRef, tunableSetterServiceRef);
 		
@@ -1410,15 +1410,15 @@ public class CyActivator extends AbstractCyActivator {
 
 		// NAMESPACE: layout
 		GetPreferredLayoutTaskFactory getPreferredLayoutTaskFactory = 
-			new GetPreferredLayoutTaskFactory(cyLayoutsServiceRef,cyPropertyServiceRef);
+			new GetPreferredLayoutTaskFactory(cyLayoutsServiceRef);
 		Properties getPreferredTFProps = new Properties();
 		getPreferredTFProps.setProperty(COMMAND, "get preferred");
 		getPreferredTFProps.setProperty(COMMAND_NAMESPACE, "layout");
 		getPreferredTFProps.setProperty(COMMAND_DESCRIPTION, "Return the current preferred layout");
 		registerService(bc,getPreferredLayoutTaskFactory,TaskFactory.class,getPreferredTFProps);
 
-		SetPreferredLayoutTaskFactory setPreferredLayoutTaskFactory = 
-			new SetPreferredLayoutTaskFactory(cyLayoutsServiceRef,cyPropertyServiceRef);
+		SetPreferredLayoutTaskFactory setPreferredLayoutTaskFactory =
+				new SetPreferredLayoutTaskFactory(cyLayoutsServiceRef);
 		Properties setPreferredTFProps = new Properties();
 		setPreferredTFProps.setProperty(COMMAND, "set preferred");
 		setPreferredTFProps.setProperty(COMMAND_NAMESPACE, "layout");

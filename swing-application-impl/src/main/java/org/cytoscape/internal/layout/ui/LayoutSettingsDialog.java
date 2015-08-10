@@ -23,7 +23,8 @@ package org.cytoscape.internal.layout.ui;
  * <http://www.gnu.org/licenses/lgpl-2.1.html>.
  * #L%
  */
-import static javax.swing.GroupLayout.*;
+import static javax.swing.GroupLayout.DEFAULT_SIZE;
+import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static org.cytoscape.util.swing.LookAndFeelUtil.isAquaLAF;
 
 import java.awt.Color;
@@ -122,7 +123,6 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 	private CyServiceRegistrar serviceRegistrar;
 	private TunablePropertySerializerFactory serializerFactory;
 	private PanelTaskManager taskMgr;
-	private CyProperty<?> cyProperty;
 	private DynamicTaskFactoryProvisioner factoryProvisioner;
 	private LayoutAttributeTunable layoutAttrTunable;
 	private final SelectedTunable selectedTunable;
@@ -145,7 +145,6 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 	                            final CyServiceRegistrar serviceRegistrar,
 	                            final TunablePropertySerializerFactory serializerFactory,
 	                            final PanelTaskManager taskManager,
-	                            final CyProperty<?> cytoscapePropertiesServiceRef,
 	                            DynamicTaskFactoryProvisioner factoryProvisioner) {
 		super(desktop.getJFrame(), "Layout Settings", false);
 
@@ -155,7 +154,6 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 		this.serviceRegistrar = serviceRegistrar;
 		this.serializerFactory = serializerFactory;
 		this.taskMgr = taskManager;
-		this.cyProperty = cytoscapePropertiesServiceRef;
 		this.factoryProvisioner = factoryProvisioner;
 		
 		initComponents();
@@ -253,9 +251,6 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 		initializing = true;
 		
 		try {
-			final Properties props = (Properties) cyProperty.getProperties();
-			final String pref = props.getProperty("preferredLayoutAlgorithm", "force-directed");
-			
 			final Collator collator = Collator.getInstance(Locale.getDefault());
 			final TreeSet<CyLayoutAlgorithm> allLayouts = new TreeSet<>(new Comparator<CyLayoutAlgorithm>() {
 				@Override
@@ -271,20 +266,14 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 			for (CyLayoutAlgorithm algo : allLayouts) 
 				getAlgorithmCmb().addItem(algo);
 			
-			// For the tabbedPanel "Set preferred Layout"
+			// Populate the preferred algorithm selector
 			getPrefAlgorithmCmb().removeAllItems();
-			getPrefAlgorithmCmb().setRenderer(new LayoutAlgorithmListCellRenderer("Select preferred algorithm"));
-	
-			CyLayoutAlgorithm prefAlgo = null;
 			
-			for (CyLayoutAlgorithm algo : allLayouts) { 
+			for (CyLayoutAlgorithm algo : allLayouts)
 				getPrefAlgorithmCmb().addItem(algo);
-				
-				if (algo.getName().equals(pref))
-					prefAlgo = algo;
-			}
 			
-			getPrefAlgorithmCmb().setSelectedItem(prefAlgo);
+			// For the tabbedPanel "Set preferred Layout"
+			getPrefAlgorithmCmb().setSelectedItem(layoutAlgorithmMgr.getDefaultLayout());
 		} finally {
 			initializing = false;
 		}
@@ -487,6 +476,7 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 		if (prefAlgorithmCmb == null) {
 			prefAlgorithmCmb = new JComboBox<CyLayoutAlgorithm>();
 	        prefAlgorithmCmb.setModel(new DefaultComboBoxModel<CyLayoutAlgorithm>());
+	        prefAlgorithmCmb.setRenderer(new LayoutAlgorithmListCellRenderer("-- Select preferred algorithm --"));
 	        
 	        prefAlgorithmCmb.addItemListener(new ItemListener() {
 				@Override
@@ -496,13 +486,8 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 					
 					final CyLayoutAlgorithm layout = (CyLayoutAlgorithm) prefAlgorithmCmb.getSelectedItem();
 					
-					if (layout != null) {
-						final String pref = layout.getName(); 
-						final Properties props = (Properties) cyProperty.getProperties();
-						
-						if (props != null && !pref.equals(props.get("preferredLayoutAlgorithm"))) 
-							props.setProperty("preferredLayoutAlgorithm", pref);
-		            }
+					if (layout != null)
+						layoutAlgorithmMgr.setDefaultLayout(layout);
 				}
 	        });
 		}

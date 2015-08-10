@@ -26,12 +26,11 @@ package org.cytoscape.task.internal.layout;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Properties;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyEdge;
-import org.cytoscape.task.AbstractNetworkViewCollectionTask;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.task.AbstractNetworkViewCollectionTask;
 import org.cytoscape.view.layout.CyLayoutAlgorithm;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.model.CyNetworkView;
@@ -44,38 +43,23 @@ import org.cytoscape.work.Tunable;
 
 public class ApplyPreferredLayoutTask extends AbstractNetworkViewCollectionTask {
 
-	private static final String DEF_LAYOUT = "force-directed";
-
-	private Properties props;
 	private final CyLayoutAlgorithmManager layouts;
-	private final CyApplicationManager appMgr;
 	private final CyNetworkViewManager viewMgr;
 
 	@Tunable(description="Network view to apply layout to", context="nogui")
 	public CyNetwork networkSelected = null;
 
 	public ApplyPreferredLayoutTask(final Collection<CyNetworkView> networkViews,
-			final CyLayoutAlgorithmManager layouts, final Properties props) {
+			final CyLayoutAlgorithmManager layouts) {
 		super(networkViews);
 		this.layouts = layouts;
-		this.props = props;
-		this.appMgr = null;
-		this.viewMgr = null;
-	}
-
-	public ApplyPreferredLayoutTask(final Collection<CyNetworkView> networkViews, final CyLayoutAlgorithmManager layouts) {
-		super(networkViews);
-		this.layouts = layouts;
-		this.appMgr = null;
 		this.viewMgr = null;
 	}
 
 	public ApplyPreferredLayoutTask(CyApplicationManager appMgr, CyNetworkViewManager viewMgr, 
-	                                CyLayoutAlgorithmManager layouts, Properties props) {
+	                                CyLayoutAlgorithmManager layouts) {
 		super(Collections.singletonList(appMgr.getCurrentNetworkView()));
 		this.layouts = layouts;
-		this.props = props;
-		this.appMgr = appMgr;
 		this.viewMgr = viewMgr;
 	}
 
@@ -85,25 +69,24 @@ public class ApplyPreferredLayoutTask extends AbstractNetworkViewCollectionTask 
 		tm.setStatusMessage("Applying Default Layout...");
 
 		Collection<CyNetworkView> views = networkViews;
+		
 		if (networkSelected != null)
 			views = viewMgr.getNetworkViews(networkSelected);
-
+		
+		final CyLayoutAlgorithm layout = layouts.getDefaultLayout();
+		tm.setProgress(0.2);
+		
 		int i = 0;
 		int viewCount = views.size();
+		
 		for (final CyNetworkView view : views) {
-			String pref = CyLayoutAlgorithmManager.DEFAULT_LAYOUT_NAME;
-			if (props != null)
-				pref = props.getProperty("preferredLayoutAlgorithm", DEF_LAYOUT);
-			tm.setProgress(0.2d);
-			final CyLayoutAlgorithm layout = layouts.getLayout(pref);
 			if (layout != null) {
 				//clearEdgeBends(view);
 				final TaskIterator itr = layout.createTaskIterator(view, layout.getDefaultLayoutContext(),
 						CyLayoutAlgorithm.ALL_NODE_VIEWS, "");
 				insertTasksAfterCurrentTask(itr);
-
 			} else {
-				throw new IllegalArgumentException("Couldn't find layout algorithm: " + pref);
+				throw new IllegalArgumentException("Couldn't find default layout algorithm");
 			}
 
 			i++;

@@ -267,7 +267,6 @@ public class CyActivator extends AbstractCyActivator {
 		                                                   tunablePropertySerializerFactoryRef,
 		                                                   cyNetworkViewManagerServiceRef,
 		                                                   panelTaskManagerServiceRef,
-		                                                   cytoscapePropertiesServiceRef, 
 		                                                   dynamicTaskFactoryProvisionerServiceRef);
 
 		HelpContentsTaskFactory helpContentsTaskFactory = new HelpContentsTaskFactory(cyHelpBroker,

@@ -25,6 +25,10 @@ package org.cytoscape.view.layout.internal;
  */
 
 
+import static org.cytoscape.work.ServiceProperties.COMMAND;
+import static org.cytoscape.work.ServiceProperties.COMMAND_DESCRIPTION;
+import static org.cytoscape.work.ServiceProperties.COMMAND_NAMESPACE;
+
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -36,20 +40,15 @@ import org.cytoscape.property.CyProperty;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.layout.CyLayoutAlgorithm;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
+import org.cytoscape.view.layout.internal.task.LayoutTaskFactoryWrapper;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.work.TaskFactory;
 
-import static org.cytoscape.work.ServiceProperties.COMMAND;
-import static org.cytoscape.work.ServiceProperties.COMMAND_NAMESPACE;
-import static org.cytoscape.work.ServiceProperties.COMMAND_DESCRIPTION;
-
-import org.cytoscape.view.layout.internal.task.LayoutTaskFactoryWrapper;
-
 /**
- * CyLayoutsImpl is a singleton class that is used to register all available
+ * CyLayoutAlgorithmManagerImpl is a singleton class that is used to register all available
  * layout algorithms.  
  */
-public class CyLayoutsImpl implements CyLayoutAlgorithmManager {
+public class CyLayoutAlgorithmManagerImpl implements CyLayoutAlgorithmManager {
 
 	private final Map<String, CyLayoutAlgorithm> layoutMap;
 	private final Map<String, TaskFactory> serviceMap;
@@ -58,7 +57,8 @@ public class CyLayoutsImpl implements CyLayoutAlgorithmManager {
 	private CyApplicationManager appManager;
 	private CyNetworkViewManager viewManager;
 
-	public CyLayoutsImpl(CyServiceRegistrar serviceRegistrar, final CyProperty<Properties> p, CyLayoutAlgorithm defaultLayout) {
+	public CyLayoutAlgorithmManagerImpl(CyServiceRegistrar serviceRegistrar, final CyProperty<Properties> p,
+			final CyLayoutAlgorithm defaultLayout) {
 		this.cyProps = p;
 		this.serviceRegistrar = serviceRegistrar;
 		layoutMap = new ConcurrentHashMap<String,CyLayoutAlgorithm>(16, 0.75f, 2);
@@ -148,17 +148,30 @@ public class CyLayoutsImpl implements CyLayoutAlgorithmManager {
 
 	/**
 	 * Get the default layout.  This is either the grid layout or a layout
-	 * chosen by the user via the setting of the "layout.default" property.
+	 * chosen by the user via the setting of the "preferredLayoutAlgorithm" property.
 	 *
 	 * @return CyLayoutAlgorithm to use as the default layout algorithm
 	 */
 	@Override
 	public CyLayoutAlgorithm getDefaultLayout() {
 		// See if the user has set the layout.default property	
-		String defaultLayout = cyProps.getProperties().getProperty(CyLayoutAlgorithmManager.DEFAULT_LAYOUT_PROPERTY_NAME);
+		String defaultLayout = cyProps.getProperties().getProperty(DEFAULT_LAYOUT_PROPERTY_NAME);
+		
 		if (defaultLayout == null || layoutMap.containsKey(defaultLayout) == false)
-			defaultLayout = CyLayoutAlgorithmManager.DEFAULT_LAYOUT_NAME; 
+			defaultLayout = DEFAULT_LAYOUT_NAME; 
 
 		return layoutMap.get(defaultLayout);
+	}
+
+	@Override
+	public CyLayoutAlgorithm setDefaultLayout(final CyLayoutAlgorithm layout) {
+		if (layout == null)
+			throw new IllegalArgumentException("The default layout algorithm cannot be null.");
+		if (!layoutMap.values().contains(layout))
+			throw new IllegalArgumentException("The layout algorithm is not registered.");
+		
+		cyProps.getProperties().setProperty(DEFAULT_LAYOUT_PROPERTY_NAME, layout.getName());
+		
+		return null;
 	}
 }
