@@ -32,18 +32,24 @@ import org.cytoscape.work.SynchronousTaskManager;
 import org.cytoscape.work.TunableHandlerFactory;
 import org.cytoscape.work.TunableRecorder;
 import org.cytoscape.work.TunableSetter;
+import org.cytoscape.work.internal.properties.BasicTypePropertyHandler;
+import org.cytoscape.work.internal.properties.BoundedPropertyHandler;
+import org.cytoscape.work.internal.properties.ListMultiplePropertyHandler;
+import org.cytoscape.work.internal.properties.ListSinglePropertyHandler;
+import org.cytoscape.work.internal.properties.SimpleTunablePropertyHandlerFactory;
+import org.cytoscape.work.internal.properties.TunablePropertySerializerFactoryImpl;
 import org.cytoscape.work.internal.sync.SyncTaskManager;
 import org.cytoscape.work.internal.sync.SyncTunableHandlerFactory;
 import org.cytoscape.work.internal.sync.SyncTunableMutatorFactory;
 import org.cytoscape.work.internal.sync.TunableRecorderManager;
 import org.cytoscape.work.internal.sync.TunableSetterImpl;
+import org.cytoscape.work.properties.TunablePropertyHandlerFactory;
+import org.cytoscape.work.properties.TunablePropertySerializerFactory;
+import org.cytoscape.work.util.ListMultipleSelection;
+import org.cytoscape.work.util.ListSingleSelection;
 import org.osgi.framework.BundleContext;
 
 public class CyActivator extends AbstractCyActivator {
-	public CyActivator() {
-		super();
-	}
-
 
 	public void start(BundleContext bc) {
 		
@@ -64,7 +70,21 @@ public class CyActivator extends AbstractCyActivator {
 
 		TunableSetterImpl tsi = new TunableSetterImpl(mutatorFactory,trm);
 		registerService(bc,tsi,TunableSetter.class, new Properties());
+
 		
 		
+		TunablePropertySerializerFactoryImpl tpsf = new TunablePropertySerializerFactoryImpl();
+		registerService(bc, tpsf, TunablePropertySerializerFactory.class, new Properties());
+		registerServiceListener(bc, tpsf, "addTunableHandlerFactory", "removeTunableHandlerFactory", TunablePropertyHandlerFactory.class);
+		
+		TunablePropertyHandlerFactory<BasicTypePropertyHandler> simpleHandler = new SimpleTunablePropertyHandlerFactory<>(BasicTypePropertyHandler.class, BasicTypePropertyHandler.supportedTypes());
+		TunablePropertyHandlerFactory<ListSinglePropertyHandler> listSingleHandler = new SimpleTunablePropertyHandlerFactory<>(ListSinglePropertyHandler.class, ListSingleSelection.class);
+		TunablePropertyHandlerFactory<ListMultiplePropertyHandler> listMultipleHandler = new SimpleTunablePropertyHandlerFactory<>(ListMultiplePropertyHandler.class, ListMultipleSelection.class);
+		TunablePropertyHandlerFactory<BoundedPropertyHandler> boundedHandler = new SimpleTunablePropertyHandlerFactory<>(BoundedPropertyHandler.class, BoundedPropertyHandler.supportedTypes());
+		
+		registerService(bc, simpleHandler,       TunablePropertyHandlerFactory.class, new Properties());
+		registerService(bc, listMultipleHandler, TunablePropertyHandlerFactory.class, new Properties());
+		registerService(bc, listSingleHandler,   TunablePropertyHandlerFactory.class, new Properties());
+		registerService(bc, boundedHandler,      TunablePropertyHandlerFactory.class, new Properties());
 	}
 }

@@ -23,20 +23,9 @@ package org.cytoscape.internal;
  * <http://www.gnu.org/licenses/lgpl-2.1.html>.
  * #L%
  */
-
-import static org.cytoscape.application.swing.CyNetworkViewDesktopMgr.ArrangeType.CASCADE;
-import static org.cytoscape.application.swing.CyNetworkViewDesktopMgr.ArrangeType.GRID;
-import static org.cytoscape.application.swing.CyNetworkViewDesktopMgr.ArrangeType.HORIZONTAL;
-import static org.cytoscape.application.swing.CyNetworkViewDesktopMgr.ArrangeType.VERTICAL;
-import static org.cytoscape.application.swing.CytoPanelName.EAST;
-import static org.cytoscape.application.swing.CytoPanelName.SOUTH;
-import static org.cytoscape.application.swing.CytoPanelName.SOUTH_WEST;
-import static org.cytoscape.application.swing.CytoPanelName.WEST;
-import static org.cytoscape.work.ServiceProperties.ACCELERATOR;
-import static org.cytoscape.work.ServiceProperties.MENU_GRAVITY;
-import static org.cytoscape.work.ServiceProperties.PREFERRED_MENU;
-import static org.cytoscape.work.ServiceProperties.TITLE;
-import static org.cytoscape.work.ServiceProperties.TOOLTIP;
+import static org.cytoscape.application.swing.CyNetworkViewDesktopMgr.ArrangeType.*;
+import static org.cytoscape.application.swing.CytoPanelName.*;
+import static org.cytoscape.work.ServiceProperties.*;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Properties;
@@ -130,6 +119,7 @@ import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.work.ServiceProperties;
 import org.cytoscape.work.SynchronousTaskManager;
 import org.cytoscape.work.TaskFactory;
+import org.cytoscape.work.properties.TunablePropertySerializerFactory;
 import org.cytoscape.work.swing.DialogTaskManager;
 import org.cytoscape.work.swing.PanelTaskManager;
 import org.cytoscape.work.swing.TaskStatusPanelFactory;
@@ -177,10 +167,10 @@ public class CyActivator extends AbstractCyActivator {
 		OpenBrowser openBrowserServiceRef = getService(bc, OpenBrowser.class);
 		VisualMappingManager visualMappingManagerServiceRef  = getService(bc, VisualMappingManager.class);
 		FileUtil fileUtilServiceRef = getService(bc, FileUtil.class);
-		DynamicTaskFactoryProvisioner dynamicTaskFactoryProvisionerServiceRef = getService(bc, 
-		                                                                                   DynamicTaskFactoryProvisioner.class);
+		DynamicTaskFactoryProvisioner dynamicTaskFactoryProvisionerServiceRef = getService(bc, DynamicTaskFactoryProvisioner.class);
 		DataSourceManager dsManagerServiceRef = getService(bc, DataSourceManager.class);
 		EditNetworkTitleTaskFactory editNetworkTitleTFServiceRef  = getService(bc, EditNetworkTitleTaskFactory.class);
+		TunablePropertySerializerFactory tunablePropertySerializerFactoryRef =  getService(bc, TunablePropertySerializerFactory.class);
 		
 		//////////////		
 		UndoAction undoAction = new UndoAction(undoSupportServiceRef);
@@ -273,6 +263,8 @@ public class CyActivator extends AbstractCyActivator {
 
 		SettingsAction settingsAction = new SettingsAction(cyLayoutsServiceRef, cytoscapeDesktop,
 		                                                   cyApplicationManagerServiceRef, 
+		                                                   cyServiceRegistrarServiceRef,
+		                                                   tunablePropertySerializerFactoryRef,
 		                                                   cyNetworkViewManagerServiceRef,
 		                                                   panelTaskManagerServiceRef,
 		                                                   cytoscapePropertiesServiceRef, 
