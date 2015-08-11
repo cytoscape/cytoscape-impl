@@ -677,6 +677,7 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 			Properties serviceProps = new Properties();
 			serviceProps.setProperty("cyPropertyName", service.getName());
 			serviceRegistrar.registerAllServices(service, serviceProps);
+			registeredPropertyServices.put(layout.getName(), service);
 		}
 		return service;
 	}
