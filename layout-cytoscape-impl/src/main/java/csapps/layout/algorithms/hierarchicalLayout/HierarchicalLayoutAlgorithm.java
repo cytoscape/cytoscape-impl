@@ -43,13 +43,12 @@ package csapps.layout.algorithms.hierarchicalLayout;
 import java.util.Set;
 
 import org.cytoscape.model.CyNode;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.layout.AbstractLayoutAlgorithm;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.undo.UndoSupport;
-import org.cytoscape.view.presentation.property.values.HandleFactory;
-import org.cytoscape.view.presentation.property.values.BendFactory;
 
 
 /**
@@ -76,20 +75,19 @@ import org.cytoscape.view.presentation.property.values.BendFactory;
  * {@link csapps.hierarchicallayout.Graph}
 */
 public class HierarchicalLayoutAlgorithm extends AbstractLayoutAlgorithm {
-	private HandleFactory hf;
-	private BendFactory bf;
+	
+	private final CyServiceRegistrar serviceRegistrar;
 
-	/**
-	 * Creates a new HierarchicalLayoutAlgorithm object.
-	 */
-	public HierarchicalLayoutAlgorithm(UndoSupport undo,HandleFactory hf,BendFactory bf) {
-		super("hierarchical", "Hierarchical Layout", undo);		
-		this.hf = hf;
-		this.bf = bf;
+	public HierarchicalLayoutAlgorithm(final CyServiceRegistrar serviceRegistrar, final UndoSupport undoSupport) {
+		super("hierarchical", "Hierarchical Layout", undoSupport);
+		this.serviceRegistrar = serviceRegistrar;
 	}
 
-	public TaskIterator createTaskIterator(CyNetworkView networkView, Object context, Set<View<CyNode>> nodesToLayOut, String attrName) {
-		return new TaskIterator(new HierarchicalLayoutAlgorithmTask(toString(), networkView, nodesToLayOut,(HierarchicalLayoutContext) context, attrName, undoSupport,hf,bf));
+	@Override
+	public TaskIterator createTaskIterator(CyNetworkView networkView, Object context, Set<View<CyNode>> nodesToLayOut,
+			String attrName) {
+		return new TaskIterator(new HierarchicalLayoutAlgorithmTask(toString(), networkView, nodesToLayOut,
+				(HierarchicalLayoutContext) context, attrName, undoSupport, serviceRegistrar));
 	}
 	
 	@Override
@@ -101,5 +99,4 @@ public class HierarchicalLayoutAlgorithm extends AbstractLayoutAlgorithm {
 	public boolean getSupportsSelectedOnly() {
 		return true;
 	}
-
 }
