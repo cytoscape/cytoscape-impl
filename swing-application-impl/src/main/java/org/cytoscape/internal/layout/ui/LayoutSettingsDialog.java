@@ -168,8 +168,13 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 				// fired when user closes window using (x) button
 				saveLayoutContexts();
 			}
+			@Override
+			public void windowActivated(WindowEvent e) {
+				// Update the combo-box selection in case the preferred layout has been changed by another task/action
+				// after this dialog has been initialized (e.g. by an app or by using commands)
+				updatePrefAlgorithmCmb();
+			}
 		});
-		
 		
 		addComponentListener(new ComponentAdapter() {
 			@Override
@@ -182,7 +187,6 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 				tunablesToSave.add(currentLayout);
 			}
 		});
-		
 	}
 	
 	@Override
@@ -193,6 +197,7 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 		} else {
 			if (!initialized) {
 				initialize();
+				updatePrefAlgorithmCmb();
 				setLocationRelativeTo(swingApp.getJFrame());
 				pack();
 			}
@@ -203,24 +208,29 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 	}
 
     void addLayout(CyLayoutAlgorithm layout) {
-    	SwingUtilities.invokeLater(new Runnable() {
-    		@Override
-    		public void run() {
-    	        initialize();
-    		}
-    	});
+    	if (initialized) {
+	    	// Initialize again
+	    	SwingUtilities.invokeLater(new Runnable() {
+	    		@Override
+	    		public void run() {
+	    	        initialize();
+	    		}
+	    	});
+    	}
     }
 
     void removeLayout(final CyLayoutAlgorithm layout) {
-    	SwingUtilities.invokeLater(new Runnable() {
-    		@Override
-    		public void run() {
-    	    	if (currentLayout == layout) {
-    	    		getAlgorithmPnl().removeAll();
-    	    	}
-    	    	initialize();
-    		}
-    	});
+    	if (initialized) {
+	    	SwingUtilities.invokeLater(new Runnable() {
+	    		@Override
+	    		public void run() {
+	    	    	if (currentLayout == layout) {
+	    	    		getAlgorithmPnl().removeAll();
+	    	    	}
+	    	    	initialize();
+	    		}
+	    	});
+    	}
     }
 
     private void initComponents() {
@@ -260,20 +270,14 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 			});
 			allLayouts.addAll(layoutAlgorithmMgr.getAllLayouts());
 			
-			// Populate the algorithm selector
+			// Populate the algorithm selectors
 			getAlgorithmCmb().removeAllItems();
-			
-			for (CyLayoutAlgorithm algo : allLayouts) 
-				getAlgorithmCmb().addItem(algo);
-			
-			// Populate the preferred algorithm selector
 			getPrefAlgorithmCmb().removeAllItems();
 			
-			for (CyLayoutAlgorithm algo : allLayouts)
+			for (CyLayoutAlgorithm algo : allLayouts) {
+				getAlgorithmCmb().addItem(algo);
 				getPrefAlgorithmCmb().addItem(algo);
-			
-			// For the tabbedPanel "Set preferred Layout"
-			getPrefAlgorithmCmb().setSelectedItem(layoutAlgorithmMgr.getDefaultLayout());
+			}
 		} finally {
 			initializing = false;
 		}
@@ -282,6 +286,13 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 			getAlgorithmCmb().setSelectedItem(currentLayout);
 		else if (getAlgorithmCmb().getModel().getSize() > 0)
 			getAlgorithmCmb().setSelectedIndex(0);
+	}
+	
+	private void updatePrefAlgorithmCmb() {
+		final CyLayoutAlgorithm defLayout = layoutAlgorithmMgr.getDefaultLayout();
+		
+		if (defLayout != null && !defLayout.equals(getPrefAlgorithmCmb().getSelectedItem()))
+			getPrefAlgorithmCmb().setSelectedItem(defLayout);
 	}
 	
 	private JTabbedPane getTabbedPane() {
@@ -486,7 +497,7 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 					
 					final CyLayoutAlgorithm layout = (CyLayoutAlgorithm) prefAlgorithmCmb.getSelectedItem();
 					
-					if (layout != null)
+					if (layout != null && !layout.equals(layoutAlgorithmMgr.getDefaultLayout()))
 						layoutAlgorithmMgr.setDefaultLayout(layout);
 				}
 	        });
