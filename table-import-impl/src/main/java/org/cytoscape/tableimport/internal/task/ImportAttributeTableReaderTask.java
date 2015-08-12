@@ -151,8 +151,12 @@ public class ImportAttributeTableReaderTask extends AbstractTask implements CyTa
 				loadAnnotation(tm);
 			}
 		} else {
-			reader = new DefaultAttributeTableReader(null, amp, this.is); 
-			loadAnnotation(tm);
+			try {
+				reader = new DefaultAttributeTableReader(null, amp, this.is); 
+				loadAnnotation(tm);
+			} catch (Exception ioe) {
+				tm.showMessage(TaskMonitor.Level.ERROR, "Unable to read table: "+ioe.getMessage());
+			}
 		}
 	}
 

@@ -121,18 +121,23 @@ public class ImportNetworkTableReaderTask extends AbstractTask implements CyNetw
 			}
 		}
 		
-		if (this.fileType.equalsIgnoreCase(SupportedFileType.EXCEL.getExtension()) ||
-		    this.fileType.equalsIgnoreCase(SupportedFileType.OOXML.getExtension())) {
-			String networkName = ntmp.getName();
-			
-			if (networkName == null)
-				networkName = workbook.getSheetName(0);
-			
-			final Sheet sheet = workbook.getSheet(networkName);
-			
-			reader = new ExcelNetworkSheetReader(networkName, sheet, ntmp, nMap, rootNetwork, serviceRegistrar);
-		} else {
-			reader = new NetworkTableReader(inputName, is, ntmp, nMap, rootNetwork, serviceRegistrar);
+		try {
+			if (this.fileType.equalsIgnoreCase(SupportedFileType.EXCEL.getExtension()) ||
+			    this.fileType.equalsIgnoreCase(SupportedFileType.OOXML.getExtension())) {
+				String networkName = ntmp.getName();
+				
+				if (networkName == null)
+					networkName = workbook.getSheetName(0);
+				
+				final Sheet sheet = workbook.getSheet(networkName);
+				
+				reader = new ExcelNetworkSheetReader(networkName, sheet, ntmp, nMap, rootNetwork, serviceRegistrar);
+			} else {
+				reader = new NetworkTableReader(inputName, is, ntmp, nMap, rootNetwork, serviceRegistrar);
+			}
+		} catch (Exception ioe) {
+			tm.showMessage(TaskMonitor.Level.ERROR, "Unable to read table: "+ioe.getMessage());
+			return;
 		}
 		
 		loadNetwork(tm);

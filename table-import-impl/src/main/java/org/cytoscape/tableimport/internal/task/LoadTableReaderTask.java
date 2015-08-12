@@ -172,19 +172,24 @@ public class LoadTableReaderTask extends AbstractTask implements CyTableReader, 
 		
 		Workbook workbook = null;
 		// Load Spreadsheet data for preview.
-		if (fileType != null && 
-				(fileType.equalsIgnoreCase(SupportedFileType.EXCEL.getExtension())
-				|| fileType.equalsIgnoreCase(SupportedFileType.OOXML.getExtension())) &&
-				workbook == null) {
-			try {
-				workbook = WorkbookFactory.create(isStart);
-			} catch (InvalidFormatException e) {
-				e.printStackTrace();
-				throw new IllegalArgumentException("Could not read Excel file.  Maybe the file is broken?");
-			} finally {
-				if (isStart != null)
-					isStart.close();
+		try {
+			if (fileType != null && 
+					(fileType.equalsIgnoreCase(SupportedFileType.EXCEL.getExtension())
+					|| fileType.equalsIgnoreCase(SupportedFileType.OOXML.getExtension())) &&
+					workbook == null) {
+				try {
+					workbook = WorkbookFactory.create(isStart);
+				} catch (InvalidFormatException e) {
+					e.printStackTrace();
+					throw new IllegalArgumentException("Could not read Excel file.  Maybe the file is broken?");
+				} finally {
+					if (isStart != null)
+						isStart.close();
+				}
 			}
+		} catch (Exception ioe) {
+			tm.showMessage(TaskMonitor.Level.ERROR, "Unable to read table: "+ioe.getMessage());
+			return;
 		}
 		
 		if (startLoadRow > 0)

@@ -30,6 +30,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.nio.charset.MalformedInputException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -159,6 +160,8 @@ public class DefaultAttributeTableReader implements TextTableReader {
 						lineCount++;
 					}
 				}
+			} catch (MalformedInputException mie) {
+				throw new IOException("Unable to import table: illegal character encoding in input");
 			} finally {
 				if (bufRd != null)
 					bufRd.close();

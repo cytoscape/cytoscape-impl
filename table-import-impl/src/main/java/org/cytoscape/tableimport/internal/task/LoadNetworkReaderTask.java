@@ -292,14 +292,19 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 					indexColumnSourceInteraction, indexColumnTargetInteraction, indexColumnTypeInteraction,
 					defaultInteraction, startLoadRow, null);
 			
-			if (this.fileType.equalsIgnoreCase(SupportedFileType.EXCEL.getExtension()) ||
-			    this.fileType.equalsIgnoreCase(SupportedFileType.OOXML.getExtension())) {
-				final Sheet sheet = workbook.getSheet(networkName);
-				
-				reader = new ExcelNetworkSheetReader(networkName, sheet, ntmp, nMap, rootNetwork, serviceRegistrar);
-			} else {
-				networkName = this.inputName;
-				reader = new NetworkTableReader(networkName, new FileInputStream(tempFile), ntmp, nMap, rootNetwork, serviceRegistrar);
+			try {
+				if (this.fileType.equalsIgnoreCase(SupportedFileType.EXCEL.getExtension()) ||
+				    this.fileType.equalsIgnoreCase(SupportedFileType.OOXML.getExtension())) {
+					final Sheet sheet = workbook.getSheet(networkName);
+					
+					reader = new ExcelNetworkSheetReader(networkName, sheet, ntmp, nMap, rootNetwork, serviceRegistrar);
+				} else {
+					networkName = this.inputName;
+					reader = new NetworkTableReader(networkName, new FileInputStream(tempFile), ntmp, nMap, rootNetwork, serviceRegistrar);
+				}
+			} catch (Exception ioe) {
+				tm.showMessage(TaskMonitor.Level.ERROR, "Unable to read network: "+ioe.getMessage());
+				return;
 			}
 			
 			loadNetwork(tm);
