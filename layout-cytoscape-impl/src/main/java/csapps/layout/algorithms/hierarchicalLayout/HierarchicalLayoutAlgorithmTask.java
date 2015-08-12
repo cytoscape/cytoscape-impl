@@ -35,43 +35,41 @@ import java.util.List;
 import java.util.Set;
 
 import org.cytoscape.model.CyEdge;
-import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyTableUtil;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.layout.AbstractLayoutTask;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
-import org.cytoscape.view.presentation.property.values.HandleFactory;
-import org.cytoscape.view.presentation.property.values.BendFactory;
 import org.cytoscape.view.presentation.property.values.Bend;
+import org.cytoscape.view.presentation.property.values.BendFactory;
 import org.cytoscape.view.presentation.property.values.Handle;
+import org.cytoscape.view.presentation.property.values.HandleFactory;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.undo.UndoSupport;
 
 
-
-
 public class HierarchicalLayoutAlgorithmTask extends AbstractLayoutTask {
 
-	private HashMap<Integer, HierarchyFlowLayoutOrderNode> nodes2HFLON = new HashMap<Integer, HierarchyFlowLayoutOrderNode>();
+	private HashMap<Integer, HierarchyFlowLayoutOrderNode> nodes2HFLON = new HashMap<>();
 	private TaskMonitor taskMonitor;
-	CyNetwork network;
-	private HierarchicalLayoutContext context;
-	private HandleFactory handleFactory;
-	private BendFactory bendFactory; 
+	private final HierarchicalLayoutContext context;
+	private final CyServiceRegistrar serviceRegistrar;
 	
 	/**
 	 * Creates a new GridNodeLayout object.
 	 */
-	public HierarchicalLayoutAlgorithmTask(final String displayName, CyNetworkView networkView, 
-	                                       Set<View<CyNode>> nodesToLayOut, HierarchicalLayoutContext context, 
-										   String attrName, UndoSupport undo, HandleFactory handleFactory,
-										   BendFactory bendFactory) {
+	public HierarchicalLayoutAlgorithmTask(
+			final String displayName,
+			final CyNetworkView networkView,
+			final Set<View<CyNode>> nodesToLayOut,
+			final HierarchicalLayoutContext context,
+			final String attrName,
+			final UndoSupport undo,
+			final CyServiceRegistrar serviceRegistrar) {
 		super(displayName, networkView, nodesToLayOut, attrName, undo);
 		this.context = context;
-		this.handleFactory = handleFactory;
-		this.bendFactory = bendFactory;
+		this.serviceRegistrar = serviceRegistrar;
 	}
 
 
@@ -82,10 +80,9 @@ public class HierarchicalLayoutAlgorithmTask extends AbstractLayoutTask {
 	@Override
 	final protected void doLayout(final TaskMonitor taskMonitor) {
 		this.taskMonitor = taskMonitor;
-		this.network = networkView.getModel();
 		construct();
-		
 	}
+	
 	/**
 	 * Lays out the graph. See this class' description for an outline
 	 * of the method used. <br>
@@ -115,9 +112,6 @@ public class HierarchicalLayoutAlgorithmTask extends AbstractLayoutTask {
 		layout();
 	}
 
-	/**
-	 *  DOCUMENT ME!
-	 */
 	public void layout() {
 		taskMonitor.setProgress(0.0);
 		taskMonitor.setStatusMessage("Capturing snapshot of network and selected nodes");
@@ -570,6 +564,9 @@ public class HierarchicalLayoutAlgorithmTask extends AbstractLayoutTask {
 			}
 		}
 
+		final HandleFactory handleFactory = serviceRegistrar.getService(HandleFactory.class);
+		final BendFactory bendFactory = serviceRegistrar.getService(BendFactory.class);
+		
 		for (nodeIndex = 0; nodeIndex < resize; nodeIndex++) {
 			HierarchyFlowLayoutOrderNode node = flowLayoutOrder[nodeIndex];
 

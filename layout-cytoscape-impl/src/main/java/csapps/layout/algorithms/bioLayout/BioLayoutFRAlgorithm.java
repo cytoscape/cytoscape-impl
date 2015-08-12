@@ -57,18 +57,20 @@ import org.cytoscape.work.undo.UndoSupport;
  * @version 0.9
  */
 public class BioLayoutFRAlgorithm extends BioLayoutAlgorithm {
-	/**
-	 * This is the constructor for the bioLayout algorithm.
-	 */
-	public BioLayoutFRAlgorithm(boolean supportEdgeWeights, UndoSupport undo) {
-		super("fruchterman-rheingold", (supportEdgeWeights ?  "Edge-weighted Force directed (BioLayout)" : "Force directed (BioLayout)"), supportEdgeWeights, undo);
+	
+	public BioLayoutFRAlgorithm(final boolean supportEdgeWeights, final UndoSupport undoSupport) {
+		super("fruchterman-rheingold", 
+				(supportEdgeWeights ? "Edge-weighted Force directed (BioLayout)" : "Force directed (BioLayout)"),
+				supportEdgeWeights, undoSupport);
 	}
 
-	public TaskIterator createTaskIterator(CyNetworkView networkView, Object context, Set<View<CyNode>> nodesToLayOut, String attrName) {
-		return new TaskIterator(
-			new BioLayoutFRAlgorithmTask(toString(), networkView, nodesToLayOut, (BioLayoutFRContext)context, supportWeights, attrName, undoSupport));
+	@Override
+	public TaskIterator createTaskIterator(CyNetworkView networkView, Object context, Set<View<CyNode>> nodesToLayOut,
+			String attrName) {
+		return new TaskIterator(new BioLayoutFRAlgorithmTask(toString(), networkView, nodesToLayOut,
+				(BioLayoutFRContext) context, supportWeights, attrName, undoSupport));
 	}
-	
+
 	@Override
 	public BioLayoutFRContext createLayoutContext() {
 		return new BioLayoutFRContext();

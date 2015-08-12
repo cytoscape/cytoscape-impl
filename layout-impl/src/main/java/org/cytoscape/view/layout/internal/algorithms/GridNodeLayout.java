@@ -28,7 +28,6 @@ import java.util.Set;
 
 import org.cytoscape.model.CyNode;
 import org.cytoscape.view.layout.AbstractLayoutAlgorithm;
-import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.work.TaskIterator;
@@ -40,11 +39,14 @@ import org.cytoscape.work.undo.UndoSupport;
  */
 public class GridNodeLayout extends AbstractLayoutAlgorithm {
 
+	private static final String ALGORITHM_ID = "grid";
+	private static final String ALGORITHM_DISPLAY_NAME = "Grid Layout";
+	
 	/**
 	 * Creates a new GridNodeLayout object.
 	 */
 	public GridNodeLayout(UndoSupport undoSupport) {
-		super(CyLayoutAlgorithmManager.DEFAULT_LAYOUT_NAME, "Grid Layout", undoSupport);
+		super(ALGORITHM_ID, ALGORITHM_DISPLAY_NAME, undoSupport);
 	}
 
 	@Override
@@ -63,5 +65,4 @@ public class GridNodeLayout extends AbstractLayoutAlgorithm {
 	public boolean getSupportsSelectedOnly() {
 		return true;
 	}
-
 }

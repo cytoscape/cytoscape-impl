@@ -38,7 +38,6 @@ import org.cytoscape.io.read.AbstractInputStreamTaskFactory;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.view.layout.CyLayoutAlgorithm;
-import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.events.NetworkViewAddedEvent;
 import org.cytoscape.view.model.events.NetworkViewAddedListener;
@@ -109,7 +108,7 @@ public class BioPaxReader extends AbstractInputStreamTaskFactory implements Netw
 		// do layout
 		CyLayoutAlgorithm layout = cyServices.layoutManager.getLayout("force-directed");
 		if (layout == null) {
-			layout = cyServices.layoutManager.getLayout(CyLayoutAlgorithmManager.DEFAULT_LAYOUT_NAME);
+			layout = cyServices.layoutManager.getDefaultLayout();
 			LOG.warn("'force-directed' layout not found; will use the default one.");
 		}
 		cyServices.taskManager.execute(layout.createTaskIterator(view, 
