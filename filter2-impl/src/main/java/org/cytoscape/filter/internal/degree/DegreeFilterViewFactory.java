@@ -3,6 +3,8 @@ package org.cytoscape.filter.internal.degree;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -35,9 +37,8 @@ public class DegreeFilterViewFactory implements TransformerViewFactory {
 		
 		edgeTypeComboBoxModel = new ArrayList<EdgeTypeElement>();
 		edgeTypeComboBoxModel.add(new EdgeTypeElement(Type.ANY, "In + Out"));
-// The individual In or Out options do not work. Commenting them out until when/if a real solution is implemented:
-//		edgeTypeComboBoxModel.add(new EdgeTypeElement(Type.INCOMING, "In"));
-//		edgeTypeComboBoxModel.add(new EdgeTypeElement(Type.OUTGOING, "Out"));
+		edgeTypeComboBoxModel.add(new EdgeTypeElement(Type.INCOMING, "In"));
+		edgeTypeComboBoxModel.add(new EdgeTypeElement(Type.OUTGOING, "Out"));
 	}
 	
 	@Override
@@ -48,6 +49,7 @@ public class DegreeFilterViewFactory implements TransformerViewFactory {
 	@Override
 	public JComponent createView(Transformer<?, ?> transformer) {
 		DegreeFilter filter = (DegreeFilter) transformer;
+		filter.setEdgeType(Type.ANY);
 		Controller controller = new Controller(filter);
 		View view = new View(controller);
 		modelMonitor.registerDegreeFilterView(view, controller);
@@ -62,13 +64,8 @@ public class DegreeFilterViewFactory implements TransformerViewFactory {
 		public Controller(final DegreeFilter filter) {
 			this.filter = filter;
 			
-			int minimum = modelMonitor.getMinimumDegree();
-			int maximum = modelMonitor.getMaximumDegree();
-			
-			if (minimum == Integer.MAX_VALUE || maximum == Integer.MIN_VALUE) {
-				minimum = 0;
-				maximum = 0;
-			}
+			DegreeRange degreeRange = modelMonitor.getDegreeRange();
+			DegreeRange.Pair pair = degreeRange.getRange(filter.getEdgeType());
 			
 			Number lowValue;
 			Number highValue;
@@ -81,8 +78,8 @@ public class DegreeFilterViewFactory implements TransformerViewFactory {
 				lowValue = range[0];
 				highValue = range[1];
 			} else {
-				lowValue = minimum;
-				highValue = maximum;
+				lowValue = pair.getLow();
+				highValue = pair.getHigh();
 			}
 			
 			final Number[] range = new Number[2];
@@ -94,7 +91,7 @@ public class DegreeFilterViewFactory implements TransformerViewFactory {
 					filter.setCriterion(range);
 				}
 			};
-			chooserController.setRange(lowValue, highValue, minimum, maximum);
+			chooserController.setRange(lowValue, highValue, pair.getLow(), pair.getHigh());
 		}
 
 		public void synchronize(View view) {
@@ -132,15 +129,39 @@ public class DegreeFilterViewFactory implements TransformerViewFactory {
 			chooserController.setInteractive(isInteractive, view.chooser);
 		}
 		
-		@Override
 		public RangeChooserController getRangeChooserController() {
 			return chooserController;
 		}
+
+		@Override
+		public void setDegreeBounds(DegreeRange range) {
+			DegreeRange.Pair pair = range.getRange(filter.getEdgeType());
+			int min = pair.getLow();
+			int max = pair.getHigh();
+			int low  = chooserController.getLow().intValue();
+			int high = chooserController.getHigh().intValue();
+			
+			// Clip low and high to be within the range.
+			// Need to do this check here because NumberRangeModel doesn't do it (unlike DefaultBoundedRangeModel which does)_
+			if(low < min)
+				low = min;
+			if(high > max)
+				high = max;
+			
+			chooserController.setRange(low, high, min, max);
+		}
+		
+		public void setEdgeType(Type type) {
+			DegreeRange range = modelMonitor.getDegreeRange();
+			filter.setEdgeType(type);
+			setDegreeBounds(range);
+		}
+		
 	}
 	
 	@SuppressWarnings("serial")
 	class View extends JPanel implements DegreeFilterView, InteractivityChangedListener {
-		private JComboBox edgeTypeComboBox;
+		private JComboBox<EdgeTypeElement> edgeTypeComboBox;
 		private Controller controller;
 		private RangeChooser chooser;
 
@@ -149,7 +170,15 @@ public class DegreeFilterViewFactory implements TransformerViewFactory {
 			
 			ViewUtil.configureFilterView(this);
 			
-			edgeTypeComboBox = new JComboBox(new DynamicComboBoxModel<EdgeTypeElement>(edgeTypeComboBoxModel));
+			edgeTypeComboBox = new JComboBox<>(new DynamicComboBoxModel<EdgeTypeElement>(edgeTypeComboBoxModel));
+			
+			edgeTypeComboBox.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					EdgeTypeElement type = edgeTypeComboBox.getItemAt(edgeTypeComboBox.getSelectedIndex());
+					controller.setEdgeType(type.type);
+				}
+			});
 			
 			chooser = new RangeChooser(controller.chooserController);
 			

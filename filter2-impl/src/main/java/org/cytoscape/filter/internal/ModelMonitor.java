@@ -19,6 +19,7 @@ import org.cytoscape.filter.internal.column.ColumnFilterView;
 import org.cytoscape.filter.internal.column.ColumnFilterView.ColumnComboBoxElement;
 import org.cytoscape.filter.internal.degree.DegreeFilterController;
 import org.cytoscape.filter.internal.degree.DegreeFilterView;
+import org.cytoscape.filter.internal.degree.DegreeRange;
 import org.cytoscape.filter.internal.view.RangeChooserController;
 import org.cytoscape.filter.view.InteractivityChangedListener;
 import org.cytoscape.model.CyColumn;
@@ -49,7 +50,7 @@ public class ModelMonitor implements SetCurrentNetworkListener,
 	private static final int INTERACTIVITY_THRESHOLD = 100000;
 	
 	CyNetwork network;
-	int[] nodeDegreeRange;
+	DegreeRange nodeDegreeRange;
 	boolean enabled;
 	
 	Map<String, double[]> nodeColumnRanges;
@@ -64,9 +65,9 @@ public class ModelMonitor implements SetCurrentNetworkListener,
 	private List<InteractivityChangedListener> interactivityChangedListeners;
 	
 	public ModelMonitor() {
-		nodeDegreeRange = new int[] { Integer.MAX_VALUE, Integer.MIN_VALUE };
-		nodeColumnRanges = new HashMap<String, double[]>();
-		edgeColumnRanges = new HashMap<String, double[]>();
+		nodeDegreeRange = new DegreeRange();
+		nodeColumnRanges = new HashMap<>();
+		edgeColumnRanges = new HashMap<>();
 		
 		columnNames = new ArrayList<ColumnComboBoxElement>();
 		defaultColumnName = new ColumnComboBoxElement(null, "Choose column...");
@@ -240,13 +241,7 @@ public class ModelMonitor implements SetCurrentNetworkListener,
 		
 		synchronized (lock) {
 			for (CyEdge edge : event.getPayloadCollection()) {
-				int degree = computeDegree(edge.getSource());
-				nodeDegreeRange[0] = Math.min(nodeDegreeRange[0], degree);
-				nodeDegreeRange[1] = Math.max(nodeDegreeRange[1], degree);
-				
-				degree = computeDegree(edge.getTarget());
-				nodeDegreeRange[0] = Math.min(nodeDegreeRange[0], degree);
-				nodeDegreeRange[1] = Math.max(nodeDegreeRange[1], degree);
+				nodeDegreeRange.update(network, edge);
 			}
 			updateDegreeSliders();
 		}
@@ -266,11 +261,8 @@ public class ModelMonitor implements SetCurrentNetworkListener,
 	}
 	
 	private void updateDegreeSliders() {
-		Integer minimum = nodeDegreeRange[0];
-		Integer maximum = nodeDegreeRange[1];
 		for (DegreeFilterController controller : degreeViews.values()) {
-			RangeChooserController chooserController = controller.getRangeChooserController();
-			chooserController.setBounds(minimum, maximum);
+			controller.setDegreeBounds(nodeDegreeRange);
 		}
 	}
 
@@ -406,16 +398,15 @@ public class ModelMonitor implements SetCurrentNetworkListener,
 
 	private void clearDegreeData() {
 		// Assume the caller has write lock.
-		nodeDegreeRange[0] = Integer.MAX_VALUE;
-		nodeDegreeRange[1] = Integer.MIN_VALUE;
+		nodeDegreeRange = new DegreeRange();
 	}
 	
-	public int getMinimumDegree() {
+	public DegreeRange getDegreeRange() {
 		synchronized (lock) {
-			if (nodeDegreeRange[0] == Integer.MAX_VALUE) {
+			if (!nodeDegreeRange.isUpdated()) {
 				computeNodeDegreeRange();
 			}
-			return nodeDegreeRange[0];
+			return nodeDegreeRange;
 		}
 	}
 
@@ -425,32 +416,10 @@ public class ModelMonitor implements SetCurrentNetworkListener,
 		}
 		
 		synchronized (lock) {
-			for (CyNode node : network.getNodeList()) {
-				int degree = computeDegree(node);
-				nodeDegreeRange[0] = Math.min(nodeDegreeRange[0], degree);
-				nodeDegreeRange[1] = Math.max(nodeDegreeRange[1], degree);
-			}
+			nodeDegreeRange.update(network);
 		}
 	}
 
-	@SuppressWarnings("unused")
-	private int computeDegree(CyNode node) {
-		int degree = 0;
-		for (CyEdge edge : network.getAdjacentEdgeIterable(node, CyEdge.Type.ANY)) {
-			degree++;
-		}
-		return degree;
-	}
-	
-	public int getMaximumDegree() {
-		synchronized (lock) {
-			if (nodeDegreeRange[1] == Integer.MIN_VALUE) {
-				computeNodeDegreeRange();
-			}
-			return nodeDegreeRange[1];
-		}
-	}
-	
 	public List<ColumnComboBoxElement> getColumnComboBoxModel() {
 		return columnNames;
 	}

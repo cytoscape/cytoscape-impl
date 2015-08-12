@@ -127,5 +127,13 @@ public abstract class RangeChooserController {
 		return maximum;
 	}
 	
+	public Number getLow() {
+		return low;
+	}
+	
+	public Number getHigh() {
+		return high;
+	}
+	
 	protected abstract void handleRangeChanged(Number low, Number high);
 }
