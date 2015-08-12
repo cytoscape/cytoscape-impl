@@ -33,7 +33,10 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Paint;
+import java.awt.Stroke;
 import java.awt.TexturePaint;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
@@ -51,6 +54,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -62,6 +66,7 @@ import javax.imageio.ImageIO;
 import javax.swing.Icon;
 import javax.swing.JLayeredPane;
 import javax.swing.SwingUtilities;
+import javax.swing.Timer;
 
 import org.cytoscape.application.swing.CyEdgeViewContextMenuFactory;
 import org.cytoscape.application.swing.CyNetworkViewContextMenuFactory;
@@ -79,6 +84,7 @@ import org.cytoscape.ding.impl.cyannotator.AnnotationFactoryManager;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.impl.events.ViewportChangeListener;
 import org.cytoscape.ding.impl.events.ViewportChangeListenerChain;
+import org.cytoscape.ding.impl.strokes.AnimatedStroke;
 import org.cytoscape.ding.impl.visualproperty.CustomGraphicsVisualProperty;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.graph.render.immed.GraphGraphics;
@@ -155,7 +161,7 @@ import org.slf4j.LoggerFactory;
  */
 public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetworkView, RenderingEngine<CyNetwork>,
 		GraphView, Printable, AddedEdgesListener, AddedNodesListener, AboutToRemoveEdgesListener,
-		AboutToRemoveNodesListener, FitContentListener, FitSelectedListener, RowsSetListener {
+		AboutToRemoveNodesListener, FitContentListener, FitSelectedListener, RowsSetListener, ActionListener {
 
 	private static final Logger logger = LoggerFactory.getLogger(DGraphView.class);
 	
@@ -384,6 +390,10 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	boolean largeModel = false;
 	boolean haveZOrder = false;
 
+	// Animated edges
+	Timer animationTimer = null;
+	Set<DEdgeView> animatedEdges = null;
+
 	/**
 	 * Create presentation from View Model
 	 * 
@@ -510,6 +520,13 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 			largeModel = true;
 
 		dummySpacialFactory = new DummySpacialFactory(this);
+
+		// Animation
+		animatedEdges = Collections.newSetFromMap(new ConcurrentHashMap<DEdgeView, Boolean>());
+
+
+		animationTimer = new Timer(200, this);
+		animationTimer.setRepeats(true);
 	}
 
 	
@@ -1082,7 +1099,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 			m_viewportChanged = true;
 		}
 	}
-	
+
 	private void fitContent(final boolean updateView) {
 		cyEventHelper.flushPayloadEvents();
 
@@ -1936,6 +1953,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		m_contentChanged = false;
 		m_viewportChanged = false;
 		m_visualChanged = true;
+
 		return lastRenderDetail;
 	}
 	
@@ -1944,20 +1962,20 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	 */
 	int renderGraph(GraphGraphics graphics, final GraphLOD lod,
 	                Paint bgColor, double xCenter, double yCenter, double scale, LongHash hash) {
-		int lastRenderDetail = 0;
 		
+		int lastRenderDetail = 0;
 		try {
 			synchronized (m_lock) {
 				final Set<VisualPropertyDependency<?>> dependencies =
 						vmm.getVisualStyle(this).getAllVisualPropertyDependencies();
 				
 				lastRenderDetail = GraphRenderer.renderGraph(this,
-										       m_spacial, lod,
-										       m_nodeDetails,
-										       m_edgeDetails, hash,
-										       graphics, bgColor, xCenter,
-										       yCenter, scale, haveZOrder,
-										       dependencies);
+				  						     m_spacial, lod,
+				  						     m_nodeDetails,
+				  						     m_edgeDetails, hash,
+				  						     graphics, bgColor, xCenter,
+				  						     yCenter, scale, haveZOrder,
+				  						     dependencies);
 			}
 		} catch (Exception e) {e.printStackTrace();}
 		
@@ -2956,6 +2974,64 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 
 		// flag all edges that are selected but not currently flagged
 		m_networkCanvas.select(selectedEdges, CyEdge.class, true);
+	}
+
+	/******************************************************
+	 * Animation handling.  Currently, this only supports *
+	 * edge marquee, but could be extended in the future  *
+	 * to support other kinds of animations.              *
+	 *****************************************************/
+	public void actionPerformed(ActionEvent e) {
+		// If we're not even drawing dashed edges, no sense in trying to do marquee
+		if ((m_networkCanvas.getLastRenderDetail() & GraphRenderer.LOD_DASHED_EDGES) == 0) {
+			return;
+		}
+
+		List<DEdgeView> removeMe = new ArrayList<>();
+		for (DEdgeView edgeView: animatedEdges) {
+			CyEdge edge = edgeView.getModel();
+			Stroke s = m_edgeDetails.getStroke(edge);
+			if (s != null && s instanceof AnimatedStroke) { 
+				Stroke as = ((AnimatedStroke)s).newInstanceForNextOffset();
+				synchronized (m_lock) {
+					m_edgeDetails.overrideSegmentStroke(edge, as);
+					m_contentChanged = true;
+				}
+			} else if (s == null) {
+				removeMe.add(edgeView);
+			}
+		}
+
+		// We do this this way to avoid the overhead of concurrent maps since
+		// this should be relatively rare
+		if (removeMe.size() != 0) {
+			for (DEdgeView edgeView: removeMe)
+				animatedEdges.remove(edgeView);
+		}
+
+		// Redraw?
+		m_networkCanvas.repaint();
+		//updateView();
+	}
+
+	public void removeAnimatedEdge(DEdgeView edgeView) {
+		if (animatedEdges.contains(edgeView)) {
+			animatedEdges.remove(edgeView);
+
+			if (animatedEdges.size() == 0 && animationTimer.isRunning()) {
+				animationTimer.stop();
+			}
+		}
+	}
+
+	public void addAnimatedEdge(DEdgeView edgeView) {
+		if (!animatedEdges.contains(edgeView)) {
+			animatedEdges.add(edgeView);
+
+			if (!animationTimer.isRunning()) {
+				animationTimer.start();
+			}
+		}
 	}
 
 }

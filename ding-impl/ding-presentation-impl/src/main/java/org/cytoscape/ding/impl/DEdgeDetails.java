@@ -63,6 +63,9 @@ import org.cytoscape.view.presentation.property.values.ArrowShape;
 import org.cytoscape.view.presentation.property.values.Bend;
 import org.cytoscape.view.presentation.property.values.LineType;
 
+import org.cytoscape.ding.impl.strokes.AnimatedStroke;
+import org.cytoscape.ding.impl.strokes.WidthStroke;
+
 /**
  * Values stored in this object will be used renderer. Be careful to keep these
  * values consistent!
@@ -482,14 +485,24 @@ final class DEdgeDetails extends EdgeDetails {
 	public Stroke getStroke(final CyEdge edge) {
 		Stroke stroke = null;
 		final DEdgeView dev = dGraphView.getDEdgeView(edge);
+
+		if (dev == null) return null;
 		
 		if (dev.isValueLocked(DVisualLexicon.EDGE_LINE_TYPE) || dev.isValueLocked(DVisualLexicon.EDGE_WIDTH)) {
 			// If one of these properties are locked, the stroke has to be recreated
 			final LineType lineType = dev.getVisualProperty(DVisualLexicon.EDGE_LINE_TYPE);
 			stroke = DLineType.getDLineType(lineType).getStroke(getWidth(edge));
+
+			// We need to handle animated edges with some care...
+			if (stroke instanceof AnimatedStroke) {
+				Stroke oldStroke = m_segmentStrokes.get(edge);
+				if (oldStroke != null && oldStroke.getClass().equals(stroke.getClass())) {
+					stroke = ((WidthStroke)oldStroke).newInstanceForWidth(getWidth(edge));
+				}
+			}
 		} else {
 			stroke = m_segmentStrokes.get(edge);
-			
+
 			if (stroke == null) {
 				if (m_segmentStrokeDefault == null)
 					stroke = super.getStroke(edge);
@@ -497,6 +510,11 @@ final class DEdgeDetails extends EdgeDetails {
 					stroke = m_segmentStrokeDefault;
 			}
 		}
+
+		if (stroke instanceof AnimatedStroke)
+			dGraphView.addAnimatedEdge(dev);
+		else
+			dGraphView.removeAnimatedEdge(dev);
 
 		return stroke;
 	}
@@ -510,9 +528,9 @@ final class DEdgeDetails extends EdgeDetails {
 	 * A null paint has the special meaning to remove overridden paint.
 	 */
 	void overrideSegmentStroke(final CyEdge edge, final Stroke stroke) {
-		if ((stroke == null) || stroke.equals(super.getStroke(edge)))
+		if ((stroke == null) || stroke.equals(super.getStroke(edge))) {
 			m_segmentStrokes.remove(edge);
-		else {
+		} else {
 			m_segmentStrokes.put(edge, stroke);
 			isCleared = false;
 		}

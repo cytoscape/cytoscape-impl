@@ -48,6 +48,7 @@ import org.cytoscape.view.presentation.property.values.Handle;
 import org.cytoscape.view.presentation.property.values.HandleFactory;
 import org.cytoscape.view.presentation.property.values.LineType;
 
+import org.cytoscape.ding.impl.strokes.AnimatedStroke;
 
 /**
  * Ding implementation of Edge View.
@@ -105,9 +106,13 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 		synchronized (graphView.m_lock) {
 			graphView.m_edgeDetails.overrideSegmentStroke(model, stroke);
 			graphView.m_contentChanged = true;
+			if (stroke instanceof AnimatedStroke) {
+				graphView.addAnimatedEdge(this);
+			} else {
+				graphView.removeAnimatedEdge(this);
+			}
 		}
 	}
-
 
 	@Override
 	public void setLineCurved(int lineType) {

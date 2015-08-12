@@ -24,24 +24,21 @@ package org.cytoscape.ding.impl.strokes;
  * #L%
  */
 
-import java.awt.BasicStroke;
+import java.awt.Stroke;
 
-public class EqualDashStroke extends BasicStroke implements WidthStroke {
+/**
+ * A marker interface for strokes that are meant to be animated (e.g. marquees).
+ */
+public interface AnimatedStroke extends Stroke {
+	
+	/**
+	 * @return A new instance of this AnimatedStroke with the next step in the animation
+	 */
+	public AnimatedStroke newInstanceForNextOffset();
 
-	private float width;
+	/**
+	 * @return the current offset for this stroke
+	 */
+	public float getOffset();
 
-	public EqualDashStroke(float width) {
-		super(width, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 
-		      10.0f, new float[]{width * 2f,width * 2f}, 0.0f);
-
-		this.width = width;
-	}
-
-	public WidthStroke newInstanceForWidth(float w) {
-		return new EqualDashStroke(w);
-	}
-
-	@Override public String toString() { return this.getClass().getSimpleName() + " " + Float.toString(width); }
 }
-
-
