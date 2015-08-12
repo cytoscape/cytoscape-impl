@@ -461,6 +461,7 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 		return DingRenderer.ID;
 	}
 
+	// XXX: Use javax.swing.Timer instead?  This would then be an ActionEvent.
 	class UpdateImage extends TimerTask {
 		private final double[] extents;
 		private final double xCenter;
@@ -503,7 +504,9 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 			boundChanged = false;
 
 			// We need to do a repaint so that we get the selection area
-			repaint();
+			SwingUtilities.invokeLater(new Runnable() {
+				public void run() { repaint(); }
+			});
 		}
 	}
 }
