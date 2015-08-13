@@ -244,7 +244,7 @@ public class ProxySettingsTask2 extends AbstractTask implements TunableValidator
 
 final class TestProxySettings implements Callable<Exception> {
 	
-	static final String TEST_URL = "http://www.google.com";
+	static final String TEST_URL = "http://www.google.com/";
 	final StreamUtil streamUtil;
 
 	public TestProxySettings(final StreamUtil streamUtil) {
