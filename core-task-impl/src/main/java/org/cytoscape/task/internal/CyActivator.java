@@ -1296,7 +1296,7 @@ public class CyActivator extends AbstractCyActivator {
 		Properties createEdgeAttributeTaskFactoryProps = new Properties();
 		createEdgeAttributeTaskFactoryProps.setProperty(COMMAND, "create attribute");
 		createEdgeAttributeTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "edge");
-		createEdgeAttributeTaskFactoryProps.setProperty(COMMAND_DESCRIPTION, "Create a new attribute (column) for edges");
+		createEdgeAttributeTaskFactoryProps.setProperty(COMMAND_DESCRIPTION, "Create a new column for edges");
 		registerService(bc,createEdgeAttributeTaskFactory,TaskFactory.class,createEdgeAttributeTaskFactoryProps);
 
 		GetEdgeTaskFactory getEdgeTaskFactory = new GetEdgeTaskFactory(cyApplicationManagerServiceRef);
@@ -1311,7 +1311,7 @@ public class CyActivator extends AbstractCyActivator {
 		Properties getEdgeAttributeTaskFactoryProps = new Properties();
 		getEdgeAttributeTaskFactoryProps.setProperty(COMMAND, "get attribute");
 		getEdgeAttributeTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "edge");
-		getEdgeAttributeTaskFactoryProps.setProperty(COMMAND_DESCRIPTION, "Get the values for an attribute (column) in a set of edges");
+		getEdgeAttributeTaskFactoryProps.setProperty(COMMAND_DESCRIPTION, "Get the values from a column in a set of edges");
 		registerService(bc,getEdgeAttributeTaskFactory,TaskFactory.class,getEdgeAttributeTaskFactoryProps);
 
 		GetPropertiesTaskFactory getEdgePropertiesTaskFactory = 
@@ -1336,7 +1336,7 @@ public class CyActivator extends AbstractCyActivator {
 		Properties listEdgeAttributesTaskFactoryProps = new Properties();
 		listEdgeAttributesTaskFactoryProps.setProperty(COMMAND, "list attributes");
 		listEdgeAttributesTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "edge");
-		listEdgeAttributesTaskFactoryProps.setProperty(COMMAND_DESCRIPTION, "List all of the attributes (columns) for edges");
+		listEdgeAttributesTaskFactoryProps.setProperty(COMMAND_DESCRIPTION, "List all of the columns for edges");
 		registerService(bc,listEdgeAttributesTaskFactory,TaskFactory.class,listEdgeAttributesTaskFactoryProps);
 
 		ListPropertiesTaskFactory listEdgeProperties = 
@@ -1361,7 +1361,7 @@ public class CyActivator extends AbstractCyActivator {
 		Properties setEdgeAttributeTaskFactoryProps = new Properties();
 		setEdgeAttributeTaskFactoryProps.setProperty(COMMAND, "set attribute");
 		setEdgeAttributeTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "edge");
-		setEdgeAttributeTaskFactoryProps.setProperty(COMMAND_DESCRIPTION, "Change attributes (table values) for an edge or set of edges");
+		setEdgeAttributeTaskFactoryProps.setProperty(COMMAND_DESCRIPTION, "Change edge table values for an edge or set of edges");
 		registerService(bc,setEdgeAttributeTaskFactory,TaskFactory.class,setEdgeAttributeTaskFactoryProps);
 
 		SetPropertiesTaskFactory setEdgePropertiesTaskFactory = 
@@ -1456,7 +1456,7 @@ public class CyActivator extends AbstractCyActivator {
 		Properties createNetworkAttributeTaskFactoryProps = new Properties();
 		createNetworkAttributeTaskFactoryProps.setProperty(COMMAND, "create attribute");
 		createNetworkAttributeTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "network");
-		createNetworkAttributeTaskFactoryProps.setProperty(COMMAND_DESCRIPTION, "Create a new attribute (column) in the network table");
+		createNetworkAttributeTaskFactoryProps.setProperty(COMMAND_DESCRIPTION, "Create a new column in the network table");
 		registerService(bc,createNetworkAttributeTaskFactory,TaskFactory.class,createNetworkAttributeTaskFactoryProps);
 
 		DeselectTaskFactory deselectTaskFactory = new DeselectTaskFactory(cyNetworkViewManagerServiceRef, cyEventHelperRef);
@@ -1478,7 +1478,7 @@ public class CyActivator extends AbstractCyActivator {
 		Properties getNetworkAttributeTaskFactoryProps = new Properties();
 		getNetworkAttributeTaskFactoryProps.setProperty(COMMAND, "get attribute");
 		getNetworkAttributeTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "network");
-		getNetworkAttributeTaskFactoryProps.setProperty(COMMAND_DESCRIPTION, "Get the value for a network attribute");
+		getNetworkAttributeTaskFactoryProps.setProperty(COMMAND_DESCRIPTION, "Get the value from a column for a network");
 		registerService(bc,getNetworkAttributeTaskFactory,TaskFactory.class,getNetworkAttributeTaskFactoryProps);
 
 		GetPropertiesTaskFactory getNetworkPropertiesTaskFactory = 
@@ -1512,7 +1512,7 @@ public class CyActivator extends AbstractCyActivator {
 		Properties listNetworkAttributesTaskFactoryProps = new Properties();
 		listNetworkAttributesTaskFactoryProps.setProperty(COMMAND, "list attributes");
 		listNetworkAttributesTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "network");
-		listNetworkAttributesTaskFactoryProps.setProperty(COMMAND_DESCRIPTION, "List all of the attributes (columns) for networks");
+		listNetworkAttributesTaskFactoryProps.setProperty(COMMAND_DESCRIPTION, "List all of the columns for networks");
 		registerService(bc,listNetworkAttributesTaskFactory,TaskFactory.class,listNetworkAttributesTaskFactoryProps);
 
 		ListPropertiesTaskFactory listNetworkProperties = 
@@ -1572,7 +1572,7 @@ public class CyActivator extends AbstractCyActivator {
 		Properties createNodeAttributeTaskFactoryProps = new Properties();
 		createNodeAttributeTaskFactoryProps.setProperty(COMMAND, "create attribute");
 		createNodeAttributeTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "node");
-		createNodeAttributeTaskFactoryProps.setProperty(COMMAND_DESCRIPTION, "Create a new attribute (column) for nodes");
+		createNodeAttributeTaskFactoryProps.setProperty(COMMAND_DESCRIPTION, "Create a new column for nodes");
 		registerService(bc,createNodeAttributeTaskFactory,TaskFactory.class,createNodeAttributeTaskFactoryProps);
 
 		GetNodeTaskFactory getNodeTaskFactory = new GetNodeTaskFactory(cyApplicationManagerServiceRef);
@@ -1613,7 +1613,7 @@ public class CyActivator extends AbstractCyActivator {
 		Properties listNodeAttributesTaskFactoryProps = new Properties();
 		listNodeAttributesTaskFactoryProps.setProperty(COMMAND, "list attributes");
 		listNodeAttributesTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "node");
-		listNodeAttributesTaskFactoryProps.setProperty(COMMAND_DESCRIPTION, "List node attributes (columns)");
+		listNodeAttributesTaskFactoryProps.setProperty(COMMAND_DESCRIPTION, "List node columns");
 		registerService(bc,listNodeAttributesTaskFactory,TaskFactory.class,listNodeAttributesTaskFactoryProps);
 
 		ListPropertiesTaskFactory listNodeProperties = 
@@ -1638,7 +1638,8 @@ public class CyActivator extends AbstractCyActivator {
 		Properties setNodeAttributeTaskFactoryProps = new Properties();
 		setNodeAttributeTaskFactoryProps.setProperty(COMMAND, "set attribute");
 		setNodeAttributeTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "node");
-		setNodeAttributeTaskFactoryProps.setProperty(COMMAND_DESCRIPTION, "Set node attributes (table values)");
+		setNodeAttributeTaskFactoryProps.setProperty(COMMAND_DESCRIPTION, 
+		                                             "Change node table values for a node or set of nodes");
 		registerService(bc,setNodeAttributeTaskFactory,TaskFactory.class,setNodeAttributeTaskFactoryProps);
 
 		SetPropertiesTaskFactory setNodePropertiesTaskFactory = 

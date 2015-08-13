@@ -65,7 +65,7 @@ public class SetNetworkAttributeTask extends AbstractTableDataTask {
 		                                network,
 		                                columnTunable.getValueMap(networkTable));
 
-		taskMonitor.showMessage(TaskMonitor.Level.INFO, "Set "+count+" network attribute values for network "+DataUtils.getNetworkTitle(network));
+		taskMonitor.showMessage(TaskMonitor.Level.INFO, "Set "+count+" network table values for network "+DataUtils.getNetworkTitle(network));
 	}
 
 }

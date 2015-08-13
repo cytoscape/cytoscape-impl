@@ -63,7 +63,7 @@ public class ListEdgeAttributesTask extends AbstractTableDataTask implements Obs
 
 		columnList = networkTable.getColumns();
 
-		taskMonitor.showMessage(TaskMonitor.Level.INFO, "   Edge attributes for network "+DataUtils.getNetworkTitle(network)+":");
+		taskMonitor.showMessage(TaskMonitor.Level.INFO, "   Edge columns for network "+DataUtils.getNetworkTitle(network)+":");
 		for (CyColumn column: columnList) {
 			if (column.getType().equals(List.class))
 				taskMonitor.showMessage(TaskMonitor.Level.INFO, 
