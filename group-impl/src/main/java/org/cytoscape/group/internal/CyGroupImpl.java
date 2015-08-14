@@ -401,7 +401,8 @@ public class CyGroupImpl implements CyGroup {
 				CyNode target = edge.getTarget();
 				if(getGroupNetwork().containsNode(source) && getGroupNetwork().containsNode(target)) {
 					getGroupNetwork().addEdge(edge);
-				} else if (groupNode != null && (source.equals(groupNode) || target.equals(groupNode))) {
+				} else if (groupNode != null && (source.equals(groupNode) || target.equals(groupNode))
+				           && !isMeta(edge)) {
 					memberEdges.add(edge);
 				} else if (getGroupNetwork().containsNode(source) || getGroupNetwork().containsNode(target)) {
 					if (!metaEdges.containsValue(edge)) {

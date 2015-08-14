@@ -33,6 +33,7 @@ import org.cytoscape.group.internal.data.CyGroupSettingsImpl;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
+import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.task.AbstractNodeViewTask;
 import org.cytoscape.task.AbstractNodeViewTaskFactory;
 import org.cytoscape.work.AbstractTask;
@@ -43,6 +44,8 @@ import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
+
+import org.cytoscape.group.internal.ModelUtils;
 
 /**
  * Handle selection
@@ -177,9 +180,12 @@ public class GroupViewDoubleClickListener extends AbstractNodeViewTaskFactory
 			
 			if (cyGroupManager.isGroup(node, network)) {
 				CyGroup group = cyGroupManager.getGroup(node, network);
+				String name = getName(group);
 				if (group.isCollapsed(network)) {
+					tm.setTitle("Expanding group \""+name+"\"");
 					group.expand(network);
 				} else {
+					tm.setTitle("Collapsing group \""+name+"\"");
 					group.collapse(network);
 				}
 				// Not sure how we can double click on a node that's a group, but not
@@ -188,13 +194,24 @@ public class GroupViewDoubleClickListener extends AbstractNodeViewTaskFactory
 				// Get the list of groups this node is a member of
 				List<CyGroup> groups = cyGroupManager.getGroupsForNode(node);
 				if (groups != null && groups.size() > 0) {
+					CyGroup group = groups.get(0);
+					String name = getName(group);
+					tm.setTitle("Collapsing group \""+name+"\"");
 					// Collapse the first one
-					groups.get(0).collapse(network);
+					group.collapse(network);
 				}
 			}
 			
 			tm.setProgress(1.0d);
 		}
+	}
+
+	String getName(CyGroup group) {
+		CyRootNetwork rootNetwork = group.getRootNetwork();
+		String name = 
+					rootNetwork.getRow(group.getGroupNode(), CyRootNetwork.SHARED_ATTRS).
+						get(CyRootNetwork.SHARED_NAME, String.class);
+		return name;
 	}
 	
 }
