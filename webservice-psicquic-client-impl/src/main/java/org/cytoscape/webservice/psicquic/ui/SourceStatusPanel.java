@@ -66,6 +66,7 @@ import org.cytoscape.property.CyProperty;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.create.CreateNetworkViewTaskFactory;
 import org.cytoscape.util.swing.LookAndFeelUtil;
+import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.webservice.psicquic.PSICQUICRestClient;
 import org.cytoscape.webservice.psicquic.PSICQUICRestClient.SearchMode;
@@ -131,10 +132,11 @@ public class SourceStatusPanel extends JPanel implements TaskObserver {
 	 * 
 	 */
 	public SourceStatusPanel(final String query, final PSICQUICRestClient client, final RegistryManager manager,
-			final CyNetworkManager networkManager, final Map<String, Long> result, final TaskManager taskManager,
+			final CyNetworkManager networkManager, final Map<String, Long> result, final TaskManager<?, ?> taskManager,
 			final SearchMode mode, final CreateNetworkViewTaskFactory createViewTaskFactory,
 			final PSIMI25VisualStyleBuilder vsBuilder, final VisualMappingManager vmm,
-			final PSIMITagManager tagManager, final CyProperty<Properties> props, final CyServiceRegistrar registrar, final CyAction mergeAction) {
+			final PSIMITagManager tagManager, final CyProperty<Properties> props, final CyServiceRegistrar registrar,
+			final CyAction mergeAction) {
 		this.manager = manager;
 		this.client = client;
 		this.query = query;
@@ -415,7 +417,7 @@ public class SourceStatusPanel extends JPanel implements TaskObserver {
 
 		// Execute Import Task
 		final ImportNetworkFromPSICQUICTask networkTask = new ImportNetworkFromPSICQUICTask(query, client,
-				networkManager, manager, sourceURLs, mode, createViewTaskFactory, vsBuilder, vmm, mergeNetwork);
+				networkManager, sourceURLs, mode, createViewTaskFactory, vsBuilder, vmm, mergeNetwork, registrar);
 
 		taskManager.execute(new TaskIterator(networkTask), this);
 	}
@@ -626,6 +628,7 @@ public class SourceStatusPanel extends JPanel implements TaskObserver {
 	private Set<CyNetwork> results;
 
 	@Override
+	@SuppressWarnings("unchecked")
 	public void taskFinished(ObservableTask task) {
 		if (task.getResults(Object.class) instanceof Set) {
 			results = task.getResults(Set.class);
@@ -636,23 +639,60 @@ public class SourceStatusPanel extends JPanel implements TaskObserver {
 		if (finishStatus.getType() == Type.SUCCEEDED) {
 			final StringBuilder builder = new StringBuilder();
 			builder.append("<html><h3>Networks created from the following databases:</h3><ul>");
+			
+			final CyNetworkViewManager netViewManager = registrar.getService(CyNetworkViewManager.class);
+			final List<CyNetwork> networksWithoutView = new ArrayList<>();
+			
 			for (final CyNetwork network : results) {
 				final String networkName = network.getRow(network).get(CyNetwork.NAME, String.class);
 				final Integer edgeCount = network.getEdgeCount();
 				builder.append("<li>" + networkName + ", " + edgeCount + " edges</li>");
+				
+				if (!netViewManager.viewExists(network))
+					networksWithoutView.add(network);
 			}
-			builder.append("</ul><br><h3>Do you want to manually merge networks?</h3></html>");
+			
+			builder.append("</ul>");
+			
+			if (!networksWithoutView.isEmpty()) {
+				final boolean s = networksWithoutView.size() == 1; // singular?
+				builder.append(
+						"<p><b>Note:</b> " + networksWithoutView.size() + (s ? " network" : " networks") +
+						(s ? " was" : " were") + " imported whithout a view because " + 
+						(s ? " it is" : " they are") +" very large.</p>");
+			}
+			
+			builder.append("<br><h3>What do you want to do now?</h3></html>");
 
-			int selection = JOptionPane.showConfirmDialog(this, builder.toString(), "Import Finished", JOptionPane.YES_NO_OPTION, 
-					JOptionPane.INFORMATION_MESSAGE);
-			if(selection == JOptionPane.YES_OPTION) {
+			final String[] options;
+			int selection = -1;
+			
+			if (networksWithoutView.isEmpty())
+				options = new String[] { "Close", "Merge networks manually..." };
+			else
+				options = new String[] { "Close", "View large networks now", "Merge networks manually..." };
+			
+			selection = JOptionPane.showOptionDialog(
+					this,
+					builder.toString(),
+					"Import Finished",
+					JOptionPane.DEFAULT_OPTION, 
+					JOptionPane.PLAIN_MESSAGE,
+					null,
+					options,
+					options[0]
+			);
+			
+			if (selection == options.length - 1)
 				mergeAction.actionPerformed(null);
-			}
+			else if (selection == 1)
+				createMissingNetworkViews(networksWithoutView);
 		} else if (finishStatus.getType() == Type.CANCELLED) {
 			final Set<String> sources = new HashSet<String>();
 			final StringBuilder builder = new StringBuilder();
 			builder.append("<html><h2 style=\"color:red\">Import Canceled</h2>" + 
 					"<h3>Networks imported from the following databases (without view):</h3><ul>");
+			
 			for (final CyNetwork network : results) {
 				final String networkName = network.getRow(network).get(CyNetwork.NAME, String.class);
 				final Integer edgeCount = network.getEdgeCount();
@@ -661,6 +701,7 @@ public class SourceStatusPanel extends JPanel implements TaskObserver {
 			}
 		
 			builder.append("<h3 style=\"color:red\">Import canceled for the following databases:</h3><ul style=\"color:red\">");
+			
 			for (int i = 0; i < resultTable.getRowCount(); i++) {
 				final String dbName = resultTable.getValueAt(i, DB_NAME_COLUMN_INDEX).toString();
 				final Integer count = ((Number)resultTable.getValueAt(i, RECORD_COUNT_COLUMN_INDEX)).intValue();
@@ -669,23 +710,31 @@ public class SourceStatusPanel extends JPanel implements TaskObserver {
 					builder.append("<li>" + dbName + "</li>");
 				}
 			}
+			
 			int selection = JOptionPane.showConfirmDialog(this, 
 					builder.toString() + "</ul><br><h3>Do you want to merge these networks?</h3></html>",
 					"Import Canceled", JOptionPane.YES_NO_OPTION, JOptionPane.ERROR_MESSAGE, null);
-			if(selection == JOptionPane.YES_OPTION) {
+			
+			if (selection == JOptionPane.YES_OPTION)
 				mergeAction.actionPerformed(null);
-			}
 		} else {
 			// Error!
-			JOptionPane.showMessageDialog(this,  "<html>Error: Please try again later.<br><br>" + finishStatus.getException().getLocalizedMessage()
+			JOptionPane.showMessageDialog(
+					this, 
+					"<html>Error: Please try again later.<br><br>" + finishStatus.getException().getLocalizedMessage()
 					+ "</html>", "Import Error",
-					JOptionPane.ERROR_MESSAGE, null);
+					JOptionPane.ERROR_MESSAGE,
+					null
+			);
 		}
 
 		results = null;
 	}
 	
-	
+	private void createMissingNetworkViews(final List<CyNetwork> networks) {
+		taskManager.execute(createViewTaskFactory.createTaskIterator(networks));
+	}
+
 	@Override
 	public void allFinished(final FinishStatus finishStatus) {
 		SwingUtilities.invokeLater(new Runnable() {

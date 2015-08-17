@@ -25,26 +25,28 @@ package org.cytoscape.webservice.psicquic.task;
  */
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
+import org.cytoscape.property.CyProperty;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.create.CreateNetworkViewTaskFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.webservice.psicquic.PSICQUICRestClient;
-import org.cytoscape.webservice.psicquic.PSIMI25VisualStyleBuilder;
 import org.cytoscape.webservice.psicquic.PSICQUICRestClient.SearchMode;
-import org.cytoscape.webservice.psicquic.RegistryManager;
+import org.cytoscape.webservice.psicquic.PSIMI25VisualStyleBuilder;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ObservableTask;
-import org.cytoscape.work.Task;
-import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskMonitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,9 +55,11 @@ public class ImportNetworkFromPSICQUICTask extends AbstractTask implements Obser
 
 	private static final Logger logger = LoggerFactory.getLogger(ImportNetworkFromPSICQUICTask.class);
 
+	private static final String VIEW_THRESHOLD = "viewThreshold";
+	private static final int DEF_VIEW_THRESHOLD = 3000;
+	
 	private final PSICQUICRestClient client;
 	private final CyNetworkManager manager;
-	private final RegistryManager registryManager;
 
 	// TaskFactory for creating view
 	private final CreateNetworkViewTaskFactory createViewTaskFactory;
@@ -75,42 +79,55 @@ public class ImportNetworkFromPSICQUICTask extends AbstractTask implements Obser
 
 	private final PSIMI25VisualStyleBuilder vsBuilder;
 	private final VisualMappingManager vmm;
+	private CyServiceRegistrar serviceRegistrar;
 
-	private volatile boolean canceled = false;
+	private volatile boolean canceled;
 
-	public ImportNetworkFromPSICQUICTask(final String query, final PSICQUICRestClient client,
-			final CyNetworkManager manager, final RegistryManager registryManager, final Set<String> searchResult,
-			final SearchMode mode, final CreateNetworkViewTaskFactory createViewTaskFactory,
-			final PSIMI25VisualStyleBuilder vsBuilder, final VisualMappingManager vmm, final boolean toCluster) {
+	public ImportNetworkFromPSICQUICTask(
+			final String query,
+			final PSICQUICRestClient client,
+			final CyNetworkManager manager,
+			final Set<String> searchResult,
+			final SearchMode mode,
+			final CreateNetworkViewTaskFactory createViewTaskFactory,
+			final PSIMI25VisualStyleBuilder vsBuilder,
+			final VisualMappingManager vmm,
+			final boolean toCluster,
+			final CyServiceRegistrar serviceRegistrar
+	) {
 		this.client = client;
 		this.manager = manager;
-		this.registryManager = registryManager;
 		this.query = query;
 		this.mergeNetworks = toCluster;
-
 		this.searchResult = searchResult;
 		this.mode = mode;
 		this.createViewTaskFactory = createViewTaskFactory;
 		this.vmm = vmm;
 		this.vsBuilder = vsBuilder;
+		this.serviceRegistrar = serviceRegistrar;
 	}
 
-	public ImportNetworkFromPSICQUICTask(final String query, final PSICQUICRestClient client,
-			final CyNetworkManager manager, final RegistryManager registryManager, final SearchRecoredsTask searchTask,
-			final SearchMode mode, final CreateNetworkViewTaskFactory createViewTaskFactory,
-			final PSIMI25VisualStyleBuilder vsBuilder, final VisualMappingManager vmm) {
-
+	public ImportNetworkFromPSICQUICTask(
+			final String query,
+			final PSICQUICRestClient client,
+			final CyNetworkManager manager,
+			final SearchRecoredsTask searchTask,
+			final SearchMode mode,
+			final CreateNetworkViewTaskFactory createViewTaskFactory,
+			final PSIMI25VisualStyleBuilder vsBuilder,
+			final VisualMappingManager vmm,
+			final CyServiceRegistrar serviceRegistrar
+	) {
 		this.client = client;
 		this.manager = manager;
-		this.registryManager = registryManager;
 		this.query = query;
 		this.mergeNetworks = false;
 		this.searchTask = searchTask;
 		this.mode = mode;
 		this.createViewTaskFactory = createViewTaskFactory;
-
 		this.vmm = vmm;
 		this.vsBuilder = vsBuilder;
+		this.serviceRegistrar = serviceRegistrar;
 	}
 
 	@Override
@@ -124,12 +141,10 @@ public class ImportNetworkFromPSICQUICTask extends AbstractTask implements Obser
 		else
 			targetServices = searchResult;
 
-		if (searchResult == null)
-		{
+		if (searchResult == null) {
 			searchResult = new HashSet<String>();
 			searchResult.add(defaultSearchResultURL);
 			targetServices = searchResult;
-			//throw new NullPointerException("Could not find search result");
 		}
 
 		if (query == null)
@@ -143,6 +158,7 @@ public class ImportNetworkFromPSICQUICTask extends AbstractTask implements Obser
 		final SimpleDateFormat timestamp = new SimpleDateFormat("yyyy/MM/dd K:mm:ss a, z");
 		final String suffix = "(" + timestamp.format(date) + ")";
 		result = new HashMap<String, CyNetwork>();
+		
 		if (mergeNetworks) {
 			final CyNetwork network = client.importMergedNetwork(query, targetServices, mode, taskMonitor);
 			network.getRow(network).set(CyNetwork.NAME, "Merged Network " + suffix);
@@ -151,6 +167,7 @@ public class ImportNetworkFromPSICQUICTask extends AbstractTask implements Obser
 			result.put("clustered", network);
 		} else {
 			final Collection<CyNetwork> networks = client.importNetworks(query, targetServices, mode, taskMonitor);
+			
 			for (CyNetwork network : networks) {
 				final String networkName = network.getRow(network).get(CyNetwork.NAME, String.class) + " " + suffix;
 				network.getRow(network).set(CyNetwork.NAME, networkName);
@@ -160,21 +177,44 @@ public class ImportNetworkFromPSICQUICTask extends AbstractTask implements Obser
 			}
 		}
 
+		if (canceled)
+			return;
+		
 		// Check Visual Style exists or not
 		VisualStyle psiStyle = null;
+		
 		for (VisualStyle style : vmm.getAllVisualStyles()) {
 			if (style.getTitle().equals(PSIMI25VisualStyleBuilder.DEF_VS_NAME)) {
 				psiStyle = style;
 				break;
 			}
 		}
+		
 		if (psiStyle == null) {
 			psiStyle = vsBuilder.getVisualStyle();
 			vmm.addVisualStyle(psiStyle);
 		}
+		
 		vmm.setCurrentVisualStyle(psiStyle);
 
-		insertTasksAfterCurrentTask(createViewTaskFactory.createTaskIterator(result.values()));
+		if (canceled)
+			return;
+		
+		final List<CyNetwork> smallNetworks = new ArrayList<>();
+		final int viewThreshold = getViewThreshold();
+		
+		for (CyNetwork net : result.values()) {
+			final int numGraphObjects = net.getNodeCount() + net.getEdgeCount();
+			
+			if (numGraphObjects < viewThreshold)
+				smallNetworks.add(net);
+		}
+		
+		if (canceled)
+			return;
+		
+		if (!smallNetworks.isEmpty())
+			insertTasksAfterCurrentTask(createViewTaskFactory.createTaskIterator(smallNetworks));
 	}
 
 	@Override
@@ -206,7 +246,23 @@ public class ImportNetworkFromPSICQUICTask extends AbstractTask implements Obser
 	}
 
 	@Override
+	@SuppressWarnings("unchecked")
 	public <T> T getResults(Class<? extends T> type) {
 		return (T) getNetworks();
+	}
+	
+	private int getViewThreshold() {
+		final Properties props = (Properties) 
+				serviceRegistrar.getService(CyProperty.class, "(cyPropertyName=cytoscape3.props)").getProperties();
+		final String vts = props.getProperty(VIEW_THRESHOLD);
+		int threshold;
+		
+		try {
+			threshold = Integer.parseInt(vts);
+		} catch (Exception e) {
+			threshold = DEF_VIEW_THRESHOLD;
+		}
+
+		return threshold;
 	}
 }

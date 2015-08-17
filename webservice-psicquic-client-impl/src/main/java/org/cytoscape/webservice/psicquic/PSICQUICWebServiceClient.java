@@ -119,8 +119,8 @@ public class PSICQUICWebServiceClient extends AbstractWebServiceGUIClient implem
 			searchTask.setQuery(query2);
 			searchTask.setTargets(activeSource.values());
 
-			networkTask = new ImportNetworkFromPSICQUICTask(query2, client, networkManager, regManager, searchTask,
-					SearchMode.MIQL, createViewTaskFactory, vsBuilder, vmm);
+			networkTask = new ImportNetworkFromPSICQUICTask(query2, client, networkManager, searchTask,
+					SearchMode.MIQL, createViewTaskFactory, vsBuilder, vmm, registrar);
 
 			return new TaskIterator(searchTask, networkTask);
 		}
