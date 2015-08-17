@@ -116,10 +116,6 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 
 	private static final Logger logger = LoggerFactory.getLogger(NetworkViewManager.class);
 
-	// TODO Where should we store these property constants?
-	private static final String VIEW_THRESHOLD = "viewThreshold";
-	private static final int DEF_VIEW_THRESHOLD = 10000;
-
 	private static final int MINIMUM_WIN_WIDTH = 200;
 	private static final int MINIMUM_WIN_HEIGHT = 200;
 
@@ -296,27 +292,7 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 		logger.debug("\n\n\nView Manager got Network view added event.  Adding view to manager: NetworkViewManager: View ID = "
 				+ nvae.getNetworkView().getSUID() + "\n\n\n");
 
-		final String viewThresholdString = props.getProperty(VIEW_THRESHOLD);
-		int viewThreshold;
-		
-		try {
-			viewThreshold = Integer.parseInt(viewThresholdString);
-		} catch (Exception e) {
-			viewThreshold = DEF_VIEW_THRESHOLD;
-			logger.warn("Could not parse view threshold property.  Use default value: " + DEF_VIEW_THRESHOLD);
-		}
-
 		final CyNetworkView networkView = nvae.getNetworkView();
-		final CyNetwork model = networkView.getModel();
-		final int graphObjectCount = model.getNodeCount() + model.getEdgeCount();
-		
-		// Render only when graph size is smaller than threshold.
-		if (graphObjectCount > viewThreshold) {
-			logger.info("Network is too big to visualize.  This may take very long time to render. " +
-					"(Current View Threshold = " + viewThreshold + ")");
-			// TODO: Should we cancel visualization?
-		}
-		
 		render(networkView);
 	}
 
