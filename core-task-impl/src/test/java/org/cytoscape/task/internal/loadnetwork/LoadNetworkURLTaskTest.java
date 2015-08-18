@@ -41,7 +41,6 @@ import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskMonitor;
-import org.cytoscape.work.TunableSetter;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -61,11 +60,10 @@ public class LoadNetworkURLTaskTest extends AbstractLoadNetworkTaskTester {
 		URLConnection con = mock(URLConnection.class);
 		StreamUtil streamUtil = mock(StreamUtil.class);
 		when(streamUtil.getURLConnection(url)).thenReturn(con);
-		TunableSetter ts = mock(TunableSetter.class);
 
 		CyNetworkViewFactory nullNetworkViewFactory = mock(CyNetworkViewFactory.class);
 		TaskFactory factory = new LoadNetworkURLTaskFactoryImpl(mgr, netmgr, networkViewManager, props, namingUtil,
-				streamUtil, synchronousTaskManager, vmm, nullNetworkViewFactory);
+				streamUtil, vmm, nullNetworkViewFactory);
 		assertNotNull(networkViewManager);
 		TaskIterator ti = factory.createTaskIterator();
 		TaskMonitor tm = mock(TaskMonitor.class);
@@ -90,11 +88,10 @@ public class LoadNetworkURLTaskTest extends AbstractLoadNetworkTaskTester {
 
 		StreamUtil streamUtil = mock(StreamUtil.class);
 		when(streamUtil.getURLConnection(url)).thenReturn(con);
-		TunableSetter ts = mock(TunableSetter.class);
 
 		CyNetworkViewFactory nullNetworkViewFactory = mock(CyNetworkViewFactory.class);
 		TaskFactory factory = new LoadNetworkURLTaskFactoryImpl(mgr, netmgr, networkViewManager, props, namingUtil,
-				streamUtil, synchronousTaskManager, vmm, nullNetworkViewFactory);
+				streamUtil, vmm, nullNetworkViewFactory);
 		TaskIterator ti = factory.createTaskIterator();
 		TaskMonitor tm = mock(TaskMonitor.class);
 		boolean first = true;
@@ -113,11 +110,10 @@ public class LoadNetworkURLTaskTest extends AbstractLoadNetworkTaskTester {
 		URLConnection con = mock(URLConnection.class);
 		StreamUtil streamUtil = mock(StreamUtil.class);
 		when(streamUtil.getURLConnection(url)).thenReturn(con);
-		TunableSetter ts = mock(TunableSetter.class);
 
 		CyNetworkViewFactory nullNetworkViewFactory = mock(CyNetworkViewFactory.class);
 		TaskFactory factory = new LoadNetworkURLTaskFactoryImpl(mgr, netmgr, networkViewManager, props, namingUtil,
-				streamUtil, synchronousTaskManager, vmm, nullNetworkViewFactory);
+				streamUtil, vmm, nullNetworkViewFactory);
 		TaskIterator ti = factory.createTaskIterator();
 		TaskMonitor tm = mock(TaskMonitor.class);
 		boolean first = true;

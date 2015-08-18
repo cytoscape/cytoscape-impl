@@ -214,6 +214,7 @@ class GenerateNetworkViewsTask extends AbstractTask implements ObservableTask {
 		}
 		
 		@Override
+		@SuppressWarnings({ "rawtypes", "unchecked" })
 		public Object getResults(Class expectedType) {
 			if (expectedType.equals(String.class))
 				return getStringResults();

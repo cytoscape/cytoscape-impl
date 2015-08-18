@@ -56,9 +56,6 @@ public class ImportNoGuiNetworkReaderFactory extends AbstractTaskFactory {
 	private final boolean fromURL;
 	private final CyServiceRegistrar serviceRegistrar;
 
-	/**
-	 * Creates a new ImportAttributeTableReaderFactory object.
-	 */
 	public ImportNoGuiNetworkReaderFactory(final boolean fromURL, final CyServiceRegistrar serviceRegistrar) {
 		this.fromURL = fromURL;
 		this.serviceRegistrar = serviceRegistrar;
@@ -102,7 +99,8 @@ public class ImportNoGuiNetworkReaderFactory extends AbstractTaskFactory {
 			final CyNetworkNaming netNaming = serviceRegistrar.getService(CyNetworkNaming.class);
 			final CyNetworkManager netManager = serviceRegistrar.getService(CyNetworkManager.class);
 			final CyNetworkViewManager netViewManager = serviceRegistrar.getService(CyNetworkViewManager.class);
-			final CyNetworkViewFactory nullNetViewFactory = serviceRegistrar.getService(CyNetworkViewFactory.class, "(id=NullCyNetworkViewFactory)");
+			final CyNetworkViewFactory nullNetViewFactory =
+					serviceRegistrar.getService(CyNetworkViewFactory.class, "(id=NullCyNetworkViewFactory)");
 
 			final VisualStyle style = vmManager.getCurrentVisualStyle(); // get the current style before registering the views!
 			final CyNetwork[] networks = netReader.getNetworks();
@@ -157,9 +155,11 @@ public class ImportNoGuiNetworkReaderFactory extends AbstractTaskFactory {
 					CySubNetwork subnet = (CySubNetwork) networks[0];
 					final CyRootNetwork rootNet = subnet.getRootNetwork();
 					String rootNetName = rootNet.getRow(rootNet).get(CyNetwork.NAME, String.class);
+					
 					if (rootNetName == null || rootNetName.trim().length() == 0){
 						// The root network does not have a name yet, set it the same as the base subnetwork
-						rootNet.getRow(rootNet).set(CyNetwork.NAME, networks[0].getRow(networks[0]).get(CyNetwork.NAME, String.class));
+						rootNet.getRow(rootNet).set(
+								CyNetwork.NAME, networks[0].getRow(networks[0]).get(CyNetwork.NAME, String.class));
 					}
 				}
 			}
@@ -167,15 +167,15 @@ public class ImportNoGuiNetworkReaderFactory extends AbstractTaskFactory {
 			
 			// Make sure rootNetwork has a name
 			for (CyNetwork network : networks) {
-
 				if (network instanceof CySubNetwork){
 					CySubNetwork subNet = (CySubNetwork) network;
 					CyRootNetwork rootNet = subNet.getRootNetwork();
-
 					String networkName = rootNet.getRow(rootNet).get(CyNetwork.NAME, String.class);
-					if(networkName == null || networkName.trim().length() == 0) {
+					
+					if (networkName == null || networkName.trim().length() == 0) {
 						networkName = name;
-						if(networkName == null)
+						
+						if (networkName == null)
 							networkName = "? (Name is missing)";
 						
 						rootNet.getRow(rootNet).set(CyNetwork.NAME, netNaming.getSuggestedNetworkTitle(networkName));

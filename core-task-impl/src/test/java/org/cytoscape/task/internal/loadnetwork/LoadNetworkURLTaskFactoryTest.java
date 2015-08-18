@@ -17,15 +17,11 @@ import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.TaskObserver;
-import org.cytoscape.work.TunableSetter;
-import org.cytoscape.work.internal.sync.SyncTunableHandlerFactory;
-import org.cytoscape.work.internal.sync.SyncTunableMutatorFactory;
-import org.cytoscape.work.internal.sync.TunableRecorderManager;
-import org.cytoscape.work.internal.sync.TunableSetterImpl;
 import org.junit.Before;
 import org.junit.Test;
 
 public class LoadNetworkURLTaskFactoryTest extends AbstractLoadNetworkTaskTester {
+	
 	private URL url;
 
 	@Before
@@ -42,10 +38,9 @@ public class LoadNetworkURLTaskFactoryTest extends AbstractLoadNetworkTaskTester
 		StreamUtil streamUtil = mock(StreamUtil.class);
 		when(streamUtil.getURLConnection(url)).thenReturn(con);
 
-		TunableSetter tunableSetter = new TunableSetterImpl(new SyncTunableMutatorFactory(new SyncTunableHandlerFactory()), new TunableRecorderManager());
 		CyNetworkViewFactory nullNetworkViewFactory = new NullCyNetworkViewFactory();
 		LoadNetworkURLTaskFactoryImpl factory = new LoadNetworkURLTaskFactoryImpl(mgr, netmgr, networkViewManager,
-				props, namingUtil, streamUtil, synchronousTaskManager, vmm, nullNetworkViewFactory);
+				props, namingUtil, streamUtil, vmm, nullNetworkViewFactory);
 
 		TaskMonitor taskMonitor = mock(TaskMonitor.class);
 		TaskObserver observer = mock(TaskObserver.class);

@@ -47,9 +47,17 @@ public class LoadNetworkTask extends AbstractLoadNetworkTask {
 		return "Load Network from File";
 	}
 	
-	public LoadNetworkTask(CyNetworkReaderManager mgr, CyNetworkManager netmgr,CyNetworkReader reader, String networkName,
-			final CyNetworkViewManager networkViewManager, final Properties props, CyNetworkNaming namingUtil,
-			final VisualMappingManager vmm, final CyNetworkViewFactory nullNetworkViewFactory) {
+	public LoadNetworkTask(
+			final CyNetworkReaderManager mgr,
+			final CyNetworkManager netmgr,
+			final CyNetworkReader reader,
+			final String networkName,
+			final CyNetworkViewManager networkViewManager,
+			final Properties props,
+			final CyNetworkNaming namingUtil,
+			final VisualMappingManager vmm,
+			final CyNetworkViewFactory nullNetworkViewFactory
+	) {
 		super(mgr, netmgr, networkViewManager, props, namingUtil, vmm, nullNetworkViewFactory);
 		this.reader = reader;
 		this.name = networkName;

@@ -66,8 +66,15 @@ abstract public class AbstractLoadNetworkTask extends AbstractTask {
 	protected final VisualMappingManager vmm;
 	protected final CyNetworkViewFactory nullNetworkViewFactory;
 
-	public AbstractLoadNetworkTask(final CyNetworkReaderManager mgr, final CyNetworkManager networkManager,
-			final CyNetworkViewManager networkViewManager, final Properties props, final CyNetworkNaming namingUtil, final VisualMappingManager vmm, final CyNetworkViewFactory nullNetworkViewFactory) {
+	public AbstractLoadNetworkTask(
+			final CyNetworkReaderManager mgr,
+			final CyNetworkManager networkManager,
+			final CyNetworkViewManager networkViewManager,
+			final Properties props,
+			final CyNetworkNaming namingUtil,
+			final VisualMappingManager vmm,
+			final CyNetworkViewFactory nullNetworkViewFactory
+	) {
 		this.mgr = mgr;
 		this.networkManager = networkManager;
 		this.networkViewManager = networkViewManager;
@@ -75,7 +82,7 @@ abstract public class AbstractLoadNetworkTask extends AbstractTask {
 		this.namingUtil = namingUtil;
 		this.vmm = vmm;
 		this.nullNetworkViewFactory = nullNetworkViewFactory;
-		
+
 		this.viewThreshold = getViewThreshold();
 	}
 

@@ -49,7 +49,8 @@ public class ImportOntologyAndAnnotationTask extends AbstractTask {
 			final String ontologyDagName,
 			final InputStream gaStream,
 			final String tableName,
-			final CyServiceRegistrar serviceRegistrar) {
+			final CyServiceRegistrar serviceRegistrar
+	) {
 		this.factory = factory;
 		this.ontologyDagName = ontologyDagName;
 		this.gaStream = gaStream;
@@ -63,15 +64,15 @@ public class ImportOntologyAndAnnotationTask extends AbstractTask {
 		tm.setTitle("Importing ontology and annotations");
 		tm.setStatusMessage("Loading Ontology...");
 		tm.setProgress(-1d);
-		
+
 		final CyNetworkReader loadOBOTask = (CyNetworkReader) factory.createTaskIterator(is, ontologyDagName).next();
 		final RegisterOntologyTask registerOntologyTask = new RegisterOntologyTask((CyNetworkReader) loadOBOTask,
 				serviceRegistrar, ontologyDagName);
 		final GeneAssociationReader gaReader = new GeneAssociationReader(ontologyDagName, gaStream, gaTableName,
 				serviceRegistrar);
 		final MapGeneAssociationTask mapAnnotationTask = new MapGeneAssociationTask(gaReader, serviceRegistrar);
-		
-		final TaskIterator taskChain = new TaskIterator(loadOBOTask,registerOntologyTask, gaReader, mapAnnotationTask);
+
+		final TaskIterator taskChain = new TaskIterator(loadOBOTask, registerOntologyTask, gaReader, mapAnnotationTask);
 		insertTasksAfterCurrentTask(taskChain);
 	}
 }

@@ -70,7 +70,7 @@ public class OBOReader extends AbstractTask implements CyNetworkReader {
 
 	private static final Logger logger = LoggerFactory.getLogger(OBOReader.class);
 
-	private static final String[] COMPATIBLE_VERSIONS = { "1.2" };
+	//private static final String[] COMPATIBLE_VERSIONS = { "1.2" };
 	
 	public static final String DAG_ATTR = "Ontology DAG";
 	
