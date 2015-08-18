@@ -24,6 +24,7 @@ package org.cytoscape.view.vizmap.gui.internal.view;
  * #L%
  */
 
+import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static org.cytoscape.util.swing.LookAndFeelUtil.isAquaLAF;
 
 import java.awt.BorderLayout;
@@ -491,13 +492,13 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 		
 		public VisualStyleDropDownButton() {
 			super(true);
-			styles = new LinkedList<VisualStyle>();
-			vsPanelMap = new HashMap<VisualStyle, JPanel>();
-			engineMap = new HashMap<String, RenderingEngine<CyNetwork>>();
+			styles = new LinkedList<>();
+			vsPanelMap = new HashMap<>();
+			engineMap = new HashMap<>();
 			
 			setHorizontalAlignment(LEFT);
 			
-			final JList list = new JList();
+			final JList<?> list = new JList<>();
 			BG_COLOR = list.getBackground();
 			FG_COLOR = list.getForeground();
 			SEL_BG_COLOR = list.getSelectionBackground();
@@ -591,14 +592,25 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 			setFocus(selectedItem);
 			
 			final JScrollPane scr = new JScrollPane(mainPnl);
-			scr.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-			dialog.add(scr);
+			scr.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+			
+			final GroupLayout layout = new GroupLayout(dialog.getContentPane());
+			dialog.getContentPane().setLayout(layout);
+			layout.setAutoCreateGaps(false);
+			layout.setAutoCreateContainerGaps(false);
+			
+			layout.setHorizontalGroup(layout.createSequentialGroup()
+					.addComponent(scr, 500, DEFAULT_SIZE, 1060)
+			);
+			layout.setVerticalGroup(layout.createSequentialGroup()
+					.addComponent(scr, DEFAULT_SIZE, DEFAULT_SIZE, 660)
+			);
+			
+			dialog.getContentPane().add(scr);
 			
 			final Point pt = getLocationOnScreen(); 
 			dialog.setLocation(pt.x, pt.y);
 			dialog.pack();
-			// TODO set maximum size
-//			dialog.setSize(new Dimension(dialog.getSize().width, 390));
 			dialog.setVisible(true);
 			dialog.requestFocus();
 		}
@@ -638,7 +650,6 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 			
 			// Preview image
 			if (engineFactory != null && previewNetView != null) {
-				// TODO review
 				final RenderingEngine<CyNetwork> engine = getRenderingEngine(vs);
 				
 				if (engine != null) {
