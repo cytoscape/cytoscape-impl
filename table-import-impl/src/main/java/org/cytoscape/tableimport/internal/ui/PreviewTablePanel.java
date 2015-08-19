@@ -887,11 +887,9 @@ public class PreviewTablePanel extends JPanel {
 		);
 		
 		if (LookAndFeelUtil.isWinLAF()) {
-			attrEditorPanel.setBorder(BorderFactory.createCompoundBorder(
-					BorderFactory.createMatteBorder(1, 1, 1, 1, new Color(236, 236, 236)),
-					BorderFactory.createMatteBorder(1, 1, 1, 1, new Color(225, 238, 250)))
-			);
-			attrEditorPanel.setBackground(new Color(251, 251, 251));
+			attrEditorPanel.setBorder(
+					BorderFactory.createMatteBorder(1, 1, 1, 1, UIManager.getColor("activeCaptionBorder")));
+			attrEditorPanel.setBackground(UIManager.getColor("TableHeader.background"));
 		}
 		
 		editDialog = new EditDialog(parent, ModalityType.MODELESS, colIdx, attrEditorPanel);
@@ -1219,29 +1217,16 @@ public class PreviewTablePanel extends JPanel {
 	
 	private class PreviewTableHeaderRenderer extends JPanel implements TableCellRenderer {
 		
-		private final Border AQUA_BORDER =
-				BorderFactory.createMatteBorder(0, 0, 0, 1, UIManager.getColor("Separator.foreground"));
-		private final Border WIN_BORDER = BorderFactory.createCompoundBorder(
-				BorderFactory.createMatteBorder(0, 0, 1, 1, new Color(236, 236, 236)),
-				BorderFactory.createMatteBorder(0, 0, 1, 1, new Color(225, 238, 250)));
-		private final Border NIMBUS_BORDER = BorderFactory.createMatteBorder(0, 0, 1, 1, new Color(97, 102, 109));
-		
 		private final JLabel typeLabel;
 		private final JLabel nameLabel;
 		private final JLabel editLabel;
 		
 		PreviewTableHeaderRenderer() {
-			if (LookAndFeelUtil.isAquaLAF()) {
-				setBorder(AQUA_BORDER);
-			} else if (LookAndFeelUtil.isWinLAF()) {
-				setBorder(WIN_BORDER);
-				setBackground(new Color(251, 251, 251));
-			} else {
-				setBorder(NIMBUS_BORDER);
-			}
+			setBorder(UIManager.getBorder("TableHeader.cellBorder"));
+			setBackground(UIManager.getColor("TableHeader.background"));
 			
 			nameLabel = new JLabel();
-			nameLabel.setFont(nameLabel.getFont().deriveFont(LookAndFeelUtil.INFO_FONT_SIZE));
+			nameLabel.setFont(UIManager.getFont("TableHeader.font"));
 			
 			typeLabel = new JLabel();
 			typeLabel.setFont(iconManager.getIconFont(ICON_FONT_SIZE));
@@ -1285,7 +1270,7 @@ public class PreviewTablePanel extends JPanel {
 		                                               boolean hasF, int row, int col) {
 			nameLabel.setText(val != null ? val.toString() : "");
 			
-			Color fgColor = UIManager.getColor("Label.foreground");
+			Color fgColor = UIManager.getColor("TableHeader.foreground");
 			
 			// Set type icon
 			if (types != null && types.length > col) {
@@ -1303,9 +1288,9 @@ public class PreviewTablePanel extends JPanel {
 				setToolTipText("<html>" + type.getDescription() + " - <i>" + dataType.getDescription() + "</i></html>");
 				
 				if (type == NONE)
-					fgColor = UIManager.getColor("Label.disabledForeground");
+					fgColor = UIManager.getColor("TextField.inactiveForeground");
 			} else {
-				fgColor = UIManager.getColor("Label.disabledForeground");
+				fgColor = UIManager.getColor("TextField.inactiveForeground");
 			}
 			
 			if (editDialog != null && editDialog.index == col)
@@ -1341,7 +1326,7 @@ public class PreviewTablePanel extends JPanel {
 			if (isImported(column))
 				setForeground(table.getForeground());
 			else
-				setForeground(UIManager.getColor("Label.disabledForeground"));
+				setForeground(UIManager.getColor("TextField.inactiveForeground"));
 			
 			final AttributeDataType dataType = getDataType(column);
 			

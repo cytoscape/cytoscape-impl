@@ -86,7 +86,7 @@ public class SourceStatusPanel extends JPanel implements TaskObserver {
 	private static final String ACTIVE = "Active";
 	private static final String INACTIVE = "Inactive";
 
-	private static final Color SELECTED_ROW = new Color(222, 234, 252);
+	private static final Color SELECTED_ROW = UIManager.getColor("Table.selectionBackground");
 
 	private static final int IMPORT_COLUMN_INDEX = 0;
 	private static final int STATUS_COLUMN_INDEX = 1;

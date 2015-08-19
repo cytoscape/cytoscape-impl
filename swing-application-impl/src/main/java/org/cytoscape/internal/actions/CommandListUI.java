@@ -24,7 +24,6 @@ package org.cytoscape.internal.actions;
  * #L%
  */
 
-import java.awt.Color;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -37,6 +36,7 @@ import javax.swing.JLabel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.SwingConstants;
+import javax.swing.UIManager;
 import javax.swing.table.DefaultTableModel;
 
 import org.cytoscape.command.AvailableCommands;
@@ -59,7 +59,7 @@ public class CommandListUI extends JDialog {
 	private void initUI() {
 		this.setTitle(TITLE);
 		final Container cp = this.getContentPane();
-		cp.setBackground(Color.WHITE);
+		cp.setBackground(UIManager.getColor("Table.background"));
 		cp.setLayout(new BoxLayout(cp, BoxLayout.Y_AXIS));
 
 		final JScrollPane pane = new JScrollPane();
@@ -67,7 +67,8 @@ public class CommandListUI extends JDialog {
 		pane.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
 		final JTable commandTable = new JTable();
-		commandTable.setBackground(Color.white);
+		commandTable.setBackground(UIManager.getColor("Table.background"));
+		
 		final DefaultTableModel model = new DefaultTableModel() {
 			private static final long serialVersionUID = -1338792823143882191L;
 

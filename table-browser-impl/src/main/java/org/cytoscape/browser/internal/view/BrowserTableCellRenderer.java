@@ -47,7 +47,6 @@ class BrowserTableCellRenderer extends JLabel implements TableCellRenderer {
 	private static final long serialVersionUID = -4364566217397320318L;
 	
 	// Define fonts & colors for the cells
-	public static final Color SELECTED_ROW_BG_COLOR = new Color(0, 100, 255, 40);
 	private static final Color ERROR_FG_COLOR = Color.RED;
 	private static final int H_PAD = 8;
 	private static final int V_PAD = 2;
@@ -75,7 +74,7 @@ class BrowserTableCellRenderer extends JLabel implements TableCellRenderer {
 		final Object validatedObj = objEditStr != null ? objEditStr.getValidatedObject() : null;
 		
 		setFont(getFont().deriveFont(LookAndFeelUtil.INFO_FONT_SIZE));
-		setBackground(table.getBackground());
+		setBackground(UIManager.getColor("Table.background"));
 		setIcon(objEditStr != null && objEditStr.isEquation() ? EQUATION_ICON : null);
 		setVerticalTextPosition(JLabel.CENTER);
 		setHorizontalTextPosition(JLabel.CENTER);
@@ -106,18 +105,18 @@ class BrowserTableCellRenderer extends JLabel implements TableCellRenderer {
 		// If selected, return
 		if (isSelected) {
 			if (table.getSelectedColumn() == column && table.getSelectedRow() == row) { // Selected cell
-				setBackground(table.getSelectionBackground());
-				setForeground(table.getSelectionForeground());
+				setBackground(UIManager.getColor("Table.focusCellBackground"));
+				setForeground(UIManager.getColor("Table.focusCellForeground"));
 			} else {
-				setForeground(isError ? ERROR_FG_COLOR : table.getForeground());
-				setBackground(SELECTED_ROW_BG_COLOR);
+				setForeground(isError ? ERROR_FG_COLOR : UIManager.getColor("Table.selectionForeground"));
+				setBackground(UIManager.getColor("Table.selectionBackground"));
 			}
 		} else {
 			// If non-editable, grey it out.
 			if (table.getModel() instanceof BrowserTableModel && !table.isCellEditable(0, column))
 				setForeground(UIManager.getColor("TextField.inactiveForeground"));
 			else
-				setForeground(isError ? ERROR_FG_COLOR : table.getForeground());
+				setForeground(isError ? ERROR_FG_COLOR : UIManager.getColor("Table.foreground"));
 		}
 		
 		return this;

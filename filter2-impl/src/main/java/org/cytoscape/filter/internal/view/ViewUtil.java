@@ -12,6 +12,7 @@ import java.text.NumberFormat;
 import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JFormattedTextField;
+import javax.swing.UIManager;
 import javax.swing.JFormattedTextField.AbstractFormatter;
 import javax.swing.JFormattedTextField.AbstractFormatterFactory;
 import javax.swing.border.AbstractBorder;
@@ -19,8 +20,9 @@ import javax.swing.border.Border;
 import javax.swing.text.NumberFormatter;
 
 public class ViewUtil {
-	public static final Color SELECTED_BACKGROUND_COLOR = new Color(222, 234, 252);
-	public static final Color UNSELECTED_BACKGROUND_COLOR = Color.WHITE;
+	
+	public static final Color SELECTED_BACKGROUND_COLOR = UIManager.getColor("Table.selectionBackground");
+	public static final Color UNSELECTED_BACKGROUND_COLOR = UIManager.getColor("Table.background");
 	
 	public static final int INTERNAL_VERTICAL_PADDING = 4;
 	

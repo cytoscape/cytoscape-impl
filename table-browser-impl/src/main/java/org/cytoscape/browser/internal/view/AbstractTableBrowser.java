@@ -27,7 +27,6 @@ package org.cytoscape.browser.internal.view;
 import static org.cytoscape.util.swing.LookAndFeelUtil.isAquaLAF;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ActionListener;
@@ -71,10 +70,6 @@ public abstract class AbstractTableBrowser extends JPanel
 	private static final long serialVersionUID = 1968196123280466989L;
 	
 	static final Dimension SELECTOR_SIZE = new Dimension(400, 32);
-	
-	// Color theme for table browser.
-	static final Color NETWORK_COLOR = new Color(0xA5, 0x2A, 0x2A);
-	static final Color SELECTED_ITEM_BACKGROUND_COLOR = new Color(0xA0, 0xA0, 0xA0, 80);
 	
 	private static final Dimension PANEL_SIZE = new Dimension(550, 400);
 	
@@ -195,7 +190,7 @@ public abstract class AbstractTableBrowser extends JPanel
 				serviceRegistrar.registerAllServices(browserTable, new Properties());
 				serviceRegistrar.registerAllServices(browserTableModel, new Properties());
 				browserTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-				browserTable.getTableHeader().setBackground(Color.LIGHT_GRAY);
+//				browserTable.getTableHeader().setBackground(Color.LIGHT_GRAY);
 				browserTable.setModel(browserTableModel);
 				
 				//move and hide SUID and selected by default

@@ -24,12 +24,12 @@ package org.cytoscape.view.vizmap.gui.internal.view.cellrenderer;
  * #L%
  */
 
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
 
 import javax.swing.JList;
 import javax.swing.JTable;
+import javax.swing.UIManager;
 
 import com.l2fprod.common.swing.renderer.DefaultCellRenderer;
 
@@ -37,8 +37,6 @@ public class FontCellRenderer extends DefaultCellRenderer {
 
 	private static final long serialVersionUID = -667720462619223580L;
 	
-	private static final Color BG_COLOR = Color.WHITE;
-	private static final Color SELECTED_BG_COLOR = new Color(222, 234, 252);
 	private static final float FONT_SIZE = 14.0f;
 
 	public FontCellRenderer() {
@@ -51,7 +49,8 @@ public class FontCellRenderer extends DefaultCellRenderer {
 												  final int index,
 												  final boolean isSelected,
 												  final boolean cellHasFocus) {
-		setBackground(isSelected ? SELECTED_BG_COLOR : BG_COLOR);
+		setBackground(isSelected ?
+				UIManager.getColor("Table.selectionBackground") : UIManager.getColor("Table.background"));
 		final String label = convertToString(value);
 		setText(label);
 		setToolTipText(label);

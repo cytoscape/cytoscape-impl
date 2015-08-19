@@ -29,13 +29,10 @@ import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.Alignment.CENTER;
 import static javax.swing.GroupLayout.Alignment.LEADING;
 
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
-import java.awt.SystemColor;
 import java.util.List;
 
-import javax.swing.BorderFactory;
 import javax.swing.GroupLayout;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -44,47 +41,33 @@ import javax.swing.RowSorter;
 import javax.swing.RowSorter.SortKey;
 import javax.swing.SortOrder;
 import javax.swing.UIManager;
-import javax.swing.border.Border;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableModel;
 
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.util.swing.IconManager;
-import org.cytoscape.util.swing.LookAndFeelUtil;
 
 final class BrowserTableHeaderRenderer extends JPanel implements TableCellRenderer {
 
 	private static final long serialVersionUID = 4656466166588715282L;
-
-	private final Border AQUA_BORDER =
-			BorderFactory.createMatteBorder(0, 0, 0, 1, UIManager.getColor("Separator.foreground"));
-	private final Border WIN_BORDER = BorderFactory.createCompoundBorder(
-			BorderFactory.createMatteBorder(0, 0, 1, 1, new Color(236, 236, 236)),
-			BorderFactory.createMatteBorder(0, 0, 1, 1, new Color(225, 238, 250)));
-	private final Border NIMBUS_BORDER = BorderFactory.createMatteBorder(0, 0, 1, 1, new Color(97, 102, 109));
 
 	private final JLabel nameLabel;
 	private final JLabel sharedLabel;
 	private final JLabel sortLabel;
 
 	BrowserTableHeaderRenderer(final IconManager iconManager) {
-		if (LookAndFeelUtil.isAquaLAF()) {
-			setBorder(AQUA_BORDER);
-		} else if (LookAndFeelUtil.isWinLAF()) {
-			setBorder(WIN_BORDER);
-			setBackground(new Color(251, 251, 251));
-		} else {
-			setBorder(NIMBUS_BORDER);
-		}
+		setBorder(UIManager.getBorder("TableHeader.cellBorder"));
+		setBackground(UIManager.getColor("TableHeader.background"));
 		
 		nameLabel = new JLabel();
-		nameLabel.setFont(nameLabel.getFont().deriveFont(LookAndFeelUtil.INFO_FONT_SIZE));
+		nameLabel.setFont(UIManager.getFont("TableHeader.font"));
 		nameLabel.setHorizontalAlignment(JLabel.CENTER);
+		nameLabel.setForeground(UIManager.getColor("TableHeader.foreground"));
 		
 		sharedLabel = new JLabel();
 		sharedLabel.setFont(iconManager.getIconFont(12.0f));
-		sharedLabel.setForeground(SystemColor.textInactiveText);
+		sharedLabel.setForeground(UIManager.getColor("TextField.inactiveForeground"));
 		
 		sortLabel = new JLabel();
 		sortLabel.setFont(iconManager.getIconFont(10.0f));
@@ -95,21 +78,20 @@ final class BrowserTableHeaderRenderer extends JPanel implements TableCellRender
 		layout.setAutoCreateGaps(true);
 		
 		layout.setHorizontalGroup(layout.createSequentialGroup()
-				.addGap(2)
 				.addComponent(sharedLabel)
 				.addComponent(nameLabel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 				.addComponent(sortLabel)
-				.addGap(6)
+				.addGap(4)
 		);
 		layout.setVerticalGroup(layout.createParallelGroup(LEADING, false)
 				.addComponent(sharedLabel)
 				.addGroup(layout.createSequentialGroup()
-						.addGap(4)
+						.addGap(2)
 						.addGroup(layout.createParallelGroup(CENTER, false)
 								.addComponent(nameLabel)
 								.addComponent(sortLabel)
 						)
-						.addGap(4)
+						.addGap(2)
 				)
 		);
 	}
@@ -132,7 +114,7 @@ final class BrowserTableHeaderRenderer extends JPanel implements TableCellRender
 		sharedLabel.setText("");
 		
 		sortLabel.setText(IconManager.ICON_SORT);
-		sortLabel.setForeground(UIManager.getColor("Label.disabledForeground"));
+		sortLabel.setForeground(UIManager.getColor("TextField.inactiveForeground"));
 		
 		setToolTipText(colName);
 		
@@ -185,7 +167,7 @@ final class BrowserTableHeaderRenderer extends JPanel implements TableCellRender
 			sortLabel.setText(col == index ? iconTxt : IconManager.ICON_SORT);
 			
 			if (col == index)
-				sortLabel.setForeground(UIManager.getColor("Label.foreground"));
+				sortLabel.setForeground(UIManager.getColor("TableHeader.foreground"));
 		}
 
 		invalidate();

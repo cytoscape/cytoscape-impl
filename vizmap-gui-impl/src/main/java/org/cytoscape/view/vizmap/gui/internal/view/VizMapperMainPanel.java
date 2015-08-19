@@ -61,7 +61,6 @@ import javax.swing.InputMap;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
-import javax.swing.JList;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
@@ -498,11 +497,10 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 			
 			setHorizontalAlignment(LEFT);
 			
-			final JList<?> list = new JList<>();
-			BG_COLOR = list.getBackground();
-			FG_COLOR = list.getForeground();
-			SEL_BG_COLOR = list.getSelectionBackground();
-			SEL_FG_COLOR = list.getSelectionForeground();
+			BG_COLOR = UIManager.getColor("TextField.background");
+			FG_COLOR = UIManager.getColor("TextField.foreground");
+			SEL_BG_COLOR = UIManager.getColor("Table.focusCellBackground");
+			SEL_FG_COLOR = UIManager.getColor("Table.focusCellForeground");
 			BORDER_COLOR = UIManager.getColor("Separator.foreground");
 			
 			addActionListener(new ActionListener() {

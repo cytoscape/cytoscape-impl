@@ -23,13 +23,27 @@ package org.cytoscape.internal;
  * <http://www.gnu.org/licenses/lgpl-2.1.html>.
  * #L%
  */
-import static org.cytoscape.application.swing.CyNetworkViewDesktopMgr.ArrangeType.*;
-import static org.cytoscape.application.swing.CytoPanelName.*;
-import static org.cytoscape.work.ServiceProperties.*;
+import static org.cytoscape.application.swing.CyNetworkViewDesktopMgr.ArrangeType.CASCADE;
+import static org.cytoscape.application.swing.CyNetworkViewDesktopMgr.ArrangeType.GRID;
+import static org.cytoscape.application.swing.CyNetworkViewDesktopMgr.ArrangeType.HORIZONTAL;
+import static org.cytoscape.application.swing.CyNetworkViewDesktopMgr.ArrangeType.VERTICAL;
+import static org.cytoscape.application.swing.CytoPanelName.EAST;
+import static org.cytoscape.application.swing.CytoPanelName.SOUTH;
+import static org.cytoscape.application.swing.CytoPanelName.SOUTH_WEST;
+import static org.cytoscape.application.swing.CytoPanelName.WEST;
+import static org.cytoscape.work.ServiceProperties.ACCELERATOR;
+import static org.cytoscape.work.ServiceProperties.MENU_GRAVITY;
+import static org.cytoscape.work.ServiceProperties.PREFERRED_MENU;
+import static org.cytoscape.work.ServiceProperties.TITLE;
+import static org.cytoscape.work.ServiceProperties.TOOLTIP;
 
+import java.awt.Color;
+import java.awt.Font;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Properties;
 
+import javax.swing.BorderFactory;
+import javax.swing.JLabel;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
@@ -67,6 +81,7 @@ import org.cytoscape.internal.select.SelectNodeViewUpdater;
 import org.cytoscape.internal.shutdown.ConfigDirPropertyWriter;
 import org.cytoscape.internal.undo.RedoAction;
 import org.cytoscape.internal.undo.UndoAction;
+import org.cytoscape.internal.util.HSLColor;
 import org.cytoscape.internal.util.undo.UndoMonitor;
 import org.cytoscape.internal.view.BirdsEyeViewHandler;
 import org.cytoscape.internal.view.CyDesktopManager;
@@ -108,6 +123,7 @@ import org.cytoscape.task.edit.EditNetworkTitleTaskFactory;
 import org.cytoscape.task.write.SaveSessionAsTaskFactory;
 import org.cytoscape.util.swing.FileUtil;
 import org.cytoscape.util.swing.IconManager;
+import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.util.swing.OpenBrowser;
 import org.cytoscape.view.layout.CyLayoutAlgorithm;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
@@ -136,15 +152,16 @@ public class CyActivator extends AbstractCyActivator {
 	private static final String CONTEXT_MENU_FILTER = "(" + ServiceProperties.IN_NETWORK_PANEL_CONTEXT_MENU + "=true)";
 
 	@Override
-	@SuppressWarnings({ "rawtypes", "unchecked" })
+	@SuppressWarnings("unchecked")
 	public void start(BundleContext bc) throws Exception {
-		setLookAndFeel();
+		CyProperty<Properties> cytoscapePropertiesServiceRef = getService(bc, CyProperty.class, "(cyPropertyName=cytoscape3.props)");
+		
+		setLookAndFeel(cytoscapePropertiesServiceRef.getProperties());
 		
 		RenderingEngineManager renderingEngineManagerServiceRef = getService(bc, RenderingEngineManager.class);
 		CyShutdown cytoscapeShutdownServiceRef = getService(bc, CyShutdown.class);
 		CyApplicationConfiguration cyApplicationConfigurationServiceRef = getService(bc, CyApplicationConfiguration.class);
 		RecentlyOpenedTracker recentlyOpenedTrackerServiceRef = getService(bc, RecentlyOpenedTracker.class);
-		CyProperty cytoscapePropertiesServiceRef = getService(bc, CyProperty.class, "(cyPropertyName=cytoscape3.props)");
 		CyVersion cyVersionServiceRef = getService(bc, CyVersion.class);
 		CyApplicationManager cyApplicationManagerServiceRef = getService(bc, CyApplicationManager.class);
 		CySessionManager cySessionManagerServiceRef = getService(bc, CySessionManager.class);
@@ -442,7 +459,7 @@ public class CyActivator extends AbstractCyActivator {
 		registerServiceListener(bc, layoutMenuPopulator, "addLayout", "removeLayout",
 		                        CyLayoutAlgorithm.class);
 
-		if (isMac()) {
+		if (LookAndFeelUtil.isMac()) {
 			new MacCyActivator().start(bc);
 		} else {
 			Properties helpAboutTaskFactoryProps = new Properties();
@@ -457,7 +474,8 @@ public class CyActivator extends AbstractCyActivator {
 
 		// Full screen actions.  This is platform dependent
 		FullScreenAction fullScreenAction = null;
-		if(isMac()) {
+		
+		if (LookAndFeelUtil.isMac()) {
 			if (MacFullScreenEnabler.supportsNativeFullScreenMode()) {
 				fullScreenAction = new FullScreenMacAction(cytoscapeDesktop);
 			} else {
@@ -466,18 +484,19 @@ public class CyActivator extends AbstractCyActivator {
 		} else {
 			fullScreenAction = new FullScreenAction(cytoscapeDesktop);
 		}
-		registerService(bc, fullScreenAction, CyAction.class, new Properties());
 		
+		registerService(bc, fullScreenAction, CyAction.class, new Properties());
 	}
 
-	private void setLookAndFeel() {
+	private void setLookAndFeel(final Properties props) {
 		Logger logger = LoggerFactory.getLogger(getClass());
+		
 		if (!SwingUtilities.isEventDispatchThread()) {
 			try {
 				SwingUtilities.invokeAndWait(new Runnable() {
 					@Override
 					public void run() {
-						setLookAndFeel();
+						setLookAndFeel(props);
 					}
 				});
 				return;
@@ -487,17 +506,19 @@ public class CyActivator extends AbstractCyActivator {
 				logger.error("Unexpected error", e);
 			}
 		}
-		String lookAndFeel;
-		// update look and feel
-		if (System.getProperty("os.name").startsWith("Mac OS X") ||
-		    System.getProperty("os.name").startsWith("Windows"))
-			lookAndFeel = UIManager.getSystemLookAndFeelClassName();
-		else {
-			// Use Nimbus on Unix systems
-			lookAndFeel = "com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel";
+		
+		// Update look and feel
+		String lookAndFeel = props.getProperty("lookAndFeel");
+		
+		if (lookAndFeel == null) {
+			if (LookAndFeelUtil.isMac() || LookAndFeelUtil.isWindows())
+				lookAndFeel = UIManager.getSystemLookAndFeelClassName();
+			else // Use Nimbus on *nix systems
+				lookAndFeel = "com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel";
 		}
+		
 		try {
-			logger.debug("setting look and feel to: " + lookAndFeel);
+			logger.debug("Setting look and feel to: " + lookAndFeel);
 			UIManager.setLookAndFeel(lookAndFeel);
 		} catch (ClassNotFoundException e) {
 			logger.error("Unexpected error", e);
@@ -508,9 +529,92 @@ public class CyActivator extends AbstractCyActivator {
 		} catch (UnsupportedLookAndFeelException e) {
 			logger.error("Unexpected error", e);
 		}
-	}
-
-	private boolean isMac() {
-		return System.getProperty("os.name").startsWith("Mac OS X");
+		
+		try {
+			if (UIManager.getFont("Label.font") == null)
+				UIManager.put("Label.font", new JLabel().getFont());
+			
+			Color tsb = UIManager.getColor("Table.selectionBackground");
+			if (tsb == null) tsb = UIManager.getColor("Tree.selectionBackground");
+			if (tsb == null) tsb = UIManager.getColor("Table[Enabled+Selected].textBackground");
+			
+			if (tsb != null) {
+				float percent = 10.0f;
+				HSLColor hsl = new HSLColor(tsb);
+				
+				do {
+					percent += 5;
+					tsb = hsl.adjustLuminance(percent);
+				} while (percent < 90.0f && !hsl.adjustLuminance(percent + 5).equals(Color.WHITE));
+				System.out.println(">> " + percent);
+			}
+			
+			final Color TABLE_SELECTION_BG = tsb != null && !tsb.equals(Color.WHITE) ? tsb : new Color(222, 234, 252);
+			final Font TABLE_FONT = UIManager.getFont("Label.font").deriveFont(11.0f);
+			
+			UIManager.put("Table.background", UIManager.getColor("TextPane.background"));
+			UIManager.put("Table.gridColor", UIManager.getColor("Table.background"));
+			UIManager.put("Table.font", TABLE_FONT);
+			UIManager.put("Table.focusCellBackground", UIManager.getColor("Tree.selectionBackground"));
+			UIManager.put("Table.focusCellForeground", UIManager.getColor("Tree.selectionForeground"));
+			UIManager.put("Table.selectionBackground", TABLE_SELECTION_BG);
+			UIManager.put("Table.selectionForeground", UIManager.getColor("Table.foreground"));
+			UIManager.put("Tree.font", TABLE_FONT);
+			UIManager.put("Tree.selectionBackground", TABLE_SELECTION_BG);
+			UIManager.put("Tree.selectionForeground", UIManager.getColor("Tree.foreground"));
+			
+			if (LookAndFeelUtil.isAquaLAF()) {
+				UIManager.put(
+						"TableHeader.cellBorder",
+						BorderFactory.createCompoundBorder(
+								BorderFactory.createEmptyBorder(2, 0, 2, 0),
+								BorderFactory.createCompoundBorder(
+										BorderFactory.createMatteBorder(0, 0, 0, 1, UIManager.getColor("Separator.foreground")),
+										BorderFactory.createEmptyBorder(0, 4, 0, 4)
+								)
+						)
+				);
+				UIManager.put("TableHeader.background", UIManager.getColor("Panel.background"));
+			} else if (LookAndFeelUtil.isWindows()) {
+				UIManager.put(
+						"TableHeader.cellBorder", 
+						BorderFactory.createCompoundBorder(
+								BorderFactory.createEmptyBorder(2, 0, 6, 0),
+								BorderFactory.createCompoundBorder(
+										BorderFactory.createMatteBorder(0, 0, 0, 1, new Color(223, 223, 223)),
+										BorderFactory.createEmptyBorder(2, 6, 2, 6)
+								)
+						)
+				);
+				UIManager.put("TableHeader.background", UIManager.getColor("Table.background"));
+				UIManager.put("Separator.foreground", new Color(208, 208, 208));
+			} else if (LookAndFeelUtil.isNimbusLAF()) {
+				UIManager.put("Table.background", Color.WHITE);
+				UIManager.put("Table.gridColor", Color.WHITE);
+				UIManager.put("Separator.foreground", new Color(127, 133, 144));
+				UIManager.put("TextField.inactiveForeground", new Color(135, 136, 140));
+				UIManager.put("Label.disabledForeground", new Color(135, 136, 140));
+				UIManager.put("TextField.selectionBackground", new Color(88, 147, 200));
+				UIManager.put("Focus.color", new Color(88, 147, 200));
+				UIManager.put(
+						"TableHeader.cellBorder", 
+						BorderFactory.createCompoundBorder(
+								BorderFactory.createMatteBorder(0, 0, 1, 1, new Color(121, 124, 131)),
+								BorderFactory.createEmptyBorder(2, 4, 2, 4)
+						)
+				);
+			} else {
+				UIManager.put(
+						"TableHeader.cellBorder", 
+						BorderFactory.createCompoundBorder(
+								BorderFactory.createMatteBorder(0, 0, 0, 1, UIManager.getColor("Separator.foreground")),
+								BorderFactory.createEmptyBorder(2, 4, 2, 4)
+						)
+				);
+				UIManager.put("TableHeader.background", UIManager.getColor("Table.background"));
+			}
+		} catch (Exception e) {
+			logger.error("Unexpected error", e);
+		}
 	}
 }

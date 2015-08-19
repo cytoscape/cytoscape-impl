@@ -49,6 +49,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ListSelectionEvent;
@@ -215,7 +216,7 @@ public class ColumnSelector extends JPanel {
 			tableScrollPane.setViewportView(getTable());
 			tableScrollPane.setBorder(new EmptyBorder(0, 2, 0, 2));
 			
-			final Color bg = LookAndFeelUtil.isNimbusLAF() ? Color.WHITE : getTable().getBackground();
+			final Color bg = UIManager.getColor("Table.background");
 			tableScrollPane.setBackground(bg);
 			tableScrollPane.getViewport().setBackground(bg);
 		}
@@ -266,8 +267,8 @@ public class ColumnSelector extends JPanel {
 			else
 				setForeground(table.getForeground());
 			
-			final Color bg = LookAndFeelUtil.isNimbusLAF() ? Color.WHITE : table.getBackground();
-			setBackground(isSelected ? BrowserTableCellRenderer.SELECTED_ROW_BG_COLOR : bg);
+			final Color bg = UIManager.getColor("Table.background");
+			setBackground(isSelected ? UIManager.getColor("Table.selectionBackground") : bg);
 			setBorder(CELL_BORDER);
 			
 			if (value instanceof Boolean) {
@@ -321,8 +322,8 @@ public class ColumnSelector extends JPanel {
 			
 			chk.setSelected((boolean)value);
 			chk.setToolTipText((boolean)value ? "Show" : "Hide");
-			chk.setBackground(isSelected ? BrowserTableCellRenderer.SELECTED_ROW_BG_COLOR : bg);
-			panel.setBackground(isSelected ? BrowserTableCellRenderer.SELECTED_ROW_BG_COLOR : bg);
+			chk.setBackground(isSelected ? UIManager.getColor("Table.selectionBackground") : bg);
+			panel.setBackground(isSelected ? UIManager.getColor("Table.selectionBackground") : bg);
 			panel.setBorder(CELL_BORDER);
 			
 			return panel;

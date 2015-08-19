@@ -11,6 +11,7 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Paint;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
@@ -100,16 +101,16 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 	private static final int MSG_ICON_WIDTH = 18;
 	private static final int MSG_ICON_HEIGHT = 15;
 	
-	static final Color BG_COLOR = Color.WHITE;
-	static final Color FG_COLOR = Color.DARK_GRAY;
-	static final Color SELECTED_BG_COLOR = new Color(222, 234, 252);
+	static final Color BG_COLOR = UIManager.getColor("Table.background");
+	static final Color FG_COLOR = UIManager.getColor("Table.foreground");
+	static final Color SELECTED_BG_COLOR = UIManager.getColor("Table.selectionBackground");
 	
-	static final Color BTN_BORDER_COLOR = new Color(200, 200, 200);
-	static final Color BTN_BORDER_DISABLED_COLOR = new Color(248, 248, 248);
+	static final Color BTN_BORDER_COLOR = UIManager.getColor("Separator.foreground");
+	static final Color BTN_BORDER_DISABLED_COLOR = UIManager.getColor("Table.background");
 	static final int BTN_H_MARGIN = 1;
 	static final int BTN_BORDER_WIDTH = 1;
 	
-	static final Color INFO_COLOR = Color.LIGHT_GRAY;
+	static final Color INFO_COLOR = UIManager.getColor("TextField.inactiveForeground");
 	
 	private JPanel topPnl;
 	private JPanel mappingPnl;
@@ -618,6 +619,8 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 						collapse();
 					else
 						expand();
+					
+					updateMappingIcon();
 				}
 			});
 			getMappingPnl().addComponentListener(new ComponentAdapter() {
@@ -625,11 +628,15 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 				public void componentShown(final ComponentEvent ce) {
 					if (mappingBtn != null)
 						mappingBtn.setSelected(true);
+					
+					updateMappingIcon();
 				}
 				@Override
 				public void componentHidden(final ComponentEvent ce) {
 					if (mappingBtn != null)
 						mappingBtn.setSelected(false);
+					
+					updateMappingIcon();
 				}
 			});
 		}
@@ -739,6 +746,7 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 	
 	private void updateSelection() {
 		getTopPnl().setBackground(selected ? SELECTED_BG_COLOR : BG_COLOR);
+		repaint();
 	}
 	
 	private void updateMessageIcon(final MessageType type) {
@@ -770,6 +778,11 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 		
 		final IconManager iconManager = servicesUtil.get(IconManager.class);
 		btn.setFont(iconManager.getIconFont(16.0f));
+		
+		if (btn.isSelected())
+			btn.setForeground(UIManager.getColor("Table.focusCellForeground"));
+		else
+			btn.setForeground(FG_COLOR);
 		
 		if (mapping == null) {
 			btn.setText("");
@@ -987,10 +1000,8 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 		public static final int CENTER = 2;
 		public static final int SOUTH = 3;
 		
-		static final Color BG_OVER_COLOR = new Color(224, 232, 246);
-		static final Color BORDER_OVER_COLOR = new Color(152, 180, 226);
-		static final Color BG_SELECTED_COLOR = new Color(193, 210, 238);
-		static final Color BORDER_SELECTED_COLOR = new Color(125, 125, 125);
+		final Color BG_OVER_COLOR = UIManager.getColor("Table.selectionBackground");
+		final Color BG_SELECTED_COLOR = UIManager.getColor("Table.focusCellBackground");
 		
 		private final int anchor;
 		
