@@ -1,5 +1,7 @@
 package org.cytoscape.io.internal.write.json.serializer;
 
+import static org.cytoscape.io.internal.write.json.serializer.CytoscapeJsToken.ID;
+
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -58,6 +60,11 @@ public class JsRowSerializer extends JsonSerializer<CyRow> {
 	}
 	
 	private final String replaceColumnName(final String columnName) {
+		if (columnName.equals(ID.getTag())) {
+			// "ID" has special meaning in Cytoscape.js. Need to add suffix
+			return columnName + "_original";
+		}
+		
 		final Matcher matcher = REPLACE_INVALID_JS_CHAR_PATTERN.matcher(columnName);
 		return matcher.replaceAll("_");
 	}
