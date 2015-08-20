@@ -118,8 +118,11 @@ public class PopupMenuHelper {
 		
 		final Object value = column.getTable().getRow(primaryKeyValue).get(column.getName(), column.getType());
 		
-		if (value != null)
-			menu.add(getOpenLinkMenu(value.toString()));
+		if (value != null) {
+			String urlString = value.toString();
+			if (urlString != null && (urlString.startsWith("http:") || urlString.startsWith("https:")))
+				menu.add(getOpenLinkMenu(value.toString()));
+		}
 		
 		final PopupMenuGravityTracker tracker = new PopupMenuGravityTracker(menu);
 
