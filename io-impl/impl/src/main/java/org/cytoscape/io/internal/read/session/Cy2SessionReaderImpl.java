@@ -46,6 +46,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.math.BigInteger;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -377,7 +378,7 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 			BufferedWriter out = null;
 			BufferedReader in = null;
 
-			in = new BufferedReader(new InputStreamReader(is));
+			in = new BufferedReader(new InputStreamReader(is, Charset.forName("UTF-8").newDecoder()));
 			out = new BufferedWriter(new FileWriter(file));
 
 			// Write to tmp file

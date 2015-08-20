@@ -31,6 +31,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StreamTokenizer;
 import java.io.Writer;
+import java.nio.charset.Charset;
 import java.text.ParseException;
 import java.util.List;
 import java.util.Vector;
@@ -99,7 +100,9 @@ public class GMLParser {
 	}
 
 	static StreamTokenizer createTokenizer(InputStream stream) {
-		StreamTokenizer tokenizer = new StreamTokenizer(new FilterNewlineReader(new InputStreamReader(stream)));
+		StreamTokenizer tokenizer = new StreamTokenizer(
+				new FilterNewlineReader(
+						new InputStreamReader(stream, Charset.forName("UTF-8").newDecoder())));
 
 		tokenizer.resetSyntax();
 		tokenizer.commentChar('#');

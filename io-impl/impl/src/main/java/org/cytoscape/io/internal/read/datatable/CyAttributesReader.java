@@ -31,6 +31,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URLDecoder;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
@@ -112,7 +113,7 @@ public class CyAttributesReader extends AbstractTask implements CyTableReader {
 	}
 
 	private void loadAttributesInternal(final CyTable table) throws IOException {
-		final InputStreamReader reader1 = new InputStreamReader(this.inputStream);
+		final InputStreamReader reader1 = new InputStreamReader(this.inputStream, Charset.forName("UTF-8").newDecoder());
 
 		badDecode = false;
 		boolean guessedAttrType = false; // We later set this to true if we have to guess the attribute type.
