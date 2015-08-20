@@ -186,7 +186,7 @@ class GenerateNetworkViewsTask extends AbstractTask implements ObservableTask {
 	public class ConfirmCreateNetworkViewsTask extends AbstractTask implements ObservableTask {
 
 		@Tunable(
-				description = "Do you want to view the very large networks now?\nThis may take a while.",
+				description = "Do you want to create a view for your large networks now?\nThis could take a long time.",
 				params="ForceSetDirectly=true;ForceSetTitle=Create Network Views?"
 		)
 		public boolean createNetworkViews;

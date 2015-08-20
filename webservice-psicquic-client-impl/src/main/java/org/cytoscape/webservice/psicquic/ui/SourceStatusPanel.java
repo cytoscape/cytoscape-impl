@@ -670,7 +670,7 @@ public class SourceStatusPanel extends JPanel implements TaskObserver {
 			if (networksWithoutView.isEmpty())
 				options = new String[] { "Close", "Merge networks manually..." };
 			else
-				options = new String[] { "Close", "View large networks now", "Merge networks manually..." };
+				options = new String[] { "Close", "Create a view for large networks", "Merge networks manually..." };
 			
 			selection = JOptionPane.showOptionDialog(
 					this,
