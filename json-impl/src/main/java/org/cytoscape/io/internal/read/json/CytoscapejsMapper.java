@@ -51,14 +51,17 @@ public class CytoscapejsMapper {
 			parseColumnTypes(columnTypes, network);
 		}
 		
+		// Create nodes and edges
 		final JsonNode elements = rootNode.get(ELEMENTS.getTag());
 		final JsonNode nodes = elements.get(NODES.getTag());
 		final JsonNode edges = elements.get(EDGES.getTag());
 
-		// Read network 
+		// Read network table data
 		final JsonNode data = rootNode.get(DATA.getTag());
-		// Need to put all columns to local table, not the default (shared) one.
-		addTableData(data, network, network, network.getTable(CyNetwork.class, CyNetwork.LOCAL_ATTRS));
+		if(data != null) {
+			// Need to put all columns to local table, not the default (shared) one.
+			addTableData(data, network, network, network.getTable(CyNetwork.class, CyNetwork.LOCAL_ATTRS));
+		}
 		
 		this.positionMap = new HashMap<CyNode, Double[]>();
 		final Map<String, CyNode> nodeMap = this.addNodes(network, nodes);
