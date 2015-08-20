@@ -649,7 +649,8 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 			});
 
 			curItem.add(copy);
-			curItem.add(popupMenuHelper.getOpenLinkMenu(dispName));
+			if (dispName != null && (dispName.startsWith("http:") || dispName.startsWith("https:")))
+				curItem.add(popupMenuHelper.getOpenLinkMenu(dispName));
 			cellMenu.add(curItem);
 		}
 
