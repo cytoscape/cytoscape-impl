@@ -66,13 +66,11 @@ import java.beans.IndexedPropertyChangeEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -139,7 +137,6 @@ import org.cytoscape.tableimport.internal.util.TypeUtil;
 import org.cytoscape.tableimport.internal.util.URLUtil;
 import org.cytoscape.util.swing.ColumnResizer;
 import org.cytoscape.util.swing.IconManager;
-import org.cytoscape.util.swing.JStatusBar;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -199,8 +196,6 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 	protected JTextField otherDelimiterTextField;
 	
 	private JCheckBox transferNameCheckBox;
-
-	JStatusBar statusBar;
 
 	// protected DefaultTableModel model;
 	protected JTable aliasTable;
@@ -336,14 +331,6 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 			
 			// Update UI based on the primary key selection
 			if (type == KEY && index >= 0 && importType != NETWORK_IMPORT) {
-				// Update
-				try {
-					if (importType == ONTOLOGY_IMPORT)
-						setStatusBar(new URL(annotationUrlMap.get(annotationComboBox.getSelectedItem().toString())));
-				} catch (MalformedURLException e) {
-					e.printStackTrace();
-				}
-	
 				getPreviewPanel().repaint();
 	
 				final JTable table = getPreviewPanel().getPreviewTable();
@@ -356,8 +343,6 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 	}
 
 	private void initComponents() {
-		statusBar = new JStatusBar();
-
 		attrTypeButtonGroup = new ButtonGroup();
 		nodeRadioButton = new JRadioButton("Node");
 		edgeRadioButton = new JRadioButton("Edge");
@@ -1061,7 +1046,6 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 			updating = false;
 		}
 
-		setStatusBar("", "", "File Size: Unknown");
 		Window parent = SwingUtilities.getWindowAncestor(this);
 		
 		if (parent != null)
@@ -1308,43 +1292,6 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 		getPreviewPanel().updatePreviewTable();
 	}
 
-	private void setStatusBar(String message1, String message2, String message3) {
-		statusBar.setLeftLabel(message1);
-		statusBar.setCenterLabel(message2);
-		statusBar.setRightLabel(message3);
-	}
-	
-	private void setStatusBar(final URL sourceURL) {
-		final String centerMessage = "First " + getPreviewPanel().getPreviewSize() + " entries are loaded for preview";
-		final String rightMessage;
-
-		if (sourceURL.toString().startsWith("file:")) {
-			int fileSize = 0;
-			BufferedInputStream fis = null;
-			
-			try {
-				fis = (BufferedInputStream) sourceURL.openStream();
-				fileSize = fis.available();
-				fis.close();
-			} catch (IOException e) {
-				try {
-					if (fis != null) fis.close();
-				} catch (IOException e1) {
-				}
-			}
-
-			if ((fileSize / 1000) == 0)
-				rightMessage = "File Size: " + fileSize + " Bytes";
-			else
-				rightMessage = "File Size: " + (fileSize / 1000) + " KBytes";
-		} else {
-			rightMessage = "File Size: Unknown (remote data source)";
-		}
-
-		final int keyInFile = getPreviewPanel().getColumnIndex(KEY);
-		setStatusBar("Key-Value Matched: " + getPreviewPanel().checkKeyMatch(keyInFile), centerMessage, rightMessage);
-	}
-
 	public List<String> checkDelimiter() {
 		final List<String> delList = new ArrayList<String>();
 
@@ -1422,26 +1369,22 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 			layout.setHorizontalGroup(layout.createParallelGroup(LEADING)
 					.addComponent(getBasicPanel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 					.addComponent(getPreviewPanel(), DEFAULT_SIZE, 680, Short.MAX_VALUE)
-					.addComponent(statusBar, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 					.addComponent(getAdvancedButton())
 			);
 			layout.setVerticalGroup(layout.createSequentialGroup()
 					.addComponent(getBasicPanel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(getPreviewPanel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-					.addComponent(statusBar, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(getAdvancedButton())
 			);
 		} else if (importType == ONTOLOGY_IMPORT) {
 			layout.setHorizontalGroup(layout.createParallelGroup(LEADING)
 					.addComponent(getBasicPanel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 					.addComponent(getPreviewPanel(), DEFAULT_SIZE, 680, Short.MAX_VALUE)
-					.addComponent(statusBar, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 					.addComponent(getAdvancedButton())
 			);
 			layout.setVerticalGroup(layout.createSequentialGroup()
 					.addComponent(getBasicPanel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(getPreviewPanel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-					.addComponent(statusBar, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(getAdvancedButton())
 			);
 		} else if (importType == NETWORK_IMPORT) {
