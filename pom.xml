@@ -80,7 +80,6 @@
 		<module>core-task-impl</module>
 		<module>headless-application-impl</module>
 		<module>headless-cmdline-parser-impl</module>
-		<module>rest-impl</module>
 	</modules>
 
 	<!-- Managed dependency.  If bundles are shared by everyone, it should be moved to dependencies section! -->

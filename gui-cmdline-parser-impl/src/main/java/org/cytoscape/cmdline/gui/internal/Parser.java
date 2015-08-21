@@ -164,7 +164,7 @@ public class Parser {
 		if (line.hasOption("S"))
 			startupConfig.setCommandScript(line.getOptionValue("S"));
 
-		// Do we want a rest server?
+		// Do we want to change the port number for REST server?
 		if (line.hasOption("R"))
 			startupConfig.setRestPort(line.getOptionValue("R"));
 	}
