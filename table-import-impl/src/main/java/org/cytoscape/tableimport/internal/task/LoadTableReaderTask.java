@@ -99,13 +99,14 @@ public class LoadTableReaderTask extends AbstractTask implements CyTableReader, 
 	public LoadTableReaderTask(final CyServiceRegistrar serviceRegistrar) {
 		this.serviceRegistrar = serviceRegistrar;
 		
-		List<String> tempList = new ArrayList<String>();
+		List<String> tempList = new ArrayList<>();
 		tempList.add(TextFileDelimiters.COMMA.toString());
 		tempList.add(TextFileDelimiters.SEMICOLON.toString());
 		tempList.add(TextFileDelimiters.SPACE.toString());
 		tempList.add(TextFileDelimiters.TAB.toString());
-		delimiters = new ListMultipleSelection<String>(tempList);
-	    tempList = new ArrayList<String>();
+		delimiters = new ListMultipleSelection<>(tempList);
+	    
+		tempList = new ArrayList<>();
 		tempList.add(TextFileDelimiters.PIPE.toString());
 		tempList.add(TextFileDelimiters.BACKSLASH.toString());
 		tempList.add(TextFileDelimiters.SLASH.toString());
@@ -152,8 +153,7 @@ public class LoadTableReaderTask extends AbstractTask implements CyTableReader, 
 			throw new IllegalStateException("Could not initialize object", e);
 		}
 		
-		List<String> tempList = new ArrayList<String>();
-		tempList = new ArrayList<String>();
+		List<String> tempList = new ArrayList<>();
 		tempList.add(TextFileDelimiters.TAB.toString());
 		tempList.add(TextFileDelimiters.SPACE.toString());
 		delimiters.setSelectedValues(tempList);
@@ -166,7 +166,7 @@ public class LoadTableReaderTask extends AbstractTask implements CyTableReader, 
 		tm.setProgress(0.0);
 		tm.setStatusMessage("Loading table...");
 		
-		List<String> attrNameList = new ArrayList<String>();
+		List<String> attrNameList = new ArrayList<>();
 		int colCount;
 		String[] attributeNames;
 		

@@ -537,7 +537,7 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 		this.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mousePressed(MouseEvent e) {
-				getPreviewPanel().disposeEditDialog(true);
+				getPreviewPanel().disposeEditDialog();
 			}
 		});
 	}
@@ -1293,7 +1293,7 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 	}
 
 	public List<String> checkDelimiter() {
-		final List<String> delList = new ArrayList<String>();
+		final List<String> delList = new ArrayList<>();
 
 		if (tabCheckBox.isSelected())
 			delList.add(TextFileDelimiters.TAB.toString());

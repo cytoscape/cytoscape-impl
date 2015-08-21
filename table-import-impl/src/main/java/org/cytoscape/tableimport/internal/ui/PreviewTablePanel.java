@@ -59,6 +59,9 @@ import java.awt.event.AdjustmentListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.BufferedReader;
@@ -92,7 +95,6 @@ import javax.swing.KeyStroke;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
-import javax.swing.border.Border;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.TableColumnModelEvent;
@@ -167,10 +169,8 @@ public class PreviewTablePanel extends JPanel {
 	private boolean updating;
 	
 	private final Object lock = new Object();
-	
-	private static final Logger logger = LoggerFactory.getLogger(PreviewTablePanel.class);
 
-	protected static final String Sheet = null;
+	private static final Logger logger = LoggerFactory.getLogger(PreviewTablePanel.class);
 
 	/**
 	 * Creates a new PreviewTablePanel object.
@@ -241,7 +241,7 @@ public class PreviewTablePanel extends JPanel {
 		this.addMouseListener(new MouseAdapter() {
 			@Override
 		    public void mousePressed(MouseEvent e) {
-	        	disposeEditDialog(true);
+	        	disposeEditDialog();
 		    }
 		});
 		
@@ -341,29 +341,15 @@ public class PreviewTablePanel extends JPanel {
 			final JTableHeader hd = previewTable.getTableHeader();
 			hd.setReorderingAllowed(false);
 			hd.setDefaultRenderer(new PreviewTableHeaderRenderer());
-			hd.addMouseListener(new MouseAdapter() {
-				@Override
-				public void mousePressed(final MouseEvent e) {
-					final TableColumnModel columnModel = previewTable.getColumnModel();
-					final int newColIdx = columnModel.getColumnIndexAtX(e.getX());
-					final int idx = editDialog != null ? editDialog.index : -1;
-					
-					disposeEditDialog(true);
-						
-					if (idx != newColIdx)
-						showEditDialog(newColIdx);
-				}
-			});
 			
-			// Do not show editor dialog when the user is resizing the columns
-			previewTable.getColumnModel().addColumnModelListener(new TableColumnModelListener() {
+			final TableColumnModelListener colModelListener = new TableColumnModelListener() {
 				@Override
 				public void columnMoved(TableColumnModelEvent e) {
-					disposeEditDialog(true);
+					disposeEditDialog();
 				}
 				@Override
 				public void columnMarginChanged(ChangeEvent e) {
-					disposeEditDialog(true);
+					disposeEditDialog();
 				}
 				@Override
 				public void columnSelectionChanged(ListSelectionEvent e) {
@@ -374,12 +360,35 @@ public class PreviewTablePanel extends JPanel {
 				@Override
 				public void columnAdded(TableColumnModelEvent e) {
 				}
+			};
+			
+			hd.addMouseListener(new MouseAdapter() {
+				@Override
+				public void mousePressed(final MouseEvent e) {
+					final TableColumnModel columnModel = previewTable.getColumnModel();
+					final int newColIdx = columnModel.getColumnIndexAtX(e.getX());
+					final int idx = editDialog != null ? editDialog.index : -1;
+					
+					disposeEditDialog();
+						
+					if (idx != newColIdx)
+						showEditDialog(newColIdx);
+					
+					// Do not show editor dialog when the user is resizing the columns
+					previewTable.getColumnModel().removeColumnModelListener(colModelListener);
+					previewTable.getColumnModel().addColumnModelListener(colModelListener);
+				}
+				@Override
+				public void mouseReleased(MouseEvent e) {
+					previewTable.getColumnModel().removeColumnModelListener(colModelListener);
+				}
 			});
+			
 			// Also close the editor dialog when the table changes
 			previewTable.getModel().addTableModelListener(new TableModelListener() {
 				@Override
 				public void tableChanged(TableModelEvent e) {
-					disposeEditDialog(false);
+					disposeEditDialog();
 				}
 			});
 			// Finally, close the editor dialog and commit its changes when the user clicks anywhere else in the table
@@ -391,7 +400,7 @@ public class PreviewTablePanel extends JPanel {
 				        int col = previewTable.columnAtPoint(e.getPoint());
 				        
 				        if (row >= 0 && col >= 0)
-							disposeEditDialog(true);
+							disposeEditDialog();
 					}
 			    }
 			});
@@ -905,21 +914,65 @@ public class PreviewTablePanel extends JPanel {
 		actionMap.put("VK_ESCAPE", new AbstractAction("VK_ESCAPE") {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				disposeEditDialog(false);
+				disposeEditDialog();
 			}
 		});
 		actionMap.put("VK_ENTER", new AbstractAction("VK_ENTER") {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				disposeEditDialog(true);
+				disposeEditDialog();
+			}
+		});
+		
+		attrEditorPanel.addPropertyChangeListener("attributeName", new PropertyChangeListener() {
+			@Override
+			public void propertyChange(PropertyChangeEvent evt) {
+				final String attrName = (String) evt.getNewValue();
+				
+				if (attrName != null && !attrName.trim().isEmpty()) {
+					((PreviewTableModel) getPreviewTable().getModel()).setColumnName(colIdx, attrName);
+					getPreviewTable().getColumnModel().getColumn(colIdx).setHeaderValue(attrName);
+					updatePreviewTable(colIdx);
+				}
+			}
+		});
+		attrEditorPanel.addPropertyChangeListener("attributeType", new PropertyChangeListener() {
+			@Override
+			public void propertyChange(PropertyChangeEvent evt) {
+				setType(colIdx, (SourceColumnSemantic)evt.getNewValue());
+				updatePreviewTable(colIdx);
+			}
+		});
+		attrEditorPanel.addPropertyChangeListener("attributeDataType", new PropertyChangeListener() {
+			@Override
+			public void propertyChange(PropertyChangeEvent evt) {
+				final AttributeDataType newDataType = (AttributeDataType) evt.getNewValue();
+
+				if (newDataType.isList())
+					setListDelimiter(colIdx, attrEditorPanel.getListDelimiter());
+
+				setDataType(colIdx, newDataType);
+				updatePreviewTable(colIdx);
+			}
+		});
+		attrEditorPanel.addPropertyChangeListener("listDelimiter", new PropertyChangeListener() {
+			@Override
+			public void propertyChange(PropertyChangeEvent evt) {
+				setListDelimiter(colIdx, (String)evt.getNewValue());
+				updatePreviewTable(colIdx);
 			}
 		});
 		
 		positionEditDialog();
 		
+		editDialog.addWindowListener(new WindowAdapter() {
+			@Override
+			public void windowOpened(WindowEvent e) {
+				attrEditorPanel.getAttributeNameTextField().requestFocusInWindow();
+			}
+		});
 	    editDialog.pack();
 		editDialog.setVisible(true);
-		editDialog.requestFocus();
 	}
 	
 	private void positionEditDialog() {
@@ -948,16 +1001,11 @@ public class PreviewTablePanel extends JPanel {
 		}
 	}
 
-	protected void disposeEditDialog(final boolean commitChanges) {
+	protected void disposeEditDialog() {
 		synchronized (lock) {
 			if (editDialog != null) {
-				final int index = editDialog.index;
-				final AttributeEditorPanel editPanel = editDialog.editPanel;
 				editDialog.dispose();
 				editDialog = null;
-				
-				if (commitChanges)
-					updatePreviewTable(index, editPanel);
 			}
 		}
 	}
@@ -979,23 +1027,7 @@ public class PreviewTablePanel extends JPanel {
 			throw new IllegalStateException("No data found in the Excel sheets.");
 	}
 	
-	private void updatePreviewTable(final int colIdx, final AttributeEditorPanel attrEditorPanel) {
-		final String attrName = attrEditorPanel.getAttributeName();
-		final SourceColumnSemantic newType = attrEditorPanel.getType();
-		final AttributeDataType newDataType = attrEditorPanel.getDataType();
-
-		if (attrName != null) {
-			final PreviewTableModel model = (PreviewTableModel) getPreviewTable().getModel();
-			model.setColumnName(colIdx, attrName);
-			getPreviewTable().getColumnModel().getColumn(colIdx).setHeaderValue(attrName);
-		}
-
-		if (newDataType.isList())
-			setListDelimiter(colIdx, attrEditorPanel.getListDelimiter());
-
-		setType(colIdx, newType);
-		setDataType(colIdx, newDataType);
-		
+	private void updatePreviewTable(final int colIdx) {
 		ColumnResizer.adjustColumnPreferredWidth(getPreviewTable(), colIdx);
 		updatePreviewTable();
 	}
@@ -1068,7 +1100,7 @@ public class PreviewTablePanel extends JPanel {
 			selectAllButton.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(final ActionEvent e) {
-					disposeEditDialog(true);
+					disposeEditDialog();
 					replaceType(NONE, TypeUtil.getDefaultType(importType));
 					updatePreviewTable();
 				}
@@ -1087,7 +1119,7 @@ public class PreviewTablePanel extends JPanel {
 			selectNoneButton.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(final ActionEvent e) {
-					disposeEditDialog(true);
+					disposeEditDialog();
 					fillTypes(NONE);
 					updatePreviewTable();
 				}
@@ -1114,7 +1146,7 @@ public class PreviewTablePanel extends JPanel {
 			tableScrollPane.getViewport().addMouseListener(new MouseAdapter() {
 				@Override
 			    public void mousePressed(MouseEvent e) {
-		        	disposeEditDialog(true);
+		        	disposeEditDialog();
 			    }
 			});
 		}

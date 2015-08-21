@@ -132,6 +132,9 @@ public class DefaultAttributeTableReader implements TextTableReader {
 						lineCount++;
 					}
 
+					try {
+						reader.close();
+					} catch (Exception e) { }
 				} else { //Use the "old" method for splitting the lines.
 					String line;
 					String[] parts = null;

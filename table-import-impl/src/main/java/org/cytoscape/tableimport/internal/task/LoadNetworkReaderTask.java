@@ -123,14 +123,14 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 		tempList.add(TextFileDelimiters.SEMICOLON.toString());
 		tempList.add(TextFileDelimiters.SPACE.toString());
 		tempList.add(TextFileDelimiters.TAB.toString());
-		delimiters = new ListMultipleSelection<String>(tempList);
+		delimiters = new ListMultipleSelection<>(tempList);
 	    
 		tempList = new ArrayList<>();
 		tempList.add(TextFileDelimiters.PIPE.toString());
 		tempList.add(TextFileDelimiters.BACKSLASH.toString());
 		tempList.add(TextFileDelimiters.SLASH.toString());
 		tempList.add(TextFileDelimiters.COMMA.toString());
-		delimitersForDataList = new ListSingleSelection<String>(tempList);
+		delimitersForDataList = new ListSingleSelection<>(tempList);
 	}
 	
 	public void setInputFile(final InputStream is, final String fileType,final String inputName, final URI uriName,
@@ -157,13 +157,13 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 			
 			
 			this.is = new FileInputStream(tempFile);
-		}catch(Exception e){
+		} catch(Exception e){
 			this.is = null;
 			e.printStackTrace();
 		}
 		
-		List<String> tempList = new ArrayList<String>();
-		tempList = new ArrayList<String>();
+		List<String> tempList = new ArrayList<>();
+		tempList = new ArrayList<>();
 		tempList.add(TextFileDelimiters.TAB.toString());
 		tempList.add(TextFileDelimiters.SPACE.toString());
 		tempList.add(TextFileDelimiters.COMMA.toString());
@@ -178,7 +178,7 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 		tm.setStatusMessage("Loading network...");
 		taskMonitor = tm;
 		
-		final List<String> attrNameList = new ArrayList<String>();
+		final List<String> attrNameList = new ArrayList<>();
 		int colCount;
 		String[] attributeNames;
 		
