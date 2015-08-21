@@ -30,6 +30,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -601,7 +602,7 @@ public final class PSICQUICRestClient {
 				strm = queryURL.openStream();
 			}
 
-			final BufferedReader reader = new BufferedReader(new InputStreamReader(strm));
+			final BufferedReader reader = new BufferedReader(new InputStreamReader(strm, Charset.forName("UTF-8").newDecoder()));
 			CyNetwork network = builder.buildNetwork(reader, networkTitle);
 			return network;
 		}

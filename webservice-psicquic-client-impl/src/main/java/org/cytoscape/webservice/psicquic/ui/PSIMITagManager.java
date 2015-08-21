@@ -28,6 +28,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -58,7 +59,7 @@ public class PSIMITagManager {
 
 	private final void createMap() throws IOException {
 		final URL tableURL = CyNetworkBuilder.class.getClassLoader().getResource("psimi_terms.txt");
-		final BufferedReader reader = new BufferedReader(new InputStreamReader(tableURL.openStream()));
+		final BufferedReader reader = new BufferedReader(new InputStreamReader(tableURL.openStream(), Charset.forName("UTF-8").newDecoder()));
 
 		String line;
 		while ((line = reader.readLine()) != null) {

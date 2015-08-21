@@ -29,6 +29,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -49,7 +50,7 @@ public class ColorUtil {
 		String line;
 
 		try {
-			bufRd = new BufferedReader(new InputStreamReader(resourceURL.openStream()));
+			bufRd = new BufferedReader(new InputStreamReader(resourceURL.openStream(), Charset.forName("UTF-8").newDecoder()));
 			while ((line = bufRd.readLine()) != null) {
 				String[] parts = line.split("\\t");
 				COLOR_MAP.put(parts[0].trim().toUpperCase(), parts[1].trim());

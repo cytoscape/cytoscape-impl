@@ -32,6 +32,7 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.net.URL;
 import java.net.URLConnection;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -101,7 +102,7 @@ public class BiomartRestClient {
 		InputStreamReader inFile;
 
 		inFile = new InputStreamReader(this.getClass().getResource(RESOURCE)
-				.openStream());
+				.openStream(), Charset.forName("UTF-8").newDecoder());
 
 		BufferedReader inBuffer = new BufferedReader(inFile);
 

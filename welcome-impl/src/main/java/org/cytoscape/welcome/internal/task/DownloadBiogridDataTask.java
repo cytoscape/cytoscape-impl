@@ -31,6 +31,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.zip.ZipEntry;
@@ -143,7 +144,7 @@ public class DownloadBiogridDataTask extends AbstractTask {
 		outFile.createNewFile();
 		FileWriter outWriter = new FileWriter(outFile);
 		String line;
-		final BufferedReader br = new BufferedReader(new InputStreamReader(is));
+		final BufferedReader br = new BufferedReader(new InputStreamReader(is, Charset.forName("UTF-8").newDecoder()));
 
 		int count = 0;
 		while ((line = br.readLine()) != null) {

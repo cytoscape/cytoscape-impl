@@ -31,6 +31,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -126,7 +127,7 @@ public class GeneAssociationReader extends AbstractTask implements CyTableReader
 		BufferedReader taxonFileReader = null;
 
 		try {
-			taxonFileReader = new BufferedReader(new InputStreamReader(taxUrl.openStream()));
+			taxonFileReader = new BufferedReader(new InputStreamReader(taxUrl.openStream(), Charset.forName("UTF-8").newDecoder()));
 			final OntologyUtil ontologyUtil = new OntologyUtil();
 			this.speciesMap = ontologyUtil.getTaxonMap(taxonFileReader);
 		} finally {
@@ -149,7 +150,7 @@ public class GeneAssociationReader extends AbstractTask implements CyTableReader
 			termIDList = ontologyDAG.getDefaultNodeTable().getColumn(CyNetwork.NAME).getValues(String.class);
 		}
 		
-		BufferedReader bufRd = new BufferedReader(new InputStreamReader(is));
+		BufferedReader bufRd = new BufferedReader(new InputStreamReader(is, Charset.forName("UTF-8").newDecoder()));
 		String line = null;
 		String[] parts;
 

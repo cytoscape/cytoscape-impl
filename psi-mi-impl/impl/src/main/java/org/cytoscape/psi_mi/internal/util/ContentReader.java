@@ -33,6 +33,7 @@ import java.io.PushbackInputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.UnknownHostException;
+import java.nio.charset.Charset;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -71,7 +72,7 @@ public class ContentReader {
 				}
 			} else {
 				File file = new File(urlStr);
-				InputStreamReader reader = new InputStreamReader(new FileInputStream(file));
+				InputStreamReader reader = new InputStreamReader(new FileInputStream(file), Charset.forName("UTF-8").newDecoder());
 				content = this.retrieveContentFromFile(reader);
 			}
 		} catch (MalformedURLException e) {
@@ -97,7 +98,7 @@ public class ContentReader {
 	 * @return File contents.
 	 */
 	private String retrieveContentFromWeb(URL url) throws IOException {
-		InputStreamReader isr = new InputStreamReader(url.openStream());
+		InputStreamReader isr = new InputStreamReader(url.openStream(), Charset.forName("UTF-8").newDecoder());
 		final int bufSize = 65536;
 		char[] buf = new char[bufSize];
 		String content = "";
@@ -125,7 +126,7 @@ public class ContentReader {
 	 * @throws IOException Error Retrieving file.
 	 */
 	private String retrieveContentFromFtp(URL url) throws IOException {
-		InputStreamReader isr = new InputStreamReader(url.openStream());
+		InputStreamReader isr = new InputStreamReader(url.openStream(), Charset.forName("UTF-8").newDecoder());
 		final int bufSize = 65536;
 		char[] buf = new char[bufSize];
 		String content = "";
@@ -210,7 +211,7 @@ public class ContentReader {
 				if ((firstFour[0] == (byte) 0x1F) && (firstFour[1] == (byte) 0x8b)) {
 					// GZIP!
 					//System.out.println( "Detected GZIP format." );
-					result = new InputStreamReader(new GZIPInputStream(pbi));
+					result = new InputStreamReader(new GZIPInputStream(pbi), Charset.forName("UTF-8").newDecoder());
 				} else if ((firstFour[0] == (byte) 0x50) && (firstFour[1] == (byte) 0x4b)
 				           && (firstFour[2] == (byte) 0x03) && (firstFour[3] == (byte) 0x04)) {
 					// (pk)ZIP!

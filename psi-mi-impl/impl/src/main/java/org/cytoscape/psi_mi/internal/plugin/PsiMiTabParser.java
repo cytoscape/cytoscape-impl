@@ -28,6 +28,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -86,7 +87,7 @@ public class PsiMiTabParser {
 		initColumns(network);
 
 		String line = null;
-		final BufferedReader br = new BufferedReader(new InputStreamReader(inputStream), BUFFER_SIZE);
+		final BufferedReader br = new BufferedReader(new InputStreamReader(inputStream, Charset.forName("UTF-8").newDecoder()), BUFFER_SIZE);
 		final MITABLine25 mline = new MITABLine25();
 
 		long interactionCount = 0;

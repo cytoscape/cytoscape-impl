@@ -28,6 +28,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -410,7 +411,7 @@ public class InteractionClusterMapper {
 	private Miriam parseXml() throws IOException {
 
 		final URL xml = CyNetworkBuilder.class.getClassLoader().getResource("MiriamResources_all.xml");
-		final BufferedReader reader = new BufferedReader(new InputStreamReader(xml.openStream()));
+		final BufferedReader reader = new BufferedReader(new InputStreamReader(xml.openStream(), Charset.forName("UTF-8").newDecoder()));
 
 		JAXBContext jc = null;
 		try {

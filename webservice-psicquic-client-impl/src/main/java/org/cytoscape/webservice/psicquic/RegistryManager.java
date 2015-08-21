@@ -31,6 +31,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -221,7 +222,7 @@ public class RegistryManager {
 		connection.setRequestProperty("accept", "text/xml");
 		connection.connect();
 
-		BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+		BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream(), Charset.forName("UTF-8").newDecoder()));
 		final StringBuilder builder = new StringBuilder();
 
 		String next;

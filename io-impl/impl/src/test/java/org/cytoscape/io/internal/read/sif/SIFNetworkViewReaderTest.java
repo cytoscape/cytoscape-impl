@@ -99,6 +99,16 @@ public class SIFNetworkViewReaderTest extends AbstractNetworkReaderTest {
 		findInteraction(net, "TRAF6", "HJKOL coltrane", "interactsWith", 13);
 	}
 
+	@Test
+	public void testReadEasternAsianCharacters() throws Exception {
+		List<CyNetworkView> views = getViews("SIF-Japanese.sif");
+		CyNetwork net = checkSingleNetwork(views, 6, 3);
+
+		findInteraction(net, "これは", "テストです", "日本語の", 1);
+		findInteraction(net, "mixed", "English", "with", 1);
+		findInteraction(net, "大野", "圭一朗", "test1", 1);
+	}
+
 	private SIFNetworkReader readFile(String file) throws Exception {
 		File f = new File("./src/test/resources/testData/sif/" + file);
 		SIFNetworkReader snvp = new SIFNetworkReader(new FileInputStream(f), layouts, applicationManager, netFactory, networkManager, rootNetworkManager);
@@ -106,11 +116,6 @@ public class SIFNetworkViewReaderTest extends AbstractNetworkReaderTest {
 		snvp.run(taskMonitor);
 
 		return snvp;
-	}
-
-	private CyNetwork[] getNetworks(String file) throws Exception {
-		final SIFNetworkReader snvp = readFile(file);
-		return snvp.getNetworks();
 	}
 
 	private List<CyNetworkView> getViews(String file) throws Exception {

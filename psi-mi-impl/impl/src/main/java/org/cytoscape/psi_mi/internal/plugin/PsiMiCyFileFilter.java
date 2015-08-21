@@ -30,6 +30,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URI;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -93,7 +94,7 @@ public class PsiMiCyFileFilter implements CyFileFilter {
 	}
 
 	private boolean checkHeader(InputStream stream) throws IOException {
-		BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
+		BufferedReader reader = new BufferedReader(new InputStreamReader(stream, Charset.forName("UTF-8").newDecoder()));
 		int linesToCheck = DEFAULT_LINES_TO_CHECK;
 		while (linesToCheck-- > 0) {
 			String line = reader.readLine();

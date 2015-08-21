@@ -29,6 +29,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.StringWriter;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -120,7 +121,7 @@ public class PSIMI10XMLNetworkViewReader extends AbstractCyNetworkReader {
 	 */
 	private static String readString(InputStream source) throws IOException {
 		final StringWriter writer = new StringWriter();
-		final BufferedReader reader = new BufferedReader(new InputStreamReader(source));
+		final BufferedReader reader = new BufferedReader(new InputStreamReader(source, Charset.forName("UTF-8").newDecoder()));
 		
 		try {
 			char[] buffer = new char[BUFFER_SIZE];

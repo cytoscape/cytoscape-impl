@@ -45,6 +45,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -104,7 +105,7 @@ public class OBOReader extends AbstractTask implements CyNetworkReader {
 	
 	@Override
 	public void run(TaskMonitor tm) throws Exception {
-		BufferedReader bufRd = new BufferedReader(new InputStreamReader(inputStream));
+		BufferedReader bufRd = new BufferedReader(new InputStreamReader(inputStream, Charset.forName("UTF-8").newDecoder()));
 		String line;
 
 		// Create new DAG

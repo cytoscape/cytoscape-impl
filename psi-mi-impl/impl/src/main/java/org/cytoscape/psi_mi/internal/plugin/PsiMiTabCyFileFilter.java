@@ -29,6 +29,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URI;
+import java.nio.charset.Charset;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -81,7 +82,7 @@ public class PsiMiTabCyFileFilter implements CyFileFilter {
 	}
 	
 	private boolean checkFirstLine(InputStream stream) throws IOException {
-		final BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
+		final BufferedReader reader = new BufferedReader(new InputStreamReader(stream, Charset.forName("UTF-8").newDecoder()));
 		final String line = reader.readLine();
 		
 		if (line != null) {

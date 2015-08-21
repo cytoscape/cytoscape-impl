@@ -38,6 +38,7 @@ import java.awt.event.MouseListener;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -76,7 +77,7 @@ public class CreditScreen {
 		try {
 			image = new ImageIcon(getClass().getResource(CREDIT_IMAGE)); 
 			BufferedReader br = new BufferedReader(
-				new InputStreamReader(getClass().getResource(CREDITS).openStream()));
+				new InputStreamReader(getClass().getResource(CREDITS).openStream(), Charset.forName("UTF-8").newDecoder()));
 			lines = new ArrayList<String>();
 			while ( br.ready() )
 				lines.add( br.readLine() );
