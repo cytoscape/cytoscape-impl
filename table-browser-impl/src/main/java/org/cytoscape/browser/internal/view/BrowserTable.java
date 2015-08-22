@@ -100,6 +100,7 @@ import org.cytoscape.model.events.RowsSetEvent;
 import org.cytoscape.model.events.RowsSetListener;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.IconManager;
+import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.model.CyNetworkView;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -114,12 +115,9 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 
 	private static final Font BORDER_FONT = UIManager.getFont("Label.font").deriveFont(11f);
 
-	private static final TableCellRenderer cellRenderer = new BrowserTableCellRenderer();
-	private static final String MAC_OS_ID = "mac";
-	private static final String WIN_OS_ID = "Windows";
-
 	private Clipboard systemClipboard;
-	private CellEditorRemover editorRemover = null;
+	private CellEditorRemover editorRemover;
+	private final TableCellRenderer cellRenderer;
 	private final HashMap<String, Integer> columnWidthMap = new HashMap<>();
 
 	// For right-click menu
@@ -141,6 +139,8 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 		this.compiler = compiler;
 		this.popupMenuHelper = popupMenuHelper;
 		this.serviceRegistrar = serviceRegistrar;
+		
+		cellRenderer = new BrowserTableCellRenderer(serviceRegistrar.getService(IconManager.class));
 		
 		init();
 		setAutoCreateColumnsFromModel(false);
@@ -678,7 +678,7 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 	
 	private void maybeShowPopup(final MouseEvent e) {
 		if (e.isPopupTrigger()) {
-			if (isWinPlatform())
+			if (LookAndFeelUtil.isWindows())
 				selectFocusedCell(e);
 			
 			// Show context menu
@@ -910,17 +910,6 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 				ignoreRowSetEvents = false;
 			}
 		}
-	}
-	
-	/**
-	 * Routine which determines if we are running on mac platform
-	 */
-	private boolean isMacPlatform() {
-		return System.getProperty("os.name").regionMatches(true, 0, MAC_OS_ID, 0, MAC_OS_ID.length());
-	}
-	
-	private boolean isWinPlatform() {
-		return System.getProperty("os.name").startsWith(WIN_OS_ID);
 	}
 	
 	// ==[ CLASSES ]====================================================================================================

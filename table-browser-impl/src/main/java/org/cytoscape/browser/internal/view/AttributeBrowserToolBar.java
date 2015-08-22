@@ -24,7 +24,7 @@ package org.cytoscape.browser.internal.view;
  * #L%
  */
 
-import static org.cytoscape.util.swing.IconManager.ICON_CHECK_SQUARE_O;
+import static org.cytoscape.util.swing.IconManager.ICON_CHECK_SQUARE;
 import static org.cytoscape.util.swing.IconManager.ICON_COLUMNS;
 import static org.cytoscape.util.swing.IconManager.ICON_PLUS;
 import static org.cytoscape.util.swing.IconManager.ICON_SQUARE_O;
@@ -674,7 +674,7 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 	
 	private JButton getSelectAllButton() {
 		if (selectAllAttributesButton == null) {
-			selectAllAttributesButton = new JButton(ICON_CHECK_SQUARE_O + " " + ICON_CHECK_SQUARE_O);
+			selectAllAttributesButton = new JButton(ICON_CHECK_SQUARE + " " + ICON_CHECK_SQUARE);
 			selectAllAttributesButton.setToolTipText("Show All Columns");
 			styleButton(selectAllAttributesButton, iconMgr.getIconFont(ICON_FONT_SIZE / 2.0f));
 
