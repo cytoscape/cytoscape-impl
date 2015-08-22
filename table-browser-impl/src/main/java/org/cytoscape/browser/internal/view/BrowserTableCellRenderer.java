@@ -27,6 +27,7 @@ package org.cytoscape.browser.internal.view;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Font;
 import java.awt.Graphics;
 
 import javax.swing.BorderFactory;
@@ -38,6 +39,7 @@ import javax.swing.border.Border;
 import javax.swing.table.TableCellRenderer;
 
 import org.cytoscape.browser.internal.util.ValidatedObjectAndEditString;
+import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 
 
@@ -47,12 +49,15 @@ class BrowserTableCellRenderer extends JLabel implements TableCellRenderer {
 	private static final long serialVersionUID = -4364566217397320318L;
 	
 	// Define fonts & colors for the cells
-	private static final Color ERROR_FG_COLOR = Color.RED;
 	private static final int H_PAD = 8;
 	private static final int V_PAD = 2;
 	private static EquationIcon EQUATION_ICON = new EquationIcon();
+	private final Font defaultFont;
+	private final IconManager iconManager;
 
-	public BrowserTableCellRenderer() {
+	public BrowserTableCellRenderer(final IconManager iconManager) {
+		this.iconManager = iconManager;
+		defaultFont = getFont().deriveFont(LookAndFeelUtil.INFO_FONT_SIZE);
 		setOpaque(true);
 		
 		// Add padding:
@@ -73,7 +78,11 @@ class BrowserTableCellRenderer extends JLabel implements TableCellRenderer {
 		final ValidatedObjectAndEditString objEditStr = (ValidatedObjectAndEditString) value;
 		final Object validatedObj = objEditStr != null ? objEditStr.getValidatedObject() : null;
 		
-		setFont(getFont().deriveFont(LookAndFeelUtil.INFO_FONT_SIZE));
+		if (validatedObj instanceof Boolean)
+			setFont(iconManager.getIconFont(12.0f));
+		else
+			setFont(defaultFont);
+		
 		setBackground(UIManager.getColor("Table.background"));
 		setIcon(objEditStr != null && objEditStr.isEquation() ? EQUATION_ICON : null);
 		setVerticalTextPosition(JLabel.CENTER);
@@ -89,12 +98,19 @@ class BrowserTableCellRenderer extends JLabel implements TableCellRenderer {
 		// First, set values
 		if (objEditStr == null || (objEditStr.getValidatedObject() == null && objEditStr.getErrorText() == null)) {
 			setText("");
+			setToolTipText(null);
 		} else {
-			final String displayText = (objEditStr.getErrorText() != null)
-				? "#ERR: " + objEditStr.getErrorText()
-				: objEditStr.getValidatedObject().toString();
+			final String displayText;
+			
+			if (objEditStr.getErrorText() != null)
+				displayText = "#ERR: " + objEditStr.getErrorText();
+			else if (validatedObj instanceof Boolean)
+				displayText = validatedObj == Boolean.TRUE ? IconManager.ICON_CHECK_SQUARE : IconManager.ICON_SQUARE_O;
+			else
+				displayText = validatedObj.toString();
+			
 			setText(displayText);
-			String tooltipText = displayText;
+			String tooltipText = validatedObj instanceof Boolean ? validatedObj.toString() : displayText;
 			
 			if (tooltipText.length() > 100)
 				setToolTipText(tooltipText.substring(0, 100) + "...");
@@ -108,7 +124,7 @@ class BrowserTableCellRenderer extends JLabel implements TableCellRenderer {
 				setBackground(UIManager.getColor("Table.focusCellBackground"));
 				setForeground(UIManager.getColor("Table.focusCellForeground"));
 			} else {
-				setForeground(isError ? ERROR_FG_COLOR : UIManager.getColor("Table.selectionForeground"));
+				setForeground(isError ? LookAndFeelUtil.ERROR_COLOR : UIManager.getColor("Table.selectionForeground"));
 				setBackground(UIManager.getColor("Table.selectionBackground"));
 			}
 		} else {
@@ -116,7 +132,7 @@ class BrowserTableCellRenderer extends JLabel implements TableCellRenderer {
 			if (table.getModel() instanceof BrowserTableModel && !table.isCellEditable(0, column))
 				setForeground(UIManager.getColor("TextField.inactiveForeground"));
 			else
-				setForeground(isError ? ERROR_FG_COLOR : UIManager.getColor("Table.foreground"));
+				setForeground(isError ? LookAndFeelUtil.ERROR_COLOR : UIManager.getColor("Table.foreground"));
 		}
 		
 		return this;

@@ -279,7 +279,7 @@ public class ColumnSelector extends JPanel {
 					setText((boolean)value ? SHARED_COL_ICON_TEXT : "");
 					setToolTipText((boolean)value ? "Network Collection Column" : null);
 				} else {
-					setText((boolean)value ? IconManager.ICON_CHECK_SQUARE_O : IconManager.ICON_SQUARE_O);
+					setText((boolean)value ? IconManager.ICON_CHECK_SQUARE : IconManager.ICON_SQUARE_O);
 				}
 			} else {
 				 if (column == TYPE_COL_IDX && value instanceof CyColumn) {
