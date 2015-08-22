@@ -30,6 +30,7 @@ import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.io.DataCategory;
 import org.cytoscape.io.internal.read.graphml.GraphMLFileFilter;
 import org.cytoscape.io.internal.read.graphml.GraphMLReaderFactory;
+import org.cytoscape.io.internal.write.graphml.GraphMLNetworkWriterFactory;
 import org.cytoscape.io.read.InputStreamTaskFactory;
 import org.cytoscape.io.util.StreamUtil;
 import org.cytoscape.model.CyNetworkFactory;
@@ -63,7 +64,11 @@ public class CyActivator extends AbstractCyActivator {
 		GraphMLReaderFactory graphMLReaderFactory = new GraphMLReaderFactory(graphMLFilter, cyLayoutsServiceRef,
 				cyApplicationManagerServiceRef, cyNetworkFactoryServiceRef, cyNetworkManager,
 				cyRootNetworkFactoryServiceRef);
+		
+		GraphMLNetworkWriterFactory graphMLNetworkWriterFactory = new GraphMLNetworkWriterFactory(graphMLFilter);
 
-		registerService(bc, graphMLReaderFactory, InputStreamTaskFactory.class, new Properties());		
+		registerService(bc, graphMLReaderFactory, InputStreamTaskFactory.class, new Properties());
+		
+		registerAllServices(bc, graphMLNetworkWriterFactory, new Properties());
 	}
 }
