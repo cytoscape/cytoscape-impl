@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -22,6 +23,9 @@ import org.cytoscape.application.CyVersion;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.CyNetworkViewManager;
+import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
@@ -32,6 +36,8 @@ import org.cytoscape.view.vizmap.mappings.ContinuousMapping;
 import org.cytoscape.view.vizmap.mappings.ContinuousMappingPoint;
 import org.cytoscape.view.vizmap.mappings.DiscreteMapping;
 import org.cytoscape.view.vizmap.mappings.PassthroughMapping;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.core.JsonGenerator;
@@ -40,6 +46,8 @@ import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
 
 public class CytoscapeJsVisualStyleSerializer extends JsonSerializer<VisualStyle> {
+	
+	private static final Logger logger = LoggerFactory.getLogger(CytoscapeJsVisualStyleSerializer.class);
 	
 	private static final Pattern REPLACE_INVALID_JS_CHAR_PATTERN = Pattern.compile("^[^a-zA-Z_]+|[^a-zA-Z_0-9]+");
 	
@@ -69,10 +77,15 @@ public class CytoscapeJsVisualStyleSerializer extends JsonSerializer<VisualStyle
 	private final ValueSerializerManager manager;
 	
 	private final String version;
+	
+	// For bypass
+	private final CyNetworkViewManager viewManager;
 
-	public CytoscapeJsVisualStyleSerializer(final ValueSerializerManager manager, final VisualLexicon lexicon, final CyVersion cyVersion) {
+	public CytoscapeJsVisualStyleSerializer(final ValueSerializerManager manager, 
+			final VisualLexicon lexicon, final CyVersion cyVersion, final CyNetworkViewManager viewManager) {
 		this.passthrough = new PassthroughMappingSerializer();
 		this.manager = manager;
+		this.viewManager = viewManager;
 
 		this.converter = new CytoscapeJsStyleConverter();
 		this.lexicon = lexicon;
@@ -109,13 +122,21 @@ public class CytoscapeJsVisualStyleSerializer extends JsonSerializer<VisualStyle
 
 		// Mappings and Defaults are stored as array.
 		jg.writeArrayFieldStart(STYLE.getTag());
+		
 		// Node Mapping
 		serializeVisualProperties(BasicVisualLexicon.NODE, vs, jg);
 		serializeMappings(BasicVisualLexicon.NODE, vs, jg, CyNode.class);
+		// Bypass
+		serializeBypass(BasicVisualLexicon.NODE, vs, jg, CyNode.class);
+		// Selected states
 		serializeSelectedProperties(BasicVisualLexicon.NODE, vs, jg);
 
+		// Edge Mappings
 		serializeVisualProperties(BasicVisualLexicon.EDGE, vs, jg);
 		serializeMappings(BasicVisualLexicon.EDGE, vs, jg, CyEdge.class);
+		// Bypass
+		serializeBypass(BasicVisualLexicon.EDGE, vs, jg, CyEdge.class);
+		// Selected States
 		serializeSelectedProperties(BasicVisualLexicon.EDGE, vs, jg);
 
 		jg.writeEndArray();
@@ -192,6 +213,15 @@ public class CytoscapeJsVisualStyleSerializer extends JsonSerializer<VisualStyle
 				}
 			}
 		}
+	}
+	
+	private final void serializeBypass(
+			final VisualProperty<?> root,
+			final VisualStyle vs,
+			final JsonGenerator jg, final Class<? extends CyIdentifiable> type) throws IOException {
+
+			final Collection<VisualProperty<?>> visualProperties = lexicon.getAllDescendants(root);
+			createBypassMappings(visualProperties, vs, jg, type);
 	}
 
 	private final void generateContinuousMappingSection(final CytoscapeJsToken jsTag,
@@ -415,7 +445,79 @@ public class CytoscapeJsVisualStyleSerializer extends JsonSerializer<VisualStyle
 			}
 		}
 	}
-
+	
+	private void createBypassMappings(
+			final Collection<VisualProperty<?>> vps, 
+			final VisualStyle vs,
+			final JsonGenerator jg, Class<? extends CyIdentifiable> type) throws IOException {
+		
+		final Set<CyNetworkView> views = viewManager.getNetworkViewSet();
+		
+		if (type.equals(CyNode.class)) {
+			views.stream().flatMap(view -> view.getNodeViews().stream())
+					.forEach(nodeView -> writeBypass(nodeView, vps, jg, type));
+		} else if (type.equals(CyEdge.class)) {
+			views.stream().flatMap(view -> view.getEdgeViews().stream())
+					.forEach(edgeView -> writeBypass(edgeView, vps, jg, type));
+		}
+	}
+	
+	private final void writeBypass(View<? extends CyIdentifiable> view, final Collection<VisualProperty<?>> vps, 
+			final JsonGenerator jg, Class<? extends CyIdentifiable> type) {
+		
+		final Set<VisualProperty<?>> bypassVpSet = new HashSet<>();
+		for(final VisualProperty<?> vp: vps) {
+			final boolean lock1 = view.isValueLocked(vp);
+			final boolean lock2 = view.isDirectlyLocked(vp);
+			if(lock1 || lock2) {
+				bypassVpSet.add(vp);
+			}
+		}
+		if(bypassVpSet.isEmpty()) {
+			return;
+		}
+		
+		
+		String objTypeString = null;
+		if(type.equals(CyNode.class)) {
+			objTypeString = "node";
+		} else if(type.equals(CyEdge.class)) {
+			objTypeString = "edge";
+		} else {
+			return;
+		}
+		
+		try {
+			jg.writeStartObject();
+			
+			final String mappingString = objTypeString + "[ id = '" + view.getModel().getSUID().toString() + "' ]";
+			
+			jg.writeStringField(SELECTOR.getTag(), mappingString);
+			jg.writeObjectFieldStart(CSS.getTag());
+			
+			writeBypassVp(view, bypassVpSet, jg);
+			
+			jg.writeEndObject();
+			jg.writeEndObject();
+		} catch (Exception e) {
+			logger.warn("Could not write bypass entry", e);
+		}
+		
+	}
+	private final void writeBypassVp(View<? extends CyIdentifiable> view, final Collection<VisualProperty<?>> vps, 
+			final JsonGenerator jg) throws IOException {
+		for (final VisualProperty<?> vp : vps) {
+			final CytoscapeJsToken tag = converter.getTag(vp);
+			if (tag == null) {
+				continue;
+			}
+			final Object originalValue = view.getVisualProperty(vp);
+			final Object value = convert(vp, originalValue);
+			// Write key-value pair
+			jg.writeObjectField(tag.getTag(), value);
+		}
+	}
+	
 	/**
 	 * Special case handler which requires value conversion.
 	 * 

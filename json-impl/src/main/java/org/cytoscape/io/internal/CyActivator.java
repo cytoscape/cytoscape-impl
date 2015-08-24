@@ -81,7 +81,7 @@ public class CyActivator extends AbstractCyActivator {
 
 		// For Visual Style
 		final CytoscapeJsVisualStyleWriterFactory jsonVSWriterFactory = new CytoscapeJsVisualStyleWriterFactory(
-				vizmapJsonFilter, applicationManager, cyVersion);
+				vizmapJsonFilter, applicationManager, cyVersion, viewManager);
 
 		// Use this ID to get this service in other bundles.
 		final Properties jsVisualStyleWriterFactoryProperties = new Properties();
