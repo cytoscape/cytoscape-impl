@@ -968,7 +968,12 @@ public class PreviewTablePanel extends JPanel {
 		editDialog.addWindowListener(new WindowAdapter() {
 			@Override
 			public void windowOpened(WindowEvent e) {
+				getPreviewTable().getTableHeader().repaint();
 				attrEditorPanel.getAttributeNameTextField().requestFocusInWindow();
+			}
+			@Override
+			public void windowClosed(WindowEvent e) {
+				getPreviewTable().getTableHeader().repaint();
 			}
 		});
 	    editDialog.pack();
@@ -1078,6 +1083,7 @@ public class PreviewTablePanel extends JPanel {
 				@Override
 				public void actionPerformed(ActionEvent evt) {
 					if (!updating) {
+						disposeEditDialog();
 						final Sheet sheet = (Sheet) sheetComboBox.getSelectedItem();
 						
 						try {
@@ -1325,7 +1331,7 @@ public class PreviewTablePanel extends JPanel {
 				fgColor = UIManager.getColor("TextField.inactiveForeground");
 			}
 			
-			if (editDialog != null && editDialog.index == col)
+			if (editDialog != null && editDialog.index == col && editDialog.isVisible())
 				editLabel.setText(IconManager.ICON_CARET_DOWN);
 			else
 				editLabel.setText(IconManager.ICON_CARET_LEFT);
