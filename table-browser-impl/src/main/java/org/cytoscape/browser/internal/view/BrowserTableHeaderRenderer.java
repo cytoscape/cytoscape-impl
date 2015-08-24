@@ -69,8 +69,10 @@ final class BrowserTableHeaderRenderer extends JPanel implements TableCellRender
 		sharedLabel.setFont(iconManager.getIconFont(12.0f));
 		sharedLabel.setForeground(UIManager.getColor("TextField.inactiveForeground"));
 		
-		sortLabel = new JLabel();
-		sortLabel.setFont(iconManager.getIconFont(10.0f));
+		sortLabel = new JLabel(IconManager.ICON_ANGLE_UP);
+		sortLabel.setFont(iconManager.getIconFont(12.0f));
+		sortLabel.setMinimumSize(sortLabel.getPreferredSize());
+		sortLabel.setSize(sortLabel.getPreferredSize());
 		
 		final GroupLayout layout = new GroupLayout(this);
 		this.setLayout(layout);
@@ -113,7 +115,7 @@ final class BrowserTableHeaderRenderer extends JPanel implements TableCellRender
 		
 		sharedLabel.setText("");
 		
-		sortLabel.setText(IconManager.ICON_SORT);
+		sortLabel.setText(" ");
 		sortLabel.setForeground(UIManager.getColor("TextField.inactiveForeground"));
 		
 		setToolTipText(colName);
@@ -163,8 +165,8 @@ final class BrowserTableHeaderRenderer extends JPanel implements TableCellRender
 				}
 			}
 			
-			final String iconTxt = ascending ? IconManager.ICON_SORT_ASC : IconManager.ICON_SORT_DESC;
-			sortLabel.setText(col == index ? iconTxt : IconManager.ICON_SORT);
+			if (col == index)
+				sortLabel.setText(ascending ? IconManager.ICON_ANGLE_UP : IconManager.ICON_ANGLE_DOWN);
 			
 			if (col == index)
 				sortLabel.setForeground(UIManager.getColor("TableHeader.foreground"));

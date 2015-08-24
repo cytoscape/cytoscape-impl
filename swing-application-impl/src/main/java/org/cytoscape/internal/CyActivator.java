@@ -567,14 +567,17 @@ public class CyActivator extends AbstractCyActivator {
 				UIManager.put(
 						"TableHeader.cellBorder",
 						BorderFactory.createCompoundBorder(
-								BorderFactory.createEmptyBorder(2, 0, 2, 0),
+								BorderFactory.createMatteBorder(0, 0, 1, 0, UIManager.getColor("Separator.foreground")),
 								BorderFactory.createCompoundBorder(
-										BorderFactory.createMatteBorder(0, 0, 0, 1, UIManager.getColor("Separator.foreground")),
-										BorderFactory.createEmptyBorder(0, 4, 0, 4)
+										BorderFactory.createEmptyBorder(2, 0, 2, 0),
+										BorderFactory.createCompoundBorder(
+												BorderFactory.createMatteBorder(0, 0, 0, 1, UIManager.getColor("Separator.foreground")),
+												BorderFactory.createEmptyBorder(0, 4, 0, 4)
+										)
 								)
 						)
 				);
-				UIManager.put("TableHeader.background", UIManager.getColor("Panel.background"));
+				UIManager.put("TableHeader.background", new Color(244, 244, 244));
 			} else if (LookAndFeelUtil.isWindows()) {
 				UIManager.put(
 						"TableHeader.cellBorder", 
