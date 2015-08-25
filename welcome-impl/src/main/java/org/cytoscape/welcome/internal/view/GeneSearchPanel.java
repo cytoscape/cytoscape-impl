@@ -1,4 +1,4 @@
-package org.cytoscape.welcome.internal.panel;
+package org.cytoscape.welcome.internal.view;
 
 /*
  * #%L
@@ -41,67 +41,59 @@ import javax.swing.JLabel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 
-import org.cytoscape.io.read.CyNetworkReaderManager;
 import org.cytoscape.io.webservice.WebServiceClient;
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.view.layout.CyLayoutAlgorithm;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
-import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.work.FinishStatus;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskObserver;
 import org.cytoscape.work.swing.DialogTaskManager;
 
-public class GeneSearchPanel extends AbstractWelcomeScreenChildPanel implements ActionListener
-{
-	JComboBox species = new JComboBox();
+@SuppressWarnings("serial")
+public class GeneSearchPanel extends AbstractWelcomeScreenChildPanel implements ActionListener {
+	
+	JComboBox<String> species = new JComboBox<>();
 	JTextArea geneList = new JTextArea();
 	JButton buildNetwork = new JButton("Build Network");
 
 	private final DialogTaskManager taskManager;
-	private final CyNetworkReaderManager networkReaderManager;
-	private final CyNetworkManager networkManager;
-	private final CyNetworkViewFactory networkViewFactory;
 	private final CyLayoutAlgorithmManager layoutAlgorithmManager;
-	private final VisualMappingManager visualMappingManager;
 	private final CyNetworkViewManager networkViewManager;
 	private final WebServiceClient webServiceClient;
 
 
-	public GeneSearchPanel(final DialogTaskManager taskManager, CyNetworkReaderManager networkReaderManager, CyNetworkManager networkManager, CyNetworkViewFactory networkViewFactory, CyLayoutAlgorithmManager layoutAlgorithmManager, VisualMappingManager visualMappingManager, CyNetworkViewManager networkViewManager, WebServiceClient webServiceClient)
-	{
+	public GeneSearchPanel(
+			final DialogTaskManager taskManager,
+			final CyLayoutAlgorithmManager layoutAlgorithmManager,
+			final CyNetworkViewManager networkViewManager,
+			final WebServiceClient webServiceClient
+	) {
+		super("Search Genes");
 		this.taskManager = taskManager;
-		this.networkReaderManager = networkReaderManager;
-		this.networkManager = networkManager;
-		this.networkViewFactory = networkViewFactory;
 		this.layoutAlgorithmManager = layoutAlgorithmManager;
-		this.visualMappingManager = visualMappingManager;
 		this.networkViewManager = networkViewManager;
 		this.webServiceClient = webServiceClient;
+		
 		initComponents();
 	}
 
-	private void initComponents()
-	{
+	private void initComponents() {
 		this.setBorder(BorderFactory.createEmptyBorder(5, 5, 3, 5));
 		species.setOpaque(true);
-		species.setBackground(PANEL_COLOR);
 		buildNetwork.setOpaque(true);
-		buildNetwork.setBackground(PANEL_COLOR);
-		
+
 		JLabel speciesLabel = new JLabel("Species");
 		speciesLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
 		species.setAlignmentX(Component.LEFT_ALIGNMENT);
-		
+
 		JLabel genesLabel = new JLabel("Genes");
 		genesLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
-		geneList.setPreferredSize( new Dimension(200,200));
-		
-		JScrollPane sp = new JScrollPane( geneList );
+		geneList.setPreferredSize(new Dimension(200, 200));
+
+		JScrollPane sp = new JScrollPane(geneList);
 		sp.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
 		sp.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 		sp.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -165,45 +157,46 @@ public class GeneSearchPanel extends AbstractWelcomeScreenChildPanel implements 
 	}
 
 	@Override
-	public void actionPerformed(ActionEvent e)
-	{
+	public void actionPerformed(ActionEvent e) {
 		String selectedSpecies = species.getSelectedItem().toString();
 		java.util.List<String> geneNames = Arrays.asList(geneList.getText().split("\\s+"));
 
 		String query = "species:" + selectedSpecies;
-		if( geneNames != null && !geneNames.isEmpty() )
-		{
+		
+		if (geneNames != null && !geneNames.isEmpty()) {
 			query += " AND ";
-			if( geneNames.size() > 1 )
+			
+			if (geneNames.size() > 1)
 				query += "( ";
-			for( int i = 0; i < geneNames.size() - 1; i++ )
-			{
+			
+			for (int i = 0; i < geneNames.size() - 1; i++) {
 				String geneName = geneNames.get(i);
 				query += "alias:" + geneName + " OR ";
 			}
-			query += "alias:" + geneNames.get(geneNames.size()-1);
-			if( geneNames.size() > 1 )
+			
+			query += "alias:" + geneNames.get(geneNames.size() - 1);
+			
+			if (geneNames.size() > 1)
 				query += " )";
 		}
-		System.out.println("Query = " + query);
 
 		closeParentWindow();
-		taskManager.execute( webServiceClient.createTaskIterator(query), new TaskObserver()
-		{
+		taskManager.execute(webServiceClient.createTaskIterator(query), new TaskObserver() {
 			CyNetwork network;
 
 			@Override
-			public void taskFinished(ObservableTask task)
-			{
+			public void taskFinished(ObservableTask task) {
 				Object networks = task.getResults(Object.class);
-				if( networks instanceof Set )
-				{
-					Set networkSet = (Set)networks;
-					for( Object o : networkSet )
-					{
+				
+				if (networks instanceof Set) {
+					Set networkSet = (Set) networks;
+					
+					for (Object o : networkSet) {
 						System.out.println("Hello there FOO BAR");
-						if( o instanceof CyNetwork )
-							network = (CyNetwork)o;
+						
+						if (o instanceof CyNetwork)
+							network = (CyNetwork) o;
+						
 						return;
 					}
 				}
@@ -211,18 +204,17 @@ public class GeneSearchPanel extends AbstractWelcomeScreenChildPanel implements 
 			}
 
 			@Override
-			public void allFinished(FinishStatus finishStatus)
-			{
-				System.out.println("All finished FOO BAR");
+			public void allFinished(FinishStatus finishStatus) {
 				Collection<CyNetworkView> views = networkViewManager.getNetworkViews(network);
 				CyLayoutAlgorithm layoutAlgorithm = layoutAlgorithmManager.getLayout("force-directed");
-				for( CyNetworkView view : views )
-				{
-					taskManager.execute(layoutAlgorithm.createTaskIterator(view, layoutAlgorithm.getDefaultLayoutContext(), CyLayoutAlgorithm.ALL_NODE_VIEWS, ""));
+				
+				for (CyNetworkView view : views) {
+					taskManager.execute(layoutAlgorithm.createTaskIterator(view,
+							layoutAlgorithm.getDefaultLayoutContext(), CyLayoutAlgorithm.ALL_NODE_VIEWS, ""));
 				}
+				//BuildNetworkBasedOnGenesTaskFactory buildNetworkFactory = new BuildNetworkBasedOnGenesTaskFactory(networkReaderManager, networkManager, networkViewFactory, layoutAlgorithmManager, visualMappingManager, networkViewManager, intActVSBuilder, selectedSpecies, geneNames);
+				//taskManager.execute( buildNetworkFactory.createTaskIterator() );
 			}
 		});
-		//BuildNetworkBasedOnGenesTaskFactory buildNetworkFactory = new BuildNetworkBasedOnGenesTaskFactory(networkReaderManager, networkManager, networkViewFactory, layoutAlgorithmManager, visualMappingManager, networkViewManager, intActVSBuilder, selectedSpecies, geneNames);
-		//taskManager.execute( buildNetworkFactory.createTaskIterator() );
 	}
 }

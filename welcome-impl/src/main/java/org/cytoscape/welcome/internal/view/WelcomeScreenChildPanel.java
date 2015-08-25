@@ -1,4 +1,4 @@
-package org.cytoscape.welcome.internal.panel;
+package org.cytoscape.welcome.internal.view;
 
 /*
  * #%L
@@ -24,25 +24,17 @@ package org.cytoscape.welcome.internal.panel;
  * #L%
  */
 
-import javax.swing.BorderFactory;
-import javax.swing.BoxLayout;
+import java.awt.Color;
+import java.awt.Window;
 
-public class NewsPanel extends AbstractWelcomeScreenChildPanel {
+import javax.swing.UIManager;
 
-	private static final long serialVersionUID = -1685752658901305871L;
-
-	private final StatusPanel statusPanel;
-
-	public NewsPanel(final StatusPanel statusPanel) {
-		this.statusPanel = statusPanel;
-		initComponents();
-	}
-
-	private void initComponents() {
-		setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-		setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
-		
-		statusPanel.setOpaque(false);
-		add(statusPanel);
-	}
+public interface WelcomeScreenChildPanel {
+	
+	public static final Color LINK_FONT_COLOR = UIManager.getColor("Table.focusCellBackground");
+	public static final Color OK_COLOR = new Color(0, 104, 103);
+	 
+	public void closeParentWindow();
+	
+	public void setParentWindow(Window window);
 }

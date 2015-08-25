@@ -65,15 +65,16 @@ public class VisualStyleBuilder {
 	private static final String EDGE_COLOR_COLUMN = "EdgeBetweenness";
 	
 	private static Font NODE_LABEL_FONT;
+	
 	static  {
 		NODE_LABEL_FONT = new Font("HelveticaNeue-UltraLight", Font.PLAIN, 10);
-		if(NODE_LABEL_FONT == null)
+		
+		if (NODE_LABEL_FONT == null)
 			NODE_LABEL_FONT = new Font("SansSerif", Font.PLAIN, 10);
 	}
 
 	// Bend definition. We can tweak this value later.
 	private static final String EDGE_BEND_DEFINITION = "0.8117209636412094,0.5840454410278249,0.6715391110621636";
-	private static final String NODE_LABEL_POSITION_DEFINITION = "S,NW,c,0.00,0.00";
 
 	private final VisualStyleFactory vsFactory;
 	private final BendFactory bendFactory;
@@ -82,10 +83,13 @@ public class VisualStyleBuilder {
 	private final VisualMappingFunctionFactory discreteMappingFactory;
 	private final VisualMappingFunctionFactory passthroughMappingFactory;
 
-	public VisualStyleBuilder(final VisualStyleFactory vsFactory,
+	public VisualStyleBuilder(
+			final VisualStyleFactory vsFactory,
 			final VisualMappingFunctionFactory continupousMappingFactory,
 			final VisualMappingFunctionFactory discreteMappingFactory,
-			final VisualMappingFunctionFactory passthroughMappingFactory, final BendFactory bendFactory) {
+			final VisualMappingFunctionFactory passthroughMappingFactory,
+			final BendFactory bendFactory
+	) {
 		this.vsFactory = vsFactory;
 		this.continupousMappingFactory = continupousMappingFactory;
 		this.discreteMappingFactory = discreteMappingFactory;

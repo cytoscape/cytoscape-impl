@@ -539,14 +539,8 @@ public class CyActivator extends AbstractCyActivator {
 			if (tsb == null) tsb = UIManager.getColor("Table[Enabled+Selected].textBackground");
 			
 			if (tsb != null) {
-				float percent = 10.0f;
 				HSLColor hsl = new HSLColor(tsb);
-				
-				do {
-					percent += 5;
-					tsb = hsl.adjustLuminance(percent);
-				} while (percent < 90.0f && !hsl.adjustLuminance(percent + 5).equals(Color.WHITE));
-				System.out.println(">> " + percent);
+				tsb = hsl.adjustLuminance(LookAndFeelUtil.isAquaLAF() ? 94.0f : 90.0f);
 			}
 			
 			final Color TABLE_SELECTION_BG = tsb != null && !tsb.equals(Color.WHITE) ? tsb : new Color(222, 234, 252);
@@ -594,7 +588,7 @@ public class CyActivator extends AbstractCyActivator {
 			} else if (LookAndFeelUtil.isNimbusLAF()) {
 				UIManager.put("Table.background", Color.WHITE);
 				UIManager.put("Table.gridColor", Color.WHITE);
-				UIManager.put("Separator.foreground", new Color(127, 133, 144));
+				UIManager.put("Separator.foreground", new Color(150, 156, 165));
 				UIManager.put("TextField.inactiveForeground", new Color(135, 136, 140));
 				UIManager.put("Label.disabledForeground", new Color(135, 136, 140));
 				UIManager.put("TextField.selectionBackground", new Color(88, 147, 200));

@@ -1,4 +1,4 @@
-package org.cytoscape.welcome.internal;
+package org.cytoscape.welcome.internal.view;
 
 /*
  * #%L
@@ -30,12 +30,10 @@ import java.util.Properties;
 
 import javax.swing.SwingUtilities;
 
-import org.cytoscape.application.CyVersion;
 import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.util.swing.OpenBrowser;
-import org.cytoscape.welcome.internal.panel.AbstractWelcomeScreenChildPanel;
 
 public class WelcomeScreenAction extends AbstractCyAction {
 
@@ -49,37 +47,37 @@ public class WelcomeScreenAction extends AbstractCyAction {
 	private boolean hide = false;
 
 	// Child Panels
-	private final AbstractWelcomeScreenChildPanel importPanel;
-	private final AbstractWelcomeScreenChildPanel openPanel;
-	private final AbstractWelcomeScreenChildPanel newsPanel;
+	private final NewNetworkPanel newNetPanel;
+	private final OpenSessionPanel openPanel;
+	private final NewsPanel newsPanel;
 
 	private final CyProperty<Properties> cyProps;
 	private final CySwingApplication cytoscapeDesktop;
 	private final OpenBrowser openBrowser;
-	private final CyVersion version;
 
-	public WelcomeScreenAction(final AbstractWelcomeScreenChildPanel importPanel,
-							   final AbstractWelcomeScreenChildPanel openPanel,
-							   final AbstractWelcomeScreenChildPanel newsPanel,
-							   final CyProperty<Properties> cyProps,
-							   final CySwingApplication cytoscapeDesktop,
-							   final OpenBrowser openBrowser,
-							   final CyVersion version) {
+	public WelcomeScreenAction(
+			final NewNetworkPanel newNetPanel,
+			final OpenSessionPanel openPanel,
+			final NewsPanel newsPanel,
+			final CyProperty<Properties> cyProps,
+			final CySwingApplication cytoscapeDesktop,
+			final OpenBrowser openBrowser
+	) {
 		super(MENU_NAME);
 		setPreferredMenu(PARENT_NAME);
 		this.setMenuGravity(1.5f);
 
-		this.importPanel = importPanel;
+		this.newNetPanel = newNetPanel;
 		this.openPanel = openPanel;
 		this.newsPanel = newsPanel;
 		this.cytoscapeDesktop = cytoscapeDesktop;
 		this.openBrowser = openBrowser;
-		this.version = version;
 
 		this.cyProps = cyProps;
 
 		// Show it if necessary
 		SwingUtilities.invokeLater(new Runnable() {
+			@Override
 			public void run() {
 				startup();
 			}
@@ -88,8 +86,8 @@ public class WelcomeScreenAction extends AbstractCyAction {
 
 	@Override
 	public void actionPerformed(ActionEvent ae) {
-		final WelcomeScreenDialog welcomeScreen = new WelcomeScreenDialog(importPanel, openPanel, newsPanel,
-				cyProps, hide, openBrowser, version, cytoscapeDesktop.getJFrame());
+		final WelcomeScreenDialog welcomeScreen = new WelcomeScreenDialog(newNetPanel, openPanel, newsPanel,
+				cyProps, hide, openBrowser, cytoscapeDesktop.getJFrame());
 		welcomeScreen.setLocationRelativeTo(cytoscapeDesktop.getJFrame());
 		welcomeScreen.setModalityType(Dialog.ModalityType.APPLICATION_MODAL);
 		welcomeScreen.setVisible(true);
@@ -100,7 +98,6 @@ public class WelcomeScreenAction extends AbstractCyAction {
 	}
 
 	public void startup() {
-
 		// Displays the dialog after startup based on whether
 		// the specified property has been set.
 		final String hideString = this.cyProps.getProperties().getProperty(DO_NOT_DISPLAY_PROP_NAME);
@@ -125,9 +122,10 @@ public class WelcomeScreenAction extends AbstractCyAction {
 
 	private boolean parseBoolean(String hideString) {
 		boolean lhide = false;
-		if (hideString == null)
+		
+		if (hideString == null) {
 			lhide = false;
-		else {
+		} else {
 			try {
 				// might make it true!
 				lhide = Boolean.parseBoolean(hideString);
@@ -135,6 +133,7 @@ public class WelcomeScreenAction extends AbstractCyAction {
 				lhide = false;
 			}
 		}
+		
 		return lhide;
 	}
 }

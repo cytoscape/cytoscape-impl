@@ -1,4 +1,4 @@
-package org.cytoscape.welcome.internal.panel;
+package org.cytoscape.welcome.internal.view;
 
 /*
  * #%L
@@ -28,15 +28,20 @@ import java.awt.Window;
 
 import javax.swing.JPanel;
 
+import org.cytoscape.util.swing.LookAndFeelUtil;
+
+@SuppressWarnings("serial")
 public class AbstractWelcomeScreenChildPanel extends JPanel implements WelcomeScreenChildPanel {
 	
-	private static final long serialVersionUID = -2263794799072713710L;
-	
-	private Window window;
+	protected Window window;
 
+	protected AbstractWelcomeScreenChildPanel(final String title) {
+		setBorder(LookAndFeelUtil.createTitledBorder(title));
+	}
+	
 	@Override
 	public void closeParentWindow() {
-		if(window != null)
+		if (window != null)
 			window.dispose();
 	}
 
@@ -44,5 +49,4 @@ public class AbstractWelcomeScreenChildPanel extends JPanel implements WelcomeSc
 	public void setParentWindow(final Window window) {
 		this.window = window;
 	}
-
 }

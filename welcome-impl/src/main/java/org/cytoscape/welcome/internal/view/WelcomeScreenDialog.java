@@ -1,4 +1,4 @@
-package org.cytoscape.welcome.internal;
+package org.cytoscape.welcome.internal.view;
 
 /*
  * #%L
@@ -25,12 +25,11 @@ package org.cytoscape.welcome.internal;
  */
 
 
-import static org.cytoscape.welcome.internal.panel.WelcomeScreenChildPanel.PANEL_COLOR;
+import static javax.swing.GroupLayout.DEFAULT_SIZE;
+import static javax.swing.GroupLayout.PREFERRED_SIZE;
+import static javax.swing.GroupLayout.Alignment.LEADING;
 
-import java.awt.BorderLayout;
-import java.awt.Container;
 import java.awt.Cursor;
-import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
@@ -47,86 +46,69 @@ import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
+import javax.swing.GroupLayout;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JSeparator;
 import javax.swing.SwingConstants;
-import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 
-import org.cytoscape.application.CyVersion;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.util.swing.OpenBrowser;
-import org.cytoscape.welcome.internal.panel.AbstractWelcomeScreenChildPanel;
-import org.cytoscape.welcome.internal.panel.WelcomeScreenChildPanel;
 
+@SuppressWarnings("serial")
 public class WelcomeScreenDialog extends JDialog {
 	
-	private static final long serialVersionUID = -2783045197802550425L;
-
 	private static final String TITLE = "Welcome to Cytoscape";
-	private static final Dimension DEF_SIZE = new Dimension(668, 500);
 
-	private JPanel mainPanel;
 	private JCheckBox checkBox;
 
 	private final CyProperty<Properties> cyProps;
 
 	// Child Panels
-	private final AbstractWelcomeScreenChildPanel importPanel;
-	private final AbstractWelcomeScreenChildPanel openPanel;
+	private final NewNetworkPanel newNetPanel;
+	private final OpenSessionPanel openPanel;
+	private final NewsPanel newsPanel;
 	private JPanel linksPanel;
-	private final AbstractWelcomeScreenChildPanel helpPanel;
 	
 	private JLabel about;
 	private JLabel manual;
 	private JLabel tutorial;
-	private JLabel bugReport;
 
 	private final List<JLabel> labelSet;
 	private final Map<JLabel, String> urlMap;
 
 	private final OpenBrowser openBrowser;
-	private final CyVersion version;
 	
-	public WelcomeScreenDialog(final AbstractWelcomeScreenChildPanel importPanel,
-							   final AbstractWelcomeScreenChildPanel openPanel,
-							   final AbstractWelcomeScreenChildPanel helpPanel,
-							   final CyProperty<Properties> cyProps,
-							   final boolean hide,
-							   final OpenBrowser openBrowser,
-							   final CyVersion version,
-							   final Window owner) {
+	public WelcomeScreenDialog(
+			final NewNetworkPanel newNetPanel,
+			final OpenSessionPanel openPanel,
+			final NewsPanel newsPanel,
+			final CyProperty<Properties> cyProps,
+			final boolean hide,
+			final OpenBrowser openBrowser,
+			final Window owner
+	) {
 		super(owner);
-		this.importPanel = importPanel;
+		this.newNetPanel = newNetPanel;
 		this.openPanel = openPanel;
-		this.helpPanel = helpPanel;
+		this.newsPanel = newsPanel;
 
-		this.importPanel.setParentWindow(this);
+		this.newNetPanel.setParentWindow(this);
 		this.openPanel.setParentWindow(this);
-		this.helpPanel.setParentWindow(this);
+		this.newsPanel.setParentWindow(this);
 
 		this.cyProps = cyProps;
 		this.openBrowser = openBrowser;
-		this.version = version;
 
-		labelSet = new ArrayList<JLabel>();
-		urlMap = new HashMap<JLabel, String>();
+		labelSet = new ArrayList<>();
+		urlMap = new HashMap<>();
 		
 		initComponents();
-
-		this.setTitle(TITLE);
-
-		this.setSize(DEF_SIZE);
-		this.setPreferredSize(DEF_SIZE);
-		this.setMinimumSize(DEF_SIZE);
-		this.setMaximumSize(DEF_SIZE);
-		this.setResizable(false);
-		this.setModalExclusionType(ModalExclusionType.APPLICATION_EXCLUDE);
-
 		checkBox.setSelected(hide);
 	}
 
@@ -134,24 +116,21 @@ public class WelcomeScreenDialog extends JDialog {
 		return checkBox.isSelected();
 	}
 
-	@SuppressWarnings("serial")
 	private void initComponents() {
+		this.setTitle(TITLE);
+		this.setResizable(false);
+		this.setModalExclusionType(ModalExclusionType.APPLICATION_EXCLUDE);
+		
 		linksPanel = new JPanel();
-		linksPanel.setBackground(PANEL_COLOR);
 		
 		about = new JLabel("<html><u>About Cytoscape</u></html>");
 		manual = new JLabel("<html><u>Documentation</u></html>");
 		tutorial = new JLabel("<html><u>Tutorials</u></html>");
-		bugReport = new JLabel("<html><u>Report a bug</u></html>");
 		
 		labelSet.add(about);
 		labelSet.add(manual);
 		labelSet.add(tutorial);
-		labelSet.add(bugReport);
 		
-		// get Cytoscape version
-		String cyversion = version.getVersion();
-
 		// get OS string
 		String os_str = System.getProperty("os.name") + "_" + System.getProperty("os.version");
 		os_str = os_str.replace(" ", "_");
@@ -159,12 +138,10 @@ public class WelcomeScreenDialog extends JDialog {
 		urlMap.put(about, "http://www.cytoscape.org/what_is_cytoscape.html");
 		urlMap.put(manual, "http://www.cytoscape.org/documentation_users.html");
 		urlMap.put(tutorial, "http://opentutorials.cgl.ucsf.edu/index.php/Portal:Cytoscape3");
-		urlMap.put(bugReport, "http://chianti.ucsd.edu/cyto_web/bugreport/bugreport.php?cyversion=" + cyversion
-				+ "&os=" + os_str);
 
 		for (final JLabel label : labelSet) {
+			label.setFont(label.getFont().deriveFont(LookAndFeelUtil.INFO_FONT_SIZE));
 			label.setBorder(BorderFactory.createEmptyBorder(4, 8, 4, 8));
-			label.setFont(WelcomeScreenChildPanel.LINK_FONT);
 			label.setForeground(WelcomeScreenChildPanel.LINK_FONT_COLOR);
 			label.setHorizontalAlignment(SwingConstants.LEFT);
 			label.setHorizontalTextPosition(SwingConstants.LEFT);
@@ -190,6 +167,17 @@ public class WelcomeScreenDialog extends JDialog {
 			}
 		});
 		
+		final JPanel mainPanel = new JPanel();
+		mainPanel.setLayout(new GridLayout(1, 2));
+		
+		final JPanel rightPanel = new JPanel();
+		rightPanel.setLayout(new BoxLayout(rightPanel, BoxLayout.Y_AXIS));
+		rightPanel.add(openPanel);
+		rightPanel.add(newsPanel);
+
+		mainPanel.add(newNetPanel);
+		mainPanel.add(rightPanel);
+		
 		final JPanel bottomPanel = new JPanel();
 		bottomPanel.setLayout(new BoxLayout(bottomPanel, BoxLayout.X_AXIS));
 		bottomPanel.setBorder(new EmptyBorder(10, 10, 5, 10));
@@ -197,22 +185,28 @@ public class WelcomeScreenDialog extends JDialog {
 		bottomPanel.add(Box.createHorizontalGlue());
 		bottomPanel.add(closeButton);
 
-		mainPanel = new JPanel();
-		mainPanel.setSize(DEF_SIZE);
-		mainPanel.setLayout(new GridLayout(1, 2));
-		mainPanel.setBackground(PANEL_COLOR);
+		final JSeparator sep = new JSeparator();
 		
-		final JPanel southPanel = new JPanel();
-		southPanel.setLayout(new BoxLayout(southPanel, BoxLayout.Y_AXIS));
-		southPanel.add(linksPanel);
-		southPanel.add(bottomPanel);
+		final JPanel contents = new JPanel();
+		final GroupLayout layout = new GroupLayout(contents);
+		contents.setLayout(layout);
+		layout.setAutoCreateContainerGaps(true);
+		layout.setAutoCreateGaps(!LookAndFeelUtil.isAquaLAF());
 		
-		final Container pane = this.getContentPane();
-		pane.setLayout(new BorderLayout());
-		pane.add(mainPanel, BorderLayout.CENTER);
-		pane.add(southPanel, BorderLayout.SOUTH);
+		layout.setHorizontalGroup(layout.createParallelGroup(LEADING, true)
+				.addComponent(mainPanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				.addComponent(linksPanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				.addComponent(sep, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				.addComponent(bottomPanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+		);
+		layout.setVerticalGroup(layout.createSequentialGroup()
+				.addComponent(mainPanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				.addComponent(linksPanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				.addComponent(sep, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				.addComponent(bottomPanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+		);
 		
-		createChildPanels();
+		getContentPane().add(contents);
 		
 		LookAndFeelUtil.setDefaultOkCancelKeyStrokes(getRootPane(), closeButton.getAction(), closeButton.getAction());
 		getRootPane().setDefaultButton(closeButton);
@@ -221,59 +215,6 @@ public class WelcomeScreenDialog extends JDialog {
 		pack();
 	}
 
-	private void createChildPanels() {
-		JPanel openSessionPanel = new JPanel();
-		JPanel newSessionPanel = new JPanel();
-		JPanel newsPanel = new JPanel();
-
-		openSessionPanel.setLayout(new BorderLayout());
-		newSessionPanel.setLayout(new BorderLayout());
-		newsPanel.setLayout(new BorderLayout());
-
-		final Border border = BorderFactory.createEmptyBorder(5, 5, 5, 5);
-		openSessionPanel.setBorder(border);
-		newSessionPanel.setBorder(border);
-		newsPanel.setBorder(border);
-
-		openSessionPanel.setBackground(PANEL_COLOR);
-		newSessionPanel.setBackground(PANEL_COLOR);
-		newsPanel.setBackground(PANEL_COLOR);
-
-		setChildPanel(openSessionPanel, openPanel, "Open Recent Session");
-		setChildPanel(newSessionPanel, importPanel, "Start New Session");
-		setChildPanel(newsPanel, helpPanel, "Latest News");
-
-		final JPanel leftPanel = new JPanel();
-		leftPanel.setLayout(new BoxLayout(leftPanel, BoxLayout.Y_AXIS));
-		
-		final JPanel rightPanel = new JPanel();
-		rightPanel.setLayout(new BoxLayout(rightPanel, BoxLayout.Y_AXIS));
-
-		rightPanel.add(openSessionPanel);
-		rightPanel.add(newsPanel);
-
-		leftPanel.add(newSessionPanel);
-
-		mainPanel.add(leftPanel);
-		mainPanel.add(rightPanel);
-	}
-
-	private void setChildPanel(JPanel panel, JPanel contentPanel, final String label) {
-		final JPanel titlePanel = new JPanel();
-		titlePanel.setLayout(new GridLayout(1, 2));
-		titlePanel.setBackground(WelcomeScreenChildPanel.TITLE_BG_COLOR);
-
-		final JLabel title = new JLabel();
-		title.setFont(WelcomeScreenChildPanel.TITLE_FONT);
-		title.setText(label);
-		title.setForeground(WelcomeScreenChildPanel.TITLE_FONT_COLOR);
-		title.setBorder(BorderFactory.createEmptyBorder(4, 8, 4, 8));
-		titlePanel.add(title);
-		
-		panel.add(titlePanel, BorderLayout.NORTH);
-		panel.add(contentPanel, BorderLayout.CENTER);
-	}
-	
 	private final class LabelMouseListener extends MouseAdapter {
 
 		private final String url;

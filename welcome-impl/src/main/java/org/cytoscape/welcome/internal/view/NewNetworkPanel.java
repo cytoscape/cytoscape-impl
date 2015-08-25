@@ -1,4 +1,4 @@
-package org.cytoscape.welcome.internal.panel;
+package org.cytoscape.welcome.internal.view;
 
 /*
  * #%L
@@ -24,8 +24,10 @@ package org.cytoscape.welcome.internal.panel;
  * #L%
  */
 
-import java.awt.BorderLayout;
-import java.awt.Dimension;
+import static javax.swing.GroupLayout.DEFAULT_SIZE;
+import static javax.swing.GroupLayout.PREFERRED_SIZE;
+import static javax.swing.GroupLayout.Alignment.LEADING;
+
 import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
@@ -46,16 +48,15 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.imageio.ImageIO;
-import javax.swing.BorderFactory;
-import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.ButtonModel;
+import javax.swing.GroupLayout;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
+import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.SwingConstants;
 
 import org.cytoscape.application.swing.CyAction;
@@ -64,7 +65,7 @@ import org.cytoscape.io.datasource.DataSource;
 import org.cytoscape.io.datasource.DataSourceManager;
 import org.cytoscape.task.create.NewEmptyNetworkViewFactory;
 import org.cytoscape.task.read.LoadNetworkURLTaskFactory;
-import org.cytoscape.welcome.internal.WelcomeScreenDialog;
+import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskIterator;
@@ -76,20 +77,16 @@ import org.osgi.framework.ServiceReference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class CreateNewNetworkPanel extends AbstractWelcomeScreenChildPanel {
+public class NewNetworkPanel extends AbstractWelcomeScreenChildPanel {
 
 	private static final long serialVersionUID = -8750909701276867389L;
-	private static final Logger logger = LoggerFactory.getLogger(CreateNewNetworkPanel.class);
+	private static final Logger logger = LoggerFactory.getLogger(NewNetworkPanel.class);
 	
 	private static final Icon NEW_ICON;
 	private static final Icon DATABASE_ICON;
 	private static final Icon OPEN_ICON;
 	
-	private static final Map<String, Icon> SPECIES_ICON = new HashMap<String, Icon>();
-
-	
-	private static final Font PRESET_FONT = new Font("SansSerif", Font.PLAIN, 11);
-	private static final Font PRESET_FONT_ITALIC = new Font("SansSerif", Font.ITALIC, 11);
+	private static final Map<String, Icon> SPECIES_ICON = new HashMap<>();
 	
 	private static final Pattern METATAG = Pattern.compile("(.*?)<meta>(.+?)</meta>(.*?)");
 
@@ -163,34 +160,42 @@ public class CreateNewNetworkPanel extends AbstractWelcomeScreenChildPanel {
 	private final NewEmptyNetworkViewFactory newEmptyNetworkViewFactory;
 	private final TaskFactory importNetworkFileTF;
 	private final DataSourceManager dsManager;
+	
 	private final Map<String, String> dataSourceMap;
+	private final Map<ButtonModel, TaskFactory> button2taskMap;
+	private final List<JButton> dataSourceButtons;
 
-	private final Map<ButtonModel, TaskFactory> button2taskMap = new HashMap<ButtonModel, TaskFactory>();
-	private JRadioButton noOptionTaskButton;
-
-	private JPanel sourceButtons;
 	private ButtonGroup bGroup;
 
-	public CreateNewNetworkPanel(final BundleContext bc, final DialogTaskManager guiTaskManager,
-			final TaskFactory importNetworkFileTF, final LoadNetworkURLTaskFactory loadTF,
-			final DataSourceManager dsManager, final NewEmptyNetworkViewFactory newEmptyNetworkViewFactory) {
+	public NewNetworkPanel(
+			final BundleContext bc,
+			final DialogTaskManager guiTaskManager,
+			final TaskFactory importNetworkFileTF,
+			final LoadNetworkURLTaskFactory loadTF,
+			final DataSourceManager dsManager,
+			final NewEmptyNetworkViewFactory newEmptyNetworkViewFactory
+	) {
+		super("Start New Session");
 		this.bc = bc;
-
 		this.importNetworkFromURLTF = loadTF;
 		this.importNetworkFileTF = importNetworkFileTF;
 		this.newEmptyNetworkViewFactory = newEmptyNetworkViewFactory;
 		this.guiTaskManager = guiTaskManager;
 		this.dsManager = dsManager;
-		this.dataSourceMap = new HashMap<String, String>();
+		
+		button2taskMap = new HashMap<>();
+		dataSourceMap = new HashMap<>();
+		dataSourceButtons = new ArrayList<>();
 
-		setFromDataSource();
+		createDataSourceButtons();
 		initComponents();
 	}
 	
-	private void setFromDataSource() {
-		final SortedMap<String, JButton> buttonMap = new TreeMap<String, JButton>();
+	private void createDataSourceButtons() {
+		final SortedMap<String, JButton> buttonMap = new TreeMap<>();
 		// Extract the URL entries
 		final Collection<DataSource> dataSources = dsManager.getDataSources(DataCategory.NETWORK);
+		
 		if (dataSources != null) {
 			for (DataSource ds : dataSources) {
 				String link = null;
@@ -199,17 +204,18 @@ public class CreateNewNetworkPanel extends AbstractWelcomeScreenChildPanel {
 				String description = ds.getDescription();
 				Matcher match = METATAG.matcher(description);
 				boolean found = match.matches();
+				
 				if (!found)
 					continue;
 
 				final String tags = match.group(2);
-			
 				final String tooltip = match.group(3);
 				final String[] res = tags.split(",");
 
 				if (res != null) {
 					// Add preset buttons
 					final List<String> tagList = Arrays.asList(res);
+					
 					if (tagList.contains("preset")) {
 						final String sourceLabel = sourceName;
 						dataSourceMap.put(sourceLabel, link);
@@ -218,18 +224,19 @@ public class CreateNewNetworkPanel extends AbstractWelcomeScreenChildPanel {
 						buttonMap.put(sourceLabel, button);
 						button.setHorizontalAlignment(SwingConstants.LEFT);
 						button.setToolTipText(tooltip);
-						if(sourceLabel.contains(".")) {
-							button.setFont(PRESET_FONT_ITALIC);
-						} else {
-							button.setFont(PRESET_FONT);
-						}
+						button.setFont(button.getFont().deriveFont(LookAndFeelUtil.INFO_FONT_SIZE));
+
+						if (sourceLabel.contains("."))
+							button.setFont(button.getFont().deriveFont(Font.ITALIC));
+
 						final Icon icon = SPECIES_ICON.get(sourceLabel);
-						if(icon != null) {
+
+						if (icon != null)
 							button.setIcon(icon);
-						}
+						
 						button.addActionListener(new ActionListener() {
 							@Override
-							public void actionPerformed(ActionEvent arg0) {
+							public void actionPerformed(ActionEvent e) {
 								loadPreset(button);
 							}
 						});
@@ -238,34 +245,18 @@ public class CreateNewNetworkPanel extends AbstractWelcomeScreenChildPanel {
 			}
 		}
 
+		dataSourceButtons.addAll(buttonMap.values());
 		bGroup = new ButtonGroup();
-		sourceButtons = new JPanel();
 		
-		// Determine Size of Grid
-		final List<JButton> buttonList = new ArrayList<JButton>(buttonMap.values());
-		int rowCount = buttonList.size()/2;
-		int mod = buttonList.size()%2;
-		sourceButtons.setLayout(new GridLayout(rowCount+mod, 2));
-		for(JButton rb: buttonList) {
-			sourceButtons.add(rb);
-			bGroup.add(rb);
-		}
+		for (JButton btn : dataSourceButtons)
+			bGroup.add(btn);
 	}
 
 	private void initComponents() {
-		// Basic layout of this panel (2 rows)
-		this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-		this.setBorder(BorderFactory.createEmptyBorder(5, 5, 3, 5));
-
-		final int BT_HEIGHT = 52;
-		
-		final JButton createEmptySessionButton = new JButton();
-		createEmptySessionButton.setText("With Empty Network");
-		createEmptySessionButton.setIcon(NEW_ICON);
-		createEmptySessionButton.setHorizontalAlignment(SwingConstants.LEFT);
-		createEmptySessionButton.setIconTextGap(20);
-		createEmptySessionButton.setPreferredSize(new Dimension(createEmptySessionButton.getPreferredSize().width, BT_HEIGHT));
-		createEmptySessionButton.addActionListener(new ActionListener() {
+		final JButton emptyNetButton = new JButton("With Empty Network", NEW_ICON);
+		emptyNetButton.setHorizontalAlignment(SwingConstants.LEFT);
+		emptyNetButton.setIconTextGap(20);
+		emptyNetButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				closeParentWindow();
@@ -273,25 +264,19 @@ public class CreateNewNetworkPanel extends AbstractWelcomeScreenChildPanel {
 			}
 		});
 		
-		final JButton importFromFileButton = new JButton();
-		importFromFileButton.setText("From Network File...");
-		importFromFileButton.setIcon(OPEN_ICON);
-		importFromFileButton.setHorizontalAlignment(SwingConstants.LEFT);
-		importFromFileButton.setIconTextGap(20);
-		importFromFileButton.setPreferredSize(new Dimension(importFromFileButton.getPreferredSize().width, BT_HEIGHT));
-		importFromFileButton.addActionListener(new ActionListener() {
+		final JButton fileImportButton = new JButton("From Network File...", OPEN_ICON);
+		fileImportButton.setHorizontalAlignment(SwingConstants.LEFT);
+		fileImportButton.setIconTextGap(20);
+		fileImportButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				loadFromFile();
 			}
 		});
 		
-
-		JButton dbButton = new JButton("From Network Database...");
-		dbButton.setIcon(DATABASE_ICON);
+		final JButton dbButton = new JButton("From Network Database...", DATABASE_ICON);
 		dbButton.setIconTextGap(20);
 		dbButton.setHorizontalAlignment(SwingConstants.LEFT);
-		dbButton.setPreferredSize(new Dimension(dbButton.getPreferredSize().width, BT_HEIGHT));
 		dbButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -306,24 +291,39 @@ public class CreateNewNetworkPanel extends AbstractWelcomeScreenChildPanel {
 			
 		});
 		
-		final JPanel buttonPanel = new JPanel();
-		buttonPanel.setLayout(new GridLayout(3, 1));
-		buttonPanel.add(createEmptySessionButton);
-		buttonPanel.add(importFromFileButton);
-		buttonPanel.add(dbButton);
+		final JPanel dsButtonPanel = new JPanel();
 		
-		final JLabel orgNetTitle = new JLabel("From Organism Network");
-		orgNetTitle.setHorizontalAlignment(JLabel.CENTER);
-		orgNetTitle.setBorder(BorderFactory.createEmptyBorder(4, 0, 4, 0));
-
-		final JPanel presetPanel = new JPanel();
-		presetPanel.setLayout(new BorderLayout());
-		presetPanel.add(sourceButtons, BorderLayout.CENTER);
+		if (LookAndFeelUtil.isAquaLAF())
+			dsButtonPanel.setOpaque(false);
 		
-		this.add(buttonPanel);
-		this.add(presetPanel);
+		int rowCount = dataSourceButtons.size() / 2;
+		int mod = dataSourceButtons.size() % 2;
+		dsButtonPanel.setLayout(new GridLayout(rowCount + mod, 2));
 		
-		createPresetTasks();
+		for (JButton btn: dataSourceButtons) {
+			dsButtonPanel.add(btn);
+			bGroup.add(btn);
+		}
+		
+		final GroupLayout layout = new GroupLayout(this);
+		this.setLayout(layout);
+		layout.setAutoCreateContainerGaps(false);
+		layout.setAutoCreateGaps(!LookAndFeelUtil.isAquaLAF());
+		
+		layout.setHorizontalGroup(layout.createParallelGroup(LEADING, true)
+				.addComponent(emptyNetButton, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				.addComponent(fileImportButton, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				.addComponent(dbButton, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				.addComponent(dsButtonPanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+		);
+		layout.setVerticalGroup(layout.createSequentialGroup()
+				.addContainerGap()
+				.addComponent(emptyNetButton, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				.addComponent(fileImportButton, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				.addComponent(dbButton, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				.addPreferredGap(ComponentPlacement.UNRELATED)
+				.addComponent(dsButtonPanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+		);
 	}
 
 	private final void loadFromFile() {
@@ -333,16 +333,16 @@ public class CreateNewNetworkPanel extends AbstractWelcomeScreenChildPanel {
 
 	private void loadPreset(JButton button) {
 		// Get selected file from the combo box
-		Object file = null;
-		
-		file = button.getText();
+		Object file = button.getText();
 		
 		if (file == null)
 			return;
 
 		if (!dataSourceMap.containsKey(file))
 			return;
+		
 		URL url = null;
+		
 		try {
 			url = new URL(dataSourceMap.get(file));
 		} catch (MalformedURLException e) {
@@ -367,6 +367,7 @@ public class CreateNewNetworkPanel extends AbstractWelcomeScreenChildPanel {
 	private void execute(BundleContext bc) throws InvalidSyntaxException {
 		final ServiceReference[] actions = bc.getAllServiceReferences("org.cytoscape.application.swing.CyAction",
 				"(id=showImportNetworkFromWebServiceDialogAction)");
+		
 		if (actions == null || actions.length != 1) {
 			logger.error("Could not find action");
 			return;
@@ -379,16 +380,17 @@ public class CreateNewNetworkPanel extends AbstractWelcomeScreenChildPanel {
 
 	public void addTaskFactory(final TaskFactory factory, @SuppressWarnings("rawtypes") Map properties) {
 		final Object workflowID = properties.get(WORKFLOW_ID);
+		
 		if (workflowID == null)
 			return;
 
 		Object workflowName = properties.get(WORKFLOW_NAME);
+		
 		if (workflowName == null)
 			workflowName = workflowID;
+		
 		final Object description = properties.get(WORKFLOW_DESCRIPTION);
 		final JRadioButton taskButton = new JRadioButton(workflowName.toString());
-		taskButton.setFont(REGULAR_FONT);
-		taskButton.setForeground(REGULAR_FONT_COLOR);
 		button2taskMap.put(taskButton.getModel(), factory);
 
 		if (description != null)
@@ -399,17 +401,11 @@ public class CreateNewNetworkPanel extends AbstractWelcomeScreenChildPanel {
 
 	}
 
-	private void createPresetTasks() {
-		noOptionTaskButton = new JRadioButton("No Optional Task");
-		noOptionTaskButton.setFont(REGULAR_FONT);
-		noOptionTaskButton.setForeground(REGULAR_FONT_COLOR);
-	}
-
 	private final class ResetTask extends AbstractTask {
 
 		@Override
 		public void run(TaskMonitor taskMonitor) throws Exception {
-
+			// TODO
 //			networkList.setSelectedIndex(0);
 		}
 	}

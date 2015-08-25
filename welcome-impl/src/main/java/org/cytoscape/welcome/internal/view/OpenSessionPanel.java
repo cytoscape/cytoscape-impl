@@ -1,4 +1,4 @@
-package org.cytoscape.welcome.internal.panel;
+package org.cytoscape.welcome.internal.view;
 
 /*
  * #%L
@@ -24,6 +24,10 @@ package org.cytoscape.welcome.internal.panel;
  * #L%
  */
 
+import static javax.swing.GroupLayout.DEFAULT_SIZE;
+import static javax.swing.GroupLayout.PREFERRED_SIZE;
+import static javax.swing.GroupLayout.Alignment.LEADING;
+
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
@@ -39,28 +43,27 @@ import java.net.URL;
 import java.util.List;
 
 import javax.imageio.ImageIO;
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
+import javax.swing.GroupLayout;
+import javax.swing.GroupLayout.ParallelGroup;
+import javax.swing.GroupLayout.SequentialGroup;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.SwingConstants;
-import javax.swing.border.Border;
 
 import org.cytoscape.io.util.RecentlyOpenedTracker;
 import org.cytoscape.task.read.OpenSessionTaskFactory;
-import org.cytoscape.welcome.internal.WelcomeScreenDialog;
+import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.work.swing.DialogTaskManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public final class OpenPanel extends AbstractWelcomeScreenChildPanel {
+public final class OpenSessionPanel extends AbstractWelcomeScreenChildPanel {
 
 	private static final long serialVersionUID = 591882944100485039L;
 
-	private static final Logger logger = LoggerFactory.getLogger(OpenPanel.class);
+	private static final Logger logger = LoggerFactory.getLogger(OpenSessionPanel.class);
 
 	private static final String ICON_LOCATION = "/images/Icons/open-file-32.png";
 	private BufferedImage openIconImg;
@@ -69,14 +72,13 @@ public final class OpenPanel extends AbstractWelcomeScreenChildPanel {
 	// Display up to 7 files due to space.
 	private static final int MAX_FILES = 7;
 
-	private JButton open;
-
 	private final RecentlyOpenedTracker fileTracker;
 	private final DialogTaskManager taskManager;
 	private final OpenSessionTaskFactory openSessionTaskFactory;
 
-	public OpenPanel(final RecentlyOpenedTracker fileTracker, final DialogTaskManager taskManager,
+	public OpenSessionPanel(final RecentlyOpenedTracker fileTracker, final DialogTaskManager taskManager,
 			final OpenSessionTaskFactory openSessionTaskFactory) {
+		super("Open Recent Session");
 		this.fileTracker = fileTracker;
 		this.taskManager = taskManager;
 		this.openSessionTaskFactory = openSessionTaskFactory;
@@ -98,11 +100,29 @@ public final class OpenPanel extends AbstractWelcomeScreenChildPanel {
 		if (fileCount > MAX_FILES)
 			fileCount = MAX_FILES;
 
-		this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-		this.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
+		final JButton openButton = new JButton("Open Session File...", openIcon);
+		openButton.setIconTextGap(20);
+		openButton.setHorizontalAlignment(SwingConstants.LEFT);
+		openButton.setMaximumSize(new Dimension(Integer.MAX_VALUE, openButton.getMinimumSize().height));
+		openButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				closeParentWindow();
+				taskManager.execute(openSessionTaskFactory.createTaskIterator());
+			}
+		});
 
-		final Border padLine = BorderFactory.createEmptyBorder(3, 5, 3, 0);
-
+		final GroupLayout layout = new GroupLayout(this);
+		this.setLayout(layout);
+		layout.setAutoCreateContainerGaps(false);
+		layout.setAutoCreateGaps(true);
+		
+		final ParallelGroup hGroup = layout.createParallelGroup(LEADING, true);
+		final SequentialGroup vGroup = layout.createSequentialGroup();
+		
+		layout.setHorizontalGroup(hGroup);
+		layout.setVerticalGroup(vGroup.addContainerGap());
+		
 		for (int i = 0; i < fileCount; i++) {
 			final URL target = recentFiles.get(i);
 
@@ -116,12 +136,9 @@ public final class OpenPanel extends AbstractWelcomeScreenChildPanel {
 			
 			final File targetFile = new File(fileURI);
 			final JLabel fileLabel = new JLabel();
-//			FontMetrics fm = fileLabel.getFontMetrics(REGULAR_FONT);
-			fileLabel.setMaximumSize(new Dimension(300, 18));
 			fileLabel.setText(" - " + targetFile.getName());
+			fileLabel.setFont(fileLabel.getFont().deriveFont(LookAndFeelUtil.INFO_FONT_SIZE));
 			fileLabel.setForeground(LINK_FONT_COLOR);
-			fileLabel.setFont(LINK_FONT);
-			fileLabel.setBorder(padLine);
 			fileLabel.setHorizontalAlignment(SwingConstants.LEFT);
 			fileLabel.setCursor(new Cursor(Cursor.HAND_CURSOR));
 			fileLabel.setToolTipText(fileURI.toString());
@@ -132,7 +149,7 @@ public final class OpenPanel extends AbstractWelcomeScreenChildPanel {
 						taskManager.execute(openSessionTaskFactory.createTaskIterator(targetFile));
 						closeParentWindow();
 					} else {
-						JOptionPane.showMessageDialog(OpenPanel.this.getTopLevelAncestor(),
+						JOptionPane.showMessageDialog(OpenSessionPanel.this.getTopLevelAncestor(),
 								"Session file not found:\n" + targetFile.getAbsolutePath(),
 								"File not Found",
 								JOptionPane.WARNING_MESSAGE);
@@ -140,28 +157,12 @@ public final class OpenPanel extends AbstractWelcomeScreenChildPanel {
 				}
 			});
 
-			this.add(fileLabel);
+			hGroup.addComponent(fileLabel, PREFERRED_SIZE, DEFAULT_SIZE, 300);
+			vGroup.addComponent(fileLabel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE);
 		}
 		
-		this.add(Box.createVerticalStrut(8));
-		this.add(Box.createVerticalGlue());
-		
-		open = new JButton("Open Session File...");
-		open.setIcon(openIcon);
-		open.setIconTextGap(20);
-		open.setHorizontalAlignment(SwingConstants.LEFT);
-//		open.setBorder(padLine);
-		open.setMaximumSize(new Dimension(Integer.MAX_VALUE, open.getMinimumSize().height));
-		open.setCursor(new Cursor(Cursor.HAND_CURSOR));
-		open.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				closeParentWindow();
-				taskManager.execute(openSessionTaskFactory.createTaskIterator());
-			}
-		});
-
-		this.add(open);
+		hGroup.addComponent(openButton, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE);
+		vGroup.addComponent(openButton, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE);
 	}
 
 //	private String getTruncatedPath(String path, double width, FontMetrics fm ) {
