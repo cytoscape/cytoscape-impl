@@ -104,5 +104,12 @@ public class CyActivator extends AbstractCyActivator {
 		Properties simpleWebSessionWriterFactoryProps = new Properties();
 		simpleWebSessionWriterFactoryProps.put(ID, "simpleWebSessionWriterFactory");
 		registerAllServices(bc, simpleWebSessionWriterFactory, simpleWebSessionWriterFactoryProps);
+		
+		final CySessionWriterFactory zippedJsonWriterFactory = new WebSessionWriterFactoryImpl(
+				jsonVSWriterFactory, vmm, cytoscapejsWriterFactory, viewManager, webSessionFilter, appConfig,
+				applicationManager, WebSessionWriterFactoryImpl.ZIP_EXPORT);
+		Properties zippedJsonWriterFactoryProps = new Properties();
+		zippedJsonWriterFactoryProps.put(ID, "zippedJsonWriterFactory");
+		registerAllServices(bc, zippedJsonWriterFactory, zippedJsonWriterFactoryProps);
 	}
 }

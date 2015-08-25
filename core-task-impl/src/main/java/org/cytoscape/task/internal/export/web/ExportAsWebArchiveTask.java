@@ -22,6 +22,7 @@ public class ExportAsWebArchiveTask extends AbstractTask {
 	
 	private static final String AS_SPA = "Full web application";
 	private static final String AS_SIMPLE_PAGE = "Simple viewer for current network only";
+	private static final String AS_ZIPPED_ARCHIVE = "Networks and Style JSON files only (No HTML)";
 
 	@ProvidesTitle
 	public String getTitle() {
@@ -36,15 +37,20 @@ public class ExportAsWebArchiveTask extends AbstractTask {
 
 	private final CySessionWriterFactory fullWriterFactory;
 	private final CySessionWriterFactory simpleWriterFactory;
+	private final CySessionWriterFactory zippedWriterFactory;
 	
 	private CyWriter writer;
 
-	public ExportAsWebArchiveTask(final CySessionWriterFactory fullWriterFactory,final CySessionWriterFactory simpleWriterFactory) {
+	public ExportAsWebArchiveTask(
+			final CySessionWriterFactory fullWriterFactory,
+			final CySessionWriterFactory simpleWriterFactory,
+			final CySessionWriterFactory zippedWriterFactory) {
 		super();
 		this.fullWriterFactory = fullWriterFactory;
 		this.simpleWriterFactory = simpleWriterFactory;
+		this.zippedWriterFactory = zippedWriterFactory;
 		
-		this.outputFormat = new ListSingleSelection<String>(AS_SPA, AS_SIMPLE_PAGE);
+		this.outputFormat = new ListSingleSelection<String>(AS_SPA, AS_SIMPLE_PAGE, AS_ZIPPED_ARCHIVE);
 	}
 
 	/**
@@ -71,6 +77,8 @@ public class ExportAsWebArchiveTask extends AbstractTask {
 			writer = fullWriterFactory.createWriter(os, null);
 		} else if(exportType.equals(AS_SIMPLE_PAGE)) {
 			writer = simpleWriterFactory.createWriter(os, null);
+		} else if(exportType.equals(AS_ZIPPED_ARCHIVE)) {
+			writer = zippedWriterFactory.createWriter(os, null);
 		} else {
 			os.close();
 			throw new NullPointerException("Could not find web session writer.");

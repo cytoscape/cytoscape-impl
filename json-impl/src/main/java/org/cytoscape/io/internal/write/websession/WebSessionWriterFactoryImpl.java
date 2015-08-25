@@ -33,6 +33,7 @@ public class WebSessionWriterFactoryImpl implements CyWriterFactory, CySessionWr
 	
 	public static final String FULL_EXPORT = "full";
 	public static final String SIMPLE_EXPORT = "simple";
+	public static final String ZIP_EXPORT = "zip";
 	
 
 	private static final int BUFFER_SIZE = 4096;
@@ -116,6 +117,9 @@ public class WebSessionWriterFactoryImpl implements CyWriterFactory, CySessionWr
 				viewManager, appConfig);
 		} else if(exportType.equals(SIMPLE_EXPORT)) {
 			return new SimpleWebSessionWriterImpl(outputStream, exportType, jsonStyleWriterFactory, vmm, cytoscapejsWriterFactory,
+				viewManager, appConfig, cyApplicationManager);
+		} else if(exportType.equals(ZIP_EXPORT)) {
+			return new ZippedArchiveWriter(outputStream, exportType, jsonStyleWriterFactory, vmm, cytoscapejsWriterFactory,
 				viewManager, appConfig, cyApplicationManager);
 		} else {
 			throw new IllegalArgumentException("Invalid export type.");
