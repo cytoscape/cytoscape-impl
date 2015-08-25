@@ -1,4 +1,4 @@
-package org.cytoscape.view.vizmap;
+package org.cytoscape.view.vizmap.internal;
 
 /*
  * #%L
@@ -30,6 +30,9 @@ import static org.mockito.Mockito.when;
 
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.view.vizmap.AbstractVisualMappingManagerTest;
+import org.cytoscape.view.vizmap.VisualStyle;
+import org.cytoscape.view.vizmap.VisualStyleFactory;
 import org.cytoscape.view.vizmap.internal.VisualMappingManagerImpl;
 import org.junit.After;
 import org.junit.Before;

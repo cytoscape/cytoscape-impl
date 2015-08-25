@@ -29,6 +29,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.NetworkViewRenderer;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.VisualLexicon;
@@ -36,6 +38,7 @@ import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.vizmap.VisualMappingFunction;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
+import org.cytoscape.view.vizmap.VisualPropertyDependency;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.VisualStyleFactory;
 import org.cytoscape.view.vizmap.internal.mappings.ContinuousMappingImpl;
@@ -45,11 +48,15 @@ import org.cytoscape.view.vizmap.mappings.ContinuousMapping;
 import org.cytoscape.view.vizmap.mappings.ContinuousMappingPoint;
 import org.cytoscape.view.vizmap.mappings.DiscreteMapping;
 import org.cytoscape.view.vizmap.mappings.PassthroughMapping;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class VisualStyleFactoryImpl implements VisualStyleFactory {
 
 	private final CyServiceRegistrar serviceRegistrar;
 	private final VisualMappingFunctionFactory passThroughFactory;
+	
+	private static final Logger logger = LoggerFactory.getLogger(VisualStyleFactoryImpl.class);
 
 	public VisualStyleFactoryImpl(
 			final CyServiceRegistrar serviceRegistrar,
@@ -65,6 +72,7 @@ public class VisualStyleFactoryImpl implements VisualStyleFactory {
 
 		copyDefaultValues(original, copy);
 		copyMappingFunctions(original, copy);
+		copyDependencies(original, copy);
 
 		return copy;
 	}
@@ -74,6 +82,7 @@ public class VisualStyleFactoryImpl implements VisualStyleFactory {
 		return new VisualStyleImpl(title, serviceRegistrar);
 	}
 
+	@SuppressWarnings("unchecked")
 	private <V, S extends V> void copyDefaultValues(final VisualStyle original, final VisualStyle copy) {
 		final Set<VisualProperty<?>> visualProps = new HashSet<VisualProperty<?>>();
 		final VisualMappingManager vmMgr = serviceRegistrar.getService(VisualMappingManager.class);
@@ -84,19 +93,12 @@ public class VisualStyleFactoryImpl implements VisualStyleFactory {
 		for (VisualProperty<?> vp : visualProps) {
 			S value = (S) original.getDefaultValue(vp);
 
-			// TODO: if the value is not immutable, this can create problems,
-			// since it is not setting a copy!
+			// TODO: if the value is not immutable, this can create problems, since it is not setting a copy!
 			if (value != null)
 				copy.setDefaultValue((VisualProperty<V>) vp, value);
 		}
 	}
 
-	/**
-	 * Copy Mapping functions
-	 * 
-	 * @param original
-	 * @param copy
-	 */
 	private void copyMappingFunctions(final VisualStyle original, final VisualStyle copy) {
 		final Collection<VisualMappingFunction<?, ?>> allMapping = original.getAllVisualMappingFunctions();
 
@@ -112,6 +114,30 @@ public class VisualStyleFactoryImpl implements VisualStyleFactory {
 
 			if (copyMapping != null)
 				copy.addVisualMappingFunction(copyMapping);
+		}
+	}
+	
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	private void copyDependencies(final VisualStyle original, final VisualStyle copy) {
+		final Set<VisualPropertyDependency<?>> allDep = original.getAllVisualPropertyDependencies();
+		final CyApplicationManager appMgr = serviceRegistrar.getService(CyApplicationManager.class);
+		final VisualLexicon lexicon = appMgr.getCurrentNetworkViewRenderer()
+				.getRenderingEngineFactory(NetworkViewRenderer.DEFAULT_CONTEXT)
+				.getVisualLexicon();
+		
+		for (VisualPropertyDependency<?> dep : allDep) {
+			try {
+				final VisualPropertyDependency<?> copyDep = new VisualPropertyDependency(
+						dep.getIdString(),
+						dep.getDisplayName(),
+						dep.getVisualProperties(),
+						lexicon
+				);
+				copyDep.setDependency(dep.isDependencyEnabled());
+				copy.addVisualPropertyDependency(copyDep);
+			} catch (Exception e) {
+				logger.warn("Cannot copy VisualPropertyDependency " + dep.getIdString(), e);
+			}
 		}
 	}
 

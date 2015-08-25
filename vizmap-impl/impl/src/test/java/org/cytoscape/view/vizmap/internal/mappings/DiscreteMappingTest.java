@@ -1,4 +1,4 @@
-package org.cytoscape.view.vizmap.mappings;
+package org.cytoscape.view.vizmap.internal.mappings;
 
 /*
  * #%L
@@ -26,7 +26,6 @@ package org.cytoscape.view.vizmap.mappings;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
-
 import static org.mockito.Mockito.*;
 
 import java.awt.Color;
@@ -35,6 +34,7 @@ import java.awt.Paint;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.vizmap.internal.mappings.DiscreteMappingImpl;
+import org.cytoscape.view.vizmap.mappings.DiscreteMapping;
 import org.junit.Test;
 import org.mockito.Mock;
 

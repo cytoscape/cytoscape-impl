@@ -1,4 +1,4 @@
-package org.cytoscape.view.vizmap;
+package org.cytoscape.view.vizmap.internal;
 
 /*
  * #%L
@@ -51,6 +51,8 @@ import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.RenderingEngineFactory;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.presentation.property.NullVisualProperty;
+import org.cytoscape.view.vizmap.AbstractVisualStyleTest;
+import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.internal.VisualStyleFactoryImpl;
 import org.junit.Before;
 import org.junit.Test;
