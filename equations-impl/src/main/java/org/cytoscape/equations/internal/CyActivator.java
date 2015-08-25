@@ -29,7 +29,8 @@ import org.cytoscape.equations.internal.EquationParserImpl;
 import org.cytoscape.equations.internal.interpreter.InterpreterImpl;
 import org.cytoscape.equations.Interpreter;
 import org.cytoscape.equations.EquationCompiler;
-
+import org.cytoscape.equations.EquationParser;
+import org.cytoscape.equations.Function;
 import org.osgi.framework.BundleContext;
 
 import org.cytoscape.service.util.AbstractCyActivator;
@@ -45,7 +46,6 @@ public class CyActivator extends AbstractCyActivator {
 
 
 	public void start(BundleContext bc) {
-
 		
 		InterpreterImpl interpreter = new InterpreterImpl();
 		EquationParserImpl parser = new EquationParserImpl();
@@ -53,6 +53,11 @@ public class CyActivator extends AbstractCyActivator {
 		
 		registerService(bc,compiler,EquationCompiler.class, new Properties());
 		registerService(bc,interpreter,Interpreter.class, new Properties());
+		registerService(bc,parser, EquationParser.class, new Properties());
+		
+		// For dynamically add functions.
+		registerServiceListener(bc, parser, "registerFunctionService", 
+				"unregisterFunctionService", Function.class);
 	}
 }
 

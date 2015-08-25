@@ -33,17 +33,89 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
+import org.cytoscape.equations.AbstractNode;
 import org.cytoscape.equations.EquationParser;
 import org.cytoscape.equations.Function;
 import org.cytoscape.equations.FunctionUtil;
-import org.cytoscape.equations.AbstractNode;
 import org.cytoscape.equations.TreeNode;
-import org.cytoscape.equations.internal.builtins.*;
-import org.cytoscape.equations.internal.parse_tree.*;
+import org.cytoscape.equations.internal.builtins.ACos;
+import org.cytoscape.equations.internal.builtins.ASin;
+import org.cytoscape.equations.internal.builtins.ATan2;
+import org.cytoscape.equations.internal.builtins.Abs;
+import org.cytoscape.equations.internal.builtins.And;
+import org.cytoscape.equations.internal.builtins.Average;
+import org.cytoscape.equations.internal.builtins.BList;
+import org.cytoscape.equations.internal.builtins.Combin;
+import org.cytoscape.equations.internal.builtins.Concatenate;
+import org.cytoscape.equations.internal.builtins.Cos;
+import org.cytoscape.equations.internal.builtins.Cosh;
+import org.cytoscape.equations.internal.builtins.Count;
+import org.cytoscape.equations.internal.builtins.Degrees;
+import org.cytoscape.equations.internal.builtins.Exp;
+import org.cytoscape.equations.internal.builtins.FList;
+import org.cytoscape.equations.internal.builtins.First;
+import org.cytoscape.equations.internal.builtins.GeoMean;
+import org.cytoscape.equations.internal.builtins.HarMean;
+import org.cytoscape.equations.internal.builtins.IList;
+import org.cytoscape.equations.internal.builtins.If;
+import org.cytoscape.equations.internal.builtins.Largest;
+import org.cytoscape.equations.internal.builtins.Last;
+import org.cytoscape.equations.internal.builtins.Left;
+import org.cytoscape.equations.internal.builtins.Len;
+import org.cytoscape.equations.internal.builtins.ListToString;
+import org.cytoscape.equations.internal.builtins.Ln;
+import org.cytoscape.equations.internal.builtins.Log;
+import org.cytoscape.equations.internal.builtins.Lower;
+import org.cytoscape.equations.internal.builtins.Max;
+import org.cytoscape.equations.internal.builtins.Median;
+import org.cytoscape.equations.internal.builtins.Mid;
+import org.cytoscape.equations.internal.builtins.Min;
+import org.cytoscape.equations.internal.builtins.Mod;
+import org.cytoscape.equations.internal.builtins.Mode;
+import org.cytoscape.equations.internal.builtins.NormDist;
+import org.cytoscape.equations.internal.builtins.Not;
+import org.cytoscape.equations.internal.builtins.Now;
+import org.cytoscape.equations.internal.builtins.Nth;
+import org.cytoscape.equations.internal.builtins.Or;
+import org.cytoscape.equations.internal.builtins.Permut;
+import org.cytoscape.equations.internal.builtins.Pi;
+import org.cytoscape.equations.internal.builtins.Product;
+import org.cytoscape.equations.internal.builtins.Radians;
+import org.cytoscape.equations.internal.builtins.Right;
+import org.cytoscape.equations.internal.builtins.Round;
+import org.cytoscape.equations.internal.builtins.SList;
+import org.cytoscape.equations.internal.builtins.Sign;
+import org.cytoscape.equations.internal.builtins.Sin;
+import org.cytoscape.equations.internal.builtins.Sinh;
+import org.cytoscape.equations.internal.builtins.Sqrt;
+import org.cytoscape.equations.internal.builtins.StDev;
+import org.cytoscape.equations.internal.builtins.Substitute;
+import org.cytoscape.equations.internal.builtins.Sum;
+import org.cytoscape.equations.internal.builtins.Tan;
+import org.cytoscape.equations.internal.builtins.Tanh;
+import org.cytoscape.equations.internal.builtins.Text;
+import org.cytoscape.equations.internal.builtins.Today;
+import org.cytoscape.equations.internal.builtins.Trunc;
+import org.cytoscape.equations.internal.builtins.Upper;
+import org.cytoscape.equations.internal.builtins.Value;
+import org.cytoscape.equations.internal.builtins.Var;
+import org.cytoscape.equations.internal.parse_tree.BinOpNode;
+import org.cytoscape.equations.internal.parse_tree.BooleanConstantNode;
+import org.cytoscape.equations.internal.parse_tree.FConvNode;
+import org.cytoscape.equations.internal.parse_tree.FloatConstantNode;
+import org.cytoscape.equations.internal.parse_tree.FuncCallNode;
+import org.cytoscape.equations.internal.parse_tree.IdentNode;
+import org.cytoscape.equations.internal.parse_tree.SConvNode;
+import org.cytoscape.equations.internal.parse_tree.StringConstantNode;
+import org.cytoscape.equations.internal.parse_tree.UnaryOpNode;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 public class EquationParserImpl implements EquationParser {
-	private String formula;
+	
+	private static final Logger logger = LoggerFactory.getLogger(EquationParserImpl.class);
+
 	private Tokeniser tokeniser;
 	private Map<String, Function> nameToFunctionMap;
 	private String lastErrorMessage;
@@ -95,7 +167,6 @@ public class EquationParserImpl implements EquationParser {
 		if (formula.length() < 1 || formula.charAt(0) != '=')
 			throw new NullPointerException("0: formula string must start with an equal sign.");
 
-		this.formula = formula;
 		this.variableNameToTypeMap = variableNameToTypeMap;
 		this.variableReferences = new TreeSet<String>();
 		this.defaultVariableValues = new TreeMap<String, Object>();
@@ -580,5 +651,19 @@ public class EquationParserImpl implements EquationParser {
 		registerFunction(new Upper());
 		registerFunction(new Value());
 		registerFunction(new Var());
+	}
+	
+	// Listeners for function services
+	public void registerFunctionService(final Function function, final Map<?, ?> props) {
+		if(function != null) {
+			this.registerFunction(function);
+			logger.info("New Function Registered: " + function.getName());
+		}
+	}
+	
+	public void unregisterFunctionService(final Function function, final Map<?, ?> props) {
+		if(function != null) {
+			registeredFunctions.remove(function);
+		}
 	}
 }

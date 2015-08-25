@@ -37,6 +37,7 @@ import org.cytoscape.model.CyNode;
 
 
 public class OutDegree extends AbstractFunction {
+	
 	private final CyApplicationManager applicationManager;
 
 	public OutDegree(final CyApplicationManager applicationManager)

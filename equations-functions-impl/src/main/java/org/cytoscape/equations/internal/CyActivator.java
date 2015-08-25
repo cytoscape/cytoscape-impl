@@ -1,5 +1,7 @@
 package org.cytoscape.equations.internal;
 
+import java.util.Properties;
+
 /*
  * #%L
  * Cytoscape Equation Functions Impl (equations-functions-impl)
@@ -25,7 +27,12 @@ package org.cytoscape.equations.internal;
  */
 
 import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.equations.EquationCompiler;
+import org.cytoscape.equations.Function;
+import org.cytoscape.equations.internal.functions.Degree;
+import org.cytoscape.equations.internal.functions.InDegree;
+import org.cytoscape.equations.internal.functions.OutDegree;
+import org.cytoscape.equations.internal.functions.SourceID;
+import org.cytoscape.equations.internal.functions.TargetID;
 import org.cytoscape.service.util.AbstractCyActivator;
 import org.osgi.framework.BundleContext;
 
@@ -34,14 +41,20 @@ public class CyActivator extends AbstractCyActivator {
 		super();
 	}
 
-
 	public void start(BundleContext bc) {
 
-		EquationCompiler compilerServiceRef = getService(bc,EquationCompiler.class);
-		CyApplicationManager applicationManagerServiceRef = getService(bc,CyApplicationManager.class);
-		
-		FunctionRegistrar functionRegistrar = new FunctionRegistrar(compilerServiceRef,applicationManagerServiceRef);
-		functionRegistrar.registerAllFunctions();
+		final CyApplicationManager applicationManager = getService(bc, CyApplicationManager.class);
+
+		final Function degree = new Degree(applicationManager);
+		final Function inDegree = new InDegree(applicationManager);
+		final Function outDegree = new OutDegree(applicationManager);
+		final Function sourceId = new SourceID(applicationManager);
+		final Function targetId = new TargetID(applicationManager);
+
+		registerAllServices(bc, degree, new Properties());
+		registerAllServices(bc, inDegree, new Properties());
+		registerAllServices(bc, outDegree, new Properties());
+		registerAllServices(bc, sourceId, new Properties());
+		registerAllServices(bc, targetId, new Properties());
 	}
 }
-
