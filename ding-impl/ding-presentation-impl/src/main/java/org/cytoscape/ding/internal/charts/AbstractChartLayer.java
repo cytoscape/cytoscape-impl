@@ -1,6 +1,8 @@
 package org.cytoscape.ding.internal.charts;
 
+import java.awt.AlphaComposite;
 import java.awt.Color;
+import java.awt.Composite;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.Shape;
@@ -22,6 +24,7 @@ import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
 import org.cytoscape.view.presentation.customgraphics.Cy2DGraphicLayer;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.CategoryLabelPositions;
+import org.jfree.chart.plot.Plot;
 import org.jfree.data.category.CategoryDataset;
 import org.jfree.data.category.DefaultCategoryDataset;
 import org.jfree.data.general.Dataset;
@@ -127,8 +130,19 @@ public abstract class AbstractChartLayer<T extends Dataset> implements Cy2DGraph
 		final AffineTransform at = new AffineTransform();
 		at.scale(invScale, invScale);
 		g.transform(at);
+
+		// Check to see if we have a current alpha composite
+		Composite comp = g.getComposite();
+		if (comp instanceof AlphaComposite) {
+			float alpha = ((AlphaComposite)comp).getAlpha();
+			JFreeChart fc = getChart();
+			Plot plot = fc.getPlot();
+			plot.setForegroundAlpha(alpha);
+			fc.draw(g, newBounds);
+		} else {
+			getChart().draw(g, newBounds);
+		}
 		
-		getChart().draw(g, newBounds);
 		
 		// Make sure Graphics2D is "back to normal" before returning
 		try {
