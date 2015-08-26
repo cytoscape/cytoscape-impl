@@ -130,10 +130,11 @@ public class ListSingleHandler<T> extends AbstractGUITunableHandler
 		final T selectedItem = (T) combobox.getSelectedItem();
 		
 		if (selectedItem != null){
-			getSingleSelection().setSelectedValue(selectedItem);
+			ListSingleSelection<T> singleSelection = getSingleSelection();
+			singleSelection.setSelectedValue(selectedItem);
 			
 			try {
-				setValue(getSingleSelection());
+				setValue(singleSelection);
 			} catch (final Exception e) {
 				combobox.setBackground(Color.RED);
 				e.printStackTrace();
