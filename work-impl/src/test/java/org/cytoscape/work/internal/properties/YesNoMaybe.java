@@ -26,8 +26,18 @@ package org.cytoscape.work.internal.properties;
 
 public enum YesNoMaybe {
 
-    YES,
-    NO,
-    MAYBE
+    YES("oui"),
+    NO("non"),
+    MAYBE("peut-etre");
+    
+    private final String name;
+	
+    YesNoMaybe(String name) {
+    	this.name = name;
+    }
+    
+	public String toString() {
+		return name;
+	}
     
 }

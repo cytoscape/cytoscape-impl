@@ -139,6 +139,20 @@ public class TunablePropertySerializerTest {
 	}
 	
 	
+	@Test(expected=IllegalArgumentException.class)
+	public void testBadEnumName() {
+		class Tunables {
+		    @Tunable public YesNoMaybe yesNoMaybe = YesNoMaybe.YES;
+		};
+		// The YesNoMaybe.toString() method must be overridden to return something other than the field name.
+		Properties props = new Properties();
+		props.setProperty("yesNoMaybe", YesNoMaybe.MAYBE.toString());
+		
+		Tunables tunables = new Tunables();
+		getSerializer().setTunables(tunables, props);
+	}
+	
+	
 	@Test
 	public void testCreatePropertiesFromTunables() {
 		LotsOfTunables tunables = new LotsOfTunables();

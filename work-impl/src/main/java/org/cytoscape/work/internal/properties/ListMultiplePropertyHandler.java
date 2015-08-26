@@ -48,8 +48,8 @@ public class ListMultiplePropertyHandler extends ParameterizedTypePropertyHandle
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override
-	protected void setElementValues(List values) {
-		getContainer().setSelectedValues(values);
+	protected void setElementValues(ListMultipleSelection container, List values) {
+		container.setSelectedValues(values);
 	}
 	
 

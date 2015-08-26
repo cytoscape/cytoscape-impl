@@ -50,8 +50,8 @@ public class ListSinglePropertyHandler extends ParameterizedTypePropertyHandler<
 
 	@SuppressWarnings({ "unchecked" })
 	@Override
-	protected void setElementValues(List<?> values) {
-		getContainer().setSelectedValue(values.get(0));
+	protected void setElementValues(ListSingleSelection container, List<?> values) {
+		container.setSelectedValue(values.get(0));
 	}
 	
 

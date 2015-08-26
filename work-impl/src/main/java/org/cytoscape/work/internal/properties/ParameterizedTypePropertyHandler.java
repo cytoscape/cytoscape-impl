@@ -55,7 +55,7 @@ public abstract class ParameterizedTypePropertyHandler<T> extends AbstractTunabl
 
 	protected abstract List<?> getElementValues();
 	
-	protected abstract void setElementValues(List<?> values);
+	protected abstract void setElementValues(T container, List<?> values);
 	
 	
 	
@@ -71,10 +71,6 @@ public abstract class ParameterizedTypePropertyHandler<T> extends AbstractTunabl
 	
 	@Override
 	public String toPropertyValue() {
-//		return getElementValues().stream()
-//				.map(BasicTypePropertyHandler::toPropertyValue)
-//				.collect(Collectors.joining(","));
-		
 		StringJoiner joiner = new StringJoiner(",");
 		for(Object o : getElementValues()) {
 			String value = BasicTypePropertyHandler.toPropertyValue(o);
@@ -99,16 +95,17 @@ public abstract class ParameterizedTypePropertyHandler<T> extends AbstractTunabl
 			String name = getName();
 			String[] strings = propertyValue.split(",");
 			
-//			List<?> values = Arrays.stream(strings)
-//				.map(x -> BasicTypePropertyHandler.parseValue(name, x, c))
-//				.collect(Collectors.toList());
-			
 			List<Object> values = new ArrayList<>(strings.length);
 			for(String s : strings) {
 				values.add(BasicTypePropertyHandler.parseValue(name, s, c));
 			}
 			
-			setElementValues(values);
+			setElementValues(container, values);
+			try {
+				setValue(container);
+			} catch (IllegalAccessException | InvocationTargetException e) {
+				throw new IllegalArgumentException("Bad object", e);
+			}
 		}
 		else {
 			throw new IllegalArgumentException("Element type is not supported: " + genericType);

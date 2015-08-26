@@ -74,6 +74,8 @@ public class BasicTypePropertyHandler extends AbstractTunableHandler implements 
 	}
 	
 	static String toPropertyValue(Object value) {
+		if(value instanceof Enum)
+			return ((Enum<?>)value).name();
 		return value == null ? "null" : value.toString();
 	}
 
