@@ -61,6 +61,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.awt.event.WindowFocusListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -165,7 +166,8 @@ public class PreviewTablePanel extends JPanel {
 	private final IconManager iconManager;
 	
 	private EditDialog editDialog;
-	
+	private int lastDialogIndex = -1;
+	private long lastDialogTime;
 	private boolean updating;
 	
 	private final Object lock = new Object();
@@ -237,13 +239,6 @@ public class PreviewTablePanel extends JPanel {
 		instructionLabel.setFont(instructionLabel.getFont().deriveFont(LookAndFeelUtil.INFO_FONT_SIZE));
 		
 		LookAndFeelUtil.equalizeSize(getSelectAllButton(), getSelectNoneButton());
-		
-		this.addMouseListener(new MouseAdapter() {
-			@Override
-		    public void mousePressed(MouseEvent e) {
-	        	disposeEditDialog();
-		    }
-		});
 		
 		final GroupLayout layout = new GroupLayout(this);
 		this.setLayout(layout);
@@ -390,19 +385,6 @@ public class PreviewTablePanel extends JPanel {
 				public void tableChanged(TableModelEvent e) {
 					disposeEditDialog();
 				}
-			});
-			// Finally, close the editor dialog and commit its changes when the user clicks anywhere else in the table
-			previewTable.addMouseListener(new MouseAdapter() {
-				@Override
-			    public void mousePressed(MouseEvent e) {
-					if (previewTable != null) {
-				        int row = previewTable.rowAtPoint(e.getPoint());
-				        int col = previewTable.columnAtPoint(e.getPoint());
-				        
-				        if (row >= 0 && col >= 0)
-							disposeEditDialog();
-					}
-			    }
 			});
 		}
 		
@@ -879,6 +861,12 @@ public class PreviewTablePanel extends JPanel {
 	}
 	
 	private void showEditDialog(final int colIdx) {
+		if (colIdx == lastDialogIndex && System.currentTimeMillis() - lastDialogTime < 100)
+			return;
+		
+		lastDialogIndex = -1;
+		lastDialogTime = 0;
+		
 		final Window parent = SwingUtilities.getWindowAncestor(PreviewTablePanel.this);
 		
 		final PreviewTableModel model = (PreviewTableModel) getPreviewTable().getModel();
@@ -976,6 +964,21 @@ public class PreviewTablePanel extends JPanel {
 				getPreviewTable().getTableHeader().repaint();
 			}
 		});
+		
+		editDialog.addWindowFocusListener(new WindowFocusListener() {
+			@Override
+			public void windowLostFocus(WindowEvent e) {
+				if (editDialog != null) {
+					lastDialogIndex = editDialog.index;
+					lastDialogTime = System.currentTimeMillis();
+				}
+				disposeEditDialog();
+			}
+			@Override
+			public void windowGainedFocus(WindowEvent e) {
+			}
+		});
+		
 	    editDialog.pack();
 		editDialog.setVisible(true);
 	}
@@ -1148,12 +1151,6 @@ public class PreviewTablePanel extends JPanel {
 					if (!e.getValueIsAdjusting())
 						positionEditDialog();
 				}
-			});
-			tableScrollPane.getViewport().addMouseListener(new MouseAdapter() {
-				@Override
-			    public void mousePressed(MouseEvent e) {
-		        	disposeEditDialog();
-			    }
 			});
 		}
 		
