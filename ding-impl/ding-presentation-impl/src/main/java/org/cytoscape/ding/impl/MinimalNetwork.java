@@ -752,18 +752,12 @@ final class MinimalNetwork implements CySubNetwork {
 				target.undDegree++;
 			}
 
-			// Self-edge
-			if (source == target) {
-				if (directed) {
-					source.selfEdges++;
-				} else {
-					source.undDegree--;
-				}
-			}
+			// Loop?
+			if (source == target)
+				source.selfEdges++;
 		}
 
 		void remove() {
-
 			if (prevOutEdge != null)
 				prevOutEdge.nextOutEdge = nextOutEdge;
 			else
@@ -788,23 +782,16 @@ final class MinimalNetwork implements CySubNetwork {
 				target.undDegree--;
 			}
 
-			// Self-edge.
-			if (source == target) {
-				if (directed) {
-					source.selfEdges--;
-				} else {
-					source.undDegree--;
-				}
-			}
+			// Loop?
+			if (source == target)
+				source.selfEdges--;
 
 			nextOutEdge = null; // ?? wasn't here in DynamicGraph
 			prevOutEdge = null;
 			nextInEdge = null;
 			prevInEdge = null;
 		}
-
 	}
-
 
 	@Override
 	public CyNode addNode() {
