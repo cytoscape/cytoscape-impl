@@ -33,6 +33,7 @@ import org.cytoscape.model.CyEdge;
  * You should only touch this if you know what you're doing.
  */
 final class EdgePointer {
+	
 	final CyEdge cyEdge;
 	final long index;
 	final boolean directed;
@@ -61,7 +62,6 @@ final class EdgePointer {
 	}
 
 	private void insertSelf() {
-
 		nextOutEdge = source.firstOutEdge;
 
 		if (source.firstOutEdge != null)

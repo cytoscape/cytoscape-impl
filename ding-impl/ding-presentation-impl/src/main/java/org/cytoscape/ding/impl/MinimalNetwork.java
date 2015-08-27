@@ -67,8 +67,8 @@ final class MinimalNetwork implements CySubNetwork {
 		nodeCount = 0;
 		edgeCount = 0;
 		firstNode = null;
-		nodePointers = new ConcurrentHashMap<Long, NodePointer>(16, 0.75f, 2);
-		edgePointers = new ConcurrentHashMap<Long, EdgePointer>(16, 0.75f, 2);
+		nodePointers = new ConcurrentHashMap<>(16, 0.75f, 2);
+		edgePointers = new ConcurrentHashMap<>(16, 0.75f, 2);
 	}
 
 	/**
@@ -92,26 +92,19 @@ final class MinimalNetwork implements CySubNetwork {
 	@Override
 	public CyEdge getEdge(final long e) {
 		final EdgePointer ep = edgePointers.get(e);
-		if (ep != null)
-			return ep.cyEdge;
-		else
-			return null;
+		return ep != null ? ep.cyEdge : null;
 	}
 
 	@Override
 	public CyNode getNode(final long n) {
 		final NodePointer np = nodePointers.get(n);
-		if (np != null)
-			return np.cyNode;
-		else
-			return null;
+		return np != null ? np.cyNode : null;
 	}
-
 	
 	@Override
 	public List<CyNode> getNodeList() {
 		synchronized (lock) {
-			final List<CyNode> ret = new ArrayList<CyNode>(nodeCount);
+			final List<CyNode> ret = new ArrayList<>(nodeCount);
 			int numRemaining = ret.size();
 			NodePointer node = firstNode;
 	
@@ -128,11 +121,10 @@ final class MinimalNetwork implements CySubNetwork {
 		}
 	}
 	
-	
 	@Override
 	public List<CyEdge> getEdgeList() {
 		synchronized (lock) {
-			final List<CyEdge> ret = new ArrayList<CyEdge>(edgeCount);
+			final List<CyEdge> ret = new ArrayList<>(edgeCount);
 			EdgePointer edge = null;
 	
 			int numRemaining = ret.size();
@@ -167,7 +159,7 @@ final class MinimalNetwork implements CySubNetwork {
 				return Collections.emptyList();
 	
 			final NodePointer np = getNodePointer(n);
-			final List<CyNode> ret = new ArrayList<CyNode>(countEdges(np, e));
+			final List<CyNode> ret = new ArrayList<>(countEdges(np, e));
 			final Iterator<EdgePointer> it = edgesAdjacent(np, e);
 			while (it.hasNext()) {
 				final EdgePointer edge = it.next();
@@ -186,7 +178,7 @@ final class MinimalNetwork implements CySubNetwork {
 				return Collections.emptyList();
 	
 			final NodePointer np = getNodePointer(n);
-			final List<CyEdge> ret = new ArrayList<CyEdge>(countEdges(np, e));
+			final List<CyEdge> ret = new ArrayList<>(countEdges(np, e));
 			final Iterator<EdgePointer> it = edgesAdjacent(np, e);
 	
 			while (it.hasNext()) {
@@ -209,24 +201,29 @@ final class MinimalNetwork implements CySubNetwork {
 	}
 
 	private final class IterableEdgeIterator implements Iterator<CyEdge>, Iterable<CyEdge> {
+		
 		private final Iterator<EdgePointer> epIterator;
 
 		IterableEdgeIterator(final Iterator<EdgePointer> epIterator) {
 			this.epIterator = epIterator;
 		}
 
+		@Override
 		public CyEdge next() {
 			return epIterator.next().cyEdge;
 		}
 
+		@Override
 		public boolean hasNext() {
 			return epIterator.hasNext();
 		}
 
+		@Override
 		public void remove() {
 			epIterator.remove();
 		}
 
+		@Override
 		public Iterator<CyEdge> iterator() {
 			return this;
 		}
@@ -244,7 +241,7 @@ final class MinimalNetwork implements CySubNetwork {
 			final NodePointer srcP = getNodePointer(src);
 			final NodePointer trgP = getNodePointer(trg);
 	
-			final List<CyEdge> ret = new ArrayList<CyEdge>(Math.min(countEdges(srcP, e), countEdges(trgP, e)));
+			final List<CyEdge> ret = new ArrayList<>(Math.min(countEdges(srcP, e), countEdges(trgP, e)));
 			final Iterator<EdgePointer> it = edgesConnecting(srcP, trgP, e);
 	
 			while (it.hasNext())
@@ -255,8 +252,7 @@ final class MinimalNetwork implements CySubNetwork {
 	}
 
 	/**
-	 * IMPORTANT: this is not protected by synchronized because caller always
-	 * uses lock.
+	 * IMPORTANT: this is not protected by synchronized because caller always uses lock.
 	 */
 	private final CyNode addNodeInternal(final CyNode node) {
 		synchronized (lock) {
@@ -294,11 +290,11 @@ final class MinimalNetwork implements CySubNetwork {
 				madeChanges = true;
 			}
 		}
+		
 		return madeChanges;
 	}
 
 	private final CyEdge addEdgeInternal(final CyNode s, final CyNode t, final boolean directed, final CyEdge edge) {
-
 		final EdgePointer e;
 
 		synchronized (lock) {
@@ -322,6 +318,7 @@ final class MinimalNetwork implements CySubNetwork {
 			edgePointers.put(edge.getSUID(), e);
 			edgeCount++;
 		}
+		
 		return edge;
 	}
 
@@ -386,18 +383,11 @@ final class MinimalNetwork implements CySubNetwork {
 	@Override
 	public boolean containsEdge(final CyNode n1, final CyNode n2) {
 		synchronized (lock) {
-			// System.out.println("private containsEdge");
-			if (!containsNode(n1)) {
-				// System.out.println("private containsEdge doesn't contain node1 "
-				// + inId);
+			if (!containsNode(n1))
 				return false;
-			}
 	
-			if (!containsNode(n2)) {
-				// System.out.println("private containsEdge doesn't contain node2 "
-				// + inId);
+			if (!containsNode(n2))
 				return false;
-			}
 	
 			final Iterator<EdgePointer> it = edgesConnecting(getNodePointer(n1), getNodePointer(n2), CyEdge.Type.ANY);
 	
@@ -420,26 +410,28 @@ final class MinimalNetwork implements CySubNetwork {
 			edgeLists = new EdgePointer[] { n.firstOutEdge, null };
 		else if (incoming) // Cannot also be outgoing.
 			edgeLists = new EdgePointer[] { null, n.firstInEdge };
-		else
-			// All boolean input parameters are false - can never get here!
+		else // All boolean input parameters are false--can never get here!
 			edgeLists = new EdgePointer[] { null, null };
 
 		final int inEdgeCount = countEdges(n, edgeType);
-		// System.out.println("edgesAdjacent edgeCount: " + inEdgeCount);
 
 		return new Iterator<EdgePointer>() {
+			
 			private int numRemaining = inEdgeCount;
 			private int edgeListIndex = -1;
 			private EdgePointer edge;
 
+			@Override
 			public boolean hasNext() {
 				return numRemaining > 0;
 			}
 
+			@Override
 			public void remove() {
 				throw new UnsupportedOperationException();
 			}
 
+			@Override
 			public EdgePointer next() {
 				// get the first non-null edgePointer
 				while (edge == null)
@@ -476,14 +468,13 @@ final class MinimalNetwork implements CySubNetwork {
 
 				// look at incoming edges
 				if (edgeListIndex == 1) {
-
 					// Important NOTE!!!
 					// Possible null pointer exception here if numRemaining,
 					// i.e. edgeCount is wrong. However, this is probably the
 					// correct behavior since it means the linked lists are
 					// messed up and there isn't a graceful way to deal.
 
-					// go to the next edge if the edge is a self edge AND
+					// go to the next edge if the edge is a loop AND
 					// either directed when we're looking for outgoing or
 					// undirected when we're looking for undirected
 					// OR
@@ -500,6 +491,7 @@ final class MinimalNetwork implements CySubNetwork {
 				}
 
 				numRemaining--;
+				
 				return (EdgePointer) edgePointers.get(returnIndex);
 			}
 		};
@@ -515,14 +507,10 @@ final class MinimalNetwork implements CySubNetwork {
 
 		// choose the smaller iterator
 		if (countEdges(node0, et) <= countEdges(node1, et)) {
-			// System.out.println("edgesConnecting fewer edges node0: " +
-			// node0.index);
 			theAdj = edgesAdjacent(node0, et);
 			nodeZero = node0.index;
 			nodeOne = node1.index;
 		} else {
-			// System.out.println("edgesConnecting fewer edges node1: " +
-			// node1.index);
 			theAdj = edgesAdjacent(node1, et);
 			nodeZero = node1.index;
 			nodeOne = node0.index;
@@ -532,9 +520,8 @@ final class MinimalNetwork implements CySubNetwork {
 			private long nextIndex = -1;
 
 			private void ensureComputeNext() {
-				if (nextIndex != -1) {
+				if (nextIndex != -1)
 					return;
-				}
 
 				while (theAdj.hasNext()) {
 					final EdgePointer e = theAdj.next();
@@ -549,16 +536,19 @@ final class MinimalNetwork implements CySubNetwork {
 				nextIndex = -2;
 			}
 
+			@Override
 			public void remove() {
 				throw new UnsupportedOperationException();
 			}
 
+			@Override
 			public boolean hasNext() {
 				ensureComputeNext();
 
 				return (nextIndex >= 0);
 			}
 
+			@Override
 			public EdgePointer next() {
 				ensureComputeNext();
 
@@ -571,15 +561,15 @@ final class MinimalNetwork implements CySubNetwork {
 	}
 
 	private final boolean assessUndirected(final CyEdge.Type e) {
-		return ((e == CyEdge.Type.UNDIRECTED) || (e == CyEdge.Type.ANY));
+		return e == CyEdge.Type.UNDIRECTED || e == CyEdge.Type.ANY;
 	}
 
 	private final boolean assessIncoming(final CyEdge.Type e) {
-		return ((e == CyEdge.Type.DIRECTED) || (e == CyEdge.Type.ANY) || (e == CyEdge.Type.INCOMING));
+		return e == CyEdge.Type.DIRECTED || e == CyEdge.Type.ANY || e == CyEdge.Type.INCOMING;
 	}
 
 	private final boolean assessOutgoing(final CyEdge.Type e) {
-		return ((e == CyEdge.Type.DIRECTED) || (e == CyEdge.Type.ANY) || (e == CyEdge.Type.OUTGOING));
+		return e == CyEdge.Type.DIRECTED || e == CyEdge.Type.ANY || e == CyEdge.Type.OUTGOING;
 	}
 
 	private final int countEdges(final NodePointer n, final CyEdge.Type edgeType) {
@@ -588,33 +578,19 @@ final class MinimalNetwork implements CySubNetwork {
 		final boolean incoming = assessIncoming(edgeType);
 		final boolean outgoing = assessOutgoing(edgeType);
 
-		// System.out.println("countEdges un: " + undirected + " in: " +
-		// incoming + " out: " + outgoing);
+		int count = 0;
 
-		int tentativeEdgeCount = 0;
+		if (outgoing)
+			count += n.outDegree;
+		if (incoming)
+			count += n.inDegree;
+		if (undirected)
+			count += n.undDegree;
 
-		if (outgoing) {
-			// System.out.println("  countEdges outgoing: " + n.outDegree);
-			tentativeEdgeCount += n.outDegree;
-		}
+		if (outgoing && incoming)
+			count -= n.selfEdges;
 
-		if (incoming) {
-			// System.out.println("  countEdges incoming: " + n.inDegree);
-			tentativeEdgeCount += n.inDegree;
-		}
-
-		if (undirected) {
-			// System.out.println("  countEdges undirected: " + n.undDegree);
-			tentativeEdgeCount += n.undDegree;
-		}
-
-		if (outgoing && incoming) {
-			// System.out.println("  countEdges out+in MINUS: " + n.selfEdges);
-			tentativeEdgeCount -= n.selfEdges;
-		}
-
-		// System.out.println("  countEdges final: " + tentativeEdgeCount);
-		return tentativeEdgeCount;
+		return count;
 	}
 
 	private final NodePointer getNodePointer(final CyNode node) {
@@ -637,8 +613,8 @@ final class MinimalNetwork implements CySubNetwork {
 		return (int) (suid.longValue() ^ (suid.longValue() >>> 32));
 	}
 
-
 	private final class NodePointer {
+		
 		final CyNode cyNode;
 		final long index;
 
@@ -656,7 +632,7 @@ final class MinimalNetwork implements CySubNetwork {
 		// The number of undirected edges which touch this node.
 		int undDegree;
 
-		// The number of directed self-edges on this node.
+		// The number of loops on this node.
 		int selfEdges;
 
 		NodePointer(final CyNode cyn) {
@@ -701,6 +677,7 @@ final class MinimalNetwork implements CySubNetwork {
 	}
 
 	private static final class EdgePointer {
+		
 		final CyEdge cyEdge;
 		final long index;
 		final boolean directed;
@@ -729,7 +706,6 @@ final class MinimalNetwork implements CySubNetwork {
 		}
 
 		private void insertSelf() {
-
 			nextOutEdge = source.firstOutEdge;
 
 			if (source.firstOutEdge != null)
@@ -826,7 +802,7 @@ final class MinimalNetwork implements CySubNetwork {
 			
 		synchronized (this) {
 			// then add the resulting CyEdge to this network
-			ret = addEdgeInternal(source,target,isDirected,null);
+			ret = addEdgeInternal(source, target, isDirected, null);
 		}
 
 		return ret;
@@ -854,17 +830,16 @@ final class MinimalNetwork implements CySubNetwork {
 
 		return true;
 	}
-
 	
 	@Override
 	public boolean removeNodes(final Collection<CyNode> nodes) {
-		if ( nodes == null || nodes.isEmpty() )
+		if (nodes == null || nodes.isEmpty())
 			return false;
 
 		boolean ret = removeNodesInternal(nodes);
 
-		if ( ret ){
-			for(CyNode node: nodes)
+		if (ret) {
+			for (CyNode node : nodes)
 				if (this.containsNode(node))
 					getRow(node).set(CyNetwork.SELECTED, false);
 
@@ -875,16 +850,15 @@ final class MinimalNetwork implements CySubNetwork {
 
 	@Override
 	public boolean removeEdges(final Collection<CyEdge> edges) {
-		if ( edges == null || edges.isEmpty() )
+		if (edges == null || edges.isEmpty())
 			return false;
 
 		boolean ret = removeEdgesInternal(edges);
 
-		if ( ret ){
-			for(CyEdge edge: edges)
+		if (ret) {
+			for (CyEdge edge : edges)
 				if (this.containsEdge(edge))
 					getRow(edge).set(CyNetwork.SELECTED, false);
-			
 		}
 
 		return ret;
@@ -895,7 +869,6 @@ final class MinimalNetwork implements CySubNetwork {
 		return SavePolicy.DO_NOT_SAVE;
 	}
 
-	
 	@Override
 	public void dispose() {
 	}
@@ -933,8 +906,5 @@ final class MinimalNetwork implements CySubNetwork {
 	@Override
 	public CyRootNetwork getRootNetwork() {
 		throw new UnsupportedOperationException();
-//		return null;
 	}
-
-
 }
