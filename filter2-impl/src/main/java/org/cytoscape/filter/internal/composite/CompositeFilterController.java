@@ -1,7 +1,6 @@
 package org.cytoscape.filter.internal.composite;
 
-import javax.swing.ComboBoxModel;
-import javax.swing.JComboBox;
+import java.awt.Component;
 
 import org.cytoscape.filter.model.CompositeFilter;
 import org.cytoscape.model.CyIdentifiable;
@@ -9,7 +8,10 @@ import org.cytoscape.model.CyNetwork;
 
 public interface CompositeFilterController {
 
-	ComboBoxModel getCombiningMethodComboBoxModel();
+	Component createFilterView(CompositeFilter<CyNetwork,CyIdentifiable> model);
 
-	void handleCombiningMethodSelected(JComboBox combiningMethodComboBox, CompositeFilter<CyNetwork, CyIdentifiable> model);
+	String getAddButtonTooltip();
+	
+	boolean autoHideComboBox();
+
 }

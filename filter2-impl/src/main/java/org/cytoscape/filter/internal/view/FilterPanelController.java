@@ -1,5 +1,6 @@
 package org.cytoscape.filter.internal.view;
 
+import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.event.ActionEvent;
@@ -9,8 +10,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JMenuItem;
+import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
 
@@ -18,12 +21,14 @@ import org.cytoscape.filter.TransformerManager;
 import org.cytoscape.filter.internal.FilterIO;
 import org.cytoscape.filter.internal.ModelMonitor;
 import org.cytoscape.filter.internal.ModelUtil;
+import org.cytoscape.filter.internal.composite.CompositeFilterController;
 import org.cytoscape.filter.internal.composite.CompositeFilterPanel;
 import org.cytoscape.filter.internal.composite.CompositeSeparator;
 import org.cytoscape.filter.internal.view.TransformerViewManager.TransformerViewElement;
 import org.cytoscape.filter.model.CompositeFilter;
 import org.cytoscape.filter.model.Filter;
 import org.cytoscape.filter.model.NamedTransformer;
+import org.cytoscape.filter.model.NegatableFilter;
 import org.cytoscape.filter.model.Transformer;
 import org.cytoscape.filter.view.InteractivityChangedListener;
 import org.cytoscape.model.CyIdentifiable;
@@ -54,15 +59,45 @@ public class FilterPanelController extends AbstractPanelController<FilterElement
 	}
 
 	public JComponent createView(FilterPanel parent, Filter<CyNetwork, CyIdentifiable> filter, int depth) {
-		if (filter instanceof CompositeFilter) {
-			return new CompositeFilterPanel(parent, this, (CompositeFilter<CyNetwork, CyIdentifiable>) filter, depth,
-					iconManager);
-		}
+		// view will be null for CompositeFilterImpl and that's ok
 		JComponent view = transformerViewManager.createView(filter);
+		
 		if (view instanceof InteractivityChangedListener) {
 			((InteractivityChangedListener) view).handleInteractivityChanged(isInteractive);
 		}
+		if (filter instanceof NegatableFilter) {
+			view = wrapInNegatePanel(view, (NegatableFilter)filter);
+		}
+		
+		if (filter instanceof CompositeFilter) {
+			String addButtonTT = transformerViewManager.getAddButtonTooltip(filter);
+			final JComponent filterView = view;
+			CompositeFilterController controller = new CompositeFilterController() {
+				@Override public String getAddButtonTooltip() { return addButtonTT; }
+				@Override public Component createFilterView(CompositeFilter<CyNetwork, CyIdentifiable> model) { return filterView; } 
+				@Override public boolean autoHideComboBox() { return filterView != null; }
+			};
+			return new CompositeFilterPanel(parent, this, controller, (CompositeFilter<CyNetwork, CyIdentifiable>) filter, depth, iconManager);
+		}
+		
 		return view;
+	}
+	
+	public JComponent wrapInNegatePanel(Component view, NegatableFilter filter) {
+		JCheckBox negateCheckBox = new JCheckBox("Negate");
+		negateCheckBox.setSelected(filter.getNegated());
+		negateCheckBox.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				filter.setNegated(negateCheckBox.isSelected());
+			}
+		});
+		
+		JPanel panel = new JPanel(new BorderLayout());
+		panel.setOpaque(false);
+		panel.add(negateCheckBox, BorderLayout.NORTH);
+		panel.add(view, BorderLayout.CENTER);
+		return panel;
 	}
 
 	public JPopupMenu createAddConditionMenu(final CompositeFilterPanel panel, final FilterPanel filterPanel) {

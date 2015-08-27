@@ -10,9 +10,10 @@ import org.cytoscape.work.Tunable;
 
 public class CompositeFilterImpl<C, E> extends AbstractTransformer<C, E> implements CompositeFilter<C, E> {
 	static final String ID = "org.cytoscape.CompositeFilter";
+	public static final Type DEFAULT_TYPE = Type.ALL;
 	
 	private Type type;
-
+	
 	List<Filter<C, E>> filters;
 
 	private Class<C> contextType;
@@ -20,7 +21,7 @@ public class CompositeFilterImpl<C, E> extends AbstractTransformer<C, E> impleme
 	private Class<E> elementType;
 	
 	public CompositeFilterImpl(Class<C> contextType, Class<E> elementType) {
-		type = Type.ALL;
+		type = DEFAULT_TYPE;
 		filters = new ArrayList<Filter<C,E>>();
 		this.contextType = contextType;
 		this.elementType = elementType;

@@ -95,8 +95,8 @@ public class CyActivator extends AbstractCyActivator {
 		
 		registerService(context, new DegreeFilterViewFactory(modelMonitor), TransformerViewFactory.class, new Properties());
 		registerService(context, new ColumnFilterViewFactory(modelMonitor, iconManager), TransformerViewFactory.class, new Properties());
-		registerService(context, new TopologyFilterViewFactory(), TransformerViewFactory.class, new Properties());
 		registerService(context, new InteractionTransformerViewFactory(), TransformerViewFactory.class, new Properties());
+		registerService(context, new TopologyFilterViewFactory(), TransformerViewFactory.class, TopologyFilterViewFactory.getServiceProperties());
 		
 		LazyWorkQueue queue = new LazyWorkQueue();
 		CyApplicationManager applicationManager = getService(context, CyApplicationManager.class);

@@ -1,5 +1,7 @@
 package org.cytoscape.filter.internal.composite;
 
+import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.dnd.DropTarget;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -45,24 +47,22 @@ public class CompositeFilterPanel extends JPanel {
 	private Map<Filter<CyNetwork, CyIdentifiable>, TransformerElementViewModel<FilterPanel>> viewModels;
 	private GroupLayout layout;
 	private int depth;
-	private JComboBox combiningMethodComboBox;
+	private JPanel combiningMethodPanel;
 	private FilterPanelController filterPanelController;
+	private CompositeFilterController compositeFilterController;
 	private final JButton addButton;
 	private FilterPanel parent;
-	private CompositeFilter<CyNetwork, CyIdentifiable> model;
+	private CompositeFilter<CyNetwork,CyIdentifiable> model;
 	private final IconManager iconManager;
 	private JComponent separator; 
+	private JComboBox<?> combiningMethodComboBox;
 	
 	public CompositeFilterPanel(FilterPanel parent, FilterPanelController filterPanelController, 
-			final CompositeFilter<CyNetwork, CyIdentifiable> model, int depth, IconManager iconManager) {
-		this(parent, filterPanelController, new Controller(), model, depth, iconManager);
-	}
-	
-	public CompositeFilterPanel(FilterPanel parent, FilterPanelController filterPanelController, 
-			final Controller controller, final CompositeFilter<CyNetwork, CyIdentifiable> model, int depth,
+			final CompositeFilterController controller, final CompositeFilter<CyNetwork,CyIdentifiable> model, int depth,
 			IconManager iconManager) {
 		this.parent = parent;
 		this.filterPanelController = filterPanelController;
+		this.compositeFilterController = controller;
 		this.depth = depth;
 		this.model = model;
 		this.iconManager = iconManager;
@@ -77,20 +77,17 @@ public class CompositeFilterPanel extends JPanel {
 		setLayout(layout);
 		updateBorder();
 		
-		combiningMethodComboBox = new JComboBox(controller.getCombiningMethodComboBoxModel());
-		combiningMethodComboBox.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent event) {
-				controller.handleCombiningMethodSelected(combiningMethodComboBox, model);
-			}
-		});
+		combiningMethodPanel = new JPanel(new BorderLayout());
+		combiningMethodPanel.setBackground(getBackground());
 		
-		DynamicComboBoxModel.select(combiningMethodComboBox, 0, new Matcher<CombiningMethodElement>() {
-			@Override
-			public boolean matches(CombiningMethodElement item) {
-				return model.getType().equals(item.combiningMethod);
-			}
-		});
+		Component topView = controller.createFilterView(model);
+		if(topView != null) {
+			topView.setBackground(getBackground());
+			combiningMethodPanel.add(topView, BorderLayout.CENTER);
+		}
+
+		combiningMethodComboBox = createCombiningMethodComboBox();
+		combiningMethodPanel.add(combiningMethodComboBox, BorderLayout.SOUTH);
 		
 		addButton = createAddConditionButton();
 		
@@ -128,10 +125,10 @@ public class CompositeFilterPanel extends JPanel {
 		final Group columns = layout.createParallelGroup(Alignment.LEADING, true);
 		final Group rows = layout.createSequentialGroup();
 		
-		if (depth > 0 || model.getLength() > 1) {
-			columns.addComponent(combiningMethodComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE);
-			rows.addComponent(combiningMethodComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE);
-		}
+		combiningMethodComboBox.setVisible((depth > 0 && !compositeFilterController.autoHideComboBox()) || model.getLength() > 1);
+		
+		columns.addComponent(combiningMethodPanel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE);
+		rows.addComponent(combiningMethodPanel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE);
 		
 		columns.addGroup(layout.createSequentialGroup()
 				.addGap(4)
@@ -177,7 +174,8 @@ public class CompositeFilterPanel extends JPanel {
 	JButton createAddConditionButton() {
 		final JButton button = new JButton(IconManager.ICON_PLUS);
 		button.setFont(iconManager.getIconFont(12.0f));
-		button.setToolTipText("Add new condition...");
+		String tooltip = compositeFilterController.getAddButtonTooltip();
+		button.setToolTipText(tooltip == null ? "Add new condition..." : tooltip);
 		button.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent event) {
@@ -187,7 +185,51 @@ public class CompositeFilterPanel extends JPanel {
 		});
 		return button;
 	}
+	
+	private List<CombiningMethodElement> getCombiningMethods() {
+		List<CombiningMethodElement> methods = new ArrayList<CombiningMethodElement>(2);
+		methods.add(new CombiningMethodElement("Match all (AND)", CompositeFilter.Type.ALL));
+		methods.add(new CombiningMethodElement("Match any (OR)", CompositeFilter.Type.ANY));
+		return methods;
+	}
 
+	public JComboBox<CombiningMethodElement> createCombiningMethodComboBox() {
+		List<CombiningMethodElement> methods = getCombiningMethods();
+		ComboBoxModel<CombiningMethodElement> comboBoxModel = new DynamicComboBoxModel<>(methods);
+		JComboBox<CombiningMethodElement> combiningMethodComboBox = new JComboBox<>(comboBoxModel);
+		combiningMethodComboBox.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent event) {
+				model.setType(((CombiningMethodElement)combiningMethodComboBox.getSelectedItem()).combiningMethod);
+			}
+		});
+		
+		DynamicComboBoxModel.select(combiningMethodComboBox, 0, new Matcher<CombiningMethodElement>() {
+			@Override
+			public boolean matches(CombiningMethodElement item) {
+				return model.getType().equals(item.combiningMethod);
+			}
+		});
+		
+		return combiningMethodComboBox;
+	}
+
+	
+	class CombiningMethodElement {
+		public final String name;
+		public final CompositeFilter.Type combiningMethod;
+		
+		public CombiningMethodElement(String name, Type combiningMethod) {
+			this.name = name;
+			this.combiningMethod = combiningMethod;
+		}
+		
+		@Override
+		public String toString() {
+			return name;
+		}
+	}
+	
 	public void addViewModel(int index, Filter<CyNetwork, CyIdentifiable> filter, TransformerElementViewModel<FilterPanel> viewModel) {
 		model.insert(index, filter);
 		viewModels.put(filter, viewModel);
@@ -255,42 +297,7 @@ public class CompositeFilterPanel extends JPanel {
 		return viewModels.values();
 	}
 	
-	public static class Controller implements CompositeFilterController {
-		private static List<CombiningMethodElement> combiningMethods = createCombiningMethods();
-
-		private static List<CombiningMethodElement> createCombiningMethods() {
-			ArrayList<CombiningMethodElement> methods = new ArrayList<CombiningMethodElement>();
-			methods.add(new CombiningMethodElement("Match all (AND)", CompositeFilter.Type.ALL));
-			methods.add(new CombiningMethodElement("Match any (OR)", CompositeFilter.Type.ANY));
-			return methods;
-		}
-
-		public void handleCombiningMethodSelected(JComboBox comboBox, CompositeFilter<CyNetwork, CyIdentifiable> model) {
-			CombiningMethodElement selected = (CombiningMethodElement) comboBox.getSelectedItem();
-			model.setType(selected.combiningMethod);
-		}
-
-		public ComboBoxModel getCombiningMethodComboBoxModel() {
-			return new DynamicComboBoxModel<CombiningMethodElement>(combiningMethods);
-		}
-	}
-	
 	public JComponent getSeparator() {
 		return separator;
-	}
-	
-	static class CombiningMethodElement {
-		public final String name;
-		public final CompositeFilter.Type combiningMethod;
-		
-		public CombiningMethodElement(String name, Type combiningMethod) {
-			this.name = name;
-			this.combiningMethod = combiningMethod;
-		}
-		
-		@Override
-		public String toString() {
-			return name;
-		}
 	}
 }
