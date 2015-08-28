@@ -98,15 +98,18 @@ public class CyGroupSettingsImpl implements GroupAddedListener,
 	final static String AGG_ENABLED = "aggregationEnabled";
 	final static String DEFAULT_INT_AGGREGATION = "defaultIntegerAggregation";
 	final static String DEFAULT_LONG_AGGREGATION = "defaultLongAggregation";
-	final static String DEFAULT_FLOAT_AGGREGATION = "defaultFloatAggregation";
 	final static String DEFAULT_DOUBLE_AGGREGATION = "defaultDoubleAggregation";
 	final static String DEFAULT_STRING_AGGREGATION = "defaultStringAggregation";
 	final static String DEFAULT_BOOLEAN_AGGREGATION = "defaultBooleanAggregation";
-	final static String DEFAULT_LIST_AGGREGATION = "defaultListAggregation";
+	final static String DEFAULT_STRING_LIST_AGGREGATION = "defaultStringListAggregation";
+	final static String DEFAULT_INTEGER_LIST_AGGREGATION = "defaultInegerListAggregation";
+	final static String DEFAULT_LONG_LIST_AGGREGATION = "defaultLongListAggregation";
+	final static String DEFAULT_DOUBLE_LIST_AGGREGATION = "defaultDoubleListAggregation";
 	final static String OVERRIDE_AGGREGATION = "overrideColumnAggregations";
 
-	Map<Class, Aggregator> allGroupDefaultMap;
-	Map<CyColumn, Aggregator> allGroupOverrideMap;
+	Map<Class<?>, Aggregator<?>> allGroupDefaultMap;
+	Map<Class<?>, Aggregator<?>> allGroupListDefaultMap;
+	Map<CyColumn, Aggregator<?>> allGroupOverrideMap;
 	Map<String, String> allGroupOverridePropertyMap;
 
 	// TODO: should these be network-specific?
@@ -134,8 +137,9 @@ public class CyGroupSettingsImpl implements GroupAddedListener,
 		this.appMgr = cyGroupManager.getService(CyApplicationManager.class);
 		this.eventHelper = cyGroupManager.getService(CyEventHelper.class);
 
-		allGroupDefaultMap = new HashMap<Class,Aggregator>();
-		allGroupOverrideMap = new HashMap<CyColumn,Aggregator>();
+		allGroupDefaultMap = new HashMap<Class<?>,Aggregator<?>>();
+		allGroupListDefaultMap = new HashMap<Class<?>,Aggregator<?>>();
+		allGroupOverrideMap = new HashMap<CyColumn,Aggregator<?>>();
 		allGroupOverridePropertyMap = new HashMap<String, String>(); // Special map for loading initial properties
 		groupMap = new HashMap<CyGroup,GroupSpecificMaps>();
 		
@@ -283,33 +287,40 @@ public class CyGroupSettingsImpl implements GroupAddedListener,
 	// This routine is the main routine used to walk that cascade
 	// of aggregations
 	@Override
-	public Aggregator getAggregator(CyGroup group, CyColumn column) {
-		Class type = column.getType();
+	public Aggregator<?> getAggregator(CyGroup group, CyColumn column) {
+		Class<?> type = column.getType();
 		synchronized (lock) {
 			// First, make sure the our override map is up-to-date
 			// This will check to see if we have a property for this
 			// and update it if we do
 			getOverrideAggregation(column);
-			Map<CyColumn, Aggregator> overrideMap = allGroupOverrideMap;
+			Map<CyColumn, Aggregator<?>> overrideMap = allGroupOverrideMap;
 
-			Map<Class, Aggregator> defaultMap = allGroupDefaultMap;
+			Map<Class<?>, Aggregator<?>> defaultMap = allGroupDefaultMap;
+			Map<Class<?>, Aggregator<?>> defaultListMap = allGroupListDefaultMap;
 			GroupSpecificMaps groupSpecificMaps = groupMap.get(group);
 			if (groupSpecificMaps != null) {
 				defaultMap = groupSpecificMaps.getDefaults();
+				defaultListMap = groupSpecificMaps.getListDefaults();
 				overrideMap = groupSpecificMaps.getOverrides();
 			}
-			Aggregator aggregator = overrideMap.get(column.getName());
+			Aggregator<?> aggregator = overrideMap.get(column.getName());
 			if (aggregator != null) {
 				return aggregator;
 			}
-			return defaultMap.get(column.getType());
+			if (type.isAssignableFrom(List.class)) {
+				return defaultListMap.get(column.getListElementType());
+			} else {
+				return defaultMap.get(column.getType());
+			}
 		}
 	}
 
 	// Update all of our maps when we add a new group
 	public void handleEvent(GroupAddedEvent e) {
 		CyGroup addedGroup = e.getGroup();
-		Map<Class,Aggregator> defMap = new HashMap<Class, Aggregator>();
+		Map<Class<?>,Aggregator<?>> defMap = new HashMap<>();
+		Map<Class<?>,Aggregator<?>> defListMap = new HashMap<>();
 		CyNetwork network = appMgr.getCurrentNetwork();
 		if (network == null || !addedGroup.isInNetwork(network)) {
 			for (CyNetwork net: addedGroup.getNetworkSet()) {
@@ -318,12 +329,14 @@ public class CyGroupSettingsImpl implements GroupAddedListener,
 			}
 		}
 		synchronized (lock) {
-			for (Class cKey: allGroupDefaultMap.keySet())
+			for (Class<?> cKey: allGroupDefaultMap.keySet())
 				defMap.put(cKey, allGroupDefaultMap.get(cKey));
-			Map<CyColumn,Aggregator> ovMap = new HashMap<CyColumn, Aggregator>();
+			for (Class<?> cKey: allGroupListDefaultMap.keySet())
+				defListMap.put(cKey, allGroupListDefaultMap.get(cKey));
+			Map<CyColumn,Aggregator<?>> ovMap = new HashMap<CyColumn, Aggregator<?>>();
 			for (CyColumn cKey: allGroupOverrideMap.keySet())
 				ovMap.put(cKey, allGroupOverrideMap.get(cKey));
-			groupMap.put(addedGroup, new GroupSpecificMaps(defMap, ovMap));
+			groupMap.put(addedGroup, new GroupSpecificMaps(defMap, defListMap, ovMap));
 		}
 		// Now override these with any settings from the table
 		loadingNewGroup = true; // Flag to indicate that we don't want to trigger visualization changes
@@ -367,16 +380,33 @@ public class CyGroupSettingsImpl implements GroupAddedListener,
 	}
 
 	@Override
-	public Aggregator getDefaultAggregation(Class ovClass) {
+	public Aggregator<?> getDefaultAggregation(Class<?> ovClass) {
 		synchronized (lock) {
+			if (ovClass.isAssignableFrom(List.class))
+				return getDefaultListAggregation(String.class);
 			return get(allGroupDefaultMap, ovClass, null);
 		}
 	}
 
 	@Override
-	public void setDefaultAggregation(Class ovClass, Aggregator agg) {
+	public void setDefaultAggregation(Class<?> ovClass, Aggregator<?> agg) {
 		synchronized (lock) {
 			allGroupDefaultMap.put(ovClass, agg);
+		}
+		updateProperties();
+	}
+
+	@Override
+	public Aggregator<?> getDefaultListAggregation(Class<?> ovClass) {
+		synchronized (lock) {
+			return get(allGroupListDefaultMap, ovClass, null);
+		}
+	}
+
+	@Override
+	public void setDefaultListAggregation(Class<?> ovClass, Aggregator<?> agg) {
+		synchronized (lock) {
+			allGroupListDefaultMap.put(ovClass, agg);
 		}
 		updateProperties();
 	}
@@ -388,7 +418,7 @@ public class CyGroupSettingsImpl implements GroupAddedListener,
 	 * copy over.
 	 */
 	@Override
-	public Aggregator getOverrideAggregation(CyColumn column) {
+	public Aggregator<?> getOverrideAggregation(CyColumn column) {
 		synchronized (lock) {
 			// First, check and see if we have an entry for this column
 			if (allGroupOverrideMap.containsKey(column))
@@ -397,7 +427,11 @@ public class CyGroupSettingsImpl implements GroupAddedListener,
 			if (allGroupOverridePropertyMap.containsKey(column.getName())) {
 				// Great!  Now add that to our allGroupOverrideMap
 				String aggrName = allGroupOverridePropertyMap.get(column.getName());
-				Aggregator aggr = cyAggManager.getAggregator(column.getType(), aggrName);
+				Aggregator<?> aggr;
+				if (column.getType().isAssignableFrom(List.class))
+					aggr = cyAggManager.getListAggregator(column.getListElementType(), aggrName);
+				else
+					aggr = cyAggManager.getAggregator(column.getType(), aggrName);
 				if (aggr != null)
 					allGroupOverrideMap.put(column, aggr);
 				return aggr;
@@ -407,7 +441,7 @@ public class CyGroupSettingsImpl implements GroupAddedListener,
 	}
 
 	@Override
-	public void setOverrideAggregation(CyColumn column, Aggregator agg) {
+	public void setOverrideAggregation(CyColumn column, Aggregator<?> agg) {
 		synchronized (lock) {
 			allGroupOverrideMap.put(column, agg);
 		}
@@ -436,7 +470,7 @@ public class CyGroupSettingsImpl implements GroupAddedListener,
 	}
 
 	@Override
-	public Aggregator getDefaultAggregation(CyGroup group, Class ovClass) {
+	public Aggregator<?> getDefaultAggregation(CyGroup group, Class<?> ovClass) {
 		synchronized (lock) {
 			GroupSpecificMaps groupSpecificMaps = groupMap.get(group);
 			if (groupSpecificMaps != null)
@@ -447,7 +481,7 @@ public class CyGroupSettingsImpl implements GroupAddedListener,
 
 	@Override
 	public void setDefaultAggregation(CyGroup group, 
-	                                  Class ovClass, Aggregator agg) {
+	                                  Class<?> ovClass, Aggregator<?> agg) {
 		synchronized (lock) {
 			GroupSpecificMaps groupSpecificMaps = groupMap.get(group);
 			if (groupSpecificMaps == null) {
@@ -460,16 +494,49 @@ public class CyGroupSettingsImpl implements GroupAddedListener,
 	}
 
 	@Override
+	public Aggregator<?> getDefaultListAggregation(CyGroup group, Class<?> ovClass) {
+		synchronized (lock) {
+			GroupSpecificMaps groupSpecificMaps = groupMap.get(group);
+			if (groupSpecificMaps != null)
+				return groupSpecificMaps.getListDefault(ovClass);
+			return null;
+		}
+	}
+
+	@Override
+	public void setDefaultListAggregation(CyGroup group, 
+	                                     Class<?> ovClass, Aggregator<?> agg) {
+		synchronized (lock) {
+			GroupSpecificMaps groupSpecificMaps = groupMap.get(group);
+			if (groupSpecificMaps == null) {
+				groupSpecificMaps = new GroupSpecificMaps();
+				groupMap.put(group, groupSpecificMaps);
+			}
+			groupSpecificMaps.setListDefault(ovClass, agg);
+		}
+		updateSettingsInTable(group);
+	}
+
+	@Override
 	public void setDefaultAggregation(CyGroup group, 
-	                                  Class ovClass, String agg) {
-		Aggregator def = cyAggManager.getAggregator(ovClass, agg);
+	                                  Class<?> ovClass, String agg) {
+		Aggregator<?> def = cyAggManager.getAggregator(ovClass, agg);
 
 		if (def != null)
 			setDefaultAggregation(group, ovClass, def);
 	}
 
 	@Override
-	public Aggregator getOverrideAggregation(CyGroup group, CyColumn column) {
+	public void setDefaultListAggregation(CyGroup group, 
+	                                      Class<?> ovClass, String agg) {
+		Aggregator<?> def = cyAggManager.getListAggregator(ovClass, agg);
+
+		if (def != null)
+			setDefaultListAggregation(group, ovClass, def);
+	}
+
+	@Override
+	public Aggregator<?> getOverrideAggregation(CyGroup group, CyColumn column) {
 		synchronized (lock) {
 			GroupSpecificMaps groupSpecificMaps = groupMap.get(group);
 			if (groupSpecificMaps != null)
@@ -480,7 +547,7 @@ public class CyGroupSettingsImpl implements GroupAddedListener,
 
 	@Override
 	public void setOverrideAggregation(CyGroup group, 
-	                                   CyColumn column, Aggregator agg) {
+	                                   CyColumn column, Aggregator<?> agg) {
 		synchronized (lock) {
 			GroupSpecificMaps groupSpecificMaps = groupMap.get(group);
 			if (groupSpecificMaps == null) {
@@ -506,13 +573,15 @@ public class CyGroupSettingsImpl implements GroupAddedListener,
 		p.setProperty(GROUP_VIEW_TYPE, groupViewType.toString());
 
 		setBooleanProperty(p, AGG_ENABLED, enableAttributeAggregation);
-		setAggregationProperty(p, DEFAULT_INT_AGGREGATION, Integer.class);
-		setAggregationProperty(p, DEFAULT_LONG_AGGREGATION, Long.class);
-		setAggregationProperty(p, DEFAULT_FLOAT_AGGREGATION, Float.class);
-		setAggregationProperty(p, DEFAULT_DOUBLE_AGGREGATION, Double.class);
-		setAggregationProperty(p, DEFAULT_STRING_AGGREGATION, String.class);
-		setAggregationProperty(p, DEFAULT_LIST_AGGREGATION, List.class);
-		setAggregationProperty(p, DEFAULT_BOOLEAN_AGGREGATION, Boolean.class);
+		setAggregationProperty(p, DEFAULT_INT_AGGREGATION, Integer.class, null);
+		setAggregationProperty(p, DEFAULT_LONG_AGGREGATION, Long.class, null);
+		setAggregationProperty(p, DEFAULT_DOUBLE_AGGREGATION, Double.class, null);
+		setAggregationProperty(p, DEFAULT_STRING_AGGREGATION, String.class, null);
+		setAggregationProperty(p, DEFAULT_BOOLEAN_AGGREGATION, Boolean.class, null);
+		setAggregationProperty(p, DEFAULT_STRING_LIST_AGGREGATION, List.class, String.class);
+		setAggregationProperty(p, DEFAULT_INTEGER_LIST_AGGREGATION, List.class, Integer.class);
+		setAggregationProperty(p, DEFAULT_LONG_LIST_AGGREGATION, List.class, Long.class);
+		setAggregationProperty(p, DEFAULT_DOUBLE_LIST_AGGREGATION, List.class, Double.class);
 
 		p.setProperty(OVERRIDE_AGGREGATION, encodeAggregationOverrides());
 	}
@@ -533,13 +602,15 @@ public class CyGroupSettingsImpl implements GroupAddedListener,
 		// OK, now get the aggregation settings
 		enableAttributeAggregation = getBooleanProperty(p, AGG_ENABLED, enableAttributeAggregation);
 
-		getAggregationProperty(p, DEFAULT_INT_AGGREGATION, Integer.class, AttributeHandlingType.AVG);
-		getAggregationProperty(p, DEFAULT_LONG_AGGREGATION, Long.class, AttributeHandlingType.NONE);
-		getAggregationProperty(p, DEFAULT_FLOAT_AGGREGATION, Float.class, AttributeHandlingType.AVG);
-		getAggregationProperty(p, DEFAULT_DOUBLE_AGGREGATION, Double.class, AttributeHandlingType.AVG);
-		getAggregationProperty(p, DEFAULT_STRING_AGGREGATION, String.class, AttributeHandlingType.CSV);
-		getAggregationProperty(p, DEFAULT_LIST_AGGREGATION, List.class, AttributeHandlingType.UNIQUE);
-		getAggregationProperty(p, DEFAULT_BOOLEAN_AGGREGATION, Boolean.class, AttributeHandlingType.NONE);
+		getAggregationProperty(p, DEFAULT_INT_AGGREGATION, Integer.class, null, AttributeHandlingType.AVG);
+		getAggregationProperty(p, DEFAULT_LONG_AGGREGATION, Long.class, null, AttributeHandlingType.NONE);
+		getAggregationProperty(p, DEFAULT_DOUBLE_AGGREGATION, Double.class, null, AttributeHandlingType.AVG);
+		getAggregationProperty(p, DEFAULT_STRING_AGGREGATION, String.class, null, AttributeHandlingType.CSV);
+		getAggregationProperty(p, DEFAULT_BOOLEAN_AGGREGATION, Boolean.class, null, AttributeHandlingType.NONE);
+		getAggregationProperty(p, DEFAULT_STRING_LIST_AGGREGATION, List.class, String.class, AttributeHandlingType.UNIQUE);
+		getAggregationProperty(p, DEFAULT_INTEGER_LIST_AGGREGATION, List.class, Integer.class, AttributeHandlingType.AVG);
+		getAggregationProperty(p, DEFAULT_LONG_LIST_AGGREGATION, List.class, Long.class, AttributeHandlingType.AVG);
+		getAggregationProperty(p, DEFAULT_DOUBLE_LIST_AGGREGATION, List.class, Double.class, AttributeHandlingType.AVG);
 
 		getOverrideAggregationProperty(p, OVERRIDE_AGGREGATION);
 	}
@@ -576,23 +647,41 @@ public class CyGroupSettingsImpl implements GroupAddedListener,
 		return convertGroupViewType(v);
 	}
 
-	private Aggregator getAggregationProperty(Properties p, String key, Class<?> c, AttributeHandlingType defType) {
-		List<Aggregator> aggs = cyAggManager.getAggregators(c);
+	private Aggregator<?> getAggregationProperty(Properties p, String key, Class<?> c, Class<?> listClass,
+	                                          AttributeHandlingType defType) {
 		String pValue = p.getProperty(key, defType.toString());
 
-		Aggregator def = cyAggManager.getAggregator(c, pValue);
+		List<Aggregator<?>> aggs;
+		Aggregator<?> def;
+	 	if (c.isAssignableFrom(List.class)) {
+			aggs	= cyAggManager.getListAggregators(listClass);
+			def = cyAggManager.getListAggregator(listClass, pValue);
 
-		if (def != null)
-			allGroupDefaultMap.put(c, def);
+			if (def != null) {
+				allGroupListDefaultMap.put(listClass, def);
+			} 
+		} else {
+			aggs	= cyAggManager.getAggregators(c);
+			def = cyAggManager.getAggregator(c, pValue);
+
+			if (def != null)
+				allGroupDefaultMap.put(c, def);
+		}
 
 		return def;
 	}
 
-	private void setAggregationProperty(Properties p, String key, Class<?> clazz) {
-		if (allGroupDefaultMap.containsKey(clazz)) {
-			Aggregator a = allGroupDefaultMap.get(clazz);
-			if (a != null)
-				p.setProperty(key, a.toString());
+	private void setAggregationProperty(Properties p, String key, Class<?> clazz, Class<?> listClass) {
+		Aggregator<?> a = null;
+		if (clazz.isAssignableFrom(List.class)) {
+			if (allGroupListDefaultMap.containsKey(listClass))
+				a = allGroupListDefaultMap.get(listClass);
+		} else {
+			if (allGroupDefaultMap.containsKey(clazz))
+				a = allGroupDefaultMap.get(clazz);
+		}
+		if (a != null) {
+			p.setProperty(key, a.toString());
 		} else {
 			p.remove(key);
 		}
@@ -629,13 +718,16 @@ public class CyGroupSettingsImpl implements GroupAddedListener,
 		createColumnIfNeeded(network, group.getGroupNode(), AGGREGATION_SETTINGS, List.class, String.class);
 		List<String> aggrSettings = new ArrayList<>();
 		aggrSettings.add(AGG_ENABLED+"="+getEnableAttributeAggregation(group));
-		addAggregationSetting(group, DEFAULT_INT_AGGREGATION, Integer.class, aggrSettings);
-		addAggregationSetting(group, DEFAULT_LONG_AGGREGATION, Long.class, aggrSettings);
-		addAggregationSetting(group, DEFAULT_FLOAT_AGGREGATION, Float.class, aggrSettings);
-		addAggregationSetting(group, DEFAULT_DOUBLE_AGGREGATION, Double.class, aggrSettings);
-		addAggregationSetting(group, DEFAULT_STRING_AGGREGATION, String.class, aggrSettings);
-		addAggregationSetting(group, DEFAULT_LIST_AGGREGATION, List.class, aggrSettings);
-		addAggregationSetting(group, DEFAULT_BOOLEAN_AGGREGATION, Boolean.class, aggrSettings);
+		addAggregationSetting(group, DEFAULT_INT_AGGREGATION, Integer.class, null, aggrSettings);
+		addAggregationSetting(group, DEFAULT_LONG_AGGREGATION, Long.class, null, aggrSettings);
+		addAggregationSetting(group, DEFAULT_DOUBLE_AGGREGATION, Double.class, null, aggrSettings);
+		addAggregationSetting(group, DEFAULT_STRING_AGGREGATION, String.class, null, aggrSettings);
+		addAggregationSetting(group, DEFAULT_BOOLEAN_AGGREGATION, Boolean.class, null, aggrSettings);
+
+		addAggregationSetting(group, DEFAULT_STRING_LIST_AGGREGATION, List.class, String.class, aggrSettings);
+		addAggregationSetting(group, DEFAULT_INTEGER_LIST_AGGREGATION, List.class, Integer.class, aggrSettings);
+		addAggregationSetting(group, DEFAULT_LONG_LIST_AGGREGATION, List.class, Long.class, aggrSettings);
+		addAggregationSetting(group, DEFAULT_DOUBLE_LIST_AGGREGATION, List.class, Double.class, aggrSettings);
 
 		// currentNetwork.getRow(group.getGroupNode(), CyNetwork.HIDDEN_ATTRS).set(AGGREGATION_SETTINGS, aggrSettings);
 		network.getRow(group.getGroupNode()).set(AGGREGATION_SETTINGS, aggrSettings);
@@ -645,7 +737,7 @@ public class CyGroupSettingsImpl implements GroupAddedListener,
 			createColumnIfNeeded(network, group.getGroupNode(), AGGREGATION_OVERRIDE_SETTINGS, List.class, String.class);
 			List<String> aggrOverrideSettings = new ArrayList<>();
 			GroupSpecificMaps gsm = groupMap.get(group);
-			Map<CyColumn,Aggregator> overrides = groupMap.get(group).getOverrides();
+			Map<CyColumn,Aggregator<?>> overrides = groupMap.get(group).getOverrides();
 			if (overrides == null || overrides.size() == 0)
 				return;
 
@@ -658,8 +750,13 @@ public class CyGroupSettingsImpl implements GroupAddedListener,
 		}
 	}
 
-	void addAggregationSetting(CyGroup group, String attribute, Class clazz, List<String> settings) {
-		Aggregator agg = getDefaultAggregation(group, clazz);
+	void addAggregationSetting(CyGroup group, String attribute, 
+	                           Class<?> clazz, Class<?> listClass, List<String> settings) {
+		Aggregator<?> agg = null;
+		if (clazz.isAssignableFrom(List.class))
+			agg = getDefaultListAggregation(group, listClass);
+		else
+			agg = getDefaultAggregation(group, clazz);
 		if (agg == null) return;
 
 		settings.add(attribute+"="+agg.toString());
@@ -739,14 +836,18 @@ public class CyGroupSettingsImpl implements GroupAddedListener,
 			setDefaultAggregation(group, Integer.class, pair[1]);
 		else if (DEFAULT_LONG_AGGREGATION.equals(pair[0])) {
 			setDefaultAggregation(group, Long.class, pair[1]);
-		} else if (DEFAULT_FLOAT_AGGREGATION.equals(pair[0])) {
-			setDefaultAggregation(group, Float.class, pair[1]);
 		} else if (DEFAULT_DOUBLE_AGGREGATION.equals(pair[0])) {
 			setDefaultAggregation(group, Double.class, pair[1]);
 		} else if (DEFAULT_STRING_AGGREGATION.equals(pair[0])) {
 			setDefaultAggregation(group, String.class, pair[1]);
-		} else if (DEFAULT_LIST_AGGREGATION.equals(pair[0])) {
-			setDefaultAggregation(group, List.class, pair[1]);
+		} else if (DEFAULT_STRING_LIST_AGGREGATION.equals(pair[0])) {
+			setDefaultListAggregation(group, String.class, pair[1]);
+		} else if (DEFAULT_INTEGER_LIST_AGGREGATION.equals(pair[0])) {
+			setDefaultListAggregation(group, Integer.class, pair[1]);
+		} else if (DEFAULT_LONG_LIST_AGGREGATION.equals(pair[0])) {
+			setDefaultListAggregation(group, Long.class, pair[1]);
+		} else if (DEFAULT_DOUBLE_LIST_AGGREGATION.equals(pair[0])) {
+			setDefaultListAggregation(group, Double.class, pair[1]);
 		} else if (DEFAULT_BOOLEAN_AGGREGATION.equals(pair[0])) {
 			setDefaultAggregation(group, Boolean.class, pair[1]);
 		}
@@ -761,7 +862,7 @@ public class CyGroupSettingsImpl implements GroupAddedListener,
 		CyColumn column = currentNetwork.getDefaultNodeTable().getColumn(pair[0]);
 		if (column == null)
 			return;
-		Aggregator def = cyAggManager.getAggregator(column.getType(), pair[1]);
+		Aggregator<?> def = cyAggManager.getAggregator(column.getType(), pair[1]);
 		if (def == null)
 			return;
 
@@ -801,11 +902,12 @@ public class CyGroupSettingsImpl implements GroupAddedListener,
 
 	/**
 	 */
-	public void createColumnIfNeeded(CyNetwork network, CyNode node, String column, Class clazz, Class elementClazz) {
+	public void createColumnIfNeeded(CyNetwork network, CyNode node, String column, 
+	                                 Class<?> clazz, Class<?> elementClazz) {
 		// CyTable nodeTable = network.getTable(CyNode.class, CyNetwork.HIDDEN_ATTRS);
 		CyTable nodeTable = network.getTable(CyNode.class, CyNetwork.DEFAULT_ATTRS);
 		if (nodeTable.getColumn(column) == null) {
-			if (clazz.equals(List.class)) {
+			if (clazz.isAssignableFrom(List.class)) {
 				nodeTable.createListColumn(column, elementClazz, false);
 			} else {
 				nodeTable.createColumn(column, clazz, false);
@@ -834,46 +936,63 @@ public class CyGroupSettingsImpl implements GroupAddedListener,
 	 **************************************************************************/
 
 	class GroupSpecificMaps {
-		Map<Class, Aggregator> defMap;
-		Map<CyColumn, Aggregator> ovMap;
+		Map<Class<?>, Aggregator<?>> defMap;
+		Map<Class<?>, Aggregator<?>> defListMap;
+		Map<CyColumn, Aggregator<?>> ovMap;
 
 		GroupSpecificMaps () {
 			this.defMap = null;
+			this.defListMap = null;
 			this.ovMap = null;
 		}
 
-		GroupSpecificMaps (Map<Class, Aggregator> defMap, 
-		                   Map<CyColumn, Aggregator> ovMap) {
+		GroupSpecificMaps (Map<Class<?>, Aggregator<?>> defMap, 
+		                   Map<Class<?>, Aggregator<?>> defListMap,
+		                   Map<CyColumn, Aggregator<?>> ovMap) {
 			this.defMap = defMap;
+			this.defListMap = defListMap;
 			this.ovMap = ovMap;
 		}
 
-		void setDefault(Class ovClass, Aggregator agg) {
-			if (defMap == null) defMap = new HashMap<Class, Aggregator>();
+		void setDefault(Class<?> ovClass, Aggregator<?> agg) {
+			if (defMap == null) defMap = new HashMap<Class<?>, Aggregator<?>>();
 
 			defMap.put(ovClass, agg);
 		}
 
-		void setOverride(CyColumn column, Aggregator agg) {
-			if (ovMap == null) ovMap = new HashMap<CyColumn, Aggregator>();
+		void setListDefault(Class<?> ovClass, Aggregator<?> agg) {
+			if (defListMap == null) defListMap = new HashMap<Class<?>, Aggregator<?>>();
+
+			defListMap.put(ovClass, agg);
+		}
+
+		void setOverride(CyColumn column, Aggregator<?> agg) {
+			if (ovMap == null) ovMap = new HashMap<CyColumn, Aggregator<?>>();
 
 			ovMap.put(column, agg);
 		}
 
-		Aggregator getDefault (Class c) {
+		Aggregator<?> getDefault (Class<?> c) {
 			if (defMap != null && defMap.containsKey(c))
 				return defMap.get(c);
 			return null;
 		}
 
-		Aggregator getOverride(CyColumn c) {
+		Aggregator<?> getListDefault (Class<?> c) {
+			if (defListMap != null && defListMap.containsKey(c))
+				return defListMap.get(c);
+			return null;
+		}
+
+		Aggregator<?> getOverride(CyColumn c) {
 			if (ovMap != null && ovMap.containsKey(c))
 				return ovMap.get(c);
 			return null;
 		}
 
-		Map<Class,Aggregator> getDefaults() {return defMap;}
-		Map<CyColumn,Aggregator> getOverrides() {return ovMap;}
+		Map<Class<?>,Aggregator<?>> getDefaults() {return defMap;}
+		Map<Class<?>,Aggregator<?>> getListDefaults() {return defListMap;}
+		Map<CyColumn,Aggregator<?>> getOverrides() {return ovMap;}
 	}
 
 	class PropsReader extends AbstractConfigDirPropsReader {

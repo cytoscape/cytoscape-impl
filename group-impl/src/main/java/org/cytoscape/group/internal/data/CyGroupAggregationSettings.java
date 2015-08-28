@@ -35,19 +35,13 @@ import org.cytoscape.group.data.Aggregator;
 import org.cytoscape.group.data.AttributeHandlingType;
 import org.cytoscape.group.data.CyGroupAggregationManager;
 import org.cytoscape.group.internal.CyGroupManagerImpl;
-import org.cytoscape.group.internal.data.aggregators.BooleanAggregator;
-import org.cytoscape.group.internal.data.aggregators.DoubleAggregator;
-import org.cytoscape.group.internal.data.aggregators.FloatAggregator;
-import org.cytoscape.group.internal.data.aggregators.IntegerAggregator;
-import org.cytoscape.group.internal.data.aggregators.ListAggregator;
-import org.cytoscape.group.internal.data.aggregators.LongAggregator;
-import org.cytoscape.group.internal.data.aggregators.NoneAggregator;
-import org.cytoscape.group.internal.data.aggregators.StringAggregator;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.util.ListSingleSelection;
+
+import org.cytoscape.group.internal.data.aggregators.NoneAggregator;
 
 public class CyGroupAggregationSettings {
 	
@@ -56,7 +50,7 @@ public class CyGroupAggregationSettings {
 	final CyGroupManagerImpl cyGroupMgr;
 	final CyApplicationManager appMgr;
 	CyNetwork currentNetwork = null;
-	Map<CyColumn, Aggregator> overrides;
+	Map<CyColumn, Aggregator<?>> overrides;
 
 	/**********************************
 	 * Default aggregation attributes *
@@ -72,43 +66,67 @@ public class CyGroupAggregationSettings {
 	         groups={"Attribute Aggregation Settings", "Default Aggregation Settings"}, 
 	         params="displayState=collapsed",
 	         dependsOn="enableAttributeAggregation=true", gravity=11.0)
-	public ListSingleSelection<Aggregator> integerDefault;
+	public ListSingleSelection<Aggregator<?>> integerDefault;
 
 	// Long
 	@Tunable(description="Long column aggregation default:", 
 	         groups={"Attribute Aggregation Settings", "Default Aggregation Settings"},
 	         dependsOn="enableAttributeAggregation=true", gravity=12.0)
-	public ListSingleSelection<Aggregator> longDefault;
+	public ListSingleSelection<Aggregator<?>> longDefault;
 
 	// Float
 	@Tunable(description="Float column aggregation default:", 
 	         groups={"Attribute Aggregation Settings", "Default Aggregation Settings"},
 	         dependsOn="enableAttributeAggregation=true", gravity=13.0)
-	public ListSingleSelection<Aggregator> floatDefault;
+	public ListSingleSelection<Aggregator<?>> floatDefault;
 
 	// Double
 	@Tunable(description="Double column aggregation default:", 
 	         groups={"Attribute Aggregation Settings", "Default Aggregation Settings"},
 	         dependsOn="enableAttributeAggregation=true", gravity=14.0)
-	public ListSingleSelection<Aggregator> doubleDefault;
-
-	// List
-	@Tunable(description="List column aggregation default:", 
-	         groups={"Attribute Aggregation Settings", "Default Aggregation Settings"},
-	         dependsOn="enableAttributeAggregation=true", gravity=15.0)
-	public ListSingleSelection<Aggregator> listDefault;
+	public ListSingleSelection<Aggregator<?>> doubleDefault;
 
 	// String
 	@Tunable(description="String column aggregation default:", 
 	         groups={"Attribute Aggregation Settings", "Default Aggregation Settings"},
-	         dependsOn="enableAttributeAggregation=true", gravity=16.0)
-	public ListSingleSelection<Aggregator> stringDefault;
+	         dependsOn="enableAttributeAggregation=true", gravity=15.0)
+	public ListSingleSelection<Aggregator<?>> stringDefault;
 
 	// Boolean
 	@Tunable(description="Boolean column aggregation default:", 
 	         groups={"Attribute Aggregation Settings", "Default Aggregation Settings"},
+	         dependsOn="enableAttributeAggregation=true", gravity=16.0)
+	public ListSingleSelection<Aggregator<?>> booleanDefault;
+
+	// String List
+	@Tunable(description="String List column aggregation default:", 
+	         groups={"Attribute Aggregation Settings", "Default Aggregation Settings"},
 	         dependsOn="enableAttributeAggregation=true", gravity=17.0)
-	public ListSingleSelection<Aggregator> booleanDefault;
+	public ListSingleSelection<Aggregator<?>> stringListDefault;
+
+	// Integer List
+	@Tunable(description="Integer List column aggregation default:", 
+	         groups={"Attribute Aggregation Settings", "Default Aggregation Settings"},
+	         dependsOn="enableAttributeAggregation=true", gravity=17.1)
+	public ListSingleSelection<Aggregator<?>> integerListDefault;
+
+	// Long List
+	@Tunable(description="Long List column aggregation default:", 
+	         groups={"Attribute Aggregation Settings", "Default Aggregation Settings"},
+	         dependsOn="enableAttributeAggregation=true", gravity=17.2)
+	public ListSingleSelection<Aggregator<?>> longListDefault;
+
+	// Float List
+	@Tunable(description="Float List column aggregation default:", 
+	         groups={"Attribute Aggregation Settings", "Default Aggregation Settings"},
+	         dependsOn="enableAttributeAggregation=true", gravity=17.3)
+	public ListSingleSelection<Aggregator<?>> floatListDefault;
+
+	// Double List
+	@Tunable(description="Double List column aggregation default:", 
+	         groups={"Attribute Aggregation Settings", "Default Aggregation Settings"},
+	         dependsOn="enableAttributeAggregation=true", gravity=17.4)
+	public ListSingleSelection<Aggregator<?>> doubleListDefault;
 
 	/**********************************
 	 * Default aggregation overrides  *
@@ -151,7 +169,7 @@ public class CyGroupAggregationSettings {
 			if (aggregationType != null)
 				aggregationType.setPossibleValues(cyAggManager.getAggregators(NoneAggregator.class));
 			else
-				aggregationType = new ListSingleSelection<Aggregator>(cyAggManager.getAggregators(NoneAggregator.class));
+				aggregationType = new ListSingleSelection<Aggregator<?>>(cyAggManager.getAggregators(NoneAggregator.class));
 			return "-- No Network --";
 		}
 
@@ -161,45 +179,57 @@ public class CyGroupAggregationSettings {
 		CyColumn column = nodeTable.getColumn(columnName);
 		if (column == null) return "-- No Such Column -- ";
 
-		if (aggregationType != null)
-			aggregationType.setPossibleValues(cyAggManager.getAggregators(column.getType()));
-		else
-			aggregationType = new ListSingleSelection<Aggregator>(cyAggManager.getAggregators(column.getType()));
+		if (aggregationType != null) {
+			if (column.getType().equals(List.class))
+				aggregationType.setPossibleValues(cyAggManager.getListAggregators(column.getListElementType()));
+			else
+				aggregationType.setPossibleValues(cyAggManager.getAggregators(column.getType()));
+		} else {
+			if (column.getType().equals(List.class))
+				aggregationType = 
+								new ListSingleSelection<Aggregator<?>>(cyAggManager.getListAggregators(column.getListElementType()));
+			else
+				aggregationType = new ListSingleSelection<Aggregator<?>>(cyAggManager.getAggregators(column.getType()));
+		}
+
 		// Now, if we already have an override for this attribute, make sure that
 		// it's reflected in what the user sees
 		if (aggregationType.getSelectedValue() == null) {
-			Aggregator type = settings.getOverrideAggregation(column);
+			Aggregator<?> type = settings.getOverrideAggregation(column);
 			if (type != null) aggregationType.setSelectedValue(type);
 		}
 
 		// Get it's type
-		return column.getType().getSimpleName();
+		String t = column.getType().getSimpleName();
+		if (column.getType().equals(List.class))
+			t += " of "+column.getListElementType().getSimpleName()+"s";
+		return t;
 	}
 	public void setAttrType(String t) {
 	}
 
-	private ListSingleSelection<Aggregator> aggregationType = null;
+	private ListSingleSelection<Aggregator<?>> aggregationType = null;
 	@Tunable(description="Aggregation Type:",
 	         groups={"Attribute Aggregation Settings", "Aggregation Overrides"},
 	         dependsOn="enableAttributeAggregation=true",
 	         listenForChange={"AttrSelection"}, gravity=22.0)
-	public ListSingleSelection<Aggregator> getAggregationType() {   
+	public ListSingleSelection<Aggregator<?>> getAggregationType() {   
 		// We need to do this because Cytoscape's Tunables processing doesn't correctly
 		// order listenForChange initializations
 		if (aggregationType == null) {
-			aggregationType = new ListSingleSelection<Aggregator>(cyAggManager.getAggregators(NoneAggregator.class));
+			aggregationType = new ListSingleSelection<Aggregator<?>>(cyAggManager.getAggregators(NoneAggregator.class));
 		}
 		return aggregationType;
 	}
 
-	public void setAggregationType(ListSingleSelection<Aggregator> input) {
+	public void setAggregationType(ListSingleSelection<Aggregator<?>> input) {
 		if (currentNetwork == null ||
 		    aggregationType == null || aggregationType.getSelectedValue() == null) return;
 		
 		String columnName = attrSelection.getSelectedValue();
 		CyTable nodeTable = currentNetwork.getDefaultNodeTable();
 		CyColumn column = nodeTable.getColumn(columnName);
-		Aggregator agg = aggregationType.getSelectedValue();
+		Aggregator<?> agg = aggregationType.getSelectedValue();
 		overrides.put(column, agg);
 	}
 
@@ -210,13 +240,13 @@ public class CyGroupAggregationSettings {
 		this.cyAggManager = cyAggManager;
 		this.settings = settings;
 		this.appMgr = cyGroupMgr.getService(CyApplicationManager.class);
-		this.overrides = new HashMap<CyColumn, Aggregator>();
+		this.overrides = new HashMap<CyColumn, Aggregator<?>>();
 		this.enableAttributeAggregation = settings.getEnableAttributeAggregation();
 
 		initializeDefaults();
 	}
 
-	public Map<CyColumn, Aggregator> getOverrideMap() {
+	public Map<CyColumn, Aggregator<?>> getOverrideMap() {
 		return overrides;
 	}
 
@@ -224,7 +254,7 @@ public class CyGroupAggregationSettings {
 		return enableAttributeAggregation;
 	}
 
-	public Aggregator getDefaultAggregator(Class c) {
+	public Aggregator<?> getDefaultAggregator(Class<?> c) {
 		if (c.equals(Integer.class))
 			return integerDefault.getSelectedValue();
 		else if (c.equals(Long.class))
@@ -236,9 +266,23 @@ public class CyGroupAggregationSettings {
 		else if (c.equals(String.class))
 			return stringDefault.getSelectedValue();
 		else if (c.equals(List.class))
-			return listDefault.getSelectedValue();
+			return getDefaultListAggregator(String.class);
 		else if (c.equals(Boolean.class))
 			return booleanDefault.getSelectedValue();
+		return null;
+	}
+
+	public Aggregator<?> getDefaultListAggregator(Class<?> c) {
+		if (c.equals(String.class))
+			return stringListDefault.getSelectedValue();
+		if (c.equals(Integer.class))
+			return integerListDefault.getSelectedValue();
+		if (c.equals(Long.class))
+			return longListDefault.getSelectedValue();
+		if (c.equals(Float.class))
+			return floatListDefault.getSelectedValue();
+		if (c.equals(Double.class))
+			return doubleListDefault.getSelectedValue();
 		return null;
 	}
 
@@ -249,21 +293,50 @@ public class CyGroupAggregationSettings {
 		floatDefault = createDefaults(Float.class, AttributeHandlingType.AVG);
 		doubleDefault = createDefaults(Double.class, AttributeHandlingType.AVG);
 		stringDefault = createDefaults(String.class, AttributeHandlingType.CSV);
-		listDefault = createDefaults(List.class, AttributeHandlingType.UNIQUE);
 		booleanDefault = createDefaults(Boolean.class, AttributeHandlingType.NONE);
+
+		stringListDefault = createListDefaults(String.class, AttributeHandlingType.UNIQUE);
+		integerListDefault = createListDefaults(Integer.class, AttributeHandlingType.AVG);
+		longListDefault = createListDefaults(Long.class, AttributeHandlingType.AVG);
+		floatListDefault = createListDefaults(Float.class, AttributeHandlingType.AVG);
+		doubleListDefault = createListDefaults(Double.class, AttributeHandlingType.AVG);
 	}
 
-	private ListSingleSelection<Aggregator> createDefaults(Class c, 
-	                                                       AttributeHandlingType type) {
-			List<Aggregator> aggs = cyAggManager.getAggregators(c);
-			Aggregator def = null;
-			for (Aggregator a: aggs) {
+	private ListSingleSelection<Aggregator<?>> createDefaults(Class<?> c, 
+	                                                          AttributeHandlingType type) {
+			List<Aggregator<?>> aggs = cyAggManager.getAggregators(c);
+			Aggregator<?> def = null;
+			for (Aggregator<?> a: aggs) {
 				if (a.toString().equals(type.toString())) {
 					def = a;
 					break;
 				}
 			}
-			ListSingleSelection<Aggregator> lss = new ListSingleSelection<Aggregator>(aggs);
+			ListSingleSelection<Aggregator<?>> lss = new ListSingleSelection<Aggregator<?>>(aggs);
+
+			if (def != null) {
+				// If we've never initialized our default aggregations, do so now
+				if (settings.getDefaultAggregation(def.getSupportedType()) == null) {
+					settings.setDefaultAggregation(def.getSupportedType(), def); 
+					lss.setSelectedValue(def);
+				} else {
+					lss.setSelectedValue(settings.getDefaultAggregation(def.getSupportedType()));
+				}
+			}
+			return lss;
+	}
+
+	private ListSingleSelection<Aggregator<?>> createListDefaults(Class<?> c, 
+	                                                              AttributeHandlingType type) {
+			List<Aggregator<?>> aggs = cyAggManager.getListAggregators(c);
+			Aggregator<?> def = null;
+			for (Aggregator<?> a: aggs) {
+				if (a.toString().equals(type.toString())) {
+					def = a;
+					break;
+				}
+			}
+			ListSingleSelection<Aggregator<?>> lss = new ListSingleSelection<Aggregator<?>>(aggs);
 
 			if (def != null) {
 				// If we've never initialized our default aggregations, do so now

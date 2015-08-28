@@ -45,19 +45,22 @@ import org.cytoscape.group.data.CyGroupAggregationManager;
 
 import org.cytoscape.group.internal.data.aggregators.BooleanAggregator;
 import org.cytoscape.group.internal.data.aggregators.DoubleAggregator;
-import org.cytoscape.group.internal.data.aggregators.FloatAggregator;
 import org.cytoscape.group.internal.data.aggregators.IntegerAggregator;
-import org.cytoscape.group.internal.data.aggregators.ListAggregator;
 import org.cytoscape.group.internal.data.aggregators.LongAggregator;
 import org.cytoscape.group.internal.data.aggregators.NoneAggregator;
 import org.cytoscape.group.internal.data.aggregators.StringAggregator;
+
+import org.cytoscape.group.internal.data.aggregators.DoubleListAggregator;
+import org.cytoscape.group.internal.data.aggregators.IntegerListAggregator;
+import org.cytoscape.group.internal.data.aggregators.LongListAggregator;
+import org.cytoscape.group.internal.data.aggregators.StringListAggregator;
 
 public class CyGroupAggregationManagerImpl 
 	implements CyGroupAggregationManager {
 
 	CyGroupManager cyGroupManager;
-	Map<Class, List<Aggregator>>aggMap = 
-		new HashMap<Class, List<Aggregator>>();
+	Map<Class<?>, List<Aggregator<?>>>aggMap = new HashMap<>();
+	Map<Class<?>, List<Aggregator<?>>>aggListMap = new HashMap<>();
 
 	private final Object lock = new Object();
 	
@@ -66,24 +69,32 @@ public class CyGroupAggregationManagerImpl
 
 		IntegerAggregator.registerAggregators(this);
 		LongAggregator.registerAggregators(this);
-		FloatAggregator.registerAggregators(this);
 		DoubleAggregator.registerAggregators(this);
 		StringAggregator.registerAggregators(this);
-		ListAggregator.registerAggregators(this);
 		BooleanAggregator.registerAggregators(this);
 		NoneAggregator.registerAggregators(this);
+
+		StringListAggregator.registerAggregators(this);
+		IntegerListAggregator.registerAggregators(this);
+		LongListAggregator.registerAggregators(this);
+		DoubleListAggregator.registerAggregators(this);
 	}
 
 	@Override
-	public void addAggregator(Aggregator aggregator) {
-		Class type = aggregator.getSupportedType();
-		List<Aggregator> aggList = null;
+	public void addAggregator(Aggregator<?> aggregator) {
+		Class<?> type = aggregator.getSupportedType();
+		Map<Class<?>, List<Aggregator<?>>> map = aggMap;
+		if (type.isAssignableFrom(List.class)) {
+			type = aggregator.getSupportedListType();
+			map = aggListMap;
+		}
+		List<Aggregator<?>> aggList = null;
 		synchronized (lock) {
-			if (aggMap.containsKey(type))
-				aggList = aggMap.get(type);
+			if (map.containsKey(type))
+				aggList = map.get(type);
 			else {
-				aggList = new ArrayList<Aggregator>();
-				aggMap.put(type, aggList);
+				aggList = new ArrayList<Aggregator<?>>();
+				map.put(type, aggList);
 			}
 	
 			aggList.add(aggregator);
@@ -91,27 +102,49 @@ public class CyGroupAggregationManagerImpl
 	}
 
 	@Override
-	public void removeAggregator(Aggregator aggregator) {
-		Class type = aggregator.getSupportedType();
+	public void removeAggregator(Aggregator<?> aggregator) {
+		Class<?> type = aggregator.getSupportedType();
+		Map<Class<?>, List<Aggregator<?>>> map = aggMap;
+		if (type.isAssignableFrom(List.class)) {
+			type = aggregator.getSupportedListType();
+			map = aggListMap;
+		}
 		synchronized (lock) {
-			if (aggMap.containsKey(type)) {
-				List<Aggregator> aggList = aggMap.get(type);
+			if (map.containsKey(type)) {
+				List<Aggregator<?>> aggList = map.get(type);
 				aggList.remove(aggregator);
 			}
 		}
 	}
 
 	@Override
-	public List<Aggregator> getAggregators(Class type) {
+	public List<Aggregator<?>> getAggregators(Class<?> type) {
 		synchronized (lock) {
 			if (aggMap.containsKey(type))
 				return aggMap.get(type);
-			return new ArrayList<Aggregator>();
+			return new ArrayList<Aggregator<?>>();
 		}
 	}
 
-	public Aggregator getAggregator(Class type, String name) {
-		for (Aggregator agg: getAggregators(type)) {
+	@Override
+	public List<Aggregator<?>> getListAggregators(Class<?> type) {
+		synchronized (lock) {
+			if (aggListMap.containsKey(type))
+				return aggListMap.get(type);
+			return new ArrayList<Aggregator<?>>();
+		}
+	}
+
+	public Aggregator<?> getAggregator(Class<?> type, String name) {
+		for (Aggregator<?> agg: getAggregators(type)) {
+			if (agg.toString().equals(name))
+				return agg;
+		}
+		return null;
+	}
+
+	public Aggregator<?> getListAggregator(Class<?> type, String name) {
+		for (Aggregator<?> agg: getListAggregators(type)) {
 			if (agg.toString().equals(name))
 				return agg;
 		}
@@ -119,10 +152,10 @@ public class CyGroupAggregationManagerImpl
 	}
 
 	@Override
-	public List<Aggregator> getAggregators() {
+	public List<Aggregator<?>> getAggregators() {
 		synchronized (lock) {
-			List<Aggregator> allAggs = new ArrayList<Aggregator>();
-			for (Class c: aggMap.keySet()) {
+			List<Aggregator<?>> allAggs = new ArrayList<Aggregator<?>>();
+			for (Class<?> c: aggMap.keySet()) {
 				allAggs.addAll(getAggregators(c));
 			}
 			return allAggs;
@@ -130,9 +163,27 @@ public class CyGroupAggregationManagerImpl
 	}
 
 	@Override
-	public List<Class> getSupportedClasses() {
+	public List<Aggregator<?>> getListAggregators() {
 		synchronized (lock) {
-			return new ArrayList<Class>(aggMap.keySet());
+			List<Aggregator<?>> allAggs = new ArrayList<Aggregator<?>>();
+			for (Class<?> c: aggListMap.keySet()) {
+				allAggs.addAll(getAggregators(c));
+			}
+			return allAggs;
+		}
+	}
+
+	@Override
+	public List<Class<?>> getSupportedClasses() {
+		synchronized (lock) {
+			return new ArrayList<Class<?>>(aggMap.keySet());
+		}
+	}
+
+	@Override
+	public List<Class<?>> getSupportedListClasses() {
+		synchronized (lock) {
+			return new ArrayList<Class<?>>(aggListMap.keySet());
 		}
 	}
 }

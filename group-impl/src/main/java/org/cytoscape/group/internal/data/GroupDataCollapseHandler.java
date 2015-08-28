@@ -76,7 +76,7 @@ public class GroupDataCollapseHandler implements GroupAboutToCollapseListener
 			// Yup -- all of our information is in the settings...
 			CyTable nodeTable = network.getDefaultNodeTable();
 			for (CyColumn column: nodeTable.getColumns()) {
-				Class type = column.getType();
+				Class<?> type = column.getType();
 				if (column.isPrimaryKey()) continue;
 
 				// Skip over our own columns
@@ -103,8 +103,10 @@ public class GroupDataCollapseHandler implements GroupAboutToCollapseListener
 				}
 
 				// Do we have an override for this group and column?
-				Aggregator agg = cyGroupSettings.getAggregator(group, column);
-				if (agg == null) continue;
+				Aggregator<?> agg = cyGroupSettings.getAggregator(group, column);
+				if (agg == null) {
+					continue;
+				}
 
 				// OK, aggregate
 				agg.aggregate(nodeTable, group, column);
@@ -119,7 +121,7 @@ public class GroupDataCollapseHandler implements GroupAboutToCollapseListener
 		if (cyGroupSettings.getOverrideAggregation(group, column) == null)
 			return false;
 
-		Aggregator agg = cyGroupSettings.getOverrideAggregation(group, column);
+		Aggregator<?> agg = cyGroupSettings.getOverrideAggregation(group, column);
 		if (agg.toString().equals("None"))
 			return false;
 

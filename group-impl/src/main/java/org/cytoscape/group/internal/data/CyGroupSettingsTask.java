@@ -82,8 +82,8 @@ public class CyGroupSettingsTask extends AbstractTask {
 		if (!enabled) return;
 		
 		// Get the default values for each class we've registered
-		for (Class c: cyAggManager.getSupportedClasses()) {
-			Aggregator a = aggregationSettings.getDefaultAggregator(c);
+		for (Class<?> c: cyAggManager.getSupportedClasses()) {
+			Aggregator<?> a = aggregationSettings.getDefaultAggregator(c);
 			if (group != null)
 				settings.setDefaultAggregation(group, c,a);
 			else
@@ -91,7 +91,7 @@ public class CyGroupSettingsTask extends AbstractTask {
 		}
 
 		// Get any overrides
-		Map<CyColumn, Aggregator> overrides = aggregationSettings.getOverrideMap();
+		Map<CyColumn, Aggregator<?>> overrides = aggregationSettings.getOverrideMap();
 		for (CyColumn column: overrides.keySet()) {
 			if (group != null)
 				settings.setOverrideAggregation(group, column, overrides.get(column));
