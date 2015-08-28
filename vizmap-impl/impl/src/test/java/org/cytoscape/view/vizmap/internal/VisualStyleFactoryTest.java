@@ -32,6 +32,7 @@ import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_H
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_SIZE;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_WIDTH;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
@@ -130,7 +131,7 @@ public class VisualStyleFactoryTest extends AbstractVisualStyleFactoryTest {
 		depProps.add(NODE_HEIGHT);
 		final VisualPropertyDependency<Double> dep1 = 
 				new VisualPropertyDependency<>("nodeSizeDep", "Lock Node W/H", depProps, lexicon);
-		dep1.setDependency(true);
+		dep1.setDependency(false);
 		vs1.addVisualPropertyDependency(dep1);
 		
 		// Copy the style and test it
@@ -162,7 +163,7 @@ public class VisualStyleFactoryTest extends AbstractVisualStyleFactoryTest {
 				assertTrue("The copied dependency is not a new instance", dep != dep1);
 				assertEquals(dep1.getDisplayName(), dep.getDisplayName());
 				assertEquals(dep1.getParentVisualProperty(), dep.getParentVisualProperty());
-				assertTrue(dep.isDependencyEnabled());
+				assertFalse(dep.isDependencyEnabled());
 				assertEquals(2, dep.getVisualProperties().size());
 				assertTrue(dep.getVisualProperties().contains(NODE_WIDTH));
 				assertTrue(dep.getVisualProperties().contains(NODE_HEIGHT));

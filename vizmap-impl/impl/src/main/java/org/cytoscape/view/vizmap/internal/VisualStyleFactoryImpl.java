@@ -25,8 +25,10 @@ package org.cytoscape.view.vizmap.internal;
  */
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.cytoscape.application.CyApplicationManager;
@@ -84,7 +86,7 @@ public class VisualStyleFactoryImpl implements VisualStyleFactory {
 
 	@SuppressWarnings("unchecked")
 	private <V, S extends V> void copyDefaultValues(final VisualStyle original, final VisualStyle copy) {
-		final Set<VisualProperty<?>> visualProps = new HashSet<VisualProperty<?>>();
+		final Set<VisualProperty<?>> visualProps = new HashSet<>();
 		final VisualMappingManager vmMgr = serviceRegistrar.getService(VisualMappingManager.class);
 		
 		for (final VisualLexicon lexicon : vmMgr.getAllVisualLexicon())
@@ -119,24 +121,39 @@ public class VisualStyleFactoryImpl implements VisualStyleFactory {
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	private void copyDependencies(final VisualStyle original, final VisualStyle copy) {
-		final Set<VisualPropertyDependency<?>> allDep = original.getAllVisualPropertyDependencies();
+		final Set<VisualPropertyDependency<?>> allDep1 = original.getAllVisualPropertyDependencies();
 		final CyApplicationManager appMgr = serviceRegistrar.getService(CyApplicationManager.class);
 		final VisualLexicon lexicon = appMgr.getCurrentNetworkViewRenderer()
 				.getRenderingEngineFactory(NetworkViewRenderer.DEFAULT_CONTEXT)
 				.getVisualLexicon();
 		
-		for (VisualPropertyDependency<?> dep : allDep) {
+		final Set<VisualPropertyDependency<?>> allDep2 = copy.getAllVisualPropertyDependencies();
+		final Map<String, VisualPropertyDependency<?>> depMap = new HashMap<>();
+		
+		for (VisualPropertyDependency<?> dep : allDep2)
+			depMap.put(dep.getIdString(), dep);
+		
+		for (VisualPropertyDependency<?> dep1 : allDep1) {
 			try {
-				final VisualPropertyDependency<?> copyDep = new VisualPropertyDependency(
-						dep.getIdString(),
-						dep.getDisplayName(),
-						dep.getVisualProperties(),
-						lexicon
-				);
-				copyDep.setDependency(dep.isDependencyEnabled());
-				copy.addVisualPropertyDependency(copyDep);
+				VisualPropertyDependency<?> dep2 = depMap.get(dep1.getIdString());
+				
+				if (dep2 == null) {
+					// Just in case the new Style does not have this dependency...
+					dep2 = new VisualPropertyDependency(
+							dep1.getIdString(),
+							dep1.getDisplayName(),
+							dep1.getVisualProperties(),
+							lexicon
+					);
+					dep2.setDependency(dep1.isDependencyEnabled());
+					copy.addVisualPropertyDependency(dep2);
+				} else {
+					// The new Style probably has the same dependency already;
+					// in this case, just update the enabled state.
+					dep2.setDependency(dep1.isDependencyEnabled());
+				}
 			} catch (Exception e) {
-				logger.warn("Cannot copy VisualPropertyDependency " + dep.getIdString(), e);
+				logger.warn("Cannot copy VisualPropertyDependency " + dep1.getIdString(), e);
 			}
 		}
 	}
