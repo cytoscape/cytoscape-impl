@@ -24,8 +24,8 @@ package org.cytoscape.tableimport.internal.reader;
  * #L%
  */
 
-import static org.cytoscape.tableimport.internal.reader.TextFileDelimiters.PIPE;
-import static org.cytoscape.tableimport.internal.reader.TextFileDelimiters.TAB;
+import static org.cytoscape.tableimport.internal.reader.TextDelimiter.PIPE;
+import static org.cytoscape.tableimport.internal.reader.TextDelimiter.TAB;
 
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -39,8 +39,8 @@ import org.cytoscape.tableimport.internal.util.SourceColumnSemantic;
 public abstract class AbstractMappingParameters implements MappingParameter{
 	
 	public static final String ID = "name";
-	public static final String DEF_LIST_DELIMITER = PIPE.toString();
-	private static final String DEF_DELIMITER = TAB.toString();
+	public static final String DEF_LIST_DELIMITER = PIPE.getDelimiter();
+	private static final String DEF_DELIMITER = TAB.getDelimiter();
 	
 	private String name;
 	protected String[] attributeNames;

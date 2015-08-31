@@ -24,7 +24,8 @@ package org.cytoscape.tableimport.internal.reader.ontology;
  * #L%
  */
 
-import static org.cytoscape.tableimport.internal.reader.TextFileDelimiters.TAB;
+import static org.cytoscape.tableimport.internal.reader.TextDelimiter.PIPE;
+import static org.cytoscape.tableimport.internal.reader.TextDelimiter.TAB;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -58,7 +59,7 @@ public class GeneAssociationReader extends AbstractTask implements CyTableReader
 
 	private static final String COMPATIBLE_VERSION = "gaf-version: 2.0";
 	private static final String TAXON_RESOURCE_FILE = "tax_report.txt";
-	private static final String LIST_DELIMITER = "\\|";
+	private static final String LIST_DELIMITER = PIPE.getDelimiter();
 
 	// The following columns should be handled as List in GA v2 spec.
 	private static final List<Integer> LIST_INDEX = new ArrayList<Integer>();
@@ -79,7 +80,7 @@ public class GeneAssociationReader extends AbstractTask implements CyTableReader
 
 	private static final String EVIDENCE_SUFFIX = " Evidence Code";
 	private static final String REFERENCE_SUFFIX = " DB Reference";
-	private static final String GA_DELIMITER = TAB.toString();
+	private static final String GA_DELIMITER = TAB.getDelimiter();
 
 	// This is minimum required fields. Max is 17 for v2
 	private static final int EXPECTED_COL_COUNT = 15;

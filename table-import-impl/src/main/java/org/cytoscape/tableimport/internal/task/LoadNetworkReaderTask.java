@@ -51,7 +51,7 @@ import org.cytoscape.tableimport.internal.reader.GraphReader;
 import org.cytoscape.tableimport.internal.reader.NetworkTableMappingParameters;
 import org.cytoscape.tableimport.internal.reader.NetworkTableReader;
 import org.cytoscape.tableimport.internal.reader.SupportedFileType;
-import org.cytoscape.tableimport.internal.reader.TextFileDelimiters;
+import org.cytoscape.tableimport.internal.reader.TextDelimiter;
 import org.cytoscape.tableimport.internal.ui.PreviewTablePanel;
 import org.cytoscape.tableimport.internal.util.AttributeDataType;
 import org.cytoscape.tableimport.internal.util.ImportType;
@@ -119,17 +119,17 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 		this.serviceRegistrar = serviceRegistrar;
 		
 		List<String> tempList = new ArrayList<>();
-		tempList.add(TextFileDelimiters.COMMA.toString());
-		tempList.add(TextFileDelimiters.SEMICOLON.toString());
-		tempList.add(TextFileDelimiters.SPACE.toString());
-		tempList.add(TextFileDelimiters.TAB.toString());
+		tempList.add(TextDelimiter.COMMA.getDelimiter());
+		tempList.add(TextDelimiter.SEMICOLON.getDelimiter());
+		tempList.add(TextDelimiter.SPACE.getDelimiter());
+		tempList.add(TextDelimiter.TAB.getDelimiter());
 		delimiters = new ListMultipleSelection<>(tempList);
 	    
 		tempList = new ArrayList<>();
-		tempList.add(TextFileDelimiters.PIPE.toString());
-		tempList.add(TextFileDelimiters.BACKSLASH.toString());
-		tempList.add(TextFileDelimiters.SLASH.toString());
-		tempList.add(TextFileDelimiters.COMMA.toString());
+		tempList.add(TextDelimiter.PIPE.getDelimiter());
+		tempList.add(TextDelimiter.BACKSLASH.getDelimiter());
+		tempList.add(TextDelimiter.SLASH.getDelimiter());
+		tempList.add(TextDelimiter.COMMA.getDelimiter());
 		delimitersForDataList = new ListSingleSelection<>(tempList);
 	}
 	
@@ -164,11 +164,11 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 		
 		List<String> tempList = new ArrayList<>();
 		tempList = new ArrayList<>();
-		tempList.add(TextFileDelimiters.TAB.toString());
-		tempList.add(TextFileDelimiters.SPACE.toString());
-		tempList.add(TextFileDelimiters.COMMA.toString());
+		tempList.add(TextDelimiter.TAB.getDelimiter());
+		tempList.add(TextDelimiter.SPACE.getDelimiter());
+		tempList.add(TextDelimiter.COMMA.getDelimiter());
 		delimiters.setSelectedValues(tempList);
-		delimitersForDataList.setSelectedValue(TextFileDelimiters.PIPE.toString());
+		delimitersForDataList.setSelectedValue(TextDelimiter.PIPE.getDelimiter());
 	}
 
 	@Override

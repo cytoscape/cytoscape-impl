@@ -105,14 +105,14 @@ public class DefaultAttributeTableReader implements TextTableReader {
 			try {
 				// This data is shared by both the OpenCSV and the old method of reading files.
 				int lineCount = 0;
-				bufRd = new BufferedReader(new InputStreamReader(is,Charset.forName("UTF-8").newDecoder()));
+				bufRd = new BufferedReader(new InputStreamReader(is, Charset.forName("UTF-8").newDecoder()));
 				/*
 				 * Read & extract one line at a time. The line can be Tab delimited,
 				 */
 				final String delimiter = mapping.getDelimiterRegEx();
 
 				//If the delimiter contains a comma, treat the file as a CSV file.
-				if ( delimiter.contains(TextFileDelimiters.COMMA.toString()) && mapping.getDelimiters().size() == 1 ) {
+				if (delimiter.contains(TextDelimiter.COMMA.getDelimiter()) && mapping.getDelimiters().size() == 1) {
 					//Use OpenCSV.. New method...
 					CSVReader reader = new CSVReader(bufRd);
 					String [] rowData; //Note that rowData is roughly equivalent to "parts" in the old code.

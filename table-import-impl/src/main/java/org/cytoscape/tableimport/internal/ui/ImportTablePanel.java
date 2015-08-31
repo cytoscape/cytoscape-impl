@@ -126,7 +126,7 @@ import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.tableimport.internal.reader.AttributeMappingParameters;
 import org.cytoscape.tableimport.internal.reader.NetworkTableMappingParameters;
 import org.cytoscape.tableimport.internal.reader.SupportedFileType;
-import org.cytoscape.tableimport.internal.reader.TextFileDelimiters;
+import org.cytoscape.tableimport.internal.reader.TextDelimiter;
 import org.cytoscape.tableimport.internal.reader.TextTableReader.ObjectType;
 import org.cytoscape.tableimport.internal.ui.PreviewTablePanel.PreviewTableModel;
 import org.cytoscape.tableimport.internal.util.AttributeDataType;
@@ -1296,16 +1296,16 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 		final List<String> delList = new ArrayList<>();
 
 		if (tabCheckBox.isSelected())
-			delList.add(TextFileDelimiters.TAB.toString());
+			delList.add(TextDelimiter.TAB.getDelimiter());
 
 		if (commaCheckBox.isSelected())
-			delList.add(TextFileDelimiters.COMMA.toString());
+			delList.add(TextDelimiter.COMMA.getDelimiter());
 
 		if (spaceCheckBox.isSelected())
-			delList.add(TextFileDelimiters.SPACE.toString());
+			delList.add(TextDelimiter.SPACE.getDelimiter());
 
 		if (semicolonCheckBox.isSelected())
-			delList.add(TextFileDelimiters.SEMICOLON.toString());
+			delList.add(TextDelimiter.SEMICOLON.getDelimiter());
 
 		if (otherCheckBox.isSelected() && otherDelimiterTextField.getText().trim().length() > 0)
 			delList.add(otherDelimiterTextField.getText());

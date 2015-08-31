@@ -28,24 +28,39 @@ package org.cytoscape.tableimport.internal.reader;
 /**
  * Define text file delimiters as enum.
  */
-public enum TextFileDelimiters {
-	TAB("\\t"),
-	COMMA(","),
-	SEMICOLON(";"),
-	SPACE(" "),
-	PIPE("\\|"),
-	COLON(":"),
-	SLASH("/"),
-	BACKSLASH("\\");
+public enum TextDelimiter {
+	TAB("tab", "\\t"),
+	COMMA(",", ","),
+	SEMICOLON(";", ";"),
+	SPACE("space", " "),
+	PIPE("|", "\\|"),
+	COLON(":", ":"),
+	SLASH("/", "/"),
+	BACKSLASH("\\", "\\");
 
-	private String delimiter;
+	private final String label;
+	private final String delimiter;
 
-	private TextFileDelimiters(String delimiter) {
+	private TextDelimiter(final String label, final String delimiter) {
+		this.label = label;
 		this.delimiter = delimiter;
+	}
+	
+	public String getDelimiter() {
+		return delimiter;
 	}
 
 	@Override
 	public String toString() {
-		return delimiter;
+		return label;
+	}
+	
+	public static TextDelimiter getByLabel(final String label) {
+		for (TextDelimiter del : values()) {
+			if (del.toString().equals(label))
+				return del;
+		}
+		
+		return null;
 	}
 }

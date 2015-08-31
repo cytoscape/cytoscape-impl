@@ -3,11 +3,13 @@ package org.cytoscape.tableimport.internal.ui;
 import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static javax.swing.GroupLayout.Alignment.CENTER;
-import static org.cytoscape.tableimport.internal.reader.TextFileDelimiters.BACKSLASH;
-import static org.cytoscape.tableimport.internal.reader.TextFileDelimiters.COLON;
-import static org.cytoscape.tableimport.internal.reader.TextFileDelimiters.COMMA;
-import static org.cytoscape.tableimport.internal.reader.TextFileDelimiters.PIPE;
-import static org.cytoscape.tableimport.internal.reader.TextFileDelimiters.SLASH;
+import static org.cytoscape.tableimport.internal.reader.TextDelimiter.BACKSLASH;
+import static org.cytoscape.tableimport.internal.reader.TextDelimiter.COLON;
+import static org.cytoscape.tableimport.internal.reader.TextDelimiter.COMMA;
+import static org.cytoscape.tableimport.internal.reader.TextDelimiter.PIPE;
+import static org.cytoscape.tableimport.internal.reader.TextDelimiter.SLASH;
+import static org.cytoscape.tableimport.internal.reader.TextDelimiter.SPACE;
+import static org.cytoscape.tableimport.internal.reader.TextDelimiter.TAB;
 import static org.cytoscape.tableimport.internal.util.AttributeDataType.TYPE_BOOLEAN;
 import static org.cytoscape.tableimport.internal.util.AttributeDataType.TYPE_BOOLEAN_LIST;
 import static org.cytoscape.tableimport.internal.util.AttributeDataType.TYPE_FLOATING;
@@ -20,6 +22,7 @@ import static org.cytoscape.tableimport.internal.util.AttributeDataType.TYPE_STR
 import static org.cytoscape.tableimport.internal.util.AttributeDataType.TYPE_STRING_LIST;
 import static org.cytoscape.tableimport.internal.util.SourceColumnSemantic.NONE;
 
+import java.awt.Component;
 import java.awt.Font;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
@@ -37,14 +40,18 @@ import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.ParallelGroup;
 import javax.swing.GroupLayout.SequentialGroup;
 import javax.swing.JComboBox;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.JToggleButton;
 import javax.swing.LayoutStyle.ComponentPlacement;
+import javax.swing.ListCellRenderer;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
+import org.cytoscape.tableimport.internal.reader.TextDelimiter;
 import org.cytoscape.tableimport.internal.util.AttributeDataType;
 import org.cytoscape.tableimport.internal.util.SourceColumnSemantic;
 import org.cytoscape.tableimport.internal.util.TypeUtil;
@@ -145,12 +152,12 @@ public class AttributeEditorPanel extends JPanel {
 	
 	public String getListDelimiter() {
 		if (isOtherDelimiterSelected())
-			return getOtherTextField().getText().trim();
+			return getOtherTextField().getText();
 
-		if (getListDelimiterComboBox().getSelectedItem().toString().equals("|"))
-			return PIPE.toString();
+		final String label = getListDelimiterComboBox().getSelectedItem().toString();
+		final TextDelimiter del = TextDelimiter.getByLabel(label);
 		
-		return getListDelimiterComboBox().getSelectedItem().toString();
+		return del != null ? del.getDelimiter() : null;
 	}
 	
 	private void initComponents() {
@@ -278,18 +285,40 @@ public class AttributeEditorPanel extends JPanel {
 			listDelimiterComboBox.putClientProperty("JComponent.sizeVariant", "small");
 			listDelimiterComboBox.setModel(
 					new DefaultComboBoxModel<String>(new String[] {
-							"|",
+							PIPE.toString(),
 	                        COLON.toString(),
 	                        SLASH.toString(),
 	                        BACKSLASH.toString(),
 	                        COMMA.toString(),
+	                        SPACE.toString(),
+	                        TAB.toString(),
 	                        OTHER
 	                    }));
+			
+			final ListCellRenderer<? super String> renderer = listDelimiterComboBox.getRenderer();
+			
+			listDelimiterComboBox.setRenderer(new ListCellRenderer<String>() {
+				@Override
+				public Component getListCellRendererComponent(JList<? extends String> list, String value, int index,
+						boolean isSelected, boolean cellHasFocus) {
+					final Component c =
+							renderer.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+					
+					if (OTHER.equals(value) && c instanceof JComponent)
+						((JComponent)c).setFont(((JComponent)c).getFont().deriveFont(Font.ITALIC));
+					
+					return c;
+				}
+			});
+			
 			listDelimiterComboBox.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					getOtherTextField().setEnabled(isOtherDelimiterSelected());
-					firePropertyChange("listDelimiter", listDelimiter, listDelimiter = getListDelimiter());
+					final boolean isOther = isOtherDelimiterSelected();
+					getOtherTextField().setEnabled(isOther);
+					
+					if (!isOther || !getOtherTextField().getText().isEmpty())
+						firePropertyChange("listDelimiter", listDelimiter, listDelimiter = getListDelimiter());
 				}
 			});
 		}
@@ -390,7 +419,10 @@ public class AttributeEditorPanel extends JPanel {
 			getListDelimiterComboBox().setSelectedIndex(0);
 		} else {
 			for (int i = 0; i < getListDelimiterComboBox().getItemCount(); i++) {
-				if (listDelimiter.equals(getListDelimiterComboBox().getItemAt(i))) {
+				final String label = getListDelimiterComboBox().getItemAt(i);
+				final TextDelimiter del = TextDelimiter.getByLabel(label);
+				
+				if (del != null && listDelimiter.equals(del.getDelimiter())) {
 					getListDelimiterComboBox().setSelectedIndex(i);
 
 					return;

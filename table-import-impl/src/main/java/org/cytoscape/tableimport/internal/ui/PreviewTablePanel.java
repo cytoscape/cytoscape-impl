@@ -116,7 +116,7 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.cytoscape.tableimport.internal.reader.SupportedFileType;
-import org.cytoscape.tableimport.internal.reader.TextFileDelimiters;
+import org.cytoscape.tableimport.internal.reader.TextDelimiter;
 import org.cytoscape.tableimport.internal.util.AttributeDataType;
 import org.cytoscape.tableimport.internal.util.FileType;
 import org.cytoscape.tableimport.internal.util.ImportType;
@@ -781,7 +781,7 @@ public class PreviewTablePanel extends JPanel {
 		maxColumn = 0;
 		data = new Vector<>();
 		
-		if (delimiters != null && delimiters.contains(TextFileDelimiters.COMMA.toString()) && delimiters.size() == 1) {
+		if (delimiters != null && delimiters.contains(TextDelimiter.COMMA.getDelimiter()) && delimiters.size() == 1) {
 			// Only if there is exactly one delimiter and that delimiter is a
 			// comma should you read the file using OpenCSV
 			// New method... Using OpenCSV
