@@ -104,6 +104,14 @@ public class JSONCytoscapejsNetworkReaderTest {
 		testComplex(view);
 	}
 	
+	@Test
+	public void testElementList() throws Exception {
+		// Element list generated with Cytoscape.js ( cy.elements().jsons() )
+		final File testFile = new File("src/test/resources/testData/element_list.json");
+		final CyNetworkView view = loadNetwork(testFile);
+		testElement(view);
+	}
+	
 	private final void testComplex(final CyNetworkView view) {
 		final CyNetwork network = view.getModel();
 
@@ -250,9 +258,6 @@ public class JSONCytoscapejsNetworkReaderTest {
 		return edge;
 	}
 	
-	
-	
-	
 	private final void testYeast(final CyNetworkView view) {
 		final CyNetwork network = view.getModel();
 
@@ -348,5 +353,24 @@ public class JSONCytoscapejsNetworkReaderTest {
 		final Collection<CyRow> match3 = network.getDefaultNodeTable().getMatchingRows(CyNetwork.NAME, "foo");
 		assertNotNull(match3);
 		assertEquals(0, match3.size());
+	}
+	
+	
+	private final void testElement(final CyNetworkView view) {
+		final CyNetwork network = view.getModel();
+
+		// Check network table
+		final String networkName = network.getRow(network).get(CyNetwork.NAME, String.class);
+		final String networkSharedName = network.getRow(network).get("shared_name", String.class);
+		assertEquals(null, networkName);
+		assertEquals(null, networkSharedName);
+		
+		// Type checking
+		final CyColumn idColumn = network.getDefaultNodeTable().getColumn("id");
+		assertNotNull(idColumn);
+		assertEquals(String.class, idColumn.getType());
+		
+		assertEquals(100, network.getNodeCount());
+		assertEquals(100, network.getEdgeCount());
 	}
 }

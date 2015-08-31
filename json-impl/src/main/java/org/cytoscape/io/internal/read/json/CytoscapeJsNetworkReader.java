@@ -89,14 +89,24 @@ public class CytoscapeJsNetworkReader extends AbstractCyNetworkReader {
 		// 1. Check from Tunable
 		// 2. If not available, use optional parameter
 		CySubNetwork subNetwork;
+		String collectionName = null;
+		
 		if (rootNetwork != null) {
 			// Root network exists
 			subNetwork = rootNetwork.addSubNetwork();
-			this.network = this.mapper.createNetwork(rootNode, subNetwork, null);
+//			this.network = this.mapper.createNetwork(rootNode, subNetwork, null);
 		} else {
 			// Need to create new network with new root.
 			subNetwork = (CySubNetwork) cyNetworkFactory.createNetwork();
-			this.network = this.mapper.createNetwork(rootNode, subNetwork, networkCollectionName);
+			collectionName = networkCollectionName;
+//			this.network = this.mapper.createNetwork(rootNode, subNetwork, networkCollectionName);
+		}
+		
+		// Check this is an element list or full network
+		if(rootNode.isArray()) {
+			this.network = this.mapper.createNetworkFromElementList(rootNode, subNetwork, collectionName);
+		} else {
+			this.network = this.mapper.createNetwork(rootNode, subNetwork, collectionName);
 		}
 	}
 }
