@@ -141,15 +141,15 @@ public class AttributeLineParser {
 		final CyRow row = tbl.getRow(key);
 
 		if (type == TYPE_INTEGER)
-			row.set(attributeName, new Integer(val));
+			row.set(attributeName, Integer.valueOf(val));
 		else if (type == TYPE_LONG)
-			row.set(attributeName, new Long(val));
+			row.set(attributeName, Long.valueOf(val));
 		else if (type == TYPE_BOOLEAN)
-			row.set(attributeName, new Boolean(val));
+			row.set(attributeName, Boolean.valueOf(val));
 		else if (type == TYPE_FLOATING)
-			row.set(attributeName, (new Double(val)));
+			row.set(attributeName, Double.valueOf(val));
 		else // type is String
-			row.set(attributeName, new String(val));
+			row.set(attributeName, val);
 	}
 
 	public static void setListAttribute(final CyTable tbl, final AttributeDataType type, final Object key,
@@ -196,16 +196,16 @@ public class AttributeLineParser {
 		for (String listItem : parts) {
 			switch (dataType) {
 				case TYPE_BOOLEAN_LIST:
-					listAttr.add(Boolean.parseBoolean(listItem.trim()));
+					listAttr.add(Boolean.valueOf(listItem.trim()));
 					break;
 				case TYPE_INTEGER_LIST:
-					listAttr.add(Integer.parseInt(listItem.trim()));
+					listAttr.add(Integer.valueOf(listItem.trim()));
 					break;
 				case TYPE_LONG_LIST:
-					listAttr.add(Long.parseLong(listItem.trim()));
+					listAttr.add(Long.valueOf(listItem.trim()));
 					break;
 				case TYPE_FLOATING_LIST:
-					listAttr.add(Double.parseDouble(listItem.trim()));
+					listAttr.add(Double.valueOf(listItem.trim()));
 					break;
 				case TYPE_STRING_LIST:
 					listAttr.add(listItem.trim());
