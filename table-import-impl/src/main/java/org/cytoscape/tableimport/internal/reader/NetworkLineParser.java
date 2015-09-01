@@ -162,25 +162,25 @@ public class NetworkLineParser {
 		switch (type) {
 			case TYPE_BOOLEAN:
 				createColumn(element, mapping.getAttributeNames()[index], Boolean.class);
-				network.getRow(element).set(mapping.getAttributeNames()[index], new Boolean(entry));
+				network.getRow(element).set(mapping.getAttributeNames()[index], Boolean.valueOf(entry.trim()));
 
 				break;
 
 			case TYPE_INTEGER:
 				createColumn(element, mapping.getAttributeNames()[index], Integer.class);
-				network.getRow(element).set(mapping.getAttributeNames()[index], new Integer(entry));
+				network.getRow(element).set(mapping.getAttributeNames()[index], Integer.valueOf(entry.trim()));
 
 				break;
 				
 			case TYPE_LONG:
 				createColumn(element, mapping.getAttributeNames()[index], Long.class);
-				network.getRow(element).set(mapping.getAttributeNames()[index], new Long(entry));
+				network.getRow(element).set(mapping.getAttributeNames()[index], Long.valueOf(entry.trim()));
 				
 				break;
 
 			case TYPE_FLOATING:
 				createColumn(element, mapping.getAttributeNames()[index], Double.class);
-				network.getRow(element).set(mapping.getAttributeNames()[index], new Double(entry));
+				network.getRow(element).set(mapping.getAttributeNames()[index], Double.valueOf(entry.trim()));
 
 				break;
 
@@ -243,11 +243,11 @@ public class NetworkLineParser {
 
 		for (String listItem : parts) {
 			if (type == TYPE_BOOLEAN_LIST)
-				listAttr.add(new Boolean(listItem.trim()));
+				listAttr.add(Boolean.valueOf(listItem.trim()));
 			else if (type == TYPE_INTEGER_LIST)
-				listAttr.add(new Integer(listItem.trim()));
+				listAttr.add(Integer.valueOf(listItem.trim()));
 			else if (type == TYPE_LONG_LIST)
-				listAttr.add(new Long(listItem.trim()));
+				listAttr.add(Long.valueOf(listItem.trim()));
 			else if (type == TYPE_FLOATING_LIST)
 				listAttr.add(new Double(listItem.trim()));
 			else // TYPE_STRING or unknown
