@@ -98,20 +98,26 @@ public class DoubleListAggregator extends AbstractAggregator<List<Double>> {
 					case SUM:
 						if (agg.size() > index) {
 							value = value + agg.get(index);
+							agg.set(index, value);
+						} else {
+							agg.add(index, value);
 						}
-						agg.set(index, value);
 						break;
 					case MIN:
 						if (agg.size() > index) {
 							value = Math.min(value, agg.get(index));
+							agg.set(index, value);
+						} else {
+							agg.add(index, value);
 						}
-						agg.set(index, value);
 						break;
 					case MAX:
 						if (agg.size() > index) {
 							value = Math.max(value, agg.get(index));
+							agg.set(index, value);
+						} else {
+							agg.add(index, value);
 						}
-						agg.set(index, value);
 						break;
 					case MEDIAN:
 						if (aggMed.size() > index) {

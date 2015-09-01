@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.group.CyGroup;
 import org.cytoscape.group.data.Aggregator;
 import org.cytoscape.group.data.AttributeHandlingType;
 import org.cytoscape.group.data.CyGroupAggregationManager;
@@ -49,6 +50,7 @@ public class CyGroupAggregationSettings {
 	final CyGroupSettingsImpl settings;
 	final CyGroupManagerImpl cyGroupMgr;
 	final CyApplicationManager appMgr;
+	final CyGroup group;
 	CyNetwork currentNetwork = null;
 	Map<CyColumn, Aggregator<?>> overrides;
 
@@ -194,10 +196,15 @@ public class CyGroupAggregationSettings {
 
 		// Now, if we already have an override for this attribute, make sure that
 		// it's reflected in what the user sees
-		if (aggregationType.getSelectedValue() == null) {
+		// if (aggregationType.getSelectedValue() == null) {
+		if (group == null) {
 			Aggregator<?> type = settings.getOverrideAggregation(column);
 			if (type != null) aggregationType.setSelectedValue(type);
+		} else {
+			Aggregator<?> type = settings.getOverrideAggregation(group, column);
+			if (type != null) aggregationType.setSelectedValue(type);
 		}
+		// }
 
 		// Get it's type
 		String t = column.getType().getSimpleName();
@@ -235,10 +242,12 @@ public class CyGroupAggregationSettings {
 
 	public CyGroupAggregationSettings(final CyGroupManagerImpl cyGroupMgr,
 		                                final CyGroupAggregationManager cyAggManager,
-	                                  final CyGroupSettingsImpl settings) {
+	                                  final CyGroupSettingsImpl settings,
+																		final CyGroup group) {
 		this.cyGroupMgr = cyGroupMgr;
 		this.cyAggManager = cyAggManager;
 		this.settings = settings;
+		this.group = group;
 		this.appMgr = cyGroupMgr.getService(CyApplicationManager.class);
 		this.overrides = new HashMap<CyColumn, Aggregator<?>>();
 		this.enableAttributeAggregation = settings.getEnableAttributeAggregation();
@@ -340,11 +349,11 @@ public class CyGroupAggregationSettings {
 
 			if (def != null) {
 				// If we've never initialized our default aggregations, do so now
-				if (settings.getDefaultAggregation(def.getSupportedType()) == null) {
-					settings.setDefaultAggregation(def.getSupportedType(), def); 
+				if (settings.getDefaultListAggregation(def.getSupportedListType()) == null) {
+					settings.setDefaultListAggregation(def.getSupportedListType(), def); 
 					lss.setSelectedValue(def);
 				} else {
-					lss.setSelectedValue(settings.getDefaultAggregation(def.getSupportedType()));
+					lss.setSelectedValue(settings.getDefaultListAggregation(def.getSupportedListType()));
 				}
 			}
 			return lss;

@@ -102,7 +102,7 @@ public class CyGroupSettingsImpl implements GroupAddedListener,
 	final static String DEFAULT_STRING_AGGREGATION = "defaultStringAggregation";
 	final static String DEFAULT_BOOLEAN_AGGREGATION = "defaultBooleanAggregation";
 	final static String DEFAULT_STRING_LIST_AGGREGATION = "defaultStringListAggregation";
-	final static String DEFAULT_INTEGER_LIST_AGGREGATION = "defaultInegerListAggregation";
+	final static String DEFAULT_INTEGER_LIST_AGGREGATION = "defaultIntegerListAggregation";
 	final static String DEFAULT_LONG_LIST_AGGREGATION = "defaultLongListAggregation";
 	final static String DEFAULT_DOUBLE_LIST_AGGREGATION = "defaultDoubleListAggregation";
 	final static String OVERRIDE_AGGREGATION = "overrideColumnAggregations";
@@ -304,7 +304,7 @@ public class CyGroupSettingsImpl implements GroupAddedListener,
 				defaultListMap = groupSpecificMaps.getListDefaults();
 				overrideMap = groupSpecificMaps.getOverrides();
 			}
-			Aggregator<?> aggregator = overrideMap.get(column.getName());
+			Aggregator<?> aggregator = overrideMap.get(column);
 			if (aggregator != null) {
 				return aggregator;
 			}
@@ -421,8 +421,9 @@ public class CyGroupSettingsImpl implements GroupAddedListener,
 	public Aggregator<?> getOverrideAggregation(CyColumn column) {
 		synchronized (lock) {
 			// First, check and see if we have an entry for this column
-			if (allGroupOverrideMap.containsKey(column))
+			if (allGroupOverrideMap.containsKey(column)) {
 				return get(allGroupOverrideMap, column, null);
+			}
 			// We don't, so see if there is a default property
 			if (allGroupOverridePropertyMap.containsKey(column.getName())) {
 				// Great!  Now add that to our allGroupOverrideMap
@@ -539,8 +540,9 @@ public class CyGroupSettingsImpl implements GroupAddedListener,
 	public Aggregator<?> getOverrideAggregation(CyGroup group, CyColumn column) {
 		synchronized (lock) {
 			GroupSpecificMaps groupSpecificMaps = groupMap.get(group);
-			if (groupSpecificMaps != null)
+			if (groupSpecificMaps != null) {
 				return groupSpecificMaps.getOverride(column);
+			}
 			return null;
 		}
 	}
@@ -648,7 +650,7 @@ public class CyGroupSettingsImpl implements GroupAddedListener,
 	}
 
 	private Aggregator<?> getAggregationProperty(Properties p, String key, Class<?> c, Class<?> listClass,
-	                                          AttributeHandlingType defType) {
+	                                             AttributeHandlingType defType) {
 		String pValue = p.getProperty(key, defType.toString());
 
 		List<Aggregator<?>> aggs;

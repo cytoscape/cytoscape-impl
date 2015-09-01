@@ -64,7 +64,7 @@ public class CyGroupSettingsTask extends AbstractTask {
 		viewSettings = new CyGroupViewSettings(settings, group);
 
 		aggregationSettings = 
-			new CyGroupAggregationSettings(groupMgr, aggMgr, settings);
+			new CyGroupAggregationSettings(groupMgr, aggMgr, settings, group);
 	}
 
 	// Our "Task" is to read the information from our settings sub-objects
@@ -88,6 +88,13 @@ public class CyGroupSettingsTask extends AbstractTask {
 				settings.setDefaultAggregation(group, c,a);
 			else
 				settings.setDefaultAggregation(c,a);
+		}
+		for (Class<?> c: cyAggManager.getSupportedListClasses()) {
+			Aggregator<?> a = aggregationSettings.getDefaultListAggregator(c);
+			if (group != null)
+				settings.setDefaultListAggregation(group, c, a);
+			else
+				settings.setDefaultListAggregation(c, a);
 		}
 
 		// Get any overrides
