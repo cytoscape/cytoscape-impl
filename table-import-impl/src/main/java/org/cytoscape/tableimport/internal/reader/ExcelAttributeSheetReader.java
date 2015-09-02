@@ -35,6 +35,7 @@ import org.apache.poi.ss.usermodel.FormulaEvaluator;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.cytoscape.model.CyTable;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,11 +46,6 @@ import org.slf4j.LoggerFactory;
  * <p>
  * This reader takes one sheet at a time.
  * </p>
- *
- * @version 0.7
- * @since Cytoscape 2.4
- * @author kono
- *
  */
 public class ExcelAttributeSheetReader implements TextTableReader {
 	
@@ -64,15 +60,15 @@ public class ExcelAttributeSheetReader implements TextTableReader {
 	private static final Logger logger = LoggerFactory.getLogger(ExcelAttributeSheetReader.class);
 	
 	
-	/**
-	 * Creates a new ExcelAttributeSheetReader object.
-	 */
-	public ExcelAttributeSheetReader(final Sheet sheet,
-	                                 final AttributeMappingParameters mapping){
+	public ExcelAttributeSheetReader(
+			final Sheet sheet,
+			final AttributeMappingParameters mapping,
+			final CyServiceRegistrar serviceRegistrar
+	){
 		this.sheet = sheet;
 		this.mapping = mapping;
 		this.startLineNumber = mapping.getStartLineNumber();
-		this.parser = new AttributeLineParser(mapping);
+		this.parser = new AttributeLineParser(mapping, serviceRegistrar);
 		this.evaluator = sheet.getWorkbook().getCreationHelper().createFormulaEvaluator();
 		this.formatter = new DataFormatter();
 	}
@@ -106,9 +102,6 @@ public class ExcelAttributeSheetReader implements TextTableReader {
 
 	/**
 	 * For a given Excel row, convert the cells into String.
-	 *
-	 * @param row
-	 * @return
 	 */
 	private String[] createElementStringArray(Row row) {
 		String[] cells = new String[mapping.getColumnCount()];

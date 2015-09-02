@@ -57,7 +57,7 @@ import javax.swing.table.TableModel;
 /**
  *
  */
-public class TypeUtil {
+public final class TypeUtil {
 
 	private static final List<SourceColumnSemantic> TABLE_IMPORT_TYPES = Arrays.asList(
 			NONE, KEY, ATTR

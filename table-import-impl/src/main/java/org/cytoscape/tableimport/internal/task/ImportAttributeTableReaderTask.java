@@ -147,12 +147,12 @@ public class ImportAttributeTableReaderTask extends AbstractTask implements CyTa
 			final Sheet sheet = workbook.getSheet(networkName);
 			
 			if (sheet != null) {
-				reader = new ExcelAttributeSheetReader(sheet, amp);
+				reader = new ExcelAttributeSheetReader(sheet, amp, serviceRegistrar);
 				loadAnnotation(tm);
 			}
 		} else {
 			try {
-				reader = new DefaultAttributeTableReader(null, amp, this.is); 
+				reader = new DefaultAttributeTableReader(null, amp, this.is, serviceRegistrar); 
 				loadAnnotation(tm);
 			} catch (Exception ioe) {
 				tm.showMessage(TaskMonitor.Level.ERROR, "Unable to read table: "+ioe.getMessage());

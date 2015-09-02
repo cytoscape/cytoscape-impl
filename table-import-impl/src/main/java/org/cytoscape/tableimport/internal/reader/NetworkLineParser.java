@@ -25,11 +25,6 @@ package org.cytoscape.tableimport.internal.reader;
  */
 
 
-import static org.cytoscape.tableimport.internal.util.AttributeDataType.TYPE_BOOLEAN_LIST;
-import static org.cytoscape.tableimport.internal.util.AttributeDataType.TYPE_FLOATING_LIST;
-import static org.cytoscape.tableimport.internal.util.AttributeDataType.TYPE_INTEGER_LIST;
-import static org.cytoscape.tableimport.internal.util.AttributeDataType.TYPE_LONG_LIST;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -41,13 +36,14 @@ import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CySubNetwork;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.tableimport.internal.util.AttributeDataType;
 import org.cytoscape.tableimport.internal.util.SourceColumnSemantic;
 
 /**
  * Parse one line for network text table
  */
-public class NetworkLineParser {
+public class NetworkLineParser extends AbstractLineParser {
 	
 	private final NetworkTableMappingParameters mapping;
 	private final List<Long> nodeList;
@@ -61,8 +57,10 @@ public class NetworkLineParser {
 			final List<Long> edgeList,
 			final NetworkTableMappingParameters mapping,
 			final Map<Object, CyNode> nMap,
-			final CyRootNetwork rootNetwork
+			final CyRootNetwork rootNetwork,
+			final CyServiceRegistrar serviceRegistrar
 	) {
+		super(serviceRegistrar);
 		this.mapping = mapping;
 		this.nodeList = nodeList;
 		this.edgeList = edgeList;
@@ -152,68 +150,45 @@ public class NetworkLineParser {
 	/**
 	 * Based on the attribute types, map the entry to Node or Edge tables.
 	 */
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private <T extends CyIdentifiable> void mapAttribute(final T element, final String entry, final int index) {
 		if (entry == null || entry.length() == 0)
 			return;
 		
 		final AttributeDataType type = mapping.getDataTypes()[index];
 		
-		switch (type) {
-			case TYPE_BOOLEAN:
-				createColumn(element, mapping.getAttributeNames()[index], Boolean.class);
-				network.getRow(element).set(mapping.getAttributeNames()[index], Boolean.valueOf(entry.trim()));
+		if (type.isList()) {
+			final CyTable table = network.getRow(element).getTable();
+			
+			if (table.getColumn(mapping.getAttributeNames()[index]) == null)
+				table.createListColumn(mapping.getAttributeNames()[index], type.getListType(), false);
 
-				break;
-
-			case TYPE_INTEGER:
-				createColumn(element, mapping.getAttributeNames()[index], Integer.class);
-				network.getRow(element).set(mapping.getAttributeNames()[index], Integer.valueOf(entry.trim()));
-
-				break;
-				
-			case TYPE_LONG:
-				createColumn(element, mapping.getAttributeNames()[index], Long.class);
-				network.getRow(element).set(mapping.getAttributeNames()[index], Long.valueOf(entry.trim()));
-				
-				break;
-
-			case TYPE_FLOATING:
-				createColumn(element, mapping.getAttributeNames()[index], Double.class);
-				network.getRow(element).set(mapping.getAttributeNames()[index], Double.valueOf(entry.trim()));
-
-				break;
-
-			case TYPE_STRING:
-				createColumn(element, mapping.getAttributeNames()[index], String.class);
-				network.getRow(element).set(mapping.getAttributeNames()[index], entry.trim());
-
-				break;
-
-			case TYPE_BOOLEAN_LIST:
-			case TYPE_INTEGER_LIST:
-			case TYPE_LONG_LIST:
-			case TYPE_FLOATING_LIST:
-			case TYPE_STRING_LIST:
-				final CyTable table = network.getRow(element).getTable();
-				
-				if (table.getColumn(mapping.getAttributeNames()[index]) == null)
-					table.createListColumn(mapping.getAttributeNames()[index], type.getListType(), false);
-
-				/*
-				 * In case of list, not overwrite the attribute. Get the existing list, and add it to the list.
-				 */
+			final String[] delimiters = mapping.getListDelimiters();
+			String delimiter = delimiters != null && delimiters.length > index ?
+					delimiters[index] : AbstractMappingParameters.DEF_LIST_DELIMITER;
+					
+			if (delimiter == null || delimiter.isEmpty())
+				delimiter = AbstractMappingParameters.DEF_LIST_DELIMITER;
+			
+			Object value = parse(entry, type, delimiter);
+			
+			if (value instanceof List) {
+				// In case of list, do not overwrite the attribute. Get the existing list, and add it to the list.
 				List<Object> curList = network.getRow(element).get(mapping.getAttributeNames()[index], List.class);
 
 				if (curList == null)
 					curList = new ArrayList<>();
-
-				curList.addAll(buildList(entry, type, index));
-
-				//mapping.getAttributes().setListAttribute(key, mapping.getAttributeNames()[index], curList);
-				network.getRow(element).set(mapping.getAttributeNames()[index], curList);
 				
-				break;
+				curList.addAll((List)value);
+				value = curList;
+			}
+
+			network.getRow(element).set(mapping.getAttributeNames()[index], value);
+		} else {
+			createColumn(element, mapping.getAttributeNames()[index], type.getType());
+			
+			final Object value = parse(entry, type, null);
+			network.getRow(element).set(mapping.getAttributeNames()[index], value);
 		}
 	}
 	
@@ -221,40 +196,6 @@ public class NetworkLineParser {
 		// If attribute does not exist, create it
 		if (network.getRow(element).getTable().getColumn(attributeName) == null)
 			network.getRow(element).getTable().createColumn(attributeName, type, false);
-	}
-
-	/**
-	 * If an entry is a list, split the string and create new List Attribute.
-	 */
-	private List<Object> buildList(final String entry, final AttributeDataType type, final int index) {
-		if (entry == null)
-			return null;
-
-		final List<Object> listAttr = new ArrayList<>();
-		
-		final String[] delimiters = mapping.getListDelimiters();
-		String delimiter = delimiters != null && delimiters.length > index ?
-				delimiters[index] : AbstractMappingParameters.DEF_LIST_DELIMITER;
-				
-		if (delimiter == null || delimiter.isEmpty())
-			delimiter = AbstractMappingParameters.DEF_LIST_DELIMITER;
-
-		final String[] parts = (entry.replace("\"", "")).split(delimiter);
-
-		for (String listItem : parts) {
-			if (type == TYPE_BOOLEAN_LIST)
-				listAttr.add(Boolean.valueOf(listItem.trim()));
-			else if (type == TYPE_INTEGER_LIST)
-				listAttr.add(Integer.valueOf(listItem.trim()));
-			else if (type == TYPE_LONG_LIST)
-				listAttr.add(Long.valueOf(listItem.trim()));
-			else if (type == TYPE_FLOATING_LIST)
-				listAttr.add(new Double(listItem.trim()));
-			else // TYPE_STRING or unknown
-				listAttr.add(listItem.trim());				
-		}
-
-		return listAttr;
 	}
 
 	public void setNetwork(CyNetwork network){

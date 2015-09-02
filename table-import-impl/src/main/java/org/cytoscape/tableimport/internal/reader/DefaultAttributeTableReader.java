@@ -36,6 +36,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.cytoscape.model.CyTable;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.tableimport.internal.util.URLUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -69,19 +70,20 @@ public class DefaultAttributeTableReader implements TextTableReader {
 	private InputStream is;
 	
 	public DefaultAttributeTableReader(final URL source, AttributeMappingParameters mapping,
-            final int startLineNumber, final String commentChar) {
+            final int startLineNumber, final String commentChar, final CyServiceRegistrar serviceRegistrar) {
 		this.source = source;
 		this.mapping = mapping;
 		this.startLineNumber = startLineNumber;
-		this.parser = new AttributeLineParser(mapping);
+		this.parser = new AttributeLineParser(mapping, serviceRegistrar);
 		this.commentChar = commentChar;
 	}
 
-	public DefaultAttributeTableReader(final URL source, AttributeMappingParameters mapping, InputStream is) {
+	public DefaultAttributeTableReader(final URL source, AttributeMappingParameters mapping, InputStream is,
+			final CyServiceRegistrar serviceRegistrar) {
 		this.source = source;
 		this.mapping = mapping;
 		this.startLineNumber = mapping.getStartLineNumber();
-		this.parser = new AttributeLineParser(mapping);
+		this.parser = new AttributeLineParser(mapping, serviceRegistrar);
 		this.commentChar = mapping.getCommentChar();
 		this.is = is;
 	}

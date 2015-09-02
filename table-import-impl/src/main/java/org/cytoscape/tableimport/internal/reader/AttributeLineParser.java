@@ -25,16 +25,6 @@ package org.cytoscape.tableimport.internal.reader;
  */
 
 
-import static org.cytoscape.tableimport.internal.util.AttributeDataType.TYPE_BOOLEAN;
-import static org.cytoscape.tableimport.internal.util.AttributeDataType.TYPE_BOOLEAN_LIST;
-import static org.cytoscape.tableimport.internal.util.AttributeDataType.TYPE_FLOATING;
-import static org.cytoscape.tableimport.internal.util.AttributeDataType.TYPE_FLOATING_LIST;
-import static org.cytoscape.tableimport.internal.util.AttributeDataType.TYPE_INTEGER;
-import static org.cytoscape.tableimport.internal.util.AttributeDataType.TYPE_INTEGER_LIST;
-import static org.cytoscape.tableimport.internal.util.AttributeDataType.TYPE_LONG;
-import static org.cytoscape.tableimport.internal.util.AttributeDataType.TYPE_LONG_LIST;
-import static org.cytoscape.tableimport.internal.util.AttributeDataType.TYPE_STRING_LIST;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -42,21 +32,20 @@ import java.util.Map;
 
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.tableimport.internal.util.AttributeDataType;
 import org.cytoscape.tableimport.internal.util.SourceColumnSemantic;
 
 /**
  * Take a line of data, analyze it, and map to CyAttributes.
  */
-public class AttributeLineParser {
+public class AttributeLineParser extends AbstractLineParser {
 	
-	private AttributeMappingParameters mapping;
-	private Map<String, Object> invalid = new HashMap<>();
+	private final AttributeMappingParameters mapping;
+	private final Map<String, Object> invalid = new HashMap<>();
 
-	/**
-	 * Creates a new AttributeLineParser object.
-	 */
-	public AttributeLineParser(AttributeMappingParameters mapping) {
+	public AttributeLineParser(final AttributeMappingParameters mapping, final CyServiceRegistrar serviceRegistrar) {
+		super(serviceRegistrar);
 		this.mapping = mapping;
 	}
 
@@ -64,7 +53,7 @@ public class AttributeLineParser {
 	 * Import everything regardless associated nodes/edges exist or not.
 	 * @param parts entries in a line.
 	 */
-	public void parseAll(CyTable table, String[] parts) {
+	public void parseAll(final CyTable table, final String[] parts) {
 		// Get key
 		final Object primaryKey ;
 		final int partsLen = parts.length;
@@ -106,115 +95,61 @@ public class AttributeLineParser {
 	/**
 	 * Based on the attribute types, map the entry to CyAttributes.<br>
 	 */
-	private void mapAttribute(CyTable table, final Object key, final String entry, final int index) {
+	private void mapAttribute(final CyTable table, final Object key, final String entry, final int index) {
 		final AttributeDataType type = mapping.getDataTypes()[index];
 
 		try {
 			if (type.isList()) {
-				// In case of list, do not overwrite the attribute. Get the existing list, and add it to the list.
-				final ArrayList<Object> curList = new ArrayList<>();
-				curList.addAll(buildList(entry, type, index));
-				setListAttribute(table, type, key, mapping.getAttributeNames()[index], curList);
+				final String[] delimiters = mapping.getListDelimiters();
+				String delimiter = delimiters != null && delimiters.length > index ?
+						delimiters[index] : AbstractMappingParameters.DEF_LIST_DELIMITER;
+						
+				if (delimiter == null || delimiter.isEmpty())
+					delimiter = AbstractMappingParameters.DEF_LIST_DELIMITER;
+				
+				Object value = parse(entry, type, delimiter);
+				setListAttribute(table, type, key, mapping.getAttributeNames()[index], value);
 			} else {
-				setAttributeForType(table, type, key, mapping.getAttributeNames()[index], entry);
+				setAttribute(table, type, key, mapping.getAttributeNames()[index], entry);
 			}
 		} catch (Exception e) {
 			invalid.put(key.toString(), entry);
 		}
 	}
 
-	public static void setAttributeForType(final CyTable tbl, final AttributeDataType type, final Object key,
-			final String attributeName, final String val) {
-		if (tbl.getColumn(attributeName) == null) {
-			if (type == TYPE_INTEGER)
-				tbl.createColumn(attributeName, Integer.class, false);
-			else if (type == TYPE_LONG)
-				tbl.createColumn(attributeName, Long.class, false);
-			else if (type == TYPE_BOOLEAN)
-				tbl.createColumn(attributeName, Boolean.class, false);
-			else if (type == TYPE_FLOATING)
-				tbl.createColumn(attributeName, Double.class, false);
-			else // type is String
-				tbl.createColumn(attributeName, String.class, false);
-		}
+	private void setAttribute(final CyTable tbl, final AttributeDataType type, final Object key,
+			final String attrName, final String attrValue) {
+		if (tbl.getColumn(attrName) == null)
+			tbl.createColumn(attrName, type.getType(), false);
 
+		final Object value = parse(attrValue, type, null);
 		final CyRow row = tbl.getRow(key);
-
-		if (type == TYPE_INTEGER)
-			row.set(attributeName, Integer.valueOf(val));
-		else if (type == TYPE_LONG)
-			row.set(attributeName, Long.valueOf(val));
-		else if (type == TYPE_BOOLEAN)
-			row.set(attributeName, Boolean.valueOf(val));
-		else if (type == TYPE_FLOATING)
-			row.set(attributeName, Double.valueOf(val));
-		else // type is String
-			row.set(attributeName, val);
+		row.set(attrName, value);
 	}
 
-	public static void setListAttribute(final CyTable tbl, final AttributeDataType type, final Object key,
-			final String attributeName, final ArrayList<?> elmsBuff) {
-		if (tbl.getColumn(attributeName) == null) {
-			if (type == TYPE_INTEGER_LIST)
-				tbl.createListColumn(attributeName, Integer.class, false);
-			else if (type == TYPE_LONG_LIST)
-				tbl.createListColumn(attributeName, Long.class, false);
-			else if (type == TYPE_BOOLEAN_LIST)
-				tbl.createListColumn(attributeName, Boolean.class, false);
-			else if (type == TYPE_FLOATING_LIST)
-				tbl.createListColumn(attributeName, Double.class, false);
-			else if (type == TYPE_STRING_LIST)
-				tbl.createListColumn(attributeName, String.class, false);
-		}
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	private void setListAttribute(final CyTable tbl, final AttributeDataType type, final Object key,
+			final String attributeName, Object value) {
+		if (tbl.getColumn(attributeName) == null)
+			tbl.createListColumn(attributeName, type.getListType(), false);
 		
 		final CyRow row = tbl.getRow(key);
-		row.set(attributeName, elmsBuff);
+		
+		if (value instanceof List) {
+			// In case of list, do not overwrite the attribute. Get the existing list, and add it to the list.
+			List<?> curList = row.getList(attributeName, type.getListType());
+
+			if (curList == null)
+				curList = new ArrayList<>();
+			
+			curList.addAll((List)value);
+			value = curList;
+		}
+		
+		row.set(attributeName, value);
 	}
 
 	protected Map<String, Object> getInvalidMap() {
 		return invalid;
-	}
-
-	/**
-	 * If an entry is a list, split the string and create new List Attribute.
-	 * @param index 
-	 */
-	private List<?> buildList(final String entry, final AttributeDataType dataType, final int index) {
-		if (entry == null)
-			return null;
-		
-		final String[] delimiters = mapping.getListDelimiters();
-		String delimiter = delimiters != null && delimiters.length > index ?
-				delimiters[index] : AbstractMappingParameters.DEF_LIST_DELIMITER;
-				
-		if (delimiter == null || delimiter.isEmpty())
-			delimiter = AbstractMappingParameters.DEF_LIST_DELIMITER;
-		
-		final String[] parts = (entry.replace("\"", "")).split(delimiter);
-		final List<Object> listAttr = new ArrayList<>();
-
-		for (String listItem : parts) {
-			switch (dataType) {
-				case TYPE_BOOLEAN_LIST:
-					listAttr.add(Boolean.valueOf(listItem.trim()));
-					break;
-				case TYPE_INTEGER_LIST:
-					listAttr.add(Integer.valueOf(listItem.trim()));
-					break;
-				case TYPE_LONG_LIST:
-					listAttr.add(Long.valueOf(listItem.trim()));
-					break;
-				case TYPE_FLOATING_LIST:
-					listAttr.add(Double.valueOf(listItem.trim()));
-					break;
-				case TYPE_STRING_LIST:
-					listAttr.add(listItem.trim());
-					break;
-				default:
-					break;
-			}
-		}
-
-		return listAttr;
 	}
 }

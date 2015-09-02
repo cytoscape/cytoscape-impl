@@ -103,6 +103,10 @@
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
+			<artifactId>equations-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.cytoscape</groupId>
 			<artifactId>core-task-api</artifactId>
 		</dependency>
 		<dependency>
@@ -226,11 +230,6 @@
             <groupId>org.cytoscape</groupId>
             <artifactId>event-api</artifactId>
             <type>test-jar</type>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.cytoscape</groupId>
-            <artifactId>equations-api</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>

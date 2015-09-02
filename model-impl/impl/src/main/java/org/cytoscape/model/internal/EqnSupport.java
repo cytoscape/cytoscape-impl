@@ -43,31 +43,27 @@ import org.slf4j.LoggerFactory;
 
 
 class EqnSupport {
+	
 	private static final Logger logger = LoggerFactory.getLogger(EqnSupport.class);
 
 	private EqnSupport() { } // Don't ever create an instance of this class!
 
-	static boolean scalarEquationIsCompatible(final Object equationCandidate,
-						  final Class targetType)
-	{
+	static boolean scalarEquationIsCompatible(final Object equationCandidate, final Class<?> targetType) {
 		if (!(equationCandidate instanceof Equation))
 			return false;
 
-		final Equation equation = (Equation)equationCandidate;
-		final Class<?> eqnReturnType = equation.getType();
+		final Equation equation = (Equation) equationCandidate;
+		final Class<?> eqType = equation.getType();
 
-		if (targetType == Double.class || targetType == Boolean.class
-		    || targetType == Integer.class || targetType == Long.class)
-			return eqnReturnType == Double.class || eqnReturnType == Long.class
-			       || eqnReturnType == Boolean.class;
-		else if (targetType == String.class)
+		if (targetType == String.class)
 			return true; // Everything can be turned into a String!
-		else
-			return false;
+		if (targetType == Boolean.class || Number.class.isAssignableFrom(targetType))
+			return eqType == Boolean.class || Number.class.isAssignableFrom(eqType);
+		
+		return false;
 	}
 
-	static boolean listEquationIsCompatible(final Equation equation, final Class listElementType)
-	{
+	static boolean listEquationIsCompatible(final Equation equation, final Class<?> listElementType) {
 		// TODO: We no longer support strongly typed lists so this always
 		// returns true.  If we ever re-introduce strongly typed lists, we
 		// should modify this to do the appropriate checks.

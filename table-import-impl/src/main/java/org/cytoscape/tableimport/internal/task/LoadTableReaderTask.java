@@ -274,11 +274,11 @@ public class LoadTableReaderTask extends AbstractTask implements CyTableReader, 
 			final Sheet sheet = workbook.getSheet(sourceName);
 			
 			if (sheet != null) {
-				reader = new ExcelAttributeSheetReader(sheet, amp);
+				reader = new ExcelAttributeSheetReader(sheet, amp, serviceRegistrar);
 				loadAnnotation(tm);
 			}
 		} else {
-			reader = new DefaultAttributeTableReader(null, amp, this.isEnd); 
+			reader = new DefaultAttributeTableReader(null, amp, this.isEnd, serviceRegistrar); 
 			loadAnnotation(tm);
 		}
 	}

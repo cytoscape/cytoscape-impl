@@ -76,11 +76,11 @@ public class NetworkTableReader extends AbstractGraphReader implements TextTable
 		this.is = is;
 		this.mapping = mapping;
 		this.startLineNumber = mapping.getStartLineNumber();
-		this.nodeList = new ArrayList<Long>();
-		this.edgeList = new ArrayList<Long>();
+		this.nodeList = new ArrayList<>();
+		this.edgeList = new ArrayList<>();
 		this.commentChar = mapping.getCommentChar();
 		
-		parser = new NetworkLineParser(nodeList, edgeList, mapping, nMap, rootNetwork);
+		parser = new NetworkLineParser(nodeList, edgeList, mapping, nMap, rootNetwork, serviceRegistrar);
 	}
 
 	@Override

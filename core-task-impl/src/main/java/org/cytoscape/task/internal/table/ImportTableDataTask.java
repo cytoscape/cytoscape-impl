@@ -614,13 +614,8 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 
 				String targetColName = source2targetColumnMap.get(col.getName());
 				
-				if (targetColName == null)
-					continue;  // skip this column
-
-				if (col.getType() == List.class)
-					targetRow.set(targetColName, sourceRow.getList(col.getName(), col.getListElementType()));
-				else
-					targetRow.set(targetColName, sourceRow.get(col.getName(), col.getType()));
+				if (targetColName != null)
+					targetRow.set(targetColName, sourceRow.getRaw(col.getName()));
 			}
 		}
 	}
