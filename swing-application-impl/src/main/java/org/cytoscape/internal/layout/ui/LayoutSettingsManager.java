@@ -3,6 +3,9 @@ package org.cytoscape.internal.layout.ui;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.FutureTask;
 
 import org.cytoscape.application.CyUserLog;
 import org.cytoscape.property.AbstractConfigDirPropsReader;
@@ -25,15 +28,22 @@ public class LayoutSettingsManager {
 	
 	private final Map<String,CyProperty<Properties>> registeredPropertyServices = new HashMap<>();
 	
+	private ExecutorService executorService;
 	
 	public LayoutSettingsManager(CyServiceRegistrar serviceRegistrar, TunablePropertySerializerFactory serializerFactory) {
 		this.serviceRegistrar = serviceRegistrar;
 		this.serializerFactory = serializerFactory;
+		this.executorService = Executors.newCachedThreadPool(); // consumes no resources after all layouts have been registered
 	}
 	
 
 	public void addLayout(final CyLayoutAlgorithm layout, Map<?,?> props) {
-		restoreLayoutContext(layout);
+		executorService.execute(new Runnable() {
+			@Override
+			public void run() {
+				restoreLayoutContext(layout);
+			}
+		}); 
     }
     
     public void removeLayout(final CyLayoutAlgorithm layout, Map<?,?> props) {
