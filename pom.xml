@@ -48,6 +48,8 @@
 		<module>model-impl</module>
 		<module>network-analyzer-impl</module>
 		<module>network-merge-impl</module>
+		<module>opencl-cycl-impl</module>
+		<module>opencl-layout-impl</module>
 		<module>app-impl</module>
 		<module>presentation-impl</module>
 		<module>property-impl</module>
