@@ -8,12 +8,10 @@ import org.cytoscape.application.events.SetCurrentNetworkViewEvent;
 import org.cytoscape.application.events.SetCurrentNetworkViewListener;
 import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.application.swing.CySwingApplication;
-import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.DynamicTaskFactoryProvisioner;
 import org.cytoscape.view.layout.CyLayoutAlgorithm;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.model.CyNetworkViewManager;
-import org.cytoscape.work.properties.TunablePropertySerializerFactory;
 import org.cytoscape.work.swing.PanelTaskManager;
 /*
  * #%L
@@ -50,8 +48,7 @@ public class SettingsAction extends AbstractCyAction implements SetCurrentNetwor
 			final CyLayoutAlgorithmManager cyl,
 			final CySwingApplication desk,
 			final CyApplicationManager appMgr,
-			final CyServiceRegistrar serviceRegistrar,
-			final TunablePropertySerializerFactory serializerFactory,
+			final LayoutSettingsManager layoutSettingsMgr,
 			final CyNetworkViewManager networkViewManager,
 			final PanelTaskManager tm,
 			final DynamicTaskFactoryProvisioner factoryProvisioner
@@ -59,8 +56,7 @@ public class SettingsAction extends AbstractCyAction implements SetCurrentNetwor
 		super("Settings...", appMgr, "networkAndView", networkViewManager);
 		setPreferredMenu("Layout");
 		setMenuGravity(3.0f);
-		settingsDialog = new LayoutSettingsDialog(cyl, desk, appMgr, serviceRegistrar, serializerFactory, tm,
-				factoryProvisioner);
+		settingsDialog = new LayoutSettingsDialog(cyl, desk, appMgr, layoutSettingsMgr, tm, factoryProvisioner);
 	}
 
 	@Override

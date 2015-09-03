@@ -73,6 +73,7 @@ import org.cytoscape.internal.dialogs.BookmarkDialogFactoryImpl;
 import org.cytoscape.internal.dialogs.PreferencesDialogFactoryImpl;
 import org.cytoscape.internal.io.SessionIO;
 import org.cytoscape.internal.layout.ui.LayoutMenuPopulator;
+import org.cytoscape.internal.layout.ui.LayoutSettingsManager;
 import org.cytoscape.internal.layout.ui.SettingsAction;
 import org.cytoscape.internal.select.RowViewTracker;
 import org.cytoscape.internal.select.RowsSetViewUpdater;
@@ -278,10 +279,11 @@ public class CyActivator extends AbstractCyActivator {
 		                                                                           cyServiceRegistrarServiceRef,
 		                                                                           dynamicTaskFactoryProvisionerServiceRef);
 
+		LayoutSettingsManager layoutSettingsManager = new LayoutSettingsManager(cyServiceRegistrarServiceRef, tunablePropertySerializerFactoryRef);
+		
 		SettingsAction settingsAction = new SettingsAction(cyLayoutsServiceRef, cytoscapeDesktop,
 		                                                   cyApplicationManagerServiceRef, 
-		                                                   cyServiceRegistrarServiceRef,
-		                                                   tunablePropertySerializerFactoryRef,
+		                                                   layoutSettingsManager,
 		                                                   cyNetworkViewManagerServiceRef,
 		                                                   panelTaskManagerServiceRef,
 		                                                   dynamicTaskFactoryProvisionerServiceRef);
@@ -440,6 +442,7 @@ public class CyActivator extends AbstractCyActivator {
 		                        NetworkViewCollectionTaskFactory.class);
 		registerServiceListener(bc, cytoscapeMenuPopulator, "addTableTaskFactory",
 		                        "removeTableTaskFactory", TableTaskFactory.class);
+		registerServiceListener(bc, layoutSettingsManager, "addLayout", "removeLayout", CyLayoutAlgorithm.class);
 		registerServiceListener(bc, settingsAction, "addLayout", "removeLayout", CyLayoutAlgorithm.class);
 		
 		// For Network Panel context menu

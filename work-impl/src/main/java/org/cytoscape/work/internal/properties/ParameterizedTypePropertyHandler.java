@@ -64,7 +64,7 @@ public abstract class ParameterizedTypePropertyHandler<T> extends AbstractTunabl
 		try {
 			return (T) getValue();
 		} catch (IllegalAccessException | InvocationTargetException e) {
-			throw new IllegalArgumentException("Bad object", e);
+			throw new IllegalArgumentException("Could not get value for tunable '" + getQualifiedName() + "'", e);
 		}
 	}
 	

@@ -40,12 +40,9 @@ import java.awt.event.WindowEvent;
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -73,9 +70,6 @@ import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.property.AbstractConfigDirPropsReader;
-import org.cytoscape.property.CyProperty;
-import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.DynamicTaskFactoryProvisioner;
 import org.cytoscape.task.NetworkViewTaskFactory;
 import org.cytoscape.util.swing.LookAndFeelUtil;
@@ -87,8 +81,6 @@ import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.Tunable;
-import org.cytoscape.work.properties.TunablePropertySerializer;
-import org.cytoscape.work.properties.TunablePropertySerializerFactory;
 import org.cytoscape.work.swing.PanelTaskManager;
 import org.cytoscape.work.util.ListSingleSelection;
 
@@ -120,8 +112,7 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 	private CyLayoutAlgorithmManager layoutAlgorithmMgr;
 	private CySwingApplication swingApp;
 	private CyApplicationManager appMgr;
-	private CyServiceRegistrar serviceRegistrar;
-	private TunablePropertySerializerFactory serializerFactory;
+	private LayoutSettingsManager layoutSettingsMgr;
 	private PanelTaskManager taskMgr;
 	private DynamicTaskFactoryProvisioner factoryProvisioner;
 	private LayoutAttributeTunable layoutAttrTunable;
@@ -130,9 +121,7 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 	private boolean initialized;
 	private boolean initializing;
 	
-	private Set<CyLayoutAlgorithm> tunablesRestored = new HashSet<>();
 	private Set<CyLayoutAlgorithm> tunablesToSave = new HashSet<>();
-	private Map<String,CyProperty<Properties>> registeredPropertyServices = new HashMap<>();
 	
 	private static final String UNWEIGHTED = "(none)";
 
@@ -142,8 +131,7 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 	public LayoutSettingsDialog(final CyLayoutAlgorithmManager cyLayoutAlgorithmManager, 
 	                            final CySwingApplication desktop,
 	                            final CyApplicationManager appMgr,
-	                            final CyServiceRegistrar serviceRegistrar,
-	                            final TunablePropertySerializerFactory serializerFactory,
+	                            final LayoutSettingsManager layoutSettingsMgr,
 	                            final PanelTaskManager taskManager,
 	                            DynamicTaskFactoryProvisioner factoryProvisioner) {
 		super(desktop.getJFrame(), "Layout Settings", false);
@@ -151,8 +139,7 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 		this.layoutAlgorithmMgr = cyLayoutAlgorithmManager;
 		this.swingApp = desktop;
 		this.appMgr = appMgr;
-		this.serviceRegistrar = serviceRegistrar;
-		this.serializerFactory = serializerFactory;
+		this.layoutSettingsMgr = layoutSettingsMgr;
 		this.taskMgr = taskManager;
 		this.factoryProvisioner = factoryProvisioner;
 		
@@ -445,7 +432,8 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 					if (o instanceof CyLayoutAlgorithm) {
 						currentLayout = (CyLayoutAlgorithm) o;
 						//Checking if the context has already been charged, if so there is no need to do it again
-						final Object context = restoreLayoutContext(currentLayout);
+						final Object context = currentLayout.getDefaultLayoutContext();
+						tunablesToSave.add(currentLayout);
 
 						final TaskFactory provisioner = factoryProvisioner.createFor(wrapWithContext(currentLayout, context));
 						final JPanel tunablePnl = taskMgr.getConfiguration(provisioner, context);
@@ -643,66 +631,13 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 		}
 	}
 	
-	private Object restoreLayoutContext(CyLayoutAlgorithm layout) {
-		Object layoutContext = layout.getDefaultLayoutContext();
-		
-		if(!tunablesRestored.contains(layout)) {
-	        CyProperty<Properties> cyProperty = getPropertyService(layout);
-			Properties propsBefore = cyProperty.getProperties();
-	        if(!propsBefore.isEmpty()) {
-	            // use the Properties to restore the values of the Tunable fields
-	        	TunablePropertySerializer serializer = serializerFactory.createSerializer();
-	            serializer.setTunables(layoutContext, propsBefore);
-	        }
-			tunablesRestored.add(layout);
-		}
-		
-		tunablesToSave.add(layout);
-		return layoutContext;
-	}
-	
 	
 	private void saveLayoutContexts() {
 		for(CyLayoutAlgorithm layout : tunablesToSave) {
-        	Object layoutContext = layout.getDefaultLayoutContext();
-        	taskMgr.validateAndApplyTunables(layoutContext);
-        	
-        	TunablePropertySerializer serializer = serializerFactory.createSerializer();
-        	Properties layoutProps = serializer.toProperties(layoutContext);
-        	
-        	// No need to save empty props
-        	if(!layoutProps.isEmpty()) {
-	        	CyProperty<Properties> cyProperty = getPropertyService(layout);
-		        cyProperty.getProperties().clear();
-		        cyProperty.getProperties().putAll(layoutProps);	
-        	}
+        	layoutSettingsMgr.saveLayoutContext(taskMgr, layout);
 		}
 		tunablesToSave.clear();
 	}
-	
-	
-	private CyProperty<Properties> getPropertyService(CyLayoutAlgorithm layout) {
-		CyProperty<Properties> service = registeredPropertyServices.get(layout.getName());
-		if(service == null) {
-			service = PropsReader.forLayout(layout);
-			Properties serviceProps = new Properties();
-			serviceProps.setProperty("cyPropertyName", service.getName());
-			serviceRegistrar.registerAllServices(service, serviceProps);
-			registeredPropertyServices.put(layout.getName(), service);
-		}
-		return service;
-	}
-	
-	
-	private static class PropsReader extends AbstractConfigDirPropsReader {
-        public PropsReader(String name, String fileName) {
-            super(name, fileName, SavePolicy.CONFIG_DIR);
-        }
-        public static PropsReader forLayout(CyLayoutAlgorithm layout) {
-        	String name = "layout." + layout.getName();
-        	return new PropsReader(name, name + ".props");
-        }
-    }
 	
 	
 	public static class SelectedTunable {
