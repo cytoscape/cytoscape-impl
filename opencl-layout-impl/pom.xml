@@ -116,7 +116,7 @@
 
 		<dependency>
 			<groupId>org.cytoscape</groupId>
-			<artifactId>opencl-cycl</artifactId>
+			<artifactId>opencl-cycl-impl</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 	</dependencies>
