@@ -26,16 +26,16 @@ package org.cytoscape.work.internal.task;
 
 
 import java.awt.Window;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.concurrent.ExecutorService;
 
 import javax.swing.SwingUtilities;
 
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeEvent;
-
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskMonitor;
-
+import org.cytoscape.work.internal.tunables.utils.GUIDefaults;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,6 +54,7 @@ class SwingTaskMonitor implements TaskMonitor {
 	final private Window parent;
 
 	final private TaskHistory.History history;
+	final private CyServiceRegistrar serviceRegistrar;
 
 	private volatile boolean cancelled;
 	private volatile TaskDialog dialog;
@@ -83,10 +84,16 @@ class SwingTaskMonitor implements TaskMonitor {
  	 */
 	Logger thisLog = null;
 
-	public SwingTaskMonitor(final ExecutorService cancelExecutorService, final Window parent, final TaskHistory.History history) {
+	public SwingTaskMonitor(
+			final ExecutorService cancelExecutorService,
+			final Window parent,
+			final TaskHistory.History history,
+			final CyServiceRegistrar serviceRegistrar
+	) {
 		this.cancelExecutorService = cancelExecutorService;
 		this.parent = parent;
 		this.history = history;
+		this.serviceRegistrar = serviceRegistrar;
 		this.thisLog = LoggerFactory.getLogger(LOG_PREFIX);
 	}
 
@@ -116,7 +123,7 @@ class SwingTaskMonitor implements TaskMonitor {
 			if (dialog != null)
 				return;
 
-			dialog = new TaskDialog(parent);
+			dialog = new TaskDialog(parent, serviceRegistrar);
 			dialog.addPropertyChangeListener(TaskDialog.CLOSE_EVENT, new PropertyChangeListener() {
 				public void propertyChange(PropertyChangeEvent e) {
 					close();
@@ -137,11 +144,14 @@ class SwingTaskMonitor implements TaskMonitor {
 
 			if (exception == null) {
 				if (statusMessage != null) {
-					if (statusMessageLevel == null) {
-						dialog.setStatus(null, statusMessage);
-					} else {
-						dialog.setStatus(statusMessageLevel.name().toLowerCase(), statusMessage);
-					}
+					if (statusMessageLevel == null)
+						dialog.setStatus(null, null, statusMessage);
+					else
+						dialog.setStatus(
+								GUIDefaults.getIconText(statusMessageLevel),
+								GUIDefaults.getForeground(statusMessageLevel),
+								statusMessage
+						);
 				}
 				if (progress != 0)
 					dialog.setPercentCompleted((float) progress);
@@ -320,8 +330,14 @@ class SwingTaskMonitor implements TaskMonitor {
 		}
 		this.statusMessage = statusMessage;
 		this.statusMessageLevel = level;
+		
 		if (dialog != null)
-			dialog.setStatus(statusMessageLevel.name().toLowerCase(), statusMessage);
+			dialog.setStatus(
+					GUIDefaults.getIconText(statusMessageLevel),
+					GUIDefaults.getForeground(statusMessageLevel),
+					statusMessage
+			);
+		
 		history.addMessage(level, statusMessage);
 	}
 

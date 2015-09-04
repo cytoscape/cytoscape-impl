@@ -1,25 +1,25 @@
 package org.cytoscape.work.internal.task;
 
-import javax.swing.JButton;
-import javax.swing.JDialog;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JEditorPane;
-import javax.swing.SwingUtilities;
-import javax.swing.text.html.HTMLEditorKit;
-import javax.swing.text.html.StyleSheet;
-
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridBagLayout;
-
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
+import javax.swing.JButton;
+import javax.swing.JDialog;
+import javax.swing.JEditorPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.SwingUtilities;
+import javax.swing.text.html.HTMLEditorKit;
+import javax.swing.text.html.StyleSheet;
+
 import org.cytoscape.work.FinishStatus;
 import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.internal.tunables.utils.GUIDefaults;
 
 public class TaskHistoryWindow {
   final TaskHistory taskHistory;
@@ -99,7 +99,7 @@ public class TaskHistoryWindow {
     }
     if (name == null)
       return null;
-    return TaskDialog.ICON_URLS.get(name).toString();
+    return GUIDefaults.ICON_URLS.get(name).toString();
   }
 
   private static String getIconURL(final TaskMonitor.Level level) {
@@ -113,7 +113,7 @@ public class TaskHistoryWindow {
     }
     if (name == null)
       return null;
-    return TaskDialog.ICON_URLS.get(name).toString();
+    return GUIDefaults.ICON_URLS.get(name).toString();
   }
 
   private void generateMessage(final TaskHistory.Message message, final StringBuffer buffer) {

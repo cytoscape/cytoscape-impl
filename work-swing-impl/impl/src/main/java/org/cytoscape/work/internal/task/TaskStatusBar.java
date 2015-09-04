@@ -15,11 +15,13 @@ import javax.swing.Timer;
 
 import org.cytoscape.work.FinishStatus;
 import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.internal.tunables.utils.GUIDefaults;
 import org.cytoscape.work.swing.TaskStatusPanelFactory;
 
 /**
  * Manages the task's status bar's UI at the bottom of the Cytoscape desktop.
  */
+@SuppressWarnings("serial")
 public class TaskStatusBar extends JPanel implements TaskStatusPanelFactory {
 
 	public static final String TASK_HISTORY_CLICK = "task-history-click";
@@ -97,7 +99,7 @@ public class TaskStatusBar extends JPanel implements TaskStatusPanelFactory {
 	public void setTitle(final String type, final String title) {
 		Icon icon = null;
 		if (type != null) {
-			icon = TaskDialog.ICONS.get(type);
+			icon = GUIDefaults.ICONS.get(type);
 			// set button icon based on error/warning status
 			if((type.equals("error") && showBtn.getIcon() != icon || 
 					type.equals("warn") && showBtn.getIcon() == defaultIcon) ) {

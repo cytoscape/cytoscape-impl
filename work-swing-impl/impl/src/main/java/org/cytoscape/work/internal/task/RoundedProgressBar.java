@@ -1,26 +1,41 @@
 package org.cytoscape.work.internal.task;
 
-import javax.swing.JComponent;
-import javax.swing.Timer;
-import java.awt.Graphics2D;
-import java.awt.Graphics;
-import java.awt.Insets;
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.geom.RoundRectangle2D;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Insets;
 import java.awt.RenderingHints;
-import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.geom.RoundRectangle2D;
 
+import javax.swing.JComponent;
+import javax.swing.Timer;
+import javax.swing.UIManager;
+
+import org.cytoscape.util.swing.LookAndFeelUtil;
+
+@SuppressWarnings("serial")
 public class RoundedProgressBar extends JComponent {
+	
 	protected static final float CORNER_RADIUS = 5.2f;
 	protected static final float HEIGHT = 6.0f;
-	protected static final Color FG_COLOR = new Color(0x527057);
-	protected static final Color BK_COLOR = new Color(0xc7c7c7);
-	protected static final Color INDET_FG_COLOR = FG_COLOR;
 	protected static final float INDET_BAR_WIDTH = 100.0f;
 	protected static final int INDET_UPDATE_MS = 50;
 	protected static final double INDET_UPDATE_INCREMENT = 0.015;
+	
+	boolean indet;
+	Timer indetUpdate;
+	double indetPosition;
+	float progress;
+	
+	Insets insets = new Insets(0, 0, 0, 0);
+	RoundRectangle2D.Float bkRect = new RoundRectangle2D.Float();
+	RoundRectangle2D.Float fgRect = new RoundRectangle2D.Float();
+	
+	final Color bgColor = UIManager.getColor("Separator.foreground");
+	final Color fgColor = LookAndFeelUtil.GO_COLOR;
 
 	public RoundedProgressBar() {
 		final int h = (int) Math.ceil(HEIGHT);
@@ -28,11 +43,6 @@ public class RoundedProgressBar extends JComponent {
 		super.setMaximumSize(new Dimension(10000, h));
 		super.setPreferredSize(new Dimension(250, h));
 	}
-
-	boolean indet = false;
-	Timer indetUpdate = null;
-	double indetPosition = 0.0;
-	float progress = 0.0f;
 
 	public void setProgress(final float progress) {
 		indet = false;
@@ -70,10 +80,7 @@ public class RoundedProgressBar extends JComponent {
 		return (indet ? null : progress);
 	}
 
-	Insets insets = new Insets(0, 0, 0, 0);
-	RoundRectangle2D.Float bkRect = new RoundRectangle2D.Float();
-	RoundRectangle2D.Float fgRect = new RoundRectangle2D.Float();
-
+	@Override
 	public void paintComponent(Graphics g) {
 		insets = super.getInsets(insets);
 		final Graphics2D g2d = (Graphics2D) g;
@@ -85,17 +92,17 @@ public class RoundedProgressBar extends JComponent {
 		final float h = HEIGHT;
 
 		bkRect.setRoundRect(x, y, w, h, CORNER_RADIUS, CORNER_RADIUS);
-		g2d.setColor(BK_COLOR);
+		g2d.setColor(bgColor);
 		g2d.fill(bkRect);
 
 		if (indet) {
 			final float nw = (INDET_BAR_WIDTH * 2.0 > w) ? (w * 0.2f) : INDET_BAR_WIDTH;
 			final float nx = (float) (x + (w - nw) * indetPositionFunc(indetPosition));
 			fgRect.setRoundRect(nx, y, nw, h, CORNER_RADIUS, CORNER_RADIUS);
-			g2d.setColor(INDET_FG_COLOR);
+			g2d.setColor(fgColor);
 		} else {
 			fgRect.setRoundRect(x, y, w * progress, h, CORNER_RADIUS, CORNER_RADIUS);
-			g2d.setColor(FG_COLOR);
+			g2d.setColor(fgColor);
 		}
 		g2d.fill(fgRect);
 	}
@@ -114,6 +121,8 @@ public class RoundedProgressBar extends JComponent {
 	}
 
 	class IndetUpdate implements ActionListener {
+		
+		@Override
 		public void actionPerformed(ActionEvent e) {
 			indetPosition += INDET_UPDATE_INCREMENT;
 			if (indetPosition > 1.0)

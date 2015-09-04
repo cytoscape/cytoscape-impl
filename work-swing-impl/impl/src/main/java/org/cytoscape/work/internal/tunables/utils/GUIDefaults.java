@@ -3,11 +3,17 @@ package org.cytoscape.work.internal.tunables.utils;
 import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
 
+import java.awt.Color;
 import java.awt.Component;
+import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.swing.BorderFactory;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -15,6 +21,9 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.ToolTipManager;
 
+import org.cytoscape.util.swing.IconManager;
+import org.cytoscape.util.swing.LookAndFeelUtil;
+import org.cytoscape.work.TaskMonitor.Level;
 import org.cytoscape.work.swing.AbstractGUITunableHandler.TunableFieldPanel;
 
 /*
@@ -49,6 +58,45 @@ import org.cytoscape.work.swing.AbstractGUITunableHandler.TunableFieldPanel;
 public final class GUIDefaults {
 
 	public static final int TEXT_BOX_WIDTH = 150;
+	
+	public static final String ICON_INFO = IconManager.ICON_INFO_CIRCLE;
+	public static final String ICON_WARN = IconManager.ICON_EXCLAMATION_TRIANGLE;
+	public static final String ICON_ERROR = IconManager.ICON_MINUS_CIRCLE;
+	public static final String ICON_CANCEL = IconManager.ICON_TIMES;
+	
+	public static final Map<String, URL> ICON_URLS = new HashMap<>();
+	static {
+		ICON_URLS.put("info", GUIDefaults.class.getResource("/images/info-icon.png"));
+		ICON_URLS.put("warn", GUIDefaults.class.getResource("/images/warn-icon.png"));
+		ICON_URLS.put("error", GUIDefaults.class.getResource("/images/error-icon.png"));
+		ICON_URLS.put("finished", GUIDefaults.class.getResource("/images/finished-icon.png"));
+		ICON_URLS.put("cancelled", GUIDefaults.class.getResource("/images/cancelled-icon.png"));
+	}
+
+	public static final Map<String, Icon> ICONS = new HashMap<>();
+	static {
+		for (final Map.Entry<String, URL> icon : ICON_URLS.entrySet()) {
+			ICONS.put(icon.getKey(), new ImageIcon(icon.getValue()));
+		}
+	}
+	
+	public static String getIconText(final Level level) {
+		switch (level) {
+			case INFO:  return ICON_INFO;
+			case WARN:  return ICON_WARN;
+			case ERROR: return ICON_ERROR;
+			default:    return null;
+		}
+	}
+	
+	public static Color getForeground(final Level level) {
+		switch (level) {
+			case INFO:  return LookAndFeelUtil.INFO_COLOR;
+			case WARN:  return LookAndFeelUtil.WARN_COLOR;
+			case ERROR: return LookAndFeelUtil.ERROR_COLOR;
+			default:    return null;
+		}
+	}
 	
 	public static void updateFieldPanel(final JPanel p, final Component control, final boolean horizontalForm) {
 		updateFieldPanel(p, new JLabel(" "), control, horizontalForm);

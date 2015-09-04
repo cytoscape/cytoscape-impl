@@ -28,25 +28,21 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Properties;
 
-import javax.swing.SwingUtilities;
-
-import org.ops4j.pax.logging.spi.PaxAppender;
-
 import org.cytoscape.io.datasource.DataSourceManager;
 import org.cytoscape.io.read.InputStreamTaskFactory;
 import org.cytoscape.io.write.CyWriterFactory;
-import org.cytoscape.property.CyProperty;
 import org.cytoscape.service.util.AbstractCyActivator;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.FileUtil;
 import org.cytoscape.work.TaskManager;
 import org.cytoscape.work.TunableHandlerFactory;
 import org.cytoscape.work.TunableRecorder;
+import org.cytoscape.work.internal.task.CyUserLogAppender;
 import org.cytoscape.work.internal.task.JDialogTaskManager;
 import org.cytoscape.work.internal.task.JPanelTaskManager;
 import org.cytoscape.work.internal.task.TaskHistory;
 import org.cytoscape.work.internal.task.TaskHistoryWindow;
 import org.cytoscape.work.internal.task.TaskStatusBar;
-import org.cytoscape.work.internal.task.CyUserLogAppender;
 import org.cytoscape.work.internal.tunables.BooleanHandler;
 import org.cytoscape.work.internal.tunables.BoundedHandler;
 import org.cytoscape.work.internal.tunables.DoubleHandler;
@@ -74,17 +70,15 @@ import org.cytoscape.work.util.BoundedInteger;
 import org.cytoscape.work.util.BoundedLong;
 import org.cytoscape.work.util.ListMultipleSelection;
 import org.cytoscape.work.util.ListSingleSelection;
+import org.ops4j.pax.logging.spi.PaxAppender;
 import org.osgi.framework.BundleContext;
 
 
 public class CyActivator extends AbstractCyActivator {
-	public CyActivator() {
-		super();
-	}
-
-
+	
+	@Override
 	public void start(BundleContext bc) {
-		CyProperty<Properties> cyPropertyServiceRef = getService(bc, CyProperty.class, "(cyPropertyName=cytoscape3.props)");
+		CyServiceRegistrar serviceRegistrar = getService(bc, CyServiceRegistrar.class);
 		DataSourceManager dsManager = getService(bc, DataSourceManager.class);
 
 		FileUtil fileUtilRef = getService(bc,FileUtil.class);
@@ -93,7 +87,7 @@ public class CyActivator extends AbstractCyActivator {
 		JDialogTunableMutator jDialogTunableMutator = new JDialogTunableMutator();
 		JPanelTunableMutator jPanelTunableMutator = new JPanelTunableMutator();
 
-		TaskStatusBar taskStatusBar = new TaskStatusBar();
+		final TaskStatusBar taskStatusBar = new TaskStatusBar();
 		final TaskHistory taskHistory = new TaskHistory();
 		taskStatusBar.addPropertyChangeListener(TaskStatusBar.TASK_HISTORY_CLICK, new PropertyChangeListener() {
 			TaskHistoryWindow window = null;
@@ -109,7 +103,7 @@ public class CyActivator extends AbstractCyActivator {
     registerService(bc, new CyUserLogAppender(taskStatusBar, taskHistory), PaxAppender.class,
         ezProps("org.ops4j.pax.logging.appender.name", "CyUserLog"));
 
-		JDialogTaskManager jDialogTaskManager = new JDialogTaskManager(jDialogTunableMutator, cyPropertyServiceRef, taskStatusBar, taskHistory);
+		JDialogTaskManager jDialogTaskManager = new JDialogTaskManager(jDialogTunableMutator, taskStatusBar, taskHistory, serviceRegistrar);
 		PanelTaskManager jPanelTaskManager = new JPanelTaskManager(jPanelTunableMutator, jDialogTaskManager);
 
 		SupportedFileTypesManager supportedFileTypesManager = new SupportedFileTypesManager();
