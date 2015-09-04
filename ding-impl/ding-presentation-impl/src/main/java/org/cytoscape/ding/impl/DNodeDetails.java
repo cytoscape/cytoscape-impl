@@ -764,7 +764,15 @@ public class DNodeDetails extends NodeDetails {
 	}
 
 	void overrideLabelTextAnchor(final CyNode node, final int inx, final int anchor) {
-		if (convertG2ND(anchor) == super.getLabelTextAnchor(node, inx))
+		// Three possibilities:
+		//  1) We have no default and the anchor is the same as in NodeDetails
+		//  2) We have a default and the anchor is the same as the default
+		//  3) The anchor is different altogether
+		if (m_labelTextAnchorDefault == null &&
+				convertG2ND(anchor) == super.getLabelTextAnchor(node, inx))
+			m_labelTextAnchors.remove(node);
+		else if (m_labelTextAnchorDefault != null &&
+		         convertG2ND(anchor) == m_labelTextAnchorDefault.byteValue())
 			m_labelTextAnchors.remove(node);
 		else {
 			m_labelTextAnchors.put(node, Integer.valueOf(anchor));
@@ -798,7 +806,15 @@ public class DNodeDetails extends NodeDetails {
 	}
 
 	void overrideLabelNodeAnchor(final CyNode node, final int inx, final int anchor) {
-		if (convertG2ND(anchor) == super.getLabelNodeAnchor(node, inx))
+		// Three possibilities:
+		//  1) We have no default and the anchor is the same as in NodeDetails
+		//  2) We have a default and the anchor is the same as the default
+		//  3) The anchor is different altogether
+		if (m_labelNodeAnchorDefault == null &&
+				convertG2ND(anchor) == super.getLabelNodeAnchor(node, inx))
+			m_labelNodeAnchors.remove(node);
+		else if (m_labelNodeAnchorDefault != null &&
+		         convertG2ND(anchor) == m_labelNodeAnchorDefault.byteValue())
 			m_labelNodeAnchors.remove(node);
 		else {
 			m_labelNodeAnchors.put(node, Integer.valueOf(anchor));
@@ -831,7 +847,15 @@ public class DNodeDetails extends NodeDetails {
 	}
 
 	void overrideLabelOffsetVectorX(final CyNode node, final int inx, final double x) {
-		if (((float) x) == super.getLabelOffsetVectorX(node, inx))
+		// Three possibilities:
+		//  1) We have no default and the offset is the same as in NodeDetails
+		//  2) We have a default and the offset is the same as the default
+		//  3) The offset is different altogether
+		if (m_labelOffsetVectorXDefault == null &&
+		    ((float) x) == super.getLabelOffsetVectorX(node, inx))
+			m_labelOffsetXs.remove(node);
+		else if (m_labelOffsetVectorXDefault != null &&
+		         ((float) x) == m_labelOffsetVectorXDefault.floatValue())
 			m_labelOffsetXs.remove(node);
 		else {
 			m_labelOffsetXs.put(node, new Double(x));
@@ -864,7 +888,15 @@ public class DNodeDetails extends NodeDetails {
 	}
 
 	void overrideLabelOffsetVectorY(final CyNode node, final int inx, final double y) {
-		if (((float) y) == super.getLabelOffsetVectorY(node, inx))
+		// Three possibilities:
+		//  1) We have no default and the offset is the same as in NodeDetails
+		//  2) We have a default and the offset is the same as the default
+		//  3) The offset is different altogether
+		if (m_labelOffsetVectorYDefault == null &&
+		    ((float) y) == super.getLabelOffsetVectorY(node, inx))
+			m_labelOffsetXs.remove(node);
+		else if (m_labelOffsetVectorYDefault != null &&
+		         ((float) y) == m_labelOffsetVectorYDefault.floatValue())
 			m_labelOffsetYs.remove(node);
 		else {
 			m_labelOffsetYs.put(node, new Double(y));
@@ -898,7 +930,15 @@ public class DNodeDetails extends NodeDetails {
 	}
 
 	void overrideLabelJustify(final CyNode node, final int inx, final int justify) {
-		if (convertG2ND(justify) == super.getLabelJustify(node, inx))
+		// Three possibilities:
+		//  1) We have no default and the offset is the same as in NodeDetails
+		//  2) We have a default and the offset is the same as the default
+		//  3) The offset is different altogether
+		if (m_labelJustifyDefault == null &&
+		    convertG2ND(justify) == super.getLabelJustify(node, inx))
+			m_labelJustifys.remove(node);
+		else if (m_labelJustifyDefault != null &&
+		    convertG2ND(justify) == m_labelJustifyDefault)
 			m_labelJustifys.remove(node);
 		else {
 			m_labelJustifys.put(node, Integer.valueOf(justify));

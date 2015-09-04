@@ -206,6 +206,9 @@ final class NodeViewDefaultSupport extends AbstractViewDefaultSupport {
 			nodeDetails.setLabelJustifyDefault(labelPosition.getJustify().getConversionConstant());
 			nodeDetails.setLabelOffsetVectorXDefault(labelPosition.getOffsetX());
 			nodeDetails.setLabelOffsetVectorYDefault(labelPosition.getOffsetY());
+			// We need to do this so that getVisualProperty calls that fall through to 
+			// the default return this value.
+			nodeDetails.setDefaultValue(DVisualLexicon.NODE_LABEL_POSITION, labelPosition);
 		}
 	}
 	
