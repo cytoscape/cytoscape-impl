@@ -134,7 +134,7 @@ public class CyCLDevice
 		prefWidthFloat = device.getInfoInt(CL10.CL_DEVICE_PREFERRED_VECTOR_WIDTH_FLOAT);
 		prefWidthDouble = device.getInfoInt(CL10.CL_DEVICE_PREFERRED_VECTOR_WIDTH_DOUBLE);
 		
-		// Nvidia has 32 threads per warp, AMD has 64
+		// Nvidia and Intel have 32 threads per warp, AMD has 64
 		if(type == DeviceTypes.GPU)
     	{
     		if(platformName.toLowerCase().contains("amd"))
@@ -152,10 +152,33 @@ public class CyCLDevice
     			bestBlockSize = 128;
     			bestWarpSize = 32;
     		}
+            else if(platformName.toLowerCase().contains("apple"))   // These guys are special.
+            {
+                String lowName = name.toLowerCase();
+                
+                if(lowName.contains("radeon") || lowName.contains("fire"))
+                {
+                    bestBlockSize = 128;
+                    bestWarpSize = 64;
+                }
+                else if(lowName.contains("geforce") ||
+                        lowName.contains("gtx") ||
+                        lowName.contains("quadro") ||
+                        lowName.contains("tesla"))
+                {
+                    bestBlockSize = 192;
+                    bestWarpSize = 32;
+                }
+                else    // Probably Intel.
+                {
+                    bestBlockSize = 128;
+                    bestWarpSize = 32;
+                }
+            }
     		else	// A new player has entered the GPU market!
     		{
-    			bestBlockSize = 1;
-    			bestWarpSize = 1;
+    			bestBlockSize = 32;
+    			bestWarpSize = 32;
     		}
     	}
 		else	// CPU

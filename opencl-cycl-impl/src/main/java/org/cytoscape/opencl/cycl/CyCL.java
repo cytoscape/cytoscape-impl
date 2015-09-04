@@ -39,55 +39,6 @@ public class CyCL
 	{		
 		if (isInitialized)
 			return true;
-		
-		String osArch = System.getProperty("os.arch");
-        String osName = System.getProperty("os.name").toLowerCase();
-
-        // Load libraries for current OS and architecture
-        if (osName.startsWith("win")) 
-        {
-            if (osArch.equalsIgnoreCase("amd64")) 
-            {
-                System.loadLibrary("jinput-raw_64");
-                System.loadLibrary("jinput-dx8_64");
-                System.loadLibrary("lwjgl64");
-                System.loadLibrary("OpenAL64");
-            } 
-            else if (osArch.equalsIgnoreCase("i386")) 
-            {
-                System.loadLibrary("jinput-dx8");
-                System.loadLibrary("jinput-raw");
-                System.loadLibrary("lwjgl");
-                System.loadLibrary("OpenAL32");
-            }
-            else
-            	return false;
-        } 
-        else if (osName.startsWith("linux")) 
-        {
-            if (osArch.equalsIgnoreCase("amd64")) 
-            {
-                System.loadLibrary("libjinput-linux64");
-                System.loadLibrary("liblwjgl64");
-                System.loadLibrary("libopenal64");
-            } 
-            else if (osArch.equalsIgnoreCase("i386")) 
-            {
-                System.loadLibrary("libjinput-linux");
-                System.loadLibrary("liblwjgl");
-                System.loadLibrary("libopenal");
-            }
-            else
-            	return false;
-        } 
-        else if (osName.startsWith("mac"))
-        {
-            System.loadLibrary("libjinput-osx");
-            System.loadLibrary("liblwjgl");
-            System.loadLibrary("openal");
-        }
-        else
-        	return false;
 				
 		try
 		{

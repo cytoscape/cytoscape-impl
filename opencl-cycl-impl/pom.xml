@@ -47,10 +47,10 @@
 						<Bundle-Activator>${bundle.namespace}.CyActivator</Bundle-Activator>
 						<Embed-Dependency>lwjgl;scope=compile|runtime</Embed-Dependency>
 						<Import-Package>!sun.misc,!com.apple.eio,!net.java.games.input,!sun.reflect,*</Import-Package>
-						<Bundle-NativeCode>
+                        <Bundle-NativeCode>
 							native/linux/libjinput-linux.so; native/linux/liblwjgl.so; native/linux/libopenal.so; osname=linux; processor=x86,
-							native/linux/libjinput-linux64.so; native/linux/liblwjgl64.so; native/linux/libopenal64.so; osname=linux; processor=x86_64,
-							native/macosx/libjinput-osx.dylib; native/macosx/liblwjgl.dylib; native/macosx/openal.dylib; osname=macosx; processor=x86_64,
+                            native/linux/libjinput-linux64.so; native/linux/liblwjgl64.so; native/linux/libopenal64.so; osname=linux; processor=x86_64,
+                            native/macosx/libjinput-osx.jnilib; native/macosx/liblwjgl.dylib; native/macosx/openal.dylib; osname=macosx; processor=x86; processor=x86_64,
 							native/windows/jinput-dx8.dll; native/windows/jinput-raw.dll; native/windows/lwjgl.dll; native/windows/OpenAL32.dll; osname=win32; processor=x86,
 							native/windows/jinput-raw_64.dll; native/windows/jinput-dx8_64.dll; native/windows/lwjgl64.dll; native/windows/OpenAL64.dll; osname=win32; processor=x86_64,
 							*
