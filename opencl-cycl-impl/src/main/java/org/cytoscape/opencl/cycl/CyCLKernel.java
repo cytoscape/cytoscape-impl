@@ -24,53 +24,57 @@ public class CyCLKernel
 	
 	public void execute(long[] dimsGlobal, long[] dimsLocal, Object... args)
 	{
-		int a = 0;
-		for(Object arg : args)
+		synchronized (CyCL.sync)
 		{
-			if(arg.getClass().equals(CyCLLocalSize.class))
+			int a = 0;
+			for(Object arg : args)
 			{
-				kernel.setArgSize(a++, ((CyCLLocalSize)arg).getSize());
+				if(arg.getClass().equals(CyCLLocalSize.class))
+				{
+					kernel.setArgSize(a++, ((CyCLLocalSize)arg).getSize());
+				}
+				else if(arg.getClass().equals(CyCLBuffer.class))
+				{
+					CL10.clSetKernelArg(kernel, a++, ((CyCLBuffer)arg).getMemObject());
+				}
+				else if(arg.getClass().equals(CLMem.class))
+				{
+					CL10.clSetKernelArg(kernel, a++, ((CLMem)arg));
+				}
+				else
+				{
+					if(arg.getClass().equals(Byte.class))
+						kernel.setArg(a++, (byte)arg);
+					else if(arg.getClass().equals(Short.class))
+						kernel.setArg(a++, (short)arg);
+					else if(arg.getClass().equals(Integer.class))
+						kernel.setArg(a++, (int)arg);
+					else if(arg.getClass().equals(Long.class))
+						kernel.setArg(a++, (long)arg);
+					else if(arg.getClass().equals(Float.class))
+						kernel.setArg(a++, (float)arg);
+					else if(arg.getClass().equals(Double.class))
+						kernel.setArg(a++, (double)arg);
+				}
 			}
-			else if(arg.getClass().equals(CyCLBuffer.class))
+			
+			PointerBuffer bufferGlobal = PointerBuffer.allocateDirect(dimsGlobal.length);
+			for (int i = 0; i < dimsGlobal.length; i++)
+				bufferGlobal.put(i, dimsGlobal[i]);
+			PointerBuffer bufferLocal = null;
+			if(dimsLocal != null)
 			{
-				CL10.clSetKernelArg(kernel, a++, ((CyCLBuffer)arg).getMemObject());
+				bufferLocal = PointerBuffer.allocateDirect(dimsLocal.length);
+				for (int i = 0; i < dimsLocal.length; i++)
+					bufferLocal.put(i, dimsLocal[i]);
 			}
-			else if(arg.getClass().equals(CLMem.class))
-			{
-				CL10.clSetKernelArg(kernel, a++, ((CLMem)arg));
-			}
-			else
-			{
-				if(arg.getClass().equals(Byte.class))
-					kernel.setArg(a++, (byte)arg);
-				else if(arg.getClass().equals(Short.class))
-					kernel.setArg(a++, (short)arg);
-				else if(arg.getClass().equals(Integer.class))
-					kernel.setArg(a++, (int)arg);
-				else if(arg.getClass().equals(Long.class))
-					kernel.setArg(a++, (long)arg);
-				else if(arg.getClass().equals(Float.class))
-					kernel.setArg(a++, (float)arg);
-				else if(arg.getClass().equals(Double.class))
-					kernel.setArg(a++, (double)arg);
-			}
-		}
 		
-		PointerBuffer bufferGlobal = PointerBuffer.allocateDirect(dimsGlobal.length);
-		for (int i = 0; i < dimsGlobal.length; i++)
-			bufferGlobal.put(i, dimsGlobal[i]);
-		PointerBuffer bufferLocal = null;
-		if(dimsLocal != null)
-		{
-			bufferLocal = PointerBuffer.allocateDirect(dimsLocal.length);
-			for (int i = 0; i < dimsLocal.length; i++)
-				bufferLocal.put(i, dimsLocal[i]);
+			try
+			{
+				Util.checkCLError(CL10.clEnqueueNDRangeKernel(context.getQueue(), kernel, dimsGlobal.length, null, bufferGlobal, bufferLocal, null, null));		
+			}
+			catch (Exception e) {}
 		}
-		try
-		{
-			Util.checkCLError(CL10.clEnqueueNDRangeKernel(context.getQueue(), kernel, dimsGlobal.length, null, bufferGlobal, bufferLocal, null, null));		
-		}
-		catch (Exception e) {}
 	}
 	
 	@Override

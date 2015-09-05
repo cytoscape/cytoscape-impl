@@ -16,6 +16,7 @@ import org.lwjgl.opencl.CL;
  */
 public class CyCL 
 {
+	public static Object sync = new Object();
 	private static List<CyCLDevice> devices;
 	private static boolean isInitialized = false;
 	

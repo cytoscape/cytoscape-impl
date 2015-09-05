@@ -87,22 +87,22 @@
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>service-api</artifactId>
-			<version>3.2.0</version>
+			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>swing-application-api</artifactId>
-			<version>3.2.0</version>
+			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>session-api</artifactId>
-			<version>3.2.0</version>
+			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 		    <groupId>org.cytoscape</groupId>
 		    <artifactId>layout-api</artifactId>
-		    <version>3.2.0</version>
+		    <version>${project.version}</version>
 		</dependency>
 
 		<!-- Logging -->
