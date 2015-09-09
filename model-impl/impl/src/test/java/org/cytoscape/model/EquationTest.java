@@ -1,5 +1,7 @@
 package org.cytoscape.model;
 
+import static org.junit.Assert.*;
+
 /*
  * #%L
  * Cytoscape Model Impl (model-impl)
@@ -32,9 +34,6 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.FutureTask;
-
-import static org.junit.Assert.*;
 
 import org.cytoscape.equations.Equation;
 import org.cytoscape.equations.internal.EquationCompilerImpl;
@@ -55,10 +54,17 @@ public class EquationTest {
 	Equation parseEquation(String equation, CyTable context) {
 		Map<String, Class<?>> typeMap = new HashMap<String, Class<?>>();
 		for (CyColumn column : context.getColumns()) {
-			typeMap.put(column.getName(), column.getType());
+			Class<?> type = column.getType();
+			if(type == Integer.class)
+				type = Long.class;
+			typeMap.put(column.getName(), type);
 		}
+		System.out.println("typeMap:" + typeMap);
 		EquationCompilerImpl compiler = new EquationCompilerImpl(parser);
-		assertTrue(compiler.compile(equation, typeMap));
+//		assertTrue(compiler.compile(equation, typeMap));
+		compiler.compile(equation, typeMap);
+		
+		System.out.println(compiler.getLastErrorMsg());
 		return compiler.getEquation();
 	}
 	
@@ -307,15 +313,26 @@ public class EquationTest {
 		assertNull(row2.get("virtual", String.class));
 		assertNull(row3.get("virtual2", String.class));
 	}
+	
+	@Test
+	public void testChainEquationsUsingArithmeticOperators() {
+		CyTableFactory factory = support.getTableFactory();
+		CyTable table = factory.createTable("MyTable2", "SUID", Long.class, true, true);
+		table.createColumn("c1", Integer.class, false);
+		table.createColumn("c2", Integer.class, false);
+		table.createColumn("c3", Integer.class, false);
+		
+		Equation e2 = parseEquation("=$c1 + 1", table);
+		Equation e3 = parseEquation("=$c2 + 1", table);
+		
+		CyRow row = table.getRow(1L);
+		row.set("c1", 1);
+		row.set("c2", e2);
+		row.set("c3", e3);
+		
+		assertEquals(Integer.valueOf(1), row.get("c1", Integer.class));
+		assertEquals(Integer.valueOf(2), row.get("c2", Integer.class));
+		assertEquals(Integer.valueOf(3), row.get("c3", Integer.class));
+	}
 }
-
-
-
-
-
-
-
-
-
-
 

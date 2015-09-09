@@ -864,7 +864,9 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 	}
 
 	Object getValue(Object key, String columnName) {
-		return getValue(key,columnName,null);
+		CyColumn column = getColumn(columnName);
+		Class<?> type = column == null ? null : column.getType();
+		return getValue(key, columnName, type);
 	}
 
 	private final Object getValue(final Object key, final String columnName, final Class<?> type) {
