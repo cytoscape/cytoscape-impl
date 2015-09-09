@@ -28,8 +28,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.FutureTask;
 
-import junit.framework.Assert;
+import static org.junit.Assert.*;
 
 import org.cytoscape.equations.Equation;
 import org.cytoscape.equations.internal.EquationCompilerImpl;
@@ -53,9 +58,10 @@ public class EquationTest {
 			typeMap.put(column.getName(), column.getType());
 		}
 		EquationCompilerImpl compiler = new EquationCompilerImpl(parser);
-		Assert.assertTrue(compiler.compile(equation, typeMap));
+		assertTrue(compiler.compile(equation, typeMap));
 		return compiler.getEquation();
 	}
+	
 	
 	@Test
 	public void testVirtualColumnEquation() {
@@ -82,21 +88,21 @@ public class EquationTest {
 		row3.set("virtual2", parseEquation("=$name", table3));
 		
 		// Equation should be propagated to all tables
-		Assert.assertNotNull(row1.getRaw("real"));
-		Assert.assertNotNull(row2.getRaw("virtual"));
-		Assert.assertNotNull(row3.getRaw("virtual2"));
+		assertNotNull(row1.getRaw("real"));
+		assertNotNull(row2.getRaw("virtual"));
+		assertNotNull(row3.getRaw("virtual2"));
 		
 		// Equation should yield different values depending on context
-		Assert.assertEquals("1", row1.get("real", String.class));
-		Assert.assertEquals("2", row2.get("virtual", String.class));
-		Assert.assertEquals("3", row3.get("virtual2", String.class));
+		assertEquals("1", row1.get("real", String.class));
+		assertEquals("2", row2.get("virtual", String.class));
+		assertEquals("3", row3.get("virtual2", String.class));
 
 		// Overwrite equation with normal attribute.  Both ends of
 		// VirtualColumn should give the same answer.
 		row1.set("real", "other");
-		Assert.assertEquals("other", row1.get("real", String.class));
-		Assert.assertEquals("other", row2.get("virtual", String.class));
-		Assert.assertEquals("other", row3.get("virtual2", String.class));
+		assertEquals("other", row1.get("real", String.class));
+		assertEquals("other", row2.get("virtual", String.class));
+		assertEquals("other", row3.get("virtual2", String.class));
 	}
 	
 	@Test
@@ -133,25 +139,25 @@ public class EquationTest {
 		row3.set("virtual2", parseEquation("=SLIST($name)", table3));
 		
 		// Equation should be propagated to all tables
-		Assert.assertNotNull(row1.getRaw("real"));
-		Assert.assertNotNull(row2.getRaw("virtual"));
-		Assert.assertNotNull(row3.getRaw("virtual2"));
+		assertNotNull(row1.getRaw("real"));
+		assertNotNull(row2.getRaw("virtual"));
+		assertNotNull(row3.getRaw("virtual2"));
 		
 		// Equation should yield different values depending on context
 		List<String> result1 = row1.getList("real", String.class);
-		Assert.assertNotNull(result1);
-		Assert.assertEquals(1, result1.size());
-		Assert.assertEquals("1", result1.get(0));
+		assertNotNull(result1);
+		assertEquals(1, result1.size());
+		assertEquals("1", result1.get(0));
 		
 		List<String> result2 = row2.getList("virtual", String.class);
-		Assert.assertNotNull(result2);
-		Assert.assertEquals(1, result2.size());
-		Assert.assertEquals("2", result2.get(0));
+		assertNotNull(result2);
+		assertEquals(1, result2.size());
+		assertEquals("2", result2.get(0));
 
 		List<String> result3 = row3.getList("virtual2", String.class);
-		Assert.assertNotNull(result3);
-		Assert.assertEquals(1, result3.size());
-		Assert.assertEquals("3", result3.get(0));
+		assertNotNull(result3);
+		assertEquals(1, result3.size());
+		assertEquals("3", result3.get(0));
 
 		// Overwrite equation with normal attribute.  Both ends of
 		// VirtualColumn should give the same answer.
@@ -160,18 +166,156 @@ public class EquationTest {
 		row1.set("real", other);
 		
 		List<String> resultOther1 = row1.getList("real", String.class);
-		Assert.assertNotNull(resultOther1);
-		Assert.assertEquals(1, resultOther1.size());
-		Assert.assertEquals("other", resultOther1.get(0));
+		assertNotNull(resultOther1);
+		assertEquals(1, resultOther1.size());
+		assertEquals("other", resultOther1.get(0));
 
 		List<String> resultOther2 = row2.getList("virtual", String.class);
-		Assert.assertNotNull(resultOther2);
-		Assert.assertEquals(1, resultOther2.size());
-		Assert.assertEquals("other", resultOther2.get(0));
+		assertNotNull(resultOther2);
+		assertEquals(1, resultOther2.size());
+		assertEquals("other", resultOther2.get(0));
 
 		List<String> resultOther3 = row3.getList("virtual2", String.class);
-		Assert.assertNotNull(resultOther3);
-		Assert.assertEquals(1, resultOther3.size());
-		Assert.assertEquals("other", resultOther3.get(0));
+		assertNotNull(resultOther3);
+		assertEquals(1, resultOther3.size());
+		assertEquals("other", resultOther3.get(0));
+	}
+	
+	
+	@Test
+	public void testEquationEvaluationThreadSafety() throws Exception {
+		CyTableFactory factory = support.getTableFactory();
+		CyTable table = factory.createTable("MyTable", "SUID", Long.class, true, true);
+		// there was a bug using Integer at time of writing, so using Double
+		table.createColumn("c1", Double.class, false);
+		table.createColumn("e1", Double.class, false);
+		table.createColumn("e2", Double.class, false);
+		table.createColumn("e3", Double.class, false);
+		
+		Equation e1 = parseEquation("=$c1", table);
+		Equation e2 = parseEquation("=$e1 + 1.0", table);
+		Equation e3 = parseEquation("=$e2 + 1.0", table);
+		
+		// first test using only one row to make sure the equations work correctly
+		{
+			CyRow row = table.getRow(1L);
+			row.set("c1", 1.0);
+			row.set("e1", e1);
+			row.set("e2", e2);
+			row.set("e3", e3);
+			
+			Double result = row.get("e3", Double.class);
+			assertEquals(3.0, result, 0);
+		}
+		
+		// Ok now lets scale it up!
+		
+		final int N = 1000;
+		for(int i = 1; i <= N; i++) {
+			CyRow row = table.getRow((long)i);
+			row.set("c1", 1.0);
+			row.set("e1", e1);
+			row.set("e2", e2);
+			row.set("e3", e3);
+		}
+		
+		assertEquals(N, table.getRowCount());
+		
+		List<Callable<Double>> taskList = new ArrayList<>(N);
+		
+		for(int i = 1; i <= N; i++) {
+			final int n = i;
+			taskList.add(new Callable<Double>() {
+				public Double call() throws Exception {
+					CyRow row = table.getRow((long)n);
+					return row.get("e3", Double.class);
+				}
+			});
+		}
+		
+		ExecutorService executor = Executors.newFixedThreadPool(20);
+		List<Future<Double>> futures = executor.invokeAll(taskList);
+		
+		double result = 0.0;
+		for(Future<Double> f : futures) {
+			result += f.get();
+		}
+		executor.shutdown();
+		
+		assertEquals(N * 3.0, result, 0);
+	}
+	
+	
+	@Test
+	public void testVirtualColumnEquationDeleteFromChild() {
+		CyTableFactory factory = support.getTableFactory();
+		CyTable table1 = factory.createTable("Table 1a", "SUID", Long.class, true, true);
+		CyTable table2 = factory.createTable("Table 2b", "SUID", Long.class, true, true);
+		CyTable table3 = factory.createTable("Table 3c", "SUID", Long.class, true, true);
+		table1.createColumn("name", String.class, false);
+		table1.createColumn("real", String.class, false);
+		table2.createColumn("name", String.class, false);
+		table2.addVirtualColumn("virtual", "real", table1, "SUID", false);
+		table3.createColumn("name", String.class, false);
+		table3.addVirtualColumn("virtual2", "virtual", table2, "SUID", false);
+		
+		CyRow row1 = table1.getRow(1L);
+		row1.set("name", "1");
+		
+		CyRow row2 = table2.getRow(1L);
+		row2.set("name", "2");
+		
+		CyRow row3 = table3.getRow(1L);
+		row3.set("name", "3");
+
+		row3.set("virtual2", parseEquation("=$name", table3));
+		
+		// Delete equation from child table should delete it from all tables
+		row3.set("virtual2", null);
+		assertNull(row1.get("real", String.class));
+		assertNull(row2.get("virtual", String.class));
+		assertNull(row3.get("virtual2", String.class));
+	}
+	
+	@Test
+	public void testVirtualColumnEquationDeleteFromParent() {
+		CyTableFactory factory = support.getTableFactory();
+		CyTable table1 = factory.createTable("Table 1a", "SUID", Long.class, true, true);
+		CyTable table2 = factory.createTable("Table 2b", "SUID", Long.class, true, true);
+		CyTable table3 = factory.createTable("Table 3c", "SUID", Long.class, true, true);
+		table1.createColumn("name", String.class, false);
+		table1.createColumn("real", String.class, false);
+		table2.createColumn("name", String.class, false);
+		table2.addVirtualColumn("virtual", "real", table1, "SUID", false);
+		table3.createColumn("name", String.class, false);
+		table3.addVirtualColumn("virtual2", "virtual", table2, "SUID", false);
+		
+		CyRow row1 = table1.getRow(1L);
+		row1.set("name", "1");
+		
+		CyRow row2 = table2.getRow(1L);
+		row2.set("name", "2");
+		
+		CyRow row3 = table3.getRow(1L);
+		row3.set("name", "3");
+
+		row3.set("virtual2", parseEquation("=$name", table3));
+		
+		// Delete equation from parent table should delete it from all tables
+		row1.set("real", null);
+		assertNull(row1.get("real", String.class));
+		assertNull(row2.get("virtual", String.class));
+		assertNull(row3.get("virtual2", String.class));
+	}
 }
-}
+
+
+
+
+
+
+
+
+
+
+

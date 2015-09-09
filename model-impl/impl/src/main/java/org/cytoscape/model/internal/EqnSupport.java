@@ -134,15 +134,11 @@ class EqnSupport {
 				else {
 					currentlyActiveAttributes.clear();
 					try {
-						lastInternalError.append(
-							"Missing value for referenced column \""
-							+ attribRef + "\".");
+						lastInternalError.append("Missing value for referenced column \"" + attribRef + "\".");
 					} catch (Exception e) {
 						// Intentionally empty!
 					}
-					logger.warn("Missing value for \"" + attribRef
-					            + "\" while evaluating an equation (ID:" + key
-					            + ", column name:" + columnName + ")");
+					logger.warn("Missing value for \"" + attribRef + "\" while evaluating an equation (ID:" + key + ", column name:" + columnName + ")");
 					return null;
 				}
 			}
@@ -152,14 +148,11 @@ class EqnSupport {
 			} catch (final Exception e) {
 				currentlyActiveAttributes.clear();
 				try {
-					lastInternalError.append("Bad column reference to \""
-								 + attribRef + "\".");
+					lastInternalError.append("Bad column reference to \"" + attribRef + "\".");
 				} catch (Exception e2) {
 					// Intentionally empty!
 				}
-				logger.warn("Bad column reference to \"" + attribRef
-				            + "\" while evaluating an equation (ID:" + key
-				            + ", column name:" + columnName + ")");
+				logger.warn("Bad column reference to \"" + attribRef + "\" while evaluating an equation (ID:" + key + ", column name:" + columnName + ")");
 				return null;
 			}
 		}
@@ -175,8 +168,7 @@ class EqnSupport {
 			} catch (Exception e2) {
 				// Intentionally empty!
 			}
-			logger.warn("Error while evaluating an equation: " + e.getMessage() + " (ID:"
-			            + key + ", column name:" + columnName + ")");
+			logger.warn("Error while evaluating an equation: " + e.getMessage() + " (ID:" + key + ", column name:" + columnName + ")");
 			return null;
 		}
 	}

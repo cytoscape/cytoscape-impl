@@ -235,8 +235,7 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 					   + types.get(curColumnName).getType());
 		
 		synchronized(lock) {
-			if (currentlyActiveAttributes.contains(oldColumnName)) {
-				currentlyActiveAttributes.remove(oldColumnName);
+			if (currentlyActiveAttributes.remove(oldColumnName)) {
 				currentlyActiveAttributes.add(newColumnName);
 			}
 
@@ -664,8 +663,6 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 			virtColumn = virtualColumnMap.get(normalizedColName);
 			if (virtColumn != null) {
 				virtColumn.setValue(key, value);
-			}
-			if (virtColumn != null && !(value instanceof Equation)) {
 				newValue = virtColumn.getValue(key);
 				newRawValue = virtColumn.getRawValue(key);
 			} else {
@@ -777,8 +774,6 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 			
 			if (virtColumn != null) {
 				virtColumn.setValue(key, rawValue);
-			}
-			if (virtColumn != null && !(rawValue instanceof Equation)) {
 				newValue = virtColumn.getListValue(key);
 			} else {
 				Map<Object, Object> keyToValueMap = attributes.get(normalizedColName);
@@ -843,12 +838,8 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 			if (primaryKey.equalsIgnoreCase(normalizedColName))
 				return key;
 	
-			Object virtualValue = null;
 			if (virtColumn != null)
-				virtualValue = virtColumn.getRawValue(key);
-			
-			if (virtualValue != null)
-				return virtualValue;
+				return virtColumn.getRawValue(key);
 			
 			final Map<Object, Object> keyToValueMap = attributes.get(normalizedColName);
 			if (keyToValueMap == null)
