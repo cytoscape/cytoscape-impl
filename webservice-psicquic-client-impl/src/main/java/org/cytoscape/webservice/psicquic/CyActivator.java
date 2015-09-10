@@ -65,7 +65,6 @@ public class CyActivator extends AbstractCyActivator {
 	@Override
 	public void start(BundleContext bc) {
 		final CyProperty<Properties> cyPropertyServiceRef = getService(bc,CyProperty.class,"(cyPropertyName=cytoscape3.props)");
-		final CyAction networkMergeActionServiceRef = getService(bc,CyAction.class,"(id=networkMergeAction)");
 		
 		CyServiceRegistrar registrar = getService(bc, CyServiceRegistrar.class);
 		
@@ -96,7 +95,7 @@ public class CyActivator extends AbstractCyActivator {
 		final PSICQUICWebServiceClient psicquicClient = new PSICQUICWebServiceClient(
 				"http://www.ebi.ac.uk/Tools/webservices/psicquic/registry/registry", "Interaction Database Universal Client",
 				CLIENT_DISCRIPTION, cyNetworkFactoryServiceRef, cyNetworkManagerServiceRef,
-				tm, createViewTaskFactoryServiceRef, builder, vsBuilder, vmm, tagManager, cyPropertyServiceRef, registrar, networkMergeActionServiceRef);
+				tm, createViewTaskFactoryServiceRef, builder, vsBuilder, vmm, tagManager, cyPropertyServiceRef, registrar);
 
 		Properties psicquicClientProperties = new Properties();
 		psicquicClientProperties.put("id", "PSICQUICWebServiceClient");

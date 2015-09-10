@@ -98,7 +98,6 @@ public class PSICQUICSearchUI extends JPanel {
 	private final CyNetworkManager networkManager;
 	private final CreateNetworkViewTaskFactory createViewTaskFactory;
 	private final CyProperty<Properties> props;
-	private final CyAction mergeAction;
 	
 	private JEditorPane queryArea;
 	private SourceStatusPanel statesPanel;
@@ -141,9 +140,7 @@ public class PSICQUICSearchUI extends JPanel {
 			final VisualMappingManager vmm,
 			final PSIMITagManager tagManager,
 			final CyProperty<Properties> props, 
-			final CyServiceRegistrar registrar,
-			final CyAction mergeAction
-	) {
+			final CyServiceRegistrar registrar) {
 		this.regManager = regManager;
 		this.client = client;
 		this.taskManager = tmManager;
@@ -154,7 +151,6 @@ public class PSICQUICSearchUI extends JPanel {
 		this.tagManager = tagManager;
 		this.props = props;
 		this.registrar = registrar;
-		this.mergeAction = mergeAction;
 		
 		// Load Property if available.
 		final Properties cyProp = props.getProperties();
@@ -415,7 +411,7 @@ public class PSICQUICSearchUI extends JPanel {
 	private final void createDBlistPanel() {
 		// Source Status - list of remote databases
 		this.statesPanel = new SourceStatusPanel("", client, regManager, networkManager, null, taskManager, mode,
-				createViewTaskFactory, vsBuilder, vmm, tagManager, props, registrar, mergeAction);
+				createViewTaskFactory, vsBuilder, vmm, tagManager, props, registrar);
 		enableComponents(false);
 		statesPanel.setSelected(sourceSet);
 	}
@@ -469,7 +465,7 @@ public class PSICQUICSearchUI extends JPanel {
 			}
 
 			statesPanel = new SourceStatusPanel(query, client, regManager, networkManager, result, taskManager, mode,
-					createViewTaskFactory, vsBuilder, vmm, tagManager, props, registrar, mergeAction);
+					createViewTaskFactory, vsBuilder, vmm, tagManager, props, registrar);
 			statesPanel.sort();
 			updateGUILayout();
 			enableComponents(true);
@@ -531,7 +527,7 @@ public class PSICQUICSearchUI extends JPanel {
 
 		getQueryArea().setText("");
 		statesPanel = new SourceStatusPanel(query, client, regManager, networkManager, null, taskManager, mode,
-				createViewTaskFactory, vsBuilder, vmm, tagManager, props, registrar, mergeAction);
+				createViewTaskFactory, vsBuilder, vmm, tagManager, props, registrar);
 		statesPanel.sort();
 
 		updateGUILayout();
