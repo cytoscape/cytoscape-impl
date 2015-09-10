@@ -59,12 +59,8 @@ public class EquationTest {
 				type = Long.class;
 			typeMap.put(column.getName(), type);
 		}
-		System.out.println("typeMap:" + typeMap);
 		EquationCompilerImpl compiler = new EquationCompilerImpl(parser);
-//		assertTrue(compiler.compile(equation, typeMap));
-		compiler.compile(equation, typeMap);
-		
-		System.out.println(compiler.getLastErrorMsg());
+		assertTrue(compiler.compile(equation, typeMap));
 		return compiler.getEquation();
 	}
 	
