@@ -17,6 +17,7 @@ import org.cytoscape.filter.internal.prefuse.JRangeSlider;
 
 @SuppressWarnings("serial")
 public class RangeChooser extends JPanel {
+	
 	private JRangeSlider slider;
 	private JFormattedTextField minimumField;
 	private JFormattedTextField maximumField;
@@ -26,7 +27,7 @@ public class RangeChooser extends JPanel {
 	private JLabel label3;
 
 	public RangeChooser(final RangeChooserController controller) {
-		slider = new JRangeSlider(controller.getSliderModel(), JRangeSlider.HORIZONTAL, JRangeSlider.LEFTRIGHT_TOPBOTTOM);
+		slider = new JRangeSlider(controller.getSliderModel(), JRangeSlider.HORIZONTAL);
 		slider.addChangeListener(new ChangeListener() {
 			@Override
 			public void stateChanged(ChangeEvent event) {

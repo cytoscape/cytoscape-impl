@@ -26,8 +26,6 @@ package org.cytoscape.filter.internal.prefuse;
 
 
 
-import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
@@ -41,6 +39,7 @@ import javax.swing.JPanel;
 import javax.swing.Popup;
 import javax.swing.PopupFactory;
 import javax.swing.Timer;
+import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 import javax.swing.event.ChangeEvent;
@@ -54,8 +53,9 @@ import javax.swing.event.ChangeListener;
  * @author Ethan Cerami.
  * @see org.cytoscape.filter.internal.prefuse.util.ui.JRangeSlider
  */
+@SuppressWarnings("serial")
 public class JRangeSliderExtended extends JRangeSlider implements ChangeListener {
-	private Dimension preferredSize;
+	
 	private Popup popup;
 	private JLabel popupLow;
 	private JLabel popupHigh;
@@ -66,54 +66,12 @@ public class JRangeSliderExtended extends JRangeSlider implements ChangeListener
 	 *
 	 * @param model       - a BoundedRangeModel specifying the slider's range
 	 * @param orientation - construct a horizontal or vertical slider?
-	 * @param direction   - Is the slider left-to-right/top-to-bottom or
-	 *                    right-to-left/bottom-to-top
 	 */
-	public JRangeSliderExtended(BoundedRangeModel model, int orientation, int direction) {
-		super(model, orientation, direction);
+	public JRangeSliderExtended(BoundedRangeModel model, int orientation) {
+		super(model, orientation);
 		addChangeListener(this);
 	}
 
-	/**
-	 * Overrides default preferred size of JRangeSlider.
-	 * <P>JRangeSlider is hard-coded to always be 300 px wide, and that is
-	 * a bit constrained.
-	 *
-	 * @return Preferred Dimension.
-	 */
-	public Dimension getPreferredSize() {
-		
-		if (preferredSize == null) {
-			return super.getPreferredSize();
-		} else {
-			return preferredSize;
-		}
-	}
-
-	/**
-	 * Sets the preferred size of the component.
-	 *
-	 * @param preferredSize Preferred Size.
-	 */
-	public void setPreferredSize(Dimension preferredSize) {
-		this.preferredSize = preferredSize;
-	}
-
-	Dimension maximumSize;
-	
-	@Override
-	public Dimension getMaximumSize() {
-		if (maximumSize != null) {
-			return maximumSize;
-		}
-		return new Dimension(JRangeSlider.PREFERRED_LENGTH * 2, JRangeSlider.PREFERRED_BREADTH);
-	}
-	
-	@Override
-	public void setMaximumSize(Dimension maximumSize) {
-		this.maximumSize = maximumSize;
-	}
-	
 	@Override
 	public void mouseEntered(MouseEvent event) {
 		stateChanged(null);
@@ -144,6 +102,7 @@ public class JRangeSliderExtended extends JRangeSlider implements ChangeListener
 	 *
 	 * @param e ChangeEvent Object.
 	 */
+	@Override
 	public void stateChanged(ChangeEvent e) {
 		NumberRangeModel model = (NumberRangeModel) getModel();
 		Number low = (Number) model.getLowValue();
@@ -174,7 +133,7 @@ public class JRangeSliderExtended extends JRangeSlider implements ChangeListener
 			if (popup == null) {
 				PopupFactory popupFactory = PopupFactory.getSharedInstance();
 				JPanel panel = new JPanel();
-				panel.setBorder(new LineBorder(Color.LIGHT_GRAY, 1));
+				panel.setBorder(new LineBorder(UIManager.getColor("Separator.foreground"), 1));
 				panel.setPreferredSize(getSize());
 				panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
 				popupLow = new JLabel(lowStr);

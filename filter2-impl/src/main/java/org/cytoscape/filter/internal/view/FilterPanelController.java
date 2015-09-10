@@ -70,7 +70,7 @@ public class FilterPanelController extends AbstractPanelController<FilterElement
 		}
 		
 		if (filter instanceof CompositeFilter) {
-			String addButtonTT = transformerViewManager.getAddButtonTooltip(filter);
+			final String addButtonTT = transformerViewManager.getAddButtonTooltip(filter);
 			final JComponent filterView = view;
 			CompositeFilterController controller = new CompositeFilterController() {
 				@Override public String getAddButtonTooltip() { return addButtonTT; }
@@ -83,8 +83,8 @@ public class FilterPanelController extends AbstractPanelController<FilterElement
 		return view;
 	}
 	
-	public JComponent wrapInNegatePanel(Component view, NegatableFilter filter) {
-		JCheckBox negateCheckBox = new JCheckBox("Negate");
+	public JComponent wrapInNegatePanel(final Component view, final NegatableFilter filter) {
+		final JCheckBox negateCheckBox = new JCheckBox("Negate");
 		negateCheckBox.setSelected(filter.getNegated());
 		negateCheckBox.addActionListener(new ActionListener() {
 			@Override

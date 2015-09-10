@@ -12,9 +12,9 @@ import java.text.NumberFormat;
 import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JFormattedTextField;
-import javax.swing.UIManager;
 import javax.swing.JFormattedTextField.AbstractFormatter;
 import javax.swing.JFormattedTextField.AbstractFormatterFactory;
+import javax.swing.UIManager;
 import javax.swing.border.AbstractBorder;
 import javax.swing.border.Border;
 import javax.swing.text.NumberFormatter;
@@ -27,7 +27,7 @@ public class ViewUtil {
 	public static final int INTERNAL_VERTICAL_PADDING = 4;
 	
 	public static final Border COMPOSITE_PANEL_BORDER = BorderFactory.createCompoundBorder(
-			new DashedBorder(Color.LIGHT_GRAY, 3),
+			new DashedBorder(UIManager.getColor("Separator.foreground"), 3),
 			BorderFactory.createEmptyBorder(INTERNAL_VERTICAL_PADDING, 0, INTERNAL_VERTICAL_PADDING, 0));
 	
 	public static void configureFilterView(JComponent component) {

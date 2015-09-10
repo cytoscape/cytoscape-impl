@@ -22,6 +22,7 @@ import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
 
 import org.cytoscape.util.swing.IconManager;
+import org.cytoscape.util.swing.LookAndFeelUtil;
 
 @SuppressWarnings({ "serial", "rawtypes" })
 public abstract class AbstractPanel<T extends NamedElement, C extends AbstractPanelController> extends JPanel implements SelectPanelComponent {
@@ -140,6 +141,7 @@ public abstract class AbstractPanel<T extends NamedElement, C extends AbstractPa
 		cancelApplyButton.setEnabled(false);
 		
 		statusLabel = new JLabel(" ");
+		statusLabel.setFont(statusLabel.getFont().deriveFont(LookAndFeelUtil.INFO_FONT_SIZE));
 		
 		progressBar = new JProgressBar();
 		progressBar.setMinimum(0);
