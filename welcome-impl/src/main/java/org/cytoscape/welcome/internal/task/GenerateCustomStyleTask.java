@@ -30,6 +30,7 @@ import java.util.Set;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.analyze.AnalyzeNetworkCollectionTaskFactory;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.vizmap.VisualMappingManager;
@@ -40,24 +41,32 @@ import org.cytoscape.work.TaskMonitor;
 
 public class GenerateCustomStyleTask extends AbstractTask {
 
-	private final AnalyzeNetworkCollectionTaskFactory analyzeNetworkCollectionTaskFactory;
+	private final CyServiceRegistrar registrar;
 	private final CyApplicationManager applicationManager;
 
 	private final VisualStyleBuilder builder;
 	private final VisualMappingManager vmm;
 
-	GenerateCustomStyleTask(final AnalyzeNetworkCollectionTaskFactory analyzeNetworkCollectionTaskFactory,
+	GenerateCustomStyleTask(final CyServiceRegistrar registrar,
 			final CyApplicationManager applicationManager, final VisualStyleBuilder builder,
 			final VisualMappingManager vmm) {
-		this.analyzeNetworkCollectionTaskFactory = analyzeNetworkCollectionTaskFactory;
+		this.registrar = registrar;
 		this.applicationManager = applicationManager;
 		this.builder = builder;
 		this.vmm = vmm;
-
 	}
 
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
+		
+		final AnalyzeNetworkCollectionTaskFactory analyzeNetworkCollectionTaskFactory; 
+		try {
+			analyzeNetworkCollectionTaskFactory = registrar.getService(AnalyzeNetworkCollectionTaskFactory.class); 
+		}
+		catch(Throwable t) {
+			throw new Exception("<html>Network Analyzer is currently unavailable.<br>"
+					+ "Make sure Cytoscape has finished starting up and try again.</html>");
+		}
 
 		final List<CyNetworkView> selectedViews = applicationManager.getSelectedNetworkViews();
 		final CyNetworkView currentView = applicationManager.getCurrentNetworkView();

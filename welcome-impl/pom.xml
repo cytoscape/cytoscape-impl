@@ -79,6 +79,10 @@
 	<dependencies>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
+			<artifactId>app-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.cytoscape</groupId>
 			<artifactId>datasource-api</artifactId>
 		</dependency>
 		<dependency>

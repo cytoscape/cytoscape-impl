@@ -149,10 +149,6 @@ public class NewNetworkPanel extends AbstractWelcomeScreenChildPanel {
 			logger.warn("Could not create Icon.", e);
 		}
 	}
-	
-	public static final String WORKFLOW_ID = "welcomeScreenWorkflowID";
-	public static final String WORKFLOW_NAME = "welcomeScreenWorkflowName";
-	public static final String WORKFLOW_DESCRIPTION = "welcomeScreenWorkflowDescription";
 
 	private final DialogTaskManager guiTaskManager;
 	private final BundleContext bc;
@@ -162,7 +158,6 @@ public class NewNetworkPanel extends AbstractWelcomeScreenChildPanel {
 	private final DataSourceManager dsManager;
 	
 	private final Map<String, String> dataSourceMap;
-	private final Map<ButtonModel, TaskFactory> button2taskMap;
 	private final List<JButton> dataSourceButtons;
 
 	private ButtonGroup bGroup;
@@ -183,7 +178,6 @@ public class NewNetworkPanel extends AbstractWelcomeScreenChildPanel {
 		this.guiTaskManager = guiTaskManager;
 		this.dsManager = dsManager;
 		
-		button2taskMap = new HashMap<>();
 		dataSourceMap = new HashMap<>();
 		dataSourceButtons = new ArrayList<>();
 
@@ -354,7 +348,6 @@ public class NewNetworkPanel extends AbstractWelcomeScreenChildPanel {
 	}
 
 	private void importNetwork(final TaskIterator loadTaskIt) {
-		loadTaskIt.append(new ResetTask());
 		closeParentWindow();
 		guiTaskManager.execute(loadTaskIt);
 	}
@@ -376,37 +369,5 @@ public class NewNetworkPanel extends AbstractWelcomeScreenChildPanel {
 		final ServiceReference ref = actions[0];
 		final CyAction action = (CyAction) bc.getService(ref);
 		action.actionPerformed(null);
-	}
-
-	public void addTaskFactory(final TaskFactory factory, @SuppressWarnings("rawtypes") Map properties) {
-		final Object workflowID = properties.get(WORKFLOW_ID);
-		
-		if (workflowID == null)
-			return;
-
-		Object workflowName = properties.get(WORKFLOW_NAME);
-		
-		if (workflowName == null)
-			workflowName = workflowID;
-		
-		final Object description = properties.get(WORKFLOW_DESCRIPTION);
-		final JRadioButton taskButton = new JRadioButton(workflowName.toString());
-		button2taskMap.put(taskButton.getModel(), factory);
-
-		if (description != null)
-			taskButton.setToolTipText(description.toString());
-	}
-
-	public void removeTaskFactory(final TaskFactory factory, @SuppressWarnings("rawtypes") Map properties) {
-
-	}
-
-	private final class ResetTask extends AbstractTask {
-
-		@Override
-		public void run(TaskMonitor taskMonitor) throws Exception {
-			// TODO
-//			networkList.setSelectedIndex(0);
-		}
 	}
 }
