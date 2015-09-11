@@ -46,32 +46,45 @@ public class CyApplicationConfigurationImpl implements CyApplicationConfiguratio
 
 	private static final Logger logger = LoggerFactory.getLogger(CyApplicationConfigurationImpl.class);
 	
-	private static final String DEF_USER_DIR = System.getProperty("user.home");
-
+	private static final String USER_DIR = System.getProperty("user.dir");
+	private static final String USER_HOME_DIR = System.getProperty("user.home");
+	private static final String CYTOSCAPE_HOME_DIR = System.getProperty("cytoscape.home");
 	private static final String APP_CONFIGURATION_DIR = "app-data";
 	
 	private static final String BUNDLE_SYMBOLIC_NAME = "Bundle-SymbolicName";
 	private static final String BUNDLE_VERSION = "Bundle-Version";
 
-	private final File configFileLocation;
+	private final File cytoscapeConfigurationDir;
+	private final File cytoscapeInstallationDir;
 	
 	public CyApplicationConfigurationImpl() {
-		configFileLocation = new File(DEF_USER_DIR, DEFAULT_CONFIG_DIR);
+		cytoscapeConfigurationDir = new File(USER_HOME_DIR, DEFAULT_CONFIG_DIR);
 		
-		if(configFileLocation.exists() == false) {
-			configFileLocation.mkdir();
+		if(cytoscapeConfigurationDir.exists() == false) {
+			cytoscapeConfigurationDir.mkdir();
 			logger.warn("CytoscapeConfiguration directory was not available.  New directory created.");
 		} else {
-			logger.info("Setting file directory = " + configFileLocation.getAbsolutePath());
+			logger.info("Setting file directory = " + cytoscapeConfigurationDir.getAbsolutePath());
 		}
 		
+		if(CYTOSCAPE_HOME_DIR != null)
+			cytoscapeInstallationDir = new File(CYTOSCAPE_HOME_DIR);
+		else if(USER_DIR != null)
+			cytoscapeInstallationDir = new File(USER_DIR);
+		else
+			cytoscapeInstallationDir = null;
+	}
+	
+	@Override
+	public File getInstallationDirectoryLocation() {
+		return cytoscapeInstallationDir;
 	}
 
 	@Override
 	public File getConfigurationDirectoryLocation() {
-		return configFileLocation;	
+		return cytoscapeConfigurationDir;	
 	}
-
+	
 	@Override
 	public File getAppConfigurationDirectoryLocation(Class<?> appClass) {
 		File configurationDirectory = getConfigurationDirectoryLocation();
