@@ -27,6 +27,8 @@ import org.cytoscape.filter.internal.ModelMonitor;
 import org.cytoscape.filter.internal.column.ColumnFilterView.ColumnComboBoxElement;
 import org.cytoscape.filter.internal.column.ColumnFilterView.PredicateElement;
 import org.cytoscape.filter.internal.prefuse.NumberRangeModel;
+import org.cytoscape.filter.internal.view.BooleanComboBox;
+import org.cytoscape.filter.internal.view.BooleanComboBox.StateChangeListener;
 import org.cytoscape.filter.internal.view.DynamicComboBoxModel;
 import org.cytoscape.filter.internal.view.Matcher;
 import org.cytoscape.filter.internal.view.RangeChooser;
@@ -47,7 +49,6 @@ public class ColumnFilterViewFactory implements TransformerViewFactory {
 	ModelMonitor modelMonitor;
 	List<ColumnComboBoxElement> nameComboBoxModel;
 	List<PredicateElement> predicateComboBoxModel;
-	List<Boolean> booleanComboBoxModel;
 	private IconManager iconManager;
 	
 	public ColumnFilterViewFactory(ModelMonitor modelMonitor, IconManager iconManager) {
@@ -62,10 +63,6 @@ public class ColumnFilterViewFactory implements TransformerViewFactory {
 		predicateComboBoxModel.add(new PredicateElement(Predicate.IS, "is"));
 		predicateComboBoxModel.add(new PredicateElement(Predicate.IS_NOT, "is not"));
 		predicateComboBoxModel.add(new PredicateElement(Predicate.REGEX, "matches regex"));
-		
-		booleanComboBoxModel = new ArrayList<Boolean>();
-		booleanComboBoxModel.add(true);
-		booleanComboBoxModel.add(false);
 	}
 	
 	@Override
@@ -250,8 +247,8 @@ public class ColumnFilterViewFactory implements TransformerViewFactory {
 				model.setHighValue(range[1]);
 			}
 			if (criterion instanceof Boolean) {
-				JComboBox comboBox = view.getBooleanComboBox();
-				comboBox.setSelectedItem(criterion);
+				BooleanComboBox comboBox = view.getBooleanComboBox();
+				comboBox.setState((boolean)criterion);
 			}
 			
 			view.getCaseSensitiveCheckBox().setSelected(filter.getCaseSensitive());
@@ -324,8 +321,8 @@ public class ColumnFilterViewFactory implements TransformerViewFactory {
 		private SelectedColumnType selectedColumn;
 		private Controller controller;
 		private RangeChooser rangeChooser;
-		
-		private JComboBox booleanComboBox;
+		private BooleanComboBox numericNegateComboBox;
+		private BooleanComboBox booleanComboBox;
 		private JLabel booleanLabel;
 		private JPanel booleanPanel;
 		
@@ -407,11 +404,19 @@ public class ColumnFilterViewFactory implements TransformerViewFactory {
 				}
 			});
 			
-			booleanComboBox = new JComboBox(new DynamicComboBoxModel<Boolean>(booleanComboBoxModel));
-			booleanComboBox.addActionListener(new ActionListener() {
+			numericNegateComboBox = new BooleanComboBox("is", "is not");
+			numericNegateComboBox.addStateChangeListener(new StateChangeListener() {
 				@Override
-				public void actionPerformed(ActionEvent event) {
-					controller.setBooleanCriterion(View.this, (Boolean) booleanComboBox.getSelectedItem());
+				public void stateChanged(boolean is) {
+					controller.setPredicate(View.this, is ? Predicate.BETWEEN : Predicate.IS_NOT_BETWEEN);
+				}
+			});
+			
+			booleanComboBox = new BooleanComboBox("true", "false");
+			booleanComboBox.addStateChangeListener(new StateChangeListener() {
+				@Override
+				public void stateChanged(boolean isTrue) {
+					controller.setBooleanCriterion(View.this, isTrue);
 				}
 			});
 			
@@ -461,7 +466,8 @@ public class ColumnFilterViewFactory implements TransformerViewFactory {
 			selectedColumn = SelectedColumnType.NUMERIC;
 			removeAll();
 			add(nameComboBox, new GridBagConstraints(0, 0, 1, 1, 0, 0, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
-			add(rangeChooser, new GridBagConstraints(0, 1, 1, 1, 1, 0, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 3, 3), 0, 0));
+			add(numericNegateComboBox, new GridBagConstraints(1, 0, 1, 1, 0, 0, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
+			add(rangeChooser, new GridBagConstraints(0, 1, 2, 1, 1, 0, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 3, 3), 0, 0));
 			controller.chooserController.setInteractive(isInteractive, rangeChooser);
 			revalidate();
 			validate();
@@ -534,7 +540,7 @@ public class ColumnFilterViewFactory implements TransformerViewFactory {
 		}
 		
 		@Override
-		public JComboBox getBooleanComboBox() {
+		public BooleanComboBox getBooleanComboBox() {
 			return booleanComboBox;
 		}
 		

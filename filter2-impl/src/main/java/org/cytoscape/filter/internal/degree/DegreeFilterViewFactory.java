@@ -15,6 +15,8 @@ import javax.swing.JPanel;
 
 import org.cytoscape.filter.internal.ModelMonitor;
 import org.cytoscape.filter.internal.degree.DegreeFilterView.EdgeTypeElement;
+import org.cytoscape.filter.internal.view.BooleanComboBox;
+import org.cytoscape.filter.internal.view.BooleanComboBox.StateChangeListener;
 import org.cytoscape.filter.internal.view.DynamicComboBoxModel;
 import org.cytoscape.filter.internal.view.Matcher;
 import org.cytoscape.filter.internal.view.RangeChooser;
@@ -95,7 +97,10 @@ public class DegreeFilterViewFactory implements TransformerViewFactory {
 		}
 
 		public void synchronize(View view) {
-			filter.setPredicate(Predicate.BETWEEN);
+			if(filter.getPredicate() == null)
+				filter.setPredicate(Predicate.BETWEEN);
+			BooleanComboBox combo = view.getIsOrIsNotCombo();
+			combo.setState(filter.getPredicate() == Predicate.BETWEEN);
 			
 			Type edgeType = filter.getEdgeType();
 			if (edgeType == null) {
@@ -124,6 +129,10 @@ public class DegreeFilterViewFactory implements TransformerViewFactory {
 			setInteractive(isInteractive, view);
 		}
 
+		public void setIsOrIsNot(boolean is) {
+			filter.setPredicate(is ? Predicate.BETWEEN : Predicate.IS_NOT_BETWEEN);
+		}
+		
 		public void setInteractive(boolean isInteractive, View view) {
 			this.isInteractive = isInteractive;
 			chooserController.setInteractive(isInteractive, view.chooser);
@@ -164,7 +173,8 @@ public class DegreeFilterViewFactory implements TransformerViewFactory {
 		private JComboBox<EdgeTypeElement> edgeTypeComboBox;
 		private Controller controller;
 		private RangeChooser chooser;
-
+		private BooleanComboBox isOrIsNotCombo;
+		
 		public View(final Controller controller) {
 			this.controller = controller;
 			
@@ -180,12 +190,21 @@ public class DegreeFilterViewFactory implements TransformerViewFactory {
 				}
 			});
 			
+			isOrIsNotCombo = new BooleanComboBox("is", "is not");
+			isOrIsNotCombo.addStateChangeListener(new StateChangeListener() {
+				@Override
+				public void stateChanged(boolean is) {
+					controller.setIsOrIsNot(is);
+				}
+			});
+			
 			chooser = new RangeChooser(controller.chooserController);
 			
 			setLayout(new GridBagLayout());
 			add(new JLabel("Degree"), new GridBagConstraints(0, 0, 1, 1, 0, 0, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
 			add(edgeTypeComboBox, new GridBagConstraints(1, 0, 1, 1, 0, 0, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
-			add(chooser, new GridBagConstraints(0, 1, 2, 1, 1, 0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 3, 3), 0, 0));
+			add(isOrIsNotCombo, new GridBagConstraints(2, 0, 1, 1, 0, 0, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
+			add(chooser, new GridBagConstraints(0, 1, 3, 1, 1, 0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 3, 3), 0, 0));
 			
 			controller.synchronize(this);
 		}
@@ -197,6 +216,10 @@ public class DegreeFilterViewFactory implements TransformerViewFactory {
 		
 		RangeChooser getRangeChooser() {
 			return chooser;
+		}
+		
+		public BooleanComboBox getIsOrIsNotCombo() {
+			return isOrIsNotCombo;
 		}
 	}
 }

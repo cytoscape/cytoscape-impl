@@ -54,7 +54,7 @@ public class RangeChooser extends JPanel {
 			}
 		});
 
-		label1 = new JLabel("is between ");
+		label1 = new JLabel("between ");
 		label2 = new JLabel(" and ");
 		label3 = new JLabel(" inclusive.");
 

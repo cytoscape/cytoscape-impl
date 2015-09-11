@@ -6,7 +6,6 @@ import org.cytoscape.filter.internal.predicates.NumericPredicateDelegate;
 import org.cytoscape.filter.internal.predicates.PredicateDelegates;
 import org.cytoscape.filter.model.AbstractTransformer;
 import org.cytoscape.filter.model.Filter;
-import org.cytoscape.filter.model.NegatableFilter;
 import org.cytoscape.filter.predicates.Predicate;
 import org.cytoscape.filter.transformers.Transformers;
 import org.cytoscape.model.CyEdge;
@@ -15,11 +14,10 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.work.Tunable;
 
-public class DegreeFilter extends AbstractTransformer<CyNetwork, CyIdentifiable> implements Filter<CyNetwork, CyIdentifiable>, NegatableFilter {
+public class DegreeFilter extends AbstractTransformer<CyNetwork, CyIdentifiable> implements Filter<CyNetwork, CyIdentifiable> {
 	private NumericPredicateDelegate delegate;
 	private Predicate predicate;
 	
-	private boolean negated;
 	private CyEdge.Type edgeType;
 	private Object rawCriterion;
 	private Number lowerBound;
@@ -85,12 +83,8 @@ public class DegreeFilter extends AbstractTransformer<CyNetwork, CyIdentifiable>
 	}
 
 	@Override
-	public boolean accepts(CyNetwork context, CyIdentifiable element) {
-		return negated ^ acceptsImpl(context, element);
-	}
-	
 	@SuppressWarnings("unused")
-	private boolean acceptsImpl(CyNetwork context, CyIdentifiable element) {
+	public boolean accepts(CyNetwork context, CyIdentifiable element) {
 		if (!(element instanceof CyNode)) {
 			return false;
 		}
@@ -115,17 +109,5 @@ public class DegreeFilter extends AbstractTransformer<CyNetwork, CyIdentifiable>
 	@Override
 	public Class<CyIdentifiable> getElementType() {
 		return CyIdentifiable.class;
-	}
-
-	@Override
-	@Tunable
-	public boolean getNegated() {
-		return negated;
-	}
-
-	@Override
-	public void setNegated(boolean negated) {
-		this.negated = negated;
-		notifyListeners();
 	}
 }

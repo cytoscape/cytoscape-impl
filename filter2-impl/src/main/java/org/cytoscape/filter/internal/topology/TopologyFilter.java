@@ -6,7 +6,6 @@ import org.cytoscape.filter.internal.predicates.PredicateDelegates;
 import org.cytoscape.filter.model.AbstractTransformer;
 import org.cytoscape.filter.model.CompositeFilter;
 import org.cytoscape.filter.model.Filter;
-import org.cytoscape.filter.model.NegatableFilter;
 import org.cytoscape.filter.predicates.Predicate;
 import org.cytoscape.filter.transformers.Transformers;
 import org.cytoscape.model.CyEdge;
@@ -17,12 +16,11 @@ import org.cytoscape.work.Tunable;
 
 import cern.colt.map.tlong.OpenLongIntHashMap;
 
-public class TopologyFilter extends AbstractTransformer<CyNetwork,CyIdentifiable> implements CompositeFilter<CyNetwork,CyIdentifiable>, NegatableFilter {
+public class TopologyFilter extends AbstractTransformer<CyNetwork,CyIdentifiable> implements CompositeFilter<CyNetwork,CyIdentifiable> {
 	private Integer distance;
 	private Integer threshold;
 	private Predicate predicate;
 	private NumericPredicateDelegate delegate;
-	private boolean negated;
 	
 	// Internally use a compositeFilter to store child filters
 	private final CompositeFilter<CyNetwork,CyIdentifiable> neighbourFilter;
@@ -85,10 +83,6 @@ public class TopologyFilter extends AbstractTransformer<CyNetwork,CyIdentifiable
 
 	@Override
 	public boolean accepts(CyNetwork network, CyIdentifiable element) {
-		return negated ^ acceptsImpl(network, element);
-	}
-	
-	private boolean acceptsImpl(CyNetwork network, CyIdentifiable element) {
 		if (!(element instanceof CyNode)) {
 			return false;
 		}
@@ -169,18 +163,6 @@ public class TopologyFilter extends AbstractTransformer<CyNetwork,CyIdentifiable
 	@Override
 	public int getLength() {
 		return neighbourFilter.getLength();
-	}
-
-	@Override
-	@Tunable
-	public boolean getNegated() {
-		return negated;
-	}
-
-	@Override
-	public void setNegated(boolean negated) {
-		this.negated = negated;
-		notifyListeners();
 	}
 
 	@Override

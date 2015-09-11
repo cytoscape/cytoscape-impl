@@ -5,6 +5,7 @@ import java.beans.PropertyChangeListener;
 import java.util.Properties;
 
 import javax.swing.GroupLayout;
+import javax.swing.GroupLayout.Alignment;
 import javax.swing.GroupLayout.ParallelGroup;
 import javax.swing.GroupLayout.SequentialGroup;
 import javax.swing.JComponent;
@@ -13,12 +14,15 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
+import org.cytoscape.filter.internal.view.BooleanComboBox;
+import org.cytoscape.filter.internal.view.BooleanComboBox.StateChangeListener;
 import org.cytoscape.filter.internal.view.ViewUtil;
 import org.cytoscape.filter.model.Transformer;
 import org.cytoscape.filter.model.TransformerListener;
 import org.cytoscape.filter.predicates.Predicate;
 import org.cytoscape.filter.transformers.Transformers;
 import org.cytoscape.filter.view.TransformerViewFactory;
+import org.cytoscape.util.swing.LookAndFeelUtil;
 
 public class TopologyFilterViewFactory implements TransformerViewFactory {
 
@@ -85,10 +89,19 @@ public class TopologyFilterViewFactory implements TransformerViewFactory {
 		void synchronize(TopologyFilterView view) {
 			view.getDistanceField().setValue(model.getDistance());
 			view.getThresholdField().setValue(model.getThreshold());
+			view.getAtLeastComboBox().setState(model.getPredicate() == Predicate.GREATER_THAN_OR_EQUAL);
 		}
 		
 		boolean hasChildren() {
 			return model.getLength() > 0;
+		}
+		
+		public void setGreaterThanOrEqual() {
+			model.setPredicate(Predicate.GREATER_THAN_OR_EQUAL);
+		}
+		
+		public void setLessThan() {
+			model.setPredicate(Predicate.LESS_THAN);
 		}
 	}
 	
@@ -99,12 +112,13 @@ public class TopologyFilterViewFactory implements TransformerViewFactory {
 
 		private final Controller controller;
 		private GroupLayout layout;
-		private JLabel label1, label2, label3, label4;
+		private JLabel label1, label2, label3;
+		private BooleanComboBox atLeastCombo;
+		
 		
 		
 		public View(final Controller controller) {
 			this.controller = controller;
-			ViewUtil.configureFilterView(this);
 			
 			thresholdField = new JFormattedTextField(ViewUtil.createIntegerFormatter(0, Integer.MAX_VALUE));
 			thresholdField.setHorizontalAlignment(JTextField.TRAILING);
@@ -128,12 +142,25 @@ public class TopologyFilterViewFactory implements TransformerViewFactory {
 				}
 			});
 			
-			label1 = new JLabel("Nodes with at least ");
-			label2 = new JLabel(" neighbours");
-			label3 = new JLabel("within distance ");
-			label4 = new JLabel("where the neighbours match...");
+			label1 = new JLabel("Nodes with ");
+			label2 = new JLabel(" neighbours within distance ");
+			label3 = new JLabel("where the neighbours match");
+			
+			atLeastCombo = new BooleanComboBox("at least", "less than");
+			
+			atLeastCombo.addStateChangeListener(new StateChangeListener() {
+				@Override
+				public void stateChanged(boolean atLeast) {
+					if(atLeast)
+						controller.setGreaterThanOrEqual();
+					else
+						controller.setLessThan();
+				}
+			});
 			
 			layout = new GroupLayout(this);
+			layout.setAutoCreateContainerGaps(false);
+			layout.setAutoCreateGaps(!LookAndFeelUtil.isAquaLAF());
 			setLayout(layout);
 			updateLayout();
 			
@@ -145,25 +172,25 @@ public class TopologyFilterViewFactory implements TransformerViewFactory {
 				layout.createParallelGroup()
 					.addGroup(layout.createSequentialGroup()
 						.addComponent(label1)
-						.addComponent(thresholdField, GroupLayout.PREFERRED_SIZE, GroupLayout.PREFERRED_SIZE, GroupLayout.PREFERRED_SIZE)
-						.addComponent(label2))
+						.addComponent(atLeastCombo, GroupLayout.PREFERRED_SIZE, GroupLayout.PREFERRED_SIZE, GroupLayout.PREFERRED_SIZE))
 					.addGroup(layout.createSequentialGroup()
-						.addComponent(label3)
+						.addComponent(thresholdField, GroupLayout.PREFERRED_SIZE, GroupLayout.PREFERRED_SIZE, GroupLayout.PREFERRED_SIZE)
+						.addComponent(label2)
 						.addComponent(distanceField, GroupLayout.PREFERRED_SIZE, GroupLayout.PREFERRED_SIZE, GroupLayout.PREFERRED_SIZE));
 		
 			SequentialGroup verticalGroup = 
 				layout.createSequentialGroup()
-					.addGroup(layout.createBaselineGroup(false, false)
+					.addGroup(layout.createParallelGroup(Alignment.CENTER)
 						.addComponent(label1)
-						.addComponent(thresholdField, GroupLayout.PREFERRED_SIZE, GroupLayout.PREFERRED_SIZE, GroupLayout.PREFERRED_SIZE)
-						.addComponent(label2))
+						.addComponent(atLeastCombo, GroupLayout.PREFERRED_SIZE, GroupLayout.PREFERRED_SIZE, GroupLayout.PREFERRED_SIZE))
 					.addGroup(layout.createBaselineGroup(false, false)
-						.addComponent(label3)
+						.addComponent(thresholdField, GroupLayout.PREFERRED_SIZE, GroupLayout.PREFERRED_SIZE, GroupLayout.PREFERRED_SIZE)
+						.addComponent(label2)
 						.addComponent(distanceField, GroupLayout.PREFERRED_SIZE, GroupLayout.PREFERRED_SIZE, GroupLayout.PREFERRED_SIZE));
 			
 			if(controller.hasChildren()) {
-				horizontalGroup.addComponent(label4, GroupLayout.PREFERRED_SIZE, GroupLayout.PREFERRED_SIZE, GroupLayout.PREFERRED_SIZE);
-				verticalGroup.addComponent(label4, GroupLayout.PREFERRED_SIZE, GroupLayout.PREFERRED_SIZE, GroupLayout.PREFERRED_SIZE);
+				horizontalGroup.addComponent(label3, GroupLayout.PREFERRED_SIZE, GroupLayout.PREFERRED_SIZE, GroupLayout.PREFERRED_SIZE);
+				verticalGroup.addComponent(label3, GroupLayout.PREFERRED_SIZE, GroupLayout.PREFERRED_SIZE, GroupLayout.PREFERRED_SIZE);
 			}
 			
 			layout.setHorizontalGroup(horizontalGroup);
@@ -178,6 +205,11 @@ public class TopologyFilterViewFactory implements TransformerViewFactory {
 		@Override
 		public JFormattedTextField getDistanceField() {
 			return distanceField;
+		}
+		
+		@Override
+		public BooleanComboBox getAtLeastComboBox() {
+			return atLeastCombo;
 		}
 	}
 }

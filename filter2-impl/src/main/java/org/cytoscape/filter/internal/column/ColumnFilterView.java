@@ -4,6 +4,7 @@ import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JTextField;
 
+import org.cytoscape.filter.internal.view.BooleanComboBox;
 import org.cytoscape.filter.internal.view.RangeChooser;
 import org.cytoscape.filter.predicates.Predicate;
 import org.cytoscape.model.CyEdge;
@@ -84,7 +85,7 @@ public interface ColumnFilterView {
 
 	JComboBox getPredicateComboBox();
 
-	JComboBox getBooleanComboBox();
+	BooleanComboBox getBooleanComboBox();
 	
 	RangeChooser getRangeChooser();
 }
