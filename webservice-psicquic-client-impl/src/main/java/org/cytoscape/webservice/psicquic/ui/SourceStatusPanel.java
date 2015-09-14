@@ -117,9 +117,7 @@ public class SourceStatusPanel extends JPanel implements TaskObserver {
 	private final CyServiceRegistrar registrar;
 
 	private int interactionsFound;
-	
-	private final CyAction mergeAction;
-	
+		
 	private JPanel buttonPanel;
 	private JButton selectNoneButton;
 	private JButton selectAllButton;
@@ -135,8 +133,8 @@ public class SourceStatusPanel extends JPanel implements TaskObserver {
 			final CyNetworkManager networkManager, final Map<String, Long> result, final TaskManager<?, ?> taskManager,
 			final SearchMode mode, final CreateNetworkViewTaskFactory createViewTaskFactory,
 			final PSIMI25VisualStyleBuilder vsBuilder, final VisualMappingManager vmm,
-			final PSIMITagManager tagManager, final CyProperty<Properties> props, final CyServiceRegistrar registrar,
-			final CyAction mergeAction) {
+			final PSIMITagManager tagManager, final CyProperty<Properties> props, final CyServiceRegistrar registrar) 
+	{
 		this.manager = manager;
 		this.client = client;
 		this.query = query;
@@ -145,7 +143,6 @@ public class SourceStatusPanel extends JPanel implements TaskObserver {
 		this.tagManager = tagManager;
 		this.props = props;
 		this.registrar = registrar;
-		this.mergeAction = mergeAction;
 		
 		if (mode == SearchMode.SPECIES)
 			this.mode = SearchMode.MIQL;
@@ -684,7 +681,7 @@ public class SourceStatusPanel extends JPanel implements TaskObserver {
 			);
 			
 			if (selection == options.length - 1)
-				mergeAction.actionPerformed(null);
+				doNetworkMerge();
 			else if (selection == 1)
 				createMissingNetworkViews(networksWithoutView);
 		} else if (finishStatus.getType() == Type.CANCELLED) {
@@ -716,7 +713,7 @@ public class SourceStatusPanel extends JPanel implements TaskObserver {
 					"Import Canceled", JOptionPane.YES_NO_OPTION, JOptionPane.ERROR_MESSAGE, null);
 			
 			if (selection == JOptionPane.YES_OPTION)
-				mergeAction.actionPerformed(null);
+				doNetworkMerge();
 		} else {
 			// Error!
 			JOptionPane.showMessageDialog(
@@ -733,6 +730,18 @@ public class SourceStatusPanel extends JPanel implements TaskObserver {
 	
 	private void createMissingNetworkViews(final List<CyNetwork> networks) {
 		taskManager.execute(createViewTaskFactory.createTaskIterator(networks));
+	}
+	
+	private void doNetworkMerge() {
+		try {
+			CyAction mergeAction = registrar.getService(CyAction.class, "(id=networkMergeAction)");
+			mergeAction.actionPerformed(null);
+		}
+		catch(Throwable t) {
+			JOptionPane.showMessageDialog(this,  "<html>Network merge is currently unavailable.<br>"
+					+ "Make sure Cytoscape has finished starting up and try again.</html>", "Network Merge Unavailable",
+					JOptionPane.ERROR_MESSAGE);
+		}
 	}
 
 	@Override

@@ -48,6 +48,7 @@ import javax.swing.JTextField;
 import javax.swing.JToggleButton;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.ListCellRenderer;
+import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
@@ -198,9 +199,17 @@ public class AttributeEditorPanel extends JPanel {
 		
 		setStyles(new ArrayList<JToggleButton>(typeButtons.values()));
 		
+		final JLabel typeLabel = new JLabel("Meaning:");
+		typeLabel.putClientProperty("JComponent.sizeVariant", "small");
+		
+		final JLabel dataTypeLabel = new JLabel("Data Type:");
+		dataTypeLabel.putClientProperty("JComponent.sizeVariant", "small");
+		
 		layout.setHorizontalGroup(layout.createParallelGroup(CENTER, true)
 				.addComponent(getAttributeNameTextField(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				.addComponent(typeLabel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 				.addGroup(typeHGroup)
+				.addComponent(dataTypeLabel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 				.addGroup(layout.createSequentialGroup()
 						.addComponent(stringButton, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 						.addComponent(integerButton, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
@@ -225,8 +234,12 @@ public class AttributeEditorPanel extends JPanel {
 		layout.setVerticalGroup(layout.createSequentialGroup()
 				.addComponent(getAttributeNameTextField(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 				.addPreferredGap(ComponentPlacement.UNRELATED)
+				.addComponent(typeLabel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				.addPreferredGap(ComponentPlacement.RELATED)
 				.addGroup(typeVGroup)
 				.addPreferredGap(ComponentPlacement.UNRELATED)
+				.addComponent(dataTypeLabel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				.addPreferredGap(ComponentPlacement.RELATED)
 				.addGroup(layout.createParallelGroup(CENTER)
 						.addComponent(stringButton)
 						.addComponent(integerButton)
@@ -381,6 +394,7 @@ public class AttributeEditorPanel extends JPanel {
 			final SourceColumnSemantic type = entry.getKey();
 			final JToggleButton btn = entry.getValue();
 			btn.setEnabled(TypeUtil.isValid(type, dataType));
+			btn.setForeground(btn.isEnabled() ? type.getForeground() : UIManager.getColor("Button.disabledForeground"));
 		}
 	}
 

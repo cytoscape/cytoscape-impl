@@ -173,9 +173,10 @@ public class CompositeFilterPanel extends JPanel {
 	
 	JButton createAddConditionButton() {
 		final JButton button = new JButton(IconManager.ICON_PLUS);
-		button.setFont(iconManager.getIconFont(12.0f));
+		button.setFont(iconManager.getIconFont(11.0f));
 		String tooltip = compositeFilterController.getAddButtonTooltip();
 		button.setToolTipText(tooltip == null ? "Add new condition..." : tooltip);
+		button.putClientProperty("JButton.buttonType", "gradient");
 		button.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent event) {
@@ -196,7 +197,7 @@ public class CompositeFilterPanel extends JPanel {
 	public JComboBox<CombiningMethodElement> createCombiningMethodComboBox() {
 		List<CombiningMethodElement> methods = getCombiningMethods();
 		ComboBoxModel<CombiningMethodElement> comboBoxModel = new DynamicComboBoxModel<>(methods);
-		JComboBox<CombiningMethodElement> combiningMethodComboBox = new JComboBox<>(comboBoxModel);
+		final JComboBox<CombiningMethodElement> combiningMethodComboBox = new JComboBox<>(comboBoxModel);
 		combiningMethodComboBox.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent event) {

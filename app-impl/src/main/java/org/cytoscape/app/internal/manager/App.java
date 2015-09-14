@@ -79,6 +79,11 @@ public abstract class App {
 	private boolean officialNameObtained;
 	
 	/**
+	 * Whether this App object represents a core app.
+	 */
+	private boolean coreApp;
+	
+	/**
 	 * The SHA-512 checksum of the app file, in format sha512:0a516c..
 	 */
 	private String sha512Checksum;
@@ -338,6 +343,10 @@ public abstract class App {
 		return officialNameObtained;
 	}
 	
+	public boolean isCoreApp() {
+		return coreApp;
+	}
+
 	public AppStatus getStatus() {
 		return status;
 	}
@@ -388,6 +397,10 @@ public abstract class App {
 
 	public void setOfficialNameObtained(boolean officialNameObtained) {
 		this.officialNameObtained = officialNameObtained;
+	}
+	
+	public void setCoreApp(boolean coreApp) {
+		this.coreApp = coreApp;
 	}
 	
 	public void setStatus(AppStatus status) {

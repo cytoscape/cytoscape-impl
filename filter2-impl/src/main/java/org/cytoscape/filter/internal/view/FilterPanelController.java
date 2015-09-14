@@ -63,7 +63,7 @@ public class FilterPanelController extends AbstractPanelController<FilterElement
 		}
 		
 		if (filter instanceof CompositeFilter) {
-			String addButtonTT = transformerViewManager.getAddButtonTooltip(filter);
+			final String addButtonTT = transformerViewManager.getAddButtonTooltip(filter);
 			final JComponent filterView = view;
 			CompositeFilterController controller = new CompositeFilterController() {
 				@Override public String getAddButtonTooltip() { return addButtonTT; }
@@ -75,7 +75,6 @@ public class FilterPanelController extends AbstractPanelController<FilterElement
 		
 		return view;
 	}
-	
 
 	public JPopupMenu createAddConditionMenu(final CompositeFilterPanel panel, final FilterPanel filterPanel) {
 		JPopupMenu menu = new JPopupMenu();

@@ -1,6 +1,5 @@
 package org.cytoscape.filter.internal.column;
 
-import java.awt.Color;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -111,16 +110,6 @@ public class ColumnFilterViewFactory implements TransformerViewFactory {
 
 		public void setCaseSensitive(View view, boolean caseSensitive) {
 			filter.setCaseSensitive(caseSensitive);
-			updateArrowLabel(view.getArrowLabel());
-		}
-
-		private void updateArrowLabel(JLabel arrowLabel) {
-			boolean notDefault = filter.getCaseSensitive() || filter.getPredicate() != Predicate.CONTAINS;
-			if (notDefault) {
-				arrowLabel.setForeground(Color.blue);
-			} else {
-				arrowLabel.setForeground(Color.black);
-			}
 		}
 
 		public void setCriterion(View view, String text) {
@@ -172,7 +161,6 @@ public class ColumnFilterViewFactory implements TransformerViewFactory {
 		
 		public void setPredicate(View view, Predicate predicate) {
 			filter.setPredicate(predicate);
-			updateArrowLabel(view.getArrowLabel());
 		}
 
 		public ColumnFilter getModel() {
@@ -187,8 +175,6 @@ public class ColumnFilterViewFactory implements TransformerViewFactory {
 				return;
 			}
 
-			nameComboBox.setForeground(Color.black);
-			
 			ColumnComboBoxElement selected = (ColumnComboBoxElement) nameComboBox.getSelectedItem();
 			setColumnName(selected.name);
 			setMatchType(selected.columnType);

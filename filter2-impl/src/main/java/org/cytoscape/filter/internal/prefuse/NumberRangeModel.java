@@ -36,7 +36,9 @@ import javax.swing.DefaultBoundedRangeModel;
  *
  * @author <a href="http://jheer.org">jeffrey heer</a>
  */
+@SuppressWarnings("serial")
 public class NumberRangeModel extends DefaultBoundedRangeModel implements ValuedRangeModel {
+	
 	protected Number m_min;
 	protected Number m_max;
 	protected Number m_lo;
@@ -124,9 +126,7 @@ public class NumberRangeModel extends DefaultBoundedRangeModel implements Valued
 		super.setRangeProperties(val, ext, min, max, false);
 	}
 
-	/**
-	 * @see javax.swing.BoundedRangeModel#setRangeProperties(int, int, int, int, boolean)
-	 */
+	@Override
 	public void setRangeProperties(int val, int extent, int min, int max, boolean adj) {
 		if ((min != getMinimum()) || (max != getMaximum())) {
 			throw new IllegalArgumentException("Can not change min or max.");
@@ -197,9 +197,7 @@ public class NumberRangeModel extends DefaultBoundedRangeModel implements Valued
 		updateRange();
 	}
 
-	/**
-	 * @see org.cytoscape.filter.internal.prefuse.util.ui.ValuedRangeModel#getMinValue()
-	 */
+	@Override
 	public Object getMinValue() {
 		return m_min;
 	}
@@ -212,9 +210,7 @@ public class NumberRangeModel extends DefaultBoundedRangeModel implements Valued
 		setValueRange((Number) getLowValue(), (Number) getHighValue(), n, m_max);
 	}
 
-	/**
-	 * @see org.cytoscape.filter.internal.prefuse.util.ui.ValuedRangeModel#getMaxValue()
-	 */
+	@Override
 	public Object getMaxValue() {
 		return m_max;
 	}
@@ -227,9 +223,7 @@ public class NumberRangeModel extends DefaultBoundedRangeModel implements Valued
 		setValueRange((Number) getLowValue(), (Number) getHighValue(), m_min, n);
 	}
 
-	/**
-	 * @see org.cytoscape.filter.internal.prefuse.util.ui.ValuedRangeModel#getLowValue()
-	 */
+	@Override
 	public Object getLowValue() {
 		if (m_lo == null)
 			m_lo = (Number) value(getValue());
@@ -245,9 +239,7 @@ public class NumberRangeModel extends DefaultBoundedRangeModel implements Valued
 		setValueRange(n, (Number) getHighValue(), m_min, m_max);
 	}
 
-	/**
-	 * @see org.cytoscape.filter.internal.prefuse.util.ui.ValuedRangeModel#getHighValue()
-	 */
+	@Override
 	public Object getHighValue() {
 		if (m_hi == null)
 			m_hi = (Number) value(getValue() + getExtent());
@@ -285,35 +277,29 @@ public class NumberRangeModel extends DefaultBoundedRangeModel implements Valued
 
 	/**
 	 * Not supported, throws an exception.
-	 * @throws UnsupportedOperationException
-	 * @see javax.swing.BoundedRangeModel#setMinimum(int)
 	 */
+	@Override
 	public void setMinimum(int min) {
 		throw new UnsupportedOperationException();
 	}
 
 	/**
 	 * Not supported, throws an exception.
-	 * @throws UnsupportedOperationException
-	 * @see javax.swing.BoundedRangeModel#setMaximum(int)
 	 */
+	@Override
 	public void setMaximum(int max) {
 		throw new UnsupportedOperationException();
 	}
 
-	/**
-	 * @see javax.swing.BoundedRangeModel#setValue(int)
-	 */
+	@Override
 	public void setValue(int val) {
 		m_lo = null;
 		super.setValue(val);
 	}
 
-	/**
-	 * @see javax.swing.BoundedRangeModel#setExtent(int)
-	 */
+	@Override
 	public void setExtent(int extent) {
 		m_hi = null;
 		super.setExtent(extent);
 	}
-} // end of class NumberRangeModel
+}

@@ -29,6 +29,8 @@ import java.io.FileFilter;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -57,6 +59,7 @@ import org.cytoscape.app.internal.util.DebugHelper;
 import org.cytoscape.app.swing.CySwingAppAdapter;
 import org.cytoscape.application.CyApplicationConfiguration;
 import org.cytoscape.application.CyUserLog;
+import org.cytoscape.application.CyVersion;
 import org.cytoscape.event.CyEventHelper;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkEvent;
@@ -97,6 +100,9 @@ public class AppManager implements FrameworkListener {
 	/** Apps that are to be installed on restart are stored in this directory. */
 	private static final String INSTALL_RESTART_DIRECTORY_NAME = "install-on-restart";
 	
+	/** This subdirectory in the Cytoscape installation directory is used to store core apps, */ 
+	private static final String CORE_APPS_DIRECTORY_NAME = "apps";
+	
 	/** This subdirectory in the local Cytoscape storage directory is used to store app data, as 
 	 * well as installed and uninstalled apps. */
 	private static final String APPS_DIRECTORY_NAME = "3" + File.separator + "apps";
@@ -122,6 +128,11 @@ public class AppManager implements FrameworkListener {
 	 * The {@link CyEventHelper} used to fire Cytoscape events
 	 */
 	private CyEventHelper eventHelper;
+	
+	/**
+	 * {@link CyVersion} service used to get the running version of Cytoscape.
+	 */
+	private CyVersion version;
 		
 	/**
 	 * {@link CyApplicationConfiguration} service used to obtain the directories used to store the apps.
@@ -173,9 +184,10 @@ public class AppManager implements FrameworkListener {
 	}
 	
 	public AppManager(CySwingAppAdapter swingAppAdapter, CyApplicationConfiguration applicationConfiguration, 
-			CyEventHelper eventHelper, final WebQuerier webQuerier, StartLevel startLevel, BundleContext bundleContext) {
+			CyVersion version, CyEventHelper eventHelper, final WebQuerier webQuerier, StartLevel startLevel, BundleContext bundleContext) {
 		this.swingAppAdapter = swingAppAdapter;
 		this.applicationConfiguration = applicationConfiguration;
+		this.version = version;
 		this.eventHelper = eventHelper;
 		this.webQuerier = webQuerier;
 		webQuerier.setAppManager(this);
@@ -280,10 +292,30 @@ public class AppManager implements FrameworkListener {
 			}
 		}
 		
+		
+		Set<App> coreApps = obtainAppsFromDirectory(getCoreAppPath(), false);
 		Set<App> installedFolderApps = obtainAppsFromDirectory(new File(getInstalledAppsPath()), false);
-		Set<App> appsToStart = new HashSet<App>();
+		//use LinkedHashSet to maintain order (core apps before non-core apps)
+		Set<App> appsToStart = new LinkedHashSet<App>();
+		for (App app: coreApps) {
+			app.setCoreApp(true);
+			for (Iterator<App> i = installedFolderApps.iterator();  i.hasNext();) {
+				App installedApp = i.next();
+				if(app.getAppName().equalsIgnoreCase(installedApp.getAppName())) {
+					i.remove();
+					if(WebQuerier.compareVersions(app.getVersion(), installedApp.getVersion()) > 0 &&
+							installedApp.isCompatible(version.getVersion())) {
+						app = installedApp;
+					}
+				}
+			}
+			appsToStart.add(app);
+		}
+		appsToStart.addAll(installedFolderApps);
+		
 		boolean appsFailed = false;
-		for (App app: installedFolderApps) {
+		for (Iterator<App> i = appsToStart.iterator(); i.hasNext();) {
+			App app = i.next();
 			try {
 				boolean appRegistered = false;
 				for (App regApp : apps) {
@@ -294,13 +326,13 @@ public class AppManager implements FrameworkListener {
 					apps.add(app);
 					app.setStatus(AppStatus.INSTALLED);
 					app.load(this);
-					appsToStart.add(app);
 				} else {
 					// Delete the copy
 					FileUtils.deleteQuietly(app.getAppFile());
 					app.setAppFile(null);
 				}
 			} catch (AppLoadingException e) {
+				i.remove();
 				appsFailed = true;
 				app.setStatus(AppStatus.FAILED_TO_LOAD);
 				userLogger.error("Failed to load app " + app.getAppName(), e);
@@ -761,6 +793,24 @@ public class AppManager implements FrameworkListener {
 		}
 		
 		return baseAppPath;
+	}
+	
+	/**
+	 * Return the path of the directory used to contain core apps.
+	 * @return The path of the root directory containing all core apps.
+	 */
+	private File getCoreAppPath() {
+		File coreAppPath = null;
+		
+		// TODO: At time of writing, CyApplicationConfiguration always returns the home directory for directory location.
+		try {
+			coreAppPath = new File(applicationConfiguration.getInstallationDirectoryLocation().getCanonicalPath() 
+					+ File.separator + CORE_APPS_DIRECTORY_NAME);
+		} catch (IOException e) {
+			throw new RuntimeException("Unable to obtain canonical path for Cytoscape installation directory", e);
+		}
+		
+		return coreAppPath;
 	}
 	
 	/**

@@ -28,21 +28,25 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Dimension;
+import java.awt.GradientPaint;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Paint;
+import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.RenderingHints;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
-
 import java.util.ArrayList;
 import java.util.Iterator;
 
 import javax.swing.BoundedRangeModel;
-import javax.swing.DefaultBoundedRangeModel;
 import javax.swing.JComponent;
+import javax.swing.SwingConstants;
+import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
@@ -56,13 +60,15 @@ import javax.swing.event.ChangeListener;
  * @author Jon Meyer
  * @author Lance Good
  * @author jeffrey heer
+ * @author Christian Lopes
  */
+@SuppressWarnings("serial")
 public class JRangeSlider extends JComponent implements MouseListener, MouseMotionListener,
-                                                        KeyListener {
+                                                        KeyListener, SwingConstants {
 	/*
 	 * NOTE: This is a modified version of the original class distributed by
 	 * Ben Bederson, Jesse Grosjean, and Jon Meyer as part of an HCIL Tech
-	 * Report.  It is modified to allow both vertical and horitonal modes.
+	 * Report.  It is modified to allow both vertical and horizontal modes.
 	 * It also fixes a bug with offset on the buttons. Also fixed a bug with
 	 * rendering using (x,y) instead of (0,0) as origin.  Also modified to
 	 * render arrows as a series of lines rather than as a GeneralPath.
@@ -74,54 +80,32 @@ public class JRangeSlider extends JComponent implements MouseListener, MouseMoti
 	 * method has been introduced to allow subclasses to perform custom
 	 * rendering within the slider through.
 	 */
-	/**
-	 * 
-	 */
-	final public static int VERTICAL = 0;
-
-	/**
-	 * 
-	 */
-	final public static int HORIZONTAL = 1;
-
-	/**
-	 * 
-	 */
-	final public static int LEFTRIGHT_TOPBOTTOM = 0;
-
-	/**
-	 * 
-	 */
-	final public static int RIGHTLEFT_BOTTOMTOP = 1;
-
-	final protected static int ARROW_SZ = 16;
-
-	/**
-	 * 
-	 */
-	final public static int PREFERRED_BREADTH = ARROW_SZ;
-
-	/**
-	 * 
-	 */
-	final public static int PREFERRED_LENGTH = ARROW_SZ * 2;
-	final protected static int ARROW_WIDTH = 8;
-	final protected static int ARROW_HEIGHT = 4;
+	final protected static int HPAD = 2; // Horizontal pad when orientation is HORIZONTAL
+	final protected static int VPAD = 4; // Vertical pad when orientation is HORIZONTAL
+	final protected static int THUMB_SIZE = 14;
+	final protected static int TRACK_THICKNESS = 4;
+	
 	protected BoundedRangeModel model;
 	protected int orientation;
-	protected int direction;
-	protected boolean empty;
 	protected int increment = 1;
 	protected int minExtent = 0; // min extent, in pixels
-	protected ArrayList listeners = new ArrayList();
-	protected ChangeEvent changeEvent = null;
+	protected ArrayList<ChangeListener> listeners = new ArrayList<>();
+	protected ChangeEvent changeEvent;
 	protected ChangeListener lstnr;
-	protected Color thumbColor = new Color(150, 180, 220);
+	protected final Color trackColor1 = UIManager.getColor("Panel.background").darker();
+	protected final Color trackColor2 = UIManager.getColor("Panel.background");
+	protected final Color rangeColor1 = UIManager.getColor("TextField.background");
+	protected final Color rangeColor2 = UIManager.getColor("TextField.selectionBackground");
+	protected final Color thumbColor1 = UIManager.getColor("TextField.background");
+	protected final Color thumbColor2 = UIManager.getColor("Button.background");
+	protected final Color borderColor = UIManager.getColor("Label.disabledForeground");
+	protected final Color disabledBorderColor = UIManager.getColor("Label.disabledForeground");
+	protected final Color rangeBorderColor = rangeColor2.darker();
 
 	// ------------------------------------------------------------------------
 
 	/**
-	 * Create a new range slider.
+	 * Create a new range slider with a {@link NumberRangeModel}.
 	 *
 	 * @param minimum - the minimum value of the range.
 	 * @param maximum - the maximum value of the range.
@@ -130,24 +114,7 @@ public class JRangeSlider extends JComponent implements MouseListener, MouseMoti
 	 * @param orientation - construct a horizontal or vertical slider?
 	 */
 	public JRangeSlider(int minimum, int maximum, int lowValue, int highValue, int orientation) {
-		this(new DefaultBoundedRangeModel(lowValue, highValue, minimum, maximum), orientation,
-		     LEFTRIGHT_TOPBOTTOM);
-	}
-
-	/**
-	 * Create a new range slider.
-	 *
-	 * @param minimum - the minimum value of the range.
-	 * @param maximum - the maximum value of the range.
-	 * @param lowValue - the current low value shown by the range slider's bar.
-	 * @param highValue - the current high value shown by the range slider's bar.
-	 * @param orientation - construct a horizontal or vertical slider?
-	 * @param direction - Is the slider left-to-right/top-to-bottom or right-to-left/bottom-to-top
-	 */
-	public JRangeSlider(int minimum, int maximum, int lowValue, int highValue, int orientation,
-	                    int direction) {
-		this(new DefaultBoundedRangeModel(lowValue, highValue, minimum, maximum), orientation,
-		     direction);
+		this(new NumberRangeModel(lowValue, highValue, minimum, maximum), orientation);
 	}
 
 	/**
@@ -155,16 +122,19 @@ public class JRangeSlider extends JComponent implements MouseListener, MouseMoti
 	 *
 	 * @param model - a BoundedRangeModel specifying the slider's range
 	 * @param orientation - construct a horizontal or vertical slider?
-	 * @param direction - Is the slider left-to-right/top-to-bottom or right-to-left/bottom-to-top
 	 */
-	public JRangeSlider(BoundedRangeModel model, int orientation, int direction) {
+	public JRangeSlider(BoundedRangeModel model, int orientation) {
 		super.setFocusable(true);
 		this.model = model;
 		this.orientation = orientation;
-		this.direction = direction;
 
-		setForeground(Color.LIGHT_GRAY);
+		if (orientation == VERTICAL)
+			setMinimumSize(new Dimension(THUMB_SIZE + 2 * VPAD, 6 * THUMB_SIZE + 2 * HPAD));
+		else
+			setMinimumSize(new Dimension(6 * THUMB_SIZE + 2 * HPAD, THUMB_SIZE + VPAD * 2));
 
+		setPreferredSize(getMinimumSize());
+		
 		this.lstnr = createListener();
 		model.addChangeListener(lstnr);
 
@@ -186,6 +156,8 @@ public class JRangeSlider extends JComponent implements MouseListener, MouseMoti
 	 * the slider list model.
 	 */
 	protected class RangeSliderChangeListener implements ChangeListener {
+		
+		@Override
 		public void stateChanged(ChangeEvent e) {
 			fireChangeEvent();
 		}
@@ -280,33 +252,6 @@ public class JRangeSlider extends JComponent implements MouseListener, MouseMoti
 	}
 
 	/**
-	 * Sets whether this slider is empty.
-	 * @param empty true if set to empty, false otherwise
-	 */
-	public void setEmpty(boolean empty) {
-		this.empty = empty;
-		repaint();
-	}
-
-	/**
-	 * Get the slider thumb color. This is the part of the slider between
-	 * the range resize buttons.
-	 * @return the slider thumb color
-	 */
-	public Color getThumbColor() {
-		return thumbColor;
-	}
-
-	/**
-	 * Set the slider thumb color. This is the part of the slider between
-	 * the range resize buttons.
-	 * @param thumbColor the slider thumb color
-	 */
-	public void setThumbColor(Color thumbColor) {
-		this.thumbColor = thumbColor;
-	}
-
-	/**
 	 * Get the BoundedRangeModel backing this slider.
 	 * @return the slider's range model
 	 */
@@ -351,21 +296,10 @@ public class JRangeSlider extends JComponent implements MouseListener, MouseMoti
 		if (changeEvent == null)
 			changeEvent = new ChangeEvent(this);
 
-		Iterator iter = listeners.iterator();
+		Iterator<ChangeListener> iter = listeners.iterator();
 
 		while (iter.hasNext())
-			((ChangeListener) iter.next()).stateChanged(changeEvent);
-	}
-
-	/**
-	 * @see java.awt.Component#getPreferredSize()
-	 */
-	public Dimension getPreferredSize() {
-		if (orientation == VERTICAL) {
-			return new Dimension(PREFERRED_BREADTH, PREFERRED_LENGTH);
-		} else {
-			return new Dimension(PREFERRED_LENGTH, PREFERRED_BREADTH);
-		}
+			iter.next().stateChanged(changeEvent);
 	}
 
 	// ------------------------------------------------------------------------
@@ -382,274 +316,176 @@ public class JRangeSlider extends JComponent implements MouseListener, MouseMoti
 		// subclasses can override to perform custom painting
 	}
 
-	/**
-	 * @see javax.swing.JComponent#paintComponent(java.awt.Graphics)
-	 */
+	@Override
 	public void paintComponent(Graphics g) {
+		final boolean vertical = orientation == VERTICAL;
+		
+		// Working bounds (excludes padding)
 		Rectangle bounds = getBounds();
-		int width = (int) bounds.getWidth() - 1;
-		int height = (int) bounds.getHeight() - 1;
+		final int width = (int) Math.round(bounds.getWidth() - (2 * (vertical ? VPAD : HPAD)));
+		final int height = (int) Math.round(bounds.getHeight() - (2 * (vertical ? HPAD : VPAD)));
 
-		int min = toScreen(getLowValue());
-		int max = toScreen(getHighValue());
-
-		// Paint the full slider if the slider is marked as empty
-		if (empty) {
-			if (direction == LEFTRIGHT_TOPBOTTOM) {
-				min = ARROW_SZ;
-				max = (orientation == VERTICAL) ? (height - ARROW_SZ) : (width - ARROW_SZ);
-			} else {
-				min = (orientation == VERTICAL) ? (height - ARROW_SZ) : (width - ARROW_SZ);
-				max = ARROW_SZ;
-			}
+		final Graphics2D g2 = (Graphics2D) g;
+		g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+		
+		int x = trackX();
+		int y = trackY();
+		int w, h;
+		
+		// Draw track
+		if (vertical) {
+			w = TRACK_THICKNESS;
+			h = height - THUMB_SIZE;
+		} else {
+			w = width - THUMB_SIZE;
+			h = TRACK_THICKNESS;
 		}
-
-		Graphics2D g2 = (Graphics2D) g;
-		g2.setColor(getBackground());
-		g2.fillRect(0, 0, width, height);
-		g2.setColor(getForeground());
-		g2.setStroke(new BasicStroke(1));
-		g2.drawRect(0, 0, width, height);
+		
+		paintTrack(
+				g2,
+				trackColor1,
+				trackColor2,
+				isEnabled() ? borderColor : disabledBorderColor,
+				x, y, w, h
+		);
 
 		customPaint(g2, width, height);
-
-		// Draw arrow and thumb backgrounds
-
-		if (orientation == VERTICAL) {
-			if (direction == LEFTRIGHT_TOPBOTTOM) {
-				g2.setColor(getForeground());
-				g2.fillRect(0, min - ARROW_SZ, width, ARROW_SZ - 1);
-				paint3DRectLighting(g2, 0, min - ARROW_SZ, width, ARROW_SZ - 1);
-
-				if (thumbColor != null) {
-					g2.setColor(thumbColor);
-					g2.fillRect(0, min, width, max - min - 1);
-					paint3DRectLighting(g2, 0, min, width, max - min - 1);
-				}
-
-				g2.setColor(getForeground());
-				g2.fillRect(0, max, width, ARROW_SZ - 1);
-				paint3DRectLighting(g2, 0, max, width, ARROW_SZ - 1);
-
-				// Draw arrows          
-				g2.setColor(Color.black);
-				paintArrow(g2, (width - ARROW_WIDTH) / 2.0,
-				           min - ARROW_SZ + ((ARROW_SZ - ARROW_HEIGHT) / 2.0), ARROW_WIDTH,
-				           ARROW_HEIGHT, true);
-				paintArrow(g2, (width - ARROW_WIDTH) / 2.0,
-				           max + ((ARROW_SZ - ARROW_HEIGHT) / 2.0), ARROW_WIDTH, ARROW_HEIGHT, false);
-			} else {
-				g2.setColor(getForeground());
-				g2.fillRect(0, min, width, ARROW_SZ - 1);
-				paint3DRectLighting(g2, 0, min, width, ARROW_SZ - 1);
-
-				if (thumbColor != null) {
-					g2.setColor(thumbColor);
-					g2.fillRect(0, max, width, min - max - 1);
-					paint3DRectLighting(g2, 0, max, width, min - max - 1);
-				}
-
-				g2.setColor(getForeground());
-				g2.fillRect(0, max - ARROW_SZ, width, ARROW_SZ - 1);
-				paint3DRectLighting(g2, 0, max - ARROW_SZ, width, ARROW_SZ - 1);
-
-				// Draw arrows          
-				g2.setColor(Color.black);
-				paintArrow(g2, (width - ARROW_WIDTH) / 2.0,
-				           min + ((ARROW_SZ - ARROW_HEIGHT) / 2.0), ARROW_WIDTH, ARROW_HEIGHT, false);
-				paintArrow(g2, (width - ARROW_WIDTH) / 2.0,
-				           max - ARROW_SZ + ((ARROW_SZ - ARROW_HEIGHT) / 2.0), ARROW_WIDTH,
-				           ARROW_HEIGHT, true);
-			}
+		
+		// Draw range backgrounds
+		int min = toScreen(getLowValue());
+		int max = toScreen(getHighValue());
+		
+		if (vertical) {
+			y = min;
+			h = max - y;
 		} else {
-			if (direction == LEFTRIGHT_TOPBOTTOM) {
-				g2.setColor(getForeground());
-				g2.fillRect(min - ARROW_SZ, 0, ARROW_SZ - 1, height);
-				paint3DRectLighting(g2, min - ARROW_SZ, 0, ARROW_SZ - 1, height);
-
-				if (thumbColor != null) {
-					g2.setColor(thumbColor);
-					g2.fillRect(min, 0, max - min - 1, height);
-					paint3DRectLighting(g2, min, 0, max - min - 1, height);
-				}
-
-				g2.setColor(getForeground());
-				g2.fillRect(max, 0, ARROW_SZ - 1, height);
-				paint3DRectLighting(g2, max, 0, ARROW_SZ - 1, height);
-
-				// Draw arrows          
-				g2.setColor(Color.black);
-				paintArrow(g2, min - ARROW_SZ + ((ARROW_SZ - ARROW_HEIGHT) / 2.0),
-				           (height - ARROW_WIDTH) / 2.0, ARROW_HEIGHT, ARROW_WIDTH, true);
-				paintArrow(g2, max + ((ARROW_SZ - ARROW_HEIGHT) / 2.0),
-				           (height - ARROW_WIDTH) / 2.0, ARROW_HEIGHT, ARROW_WIDTH, false);
-			} else {
-				g2.setColor(getForeground());
-				g2.fillRect(min, 0, ARROW_SZ - 1, height);
-				paint3DRectLighting(g2, min, 0, ARROW_SZ - 1, height);
-
-				if (thumbColor != null) {
-					g2.setColor(thumbColor);
-					g2.fillRect(max, 0, min - max - 1, height);
-					paint3DRectLighting(g2, max, 0, min - max - 1, height);
-				}
-
-				g2.setColor(getForeground());
-				g2.fillRect(max - ARROW_SZ, 0, ARROW_SZ - 1, height);
-				paint3DRectLighting(g2, max - ARROW_SZ, 0, ARROW_SZ - 1, height);
-
-				// Draw arrows          
-				g2.setColor(Color.black);
-				paintArrow(g2, min + ((ARROW_SZ - ARROW_HEIGHT) / 2.0),
-				           (height - ARROW_WIDTH) / 2.0, ARROW_HEIGHT, ARROW_WIDTH, true);
-				paintArrow(g2, max - ARROW_SZ + ((ARROW_SZ - ARROW_HEIGHT) / 2.0),
-				           (height - ARROW_WIDTH) / 2.0, ARROW_HEIGHT, ARROW_WIDTH, false);
-			}
+			x = min;
+			w = max - x;
 		}
-	}
-
-	/**
-	 * This draws an arrow as a series of lines within the specified box.
-	 * The last boolean specifies whether the point should be at the
-	 * right/bottom or left/top.
-	 */
-	protected void paintArrow(Graphics2D g2, double x, double y, int w, int h, boolean topDown) {
-		int intX = (int) (x + 0.5);
-		int intY = (int) (y + 0.5);
-
-		if (orientation == VERTICAL) {
-			if ((w % 2) == 0) {
-				w = w - 1;
-			}
-
-			if (topDown) {
-				for (int i = 0; i < ((w / 2) + 1); i++) {
-					g2.drawLine(intX + i, intY + i, (intX + w) - i - 1, intY + i);
-				}
-			} else {
-				for (int i = 0; i < ((w / 2) + 1); i++) {
-					g2.drawLine((intX + (w / 2)) - i, intY + i, ((intX + w) - (w / 2) + i) - 1,
-					            intY + i);
-				}
-			}
+		
+		paintTrack(
+				g2,
+				rangeColor1,
+				isEnabled() ? rangeColor2 : trackColor2,
+				isEnabled() ? rangeBorderColor : disabledBorderColor,
+				x, y, w, h
+		);
+		
+		// Draw thumbs
+		w = h = THUMB_SIZE;
+		
+		if (vertical) {
+			x = (int) Math.round((bounds.getWidth() - THUMB_SIZE) / 2.0);
+			y = y - THUMB_SIZE;
 		} else {
-			if ((h % 2) == 0) {
-				h = h - 1;
-			}
-
-			if (topDown) {
-				for (int i = 0; i < ((h / 2) + 1); i++) {
-					g2.drawLine(intX + i, intY + i, intX + i, (intY + h) - i - 1);
-				}
-			} else {
-				for (int i = 0; i < ((h / 2) + 1); i++) {
-					g2.drawLine(intX + i, (intY + (h / 2)) - i, intX + i,
-					            ((intY + h) - (h / 2) + i) - 1);
-				}
-			}
+			x = x - THUMB_SIZE;
+			y = (int) Math.round((bounds.getHeight() - THUMB_SIZE) / 2.0);
 		}
+		
+		paintThumb(
+				g2,
+				isEnabled() ? thumbColor1 : thumbColor2,
+				thumbColor2,
+				x, y, w, h
+		);
+		
+		if (vertical)
+			y = max;
+		else
+			x = max;
+		
+		paintThumb(
+				g2,
+				isEnabled() ? thumbColor1 : thumbColor2,
+				thumbColor2,
+				x, y, w, h
+		);
 	}
-
-	/**
-	 * Adds Windows2K type 3D lighting effects
-	 */
-	protected void paint3DRectLighting(Graphics2D g2, int x, int y, int width, int height) {
-		g2.setColor(Color.white);
-		g2.drawLine(x + 1, y + 1, x + 1, (y + height) - 1);
-		g2.drawLine(x + 1, y + 1, (x + width) - 1, y + 1);
-		g2.setColor(Color.gray);
-		g2.drawLine(x + 1, (y + height) - 1, (x + width) - 1, (y + height) - 1);
-		g2.drawLine((x + width) - 1, y + 1, (x + width) - 1, (y + height) - 1);
-		g2.setColor(Color.darkGray);
-		g2.drawLine(x, y + height, x + width, y + height);
-		g2.drawLine(x + width, y, x + width, y + height);
+	
+	private int trackX() {
+		return orientation == VERTICAL ?
+				(int) Math.round((getBounds().getWidth() - TRACK_THICKNESS) / 2.0) :
+				(int) Math.round(HPAD + THUMB_SIZE / 2.0);
+	}
+	
+	private int trackY() {
+		return orientation == VERTICAL ?
+				(int) Math.round(HPAD + THUMB_SIZE / 2.0) :
+				(int) Math.round((getBounds().getHeight() - TRACK_THICKNESS) / 2.0);
+	}
+	
+	private void paintTrack(final Graphics g, final Color color1, final Color color2, final Color borderColor,
+			int x, int y, int w, int h) {
+		final Graphics2D g2 = (Graphics2D) g.create();
+		g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+		
+		final Point p1 = orientation == VERTICAL ? new Point(x, y) : new Point(x, y);
+		final Point p2 = orientation == VERTICAL ? new Point(x + w, y) : new Point(x, y + h);
+		final Paint p = new GradientPaint(p1, color1, p2, color2);
+		
+		final int arc = 4;
+		
+		// Background
+		g2.setPaint(p);
+		g2.fillRoundRect(x, y, w, h, arc, arc);
+		// Border
+		g2.setColor(borderColor);
+		g2.setStroke(new BasicStroke(1));
+		g2.drawRoundRect(x, y, w, h, arc, arc);
+		
+		g2.dispose();
+	}
+	
+	private void paintThumb(final Graphics g, final Color color1, final Color color2, int x, int y, int w, int h) {
+		final Graphics2D g2 = (Graphics2D) g.create();
+		g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+		
+		final Point p1 = new Point(x, y);
+		final Point p2 = new Point(x, y + h);
+		final Paint p = new GradientPaint(p1, color1, p2, color2);
+		
+		// Background
+		g2.setPaint(p);
+		g2.fillOval(x, y, w, h);
+		// Border
+		g2.setColor(isEnabled() ? borderColor : disabledBorderColor);
+		g2.setStroke(new BasicStroke(1));
+		g2.drawOval(x, y, w, h);
+		g2.dispose();
 	}
 
 	/**
 	 * Converts from screen coordinates to a range value.
 	 */
 	protected int toLocal(int xOrY) {
-		Dimension sz = getSize();
-		int min = getMinimum();
-		double scale;
+		final Dimension d = getSize();
+		final int min = getMinimum();
+		final int max = getMaximum();
+		double length = orientation == VERTICAL ? d.height : d.width;
+		double scale = (length - (2 * HPAD) - THUMB_SIZE) / (double) (max - min);
 
-		if (orientation == VERTICAL) {
-			scale = (sz.height - (2 * ARROW_SZ)) / (double) (getMaximum() - min);
-		} else {
-			scale = (sz.width - (2 * ARROW_SZ)) / (double) (getMaximum() - min);
-		}
-
-		if (direction == LEFTRIGHT_TOPBOTTOM) {
-			return (int) (((xOrY - ARROW_SZ) / scale) + min + 0.5);
-		} else {
-			if (orientation == VERTICAL) {
-				return (int) (((sz.height - xOrY - ARROW_SZ) / scale) + min + 0.5);
-			} else {
-				return (int) (((sz.width - xOrY - ARROW_SZ) / scale) + min + 0.5);
-			}
-		}
+		return (int) (((xOrY - THUMB_SIZE) / scale) + min + 0.5);
 	}
 
 	/**
 	 * Converts from a range value to screen coordinates.
 	 */
 	protected int toScreen(int xOrY) {
-		Dimension sz = getSize();
-		int min = getMinimum();
-		double scale;
+		final Dimension d = getSize();
+		final int min = getMinimum();
+		final int max = getMaximum();
+		double length = orientation == VERTICAL ? d.height : d.width;
+		double scale = (length - (2 * HPAD) - (2 * THUMB_SIZE)) / (double) (max - min);
 
-		if (orientation == VERTICAL) {
-			scale = (sz.height - (2 * ARROW_SZ)) / (double) (getMaximum() - min);
-		} else {
-			scale = (sz.width - (2 * ARROW_SZ)) / (double) (getMaximum() - min);
-		}
-
-		// If the direction is left/right_top/bottom then we subtract the min and multiply times scale
-		// Otherwise, we have to invert the number by subtracting the value from the height
-		if (direction == LEFTRIGHT_TOPBOTTOM) {
-			return (int) (ARROW_SZ + ((xOrY - min) * scale) + 0.5);
-		} else {
-			if (orientation == VERTICAL) {
-				return (int) (sz.height - ((xOrY - min) * scale) - ARROW_SZ + 0.5);
-			} else {
-				return (int) (sz.width - ((xOrY - min) * scale) - ARROW_SZ + 0.5);
-			}
-		}
+		return (int) (HPAD + THUMB_SIZE + ((xOrY - min) * scale));
 	}
-
-	/**
-	 * Converts from a range value to screen coordinates.
-	 */
-	protected double toScreenDouble(int xOrY) {
-		Dimension sz = getSize();
-		int min = getMinimum();
-		double scale;
-
-		if (orientation == VERTICAL) {
-			scale = (sz.height - (2 * ARROW_SZ)) / (double) ((getMaximum() + 1) - min);
-		} else {
-			scale = (sz.width - (2 * ARROW_SZ)) / (double) ((getMaximum() + 1) - min);
-		}
-
-		// If the direction is left/right_top/bottom then we subtract the min and multiply times scale
-		// Otherwise, we have to invert the number by subtracting the value from the height
-		if (direction == LEFTRIGHT_TOPBOTTOM) {
-			return ARROW_SZ + ((xOrY - min) * scale);
-		} else {
-			if (orientation == VERTICAL) {
-				return sz.height - ((xOrY - min) * scale) - ARROW_SZ;
-			} else {
-				return sz.width - ((xOrY - min) * scale) - ARROW_SZ;
-			}
-		}
-	}
-
+	
 	// ------------------------------------------------------------------------
 	// Event Handling
 	static final int PICK_NONE = 0;
-	static final int PICK_LEFT_OR_TOP = 1;
-	static final int PICK_THUMB = 2;
-	static final int PICK_RIGHT_OR_BOTTOM = 3;
+	static final int PICK_THUMB_1 = 1; // Left or Top Thumb
+	static final int PICK_RANGE = 2; // Range Track
+	static final int PICK_THUMB_2 = 3; // Right or Bottom Thumb
 	int pick;
 	int pickOffsetLow;
 	int pickOffsetHigh;
@@ -660,23 +496,12 @@ public class JRangeSlider extends JComponent implements MouseListener, MouseMoti
 		int max = toScreen(getHighValue());
 		int pick = PICK_NONE;
 
-		if (direction == LEFTRIGHT_TOPBOTTOM) {
-			if ((xOrY > (min - ARROW_SZ)) && (xOrY < min)) {
-				pick = PICK_LEFT_OR_TOP;
-			} else if ((xOrY >= min) && (xOrY <= max)) {
-				pick = PICK_THUMB;
-			} else if ((xOrY > max) && (xOrY < (max + ARROW_SZ))) {
-				pick = PICK_RIGHT_OR_BOTTOM;
-			}
-		} else {
-			if ((xOrY > min) && (xOrY < (min + ARROW_SZ))) {
-				pick = PICK_LEFT_OR_TOP;
-			} else if ((xOrY <= min) && (xOrY >= max)) {
-				pick = PICK_THUMB;
-			} else if (((xOrY > (max - ARROW_SZ)) && (xOrY < max))) {
-				pick = PICK_RIGHT_OR_BOTTOM;
-			}
-		}
+		if (xOrY >= (min - THUMB_SIZE) && xOrY <= min)
+			pick = PICK_THUMB_1;
+		else if (xOrY > min && xOrY < max)
+			pick = PICK_RANGE;
+		else if (xOrY >= max && xOrY <= (max + THUMB_SIZE))
+			pick = PICK_THUMB_2;
 
 		return pick;
 	}
@@ -685,10 +510,11 @@ public class JRangeSlider extends JComponent implements MouseListener, MouseMoti
 		model.setValue(model.getValue() + dxOrDy);
 	}
 
-	/**
-	 * @see java.awt.event.MouseListener#mousePressed(java.awt.event.MouseEvent)
-	 */
+	@Override
 	public void mousePressed(MouseEvent e) {
+		if (!isEnabled())
+			return;
+		
 		if (orientation == VERTICAL) {
 			pick = pickHandle(e.getY());
 			pickOffsetLow = e.getY() - toScreen(getLowValue());
@@ -704,12 +530,12 @@ public class JRangeSlider extends JComponent implements MouseListener, MouseMoti
 		repaint();
 	}
 
-	/**
-	 * @see java.awt.event.MouseMotionListener#mouseDragged(java.awt.event.MouseEvent)
-	 */
+	@Override
 	public void mouseDragged(MouseEvent e) {
+		if (!isEnabled())
+			return;
+		
 		requestFocus();
-
 		int value = (orientation == VERTICAL) ? e.getY() : e.getX();
 
 		int minimum = getMinimum();
@@ -718,140 +544,110 @@ public class JRangeSlider extends JComponent implements MouseListener, MouseMoti
 		int highValue = getHighValue();
 
 		switch (pick) {
-			case PICK_LEFT_OR_TOP:
+			case PICK_THUMB_1:
 
 				int low = toLocal(value - pickOffsetLow);
 
-				if (low < minimum) {
+				if (low < minimum)
 					low = minimum;
-				}
-
-				if (low > maximum) {
+				if (low > maximum)
 					low = maximum;
-				}
-
-				if (low > (highValue - minExtent)) {
+				if (low > (highValue - minExtent))
 					low = highValue - minExtent;
-				}
 
 				setLowValue(low);
-
 				break;
 
-			case PICK_RIGHT_OR_BOTTOM:
+			case PICK_THUMB_2:
 
 				int high = toLocal(value - pickOffsetHigh);
 
-				if (high < minimum) {
+				if (high < minimum)
 					high = minimum;
-				}
-
-				if (high > maximum) {
+				if (high > maximum)
 					high = maximum;
-				}
-
-				if (high < (lowValue + minExtent)) {
+				if (high < (lowValue + minExtent))
 					high = lowValue + minExtent;
-				}
 
 				setHighValue(high);
-
 				break;
 
-			case PICK_THUMB:
+			case PICK_RANGE:
 
 				int dxOrDy = toLocal(value - pickOffsetLow) - lowValue;
 
-				if ((dxOrDy < 0) && ((lowValue + dxOrDy) < minimum)) {
+				if ((dxOrDy < 0) && ((lowValue + dxOrDy) < minimum))
 					dxOrDy = minimum - lowValue;
-				}
-
-				if ((dxOrDy > 0) && ((highValue + dxOrDy) > maximum)) {
+				if ((dxOrDy > 0) && ((highValue + dxOrDy) > maximum))
 					dxOrDy = maximum - highValue;
-				}
-
-				if (dxOrDy != 0) {
+				if (dxOrDy != 0)
 					offset(dxOrDy);
-				}
 
 				break;
 		}
 	}
 
-	/**
-	 * @see java.awt.event.MouseListener#mouseReleased(java.awt.event.MouseEvent)
-	 */
+	@Override
 	public void mouseReleased(MouseEvent e) {
-		pick = PICK_NONE;
-		repaint();
+		if (isEnabled()) {
+			pick = PICK_NONE;
+			repaint();
+		}
 	}
 
-	/**
-	 * @see java.awt.event.MouseMotionListener#mouseMoved(java.awt.event.MouseEvent)
-	 */
+	@Override
 	public void mouseMoved(MouseEvent e) {
+		if (!isEnabled())
+			return;
+		
 		if (orientation == VERTICAL) {
 			switch (pickHandle(e.getY())) {
-				case PICK_LEFT_OR_TOP:
+				case PICK_THUMB_1:
 					setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-
 					break;
 
-				case PICK_RIGHT_OR_BOTTOM:
+				case PICK_THUMB_2:
 					setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-
 					break;
 
-				case PICK_THUMB:
+				case PICK_RANGE:
 					setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-
 					break;
 
 				case PICK_NONE:
 					setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-
 					break;
 			}
 		} else {
 			switch (pickHandle(e.getX())) {
-				case PICK_LEFT_OR_TOP:
+				case PICK_THUMB_1:
 					setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-
 					break;
 
-				case PICK_RIGHT_OR_BOTTOM:
+				case PICK_THUMB_2:
 					setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-
 					break;
 
-				case PICK_THUMB:
+				case PICK_RANGE:
 					setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-
 					break;
 
 				case PICK_NONE:
 					setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-
 					break;
 			}
 		}
 	}
 
-	/**
-	 * @see java.awt.event.MouseListener#mouseClicked(java.awt.event.MouseEvent)
-	 */
+	@Override
 	public void mouseClicked(MouseEvent e) {
 	}
 
-	/**
-	 * @see java.awt.event.MouseListener#mouseEntered(java.awt.event.MouseEvent)
-	 */
+	@Override
 	public void mouseEntered(MouseEvent e) {
 	}
 
-	/**
-	 * @see java.awt.event.MouseListener#mouseExited(java.awt.event.MouseEvent)
-	 */
+	@Override
 	public void mouseExited(MouseEvent e) {
 	}
 
@@ -860,10 +656,11 @@ public class JRangeSlider extends JComponent implements MouseListener, MouseMoti
 		                         model.getMinimum(), model.getMaximum(), false);
 	}
 
-	/**
-	 * @see java.awt.event.KeyListener#keyPressed(java.awt.event.KeyEvent)
-	 */
+	@Override
 	public void keyPressed(KeyEvent e) {
+		if (!isEnabled())
+			return;
+		
 		int kc = e.getKeyCode();
 		boolean v = (orientation == VERTICAL);
 		boolean d = (kc == KeyEvent.VK_DOWN);
@@ -895,15 +692,25 @@ public class JRangeSlider extends JComponent implements MouseListener, MouseMoti
 		}
 	}
 
-	/**
-	 * @see java.awt.event.KeyListener#keyReleased(java.awt.event.KeyEvent)
-	 */
+	@Override
 	public void keyReleased(KeyEvent e) {
 	}
 
-	/**
-	 * @see java.awt.event.KeyListener#keyTyped(java.awt.event.KeyEvent)
-	 */
+	@Override
 	public void keyTyped(KeyEvent e) {
 	}
-} // end of class JRangeSlider
+	
+//	public static void main(String... s) {
+//		JFrame frame = new JFrame();
+//		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+//		frame.getContentPane().setLayout(new BorderLayout());
+//		
+//		final JRangeSlider jrs = new JRangeSlider(0, 100, 50, 75, HORIZONTAL);
+////		jrs.setEnabled(false);
+//
+//		frame.getContentPane().add(jrs);
+//
+//		frame.pack();
+//		frame.setVisible(true);
+//	}
+}

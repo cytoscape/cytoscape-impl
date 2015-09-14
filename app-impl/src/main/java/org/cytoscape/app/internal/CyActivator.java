@@ -395,8 +395,8 @@ public class CyActivator extends AbstractCyActivator {
 		PackageAdmin packageAdmin = getService(bc, PackageAdmin.class);
 		
 		// Instantiate new manager
-		final AppManager appManager = new AppManager(cyAppAdapter, 
-				cyApplicationConfigurationServiceRef, cyEventHelperRef, webQuerier, startLevel, bc);
+		final AppManager appManager = new AppManager(cyAppAdapter, cyApplicationConfigurationServiceRef,
+				cytoscapeVersionService, cyEventHelperRef, webQuerier, startLevel, bc);
 		registerService(bc, appManager, AppManager.class, new Properties());
 		bc.addFrameworkListener(appManager);
 		

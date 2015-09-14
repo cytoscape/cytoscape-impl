@@ -65,8 +65,6 @@ public class PSICQUICWebServiceClient extends AbstractWebServiceGUIClient implem
 
 	private SearchRecoredsTask searchTask;
 
-	private final CyAction mergeAction;
-
 	private final PSIMI25VisualStyleBuilder vsBuilder;
 	private final VisualMappingManager vmm;
 	private final PSIMITagManager tagManager;
@@ -87,8 +85,7 @@ public class PSICQUICWebServiceClient extends AbstractWebServiceGUIClient implem
 									final VisualMappingManager vmm,
 									final PSIMITagManager tagManager,
 									final CyProperty<Properties> props,
-									final CyServiceRegistrar registrar,
-									final CyAction mergeAction) {
+									final CyServiceRegistrar registrar) {
 		super(uri, displayName, description);
 
 		this.networkManager = networkManager;
@@ -99,7 +96,6 @@ public class PSICQUICWebServiceClient extends AbstractWebServiceGUIClient implem
 		this.tagManager = tagManager;
 		this.props = props;
 		this.registrar = registrar;
-		this.mergeAction = mergeAction;
 		
 		regManager = new RegistryManager();
 		client = new PSICQUICRestClient(networkFactory, regManager, builder);
@@ -129,7 +125,7 @@ public class PSICQUICWebServiceClient extends AbstractWebServiceGUIClient implem
 	@Override
 	public Container getQueryBuilderGUI() {
 		return new PSICQUICSearchUI(networkManager, regManager, client, tManager, createViewTaskFactory, vsBuilder,
-				vmm, tagManager, props, registrar, mergeAction);
+				vmm, tagManager, props, registrar);
 	}
 
 	PSICQUICRestClient getRestClient() {

@@ -293,7 +293,7 @@ public final class TypeUtil {
 	private static boolean isInteger(final String val) {
 		if (val != null) {
 			try {
-				final long n = Long.parseLong(val);
+				final long n = Long.parseLong(val.trim());
 				return n <= Integer.MAX_VALUE && n >= Integer.MIN_VALUE;
 			} catch (NumberFormatException e) {
 			}
@@ -305,7 +305,7 @@ public final class TypeUtil {
 	private static boolean isLong(final String val) {
 		if (val != null) {
 			try {
-				Long.parseLong(val);
+				Long.parseLong(val.trim());
 				return true;
 			} catch (NumberFormatException e) {
 			}
@@ -317,7 +317,7 @@ public final class TypeUtil {
 	private static boolean isDouble(final String val) {
 		if (val != null) {
 			try {
-				Double.parseDouble(val);
+				Double.parseDouble(val.trim());
 				return true;
 			} catch (NumberFormatException e) {
 			}

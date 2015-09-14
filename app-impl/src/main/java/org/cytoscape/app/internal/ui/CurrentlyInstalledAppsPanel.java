@@ -358,9 +358,9 @@ public class CurrentlyInstalledAppsPanel extends javax.swing.JPanel {
     	for (App app : appManager.getApps()) {
     		
     		// Hide apps with certain statuses from the table, such as uninstalled ones.
-    		if (app.isDetached()) {
+    		if (app.isDetached() || app.isCoreApp()) {
     			// Do nothing
-    			DebugHelper.print(this, "Detached app: " + app.getAppName() + ", status: " + app.getStatus());
+    			//DebugHelper.print(this, "Detached app: " + app.getAppName() + ", status: " + app.getStatus());
     		} else {
 	    		tableModel.addRow(new Object[]{
 						app,
@@ -383,7 +383,7 @@ public class CurrentlyInstalledAppsPanel extends javax.swing.JPanel {
     	for (App app : appManager.getApps()) {
     		
     		// Count the number of displayed apps
-    		if (!app.isDetached()) {
+    		if (!(app.isDetached() || app.isCoreApp())) {
     			listedCount++;
     		} else {
     			DebugHelper.print(this, "Detached app: " + app.getAppName() + ", status: " + app.getStatus());
