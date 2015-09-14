@@ -26,7 +26,6 @@ package org.cytoscape.internal.actions;
 
 import java.awt.Container;
 import java.awt.Dimension;
-import java.awt.Font;
 import java.util.Stack;
 
 import javax.swing.BorderFactory;
@@ -89,7 +88,6 @@ public class CommandListUI extends JDialog {
 		};
 
 		commandTable.getTableHeader().setPreferredSize(new Dimension(500, 30));
-		commandTable.getTableHeader().setFont(new Font("Dialog", Font.BOLD, 14));
 		final JLabel rend = (JLabel) commandTable.getTableHeader().getDefaultRenderer();
 		rend.setHorizontalAlignment(SwingConstants.CENTER);
 

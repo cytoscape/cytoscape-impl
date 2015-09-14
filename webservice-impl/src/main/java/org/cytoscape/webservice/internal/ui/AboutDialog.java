@@ -145,7 +145,7 @@ public final class AboutDialog extends JDialog implements HyperlinkListener {
 		mainScrollPane.setViewportView(mainEditorPane);
 		
 		titleLabel = new JLabel();
-		titleLabel.setFont(new Font("SansSerif", Font.BOLD, 18));
+		titleLabel.setFont(new Font(titleLabel.getName(), Font.BOLD, 18));
 		titleLabel.setText("Client Name Here");
 
 		titlePanel = new JPanel();

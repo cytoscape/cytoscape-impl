@@ -481,7 +481,7 @@ public class AttributeEditorPanel extends JPanel {
 	private JToggleButton createDataTypeButton(final AttributeDataType dataType) {
 		final JToggleButton btn = new JToggleButton(dataType.getText());
 		btn.setToolTipText(dataType.getDescription());
-		btn.setFont(new Font("Serif", Font.BOLD, 11));
+		btn.setFont(new Font("Serif", Font.BOLD, 11)); // This font is used as an icon--Don't change it!
 		btn.setName(dataType.toString());
 		btn.addActionListener(new DataTypeButtonActionListener(dataType.isList()));
 		
