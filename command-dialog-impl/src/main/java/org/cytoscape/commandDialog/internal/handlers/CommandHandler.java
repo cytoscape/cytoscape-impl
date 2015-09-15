@@ -62,18 +62,22 @@ import org.cytoscape.work.util.ListSingleSelection;
 import org.ops4j.pax.logging.spi.PaxAppender;
 import org.ops4j.pax.logging.spi.PaxLevel;
 import org.ops4j.pax.logging.spi.PaxLoggingEvent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-public class CommandHandler extends Handler
-                            implements PaxAppender, TaskObserver {
-	boolean processingCommand = false;
+public class CommandHandler extends Handler implements PaxAppender, TaskObserver {
+	
+	boolean processingCommand;
 	AvailableCommands availableCommands;
 	CommandExecutorTaskFactory commandExecutor;
-	MessageHandler resultsText = null;
-	SynchronousTaskManager taskManager = null;
+	MessageHandler resultsText;
+	SynchronousTaskManager<?> taskManager;
+	
+	private final static Logger logger = LoggerFactory.getLogger(CommandHandler.class);
 
 	public CommandHandler(AvailableCommands availableCommands, 
 	                      CommandExecutorTaskFactory commandExecutor,
-	                      SynchronousTaskManager taskManager) {
+	                      SynchronousTaskManager<?> taskManager) {
 		this.availableCommands = availableCommands;
 		this.commandExecutor = commandExecutor;
 		this.taskManager = taskManager;
@@ -101,7 +105,8 @@ public class CommandHandler extends Handler
 				}
 			}
 		} catch (RuntimeException e) {
-			resultsText.appendError("  "+e.getMessage());
+			logger.error("Error handling command \"" + input + "\"", e);
+			resultsText.appendError("  " + e.getMessage());
 		}
 		resultsText.appendMessage("");
 	}
@@ -342,7 +347,10 @@ public class CommandHandler extends Handler
 				for (int index = 0; index < list.size()-1; index++) { 
 					str += keyword(list.get(index).toString())+"|"; 
 				}
-				str += keyword(list.get(list.size()-1).toString())+")&gt;"; 
+				if (!list.isEmpty())
+					str += keyword(list.get(list.size()-1).toString()); 
+				str += ")&gt;";
+				
 				return fixedSpan(str);
 			}
 		} else if (clazz.equals(ListMultipleSelection.class)) {
@@ -353,7 +361,10 @@ public class CommandHandler extends Handler
 				for (int index = 0; index < list.size()-1; index++) { 
 					str += keyword(list.get(index).toString())+","; 
 				}
-				str += keyword(list.get(list.size()-1).toString())+"]&gt;"; 
+				if (!list.isEmpty())
+					str += keyword(list.get(list.size()-1).toString());
+				str += "]&gt;";
+				
 				return fixedSpan(str);
 			}
 		} else if (clazz.equals(BoundedDouble.class) || clazz.equals(BoundedFloat.class) ||

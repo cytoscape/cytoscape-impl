@@ -26,12 +26,14 @@ package org.cytoscape.command.internal.available;
 
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
+import java.text.Collator;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import org.cytoscape.application.CyApplicationManager;
@@ -44,13 +46,10 @@ import org.cytoscape.task.NetworkViewTaskFactory;
 import org.cytoscape.task.TableTaskFactory;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.work.AbstractTaskFactory;
-import org.cytoscape.work.AbstractTunableHandler;
 import org.cytoscape.work.ServiceProperties;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.Tunable;
-import org.cytoscape.command.AvailableCommands;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -86,9 +85,10 @@ public class AvailableCommandsImpl implements AvailableCommands {
 	public List<String> getNamespaces() {
 		List<String> l;
 		synchronized (lock) {
-			l = new ArrayList<String>( argHandlers.keySet() );
+			l = new ArrayList<>( argHandlers.keySet() );
 		}
-		Collections.sort(l);
+		sort(l);
+		
 		return l;
 	}
 
@@ -99,8 +99,9 @@ public class AvailableCommandsImpl implements AvailableCommands {
 			if ( mm == null ) {
 				return Collections.emptyList();
 			} else {
-				List<String> l = new ArrayList<String>( mm.keySet() );
-				Collections.sort(l);
+				List<String> l = new ArrayList<>( mm.keySet() );
+				sort(l);
+				
 				return l;
 			}
 		}
@@ -132,11 +133,11 @@ public class AvailableCommandsImpl implements AvailableCommands {
 				}
 	
 				// At this point, we should definitely have everything to create the arguments
-				List<String> l = new ArrayList<String>();
-				for (ArgHandler ah: ll.values()) {
+				List<String> l = new ArrayList<>();
+				for (ArgHandler ah: ll.values())
 					l.add(ah.getName());
-				}
-				Collections.sort(l);
+				sort(l);
+				
 				return l;
 			}
 		}
@@ -343,6 +344,17 @@ public class AvailableCommandsImpl implements AvailableCommands {
 			e.printStackTrace();
 			return Collections.emptyMap();
 		}
+	}
+	
+	private void sort(final List<String> list) {
+		final Collator collator = Collator.getInstance(Locale.getDefault());
+		
+		Collections.sort(list, new Comparator<String>() {
+			@Override
+			public int compare(String s1, String s2) {
+				return collator.compare(s1, s2);
+			}
+		});
 	}
 
 	class StaticTaskFactoryProvisioner {

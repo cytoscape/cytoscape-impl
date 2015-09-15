@@ -70,9 +70,11 @@ public final class TypeUtil {
 	);
 	
 	private static final String[] PREF_KEY_NAMES = new String[] {
-		"shared name", "name", "identifier", "id", "node", "node id", "edge", "edge id",
-		"names", "identifiers", "ids", "nodes", "node ids", "edges", "edge ids",
+		"shared name", "name", "identifier", "id", "key", "names", "identifiers", "ids", "keys",
+		"node", "node id", "node key", "edge", "edge id", "edge key",
+		"nodes", "node ids", "node keys", "edges", "edge ids", "edge keys",
 		"gene", "gene id", "gene name", "protein",
+		"genes", "gene ids", "gene names", "proteins"
 	};
 	private static final String[] PREF_SOURCE_NAMES = new String[] {
 		"source", "source node", "source name", "source id", "source identifier",
