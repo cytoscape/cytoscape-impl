@@ -29,6 +29,7 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
+import javax.swing.UIManager;
 import javax.swing.border.Border;
 
 import org.cytoscape.ding.customgraphics.AbstractCustomGraphics2;
@@ -75,13 +76,12 @@ public class ColorSchemeEditor<T extends AbstractCustomGraphics2<?>> extends JPa
 		this.network = network;
 		this.iconMgr = iconMgr;
 		
-		JList tmpList = new JList();
 		COLOR_BORDER = BorderFactory.createCompoundBorder(
-				BorderFactory.createLineBorder(Color.WHITE, 2),
-				BorderFactory.createLineBorder(Color.GRAY, 1));
+				BorderFactory.createLineBorder(UIManager.getColor("TextField.background"), 2),
+				BorderFactory.createLineBorder(UIManager.getColor("TextField.inactiveForeground"), 1));
 		COLOR_HOVER_BORDER = BorderFactory.createCompoundBorder(
-				BorderFactory.createLineBorder(tmpList.getSelectionBackground(), 2),
-				BorderFactory.createLineBorder(tmpList.getSelectionForeground(), 1));
+				BorderFactory.createLineBorder(UIManager.getColor("Focus.color"), 2),
+				BorderFactory.createLineBorder(UIManager.getColor("TextField.background"), 1));
 		
 		init();
 		updateColorList(false);

@@ -588,6 +588,7 @@ public class CyActivator extends AbstractCyActivator {
 				);
 				UIManager.put("TableHeader.background", UIManager.getColor("Table.background"));
 				UIManager.put("Separator.foreground", new Color(208, 208, 208));
+				UIManager.put("Focus.color", UIManager.getColor("TextField.selectionBackground"));
 			} else if (LookAndFeelUtil.isNimbusLAF()) {
 				UIManager.put("Table.background", Color.WHITE);
 				UIManager.put("Table.gridColor", Color.WHITE);

@@ -24,7 +24,6 @@ package org.cytoscape.app.internal.ui;
  * #L%
  */
 
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
@@ -49,6 +48,7 @@ import org.cytoscape.app.internal.manager.AppManager;
 import org.cytoscape.app.internal.manager.BundleApp;
 import org.cytoscape.app.internal.manager.SimpleApp;
 import org.cytoscape.app.internal.util.DebugHelper;
+import org.cytoscape.util.swing.LookAndFeelUtil;
 
 /**
  * This class represents the panel in the App Manager dialog's tab used for checking for currently installed apps.
@@ -122,7 +122,7 @@ public class CurrentlyInstalledAppsPanel extends javax.swing.JPanel {
 			public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
 				if(table.getValueAt(row, 2).equals(AppStatus.FAILED_TO_LOAD.toString()) || 
 						table.getValueAt(row, 2).equals(AppStatus.FAILED_TO_START.toString()))
-					setForeground(Color.RED);
+					setForeground(LookAndFeelUtil.ERROR_COLOR);
 				else
 					setForeground(null);
 				return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);

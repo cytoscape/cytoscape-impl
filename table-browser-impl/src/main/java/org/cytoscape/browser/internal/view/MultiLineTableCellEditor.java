@@ -25,7 +25,6 @@ package org.cytoscape.browser.internal.view;
  */
 
 
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Rectangle;
@@ -40,6 +39,7 @@ import javax.swing.AbstractCellEditor;
 import javax.swing.BorderFactory;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
+import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.table.TableCellEditor;
@@ -56,7 +56,7 @@ public class MultiLineTableCellEditor extends AbstractCellEditor implements Tabl
 
 	public MultiLineTableCellEditor() {
 		textArea = new ResizableTextArea(this);
-		textArea.setBorder(BorderFactory.createLineBorder(Color.GRAY));
+		textArea.setBorder(BorderFactory.createLineBorder(UIManager.getColor("Label.disabledForeground")));
 		textArea.setLineWrap(true);
 		textArea.setWrapStyleWord(true);
 	}

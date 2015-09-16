@@ -21,6 +21,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 
 import org.cytoscape.ding.internal.charts.AbstractChartEditor.DoubleInputVerifier;
 import org.cytoscape.util.swing.LookAndFeelUtil;
@@ -280,13 +281,13 @@ public class PointPicker extends JPanel {
 		final int w = (int) fieldWidth;
 		final int h = (int) fieldHeight;
 
-		g2.setColor(Color.LIGHT_GRAY);
+		g2.setColor(UIManager.getColor("Panel.background"));
 		g2.fillRect(x, y, w, h);
-		g2.setColor(Color.DARK_GRAY);
+		g2.setColor(UIManager.getColor("Label.disabledForeground"));
 		g2.drawRect(x, y, w, h);
 
-		drawTarget(g2, 3.2f, Color.DARK_GRAY);
-		drawTarget(g2, 1.0f, Color.WHITE);
+		drawTarget(g2, 3.2f, UIManager.getColor("Label.foreground"));
+		drawTarget(g2, 1.0f, UIManager.getColor("Table.background"));
 	}
     
     protected void drawTarget(final Graphics2D g2, final float strokeWidth, final Color strokeColor) {

@@ -24,13 +24,13 @@ package org.cytoscape.browser.internal.view;
  * #L%
  */
 
-import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Map;
 
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
+import javax.swing.UIManager;
 
 import org.cytoscape.util.swing.OpenBrowser;
 
@@ -48,7 +48,7 @@ public class OpenURLMenu extends JMenu {
 		this.structure = menuStructure;
 		this.openBrowser = openBrowser;
 
-		setBackground(Color.white);
+		setBackground(UIManager.getColor("Table.background"));
 
 		final String dispStr;
 		if (value.length() > 30)
@@ -71,6 +71,7 @@ public class OpenURLMenu extends JMenu {
 			for (final String name : children.keySet()) {
 				JMenuItem dbLink = new JMenuItem(name);
 				dbLink.addActionListener(new ActionListener() {
+					@Override
 					public void actionPerformed(ActionEvent e) {
 						final String url = structure.get(category).get(name).replace("%ID%", value);
 						openBrowser.openURL(url);

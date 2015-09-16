@@ -24,17 +24,17 @@ package org.cytoscape.internal.view.help;
  * #L%
  */
 
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GraphicsConfiguration;
 import java.awt.GraphicsEnvironment;
 import java.awt.Insets;
+import java.awt.RenderingHints;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -49,6 +49,7 @@ import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.Timer;
+import javax.swing.UIManager;
 
 import org.cytoscape.application.CyVersion;
 import org.cytoscape.application.swing.CySwingApplication;
@@ -107,15 +108,12 @@ public class CreditScreen {
 
 		timer = new Timer(100, scrollText);
 
-		dialog.addMouseListener(new MouseListener() {
-				public void mouseClicked(MouseEvent e) {
-					hideCredits();
-				}
-				public void mouseEntered(MouseEvent e) { }
-				public void mouseExited(MouseEvent e) { }
-				public void mousePressed(MouseEvent e) { }
-				public void mouseReleased(MouseEvent e) { }
-			});
+		dialog.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				hideCredits();
+			}
+		});
 
 		timer.start();
 		dialog.setVisible(true);
@@ -127,8 +125,9 @@ public class CreditScreen {
 			timer.stop();
 	}
 
+	@SuppressWarnings("serial")
 	private class ScrollingLinesPanel extends JPanel {
-		private final static long serialVersionUID = 1202339874718767L;
+		
 		int yPos;
 		int xPos;
 		ImageIcon background;
@@ -144,11 +143,15 @@ public class CreditScreen {
 			setPreferredSize(new Dimension(background.getIconWidth(), background.getIconHeight()));
 		}
 
+		@Override
 		protected void paintComponent(Graphics g) {
+			final Graphics2D g2 = (Graphics2D) g;
+			g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+			
 			g.drawImage(background.getImage(), 0, 0, null);
-			((Graphics2D) g).setPaint(Color.black);
-			g.drawString("Java version: " +System.getProperty("java.version"),xPos+50,20);
-			g.drawString(version,xPos,120);
+			((Graphics2D) g).setPaint(UIManager.getColor("Label.foreground"));
+			g.drawString("Java version: " + System.getProperty("java.version"), xPos + 50, 20);
+			g.drawString(version, xPos, 120);
 
 			int i = 1;
 			int y = yPos;
@@ -170,23 +173,12 @@ public class CreditScreen {
 		}
 	}
 
-
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @param dialog DOCUMENT ME!
-	 */
 	protected void centerDialogOnScreen(JDialog dialog) {
 		centerDialogSize(dialog);
 		centerDialogLocation(dialog);
 		dialog.setVisible(true);
 	} 
 
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @param dialog DOCUMENT ME!
-	 */
 	protected void centerDialogSize(JDialog dialog) {
 		Dimension screen_size = Toolkit.getDefaultToolkit().getScreenSize();
 		GraphicsConfiguration configuration = GraphicsEnvironment.getLocalGraphicsEnvironment()
@@ -205,11 +197,6 @@ public class CreditScreen {
 		dialog.setSize(frame_size);
 	} 
 
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @param dialog DOCUMENT ME!
-	 */
 	protected void centerDialogLocation(JDialog dialog) {
 		Dimension screen_size = Toolkit.getDefaultToolkit().getScreenSize();
 		GraphicsConfiguration configuration = GraphicsEnvironment.getLocalGraphicsEnvironment()

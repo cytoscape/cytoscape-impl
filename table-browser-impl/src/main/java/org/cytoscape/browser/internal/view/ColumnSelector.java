@@ -318,7 +318,7 @@ public class ColumnSelector extends JPanel {
 		@Override
 		public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,
 				boolean hasFocus, int row, int column) {
-			final Color bg = LookAndFeelUtil.isNimbusLAF() ? Color.WHITE : table.getBackground();
+			final Color bg = UIManager.getColor("Table.background");
 			
 			chk.setSelected((boolean)value);
 			chk.setToolTipText((boolean)value ? "Show" : "Hide");

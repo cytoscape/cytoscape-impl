@@ -27,7 +27,6 @@ import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static org.cytoscape.util.swing.LookAndFeelUtil.isAquaLAF;
 
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -419,7 +418,7 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 	private JComboBox<CyLayoutAlgorithm> getAlgorithmCmb() {
 		if (algorithmCmb == null) {
 			algorithmCmb = new JComboBox<CyLayoutAlgorithm>();
-			algorithmCmb.setRenderer(new LayoutAlgorithmListCellRenderer("Select algorithm to view settings"));
+			algorithmCmb.setRenderer(new LayoutAlgorithmListCellRenderer("-- Select algorithm to view settings --"));
 			
 			algorithmCmb.addActionListener(new ActionListener() {
 				@Override
@@ -599,7 +598,7 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 		}
 		
 		@Override
-		public Component getListCellRendererComponent(JList list, Object value, int index,
+		public Component getListCellRendererComponent(JList<?> list, Object value, int index,
 		                                              boolean isSelected, boolean cellHasFocus) {
 			super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
 			
@@ -611,7 +610,6 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 			} else {
 				setText(defaultText);
 				setHorizontalAlignment(CENTER);
-				setForeground(Color.GRAY);
 			}
 			
 			return this;

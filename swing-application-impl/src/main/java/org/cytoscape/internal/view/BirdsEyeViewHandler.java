@@ -35,6 +35,7 @@ import java.util.WeakHashMap;
 
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.NetworkViewRenderer;
@@ -56,10 +57,11 @@ import org.slf4j.LoggerFactory;
  */
 public class BirdsEyeViewHandler implements SetCurrentRenderingEngineListener, NetworkViewDestroyedListener {
 
+	@SuppressWarnings("unused")
 	private static final Logger logger = LoggerFactory.getLogger(BirdsEyeViewHandler.class);
 
 	private static final Dimension DEF_PANEL_SIZE = new Dimension(300, 300);
-	private static final Color DEF_BACKGROUND_COLOR = Color.WHITE;
+	private final Color DEF_BACKGROUND_COLOR = UIManager.getColor("Table.background");
 
 	private final JPanel bevPanel;
 	private final Map<CyNetworkView, RenderingEngine<?>> viewToEngineMap;
@@ -78,8 +80,8 @@ public class BirdsEyeViewHandler implements SetCurrentRenderingEngineListener, N
 
 		this.appManager = appManager;
 		this.netViewManager = netViewManager;
-		this.viewToEngineMap = new WeakHashMap<CyNetworkView, RenderingEngine<?>>();
-		this.presentationMap = new WeakHashMap<CyNetworkView, JPanel>();
+		this.viewToEngineMap = new WeakHashMap<>();
+		this.presentationMap = new WeakHashMap<>();
 
 		this.bevPanel = new JPanel();
 		this.bevPanel.setLayout(new BorderLayout());
@@ -131,7 +133,6 @@ public class BirdsEyeViewHandler implements SetCurrentRenderingEngineListener, N
 				presentationPanel = presentationMap.get(newView);
 		
 				if (presentationPanel == null) {
-					logger.debug("Creating new BEV for: " + newView);
 					presentationPanel = new JPanel();
 					NetworkViewRenderer renderer = appManager.getCurrentNetworkViewRenderer();
 					RenderingEngineFactory<CyNetwork> bevFactory = renderer.getRenderingEngineFactory(NetworkViewRenderer.BIRDS_EYE_CONTEXT);

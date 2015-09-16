@@ -190,7 +190,6 @@ public abstract class AbstractTableBrowser extends JPanel
 				serviceRegistrar.registerAllServices(browserTable, new Properties());
 				serviceRegistrar.registerAllServices(browserTableModel, new Properties());
 				browserTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-//				browserTable.getTableHeader().setBackground(Color.LIGHT_GRAY);
 				browserTable.setModel(browserTableModel);
 				
 				//move and hide SUID and selected by default
