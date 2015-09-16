@@ -20,6 +20,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.ToolTipManager;
+import javax.swing.UIManager;
 
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
@@ -57,12 +58,38 @@ import org.cytoscape.work.swing.AbstractGUITunableHandler.TunableFieldPanel;
  */
 public final class GUIDefaults {
 
-	public static final int TEXT_BOX_WIDTH = 150;
-	
 	public static final String ICON_INFO = IconManager.ICON_INFO_CIRCLE;
 	public static final String ICON_WARN = IconManager.ICON_EXCLAMATION_TRIANGLE;
 	public static final String ICON_ERROR = IconManager.ICON_MINUS_CIRCLE;
-	public static final String ICON_CANCEL = IconManager.ICON_TIMES;
+	public static final String ICON_CANCELLED = IconManager.ICON_BAN;
+	public static final String ICON_FINISHED = IconManager.ICON_CHECK;
+	
+	public static enum TaskIcon {
+		INFO(LookAndFeelUtil.INFO_COLOR, ICON_INFO),
+		WARN(LookAndFeelUtil.WARN_COLOR, ICON_WARN),
+		ERROR(LookAndFeelUtil.ERROR_COLOR, ICON_ERROR),
+		CANCELLED(LookAndFeelUtil.ERROR_COLOR, ICON_CANCELLED),
+		FINISHED(LookAndFeelUtil.GO_COLOR, ICON_FINISHED),
+		TASKS(UIManager.getColor("Label.foreground"), IconManager.ICON_LIST_UL);
+		
+		private final Color foreground;
+		private final String text;
+
+		private TaskIcon(final Color foreground, final String text) {
+			this.foreground = foreground;
+			this.text = text;
+		}
+
+		public Color getForeground() {
+			return foreground != null ? foreground : UIManager.getColor("Label.foreground");
+		}
+		
+		public String getText() {
+			return text;
+		}
+	}
+	
+	public static final int TEXT_BOX_WIDTH = 150;
 	
 	public static final Map<String, URL> ICON_URLS = new HashMap<>();
 	static {
@@ -75,8 +102,8 @@ public final class GUIDefaults {
 
 	public static final Map<String, Icon> ICONS = new HashMap<>();
 	static {
-		for (final Map.Entry<String, URL> icon : ICON_URLS.entrySet()) {
-			ICONS.put(icon.getKey(), new ImageIcon(icon.getValue()));
+		for (final Map.Entry<String, URL> entry : ICON_URLS.entrySet()) {
+			ICONS.put(entry.getKey(), new ImageIcon(entry.getValue()));
 		}
 	}
 	

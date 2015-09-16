@@ -87,7 +87,7 @@ public class CyActivator extends AbstractCyActivator {
 		JDialogTunableMutator jDialogTunableMutator = new JDialogTunableMutator();
 		JPanelTunableMutator jPanelTunableMutator = new JPanelTunableMutator();
 
-		final TaskStatusBar taskStatusBar = new TaskStatusBar();
+		final TaskStatusBar taskStatusBar = new TaskStatusBar(serviceRegistrar);
 		final TaskHistory taskHistory = new TaskHistory();
 		taskStatusBar.addPropertyChangeListener(TaskStatusBar.TASK_HISTORY_CLICK, new PropertyChangeListener() {
 			TaskHistoryWindow window = null;

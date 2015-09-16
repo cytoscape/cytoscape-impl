@@ -24,11 +24,12 @@ package org.cytoscape.internal.view;
  * #L%
  */
 
+import static javax.swing.GroupLayout.DEFAULT_SIZE;
+import static javax.swing.GroupLayout.PREFERRED_SIZE;
+
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
 import java.awt.Toolkit;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -36,15 +37,18 @@ import java.util.Dictionary;
 import java.util.Properties;
 
 import javax.swing.BorderFactory;
+import javax.swing.GroupLayout;
+import javax.swing.GroupLayout.Alignment;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JPanel;
-import javax.swing.JSeparator;
 import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JToolBar;
+import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import javax.swing.WindowConstants;
 
 import org.cytoscape.application.CyShutdown;
@@ -65,6 +69,7 @@ import org.cytoscape.session.events.SessionLoadedListener;
 import org.cytoscape.session.events.SessionSavedEvent;
 import org.cytoscape.session.events.SessionSavedListener;
 import org.cytoscape.util.swing.IconManager;
+import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.work.swing.DialogTaskManager;
 import org.cytoscape.work.swing.TaskStatusPanelFactory;
 import org.slf4j.Logger;
@@ -87,6 +92,7 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 	private static final String SMALL_ICON = "/images/logo.png";
 	private static final int DIVIDER_SIZE = 4;
 	
+	@SuppressWarnings("unused")
 	private static final Logger logger = LoggerFactory.getLogger(CytoscapeDesktop.class);
 	
 	/**
@@ -110,7 +116,7 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 	private CytoPanelImp cytoPanelSouthWest; 
 
 	// Status Bar TODO: Move this to log-swing to avoid cyclic dependency.
-	private JPanel main_panel;
+	private JPanel mainPanel;
 	private final CyShutdown shutdown; 
 	private final CyEventHelper cyEventHelper;
 	private final CyServiceRegistrar registrar;
@@ -141,20 +147,20 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 
 		setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource(SMALL_ICON)));
 
-		main_panel = new JPanel();
-		main_panel.setLayout(new BorderLayout());
+		mainPanel = new JPanel();
+		mainPanel.setLayout(new BorderLayout());
 
 		// create the CytoscapeDesktop
 		final BiModalJSplitPane masterPane = setupCytoPanels(networkViewManager);
 
-		main_panel.add(masterPane, BorderLayout.CENTER);
-		main_panel.add(cyMenus.getJToolBar(), BorderLayout.NORTH);
+		mainPanel.add(masterPane, BorderLayout.CENTER);
+		mainPanel.add(cyMenus.getJToolBar(), BorderLayout.NORTH);
 
 		statusToolBar = setupStatusPanel(taskStatusPanelFactory);
 
 		setJMenuBar(cyMenus.getJMenuBar());
 
-		if(MacFullScreenEnabler.supportsNativeFullScreenMode()) {
+		if (MacFullScreenEnabler.supportsNativeFullScreenMode()) {
 			MacFullScreenEnabler.setEnabled(this, true);
 		}
 
@@ -163,13 +169,14 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 		setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 
 		addWindowListener(new WindowAdapter() {
-				public void windowClosing(WindowEvent we) {
-					shutdown.exit(0);
-				}
-			});
+			@Override
+			public void windowClosing(WindowEvent we) {
+				shutdown.exit(0);
+			}
+		});
 
 		// Prepare to show the desktop...
-		setContentPane(main_panel);
+		setContentPane(mainPanel);
 		pack();
 		setSize(DEF_DESKTOP_SIZE);
 		
@@ -185,33 +192,45 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 	}
 
 	private JToolBar setupStatusPanel(TaskStatusPanelFactory taskStatusPanelFactory) {
-		final JPanel statusPanel = new JPanel(new GridBagLayout());
-		statusPanel.setOpaque(false);
-		statusPanel.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, (new JSeparator()).getForeground()));
-		
-		final GridBagConstraints c = new GridBagConstraints();
-		final JToolBar statusToolBar = new JToolBar();
-		statusToolBar.setOpaque(false);
-
 		final JPanel taskStatusPanel = taskStatusPanelFactory.createTaskStatusPanel();
+		final JToolBar statusToolBar = new JToolBar();
+		final MemStatusPanel memStatusPanel = new MemStatusPanel();
+		
+		if (LookAndFeelUtil.isNimbusLAF()) {
+			taskStatusPanel.setOpaque(false);
+			statusToolBar.setOpaque(false);
+			memStatusPanel.setOpaque(false);
+		}
 
-		c.gridx = 0;		c.gridy = 0;
-		c.gridwidth = 1;	c.gridheight = 1;
-		c.weightx = 1.0;	c.weighty = 0.0;
-		c.fill = GridBagConstraints.HORIZONTAL;
-		c.anchor = GridBagConstraints.WEST;
-		statusPanel.add(taskStatusPanel, c);
-
-		c.gridx++;
-		c.weightx = 0.0;	c.weighty = 0.0;
-		c.fill = GridBagConstraints.NONE;
-		statusPanel.add(statusToolBar, c);
-
-		c.gridx++;
-		c.anchor = GridBagConstraints.EAST;
-		statusPanel.add(new MemStatusPanel(), c);
-
-		main_panel.add(statusPanel, BorderLayout.SOUTH);
+		final JPanel statusPanel = new JPanel();
+		statusPanel.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, UIManager.getColor("Separator.foreground")));
+		
+		final GroupLayout layout = new GroupLayout(statusPanel);
+		statusPanel.setLayout(layout);
+		layout.setAutoCreateContainerGaps(false);
+		layout.setAutoCreateGaps(false);
+		
+		layout.setHorizontalGroup(layout.createSequentialGroup()
+				.addContainerGap()
+				.addComponent(taskStatusPanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				.addPreferredGap(ComponentPlacement.UNRELATED)
+				.addComponent(statusToolBar, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				.addPreferredGap(ComponentPlacement.UNRELATED)
+				.addComponent(memStatusPanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				.addContainerGap()
+		);
+		layout.setVerticalGroup(layout.createSequentialGroup()
+				.addGap(LookAndFeelUtil.isWinLAF() ? 5 : 0)
+				.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
+						.addComponent(taskStatusPanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addComponent(statusToolBar, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addComponent(memStatusPanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				)
+				.addGap(LookAndFeelUtil.isWinLAF() ? 5 : 0)
+		);
+		
+		mainPanel.add(statusPanel, BorderLayout.SOUTH);
+		
 		return statusToolBar;
 	}
 
