@@ -45,6 +45,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
 import javax.swing.JPanel;
+import javax.swing.UIManager;
 
 import org.cytoscape.ding.impl.ObjectPositionImpl;
 
@@ -63,9 +64,15 @@ public class ObjectPlacerGraphic extends JPanel implements PropertyChangeListene
 	private static final double GRAVITY_DISTANCE = 10;
 	
 	// Color scheme for GUI
-	private static final Color transparentRed = new Color(1.0f, 0.0f, 0.0f, 0.1f);
-	private static final Color transparentBlue = new Color(0.0f, 0.0f, 1.0f, 0.1f);
-	private static final Color transparentMagenta = new Color(0.0f, 0.0f, 1.0f, 0.05f);
+	private final Color BG_COLOR = UIManager.getColor("TextField.background");
+	
+	private final Color LABEL_BOX_FG_COLOR = new Color(251, 108, 13); // Orange color from Cytoscape palette
+	private final Color LABEL_BOX_BG_COLOR = new Color(251, 108, 13, 25);
+	
+	private final Color NODE_BOX_FG_COLOR = new Color(14, 59, 149); // Blue color from Cytoscape palette
+	private final Color NODE_BOX_BG_COLOR = new Color(14, 59, 149, 30);
+	
+	private final Color POINT_HIGHLIGHT_COLOR = new Color(255, 198, 94); // Yellow color from Cytoscape palette
 	
 	private int center;
 	private float offsetRatio;
@@ -98,12 +105,12 @@ public class ObjectPlacerGraphic extends JPanel implements PropertyChangeListene
 	private int bestNodeY = 1;
 
 	// mouse drag state
-	private boolean beenDragged = false;
-	private boolean canOffsetDrag = false;
+	private boolean beenDragged;
+	private boolean canOffsetDrag;
 
 	// click offset
-	private int xClickOffset = 0;
-	private int yClickOffset = 0;
+	private int xClickOffset;
+	private int yClickOffset;
 
 	// the x and y offsets for the label rendering
 	private int xOffset;
@@ -111,38 +118,33 @@ public class ObjectPlacerGraphic extends JPanel implements PropertyChangeListene
 
 	// default text justify rule
 	private Justification justify;
-
 	
-
 	// used to determine the render level of detail
 	private boolean renderDetail;
 
 	// strings for the graphic
 	private String objectLabel = "LABEL";
 	private String targetLabel = "NODE";
-	private String click = "CLICK 'N DRAG";
+	private String click = "(click and drag)";
 
 	// font metrics for strings
-	private int labelLen = 0;
-	private int clickLen = 0;
-	private int ascent = 0;
+	private int labelLen;
+	private int clickLen;
+	private int ascent;
 	private int detailStrokeWidth = 3;
 	private int lowStrokeWidth = 1;
-	private Stroke detailStroke = new BasicStroke(detailStrokeWidth);
-	private Stroke lowStroke = new BasicStroke(lowStrokeWidth);
+	private final Stroke detailStroke = new BasicStroke(detailStrokeWidth);
+	private final Stroke lowStroke = new BasicStroke(lowStrokeWidth);
 
 	private Integer graphicSize;
 	
 
 	/**
-	 * A gui for placing a label relative to a node.
+	 * A GUI for placing an object (e.g. a label) relative to a node.
 	 * 
-	 * @param pos
-	 *            initial label position
-	 * @param graphicSize
-	 *            number of pixels square the that graphic should be
-	 * @param fullDetail
-	 *            whether or not to render at full detail or not
+	 * @param graphicSize number of pixels square the that graphic should be
+	 * @param fullDetail whether or not to render at full detail
+	 * @param objectName
 	 */
 	public ObjectPlacerGraphic(final Integer graphicSize, boolean fullDetail, final String objectName) {
 		super();
@@ -157,7 +159,7 @@ public class ObjectPlacerGraphic extends JPanel implements PropertyChangeListene
 		else
 			initSize(graphicSize);
 
-		setBackground(Color.WHITE);
+		setBackground(BG_COLOR);
 
 		addMouseListener(new MouseClickHandler());
 		addMouseMotionListener(new MouseDragHandler());
@@ -224,14 +226,14 @@ public class ObjectPlacerGraphic extends JPanel implements PropertyChangeListene
 		}
 
 		// clear the screen
-		g.setColor(Color.WHITE);
+		g.setColor(UIManager.getColor("Table.background"));
 		g.fillRect(0, 0, w, h);
 
 		// draw the node box
 		int x = center - (nxy / 2);
 		int y = center - (nxy / 2);
 
-		g.setColor(transparentBlue);
+		g.setColor(NODE_BOX_BG_COLOR);
 		g.fillOval(x, y, nxy, nxy);
 
 		if (renderDetail)
@@ -239,7 +241,7 @@ public class ObjectPlacerGraphic extends JPanel implements PropertyChangeListene
 		else
 			g.setStroke(lowStroke);
 
-		g.setColor(Color.BLUE);
+		g.setColor(NODE_BOX_FG_COLOR);
 		g.drawLine(x, y, x + nxy, y);
 		g.drawLine(x + nxy, y, x + nxy, y + nxy);
 		g.drawLine(x + nxy, y + nxy, x, y + nxy);
@@ -249,26 +251,22 @@ public class ObjectPlacerGraphic extends JPanel implements PropertyChangeListene
 			g.drawString(targetLabel, center - (nxy / 12), center - (nxy / 6));
 
 			// draw the node box points
-			g.setColor(Color.BLACK);
-			int gd = (int) ((GRAVITY_DISTANCE * 2) + (dot / 2));
-
-			for (int i = 0; i < npoints.length; i++)
+			for (int i = 0; i < npoints.length; i++) {
 				for (int j = 0; j < npoints.length; j++) {
-					g.setColor(transparentMagenta);
-					g.fillOval(npoints[i] - (gd / 2), npoints[j] - (gd / 2), gd, gd);
 					if ((i == bestNodeX) && (j == bestNodeY) && !beenDragged)
-						g.setColor(Color.YELLOW);
+						g.setColor(POINT_HIGHLIGHT_COLOR);
 					else
-						g.setColor(Color.BLACK);
+						g.setColor(NODE_BOX_FG_COLOR);
 					g.fillOval(npoints[i] - (dot / 2), npoints[j] - (dot / 2), dot, dot);
 				}
+			}
 		}
 
 		// draw the label box
-		g.setColor(transparentRed);
+		g.setColor(LABEL_BOX_BG_COLOR);
 		g.fillRect(xOffset + xPos, yOffset + yPos, lx, ly);
 
-		g.setColor(Color.RED);
+		g.setColor(LABEL_BOX_FG_COLOR);
 		g.drawLine(xOffset + xPos, yOffset + yPos, xOffset + xPos + lx, yOffset + yPos);
 		g.drawLine(xOffset + xPos + lx, yOffset + yPos, xOffset + xPos + lx, yOffset + yPos + ly);
 		g.drawLine(xOffset + xPos + lx, yOffset + yPos + ly, xOffset + xPos, yOffset + yPos + ly);
@@ -290,44 +288,34 @@ public class ObjectPlacerGraphic extends JPanel implements PropertyChangeListene
 				g.drawString(click, (xOffset + xPos + ((lx - clickLen) / 2)) - detailStrokeWidth, yOffset + yPos
 						+ (2 * (vspace + ascent)));
 			}
-		} else {
-			g.setColor(Color.GRAY);
-
-			if (justify == JUSTIFY_LEFT)
-				g.drawLine(xOffset + xPos + lowStrokeWidth, yOffset + yPos + (ly / 2), xOffset + xPos + (lx / 3),
-						yOffset + yPos + (ly / 2));
-			else if (justify == JUSTIFY_RIGHT)
-				g.drawLine(xOffset + xPos + ((2 * lx) / 3), yOffset + yPos + (ly / 2), xOffset + xPos + lx, yOffset
-						+ yPos + (ly / 2));
-			else
-				g.drawLine(xOffset + xPos + (lx / 3), yOffset + yPos + (ly / 2), (xOffset + xPos + ((2 * lx) / 3))
-						- lowStrokeWidth, yOffset + yPos + (ly / 2));
 		}
 
 		if (renderDetail) {
 			// draw the label box points
-			g.setColor(Color.BLACK);
+			g.setColor(LABEL_BOX_FG_COLOR);
 
 			for (int i = 0; i < lxpoints.length; i++)
 				for (int j = 0; j < lypoints.length; j++) {
 					if ((i == bestLabelX) && (j == bestLabelY) && !beenDragged)
-						g.setColor(Color.YELLOW);
+						g.setColor(POINT_HIGHLIGHT_COLOR);
 
 					g.fillOval((xPos + xOffset + lxpoints[i]) - (dot / 2), (yPos + yOffset + lypoints[j]) - (dot / 2),
 							dot, dot);
 
 					if ((i == bestLabelX) && (j == bestLabelY))
-						g.setColor(Color.BLACK);
+						g.setColor(LABEL_BOX_FG_COLOR);
 				}
 		}
 	}
 
 	private class MouseClickHandler extends MouseAdapter {
+		
 		/**
 		 * Only allows dragging if we're in the label box. Also sets the offset
 		 * from where the click is and where the box is, so the box doesn't
 		 * appear to jump around too much.
 		 */
+		@Override
 		public void mousePressed(MouseEvent e) {
 			int x = e.getX();
 			int y = e.getY();
@@ -344,6 +332,7 @@ public class ObjectPlacerGraphic extends JPanel implements PropertyChangeListene
 		/**
 		 * Finds the closest points once the dragging is finished.
 		 */
+		@Override
 		public void mouseReleased(MouseEvent e) {
 			if (beenDragged) {
 
@@ -413,9 +402,11 @@ public class ObjectPlacerGraphic extends JPanel implements PropertyChangeListene
 	}
 
 	private class MouseDragHandler extends MouseMotionAdapter {
+		
 		/**
 		 * Handles redrawing for dragging.
 		 */
+		@Override
 		public void mouseDragged(MouseEvent e) {
 			// dragging within normal box
 			if (canOffsetDrag) {

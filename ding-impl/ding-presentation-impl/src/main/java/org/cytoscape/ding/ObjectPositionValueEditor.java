@@ -67,7 +67,7 @@ public class ObjectPositionValueEditor extends JPanel implements ValueEditor<Obj
 	
 	public ObjectPositionValueEditor() {
 		super();
-		this.label = "Object";
+		this.label = "OBJECT";
 	}
 
 	@SuppressWarnings("serial")
