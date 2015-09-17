@@ -30,7 +30,6 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Polygon;
 import java.awt.RenderingHints;
-import java.awt.SystemColor;
 import java.awt.geom.AffineTransform;
 
 import javax.swing.JPanel;
@@ -74,8 +73,8 @@ public class YValueLegendPanel extends JPanel {
 		g.fillPolygon(poly);
 
 		g2d.drawLine(center, top, center, panelHeight);
-		g2d.setColor(SystemColor.textInactiveText);
-		g2d.setFont(UIManager.getFont("Label.font").deriveFont(Font.BOLD, LookAndFeelUtil.INFO_FONT_SIZE));
+		g2d.setColor(UIManager.getColor("Label.disabledForeground"));
+		g2d.setFont(UIManager.getFont("Label.font").deriveFont(Font.BOLD, LookAndFeelUtil.getSmallFontSize()));
 
 		final String label = type.getDisplayName();
 		final int width = SwingUtilities.computeStringWidth(g2d.getFontMetrics(), label);
@@ -83,7 +82,7 @@ public class YValueLegendPanel extends JPanel {
 		af.rotate(Math.PI + (Math.PI / 2));
 		g2d.setTransform(af);
 
-		g2d.setColor(SystemColor.textText);
+		g2d.setColor(UIManager.getColor("Label.foreground"));
 		g2d.drawString(type.getDisplayName(), (-this.getHeight() / 2) - (width / 2), (this.getWidth() / 2) + 5);
 	}
 

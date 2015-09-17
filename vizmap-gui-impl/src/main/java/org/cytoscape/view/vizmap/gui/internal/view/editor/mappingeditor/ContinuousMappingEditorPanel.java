@@ -404,7 +404,7 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 				propertyLabel.setLabelFor(getPropertyComponent());
 			} else {
 				propertyLabel.setText("Double-click on icon to change " + type.getDisplayName());
-				propertyLabel.setFont(propertyLabel.getFont().deriveFont(LookAndFeelUtil.INFO_FONT_SIZE));
+				propertyLabel.setFont(propertyLabel.getFont().deriveFont(LookAndFeelUtil.getSmallFontSize()));
 			}
 		}
 		

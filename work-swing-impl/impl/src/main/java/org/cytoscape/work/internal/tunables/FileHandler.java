@@ -188,7 +188,7 @@ public class FileHandler extends AbstractGUITunableHandler implements DirectlyPr
 		textField = new JTextField();
 		textField.setEditable(false);
 		textField.setForeground(UIManager.getColor("Label.disabledForeground"));
-		textField.setFont(textField.getFont().deriveFont(LookAndFeelUtil.INFO_FONT_SIZE));
+		textField.setFont(textField.getFont().deriveFont(LookAndFeelUtil.getSmallFontSize()));
 		
 		browseButton = new JButton( (input ? "Open File..." : "Browse..."), (input ? image : null) );
 		browseButton.setActionCommand(input ? "open" : "save");

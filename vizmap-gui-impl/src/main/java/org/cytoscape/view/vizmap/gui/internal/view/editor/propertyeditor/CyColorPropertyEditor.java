@@ -49,10 +49,7 @@ import com.l2fprod.common.beans.editor.ColorPropertyEditor;
 import com.l2fprod.common.swing.ComponentFactory;
 import com.l2fprod.common.swing.PercentLayout;
 
-/**
- * ColorPropertyEditor. <br>
- * 
- */
+
 public class CyColorPropertyEditor extends AbstractPropertyEditor {
 
 	private CyColorCellRenderer label;
@@ -63,10 +60,6 @@ public class CyColorPropertyEditor extends AbstractPropertyEditor {
 
 	private final CyColorChooser chooser;
 
-	/**
-	 * Creates a new CyColorPropertyEditor object.
-	 * @param themeManager 
-	 */
 	public CyColorPropertyEditor(final CyColorChooser chooser, final ServicesUtil servicesUtil) {
 		this.chooser = chooser;
 

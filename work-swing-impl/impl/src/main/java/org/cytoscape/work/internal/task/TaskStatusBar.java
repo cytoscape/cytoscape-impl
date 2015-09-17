@@ -197,7 +197,7 @@ public class TaskStatusBar extends JPanel implements TaskStatusPanelFactory {
 			component.putClientProperty("JComponent.sizeVariant", "small");
 		} else {
 			final Font font = component.getFont();
-			final Font newFont = new Font(font.getFontName(), font.getStyle(), (int)LookAndFeelUtil.INFO_FONT_SIZE);
+			final Font newFont = new Font(font.getFontName(), font.getStyle(), (int)LookAndFeelUtil.getSmallFontSize());
 			component.setFont(newFont);
 		}
 	}

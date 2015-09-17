@@ -11,7 +11,6 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Paint;
 import java.awt.Point;
-import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
@@ -758,10 +757,10 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 			fg = INFO_COLOR;
 		} else if (type == MessageType.WARNING) {
 			text = IconManager.ICON_WARNING;
-			fg = LookAndFeelUtil.WARN_COLOR;
+			fg = LookAndFeelUtil.getWarnColor();
 		} else if (type == MessageType.ERROR) {
 			text = IconManager.ICON_MINUS_CIRCLE;
-			fg = LookAndFeelUtil.ERROR_COLOR;
+			fg = LookAndFeelUtil.getErrorColor();
 		}
 		
 		getMsgIconLbl().setText(text);
@@ -952,8 +951,8 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 
 	static class VizMapperButton extends JButton {
 
-		static final Color BG_COLOR_1 = new Color(226, 226, 226);
-		static final Color BG_COLOR_2 = Color.WHITE;
+		static final Color BG_COLOR_1 = UIManager.getColor("Button.background");
+		static final Color BG_COLOR_2 = UIManager.getColor("Table.background");;
 		static final Color BG_DISABLED_COLOR = new Color(248, 248, 248);
 		
 		VizMapperButton() {

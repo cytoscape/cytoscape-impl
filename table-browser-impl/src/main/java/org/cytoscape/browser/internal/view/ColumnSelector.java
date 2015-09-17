@@ -251,7 +251,7 @@ public class ColumnSelector extends JPanel {
 		
 		DefaultSelectorTableCellRenderer() {
 			typeFont = new Font("Serif", Font.BOLD, 11); // This font is used as an icon--Don't change it!
-			defFont = getFont().deriveFont(LookAndFeelUtil.INFO_FONT_SIZE);
+			defFont = getFont().deriveFont(LookAndFeelUtil.getSmallFontSize());
 			iconManager = serviceRegistrar.getService(IconManager.class);
 		}
 		

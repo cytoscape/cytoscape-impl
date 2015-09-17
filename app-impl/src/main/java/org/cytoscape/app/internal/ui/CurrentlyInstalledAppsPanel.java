@@ -122,7 +122,7 @@ public class CurrentlyInstalledAppsPanel extends javax.swing.JPanel {
 			public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
 				if(table.getValueAt(row, 2).equals(AppStatus.FAILED_TO_LOAD.toString()) || 
 						table.getValueAt(row, 2).equals(AppStatus.FAILED_TO_START.toString()))
-					setForeground(LookAndFeelUtil.ERROR_COLOR);
+					setForeground(LookAndFeelUtil.getErrorColor());
 				else
 					setForeground(null);
 				return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);

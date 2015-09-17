@@ -35,7 +35,7 @@ public class RoundedProgressBar extends JComponent {
 	RoundRectangle2D.Float fgRect = new RoundRectangle2D.Float();
 	
 	final Color bgColor = UIManager.getColor("Separator.foreground");
-	final Color fgColor = LookAndFeelUtil.GO_COLOR;
+	final Color fgColor = LookAndFeelUtil.getSuccessColor();
 
 	public RoundedProgressBar() {
 		final int h = (int) Math.ceil(HEIGHT);

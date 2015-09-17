@@ -13,7 +13,6 @@ import java.awt.image.BufferedImage;
 
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
-import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -21,6 +20,7 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JToggleButton;
+import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
@@ -34,9 +34,9 @@ class MemStatusPanel extends JPanel {
 	static final int MEM_STATE_ICON_DIM_PX = 14;
 	
 	static enum MemState {
-		MEM_OK       (0.00f, 0.75f, LookAndFeelUtil.GO_COLOR, "OK"),
-		MEM_LOW      (0.75f, 0.85f, LookAndFeelUtil.WARN_COLOR, "Low"),
-		MEM_VERY_LOW (0.85f, 1.00f, LookAndFeelUtil.ERROR_COLOR, "Very Low");
+		MEM_OK       (0.00f, 0.75f, LookAndFeelUtil.getSuccessColor(), "OK"),
+		MEM_LOW      (0.75f, 0.85f, LookAndFeelUtil.getWarnColor(), "Low"),
+		MEM_VERY_LOW (0.85f, 1.00f, LookAndFeelUtil.getErrorColor(), "Very Low");
 
 		final float minRange;
 		final float maxRange;
@@ -207,7 +207,7 @@ class MemStatusPanel extends JPanel {
 			component.putClientProperty("JComponent.sizeVariant", "small");
 		} else {
 			final Font font = component.getFont();
-			final Font newFont = new Font(font.getFontName(), font.getStyle(), (int)LookAndFeelUtil.INFO_FONT_SIZE);
+			final Font newFont = new Font(font.getFontName(), font.getStyle(), (int)LookAndFeelUtil.getSmallFontSize());
 			component.setFont(newFont);
 		}
 	}

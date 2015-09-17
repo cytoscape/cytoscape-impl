@@ -24,7 +24,6 @@ package org.cytoscape.view.vizmap.gui.internal.view.editor.propertyeditor;
  * #L%
  */
 
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -41,6 +40,7 @@ import java.util.TreeSet;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.UIManager;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyIdentifiable;
@@ -152,7 +152,7 @@ public final class AttributeComboBoxPropertyEditor extends CyComboBoxPropertyEdi
 			if (keys != null && !keys.contains(valueString)) {
 				this.setEnabled(false);
 				this.setFocusable(false);
-				this.setForeground(Color.LIGHT_GRAY);
+				this.setForeground(UIManager.getColor("Label.disabledForeground"));
 				this.setToolTipText("This column does not exist in current network's table.");
 			} else {
 				this.setEnabled(true);

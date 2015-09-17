@@ -206,7 +206,7 @@ class TaskDialog extends JDialog {
 		invokeOnEDT(new Runnable() {
 			@Override
 			public void run() {
-				setStatus(GUIDefaults.ICON_ERROR, LookAndFeelUtil.ERROR_COLOR, t.getMessage());
+				setStatus(GUIDefaults.ICON_ERROR, LookAndFeelUtil.getErrorColor(), t.getMessage());
 				progressBar.setVisible(false);
 				closeButton.setVisible(true);
 				cancelButton.setVisible(false);

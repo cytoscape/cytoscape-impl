@@ -435,7 +435,7 @@ public class FormulaBuilderDialog extends JDialog {
 	private JLabel getInfoLabel() {
 		if (infoLabel == null) {
 			infoLabel = new JLabel(FUNC_SELECTION_MESSAGE);
-			infoLabel.setFont(infoLabel.getFont().deriveFont(LookAndFeelUtil.INFO_FONT_SIZE));
+			infoLabel.setFont(infoLabel.getFont().deriveFont(LookAndFeelUtil.getSmallFontSize()));
 			infoLabel.setPreferredSize(new Dimension(320, infoLabel.getPreferredSize().height));
 			
 			if (function != null)
@@ -448,7 +448,7 @@ public class FormulaBuilderDialog extends JDialog {
 	private JLabel getUsageLabel() {
 		if (usageLabel == null) {
 			usageLabel = new JLabel(" ");
-			usageLabel.setFont(usageLabel.getFont().deriveFont(LookAndFeelUtil.INFO_FONT_SIZE));
+			usageLabel.setFont(usageLabel.getFont().deriveFont(LookAndFeelUtil.getSmallFontSize()));
 			usageLabel.setPreferredSize(new Dimension(320, usageLabel.getPreferredSize().height));
 			
 			if (function != null)

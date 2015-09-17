@@ -65,23 +65,29 @@ public final class GUIDefaults {
 	public static final String ICON_FINISHED = IconManager.ICON_CHECK;
 	
 	public static enum TaskIcon {
-		INFO(LookAndFeelUtil.INFO_COLOR, ICON_INFO),
-		WARN(LookAndFeelUtil.WARN_COLOR, ICON_WARN),
-		ERROR(LookAndFeelUtil.ERROR_COLOR, ICON_ERROR),
-		CANCELLED(LookAndFeelUtil.ERROR_COLOR, ICON_CANCELLED),
-		FINISHED(LookAndFeelUtil.GO_COLOR, ICON_FINISHED),
-		TASKS(UIManager.getColor("Label.foreground"), IconManager.ICON_LIST_UL);
+		INFO(ICON_WARN),
+		WARN(ICON_WARN),
+		ERROR(ICON_ERROR),
+		CANCELLED(ICON_CANCELLED),
+		FINISHED(ICON_FINISHED),
+		TASKS(IconManager.ICON_LIST_UL);
 		
-		private final Color foreground;
 		private final String text;
 
-		private TaskIcon(final Color foreground, final String text) {
-			this.foreground = foreground;
+		private TaskIcon(final String text) {
 			this.text = text;
 		}
 
 		public Color getForeground() {
-			return foreground != null ? foreground : UIManager.getColor("Label.foreground");
+			// We have to do this (rather than cache the colors) to make sure they have been initialized
+			switch (this) {
+				case INFO:      return LookAndFeelUtil.getInfoColor();
+				case WARN:      return LookAndFeelUtil.getWarnColor();
+				case ERROR:     return LookAndFeelUtil.getErrorColor();
+				case CANCELLED: return LookAndFeelUtil.getErrorColor();
+				case FINISHED:  return LookAndFeelUtil.getSuccessColor();
+				default:        return UIManager.getColor("Label.foreground");
+			}
 		}
 		
 		public String getText() {
@@ -118,9 +124,9 @@ public final class GUIDefaults {
 	
 	public static Color getForeground(final Level level) {
 		switch (level) {
-			case INFO:  return LookAndFeelUtil.INFO_COLOR;
-			case WARN:  return LookAndFeelUtil.WARN_COLOR;
-			case ERROR: return LookAndFeelUtil.ERROR_COLOR;
+			case INFO:  return LookAndFeelUtil.getInfoColor();
+			case WARN:  return LookAndFeelUtil.getWarnColor();
+			case ERROR: return LookAndFeelUtil.getErrorColor();
 			default:    return null;
 		}
 	}

@@ -25,9 +25,7 @@ package org.cytoscape.view.vizmap.gui.internal.view.editor.mappingeditor;
  */
 
 import java.awt.BasicStroke;
-import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Polygon;
@@ -59,10 +57,6 @@ public class DiscreteTrackRenderer<K, V> extends JComponent implements VizMapTra
 
 	private final static long serialVersionUID = 1213748837182053L;
 
-	private static final Font TITLE_FONT = new Font("SansSerif", Font.BOLD, 12);
-	private static final Font TRACK_FONT = new Font("SansSerif", Font.PLAIN, 10);
-	private static final Color BACKGROUND_COLOR = Color.WHITE;
-	
 	private static final Dimension MIN_SIZE = new Dimension(200, 100);
 	private static final int ICON_SIZE = 32;
 	private static final int THUMB_WIDTH = 12;
@@ -176,7 +170,7 @@ public class DiscreteTrackRenderer<K, V> extends JComponent implements VizMapTra
 		arrow.addPoint(trackWidth - 20, arrowBarYPosition);
 		g.fill(arrow);
 
-		g.setColor(Color.GRAY);
+		g.setColor(LABEL_COLOR);
 		g.drawLine(0, arrowBarYPosition, 15, arrowBarYPosition - 30);
 		g.drawLine(15, arrowBarYPosition - 30, 25, arrowBarYPosition - 30);
 
@@ -190,7 +184,7 @@ public class DiscreteTrackRenderer<K, V> extends JComponent implements VizMapTra
 		int strWidth = SwingUtilities.computeStringWidth(g.getFontMetrics(), maxStr);
 		g.drawString(maxStr, trackWidth - strWidth - 26, arrowBarYPosition + 35);
 
-		g.setColor(Color.BLACK);
+		g.setColor(LABEL_COLOR);
 		strWidth = SwingUtilities.computeStringWidth(g.getFontMetrics(), title);
 		g.drawString(title, (trackWidth / 2) - (strWidth / 2), arrowBarYPosition + 35);
 
@@ -219,13 +213,13 @@ public class DiscreteTrackRenderer<K, V> extends JComponent implements VizMapTra
 			int newX = (int) (trackWidth * (fractions[i] / 100));
 
 			p2.setLocation(newX, 5);
-			g.setColor(Color.BLACK);
+			g.setColor(LABEL_COLOR);
 			g.setStroke(STROKE1);
 
 			g.drawLine(newX, 5, newX, trackHeight + 4);
 
-			g.setColor(Color.DARK_GRAY);
-			g.setFont(TRACK_FONT);
+			g.setColor(LABEL_COLOR);
+			g.setFont(SMALL_FONT);
 
 			final Float curPositionValue = ((Number) (((fractions[i] / 100) * valueRange) + minValue)).floatValue();
 			final String valueString = String.format("%.5f", curPositionValue);
@@ -236,26 +230,26 @@ public class DiscreteTrackRenderer<K, V> extends JComponent implements VizMapTra
 			if (((i % 2) == 0) && (flipLimit < borderVal)) {
 				g.drawLine(newX, arrowBarYPosition, newX + 20, arrowBarYPosition - 15);
 				g.drawLine(newX + 20, arrowBarYPosition - 15, newX + 30, arrowBarYPosition - 15);
-				g.setColor(Color.BLACK);
+				g.setColor(LABEL_COLOR);
 				g.drawString(valueString, newX + 33, arrowBarYPosition - 11);
 			} else if (((i % 2) == 1) && (flipLimit < borderVal)) {
 				g.drawLine(newX, arrowBarYPosition, newX + 20, arrowBarYPosition + 15);
 				g.drawLine(newX + 20, arrowBarYPosition + 15, newX + 30, arrowBarYPosition + 15);
-				g.setColor(Color.BLACK);
+				g.setColor(LABEL_COLOR);
 				g.drawString(valueString, newX + 33, arrowBarYPosition + 19);
 			} else if (((i % 2) == 0) && (flipLimit >= borderVal)) {
 				g.drawLine(newX, arrowBarYPosition, newX - 20, arrowBarYPosition - 15);
 				g.drawLine(newX - 20, arrowBarYPosition - 15, newX - 30, arrowBarYPosition - 15);
-				g.setColor(Color.BLACK);
+				g.setColor(LABEL_COLOR);
 				g.drawString(valueString, newX - 90, arrowBarYPosition - 11);
 			} else {
 				g.drawLine(newX, arrowBarYPosition, newX - 20, arrowBarYPosition + 15);
 				g.drawLine(newX - 20, arrowBarYPosition + 15, newX - 30, arrowBarYPosition + 15);
-				g.setColor(Color.BLACK);
+				g.setColor(LABEL_COLOR);
 				g.drawString(valueString, newX - 90, arrowBarYPosition + 19);
 			}
 
-			g.setColor(Color.BLACK);
+			g.setColor(LABEL_COLOR);
 			g.fillOval(newX - 3, arrowBarYPosition - 3, 6, 6);
 
 			iconLocX = (int) (p2.getX() - ((p2.getX() - p1.getX()) / 2 + ICON_SIZE / 2));
@@ -366,7 +360,7 @@ public class DiscreteTrackRenderer<K, V> extends JComponent implements VizMapTra
 		if (icon == null)
 			icon = engine.createIcon(vp, key, ICON_SIZE, ICON_SIZE);
 		
-		g.setColor(Color.DARK_GRAY);
+		g.setColor(LABEL_COLOR);
 		icon.paintIcon(this, g, x, y);	
 	}
 
@@ -389,7 +383,7 @@ public class DiscreteTrackRenderer<K, V> extends JComponent implements VizMapTra
 		g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
 		// Fill background
-		g.setColor(Color.WHITE);
+		g.setColor(BACKGROUND_COLOR);
 		g.fillRect(0, 0, iconWidth, iconHeight);
 
 		double minValue = tracer.getMin(vp);
@@ -459,7 +453,7 @@ public class DiscreteTrackRenderer<K, V> extends JComponent implements VizMapTra
 			else
 				drawIcon((V) objectValues[i], g, iconLocX, iconLocY);
 
-			g.setColor(Color.GRAY);
+			g.setColor(BORDER_COLOR);
 			g.setStroke(STROKE1);
 			g.drawLine(newX, 0, newX, trackHeight);
 
@@ -482,19 +476,19 @@ public class DiscreteTrackRenderer<K, V> extends JComponent implements VizMapTra
 		g.setStroke(new BasicStroke(1.0f));
 		g.drawRect(0, 0, track_width - 3, trackHeight);
 
-		g.setFont(new Font("SansSerif", Font.BOLD, 9));
+		g.setFont(ICON_FONT);
 
 		final String minStr = String.format("%.2f", minValue);
 		final String maxStr = String.format("%.2f", maxValue);
 		int strWidth;
-		g.setColor(Color.BLACK);
+		g.setColor(LABEL_COLOR);
 		
 		if (detail) {
 			String fNum = null;
-			
+
 			for (int j = 0; j < fractions.length; j++) {
 				fNum = String.format("%.2f", ((fractions[j] / 100) * valueRange) + minValue);
-				strWidth = SwingUtilities.computeStringWidth( g.getFontMetrics(), fNum);
+				strWidth = SwingUtilities.computeStringWidth(g.getFontMetrics(), fNum);
 				g.drawString(fNum, (fractions[j] / 100) * iconWidth - strWidth / 2, iconHeight - 20);
 			}
 
@@ -505,7 +499,7 @@ public class DiscreteTrackRenderer<K, V> extends JComponent implements VizMapTra
 			g.setFont(TITLE_FONT);
 
 			final int titleWidth = SwingUtilities.computeStringWidth(g.getFontMetrics(), title);
-			g.setColor(Color.BLACK);
+			g.setColor(LABEL_COLOR);
 			g.drawString(title, (iconWidth / 2) - (titleWidth / 2), iconHeight - 5);
 			Polygon p = new Polygon();
 			p.addPoint(iconWidth, iconHeight - 9);
@@ -516,8 +510,7 @@ public class DiscreteTrackRenderer<K, V> extends JComponent implements VizMapTra
 			g.drawLine((iconWidth / 2) + (titleWidth / 2) + 3, iconHeight - 9, iconWidth, iconHeight - 9);
 		} else {
 			g.drawString(minStr, 0, iconHeight);
-			strWidth = SwingUtilities.computeStringWidth(g.getFontMetrics(),
-					maxStr);
+			strWidth = SwingUtilities.computeStringWidth(g.getFontMetrics(), maxStr);
 			g.drawString(maxStr, iconWidth - strWidth - 2, iconHeight);
 		}
 

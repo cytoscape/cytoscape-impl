@@ -141,7 +141,7 @@ public abstract class AbstractPanel<T extends NamedElement, C extends AbstractPa
 		cancelApplyButton.setEnabled(false);
 		
 		statusLabel = new JLabel(" ");
-		statusLabel.setFont(statusLabel.getFont().deriveFont(LookAndFeelUtil.INFO_FONT_SIZE));
+		statusLabel.setFont(statusLabel.getFont().deriveFont(LookAndFeelUtil.getSmallFontSize()));
 		
 		progressBar = new JProgressBar();
 		progressBar.setMinimum(0);

@@ -144,7 +144,7 @@ public class EdgeBendValueEditor extends JPanel implements ValueEditor<Bend> {
 				"<html><b>1. <i>" + newHandleAction + "</i></b> the edge to add a new handle.<br />" +
 				"<b>2. </b>Drag handles to bend (select the edge first).</html>"
 		);
-		infoLabel.setFont(infoLabel.getFont().deriveFont(LookAndFeelUtil.INFO_FONT_SIZE));
+		infoLabel.setFont(infoLabel.getFont().deriveFont(LookAndFeelUtil.getSmallFontSize()));
 		
 		innerPanel = new JPanel();
 		innerPanel.setBackground(BACKGROUND_COLOR);

@@ -236,7 +236,7 @@ public class PreviewTablePanel extends JPanel {
 		taxonIconLabel.setForeground(TAXON.getForeground());
 		
 		final JLabel instructionLabel = new JLabel("Click on a column to edit it.");
-		instructionLabel.setFont(instructionLabel.getFont().deriveFont(LookAndFeelUtil.INFO_FONT_SIZE));
+		instructionLabel.setFont(instructionLabel.getFont().deriveFont(LookAndFeelUtil.getSmallFontSize()));
 		
 		LookAndFeelUtil.equalizeSize(getSelectAllButton(), getSelectNoneButton());
 		
@@ -1353,7 +1353,7 @@ public class PreviewTablePanel extends JPanel {
 		                                               boolean hasFocus, int row, int column) {
 			setHorizontalAlignment(DefaultTableCellRenderer.CENTER);
 			
-			setFont(getFont().deriveFont(LookAndFeelUtil.INFO_FONT_SIZE));
+			setFont(getFont().deriveFont(LookAndFeelUtil.getSmallFontSize()));
 			setFont(getFont().deriveFont(getColumnIndex(KEY) == column ? Font.BOLD : Font.PLAIN));
 			
 			setText(value == null ? "" : value.toString());

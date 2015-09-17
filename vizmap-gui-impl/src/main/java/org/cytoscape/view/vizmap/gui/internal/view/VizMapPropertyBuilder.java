@@ -24,7 +24,6 @@ package org.cytoscape.view.vizmap.gui.internal.view;
  * #L%
  */
 
-import java.awt.Color;
 import java.awt.Component;
 import java.beans.PropertyEditor;
 import java.util.HashSet;
@@ -36,6 +35,7 @@ import java.util.TreeSet;
 
 import javax.swing.JLabel;
 import javax.swing.JTable;
+import javax.swing.UIManager;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
 
@@ -480,7 +480,7 @@ public class VizMapPropertyBuilder {
 				((JLabel) c).setText("-- select value --");
 			
 			if (!isSelected)
-				c.setForeground(Color.DARK_GRAY);
+				c.setForeground(UIManager.getColor("Label.disabledForeground"));
 			
 			return c;
 		}

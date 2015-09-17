@@ -43,7 +43,7 @@ public class CyColorChooser implements ValueEditor<Paint> {
 
 	protected JColorChooser chooser = new JColorChooser();
 	protected ColorListener listener = new ColorListener();
-	protected Paint color = Color.white;
+	protected Paint color = Color.WHITE;
 
 	@Override
 	public Paint showEditor(Component parent, Paint initialValue) {

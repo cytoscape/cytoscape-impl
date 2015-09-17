@@ -85,10 +85,10 @@ public class AttributeMappingParametersHandler extends AbstractGUITunableHandler
 					"<p>The selected file may be empty or contain invalid entries.<br>" +
 					"Please check the contents of the original file and try again.</p></html>"
 			);
-			errorLabel.setForeground(LookAndFeelUtil.ERROR_COLOR);
+			errorLabel.setForeground(LookAndFeelUtil.getErrorColor());
 			errorLabel.setHorizontalTextPosition(JLabel.CENTER);
 			errorLabel.setHorizontalAlignment(JLabel.CENTER);
-			errorLabel.setFont(errorLabel.getFont().deriveFont(LookAndFeelUtil.INFO_FONT_SIZE));
+			errorLabel.setFont(errorLabel.getFont().deriveFont(LookAndFeelUtil.getSmallFontSize()));
 
 			panel.add(errorLabel, BorderLayout.CENTER);
 			

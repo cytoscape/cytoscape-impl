@@ -57,7 +57,7 @@ class BrowserTableCellRenderer extends JLabel implements TableCellRenderer {
 
 	public BrowserTableCellRenderer(final IconManager iconManager) {
 		this.iconManager = iconManager;
-		defaultFont = getFont().deriveFont(LookAndFeelUtil.INFO_FONT_SIZE);
+		defaultFont = getFont().deriveFont(LookAndFeelUtil.getSmallFontSize());
 		setOpaque(true);
 		
 		// Add padding:
@@ -124,7 +124,7 @@ class BrowserTableCellRenderer extends JLabel implements TableCellRenderer {
 				setBackground(UIManager.getColor("Table.focusCellBackground"));
 				setForeground(UIManager.getColor("Table.focusCellForeground"));
 			} else {
-				setForeground(isError ? LookAndFeelUtil.ERROR_COLOR : UIManager.getColor("Table.selectionForeground"));
+				setForeground(isError ? LookAndFeelUtil.getErrorColor() : UIManager.getColor("Table.selectionForeground"));
 				setBackground(UIManager.getColor("Table.selectionBackground"));
 			}
 		} else {
@@ -132,7 +132,7 @@ class BrowserTableCellRenderer extends JLabel implements TableCellRenderer {
 			if (table.getModel() instanceof BrowserTableModel && !table.isCellEditable(0, column))
 				setForeground(UIManager.getColor("TextField.inactiveForeground"));
 			else
-				setForeground(isError ? LookAndFeelUtil.ERROR_COLOR : UIManager.getColor("Table.foreground"));
+				setForeground(isError ? LookAndFeelUtil.getErrorColor() : UIManager.getColor("Table.foreground"));
 		}
 		
 		return this;
