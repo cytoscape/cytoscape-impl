@@ -22,8 +22,6 @@
 
 
 	<modules>
-		<module>biopax-impl</module>
-		<module>command-dialog-impl</module>
 		<module>command-executor-impl</module>
 		<module>ding-impl</module>
 		<module>editor-impl</module>
@@ -46,15 +44,11 @@
 		<module>log-swing-impl</module>
 		<module>manual-layout-impl</module>
 		<module>model-impl</module>
-		<module>network-analyzer-impl</module>
-		<module>network-merge-impl</module>
 		<module>opencl-cycl-impl</module>
 		<module>opencl-layout-impl</module>
 		<module>app-impl</module>
 		<module>presentation-impl</module>
 		<module>property-impl</module>
-		<module>psi-mi-impl</module>
-		<module>sbml-impl</module>
 		<module>search-impl</module>
 		<module>session-impl</module>
 		<module>help-impl</module>
@@ -66,16 +60,12 @@
 		<module>vizmap-gui-core-impl</module>
 		<module>vizmap-gui-impl</module>
 		<module>vizmap-impl</module>
-		<module>webservice-biomart-client-impl</module>
 		<module>webservice-impl</module>
 		<module>work-headless-impl</module>
 		<module>work-impl</module>
 		<module>work-swing-impl</module>
 		<module>application-impl</module>
-		<module>webservice-psicquic-client-impl</module>
 		<module>datasource-impl</module>
-		<module>datasource-biogrid-impl</module>
-		<module>welcome-impl</module>
 		<module>gui-cmdline-parser-impl</module>
 		<module>edge-bundler-impl</module>
 		<module>scripting-impl</module>
