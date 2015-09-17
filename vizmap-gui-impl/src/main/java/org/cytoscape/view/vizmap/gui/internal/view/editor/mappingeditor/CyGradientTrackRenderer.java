@@ -50,8 +50,6 @@ import org.jdesktop.swingx.multislider.Thumb;
 
 /**
  * Track Renderer for color gradient
- * 
- * @author $author$
  */
 public class CyGradientTrackRenderer extends JComponent implements
 		VizMapTrackRenderer {
@@ -60,7 +58,6 @@ public class CyGradientTrackRenderer extends JComponent implements
 
 	// Preset fonts
 	private static final Font SMALL_FONT = new Font("SansSerif", Font.BOLD, 16);
-	private static final Font TITLE_FONT = new Font("SansSerif", Font.BOLD, 12);
 
 	// Width of the slider
 	private static final int THUMB_WIDTH = 12;
@@ -76,15 +73,14 @@ public class CyGradientTrackRenderer extends JComponent implements
 	private final VisualProperty<Color> type;
 	private final EditorValueRangeTracer tracer;
 
-	/**
-	 * Creates a new GradientTrackRenderer object.
-	 * 
-	 * @param gradientPicker
-	 *            DOCUMENT ME!
-	 */
-	public CyGradientTrackRenderer(final VisualProperty<Color> type,
-			final Color below, final Color above, final String title,
-			final EditorValueRangeTracer tracer) {
+
+	public CyGradientTrackRenderer(
+			final VisualProperty<Color> type,
+			final Color below,
+			final Color above,
+			final String title,
+			final EditorValueRangeTracer tracer
+	) {
 		this.below = below;
 		this.above = above;
 		this.tracer = tracer;
@@ -93,18 +89,18 @@ public class CyGradientTrackRenderer extends JComponent implements
 		this.type = type;
 	}
 
-	
+	@Override
 	public void paint(Graphics g) {
 		super.paint(g);
 		paintComponent(g);
 	}
 
+	@Override
 	protected void paintComponent(Graphics gfx) {
 		final Graphics2D g = (Graphics2D) gfx;
 
 		// Turn AA on
-		g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-				RenderingHints.VALUE_ANTIALIAS_ON);
+		g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
 		final double minValue = tracer.getMin(type);
 		final double maxValue = tracer.getMax(type);
@@ -144,18 +140,16 @@ public class CyGradientTrackRenderer extends JComponent implements
 				else
 					valueString = String.format("%.2f", value);
 
-				final int stringWidth = SwingUtilities.computeStringWidth(
-						g.getFontMetrics(), valueString);
+				final int stringWidth = SwingUtilities.computeStringWidth(g.getFontMetrics(), valueString);
 				final int curPosition = (int) (track_width * fractions[i]);
 
 				FontRenderContext frc = g.getFontRenderContext();
 				TextLayout tl = new TextLayout(valueString, g.getFont(), frc);
 
 				g.setStroke(new BasicStroke(0.6f));
-				g.setColor(Color.BLACK);
+				g.setColor(BORDER_COLOR);
 
-				final float[] hsb = Color.RGBtoHSB(colors[i].getRed(),
-						colors[i].getGreen(), colors[i].getBlue(), null);
+				final float[] hsb = Color.RGBtoHSB(colors[i].getRed(), colors[i].getGreen(), colors[i].getBlue(), null);
 
 				int x;
 				int y;
@@ -176,7 +170,7 @@ public class CyGradientTrackRenderer extends JComponent implements
 					g.drawString(valueString, x, y);
 
 					g.translate(x, y);
-					g.setColor(Color.BLACK);
+					g.setColor(LABEL_COLOR);
 					g.draw(tl.getOutline(null));
 					g.translate(-x, -y);
 				} else {
@@ -188,8 +182,7 @@ public class CyGradientTrackRenderer extends JComponent implements
 			}
 
 			colors[colors.length - 1] = above;
-			fractions[fractions.length - 1] = stops.get(stops.size() - 1)
-					.getPosition() / 100;
+			fractions[fractions.length - 1] = stops.get(stops.size() - 1).getPosition() / 100;
 
 			g.setStroke(new BasicStroke(1.0f));
 
@@ -202,7 +195,7 @@ public class CyGradientTrackRenderer extends JComponent implements
 
 		// Define rectangle
 		Rectangle2D rect = new Rectangle(0, 0, track_width, trackHeight);
-		g.setColor(Color.gray);
+		g.setColor(BORDER_COLOR);
 		g.drawLine((int) rect.getBounds2D().getMinX(), (int) rect.getBounds2D()
 				.getMaxY(), 8, (int) rect.getBounds2D().getMaxY() + 25);
 		g.setFont(SMALL_FONT);
@@ -224,9 +217,8 @@ public class CyGradientTrackRenderer extends JComponent implements
 
 		g.setFont(TITLE_FONT);
 
-		final int titleWidth = SwingUtilities.computeStringWidth(
-				g.getFontMetrics(), attrName);
-		g.setColor(Color.black);
+		final int titleWidth = SwingUtilities.computeStringWidth(g.getFontMetrics(), attrName);
+		g.setColor(LABEL_COLOR);
 		g.drawString(attrName, ((int) rect.getBounds2D().getWidth() / 2)
 				- (titleWidth / 2), (int) rect.getBounds2D().getMaxY() + 33);
 
@@ -275,14 +267,6 @@ public class CyGradientTrackRenderer extends JComponent implements
 		}
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 * 
-	 * @param slider
-	 *            DOCUMENT ME!
-	 * 
-	 * @return DOCUMENT ME!
-	 */
 	@SuppressWarnings("unchecked")
 	public JComponent getRendererComponent(JXMultiThumbSlider slider) {
 		this.slider = slider;
@@ -291,16 +275,6 @@ public class CyGradientTrackRenderer extends JComponent implements
 		return this;
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 * 
-	 * @param x
-	 *            DOCUMENT ME!
-	 * @param y
-	 *            DOCUMENT ME!
-	 * 
-	 * @return DOCUMENT ME!
-	 */
 	public Object getObjectInRange(int x, int y) {
 		// TODO Auto-generated method stub
 		return null;
@@ -312,12 +286,6 @@ public class CyGradientTrackRenderer extends JComponent implements
 		return null;
 	}
 
-	
-//	public ImageIcon getTrackGraphicIcon(int iconWidth, int iconHeight) {
-//		return drawIcon(iconWidth, iconHeight, false);
-//	}
-//
-//
 	public ImageIcon getLegend(int iconWidth, int iconHeight) {
 		return drawIcon(iconWidth, iconHeight, true);
 	}
@@ -326,13 +294,11 @@ public class CyGradientTrackRenderer extends JComponent implements
 		if (slider == null)
 			return null;
 
-		final BufferedImage bi = new BufferedImage(iconWidth, iconHeight,
-				BufferedImage.TYPE_INT_RGB);
+		final BufferedImage bi = new BufferedImage(iconWidth, iconHeight, BufferedImage.TYPE_INT_RGB);
 		final Graphics2D g2 = bi.createGraphics();
 
 		// Turn AA on.
-		g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-				RenderingHints.VALUE_ANTIALIAS_ON);
+		g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
 		final double minValue = tracer.getMin(type);
 		final double maxValue = tracer.getMax(type);
@@ -340,7 +306,7 @@ public class CyGradientTrackRenderer extends JComponent implements
 		/*
 		 * Fill background
 		 */
-		g2.setColor(Color.white);
+		g2.setColor(BACKGROUND_COLOR);
 		g2.fillRect(0, 0, iconWidth, iconHeight);
 
 		List<Thumb<Color>> stops = slider.getModel().getSortedThumbs();
@@ -373,8 +339,7 @@ public class CyGradientTrackRenderer extends JComponent implements
 			}
 
 			colors[colors.length - 1] = above;
-			fractions[fractions.length - 1] = stops.get(stops.size() - 1)
-					.getPosition() / 100;
+			fractions[fractions.length - 1] = stops.get(stops.size() - 1).getPosition() / 100;
 
 			// fill in the gradient
 			drawGradient(g2, start, end, fractions, colors);
@@ -382,19 +347,18 @@ public class CyGradientTrackRenderer extends JComponent implements
 
 		// Draw border line
 		g2.setStroke(new BasicStroke(1.0f));
-		g2.setColor(Color.DARK_GRAY);
-		g2.drawRect(0, 0, ((Number) end.getX()).intValue(),
-				((Number) end.getY()).intValue());
+		g2.setColor(BORDER_COLOR);
+		g2.drawRect(0, 0, ((Number) end.getX()).intValue(), ((Number) end.getY()).intValue());
 
 		/*
 		 * draw numbers
 		 */
-		g2.setFont(new Font("SansSerif", Font.BOLD, 9));
+		g2.setFont(ICON_FONT);
 
 		final String minStr = String.format("%.2f", minValue);
 		final String maxStr = String.format("%.2f", maxValue);
 
-		g2.setColor(Color.black);
+		g2.setColor(LABEL_COLOR);
 
 		if (detail && (fractions != null)) {
 			String fNum = null;
@@ -402,40 +366,31 @@ public class CyGradientTrackRenderer extends JComponent implements
 			for (int i = 0; i < fractions.length; i++) {
 				fNum = String.format("%.2f", (fractions[i] * range) + minValue);
 
-				strWidth = SwingUtilities.computeStringWidth(
-						g2.getFontMetrics(), fNum);
+				strWidth = SwingUtilities.computeStringWidth(g2.getFontMetrics(), fNum);
 
-				g2.drawString(fNum,
-						(fractions[i] * iconWidth) - (strWidth / 2),
-						iconHeight - 20);
+				g2.drawString(fNum, (fractions[i] * iconWidth) - (strWidth / 2), iconHeight - 20);
 			}
 
 			g2.drawString(minStr, 0, iconHeight);
-			strWidth = SwingUtilities.computeStringWidth(g2.getFontMetrics(),
-					maxStr);
+			strWidth = SwingUtilities.computeStringWidth(g2.getFontMetrics(), maxStr);
 			g2.drawString(maxStr, iconWidth - strWidth - 2, iconHeight);
 
 			g2.setFont(TITLE_FONT);
 
-			final int titleWidth = SwingUtilities.computeStringWidth(
-					g2.getFontMetrics(), attrName);
-			g2.setColor(Color.black);
-			g2.drawString(attrName, (iconWidth / 2) - (titleWidth / 2),
-					iconHeight - 5);
+			final int titleWidth = SwingUtilities.computeStringWidth(g2.getFontMetrics(), attrName);
+			g2.setColor(LABEL_COLOR);
+			g2.drawString(attrName, (iconWidth / 2) - (titleWidth / 2), iconHeight - 5);
 
 			Polygon p = new Polygon();
 			p.addPoint(iconWidth, iconHeight - 9);
 			p.addPoint(iconWidth - 15, iconHeight - 15);
 			p.addPoint(iconWidth - 15, iconHeight - 9);
 			g2.fillPolygon(p);
-			g2.drawLine(0, iconHeight - 9, (iconWidth / 2) - (titleWidth / 2)
-					- 3, iconHeight - 9);
-			g2.drawLine((iconWidth / 2) + (titleWidth / 2) + 3, iconHeight - 9,
-					iconWidth, iconHeight - 9);
+			g2.drawLine(0, iconHeight - 9, (iconWidth / 2) - (titleWidth / 2) - 3, iconHeight - 9);
+			g2.drawLine((iconWidth / 2) + (titleWidth / 2) + 3, iconHeight - 9, iconWidth, iconHeight - 9);
 		} else {
 			g2.drawString(minStr, 0, iconHeight);
-			strWidth = SwingUtilities.computeStringWidth(g2.getFontMetrics(),
-					maxStr);
+			strWidth = SwingUtilities.computeStringWidth(g2.getFontMetrics(), maxStr);
 			g2.drawString(maxStr, iconWidth - strWidth - 2, iconHeight);
 		}
 
@@ -444,10 +399,8 @@ public class CyGradientTrackRenderer extends JComponent implements
 
 	
 	public Double getSelectedThumbValue() {
-		final float position = slider.getModel()
-				.getThumbAt(slider.getSelectedIndex()).getPosition();
-		final double thumbVal = (((position / 100) * tracer.getRange(type)) + tracer
-				.getMin(type));
+		final float position = slider.getModel().getThumbAt(slider.getSelectedIndex()).getPosition();
+		final double thumbVal = (((position / 100) * tracer.getRange(type)) + tracer.getMin(type));
 
 		return thumbVal;
 	}
