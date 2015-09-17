@@ -20,7 +20,6 @@ import org.cytoscape.filter.internal.column.ColumnFilterView.ColumnComboBoxEleme
 import org.cytoscape.filter.internal.degree.DegreeFilterController;
 import org.cytoscape.filter.internal.degree.DegreeFilterView;
 import org.cytoscape.filter.internal.degree.DegreeRange;
-import org.cytoscape.filter.internal.view.RangeChooserController;
 import org.cytoscape.filter.view.InteractivityChangedListener;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyEdge;
@@ -172,19 +171,21 @@ public class ModelMonitor implements SetCurrentNetworkListener,
 		}
 	}
 
-	private void updateRange(double[] range, Number value) {
+	private boolean updateRange(double[] range, Number value) {
 		if (value == null) {
-			return;
+			return false;
 		}
 		double number = ((Number) value).doubleValue();
 		range[0] = Math.min(range[0], number);
 		range[1] = Math.max(range[1], number);
+		return true;
 	}
 
-	private void updateRange(double[] range, List<?> list) {
+	private boolean updateRange(double[] range, List<?> list) {
 		if (list == null) {
-			return;
+			return false;
 		}
+		boolean changed = false;
 		for (Object value : list) {
 			if (value == null) {
 				continue;
@@ -192,12 +193,13 @@ public class ModelMonitor implements SetCurrentNetworkListener,
 			double number = ((Number) value).doubleValue();
 			range[0] = Math.min(range[0], number);
 			range[1] = Math.max(range[1], number);
+			changed = true;
 		}
+		return changed;
 	}
 
 	private void updateColumnSliders() {
 		for (ColumnFilterController controller : columnViews.values()) {
-			RangeChooserController chooserController = controller.getRangeChooserController();
 			ColumnFilter filter = controller.getFilter();
 			
 			Class<? extends CyIdentifiable> columnType = filter.getColumnType();
@@ -226,9 +228,9 @@ public class ModelMonitor implements SetCurrentNetworkListener,
 				type = column.getListElementType();
 			}
 			if (Integer.class.equals(type) || Long.class.equals(type)) {
-				chooserController.setBounds((long) range[0], (long) range[1]);
+				controller.setSliderBounds((long) range[0], (long) range[1]);
 			} else {
-				chooserController.setBounds(range[0], range[1]);
+				controller.setSliderBounds(range[0], range[1]);
 			}
 		}
 	}
@@ -350,7 +352,7 @@ public class ModelMonitor implements SetCurrentNetworkListener,
 				ColumnComboBoxElement element = columnNames.get(i);
 				if (element.name.equals(event.getColumnName()) && type.equals(element.columnType)) {
 					columnNames.remove(i);
-					return;
+					break;
 				}
 			}
 			updateColumnViews();
@@ -503,21 +505,25 @@ public class ModelMonitor implements SetCurrentNetworkListener,
 	
 	private double[] computeRange(CyTable table, String name, CyColumn column) {
 		double[] range = new double[] { Double.MAX_VALUE, Double.MIN_VALUE };
+		boolean changed = false;
 		Class<?> type = column.getType();
 		if (List.class.equals(type)) {
 			Class<?> elementType = column.getListElementType();
 			if (Number.class.isAssignableFrom(elementType)) {
 				for (CyRow row : table.getAllRows()) {
 					List<?> list = row.getList(name, elementType);
-					updateRange(range, list);
+					changed |= updateRange(range, list);
 				}
 			}
 		} else if (Number.class.isAssignableFrom(type)) {
 			for (CyRow row : table.getAllRows()) {
 				Object value = row.get(name, type);
-				updateRange(range, (Number) value);
+				changed |= updateRange(range, (Number) value);
 			}
 		}
+		
+		if(!changed)
+			return new double[] { 0.0, 0.0 };
 		return range;
 	}
 

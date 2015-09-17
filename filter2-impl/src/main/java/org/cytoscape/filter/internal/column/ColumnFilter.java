@@ -43,6 +43,7 @@ public class ColumnFilter extends AbstractTransformer<CyNetwork, CyIdentifiable>
 	private Number upperBound;
 	private String stringCriterion;
 	private String lowerCaseCriterion;
+	private Boolean booleanCriterion;
 	
 	public ColumnFilter() {
 		type = new ListSingleSelection<String>(NODES, EDGES, NODES_AND_EDGES);
@@ -91,38 +92,41 @@ public class ColumnFilter extends AbstractTransformer<CyNetwork, CyIdentifiable>
 		return rawCriterion;
 	}
 	
-	@SuppressWarnings("unchecked")
 	public void setCriterion(Object criterion) {
 		try {
-			if (criterion == null) {
-				rawCriterion = null;
-				lowerBound = null;
-				upperBound = null;
-				stringCriterion = null;
-				lowerCaseCriterion = null;
-				return;
-			}
-			
-			rawCriterion = criterion;
-			
-			if (criterion instanceof List) {
-				List<Number> list = (List<Number>) criterion;
-				lowerBound = list.get(0);
-				upperBound = list.get(1);
-				rawCriterion = new Number[] { lowerBound, upperBound };
-			} else if (criterion instanceof Number[]) {
-				Number[] range = (Number[]) criterion;
-				lowerBound = range[0];
-				upperBound = range[1];
-			} else if (criterion instanceof Number) {
-				lowerBound = (Number) criterion;
-				upperBound = lowerBound;
-			}
-			
-			stringCriterion = criterion.toString();
-			lowerCaseCriterion = stringCriterion.toLowerCase();
+			setCriterionImpl(criterion);
 		} finally {
 			notifyListeners();
+		}
+	}
+	
+	@SuppressWarnings("unchecked")
+	private void setCriterionImpl(Object criterion) {
+		rawCriterion = criterion;
+		
+		if (criterion instanceof List) {
+			List<Number> list = (List<Number>) criterion;
+			lowerBound = list.get(0);
+			upperBound = list.get(1);
+			rawCriterion = new Number[] { lowerBound, upperBound };
+		} else if (criterion instanceof Number[]) {
+			Number[] range = (Number[]) criterion;
+			lowerBound = range[0];
+			upperBound = range[1];
+		} else if (criterion instanceof Number) {
+			lowerBound = (Number) criterion;
+			upperBound = lowerBound;
+		} else if (criterion instanceof String) {
+			stringCriterion = criterion.toString();
+			lowerCaseCriterion = stringCriterion.toLowerCase();
+		} else if (criterion instanceof Boolean) {
+			booleanCriterion = (Boolean)criterion;
+		} else {
+			rawCriterion = null;
+			lowerBound = null;
+			upperBound = null;
+			stringCriterion = null;
+			lowerCaseCriterion = null;
 		}
 	}
 	
@@ -132,10 +136,26 @@ public class ColumnFilter extends AbstractTransformer<CyNetwork, CyIdentifiable>
 	}
 	
 	public void setPredicate(Predicate predicate) {
+		setPredicateImpl(predicate);
+		notifyListeners();
+	}
+	
+	private void setPredicateImpl(Predicate predicate) {
 		this.predicate = predicate;
 		numericDelegate = PredicateDelegates.getNumericDelegate(predicate);
 		stringDelegate = PredicateDelegates.getStringDelegate(predicate);
-		notifyListeners();
+	}
+	
+	/**
+	 * Sets both predicate and criterion, updates listeners only once.
+	 */
+	public void setPredicateAndCriterion(Predicate predicate, Object criterion) {
+		try {
+			setPredicateImpl(predicate);
+			setCriterionImpl(criterion);
+		} finally {
+			notifyListeners();
+		}
 	}
 
 	public Class<? extends CyIdentifiable> getColumnType() {
@@ -207,7 +227,7 @@ public class ColumnFilter extends AbstractTransformer<CyNetwork, CyIdentifiable>
 				List<Boolean> list = (List<Boolean>) row.getList(columnName, listElementType);
 				if (list != null) {
 					for (Boolean value : list) {
-						if (value != null && rawCriterion.equals(value)) {
+						if (value != null && booleanCriterion.equals(value)) {
 							return true;
 						}
 					}
@@ -221,8 +241,22 @@ public class ColumnFilter extends AbstractTransformer<CyNetwork, CyIdentifiable>
 			return numericDelegate.accepts(lowerBound, upperBound, value);
 		} else if (Boolean.class.equals(columnType)) {
 			Boolean value = row.get(columnName, Boolean.class);
-			return rawCriterion.equals(value);
+			return booleanCriterion.equals(value);
 		}
 		return false;
 	}
+
+	@Override
+	public String toString() {
+		return "ColumnFilter [type=" + (type == null ? null : type.getSelectedValue())
+				+ ", elementType=" + (elementType == null ? null : elementType.getSimpleName()) 
+				+ ", predicate=" + predicate
+				+ ", caseSensitive="
+				+ caseSensitive + ", columnName=" + columnName + ", rawCriterion=" + rawCriterion + ", lowerBound="
+				+ lowerBound + ", upperBound=" + upperBound + ", stringCriterion=" + stringCriterion
+				+ ", lowerCaseCriterion=" + lowerCaseCriterion + ", booleanCriterion=" + booleanCriterion + "]";
+	}
+
+	
+	
 }

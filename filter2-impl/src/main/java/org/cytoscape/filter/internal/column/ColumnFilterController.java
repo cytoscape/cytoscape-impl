@@ -1,9 +1,8 @@
 package org.cytoscape.filter.internal.column;
 
-import org.cytoscape.filter.internal.view.RangeChooserController;
-
 public interface ColumnFilterController {
 	ColumnFilter getFilter();
-	RangeChooserController getRangeChooserController();
 	void synchronize(ColumnFilterView view);
+	void setSliderBounds(long min, long max);
+	void setSliderBounds(double min, double max);
 }

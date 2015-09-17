@@ -88,4 +88,6 @@ public interface ColumnFilterView {
 	BooleanComboBox getBooleanComboBox();
 	
 	RangeChooser getRangeChooser();
+	
+	BooleanComboBox getNumericNegateComboBox();
 }

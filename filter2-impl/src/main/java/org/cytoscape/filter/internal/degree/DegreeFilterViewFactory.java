@@ -112,12 +112,10 @@ public class DegreeFilterViewFactory implements TransformerViewFactory {
 				Number[] range = (Number[]) criterion;
 				chooserController.setSelection(range[0], range[1]);
 			}
-			if (criterion == null) {
-				Number minimum = chooserController.getMinimum();
-				Number maximum = chooserController.getMaximum();
-				view.getRangeChooser().getMinimumField().setText(minimum.toString());
-				view.getRangeChooser().getMaximumField().setText(maximum.toString());
-			}
+			Number low = chooserController.getLow().longValue();
+			Number high = chooserController.getHigh().longValue();
+			view.getRangeChooser().getMinimumField().setText(low.toString());
+			view.getRangeChooser().getMaximumField().setText(high.toString());
 			
 			DynamicComboBoxModel.select(view.edgeTypeComboBox, 0, new Matcher<EdgeTypeElement>() {
 				@Override
