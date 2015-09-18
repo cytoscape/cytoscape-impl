@@ -100,16 +100,8 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 	private static final int MSG_ICON_WIDTH = 18;
 	private static final int MSG_ICON_HEIGHT = 15;
 	
-	static final Color BG_COLOR = UIManager.getColor("Table.background");
-	static final Color FG_COLOR = UIManager.getColor("Table.foreground");
-	static final Color SELECTED_BG_COLOR = UIManager.getColor("Table.selectionBackground");
-	
-	static final Color BTN_BORDER_COLOR = UIManager.getColor("Separator.foreground");
-	static final Color BTN_BORDER_DISABLED_COLOR = UIManager.getColor("Table.background");
 	static final int BTN_H_MARGIN = 1;
 	static final int BTN_BORDER_WIDTH = 1;
-	
-	static final Color INFO_COLOR = UIManager.getColor("TextField.inactiveForeground");
 	
 	private JPanel topPnl;
 	private JPanel mappingPnl;
@@ -236,7 +228,7 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 				bypassBtn.setFont(iconManager.getIconFont(19.0f));
 				bypassBtn.setText(IconManager.ICON_QUESTION_CIRCLE);
 			} else {
-				bypassBtn.setForeground(FG_COLOR);
+				bypassBtn.setForeground(getForegroundColor());
 				bypassBtn.setFont(UIManager.getFont("Button.font"));
 				bypassBtn.setText("");
 			}
@@ -376,8 +368,8 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 	// ==[ PRIVATE METHODS ]============================================================================================
 	
 	private void init() {
-		setBackground(BG_COLOR);
-		setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, BTN_BORDER_COLOR));
+		setBackground(getBackgroundColor());
+		setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, getButtonBorderColor()));
 		setLayout(new BorderLayout());
 		
 		add(getTopPnl(), BorderLayout.NORTH);
@@ -712,6 +704,26 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 		return msgIconLbl;
 	}
 	
+	static Color getBackgroundColor() {
+		return UIManager.getColor("Table.background");
+	}
+	
+	static Color getSelectedBackgroundColor() {
+		return UIManager.getColor("Table.selectionBackground");
+	}
+	
+	static Color getForegroundColor() {
+		return UIManager.getColor("Table.foreground");
+	}
+	
+	static Color getButtonBorderColor() {
+		return UIManager.getColor("Separator.foreground");
+	}
+	
+	static Color getDisabledButtonBorderColor() {
+		return UIManager.getColor("Table.background");
+	}
+	
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private Icon getIcon(final T value, final int width, final int height) {// TODO should not be part of this class
 		Icon icon = null;
@@ -744,7 +756,7 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 	}
 	
 	private void updateSelection() {
-		getTopPnl().setBackground(selected ? SELECTED_BG_COLOR : BG_COLOR);
+		getTopPnl().setBackground(selected ? getSelectedBackgroundColor() : getBackgroundColor());
 		repaint();
 	}
 	
@@ -754,7 +766,7 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 		
 		if (type == MessageType.INFO) {
 			text = IconManager.ICON_INFO_CIRCLE;
-			fg = INFO_COLOR;
+			fg = LookAndFeelUtil.getInfoColor();
 		} else if (type == MessageType.WARNING) {
 			text = IconManager.ICON_WARNING;
 			fg = LookAndFeelUtil.getWarnColor();
@@ -781,7 +793,7 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 		if (btn.isSelected())
 			btn.setForeground(UIManager.getColor("Table.focusCellForeground"));
 		else
-			btn.setForeground(FG_COLOR);
+			btn.setForeground(getForegroundColor());
 		
 		if (mapping == null) {
 			btn.setText("");
@@ -866,7 +878,7 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 				if (prop != null && prop.getValue() != null && prop.getValue().getClass() == Color.class)
 					fontColor = (Color) prop.getValue();
 				else
-					fontColor = FG_COLOR;
+					fontColor = getForegroundColor();
 
 				final String colorString = Integer.toHexString(fontColor.getRGB());
 
@@ -1027,8 +1039,8 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 			btn.setVerticalAlignment(SwingConstants.CENTER);
 			btn.setHorizontalAlignment(SwingConstants.CENTER);
 			btn.setFocusPainted(false);
-			btn.setBackground(BG_COLOR);
-			btn.setForeground(FG_COLOR);
+			btn.setBackground(getBackgroundColor());
+			btn.setForeground(getForegroundColor());
 			btn.setFocusable(false);
 			btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
 			
@@ -1041,7 +1053,7 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 																BTN_BORDER_WIDTH,
 																anchor == SOUTH ? 0: BTN_BORDER_WIDTH,
 																BTN_BORDER_WIDTH,
-																BTN_BORDER_COLOR);
+																getButtonBorderColor());
 				borderEnabled =  BorderFactory.createCompoundBorder(border, padBorder);
 			}
 			{
@@ -1049,7 +1061,7 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 																BTN_BORDER_WIDTH,
 																anchor == SOUTH ? 0: BTN_BORDER_WIDTH,
 																BTN_BORDER_WIDTH,
-																BTN_BORDER_DISABLED_COLOR);
+																getDisabledButtonBorderColor());
 				borderDisabled =  BorderFactory.createCompoundBorder(border, padBorder);
 			}
 			

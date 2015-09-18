@@ -188,7 +188,7 @@ public class VisualPropertySheet extends JPanel{
 			
 			// Add an empty panel to fill the vertical gap
 			final JPanel fillPnl = new JPanel();
-			fillPnl.setBackground(VisualPropertySheetItem.BG_COLOR);
+			fillPnl.setBackground(VisualPropertySheetItem.getBackgroundColor());
 			c.fill = GridBagConstraints.BOTH;
 			c.weighty = 1;
 			p.add(fillPnl, c);
