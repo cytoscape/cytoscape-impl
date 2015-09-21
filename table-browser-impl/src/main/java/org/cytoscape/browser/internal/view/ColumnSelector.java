@@ -29,7 +29,6 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
-import java.awt.SystemColor;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.text.Collator;
@@ -263,7 +262,7 @@ public class ColumnSelector extends JPanel {
 			final boolean visible = (boolean) table.getValueAt(row, SELECTED_COL_IDX);
 			
 			if (!visible && column != SELECTED_COL_IDX)
-				setForeground(SystemColor.textInactiveText);
+				setForeground(UIManager.getColor("TextField.inactiveForeground"));
 			else
 				setForeground(table.getForeground());
 			

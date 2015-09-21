@@ -25,7 +25,6 @@ package org.cytoscape.browser.internal.view;
  */
 
 
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
 import java.awt.Graphics;
@@ -142,7 +141,6 @@ class BrowserTableCellRenderer extends JLabel implements TableCellRenderer {
 
 		static final int HEIGHT = 8;
 		static final int WIDTH = 8;
-		static final Color COLOR = new Color(1, 128, 0);
 		
 		@Override
 		public int getIconHeight() {
@@ -156,7 +154,7 @@ class BrowserTableCellRenderer extends JLabel implements TableCellRenderer {
 
 		@Override
 		public void paintIcon(final Component c, final Graphics g, final int x, final int y) {
-			g.setColor(COLOR);
+			g.setColor(LookAndFeelUtil.getSuccessColor());
 			
 			final int[] xPoints = new int[] { 0,      0, WIDTH };
 			final int[] yPoints = new int[] { HEIGHT, 0, 0 };
