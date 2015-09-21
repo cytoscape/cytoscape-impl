@@ -618,33 +618,33 @@ public class CyActivator extends AbstractCyActivator {
 			logger.error("Unexpected error", e);
 		}
 		
-		// Cytoscape Palette (http://paletton.com/#uid=7070v0krdtnioE5nqxcsfmIvKhK)
-		UIManager.put("CyColor.primary(-2)", new Color(141, 23, 1));    // Darkest
-		UIManager.put("CyColor.primary(-1)", new Color(181, 46, 21));   // Darker
-		UIManager.put("CyColor.primary(0)", new Color(234, 66, 35));    // Base color
-		UIManager.put("CyColor.primary", new Color(234, 66, 35));       // Just an alias for (0)
-		UIManager.put("CyColor.primary(+1)", new Color(255, 97, 68));   // Brighter
-		UIManager.put("CyColor.primary(+2)", new Color(255, 131, 109)); // Brightest
+		// Cytoscape Palette (http://paletton.com/#uid=70F2h0krdtngVCclWv9tYnSyeiT)
+		UIManager.put("CyColor.primary(-2)", new Color(150, 83, 0));    // Darkest
+		UIManager.put("CyColor.primary(-1)", new Color(190, 110, 12));  // Darker
+		UIManager.put("CyColor.primary(0)",  new Color(234, 145, 35));  // Base color
+		UIManager.put("CyColor.primary",     new Color(234, 145, 35));  // Just an alias for (0)
+		UIManager.put("CyColor.primary(+1)", new Color(248, 172, 78));  // Brighter
+		UIManager.put("CyColor.primary(+2)", new Color(255, 194, 120)); // Brightest
 
-		UIManager.put("CyColor.secondary1(-2)", new Color(141, 74, 1));
-		UIManager.put("CyColor.secondary1(-1)", new Color(181, 104, 21));
-		UIManager.put("CyColor.secondary1(0)", new Color(234, 139, 35));
-		UIManager.put("CyColor.secondary1", new Color(234, 139, 35));
-		UIManager.put("CyColor.secondary1(+1)", new Color(255, 166, 68));
-		UIManager.put("CyColor.secondary1(+2)", new Color(255, 185, 109));
+		UIManager.put("CyColor.secondary1(-2)", new Color(0, 110, 37));
+		UIManager.put("CyColor.secondary1(-1)", new Color(9, 139, 53));
+		UIManager.put("CyColor.secondary1(0)",  new Color(26, 171, 75));
+		UIManager.put("CyColor.secondary1",     new Color(26, 171, 75));
+		UIManager.put("CyColor.secondary1(+1)", new Color(57, 182, 99));
+		UIManager.put("CyColor.secondary1(+2)", new Color(95, 202, 131));
 
-		UIManager.put("CyColor.secondary2(-2)", new Color(4, 65, 89));
-		UIManager.put("CyColor.secondary2(-1)", new Color(17, 87, 114));
-		UIManager.put("CyColor.secondary2(0)", new Color(27, 114, 147));
-		UIManager.put("CyColor.secondary2", new Color(27, 114, 147));
-		UIManager.put("CyColor.secondary2(+1)", new Color(49, 132, 164));
-		UIManager.put("CyColor.secondary2(+2)", new Color(84, 159, 187));
+		UIManager.put("CyColor.secondary2(-2)", new Color(150, 23, 0));
+		UIManager.put("CyColor.secondary2(-1)", new Color(190, 40, 12));
+		UIManager.put("CyColor.secondary2(0)",  new Color(234, 66, 35));
+		UIManager.put("CyColor.secondary2",     new Color(234, 66, 35));
+		UIManager.put("CyColor.secondary2(+1)", new Color(248, 105, 78));
+		UIManager.put("CyColor.secondary2(+2)", new Color(255, 141, 120));
 
-		UIManager.put("CyColor.complement(-2)", new Color(1, 104, 36));
-		UIManager.put("CyColor.complement(-1)", new Color(16, 133, 55));
-		UIManager.put("CyColor.complement(0)", new Color(26, 171, 75));
-		UIManager.put("CyColor.complement", new Color(26, 171, 75));
-		UIManager.put("CyColor.complement(+1)", new Color(51, 189, 98));
-		UIManager.put("CyColor.complement(+2)", new Color(88, 206, 128));
+		UIManager.put("CyColor.complement(-2)", new Color(5, 62, 96));
+		UIManager.put("CyColor.complement(-1)", new Color(14, 81, 121));
+		UIManager.put("CyColor.complement(0)",  new Color(29, 105, 149));
+		UIManager.put("CyColor.complement",     new Color(29, 105, 149));
+		UIManager.put("CyColor.complement(+1)", new Color(56, 120, 158));
+		UIManager.put("CyColor.complement(+2)", new Color(92, 149, 183));
 	}
 }

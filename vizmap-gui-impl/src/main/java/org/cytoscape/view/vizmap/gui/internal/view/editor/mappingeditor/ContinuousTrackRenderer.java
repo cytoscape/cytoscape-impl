@@ -135,9 +135,9 @@ public class ContinuousTrackRenderer<K extends Number, V extends Number>
 		
 		title = cMapping.getMappingColumnName();
 		
-		Color c = UIManager.getColor("CyColor.secondary2(+2)");
+		Color c = UIManager.getColor("CyColor.complement(+2)");
 		VALUE_AREA_COLOR = new Color(c.getRed(), c.getGreen(), c.getBlue(), 60);
-		TRACK_COLOR = UIManager.getColor("CyColor.secondary2(-1)");
+		TRACK_COLOR = UIManager.getColor("CyColor.complement(-1)");
 		
 		 //TODO: where should I put this property value?
 //		 Object propStr =

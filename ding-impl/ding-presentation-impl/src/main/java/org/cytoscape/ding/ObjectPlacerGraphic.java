@@ -66,17 +66,17 @@ public class ObjectPlacerGraphic extends JPanel implements PropertyChangeListene
 	// Color scheme for GUI
 	private final Color BG_COLOR = UIManager.getColor("TextField.background");
 	
-	private final Color LABEL_BOX_FG_COLOR = UIManager.getColor("CyColor.secondary2(-2)");
+	private final Color LABEL_BOX_FG_COLOR = UIManager.getColor("CyColor.complement(-2)");
 	// Same color, but transparent
 	private final Color LABEL_BOX_BG_COLOR =
 			new Color(LABEL_BOX_FG_COLOR.getRed(), LABEL_BOX_FG_COLOR.getGreen(), LABEL_BOX_FG_COLOR.getBlue(), 30);
 	
-	private final Color NODE_BOX_FG_COLOR = UIManager.getColor("CyColor.secondary2(+1)");
+	private final Color NODE_BOX_FG_COLOR = UIManager.getColor("CyColor.complement(+1)");
 	// Same color, but transparent
 	private final Color NODE_BOX_BG_COLOR =
 			new Color(NODE_BOX_FG_COLOR.getRed(), NODE_BOX_FG_COLOR.getGreen(), NODE_BOX_FG_COLOR.getBlue(), 30);
 	
-	private final Color POINT_HIGHLIGHT_COLOR = UIManager.getColor("CyColor.secondary1(+2)");
+	private final Color POINT_HIGHLIGHT_COLOR = UIManager.getColor("CyColor.primary(+2)");
 	
 	private int center;
 	private float offsetRatio;
