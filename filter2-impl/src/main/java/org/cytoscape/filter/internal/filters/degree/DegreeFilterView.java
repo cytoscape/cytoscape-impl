@@ -1,4 +1,4 @@
-package org.cytoscape.filter.internal.degree;
+package org.cytoscape.filter.internal.filters.degree;
 
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyEdge.Type;

@@ -1,4 +1,4 @@
-package org.cytoscape.filter.internal.composite;
+package org.cytoscape.filter.internal.filters.composite;
 
 import javax.swing.JPanel;
 

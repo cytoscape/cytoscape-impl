@@ -1,4 +1,4 @@
-package org.cytoscape.filter.internal.interaction;
+package org.cytoscape.filter.internal.transformers.interaction;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;

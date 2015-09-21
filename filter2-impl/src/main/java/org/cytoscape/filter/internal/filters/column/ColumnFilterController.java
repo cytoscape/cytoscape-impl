@@ -1,4 +1,4 @@
-package org.cytoscape.filter.internal.column;
+package org.cytoscape.filter.internal.filters.column;
 
 public interface ColumnFilterController {
 	ColumnFilter getFilter();

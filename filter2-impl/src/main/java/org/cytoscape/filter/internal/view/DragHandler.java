@@ -26,8 +26,8 @@ import java.util.List;
 
 import javax.swing.JComponent;
 
-import org.cytoscape.filter.internal.composite.CompositeFilterPanel;
-import org.cytoscape.filter.internal.composite.CompositeSeparator;
+import org.cytoscape.filter.internal.filters.composite.CompositeFilterPanel;
+import org.cytoscape.filter.internal.filters.composite.CompositeSeparator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

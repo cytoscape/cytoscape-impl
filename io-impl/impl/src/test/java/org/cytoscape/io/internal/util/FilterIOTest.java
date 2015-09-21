@@ -7,10 +7,10 @@ import java.util.List;
 import java.util.Map;
 
 import org.cytoscape.filter.internal.TransformerManagerImpl;
-import org.cytoscape.filter.internal.composite.CompositeFilterFactory;
-import org.cytoscape.filter.internal.composite.CompositeFilterImpl;
-import org.cytoscape.filter.internal.degree.DegreeFilter;
-import org.cytoscape.filter.internal.degree.DegreeFilterFactory;
+import org.cytoscape.filter.internal.filters.composite.CompositeFilterFactory;
+import org.cytoscape.filter.internal.filters.composite.CompositeFilterImpl;
+import org.cytoscape.filter.internal.filters.degree.DegreeFilter;
+import org.cytoscape.filter.internal.filters.degree.DegreeFilterFactory;
 import org.cytoscape.filter.model.AbstractTransformer;
 import org.cytoscape.filter.model.CompositeFilter;
 import org.cytoscape.filter.model.CompositeFilter.Type;

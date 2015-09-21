@@ -1,4 +1,4 @@
-package org.cytoscape.filter.internal.topology;
+package org.cytoscape.filter.internal.filters.topology;
 
 import javax.swing.JFormattedTextField;
 

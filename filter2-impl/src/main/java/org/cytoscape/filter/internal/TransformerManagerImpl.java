@@ -13,7 +13,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import org.cytoscape.filter.TransformerManager;
-import org.cytoscape.filter.internal.composite.CompositeFilterImpl;
+import org.cytoscape.filter.internal.filters.composite.CompositeFilterImpl;
 import org.cytoscape.filter.model.CompositeFilter;
 import org.cytoscape.filter.model.ElementTransformer;
 import org.cytoscape.filter.model.ElementTransformerFactory;

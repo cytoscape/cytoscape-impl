@@ -1,4 +1,4 @@
-package org.cytoscape.filter.internal.column;
+package org.cytoscape.filter.internal.filters.column;
 
 import java.awt.Font;
 import java.awt.GridBagConstraints;
@@ -23,8 +23,8 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
 import org.cytoscape.filter.internal.ModelMonitor;
-import org.cytoscape.filter.internal.column.ColumnFilterView.ColumnComboBoxElement;
-import org.cytoscape.filter.internal.column.ColumnFilterView.PredicateElement;
+import org.cytoscape.filter.internal.filters.column.ColumnFilterView.ColumnComboBoxElement;
+import org.cytoscape.filter.internal.filters.column.ColumnFilterView.PredicateElement;
 import org.cytoscape.filter.internal.view.BooleanComboBox;
 import org.cytoscape.filter.internal.view.BooleanComboBox.StateChangeListener;
 import org.cytoscape.filter.internal.view.DynamicComboBoxModel;

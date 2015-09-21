@@ -1,4 +1,4 @@
-package org.cytoscape.filter.internal.degree;
+package org.cytoscape.filter.internal.filters.degree;
 
 import org.cytoscape.filter.model.Filter;
 import org.cytoscape.filter.model.FilterFactory;

@@ -1,4 +1,4 @@
-package org.cytoscape.filter.internal.interaction;
+package org.cytoscape.filter.internal.transformers.interaction;
 
 import org.cytoscape.filter.model.AbstractTransformer;
 import org.cytoscape.filter.model.ElementTransformer;

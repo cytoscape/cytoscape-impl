@@ -1,4 +1,4 @@
-package org.cytoscape.filter.internal.column;
+package org.cytoscape.filter.internal.filters.column;
 
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;

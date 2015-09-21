@@ -10,8 +10,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.filter.TransformerManager;
-import org.cytoscape.filter.internal.column.ColumnFilter;
-import org.cytoscape.filter.internal.degree.DegreeFilter;
+import org.cytoscape.filter.internal.filters.column.ColumnFilter;
+import org.cytoscape.filter.internal.filters.degree.DegreeFilter;
 import org.cytoscape.filter.internal.filters.model.AtomicFilter;
 import org.cytoscape.filter.internal.filters.model.CompositeFilter;
 import org.cytoscape.filter.internal.filters.model.NumericFilter;

@@ -1,4 +1,4 @@
-package org.cytoscape.filter.internal.degree;
+package org.cytoscape.filter.internal.filters.degree;
 
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -14,7 +14,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 import org.cytoscape.filter.internal.ModelMonitor;
-import org.cytoscape.filter.internal.degree.DegreeFilterView.EdgeTypeElement;
+import org.cytoscape.filter.internal.filters.degree.DegreeFilterView.EdgeTypeElement;
 import org.cytoscape.filter.internal.view.BooleanComboBox;
 import org.cytoscape.filter.internal.view.BooleanComboBox.StateChangeListener;
 import org.cytoscape.filter.internal.view.DynamicComboBoxModel;

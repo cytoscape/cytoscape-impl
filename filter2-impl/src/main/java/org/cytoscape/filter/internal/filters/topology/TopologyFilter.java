@@ -1,6 +1,6 @@
-package org.cytoscape.filter.internal.topology;
+package org.cytoscape.filter.internal.filters.topology;
 
-import org.cytoscape.filter.internal.composite.CompositeFilterImpl;
+import org.cytoscape.filter.internal.filters.composite.CompositeFilterImpl;
 import org.cytoscape.filter.internal.predicates.NumericPredicateDelegate;
 import org.cytoscape.filter.internal.predicates.PredicateDelegates;
 import org.cytoscape.filter.model.AbstractTransformer;
