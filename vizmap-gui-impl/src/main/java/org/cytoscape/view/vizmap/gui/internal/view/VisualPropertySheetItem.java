@@ -224,7 +224,7 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 			if (state == LockedValueState.ENABLED_MULTIPLE_VALUES) {
 				final IconManager iconManager = servicesUtil.get(IconManager.class);
 				
-				bypassBtn.setForeground(Color.GRAY);
+				bypassBtn.setForeground(LookAndFeelUtil.getInfoColor());
 				bypassBtn.setFont(iconManager.getIconFont(19.0f));
 				bypassBtn.setText(IconManager.ICON_QUESTION_CIRCLE);
 			} else {
@@ -460,8 +460,7 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 	protected JPanel getMappingPnl() {
 		if (mappingPnl == null) {
 			mappingPnl = new JPanel();
-			mappingPnl.setBackground(new Color(125, 125, 125));
-			mappingPnl.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(125, 125, 125)));
+			mappingPnl.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, UIManager.getColor("Separator.foreground")));
 			mappingPnl.setLayout(new BorderLayout());
 			mappingPnl.setVisible(false);
 			
@@ -963,10 +962,6 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 
 	static class VizMapperButton extends JButton {
 
-		static final Color BG_COLOR_1 = UIManager.getColor("Button.background");
-		static final Color BG_COLOR_2 = UIManager.getColor("Table.background");;
-		static final Color BG_DISABLED_COLOR = new Color(248, 248, 248);
-		
 		VizMapperButton() {
 			setContentAreaFilled(false);
 		}
@@ -982,9 +977,11 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 			final Paint p;
 			
 			if (btn.isEnabled())
-				p = new GradientPaint(new Point(0, 0), BG_COLOR_1, new Point(0, btn.getHeight()), BG_COLOR_2);
+				p = new GradientPaint(
+						new Point(0, 0), UIManager.getColor("Button.background"), 
+						new Point(0, btn.getHeight()), UIManager.getColor("Table.background"));
 			else
-				p = BG_DISABLED_COLOR;
+				p = UIManager.getColor("Button.background");
 			
 			g2.setPaint(p);
 			g2.fillRect(0, 0, btn.getWidth(), btn.getHeight());

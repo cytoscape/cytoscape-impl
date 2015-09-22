@@ -78,6 +78,7 @@ final class BelowAndAbovePanel extends JPanel {
 		});
 	}
 
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private void processDoubleClick(MouseEvent e) {
 		if (e.getClickCount() == 2) {
 			Object newValue = null;
@@ -161,7 +162,5 @@ final class BelowAndAbovePanel extends JPanel {
 		}
 
 		g2d.fillPolygon(poly);
-		g2d.setColor(Color.DARK_GRAY);
-		g2d.draw(poly);
 	}
 }
