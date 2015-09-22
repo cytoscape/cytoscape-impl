@@ -1471,16 +1471,18 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 					// TODO: Optimize to not instantiate new array on every call.
 					final long[] selectedNodes = m_view.getSelectedNodeIndices();
 	
-					for (int i = 0; i < selectedNodes.length; i++) {
-						final NodeView dNodeView = m_view.getDNodeView(selectedNodes[i]);
-						final double oldXPos = dNodeView.getXPosition();
-						final double oldYPos = dNodeView.getYPosition();
-						dNodeView.setOffset(oldXPos + deltaX, oldYPos + deltaY);
-					}
-	
 					final LongEnumerator anchorsToMove = m_view.m_selectedAnchors.searchRange(Integer.MIN_VALUE,
-					                                                                         Integer.MAX_VALUE,
-					                                                                         false);
+                            Integer.MAX_VALUE,
+                            false);
+					
+					if ( anchorsToMove.numRemaining() < 1 ) { // If we are moving anchors of edges, no need to move nodes (bug #2360).
+					    for (int i = 0; i < selectedNodes.length; i++) {
+						    final NodeView dNodeView = m_view.getDNodeView(selectedNodes[i]);
+						    final double oldXPos = dNodeView.getXPosition();
+						    final double oldYPos = dNodeView.getYPosition();
+						    dNodeView.setOffset(oldXPos + deltaX, oldYPos + deltaY);
+					    }
+					}
 	
 					while (anchorsToMove.numRemaining() > 0) {
 						final long edgeAndAnchor = anchorsToMove.nextLong();
