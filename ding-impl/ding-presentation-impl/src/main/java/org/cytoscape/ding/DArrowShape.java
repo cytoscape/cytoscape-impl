@@ -48,7 +48,12 @@ public enum DArrowShape {
 	T("T", "T", ArrowShapeVisualProperty.T, GraphGraphics.ARROW_TEE),
 	CIRCLE("Circle", "CIRCLE", ArrowShapeVisualProperty.CIRCLE, GraphGraphics.ARROW_DISC),
 	HALF_TOP("Half Top", "HALF_TOP", ArrowShapeVisualProperty.HALF_TOP, GraphGraphics.ARROW_HALF_TOP),
-	HALF_BOTTOM("Half Top", "HALF_BOTTOM", ArrowShapeVisualProperty.HALF_BOTTOM, GraphGraphics.ARROW_HALF_BOTTOM);
+	HALF_BOTTOM("Half Top", "HALF_BOTTOM", ArrowShapeVisualProperty.HALF_BOTTOM, GraphGraphics.ARROW_HALF_BOTTOM),
+	DELTA_SHORT_1("Delta Short 1", "DELTA_SHORT_1", ArrowShapeVisualProperty.DELTA_SHORT_1, GraphGraphics.ARROW_DELTA_SHORT_1),
+	DELTA_SHORT_2("Delta Short 2", "DELTA_SHORT_2", ArrowShapeVisualProperty.DELTA_SHORT_2, GraphGraphics.ARROW_DELTA_SHORT_2),
+	ARROW_SHORT("Arrow Short", "ARROW_SHORT", ArrowShapeVisualProperty.ARROW_SHORT, GraphGraphics.ARROW_ARROWHEAD_SHORT),
+	DIAMOND_SHORT_1("Diamond Short 1", "DIAMOND_SHORT_1", ArrowShapeVisualProperty.DIAMOND_SHORT_1, GraphGraphics.ARROW_DIAMOND_SHORT_1),
+	DIAMOND_SHORT_2("Diamond Short 2", "DIAMOND_SHORT_2", ArrowShapeVisualProperty.DIAMOND_SHORT_2, GraphGraphics.ARROW_DIAMOND_SHORT_2);
 	
 
 	private final String displayName;

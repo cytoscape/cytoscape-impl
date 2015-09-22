@@ -53,8 +53,13 @@ import java.util.Map;
 
 import org.cytoscape.graph.render.immed.arrow.Arrow;
 import org.cytoscape.graph.render.immed.arrow.ArrowheadArrow;
+import org.cytoscape.graph.render.immed.arrow.ArrowheadArrowShort;
 import org.cytoscape.graph.render.immed.arrow.DeltaArrow;
+import org.cytoscape.graph.render.immed.arrow.DeltaArrowShort1;
+import org.cytoscape.graph.render.immed.arrow.DeltaArrowShort2;
 import org.cytoscape.graph.render.immed.arrow.DiamondArrow;
+import org.cytoscape.graph.render.immed.arrow.DiamondArrowShort1;
+import org.cytoscape.graph.render.immed.arrow.DiamondArrowShort2;
 import org.cytoscape.graph.render.immed.arrow.DiscArrow;
 import org.cytoscape.graph.render.immed.arrow.HalfBottomArrow;
 import org.cytoscape.graph.render.immed.arrow.HalfTopArrow;
@@ -153,6 +158,11 @@ public final class GraphGraphics {
 	public static final byte ARROW_HALF_TOP = -6;
 	public static final byte ARROW_HALF_BOTTOM = -7;
 	public static final byte ARROW_ARROWHEAD = -8;
+	public static final byte ARROW_DELTA_SHORT_1 = -9;
+	public static final byte ARROW_DELTA_SHORT_2 = -10;
+	public static final byte ARROW_ARROWHEAD_SHORT = -11;
+	public static final byte ARROW_DIAMOND_SHORT_1 = -12;
+	public static final byte ARROW_DIAMOND_SHORT_2 = -13;
 
 	// The way to access all Arrow objects.
 	private static final Map<Byte,Arrow> arrows;
@@ -194,6 +204,11 @@ public final class GraphGraphics {
 		arrows.put(ARROW_ARROWHEAD, new ArrowheadArrow() );
 		arrows.put(ARROW_HALF_TOP, new HalfTopArrow() );
 		arrows.put(ARROW_HALF_BOTTOM, new HalfBottomArrow() );
+		arrows.put(ARROW_DELTA_SHORT_1, new DeltaArrowShort1() );
+		arrows.put(ARROW_DELTA_SHORT_2, new DeltaArrowShort2() );
+		arrows.put(ARROW_ARROWHEAD_SHORT, new ArrowheadArrowShort() );
+		arrows.put(ARROW_DIAMOND_SHORT_1, new DiamondArrowShort1() );
+		arrows.put(ARROW_DIAMOND_SHORT_2, new DiamondArrowShort2() );
 	}
 
 	private static final float DEF_SHAPE_SIZE = 32;
