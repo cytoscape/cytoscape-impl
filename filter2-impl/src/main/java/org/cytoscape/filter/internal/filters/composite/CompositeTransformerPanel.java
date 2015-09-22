@@ -73,8 +73,9 @@ public class CompositeTransformerPanel extends JPanel {
 	
 	JButton createAddChainEntryButton() {
 		final JButton button = new JButton(IconManager.ICON_PLUS);
-		button.setFont(iconManager.getIconFont(12.0f));
+		button.setFont(iconManager.getIconFont(11.0f));
 		button.setToolTipText("Add new chain entry...");
+		button.putClientProperty("JButton.buttonType", "gradient");
 		button.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent event) {
