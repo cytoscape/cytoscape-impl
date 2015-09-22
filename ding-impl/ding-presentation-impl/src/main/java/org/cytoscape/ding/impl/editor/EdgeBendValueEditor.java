@@ -26,14 +26,19 @@ package org.cytoscape.ding.impl.editor;
 
 import static javax.swing.GroupLayout.Alignment.LEADING;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_BEND;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_SELECTED_PAINT;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_STROKE_SELECTED_PAINT;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_TARGET_ARROW_SHAPE;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_WIDTH;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NETWORK_BACKGROUND_PAINT;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_BORDER_PAINT;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_FILL_COLOR;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_HEIGHT;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_LABEL;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_LABEL_COLOR;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_LABEL_FONT_SIZE;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_SELECTED_PAINT;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_SHAPE;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_WIDTH;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_X_LOCATION;
@@ -71,7 +76,6 @@ import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.View;
-import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.view.presentation.RenderingEngineFactory;
 import org.cytoscape.view.presentation.property.ArrowShapeVisualProperty;
 import org.cytoscape.view.presentation.property.NodeShapeVisualProperty;
@@ -83,10 +87,6 @@ public class EdgeBendValueEditor extends JPanel implements ValueEditor<Bend> {
 	private static final long serialVersionUID = 9145223127932839836L;
 
 	private static final Dimension DEF_PANEL_SIZE = new Dimension(600, 400);
-	
-	private static final Color NODE_COLOR = Color.gray;
-	private static final Color EDGE_COLOR = Color.BLACK;
-	private static final Color BACKGROUND_COLOR = Color.white;
 	
 	private JDialog dialog;
 	private JPanel innerPanel;
@@ -122,7 +122,7 @@ public class EdgeBendValueEditor extends JPanel implements ValueEditor<Bend> {
 		dialog = new JDialog(owner, ModalityType.APPLICATION_MODAL);
 		dialog.setTitle("Edge Bend Editor");
 		dialog.setResizable(false);
-		dialog.setContentPane(this);
+		dialog.getContentPane().add(this);
 		
 		dialog.addWindowListener(new WindowAdapter() {
 			@Override
@@ -147,7 +147,7 @@ public class EdgeBendValueEditor extends JPanel implements ValueEditor<Bend> {
 		infoLabel.setFont(infoLabel.getFont().deriveFont(LookAndFeelUtil.getSmallFontSize()));
 		
 		innerPanel = new JPanel();
-		innerPanel.setBackground(BACKGROUND_COLOR);
+		innerPanel.setBackground(UIManager.getColor("Table.background"));
 		innerPanel.setBorder(BorderFactory.createLineBorder(UIManager.getColor("Separator.foreground")));
 
 		final JButton okButton = new JButton(new AbstractAction("OK") {
@@ -199,6 +199,11 @@ public class EdgeBendValueEditor extends JPanel implements ValueEditor<Bend> {
 	private void updateUI(Bend startBend) {
 		innerPanel.removeAll();
 		
+		final Color NODE_COLOR = UIManager.getColor("Label.disabledForeground");
+		final Color EDGE_COLOR = UIManager.getColor("Label.foreground");
+		final Color SELECTION_COLOR = UIManager.getColor("Focus.color");
+		final Color BACKGROUND_COLOR = UIManager.getColor("Table.background");
+		
 		// Create very simple dummy view.
 		final CyNetwork dummyNet = cyNetworkFactory.createNetworkWithPrivateTables(SavePolicy.DO_NOT_SAVE);
 		final CyNode source = dummyNet.addNode();
@@ -216,10 +221,14 @@ public class EdgeBendValueEditor extends JPanel implements ValueEditor<Bend> {
 		final View<CyNode> targetView = dummyView.getNodeView(target);
 		edgeView = dummyView.getEdgeView(edge);
 		
+		dummyView.setVisualProperty(NETWORK_BACKGROUND_PAINT, BACKGROUND_COLOR);
+		
 		sourceView.setVisualProperty(NODE_FILL_COLOR, NODE_COLOR);
 		targetView.setVisualProperty(NODE_FILL_COLOR, NODE_COLOR);
-		sourceView.setVisualProperty(NODE_LABEL_COLOR, Color.WHITE);
-		targetView.setVisualProperty(NODE_LABEL_COLOR, Color.WHITE);
+		sourceView.setVisualProperty(NODE_LABEL_COLOR, BACKGROUND_COLOR);
+		targetView.setVisualProperty(NODE_LABEL_COLOR, BACKGROUND_COLOR);
+		sourceView.setVisualProperty(NODE_SELECTED_PAINT, SELECTION_COLOR);
+		targetView.setVisualProperty(NODE_SELECTED_PAINT, SELECTION_COLOR);
 		sourceView.setVisualProperty(NODE_LABEL_FONT_SIZE, 16);
 		targetView.setVisualProperty(NODE_LABEL_FONT_SIZE, 16);
 		sourceView.setVisualProperty(NODE_LABEL, "S");
@@ -230,9 +239,13 @@ public class EdgeBendValueEditor extends JPanel implements ValueEditor<Bend> {
 		
 		sourceView.setVisualProperty(NODE_WIDTH, 40d);
 		sourceView.setVisualProperty(NODE_HEIGHT, 40d);
+		sourceView.setVisualProperty(NODE_BORDER_PAINT, NODE_COLOR);
 		targetView.setVisualProperty(NODE_WIDTH, 40d);
 		targetView.setVisualProperty(NODE_HEIGHT, 40d);
+		targetView.setVisualProperty(NODE_BORDER_PAINT, NODE_COLOR);
 		
+		edgeView.setVisualProperty(EDGE_SELECTED_PAINT, SELECTION_COLOR);
+		edgeView.setVisualProperty(EDGE_STROKE_SELECTED_PAINT, SELECTION_COLOR);
 		edgeView.setVisualProperty(EDGE_STROKE_UNSELECTED_PAINT, EDGE_COLOR);
 		edgeView.setVisualProperty(EDGE_WIDTH, 4d);
 		edgeView.setVisualProperty(EDGE_TARGET_ARROW_SHAPE, ArrowShapeVisualProperty.ARROW);
@@ -250,7 +263,7 @@ public class EdgeBendValueEditor extends JPanel implements ValueEditor<Bend> {
 		targetView.setVisualProperty(NODE_Y_LOCATION, 120d);
 
 		// Render it in this panel.  It is not necessary to register this engine to manager.
-		final RenderingEngine<CyNetwork> engine = presentationFactory.createRenderingEngine(innerPanel, dummyView);
+		presentationFactory.createRenderingEngine(innerPanel, dummyView);
 		dummyView.fitContent();
 		
 		final InnerCanvas innerCanvas = (InnerCanvas) innerPanel.getComponent(0);

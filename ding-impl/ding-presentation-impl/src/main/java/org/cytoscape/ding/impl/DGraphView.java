@@ -54,7 +54,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -168,9 +167,6 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	// Size of square for moving handle
 	static final float DEFAULT_ANCHOR_SIZE = 12.0f;
 	
-	static final Paint DEFAULT_ANCHOR_SELECTED_PAINT = Color.red;
-	static final Paint DEFAULT_ANCHOR_UNSELECTED_PAINT = Color.DARK_GRAY;
-
 	final CyEventHelper cyEventHelper;
 
 	// Size of snapshot image
@@ -330,10 +326,6 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	 * List of listeners.
 	 */
 	final ViewportChangeListener[] m_vLis = new ViewportChangeListener[1];
-	/**
-	 * ???
-	 */
-	private final LongHash m_hash = new LongHash();
 
 	/**
 	 *
@@ -394,51 +386,42 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	Timer animationTimer = null;
 	Set<DEdgeView> animatedEdges = null;
 
-	/**
-	 * Create presentation from View Model
-	 * 
-	 */
-	public DGraphView(final CyNetworkView view,
-			CyRootNetworkManager cyRoot, UndoSupport undo,
+	public DGraphView(
+			final CyNetworkView view,
+			CyRootNetworkManager cyRoot,
+			UndoSupport undo,
 			SpacialIndex2DFactory spacialFactory,
 			final VisualLexicon dingLexicon,
 			ViewTaskFactoryListener vtfl,
 			DialogTaskManager manager,
 			CyEventHelper eventHelper,
-			AnnotationFactoryManager annMgr, final DingGraphLOD dingGraphLOD, final VisualMappingManager vmm,
+			AnnotationFactoryManager annMgr,
+			final DingGraphLOD dingGraphLOD,
+			final VisualMappingManager vmm,
 			final CyNetworkViewManager netViewMgr,
 			final HandleFactory handleFactory,
-			final CyServiceRegistrar registrar) {
-		
-		this(view.getModel(), cyRoot, undo, spacialFactory, dingLexicon, 
-				vtfl, manager, eventHelper, annMgr, dingGraphLOD, vmm, netViewMgr, handleFactory, registrar);
+			final CyServiceRegistrar registrar
+	) {
+		this(view.getModel(), cyRoot, undo, spacialFactory, dingLexicon, vtfl, manager, eventHelper, annMgr,
+				dingGraphLOD, vmm, netViewMgr, handleFactory, registrar);
 	}
-
 	
-	/**
-	 * 
-	 * @param model
-	 * @param cyRoot
-	 * @param undo
-	 * @param spacialFactory
-	 * @param dingLexicon
-	 * @param vtfl
-	 * @param manager
-	 * @param cyEventHelper
-	 * @param annMgr
-	 * @param dingGraphLOD
-	 */
-	public DGraphView(final CyNetwork model,
-			CyRootNetworkManager cyRoot, UndoSupport undo,
+	public DGraphView(
+			final CyNetwork model,
+			CyRootNetworkManager cyRoot,
+			UndoSupport undo,
 			SpacialIndex2DFactory spacialFactory,
 			final VisualLexicon dingLexicon,
 			ViewTaskFactoryListener vtfl,
 			DialogTaskManager manager,
 			CyEventHelper cyEventHelper,
-			AnnotationFactoryManager annMgr, final DingGraphLOD dingGraphLOD, final VisualMappingManager vmm,
+			AnnotationFactoryManager annMgr,
+			final DingGraphLOD dingGraphLOD,
+			final VisualMappingManager vmm,
 			final CyNetworkViewManager netViewMgr,
 			final HandleFactory handleFactory,
-			final CyServiceRegistrar registrar) {
+			final CyServiceRegistrar registrar
+	) {
 		super(model, dingLexicon, cyEventHelper);
 		this.props = new Properties();
 		this.vmm = vmm;
@@ -529,7 +512,6 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		animationTimer.setRepeats(true);
 	}
 
-	
 	@Override
 	public CyNetwork getNetwork() {
 		return model;
@@ -1177,10 +1159,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	}
 
 	/**
-	 * Returns an iterator of all node views, including those that are currently
-	 * hidden.
-	 *
-	 * @return DOCUMENT ME!
+	 * Returns an iterator of all node views, including those that are currently hidden.
 	 */
 	@Override
 	public Iterator<NodeView> getNodeViewsIterator() {
@@ -1190,10 +1169,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	}
 
 	/**
-	 * Returns the count of all node views, including those that are currently
-	 * hidden.
-	 *
-	 * @return DOCUMENT ME!
+	 * Returns the count of all node views, including those that are currently hidden.
 	 */
 	@Override
 	public int getNodeViewCount() {
@@ -1203,10 +1179,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	}
 
 	/**
-	 * Returns the count of all edge views, including those that are currently
-	 * hidden.
-	 *
-	 * @return DOCUMENT ME!
+	 * Returns the count of all edge views, including those that are currently hidden.
 	 */
 	@Override
 	public int getEdgeViewCount() {
@@ -1247,13 +1220,6 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	 * directed, having oneNode as source and otherNode as target or 2.
 	 * undirected, having oneNode and otherNode as endpoints. Note that this
 	 * behaviour is similar to that of CyNetwork.edgesList(Node, Node).
-	 *
-	 * @param oneNode
-	 *            DOCUMENT ME!
-	 * @param otherNode
-	 *            DOCUMENT ME!
-	 *
-	 * @return DOCUMENT ME!
 	 */
 	@Override
 	public List<EdgeView> getEdgeViewsList(CyNode oneNode, CyNode otherNode) {
@@ -1282,15 +1248,6 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	/**
 	 * Similar to getEdgeViewsList(Node, Node), only that one has control of
 	 * whether or not to include undirected edges.
-	 *
-	 * @param oneNodeInx
-	 *            DOCUMENT ME!
-	 * @param otherNodeInx
-	 *            DOCUMENT ME!
-	 * @param includeUndirected
-	 *            DOCUMENT ME!
-	 *
-	 * @return DOCUMENT ME!
 	 */
 	@Override
 	public List<EdgeView> getEdgeViewsList(long oneNodeInx, long otherNodeInx,
@@ -1409,12 +1366,6 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		// }
 	}
 
-	/**
-	 * @param obj
-	 *            should be either a DEdgeView or a DNodeView.
-	 *
-	 * @return DOCUMENT ME!
-	 */
 	@Override
 	public boolean showGraphObject(Object obj) {
 		return showGraphObjectInternal(obj, true);
@@ -1500,14 +1451,6 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		return true;
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 *
-	 * @param objects
-	 *            DOCUMENT ME!
-	 *
-	 * @return DOCUMENT ME!
-	 */
 	@Override
 	public boolean showGraphObjects(List<? extends GraphViewObject> objects) {
 		final Iterator<? extends GraphViewObject> it = objects.iterator();
@@ -1533,7 +1476,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		}
 	}
 
-	
+	@Override
 	public Point2D getCenter() {
 		synchronized (m_lock) {
 			return new Point2D.Double(m_networkCanvas.m_xCenter, m_networkCanvas.m_yCenter);
@@ -1608,8 +1551,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	}
 
 	/**
-	 * @return An LongEnumerator listing the nodes that are endpoints of the
-	 *         currently selected edges.
+	 * @return An LongEnumerator listing the nodes that are endpoints of the currently selected edges.
 	 */
 	private LongEnumerator getSelectedEdgeNodes() {
 		synchronized (m_lock) {
@@ -1661,11 +1603,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		}
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 *
-	 * @return DOCUMENT ME!
-	 */
+	@Override
 	public GraphLOD getGraphLOD() {
 		return m_networkCanvas.m_lod[0];
 	}
@@ -1759,20 +1697,6 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		}
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 *
-	 * @param xMin
-	 *            DOCUMENT ME!
-	 * @param yMin
-	 *            DOCUMENT ME!
-	 * @param xMax
-	 *            DOCUMENT ME!
-	 * @param yMax
-	 *            DOCUMENT ME!
-	 * @param returnVal
-	 *            DOCUMENT ME!
-	 */
 	public void queryDrawnEdges(int xMin, int yMin, int xMax, int yMax,
 			LongStack returnVal) {
 		synchronized (m_lock) {
@@ -1802,12 +1726,6 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		}
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 *
-	 * @param coords
-	 *            DOCUMENT ME!
-	 */
 	@Override
 	public void xformComponentToNodeCoords(double[] coords) {
 		synchronized (m_lock) {
@@ -1815,12 +1733,6 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		}
 	}
 	
-	/**
-	 * DOCUMENT ME!
-	 *
-	 * @param coords
-	 *            DOCUMENT ME!
-	 */
 	public void xformNodeToComponentCoords(double[] coords) {
 		synchronized (m_lock) {
 			m_networkCanvas.m_grafx.xformNodetoImageCoords(coords);
@@ -1829,19 +1741,6 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 
 	/**
 	 * This method is called by the BirdsEyeView to get a snapshot of the graphics.
-	 *
-	 * @param img
-	 *            DOCUMENT ME!
-	 * @param lod
-	 *            DOCUMENT ME!
-	 * @param bgPaint
-	 *            DOCUMENT ME!
-	 * @param xCenter
-	 *            DOCUMENT ME!
-	 * @param yCenter
-	 *            DOCUMENT ME!
-	 * @param scaleFactor
-	 *            DOCUMENT ME!
 	 */
 //TODO: Need to fix up scaling and sizing.  
 	public void drawSnapshot(VolatileImage img, GraphLOD lod, Paint bgPaint, 
@@ -1890,7 +1789,6 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		} catch (Exception e) { e.printStackTrace(); }
 
 	}
-
 
 	int renderSubgraph(GraphGraphics graphics, final GraphLOD lod, 
 	                   Paint bgColor, double xCenter, double yCenter, double scale, LongHash hash,
@@ -1986,22 +1884,10 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		return lastRenderDetail;
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 *
-	 * @param l
-	 *            DOCUMENT ME!
-	 */
 	public void addContentChangeListener(ContentChangeListener l) {
 		m_cLis[0] = ContentChangeListenerChain.add(m_cLis[0], l);
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 *
-	 * @param l
-	 *            DOCUMENT ME!
-	 */
 	public void removeContentChangeListener(ContentChangeListener l) {
 		m_cLis[0] = ContentChangeListenerChain.remove(m_cLis[0], l);
 	}
@@ -2010,38 +1896,15 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		return m_cLis[0];
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 *
-	 * @param l
-	 *            DOCUMENT ME!
-	 */
 	public void addViewportChangeListener(ViewportChangeListener l) {
 		m_vLis[0] = ViewportChangeListenerChain.add(m_vLis[0], l);
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 *
-	 * @param l
-	 *            DOCUMENT ME!
-	 */
 	public void removeViewportChangeListener(ViewportChangeListener l) {
 		m_vLis[0] = ViewportChangeListenerChain.remove(m_vLis[0], l);
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 *
-	 * @param g
-	 *            DOCUMENT ME!
-	 * @param pageFormat
-	 *            DOCUMENT ME!
-	 * @param page
-	 *            DOCUMENT ME!
-	 *
-	 * @return DOCUMENT ME!
-	 */
+	@Override
 	public int print(Graphics g, PageFormat pageFormat, int page) {
 		if (page == 0) {
 			((Graphics2D) g).translate(pageFormat.getImageableX(),
@@ -2226,13 +2089,6 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		return nv;
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 *
-	 * @param pt
-	 *            DOCUMENT ME!
-	 * @return DOCUMENT ME!
-	 */
 	@Override
 	public EdgeView getPickedEdgeView(Point2D pt) {
 		EdgeView ev = null;
@@ -2249,18 +2105,8 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		return ev;
 	}
 
-	
 	final float getAnchorSize() {
 		return DEFAULT_ANCHOR_SIZE;
-	}
-
-	
-	final Paint getAnchorSelectedPaint() {
-		return DEFAULT_ANCHOR_SELECTED_PAINT;
-	}
-
-	final Paint getAnchorUnselectedPaint() {
-		return DEFAULT_ANCHOR_UNSELECTED_PAINT;
 	}
 
 	private double checkZoom(double zoom, double orig) {
@@ -2273,27 +2119,16 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 
 	private String title;
 
-	/**
-	 * DOCUMENT ME!
-	 *
-	 * @param title
-	 *            DOCUMENT ME!
-	 */
+	@Override
 	public void setTitle(String title) {
 		this.title = title;
 	}
 
-	
-	@Override public String getTitle() {
+	@Override
+	public String getTitle() {
 		return title;
 	}
 
-	
-	/**
-	 * Set selected nodes
-	 * @param nodes
-	 * @return
-	 */
 	public boolean setSelected(final CyNode[] nodes) {
 		for ( CyNode node : nodes )
 			getDNodeView(node).select();
@@ -2301,7 +2136,6 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 
 		return true;
 	}
-	
 	
 	public boolean setSelected(final CyEdge[] edges) {
 		for ( CyEdge edge : edges )
@@ -2311,7 +2145,6 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		return true;
 	}
 
-	
 	public List<NodeView> getNodeViewsList() {
 		ArrayList<NodeView> list = new ArrayList<NodeView>(getNodeViewCount());
 		for (CyNode nn : getNetwork().getNodeList())
@@ -3033,5 +2866,4 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 			}
 		}
 	}
-
 }

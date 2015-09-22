@@ -66,7 +66,6 @@ public class ObjectPositionValueEditor extends JPanel implements ValueEditor<Obj
 	private boolean initialized;
 	
 	public ObjectPositionValueEditor() {
-		super();
 		this.label = "OBJECT";
 	}
 
@@ -77,7 +76,7 @@ public class ObjectPositionValueEditor extends JPanel implements ValueEditor<Obj
 		dialog.setMinimumSize(new Dimension(400, 600));
 		dialog.setTitle("Position");
 		dialog.setResizable(false);
-		dialog.setContentPane(this);
+		dialog.getContentPane().add(this);
 		
 		dialog.addWindowListener(new WindowAdapter() {
 			@Override

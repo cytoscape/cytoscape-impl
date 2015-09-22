@@ -1250,9 +1250,9 @@ final class DEdgeDetails extends EdgeDetails {
 			anchorInx = anchorInx / 2;
 
 		if (dGraphView.m_selectedAnchors.count((edge.getSUID() << 6) | anchorInx) > 0)
-			return dGraphView.getAnchorSelectedPaint();
+			return getSelectedPaint(edge);
 		else
-			return dGraphView.getAnchorUnselectedPaint();
+			return getUnselectedPaint(edge);
 	}
 	
 	public <T, V extends T> V getDefaultValue(VisualProperty<T> vp) {

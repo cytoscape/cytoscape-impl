@@ -26,7 +26,6 @@ package org.cytoscape.ding.impl;
 
 
 import org.cytoscape.ding.EdgeView;
-import org.cytoscape.ding.GraphViewChangeListener;
 import org.cytoscape.ding.NodeView;
 import org.cytoscape.ding.ViewChangeEdit;
 import org.cytoscape.ding.impl.DNodeView;
@@ -42,11 +41,8 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.model.SUIDFactory;
 import org.cytoscape.model.events.RowsSetEvent;
 import org.cytoscape.model.events.RowSetRecord;
-import org.cytoscape.model.subnetwork.CySubNetwork;
-import org.cytoscape.spacial.SpacialIndex2D;
 import org.cytoscape.util.intr.LongEnumerator;
 import org.cytoscape.util.intr.LongHash;
 import org.cytoscape.util.intr.LongStack;
@@ -81,6 +77,9 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 	// and that is ridiculous. 
 	public GraphGraphics m_grafx;
 
+	final Color SELECTION_RECT_BORDER_COLOR_1;
+	final Color SELECTION_RECT_BORDER_COLOR_2;
+	
 	final double[] m_ptBuff = new double[2];
 	final float[] m_extentsBuff2 = new float[4];
 	final float[] m_floatBuff1 = new float[2];
@@ -96,14 +95,14 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 	double m_xCenter;
 	double m_yCenter;
 	double m_scaleFactor;
-	private int m_lastRenderDetail = 0;
-	private Rectangle m_selectionRect = null;
+	private int m_lastRenderDetail;
+	private Rectangle m_selectionRect;
 	private ViewChangeEdit m_undoable_edit;
-	private boolean isPrinting = false;
+	private boolean isPrinting;
 	private PopupMenuHelper popup;
 	private LongHash m_hash;
 
-	FontMetrics m_fontMetrics = null;
+	FontMetrics m_fontMetrics;
 	
 	private boolean NodeMovement = true;
 
@@ -114,10 +113,10 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 
 	private UndoSupport m_undo;
 
-	private int m_currMouseButton = 0;
-	private int m_lastXMousePos = 0;
-	private int m_lastYMousePos = 0;
-	private boolean m_button1NodeDrag = false;
+	private int m_currMouseButton;
+	private int m_lastXMousePos;
+	private int m_lastYMousePos;
+	private boolean m_button1NodeDrag;
 	
 	private final MousePressedDelegator mousePressedDelegator;
 	private final MouseReleasedDelegator mouseReleasedDelegator;
@@ -125,16 +124,14 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 	private final AddEdgeMousePressedDelegator addEdgeMousePressedDelegator;
 
 	private AddEdgeStateMonitor addEdgeMode;
-	private ActionListener taskPerformer = null;
-	private Timer hideEdgesTimer = null;
+	private Timer hideEdgesTimer;
 
 	InnerCanvas(Object lock, DGraphView view, UndoSupport undo) {
-		super();
 		m_lock = lock;
 		m_view = view;
 		m_undo = undo;
 		m_lod[0] = new GraphLOD(); // Default LOD.
-		m_backgroundColor = Color.white;
+		m_backgroundColor = Color.WHITE;
 		m_isVisible = true;
 		m_isOpaque = false;
 		m_xCenter = 0.0d;
@@ -155,6 +152,9 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 
 		addEdgeMode = new AddEdgeStateMonitor(this,m_view);
 
+		SELECTION_RECT_BORDER_COLOR_1 = UIManager.getColor("Focus.color");
+		SELECTION_RECT_BORDER_COLOR_2 = new Color(255, 255, 255, 160);
+		
 		// Timer to reset edge drawing
 		ActionListener taskPerformer = new ActionListener() {
 			public void actionPerformed(ActionEvent evt) {
@@ -214,8 +214,6 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 			}
 		}
 
-		// System.out.println("contentChanged = "+contentChanged+", viewportChanged = "+viewportChanged);
-
 		// if canvas is visible, draw it (could be made invisible via DingCanvas api)
 		if (m_isVisible) {
 			// Should this be on the AWT thread?
@@ -224,22 +222,31 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 
 		if ((m_selectionRect != null) && (this.isSelecting())) {
 			final Graphics2D g2 = (Graphics2D) g;
-			g2.setColor(Color.red);
+			// External border
+			g2.setColor(SELECTION_RECT_BORDER_COLOR_1);
 			g2.draw(m_selectionRect);
+			
+			// Internal border
+			if (m_selectionRect.width > 4 && m_selectionRect.height > 4) {
+				g2.setColor(SELECTION_RECT_BORDER_COLOR_2);
+				g2.drawRect(
+						m_selectionRect.x + 1,
+						m_selectionRect.y + 1,
+						m_selectionRect.width - 2,
+						m_selectionRect.height - 2
+				);
+			}
 		}
 
 		if (contentChanged) {
 			final ContentChangeListener lis = m_view.m_cLis[0];
-			// System.out.println("Firing contentChanged");
 
-			if (lis != null) {
+			if (lis != null)
 				lis.contentChanged();
-			}
 		}
 
 		if (viewportChanged) {
 			final ViewportChangeListener lis = m_view.m_vLis[0];
-			// System.out.println("Firing viewportChanged");
 
 			if (lis != null)
 				lis.viewportChanged(getWidth(), getHeight(), xCenter, yCenter, scaleFactor);
@@ -1219,7 +1226,6 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 	
 		@Override
 		void singleMiddleClick(MouseEvent e) {
-			// System.out.println("MousePressed ----> singleMiddleClick");
 			// Save all node positions
 			m_undoable_edit = new ViewChangeEdit(m_view,ViewChangeEdit.SavedObjs.NODES,"Move",m_undo);
 			m_currMouseButton = 2;
@@ -1232,21 +1238,17 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
         private double pickedNodeWidth = 0.0;
         private double pickedNodeHeight = 0.0;
 
-        private NodeView getPickedNodeView()
-        {
-            return pickedNodeView;
-        }
+		private NodeView getPickedNodeView() {
+			return pickedNodeView;
+		}
 
-        private double getPickedNodeWidth()
-        {
-            return pickedNodeWidth;
-        }
+		private double getPickedNodeWidth() {
+			return pickedNodeWidth;
+		}
 
-        private double getPickedNodeHeight()
-        {
-            return pickedNodeHeight;
-        }
-
+		private double getPickedNodeHeight() {
+			return pickedNodeHeight;
+		}
 	
 		@Override
 		void singleRightClick(MouseEvent e) {
