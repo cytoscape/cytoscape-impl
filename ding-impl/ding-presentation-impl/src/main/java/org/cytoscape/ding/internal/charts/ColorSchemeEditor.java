@@ -34,7 +34,7 @@ import javax.swing.border.Border;
 
 import org.cytoscape.ding.customgraphics.AbstractCustomGraphics2;
 import org.cytoscape.ding.customgraphics.ColorScheme;
-import org.cytoscape.ding.internal.charts.util.ColorUtil;
+import org.cytoscape.ding.internal.util.ColorUtil;
 import org.cytoscape.ding.internal.util.IconUtil;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetwork;

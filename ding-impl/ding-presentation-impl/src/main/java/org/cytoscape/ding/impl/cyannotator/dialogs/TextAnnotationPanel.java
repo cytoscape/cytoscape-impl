@@ -24,219 +24,263 @@ package org.cytoscape.ding.impl.cyannotator.dialogs;
  * #L%
  */
 
-import java.awt.BorderLayout;
+import static javax.swing.GroupLayout.DEFAULT_SIZE;
+import static javax.swing.GroupLayout.PREFERRED_SIZE;
+import static javax.swing.GroupLayout.Alignment.CENTER;
+import static javax.swing.GroupLayout.Alignment.LEADING;
+
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.GraphicsEnvironment;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 
+import javax.swing.AbstractListModel;
+import javax.swing.GroupLayout;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextField;
+import javax.swing.LayoutStyle.ComponentPlacement;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+
+import org.cytoscape.ding.internal.util.ColorButton;
+import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.presentation.annotations.TextAnnotation;
-import org.cytoscape.ding.impl.cyannotator.annotations.TextAnnotationImpl;
 
-import javax.swing.BorderFactory;
-import javax.swing.JFrame;
+@SuppressWarnings("serial")
+public class TextAnnotationPanel extends JPanel {
+	
+	private JTextField annotationText;
+	private JList<String> fontSizeList;
+	private JList<String> fontStyleList;
+	private JList<String> fontTypeList;
+	private ColorButton textColorButton;
 
-public class TextAnnotationPanel extends javax.swing.JPanel {
-	private int WIDTH = 500;
-	private int HEIGHT = 200;
-	private int TOP = 10;
-	private int LEFT = 10;
-	private int COLUMN1 = 175;
-	private int COLUMN2 = 325;
-	private int RIGHT = WIDTH-10;
+	private PreviewPanel previewPanel;
+	private TextAnnotation annotation;
+	private TextAnnotation preview;
 
-	public TextAnnotationPanel(TextAnnotation annotation, PreviewPanel previewPanel, int width, int height) {
-		this.mAnnotation=annotation;
-		this.previewPanel=previewPanel;
-		this.preview=(TextAnnotation)previewPanel.getPreviewAnnotation();
-		this.WIDTH = width;
-		this.HEIGHT = height;
+	public TextAnnotationPanel(TextAnnotation annotation, PreviewPanel previewPanel) {
+		this.annotation = annotation;
+		this.previewPanel = previewPanel;
+		this.preview = (TextAnnotation) previewPanel.getAnnotation();
 		initComponents();
-		setSize(width,height);
 	}
 
 	private void initComponents() {
-		jLabel1 = new javax.swing.JLabel();
-		fTField = new javax.swing.JTextField();
-		jLabel2 = new javax.swing.JLabel();
-		annotationText = new javax.swing.JTextField();
-		selectTextColorButton = new javax.swing.JButton();
-		jLabel4 = new javax.swing.JLabel();
-		jLabel3 = new javax.swing.JLabel();
-		jScrollPane2 = new javax.swing.JScrollPane();
-		fontStyleList = new javax.swing.JList();
-		jScrollPane1 = new javax.swing.JScrollPane();
-		fontTypeList = new javax.swing.JList();
-		jScrollPane3 = new javax.swing.JScrollPane();
-		fontSizeList = new javax.swing.JList();
+		setBorder(LookAndFeelUtil.createPanelBorder());
+		
+		final JLabel label1 = new JLabel("Text:");
+		final JLabel label2 = new JLabel("Font Family:");
+		final JLabel label3 = new JLabel("Style:");
+		final JLabel label4 = new JLabel("Size:");
+		annotationText = new JTextField(annotation.getText());
+		textColorButton = new ColorButton(getTextColor());
+		fontTypeList = new JList<>();
+		fontStyleList = new JList<>();
+		fontSizeList = new JList<>();
+		final JScrollPane scrollPane1 = new JScrollPane(fontTypeList);
+		final JScrollPane scrollPane2 = new JScrollPane(fontStyleList);
+		final JScrollPane scrollPane3 = new JScrollPane(fontSizeList);
 
-		setMaximumSize(new java.awt.Dimension(WIDTH, HEIGHT));
-		setMinimumSize(new java.awt.Dimension(WIDTH, HEIGHT));
-		setLayout(null);
-		setBorder(BorderFactory.createLoweredBevelBorder());
-
-		// Top Row
-		//
-		// Text label
-		jLabel1.setFont(new java.awt.Font("Tahoma", 1, 12));
-		jLabel1.setText("Enter Text:");
-		add(jLabel1);
-		jLabel1.setBounds(LEFT, TOP, jLabel1.getPreferredSize().width, 25);
-
-		// Text field
-		annotationText.setText(mAnnotation.getText());
-		add(annotationText);
-		annotationText.setBounds(LEFT+80, TOP, 200, 25);
-
-		// Text color
-		selectTextColorButton.setText("Select Text Color");
-		add(selectTextColorButton);
-		selectTextColorButton.setBounds(LEFT+80+200+10, TOP, selectTextColorButton.getPreferredSize().width, 25);
-
-		int y = TOP+40;
-
-		// Second row (labels)
-		jLabel2.setText("Font Family:");
-		add(jLabel2);
-		jLabel2.setBounds(LEFT, y, jLabel2.getPreferredSize().width, 14);
-
-		jLabel3.setText("Style:");
-		add(jLabel3);
-		jLabel3.setBounds(COLUMN1, y, jLabel3.getPreferredSize().width, 14);
-
-		jLabel4.setText("Size:");
-		add(jLabel4);
-		jLabel4.setBounds(COLUMN2, y, jLabel4.getPreferredSize().width, 14);
-
-		// Third row
-		y += 20;
-
-		// Fourth row (lists)
-		// Font family
 		final String[] familyStrings = GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames();
-		fontTypeList.setModel(new javax.swing.AbstractListModel() {
-			public int getSize() { return familyStrings.length; }
-			public Object getElementAt(int i) { return familyStrings[i]; }
+		fontTypeList.setModel(new AbstractListModel<String>() {
+			@Override
+			public int getSize() {
+				return familyStrings.length;
+			}
+			@Override
+			public String getElementAt(int i) {
+				return familyStrings[i];
+			}
 		});
 
-		jScrollPane1.setViewportView(fontTypeList);
-
-		for(int i=0;i<fontTypeList.getModel().getSize();i++){
-			if(mAnnotation.getFont().getFamily().equals((String)fontTypeList.getModel().getElementAt(i))){
+		for (int i = 0; i < fontTypeList.getModel().getSize(); i++) {
+			if (annotation.getFont().getFamily().equals((String) fontTypeList.getModel().getElementAt(i))) {
 				fontTypeList.setSelectedValue(familyStrings[i], true);
 				break;
 			}
 		}
-		add(jScrollPane1);
-		jScrollPane1.setBounds(LEFT, y, 128, 130);
 
 		// Font style
 		final String[] typeStrings = { "Plain", "Bold", "Italic", "Bold and Italic" };
-		fontStyleList.setModel(new javax.swing.AbstractListModel() {
-			public int getSize() { return typeStrings.length; }
-			public Object getElementAt(int i) { return typeStrings[i]; }
+		fontStyleList.setModel(new AbstractListModel<String>() {
+			@Override
+			public int getSize() {
+				return typeStrings.length;
+			}
+			@Override
+			public String getElementAt(int i) {
+				return typeStrings[i];
+			}
 		});
 
-		jScrollPane2.setViewportView(fontStyleList);
-
-		if(mAnnotation.getFont().getStyle()==Font.PLAIN)
+		if (annotation.getFont().getStyle() == Font.PLAIN)
 			fontStyleList.setSelectedValue(typeStrings[0], true);
-		else if(mAnnotation.getFont().getStyle()==Font.BOLD)
+		else if (annotation.getFont().getStyle() == Font.BOLD)
 			fontStyleList.setSelectedValue(typeStrings[1], true);
-		else if(mAnnotation.getFont().getStyle()==Font.ITALIC) 
+		else if (annotation.getFont().getStyle() == Font.ITALIC)
 			fontStyleList.setSelectedValue(typeStrings[2], true);
 		else
 			fontStyleList.setSelectedValue(typeStrings[3], true);
 
-		add(jScrollPane2);
-		jScrollPane2.setBounds(COLUMN1, y, 110, 130);
-
 		// Font size
-		final String[] sizeStrings = { "10", "12", "14", "16", "18", "20", "22", "24", "26", "28", "30", "32", "34", "36" };
-		fontSizeList.setModel(new javax.swing.AbstractListModel() {
-			public int getSize() { return sizeStrings.length; }
-			public Object getElementAt(int i) { return sizeStrings[i]; }
+		final String[] sizeStrings = 
+			{ "10", "12", "14", "16", "18", "20", "22", "24", "26", "28", "30", "32", "34", "36" };
+		fontSizeList.setModel(new AbstractListModel<String>() {
+			@Override
+			public int getSize() {
+				return sizeStrings.length;
+			}
+			@Override
+			public String getElementAt(int i) {
+				return sizeStrings[i];
+			}
 		});
 
-		int fontSize=mAnnotation.getFont().getSize();
-		if(fontSize%2!=0)
+		int fontSize = annotation.getFont().getSize();
+		
+		if (fontSize % 2 != 0)
 			fontSize++;
 
-		int i=0;
+		int i = 0;
 
-		for(i=0;i<fontSizeList.getModel().getSize();i++){
-			if(fontSize==Integer.parseInt((String)fontSizeList.getModel().getElementAt(i)) ){
+		for (i = 0; i < fontSizeList.getModel().getSize(); i++) {
+			if (fontSize == Integer.parseInt((String) fontSizeList.getModel().getElementAt(i))) {
 				fontSizeList.setSelectedValue(sizeStrings[i], true);
 				break;
 			}
 		}
 
-		if(i==fontSizeList.getModel().getSize())
+		if (i == fontSizeList.getModel().getSize())
 			fontSizeList.setSelectedValue(sizeStrings[2], true);
 
-		jScrollPane3.setViewportView(fontSizeList);
+		iModifyTAPreview();
 
-		add(jScrollPane3);
-		jScrollPane3.setBounds(COLUMN2, y, 90, 130);
-
-		iModifyTAPreview();											   
-
-		fontStyleList.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
-			public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
+		fontStyleList.addListSelectionListener(new ListSelectionListener() {
+			@Override
+			public void valueChanged(ListSelectionEvent evt) {
 				fontStyleListValueChanged(evt);
 			}
 		});
 
-		fontTypeList.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
-			public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
+		fontTypeList.addListSelectionListener(new ListSelectionListener() {
+			@Override
+			public void valueChanged(ListSelectionEvent evt) {
 				fontTypeListValueChanged(evt);
 			}
 		});
 
-		fontSizeList.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
-			public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
+		fontSizeList.addListSelectionListener(new ListSelectionListener() {
+			@Override
+			public void valueChanged(ListSelectionEvent evt) {
 				fontSizeListValueChanged(evt);
 			}
 		});
 
-		selectTextColorButton.addActionListener(new java.awt.event.ActionListener() {
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
-				selectTextColorButtonActionPerformed(evt);
+		textColorButton.setToolTipText("Select text color...");
+		textColorButton.addPropertyChangeListener("color", new PropertyChangeListener() {
+			@Override
+			public void propertyChange(PropertyChangeEvent evt) {
+				preview.setTextColor((Color) evt.getNewValue());
+				previewPanel.repaint();
 			}
 		});
 
-		annotationText.addActionListener(new java.awt.event.ActionListener() {
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+		annotationText.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent evt) {
 				annotationTextActionPerformed(evt);
 			}
 		});
+		
+		final GroupLayout layout = new GroupLayout(this);
+		setLayout(layout);
+		layout.setAutoCreateContainerGaps(true);
+		layout.setAutoCreateGaps(!LookAndFeelUtil.isAquaLAF());
+		
+		layout.setHorizontalGroup(layout.createParallelGroup(LEADING, true)
+				.addGroup(layout.createSequentialGroup()
+						.addComponent(label1, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addPreferredGap(ComponentPlacement.RELATED)
+						.addComponent(annotationText, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+						.addComponent(textColorButton, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				)
+				.addGroup(layout.createSequentialGroup()
+						.addGroup(layout.createParallelGroup(LEADING, true)
+								.addComponent(label2)
+								.addComponent(scrollPane1)
+						)
+						.addPreferredGap(ComponentPlacement.RELATED)
+						.addGroup(layout.createParallelGroup(LEADING, true)
+								.addComponent(label3)
+								.addComponent(scrollPane2)
+						)
+						.addPreferredGap(ComponentPlacement.RELATED)
+						.addGroup(layout.createParallelGroup(LEADING, true)
+								.addComponent(label4)
+								.addComponent(scrollPane3)
+						)
+				)
+				.addGroup(layout.createSequentialGroup()
+						.addComponent(scrollPane2, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addComponent(scrollPane3, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				)
+		);
+		layout.setVerticalGroup(layout.createSequentialGroup()
+				.addGroup(layout.createParallelGroup(CENTER, false)
+						.addComponent(label1)
+						.addComponent(annotationText, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addComponent(textColorButton, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				)
+				.addPreferredGap(ComponentPlacement.RELATED)
+				.addGroup(layout.createParallelGroup(LEADING, true)
+						.addGroup(layout.createSequentialGroup()
+								.addComponent(label2, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+								.addComponent(scrollPane1, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+						)
+						.addGroup(layout.createSequentialGroup()
+								.addComponent(label3, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+								.addComponent(scrollPane2, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+						)
+						.addGroup(layout.createSequentialGroup()
+								.addComponent(label4, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+								.addComponent(scrollPane3, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+						)
+				)
+		);
 	}
 
-	public String getText(){
+	public String getText() {
 		// Make sure text is updated
-		preview.setText(annotationText.getText());	   
+		preview.setText(annotationText.getText());
 		return preview.getText();
 	}
 
-	public Color getTextColor(){
+	public Color getTextColor() {
 		return preview.getTextColor();
 	}
 
-	public Font getNewFont(){
-		int fontStyle=0;
-		  
-		if(fontStyleList.getSelectedValue().equals("Plain"))
-			fontStyle=Font.PLAIN;
-		else if(fontStyleList.getSelectedValue().equals("Bold"))
-			fontStyle=Font.BOLD;
-		else if(fontStyleList.getSelectedValue().equals("Italic"))
-			fontStyle=Font.ITALIC;
-			else if(fontStyleList.getSelectedValue().equals("Bold and Italic"))
-				fontStyle=Font.ITALIC+Font.BOLD;
+	public Font getNewFont() {
+		int fontStyle = 0;
 
-			return new Font((String)fontTypeList.getSelectedValue(), fontStyle, Integer.parseInt((String)fontSizeList.getSelectedValue()) );
-		}
+		if (fontStyleList.getSelectedValue().equals("Plain"))
+			fontStyle = Font.PLAIN;
+		else if (fontStyleList.getSelectedValue().equals("Bold"))
+			fontStyle = Font.BOLD;
+		else if (fontStyleList.getSelectedValue().equals("Italic"))
+			fontStyle = Font.ITALIC;
+		else if (fontStyleList.getSelectedValue().equals("Bold and Italic"))
+			fontStyle = Font.ITALIC + Font.BOLD;
+
+		return new Font((String) fontTypeList.getSelectedValue(), fontStyle,
+				Integer.parseInt((String) fontSizeList.getSelectedValue()));
+	}
 
 	public void modifyTAPreview(){
 		preview.setFont(getNewFont());
@@ -246,64 +290,29 @@ public class TextAnnotationPanel extends javax.swing.JPanel {
 	}	  
 
 	public void iModifyTAPreview(){
-
-		preview.setFont(mAnnotation.getFont());
-		preview.setText(mAnnotation.getText());	   
-		preview.setTextColor(mAnnotation.getTextColor());
+		preview.setFont(annotation.getFont());
+		preview.setText(annotation.getText());	   
+		preview.setTextColor(annotation.getTextColor());
 
 		previewPanel.repaint();
 	}
 
-	private void annotationTextActionPerformed(java.awt.event.ActionEvent evt) {
+	private void annotationTextActionPerformed(ActionEvent evt) {
 		modifyTAPreview();
 	}
 
-	private void selectTextColorButtonActionPerformed(java.awt.event.ActionEvent evt) {
-		//Select Text Color
-		final SelectColor tASelectColor=new SelectColor(mAnnotation.getTextColor());
-		tASelectColor.setOKListener( new ActionListener() {
-			public void actionPerformed(ActionEvent evt) {
-				Color clr = tASelectColor.getColor();
-				preview.setTextColor(clr);
-				previewPanel.repaint();
-			}
-		});
-
-		tASelectColor.setSize(435, 420);
-		tASelectColor.setVisible(true);
-	}
-
-	private void fontStyleListValueChanged(javax.swing.event.ListSelectionEvent evt) {
-		//Plain, Bold, Italic.......
+	private void fontStyleListValueChanged(ListSelectionEvent evt) {
+		// Plain, Bold, Italic.......
 		modifyTAPreview();
 	}
 
-	private void fontTypeListValueChanged(javax.swing.event.ListSelectionEvent evt) {
-		//Font type
+	private void fontTypeListValueChanged(ListSelectionEvent evt) {
+		// Font type
 		modifyTAPreview();
 	}
 
-	private void fontSizeListValueChanged(javax.swing.event.ListSelectionEvent evt) {
-		//Font Size
+	private void fontSizeListValueChanged(ListSelectionEvent evt) {
+		// Font Size
 		modifyTAPreview();
 	}
-
-	private javax.swing.JTextField annotationText;
-	private javax.swing.JTextField fTField;
-	private javax.swing.JList fontSizeList;
-	private javax.swing.JList fontStyleList;
-	private javax.swing.JList fontTypeList;
-	private javax.swing.JLabel jLabel1;
-	private javax.swing.JLabel jLabel2;
-	private javax.swing.JLabel jLabel3;
-	private javax.swing.JLabel jLabel4;
-	private javax.swing.JScrollPane jScrollPane1;
-	private javax.swing.JScrollPane jScrollPane2;
-	private javax.swing.JScrollPane jScrollPane3;
-	private javax.swing.JButton selectTextColorButton;
-
-	private TextAnnotation preview;
-	private PreviewPanel previewPanel;
-
-	private TextAnnotation mAnnotation;
 }

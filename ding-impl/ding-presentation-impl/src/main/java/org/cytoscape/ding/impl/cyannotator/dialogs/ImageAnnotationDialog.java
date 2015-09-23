@@ -24,30 +24,42 @@ package org.cytoscape.ding.impl.cyannotator.dialogs;
  * #L%
  */
 
+import static javax.swing.GroupLayout.DEFAULT_SIZE;
+import static javax.swing.GroupLayout.PREFERRED_SIZE;
+import static javax.swing.GroupLayout.Alignment.LEADING;
 
 import java.awt.Image;
 import java.awt.Point;
 import java.awt.Robot;
+import java.awt.event.ActionEvent;
 import java.awt.geom.Point2D;
 
+import javax.swing.AbstractAction;
+import javax.swing.GroupLayout;
+import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
+import javax.swing.JPanel;
 
 import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.impl.cyannotator.annotations.ImageAnnotationImpl;
+import org.cytoscape.util.swing.LookAndFeelUtil;
 
+@SuppressWarnings("serial")
 public class ImageAnnotationDialog extends JDialog {
 
-	private javax.swing.JButton applyButton;
-	private javax.swing.JButton cancelButton;
+	private static final int PREVIEW_WIDTH = 500;
+	private static final int PREVIEW_HEIGHT = 350;
+	
+	private ImageAnnotationPanel imageAnnotationPanel;
+	private JButton applyButton;
+	private JButton cancelButton;
 
-	private ImageAnnotationPanel imageAnnotation1;  
-
-	private final CyAnnotator cyAnnotator;    
-	private final DGraphView view;    
+	private final CyAnnotator cyAnnotator;
+	private final DGraphView view;
 	private final Point2D startingLocation;
-	private final ImageAnnotationImpl mAnnotation;
+	private final ImageAnnotationImpl annotation;
 	private ImageAnnotationImpl preview;
 	private final boolean create;
 		
@@ -55,123 +67,114 @@ public class ImageAnnotationDialog extends JDialog {
 		this.view = view;
 		this.cyAnnotator = view.getCyAnnotator();
 		this.startingLocation = start;
-		this.mAnnotation = new ImageAnnotationImpl(cyAnnotator, view);
+		this.annotation = new ImageAnnotationImpl(cyAnnotator, view);
 		this.create = true;
 
-		initComponents();		        
+		initComponents();
 	}
 
 	public ImageAnnotationDialog(ImageAnnotationImpl mAnnotation) {
-		this.mAnnotation=mAnnotation;
+		this.annotation = mAnnotation;
 		this.cyAnnotator = mAnnotation.getCyAnnotator();
 		this.view = cyAnnotator.getView();
 		this.create = false;
 		this.startingLocation = null;
 
-		initComponents();	
+		initComponents();
 	}
-    
-	private void initComponents() {
-		int IMAGE_HEIGHT = 350;
-		int IMAGE_WIDTH = 500;
-		int PREVIEW_WIDTH = 500;
-		int PREVIEW_HEIGHT = 350;
 
+	private void initComponents() {
+		setTitle(create ? "Create Image Annotation" : "Modify Image Annotation");
+		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		setModalityType(DEFAULT_MODALITY_TYPE);
+		setResizable(false);
+		
 		// Create the preview panel
-		preview = new ImageAnnotationImpl(mAnnotation);
-		Image img = mAnnotation.getImage();
-		double width = (double)img.getWidth(this);
-		double height = (double)img.getHeight(this);
-		double scale = (Math.max(width, height))/(PREVIEW_HEIGHT-50);
+		preview = new ImageAnnotationImpl(annotation);
+		Image img = annotation.getImage();
+		double width = (double) img.getWidth(this);
+		double height = (double) img.getHeight(this);
+		double scale = (Math.max(width, height)) / (PREVIEW_HEIGHT - 50);
 
 		preview.setImage(img);
 		preview.setUsedForPreviews(true);
-		preview.setSize(width/scale, height/scale);
-		PreviewPanel previewPanel = new PreviewPanel(preview, PREVIEW_WIDTH, PREVIEW_HEIGHT);
+		preview.setSize(width / scale, height / scale);
+		PreviewPanel previewPanel = new PreviewPanel(preview);
 
-		imageAnnotation1 = new ImageAnnotationPanel(mAnnotation, previewPanel, IMAGE_WIDTH, IMAGE_HEIGHT);
+		imageAnnotationPanel = new ImageAnnotationPanel(annotation, previewPanel);
 
-		applyButton = new javax.swing.JButton();
-		cancelButton = new javax.swing.JButton();
-
-		if (create)
-			setTitle("Create Image Annotation");
-		else
-			setTitle("Modify Image Annotation");
-
-		setResizable(false);
-		getContentPane().setLayout(null);
-
-		getContentPane().add(imageAnnotation1);
-		imageAnnotation1.setBounds(5, 0, imageAnnotation1.getWidth(), imageAnnotation1.getHeight());
-
-		getContentPane().add(previewPanel);
-		previewPanel.setBounds(5, imageAnnotation1.getHeight()+5, PREVIEW_WIDTH, PREVIEW_HEIGHT);
-
-		int y = PREVIEW_HEIGHT+IMAGE_HEIGHT+10;
-
-		applyButton.setText("OK");
-		applyButton.addActionListener(new java.awt.event.ActionListener() {
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
-				applyButtonActionPerformed(evt);
+		applyButton = new JButton(new AbstractAction("OK") {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				applyButtonActionPerformed(e);
 			}
 		});
-		getContentPane().add(applyButton);
-		applyButton.setBounds(350, y+20, applyButton.getPreferredSize().width, 23);
-
-		cancelButton.setText("Cancel");
-		cancelButton.addActionListener(new java.awt.event.ActionListener() {
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
-				cancelButtonActionPerformed(evt);
+		cancelButton = new JButton(new AbstractAction("Cancel") {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				dispose();
 			}
 		});
+		
+		final JPanel buttonPanel = LookAndFeelUtil.createOkCancelPanel(applyButton, cancelButton);
 
-		getContentPane().add(cancelButton);
-		cancelButton.setBounds(430, y+20, cancelButton.getPreferredSize().width, 23);
+		final JPanel contents = new JPanel();
+		final GroupLayout layout = new GroupLayout(contents);
+		contents.setLayout(layout);
+		layout.setAutoCreateContainerGaps(true);
+		layout.setAutoCreateGaps(true);
+		
+		layout.setHorizontalGroup(layout.createParallelGroup(LEADING, true)
+				.addComponent(imageAnnotationPanel)
+				.addComponent(previewPanel, DEFAULT_SIZE, PREVIEW_WIDTH, Short.MAX_VALUE)
+				.addComponent(buttonPanel)
+		);
+		layout.setVerticalGroup(layout.createSequentialGroup()
+				.addComponent(imageAnnotationPanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				.addComponent(previewPanel, DEFAULT_SIZE, PREVIEW_HEIGHT, Short.MAX_VALUE)
+				.addComponent(buttonPanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+		);
+		
+		LookAndFeelUtil.setDefaultOkCancelKeyStrokes(getRootPane(), applyButton.getAction(), cancelButton.getAction());
+		getRootPane().setDefaultButton(applyButton);
+		
+		getContentPane().add(contents);
 
 		pack();
-		setSize(520, y+80);
-		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-		setModalityType(DEFAULT_MODALITY_TYPE);
 	}
 
-	private void applyButtonActionPerformed(java.awt.event.ActionEvent evt) {
-		dispose();           
+	private void applyButtonActionPerformed(ActionEvent evt) {
+		dispose();
 
-		//Apply
-		mAnnotation.setBorderColor(preview.getBorderColor());
-		mAnnotation.setBorderOpacity(preview.getBorderOpacity());
-		mAnnotation.setBorderWidth((int)preview.getBorderWidth());
-		mAnnotation.setImageOpacity(preview.getImageOpacity());
-		mAnnotation.setImageBrightness(preview.getImageBrightness());
-		mAnnotation.setImageContrast(preview.getImageContrast());
+		// Apply
+		annotation.setBorderColor(preview.getBorderColor());
+		annotation.setBorderOpacity(preview.getBorderOpacity());
+		annotation.setBorderWidth((int) preview.getBorderWidth());
+		annotation.setImageOpacity(preview.getImageOpacity());
+		annotation.setImageBrightness(preview.getImageBrightness());
+		annotation.setImageContrast(preview.getImageContrast());
 
 		if (!create) {
-			mAnnotation.update(); 
+			annotation.update();
 			return;
 		}
 
-		mAnnotation.setImage(preview.getImageURL());
-		mAnnotation.getComponent().setLocation((int)startingLocation.getX(), (int)startingLocation.getY());
-		mAnnotation.addComponent(null);
+		annotation.setImage(preview.getImageURL());
+		annotation.getComponent().setLocation((int) startingLocation.getX(), (int) startingLocation.getY());
+		annotation.addComponent(null);
 
 		// Update the canvas
 		view.getCanvas(DGraphView.Canvas.FOREGROUND_CANVAS).repaint();
 
 		// Set this shape to be resized
-		cyAnnotator.resizeShape(mAnnotation);
+		cyAnnotator.resizeShape(annotation);
 
 		try {
 			// Warp the mouse to the starting location (if supported)
-			Point start = mAnnotation.getComponent().getLocationOnScreen();
+			Point start = annotation.getComponent().getLocationOnScreen();
 			Robot robot = new Robot();
-			robot.mouseMove((int)start.getX()+100, (int)start.getY()+100);
-		} catch (Exception e) {}
-	}
-
-	private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {
-		//Cancel
-		dispose();
+			robot.mouseMove((int) start.getX() + 100, (int) start.getY() + 100);
+		} catch (Exception e) {
+		}
 	}
 }
-

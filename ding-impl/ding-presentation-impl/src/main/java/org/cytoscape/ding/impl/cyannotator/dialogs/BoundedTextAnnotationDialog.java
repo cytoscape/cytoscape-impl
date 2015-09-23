@@ -24,31 +24,39 @@ package org.cytoscape.ding.impl.cyannotator.dialogs;
  * #L%
  */
 
+import static javax.swing.GroupLayout.DEFAULT_SIZE;
+import static javax.swing.GroupLayout.PREFERRED_SIZE;
+import static javax.swing.GroupLayout.Alignment.LEADING;
 
 import java.awt.Point;
 import java.awt.Robot;
+import java.awt.event.ActionEvent;
 import java.awt.geom.Point2D;
 
+import javax.swing.AbstractAction;
+import javax.swing.GroupLayout;
+import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
-
-import org.cytoscape.view.presentation.annotations.BoundedTextAnnotation;
-import org.cytoscape.view.presentation.annotations.ShapeAnnotation;
-import org.cytoscape.view.presentation.annotations.TextAnnotation;
+import javax.swing.JPanel;
 
 import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.impl.cyannotator.annotations.BoundedTextAnnotationImpl;
-import org.cytoscape.ding.impl.cyannotator.annotations.ShapeAnnotationImpl;
-import org.cytoscape.ding.impl.cyannotator.annotations.TextAnnotationImpl;
+import org.cytoscape.util.swing.LookAndFeelUtil;
+import org.cytoscape.view.presentation.annotations.ShapeAnnotation;
+import org.cytoscape.view.presentation.annotations.TextAnnotation;
 
+@SuppressWarnings("serial")
 public class BoundedTextAnnotationDialog extends JDialog {
 
-	private javax.swing.JButton applyButton;
-	private javax.swing.JButton cancelButton;
-
-	private ShapeAnnotationPanel shapeAnnotation1;  
-	private TextAnnotationPanel textAnnotation1;  
+	private static final int PREVIEW_WIDTH = 500;
+	private static final int PREVIEW_HEIGHT = 220;
+	
+	private ShapeAnnotationPanel shapeAnnotationPanel;  
+	private TextAnnotationPanel textAnnotationPanel;
+	private JButton applyButton;
+	private JButton cancelButton;
 
 	private final CyAnnotator cyAnnotator;    
 	private final DGraphView view;    
@@ -78,13 +86,11 @@ public class BoundedTextAnnotationDialog extends JDialog {
 	}
     
 	private void initComponents() {
-		int SHAPE_HEIGHT = 220;
-		int SHAPE_WIDTH = 500;
-		int TEXT_HEIGHT = 220;
-		int TEXT_WIDTH = 500;
-		int PREVIEW_WIDTH = 500;
-		int PREVIEW_HEIGHT = 220;
-
+		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		setModalityType(DEFAULT_MODALITY_TYPE);
+		setResizable(false);
+		setTitle(create ? "Create Bounded Text Annotation" : "Modify Bounded Text Annotation");
+		
 		// Create the preview panel
 		preview = new BoundedTextAnnotationImpl(cyAnnotator, view);
 		preview.setUsedForPreviews(true);
@@ -92,63 +98,58 @@ public class BoundedTextAnnotationDialog extends JDialog {
 		preview.setFont(mAnnotation.getFont());
 		preview.fitShapeToText();
 		
-		PreviewPanel previewPanel = new PreviewPanel(preview, PREVIEW_WIDTH, PREVIEW_HEIGHT);
+		PreviewPanel previewPanel = new PreviewPanel(preview);
 
-		shapeAnnotation1 = new ShapeAnnotationPanel((ShapeAnnotation)mAnnotation, previewPanel, SHAPE_WIDTH, SHAPE_HEIGHT);
-		textAnnotation1 = new TextAnnotationPanel((TextAnnotation)mAnnotation, previewPanel, TEXT_WIDTH, TEXT_HEIGHT);
+		shapeAnnotationPanel = new ShapeAnnotationPanel((ShapeAnnotation)mAnnotation, previewPanel);
+		textAnnotationPanel = new TextAnnotationPanel((TextAnnotation)mAnnotation, previewPanel);
 
-		applyButton = new javax.swing.JButton();
-		cancelButton = new javax.swing.JButton();
-
-		if (create)
-			setTitle("Create Bounded Text Annotation");
-		else
-			setTitle("Modify Bounded Text Annotation");
-
-		setResizable(false);
-		getContentPane().setLayout(null);
-
-		getContentPane().add(shapeAnnotation1);
-		shapeAnnotation1.setBounds(5, 0, shapeAnnotation1.getWidth(), shapeAnnotation1.getHeight());
-		getContentPane().add(textAnnotation1);
-		textAnnotation1.setBounds(5, SHAPE_HEIGHT, textAnnotation1.getWidth(), textAnnotation1.getHeight());
-
-		getContentPane().add(previewPanel);
-		previewPanel.setBounds(5, SHAPE_HEIGHT+TEXT_HEIGHT+5, PREVIEW_WIDTH, PREVIEW_HEIGHT);
-
-		int y = PREVIEW_HEIGHT+SHAPE_HEIGHT+TEXT_HEIGHT+10;
-
-		applyButton.setText("OK");
-		applyButton.addActionListener(new java.awt.event.ActionListener() {
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
-				applyButtonActionPerformed(evt);
+		applyButton = new JButton(new AbstractAction("OK") {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				applyButtonActionPerformed(e);
 			}
 		});
-		getContentPane().add(applyButton);
-		applyButton.setBounds(350, y+20, applyButton.getPreferredSize().width, 23);
-
-		cancelButton.setText("Cancel");
-		cancelButton.addActionListener(new java.awt.event.ActionListener() {
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
-				cancelButtonActionPerformed(evt);
+		cancelButton = new JButton(new AbstractAction("Cancel") {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				dispose();
 			}
 		});
+		
+		final JPanel buttonPanel = LookAndFeelUtil.createOkCancelPanel(applyButton, cancelButton);
 
-		getContentPane().add(cancelButton);
-		cancelButton.setBounds(430, y+20, cancelButton.getPreferredSize().width, 23);
-
+		final JPanel contents = new JPanel();
+		final GroupLayout layout = new GroupLayout(contents);
+		contents.setLayout(layout);
+		layout.setAutoCreateContainerGaps(true);
+		layout.setAutoCreateGaps(true);
+		
+		layout.setHorizontalGroup(layout.createParallelGroup(LEADING, true)
+				.addComponent(shapeAnnotationPanel)
+				.addComponent(textAnnotationPanel)
+				.addComponent(previewPanel, DEFAULT_SIZE, PREVIEW_WIDTH, Short.MAX_VALUE)
+				.addComponent(buttonPanel)
+		);
+		layout.setVerticalGroup(layout.createSequentialGroup()
+				.addComponent(shapeAnnotationPanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				.addComponent(textAnnotationPanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				.addComponent(previewPanel, DEFAULT_SIZE, PREVIEW_HEIGHT, Short.MAX_VALUE)
+				.addComponent(buttonPanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+		);
+		
+		LookAndFeelUtil.setDefaultOkCancelKeyStrokes(getRootPane(), applyButton.getAction(), cancelButton.getAction());
+		getRootPane().setDefaultButton(applyButton);
+		
+		getContentPane().add(contents);
 		pack();
-		setSize(520, y+80 );
-		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-		setModalityType(DEFAULT_MODALITY_TYPE);
 	}
 
-	private void applyButtonActionPerformed(java.awt.event.ActionEvent evt) {
+	private void applyButtonActionPerformed(ActionEvent evt) {
 		dispose();           
-		//Apply
-		mAnnotation.setFont(textAnnotation1.getNewFont());
-		mAnnotation.setTextColor(textAnnotation1.getTextColor());
-		mAnnotation.setText(textAnnotation1.getText());
+		
+		mAnnotation.setFont(textAnnotationPanel.getNewFont());
+		mAnnotation.setTextColor(textAnnotationPanel.getTextColor());
+		mAnnotation.setText(textAnnotationPanel.getText());
 		mAnnotation.setShapeType(preview.getShapeType());
 		mAnnotation.setFillColor(preview.getFillColor());
 		mAnnotation.setFillOpacity(preview.getFillOpacity());
@@ -175,13 +176,7 @@ public class BoundedTextAnnotationDialog extends JDialog {
 			// Warp the mouse to the starting location (if supported)
 			Point start = mAnnotation.getComponent().getLocationOnScreen();
 			Robot robot = new Robot();
-			robot.mouseMove((int)start.getX()+100, (int)start.getY()+100);
+			robot.mouseMove((int) start.getX() + 100, (int) start.getY() + 100);
 		} catch (Exception e) {}
 	}
-
-	private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {
-		//Cancel
-		dispose();
-	}
 }
-

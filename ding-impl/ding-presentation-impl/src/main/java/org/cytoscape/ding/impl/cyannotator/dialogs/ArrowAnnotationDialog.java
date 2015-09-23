@@ -1,5 +1,9 @@
 package org.cytoscape.ding.impl.cyannotator.dialogs;
 
+import static javax.swing.GroupLayout.DEFAULT_SIZE;
+import static javax.swing.GroupLayout.PREFERRED_SIZE;
+import static javax.swing.GroupLayout.Alignment.LEADING;
+
 /*
  * #%L
  * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
@@ -27,28 +31,36 @@ package org.cytoscape.ding.impl.cyannotator.dialogs;
 
 import java.awt.Point;
 import java.awt.Robot;
+import java.awt.event.ActionEvent;
 import java.awt.geom.Point2D;
 
+import javax.swing.AbstractAction;
+import javax.swing.GroupLayout;
+import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
-
-import org.cytoscape.view.presentation.annotations.ArrowAnnotation.AnchorType;
-import org.cytoscape.view.presentation.annotations.ArrowAnnotation.ArrowEnd;
 
 import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.impl.cyannotator.annotations.ArrowAnnotationImpl;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
+import org.cytoscape.util.swing.LookAndFeelUtil;
+import org.cytoscape.view.presentation.annotations.ArrowAnnotation.ArrowEnd;
 
+@SuppressWarnings("serial")
 public class ArrowAnnotationDialog extends JDialog {
-	private javax.swing.JButton applyButton;
-	private javax.swing.JButton cancelButton;
+	
+	private static final int PREVIEW_WIDTH = 400;
+	private static final int PREVIEW_HEIGHT = 120;
+	
+	private JButton applyButton;
+	private JButton cancelButton;
 
 	private final CyAnnotator cyAnnotator;    
 	private final DGraphView view;    
 	private final Point2D startingLocation;
-	private final ArrowAnnotationImpl mAnnotation;
+	private final ArrowAnnotationImpl annotation;
 	private ArrowAnnotationImpl preview;
 	private DingAnnotation source = null;
 	private final boolean create;
@@ -57,123 +69,112 @@ public class ArrowAnnotationDialog extends JDialog {
 		this.view = view;
 		this.cyAnnotator = view.getCyAnnotator();
 		this.startingLocation = start;
-		this.mAnnotation = new ArrowAnnotationImpl(cyAnnotator, view);
+		this.annotation = new ArrowAnnotationImpl(cyAnnotator, view);
 		this.source = cyAnnotator.getAnnotationAt(start);
 		this.create = true;
 
-		initComponents();		        
+		initComponents();
 	}
 
-	public ArrowAnnotationDialog(ArrowAnnotationImpl mAnnotation) {
-		this.mAnnotation=mAnnotation;
-		this.cyAnnotator = mAnnotation.getCyAnnotator();
+	public ArrowAnnotationDialog(ArrowAnnotationImpl annotation) {
+		this.annotation = annotation;
+		this.cyAnnotator = annotation.getCyAnnotator();
 		this.view = cyAnnotator.getView();
 		this.create = false;
 		this.startingLocation = null;
 
-		initComponents();	
+		initComponents();
 	}
     
 	private void initComponents() {
-		int ARROW_HEIGHT = 500;
-		int ARROW_WIDTH = 500;
-		int PREVIEW_WIDTH = 500;
-		int PREVIEW_HEIGHT = 120;
+		setTitle(create ? "Create Arrow Annotation" : "Modify Arrow Annotation");
+		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		setModalityType(DEFAULT_MODALITY_TYPE);
+		setResizable(false);
 
 		// Create the preview panel
 		preview = new ArrowAnnotationImpl(cyAnnotator, view);
 		preview.setUsedForPreviews(true);
-		preview.getComponent().setLocation(10,10);
-		((ArrowAnnotationImpl)preview).setSize(400.0,100.0);
-		PreviewPanel previewPanel = new PreviewPanel(preview, PREVIEW_WIDTH, PREVIEW_HEIGHT);
+		((ArrowAnnotationImpl) preview).setSize(400.0, 100.0);
+		
+		final PreviewPanel previewPanel = new PreviewPanel(preview);
+		final JPanel arrowAnnotationPanel = new ArrowAnnotationPanel(annotation, previewPanel);
 
-		JPanel arrowAnnotation1 = new ArrowAnnotationPanel(mAnnotation, previewPanel, ARROW_WIDTH, ARROW_HEIGHT);
-
-		applyButton = new javax.swing.JButton();
-		cancelButton = new javax.swing.JButton();
-
-		if (create)
-			setTitle("Create Arrow Annotation");
-		else
-			setTitle("Modify Arrow Annotation");
-
-		setResizable(false);
-		getContentPane().setLayout(null);
-
-		getContentPane().add(arrowAnnotation1);
-		arrowAnnotation1.setBounds(5, 0, arrowAnnotation1.getWidth(), arrowAnnotation1.getHeight());
-
-		getContentPane().add(previewPanel);
-		previewPanel.setBounds(5, arrowAnnotation1.getHeight()+5, PREVIEW_WIDTH, PREVIEW_HEIGHT);
-
-		int y = PREVIEW_HEIGHT+ARROW_HEIGHT+10;
-
-		applyButton.setText("OK");
-		applyButton.addActionListener(new java.awt.event.ActionListener() {
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
-				applyButtonActionPerformed(evt);
+		applyButton = new JButton(new AbstractAction("OK") {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				applyButtonActionPerformed(e);
 			}
 		});
-		getContentPane().add(applyButton);
-		applyButton.setBounds(350, y+20, applyButton.getPreferredSize().width, 23);
-
-		cancelButton.setText("Cancel");
-		cancelButton.addActionListener(new java.awt.event.ActionListener() {
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
-				cancelButtonActionPerformed(evt);
+		cancelButton = new JButton(new AbstractAction("Cancel") {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				dispose();
 			}
 		});
+		
+		final JPanel buttonPanel = LookAndFeelUtil.createOkCancelPanel(applyButton, cancelButton);
 
-		getContentPane().add(cancelButton);
-		cancelButton.setBounds(430, y+20, cancelButton.getPreferredSize().width, 23);
+		final JPanel contents = new JPanel();
+		final GroupLayout layout = new GroupLayout(contents);
+		contents.setLayout(layout);
+		layout.setAutoCreateContainerGaps(true);
+		layout.setAutoCreateGaps(true);
+		
+		layout.setHorizontalGroup(layout.createParallelGroup(LEADING, true)
+				.addComponent(arrowAnnotationPanel)
+				.addComponent(previewPanel, DEFAULT_SIZE, PREVIEW_WIDTH, Short.MAX_VALUE)
+				.addComponent(buttonPanel)
+		);
+		layout.setVerticalGroup(layout.createSequentialGroup()
+				.addComponent(arrowAnnotationPanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				.addComponent(previewPanel, DEFAULT_SIZE, PREVIEW_HEIGHT, Short.MAX_VALUE)
+				.addComponent(buttonPanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+		);
+		
+		LookAndFeelUtil.setDefaultOkCancelKeyStrokes(getRootPane(), applyButton.getAction(), cancelButton.getAction());
+		getRootPane().setDefaultButton(applyButton);
+		
+		getContentPane().add(contents);
 
 		pack();
-		setSize(520, PREVIEW_HEIGHT+ARROW_HEIGHT+80);
-		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-		setModalityType(DEFAULT_MODALITY_TYPE);
 	}
 
-	private void applyButtonActionPerformed(java.awt.event.ActionEvent evt) {
-		dispose();           
-		//Apply
+	private void applyButtonActionPerformed(ActionEvent evt) {
+		dispose();
 
-		mAnnotation.setLineColor(preview.getLineColor());
-		mAnnotation.setLineWidth(preview.getLineWidth());
-		mAnnotation.setArrowType(ArrowEnd.SOURCE, preview.getArrowType(ArrowEnd.SOURCE));
-		mAnnotation.setArrowColor(ArrowEnd.SOURCE, preview.getArrowColor(ArrowEnd.SOURCE));
-		mAnnotation.setArrowSize(ArrowEnd.SOURCE, preview.getArrowSize(ArrowEnd.SOURCE));
-		mAnnotation.setAnchorType(ArrowEnd.SOURCE, preview.getAnchorType(ArrowEnd.SOURCE));
-		mAnnotation.setArrowType(ArrowEnd.TARGET, preview.getArrowType(ArrowEnd.TARGET));
-		mAnnotation.setArrowColor(ArrowEnd.TARGET, preview.getArrowColor(ArrowEnd.TARGET));
-		mAnnotation.setArrowSize(ArrowEnd.TARGET, preview.getArrowSize(ArrowEnd.TARGET));
-		mAnnotation.setAnchorType(ArrowEnd.TARGET, preview.getAnchorType(ArrowEnd.TARGET));
+		annotation.setLineColor(preview.getLineColor());
+		annotation.setLineWidth(preview.getLineWidth());
+		annotation.setArrowType(ArrowEnd.SOURCE, preview.getArrowType(ArrowEnd.SOURCE));
+		annotation.setArrowColor(ArrowEnd.SOURCE, preview.getArrowColor(ArrowEnd.SOURCE));
+		annotation.setArrowSize(ArrowEnd.SOURCE, preview.getArrowSize(ArrowEnd.SOURCE));
+		annotation.setAnchorType(ArrowEnd.SOURCE, preview.getAnchorType(ArrowEnd.SOURCE));
+		annotation.setArrowType(ArrowEnd.TARGET, preview.getArrowType(ArrowEnd.TARGET));
+		annotation.setArrowColor(ArrowEnd.TARGET, preview.getArrowColor(ArrowEnd.TARGET));
+		annotation.setArrowSize(ArrowEnd.TARGET, preview.getArrowSize(ArrowEnd.TARGET));
+		annotation.setAnchorType(ArrowEnd.TARGET, preview.getAnchorType(ArrowEnd.TARGET));
 
 		if (!create) {
-			mAnnotation.update(); 
+			annotation.update();
 			return;
 		}
 
-		mAnnotation.addComponent(null);
-		mAnnotation.setSource(this.source);
-		mAnnotation.update();
+		annotation.addComponent(null);
+		annotation.setSource(this.source);
+		annotation.update();
 
 		// Update the canvas
 		view.getCanvas(DGraphView.Canvas.FOREGROUND_CANVAS).repaint();
 
 		// Set this shape to be resized
-		cyAnnotator.positionArrow(mAnnotation);
+		cyAnnotator.positionArrow(annotation);
 
 		try {
 			// Warp the mouse to the starting location (if supported)
-			Point start = mAnnotation.getComponent().getLocationOnScreen();
+			Point start = annotation.getComponent().getLocationOnScreen();
 			Robot robot = new Robot();
-			robot.mouseMove((int)start.getX()+100, (int)start.getY()+100);
-		} catch (Exception e) {}
-	}
-
-	private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {
-		//Cancel
-		dispose();
+			robot.mouseMove((int) start.getX() + 100, (int) start.getY() + 100);
+		} catch (Exception e) {
+		}
 	}
 }
-
