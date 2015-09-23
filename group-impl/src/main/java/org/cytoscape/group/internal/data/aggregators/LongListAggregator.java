@@ -81,10 +81,12 @@ public class LongListAggregator extends AbstractAggregator<List<Long>> {
 			// Initialization
 
 			// Loop processing
+			long nodeCount = 0;
 			for (CyNode node: group.getNodeList()) {
 				List<?> list = table.getRow(node.getSUID()).getList(column.getName(), listType);
 				if (list == null) continue;
 				int index = 0;
+				nodeCount++;
 				for (Object obj: list) {
 					Long value = (Long)obj;
 					switch (type) {
@@ -138,7 +140,7 @@ public class LongListAggregator extends AbstractAggregator<List<Long>> {
 			else if (type == AttributeHandlingType.AVG) {
 				aggregation = new ArrayList<Long>();
 				for (Long v: agg) {
-					aggregation.add(v/agg.size());
+					aggregation.add(Math.round((double)v/(double)nodeCount));
 				}
 			} else if (type == AttributeHandlingType.MEDIAN) {
 				aggregation = new ArrayList<Long>();

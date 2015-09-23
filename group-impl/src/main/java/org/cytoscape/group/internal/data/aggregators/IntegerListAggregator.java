@@ -81,10 +81,12 @@ public class IntegerListAggregator extends AbstractAggregator<List<Integer>> {
 			// Initialization
 
 			// Loop processing
+			int nodeCount = 0;
 			for (CyNode node: group.getNodeList()) {
 				List<?> list = table.getRow(node.getSUID()).getList(column.getName(), listType);
 				if (list == null) continue;
 				int index = 0;
+				nodeCount++;
 				for (Object obj: list) {
 					Integer value = (Integer)obj;
 					switch (type) {
@@ -138,7 +140,7 @@ public class IntegerListAggregator extends AbstractAggregator<List<Integer>> {
 			else if (type == AttributeHandlingType.AVG) {
 				aggregation = new ArrayList<Integer>();
 				for (Integer v: agg) {
-					aggregation.add(v/agg.size());
+					aggregation.add(Math.round((float)v/(float)nodeCount));
 				}
 			} else if (type == AttributeHandlingType.MEDIAN) {
 				aggregation = new ArrayList<Integer>();

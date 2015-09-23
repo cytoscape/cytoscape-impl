@@ -81,10 +81,12 @@ public class DoubleListAggregator extends AbstractAggregator<List<Double>> {
 			// Initialization
 
 			// Loop processing
+			int nodeCount = 0;
 			for (CyNode node: group.getNodeList()) {
 				List<?> list = table.getRow(node.getSUID()).getList(column.getName(), listType);
 				if (list == null) continue;
 				int index = 0;
+				nodeCount++;
 				for (Object obj: list) {
 					Double value = (Double)obj;
 					switch (type) {
@@ -138,7 +140,7 @@ public class DoubleListAggregator extends AbstractAggregator<List<Double>> {
 			else if (type == AttributeHandlingType.AVG) {
 				aggregation = new ArrayList<Double>();
 				for (Double v: agg) {
-					aggregation.add(v/agg.size());
+					aggregation.add(v/(double)nodeCount);
 				}
 			} else if (type == AttributeHandlingType.MEDIAN) {
 				aggregation = new ArrayList<Double>();
