@@ -69,6 +69,8 @@ public class ViewUtils {
 	private static final VisualProperty<Double> xLoc = BasicVisualLexicon.NODE_X_LOCATION;
 	// Middle of the node in the Y direction
 	private static final VisualProperty<Double> yLoc = BasicVisualLexicon.NODE_Y_LOCATION;
+	// Middle of the node in the Z direction
+	private static final VisualProperty<Double> zLoc = BasicVisualLexicon.NODE_Z_LOCATION;
 	private static final String X_LOCATION_ATTR = "__xLocation";
 	private static final String Y_LOCATION_ATTR = "__yLocation";
 	private static final String NETWORK_SUID_ATTR = "__groupNetworks.SUID";
@@ -271,7 +273,8 @@ public class ViewUtils {
 	                                          CyNode node, Dimension center) {
 		CyTable nodeTable = group.getGroupNetwork().getTable(CyNode.class, CyNetwork.HIDDEN_ATTRS);
 		Dimension d = getNodeLocation(nodeTable, network, node.getSUID());
-		d.setSize(d.getWidth()+center.getWidth(), d.getHeight()+center.getHeight());
+		if (d != null && center != null) 
+			d.setSize(d.getWidth()+center.getWidth(), d.getHeight()+center.getHeight());
 		return d;
 	}
 
@@ -355,9 +358,23 @@ public class ViewUtils {
 		List<Double>xLocations = ModelUtils.getList(row, X_LOCATION_ATTR, Double.class);
 		List<Double>yLocations = ModelUtils.getList(row, Y_LOCATION_ATTR, Double.class);
 		int index = networkSUIDs.indexOf(network.getSUID());
-		if (index == -1)
+		if (index >= 0)
+			return getDim(xLocations.get(index), yLocations.get(index));
+		else if (xLocations.size() > 0) {
+			// Well, do what we can...
+			return getDim(xLocations.get(0), yLocations.get(0));
+		} else
 			return null;
-		return getDim(xLocations.get(index), yLocations.get(index));
+	}
+
+	public static void copyNodeLocations(CyGroup group, CyNetworkView source, CyNetworkView dest) {
+		for (CyNode node: group.getNodeList()) {
+			View<CyNode>nodeView = source.getNodeView(node);
+			View<CyNode>nNodeView = dest.getNodeView(node);
+			dest.setVisualProperty(xLoc, source.getVisualProperty(xLoc));
+			dest.setVisualProperty(yLoc, source.getVisualProperty(yLoc));
+			dest.setVisualProperty(zLoc, source.getVisualProperty(zLoc));
+		}
 	}
 
 	public static Dimension getDim(double x, double y) {

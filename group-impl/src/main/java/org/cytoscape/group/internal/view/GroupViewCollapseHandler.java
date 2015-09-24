@@ -264,14 +264,30 @@ public class GroupViewCollapseHandler implements GroupAboutToCollapseListener,
 			if (cyGroupSettings.getUseNestedNetworks(group)) {
 				// Now, if we're displaying the nested network, create it....
 				CyNetwork nn = group.getGroupNetwork();
-				cyNetworkManager.addNetwork(nn);
-				CyNetworkView nnView = cyNetworkViewFactory.createNetworkView(nn);
-				cyNetworkViewManager.addNetworkView(nnView);
-				// Move the nodes around
-				ViewUtils.moveNodes(group, nnView, d);
+				CyNetworkView nnView = null;
 
-				// Allow the nested network image to be displayed
-				nView.clearValueLock(BasicVisualLexicon.NODE_NESTED_NETWORK_IMAGE_VISIBLE);
+				// If we've already registered the network, don't do it again
+				if (!cyNetworkManager.networkExists(nn.getSUID())) {
+					cyNetworkManager.addNetwork(nn);
+					nnView = cyNetworkViewFactory.createNetworkView(nn);
+					cyNetworkViewManager.addNetworkView(nnView);
+
+					// Apply our current style to the nested network
+					VisualStyle style = cyStyleManager.getVisualStyle(view);
+					cyStyleManager.setVisualStyle(style, nnView);
+					style.apply(nnView);
+				} else if (cyNetworkViewManager.viewExists(nn)) {
+					nnView = cyNetworkViewManager.getNetworkViews(nn).iterator().next();
+				}
+
+				if (nnView != null) {
+					ViewUtils.moveNodes(group, nnView, d);
+
+					nnView.updateView();
+
+					// Allow the nested network image to be displayed
+					nView.clearValueLock(BasicVisualLexicon.NODE_NESTED_NETWORK_IMAGE_VISIBLE);
+				}
 			} else {
 				// Make sure the nested network image is not displayed
 				nView.setLockedValue(BasicVisualLexicon.NODE_NESTED_NETWORK_IMAGE_VISIBLE, Boolean.FALSE);
@@ -402,6 +418,28 @@ public class GroupViewCollapseHandler implements GroupAboutToCollapseListener,
 		GroupViewType groupViewType = cyGroupSettings.getGroupViewType(group);
 		if (groupViewType.equals(GroupViewType.COMPOUND)) {
 			removeCompoundNode(group);
+			return;
+		}
+
+		// We need to do special handling if we created a nested network
+		// for this group
+		if (cyGroupSettings.getUseNestedNetworks(group)) {
+			// First, we need to make sure the group is expanded
+			for (CyNetwork net: group.getNetworkSet()) {
+				group.expand(net);
+			}
+
+			CyNetwork nn = group.getGroupNetwork();
+			if (cyNetworkViewManager.viewExists(nn)) {
+				// Destroy the view(s)
+				for (CyNetworkView v: cyNetworkViewManager.getNetworkViews(nn)) {
+					cyNetworkViewManager.destroyNetworkView(v);
+				}
+			}
+
+			// Now, remove the network
+			cyNetworkManager.destroyNetwork(nn);
+			group.getGroupNode().setNetworkPointer(null);
 		}
 	}
 

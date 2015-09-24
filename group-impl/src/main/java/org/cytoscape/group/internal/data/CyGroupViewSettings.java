@@ -59,7 +59,7 @@ public class CyGroupViewSettings {
 	// We need to use getters and setters so we can update
 	// our settings object
 	@Tunable(description="Visualization for group:", 
-	         groups={"Group View Settings"}, gravity=2.0)
+	         groups={"Group View Settings"}, gravity=2.0, dependsOn="useNestedNetworks=false")
 	public ListSingleSelection<GroupViewType> getGVtype() {
 		return groupViewType;
 	}
@@ -74,6 +74,8 @@ public class CyGroupViewSettings {
 	}
 	public void setUseNestedNetwork(boolean nestedNetworks) {
 		useNestedNetworks = nestedNetworks;
+		if (useNestedNetworks)
+			groupViewType.setSelectedValue(GroupViewType.NONE);
 	}
 
 
