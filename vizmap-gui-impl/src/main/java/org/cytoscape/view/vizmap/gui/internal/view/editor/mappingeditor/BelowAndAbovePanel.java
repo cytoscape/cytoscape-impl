@@ -38,6 +38,7 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 import javax.swing.JPanel;
+import javax.swing.UIManager;
 
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.vizmap.mappings.BoundaryRangeValues;
@@ -162,5 +163,8 @@ final class BelowAndAbovePanel extends JPanel {
 		}
 
 		g2d.fillPolygon(poly);
+		
+		g2d.setColor(UIManager.getColor("Label.disabledForeground"));
+		g2d.draw(poly);
 	}
 }

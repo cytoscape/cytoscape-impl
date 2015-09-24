@@ -41,8 +41,6 @@ import java.util.Set;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
@@ -57,9 +55,9 @@ import javax.swing.WindowConstants;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.io.webservice.WebServiceClient;
 import org.cytoscape.io.webservice.swing.WebServiceGUIClient;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.LookAndFeelUtil;
-import org.cytoscape.util.swing.OpenBrowser;
-import org.cytoscape.work.TaskManager;
+import org.cytoscape.work.swing.DialogTaskManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -67,10 +65,6 @@ public class WebServiceImportDialog<T> extends JDialog {
 
 	private static final long serialVersionUID = 4454012178961756787L;
 	private static final Logger logger = LoggerFactory.getLogger(WebServiceImportDialog.class);
-
-	// Default icon for about dialog
-	private static final Icon DEF_ICON = new ImageIcon(
-			WebServiceImportDialog.class.getResource("/images/stock_internet-32.png"));
 
 	private static final String NO_CLIENT = "No Service Client";
 
@@ -99,25 +93,16 @@ public class WebServiceImportDialog<T> extends JDialog {
 	private Map<WebServiceClient, Container> serviceUIPanels = new HashMap<WebServiceClient, Container>();
 	private int numClients;
 
-	private final TaskManager<?, ?> taskManager;
 	private final Class<T> type;
-	private final OpenBrowser openBrowser;
+	private final CyServiceRegistrar serviceRegistrar;
 	
 	boolean readyToShow;
 	
-	public WebServiceImportDialog(final Class<T> type,
-								  final String title,
-								  final CySwingApplication cySwingApplicationServiceRef,
-								  final TaskManager<?, ?> taskManager,
-								  final OpenBrowser openBrowser) {
-		super(cySwingApplicationServiceRef.getJFrame(), false);
+	public WebServiceImportDialog(final Class<T> type, final String title, final CyServiceRegistrar serviceRegistrar) {
+		super(serviceRegistrar.getService(CySwingApplication.class).getJFrame(), false);
 		
-		if (taskManager == null)
-			throw new NullPointerException("TaskManager is null.");
-
 		this.type = type;
-		this.taskManager = taskManager;
-		this.openBrowser = openBrowser;
+		this.serviceRegistrar = serviceRegistrar;
 
 		numClients = 0;
 		this.clients = new HashSet<WebServiceClient>();
@@ -348,16 +333,20 @@ public class WebServiceImportDialog<T> extends JDialog {
 	
 	private void searchButtonActionPerformed() {
 		final Object selected = datasourceComboBox.getSelectedItem();
+		
 		if (selected == null)
 			return;
 
 		WebServiceClient client = null;
+		
 		if (selected instanceof WebServiceClient) {
 			client = (WebServiceClient) selected;
 		} else {
 			throw new IllegalStateException("Selected client is not a compatible one.");
 		}
 
+		final DialogTaskManager taskManager = serviceRegistrar.getService(DialogTaskManager.class);
+		
 		// Set query. Just pass the text in the panel.
 		taskManager.execute(client.createTaskIterator(this.queryTextPane.getText()));
 	}
@@ -435,12 +424,8 @@ public class WebServiceImportDialog<T> extends JDialog {
 		final String clientName = wsc.getDisplayName();
 		final String description = wsc.getDescription();
 
-		Icon icon = null;
-		if (icon == null)
-			icon = DEF_ICON;
-		
-		final AboutDialog aboutDialog = new AboutDialog(this, Dialog.ModalityType.APPLICATION_MODAL, openBrowser);
-		aboutDialog.showDialog("About " + clientName, icon, description);
+		final AboutDialog aboutDialog = new AboutDialog(this, Dialog.ModalityType.APPLICATION_MODAL, serviceRegistrar);
+		aboutDialog.showDialog(clientName, description);
 	}
 
 	private final class ClientComboBoxCellRenderer extends DefaultListCellRenderer {

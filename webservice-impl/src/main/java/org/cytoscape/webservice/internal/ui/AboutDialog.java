@@ -36,21 +36,25 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 
+import javax.swing.AbstractAction;
+import javax.swing.BorderFactory;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
-import javax.swing.AbstractAction;
 import javax.swing.Icon;
+import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JEditorPane;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.LayoutStyle;
+import javax.swing.JSeparator;
 import javax.swing.ScrollPaneConstants;
+import javax.swing.UIDefaults;
 import javax.swing.WindowConstants;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.util.swing.OpenBrowser;
 import org.slf4j.Logger;
@@ -68,18 +72,16 @@ public final class AboutDialog extends JDialog implements HyperlinkListener {
 
 	private static final Dimension WINDOW_SIZE = new Dimension(500, 400);
 
-	private final OpenBrowser openBrowser;
+	private final CyServiceRegistrar serviceRegistrar;
 
+	private JLabel titleLabel;
 	private JEditorPane mainEditorPane;
 	private JScrollPane mainScrollPane;
-	private JLabel titleLabel;
-	private JPanel titlePanel;
-	private JPanel mainPanel;
 
 	/** Creates new form WSAboutDialog */
-	public AboutDialog(Window parent, Dialog.ModalityType modal, final OpenBrowser openBrowser) {
+	public AboutDialog(Window parent, Dialog.ModalityType modal, final CyServiceRegistrar serviceRegistrar) {
 		super(parent, modal);
-		this.openBrowser = openBrowser;
+		this.serviceRegistrar = serviceRegistrar;
 		initComponents();
 		mainEditorPane.setEditable(false);
 		mainEditorPane.addHyperlinkListener(this);
@@ -90,18 +92,18 @@ public final class AboutDialog extends JDialog implements HyperlinkListener {
 	}
 
 	public AboutDialog(Window parent, Dialog.ModalityType modal, String title, Icon icon, URL contentURL,
-			final OpenBrowser openBrowser) {
+			final CyServiceRegistrar serviceRegistrar) {
 		super(parent, modal);
-		this.openBrowser = openBrowser;
+		this.serviceRegistrar = serviceRegistrar;
 		initComponents();
 		mainEditorPane.setContentType("text/html");
 		this.setPreferredSize(WINDOW_SIZE);
 		this.setSize(WINDOW_SIZE);
 	}
 
-	public void showDialog(String title, Icon icon, String description) {
+	public void showDialog(final String title, final String description) {
+		setTitle("About " + title);
 		titleLabel.setText(title);
-		titleLabel.setIcon(icon);
 
 		URL target = null;
 		mainEditorPane.putClientProperty(JEditorPane.HONOR_DISPLAY_PROPERTIES, Boolean.TRUE);
@@ -133,71 +135,71 @@ public final class AboutDialog extends JDialog implements HyperlinkListener {
 		setTitle("About");
 		setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 		
-		mainPanel = new JPanel();
-		
 		mainEditorPane = new JEditorPane();
-		mainEditorPane.setBorder(null);
+		mainEditorPane.setBorder(BorderFactory.createEmptyBorder());
 		mainEditorPane.setEditable(false);
+		mainEditorPane.setBackground(getBackground());
+		
+		if (LookAndFeelUtil.isNimbusLAF()) {
+			// Nimbus does not respect background color settings for JEditorPane,
+			// so this is necessary to override its color:
+			final UIDefaults defaults = new UIDefaults();
+			defaults.put("EditorPane[Enabled].backgroundPainter", getBackground());
+			mainEditorPane.putClientProperty("Nimbus.Overrides", defaults);
+			mainEditorPane.putClientProperty("Nimbus.Overrides.InheritDefaults", true);
+		}
 		
 		mainScrollPane = new JScrollPane();
-		mainScrollPane.setBorder(null);
+		mainScrollPane.setBorder(BorderFactory.createEmptyBorder());
 		mainScrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 		mainScrollPane.setViewportView(mainEditorPane);
 		
-		titleLabel = new JLabel();
+		titleLabel = new JLabel(); // Client name to be set here...
 		titleLabel.setFont(new Font(titleLabel.getName(), Font.BOLD, 18));
-		titleLabel.setText("Client Name Here");
+		titleLabel.setHorizontalAlignment(JLabel.CENTER);
 
-		titlePanel = new JPanel();
+		final JButton closeButton = new JButton(new AbstractAction("Close") {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				dispose();
+			}
+		});
 		
-		GroupLayout titlePanelLayout = new GroupLayout(titlePanel);
-		titlePanel.setLayout(titlePanelLayout);
+		final JPanel buttonPanel = LookAndFeelUtil.createOkCancelPanel(closeButton, null);
+		final JPanel contents = new JPanel();
 		
-		titlePanelLayout.setHorizontalGroup(titlePanelLayout.createParallelGroup(Alignment.LEADING)
-				.addGroup(titlePanelLayout.createSequentialGroup()
-						.addContainerGap()
-						.addComponent(titleLabel, DEFAULT_SIZE, 340, Short.MAX_VALUE)
-						.addContainerGap()));
-		titlePanelLayout.setVerticalGroup(titlePanelLayout.createParallelGroup(Alignment.LEADING)
-				.addGroup(titlePanelLayout.createSequentialGroup().addContainerGap()
-						.addComponent(titleLabel, DEFAULT_SIZE, 32, Short.MAX_VALUE)
-						.addContainerGap()));
+		final JSeparator sep1 = new JSeparator();
+		final JSeparator sep2 = new JSeparator();
+		
+		final GroupLayout layout = new GroupLayout(contents);
+		contents.setLayout(layout);
+		layout.setAutoCreateContainerGaps(true);
+		layout.setAutoCreateGaps(true);
+		
+		layout.setHorizontalGroup(layout.createSequentialGroup()
+				.addGap(20)
+				.addGroup(layout.createParallelGroup(Alignment.LEADING)
+						.addComponent(titleLabel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+						.addComponent(sep1, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+						.addComponent(mainScrollPane, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+						.addComponent(sep2, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+						.addComponent(buttonPanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				)
+				.addGap(20)
+		);
+		layout.setVerticalGroup(layout.createSequentialGroup()
+				.addComponent(titleLabel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				.addComponent(sep1, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				.addComponent(mainScrollPane, DEFAULT_SIZE, 215, Short.MAX_VALUE)
+				.addComponent(sep2, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				.addComponent(buttonPanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+		);
 
-		final GroupLayout mainPanelLayout = new GroupLayout(mainPanel);
-		mainPanel.setLayout(mainPanelLayout);
+		getContentPane().add(contents);
 		
-		mainPanelLayout.setHorizontalGroup(mainPanelLayout.createParallelGroup(Alignment.LEADING)
-				.addGroup(mainPanelLayout.createSequentialGroup()
-						.addContainerGap()
-						.addComponent(mainScrollPane)
-						.addContainerGap()));
-		mainPanelLayout.setVerticalGroup(mainPanelLayout.createParallelGroup(Alignment.LEADING)
-				.addGroup(mainPanelLayout.createSequentialGroup()
-						.addContainerGap()
-						.addComponent(mainScrollPane, DEFAULT_SIZE, 215, Short.MAX_VALUE)
-						.addContainerGap()));
-
-		GroupLayout layout = new GroupLayout(getContentPane());
-		getContentPane().setLayout(layout);
-		
-		layout.setHorizontalGroup(layout.createParallelGroup(Alignment.LEADING)
-				.addComponent(titlePanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-				.addComponent(mainPanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE));
-		layout.setVerticalGroup(layout.createParallelGroup(Alignment.LEADING)
-				.addGroup(layout.createSequentialGroup()
-						.addComponent(titlePanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-						.addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-						.addComponent(mainPanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)));
-
+		LookAndFeelUtil.setDefaultOkCancelKeyStrokes(getRootPane(), closeButton.getAction(), closeButton.getAction());
+		getRootPane().setDefaultButton(closeButton);
 		pack();
-		
-		LookAndFeelUtil.setDefaultOkCancelKeyStrokes(getRootPane(), null,
-				new AbstractAction() {
-					@Override
-					public void actionPerformed(ActionEvent e) {
-						dispose();
-					}
-				});
 	}
 
 	@Override
@@ -208,7 +210,7 @@ public final class AboutDialog extends JDialog implements HyperlinkListener {
 		String url = e.getURL().toString();
 
 		try {
-			openBrowser.openURL(url);
+			serviceRegistrar.getService(OpenBrowser.class).openURL(url);
 		} catch (Exception err) {
 			logger.warn("Unable to open browser for " + url.toString(), err);
 		}

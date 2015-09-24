@@ -28,9 +28,10 @@ import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
 
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
-import java.awt.Graphics2D;
+import java.awt.Graphics;
 import java.awt.Paint;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -38,7 +39,6 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.awt.image.BufferedImage;
 import java.util.List;
 
 import javax.swing.AbstractAction;
@@ -440,8 +440,11 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 	protected JButton getColorButton() {
 		if (colorButton == null) {
 			colorButton = new JButton();
+			colorButton.putClientProperty("JButton.buttonType", "gradient"); // Aqua LAF only
+			colorButton.setHorizontalTextPosition(JButton.CENTER);
+			colorButton.setVerticalTextPosition(JButton.CENTER);
 			colorButton.setEnabled(false);
-			colorButton.setMinimumSize(new Dimension(36, colorButton.getMinimumSize().height));
+			setButtonColor(new Color(0, 0, 0, 0)); // Transparent
 		}
 		
 		return colorButton;
@@ -695,16 +698,7 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 	}
 
 	protected void setButtonColor(final Color newColor) {
-		final int iconWidth = 20;
-		final int iconHeight = 10;
-		final BufferedImage bi = new BufferedImage(iconWidth, iconHeight, BufferedImage.TYPE_INT_RGB);
-		final Graphics2D g2 = bi.createGraphics();
-
-		g2.setColor(newColor);
-		g2.fillRect(0, 0, iconWidth, iconHeight);
-
-		final Icon colorIcon = new ImageIcon(bi);
-		getColorButton().setIcon(colorIcon);
+		getColorButton().setIcon(new ColorIcon(newColor));
 	}
 
 	void cancelChangesInternal() {
@@ -789,6 +783,38 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 				getSlider().repaint();
 				lastSpinnerNumber = newVal.doubleValue();
 			}
+		}
+	}
+	
+	private class ColorIcon implements Icon {
+
+		private final Color color;
+		private final Color borderColor;
+		
+		ColorIcon(final Color c) {
+			this.color = c != null ? c : new Color(0, 0, 0, 0); // transparent
+			this.borderColor = VisualPropertyUtil.getContrastingColor(this.color);
+		}
+		
+		@Override
+		public int getIconHeight() {
+			return 16;
+		}
+
+		@Override
+		public int getIconWidth() {
+			return 44;
+		}
+
+		@Override
+		public void paintIcon(Component c, Graphics g, int x, int y) {
+			int w = getIconWidth();
+			int h = getIconHeight();
+			
+			g.setColor(color);
+			g.fillRect(x, y, w, h);
+			g.setColor(borderColor);
+			g.drawRect(x, y, w, h);
 		}
 	}
 }

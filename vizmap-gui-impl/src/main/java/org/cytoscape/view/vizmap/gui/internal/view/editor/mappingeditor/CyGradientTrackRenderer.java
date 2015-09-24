@@ -26,15 +26,12 @@ package org.cytoscape.view.vizmap.gui.internal.view.editor.mappingeditor;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
-import java.awt.Font;
 import java.awt.GradientPaint;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Polygon;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
-import java.awt.font.FontRenderContext;
-import java.awt.font.TextLayout;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
@@ -51,13 +48,9 @@ import org.jdesktop.swingx.multislider.Thumb;
 /**
  * Track Renderer for color gradient
  */
-public class CyGradientTrackRenderer extends JComponent implements
-		VizMapTrackRenderer {
+public class CyGradientTrackRenderer extends JComponent implements VizMapTrackRenderer {
 
 	private final static long serialVersionUID = 1202339877115160L;
-
-	// Preset fonts
-	private static final Font SMALL_FONT = new Font("SansSerif", Font.BOLD, 16);
 
 	// Width of the slider
 	private static final int THUMB_WIDTH = 12;
@@ -126,11 +119,7 @@ public class CyGradientTrackRenderer extends JComponent implements
 
 			for (Thumb<Color> thumb : stops) {
 				colors[i] = (Color) thumb.getObject();
-
 				fractions[i] = thumb.getPosition() / 100;
-
-				g.setColor(colors[i]);
-				g.setFont(SMALL_FONT);
 
 				String valueString;
 				Double value = minValue + (fractions[i] * range);
@@ -142,14 +131,6 @@ public class CyGradientTrackRenderer extends JComponent implements
 
 				final int stringWidth = SwingUtilities.computeStringWidth(g.getFontMetrics(), valueString);
 				final int curPosition = (int) (track_width * fractions[i]);
-
-				FontRenderContext frc = g.getFontRenderContext();
-				TextLayout tl = new TextLayout(valueString, g.getFont(), frc);
-
-				g.setStroke(new BasicStroke(0.6f));
-				g.setColor(BORDER_COLOR);
-
-				final float[] hsb = Color.RGBtoHSB(colors[i].getRed(), colors[i].getGreen(), colors[i].getBlue(), null);
 
 				int x;
 				int y;
@@ -165,18 +146,9 @@ public class CyGradientTrackRenderer extends JComponent implements
 					y = trackHeight + 15;
 				}
 
-				if (hsb[1] < 0.5) {
-					g.setColor(colors[i]);
-					g.drawString(valueString, x, y);
-
-					g.translate(x, y);
-					g.setColor(LABEL_COLOR);
-					g.draw(tl.getOutline(null));
-					g.translate(-x, -y);
-				} else {
-					g.setColor(colors[i]);
-					g.drawString(valueString, x, y);
-				}
+				g.setFont(SMALL_FONT);
+				g.setColor(LABEL_COLOR);
+				g.drawString(valueString, x, y);
 
 				i++;
 			}
