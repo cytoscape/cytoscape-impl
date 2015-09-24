@@ -229,11 +229,11 @@ public class ArrowAnnotationPanel extends JPanel {
 	}
 
 	private JPanel getArrowPanel(final ArrowEnd end) {
-		final JLabel label1 = new JLabel("Arrow Type:");
-		final JLabel label2 = new JLabel("Arrow Color:");
-		final JLabel label3 = new JLabel("Arrow Opacity:");
-		final JLabel label4 = new JLabel("Arrow Size:");
-		final JLabel label5 = new JLabel("Anchor type:");
+		final JLabel label1 = new JLabel("Shape:");
+		final JLabel label2 = new JLabel("Color:");
+		final JLabel label3 = new JLabel("Opacity:");
+		final JLabel label4 = new JLabel("Size:");
+		final JLabel label5 = new JLabel("Anchor:");
 		
 		final JComboBox<String> arrowTypeCombo = new JComboBox<>();
 		final List<String> arrows = annotation.getSupportedArrows();
