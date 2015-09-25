@@ -27,8 +27,8 @@ package org.cytoscape.io.internal.read.xgmml.handler;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.cytoscape.io.internal.read.xgmml.ObjectType;
 import org.cytoscape.io.internal.read.xgmml.ParseState;
+import org.cytoscape.io.internal.util.xgmml.ObjectType;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyRow;
 import org.xml.sax.Attributes;
@@ -40,8 +40,10 @@ public class HandleListAttribute extends AbstractHandler {
 	@SuppressWarnings({ "unchecked", "rawtypes" })
     public ParseState handle(String tag, Attributes atts, ParseState current) throws SAXException {
         final String type = atts.getValue("type");
+        final String cyType = atts.getValue("cy:type");
         final String name = manager.currentAttributeID;
-        final ObjectType objType = typeMap.getType(type);
+        
+        final ObjectType objType = typeMap.fromXgmml(cyType, type);
         final Object value = attributeValueUtil.getTypedAttributeValue(objType, atts, name);
 
         final CyRow row = manager.getCurrentRow();

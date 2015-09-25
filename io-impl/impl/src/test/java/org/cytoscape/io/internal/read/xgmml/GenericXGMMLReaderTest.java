@@ -167,6 +167,35 @@ public class GenericXGMMLReaderTest extends AbstractNetworkReaderTest {
 		assertFalse(defNetTbl.getColumn(CyNetwork.SELECTED).getVirtualColumnInfo().isVirtual());
 	}
 	
+	/**
+	 * Make sure the custom attributes "cy:type" and "cy:elementType" are used
+	 * to create the correct column types, when they are available (i.e. XGMML exported from Cytoscape v3.3+)
+	 */
+	@Test
+	public void testCustomCyAttTypes() throws Exception {
+		List<CyNetworkView> views = getViews("simple_3.3.xgmml");
+		CyNetwork net = checkSingleNetwork(views, 1, 1);
+		assertCustomColumnsAreMutable(net);
+		
+		CyTable defNodeTbl = net.getDefaultNodeTable();
+		CyTable defEdgeTbl = net.getDefaultEdgeTable();
+		CyTable defNetTbl = net.getDefaultNetworkTable();
+		
+		assertEquals(String.class, defNodeTbl.getColumn("node_att_1").getType());
+		assertEquals(List.class, defNodeTbl.getColumn("node_att_2").getType());
+		assertEquals(Long.class, defNodeTbl.getColumn("node_att_2").getListElementType());
+		assertEquals(Integer.class, defNodeTbl.getColumn("node_att_3").getType());
+		assertEquals(Long.class, defNodeTbl.getColumn("node_att_4").getType());
+		
+		assertEquals(Double.class, defEdgeTbl.getColumn("edge_att_1").getType());
+		assertEquals(List.class, defEdgeTbl.getColumn("edge_att_2").getType());
+		assertEquals(String.class, defEdgeTbl.getColumn("edge_att_2").getListElementType());
+		
+		assertEquals(Boolean.class, defNetTbl.getColumn("net_att_1").getType());
+		assertEquals(List.class, defNetTbl.getColumn("net_att_2").getType());
+		assertEquals(Integer.class, defNetTbl.getColumn("net_att_2").getListElementType());
+	}
+	
 	@Test
 	public void testIgnoreEmptyListAtt() throws Exception {
 		List<CyNetworkView> views = getViews("listAtt.xgmml");

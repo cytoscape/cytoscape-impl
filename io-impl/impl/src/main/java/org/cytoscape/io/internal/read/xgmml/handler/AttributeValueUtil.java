@@ -32,10 +32,10 @@ import java.util.regex.Pattern;
 
 import org.cytoscape.io.internal.read.xgmml.MetadataEntries;
 import org.cytoscape.io.internal.read.xgmml.MetadataParser;
-import org.cytoscape.io.internal.read.xgmml.ObjectType;
 import org.cytoscape.io.internal.read.xgmml.ObjectTypeMap;
 import org.cytoscape.io.internal.read.xgmml.ParseState;
 import org.cytoscape.io.internal.util.SUIDUpdater;
+import org.cytoscape.io.internal.util.xgmml.ObjectType;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
@@ -172,9 +172,10 @@ public class AttributeValueUtil {
     	
     	final String name = atts.getValue("name");
     	String type = atts.getValue("type");
+    	String cyType = atts.getValue("cy:type");
     	
     	if ("has_nested_network".equals(name))
-        	type = ObjectType.BOOLEAN.getName();
+        	type = ObjectType.BOOLEAN.getXgmmlValue();
     	
     	final boolean isEquation = ObjectTypeMap.fromXGMMLBoolean(atts.getValue("cy:equation"));
     	final boolean isHidden = ObjectTypeMap.fromXGMMLBoolean(atts.getValue("cy:hidden"));
@@ -246,7 +247,7 @@ public class AttributeValueUtil {
         }
         
         Object value = null;
-        final ObjectType objType = typeMap.getType(type);
+        final ObjectType objType = typeMap.fromXgmml(cyType, type);
 
         if (isEquation) {
         	// It is an equation...
@@ -273,10 +274,17 @@ public class AttributeValueUtil {
 				}
 				break;
 			case INTEGER:
-				if (name != null) setAttribute(row, name, Integer.class, (Integer) value);
+				if (name != null) {
+					if (SUIDUpdater.isUpdatable(name))
+						setAttribute(row, name, Long.class, (Long) value);
+					else
+						setAttribute(row, name, Integer.class, (Integer) value);
+				}
+				break;
+			case LONG:
+				if (name != null) setAttribute(row, name, Long.class, (Long) value);
 				break;
 			case STRING:
-			case NONE:
 				if (name != null) setAttribute(row, name, String.class, (String) value);
 				break;
 			// We need to be *very* careful. Because we duplicate attributes for
@@ -296,7 +304,7 @@ public class AttributeValueUtil {
 					final String elementType = atts.getValue("cy:elementType"); // Since Cytoscape v3.3
 					
 					if (elementType != null) {
-						final ObjectType elementObjType = typeMap.getType(elementType);
+						final ObjectType elementObjType = typeMap.fromXgmml(elementType, null);
 			        	final Class<?> clazz = typeMap.getClass(elementObjType, name);
 			            
 			        	table.createListColumn(name, clazz, false, new ArrayList());
@@ -315,17 +323,34 @@ public class AttributeValueUtil {
     private <T> void setAttribute(final CyRow row, final String name, final Class<T> type, final T value) {
         if (name != null) {
             final CyTable table = row.getTable();
-            final CyColumn column = table.getColumn(name);
+            CyColumn column = table.getColumn(name);
             
             if (column == null) {
             	table.createColumn(name, type, false);
+            	column = table.getColumn(name);
             } else if (column.getVirtualColumnInfo().isVirtual()) {
             	logger.warn("Cannot set value to virtual column \"" + name + "\".");
             	return;
             }
             
             if (value != null) {
-            	row.set(name, value);
+            	// Note: The actual column type may be different from the passed "type" argument,
+            	//       if the column was not created when importing the XGMML
+            	//       (i.e. merging with an existing CyRootNetwork)
+            	final Class<?> colType = column.getType();
+            	
+            	// Preventing ClassCastExeptions when handling numbers,
+            	// because there is no 1:1 type matching between numeric CyColumn types and XGMML types
+            	// (only when importing standard XGMML files or from Cytoscape version 3.2 or bellow,
+            	// since Cytoscape 3.3 adds the "cy:type" and "cy:elementTypes" attributes)
+            	if (colType == Integer.class)
+            		row.set(name, ((Number)value).intValue());
+            	else if (colType == Long.class)
+            		row.set(name, ((Number)value).longValue());
+            	else if (colType == Double.class)
+            		row.set(name, ((Number)value).doubleValue());
+            	else
+            		row.set(name, value);
             }
         }
     }
