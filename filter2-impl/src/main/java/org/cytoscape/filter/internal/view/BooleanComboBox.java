@@ -7,6 +7,8 @@ import java.awt.event.ActionListener;
 import javax.swing.JComboBox;
 import javax.swing.JPanel;
 
+import org.cytoscape.filter.internal.view.look.FilterPanelStyle;
+
 /**
  * A panel that contains a combo box with two values, the first value is true, second is false.
  */
@@ -35,8 +37,8 @@ public class BooleanComboBox extends JPanel {
 		void stateChanged(boolean is);
 	}
 	
-	public BooleanComboBox(String trueLabel, String falseLabel) {
-		combo = new JComboBox<>(new Element[] {
+	public BooleanComboBox(FilterPanelStyle style, String trueLabel, String falseLabel) {
+		combo = style.createCombo(new Element[] {
 			new Element(trueLabel, true),
 			new Element(falseLabel, false)
 		});

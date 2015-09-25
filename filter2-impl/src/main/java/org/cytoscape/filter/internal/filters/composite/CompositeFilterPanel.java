@@ -53,19 +53,16 @@ public class CompositeFilterPanel<P extends SelectPanelComponent> extends JPanel
 	private final JButton addButton;
 	private P parent;
 	private CompositeFilter<CyNetwork,CyIdentifiable> model;
-	private final IconManager iconManager;
 	private JComponent separator; 
 	private JComboBox<?> combiningMethodComboBox;
 	
 	public CompositeFilterPanel(P parent, AbstractPanelController<?, P> filterPanelController, 
-			final CompositeFilterController controller, final CompositeFilter<CyNetwork,CyIdentifiable> model, int depth,
-			IconManager iconManager) {
+			final CompositeFilterController controller, final CompositeFilter<CyNetwork,CyIdentifiable> model, int depth) {
 		this.parent = parent;
 		this.filterPanelController = filterPanelController;
 		this.compositeFilterController = controller;
 		this.depth = depth;
 		this.model = model;
-		this.iconManager = iconManager;
 		
 		separator = new CompositeSeparator();
 		new DropTarget(separator, new DragHandler<P>(separator, filterPanelController, parent, null));
@@ -94,7 +91,7 @@ public class CompositeFilterPanel<P extends SelectPanelComponent> extends JPanel
 		for (int i = 0; i < model.getLength(); i++) {
 			Filter<CyNetwork, CyIdentifiable> filter = model.get(i);
 			JComponent component = filterPanelController.createView(parent, filter, depth + 1);
-			TransformerElementViewModel<P> viewModel = new TransformerElementViewModel<>(component, filterPanelController, parent, iconManager);
+			TransformerElementViewModel<P> viewModel = new TransformerElementViewModel<>(component, filterPanelController, parent);
 			viewModels.put(filter, viewModel);
 		}
 	}
@@ -173,7 +170,7 @@ public class CompositeFilterPanel<P extends SelectPanelComponent> extends JPanel
 	
 	JButton createAddConditionButton() {
 		final JButton button = new JButton(IconManager.ICON_PLUS);
-		button.setFont(iconManager.getIconFont(11.0f));
+		button.setFont(filterPanelController.getIconManager().getIconFont(11.0f));
 		String tooltip = compositeFilterController.getAddButtonTooltip();
 		button.setToolTipText(tooltip == null ? "Add new condition..." : tooltip);
 		button.putClientProperty("JButton.buttonType", "gradient");
@@ -197,7 +194,7 @@ public class CompositeFilterPanel<P extends SelectPanelComponent> extends JPanel
 	public JComboBox<CombiningMethodElement> createCombiningMethodComboBox() {
 		List<CombiningMethodElement> methods = getCombiningMethods();
 		ComboBoxModel<CombiningMethodElement> comboBoxModel = new DynamicComboBoxModel<>(methods);
-		final JComboBox<CombiningMethodElement> combiningMethodComboBox = new JComboBox<>(comboBoxModel);
+		final JComboBox<CombiningMethodElement> combiningMethodComboBox = filterPanelController.getStyle().createCombo(comboBoxModel);
 		combiningMethodComboBox.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent event) {
@@ -244,7 +241,7 @@ public class CompositeFilterPanel<P extends SelectPanelComponent> extends JPanel
 
 	public void addFilter(Filter<CyNetwork, CyIdentifiable> filter) {
 		JComponent component = filterPanelController.createView(parent, filter, depth + 1);
-		final TransformerElementViewModel<P> viewModel = new TransformerElementViewModel<P>(component, filterPanelController, parent, iconManager);
+		final TransformerElementViewModel<P> viewModel = new TransformerElementViewModel<P>(component, filterPanelController, parent);
 		addViewModel(filter, viewModel);
 	}
 

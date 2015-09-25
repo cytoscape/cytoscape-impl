@@ -75,7 +75,7 @@ public class TransformerPanel extends AbstractPanel<TransformerElement, Transfor
 		}
 		
 		CompositeTransformerPanel panel = new CompositeTransformerPanel(this, controller, chain, iconManager);
-		new TransformerElementViewModel<TransformerPanel>(panel, controller, this, iconManager);
+		new TransformerElementViewModel<TransformerPanel>(panel, controller, this);
 		setRootPanel(panel);
 	}
 

@@ -17,6 +17,7 @@ import javax.swing.JTextField;
 import org.cytoscape.filter.internal.view.BooleanComboBox;
 import org.cytoscape.filter.internal.view.BooleanComboBox.StateChangeListener;
 import org.cytoscape.filter.internal.view.ViewUtil;
+import org.cytoscape.filter.internal.view.look.FilterPanelStyle;
 import org.cytoscape.filter.model.Transformer;
 import org.cytoscape.filter.model.TransformerListener;
 import org.cytoscape.filter.predicates.Predicate;
@@ -26,6 +27,12 @@ import org.cytoscape.util.swing.LookAndFeelUtil;
 
 public class TopologyFilterViewFactory implements TransformerViewFactory {
 
+	private final FilterPanelStyle style;
+	
+	public TopologyFilterViewFactory(FilterPanelStyle style) {
+		this.style = style;
+	}
+	
 	public static Properties getServiceProperties() {
 		Properties props = new Properties();
 		props.setProperty("addButtonTooltip", "Add neighbour condition...");
@@ -120,7 +127,7 @@ public class TopologyFilterViewFactory implements TransformerViewFactory {
 		public View(final Controller controller) {
 			this.controller = controller;
 			
-			thresholdField = new JFormattedTextField(ViewUtil.createIntegerFormatter(0, Integer.MAX_VALUE));
+			thresholdField = style.createFormattedTextField(ViewUtil.createIntegerFormatter(0, Integer.MAX_VALUE));
 			thresholdField.setHorizontalAlignment(JTextField.TRAILING);
 			thresholdField.setColumns(3);
 			thresholdField.addPropertyChangeListener("value", new PropertyChangeListener() {
@@ -131,7 +138,7 @@ public class TopologyFilterViewFactory implements TransformerViewFactory {
 				}
 			});
 			
-			distanceField = new JFormattedTextField(ViewUtil.createIntegerFormatter(1, Integer.MAX_VALUE));
+			distanceField = style.createFormattedTextField(ViewUtil.createIntegerFormatter(1, Integer.MAX_VALUE));
 			distanceField.setHorizontalAlignment(JTextField.TRAILING);
 			distanceField.setColumns(3);
 			distanceField.addPropertyChangeListener("value", new PropertyChangeListener() {
@@ -142,11 +149,11 @@ public class TopologyFilterViewFactory implements TransformerViewFactory {
 				}
 			});
 			
-			label1 = new JLabel("Nodes with ");
-			label2 = new JLabel(" neighbours within distance ");
-			label3 = new JLabel("where the neighbours match:");
+			label1 = style.createLabel("Nodes with ");
+			label2 = style.createLabel(" neighbours within distance ");
+			label3 = style.createLabel("where the neighbours match:");
 			
-			atLeastCombo = new BooleanComboBox("at least", "less than");
+			atLeastCombo = new BooleanComboBox(style, "at least", "less than");
 			
 			atLeastCombo.addStateChangeListener(new StateChangeListener() {
 				@Override
@@ -189,8 +196,10 @@ public class TopologyFilterViewFactory implements TransformerViewFactory {
 						.addComponent(distanceField, GroupLayout.PREFERRED_SIZE, GroupLayout.PREFERRED_SIZE, GroupLayout.PREFERRED_SIZE));
 			
 			if(controller.hasChildren()) {
-				horizontalGroup.addComponent(label3, GroupLayout.PREFERRED_SIZE, GroupLayout.PREFERRED_SIZE, GroupLayout.PREFERRED_SIZE);
-				verticalGroup.addComponent(label3, GroupLayout.PREFERRED_SIZE, GroupLayout.PREFERRED_SIZE, GroupLayout.PREFERRED_SIZE);
+				horizontalGroup.addGroup(layout.createSequentialGroup()
+						.addComponent(label3, GroupLayout.PREFERRED_SIZE, GroupLayout.PREFERRED_SIZE, GroupLayout.PREFERRED_SIZE));
+				verticalGroup.addGroup(layout.createParallelGroup(Alignment.TRAILING)
+						.addComponent(label3, GroupLayout.PREFERRED_SIZE, GroupLayout.PREFERRED_SIZE, GroupLayout.PREFERRED_SIZE));
 			}
 			
 			layout.setHorizontalGroup(horizontalGroup);

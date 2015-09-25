@@ -66,7 +66,7 @@ public class CompositeTransformerPanel extends JPanel {
 
 		for (Transformer<CyNetwork, CyIdentifiable> transformer : model) {
 			JComponent component = transformerPanelController.createView(parent, transformer, 0);
-			TransformerElementViewModel<TransformerPanel> viewModel = new TransformerElementViewModel<TransformerPanel>(component, transformerPanelController, parent, iconManager);
+			TransformerElementViewModel<TransformerPanel> viewModel = new TransformerElementViewModel<TransformerPanel>(component, transformerPanelController, parent);
 			viewModels.put(transformer, viewModel);
 		}
 	}
@@ -146,7 +146,7 @@ public class CompositeTransformerPanel extends JPanel {
 
 	public void addTransformer(Transformer<CyNetwork, CyIdentifiable> transformer) {
 		JComponent component = transformerPanelController.createView(parent, transformer, 0);
-		final TransformerElementViewModel<TransformerPanel> viewModel = new TransformerElementViewModel<TransformerPanel>(component, transformerPanelController, parent, iconManager);
+		final TransformerElementViewModel<TransformerPanel> viewModel = new TransformerElementViewModel<TransformerPanel>(component, transformerPanelController, parent);
 		addViewModel(transformer, viewModel);
 	}
 

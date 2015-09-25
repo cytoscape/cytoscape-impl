@@ -70,7 +70,7 @@ public class FilterPanel extends AbstractPanel<FilterElement, FilterPanelControl
 		// We're passing in a CompositeFilter so we can assume we're getting
 		// back a CompositeFilterPanel.
 		CompositeFilterPanel<FilterPanel> panel = (CompositeFilterPanel<FilterPanel>) controller.createView(this, filter, 0);
-		new TransformerElementViewModel<FilterPanel>(panel, controller, this, iconManager);
+		new TransformerElementViewModel<FilterPanel>(panel, controller, this);
 		setRootPanel(panel);
 	}
 

@@ -21,11 +21,13 @@ import org.cytoscape.filter.internal.filters.composite.CompositeFilterPanel;
 import org.cytoscape.filter.internal.tasks.ExportNamedTransformersTask;
 import org.cytoscape.filter.internal.tasks.ImportNamedTransformersTask;
 import org.cytoscape.filter.internal.view.TransformerViewManager.TransformerViewElement;
+import org.cytoscape.filter.internal.view.look.FilterPanelStyle;
 import org.cytoscape.filter.model.Filter;
 import org.cytoscape.filter.model.NamedTransformer;
 import org.cytoscape.filter.model.Transformer;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskManager;
@@ -41,6 +43,8 @@ public abstract class AbstractPanelController<T extends NamedElement, V extends 
 
 	private final TransformerManager transformerManager;
 	private final TransformerViewManager transformerViewManager;
+	private final IconManager iconManager;
+	private final FilterPanelStyle style;
 	
 	private List<NamedElementListener<T>> namedElementListeners;
 	
@@ -54,12 +58,15 @@ public abstract class AbstractPanelController<T extends NamedElement, V extends 
 	final Logger logger;
 
 	public AbstractPanelController(AbstractWorker<?, ?> worker, TransformerManager transformerManager, TransformerViewManager transformerViewManager,
-			                       FilterIO filterIo, TaskManager<?, ?> taskManager) {
+			                       FilterIO filterIo, TaskManager<?, ?> taskManager,
+			                       FilterPanelStyle style, IconManager iconManager) {
 		this.worker = worker;
 		this.filterIo = filterIo;
 		this.taskManager = taskManager;
 		this.transformerManager = transformerManager;
 		this.transformerViewManager = transformerViewManager;
+		this.style = style;
+		this.iconManager = iconManager;
 		
 		logger = LoggerFactory.getLogger(getClass());
 		
@@ -329,6 +336,14 @@ public abstract class AbstractPanelController<T extends NamedElement, V extends 
 			target = target.getParent();
 		}
 		return false;
+	}
+	
+	public FilterPanelStyle getStyle() {
+		return style;
+	}
+	
+	public IconManager getIconManager() {
+		return iconManager;
 	}
 
 	protected abstract T createElement(String name);

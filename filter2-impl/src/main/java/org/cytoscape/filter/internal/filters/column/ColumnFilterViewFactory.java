@@ -32,6 +32,7 @@ import org.cytoscape.filter.internal.view.Matcher;
 import org.cytoscape.filter.internal.view.RangeChooser;
 import org.cytoscape.filter.internal.view.RangeChooserController;
 import org.cytoscape.filter.internal.view.ViewUtil;
+import org.cytoscape.filter.internal.view.look.FilterPanelStyle;
 import org.cytoscape.filter.model.Transformer;
 import org.cytoscape.filter.predicates.Predicate;
 import org.cytoscape.filter.transformers.Transformers;
@@ -47,10 +48,13 @@ public class ColumnFilterViewFactory implements TransformerViewFactory {
 	ModelMonitor modelMonitor;
 	List<ColumnComboBoxElement> nameComboBoxModel;
 	List<ComboItem<Predicate>> predicateComboBoxModel;
-	private IconManager iconManager;
 	
-	public ColumnFilterViewFactory(ModelMonitor modelMonitor, IconManager iconManager) {
+	private final IconManager iconManager;
+	private final FilterPanelStyle style;
+	
+	public ColumnFilterViewFactory(FilterPanelStyle style, ModelMonitor modelMonitor, IconManager iconManager) {
 		this.modelMonitor = modelMonitor;
+		this.style = style;
 		this.iconManager = iconManager;
 		
 		nameComboBoxModel = modelMonitor.getColumnComboBoxModel();
@@ -350,7 +354,7 @@ public class ColumnFilterViewFactory implements TransformerViewFactory {
 			
 			ViewUtil.configureFilterView(this);
 			
-			textField = new JTextField();
+			textField = style.createTextField();
 			textField.addFocusListener(new FocusListener() {
 
 				@Override
@@ -379,7 +383,7 @@ public class ColumnFilterViewFactory implements TransformerViewFactory {
 				}
 			});
 			
-			arrowLabel = new JLabel(IconManager.ICON_CARET_DOWN);
+			arrowLabel = style.createLabel(IconManager.ICON_CARET_DOWN);
 			Font arrowFont = iconManager.getIconFont(16.0f);
 			arrowLabel.setFont(arrowFont);
 			arrowLabel.addMouseListener(new MouseAdapter() {
@@ -389,7 +393,7 @@ public class ColumnFilterViewFactory implements TransformerViewFactory {
 				}
 			});
 			
-			caseSensitiveCheckBox = new JCheckBox("Case sensitive");
+			caseSensitiveCheckBox = style.createCheckBox("Case sensitive");
 			caseSensitiveCheckBox.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent event) {
@@ -398,7 +402,7 @@ public class ColumnFilterViewFactory implements TransformerViewFactory {
 			});
 			caseSensitiveCheckBox.setOpaque(false);
 			
-			predicateComboBox = new JComboBox(new DynamicComboBoxModel<ComboItem<Predicate>>(predicateComboBoxModel));
+			predicateComboBox = style.createCombo(new DynamicComboBoxModel<ComboItem<Predicate>>(predicateComboBoxModel));
 			predicateComboBox.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent event) {
@@ -410,7 +414,7 @@ public class ColumnFilterViewFactory implements TransformerViewFactory {
 				}
 			});
 			
-			nameComboBox = new JComboBox(new DynamicComboBoxModel<ColumnComboBoxElement>(nameComboBoxModel));
+			nameComboBox = style.createCombo(new DynamicComboBoxModel<ColumnComboBoxElement>(nameComboBoxModel));
 			nameComboBox.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent event) {
@@ -421,7 +425,7 @@ public class ColumnFilterViewFactory implements TransformerViewFactory {
 				}
 			});
 			
-			numericNegateComboBox = new BooleanComboBox("is", "is not");
+			numericNegateComboBox = new BooleanComboBox(style, "is", "is not");
 			numericNegateComboBox.addStateChangeListener(new StateChangeListener() {
 				@Override
 				public void stateChanged(boolean is) {
@@ -429,7 +433,7 @@ public class ColumnFilterViewFactory implements TransformerViewFactory {
 				}
 			});
 			
-			booleanComboBox = new BooleanComboBox("true", "false");
+			booleanComboBox = new BooleanComboBox(style, "true", "false");
 			booleanComboBox.addStateChangeListener(new StateChangeListener() {
 				@Override
 				public void stateChanged(boolean isTrue) {
@@ -437,11 +441,11 @@ public class ColumnFilterViewFactory implements TransformerViewFactory {
 				}
 			});
 			
-			booleanLabel = new JLabel("is");
+			booleanLabel = style.createLabel("is");
 			booleanPanel = new JPanel();
 			booleanPanel.setOpaque(false);
 			booleanPanel.setLayout(new GridBagLayout());
-			booleanPanel.add(booleanLabel, new GridBagConstraints(0, 0, 1, 1, 0, 0, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
+			booleanPanel.add(booleanLabel, new GridBagConstraints(0, 0, 1, 1, 0, 0, GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
 			booleanPanel.add(booleanComboBox, new GridBagConstraints(1, 0, 1, 1, 0, 0, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
 			
 			spacerPanel = new JPanel();
@@ -451,7 +455,7 @@ public class ColumnFilterViewFactory implements TransformerViewFactory {
 			predicatePanel.setOpaque(false);
 			predicatePanel.setLayout(new GridBagLayout());
 			
-			rangeChooser = new RangeChooser(controller.chooserController);
+			rangeChooser = new RangeChooser(style, controller.chooserController);
 			
 			setLayout(new GridBagLayout());
 			controller.initializeView(this);

@@ -17,6 +17,7 @@ import org.cytoscape.filter.internal.ModelUtil;
 import org.cytoscape.filter.internal.filters.composite.CompositeFilterController;
 import org.cytoscape.filter.internal.filters.composite.CompositeFilterPanel;
 import org.cytoscape.filter.internal.filters.composite.CompositeSeparator;
+import org.cytoscape.filter.internal.view.look.FilterPanelStyle;
 import org.cytoscape.filter.model.CompositeFilter;
 import org.cytoscape.filter.model.Filter;
 import org.cytoscape.filter.model.NamedTransformer;
@@ -30,20 +31,18 @@ import org.cytoscape.work.TaskManager;
 public class FilterPanelController extends AbstractPanelController<FilterElement, FilterPanel> {
 	private TransformerManager transformerManager;
 	private TransformerViewManager transformerViewManager;
-	private IconManager iconManager;
 	
 	private ModelMonitor modelMonitor;
 
 	public FilterPanelController(TransformerManager transformerManager, TransformerViewManager transformerViewManager,
 			FilterWorker worker, ModelMonitor modelMonitor, FilterIO filterIo, TaskManager<?, ?> taskManager,
-			IconManager iconManager) {
-		super(worker, transformerManager, transformerViewManager, filterIo, taskManager);
+			FilterPanelStyle style, IconManager iconManager) {
+		super(worker, transformerManager, transformerViewManager, filterIo, taskManager, style, iconManager);
 		worker.setController(this);
 		
 		this.transformerManager = transformerManager;
 		this.transformerViewManager = transformerViewManager;
 		this.modelMonitor = modelMonitor;
-		this.iconManager = iconManager;
 		
 		worker.setController(this);
 		addNewElement("Default filter");
@@ -61,7 +60,7 @@ public class FilterPanelController extends AbstractPanelController<FilterElement
 		if (filter instanceof CompositeFilter) {
 			final String addButtonTT = transformerViewManager.getAddButtonTooltip(filter);
 			CompositeFilterController controller = CompositeFilterController.createFor(view, addButtonTT);
-			return new CompositeFilterPanel<FilterPanel>(parent, this, controller, (CompositeFilter<CyNetwork, CyIdentifiable>) filter, depth, iconManager);
+			return new CompositeFilterPanel<FilterPanel>(parent, this, controller, (CompositeFilter<CyNetwork, CyIdentifiable>) filter, depth);
 		}
 		
 		return view;
@@ -83,7 +82,7 @@ public class FilterPanelController extends AbstractPanelController<FilterElement
 	
 	private void setFilter(CompositeFilter<CyNetwork, CyIdentifiable> filter, FilterPanel parent) {
 		CompositeFilterPanel<FilterPanel> root = (CompositeFilterPanel<FilterPanel>) createView(parent, filter, 0);
-		new TransformerElementViewModel<FilterPanel>(root, this, parent, iconManager);
+		new TransformerElementViewModel<FilterPanel>(root, this, parent);
 		parent.setRootPanel(root);
 	}
 
@@ -411,7 +410,7 @@ public class FilterPanelController extends AbstractPanelController<FilterElement
 				group.addListener(worker);
 				
 				CompositeFilterPanel groupView = (CompositeFilterPanel) createView(parent, group, targetParent.getDepth() + 1);
-				TransformerElementViewModel<FilterPanel> groupViewModel = new TransformerElementViewModel<FilterPanel>(groupView, this, parent, iconManager);
+				TransformerElementViewModel<FilterPanel> groupViewModel = new TransformerElementViewModel<FilterPanel>(groupView, this, parent);
 				targetParent.addViewModel(targetIndex, group, groupViewModel);
 				
 				groupView.addViewModel(targetFilter, targetViewModel);

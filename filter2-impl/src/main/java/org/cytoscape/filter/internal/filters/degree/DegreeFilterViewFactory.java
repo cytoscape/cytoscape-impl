@@ -10,18 +10,18 @@ import java.util.List;
 
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 import org.cytoscape.filter.internal.ModelMonitor;
 import org.cytoscape.filter.internal.view.BooleanComboBox;
-import org.cytoscape.filter.internal.view.ComboItem;
 import org.cytoscape.filter.internal.view.BooleanComboBox.StateChangeListener;
+import org.cytoscape.filter.internal.view.ComboItem;
 import org.cytoscape.filter.internal.view.DynamicComboBoxModel;
 import org.cytoscape.filter.internal.view.Matcher;
 import org.cytoscape.filter.internal.view.RangeChooser;
 import org.cytoscape.filter.internal.view.RangeChooserController;
 import org.cytoscape.filter.internal.view.ViewUtil;
+import org.cytoscape.filter.internal.view.look.FilterPanelStyle;
 import org.cytoscape.filter.model.Transformer;
 import org.cytoscape.filter.predicates.Predicate;
 import org.cytoscape.filter.transformers.Transformers;
@@ -31,11 +31,14 @@ import org.cytoscape.model.CyEdge.Type;
 
 public class DegreeFilterViewFactory implements TransformerViewFactory {
 
-	List<ComboItem<Type>> edgeTypeComboBoxModel;
-	ModelMonitor modelMonitor;
+	private final List<ComboItem<Type>> edgeTypeComboBoxModel;
+	private final ModelMonitor modelMonitor;
 	
-	public DegreeFilterViewFactory(ModelMonitor modelMonitor) {
+	private final FilterPanelStyle style;
+	
+	public DegreeFilterViewFactory(FilterPanelStyle style, ModelMonitor modelMonitor) {
 		this.modelMonitor = modelMonitor;
+		this.style = style;
 		
 		edgeTypeComboBoxModel = new ArrayList<ComboItem<Type>>();
 		edgeTypeComboBoxModel.add(new ComboItem<>(Type.ANY, "In + Out"));
@@ -178,7 +181,7 @@ public class DegreeFilterViewFactory implements TransformerViewFactory {
 			
 			ViewUtil.configureFilterView(this);
 			
-			edgeTypeComboBox = new JComboBox<>(new DynamicComboBoxModel<ComboItem<Type>>(edgeTypeComboBoxModel));
+			edgeTypeComboBox = style.createCombo(new DynamicComboBoxModel<ComboItem<Type>>(edgeTypeComboBoxModel));
 			
 			edgeTypeComboBox.addActionListener(new ActionListener() {
 				@Override
@@ -188,7 +191,7 @@ public class DegreeFilterViewFactory implements TransformerViewFactory {
 				}
 			});
 			
-			isOrIsNotCombo = new BooleanComboBox("is", "is not");
+			isOrIsNotCombo = new BooleanComboBox(style, "is", "is not");
 			isOrIsNotCombo.addStateChangeListener(new StateChangeListener() {
 				@Override
 				public void stateChanged(boolean is) {
@@ -196,10 +199,10 @@ public class DegreeFilterViewFactory implements TransformerViewFactory {
 				}
 			});
 			
-			chooser = new RangeChooser(controller.chooserController);
+			chooser = new RangeChooser(style, controller.chooserController);
 			
 			setLayout(new GridBagLayout());
-			add(new JLabel("Degree"), new GridBagConstraints(0, 0, 1, 1, 0, 0, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
+			add(style.createLabel("Degree"), new GridBagConstraints(0, 0, 1, 1, 0, 0, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
 			add(edgeTypeComboBox, new GridBagConstraints(1, 0, 1, 1, 0, 0, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
 			add(isOrIsNotCombo, new GridBagConstraints(2, 0, 1, 1, 0, 0, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
 			add(chooser, new GridBagConstraints(0, 1, 3, 1, 1, 0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 3, 3), 0, 0));

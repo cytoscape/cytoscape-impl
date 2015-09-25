@@ -10,11 +10,19 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 import org.cytoscape.filter.internal.view.ViewUtil;
+import org.cytoscape.filter.internal.view.look.FilterPanelStyle;
 import org.cytoscape.filter.model.Transformer;
 import org.cytoscape.filter.transformers.Transformers;
 import org.cytoscape.filter.view.TransformerViewFactory;
 
 public class InteractionTransformerViewFactory implements TransformerViewFactory {
+	
+	private final FilterPanelStyle style;
+	
+	public InteractionTransformerViewFactory(FilterPanelStyle style) {
+		this.style = style;
+	}
+	
 	@Override
 	public String getId() {
 		return Transformers.INTERACTION_TRANSFORMER;
@@ -41,7 +49,7 @@ public class InteractionTransformerViewFactory implements TransformerViewFactory
 	}
 	
 	@SuppressWarnings("serial")
-	static class View extends JPanel {
+	class View extends JPanel {
 		private JCheckBox sourceCheckBox;
 		private JCheckBox targetCheckBox;
 
@@ -56,8 +64,8 @@ public class InteractionTransformerViewFactory implements TransformerViewFactory
 		public View(final Controller controller) {
 			ViewUtil.configureFilterView(this);
 			
-			JLabel label1 = new JLabel("Add");
-			sourceCheckBox = new JCheckBox("source");
+			JLabel label1 = style.createLabel("Add");
+			sourceCheckBox = style.createCheckBox("source");
 			sourceCheckBox.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent event) {
@@ -66,8 +74,8 @@ public class InteractionTransformerViewFactory implements TransformerViewFactory
 			});
 			sourceCheckBox.setOpaque(false);
 			
-			JLabel label2 = new JLabel("and/or");
-			targetCheckBox = new JCheckBox("target");
+			JLabel label2 = style.createLabel("and/or");
+			targetCheckBox = style.createCheckBox("target");
 			targetCheckBox.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent event) {
@@ -76,7 +84,7 @@ public class InteractionTransformerViewFactory implements TransformerViewFactory
 			});
 			targetCheckBox.setOpaque(false);
 			
-			JLabel label3 = new JLabel("nodes from upstream edges.");
+			JLabel label3 = style.createLabel("nodes from upstream edges.");
 			
 			GroupLayout layout = new GroupLayout(this);
 			layout.setHorizontalGroup(layout.createParallelGroup()

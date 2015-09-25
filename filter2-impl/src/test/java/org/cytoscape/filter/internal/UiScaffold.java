@@ -32,6 +32,8 @@ import org.cytoscape.filter.internal.view.TransformerPanel;
 import org.cytoscape.filter.internal.view.TransformerPanelController;
 import org.cytoscape.filter.internal.view.TransformerViewManager;
 import org.cytoscape.filter.internal.view.TransformerWorker;
+import org.cytoscape.filter.internal.view.look.FilterPanelStyle;
+import org.cytoscape.filter.internal.view.look.StandardStyle;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
@@ -91,22 +93,23 @@ public class UiScaffold {
 		ModelMonitor modelMonitor = new ModelMonitor();
 		modelMonitor.handleEvent(new SetCurrentNetworkEvent(applicationManager, network));
 		
+		FilterPanelStyle style = new StandardStyle();
 		TransformerViewManager transformerViewManager = new TransformerViewManager(transformerManager);
-		transformerViewManager.registerTransformerViewFactory(new ColumnFilterViewFactory(modelMonitor, iconManager), properties);
-		transformerViewManager.registerTransformerViewFactory(new DegreeFilterViewFactory(modelMonitor), properties);
-		transformerViewManager.registerTransformerViewFactory(new TopologyFilterViewFactory(), properties);
-		transformerViewManager.registerTransformerViewFactory(new InteractionTransformerViewFactory(), properties);
+		transformerViewManager.registerTransformerViewFactory(new ColumnFilterViewFactory(style, modelMonitor, iconManager), properties);
+		transformerViewManager.registerTransformerViewFactory(new DegreeFilterViewFactory(style, modelMonitor), properties);
+		transformerViewManager.registerTransformerViewFactory(new TopologyFilterViewFactory(style), properties);
+		transformerViewManager.registerTransformerViewFactory(new InteractionTransformerViewFactory(style), properties);
 
 		LazyWorkQueue queue = new LazyWorkQueue();
 		
 		FilterWorker filterWorker = new FilterWorker(queue, applicationManager);
 		FilterIO filterIo = null;
 		TaskManager<?, ?> taskManager = null;
-		FilterPanelController filterPanelController = new FilterPanelController(transformerManager, transformerViewManager, filterWorker, modelMonitor, filterIo, taskManager, iconManager);
+		FilterPanelController filterPanelController = new FilterPanelController(transformerManager, transformerViewManager, filterWorker, modelMonitor, filterIo, taskManager, style, iconManager);
 		FilterPanel filterPanel = new FilterPanel(filterPanelController, iconManager, filterWorker);
 		
 		TransformerWorker transformerWorker = new TransformerWorker(queue, applicationManager, transformerManager);
-		TransformerPanelController transformerPanelController = new TransformerPanelController(transformerManager, transformerViewManager, filterPanelController, transformerWorker, filterIo, taskManager, iconManager);
+		TransformerPanelController transformerPanelController = new TransformerPanelController(transformerManager, transformerViewManager, filterPanelController, transformerWorker, filterIo, taskManager, style, iconManager);
 		TransformerPanel transformerPanel = new TransformerPanel(transformerPanelController, iconManager, transformerWorker);
 		
 		SelectPanel selectPanel = new SelectPanel(filterPanel, transformerPanel);

@@ -19,6 +19,7 @@ import org.cytoscape.filter.internal.transformers.adjacency.AdjacencyTransformer
 import org.cytoscape.filter.internal.transformers.adjacency.AdjacencyTransformer.What;
 import org.cytoscape.filter.internal.view.ComboItem;
 import org.cytoscape.filter.internal.view.ViewUtil;
+import org.cytoscape.filter.internal.view.look.FilterPanelStyle;
 import org.cytoscape.filter.model.Transformer;
 import org.cytoscape.filter.model.TransformerListener;
 import org.cytoscape.filter.transformers.Transformers;
@@ -28,9 +29,11 @@ import org.cytoscape.util.swing.LookAndFeelUtil;
 
 public class AdjacencyTransformerViewFactory implements TransformerViewFactory {
 
-	private IconManager iconManager;
+	private final IconManager iconManager;
+	private final FilterPanelStyle style;
 	
-	public AdjacencyTransformerViewFactory(IconManager iconManager) {
+	public AdjacencyTransformerViewFactory(FilterPanelStyle style, IconManager iconManager) {
+		this.style = style;
 		this.iconManager = iconManager;
 	}
 	
@@ -57,20 +60,20 @@ public class AdjacencyTransformerViewFactory implements TransformerViewFactory {
 	class UpdateLayoutListener implements TransformerListener {
 		private final AdjacencyTransformer model;
 		private final View view;
-		private int savedLength;
+		private int savedCount;
 		
 		public UpdateLayoutListener(View view, AdjacencyTransformer model) {
 			this.view = view;
 			this.model = model;
-			this.savedLength = model.getFilterCount();
+			this.savedCount = model.getFilterCount();
 		}
 		
 		@Override
 		public synchronized void handleSettingsChanged() {
-			if(savedLength != model.getFilterCount()) {
+			if(savedCount != model.getFilterCount()) {
 				view.updateLayout();
 			}
-			savedLength = model.getFilterCount();
+			savedCount = model.getFilterCount();
 		}
 	}
 	
@@ -95,36 +98,36 @@ public class AdjacencyTransformerViewFactory implements TransformerViewFactory {
 			ViewUtil.configureFilterView(this);
 			
 			// Create UI controls
-			label1 = new JLabel("Take nodes and");
+			label1 = style.createLabel("Take nodes and");
 			
-			actionCombo = new JComboBox<>();
+			actionCombo = style.createCombo();
 			actionCombo.addItem(new ComboItem<>(Action.ADD, "add"));
 			actionCombo.addItem(new ComboItem<>(Action.REPLACE, "replace with"));
 			
-			outputCombo = new JComboBox<>();
+			outputCombo = style.createCombo();
 			outputCombo.addItem(new ComboItem<>(What.NODES_AND_EDGES, "adjacent nodes and edges"));
 			outputCombo.addItem(new ComboItem<>(What.NODES, "adjacent nodes"));
 			outputCombo.addItem(new ComboItem<>(What.EDGES, "adjacent edges"));
 			
-			arrowLabel = new JLabel(IconManager.ICON_CARET_LEFT);
+			arrowLabel = style.createLabel(IconManager.ICON_CARET_LEFT);
 			arrowLabel.setFont(iconManager.getIconFont(16.0f));
 			
-			label2 = new JLabel("where the adjacent edges are");
+			label2 = style.createLabel("where the adjacent edges are");
 			
-			edgesAreCombo = new JComboBox<>();
+			edgesAreCombo = style.createCombo();
 			edgesAreCombo.addItem(new ComboItem<>(EdgesAre.INCOMING_AND_OUTGOING, "incoming and outgoing"));
 			edgesAreCombo.addItem(new ComboItem<>(EdgesAre.INCOMING, "incoming"));
 			edgesAreCombo.addItem(new ComboItem<>(EdgesAre.OUTGOING, "outgoing"));
 			
-			label3a = new JLabel("and the");
-			label3b = new JLabel("where the");
+			label3a = style.createLabel("and the");
+			label3b = style.createLabel("where the");
 			
-			filterTargetCombo = new JComboBox<>();
+			filterTargetCombo = style.createCombo();
 			filterTargetCombo.addItem(new ComboItem<>(What.NODES_AND_EDGES, "adjacent nodes and edges"));
 			filterTargetCombo.addItem(new ComboItem<>(What.NODES, "adjacent nodes"));
 			filterTargetCombo.addItem(new ComboItem<>(What.EDGES, "adjacent edges"));
 			
-			label4 = new JLabel("match the filter:");
+			label4 = style.createLabel("match the filter:");
 			
 			
 			// Initialize UI

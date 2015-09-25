@@ -48,6 +48,8 @@ import org.cytoscape.filter.internal.view.TransformerPanel;
 import org.cytoscape.filter.internal.view.TransformerPanelController;
 import org.cytoscape.filter.internal.view.TransformerViewManager;
 import org.cytoscape.filter.internal.view.TransformerWorker;
+import org.cytoscape.filter.internal.view.look.FilterPanelStyle;
+import org.cytoscape.filter.internal.view.look.FlatStyle;
 import org.cytoscape.filter.model.ElementTransformerFactory;
 import org.cytoscape.filter.model.FilterFactory;
 import org.cytoscape.filter.model.HolisticTransformerFactory;
@@ -95,12 +97,13 @@ public class CyActivator extends AbstractCyActivator {
 		registerAllServices(context, modelMonitor, new Properties());
 		
 		IconManager iconManager = getService(context, IconManager.class);
+		FilterPanelStyle style = new FlatStyle();
 		
-		registerService(context, new DegreeFilterViewFactory(modelMonitor), TransformerViewFactory.class, new Properties());
-		registerService(context, new ColumnFilterViewFactory(modelMonitor, iconManager), TransformerViewFactory.class, new Properties());
-		registerService(context, new TopologyFilterViewFactory(), TransformerViewFactory.class, TopologyFilterViewFactory.getServiceProperties());
-		registerService(context, new InteractionTransformerViewFactory(), TransformerViewFactory.class, new Properties());
-		registerService(context, new AdjacencyTransformerViewFactory(iconManager), TransformerViewFactory.class, AdjacencyTransformerViewFactory.getServiceProperties());
+		registerService(context, new DegreeFilterViewFactory(style, modelMonitor), TransformerViewFactory.class, new Properties());
+		registerService(context, new ColumnFilterViewFactory(style, modelMonitor, iconManager), TransformerViewFactory.class, new Properties());
+		registerService(context, new TopologyFilterViewFactory(style), TransformerViewFactory.class, TopologyFilterViewFactory.getServiceProperties());
+		registerService(context, new InteractionTransformerViewFactory(style), TransformerViewFactory.class, new Properties());
+		registerService(context, new AdjacencyTransformerViewFactory(style, iconManager), TransformerViewFactory.class, AdjacencyTransformerViewFactory.getServiceProperties());
 		
 		LazyWorkQueue queue = new LazyWorkQueue();
 		CyApplicationManager applicationManager = getService(context, CyApplicationManager.class);
@@ -112,11 +115,11 @@ public class CyActivator extends AbstractCyActivator {
 		TaskManager<?, ?> taskManager = getService(context, TaskManager.class);
 
 		FilterWorker filterWorker = new FilterWorker(queue, applicationManager);
-		FilterPanelController filterPanelController = new FilterPanelController(transformerManager, transformerViewManager, filterWorker, modelMonitor, filterIo, taskManager, iconManager);
+		FilterPanelController filterPanelController = new FilterPanelController(transformerManager, transformerViewManager, filterWorker, modelMonitor, filterIo, taskManager, style, iconManager);
 		FilterPanel filterPanel = new FilterPanel(filterPanelController, iconManager, filterWorker);
 		
 		TransformerWorker transformerWorker = new TransformerWorker(queue, applicationManager, transformerManager);
-		TransformerPanelController transformerPanelController = new TransformerPanelController(transformerManager, transformerViewManager, filterPanelController, transformerWorker, filterIo, taskManager, iconManager);
+		TransformerPanelController transformerPanelController = new TransformerPanelController(transformerManager, transformerViewManager, filterPanelController, transformerWorker, filterIo, taskManager, style, iconManager);
 		TransformerPanel transformerPanel = new TransformerPanel(transformerPanelController, iconManager, transformerWorker);
 	
 		CytoPanelComponent selectPanel = new FilterCytoPanelComponent(transformerViewManager, applicationManager, iconManager, modelMonitor, filterPanel, transformerPanel);

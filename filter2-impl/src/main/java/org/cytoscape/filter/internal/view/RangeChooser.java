@@ -14,6 +14,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import org.cytoscape.filter.internal.prefuse.JRangeSlider;
+import org.cytoscape.filter.internal.view.look.FilterPanelStyle;
 
 @SuppressWarnings("serial")
 public class RangeChooser extends JPanel {
@@ -26,7 +27,7 @@ public class RangeChooser extends JPanel {
 	private JPanel spacerPanel;
 	private JLabel label3;
 
-	public RangeChooser(final RangeChooserController controller) {
+	public RangeChooser(FilterPanelStyle style, final RangeChooserController controller) {
 		slider = new JRangeSlider(controller.getSliderModel(), JRangeSlider.HORIZONTAL);
 		slider.addChangeListener(new ChangeListener() {
 			@Override
@@ -35,7 +36,7 @@ public class RangeChooser extends JPanel {
 			}
 		});
 		
-		minimumField = new JFormattedTextField(ViewUtil.createNumberFormatterFactory());
+		minimumField = style.createFormattedTextField(ViewUtil.createNumberFormatterFactory());
 		minimumField.setHorizontalAlignment(JTextField.TRAILING);
 		minimumField.setColumns(6);
 		minimumField.addPropertyChangeListener("value", new PropertyChangeListener() {
@@ -45,7 +46,7 @@ public class RangeChooser extends JPanel {
 			}
 		});
 
-		maximumField = new JFormattedTextField(ViewUtil.createNumberFormatterFactory());
+		maximumField = style.createFormattedTextField(ViewUtil.createNumberFormatterFactory());
 		maximumField.setHorizontalAlignment(JTextField.TRAILING);
 		maximumField.setColumns(6);
 		maximumField.addPropertyChangeListener("value", new PropertyChangeListener() {
@@ -55,9 +56,9 @@ public class RangeChooser extends JPanel {
 			}
 		});
 
-		label1 = new JLabel("between ");
-		label2 = new JLabel(" and ");
-		label3 = new JLabel(" inclusive.");
+		label1 = style.createLabel("between ");
+		label2 = style.createLabel(" and ");
+		label3 = style.createLabel(" inclusive.");
 
 		spacerPanel = new JPanel();
 		spacerPanel.setOpaque(false);

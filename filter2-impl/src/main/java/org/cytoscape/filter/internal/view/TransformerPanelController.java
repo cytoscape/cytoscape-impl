@@ -21,10 +21,11 @@ import org.cytoscape.filter.internal.filters.composite.CompositeFilterPanel;
 import org.cytoscape.filter.internal.filters.composite.CompositeSeparator;
 import org.cytoscape.filter.internal.filters.composite.CompositeTransformerPanel;
 import org.cytoscape.filter.internal.view.TransformerViewManager.TransformerViewElement;
+import org.cytoscape.filter.internal.view.look.FilterPanelStyle;
 import org.cytoscape.filter.model.CompositeFilter;
-import org.cytoscape.filter.model.SubFilterTransformer;
 import org.cytoscape.filter.model.Filter;
 import org.cytoscape.filter.model.NamedTransformer;
+import org.cytoscape.filter.model.SubFilterTransformer;
 import org.cytoscape.filter.model.Transformer;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
@@ -34,18 +35,16 @@ import org.cytoscape.work.TaskManager;
 public class TransformerPanelController extends AbstractPanelController<TransformerElement, TransformerPanel> {
 	private TransformerManager transformerManager;
 	private TransformerViewManager transformerViewManager;
-	private IconManager iconManager;
 	private DynamicComboBoxModel<FilterElement> startWithComboBoxModel;
 	
 	public TransformerPanelController(TransformerManager transformerManager, 
 			TransformerViewManager transformerViewManager, FilterPanelController filterPanelController, 
-			TransformerWorker worker, FilterIO filterIo, TaskManager<?, ?> taskManager, IconManager iconManager) {
-		super(worker, transformerManager, transformerViewManager, filterIo, taskManager);
+			TransformerWorker worker, FilterIO filterIo, TaskManager<?, ?> taskManager, FilterPanelStyle style, IconManager iconManager) {
+		super(worker, transformerManager, transformerViewManager, filterIo, taskManager, style, iconManager);
 		worker.setController(this);
 		
 		this.transformerManager = transformerManager;
 		this.transformerViewManager = transformerViewManager;
-		this.iconManager = iconManager;
 
 		List<FilterElement> items = new ArrayList<FilterElement>();
 		items.add(new FilterElement("(Current Selection)", null));
@@ -70,7 +69,7 @@ public class TransformerPanelController extends AbstractPanelController<Transfor
 	
 	@Override
 	protected void handleElementSelected(TransformerElement selected, TransformerPanel panel) {
-		CompositeTransformerPanel root = new CompositeTransformerPanel(panel, this, selected.chain, iconManager);
+		CompositeTransformerPanel root = new CompositeTransformerPanel(panel, this, selected.chain, getIconManager());
 		panel.setRootPanel(root);
 	}
 
@@ -176,7 +175,7 @@ public class TransformerPanelController extends AbstractPanelController<Transfor
 			CompositeFilterController controller = CompositeFilterController.createFor(view, addButtonTT);
 			@SuppressWarnings("unchecked")
 			CompositeFilter<CyNetwork,CyIdentifiable> compositeFilter = ((SubFilterTransformer<CyNetwork, CyIdentifiable>) transformer).getCompositeFilter();
-			return new CompositeFilterPanel<TransformerPanel>(parent, this, controller, compositeFilter, depth, iconManager);
+			return new CompositeFilterPanel<TransformerPanel>(parent, this, controller, compositeFilter, depth);
 		}
 		
 		return view;
