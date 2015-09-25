@@ -14,8 +14,8 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 import org.cytoscape.filter.internal.ModelMonitor;
-import org.cytoscape.filter.internal.filters.degree.DegreeFilterView.EdgeTypeElement;
 import org.cytoscape.filter.internal.view.BooleanComboBox;
+import org.cytoscape.filter.internal.view.ComboItem;
 import org.cytoscape.filter.internal.view.BooleanComboBox.StateChangeListener;
 import org.cytoscape.filter.internal.view.DynamicComboBoxModel;
 import org.cytoscape.filter.internal.view.Matcher;
@@ -31,16 +31,16 @@ import org.cytoscape.model.CyEdge.Type;
 
 public class DegreeFilterViewFactory implements TransformerViewFactory {
 
-	List<EdgeTypeElement> edgeTypeComboBoxModel;
+	List<ComboItem<Type>> edgeTypeComboBoxModel;
 	ModelMonitor modelMonitor;
 	
 	public DegreeFilterViewFactory(ModelMonitor modelMonitor) {
 		this.modelMonitor = modelMonitor;
 		
-		edgeTypeComboBoxModel = new ArrayList<EdgeTypeElement>();
-		edgeTypeComboBoxModel.add(new EdgeTypeElement(Type.ANY, "In + Out"));
-		edgeTypeComboBoxModel.add(new EdgeTypeElement(Type.INCOMING, "In"));
-		edgeTypeComboBoxModel.add(new EdgeTypeElement(Type.OUTGOING, "Out"));
+		edgeTypeComboBoxModel = new ArrayList<ComboItem<Type>>();
+		edgeTypeComboBoxModel.add(new ComboItem<>(Type.ANY, "In + Out"));
+		edgeTypeComboBoxModel.add(new ComboItem<>(Type.INCOMING, "In"));
+		edgeTypeComboBoxModel.add(new ComboItem<>(Type.OUTGOING, "Out"));
 	}
 	
 	@Override
@@ -117,10 +117,10 @@ public class DegreeFilterViewFactory implements TransformerViewFactory {
 			view.getRangeChooser().getMinimumField().setText(low.toString());
 			view.getRangeChooser().getMaximumField().setText(high.toString());
 			
-			DynamicComboBoxModel.select(view.edgeTypeComboBox, 0, new Matcher<EdgeTypeElement>() {
+			DynamicComboBoxModel.select(view.edgeTypeComboBox, 0, new Matcher<ComboItem<Type>>() {
 				@Override
-				public boolean matches(EdgeTypeElement item) {
-					return filter.getEdgeType().equals(item.type);
+				public boolean matches(ComboItem<Type> item) {
+					return filter.getEdgeType().equals(item.getValue());
 				}
 			});
 			
@@ -168,7 +168,7 @@ public class DegreeFilterViewFactory implements TransformerViewFactory {
 	
 	@SuppressWarnings("serial")
 	class View extends JPanel implements DegreeFilterView, InteractivityChangedListener {
-		private JComboBox<EdgeTypeElement> edgeTypeComboBox;
+		private JComboBox<ComboItem<Type>> edgeTypeComboBox;
 		private Controller controller;
 		private RangeChooser chooser;
 		private BooleanComboBox isOrIsNotCombo;
@@ -178,13 +178,13 @@ public class DegreeFilterViewFactory implements TransformerViewFactory {
 			
 			ViewUtil.configureFilterView(this);
 			
-			edgeTypeComboBox = new JComboBox<>(new DynamicComboBoxModel<EdgeTypeElement>(edgeTypeComboBoxModel));
+			edgeTypeComboBox = new JComboBox<>(new DynamicComboBoxModel<ComboItem<Type>>(edgeTypeComboBoxModel));
 			
 			edgeTypeComboBox.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					EdgeTypeElement type = edgeTypeComboBox.getItemAt(edgeTypeComboBox.getSelectedIndex());
-					controller.setEdgeType(type.type);
+					ComboItem<Type> type = edgeTypeComboBox.getItemAt(edgeTypeComboBox.getSelectedIndex());
+					controller.setEdgeType(type.getValue());
 				}
 			});
 			

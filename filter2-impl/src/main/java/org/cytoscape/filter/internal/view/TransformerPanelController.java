@@ -16,9 +16,13 @@ import javax.swing.SwingUtilities;
 import org.cytoscape.filter.TransformerManager;
 import org.cytoscape.filter.internal.FilterIO;
 import org.cytoscape.filter.internal.ModelUtil;
+import org.cytoscape.filter.internal.filters.composite.CompositeFilterController;
+import org.cytoscape.filter.internal.filters.composite.CompositeFilterPanel;
 import org.cytoscape.filter.internal.filters.composite.CompositeSeparator;
 import org.cytoscape.filter.internal.filters.composite.CompositeTransformerPanel;
 import org.cytoscape.filter.internal.view.TransformerViewManager.TransformerViewElement;
+import org.cytoscape.filter.model.CompositeFilter;
+import org.cytoscape.filter.model.SubFilterTransformer;
 import org.cytoscape.filter.model.Filter;
 import org.cytoscape.filter.model.NamedTransformer;
 import org.cytoscape.filter.model.Transformer;
@@ -36,7 +40,7 @@ public class TransformerPanelController extends AbstractPanelController<Transfor
 	public TransformerPanelController(TransformerManager transformerManager, 
 			TransformerViewManager transformerViewManager, FilterPanelController filterPanelController, 
 			TransformerWorker worker, FilterIO filterIo, TaskManager<?, ?> taskManager, IconManager iconManager) {
-		super(worker, filterIo, taskManager);
+		super(worker, transformerManager, transformerViewManager, filterIo, taskManager);
 		worker.setController(this);
 		
 		this.transformerManager = transformerManager;
@@ -162,8 +166,20 @@ public class TransformerPanelController extends AbstractPanelController<Transfor
 		panel.updateLayout();
 	}
 
-	public JComponent createView(TransformerPanel transformerPanel, Transformer<CyNetwork, CyIdentifiable> transformer) {
-		return transformerViewManager.createView(transformer);
+	@Override
+	public JComponent createView(TransformerPanel parent, Transformer<CyNetwork, CyIdentifiable> transformer, int depth) {
+		// view will be null for CompositeFilterImpl and that's ok
+		JComponent view = transformerViewManager.createView(transformer);
+		
+		if (transformer instanceof SubFilterTransformer) {
+			final String addButtonTT = transformerViewManager.getAddButtonTooltip(transformer);
+			CompositeFilterController controller = CompositeFilterController.createFor(view, addButtonTT);
+			@SuppressWarnings("unchecked")
+			CompositeFilter<CyNetwork,CyIdentifiable> compositeFilter = ((SubFilterTransformer<CyNetwork, CyIdentifiable>) transformer).getCompositeFilter();
+			return new CompositeFilterPanel<TransformerPanel>(parent, this, controller, compositeFilter, depth, iconManager);
+		}
+		
+		return view;
 	}
 
 	public void handleApply(TransformerPanel transformerPanel) {

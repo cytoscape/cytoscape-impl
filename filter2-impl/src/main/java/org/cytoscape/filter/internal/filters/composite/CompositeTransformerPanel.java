@@ -65,7 +65,7 @@ public class CompositeTransformerPanel extends JPanel {
 		addButton = createAddChainEntryButton();
 
 		for (Transformer<CyNetwork, CyIdentifiable> transformer : model) {
-			JComponent component = transformerPanelController.createView(parent, transformer);
+			JComponent component = transformerPanelController.createView(parent, transformer, 0);
 			TransformerElementViewModel<TransformerPanel> viewModel = new TransformerElementViewModel<TransformerPanel>(component, transformerPanelController, parent, iconManager);
 			viewModels.put(transformer, viewModel);
 		}
@@ -107,6 +107,10 @@ public class CompositeTransformerPanel extends JPanel {
 
 		for (Transformer<CyNetwork, CyIdentifiable> transformer : model) {
 			final TransformerElementViewModel<TransformerPanel> viewModel = viewModels.get(transformer);
+			if (viewModel.view instanceof CompositeFilterPanel) {
+				CompositeFilterPanel<?> panel = (CompositeFilterPanel<?>) viewModel.view;
+				panel.updateLayout();
+			}
 			
 			checkBoxGroup.addGroup(layout.createSequentialGroup()
 				.addComponent(viewModel.deleteButton, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE)
@@ -141,7 +145,7 @@ public class CompositeTransformerPanel extends JPanel {
 	}
 
 	public void addTransformer(Transformer<CyNetwork, CyIdentifiable> transformer) {
-		JComponent component = transformerPanelController.createView(parent, transformer);
+		JComponent component = transformerPanelController.createView(parent, transformer, 0);
 		final TransformerElementViewModel<TransformerPanel> viewModel = new TransformerElementViewModel<TransformerPanel>(component, transformerPanelController, parent, iconManager);
 		addViewModel(transformer, viewModel);
 	}

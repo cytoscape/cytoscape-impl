@@ -24,9 +24,9 @@ import javax.swing.event.DocumentListener;
 
 import org.cytoscape.filter.internal.ModelMonitor;
 import org.cytoscape.filter.internal.filters.column.ColumnFilterView.ColumnComboBoxElement;
-import org.cytoscape.filter.internal.filters.column.ColumnFilterView.PredicateElement;
 import org.cytoscape.filter.internal.view.BooleanComboBox;
 import org.cytoscape.filter.internal.view.BooleanComboBox.StateChangeListener;
+import org.cytoscape.filter.internal.view.ComboItem;
 import org.cytoscape.filter.internal.view.DynamicComboBoxModel;
 import org.cytoscape.filter.internal.view.Matcher;
 import org.cytoscape.filter.internal.view.RangeChooser;
@@ -46,7 +46,7 @@ public class ColumnFilterViewFactory implements TransformerViewFactory {
 
 	ModelMonitor modelMonitor;
 	List<ColumnComboBoxElement> nameComboBoxModel;
-	List<PredicateElement> predicateComboBoxModel;
+	List<ComboItem<Predicate>> predicateComboBoxModel;
 	private IconManager iconManager;
 	
 	public ColumnFilterViewFactory(ModelMonitor modelMonitor, IconManager iconManager) {
@@ -55,12 +55,12 @@ public class ColumnFilterViewFactory implements TransformerViewFactory {
 		
 		nameComboBoxModel = modelMonitor.getColumnComboBoxModel();
 		
-		predicateComboBoxModel = new ArrayList<PredicateElement>();
-		predicateComboBoxModel.add(new PredicateElement(Predicate.CONTAINS, "contains"));
-		predicateComboBoxModel.add(new PredicateElement(Predicate.DOES_NOT_CONTAIN, "doesn't contain"));
-		predicateComboBoxModel.add(new PredicateElement(Predicate.IS, "is"));
-		predicateComboBoxModel.add(new PredicateElement(Predicate.IS_NOT, "is not"));
-		predicateComboBoxModel.add(new PredicateElement(Predicate.REGEX, "matches regex"));
+		predicateComboBoxModel = new ArrayList<>();
+		predicateComboBoxModel.add(new ComboItem<>(Predicate.CONTAINS, "contains"));
+		predicateComboBoxModel.add(new ComboItem<>(Predicate.DOES_NOT_CONTAIN, "doesn't contain"));
+		predicateComboBoxModel.add(new ComboItem<>(Predicate.IS, "is"));
+		predicateComboBoxModel.add(new ComboItem<>(Predicate.IS_NOT, "is not"));
+		predicateComboBoxModel.add(new ComboItem<>(Predicate.REGEX, "matches regex"));
 	}
 	
 	@Override
@@ -223,7 +223,7 @@ public class ColumnFilterViewFactory implements TransformerViewFactory {
 			
 			// update the filter to match what's in the view, then show the view
 			if (modelMonitor.checkType(selected.name, selected.columnType, String.class)) {
-				Predicate predicate = ((PredicateElement)view.getPredicateComboBox().getSelectedItem()).predicate;
+				Predicate predicate = ((ComboItem<Predicate>)view.getPredicateComboBox().getSelectedItem()).getValue();
 				filter.setPredicateAndCriterion(predicate, view.getField().getText());
 				view.handleStringColumnSelected();
 				chooserController.setInteractive(false, rangeChooser);
@@ -255,10 +255,10 @@ public class ColumnFilterViewFactory implements TransformerViewFactory {
 			if (criterion instanceof String) {
 				String str = (String)criterion;
 				view.getField().setText(str);
-				DynamicComboBoxModel.select(view.getPredicateComboBox(), -1, new Matcher<PredicateElement>() {
+				DynamicComboBoxModel.select(view.getPredicateComboBox(), -1, new Matcher<ComboItem<Predicate>>() {
 					@Override
-					public boolean matches(PredicateElement item) {
-						return item.predicate.equals(filter.getPredicate());
+					public boolean matches(ComboItem<Predicate> item) {
+						return item.getValue().equals(filter.getPredicate());
 					}
 				});
 				view.handleStringColumnSelected();
@@ -398,15 +398,15 @@ public class ColumnFilterViewFactory implements TransformerViewFactory {
 			});
 			caseSensitiveCheckBox.setOpaque(false);
 			
-			predicateComboBox = new JComboBox(new DynamicComboBoxModel<PredicateElement>(predicateComboBoxModel));
+			predicateComboBox = new JComboBox(new DynamicComboBoxModel<ComboItem<Predicate>>(predicateComboBoxModel));
 			predicateComboBox.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent event) {
-					PredicateElement selected = (PredicateElement) predicateComboBox.getSelectedItem();
+					ComboItem<Predicate> selected = (ComboItem<Predicate>) predicateComboBox.getSelectedItem();
 					if (selected == null) {
 						return;
 					}
-					controller.setPredicate(View.this, selected.predicate);
+					controller.setPredicate(View.this, selected.getValue());
 				}
 			});
 			

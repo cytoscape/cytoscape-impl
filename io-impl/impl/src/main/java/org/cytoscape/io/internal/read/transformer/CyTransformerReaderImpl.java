@@ -11,6 +11,7 @@ import org.cytoscape.filter.TransformerManager;
 import org.cytoscape.filter.model.CompositeFilter;
 import org.cytoscape.filter.model.Filter;
 import org.cytoscape.filter.model.NamedTransformer;
+import org.cytoscape.filter.model.SubFilterTransformer;
 import org.cytoscape.filter.model.Transformer;
 import org.cytoscape.io.internal.util.FilterIO;
 import org.cytoscape.io.read.CyTransformerReader;
@@ -91,6 +92,10 @@ public class CyTransformerReaderImpl implements CyTransformerReader {
 		
 		if (transformer instanceof CompositeFilter) {
 			readCompositeFilter(parser, (CompositeFilter<?, ?>) transformer);
+		}
+		if (transformer instanceof SubFilterTransformer) {
+			SubFilterTransformer<?,?> sft = (SubFilterTransformer<?,?>) transformer;
+			readCompositeFilter(parser, sft.getCompositeFilter());
 		}
 		
 		assertNextToken(parser, JsonToken.END_OBJECT);

@@ -23,7 +23,7 @@ import org.cytoscape.util.swing.IconManager;
 @SuppressWarnings("serial")
 public class FilterPanel extends AbstractPanel<FilterElement, FilterPanelController> {
 	
-	private CompositeFilterPanel root;
+	private CompositeFilterPanel<FilterPanel> root;
 	private JCheckBox applyAutomaticallyCheckBox;
 
 	public FilterPanel(final FilterPanelController controller, IconManager iconManager, final FilterWorker worker) {
@@ -69,16 +69,16 @@ public class FilterPanel extends AbstractPanel<FilterElement, FilterPanelControl
 		
 		// We're passing in a CompositeFilter so we can assume we're getting
 		// back a CompositeFilterPanel.
-		CompositeFilterPanel panel = (CompositeFilterPanel) controller.createView(this, filter, 0);
+		CompositeFilterPanel<FilterPanel> panel = (CompositeFilterPanel<FilterPanel>) controller.createView(this, filter, 0);
 		new TransformerElementViewModel<FilterPanel>(panel, controller, this, iconManager);
 		setRootPanel(panel);
 	}
 
-	CompositeFilterPanel getRootPanel() {
+	CompositeFilterPanel<FilterPanel> getRootPanel() {
 		return root;
 	}
 
-	public void setRootPanel(CompositeFilterPanel panel) {
+	public void setRootPanel(CompositeFilterPanel<FilterPanel> panel) {
 		root = panel;
 		scrollPane.setViewportView(root);
 		

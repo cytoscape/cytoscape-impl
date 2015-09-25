@@ -1,6 +1,5 @@
 package org.cytoscape.filter.internal.transformers.interaction;
 
-import org.cytoscape.filter.model.ElementTransformer;
 import org.cytoscape.filter.model.ElementTransformerFactory;
 import org.cytoscape.filter.transformers.Transformers;
 import org.cytoscape.model.CyIdentifiable;
@@ -13,7 +12,7 @@ public class InteractionTransformerFactory implements ElementTransformerFactory<
 	}
 
 	@Override
-	public ElementTransformer<CyNetwork, CyIdentifiable> createElementTransformer() {
+	public InteractionTransformer createElementTransformer() {
 		return new InteractionTransformer();
 	}
 }

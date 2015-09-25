@@ -36,6 +36,8 @@ import org.cytoscape.filter.internal.filters.degree.DegreeFilterFactory;
 import org.cytoscape.filter.internal.filters.degree.DegreeFilterViewFactory;
 import org.cytoscape.filter.internal.filters.topology.TopologyFilterFactory;
 import org.cytoscape.filter.internal.filters.topology.TopologyFilterViewFactory;
+import org.cytoscape.filter.internal.transformers.adjacency.AdjacencyTransformerFactory;
+import org.cytoscape.filter.internal.transformers.adjacency.AdjacencyTransformerViewFactory;
 import org.cytoscape.filter.internal.transformers.interaction.InteractionTransformerFactory;
 import org.cytoscape.filter.internal.transformers.interaction.InteractionTransformerViewFactory;
 import org.cytoscape.filter.internal.view.FilterPanel;
@@ -87,6 +89,7 @@ public class CyActivator extends AbstractCyActivator {
 		
 		// Transformers
 		registerService(context, new InteractionTransformerFactory(), ElementTransformerFactory.class, new Properties());
+		registerService(context, new AdjacencyTransformerFactory(), ElementTransformerFactory.class, new Properties());
 		
 		ModelMonitor modelMonitor = new ModelMonitor();
 		registerAllServices(context, modelMonitor, new Properties());
@@ -95,8 +98,9 @@ public class CyActivator extends AbstractCyActivator {
 		
 		registerService(context, new DegreeFilterViewFactory(modelMonitor), TransformerViewFactory.class, new Properties());
 		registerService(context, new ColumnFilterViewFactory(modelMonitor, iconManager), TransformerViewFactory.class, new Properties());
-		registerService(context, new InteractionTransformerViewFactory(), TransformerViewFactory.class, new Properties());
 		registerService(context, new TopologyFilterViewFactory(), TransformerViewFactory.class, TopologyFilterViewFactory.getServiceProperties());
+		registerService(context, new InteractionTransformerViewFactory(), TransformerViewFactory.class, new Properties());
+		registerService(context, new AdjacencyTransformerViewFactory(iconManager), TransformerViewFactory.class, AdjacencyTransformerViewFactory.getServiceProperties());
 		
 		LazyWorkQueue queue = new LazyWorkQueue();
 		CyApplicationManager applicationManager = getService(context, CyApplicationManager.class);

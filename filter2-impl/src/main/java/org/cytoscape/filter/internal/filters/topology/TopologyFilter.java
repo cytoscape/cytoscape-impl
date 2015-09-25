@@ -6,6 +6,7 @@ import org.cytoscape.filter.internal.predicates.PredicateDelegates;
 import org.cytoscape.filter.model.AbstractTransformer;
 import org.cytoscape.filter.model.CompositeFilter;
 import org.cytoscape.filter.model.Filter;
+import org.cytoscape.filter.model.TransformerListener;
 import org.cytoscape.filter.predicates.Predicate;
 import org.cytoscape.filter.transformers.Transformers;
 import org.cytoscape.model.CyEdge;
@@ -16,7 +17,9 @@ import org.cytoscape.work.Tunable;
 
 import cern.colt.map.tlong.OpenLongIntHashMap;
 
-public class TopologyFilter extends AbstractTransformer<CyNetwork,CyIdentifiable> implements CompositeFilter<CyNetwork,CyIdentifiable> {
+public class TopologyFilter extends AbstractTransformer<CyNetwork,CyIdentifiable> 
+                            implements CompositeFilter<CyNetwork,CyIdentifiable> {
+	
 	private Integer distance;
 	private Integer threshold;
 	private Predicate predicate;
@@ -28,6 +31,11 @@ public class TopologyFilter extends AbstractTransformer<CyNetwork,CyIdentifiable
 	public TopologyFilter() {
 		neighbourFilter = new CompositeFilterImpl<>(CyNetwork.class,CyIdentifiable.class);
 		neighbourFilter.setType(CompositeFilter.Type.ALL); // ALL accepts if empty
+		neighbourFilter.addListener(new TransformerListener() {
+			public void handleSettingsChanged() {
+				notifyListeners();
+			}
+		});
 	}
 	
 	@Tunable
@@ -132,13 +140,11 @@ public class TopologyFilter extends AbstractTransformer<CyNetwork,CyIdentifiable
 	@Override
 	public void append(Filter<CyNetwork, CyIdentifiable> filter) {
 		neighbourFilter.append(filter);
-		notifyListeners();
 	}
 
 	@Override
 	public void insert(int index, Filter<CyNetwork, CyIdentifiable> filter) {
 		neighbourFilter.insert(index, filter);
-		notifyListeners();
 	}
 
 	@Override
@@ -148,11 +154,7 @@ public class TopologyFilter extends AbstractTransformer<CyNetwork,CyIdentifiable
 
 	@Override
 	public Filter<CyNetwork, CyIdentifiable> remove(int index) {
-		try {
-			return neighbourFilter.remove(index);
-		} finally {
-			notifyListeners();
-		}
+		return neighbourFilter.remove(index);
 	}
 
 	@Override
@@ -174,8 +176,6 @@ public class TopologyFilter extends AbstractTransformer<CyNetwork,CyIdentifiable
 	@Override
 	public void setType(CompositeFilter.Type type) {
 		neighbourFilter.setType(type);
-		notifyListeners();
 	}
-
-
+	
 }

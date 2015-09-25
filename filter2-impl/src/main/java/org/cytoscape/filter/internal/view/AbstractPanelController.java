@@ -1,6 +1,8 @@
 package org.cytoscape.filter.internal.view;
 
 import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -8,13 +10,20 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.swing.JComponent;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
+import javax.swing.JPopupMenu;
 import javax.swing.JProgressBar;
 
+import org.cytoscape.filter.TransformerManager;
 import org.cytoscape.filter.internal.FilterIO;
+import org.cytoscape.filter.internal.filters.composite.CompositeFilterPanel;
 import org.cytoscape.filter.internal.tasks.ExportNamedTransformersTask;
 import org.cytoscape.filter.internal.tasks.ImportNamedTransformersTask;
+import org.cytoscape.filter.internal.view.TransformerViewManager.TransformerViewElement;
+import org.cytoscape.filter.model.Filter;
 import org.cytoscape.filter.model.NamedTransformer;
+import org.cytoscape.filter.model.Transformer;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.work.Task;
@@ -30,6 +39,9 @@ public abstract class AbstractPanelController<T extends NamedElement, V extends 
 	
 	protected boolean isInteractive;
 
+	private final TransformerManager transformerManager;
+	private final TransformerViewManager transformerViewManager;
+	
 	private List<NamedElementListener<T>> namedElementListeners;
 	
 	protected DynamicComboBoxModel<T> namedElementComboBoxModel;
@@ -41,10 +53,13 @@ public abstract class AbstractPanelController<T extends NamedElement, V extends 
 	
 	final Logger logger;
 
-	public AbstractPanelController(AbstractWorker<?, ?> worker, FilterIO filterIo, TaskManager<?, ?> taskManager) {
+	public AbstractPanelController(AbstractWorker<?, ?> worker, TransformerManager transformerManager, TransformerViewManager transformerViewManager,
+			                       FilterIO filterIo, TaskManager<?, ?> taskManager) {
 		this.worker = worker;
 		this.filterIo = filterIo;
 		this.taskManager = taskManager;
+		this.transformerManager = transformerManager;
+		this.transformerViewManager = transformerViewManager;
 		
 		logger = LoggerFactory.getLogger(getClass());
 		
@@ -53,6 +68,34 @@ public abstract class AbstractPanelController<T extends NamedElement, V extends 
 		namedElementListeners = new CopyOnWriteArrayList<NamedElementListener<T>>();
 	}
 
+	public JPopupMenu createAddConditionMenu(final CompositeFilterPanel<?> panel) {
+		JPopupMenu menu = new JPopupMenu();
+		
+		for (final TransformerViewElement element : transformerViewManager.getFilterConditionViewElements()) {
+			JMenuItem mi = new JMenuItem(element.toString());
+			mi.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					handleAddCondition(element, panel);
+				}
+			});
+			menu.add(mi);
+		}
+		
+		return menu;
+	}
+	
+	private void handleAddCondition(TransformerViewElement element, CompositeFilterPanel<?> panel) {
+		// Assume the factory makes filters
+		Transformer<CyNetwork, CyIdentifiable> transformer = transformerManager.createTransformer(element.getId());
+		Filter<CyNetwork, CyIdentifiable> filter = (Filter<CyNetwork, CyIdentifiable>) transformer;
+		panel.addFilter(filter);
+		panel.updateLayout();
+		
+		filter.addListener(worker);
+		worker.handleFilterStructureChanged();
+	}
+	
 	public void addNamedElementListener(NamedElementListener<T> listener) {
 		if (namedElementListeners.contains(listener)) {
 			return;
@@ -314,6 +357,8 @@ public abstract class AbstractPanelController<T extends NamedElement, V extends 
 	
 	protected abstract void synchronize(V view);
 
+	public abstract JComponent createView(V parent, Transformer<CyNetwork, CyIdentifiable> transformer, int depth);
+	
 	public abstract void unregisterView(JComponent elementView);
 	
 	public abstract void addNamedTransformers(V view, NamedTransformer<CyNetwork, CyIdentifiable>... transformers);

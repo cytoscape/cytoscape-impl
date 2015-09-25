@@ -6,7 +6,6 @@ import javax.swing.JTextField;
 
 import org.cytoscape.filter.internal.view.BooleanComboBox;
 import org.cytoscape.filter.internal.view.RangeChooser;
-import org.cytoscape.filter.predicates.Predicate;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNode;
 
@@ -62,21 +61,6 @@ public interface ColumnFilterView {
 		}
 	}
 	
-	static class PredicateElement {
-		public final Predicate predicate;
-		public final String description;
-		
-		public PredicateElement(Predicate predicate, String description) {
-			this.predicate = predicate;
-			this.description = description;
-		}
-		
-		@Override
-		public String toString() {
-			return description;
-		}
-	}
-
 	JTextField getField();
 
 	JCheckBox getCaseSensitiveCheckBox();

@@ -59,7 +59,7 @@ public class ModelMonitor implements SetCurrentNetworkListener,
 	private final Object lock = new Object();
 	private ColumnComboBoxElement defaultColumnName;
 	
-	Map<DegreeFilterView, DegreeFilterController> degreeViews;
+	private Map<DegreeFilterView, DegreeFilterController> degreeViews;
 	private Map<ColumnFilterView, ColumnFilterController> columnViews;
 	private List<InteractivityChangedListener> interactivityChangedListeners;
 	

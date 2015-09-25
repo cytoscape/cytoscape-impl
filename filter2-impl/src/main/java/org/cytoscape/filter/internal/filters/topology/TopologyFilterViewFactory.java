@@ -144,7 +144,7 @@ public class TopologyFilterViewFactory implements TransformerViewFactory {
 			
 			label1 = new JLabel("Nodes with ");
 			label2 = new JLabel(" neighbours within distance ");
-			label3 = new JLabel("where the neighbours match");
+			label3 = new JLabel("where the neighbours match:");
 			
 			atLeastCombo = new BooleanComboBox("at least", "less than");
 			
