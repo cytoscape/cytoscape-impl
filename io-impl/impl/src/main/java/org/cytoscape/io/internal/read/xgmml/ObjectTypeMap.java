@@ -26,29 +26,30 @@ package org.cytoscape.io.internal.read.xgmml;
 
 import java.awt.List;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.regex.Pattern;
 
 import org.cytoscape.io.internal.util.SUIDUpdater;
+import org.cytoscape.io.internal.util.xgmml.ObjectType;
 
 public class ObjectTypeMap {
 
-    private Map<String, ObjectType> typeMap;
-
-    public ObjectTypeMap() {
-        typeMap = new HashMap<String, ObjectType>();
-
-        for (ObjectType type : ObjectType.values())
-            typeMap.put(type.getName(), type);
-    }
-
-    public ObjectType getType(final String name) {
-        final ObjectType type = typeMap.get(name);
+	// Should be only "1", but let's be nice and also accept "true"
+	// http://www.cs.rpi.edu/research/groups/pb/punin/public_html/XGMML/draft-xgmml-20001006.html#BT
+	// We also accept "yes", because of Cy2 "has_nested_network" attribute
+	private static Pattern TRUE_PATTERN = Pattern.compile("(?i)1|true|yes");
+	
+    public ObjectType fromXgmml(final String cyType, final String xgmmlType) {
+        ObjectType type = null;
         
-        if (type != null)
-            return type;
-        else
-            return ObjectType.NONE;
+        // First try to get the ObjectType from the custom "cy:type" (or "cy:elementType") attribute value
+        if (cyType != null && !cyType.isEmpty())
+        	type = ObjectType.fromCyValue(cyType);
+        
+        // Then try to get it from the standard (XGMML) "type" attribute, if necessary
+        if (type == null)
+        	type = ObjectType.fromXgmmlValue(xgmmlType);
+        
+        return type != null ? type : ObjectType.STRING;
     }
     
     /**
@@ -63,9 +64,9 @@ public class ObjectTypeMap {
 	        case LIST:    return List.class;
 	        case BOOLEAN: return Boolean.class;
 	        case REAL:    return SUIDUpdater.isUpdatable(name) ? Long.class : Double.class;
-	        case INTEGER: return Integer.class;
+	        case INTEGER: return SUIDUpdater.isUpdatable(name) ? Long.class : Integer.class;
+	        case LONG:    return Long.class;
 	        case STRING:
-	        case NONE:
 	        default:      return String.class;
 	    }
 	}
@@ -95,14 +96,20 @@ public class ObjectTypeMap {
 			}
 			break;
 		case INTEGER:
+			if (value != null) {
+				if (SUIDUpdater.isUpdatable(name))
+					typedValue = Long.valueOf(value);
+				else
+					typedValue = Integer.valueOf(value);
+			}
+			break;
+		case LONG:
 			if (value != null)
-				typedValue = Integer.valueOf(value);
+				typedValue = Long.valueOf(value);
 			break;
 		case STRING:
 			if (value != null) {
 				// Make sure we convert our newlines and tabs back
-//				typedValue = NEW_LINE_PATTERN.matcher(TAB_PATTERN.matcher(value).replaceFirst(TAB_STRING))
-//						.replaceFirst(NEW_LINE_STRING);
 				final String sAttr = value.replace("\\t", "\t");
 				typedValue = sAttr.replace("\\n", "\n");
 			}
@@ -117,10 +124,7 @@ public class ObjectTypeMap {
 	}
 	
     public static boolean fromXGMMLBoolean(final String s) {
-    	// Should be only "1", but let's be nice and also accept "true"
-    	// http://www.cs.rpi.edu/research/groups/pb/punin/public_html/XGMML/draft-xgmml-20001006.html#BT
-    	// We also accept "yes", because of Cy2 "has_nested_network" attribute
-    	return s != null && s.matches("(?i)1|true|yes");
+    	return s != null && TRUE_PATTERN.matcher(s).matches();
     }
 
     public static String toXGMMLBoolean(final Boolean value) {

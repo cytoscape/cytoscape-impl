@@ -45,6 +45,7 @@ import org.cytoscape.io.internal.read.xgmml.ObjectTypeMap;
 import org.cytoscape.io.internal.util.GroupUtil;
 import org.cytoscape.io.internal.util.UnrecognizedVisualPropertyManager;
 import org.cytoscape.io.internal.util.session.SessionUtil;
+import org.cytoscape.io.internal.util.xgmml.ObjectType;
 import org.cytoscape.io.write.CyWriter;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyEdge;
@@ -71,37 +72,6 @@ import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-enum ObjectType {
-    LIST("list"),
-    STRING("string"),
-    REAL("real"),
-    INTEGER("integer"),
-    BOOLEAN("boolean");
-
-    private final String value;
-
-    ObjectType(String v) {
-        value = v;
-    }
-
-    String value() {
-        return value;
-    }
-
-    static ObjectType fromValue(String v) {
-        for (ObjectType c : ObjectType.values()) {
-            if (c.value.equals(v)) {
-                return c;
-            }
-        }
-        throw new IllegalArgumentException(v.toString());
-    }
-
-    public String toString() {
-        return value;
-    }
-}
 
 /**
  * This writer serializes CyNetworks and CyNetworkViews as standard XGMML files.
@@ -768,7 +738,7 @@ public class GenericXGMMLWriter extends AbstractTask implements CyWriter {
             writeAttributeXML(attName, ObjectType.INTEGER, iAttr, hidden, true);
         } else if (attType == Long.class) {
             Long lAttr = row.get(attName, Long.class);
-            writeAttributeXML(attName, ObjectType.REAL, lAttr, hidden, true);
+            writeAttributeXML(attName, ObjectType.LONG, lAttr, hidden, true);
         } else if (attType == String.class) {
             String sAttr = row.get(attName, String.class);
             // Protect tabs and returns
@@ -849,10 +819,11 @@ public class GenericXGMMLWriter extends AbstractTask implements CyWriter {
             if (value != null)
                 writeAttributePair("value", value);
 
-            writeAttributePair("type", type);
+            writeAttributePair("type", type.getXgmmlValue());
+            writeAttributePair("cy:type", type.getCyValue()); // Since Cytoscape v3.3
             
             if (type == ObjectType.LIST && listType != null)
-            	writeAttributePair("cy:elementType", listType); // Since Cytoscape v3.3
+            	writeAttributePair("cy:elementType", listType.getCyValue()); // Since Cytoscape v3.3
             
             if (hidden)
                 writeAttributePair("cy:hidden", ObjectTypeMap.toXGMMLBoolean(hidden));
@@ -913,7 +884,9 @@ public class GenericXGMMLWriter extends AbstractTask implements CyWriter {
             return ObjectType.STRING;
         else if (type == Integer.class)
             return ObjectType.INTEGER;
-        else if (type == Double.class || type == Float.class || type == Long.class)
+        else if (type == Long.class)
+        	return ObjectType.LONG;
+        else if (type == Double.class || type == Float.class)
             return ObjectType.REAL;
         else if (type == Boolean.class)
             return ObjectType.BOOLEAN;

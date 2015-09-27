@@ -5,7 +5,7 @@
 	directed="1">
 	
 	<att type="list" name="null_value_list"/>
-	<att type="list" name="empty_list_1" cy:elementType="string"/>
+	<att type="list" name="empty_list_1" cy:elementType="String"/>
 	<att type="list" name="empty_list_2">
 		<att type="string" />
 	</att>
