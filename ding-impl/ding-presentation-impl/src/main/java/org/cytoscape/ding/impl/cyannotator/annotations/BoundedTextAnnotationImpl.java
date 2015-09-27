@@ -158,6 +158,8 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 	public void drawAnnotation(Graphics g, double x, double y, double scaleFactor) {
 		super.drawAnnotation(g, x, y, scaleFactor);
 
+		if (text == null || textColor == null || font == null) return;
+
 		// For now, we put the text in the middle of the shape.  At some point, we may
 		// want to add other options
 		Graphics2D g2 = (Graphics2D) g;

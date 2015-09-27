@@ -232,6 +232,8 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 		if (text == null) return;
 		super.paint(g);
 
+		if (text == null || textColor == null || font == null) return;
+
 		Graphics2D g2=(Graphics2D)g;
 
 		g2.setPaint(textColor);
