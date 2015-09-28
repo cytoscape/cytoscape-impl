@@ -91,7 +91,7 @@ public class AppManagerDialog extends JDialog {
         initComponents();
         
         // Create new manage download sites dialog
-        manageDownloadSitesDialog = new ManageDownloadSitesDialog(parent, true, downloadSitesManager);
+        manageDownloadSitesDialog = new ManageDownloadSitesDialog(parent, downloadSitesManager);
         manageDownloadSitesDialog.setLocationRelativeTo(this);
         
         this.setLocationRelativeTo(parent);

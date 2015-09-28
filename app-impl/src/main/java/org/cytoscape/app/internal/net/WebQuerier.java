@@ -50,7 +50,6 @@ import org.apache.commons.io.IOUtils;
 import org.cytoscape.app.internal.exception.AppDownloadException;
 import org.cytoscape.app.internal.manager.App;
 import org.cytoscape.app.internal.manager.AppManager;
-import org.cytoscape.app.internal.manager.AppParser;
 import org.cytoscape.app.internal.manager.AppParser.ChecksumException;
 import org.cytoscape.app.internal.net.WebApp.Release;
 import org.cytoscape.app.internal.ui.downloadsites.DownloadSite;
@@ -63,9 +62,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.swing.SwingUtilities;
-import javax.swing.JOptionPane;
 
 /**
  * This class is responsible for querying the Cytoscape App Store web service to obtain

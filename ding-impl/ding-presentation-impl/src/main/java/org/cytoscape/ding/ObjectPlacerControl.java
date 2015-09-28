@@ -1,5 +1,8 @@
 package org.cytoscape.ding;
 
+import static javax.swing.GroupLayout.DEFAULT_SIZE;
+import static javax.swing.GroupLayout.PREFERRED_SIZE;
+
 /*
  * #%L
  * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
@@ -78,15 +81,17 @@ public class ObjectPlacerControl extends JPanel implements ActionListener,
 
 		final JLabel xoffsetLabel = new JLabel("X Offset Value (can be negative):");
 		xoffsetBox = new JTextField("0", 8);
+		xoffsetBox.setHorizontalAlignment(JTextField.RIGHT);
 		xoffsetBox.addActionListener(this);
 
 		final JLabel yoffsetLabel = new JLabel("Y Offset Value (can be negative):");
 		yoffsetBox = new JTextField("0", 8);
+		yoffsetBox.setHorizontalAlignment(JTextField.RIGHT);
 		yoffsetBox.addActionListener(this);
 		
 		final GroupLayout layout = new GroupLayout(this);
 		this.setLayout(layout);
-		layout.setAutoCreateContainerGaps(false);
+		layout.setAutoCreateContainerGaps(true);
 		layout.setAutoCreateGaps(true);
 		
 		layout.setHorizontalGroup(layout.createSequentialGroup()
@@ -101,8 +106,8 @@ public class ObjectPlacerControl extends JPanel implements ActionListener,
 						.addComponent(nodeAnchors)
 						.addComponent(objAnchors)
 						.addComponent(justifyCombo)
-						.addComponent(xoffsetBox)
-						.addComponent(yoffsetBox)
+						.addComponent(xoffsetBox, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addComponent(yoffsetBox, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 				)
 		);
 		layout.setVerticalGroup(layout.createSequentialGroup()

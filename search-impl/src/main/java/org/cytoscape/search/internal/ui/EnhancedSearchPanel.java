@@ -44,6 +44,7 @@ import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.search.internal.EnhancedSearch;
 import org.cytoscape.search.internal.SearchTaskFactory;
+import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.work.swing.DialogTaskManager;
 import org.slf4j.Logger;
@@ -102,7 +103,7 @@ public class EnhancedSearchPanel extends JPanel {
 	private void initComponents() {
 		final String defText = "Enter search term...";
 		final Font defFont = UIManager.getFont("TextField.font") != null ?
-				UIManager.getFont("TextField.font").deriveFont(10.0f).deriveFont(Font.ITALIC) : null;
+				UIManager.getFont("TextField.font").deriveFont(LookAndFeelUtil.getSmallFontSize()) : null;
 		
 		tfSearchText = new JTextField();
 		tfSearchText.putClientProperty("JTextField.variant", "search");

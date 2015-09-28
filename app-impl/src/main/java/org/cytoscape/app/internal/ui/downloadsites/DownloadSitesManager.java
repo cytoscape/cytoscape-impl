@@ -25,7 +25,6 @@ package org.cytoscape.app.internal.ui.downloadsites;
  */
 
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
