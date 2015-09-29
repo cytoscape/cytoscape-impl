@@ -13,10 +13,10 @@ import javax.swing.JComponent;
 
 import org.cytoscape.application.events.SetCurrentNetworkEvent;
 import org.cytoscape.application.events.SetCurrentNetworkListener;
+import org.cytoscape.filter.internal.filters.column.ColumnComboBoxElement;
 import org.cytoscape.filter.internal.filters.column.ColumnFilter;
 import org.cytoscape.filter.internal.filters.column.ColumnFilterController;
 import org.cytoscape.filter.internal.filters.column.ColumnFilterView;
-import org.cytoscape.filter.internal.filters.column.ColumnFilterView.ColumnComboBoxElement;
 import org.cytoscape.filter.internal.filters.degree.DegreeFilterController;
 import org.cytoscape.filter.internal.filters.degree.DegreeFilterView;
 import org.cytoscape.filter.internal.filters.degree.DegreeRange;
@@ -69,7 +69,7 @@ public class ModelMonitor implements SetCurrentNetworkListener,
 		edgeColumnRanges = new HashMap<>();
 		
 		columnNames = new ArrayList<ColumnComboBoxElement>();
-		defaultColumnName = new ColumnComboBoxElement(null, "Choose column...");
+		defaultColumnName = new ColumnComboBoxElement("Choose column...");
 		columnNames.add(defaultColumnName);
 		
 		interactivityChangedListeners = new CopyOnWriteArrayList<InteractivityChangedListener>();
@@ -284,7 +284,7 @@ public class ModelMonitor implements SetCurrentNetworkListener,
 	private void updateColumnViews() {
 		for (Entry<ColumnFilterView, ColumnFilterController> entry : columnViews.entrySet()) {
 			ColumnFilterController controller = entry.getValue();
-			controller.synchronize(entry.getKey());
+			controller.columnsChanged(entry.getKey());
 		}
 	}
 	
@@ -297,9 +297,9 @@ public class ModelMonitor implements SetCurrentNetworkListener,
 			Class<?> listElementType = column.getListElementType();
 			
 			if (List.class.equals(elementType) && (String.class.equals(listElementType) || Number.class.isAssignableFrom(listElementType) || Boolean.class.equals(listElementType))) {
-				columnNames.add(new ColumnComboBoxElement(type, column.getName()));
+				columnNames.add(new ColumnComboBoxElement(type, column));
 			} else if (String.class.equals(elementType) || Number.class.isAssignableFrom(elementType) || Boolean.class.equals(elementType)) {
-				columnNames.add(new ColumnComboBoxElement(type, column.getName()));
+				columnNames.add(new ColumnComboBoxElement(type, column));
 			}
 		}
 	}
@@ -323,7 +323,10 @@ public class ModelMonitor implements SetCurrentNetworkListener,
 			} else {
 				return;
 			}
-			columnNames.add(new ColumnComboBoxElement(type, event.getColumnName()));
+			
+			CyColumn column = table.getColumn(event.getColumnName());
+			
+			columnNames.add(new ColumnComboBoxElement(type, column));
 			Collections.sort(columnNames);
 			updateColumnViews();
 		}
@@ -350,7 +353,7 @@ public class ModelMonitor implements SetCurrentNetworkListener,
 			}
 			for (int i = 0; i < columnNames.size(); i++) {
 				ColumnComboBoxElement element = columnNames.get(i);
-				if (element.name.equals(event.getColumnName()) && type.equals(element.columnType)) {
+				if (element.getName().equals(event.getColumnName()) && type.equals(element.getTableType())) {
 					columnNames.remove(i);
 					break;
 				}
@@ -369,6 +372,7 @@ public class ModelMonitor implements SetCurrentNetworkListener,
 			CyTable nodeTable = network.getDefaultNodeTable();
 			CyTable edgeTable = network.getDefaultEdgeTable();
 			CyTable table = event.getSource();
+			CyColumn column = table.getColumn(event.getNewColumnName());
 			
 			Class<?> type;
 			if (table == nodeTable) {
@@ -380,9 +384,9 @@ public class ModelMonitor implements SetCurrentNetworkListener,
 			}
 			for (int i = 0; i < columnNames.size(); i++) {
 				ColumnComboBoxElement element = columnNames.get(i);
-				if (element.name.equals(event.getOldColumnName()) && type.equals(element.columnType)) {
+				if (element.getName().equals(event.getOldColumnName()) && type.equals(element.getTableType())) {
 					columnNames.remove(i);
-					columnNames.add(new ColumnComboBoxElement(element.columnType, event.getNewColumnName()));
+					columnNames.add(new ColumnComboBoxElement(element.getTableType(), column));
 					break;
 				}
 			}

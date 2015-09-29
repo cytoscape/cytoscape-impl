@@ -1,16 +1,15 @@
 package org.cytoscape.filter.internal.filters.column;
 
-import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.JCheckBox;
@@ -23,10 +22,11 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
 import org.cytoscape.filter.internal.ModelMonitor;
-import org.cytoscape.filter.internal.filters.column.ColumnFilterView.ColumnComboBoxElement;
+import org.cytoscape.filter.internal.filters.column.ColumnComboBoxElement.SelectedColumnType;
 import org.cytoscape.filter.internal.view.BooleanComboBox;
 import org.cytoscape.filter.internal.view.BooleanComboBox.StateChangeListener;
 import org.cytoscape.filter.internal.view.ComboItem;
+import org.cytoscape.filter.internal.view.DocumentListenerAdapter;
 import org.cytoscape.filter.internal.view.DynamicComboBoxModel;
 import org.cytoscape.filter.internal.view.Matcher;
 import org.cytoscape.filter.internal.view.RangeChooser;
@@ -45,10 +45,7 @@ import org.cytoscape.util.swing.IconManager;
 
 public class ColumnFilterViewFactory implements TransformerViewFactory {
 
-	ModelMonitor modelMonitor;
-	List<ColumnComboBoxElement> nameComboBoxModel;
-	List<ComboItem<Predicate>> predicateComboBoxModel;
-	
+	private final ModelMonitor modelMonitor;
 	private final IconManager iconManager;
 	private final FilterPanelStyle style;
 	
@@ -56,15 +53,6 @@ public class ColumnFilterViewFactory implements TransformerViewFactory {
 		this.modelMonitor = modelMonitor;
 		this.style = style;
 		this.iconManager = iconManager;
-		
-		nameComboBoxModel = modelMonitor.getColumnComboBoxModel();
-		
-		predicateComboBoxModel = new ArrayList<>();
-		predicateComboBoxModel.add(new ComboItem<>(Predicate.CONTAINS, "contains"));
-		predicateComboBoxModel.add(new ComboItem<>(Predicate.DOES_NOT_CONTAIN, "doesn't contain"));
-		predicateComboBoxModel.add(new ComboItem<>(Predicate.IS, "is"));
-		predicateComboBoxModel.add(new ComboItem<>(Predicate.IS_NOT, "is not"));
-		predicateComboBoxModel.add(new ComboItem<>(Predicate.REGEX, "matches regex"));
 	}
 	
 	@Override
@@ -76,24 +64,23 @@ public class ColumnFilterViewFactory implements TransformerViewFactory {
 	public JComponent createView(Transformer<?, ?> transformer) {
 		ColumnFilter filter = (ColumnFilter) transformer;
 		Controller controller = new Controller(filter);
-		View view = new View(controller, iconManager);
+		View view = new View(controller, filter);
 		modelMonitor.registerColumnFilterView(view, controller);
 		return view;
 	}
 
+	
+	/**
+	 * Controller mainly responsible for updating the range slider
+	 * and column combo box in response to model change events.
+	 */
 	class Controller implements ColumnFilterController {
-		private ColumnFilter filter;
-		private RangeChooserController chooserController;
-		private boolean listenersEnabled;
-		
-		public Controller(final ColumnFilter filter) {
-			this.filter = filter;
-			listenersEnabled = true;
 
-			if (filter.getPredicate() == null) {
-				filter.setPredicate(Predicate.CONTAINS);
-				filter.setCriterion("");
-			}
+		private final ColumnFilter filter;
+		private final RangeChooserController chooserController;
+		
+		public Controller(ColumnFilter filter) {
+			this.filter = filter;
 			
 			chooserController = new RangeChooserController() {
 				@Override
@@ -105,34 +92,17 @@ public class ColumnFilterViewFactory implements TransformerViewFactory {
 				}
 			};
 		}
-		
+
 		@Override
 		public ColumnFilter getFilter() {
 			return filter;
 		}
 
-		public void setCaseSensitive(View view, boolean caseSensitive) {
-			filter.setCaseSensitive(caseSensitive);
+		@Override
+		public void columnsChanged(ColumnFilterView view) {
+			view.columnsChanged();
 		}
 
-		public void setCriterion(View view, String text) {
-			if (text != null && text.equals(filter.getCriterion())) {
-				return;
-			}
-			filter.setCriterion(text);
-		}
-		
-		public void setBooleanCriterion(View view, Boolean value) {
-			if (value != null && value.equals(filter.getCriterion())) {
-				return;
-			}
-			filter.setCriterion(value);
-		}
-		
-		public void setColumnName(String name) {
-			filter.setColumnName(name);
-		}
-		
 		private void updateRange(Number[] criterion) {
 			String name = filter.getColumnName();
 			Class<? extends CyIdentifiable> type = filter.getColumnType();
@@ -162,7 +132,6 @@ public class ColumnFilterViewFactory implements TransformerViewFactory {
 			}
 		}
 		
-		
 		@Override
 		public void setSliderBounds(long min, long max) {
 			long low  = chooserController.getLow().longValue();
@@ -176,270 +145,87 @@ public class ColumnFilterViewFactory implements TransformerViewFactory {
 			double high = chooserController.getHigh().doubleValue();
 			setRange(low, high, min, max);
 		}
-				
+		
 		/**
 		 * Sets the slider range, makes sure min and max encompass the range..
 		 */
 		private <N extends Number & Comparable<N>> void setRange(N low, N high, N min, N max) {
 			// Clip low and high to be within the range, need to do this here because NumberRangeModel doesn't do it
 			if(low.compareTo(min) < 0)
-				min = low;
+				low = min;
 			if(high.compareTo(max) > 0)
-				max = high;
+				high = max;
 			
 			chooserController.setRange(low, high, min, max);
 		}
-		
-		public void setMatchType(Class<?> type) {
-			if (type == null) {
-				filter.type.setSelectedValue(ColumnFilter.NODES_AND_EDGES);
-			}
-			if (CyNode.class.equals(type)) {
-				filter.type.setSelectedValue(ColumnFilter.NODES);
-			}
-			if (CyEdge.class.equals(type)) {
-				filter.type.setSelectedValue(ColumnFilter.EDGES);
-			}
-		}
-		
-		public void setPredicate(View view, Predicate predicate) {
-			filter.setPredicate(predicate);
-		}
-
-		public ColumnFilter getModel() {
-			return filter;
-		}
-
-		// Updates the filter object to display what's in the view, then shows the view
-		void handleColumnSelected(View view, JComboBox<?> nameComboBox) {
-			RangeChooser rangeChooser = view.rangeChooser;
-			if (nameComboBox.getSelectedIndex() == 0) {
-				filter.setCriterion(null);
-				filter.setPredicate(null);
-				view.handleNoColumnSelected();
-				chooserController.setInteractive(false, rangeChooser);
-				return;
-			}
-
-			ColumnComboBoxElement selected = (ColumnComboBoxElement) nameComboBox.getSelectedItem();
-			setColumnName(selected.name);
-			setMatchType(selected.columnType);
-			
-			// update the filter to match what's in the view, then show the view
-			if (modelMonitor.checkType(selected.name, selected.columnType, String.class)) {
-				Predicate predicate = ((ComboItem<Predicate>)view.getPredicateComboBox().getSelectedItem()).getValue();
-				filter.setPredicateAndCriterion(predicate, view.getField().getText());
-				view.handleStringColumnSelected();
-				chooserController.setInteractive(false, rangeChooser);
-			} else if (modelMonitor.checkType(selected.name, selected.columnType, Boolean.class)) {
-				filter.setPredicateAndCriterion(Predicate.IS, view.getBooleanComboBox().booleanValue());
-				view.handleBooleanColumnSelected();
-				chooserController.setInteractive(false, rangeChooser);
-			} else { // numeric
-				updateRange(null);
-				boolean between = view.getNumericNegateComboBox().booleanValue();
-				Predicate predicate = between ? Predicate.BETWEEN : Predicate.IS_NOT_BETWEEN;
-				Number[] criterion = { chooserController.getLow(), chooserController.getHigh() };
-				filter.setPredicateAndCriterion(predicate, criterion);
-				chooserController.setInteractive(view.isInteractive, rangeChooser);
-				view.handleNumericColumnSelected();
-				
-				// hack because the textboxes don't update properly on their own
-				Number low = chooserController.getLow();
-				Number high = chooserController.getHigh();
-				view.getRangeChooser().getMinimumField().setText(low.toString());
-				view.getRangeChooser().getMaximumField().setText(high.toString());
-			}
-		}
-		
-		private void initializeView(View view) {
-			Object criterion = filter.getCriterion();
-			
-			// set the view based on the model
-			if (criterion instanceof String) {
-				String str = (String)criterion;
-				view.getField().setText(str);
-				DynamicComboBoxModel.select(view.getPredicateComboBox(), -1, new Matcher<ComboItem<Predicate>>() {
-					@Override
-					public boolean matches(ComboItem<Predicate> item) {
-						return item.getValue().equals(filter.getPredicate());
-					}
-				});
-				view.handleStringColumnSelected();
-			}
-			else if (criterion instanceof Number[]) {
-				Number[] range = (Number[]) criterion;
-				updateRange(range);
-				view.getNumericNegateComboBox().setState(filter.getPredicate() != Predicate.IS_NOT_BETWEEN);
-				view.handleNumericColumnSelected();
-				chooserController.setInteractive(view.isInteractive, view.rangeChooser);
-			}
-			else if (criterion instanceof Boolean) {
-				BooleanComboBox comboBox = view.getBooleanComboBox();
-				comboBox.setState((boolean)criterion);
-				view.handleBooleanColumnSelected();
-			}
-			else {
-				view.handleNoColumnSelected();
-			}
-			
-			view.getCaseSensitiveCheckBox().setSelected(filter.getCaseSensitive());
-			columnModelChanged(view, true);
-		}
-		
-		@Override
-		public void synchronize(ColumnFilterView view) {
-			columnModelChanged(view, false);
-		}
-		
-		private void columnModelChanged(ColumnFilterView view, boolean initializing) {
-			// update the view combo box to match the current columns
-			JComboBox<?> nameComboBox = view.getNameComboBox();
-			
-			final String selectedColumn = filter.getColumnName();
-			listenersEnabled = false;
-			try {
-				DynamicComboBoxModel<?> model = (DynamicComboBoxModel<?>) nameComboBox.getModel();
-				model.notifyChanged(0, model.getSize() - 1);
-				
-				
-			} finally {
-				listenersEnabled = true;
-			}
-			
-			listenersEnabled = !initializing;
-			try {
-				DynamicComboBoxModel.select(nameComboBox, 0, new Matcher<ColumnComboBoxElement>() {
-					@Override
-					public boolean matches(ColumnComboBoxElement item) {
-						return item.name.equals(selectedColumn) && item.columnType.equals(filter.getColumnType());
-					}
-				});
-			} finally {
-				listenersEnabled = true;
-			}
-		}
-
-		public void setInteractive(boolean isInteractive, View view) {
-			view.isInteractive = isInteractive;
-			if(view.selectedColumn == SelectedColumnType.NUMERIC) {
-				chooserController.setInteractive(isInteractive, view.rangeChooser);
-			}
-		}
 	}
+	
+	
 	
 	@SuppressWarnings("serial")
 	class View extends JPanel implements ColumnFilterView, InteractivityChangedListener {
-		boolean optionsExpanded;
+		private final Controller controller;
+		private final ColumnFilter filter;
+		
+		private boolean optionsExpanded;
+		private boolean isInteractive;
+		
 		private JTextField textField;
 		private JLabel arrowLabel;
 		private JCheckBox caseSensitiveCheckBox;
-		private JComboBox predicateComboBox;
-		private JComboBox nameComboBox;
+		private JComboBox<ComboItem<Predicate>> predicateComboBox;
+		private JComboBox<ColumnComboBoxElement> nameComboBox;
 		private JPanel spacerPanel;
 		private JPanel predicatePanel;
-		private boolean isInteractive;
-		private SelectedColumnType selectedColumn;
-		private Controller controller;
+		
 		private RangeChooser rangeChooser;
 		private BooleanComboBox numericNegateComboBox;
 		private BooleanComboBox booleanComboBox;
 		private JLabel booleanLabel;
 		private JPanel booleanPanel;
 		
-		public View(final Controller controller, IconManager iconManager) {
+		private FocusListener textFieldFocusListener;
+		private DocumentListener textFieldDocumentListener;
+		private ActionListener caseSensitiveCheckBoxActionListener;
+		private ActionListener predicateComboBoxActionListener;
+		private ActionListener nameComboBoxActionListener;
+		private StateChangeListener numericNegateComboBoxStateChangeListener;
+		private StateChangeListener booleanComboBoxStateChangeListener;
+		
+		
+		public View(Controller controller, ColumnFilter filter) {
 			this.controller = controller;
-			selectedColumn = SelectedColumnType.NONE;
-			optionsExpanded = true;
+			this.filter = filter;
+			this.optionsExpanded = true;
 			
 			ViewUtil.configureFilterView(this);
 			
 			textField = style.createTextField();
-			textField.addFocusListener(new FocusListener() {
-
-				@Override
-				public void focusLost(FocusEvent event) {
-					controller.setCriterion(View.this, textField.getText());
-				}
-				
-				@Override
-				public void focusGained(FocusEvent event) {
-				}
-			});
-			textField.getDocument().addDocumentListener(new DocumentListener() {
-				@Override
-				public void removeUpdate(DocumentEvent event) {
-					handleInteractiveUpdate();
-				}
-				
-				@Override
-				public void insertUpdate(DocumentEvent event) {
-					handleInteractiveUpdate();
-				}
-				
-				@Override
-				public void changedUpdate(DocumentEvent event) {
-					handleInteractiveUpdate();
-				}
-			});
 			
 			arrowLabel = style.createLabel(IconManager.ICON_CARET_DOWN);
-			Font arrowFont = iconManager.getIconFont(16.0f);
-			arrowLabel.setFont(arrowFont);
+			arrowLabel.setFont(iconManager.getIconFont(16.0f));
 			arrowLabel.addMouseListener(new MouseAdapter() {
-				@Override
 				public void mouseClicked(MouseEvent event) {
 					handleArrowClicked();
 				}
 			});
 			
 			caseSensitiveCheckBox = style.createCheckBox("Case sensitive");
-			caseSensitiveCheckBox.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent event) {
-					controller.setCaseSensitive(View.this, caseSensitiveCheckBox.isSelected());
-				}
-			});
 			caseSensitiveCheckBox.setOpaque(false);
 			
-			predicateComboBox = style.createCombo(new DynamicComboBoxModel<ComboItem<Predicate>>(predicateComboBoxModel));
-			predicateComboBox.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent event) {
-					ComboItem<Predicate> selected = (ComboItem<Predicate>) predicateComboBox.getSelectedItem();
-					if (selected == null) {
-						return;
-					}
-					controller.setPredicate(View.this, selected.getValue());
-				}
-			});
+			predicateComboBox = style.createCombo();
+			predicateComboBox.addItem(new ComboItem<>(Predicate.CONTAINS, "contains"));
+			predicateComboBox.addItem(new ComboItem<>(Predicate.DOES_NOT_CONTAIN, "doesn't contain"));
+			predicateComboBox.addItem(new ComboItem<>(Predicate.IS, "is"));
+			predicateComboBox.addItem(new ComboItem<>(Predicate.IS_NOT, "is not"));
+			predicateComboBox.addItem(new ComboItem<>(Predicate.REGEX, "matches regex"));
+			predicateComboBox.addItem(new ComboItem<>(Predicate.CONTAINS));
 			
+			List<ColumnComboBoxElement> nameComboBoxModel = modelMonitor.getColumnComboBoxModel();
 			nameComboBox = style.createCombo(new DynamicComboBoxModel<ColumnComboBoxElement>(nameComboBoxModel));
-			nameComboBox.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent event) {
-					if (!controller.listenersEnabled) {
-						return;
-					}
-					controller.handleColumnSelected(View.this, nameComboBox);
-				}
-			});
 			
 			numericNegateComboBox = new BooleanComboBox(style, "is", "is not");
-			numericNegateComboBox.addStateChangeListener(new StateChangeListener() {
-				@Override
-				public void stateChanged(boolean is) {
-					controller.setPredicate(View.this, is ? Predicate.BETWEEN : Predicate.IS_NOT_BETWEEN);
-				}
-			});
-			
 			booleanComboBox = new BooleanComboBox(style, "true", "false");
-			booleanComboBox.addStateChangeListener(new StateChangeListener() {
-				@Override
-				public void stateChanged(boolean isTrue) {
-					controller.setBooleanCriterion(View.this, isTrue);
-				}
-			});
 			
 			booleanLabel = style.createLabel("is");
 			booleanPanel = new JPanel();
@@ -456,35 +242,182 @@ public class ColumnFilterViewFactory implements TransformerViewFactory {
 			predicatePanel.setLayout(new GridBagLayout());
 			
 			rangeChooser = new RangeChooser(style, controller.chooserController);
-			
 			setLayout(new GridBagLayout());
-			controller.initializeView(this);
+			
+			refreshUI(false, true);
 		}
-
-		void handleInteractiveUpdate() {
-			String text = textField.getText();
-			if (text == null || text.length() == 0) {
+		
+		@Override
+		public void columnsChanged() {
+			refreshUI(true, true);
+		}
+		
+		
+		/**
+		 * Update the UI controls to reflect the state of the filter object.
+		 * The nameComboBox and the filter object are kept in sync.
+		 */
+		private void refreshUI(boolean updateColumnModel, boolean selectColumn) {
+			removeListeners();
+			
+			if(updateColumnModel) {
+				// need to inform the nameComboBox that its model has changed
+				DynamicComboBoxModel<?> model = (DynamicComboBoxModel<?>) nameComboBox.getModel();
+				model.notifyChanged(0, model.getSize() - 1);
+			}
+			if(selectColumn) {
+				String selectedColumn = filter.getColumnName();
+				DynamicComboBoxModel.select(nameComboBox, 0, new Matcher<ColumnComboBoxElement>() {
+					public boolean matches(ColumnComboBoxElement item) {
+						return item.getName().equals(selectedColumn) && item.getTableType().equals(filter.getColumnType());
+					}
+				});
+			}
+			
+			ColumnComboBoxElement column = (ColumnComboBoxElement)nameComboBox.getSelectedItem();
+			Object criterion = filter.getCriterion();
+			
+			switch(column.getColType()) {
+			case STRING:
+				textField.setText((String)criterion);
+				predicateComboBox.setSelectedItem(new ComboItem<>(filter.getPredicate()));
+				handleStringColumnSelected();
+				break;
+			case NUMERIC:
+				Number[] range = (Number[]) criterion;
+				controller.updateRange(range);
+				numericNegateComboBox.setState(filter.getPredicate() != Predicate.IS_NOT_BETWEEN);
+				handleNumericColumnSelected();
+				controller.chooserController.setInteractive(isInteractive, rangeChooser);
+				// hack because the textboxes don't update properly on their own
+				Number low = controller.chooserController.getLow();
+				Number high = controller.chooserController.getHigh();
+				rangeChooser.getMinimumField().setText(low.toString());
+				rangeChooser.getMaximumField().setText(high.toString());
+				break;
+			case BOOLEAN:
+				booleanComboBox.setState((boolean)criterion);
+				handleBooleanColumnSelected();
+				break;
+			case NONE:
+				handleNoColumnSelected();
+				break;
+			}
+			caseSensitiveCheckBox.setSelected(filter.getCaseSensitive());
+			
+			addListeners();
+		}
+		
+		
+		private void handleColumnSelected() {
+			if (nameComboBox.getSelectedIndex() == 0) {
+				filter.setPredicateAndCriterion(null, null);
+				handleNoColumnSelected();
+				controller.chooserController.setInteractive(false, rangeChooser);
 				return;
 			}
-			controller.setCriterion(View.this, text);
+			
+			ColumnComboBoxElement selected = (ColumnComboBoxElement) nameComboBox.getSelectedItem();
+			filter.setCaseSensitive(false);
+			filter.setColumnName(selected.getName());
+			setFilterDefaults(selected.getColType());
+			
+			Class<?> type = selected.getTableType();
+			if (type == null)
+				filter.type.setSelectedValue(ColumnFilter.NODES_AND_EDGES);
+			else if (CyNode.class.equals(type))
+				filter.type.setSelectedValue(ColumnFilter.NODES);
+			else if (CyEdge.class.equals(type))
+				filter.type.setSelectedValue(ColumnFilter.EDGES);
+			
+			refreshUI(false, false); // no need to select the column as it was just selected
 		}
-
-		public JLabel getArrowLabel() {
-			return arrowLabel;
-		}
-
-		protected void handleArrowClicked() {
-			optionsExpanded = !optionsExpanded;
-			if (optionsExpanded) {
-				arrowLabel.setText(IconManager.ICON_CARET_DOWN);
-			} else {
-				arrowLabel.setText(IconManager.ICON_CARET_LEFT);
+		
+		
+		private void setFilterDefaults(SelectedColumnType type) {
+			if(type == null) {
+				filter.setPredicateAndCriterion(null, null);
+				return;
 			}
+			switch(type) {
+			case BOOLEAN:
+				filter.setPredicateAndCriterion(Predicate.IS, true);
+				break;
+			case NUMERIC:
+				filter.setPredicateAndCriterion(Predicate.BETWEEN, null); // must be null!
+				break;
+			case STRING:
+				filter.setPredicateAndCriterion(Predicate.CONTAINS, "");
+				break;
+			case NONE:
+				filter.setPredicateAndCriterion(null, null);
+				break;
+			}
+		}
+
+		
+		
+		private void addListeners() {
+			textField.addFocusListener(textFieldFocusListener = new FocusAdapter() {
+				public void focusLost(FocusEvent event) {
+					filter.setCriterion(textField.getText());
+				}
+			});
+			textField.getDocument().addDocumentListener(textFieldDocumentListener = new DocumentListenerAdapter() {
+				public void update(DocumentEvent event) {
+					filter.setCriterion(textField.getText());
+				}
+			});
+			
+			caseSensitiveCheckBox.addActionListener(caseSensitiveCheckBoxActionListener = new ActionListener() {
+				public void actionPerformed(ActionEvent event) {
+					filter.setCaseSensitive(caseSensitiveCheckBox.isSelected());
+				}
+			});
+			
+			predicateComboBox.addActionListener(predicateComboBoxActionListener = new ActionListener() {
+				public void actionPerformed(ActionEvent event) {
+					ComboItem<Predicate> selected = predicateComboBox.getItemAt(predicateComboBox.getSelectedIndex());
+					filter.setPredicate(selected.getValue());
+				}
+			});
+			
+			nameComboBox.addActionListener(nameComboBoxActionListener = new ActionListener() {
+				public void actionPerformed(ActionEvent event) {
+					handleColumnSelected();
+				}
+			});
+			
+			numericNegateComboBox.addStateChangeListener(numericNegateComboBoxStateChangeListener = new StateChangeListener() {
+				public void stateChanged(boolean is) {
+					filter.setPredicate(is ? Predicate.BETWEEN : Predicate.IS_NOT_BETWEEN);
+				}
+			});
+			
+			booleanComboBox.addStateChangeListener(booleanComboBoxStateChangeListener = new StateChangeListener() {
+				public void stateChanged(boolean isTrue) {
+					filter.setCriterion(isTrue);
+				}
+			});
+		}
+		
+
+		private void removeListeners() {
+			textField.removeFocusListener(textFieldFocusListener);
+			textField.getDocument().removeDocumentListener(textFieldDocumentListener);
+			caseSensitiveCheckBox.removeActionListener(caseSensitiveCheckBoxActionListener);
+			predicateComboBox.removeActionListener(predicateComboBoxActionListener);
+			nameComboBox.removeActionListener(nameComboBoxActionListener);
+			numericNegateComboBox.removeStateChangeListener(numericNegateComboBoxStateChangeListener);
+			booleanComboBox.removeStateChangeListener(booleanComboBoxStateChangeListener);
+		}
+		
+		protected void handleArrowClicked() {
+			arrowLabel.setText((optionsExpanded = !optionsExpanded) ? IconManager.ICON_CARET_DOWN : IconManager.ICON_CARET_LEFT);
 			handleStringColumnSelected();
 		}
 
 		void handleNumericColumnSelected() {
-			selectedColumn = SelectedColumnType.NUMERIC;
 			removeAll();
 			add(nameComboBox, new GridBagConstraints(0, 0, 1, 1, 0, 0, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
 			add(numericNegateComboBox, new GridBagConstraints(1, 0, 1, 1, 0, 0, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
@@ -496,7 +429,6 @@ public class ColumnFilterViewFactory implements TransformerViewFactory {
 		}
 
 		void handleStringColumnSelected() {
-			selectedColumn = SelectedColumnType.STRING;
 			removeAll();
 			if (optionsExpanded) {
 				predicatePanel.removeAll();
@@ -522,7 +454,6 @@ public class ColumnFilterViewFactory implements TransformerViewFactory {
 		}
 
 		void handleBooleanColumnSelected() {
-			selectedColumn = SelectedColumnType.BOOLEAN;
 			removeAll();
 			add(nameComboBox, new GridBagConstraints(0, 0, 1, 1, 0, 0, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
 			add(spacerPanel, new GridBagConstraints(1, 0, 1, 1, Double.MIN_VALUE, 0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
@@ -532,59 +463,20 @@ public class ColumnFilterViewFactory implements TransformerViewFactory {
 		}
 		
 		private void handleNoColumnSelected() {
-			selectedColumn = SelectedColumnType.NONE;
 			removeAll();
 			add(nameComboBox, new GridBagConstraints(0, 0, 1, 1, 0, 0, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
 			add(spacerPanel, new GridBagConstraints(1, 0, 1, 1, Double.MIN_VALUE, 0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
 			invalidate();
 			validate();
 		}
-		
-		@Override
-		public JCheckBox getCaseSensitiveCheckBox() {
-			return caseSensitiveCheckBox;
-		}
-		
-		@Override
-		public JTextField getField() {
-			return textField;
-		}
-		
-		@Override
-		public JComboBox getNameComboBox() {
-			return nameComboBox;
-		}
-		
-		@Override
-		public JComboBox getPredicateComboBox() {
-			return predicateComboBox;
-		}
-		
-		@Override
-		public BooleanComboBox getBooleanComboBox() {
-			return booleanComboBox;
-		}
-		
-		@Override
-		public void handleInteractivityChanged(boolean isInteractive) {
-			controller.setInteractive(isInteractive, this);
-		}
-		
-		@Override
-		public RangeChooser getRangeChooser() {
-			return rangeChooser;
-		}
+
 
 		@Override
-		public BooleanComboBox getNumericNegateComboBox() {
-			return numericNegateComboBox;
+		public void handleInteractivityChanged(boolean isInteractive) {
+			this.isInteractive = isInteractive;
+			controller.chooserController.setInteractive(isInteractive, rangeChooser);
 		}
+		
 	}
 	
-	private enum SelectedColumnType {
-		NONE,
-		NUMERIC,
-		STRING,
-		BOOLEAN,
-	}
 }

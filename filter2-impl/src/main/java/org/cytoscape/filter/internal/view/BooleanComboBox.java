@@ -3,6 +3,8 @@ package org.cytoscape.filter.internal.view;
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.IdentityHashMap;
+import java.util.Map;
 
 import javax.swing.JComboBox;
 import javax.swing.JPanel;
@@ -55,14 +57,20 @@ public class BooleanComboBox extends JPanel {
 		combo.setSelectedIndex(state ? 0 : 1);
 	}
 	
+	private Map<StateChangeListener, ActionListener> actionListeners = new IdentityHashMap<>();
 	
 	public void addStateChangeListener(StateChangeListener listener) {
-		combo.addActionListener(new ActionListener() {
-			@Override
+		ActionListener actionListener = new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				listener.stateChanged(booleanValue());
 			}
-		});
+		};
+		actionListeners.put(listener, actionListener);
+		combo.addActionListener(actionListener);
+	}
+	
+	public void removeStateChangeListener(StateChangeListener listener) {
+		combo.removeActionListener(actionListeners.remove(listener));
 	}
 	
 	
