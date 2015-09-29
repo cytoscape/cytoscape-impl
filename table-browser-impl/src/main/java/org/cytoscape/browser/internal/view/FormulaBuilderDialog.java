@@ -68,6 +68,7 @@ import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
+import org.cytoscape.browser.internal.util.TableBrowserUtil;
 import org.cytoscape.equations.Equation;
 import org.cytoscape.equations.EquationCompiler;
 import org.cytoscape.equations.EquationParser;
@@ -797,10 +798,9 @@ public class FormulaBuilderDialog extends JDialog {
 	 */
 	private Equation compileEquation(final CyTable attribs, final String attribName,
 	                                 final String formula, final StringBuilder errorMessage) {
-		final Map<String, Class<?>> attribNameToTypeMap = new HashMap<String, Class<?>>();
-		initAttribNameToTypeMap(attribs, attribName, attribNameToTypeMap);
+		final Map<String, Class<?>> attrNameToTypeMap = TableBrowserUtil.getAttNameToTypeMap(attribs, attribName);
 		
-		if (compiler.compile(formula, attribNameToTypeMap))
+		if (compiler.compile(formula, attrNameToTypeMap))
 			return compiler.getEquation();
 
 		errorMessage.append(compiler.getLastErrorMsg());
@@ -846,25 +846,6 @@ public class FormulaBuilderDialog extends JDialog {
 
 	private static void displayErrorMessage(final String errorMessage) {
 		JOptionPane.showMessageDialog(new JFrame(), errorMessage, "Error", JOptionPane.ERROR_MESSAGE);
-	}
-
-	/**
-	 *  Populates "attribNameToTypeMap" with the names from "cyAttribs" and their types as mapped
-	 *  to the types used by attribute equations.  Types (and associated names) not used by
-	 *  attribute equations are omitted.
-	 *
-	 *  @param cyAttribs            the attributes to map
-	 *  @param ignore               if not null, skip the attribute with this name
-	 *  @param attribNameToTypeMap  the result of the translation from attribute types to
-	 *                              attribute equation types
-	 */
-	private static void initAttribNameToTypeMap(final CyTable attribs, final String ignore,
-	                                            final Map<String, Class<?>> attribNameToTypeMap) {
-		for (final CyColumn column : attribs.getColumns())
-			attribNameToTypeMap.put(column.getName(), column.getType());
-		
-		if (ignore != null)
-			attribNameToTypeMap.remove(ignore);
 	}
 
 	private void wrapLabelText(final JLabel label, final String text) {

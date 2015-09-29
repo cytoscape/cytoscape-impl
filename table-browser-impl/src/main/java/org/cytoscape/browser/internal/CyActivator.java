@@ -24,9 +24,12 @@ package org.cytoscape.browser.internal;
  * #L%
  */
 
+import static org.cytoscape.work.ServiceProperties.TITLE;
+
 import java.awt.event.ActionListener;
 import java.util.Properties;
 
+import org.cytoscape.browser.internal.task.ClearAllErrorsTaskFactory;
 import org.cytoscape.browser.internal.view.AbstractTableBrowser;
 import org.cytoscape.browser.internal.view.DefaultTableBrowser;
 import org.cytoscape.browser.internal.view.GlobalTableBrowser;
@@ -51,14 +54,14 @@ public class CyActivator extends AbstractCyActivator {
 	
 	@Override
 	public void start(BundleContext bc) {
-		CyServiceRegistrar cyServiceRegistrarServiceRef = getService(bc, CyServiceRegistrar.class);
+		CyServiceRegistrar serviceRegistrar = getService(bc, CyServiceRegistrar.class);
 
-		PopupMenuHelper popupMenuHelper = new PopupMenuHelper(cyServiceRegistrarServiceRef);
+		PopupMenuHelper popupMenuHelper = new PopupMenuHelper(serviceRegistrar);
 		
-		AbstractTableBrowser nodeTableBrowser = new DefaultTableBrowser("Node Table", CyNode.class, cyServiceRegistrarServiceRef, popupMenuHelper);
-		AbstractTableBrowser edgeTableBrowser = new DefaultTableBrowser("Edge Table", CyEdge.class, cyServiceRegistrarServiceRef, popupMenuHelper);
-		AbstractTableBrowser networkTableBrowser = new DefaultTableBrowser("Network Table", CyNetwork.class, cyServiceRegistrarServiceRef, popupMenuHelper);
-		AbstractTableBrowser globalTableBrowser = new GlobalTableBrowser("Unassigned Tables", cyServiceRegistrarServiceRef, popupMenuHelper);
+		AbstractTableBrowser nodeTableBrowser = new DefaultTableBrowser("Node Table", CyNode.class, serviceRegistrar, popupMenuHelper);
+		AbstractTableBrowser edgeTableBrowser = new DefaultTableBrowser("Edge Table", CyEdge.class, serviceRegistrar, popupMenuHelper);
+		AbstractTableBrowser networkTableBrowser = new DefaultTableBrowser("Network Table", CyNetwork.class, serviceRegistrar, popupMenuHelper);
+		AbstractTableBrowser globalTableBrowser = new GlobalTableBrowser("Unassigned Tables", serviceRegistrar, popupMenuHelper);
 		
 		registerAllServices(bc, nodeTableBrowser, new Properties());
 		registerAllServices(bc, edgeTableBrowser, new Properties());
@@ -76,5 +79,12 @@ public class CyActivator extends AbstractCyActivator {
 
 		registerServiceListener(bc, popupMenuHelper, "addTableColumnTaskFactory", "removeTableColumnTaskFactory", TableColumnTaskFactory.class);
 		registerServiceListener(bc, popupMenuHelper, "addTableCellTaskFactory", "removeTableCellTaskFactory", TableCellTaskFactory.class);
+		
+		{
+			ClearAllErrorsTaskFactory taskFactory = new ClearAllErrorsTaskFactory(serviceRegistrar);
+			Properties props = new Properties();
+			props.setProperty(TITLE, "Clear all errors");
+			registerService(bc, taskFactory, TableColumnTaskFactory.class, props);
+		}
 	}
 }

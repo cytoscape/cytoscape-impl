@@ -84,8 +84,8 @@ public abstract class AbstractTableBrowser extends JPanel
 
 	// Tab title for the CytoPanel
 	private final String tabTitle;
-	private final Map<BrowserTable,JScrollPane> scrollPanes;
-	private final Map<CyTable,BrowserTable> browserTables;
+	private final Map<BrowserTable, JScrollPane> scrollPanes;
+	private final Map<CyTable, BrowserTable> browserTables;
 	private JScrollPane currentScrollPane;
 	protected final String appFileName;
 
@@ -100,8 +100,8 @@ public abstract class AbstractTableBrowser extends JPanel
 		this.popupMenuHelper = popupMenuHelper;
 		this.appFileName  = tabTitle.replaceAll(" ", "").concat(".props");
 
-		this.scrollPanes = new HashMap<BrowserTable,JScrollPane>();
-		this.browserTables = new HashMap<CyTable,BrowserTable>();
+		this.scrollPanes = new HashMap<>();
+		this.browserTables = new HashMap<>();
 		
 		this.setLayout(new BorderLayout());
 		this.setOpaque(!isAquaLAF());
@@ -234,6 +234,10 @@ public abstract class AbstractTableBrowser extends JPanel
 		return table;
 	}
 	
+	public BrowserTable getBrowserTable(final CyTable table) {
+		return browserTables.get(table);
+	}
+	
 	protected Map<CyTable, BrowserTable> getAllBrowserTablesMap() {
 		return browserTables;
 	}
@@ -276,7 +280,7 @@ public abstract class AbstractTableBrowser extends JPanel
 	@Override
 	public void handleEvent(SessionAboutToBeSavedEvent e) {
 		Map<CyTable, BrowserTable>  browserTables = getAllBrowserTablesMap();
-		List< TableColumnStat> tableColumnStatList = new ArrayList<TableColumnStat>();
+		List<TableColumnStat> tableColumnStatList = new ArrayList<>();
 
 		for (CyTable table :  browserTables.keySet()){
 			TableColumnStat tcs = new TableColumnStat(table.getTitle());

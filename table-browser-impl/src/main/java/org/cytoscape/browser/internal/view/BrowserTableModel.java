@@ -27,16 +27,15 @@ package org.cytoscape.browser.internal.view;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 import javax.swing.event.TableModelEvent;
 import javax.swing.table.AbstractTableModel;
-import javax.swing.SwingUtilities;
 
 import org.cytoscape.browser.internal.util.TableBrowserUtil;
 import org.cytoscape.browser.internal.util.ValidatedObjectAndEditString;
@@ -177,7 +176,7 @@ public final class BrowserTableModel extends AbstractTableModel
 	}
 
 	CyColumn getColumnByModelIndex(final int modelIndex)  {
-		final String columnName = getColumnName( modelIndex);
+		final String columnName = getColumnName(modelIndex);
 
 		return dataTable.getColumn(columnName);
 	}
@@ -471,10 +470,9 @@ public final class BrowserTableModel extends AbstractTableModel
 				return;
 			row.set(columnName, null);
 		} else if (text.startsWith("=")) {
-			final Map<String, Class<?>> variableNameToTypeMap = new HashMap<String, Class<?>>();
-			initVariableNameToTypeMap(variableNameToTypeMap);
-			if (compiler.compile(text, variableNameToTypeMap)) {
-				
+			final Map<String, Class<?>> attrNameToTypeMap = TableBrowserUtil.getAttNameToTypeMap(dataTable, null);
+			
+			if (compiler.compile(text, attrNameToTypeMap)) {
 				final Equation eqn = compiler.getEquation();
 				final Class<?> eqnType = eqn.getType();
 
@@ -538,28 +536,6 @@ public final class BrowserTableModel extends AbstractTableModel
 		final String typeName = type.getName();
 		final int lastDotPos = typeName.lastIndexOf('.');
 		return lastDotPos == -1 ? typeName : typeName.substring(lastDotPos + 1);
-	}
-
-	private void initVariableNameToTypeMap(final Map<String, Class<?>> variableNameToTypeMap) {
-		for (final CyColumn column : dataTable.getColumns()) {
-			final Class<?> type = column.getType();
-			final String columnName = column.getName();
-			
-			if (type == String.class)
-				variableNameToTypeMap.put(columnName, String.class);
-			else if (type == Double.class)
-				variableNameToTypeMap.put(columnName, Double.class);
-			else if (type == Integer.class)
-				variableNameToTypeMap.put(columnName, Long.class);
-			else if (type == Long.class)
-				variableNameToTypeMap.put(columnName, Long.class);
-			else if (type == Boolean.class)
-				variableNameToTypeMap.put(columnName, Boolean.class);
-			else if (type == List.class)
-				variableNameToTypeMap.put(columnName, List.class);
-			else
-				throw new IllegalStateException("unknown type \"" + type.getName() + "\".");
-		}
 	}
 
 	@Override
