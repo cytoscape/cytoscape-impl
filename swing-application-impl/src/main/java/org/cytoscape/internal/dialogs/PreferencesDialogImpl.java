@@ -77,7 +77,7 @@ public class PreferencesDialogImpl extends JDialog implements ItemListener, Acti
 	private Map<String, CyProperty> cyPropMap;
 	private Map<String, Boolean> itemChangedMap = new HashMap<String, Boolean>();
 
-	private JComboBox cmbPropCategories = new JComboBox();	
+	private JComboBox<String> cmbPropCategories = new JComboBox<>();	
 	private JScrollPane propsTablePane = new JScrollPane();
 	private JTable prefsTable = new JTable();
 	private JButton addPropBtn = new JButton("Add");
@@ -130,8 +130,8 @@ public class PreferencesDialogImpl extends JDialog implements ItemListener, Acti
 	}
 
 	private void initCMB() {
-		Object[] keys = this.propMap.keySet().toArray();
-		DefaultComboBoxModel cmbModel = new DefaultComboBoxModel(keys);
+		String[] keys = propMap.keySet().toArray(new String[propMap.keySet().size()]);
+		DefaultComboBoxModel<String> cmbModel = new DefaultComboBoxModel<>(keys);
 
 		this.cmbPropCategories.setModel(cmbModel);
 		
@@ -167,9 +167,8 @@ public class PreferencesDialogImpl extends JDialog implements ItemListener, Acti
 	}
 	
 	private void updateTable(){
-		if (this.cmbPropCategories.getSelectedItem() == null) {
+		if (this.cmbPropCategories.getSelectedItem() == null)
 			return;
-		}
 				
 		String selectedPropertyName = this.cmbPropCategories.getSelectedItem().toString();
 
@@ -179,7 +178,6 @@ public class PreferencesDialogImpl extends JDialog implements ItemListener, Acti
 		prefsTable.setModel(m);
 	}
 	
-
 	// Handle action event from the buttons
 	@Override
 	public void actionPerformed(ActionEvent e) {
@@ -288,9 +286,9 @@ public class PreferencesDialogImpl extends JDialog implements ItemListener, Acti
 					)
 			);
 			layout.setVerticalGroup(layout.createSequentialGroup()
-					.addComponent(cmbPropCategories, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+					.addComponent(cmbPropCategories, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(propsTablePane, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addGroup(layout.createParallelGroup(Alignment.CENTER, true)
+					.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
 							.addComponent(addPropBtn)
 							.addComponent(modifyPropBtn)
 							.addComponent(deletePropBtn)

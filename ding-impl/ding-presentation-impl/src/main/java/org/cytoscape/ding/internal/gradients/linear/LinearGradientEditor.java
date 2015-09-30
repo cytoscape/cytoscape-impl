@@ -1,5 +1,7 @@
 package org.cytoscape.ding.internal.gradients.linear;
 
+import static javax.swing.GroupLayout.DEFAULT_SIZE;
+import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static org.cytoscape.ding.internal.gradients.linear.LinearGradient.ANGLE;
 
 import java.awt.event.ActionEvent;
@@ -47,15 +49,15 @@ public class LinearGradientEditor extends AbstractGradientEditor<LinearGradient>
 		final GroupLayout layout = new GroupLayout(p);
 		p.setLayout(layout);
 		layout.setAutoCreateContainerGaps(false);
+		layout.setAutoCreateGaps(true);
 		
 		layout.setHorizontalGroup(layout.createSequentialGroup()
 				.addComponent(angleLbl)
-				.addComponent(getAngleCmb(), GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
-						GroupLayout.PREFERRED_SIZE)
+				.addComponent(getAngleCmb(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 		);
 		layout.setVerticalGroup(layout.createParallelGroup(Alignment.CENTER, false)
 				.addComponent(angleLbl)
-				.addComponent(getAngleCmb())
+				.addComponent(getAngleCmb(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 		);
 		
 		return p;

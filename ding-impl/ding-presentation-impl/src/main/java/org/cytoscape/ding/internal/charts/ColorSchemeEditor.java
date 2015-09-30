@@ -1,5 +1,7 @@
 package org.cytoscape.ding.internal.charts;
 
+import static javax.swing.GroupLayout.DEFAULT_SIZE;
+import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static org.cytoscape.ding.customgraphics.AbstractCustomGraphics2.COLORS;
 import static org.cytoscape.ding.customgraphics.AbstractCustomGraphics2.COLOR_SCHEME;
 import static org.cytoscape.ding.customgraphics.ColorScheme.CUSTOM;
@@ -42,6 +44,7 @@ import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.util.swing.IconManager;
+import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.presentation.property.values.CyColumnIdentifier;
 
 public class ColorSchemeEditor<T extends AbstractCustomGraphics2<?>> extends JPanel {
@@ -114,7 +117,8 @@ public class ColorSchemeEditor<T extends AbstractCustomGraphics2<?>> extends JPa
 		
 		final GroupLayout layout = new GroupLayout(this);
 		setLayout(layout);
-		layout.setAutoCreateContainerGaps(true);
+		layout.setAutoCreateContainerGaps(false);
+		layout.setAutoCreateGaps(!LookAndFeelUtil.isAquaLAF());
 		
 		final JSeparator sep = new JSeparator();
 		final JScrollPane colorListScr = new JScrollPane(getColorListPnl(),
@@ -124,19 +128,18 @@ public class ColorSchemeEditor<T extends AbstractCustomGraphics2<?>> extends JPa
 		layout.setHorizontalGroup(layout.createParallelGroup(Alignment.LEADING, true)
 				.addGroup(layout.createSequentialGroup()
 						.addComponent(colorSchemeLbl)
-						.addComponent(getColorSchemeCmb(), GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
-						          GroupLayout.PREFERRED_SIZE))
+						.addComponent(getColorSchemeCmb(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				)
 				.addComponent(colorListScr)
 				.addComponent(sep)
 		);
 		layout.setVerticalGroup(layout.createSequentialGroup()
 				.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
 						.addComponent(colorSchemeLbl)
-						.addComponent(getColorSchemeCmb()))
-				.addComponent(colorListScr, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
-						GroupLayout.PREFERRED_SIZE)
-				.addComponent(sep, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
-						GroupLayout.PREFERRED_SIZE)
+						.addComponent(getColorSchemeCmb())
+				)
+				.addComponent(colorListScr, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				.addComponent(sep, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 		);
 	}
 	

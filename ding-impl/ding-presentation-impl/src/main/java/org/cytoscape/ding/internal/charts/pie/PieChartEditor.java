@@ -20,6 +20,7 @@ import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.util.swing.IconManager;
+import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.presentation.property.values.CyColumnIdentifier;
 import org.cytoscape.view.presentation.property.values.CyColumnIdentifierFactory;
 
@@ -58,6 +59,7 @@ public class PieChartEditor extends AbstractChartEditor<PieChart> {
 		final GroupLayout layout = new GroupLayout(p);
 		p.setLayout(layout);
 		layout.setAutoCreateContainerGaps(false);
+		layout.setAutoCreateGaps(!LookAndFeelUtil.isAquaLAF());
 		
 		layout.setHorizontalGroup(layout.createParallelGroup(Alignment.LEADING, true)
 				.addGroup(layout.createSequentialGroup()

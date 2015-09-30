@@ -15,6 +15,7 @@ import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.ding.internal.charts.AbstractChartEditor;
 import org.cytoscape.ding.internal.charts.pie.PieChart;
 import org.cytoscape.util.swing.IconManager;
+import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.presentation.property.values.CyColumnIdentifierFactory;
 
 public class RingChartEditor extends AbstractChartEditor<RingChart> {
@@ -55,6 +56,7 @@ public class RingChartEditor extends AbstractChartEditor<RingChart> {
 		final GroupLayout layout = new GroupLayout(p);
 		p.setLayout(layout);
 		layout.setAutoCreateContainerGaps(false);
+		layout.setAutoCreateGaps(!LookAndFeelUtil.isAquaLAF());
 		
 		layout.setHorizontalGroup(layout.createSequentialGroup()
 				.addGroup(layout.createParallelGroup(Alignment.TRAILING, false)

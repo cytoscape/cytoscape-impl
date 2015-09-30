@@ -453,7 +453,7 @@ public class CyCustomGraphicsValueEditor extends JPanel implements VisualPropert
 					this.cg2 = selectedEditorPn.getCg2();
 			}
 			
-			getTypeTpn().setPreferredSize(new Dimension(maxWidth + 40, 400));
+			getTypeTpn().setPreferredSize(new Dimension(maxWidth + 40, 520));
 		}
 		
 		private JTabbedPane getTypeTpn() {

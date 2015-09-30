@@ -31,6 +31,7 @@ import org.cytoscape.ding.internal.charts.bar.BarChart.BarChartType;
 import org.cytoscape.ding.internal.charts.util.ColorGradient;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.util.swing.IconManager;
+import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.presentation.property.values.CyColumnIdentifierFactory;
 
 public class BarChartEditor extends AbstractChartEditor<BarChart> {
@@ -103,6 +104,7 @@ public class BarChartEditor extends AbstractChartEditor<BarChart> {
 		final GroupLayout layout = new GroupLayout(p);
 		p.setLayout(layout);
 		layout.setAutoCreateContainerGaps(false);
+		layout.setAutoCreateGaps(!LookAndFeelUtil.isAquaLAF());
 		
 		final JSeparator sep = new JSeparator();
 		
@@ -134,6 +136,7 @@ public class BarChartEditor extends AbstractChartEditor<BarChart> {
 		final GroupLayout layout = new GroupLayout(p);
 		p.setLayout(layout);
 		layout.setAutoCreateContainerGaps(false);
+		layout.setAutoCreateGaps(!LookAndFeelUtil.isAquaLAF());
 		
 		layout.setHorizontalGroup(layout.createSequentialGroup()
 					.addComponent(separationLbl)

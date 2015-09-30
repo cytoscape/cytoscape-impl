@@ -1,6 +1,9 @@
 package org.cytoscape.ding.internal.util;
 
 
+import static javax.swing.GroupLayout.DEFAULT_SIZE;
+import static javax.swing.GroupLayout.PREFERRED_SIZE;
+
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -104,10 +107,10 @@ public class PointPicker extends JPanel {
     	final GroupLayout layout = new GroupLayout(this);
 		this.setLayout(layout);
 		layout.setAutoCreateContainerGaps(true);
+		layout.setAutoCreateGaps(true);
 		
 		layout.setHorizontalGroup(layout.createSequentialGroup()
-				.addComponent(getCanvas(), GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
-						GroupLayout.PREFERRED_SIZE)
+				.addComponent(getCanvas(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 				.addGap(4)
 				.addGroup(layout.createParallelGroup(Alignment.LEADING, true)
 						.addGroup(layout.createSequentialGroup()
@@ -124,15 +127,13 @@ public class PointPicker extends JPanel {
 				.addComponent(getCanvas())
 				.addGroup(layout.createSequentialGroup()
 						.addGap((int)fieldY)
-						.addGroup(layout.createParallelGroup(Alignment.CENTER, true)
+						.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
 								.addComponent(xLbl)
-								.addComponent(getXTxt(), GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
-								          GroupLayout.PREFERRED_SIZE)
+								.addComponent(getXTxt(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 						)
-						.addGroup(layout.createParallelGroup(Alignment.CENTER, true)
+						.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
 								.addComponent(yLbl)
-								.addComponent(getYTxt(), GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
-								          GroupLayout.PREFERRED_SIZE)
+								.addComponent(getYTxt(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 						)
 				)
 		);

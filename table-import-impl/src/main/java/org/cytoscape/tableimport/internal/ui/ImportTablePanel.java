@@ -673,9 +673,14 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 			layout.setAutoCreateGaps(true);
 			
 			// Get the width of the largest left and right components
-			final int lw = commentLineLabel.getPreferredSize().width; // to align all left-side components
-			final int rw = getTransferNameCheckBox().getPreferredSize().width; // to align all right-side components
-
+			// - to align all left-side components
+			final int lw = commentLineLabel.getPreferredSize().width;
+			// - to align all right-side components
+			final int rw = Math.max(
+					getTransferNameCheckBox().getPreferredSize().width,
+					getImportAllCheckBox().getPreferredSize().width
+			);
+			
 			final ParallelGroup hGroup = layout.createParallelGroup(Alignment.LEADING, true);
 			final SequentialGroup vGroup = layout.createSequentialGroup();
 
@@ -714,8 +719,8 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 					.addComponent(semicolonCheckBox)
 					.addComponent(spaceCheckBox)
 					.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
-							.addComponent(otherCheckBox)
-							.addComponent(otherDelimiterTextField)
+							.addComponent(otherCheckBox, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+							.addComponent(otherDelimiterTextField, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					)
 					.addComponent(sep, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE);
 			}

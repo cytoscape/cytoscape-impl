@@ -79,8 +79,6 @@ import java.util.Set;
 import java.util.TreeMap;
 
 import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
@@ -333,6 +331,7 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 			final GroupLayout layout = new GroupLayout(basicOptionsPnl);
 			basicOptionsPnl.setLayout(layout);
 			layout.setAutoCreateContainerGaps(true);
+			layout.setAutoCreateGaps(!LookAndFeelUtil.isAquaLAF());
 			
 			layout.setHorizontalGroup(layout.createParallelGroup(Alignment.LEADING, true)
 					.addComponent(getOtherBasicOptionsPnl())
@@ -357,6 +356,7 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 			final GroupLayout layout = new GroupLayout(advancedOptionsPnl);
 			advancedOptionsPnl.setLayout(layout);
 			layout.setAutoCreateContainerGaps(true);
+			layout.setAutoCreateGaps(!LookAndFeelUtil.isAquaLAF());
 			
 			layout.setHorizontalGroup(layout.createParallelGroup(Alignment.LEADING, true)
 					.addComponent(getColorSchemeEditor())
@@ -401,6 +401,7 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 			final GroupLayout layout = new GroupLayout(rangePnl);
 			rangePnl.setLayout(layout);
 			layout.setAutoCreateContainerGaps(false);
+			layout.setAutoCreateGaps(!LookAndFeelUtil.isAquaLAF());
 			
 			final JSeparator sep = new JSeparator();
 			
@@ -419,12 +420,12 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 			layout.setVerticalGroup(layout.createSequentialGroup()
 					.addComponent(getGlobalRangeCkb())
 					.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
-							.addComponent(getAutoRangeCkb())
+							.addComponent(getAutoRangeCkb(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 							.addComponent(rangeMinLbl)
-							.addComponent(getRangeMinTxt())
+							.addComponent(getRangeMinTxt(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 							.addComponent(rangeMaxLbl)
-							.addComponent(getRangeMaxTxt())
-							.addComponent(getRefreshRangeBtn())
+							.addComponent(getRangeMaxTxt(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+							.addComponent(getRefreshRangeBtn(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					).addComponent(sep, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 			);
 		}
@@ -444,6 +445,7 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 			final GroupLayout layout = new GroupLayout(labelsPnl);
 			labelsPnl.setLayout(layout);
 			layout.setAutoCreateContainerGaps(false);
+			layout.setAutoCreateGaps(!LookAndFeelUtil.isAquaLAF());
 			
 			final ParallelGroup hGroup = layout.createParallelGroup(Alignment.LEADING, true);
 			final SequentialGroup vGroup = layout.createSequentialGroup();
@@ -514,6 +516,7 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 			final GroupLayout layout = new GroupLayout(orientationPnl);
 			orientationPnl.setLayout(layout);
 			layout.setAutoCreateContainerGaps(false);
+			layout.setAutoCreateGaps(!LookAndFeelUtil.isAquaLAF());
 			
 			final JSeparator sep = new JSeparator();
 			
@@ -546,6 +549,7 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 			final GroupLayout layout = new GroupLayout(axesPnl);
 			axesPnl.setLayout(layout);
 			layout.setAutoCreateContainerGaps(false);
+			layout.setAutoCreateGaps(!LookAndFeelUtil.isAquaLAF());
 			
 			final JSeparator vsep = new JSeparator(JSeparator.VERTICAL);
 			final JSeparator sep = new JSeparator();
@@ -614,6 +618,7 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 			final GroupLayout layout = new GroupLayout(borderPnl);
 			borderPnl.setLayout(layout);
 			layout.setAutoCreateContainerGaps(false);
+			layout.setAutoCreateGaps(!LookAndFeelUtil.isAquaLAF());
 			
 			final JSeparator sep = new JSeparator();
 			
@@ -1361,6 +1366,7 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 			final GroupLayout layout = new GroupLayout(this);
 			setLayout(layout);
 			layout.setAutoCreateContainerGaps(false);
+			layout.setAutoCreateGaps(!LookAndFeelUtil.isAquaLAF());
 			
 			layout.setHorizontalGroup(layout.createParallelGroup(Alignment.LEADING, true)
 					.addGroup(layout.createSequentialGroup()
@@ -1486,15 +1492,25 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 				btnPnl = new JPanel();
 				btnPnl.setOpaque(!LookAndFeelUtil.isAquaLAF()); // Transparent if Aqua
 				
-				final BoxLayout layout = new BoxLayout(btnPnl, BoxLayout.Y_AXIS);
+				final GroupLayout layout = new GroupLayout(btnPnl);
 				btnPnl.setLayout(layout);
+				layout.setAutoCreateContainerGaps(false);
+				layout.setAutoCreateGaps(!LookAndFeelUtil.isAquaLAF());
 				
-				btnPnl.add(Box.createVerticalGlue());
-				btnPnl.add(getAddBtn());
-				btnPnl.add(getAddAllBtn());
-				btnPnl.add(Box.createVerticalStrut(20));
-				btnPnl.add(getRemoveBtn());
-				btnPnl.add(getRemoveAllBtn());
+				layout.setHorizontalGroup(layout.createParallelGroup(Alignment.CENTER, true)
+						.addComponent(getAddBtn(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+						.addComponent(getAddAllBtn(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+						.addComponent(getRemoveBtn(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+						.addComponent(getRemoveAllBtn(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				);
+				layout.setVerticalGroup(layout.createSequentialGroup()
+						.addGap(0, 0, Short.MAX_VALUE)
+						.addComponent(getAddBtn(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addComponent(getAddAllBtn(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addGap(20)
+						.addComponent(getRemoveBtn(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addComponent(getRemoveAllBtn(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				);
 			}
 			
 			return btnPnl;

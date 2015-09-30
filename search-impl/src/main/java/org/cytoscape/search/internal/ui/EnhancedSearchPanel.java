@@ -24,18 +24,17 @@ package org.cytoscape.search.internal.ui;
  * #L%
  */
 
-
+import static javax.swing.GroupLayout.DEFAULT_SIZE;
+import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static org.cytoscape.util.swing.LookAndFeelUtil.isAquaLAF;
 
-import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 
-import javax.swing.Box;
-import javax.swing.BoxLayout;
+import javax.swing.GroupLayout;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.UIManager;
@@ -44,8 +43,8 @@ import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.search.internal.EnhancedSearch;
 import org.cytoscape.search.internal.SearchTaskFactory;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.LookAndFeelUtil;
-import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.work.swing.DialogTaskManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,26 +55,19 @@ public class EnhancedSearchPanel extends JPanel {
 	
 	private static final Logger logger = LoggerFactory.getLogger(EnhancedSearchPanel.class);
 	
-	private final CyApplicationManager appManager;
 	private final EnhancedSearch searchMgr;
-	private final DialogTaskManager taskMgr;
-	
-	private final CyNetworkViewManager viewManager;
+	private final CyServiceRegistrar serviceRegistrar;
 	
 	private JTextField tfSearchText;
 
 	/** Creates new form NewJPanel */
-	public EnhancedSearchPanel(final CyApplicationManager appManager, final CyNetworkViewManager viewManager,
-			final EnhancedSearch searchMgr, final DialogTaskManager taskMgr) {
-		this.appManager = appManager;
+	public EnhancedSearchPanel(final EnhancedSearch searchMgr, final CyServiceRegistrar serviceRegistrar) {
 		this.searchMgr = searchMgr;
-		this.taskMgr = taskMgr;
-		this.viewManager = viewManager;
-		
+		this.serviceRegistrar = serviceRegistrar;
 		initComponents();
 	}
 
-	private void tfSearchTextActionPerformed(java.awt.event.ActionEvent evt) {
+	private void tfSearchTextActionPerformed(ActionEvent evt) {
 		doSearching();
 	}
 
@@ -87,17 +79,17 @@ public class EnhancedSearchPanel extends JPanel {
 		if (queryStr == null || queryStr.length() == 0)
 			return;
 		
-		logger.info("Search Start.  Query text = " + queryStr);
-
+		final CyApplicationManager appManager = serviceRegistrar.getService(CyApplicationManager.class);
 		final CyNetwork currentNetwork = appManager.getCurrentNetwork();
+		
 		if (currentNetwork != null) {
-			logger.debug("Target Network ID = " + currentNetwork.getSUID());
-
-			final SearchTaskFactory factory = new SearchTaskFactory(searchMgr,
-					queryStr, viewManager, appManager);
-			this.taskMgr.execute(factory.createTaskIterator(currentNetwork));
-		} else
+			final SearchTaskFactory factory = new SearchTaskFactory(searchMgr, queryStr, serviceRegistrar);
+			
+			final DialogTaskManager taskMgr = serviceRegistrar.getService(DialogTaskManager.class);
+			taskMgr.execute(factory.createTaskIterator(currentNetwork));
+		} else {
 			logger.error("Could not find network for search");
+		}
 	}
 
 	private void initComponents() {
@@ -117,9 +109,6 @@ public class EnhancedSearchPanel extends JPanel {
 			if (defFont != null)
 				tfSearchText.setFont(defFont);
 		}
-		
-		tfSearchText.setPreferredSize(new Dimension(220, tfSearchText.getPreferredSize().height));
-		tfSearchText.setMaximumSize(tfSearchText.getPreferredSize());
 		
 		tfSearchText.addActionListener(new ActionListener() {
 			@Override
@@ -146,8 +135,17 @@ public class EnhancedSearchPanel extends JPanel {
 			}
 		});
 		
-		setLayout(new BoxLayout(this, BoxLayout.LINE_AXIS));
-		add(Box.createHorizontalGlue());
-		add(tfSearchText);
+		final GroupLayout layout = new GroupLayout(this);
+		setLayout(layout);
+		layout.setAutoCreateContainerGaps(true);
+		layout.setAutoCreateGaps(true);
+		
+		layout.setHorizontalGroup(layout.createSequentialGroup()
+				.addGap(10, 20, Short.MAX_VALUE)
+				.addComponent(tfSearchText, 120, 240, 300)
+		);
+		layout.setVerticalGroup(layout.createSequentialGroup()
+				.addComponent(tfSearchText, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+		);
 	}
 }

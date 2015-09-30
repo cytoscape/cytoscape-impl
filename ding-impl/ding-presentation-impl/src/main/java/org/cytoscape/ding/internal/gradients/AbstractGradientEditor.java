@@ -1,5 +1,7 @@
 package org.cytoscape.ding.internal.gradients;
 
+import static javax.swing.GroupLayout.DEFAULT_SIZE;
+import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static org.cytoscape.ding.internal.gradients.AbstractGradient.GRADIENT_COLORS;
 import static org.cytoscape.ding.internal.gradients.AbstractGradient.GRADIENT_FRACTIONS;
 
@@ -45,6 +47,7 @@ public abstract class AbstractGradientEditor<T extends AbstractCustomGraphics2<?
 		final GroupLayout layout = new GroupLayout(this);
 		setLayout(layout);
 		layout.setAutoCreateContainerGaps(true);
+		layout.setAutoCreateGaps(!LookAndFeelUtil.isAquaLAF());
 		
 		final JSeparator sep = new JSeparator();
 		
@@ -56,9 +59,8 @@ public abstract class AbstractGradientEditor<T extends AbstractCustomGraphics2<?
 		);
 		layout.setVerticalGroup(layout.createSequentialGroup()
 				.addComponent(colorsLbl)
-				.addComponent(getGrEditor(), 100, 100, GroupLayout.PREFERRED_SIZE)
-				.addComponent(sep, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
-				          GroupLayout.PREFERRED_SIZE)
+				.addComponent(getGrEditor(), 100, 100, PREFERRED_SIZE)
+				.addComponent(sep, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 				.addComponent(getOtherOptionsPnl())
 		);
 	}

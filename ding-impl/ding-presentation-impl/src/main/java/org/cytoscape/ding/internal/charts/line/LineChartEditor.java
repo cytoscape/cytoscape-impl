@@ -13,6 +13,7 @@ import javax.swing.JTextField;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.ding.internal.charts.AbstractChartEditor;
 import org.cytoscape.util.swing.IconManager;
+import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.presentation.property.values.CyColumnIdentifierFactory;
 
 public class LineChartEditor extends AbstractChartEditor<LineChart> {
@@ -49,6 +50,7 @@ public class LineChartEditor extends AbstractChartEditor<LineChart> {
 		final GroupLayout layout = new GroupLayout(p);
 		p.setLayout(layout);
 		layout.setAutoCreateContainerGaps(false);
+		layout.setAutoCreateGaps(!LookAndFeelUtil.isAquaLAF());
 		
 		layout.setHorizontalGroup(layout.createParallelGroup(Alignment.LEADING, true)
 				.addGroup(layout.createSequentialGroup()

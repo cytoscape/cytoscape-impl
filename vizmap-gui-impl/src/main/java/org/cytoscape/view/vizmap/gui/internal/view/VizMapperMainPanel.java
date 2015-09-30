@@ -25,6 +25,7 @@ package org.cytoscape.view.vizmap.gui.internal.view;
  */
 
 import static javax.swing.GroupLayout.DEFAULT_SIZE;
+import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static org.cytoscape.util.swing.LookAndFeelUtil.isAquaLAF;
 
 import java.awt.BorderLayout;
@@ -55,6 +56,7 @@ import javax.swing.ActionMap;
 import javax.swing.BorderFactory;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.GroupLayout;
+import javax.swing.GroupLayout.Alignment;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.InputMap;
@@ -69,7 +71,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JTabbedPane;
 import javax.swing.KeyStroke;
-import javax.swing.LayoutStyle;
+import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
@@ -81,6 +83,7 @@ import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.util.swing.GravityTracker;
 import org.cytoscape.util.swing.IconManager;
+import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.util.swing.MenuGravityTracker;
 import org.cytoscape.util.swing.PopupMenuGravityTracker;
 import org.cytoscape.view.model.CyNetworkView;
@@ -327,15 +330,20 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 		setOpaque(!isAquaLAF());
 		final GroupLayout layout = new GroupLayout(this);
 		this.setLayout(layout);
+		layout.setAutoCreateContainerGaps(LookAndFeelUtil.isWinLAF());
+		layout.setAutoCreateGaps(!LookAndFeelUtil.isAquaLAF());
 		
-		layout.setHorizontalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-				.addComponent(getStylesPnl(), GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-				.addComponent(getPropertiesPn(), GroupLayout.DEFAULT_SIZE, 280, Short.MAX_VALUE));
-		layout.setVerticalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING).addGroup(
-				layout.createSequentialGroup()
-						.addComponent(getStylesPnl(), GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
-								GroupLayout.PREFERRED_SIZE).addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-						.addComponent(getPropertiesPn(), GroupLayout.DEFAULT_SIZE, 510, Short.MAX_VALUE)));
+		layout.setHorizontalGroup(layout.createParallelGroup(Alignment.LEADING)
+				.addComponent(getStylesPnl(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				.addComponent(getPropertiesPn(), DEFAULT_SIZE, 280, Short.MAX_VALUE)
+		);
+		layout.setVerticalGroup(layout.createParallelGroup(Alignment.LEADING)
+				.addGroup(layout.createSequentialGroup()
+						.addComponent(getStylesPnl(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addPreferredGap(ComponentPlacement.RELATED)
+						.addComponent(getPropertiesPn(), DEFAULT_SIZE, 510, Short.MAX_VALUE)
+				)
+		);
 	}
 	
 	private JPanel getStylesPnl() {
@@ -343,20 +351,19 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 			stylesPnl = new JPanel();
 			stylesPnl.setOpaque(!isAquaLAF());
 			
-			final GroupLayout stylesPanelLayout = new GroupLayout(stylesPnl);
-			stylesPnl.setLayout(stylesPanelLayout);
+			final GroupLayout layout = new GroupLayout(stylesPnl);
+			stylesPnl.setLayout(layout);
+			layout.setAutoCreateGaps(!LookAndFeelUtil.isAquaLAF());
 			
-			stylesPanelLayout.setHorizontalGroup(stylesPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
-					.addGroup(stylesPanelLayout.createSequentialGroup()
-							.addComponent(getStylesBtn(), 0, 146, Short.MAX_VALUE)
-							.addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-							.addComponent(getOptionsBtn(), GroupLayout.PREFERRED_SIZE, 64, GroupLayout.PREFERRED_SIZE)
-					));
-			stylesPanelLayout.setVerticalGroup(stylesPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
-					.addComponent(getStylesBtn(), GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
-							GroupLayout.PREFERRED_SIZE)
-					.addComponent(getOptionsBtn())
-					);
+			layout.setHorizontalGroup(layout.createSequentialGroup()
+					.addComponent(getStylesBtn(), 0, 146, Short.MAX_VALUE)
+					.addPreferredGap(ComponentPlacement.RELATED)
+					.addComponent(getOptionsBtn(), PREFERRED_SIZE, 64, PREFERRED_SIZE)
+			);
+			layout.setVerticalGroup(layout.createParallelGroup(Alignment.CENTER, false)
+					.addComponent(getStylesBtn(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(getOptionsBtn(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+			);
 		}
 		
 		return stylesPnl;

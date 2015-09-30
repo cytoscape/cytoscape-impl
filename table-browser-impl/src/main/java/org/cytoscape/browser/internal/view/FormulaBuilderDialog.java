@@ -241,7 +241,7 @@ public class FormulaBuilderDialog extends JDialog {
 			layout.setHorizontalGroup(layout.createParallelGroup(Alignment.LEADING, true)
 					.addComponent(nextArgLabel)
 					.addGroup(layout.createSequentialGroup()
-							.addComponent(getAttribNamesComboBox(), 200, 320, 320)
+							.addComponent(getAttribNamesComboBox(), 200, 320, Short.MAX_VALUE)
 							.addComponent(getAddButton1(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					)
 					.addGroup(layout.createSequentialGroup()
