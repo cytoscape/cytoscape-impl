@@ -15,7 +15,8 @@ public class ColumnComboBoxElement implements Comparable<ColumnComboBoxElement> 
 	
 	public static enum SelectedColumnType {
 		NONE,
-		NUMERIC,
+		INTEGER,
+		DOUBLE,
 		STRING,
 		BOOLEAN;
 		
@@ -24,8 +25,10 @@ public class ColumnComboBoxElement implements Comparable<ColumnComboBoxElement> 
 			if(colType.isAssignableFrom(List.class))
 				colType = col.getListElementType();
 			
-			if(colType == Integer.class || colType == Double.class || colType == Long.class)
-				return NUMERIC;
+			if(colType == Integer.class || colType == Long.class) // treat longs as ints for now, 
+				return INTEGER;
+			if(colType == Double.class)
+				return DOUBLE;
 			if(colType == Boolean.class)
 				return BOOLEAN;
 			if(colType == String.class)

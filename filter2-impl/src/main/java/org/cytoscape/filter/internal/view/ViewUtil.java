@@ -45,6 +45,25 @@ public class ViewUtil {
 		return formatter;
 	}
 	
+	public static NumberFormatter createIntegerFormatter() {
+		NumberFormat format = NumberFormat.getIntegerInstance();
+		NumberFormatter formatter = new NumberFormatter(format);
+		formatter.setValueClass(Integer.class);
+		formatter.setCommitsOnValidEdit(true);
+		return formatter;
+	}
+	
+	public static AbstractFormatterFactory createIntegerFormatterFactory() {
+		return new AbstractFormatterFactory() {
+			@Override
+			public AbstractFormatter getFormatter(JFormattedTextField tf) {
+				return createIntegerFormatter();
+			}
+		};
+	}
+	
+	
+	
 	public static NumberFormatter createNumberFormatter() {
 		NumberFormat format = NumberFormat.getNumberInstance();
 		NumberFormatter formatter = new NumberFormatter(format);

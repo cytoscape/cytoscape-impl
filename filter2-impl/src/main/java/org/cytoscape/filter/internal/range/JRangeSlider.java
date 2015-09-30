@@ -1,4 +1,4 @@
-package org.cytoscape.filter.internal.prefuse;
+package org.cytoscape.filter.internal.range;
 
 /*
  * #%L
@@ -113,9 +113,9 @@ public class JRangeSlider extends JComponent implements MouseListener, MouseMoti
 	 * @param highValue - the current high value shown by the range slider's bar.
 	 * @param orientation - construct a horizontal or vertical slider?
 	 */
-	public JRangeSlider(int minimum, int maximum, int lowValue, int highValue, int orientation) {
-		this(new NumberRangeModel(lowValue, highValue, minimum, maximum), orientation);
-	}
+//	public JRangeSlider(int minimum, int maximum, int lowValue, int highValue, int orientation) {
+//		this(new NumberRangeModel(lowValue, highValue, minimum, maximum), orientation);
+//	}
 
 	/**
 	 * Create a new range slider.

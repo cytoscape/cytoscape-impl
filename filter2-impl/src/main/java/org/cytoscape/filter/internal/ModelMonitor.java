@@ -543,7 +543,7 @@ public class ModelMonitor implements SetCurrentNetworkListener,
 		interactivityChangedListeners.remove(listener);
 	}
 
-	public void recomputeColumnRange(String name, Class<? extends CyIdentifiable> type) {
+	public void recomputeColumnRange(String name, Class<?> type) {
 		synchronized (lock) {
 			if (network == null) {
 				return;

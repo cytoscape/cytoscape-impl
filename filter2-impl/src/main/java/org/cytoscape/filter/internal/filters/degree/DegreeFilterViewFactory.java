@@ -13,13 +13,14 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 
 import org.cytoscape.filter.internal.ModelMonitor;
+import org.cytoscape.filter.internal.range.RangeChooser;
+import org.cytoscape.filter.internal.range.RangeChooserController;
+import org.cytoscape.filter.internal.range.RangeListener;
 import org.cytoscape.filter.internal.view.BooleanComboBox;
 import org.cytoscape.filter.internal.view.BooleanComboBox.StateChangeListener;
 import org.cytoscape.filter.internal.view.ComboItem;
 import org.cytoscape.filter.internal.view.DynamicComboBoxModel;
 import org.cytoscape.filter.internal.view.Matcher;
-import org.cytoscape.filter.internal.view.RangeChooser;
-import org.cytoscape.filter.internal.view.RangeChooserController;
 import org.cytoscape.filter.internal.view.ViewUtil;
 import org.cytoscape.filter.internal.view.look.FilterPanelStyle;
 import org.cytoscape.filter.model.Transformer;
@@ -63,7 +64,7 @@ public class DegreeFilterViewFactory implements TransformerViewFactory {
 
 	class Controller implements DegreeFilterController {
 		private DegreeFilter filter;
-		private RangeChooserController chooserController;
+		private RangeChooserController<Integer> chooserController;
 		private boolean isInteractive;
 
 		public Controller(final DegreeFilter filter) {
@@ -87,16 +88,14 @@ public class DegreeFilterViewFactory implements TransformerViewFactory {
 				highValue = pair.getHigh();
 			}
 			
-			final Number[] range = new Number[2];
-			chooserController = new RangeChooserController() {
-				@Override
-				protected void handleRangeChanged(Number low, Number high) {
-					range[0] = low;
-					range[1] = high;
+			chooserController = RangeChooserController.forInteger(style, new RangeListener<Integer>() {
+				public void rangeChanged(Integer low, Integer high) {
+					Number[] range = { low, high };
 					filter.setCriterion(range);
 				}
-			};
-			chooserController.setRange(lowValue, highValue, pair.getLow(), pair.getHigh());
+			});
+			
+			chooserController.reset(lowValue.intValue(), highValue.intValue(), pair.getLow(), pair.getHigh());
 		}
 
 		public void synchronize(View view) {
@@ -112,13 +111,17 @@ public class DegreeFilterViewFactory implements TransformerViewFactory {
 			
 			Object criterion = filter.getCriterion();
 			if (criterion instanceof Number[]) {
+				DegreeRange degreeRange = modelMonitor.getDegreeRange();
+				DegreeRange.Pair pair = degreeRange.getRange(filter.getEdgeType());
 				Number[] range = (Number[]) criterion;
-				chooserController.setSelection(range[0], range[1]);
+				chooserController.reset(range[0].intValue(), range[1].intValue(), pair.getLow(), pair.getHigh());
 			}
-			Number low = chooserController.getLow().longValue();
-			Number high = chooserController.getHigh().longValue();
-			view.getRangeChooser().getMinimumField().setText(low.toString());
-			view.getRangeChooser().getMaximumField().setText(high.toString());
+			
+			// MKTODO below is the hack, should fix this
+//			Number low  = chooserController.getLow().longValue();
+//			Number high = chooserController.getHigh().longValue();
+//			view.getRangeChooser().getLowField().setText(low.toString());
+//			view.getRangeChooser().getHighField().setText(high.toString());
 			
 			DynamicComboBoxModel.select(view.edgeTypeComboBox, 0, new Matcher<ComboItem<Type>>() {
 				@Override
@@ -136,11 +139,7 @@ public class DegreeFilterViewFactory implements TransformerViewFactory {
 		
 		public void setInteractive(boolean isInteractive, View view) {
 			this.isInteractive = isInteractive;
-			chooserController.setInteractive(isInteractive, view.chooser);
-		}
-		
-		public RangeChooserController getRangeChooserController() {
-			return chooserController;
+			chooserController.setInteractive(isInteractive);
 		}
 
 		@Override
@@ -151,14 +150,7 @@ public class DegreeFilterViewFactory implements TransformerViewFactory {
 			int low  = chooserController.getLow().intValue();
 			int high = chooserController.getHigh().intValue();
 			
-			// Clip low and high to be within the range.
-			// Need to do this check here because NumberRangeModel doesn't do it (unlike DefaultBoundedRangeModel which does)_
-			if(low < min)
-				low = min;
-			if(high > max)
-				high = max;
-			
-			chooserController.setRange(low, high, min, max);
+			chooserController.reset(low, high, min, max);
 		}
 		
 		public void setEdgeType(Type type) {
@@ -173,7 +165,7 @@ public class DegreeFilterViewFactory implements TransformerViewFactory {
 	class View extends JPanel implements DegreeFilterView, InteractivityChangedListener {
 		private JComboBox<ComboItem<Type>> edgeTypeComboBox;
 		private Controller controller;
-		private RangeChooser chooser;
+		private RangeChooser<Integer> chooser;
 		private BooleanComboBox isOrIsNotCombo;
 		
 		public View(final Controller controller) {
@@ -199,7 +191,7 @@ public class DegreeFilterViewFactory implements TransformerViewFactory {
 				}
 			});
 			
-			chooser = new RangeChooser(style, controller.chooserController);
+			chooser = controller.chooserController.getRangeChooser();
 			
 			setLayout(new GridBagLayout());
 			add(style.createLabel("Degree"), new GridBagConstraints(0, 0, 1, 1, 0, 0, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
@@ -215,7 +207,7 @@ public class DegreeFilterViewFactory implements TransformerViewFactory {
 			controller.setInteractive(isInteractive, this);
 		}
 		
-		RangeChooser getRangeChooser() {
+		RangeChooser<Integer> getRangeChooser() {
 			return chooser;
 		}
 		
