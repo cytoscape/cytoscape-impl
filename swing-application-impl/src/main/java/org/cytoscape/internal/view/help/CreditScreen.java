@@ -44,6 +44,7 @@ import java.util.List;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
@@ -53,6 +54,7 @@ import javax.swing.UIManager;
 
 import org.cytoscape.application.CyVersion;
 import org.cytoscape.application.swing.CySwingApplication;
+import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -87,10 +89,14 @@ public class CreditScreen {
 		}
 	}
 
+	@SuppressWarnings("serial")
 	public void showCredits() {
-		dialog = new JDialog(parent,true);
+		dialog = new JDialog(parent, true);
 		dialog.setUndecorated(true);
+		
 		final ScrollingLinesPanel panel = new ScrollingLinesPanel(image, lines);
+		panel.setBorder(BorderFactory.createLineBorder(UIManager.getColor("Separator.foreground")));
+		
 		dialog.add(panel);
 		dialog.pack();
 		dialog.validate();
@@ -98,8 +104,7 @@ public class CreditScreen {
 		centerDialogLocation(dialog);
 
 		Action scrollText = new AbstractAction() {
-			private final static long serialVersionUID = 1202340446391603L;
-
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				panel.incrementYPos();
 				dialog.repaint();
@@ -114,6 +119,15 @@ public class CreditScreen {
 				hideCredits();
 			}
 		});
+		
+		Action cancelAction = new AbstractAction() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				hideCredits();
+			}
+		};
+		
+		LookAndFeelUtil.setDefaultOkCancelKeyStrokes(dialog.getRootPane(), null, cancelAction);
 
 		timer.start();
 		dialog.setVisible(true);
