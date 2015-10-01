@@ -71,7 +71,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JTabbedPane;
 import javax.swing.KeyStroke;
-import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
@@ -83,7 +82,6 @@ import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.util.swing.GravityTracker;
 import org.cytoscape.util.swing.IconManager;
-import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.util.swing.MenuGravityTracker;
 import org.cytoscape.util.swing.PopupMenuGravityTracker;
 import org.cytoscape.view.model.CyNetworkView;
@@ -328,10 +326,11 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 	private void init() {
 		setMinimumSize(new Dimension(420, getMinimumSize().height));
 		setOpaque(!isAquaLAF());
+		
 		final GroupLayout layout = new GroupLayout(this);
 		this.setLayout(layout);
-		layout.setAutoCreateContainerGaps(LookAndFeelUtil.isWinLAF());
-		layout.setAutoCreateGaps(!LookAndFeelUtil.isAquaLAF());
+		layout.setAutoCreateContainerGaps(!isAquaLAF());
+		layout.setAutoCreateGaps(!isAquaLAF());
 		
 		layout.setHorizontalGroup(layout.createParallelGroup(Alignment.LEADING)
 				.addComponent(getStylesPnl(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
@@ -340,7 +339,6 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 		layout.setVerticalGroup(layout.createParallelGroup(Alignment.LEADING)
 				.addGroup(layout.createSequentialGroup()
 						.addComponent(getStylesPnl(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-						.addPreferredGap(ComponentPlacement.RELATED)
 						.addComponent(getPropertiesPn(), DEFAULT_SIZE, 510, Short.MAX_VALUE)
 				)
 		);
@@ -351,16 +349,20 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 			stylesPnl = new JPanel();
 			stylesPnl.setOpaque(!isAquaLAF());
 			
+			// TODO: For some reason, the Styles button is naturally taller than the Options one on Nimbus and Windows.
+			//       Let's force it to have the same height.
+			getStylesBtn().setPreferredSize(
+					new Dimension(getStylesBtn().getPreferredSize().width, getOptionsBtn().getPreferredSize().height));
+			
 			final GroupLayout layout = new GroupLayout(stylesPnl);
 			stylesPnl.setLayout(layout);
-			layout.setAutoCreateGaps(!LookAndFeelUtil.isAquaLAF());
+			layout.setAutoCreateGaps(!isAquaLAF());
 			
 			layout.setHorizontalGroup(layout.createSequentialGroup()
 					.addComponent(getStylesBtn(), 0, 146, Short.MAX_VALUE)
-					.addPreferredGap(ComponentPlacement.RELATED)
 					.addComponent(getOptionsBtn(), PREFERRED_SIZE, 64, PREFERRED_SIZE)
 			);
-			layout.setVerticalGroup(layout.createParallelGroup(Alignment.CENTER, false)
+			layout.setVerticalGroup(layout.createParallelGroup(Alignment.LEADING, false)
 					.addComponent(getStylesBtn(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(getOptionsBtn(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 			);

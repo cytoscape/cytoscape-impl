@@ -1,5 +1,7 @@
 package org.cytoscape.filter.internal.view;
 
+import static org.cytoscape.util.swing.LookAndFeelUtil.isAquaLAF;
+
 import java.awt.BorderLayout;
 
 import javax.swing.JPanel;
@@ -7,6 +9,7 @@ import javax.swing.JTabbedPane;
 
 @SuppressWarnings("serial")
 public class SelectPanel extends JPanel {
+	
 	public SelectPanel(FilterPanel filterPanel, TransformerPanel transformerPanel) {
 		JTabbedPane tabPane = new JTabbedPane(JTabbedPane.BOTTOM);
 		tabPane.addTab("Filter", null, filterPanel, "Define filters");
@@ -15,6 +18,6 @@ public class SelectPanel extends JPanel {
 		setLayout(new BorderLayout());
 		add(tabPane, BorderLayout.CENTER);
 		
-		setOpaque(false);
+		setOpaque(!isAquaLAF());
 	}
 }
