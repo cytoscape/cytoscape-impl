@@ -66,6 +66,7 @@ public class RangeChooser<N extends Number> extends JPanel {
 		setOpaque(false);
 	}
 	
+	
 	void addListeners(RangeChooserController<N> controller) {
 		slider.addChangeListener(sliderListener);
 		lowField.addPropertyChangeListener("value", textListener);

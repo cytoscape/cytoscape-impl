@@ -285,23 +285,18 @@ public class ColumnFilterViewFactory implements TransformerViewFactory {
 			ColumnComboBoxElement column = (ColumnComboBoxElement)nameComboBox.getSelectedItem();
 			Object criterion = filter.getCriterion();
 			
-			switch(column.getColType()) {
+			SelectedColumnType colType = column.getColType();
+			switch(colType) {
 			case STRING:
 				textField.setText((String)criterion);
 				predicateComboBox.setSelectedItem(new ComboItem<>(filter.getPredicate()));
 				handleStringColumnSelected();
 				break;
 			case INTEGER:
-				modelMonitor.recomputeColumnRange(column.getName(), column.getTableType());
-				controller.updateIntRange((Number[]) criterion);
-				numericNegateComboBox.setState(filter.getPredicate() != Predicate.IS_NOT_BETWEEN);
-				handleNumericColumnSelected(true);
+				refreshRangeUI(true,  (Number[])criterion, column, controller.intChooserController);
 				break;
 			case DOUBLE:
-				modelMonitor.recomputeColumnRange(column.getName(), column.getTableType());
-				controller.updateDoubleRange((Number[]) criterion);
-				numericNegateComboBox.setState(filter.getPredicate() != Predicate.IS_NOT_BETWEEN);
-				handleNumericColumnSelected(false);
+				refreshRangeUI(false, (Number[])criterion, column, controller.doubleChooserController);
 				break;
 			case BOOLEAN:
 				booleanComboBox.setState((boolean)criterion);
@@ -313,9 +308,26 @@ public class ColumnFilterViewFactory implements TransformerViewFactory {
 			}
 			caseSensitiveCheckBox.setSelected(filter.getCaseSensitive());
 			
+			
 			addListeners();
 		}
 		
+		private void refreshRangeUI(boolean isInt, Number[] criterion, ColumnComboBoxElement column, RangeChooserController<? extends Number> rcc) {
+			modelMonitor.recomputeColumnRange(column.getName(), column.getTableType());
+			
+			if(isInt)
+				controller.updateIntRange(criterion);
+			else
+				controller.updateDoubleRange(criterion);
+			
+			if(criterion == null) {
+				Number[] range = { rcc.getLow(), rcc.getHigh() };
+				filter.setCriterion(range);
+			}
+			
+			numericNegateComboBox.setState(filter.getPredicate() != Predicate.IS_NOT_BETWEEN);
+			handleNumericColumnSelected(isInt);
+		}
 		
 		private void handleColumnSelected() {
 			if (nameComboBox.getSelectedIndex() == 0) {
