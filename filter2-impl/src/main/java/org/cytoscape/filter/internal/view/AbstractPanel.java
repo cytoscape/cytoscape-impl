@@ -145,6 +145,7 @@ public abstract class AbstractPanel<T extends NamedElement, C extends AbstractPa
 			}
 		});
 		cancelApplyButton.setEnabled(false);
+		cancelApplyButton.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 5));
 		
 		statusLabel = new JLabel(" ");
 		statusLabel.setFont(statusLabel.getFont().deriveFont(LookAndFeelUtil.getSmallFontSize()));
@@ -165,12 +166,9 @@ public abstract class AbstractPanel<T extends NamedElement, C extends AbstractPa
 	}
 	
 	protected Component createEditPanel() {
-		final JPanel panel = new JPanel();
-		panel.setBorder(BorderFactory.createEtchedBorder());
-		
 		scrollPane = new JScrollPane();
-		scrollPane.setBorder(BorderFactory.createEmptyBorder());
 		
+		final JPanel panel = new JPanel();
 		panel.setLayout(new GridBagLayout());
 		
 		int row = 0;

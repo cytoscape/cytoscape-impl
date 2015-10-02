@@ -53,7 +53,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.Vector;
 
-import javax.swing.BorderFactory;
 import javax.swing.ComboBoxEditor;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.GroupLayout;
@@ -64,11 +63,12 @@ import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JSeparator;
 import javax.swing.JSplitPane;
 import javax.swing.JTextField;
 import javax.swing.JTextPane;
 import javax.swing.JTree;
-import javax.swing.LayoutStyle;
+import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
@@ -91,8 +91,8 @@ import org.cytoscape.app.internal.net.ResultsFilterer;
 import org.cytoscape.app.internal.net.WebApp;
 import org.cytoscape.app.internal.net.WebQuerier;
 import org.cytoscape.app.internal.net.WebQuerier.AppTag;
-import org.cytoscape.app.internal.task.InstallAppFromNetworkTask;
 import org.cytoscape.app.internal.task.InstallAppFromJarTask;
+import org.cytoscape.app.internal.task.InstallAppFromNetworkTask;
 import org.cytoscape.app.internal.task.ShowInstalledAppsIfChangedTask;
 import org.cytoscape.app.internal.ui.downloadsites.DownloadSite;
 import org.cytoscape.app.internal.ui.downloadsites.DownloadSitesManager;
@@ -100,6 +100,7 @@ import org.cytoscape.app.internal.ui.downloadsites.DownloadSitesManager.Download
 import org.cytoscape.app.internal.ui.downloadsites.DownloadSitesManager.DownloadSitesChangedListener;
 import org.cytoscape.util.swing.FileChooserFilter;
 import org.cytoscape.util.swing.FileUtil;
+import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskIterator;
@@ -271,8 +272,8 @@ public class InstallAppsPanel extends JPanel {
     }
 
     private void initComponents() {
-    	searchAppsLabel = new JLabel();
-        installFromFileButton = new JButton();
+    	searchAppsLabel = new JLabel("Search:");
+        installFromFileButton = new JButton("Install from File...");
         filterTextField = new JTextField();
         descriptionSplitPane = new JSplitPane();
         tagsSplitPane = new JSplitPane();
@@ -283,25 +284,28 @@ public class InstallAppsPanel extends JPanel {
         descriptionPanel = new JPanel();
         descriptionScrollPane = new JScrollPane();
         descriptionTextPane = new JTextPane();
-        viewOnAppStoreButton = new JButton();
-        installButton = new JButton();
-        downloadSiteLabel = new JLabel();
+        viewOnAppStoreButton = new JButton("View on App Store");
+        installButton = new JButton("Install");
+        downloadSiteLabel = new JLabel("Download Site:");
         downloadSiteComboBox = new JComboBox();
-        manageSitesButton = new JButton();
+        manageSitesButton = new JButton("Manage Sites...");
 
-        searchAppsLabel.setText("Search:");
+        searchAppsLabel.setVisible(!LookAndFeelUtil.isAquaLAF());
+        filterTextField.putClientProperty("JTextField.variant", "search"); // Aqua LAF only
+        filterTextField.setToolTipText("To search, start typing");
 
-        installFromFileButton.setText("Install from File...");
-        installFromFileButton.addActionListener(new java.awt.event.ActionListener() {
+        installFromFileButton.addActionListener(new ActionListener() {
         	@Override
             public void actionPerformed(ActionEvent evt) {
                 installFromFileButtonActionPerformed(evt);
             }
         });
 
+        descriptionSplitPane.setBorder(null);
         descriptionSplitPane.setDividerLocation(390);
 
         tagsSplitPane.setDividerLocation(175);
+        tagsSplitPane.setBorder(null);
 
         DefaultMutableTreeNode treeNode1 = new DefaultMutableTreeNode("root");
         DefaultMutableTreeNode treeNode2 = new DefaultMutableTreeNode("all apps (0)");
@@ -325,8 +329,6 @@ public class InstallAppsPanel extends JPanel {
 
         descriptionSplitPane.setLeftComponent(tagsSplitPane);
 
-        descriptionPanel.setBorder(BorderFactory.createEtchedBorder());
-
         descriptionTextPane.setContentType("text/html");
         descriptionTextPane.setEditable(false);
         //descriptionTextPane.setText("<html>\n  <head>\n\n  </head>\n  <body>\n    <p style=\"margin-top: 0\">\n      App description is displayed here.\n    </p>\n  </body>\n</html>\n");
@@ -345,7 +347,6 @@ public class InstallAppsPanel extends JPanel {
 
         descriptionSplitPane.setRightComponent(descriptionPanel);
 
-        viewOnAppStoreButton.setText("View on App Store");
         viewOnAppStoreButton.setEnabled(false);
         viewOnAppStoreButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
@@ -353,15 +354,12 @@ public class InstallAppsPanel extends JPanel {
             }
         });
 
-        installButton.setText("Install");
         installButton.setEnabled(false);
         installButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 installButtonActionPerformed(evt);
             }
         });
-
-        downloadSiteLabel.setText("Download Site:");
 
         downloadSiteComboBox.setModel(new DefaultComboBoxModel(new String[] { WebQuerier.DEFAULT_APP_STORE_URL }));
         downloadSiteComboBox.addItemListener(new ItemListener() {
@@ -380,64 +378,54 @@ public class InstallAppsPanel extends JPanel {
             }
         });
 
-        manageSitesButton.setText("Manage Sites...");
         manageSitesButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 manageSitesButtonActionPerformed(evt);
             }
         });
+        
+        final JSeparator sep = new JSeparator();
 
         final GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
         layout.setAutoCreateContainerGaps(true);
+        layout.setAutoCreateGaps(true);
         
-        layout.setHorizontalGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(Alignment.LEADING)
-                    .addComponent(descriptionSplitPane)
-                    .addGroup(layout.createSequentialGroup()
+        layout.setHorizontalGroup(layout.createParallelGroup(Alignment.LEADING)
+                .addGroup(layout.createSequentialGroup()
+                        .addComponent(downloadSiteLabel)
+                        .addComponent(downloadSiteComboBox, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(manageSitesButton)
+                )
+                .addComponent(sep, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(layout.createSequentialGroup()
+                        .addComponent(searchAppsLabel)
+                        .addComponent(filterTextField, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+                )
+                .addComponent(descriptionSplitPane)
+                .addGroup(layout.createSequentialGroup()
                         .addComponent(installFromFileButton)
-                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED, 80, Short.MAX_VALUE)
+                        .addPreferredGap(ComponentPlacement.RELATED, 80, Short.MAX_VALUE)
                         .addComponent(viewOnAppStoreButton)
-                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(installButton)
-                    )
-                    .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(searchAppsLabel)
-                                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(filterTextField, PREFERRED_SIZE, 228, PREFERRED_SIZE)
-                            )
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(downloadSiteLabel)
-                                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(downloadSiteComboBox, PREFERRED_SIZE, 274, PREFERRED_SIZE)
-                                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(manageSitesButton)
-                            )
-                        )
-                        .addGap(0, 0, Short.MAX_VALUE)
-                    )
                 )
         );
         layout.setVerticalGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(Alignment.BASELINE)
-                    .addComponent(downloadSiteLabel)
-                    .addComponent(downloadSiteComboBox, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-                    .addComponent(manageSitesButton)
+	                    .addComponent(downloadSiteLabel)
+	                    .addComponent(downloadSiteComboBox, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+	                    .addComponent(manageSitesButton, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
                 )
-                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(sep, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
                 .addGroup(layout.createParallelGroup(Alignment.BASELINE)
-                    .addComponent(searchAppsLabel)
-                    .addComponent(filterTextField, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+	                    .addComponent(searchAppsLabel)
+	                    .addComponent(filterTextField, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
                 )
-                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(descriptionSplitPane, DEFAULT_SIZE, 360, Short.MAX_VALUE)
-                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(Alignment.BASELINE)
-                    .addComponent(installFromFileButton)
-                    .addComponent(viewOnAppStoreButton)
-                    .addComponent(installButton)
+	                    .addComponent(installFromFileButton)
+	                    .addComponent(viewOnAppStoreButton)
+	                    .addComponent(installButton)
                 )
         );
 

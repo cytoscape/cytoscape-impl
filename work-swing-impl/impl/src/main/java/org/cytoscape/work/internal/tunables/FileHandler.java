@@ -31,6 +31,7 @@ import static org.cytoscape.work.internal.tunables.utils.GUIDefaults.setTooltip;
 import static org.cytoscape.work.internal.tunables.utils.GUIDefaults.updateFieldPanel;
 
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -193,6 +194,10 @@ public class FileHandler extends AbstractGUITunableHandler implements DirectlyPr
 		browseButton = new JButton( (input ? "Open File..." : "Browse..."), (input ? image : null) );
 		browseButton.setActionCommand(input ? "open" : "save");
 		browseButton.addActionListener(new MyFileActionListener());
+		
+		if (input) // To prevent the button from getting too tall because of the icon
+			browseButton.setPreferredSize(
+					new Dimension(browseButton.getPreferredSize().width, new JButton("X").getPreferredSize().height));
 
 		//set title and textfield text for the file type
 		final String fileCategory = getFileCategory();
