@@ -9,7 +9,7 @@ import javax.swing.JFormattedTextField.AbstractFormatterFactory;
 import org.cytoscape.filter.internal.view.ViewUtil;
 import org.cytoscape.filter.internal.view.look.FilterPanelStyle;
 
-public class RangeChooserController<N extends Number> {
+public class RangeChooserController<N extends Number & Comparable<N>> {
 	
 	private final SliderModel<N> sliderModel;
 	private final AbstractFormatterFactory formatterFactory;
@@ -59,16 +59,25 @@ public class RangeChooserController<N extends Number> {
 	}
 	
 	
-	public void reset(N low, N high, N minimum, N maximum) {
+	public void reset(N low, N high, N min, N max) {
 		rangeChooser.removeListeners();
 		
-		sliderModel.setValues(low, high, minimum, maximum);
+		setSliderValues(low, high, min, max);
 		rangeChooser.getLowField().setValue(low);
 		rangeChooser.getHighField().setValue(high);
 		
 		rangeChooser.addListeners(this);
 	}
 	
+	
+	private void setSliderValues(N low, N high, N min, N max) {
+		if(low.compareTo(min) < 0)
+			low = min;
+		if(high.compareTo(max) > 0)
+			high = max;
+		
+		sliderModel.setValues(low, high, min, max);
+	}
 	
 	private N clampByFormat(AbstractFormatter format, N value) {
 		if (format == null) {
@@ -108,9 +117,8 @@ public class RangeChooserController<N extends Number> {
 		N low  = getLow();
 		N high = getHigh();
 		
-		// If the user set a value outside the range then the slider model will clamp it to the range.
 		// We still use what's in the text fields as the definitive value.
-		sliderModel.setValues(low, high, sliderModel.getMin(), sliderModel.getMax());
+		setSliderValues(low, high, sliderModel.getMin(), sliderModel.getMax());
 		
 		handleRangeChanged(low, high);
 		

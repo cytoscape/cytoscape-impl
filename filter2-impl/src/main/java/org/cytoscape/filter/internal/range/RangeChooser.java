@@ -16,7 +16,7 @@ import javax.swing.event.ChangeListener;
 import org.cytoscape.filter.internal.view.look.FilterPanelStyle;
 
 @SuppressWarnings("serial")
-public class RangeChooser<N extends Number> extends JPanel {
+public class RangeChooser<N extends Number & Comparable<N>> extends JPanel {
 	
 	private JRangeSlider slider;
 	private JFormattedTextField lowField;
