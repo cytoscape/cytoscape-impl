@@ -124,14 +124,16 @@ public class RecentSessionManager implements SessionLoadedListener, CyShutdownLi
 		currentMenuItems.clear();
 
 		final List<URL> urls = tracker.getRecentlyOpenedURLs();
+		int i = 0;
 
 		for (final URL url : urls) {
+			final OpenRecentSessionTaskFactory factory = new OpenRecentSessionTaskFactory(sessionManager, readerManager,
+					appManager, netManager, tableManager, netTableManager, grManager, tracker, url, eventHelper);
+
 			final Properties prop = new Properties();
 			prop.put(ServiceProperties.PREFERRED_MENU, MENU_CATEGORY);
 			prop.put(ServiceProperties.TITLE, url.getFile());
-			prop.put(ServiceProperties.MENU_GRAVITY, "6.0");
-			final OpenRecentSessionTaskFactory factory = new OpenRecentSessionTaskFactory(sessionManager, readerManager,
-					appManager, netManager, tableManager, netTableManager, grManager, tracker, url, eventHelper);
+			prop.put(ServiceProperties.MENU_GRAVITY, String.valueOf(++i));
 			registrar.registerService(factory, TaskFactory.class, prop);
 
 			this.currentMenuItems.add(factory);
