@@ -47,7 +47,7 @@ public class TransformerPanelController extends AbstractPanelController<Transfor
 		this.transformerViewManager = transformerViewManager;
 
 		List<FilterElement> items = new ArrayList<FilterElement>();
-		items.add(new FilterElement("(Current Selection)", null));
+		items.add(new FilterElement("Current Selection", null));
 		startWithComboBoxModel = new DynamicComboBoxModel<FilterElement>(items);
 		filterPanelController.addNamedElementListener(new NamedElementListener<FilterElement>() {
 			@Override

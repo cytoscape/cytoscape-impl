@@ -1,5 +1,6 @@
 package org.cytoscape.filter.internal.filters.column;
 
+import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -8,14 +9,13 @@ import java.awt.event.ActionListener;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.util.List;
 
-import javax.swing.JCheckBox;
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
@@ -64,6 +64,7 @@ public class ColumnFilterViewFactory implements TransformerViewFactory {
 	@Override
 	public JComponent createView(Transformer<?, ?> transformer) {
 		ColumnFilter filter = (ColumnFilter) transformer;
+		filter.setCaseSensitive(false); // case sensitivity no longer supported
 		Controller controller = new Controller(filter);
 		View view = new View(controller, filter);
 		modelMonitor.registerColumnFilterView(view, controller);
@@ -171,12 +172,9 @@ public class ColumnFilterViewFactory implements TransformerViewFactory {
 		private final Controller controller;
 		private final ColumnFilter filter;
 		
-		private boolean optionsExpanded;
 		private boolean isInteractive;
 		
 		private JTextField textField;
-		private JLabel arrowLabel;
-		private JCheckBox caseSensitiveCheckBox;
 		private JComboBox<ComboItem<Predicate>> predicateComboBox;
 		private JComboBox<ColumnComboBoxElement> nameComboBox;
 		private JPanel spacerPanel;
@@ -192,7 +190,6 @@ public class ColumnFilterViewFactory implements TransformerViewFactory {
 		
 		private FocusListener textFieldFocusListener;
 		private DocumentListener textFieldDocumentListener;
-		private ActionListener caseSensitiveCheckBoxActionListener;
 		private ActionListener predicateComboBoxActionListener;
 		private ActionListener nameComboBoxActionListener;
 		private StateChangeListener numericNegateComboBoxStateChangeListener;
@@ -202,22 +199,10 @@ public class ColumnFilterViewFactory implements TransformerViewFactory {
 		public View(Controller controller, ColumnFilter filter) {
 			this.controller = controller;
 			this.filter = filter;
-			this.optionsExpanded = true;
 			
 			ViewUtil.configureFilterView(this);
 			
 			textField = style.createTextField();
-			
-			arrowLabel = style.createLabel(IconManager.ICON_CARET_DOWN);
-			arrowLabel.setFont(iconManager.getIconFont(16.0f));
-			arrowLabel.addMouseListener(new MouseAdapter() {
-				public void mouseClicked(MouseEvent event) {
-					handleArrowClicked();
-				}
-			});
-			
-			caseSensitiveCheckBox = style.createCheckBox("Case sensitive");
-			caseSensitiveCheckBox.setOpaque(false);
 			
 			predicateComboBox = style.createCombo();
 			predicateComboBox.addItem(new ComboItem<>(Predicate.CONTAINS, "contains"));
@@ -225,10 +210,24 @@ public class ColumnFilterViewFactory implements TransformerViewFactory {
 			predicateComboBox.addItem(new ComboItem<>(Predicate.IS, "is"));
 			predicateComboBox.addItem(new ComboItem<>(Predicate.IS_NOT, "is not"));
 			predicateComboBox.addItem(new ComboItem<>(Predicate.REGEX, "matches regex"));
-			predicateComboBox.addItem(new ComboItem<>(Predicate.CONTAINS));
 			
 			List<ColumnComboBoxElement> nameComboBoxModel = modelMonitor.getColumnComboBoxModel();
 			nameComboBox = style.createCombo(new DynamicComboBoxModel<ColumnComboBoxElement>(nameComboBoxModel));
+			nameComboBox.setRenderer(new DefaultListCellRenderer() {
+				@Override
+				public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+					super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+					ColumnComboBoxElement element = (ColumnComboBoxElement) value;
+					String description = String.valueOf(element.getDescription()); // in case its null
+					String text = description;
+					if(text.length() > 30) {
+						text = text.substring(0, 30) + "...";
+					}
+					setText(text);
+					setToolTipText(description);
+					return this;
+				}
+			});
 			
 			numericNegateComboBox = new BooleanComboBox(style, "is", "is not");
 			booleanComboBox = new BooleanComboBox(style, "true", "false");
@@ -306,8 +305,6 @@ public class ColumnFilterViewFactory implements TransformerViewFactory {
 				handleNoColumnSelected();
 				break;
 			}
-			caseSensitiveCheckBox.setSelected(filter.getCaseSensitive());
-			
 			
 			addListeners();
 		}
@@ -391,12 +388,6 @@ public class ColumnFilterViewFactory implements TransformerViewFactory {
 				}
 			});
 			
-			caseSensitiveCheckBox.addActionListener(caseSensitiveCheckBoxActionListener = new ActionListener() {
-				public void actionPerformed(ActionEvent event) {
-					filter.setCaseSensitive(caseSensitiveCheckBox.isSelected());
-				}
-			});
-			
 			predicateComboBox.addActionListener(predicateComboBoxActionListener = new ActionListener() {
 				public void actionPerformed(ActionEvent event) {
 					ComboItem<Predicate> selected = predicateComboBox.getItemAt(predicateComboBox.getSelectedIndex());
@@ -427,18 +418,12 @@ public class ColumnFilterViewFactory implements TransformerViewFactory {
 		private void removeListeners() {
 			textField.removeFocusListener(textFieldFocusListener);
 			textField.getDocument().removeDocumentListener(textFieldDocumentListener);
-			caseSensitiveCheckBox.removeActionListener(caseSensitiveCheckBoxActionListener);
 			predicateComboBox.removeActionListener(predicateComboBoxActionListener);
 			nameComboBox.removeActionListener(nameComboBoxActionListener);
 			numericNegateComboBox.removeStateChangeListener(numericNegateComboBoxStateChangeListener);
 			booleanComboBox.removeStateChangeListener(booleanComboBoxStateChangeListener);
 		}
 		
-		protected void handleArrowClicked() {
-			arrowLabel.setText((optionsExpanded = !optionsExpanded) ? IconManager.ICON_CARET_DOWN : IconManager.ICON_CARET_LEFT);
-			handleStringColumnSelected();
-		}
-
 		void handleNumericColumnSelected(boolean isInt) {
 			RangeChooser<?> rangeChooser = isInt ? intRangeChooser : doubleRangeChooser;
 			RangeChooserController<?> chooserController = isInt ? controller.intChooserController : controller.doubleChooserController;
@@ -454,25 +439,13 @@ public class ColumnFilterViewFactory implements TransformerViewFactory {
 
 		void handleStringColumnSelected() {
 			removeAll();
-			if (optionsExpanded) {
-				predicatePanel.removeAll();
-				predicatePanel.add(nameComboBox, new GridBagConstraints(0, 0, 1, 1, 0, 0, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
-				predicatePanel.add(predicateComboBox, new GridBagConstraints(1, 0, 1, 1, 0, 0, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
-				predicatePanel.add(spacerPanel, new GridBagConstraints(2, 0, 1, 1, Double.MIN_VALUE, 0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
-				predicatePanel.add(arrowLabel, new GridBagConstraints(3, 0, 1, 1, 0, 0, GridBagConstraints.BASELINE_TRAILING, GridBagConstraints.NONE, new Insets(0, 0, 0, 4), 0, 0));
-				
-				add(predicatePanel, new GridBagConstraints(0, 0, 2, 1, 1, 0, GridBagConstraints.LINE_START, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
-				add(textField, new GridBagConstraints(0, 1, 1, 1, 1, 0, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
-				add(caseSensitiveCheckBox, new GridBagConstraints(1, 1, 1, 1, 0, 0, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
-			} else {
-				predicatePanel.removeAll();
-				predicatePanel.add(nameComboBox, new GridBagConstraints(0, 0, 1, 1, 0, 0, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
-				predicatePanel.add(spacerPanel, new GridBagConstraints(1, 0, 1, 1, Double.MIN_VALUE, 0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
-				predicatePanel.add(arrowLabel, new GridBagConstraints(2, 0, 1, 1, 0, 0, GridBagConstraints.BASELINE_TRAILING, GridBagConstraints.NONE, new Insets(0, 0, 0, 4), 0, 0));
-				predicatePanel.add(textField, new GridBagConstraints(0, 1, 3, 1, 1, 0, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
-				
-				add(predicatePanel, new GridBagConstraints(0, 0, 2, 1, 1, 0, GridBagConstraints.LINE_START, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
-			}
+			predicatePanel.removeAll();
+			predicatePanel.add(nameComboBox, new GridBagConstraints(0, 0, 1, 1, 0, 0, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
+			predicatePanel.add(predicateComboBox, new GridBagConstraints(1, 0, 1, 1, 0, 0, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
+			predicatePanel.add(spacerPanel, new GridBagConstraints(2, 0, 1, 1, Double.MIN_VALUE, 0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
+			
+			add(predicatePanel, new GridBagConstraints(0, 0, 2, 1, 1, 0, GridBagConstraints.LINE_START, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
+			add(textField, new GridBagConstraints(0, 1, 1, 1, 1, 0, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
 			predicatePanel.invalidate();
 			validate();
 		}
