@@ -57,14 +57,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Update menu
- * 
+ * Update "Open Recent Session" menu.
  */
 public class RecentSessionManager implements SessionLoadedListener, CyShutdownListener {
 	
+	@SuppressWarnings("unused")
 	private static final Logger logger = LoggerFactory.getLogger(RecentSessionManager.class);
 	
-	private static final String MENU_CATEGORY = "File.Recent Session";
+	private static final String MENU_CATEGORY = "File.Open Recent";
 
 	private final RecentlyOpenedTracker tracker;
 	private final CyServiceRegistrar registrar;
@@ -79,7 +79,7 @@ public class RecentSessionManager implements SessionLoadedListener, CyShutdownLi
 
 	private final Set<OpenRecentSessionTaskFactory> currentMenuItems;
 	
-	private final DummyAction factory;
+	private final DummyAction dummyAction;
 
 	public RecentSessionManager(final RecentlyOpenedTracker tracker,
 								final CyServiceRegistrar registrar,
@@ -102,22 +102,23 @@ public class RecentSessionManager implements SessionLoadedListener, CyShutdownLi
 		this.grManager = grManager;
 		this.eventHelper = eventHelper;
 		
-		this.currentMenuItems = new HashSet<OpenRecentSessionTaskFactory>();
+		this.currentMenuItems = new HashSet<>();
 
-		factory = new DummyAction();
+		dummyAction = new DummyAction();
 		
 		updateMenuItems();
 	}
 
 	private void updateMenuItems() {
 		// If there is no recent items, add dummy menu.
-		if(tracker.getRecentlyOpenedURLs().size() == 0) {
-			registrar.registerService(factory, CyAction.class, new Properties());
+		if (tracker.getRecentlyOpenedURLs().isEmpty()) {
+			registrar.registerService(dummyAction, CyAction.class, new Properties());
 			return;
 		}
 			
 		// Unregister services
-		registrar.unregisterService(factory, CyAction.class);
+		registrar.unregisterService(dummyAction, CyAction.class);
+		
 		for (final OpenRecentSessionTaskFactory currentItem : currentMenuItems)
 			registrar.unregisterAllServices(currentItem);
 
@@ -136,9 +137,8 @@ public class RecentSessionManager implements SessionLoadedListener, CyShutdownLi
 			prop.put(ServiceProperties.MENU_GRAVITY, String.valueOf(++i));
 			registrar.registerService(factory, TaskFactory.class, prop);
 
-			this.currentMenuItems.add(factory);
+			currentMenuItems.add(factory);
 		}
-
 	}
 
 	@Override
@@ -153,7 +153,6 @@ public class RecentSessionManager implements SessionLoadedListener, CyShutdownLi
 		});
 	}
 	
-	
 	/**
 	 * Dummy action to add menu item when no entry is available.
 	 */
@@ -162,19 +161,22 @@ public class RecentSessionManager implements SessionLoadedListener, CyShutdownLi
 		private static final long serialVersionUID = 4904285068314580548L;
 
 		public DummyAction() {
-			super("(No recent session files)");
+			super("No files");
 			setPreferredMenu(MENU_CATEGORY);
 			setMenuGravity(6.0f);
-			this.setEnabled(false);
 		}
 
+		@Override
+		public boolean isEnabled() {
+			return false;
+		}
+		
 		@Override
 		public void actionPerformed(ActionEvent e) {}
 	}
 
 	@Override
 	public void handleEvent(CyShutdownEvent e) {
-		logger.info("Saving recently used session file list...");
 		try {
 			tracker.writeOut();
 		} catch (FileNotFoundException ex) {

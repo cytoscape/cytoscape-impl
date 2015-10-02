@@ -1056,7 +1056,7 @@ public class CyActivator extends AbstractCyActivator {
 		openSessionTaskFactoryProps.setProperty(TITLE,"Open...");
 		openSessionTaskFactoryProps.setProperty(TOOL_BAR_GRAVITY,"1.0");
 		openSessionTaskFactoryProps.setProperty(IN_TOOL_BAR,"true");
-		openSessionTaskFactoryProps.setProperty(MENU_GRAVITY,"1.0");
+		openSessionTaskFactoryProps.setProperty(MENU_GRAVITY,"1.2");
 		openSessionTaskFactoryProps.setProperty(TOOLTIP,"Open Session");
 		registerService(bc,openSessionTaskFactory,OpenSessionTaskFactory.class, openSessionTaskFactoryProps);
 		registerService(bc,openSessionTaskFactory,TaskFactory.class, openSessionTaskFactoryProps);
