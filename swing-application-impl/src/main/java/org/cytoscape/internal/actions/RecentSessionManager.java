@@ -25,120 +25,88 @@ package org.cytoscape.internal.actions;
  */
 
 import java.awt.event.ActionEvent;
+import java.io.File;
 import java.io.FileNotFoundException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
+import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
-import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.events.CyShutdownEvent;
 import org.cytoscape.application.events.CyShutdownListener;
 import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.application.swing.CyAction;
-import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.group.CyGroupManager;
-import org.cytoscape.internal.task.OpenRecentSessionTaskFactory;
-import org.cytoscape.io.read.CySessionReaderManager;
+import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.io.util.RecentlyOpenedTracker;
 import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.session.CySessionManager;
 import org.cytoscape.session.events.SessionLoadedEvent;
 import org.cytoscape.session.events.SessionLoadedListener;
-import org.cytoscape.work.ServiceProperties;
-import org.cytoscape.work.TaskFactory;
+import org.cytoscape.task.read.OpenSessionTaskFactory;
+import org.cytoscape.work.swing.DialogTaskManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * Update "Open Recent Session" menu.
  */
+@SuppressWarnings("serial")
 public class RecentSessionManager implements SessionLoadedListener, CyShutdownListener {
 	
-	@SuppressWarnings("unused")
 	private static final Logger logger = LoggerFactory.getLogger(RecentSessionManager.class);
 	
 	private static final String MENU_CATEGORY = "File.Open Recent";
 
-	private final RecentlyOpenedTracker tracker;
-	private final CyServiceRegistrar registrar;
-	private final CySessionManager sessionManager;
-	private final CySessionReaderManager readerManager;
-	private final CyApplicationManager appManager;
-	private final CyNetworkManager netManager;
-	private final CyTableManager tableManager;
-	private final CyNetworkTableManager netTableManager;
-	private final CyGroupManager grManager;
-	private final CyEventHelper eventHelper;
-
-	private final Set<OpenRecentSessionTaskFactory> currentMenuItems;
+	private final Set<OpenRecentSessionAction> currentMenuItems;
+	private final ClearMenuAction clearMenuAction;
 	
-	private final DummyAction dummyAction;
+	private final CyServiceRegistrar serviceRegistrar;
 
-	public RecentSessionManager(final RecentlyOpenedTracker tracker,
-								final CyServiceRegistrar registrar,
-								final CySessionManager sessionManager,
-								final CySessionReaderManager readerManager,
-								final CyApplicationManager appManager,
-								final CyNetworkManager netManager,
-								final CyTableManager tableManager,
-								final CyNetworkTableManager netTableManager,
-								final CyGroupManager grManager,
-								final CyEventHelper eventHelper) {
-		this.tracker = tracker;
-		this.registrar = registrar;
-		this.sessionManager = sessionManager;
-		this.readerManager = readerManager;
-		this.appManager = appManager;
-		this.netManager = netManager;
-		this.tableManager = tableManager;
-		this.netTableManager = netTableManager;
-		this.grManager = grManager;
-		this.eventHelper = eventHelper;
-		
+	public RecentSessionManager(final CyServiceRegistrar serviceRegistrar) {
+		this.serviceRegistrar = serviceRegistrar;
 		this.currentMenuItems = new HashSet<>();
-
-		dummyAction = new DummyAction();
+		clearMenuAction = new ClearMenuAction();
 		
 		updateMenuItems();
 	}
 
 	private void updateMenuItems() {
-		// If there is no recent items, add dummy menu.
-		if (tracker.getRecentlyOpenedURLs().isEmpty()) {
-			registrar.registerService(dummyAction, CyAction.class, new Properties());
-			return;
-		}
-			
 		// Unregister services
-		registrar.unregisterService(dummyAction, CyAction.class);
-		
-		for (final OpenRecentSessionTaskFactory currentItem : currentMenuItems)
-			registrar.unregisterAllServices(currentItem);
+		for (final OpenRecentSessionAction currentItem : currentMenuItems)
+			serviceRegistrar.unregisterAllServices(currentItem);
 
 		currentMenuItems.clear();
 
+		final RecentlyOpenedTracker tracker = serviceRegistrar.getService(RecentlyOpenedTracker.class);
 		final List<URL> urls = tracker.getRecentlyOpenedURLs();
-		int i = 0;
+		float gravity = 0.0f;
 
 		for (final URL url : urls) {
-			final OpenRecentSessionTaskFactory factory = new OpenRecentSessionTaskFactory(sessionManager, readerManager,
-					appManager, netManager, tableManager, netTableManager, grManager, tracker, url, eventHelper);
-
-			final Properties prop = new Properties();
-			prop.put(ServiceProperties.PREFERRED_MENU, MENU_CATEGORY);
-			prop.put(ServiceProperties.TITLE, url.getFile());
-			prop.put(ServiceProperties.MENU_GRAVITY, String.valueOf(++i));
-			registrar.registerService(factory, TaskFactory.class, prop);
-
-			currentMenuItems.add(factory);
+			File file = null;
+			
+			try {
+				URI uri = url.toURI();
+				file = new File(uri);
+			} catch (URISyntaxException e) {
+				logger.error("Invalid file URL.", e);
+				continue;
+			}
+			
+			final OpenRecentSessionAction action = new OpenRecentSessionAction(gravity++, file);
+			serviceRegistrar.registerService(action, CyAction.class, new Properties());
+			currentMenuItems.add(action);
 		}
+		
+		// Register the Clear Menu action again
+		serviceRegistrar.unregisterService(clearMenuAction, CyAction.class);
+		serviceRegistrar.registerService(clearMenuAction, CyAction.class, new Properties());
 	}
 
 	@Override
@@ -153,35 +121,89 @@ public class RecentSessionManager implements SessionLoadedListener, CyShutdownLi
 		});
 	}
 	
-	/**
-	 * Dummy action to add menu item when no entry is available.
-	 */
-	private final class DummyAction extends AbstractCyAction {
-
-		private static final long serialVersionUID = 4904285068314580548L;
-
-		public DummyAction() {
-			super("No files");
+	@Override
+	public void handleEvent(CyShutdownEvent e) {
+		final RecentlyOpenedTracker tracker = serviceRegistrar.getService(RecentlyOpenedTracker.class);
+		
+		try {
+			tracker.writeOut();
+		} catch (FileNotFoundException ex) {
+			logger.error("Could not save recently opened session file list.", ex);
+		}
+	}
+	
+	private final class OpenRecentSessionAction extends AbstractCyAction {
+		
+		private final File file;
+		
+		public OpenRecentSessionAction(float gravity, final File file) {
+			super(file.getAbsolutePath());
 			setPreferredMenu(MENU_CATEGORY);
-			setMenuGravity(6.0f);
+			setMenuGravity(gravity);
+			this.file = file;
+		}
+
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			if (file.exists()) {
+				final CyNetworkManager netManager = serviceRegistrar.getService(CyNetworkManager.class);
+				final CyTableManager tableManager = serviceRegistrar.getService(CyTableManager.class);
+				
+				if (netManager.getNetworkSet().isEmpty() && tableManager.getAllTables(false).isEmpty())
+					openSession();
+				else
+					openSessionWithWarning();
+			} else {
+				final CySwingApplication swingApp = serviceRegistrar.getService(CySwingApplication.class);
+				JOptionPane.showMessageDialog(
+						swingApp.getJFrame(),
+						"Session file not found:\n" + file.getAbsolutePath(),
+						"File not Found",
+						JOptionPane.WARNING_MESSAGE
+				);
+			}
+		}
+		
+		private void openSession() {
+			final OpenSessionTaskFactory taskFactory = serviceRegistrar.getService(OpenSessionTaskFactory.class);
+			final DialogTaskManager taskManager = serviceRegistrar.getService(DialogTaskManager.class);
+			taskManager.execute(taskFactory.createTaskIterator(file));
+		}
+		
+		private void openSessionWithWarning() {
+			final CySwingApplication swingApp = serviceRegistrar.getService(CySwingApplication.class);
+			
+			if (JOptionPane.showConfirmDialog(
+					swingApp.getJFrame(),
+					"Current session (all networks and tables) will be lost.\nDo you want to continue?",
+					"Open Session",
+					JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION)
+				openSession();
+		}
+	}
+	
+	/**
+	 * Menu action to clear the list of recent sessions.
+	 */
+	private final class ClearMenuAction extends AbstractCyAction {
+
+		public ClearMenuAction() {
+			super("Clear Menu");
+			setPreferredMenu(MENU_CATEGORY);
+			insertSeparatorBefore = true;
+			setMenuGravity(10001.0f);
 		}
 
 		@Override
 		public boolean isEnabled() {
-			return false;
+			return !currentMenuItems.isEmpty();
 		}
 		
 		@Override
-		public void actionPerformed(ActionEvent e) {}
-	}
-
-	@Override
-	public void handleEvent(CyShutdownEvent e) {
-		try {
-			tracker.writeOut();
-		} catch (FileNotFoundException ex) {
-			ex.printStackTrace();
-			throw new RuntimeException("Could not save recently opened session file list.", ex);
+		public void actionPerformed(ActionEvent e) {
+			final RecentlyOpenedTracker tracker = serviceRegistrar.getService(RecentlyOpenedTracker.class);
+			tracker.clear();
+			updateMenuItems();
 		}
 	}
 }

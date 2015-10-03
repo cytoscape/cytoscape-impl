@@ -78,7 +78,7 @@ public class RecentlyOpenedTrackerImpl implements RecentlyOpenedTracker {
 		} catch (IOException ioe) {
 			logger.warn("problem reading Recently Opened File list",ioe); 	
 		} finally {
-			if(reader != null) {
+			if (reader != null) {
 				try {
 					reader.close();
 					reader = null;
@@ -89,18 +89,11 @@ public class RecentlyOpenedTrackerImpl implements RecentlyOpenedTracker {
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see org.cytoscape.task.internal.session.RecentlyOpenedTracker#getRecentlyOpenedURLs()
-	 */
 	@Override
 	public synchronized List<URL> getRecentlyOpenedURLs() {
 		return Collections.unmodifiableList(trackerURLs);
 	}
 
-
-	/* (non-Javadoc)
-	 * @see org.cytoscape.task.internal.session.RecentlyOpenedTracker#add(java.net.URL)
-	 */
 	@Override
 	public synchronized void add(final URL newURL) {
 		trackerURLs.remove(newURL);
@@ -108,10 +101,12 @@ public class RecentlyOpenedTrackerImpl implements RecentlyOpenedTracker {
 			trackerURLs.removeLast();
 		trackerURLs.addFirst(newURL);
 	}
+	
+	@Override
+	public void clear() {
+		trackerURLs.clear();
+	}
 
-	/* (non-Javadoc)
-	 * @see org.cytoscape.task.internal.session.RecentlyOpenedTracker#writeOut()
-	 */
 	@Override
 	public void writeOut() throws FileNotFoundException {
 		final PrintWriter writer = new PrintWriter(new File(propDir, trackerFileName));
@@ -120,9 +115,6 @@ public class RecentlyOpenedTrackerImpl implements RecentlyOpenedTracker {
 		writer.close();
 	}
 
-	/* (non-Javadoc)
-	 * @see org.cytoscape.task.internal.session.RecentlyOpenedTracker#getMostRecentAddition()
-	 */
 	@Override
 	public synchronized URL getMostRecentlyOpenedURL() {
 		if (trackerURLs.isEmpty())

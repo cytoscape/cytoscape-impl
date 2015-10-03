@@ -23,6 +23,7 @@ package org.cytoscape.internal;
  * <http://www.gnu.org/licenses/lgpl-2.1.html>.
  * #L%
  */
+
 import static org.cytoscape.application.swing.CyNetworkViewDesktopMgr.ArrangeType.CASCADE;
 import static org.cytoscape.application.swing.CyNetworkViewDesktopMgr.ArrangeType.GRID;
 import static org.cytoscape.application.swing.CyNetworkViewDesktopMgr.ArrangeType.HORIZONTAL;
@@ -60,7 +61,6 @@ import org.cytoscape.application.swing.CyNetworkViewDesktopMgr;
 import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.application.swing.ToolBarComponent;
 import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.group.CyGroupManager;
 import org.cytoscape.internal.actions.BookmarkAction;
 import org.cytoscape.internal.actions.CytoPanelAction;
 import org.cytoscape.internal.actions.ExitAction;
@@ -102,11 +102,8 @@ import org.cytoscape.internal.view.help.HelpContactHelpDeskTaskFactory;
 import org.cytoscape.internal.view.help.HelpContentsTaskFactory;
 import org.cytoscape.internal.view.help.HelpReportABugTaskFactory;
 import org.cytoscape.io.datasource.DataSourceManager;
-import org.cytoscape.io.read.CySessionReaderManager;
-import org.cytoscape.io.util.RecentlyOpenedTracker;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNetworkTableManager;
-import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.events.NetworkDestroyedListener;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.property.bookmark.BookmarksUtil;
@@ -162,16 +159,12 @@ public class CyActivator extends AbstractCyActivator {
 		RenderingEngineManager renderingEngineManagerServiceRef = getService(bc, RenderingEngineManager.class);
 		CyShutdown cytoscapeShutdownServiceRef = getService(bc, CyShutdown.class);
 		CyApplicationConfiguration cyApplicationConfigurationServiceRef = getService(bc, CyApplicationConfiguration.class);
-		RecentlyOpenedTracker recentlyOpenedTrackerServiceRef = getService(bc, RecentlyOpenedTracker.class);
 		CyVersion cyVersionServiceRef = getService(bc, CyVersion.class);
 		CyApplicationManager cyApplicationManagerServiceRef = getService(bc, CyApplicationManager.class);
 		CySessionManager cySessionManagerServiceRef = getService(bc, CySessionManager.class);
-		CySessionReaderManager sessionReaderManagerServiceRef = getService(bc, CySessionReaderManager.class);
 		CyNetworkViewManager cyNetworkViewManagerServiceRef = getService(bc, CyNetworkViewManager.class);
 		CyNetworkManager cyNetworkManagerServiceRef = getService(bc, CyNetworkManager.class);
-		CyTableManager cyTableManagerServiceRef = getService(bc, CyTableManager.class);
 		CyNetworkTableManager cyNetworkTableManagerServiceRef = getService(bc, CyNetworkTableManager.class);
-		CyGroupManager cyGroupManagerServiceRef = getService(bc, CyGroupManager.class);
 		DialogTaskManager dialogTaskManagerServiceRef = getService(bc, DialogTaskManager.class);
 		PanelTaskManager panelTaskManagerServiceRef = getService(bc, PanelTaskManager.class);
 		TaskStatusPanelFactory taskStatusPanelFactoryRef = getService(bc, TaskStatusPanelFactory.class);
@@ -318,16 +311,7 @@ public class CyActivator extends AbstractCyActivator {
 		                                                               networkViewManager,
 		                                                               cyColumnIdentifierFactory);
 		
-		RecentSessionManager recentSessionManager = new RecentSessionManager(recentlyOpenedTrackerServiceRef,
-		                                                                     cyServiceRegistrarServiceRef,
-		                                                                     cySessionManagerServiceRef,
-		                                                                     sessionReaderManagerServiceRef,
-		                                                                     cyApplicationManagerServiceRef,
-		                                                                     cyNetworkManagerServiceRef,
-		                                                                     cyTableManagerServiceRef,
-		                                                                     cyNetworkTableManagerServiceRef,
-		                                                                     cyGroupManagerServiceRef,
-		                                                                     cyEventHelperServiceRef);
+		RecentSessionManager recentSessionManager = new RecentSessionManager(cyServiceRegistrarServiceRef);
 		
 		registerService(bc, cyHelpBroker, CyHelpBroker.class, new Properties());
 		registerService(bc, undoAction, CyAction.class, new Properties());
