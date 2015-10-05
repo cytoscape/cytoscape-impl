@@ -26,6 +26,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.border.Border;
 
 import org.cytoscape.filter.internal.view.AbstractPanelController;
+import org.cytoscape.filter.internal.view.CompositePanelComponent;
 import org.cytoscape.filter.internal.view.DragHandler;
 import org.cytoscape.filter.internal.view.DynamicComboBoxModel;
 import org.cytoscape.filter.internal.view.Matcher;
@@ -35,16 +36,17 @@ import org.cytoscape.filter.internal.view.ViewUtil;
 import org.cytoscape.filter.model.CompositeFilter;
 import org.cytoscape.filter.model.CompositeFilter.Type;
 import org.cytoscape.filter.model.Filter;
+import org.cytoscape.filter.model.Transformer;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.util.swing.IconManager;
 
 @SuppressWarnings("serial")
-public class CompositeFilterPanel<P extends SelectPanelComponent> extends JPanel {
+public class CompositeFilterPanel<P extends SelectPanelComponent> extends JPanel implements CompositePanelComponent {
 	
 	private static final Border NO_BORDER = BorderFactory.createEmptyBorder();
 
-	private Map<Filter<CyNetwork, CyIdentifiable>, TransformerElementViewModel<P>> viewModels;
+	private Map<Transformer<CyNetwork,CyIdentifiable>, TransformerElementViewModel<P>> viewModels;
 	private GroupLayout layout;
 	private int depth;
 	private JPanel combiningMethodPanel;
@@ -138,7 +140,7 @@ public class CompositeFilterPanel<P extends SelectPanelComponent> extends JPanel
 		rows.addComponent(separator, separatorHeight, separatorHeight, separatorHeight);
 		
 		for (int i = 0; i < model.getLength(); i++) {
-			final TransformerElementViewModel<P> viewModel = getViewModel(model.get(i));
+			final TransformerElementViewModel<?> viewModel = getViewModel(model.get(i));
 			if (viewModel.view instanceof CompositeFilterPanel) {
 				CompositeFilterPanel<?> panel = (CompositeFilterPanel<?>) viewModel.view;
 				panel.updateLayout();
@@ -245,7 +247,7 @@ public class CompositeFilterPanel<P extends SelectPanelComponent> extends JPanel
 		addViewModel(filter, viewModel);
 	}
 
-	public TransformerElementViewModel<P> getViewModel(Filter<CyNetwork, CyIdentifiable> filter) {
+	public TransformerElementViewModel<P> getViewModel(Transformer<CyNetwork,CyIdentifiable> filter) {
 		return viewModels.get(filter);
 	}
 
@@ -298,4 +300,15 @@ public class CompositeFilterPanel<P extends SelectPanelComponent> extends JPanel
 	public JComponent getSeparator() {
 		return separator;
 	}
+
+	@Override
+	public int getModelCount() {
+		return model.getLength();
+	}
+
+	@Override
+	public Transformer<CyNetwork, CyIdentifiable> getModelAt(int index) {
+		return model.get(index);
+	}
+
 }

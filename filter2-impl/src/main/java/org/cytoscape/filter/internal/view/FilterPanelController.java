@@ -1,10 +1,7 @@
 package org.cytoscape.filter.internal.view;
 
-import java.awt.Component;
 import java.awt.Container;
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import javax.swing.JComponent;
@@ -280,47 +277,6 @@ public class FilterPanelController extends AbstractPanelController<FilterElement
 		modelMonitor.unregisterView(elementView);
 	}
 	
-	@Override
-	public List<Integer> getPath(FilterPanel view, JComponent component) {
-		if (component == view.getRootPanel()) {
-			return Collections.emptyList();
-		}
-		
-		List<Integer> path = new ArrayList<Integer>();
-		Component current = component;
-		Container nextParent = component.getParent();
-		while (true) {
-			if (!(nextParent instanceof CompositeFilterPanel)) {
-				break;
-			}
-			CompositeFilterPanel composite = (CompositeFilterPanel) nextParent;
-			if (current == composite.getSeparator()) {
-				path.add(0, -1);
-			} else {
-				CompositeFilter<CyNetwork, CyIdentifiable> compositeFilter = composite.getModel();
-				boolean found = false;
-				for (int i = 0; i < compositeFilter.getLength(); i++) {
-					Filter<CyNetwork, CyIdentifiable> filter = compositeFilter.get(i);
-					TransformerElementViewModel<FilterPanel> viewModel = composite.getViewModel(filter);
-					if (current == viewModel.view || current == viewModel.separator || current == viewModel.handle) {
-						path.add(0, i);
-						found = true;
-						break;
-					}
-				}
-				
-				if (!found) {
-					return null;
-				}
-			}
-			current = nextParent;
-			nextParent = nextParent.getParent();
-		}
-		if (path.size() == 0) {
-			return null;
-		}
-		return path;
-	}
 	
 	@Override
 	public JComponent getChild(FilterPanel view, List<Integer> path) {

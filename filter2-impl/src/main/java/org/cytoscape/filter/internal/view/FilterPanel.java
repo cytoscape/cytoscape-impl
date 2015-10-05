@@ -1,7 +1,6 @@
 package org.cytoscape.filter.internal.view;
 
-import static javax.swing.GroupLayout.DEFAULT_SIZE;
-import static javax.swing.GroupLayout.PREFERRED_SIZE;
+import static javax.swing.GroupLayout.*;
 import static org.cytoscape.util.swing.LookAndFeelUtil.isAquaLAF;
 
 import java.awt.Component;
@@ -89,7 +88,8 @@ public class FilterPanel extends AbstractPanel<FilterElement, FilterPanelControl
 		setRootPanel(panel);
 	}
 
-	CompositeFilterPanel<FilterPanel> getRootPanel() {
+	@Override
+	public CompositeFilterPanel<FilterPanel> getRootPanel() {
 		return root;
 	}
 

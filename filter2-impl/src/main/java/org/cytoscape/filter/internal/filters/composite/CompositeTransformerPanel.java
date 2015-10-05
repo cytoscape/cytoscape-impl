@@ -18,6 +18,7 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 
+import org.cytoscape.filter.internal.view.CompositePanelComponent;
 import org.cytoscape.filter.internal.view.DragHandler;
 import org.cytoscape.filter.internal.view.TransformerElementViewModel;
 import org.cytoscape.filter.internal.view.TransformerPanel;
@@ -29,7 +30,7 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.util.swing.IconManager;
 
 @SuppressWarnings("serial")
-public class CompositeTransformerPanel extends JPanel {
+public class CompositeTransformerPanel extends JPanel implements CompositePanelComponent {
 	
 	private Map<Transformer<CyNetwork, CyIdentifiable>, TransformerElementViewModel<TransformerPanel>> viewModels;
 	private GroupLayout layout;
@@ -174,4 +175,16 @@ public class CompositeTransformerPanel extends JPanel {
 	public JComponent getSeparator() {
 		return separator;
 	}
+
+	@Override
+	public int getModelCount() {
+		return model.size();
+	}
+
+	@Override
+	public Transformer<CyNetwork, CyIdentifiable> getModelAt(int index) {
+		return model.get(index);
+	}
+	
+	
 }

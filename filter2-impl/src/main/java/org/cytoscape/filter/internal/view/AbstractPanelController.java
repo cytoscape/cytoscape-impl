@@ -1,9 +1,12 @@
 package org.cytoscape.filter.internal.view;
 
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.regex.Matcher;
@@ -345,6 +348,50 @@ public abstract class AbstractPanelController<T extends NamedElement, V extends 
 	public IconManager getIconManager() {
 		return iconManager;
 	}
+	
+	
+	public List<Integer> getPath(SelectPanelComponent view, JComponent component) {
+		if (component == view.getRootPanel()) {
+			return Collections.emptyList();
+		}
+		
+		LinkedList<Integer> path = new LinkedList<>();
+		Component current = component;
+		Container nextParent = component.getParent();
+		while (true) {
+			if (!(nextParent instanceof CompositePanelComponent)) {
+				break;
+			}
+
+			CompositePanelComponent composite = (CompositePanelComponent) nextParent;
+			if (current == composite.getSeparator()) {
+				path.addFirst(-1);
+			} else {
+				boolean found = false;
+				for (int i = 0; i < composite.getModelCount(); i++) {
+					Transformer<CyNetwork, CyIdentifiable> filter = composite.getModelAt(i);
+					TransformerElementViewModel<?> viewModel = composite.getViewModel(filter);
+					if (current == viewModel.view || current == viewModel.separator || current == viewModel.handle) {
+						path.addFirst(i);
+						found = true;
+						break;
+					}
+				}
+				
+				if (!found) {
+					return null;
+				}
+			}
+			
+			current = nextParent;
+			nextParent = nextParent.getParent();
+		}
+		if (path.isEmpty()) {
+			return null;
+		}
+		return path;
+	}
+
 
 	protected abstract T createElement(String name);
 
@@ -379,8 +426,6 @@ public abstract class AbstractPanelController<T extends NamedElement, V extends 
 	public abstract void addNamedTransformers(V view, NamedTransformer<CyNetwork, CyIdentifiable>... transformers);
 	
 	public abstract NamedTransformer<CyNetwork, CyIdentifiable>[] getNamedTransformers();
-	
-	public abstract List<Integer> getPath(V view, JComponent component);
 	
 	public abstract JComponent getChild(V view, List<Integer> path);
 	

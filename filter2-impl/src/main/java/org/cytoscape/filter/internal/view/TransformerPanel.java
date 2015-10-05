@@ -1,7 +1,6 @@
 package org.cytoscape.filter.internal.view;
 
-import static javax.swing.GroupLayout.DEFAULT_SIZE;
-import static javax.swing.GroupLayout.PREFERRED_SIZE;
+import static javax.swing.GroupLayout.*;
 import static org.cytoscape.util.swing.LookAndFeelUtil.isAquaLAF;
 
 import java.awt.Component;
@@ -100,6 +99,7 @@ public class TransformerPanel extends AbstractPanel<TransformerElement, Transfor
 		root.updateLayout();
 	}
 
+	@Override
 	public CompositeTransformerPanel getRootPanel() {
 		return root;
 	}

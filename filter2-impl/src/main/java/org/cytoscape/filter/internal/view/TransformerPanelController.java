@@ -4,7 +4,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import javax.swing.ComboBoxModel;
@@ -259,28 +258,6 @@ public class TransformerPanelController extends AbstractPanelController<Transfor
 	public void unregisterView(JComponent elementView) {
 	}
 	
-	
-	@Override
-	public List<Integer> getPath(TransformerPanel view, JComponent component) {
-		CompositeTransformerPanel root = view.getRootPanel();
-		if (root == component) {
-			return Collections.emptyList();
-		}
-		
-		List<Transformer<CyNetwork, CyIdentifiable>> model = root.getModel();
-		int index = 0;
-		if (root.getSeparator() == component) {
-			return Collections.singletonList(-1);
-		}
-		for (Transformer<CyNetwork, CyIdentifiable> transformer : model) {
-			TransformerElementViewModel<TransformerPanel> viewModel = root.getViewModel(transformer);
-			if (viewModel.view == component || viewModel.separator == component || viewModel.handle == component) {
-				return Collections.singletonList(index);
-			}
-			index++;
-		}
-		return null;
-	}
 	
 	@Override
 	public JComponent getChild(TransformerPanel view, List<Integer> path) {
