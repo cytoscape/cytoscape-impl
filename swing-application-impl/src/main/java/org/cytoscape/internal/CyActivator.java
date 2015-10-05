@@ -541,8 +541,6 @@ public class CyActivator extends AbstractCyActivator {
 			UIManager.put("Table.selectionBackground", TABLE_SELECTION_BG);
 			UIManager.put("Table.selectionForeground", UIManager.getColor("Table.foreground"));
 			UIManager.put("Tree.font", TABLE_FONT);
-			UIManager.put("Tree.selectionBackground", TABLE_SELECTION_BG);
-			UIManager.put("Tree.selectionForeground", UIManager.getColor("Tree.foreground"));
 			
 			if (LookAndFeelUtil.isAquaLAF()) {
 				UIManager.put(
