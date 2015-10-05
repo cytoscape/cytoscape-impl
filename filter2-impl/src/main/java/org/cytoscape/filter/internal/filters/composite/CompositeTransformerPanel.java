@@ -87,6 +87,7 @@ public class CompositeTransformerPanel extends JPanel implements CompositePanelC
 		return button;
 	}
 
+	@Override
 	public void updateLayout() {
 		removeAll();
 
@@ -156,9 +157,11 @@ public class CompositeTransformerPanel extends JPanel implements CompositePanelC
 		viewModels.put(transformer, viewModel);
 	}
 
-	public void removeTransformer(int index) {
+	@Override
+	public void removeTransformer(int index, boolean unregister) {
 		Transformer<CyNetwork, CyIdentifiable> transformer = model.remove(index);
 		TransformerElementViewModel<TransformerPanel> model = viewModels.remove(transformer);
+		// always unregister
 		if (model != null && model.view != null) {
 			transformerPanelController.unregisterView(model.view);
 		}
@@ -177,12 +180,12 @@ public class CompositeTransformerPanel extends JPanel implements CompositePanelC
 	}
 
 	@Override
-	public int getModelCount() {
+	public int getTransformerCount() {
 		return model.size();
 	}
 
 	@Override
-	public Transformer<CyNetwork, CyIdentifiable> getModelAt(int index) {
+	public Transformer<CyNetwork, CyIdentifiable> getTransformerAt(int index) {
 		return model.get(index);
 	}
 	

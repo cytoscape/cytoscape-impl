@@ -8,11 +8,15 @@ import org.cytoscape.model.CyNetwork;
 
 public interface CompositePanelComponent {
 	
+	void updateLayout();
+	
 	JComponent getSeparator();
 	
-	int getModelCount();
+	int getTransformerCount();
 	
-	Transformer<CyNetwork,CyIdentifiable> getModelAt(int index);
+	Transformer<CyNetwork,CyIdentifiable> getTransformerAt(int index);
 	
 	TransformerElementViewModel<? extends SelectPanelComponent> getViewModel(Transformer<CyNetwork,CyIdentifiable> transformer);
+	
+	void removeTransformer(int index, boolean unregister);
 }

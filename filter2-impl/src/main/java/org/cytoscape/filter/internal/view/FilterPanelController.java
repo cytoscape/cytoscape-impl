@@ -329,7 +329,7 @@ public class FilterPanelController extends AbstractPanelController<FilterElement
 			int sourceIndex = sourcePath.get(sourcePath.size() - 1);
 			Filter<CyNetwork, CyIdentifiable> filter = sourceParent.getModel().get(sourceIndex);
 			TransformerElementViewModel<FilterPanel> viewModel = sourceParent.getViewModel(filter);
-			sourceParent.removeFilter(sourceIndex, false);
+			sourceParent.removeTransformer(sourceIndex, false);
 			
 			if (targetPath.size() == 0) {
 				// Target is end of root
@@ -360,7 +360,7 @@ public class FilterPanelController extends AbstractPanelController<FilterElement
 				}
 				Filter<CyNetwork, CyIdentifiable> targetFilter = targetParent.getModel().get(targetIndex);
 				TransformerElementViewModel<FilterPanel> targetViewModel = targetParent.getViewModel(targetFilter);
-				targetParent.removeFilter(targetIndex, false);
+				targetParent.removeTransformer(targetIndex, false);
 				
 				CompositeFilter<CyNetwork, CyIdentifiable> group = transformerManager.createCompositeFilter(CyNetwork.class, CyIdentifiable.class);
 				group.addListener(worker);
@@ -398,7 +398,7 @@ public class FilterPanelController extends AbstractPanelController<FilterElement
 		for (int index = 0; index < parentModel.getLength(); index++) {
 			Filter<CyNetwork, CyIdentifiable> filter = parentModel.get(index);
 			if (model == filter) {
-				parentPanel.removeFilter(index, true);
+				parentPanel.removeTransformer(index, true);
 				removeOrphans(parentPanel);
 				return;
 			}
@@ -406,18 +406,8 @@ public class FilterPanelController extends AbstractPanelController<FilterElement
 	}
 	
 	@Override
-	public void handleDelete(FilterPanel view, JComponent component) {
-		if (component == null) {
-			return;
-		}
-		
-		List<Integer> path = getPath(view, component);
-		CompositeFilterPanel parent = (CompositeFilterPanel) component.getParent();
-		int sourceIndex = path.get(path.size() - 1);
-		parent.removeFilter(sourceIndex, true);
-		
-		CompositeFilterPanel root = view.getRootPanel();
-		root.updateLayout();
+	public void handleDelete(SelectPanelComponent view, JComponent component) {
+		super.handleDelete(view, component);
 		worker.handleFilterStructureChanged();
 	}
 }

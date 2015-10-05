@@ -368,8 +368,8 @@ public abstract class AbstractPanelController<T extends NamedElement, V extends 
 				path.addFirst(-1);
 			} else {
 				boolean found = false;
-				for (int i = 0; i < composite.getModelCount(); i++) {
-					Transformer<CyNetwork, CyIdentifiable> filter = composite.getModelAt(i);
+				for (int i = 0; i < composite.getTransformerCount(); i++) {
+					Transformer<CyNetwork, CyIdentifiable> filter = composite.getTransformerAt(i);
 					TransformerElementViewModel<?> viewModel = composite.getViewModel(filter);
 					if (current == viewModel.view || current == viewModel.separator || current == viewModel.handle) {
 						path.addFirst(i);
@@ -392,6 +392,26 @@ public abstract class AbstractPanelController<T extends NamedElement, V extends 
 		return path;
 	}
 
+	
+	public void handleDelete(SelectPanelComponent view, JComponent component) {
+		if (component == null)
+			return;
+			
+		List<Integer> path = getPath(view, component);
+		int index = path.get(path.size() - 1);
+		
+		Component parent = component.getParent();
+		if(parent instanceof CompositePanelComponent) {
+			CompositePanelComponent compositePanel = (CompositePanelComponent)parent;
+			compositePanel.removeTransformer(index, true);
+		}
+		
+		CompositePanelComponent root = view.getRootPanel();
+		root.updateLayout();
+	}
+	
+	
+	
 
 	protected abstract T createElement(String name);
 
@@ -433,8 +453,6 @@ public abstract class AbstractPanelController<T extends NamedElement, V extends 
 	
 	public abstract void handleDrop(V view, JComponent source, List<Integer> sourcePath, JComponent target, List<Integer> targetPath);
 	
-	public abstract void handleDelete(V view, JComponent component);
-
 	public abstract String getHandleToolTip();
 }
 

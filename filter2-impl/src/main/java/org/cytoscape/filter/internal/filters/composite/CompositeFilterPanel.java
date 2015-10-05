@@ -106,6 +106,7 @@ public class CompositeFilterPanel<P extends SelectPanelComponent> extends JPanel
 		}
 	}
 
+	@Override
 	public void updateLayout() {
 		if (!SwingUtilities.isEventDispatchThread()) {
 			SwingUtilities.invokeLater(new Runnable() {
@@ -270,26 +271,22 @@ public class CompositeFilterPanel<P extends SelectPanelComponent> extends JPanel
 		}
 	}
 
-	public void removeFilter(int index, boolean unregister) {
+	@Override
+	public void removeTransformer(int index, boolean unregister) {
 		Filter<CyNetwork, CyIdentifiable> filter = model.remove(index);
 		TransformerElementViewModel<P> model = viewModels.remove(filter);
-		if (model == null || model.view == null) {
-			return;
-		}
 		
-		if (!unregister) {
-			return;
-		}
-		
-		filterPanelController.unregisterView(model.view);
-		if (model.view instanceof CompositeFilterPanel) {
-			((CompositeFilterPanel<?>) model.view).removeAllFilters();
+		if (unregister && model != null && model.view != null) {
+			filterPanelController.unregisterView(model.view);
+			if (model.view instanceof CompositeFilterPanel) {
+				((CompositeFilterPanel<?>) model.view).removeAllFilters();
+			}
 		}
 	}
 
 	void removeAllFilters() {
 		while (model.getLength() > 0) {
-			removeFilter(0, true);
+			removeTransformer(0, true);
 		}
 	}
 	
@@ -302,12 +299,12 @@ public class CompositeFilterPanel<P extends SelectPanelComponent> extends JPanel
 	}
 
 	@Override
-	public int getModelCount() {
+	public int getTransformerCount() {
 		return model.getLength();
 	}
 
 	@Override
-	public Transformer<CyNetwork, CyIdentifiable> getModelAt(int index) {
+	public Transformer<CyNetwork, CyIdentifiable> getTransformerAt(int index) {
 		return model.get(index);
 	}
 

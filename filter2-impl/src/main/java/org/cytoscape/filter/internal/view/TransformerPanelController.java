@@ -296,13 +296,4 @@ public class TransformerPanelController extends AbstractPanelController<Transfor
 		}
 	}
 	
-	@Override
-	public void handleDelete(TransformerPanel view, JComponent component) {
-		List<Integer> path = getPath(view, component);
-		CompositeTransformerPanel root = view.getRootPanel();
-		int index = path.get(path.size() - 1);
-		root.removeTransformer(index);
-		
-		root.updateLayout();
-	}
 }
