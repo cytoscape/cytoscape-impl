@@ -40,7 +40,9 @@ import org.cytoscape.app.internal.exception.AppLoadingException;
 import org.cytoscape.app.internal.exception.AppStartupException;
 import org.cytoscape.app.internal.exception.AppStoppingException;
 import org.cytoscape.app.internal.exception.AppUnloadingException;
+import org.cytoscape.app.internal.util.AppHelper;
 import org.cytoscape.app.swing.CySwingAppAdapter;
+import org.cytoscape.application.CyVersion;
 
 public class SimpleApp extends App {
 	
@@ -65,14 +67,20 @@ public class SimpleApp extends App {
 	private AbstractCyApp app;
 	
 	@Override
-	public boolean isDetached() {
-		return(super.isDetached() && app == null);
+	public boolean isHidden() {
+		return(super.isHidden() && app == null);
 	}
 
 	@Override
 	public String getReadableStatus() {
 		switch (this.getStatus()) {
 		
+		case INACTIVE:
+			if (app != null) {
+				return "Inactive on Restart";
+			} else {
+				return "Inactive";
+			}
 		case DISABLED:
 			if (app != null) {
 				return "Disable on Restart";
@@ -186,6 +194,11 @@ public class SimpleApp extends App {
 
 	@Override
 	public void stop(AppManager appManager) throws AppStoppingException {
+	}
+	
+	@Override
+	public boolean isCompatible(CyVersion cyVer) {
+		return AppHelper.isCompatible(cyVer, getCompatibleVersions());
 	}
 
 }

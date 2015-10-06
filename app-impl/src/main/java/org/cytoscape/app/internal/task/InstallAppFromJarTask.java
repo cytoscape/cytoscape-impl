@@ -14,10 +14,12 @@ public class InstallAppFromJarTask extends AbstractTask {
 	
 	private final File appFile;
 	private final AppManager appManager;
+	private final boolean promptToReplace;
 	
-	public InstallAppFromJarTask(final File appFile, final AppManager appManager) {
+	public InstallAppFromJarTask(final File appFile, final AppManager appManager, final boolean promptToReplace) {
 		this.appFile = appFile;
 		this.appManager = appManager;
+		this.promptToReplace = promptToReplace;
 	}
 
 	@Override
@@ -26,7 +28,7 @@ public class InstallAppFromJarTask extends AbstractTask {
 		App appToInstall = appManager.getAppParser().parseApp(appFile);
 		taskMonitor.setStatusMessage("Resolving dependencies for " + appToInstall.getAppName() + "...");
 		taskMonitor.setProgress(-1);
-		insertTasksAfterCurrentTask(new InstallAppTask(appToInstall, appManager));
+		insertTasksAfterCurrentTask(new InstallAppTask(appToInstall, appManager, promptToReplace));
 
 		// Download dependencies
 		final Set<WebApp> webApps = appManager.getWebQuerier().getAllApps();
@@ -40,12 +42,9 @@ public class InstallAppFromJarTask extends AbstractTask {
 				if (webApp == null) {
 					taskMonitor.showMessage(TaskMonitor.Level.WARN, "App may not work. Could not find dependency through the App Store: " + dep);
 				} else {
-					if (webApp.getCorrespondingApp() == null || webApp.getCorrespondingApp().isDetached()) {
-						// install dependency
-						insertTasksAfterCurrentTask(new InstallAppFromNetworkTask(webApp, appManager.getWebQuerier(), appManager));
-					} else if (WebQuerier.compareVersions(webApp.getCorrespondingApp().getVersion(), dep.getVersion()) > 0) {
-						// update dependency
-						appManager.uninstallApp(webApp.getCorrespondingApp());
+					if (webApp.getCorrespondingApp() == null ||
+							WebQuerier.compareVersions(webApp.getCorrespondingApp().getVersion(), dep.getVersion()) > 0) {
+						// install/update dependency
 						insertTasksAfterCurrentTask(new InstallAppFromNetworkTask(webApp, appManager.getWebQuerier(), appManager));
 					} else {
 						taskMonitor.showMessage(TaskMonitor.Level.INFO, "App dependency already satisfied: " + dep);

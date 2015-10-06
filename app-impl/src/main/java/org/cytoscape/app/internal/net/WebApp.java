@@ -28,7 +28,6 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
-
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 
@@ -36,7 +35,7 @@ import javax.swing.ImageIcon;
 
 import org.cytoscape.app.internal.manager.App;
 import org.cytoscape.app.internal.net.WebQuerier.AppTag;
-
+import org.cytoscape.app.internal.util.AppHelper;
 import org.cytoscape.application.CyVersion;
 
 /**
@@ -89,7 +88,6 @@ public class WebApp {
 	private App correspondingApp;
 	
 	public static class Release implements Comparable<Release> {
-		private static Pattern COMPAT_VERSION_REGEX = Pattern.compile("^(\\d+)(?:\\.(\\d+))?(?:\\.(\\d+))?([\\-\\.\\w]+)?$");
 		private String baseUrl;
 		private String relativeUrl;
 		private String releaseDate;
@@ -153,26 +151,7 @@ public class WebApp {
 		}
 
 		public boolean isCompatible(final CyVersion cyVer) {
-			final String compatVersStr = this.compatibleCytoscapeVersions;
-			final String[] compatVers = compatVersStr.split(",");
-			for (final String compatVer : compatVers) {
-				final Matcher matcher = COMPAT_VERSION_REGEX.matcher(compatVer);
-				if (!matcher.matches())
-					continue;
-				final String majorStr = matcher.group(1);
-				final int major = Integer.parseInt(majorStr);
-				final String minorStr = matcher.group(2);
-				final int minor = minorStr != null ? Integer.parseInt(minorStr) : 0;
-				final String patchStr = matcher.group(3);
-				final int patch = patchStr != null ? Integer.parseInt(patchStr) : 0;
-				final String tagStr = matcher.group(4);
-				if (cyVer.getMajorVersion() == major &&
-						cyVer.getMinorVersion() >= minor &&
-						cyVer.getBugFixVersion() >= patch) {
-					return true;
-				}
-			}
-			return false;
+			return AppHelper.isCompatible(cyVer, compatibleCytoscapeVersions);
 		}
 	}
 	

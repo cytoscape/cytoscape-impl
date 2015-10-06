@@ -38,6 +38,8 @@ import org.cytoscape.app.internal.exception.AppStartupException;
 import org.cytoscape.app.internal.exception.AppStoppingException;
 import org.cytoscape.app.internal.exception.AppUnloadingException;
 import org.cytoscape.app.internal.net.WebQuerier;
+import org.cytoscape.app.internal.util.AppHelper;
+import org.cytoscape.application.CyVersion;
 
 /**
  * This class represents an app, and contains all needed information about the app such as its name, version, 
@@ -118,6 +120,7 @@ public abstract class App {
 	 * An enumeration that indicates the status of a given app, such as whether it is installed or uninstalled.
 	 */
 	public enum AppStatus{
+		INACTIVE("Inactive"),
 		INSTALLED("Installed"),
 		DISABLED("Disabled"),
 		UNINSTALLED("Uninstalled"),
@@ -147,20 +150,27 @@ public abstract class App {
 		
 		appValidated = false;
 		officialNameObtained = false;
-		this.status = null;
+		this.status = AppStatus.INACTIVE;
+	}
+	
+	/**
+	 * This is a useful method for knowing which apps not to display in an "all apps" GUI listing.
+	 */
+	public boolean isHidden() {
+		if (coreApp || status == AppStatus.INACTIVE || 
+				status == AppStatus.UNINSTALLED || status == AppStatus.FILE_MOVED)
+			return true;
+		else return false;
 	}
 	
 	/**
 	 * Loosely, a detached app is no longer associated with the main program.
-	 * 
-	 * This is a useful method for knowing which apps not to display in an "all apps" GUI listing.
 	 */
 	public boolean isDetached() {
-		if (status == AppStatus.UNINSTALLED || status == AppStatus.FILE_MOVED) {
+		if (status == AppStatus.UNINSTALLED || status == AppStatus.FILE_MOVED || 
+				status == AppStatus.DISABLED || status == AppStatus.TO_BE_INSTALLED)
 			return true;
-		} else {
-			return false;
-		}
+		else return false;
 	}
 	
 
@@ -171,6 +181,8 @@ public abstract class App {
 	public abstract void stop(AppManager appManager) throws AppStoppingException;
 	
 	public abstract void unload(AppManager appManager) throws AppUnloadingException;
+	
+	public abstract boolean isCompatible(CyVersion cyVer);
 	
 	
 	/**
@@ -224,23 +236,6 @@ public abstract class App {
 		}
 		
 		return newFileName;
-	}
-	
-	/**
-	 * Checks if this app is known to be compatible with a given version of Cytoscape.
-	 * @param cytoscapeVersion The version of Cytoscape to be checked, in the form major.minor.patch[-tag].
-	 * @return <code>true</code> if this app is known to be compatible with the given version, or
-	 * <code>false</code> otherwise.
-	 */
-	public boolean isCompatible(String cytoscapeVersion) {
-		// Get the major version of Cytoscape
-		String majorVersion = cytoscapeVersion.substring(0, cytoscapeVersion.indexOf(".")).trim();
-		
-		if (compatibleVersions.matches("(.*,|^)\\s*(" + majorVersion + ")\\s*(,.*|$)")) {
-			return true;
-		} else {
-			return false;
-		}
 	}
 	
 	/**
@@ -319,10 +314,6 @@ public abstract class App {
 		return entryClassName;
 	}
 	
-	/**
-	 * Return the major versions of Cytoscape the app is known to be compatible with, in comma-delimited form, eg. "2, 3"
-	 * @return The major versions of Cytoscape that the app is known to be compatible with
-	 */
 	public String getCompatibleVersions() {
 		return compatibleVersions;
 	}
@@ -515,16 +506,5 @@ public abstract class App {
 			}
 			tempFile.renameTo(targetFile);
 		}
-	}
-	
-	protected boolean checkAppAlreadyInstalled(AppManager appManager) {
-		boolean appAlreadyInstalled = false;
-		for (App app : appManager.getApps()) {
-			if (app.heuristicEquals(this)) {
-				appAlreadyInstalled = true;
-			}
-		}
-		
-		return appAlreadyInstalled;
 	}
 }

@@ -250,26 +250,28 @@ public class AppParser {
 				}
 			}
 		}
-		
-		String compatibleVersions = manifest.getMainAttributes().getValue(APP_COMPATIBLE_TAG);
-		if (compatibleVersions == null || compatibleVersions.trim().length() == 0) {
-            if (bundleApp) {
-                logger.info("Bundle app " + file.getName() + " manifest does not contain the entry \"" + APP_COMPATIBLE_TAG
-                        + "\". Assuming default value 3.0.");
-                compatibleVersions = "3.0";
-            } else {
-            	
-            	// For now, accept the deprecated field Cytoscape-App-Works-With if the official field was not found
-            	compatibleVersions = manifest.getMainAttributes().getValue("Cytoscape-App-Works-With");
-            	
-            	if (compatibleVersions == null || compatibleVersions.trim().length() == 0) {
-            		throw new AppParsingException("Jar is missing value for entry " + APP_COMPATIBLE_TAG + " in its manifest file.");
-            	}
-            }
-		} else if (!compatibleVersions.matches(APP_COMPATIBLE_TAG_REGEX)) {
-			throw new AppParsingException("The known compatible versions of Cytoscape specified in the manifest under the"
-					+ " key " + APP_COMPATIBLE_TAG + " does not match the form of a comma-delimited list of versions of the form"
-					+ " major[.minor] (eg. 1 or 1.0) with variable whitespace around versions");
+		String compatibleVersions = null;
+		if (bundleApp) {
+			compatibleVersions = manifest.getMainAttributes().getValue("Import-Package");
+			if (compatibleVersions == null || compatibleVersions.trim().length() == 0) {
+				throw new AppParsingException("Jar is missing value for entry Import-Package in its manifest file.");
+			}
+		} else {
+			compatibleVersions = manifest.getMainAttributes().getValue(APP_COMPATIBLE_TAG);
+
+			if (compatibleVersions == null || compatibleVersions.trim().length() == 0) {
+				// For now, accept the deprecated field Cytoscape-App-Works-With if the official field was not found
+				compatibleVersions = manifest.getMainAttributes().getValue("Cytoscape-App-Works-With");
+			}
+
+			if (compatibleVersions == null || compatibleVersions.trim().length() == 0) {
+				throw new AppParsingException("Jar is missing value for entry " + APP_COMPATIBLE_TAG + " in its manifest file.");
+			}
+			else if (!compatibleVersions.matches(APP_COMPATIBLE_TAG_REGEX)) {
+				throw new AppParsingException("The known compatible versions of Cytoscape specified in the manifest under the"
+						+ " key " + APP_COMPATIBLE_TAG + " does not match the form of a comma-delimited list of versions of the form"
+						+ " major[.minor] (eg. 1 or 1.0) with variable whitespace around versions");
+			}
 		}
 
 		List<App.Dependency> deps = null;

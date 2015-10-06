@@ -136,7 +136,7 @@ public class UpdateManager implements AppsFinishedStartingListener {
 			appManager.getWebQuerier().setCurrentAppStoreUrl(downloadSite.getSiteUrl());
 			appManager.getWebQuerier().getAllApps();
 		}
-		checkForUpdates(appManager.getApps());
+		checkForUpdates(appManager.getInstalledApps());
 		if(updates.size() > 0)
 			userLogger.info(updates.size() + " " + 
 						(updates.size() == 1 ? "update" : "updates") + " available" );

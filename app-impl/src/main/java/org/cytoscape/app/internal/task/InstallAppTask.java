@@ -13,10 +13,12 @@ public class InstallAppTask extends AbstractTask {
 	
 	private final App appToInstall;
 	private final AppManager appManager;
+	private final boolean promptToReplace;
 	
-	public InstallAppTask(final App appToInstall, final AppManager appManager) {
+	public InstallAppTask(final App appToInstall, final AppManager appManager, final boolean promptToReplace) {
 		this.appToInstall = appToInstall;
 		this.appManager = appManager;
+		this.promptToReplace = promptToReplace;
 	}
 
 	@Override
@@ -24,9 +26,14 @@ public class InstallAppTask extends AbstractTask {
 		// Check for name collisions
 		taskMonitor.setStatusMessage("Installing " + appToInstall.getAppName() + "...");
 		Set<App> conflictingApps = checkAppNameCollision(appToInstall.getAppName());
-		if (conflictingApps.size() == 1 && conflictingApps.iterator().next() instanceof BundleApp) {
+		if (conflictingApps.size() == 1) {
 			App conflictingApp = conflictingApps.iterator().next();
-			insertTasksAfterCurrentTask(new ResolveAppInstallationConflictTask(appToInstall, conflictingApp, appManager));
+			if(promptToReplace)
+				insertTasksAfterCurrentTask(new ResolveAppInstallationConflictTask(appToInstall, conflictingApp, appManager));
+			else {
+				appManager.installApp(appToInstall);
+				appManager.uninstallApp(conflictingApp);
+			}
 		}
 		else
 		{
@@ -37,12 +44,9 @@ public class InstallAppTask extends AbstractTask {
 	private Set<App> checkAppNameCollision(String appName) {
 		Set<App> collidingApps = new HashSet<App>();
 		
-		for (App app : appManager.getApps()) {
+		for (App app : appManager.getInstalledApps()) {
 			if (appName.equalsIgnoreCase(app.getAppName())) {
-				
-				if (app.isDetached() == false) {
-					collidingApps.add(app);
-				}
+				collidingApps.add(app);
 			}
 		}
 		

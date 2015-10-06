@@ -348,7 +348,7 @@ public class CurrentlyInstalledAppsPanel extends JPanel {
     	for (App app : appManager.getApps()) {
     		
     		// Hide apps with certain statuses from the table, such as uninstalled ones.
-    		if (app.isDetached() || app.isCoreApp()) {
+    		if (app.isHidden()) {
     			// Do nothing
     			//DebugHelper.print(this, "Detached app: " + app.getAppName() + ", status: " + app.getStatus());
     		} else {
@@ -373,10 +373,10 @@ public class CurrentlyInstalledAppsPanel extends JPanel {
     	for (App app : appManager.getApps()) {
     		
     		// Count the number of displayed apps
-    		if (!(app.isDetached() || app.isCoreApp())) {
+    		if (!app.isHidden()) {
     			listedCount++;
     		} else {
-    			DebugHelper.print(this, "Detached app: " + app.getAppName() + ", status: " + app.getStatus());
+    			DebugHelper.print(this, "Hidden app: " + app.getAppName() + ", status: " + app.getStatus());
     		}
     	}
     	

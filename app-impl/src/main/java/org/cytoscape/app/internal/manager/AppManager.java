@@ -27,11 +27,12 @@ package org.cytoscape.app.internal.manager;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CopyOnWriteArraySet;
@@ -194,11 +195,11 @@ public class AppManager implements FrameworkListener {
 		this.startLevel = startLevel;
 		this.bundleContext = bundleContext;
 		
-		
-		apps = new CopyOnWriteArraySet<App>();
 		appParser = new AppParser();
 		appListeners = new CopyOnWriteArrayList<AppsChangedListener>();
 		
+		apps = new CopyOnWriteArraySet<App>();
+
 		// cleanKarafDeployDirectory();
 		purgeTemporaryDirectories();
 		initializeAppsDirectories();
@@ -233,6 +234,10 @@ public class AppManager implements FrameworkListener {
 	}
 	
 	void initializeApps() {
+		// Register all core apps first
+		Set<App> coreApps = obtainAppsFromDirectory(getCoreAppPath(), true);
+		apps.addAll(coreApps);
+		
 		// Move apps from install-on-restart directory to install directory
 		Set<App> installOnRestartApps = obtainAppsFromDirectory(new File(getInstallOnRestartAppsPath()), false);
 		for (App app: installOnRestartApps) {
@@ -293,44 +298,42 @@ public class AppManager implements FrameworkListener {
 		}
 		
 		
-		Set<App> coreApps = obtainAppsFromDirectory(getCoreAppPath(), false);
 		Set<App> installedFolderApps = obtainAppsFromDirectory(new File(getInstalledAppsPath()), false);
-		//use LinkedHashSet to maintain order (core apps before non-core apps)
-		Set<App> appsToStart = new LinkedHashSet<App>();
-		for (App app: coreApps) {
-			app.setCoreApp(true);
-			for (Iterator<App> i = installedFolderApps.iterator();  i.hasNext();) {
-				App installedApp = i.next();
-				if(app.getAppName().equalsIgnoreCase(installedApp.getAppName())) {
-					i.remove();
-					if(WebQuerier.compareVersions(app.getVersion(), installedApp.getVersion()) > 0 &&
-							installedApp.isCompatible(version.getVersion())) {
-						app = installedApp;
+		List<App> startupApps = new ArrayList<App>(coreApps);
+		boolean appsFailed = false;
+		for (App app: installedFolderApps) {
+			boolean appRegistered = false;
+			for (App regApp : apps) {
+				if (regApp.heuristicEquals(app))
+					appRegistered = true;
+			}
+			if (!appRegistered) {
+				apps.add(app);
+				boolean existsInStartup = false;
+				for(ListIterator<App> i = startupApps.listIterator(); i.hasNext();) {
+					App startupApp = i.next();
+					if(startupApp.getAppName().equalsIgnoreCase(app.getAppName())) {
+						existsInStartup = true;
+						if(app.isCompatible(version) &&
+							WebQuerier.compareVersions(startupApp.getVersion(), app.getVersion()) > 0) {
+							i.set(app);
+						}
 					}
 				}
+				if (!existsInStartup && app.isCompatible(version)) {
+					startupApps.add(app);
+				}
+			} else {
+				// Delete the copy
+				FileUtils.deleteQuietly(app.getAppFile());
+				app.setAppFile(null);
 			}
-			appsToStart.add(app);
 		}
-		appsToStart.addAll(installedFolderApps);
 		
-		boolean appsFailed = false;
-		for (Iterator<App> i = appsToStart.iterator(); i.hasNext();) {
+		for(Iterator<App> i = startupApps.iterator(); i.hasNext();) {
 			App app = i.next();
 			try {
-				boolean appRegistered = false;
-				for (App regApp : apps) {
-					if (regApp.heuristicEquals(app))
-						appRegistered = true;
-				}
-				if (!appRegistered) {
-					apps.add(app);
-					app.setStatus(AppStatus.INSTALLED);
-					app.load(this);
-				} else {
-					// Delete the copy
-					FileUtils.deleteQuietly(app.getAppFile());
-					app.setAppFile(null);
-				}
+				app.load(this);
 			} catch (AppLoadingException e) {
 				i.remove();
 				appsFailed = true;
@@ -339,9 +342,10 @@ public class AppManager implements FrameworkListener {
 			}
 		}
 		
-		for(App app: appsToStart) {
+		for(App app: startupApps) {
 			try {
 				app.start(this);
+				app.setStatus(AppStatus.INSTALLED);
 			} catch (AppStartupException e) {
 				appsFailed = true;
 				app.setStatus(AppStatus.FAILED_TO_START);
@@ -372,6 +376,7 @@ public class AppManager implements FrameworkListener {
 		installAlterationObserver.addListener(new FileAlterationListenerAdaptor() {
 			@Override
 			public void onFileCreate(File file) {
+				
 				App parsedApp = null;
 				try {
 					parsedApp = appParser
@@ -379,7 +384,7 @@ public class AppManager implements FrameworkListener {
 				} catch (AppParsingException e) {
 					return;
 				}
-				
+				boolean startApp = parsedApp.isCompatible(version);
 				App registeredApp = null;
 				for (App app : apps) {
 					if (parsedApp.heuristicEquals(app)) {
@@ -389,7 +394,7 @@ public class AppManager implements FrameworkListener {
 						File oldFile = registeredApp
 								.getAppFile();
 						
-						if (oldFile.exists() && !registeredApp
+						if (oldFile != null && oldFile.exists() && !registeredApp
 								.getAppFile().equals(parsedApp
 										.getAppFile())) {
 							FileUtils.deleteQuietly(oldFile);
@@ -397,6 +402,22 @@ public class AppManager implements FrameworkListener {
 						
 						// Update file reference to reflect file having been moved
 						registeredApp.setAppFile(file);
+						registeredApp.setStatus(AppStatus.INACTIVE);
+					}
+					else if(parsedApp.isCompatible(version) && parsedApp.getAppName().equals(app.getAppName())) {
+						try {
+							if(!app.isDetached() && app.isCompatible(version)) {
+								if(WebQuerier.compareVersions(parsedApp.getVersion(), app.getVersion()) > 0)
+									startApp = false;
+								else {
+									app.unload(AppManager.this);
+									app.setStatus(AppStatus.INACTIVE);
+								}
+							}
+						} catch (AppUnloadingException e) {
+							// TODO Auto-generated catch block
+							userLogger.warn("Failed to unload app " + app.getAppName(), e);
+						}
 					}
 				}
 				App app = null;
@@ -408,9 +429,11 @@ public class AppManager implements FrameworkListener {
 					app = registeredApp;
 				}
 				try {
-					app.setStatus(AppStatus.INSTALLED);
-					app.load(appManager);
-					app.start(appManager);
+					if(startApp) {
+						app.load(appManager);
+						app.start(appManager);
+						app.setStatus(AppStatus.INSTALLED);
+					}
 				}
 				catch (AppLoadingException e) {
 					app.setStatus(AppStatus.FAILED_TO_LOAD);
@@ -438,21 +461,65 @@ public class AppManager implements FrameworkListener {
 				// System.out.println(file + " on delete");
 				
 				DebugHelper.print(this + " installObserverDelete", file.getAbsolutePath() + " deleted.");
-				
+				App registeredApp = null;
 				for (App app : apps) {
-
-					if (app.getAppFile().equals(file)) {
-						app.setStatus(AppStatus.FILE_MOVED);
-						try {
-							app.unload(appManager);
-						}
-						catch (AppUnloadingException e) {
-							userLogger.warn("Failed to unload app " + app.getAppName(), e);
-						}
+					if (file.equals(app.getAppFile())) {
+						app.setAppFile(null);
+						registeredApp = app;
+						break;
 					}
 				}
 				
-				fireAppsChangedEvent();
+				if (registeredApp == null) return;
+				
+				try {
+					registeredApp.unload(appManager);
+					registeredApp.setStatus(AppStatus.FILE_MOVED);
+				}
+				catch (AppUnloadingException e) {
+					userLogger.warn("Failed to unload app " + registeredApp.getAppName(), e);
+				}
+
+				//Do this so that we don't reload an old app when responding to change events
+				if (file.exists()) {
+					App parsedApp = null;
+					try {
+						parsedApp = appParser
+								.parseApp(file);
+					} catch (AppParsingException e) {
+						return;
+					}
+					if(parsedApp.isCompatible(version) && 
+							registeredApp.getAppName().equalsIgnoreCase(parsedApp.getAppName()))
+						return;
+				}
+
+				App appToStart = null;
+				for (App app: apps) {
+					if(!app.isDetached() && app.isCompatible(version) && 
+							app.getAppName().equalsIgnoreCase(registeredApp.getAppName())) {
+						if(appToStart == null || 
+								WebQuerier.compareVersions(appToStart.getVersion(), app.getVersion()) > 0) 
+							appToStart = app;
+					}
+				}
+
+				if(appToStart != null) {
+					try {
+						appToStart.load(appManager);
+						appToStart.start(appManager);
+						appToStart.setStatus(AppStatus.INSTALLED);
+					}
+					catch (AppLoadingException e) {
+						appToStart.setStatus(AppStatus.FAILED_TO_LOAD);
+						userLogger.error("Failed to load app " + appToStart.getAppName(), e);
+					}
+					catch (AppStartupException e) {
+						appToStart.setStatus(AppStatus.FAILED_TO_START);
+						userLogger.error("Failed to start app " + appToStart.getAppName(), e);
+					}
+				}
+			fireAppsChangedEvent();
 			}
 		});
 		
@@ -481,7 +548,7 @@ public class AppManager implements FrameworkListener {
 						// TODO: Possible rename from filename-2 to filename?
 						File oldFile = registeredApp.getAppFile();
 						
-						if (oldFile.exists() && !registeredApp.getAppFile().equals(parsedApp.getAppFile())) {
+						if (oldFile != null && oldFile.exists() && !registeredApp.getAppFile().equals(parsedApp.getAppFile())) {
 							DebugHelper.print(this + " disableObserverCreate", 
 									registeredApp.getAppName() + " moved from " 
 									+ registeredApp.getAppFile().getAbsolutePath() + " to " 
@@ -526,9 +593,10 @@ public class AppManager implements FrameworkListener {
 				
 				for (App app : apps) {
 					// System.out.println("checking " + app.getAppFile().getAbsolutePath());
-					if (app.getAppFile().equals(file)) {
-						// System.out.println(app + " moved");
+					if (file.equals(app.getAppFile())) {
+						app.setAppFile(null);
 						app.setStatus(AppStatus.FILE_MOVED);
+						break;
 					}
 				}
 				
@@ -561,7 +629,7 @@ public class AppManager implements FrameworkListener {
 						// TODO: Possible rename from filename-2 to filename?
 						File oldFile = registeredApp.getAppFile();
 						
-						if (oldFile.exists() && !registeredApp.getAppFile().equals(parsedApp.getAppFile())) {
+						if (oldFile != null && oldFile.exists() && !registeredApp.getAppFile().equals(parsedApp.getAppFile())) {
 							DebugHelper.print(this + " uninstallObserverCreate", 
 									registeredApp.getAppName() + " moved from " 
 									+ registeredApp.getAppFile().getAbsolutePath() + " to " 
@@ -606,9 +674,10 @@ public class AppManager implements FrameworkListener {
 				
 				for (App app : apps) {
 					// System.out.println("checking " + app.getAppFile().getAbsolutePath());
-					if (app.getAppFile().equals(file)) {
-						// System.out.println(app + " moved");
+					if (file.equals(app.getAppFile())) {
+						app.setAppFile(null);
 						app.setStatus(AppStatus.FILE_MOVED);
+						break;
 					}
 				}
 				
@@ -695,22 +764,40 @@ public class AppManager implements FrameworkListener {
 	 * unable to copy the app to the installed apps directory or to instance the app's entry point class
 	 */
 	public void installApp(App app) throws AppInstallException {
+		
+		if(app.isCoreApp()) return;
+		
+		boolean installOnRestart = false;
 
-		/*
-		try {
-			System.out.println(getChecksum(app.getAppFile()));
-		} catch (ChecksumException e) {
-			System.out.println(e.getMessage());
-		}
-		*/
-		
-		try {
-			app.moveAppFile(this, new File(getInstalledAppsPath()));
-		} catch (IOException e) {
-			throw new AppInstallException("Unable to move app file", e);
+		if(app instanceof SimpleApp){
+			for (App regApp : apps) {
+				if (app.getAppName().equalsIgnoreCase(regApp.getAppName()) && !app.isDetached()) {
+					installOnRestart = true;
+				}
+			}
 		}
 		
-		checkForFileChanges();
+		if (installOnRestart) {
+			try {
+				app.moveAppFile(this, new File(getInstallOnRestartAppsPath()));
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				throw new AppInstallException("Unable to move app file" ,e);
+			}
+			checkForFileChanges();
+			
+			apps.add(app);
+			app.setStatus(AppStatus.TO_BE_INSTALLED);
+			fireAppsChangedEvent();
+		}
+		else {
+			try {
+				app.moveAppFile(this, new File(getInstalledAppsPath()));
+			} catch (IOException e) {
+				throw new AppInstallException("Unable to move app file", e);
+			}
+			checkForFileChanges();
+		}
 	}
 	
 	/**
@@ -723,25 +810,25 @@ public class AppManager implements FrameworkListener {
 	 * apps directory
 	 */
 	public void uninstallApp(App app) throws AppUninstallException {
+		if(app.isCoreApp()) return; 
 		
 		try {
 			app.moveAppFile(this, new File(getUninstalledAppsPath()));
 		} catch (IOException e) {
 			throw new AppUninstallException("Unable to move app file", e);
 		}
-
 		checkForFileChanges();
 	}
 
     public void disableApp(App app) throws AppDisableException {
-		
+    	if(app.isCoreApp()) return;
+    	
     	try {
 			app.moveAppFile(this, new File(getDisabledAppsPath()));
 		} catch (IOException e) {
 			throw new AppDisableException("Unable to move app file", e);
 		}
-
-		checkForFileChanges();
+    	checkForFileChanges();
     }
     
 //    /**
@@ -775,6 +862,22 @@ public class AppManager implements FrameworkListener {
 	 */
 	public Set<App> getApps() {
 		return apps;
+	}
+	
+	/**
+	 * Return the set of installed apps.
+	 * @return The set of all installed apps.
+	 */
+	public Set<App> getInstalledApps() {
+		final Set<App> installedApps = new HashSet<App>();
+		
+		for (App app : apps) {
+			if (app.getStatus() != AppStatus.INACTIVE
+					&& !app.isDetached()) {
+				installedApps.add(app);
+			}
+		}
+		return installedApps;
 	}
 	
 	/**
@@ -963,7 +1066,7 @@ public class AppManager implements FrameworkListener {
 	 * @param directory The directory used to parse {@link App} objects
 	 * @return A set of all {@link App} objects that were successfully parsed from files in the given directory
 	 */
-	private Set<App> obtainAppsFromDirectory(File directory, boolean ignoreDuplicateBundleApps) {
+	private Set<App> obtainAppsFromDirectory(File directory, boolean isCoreAppDirectory) {
 		// Obtain all files in the given directory with supported extensions, perform a non-recursive search
 		Collection<File> files = FileUtils.listFiles(directory, APP_EXTENSIONS, false); 
 		
@@ -975,6 +1078,7 @@ public class AppManager implements FrameworkListener {
 			app = null;
 			try {
 				app = appParser.parseApp(file);
+				app.setCoreApp(isCoreAppDirectory);
 			} catch (AppParsingException e) {
 				app = null;
 			} finally {

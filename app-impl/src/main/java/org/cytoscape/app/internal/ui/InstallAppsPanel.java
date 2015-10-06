@@ -531,7 +531,7 @@ public class InstallAppsPanel extends JPanel {
         				taskMonitor.setTitle("Install from File");
         				taskMonitor.setTitle("Installing app from file: " + appFile.getName());
         				taskMonitor.setStatusMessage("Starting install...");
-        				insertTasksAfterCurrentTask(new InstallAppFromJarTask(appFile, appManager));
+        				insertTasksAfterCurrentTask(new InstallAppFromJarTask(appFile, appManager, true));
         			}
         		}));
         	}

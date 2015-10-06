@@ -677,9 +677,7 @@ public class WebQuerier {
 		// installed app. Runtime performance is
 		// (num_installed_apps * num_web_apps * releases_per_web_app)
 		
-		for (App app : appManager.getApps()) {
-			
-			if(app.isDetached()) continue;
+		for (App app : appManager.getInstalledApps()) {
 			
 			if (app.getSha512Checksum() == null) {
 				try {

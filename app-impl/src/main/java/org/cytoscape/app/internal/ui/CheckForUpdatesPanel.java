@@ -33,7 +33,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.util.Calendar;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -53,7 +52,6 @@ import javax.swing.table.DefaultTableModel;
 import org.cytoscape.app.internal.event.UpdatesChangedEvent;
 import org.cytoscape.app.internal.event.UpdatesChangedListener;
 import org.cytoscape.app.internal.manager.App;
-import org.cytoscape.app.internal.manager.App.AppStatus;
 import org.cytoscape.app.internal.manager.AppManager;
 import org.cytoscape.app.internal.net.Update;
 import org.cytoscape.app.internal.net.UpdateManager;
@@ -254,15 +252,8 @@ public class CheckForUpdatesPanel extends JPanel {
     }
     
     private void checkUpdates() {
-    	final Set<App> appsToCheckUpdates = new HashSet<App>();
-		
-		for (App app : appManager.getApps()) {
-			if (app.getStatus() != AppStatus.UNINSTALLED
-					&& app.getStatus() != AppStatus.FILE_MOVED) {
-				appsToCheckUpdates.add(app);
-			}
-		}
-		
+    	final Set<App> appsToCheckUpdates = appManager.getInstalledApps();
+
 		taskManager.execute(new TaskIterator(new Task() {
 			
 			@Override
@@ -321,12 +312,9 @@ public class CheckForUpdatesPanel extends JPanel {
 							+ " (" + currentCount + "/" + updateCount + ")");
 					taskMonitor.setStatusMessage("Checking update status...");
 					
-					appManager.getWebQuerier().checkWebAppInstallStatus(Collections.singleton(update.getWebApp()), appManager);
 					
-					if(!update.getWebApp().getCorrespondingApp().getSha512Checksum().
-							equals(update.getRelease().getSha512Checksum())) {
+					if(!update.isInstalled(appManager)) {
 						// update not already installed
-						appManager.uninstallApp(update.getWebApp().getCorrespondingApp());
 						insertTasksAfterCurrentTask(new InstallAppFromNetworkTask(update.getWebApp(), appManager.getWebQuerier(), appManager));
 					}
 				}

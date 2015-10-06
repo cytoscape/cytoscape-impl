@@ -28,6 +28,8 @@ import org.cytoscape.app.internal.exception.AppLoadingException;
 import org.cytoscape.app.internal.exception.AppStartupException;
 import org.cytoscape.app.internal.exception.AppStoppingException;
 import org.cytoscape.app.internal.exception.AppUnloadingException;
+import org.cytoscape.app.internal.util.AppHelper;
+import org.cytoscape.application.CyVersion;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleException;
 
@@ -39,6 +41,12 @@ public class BundleApp extends App {
 	public String getReadableStatus() {
 		switch (this.getStatus()) {
 		
+		case INACTIVE:
+			if (bundleInstance != null) {
+				return "Inactive on Restart";
+			} else {
+				return "Inactive";
+			}
 		case DISABLED:
 			if (bundleInstance != null) {
 				return "Disable on Restart";
@@ -95,6 +103,15 @@ public class BundleApp extends App {
 		}
 		catch (BundleException e) {
 			throw new AppUnloadingException("Bundle uninstall error", e);
+		}
+	}
+	
+	@Override
+	public boolean isCompatible(CyVersion cyVer) {
+		try {
+			return ParseAppDependencies.checkVersions(getCompatibleVersions(), "org.cytoscape", cyVer.getVersion());
+		} catch (Exception e) {
+			return false;
 		}
 	}
 }

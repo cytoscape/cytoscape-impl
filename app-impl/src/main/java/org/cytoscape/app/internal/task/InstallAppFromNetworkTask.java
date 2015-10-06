@@ -34,7 +34,7 @@ public class InstallAppFromNetworkTask extends AbstractTask {
 		// Download app
 		File appFile = webQuerier.downloadApp(webApp, null, new File(appManager.getDownloadedAppsPath()), status);
 		if(appFile != null) {
-			insertTasksAfterCurrentTask(new InstallAppFromJarTask(appFile, appManager));
+			insertTasksAfterCurrentTask(new InstallAppFromJarTask(appFile, appManager, false));
 		}
 		else {
 			// Log error: no download links were found for app
