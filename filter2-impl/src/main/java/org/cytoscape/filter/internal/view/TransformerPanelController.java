@@ -17,7 +17,6 @@ import org.cytoscape.filter.internal.FilterIO;
 import org.cytoscape.filter.internal.ModelUtil;
 import org.cytoscape.filter.internal.filters.composite.CompositeFilterController;
 import org.cytoscape.filter.internal.filters.composite.CompositeFilterPanel;
-import org.cytoscape.filter.internal.filters.composite.CompositeSeparator;
 import org.cytoscape.filter.internal.filters.composite.CompositeTransformerPanel;
 import org.cytoscape.filter.internal.view.TransformerViewManager.TransformerViewElement;
 import org.cytoscape.filter.internal.view.look.FilterPanelStyle;
@@ -260,22 +259,19 @@ public class TransformerPanelController extends AbstractPanelController<Transfor
 	
 	
 	@Override
-	public JComponent getChild(TransformerPanel view, List<Integer> path) {
-		CompositeTransformerPanel root = view.getRootPanel();
-		if (path.isEmpty()) {
-			return root;
-		}
-		if (path.size() > 1) {
-			return null;
-		}
-		Transformer<CyNetwork, CyIdentifiable> transformer = root.getModel().get(path.get(0));
-		TransformerElementViewModel<TransformerPanel> viewModel = root.getViewModel(transformer);
-		return viewModel.view;
-	}
-	
-	@Override
 	public boolean supportsDrop(TransformerPanel parent, List<Integer> sourcePath, JComponent source, List<Integer> targetPath, JComponent target) {
-		return target instanceof CompositeSeparator;
+		if(!super.supportsDrop(parent, sourcePath, source, targetPath, target))
+			return false;
+		
+		boolean sourceIsFilter = sourcePath.size() > 1;
+		boolean targetIsFilter = targetPath.size() > 1 || target instanceof CompositeFilterPanel;
+		
+		if(sourceIsFilter && targetIsFilter)
+			return true; // create CompositeFilter or move filters
+		if(!sourceIsFilter && !targetIsFilter)
+			return true; // reorder top level transformers
+		
+		return false;
 	}
 	
 	@Override

@@ -308,4 +308,9 @@ public class CompositeFilterPanel<P extends SelectPanelComponent> extends JPanel
 		return model.get(index);
 	}
 
+	@Override
+	public JComponent getComponent() {
+		return this;
+	}
+
 }

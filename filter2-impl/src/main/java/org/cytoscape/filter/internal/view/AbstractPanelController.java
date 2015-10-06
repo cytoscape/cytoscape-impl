@@ -54,9 +54,9 @@ public abstract class AbstractPanelController<T extends NamedElement, V extends 
 	protected DynamicComboBoxModel<T> namedElementComboBoxModel;
 	
 	protected AbstractWorker<?, ?> worker;
-	protected FilterIO filterIo;
-	TaskManager<?, ?> taskManager;
-	JComponent lastHoveredComponent;
+	private FilterIO filterIo;
+	private TaskManager<?, ?> taskManager;
+	private JComponent lastHoveredComponent;
 	
 	final Logger logger;
 
@@ -78,7 +78,7 @@ public abstract class AbstractPanelController<T extends NamedElement, V extends 
 		namedElementListeners = new CopyOnWriteArrayList<NamedElementListener<T>>();
 	}
 
-	public JPopupMenu createAddConditionMenu(final CompositeFilterPanel<?> panel) {
+	public JPopupMenu createAddConditionMenu(final CompositeFilterPanel panel) {
 		JPopupMenu menu = new JPopupMenu();
 		
 		for (final TransformerViewElement element : transformerViewManager.getFilterConditionViewElements()) {
@@ -95,7 +95,7 @@ public abstract class AbstractPanelController<T extends NamedElement, V extends 
 		return menu;
 	}
 	
-	private void handleAddCondition(TransformerViewElement element, CompositeFilterPanel<?> panel) {
+	private void handleAddCondition(TransformerViewElement element, CompositeFilterPanel panel) {
 		// Assume the factory makes filters
 		Transformer<CyNetwork, CyIdentifiable> transformer = transformerManager.createTransformer(element.getId());
 		Filter<CyNetwork, CyIdentifiable> filter = (Filter<CyNetwork, CyIdentifiable>) transformer;
@@ -350,7 +350,7 @@ public abstract class AbstractPanelController<T extends NamedElement, V extends 
 	}
 	
 	
-	public List<Integer> getPath(SelectPanelComponent view, JComponent component) {
+	public List<Integer> getPath(V view, JComponent component) {
 		if (component == view.getRootPanel()) {
 			return Collections.emptyList();
 		}
@@ -370,7 +370,7 @@ public abstract class AbstractPanelController<T extends NamedElement, V extends 
 				boolean found = false;
 				for (int i = 0; i < composite.getTransformerCount(); i++) {
 					Transformer<CyNetwork, CyIdentifiable> filter = composite.getTransformerAt(i);
-					TransformerElementViewModel<?> viewModel = composite.getViewModel(filter);
+					TransformerElementViewModel viewModel = composite.getViewModel(filter);
 					if (current == viewModel.view || current == viewModel.separator || current == viewModel.handle) {
 						path.addFirst(i);
 						found = true;
@@ -393,7 +393,7 @@ public abstract class AbstractPanelController<T extends NamedElement, V extends 
 	}
 
 	
-	public void handleDelete(SelectPanelComponent view, JComponent component) {
+	public void handleDelete(V view, JComponent component) {
 		if (component == null)
 			return;
 			
@@ -410,7 +410,31 @@ public abstract class AbstractPanelController<T extends NamedElement, V extends 
 		root.updateLayout();
 	}
 	
+	public JComponent getChild(V view, List<Integer> path) {
+		CompositePanelComponent root = view.getRootPanel();
+		if(path.isEmpty()) {
+			return root.getComponent();
+		}
+		return getChild(root, new ArrayList<>(path));
+	}
 	
+	private JComponent getChild(CompositePanelComponent panel, List<Integer> path) {
+		if(path.isEmpty())
+			return null;
+		
+		int index = path.remove(0);
+		JComponent view = panel.getViewModel(panel.getTransformerAt(index)).view;
+		
+		if(path.isEmpty())
+			return view;
+		else
+			return getChild((CompositePanelComponent)view, path);
+	}
+	
+	
+	public boolean supportsDrop(V parent, List<Integer> sourcePath, JComponent source, List<Integer> targetPath, JComponent target) {
+		return !isParentOrSelf(source, target);
+	}
 	
 
 	protected abstract T createElement(String name);
@@ -446,10 +470,6 @@ public abstract class AbstractPanelController<T extends NamedElement, V extends 
 	public abstract void addNamedTransformers(V view, NamedTransformer<CyNetwork, CyIdentifiable>... transformers);
 	
 	public abstract NamedTransformer<CyNetwork, CyIdentifiable>[] getNamedTransformers();
-	
-	public abstract JComponent getChild(V view, List<Integer> path);
-	
-	public abstract boolean supportsDrop(V view, List<Integer> sourcePath, JComponent source, List<Integer> targetPath, JComponent target);
 	
 	public abstract void handleDrop(V view, JComponent source, List<Integer> sourcePath, JComponent target, List<Integer> targetPath);
 	

@@ -188,6 +188,11 @@ public class CompositeTransformerPanel extends JPanel implements CompositePanelC
 	public Transformer<CyNetwork, CyIdentifiable> getTransformerAt(int index) {
 		return model.get(index);
 	}
+
+	@Override
+	public JComponent getComponent() {
+		return this;
+	}
 	
 	
 }

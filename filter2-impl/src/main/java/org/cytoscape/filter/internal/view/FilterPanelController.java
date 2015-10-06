@@ -279,49 +279,6 @@ public class FilterPanelController extends AbstractPanelController<FilterElement
 	
 	
 	@Override
-	public JComponent getChild(FilterPanel view, List<Integer> path) {
-		CompositeFilterPanel panel = view.getRootPanel();
-		if (path.size() == 0) {
-			return panel;
-		}
-		
-		CompositeFilter<CyNetwork,CyIdentifiable> composite = panel.getModel();
-		Filter<CyNetwork, CyIdentifiable> child = null;
-		JComponent lastView = null;
-		for (int index : path) {
-			if (composite == null) {
-				return null;
-			}
-			
-			child = composite.get(index);
-			lastView = panel.getViewModel(child).view;
-			if (child instanceof CompositeFilter) {
-				panel = (CompositeFilterPanel) lastView;
-				composite = (CompositeFilter<CyNetwork, CyIdentifiable>) child;
-			} else {
-				composite = null;
-			}
-		}
-		
-		if (child == null) {
-			return null;
-		}
-		return lastView;
-	}
-
-	@Override
-	public boolean supportsDrop(FilterPanel parent, List<Integer> sourcePath, JComponent source, List<Integer> targetPath, JComponent target) {
-		boolean droppingInParent = source.getParent() == target;
-		boolean droppingAtEnd;
-		if (target instanceof CompositeFilterPanel) {
-			droppingAtEnd = ((CompositeFilterPanel) target).getModel().getLength() - 1 == sourcePath.get(sourcePath.size() - 1);
-		} else {
-			droppingAtEnd = false;
-		}
-		return !((droppingInParent && droppingAtEnd) || isParentOrSelf(source, target));
-	}
-	
-	@Override
 	public void handleDrop(FilterPanel parent, JComponent source, List<Integer> sourcePath, JComponent target, List<Integer> targetPath) {
 		CompositeFilterPanel root = parent.getRootPanel();
 		CompositeFilterPanel sourceParent = (CompositeFilterPanel) source.getParent();
@@ -406,8 +363,11 @@ public class FilterPanelController extends AbstractPanelController<FilterElement
 	}
 	
 	@Override
-	public void handleDelete(SelectPanelComponent view, JComponent component) {
-		super.handleDelete(view, component);
-		worker.handleFilterStructureChanged();
+	public void handleDelete(FilterPanel view, JComponent component) {
+		try {
+			super.handleDelete(view, component);
+		} finally {
+			worker.handleFilterStructureChanged();
+		}
 	}
 }

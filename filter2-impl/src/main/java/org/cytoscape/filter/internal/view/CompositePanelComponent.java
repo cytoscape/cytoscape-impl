@@ -8,6 +8,8 @@ import org.cytoscape.model.CyNetwork;
 
 public interface CompositePanelComponent {
 	
+	JComponent getComponent();
+	
 	void updateLayout();
 	
 	JComponent getSeparator();

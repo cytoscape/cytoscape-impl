@@ -6,7 +6,6 @@ import static org.cytoscape.util.swing.LookAndFeelUtil.isAquaLAF;
 import java.awt.Component;
 import java.util.List;
 
-import javax.swing.ComboBoxModel;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JComboBox;
@@ -25,7 +24,7 @@ import org.cytoscape.util.swing.IconManager;
 public class TransformerPanel extends AbstractPanel<TransformerElement, TransformerPanelController> {
 	
 	private CompositeTransformerPanel root;
-	private JComboBox startWithComboBox;
+	private JComboBox<FilterElement> startWithComboBox;
 	
 	public TransformerPanel(final TransformerPanelController controller, IconManager iconManager, TransformerWorker worker) {
 		super(controller, iconManager);
@@ -36,7 +35,7 @@ public class TransformerPanel extends AbstractPanel<TransformerElement, Transfor
 		final JPanel applyPanel = createApplyPanel();
 		final Component editPanel = createEditPanel();
 		final JLabel startWithLabel = new JLabel("Start with:");
-		startWithComboBox = new JComboBox(controller.getStartWithComboBoxModel());
+		startWithComboBox = new JComboBox<>(controller.getStartWithComboBoxModel());
 		final JSeparator sep = new JSeparator();
 		
 		final GroupLayout layout = new GroupLayout(this);
@@ -71,7 +70,7 @@ public class TransformerPanel extends AbstractPanel<TransformerElement, Transfor
 				.addComponent(applyPanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 		);
 		
-		ComboBoxModel model = controller.getElementComboBoxModel();
+		DynamicComboBoxModel<TransformerElement> model = controller.getElementComboBoxModel();
 		TransformerElement element = (TransformerElement) model.getSelectedItem();
 		createView(element.chain);
 
