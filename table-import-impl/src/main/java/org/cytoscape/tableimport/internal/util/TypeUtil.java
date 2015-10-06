@@ -46,6 +46,7 @@ import static org.cytoscape.tableimport.internal.util.SourceColumnSemantic.TARGE
 import static org.cytoscape.tableimport.internal.util.SourceColumnSemantic.TARGET_ATTR;
 import static org.cytoscape.tableimport.internal.util.SourceColumnSemantic.TAXON;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -288,6 +289,112 @@ public final class TypeUtil {
 		return dataTypes;
 	}
 	
+	public static AttributeDataType[] parseDataTypeList(final String strList) {
+		final List<AttributeDataType> dataTypeList = new ArrayList<>();
+		
+		if (strList != null) {
+			final String[] tokens = getCSV(strList);
+			
+			for (final String t : tokens) {
+				final String s = t.trim().toLowerCase().replaceAll("[^a-zA-Z]", "");
+				final AttributeDataType dataType;
+				
+				switch(s) {
+					case "i":
+					case "int":
+					case "integer":
+						dataType = AttributeDataType.TYPE_INTEGER;
+						break;
+					case "l":
+					case "long":
+					case "longinteger":
+						dataType = AttributeDataType.TYPE_LONG;
+						break;
+					case "f":
+					case "d":
+					case "float":
+					case "floating":
+					case "floatingpoint":
+					case "decimal":
+					case "double":
+						dataType = AttributeDataType.TYPE_FLOATING;
+						break;
+					case "b":
+					case "bool":
+					case "boolean":
+						dataType = AttributeDataType.TYPE_BOOLEAN;
+						break;
+					case "s":
+					case "t":
+					case "text":
+					case "string":
+						dataType = AttributeDataType.TYPE_STRING;
+						break;
+					case "ii":
+					case "li":
+					case "il":
+					case "listint":
+					case "listinteger":
+					case "intlist":
+					case "integerlist":
+						dataType = AttributeDataType.TYPE_INTEGER_LIST;
+						break;
+					case "ll":
+					case "listlong":
+					case "listlonginteger":
+					case "longlist":
+					case "longintegerlist":
+						dataType = AttributeDataType.TYPE_LONG_LIST;
+						break;
+					case "ff":
+					case "dd":
+					case "lf":
+					case "fl":
+					case "ld":
+					case "dl":
+					case "listfloat":
+					case "listfloating":
+					case "listfloatingpoint":
+					case "listdecimal":
+					case "listdouble":
+					case "floatlist":
+					case "floatinglist":
+					case "floatingpointlist":
+					case "decimallist":
+					case "doublelist":
+						dataType = AttributeDataType.TYPE_FLOATING_LIST;
+						break;
+					case "bb":
+					case "lb":
+					case "bl":
+					case "listbool":
+					case "listboolean":
+					case "boollist":
+					case "booleanlist":
+						dataType = AttributeDataType.TYPE_BOOLEAN_LIST;
+						break;
+					case "ss":
+					case "ls":
+					case "sl":
+					case "lt":
+					case "tl":
+					case "liststring":
+					case "listtext":
+					case "stringlist":
+					case "textlist":
+						dataType = AttributeDataType.TYPE_STRING_LIST;
+						break;
+					default:
+						throw new IllegalArgumentException("Invalid Data Type: \"" + t + "\"");
+				}
+				
+				dataTypeList.add(dataType);
+			}
+		}
+		
+		return dataTypeList.toArray(new AttributeDataType[dataTypeList.size()]);
+	}
+	
 	private static boolean isBoolean(final String val) {
 		return val != null && (truePattern.matcher(val).matches() || falsePattern.matcher(val).matches());
 	}
@@ -422,5 +529,18 @@ public final class TypeUtil {
 		}
 		
 		return true;
+	}
+	
+	public static String[] getCSV(String str) {
+		// Split the string, but allow for protected commas
+		String [] s1 = str.split("(?<!\\\\),");
+		
+		// Now replace any backslashes with nothing.
+		for (int index = 0; index < s1.length; index++) {
+			String s = s1[index];
+			s1[index] = s.replaceAll("\\\\", "");
+		}
+		
+		return s1;
 	}
 }

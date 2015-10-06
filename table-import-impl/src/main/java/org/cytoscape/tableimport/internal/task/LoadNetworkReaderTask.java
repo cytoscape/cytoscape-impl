@@ -24,7 +24,6 @@ package org.cytoscape.tableimport.internal.task;
  * #L%
  */
 
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -99,7 +98,7 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 	public int startLoadRow = -1;
 	
 	@Tunable(description="First row used for column names:", context="both")
-	public boolean firstRowAsColumnNames = false;
+	public boolean firstRowAsColumnNames;
 	
 	@Tunable(description="Column for source interaction:", context="both")
 	public int indexColumnSourceInteraction = -1;
@@ -112,6 +111,9 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 	
 	@Tunable(description="Default interaction type:", context="both")
 	public String defaultInteraction = DEF_INTERACTION;
+	
+	@Tunable(description="List of column data types ordered by column index (e.g. \"string,int,long,double,boolean,intlist\" or just \"s,i,l,d,b,il\"):", context="nongui")
+	public String dataTypeList;
 	
 	private NetworkTableMappingParameters ntmp;
 
@@ -140,7 +142,7 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 		this.inputName = inputName;
 		this.uri = uriName;
 		
-		previewPanel = new PreviewTablePanel(iconManager);
+		previewPanel = new PreviewTablePanel(ImportType.NETWORK_IMPORT, iconManager);
 
 		try{
 			tempFile = File.createTempFile("temp", this.fileType);
@@ -154,7 +156,6 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 			}
 			os.flush();
 			os.close();
-			
 			
 			this.is = new FileInputStream(tempFile);
 		} catch(Exception e){
@@ -260,12 +261,23 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 					attrNameList.add(curName.toString());
 			}
 			
-			attributeNames = attrNameList.toArray(new String[0]);
+			attributeNames = attrNameList.toArray(new String[attrNameList.size()]);
 			
 			final SourceColumnSemantic[] typesCopy = Arrays.copyOf(types, types.length);
 			
 			final AttributeDataType[] dataTypes = previewPanel.getDataTypes();
 			final AttributeDataType[] dataTypesCopy = Arrays.copyOf(dataTypes, dataTypes.length);
+			
+			AttributeDataType[] tunableDataTypes = null;
+			
+			if (dataTypeList != null && !dataTypeList.trim().isEmpty())
+				tunableDataTypes = TypeUtil.parseDataTypeList(dataTypeList);
+			
+			if (tunableDataTypes != null && tunableDataTypes.length > 0)
+				System.arraycopy(
+						tunableDataTypes, 0,
+						dataTypesCopy, 0, 
+						Math.min(tunableDataTypes.length, dataTypesCopy.length));
 			
 			String[] listDelimiters = previewPanel.getListDelimiters();
 			

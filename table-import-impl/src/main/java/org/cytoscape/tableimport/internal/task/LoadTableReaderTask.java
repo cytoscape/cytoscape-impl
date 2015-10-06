@@ -92,7 +92,10 @@ public class LoadTableReaderTask extends AbstractTask implements CyTableReader, 
 	public int keyColumnIndex = -1;
 	
 	@Tunable(description="First row used for column names:", context="both")
-	public boolean firstRowAsColumnNames = false;
+	public boolean firstRowAsColumnNames;
+	
+	@Tunable(description="List of column data types ordered by column index (e.g. \"string,int,long,double,boolean,intlist\" or just \"s,i,l,d,b,il\"):", context="nongui")
+	public String dataTypeList;
 	
 	private final CyServiceRegistrar serviceRegistrar;
 
@@ -125,7 +128,7 @@ public class LoadTableReaderTask extends AbstractTask implements CyTableReader, 
 		this.inputName = inputName;
 		this.isStart = is;
 		
-		previewPanel = new PreviewTablePanel(serviceRegistrar.getService(IconManager.class));
+		previewPanel = new PreviewTablePanel(ImportType.TABLE_IMPORT, serviceRegistrar.getService(IconManager.class));
 				
 		try {
 			File tempFile = File.createTempFile("temp", this.fileType);
@@ -250,6 +253,17 @@ public class LoadTableReaderTask extends AbstractTask implements CyTableReader, 
 		
 		final AttributeDataType[] dataTypes = previewPanel.getDataTypes();
 		final AttributeDataType[] dataTypesCopy = Arrays.copyOf(dataTypes, dataTypes.length);
+		
+		AttributeDataType[] tunableDataTypes = null;
+		
+		if (dataTypeList != null && !dataTypeList.trim().isEmpty())
+			tunableDataTypes = TypeUtil.parseDataTypeList(dataTypeList);
+		
+		if (tunableDataTypes != null && tunableDataTypes.length > 0)
+			System.arraycopy(
+					tunableDataTypes, 0,
+					dataTypesCopy, 0, 
+					Math.min(tunableDataTypes.length, dataTypesCopy.length));
 		
 		String[] listDelimiters = previewPanel.getListDelimiters();
 		
