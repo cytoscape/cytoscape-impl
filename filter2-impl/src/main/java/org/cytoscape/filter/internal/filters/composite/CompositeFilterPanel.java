@@ -1,6 +1,7 @@
 package org.cytoscape.filter.internal.filters.composite;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.dnd.DropTarget;
 import java.awt.event.ActionEvent;
@@ -49,7 +50,9 @@ public class CompositeFilterPanel<P extends SelectPanelComponent> extends JPanel
 	private Map<Transformer<CyNetwork,CyIdentifiable>, TransformerElementViewModel<P>> viewModels;
 	private GroupLayout layout;
 	private int depth;
-	private JPanel combiningMethodPanel;
+	private final JPanel combiningMethodPanel;
+	private final Component topView;
+	
 	private AbstractPanelController<?, P> filterPanelController;
 	private CompositeFilterController compositeFilterController;
 	private final JButton addButton;
@@ -79,7 +82,7 @@ public class CompositeFilterPanel<P extends SelectPanelComponent> extends JPanel
 		combiningMethodPanel = new JPanel(new BorderLayout());
 		combiningMethodPanel.setBackground(getBackground());
 		
-		Component topView = controller.createFilterView(model);
+		topView = controller.createFilterView(model);
 		if(topView != null) {
 			topView.setBackground(getBackground());
 			combiningMethodPanel.add(topView, BorderLayout.CENTER);
@@ -96,6 +99,15 @@ public class CompositeFilterPanel<P extends SelectPanelComponent> extends JPanel
 			TransformerElementViewModel<P> viewModel = new TransformerElementViewModel<>(component, filterPanelController, parent);
 			viewModels.put(filter, viewModel);
 		}
+	}
+	
+	@Override
+	public void setBackground(Color bg) {
+		super.setBackground(bg);
+		if(combiningMethodPanel != null) // called by superclass constructor
+			combiningMethodPanel.setBackground(bg);
+		if(topView != null)
+			topView.setBackground(bg);
 	}
 	
 	private void updateBorder() {
@@ -304,7 +316,7 @@ public class CompositeFilterPanel<P extends SelectPanelComponent> extends JPanel
 	}
 
 	@Override
-	public Transformer<CyNetwork, CyIdentifiable> getTransformerAt(int index) {
+	public Filter<CyNetwork, CyIdentifiable> getTransformerAt(int index) {
 		return model.get(index);
 	}
 

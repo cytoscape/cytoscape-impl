@@ -117,12 +117,6 @@ public class DegreeFilterViewFactory implements TransformerViewFactory {
 				chooserController.reset(range[0].intValue(), range[1].intValue(), pair.getLow(), pair.getHigh());
 			}
 			
-			// MKTODO below is the hack, should fix this
-//			Number low  = chooserController.getLow().longValue();
-//			Number high = chooserController.getHigh().longValue();
-//			view.getRangeChooser().getLowField().setText(low.toString());
-//			view.getRangeChooser().getHighField().setText(high.toString());
-			
 			DynamicComboBoxModel.select(view.edgeTypeComboBox, 0, new Matcher<ComboItem<Type>>() {
 				@Override
 				public boolean matches(ComboItem<Type> item) {

@@ -126,6 +126,7 @@ public class TopologyFilterViewFactory implements TransformerViewFactory {
 		
 		public View(final Controller controller) {
 			this.controller = controller;
+			ViewUtil.configureFilterView(this);
 			
 			thresholdField = style.createFormattedTextField(ViewUtil.createIntegerFormatter(0, Integer.MAX_VALUE));
 			thresholdField.setHorizontalAlignment(JTextField.TRAILING);

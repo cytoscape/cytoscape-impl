@@ -17,6 +17,7 @@ import org.cytoscape.filter.internal.FilterIO;
 import org.cytoscape.filter.internal.ModelUtil;
 import org.cytoscape.filter.internal.filters.composite.CompositeFilterController;
 import org.cytoscape.filter.internal.filters.composite.CompositeFilterPanel;
+import org.cytoscape.filter.internal.filters.composite.CompositeSeparator;
 import org.cytoscape.filter.internal.filters.composite.CompositeTransformerPanel;
 import org.cytoscape.filter.internal.view.TransformerViewManager.TransformerViewElement;
 import org.cytoscape.filter.internal.view.look.FilterPanelStyle;
@@ -165,17 +166,24 @@ public class TransformerPanelController extends AbstractPanelController<Transfor
 
 	@Override
 	public JComponent createView(TransformerPanel parent, Transformer<CyNetwork, CyIdentifiable> transformer, int depth) {
-		// view will be null for CompositeFilterImpl and that's ok
+		// CompositeFilterImpl needs a CompositeFilterPanel but the top is blank so view will be null
 		JComponent view = transformerViewManager.createView(transformer);
 		
-		if (transformer instanceof SubFilterTransformer) {
-			final String addButtonTT = transformerViewManager.getAddButtonTooltip(transformer);
+		if(transformer instanceof SubFilterTransformer || transformer instanceof CompositeFilter) {
+			String addButtonTT = transformerViewManager.getAddButtonTooltip(transformer);
 			CompositeFilterController controller = CompositeFilterController.createFor(view, addButtonTT);
-			@SuppressWarnings("unchecked")
-			CompositeFilter<CyNetwork,CyIdentifiable> compositeFilter = ((SubFilterTransformer<CyNetwork, CyIdentifiable>) transformer).getCompositeFilter();
+			CompositeFilter<CyNetwork,CyIdentifiable> compositeFilter;
+			
+			if(transformer instanceof SubFilterTransformer)
+				compositeFilter = ((SubFilterTransformer<CyNetwork, CyIdentifiable>) transformer).getCompositeFilter();
+			else
+				compositeFilter = (CompositeFilter<CyNetwork,CyIdentifiable>) transformer;
+			
 			return new CompositeFilterPanel<TransformerPanel>(parent, this, controller, compositeFilter, depth);
 		}
 		
+		if(view == null)
+			throw new IllegalArgumentException("view could not be created for: " + transformer.getId());
 		return view;
 	}
 
@@ -278,18 +286,33 @@ public class TransformerPanelController extends AbstractPanelController<Transfor
 	public void handleDrop(TransformerPanel parent, JComponent source, List<Integer> sourcePath, JComponent target, List<Integer> targetPath) {
 		CompositeTransformerPanel root = parent.getRootPanel();
 		try {
-			int sourceIndex = sourcePath.get(sourcePath.size() - 1);
-			List<Transformer<CyNetwork, CyIdentifiable>> model = root.getModel();
-			Transformer<CyNetwork, CyIdentifiable> transformer = model.remove(sourceIndex);
-			
-			int targetIndex = targetPath.get(targetPath.size() - 1) + 1;
-			if (sourceIndex < targetIndex) {
-				targetIndex--;
+			if(sourcePath.size() == 1 && targetPath.size() == 1) {
+				int sourceIndex = sourcePath.get(0);
+				
+				List<Transformer<CyNetwork, CyIdentifiable>> model = root.getModel();
+				Transformer<CyNetwork, CyIdentifiable> transformer = model.remove(sourceIndex);
+				
+				int targetIndex = targetPath.get(targetPath.size() - 1) + 1;
+				if (sourceIndex < targetIndex) {
+					targetIndex--;
+				}
+				model.add(targetIndex, transformer);
 			}
-			model.add(targetIndex, transformer);
+			else {
+				super.handleFilterDrop(parent, source, sourcePath, target, targetPath);
+			}
+		} catch(Exception e) {
+			e.printStackTrace();
 		} finally {
 			root.updateLayout();
 		}
 	}
 	
+	@Override
+	public boolean isDropMove(TransformerPanel view, JComponent source, List<Integer> sourcePath, JComponent target, List<Integer> targetPath) {
+		if(sourcePath.size() == 1 && targetPath.size() == 1)
+			return true;
+		
+		return target instanceof CompositeSeparator || target instanceof CompositeFilterPanel;
+	}
 }

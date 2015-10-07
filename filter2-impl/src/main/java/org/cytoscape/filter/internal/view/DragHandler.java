@@ -26,7 +26,6 @@ import java.util.List;
 
 import javax.swing.JComponent;
 
-import org.cytoscape.filter.internal.filters.composite.CompositeFilterPanel;
 import org.cytoscape.filter.internal.filters.composite.CompositeSeparator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -167,19 +166,19 @@ public class DragHandler<V extends SelectPanelComponent> implements DragGestureL
 
 		JComponent target = getPrimaryView(view);
 		try {
-			List<Integer> path = (List<Integer>) event.getTransferable().getTransferData(PathDataFlavor.instance);
-			JComponent sourceView = controller.getChild(parent, path);
+			List<Integer> sourcePath = (List<Integer>) event.getTransferable().getTransferData(PathDataFlavor.instance);
 			List<Integer> targetPath = controller.getPath(parent, target);
-			if (!controller.supportsDrop(parent, path, sourceView, targetPath, target) || isEquivalentLocation(path, targetPath, target)) {
+			JComponent sourceView = controller.getChild(parent, sourcePath);
+			if (!controller.supportsDrop(parent, sourcePath, sourceView, targetPath, target) || isEquivalentLocation(sourcePath, targetPath, target)) {
 				setCursor(DragSource.DefaultCopyNoDrop, target);
 				return;
 			}
-			if (target instanceof CompositeSeparator || target instanceof CompositeFilterPanel) {
+			if (controller.isDropMove(parent, sourceView, sourcePath, target, targetPath)) {
 				// Move
 				event.acceptDrag(DnDConstants.ACTION_MOVE);
 				setCursor(DragSource.DefaultMoveDrop, view);
 			} else {
-				// Group
+				// Group (+)
 				event.acceptDrag(DnDConstants.ACTION_COPY);
 				setCursor(DragSource.DefaultCopyDrop, view);
 			}
