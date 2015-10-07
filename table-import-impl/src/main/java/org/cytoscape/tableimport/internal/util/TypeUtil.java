@@ -201,8 +201,16 @@ public final class TypeUtil {
 		} else if (importType == NETWORK_IMPORT) {
 			// Try to find good candidates for source/target node attributes
 			for (int i = 0; i < types.length; i++) {
-				if (types[i] == ATTR) { // Hasn't been chosen as KEY, SOURCE, TARGET or INTERACTION yet...
-					// TODO
+				if (types[i] == EDGE_ATTR) {
+					// Hasn't been chosen as KEY, SOURCE, TARGET, INTERACTION, SOURCE_ATTR or TARGET_ATTR  yet...
+					for (int j = 0; j < types.length; j++) {
+						// For now, simply look for columns with same name
+						if (i != j && types[j] == EDGE_ATTR && model.getColumnName(i).equals(model.getColumnName(j))) {
+							types[i] = SOURCE_ATTR;
+							types[j] = TARGET_ATTR;
+							break;
+						}
+					}
 				}
 			}
 		}
