@@ -103,6 +103,11 @@ public class RecentlyOpenedTrackerImpl implements RecentlyOpenedTracker {
 	}
 	
 	@Override
+	public void remove(URL url) {
+		trackerURLs.remove(url);
+	}
+	
+	@Override
 	public void clear() {
 		trackerURLs.clear();
 	}

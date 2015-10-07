@@ -111,8 +111,6 @@ public class RecentSessionManager implements SessionLoadedListener, CyShutdownLi
 
 	@Override
 	public void handleEvent(SessionLoadedEvent e) {
-		updateMenuItems();
-		
 		SwingUtilities.invokeLater(new Runnable() {
 			@Override
 			public void run() {
@@ -161,6 +159,15 @@ public class RecentSessionManager implements SessionLoadedListener, CyShutdownLi
 						"File not Found",
 						JOptionPane.WARNING_MESSAGE
 				);
+				
+				final RecentlyOpenedTracker tracker = serviceRegistrar.getService(RecentlyOpenedTracker.class);
+				
+				try {
+					tracker.remove(file.toURI().toURL());
+					updateMenuItems();
+				} catch (Exception ex) {
+					logger.error("Error removing session file from RecentlyOpenedTracker.", ex);
+				}
 			}
 		}
 		
