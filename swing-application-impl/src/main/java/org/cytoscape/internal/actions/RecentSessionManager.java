@@ -184,7 +184,7 @@ public class RecentSessionManager implements SessionLoadedListener, CyShutdownLi
 					swingApp.getJFrame(),
 					"Current session (all networks and tables) will be lost.\nDo you want to continue?",
 					"Open Session",
-					JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION)
+					JOptionPane.OK_CANCEL_OPTION) == JOptionPane.OK_OPTION)
 				openSession();
 		}
 	}
