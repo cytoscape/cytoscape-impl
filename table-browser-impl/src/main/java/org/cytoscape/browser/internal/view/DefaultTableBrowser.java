@@ -27,6 +27,7 @@ package org.cytoscape.browser.internal.view;
 import static org.cytoscape.util.swing.IconManager.ICON_COG;
 
 import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Collection;
@@ -342,10 +343,11 @@ public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurr
 			tableChooser = new JComboBox<>(new DefaultComboBoxModel<CyTable>());
 			tableChooser.setRenderer(new TableChooserCellRenderer());
 			tableChooser.addActionListener(this);
-			tableChooser.setMaximumSize(SELECTOR_SIZE);
-			tableChooser.setMinimumSize(SELECTOR_SIZE);
-			tableChooser.setPreferredSize(SELECTOR_SIZE);
-			tableChooser.setSize(SELECTOR_SIZE);
+			final Dimension d = new Dimension(SELECTOR_WIDTH, tableChooser.getPreferredSize().height);
+			tableChooser.setMaximumSize(d);
+			tableChooser.setMinimumSize(d);
+			tableChooser.setPreferredSize(d);
+			tableChooser.setSize(d);
 			// Table selector is invisible unless it has more than one item
 			tableChooser.setVisible(false);
 			tableChooser.getModel().addListDataListener(new ListDataListener() {

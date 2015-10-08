@@ -25,6 +25,7 @@ package org.cytoscape.browser.internal.view;
  */
 
 import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -71,10 +72,11 @@ public class GlobalTableBrowser extends AbstractTableBrowser
 		
 		tableChooser = new GlobalTableChooser();
 		tableChooser.addActionListener(this);
-		tableChooser.setMaximumSize(SELECTOR_SIZE);
-		tableChooser.setMinimumSize(SELECTOR_SIZE);
-		tableChooser.setPreferredSize(SELECTOR_SIZE);
-		tableChooser.setSize(SELECTOR_SIZE);
+		final Dimension d = new Dimension(SELECTOR_WIDTH, tableChooser.getPreferredSize().height);
+		tableChooser.setMaximumSize(d);
+		tableChooser.setMinimumSize(d);
+		tableChooser.setPreferredSize(d);
+		tableChooser.setSize(d);
 		tableChooser.setToolTipText("\"Tables\" are data tables not associated with specific networks.");
 		tableChooser.setEnabled(false);
 		

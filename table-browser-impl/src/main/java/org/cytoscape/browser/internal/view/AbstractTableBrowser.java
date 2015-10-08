@@ -69,7 +69,7 @@ public abstract class AbstractTableBrowser extends JPanel
 
 	private static final long serialVersionUID = 1968196123280466989L;
 	
-	static final Dimension SELECTOR_SIZE = new Dimension(400, 32);
+	static final int SELECTOR_WIDTH = 400;
 	
 	private static final Dimension PANEL_SIZE = new Dimension(550, 400);
 	

@@ -24,6 +24,8 @@ package org.cytoscape.browser.internal.view;
  * #L%
  */
 
+import static javax.swing.GroupLayout.DEFAULT_SIZE;
+import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static org.cytoscape.util.swing.IconManager.ICON_CHECK_SQUARE;
 import static org.cytoscape.util.swing.IconManager.ICON_COLUMNS;
 import static org.cytoscape.util.swing.IconManager.ICON_PLUS;
@@ -244,15 +246,6 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 		comp.setEnabled(enabled);
 	}
 	
-	protected void addComponent(final JComponent component, final ComponentPlacement placement) {
-		if (placement != null)
-			hToolBarGroup.addPreferredGap(placement);
-		
-		hToolBarGroup.addComponent(component);
-		vToolBarGroup.addComponent(component, Alignment.CENTER, GroupLayout.DEFAULT_SIZE, 27, Short.MAX_VALUE);
-		components.add(component);
-	}
-	
 	private void initializeGUI() {
 		setLayout(new BorderLayout());
 		setOpaque(!isAquaLAF());
@@ -273,6 +266,16 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 		
 		if (tableChooser != null)
 			addComponent(tableChooser, ComponentPlacement.UNRELATED);
+	}
+	
+	private void addComponent(final JComponent component, final ComponentPlacement placement) {
+		if (placement != null)
+			hToolBarGroup.addPreferredGap(placement);
+		
+		hToolBarGroup.addComponent(component);
+		vToolBarGroup.addComponent(component, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE);
+		
+		components.add(component);
 	}
 
 	static void styleButton(final AbstractButton btn, final Font font) {
@@ -523,10 +526,10 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 			final GroupLayout buttonBarLayout = new GroupLayout(toolBar);
 			toolBar.setLayout(buttonBarLayout);
 			hToolBarGroup = buttonBarLayout.createSequentialGroup();
-			vToolBarGroup = buttonBarLayout.createParallelGroup(GroupLayout.Alignment.LEADING);
+			vToolBarGroup = buttonBarLayout.createParallelGroup(Alignment.CENTER, false);
 			
 			// Layout information.
-			buttonBarLayout.setHorizontalGroup(buttonBarLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
+			buttonBarLayout.setHorizontalGroup(buttonBarLayout.createParallelGroup(Alignment.LEADING)
 								.addGroup(hToolBarGroup));
 			buttonBarLayout.setVerticalGroup(vToolBarGroup);
 

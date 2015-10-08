@@ -28,13 +28,12 @@ import java.awt.Component;
 import java.util.Collections;
 import java.util.Map;
 
-import javax.swing.JLabel;
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.JList;
-import javax.swing.ListCellRenderer;
 
 import org.cytoscape.model.CyTable;
 
-public class TableChooserCellRenderer extends JLabel implements ListCellRenderer<CyTable> {
+public class TableChooserCellRenderer extends DefaultListCellRenderer {
 
 	private static final long serialVersionUID = 3512300857227705136L;
 	
@@ -50,8 +49,10 @@ public class TableChooserCellRenderer extends JLabel implements ListCellRenderer
 	}
 
 	@Override
-	public Component getListCellRendererComponent(final JList<? extends CyTable> list, final CyTable table,
+	public Component getListCellRendererComponent(final JList<?> list, final Object value,
 			final int index, final boolean isSelected, final boolean cellHasFocus) {
+		super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+		
 		if (isSelected) {
 			setBackground(list.getSelectionBackground());
 			setForeground(list.getSelectionForeground());
@@ -59,7 +60,13 @@ public class TableChooserCellRenderer extends JLabel implements ListCellRenderer
 			setBackground(list.getBackground());
 			setForeground(list.getForeground());
 		}
-
+		
+		if (value instanceof CyTable == false) {
+			setText("-- No Table --");
+			return this;
+		}
+		
+		final CyTable table = (CyTable) value;
 		String label = tableToStringMap.get(table);
 		
 		if (label == null)
@@ -69,9 +76,6 @@ public class TableChooserCellRenderer extends JLabel implements ListCellRenderer
 			label += " Table";
 		
 		setText(label);
-		setEnabled(list.isEnabled());
-		setFont(list.getFont());
-		setOpaque(true);
 
 		return this;
 	}

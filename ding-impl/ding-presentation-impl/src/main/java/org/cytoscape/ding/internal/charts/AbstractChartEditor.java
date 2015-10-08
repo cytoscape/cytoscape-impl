@@ -1826,19 +1826,20 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 			if (value == null) {
 				c.setText("-- none --");
 			} else if (value instanceof CyColumnIdentifier) {
-				String count = "";
-				
 				if (showCount) {
 					int totalLength = (int)(Math.log10(list.getModel().getSize()) + 1);
 					int idxLength = (int)(Math.log10(index + 1) + 1);
 					int dif = totalLength - idxLength;
+					String count = "";
 					
 					while (dif-- > 0) count += "&nbsp;";
 					count += (index + 1) + ". ";
+					
+					c.setText( "<html><font face='Monospaced'>" + count + "</font>" +
+							   ((CyColumnIdentifier)value).getColumnName() + "</html>" );
+				} else {
+					c.setText(((CyColumnIdentifier)value).getColumnName());
 				}
-				
-				c.setText( "<html><font face='Monospaced'>" + count + "</font>" +
-						   ((CyColumnIdentifier)value).getColumnName() + "</html>" );
 			} else {
 				c.setText("[ invalid column ]"); // Should never happen
 			}
