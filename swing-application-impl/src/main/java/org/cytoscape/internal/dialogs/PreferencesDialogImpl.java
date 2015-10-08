@@ -33,6 +33,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -164,6 +166,17 @@ public class PreferencesDialogImpl extends JDialog implements ItemListener, Acti
 
 		prefsTable.setColumnModel(cm);
 		prefsTable.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		prefsTable.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				if (e.getClickCount() == 2 && !e.isConsumed()) {
+				     e.consume();
+				     
+				     if (prefsTable.getSelectedRow() >= 0 && modifyPropBtn.isEnabled())
+				    	 modifyPropBtn.doClick();
+				}
+			}
+		});
 	}
 	
 	private void updateTable(){
