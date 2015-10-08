@@ -24,11 +24,6 @@ package org.cytoscape.internal.actions;
  * #L%
  */
 
-import static org.cytoscape.work.ServiceProperties.INSERT_SEPARATOR_BEFORE;
-import static org.cytoscape.work.ServiceProperties.MENU_GRAVITY;
-import static org.cytoscape.work.ServiceProperties.PREFERRED_MENU;
-import static org.cytoscape.work.ServiceProperties.TITLE;
-
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -55,10 +50,6 @@ import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.events.SessionLoadedEvent;
 import org.cytoscape.session.events.SessionLoadedListener;
 import org.cytoscape.task.read.OpenSessionTaskFactory;
-import org.cytoscape.work.AbstractTask;
-import org.cytoscape.work.AbstractTaskFactory;
-import org.cytoscape.work.TaskIterator;
-import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.swing.DialogTaskManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -74,6 +65,7 @@ public class RecentSessionManager implements SessionLoadedListener, CyShutdownLi
 	private static final String MENU_CATEGORY = "File.Open Recent";
 
 	private final Set<OpenRecentSessionAction> currentMenuItems;
+	private final ClearMenuAction clearMenuAction;
 	
 	private final CyServiceRegistrar serviceRegistrar;
 
@@ -81,15 +73,15 @@ public class RecentSessionManager implements SessionLoadedListener, CyShutdownLi
 		this.serviceRegistrar = serviceRegistrar;
 		this.currentMenuItems = new HashSet<>();
 		
-		final ClearMenuTaskFactory clearMenuTaskFactory = new ClearMenuTaskFactory();
-		final Properties props = new Properties();
-		props.setProperty(PREFERRED_MENU, MENU_CATEGORY);
-		props.setProperty(TITLE, "Clear Menu");
-		props.setProperty(MENU_GRAVITY, "10001.0");
-		props.setProperty(INSERT_SEPARATOR_BEFORE, "true");
-		serviceRegistrar.registerAllServices(clearMenuTaskFactory, props);
-
-		updateMenuItems();
+		clearMenuAction = new ClearMenuAction();
+		serviceRegistrar.registerAllServices(clearMenuAction, new Properties());
+		
+		SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				updateMenuItems();
+			}
+		});
 	}
 
 	private void updateMenuItems() {
@@ -118,6 +110,8 @@ public class RecentSessionManager implements SessionLoadedListener, CyShutdownLi
 			serviceRegistrar.registerService(action, CyAction.class, new Properties());
 			currentMenuItems.add(action);
 		}
+		
+		clearMenuAction.updateEnableState();
 	}
 
 	@Override
@@ -201,31 +195,27 @@ public class RecentSessionManager implements SessionLoadedListener, CyShutdownLi
 	}
 	
 	/**
-	 * Task to clear the list of recent sessions.
+	 * Menu action to clear the list of recent sessions.
 	 */
-	private final class ClearMenuTaskFactory extends AbstractTaskFactory {
+	private final class ClearMenuAction extends AbstractCyAction {
+
+		public ClearMenuAction() {
+			super("Clear Menu");
+			setPreferredMenu(MENU_CATEGORY);
+			insertSeparatorBefore = true;
+			setMenuGravity(10001.0f);
+		}
 
 		@Override
-		public TaskIterator createTaskIterator() {
-			return new TaskIterator(new AbstractTask() {
-				@Override
-				public void run(TaskMonitor taskMonitor) throws Exception {
-					final RecentlyOpenedTracker tracker = serviceRegistrar.getService(RecentlyOpenedTracker.class);
-					tracker.clear();
-					
-					SwingUtilities.invokeLater(new Runnable() {
-						@Override
-						public void run() {
-							updateMenuItems();
-						}
-					});
-				}
-			});
+		public boolean isEnabled() {
+			return !currentMenuItems.isEmpty();
 		}
 		
 		@Override
-		public boolean isReady() {
-			return !currentMenuItems.isEmpty();
+		public void actionPerformed(ActionEvent e) {
+			final RecentlyOpenedTracker tracker = serviceRegistrar.getService(RecentlyOpenedTracker.class);
+			tracker.clear();
+			updateMenuItems();
 		}
 	}
 }
