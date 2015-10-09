@@ -59,7 +59,7 @@ public class ComboItem<V> {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		ComboItem other = (ComboItem) obj;
+		ComboItem<?> other = (ComboItem<?>) obj;
 		if (value == null) {
 			if (other.value != null)
 				return false;

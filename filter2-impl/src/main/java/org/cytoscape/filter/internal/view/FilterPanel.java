@@ -70,7 +70,7 @@ public class FilterPanel extends AbstractPanel<FilterElement, FilterPanelControl
 		
 		ComboBoxModel model = controller.getElementComboBoxModel();
 		FilterElement element = (FilterElement) model.getSelectedItem();
-		createView(element.filter);
+		createView(element.getFilter());
 		
 		controller.synchronize(this);
 	}
@@ -83,8 +83,9 @@ public class FilterPanel extends AbstractPanel<FilterElement, FilterPanelControl
 		
 		// We're passing in a CompositeFilter so we can assume we're getting
 		// back a CompositeFilterPanel.
+		@SuppressWarnings("unchecked")
 		CompositeFilterPanel<FilterPanel> panel = (CompositeFilterPanel<FilterPanel>) controller.createView(this, filter, 0);
-		new TransformerElementViewModel<FilterPanel>(panel, controller, this);
+		new TransformerElementViewModel<>(panel, controller, this);
 		setRootPanel(panel);
 	}
 

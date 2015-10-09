@@ -100,7 +100,7 @@ public class CyActivator extends AbstractCyActivator {
 		FilterPanelStyle style = new FlatStyle();
 		
 		registerService(context, new DegreeFilterViewFactory(style, modelMonitor), TransformerViewFactory.class, new Properties());
-		registerService(context, new ColumnFilterViewFactory(style, modelMonitor, iconManager), TransformerViewFactory.class, new Properties());
+		registerService(context, new ColumnFilterViewFactory(style, modelMonitor), TransformerViewFactory.class, new Properties());
 		registerService(context, new TopologyFilterViewFactory(style), TransformerViewFactory.class, TopologyFilterViewFactory.getServiceProperties());
 		registerService(context, new InteractionTransformerViewFactory(style), TransformerViewFactory.class, new Properties());
 		registerService(context, new AdjacencyTransformerViewFactory(style, iconManager), TransformerViewFactory.class, AdjacencyTransformerViewFactory.getServiceProperties());

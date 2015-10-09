@@ -26,10 +26,11 @@ public class FilterIO {
 	
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void readTransformers(File file, AbstractPanel panel) throws IOException {
-		BufferedInputStream stream = new BufferedInputStream(new FileInputStream(file));
-		NamedTransformer<CyNetwork, CyIdentifiable>[] transformers = (NamedTransformer<CyNetwork, CyIdentifiable>[]) reader.read(stream);
-		AbstractPanelController controller = panel.getController();
-		controller.addNamedTransformers(panel, transformers);
+		try(BufferedInputStream stream = new BufferedInputStream(new FileInputStream(file))) {
+			NamedTransformer<CyNetwork, CyIdentifiable>[] transformers = (NamedTransformer<CyNetwork, CyIdentifiable>[]) reader.read(stream);
+			AbstractPanelController controller = panel.getController();
+			controller.addNamedTransformers(panel, transformers);
+		}
 	}
 	
 

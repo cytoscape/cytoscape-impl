@@ -72,7 +72,7 @@ public class TransformerPanel extends AbstractPanel<TransformerElement, Transfor
 		
 		DynamicComboBoxModel<TransformerElement> model = controller.getElementComboBoxModel();
 		TransformerElement element = (TransformerElement) model.getSelectedItem();
-		createView(element.chain);
+		createView(element.getChain());
 
 		controller.synchronize(this);
 	}

@@ -77,10 +77,10 @@ public class TransformerWorker extends AbstractWorker<TransformerPanel, Transfor
 	}
 
 	private TransformerSource<CyNetwork, CyIdentifiable> createSource(CyNetwork network, FilterElement selected) {
-		if (selected.filter == null) {
+		if (selected.getFilter() == null) {
 			return SelectionSource.instance;
 		} else {
-			filterSource.filter = selected.filter;
+			filterSource.filter = selected.getFilter();
 			return filterSource;
 		}
 	}

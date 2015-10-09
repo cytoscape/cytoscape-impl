@@ -75,19 +75,20 @@ public class FilterPanelController extends AbstractPanelController<FilterElement
 
 	@Override
 	protected void handleElementSelected(FilterElement selected, FilterPanel panel) {
-		setFilter(selected.filter, panel);
+		setFilter(selected.getFilter(), panel);
 		worker.handleFilterStructureChanged();
 	}
 	
 	private void setFilter(CompositeFilter<CyNetwork, CyIdentifiable> filter, FilterPanel parent) {
+		@SuppressWarnings("unchecked")
 		CompositeFilterPanel<FilterPanel> root = (CompositeFilterPanel<FilterPanel>) createView(parent, filter, 0);
-		new TransformerElementViewModel<FilterPanel>(root, this, parent);
+		new TransformerElementViewModel<>(root, this, parent);
 		parent.setRootPanel(root);
 	}
 
 	public Filter<CyNetwork, CyIdentifiable> getFilter() {
 		FilterElement selected = (FilterElement) namedElementComboBoxModel.getSelectedItem();
-		return selected.filter;
+		return selected.getFilter();
 	}
 
 	public void setInteractive(boolean isInteractive, FilterPanel panel) {
@@ -105,6 +106,7 @@ public class FilterPanelController extends AbstractPanelController<FilterElement
 		setProgress(1.0, panel);
 	}
 
+	@SuppressWarnings("unchecked")
 	private void setInteractive(boolean isInteractive, CompositeFilterPanel<FilterPanel> panel) {
 		for (TransformerElementViewModel<FilterPanel> viewModel : panel.getViewModels()) {
 			if (viewModel.view instanceof InteractivityChangedListener) {
@@ -176,7 +178,7 @@ public class FilterPanelController extends AbstractPanelController<FilterElement
 	}
 	
 	@Override
-	public void addNamedTransformers(final FilterPanel panel, final NamedTransformer<CyNetwork, CyIdentifiable>... namedTransformers) {
+	public void addNamedTransformers(final FilterPanel panel, @SuppressWarnings("unchecked") final NamedTransformer<CyNetwork, CyIdentifiable>... namedTransformers) {
 		if (!SwingUtilities.isEventDispatchThread()) {
 			try {
 				SwingUtilities.invokeAndWait(new Runnable() {
@@ -222,15 +224,15 @@ public class FilterPanelController extends AbstractPanelController<FilterElement
 		if (selected == null) {
 			return;
 		}
-		setFilter(selected.filter, panel);
+		setFilter(selected.getFilter(), panel);
 	}
 	
 	private void addCompositeFilter(FilterElement element, CompositeFilter<CyNetwork, CyIdentifiable> composite) {
-		element.filter.setType(composite.getType());
+		element.getFilter().setType(composite.getType());
 		for (int i = 0; i < composite.getLength(); i++) {
 			Filter<CyNetwork, CyIdentifiable> filter = composite.get(i);
 			addListeners(filter);
-			element.filter.append(filter);
+			element.getFilter().append(filter);
 		}
 	}
 
@@ -241,7 +243,7 @@ public class FilterPanelController extends AbstractPanelController<FilterElement
 			}
 			Filter<CyNetwork, CyIdentifiable> filter = (Filter<CyNetwork, CyIdentifiable>) transformer;
 			addListeners(filter);
-			element.filter.append(filter);
+			element.getFilter().append(filter);
 		}
 	}
 	
@@ -263,11 +265,11 @@ public class FilterPanelController extends AbstractPanelController<FilterElement
 		NamedTransformer<CyNetwork, CyIdentifiable>[] namedTransformers = new NamedTransformer[model.getSize()];
 		int i = 0;
 		for (FilterElement element : model) {
-			if (element.filter == null) {
+			if (element.getFilter() == null) {
 				continue;
 			}
 			
-			Transformer<CyNetwork, CyIdentifiable>[] transformers = new Transformer[] { element.filter };
+			Transformer<CyNetwork, CyIdentifiable>[] transformers = new Transformer[] { element.getFilter() };
 			namedTransformers[i] = (NamedTransformer<CyNetwork, CyIdentifiable>) ModelUtil.createNamedTransformer(element.name, transformers);
 			i++;
 		}

@@ -56,7 +56,7 @@ public class TransformerPanelController extends AbstractPanelController<Transfor
 			
 			@Override
 			public void handleElementAdded(FilterElement element) {
-				if (element.filter == null) {
+				if (element.getFilter() == null) {
 					return;
 				}
 				startWithComboBoxModel.add(element);
@@ -68,7 +68,7 @@ public class TransformerPanelController extends AbstractPanelController<Transfor
 	
 	@Override
 	protected void handleElementSelected(TransformerElement selected, TransformerPanel panel) {
-		CompositeTransformerPanel root = new CompositeTransformerPanel(panel, this, selected.chain, getIconManager());
+		CompositeTransformerPanel root = new CompositeTransformerPanel(panel, this, selected.getChain(), getIconManager());
 		panel.setRootPanel(root);
 	}
 
@@ -78,7 +78,7 @@ public class TransformerPanelController extends AbstractPanelController<Transfor
 
 	@Override
 	protected TransformerElement createElement(String name) {
-		ArrayList<Transformer<CyNetwork, CyIdentifiable>> chain = new ArrayList<Transformer<CyNetwork, CyIdentifiable>>();
+		ArrayList<Transformer<CyNetwork, CyIdentifiable>> chain = new ArrayList<>();
 		return new TransformerElement(name, chain);
 	}
 
@@ -227,12 +227,11 @@ public class TransformerPanelController extends AbstractPanelController<Transfor
 			
 			String name = findUniqueName(namedTransformer.getName());
 			TransformerElement element = addNewElement(name);
-			element.chain = new ArrayList<Transformer<CyNetwork,CyIdentifiable>>();
 			for (Transformer<CyNetwork, CyIdentifiable> transformer: namedTransformer.getTransformers()) {
 				if (transformer instanceof Filter) {
 					continue;
 				}
-				element.chain.add(transformer);
+				element.getChain().add(transformer);
 			}
 		}
 		TransformerElement selected = (TransformerElement) namedElementComboBoxModel.getSelectedItem();
@@ -250,11 +249,11 @@ public class TransformerPanelController extends AbstractPanelController<Transfor
 		NamedTransformer<CyNetwork, CyIdentifiable>[] namedTransformers = new NamedTransformer[model.getSize()];
 		int i = 0;
 		for (TransformerElement element : model) {
-			if (element.chain == null) {
+			if (element.getChain() == null) {
 				continue;
 			}
 			
-			Transformer<CyNetwork, CyIdentifiable>[] transformers = element.chain.toArray(new Transformer[element.chain.size()]);
+			Transformer<CyNetwork, CyIdentifiable>[] transformers = element.getChain().toArray(new Transformer[element.getChain().size()]);
 			namedTransformers[i] = (NamedTransformer<CyNetwork, CyIdentifiable>) ModelUtil.createNamedTransformer(element.name, transformers);
 			i++;
 		}

@@ -122,4 +122,13 @@ public class ViewUtil {
 	        gg.drawLine(x, y + comp.getHeight(), x + w - 1, y + comp.getHeight());
 	    }
 	}
+	
+	public static String abbreviate(String s) {
+		int maxLength = 30;
+		s = String.valueOf(s); // null check
+		if(s.length() > maxLength) {
+			s = s.substring(0, maxLength) + "...";
+		}
+		return s;
+	}
 }

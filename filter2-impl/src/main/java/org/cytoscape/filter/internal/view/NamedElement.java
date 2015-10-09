@@ -1,6 +1,7 @@
 package org.cytoscape.filter.internal.view;
 
 public abstract class NamedElement {
+	
 	public String name;
 
 	public NamedElement(String name) {
@@ -12,5 +13,4 @@ public abstract class NamedElement {
 		return name;
 	}
 	
-	public abstract boolean isPlaceholder();
 }

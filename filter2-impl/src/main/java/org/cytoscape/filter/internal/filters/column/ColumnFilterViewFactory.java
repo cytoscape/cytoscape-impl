@@ -42,18 +42,15 @@ import org.cytoscape.filter.view.TransformerViewFactory;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.util.swing.IconManager;
 
 public class ColumnFilterViewFactory implements TransformerViewFactory {
 
 	private final ModelMonitor modelMonitor;
-	private final IconManager iconManager;
 	private final FilterPanelStyle style;
 	
-	public ColumnFilterViewFactory(FilterPanelStyle style, ModelMonitor modelMonitor, IconManager iconManager) {
+	public ColumnFilterViewFactory(FilterPanelStyle style, ModelMonitor modelMonitor) {
 		this.modelMonitor = modelMonitor;
 		this.style = style;
-		this.iconManager = iconManager;
 	}
 	
 	@Override

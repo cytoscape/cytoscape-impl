@@ -78,7 +78,7 @@ public abstract class AbstractPanelController<T extends NamedElement, V extends 
 		namedElementListeners = new CopyOnWriteArrayList<NamedElementListener<T>>();
 	}
 
-	public JPopupMenu createAddConditionMenu(final CompositeFilterPanel panel) {
+	public JPopupMenu createAddConditionMenu(final CompositeFilterPanel<?> panel) {
 		JPopupMenu menu = new JPopupMenu();
 		
 		for (final TransformerViewElement element : transformerViewManager.getFilterConditionViewElements()) {
@@ -95,7 +95,7 @@ public abstract class AbstractPanelController<T extends NamedElement, V extends 
 		return menu;
 	}
 	
-	private void handleAddCondition(TransformerViewElement element, CompositeFilterPanel panel) {
+	private void handleAddCondition(TransformerViewElement element, CompositeFilterPanel<?> panel) {
 		// Assume the factory makes filters
 		Transformer<CyNetwork, CyIdentifiable> transformer = transformerManager.createTransformer(element.getId());
 		Filter<CyNetwork, CyIdentifiable> filter = (Filter<CyNetwork, CyIdentifiable>) transformer;
@@ -370,7 +370,7 @@ public abstract class AbstractPanelController<T extends NamedElement, V extends 
 				boolean found = false;
 				for (int i = 0; i < composite.getTransformerCount(); i++) {
 					Transformer<CyNetwork, CyIdentifiable> filter = composite.getTransformerAt(i);
-					TransformerElementViewModel viewModel = composite.getViewModel(filter);
+					TransformerElementViewModel<?> viewModel = composite.getViewModel(filter);
 					if (current == viewModel.view || current == viewModel.separator || current == viewModel.handle) {
 						path.addFirst(i);
 						found = true;
@@ -548,7 +548,7 @@ public abstract class AbstractPanelController<T extends NamedElement, V extends 
 	
 	public abstract void unregisterView(JComponent elementView);
 	
-	public abstract void addNamedTransformers(V view, NamedTransformer<CyNetwork, CyIdentifiable>... transformers);
+	public abstract void addNamedTransformers(V view, @SuppressWarnings("unchecked") NamedTransformer<CyNetwork, CyIdentifiable>... transformers);
 	
 	public abstract NamedTransformer<CyNetwork, CyIdentifiable>[] getNamedTransformers();
 	

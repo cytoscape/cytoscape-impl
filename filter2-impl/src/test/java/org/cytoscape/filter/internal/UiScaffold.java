@@ -95,7 +95,7 @@ public class UiScaffold {
 		
 		FilterPanelStyle style = new StandardStyle();
 		TransformerViewManager transformerViewManager = new TransformerViewManager(transformerManager);
-		transformerViewManager.registerTransformerViewFactory(new ColumnFilterViewFactory(style, modelMonitor, iconManager), properties);
+		transformerViewManager.registerTransformerViewFactory(new ColumnFilterViewFactory(style, modelMonitor), properties);
 		transformerViewManager.registerTransformerViewFactory(new DegreeFilterViewFactory(style, modelMonitor), properties);
 		transformerViewManager.registerTransformerViewFactory(new TopologyFilterViewFactory(style), properties);
 		transformerViewManager.registerTransformerViewFactory(new InteractionTransformerViewFactory(style), properties);
