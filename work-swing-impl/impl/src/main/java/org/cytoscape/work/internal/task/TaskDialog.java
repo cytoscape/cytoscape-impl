@@ -73,6 +73,7 @@ class TaskDialog extends JDialog {
 
 		msgArea = new JTextArea();
 		msgArea.setEditable(false);
+		msgArea.setHighlighter(null); // disables text selection
 		msgArea.setBorder(null);
 		msgArea.setLineWrap(true);
 		msgArea.setWrapStyleWord(true);
