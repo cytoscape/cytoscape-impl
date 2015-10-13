@@ -1,13 +1,14 @@
 package org.cytoscape.work.internal.task;
 
-import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.GridBagLayout;
+import static javax.swing.GroupLayout.DEFAULT_SIZE;
+import static javax.swing.GroupLayout.PREFERRED_SIZE;
+import static javax.swing.GroupLayout.Alignment.LEADING;
+
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 
+import javax.swing.AbstractAction;
+import javax.swing.GroupLayout;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JEditorPane;
@@ -17,29 +18,23 @@ import javax.swing.SwingUtilities;
 import javax.swing.text.html.HTMLEditorKit;
 import javax.swing.text.html.StyleSheet;
 
+import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.work.FinishStatus;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.internal.tunables.utils.GUIDefaults;
 
+@SuppressWarnings("serial")
 public class TaskHistoryWindow {
 
 	final TaskHistory taskHistory;
 	final JDialog dialog;
 	final JEditorPane pane;
-	boolean isOpen;
 
 	public TaskHistoryWindow(final TaskHistory taskHistory) {
 		this.taskHistory = taskHistory;
 
 		dialog = new JDialog(null, "Cytoscape Task History", JDialog.ModalityType.MODELESS);
-		dialog.addWindowListener(new WindowAdapter() {
-			@Override
-			public void windowClosing(WindowEvent e) {
-				dialog.dispose();
-				isOpen = false;
-			}
-		});
-		dialog.setPreferredSize(new Dimension(500, 400));
+		dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 
 		pane = new JEditorPane();
 		pane.setEditable(false);
@@ -48,24 +43,48 @@ public class TaskHistoryWindow {
 		final StyleSheet styleSheet = htmlEditorKit.getStyleSheet();
 		styleSheet.addRule("ul {list-style-type: none;}");
 
-		final JButton cleanButton = new JButton("Clean");
-		cleanButton.addActionListener(new ActionListener() {
+		final JButton clearButton = new JButton("Clear Display");
+		clearButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				taskHistory.clear();
 				update();
 			}
 		});
+		
+		final JButton closeButton = new JButton(new AbstractAction("Close") {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				dialog.dispose();
+			}
+		});
 
-		final JPanel buttonsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-		buttonsPanel.add(cleanButton);
+		final JPanel buttonsPanel = LookAndFeelUtil.createOkCancelPanel(null, closeButton, clearButton);
+		buttonsPanel.add(clearButton);
 
 		final JScrollPane scrollPane = new JScrollPane(pane);
 
-		dialog.setLayout(new GridBagLayout());
-		final EasyGBC c = new EasyGBC();
-		dialog.add(scrollPane, c.expandBoth());
-		dialog.add(buttonsPanel, c.down().expandHoriz());
+		final GroupLayout layout = new GroupLayout(dialog.getContentPane());
+		dialog.getContentPane().setLayout(layout);
+		layout.setAutoCreateContainerGaps(false);
+		layout.setAutoCreateGaps(true);
+		
+		layout.setHorizontalGroup(layout.createParallelGroup(LEADING, true)
+				.addComponent(scrollPane, DEFAULT_SIZE, 500, Short.MAX_VALUE)
+				.addGroup(layout.createSequentialGroup()
+						.addContainerGap()
+						.addComponent(buttonsPanel)
+						.addContainerGap()
+				)
+		);
+		layout.setVerticalGroup(layout.createSequentialGroup()
+				.addComponent(scrollPane, DEFAULT_SIZE, 400, Short.MAX_VALUE)
+				.addComponent(buttonsPanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				.addContainerGap()
+		);
+		
+		LookAndFeelUtil.setDefaultOkCancelKeyStrokes(dialog.getRootPane(), null, closeButton.getAction());
+		dialog.getRootPane().setDefaultButton(closeButton);
 
 		taskHistory.setFinishListener(new TaskHistory.FinishListener() {
 			@Override
@@ -74,22 +93,13 @@ public class TaskHistoryWindow {
 			}
 		});
 
-		update();
+		dialog.pack();
 		open();
 	}
 
-	public void close() {
-		dialog.dispose();
-		isOpen = false;
-	}
-
 	public void open() {
-		if (!isOpen)
-			dialog.pack();
-		
-		dialog.setVisible(true);
 		update();
-		isOpen = true;
+		dialog.setVisible(true);
 	}
 
 	private static String getIconURL(final FinishStatus.Type finishType) {

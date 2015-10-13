@@ -33,6 +33,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -68,10 +70,9 @@ import org.cytoscape.util.swing.LookAndFeelUtil;
 /**
  *
  */
+@SuppressWarnings("serial")
 public class BookmarkDialogImpl extends JDialog implements ActionListener, ListSelectionListener, ItemListener {
 
-	private final static long serialVersionUID = 1202339873340615L;
-	
 	private String bookmarkCategory;
 
 	private String[] bookmarkCategories = { "network", "table", "image","properties","session","script","vizmap", "unspecified" };
@@ -81,9 +82,9 @@ public class BookmarkDialogImpl extends JDialog implements ActionListener, ListS
 	private JButton btnDeleteBookmark;
 	private JButton btnEditBookmark;
 	private JButton btnClose;
-	private JComboBox cmbCategory;
-	private JScrollPane jScrollPane1;
-	private JList listBookmark;
+	private JComboBox<String> cmbCategory;
+	private JScrollPane scrollPane;
+	private JList<org.cytoscape.io.datasource.DataSource> listBookmark;
 	
 	public BookmarkDialogImpl(Frame pParent, DataSourceManager dsManagerServiceRef) {
 		super(pParent, ModalityType.APPLICATION_MODAL);
@@ -92,7 +93,7 @@ public class BookmarkDialogImpl extends JDialog implements ActionListener, ListS
 		this.setTitle("Bookmark Manager");
 		initComponents();
 		
-		bookmarkCategory = cmbCategory.getSelectedItem().toString();
+		bookmarkCategory = (String) cmbCategory.getSelectedItem();
 		loadBookmarks();
 
 		setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
@@ -102,9 +103,9 @@ public class BookmarkDialogImpl extends JDialog implements ActionListener, ListS
 	}
 
 	private void initComponents() {
-		cmbCategory = new JComboBox();
-		jScrollPane1 = new JScrollPane();
-		listBookmark = new JList();
+		cmbCategory = new JComboBox<>();
+		scrollPane = new JScrollPane();
+		listBookmark = new JList<>();
 		btnAddBookmark = new JButton("Add");
 		btnEditBookmark = new JButton("Modify");
 		btnDeleteBookmark = new JButton("Delete");
@@ -118,7 +119,7 @@ public class BookmarkDialogImpl extends JDialog implements ActionListener, ListS
 
 		cmbCategory.setToolTipText("Bookmark Category");
 		
-		jScrollPane1.setViewportView(listBookmark);
+		scrollPane.setViewportView(listBookmark);
 		
 		btnAddBookmark.setToolTipText("Add a new bookmark");
 		btnEditBookmark.setToolTipText("Edit a bookmark");
@@ -141,6 +142,17 @@ public class BookmarkDialogImpl extends JDialog implements ActionListener, ListS
 		listBookmark.addListSelectionListener(this);
 		listBookmark.setCellRenderer(new MyListCellRenderer());
 		listBookmark.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		listBookmark.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				if (e.getClickCount() == 2 && !e.isConsumed()) {
+				     e.consume();
+				     
+				     if (listBookmark.getSelectedIndex() >= 0 && btnEditBookmark.isEnabled())
+				    	 btnEditBookmark.doClick();
+				}
+			}
+		});
 
 		final JPanel propsTablePanel = new JPanel();
 		propsTablePanel.setBorder(LookAndFeelUtil.createTitledBorder("Bookmarks"));
@@ -153,7 +165,7 @@ public class BookmarkDialogImpl extends JDialog implements ActionListener, ListS
 			
 			layout.setHorizontalGroup(layout.createParallelGroup(Alignment.CENTER, true)
 					.addComponent(cmbCategory, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-					.addComponent(jScrollPane1, DEFAULT_SIZE, DEFAULT_SIZE, 460)
+					.addComponent(scrollPane, DEFAULT_SIZE, DEFAULT_SIZE, 460)
 					.addGroup(Alignment.CENTER, layout.createSequentialGroup()
 							.addComponent(btnAddBookmark)
 							.addComponent(btnEditBookmark)
@@ -162,7 +174,7 @@ public class BookmarkDialogImpl extends JDialog implements ActionListener, ListS
 			);
 			layout.setVerticalGroup(layout.createSequentialGroup()
 					.addComponent(cmbCategory, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-					.addComponent(jScrollPane1, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(scrollPane, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addGroup(layout.createParallelGroup(Alignment.CENTER, true)
 							.addComponent(btnAddBookmark)
 							.addComponent(btnEditBookmark)
@@ -196,40 +208,33 @@ public class BookmarkDialogImpl extends JDialog implements ActionListener, ListS
 	}
 
 	public void loadBookmarks() {
-		Collection<org.cytoscape.io.datasource.DataSource> theDataSourceCollection = new HashSet<org.cytoscape.io.datasource.DataSource>();
+		Collection<org.cytoscape.io.datasource.DataSource> theDataSourceCollection = new HashSet<>();
+		final String selectedItem = (String) cmbCategory.getSelectedItem();
 		
-		if (this.cmbCategory.getSelectedItem().equals("network")){
-			theDataSourceCollection = this.dsManagerServiceRef.getDataSources(org.cytoscape.io.DataCategory.NETWORK); 			
-		}
-		else if (this.cmbCategory.getSelectedItem().equals("table")){
-			theDataSourceCollection = this.dsManagerServiceRef.getDataSources(org.cytoscape.io.DataCategory.TABLE); 						
-		}
-		else if (this.cmbCategory.getSelectedItem().equals("image")){
-			theDataSourceCollection = this.dsManagerServiceRef.getDataSources(org.cytoscape.io.DataCategory.IMAGE); 						
-		}
-		else if (this.cmbCategory.getSelectedItem().equals("properties")){
-			theDataSourceCollection = this.dsManagerServiceRef.getDataSources(org.cytoscape.io.DataCategory.PROPERTIES);			
-		}
-		else if (this.cmbCategory.getSelectedItem().equals("session")){
-			theDataSourceCollection = this.dsManagerServiceRef.getDataSources(org.cytoscape.io.DataCategory.SESSION);
-		}
-		else if (this.cmbCategory.getSelectedItem().equals("script")){
-			theDataSourceCollection = this.dsManagerServiceRef.getDataSources(org.cytoscape.io.DataCategory.SCRIPT);
-		}
-		else if (this.cmbCategory.getSelectedItem().equals("vizmap")){
-			theDataSourceCollection = this.dsManagerServiceRef.getDataSources(org.cytoscape.io.DataCategory.VIZMAP);
-		}
-		else if (this.cmbCategory.getSelectedItem().equals("unspecified")){
-			theDataSourceCollection = this.dsManagerServiceRef.getDataSources(org.cytoscape.io.DataCategory.UNSPECIFIED);
-		}
-		else {
-			theDataSourceCollection = this.dsManagerServiceRef.getDataSources(org.cytoscape.io.DataCategory.UNSPECIFIED);
+		if (selectedItem.equals("network")){
+			theDataSourceCollection = dsManagerServiceRef.getDataSources(org.cytoscape.io.DataCategory.NETWORK); 			
+		} else if (selectedItem.equals("table")){
+			theDataSourceCollection = dsManagerServiceRef.getDataSources(org.cytoscape.io.DataCategory.TABLE); 						
+		} else if (selectedItem.equals("image")){
+			theDataSourceCollection = dsManagerServiceRef.getDataSources(org.cytoscape.io.DataCategory.IMAGE); 						
+		} else if (selectedItem.equals("properties")){
+			theDataSourceCollection = dsManagerServiceRef.getDataSources(org.cytoscape.io.DataCategory.PROPERTIES);			
+		} else if (selectedItem.equals("session")){
+			theDataSourceCollection = dsManagerServiceRef.getDataSources(org.cytoscape.io.DataCategory.SESSION);
+		} else if (selectedItem.equals("script")){
+			theDataSourceCollection = dsManagerServiceRef.getDataSources(org.cytoscape.io.DataCategory.SCRIPT);
+		} else if (selectedItem.equals("vizmap")){
+			theDataSourceCollection = dsManagerServiceRef.getDataSources(org.cytoscape.io.DataCategory.VIZMAP);
+		} else if (selectedItem.equals("unspecified")){
+			theDataSourceCollection = dsManagerServiceRef.getDataSources(org.cytoscape.io.DataCategory.UNSPECIFIED);
+		} else {
+			theDataSourceCollection = dsManagerServiceRef.getDataSources(org.cytoscape.io.DataCategory.UNSPECIFIED);
 		}
 		 
 		Iterator<org.cytoscape.io.datasource.DataSource> it = theDataSourceCollection.iterator();
+		ArrayList<org.cytoscape.io.datasource.DataSource> theDataSourceList = new ArrayList<>(theDataSourceCollection.size());
 		
-		ArrayList<org.cytoscape.io.datasource.DataSource> theDataSourceList = new ArrayList(theDataSourceCollection.size());
-		while(it.hasNext()){
+		while (it.hasNext()) {
 			theDataSourceList.add(it.next());
 		}
 				
@@ -239,7 +244,7 @@ public class BookmarkDialogImpl extends JDialog implements ActionListener, ListS
 
 	@Override
 	public void itemStateChanged(ItemEvent e) {
-		bookmarkCategory = cmbCategory.getSelectedItem().toString();
+		bookmarkCategory = (String) cmbCategory.getSelectedItem();
 		loadBookmarks();
 	}
 
@@ -257,16 +262,14 @@ public class BookmarkDialogImpl extends JDialog implements ActionListener, ListS
 				theNewDialog.setVisible(true);
 				loadBookmarks(); // reload is required to update the GUI
 			} else if (_btn == btnEditBookmark) {
-				org.cytoscape.io.datasource.DataSource theDataSource = 
-						(org.cytoscape.io.datasource.DataSource) listBookmark.getSelectedValue();
+				org.cytoscape.io.datasource.DataSource theDataSource = listBookmark.getSelectedValue();
 				EditBookmarkDialog theEditDialog = new EditBookmarkDialog(this, bookmarkCategory, "edit",
 						theDataSource);
 				theEditDialog.setLocationRelativeTo(this);
 				theEditDialog.setVisible(true);
 				loadBookmarks(); // reload is required to update the GUI
 			} else if (_btn == btnDeleteBookmark) {
-				org.cytoscape.io.datasource.DataSource theDataSource = (org.cytoscape.io.datasource.DataSource) listBookmark
-						.getSelectedValue();
+				org.cytoscape.io.datasource.DataSource theDataSource = listBookmark.getSelectedValue();
 
 				MyListModel theModel = (MyListModel) listBookmark.getModel();
 				theModel.removeElement(listBookmark.getSelectedIndex());
@@ -298,28 +301,22 @@ public class BookmarkDialogImpl extends JDialog implements ActionListener, ListS
 		}
 	}
 
-	class MyListModel extends AbstractListModel {
-		private final static long serialVersionUID = 1202339873199984L;
-		List<org.cytoscape.io.datasource.DataSource> theDataSourceList = new ArrayList<org.cytoscape.io.datasource.DataSource>(0);
+	class MyListModel extends AbstractListModel<org.cytoscape.io.datasource.DataSource> {
+		
+		List<org.cytoscape.io.datasource.DataSource> theDataSourceList = new ArrayList<>(0);
 
 		public MyListModel(List<org.cytoscape.io.datasource.DataSource> pDataSourceList) {
 			theDataSourceList = pDataSourceList;
 		}
 
+		@Override
 		public int getSize() {
-			if (theDataSourceList == null) {
-				return 0;
-			}
-
-			return theDataSourceList.size();
+			return theDataSourceList == null ? 0 : theDataSourceList.size();
 		}
 
-		public Object getElementAt(int i) {
-			if (theDataSourceList == null) {
-				return null;
-			}
-
-			return theDataSourceList.get(i);
+		@Override
+		public org.cytoscape.io.datasource.DataSource getElementAt(int i) {
+			return theDataSourceList == null ? null : theDataSourceList.get(i);
 		}
 
 		public void addElement(org.cytoscape.io.datasource.DataSource pDataSource) {
