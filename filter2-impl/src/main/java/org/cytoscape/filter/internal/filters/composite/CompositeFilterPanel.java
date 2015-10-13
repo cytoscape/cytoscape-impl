@@ -208,9 +208,11 @@ public class CompositeFilterPanel<P extends SelectPanelComponent> extends JPanel
 
 	public JComboBox<CombiningMethodElement> createCombiningMethodComboBox() {
 		List<CombiningMethodElement> methods = getCombiningMethods();
+		@SuppressWarnings("unchecked")
 		ComboBoxModel<CombiningMethodElement> comboBoxModel = new DynamicComboBoxModel<>(methods);
 		final JComboBox<CombiningMethodElement> combiningMethodComboBox = filterPanelController.getStyle().createCombo(comboBoxModel);
 		combiningMethodComboBox.addActionListener(new ActionListener() {
+			@SuppressWarnings("unchecked")
 			@Override
 			public void actionPerformed(ActionEvent event) {
 				model.setType(((CombiningMethodElement)combiningMethodComboBox.getSelectedItem()).combiningMethod);

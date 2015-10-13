@@ -1,6 +1,5 @@
 package org.cytoscape.filter.internal.filters.column;
 
-import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -11,11 +10,9 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.util.List;
 
-import javax.swing.DefaultListCellRenderer;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
-import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
@@ -193,6 +190,7 @@ public class ColumnFilterViewFactory implements TransformerViewFactory {
 		private StateChangeListener booleanComboBoxStateChangeListener;
 		
 		
+		@SuppressWarnings("unchecked")
 		public View(Controller controller, ColumnFilter filter) {
 			this.controller = controller;
 			this.filter = filter;
@@ -210,21 +208,7 @@ public class ColumnFilterViewFactory implements TransformerViewFactory {
 			
 			List<ColumnComboBoxElement> nameComboBoxModel = modelMonitor.getColumnComboBoxModel();
 			nameComboBox = style.createCombo(new DynamicComboBoxModel<ColumnComboBoxElement>(nameComboBoxModel));
-			nameComboBox.setRenderer(new DefaultListCellRenderer() {
-				@Override
-				public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-					super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-					ColumnComboBoxElement element = (ColumnComboBoxElement) value;
-					String description = String.valueOf(element.getDescription()); // in case its null
-					String text = description;
-					if(text.length() > 30) {
-						text = text.substring(0, 30) + "...";
-					}
-					setText(text);
-					setToolTipText(description);
-					return this;
-				}
-			});
+			nameComboBox.setRenderer(ViewUtil.createElipsisRenderer(30));
 			
 			numericNegateComboBox = new BooleanComboBox(style, "is", "is not");
 			booleanComboBox = new BooleanComboBox(style, "true", "false");

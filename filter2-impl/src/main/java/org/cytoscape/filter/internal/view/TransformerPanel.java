@@ -26,6 +26,7 @@ public class TransformerPanel extends AbstractPanel<TransformerElement, Transfor
 	private CompositeTransformerPanel root;
 	private JComboBox<FilterElement> startWithComboBox;
 	
+	@SuppressWarnings("unchecked")
 	public TransformerPanel(final TransformerPanelController controller, IconManager iconManager, TransformerWorker worker) {
 		super(controller, iconManager);
 		setOpaque(!isAquaLAF());
@@ -36,6 +37,7 @@ public class TransformerPanel extends AbstractPanel<TransformerElement, Transfor
 		final Component editPanel = createEditPanel();
 		final JLabel startWithLabel = new JLabel("Start with:");
 		startWithComboBox = new JComboBox<>(controller.getStartWithComboBoxModel());
+		startWithComboBox.setRenderer(ViewUtil.createElipsisRenderer(50));
 		final JSeparator sep = new JSeparator();
 		
 		final GroupLayout layout = new GroupLayout(this);

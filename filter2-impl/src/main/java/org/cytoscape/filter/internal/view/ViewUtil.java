@@ -10,10 +10,13 @@ import java.text.Format;
 import java.text.NumberFormat;
 
 import javax.swing.BorderFactory;
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.JComponent;
 import javax.swing.JFormattedTextField;
 import javax.swing.JFormattedTextField.AbstractFormatter;
 import javax.swing.JFormattedTextField.AbstractFormatterFactory;
+import javax.swing.JList;
+import javax.swing.ListCellRenderer;
 import javax.swing.UIManager;
 import javax.swing.border.AbstractBorder;
 import javax.swing.border.Border;
@@ -123,12 +126,28 @@ public class ViewUtil {
 	    }
 	}
 	
-	public static String abbreviate(String s) {
-		int maxLength = 30;
+	public static String abbreviate(String s, int maxLength) {
 		s = String.valueOf(s); // null check
 		if(s.length() > maxLength) {
 			s = s.substring(0, maxLength) + "...";
 		}
 		return s;
 	}
+	
+	
+	@SuppressWarnings("serial")
+	public static ListCellRenderer<Object> createElipsisRenderer(int maxLength) {
+		return new DefaultListCellRenderer() {
+			@Override
+			public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+				super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+				String longText  = String.valueOf(value); // in case its null
+				String shortText = abbreviate(longText, maxLength);
+				setToolTipText(longText);
+				setText(shortText);
+				return this;
+			}
+		};
+	}
+	
 }

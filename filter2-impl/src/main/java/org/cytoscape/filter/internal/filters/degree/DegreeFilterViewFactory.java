@@ -162,6 +162,7 @@ public class DegreeFilterViewFactory implements TransformerViewFactory {
 		private RangeChooser<Integer> chooser;
 		private BooleanComboBox isOrIsNotCombo;
 		
+		@SuppressWarnings("unchecked")
 		public View(final Controller controller) {
 			this.controller = controller;
 			

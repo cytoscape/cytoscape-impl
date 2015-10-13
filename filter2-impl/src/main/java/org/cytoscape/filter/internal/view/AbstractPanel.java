@@ -1,7 +1,6 @@
 package org.cytoscape.filter.internal.view;
 
-import static javax.swing.GroupLayout.DEFAULT_SIZE;
-import static javax.swing.GroupLayout.PREFERRED_SIZE;
+import static javax.swing.GroupLayout.*;
 import static org.cytoscape.util.swing.LookAndFeelUtil.isAquaLAF;
 
 import java.awt.Component;
@@ -9,7 +8,6 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
@@ -51,63 +49,30 @@ public abstract class AbstractPanel<T extends NamedElement, C extends AbstractPa
 
 	protected JLabel statusLabel;
 	
+	@SuppressWarnings("unchecked")
 	public AbstractPanel(final C controller, IconManager iconManager) {
 		this.controller = controller;
 		this.iconManager = iconManager;
 		
 		ComboBoxModel model = controller.getElementComboBoxModel();
 		namedElementComboBox = new JComboBox(model);
-		namedElementComboBox.addActionListener(new ActionListener() {
-			@SuppressWarnings("unchecked")
-			@Override
-			public void actionPerformed(ActionEvent event) {
-				controller.handleElementSelected(AbstractPanel.this);
-			}
-		});
+		namedElementComboBox.setRenderer(ViewUtil.createElipsisRenderer(50));
+		namedElementComboBox.addActionListener(e -> controller.handleElementSelected(AbstractPanel.this));
 		
 		createMenu = new JMenuItem(controller.getCreateMenuLabel());
-		createMenu.addActionListener(new ActionListener() {
-			@SuppressWarnings("unchecked")
-			@Override
-			public void actionPerformed(ActionEvent event) {
-				controller.createNewElement(AbstractPanel.this);
-			}
-		});
+		createMenu.addActionListener(e -> controller.createNewElement(AbstractPanel.this));
 		
 		renameMenu = new JMenuItem(controller.getRenameMenuLabel());
-		renameMenu.addActionListener(new ActionListener() {
-			@SuppressWarnings("unchecked")
-			@Override
-			public void actionPerformed(ActionEvent event) {
-				controller.handleRename(AbstractPanel.this);
-			}
-		});
+		renameMenu.addActionListener(e -> controller.handleRename(AbstractPanel.this));
 		
 		deleteMenu = new JMenuItem(controller.getDeleteMenuLabel());
-		deleteMenu.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent event) {
-				controller.handleDelete();
-			}
-		});
+		deleteMenu.addActionListener(e -> controller.handleDelete());
 
 		exportMenu = new JMenuItem(controller.getExportLabel());
-		exportMenu.addActionListener(new ActionListener() {
-			@SuppressWarnings("unchecked")
-			@Override
-			public void actionPerformed(ActionEvent event) {
-				controller.handleExport(AbstractPanel.this);
-			}
-		});
+		exportMenu.addActionListener(e -> controller.handleExport(AbstractPanel.this));
 
 		importMenu = new JMenuItem(controller.getImportLabel());
-		importMenu.addActionListener(new ActionListener() {
-			@SuppressWarnings("unchecked")
-			@Override
-			public void actionPerformed(ActionEvent event) {
-				controller.handleImport(AbstractPanel.this);
-			}
-		});
+		importMenu.addActionListener(e -> controller.handleImport(AbstractPanel.this));
 
 		menu = new JPopupMenu();
 		menu.add(renameMenu);
@@ -119,27 +84,14 @@ public abstract class AbstractPanel<T extends NamedElement, C extends AbstractPa
 		optionsButton = new JButton(IconManager.ICON_CARET_DOWN);
 		optionsButton.setFont(iconManager.getIconFont(11.0f));
 		optionsButton.setToolTipText("Options...");
-		optionsButton.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent event) {
-				handleShowMenu(event);
-			}
-		});
+		optionsButton.addActionListener(this::handleShowMenu);
 		
 		applyButton = new JButton("Apply");
-		applyButton.addActionListener(new ActionListener() {
-			@SuppressWarnings("unchecked")
-			@Override
-			public void actionPerformed(ActionEvent event) {
-				controller.handleApplyFilter(AbstractPanel.this);
-			}
-		});
+		applyButton.addActionListener(e -> controller.handleApplyFilter(AbstractPanel.this));
 		
 		cancelApplyButton = new JLabel(IconManager.ICON_BAN);
 		cancelApplyButton.setFont(iconManager.getIconFont(17.0f));
 		cancelApplyButton.addMouseListener(new MouseAdapter() {
-			@SuppressWarnings("unchecked")
-			@Override
 			public void mousePressed(MouseEvent event) {
 				controller.handleCancelApply(AbstractPanel.this);
 			}
