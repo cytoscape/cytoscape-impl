@@ -45,6 +45,7 @@ import static org.cytoscape.tableimport.internal.util.SourceColumnSemantic.KEY;
 import static org.cytoscape.tableimport.internal.util.SourceColumnSemantic.NONE;
 import static org.cytoscape.tableimport.internal.util.SourceColumnSemantic.ONTOLOGY;
 import static org.cytoscape.tableimport.internal.util.SourceColumnSemantic.TAXON;
+import static org.cytoscape.util.swing.LookAndFeelUtil.isAquaLAF;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -1114,8 +1115,12 @@ public class PreviewTablePanel extends JPanel {
 					updatePreviewTable();
 				}
 			});
-			selectAllButton.putClientProperty("JButton.buttonType", "gradient"); // Mac OS X only
-			selectAllButton.putClientProperty("JComponent.sizeVariant", "small"); // Mac OS X only
+			
+			if (isAquaLAF()) {
+				selectAllButton.putClientProperty("JButton.buttonType", "gradient");
+				selectAllButton.putClientProperty("JComponent.sizeVariant", "small");
+			}
+			
 			selectAllButton.setEnabled(false);
 		}
 		
@@ -1133,8 +1138,12 @@ public class PreviewTablePanel extends JPanel {
 					updatePreviewTable();
 				}
 			});
-			selectNoneButton.putClientProperty("JButton.buttonType", "gradient"); // Mac OS X only
-			selectNoneButton.putClientProperty("JComponent.sizeVariant", "small"); // Mac OS X only
+			
+			if (isAquaLAF()) {
+				selectNoneButton.putClientProperty("JButton.buttonType", "gradient");
+				selectNoneButton.putClientProperty("JComponent.sizeVariant", "small");
+			}
+			
 			selectNoneButton.setEnabled(false);
 		}
 		

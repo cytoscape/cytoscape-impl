@@ -82,9 +82,7 @@ import org.cytoscape.view.presentation.property.NodeShapeVisualProperty;
 import org.cytoscape.view.presentation.property.values.Bend;
 import org.cytoscape.view.vizmap.gui.editor.ValueEditor;
 
-public class EdgeBendValueEditor extends JPanel implements ValueEditor<Bend> {
-
-	private static final long serialVersionUID = 9145223127932839836L;
+public class EdgeBendValueEditor implements ValueEditor<Bend> {
 
 	private static final Dimension DEF_PANEL_SIZE = new Dimension(600, 400);
 	
@@ -122,7 +120,6 @@ public class EdgeBendValueEditor extends JPanel implements ValueEditor<Bend> {
 		dialog = new JDialog(owner, ModalityType.APPLICATION_MODAL);
 		dialog.setTitle("Edge Bend Editor");
 		dialog.setResizable(false);
-		dialog.getContentPane().add(this);
 		
 		dialog.addWindowListener(new WindowAdapter() {
 			@Override
@@ -176,11 +173,11 @@ public class EdgeBendValueEditor extends JPanel implements ValueEditor<Bend> {
 		});
 		
 		final JPanel buttonPanel = LookAndFeelUtil.createOkCancelPanel(okButton, cancelButton, removeBendButton);
-		LookAndFeelUtil.setDefaultOkCancelKeyStrokes(getRootPane(), okButton.getAction(), cancelButton.getAction());
-		getRootPane().setDefaultButton(okButton);
+		LookAndFeelUtil.setDefaultOkCancelKeyStrokes(dialog.getRootPane(), okButton.getAction(), cancelButton.getAction());
+		dialog.getRootPane().setDefaultButton(okButton);
 		
-		final GroupLayout layout = new GroupLayout(this);
-		this.setLayout(layout);
+		final GroupLayout layout = new GroupLayout(dialog.getContentPane());
+		dialog.getContentPane().setLayout(layout);
 		layout.setAutoCreateContainerGaps(true);
 		layout.setAutoCreateGaps(true);
 		

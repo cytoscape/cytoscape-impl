@@ -28,9 +28,9 @@ import static javax.swing.GroupLayout.Alignment.LEADING;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Dialog.ModalityType;
 import java.awt.Dimension;
 import java.awt.Window;
-import java.awt.Dialog.ModalityType;
 import java.awt.event.ActionEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -51,9 +51,7 @@ import org.cytoscape.view.vizmap.gui.editor.ValueEditor;
 /**
  * Swing implementation of Object Position editor.
  */
-public class ObjectPositionValueEditor extends JPanel implements ValueEditor<ObjectPosition> {
-
-	private static final long serialVersionUID = 7146654020668346430L;
+public class ObjectPositionValueEditor implements ValueEditor<ObjectPosition> {
 
 	private String label;
 	private ObjectPosition oldValue;
@@ -76,7 +74,6 @@ public class ObjectPositionValueEditor extends JPanel implements ValueEditor<Obj
 		dialog.setMinimumSize(new Dimension(400, 600));
 		dialog.setTitle("Position");
 		dialog.setResizable(false);
-		dialog.getContentPane().add(this);
 		
 		dialog.addWindowListener(new WindowAdapter() {
 			@Override
@@ -113,11 +110,11 @@ public class ObjectPositionValueEditor extends JPanel implements ValueEditor<Obj
 		});
 
 		final JPanel buttonPanel = LookAndFeelUtil.createOkCancelPanel(okButton, cancelButton);
-		LookAndFeelUtil.setDefaultOkCancelKeyStrokes(getRootPane(), okButton.getAction(), cancelButton.getAction());
-		getRootPane().setDefaultButton(okButton);
+		LookAndFeelUtil.setDefaultOkCancelKeyStrokes(dialog.getRootPane(), okButton.getAction(), cancelButton.getAction());
+		dialog.getRootPane().setDefaultButton(okButton);
 
-		final GroupLayout layout = new GroupLayout(this);
-		this.setLayout(layout);
+		final GroupLayout layout = new GroupLayout(dialog.getContentPane());
+		dialog.getContentPane().setLayout(layout);
 		layout.setAutoCreateContainerGaps(true);
 		layout.setAutoCreateGaps(true);
 		

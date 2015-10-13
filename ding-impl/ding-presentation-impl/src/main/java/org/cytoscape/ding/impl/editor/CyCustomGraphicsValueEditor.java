@@ -52,7 +52,7 @@ import org.cytoscape.view.vizmap.gui.DefaultViewPanel;
 import org.cytoscape.view.vizmap.gui.editor.VisualPropertyValueEditor;
 
 @SuppressWarnings({ "rawtypes", "unchecked" })
-public class CyCustomGraphicsValueEditor extends JPanel implements VisualPropertyValueEditor<CyCustomGraphics> {
+public class CyCustomGraphicsValueEditor implements VisualPropertyValueEditor<CyCustomGraphics> {
 
 	private static final long serialVersionUID = 3276556808025021859L;
 
@@ -123,7 +123,6 @@ public class CyCustomGraphicsValueEditor extends JPanel implements VisualPropert
 	private void init(final Component parent) {
 		final Window owner = parent != null ? SwingUtilities.getWindowAncestor(parent) : null;
 		dialog = new JDialog(owner, ModalityType.APPLICATION_MODAL);
-		dialog.getContentPane().add(this);
 		dialog.setMinimumSize(new Dimension(400, 600));
 		dialog.setTitle("Graphics");
 		dialog.setResizable(false);
@@ -135,8 +134,8 @@ public class CyCustomGraphicsValueEditor extends JPanel implements VisualPropert
 			}
 		});
 		
-		final GroupLayout layout = new GroupLayout(this);
-		this.setLayout(layout);
+		final GroupLayout layout = new GroupLayout(dialog.getContentPane());
+		dialog.getContentPane().setLayout(layout);
 		layout.setAutoCreateContainerGaps(true);
 		layout.setAutoCreateGaps(true);
 		

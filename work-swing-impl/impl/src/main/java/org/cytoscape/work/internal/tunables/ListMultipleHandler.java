@@ -24,9 +24,9 @@ package org.cytoscape.work.internal.tunables;
  * #L%
  */
 
-
 import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
+import static org.cytoscape.util.swing.LookAndFeelUtil.isAquaLAF;
 import static org.cytoscape.work.internal.tunables.utils.GUIDefaults.setTooltip;
 import static org.cytoscape.work.internal.tunables.utils.GUIDefaults.updateFieldPanel;
 
@@ -118,8 +118,6 @@ public class ListMultipleHandler<T> extends AbstractGUITunableHandler
 					itemsContainerList.getSelectionModel().setSelectionInterval(0, listModel.getSize() - 1);
 			}
 		});
-		selectAllButton.putClientProperty("JButton.buttonType", "gradient"); // Mac OS X only
-		selectAllButton.putClientProperty("JComponent.sizeVariant", "small"); // Mac OS X only
 		
 		selectNoneButton = new JButton("Select None");
 		selectNoneButton.addActionListener(new ActionListener() {
@@ -128,9 +126,14 @@ public class ListMultipleHandler<T> extends AbstractGUITunableHandler
 				itemsContainerList.getSelectionModel().clearSelection();
 			}
 		});
-		selectNoneButton.putClientProperty("JButton.buttonType", "gradient"); // Mac OS X only
-		selectNoneButton.putClientProperty("JComponent.sizeVariant", "small"); // Mac OS X only
 		selectNoneButton.setEnabled(false);
+		
+		if (isAquaLAF()) {
+			selectAllButton.putClientProperty("JButton.buttonType", "gradient");
+			selectAllButton.putClientProperty("JComponent.sizeVariant", "small");
+			selectNoneButton.putClientProperty("JButton.buttonType", "gradient");
+			selectNoneButton.putClientProperty("JComponent.sizeVariant", "small");
+		}
 		
 		LookAndFeelUtil.equalizeSize(selectAllButton, selectNoneButton);
 		
