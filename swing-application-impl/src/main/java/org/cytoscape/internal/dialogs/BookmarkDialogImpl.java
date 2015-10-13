@@ -284,11 +284,6 @@ public class BookmarkDialogImpl extends JDialog implements ActionListener, ListS
 		}
 	}
 
-	/**
-	 * Called by ListSelectionListener interface when a table item is selected.
-	 * 
-	 * @param pListSelectionEvent
-	 */
 	@Override
 	public void valueChanged(ListSelectionEvent pListSelectionEvent) {
 		if (listBookmark.getSelectedIndex() == -1) { // nothing is selected
@@ -327,21 +322,18 @@ public class BookmarkDialogImpl extends JDialog implements ActionListener, ListS
 			theDataSourceList.remove(pIndex);
 			fireContentsChanged(this, pIndex, pIndex);
 		}
-	} // MyListModel
+	}
 
-	// class MyListCellrenderer
 	class MyListCellRenderer extends DefaultListCellRenderer {
 		
-		private final static long serialVersionUID = 1202339873310334L;
-
 		public MyListCellRenderer() {
 			setOpaque(true);
 		}
 
-		public Component getListCellRendererComponent(JList list, Object value,
+		public Component getListCellRendererComponent(JList<?> list, Object value,
 				int index, boolean isSelected, boolean cellHasFocus) {
 			super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-			org.cytoscape.io.datasource.DataSource theDataSource = (org.cytoscape.io.datasource.DataSource) value;
+			org.cytoscape.io.datasource.DataSource theDataSource =  (org.cytoscape.io.datasource.DataSource) value;
 			setText(theDataSource.getName());
 			setToolTipText(theDataSource.getLocation().toString());
 
@@ -350,8 +342,6 @@ public class BookmarkDialogImpl extends JDialog implements ActionListener, ListS
 	}
 
 	class EditBookmarkDialog extends JDialog {
-		
-		private final static long serialVersionUID = 1202339873325728L;
 		
 		private String name;
 		private String URLstr;
@@ -497,7 +487,6 @@ public class BookmarkDialogImpl extends JDialog implements ActionListener, ListS
 			return DataCategory.UNSPECIFIED;
 		}
 		
-	    @SuppressWarnings("serial")
 		private void initComponents() {
 	        lbCategory = new JLabel("Category:");
 	        lbCategoryValue = new JLabel("network");
@@ -587,7 +576,6 @@ public class BookmarkDialogImpl extends JDialog implements ActionListener, ListS
 			getRootPane().setDefaultButton(btnOK);
 	    }
 	}
-	
 
 	public void showDialog() {
 		setVisible(true);
