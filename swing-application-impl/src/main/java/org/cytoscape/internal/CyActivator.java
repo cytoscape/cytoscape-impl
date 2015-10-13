@@ -586,6 +586,8 @@ public class CyActivator extends AbstractCyActivator {
 								BorderFactory.createEmptyBorder(2, 4, 2, 4)
 						)
 				);
+				UIManager.put("Button.disabledForeground", UIManager.getColor("Label.disabledForeground"));
+				UIManager.put("Button.disabledText", UIManager.getColor("Label.disabledForeground"));
 			} else {
 				UIManager.put(
 						"TableHeader.cellBorder", 
