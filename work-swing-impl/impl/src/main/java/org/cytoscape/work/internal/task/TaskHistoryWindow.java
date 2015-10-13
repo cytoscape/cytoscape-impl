@@ -22,188 +22,225 @@ import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.internal.tunables.utils.GUIDefaults;
 
 public class TaskHistoryWindow {
-  final TaskHistory taskHistory;
-  final JDialog dialog;
-  final JEditorPane pane;
-  boolean isOpen = false;
 
-  public TaskHistoryWindow(final TaskHistory taskHistory) {
-    this.taskHistory = taskHistory;
+	final TaskHistory taskHistory;
+	final JDialog dialog;
+	final JEditorPane pane;
+	boolean isOpen;
 
-    dialog = new JDialog(null, "Cytoscape Task History", JDialog.ModalityType.MODELESS);
-    dialog.addWindowListener(new WindowAdapter() {
-      public void windowClosing(WindowEvent e) {
-        dialog.dispose();
-        isOpen = false;
-      }
-    });
-    dialog.setPreferredSize(new Dimension(500, 400));
+	public TaskHistoryWindow(final TaskHistory taskHistory) {
+		this.taskHistory = taskHistory;
 
-    pane = new JEditorPane();
-    pane.setEditable(false);
-    pane.setContentType("text/html");
-    final HTMLEditorKit htmlEditorKit = (HTMLEditorKit) pane.getEditorKit();
-    final StyleSheet styleSheet = htmlEditorKit.getStyleSheet();
-    styleSheet.addRule("ul {list-style-type: none;}");
+		dialog = new JDialog(null, "Cytoscape Task History", JDialog.ModalityType.MODELESS);
+		dialog.addWindowListener(new WindowAdapter() {
+			@Override
+			public void windowClosing(WindowEvent e) {
+				dialog.dispose();
+				isOpen = false;
+			}
+		});
+		dialog.setPreferredSize(new Dimension(500, 400));
 
-    final JButton cleanButton = new JButton("Clean");
-    cleanButton.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
-        taskHistory.clear();
-        update();
-      }
-    });
+		pane = new JEditorPane();
+		pane.setEditable(false);
+		pane.setContentType("text/html");
+		final HTMLEditorKit htmlEditorKit = (HTMLEditorKit) pane.getEditorKit();
+		final StyleSheet styleSheet = htmlEditorKit.getStyleSheet();
+		styleSheet.addRule("ul {list-style-type: none;}");
 
-    final JPanel buttonsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-    buttonsPanel.add(cleanButton);
+		final JButton cleanButton = new JButton("Clean");
+		cleanButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				taskHistory.clear();
+				update();
+			}
+		});
 
-    final JScrollPane scrollPane = new JScrollPane(pane);
+		final JPanel buttonsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+		buttonsPanel.add(cleanButton);
 
-    dialog.setLayout(new GridBagLayout());
-    final EasyGBC c = new EasyGBC();
-    dialog.add(scrollPane, c.expandBoth());
-    dialog.add(buttonsPanel, c.down().expandHoriz());
+		final JScrollPane scrollPane = new JScrollPane(pane);
 
-    taskHistory.setFinishListener(new TaskHistory.FinishListener() {
-      public void taskFinished(final TaskHistory.History history) {
-        update();
-      }
-    });
+		dialog.setLayout(new GridBagLayout());
+		final EasyGBC c = new EasyGBC();
+		dialog.add(scrollPane, c.expandBoth());
+		dialog.add(buttonsPanel, c.down().expandHoriz());
 
-    update();
-    open();
-  }
+		taskHistory.setFinishListener(new TaskHistory.FinishListener() {
+			@Override
+			public void taskFinished(final TaskHistory.History history) {
+				update();
+			}
+		});
 
-  public void close() {
-    dialog.dispose();
-    isOpen = false;
-  }
+		update();
+		open();
+	}
 
-  public void open() {
-    if (!isOpen) {
-      dialog.pack();
-    }
-    dialog.setVisible(true);
-    update();
-    isOpen = true;
-  }
+	public void close() {
+		dialog.dispose();
+		isOpen = false;
+	}
 
-  private static String getIconURL(final FinishStatus.Type finishType) {
-    if (finishType == null)
-      return null;
-    String name = null;
-    switch (finishType) {
-      case SUCCEEDED: name = "finished"; break;
-      case FAILED:    name = "error"; break;
-      case CANCELLED: name = "cancelled"; break;
-    }
-    if (name == null)
-      return null;
-    return GUIDefaults.ICON_URLS.get(name).toString();
-  }
+	public void open() {
+		if (!isOpen)
+			dialog.pack();
+		
+		dialog.setVisible(true);
+		update();
+		isOpen = true;
+	}
 
-  private static String getIconURL(final TaskMonitor.Level level) {
-    if (level == null)
-      return null;
-    String name = null;
-    switch (level) {
-      case INFO:  name = "info"; break;
-      case WARN:  name = "warn"; break;
-      case ERROR: name = "error"; break;
-    }
-    if (name == null)
-      return null;
-    return GUIDefaults.ICON_URLS.get(name).toString();
-  }
+	private static String getIconURL(final FinishStatus.Type finishType) {
+		if (finishType == null)
+			return null;
+		
+		String name = null;
+		
+		switch (finishType) {
+			case SUCCEEDED:
+				name = "finished";
+				break;
+			case FAILED:
+				name = "error";
+				break;
+			case CANCELLED:
+				name = "cancelled";
+				break;
+		}
+		
+		if (name == null)
+			return null;
+		
+		return GUIDefaults.ICON_URLS.get(name).toString();
+	}
 
-  private void generateMessage(final TaskHistory.Message message, final StringBuffer buffer) {
-    final TaskMonitor.Level level = message.level();
-    final String levelIconURL = getIconURL(level);
-    if (levelIconURL != null) {
-      buffer.append("<li style=\"margin-top: 5px;\">");
-      buffer.append("<img src=\"");
-      buffer.append(levelIconURL);
-      buffer.append("\">&nbsp;");
-    } else {
-      buffer.append("<li style=\"margin-top: 10px;\">");
-      buffer.append("<b>");
-    }
-    buffer.append(message.message());
-    if (level == null) {
-      buffer.append("</b>");
-    }
-    buffer.append("</li>");
-  }
+	private static String getIconURL(final TaskMonitor.Level level) {
+		if (level == null)
+			return null;
+		
+		String name = null;
+		
+		switch (level) {
+			case INFO:
+				name = "info";
+				break;
+			case WARN:
+				name = "warn";
+				break;
+			case ERROR:
+				name = "error";
+				break;
+		}
+		
+		if (name == null)
+			return null;
+		
+		return GUIDefaults.ICON_URLS.get(name).toString();
+	}
 
-  private void generateHistory(final TaskHistory.History history, final StringBuffer buffer) {
-    if (history.getFirstTaskClass() == null) {
-      // skip task iterators that never called history.setFirstTaskClass() -- these
-      // iterators were never started because they were cancelled by its first tunable dialog
-      return;
-    }
+	private void generateMessage(final TaskHistory.Message message, final StringBuffer buffer) {
+		final TaskMonitor.Level level = message.level();
+		final String levelIconURL = getIconURL(level);
+		
+		if (levelIconURL != null) {
+			buffer.append("<li style=\"margin-top: 5px;\">");
+			buffer.append("<img src=\"");
+			buffer.append(levelIconURL);
+			buffer.append("\">&nbsp;");
+		} else {
+			buffer.append("<li style=\"margin-top: 10px;\">");
+			buffer.append("<b>");
+		}
+		
+		buffer.append(message.message());
+		
+		if (level == null)
+			buffer.append("</b>");
+		
+		buffer.append("</li>");
+	}
 
-    buffer.append("<p>");
-    buffer.append("<h1 style=\"margin-top: 0px; margin-bottom: 0px;\">&nbsp;");
+	private void generateHistory(final TaskHistory.History history, final StringBuffer buffer) {
+		if (history.getFirstTaskClass() == null) {
+			// skip task iterators that never called history.setFirstTaskClass()
+			// -- these
+			// iterators were never started because they were cancelled by its
+			// first tunable dialog
+			return;
+		}
 
-    final FinishStatus.Type finishType = history.getFinishType();
-    final String finishIconURL = getIconURL(finishType);
-    if (finishIconURL != null) {
-      buffer.append("<img src=\"");
-      buffer.append(finishIconURL);
-      buffer.append("\">&nbsp;");
-    }
+		buffer.append("<p>");
+		buffer.append("<h1 style=\"margin-top: 0px; margin-bottom: 0px;\">&nbsp;");
 
-    final String title = history.getTitle();
-    if (title == null || title.length() == 0) {
-      buffer.append("<i>Untitled</i>");
-      final Class<?> klass = history.getFirstTaskClass();
-      if (klass != null) {
-        buffer.append(" <font size=\"-1\">(");
-        buffer.append(klass.getName());
-        buffer.append(")</font>");
-      }
-    } else {
-      buffer.append(title);
-    }
-    buffer.append("</h1>");
+		final FinishStatus.Type finishType = history.getFinishType();
+		final String finishIconURL = getIconURL(finishType);
+		
+		if (finishIconURL != null) {
+			buffer.append("<img src=\"");
+			buffer.append(finishIconURL);
+			buffer.append("\">&nbsp;");
+		}
 
-    buffer.append("<ul style=\"margin-top: 0px; margin-bottom: 0px;\">");
-    for (final TaskHistory.Message message : history) {
-      generateMessage(message, buffer);
-    }
-    buffer.append("</ul>");
-    buffer.append("</p>");
-  }
+		final String title = history.getTitle();
+		
+		if (title == null || title.length() == 0) {
+			buffer.append("<i>Untitled</i>");
+			final Class<?> klass = history.getFirstTaskClass();
+			
+			if (klass != null) {
+				buffer.append(" <font size=\"-1\">(");
+				buffer.append(klass.getName());
+				buffer.append(")</font>");
+			}
+		} else {
+			buffer.append(title);
+		}
+		
+		buffer.append("</h1>");
+		buffer.append("<ul style=\"margin-top: 0px; margin-bottom: 0px;\">");
+		
+		for (final TaskHistory.Message message : history) {
+			generateMessage(message, buffer);
+		}
+		
+		buffer.append("</ul>");
+		buffer.append("</p>");
+	}
 
-  private String generateHistoryHTML() {
-    final StringBuffer buffer = new StringBuffer();
-    buffer.append("<html>");
+	private String generateHistoryHTML() {
+		final StringBuffer buffer = new StringBuffer();
+		buffer.append("<html>");
 
-    for (final Object element : taskHistory) {
-      if (element instanceof TaskHistory.History) {
-        generateHistory((TaskHistory.History) element, buffer);
-      } else if (element instanceof TaskHistory.Message) {
-        buffer.append("<ul style=\"margin-top: 0px; margin-bottom: 0px; margin-left: 0px; padding-left: 0px;\">");
-        generateMessage((TaskHistory.Message) element, buffer);
-        buffer.append("</ul>");
-      }
-    }
-    buffer.append("</html>");
-    return buffer.toString();
-  }
+		for (final Object element : taskHistory) {
+			if (element instanceof TaskHistory.History) {
+				generateHistory((TaskHistory.History) element, buffer);
+			} else if (element instanceof TaskHistory.Message) {
+				buffer.append(
+						"<ul style=\"margin-top: 0px; margin-bottom: 0px; margin-left: 0px; padding-left: 0px;\">");
+				generateMessage((TaskHistory.Message) element, buffer);
+				buffer.append("</ul>");
+			}
+		}
+		
+		buffer.append("</html>");
+		
+		return buffer.toString();
+	}
 
-  public void update() {
-    final String content = generateHistoryHTML();
+	public void update() {
+		final String content = generateHistoryHTML();
 
-    if (SwingUtilities.isEventDispatchThread()) {
-      pane.setText(content);
-    } else {
-      SwingUtilities.invokeLater(new Runnable() {
-        @Override
-        public void run() {
-          pane.setText(content);
-        }
-      });
-    }
-  }
+		if (SwingUtilities.isEventDispatchThread()) {
+			pane.setText(content);
+		} else {
+			SwingUtilities.invokeLater(new Runnable() {
+				@Override
+				public void run() {
+					pane.setText(content);
+				}
+			});
+		}
+	}
 }
