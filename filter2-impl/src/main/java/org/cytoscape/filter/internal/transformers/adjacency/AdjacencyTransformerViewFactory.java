@@ -18,10 +18,11 @@ import org.cytoscape.filter.internal.transformers.adjacency.AdjacencyTransformer
 import org.cytoscape.filter.internal.transformers.adjacency.AdjacencyTransformer.EdgesAre;
 import org.cytoscape.filter.internal.transformers.adjacency.AdjacencyTransformer.What;
 import org.cytoscape.filter.internal.view.ComboItem;
+import org.cytoscape.filter.internal.view.CompositeFilterLayoutUpdator;
+import org.cytoscape.filter.internal.view.CompositeFilterLayoutUpdator.LayoutUpdatable;
 import org.cytoscape.filter.internal.view.ViewUtil;
 import org.cytoscape.filter.internal.view.look.FilterPanelStyle;
 import org.cytoscape.filter.model.Transformer;
-import org.cytoscape.filter.model.TransformerListener;
 import org.cytoscape.filter.transformers.Transformers;
 import org.cytoscape.filter.view.TransformerViewFactory;
 import org.cytoscape.util.swing.IconManager;
@@ -52,34 +53,13 @@ public class AdjacencyTransformerViewFactory implements TransformerViewFactory {
 	public JComponent createView(Transformer<?, ?> transformer) {
 		AdjacencyTransformer model = (AdjacencyTransformer)transformer;
 		View view = new View(model);
-		model.addListener(new UpdateLayoutListener(view, model));
+		model.addListener(new CompositeFilterLayoutUpdator(view, model.getCompositeFilter()));
 		return view;
 	}
 
 	
-	class UpdateLayoutListener implements TransformerListener {
-		private final AdjacencyTransformer model;
-		private final View view;
-		private int savedCount;
-		
-		public UpdateLayoutListener(View view, AdjacencyTransformer model) {
-			this.view = view;
-			this.model = model;
-			this.savedCount = model.getFilterCount();
-		}
-		
-		@Override
-		public synchronized void handleSettingsChanged() {
-			if(savedCount != model.getFilterCount()) {
-				view.updateLayout();
-			}
-			savedCount = model.getFilterCount();
-		}
-	}
-	
-	
 	@SuppressWarnings("serial")
-	class View extends JPanel {
+	class View extends JPanel implements LayoutUpdatable {
 		private final AdjacencyTransformer model;
 		
 		private GroupLayout layout;
@@ -190,7 +170,7 @@ public class AdjacencyTransformerViewFactory implements TransformerViewFactory {
 			updateLayout();
 		}
 		
-		
+		@Override
 		public void updateLayout() {
 			removeAll();
 			

@@ -1,24 +1,60 @@
 package org.cytoscape.filter.internal.transformers.interaction;
 
+import org.cytoscape.filter.internal.filters.composite.CompositeFilterImpl;
 import org.cytoscape.filter.model.AbstractTransformer;
+import org.cytoscape.filter.model.CompositeFilter;
 import org.cytoscape.filter.model.ElementTransformer;
+import org.cytoscape.filter.model.SubFilterTransformer;
 import org.cytoscape.filter.model.TransformerSink;
 import org.cytoscape.filter.transformers.Transformers;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNode;
 import org.cytoscape.work.Tunable;
 
-public class InteractionTransformer extends AbstractTransformer<CyNetwork, CyIdentifiable> implements ElementTransformer<CyNetwork, CyIdentifiable> {
-	@Tunable()
+public class InteractionTransformer extends AbstractTransformer<CyNetwork, CyIdentifiable> 
+									implements ElementTransformer<CyNetwork, CyIdentifiable>,
+											   SubFilterTransformer<CyNetwork,CyIdentifiable> {
+	
+	public static enum Action {
+		ADD, REPLACE
+	}
+
+	// Internally use a compositeFilter to store child filters
+	private final CompositeFilter<CyNetwork,CyIdentifiable> nodeFilter;
+	
+	@Tunable
 	public boolean selectSource;
 	
-	@Tunable()
+	@Tunable
 	public boolean selectTarget;
+	
+	private Action action = Action.ADD;
+		
+	
+	public InteractionTransformer() {
+		nodeFilter = new CompositeFilterImpl<>(CyNetwork.class,CyIdentifiable.class);
+		nodeFilter.setType(CompositeFilter.Type.ALL); // ALL accepts if empty
+		nodeFilter.addListener(this::notifyListeners);
+		selectSource = true;
+		selectTarget = true;
+	}
+	
+	@Tunable
+	public Action getAction() {
+		return action;
+	}
 
+	public void setAction(Action action) {
+		this.action = action;
+		notifyListeners();
+	}
+	
+	
 	@Override
 	public String getName() {
-		return "Interaction Transformer";
+		return "Edge Interaction Transformer";
 	}
 
 	@Override
@@ -37,19 +73,35 @@ public class InteractionTransformer extends AbstractTransformer<CyNetwork, CyIde
 	}
 
 	@Override
-	public void apply(CyNetwork context, CyIdentifiable element, TransformerSink<CyIdentifiable> sink) {
-		sink.collect(element);
+	public void apply(CyNetwork network, CyIdentifiable element, TransformerSink<CyIdentifiable> sink) {
+		if(action == Action.ADD)
+			sink.collect(element);
 		
-		if (!(element instanceof CyEdge)) {
-			return;
+		if(element instanceof CyEdge) {
+			CyEdge edge = (CyEdge) element;
+
+			if(selectSource) {
+				CyNode source = edge.getSource();
+				if(nodeFilter.accepts(network, source)) {
+					sink.collect(source);
+				}
+			}
+			
+			if(selectTarget) {
+				CyNode target = edge.getTarget();
+				if(nodeFilter.accepts(network, target)) {
+					sink.collect(target);
+				}
+			}
 		}
-		
-		CyEdge edge = (CyEdge) element;
-		if (selectSource) {
-			sink.collect(edge.getSource());
-		}
-		if (selectTarget) {
-			sink.collect(edge.getTarget());
-		}
+	}
+
+	@Override
+	public CompositeFilter<CyNetwork, CyIdentifiable> getCompositeFilter() {
+		return nodeFilter;
+	}
+	
+	public boolean hasSubfilters() {
+		return nodeFilter.getLength() > 0;
 	}
 }

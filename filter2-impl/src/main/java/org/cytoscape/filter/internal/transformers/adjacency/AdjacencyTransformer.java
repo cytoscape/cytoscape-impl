@@ -5,7 +5,6 @@ import org.cytoscape.filter.model.AbstractTransformer;
 import org.cytoscape.filter.model.CompositeFilter;
 import org.cytoscape.filter.model.ElementTransformer;
 import org.cytoscape.filter.model.SubFilterTransformer;
-import org.cytoscape.filter.model.TransformerListener;
 import org.cytoscape.filter.model.TransformerSink;
 import org.cytoscape.filter.transformers.Transformers;
 import org.cytoscape.model.CyEdge;
@@ -54,11 +53,7 @@ public class AdjacencyTransformer extends AbstractTransformer<CyNetwork,CyIdenti
 	public AdjacencyTransformer() {
 		adjacentElementFilter = new CompositeFilterImpl<>(CyNetwork.class,CyIdentifiable.class);
 		adjacentElementFilter.setType(CompositeFilter.Type.ALL); // ALL accepts if empty
-		adjacentElementFilter.addListener(new TransformerListener() {
-			public void handleSettingsChanged() {
-				notifyListeners();
-			}
-		});
+		adjacentElementFilter.addListener(this::notifyListeners);
 	}
 	
 	@Override
@@ -72,7 +67,7 @@ public class AdjacencyTransformer extends AbstractTransformer<CyNetwork,CyIdenti
 	
 	@Override
 	public String getName() {
-		return "Adjacency Transformer";
+		return "Node Adjacency Transformer";
 	}
 
 	@Override

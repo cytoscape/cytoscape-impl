@@ -1,14 +1,16 @@
 package org.cytoscape.filter.internal.transformers.interaction;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-
 import javax.swing.GroupLayout;
-import javax.swing.JCheckBox;
+import javax.swing.GroupLayout.Group;
+import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
+import org.cytoscape.filter.internal.transformers.interaction.InteractionTransformer.Action;
+import org.cytoscape.filter.internal.view.ComboItem;
+import org.cytoscape.filter.internal.view.CompositeFilterLayoutUpdator;
+import org.cytoscape.filter.internal.view.CompositeFilterLayoutUpdator.LayoutUpdatable;
 import org.cytoscape.filter.internal.view.ViewUtil;
 import org.cytoscape.filter.internal.view.look.FilterPanelStyle;
 import org.cytoscape.filter.model.Transformer;
@@ -31,83 +33,115 @@ public class InteractionTransformerViewFactory implements TransformerViewFactory
 	@Override
 	public JComponent createView(Transformer<?, ?> transformer) {
 		InteractionTransformer model = (InteractionTransformer) transformer;
-		Controller controller = new Controller(model);
-		return new View(controller);
+		View view = new View(model);
+		model.addListener(new CompositeFilterLayoutUpdator(view, model.getCompositeFilter()));
+		return view;
 	}
 
-	static class Controller {
-		private InteractionTransformer model;
-
-		public Controller(InteractionTransformer model) {
-			this.model = model;
-		}
-
-		public void synchronize(View view) {
-			view.getSourceCheckBox().setSelected(model.selectSource);
-			view.getTargetCheckBox().setSelected(model.selectTarget);
-		}
-	}
+	
 	
 	@SuppressWarnings("serial")
-	class View extends JPanel {
-		private JCheckBox sourceCheckBox;
-		private JCheckBox targetCheckBox;
-
-		JCheckBox getSourceCheckBox() {
-			return sourceCheckBox;
-		}
+	class View extends JPanel implements LayoutUpdatable {
 		
-		JCheckBox getTargetCheckBox() {
-			return targetCheckBox;
-		}
+		private final InteractionTransformer model;
 		
-		public View(final Controller controller) {
+		private GroupLayout layout;
+		
+		private JLabel label1, label2;
+		private JComboBox<ComboItem<Action>> actionCombo;
+		private JComboBox<ComboItem<Runnable>> selectCombo;
+		
+		
+		public View(InteractionTransformer model) {
+			this.model = model;
 			ViewUtil.configureFilterView(this);
 			
-			JLabel label1 = style.createLabel("Add");
-			sourceCheckBox = style.createCheckBox("source");
-			sourceCheckBox.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent event) {
-					controller.model.selectSource = sourceCheckBox.isSelected();
-				}
-			});
-			sourceCheckBox.setOpaque(false);
+			label1 = style.createLabel("Take edges and");
 			
-			JLabel label2 = style.createLabel("and/or");
-			targetCheckBox = style.createCheckBox("target");
-			targetCheckBox.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent event) {
-					controller.model.selectTarget = targetCheckBox.isSelected();
-				}
-			});
-			targetCheckBox.setOpaque(false);
+			actionCombo = style.createCombo();
+			actionCombo.addItem(new ComboItem<>(Action.ADD, "add"));
+			actionCombo.addItem(new ComboItem<>(Action.REPLACE, "replace with"));
 			
-			JLabel label3 = style.createLabel("nodes from upstream edges.");
+			selectCombo = style.createCombo();
+			selectCombo.addItem(new ComboItem<>(this::selectSourceAndTarget, "source and target nodes"));
+			selectCombo.addItem(new ComboItem<>(this::selectSource, "source nodes"));
+			selectCombo.addItem(new ComboItem<>(this::selectTarget, "target nodes"));
 			
-			GroupLayout layout = new GroupLayout(this);
-			layout.setHorizontalGroup(layout.createParallelGroup()
-				.addGroup(layout.createSequentialGroup()
-					.addComponent(label1)
-					.addComponent(sourceCheckBox)
-					.addComponent(label2)
-					.addComponent(targetCheckBox))
-				.addGroup(layout.createSequentialGroup()
-					.addComponent(label3)));
+			label2 = style.createLabel("where the nodes match the filter:");
 			
-			layout.setVerticalGroup(layout.createSequentialGroup()
-				.addGroup(layout.createBaselineGroup(false, false)
-					.addComponent(label1)
-					.addComponent(sourceCheckBox)
-					.addComponent(label2)
-					.addComponent(targetCheckBox))
-				.addGroup(layout.createBaselineGroup(false, false)
-					.addComponent(label3)));
+			// Initialize UI
+			if(model.selectSource && model.selectTarget) {
+				selectCombo.setSelectedIndex(0);
+			}
+			else if(model.selectSource) {
+				selectCombo.setSelectedIndex(1);
+			}
+			else if(model.selectTarget) {
+				selectCombo.setSelectedIndex(2);
+			}
+			else {
+				selectCombo.addItem(new ComboItem<>(this::selectNone, "---")); // don't show this unless we have to
+				selectCombo.setSelectedIndex(3);
+			}
 			
+			actionCombo.addActionListener(e -> model.setAction(actionCombo.getItemAt(actionCombo.getSelectedIndex()).getValue()));
+			selectCombo.addActionListener(e -> selectCombo.getItemAt(selectCombo.getSelectedIndex()).getValue().run());
+			
+			layout = new GroupLayout(this);
 			setLayout(layout);
+			updateLayout();
+		}
+		
+		
+		private void selectSource() {
+			model.selectSource = true;
+			model.selectTarget = false;
+		}
+		
+		private void selectTarget() {
+			model.selectSource = false;
+			model.selectTarget = true;
+		}
+		
+		private void selectSourceAndTarget() {
+			model.selectSource = true;
+			model.selectTarget = true;
+		}
+		
+		private void selectNone() {
+			model.selectSource = false;
+			model.selectTarget = false;
+		}
+		
+		
+		@Override
+		public void updateLayout() {
+			Group horizontalGroup =
+				layout.createParallelGroup()
+					.addGroup(layout.createSequentialGroup()
+						.addComponent(label1)
+						.addComponent(actionCombo)
+						.addComponent(selectCombo));
 			
-			controller.synchronize(this);
+			Group verticalGroup =
+				layout.createSequentialGroup()
+					.addGroup(layout.createBaselineGroup(false, false)
+						.addComponent(label1)
+						.addComponent(actionCombo)
+						.addComponent(selectCombo));
+
+			if(model.hasSubfilters()) {
+				horizontalGroup
+					.addGroup(layout.createSequentialGroup()
+							.addComponent(label2));
+				
+				verticalGroup
+					.addGroup(layout.createBaselineGroup(false, false)
+						.addComponent(label2));
+			}
+			
+			layout.setHorizontalGroup(horizontalGroup);
+			layout.setVerticalGroup(verticalGroup);
 		}
 	}
 }

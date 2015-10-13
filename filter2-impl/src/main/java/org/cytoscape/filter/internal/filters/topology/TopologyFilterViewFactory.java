@@ -16,10 +16,11 @@ import javax.swing.JTextField;
 
 import org.cytoscape.filter.internal.view.BooleanComboBox;
 import org.cytoscape.filter.internal.view.BooleanComboBox.StateChangeListener;
+import org.cytoscape.filter.internal.view.CompositeFilterLayoutUpdator;
+import org.cytoscape.filter.internal.view.CompositeFilterLayoutUpdator.LayoutUpdatable;
 import org.cytoscape.filter.internal.view.ViewUtil;
 import org.cytoscape.filter.internal.view.look.FilterPanelStyle;
 import org.cytoscape.filter.model.Transformer;
-import org.cytoscape.filter.model.TransformerListener;
 import org.cytoscape.filter.predicates.Predicate;
 import org.cytoscape.filter.transformers.Transformers;
 import org.cytoscape.filter.view.TransformerViewFactory;
@@ -49,31 +50,11 @@ public class TopologyFilterViewFactory implements TransformerViewFactory {
 		TopologyFilter filter = (TopologyFilter) transformer;
 		Controller controller = new Controller(filter);
 		View view = new View(controller);
-		filter.addListener(new UpdateLayoutListener(view, filter));
+		filter.addListener(new CompositeFilterLayoutUpdator(view, filter));
 		return view;
 	}
 	
 	
-	class UpdateLayoutListener implements TransformerListener {
-		private final TopologyFilter model;
-		private final View view;
-		private int savedLength;
-		
-		public UpdateLayoutListener(View view, TopologyFilter model) {
-			this.view = view;
-			this.model = model;
-			this.savedLength = model.getLength();
-		}
-		
-		@Override
-		public synchronized void handleSettingsChanged() {
-			if(savedLength != model.getLength()) {
-				view.updateLayout();
-			}
-			savedLength = model.getLength();
-		}
-	}
-
 	class Controller implements TopologyFilterController {
 		private final TopologyFilter model;
 		
@@ -113,7 +94,7 @@ public class TopologyFilterViewFactory implements TransformerViewFactory {
 	}
 	
 	@SuppressWarnings("serial")
-	class View extends JPanel implements TopologyFilterView {
+	class View extends JPanel implements TopologyFilterView, LayoutUpdatable {
 		private JFormattedTextField thresholdField;
 		private JFormattedTextField distanceField;
 
@@ -175,6 +156,7 @@ public class TopologyFilterViewFactory implements TransformerViewFactory {
 			controller.synchronize(this);
 		}
 		
+		@Override
 		public void updateLayout() {
 			ParallelGroup horizontalGroup = 
 				layout.createParallelGroup()
