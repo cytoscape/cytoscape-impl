@@ -44,6 +44,7 @@ public class YValueLegendPanel extends JPanel {
 	
 	private final static long serialVersionUID = 1202339877453677L;
 	
+	private final int xOffset = LookAndFeelUtil.isWinLAF() ? 20 : 5;
 	private VisualProperty<?> type;
 
 	public YValueLegendPanel(VisualProperty<?> type) {
@@ -55,14 +56,12 @@ public class YValueLegendPanel extends JPanel {
 		clear(g);
 		Graphics2D g2d = (Graphics2D) g;
 
-		//this.setPreferredSize(new Dimension(strW + 6, 1));
 		int panelHeight = this.getHeight() - 30;
 
 		Polygon poly = new Polygon();
 		int top = 10;
 
 		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
 		g2d.setStroke(new BasicStroke(1.0f));
 
 		int center = (this.getWidth() / 2) + 4;
@@ -72,8 +71,9 @@ public class YValueLegendPanel extends JPanel {
 		poly.addPoint(center, top + 15);
 		g.fillPolygon(poly);
 
-		g2d.drawLine(center, top, center, panelHeight);
 		g2d.setColor(UIManager.getColor("Label.disabledForeground"));
+		g2d.drawLine(center, top, center, panelHeight);
+		
 		g2d.setFont(UIManager.getFont("Label.font").deriveFont(Font.BOLD, LookAndFeelUtil.getSmallFontSize()));
 
 		final String label = type.getDisplayName();
@@ -83,7 +83,7 @@ public class YValueLegendPanel extends JPanel {
 		g2d.setTransform(af);
 
 		g2d.setColor(UIManager.getColor("Label.foreground"));
-		g2d.drawString(type.getDisplayName(), (-this.getHeight() / 2) - (width / 2), (this.getWidth() / 2) + 5);
+		g2d.drawString(type.getDisplayName(), (-this.getHeight() / 2) - (width / 2), (this.getWidth() / 2) + xOffset);
 	}
 
 	// super.paintComponent clears offscreen pixmap,

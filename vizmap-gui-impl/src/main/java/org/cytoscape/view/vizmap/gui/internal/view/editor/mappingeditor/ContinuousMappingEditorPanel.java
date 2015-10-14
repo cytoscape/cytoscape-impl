@@ -274,7 +274,7 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 			layout.setAutoCreateContainerGaps(true);
 			layout.setAutoCreateGaps(true);
 
-			layout.setHorizontalGroup(layout.createParallelGroup(Alignment.LEADING)
+			layout.setHorizontalGroup(layout.createParallelGroup(Alignment.LEADING, true)
 					.addComponent(getEditorPanel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 					.addComponent(getFormPanel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 			);
@@ -322,38 +322,50 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 			formPanel = new JPanel();
 			formPanel.setBorder(LookAndFeelUtil.createTitledBorder("Edit Handle Positions and Values"));
 			
+			final JLabel infoLabel = new JLabel("Double-click on icon to change " + type.getDisplayName());
+			infoLabel.setFont(infoLabel.getFont().deriveFont(LookAndFeelUtil.getSmallFontSize()));
+			
+			if (Number.class.isAssignableFrom(vpValueType) || Paint.class.isAssignableFrom(vpValueType))
+				infoLabel.setVisible(false);
+			
 			final GroupLayout layout = new GroupLayout(formPanel);
 			formPanel.setLayout(layout);
 			layout.setAutoCreateContainerGaps(true);
 			layout.setAutoCreateGaps(true);
 			
-			layout.setHorizontalGroup(layout.createParallelGroup(Alignment.LEADING)
+			layout.setHorizontalGroup(layout.createParallelGroup(Alignment.CENTER, true)
 					.addGroup(layout.createSequentialGroup()
-							.addComponent(handlePositionSpinnerLabel)
-							.addComponent(getValueSpinner())
-							.addGap(10, 20, Short.MAX_VALUE)
-							.addComponent(getMinMaxButton())
-							.addGap(10, 20, Short.MAX_VALUE)
-							.addComponent(getAddButton())
-							.addComponent(getDeleteButton())
+							.addGroup(layout.createParallelGroup(Alignment.TRAILING, true)
+									.addComponent(handlePositionSpinnerLabel)
+									.addComponent(getPropertyLabel())
+							)
+							.addGroup(layout.createParallelGroup(Alignment.LEADING, false)
+									.addGroup(layout.createSequentialGroup()
+											.addComponent(getValueSpinner())
+											.addGap(10, 20, Short.MAX_VALUE)
+											.addComponent(getMinMaxButton())
+											.addGap(10, 20, Short.MAX_VALUE)
+											.addComponent(getAddButton())
+											.addComponent(getDeleteButton())
+									)
+									.addComponent(getPropertyComponent())
+							)
 					)
-					.addGroup(layout.createSequentialGroup()
-							.addComponent(getPropertyLabel())
-							.addComponent(getPropertyComponent())
-					)
+					.addComponent(infoLabel)
 			);
 			layout.setVerticalGroup(layout.createSequentialGroup()
 					.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
 							.addComponent(handlePositionSpinnerLabel)
-							.addComponent(getValueSpinner())
-							.addComponent(getMinMaxButton())
-							.addComponent(getDeleteButton())
-							.addComponent(getAddButton())
+							.addComponent(getValueSpinner(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+							.addComponent(getMinMaxButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+							.addComponent(getDeleteButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+							.addComponent(getAddButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					)
 					.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
 							.addComponent(getPropertyLabel())
-							.addComponent(getPropertyComponent())
+							.addComponent(getPropertyComponent(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					)
+					.addComponent(infoLabel)
 			);
 		}
 		
@@ -403,8 +415,7 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 				propertyLabel.setText(type.getDisplayName() + ":");
 				propertyLabel.setLabelFor(getPropertyComponent());
 			} else {
-				propertyLabel.setText("Double-click on icon to change " + type.getDisplayName());
-				propertyLabel.setFont(propertyLabel.getFont().deriveFont(LookAndFeelUtil.getSmallFontSize()));
+				propertyLabel.setVisible(false);
 			}
 		}
 		
@@ -420,6 +431,7 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 				propertyComponent = getColorButton();
 			} else {
 				propertyComponent = new JLabel();
+				propertyComponent.setVisible(false);
 			}
 		}
 
@@ -467,6 +479,7 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 		if (deleteButton == null) {
 			deleteButton = new JButton("Delete");
 			deleteButton.addActionListener(new ActionListener() {
+				@Override
 				public void actionPerformed(ActionEvent evt) {
 					deleteButtonActionPerformed(evt);
 				}
@@ -480,6 +493,7 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 		if (minMaxButton == null) {
 			minMaxButton = new JButton("Set Min and Max...");
 			minMaxButton.addActionListener(new ActionListener() {
+				@Override
 				public void actionPerformed(ActionEvent evt) {
 					minMaxButtonActionPerformed(evt);
 				}
