@@ -572,22 +572,40 @@ public class CyActivator extends AbstractCyActivator {
 				UIManager.put("Separator.foreground", new Color(208, 208, 208));
 				UIManager.put("Focus.color", UIManager.getColor("TextField.selectionBackground"));
 			} else if (LookAndFeelUtil.isNimbusLAF()) {
+				// Translating Nimbus default colors to more standard UIManager keys
+				// in order to make it easier for Cytoscape to reuse the LAF colors.
+				// Also fixes inconsistent colors since the latest Java 8 version.
+				// (http://docs.oracle.com/javase/tutorial/uiswing/lookandfeel/_nimbusDefaults.html)
+				UIManager.put("nimbusLightBackground", Color.WHITE);
+				
+				// Make all table rows white, like the other LAFs
 				UIManager.put("Table.background", Color.WHITE);
-				UIManager.put("Table.gridColor", Color.WHITE);
-				UIManager.put("Separator.foreground", new Color(150, 156, 165));
-				UIManager.put("TextField.inactiveForeground", new Color(135, 136, 140));
-				UIManager.put("Label.disabledForeground", new Color(135, 136, 140));
-				UIManager.put("TextField.selectionBackground", new Color(88, 147, 200));
-				UIManager.put("Focus.color", new Color(88, 147, 200));
+				UIManager.put("Table.alternateRowColor", Color.WHITE);
+				UIManager.put("Table:\"Table.cellRenderer\".background", Color.WHITE);
+				
+				UIManager.put("Table.showGrid", true);
+				UIManager.put("Table.gridColor", new Color(242, 242, 242));
+				UIManager.put("Table.disabledText", UIManager.getColor("nimbusDisabledText"));
+				UIManager.put("Table.disabledForeground", UIManager.getColor("nimbusDisabledText"));
+				
+				UIManager.put("Separator.foreground", UIManager.getColor("nimbusBorder"));
+				UIManager.put("TextField.inactiveForeground", UIManager.getColor("nimbusDisabledText"));
+				UIManager.put("Label.disabledForeground", UIManager.getColor("nimbusDisabledText"));
+				UIManager.put("Button.disabledForeground", UIManager.getColor("nimbusDisabledText"));
+				UIManager.put("Button.disabledText", UIManager.getColor("nimbusDisabledText"));
+				UIManager.put("TextField.selectionBackground", UIManager.getColor("nimbusDisabledText"));
+				UIManager.put("Focus.color", UIManager.getColor("nimbusFocus"));
 				UIManager.put(
 						"TableHeader.cellBorder", 
 						BorderFactory.createCompoundBorder(
-								BorderFactory.createMatteBorder(0, 0, 1, 1, new Color(121, 124, 131)),
+								BorderFactory.createMatteBorder(0, 0, 1, 1, UIManager.getColor("nimbusBorder")),
 								BorderFactory.createEmptyBorder(2, 4, 2, 4)
 						)
 				);
-				UIManager.put("Button.disabledForeground", UIManager.getColor("Label.disabledForeground"));
-				UIManager.put("Button.disabledText", UIManager.getColor("Label.disabledForeground"));
+				
+				// JList has ugly inconsistent selection colors in the latest Java 8 version
+				UIManager.getLookAndFeelDefaults().put("List[Selected].textBackground", new Color(57, 105, 138));
+				UIManager.getLookAndFeelDefaults().put("List[Selected].textForeground", Color.WHITE);
 			} else {
 				UIManager.put(
 						"TableHeader.cellBorder", 
