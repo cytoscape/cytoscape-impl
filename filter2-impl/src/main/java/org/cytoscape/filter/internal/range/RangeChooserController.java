@@ -22,6 +22,7 @@ public class RangeChooserController<N extends Number & Comparable<N>> {
 		SliderModel<Integer> sliderModel = new IntegerSliderModel();
 		AbstractFormatterFactory formatterFactory = ViewUtil.createIntegerFormatterFactory();
 		RangeChooserController<Integer> controller = new RangeChooserController<>(sliderModel, formatterFactory, style, listener);
+		controller.reset(0, 0, 0, 0); // make sure values aren't null
 		return controller;
 	}
 	
@@ -29,6 +30,7 @@ public class RangeChooserController<N extends Number & Comparable<N>> {
 		SliderModel<Double> sliderModel = new DoubleSliderModel();
 		AbstractFormatterFactory formatterFactory = ViewUtil.createNumberFormatterFactory();
 		RangeChooserController<Double> controller = new RangeChooserController<>(sliderModel, formatterFactory, style, listener);
+		controller.reset(0d, 0d, 0d, 0d); // make sure values aren't null
 		return controller;
 	}
 	

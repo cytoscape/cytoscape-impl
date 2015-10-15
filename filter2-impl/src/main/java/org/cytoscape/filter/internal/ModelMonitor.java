@@ -203,18 +203,18 @@ public class ModelMonitor implements SetCurrentNetworkListener,
 			ColumnFilter filter = controller.getFilter();
 			
 			Class<? extends CyIdentifiable> columnType = filter.getColumnType();
-			double[] range;
+			Number[] range;
 			String name = filter.getColumnName();
 			if (name == null) {
 				continue;
 			}
 			CyTable table;
 			if (CyNode.class.equals(columnType)) {
-				range = nodeColumnRanges.get(name);
 				table = network.getDefaultNodeTable();
+				range = getColumnRange(table, name, nodeColumnRanges);
 			} else if (CyEdge.class.equals(columnType)) {
-				range = edgeColumnRanges.get(name);
 				table = network.getDefaultEdgeTable();
+				range = getColumnRange(table, name, edgeColumnRanges);
 			} else {
 				continue;
 			}
@@ -228,9 +228,9 @@ public class ModelMonitor implements SetCurrentNetworkListener,
 				type = column.getListElementType();
 			}
 			if (Integer.class.equals(type) || Long.class.equals(type)) {
-				controller.setSliderBounds((long) range[0], (long) range[1]);
+				controller.setSliderBounds(range[0].longValue(), range[1].longValue());
 			} else {
-				controller.setSliderBounds(range[0], range[1]);
+				controller.setSliderBounds(range[0].doubleValue(), range[1].doubleValue());
 			}
 		}
 	}
