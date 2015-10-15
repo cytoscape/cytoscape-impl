@@ -295,25 +295,35 @@ public class GMLParser {
 
 	/**
 	 * This misery exists to overcome a bug in the java.io.StreamTokenizer lib.
-	 * the problem is that StreamTokenizer treats newlines as end-of-quotes,
+	 * the problem is that StreamTokenizer treats newlines as end-of-token,
 	 * which means you can't have quoted strings over multiple lines.  This,
 	 * however, violates the GML grammar.  So, since the grammar treats newlines
-	 * and spaces the same, we just turn all newlines and carriage returns
-	 * into spaces.  Fortunately for us, StreamTokenizer only calls the read() method.
+	 * and spaces the same outside of comments, we turn all newlines and carriage returns,
+	 * except for those terminating comments, into spaces.  Fortunately for us, 
+	 * StreamTokenizer only calls the read() method.
 	 */
 	private static class FilterNewlineReader extends FilterReader {
+		boolean inComment = false;
+		boolean inQuote = false;
+		
 		public FilterNewlineReader(Reader r) {
 			super(r);
 		}
 
 		public int read() throws IOException {
 			int c = super.read();
-
-			if ((c == '\n') || (c == '\r'))
-				return ' ';
-			else
-
-				return c;
+			
+			if ((c == '\n') || (c == '\r')) {
+				if(inComment == true) { // end of comment
+					inComment = false;
+				}
+				else return ' '; // whitespace
+			}
+			else if (c == '#' && !inQuote) // starting a comment
+				inComment = true;
+			else if (c == '"' && !inComment) // toggle quote
+				inQuote = !inQuote;
+			return c;
 		}
 	}
 }
