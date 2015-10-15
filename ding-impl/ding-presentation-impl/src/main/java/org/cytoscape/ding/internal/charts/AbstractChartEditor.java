@@ -1414,8 +1414,6 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 					)
 					.addComponent(sep, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 			);
-			
-			add(new JSeparator());
 		}
 		
 		protected void refresh() {
