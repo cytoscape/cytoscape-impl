@@ -531,18 +531,16 @@ public class CyActivator extends AbstractCyActivator {
 			}
 			
 			final Color TABLE_SELECTION_BG = tsb != null && !tsb.equals(Color.WHITE) ? tsb : new Color(222, 234, 252);
-			final Font TABLE_FONT = UIManager.getFont("Label.font").deriveFont(11.0f);
 			
-			UIManager.put("Table.background", UIManager.getColor("TextPane.background"));
-			UIManager.put("Table.gridColor", UIManager.getColor("Table.background"));
-			UIManager.put("Table.font", TABLE_FONT);
 			UIManager.put("Table.focusCellBackground", UIManager.getColor("Tree.selectionBackground"));
 			UIManager.put("Table.focusCellForeground", UIManager.getColor("Tree.selectionForeground"));
 			UIManager.put("Table.selectionBackground", TABLE_SELECTION_BG);
 			UIManager.put("Table.selectionForeground", UIManager.getColor("Table.foreground"));
-			UIManager.put("Tree.font", TABLE_FONT);
+			
+			final Font TABLE_FONT = UIManager.getFont("Label.font").deriveFont(11.0f);
 			
 			if (LookAndFeelUtil.isAquaLAF()) {
+				// Mac OS X + Aqua:
 				UIManager.put(
 						"TableHeader.cellBorder",
 						BorderFactory.createCompoundBorder(
@@ -557,7 +555,11 @@ public class CyActivator extends AbstractCyActivator {
 						)
 				);
 				UIManager.put("TableHeader.background", new Color(244, 244, 244));
+				UIManager.put("Table.gridColor", UIManager.getColor("Table.background"));
+				UIManager.put("Table.font", TABLE_FONT);
+				UIManager.put("Tree.font", TABLE_FONT);
 			} else if (LookAndFeelUtil.isWindows()) {
+				// Windows:
 				UIManager.put(
 						"TableHeader.cellBorder", 
 						BorderFactory.createCompoundBorder(
@@ -569,9 +571,11 @@ public class CyActivator extends AbstractCyActivator {
 						)
 				);
 				UIManager.put("TableHeader.background", UIManager.getColor("Table.background"));
+				UIManager.put("Table.gridColor", UIManager.getColor("Table.background"));
 				UIManager.put("Separator.foreground", new Color(208, 208, 208));
 				UIManager.put("Focus.color", UIManager.getColor("TextField.selectionBackground"));
 			} else if (LookAndFeelUtil.isNimbusLAF()) {
+				// Nimbus (usually Linux)
 				// Translating Nimbus default colors to more standard UIManager keys
 				// in order to make it easier for Cytoscape to reuse the LAF colors.
 				// Also fixes inconsistent colors since the latest Java 8 version.
@@ -587,14 +591,17 @@ public class CyActivator extends AbstractCyActivator {
 				UIManager.put("Table.gridColor", new Color(242, 242, 242));
 				UIManager.put("Table.disabledText", UIManager.getColor("nimbusDisabledText"));
 				UIManager.put("Table.disabledForeground", UIManager.getColor("nimbusDisabledText"));
+				UIManager.put("Table.font", TABLE_FONT);
+				UIManager.put("Tree.font", TABLE_FONT);
 				
 				UIManager.put("Separator.foreground", UIManager.getColor("nimbusBorder"));
 				UIManager.put("TextField.inactiveForeground", UIManager.getColor("nimbusDisabledText"));
+				UIManager.put("TextField.disabledForeground", UIManager.getColor("nimbusDisabledText"));
 				UIManager.put("Label.disabledForeground", UIManager.getColor("nimbusDisabledText"));
 				UIManager.put("Button.disabledForeground", UIManager.getColor("nimbusDisabledText"));
 				UIManager.put("Button.disabledText", UIManager.getColor("nimbusDisabledText"));
-				UIManager.put("TextField.selectionBackground", UIManager.getColor("nimbusDisabledText"));
 				UIManager.put("Focus.color", UIManager.getColor("nimbusFocus"));
+				UIManager.put("TextField.selectionBackground", UIManager.getColor("nimbusSelectionBackground"));
 				UIManager.put(
 						"TableHeader.cellBorder", 
 						BorderFactory.createCompoundBorder(
@@ -606,7 +613,8 @@ public class CyActivator extends AbstractCyActivator {
 				// JList has ugly inconsistent selection colors in the latest Java 8 version
 				UIManager.getLookAndFeelDefaults().put("List[Selected].textBackground", new Color(57, 105, 138));
 				UIManager.getLookAndFeelDefaults().put("List[Selected].textForeground", Color.WHITE);
-			} else {
+			} else if (UIManager.getLookAndFeel() != null && "GTK".equals(UIManager.getLookAndFeel().getID())) {
+				// GTK (usually Linux):
 				UIManager.put(
 						"TableHeader.cellBorder", 
 						BorderFactory.createCompoundBorder(
