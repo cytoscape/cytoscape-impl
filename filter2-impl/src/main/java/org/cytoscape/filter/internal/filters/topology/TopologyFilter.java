@@ -1,12 +1,16 @@
 package org.cytoscape.filter.internal.filters.topology;
 
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
 import org.cytoscape.filter.internal.filters.composite.CompositeFilterImpl;
 import org.cytoscape.filter.internal.predicates.NumericPredicateDelegate;
 import org.cytoscape.filter.internal.predicates.PredicateDelegates;
 import org.cytoscape.filter.model.AbstractTransformer;
 import org.cytoscape.filter.model.CompositeFilter;
 import org.cytoscape.filter.model.Filter;
-import org.cytoscape.filter.model.TransformerListener;
 import org.cytoscape.filter.predicates.Predicate;
 import org.cytoscape.filter.transformers.Transformers;
 import org.cytoscape.model.CyEdge;
@@ -14,8 +18,6 @@ import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.work.Tunable;
-
-import cern.colt.map.tlong.OpenLongIntHashMap;
 
 public class TopologyFilter extends AbstractTransformer<CyNetwork,CyIdentifiable> 
                             implements CompositeFilter<CyNetwork,CyIdentifiable> {
@@ -31,11 +33,7 @@ public class TopologyFilter extends AbstractTransformer<CyNetwork,CyIdentifiable
 	public TopologyFilter() {
 		neighbourFilter = new CompositeFilterImpl<>(CyNetwork.class,CyIdentifiable.class);
 		neighbourFilter.setType(CompositeFilter.Type.ALL); // ALL accepts if empty
-		neighbourFilter.addListener(new TransformerListener() {
-			public void handleSettingsChanged() {
-				notifyListeners();
-			}
-		});
+		neighbourFilter.addListener(this::notifyListeners);
 	}
 	
 	@Tunable
@@ -91,50 +89,57 @@ public class TopologyFilter extends AbstractTransformer<CyNetwork,CyIdentifiable
 
 	@Override
 	public boolean accepts(CyNetwork network, CyIdentifiable element) {
-		if (!(element instanceof CyNode)) {
+		if (!(element instanceof CyNode) || distance == null || threshold == null) {
 			return false;
 		}
 		
-		if (distance == null || threshold == null) {
-			return false;
-		}
+		Set<Long> counted  = new HashSet<>();
+		// keep track of which edges have already been traversed, and the distance value
+		Map<Long,Integer> sourceToTarget = new HashMap<>();
+		Map<Long,Integer> targetToSource = new HashMap<>();
 		
-		OpenLongIntHashMap seen = new OpenLongIntHashMap();
-		countNeighbours(network, (CyNode) element, distance, seen);
+		traverse(network, (CyNode) element, distance, counted, sourceToTarget, targetToSource);
 		
-		seen.removeKey(element.getSUID());
-		int count = seen.size();
+		counted.remove(element.getSUID());
+		int count = counted.size();
 		
 		return delegate.accepts(threshold, threshold, count);
 	}
-
-	private void countNeighbours(CyNetwork network, CyNode node, int distance, OpenLongIntHashMap seen) {
-		if (distance == 0) {
-			mark(seen, network, node);
-			return;
-		}
+	
+	
+	private void traverse(CyNetwork network, CyNode node, int distance, Set<Long> counted, Map<Long,Integer> sourceToTarget, Map<Long,Integer> targetToSource) {
+		if(neighbourFilter.accepts(network, node))
+			counted.add(node.getSUID());
 		
-		for (CyEdge edge : network.getAdjacentEdgeIterable(node, CyEdge.Type.ANY)) {
-			CyNode source = edge.getSource();
-			CyNode target = edge.getTarget();
-			if (source == node && target == node) {
-				// Self edge
-				mark(seen, network, node);
-				countNeighbours(network, node, distance - 1, seen);
-			} else if (source == node) {
-				mark(seen, network, target);
-				countNeighbours(network, target, distance - 1, seen);
-			} else {
-				mark(seen, network, source);
-				countNeighbours(network, source, distance - 1, seen);
+		if(distance == 0) 
+			return;
+		
+		for(CyEdge edge : network.getAdjacentEdgeIterable(node, CyEdge.Type.ANY)) {
+			// short circut if we've already found enough nodes
+			if(counted.size() > threshold) // 'greater than' because the start node is included in the count
+				return;
+			
+			// figure out which direction we are going along the edge
+			CyNode next = edge.getTarget();
+			Map<Long,Integer> map = sourceToTarget;
+			if(next == node) {
+				next = edge.getSource();
+				map = targetToSource;
+			}
+			
+			if(traverseEdge(edge, distance, map)) {
+				traverse(network, next, distance - 1, counted, sourceToTarget, targetToSource);
 			}
 		}
 	}
-
-	private void mark(OpenLongIntHashMap seen, CyNetwork network, CyNode node) {
-		if(neighbourFilter.accepts(network, node)) {
-			seen.put(node.getSUID(), 1);
+	
+	private boolean traverseEdge(CyEdge edge, int distance, Map<Long,Integer> edgeTraversal) {
+		Integer prevDist = edgeTraversal.get(edge.getSUID());
+		if(prevDist == null || prevDist < distance) {
+			edgeTraversal.put(edge.getSUID(), distance);
+			return true;
 		}
+		return false;
 	}
 	
 	@Override
