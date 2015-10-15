@@ -11,6 +11,7 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.work.TaskMonitor;
 
 public class FilterWorker extends AbstractWorker<FilterPanel, FilterPanelController> {
 	public FilterWorker(LazyWorkQueue queue, CyApplicationManager applicationManager) {
@@ -35,8 +36,9 @@ public class FilterWorker extends AbstractWorker<FilterPanel, FilterPanelControl
 			return;
 		}
 		
-		controller.setProgress(0, view);
-		controller.setStatus(view, null);
+		TaskMonitor monitor = controller.getTaskMonitor(view);
+		monitor.setProgress(0);
+		monitor.setStatusMessage(null);
 		int nodeCount = 0;
 		int edgeCount = 0;
 		int counter = 0;
@@ -66,7 +68,7 @@ public class FilterWorker extends AbstractWorker<FilterPanel, FilterPanelControl
 				if (row.get(CyNetwork.SELECTED, Boolean.class) != accepted) {
 					row.set(CyNetwork.SELECTED, accepted);
 				}
-				controller.setProgress(++counter / total, view);
+				monitor.setProgress(++counter / total);
 			}
 			for (CyEdge edge : edgeList) {
 				if (isCancelled) {
@@ -80,15 +82,15 @@ public class FilterWorker extends AbstractWorker<FilterPanel, FilterPanelControl
 				if (row.get(CyNetwork.SELECTED, Boolean.class) != accepted) {
 					row.set(CyNetwork.SELECTED, accepted);
 				}
-				controller.setProgress(++counter / total, view);
+				monitor.setProgress(++counter / total);
 			}
 			if (networkView != null) {
 				networkView.updateView();
 			}
 		} finally {
 			long duration = System.currentTimeMillis() - startTime;
-			controller.setProgress(1.0, view);
-			controller.setStatus(view, String.format("Selected %d %s and %d %s in %dms",
+			monitor.setProgress(1.0);
+			monitor.setStatusMessage(String.format("Selected %d %s and %d %s in %dms",
 					nodeCount,
 					nodeCount == 1 ? "node" : "nodes",
 					edgeCount,

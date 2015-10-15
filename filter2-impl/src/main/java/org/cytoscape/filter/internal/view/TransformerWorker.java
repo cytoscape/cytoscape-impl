@@ -15,6 +15,7 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.work.TaskMonitor;
 
 public class TransformerWorker extends AbstractWorker<TransformerPanel, TransformerPanelController> {
 	private TransformerManager transformerManager;
@@ -49,8 +50,10 @@ public class TransformerWorker extends AbstractWorker<TransformerPanel, Transfor
 		}
 		
 		sink.resetCounts();
-		controller.setProgress(0, view);
-		controller.setStatus(view, null);
+		TaskMonitor monitor = controller.getTaskMonitor(view);
+		
+		monitor.setProgress(-1.0); // indeterminate
+		monitor.setStatusMessage(null);
 		long startTime = System.currentTimeMillis();
 		try {
 			List<Transformer<CyNetwork, CyIdentifiable>> transformers = controller.getTransformers(view);
@@ -64,8 +67,8 @@ public class TransformerWorker extends AbstractWorker<TransformerPanel, Transfor
 			}
 		} finally {
 			long duration = System.currentTimeMillis() - startTime;
-			controller.setProgress(1.0, view);
-			controller.setStatus(view, String.format("Selected %d %s and %d %s in %dms",
+			monitor.setProgress(1.0);
+			monitor.setStatusMessage(String.format("Selected %d %s and %d %s in %dms",
 					sink.nodeCount,
 					sink.nodeCount == 1 ? "node" : "nodes",
 					sink.edgeCount,

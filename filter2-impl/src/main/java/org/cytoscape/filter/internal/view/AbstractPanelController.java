@@ -36,6 +36,7 @@ import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskManager;
+import org.cytoscape.work.TaskMonitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -282,18 +283,37 @@ public abstract class AbstractPanelController<T extends NamedElement, V extends 
 		namedElementComboBoxModel.notifyChanged(0, 0);
 	}
 	
-	public void setProgress(double progress, V panel) {
-		boolean done = progress == 1.0;
-		
-		panel.getApplyButton().setEnabled(done);
-		panel.getCancelApplyButton().setEnabled(!done);
-		
-		JProgressBar progressBar = panel.getProgressBar();
-		if (done) {
-			progressBar.setValue(0);
-		} else {
-			progressBar.setValue((int) (progress * PROGRESS_BAR_MAXIMUM));
-		}
+	public TaskMonitor getTaskMonitor(V view) {
+		return new TaskMonitor() {
+			
+			@Override
+			public void setStatusMessage(String message) {
+				view.setStatus(message);
+			}
+			
+			@Override
+			public void setProgress(double progress) {
+				JProgressBar progressBar = view.getProgressBar();
+				
+				if(progress < 0.0) {
+					progressBar.setIndeterminate(true);
+				}
+				else {
+					if(progressBar.isIndeterminate()) {
+						progressBar.setIndeterminate(false);
+					}
+					boolean done = progress == 1.0;
+					view.getApplyButton().setEnabled(done);
+					view.getCancelApplyButton().setEnabled(!done);
+					progressBar.setValue(done ? 0 : (int)(progress * PROGRESS_BAR_MAXIMUM));
+				}
+			}
+			
+			@Override
+			public void showMessage(Level level, String message) { }
+			@Override
+			public void setTitle(String title) { }
+		};
 	}
 
 	public void handleCancelApply(V view) {
@@ -317,10 +337,6 @@ public abstract class AbstractPanelController<T extends NamedElement, V extends 
 	protected void handleImport(V view) {
 		Task task = new ImportNamedTransformersTask(filterIo, (AbstractPanel) view);
 		taskManager.execute(new TaskIterator(task));
-	}
-
-	public void setStatus(V view, String message) {
-		view.setStatus(message);
 	}
 
 	public JComponent getLastHoveredComponent() {

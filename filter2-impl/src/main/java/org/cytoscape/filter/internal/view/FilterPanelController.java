@@ -103,7 +103,6 @@ public class FilterPanelController extends AbstractPanelController<FilterElement
 		this.isInteractive = isInteractive;
 		CompositeFilterPanel<FilterPanel> root = panel.getRootPanel();
 		setInteractive(isInteractive, root);
-		setProgress(1.0, panel);
 	}
 
 	@SuppressWarnings("unchecked")
