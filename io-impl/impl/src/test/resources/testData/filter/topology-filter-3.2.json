@@ -1,0 +1,26 @@
+[ {
+  "name" : "Default filter",
+  "transformers" : [ {
+    "id" : "org.cytoscape.CompositeFilter",
+    "parameters" : {
+      "type" : "ALL"
+    },
+    "transformers" : [ {
+      "id" : "org.cytoscape.TopologyFilter",
+      "parameters" : {
+        "predicate" : "GREATER_THAN_OR_EQUAL",
+        "distance" : 4,
+        "threshold" : 5
+      }
+    }, {
+      "id" : "org.cytoscape.ColumnFilter",
+      "parameters" : {
+        "predicate" : "CONTAINS",
+        "criterion" : "4",
+        "caseSensitive" : false,
+        "type" : "nodes",
+        "columnName" : "name"
+      }
+    } ]
+  } ]
+} ]

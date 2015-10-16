@@ -2,6 +2,9 @@ package org.cytoscape.io.internal.util;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -13,6 +16,8 @@ import org.cytoscape.filter.internal.filters.composite.CompositeFilterFactory;
 import org.cytoscape.filter.internal.filters.composite.CompositeFilterImpl;
 import org.cytoscape.filter.internal.filters.degree.DegreeFilter;
 import org.cytoscape.filter.internal.filters.degree.DegreeFilterFactory;
+import org.cytoscape.filter.internal.filters.topology.TopologyFilter;
+import org.cytoscape.filter.internal.filters.topology.TopologyFilterFactory;
 import org.cytoscape.filter.internal.transformers.adjacency.AdjacencyTransformer;
 import org.cytoscape.filter.internal.transformers.adjacency.AdjacencyTransformer.Action;
 import org.cytoscape.filter.internal.transformers.adjacency.AdjacencyTransformer.EdgesAre;
@@ -141,7 +146,7 @@ public class FilterIOTest {
 		CyTransformerWriter writer = new CyTransformerWriterImpl();
 		ByteArrayOutputStream stream = new ByteArrayOutputStream();
 		writer.write(stream, FilterIO.createNamedTransformer("transformer1", adjacency));
-		String serialized = stream.toString("utf-8");
+		//String serialized = stream.toString("utf-8");
 		
 		TransformerManagerImpl transformerManager = new TransformerManagerImpl();
 		Map<String, String> properties = Collections.emptyMap();
@@ -184,6 +189,60 @@ public class FilterIOTest {
 		Assert.assertEquals(columnFilter.getPredicate(), columnFilter2.getPredicate());
 		Assert.assertEquals(columnFilter.getCriterion(), columnFilter2.getCriterion());
 	}
+	
+	/**
+	 * The topology filter was made a composite filter in 3.3. Older versions of cytoscape
+	 * will export a topology filter without the "transformers" field that is part of 
+	 * composite filters. The filter json parser was enhanced to support this.
+	 */
+	@SuppressWarnings("rawtypes")
+	@Test
+	public void testLoadOldTopologyFilter() throws IOException {
+		TransformerManagerImpl transformerManager = new TransformerManagerImpl();
+		Map<String, String> properties = Collections.emptyMap();
+		transformerManager.registerFilterFactory(new CompositeFilterFactory<CyNetwork, CyIdentifiable>(CyNetwork.class, CyIdentifiable.class), properties);
+		transformerManager.registerFilterFactory(new TopologyFilterFactory(), properties);
+		transformerManager.registerFilterFactory(new ColumnFilterFactory(), properties);
+		
+		String path = "./src/test/resources/testData/filter/topology-filter-3.2.json";
+		byte[] encoded = Files.readAllBytes(Paths.get(path));
+		//String contents = new String(encoded);
+		//System.out.println(contents);
+		
+		CyTransformerReaderImpl reader = new CyTransformerReaderImpl();
+		reader.registerTransformerManager(transformerManager, null);
+		
+		ByteArrayInputStream inputStream = new ByteArrayInputStream(encoded);
+		NamedTransformer<?, ?>[] transformers = reader.read(inputStream);
+		
+		Assert.assertNotNull(transformers);
+		Assert.assertEquals(1, transformers.length);
+		
+		NamedTransformer<?, ?> namedTransformer = transformers[0];
+		Assert.assertNotNull(namedTransformer);
+		Assert.assertEquals("Default filter", namedTransformer.getName());
+		
+		List children = namedTransformer.getTransformers();
+		Assert.assertEquals(1, children.size());
+		
+		Transformer child = (Transformer) children.get(0);
+		Assert.assertNotNull(child);
+		Assert.assertTrue(child instanceof CompositeFilter);
+		
+		CompositeFilter composite = (CompositeFilter) child;
+		Assert.assertEquals(2, composite.getLength());
+		Assert.assertTrue(composite.get(0) instanceof TopologyFilter);
+		Assert.assertTrue(composite.get(1) instanceof ColumnFilter);
+		
+		TopologyFilter topology = (TopologyFilter) composite.get(0);
+		Assert.assertEquals(0, topology.getLength());
+		Assert.assertEquals(Integer.valueOf(4), topology.getDistance());
+		Assert.assertEquals(Integer.valueOf(5), topology.getThreshold());
+		
+		ColumnFilter column = (ColumnFilter) composite.get(1);
+		Assert.assertEquals("name", column.getColumnName());
+	}
+	
 	
 	public static class DummyFilter extends AbstractTransformer<Object, Object> implements Filter<Object, Object> {
 		@Tunable
