@@ -105,9 +105,9 @@ public class NetworkLineParser extends AbstractLineParser {
 		}
 
 		final CyEdge edge = network.addEdge(source, target, true);
-		network.getRow(edge).set("interaction", interaction);
-		String edgeName = network.getRow(source).get("name", String.class)+ " ("+interaction+") "+ network.getRow(target).get("name", String.class);
-		network.getRow(edge).set("name", edgeName);
+		network.getRow(edge).set(CyEdge.INTERACTION, interaction);
+		String edgeName = network.getRow(source).get(CyNetwork.NAME, String.class)+ " ("+interaction+") "+ network.getRow(target).get(CyNetwork.NAME, String.class);
+		network.getRow(edge).set(CyNetwork.NAME, edgeName);
 
 		edgeList.add(edge.getSUID());
 

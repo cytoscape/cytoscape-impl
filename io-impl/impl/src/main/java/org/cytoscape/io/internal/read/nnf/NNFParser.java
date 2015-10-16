@@ -226,7 +226,7 @@ public class NNFParser {
 			}
 
 			CyEdge newEdge = network.addEdge(source, target, true);
-			network.getRow(newEdge).set("interaction", parts[2]);
+			network.getRow(newEdge).set(CyEdge.INTERACTION, parts[2]);
 			network.getRow(newEdge).set(CyNetwork.NAME, parts[1]+ " ("+parts[2]+") "+parts[3]);
 
 		} else {
