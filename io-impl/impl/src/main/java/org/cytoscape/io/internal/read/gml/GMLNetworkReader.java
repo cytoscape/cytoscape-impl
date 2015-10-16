@@ -119,7 +119,7 @@ public class GMLNetworkReader extends AbstractCyNetworkReader {
 	private static String ARROW_LAST = "last";
 
 	private static String OUTLINE_WIDTH = "outline_width";
-	private static String DEFAULT_EDGE_INTERACTION = "pp";
+	private static String DEFAULT_EDGE_INTERACTION = "interacts with";
 
 	private static final String VIZMAP_PREFIX = "vizmap:";
 

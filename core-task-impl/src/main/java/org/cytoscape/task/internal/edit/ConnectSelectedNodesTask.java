@@ -44,8 +44,7 @@ import org.cytoscape.work.undo.UndoSupport;
 
 public class ConnectSelectedNodesTask extends AbstractTask {
 
-	// TODO: is it sufficient to create undirected edge only?
-	static final String INTERACTION = "undirected";
+	static final String DEFAULT_INTERACTION = "interacts with";
 
 	private final UndoSupport undoSupport;
 	private final CyNetwork network;
@@ -91,11 +90,11 @@ public class ConnectSelectedNodesTask extends AbstractTask {
 						// connect it
 						final CyEdge newEdge = network.addEdge(source, target, false);
 						newEdges.add(newEdge);
-						String name = network.getRow(source).get(CyNetwork.NAME, String.class) + " (" + INTERACTION + ") "
+						String name = network.getRow(source).get(CyNetwork.NAME, String.class) + " (" + DEFAULT_INTERACTION + ") "
 										+ network.getRow(target).get(CyNetwork.NAME, String.class);
 						network.getRow(newEdge).set(CyNetwork.NAME, name);
 						// System.out.println("Added edge "+name);
-						network.getRow(newEdge).set(CyEdge.INTERACTION, INTERACTION);
+						network.getRow(newEdge).set(CyEdge.INTERACTION, DEFAULT_INTERACTION);
 					}
 				}
 			}

@@ -149,11 +149,6 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 	
 	private static final Logger logger = LoggerFactory.getLogger(ImportTablePanel.class);
 
-	/*
-	 * Default value for Interaction edge attribute.
-	 */
-	private static final String DEFAULT_INTERACTION = "pp";
-
 	private static final String ID = CyNetwork.NAME;
 
 	private JDialog advancedDialog;
@@ -525,7 +520,7 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 		commentLineTextField.setToolTipText("<html>Lines start with this string will be ignored. <br>"
 				+ "(Click on the <strong><i>Refresh Preview</i></strong> button to refresh preview.)</html>");
 
-		defaultInteractionTextField.setText(DEFAULT_INTERACTION);
+		defaultInteractionTextField.setText(TypeUtil.DEFAULT_INTERACTION);
 		defaultInteractionTextField.setToolTipText("<html>If <font color=\"red\"><i>Default Interaction</i></font>"
 				+ " is selected, this value will be used for <i>Interaction Type</i>.<br></html>");
 

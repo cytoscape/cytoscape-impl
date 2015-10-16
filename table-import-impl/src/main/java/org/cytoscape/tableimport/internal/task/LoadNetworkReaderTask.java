@@ -86,8 +86,6 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 	private File tempFile;
 	private TaskMonitor taskMonitor;
 	
-	private static final String DEF_INTERACTION = "pp";
-	
 	@Tunable(description="Text Delimiters:", context="both")
 	public ListMultipleSelection<String> delimiters;
 	
@@ -110,7 +108,7 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 	public int indexColumnTypeInteraction = -1;
 	
 	@Tunable(description="Default interaction type:", context="both")
-	public String defaultInteraction = DEF_INTERACTION;
+	public String defaultInteraction = TypeUtil.DEFAULT_INTERACTION;
 	
 	@Tunable(description="List of column data types ordered by column index (e.g. \"string,int,long,double,boolean,intlist\" or just \"s,i,l,d,b,il\"):", context="nongui")
 	public String dataTypeList;

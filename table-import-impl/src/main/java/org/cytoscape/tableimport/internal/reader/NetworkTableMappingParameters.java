@@ -29,13 +29,12 @@ import java.util.List;
 
 import org.cytoscape.tableimport.internal.util.AttributeDataType;
 import org.cytoscape.tableimport.internal.util.SourceColumnSemantic;
+import org.cytoscape.tableimport.internal.util.TypeUtil;
 
 /**
  * Text table <---> CyAttribute & CyNetwork mapping parameters for network table.
  */
 public class NetworkTableMappingParameters extends AbstractMappingParameters {
-	
-	private static final String DEF_INTERACTION = "pp";
 	
 	private final Integer source;
 	private final Integer target;
@@ -88,6 +87,6 @@ public class NetworkTableMappingParameters extends AbstractMappingParameters {
 	}
 
 	public String getDefaultInteraction() {
-		return defInteraction == null ? DEF_INTERACTION : defInteraction;
+		return defInteraction == null ? TypeUtil.DEFAULT_INTERACTION : defInteraction;
 	}
 }

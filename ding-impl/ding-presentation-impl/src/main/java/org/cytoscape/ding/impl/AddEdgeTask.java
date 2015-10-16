@@ -80,7 +80,7 @@ public class AddEdgeTask extends AbstractNodeViewTask {
 			CyNode targetNode = nodeView.getModel();
 
 			final CyEdge newEdge = net.addEdge(sourceNode, targetNode, true);
-			final String interaction = "interaction";
+			final String interaction = "interacts with";
 			String edgeName = net.getRow(sourceNode).get(CyRootNetwork.SHARED_NAME, String.class);
 			edgeName += " (" + interaction + ") ";
 			edgeName += net.getRow(targetNode).get(CyRootNetwork.SHARED_NAME, String.class);

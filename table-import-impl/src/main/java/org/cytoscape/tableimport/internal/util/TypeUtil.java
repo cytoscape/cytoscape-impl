@@ -60,6 +60,11 @@ import javax.swing.table.TableModel;
  */
 public final class TypeUtil {
 
+	/**
+	 * Default value for Interaction edge attribute.
+	 */
+	public static final String DEFAULT_INTERACTION = "interacts with";
+	
 	private static final List<SourceColumnSemantic> TABLE_IMPORT_TYPES = Arrays.asList(
 			NONE, KEY, ATTR
 	);

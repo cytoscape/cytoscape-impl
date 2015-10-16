@@ -292,9 +292,9 @@ public class GMLNetworkReaderTest extends AbstractNetworkReaderTest {
 		final CyNetwork net = networks[0];
 		assertEquals(3, net.getEdgeCount());
 		
-		CyEdge e1 = getEdgeByName(net, "1 (pp) 2");
-		CyEdge e2 = getEdgeByName(net, "1 (pp) 3");
-		CyEdge e3 = getEdgeByName(net, "2 (pp) 3");
+		CyEdge e1 = getEdgeByName(net, "1 (interacts with) 2");
+		CyEdge e2 = getEdgeByName(net, "1 (interacts with) 3");
+		CyEdge e3 = getEdgeByName(net, "2 (interacts with) 3");
 		
 		assertFalse(e1.isDirected());
 		assertTrue(e2.isDirected());
@@ -309,9 +309,9 @@ public class GMLNetworkReaderTest extends AbstractNetworkReaderTest {
 		final CyNetwork net = networks[0];
 		assertEquals(3, net.getEdgeCount());
 		
-		CyEdge e1 = getEdgeByName(net, "1 (pp) 2");
-		CyEdge e2 = getEdgeByName(net, "1 (pp) 3");
-		CyEdge e3 = getEdgeByName(net, "2 (pp) 3");
+		CyEdge e1 = getEdgeByName(net, "1 (interacts with) 2");
+		CyEdge e2 = getEdgeByName(net, "1 (interacts with) 3");
+		CyEdge e3 = getEdgeByName(net, "2 (interacts with) 3");
 		
 		assertFalse(e1.isDirected());
 		assertTrue(e2.isDirected());
