@@ -354,13 +354,13 @@ public class JDialogTaskManager extends AbstractTaskManager<JDialog,Window> impl
 			try {
 				finishStatus = innerRun();
 				taskMonitor.close();
+				taskStatusBar.setTitle(finishStatus.getType(), taskMonitor.getFirstTitle());
 			} catch (Exception exception) {
 				finishStatus = FinishStatus.newFailed(task, exception);
 				logger.warn("Caught exception executing task. ", exception);
 				taskMonitor.showException(exception);
 				history.addMessage(TaskMonitor.Level.ERROR, exception.getMessage());
 			} finally {
-				taskStatusBar.setTitle(finishStatus.getType(), taskMonitor.getFirstTitle());
 				history.setFinishType(finishStatus.getType());
 				if (observer != null)
 					observer.allFinished(finishStatus);
