@@ -60,4 +60,24 @@ public class CyCL
 		
 		return true;
 	}
+	
+	public static void makePreferred(String name)
+	{
+		if (devices == null)
+			return;
+		
+		CyCLDevice newPreferred = null;
+		for (CyCLDevice device : devices)
+			if (device.name.equals(name))
+			{
+				newPreferred = device;
+				break;
+			}
+		
+		if (newPreferred != null)
+		{
+			devices.remove(newPreferred);
+			devices.add(0, newPreferred);
+		}
+	}
 }

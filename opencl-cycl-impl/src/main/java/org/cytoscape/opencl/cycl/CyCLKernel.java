@@ -78,14 +78,22 @@ public class CyCLKernel
 	}
 	
 	@Override
-	protected void finalize() throws Throwable 
+	protected void finalize()
 	{
-		if(finalized)
-			return;
-		
-		Util.checkCLError(CL10.clReleaseKernel(kernel));
-		
-		finalized = true;		
-		super.finalize();
+		try
+		{
+			if(finalized)
+				return;
+			
+			Util.checkCLError(CL10.clReleaseKernel(kernel));
+			
+			finalized = true;		
+			super.finalize();
+		}
+		catch (Throwable exc)
+		{
+			System.out.println(exc.getMessage());
+			throw new RuntimeException("Could not finalize CyCLKernel object.");
+		}
 	}
 }

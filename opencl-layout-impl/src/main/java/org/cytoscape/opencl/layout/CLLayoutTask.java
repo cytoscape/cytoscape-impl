@@ -54,7 +54,7 @@ public class CLLayoutTask extends AbstractParallelPartitionLayoutTask
 			throw new RuntimeException();
 		}
 		
-		//System.out.println("Layout will use " + device.name + ".");
+		System.out.println("Layout will use " + device.name + ".");
 		
 		String[] kernelNames = new String[] 
 				{
@@ -73,7 +73,7 @@ public class CLLayoutTask extends AbstractParallelPartitionLayoutTask
 		CyCLProgram tryProgram;
 		try
 		{
-			tryProgram = device.addProgram("PrefuseLayout", getClass().getResource("/LayoutKernels.cl"), kernelNames, null);
+			tryProgram = device.addProgram("PrefuseLayout", getClass().getResource("/LayoutKernels.cl"), kernelNames, null, false);
 		}
 		catch (Exception exc)
 		{

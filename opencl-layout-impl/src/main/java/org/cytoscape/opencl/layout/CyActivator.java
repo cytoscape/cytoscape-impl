@@ -6,17 +6,25 @@ import static org.cytoscape.work.ServiceProperties.TITLE;
 
 import java.util.Properties;
 
+import org.cytoscape.opencl.cycl.CyCL;
 import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.view.layout.CyLayoutAlgorithm;
+import org.cytoscape.work.ServiceProperties;
 import org.cytoscape.work.undo.UndoSupport;
 import org.osgi.framework.BundleContext;
 
-public class CyActivator extends AbstractCyActivator {
-	public CyActivator() {
+public class CyActivator extends AbstractCyActivator 
+{
+	public CyActivator() 
+	{
 		super();
 	}
 
-	public void start(BundleContext bc) {
+	public void start(BundleContext bc) 
+	{		
+		// Don't initialize if there are no OpenCL devices.
+		if (CyCL.getDevices().size() == 0)
+			return;
 		
 		UndoSupport undo = getService(bc,UndoSupport.class);
 

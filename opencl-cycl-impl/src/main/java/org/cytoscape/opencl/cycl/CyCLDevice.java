@@ -89,13 +89,13 @@ public class CyCLDevice
 		
 		// Obtain information about the platform the device belongs to
 		platformName = devicePlatform.getInfoString(CL10.CL_PLATFORM_NAME);
-		if (platformName.indexOf(" ") > -1)
-			platformName = platformName.substring(0, platformName.indexOf(" "));
+		//if (platformName.indexOf(" ") > -1)
+			//platformName = platformName.substring(0, platformName.indexOf(" "));
 
 		// Obtain information about the device
-		name = device.getInfoString(CL10.CL_DEVICE_NAME);
 		vendor = device.getInfoString(CL10.CL_DEVICE_VENDOR);
 		version = device.getInfoString(CL10.CL_DEVICE_VERSION);
+		name = version + " " + device.getInfoString(CL10.CL_DEVICE_NAME);
 		
 		// Device type can be in theory a combination of multiple enum values, GPU is probably the most important indicator
 		long longType = device.getInfoLong(CL10.CL_DEVICE_TYPE);
@@ -187,15 +187,16 @@ public class CyCLDevice
 			bestWarpSize = 1;
 		}
 		
+        CyCLProgram program = null;
+        try
+		{
+			program = new CyCLProgram(context, this, getClass().getResource("/Benchmark.cl"), new String[] { "BenchmarkKernel" }, null, true);
+		}
+		catch (Exception e1) { throw new RuntimeException("Could not build benchmark program."); }
+	        
 		// Run the benchmark     
 		if (doBenchmark)
 		{
-	        CyCLProgram program = null;
-	        try
-			{
-				program = new CyCLProgram(context, this, getClass().getResource("/Benchmark.cl"), new String[] { "BenchmarkKernel" }, null);
-			}
-			catch (Exception e1) { throw new RuntimeException("Could not build benchmark program."); }
 	        
 	        int n = 1 << 13;
 	        int[] a = new int[n];
@@ -260,8 +261,6 @@ public class CyCLDevice
 		        bufferA.free();
 		        bufferB.free();
 		        bufferC.free();
-		        
-				program.finalize();
 			}
 			catch (Throwable e)	{ throw new RuntimeException("Could not release resources."); }
 		}
@@ -269,6 +268,8 @@ public class CyCLDevice
 		{
 			benchmarkScore = 0.0;
 		}
+		        
+		program.finalize();
 	}
 	    
 	/***
@@ -336,7 +337,7 @@ public class CyCLDevice
      * @param defines Dictionary of definitions to be injected as "#define key value"; can be null
      * @return The program if it has been successfully compiled
      */
-    public CyCLProgram addProgram(String name, URL resourcePath, String[] kernelNames, HashMap<String, String> defines)
+    public CyCLProgram addProgram(String name, URL resourcePath, String[] kernelNames, HashMap<String, String> defines, boolean silentCompilation)
     {
     	if (hasProgram(name))
     		return getProgram(name);
@@ -349,7 +350,7 @@ public class CyCLDevice
     	CyCLProgram added;
     	try
     	{
-    		added = new CyCLProgram(context, this, resourcePath, kernelNames, alldefines);
+    		added = new CyCLProgram(context, this, resourcePath, kernelNames, alldefines, silentCompilation);
     	}
     	catch (Exception e)
     	{
@@ -370,7 +371,7 @@ public class CyCLDevice
      * @param defines Dictionary of definitions to be injected as "#define key value"; can be null
      * @return The program if it has been successfully compiled
      */
-    public CyCLProgram forceAddProgram(String name, URL resourcePath, String[] kernelNames, HashMap<String, String> defines)
+    public CyCLProgram forceAddProgram(String name, URL resourcePath, String[] kernelNames, HashMap<String, String> defines, boolean silentCompilation)
     {
     	if (hasProgram(name))
     	{
@@ -390,7 +391,7 @@ public class CyCLDevice
     	CyCLProgram added;
     	try
     	{
-    		added = new CyCLProgram(context, this, resourcePath, kernelNames, alldefines);
+    		added = new CyCLProgram(context, this, resourcePath, kernelNames, alldefines, silentCompilation);
     	}
     	catch (Exception e)
     	{
@@ -503,18 +504,26 @@ public class CyCLDevice
      * Object cannot be used anymore once this method has been called.
      */
 	@Override
-	protected void finalize() throws Throwable 
+	protected void finalize()
 	{
-		if(finalized)
-			return;
-		
-		for(Entry<String, CyCLProgram> entry : programs.entrySet())
-			entry.getValue().finalize();
-		
-		context.finalize();
-		
-		finalized = true;		
-		super.finalize();
+		try
+		{
+			if(finalized)
+				return;
+			
+			for(Entry<String, CyCLProgram> entry : programs.entrySet())
+				entry.getValue().finalize();
+			
+			context.finalize();
+			
+			finalized = true;		
+			super.finalize();
+		}
+		catch (Throwable exc)
+		{
+			System.out.println(exc.getMessage());
+			throw new RuntimeException("Could not finalize CyCLDevice object.");
+		}
 	}
 
 	/***
@@ -557,22 +566,22 @@ public class CyCLDevice
     	}    	
     	devices.sort(new DeviceComparator());
     	
-    	List<CyCLDevice> uniqueDevices = new ArrayList<>();
+    	/*List<CyCLDevice> uniqueDevices = new ArrayList<>();
     	for (CyCLDevice device : devices)
 		{
 			Boolean unique = true;
 			for (CyCLDevice included : uniqueDevices)
 				if (included.name.toLowerCase().equals(device.name.toLowerCase()) && !included.platformName.toLowerCase().equals(device.platformName.toLowerCase()))
 				{
-					unique = false;
-					break;
+					//unique = false;
+					//break;
 				}
 			if (unique)
 				uniqueDevices.add(device);
 			else
 				try { device.finalize(); } catch (Throwable e) { }
-		}
+		}*/
     	
-    	return uniqueDevices;
+    	return devices;
     }
 }

@@ -149,7 +149,7 @@ __kernel void CalcForcesGravity(__global float8* nodePosX, __global float8* node
 				return;
 	
 		// Get data for the current node
-		float2 pos1x = ((float2*)nodePosX)[id1], pos1y = ((float2*)nodePosY)[id1];
+		float2 pos1x = ((__global float2*)nodePosX)[id1], pos1y = ((__global float2*)nodePosY)[id1];
 		float16 f0 = (float16)(0.0f);
 		float16 f1 = (float16)(0.0f);
 		
@@ -171,7 +171,7 @@ __kernel void CalcForcesGravity(__global float8* nodePosX, __global float8* node
 				id2++;
 		}
 		
-		float2 mass1 = ((float2*)nodeMass)[id1];
+		float2 mass1 = ((__global float2*)nodeMass)[id1];
 		
 		nodeForce[id1 * 2 + 0] = REDUCE16TO2(f0) * mass1.s0;
 		nodeForce[id1 * 2 + 1] = REDUCE16TO2(f1) * mass1.s1;

@@ -66,7 +66,11 @@ public class CyCLSettingsTask extends AbstractTask implements TunableValidator
 
     public void assignSystemProperties() 
     {
+        String newPreferred = properties.getProperty(OPENCL_PREFERREDNAME);
+        if (newPreferred == null || newPreferred.length() == 0)
+        	return;
         
+        CyCL.makePreferred(newPreferred);
     }
 	
 	@Override

@@ -20,31 +20,40 @@ public class CyCLProgram
 	private Hashtable<String, CyCLKernel> kernels = new Hashtable<String, CyCLKernel>();
 	private HashMap<String, String> defines;
 	
-	public CyCLProgram(CyCLContext context, CyCLDevice device, URL resourcePath, String[] kernelNames, HashMap<String, String> defines) throws IOException
+	public CyCLProgram(CyCLContext context, CyCLDevice device, URL resourcePath, String[] kernelNames, HashMap<String, String> defines, boolean silentCompilation) throws IOException
 	{
-    	InputStream programTextStream = resourcePath.openStream();
-    	Scanner programTextScanner = new Scanner(programTextStream, "UTF-8");
-    	String programText = programTextScanner.useDelimiter("\\Z").next();
-    	programTextScanner.close();
-        programTextStream.close();
-        
-        this.defines = new HashMap<>();
-        if (defines != null)
-	        for (Entry<String, String> entry : defines.entrySet())
-	        {
-	        	String defineline = "#define " + entry.getKey() + " " + entry.getValue() + "\n";
-	        	programText = defineline + programText;
-	        	this.defines.put(entry.getKey(), entry.getValue());
-	        }
-    
-        IntBuffer errorBuffer = BufferUtils.createIntBuffer(1);
-        program = CL10.clCreateProgramWithSource(context.getContext(), programText, errorBuffer);
-        Util.checkCLError(errorBuffer.get(0));
-		
-        Util.checkCLError(CL10.clBuildProgram(program, device.getDevice(), "", null));
-		
-		for(String kernelName : kernelNames)
-			kernels.put(kernelName, new CyCLKernel(context, this, kernelName));
+		try
+		{
+	    	InputStream programTextStream = resourcePath.openStream();
+	    	Scanner programTextScanner = new Scanner(programTextStream, "UTF-8");
+	    	String programText = programTextScanner.useDelimiter("\\Z").next();
+	    	programTextScanner.close();
+	        programTextStream.close();
+	        
+	        this.defines = new HashMap<>();
+	        if (defines != null)
+		        for (Entry<String, String> entry : defines.entrySet())
+		        {
+		        	String defineline = "#define " + entry.getKey() + " " + entry.getValue() + "\n";
+		        	programText = defineline + programText;
+		        	this.defines.put(entry.getKey(), entry.getValue());
+		        }
+	    
+	        IntBuffer errorBuffer = BufferUtils.createIntBuffer(1);
+	        program = CL10.clCreateProgramWithSource(context.getContext(), programText, errorBuffer);
+	        Util.checkCLError(errorBuffer.get(0));
+			
+	        Util.checkCLError(CL10.clBuildProgram(program, device.getDevice(), "", null));
+			
+			for(String kernelName : kernelNames)
+				kernels.put(kernelName, new CyCLKernel(context, this, kernelName));
+		}
+		catch (Exception exc)
+		{
+			if (!silentCompilation)
+				System.out.println(program.getBuildInfoString(device.getDevice(), CL10.CL_PROGRAM_BUILD_LOG));
+			throw new RuntimeException();
+		}
 	}
 	
 	public CLProgram getProgram()
@@ -58,18 +67,26 @@ public class CyCLProgram
 	}
 	
 	@Override
-	protected void finalize() throws Throwable 
+	protected void finalize() 
 	{
-		if(finalized)
-			return;
-		
-		for(Entry<String, CyCLKernel> entry : kernels.entrySet())
-			entry.getValue().finalize();
-		kernels.clear();
-		
-		Util.checkCLError(CL10.clReleaseProgram(program));
-		
-		finalized = true;		
-		super.finalize();
+		try
+		{
+			if(finalized)
+				return;
+			
+			for(Entry<String, CyCLKernel> entry : kernels.entrySet())
+				entry.getValue().finalize();
+			kernels.clear();
+			
+			Util.checkCLError(CL10.clReleaseProgram(program));
+			
+			finalized = true;		
+			super.finalize();
+		}
+		catch (Throwable exc)
+		{
+			System.out.println(exc.getMessage());
+			throw new RuntimeException("Could not finalize CyCLProgram object.");
+		}
 	}
 }
