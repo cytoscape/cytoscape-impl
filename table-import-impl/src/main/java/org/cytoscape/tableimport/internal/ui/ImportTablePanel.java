@@ -354,11 +354,11 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 		delimiterLabel = new JLabel("Delimiter:");
 		delimiterLabel.setHorizontalAlignment(JLabel.RIGHT);
 		
-		tabCheckBox = new JCheckBox();
-		commaCheckBox = new JCheckBox();
-		semicolonCheckBox = new JCheckBox();
-		spaceCheckBox = new JCheckBox();
-		otherCheckBox = new JCheckBox();
+		commaCheckBox = new JCheckBox("<html><b><font size=+1 face=Monospaced>,<font></b> <font size=-2>(comma)</font><html>");
+		semicolonCheckBox = new JCheckBox("<html><b><font size=+1 face=Monospaced>;<font></b> <font size=-2>(semicolon)</font><html>");
+		spaceCheckBox = new JCheckBox("<html><b><font size=-1 face=Monospaced>SPACE<font></b><html>");
+		tabCheckBox = new JCheckBox("<html><b><font size=-1 face=Monospaced>TAB<font></b><html>");
+		otherCheckBox = new JCheckBox("Other:");
 		otherDelimiterTextField = new JTextField();
 
 		defaultInteractionTextField = new JTextField();
@@ -470,19 +470,10 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 			}
 		};
 		
-		tabCheckBox.setText("<html><b><font size=+1>\u21b9 <font></b><font size=-2>(tab)</font><html>");
-		tabCheckBox.addChangeListener(delimitersChangeListener);
-
-		commaCheckBox.setText("<html><b><font size=+1>, <font></b><font size=-2>(comma)</font><html>");
 		commaCheckBox.addChangeListener(delimitersChangeListener);
-
-		semicolonCheckBox.setText("<html><b><font size=+1>; <font></b><font size=-2>(semicolon)</font><html>");
 		semicolonCheckBox.addChangeListener(delimitersChangeListener);
-
-		spaceCheckBox.setText("<html><b><font size=+1>\u2423 <font></b><font size=-2>(space)</font><html>");
 		spaceCheckBox.addChangeListener(delimitersChangeListener);
-
-		otherCheckBox.setText("Other:");
+		tabCheckBox.addChangeListener(delimitersChangeListener);
 		otherCheckBox.addChangeListener(delimitersChangeListener);
 
 		otherDelimiterTextField.addKeyListener(new KeyListener() {
@@ -693,10 +684,10 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 									.addGap(lw)
 							)
 							.addGroup(layout.createParallelGroup(Alignment.LEADING, true)
-									.addComponent(tabCheckBox)
-									.addComponent(commaCheckBox)
-									.addComponent(semicolonCheckBox)
+									.addComponent(commaCheckBox, rw, rw, Short.MAX_VALUE)
+									.addComponent(semicolonCheckBox, rw, rw, Short.MAX_VALUE)
 									.addComponent(spaceCheckBox, rw, rw, Short.MAX_VALUE)
+									.addComponent(tabCheckBox, rw, rw, Short.MAX_VALUE)
 									.addGroup(layout.createSequentialGroup()
 										.addComponent(otherCheckBox)
 										.addComponent(otherDelimiterTextField, PREFERRED_SIZE, 80, PREFERRED_SIZE)
@@ -708,11 +699,11 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 				vGroup
 					.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
 							.addComponent(delimiterLabel)
-							.addComponent(tabCheckBox)
+							.addComponent(commaCheckBox)
 					)
-					.addComponent(commaCheckBox)
 					.addComponent(semicolonCheckBox)
 					.addComponent(spaceCheckBox)
+					.addComponent(tabCheckBox)
 					.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
 							.addComponent(otherCheckBox, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 							.addComponent(otherDelimiterTextField, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
