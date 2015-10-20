@@ -5,10 +5,10 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.cytoscape.filter.internal.AbstractMemoizedTransformer;
 import org.cytoscape.filter.internal.filters.composite.CompositeFilterImpl;
 import org.cytoscape.filter.internal.predicates.NumericPredicateDelegate;
 import org.cytoscape.filter.internal.predicates.PredicateDelegates;
-import org.cytoscape.filter.model.AbstractTransformer;
 import org.cytoscape.filter.model.CompositeFilter;
 import org.cytoscape.filter.model.Filter;
 import org.cytoscape.filter.predicates.Predicate;
@@ -19,7 +19,7 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.work.Tunable;
 
-public class TopologyFilter extends AbstractTransformer<CyNetwork,CyIdentifiable> 
+public class TopologyFilter extends AbstractMemoizedTransformer<CyNetwork,CyIdentifiable> 
                             implements CompositeFilter<CyNetwork,CyIdentifiable> {
 	
 	private Integer distance;
@@ -86,6 +86,11 @@ public class TopologyFilter extends AbstractTransformer<CyNetwork,CyIdentifiable
 	public Class<CyIdentifiable> getElementType() {
 		return CyIdentifiable.class;
 	}
+	
+	@Override
+	protected CompositeFilter<CyNetwork, CyIdentifiable> getCompositeFilter() {
+		return neighbourFilter;
+	}
 
 	@Override
 	public boolean accepts(CyNetwork network, CyIdentifiable element) {
@@ -108,7 +113,7 @@ public class TopologyFilter extends AbstractTransformer<CyNetwork,CyIdentifiable
 	
 	
 	private void traverse(CyNetwork network, CyNode node, int distance, Set<Long> counted, Map<Long,Integer> sourceToTarget, Map<Long,Integer> targetToSource) {
-		if(neighbourFilter.accepts(network, node))
+		if(memoizedFilter.accepts(network, node))
 			counted.add(node.getSUID());
 		
 		if(distance == 0) 
@@ -134,8 +139,8 @@ public class TopologyFilter extends AbstractTransformer<CyNetwork,CyIdentifiable
 	}
 	
 	private boolean traverseEdge(CyEdge edge, int distance, Map<Long,Integer> edgeTraversal) {
-		Integer prevDist = edgeTraversal.get(edge.getSUID());
-		if(prevDist == null || prevDist < distance) {
+		Integer prevDistance = edgeTraversal.get(edge.getSUID());
+		if(prevDistance == null || prevDistance < distance) {
 			edgeTraversal.put(edge.getSUID(), distance);
 			return true;
 		}

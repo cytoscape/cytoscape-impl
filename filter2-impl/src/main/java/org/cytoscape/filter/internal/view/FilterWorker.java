@@ -3,6 +3,7 @@ package org.cytoscape.filter.internal.view;
 import java.util.List;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.filter.internal.LifecycleTransformer;
 import org.cytoscape.filter.model.CompositeFilter;
 import org.cytoscape.filter.model.Filter;
 import org.cytoscape.model.CyEdge;
@@ -53,37 +54,48 @@ public class FilterWorker extends AbstractWorker<FilterPanel, FilterPanelControl
 				}
 			}
 			
-			List<CyNode> nodeList = network.getNodeList();
-			List<CyEdge> edgeList = network.getEdgeList();
-			double total = nodeList.size() + edgeList.size();
-			for (CyNode node : nodeList) {
-				if (isCancelled) {
-					return;
-				}
-				CyRow row = network.getRow(node);
-				boolean accepted = filter.accepts(network, node);
-				if (accepted) {
-					nodeCount++;
-				}
-				if (row.get(CyNetwork.SELECTED, Boolean.class) != accepted) {
-					row.set(CyNetwork.SELECTED, accepted);
-				}
-				monitor.setProgress(++counter / total);
+			if(filter instanceof LifecycleTransformer) {
+				((LifecycleTransformer) filter).setUp();
 			}
-			for (CyEdge edge : edgeList) {
-				if (isCancelled) {
-					return;
+			try {
+				List<CyNode> nodeList = network.getNodeList();
+				List<CyEdge> edgeList = network.getEdgeList();
+				double total = nodeList.size() + edgeList.size();
+				for (CyNode node : nodeList) {
+					if (isCancelled) {
+						return;
+					}
+					CyRow row = network.getRow(node);
+					boolean accepted = filter.accepts(network, node);
+					if (accepted) {
+						nodeCount++;
+					}
+					if (row.get(CyNetwork.SELECTED, Boolean.class) != accepted) {
+						row.set(CyNetwork.SELECTED, accepted);
+					}
+					monitor.setProgress(++counter / total);
 				}
-				CyRow row = network.getRow(edge);
-				boolean accepted = filter.accepts(network, edge);
-				if (accepted) {
-					edgeCount++;
+				for (CyEdge edge : edgeList) {
+					if (isCancelled) {
+						return;
+					}
+					CyRow row = network.getRow(edge);
+					boolean accepted = filter.accepts(network, edge);
+					if (accepted) {
+						edgeCount++;
+					}
+					if (row.get(CyNetwork.SELECTED, Boolean.class) != accepted) {
+						row.set(CyNetwork.SELECTED, accepted);
+					}
+					monitor.setProgress(++counter / total);
 				}
-				if (row.get(CyNetwork.SELECTED, Boolean.class) != accepted) {
-					row.set(CyNetwork.SELECTED, accepted);
-				}
-				monitor.setProgress(++counter / total);
 			}
+			finally {
+				if(filter instanceof LifecycleTransformer) {
+					((LifecycleTransformer) filter).tearDown();
+				}
+			}
+			
 			if (networkView != null) {
 				networkView.updateView();
 			}

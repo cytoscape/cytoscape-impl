@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.filter.TransformerManager;
+import org.cytoscape.filter.internal.LifecycleTransformer;
 import org.cytoscape.filter.model.CompositeFilter;
 import org.cytoscape.filter.model.Transformer;
 import org.cytoscape.filter.model.TransformerSink;
@@ -59,9 +60,24 @@ public class TransformerWorker extends AbstractWorker<TransformerPanel, Transfor
 			List<Transformer<CyNetwork, CyIdentifiable>> transformers = controller.getTransformers(view);
 			FilterElement selected = (FilterElement) controller.getStartWithComboBoxModel().getSelectedItem();
 			TransformerSource<CyNetwork, CyIdentifiable> source = createSource(network, selected);
-			
 			sink.network = network;
-			transformerManager.execute(network, source, transformers, sink);
+			
+			for(Transformer<?,?> transformer : transformers) {
+				if(transformer instanceof LifecycleTransformer) {
+					((LifecycleTransformer) transformer).setUp();
+				}
+			}
+			try {
+				transformerManager.execute(network, source, transformers, sink);
+			}
+			finally {
+				for(Transformer<?,?> transformer : transformers) {
+					if(transformer instanceof LifecycleTransformer) {
+						((LifecycleTransformer) transformer).tearDown();
+					}
+				}
+			}
+			
 			if (networkView != null) {
 				networkView.updateView();
 			}
@@ -141,23 +157,33 @@ public class TransformerWorker extends AbstractWorker<TransformerPanel, Transfor
 			int maximum = getElementCount(context);
 			ArrayList<CyIdentifiable> elements = new ArrayList<CyIdentifiable>(maximum);
 			
-			// Clear selection state while collecting elements
-			for (CyNode node : context.getNodeList()) {
-				CyRow row = context.getRow(node);
-				if (row.get(CyNetwork.SELECTED, Boolean.class)) {
-					row.set(CyNetwork.SELECTED, false);
+			if(filter instanceof LifecycleTransformer) {
+				((LifecycleTransformer) filter).setUp();
+			}
+			try {
+				// Clear selection state while collecting elements
+				for (CyNode node : context.getNodeList()) {
+					CyRow row = context.getRow(node);
+					if (row.get(CyNetwork.SELECTED, Boolean.class)) {
+						row.set(CyNetwork.SELECTED, false);
+					}
+					if (filter.accepts(context, node)) {
+						elements.add(node);
+					}
 				}
-				if (filter.accepts(context, node)) {
-					elements.add(node);
+				for (CyEdge edge : context.getEdgeList()) {
+					CyRow row = context.getRow(edge);
+					if (row.get(CyNetwork.SELECTED, Boolean.class)) {
+						row.set(CyNetwork.SELECTED, false);
+					}
+					if (filter.accepts(context, edge)) {
+						elements.add(edge);
+					}
 				}
 			}
-			for (CyEdge edge : context.getEdgeList()) {
-				CyRow row = context.getRow(edge);
-				if (row.get(CyNetwork.SELECTED, Boolean.class)) {
-					row.set(CyNetwork.SELECTED, false);
-				}
-				if (filter.accepts(context, edge)) {
-					elements.add(edge);
+			finally {
+				if(filter instanceof LifecycleTransformer) {
+					((LifecycleTransformer) filter).tearDown();
 				}
 			}
 			return elements;

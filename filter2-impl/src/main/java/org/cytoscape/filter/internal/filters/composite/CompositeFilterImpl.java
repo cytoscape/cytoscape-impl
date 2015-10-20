@@ -3,12 +3,13 @@ package org.cytoscape.filter.internal.filters.composite;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.cytoscape.filter.internal.LifecycleTransformer;
 import org.cytoscape.filter.model.AbstractTransformer;
 import org.cytoscape.filter.model.CompositeFilter;
 import org.cytoscape.filter.model.Filter;
 import org.cytoscape.work.Tunable;
 
-public class CompositeFilterImpl<C, E> extends AbstractTransformer<C, E> implements CompositeFilter<C, E> {
+public class CompositeFilterImpl<C, E> extends AbstractTransformer<C, E> implements CompositeFilter<C, E>, LifecycleTransformer {
 	static final String ID = "org.cytoscape.CompositeFilter";
 	public static final Type DEFAULT_TYPE = Type.ALL;
 	
@@ -98,6 +99,24 @@ public class CompositeFilterImpl<C, E> extends AbstractTransformer<C, E> impleme
 	@Override
 	public int indexOf(Filter<C, E> filter) {
 		return filters.indexOf(filter);
+	}
+	
+	@Override
+	public void setUp() {
+		for(Filter<C,E> filter : filters) {
+			if(filter instanceof LifecycleTransformer) {
+				((LifecycleTransformer)filter).setUp();
+			}
+		}
+	}
+	
+	@Override
+	public void tearDown() {
+		for(Filter<C,E> filter : filters) {
+			if(filter instanceof LifecycleTransformer) {
+				((LifecycleTransformer)filter).tearDown();
+			}
+		}
 	}
 	
 	@Override

@@ -1,7 +1,7 @@
 package org.cytoscape.filter.internal.transformers.adjacency;
 
+import org.cytoscape.filter.internal.AbstractMemoizedTransformer;
 import org.cytoscape.filter.internal.filters.composite.CompositeFilterImpl;
-import org.cytoscape.filter.model.AbstractTransformer;
 import org.cytoscape.filter.model.CompositeFilter;
 import org.cytoscape.filter.model.ElementTransformer;
 import org.cytoscape.filter.model.SubFilterTransformer;
@@ -13,7 +13,7 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.work.Tunable;
 
-public class AdjacencyTransformer extends AbstractTransformer<CyNetwork,CyIdentifiable> 
+public class AdjacencyTransformer extends AbstractMemoizedTransformer<CyNetwork,CyIdentifiable> 
                                   implements ElementTransformer<CyNetwork,CyIdentifiable>, 
                                              SubFilterTransformer<CyNetwork,CyIdentifiable> {
 
@@ -99,13 +99,13 @@ public class AdjacencyTransformer extends AbstractTransformer<CyNetwork,CyIdenti
 				
 				boolean pass;
 				if(filterTarget == What.NODES) {
-					pass = adjacentElementFilter.accepts(network, node);
+					pass = memoizedFilter.accepts(network, node);
 				}
 				else if(filterTarget == What.EDGES) {
-					pass = adjacentElementFilter.accepts(network, edge);
+					pass = memoizedFilter.accepts(network, edge);
 				}
 				else { //filterTarget == What.NODES_AND_EDGES
-					pass = adjacentElementFilter.accepts(network, node) && adjacentElementFilter.accepts(network, edge);
+					pass = memoizedFilter.accepts(network, node) && memoizedFilter.accepts(network, edge);
 				}
 				
 				if(pass) {
