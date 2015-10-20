@@ -25,7 +25,6 @@ import org.cytoscape.model.CyIdentifiable;
 public abstract class AbstractMemoizedTransformer<C,E extends CyIdentifiable> extends AbstractTransformer<C, E> implements LifecycleTransformer {
 	
 	protected Filter<C,E> memoizedFilter;
-	int cacheHits = 0;
 	
 	abstract protected CompositeFilter<C,E> getCompositeFilter();
 	
@@ -45,7 +44,6 @@ public abstract class AbstractMemoizedTransformer<C,E extends CyIdentifiable> ex
 	
 	@Override
 	public void tearDown() {
-		cacheHits = 0;
 		Filter<C,E> subfilter = getCompositeFilter();
 		memoizedFilter = subfilter;
 		if(subfilter instanceof LifecycleTransformer) {
@@ -65,9 +63,6 @@ public abstract class AbstractMemoizedTransformer<C,E extends CyIdentifiable> ex
 				if(value == null) {
 					value = filter.accepts(context, element);
 					cache.put(element.getSUID(), value);
-				}
-				else {
-					cacheHits++;
 				}
 				return value;
 			}
