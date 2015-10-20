@@ -55,12 +55,7 @@ public class VizmapPropertiesFileFilter extends PropertiesFileFilter {
 
         if (header.contains("<vizmap"))
             return false;
-
-        // This is the real test to see if we're a .props file
-        // TODO can we find a better test?
-        if (matcher.reset(header).matches()) 
-            return true;
         
-        return false;
+        return true;
     }
 }
