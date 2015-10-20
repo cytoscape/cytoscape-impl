@@ -172,7 +172,7 @@ public class StartupConfig {
 		
 		for (String name : args){
 			try{
-			if (StreamUtil.URL_PATTERN.matches(name))
+			if (name.matches(StreamUtil.URL_PATTERN))
 				networkURLs.add(new URL(name));
 			else 
 				networkFiles.add(new File(name));
