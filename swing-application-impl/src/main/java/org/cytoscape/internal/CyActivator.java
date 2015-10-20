@@ -581,6 +581,7 @@ public class CyActivator extends AbstractCyActivator {
 				// Also fixes inconsistent colors since the latest Java 8 version.
 				// (http://docs.oracle.com/javase/tutorial/uiswing/lookandfeel/_nimbusDefaults.html)
 				UIManager.put("nimbusLightBackground", Color.WHITE);
+				UIManager.put("nimbusDisabledText", new Color(142, 143, 145));
 				
 				// Make all table rows white, like the other LAFs
 				UIManager.put("Table.background", Color.WHITE);
