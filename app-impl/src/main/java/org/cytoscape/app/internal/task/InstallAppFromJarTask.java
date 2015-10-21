@@ -7,6 +7,7 @@ import org.cytoscape.app.internal.manager.App;
 import org.cytoscape.app.internal.manager.AppManager;
 import org.cytoscape.app.internal.net.WebApp;
 import org.cytoscape.app.internal.net.WebQuerier;
+import org.cytoscape.application.CyVersion;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 
@@ -26,6 +27,12 @@ public class InstallAppFromJarTask extends AbstractTask {
 	public void run(TaskMonitor taskMonitor) throws Exception {
 		// Parse app
 		App appToInstall = appManager.getAppParser().parseApp(appFile);
+		CyVersion version = appManager.getCyVersion();
+		if(!appToInstall.isCompatible(version))
+			throw new Exception("Unable to install " + appToInstall.getAppName() + 
+					".\nIt is incompatible with this version of Cytoscape (" + version.getVersion() +
+					").");
+		
 		taskMonitor.setStatusMessage("Resolving dependencies for " + appToInstall.getAppName() + "...");
 		taskMonitor.setProgress(-1);
 		insertTasksAfterCurrentTask(new InstallAppTask(appToInstall, appManager, promptToReplace));

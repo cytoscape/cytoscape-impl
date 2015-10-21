@@ -881,6 +881,14 @@ public class AppManager implements FrameworkListener {
 	}
 	
 	/**
+	 * Return the CyVersion for this Cytoscape instance.
+	 * @return The CyVersion.
+	 */
+	public CyVersion getCyVersion() {
+		return version;
+	}
+	
+	/**
 	 * Return the path of the directory used to contain all apps.
 	 * @return The path of the root directory containing all installed and uninstalled apps.
 	 */
