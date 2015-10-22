@@ -56,7 +56,6 @@ public abstract class AbstractMemoizableTransformer<C,E extends CyIdentifiable> 
 	
 	
 	public <A,B extends CyIdentifiable> Filter<A,B> memoize(Filter<A,B> filter) {
-		System.out.println("memoizing: " + filter);
 		return new Filter<A, B>() {
 			
 			private Map<Long, Boolean> cache = new HashMap<>();
