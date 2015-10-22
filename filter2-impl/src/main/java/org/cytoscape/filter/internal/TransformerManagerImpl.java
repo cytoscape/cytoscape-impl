@@ -14,6 +14,9 @@ import java.util.concurrent.TimeUnit;
 
 import org.cytoscape.filter.TransformerManager;
 import org.cytoscape.filter.internal.filters.composite.CompositeFilterImpl;
+import org.cytoscape.filter.internal.view.DiscreteProgressMonitor;
+import org.cytoscape.filter.internal.view.ProgressMonitor;
+import org.cytoscape.filter.internal.view.SubProgressMonitor;
 import org.cytoscape.filter.model.CompositeFilter;
 import org.cytoscape.filter.model.ElementTransformer;
 import org.cytoscape.filter.model.ElementTransformerFactory;
@@ -47,8 +50,16 @@ public class TransformerManagerImpl implements TransformerManager {
 	
 	@Override
 	public <C, E> void execute(C context, TransformerSource<C, E> source, List<Transformer<C, E>> transformers, TransformerSink<E> sink) {
+		execute(context, source, transformers, sink, ProgressMonitor.nullMonitor());
+	}
+	
+	/**
+	 * Not yet API.
+	 * Need to make all of the methods in this class support progress monitoring.
+	 */
+	public <C, E> void execute(C context, TransformerSource<C, E> source, List<Transformer<C, E>> transformers, TransformerSink<E> sink, ProgressMonitor monitor) {
 		TransformerExecutionStrategy strategy = getOptimalStrategy(transformers);
-		strategy.execute(context, transformers, source, sink);
+		strategy.execute(context, transformers, source, sink, monitor);
 	}
 	
 	@Override
@@ -66,12 +77,12 @@ public class TransformerManagerImpl implements TransformerManager {
 		Class<C> contextType = transformer.getContextType();
 		TransformerSource<C, E> source = getTransformerSource(contextType);
 		if (transformer instanceof Filter) {
-			applyFilter(context, source, (Filter<C, E>) transformer, sink);
+			applyFilter(context, source, (Filter<C, E>) transformer, sink, ProgressMonitor.nullMonitor());
 		} else if (transformer instanceof HolisticTransformer) {
 			((HolisticTransformer<C, E>) transformer).apply(context, source, sink);
 		} else if (transformer instanceof ElementTransformer) {
 			TransformerBuffer<C, E> sinkBuffer = createTransformerBuffer(source, context);
-			applyElementTransformer(context, source, (ElementTransformer<C, E>) transformer, sinkBuffer);
+			applyElementTransformer(context, source, (ElementTransformer<C, E>) transformer, sinkBuffer, ProgressMonitor.nullMonitor());
 			for (E element : sinkBuffer.getElementList(context)) {
 				sink.collect(element);
 			}
@@ -89,18 +100,34 @@ public class TransformerManagerImpl implements TransformerManager {
 		return unbufferedStrategy;
 	}
 	
-	<C, E> void applyElementTransformer(C context, TransformerSource<C, E> source, ElementTransformer<C, E> transformer, TransformerSink<E> sink) {
-		for (E element : source.getElementList(context)) {
+	<C, E> void applyElementTransformer(C context, TransformerSource<C, E> source, ElementTransformer<C, E> transformer, TransformerSink<E> sink, ProgressMonitor monitor) {
+		List<E> elements = source.getElementList(context);
+		DiscreteProgressMonitor dpm = new DiscreteProgressMonitor(monitor);
+		dpm.setTotalWork(elements.size());
+		for (E element : elements) {
+			if(dpm.isCancelled()) {
+				return;
+			}
 			transformer.apply(context, element, sink);
+			dpm.addWork(1);
 		}
+		dpm.done();
 	}
 
-	<C, E> void applyFilter(C context, TransformerSource<C, E> source, Filter<C, E> filter, TransformerSink<E> sink) {
+	<C, E> void applyFilter(C context, TransformerSource<C, E> source, Filter<C, E> filter, TransformerSink<E> sink, ProgressMonitor monitor) {
+		List<E> elements = source.getElementList(context);
+		DiscreteProgressMonitor dpm = new DiscreteProgressMonitor(monitor);
+		dpm.setTotalWork(elements.size());
 		for (E element : source.getElementList(context)) {
+			if(dpm.isCancelled()) {
+				return;
+			}
 			if (filter.accepts(context, element)) {
 				sink.collect(element);
 			}
+			dpm.addWork(1);
 		}
+		dpm.done();
 	}
 	
 	<C, E> TransformerBuffer<C, E> createTransformerBuffer(TransformerSource<C, E> source, C context) {
@@ -197,17 +224,29 @@ public class TransformerManagerImpl implements TransformerManager {
 
 	class BufferedExecutionStrategy implements TransformerExecutionStrategy {
 		@Override
-		public <C, E> void execute(C context, List<Transformer<C, E>> transformers, TransformerSource<C, E> source, TransformerSink<E> sink) {
+		public <C, E> void execute(C context, List<Transformer<C, E>> transformers, TransformerSource<C, E> source, TransformerSink<E> sink, ProgressMonitor monitor) {
 			// Use double buffering to push elements through the transformers.
 			TransformerBuffer<C, E> sourceBuffer = createTransformerBuffer(source, context);
 			TransformerBuffer<C, E> sinkBuffer = createTransformerBuffer(source, context);
 			
 			TransformerSource<C, E> currentSource = source;
-			for (Transformer<C, E> transformer : transformers) {
+			int n = transformers.size();
+			double stepSize = 1.0/(double)n;
+			
+			for(int i = 0; i < n; i++) {
+				if(monitor.isCancelled())
+					return;
+				
+				double stepStart = i * stepSize;
+				double stepEnd = stepStart + stepSize;
+				ProgressMonitor subMonitor = new SubProgressMonitor(monitor, stepStart, stepEnd);
+				subMonitor.start();
+				
+				Transformer<C, E> transformer = transformers.get(i);
 				if (transformer instanceof Filter) {
-					applyFilter(context, currentSource, (Filter<C, E>) transformer, sinkBuffer);
+					applyFilter(context, currentSource, (Filter<C, E>) transformer, sinkBuffer, subMonitor);
 				} else if (transformer instanceof ElementTransformer) {
-					applyElementTransformer(context, currentSource, (ElementTransformer<C, E>) transformer, sinkBuffer);
+					applyElementTransformer(context, currentSource, (ElementTransformer<C, E>) transformer, sinkBuffer, subMonitor);
 				} else if (transformer instanceof HolisticTransformer) {
 					((HolisticTransformer<C, E>) transformer).apply(context, currentSource, sinkBuffer);
 				} else {
@@ -251,7 +290,8 @@ public class TransformerManagerImpl implements TransformerManager {
 		}
 
 		@Override
-		public <C, E> void execute(final C context, final List<Transformer<C, E>> transformers, TransformerSource<C, E> source, final TransformerSink<E> sink) {
+		public <C, E> void execute(final C context, final List<Transformer<C, E>> transformers, TransformerSource<C, E> source, final TransformerSink<E> sink, ProgressMonitor monitor) {
+			// I don't think this code is actually being called anywhere.
 			if (source.getElementCount(context) < PARALLEL_THRESHOLD) {
 				execute(context, transformers, source.getElementList(context).iterator(), sink);
 				return;

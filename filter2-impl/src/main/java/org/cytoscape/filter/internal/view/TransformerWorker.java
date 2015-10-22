@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.filter.TransformerManager;
 import org.cytoscape.filter.internal.LifecycleTransformer;
+import org.cytoscape.filter.internal.TransformerManagerImpl;
 import org.cytoscape.filter.model.CompositeFilter;
 import org.cytoscape.filter.model.Transformer;
 import org.cytoscape.filter.model.TransformerSink;
@@ -16,24 +16,20 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.work.TaskMonitor;
 
 public class TransformerWorker extends AbstractWorker<TransformerPanel, TransformerPanelController> {
-	private TransformerManager transformerManager;
 	
-	private FilterSource filterSource;
-	private Sink sink;
+	// TODO add progress monitoring to the TransformerManager API, must use impl for now
+	private TransformerManagerImpl transformerManager;
 	
-	public TransformerWorker(LazyWorkQueue queue, CyApplicationManager applicationManager, TransformerManager transformerManager) {
+	public TransformerWorker(LazyWorkQueue queue, CyApplicationManager applicationManager, TransformerManagerImpl transformerManager) {
 		super(queue, applicationManager);
 		this.transformerManager = transformerManager;
 		
-		filterSource = new FilterSource();
-		sink = new Sink();
 	}
 	
 	@Override
-	public void doWork() {
+	public void doWork(ProgressMonitor monitor) {
 		if (controller == null) {
 			return;
 		}
@@ -50,17 +46,18 @@ public class TransformerWorker extends AbstractWorker<TransformerPanel, Transfor
 			return;
 		}
 		
-		sink.resetCounts();
-		TaskMonitor monitor = controller.getTaskMonitor(view);
+		ProgressMonitor filterMonitor = new SubProgressMonitor(monitor, 0.0, 0.4);
+		ProgressMonitor chainMonitor  = new SubProgressMonitor(monitor, 0.4, 0.98);
 		
-		monitor.setProgress(-1.0); // indeterminate
+		monitor.setProgress(0.0);
 		monitor.setStatusMessage(null);
+		
+		Sink sink = new Sink(network);
 		long startTime = System.currentTimeMillis();
 		try {
 			List<Transformer<CyNetwork, CyIdentifiable>> transformers = controller.getTransformers(view);
 			FilterElement selected = (FilterElement) controller.getStartWithComboBoxModel().getSelectedItem();
-			TransformerSource<CyNetwork, CyIdentifiable> source = createSource(network, selected);
-			sink.network = network;
+			TransformerSource<CyNetwork, CyIdentifiable> source = createSource(network, selected, filterMonitor);
 			
 			for(Transformer<?,?> transformer : transformers) {
 				if(transformer instanceof LifecycleTransformer) {
@@ -68,7 +65,7 @@ public class TransformerWorker extends AbstractWorker<TransformerPanel, Transfor
 				}
 			}
 			try {
-				transformerManager.execute(network, source, transformers, sink);
+				transformerManager.execute(network, source, transformers, sink, chainMonitor);
 			}
 			finally {
 				for(Transformer<?,?> transformer : transformers) {
@@ -90,21 +87,19 @@ public class TransformerWorker extends AbstractWorker<TransformerPanel, Transfor
 					sink.edgeCount,
 					sink.edgeCount == 1 ? "edge" : "edges",
 					duration));
-
-			isCancelled = false;
 		}
 	}
 
-	private TransformerSource<CyNetwork, CyIdentifiable> createSource(CyNetwork network, FilterElement selected) {
+	private TransformerSource<CyNetwork, CyIdentifiable> createSource(CyNetwork network, FilterElement selected, ProgressMonitor monitor) {
+		// The progress monitor should really be passed to getElementList(), but oh well
 		if (selected.getFilter() == null) {
-			return SelectionSource.instance;
+			return new SelectionSource(monitor);
 		} else {
-			filterSource.filter = selected.getFilter();
-			return filterSource;
+			return new FilterSource(selected.getFilter(), monitor);
 		}
 	}
 	
-	static abstract class AbstractSource implements TransformerSource<CyNetwork, CyIdentifiable> {
+	private static abstract class AbstractSource implements TransformerSource<CyNetwork, CyIdentifiable> {
 		@Override
 		public Class<CyNetwork> getContextType() {
 			return CyNetwork.class;
@@ -122,40 +117,68 @@ public class TransformerWorker extends AbstractWorker<TransformerPanel, Transfor
 		}
 	}
 	
-	static class SelectionSource extends AbstractSource {
-		public static TransformerSource<CyNetwork, CyIdentifiable> instance = new SelectionSource();
-
+	private static class SelectionSource extends AbstractSource {
+		
+		private ProgressMonitor monitor;
+		
+		SelectionSource(ProgressMonitor monitor) {
+			this.monitor = monitor;
+		}
+		
 		@Override
 		public List<CyIdentifiable> getElementList(CyNetwork context) {
+			monitor.start();
+			
 			int maximum = getElementCount(context);
 			ArrayList<CyIdentifiable> elements = new ArrayList<CyIdentifiable>(maximum);
-
+			DiscreteProgressMonitor discreteMonitor = new DiscreteProgressMonitor(monitor);
+			discreteMonitor.setTotalWork(maximum);
+			
 			// Clear selection state while collecting elements
-			for (CyNode node : context.getNodeList()) {
+			List<CyNode> nodes = context.getNodeList();
+			
+			for (CyNode node : nodes) {
 				CyRow row = context.getRow(node);
 				if (row.get(CyNetwork.SELECTED, Boolean.class)) {
 					row.set(CyNetwork.SELECTED, false);
 					elements.add(node);
 				}
+				discreteMonitor.addWork(1);
 			}
-			for (CyEdge edge : context.getEdgeList()) {
+			
+			List<CyEdge> edges = context.getEdgeList();
+			for (CyEdge edge : edges) {
 				CyRow row = context.getRow(edge);
 				if (row.get(CyNetwork.SELECTED, Boolean.class)) {
 					row.set(CyNetwork.SELECTED, false);
 					elements.add(edge);
 				}
+				discreteMonitor.addWork(1);
 			}
+			
+			monitor.done();
 			return elements;
 		}
 	}
 	
-	static class FilterSource extends AbstractSource {
-		CompositeFilter<CyNetwork, CyIdentifiable> filter;
+	private static class FilterSource extends AbstractSource {
+		private CompositeFilter<CyNetwork, CyIdentifiable> filter;
+		private ProgressMonitor monitor;
 
+		FilterSource(CompositeFilter<CyNetwork, CyIdentifiable> filter, ProgressMonitor monitor) {
+			this.filter = filter;
+			this.monitor = monitor;
+		}
+		
 		@Override
 		public List<CyIdentifiable> getElementList(CyNetwork context) {
+			monitor.start();
+			monitor.setStatusMessage("Filtering");
+			
 			int maximum = getElementCount(context);
 			ArrayList<CyIdentifiable> elements = new ArrayList<CyIdentifiable>(maximum);
+			DiscreteProgressMonitor discreteMonitor = new DiscreteProgressMonitor(monitor);
+			discreteMonitor.setTotalWork(maximum);
 			
 			if(filter instanceof LifecycleTransformer) {
 				((LifecycleTransformer) filter).setUp();
@@ -170,6 +193,7 @@ public class TransformerWorker extends AbstractWorker<TransformerPanel, Transfor
 					if (filter.accepts(context, node)) {
 						elements.add(node);
 					}
+					discreteMonitor.addWork(1);
 				}
 				for (CyEdge edge : context.getEdgeList()) {
 					CyRow row = context.getRow(edge);
@@ -179,6 +203,7 @@ public class TransformerWorker extends AbstractWorker<TransformerPanel, Transfor
 					if (filter.accepts(context, edge)) {
 						elements.add(edge);
 					}
+					discreteMonitor.addWork(1);
 				}
 			}
 			finally {
@@ -186,14 +211,20 @@ public class TransformerWorker extends AbstractWorker<TransformerPanel, Transfor
 					((LifecycleTransformer) filter).tearDown();
 				}
 			}
+			
+			monitor.done();
 			return elements;
 		}
 	}
 	
 	static class Sink implements TransformerSink<CyIdentifiable> {
-		CyNetwork network;
+		private final CyNetwork network;
 		int nodeCount;
 		int edgeCount;
+		
+		Sink(CyNetwork network) {
+			this.network = network;
+		}
 		
 		@Override
 		public void collect(CyIdentifiable element) {
@@ -206,9 +237,5 @@ public class TransformerWorker extends AbstractWorker<TransformerPanel, Transfor
 			network.getRow(element).set(CyNetwork.SELECTED, true);
 		}
 		
-		void resetCounts() {
-			nodeCount = 0;
-			edgeCount = 0;
-		}
 	}
 }

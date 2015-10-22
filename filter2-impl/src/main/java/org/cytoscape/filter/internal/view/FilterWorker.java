@@ -12,7 +12,6 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.work.TaskMonitor;
 
 public class FilterWorker extends AbstractWorker<FilterPanel, FilterPanelController> {
 	public FilterWorker(LazyWorkQueue queue, CyApplicationManager applicationManager) {
@@ -20,7 +19,7 @@ public class FilterWorker extends AbstractWorker<FilterPanel, FilterPanelControl
 	}
 
 	@Override
-	public void doWork() {
+	public void doWork(ProgressMonitor monitor) {
 		if (controller == null) {
 			return;
 		}
@@ -37,7 +36,6 @@ public class FilterWorker extends AbstractWorker<FilterPanel, FilterPanelControl
 			return;
 		}
 		
-		TaskMonitor monitor = controller.getTaskMonitor(view);
 		monitor.setProgress(0);
 		monitor.setStatusMessage(null);
 		int nodeCount = 0;
@@ -62,7 +60,7 @@ public class FilterWorker extends AbstractWorker<FilterPanel, FilterPanelControl
 				List<CyEdge> edgeList = network.getEdgeList();
 				double total = nodeList.size() + edgeList.size();
 				for (CyNode node : nodeList) {
-					if (isCancelled) {
+					if (monitor.isCancelled()) {
 						return;
 					}
 					CyRow row = network.getRow(node);
@@ -76,7 +74,7 @@ public class FilterWorker extends AbstractWorker<FilterPanel, FilterPanelControl
 					monitor.setProgress(++counter / total);
 				}
 				for (CyEdge edge : edgeList) {
-					if (isCancelled) {
+					if (monitor.isCancelled()) {
 						return;
 					}
 					CyRow row = network.getRow(edge);
@@ -108,7 +106,6 @@ public class FilterWorker extends AbstractWorker<FilterPanel, FilterPanelControl
 					edgeCount,
 					edgeCount == 1 ? "edge" : "edges",
 					duration));
-			isCancelled = false;
 		}
 	}
 }

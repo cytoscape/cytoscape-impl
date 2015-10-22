@@ -16,7 +16,6 @@ import javax.swing.JComponent;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
-import javax.swing.JProgressBar;
 
 import org.cytoscape.filter.TransformerManager;
 import org.cytoscape.filter.internal.FilterIO;
@@ -36,7 +35,6 @@ import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskManager;
-import org.cytoscape.work.TaskMonitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -283,38 +281,6 @@ public abstract class AbstractPanelController<T extends NamedElement, V extends 
 		namedElementComboBoxModel.notifyChanged(0, 0);
 	}
 	
-	public TaskMonitor getTaskMonitor(V view) {
-		return new TaskMonitor() {
-			
-			@Override
-			public void setStatusMessage(String message) {
-				view.setStatus(message);
-			}
-			
-			@Override
-			public void setProgress(double progress) {
-				JProgressBar progressBar = view.getProgressBar();
-				
-				if(progress < 0.0) {
-					progressBar.setIndeterminate(true);
-				}
-				else {
-					if(progressBar.isIndeterminate()) {
-						progressBar.setIndeterminate(false);
-					}
-					boolean done = progress == 1.0;
-					view.getApplyButton().setEnabled(done);
-					view.getCancelApplyButton().setEnabled(!done);
-					progressBar.setValue(done ? 0 : (int)(progress * PROGRESS_BAR_MAXIMUM));
-				}
-			}
-			
-			@Override
-			public void showMessage(Level level, String message) { }
-			@Override
-			public void setTitle(String title) { }
-		};
-	}
 
 	public void handleCancelApply(V view) {
 		worker.cancel();

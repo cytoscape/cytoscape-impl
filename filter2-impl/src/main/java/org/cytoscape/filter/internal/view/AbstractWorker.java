@@ -1,12 +1,18 @@
 package org.cytoscape.filter.internal.view;
 
+import javax.swing.JProgressBar;
+
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.filter.model.TransformerListener;
 
-public abstract class AbstractWorker<V, C> implements LazyWorker, TransformerListener {
+public abstract class AbstractWorker<V extends AbstractPanel<?,?>, C extends AbstractPanelController<?,?>> implements LazyWorker, TransformerListener {
+	
+	public static final int PROGRESS_BAR_MAXIMUM = Integer.MAX_VALUE;
+	
 	protected CyApplicationManager applicationManager;
 	protected LazyWorkQueue queue;
-	protected volatile boolean isCancelled;
+	
+	private ProgressMonitor currentMonitor;
 	
 	protected V view;
 	protected C controller;
@@ -34,7 +40,9 @@ public abstract class AbstractWorker<V, C> implements LazyWorker, TransformerLis
 	}
 	
 	public void cancel() {
-		isCancelled = true;
+		if(currentMonitor != null) {
+			currentMonitor.cancel();
+		}
 	}
 	
 	public void setInteractive(boolean isInteractive) {
@@ -52,4 +60,49 @@ public abstract class AbstractWorker<V, C> implements LazyWorker, TransformerLis
 	public void setController(C controller) {
 		this.controller = controller;
 	}
+	
+	@Override
+	public synchronized final void doWork() {
+		currentMonitor = new ProgressMonitor() {
+			private boolean cancelled = false;
+			
+			@Override
+			public void cancel() {
+				cancelled = true;
+			}
+
+			@Override
+			public boolean isCancelled() {
+				return cancelled;
+			}
+
+			@Override
+			public void setProgress(double progress) {
+				JProgressBar progressBar = view.getProgressBar();
+				
+				if(progress < 0.0) {
+					progressBar.setIndeterminate(true);
+					view.getCancelApplyButton().setEnabled(true);
+				}
+				else {
+					if(progressBar.isIndeterminate()) {
+						progressBar.setIndeterminate(false);
+					}
+					boolean done = progress == 1.0;
+					view.getApplyButton().setEnabled(done);
+					view.getCancelApplyButton().setEnabled(!done);
+					progressBar.setValue(done ? 0 : (int)(progress * PROGRESS_BAR_MAXIMUM));
+				}
+			}
+
+			@Override
+			public void setStatusMessage(String message) {
+				view.setStatus(message);
+			}
+		};
+		
+		doWork(currentMonitor);
+	}
+	
+	abstract protected void doWork(ProgressMonitor monitor);
 }

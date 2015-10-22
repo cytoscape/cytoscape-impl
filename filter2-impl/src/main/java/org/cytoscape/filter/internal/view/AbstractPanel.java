@@ -24,6 +24,7 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
+import javax.swing.UIManager;
 
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
@@ -44,7 +45,7 @@ public abstract class AbstractPanel<T extends NamedElement, C extends AbstractPa
 	protected Component editControlPanel;
 	protected JScrollPane scrollPane;
 	protected JButton applyButton;
-	protected JComponent cancelApplyButton;
+	protected JButton cancelApplyButton;
 	protected JProgressBar progressBar;
 
 	protected JLabel statusLabel;
@@ -89,15 +90,26 @@ public abstract class AbstractPanel<T extends NamedElement, C extends AbstractPa
 		applyButton = new JButton("Apply");
 		applyButton.addActionListener(e -> controller.handleApplyFilter(AbstractPanel.this));
 		
-		cancelApplyButton = new JLabel(IconManager.ICON_BAN);
+		cancelApplyButton = new JButton(IconManager.ICON_BAN);
+		cancelApplyButton.addActionListener(e -> controller.handleCancelApply(AbstractPanel.this));
 		cancelApplyButton.setFont(iconManager.getIconFont(17.0f));
-		cancelApplyButton.addMouseListener(new MouseAdapter() {
-			public void mousePressed(MouseEvent event) {
-				controller.handleCancelApply(AbstractPanel.this);
-			}
-		});
 		cancelApplyButton.setEnabled(false);
 		cancelApplyButton.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 5));
+		
+		cancelApplyButton.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mousePressed(MouseEvent e) {
+				if(cancelApplyButton.isEnabled()) {
+					cancelApplyButton.setForeground(UIManager.getColor("Focus.color"));
+				}
+			}
+			@Override
+			public void mouseReleased(MouseEvent e) {
+				if(cancelApplyButton.isEnabled()) {
+				 cancelApplyButton.setForeground(UIManager.getColor("Button.foreground"));
+				}
+			}
+		});
 		
 		statusLabel = new JLabel(" ");
 		statusLabel.setFont(statusLabel.getFont().deriveFont(LookAndFeelUtil.getSmallFontSize()));

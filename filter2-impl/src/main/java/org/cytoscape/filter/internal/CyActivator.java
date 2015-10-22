@@ -70,7 +70,7 @@ import org.osgi.framework.BundleContext;
 public class CyActivator extends AbstractCyActivator {
 	
 	public void start(BundleContext context) {
-		TransformerManager transformerManager = new TransformerManagerImpl();
+		TransformerManagerImpl transformerManager = new TransformerManagerImpl();
 		registerService(context, transformerManager, TransformerManager.class, new Properties());
 		
 		registerServiceListener(context, transformerManager, "registerTransformerSource", "unregisterTransformerSource", TransformerSource.class);
