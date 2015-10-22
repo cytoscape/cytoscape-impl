@@ -8,15 +8,14 @@ package org.cytoscape.filter.internal;
  * Note: 
  * This is just an optimization and there is no guarantee that these
  * methods will be called. The transformer must be able to function properly
- * without these methods being called. The only guarantee is if 
- * startOptimization() is called then endOptimization() will be called.
+ * without these methods being called.
  * 
- * @see AbstractMemoizedTransformer
+ * @see AbstractMemoizableTransformer
  */
-public interface LifecycleTransformer {
+public interface MemoizableTransformer {
 
-	void setUp();
+	void startCaching();
 	
-	void tearDown();
+	void clearCache();
 	
 }

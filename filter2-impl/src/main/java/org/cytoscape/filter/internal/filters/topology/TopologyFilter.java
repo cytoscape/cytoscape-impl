@@ -5,7 +5,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.cytoscape.filter.internal.AbstractMemoizedTransformer;
+import org.cytoscape.filter.internal.AbstractMemoizableTransformer;
 import org.cytoscape.filter.internal.filters.composite.CompositeFilterImpl;
 import org.cytoscape.filter.internal.predicates.NumericPredicateDelegate;
 import org.cytoscape.filter.internal.predicates.PredicateDelegates;
@@ -19,7 +19,7 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.work.Tunable;
 
-public class TopologyFilter extends AbstractMemoizedTransformer<CyNetwork,CyIdentifiable> 
+public class TopologyFilter extends AbstractMemoizableTransformer<CyNetwork,CyIdentifiable> 
                             implements CompositeFilter<CyNetwork,CyIdentifiable> {
 	
 	private Integer distance;

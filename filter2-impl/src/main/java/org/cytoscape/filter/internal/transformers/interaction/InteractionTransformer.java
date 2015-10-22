@@ -1,6 +1,6 @@
 package org.cytoscape.filter.internal.transformers.interaction;
 
-import org.cytoscape.filter.internal.AbstractMemoizedTransformer;
+import org.cytoscape.filter.internal.AbstractMemoizableTransformer;
 import org.cytoscape.filter.internal.filters.composite.CompositeFilterImpl;
 import org.cytoscape.filter.model.CompositeFilter;
 import org.cytoscape.filter.model.ElementTransformer;
@@ -13,7 +13,7 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.work.Tunable;
 
-public class InteractionTransformer extends AbstractMemoizedTransformer<CyNetwork, CyIdentifiable> 
+public class InteractionTransformer extends AbstractMemoizableTransformer<CyNetwork, CyIdentifiable> 
 									implements ElementTransformer<CyNetwork, CyIdentifiable>,
 											   SubFilterTransformer<CyNetwork,CyIdentifiable> {
 	

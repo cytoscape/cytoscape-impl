@@ -20,39 +20,43 @@ import org.cytoscape.model.CyIdentifiable;
  * 
  * @author mkucera
  *
- * @see LifecycleTransformer
+ * @see MemoizableTransformer
  */
-public abstract class AbstractMemoizedTransformer<C,E extends CyIdentifiable> extends AbstractTransformer<C, E> implements LifecycleTransformer {
+public abstract class AbstractMemoizableTransformer<C,E extends CyIdentifiable> extends AbstractTransformer<C, E> implements MemoizableTransformer {
 	
 	protected Filter<C,E> memoizedFilter;
 	
 	abstract protected CompositeFilter<C,E> getCompositeFilter();
 	
 	
-	public AbstractMemoizedTransformer() {
-		memoizedFilter = getCompositeFilter();
-	}
-	
-	@Override
-	public void setUp() {
-		Filter<C,E> subfilter = getCompositeFilter();
-		if(subfilter instanceof LifecycleTransformer) {
-			((LifecycleTransformer) subfilter).setUp();
-		}
-		memoizedFilter = memoize(subfilter);
-	}
-	
-	@Override
-	public void tearDown() {
+	public AbstractMemoizableTransformer() {
 		Filter<C,E> subfilter = getCompositeFilter();
 		memoizedFilter = subfilter;
-		if(subfilter instanceof LifecycleTransformer) {
-			((LifecycleTransformer) subfilter).tearDown();
+	}
+	
+	@Override
+	public void startCaching() {
+		CompositeFilter<C,E> subfilter = getCompositeFilter();
+		if(subfilter.getLength() > 0) {
+			if(subfilter instanceof MemoizableTransformer) {
+				((MemoizableTransformer) subfilter).startCaching();
+			}
+			memoizedFilter = memoize(subfilter);
+		}
+	}
+	
+	@Override
+	public void clearCache() {
+		Filter<C,E> subfilter = getCompositeFilter();
+		memoizedFilter = subfilter;
+		if(subfilter instanceof MemoizableTransformer) {
+			((MemoizableTransformer) subfilter).clearCache();
 		}
 	}
 	
 	
 	public <A,B extends CyIdentifiable> Filter<A,B> memoize(Filter<A,B> filter) {
+		System.out.println("memoizing: " + filter);
 		return new Filter<A, B>() {
 			
 			private Map<Long, Boolean> cache = new HashMap<>();

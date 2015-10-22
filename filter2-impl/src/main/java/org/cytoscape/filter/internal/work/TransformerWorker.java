@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.filter.internal.LifecycleTransformer;
+import org.cytoscape.filter.internal.MemoizableTransformer;
 import org.cytoscape.filter.internal.view.FilterElement;
 import org.cytoscape.filter.internal.view.TransformerPanel;
 import org.cytoscape.filter.internal.view.TransformerPanelController;
@@ -62,8 +62,8 @@ public class TransformerWorker extends AbstractWorker<TransformerPanel, Transfor
 			TransformerSource<CyNetwork, CyIdentifiable> source = createSource(network, selected, filterMonitor);
 			
 			for(Transformer<?,?> transformer : transformers) {
-				if(transformer instanceof LifecycleTransformer) {
-					((LifecycleTransformer) transformer).setUp();
+				if(transformer instanceof MemoizableTransformer) {
+					((MemoizableTransformer) transformer).startCaching();
 				}
 			}
 			try {
@@ -71,8 +71,8 @@ public class TransformerWorker extends AbstractWorker<TransformerPanel, Transfor
 			}
 			finally {
 				for(Transformer<?,?> transformer : transformers) {
-					if(transformer instanceof LifecycleTransformer) {
-						((LifecycleTransformer) transformer).tearDown();
+					if(transformer instanceof MemoizableTransformer) {
+						((MemoizableTransformer) transformer).clearCache();
 					}
 				}
 			}
@@ -182,8 +182,8 @@ public class TransformerWorker extends AbstractWorker<TransformerPanel, Transfor
 			DiscreteProgressMonitor discreteMonitor = new DiscreteProgressMonitor(monitor);
 			discreteMonitor.setTotalWork(maximum);
 			
-			if(filter instanceof LifecycleTransformer) {
-				((LifecycleTransformer) filter).setUp();
+			if(filter instanceof MemoizableTransformer) {
+				((MemoizableTransformer) filter).startCaching();
 			}
 			try {
 				// Clear selection state while collecting elements
@@ -209,8 +209,8 @@ public class TransformerWorker extends AbstractWorker<TransformerPanel, Transfor
 				}
 			}
 			finally {
-				if(filter instanceof LifecycleTransformer) {
-					((LifecycleTransformer) filter).tearDown();
+				if(filter instanceof MemoizableTransformer) {
+					((MemoizableTransformer) filter).clearCache();
 				}
 			}
 			

@@ -3,7 +3,7 @@ package org.cytoscape.filter.internal.work;
 import java.util.List;
 
 import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.filter.internal.LifecycleTransformer;
+import org.cytoscape.filter.internal.MemoizableTransformer;
 import org.cytoscape.filter.internal.view.FilterPanel;
 import org.cytoscape.filter.internal.view.FilterPanelController;
 import org.cytoscape.filter.model.CompositeFilter;
@@ -54,8 +54,8 @@ public class FilterWorker extends AbstractWorker<FilterPanel, FilterPanelControl
 				}
 			}
 			
-			if(filter instanceof LifecycleTransformer) {
-				((LifecycleTransformer) filter).setUp();
+			if(filter instanceof MemoizableTransformer) {
+				((MemoizableTransformer) filter).startCaching();
 			}
 			try {
 				List<CyNode> nodeList = network.getNodeList();
@@ -91,8 +91,8 @@ public class FilterWorker extends AbstractWorker<FilterPanel, FilterPanelControl
 				}
 			}
 			finally {
-				if(filter instanceof LifecycleTransformer) {
-					((LifecycleTransformer) filter).tearDown();
+				if(filter instanceof MemoizableTransformer) {
+					((MemoizableTransformer) filter).clearCache();
 				}
 			}
 			
