@@ -1,4 +1,4 @@
-package org.cytoscape.filter.internal.view;
+package org.cytoscape.filter.internal.work;
 
 public class DiscreteProgressMonitor implements ProgressMonitor {
 

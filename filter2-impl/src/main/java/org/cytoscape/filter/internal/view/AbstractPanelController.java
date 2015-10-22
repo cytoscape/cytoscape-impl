@@ -25,6 +25,7 @@ import org.cytoscape.filter.internal.tasks.ExportNamedTransformersTask;
 import org.cytoscape.filter.internal.tasks.ImportNamedTransformersTask;
 import org.cytoscape.filter.internal.view.TransformerViewManager.TransformerViewElement;
 import org.cytoscape.filter.internal.view.look.FilterPanelStyle;
+import org.cytoscape.filter.internal.work.AbstractWorker;
 import org.cytoscape.filter.model.CompositeFilter;
 import org.cytoscape.filter.model.Filter;
 import org.cytoscape.filter.model.NamedTransformer;

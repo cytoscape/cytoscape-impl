@@ -1,11 +1,13 @@
-package org.cytoscape.filter.internal.view;
+package org.cytoscape.filter.internal.work;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.filter.internal.LifecycleTransformer;
-import org.cytoscape.filter.internal.TransformerManagerImpl;
+import org.cytoscape.filter.internal.view.FilterElement;
+import org.cytoscape.filter.internal.view.TransformerPanel;
+import org.cytoscape.filter.internal.view.TransformerPanelController;
 import org.cytoscape.filter.model.CompositeFilter;
 import org.cytoscape.filter.model.Transformer;
 import org.cytoscape.filter.model.TransformerSink;

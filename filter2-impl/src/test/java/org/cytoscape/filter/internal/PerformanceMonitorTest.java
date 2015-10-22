@@ -2,9 +2,9 @@ package org.cytoscape.filter.internal;
 
 import static org.junit.Assert.*;
 
-import org.cytoscape.filter.internal.view.DiscreteProgressMonitor;
-import org.cytoscape.filter.internal.view.ProgressMonitor;
-import org.cytoscape.filter.internal.view.SubProgressMonitor;
+import org.cytoscape.filter.internal.work.DiscreteProgressMonitor;
+import org.cytoscape.filter.internal.work.ProgressMonitor;
+import org.cytoscape.filter.internal.work.SubProgressMonitor;
 import org.junit.Test;
 
 

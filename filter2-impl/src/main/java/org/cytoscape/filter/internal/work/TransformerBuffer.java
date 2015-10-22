@@ -1,4 +1,4 @@
-package org.cytoscape.filter.internal;
+package org.cytoscape.filter.internal.work;
 
 import org.cytoscape.filter.model.TransformerSink;
 import org.cytoscape.filter.model.TransformerSource;

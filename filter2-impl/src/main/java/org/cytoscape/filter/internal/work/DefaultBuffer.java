@@ -1,4 +1,4 @@
-package org.cytoscape.filter.internal;
+package org.cytoscape.filter.internal.work;
 
 import java.util.ArrayList;
 import java.util.Collections;

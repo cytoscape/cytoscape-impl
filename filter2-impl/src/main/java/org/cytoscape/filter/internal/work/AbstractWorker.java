@@ -1,8 +1,10 @@
-package org.cytoscape.filter.internal.view;
+package org.cytoscape.filter.internal.work;
 
 import javax.swing.JProgressBar;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.filter.internal.view.AbstractPanel;
+import org.cytoscape.filter.internal.view.AbstractPanelController;
 import org.cytoscape.filter.model.TransformerListener;
 
 public abstract class AbstractWorker<V extends AbstractPanel<?,?>, C extends AbstractPanelController<?,?>> implements LazyWorker, TransformerListener {

@@ -14,6 +14,7 @@ import org.cytoscape.filter.internal.filters.composite.CompositeFilterController
 import org.cytoscape.filter.internal.filters.composite.CompositeFilterPanel;
 import org.cytoscape.filter.internal.filters.composite.CompositeSeparator;
 import org.cytoscape.filter.internal.view.look.FilterPanelStyle;
+import org.cytoscape.filter.internal.work.FilterWorker;
 import org.cytoscape.filter.model.CompositeFilter;
 import org.cytoscape.filter.model.Filter;
 import org.cytoscape.filter.model.NamedTransformer;

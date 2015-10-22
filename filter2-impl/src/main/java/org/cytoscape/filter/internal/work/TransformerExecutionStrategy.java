@@ -1,8 +1,7 @@
-package org.cytoscape.filter.internal;
+package org.cytoscape.filter.internal.work;
 
 import java.util.List;
 
-import org.cytoscape.filter.internal.view.ProgressMonitor;
 import org.cytoscape.filter.model.Transformer;
 import org.cytoscape.filter.model.TransformerSink;
 import org.cytoscape.filter.model.TransformerSource;

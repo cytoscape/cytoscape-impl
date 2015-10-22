@@ -20,6 +20,7 @@ import org.cytoscape.filter.internal.filters.model.TopologyFilter;
 import org.cytoscape.filter.internal.filters.util.FilterUtil;
 import org.cytoscape.filter.internal.quickfind.util.QuickFind;
 import org.cytoscape.filter.internal.quickfind.util.QuickFindImpl;
+import org.cytoscape.filter.internal.work.TransformerManagerImpl;
 import org.cytoscape.filter.model.Transformer;
 import org.cytoscape.filter.model.TransformerSink;
 import org.cytoscape.filter.predicates.Predicate;

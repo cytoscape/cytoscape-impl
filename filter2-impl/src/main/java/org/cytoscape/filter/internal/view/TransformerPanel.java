@@ -14,6 +14,7 @@ import javax.swing.JPanel;
 import javax.swing.JSeparator;
 
 import org.cytoscape.filter.internal.filters.composite.CompositeTransformerPanel;
+import org.cytoscape.filter.internal.work.TransformerWorker;
 import org.cytoscape.filter.model.Transformer;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;

@@ -1,9 +1,11 @@
-package org.cytoscape.filter.internal.view;
+package org.cytoscape.filter.internal.work;
 
 import java.util.List;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.filter.internal.LifecycleTransformer;
+import org.cytoscape.filter.internal.view.FilterPanel;
+import org.cytoscape.filter.internal.view.FilterPanelController;
 import org.cytoscape.filter.model.CompositeFilter;
 import org.cytoscape.filter.model.Filter;
 import org.cytoscape.model.CyEdge;

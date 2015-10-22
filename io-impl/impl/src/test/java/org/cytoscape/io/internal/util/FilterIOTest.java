@@ -9,7 +9,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import org.cytoscape.filter.internal.TransformerManagerImpl;
 import org.cytoscape.filter.internal.filters.column.ColumnFilter;
 import org.cytoscape.filter.internal.filters.column.ColumnFilterFactory;
 import org.cytoscape.filter.internal.filters.composite.CompositeFilterFactory;
@@ -22,6 +21,7 @@ import org.cytoscape.filter.internal.transformers.adjacency.AdjacencyTransformer
 import org.cytoscape.filter.internal.transformers.adjacency.AdjacencyTransformer.Action;
 import org.cytoscape.filter.internal.transformers.adjacency.AdjacencyTransformer.EdgesAre;
 import org.cytoscape.filter.internal.transformers.adjacency.AdjacencyTransformer.What;
+import org.cytoscape.filter.internal.work.TransformerManagerImpl;
 import org.cytoscape.filter.internal.transformers.adjacency.AdjacencyTransformerFactory;
 import org.cytoscape.filter.model.AbstractTransformer;
 import org.cytoscape.filter.model.CompositeFilter;

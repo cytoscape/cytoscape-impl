@@ -1,4 +1,4 @@
-package org.cytoscape.filter.internal;
+package org.cytoscape.filter.internal.work;
 
 import java.util.Iterator;
 import java.util.List;
@@ -14,9 +14,6 @@ import java.util.concurrent.TimeUnit;
 
 import org.cytoscape.filter.TransformerManager;
 import org.cytoscape.filter.internal.filters.composite.CompositeFilterImpl;
-import org.cytoscape.filter.internal.view.DiscreteProgressMonitor;
-import org.cytoscape.filter.internal.view.ProgressMonitor;
-import org.cytoscape.filter.internal.view.SubProgressMonitor;
 import org.cytoscape.filter.model.CompositeFilter;
 import org.cytoscape.filter.model.ElementTransformer;
 import org.cytoscape.filter.model.ElementTransformerFactory;

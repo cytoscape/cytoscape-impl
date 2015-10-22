@@ -1,4 +1,4 @@
-package org.cytoscape.filter.internal.view;
+package org.cytoscape.filter.internal.work;
 
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
