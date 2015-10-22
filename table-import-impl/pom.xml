@@ -136,12 +136,6 @@
 			<artifactId>work-swing-api</artifactId>
 		</dependency>
     
-    		<dependency>
-    			<groupId>cytoscape-temp</groupId>
-			<artifactId>org.swinglabs.swing-layout</artifactId>
-			<version>1.0.3</version>
-    		</dependency>
-
 		<!-- Apache poi -->
 		<dependency>
 			<groupId>org.apache.xmlbeans</groupId> 
