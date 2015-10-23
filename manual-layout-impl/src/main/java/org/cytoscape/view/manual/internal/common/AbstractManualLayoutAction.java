@@ -113,7 +113,7 @@ public abstract class AbstractManualLayoutAction
 		JMenu layouts = swingApp.getJMenu(preferredMenu);
 		for ( int i = 0; i < layouts.getItemCount(); i++ ) {
 			JMenuItem item = layouts.getItem(i);
-			if ( item.getText().equals(title) && item instanceof JCheckBoxMenuItem) {
+			if (item instanceof JCheckBoxMenuItem && item.getText().equals(title)) {
 				return (JCheckBoxMenuItem)item;	
 			}
 		}

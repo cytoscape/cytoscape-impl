@@ -33,6 +33,7 @@ import org.cytoscape.view.model.CyNetworkViewManager;
 /**
  * Rotate network action.
  */
+@SuppressWarnings("serial")
 public class RotatePanelAction extends AbstractManualLayoutAction {
 
 	/**
@@ -41,5 +42,6 @@ public class RotatePanelAction extends AbstractManualLayoutAction {
 	public RotatePanelAction(CytoPanelComponent comp, CySwingApplication swingApp, CyApplicationManager appMgr,
 			final CyNetworkViewManager networkViewManager) {
 		super(comp, swingApp, appMgr, networkViewManager, 1.0f);
+		insertSeparatorBefore = true;
 	}
 }
