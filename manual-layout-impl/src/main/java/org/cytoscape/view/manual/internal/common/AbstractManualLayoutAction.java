@@ -24,8 +24,6 @@ package org.cytoscape.view.manual.internal.common;
  * #L%
  */
 
-
-
 import java.awt.event.ActionEvent;
 
 import javax.swing.JCheckBoxMenuItem;
@@ -40,8 +38,6 @@ import org.cytoscape.application.swing.CytoPanel;
 import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.application.swing.CytoPanelState;
-import org.cytoscape.application.swing.events.CytoPanelComponentSelectedEvent;
-import org.cytoscape.application.swing.events.CytoPanelComponentSelectedListener;
 import org.cytoscape.view.model.CyNetworkViewManager;
 
 /**
@@ -49,13 +45,9 @@ import org.cytoscape.view.model.CyNetworkViewManager;
  * manages the Layout Menu logic and tab selection of the tools cytopanel. 
  */
 @SuppressWarnings("serial")
-public abstract class AbstractManualLayoutAction 
-	extends AbstractCyAction 
-	implements CytoPanelComponentSelectedListener {
+public abstract class AbstractManualLayoutAction extends AbstractCyAction {
 
     static protected CytoPanel manualLayoutPanel; 
-
-	private static int selectedIndex = -1;
 
 	private final CySwingApplication swingApp;
 
@@ -68,7 +60,8 @@ public abstract class AbstractManualLayoutAction
 	 *
 	 * @param title The title of the menu item. 
 	 */
-	public AbstractManualLayoutAction(CytoPanelComponent comp, CySwingApplication swingApp, CyApplicationManager appMgr, final CyNetworkViewManager networkViewManager, float menuGravity) {
+	public AbstractManualLayoutAction(CytoPanelComponent comp, CySwingApplication swingApp, CyApplicationManager appMgr,
+			final CyNetworkViewManager networkViewManager, float menuGravity) {
 		super(comp.getTitle(), appMgr,"networkAndView", networkViewManager);
 		this.title = comp.getTitle();
 		this.swingApp = swingApp;
@@ -81,11 +74,9 @@ public abstract class AbstractManualLayoutAction
 
 	/**
 	 * Selects the component and hides/unhides the cytopanel as necessary. 
-	 *
-	 * @param ev Triggering event - not used. 
 	 */
+	@Override
 	public void actionPerformed(ActionEvent ev) {
-
 		// Check the state of the manual layout Panel
 		CytoPanelState curState = manualLayoutPanel.getState();
 
@@ -95,66 +86,55 @@ public abstract class AbstractManualLayoutAction
 		if (curState == CytoPanelState.HIDE) {
 			manualLayoutPanel.setState(CytoPanelState.DOCK);
 			manualLayoutPanel.setSelectedIndex(menuIndex);
-			selectedIndex = menuIndex;
 
 		// Case 2: Panel is in the DOCK/FLOAT and a different panel is selected
 		} else if ( manualLayoutPanel.getSelectedIndex() != menuIndex ) {
 			manualLayoutPanel.setSelectedIndex(menuIndex);
-			selectedIndex = menuIndex;
 
 		// Case 3: The currently selected item is selected 
 		} else { 
 			manualLayoutPanel.setState(CytoPanelState.HIDE);
-			selectedIndex = -1;
 		}
 	} 
 
 	private JCheckBoxMenuItem getThisItem() {
 		JMenu layouts = swingApp.getJMenu(preferredMenu);
-		for ( int i = 0; i < layouts.getItemCount(); i++ ) {
+		
+		for (int i = 0; i < layouts.getItemCount(); i++) {
 			JMenuItem item = layouts.getItem(i);
-			if (item instanceof JCheckBoxMenuItem && item.getText().equals(title)) {
-				return (JCheckBoxMenuItem)item;	
-			}
+			
+			if (item instanceof JCheckBoxMenuItem && item.getText().equals(title))
+				return (JCheckBoxMenuItem) item;
 		}
+		
 		return null;
 	}
 
 	/**
 	 * Enables of disables the action based on system state. 
-	 *
-	 * @param ev Triggering event - not used. 
 	 */
+	@Override
 	public void menuSelected(MenuEvent e) {
 		// set the check next to the menu item
 		JCheckBoxMenuItem item = getThisItem(); 
 		int menuIndex = manualLayoutPanel.indexOfComponent(comp.getComponent());
 
-		if ( item != null ) {
-			if ( manualLayoutPanel.getSelectedIndex() != menuIndex || 
-			     manualLayoutPanel.getState() == CytoPanelState.HIDE )
-				item.setState(false);
+		if (item != null) {
+			if (manualLayoutPanel.getSelectedIndex() != menuIndex
+					|| manualLayoutPanel.getState() == CytoPanelState.HIDE)
+				item.setSelected(false);
 			else 
-				item.setState(true);
+				item.setSelected(true);
 		}
 	
 		// enable the menu based on cytopanel state
 		CytoPanelState parentState = swingApp.getCytoPanel(CytoPanelName.WEST).getState();
-		if ( parentState == CytoPanelState.HIDE )
+		if (parentState == CytoPanelState.HIDE)
 			setEnabled(false);
-		else 
+		else
 			setEnabled(true);
 
 		// enable the menu based on presence of network 
 		updateEnableState();
-	}
-
-	/**
-	 * Makes sure the menu check stays in sync with the selections made in the cytopanel.
-	 *
-	 * @param componentIndex the index of the menu
-	 */
-	public void handleEvent(CytoPanelComponentSelectedEvent e) {
-		selectedIndex = e.getSelectedIndex();
 	}
 }
