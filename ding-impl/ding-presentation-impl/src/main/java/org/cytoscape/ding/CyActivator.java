@@ -156,17 +156,12 @@ import org.cytoscape.view.vizmap.gui.editor.ValueEditor;
 import org.cytoscape.view.vizmap.gui.editor.VisualPropertyEditor;
 import org.cytoscape.view.vizmap.mappings.ValueTranslator;
 import org.cytoscape.work.SynchronousTaskManager;
-import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.swing.DialogTaskManager;
 import org.cytoscape.work.undo.UndoSupport;
 import org.osgi.framework.BundleContext;
 
 public class CyActivator extends AbstractCyActivator {
 	
-	public CyActivator() {
-		super();
-	}
-
 	@Override
 	public void start(BundleContext bc) {
 		startSpacial(bc); 
@@ -496,29 +491,14 @@ public class CyActivator extends AbstractCyActivator {
 		                ungroupAnnotationTaskFactoryProps);
 
 		// Set mouse drag selection modes
-		SelectModeTaskFactory selectNodesOnly = new SelectModeTaskFactory("Nodes only", cyApplicationManagerServiceRef);
-		Properties selectNodesOnlyProps = new Properties();
-		selectNodesOnlyProps.setProperty(PREFERRED_ACTION, "New");
-		selectNodesOnlyProps.setProperty(MENU_GRAVITY, "0.5");
-		selectNodesOnlyProps.setProperty(PREFERRED_MENU, "Select.Mouse Drag Selects");
-		selectNodesOnlyProps.setProperty(TITLE, "Nodes Only");
-		registerService(bc, selectNodesOnly, TaskFactory.class, selectNodesOnlyProps);
+		SelectModeAction selectNodesOnlyAction = new SelectModeAction(SelectModeAction.NODES, 0.5f, cyServiceRegistrarRef);
+		registerAllServices(bc, selectNodesOnlyAction, new Properties());
 		
-		SelectModeTaskFactory selectEdgesOnly = new SelectModeTaskFactory("Edges only", cyApplicationManagerServiceRef);
-		Properties selectEdgesOnlyProps = new Properties();
-		selectEdgesOnlyProps.setProperty(PREFERRED_ACTION, "New");
-		selectEdgesOnlyProps.setProperty(MENU_GRAVITY, "0.6");
-		selectEdgesOnlyProps.setProperty(PREFERRED_MENU, "Select.Mouse Drag Selects");
-		selectEdgesOnlyProps.setProperty(TITLE, "Edges Only");
-		registerService(bc, selectEdgesOnly, TaskFactory.class, selectEdgesOnlyProps);
+		SelectModeAction selectEdgesOnlyAction = new SelectModeAction(SelectModeAction.EDGES, 0.6f, cyServiceRegistrarRef);
+		registerAllServices(bc, selectEdgesOnlyAction, new Properties());
 
-		SelectModeTaskFactory selectNodesAndEdges = new SelectModeTaskFactory("Nodes and Edges", cyApplicationManagerServiceRef);
-		Properties selectNodesEdgesProps = new Properties();
-		selectNodesEdgesProps.setProperty(PREFERRED_ACTION, "New");
-		selectNodesEdgesProps.setProperty(MENU_GRAVITY, "0.7");
-		selectNodesEdgesProps.setProperty(PREFERRED_MENU, "Select.Mouse Drag Selects");
-		selectNodesEdgesProps.setProperty(TITLE, "Nodes and Edges");
-		registerService(bc, selectNodesAndEdges, TaskFactory.class, selectNodesEdgesProps);
+		SelectModeAction selectNodesAndEdgesAction = new SelectModeAction(SelectModeAction.ALL, 0.7f, cyServiceRegistrarRef);
+		registerAllServices(bc, selectNodesAndEdgesAction, new Properties());
 		
 		//
 		ShowGraphicsDetailsTaskFactory showGraphicsDetailsTaskFactory = new ShowGraphicsDetailsTaskFactory(cyApplicationManagerServiceRef,dingGraphLOD, dingGraphLODAll);
