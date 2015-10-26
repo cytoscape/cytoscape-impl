@@ -1091,6 +1091,8 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 			                           m_extentsBuff, 0, false).numRemaining() == 0) {
 				return;
 			}
+			else if(m_networkCanvas.getWidth() == 0 || m_networkCanvas.getHeight() == 0)
+				return;
 
 			// At this point, we actually want doubles
 			m_extentsBuffD[0] = (double)m_extentsBuff[0];
