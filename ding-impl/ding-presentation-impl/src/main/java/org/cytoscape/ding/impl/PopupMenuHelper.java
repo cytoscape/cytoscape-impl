@@ -482,7 +482,9 @@ class PopupMenuHelper {
 		else
 			item = new JMenuItem(action);
 
-		item.setEnabled(tf.isReady());
+		boolean ready = tf.isReady();
+		item.setEnabled(ready);
+		action.setEnabled(ready);
 
 		item.setToolTipText(toolTipText);
 		return item;
