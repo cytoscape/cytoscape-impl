@@ -24,7 +24,6 @@ package org.cytoscape.tableimport.internal.ui;
  * #L%
  */
 
-
 import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static javax.swing.GroupLayout.Alignment.CENTER;
@@ -37,14 +36,11 @@ import static org.cytoscape.tableimport.internal.util.AttributeDataType.TYPE_INT
 import static org.cytoscape.tableimport.internal.util.AttributeDataType.TYPE_LONG;
 import static org.cytoscape.tableimport.internal.util.AttributeDataType.TYPE_STRING;
 import static org.cytoscape.tableimport.internal.util.ImportType.NETWORK_IMPORT;
-import static org.cytoscape.tableimport.internal.util.ImportType.ONTOLOGY_IMPORT;
 import static org.cytoscape.tableimport.internal.util.ImportType.TABLE_IMPORT;
 import static org.cytoscape.tableimport.internal.util.SourceColumnSemantic.ALIAS;
 import static org.cytoscape.tableimport.internal.util.SourceColumnSemantic.ATTR;
 import static org.cytoscape.tableimport.internal.util.SourceColumnSemantic.KEY;
 import static org.cytoscape.tableimport.internal.util.SourceColumnSemantic.NONE;
-import static org.cytoscape.tableimport.internal.util.SourceColumnSemantic.ONTOLOGY;
-import static org.cytoscape.tableimport.internal.util.SourceColumnSemantic.TAXON;
 import static org.cytoscape.util.swing.LookAndFeelUtil.isAquaLAF;
 
 import java.awt.Color;
@@ -215,27 +211,6 @@ public class PreviewTablePanel extends JPanel {
 		sheetLabel = new JLabel("Sheet:");
 		sheetLabel.setVisible(false);
 		
-		final JLabel legendLabel = new JLabel("Legend:");
-		final JLabel pkLabel = new JLabel("Key");
-		final JLabel aliasLabel = new JLabel("Alias");
-		final JLabel ontologyLabel = new JLabel("Ontology");
-		final JLabel taxonLabel = new JLabel("Taxon");
-		
-		final JLabel pkIconLabel = new JLabel(KEY.getText());
-		pkIconLabel.setFont(iconManager.getIconFont(ICON_FONT_SIZE));
-		
-		final JLabel aliasIconLabel = new JLabel(ALIAS.getText());
-		aliasIconLabel.setFont(iconManager.getIconFont(ICON_FONT_SIZE));
-		aliasIconLabel.setForeground(ALIAS.getForeground());
-		
-		final JLabel ontologyIconLabel = new JLabel(ONTOLOGY.getText());
-		ontologyIconLabel.setFont(iconManager.getIconFont(ICON_FONT_SIZE));
-		ontologyIconLabel.setForeground(ONTOLOGY.getForeground());
-		
-		final JLabel taxonIconLabel = new JLabel(TAXON.getText());
-		taxonIconLabel.setFont(iconManager.getIconFont(ICON_FONT_SIZE));
-		taxonIconLabel.setForeground(TAXON.getForeground());
-		
 		final JLabel instructionLabel = new JLabel("Click on a column to edit it.");
 		instructionLabel.setFont(instructionLabel.getFont().deriveFont(LookAndFeelUtil.getSmallFontSize()));
 		
@@ -259,25 +234,6 @@ public class PreviewTablePanel extends JPanel {
 						.addComponent(getSelectNoneButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 				)
 				.addComponent(getTableScrollPane(), DEFAULT_SIZE, 320, Short.MAX_VALUE)
-				.addGroup(layout.createSequentialGroup()
-						.addComponent(legendLabel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-						.addPreferredGap(UNRELATED)
-						.addComponent(pkIconLabel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-						.addGap(2)
-						.addComponent(pkLabel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-						.addPreferredGap(UNRELATED)
-						.addComponent(aliasIconLabel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-						.addGap(2)
-						.addComponent(aliasLabel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-						.addPreferredGap(UNRELATED)
-						.addComponent(ontologyIconLabel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-						.addGap(2)
-						.addComponent(ontologyLabel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-						.addPreferredGap(UNRELATED)
-						.addComponent(taxonIconLabel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-						.addGap(2)
-						.addComponent(taxonLabel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-				)
 		);
 		layout.setVerticalGroup(layout.createSequentialGroup()
 				.addGroup(layout.createParallelGroup(CENTER, false)
@@ -290,30 +246,7 @@ public class PreviewTablePanel extends JPanel {
 				.addPreferredGap(RELATED)
 				.addComponent(getTableScrollPane(), 120, 160, Short.MAX_VALUE)
 				.addPreferredGap(RELATED)
-				.addGroup(layout.createParallelGroup(CENTER)
-						.addComponent(legendLabel)
-						.addComponent(pkIconLabel)
-						.addComponent(pkLabel)
-						.addComponent(aliasIconLabel)
-						.addComponent(aliasLabel)
-						.addComponent(ontologyIconLabel)
-						.addComponent(ontologyLabel)
-						.addComponent(taxonIconLabel)
-						.addComponent(taxonLabel)
-				)
 		);
-		
-		if (importType != ONTOLOGY_IMPORT) {
-			legendLabel.setVisible(false);
-			pkIconLabel.setVisible(false);
-			pkLabel.setVisible(false);
-			aliasIconLabel.setVisible(false);
-			aliasLabel.setVisible(false);
-			ontologyIconLabel.setVisible(false);
-			ontologyLabel.setVisible(false);
-			taxonIconLabel.setVisible(false);
-			taxonLabel.setVisible(false);
-		}
 		
 		ColumnResizer.adjustColumnPreferredWidths(getPreviewTable());
 		updatePreviewTable();
