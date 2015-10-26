@@ -872,14 +872,6 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 				return null;
 			} else {
 				final Property prop = ((Item) getValueAt(row, 0)).getProperty();
-				final Color fontColor;
-
-				if (prop != null && prop.getValue() != null && prop.getValue().getClass() == Color.class)
-					fontColor = (Color) prop.getValue();
-				else
-					fontColor = getForegroundColor();
-
-				final String colorString = Integer.toHexString(fontColor.getRGB());
 
 				if (prop == null)
 					return null;
@@ -890,15 +882,12 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 					return "Click to edit this mapping...";
 
 				if (displayName.equals(VizMapPropertyBuilder.COLUMN) || displayName.equals(VizMapPropertyBuilder.MAPPING_TYPE))
-					return "<html><Body BgColor=\"white\"><font Size=\"4\" Color=\"#" + colorString.substring(2, 8)
-							+ "\"><strong>" + prop.getDisplayName() + " = " + prop.getValue()
-							+ "</font></strong></body></html>";
+					return prop.getDisplayName() + ": " + prop.getValue();
 				else
-					return "<html><Body BgColor=\"white\"><font Size=\"4\" Color=\"#" + colorString.substring(2, 8)
-							+ "\"><strong>" + prop.getDisplayName() + ": "
+					return "<html>" + prop.getDisplayName() + ": "
 							+ (prop.getValue() != null ? 
 									VisualPropertyUtil.getDisplayString(prop.getValue()) : "<i>default value</i>")
-							+ "</font></strong></body></html>";
+							+ "</html>";
 			}
 		}
 		
