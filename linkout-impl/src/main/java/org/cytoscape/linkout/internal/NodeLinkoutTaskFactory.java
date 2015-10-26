@@ -1,5 +1,7 @@
 package org.cytoscape.linkout.internal;
 
+import org.cytoscape.model.CyNetwork;
+
 /*
  * #%L
  * Cytoscape Linkout Impl (linkout-impl)
@@ -52,5 +54,18 @@ public class NodeLinkoutTaskFactory extends AbstractNodeViewTaskFactory {
 
 	public void setLink(String link) {
 		this.link = link;
+	}
+	
+	@Override
+	public boolean isReady(View<CyNode> nodeView, CyNetworkView networkView) {
+		if(!super.isReady(nodeView, networkView)) {
+			return false;
+		}
+		try {
+			Object raw = networkView.getModel().getRow(nodeView.getModel()).getRaw(CyNetwork.NAME);
+			return raw != null;
+		} catch(Exception e) {
+			return false;
+		}
 	}
 }
