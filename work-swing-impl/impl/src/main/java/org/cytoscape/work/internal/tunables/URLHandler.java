@@ -27,6 +27,8 @@ package org.cytoscape.work.internal.tunables;
 import static org.cytoscape.work.internal.tunables.utils.GUIDefaults.updateFieldPanel;
 import static org.cytoscape.work.internal.tunables.utils.GUIDefaults.setTooltip;
 
+import java.awt.Component;
+import java.awt.Dimension;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.URL;
@@ -36,8 +38,10 @@ import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.ToolTipManager;
 
 import org.cytoscape.io.DataCategory;
@@ -51,6 +55,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Handler for the type <i>URL</i> of <code>Tunable</code>
  */
+@SuppressWarnings("serial")
 public class URLHandler extends AbstractGUITunableHandler {
 
 	private static final Logger logger = LoggerFactory.getLogger(URLHandler.class);
@@ -74,14 +79,14 @@ public class URLHandler extends AbstractGUITunableHandler {
 	 */
 	public URLHandler(Field f, Object o, Tunable t, final DataSourceManager manager) {
 		super(f, o, t);
-		dataSourceMap = new HashMap<String, String>();
+		dataSourceMap = new HashMap<>();
 		init(manager);
 	}
 
 	public URLHandler(final Method getter, final Method setter, final Object instance, final Tunable tunable,
 			final DataSourceManager manager) {
 		super(getter, setter, instance, tunable);
-		dataSourceMap = new HashMap<String, String>();
+		dataSourceMap = new HashMap<>();
 		init(manager);
 	}
 
@@ -112,7 +117,7 @@ public class URLHandler extends AbstractGUITunableHandler {
 	}
 
 	/**
-	 * Set the url typed in the field, or choosen from the combobox to the
+	 * Set the url typed in the field, or chosen from the combobox to the
 	 * object <code>URL</code> <code>o</code>
 	 */
 	@Override
@@ -140,9 +145,7 @@ public class URLHandler extends AbstractGUITunableHandler {
 
 	}
 
-	// Tooltips to inform the user are also provided on the combobox
 	private void initGUI() {
-		// adding tooltips to panel components
 		final ToolTipManager tipManager = ToolTipManager.sharedInstance();
 		tipManager.setInitialDelay(1);
 		tipManager.setDismissDelay(7500);
@@ -155,6 +158,17 @@ public class URLHandler extends AbstractGUITunableHandler {
 				"<ul><li>Type URL</li><li>Select from pull down menu</li>" +
 				"<li>Drag & Drop URL from Web Browser</li></ul></body><html>"
 		);
+		networkFileComboBox.setRenderer(new DefaultListCellRenderer() {
+			@Override
+			public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected,
+					boolean cellHasFocus) {
+				super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+				this.setToolTipText(value != null ? value.toString() : null);
+				return this;
+			}
+		});
+		networkFileComboBox.setPreferredSize(new Dimension(660, networkFileComboBox.getPreferredSize().height));
+		networkFileComboBox.setMaximumSize(networkFileComboBox.getPreferredSize());
 
 		final JLabel label = new JLabel("Import data from URL:");
 		
