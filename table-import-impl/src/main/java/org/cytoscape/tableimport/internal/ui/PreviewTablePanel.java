@@ -69,6 +69,7 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.Vector;
@@ -495,7 +496,7 @@ public class PreviewTablePanel extends JPanel {
 					sourceName = "Source Table";
 				
 				dataTypes = TypeUtil.guessDataTypes(newModel);
-				types = TypeUtil.guessTypes(importType, newModel, dataTypes);
+				types = TypeUtil.guessTypes(importType, newModel, dataTypes, null);
 				listDelimiters = new String[newModel.getColumnCount()];
 				
 				updatePreviewTable(newModel, sourceName);
@@ -509,7 +510,7 @@ public class PreviewTablePanel extends JPanel {
 		final PreviewTableModel model = (PreviewTableModel) getPreviewTable().getModel();
 		model.setFirstRowNames(true);
 
-		types = TypeUtil.guessTypes(importType, model, dataTypes);
+		types = TypeUtil.guessTypes(importType, model, dataTypes, null);
 		updatePreviewTable();
 		
 		ColumnResizer.adjustColumnPreferredWidths(getPreviewTable());
@@ -854,7 +855,7 @@ public class PreviewTablePanel extends JPanel {
 				if (attrName != null && !attrName.trim().isEmpty()) {
 					((PreviewTableModel) getPreviewTable().getModel()).setColumnName(colIdx, attrName);
 					getPreviewTable().getColumnModel().getColumn(colIdx).setHeaderValue(attrName);
-					updatePreviewTable(colIdx);
+					updatePreviewTable();
 				}
 			}
 		});
@@ -862,7 +863,7 @@ public class PreviewTablePanel extends JPanel {
 			@Override
 			public void propertyChange(PropertyChangeEvent evt) {
 				setType(colIdx, (SourceColumnSemantic)evt.getNewValue());
-				updatePreviewTable(colIdx);
+				updatePreviewTable();
 			}
 		});
 		attrEditorPanel.addPropertyChangeListener("attributeDataType", new PropertyChangeListener() {
@@ -874,14 +875,14 @@ public class PreviewTablePanel extends JPanel {
 					setListDelimiter(colIdx, attrEditorPanel.getListDelimiter());
 
 				setDataType(colIdx, newDataType);
-				updatePreviewTable(colIdx);
+				updatePreviewTable();
 			}
 		});
 		attrEditorPanel.addPropertyChangeListener("listDelimiter", new PropertyChangeListener() {
 			@Override
 			public void propertyChange(PropertyChangeEvent evt) {
 				setListDelimiter(colIdx, (String)evt.getNewValue());
-				updatePreviewTable(colIdx);
+				updatePreviewTable();
 			}
 		});
 		
@@ -959,7 +960,7 @@ public class PreviewTablePanel extends JPanel {
 			final String sheetName = sheet.getSheetName();
 			
 			dataTypes = TypeUtil.guessDataTypes(newModel);
-			types = TypeUtil.guessTypes(importType, newModel, dataTypes);
+			types = TypeUtil.guessTypes(importType, newModel, dataTypes, null);
 			listDelimiters = new String[newModel.getColumnCount()];
 			
 			updatePreviewTable(newModel, sheetName);
@@ -967,11 +968,6 @@ public class PreviewTablePanel extends JPanel {
 		
 		if (getPreviewTable() == null)
 			throw new IllegalStateException("No data found in the Excel sheets.");
-	}
-	
-	private void updatePreviewTable(final int colIdx) {
-		ColumnResizer.adjustColumnPreferredWidth(getPreviewTable(), colIdx);
-		updatePreviewTable();
 	}
 	
 	private void updatePreviewTable(final PreviewTableModel newModel, final String name) {
@@ -1044,7 +1040,18 @@ public class PreviewTablePanel extends JPanel {
 				@Override
 				public void actionPerformed(final ActionEvent e) {
 					disposeEditDialog();
-					replaceType(NONE, TypeUtil.getDefaultType(importType));
+					
+					// Replace types "NONE" with new guessed types.
+					// NOTE: This must not change the current data types!
+					final Set<SourceColumnSemantic> ignoredTypes = new HashSet<>(Arrays.asList(types));
+					final SourceColumnSemantic[] newTypes =
+							TypeUtil.guessTypes(importType, getPreviewTable().getModel(), dataTypes, ignoredTypes);
+					
+					for (int i = 0; i < newTypes.length; i++) {
+						if (types.length > i && types[i] == NONE)
+							setType(i, newTypes[i]);
+					}
+					
 					updatePreviewTable();
 				}
 			});

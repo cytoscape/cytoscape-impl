@@ -126,7 +126,7 @@ public final class TypeUtil {
 	}
 	
 	public static SourceColumnSemantic[] guessTypes(final ImportType importType, final TableModel model,
-			final AttributeDataType[] dataTypes) {
+			final AttributeDataType[] dataTypes, final Set<SourceColumnSemantic> ignoredTypes) {
 		final int size = model.getColumnCount();
 		
 		final SourceColumnSemantic[] types = new SourceColumnSemantic[size];
@@ -139,12 +139,12 @@ public final class TypeUtil {
 		if (dataTypes == null || dataTypes.length == 0 || dataTypes.length != model.getColumnCount())
 			return types;
 		
-		boolean srcFound = false;
-		boolean tgtFound = false;
-		boolean interactFound = false;
-		boolean keyFound = false;
-		boolean goFound = false;
-		boolean taxFound = false;
+		boolean srcFound = ignoredTypes != null && ignoredTypes.contains(SOURCE);
+		boolean tgtFound = ignoredTypes != null && ignoredTypes.contains(TARGET);
+		boolean interactFound = ignoredTypes != null && ignoredTypes.contains(INTERACTION);
+		boolean keyFound = ignoredTypes != null && ignoredTypes.contains(KEY);
+		boolean goFound = ignoredTypes != null && ignoredTypes.contains(ONTOLOGY);
+		boolean taxFound = ignoredTypes != null && ignoredTypes.contains(TAXON);
 
 		// First pass: Look for exact column name
 		// Second pass: Select column whose name contains one of the tokens
