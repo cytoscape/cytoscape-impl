@@ -329,12 +329,9 @@ public class CyActivator extends AbstractCyActivator {
 
 		Properties helpContentsTaskFactoryProps = new Properties();
 		helpContentsTaskFactoryProps.setProperty(PREFERRED_MENU, "Help");
-//		helpContentsTaskFactoryProps.setProperty(LARGE_ICON_URL, getClass().getResource("/images/Icons/help-32.png").toString());
 		helpContentsTaskFactoryProps.setProperty(TITLE, "Contents...");
 		helpContentsTaskFactoryProps.setProperty(MENU_GRAVITY,"1.0");
 		helpContentsTaskFactoryProps.setProperty(TOOLTIP, "Show Help Contents...");
-//		helpContentsTaskFactoryProps.setProperty(TOOL_BAR_GRAVITY, "20.0f");
-//		helpContentsTaskFactoryProps.setProperty(IN_TOOL_BAR, "true");
 		registerService(bc, helpContentsTaskFactory, TaskFactory.class, helpContentsTaskFactoryProps);
 
 		Properties helpContactHelpDeskTaskFactoryProps = new Properties();
