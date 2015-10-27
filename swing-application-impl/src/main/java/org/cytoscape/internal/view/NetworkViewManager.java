@@ -24,6 +24,7 @@ package org.cytoscape.internal.view;
  * #L%
  */
 
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.KeyboardFocusManager;
 import java.awt.Point;
@@ -41,6 +42,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.WeakHashMap;
 
+import javax.swing.BorderFactory;
 import javax.swing.JDesktopPane;
 import javax.swing.JInternalFrame;
 import javax.swing.SwingUtilities;
@@ -72,6 +74,7 @@ import org.cytoscape.session.events.SessionLoadCancelledEvent;
 import org.cytoscape.session.events.SessionLoadCancelledListener;
 import org.cytoscape.session.events.SessionLoadedEvent;
 import org.cytoscape.session.events.SessionLoadedListener;
+import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.View;
@@ -359,6 +362,11 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 		// Create a new InternalFrame and put the CyNetworkView Component into it
 		final String title = getTitle(view);
 		final JInternalFrame iframe = new JInternalFrame(title, true, true, true, true);
+		// This is to work around a bug with Mac JInternalFrame L&F that causes large borders (#3352)
+		if (LookAndFeelUtil.isAquaLAF()) {
+			iframe.putClientProperty("JInternalFrame.frameType", "normal");
+			iframe.getRootPane().setBorder(BorderFactory.createMatteBorder(0, 1, 1, 1, new Color(128, 128, 128, 128)));
+		}
 		
 		// This is for force move title bar to the desktop if it's out of range.
 		iframe.addMouseListener(new MouseAdapter() {
