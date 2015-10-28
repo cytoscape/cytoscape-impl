@@ -1,7 +1,5 @@
 package org.cytoscape.linkout.internal;
 
-import org.cytoscape.model.CyNetwork;
-
 /*
  * #%L
  * Cytoscape Linkout Impl (linkout-impl)
@@ -45,7 +43,11 @@ public class NodeLinkoutTaskFactory extends AbstractNodeViewTaskFactory {
 	}
 
 	public TaskIterator createTaskIterator(View<CyNode> nodeView, CyNetworkView netView) {
-		return new TaskIterator(new LinkoutTask(link, browser, netView.getModel(), nodeView.getModel()));
+		return new TaskIterator(createTask(nodeView, netView));
+	}
+	
+	private LinkoutTask createTask(View<CyNode> nodeView, CyNetworkView netView) {
+		return new LinkoutTask(link, browser, netView.getModel(), nodeView.getModel());
 	}
 
 	public String getLink() {
@@ -57,15 +59,10 @@ public class NodeLinkoutTaskFactory extends AbstractNodeViewTaskFactory {
 	}
 	
 	@Override
-	public boolean isReady(View<CyNode> nodeView, CyNetworkView networkView) {
-		if(!super.isReady(nodeView, networkView)) {
+	public boolean isReady(View<CyNode> nodeView, CyNetworkView netView) {
+		if(!super.isReady(nodeView, netView))
 			return false;
-		}
-		try {
-			Object raw = networkView.getModel().getRow(nodeView.getModel()).getRaw(CyNetwork.NAME);
-			return raw != null;
-		} catch(Exception e) {
-			return false;
-		}
+		LinkoutTask task = createTask(nodeView, netView);
+		return task.isValidUrl();
 	}
 }
