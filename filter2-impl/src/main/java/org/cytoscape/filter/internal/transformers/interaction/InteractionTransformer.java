@@ -4,6 +4,7 @@ import org.cytoscape.filter.internal.AbstractMemoizableTransformer;
 import org.cytoscape.filter.internal.filters.composite.CompositeFilterImpl;
 import org.cytoscape.filter.model.CompositeFilter;
 import org.cytoscape.filter.model.ElementTransformer;
+import org.cytoscape.filter.model.Filter;
 import org.cytoscape.filter.model.SubFilterTransformer;
 import org.cytoscape.filter.model.TransformerSink;
 import org.cytoscape.filter.transformers.Transformers;
@@ -79,6 +80,7 @@ public class InteractionTransformer extends AbstractMemoizableTransformer<CyNetw
 		
 		if(element instanceof CyEdge) {
 			CyEdge edge = (CyEdge) element;
+			Filter<CyNetwork,CyIdentifiable> memoizedFilter = super.getMemoizedFilter();
 
 			if(selectSource) {
 				CyNode source = edge.getSource();

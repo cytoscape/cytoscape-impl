@@ -4,6 +4,7 @@ import org.cytoscape.filter.internal.AbstractMemoizableTransformer;
 import org.cytoscape.filter.internal.filters.composite.CompositeFilterImpl;
 import org.cytoscape.filter.model.CompositeFilter;
 import org.cytoscape.filter.model.ElementTransformer;
+import org.cytoscape.filter.model.Filter;
 import org.cytoscape.filter.model.SubFilterTransformer;
 import org.cytoscape.filter.model.TransformerSink;
 import org.cytoscape.filter.transformers.Transformers;
@@ -56,6 +57,7 @@ public class AdjacencyTransformer extends AbstractMemoizableTransformer<CyNetwor
 		adjacentElementFilter.addListener(this::notifyListeners);
 	}
 	
+	
 	@Override
 	public CompositeFilter<CyNetwork,CyIdentifiable> getCompositeFilter() {
 		return adjacentElementFilter;
@@ -93,6 +95,7 @@ public class AdjacencyTransformer extends AbstractMemoizableTransformer<CyNetwor
 		if(element instanceof CyNode) {
 			CyNode currentNode = (CyNode) element;
 			Iterable<CyEdge> adjacentEdges  = network.getAdjacentEdgeIterable(currentNode, edgesAre.type());
+			Filter<CyNetwork,CyIdentifiable> memoizedFilter = super.getMemoizedFilter();
 			
 			for(CyEdge edge : adjacentEdges) {
 				CyNode node = otherNode(currentNode, edge);

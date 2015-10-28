@@ -24,15 +24,18 @@ import org.cytoscape.model.CyIdentifiable;
  */
 public abstract class AbstractMemoizableTransformer<C,E extends CyIdentifiable> extends AbstractTransformer<C, E> implements MemoizableTransformer {
 	
-	protected Filter<C,E> memoizedFilter;
+	private Filter<C,E> memoizedFilter;
 	
 	abstract protected CompositeFilter<C,E> getCompositeFilter();
 	
 	
-	public AbstractMemoizableTransformer() {
-		Filter<C,E> subfilter = getCompositeFilter();
-		memoizedFilter = subfilter;
+	protected Filter<C,E> getMemoizedFilter() {
+		if(memoizedFilter == null) {
+			memoizedFilter = getCompositeFilter();
+		}
+		return memoizedFilter;
 	}
+	
 	
 	@Override
 	public void startCaching() {

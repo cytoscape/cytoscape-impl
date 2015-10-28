@@ -113,6 +113,7 @@ public class TopologyFilter extends AbstractMemoizableTransformer<CyNetwork,CyId
 	
 	
 	private void traverse(CyNetwork network, CyNode node, int distance, Set<Long> counted, Map<Long,Integer> sourceToTarget, Map<Long,Integer> targetToSource) {
+		Filter<CyNetwork,CyIdentifiable> memoizedFilter = super.getMemoizedFilter();
 		if(memoizedFilter.accepts(network, node))
 			counted.add(node.getSUID());
 		
