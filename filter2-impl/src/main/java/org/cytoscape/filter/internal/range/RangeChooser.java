@@ -98,10 +98,11 @@ public class RangeChooser<N extends Number & Comparable<N>> extends JPanel {
 		add(spacerPanel, new GridBagConstraints(5, row, 1, 1, 1, 0, GridBagConstraints.LINE_START,  GridBagConstraints.HORIZONTAL,  new Insets(0, 0, 0, 0), 0, 0));
 		row++;
 		
-		if (isInteractive) {
+		// Why are we hiding the slider?
+		//if (isInteractive) {
 			add(slider, new GridBagConstraints(0, row, 6, 1, 1, 0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 3, 3), 0, 0));
 			slider.invalidate();
-		}
+		//}
 		revalidate();
 	}
 }
