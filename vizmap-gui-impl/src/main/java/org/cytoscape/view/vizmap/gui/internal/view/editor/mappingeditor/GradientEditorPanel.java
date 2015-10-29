@@ -147,8 +147,8 @@ public class GradientEditorPanel<T extends Number> extends ContinuousMappingEdit
 	}
 
 	private void createSimpleGradient() {
-		Number rangeValue = tracer.getRange(type);
 		Number minValue = tracer.getMin(type);
+		Number maxValue = tracer.getMax(type);
 
 		final BoundaryRangeValues<Color> lowerRange;
 		final BoundaryRangeValues<Color> upperRange;
@@ -161,10 +161,10 @@ public class GradientEditorPanel<T extends Number> extends ContinuousMappingEdit
 
 		// Add two points.
 		mapping.addPoint(
-				NumberConverter.convert(columnType, ((rangeValue.doubleValue() * 0.1) + minValue.doubleValue())),
+				NumberConverter.convert(columnType, minValue.doubleValue()),
 				lowerRange);
 		mapping.addPoint(
-				NumberConverter.convert(columnType, (rangeValue.doubleValue() * 0.9) + minValue.doubleValue()),
+				NumberConverter.convert(columnType, maxValue.doubleValue()),
 				upperRange);
 	}
 
