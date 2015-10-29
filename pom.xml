@@ -32,8 +32,6 @@
 		<module>filter2-impl</module>
 		<module>graphml-impl</module>
 		<module>group-impl</module>
-		<!--module>group-data-impl</module-->
-		<!--module>group-view-impl</module-->
 		<module>io-impl</module>
 		<module>json-impl</module>
 		<module>layout-cytoscape-impl</module>
@@ -44,8 +42,6 @@
 		<module>log-swing-impl</module>
 		<module>manual-layout-impl</module>
 		<module>model-impl</module>
-		<module>opencl-cycl-impl</module>
-		<module>opencl-layout-impl</module>
 		<module>app-impl</module>
 		<module>presentation-impl</module>
 		<module>property-impl</module>
