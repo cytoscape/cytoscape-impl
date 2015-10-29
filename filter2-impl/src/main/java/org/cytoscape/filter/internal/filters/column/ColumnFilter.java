@@ -104,7 +104,7 @@ public class ColumnFilter extends AbstractTransformer<CyNetwork, CyIdentifiable>
 	private void setCriterionImpl(Object criterion) {
 		rawCriterion = criterion;
 		
-		if (criterion instanceof List) {
+		if (isListOfNumber(criterion)) {
 			List<Number> list = (List<Number>) criterion;
 			lowerBound = list.get(0);
 			upperBound = list.get(1);
@@ -128,6 +128,14 @@ public class ColumnFilter extends AbstractTransformer<CyNetwork, CyIdentifiable>
 			stringCriterion = null;
 			lowerCaseCriterion = null;
 		}
+	}
+	
+	private static boolean isListOfNumber(Object criterion) {
+		if(criterion instanceof List) {
+			List<?> list = (List<?>) criterion;
+			return list.size() >= 2 && list.get(0) instanceof Number && list.get(1) instanceof Number;
+		}
+		return false;
 	}
 	
 	@Tunable

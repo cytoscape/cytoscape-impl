@@ -176,6 +176,9 @@ public class ModelMonitor implements SetCurrentNetworkListener,
 			return false;
 		}
 		double number = ((Number) value).doubleValue();
+		if(!Double.isFinite(number)) // ignore NaN and infinity
+			return false;
+		
 		range[0] = Math.min(range[0], number);
 		range[1] = Math.max(range[1], number);
 		return true;
@@ -191,9 +194,11 @@ public class ModelMonitor implements SetCurrentNetworkListener,
 				continue;
 			}
 			double number = ((Number) value).doubleValue();
-			range[0] = Math.min(range[0], number);
-			range[1] = Math.max(range[1], number);
-			changed = true;
+			if(Double.isFinite(number)) {
+				range[0] = Math.min(range[0], number);
+				range[1] = Math.max(range[1], number);
+				changed = true;
+			}
 		}
 		return changed;
 	}
