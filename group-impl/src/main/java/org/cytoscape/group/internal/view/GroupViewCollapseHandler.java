@@ -318,13 +318,24 @@ public class GroupViewCollapseHandler implements GroupAboutToCollapseListener,
 				List<CyEdge> groupNodeEdges = rootNetwork.getAdjacentEdgeList(groupNode, CyEdge.Type.ANY);
 				for (CyEdge edge: groupNodeEdges) {
 					CyRow row = rootNetwork.getRow(edge, CyNetwork.HIDDEN_ATTRS);
-					// System.out.println("Group node edge: "+edge+"("+
-					//                    rootNetwork.getRow(edge).get(CyNetwork.NAME, String.class)+")");
+					/*
+					System.out.println("Group node edge: "+edge+"("+
+					                   rootNetwork.getRow(edge).get(CyNetwork.NAME, String.class)+")");
+					if (row != null && row.isSet(CyGroupImpl.ISMETA_EDGE_ATTR))
+						System.out.println("ISMETA =  "+row.get(CyGroupImpl.ISMETA_EDGE_ATTR, Boolean.class));
+					*/
+
 					// Only add non-meta edges
 					if (row != null && 
 							(!row.isSet(CyGroupImpl.ISMETA_EDGE_ATTR) ||
 							 !row.get(CyGroupImpl.ISMETA_EDGE_ATTR, Boolean.class))) {
 						subnet.addEdge(edge);
+					} else if (subnet.containsEdge(edge) &&
+					           row != null &&
+										 row.isSet(CyGroupImpl.ISMETA_EDGE_ATTR) &&
+										 row.get(CyGroupImpl.ISMETA_EDGE_ATTR, Boolean.class)) {
+						// Edge is a meta edge, but is still in the network.  Remove it
+						subnet.removeEdges(Collections.singletonList(edge));
 					}
 				}
 
