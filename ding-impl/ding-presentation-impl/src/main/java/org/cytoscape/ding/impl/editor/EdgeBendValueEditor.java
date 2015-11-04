@@ -261,7 +261,6 @@ public class EdgeBendValueEditor implements ValueEditor<Bend> {
 
 		// Render it in this panel.  It is not necessary to register this engine to manager.
 		presentationFactory.createRenderingEngine(innerPanel, dummyView);
-		dummyView.fitContent();
 		
 		final InnerCanvas innerCanvas = (InnerCanvas) innerPanel.getComponent(0);
 		innerCanvas.disablePopupMenu();
@@ -286,6 +285,7 @@ public class EdgeBendValueEditor implements ValueEditor<Bend> {
 			dialog.setLocationByPlatform(true);
 
 		dialog.pack();
+		dummyView.fitContent();
 		dialog.setVisible(true);
 		
 		EditMode.setMode(false);
