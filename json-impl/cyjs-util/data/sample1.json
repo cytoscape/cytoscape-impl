@@ -1,6 +1,6 @@
 {
   "format_version" : "1.0",
-  "generated_by" : "cytoscape-3.3.0-SNAPSHOT",
+  "generated_by" : "cytoscape-3.3.0",
   "target_cytoscapejs_version" : "~2.1",
   "data" : {
     "shared_name" : "BIOGRID-ORGANISM-Escherichia_coli-3.2.105.mitab",
