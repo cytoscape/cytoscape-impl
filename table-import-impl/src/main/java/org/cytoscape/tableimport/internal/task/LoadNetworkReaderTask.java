@@ -164,7 +164,6 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 		List<String> tempList = new ArrayList<>();
 		tempList = new ArrayList<>();
 		tempList.add(TextDelimiter.TAB.getDelimiter());
-		tempList.add(TextDelimiter.SPACE.getDelimiter());
 		tempList.add(TextDelimiter.COMMA.getDelimiter());
 		delimiters.setSelectedValues(tempList);
 		delimitersForDataList.setSelectedValue(TextDelimiter.PIPE.getDelimiter());

@@ -1023,7 +1023,6 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 				commaCheckBox.setSelected(true);
 			} else {
 				tabCheckBox.setSelected(true);
-				spaceCheckBox.setSelected(importType == NETWORK_IMPORT);
 			}
 
 			otherDelimiterTextField.setEnabled(false);

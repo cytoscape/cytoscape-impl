@@ -158,7 +158,6 @@ public class LoadTableReaderTask extends AbstractTask implements CyTableReader, 
 		
 		List<String> tempList = new ArrayList<>();
 		tempList.add(TextDelimiter.TAB.getDelimiter());
-		tempList.add(TextDelimiter.SPACE.getDelimiter());
 		delimiters.setSelectedValues(tempList);
 		delimitersForDataList.setSelectedValue(TextDelimiter.PIPE.getDelimiter());
 	}
