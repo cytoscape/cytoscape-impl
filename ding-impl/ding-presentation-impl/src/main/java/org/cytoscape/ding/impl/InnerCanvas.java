@@ -179,7 +179,9 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 			synchronized (m_lock) {
 				m_img = img;
 				m_grafx = grafx;
-				m_view.m_viewportChanged = true;
+				
+				if (m_view != null)
+					m_view.m_viewportChanged = true;
 			}
 		}
 	}
@@ -263,9 +265,12 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 	@Override
 	public void print(Graphics g) {
 		isPrinting = true;
-		renderGraph(new GraphGraphics(
-				new ImageImposter(g, getWidth(), getHeight()), /* debug = */ false, /* clear = */ false), 
-				/* setLastRenderDetail = */ false, m_view.m_printLOD);
+		
+		if (m_view != null)
+			renderGraph(new GraphGraphics(
+					new ImageImposter(g, getWidth(), getHeight()), /* debug = */ false, /* clear = */ false), 
+					/* setLastRenderDetail = */ false, m_view.m_printLOD);
+		
 		isPrinting = false;
 	}
 
@@ -274,7 +279,10 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 	public void printNoImposter(Graphics g) {
 		isPrinting = true;
 		final Image img = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_ARGB);
-		renderGraph(new GraphGraphics(img, false, false), /* setLastRenderDetail = */ false, m_view.m_printLOD);
+		
+		if (m_view != null)
+			renderGraph(new GraphGraphics(img, false, false), /* setLastRenderDetail = */ false, m_view.m_printLOD);
+		
 		isPrinting = false;
 	}
 

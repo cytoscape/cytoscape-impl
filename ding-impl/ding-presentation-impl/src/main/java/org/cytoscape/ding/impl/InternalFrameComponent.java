@@ -160,7 +160,6 @@ public class InternalFrameComponent extends JComponent implements Printable {
 
 			return PAGE_EXISTS;
 		} else
-
 			return NO_SUCH_PAGE;
 	}
 
