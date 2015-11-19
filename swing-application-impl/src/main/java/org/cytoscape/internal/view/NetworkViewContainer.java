@@ -100,6 +100,6 @@ public class NetworkViewContainer extends JComponent implements RootPaneContaine
 	}
 	
 	protected static String createUniqueName(final CyNetworkView view) {
-		return view.getModel().getSUID() + "__" + view.getRendererId() + "__" + view.hashCode();
+		return view.getSUID() + "__" + view.getRendererId() + "__" + view.hashCode();
 	}
 }

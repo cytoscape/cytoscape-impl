@@ -21,6 +21,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
@@ -39,7 +41,9 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JSeparator;
 import javax.swing.JSlider;
+import javax.swing.JTextField;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -78,6 +82,7 @@ public class NetworkViewsPanel extends JPanel {
 	private JButton nextViewButton;
 	private JButton detachViewButton;
 	private JLabel viewTitleLabel;
+	private JTextField viewTitleTextField;
 	
 	private final Map<String, NetworkViewContainer> viewContainers;
 	private final Map<String, JFrame> viewFrames;
@@ -101,7 +106,7 @@ public class NetworkViewsPanel extends JPanel {
 						public void mouseClicked(MouseEvent e) {
 							if (e.getClickCount() == 2) {
 								setCurrentNetworkView(tp.getNetworkView());
-								show(NetworkViewContainer.createUniqueName(tp.getNetworkView()));
+								show(tp.getNetworkView());
 							}
 						}
 					});
@@ -122,8 +127,12 @@ public class NetworkViewsPanel extends JPanel {
 		vc.addComponentListener(new ComponentAdapter() {
 			@Override
 			public void componentShown(ComponentEvent e) {
-				// TODO move to NetworkViewManager and fire event here
-				serviceRegistrar.getService(CyApplicationManager.class).setCurrentNetworkView(vc.getNetworkView());
+				final CyNetworkView oldView = getCurrentNetworkView();
+				
+				if ((oldView == null && view == null) || (oldView != null && oldView.equals(view)))
+					return;
+				
+				firePropertyChange("currentNetworkView", oldView, view);
 			}
 		});
 		
@@ -162,6 +171,10 @@ public class NetworkViewsPanel extends JPanel {
 		}
 	}
 	
+	public CyNetworkView getCurrentNetworkView() {
+		return networkViewGrid.getCurrentNetworkView();
+	}
+	
 	public void setCurrentNetworkView(final CyNetworkView view) {
 		networkViewGrid.setCurrentNetworkView(view);
 		
@@ -170,7 +183,7 @@ public class NetworkViewsPanel extends JPanel {
 		} else {
 			final String name = NetworkViewContainer.createUniqueName(view);
 			
-			if (networkViewGrid == getCurrentCard()) {
+			if (isGridMode()) {
 				final JFrame frame = viewFrames.get(name);
 				
 				if (frame != null)
@@ -235,11 +248,9 @@ public class NetworkViewsPanel extends JPanel {
 		view.updateView();
 	}
 	
-	private void showCurrentNetworkView() {
-		final CyNetworkView view = serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetworkView();
-		
+	private void show(final CyNetworkView view) {
 		if (view != null)
-			setCurrentNetworkView(view);
+			show(NetworkViewContainer.createUniqueName(view));
 	}
 	
 	private void show(final String name) {
@@ -270,6 +281,10 @@ public class NetworkViewsPanel extends JPanel {
 		frame.setVisible(true);
 		frame.toFront();
 		showGrid();
+	}
+	
+	private boolean isGridMode() {
+		return getCurrentCard() == getGridScrollPane();
 	}
 	
 	private void updateToolBars() {
@@ -305,11 +320,11 @@ public class NetworkViewsPanel extends JPanel {
 	private Component getCurrentCard() {
 		Component current = null;
 		
-		for (Component comp : getContentPane().getComponents()) {
+		for (Component comp : getContentPane().getComponents()) {System.out.println("\t. " + comp.getName() + ": " + comp.isVisible());
 			if (comp.isVisible())
 				current = comp;
 		}
-
+		System.out.println("\t\t>> " + current.getName() + "\n");
 		return current;
 	}
 	
@@ -382,6 +397,8 @@ public class NetworkViewsPanel extends JPanel {
 			viewToolBar = new JPanel();
 			viewToolBar.setName("viewToolBar");
 			
+			final JSeparator sep = new JSeparator(JSeparator.VERTICAL);
+			
 			final GroupLayout layout = new GroupLayout(viewToolBar);
 			viewToolBar.setLayout(layout);
 			layout.setAutoCreateContainerGaps(true);
@@ -393,8 +410,9 @@ public class NetworkViewsPanel extends JPanel {
 					.addComponent(getPreviousViewButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(getNextViewButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(getDetachViewButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addGap(0, 10, Short.MAX_VALUE)
+					.addComponent(sep, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(getViewTitleLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(getViewTitleTextField(), 100, 260, 320)
 					.addGap(0, 10, Short.MAX_VALUE)
 					.addComponent(getDestroyViewButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addContainerGap()
@@ -404,7 +422,9 @@ public class NetworkViewsPanel extends JPanel {
 					.addComponent(getPreviousViewButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(getNextViewButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(getDetachViewButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(sep, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 					.addComponent(getViewTitleLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(getViewTitleTextField(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(getDestroyViewButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 			);
 		}
@@ -433,7 +453,7 @@ public class NetworkViewsPanel extends JPanel {
 			viewModeButton.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					showCurrentNetworkView();
+					show(getCurrentNetworkView());
 				}
 			});
 		}
@@ -519,11 +539,40 @@ public class NetworkViewsPanel extends JPanel {
 	private JLabel getViewTitleLabel() {
 		if (viewTitleLabel == null) {
 			viewTitleLabel = new JLabel();
+			viewTitleLabel.setToolTipText("Double-click to change the title...");
 			viewTitleLabel.setFont(viewTitleLabel.getFont().deriveFont(LookAndFeelUtil.getSmallFontSize()));
-			viewTitleLabel.setHorizontalAlignment(JLabel.CENTER);
+			viewTitleLabel.addMouseListener(new MouseAdapter() {
+				@Override
+				public void mouseClicked(MouseEvent e) {
+					if (e.getClickCount() == 2)
+						showViewTitleEditor();
+				}
+			});
 		}
 		
 		return viewTitleLabel;
+	}
+	
+	public JTextField getViewTitleTextField() {
+		if (viewTitleTextField == null) {
+			viewTitleTextField = new JTextField();
+			viewTitleTextField.putClientProperty("JComponent.sizeVariant", "mini"); // Aqua (Mac OS X) only
+			viewTitleTextField.setVisible(false);
+			viewTitleTextField.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					changeCurrentViewTitle(viewTitleTextField.getText());
+				}
+			});
+			viewTitleTextField.addFocusListener(new FocusAdapter() {
+				@Override
+				public void focusLost(FocusEvent e) {
+					changeCurrentViewTitle(viewTitleTextField.getText());
+				}
+			});
+		}
+		
+		return viewTitleTextField;
 	}
 	
 	private JButton getDestroyViewButton() {
@@ -571,6 +620,31 @@ public class NetworkViewsPanel extends JPanel {
 		}
 		
 		return thumbnailSlider;
+	}
+	
+	private void showViewTitleEditor() {
+		getViewTitleTextField().setText(getViewTitleLabel().getText());
+		getViewTitleLabel().setVisible(false);
+		getViewTitleTextField().setVisible(true);
+		getViewTitleTextField().requestFocusInWindow();
+	}
+	
+	private void changeCurrentViewTitle(String text) {
+		if (text != null) {
+			text = text.trim();
+			
+			// TODO Make sure it's unique
+			if (!text.isEmpty()) {
+				getViewTitleLabel().setText(text);
+				// TODO This will fire a ViewChangedEvent - Just let the NetworkViewManager ask this panel to update itself instead?
+				getCurrentNetworkView().setVisualProperty(BasicVisualLexicon.NETWORK_TITLE, text);
+			}
+		}
+		
+		getViewTitleTextField().setText(null);
+		getViewTitleTextField().setVisible(false);
+		getViewTitleLabel().setVisible(true);
+		getViewToolBar().invalidate();
 	}
 	
 	static void styleButton(final AbstractButton btn, final Font font) {

@@ -32,6 +32,8 @@ import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.util.Collection;
 import java.util.Collections;
@@ -112,7 +114,7 @@ import org.slf4j.LoggerFactory;
  * Managing views (presentations) in current session.
  * 
  */
-public class NetworkViewManager extends InternalFrameAdapter implements NetworkViewAddedListener,
+public class NetworkViewManager implements NetworkViewAddedListener,
 		NetworkViewAboutToBeDestroyedListener, SetCurrentNetworkViewListener, SetCurrentNetworkListener,
 		RowsSetListener, VisualStyleChangedListener, SetCurrentVisualStyleListener, UpdateNetworkPresentationListener,
 		VisualStyleSetListener, SessionAboutToBeLoadedListener, SessionLoadCancelledListener, SessionLoadedListener,
@@ -158,6 +160,42 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 		frameListeners = new HashMap<>();
 		viewUpdateRequired = new HashSet<>();
 		mappedValuesMap = new HashMap<>();
+		
+		networkViewsPanel.addPropertyChangeListener("currentNetworkView", new PropertyChangeListener() {
+			@Override
+			public void propertyChange(PropertyChangeEvent e) {
+				final CyNetworkView targetView = (CyNetworkView) e.getNewValue();
+				
+				final CyApplicationManager appMgr = serviceRegistrar.getService(CyApplicationManager.class);
+				final CyNetworkViewManager netViewMgr = serviceRegistrar.getService(CyNetworkViewManager.class);
+				final RenderingEngine<CyNetwork> currentEngine = appMgr.getCurrentRenderingEngine();
+				
+				if (targetView != null) {
+					if (netViewMgr.getNetworkViewSet().contains(targetView)) {
+						if (!targetView.equals(appMgr.getCurrentNetworkView()))
+							appMgr.setCurrentNetworkView(targetView);
+			
+						if (currentEngine == null || currentEngine.getViewModel() != targetView)
+							appMgr.setCurrentRenderingEngine(presentationMap.get(targetView));
+						
+						if (viewUpdateRequired.contains(targetView)) {
+							viewUpdateRequired.remove(targetView);
+							
+							final VisualMappingManager vmm = serviceRegistrar.getService(VisualMappingManager.class);
+							final VisualStyle style = vmm.getVisualStyle(targetView);
+							style.apply(targetView);
+							targetView.updateView();
+						}
+					}
+				} else {
+					if (appMgr.getCurrentNetworkView() != null)
+						appMgr.setCurrentNetworkView(targetView);
+					
+					if (currentEngine != null)
+						appMgr.setCurrentRenderingEngine(null);
+				}
+			}
+		});
 	}
 
 	public NetworkViewsPanel getNetworkViewsPanel() {
@@ -196,56 +234,17 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 		return iFrameMap.get(frame);
 	}
 
-	/**
-	 * View switched
-	 */
-	@Override
-	public void internalFrameActivated(InternalFrameEvent e) {
-		final JInternalFrame frame = e.getInternalFrame();
-		
-		if (frame.isClosed())
-			return;
-		
-		final CyNetworkView targetView = iFrameMap.get(frame);
-		
-		if (targetView != null) {
-			final CyApplicationManager appMgr = serviceRegistrar.getService(CyApplicationManager.class);
-			final CyNetworkViewManager netViewMgr = serviceRegistrar.getService(CyNetworkViewManager.class);
-			final RenderingEngine<CyNetwork> currentEngine = appMgr.getCurrentRenderingEngine();
-			
-			if (netViewMgr.getNetworkViewSet().contains(targetView)) {
-				if (!targetView.equals(appMgr.getCurrentNetworkView()))
-					appMgr.setCurrentNetworkView(targetView);
-	
-				if (currentEngine == null || currentEngine.getViewModel() != targetView)
-					appMgr.setCurrentRenderingEngine(presentationMap.get(targetView));
-				
-				if (viewUpdateRequired.contains(targetView)) {
-					viewUpdateRequired.remove(targetView);
-					
-					final VisualMappingManager vmm = serviceRegistrar.getService(VisualMappingManager.class);
-					final VisualStyle style = vmm.getVisualStyle(targetView);
-					style.apply(targetView);
-					targetView.updateView();
-				}
-			}
-		}
-	}
-
-	/**
-	 * Fire Events when a Managed Network View gets the Focus.
-	 */
-	@Override
-	public void internalFrameOpened(InternalFrameEvent e) {
-		internalFrameActivated(e);
-	}
-
 	// // Event Handlers ////
 	@Override
 	public void handleEvent(SetCurrentNetworkViewEvent e) {
 		final CyNetworkView view = e.getNetworkView();
-		// Do not use invokeLater() here. It cause all kinds of threading problem.
-		setFocus(view);
+		
+		SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				onCurrentNetworkViewChanged(view);
+			}
+		});
 	}
 
 	@Override
@@ -261,8 +260,14 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 				view = views.iterator().next();
 		}
 		
-		// Do not use invokeLater() here. It cause all kinds of threading problem.
-		setFocus(view);
+		final CyNetworkView curView = view;
+		
+		SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				onCurrentNetworkViewChanged(curView);
+			}
+		});
 	}
 
 	@Override
@@ -324,7 +329,7 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 		frame.getRootPane().getContentPane().removeAll();
 		frame.setClosed(true);
 		
-		frame.removeInternalFrameListener(this);
+//		frame.removeInternalFrameListener(this);
 		InternalFrameListener frameListener = frameListeners.remove(frame);
 		
 		if (frameListener != null)
@@ -473,7 +478,7 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 			}
 		});
 		
-		iframe.addInternalFrameListener(this);
+//		iframe.addInternalFrameListener(this);
 		iframe.setVisible(true);
 	}
 
@@ -515,43 +520,14 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 		}
 	}
 	
-	private void setFocus(final CyNetworkView targetView) {
-		final CyNetworkView curView = getSelectedNetworkView();
+	private void onCurrentNetworkViewChanged(final CyNetworkView view) {
+		final CyNetworkView curView = getNetworkViewsPanel().getCurrentNetworkView();
 		
 		// Same as current focus; no need to update view
-		if ((curView == null && targetView == null) || (curView != null && curView.equals(targetView)))
+		if ((curView == null && view == null) || (curView != null && curView.equals(view)))
 			return;
-
-		if (renderAsInternalFrame) {
-			// Reset focus on frames
-			for (JInternalFrame f : presentationContainerMap.values()) {
-				try {
-					f.setSelected(false);
-				} catch (PropertyVetoException pve) {
-					logger.error("Couldn't reset focus for internal frames.", pve);
-				}
-			}
-	
-			// Set focus
-			if (targetView != null) {
-				final JInternalFrame curr = presentationContainerMap.get(targetView);
-				
-				if (curr != null) {
-					try {
-						logger.debug("Selecting JInternalFrame of: " + targetView);
 		
-						curr.setIcon(false);
-						curr.show();
-						// fires internalFrameActivated
-						curr.setSelected(true);
-					} catch (Exception ex) {
-						logger.error("Could not update focus: ", ex);
-					}
-				}
-			}
-		} else {
-			getNetworkViewsPanel().setCurrentNetworkView(targetView);
-		}
+		getNetworkViewsPanel().setCurrentNetworkView(view);
 	}
 
 	@Override
@@ -670,23 +646,6 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 		}
 	}
 	
-	private JInternalFrame getSelectedFrame() {
-		synchronized (presentationContainerMap) {
-			for (JInternalFrame f : presentationContainerMap.values()) {
-				if (f.isSelected())
-					return f;
-			}
-		}
-		
-		return null;
-	}
-	
-	private CyNetworkView getSelectedNetworkView() {
-		final JInternalFrame selectedFrame = getSelectedFrame();
-		
-		return iFrameMap.get(selectedFrame);
-	}
-	
 	public void setUpdateFlag(final CyNetworkView view) {
 		this.viewUpdateRequired.add(view);
 	}
@@ -712,7 +671,7 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 		final VisualStyle style = e.getVisualStyle();
 		
 		if (style != null) {
-			final CyNetworkView curView = getSelectedNetworkView();
+			final CyNetworkView curView = getNetworkViewsPanel().getCurrentNetworkView();
 			
 			if (curView != null) {
 				final VisualMappingManager vmm = serviceRegistrar.getService(VisualMappingManager.class);

@@ -50,6 +50,7 @@ public class NetworkViewGrid extends JPanel implements Scrollable {
 	
 	private Set<RenderingEngine<CyNetwork>> engines;
 	private final Map<CyNetworkView, ThumbnailPanel> thumbnailPanels;
+	private CyNetworkView currentNetworkView;
 	private int thumbnailSize;
 	private boolean dirty;
 	
@@ -117,9 +118,19 @@ public class NetworkViewGrid extends JPanel implements Scrollable {
 		dirty = true;
 	}
 	
+	protected CyNetworkView getCurrentNetworkView() {
+		return currentNetworkView;
+	}
+	
 	protected void setCurrentNetworkView(final CyNetworkView view) {
+		if ((currentNetworkView == null && view == null) || 
+				(currentNetworkView != null && currentNetworkView.equals(view)))
+			return;
+		
+		currentNetworkView = view;
+		
 		for (ThumbnailPanel tp : thumbnailPanels.values())
-			tp.setCurrent(tp.getNetworkView().equals(view));
+			tp.update();
 	}
 	
 	protected void update(final int thumbnailSize) {
@@ -238,10 +249,13 @@ public class NetworkViewGrid extends JPanel implements Scrollable {
 							.addComponent(titleLabel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					)
 			);
+			
+			this.update();
 		}
 		
-		void setCurrent(final boolean b) {
-			currentLabel.setForeground(b ? UIManager.getColor("Focus.color") : this.getBackground());
+		void update() {
+			final boolean isCurrent = engine.getViewModel().equals(currentNetworkView);
+			currentLabel.setForeground(isCurrent ? UIManager.getColor("Focus.color") : this.getBackground());
 		}
 		
 		CyNetworkView getNetworkView() {
