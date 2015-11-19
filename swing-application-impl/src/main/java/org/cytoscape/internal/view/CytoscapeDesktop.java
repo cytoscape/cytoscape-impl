@@ -266,7 +266,7 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 				iconManager);
 
 		// determine proper network view manager component
-		Component networkViewComp = (Component) networkViewManager.getDesktopPane();
+		Component networkViewComp = networkViewManager.getNetworkViewsPanel();
 
 		// create the split pane - we show this on startup
 		BiModalJSplitPane splitPane = new BiModalJSplitPane(this, JSplitPane.HORIZONTAL_SPLIT,

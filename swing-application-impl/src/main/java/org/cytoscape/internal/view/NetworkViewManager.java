@@ -68,6 +68,7 @@ import org.cytoscape.model.events.RowSetRecord;
 import org.cytoscape.model.events.RowsSetEvent;
 import org.cytoscape.model.events.RowsSetListener;
 import org.cytoscape.property.CyProperty;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.events.SessionAboutToBeLoadedEvent;
 import org.cytoscape.session.events.SessionAboutToBeLoadedListener;
 import org.cytoscape.session.events.SessionLoadCancelledEvent;
@@ -122,7 +123,10 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 	private static final int MINIMUM_WIN_WIDTH = 200;
 	private static final int MINIMUM_WIN_HEIGHT = 200;
 
+	@Deprecated
 	private final JDesktopPane desktopPane;
+	
+	private final NetworkViewsPanel networkViewsPanel;
 
 	// Key is MODEL ID
 	private final Map<CyNetworkView, JInternalFrame> presentationContainerMap;
@@ -131,47 +135,19 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 
 	private final Map<JInternalFrame, CyNetworkView> iFrameMap;
 	private final Map<JInternalFrame, InternalFrameListener> frameListeners;
-	private final Properties props;
 	
 	/** columnIdentifier -> { valueInfo -> [views] }*/
 	private final Map<CyColumnIdentifier, Map<MappedVisualPropertyValueInfo, Set<View<?>>>> mappedValuesMap;
 	
 	private volatile boolean loadingSession;
+	private boolean renderAsInternalFrame;
 
-	private final CyNetworkViewManager netViewMgr;
-	private final CyApplicationManager appMgr;
-	private final RenderingEngineManager renderingEngineMgr;
-	private final VisualMappingManager vmm;
-	private final CyNetworkTableManager netTblMgr;
-	private final CyColumnIdentifierFactory colIdfFactory;
+	private final CyServiceRegistrar serviceRegistrar;
 	
-	public NetworkViewManager(final CyApplicationManager appMgr,
-							  final CyNetworkViewManager netViewMgr,
-							  final RenderingEngineManager renderingEngineManager,
-							  final CyProperty<Properties> cyProps,
-							  final CyHelpBroker help,
-							  final VisualMappingManager vmm,
-							  final CyNetworkTableManager netTblMgr,
-							  final CyColumnIdentifierFactory colIdfFactory) {
-		if (appMgr == null)
-			throw new NullPointerException("CyApplicationManager is null.");
-		if (netViewMgr == null)
-			throw new NullPointerException("CyNetworkViewManager is null.");
-		if (netTblMgr == null)
-			throw new NullPointerException("CyNetworkTableManager is null.");
-		if (colIdfFactory == null)
-			throw new NullPointerException("CyColumnIdentifierFactory is null.");
-		
-		this.renderingEngineMgr = renderingEngineManager;
-
-		this.netViewMgr = netViewMgr;
-		this.appMgr = appMgr;
-		this.props = cyProps.getProperties();
-		this.vmm = vmm;
-		this.netTblMgr = netTblMgr;
-		this.colIdfFactory = colIdfFactory;
-
+	public NetworkViewManager(final CyHelpBroker help, final CyServiceRegistrar serviceRegistrar) {
+		this.serviceRegistrar = serviceRegistrar;
 		this.desktopPane = new JDesktopPane();
+		this.networkViewsPanel = new NetworkViewsPanel(serviceRegistrar);
 
 		// add Help hooks
 		help.getHelpBroker().enableHelp(desktopPane, "network-view-manager", null);
@@ -184,9 +160,14 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 		mappedValuesMap = new HashMap<>();
 	}
 
+	public NetworkViewsPanel getNetworkViewsPanel() {
+		return networkViewsPanel;
+	}
+	
 	/**
 	 * Desktop for JInternalFrames which contains actual network presentations.
 	 */
+	@Deprecated
 	public JDesktopPane getDesktopPane() {
 		return desktopPane;
 	}
@@ -228,6 +209,8 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 		final CyNetworkView targetView = iFrameMap.get(frame);
 		
 		if (targetView != null) {
+			final CyApplicationManager appMgr = serviceRegistrar.getService(CyApplicationManager.class);
+			final CyNetworkViewManager netViewMgr = serviceRegistrar.getService(CyNetworkViewManager.class);
 			final RenderingEngine<CyNetwork> currentEngine = appMgr.getCurrentRenderingEngine();
 			
 			if (netViewMgr.getNetworkViewSet().contains(targetView)) {
@@ -239,6 +222,8 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 				
 				if (viewUpdateRequired.contains(targetView)) {
 					viewUpdateRequired.remove(targetView);
+					
+					final VisualMappingManager vmm = serviceRegistrar.getService(VisualMappingManager.class);
 					final VisualStyle style = vmm.getVisualStyle(targetView);
 					style.apply(targetView);
 					targetView.updateView();
@@ -269,6 +254,7 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 		CyNetworkView view = null;
 		
 		if (net != null) {
+			final CyNetworkViewManager netViewMgr = serviceRegistrar.getService(CyNetworkViewManager.class);
 			final Collection<CyNetworkView> views = netViewMgr.getNetworkViews(net);
 			
 			if (!views.isEmpty())
@@ -281,9 +267,7 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 
 	@Override
 	public void handleEvent(NetworkViewAboutToBeDestroyedEvent nvde) {
-		logger.info("Network view destroyed: " + nvde.getNetworkView());
 		final CyNetworkView view = nvde.getNetworkView();
-		
 		removeView(view);
 	}
 
@@ -292,27 +276,25 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 	 */
 	@Override
 	public void handleEvent(final NetworkViewAddedEvent nvae) {
-		logger.debug("\n\n\nView Manager got Network view added event.  Adding view to manager: NetworkViewManager: View ID = "
-				+ nvae.getNetworkView().getSUID() + "\n\n\n");
-
 		final CyNetworkView networkView = nvae.getNetworkView();
 		render(networkView);
 	}
 
 	private final void removeView(final CyNetworkView view) {
 		try {
-			JInternalFrame frame = presentationContainerMap.get(view);
-			
-			if (frame != null) {
-				RenderingEngine<CyNetwork> removed = presentationMap.remove(view);
-				logger.debug("Removing rendering engine: " + removed);
+			if (renderAsInternalFrame) {
+				JInternalFrame frame = presentationContainerMap.get(view);
 				
-				viewUpdateRequired.remove(frame);
-				iFrameMap.remove(frame);
-				
-				disposeFrame(frame);
-				
-				renderingEngineMgr.removeRenderingEngine(removed);
+				if (frame != null) {
+					RenderingEngine<CyNetwork> removed = presentationMap.remove(view);
+					
+					viewUpdateRequired.remove(frame);
+					iFrameMap.remove(frame);
+					disposeFrame(frame);
+					serviceRegistrar.getService(RenderingEngineManager.class).removeRenderingEngine(removed);
+				}
+			} else {
+				getNetworkViewsPanel().remove(view);
 			}
 		} catch (Exception e) {
 			logger.error("Network View unable to be killed", e);
@@ -321,8 +303,6 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 		synchronized (presentationContainerMap) {
 			presentationContainerMap.remove(view);
 		}
-		
-		logger.debug("Network View Model removed.");
 	}
 
 	private void disposeFrame(final JInternalFrame frame) throws PropertyVetoException {
@@ -339,12 +319,14 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 			});
 			return;
 		}
+		
 		frame.getRootPane().getLayeredPane().removeAll();
 		frame.getRootPane().getContentPane().removeAll();
 		frame.setClosed(true);
 		
 		frame.removeInternalFrameListener(this);
 		InternalFrameListener frameListener = frameListeners.remove(frame);
+		
 		if (frameListener != null)
 			frame.removeInternalFrameListener(frameListener);
 		
@@ -359,9 +341,39 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 		if (presentationContainerMap.containsKey(view))
 			return;
 
-		// Create a new InternalFrame and put the CyNetworkView Component into it
+		// Create a new panel or frame  and put the CyNetworkView Component into it
 		final String title = getTitle(view);
+		
+		NetworkViewRenderer renderer = null;
+		String rendererId = view.getRendererId();
+		final CyApplicationManager appMgr = serviceRegistrar.getService(CyApplicationManager.class);
+		
+		if (rendererId != null)
+			renderer = appMgr.getNetworkViewRenderer(rendererId);
+		
+		if (renderer == null)
+			renderer = appMgr.getDefaultNetworkViewRenderer();
+
+		RenderingEngineFactory<CyNetwork> engineFactory = renderer
+				.getRenderingEngineFactory(NetworkViewRenderer.DEFAULT_CONTEXT);
+		
+		if (renderAsInternalFrame)
+			renderAsInternalFrame(title, view, engineFactory);
+		else
+			renderAsPanel(view, engineFactory);
+	}
+	
+	private void renderAsPanel(final CyNetworkView view, final RenderingEngineFactory<CyNetwork> engineFactory) {
+		final RenderingEngine<CyNetwork> renderingEngine =
+				getNetworkViewsPanel().addNetworkView(view, engineFactory);
+		serviceRegistrar.getService(RenderingEngineManager.class).addRenderingEngine(renderingEngine);
+	}
+
+	@SuppressWarnings("unchecked")
+	private void renderAsInternalFrame(final String title, final CyNetworkView view,
+			final RenderingEngineFactory<CyNetwork> engineFactory) {
 		final JInternalFrame iframe = new JInternalFrame(title, true, true, true, true);
+		
 		// This is to work around a bug with Mac JInternalFrame L&F that causes large borders (#3352)
 		if (LookAndFeelUtil.isAquaLAF()) {
 			iframe.putClientProperty("JInternalFrame.frameType", "normal");
@@ -379,7 +391,10 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 		});
 
 		final InternalFrameAdapter frameListener = new InternalFrameAdapter() {
+			@Override
 			public void internalFrameClosing(InternalFrameEvent e) {
+				final CyNetworkViewManager netViewMgr = serviceRegistrar.getService(CyNetworkViewManager.class);
+				
 				if (netViewMgr.getNetworkViewSet().contains(view))
 					netViewMgr.destroyNetworkView(view);
 
@@ -399,24 +414,10 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 		
 		iFrameMap.put(iframe, view);
 		
-		
-		NetworkViewRenderer renderer;
-		String rendererId = view.getRendererId();
-		if(rendererId == null)
-			renderer = appMgr.getDefaultNetworkViewRenderer();
-		renderer = appMgr.getNetworkViewRenderer(rendererId);
-		if(renderer == null)
-			renderer = appMgr.getDefaultNetworkViewRenderer();
-
-		final long start = System.currentTimeMillis();
-		logger.debug("Rendering start: view model = " + view.getSUID());
-		RenderingEngineFactory<CyNetwork> engineFactory = renderer.getRenderingEngineFactory(NetworkViewRenderer.DEFAULT_CONTEXT);
 		final RenderingEngine<CyNetwork> renderingEngine = engineFactory.createRenderingEngine(iframe, view);
-		renderingEngineMgr.addRenderingEngine(renderingEngine);
+		serviceRegistrar.getService(RenderingEngineManager.class).addRenderingEngine(renderingEngine);
 		
-		logger.debug("Rendering finished in " + (System.currentTimeMillis() - start) + " m sec.");
 		presentationMap.put(view, renderingEngine);
-
 		iframe.pack();
 
 		// create cascade iframe
@@ -446,8 +447,8 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 		iframe.setLocation(x, y);
 
 		// maximize the frame if the specified property is set
-
-		final String max = props.getProperty("maximizeViewOnCreate");
+		final CyProperty<Properties> cyProp = serviceRegistrar.getService(CyProperty.class, "(cyPropertyName=cytoscape3.props)");
+		final String max = cyProp.getProperties().getProperty("maximizeViewOnCreate");
 
 		if ((max != null) && Boolean.parseBoolean(max)) {
 			try {
@@ -471,15 +472,18 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 				view.setVisualProperty(BasicVisualLexicon.NETWORK_HEIGHT, (double)iframe.getContentPane().getHeight());
 			}
 		});
+		
 		iframe.addInternalFrameListener(this);
 		iframe.setVisible(true);
 	}
-	
+
 	private String getTitle(final CyNetworkView view) {
 		String title = view.getVisualProperty(BasicVisualLexicon.NETWORK_TITLE);
 		
-		if (title == null || title.trim().isEmpty())
+		if (title == null || title.trim().isEmpty()) {
 			title = view.getModel().getRow(view.getModel()).get(CyNetwork.NAME, String.class);
+			view.setVisualProperty(BasicVisualLexicon.NETWORK_TITLE, title);
+		}
 		
 		return title;
 	}
@@ -491,7 +495,7 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 			return;
 
 		if (width > 0 && height > 0) {
-			if(width != frame.getContentPane().getWidth() && 
+			if (width != frame.getContentPane().getWidth() && 
 				height != frame.getContentPane().getHeight()) {
 				frame.getContentPane().setPreferredSize(new Dimension(width, height));
 				frame.pack();
@@ -514,39 +518,39 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 	private void setFocus(final CyNetworkView targetView) {
 		final CyNetworkView curView = getSelectedNetworkView();
 		
-		if ((curView == null && targetView == null) || (curView != null && curView.equals(targetView))) {
-			logger.debug("Same as current focus.  No need to update focus view model: " + targetView);
+		// Same as current focus; no need to update view
+		if ((curView == null && targetView == null) || (curView != null && curView.equals(targetView)))
 			return;
-		}
 
-		// Reset focus on frames
-		for (JInternalFrame f : presentationContainerMap.values()) {
-			try {
-				f.setSelected(false);
-			} catch (PropertyVetoException pve) {
-				logger.error("Couldn't reset focus for internal frames.", pve);
-			}
-		}
-
-		// Set focus
-		if (targetView != null) {
-			final JInternalFrame curr = presentationContainerMap.get(targetView);
-			
-			if (curr != null) {
+		if (renderAsInternalFrame) {
+			// Reset focus on frames
+			for (JInternalFrame f : presentationContainerMap.values()) {
 				try {
-					logger.debug("Selecting JInternalFrame of: " + targetView);
-	
-					curr.setIcon(false);
-					curr.show();
-					// fires internalFrameActivated
-					curr.setSelected(true);
-	
-				} catch (Exception ex) {
-					logger.error("Could not update focus: ", ex);
+					f.setSelected(false);
+				} catch (PropertyVetoException pve) {
+					logger.error("Couldn't reset focus for internal frames.", pve);
 				}
-			} else {
-				logger.debug("Frame was not found. Need to create new frame for presentation.");
 			}
+	
+			// Set focus
+			if (targetView != null) {
+				final JInternalFrame curr = presentationContainerMap.get(targetView);
+				
+				if (curr != null) {
+					try {
+						logger.debug("Selecting JInternalFrame of: " + targetView);
+		
+						curr.setIcon(false);
+						curr.show();
+						// fires internalFrameActivated
+						curr.setSelected(true);
+					} catch (Exception ex) {
+						logger.error("Could not update focus: ", ex);
+					}
+				}
+			}
+		} else {
+			getNetworkViewsPanel().setCurrentNetworkView(targetView);
 		}
 	}
 
@@ -578,7 +582,10 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 		if (loadingSession || iFrameMap.isEmpty())
 			return;
 		
+		final CyNetworkTableManager netTblMgr = serviceRegistrar.getService(CyNetworkTableManager.class);
 		final CyNetwork net = netTblMgr.getNetworkForTable(tbl);
+		
+		final CyNetworkViewManager netViewMgr = serviceRegistrar.getService(CyNetworkViewManager.class);
 		
 		// Is this column from a network table?
 		// And if there is no related view, nothing needs to be done
@@ -611,7 +618,10 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 		if (loadingSession || iFrameMap.isEmpty())
 			return;
 		
+		final CyNetworkTableManager netTblMgr = serviceRegistrar.getService(CyNetworkTableManager.class);
 		final CyNetwork net = netTblMgr.getNetworkForTable(tbl);
+		
+		final CyNetworkViewManager netViewMgr = serviceRegistrar.getService(CyNetworkViewManager.class);
 		
 		// And if there is no related view, nothing needs to be done
 		if ( net != null && netViewMgr.viewExists(net) && 
@@ -704,8 +714,10 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 		if (style != null) {
 			final CyNetworkView curView = getSelectedNetworkView();
 			
-			if (curView != null)
+			if (curView != null) {
+				final VisualMappingManager vmm = serviceRegistrar.getService(VisualMappingManager.class);
 				vmm.setVisualStyle(style, curView);
+			}
 		}
 	}
 	
@@ -725,12 +737,14 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 		final String title = getTitle(view);
 		updateNetworkFrameTitle(view, title);
 		
-		final int w = view.getVisualProperty(BasicVisualLexicon.NETWORK_WIDTH).intValue();
-		final int h = view.getVisualProperty(BasicVisualLexicon.NETWORK_HEIGHT).intValue();
-		final boolean resizable = !view.isValueLocked(BasicVisualLexicon.NETWORK_WIDTH) &&
-				!view.isValueLocked(BasicVisualLexicon.NETWORK_HEIGHT);
-		
-		updateNetworkFrameSize(view, w, h, resizable);
+		if (renderAsInternalFrame) {
+			final int w = view.getVisualProperty(BasicVisualLexicon.NETWORK_WIDTH).intValue();
+			final int h = view.getVisualProperty(BasicVisualLexicon.NETWORK_HEIGHT).intValue();
+			final boolean resizable = !view.isValueLocked(BasicVisualLexicon.NETWORK_WIDTH) &&
+					!view.isValueLocked(BasicVisualLexicon.NETWORK_HEIGHT);
+			
+			updateNetworkFrameSize(view, w, h, resizable);
+		}
 	}
 	
 	@Override
@@ -789,10 +803,12 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 	
 	private Set<VisualStyle> findStylesWithMappedColumn(final String columnName) {
 		final Set<VisualStyle> styles = new HashSet<VisualStyle>();
+		final CyApplicationManager appMgr = serviceRegistrar.getService(CyApplicationManager.class);
 		final RenderingEngine<CyNetwork> renderer = appMgr.getCurrentRenderingEngine();
 		
 		if (columnName != null && renderer != null) {
 			final Set<VisualProperty<?>> properties = renderer.getVisualLexicon().getAllVisualProperties();
+			final VisualMappingManager vmm = serviceRegistrar.getService(VisualMappingManager.class);
 			
 			for (final VisualStyle vs : vmm.getAllVisualStyles()) {
 				for (final VisualProperty<?> vp : properties) {
@@ -826,7 +842,10 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 			return result;
 		
 		// First, check current view.  If necessary, apply it.
+		final CyNetworkViewManager netViewMgr = serviceRegistrar.getService(CyNetworkViewManager.class);
 		final Set<CyNetworkView> networkViews = netViewMgr.getNetworkViewSet();
+		
+		final VisualMappingManager vmm = serviceRegistrar.getService(VisualMappingManager.class);
 		
 		for (final CyNetworkView view: networkViews) {
 			if (styles.contains(vmm.getVisualStyle(view)))
@@ -839,6 +858,8 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	private boolean reapplyLockedValues(final String columnName, final Collection<CyNetworkView> networkViews) {
 		boolean result = false;
+		
+		final CyColumnIdentifierFactory colIdfFactory = serviceRegistrar.getService(CyColumnIdentifierFactory.class);
 		final CyColumnIdentifier colId = colIdfFactory.createColumnIdentifier(columnName);
 		final Map<MappedVisualPropertyValueInfo, Set<View<?>>> mvpInfoMap = mappedValuesMap.get(colId);
 		
@@ -868,9 +889,13 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 		if (view == null)
 			return;
 		
+		final CyApplicationManager appMgr = serviceRegistrar.getService(CyApplicationManager.class);
+		
 		if (view.equals(appMgr.getCurrentNetworkView())) {
-			if (vs == null)
+			if (vs == null) {
+				final VisualMappingManager vmm = serviceRegistrar.getService(VisualMappingManager.class);
 				vs = vmm.getVisualStyle(view);
+			}
 			
 			vs.apply(view);
 			view.updateView();

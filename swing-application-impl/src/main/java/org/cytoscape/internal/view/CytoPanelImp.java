@@ -24,9 +24,10 @@ package org.cytoscape.internal.view;
  * #L%
  */
 
+import static org.cytoscape.internal.view.CytoPanelUtil.BUTTON_SIZE;
+import static org.cytoscape.util.swing.IconManager.ICON_REMOVE;
 import static org.cytoscape.util.swing.IconManager.ICON_SQUARE_O;
 import static org.cytoscape.util.swing.IconManager.ICON_THUMB_TACK;
-import static org.cytoscape.util.swing.IconManager.ICON_REMOVE;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -43,8 +44,6 @@ import java.awt.event.WindowEvent;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.swing.AbstractButton;
-import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -68,6 +67,7 @@ import org.cytoscape.application.swing.events.CytoPanelComponentSelectedEvent;
 import org.cytoscape.application.swing.events.CytoPanelStateChangedEvent;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.util.swing.IconManager;
+import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -101,8 +101,6 @@ public class CytoPanelImp extends JPanel implements CytoPanel, ChangeListener {
 	private static final int EAST_MAX_WIDTH = 1500;
 	private static final int EAST_MIN_HEIGHT = 100;
 	private static final int EAST_MAX_HEIGHT = 600;
-	
-	private static final int BUTTON_SIZE = 18;
 	
 	/**
 	 * The JTabbedPane we hide.
@@ -593,7 +591,7 @@ public class CytoPanelImp extends JPanel implements CytoPanel, ChangeListener {
 	 */
 	private void initLabel() {
 		floatLabel = new JLabel(getTitle());
-		floatLabel.setFont(floatLabel.getFont().deriveFont(12.0f));
+		floatLabel.setFont(floatLabel.getFont().deriveFont(LookAndFeelUtil.getSmallFontSize()));
 		floatLabel.setBorder(new EmptyBorder(0, 5, 0, 0));
 	}
 
@@ -604,14 +602,14 @@ public class CytoPanelImp extends JPanel implements CytoPanel, ChangeListener {
 		// Create Float / Dock Button
 		floatButton = new JButton(ICON_SQUARE_O);
 		floatButton.setToolTipText(TOOL_TIP_FLOAT);
-		styleButton(floatButton);
+		CytoPanelUtil.styleButton(floatButton);
 		floatButton.setFont(iconManager.getIconFont(12));
 		floatButton.setSelected(true);
 		
 		// Create close button
 		closeButton = new JButton(ICON_REMOVE);
 		closeButton.setToolTipText(TOOL_TIP_CLOSE);
-		styleButton(closeButton);
+		CytoPanelUtil.styleButton(closeButton);
 		closeButton.setFont(iconManager.getIconFont(13));
 		closeButton.setSelected(true);
 		
@@ -805,17 +803,5 @@ public class CytoPanelImp extends JPanel implements CytoPanel, ChangeListener {
 	@Override
 	public Component getThisComponent() {
 		return this;
-	}
-	
-	private static void styleButton(final AbstractButton btn) {
-		btn.setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 2));
-		btn.setContentAreaFilled(false);
-		btn.setMinimumSize(new Dimension(BUTTON_SIZE, BUTTON_SIZE));
-		btn.setPreferredSize(new Dimension(BUTTON_SIZE, BUTTON_SIZE));
-		btn.setSize(new Dimension(BUTTON_SIZE, BUTTON_SIZE));
-		btn.setRolloverEnabled(false);
-		btn.setFocusPainted(false);
-		btn.setFocusable(false);
-		btn.setContentAreaFilled(false);
 	}
 }

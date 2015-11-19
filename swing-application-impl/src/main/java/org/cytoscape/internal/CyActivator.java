@@ -103,7 +103,6 @@ import org.cytoscape.internal.view.help.HelpContentsTaskFactory;
 import org.cytoscape.internal.view.help.HelpReportABugTaskFactory;
 import org.cytoscape.io.datasource.DataSourceManager;
 import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.events.NetworkDestroyedListener;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.property.bookmark.BookmarksUtil;
@@ -127,7 +126,6 @@ import org.cytoscape.view.layout.CyLayoutAlgorithm;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.events.NetworkViewDestroyedListener;
-import org.cytoscape.view.presentation.RenderingEngineManager;
 import org.cytoscape.view.presentation.property.values.CyColumnIdentifierFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.work.ServiceProperties;
@@ -156,7 +154,6 @@ public class CyActivator extends AbstractCyActivator {
 		
 		setLookAndFeel(cytoscapePropertiesServiceRef.getProperties());
 		
-		RenderingEngineManager renderingEngineManagerServiceRef = getService(bc, RenderingEngineManager.class);
 		CyShutdown cytoscapeShutdownServiceRef = getService(bc, CyShutdown.class);
 		CyApplicationConfiguration cyApplicationConfigurationServiceRef = getService(bc, CyApplicationConfiguration.class);
 		CyVersion cyVersionServiceRef = getService(bc, CyVersion.class);
@@ -164,7 +161,6 @@ public class CyActivator extends AbstractCyActivator {
 		CySessionManager cySessionManagerServiceRef = getService(bc, CySessionManager.class);
 		CyNetworkViewManager cyNetworkViewManagerServiceRef = getService(bc, CyNetworkViewManager.class);
 		CyNetworkManager cyNetworkManagerServiceRef = getService(bc, CyNetworkManager.class);
-		CyNetworkTableManager cyNetworkTableManagerServiceRef = getService(bc, CyNetworkTableManager.class);
 		DialogTaskManager dialogTaskManagerServiceRef = getService(bc, DialogTaskManager.class);
 		PanelTaskManager panelTaskManagerServiceRef = getService(bc, PanelTaskManager.class);
 		TaskStatusPanelFactory taskStatusPanelFactoryRef = getService(bc, TaskStatusPanelFactory.class);
@@ -201,14 +197,7 @@ public class CyActivator extends AbstractCyActivator {
 		ToolBarEnableUpdater toolBarEnableUpdater =
 				new ToolBarEnableUpdater(cytoscapeToolBar, cyServiceRegistrarServiceRef);
 
-		NetworkViewManager networkViewManager = new NetworkViewManager(cyApplicationManagerServiceRef,
-		                                                               cyNetworkViewManagerServiceRef, 
-		                                                               renderingEngineManagerServiceRef,
-		                                                               cytoscapePropertiesServiceRef,
-		                                                               cyHelpBroker,
-		                                                               visualMappingManagerServiceRef,
-		                                                               cyNetworkTableManagerServiceRef,
-		                                                               cyColumnIdentifierFactory);
+		NetworkViewManager networkViewManager = new NetworkViewManager(cyHelpBroker, cyServiceRegistrarServiceRef);
 
 		BirdsEyeViewHandler birdsEyeViewHandler = new BirdsEyeViewHandler(cyApplicationManagerServiceRef,
 		                                                                  cyNetworkViewManagerServiceRef);
