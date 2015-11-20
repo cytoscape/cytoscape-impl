@@ -2210,11 +2210,6 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	}
 
 	@Override
-	public Container getContainer(JLayeredPane jlp) {
-		return new InternalFrameComponent(jlp, this);
-	}
-
-	@Override
 	public void addMouseListener(MouseListener m) {
 		m_networkCanvas.addMouseListener(m);
 	}

@@ -147,7 +147,7 @@ public class DingRenderingEngineFactory implements RenderingEngineFactory<CyNetw
 			if (presentationContainer instanceof RootPaneContainer) {
 				final RootPaneContainer container = (RootPaneContainer) presentationContainer;
 				final InternalFrameComponent ifComp = new InternalFrameComponent(container.getLayeredPane(), dgv);
-				container.getContentPane().add(ifComp);
+				container.setContentPane(ifComp);
 			} else {
 				final JComponent component = (JComponent) presentationContainer;
 				component.setLayout(new BorderLayout());
