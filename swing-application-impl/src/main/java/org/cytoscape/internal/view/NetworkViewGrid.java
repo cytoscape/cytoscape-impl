@@ -45,8 +45,10 @@ public class NetworkViewGrid extends JPanel implements Scrollable {
 	private static int BORDER_WIDTH = 2;
 	private static int PAD = 10;
 	
-	private static Border DEF_BORDER = BorderFactory.createLineBorder(
-			UIManager.getColor("Separator.foreground"), BORDER_WIDTH);
+	private static Border DEF_BORDER = BorderFactory.createCompoundBorder(
+			BorderFactory.createEmptyBorder(1, 1, 1, 1),
+			BorderFactory.createLineBorder(UIManager.getColor("Separator.foreground"), 1)
+	);
 	
 	private Set<RenderingEngine<CyNetwork>> engines;
 	private final Map<CyNetworkView, ThumbnailPanel> thumbnailPanels;
@@ -61,8 +63,6 @@ public class NetworkViewGrid extends JPanel implements Scrollable {
 		
 		engines = new LinkedHashSet<>();
 		thumbnailPanels = new HashMap<>();
-		
-		setBackground(UIManager.getColor("Separator.foreground"));
 		
 		// TODO: Listener to update when grip panel resized
 		addComponentListener(new ComponentAdapter() {
@@ -116,6 +116,10 @@ public class NetworkViewGrid extends JPanel implements Scrollable {
 	protected void removeThumbnail(final RenderingEngine<CyNetwork> re) {
 		engines.remove(re);
 		dirty = true;
+	}
+	
+	protected ThumbnailPanel getCurrentThumbnailPanel() {
+		return currentNetworkView != null ? thumbnailPanels.get(currentNetworkView) : null;
 	}
 	
 	protected CyNetworkView getCurrentNetworkView() {
@@ -179,9 +183,19 @@ public class NetworkViewGrid extends JPanel implements Scrollable {
 				add(tp);
 				thumbnailPanels.put(tp.getNetworkView(), tp);
 			}
+			
+			if (thumbnailPanels.size() < cols) {
+				final int diff = cols - thumbnailPanels.size();
+				
+				for (int i = 0; i < diff; i++) {
+					final JPanel filler = new JPanel();
+					add(filler);
+				}
+			}
 		}
 		
 		dirty = false;
+		updateUI();
 		firePropertyChange("thumbnailPanels", null, thumbnailPanels.values());
 	}
 	
@@ -198,17 +212,10 @@ public class NetworkViewGrid extends JPanel implements Scrollable {
 			this.engine = engine;
 			this.setBorder(DEF_BORDER);
 			
-			final CyNetworkView netView = getNetworkView();
-			final CyNetwork network = netView.getModel();
-			
-			final String title = netView.getVisualProperty(BasicVisualLexicon.NETWORK_TITLE);
-			final String netName = network.getRow(network).get(CyNetwork.NAME, String.class);
-			
-			setToolTipText("<html><center>" + title + "<br>(" + netName + ")</center></html>");
-			
-			titleLabel = new JLabel(title);
+			titleLabel = new JLabel();
 			titleLabel.setHorizontalAlignment(JLabel.CENTER);
 			titleLabel.setFont(titleLabel.getFont().deriveFont(LookAndFeelUtil.getSmallFontSize()));
+			titleLabel.setForeground(UIManager.getColor("Label.disabledForeground"));
 			
 			final IconManager iconManager = serviceRegistrar.getService(IconManager.class);
 			
@@ -254,7 +261,16 @@ public class NetworkViewGrid extends JPanel implements Scrollable {
 		}
 		
 		void update() {
-			final boolean isCurrent = engine.getViewModel().equals(currentNetworkView);
+			final CyNetworkView netView = getNetworkView();
+			final CyNetwork network = netView.getModel();
+			
+			final String title = netView.getVisualProperty(BasicVisualLexicon.NETWORK_TITLE);
+			final String netName = network.getRow(network).get(CyNetwork.NAME, String.class);
+			
+			setToolTipText("<html><center>" + title + "<br>(" + netName + ")</center></html>");
+			titleLabel.setText(title);
+			
+			final boolean isCurrent = netView.equals(currentNetworkView);
 			currentLabel.setForeground(isCurrent ? UIManager.getColor("Focus.color") : this.getBackground());
 		}
 		

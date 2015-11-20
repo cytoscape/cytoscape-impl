@@ -188,6 +188,8 @@ public class NetworkViewsPanel extends JPanel {
 				
 				if (frame != null)
 					showFrame(frame);
+				else if (networkViewGrid.getCurrentThumbnailPanel() != null)
+					networkViewGrid.scrollRectToVisible(networkViewGrid.getCurrentThumbnailPanel().getBounds());
 			} else {
 				show(name);
 			}
@@ -215,12 +217,12 @@ public class NetworkViewsPanel extends JPanel {
 		frame.setContentPane(vc.getContentPane());
 		frame.setLayeredPane(vc.getLayeredPane());
 		frame.setGlassPane(vc.getGlassPane());
+		
 		viewFrames.put(name, frame);
 		
 		frame.addWindowListener(new WindowAdapter() {
 			@Override
 			public void windowClosed(WindowEvent e) {
-				// TODO
 				viewFrames.remove(name);
 				vc.setContentPane(frame.getContentPane());
 				vc.setLayeredPane(frame.getLayeredPane());
@@ -320,7 +322,7 @@ public class NetworkViewsPanel extends JPanel {
 	private Component getCurrentCard() {
 		Component current = null;
 		
-		for (Component comp : getContentPane().getComponents()) {System.out.println("\t. " + comp.getName() + ": " + comp.isVisible());
+		for (Component comp : getContentPane().getComponents()) {
 			if (comp.isVisible())
 				current = comp;
 		}
@@ -638,6 +640,11 @@ public class NetworkViewsPanel extends JPanel {
 				getViewTitleLabel().setText(text);
 				// TODO This will fire a ViewChangedEvent - Just let the NetworkViewManager ask this panel to update itself instead?
 				getCurrentNetworkView().setVisualProperty(BasicVisualLexicon.NETWORK_TITLE, text);
+				
+				final ThumbnailPanel tp = networkViewGrid.getCurrentThumbnailPanel();
+				
+				if (tp != null)
+					tp.update();
 			}
 		}
 		
