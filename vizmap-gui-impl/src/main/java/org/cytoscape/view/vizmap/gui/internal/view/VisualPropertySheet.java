@@ -659,8 +659,7 @@ public class VisualPropertySheet extends JPanel{
 			selectionHead = item;
 		} else if (SwingUtilities.isLeftMouseButton(e)) {
 			// LEFT-CLICK...
-			final String os = System.getProperty("os.name").toLowerCase();
-			final boolean isMac = os.indexOf("mac") >= 0;
+			final boolean isMac = LookAndFeelUtil.isMac();
 			
 			if ((isMac && e.isMetaDown()) || (!isMac && e.isControlDown())) {
 				// COMMAND button down on MacOS or CONTROL button down on another OS.
