@@ -29,9 +29,12 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
 
 import javax.swing.AbstractButton;
 import javax.swing.BorderFactory;
@@ -44,6 +47,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JSlider;
 import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -74,7 +78,8 @@ public class NetworkViewsPanel extends JPanel {
 	private JScrollPane gridScrollPane;
 	
 	private JButton viewModeButton;
-	private JButton destroyViewButton;
+	private JLabel selectionLabel;
+	private JButton destroySelectedViewsButton;
 	private JSlider thumbnailSlider;
 	
 	private JButton gridModeButton;
@@ -83,6 +88,7 @@ public class NetworkViewsPanel extends JPanel {
 	private JButton detachViewButton;
 	private JLabel viewTitleLabel;
 	private JTextField viewTitleTextField;
+	private JButton destroyViewButton;
 	
 	private final Map<String, NetworkViewContainer> viewContainers;
 	private final Map<String, JFrame> viewFrames;
@@ -100,7 +106,9 @@ public class NetworkViewsPanel extends JPanel {
 		networkViewGrid.addPropertyChangeListener("thumbnailPanels", new PropertyChangeListener() {
 			@Override
 			public void propertyChange(PropertyChangeEvent evt) {
-				for (ThumbnailPanel tp : networkViewGrid.getThumbnailPanels()) {
+				updateGridToolBar();
+				
+				for (ThumbnailPanel tp : networkViewGrid.getItems()) {
 					tp.addMouseListener(new MouseAdapter() {
 						@Override
 						public void mouseClicked(MouseEvent e) {
@@ -108,6 +116,23 @@ public class NetworkViewsPanel extends JPanel {
 								setCurrentNetworkView(tp.getNetworkView());
 								show(tp.getNetworkView());
 							}
+						}
+					});
+					tp.addComponentListener(new ComponentAdapter() {
+						@Override
+						public void componentResized(ComponentEvent e) {
+							SwingUtilities.invokeLater(new Runnable() {
+								@Override
+								public void run() {
+									networkViewGrid.updateThumbnail(tp.getNetworkView());
+								}
+							});
+						};
+					});
+					tp.addPropertyChangeListener("selected", new PropertyChangeListener() {
+						@Override
+						public void propertyChange(PropertyChangeEvent evt) {
+							updateGridToolBar();
 						}
 					});
 				}
@@ -232,6 +257,17 @@ public class NetworkViewsPanel extends JPanel {
 				show(vc.getName());
 			}
 		});
+		frame.addComponentListener(new ComponentAdapter() {
+			@Override
+			public void componentResized(ComponentEvent e) {
+				SwingUtilities.invokeLater(new Runnable() {
+					@Override
+					public void run() {
+						networkViewGrid.updateThumbnail(view);
+					}
+				});
+			};
+		});
 		
 		int w = view.getVisualProperty(BasicVisualLexicon.NETWORK_WIDTH).intValue();
 		int h = view.getVisualProperty(BasicVisualLexicon.NETWORK_HEIGHT).intValue();
@@ -248,6 +284,10 @@ public class NetworkViewsPanel extends JPanel {
 		frame.setResizable(resizable);
 		frame.setVisible(true);
 		view.updateView();
+	}
+	
+	public void updateThumbnail(final CyNetworkView view) {
+		networkViewGrid.updateThumbnail(view);
 	}
 	
 	private void show(final CyNetworkView view) {
@@ -304,8 +344,22 @@ public class NetworkViewsPanel extends JPanel {
 	}
 
 	private void updateGridToolBar() {
+		final Collection<ThumbnailPanel> items = networkViewGrid.getItems();
+		final Set<ThumbnailPanel> selectedItems = networkViewGrid.getSelectedItems();
+		
 		getViewModeButton().setEnabled(
 				serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetworkView() != null);
+		getDestroySelectedViewsButton().setEnabled(!selectedItems.isEmpty());
+		
+		if (items.isEmpty())
+			getSelectionLabel().setText(null);
+		else
+			getSelectionLabel().setText(
+					selectedItems.size() + " of " + 
+							items.size() + " Network View" + (items.size() == 1 ? "" : "s") +
+							" selected");
+		
+		getGridToolBar().updateUI();
 	}
 
 	private void updateViewToolBar(final NetworkViewContainer vc) {
@@ -369,9 +423,10 @@ public class NetworkViewsPanel extends JPanel {
 		if (gridToolBar == null) {
 			gridToolBar = new JPanel();
 			gridToolBar.setName("gridToolBar");
-			
 			gridToolBar.setBorder(
 					BorderFactory.createMatteBorder(1, 0, 0, 0, UIManager.getColor("Separator.foreground")));
+			
+			final JSeparator sep = new JSeparator(JSeparator.VERTICAL);
 			
 			final GroupLayout layout = new GroupLayout(gridToolBar);
 			gridToolBar.setLayout(layout);
@@ -381,12 +436,19 @@ public class NetworkViewsPanel extends JPanel {
 			layout.setHorizontalGroup(layout.createSequentialGroup()
 					.addContainerGap()
 					.addComponent(getViewModeButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addGap(0, 0, Short.MAX_VALUE)
+					.addGap(0, 10, Short.MAX_VALUE)
+					.addComponent(getSelectionLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addGap(0, 10, Short.MAX_VALUE)
+					.addComponent(getDestroySelectedViewsButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(sep, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(getThumbnailSlider(), 100, 100, 100)
 					.addContainerGap()
 			);
 			layout.setVerticalGroup(layout.createParallelGroup(CENTER, false)
 					.addComponent(getViewModeButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(getSelectionLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(getDestroySelectedViewsButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(sep, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 					.addComponent(getThumbnailSlider(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 			);
 		}
@@ -440,6 +502,14 @@ public class NetworkViewsPanel extends JPanel {
 					JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 			gridScrollPane.setName(GRID_NAME);
 			gridScrollPane.getViewport().setBackground(networkViewGrid.getBackground());
+			
+			gridScrollPane.getViewport().addMouseListener(new MouseAdapter() {
+				@Override
+				public void mousePressed(final MouseEvent e) {
+					if (!e.isPopupTrigger())
+						networkViewGrid.setSelectedItems(Collections.emptySet());
+				}
+			});
 		}
 		
 		return gridScrollPane;
@@ -601,6 +671,42 @@ public class NetworkViewsPanel extends JPanel {
 		}
 		
 		return destroyViewButton;
+	}
+	
+	private JLabel getSelectionLabel() {
+		if (selectionLabel == null) {
+			selectionLabel = new JLabel();
+			selectionLabel.setHorizontalAlignment(JLabel.CENTER);
+			selectionLabel.setFont(selectionLabel.getFont().deriveFont(LookAndFeelUtil.getSmallFontSize()));
+		}
+		
+		return selectionLabel;
+	}
+	
+	private JButton getDestroySelectedViewsButton() {
+		if (destroySelectedViewsButton == null) {
+			destroySelectedViewsButton = new JButton(ICON_TRASH_O);
+			destroySelectedViewsButton.setToolTipText("Destroy Selected Network Views");
+			destroySelectedViewsButton.setFont(serviceRegistrar.getService(IconManager.class).getIconFont(16.0f));
+			CytoPanelUtil.styleButton(destroySelectedViewsButton);
+			
+			destroySelectedViewsButton.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					final Set<ThumbnailPanel> selectedItems = networkViewGrid.getSelectedItems();
+					
+					for (ThumbnailPanel tp : selectedItems) {
+						remove(tp.getNetworkView());
+						
+						// TODO Move to NetworkViewManager (fire event)
+						if (serviceRegistrar.getService(CyNetworkViewManager.class).getNetworkViewSet().contains(tp.getNetworkView()))
+							serviceRegistrar.getService(CyNetworkViewManager.class).destroyNetworkView(tp.getNetworkView());
+					}
+				}
+			});
+		}
+		
+		return destroySelectedViewsButton;
 	}
 	
 	private JSlider getThumbnailSlider() {

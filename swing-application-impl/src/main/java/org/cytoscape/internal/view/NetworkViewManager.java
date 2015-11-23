@@ -710,6 +710,9 @@ public class NetworkViewManager implements NetworkViewAddedListener,
 	public void handleEvent(final ViewChangedEvent<?> e) {
 		final CyNetworkView netView = e.getSource();
 		
+		// Ask the Views Panel to update the thumbnail for the affected network view
+		getNetworkViewsPanel().updateThumbnail(netView);
+		
 		// Look for MappableVisualPropertyValue objects, so they can be saved for future reference
 		for (final ViewChangeRecord<?> record : e.getPayloadCollection()) {
 			if (!record.isLockedValue())
