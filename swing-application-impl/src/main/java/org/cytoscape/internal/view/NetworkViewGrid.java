@@ -3,6 +3,7 @@ package org.cytoscape.internal.view;
 import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static javax.swing.GroupLayout.Alignment.CENTER;
+import static javax.swing.GroupLayout.Alignment.LEADING;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NETWORK_BACKGROUND_PAINT;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NETWORK_HEIGHT;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NETWORK_TITLE;
@@ -59,7 +60,7 @@ public class NetworkViewGrid extends JPanel implements Scrollable {
 	public static int MAX_THUMBNAIL_SIZE = 500;
 	
 	private static int BORDER_WIDTH = 2;
-	private static int PAD = 10;
+	private static int PAD = 5;
 	
 	private Set<RenderingEngine<CyNetwork>> engines;
 	private final TreeMap<CyNetworkView, ThumbnailPanel> thumbnailPanels;
@@ -72,6 +73,8 @@ public class NetworkViewGrid extends JPanel implements Scrollable {
 	private ThumbnailPanel selectionTail;
 	
 	private final CyServiceRegistrar serviceRegistrar;
+	
+	private final Object lock = new Object();
 	
 	public NetworkViewGrid(final CyServiceRegistrar serviceRegistrar) {
 		this.serviceRegistrar = serviceRegistrar;
@@ -150,18 +153,22 @@ public class NetworkViewGrid extends JPanel implements Scrollable {
 	}
 	
 	protected CyNetworkView getCurrentNetworkView() {
-		return currentNetworkView;
+		synchronized (lock) {
+			return currentNetworkView;
+		}
 	}
 	
 	protected void setCurrentNetworkView(final CyNetworkView view) {
-		if ((currentNetworkView == null && view == null) || 
-				(currentNetworkView != null && currentNetworkView.equals(view)))
-			return;
-		
-		currentNetworkView = view;
-		
-		for (ThumbnailPanel tp : thumbnailPanels.values())
-			tp.update();
+		synchronized (lock) {
+			if ((currentNetworkView == null && view == null) || 
+					(currentNetworkView != null && currentNetworkView.equals(view)))
+				return;
+			
+			currentNetworkView = view;
+			
+			for (ThumbnailPanel tp : thumbnailPanels.values())
+				tp.update();
+		}
 	}
 	
 	protected void update(final int thumbnailSize) {
@@ -188,6 +195,11 @@ public class NetworkViewGrid extends JPanel implements Scrollable {
 	
 	protected Collection<ThumbnailPanel> getItems() {
 		return thumbnailPanels.values();
+	}
+	
+	protected void selectAll() {
+		for (ThumbnailPanel tp : thumbnailPanels.values())
+			tp.setSelected(true);
 	}
 	
 	protected void deselectAll() {
@@ -390,9 +402,10 @@ public class NetworkViewGrid extends JPanel implements Scrollable {
 			
 			final IconManager iconManager = serviceRegistrar.getService(IconManager.class);
 			
-			currentLabel = new JLabel(IconManager.ICON_ASTERISK);
-			currentLabel.setFont(iconManager.getIconFont(14.0f));
-			currentLabel.setForeground(this.getBackground());
+			currentLabel = new JLabel(IconManager.ICON_BOOKMARK);
+			currentLabel.setFont(iconManager.getIconFont(24.0f));
+			currentLabel.setForeground(UIManager.getColor("Focus.color"));
+			currentLabel.setMinimumSize(currentLabel.getPreferredSize());
 			
 			final Dimension d = new Dimension(size - BORDER_WIDTH, size - BORDER_WIDTH);
 			this.setMinimumSize(d);
@@ -403,7 +416,16 @@ public class NetworkViewGrid extends JPanel implements Scrollable {
 			layout.setAutoCreateContainerGaps(false);
 			layout.setAutoCreateGaps(true);
 			
-			layout.setHorizontalGroup(layout.createParallelGroup(CENTER, true)
+			layout.setHorizontalGroup(layout.createParallelGroup(LEADING, true)
+					.addGroup(layout.createSequentialGroup()
+							.addGap(2)
+							.addComponent(currentLabel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+							.addGap(2, 2, Short.MAX_VALUE)
+							.addComponent(getTitleLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+							.addGap(2, 2, Short.MAX_VALUE)
+							.addGap(currentLabel.getPreferredSize().width)
+							.addGap(2)
+					)
 					.addGroup(layout.createSequentialGroup()
 							.addGap(PAD)
 							.addGap(0, 0, Short.MAX_VALUE)
@@ -411,23 +433,18 @@ public class NetworkViewGrid extends JPanel implements Scrollable {
 							.addGap(0, 0, Short.MAX_VALUE)
 							.addGap(PAD)
 					)
-					.addGroup(layout.createSequentialGroup()
-							.addGap(5)
-							.addComponent(currentLabel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-							.addComponent(getTitleLabel(), DEFAULT_SIZE, DEFAULT_SIZE, size - BORDER_WIDTH)
-							.addGap(currentLabel.getPreferredSize().width)
-							.addGap(5)
-					)
 			);
 			layout.setVerticalGroup(layout.createSequentialGroup()
-					.addGap(PAD)
+					.addGroup(layout.createParallelGroup(LEADING, true)
+							.addComponent(currentLabel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+							.addGroup(layout.createSequentialGroup()
+									.addGap(PAD)
+									.addComponent(getTitleLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+							)
+					)
 					.addGap(0, 0, Short.MAX_VALUE)
 					.addComponent(getImageLabel())
 					.addGap(0, 0, Short.MAX_VALUE)
-					.addGroup(layout.createParallelGroup(CENTER, true)
-							.addComponent(currentLabel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-							.addComponent(getTitleLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					)
 					.addGap(PAD)
 			);
 			
@@ -470,7 +487,8 @@ public class NetworkViewGrid extends JPanel implements Scrollable {
 			getTitleLabel().setText(title);
 			
 			final boolean isCurrent = netView.equals(currentNetworkView);
-			currentLabel.setForeground(isCurrent ? UIManager.getColor("Focus.color") : this.getBackground());
+			currentLabel.setText(isCurrent ? IconManager.ICON_BOOKMARK_O : " ");
+			currentLabel.setToolTipText(isCurrent ? "Current Network View" : null);
 			getTitleLabel().setForeground(
 					UIManager.getColor(isCurrent ? "Label.foreground" : "Label.disabledForeground"));
 			

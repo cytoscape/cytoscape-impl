@@ -7,8 +7,10 @@ import static org.cytoscape.internal.view.NetworkViewGrid.MAX_THUMBNAIL_SIZE;
 import static org.cytoscape.internal.view.NetworkViewGrid.MIN_THUMBNAIL_SIZE;
 import static org.cytoscape.util.swing.IconManager.ICON_ARROW_LEFT;
 import static org.cytoscape.util.swing.IconManager.ICON_ARROW_RIGHT;
+import static org.cytoscape.util.swing.IconManager.ICON_CHECK_SQUARE;
 import static org.cytoscape.util.swing.IconManager.ICON_EXTERNAL_LINK_SQUARE;
 import static org.cytoscape.util.swing.IconManager.ICON_SHARE_ALT_SQUARE;
+import static org.cytoscape.util.swing.IconManager.ICON_SQUARE_O;
 import static org.cytoscape.util.swing.IconManager.ICON_TH;
 import static org.cytoscape.util.swing.IconManager.ICON_TRASH_O;
 
@@ -47,6 +49,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JSlider;
 import javax.swing.JTextField;
+import javax.swing.JToolBar;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
@@ -68,11 +71,11 @@ import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 public class NetworkViewsPanel extends JPanel {
 
 	private static final String GRID_NAME = "__NETWORK_VIEW_GRID__";
-	
+
 	private JPanel contentPane;
 	private JPanel toolBarsPanel;
-	private JPanel gridToolBar;
-	private JPanel viewToolBar;
+	private JToolBar gridToolBar;
+	private JToolBar viewToolBar;
 	private final CardLayout cardLayout;
 	private final NetworkViewGrid networkViewGrid;
 	private JScrollPane gridScrollPane;
@@ -88,6 +91,8 @@ public class NetworkViewsPanel extends JPanel {
 	private JButton detachViewButton;
 	private JLabel viewTitleLabel;
 	private JTextField viewTitleTextField;
+	private JButton selectAllViewsButton;
+	private JButton deselectAllViewsButton;
 	private JButton destroyViewButton;
 	
 	private final Map<String, NetworkViewContainer> viewContainers;
@@ -351,6 +356,9 @@ public class NetworkViewsPanel extends JPanel {
 				serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetworkView() != null);
 		getDestroySelectedViewsButton().setEnabled(!selectedItems.isEmpty());
 		
+		getSelectAllViewsButton().setEnabled(selectedItems.size() < items.size());
+		getDeselectAllViewsButton().setEnabled(!selectedItems.isEmpty());
+		
 		if (items.isEmpty())
 			getSelectionLabel().setText(null);
 		else
@@ -359,7 +367,7 @@ public class NetworkViewsPanel extends JPanel {
 							items.size() + " Network View" + (items.size() == 1 ? "" : "s") +
 							" selected");
 		
-		getGridToolBar().updateUI();
+		getGridToolBar().invalidate();
 	}
 
 	private void updateViewToolBar(final NetworkViewContainer vc) {
@@ -419,23 +427,23 @@ public class NetworkViewsPanel extends JPanel {
 		return toolBarsPanel;
 	}
 	
-	private JPanel getGridToolBar() {
+	private JToolBar getGridToolBar() {
 		if (gridToolBar == null) {
-			gridToolBar = new JPanel();
-			gridToolBar.setName("gridToolBar");
-			gridToolBar.setBorder(
-					BorderFactory.createMatteBorder(1, 0, 0, 0, UIManager.getColor("Separator.foreground")));
+			gridToolBar = new JToolBar("gridToolBar", JToolBar.HORIZONTAL);
+			gridToolBar.setFloatable(false);
 			
 			final JSeparator sep = new JSeparator(JSeparator.VERTICAL);
 			
 			final GroupLayout layout = new GroupLayout(gridToolBar);
 			gridToolBar.setLayout(layout);
-			layout.setAutoCreateContainerGaps(!LookAndFeelUtil.isAquaLAF());
+			layout.setAutoCreateContainerGaps(false);
 			layout.setAutoCreateGaps(true);
 			
 			layout.setHorizontalGroup(layout.createSequentialGroup()
 					.addContainerGap()
 					.addComponent(getViewModeButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(getSelectAllViewsButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(getDeselectAllViewsButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addGap(0, 10, Short.MAX_VALUE)
 					.addComponent(getSelectionLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addGap(0, 10, Short.MAX_VALUE)
@@ -444,8 +452,10 @@ public class NetworkViewsPanel extends JPanel {
 					.addComponent(getThumbnailSlider(), 100, 100, 100)
 					.addContainerGap()
 			);
-			layout.setVerticalGroup(layout.createParallelGroup(CENTER, false)
+			layout.setVerticalGroup(layout.createParallelGroup(CENTER, true)
 					.addComponent(getViewModeButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(getSelectAllViewsButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(getDeselectAllViewsButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(getSelectionLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(getDestroySelectedViewsButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(sep, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
@@ -456,16 +466,16 @@ public class NetworkViewsPanel extends JPanel {
 		return gridToolBar;
 	}
 	
-	private JPanel getViewToolBar() {
+	private JToolBar getViewToolBar() {
 		if (viewToolBar == null) {
-			viewToolBar = new JPanel();
-			viewToolBar.setName("viewToolBar");
+			viewToolBar = new JToolBar("viewToolBar", JToolBar.HORIZONTAL);
+			viewToolBar.setFloatable(false);
 			
 			final JSeparator sep = new JSeparator(JSeparator.VERTICAL);
 			
 			final GroupLayout layout = new GroupLayout(viewToolBar);
 			viewToolBar.setLayout(layout);
-			layout.setAutoCreateContainerGaps(true);
+			layout.setAutoCreateContainerGaps(false);
 			layout.setAutoCreateGaps(true);
 			
 			layout.setHorizontalGroup(layout.createSequentialGroup()
@@ -481,7 +491,7 @@ public class NetworkViewsPanel extends JPanel {
 					.addComponent(getDestroyViewButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addContainerGap()
 			);
-			layout.setVerticalGroup(layout.createParallelGroup(CENTER, false)
+			layout.setVerticalGroup(layout.createParallelGroup(CENTER, true)
 					.addComponent(getGridModeButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(getPreviousViewButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(getNextViewButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
@@ -515,12 +525,45 @@ public class NetworkViewsPanel extends JPanel {
 		return gridScrollPane;
 	}
 	
+	private JButton getSelectAllViewsButton() {
+		if (selectAllViewsButton == null) {
+			selectAllViewsButton = new JButton(ICON_CHECK_SQUARE + " " + ICON_CHECK_SQUARE);
+			selectAllViewsButton.setToolTipText("Select All Network Views");
+			styleButton(selectAllViewsButton, serviceRegistrar.getService(IconManager.class).getIconFont(11.0f));
+
+			selectAllViewsButton.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(final ActionEvent e) {
+					networkViewGrid.selectAll();
+				}
+			});
+		}
+
+		return selectAllViewsButton;
+	}
+	
+	private JButton getDeselectAllViewsButton() {
+		if (deselectAllViewsButton == null) {
+			deselectAllViewsButton = new JButton(ICON_SQUARE_O + " " + ICON_SQUARE_O);
+			deselectAllViewsButton.setToolTipText("Deselect All Network Views");
+			styleButton(deselectAllViewsButton, serviceRegistrar.getService(IconManager.class).getIconFont(11.0f));
+
+			deselectAllViewsButton.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(final ActionEvent e) {
+					networkViewGrid.deselectAll();
+				}
+			});
+		}
+
+		return deselectAllViewsButton;
+	}
+	
 	private JButton getViewModeButton() {
 		if (viewModeButton == null) {
 			viewModeButton = new JButton(ICON_SHARE_ALT_SQUARE);
 			viewModeButton.setToolTipText("Show Network View");
-			viewModeButton.setFont(serviceRegistrar.getService(IconManager.class).getIconFont(16.0f));
-			CytoPanelUtil.styleButton(viewModeButton);
+			styleButton(viewModeButton, serviceRegistrar.getService(IconManager.class).getIconFont(22.0f));
 			
 			viewModeButton.addActionListener(new ActionListener() {
 				@Override
@@ -537,8 +580,7 @@ public class NetworkViewsPanel extends JPanel {
 		if (detachViewButton == null) {
 			detachViewButton = new JButton(ICON_EXTERNAL_LINK_SQUARE);
 			detachViewButton.setToolTipText("Detach Network View");
-			detachViewButton.setFont(serviceRegistrar.getService(IconManager.class).getIconFont(16.0f));
-			CytoPanelUtil.styleButton(detachViewButton);
+			styleButton(detachViewButton, serviceRegistrar.getService(IconManager.class).getIconFont(22.0f));
 			
 			detachViewButton.addActionListener(new ActionListener() {
 				@Override
@@ -556,8 +598,7 @@ public class NetworkViewsPanel extends JPanel {
 		if (gridModeButton == null) {
 			gridModeButton = new JButton(ICON_TH);
 			gridModeButton.setToolTipText("Show Thumbnails");
-			gridModeButton.setFont(serviceRegistrar.getService(IconManager.class).getIconFont(14.0f));
-			CytoPanelUtil.styleButton(gridModeButton);
+			styleButton(gridModeButton, serviceRegistrar.getService(IconManager.class).getIconFont(22.0f));
 			
 			gridModeButton.addActionListener(new ActionListener() {
 				@Override
@@ -574,8 +615,7 @@ public class NetworkViewsPanel extends JPanel {
 		if (previousViewButton == null) {
 			previousViewButton = new JButton(ICON_ARROW_LEFT);
 			previousViewButton.setToolTipText("Previous View");
-			previousViewButton.setFont(serviceRegistrar.getService(IconManager.class).getIconFont(14.0f));
-			CytoPanelUtil.styleButton(previousViewButton);
+			styleButton(previousViewButton, serviceRegistrar.getService(IconManager.class).getIconFont(14.0f));
 			
 			previousViewButton.addActionListener(new ActionListener() {
 				@Override
@@ -593,8 +633,7 @@ public class NetworkViewsPanel extends JPanel {
 		if (nextViewButton == null) {
 			nextViewButton = new JButton(ICON_ARROW_RIGHT);
 			nextViewButton.setToolTipText("Next View");
-			nextViewButton.setFont(serviceRegistrar.getService(IconManager.class).getIconFont(14.0f));
-			CytoPanelUtil.styleButton(nextViewButton);
+			styleButton(nextViewButton, serviceRegistrar.getService(IconManager.class).getIconFont(14.0f));
 			
 			nextViewButton.addActionListener(new ActionListener() {
 				@Override
@@ -613,6 +652,8 @@ public class NetworkViewsPanel extends JPanel {
 			viewTitleLabel = new JLabel();
 			viewTitleLabel.setToolTipText("Double-click to change the title...");
 			viewTitleLabel.setFont(viewTitleLabel.getFont().deriveFont(LookAndFeelUtil.getSmallFontSize()));
+			viewTitleLabel.setMinimumSize(new Dimension(viewTitleLabel.getPreferredSize().width,
+					getViewTitleTextField().getPreferredSize().height));
 			viewTitleLabel.addMouseListener(new MouseAdapter() {
 				@Override
 				public void mouseClicked(MouseEvent e) {
@@ -651,8 +692,7 @@ public class NetworkViewsPanel extends JPanel {
 		if (destroyViewButton == null) {
 			destroyViewButton = new JButton(ICON_TRASH_O);
 			destroyViewButton.setToolTipText("Destroy Network View");
-			destroyViewButton.setFont(serviceRegistrar.getService(IconManager.class).getIconFont(16.0f));
-			CytoPanelUtil.styleButton(destroyViewButton);
+			styleButton(destroyViewButton, serviceRegistrar.getService(IconManager.class).getIconFont(22.0f));
 			
 			destroyViewButton.addActionListener(new ActionListener() {
 				@Override
@@ -673,22 +713,11 @@ public class NetworkViewsPanel extends JPanel {
 		return destroyViewButton;
 	}
 	
-	private JLabel getSelectionLabel() {
-		if (selectionLabel == null) {
-			selectionLabel = new JLabel();
-			selectionLabel.setHorizontalAlignment(JLabel.CENTER);
-			selectionLabel.setFont(selectionLabel.getFont().deriveFont(LookAndFeelUtil.getSmallFontSize()));
-		}
-		
-		return selectionLabel;
-	}
-	
 	private JButton getDestroySelectedViewsButton() {
 		if (destroySelectedViewsButton == null) {
 			destroySelectedViewsButton = new JButton(ICON_TRASH_O);
 			destroySelectedViewsButton.setToolTipText("Destroy Selected Network Views");
-			destroySelectedViewsButton.setFont(serviceRegistrar.getService(IconManager.class).getIconFont(16.0f));
-			CytoPanelUtil.styleButton(destroySelectedViewsButton);
+			styleButton(destroySelectedViewsButton, serviceRegistrar.getService(IconManager.class).getIconFont(22.0f));
 			
 			destroySelectedViewsButton.addActionListener(new ActionListener() {
 				@Override
@@ -707,6 +736,16 @@ public class NetworkViewsPanel extends JPanel {
 		}
 		
 		return destroySelectedViewsButton;
+	}
+	
+	private JLabel getSelectionLabel() {
+		if (selectionLabel == null) {
+			selectionLabel = new JLabel();
+			selectionLabel.setHorizontalAlignment(JLabel.CENTER);
+			selectionLabel.setFont(selectionLabel.getFont().deriveFont(LookAndFeelUtil.getSmallFontSize()));
+		}
+		
+		return selectionLabel;
 	}
 	
 	private JSlider getThumbnailSlider() {
@@ -765,8 +804,6 @@ public class NetworkViewsPanel extends JPanel {
 		btn.setBorder(null);
 		btn.setContentAreaFilled(false);
 		btn.setBorderPainted(false);
-		btn.setRolloverEnabled(false);
-		btn.setFocusPainted(false);
-		btn.setFocusable(false);
+		btn.setPreferredSize(new Dimension(32, 32));
 	}
 }
