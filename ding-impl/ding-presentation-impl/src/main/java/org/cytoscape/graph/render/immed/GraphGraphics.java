@@ -53,8 +53,13 @@ import java.util.Map;
 
 import org.cytoscape.graph.render.immed.arrow.Arrow;
 import org.cytoscape.graph.render.immed.arrow.ArrowheadArrow;
+import org.cytoscape.graph.render.immed.arrow.ArrowheadArrowShort;
 import org.cytoscape.graph.render.immed.arrow.DeltaArrow;
+import org.cytoscape.graph.render.immed.arrow.DeltaArrowShort1;
+import org.cytoscape.graph.render.immed.arrow.DeltaArrowShort2;
 import org.cytoscape.graph.render.immed.arrow.DiamondArrow;
+import org.cytoscape.graph.render.immed.arrow.DiamondArrowShort1;
+import org.cytoscape.graph.render.immed.arrow.DiamondArrowShort2;
 import org.cytoscape.graph.render.immed.arrow.DiscArrow;
 import org.cytoscape.graph.render.immed.arrow.HalfBottomArrow;
 import org.cytoscape.graph.render.immed.arrow.HalfTopArrow;
@@ -153,6 +158,11 @@ public final class GraphGraphics {
 	public static final byte ARROW_HALF_TOP = -6;
 	public static final byte ARROW_HALF_BOTTOM = -7;
 	public static final byte ARROW_ARROWHEAD = -8;
+	public static final byte ARROW_DELTA_SHORT_1 = -9;
+	public static final byte ARROW_DELTA_SHORT_2 = -10;
+	public static final byte ARROW_ARROWHEAD_SHORT = -11;
+	public static final byte ARROW_DIAMOND_SHORT_1 = -12;
+	public static final byte ARROW_DIAMOND_SHORT_2 = -13;
 
 	// The way to access all Arrow objects.
 	private static final Map<Byte,Arrow> arrows;
@@ -194,6 +204,11 @@ public final class GraphGraphics {
 		arrows.put(ARROW_ARROWHEAD, new ArrowheadArrow() );
 		arrows.put(ARROW_HALF_TOP, new HalfTopArrow() );
 		arrows.put(ARROW_HALF_BOTTOM, new HalfBottomArrow() );
+		arrows.put(ARROW_DELTA_SHORT_1, new DeltaArrowShort1() );
+		arrows.put(ARROW_DELTA_SHORT_2, new DeltaArrowShort2() );
+		arrows.put(ARROW_ARROWHEAD_SHORT, new ArrowheadArrowShort() );
+		arrows.put(ARROW_DIAMOND_SHORT_1, new DiamondArrowShort1() );
+		arrows.put(ARROW_DIAMOND_SHORT_2, new DiamondArrowShort2() );
 	}
 
 	private static final float DEF_SHAPE_SIZE = 32;
@@ -2067,8 +2082,9 @@ public final class GraphGraphics {
 			checkCleared();
 		}
 
+		m_g2d.translate(xOffset, yOffset);
+		
 		if (cg instanceof PaintedShape) {
-			m_g2d.translate(xOffset, yOffset);
 			PaintedShape ps = (PaintedShape)cg;
 			Shape shape = ps.getShape();
 
@@ -2079,15 +2095,14 @@ public final class GraphGraphics {
 				m_g2d.setStroke(ps.getStroke());
 				m_g2d.draw(shape);
 			}
+			
 			m_g2d.setPaint(ps.getPaint());
 			m_g2d.fill(shape);
 		} else if (cg instanceof Cy2DGraphicLayer) {
-			m_g2d.translate(xOffset, yOffset);
 			Cy2DGraphicLayer layer = (Cy2DGraphicLayer)cg;
 			final View<CyNode> view = (netView != null && node != null) ? netView.getNodeView(node) : null;
 			layer.draw(m_g2d, nodeShape, netView, view);
 		} else if (cg instanceof ImageCustomGraphicLayer) {
-			m_g2d.translate(xOffset, yOffset);
 			Rectangle bounds = cg.getBounds2D().getBounds();
 			final BufferedImage bImg = ((ImageCustomGraphicLayer)cg).getPaint(bounds).getImage();
 			m_g2d.drawImage(bImg, bounds.x, bounds.y, bounds.width, bounds.height, null);
@@ -2095,43 +2110,6 @@ public final class GraphGraphics {
 			Rectangle2D bounds = nodeShape.getBounds2D();
 			m_g2d.setPaint(cg.getPaint(bounds));
 			m_g2d.fill(nodeShape);
-		}
-
-		m_g2d.setTransform(m_currNativeXform);
-	}
-
-	/**
-	 * Fills an arbitrary graphical shape with high detail.
-	 * <p>
-	 * This method will not work unless clear() has been called at least once
-	 * previously.
-	 * 
-	 * @param shape
-	 *            the shape to fill; the shape is specified in node coordinates.
-	 * @param xOffset
-	 *            in node coordinates, a value to add to the X coordinates of
-	 *            the shape's definition.
-	 * @param yOffset
-	 *            in node coordinates, a value to add to the Y coordinates of
-	 *            the shape's definition.
-	 * @param paint
-	 *            the paint to use when filling the shape.
-	 */
-	public final void drawCustomGraphicFull(final Shape shape,
-			final float xOffset, final float yOffset, final Paint paint) {
-		if (m_debug) {
-			checkDispatchThread();
-			checkCleared();
-		}
-		
-		m_g2d.translate(xOffset, yOffset);
-		if(paint instanceof TexturePaint) {
-			final BufferedImage bImg = ((TexturePaint) paint).getImage();
-			Rectangle bounds = shape.getBounds();
-			m_g2d.drawImage(bImg, bounds.x, bounds.y, bounds.width, bounds.height, null);
-		} else {
-			m_g2d.setPaint(paint);
-			m_g2d.fill(shape);
 		}
 
 		m_g2d.setTransform(m_currNativeXform);

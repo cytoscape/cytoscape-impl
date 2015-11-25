@@ -28,13 +28,16 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+
 import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.DataFormatter;
+import org.apache.poi.ss.usermodel.FormulaEvaluator;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
+import org.cytoscape.model.CyTable;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.cytoscape.tableimport.internal.util.AttributeTypes;
-import org.cytoscape.model.CyTable;
 
 /**
  * Reader for Excel attribute workbook.<br>
@@ -43,52 +46,39 @@ import org.cytoscape.model.CyTable;
  * <p>
  * This reader takes one sheet at a time.
  * </p>
- *
- * @version 0.7
- * @since Cytoscape 2.4
- * @author kono
- *
  */
 public class ExcelAttributeSheetReader implements TextTableReader {
+	
 	private final Sheet sheet;
 	private final AttributeMappingParameters mapping;
 	private final AttributeLineParser parser;
+	private final DataFormatter formatter;
+	private final FormulaEvaluator evaluator;
 	private final int startLineNumber;
 	private int globalCounter = 0;
 
 	private static final Logger logger = LoggerFactory.getLogger(ExcelAttributeSheetReader.class);
 	
 	
-	/**
-	 * Creates a new ExcelAttributeSheetReader object.
-	 *
-	 * @param sheet  DOCUMENT ME!
-	 * @param mapping  DOCUMENT ME!
-	 * @param startLineNumber  DOCUMENT ME!
-	 * @param importAll  DOCUMENT ME!
-	 */
-	public ExcelAttributeSheetReader(final Sheet sheet,
-	                                 final AttributeMappingParameters mapping){
+	public ExcelAttributeSheetReader(
+			final Sheet sheet,
+			final AttributeMappingParameters mapping,
+			final CyServiceRegistrar serviceRegistrar
+	){
 		this.sheet = sheet;
 		this.mapping = mapping;
 		this.startLineNumber = mapping.getStartLineNumber();
-		this.parser = new AttributeLineParser(mapping);
+		this.parser = new AttributeLineParser(mapping, serviceRegistrar);
+		this.evaluator = sheet.getWorkbook().getCreationHelper().createFormulaEvaluator();
+		this.formatter = new DataFormatter();
 	}
 
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @return  DOCUMENT ME!
-	 */
+	@Override
 	public List<String> getColumnNames() {
 		return Arrays.asList(mapping.getAttributeNames());
 	}
 
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @throws IOException DOCUMENT ME!
-	 */
+	@Override
 	public void readTable(CyTable table) throws IOException {
 		Row row;
 		int rowCount = startLineNumber;
@@ -111,10 +101,7 @@ public class ExcelAttributeSheetReader implements TextTableReader {
 	}
 
 	/**
-	 * For a given Excell row, convert the cells into String.
-	 *
-	 * @param row
-	 * @return
+	 * For a given Excel row, convert the cells into String.
 	 */
 	private String[] createElementStringArray(Row row) {
 		String[] cells = new String[mapping.getColumnCount()];
@@ -123,36 +110,18 @@ public class ExcelAttributeSheetReader implements TextTableReader {
 		for (short i = 0; i < mapping.getColumnCount(); i++) {
 			cell = row.getCell(i);
 
-			if (cell == null) {
+			if (cell == null || cell.getCellType() == Cell.CELL_TYPE_ERROR || 
+					(cell.getCellType() == Cell.CELL_TYPE_FORMULA && cell.getCachedFormulaResultType() == Cell.CELL_TYPE_ERROR)) {
 				cells[i] = null;
-			} else if (cell.getCellType() == Cell.CELL_TYPE_STRING) {
-				cells[i] = cell.getRichStringCellValue().getString();
-			} else if (cell.getCellType() == Cell.CELL_TYPE_NUMERIC) {
-				if (mapping.getAttributeTypes()[i] == AttributeTypes.TYPE_INTEGER) {
-					Double dblValue = cell.getNumericCellValue();
-					Integer intValue = dblValue.intValue();
-					cells[i] = intValue.toString();
-				} else {
-					cells[i] = Double.toString(cell.getNumericCellValue());
-				}
-			} else if (cell.getCellType() == Cell.CELL_TYPE_BOOLEAN) {
-				cells[i] = Boolean.toString(cell.getBooleanCellValue());
-			} else if (cell.getCellType() == Cell.CELL_TYPE_BLANK) {
-				cells[i] = null;
-			} else if (cell.getCellType() == Cell.CELL_TYPE_ERROR) {
-				cells[i] = null;
-				logger.warn("Error found when reading a cell.");
+			} else {
+				cells[i] = formatter.formatCellValue(cell, evaluator);
 			}
 		}
 
 		return cells;
 	}
 
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @return  DOCUMENT ME!
-	 */
+	@Override
 	public String getReport() {
 		final StringBuilder sb = new StringBuilder();
 		final Map<String, Object> invalid = parser.getInvalidMap();
@@ -176,6 +145,7 @@ public class ExcelAttributeSheetReader implements TextTableReader {
 		return sb.toString();
 	}
 	
+	@Override
 	public MappingParameter getMappingParameter(){
 		return mapping;
 	}

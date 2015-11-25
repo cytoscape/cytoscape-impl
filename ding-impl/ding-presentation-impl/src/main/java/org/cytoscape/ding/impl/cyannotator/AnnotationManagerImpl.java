@@ -27,6 +27,7 @@ package org.cytoscape.ding.impl.cyannotator;
 import java.awt.Rectangle;
 import java.util.List;
 import javax.swing.JComponent;
+import javax.swing.SwingUtilities;
 
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
@@ -50,9 +51,22 @@ public class AnnotationManagerImpl implements AnnotationManager {
 	 *                   AnnotationManager implementation methods                     *
 	 **********************************************************************************/
 	@Override
-	public void addAnnotation(Annotation annotation) {
+	public void addAnnotation(final Annotation annotation) {
 		if (annotation == null || !(annotation instanceof DingAnnotation))
 			return;
+
+		if (!SwingUtilities.isEventDispatchThread()) {
+			try {
+				SwingUtilities.invokeAndWait(new Runnable() {
+					public void run() {
+						addAnnotation(annotation);
+					}
+				});
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			return;
+		}
 
 		DingAnnotation dAnnotation = (DingAnnotation)annotation;
 
@@ -69,13 +83,25 @@ public class AnnotationManagerImpl implements AnnotationManager {
 	}
 
 	@Override
-	public void removeAnnotation(Annotation annotation) {
+	public void removeAnnotation(final Annotation annotation) {
+		if (!SwingUtilities.isEventDispatchThread()) {
+			try {
+				SwingUtilities.invokeAndWait(new Runnable() {
+					public void run() {
+						removeAnnotation(annotation);
+					}
+				});
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			return;
+		}
 		for (CyNetworkView view: viewManager.getNetworkViewSet())
 			((DGraphView)view).getCyAnnotator().removeAnnotation(annotation);
 	}
 
 	@Override
-	public List<Annotation> getAnnotations(CyNetworkView networkView) {
+	public List<Annotation> getAnnotations(final CyNetworkView networkView) {
 		for (CyNetworkView view: viewManager.getNetworkViewSet()) {
 			if (view.equals(networkView))
 				return ((DGraphView)view).getCyAnnotator().getAnnotations();

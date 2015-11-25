@@ -24,24 +24,37 @@ package org.cytoscape.view.manual.internal.control.view;
  * #L%
  */
 
-import org.cytoscape.view.manual.internal.control.actions.dist.*;
+import java.awt.Dimension;
 
-import java.awt.*;
-
-import javax.swing.*;
-import javax.swing.border.*;
+import javax.swing.Action;
+import javax.swing.BorderFactory;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JPanel;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.util.swing.LookAndFeelUtil;
+import org.cytoscape.view.manual.internal.control.actions.dist.HDistCenter;
+import org.cytoscape.view.manual.internal.control.actions.dist.HDistLeft;
+import org.cytoscape.view.manual.internal.control.actions.dist.HDistRight;
+import org.cytoscape.view.manual.internal.control.actions.dist.VDistBottom;
+import org.cytoscape.view.manual.internal.control.actions.dist.VDistCenter;
+import org.cytoscape.view.manual.internal.control.actions.dist.VDistTop;
 
 
 /**
  *
  */
+@SuppressWarnings("serial")
 public class DistPanel extends JPanel {
+	
 	/**
 	 * Creates a new DistPanel object.
 	 */
 	public DistPanel(CyApplicationManager app) {
+		if (LookAndFeelUtil.isAquaLAF())
+			setOpaque(false);
+		
 		ImageIcon hali = new ImageIcon(getClass().getResource("/images/H_DIST_LEFT.gif"));
 		ImageIcon haci = new ImageIcon(getClass().getResource("/images/H_DIST_CENTER.gif"));
 		ImageIcon hari = new ImageIcon(getClass().getResource("/images/H_DIST_RIGHT.gif"));
@@ -66,7 +79,7 @@ public class DistPanel extends JPanel {
 		add(createJButton(vac, "Vertical Distribute Center"));
 		add(createJButton(vab, "Vertical Distribute Bottom"));
 
-		setBorder(new TitledBorder("Distribute"));
+		setBorder(LookAndFeelUtil.createTitledBorder("Distribute"));
 	}
 
 	protected JButton createJButton(Action a, String tt) {

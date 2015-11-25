@@ -29,8 +29,9 @@ import org.cytoscape.ding.internal.charts.AbstractChartEditor;
 import org.cytoscape.ding.internal.charts.ColorSchemeEditor;
 import org.cytoscape.ding.internal.charts.bar.BarChart.BarChartType;
 import org.cytoscape.ding.internal.charts.util.ColorGradient;
-import org.cytoscape.ding.internal.util.IconManager;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.util.swing.IconManager;
+import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.presentation.property.values.CyColumnIdentifierFactory;
 
 public class BarChartEditor extends AbstractChartEditor<BarChart> {
@@ -73,7 +74,7 @@ public class BarChartEditor extends AbstractChartEditor<BarChart> {
 	
 	public BarChartEditor(final BarChart chart, final CyApplicationManager appMgr, final IconManager iconMgr,
 			final CyColumnIdentifierFactory colIdFactory) {
-		super(chart, Number.class, false, true, true, true, true, false, true, appMgr, iconMgr, colIdFactory);
+		super(chart, Number.class, false, true, true, true, true, false, true, true, appMgr, iconMgr, colIdFactory);
 	}
 	
 	// ==[ PUBLIC METHODS ]=============================================================================================
@@ -83,7 +84,7 @@ public class BarChartEditor extends AbstractChartEditor<BarChart> {
 	@Override
 	protected void createLabels() {
 		super.createLabels();
-		separationLbl = new JLabel("Separation (0.0-0.5)");
+		separationLbl = new JLabel("Separation (0.0-0.5):");
 	}
 	
 	@Override
@@ -103,6 +104,7 @@ public class BarChartEditor extends AbstractChartEditor<BarChart> {
 		final GroupLayout layout = new GroupLayout(p);
 		p.setLayout(layout);
 		layout.setAutoCreateContainerGaps(false);
+		layout.setAutoCreateGaps(!LookAndFeelUtil.isAquaLAF());
 		
 		final JSeparator sep = new JSeparator();
 		
@@ -134,6 +136,7 @@ public class BarChartEditor extends AbstractChartEditor<BarChart> {
 		final GroupLayout layout = new GroupLayout(p);
 		p.setLayout(layout);
 		layout.setAutoCreateContainerGaps(false);
+		layout.setAutoCreateGaps(!LookAndFeelUtil.isAquaLAF());
 		
 		layout.setHorizontalGroup(layout.createSequentialGroup()
 					.addComponent(separationLbl)

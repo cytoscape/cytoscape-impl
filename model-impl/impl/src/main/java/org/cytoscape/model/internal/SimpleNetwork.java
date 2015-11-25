@@ -90,8 +90,8 @@ class SimpleNetwork {
 
 	public CyEdge getEdge(final long e) {
 		synchronized (lock) {
-			final EdgePointer ep = (EdgePointer)edgePointers.get(e);
-			if ( ep != null )
+			final EdgePointer ep = (EdgePointer) edgePointers.get(e);
+			if (ep != null)
 				return ep.cyEdge;
 			else
 				return null;
@@ -100,8 +100,8 @@ class SimpleNetwork {
 
 	public CyNode getNode(final long n) {
 		synchronized (lock) {
-			final NodePointer np = (NodePointer)nodePointers.get(n);
-			if ( np != null )
+			final NodePointer np = (NodePointer) nodePointers.get(n);
+			if (np != null)
 				return np.cyNode;
 			else
 				return null;
@@ -110,7 +110,7 @@ class SimpleNetwork {
 
 	public List<CyNode> getNodeList() {
 		synchronized (lock) {
-			final List<CyNode> ret = new ArrayList<CyNode>(nodeCount);
+			final List<CyNode> ret = new ArrayList<>(nodeCount);
 			int numRemaining = nodeCount;
 			NodePointer node = firstNode;
 	
@@ -129,7 +129,7 @@ class SimpleNetwork {
 
 	public List<CyEdge> getEdgeList() {
 		synchronized (lock) {
-			final List<CyEdge> ret = new ArrayList<CyEdge>(edgeCount);
+			final List<CyEdge> ret = new ArrayList<>(edgeCount);
 			EdgePointer edge = null;
 	
 			int numRemaining = edgeCount;
@@ -164,7 +164,7 @@ class SimpleNetwork {
 				return Collections.emptyList(); 
 	
 			final NodePointer np = getNodePointer(n);
-			final List<CyNode> ret = new ArrayList<CyNode>(countEdges(np, e));
+			final List<CyNode> ret = new ArrayList<>(countEdges(np, e));
 			final Iterator<EdgePointer> it = edgesAdjacent(np, e);
 			while (it.hasNext()) {
 				final EdgePointer edge = it.next();
@@ -182,7 +182,7 @@ class SimpleNetwork {
 				return Collections.emptyList(); 
 	
 			final NodePointer np = getNodePointer(n);
-			final List<CyEdge> ret = new ArrayList<CyEdge>(countEdges(np, e));
+			final List<CyEdge> ret = new ArrayList<>(countEdges(np, e));
 			final Iterator<EdgePointer> it = edgesAdjacent(np, e);
 	
 			while (it.hasNext()) {
@@ -203,14 +203,33 @@ class SimpleNetwork {
 		}
 	}
 
-
 	private class IterableEdgeIterator implements Iterator<CyEdge>, Iterable<CyEdge> {
+		
 		private final Iterator<EdgePointer> epIterator;
-		IterableEdgeIterator(final Iterator<EdgePointer> epIterator) { this.epIterator = epIterator; }
-		public CyEdge next() { return epIterator.next().cyEdge; }
-		public boolean hasNext() { return epIterator.hasNext(); }
-		public void remove() { epIterator.remove(); }
-		public Iterator<CyEdge> iterator() { return this; }
+		
+		IterableEdgeIterator(final Iterator<EdgePointer> epIterator) {
+			this.epIterator = epIterator;
+		}
+		
+		@Override
+		public CyEdge next() {
+			return epIterator.next().cyEdge;
+		}
+
+		@Override
+		public boolean hasNext() {
+			return epIterator.hasNext();
+		}
+
+		@Override
+		public void remove() {
+			epIterator.remove();
+		}
+
+		@Override
+		public Iterator<CyEdge> iterator() {
+			return this;
+		}
 	}
 
 	public List<CyEdge> getConnectingEdgeList(final CyNode src, final CyNode trg, final CyEdge.Type e) {
@@ -224,8 +243,7 @@ class SimpleNetwork {
 			final NodePointer srcP = getNodePointer(src);
 			final NodePointer trgP = getNodePointer(trg);
 	
-			final List<CyEdge> ret = new ArrayList<CyEdge>(Math.min(countEdges(srcP, e), 
-			                                                        countEdges(trgP, e)));
+			final List<CyEdge> ret = new ArrayList<>(Math.min(countEdges(srcP, e), countEdges(trgP, e)));
 			final Iterator<EdgePointer> it = edgesConnecting(srcP, trgP, e);
 	
 			while (it.hasNext())
@@ -308,7 +326,7 @@ class SimpleNetwork {
 	}
 
 	protected boolean removeEdgesInternal(final Collection<CyEdge> edges) {
-		if ( edges == null || edges.isEmpty() )
+		if (edges == null || edges.isEmpty())
 			return false;
 
 		boolean madeChanges = false;
@@ -340,8 +358,8 @@ class SimpleNetwork {
 			thisNode = (NodePointer)nodePointers.get(node.getSUID());
 		}
 
-		if ( thisNode == null )
-			return false;	
+		if (thisNode == null)
+			return false;
 
 		return thisNode.cyNode.equals(node);
 	}
@@ -356,7 +374,7 @@ class SimpleNetwork {
 			thisEdge = (EdgePointer)edgePointers.get(edge.getSUID());
 		}
 
-		if ( thisEdge == null )
+		if (thisEdge == null)
 			return false;
 
 		return thisEdge.cyEdge.equals(edge);
@@ -364,16 +382,11 @@ class SimpleNetwork {
 
 	public boolean containsEdge(final CyNode n1, final CyNode n2) {
 		synchronized (lock) {
-			//System.out.println("private containsEdge");
-			if (!containsNode(n1)) {
-				//System.out.println("private containsEdge doesn't contain node1 " + inId);
+			if (!containsNode(n1))
 				return false;
-			}
 	
-			if (!containsNode(n2)) {
-				//System.out.println("private containsEdge doesn't contain node2 " + inId);
+			if (!containsNode(n2))
 				return false;
-			}
 	
 			final Iterator<EdgePointer> it = edgesConnecting(getNodePointer(n1), getNodePointer(n2), CyEdge.Type.ANY);
 	
@@ -382,7 +395,7 @@ class SimpleNetwork {
 	}
 
 	private Iterator<EdgePointer> edgesAdjacent(final NodePointer n, final CyEdge.Type edgeType) {
-		assert(n!=null);
+		assert (n != null);
 
 		final EdgePointer[] edgeLists;
 
@@ -494,12 +507,10 @@ class SimpleNetwork {
 
 		// choose the smaller iterator
 		if (countEdges(node0, et) <= countEdges(node1, et)) {
-			//System.out.println("edgesConnecting fewer edges node0: " + node0.index);
 			theAdj = edgesAdjacent(node0, et);
 			nodeZero = node0.index;
 			nodeOne = node1.index;
 		} else {
-			//System.out.println("edgesConnecting fewer edges node1: " + node1.index);
 			theAdj = edgesAdjacent(node1, et);
 			nodeZero = node1.index;
 			nodeOne = node0.index;
@@ -526,16 +537,19 @@ class SimpleNetwork {
 					nextIndex = -2;
 				}
 
+				@Override
 				public void remove() {
 					throw new UnsupportedOperationException();
 				}
 
+				@Override
 				public boolean hasNext() {
 					ensureComputeNext();
 
 					return (nextIndex >= 0);
 				}
 
+				@Override
 				public EdgePointer next() {
 					ensureComputeNext();
 
@@ -548,15 +562,15 @@ class SimpleNetwork {
 	}
 
 	private boolean assessUndirected(final CyEdge.Type e) {
-		return ((e == CyEdge.Type.UNDIRECTED) || (e == CyEdge.Type.ANY));
+		return e == CyEdge.Type.UNDIRECTED || e == CyEdge.Type.ANY;
 	}
 
 	private boolean assessIncoming(final CyEdge.Type e) {
-		return ((e == CyEdge.Type.DIRECTED) || (e == CyEdge.Type.ANY) || (e == CyEdge.Type.INCOMING));
+		return e == CyEdge.Type.DIRECTED || e == CyEdge.Type.ANY || e == CyEdge.Type.INCOMING;
 	}
 
 	private boolean assessOutgoing(final CyEdge.Type e) {
-		return ((e == CyEdge.Type.DIRECTED) || (e == CyEdge.Type.ANY) || (e == CyEdge.Type.OUTGOING));
+		return e == CyEdge.Type.DIRECTED || e == CyEdge.Type.ANY || e == CyEdge.Type.OUTGOING;
 	}
 
 	private int countEdges(final NodePointer n, final CyEdge.Type edgeType) {
@@ -565,32 +579,19 @@ class SimpleNetwork {
 		final boolean incoming = assessIncoming(edgeType);
 		final boolean outgoing = assessOutgoing(edgeType);
 
-		//System.out.println("countEdges un: " + undirected + " in: " + incoming + " out: " + outgoing);
+		int count = 0;
 
-		int tentativeEdgeCount = 0;
+		if (outgoing)
+			count += n.outDegree;
+		if (incoming)
+			count += n.inDegree;
+		if (undirected)
+			count += n.undDegree;
 
-		if (outgoing) { 
-			//System.out.println("  countEdges outgoing: " + n.outDegree);
-			tentativeEdgeCount += n.outDegree;
-		}
+		if (outgoing && incoming)
+			count -= n.selfEdges;
 
-		if (incoming) { 
-			//System.out.println("  countEdges incoming: " + n.inDegree);
-			tentativeEdgeCount += n.inDegree;
-		}
-
-		if (undirected) {
-			//System.out.println("  countEdges undirected: " + n.undDegree);
-			tentativeEdgeCount += n.undDegree;
-		}
-
-		if (outgoing && incoming) {
-			//System.out.println("  countEdges out+in MINUS: " + n.selfEdges);
-			tentativeEdgeCount -= n.selfEdges;
-		}
-
-		//System.out.println("  countEdges final: " + tentativeEdgeCount);
-		return tentativeEdgeCount;
+		return count;
 	}
 
 	private NodePointer getNodePointer(final CyNode node) {
@@ -598,7 +599,6 @@ class SimpleNetwork {
 		return (NodePointer)nodePointers.get(node.getSUID());
 	}
 
-	
 	@Override
 	public boolean equals(final Object o) {
 		if (!(o instanceof SimpleNetwork))
@@ -609,7 +609,6 @@ class SimpleNetwork {
 		return ag.suid.longValue() == this.suid.longValue();
 	}
 
-	
 	@Override
 	public int hashCode() {
 		return (int) (suid.longValue() ^ (suid.longValue() >>> 32));
@@ -620,5 +619,4 @@ class SimpleNetwork {
 	public String toString() {
 		return "CyNetwork: " + suid;
 	}
-
 }

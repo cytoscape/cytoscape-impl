@@ -31,12 +31,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.SUIDFactory;
 import org.cytoscape.model.SavePolicy;
 import org.cytoscape.model.VirtualColumnInfo;
+import org.cytoscape.model.events.RowsDeletedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,13 +53,15 @@ public abstract class AbstractTableFacade implements CyTable {
 	private static final Logger logger = LoggerFactory.getLogger(AbstractTableFacade.class);
 	
 	private final CyTable actual;
+	private final CyEventHelper cyEventHelper;
 	private final Long suid;
 	private final Map<CyRow,CyRow> facadeRows;
 	private final Map<CyColumn,CyColumn> facadeColumns;
 	private boolean isPublic = true;
 
-	public AbstractTableFacade(final CyTable actual) {
+	public AbstractTableFacade(final CyTable actual, final CyEventHelper eventHelper) {
 		this.actual = actual;
+		this.cyEventHelper = eventHelper;
 		this.suid = Long.valueOf(SUIDFactory.getNextSUID()); 
 		this.facadeRows = new MapMaker().weakKeys().makeMap();
 		this.facadeColumns = new MapMaker().weakKeys().makeMap();
@@ -161,7 +165,18 @@ public abstract class AbstractTableFacade implements CyTable {
 	
 	@Override
 	public boolean deleteRows(Collection<?> primaryKeys) {
-		return actual.deleteRows(primaryKeys); 
+		// First, remove the rows from the facade table
+		for (Object primaryKey: primaryKeys) {
+			CyRow row = actual.getRow(primaryKey);
+			if (row != null && facadeRows.containsKey(row))
+				facadeRows.remove(row);
+		}
+
+		// Now delete the rows from the actual table
+		boolean changed = actual.deleteRows(primaryKeys); 
+		if(changed)
+			cyEventHelper.fireEvent(new RowsDeletedEvent( this,  (Collection<Object>) primaryKeys));
+		return changed;
 	}
 
 	@Override

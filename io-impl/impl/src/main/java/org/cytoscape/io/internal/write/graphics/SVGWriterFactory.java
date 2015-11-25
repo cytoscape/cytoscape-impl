@@ -31,18 +31,18 @@ import java.io.OutputStream;
 import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.io.internal.write.AbstractCyWriterFactory;
 
-public class SVGWriterFactory extends AbstractCyWriterFactory implements PresentationWriterFactory {
+public class SVGWriterFactory extends AbstractCyWriterFactory implements
+		PresentationWriterFactory {
 
 	public SVGWriterFactory(final CyFileFilter fileFilter) {
 		super(fileFilter);
 	}
 
 	@Override
-	public CyWriter createWriter(OutputStream outputStream, RenderingEngine re) {
+	public CyWriter createWriter(OutputStream outputStream, RenderingEngine<?> re) {
 		if (re == null)
 			throw new NullPointerException("RenderingEngine is null");
 
 		return new SVGWriter(re, outputStream);
 	}
-
 }

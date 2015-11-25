@@ -28,7 +28,7 @@ package org.cytoscape.search.internal.util;
 
 import java.util.regex.Pattern;
 
-public class EnhancedSearchUtils {
+public final class EnhancedSearchUtils {
 
 	public static final String SEARCH_STRING = "\\s";
 
@@ -83,6 +83,7 @@ public class EnhancedSearchUtils {
 		
 		return lowercaseQuery;
 	}
-
-
+	
+	private EnhancedSearchUtils() {		
+	}
 }

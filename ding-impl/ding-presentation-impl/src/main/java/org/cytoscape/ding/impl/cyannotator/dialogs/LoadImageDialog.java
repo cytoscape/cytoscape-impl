@@ -24,17 +24,26 @@ package org.cytoscape.ding.impl.cyannotator.dialogs;
  * #L%
  */
 
-import java.awt.Container;
+import static javax.swing.GroupLayout.DEFAULT_SIZE;
+import static javax.swing.GroupLayout.PREFERRED_SIZE;
+import static javax.swing.GroupLayout.Alignment.CENTER;
+
 import java.awt.Point;
 import java.awt.Robot;
+import java.awt.event.ActionEvent;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.net.URL;
 
 import javax.imageio.ImageIO;
+import javax.swing.AbstractAction;
+import javax.swing.GroupLayout;
+import javax.swing.JButton;
 import javax.swing.JDialog;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
+import javax.swing.JPanel;
 import javax.swing.filechooser.FileFilter;
 
 import org.apache.commons.io.FilenameUtils;
@@ -42,15 +51,22 @@ import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
 import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.impl.cyannotator.annotations.ImageAnnotationImpl;
+import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-//Provides a way to create ImageAnnotations
-
+/**
+ * Provides a way to create ImageAnnotations
+ */
+@SuppressWarnings("serial")
 public class LoadImageDialog extends JDialog {
 
+	private JButton openButton;
+	private JButton cancelButton;
+	private JFileChooser fileChooser;
+	
 	private final DGraphView view;
-	private final CyAnnotator cyAnnotator; 
+	private final CyAnnotator cyAnnotator;
 	private final CustomGraphicsManager cgm;
 	private final Point2D startingLocation;
 
@@ -61,72 +77,81 @@ public class LoadImageDialog extends JDialog {
 		this.cgm = cgm;
 		this.cyAnnotator = view.getCyAnnotator();
 		this.startingLocation = location;
-		
-		initComponents(this.getContentPane());
-		setSize(474, 445);
-		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-		setModalityType(DEFAULT_MODALITY_TYPE);
+
+		initComponents();
 	}
 
-	private void initComponents(Container pane) {
-
+	private void initComponents() {
 		setTitle("Select an Image");
+		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		setModalityType(DEFAULT_MODALITY_TYPE);
 		setResizable(false);
 
-		setMinimumSize(new java.awt.Dimension(625, 440));
+		fileChooser = new JFileChooser();
+		fileChooser.setControlButtonsAreShown(false);
+		fileChooser.setCurrentDirectory(null);
+		fileChooser.setDialogTitle("");
+		fileChooser.setAcceptAllFileFilterUsed(false);
+		fileChooser.addChoosableFileFilter( new ImageFilter() );
 
-		pane.setLayout(null);
-
-		jFileChooser1 = new javax.swing.JFileChooser();
-		jFileChooser1.setControlButtonsAreShown(false);
-		jFileChooser1.setCurrentDirectory(null);
-		jFileChooser1.setDialogTitle("");
-
-		jFileChooser1.setAcceptAllFileFilterUsed(false);
-		jFileChooser1.addChoosableFileFilter( new ImageFilter() );
-
-		pane.add(jFileChooser1);
-		jFileChooser1.setBounds(0, 0, 540, 400);
-		
-		jButton1 = new javax.swing.JButton();
-
-		jButton1.setText("Open");
-		jButton1.addActionListener(new java.awt.event.ActionListener() {
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
-				jButton1ActionPerformed(evt);
+		openButton = new JButton(new AbstractAction("Open") {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				openButtonActionPerformed(e);
+			}
+		});
+		cancelButton = new JButton(new AbstractAction("Cancel") {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				dispose();
 			}
 		});
 		
-		pane.add(jButton1);
-		jButton1.setBounds(540, 335, 70, (int)jButton1.getPreferredSize().getHeight());
+		final JPanel buttonPanel = LookAndFeelUtil.createOkCancelPanel(openButton, cancelButton);
 
-		jButton2 = new javax.swing.JButton();
-
-		jButton2.setText("Cancel");
-		jButton2.addActionListener(new java.awt.event.ActionListener() {
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
-				jButton2ActionPerformed(evt);
-			}
-		});
-
-		pane.add(jButton2);
-		jButton2.setBounds(540, 365, 70, (int)jButton2.getPreferredSize().getHeight());			   
+		final JPanel contents = new JPanel();
+		final GroupLayout layout = new GroupLayout(contents);
+		contents.setLayout(layout);
+		layout.setAutoCreateContainerGaps(true);
+		layout.setAutoCreateGaps(true);
+		
+		layout.setHorizontalGroup(layout.createParallelGroup(CENTER, true)
+				.addComponent(fileChooser, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				.addComponent(buttonPanel)
+		);
+		layout.setVerticalGroup(layout.createSequentialGroup()
+				.addComponent(fileChooser, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				.addComponent(buttonPanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+		);
+		
+		LookAndFeelUtil.setDefaultOkCancelKeyStrokes(getRootPane(), openButton.getAction(), cancelButton.getAction());
+		getRootPane().setDefaultButton(openButton);
+		
+		getContentPane().add(contents);
 		pack();
 	}
 
-	private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {
+	private void openButtonActionPerformed(ActionEvent evt) {
 		try {
-			//Read the selected Image, create an Image Annotation, repaint the whole network and then dispose off this Frame
-			File imageFile = jFileChooser1.getSelectedFile(); // Get the file
+			// Read the selected Image, create an Image Annotation, repaint the
+			// whole network and then dispose off this Frame
+			File imageFile = fileChooser.getSelectedFile(); // Get the file
 			BufferedImage image = ImageIO.read(imageFile);
 			URL url = imageFile.toURI().toURL();
-			//The Attributes are x, y, Image, componentNumber, scaleFactor
-			ImageAnnotationImpl newOne=new ImageAnnotationImpl(cyAnnotator, view, 
-			                                                   (int)startingLocation.getX(), (int)startingLocation.getY(), 
-			                                                   url, image, 
- 			                                                   view.getZoom(),cgm);
+			
+			// The Attributes are x, y, Image, componentNumber, scaleFactor
+			ImageAnnotationImpl newOne = new ImageAnnotationImpl(
+					cyAnnotator,
+					view,
+					(int) startingLocation.getX(),
+					(int) startingLocation.getY(),
+					url,
+					image,
+					view.getZoom(),
+					cgm
+			);
 
-			newOne.getComponent().setLocation((int)startingLocation.getX(), (int)startingLocation.getY());
+			newOne.getComponent().setLocation((int) startingLocation.getX(), (int) startingLocation.getY());
 			newOne.addComponent(null);
 			newOne.update();
 
@@ -137,44 +162,43 @@ public class LoadImageDialog extends JDialog {
 			cyAnnotator.resizeShape(newOne);
 
 			try {
-				// Warp the mouse to the starting location (if supported)
-				// But, we want to preserve the aspect ratio, at least initially
-				double width = (double)image.getWidth();
-				double height = (double)image.getHeight();
+				// Warp the mouse to the starting location (if supported).
+				// But we want to preserve the aspect ratio, at least initially.
+				double width = (double) image.getWidth();
+				double height = (double) image.getHeight();
+				
 				if (height > width) {
-					width = 100.0*width/height;
+					width = 100.0 * width / height;
 					height = 100;
 				} else {
-					height = 100.0*height/width;
+					height = 100.0 * height / width;
 					width = 100;
 				}
+				
 				Point start = newOne.getComponent().getLocationOnScreen();
 				Robot robot = new Robot();
-				robot.mouseMove((int)start.getX()+(int)width, (int)start.getY()+(int)height);
-			} catch (Exception e) {}
+				robot.mouseMove((int) start.getX() + (int) width, (int) start.getY() + (int) height);
+			} catch (Exception e) {
+			}
 
 			this.dispose();
-		} catch(Exception ex){
-			logger.warn("Unable to load the selected image",ex);	
+		} catch (Exception ex) {
+			logger.warn("Unable to load the selected image", ex);
 		}
 	}
 
-	private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {
-
-		dispose();
-	}
-
-
-	//This class provides a FileFilter for the JFileChooser
-
+	/**
+	 * This class provides a FileFilter for the JFileChooser.
+	 */
 	public class ImageFilter extends FileFilter{
 
-		//Accept all directories and all gif, jpg, tiff, or png files.
+		/**
+		 * Accept all directories and all gif, jpg, tiff, or png files.
+		 */
+		@Override
 		public boolean accept(File f) {
-
-			if (f.isDirectory()) {
+			if (f.isDirectory())
 				return true;
-			}
 
 			String extension = FilenameUtils.getExtension(f.getName());
 			
@@ -187,7 +211,6 @@ public class LoadImageDialog extends JDialog {
 					extension.equals("jpg") ||
 					extension.equals("png"))
 						return true;
-
 				else
 					return false;
 			}
@@ -195,15 +218,9 @@ public class LoadImageDialog extends JDialog {
 			return false;
 		}
 
-		//The description of this filter
+		@Override
 		public String getDescription() {
 			return "Just Images";
 		}
-
 	}
-
-	private javax.swing.JButton jButton1;
-	private javax.swing.JButton jButton2;
-	private javax.swing.JFileChooser jFileChooser1;
-
 }

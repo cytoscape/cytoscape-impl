@@ -26,24 +26,25 @@ package org.cytoscape.view.manual.internal.rotate;
 
 
 import java.awt.Dimension;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
 
+import javax.swing.GroupLayout;
+import javax.swing.GroupLayout.Alignment;
+import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
-import javax.swing.JPanel;
 import javax.swing.JSlider;
-
-
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import org.cytoscape.view.manual.internal.layout.algorithm.MutablePolyEdgeGraphLayout;
-import org.cytoscape.view.manual.internal.common.*;
-import org.cytoscape.view.model.CyNetworkView;
-
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.util.swing.LookAndFeelUtil;
+import org.cytoscape.view.manual.internal.common.AbstractManualPanel;
+import org.cytoscape.view.manual.internal.common.CheckBoxTracker;
+import org.cytoscape.view.manual.internal.common.GraphConverter2;
+import org.cytoscape.view.manual.internal.common.PolymorphicSlider;
+import org.cytoscape.view.manual.internal.common.SliderStateTracker;
+import org.cytoscape.view.manual.internal.layout.algorithm.MutablePolyEdgeGraphLayout;
+import org.cytoscape.view.model.CyNetworkView;
 
 
 /**
@@ -51,7 +52,9 @@ import org.cytoscape.application.CyApplicationManager;
  *
  *      Rewrite based on the class RotateAction       9/13/2006        Peng-Liang Wang
  */
+@SuppressWarnings("serial")
 public class RotatePanel extends AbstractManualPanel implements ChangeListener, PolymorphicSlider {
+	
 	private JCheckBox jCheckBox;
 	private JSlider jSlider;
 	private int prevValue; 
@@ -64,10 +67,13 @@ public class RotatePanel extends AbstractManualPanel implements ChangeListener, 
 	public RotatePanel(CyApplicationManager appMgr) {
 		super("Rotate");
 		this.appMgr = appMgr;
+		
+		if (LookAndFeelUtil.isAquaLAF())
+			setOpaque(false);
+		
 		// set up the user interface
 		JLabel jLabel = new JLabel();
-		jLabel.setText("Rotate in Degrees:");
-		jLabel.setPreferredSize(new Dimension(120, 50));
+		jLabel.setText("Degrees:");
 
 		jSlider = new JSlider();
 		jSlider.setMaximum(360);
@@ -83,26 +89,24 @@ public class RotatePanel extends AbstractManualPanel implements ChangeListener, 
 
 		jCheckBox = new JCheckBox("Rotate Selected Nodes Only", /* selected = */true);
 
-		new CheckBoxTracker( jCheckBox );
+		new CheckBoxTracker(jCheckBox);
 
-		GridBagConstraints gbc = new GridBagConstraints();
-
-		setLayout(new GridBagLayout());
-
-		gbc.gridy = 0;
-		gbc.anchor = GridBagConstraints.WEST;
-		gbc.weightx = 1.0;
-		gbc.insets = new Insets(0, 15, 0, 15);
-		add(jLabel, gbc);
-
-		gbc.gridy = 1;
-		gbc.fill = GridBagConstraints.HORIZONTAL;
-		add(jSlider, gbc);
-
-		gbc.gridy = 2;
-		gbc.anchor = GridBagConstraints.WEST;
-		gbc.fill = GridBagConstraints.NONE;
-		add(jCheckBox, gbc);
+		final GroupLayout layout = new GroupLayout(this);
+		this.setLayout(layout);
+		layout.setAutoCreateContainerGaps(true);
+		layout.setAutoCreateGaps(true);
+		
+		layout.setHorizontalGroup(layout.createParallelGroup(Alignment.LEADING, true)
+				.addComponent(jLabel)
+				.addComponent(jSlider)
+				.addComponent(jCheckBox)
+		);
+		layout.setVerticalGroup(layout.createSequentialGroup()
+				.addComponent(jLabel)
+				.addComponent(jSlider)
+				.addPreferredGap(ComponentPlacement.UNRELATED)
+				.addComponent(jCheckBox)
+		);
 
 		new SliderStateTracker(this);
 
@@ -111,16 +115,19 @@ public class RotatePanel extends AbstractManualPanel implements ChangeListener, 
 		setMaximumSize(new Dimension(100,1200));
 	} 
 
+	@Override
 	public void updateSlider(int x) {
 		// this will prevent the state change from producing a change
 		prevValue = x;
 		jSlider.setValue(x);
 	}
 
+	@Override
 	public int getSliderValue() {
 		return jSlider.getValue();
 	}
 
+	@Override
 	public void stateChanged(ChangeEvent e) {
 		if (e.getSource() != jSlider)
 			return;

@@ -40,18 +40,19 @@ public class URLHandlerFactory implements GUITunableHandlerFactory<URLHandler> {
 		this.manager = manager;
 	}
 
+	@Override
 	public URLHandler createTunableHandler(Field field, Object instance, Tunable tunable) {
-		if ( field.getType() != URL.class)
+		if (field.getType() != URL.class)
 			return null;
-		
+
 		return new URLHandler(field, instance, tunable, manager);
 	}
 
+	@Override
 	public URLHandler createTunableHandler(Method getter, Method setter, Object instance, Tunable tunable) {
-		if ( getter.getReturnType() != URL.class)
+		if (getter.getReturnType() != URL.class)
 			return null;
-		
+
 		return new URLHandler(getter, setter, instance, tunable, manager);
 	}
-
 }

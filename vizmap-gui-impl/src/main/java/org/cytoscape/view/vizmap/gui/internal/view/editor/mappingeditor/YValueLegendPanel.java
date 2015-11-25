@@ -25,8 +25,6 @@ package org.cytoscape.view.vizmap.gui.internal.view.editor.mappingeditor;
  */
 
 import java.awt.BasicStroke;
-import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -36,43 +34,34 @@ import java.awt.geom.AffineTransform;
 
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 
+import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.model.VisualProperty;
 
 
-/**
- * DOCUMENT ME!
- *
- * @author $author$
-  */
 public class YValueLegendPanel extends JPanel {
+	
 	private final static long serialVersionUID = 1202339877453677L;
+	
+	private final int xOffset = LookAndFeelUtil.isWinLAF() ? 20 : 5;
 	private VisualProperty<?> type;
 
-	/**
-	 * Creates a new IconPanel object.
-	 *
-	 * @param type DOCUMENT ME!
-	 */
 	public YValueLegendPanel(VisualProperty<?> type) {
 		this.type = type;
-		this.setPreferredSize(new Dimension());
 	}
 
 	@Override
 	public void paintComponent(Graphics g) {
 		clear(g);
-
 		Graphics2D g2d = (Graphics2D) g;
 
-		//this.setPreferredSize(new Dimension(strW + 6, 1));
 		int panelHeight = this.getHeight() - 30;
 
 		Polygon poly = new Polygon();
 		int top = 10;
 
 		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
 		g2d.setStroke(new BasicStroke(1.0f));
 
 		int center = (this.getWidth() / 2) + 4;
@@ -82,9 +71,10 @@ public class YValueLegendPanel extends JPanel {
 		poly.addPoint(center, top + 15);
 		g.fillPolygon(poly);
 
+		g2d.setColor(UIManager.getColor("Label.disabledForeground"));
 		g2d.drawLine(center, top, center, panelHeight);
-		g2d.setColor(Color.DARK_GRAY);
-		g2d.setFont(new Font("SansSerif", Font.BOLD, 10));
+		
+		g2d.setFont(UIManager.getFont("Label.font").deriveFont(Font.BOLD, LookAndFeelUtil.getSmallFontSize()));
 
 		final String label = type.getDisplayName();
 		final int width = SwingUtilities.computeStringWidth(g2d.getFontMetrics(), label);
@@ -92,9 +82,8 @@ public class YValueLegendPanel extends JPanel {
 		af.rotate(Math.PI + (Math.PI / 2));
 		g2d.setTransform(af);
 
-		g2d.setColor(Color.black);
-		g2d.drawString(type.getDisplayName(), (-this.getHeight() / 2) - (width / 2),
-		               (this.getWidth() / 2) + 5);
+		g2d.setColor(UIManager.getColor("Label.foreground"));
+		g2d.drawString(type.getDisplayName(), (-this.getHeight() / 2) - (width / 2), (this.getWidth() / 2) + xOffset);
 	}
 
 	// super.paintComponent clears offscreen pixmap,

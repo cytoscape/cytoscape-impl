@@ -31,19 +31,16 @@ import java.awt.Graphics2D;
 import java.awt.Paint;
 import java.awt.Stroke;
 import java.awt.TexturePaint;
-import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.Comparator;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.TreeMap;
+import java.util.regex.Pattern;
 
 import javax.imageio.ImageIO;
 
@@ -52,12 +49,11 @@ import org.cytoscape.ding.GraphView;
 import org.cytoscape.ding.Label;
 import org.cytoscape.ding.NodeView;
 import org.cytoscape.ding.ObjectPosition;
-import org.cytoscape.ding.customgraphics.CustomGraphicsPositionCalculator;
-import org.cytoscape.ding.customgraphics.NullCustomGraphics;
 import org.cytoscape.ding.impl.visualproperty.CustomGraphicsVisualProperty;
 import org.cytoscape.ding.impl.visualproperty.ObjectPositionVisualProperty;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.graph.render.immed.GraphGraphics;
+import org.cytoscape.graph.render.stateful.CustomGraphicsInfo;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
@@ -65,22 +61,21 @@ import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualLexiconNode;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
-import org.cytoscape.view.presentation.customgraphics.Cy2DGraphicLayer;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
-import org.cytoscape.view.presentation.customgraphics.PaintedShape;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.presentation.property.values.LineType;
 import org.cytoscape.view.presentation.property.values.NodeShape;
 import org.cytoscape.view.vizmap.VisualMappingManager;
-import org.cytoscape.view.vizmap.VisualPropertyDependency;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * DING implementation of View Model and Presentation.
  */
 public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, Label {
 	
-	private final static Set<CustomGraphicLayer> EMPTY_CUSTOM_GRAPHICS = new LinkedHashSet<CustomGraphicLayer>(0);
-
+	private static Pattern CG_SIZE_PATTERN = Pattern.compile("NODE_CUSTOMGRAPHICS_SIZE_[1-9]");
+	
 	// Affects size of the nested network image relative to the node size:
 	private static final float NESTED_IMAGE_SCALE_FACTOR = 0.6f;
 
@@ -148,31 +143,17 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 	// Show/hide flag for nested network graphics
 	private boolean nestedNetworkVisible = true;
 
-	// A LinkedHashSet of the custom graphics associated with this
-	// DNodeView. We need the HashSet linked since the ordering of
-	// custom graphics is important. For space considerations, we
-	// keep _customGraphics null when there are no custom
-	// graphics--event though this is a bit more complicated:
-	private LinkedHashSet<CustomGraphicLayer> orderedCustomGraphicLayers;
-
-	// CG_LOCK is used for synchronizing custom graphics operations on this
-	// DNodeView.
-	// Arrays are objects like any other and can be used for synchronization. We
-	// use an array
-	// object assuming it takes up the least amount of memory:
+	// CG_LOCK is used for synchronizing custom graphics operations on this DNodeView.
+	// Arrays are objects like any other and can be used for synchronization.
+	// We use an array object assuming it takes up the least amount of memory:
 	private final Object[] CG_LOCK = new Object[0];
-
-	// Map from NodeCustomGraphics Visual Property to native CustomGraphicLayers
-	// objects.
-	private final Map<VisualProperty<?>, Set<CustomGraphicLayer>> cgMap;
-
-	// Locations of Custom Graphics
-	private Map<CustomGraphicLayer, ObjectPosition> graphicsPositions;
+	
+	private final Map<VisualProperty<CyCustomGraphics>, CustomGraphicsInfo> cgInfoMap;
 
 	// Label position
 	private ObjectPosition labelPosition;
 
-	private final VisualMappingManager vmm;
+	private final VisualMappingManager vmMgr;
 	
 	private final CyNetworkViewManager netViewMgr; 
 
@@ -188,10 +169,12 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 	// Cached visibility information
 	private boolean isVisible = true;
 	
+	private static final Logger logger = LoggerFactory.getLogger(DNodeView.class);
+	
 	DNodeView(final VisualLexicon lexicon,
 			  final DGraphView graphView,
 			  final CyNode model,
-			  final VisualMappingManager vmm,
+			  final VisualMappingManager vmMgr,
 			  final CyNetworkViewManager netViewMgr,
 			  final CyEventHelper eventHelper) {
 		super(model, lexicon, eventHelper);
@@ -201,16 +184,23 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 		if (lexicon == null)
 			throw new NullPointerException("Lexicon must never be null.");
 
-		this.vmm = vmm;
+		this.vmMgr = vmMgr;
 		this.labelPosition = new ObjectPositionImpl();
 
 		this.netViewMgr = netViewMgr;
 		this.modelIdx = model.getSUID();
-		
-		// Initialize custom graphics pool.
-		cgMap = new HashMap<VisualProperty<?>, Set<CustomGraphicLayer>>();
 
 		this.graphView = graphView;
+		
+		this.cgInfoMap = new TreeMap<VisualProperty<CyCustomGraphics>, CustomGraphicsInfo>(
+				new Comparator<VisualProperty<CyCustomGraphics>>() {
+
+					@Override
+					public int compare(VisualProperty<CyCustomGraphics> vp1, VisualProperty<CyCustomGraphics> vp2) {
+						// Sort by: Custom Graphics 1, 2, 3, etc.
+						return vp1.getIdString().compareTo(vp2.getIdString());
+					}
+				});
 	}
 	
 	@Override
@@ -349,19 +339,18 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 		}
 	}
 
-
 	@Override
 	public boolean setWidth(final double originalWidth) {
-		final double width;
+		double newWidth = originalWidth;
 
 		// Check bypass
 		if (isValueLocked(DVisualLexicon.NODE_WIDTH))
-			width = getVisualProperty(DVisualLexicon.NODE_WIDTH);
-		else
-			width = originalWidth;
+			newWidth = getVisualProperty(DVisualLexicon.NODE_WIDTH);
 
-		resizeCustomGraphics(width/getWidth(), 1.0);
-
+		final double width = getWidth();
+		
+		if (newWidth == width) return false;
+		
 		synchronized (graphView.m_lock) {
 			if (!graphView.m_spacial.exists(modelIdx, graphView.m_extentsBuff, 0)) {
 				isVisible = false;
@@ -370,7 +359,7 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 			isVisible = true;
 
 			final double xCenter = (graphView.m_extentsBuff[0] + graphView.m_extentsBuff[2]) / 2.0d;
-			final double wDiv2 = width / 2.0d;
+			final double wDiv2 = newWidth / 2.0d;
 			final float xMin = (float) (xCenter - wDiv2);
 			final float xMax = (float) (xCenter + wDiv2);
 
@@ -409,14 +398,15 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 
 	@Override
 	public boolean setHeight(final double originalHeight) {
-		final double height;
+		double newHeight = originalHeight;
+		
 		// Check bypass
 		if (isValueLocked(DVisualLexicon.NODE_HEIGHT))
-			height = getVisualProperty(DVisualLexicon.NODE_HEIGHT);
-		else
-			height = originalHeight;
+			newHeight = getVisualProperty(DVisualLexicon.NODE_HEIGHT);
 
-		resizeCustomGraphics(1.0, height/getHeight());
+		final double height = getHeight();
+		
+		if (newHeight == height) return false;
 		
 		synchronized (graphView.m_lock) {
 			if (!graphView.m_spacial.exists(modelIdx, graphView.m_extentsBuff, 0)) {
@@ -426,13 +416,13 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 			isVisible = true;
 
 			final double yCenter = ((graphView.m_extentsBuff[1]) + graphView.m_extentsBuff[3]) / 2.0d;
-			final double hDiv2 = height / 2.0d;
+			final double hDiv2 = newHeight / 2.0d;
 			final float yMin = (float) (yCenter - hDiv2);
 			final float yMax = (float) (yCenter + hDiv2);
 
 			if (!(yMax > yMin))
 				throw new IllegalArgumentException("height is too small max:" + yMax + " min:" + yMin + " center:"
-						+ yCenter + " height:" + height);
+						+ yCenter + " height:" + newHeight);
 
 			graphView.m_spacial.delete(modelIdx);
 			graphView.m_spacial.insert(modelIdx, graphView.m_extentsBuff[0], yMin, graphView.m_extentsBuff[2], yMax, m_zOrder);
@@ -462,7 +452,6 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 		}
 		*/
 	}
-
 
 	@Override
 	public void setOffset(double x, double y) {
@@ -549,6 +538,7 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 		}
 	}
 
+	@Override
 	public double getXPosition() {
 		if (isVisible)
 			return (m_xMin + m_xMax) / 2.0;
@@ -582,6 +572,7 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 		return (double)m_zOrder;
 	}
 
+	@Override
 	public void setYPosition(final double yPos) {
 		
 		synchronized (graphView.m_lock) {
@@ -624,6 +615,7 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 		}
 	}
 
+	@Override
 	public double getYPosition() {
 		if (isVisible)
 			return (m_yMax + m_yMin) / 2.0d;
@@ -769,7 +761,6 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 			graphView.m_contentChanged = true;
 		}
 	}
-	
 
 	@Override
 	public String getText() {
@@ -813,130 +804,6 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 		}
 	}
 
-	/**
-	 * Adds a given CustomGraphicLayer, <EM>in draw order</EM>, to this DNodeView in
-	 * a thread-safe way. Each CustomGraphicLayer will be drawn in the order is was
-	 * added. So, if you care about draw order (as for overlapping graphics),
-	 * make sure you add them in the order you desire. Note that since
-	 * CustomGraphicLayers may be added by multiple apps, your additions may be
-	 * interleaved with others.
-	 * 
-	 * <P>
-	 * A CustomGraphicLayer can only be associated with a DNodeView once. If you wish
-	 * to have a custom graphic, with the same paint and shape information,
-	 * occur in multiple places in the draw order, simply create a new
-	 * CustomGraphicLayer and add it.
-	 * 
-	 * @since Cytoscape 2.6
-	 * @throws IllegalArgumentException
-	 *             if shape or paint are null.
-	 * @return true if the CustomGraphicLayer was added to this DNodeView. false if
-	 *         this DNodeView already contained this CustomGraphicLayer.
-	 * @see org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer
-	 */
-	public boolean addCustomGraphic(final CustomGraphicLayer cg) {
-		boolean retVal = false;
-		synchronized (CG_LOCK) {
-			// Lazy instantiation
-			if (orderedCustomGraphicLayers == null) {
-				orderedCustomGraphicLayers = new LinkedHashSet<CustomGraphicLayer>();
-				graphicsPositions = new HashMap<CustomGraphicLayer, ObjectPosition>();
-			}
-
-			if (orderedCustomGraphicLayers.contains(cg))
-				retVal = false;
-			else
-				retVal = orderedCustomGraphicLayers.add(cg);
-		}
-		ensureContentChanged();
-		return retVal;
-	}
-
-	/**
-	 * A thread-safe way to determine if this DNodeView contains a given custom
-	 * graphic.
-	 * 
-	 * @param cg
-	 *            the CustomGraphicLayer for which we are checking containment.
-	 * @since Cytoscape 2.6
-	 */
-	public boolean containsCustomGraphic(final CustomGraphicLayer cg) {
-		synchronized (CG_LOCK) {
-			if (orderedCustomGraphicLayers == null)
-				return false;
-			return orderedCustomGraphicLayers.contains(cg);
-		}
-	}
-
-	/**
-	 * Return a read-only Iterator over all CustomGraphicLayers contained
-	 * in this DNodeView. The Iterator will return each CustomGraphicLayer in draw
-	 * order. The Iterator cannot be used to modify the underlying set of
-	 * CustomGraphicLayers.
-	 * 
-	 * @return The CustomGraphicLayers Iterator. If no CustomGraphicLayers are associated
-	 *         with this DNOdeView, null is returned.
-	 * @throws UnsupportedOperationException
-	 *             if an attempt is made to use the Iterator's remove() method.
-	 */
-	public Iterator<CustomGraphicLayer> customGraphicIterator() {
-		synchronized (CG_LOCK) {
-			final Set<CustomGraphicLayer> toIterate;
-			if (orderedCustomGraphicLayers == null)
-				toIterate = EMPTY_CUSTOM_GRAPHICS;
-			else
-				toIterate = orderedCustomGraphicLayers;
-			
-			return new ReadOnlyIterator<CustomGraphicLayer>(toIterate);
-		}
-	}
-
-	/**
-	 * A thread-safe method for removing a given custom graphic from this
-	 * DNodeView.
-	 * 
-	 * @return true if the custom graphic was found an removed. Returns false if
-	 *         cg is null or is not a custom graphic associated with this
-	 *         DNodeView.
-	 * @since Cytoscape 2.6
-	 */
-	public boolean removeCustomGraphic(CustomGraphicLayer cg) {
-		boolean retVal = false;
-		synchronized (CG_LOCK) {
-			if (orderedCustomGraphicLayers != null) {
-				retVal = orderedCustomGraphicLayers.remove(cg);
-				graphicsPositions.remove(cg);
-			}
-		}
-		ensureContentChanged();
-		return retVal;
-	}
-
-	void removeAllCustomGraphics() {
-		synchronized (CG_LOCK) {
-			if (orderedCustomGraphicLayers != null) {
-				orderedCustomGraphicLayers.clear();
-				graphicsPositions.clear();
-			}
-		}
-		// ensureContentChanged();
-	}
-
-	/**
-	 * A thread-safe method returning the number of custom graphics associated
-	 * with this DNodeView. If none are associated, zero is returned.
-	 * 
-	 * @since Cytoscape 2.6
-	 */
-	int getNumCustomGraphics() {
-		synchronized (CG_LOCK) {
-			if (orderedCustomGraphicLayers == null)
-				return 0;
-			else
-				return orderedCustomGraphicLayers.size();
-		}
-	}
-
 	private void ensureContentChanged() {
 		synchronized (graphView.m_lock) {
 			graphView.m_contentChanged = true;
@@ -976,27 +843,6 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 	public Object customGraphicLock() {
 		return CG_LOCK;
 	}
-
-	private static final class ReadOnlyIterator<T> implements Iterator<T> {
-		private final Iterator<? extends T> _iterator;
-
-		public ReadOnlyIterator(Iterable<T> toIterate) {
-			_iterator = toIterate.iterator();
-		}
-
-		public boolean hasNext() {
-			return _iterator.hasNext();
-		}
-
-		public T next() {
-			return _iterator.next();
-		}
-
-		public void remove() {
-			throw new UnsupportedOperationException();
-		}
-	};
-
 
 	public double getLabelWidth() {
 		synchronized (graphView.m_lock) {
@@ -1123,23 +969,6 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 		}
 	}
 
-	private CustomGraphicLayer moveCustomGraphicsToNewPosition(final CustomGraphicLayer cg, final ObjectPosition newPosition) {
-		if (cg == null || newPosition == null)
-			throw new NullPointerException("CustomGraphicLayer and Position cannot be null.");
-
-		removeCustomGraphic(cg);
-
-		// Create new graphics
-		final CustomGraphicLayer newCg = CustomGraphicsPositionCalculator.transform(newPosition, this, cg);
-
-		synchronized (CG_LOCK) {
-			this.addCustomGraphic(newCg);
-			graphicsPositions.put(newCg, newPosition);
-		}
-
-		return newCg;
-	}
-	
 	@Override
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void clearValueLock(final VisualProperty<?> vp) {
@@ -1207,7 +1036,7 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 			setHeight(((Number) value).doubleValue());
 		} else if (vp == BasicVisualLexicon.NODE_LABEL) {
 			setText(value.toString());
-		}  else if (vp == BasicVisualLexicon.NODE_LABEL_WIDTH) {
+		} else if (vp == BasicVisualLexicon.NODE_LABEL_WIDTH) {
 			setLabelWidth(((Number) value).doubleValue());
 		} else if (vp == BasicVisualLexicon.NODE_X_LOCATION) {
 			setXPosition(((Number) value).doubleValue());
@@ -1235,9 +1064,11 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 		} else if (vp == BasicVisualLexicon.NODE_NESTED_NETWORK_IMAGE_VISIBLE) {
 			setNestedNetworkImgVisible(Boolean.TRUE.equals(value));
 		} else if (vp instanceof CustomGraphicsVisualProperty) {
-			applyCustomGraphics(vp, (CyCustomGraphics<CustomGraphicLayer>) value);
+			setCustomGraphics((CustomGraphicsVisualProperty) vp, (CyCustomGraphics<CustomGraphicLayer>) value);
 		} else if (vp instanceof ObjectPositionVisualProperty) {
-			applyCustomGraphicsPosition(vp, (ObjectPosition) value);
+			setCustomGraphicsPosition(vp, (ObjectPosition) value);
+		} else if (CG_SIZE_PATTERN.matcher(vp.getIdString()).matches()) {
+			setCustomGraphicsSize((VisualProperty<Double>) vp, (Double) value);
 		}
 	}
 
@@ -1259,180 +1090,86 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 		return true;
 	}
 
-	private void applyCustomGraphics(final VisualProperty<?> vp, 
-	                                 final CyCustomGraphics<CustomGraphicLayer> customGraphics) {
-		Set<CustomGraphicLayer> dCustomGraphicsSet = cgMap.get(vp);
-		
-		if (dCustomGraphicsSet == null)
-			dCustomGraphicsSet = new HashSet<CustomGraphicLayer>();
-
-		for (final CustomGraphicLayer cg : dCustomGraphicsSet)
-			removeCustomGraphic(cg);
-
-		dCustomGraphicsSet.clear();
-
-		if (customGraphics == null || customGraphics instanceof NullCustomGraphics)
-			return;
-
-		final List<CustomGraphicLayer> layers = customGraphics.getLayers(graphView, this);
-
-		// No need to update
-		if (layers == null || layers.size() == 0)
-			return;
-
-		// Check dependency. Sync size or not.
-		final VisualProperty<Double> cgSizeVP = DVisualLexicon.getAssociatedCustomGraphicsSizeVP(vp);
-		boolean sync = syncToNode();
-		
-		final VisualProperty<ObjectPosition> cgPositionVP = DVisualLexicon.getAssociatedCustomGraphicsPositionVP(vp);
-		final ObjectPosition positionValue = getVisualProperty(cgPositionVP);
-		final Double customSize = getVisualProperty(cgSizeVP);
-
-		for (CustomGraphicLayer newCG : layers) {
-			// Assume it's a Ding layer
-			CustomGraphicLayer finalCG = newCG;
-
-			if (sync) {
-				// System.out.println("Synching size to "+this.getWidth()+"x"+this.getHeight());
-				// Size is locked to node size.				
-				finalCG = syncSize(customGraphics, newCG, this.getWidth(), this.getHeight());
-			} else if (customSize != null) {
-				// System.out.println("Synching size to "+customSize);
-				// Size should be set to customSize
-				finalCG = syncSize(customGraphics, newCG, customSize, customSize);
-			}
-			finalCG = moveCustomGraphicsToNewPosition(finalCG, positionValue);
-
-			addCustomGraphic(finalCG);
-			dCustomGraphicsSet.add(finalCG);
+	public Map<VisualProperty<CyCustomGraphics>, CustomGraphicsInfo> getCustomGraphics() {
+		return cgInfoMap;
+	}
+	
+	private void setCustomGraphics(final CustomGraphicsVisualProperty vp, 
+								   final CyCustomGraphics<CustomGraphicLayer> cg) {
+		synchronized (CG_LOCK) {
+			final CustomGraphicsInfo info = getCustomGraphicsInfo(vp);
+			info.setCustomGraphics(cg);
 		}
-
-		cgMap.put(vp, dCustomGraphicsSet);
 	}
 
-	private void applyCustomGraphicsPosition(final VisualProperty<?> vp, final ObjectPosition position) {
+	@SuppressWarnings("rawtypes")
+	private void setCustomGraphicsPosition(final VisualProperty<?> vp, final ObjectPosition position) {
 		// No need to modify
-		if (position == null)
-			return;
+		if (position == null) return;
+		
+		final VisualProperty<CyCustomGraphics> parent = getParentCustomGraphicsProperty(vp);
+		if (parent == null) return;
+		
+		synchronized (CG_LOCK) {
+			final CustomGraphicsInfo info = getCustomGraphicsInfo(parent);
+			info.setPosition(position);
+		}
+	}
+	
+	@SuppressWarnings("rawtypes")
+	private void setCustomGraphicsSize(final VisualProperty<Double> vp, final Double size) {
+		if (size == null) return;
+		
+		final VisualProperty<CyCustomGraphics> parent = DVisualLexicon.getAssociatedCustomGraphicsVP(vp);
+		if (parent == null) return;
+		
+		synchronized (CG_LOCK) {
+			final CustomGraphicsInfo info = getCustomGraphicsInfo(parent);
+			info.setSize(size);
+		}
+	}
 
-		// Use dependency to retrieve its parent.
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	private VisualProperty<CyCustomGraphics> getParentCustomGraphicsProperty(final VisualProperty<?> vp) {
+		VisualProperty<CyCustomGraphics> parent = null;
+		
+		// Use the visual property tree to retrieve its parent.
 		final VisualLexiconNode lexNode = lexicon.getVisualLexiconNode(vp);
 		final Collection<VisualLexiconNode> leavs = lexNode.getParent().getChildren();
-		VisualProperty<?> parent = null;
 		
 		for (VisualLexiconNode vlNode : leavs) {
 			if (vlNode.getVisualProperty().getRange().getType().equals(CyCustomGraphics.class)) {
-				parent = vlNode.getVisualProperty();
+				parent = (VisualProperty<CyCustomGraphics>) vlNode.getVisualProperty();
 				break;
 			}
 		}
 
 		if (parent == null)
-			throw new NullPointerException("Associated Custom Graphics VP is missing for " + vp.getDisplayName());
-
-		final Set<CustomGraphicLayer> currentCG = cgMap.get(parent);
-
-		if (currentCG == null || currentCG.size() == 0)
-			return;
-
-		final Set<CustomGraphicLayer> newList = new HashSet<CustomGraphicLayer>();
+			logger.error("Associated CustomGraphics VisualProperty is missing for " + vp.getDisplayName());
 		
-		for (CustomGraphicLayer g : currentCG)
-			newList.add(moveCustomGraphicsToNewPosition(g, position));
-
-		currentCG.clear();
-		currentCG.addAll(newList);
-
-		this.cgMap.put(parent, currentCG);
+		return parent;
 	}
-
-	private void resizeCustomGraphics(double widthScale, double heightScale) {
-		// System.out.println("resizing custom graphics to "+widthScale+", "+heightScale);
-		boolean sync = syncToNode();
-		if (!sync || cgMap == null || cgMap.isEmpty()) return;
-
-		// Get all of our custom graphics layers
-		for (VisualProperty<?> vp: cgMap.keySet()) {
-			final Set<CustomGraphicLayer> currentCG = cgMap.get(vp);
-			if (currentCG == null || currentCG.size() == 0) continue;
-
-			// Resize
-			final Set<CustomGraphicLayer> newList = new HashSet<CustomGraphicLayer>();
-			for (CustomGraphicLayer g : currentCG)
-				newList.add(resizeCustomGraphicsLayer(g, widthScale, heightScale));
-
-			currentCG.clear();
-			currentCG.addAll(newList);
-
-			this.cgMap.put(vp, currentCG);
-		}
-	}
-
-	CustomGraphicLayer resizeCustomGraphicsLayer(CustomGraphicLayer cg, double widthScale, double heightScale) {
-		removeCustomGraphic(cg);
-		AffineTransform scale = AffineTransform.getScaleInstance(widthScale, heightScale);
-		CustomGraphicLayer newCG = cg.transform(scale);
-		addCustomGraphic(newCG);
-		return newCG;
-	}
-
-	private boolean syncToNode() {
-		boolean sync = false;
-		if (vmm.getCurrentVisualStyle() != null) {
-			Set<VisualPropertyDependency<?>> dependencies = vmm.getCurrentVisualStyle().getAllVisualPropertyDependencies();
-		
-			for (VisualPropertyDependency<?> dep:dependencies) {
-				if(dep.getIdString().equals("nodeCustomGraphicsSizeSync")) {
-					sync = dep.isDependencyEnabled();
-					break;
-				}
+	
+	/**
+	 * If a CustomGraphicsInfo for the passed VisualProperty does not exist yet, it creates a new one.
+	 */
+	@SuppressWarnings("rawtypes")
+	private CustomGraphicsInfo getCustomGraphicsInfo(final VisualProperty<CyCustomGraphics> vp) {
+		synchronized (CG_LOCK) {
+			CustomGraphicsInfo info = cgInfoMap.get(vp);
+			
+			if (info == null) {
+				info = new CustomGraphicsInfo(vp);
+				cgInfoMap.put(vp, info);
 			}
+			
+			return info;
 		}
-		return sync;
 	}
 
-	private CustomGraphicLayer syncSize(CyCustomGraphics<CustomGraphicLayer> graphics, 
-	                               final CustomGraphicLayer cg, double width, double height) {
-		// final double nodeW = this.getWidth();
-		// final double nodeH = this.getHeight();
-
-		final Rectangle2D originalBounds = cg.getBounds2D();
-		// If this is just a paint, getBounds2D will return null and
-		// we can use our own width and height
-		if (originalBounds == null) return cg;
-
-		if (width == 0.0 || height == 0.0) return cg;
-
-		final double cgW = originalBounds.getWidth();
-		final double cgH = originalBounds.getHeight();
-
-		// In case size is same, return the original.
-		if (width == cgW && height == cgH)
-			return cg;
-
-		final AffineTransform scale;
-		final float fit = graphics.getFitRatio();
-
-		// Case 1: if custom graphic is a vector fit width and length
-		if (cg instanceof PaintedShape || cg instanceof Cy2DGraphicLayer) {
-			scale = AffineTransform.getScaleInstance(fit * width / cgW, fit * height / cgH);
-		} else {
-			double scaleW = width/cgW;
-			double scaleH = height/cgH;
-			// Case 2: node height value is larger than width
-			if (scaleW >= scaleH) {
-				scale = AffineTransform.getScaleInstance(fit * scaleH, fit * scaleH);
-				// scale = AffineTransform.getScaleInstance(fit * (width / cgW) * (height / width), fit * height / cgH);
-			} else {
-				scale = AffineTransform.getScaleInstance(fit * scaleW, fit * scaleW);
-				// scale = AffineTransform.getScaleInstance(fit * (width / cgW) * (height / width), fit * height / cgH);
-			}
-		}
-		
-		return cg.transform(scale);
+	public boolean isVisible() {
+		return isVisible;
 	}
-
-	public boolean isVisible() { return isVisible; }
 
 	@Override
 	protected <T, V extends T> V getDefaultValue(VisualProperty<T> vp) {

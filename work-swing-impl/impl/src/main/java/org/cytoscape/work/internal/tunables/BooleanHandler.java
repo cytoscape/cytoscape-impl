@@ -25,36 +25,37 @@ package org.cytoscape.work.internal.tunables;
  */
 
 
-import java.awt.BorderLayout;
+import static org.cytoscape.work.internal.tunables.utils.GUIDefaults.setTooltip;
+import static org.cytoscape.work.internal.tunables.utils.GUIDefaults.updateFieldPanel;
+
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
-import javax.swing.BorderFactory;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.ToolTipManager;
+import javax.swing.SwingUtilities;
 
 import org.cytoscape.work.Tunable;
-import org.cytoscape.work.internal.tunables.utils.GUIDefaults;
 import org.cytoscape.work.swing.AbstractGUITunableHandler;
 import org.cytoscape.work.swing.DirectlyPresentableTunableHandler;
 
 
 /**
  * Handler for the type <i>Boolean</i> of <code>Tunable</code>
- *
  * @author pasteur
  */
-public class BooleanHandler extends AbstractGUITunableHandler implements ActionListener, DirectlyPresentableTunableHandler{
+public class BooleanHandler extends AbstractGUITunableHandler
+							implements ActionListener, DirectlyPresentableTunableHandler {
+	
 	private JCheckBox checkBox;
-	private boolean horizontal = false;
 	private JOptionPane optionPane;
-	private boolean useOptionPane = false;
+	private boolean useOptionPane;
 	private int selectedOption;
 	
 	/**
@@ -77,32 +78,24 @@ public class BooleanHandler extends AbstractGUITunableHandler implements ActionL
 	}
 
 	private void init() {
-		//setup GUI
-		panel = new JPanel(new BorderLayout(GUIDefaults.hGap, GUIDefaults.vGap));
+		// setup GUI
 		checkBox = new JCheckBox();
 		checkBox.setSelected(getBoolean());
-		JLabel label = new JLabel(getDescription());
-		label.setFont(GUIDefaults.LABEL_FONT);
-		label.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 		checkBox.addActionListener(this);
+		
+		final JLabel label = new JLabel(getDescription());
+		label.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseReleased(final MouseEvent e) {
+				if (checkBox.isEnabled() && SwingUtilities.isLeftMouseButton(e)) {
+					checkBox.doClick();
+					checkBox.requestFocusInWindow();
+				}
+			}
+		});
 
-		if (horizontal) {
-			panel.add(label, BorderLayout.NORTH);
-			panel.add(checkBox, BorderLayout.SOUTH);
-		} else {
-			panel.add(label, BorderLayout.WEST);
-			panel.add(checkBox, BorderLayout.EAST);
-		}
-
-		// Set the tooltip.  Note that at this point, we're setting
-		// the tooltip on the entire panel.  This may or may not be
-		// the right thing to do.
-		if (getTooltip() != null && getTooltip().length() > 0) {
-			final ToolTipManager tipManager = ToolTipManager.sharedInstance();
-			tipManager.setInitialDelay(1);
-			tipManager.setDismissDelay(7500);
-			panel.setToolTipText(getTooltip());
-		}
+		updateFieldPanel(panel, label, checkBox, horizontal);
+		setTooltip(getTooltip(), label, checkBox);
 	}
 
 	private boolean getBoolean() {
@@ -114,17 +107,16 @@ public class BooleanHandler extends AbstractGUITunableHandler implements ActionL
 		}
 	}
 	
-	
+	@Override
 	public void update(){
 		boolean b;
-		try{
+		try {
 			b = (Boolean) getValue();
 			checkBox.setSelected(b);
-		}catch(Exception e){
+		} catch(Exception e){
 			e.printStackTrace();
 		}
 	}
-	
 	
 	@Override
 	public boolean isForcedToSetDirectly() {
@@ -137,20 +129,29 @@ public class BooleanHandler extends AbstractGUITunableHandler implements ActionL
 		useOptionPane = true;
 		handle();
 		useOptionPane = false;
+		
 		return selectedOption != JOptionPane.CANCEL_OPTION;
 	}
 
 	@SuppressWarnings("static-access")
 	private int setOptionPaneGUI(Window possibleParent) {
-		
-		//optionPane = new JOptionPane(getDescription());
-		//optionPane.setOptionType(JOptionPane.YES_NO_OPTION);
-		return  optionPane.showOptionDialog(possibleParent, getDescription(), getParams().getProperty("ForceSetTitle", " "), JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, null, null, null);
+		return  optionPane.showOptionDialog(
+				possibleParent,
+				getDescription(),
+				getParams().getProperty("ForceSetTitle", " "),
+				JOptionPane.OK_CANCEL_OPTION,
+				JOptionPane.PLAIN_MESSAGE,
+				null,
+				null,
+				null
+		);
 	}
 
 	/**
-	 * To set the current value represented in the <code>GUIHandler</code> (in a <code>JCheckBox</code>)to the value of this <code>Boolean</code> object
+	 * To set the current value represented in the <code>GUIHandler</code> (in a <code>JCheckBox</code>)
+	 * to the value of this <code>Boolean</code> object
 	 */
+	@Override
 	public void handle() {
 		try {
 			final Boolean setting;
@@ -167,6 +168,7 @@ public class BooleanHandler extends AbstractGUITunableHandler implements ActionL
 	/**
 	 * To get the state of the value of the <code>BooleanHandler</code> : <code>true</code> or <code>false</code>
 	 */
+	@Override
 	public String getState() {
 		return String.valueOf(checkBox.isSelected());
 	}

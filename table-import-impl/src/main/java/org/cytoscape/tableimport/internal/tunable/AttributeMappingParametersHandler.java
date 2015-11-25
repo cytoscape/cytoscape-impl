@@ -25,52 +25,44 @@ package org.cytoscape.tableimport.internal.tunable;
  */
 
 import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Font;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.logging.Logger;
 
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
-import org.cytoscape.model.CyTableManager;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.tableimport.internal.reader.AttributeMappingParameters;
 import org.cytoscape.tableimport.internal.ui.ImportTablePanel;
-import org.cytoscape.tableimport.internal.util.CytoscapeServices;
-import org.cytoscape.util.swing.FileUtil;
+import org.cytoscape.tableimport.internal.util.ImportType;
+import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.swing.AbstractGUITunableHandler;
 
 public class AttributeMappingParametersHandler extends AbstractGUITunableHandler {
 
-	private int dialogType;
-	private CyTableManager tableManager;
+	private ImportType dialogType;
 	private ImportTablePanel importTablePanel;
 	private AttributeMappingParameters amp;
-	private final FileUtil fileUtil;
+	private final CyServiceRegistrar serviceRegistrar;
 
 
-	protected AttributeMappingParametersHandler(final Field field, final Object obj, final Tunable t,
-			final int dialogType, final CyTableManager tableManager) {
-		super(field, obj, t);
+	protected AttributeMappingParametersHandler(final Field field, final Object obj, final Tunable tunable,
+			final ImportType dialogType, final CyServiceRegistrar serviceRegistrar) {
+		super(field, obj, tunable);
 		
 		this.dialogType = dialogType;
-		this.tableManager = tableManager;
-		this.fileUtil = CytoscapeServices.fileUtil;
+		this.serviceRegistrar = serviceRegistrar;
 		init();
 	}
 
-
 	protected AttributeMappingParametersHandler(final Method getter, final Method setter, final Object instance,
-			final Tunable tunable, final int dialogType, final CyTableManager tableManager) {
+			final Tunable tunable, final ImportType dialogType, final CyServiceRegistrar serviceRegistrar) {
 		super(getter, setter, instance, tunable);
 		
 		this.dialogType = dialogType;
-		this.tableManager = tableManager;
-		this.fileUtil = CytoscapeServices.fileUtil;
+		this.serviceRegistrar = serviceRegistrar;
 		init();
 	}
 
@@ -83,19 +75,23 @@ public class AttributeMappingParametersHandler extends AbstractGUITunableHandler
 			e1.printStackTrace();
 		}
 
-		panel = new JPanel(new BorderLayout(10, 10));
+		panel = new JPanel(new BorderLayout());
 
 		try {
-			importTablePanel = new ImportTablePanel(dialogType, amp.is, amp.fileType, null, null, null, null, null,
-					null, null, tableManager, fileUtil);
+			importTablePanel = new ImportTablePanel(dialogType, amp.is, amp.fileType, null, serviceRegistrar);
 		} catch (Exception e) {
-			JLabel errorLabel1 = new JLabel("<html><h2>Error: Could not Initialize Preview.</h2>  <p>The selected file may contain invalid entries.  "
-					+ "  Please check the contents of original file.</p></html>");
-			errorLabel1.setForeground(Color.RED);
-			errorLabel1.setHorizontalTextPosition(JLabel.CENTER);
-			errorLabel1.setHorizontalAlignment(JLabel.CENTER);
+			final JLabel errorLabel = new JLabel(
+					"<html><h3>Error: Could not Initialize Preview.</h3>" +
+					"<p>The selected file may be empty or contain invalid entries.<br>" +
+					"Please check the contents of the original file and try again.</p></html>"
+			);
+			errorLabel.setForeground(LookAndFeelUtil.getErrorColor());
+			errorLabel.setHorizontalTextPosition(JLabel.CENTER);
+			errorLabel.setHorizontalAlignment(JLabel.CENTER);
+			errorLabel.setFont(errorLabel.getFont().deriveFont(LookAndFeelUtil.getSmallFontSize()));
 
-			panel.add(errorLabel1);
+			panel.add(errorLabel, BorderLayout.CENTER);
+			
 			return;
 		}
 
@@ -105,8 +101,10 @@ public class AttributeMappingParametersHandler extends AbstractGUITunableHandler
 	@Override
 	public void handle() {
 		try {
-			amp = importTablePanel.getAttributeMappingParameters();
-			setValue(amp);
+			if (importTablePanel != null) {
+				amp = importTablePanel.getAttributeMappingParameters();
+				setValue(amp);
+			}
 		} catch (IllegalAccessException e) {
 			e.printStackTrace();
 		} catch (InvocationTargetException e) {
@@ -114,7 +112,5 @@ public class AttributeMappingParametersHandler extends AbstractGUITunableHandler
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-
 	}
-
 }

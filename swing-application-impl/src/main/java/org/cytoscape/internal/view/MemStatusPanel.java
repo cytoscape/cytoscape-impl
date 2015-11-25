@@ -1,17 +1,42 @@
 package org.cytoscape.internal.view;
 
-import java.awt.*;
-import java.awt.image.*;
-import java.awt.event.*;
-import javax.swing.*;
+import static javax.swing.GroupLayout.DEFAULT_SIZE;
+import static javax.swing.GroupLayout.PREFERRED_SIZE;
 
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.image.BufferedImage;
+
+import javax.swing.GroupLayout;
+import javax.swing.GroupLayout.Alignment;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JToggleButton;
+import javax.swing.LayoutStyle.ComponentPlacement;
+import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
+import javax.swing.Timer;
+
+import org.cytoscape.util.swing.LookAndFeelUtil;
+
+@SuppressWarnings("serial")
 class MemStatusPanel extends JPanel {
+	
 	static final int MEM_UPDATE_DELAY_MS = 2000;
 	static final int MEM_STATE_ICON_DIM_PX = 14;
+	
 	static enum MemState {
-		MEM_OK       (0.00f, 0.75f, new Color(0x32C734), "OK"),
-		MEM_LOW      (0.75f, 0.85f, new Color(0xE7F20A), "Low"),
-		MEM_VERY_LOW (0.85f, 1.00f, new Color(0xC73232), "Very Low");
+		MEM_OK       (0.00f, 0.75f, LookAndFeelUtil.getSuccessColor(), "OK"),
+		MEM_LOW      (0.75f, 0.85f, LookAndFeelUtil.getWarnColor(), "Low"),
+		MEM_VERY_LOW (0.85f, 1.00f, LookAndFeelUtil.getErrorColor(), "Very Low");
 
 		final float minRange;
 		final float maxRange;
@@ -25,12 +50,10 @@ class MemStatusPanel extends JPanel {
 
 			final BufferedImage image = new BufferedImage(MEM_STATE_ICON_DIM_PX, MEM_STATE_ICON_DIM_PX, BufferedImage.TYPE_INT_ARGB);
 			final Graphics2D g2d = (Graphics2D) image.getGraphics();
-			final RenderingHints hints = g2d.getRenderingHints();
 			g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 			g2d.setColor(color);
 			g2d.fillOval(1, 1, MEM_STATE_ICON_DIM_PX - 2, MEM_STATE_ICON_DIM_PX - 2);
-            g2d.setColor(Color.DARK_GRAY);
-			g2d.drawOval(1, 1, MEM_STATE_ICON_DIM_PX - 3, MEM_STATE_ICON_DIM_PX - 3);
+			
 			this.icon = new ImageIcon(image);
 		}
 
@@ -75,12 +98,6 @@ class MemStatusPanel extends JPanel {
 		}
 	}
 
-	static void setFontSize(final Component component, final int size) {
-		final Font font = component.getFont();
-		final Font newFont = new Font(font.getFontName(), font.getStyle(), size);
-		component.setFont(newFont);
-	}
-
 	static float getMemUsed() {
 		final Runtime runtime = Runtime.getRuntime();
 		final long freeMem = runtime.freeMemory();
@@ -103,15 +120,20 @@ class MemStatusPanel extends JPanel {
 
 	public MemStatusPanel() {
 		memAmountLabel = new JLabel();
-		setFontSize(memAmountLabel, 9);
+		makeSmall(memAmountLabel);
 		memAmountLabel.setVisible(false);
 
 		final JButton gcBtn = new JButton("Free Unused Memory");
+		gcBtn.putClientProperty("JButton.buttonType", "gradient");
+		makeSmall(gcBtn);
 		gcBtn.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				gcBtn.setEnabled(false);
 				gcBtn.setText("Freeing Memory...");
+				
 				SwingUtilities.invokeLater(new Runnable() {
+					@Override
 					public void run() {
 						performGC();
 						updateMemStatus();
@@ -122,20 +144,24 @@ class MemStatusPanel extends JPanel {
 			}
 		});
 		gcBtn.setToolTipText("<html>Try to free memory&mdash;may temporarily freeze Cytoscape</html>");
-		setFontSize(gcBtn, 9);
 		gcBtn.setVisible(false);
 
-		memStatusBtn = new JToggleButton();
-		setFontSize(memStatusBtn, 9);
+		memStatusBtn = new JToggleButton("Memory", MemState.MEM_OK.getIcon());
+		memStatusBtn.setHorizontalTextPosition(JButton.RIGHT);
+		memStatusBtn.putClientProperty("JButton.buttonType", "gradient");
+		makeSmall(memStatusBtn);
 		memStatusBtn.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				memAmountLabel.setVisible(memStatusBtn.isSelected());
 				gcBtn.setVisible(memStatusBtn.isSelected());
 			}
 		});
 		memStatusBtn.setHorizontalTextPosition(SwingConstants.LEFT);
+		memStatusBtn.setFocusPainted(false);
 
 		final Timer updateTimer = new Timer(MEM_UPDATE_DELAY_MS, new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				updateMemStatus();
 			}
@@ -143,10 +169,23 @@ class MemStatusPanel extends JPanel {
 		updateTimer.setRepeats(true);
 		updateTimer.start();
 
-		super.setLayout(new FlowLayout(FlowLayout.RIGHT));
-		super.add(memAmountLabel);
-		super.add(gcBtn);
-		super.add(memStatusBtn);
+		final GroupLayout layout = new GroupLayout(this);
+		setLayout(layout);
+		layout.setAutoCreateContainerGaps(false);
+		layout.setAutoCreateGaps(false);
+		
+		layout.setHorizontalGroup(layout.createSequentialGroup()
+				.addComponent(memAmountLabel)
+				.addPreferredGap(ComponentPlacement.RELATED)
+				.addComponent(gcBtn)
+				.addPreferredGap(ComponentPlacement.RELATED)
+				.addComponent(memStatusBtn)
+		);
+		layout.setVerticalGroup(layout.createParallelGroup(Alignment.CENTER, false)
+				.addComponent(memAmountLabel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				.addComponent(gcBtn, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				.addComponent(memStatusBtn, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+		);
 	}
 
 	private void updateMemStatus() {
@@ -155,8 +194,21 @@ class MemStatusPanel extends JPanel {
 
 		final float memUsed = getMemUsed();
 		final MemState memState = MemState.which(memUsed);
+		
 		memStatusBtn.setIcon(memState.getIcon());
-		memStatusBtn.setText("Memory: " + memState.getName());
+		memStatusBtn.setHorizontalTextPosition(JButton.RIGHT);
+		memStatusBtn.setToolTipText(memState.getName());
+		
 		memAmountLabel.setText(String.format("%.1f%% used of %s", memUsed * 100.0f, memTotalFmt));
+	}
+	
+	private static void makeSmall(final JComponent component) {	
+		if (LookAndFeelUtil.isAquaLAF()) {
+			component.putClientProperty("JComponent.sizeVariant", "small");
+		} else {
+			final Font font = component.getFont();
+			final Font newFont = new Font(font.getFontName(), font.getStyle(), (int)LookAndFeelUtil.getSmallFontSize());
+			component.setFont(newFont);
+		}
 	}
 }

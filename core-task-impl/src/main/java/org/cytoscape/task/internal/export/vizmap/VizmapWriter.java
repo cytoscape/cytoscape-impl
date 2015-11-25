@@ -25,60 +25,100 @@ package org.cytoscape.task.internal.export.vizmap;
  */
 
 import java.io.File;
+import java.text.Collator;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 
 import org.apache.commons.io.FilenameUtils;
 import org.cytoscape.io.CyFileFilter;
 import org.cytoscape.io.write.CyWriter;
-import org.cytoscape.io.write.VizmapWriterManager;
 import org.cytoscape.io.write.VizmapWriterFactory;
+import org.cytoscape.io.write.VizmapWriterManager;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.internal.export.TunableAbstractCyWriter;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.Tunable;
+import org.cytoscape.work.util.ListMultipleSelection;
 
-public class VizmapWriter extends TunableAbstractCyWriter<VizmapWriterFactory,VizmapWriterManager> {
+public class VizmapWriter extends TunableAbstractCyWriter<VizmapWriterFactory, VizmapWriterManager> {
 
-	private final VisualMappingManager vmMgr;
-
-	public VizmapWriter(VizmapWriterManager writerManager, VisualMappingManager vmMgr) {
-		super(writerManager);
-		if (vmMgr == null) throw new NullPointerException("VisualMappingManager is null");
-		this.vmMgr = vmMgr;
+	@ProvidesTitle
+	public String getTitle() {
+		return "Export Styles";
 	}
 	
-	void setDefaultFileFormatUsingFileExt(File file) {
+	@Tunable(description = "Select Styles:")
+	public ListMultipleSelection<VisualStyle> styles;
+	
+	@Tunable(description="Save Styles as:", params="fileCategory=vizmap;input=false")
+	@Override
+	public File getOutputFile() {
+		return outputFile;
+	}
+	
+	public VizmapWriter(final VizmapWriterManager writerManager, final CyServiceRegistrar serviceRegistrar) {
+		super(writerManager);
+		
+		// Initialize Visual Style selector
+		final VisualMappingManager vmMgr = serviceRegistrar.getService(VisualMappingManager.class);
+		final List<VisualStyle> allStyles = new ArrayList<>(vmMgr.getAllVisualStyles());
+		
+		final Collator collator = Collator.getInstance(Locale.getDefault());
+		
+		Collections.sort(allStyles, new Comparator<VisualStyle>() {
+			@Override
+			public int compare(final VisualStyle vs1, VisualStyle vs2) {
+				return collator.compare(vs1.getTitle(), vs2.getTitle());
+			}
+		});
+		
+		styles = new ListMultipleSelection<>(allStyles);
+		// Select the current style by default
+		styles.setSelectedValues(Collections.singletonList(vmMgr.getCurrentVisualStyle()));
+	}
+	
+	void setDefaultFileFormatUsingFileExt(final File file) {
 		String ext = FilenameUtils.getExtension(file.getName());
 		ext = ext.toLowerCase().trim();
 		String searchDesc = "*." + ext;
-		//Use the EXT to determine the default file format
-		for(String fileTypeDesc: this.getFileFilterDescriptions() )
-			if(fileTypeDesc.contains(searchDesc) )
-			{
+		
+		// Use the EXT to determine the default file format
+		for (String fileTypeDesc : this.getFileFilterDescriptions())
+			if (fileTypeDesc.contains(searchDesc)) {
 				options.setSelectedValue(fileTypeDesc);
 				break;
 			}
 	}
 
 	@Override
-	protected CyWriter getWriter(CyFileFilter filter, File file) throws Exception {
+	protected CyWriter getWriter(final CyFileFilter filter, File file) throws Exception {
 		if (!fileExtensionIsOk(file))
 			file = addOrReplaceExtension(outputFile);
 
-		Set<VisualStyle> styles = vmMgr.getAllVisualStyles();
+		final Set<VisualStyle> selectedStyles = new LinkedHashSet<>(styles.getSelectedValues());
 
-		return writerManager.getWriter(styles, filter, file);
+		return writerManager.getWriter(selectedStyles, filter, file);
 	}
 	
-	@Tunable(description="Save Style As:", params="fileCategory=vizmap;input=false")
 	@Override
-	public File getOutputFile() {
-		return outputFile;
-	}
-	
-	@ProvidesTitle
-	public String getTitle() {
-		return "Export Style";
+	public ValidationState getValidationState(final Appendable msg) {
+		if (styles.getSelectedValues().isEmpty()) {
+			try {
+				msg.append("Select at least one Style.");
+			} catch (final Exception e) {
+				/* Intentionally empty. */
+			}
+			
+			return ValidationState.INVALID;
+		}
+		
+		return super.getValidationState(msg);
 	}
 }

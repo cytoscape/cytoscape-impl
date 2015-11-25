@@ -32,15 +32,18 @@ public abstract class AbstractChart<T extends CustomGraphicLayer> extends Abstra
 	public static final String DATA_COLUMNS = "cy_dataColumns";
 	public static final String ITEM_LABELS_COLUMN = "cy_itemLabelsColumn";
 	public static final String ITEM_LABELS = "cy_itemLabels";
+	public static final String ITEM_LABEL_FONT_SIZE = "cy_itemLabelFontSize";
 	public static final String DOMAIN_LABELS_COLUMN = "cy_domainLabelsColumn";
 	public static final String RANGE_LABELS_COLUMN = "cy_rangeLabelsColumn";
 	public static final String DOMAIN_LABEL_POSITION = "cy_domainLabelPosition";
+	public static final String AXIS_LABEL_FONT_SIZE = "cy_axisLabelFontSize";
 	public static final String GLOBAL_RANGE = "cy_globalRange";
 	public static final String AUTO_RANGE = "cy_autoRange";
 	public static final String RANGE = "cy_range";
 	public static final String SHOW_ITEM_LABELS = "cy_showItemLabels";
 	public static final String SHOW_DOMAIN_AXIS = "cy_showDomainAxis";
 	public static final String SHOW_RANGE_AXIS = "cy_showRangeAxis";
+	public static final String SHOW_RANGE_ZERO_BASELINE = "cy_showRangeZeroBaseline";
 	public static final String AXIS_WIDTH = "cy_axisWidth";
 	public static final String AXIS_COLOR = "cy_axisColor";
 	public static final String VALUES = "cy_values";
@@ -321,12 +324,15 @@ public abstract class AbstractChart<T extends CustomGraphicLayer> extends Abstra
 		if (key.equalsIgnoreCase(VALUES)) return List.class;
 		if (key.equalsIgnoreCase(ITEM_LABELS_COLUMN)) return CyColumnIdentifier.class;
 		if (key.equalsIgnoreCase(ITEM_LABELS)) return List.class;
+		if (key.equalsIgnoreCase(ITEM_LABEL_FONT_SIZE)) return Integer.class;
 		if (key.equalsIgnoreCase(DOMAIN_LABELS_COLUMN)) return CyColumnIdentifier.class;
 		if (key.equalsIgnoreCase(RANGE_LABELS_COLUMN)) return CyColumnIdentifier.class;
 		if (key.equalsIgnoreCase(SHOW_ITEM_LABELS)) return Boolean.class;
 		if (key.equalsIgnoreCase(SHOW_RANGE_AXIS)) return Boolean.class;
 		if (key.equalsIgnoreCase(SHOW_DOMAIN_AXIS)) return Boolean.class;
+		if (key.equalsIgnoreCase(SHOW_RANGE_ZERO_BASELINE)) return Boolean.class;
 		if (key.equalsIgnoreCase(DOMAIN_LABEL_POSITION)) return LabelPosition.class;
+		if (key.equalsIgnoreCase(AXIS_LABEL_FONT_SIZE)) return Integer.class;
 		if (key.equalsIgnoreCase(AXIS_WIDTH)) return Float.class;
 		if (key.equalsIgnoreCase(AXIS_COLOR)) return Color.class;
 		if (key.equalsIgnoreCase(GLOBAL_RANGE)) return Boolean.class;
@@ -358,5 +364,9 @@ public abstract class AbstractChart<T extends CustomGraphicLayer> extends Abstra
 	protected void addJsonDeserializers(final SimpleModule module) {
 		super.addJsonDeserializers(module);
 		module.addDeserializer(CyColumnIdentifier.class, new CyColumnIdentifierJsonDeserializer(colIdFactory));
+	}
+	
+	protected static float convertFontSize(final int size) {
+		return size * 2.0f;
 	}
 }

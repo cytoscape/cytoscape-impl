@@ -45,6 +45,7 @@ import org.cytoscape.io.internal.read.xgmml.ObjectTypeMap;
 import org.cytoscape.io.internal.util.GroupUtil;
 import org.cytoscape.io.internal.util.UnrecognizedVisualPropertyManager;
 import org.cytoscape.io.internal.util.session.SessionUtil;
+import org.cytoscape.io.internal.util.xgmml.ObjectType;
 import org.cytoscape.io.write.CyWriter;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyEdge;
@@ -71,37 +72,6 @@ import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-enum ObjectType {
-    LIST("list"),
-    STRING("string"),
-    REAL("real"),
-    INTEGER("integer"),
-    BOOLEAN("boolean");
-
-    private final String value;
-
-    ObjectType(String v) {
-        value = v;
-    }
-
-    String value() {
-        return value;
-    }
-
-    static ObjectType fromValue(String v) {
-        for (ObjectType c : ObjectType.values()) {
-            if (c.value.equals(v)) {
-                return c;
-            }
-        }
-        throw new IllegalArgumentException(v.toString());
-    }
-
-    public String toString() {
-        return value;
-    }
-}
 
 /**
  * This writer serializes CyNetworks and CyNetworkViews as standard XGMML files.
@@ -768,7 +738,7 @@ public class GenericXGMMLWriter extends AbstractTask implements CyWriter {
             writeAttributeXML(attName, ObjectType.INTEGER, iAttr, hidden, true);
         } else if (attType == Long.class) {
             Long lAttr = row.get(attName, Long.class);
-            writeAttributeXML(attName, ObjectType.REAL, lAttr, hidden, true);
+            writeAttributeXML(attName, ObjectType.LONG, lAttr, hidden, true);
         } else if (attType == String.class) {
             String sAttr = row.get(attName, String.class);
             // Protect tabs and returns
@@ -783,7 +753,9 @@ public class GenericXGMMLWriter extends AbstractTask implements CyWriter {
             writeAttributeXML(attName, ObjectType.BOOLEAN, ObjectTypeMap.toXGMMLBoolean(bAttr), hidden, true);
         } else if (attType == List.class) {
             final List<?> listAttr = row.getList(attName, column.getListElementType());
-            writeAttributeXML(attName, ObjectType.LIST, null, hidden, false);
+            final ObjectType elementType = getObjectType(column.getListElementType());
+            
+            writeAttributeXML(attName, ObjectType.LIST, elementType, null, hidden, false);
 
             if (listAttr != null) {
                 depth++;
@@ -802,7 +774,7 @@ public class GenericXGMMLWriter extends AbstractTask implements CyWriter {
                         }
                     }
                     // set child attribute value & label
-                    writeAttributeXML(attName, checkType(obj), sAttr, hidden, true);
+                    writeAttributeXML(attName, getObjectType(obj), sAttr, hidden, true);
                 }
                 depth--;
             }
@@ -820,7 +792,23 @@ public class GenericXGMMLWriter extends AbstractTask implements CyWriter {
      * @param end is a flag to tell us if the attribute should include a tag end
      * @throws IOException
      */
-    protected void writeAttributeXML(String name, ObjectType type, Object value, boolean hidden, boolean end) throws IOException {
+    protected void writeAttributeXML(String name, ObjectType type, Object value, boolean hidden, boolean end)
+    		throws IOException {
+    	writeAttributeXML(name, type, null, value, hidden, end);
+    }
+    
+	/**
+     * writeAttributeXML outputs an XGMML attribute
+     *
+     * @param name is the name of the attribute we are outputting
+     * @param type is the XGMML type of the attribute
+     * @param listType is the XGMML type of the list elements
+     * @param value is the value of the attribute we're outputting
+     * @param end is a flag to tell us if the attribute should include a tag end
+     * @throws IOException
+     */
+    protected void writeAttributeXML(String name, ObjectType type, ObjectType listType, Object value, boolean hidden, 
+    		boolean end) throws IOException {
         if (name == null && type == null)
             writeElement("</att>\n");
         else {
@@ -831,7 +819,11 @@ public class GenericXGMMLWriter extends AbstractTask implements CyWriter {
             if (value != null)
                 writeAttributePair("value", value);
 
-            writeAttributePair("type", type);
+            writeAttributePair("type", type.getXgmmlValue());
+            writeAttributePair("cy:type", type.getCyValue()); // Since Cytoscape v3.3
+            
+            if (type == ObjectType.LIST && listType != null)
+            	writeAttributePair("cy:elementType", listType.getCyValue()); // Since Cytoscape v3.3
             
             if (hidden)
                 writeAttributePair("cy:hidden", ObjectTypeMap.toXGMMLBoolean(hidden));
@@ -878,22 +870,28 @@ public class GenericXGMMLWriter extends AbstractTask implements CyWriter {
     }
 
     /**
-     * Check the type of Attributes.
-     *
-     * @param obj
-     * @return Attribute type in string.
+     * Return the type of an attribute value.
      */
-    private ObjectType checkType(final Object obj) {
-        final Class<?> type = obj.getClass();
-        
+    private ObjectType getObjectType(final Object obj) {
+        return getObjectType(obj.getClass());
+    }
+    
+    /**
+     * Return the type corresponding to a class.
+     */
+    private ObjectType getObjectType(final Class<?> type) {
         if (type == String.class)
             return ObjectType.STRING;
         else if (type == Integer.class)
             return ObjectType.INTEGER;
-        else if (type == Double.class || type == Float.class || type == Long.class)
+        else if (type == Long.class)
+        	return ObjectType.LONG;
+        else if (type == Double.class || type == Float.class)
             return ObjectType.REAL;
         else if (type == Boolean.class)
             return ObjectType.BOOLEAN;
+        else if (type == List.class)
+            return ObjectType.LIST;
 
         return null;
     }

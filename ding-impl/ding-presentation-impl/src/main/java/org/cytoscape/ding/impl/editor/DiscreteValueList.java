@@ -28,6 +28,7 @@ import javax.swing.JPanel;
 import javax.swing.ListCellRenderer;
 import javax.swing.ListSelectionModel;
 import javax.swing.SortOrder;
+import javax.swing.UIManager;
 import javax.swing.border.Border;
 
 import org.cytoscape.ding.internal.util.IconUtil;
@@ -41,11 +42,8 @@ import org.cytoscape.view.presentation.property.values.VisualPropertyValue;
 import org.cytoscape.view.vizmap.gui.DefaultViewPanel;
 import org.jdesktop.swingx.JXList;
 
+@SuppressWarnings("serial")
 public class DiscreteValueList<T> extends JXList {
-	
-	private static final long serialVersionUID = 391558018818678186L;
-	
-	static final Color BORDER_COLOR = new Color(200, 200, 200);
 	
 	private int iconWidth = -1; // not initialized!
 	private int iconHeight = -1; // not initialized!
@@ -58,6 +56,7 @@ public class DiscreteValueList<T> extends JXList {
 	
 	private final DefaultViewPanel defViewPanel;
 
+	@SuppressWarnings("rawtypes")
 	DiscreteValueList(final Class<T> type, final VisualProperty<T> vp, final DefaultViewPanel defViewPanel) {
 		this.type = type;
 		this.vp = vp;
@@ -92,6 +91,7 @@ public class DiscreteValueList<T> extends JXList {
 	 * Use current renderer to create icons.
 	 * @param values
 	 */
+	@SuppressWarnings("rawtypes")
 	private void renderIcons(final Set<T> values) {
 		if (type == Font.class)
 			return;
@@ -165,19 +165,17 @@ public class DiscreteValueList<T> extends JXList {
 	
 	private final class IconCellRenderer extends JPanel implements ListCellRenderer {
 		
-		private final static long serialVersionUID = 1202339876940871L;
-		
-		private final Font SELECTED_FONT = new Font("SansSerif", Font.ITALIC, 14);
-		private final Font NORMAL_FONT = new Font("SansSerif", Font.PLAIN, 14);
-		private final Color BG_COLOR = Color.WHITE;
-		private final Color SELECTED_BG_COLOR = new Color(222, 234, 252);
+		private final Color BG_COLOR = UIManager.getColor("Table.background");
+		private final Color FG_COLOR = UIManager.getColor("Table.foreground");
+		private final Color SELECTED_BG_COLOR = UIManager.getColor("Table.selectionBackground");
+		private final Color SELECTED_FG_COLOR = UIManager.getColor("Table.selectionForeground");
 
 		public IconCellRenderer() {
 			setOpaque(true);
 		}
 
 		@Override
-		@SuppressWarnings("unchecked")
+		@SuppressWarnings({ "unchecked", "rawtypes" })
 		public Component getListCellRendererComponent(final JList list,
 													  final Object value,
 													  final int index,
@@ -186,8 +184,9 @@ public class DiscreteValueList<T> extends JXList {
 			removeAll();
 			
 			setBackground(isSelected ? SELECTED_BG_COLOR : BG_COLOR);
+			setForeground(isSelected ? SELECTED_FG_COLOR : FG_COLOR);
 			
-			final Border border = BorderFactory.createMatteBorder(0, 0, 1, 0, BORDER_COLOR);
+			final Border border = BorderFactory.createMatteBorder(0, 0, 1, 0, UIManager.getColor("Separator.foreground"));
 			final Border paddingBorder = BorderFactory.createEmptyBorder(4, 4, 4, 4);
 			setBorder(BorderFactory.createCompoundBorder(border, paddingBorder));
 			
@@ -206,8 +205,6 @@ public class DiscreteValueList<T> extends JXList {
 			
 			if (value instanceof Font)
 				textLbl.setFont(((Font) value).deriveFont(14.0f));
-			else
-				textLbl.setFont(isSelected ? SELECTED_FONT : NORMAL_FONT);
 
 			add(textLbl);
 			add(Box.createHorizontalGlue());

@@ -2,7 +2,7 @@
 	<parent>
 		<groupId>org.cytoscape</groupId>
 		<artifactId>impl-parent</artifactId>
-		<version>3.2.1</version>
+		<version>3.3.0</version>
 	</parent>
 
 	<properties>
@@ -12,7 +12,7 @@
 
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>group-impl</artifactId>
-  <version>3.2.1</version>
+  <version>3.3.0</version>
 
     <name>Cytoscape Groups Impl (${project.artifactId})</name>
 
@@ -119,7 +119,19 @@
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
+			<artifactId>work-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>application-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.cytoscape</groupId>
 			<artifactId>presentation-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>core-task-api</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>

@@ -31,10 +31,12 @@ import org.cytoscape.command.util.NodeList;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.work.Tunable;
 
 public class NodeAndEdgeTunable {
-	CyApplicationManager appMgr;
+	
+	final CyServiceRegistrar serviceRegistrar;
 	
 	@Tunable(description="Network", context="nogui")
 	public CyNetwork network = null;
@@ -43,7 +45,7 @@ public class NodeAndEdgeTunable {
 	@Tunable(description="List of nodes", context="nogui")
 	public NodeList getnodeList() {
 		if (network == null)
-			network = appMgr.getCurrentNetwork();
+			network = serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetwork();
 		if (nodeList == null) 
 			nodeList = new NodeList(network);
 		else
@@ -56,7 +58,7 @@ public class NodeAndEdgeTunable {
 	@Tunable(description="List of edges", context="nogui")
 	public EdgeList getedgeList() {
 		if (network == null)
-			network = appMgr.getCurrentNetwork();
+			network = serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetwork();
 		if (edgeList == null) 
 			edgeList = new EdgeList(network);
 		else
@@ -65,13 +67,13 @@ public class NodeAndEdgeTunable {
 	}
   public void setedgeList(EdgeList setValue) {}
 
-	public NodeAndEdgeTunable(CyApplicationManager appMgr) {
-		this.appMgr = appMgr;
+	public NodeAndEdgeTunable(final CyServiceRegistrar serviceRegistrar) {
+		this.serviceRegistrar = serviceRegistrar;
 	}
 
 	public CyNetwork getNetwork() { 
 		if (network == null)
-			network = appMgr.getCurrentNetwork();
+			network = serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetwork();
 		return network; 
 	}
 

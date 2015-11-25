@@ -50,12 +50,12 @@ public class HandleEdgeAttribute extends AbstractHandler {
 
 			// Check for blank attribute
 			final String value = atts.getValue(VALUE);
+			
 			if (name == null && value == null)
 				return current;
 			
 			if (manager.getDocumentVersion() < 3.0) {
-				// Writing locked visual properties as regular <att> tags is
-				// deprecated!
+				// Writing locked visual properties as regular <att> tags is deprecated!
 				if (name.startsWith("edge.")) {
 					// It is a bypass attribute...
 					name = name.replace(".", "").toLowerCase();

@@ -29,40 +29,38 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.cytoscape.io.write.VizmapWriterManager;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.write.ExportVizmapTaskFactory;
-import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TunableSetter;
 
 public class ExportVizmapTaskFactoryImpl extends AbstractTaskFactory implements ExportVizmapTaskFactory{
 
-	private final VizmapWriterManager writerManager;
-	private final VisualMappingManager vmMgr;
-	private final TunableSetter tunableSetter; 
-
+	private final CyServiceRegistrar serviceRegistrar; 
 	
-	public ExportVizmapTaskFactoryImpl(VizmapWriterManager writerManager, VisualMappingManager vmMgr,
-			TunableSetter tunableSetter) {
-		this.writerManager = writerManager;
-		this.vmMgr = vmMgr;
-		this.tunableSetter = tunableSetter; 
+	public ExportVizmapTaskFactoryImpl(final CyServiceRegistrar serviceRegistrar) {
+		this.serviceRegistrar = serviceRegistrar;
 	}
 	
 	@Override
 	public TaskIterator createTaskIterator() {
-		return new TaskIterator(2,new VizmapWriter(writerManager, vmMgr));
+		final VizmapWriterManager writerManager = serviceRegistrar.getService(VizmapWriterManager.class);
+		
+		return new TaskIterator(2, new VizmapWriter(writerManager, serviceRegistrar));
 	}
 
 	@Override
 	public TaskIterator createTaskIterator(File file) {
-		final Map<String, Object> m = new HashMap<String, Object>();
+		final Map<String, Object> m = new HashMap<>();
 		m.put("OutputFile", file);
 		
-		VizmapWriter writer = new VizmapWriter(writerManager, vmMgr);
-		
+		final VizmapWriterManager writerManager = serviceRegistrar.getService(VizmapWriterManager.class);
+		final VizmapWriter writer = new VizmapWriter(writerManager, serviceRegistrar);
 		writer.setDefaultFileFormatUsingFileExt(file);
+		
+		final TunableSetter tunableSetter = serviceRegistrar.getService(TunableSetter.class);
 
-		return tunableSetter.createTaskIterator(new TaskIterator(2,writer), m); 
+		return tunableSetter.createTaskIterator(new TaskIterator(2, writer), m); 
 	}
 }

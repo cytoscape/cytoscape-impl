@@ -38,7 +38,7 @@ public class AppInstallationConflictHandler extends AbstractGUITunableHandler im
 			int response = JOptionPane.showConfirmDialog(possibleParent, "There is an app \"" + conflictingApp.getAppName()
 					+ "\" with the same name. It is version " + conflictingApp.getVersion() + ", while the" 
 					+ " one you're about to install is version " + appToInstall.getVersion() 
-					+ ". Replace it?", "Replace App?", JOptionPane.YES_NO_CANCEL_OPTION);
+					+ ". Replace it?", "Replace App?", JOptionPane.OK_CANCEL_OPTION);
 			conflict.setReplaceApp(response);
 		} catch (IllegalAccessException e) {
 			logger.warn("Error accessing conflict object",e);

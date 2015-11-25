@@ -28,6 +28,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.Charset;
 import java.util.Set;
 
 import org.cytoscape.io.BasicCyFileFilter;
@@ -50,7 +51,7 @@ public class SessionTableFileFilter extends BasicCyFileFilter {
 			return false;
 		}
 		
-		BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
+		BufferedReader reader = new BufferedReader(new InputStreamReader(stream, Charset.forName("UTF-8").newDecoder()));
 		try {
 			// TODO: This is a really lame way to check for a CSV file
 			String line = reader.readLine().trim();

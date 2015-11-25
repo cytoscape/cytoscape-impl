@@ -171,7 +171,7 @@ public final class CyRootNetworkImpl extends DefaultTablesNetwork implements CyR
 	private void createRootNetworkTables() {
 		final CyTable rawEdgeSharedTable = tableFactory.createTable(suid + " shared edge", CyIdentifiable.SUID, Long.class, false /*all root tables are private*/, false, getInitialTableSize(subNetworks.size()));
 		
-		final CyTable edgeSharedTable = new SharedTableFacade(rawEdgeSharedTable,this,CyEdge.class,networkTableMgr);
+		final CyTable edgeSharedTable = new SharedTableFacade(rawEdgeSharedTable,this,CyEdge.class,networkTableMgr, eventHelper);
 		edgeSharedTable.setPublic(false /*all root tables are private*/);
 		
 		networkTableMgr.setTable(this, CyEdge.class, CyRootNetwork.SHARED_ATTRS, rawEdgeSharedTable);
@@ -183,7 +183,7 @@ public final class CyRootNetworkImpl extends DefaultTablesNetwork implements CyR
 		final CyTable rawNetworkSharedTable = tableFactory.createTable(suid
 				+ " shared network", CyIdentifiable.SUID, Long.class, false /*all root tables are private*/, false, InitialTableSize.SMALL);
 		
-		final CyTable networkSharedTable = new SharedTableFacade(rawNetworkSharedTable,this,CyNetwork.class,networkTableMgr);
+		final CyTable networkSharedTable = new SharedTableFacade(rawNetworkSharedTable,this,CyNetwork.class,networkTableMgr, eventHelper);
 		networkSharedTable.setPublic(false /*all root tables are private*/);
 		
 		networkTableMgr.setTable(this, CyNetwork.class, CyRootNetwork.SHARED_ATTRS, rawNetworkSharedTable);
@@ -193,7 +193,7 @@ public final class CyRootNetworkImpl extends DefaultTablesNetwork implements CyR
 		
 		final CyTable rawNodeSharedTable = tableFactory.createTable(suid + " shared node", CyIdentifiable.SUID, Long.class, false /*all root tables are private*/, false, getInitialTableSize(subNetworks.size()));
 		
-		final CyTable nodeSharedTable = new SharedTableFacade(rawNodeSharedTable,this,CyNode.class,networkTableMgr);
+		final CyTable nodeSharedTable = new SharedTableFacade(rawNodeSharedTable,this,CyNode.class,networkTableMgr, eventHelper);
 		nodeSharedTable.setPublic(false /*all root tables are private*/);
 		
 		networkTableMgr.setTable(this, CyNode.class, CyRootNetwork.SHARED_ATTRS, rawNodeSharedTable);

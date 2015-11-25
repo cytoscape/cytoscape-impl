@@ -26,6 +26,8 @@ public class PredicateDelegates {
 			return LessThanOrEqualDelegate.instance;
 		case BETWEEN:
 			return BetweenDelegate.instance;
+		case IS_NOT_BETWEEN:
+			return IsNotBetweenDelegate.instance;
 		default:
 			return UnsupportedOperationDelegate.instance;
 		}
@@ -225,6 +227,15 @@ public class PredicateDelegates {
 			double value2 = value.doubleValue();
 			return (lowerBound == null || Double.compare(value2, lowerBound.doubleValue()) >= 0)
 				&& (upperBound == null || Double.compare(value2, upperBound.doubleValue()) <= 0);
+		}
+	}
+	
+	static class IsNotBetweenDelegate implements NumericPredicateDelegate {
+		static NumericPredicateDelegate instance = new IsNotBetweenDelegate();
+		
+		@Override
+		public boolean accepts(Number lowerBound, Number upperBound, Number value) {
+			return !BetweenDelegate.instance.accepts(lowerBound, upperBound, value);
 		}
 	}
 }

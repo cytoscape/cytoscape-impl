@@ -1,26 +1,20 @@
 package org.cytoscape.filter.internal.view;
 
-import java.awt.Component;
-import java.awt.Container;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import javax.swing.JComponent;
-import javax.swing.JMenuItem;
-import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
 
 import org.cytoscape.filter.TransformerManager;
 import org.cytoscape.filter.internal.FilterIO;
 import org.cytoscape.filter.internal.ModelMonitor;
 import org.cytoscape.filter.internal.ModelUtil;
-import org.cytoscape.filter.internal.composite.CompositeFilterPanel;
-import org.cytoscape.filter.internal.composite.CompositeSeparator;
-import org.cytoscape.filter.internal.view.TransformerViewManager.TransformerViewElement;
+import org.cytoscape.filter.internal.filters.composite.CompositeFilterController;
+import org.cytoscape.filter.internal.filters.composite.CompositeFilterPanel;
+import org.cytoscape.filter.internal.filters.composite.CompositeSeparator;
+import org.cytoscape.filter.internal.view.look.FilterPanelStyle;
+import org.cytoscape.filter.internal.work.FilterWorker;
 import org.cytoscape.filter.model.CompositeFilter;
 import org.cytoscape.filter.model.Filter;
 import org.cytoscape.filter.model.NamedTransformer;
@@ -28,69 +22,50 @@ import org.cytoscape.filter.model.Transformer;
 import org.cytoscape.filter.view.InteractivityChangedListener;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.work.TaskManager;
 
 public class FilterPanelController extends AbstractPanelController<FilterElement, FilterPanel> {
 	private TransformerManager transformerManager;
 	private TransformerViewManager transformerViewManager;
-	private IconManager iconManager;
-	
 	private ModelMonitor modelMonitor;
+	
+	private boolean isInteractive;
 
 	public FilterPanelController(TransformerManager transformerManager, TransformerViewManager transformerViewManager,
 			FilterWorker worker, ModelMonitor modelMonitor, FilterIO filterIo, TaskManager<?, ?> taskManager,
-			IconManager iconManager) {
-		super(worker, filterIo, taskManager);
+			FilterPanelStyle style, IconManager iconManager) {
+		super(worker, transformerManager, transformerViewManager, filterIo, taskManager, style, iconManager);
 		worker.setController(this);
 		
 		this.transformerManager = transformerManager;
 		this.transformerViewManager = transformerViewManager;
 		this.modelMonitor = modelMonitor;
-		this.iconManager = iconManager;
 		
 		worker.setController(this);
 		addNewElement("Default filter");
 	}
 
-	public JComponent createView(FilterPanel parent, Filter<CyNetwork, CyIdentifiable> filter, int depth) {
-		if (filter instanceof CompositeFilter) {
-			return new CompositeFilterPanel(parent, this, (CompositeFilter<CyNetwork, CyIdentifiable>) filter, depth,
-					iconManager);
-		}
+	@Override
+	public JComponent createView(FilterPanel parent, Transformer<CyNetwork, CyIdentifiable> filter, int depth) {
+		// CompositeFilterImpl needs a CompositeFilterPanel but the top is blank so view will be null
 		JComponent view = transformerViewManager.createView(filter);
+		
 		if (view instanceof InteractivityChangedListener) {
 			((InteractivityChangedListener) view).handleInteractivityChanged(isInteractive);
 		}
+		
+		if (filter instanceof CompositeFilter) {
+			String addButtonTT = transformerViewManager.getAddButtonTooltip(filter);
+			CompositeFilterController controller = CompositeFilterController.createFor(view, addButtonTT);
+			return new CompositeFilterPanel<FilterPanel>(parent, this, controller, (CompositeFilter<CyNetwork, CyIdentifiable>) filter, depth);
+		}
+		
+		if(view == null)
+			throw new IllegalArgumentException("view could not be created for: " + filter.getId());
 		return view;
 	}
 
-	public JPopupMenu createAddConditionMenu(final CompositeFilterPanel panel, final FilterPanel filterPanel) {
-		JPopupMenu menu = new JPopupMenu();
-		
-		for (final TransformerViewElement element : transformerViewManager.getFilterConditionViewElements()) {
-			JMenuItem mi = new JMenuItem(element.toString());
-			mi.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					handleAddCondition(element, panel, filterPanel);
-				}
-			});
-			menu.add(mi);
-		}
-		
-		return menu;
-	}
-	
-	private void handleAddCondition(TransformerViewElement element, CompositeFilterPanel panel, FilterPanel filterPanel) {
-		// Assume the factory makes filters
-		Transformer<CyNetwork, CyIdentifiable> transformer = transformerManager.createTransformer(element.getId());
-		Filter<CyNetwork, CyIdentifiable> filter = (Filter<CyNetwork, CyIdentifiable>) transformer;
-		panel.addFilter(filter);
-		panel.updateLayout();
-		
-		filter.addListener(worker);
-		worker.handleFilterStructureChanged();
-	}
 
 	@Override
 	protected FilterElement createElement(String name) {
@@ -101,19 +76,20 @@ public class FilterPanelController extends AbstractPanelController<FilterElement
 
 	@Override
 	protected void handleElementSelected(FilterElement selected, FilterPanel panel) {
-		setFilter(selected.filter, panel);
+		setFilter(selected.getFilter(), panel);
 		worker.handleFilterStructureChanged();
 	}
 	
 	private void setFilter(CompositeFilter<CyNetwork, CyIdentifiable> filter, FilterPanel parent) {
-		CompositeFilterPanel root = (CompositeFilterPanel) createView(parent, filter, 0);
-		new TransformerElementViewModel<FilterPanel>(root, this, parent, iconManager);
+		@SuppressWarnings("unchecked")
+		CompositeFilterPanel<FilterPanel> root = (CompositeFilterPanel<FilterPanel>) createView(parent, filter, 0);
+		new TransformerElementViewModel<>(root, this, parent);
 		parent.setRootPanel(root);
 	}
 
 	public Filter<CyNetwork, CyIdentifiable> getFilter() {
 		FilterElement selected = (FilterElement) namedElementComboBoxModel.getSelectedItem();
-		return selected.filter;
+		return selected.getFilter();
 	}
 
 	public void setInteractive(boolean isInteractive, FilterPanel panel) {
@@ -126,18 +102,18 @@ public class FilterPanelController extends AbstractPanelController<FilterElement
 		panel.getApplyAutomaticallyCheckBox().setSelected(isInteractive);
 		
 		this.isInteractive = isInteractive;
-		CompositeFilterPanel root = panel.getRootPanel();
+		CompositeFilterPanel<FilterPanel> root = panel.getRootPanel();
 		setInteractive(isInteractive, root);
-		setProgress(1.0, panel);
 	}
 
-	private void setInteractive(boolean isInteractive, CompositeFilterPanel panel) {
+	@SuppressWarnings("unchecked")
+	private void setInteractive(boolean isInteractive, CompositeFilterPanel<FilterPanel> panel) {
 		for (TransformerElementViewModel<FilterPanel> viewModel : panel.getViewModels()) {
 			if (viewModel.view instanceof InteractivityChangedListener) {
 				((InteractivityChangedListener) viewModel.view).handleInteractivityChanged(isInteractive);
 			}
 			if (viewModel.view instanceof CompositeFilterPanel) {
-				setInteractive(isInteractive, (CompositeFilterPanel) viewModel.view);
+				setInteractive(isInteractive, (CompositeFilterPanel<FilterPanel>) viewModel.view);
 			}
 		}
 	}
@@ -202,7 +178,7 @@ public class FilterPanelController extends AbstractPanelController<FilterElement
 	}
 	
 	@Override
-	public void addNamedTransformers(final FilterPanel panel, final NamedTransformer<CyNetwork, CyIdentifiable>... namedTransformers) {
+	public void addNamedTransformers(final FilterPanel panel, @SuppressWarnings("unchecked") final NamedTransformer<CyNetwork, CyIdentifiable>... namedTransformers) {
 		if (!SwingUtilities.isEventDispatchThread()) {
 			try {
 				SwingUtilities.invokeAndWait(new Runnable() {
@@ -248,15 +224,15 @@ public class FilterPanelController extends AbstractPanelController<FilterElement
 		if (selected == null) {
 			return;
 		}
-		setFilter(selected.filter, panel);
+		setFilter(selected.getFilter(), panel);
 	}
 	
 	private void addCompositeFilter(FilterElement element, CompositeFilter<CyNetwork, CyIdentifiable> composite) {
-		element.filter.setType(composite.getType());
+		element.getFilter().setType(composite.getType());
 		for (int i = 0; i < composite.getLength(); i++) {
 			Filter<CyNetwork, CyIdentifiable> filter = composite.get(i);
 			addListeners(filter);
-			element.filter.append(filter);
+			element.getFilter().append(filter);
 		}
 	}
 
@@ -267,7 +243,7 @@ public class FilterPanelController extends AbstractPanelController<FilterElement
 			}
 			Filter<CyNetwork, CyIdentifiable> filter = (Filter<CyNetwork, CyIdentifiable>) transformer;
 			addListeners(filter);
-			element.filter.append(filter);
+			element.getFilter().append(filter);
 		}
 	}
 	
@@ -289,11 +265,11 @@ public class FilterPanelController extends AbstractPanelController<FilterElement
 		NamedTransformer<CyNetwork, CyIdentifiable>[] namedTransformers = new NamedTransformer[model.getSize()];
 		int i = 0;
 		for (FilterElement element : model) {
-			if (element.filter == null) {
+			if (element.getFilter() == null) {
 				continue;
 			}
 			
-			Transformer<CyNetwork, CyIdentifiable>[] transformers = new Transformer[] { element.filter };
+			Transformer<CyNetwork, CyIdentifiable>[] transformers = new Transformer[] { element.getFilter() };
 			namedTransformers[i] = (NamedTransformer<CyNetwork, CyIdentifiable>) ModelUtil.createNamedTransformer(element.name, transformers);
 			i++;
 		}
@@ -305,188 +281,48 @@ public class FilterPanelController extends AbstractPanelController<FilterElement
 		modelMonitor.unregisterView(elementView);
 	}
 	
-	@Override
-	public List<Integer> getPath(FilterPanel view, JComponent component) {
-		if (component == view.getRootPanel()) {
-			return Collections.emptyList();
-		}
-		
-		List<Integer> path = new ArrayList<Integer>();
-		Component current = component;
-		Container nextParent = component.getParent();
-		while (true) {
-			if (!(nextParent instanceof CompositeFilterPanel)) {
-				break;
-			}
-			CompositeFilterPanel composite = (CompositeFilterPanel) nextParent;
-			if (current == composite.getSeparator()) {
-				path.add(0, -1);
-			} else {
-				CompositeFilter<CyNetwork, CyIdentifiable> compositeFilter = composite.getModel();
-				boolean found = false;
-				for (int i = 0; i < compositeFilter.getLength(); i++) {
-					Filter<CyNetwork, CyIdentifiable> filter = compositeFilter.get(i);
-					TransformerElementViewModel<FilterPanel> viewModel = composite.getViewModel(filter);
-					if (current == viewModel.view || current == viewModel.separator || current == viewModel.handle) {
-						path.add(0, i);
-						found = true;
-						break;
-					}
-				}
-				
-				if (!found) {
-					return null;
-				}
-			}
-			current = nextParent;
-			nextParent = nextParent.getParent();
-		}
-		if (path.size() == 0) {
-			return null;
-		}
-		return path;
-	}
 	
+	/**
+	 * The root panel is different for FilterPanel and TransformerPanel, so these need to be
+	 * handled separately.
+	 */
 	@Override
-	public JComponent getChild(FilterPanel view, List<Integer> path) {
-		CompositeFilterPanel panel = view.getRootPanel();
-		if (path.size() == 0) {
-			return panel;
-		}
-		
-		CompositeFilter<CyNetwork,CyIdentifiable> composite = panel.getModel();
-		Filter<CyNetwork, CyIdentifiable> child = null;
-		JComponent lastView = null;
-		for (int index : path) {
-			if (composite == null) {
-				return null;
-			}
-			
-			child = composite.get(index);
-			lastView = panel.getViewModel(child).view;
-			if (child instanceof CompositeFilter) {
-				panel = (CompositeFilterPanel) lastView;
-				composite = (CompositeFilter<CyNetwork, CyIdentifiable>) child;
-			} else {
-				composite = null;
-			}
-		}
-		
-		if (child == null) {
-			return null;
-		}
-		return lastView;
-	}
-
-	@Override
-	public boolean supportsDrop(FilterPanel parent, List<Integer> sourcePath, JComponent source, List<Integer> targetPath, JComponent target) {
-		boolean droppingInParent = source.getParent() == target;
-		boolean droppingAtEnd;
-		if (target instanceof CompositeFilterPanel) {
-			droppingAtEnd = ((CompositeFilterPanel) target).getModel().getLength() - 1 == sourcePath.get(sourcePath.size() - 1);
-		} else {
-			droppingAtEnd = false;
-		}
-		return !((droppingInParent && droppingAtEnd) || isParentOrSelf(source, target));
-	}
-	
-	@Override
+	@SuppressWarnings("unchecked")
 	public void handleDrop(FilterPanel parent, JComponent source, List<Integer> sourcePath, JComponent target, List<Integer> targetPath) {
-		CompositeFilterPanel root = parent.getRootPanel();
-		CompositeFilterPanel sourceParent = (CompositeFilterPanel) source.getParent();
+		CompositeFilterPanel<FilterPanel> root = parent.getRootPanel();
+		CompositeFilterPanel<FilterPanel> sourceParent = (CompositeFilterPanel<FilterPanel>) source.getParent();
 		try {
-			int sourceIndex = sourcePath.get(sourcePath.size() - 1);
-			Filter<CyNetwork, CyIdentifiable> filter = sourceParent.getModel().get(sourceIndex);
-			TransformerElementViewModel<FilterPanel> viewModel = sourceParent.getViewModel(filter);
-			sourceParent.removeFilter(sourceIndex, false);
-			
-			if (targetPath.size() == 0) {
+			if (targetPath.isEmpty()) {
+				int sourceIndex = sourcePath.get(sourcePath.size() - 1);
+				Filter<CyNetwork, CyIdentifiable> filter = sourceParent.getTransformerAt(sourceIndex);
+				TransformerElementViewModel<FilterPanel> viewModel = sourceParent.getViewModel(filter);
+				sourceParent.removeTransformer(sourceIndex, false);
 				// Target is end of root
 				root.addViewModel(filter, viewModel);
-				return;
 			}
-			
-			CompositeFilterPanel targetParent = (CompositeFilterPanel) target.getParent();
-			
-			if (target instanceof CompositeSeparator) {
-				// Drop causes a move
-				int targetIndex = targetPath.get(targetPath.size() - 1) + 1;
-				if (sourcePath.size() == targetPath.size()) {
-					// Source and target have same parent.  Need to adjust
-					// Indices to account for removal of source
-					if (sourceIndex < targetIndex) {
-						targetIndex--;
-					}
-				}
-				targetParent.addViewModel(targetIndex, filter, viewModel);
-			} else if (target instanceof CompositeFilterPanel) {
-				((CompositeFilterPanel) target).addViewModel(filter, viewModel);
-			} else {
-				// Drop causes grouping
-				int targetIndex = targetPath.get(targetPath.size() - 1);
-				if (sourceIndex < targetIndex) {
-					targetIndex--;
-				}
-				Filter<CyNetwork, CyIdentifiable> targetFilter = targetParent.getModel().get(targetIndex);
-				TransformerElementViewModel<FilterPanel> targetViewModel = targetParent.getViewModel(targetFilter);
-				targetParent.removeFilter(targetIndex, false);
-				
-				CompositeFilter<CyNetwork, CyIdentifiable> group = transformerManager.createCompositeFilter(CyNetwork.class, CyIdentifiable.class);
-				group.addListener(worker);
-				
-				CompositeFilterPanel groupView = (CompositeFilterPanel) createView(parent, group, targetParent.getDepth() + 1);
-				TransformerElementViewModel<FilterPanel> groupViewModel = new TransformerElementViewModel<FilterPanel>(groupView, this, parent, iconManager);
-				targetParent.addViewModel(targetIndex, group, groupViewModel);
-				
-				groupView.addViewModel(targetFilter, targetViewModel);
-				groupView.addViewModel(filter, viewModel);
+			else {
+				super.handleFilterDrop(parent, source, sourcePath, target, targetPath);
 			}
 		} finally {
-			// Delete chains of CompositeFilters that don't have
-			// any real filters.
-			removeOrphans(sourceParent);
 			root.setDepth(0);
 			root.updateLayout();
 			worker.handleFilterStructureChanged();
 		}
 	}
 
-	private void removeOrphans(CompositeFilterPanel panel) {
-		CompositeFilter<CyNetwork, CyIdentifiable> model = panel.getModel();
-		if (model.getLength() > 0) {
-			return;
-		}
-		
-		Container parent = panel.getParent();
-		if (!(parent instanceof CompositeFilterPanel)) {
-			return;
-		}
-		
-		CompositeFilterPanel parentPanel = (CompositeFilterPanel) parent;
-		CompositeFilter<CyNetwork, CyIdentifiable> parentModel = parentPanel.getModel();
-		for (int index = 0; index < parentModel.getLength(); index++) {
-			Filter<CyNetwork, CyIdentifiable> filter = parentModel.get(index);
-			if (model == filter) {
-				parentPanel.removeFilter(index, true);
-				removeOrphans(parentPanel);
-				return;
-			}
+	
+	
+	@Override
+	public void handleDelete(FilterPanel view, JComponent component) {
+		try {
+			super.handleDelete(view, component);
+		} finally {
+			worker.handleFilterStructureChanged();
 		}
 	}
 	
 	@Override
-	public void handleDelete(FilterPanel view, JComponent component) {
-		if (component == null) {
-			return;
-		}
-		
-		List<Integer> path = getPath(view, component);
-		CompositeFilterPanel parent = (CompositeFilterPanel) component.getParent();
-		int sourceIndex = path.get(path.size() - 1);
-		parent.removeFilter(sourceIndex, true);
-		
-		CompositeFilterPanel root = view.getRootPanel();
-		root.updateLayout();
-		worker.handleFilterStructureChanged();
+	public boolean isDropMove(FilterPanel view, JComponent source, List<Integer> sourcePath, JComponent target, List<Integer> targetPath) {
+		return target instanceof CompositeSeparator || target instanceof CompositeFilterPanel;
 	}
 }

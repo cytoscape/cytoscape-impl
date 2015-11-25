@@ -111,7 +111,7 @@ public class DynamicComboBoxModel<T> extends AbstractComboBoxModel implements It
 	}
 	
 	@SuppressWarnings("unchecked")
-	public static <T> void select(JComboBox comboBox, int defaultIndex, Matcher<T> matcher) {
+	public static <T> void select(JComboBox<?> comboBox, int defaultIndex, Matcher<T> matcher) {
 		DynamicComboBoxModel<T> model = (DynamicComboBoxModel<T>) comboBox.getModel();
 		int index = model.find(matcher);
 		if (index == -1) {

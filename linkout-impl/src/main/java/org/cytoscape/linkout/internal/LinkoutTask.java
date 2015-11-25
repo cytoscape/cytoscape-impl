@@ -1,5 +1,10 @@
 package org.cytoscape.linkout.internal;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URLEncoder;
+
 /*
  * #%L
  * Cytoscape Linkout Impl (linkout-impl)
@@ -60,8 +65,16 @@ public class LinkoutTask extends AbstractTask {
 
 	@Override
 	public void run(TaskMonitor tm) {
-		String url = link;
+		String url = computeUrl();
+		logger.debug("LinkOut opening url: " + url);
+		if(!isValidUrl(url))
+			throw new RuntimeException("URL has an incorrect format: " + url);
+		if(!browser.openURL(url))
+			throw new RuntimeException("Problem opening linkout URL: " + url);
+	}
 
+	public String computeUrl() {
+		String url = link;
 		// This absurdity is to support backwards compatibility with 2.x formatted links.
 		if (tableEntries.length == 1) {
 			url = substituteAttributes(url, tableEntries[0], "ID");
@@ -73,14 +86,23 @@ public class LinkoutTask extends AbstractTask {
 			url = substituteAttributes(url, tableEntries[1], "ID2");
 			url = substituteAttributes(url, tableEntries[2], "ID");
 		}
-
-		logger.debug("LinkOut opening url: " + url);
-		if (!browser.openURL(url))
-			throw new RuntimeException("Problem opening linkout URL: " + url);
+		return url;
 	}
-
+	
+	private static boolean isValidUrl(String url) {
+		try {
+			new URI(url); // OpenBrowser uses URI
+			return true;
+		} catch(URISyntaxException e) {
+			return false;
+		}
+	}
+	
+	public boolean isValidUrl() {
+		return isValidUrl(computeUrl());
+	}
+	
 	private String substituteAttributes(String url, CyIdentifiable tableEntry, String id) {
-
 		// Replace %ATTRIBUTE.NAME% mark with the value of the attribute final
 		Matcher mat = regexPattern.matcher(url);
 
@@ -97,12 +119,12 @@ public class LinkoutTask extends AbstractTask {
 				continue;
 
 			String attrValue = raw.toString();
-      String attrValueEscaped = null; 
-      try {
-        attrValueEscaped = URLEncoder.encode(attrValue, "UTF-8");
-      } catch (UnsupportedEncodingException e) {
-        throw new IllegalStateException(e);
-      }
+			String attrValueEscaped = null;
+			try {
+				attrValueEscaped = URLEncoder.encode(attrValue, "UTF-8");
+			} catch (UnsupportedEncodingException e) {
+				throw new IllegalStateException(e);
+			}
 			url = url.replace("%" + replaceName + "%", attrValueEscaped);
 			mat = regexPattern.matcher(url);
 		}

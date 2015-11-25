@@ -28,17 +28,16 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Properties;
 
-import javax.swing.SwingUtilities;
-
 import org.cytoscape.io.datasource.DataSourceManager;
 import org.cytoscape.io.read.InputStreamTaskFactory;
 import org.cytoscape.io.write.CyWriterFactory;
-import org.cytoscape.property.CyProperty;
 import org.cytoscape.service.util.AbstractCyActivator;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.FileUtil;
 import org.cytoscape.work.TaskManager;
 import org.cytoscape.work.TunableHandlerFactory;
 import org.cytoscape.work.TunableRecorder;
+import org.cytoscape.work.internal.task.CyUserLogAppender;
 import org.cytoscape.work.internal.task.JDialogTaskManager;
 import org.cytoscape.work.internal.task.JPanelTaskManager;
 import org.cytoscape.work.internal.task.TaskHistory;
@@ -71,18 +70,15 @@ import org.cytoscape.work.util.BoundedInteger;
 import org.cytoscape.work.util.BoundedLong;
 import org.cytoscape.work.util.ListMultipleSelection;
 import org.cytoscape.work.util.ListSingleSelection;
+import org.ops4j.pax.logging.spi.PaxAppender;
 import org.osgi.framework.BundleContext;
 
 
-
 public class CyActivator extends AbstractCyActivator {
-	public CyActivator() {
-		super();
-	}
-
-
+	
+	@Override
 	public void start(BundleContext bc) {
-		CyProperty<Properties> cyPropertyServiceRef = getService(bc, CyProperty.class, "(cyPropertyName=cytoscape3.props)");
+		CyServiceRegistrar serviceRegistrar = getService(bc, CyServiceRegistrar.class);
 		DataSourceManager dsManager = getService(bc, DataSourceManager.class);
 
 		FileUtil fileUtilRef = getService(bc,FileUtil.class);
@@ -91,46 +87,50 @@ public class CyActivator extends AbstractCyActivator {
 		JDialogTunableMutator jDialogTunableMutator = new JDialogTunableMutator();
 		JPanelTunableMutator jPanelTunableMutator = new JPanelTunableMutator();
 
-		TaskStatusBar taskStatusBar = new TaskStatusBar();
+		final TaskStatusBar taskStatusBar = new TaskStatusBar(serviceRegistrar);
 		final TaskHistory taskHistory = new TaskHistory();
 		taskStatusBar.addPropertyChangeListener(TaskStatusBar.TASK_HISTORY_CLICK, new PropertyChangeListener() {
 			TaskHistoryWindow window = null;
 			// don't need to wrap this method in a SwingUtilities.invokeLater -- it will only be called on the EDT anyway
+			@Override
 			public void propertyChange(PropertyChangeEvent e) {
-				if (window == null) {
+				if (window == null) 
 					window = new TaskHistoryWindow(taskHistory);
-				}
+				
 				window.open();
 			}
 		});
 
-		JDialogTaskManager jDialogTaskManager = new JDialogTaskManager(jDialogTunableMutator, cyPropertyServiceRef, taskStatusBar, taskHistory);
+		registerService(bc, new CyUserLogAppender(taskStatusBar, taskHistory), PaxAppender.class, ezProps("org.ops4j.pax.logging.appender.name", "CyUserLog"));
+
+		JDialogTaskManager jDialogTaskManager = new JDialogTaskManager(jDialogTunableMutator, taskStatusBar, taskHistory, serviceRegistrar);
 		PanelTaskManager jPanelTaskManager = new JPanelTaskManager(jPanelTunableMutator, jDialogTaskManager);
 
 		SupportedFileTypesManager supportedFileTypesManager = new SupportedFileTypesManager();
-		SimpleGUITunableHandlerFactory<BooleanHandler> booleanHandlerFactory = new SimpleGUITunableHandlerFactory<BooleanHandler>(
+		SimpleGUITunableHandlerFactory<BooleanHandler> booleanHandlerFactory = new SimpleGUITunableHandlerFactory<>(
 				BooleanHandler.class, Boolean.class, boolean.class);
-		SimpleGUITunableHandlerFactory<IntegerHandler> integerHandlerFactory = new SimpleGUITunableHandlerFactory<IntegerHandler>(
+		SimpleGUITunableHandlerFactory<IntegerHandler> integerHandlerFactory = new SimpleGUITunableHandlerFactory<>(
 				IntegerHandler.class, Integer.class, int.class);
-		SimpleGUITunableHandlerFactory<FloatHandler> floatHandlerFactory = new SimpleGUITunableHandlerFactory<FloatHandler>(
+		SimpleGUITunableHandlerFactory<FloatHandler> floatHandlerFactory = new SimpleGUITunableHandlerFactory<>(
 				FloatHandler.class, Float.class, float.class);
-		SimpleGUITunableHandlerFactory<DoubleHandler> doubleHandlerFactory = new SimpleGUITunableHandlerFactory<DoubleHandler>(
+
+		SimpleGUITunableHandlerFactory<DoubleHandler> doubleHandlerFactory = new SimpleGUITunableHandlerFactory<>(
 				DoubleHandler.class, Double.class, double.class);
-		SimpleGUITunableHandlerFactory<LongHandler> longHandlerFactory = new SimpleGUITunableHandlerFactory<LongHandler>(
+		SimpleGUITunableHandlerFactory<LongHandler> longHandlerFactory = new SimpleGUITunableHandlerFactory<>(
 				LongHandler.class, Long.class, long.class);
-		SimpleGUITunableHandlerFactory<StringHandler> stringHandlerFactory = new SimpleGUITunableHandlerFactory<StringHandler>(
+		SimpleGUITunableHandlerFactory<StringHandler> stringHandlerFactory = new SimpleGUITunableHandlerFactory<>(
 				StringHandler.class, String.class);
-		SimpleGUITunableHandlerFactory<BoundedHandler> boundedIntegerHandlerFactory = new SimpleGUITunableHandlerFactory<BoundedHandler>(
+		SimpleGUITunableHandlerFactory<BoundedHandler> boundedIntegerHandlerFactory = new SimpleGUITunableHandlerFactory<>(
 				BoundedHandler.class, BoundedInteger.class);
-		SimpleGUITunableHandlerFactory<BoundedHandler> boundedFloatHandlerFactory = new SimpleGUITunableHandlerFactory<BoundedHandler>(
+		SimpleGUITunableHandlerFactory<BoundedHandler> boundedFloatHandlerFactory = new SimpleGUITunableHandlerFactory<>(
 				BoundedHandler.class, BoundedFloat.class);
-		SimpleGUITunableHandlerFactory<BoundedHandler> boundedDoubleHandlerFactory = new SimpleGUITunableHandlerFactory<BoundedHandler>(
+		SimpleGUITunableHandlerFactory<BoundedHandler> boundedDoubleHandlerFactory = new SimpleGUITunableHandlerFactory<>(
 				BoundedHandler.class, BoundedDouble.class);
-		SimpleGUITunableHandlerFactory<BoundedHandler> boundedLongHandlerFactory = new SimpleGUITunableHandlerFactory<BoundedHandler>(
+		SimpleGUITunableHandlerFactory<BoundedHandler> boundedLongHandlerFactory = new SimpleGUITunableHandlerFactory<>(
 				BoundedHandler.class, BoundedLong.class);
-		SimpleGUITunableHandlerFactory<ListSingleHandler> listSingleSelectionHandlerFactory = new SimpleGUITunableHandlerFactory<ListSingleHandler>(
+		SimpleGUITunableHandlerFactory<ListSingleHandler> listSingleSelectionHandlerFactory = new SimpleGUITunableHandlerFactory<>(
 				ListSingleHandler.class, ListSingleSelection.class);
-		SimpleGUITunableHandlerFactory<ListMultipleHandler> listMultipleSelectionHandlerFactory = new SimpleGUITunableHandlerFactory<ListMultipleHandler>(
+		SimpleGUITunableHandlerFactory<ListMultipleHandler> listMultipleSelectionHandlerFactory = new SimpleGUITunableHandlerFactory<>(
 				ListMultipleHandler.class, ListMultipleSelection.class);
 
 		URLHandlerFactory urlHandlerFactory = new URLHandlerFactory(dsManager);
@@ -169,5 +169,12 @@ public class CyActivator extends AbstractCyActivator {
 
 		registerServiceListener(bc,jPanelTunableMutator,"addTunableHandlerFactory","removeTunableHandlerFactory",GUITunableHandlerFactory.class, TunableHandlerFactory.class);
 		registerServiceListener(bc,jDialogTunableMutator,"addTunableHandlerFactory","removeTunableHandlerFactory",GUITunableHandlerFactory.class, TunableHandlerFactory.class);
+	}
+
+	static Properties ezProps(String... args) {
+		final Properties props = new Properties();
+		for (int i = 0; i < args.length; i += 2)
+			props.setProperty(args[i], args[i + 1]);
+		return props;
 	}
 }

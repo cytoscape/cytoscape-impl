@@ -24,8 +24,10 @@ package org.cytoscape.ding.impl.cyannotator.annotations;
  * #L%
  */
 
+import java.awt.AlphaComposite;
 import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.Composite;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Paint;
@@ -336,6 +338,7 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 		else
 			return this.targetColor; 
 	}
+
 	public void setArrowColor(ArrowEnd end, Paint color) { 
 		if (end == ArrowEnd.SOURCE)
 			this.sourceColor = color; 
@@ -380,7 +383,17 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 		                                      x*scaleFactor, y*scaleFactor, scale, border);
 
 		if (relativeLine != null) {
-			g2.draw(relativeLine);
+			// Handle opacity
+			if (lineColor instanceof Color) {
+				int alpha = ((Color)lineColor).getAlpha();
+				float opacity = (float)alpha/(float)255;
+				final Composite originalComposite = g2.getComposite();
+				g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, opacity));
+				g2.draw(relativeLine);
+				g2.setComposite(originalComposite);
+			} else {
+				g2.draw(relativeLine);
+			}
 		}
 
 		// Add the head
@@ -411,6 +424,13 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 			drawArrow(g, false);
 	}
 
+	public void print(Graphics g) {
+		boolean selected = isSelected();
+		setSelected(false);
+		paint(g);
+		setSelected(selected);
+	}
+
 	public void drawArrow(Graphics g, boolean isPrinting) {
 		if ( (source == null || target == null) && !usedForPreviews ) return;
 
@@ -429,16 +449,33 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 		g2.setStroke(new BasicStroke(border, BasicStroke.JOIN_ROUND, BasicStroke.JOIN_ROUND, 10.0f));
 		
 		Line2D relativeLine = getRelativeLine(arrowLine, 0.0, 0.0, 1.0, border);
-		g2.draw(relativeLine);
+
+		if (relativeLine != null) {
+			// Handle opacity
+			if (lineColor instanceof Color) {
+				int alpha = ((Color)lineColor).getAlpha();
+				float opacity = (float)alpha/(float)255;
+				final Composite originalComposite = g2.getComposite();
+				g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, opacity));
+				g2.draw(relativeLine);
+				g2.setComposite(originalComposite);
+			} else {
+				g2.draw(relativeLine);
+			}
+		}
 
 		g2.setStroke(new BasicStroke(border));
 
 		// Add the head
 		if (sourceType != ArrowType.NONE) {
+			if (sourceColor == null) 
+				sourceColor = lineColor;
 			GraphicsUtilities.drawArrow(g, relativeLine, ArrowEnd.SOURCE, sourceColor, sourceSize*10.0*getZoom(), sourceType);
 		}
 
 		if (targetType != ArrowType.NONE) {
+			if (targetColor == null) 
+				targetColor = lineColor;
 			GraphicsUtilities.drawArrow(g, relativeLine, ArrowEnd.TARGET, targetColor, targetSize*10.0*getZoom(), targetType);
 		}
 	}

@@ -1,5 +1,7 @@
 package org.cytoscape.ding.internal.charts;
 
+import static javax.swing.GroupLayout.DEFAULT_SIZE;
+import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static org.cytoscape.ding.customgraphics.AbstractCustomGraphics2.COLORS;
 import static org.cytoscape.ding.customgraphics.AbstractCustomGraphics2.COLOR_SCHEME;
 import static org.cytoscape.ding.customgraphics.ColorScheme.CUSTOM;
@@ -29,18 +31,20 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
+import javax.swing.UIManager;
 import javax.swing.border.Border;
 
 import org.cytoscape.ding.customgraphics.AbstractCustomGraphics2;
 import org.cytoscape.ding.customgraphics.ColorScheme;
-import org.cytoscape.ding.internal.charts.util.ColorUtil;
-import org.cytoscape.ding.internal.util.IconManager;
+import org.cytoscape.ding.internal.util.ColorUtil;
 import org.cytoscape.ding.internal.util.IconUtil;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
+import org.cytoscape.util.swing.IconManager;
+import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.presentation.property.values.CyColumnIdentifier;
 
 public class ColorSchemeEditor<T extends AbstractCustomGraphics2<?>> extends JPanel {
@@ -75,13 +79,12 @@ public class ColorSchemeEditor<T extends AbstractCustomGraphics2<?>> extends JPa
 		this.network = network;
 		this.iconMgr = iconMgr;
 		
-		JList tmpList = new JList();
 		COLOR_BORDER = BorderFactory.createCompoundBorder(
-				BorderFactory.createLineBorder(Color.WHITE, 2),
-				BorderFactory.createLineBorder(Color.GRAY, 1));
+				BorderFactory.createLineBorder(UIManager.getColor("TextField.background"), 2),
+				BorderFactory.createLineBorder(UIManager.getColor("TextField.inactiveForeground"), 1));
 		COLOR_HOVER_BORDER = BorderFactory.createCompoundBorder(
-				BorderFactory.createLineBorder(tmpList.getSelectionBackground(), 2),
-				BorderFactory.createLineBorder(tmpList.getSelectionForeground(), 1));
+				BorderFactory.createLineBorder(UIManager.getColor("Focus.color"), 2),
+				BorderFactory.createLineBorder(UIManager.getColor("TextField.background"), 1));
 		
 		init();
 		updateColorList(false);
@@ -108,13 +111,14 @@ public class ColorSchemeEditor<T extends AbstractCustomGraphics2<?>> extends JPa
 	// ==[ PRIVATE METHODS ]============================================================================================
 
 	private void init() {
-		colorSchemeLbl = new JLabel("Color Scheme");
+		colorSchemeLbl = new JLabel("Color Scheme:");
 		
 		setOpaque(false);
 		
 		final GroupLayout layout = new GroupLayout(this);
 		setLayout(layout);
-		layout.setAutoCreateContainerGaps(true);
+		layout.setAutoCreateContainerGaps(false);
+		layout.setAutoCreateGaps(!LookAndFeelUtil.isAquaLAF());
 		
 		final JSeparator sep = new JSeparator();
 		final JScrollPane colorListScr = new JScrollPane(getColorListPnl(),
@@ -124,19 +128,18 @@ public class ColorSchemeEditor<T extends AbstractCustomGraphics2<?>> extends JPa
 		layout.setHorizontalGroup(layout.createParallelGroup(Alignment.LEADING, true)
 				.addGroup(layout.createSequentialGroup()
 						.addComponent(colorSchemeLbl)
-						.addComponent(getColorSchemeCmb(), GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
-						          GroupLayout.PREFERRED_SIZE))
+						.addComponent(getColorSchemeCmb(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				)
 				.addComponent(colorListScr)
 				.addComponent(sep)
 		);
 		layout.setVerticalGroup(layout.createSequentialGroup()
 				.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
 						.addComponent(colorSchemeLbl)
-						.addComponent(getColorSchemeCmb()))
-				.addComponent(colorListScr, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
-						GroupLayout.PREFERRED_SIZE)
-				.addComponent(sep, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
-						GroupLayout.PREFERRED_SIZE)
+						.addComponent(getColorSchemeCmb())
+				)
+				.addComponent(colorListScr, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				.addComponent(sep, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 		);
 	}
 	
@@ -318,7 +321,7 @@ public class ColorSchemeEditor<T extends AbstractCustomGraphics2<?>> extends JPa
 		private void chooseColor() {
 			final JDialog dialog = JColorChooser.createDialog(
 					ColorSchemeEditor.this,
-					"Please pick a color",
+					"Colors",
 					true,
 					colorChooser, 
 					new ActionListener() {

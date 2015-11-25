@@ -44,9 +44,12 @@ public class EdgeLinkoutTaskFactory extends AbstractEdgeViewTaskFactory {
 
 	@Override
 	public TaskIterator createTaskIterator(final View<CyEdge> edgeView, final CyNetworkView netView) {
-		return new TaskIterator(
-				new LinkoutTask(link, browser, netView.getModel(), edgeView.getModel().getSource(),
-				edgeView.getModel().getTarget(), edgeView.getModel()));
+		return new TaskIterator(createTask(edgeView, netView));
+	}
+	
+	private LinkoutTask createTask(final View<CyEdge> edgeView, final CyNetworkView netView) {
+		return new LinkoutTask(link, browser, netView.getModel(), edgeView.getModel().getSource(),
+				               edgeView.getModel().getTarget(), edgeView.getModel());
 	}
 
 	public String getLink() {
@@ -55,5 +58,13 @@ public class EdgeLinkoutTaskFactory extends AbstractEdgeViewTaskFactory {
 
 	public void setLink(final String link) {
 		this.link = link;
+	}
+	
+	@Override
+	public boolean isReady(View<CyEdge> edgeView, CyNetworkView netView) {
+		if(!super.isReady(edgeView, netView))
+			return false;
+		LinkoutTask task = createTask(edgeView, netView);
+		return task.isValidUrl();
 	}
 }

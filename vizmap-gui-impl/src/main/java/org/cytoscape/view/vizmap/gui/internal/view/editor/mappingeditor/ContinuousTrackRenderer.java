@@ -26,7 +26,6 @@ package org.cytoscape.view.vizmap.gui.internal.view.editor.mappingeditor;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
-import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
@@ -47,6 +46,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.vizmap.VisualStyle;
@@ -66,14 +66,8 @@ public class ContinuousTrackRenderer<K extends Number, V extends Number>
 	
 	private final static long serialVersionUID = 1202339877100033L;
 	
-	// Preset colors
-	private static final Color VALUE_AREA_COLOR = new Color(0x1C, 0x86, 0xEE, 130);
-	
-	// Preset fonts
-	private static final Font smallFont = new Font("SansSerif", Font.BOLD, 10);
-	private static final Font defFont = new Font("SansSerif", Font.BOLD, 12);
-	private static final Font TITLE_FONT = new Font("SansSerif", Font.BOLD, 12);
-	private static final Font ICON_FONT = new Font("SansSerif", Font.BOLD, 8);
+	private final Color VALUE_AREA_COLOR;
+	private final Color TRACK_COLOR;
 	
 	private static final Float UPPER_LIMIT = 2000f;
 	
@@ -81,22 +75,20 @@ public class ContinuousTrackRenderer<K extends Number, V extends Number>
 	private static final int LEFT_SPACE = 50;
 	
 	private Map<Integer, Double> valueMap;
-	
 
 	/*
 	 * Define Colors used in this diagram.
 	 */
 	private int trackHeight = 120;
 	private int arrowBarPosition = trackHeight + 50;
-	private static final Color BORDER_COLOR = Color.black;
 
 	/*
 	 * Min and Max for the Y-Axis.
 	 */
-	private float min = 0;
-	private float max = 0;
-	private boolean clickFlag = false;
-	private boolean dragFlag = false;
+	private float min;
+	private float max;
+	private boolean clickFlag;
+	private boolean dragFlag;
 	private Point curPoint;
 	private JXMultiThumbSlider<V> slider;
 	private CMouseListener listener = null;
@@ -123,16 +115,6 @@ public class ContinuousTrackRenderer<K extends Number, V extends Number>
 
 	private final ServicesUtil servicesUtil;
 	
-	/**
-	 * Creates a new ContinuousTrackRenderer object.
-	 * 
-	 * @param type
-	 *            DOCUMENT ME!
-	 * @param below
-	 *            DOCUMENT ME!
-	 * @param above
-	 *            DOCUMENT ME!
-	 */
 	public ContinuousTrackRenderer(final VisualStyle style, final ContinuousMapping<K, V> mapping, V below, V above,
 			final EditorValueRangeTracer tracer, final ServicesUtil servicesUtil) {
 		if (mapping == null)
@@ -152,7 +134,11 @@ public class ContinuousTrackRenderer<K extends Number, V extends Number>
 		this.vpValueType = mapping.getVisualProperty().getRange().getType();
 		
 		title = cMapping.getMappingColumnName();
-
+		
+		Color c = UIManager.getColor("CyColor.complement(+2)");
+		VALUE_AREA_COLOR = new Color(c.getRed(), c.getGreen(), c.getBlue(), 60);
+		TRACK_COLOR = UIManager.getColor("CyColor.complement(-1)");
+		
 		 //TODO: where should I put this property value?
 //		 Object propStr =
 //		 CytoscapeInit.getProperties().getProperty("vizmapper.cntMapperUpperLimit");
@@ -168,21 +154,14 @@ public class ContinuousTrackRenderer<K extends Number, V extends Number>
 //		 } else {
 //		 UPPER_LIMIT = 2000f;
 //		 }
-
 	}
 
-	
 	@Override
 	public void paint(Graphics g) {
 		super.paint(g);
 		paintComponent(g);
 	}
 
-	/**
-	 * Remove square
-	 * 
-	 * @param index
-	 */
 	protected void removeSquare(Integer index) {
 		verticesList.remove(index);
 	}
@@ -194,8 +173,7 @@ public class ContinuousTrackRenderer<K extends Number, V extends Number>
 
 		// AA on
 		Graphics2D g = (Graphics2D) gfx;
-		g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-				RenderingHints.VALUE_ANTIALIAS_ON);
+		g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
 		double minValue = tracer.getMin(vp);
 		double maxValue = tracer.getMax(vp);
@@ -235,7 +213,7 @@ public class ContinuousTrackRenderer<K extends Number, V extends Number>
 
 		// Draw arrow bar
 		g.setStroke(new BasicStroke(1.0f));
-		g.setColor(Color.black);
+		g.setColor(LABEL_COLOR);
 		g.drawLine(0, arrowBarPosition, track_width, arrowBarPosition);
 
 		Polygon arrow = new Polygon();
@@ -244,30 +222,24 @@ public class ContinuousTrackRenderer<K extends Number, V extends Number>
 		arrow.addPoint(track_width - 20, arrowBarPosition);
 		g.fill(arrow);
 
-		g.setColor(Color.gray);
+		g.setColor(DISABLED_LABEL_COLOR);
 		g.drawLine(0, arrowBarPosition, 15, arrowBarPosition - 30);
 		g.drawLine(15, arrowBarPosition - 30, 25, arrowBarPosition - 30);
 
-		g.setFont(smallFont);
+		g.setFont(SMALL_FONT);
 		g.drawString("Min=" + minValue, 28, arrowBarPosition - 25);
 
-		g.drawLine(track_width, arrowBarPosition, track_width - 15,
-				arrowBarPosition + 30);
-		g.drawLine(track_width - 15, arrowBarPosition + 30, track_width - 25,
-				arrowBarPosition + 30);
+		g.drawLine(track_width, arrowBarPosition, track_width - 15, arrowBarPosition + 30);
+		g.drawLine(track_width - 15, arrowBarPosition + 30, track_width - 25, arrowBarPosition + 30);
 
 		final String maxStr = "Max=" + maxValue;
-		int strWidth = SwingUtilities.computeStringWidth(g.getFontMetrics(),
-				maxStr);
-		g
-				.drawString(maxStr, track_width - strWidth - 26,
-						arrowBarPosition + 35);
+		int strWidth = SwingUtilities.computeStringWidth(g.getFontMetrics(), maxStr);
+		g.drawString(maxStr, track_width - strWidth - 26, arrowBarPosition + 35);
 
-		g.setFont(defFont);
-		g.setColor(Color.black);
+		g.setFont(DEF_FONT);
+		g.setColor(LABEL_COLOR);
 		strWidth = SwingUtilities.computeStringWidth(g.getFontMetrics(), title);
-		g.drawString(title, (track_width / 2) - (strWidth / 2),
-				arrowBarPosition + 35);
+		g.drawString(title, (track_width / 2) - (strWidth / 2), arrowBarPosition + 35);
 
 		/*
 		 * If no points, just draw empty box.
@@ -285,7 +257,7 @@ public class ContinuousTrackRenderer<K extends Number, V extends Number>
 		/*
 		 * Fill background
 		 */
-		g.setColor(Color.white);
+		g.setColor(BACKGROUND_COLOR);
 		g.fillRect(0, 5, track_width, trackHeight);
 
 		int newX = 0;
@@ -299,19 +271,16 @@ public class ContinuousTrackRenderer<K extends Number, V extends Number>
 
 			p2.setLocation(newX, 5);
 
-			int newY = (5 + trackHeight)
-					- (int) ((doubleValues[i].floatValue() / max) * trackHeight);
+			int newY = (5 + trackHeight) - (int) ((doubleValues[i].floatValue() / max) * trackHeight);
 
 			valueArea.reset();
 
 			g.setColor(VALUE_AREA_COLOR);
 
 			if (i == 0) {
-				int h = (5 + trackHeight)
-						- (int) ((below.floatValue() / max) * trackHeight);
-				g.fillRect(0, h, newX,
-						(int) ((below.floatValue() / max) * trackHeight));
-				g.setColor(Color.red);
+				int h = (5 + trackHeight) - (int) ((below.floatValue() / max) * trackHeight);
+				g.fillRect(0, h, newX, (int) ((below.floatValue() / max) * trackHeight));
+				g.setColor(TRACK_COLOR);
 				g.fillRect(-5, h - 5, 10, 10);
 				belowSquare = new Point(0, h);
 			} else {
@@ -336,66 +305,55 @@ public class ContinuousTrackRenderer<K extends Number, V extends Number>
 
 			lastY = newY;
 
-			g.setColor(Color.black);
+			g.setColor(LABEL_COLOR);
 			g.setStroke(new BasicStroke(1.5f));
-			g.setFont(smallFont);
+			g.setFont(SMALL_FONT);
 
-			int numberWidth = SwingUtilities.computeStringWidth(g
-					.getFontMetrics(), doubleValues[i].toString());
+			int numberWidth = SwingUtilities.computeStringWidth(g.getFontMetrics(), doubleValues[i].toString());
 
-			g.setColor(Color.DARK_GRAY);
+			g.setColor(LABEL_COLOR);
 
 			if (fractions[i] < 10) {
 				g.drawLine(newX, newY, newX + 15, newY - 35);
-				g.drawString(doubleValues[i].toString(), newX + numberWidth,
-						newY - 48);
+				g.drawString(doubleValues[i].toString(), newX + numberWidth, newY - 48);
 			} else {
 				g.drawLine(newX, newY, newX - 15, newY + 35);
-				g.drawString(doubleValues[i].toString(), newX
-						- (numberWidth + 5), newY + 48);
+				g.drawString(doubleValues[i].toString(), newX - (numberWidth + 5), newY + 48);
 			}
 
-			g.setColor(Color.DARK_GRAY);
-			g.setFont(new Font("SansSerif", Font.BOLD, 10));
+			g.setColor(LABEL_COLOR);
+			g.setFont(SMALL_FONT);
 
-			Double curPositionValue = ((Double) (((fractions[i] / 100) * tracer
-					.getRange(vp)) + minValue)).doubleValue();
+			Double curPositionValue = ((Double) (((fractions[i] / 100) * tracer.getRange(vp)) + minValue))
+					.doubleValue();
 			String valueString = String.format("%.4f", curPositionValue);
 
 			int flipLimit = 90;
 			int borderVal = track_width - newX;
 
 			if (((i % 2) == 0) && (flipLimit < borderVal)) {
-				g.drawLine(newX, arrowBarPosition, newX + 20,
-						arrowBarPosition - 15);
-				g.drawLine(newX + 20, arrowBarPosition - 15, newX + 30,
-						arrowBarPosition - 15);
-				g.setColor(Color.black);
+				g.drawLine(newX, arrowBarPosition, newX + 20, arrowBarPosition - 15);
+				g.drawLine(newX + 20, arrowBarPosition - 15, newX + 30, arrowBarPosition - 15);
+				g.setColor(LABEL_COLOR);
 				g.drawString(valueString, newX + 33, arrowBarPosition - 11);
 			} else if (((i % 2) == 1) && (flipLimit < borderVal)) {
-				g.drawLine(newX, arrowBarPosition, newX + 20,
-						arrowBarPosition + 15);
-				g.drawLine(newX + 20, arrowBarPosition + 15, newX + 30,
-						arrowBarPosition + 15);
-				g.setColor(Color.black);
+				g.drawLine(newX, arrowBarPosition, newX + 20, arrowBarPosition + 15);
+				g.drawLine(newX + 20, arrowBarPosition + 15, newX + 30, arrowBarPosition + 15);
+				g.setColor(LABEL_COLOR);
 				g.drawString(valueString, newX + 33, arrowBarPosition + 19);
 			} else if (((i % 2) == 0) && (flipLimit >= borderVal)) {
-				g.drawLine(newX, arrowBarPosition, newX - 20,
-						arrowBarPosition - 15);
-				g.drawLine(newX - 20, arrowBarPosition - 15, newX - 30,
-						arrowBarPosition - 15);
-				g.setColor(Color.black);
+				g.drawLine(newX, arrowBarPosition, newX - 20, arrowBarPosition - 15);
+				g.drawLine(newX - 20, arrowBarPosition - 15, newX - 30, arrowBarPosition - 15);
+				g.setColor(LABEL_COLOR);
 				g.drawString(valueString, newX - 90, arrowBarPosition - 11);
 			} else {
-				g.drawLine(newX, arrowBarPosition, newX - 20,
-						arrowBarPosition + 15);
-				g.drawLine(newX - 20, arrowBarPosition + 15, newX - 30,
-						arrowBarPosition + 15);
-				g.setColor(Color.black);
+				g.drawLine(newX, arrowBarPosition, newX - 20, arrowBarPosition + 15);
+				g.drawLine(newX - 20, arrowBarPosition + 15, newX - 30, arrowBarPosition + 15);
+				g.setColor(LABEL_COLOR);
 				g.drawString(valueString, newX - 90, arrowBarPosition + 19);
 			}
 
-			g.setColor(Color.black);
+			g.setColor(LABEL_COLOR);
 			g.fillOval(newX - 3, arrowBarPosition - 3, 6, 6);
 
 			p1.setLocation(p2);
@@ -405,12 +363,10 @@ public class ContinuousTrackRenderer<K extends Number, V extends Number>
 
 		g.setColor(VALUE_AREA_COLOR);
 
-		int h = (5 + trackHeight)
-				- (int) ((above.floatValue() / max) * trackHeight);
-		g.fillRect((int) p1.getX(), h, track_width - (int) p1.getX(),
-				(int) ((above.floatValue() / max) * trackHeight));
-		
-		g.setColor(Color.RED);
+		int h = (5 + trackHeight) - (int) ((above.floatValue() / max) * trackHeight);
+		g.fillRect((int) p1.getX(), h, track_width - (int) p1.getX(), (int) ((above.floatValue() / max) * trackHeight));
+
+		g.setColor(TRACK_COLOR);
 		g.fillRect(track_width - 5, h - 5, 10, 10);
 		aboveSquare = new Point(track_width, h);
 
@@ -421,7 +377,7 @@ public class ContinuousTrackRenderer<K extends Number, V extends Number>
 		g.setStroke(new BasicStroke(1.5f));
 		g.drawRect(0, 5, track_width, trackHeight);
 
-		g.setColor(Color.red);
+		g.setColor(TRACK_COLOR);
 		g.setStroke(new BasicStroke(1.5f));
 
 		for (Integer key : verticesList.keySet()) {
@@ -431,10 +387,10 @@ public class ContinuousTrackRenderer<K extends Number, V extends Number>
 				int diffY = Math.abs(p.y - (curPoint.y - 12));
 
 				if (((diffX < 6) && (diffY < 6)) || (key == selectedIdx)) {
-					g.setColor(Color.green);
+					g.setColor(FOCUS_COLOR);
 					g.setStroke(new BasicStroke(2.5f));
 				} else {
-					g.setColor(Color.red);
+					g.setColor(TRACK_COLOR);
 					g.setStroke(new BasicStroke(1.5f));
 				}
 			}
@@ -452,7 +408,6 @@ public class ContinuousTrackRenderer<K extends Number, V extends Number>
 	@Override
 	public JComponent getRendererComponent(@SuppressWarnings("rawtypes") JXMultiThumbSlider slider) {
 		this.slider = slider;
-		
 
 		if (listener == null) {
 			listener = new CMouseListener();
@@ -470,6 +425,8 @@ public class ContinuousTrackRenderer<K extends Number, V extends Number>
 	}
 
 	class CMouseMotionListener implements MouseMotionListener {
+		
+		@Override
 		public void mouseDragged(MouseEvent e) {
 			/*
 			 * If user is moving thumbs, update is not necessary!
@@ -498,8 +455,7 @@ public class ContinuousTrackRenderer<K extends Number, V extends Number>
 
 				double curY = curPoint.getY();
 
-				V newY = (V) Double
-						.valueOf(((((trackHeight + 5) - curY) * max) / (trackHeight + 5)));
+				V newY = (V) Double.valueOf(((((trackHeight + 5) - curY) * max) / (trackHeight + 5)));
 
 				if (newY.doubleValue() > UPPER_LIMIT)
 					newY = (V) UPPER_LIMIT;
@@ -762,29 +718,24 @@ public class ContinuousTrackRenderer<K extends Number, V extends Number>
 			max = curMax;
 		}
 	}
-
 	
 	public ImageIcon getTrackGraphicIcon(int iconWidth, int iconHeight) {
 		return drawIcon(iconWidth, iconHeight, false);
 	}
-
 	
 	public ImageIcon getLegend(int iconWidth, int iconHeight) {
 		return drawIcon(iconWidth, iconHeight, true);
 	}
 
 	private ImageIcon drawIcon(int iconWidth, int iconHeight, boolean detail) {
-		if (slider == null) {
+		if (slider == null)
 			return null;
-		}
 
-		final BufferedImage bi = new BufferedImage(iconWidth, iconHeight,
-				BufferedImage.TYPE_INT_RGB);
+		final BufferedImage bi = new BufferedImage(iconWidth, iconHeight, BufferedImage.TYPE_INT_RGB);
 		final Graphics2D g = bi.createGraphics();
 
 		// Turn Anti-alias on
-		g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-				RenderingHints.VALUE_ANTIALIAS_ON);
+		g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
 		double minValue = tracer.getMin(vp);
 		double maxValue = tracer.getMax(vp);
@@ -792,7 +743,7 @@ public class ContinuousTrackRenderer<K extends Number, V extends Number>
 		/*
 		 * Fill background
 		 */
-		g.setColor(Color.white);
+		g.setColor(BACKGROUND_COLOR);
 		g.fillRect(0, 0, iconWidth, iconHeight);
 
 		int leftSpace = 10;
@@ -830,13 +781,11 @@ public class ContinuousTrackRenderer<K extends Number, V extends Number>
 		}
 
 		// Draw min/max
-		g.setColor(Color.DARK_GRAY);
+		g.setColor(LABEL_COLOR);
 		g.setFont(ICON_FONT);
 
-		int minWidth = SwingUtilities.computeStringWidth(g.getFontMetrics(),
-				String.format("%.1f", min));
-		int maxWidth = SwingUtilities.computeStringWidth(g.getFontMetrics(),
-				String.format("%.1f", max));
+		int minWidth = SwingUtilities.computeStringWidth(g.getFontMetrics(), String.format("%.1f", min));
+		int maxWidth = SwingUtilities.computeStringWidth(g.getFontMetrics(), String.format("%.1f", max));
 
 		if (detail) {
 			leftSpace = LEFT_SPACE;
@@ -855,7 +804,7 @@ public class ContinuousTrackRenderer<K extends Number, V extends Number>
 		 */
 		if (numPoints == 0) {
 			g.setStroke(new BasicStroke(1.0f));
-			g.setColor(Color.DARK_GRAY);
+			g.setColor(LABEL_COLOR);
 			g.drawRect(leftSpace, 0, trackWidth - 3, trackHeight);
 
 			return new ImageIcon(bi);
@@ -879,18 +828,15 @@ public class ContinuousTrackRenderer<K extends Number, V extends Number>
 
 			p2.setLocation(newX, 0);
 
-			int newY = trackHeight
-					- (int) ((floatProperty[i] / max) * trackHeight);
+			int newY = trackHeight - (int) ((floatProperty[i] / max) * trackHeight);
 
 			valueArea.reset();
 
 			g.setColor(VALUE_AREA_COLOR);
 
 			if (i == 0) {
-				int h = trackHeight
-						- (int) ((below.floatValue() / max) * trackHeight);
-				g.fillRect(0, h, newX,
-						(int) ((below.floatValue() / max) * trackHeight));
+				int h = trackHeight - (int) ((below.floatValue() / max) * trackHeight);
+				g.fillRect(0, h, newX, (int) ((below.floatValue() / max) * trackHeight));
 			} else {
 				valueArea.addPoint((int) p1.getX(), lastY);
 				valueArea.addPoint(newX, newY);
@@ -934,47 +880,39 @@ public class ContinuousTrackRenderer<K extends Number, V extends Number>
 		/*
 		 * Draw numbers and arrows
 		 */
-		g.setFont(new Font("SansSerif", Font.BOLD, 9));
+		g.setFont(ICON_FONT);
 
 		final String minStr = String.format("%.2f", minValue);
 		final String maxStr = String.format("%.2f", maxValue);
 		int strWidth;
-		g.setColor(Color.black);
+		g.setColor(LABEL_COLOR);
 
 		if (detail) {
 			String fNum = null;
 
 			for (int j = 0; j < fractions.length; j++) {
-				fNum = String.format("%.2f",
-						((fractions[j] / 100) * valueRange) + minValue);
-				strWidth = SwingUtilities.computeStringWidth(
-						g.getFontMetrics(), fNum);
-				g.drawString(fNum, ((fractions[j] / 100) * trackWidth)
-						- (strWidth / 2) + leftSpace, iconHeight - 20);
+				fNum = String.format("%.2f", ((fractions[j] / 100) * valueRange) + minValue);
+				strWidth = SwingUtilities.computeStringWidth(g.getFontMetrics(), fNum);
+				g.drawString(fNum, ((fractions[j] / 100) * trackWidth) - (strWidth / 2) + leftSpace, iconHeight - 20);
 			}
 
 			g.drawString(minStr, leftSpace, iconHeight);
-			strWidth = SwingUtilities.computeStringWidth(g.getFontMetrics(),
-					maxStr);
+			strWidth = SwingUtilities.computeStringWidth(g.getFontMetrics(), maxStr);
 			g.drawString(maxStr, iconWidth - strWidth - 2, iconHeight);
 
 			g.setFont(TITLE_FONT);
 
-			final int titleWidth = SwingUtilities.computeStringWidth(g
-					.getFontMetrics(), title);
-			g.setColor(Color.black);
-			g.drawString(title, (iconWidth / 2) - (titleWidth / 2),
-					iconHeight - 5);
+			final int titleWidth = SwingUtilities.computeStringWidth(g.getFontMetrics(), title);
+			g.setColor(LABEL_COLOR);
+			g.drawString(title, (iconWidth / 2) - (titleWidth / 2), iconHeight - 5);
 
 			Polygon p = new Polygon();
 			p.addPoint(iconWidth, iconHeight - 9);
 			p.addPoint(iconWidth - 15, iconHeight - 15);
 			p.addPoint(iconWidth - 15, iconHeight - 9);
 			g.fillPolygon(p);
-			g.drawLine(leftSpace, iconHeight - 9, ((iconWidth - leftSpace) / 2)
-					- (titleWidth / 2) - 3, iconHeight - 9);
-			g.drawLine((iconWidth / 2) + (titleWidth / 2) + 3, iconHeight - 9,
-					iconWidth, iconHeight - 9);
+			g.drawLine(leftSpace, iconHeight - 9, ((iconWidth - leftSpace) / 2) - (titleWidth / 2) - 3, iconHeight - 9);
+			g.drawLine((iconWidth / 2) + (titleWidth / 2) + 3, iconHeight - 9, iconWidth, iconHeight - 9);
 
 			/*
 			 * Draw vertical arrow
@@ -994,23 +932,20 @@ public class ContinuousTrackRenderer<K extends Number, V extends Number>
 			g.fillPolygon(poly);
 
 			g.drawLine(center, top, center, panelHeight);
-			g.setColor(Color.DARK_GRAY);
-			g.setFont(new Font("SansSerif", Font.BOLD, 10));
+			g.setColor(LABEL_COLOR);
+			g.setFont(SMALL_FONT);
 
 			final String label = vp.getDisplayName();
-			final int width = SwingUtilities.computeStringWidth(g
-					.getFontMetrics(), label);
+			final int width = SwingUtilities.computeStringWidth(g.getFontMetrics(), label);
 			AffineTransform af = new AffineTransform();
 			af.rotate(Math.PI + (Math.PI / 2));
 			g.setTransform(af);
 
-			g.setColor(Color.black);
-			g.drawString(vp.getDisplayName(), (-panelHeight / 2) - (width / 2),
-					(leftSpace / 2) + 5);
+			g.setColor(LABEL_COLOR);
+			g.drawString(vp.getDisplayName(), (-panelHeight / 2) - (width / 2), (leftSpace / 2) + 5);
 		} else {
 			g.drawString(minStr, 0, iconHeight);
-			strWidth = SwingUtilities.computeStringWidth(g.getFontMetrics(),
-					maxStr);
+			strWidth = SwingUtilities.computeStringWidth(g.getFontMetrics(), maxStr);
 			g.drawString(maxStr, iconWidth - strWidth - 2, iconHeight);
 		}
 

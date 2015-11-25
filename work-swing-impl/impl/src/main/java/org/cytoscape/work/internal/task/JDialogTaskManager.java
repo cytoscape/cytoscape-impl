@@ -26,7 +26,6 @@ package org.cytoscape.work.internal.task;
 
 
 import java.awt.Window;
-import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -39,14 +38,15 @@ import javax.swing.JDialog;
 import javax.swing.SwingUtilities;
 
 import org.cytoscape.property.CyProperty;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.work.AbstractTaskManager;
+import org.cytoscape.work.FinishStatus;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.TaskObserver;
-import org.cytoscape.work.FinishStatus;
 import org.cytoscape.work.TunableRecorder;
 import org.cytoscape.work.internal.tunables.JDialogTunableMutator;
 import org.cytoscape.work.swing.DialogTaskManager;
@@ -84,11 +84,6 @@ public class JDialogTaskManager extends AbstractTaskManager<JDialog,Window> impl
 	private final static long DEFAULT_STACK_SIZE = 10485760;
 	
 	/**
-	 * The default Cytoscape property object.
-	 */
-	private final CyProperty<Properties> cyProperty;
-
-	/**
 	 * Display the user of the latest task information
 	 */
 	private final TaskStatusBar taskStatusBar;
@@ -97,6 +92,8 @@ public class JDialogTaskManager extends AbstractTaskManager<JDialog,Window> impl
 	 * Record task history
 	 */
 	private final TaskHistory taskHistory;
+	
+	private final CyServiceRegistrar serviceRegistrar;
 	
 	/**
 	 * Used to create Threads for executed tasks.
@@ -141,12 +138,17 @@ public class JDialogTaskManager extends AbstractTaskManager<JDialog,Window> impl
 	 * <li><code>cancelExecutorService</code> is the same as <code>taskExecutorService</code>.</li>
 	 * </ul>
 	 */
-	public JDialogTaskManager(final JDialogTunableMutator tunableMutator, final CyProperty<Properties> cyProperty, final TaskStatusBar taskStatusBar, final TaskHistory taskHistory) {
+	public JDialogTaskManager(
+			final JDialogTunableMutator tunableMutator,
+			final TaskStatusBar taskStatusBar,
+			final TaskHistory taskHistory,
+			final CyServiceRegistrar serviceRegistrar
+	) {
 		super(tunableMutator);
 		this.dialogTunableMutator = tunableMutator;
-		this.cyProperty = cyProperty;
 		this.taskStatusBar = taskStatusBar;
 		this.taskHistory = taskHistory;
+		this.serviceRegistrar = serviceRegistrar;
 
 		parent = null;
 		initialParent = null;
@@ -212,7 +214,8 @@ public class JDialogTaskManager extends AbstractTaskManager<JDialog,Window> impl
 	public void execute(final TaskIterator taskIterator, Object tunableContext, 
 	                    final TaskObserver observer) {
 		final TaskHistory.History history = taskHistory.newHistory();
-		final SwingTaskMonitor taskMonitor = new SwingTaskMonitor(cancelExecutorService, parent, history);
+		final SwingTaskMonitor taskMonitor =
+				new SwingTaskMonitor(cancelExecutorService, parent, history, serviceRegistrar);
 		
 		final Task first; 
 
@@ -235,7 +238,6 @@ public class JDialogTaskManager extends AbstractTaskManager<JDialog,Window> impl
 				if (observer != null) observer.allFinished(FinishStatus.newCancelled(first));
 				return;
 			}
-
 		} catch (Exception exception) {
 			logger.warn("Caught exception getting and validating task. ", exception);	
 			taskMonitor.showException(exception);
@@ -278,9 +280,12 @@ public class JDialogTaskManager extends AbstractTaskManager<JDialog,Window> impl
 		int thread = 1;
 
 		@Override
+		@SuppressWarnings("unchecked")
 		public Thread newThread(Runnable r) {
 			long stackSize;
 			try {
+				CyProperty<Properties> cyProperty =
+						serviceRegistrar.getService(CyProperty.class, "(cyPropertyName=cytoscape3.props)");
 				Properties props = cyProperty.getProperties();
 				stackSize = Long.parseLong(props.getProperty("taskStackSize"));
 			} catch (Exception e) {	
@@ -349,13 +354,13 @@ public class JDialogTaskManager extends AbstractTaskManager<JDialog,Window> impl
 			try {
 				finishStatus = innerRun();
 				taskMonitor.close();
+				taskStatusBar.setTitle(finishStatus.getType(), taskMonitor.getFirstTitle());
 			} catch (Exception exception) {
 				finishStatus = FinishStatus.newFailed(task, exception);
 				logger.warn("Caught exception executing task. ", exception);
 				taskMonitor.showException(exception);
 				history.addMessage(TaskMonitor.Level.ERROR, exception.getMessage());
 			} finally {
-				taskStatusBar.setTitle(finishStatus.getType(), taskMonitor.getFirstTitle());
 				history.setFinishType(finishStatus.getType());
 				if (observer != null)
 					observer.allFinished(finishStatus);

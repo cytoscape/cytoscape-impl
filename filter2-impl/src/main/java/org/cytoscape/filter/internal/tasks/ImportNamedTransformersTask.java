@@ -9,7 +9,8 @@ import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 
 public class ImportNamedTransformersTask extends AbstractTask {
-	@Tunable(description="Choose File to Load", params="fileCategory=unspecified;input=true")
+	
+	@Tunable(description="Choose File to Load:", params="fileCategory=unspecified;input=true")
 	public File file;
 	
 	private FilterIO filterIo;

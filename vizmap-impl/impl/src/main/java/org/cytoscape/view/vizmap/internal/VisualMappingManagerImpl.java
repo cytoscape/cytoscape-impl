@@ -27,11 +27,13 @@ package org.cytoscape.view.vizmap.internal;
 import java.awt.Color;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.NetworkViewRenderer;
 import org.cytoscape.application.events.SetCurrentNetworkViewEvent;
 import org.cytoscape.application.events.SetCurrentNetworkViewListener;
 import org.cytoscape.event.CyEventHelper;
@@ -75,21 +77,14 @@ public class VisualMappingManagerImpl implements VisualMappingManager, SetCurren
 	private final Map<CyNetworkView, VisualStyle> network2VisualStyleMap;
 	private final Set<VisualStyle> visualStyles;
 
-	private final CyEventHelper cyEventHelper;
-	private final VisualLexiconManager lexManager;
 	private final CyServiceRegistrar serviceRegistrar;
 	
 	private final Object lock = new Object();
 
-	public VisualMappingManagerImpl(final CyEventHelper eventHelper, final VisualStyleFactory factory,
-			final VisualLexiconManager lexManager, final CyServiceRegistrar serviceRegistrar) {
-		if (eventHelper == null)
-			throw new NullPointerException("'eventHelper' cannot be null");
+	public VisualMappingManagerImpl(final VisualStyleFactory factory, final CyServiceRegistrar serviceRegistrar) {
 		if (serviceRegistrar == null)
 			throw new NullPointerException("'serviceRegistrar' cannot be null");
 
-		this.cyEventHelper = eventHelper;
-		this.lexManager = lexManager;
 		this.serviceRegistrar = serviceRegistrar;
 
 		visualStyles = new HashSet<VisualStyle>();
@@ -158,7 +153,8 @@ public class VisualMappingManagerImpl implements VisualMappingManager, SetCurren
 		}
 		
 		if (changed) {
-			cyEventHelper.fireEvent(new VisualStyleSetEvent(this, vs, nv));
+			final CyEventHelper eventHelper = serviceRegistrar.getService(CyEventHelper.class);
+			eventHelper.fireEvent(new VisualStyleSetEvent(this, vs, nv));
 			final CyApplicationManager appManager = serviceRegistrar.getService(CyApplicationManager.class);
 		
 			if (appManager != null && nv.equals(appManager.getCurrentNetworkView()))
@@ -177,7 +173,9 @@ public class VisualMappingManagerImpl implements VisualMappingManager, SetCurren
 			throw new IllegalArgumentException("Cannot remove default visual style.");
 
 		logger.info("Visual Style about to be removed from VMM: " + vs.getTitle());
-		cyEventHelper.fireEvent(new VisualStyleAboutToBeRemovedEvent(this, vs));
+		
+		final CyEventHelper eventHelper = serviceRegistrar.getService(CyEventHelper.class);
+		eventHelper.fireEvent(new VisualStyleAboutToBeRemovedEvent(this, vs));
 		
 		synchronized (lock) {
 			visualStyles.remove(vs);
@@ -231,7 +229,8 @@ public class VisualMappingManagerImpl implements VisualMappingManager, SetCurren
 		if (vs.getTitle() != null && vs.getTitle().equals(DEFAULT_STYLE_NAME))
 			defaultStyle = vs;
 
-		cyEventHelper.fireEvent(new VisualStyleAddedEvent(this, vs));
+		final CyEventHelper eventHelper = serviceRegistrar.getService(CyEventHelper.class);
+		eventHelper.fireEvent(new VisualStyleAddedEvent(this, vs));
 	}
 
 	private String getSuggestedTitle(String title) {
@@ -297,7 +296,18 @@ public class VisualMappingManagerImpl implements VisualMappingManager, SetCurren
 
 	@Override
 	public Set<VisualLexicon> getAllVisualLexicon() {
-		return lexManager.getAllVisualLexicon();
+		final Set<VisualLexicon> set = new LinkedHashSet<>();
+		final CyApplicationManager appManager = serviceRegistrar.getService(CyApplicationManager.class);
+		
+		for (final NetworkViewRenderer nvRenderer : appManager.getNetworkViewRendererSet()) {
+			final VisualLexicon lexicon = 
+					nvRenderer.getRenderingEngineFactory(NetworkViewRenderer.DEFAULT_CONTEXT).getVisualLexicon();
+			
+			if (lexicon != null)
+				set.add(lexicon);
+		}
+		
+		return set;
 	}
 
 	@Override
@@ -326,7 +336,9 @@ public class VisualMappingManagerImpl implements VisualMappingManager, SetCurren
 		boolean changed = !newStyle.equals(currentStyle);
 		this.currentStyle = newStyle;
 		
-		if (changed)
-			cyEventHelper.fireEvent(new SetCurrentVisualStyleEvent(this, currentStyle));
+		if (changed) {
+			final CyEventHelper eventHelper = serviceRegistrar.getService(CyEventHelper.class);
+			eventHelper.fireEvent(new SetCurrentVisualStyleEvent(this, currentStyle));
+		}
 	}
 }

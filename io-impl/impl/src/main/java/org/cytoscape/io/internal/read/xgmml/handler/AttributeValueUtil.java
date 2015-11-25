@@ -24,6 +24,7 @@ package org.cytoscape.io.internal.read.xgmml.handler;
  * #L%
  */
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -31,17 +32,17 @@ import java.util.regex.Pattern;
 
 import org.cytoscape.io.internal.read.xgmml.MetadataEntries;
 import org.cytoscape.io.internal.read.xgmml.MetadataParser;
-import org.cytoscape.io.internal.read.xgmml.ObjectType;
 import org.cytoscape.io.internal.read.xgmml.ObjectTypeMap;
 import org.cytoscape.io.internal.read.xgmml.ParseState;
 import org.cytoscape.io.internal.util.SUIDUpdater;
+import org.cytoscape.io.internal.util.xgmml.ObjectType;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.VirtualColumnInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -165,14 +166,16 @@ public class AttributeValueUtil {
             return atts.getValue(key);
     }
 
-    protected ParseState handleAttribute(Attributes atts) throws SAXParseException {
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+	protected ParseState handleAttribute(Attributes atts) throws SAXParseException {
     	ParseState parseState = ParseState.NONE;
     	
     	final String name = atts.getValue("name");
     	String type = atts.getValue("type");
+    	String cyType = atts.getValue("cy:type");
     	
     	if ("has_nested_network".equals(name))
-        	type = ObjectType.BOOLEAN.getName();
+        	type = ObjectType.BOOLEAN.getXgmmlValue();
     	
     	final boolean isEquation = ObjectTypeMap.fromXGMMLBoolean(atts.getValue("cy:equation"));
     	final boolean isHidden = ObjectTypeMap.fromXGMMLBoolean(atts.getValue("cy:hidden"));
@@ -244,7 +247,7 @@ public class AttributeValueUtil {
         }
         
         Object value = null;
-        ObjectType objType = typeMap.getType(type);
+        final ObjectType objType = typeMap.fromXgmml(cyType, type);
 
         if (isEquation) {
         	// It is an equation...
@@ -271,7 +274,15 @@ public class AttributeValueUtil {
 				}
 				break;
 			case INTEGER:
-				if (name != null) setAttribute(row, name, Integer.class, (Integer) value);
+				if (name != null) {
+					if (SUIDUpdater.isUpdatable(name))
+						setAttribute(row, name, Long.class, (Long) value);
+					else
+						setAttribute(row, name, Integer.class, (Integer) value);
+				}
+				break;
+			case LONG:
+				if (name != null) setAttribute(row, name, Long.class, (Long) value);
 				break;
 			case STRING:
 				if (name != null) setAttribute(row, name, String.class, (String) value);
@@ -289,6 +300,20 @@ public class AttributeValueUtil {
 				if (column != null && List.class.isAssignableFrom(column.getType()))
 					row.set(name, null);
 				
+				if (column == null) {
+					final String elementType = atts.getValue("cy:elementType"); // Since Cytoscape v3.3
+					
+					if (elementType != null) {
+						final ObjectType elementObjType = typeMap.fromXgmml(elementType, null);
+			        	final Class<?> clazz = typeMap.getClass(elementObjType, name);
+			            
+			        	table.createListColumn(name, clazz, false, new ArrayList());
+			            column = row.getTable().getColumn(name);
+			            
+			            manager.listAttrHolder = new ArrayList<Object>();
+					}
+		        }
+				
 				return ParseState.LIST_ATT;
 		}
 
@@ -298,17 +323,34 @@ public class AttributeValueUtil {
     private <T> void setAttribute(final CyRow row, final String name, final Class<T> type, final T value) {
         if (name != null) {
             final CyTable table = row.getTable();
-            final CyColumn column = table.getColumn(name);
+            CyColumn column = table.getColumn(name);
             
             if (column == null) {
             	table.createColumn(name, type, false);
+            	column = table.getColumn(name);
             } else if (column.getVirtualColumnInfo().isVirtual()) {
             	logger.warn("Cannot set value to virtual column \"" + name + "\".");
             	return;
             }
             
             if (value != null) {
-            	row.set(name, value);
+            	// Note: The actual column type may be different from the passed "type" argument,
+            	//       if the column was not created when importing the XGMML
+            	//       (i.e. merging with an existing CyRootNetwork)
+            	final Class<?> colType = column.getType();
+            	
+            	// Preventing ClassCastExeptions when handling numbers,
+            	// because there is no 1:1 type matching between numeric CyColumn types and XGMML types
+            	// (only when importing standard XGMML files or from Cytoscape version 3.2 or bellow,
+            	// since Cytoscape 3.3 adds the "cy:type" and "cy:elementTypes" attributes)
+            	if (colType == Integer.class)
+            		row.set(name, ((Number)value).intValue());
+            	else if (colType == Long.class)
+            		row.set(name, ((Number)value).longValue());
+            	else if (colType == Double.class)
+            		row.set(name, ((Number)value).doubleValue());
+            	else
+            		row.set(name, value);
             }
         }
     }

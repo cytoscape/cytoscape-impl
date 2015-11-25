@@ -130,7 +130,7 @@ abstract class DefaultTablesNetwork extends SimpleNetwork {
 				+ " default network", CyIdentifiable.SUID, Long.class, false /* all local tables are private*/, false, InitialTableSize.SMALL);
 		
 		networkTableManager.setTable(networkRef.get(), CyNetwork.class, CyNetwork.LOCAL_ATTRS, defTable);
-		LocalTableFacade localTable = new LocalTableFacade(defTable,sharedNetworkTable);
+		LocalTableFacade localTable = new LocalTableFacade(defTable,sharedNetworkTable, eventHelper);
 		localTable.setPublic(pubTables); //Set the privacy of facade tables based on the given flag
 		networkTableManager.setTable(networkRef.get(), CyNetwork.class, CyNetwork.DEFAULT_ATTRS, localTable);
 		if ( eventHelper instanceof TableEventHelperFacade )
@@ -149,7 +149,7 @@ abstract class DefaultTablesNetwork extends SimpleNetwork {
 				+ " default node", CyIdentifiable.SUID, Long.class, false /* all local tables are private*/, false, InitialTableSize.SMALL);
 		
 		networkTableManager.setTable(networkRef.get(), CyNode.class, CyNetwork.LOCAL_ATTRS, defTable);
-		LocalTableFacade localTable = new LocalTableFacade(defTable,sharedNodeTable);
+		LocalTableFacade localTable = new LocalTableFacade(defTable,sharedNodeTable, eventHelper);
 		localTable.setPublic(pubTables); //Set the privacy of facade tables based on the given flag
 
 		networkTableManager.setTable(networkRef.get(), CyNode.class, CyNetwork.DEFAULT_ATTRS, localTable);
@@ -169,7 +169,7 @@ abstract class DefaultTablesNetwork extends SimpleNetwork {
 				false /* all local tables are private*/, false, InitialTableSize.SMALL);
 		networkTableManager.setTable(networkRef.get(), CyEdge.class, CyNetwork.LOCAL_ATTRS, defTable);
 
-		LocalTableFacade localTable = new LocalTableFacade(defTable,sharedEdgeTable);
+		LocalTableFacade localTable = new LocalTableFacade(defTable,sharedEdgeTable, eventHelper);
 		localTable.setPublic(pubTables); //Set the privacy of facade tables based on the given flag
 
 		networkTableManager.setTable(networkRef.get(), CyEdge.class, CyNetwork.DEFAULT_ATTRS, localTable);

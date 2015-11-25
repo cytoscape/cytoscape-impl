@@ -25,31 +25,24 @@ package org.cytoscape.task.internal.loaddatatable;
  */
 
 
-import org.cytoscape.io.read.CyTableReaderManager;
-import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.model.CyTableManager;
-import org.cytoscape.model.subnetwork.CyRootNetworkManager;
+import java.io.File;
+
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 
-import java.io.File;
-
 
 public class LoadTableFileTask extends AbstractLoadTableTask {
-	@Tunable(description="Data Table file", params="fileCategory=table;input=true")
+	
+	@Tunable(description = "Data Table file:", params = "fileCategory=table;input=true")
 	public File file;
 
-	public LoadTableFileTask(final CyTableReaderManager mgr,  final CyNetworkManager netMgr, final CyTableManager tableMgr,
-			final CyRootNetworkManager rootNetMgr) {
-		super(mgr, netMgr, tableMgr, rootNetMgr);
+	public LoadTableFileTask(final CyServiceRegistrar serviceRegistrar) {
+		super(serviceRegistrar);
 	}
 
-	/**
-	 * Executes Task.
-	 */
+	@Override
 	public void run(final TaskMonitor taskMonitor) throws Exception {
-
-		loadTable(file.getName(), file.toURI(), true,taskMonitor);
+		loadTable(file.getName(), file.toURI(), true, taskMonitor);
 	}
 }
-

@@ -45,8 +45,10 @@ abstract class HideUtils {
 		for (CyNode n : nodes) {
 			if (visible)
 				view.getNodeView(n).clearValueLock(NODE_VISIBLE);
-			else
+			else {
+				view.getModel().getRow(n).set(CyNetwork.SELECTED, false);
 				view.getNodeView(n).setLockedValue(NODE_VISIBLE, false);
+			}
 
 			for (CyNode n2 : net.getNeighborList(n, CyEdge.Type.ANY)) {
 				for (CyEdge e : net.getConnectingEdgeList(n, n2, CyEdge.Type.ANY)) {
@@ -54,8 +56,10 @@ abstract class HideUtils {
 					
 					if (visible)
 						ev.clearValueLock(EDGE_VISIBLE);
-					else
+					else {
+						view.getModel().getRow(ev.getModel()).set(CyNetwork.SELECTED, false);
 						ev.setLockedValue(EDGE_VISIBLE, false);
+					}
 				}
 			}
 		}
@@ -67,8 +71,10 @@ abstract class HideUtils {
 					
 			if (visible)
 				ev.clearValueLock(EDGE_VISIBLE);
-			else
+			else {
 				ev.setLockedValue(EDGE_VISIBLE, false);
+				view.getModel().getRow(ev.getModel()).set(CyNetwork.SELECTED, false);
+			}
 		}
 	}
 }

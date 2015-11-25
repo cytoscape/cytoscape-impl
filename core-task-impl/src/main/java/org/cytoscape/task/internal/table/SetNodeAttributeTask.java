@@ -68,7 +68,7 @@ public class SetNodeAttributeTask extends AbstractTableDataTask {
 		 	                                node,
 		 	                                columnTunable.getValueMap(nodeTable));
 
-			taskMonitor.showMessage(TaskMonitor.Level.INFO, "   Set "+count+" node attribute values for node "+DataUtils.getNodeName(nodeTable, node));
+			taskMonitor.showMessage(TaskMonitor.Level.INFO, "   Set "+count+" node table values for node "+DataUtils.getNodeName(nodeTable, node));
 		}
 	}
 

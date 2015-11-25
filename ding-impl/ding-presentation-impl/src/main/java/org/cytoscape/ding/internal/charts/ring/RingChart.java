@@ -66,12 +66,12 @@ public class RingChart extends AbstractChart<RingLayer> {
 		final double size = 32;
 		final Rectangle2D bounds = new Rectangle2D.Double(-size / 2, -size / 2, size, size);
 		final boolean showLabels = get(SHOW_ITEM_LABELS, Boolean.class, false);
-		
+		final float itemFontSize = convertFontSize(get(ITEM_LABEL_FONT_SIZE, Integer.class, 1));
 		final float borderWidth = get(BORDER_WIDTH, Float.class, 0.25f);
 		final Color borderColor = get(BORDER_COLOR, Color.class, Color.DARK_GRAY);
 		
-		final RingLayer layer = new RingLayer(data, labels, showLabels, colors, borderWidth, borderColor, startAngle,
-				hole, rotation, bounds);
+		final RingLayer layer = new RingLayer(data, labels, showLabels, itemFontSize, colors, borderWidth, borderColor,
+				startAngle, hole, rotation, bounds);
 		
 		return Collections.singletonList(layer);
 	}

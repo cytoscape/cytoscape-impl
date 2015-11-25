@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.NetworkViewRenderer;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.group.CyGroup;
 import org.cytoscape.group.CyGroupManager;
@@ -58,35 +59,35 @@ import org.cytoscape.work.undo.UndoSupport;
 abstract class AbstractNetworkFromSelectionTask extends AbstractCreationTask {
 	
 	private final UndoSupport undoSupport;
-	protected final CyRootNetworkManager rootNetworkManager;
+	protected final CyRootNetworkManager rootNetMgr;
 	protected final CyNetworkViewFactory viewFactory;
-	protected final VisualMappingManager vmm;
-	protected final CyNetworkNaming cyNetworkNaming;
-	protected final CyApplicationManager appManager;
+	protected final VisualMappingManager vmMgr;
+	protected final CyNetworkNaming networkNaming;
+	protected final CyApplicationManager appMgr;
 	private final CyEventHelper eventHelper;
 	private final RenderingEngineManager renderingEngineMgr;
 	protected final CyGroupManager groupMgr;
 
 	public AbstractNetworkFromSelectionTask(final UndoSupport undoSupport,
 	                                        final CyNetwork parentNetwork,
-	                                        final CyRootNetworkManager rootNetworkManager,
+	                                        final CyRootNetworkManager rootNetMgr,
 	                                        final CyNetworkViewFactory viewFactory,
-	                                        final CyNetworkManager netmgr,
-	                                        final CyNetworkViewManager networkViewManager,
-	                                        final CyNetworkNaming cyNetworkNaming,
-	                                        final VisualMappingManager vmm,
+	                                        final CyNetworkManager netMgr,
+	                                        final CyNetworkViewManager netViewMgr,
+	                                        final CyNetworkNaming networkNaming,
+	                                        final VisualMappingManager vmMgr,
 	                                        final CyApplicationManager appManager,
 	                                        final CyEventHelper eventHelper,
 	                                        final CyGroupManager groupMgr,
 	                                        final RenderingEngineManager renderingEngineMgr) {
-		super(parentNetwork, netmgr, networkViewManager);
+		super(parentNetwork, netMgr, netViewMgr);
 
 		this.undoSupport = undoSupport;
-		this.rootNetworkManager = rootNetworkManager;
+		this.rootNetMgr = rootNetMgr;
 		this.viewFactory = viewFactory;
-		this.cyNetworkNaming = cyNetworkNaming;
-		this.vmm = vmm;
-		this.appManager = appManager;
+		this.networkNaming = networkNaming;
+		this.vmMgr = vmMgr;
+		this.appMgr = appManager;
 		this.eventHelper = eventHelper;
 		this.groupMgr = groupMgr;
 		this.renderingEngineMgr = renderingEngineMgr;
@@ -97,7 +98,7 @@ abstract class AbstractNetworkFromSelectionTask extends AbstractCreationTask {
 	abstract Set<CyEdge> getEdges(CyNetwork net);
 
 	String getNetworkName() {
-		return cyNetworkNaming.getSuggestedSubnetworkTitle(parentNetwork);
+		return networkNaming.getSuggestedSubnetworkTitle(parentNetwork);
 	}
 
 	@Override
@@ -125,7 +126,7 @@ abstract class AbstractNetworkFromSelectionTask extends AbstractCreationTask {
 			throw new IllegalArgumentException("No nodes are selected.");
 
 		// create subnetwork and add selected nodes and appropriate edges
-		final CySubNetwork newNet = rootNetworkManager.getRootNetwork(parentNetwork).addSubNetwork();
+		final CySubNetwork newNet = rootNetMgr.getRootNetwork(parentNetwork).addSubNetwork();
 		
 		//We need to cpy the columns to local tables, since copying them to default table will duplicate the virtual columns.
 		addColumns(parentNetwork.getTable(CyNode.class, CyNetwork.LOCAL_ATTRS), newNet.getTable(CyNode.class, CyNetwork.LOCAL_ATTRS));
@@ -165,9 +166,19 @@ abstract class AbstractNetworkFromSelectionTask extends AbstractCreationTask {
 		// create the view in a separate task
 		final Set<CyNetwork> networks = new HashSet<CyNetwork>();
 		networks.add(newNet);
+		
+		// Pick a CyNetworkViewFactory that is appropriate for the sourceView
+		CyNetworkViewFactory sourceViewFactory = viewFactory;
+		if(sourceView != null) {
+			NetworkViewRenderer networkViewRenderer = appMgr.getNetworkViewRenderer(sourceView.getRendererId());
+			if(networkViewRenderer != null) {
+				sourceViewFactory = networkViewRenderer.getNetworkViewFactory();
+			}
+		}
+		
 		final CreateNetworkViewTask createViewTask = 
-			new CreateNetworkViewTask(undoSupport, networks, viewFactory, networkViewManager,
-				                        null, eventHelper, vmm, renderingEngineMgr, sourceView);
+			new CreateNetworkViewTask(undoSupport, networks, sourceViewFactory, networkViewManager,
+				                        null, eventHelper, vmMgr, renderingEngineMgr, appMgr, sourceView);
 		insertTasksAfterCurrentTask(createViewTask);
 		
 		tm.setProgress(1.0);

@@ -31,7 +31,6 @@ import org.cytoscape.event.DummyCyEventHelper;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
-
 import org.cytoscape.model.internal.CyNetworkFactoryImpl;
 import org.cytoscape.model.internal.CyNetworkManagerImpl;
 import org.cytoscape.model.internal.CyNetworkTableManagerImpl;
@@ -39,6 +38,7 @@ import org.cytoscape.model.internal.CyTableFactoryImpl;
 import org.cytoscape.model.internal.CyTableManagerImpl;
 import org.cytoscape.model.internal.CyRootNetworkManagerImpl;
 import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.session.CyNetworkNaming;
 
 import static org.mockito.Mockito.*;
 
@@ -49,20 +49,22 @@ import static org.mockito.Mockito.*;
 public class NetworkTestSupport {
 
 	protected CyNetworkFactory networkFactory;
-	protected CyEventHelper eventHelper;
+	protected CyEventHelper eventHelper = new DummyCyEventHelper();
 	protected CyTableManagerImpl tableMgr;
 	protected CyNetworkTableManagerImpl networkTableMgr;
 	protected CyRootNetworkManager rootNetworkManager;
 	protected CyNetworkManager networkMgr;
 	
+	private CyNetworkNaming namingUtil = mock(CyNetworkNaming.class);
+	private CyServiceRegistrar serviceRegistrar = mock(CyServiceRegistrar.class);
+	
 	public NetworkTestSupport() {
-		eventHelper = new DummyCyEventHelper();
-		networkTableMgr = new CyNetworkTableManagerImpl();
-		
 		// Mock objects.
-		networkMgr = new CyNetworkManagerImpl(eventHelper);
-		final CyServiceRegistrar serviceRegistrar = mock(CyServiceRegistrar.class);
+		when(serviceRegistrar.getService(CyEventHelper.class)).thenReturn(eventHelper);
+		when(serviceRegistrar.getService(CyNetworkNaming.class)).thenReturn(namingUtil);
 		
+		networkTableMgr = new CyNetworkTableManagerImpl();
+		networkMgr = new CyNetworkManagerImpl(serviceRegistrar);
 		tableMgr = new CyTableManagerImpl(eventHelper, networkTableMgr, networkMgr); 
 		
 		final CyTableFactoryImpl tableFactory = new CyTableFactoryImpl(eventHelper, mock(Interpreter.class), serviceRegistrar);

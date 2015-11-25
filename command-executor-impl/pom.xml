@@ -3,7 +3,7 @@
 	<parent>
 		<groupId>org.cytoscape</groupId>
 		<artifactId>impl-parent</artifactId>
-		<version>3.2.1</version>
+		<version>3.3.0</version>
 	</parent>
 
 	<properties>
@@ -14,7 +14,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.cytoscape</groupId>
 	<artifactId>command-executor-impl</artifactId>
-  <version>3.2.1</version>
+  <version>3.3.0</version>
 
 	<name>Cytoscape Command Executor Impl (${project.artifactId})</name>
 

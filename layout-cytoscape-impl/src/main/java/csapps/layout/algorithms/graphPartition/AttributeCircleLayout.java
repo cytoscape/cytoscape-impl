@@ -33,10 +33,8 @@
 package csapps.layout.algorithms.graphPartition;
 
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.cytoscape.model.CyNode;
@@ -48,30 +46,25 @@ import org.cytoscape.work.undo.UndoSupport;
 
 
 public class AttributeCircleLayout extends AbstractLayoutAlgorithm {
+	
 	private final boolean supportNodeAttributes;
 
-	/**
-	 * Creates a new AttributeCircleLayout object.
-	 *
-	 * @param supportAttributes  DOCUMENT ME!
-	 */
-	public AttributeCircleLayout(final boolean supportNodeAttributes, UndoSupport undo)
-	{
-		super((supportNodeAttributes ? "attribute-circle": "circle"), 
-		      (supportNodeAttributes ? "Attribute Circle Layout" : "Circle Layout"), undo);
+	public AttributeCircleLayout(final boolean supportNodeAttributes, final UndoSupport undoSupport) {
+		super((supportNodeAttributes ? "attribute-circle" : "circle"),
+				(supportNodeAttributes ? "Attribute Circle Layout" : "Circle Layout"),
+				undoSupport);
 		this.supportNodeAttributes = supportNodeAttributes;
 	}
 
-	/**
-	 * Creates a new AttributeCircleLayout object.
-	 */
-	public AttributeCircleLayout(UndoSupport undo) {
-		this(true, undo);
+	public AttributeCircleLayout(final UndoSupport undoSupport) {
+		this(true, undoSupport);
 	}
 
 	@Override
-	public TaskIterator createTaskIterator(CyNetworkView networkView, Object context, Set<View<CyNode>> nodesToLayOut, String attrName) {
-		return new TaskIterator(new AttributeCircleLayoutTask(toString(), networkView, nodesToLayOut, (AttributeCircleLayoutContext)context, attrName, undoSupport));
+	public TaskIterator createTaskIterator(CyNetworkView networkView, Object context, Set<View<CyNode>> nodesToLayOut,
+			String attrName) {
+		return new TaskIterator(new AttributeCircleLayoutTask(toString(), networkView, nodesToLayOut,
+				(AttributeCircleLayoutContext) context, attrName, undoSupport));
 	}
 
 	@Override
@@ -88,12 +81,12 @@ public class AttributeCircleLayout extends AbstractLayoutAlgorithm {
 
 		return ret;
 	}
-	
+
 	@Override
 	public AttributeCircleLayoutContext createLayoutContext() {
 		return new AttributeCircleLayoutContext();
 	}
-	
+
 	@Override
 	public boolean getSupportsSelectedOnly() {
 		return true;

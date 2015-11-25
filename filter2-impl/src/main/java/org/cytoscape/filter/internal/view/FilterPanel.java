@@ -1,31 +1,35 @@
 package org.cytoscape.filter.internal.view;
 
+import static javax.swing.GroupLayout.*;
+import static org.cytoscape.util.swing.LookAndFeelUtil.isAquaLAF;
+
 import java.awt.Component;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import javax.swing.ComboBoxModel;
+import javax.swing.GroupLayout;
+import javax.swing.GroupLayout.Alignment;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JPanel;
 
-import org.cytoscape.filter.internal.composite.CompositeFilterPanel;
+import org.cytoscape.filter.internal.filters.composite.CompositeFilterPanel;
+import org.cytoscape.filter.internal.work.FilterWorker;
 import org.cytoscape.filter.model.CompositeFilter;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.util.swing.IconManager;
 
 @SuppressWarnings("serial")
 public class FilterPanel extends AbstractPanel<FilterElement, FilterPanelController> {
 	
-	private CompositeFilterPanel root;
+	private CompositeFilterPanel<FilterPanel> root;
 	private JCheckBox applyAutomaticallyCheckBox;
 
 	public FilterPanel(final FilterPanelController controller, IconManager iconManager, final FilterWorker worker) {
 		super(controller, iconManager);
-		setOpaque(false);
+		setOpaque(!isAquaLAF());
 		
 		worker.setView(this);
 		
@@ -36,24 +40,38 @@ public class FilterPanel extends AbstractPanel<FilterElement, FilterPanelControl
 				controller.setInteractive(applyAutomaticallyCheckBox.isSelected(), FilterPanel.this);
 			}
 		});
-		applyAutomaticallyCheckBox.setOpaque(false);
+		applyAutomaticallyCheckBox.setOpaque(!isAquaLAF());
 		
-		JPanel applyPanel = createApplyPanel();
+		final JPanel applyPanel = createApplyPanel();
+		final Component editPanel = createEditPanel();
 		
-		setLayout(new GridBagLayout());
-		int row = 0;
-		add(namedElementComboBox, new GridBagConstraints(0, row, 2, 1, 1, 0, GridBagConstraints.LINE_START, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
-		add(optionsButton, new GridBagConstraints(2, row++, 1, 1, 0, 0, GridBagConstraints.LINE_END, GridBagConstraints.NONE, new Insets(0, 0, 0, 4), 0, 0));
-
-		Component editPanel = createEditPanel();
-		add(editPanel, new GridBagConstraints(0, row++, 3, 1, 1, 1, GridBagConstraints.LINE_START, GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 0));
+		final GroupLayout layout = new GroupLayout(this);
+		this.setLayout(layout);
+		layout.setAutoCreateContainerGaps(!isAquaLAF());
+		layout.setAutoCreateGaps(!isAquaLAF());
 		
-		add(applyAutomaticallyCheckBox, new GridBagConstraints(0, row++, 3, 1, 1, 0, GridBagConstraints.LINE_START, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
-		add(applyPanel, new GridBagConstraints(0, row++, 3, 1, 1, 0, GridBagConstraints.LINE_START, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
+		layout.setHorizontalGroup(layout.createParallelGroup(Alignment.LEADING)
+				.addGroup(layout.createSequentialGroup()
+						.addComponent(namedElementComboBox, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+						.addComponent(optionsButton, PREFERRED_SIZE, 64, PREFERRED_SIZE)
+				)
+				.addComponent(editPanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				.addComponent(applyAutomaticallyCheckBox, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				.addComponent(applyPanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+		);
+		layout.setVerticalGroup(layout.createSequentialGroup()
+				.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
+						.addComponent(namedElementComboBox, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addComponent(optionsButton, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				)
+				.addComponent(editPanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				.addComponent(applyAutomaticallyCheckBox, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				.addComponent(applyPanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+		);
 		
 		ComboBoxModel model = controller.getElementComboBoxModel();
 		FilterElement element = (FilterElement) model.getSelectedItem();
-		createView(element.filter);
+		createView(element.getFilter());
 		
 		controller.synchronize(this);
 	}
@@ -66,16 +84,18 @@ public class FilterPanel extends AbstractPanel<FilterElement, FilterPanelControl
 		
 		// We're passing in a CompositeFilter so we can assume we're getting
 		// back a CompositeFilterPanel.
-		CompositeFilterPanel panel = (CompositeFilterPanel) controller.createView(this, filter, 0);
-		new TransformerElementViewModel<FilterPanel>(panel, controller, this, iconManager);
+		@SuppressWarnings("unchecked")
+		CompositeFilterPanel<FilterPanel> panel = (CompositeFilterPanel<FilterPanel>) controller.createView(this, filter, 0);
+		new TransformerElementViewModel<>(panel, controller, this);
 		setRootPanel(panel);
 	}
 
-	CompositeFilterPanel getRootPanel() {
+	@Override
+	public CompositeFilterPanel<FilterPanel> getRootPanel() {
 		return root;
 	}
 
-	public void setRootPanel(CompositeFilterPanel panel) {
+	public void setRootPanel(CompositeFilterPanel<FilterPanel> panel) {
 		root = panel;
 		scrollPane.setViewportView(root);
 		

@@ -24,33 +24,37 @@ package org.cytoscape.app.internal.manager;
  * #L%
  */
 
-import java.io.File;
-import java.io.IOException;
-import java.util.LinkedList;
-
-import org.apache.commons.io.FileUtils;
-import org.cytoscape.app.internal.exception.AppDisableException;
-import org.cytoscape.app.internal.exception.AppInstallException;
-import org.cytoscape.app.internal.exception.AppInstanceException;
-import org.cytoscape.app.internal.exception.AppUninstallException;
-import org.cytoscape.app.internal.manager.App.AppStatus;
-import org.cytoscape.app.swing.CySwingAppAdapter;
+import org.cytoscape.app.internal.exception.AppLoadingException;
+import org.cytoscape.app.internal.exception.AppStartupException;
+import org.cytoscape.app.internal.exception.AppStoppingException;
+import org.cytoscape.app.internal.exception.AppUnloadingException;
+import org.cytoscape.app.internal.util.AppHelper;
+import org.cytoscape.application.CyVersion;
+import org.osgi.framework.Bundle;
+import org.osgi.framework.BundleException;
 
 public class BundleApp extends App {
 	
-	/*
+	private Bundle bundleInstance;
+	
 	@Override
 	public String getReadableStatus() {
 		switch (this.getStatus()) {
 		
+		case INACTIVE:
+			if (bundleInstance != null) {
+				return "Inactive on Restart";
+			} else {
+				return "Inactive";
+			}
 		case DISABLED:
-			if (this.getAppInstance() != null) {
+			if (bundleInstance != null) {
 				return "Disable on Restart";
 			} else {
 				return "Disabled";
 			}
 		case UNINSTALLED:
-			if (this.getAppInstance() != null) {
+			if (bundleInstance != null) {
 				return "Uninstall on Restart";
 			} else {
 				return "Uninstalled";
@@ -62,27 +66,52 @@ public class BundleApp extends App {
 		
 		}
 	}
-	*/
+
+	@Override
+	public void load(AppManager appManager) throws AppLoadingException {
+		if(bundleInstance == null) try {
+			bundleInstance = appManager.getBundleContext().installBundle(getAppFile().toURI().toString());;
+		} catch (BundleException e) {
+			throw new AppLoadingException("Bundle install error", e);
+		}
+	}
 	
 	@Override
-	public Object createAppInstance(CySwingAppAdapter appAdapter)
-			throws AppInstanceException {
-		return null;
+	public void start(AppManager appManager) throws AppStartupException {
+		if(bundleInstance != null) try {
+			bundleInstance.start();
+		} catch (BundleException e) {
+			throw new AppStartupException("Bundle start error", e);
+		}
+	}
+	
+	@Override
+	public void stop(AppManager appManager) throws AppStoppingException {
+		if(bundleInstance != null) try {
+			bundleInstance.stop();
+		}
+		catch (BundleException e) {
+			throw new AppStoppingException("Bundle stop error", e);
+		}
 	}
 
 	@Override
-	public void install(AppManager appManager) throws AppInstallException {
-		this.setStatus(AppStatus.INSTALLED);
+	public void unload(AppManager appManager) throws AppUnloadingException {
+		if(bundleInstance != null) try {
+			bundleInstance.uninstall();
+			bundleInstance = null;
+		}
+		catch (BundleException e) {
+			throw new AppUnloadingException("Bundle uninstall error", e);
+		}
 	}
-
+	
 	@Override
-	public void uninstall(AppManager appManager) throws AppUninstallException {
-		this.setStatus(AppStatus.UNINSTALLED);
+	public boolean isCompatible(CyVersion cyVer) {
+		try {
+			return ParseAppDependencies.checkVersions(getCompatibleVersions(), "org.cytoscape", cyVer.getVersion());
+		} catch (Exception e) {
+			return false;
+		}
 	}
-
-	@Override
-	public void disable(AppManager appManager) throws AppDisableException {
-		this.setStatus(AppStatus.DISABLED);
-	}
-
 }

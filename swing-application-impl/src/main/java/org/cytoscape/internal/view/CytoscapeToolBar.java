@@ -24,7 +24,6 @@ package org.cytoscape.internal.view;
  * #L%
  */
 
-import java.awt.Dimension;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -32,7 +31,9 @@ import java.util.List;
 import java.util.Map;
 
 import javax.swing.Action;
+import javax.swing.BorderFactory;
 import javax.swing.JButton;
+import javax.swing.JSeparator;
 import javax.swing.JToolBar;
 
 import org.cytoscape.application.swing.CyAction;
@@ -58,6 +59,8 @@ public class CytoscapeToolBar extends JToolBar {
 		actionButtonMap = new HashMap<CyAction,JButton>();
 		componentGravity = new HashMap<Object,Float>();
 		orderedList = new ArrayList<Object>();
+		
+		setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, (new JSeparator()).getForeground()));
 	}
 
 	/**

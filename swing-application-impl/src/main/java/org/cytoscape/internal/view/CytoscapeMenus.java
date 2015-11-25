@@ -40,9 +40,9 @@ public class CytoscapeMenus {
 		this.toolBar = toolBar;
 
 		menuBar.addMenu("File", 0.0);
-		menuBar.addMenu("File.Recent Session", 0.0);
-		menuBar.addMenu("File.New", 0.5);
+		menuBar.addMenu("File.New", 0.0);
 		menuBar.addMenu("File.New.Network", 0.0);
+		menuBar.addMenu("File.Open Recent", 1.9);
 		menuBar.addMenu("File.Import", 5.0);
 		menuBar.addMenu("File.Export", 5.1);
 		menuBar.addMenu("Edit", 0.0);
@@ -87,10 +87,11 @@ public class CytoscapeMenus {
 		menuBar.addSeparator("Help", 9.0);
 
 		toolBar.addSeparator(2.0f);
+		toolBar.addSeparator(3.0f);
 		toolBar.addSeparator(4.0f);
 		toolBar.addSeparator(6.0f);
 		toolBar.addSeparator(8.0f);
-		toolBar.addSeparator(10.0f);
+//		toolBar.addSeparator(10.0f);
 	}
 
 	private boolean isMac() {

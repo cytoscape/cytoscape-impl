@@ -235,8 +235,7 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 					   + types.get(curColumnName).getType());
 		
 		synchronized(lock) {
-			if (currentlyActiveAttributes.contains(oldColumnName)) {
-				currentlyActiveAttributes.remove(oldColumnName);
+			if (currentlyActiveAttributes.remove(oldColumnName)) {
 				currentlyActiveAttributes.add(newColumnName);
 			}
 
@@ -664,8 +663,6 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 			virtColumn = virtualColumnMap.get(normalizedColName);
 			if (virtColumn != null) {
 				virtColumn.setValue(key, value);
-			}
-			if (virtColumn != null && !(value instanceof Equation)) {
 				newValue = virtColumn.getValue(key);
 				newRawValue = virtColumn.getRawValue(key);
 			} else {
@@ -777,8 +774,6 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 			
 			if (virtColumn != null) {
 				virtColumn.setValue(key, rawValue);
-			}
-			if (virtColumn != null && !(rawValue instanceof Equation)) {
 				newValue = virtColumn.getListValue(key);
 			} else {
 				Map<Object, Object> keyToValueMap = attributes.get(normalizedColName);
@@ -843,12 +838,8 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 			if (primaryKey.equalsIgnoreCase(normalizedColName))
 				return key;
 	
-			Object virtualValue = null;
 			if (virtColumn != null)
-				virtualValue = virtColumn.getRawValue(key);
-			
-			if (virtualValue != null)
-				return virtualValue;
+				return virtColumn.getRawValue(key);
 			
 			final Map<Object, Object> keyToValueMap = attributes.get(normalizedColName);
 			if (keyToValueMap == null)
@@ -873,7 +864,9 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 	}
 
 	Object getValue(Object key, String columnName) {
-		return getValue(key,columnName,null);
+		CyColumn column = getColumn(columnName);
+		Class<?> type = column == null ? null : column.getType();
+		return getValue(key, columnName, type);
 	}
 
 	private final Object getValue(final Object key, final String columnName, final Class<?> type) {
@@ -1157,7 +1150,7 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 		synchronized(lock) {
 			for (Object key : primaryKeys) {
 				checkKey(key);
-		
+
 				CyRow row = rows.remove(key);
 				if (row != null) {
 					rowList.remove(row);
@@ -1165,13 +1158,13 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 				}
 
 				for (CyColumn col : getColumns()) {
-		            final String normalizedColName = normalizeColumnName(col.getName());
-		            final Map<Object, Object> keyToValueMap = attributes.get(normalizedColName);
-		            if (keyToValueMap != null) {
-		                keyToValueMap.remove(key);
-		            }
+					final String normalizedColName = normalizeColumnName(col.getName());
+					final Map<Object, Object> keyToValueMap = attributes.get(normalizedColName);
+					if (keyToValueMap != null) {
+						keyToValueMap.remove(key);
+					}
 				}
-	        }
+			}
 		}
 		if(changed)
 			eventHelper.fireEvent(new RowsDeletedEvent( this,  (Collection<Object>) primaryKeys));

@@ -12,7 +12,8 @@ import javax.swing.JTextField;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.ding.internal.charts.AbstractChartEditor;
-import org.cytoscape.ding.internal.util.IconManager;
+import org.cytoscape.util.swing.IconManager;
+import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.presentation.property.values.CyColumnIdentifierFactory;
 
 public class LineChartEditor extends AbstractChartEditor<LineChart> {
@@ -26,7 +27,7 @@ public class LineChartEditor extends AbstractChartEditor<LineChart> {
 	
 	public LineChartEditor(final LineChart chart, final CyApplicationManager appMgr, final IconManager iconMgr,
 			final CyColumnIdentifierFactory colIdFactory) {
-		super(chart, Number.class, true, true, false, true, true, false, true, appMgr, iconMgr, colIdFactory);
+		super(chart, Number.class, true, true, false, true, true, false, true, true, appMgr, iconMgr, colIdFactory);
 		
 		getBorderPnl().setVisible(false);
 	}
@@ -38,7 +39,7 @@ public class LineChartEditor extends AbstractChartEditor<LineChart> {
 	@Override
 	protected void createLabels() {
 		super.createLabels();
-		lineWidthLbl = new JLabel("Line Width");
+		lineWidthLbl = new JLabel("Line Width:");
 	}
 	
 	@Override
@@ -49,6 +50,7 @@ public class LineChartEditor extends AbstractChartEditor<LineChart> {
 		final GroupLayout layout = new GroupLayout(p);
 		p.setLayout(layout);
 		layout.setAutoCreateContainerGaps(false);
+		layout.setAutoCreateGaps(!LookAndFeelUtil.isAquaLAF());
 		
 		layout.setHorizontalGroup(layout.createParallelGroup(Alignment.LEADING, true)
 				.addGroup(layout.createSequentialGroup()

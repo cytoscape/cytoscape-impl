@@ -103,6 +103,10 @@ public class VisualPropertySheetItemModel<T> extends AbstractVizMapperModel {
 	public T getLockedValue() {
 		return lockedValue;
 	}
+	
+	public void resetDefaultValue() {
+		setDefaultValue(getVisualProperty().getDefault());
+	}
 
 	public void setLockedValue(final T value) {
 		if ((value == null && lockedValue != null) || (value != null && (!value.equals(lockedValue)||value instanceof Bend) ))
@@ -176,7 +180,13 @@ public class VisualPropertySheetItemModel<T> extends AbstractVizMapperModel {
 	}
 
 	public static String createTitle(final VisualProperty<?> vp) {
-		return vp.getDisplayName().replaceFirst(vp.getTargetDataType().getSimpleName().replace("Cy", ""), "").trim();
+		String title = vp.getDisplayName();
+		final String targetName = vp.getTargetDataType().getSimpleName().replace("Cy", "") + " ";
+		
+		if (title.startsWith(targetName))
+			title = title.replaceFirst(targetName, "");
+		
+		return title.trim();
 	}
 	
 	// ==[ PRIVATE METHODS ]============================================================================================

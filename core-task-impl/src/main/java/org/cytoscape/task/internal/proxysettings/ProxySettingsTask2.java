@@ -26,7 +26,6 @@ package org.cytoscape.task.internal.proxysettings;
 
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.ProtocolException;
 import java.net.URL;
 import java.util.Arrays;
@@ -56,6 +55,7 @@ import org.cytoscape.work.util.ListSingleSelection;
  * Dialog for assigning proxy settings.
  */
 public class ProxySettingsTask2 extends AbstractTask implements TunableValidator {
+	
 	@ProvidesTitle
 	public String getTitle() {
 		return "Proxy Settings";
@@ -71,19 +71,19 @@ public class ProxySettingsTask2 extends AbstractTask implements TunableValidator
 
     private static final List<String> PROXY_TYPES = Arrays.asList("direct", "http", "socks");
 
-	@Tunable(description="Type")
+	@Tunable(description="Type:")
 	public ListSingleSelection<String> type = new ListSingleSelection<String>(PROXY_TYPES);
 
-	@Tunable(description="Proxy Server",groups={"Options"},dependsOn="type!=direct",params="displayState=hidden")
+	@Tunable(description="Proxy Server:",groups={"Options"},dependsOn="type!=direct")
 	public String hostname="";
 
-	@Tunable(description="Port",groups={"Options"},dependsOn="type!=direct",params="displayState=hidden")
+	@Tunable(description="Port:",groups={"Options"},dependsOn="type!=direct")
 	public int port=0;
 
-	@Tunable(description="User Name", groups={"Options"},dependsOn="type!=direct", params="displayState=hidden")
+	@Tunable(description="User Name:", groups={"Options"},dependsOn="type!=direct")
 	public String userName;
 	
-	@Tunable(description="Password", groups={"Options"},dependsOn="type!=direct", params="displayState=hidden")
+	@Tunable(description="Password:", groups={"Options"},dependsOn="type!=direct")
 	public String password;
 	
 	private final StreamUtil streamUtil;
@@ -153,6 +153,7 @@ public class ProxySettingsTask2 extends AbstractTask implements TunableValidator
 		return new String(DatatypeConverter.parseBase64Binary(text), "UTF-8");
 	}
 	
+	@Override
 	public ValidationState getValidationState(final Appendable errMsg) {
 	
 		storeProxySettings();
@@ -184,6 +185,7 @@ public class ProxySettingsTask2 extends AbstractTask implements TunableValidator
 		return ValidationState.INVALID;
 	}
 
+	@Override
 	public void run(TaskMonitor taskMonitor) {
 		taskMonitor.setProgress(0.0);
 		storeProxySettings();
@@ -241,13 +243,15 @@ public class ProxySettingsTask2 extends AbstractTask implements TunableValidator
 
 
 final class TestProxySettings implements Callable<Exception> {
-	static final String TEST_URL = "http://www.google.com";
+	
+	static final String TEST_URL = "http://www.google.com/";
 	final StreamUtil streamUtil;
 
 	public TestProxySettings(final StreamUtil streamUtil) {
 		this.streamUtil = streamUtil;
 	}
 
+	@Override
 	public Exception call() {
 		try {
 			final URL url = new URL(TEST_URL);

@@ -28,6 +28,9 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Font;
 
+import javax.swing.UIManager;
+
+import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.jdesktop.swingx.multislider.TrackRenderer;
 
 
@@ -37,13 +40,23 @@ import org.jdesktop.swingx.multislider.TrackRenderer;
  * @param <V>  Visual Property type.
  */
 public interface VizMapTrackRenderer extends TrackRenderer {
+	
 	/*
 	 * Static variables used by the implemented classes.
 	 */
-	static final Font ICON_FONT = new Font("SansSerif", Font.BOLD, 8);
-	static final Font SMALL_FONT = new Font("SansSerif", Font.BOLD, 10);
-	static final Font LARGE_FONT = new Font("SansSerif", Font.BOLD, 18);
-	static final Color BORDER_COLOR = Color.DARK_GRAY;
+	static final Color BACKGROUND_COLOR = Color.WHITE;
+	static final Color BORDER_COLOR = UIManager.getColor("Label.disabledForeground");
+	static final Color LABEL_COLOR = UIManager.getColor("Label.foreground");
+	static final Color DISABLED_LABEL_COLOR = UIManager.getColor("Label.disabledForeground");
+	static final Color FOCUS_COLOR = UIManager.getColor("Focus.color");
+	
+	// Preset fonts
+	static final Font DEF_FONT = UIManager.getFont("Label.font");
+	static final Font TITLE_FONT = DEF_FONT.deriveFont(Font.BOLD);
+	static final Font SMALL_FONT = DEF_FONT.deriveFont(LookAndFeelUtil.getSmallFontSize());
+	static final Font LARGE_FONT = DEF_FONT.deriveFont(18.0f);
+	static final Font ICON_FONT = DEF_FONT.deriveFont(8.0f);
+	
 	static final BasicStroke STROKE1 = new BasicStroke(1.0f);
 	static final BasicStroke STROKE2 = new BasicStroke(2.0f);
 }

@@ -4,13 +4,13 @@
 	<parent>
 		<artifactId>impl-parent</artifactId>
 		<groupId>org.cytoscape</groupId>
-		<version>3.2.1</version>
+		<version>3.3.0</version>
 	</parent>
 
 	<modelVersion>4.0.0</modelVersion>
     <groupId>org.cytoscape</groupId>
     <artifactId>search-impl</artifactId>
-  <version>3.2.1</version>
+  <version>3.3.0</version>
 
 	<properties>
 		<bundle.symbolicName>org.cytoscape.search-impl</bundle.symbolicName>
@@ -94,6 +94,10 @@
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>session-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>swing-util-api</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>cytoscape-temp</groupId>

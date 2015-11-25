@@ -71,8 +71,8 @@ public class C2CMappingEditorPanel<K extends Number, V extends Number> extends C
 			final ServicesUtil servicesUtil) {
 		super(style, mapping, attr, servicesUtil);
 
-		abovePanel.setVisible(false);
-		belowPanel.setVisible(false);
+		getAbovePanel().setVisible(false);
+		getBelowPanel().setVisible(false);
 
 		initSlider();
 		
@@ -93,10 +93,10 @@ public class C2CMappingEditorPanel<K extends Number, V extends Number> extends C
 	}
 
 	public ImageIcon getIcon(final int iconWidth, final int iconHeight) {
-		final TrackRenderer rend = slider.getTrackRenderer();
+		final TrackRenderer rend = getSlider().getTrackRenderer();
 
 		if (rend instanceof ContinuousTrackRenderer) {
-			rend.getRendererComponent(slider);
+			rend.getRendererComponent(getSlider());
 
 			return ((ContinuousTrackRenderer) rend).getTrackGraphicIcon(iconWidth, iconHeight);
 		} else {
@@ -105,8 +105,8 @@ public class C2CMappingEditorPanel<K extends Number, V extends Number> extends C
 	}
 
 	public ImageIcon getLegend(final int width, final int height) {
-		final ContinuousTrackRenderer<K, V> rend = (ContinuousTrackRenderer) slider.getTrackRenderer();
-		rend.getRendererComponent(slider);
+		final ContinuousTrackRenderer<K, V> rend = (ContinuousTrackRenderer) getSlider().getTrackRenderer();
+		rend.getRendererComponent(getSlider());
 
 		return rend.getLegend(width, height);
 	}
@@ -121,7 +121,7 @@ public class C2CMappingEditorPanel<K extends Number, V extends Number> extends C
 		final K maxValue = convertToColumnValue(tracer.getMax(type));
 		BoundaryRangeValues<V> newRange;
 
-		slider.getModel().addThumb(position.floatValue(), convertToValue(value));
+		getSlider().getModel().addThumb(position.floatValue(), convertToValue(value));
 
 		// There is no handle at this point.  Add new one.
 		if (mapping.getPointCount() == 0) {
@@ -162,19 +162,18 @@ public class C2CMappingEditorPanel<K extends Number, V extends Number> extends C
 
 	@Override
 	protected void deleteButtonActionPerformed(ActionEvent evt) {
-		final int selectedIndex = slider.getSelectedIndex();
+		final int selectedIndex = getSlider().getSelectedIndex();
 
 		// TODO: Is this correct?
 		if (0 <= selectedIndex) {
-			slider.getModel().removeThumb(selectedIndex);
+			getSlider().getModel().removeThumb(selectedIndex);
 			mapping.removePoint(selectedIndex);
 			initSlider();
 		}
 	}
 
 	private void initSlider() {
-
-		slider.updateUI();
+		getSlider().updateUI();
 
 		final Number minValue = tracer.getMin(type);
 		Number actualRange = tracer.getRange(type);
@@ -182,9 +181,9 @@ public class C2CMappingEditorPanel<K extends Number, V extends Number> extends C
 		BoundaryRangeValues<V> bound;
 		Number fraction;
 
-		final List<Thumb<V>> sorted = slider.getModel().getSortedThumbs();
+		final List<Thumb<V>> sorted = getSlider().getModel().getSortedThumbs();
 		for (Thumb<V> t : sorted)
-			slider.getModel().removeThumb(slider.getModel().getThumbIndex(t));
+			getSlider().getModel().removeThumb(getSlider().getModel().getThumbIndex(t));
 
 		final SortedMap<Double, ContinuousMappingPoint<K, V>> sortedPoints = new TreeMap<Double, ContinuousMappingPoint<K, V>>();
 		for (final ContinuousMappingPoint<K, V> point : mapping.getAllPoints()) {
@@ -197,7 +196,7 @@ public class C2CMappingEditorPanel<K extends Number, V extends Number> extends C
 			bound = point.getRange();
 			fraction = ((Number) ((point.getValue().doubleValue() - minValue.doubleValue()) / actualRange.doubleValue()))
 					.floatValue() * 100d;
-			slider.getModel().addThumb(fraction.floatValue(), bound.equalValue);
+			getSlider().getModel().addThumb(fraction.floatValue(), bound.equalValue);
 		}
 
 		if (!sortedPoints.isEmpty()) {
@@ -217,9 +216,8 @@ public class C2CMappingEditorPanel<K extends Number, V extends Number> extends C
 				servicesUtil);
 		cRend.addPropertyChangeListener(this);
 
-		slider.setThumbRenderer(thumbRend);
-		slider.setTrackRenderer(cRend);
-//		slider.addMouseListener(new ThumbMouseListener());
+		getSlider().setThumbRenderer(thumbRend);
+		getSlider().setTrackRenderer(cRend);
 	}
 
 	@Override
@@ -233,10 +231,10 @@ public class C2CMappingEditorPanel<K extends Number, V extends Number> extends C
 
 	@Override
 	public ImageIcon drawIcon(int iconWidth, int iconHeight, boolean detail) {
-		final TrackRenderer rend = slider.getTrackRenderer();
+		final TrackRenderer rend = getSlider().getTrackRenderer();
 
 		if (rend instanceof ContinuousTrackRenderer) {
-			rend.getRendererComponent(slider);
+			rend.getRendererComponent(getSlider());
 
 			return ((ContinuousTrackRenderer) rend).getTrackGraphicIcon(iconWidth, iconHeight);
 		} else {
@@ -248,7 +246,7 @@ public class C2CMappingEditorPanel<K extends Number, V extends Number> extends C
 		SpinnerNumberModel propertySpinnerModel = new SpinnerNumberModel(0.0d, Double.NEGATIVE_INFINITY,
 				Double.POSITIVE_INFINITY, 0.01d);
 		propertySpinnerModel.addChangeListener(new PropertyValueSpinnerChangeListener(propertySpinnerModel));
-		propertySpinner.setModel(propertySpinnerModel);
+		getPropertySpinner().setModel(propertySpinnerModel);
 	}
 
 	private final class PropertyValueSpinnerChangeListener implements ChangeListener {
@@ -262,14 +260,14 @@ public class C2CMappingEditorPanel<K extends Number, V extends Number> extends C
 		public void stateChanged(ChangeEvent e) {
 
 			final Number newVal = spinnerModel.getNumber().doubleValue();
-			final int selectedIndex = slider.getSelectedIndex();
-			V currentValue = slider.getModel().getThumbAt(selectedIndex).getObject();
+			final int selectedIndex = getSlider().getSelectedIndex();
+			V currentValue = getSlider().getModel().getThumbAt(selectedIndex).getObject();
 			if(currentValue.equals(newVal))
 				return;
 			
-			slider.getModel().getThumbAt(selectedIndex).setObject(convertToValue(newVal));
+			getSlider().getModel().getThumbAt(selectedIndex).setObject(convertToValue(newVal));
 			//updateMap();
-			slider.repaint();
+			getSlider().repaint();
 		}
 	}
 

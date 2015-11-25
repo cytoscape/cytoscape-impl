@@ -41,7 +41,6 @@ public class DiscreteMappingFactory implements VisualMappingFunctionFactory {
 	@Override
 	public <K, V> VisualMappingFunction<K, V> createVisualMappingFunction(final String attributeName,
 			Class<K> attrValueType, final VisualProperty<V> vp) {
-
 		return new DiscreteMappingImpl<K, V>(attributeName, attrValueType, vp, eventHelper);
 	}
 
@@ -54,5 +53,4 @@ public class DiscreteMappingFactory implements VisualMappingFunctionFactory {
 	public Class<?> getMappingFunctionType() {
 		return DiscreteMapping.class;
 	}
-
 }

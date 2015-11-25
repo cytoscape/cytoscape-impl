@@ -27,6 +27,7 @@ package org.cytoscape.ding.internal;
 
 import static org.cytoscape.property.CyProperty.SavePolicy.DO_NOT_SAVE;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -36,6 +37,8 @@ import java.util.Properties;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
+import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.NetworkViewRenderer;
 import org.cytoscape.ding.NetworkViewTestSupport;
 import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.ding.impl.InnerCanvas;
@@ -49,14 +52,17 @@ import org.cytoscape.model.NetworkTestSupport;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.property.SimpleCyProperty;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.layout.CyLayoutAlgorithm;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
-import org.cytoscape.view.layout.internal.CyLayoutsImpl;
+import org.cytoscape.view.layout.internal.CyLayoutAlgorithmManagerImpl;
 import org.cytoscape.view.layout.internal.algorithms.GridNodeLayout;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskMonitor;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
 
 public class PerfTest {
@@ -67,7 +73,9 @@ public class PerfTest {
 		pt.visualizeNetworks();
 	}
 
-    protected TaskMonitor taskMonitor;
+	@Mock protected TaskMonitor taskMonitor;
+	@Mock protected NetworkViewRenderer netViewRenderer;
+	@Mock protected CyApplicationManager appMgr;
     protected CyNetworkFactory netFactory;
     protected CyNetworkViewFactory viewFactory;
     protected ReadUtils readUtil;
@@ -76,7 +84,7 @@ public class PerfTest {
     protected CyLayoutAlgorithmManager layouts;
 
 	public PerfTest() {
-		taskMonitor = mock(TaskMonitor.class);
+		MockitoAnnotations.initMocks(this);
 
 		layouts = getLayouts(); 
 
@@ -86,18 +94,23 @@ public class PerfTest {
 		rootMgr = nts.getRootNetworkFactory();
 
 		NetworkViewTestSupport nvts = new NetworkViewTestSupport();
-	
 		viewFactory = nvts.getNetworkViewFactory();
-
 
 		Properties properties = new Properties();
 		CyProperty<Properties> cyProperties = new SimpleCyProperty<Properties>("Test",properties,Properties.class,DO_NOT_SAVE);	
-		readUtil = new ReadUtils(new StreamUtilImpl(cyProperties));
+		
+		CyServiceRegistrar serviceRegistrar = mock(CyServiceRegistrar.class);
+		when(serviceRegistrar.getService(CyProperty.class, "(cyPropertyName=cytoscape3.props)")).thenReturn(cyProperties);
+		
+		readUtil = new ReadUtils(new StreamUtilImpl(serviceRegistrar));
+		
+		when(netViewRenderer.getNetworkViewFactory()).thenReturn(viewFactory);
+		when(appMgr.getDefaultNetworkViewRenderer()).thenReturn(netViewRenderer);
 	}
 
 	private SIFNetworkReader readFile(String file) throws Exception {
 		InputStream is = getClass().getResource("/testData/sif/" + file).openStream();
-		SIFNetworkReader snvp = new SIFNetworkReader(is, layouts, viewFactory, netFactory, netMgr, rootMgr);
+		SIFNetworkReader snvp = new SIFNetworkReader(is, layouts, appMgr, netFactory, netMgr, rootMgr);
 		new TaskIterator(snvp);
 		snvp.run(taskMonitor);
 
@@ -174,7 +187,7 @@ public class PerfTest {
 		Properties p = new Properties();
 		CyProperty<Properties> props = new SimpleCyProperty<Properties>("Test",p,Properties.class,DO_NOT_SAVE);
 		CyLayoutAlgorithm gridNodeLayout = new GridNodeLayout(null);
-		CyLayoutsImpl cyLayouts = new CyLayoutsImpl(null, props, gridNodeLayout);
+		CyLayoutAlgorithmManagerImpl cyLayouts = new CyLayoutAlgorithmManagerImpl(null, props, gridNodeLayout);
 		return cyLayouts;
 	}
 }

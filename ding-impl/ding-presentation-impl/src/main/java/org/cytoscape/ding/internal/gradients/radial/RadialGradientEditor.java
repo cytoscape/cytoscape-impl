@@ -1,5 +1,7 @@
 package org.cytoscape.ding.internal.gradients.radial;
 
+import static javax.swing.GroupLayout.DEFAULT_SIZE;
+import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static org.cytoscape.ding.internal.gradients.radial.RadialGradient.CENTER;
 
 import java.awt.geom.Point2D;
@@ -32,7 +34,7 @@ public class RadialGradientEditor extends AbstractGradientEditor<RadialGradient>
 	@Override
 	protected void createLabels() {
 		super.createLabels();
-		centerLbl = new JLabel("Center");
+		centerLbl = new JLabel("Center:");
 	}
 	
 	@Override
@@ -43,15 +45,15 @@ public class RadialGradientEditor extends AbstractGradientEditor<RadialGradient>
 		final GroupLayout layout = new GroupLayout(p);
 		p.setLayout(layout);
 		layout.setAutoCreateContainerGaps(false);
+		layout.setAutoCreateGaps(true);
 		
-		layout.setHorizontalGroup(layout.createParallelGroup(Alignment.LEADING, true)
+		layout.setHorizontalGroup(layout.createParallelGroup(Alignment.LEADING, false)
 				.addComponent(centerLbl)
-				.addComponent(getPointPicker(), GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
-						GroupLayout.PREFERRED_SIZE)
+				.addComponent(getPointPicker(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 		);
 		layout.setVerticalGroup(layout.createSequentialGroup()
 				.addComponent(centerLbl)
-				.addComponent(getPointPicker())
+				.addComponent(getPointPicker(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 		);
 		
 		return p;

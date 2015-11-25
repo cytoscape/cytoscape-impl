@@ -1,16 +1,20 @@
 package org.cytoscape.filter.internal.view;
 
+import static javax.swing.GroupLayout.*;
+import static org.cytoscape.util.swing.LookAndFeelUtil.isAquaLAF;
+
 import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
 import javax.swing.BorderFactory;
 import javax.swing.ComboBoxModel;
+import javax.swing.GroupLayout;
+import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
@@ -20,6 +24,10 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
+import javax.swing.UIManager;
+
+import org.cytoscape.util.swing.IconManager;
+import org.cytoscape.util.swing.LookAndFeelUtil;
 
 @SuppressWarnings({ "serial", "rawtypes" })
 public abstract class AbstractPanel<T extends NamedElement, C extends AbstractPanelController> extends JPanel implements SelectPanelComponent {
@@ -37,68 +45,35 @@ public abstract class AbstractPanel<T extends NamedElement, C extends AbstractPa
 	protected Component editControlPanel;
 	protected JScrollPane scrollPane;
 	protected JButton applyButton;
-	protected JComponent cancelApplyButton;
+	protected JButton cancelApplyButton;
 	protected JProgressBar progressBar;
 
 	protected JLabel statusLabel;
 	
+	@SuppressWarnings("unchecked")
 	public AbstractPanel(final C controller, IconManager iconManager) {
 		this.controller = controller;
 		this.iconManager = iconManager;
 		
 		ComboBoxModel model = controller.getElementComboBoxModel();
 		namedElementComboBox = new JComboBox(model);
-		namedElementComboBox.addActionListener(new ActionListener() {
-			@SuppressWarnings("unchecked")
-			@Override
-			public void actionPerformed(ActionEvent event) {
-				controller.handleElementSelected(AbstractPanel.this);
-			}
-		});
+		namedElementComboBox.setRenderer(ViewUtil.createElipsisRenderer(50));
+		namedElementComboBox.addActionListener(e -> controller.handleElementSelected(AbstractPanel.this));
 		
 		createMenu = new JMenuItem(controller.getCreateMenuLabel());
-		createMenu.addActionListener(new ActionListener() {
-			@SuppressWarnings("unchecked")
-			@Override
-			public void actionPerformed(ActionEvent event) {
-				controller.createNewElement(AbstractPanel.this);
-			}
-		});
+		createMenu.addActionListener(e -> controller.createNewElement(AbstractPanel.this));
 		
 		renameMenu = new JMenuItem(controller.getRenameMenuLabel());
-		renameMenu.addActionListener(new ActionListener() {
-			@SuppressWarnings("unchecked")
-			@Override
-			public void actionPerformed(ActionEvent event) {
-				controller.handleRename(AbstractPanel.this);
-			}
-		});
+		renameMenu.addActionListener(e -> controller.handleRename(AbstractPanel.this));
 		
 		deleteMenu = new JMenuItem(controller.getDeleteMenuLabel());
-		deleteMenu.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent event) {
-				controller.handleDelete();
-			}
-		});
+		deleteMenu.addActionListener(e -> controller.handleDelete());
 
 		exportMenu = new JMenuItem(controller.getExportLabel());
-		exportMenu.addActionListener(new ActionListener() {
-			@SuppressWarnings("unchecked")
-			@Override
-			public void actionPerformed(ActionEvent event) {
-				controller.handleExport(AbstractPanel.this);
-			}
-		});
+		exportMenu.addActionListener(e -> controller.handleExport(AbstractPanel.this));
 
 		importMenu = new JMenuItem(controller.getImportLabel());
-		importMenu.addActionListener(new ActionListener() {
-			@SuppressWarnings("unchecked")
-			@Override
-			public void actionPerformed(ActionEvent event) {
-				controller.handleImport(AbstractPanel.this);
-			}
-		});
+		importMenu.addActionListener(e -> controller.handleImport(AbstractPanel.this));
 
 		menu = new JPopupMenu();
 		menu.add(renameMenu);
@@ -110,34 +85,34 @@ public abstract class AbstractPanel<T extends NamedElement, C extends AbstractPa
 		optionsButton = new JButton(IconManager.ICON_CARET_DOWN);
 		optionsButton.setFont(iconManager.getIconFont(11.0f));
 		optionsButton.setToolTipText("Options...");
-		optionsButton.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent event) {
-				handleShowMenu(event);
-			}
-		});
+		optionsButton.addActionListener(this::handleShowMenu);
 		
 		applyButton = new JButton("Apply");
-		applyButton.addActionListener(new ActionListener() {
-			@SuppressWarnings("unchecked")
-			@Override
-			public void actionPerformed(ActionEvent event) {
-				controller.handleApplyFilter(AbstractPanel.this);
-			}
-		});
+		applyButton.addActionListener(e -> controller.handleApplyFilter(AbstractPanel.this));
 		
-		cancelApplyButton = new JLabel(IconManager.ICON_BAN_CIRCLE);
+		cancelApplyButton = new JButton(IconManager.ICON_BAN);
+		cancelApplyButton.addActionListener(e -> controller.handleCancelApply(AbstractPanel.this));
 		cancelApplyButton.setFont(iconManager.getIconFont(17.0f));
+		cancelApplyButton.setEnabled(false);
+		cancelApplyButton.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 5));
+		
 		cancelApplyButton.addMouseListener(new MouseAdapter() {
-			@SuppressWarnings("unchecked")
 			@Override
-			public void mousePressed(MouseEvent event) {
-				controller.handleCancelApply(AbstractPanel.this);
+			public void mousePressed(MouseEvent e) {
+				if(cancelApplyButton.isEnabled()) {
+					cancelApplyButton.setForeground(UIManager.getColor("Focus.color"));
+				}
+			}
+			@Override
+			public void mouseReleased(MouseEvent e) {
+				if(cancelApplyButton.isEnabled()) {
+				 cancelApplyButton.setForeground(UIManager.getColor("Button.foreground"));
+				}
 			}
 		});
-		cancelApplyButton.setEnabled(false);
 		
 		statusLabel = new JLabel(" ");
+		statusLabel.setFont(statusLabel.getFont().deriveFont(LookAndFeelUtil.getSmallFontSize()));
 		
 		progressBar = new JProgressBar();
 		progressBar.setMinimum(0);
@@ -155,12 +130,9 @@ public abstract class AbstractPanel<T extends NamedElement, C extends AbstractPa
 	}
 	
 	protected Component createEditPanel() {
-		JPanel panel = new JPanel();
-		panel.setBorder(BorderFactory.createEtchedBorder());
-		
 		scrollPane = new JScrollPane();
-		scrollPane.setBorder(BorderFactory.createEmptyBorder());
 		
+		final JPanel panel = new JPanel();
 		panel.setLayout(new GridBagLayout());
 		
 		int row = 0;
@@ -180,21 +152,32 @@ public abstract class AbstractPanel<T extends NamedElement, C extends AbstractPa
 	}
 	
 	protected JPanel createApplyPanel() {
-		JPanel applyPanel = new JPanel();
-		applyPanel.setOpaque(false);
+		final JPanel panel = new JPanel();
+		panel.setOpaque(!isAquaLAF());
 		
-		JPanel progressPanel = new JPanel();
-		progressPanel.setLayout(new GridBagLayout());
-		progressPanel.setOpaque(false);
-
-		progressPanel.add(progressBar, new GridBagConstraints(0, 0, 1, 1, 1, 0, GridBagConstraints.LINE_START, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
-		progressPanel.add(cancelApplyButton, new GridBagConstraints(1, 0, 1, 1, 0, 0, GridBagConstraints.LINE_START, GridBagConstraints.NONE, new Insets(0, 4, 0, 4), 0, 0));
+		final GroupLayout layout = new GroupLayout(panel);
+		panel.setLayout(layout);
+		layout.setAutoCreateContainerGaps(false);
+		layout.setAutoCreateGaps(!isAquaLAF());
 		
-		applyPanel.setLayout(new GridBagLayout());
-		applyPanel.add(applyButton, new GridBagConstraints(0, 0, 1, 1, 0, 0, GridBagConstraints.LINE_START, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
-		applyPanel.add(progressPanel, new GridBagConstraints(1, 0, 1, 1, 1, 0, GridBagConstraints.LINE_START, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
-		applyPanel.add(statusLabel, new GridBagConstraints(0, 1, 2, 1, 1, 0, GridBagConstraints.LINE_START, GridBagConstraints.HORIZONTAL, new Insets(0, 4, 0, 4), 0, 0));
-		return applyPanel;
+		layout.setHorizontalGroup(layout.createParallelGroup(Alignment.LEADING, true)
+				.addGroup(layout.createSequentialGroup()
+						.addComponent(applyButton, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addComponent(progressBar, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+						.addComponent(cancelApplyButton, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				)
+				.addComponent(statusLabel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+		);
+		layout.setVerticalGroup(layout.createSequentialGroup()
+				.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
+						.addComponent(applyButton, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addComponent(progressBar, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addComponent(cancelApplyButton, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				)
+				.addComponent(statusLabel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+		);
+		
+		return panel;
 	}
 	
 	public void setStatus(String status) {

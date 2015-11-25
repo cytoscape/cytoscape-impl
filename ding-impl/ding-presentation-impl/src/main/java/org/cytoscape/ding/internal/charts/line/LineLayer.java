@@ -2,10 +2,12 @@ package org.cytoscape.ding.internal.charts.line;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.geom.Rectangle2D;
 import java.util.List;
 import java.util.Map;
 
+import org.cytoscape.ding.impl.strokes.EqualDashStroke;
 import org.cytoscape.ding.internal.charts.AbstractChartLayer;
 import org.cytoscape.ding.internal.charts.CustomCategoryItemLabelGenerator;
 import org.cytoscape.ding.internal.charts.LabelPosition;
@@ -23,6 +25,7 @@ import org.jfree.ui.RectangleInsets;
 
 public class LineLayer extends AbstractChartLayer<CategoryDataset> {
 	
+	private final boolean showRangeZeroBaseline;
 	private final float lineWidth;
 
 	// ==[ CONSTRUCTORS ]===============================================================================================
@@ -34,15 +37,20 @@ public class LineLayer extends AbstractChartLayer<CategoryDataset> {
 					 final boolean showItemLabels,
 					 final boolean showDomainAxis,
 					 final boolean showRangeAxis,
+					 final boolean showRangeZeroBaseline,
+					 final float itemFontSize,
 					 final LabelPosition domainLabelPosition,
 					 final List<Color> colors,
 					 final float axisWidth,
 					 final Color axisColor,
+					 final float axisFontSize,
 					 final List<Double> range,
 					 final float lineWidth,
 					 final Rectangle2D bounds) {
-        super(data, itemLabels, domainLabels, rangeLabels, showItemLabels, showDomainAxis, showRangeAxis,
-        		domainLabelPosition, colors, axisWidth, axisColor, 0.0f, TRANSPARENT_COLOR, range, bounds);
+        super(data, itemLabels, domainLabels, rangeLabels, showItemLabels, showDomainAxis, showRangeAxis, itemFontSize,
+        		domainLabelPosition, colors, axisWidth, axisColor, axisFontSize, 0.0f, TRANSPARENT_COLOR, range,
+        		bounds);
+        this.showRangeZeroBaseline = showRangeZeroBaseline;
         this.lineWidth = lineWidth >= 0 ? lineWidth : 1.0f;
 	}
 	
@@ -81,13 +89,18 @@ public class LineLayer extends AbstractChartLayer<CategoryDataset> {
 		plot.setBackgroundAlpha(0.0f);
 		plot.setRangeAxisLocation(AxisLocation.BOTTOM_OR_LEFT);
 		
+		if (showRangeZeroBaseline) {
+			plot.setRangeZeroBaselineVisible(true);
+			plot.setRangeZeroBaselinePaint(axisColor);
+			plot.setRangeZeroBaselineStroke(new EqualDashStroke(axisWidth));
+		}
+		
+		final BasicStroke axisStroke = new BasicStroke(axisWidth, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
 		final BasicStroke gridLineStroke =
 				new BasicStroke(axisWidth, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND,
 						 0.5f, new float[]{ 0.5f }, 0.0f);
 		
 		plot.setRangeGridlineStroke(gridLineStroke);
-		
-		final BasicStroke axisStroke = new BasicStroke(axisWidth, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
 		
 		final CategoryAxis domainAxis = (CategoryAxis) plot.getDomainAxis();
         domainAxis.setVisible(showDomainAxis);
@@ -97,7 +110,7 @@ public class LineLayer extends AbstractChartLayer<CategoryDataset> {
         domainAxis.setTickMarkStroke(axisStroke);
         domainAxis.setTickMarkPaint(axisColor);
         domainAxis.setTickLabelsVisible(true);
-        domainAxis.setTickLabelFont(domainAxis.getTickLabelFont().deriveFont(axisFontSize));
+        domainAxis.setTickLabelFont(domainAxis.getTickLabelFont().deriveFont(axisFontSize).deriveFont(Font.PLAIN));
         domainAxis.setTickLabelPaint(axisColor);
         domainAxis.setCategoryLabelPositions(getCategoryLabelPosition());
         domainAxis.setCategoryMargin(.1);
@@ -110,7 +123,7 @@ public class LineLayer extends AbstractChartLayer<CategoryDataset> {
 		rangeAxis.setAxisLinePaint(axisColor);
 		rangeAxis.setTickMarkStroke(axisStroke);
 		rangeAxis.setTickMarkPaint(axisColor);
-		rangeAxis.setTickLabelFont(rangeAxis.getLabelFont().deriveFont(axisFontSize));
+		rangeAxis.setTickLabelFont(rangeAxis.getLabelFont().deriveFont(axisFontSize).deriveFont(Font.PLAIN));
 		rangeAxis.setTickLabelPaint(axisColor);
 		rangeAxis.setLowerMargin(0.0);
 		rangeAxis.setUpperMargin(0.0);
@@ -124,7 +137,7 @@ public class LineLayer extends AbstractChartLayer<CategoryDataset> {
 		final LineAndShapeRenderer renderer = (LineAndShapeRenderer) plot.getRenderer();
 		renderer.setBaseItemLabelGenerator(showItemLabels ? new CustomCategoryItemLabelGenerator(itemLabels) : null);
 		renderer.setBaseItemLabelsVisible(showItemLabels);
-		renderer.setBaseItemLabelFont(renderer.getBaseItemLabelFont().deriveFont(labelFontSize));
+		renderer.setBaseItemLabelFont(renderer.getBaseItemLabelFont().deriveFont(itemFontSize));
 		renderer.setBaseItemLabelPaint(labelColor);
 		
 		final BasicStroke seriesStroke = new BasicStroke(lineWidth, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);

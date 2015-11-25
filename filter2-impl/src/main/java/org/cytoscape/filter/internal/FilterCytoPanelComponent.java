@@ -10,11 +10,11 @@ import org.cytoscape.application.swing.CytoPanelComponent2;
 import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.filter.internal.view.FilterPanel;
 import org.cytoscape.filter.internal.view.FilterPanelController;
-import org.cytoscape.filter.internal.view.IconManager;
 import org.cytoscape.filter.internal.view.SelectPanel;
 import org.cytoscape.filter.internal.view.TransformerPanel;
 import org.cytoscape.filter.internal.view.TransformerViewManager;
 import org.cytoscape.filter.view.InteractivityChangedListener;
+import org.cytoscape.util.swing.IconManager;
 
 public class FilterCytoPanelComponent implements CytoPanelComponent2 {
 

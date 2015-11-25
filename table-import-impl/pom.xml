@@ -3,13 +3,13 @@
 	<parent>
 		<artifactId>impl-parent</artifactId>
 		<groupId>org.cytoscape</groupId>
-		<version>3.2.1</version>
+		<version>3.3.0</version>
 	</parent>
 
 	<modelVersion>4.0.0</modelVersion>
     <groupId>org.cytoscape</groupId>
     <artifactId>table-import-impl</artifactId>
-  <version>3.2.1</version>
+  <version>3.3.0</version>
 
 	<properties>
 		<bundle.symbolicName>org.cytoscape.table-import-impl</bundle.symbolicName>
@@ -103,6 +103,10 @@
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
+			<artifactId>equations-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.cytoscape</groupId>
 			<artifactId>core-task-api</artifactId>
 		</dependency>
 		<dependency>
@@ -132,12 +136,6 @@
 			<artifactId>work-swing-api</artifactId>
 		</dependency>
     
-    		<dependency>
-    			<groupId>cytoscape-temp</groupId>
-			<artifactId>org.swinglabs.swing-layout</artifactId>
-			<version>1.0.3</version>
-    		</dependency>
-
 		<!-- Apache poi -->
 		<dependency>
 			<groupId>org.apache.xmlbeans</groupId> 
@@ -226,11 +224,6 @@
             <groupId>org.cytoscape</groupId>
             <artifactId>event-api</artifactId>
             <type>test-jar</type>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.cytoscape</groupId>
-            <artifactId>equations-api</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>

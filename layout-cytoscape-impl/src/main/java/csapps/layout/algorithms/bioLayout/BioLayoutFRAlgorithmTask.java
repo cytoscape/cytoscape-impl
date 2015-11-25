@@ -27,7 +27,6 @@ package csapps.layout.algorithms.bioLayout;
 
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Set;
 
 import org.cytoscape.model.CyNode;
@@ -74,10 +73,11 @@ public class BioLayoutFRAlgorithmTask extends BioLayoutAlgorithmTask {
 	private LayoutPartition partition;
 
 	/**
-	 * The width and height of the layout
+	 * The width, height and depth of the layout
 	 */
 	private double width = 0;
 	private double height = 0;
+	private double depth = 0;
 
 	private BioLayoutFRContext context;
 
@@ -174,7 +174,7 @@ public class BioLayoutFRAlgorithmTask extends BioLayoutAlgorithmTask {
 		// Randomize our points, if any points lie
 		// outside of our bounds
 		if (context.randomize)
-			partition.randomizeLocations();
+			partition.randomizeLocations(context.layout3D);
 
 		// Calculate our force constant
 		calculateForces();
@@ -198,7 +198,10 @@ public class BioLayoutFRAlgorithmTask extends BioLayoutAlgorithmTask {
 					// Actually move the pieces around
 					for (LayoutNode v: partition.getNodeList()) {
 						// if this is locked, the move just resets X and Y
-						v.moveToLocation();
+						if(context.layout3D)
+							v.moveToLocation3D();
+						else
+							v.moveToLocation();
 
 					}
 					// This fires events to presentation layer.
@@ -229,22 +232,31 @@ public class BioLayoutFRAlgorithmTask extends BioLayoutAlgorithmTask {
 		partition.resetNodes();
 
 		for (LayoutNode v: partition.getNodeList()) {
-			partition.moveNodeToLocation(v);
+			if(context.layout3D)
+				partition.moveNodeToLocation3D(v);
+			else
+				partition.moveNodeToLocation(v);
 		}
 
 		// Not quite done, yet.  If we're only laying out selected nodes, we need
 		// to migrate the selected nodes back to their starting position
 		double xDelta = 0.0;
 		double yDelta = 0.0;
+		double zDelta = 0.0;
 		final LayoutPoint finalLocation = partition.getAverageLocation();
 		xDelta = finalLocation.getX() - initialLocation.getX();
 		yDelta = finalLocation.getY() - initialLocation.getY();
+		if(context.layout3D)
+			zDelta = finalLocation.getZ() - initialLocation.getZ(); 
 
 		partition.resetNodes();
 		for (LayoutNode v: partition.getNodeList()) {
 			if (!v.isLocked()) {
-				v.decrement(xDelta, yDelta);
-				partition.moveNodeToLocation(v);
+				v.decrement(xDelta, yDelta, zDelta);
+				if(context.layout3D)
+					partition.moveNodeToLocation3D(v);
+				else
+					partition.moveNodeToLocation(v);
 			}
 		}
 
@@ -261,6 +273,7 @@ public class BioLayoutFRAlgorithmTask extends BioLayoutAlgorithmTask {
 	public double doOneIteration(int iteration, double temp) {
 		double xAverage = 0;
 		double yAverage = 0;
+		double zAverage = 0;
 
 		// repulseProfile.start();
 		// Calculate repulsive forces
@@ -268,6 +281,7 @@ public class BioLayoutFRAlgorithmTask extends BioLayoutAlgorithmTask {
 			if (!v.isLocked()) {
 				xAverage += v.getX()/partition.nodeCount();
 				yAverage += v.getY()/partition.nodeCount();
+				zAverage += v.getZ()/partition.nodeCount();
 			}
 		}
 
@@ -275,7 +289,7 @@ public class BioLayoutFRAlgorithmTask extends BioLayoutAlgorithmTask {
 			if (!v.isLocked()) {
 				calculateRepulsion(v);
 				if (gravity_constant != 0)
-					calculateGravity(v,xAverage,yAverage);
+					calculateGravity(v,xAverage,yAverage,zAverage);
 			}
 		}
 
@@ -379,7 +393,7 @@ public class BioLayoutFRAlgorithmTask extends BioLayoutAlgorithmTask {
 	 */
 	private void calculateRepulsion(LayoutNode v) {
 /// v.disp := 0;
-		v.setDisp(0, 0);
+		v.setDisp(0, 0, 0);
 
 		double radius = v.getWidth() / 2;
 
@@ -387,6 +401,7 @@ public class BioLayoutFRAlgorithmTask extends BioLayoutAlgorithmTask {
 		for (LayoutNode u: partition.getNodeList()) {
 			double dx = v.getX() - u.getX();
 			double dy = v.getY() - u.getY();
+			double dz = v.getZ() - u.getZ();
 
 /// if (u # v) then begin
 			if (v == u)
@@ -398,7 +413,7 @@ public class BioLayoutFRAlgorithmTask extends BioLayoutAlgorithmTask {
 
 /// delta := v.pos - u.pos
 			// Get our euclidean distance
-			double deltaDistance = v.distance(u);
+			double deltaDistance = context.layout3D ? v.distance3D(u) : v.distance(u);
 
 			if (deltaDistance == 0.0)
 				deltaDistance = EPSILON;
@@ -430,12 +445,13 @@ public class BioLayoutFRAlgorithmTask extends BioLayoutAlgorithmTask {
 /// v.disp := v.disp + (delta/abs(delta)) * fr(abs(delta))
 			double xVector = dx*fr/deltaDistance;
 			double yVector = dy*fr/deltaDistance;
+			double zVector = context.layout3D ? dz*fr/deltaDistance : 0;
 			if (v.isLocked()) {
 				return; // shouldn't happen
 			} else if (u.isLocked()) {
-				v.incrementDisp(xVector * 2, yVector * 2);
+				v.incrementDisp(xVector * 2, yVector * 2, zVector * 2);
 			} else {
-				v.incrementDisp(xVector, yVector);
+				v.incrementDisp(xVector, yVector, zVector);
 			}
 		}
 	}
@@ -452,9 +468,10 @@ public class BioLayoutFRAlgorithmTask extends BioLayoutAlgorithmTask {
 		LayoutNode u = e.getTarget();
 		double dx = v.getX() - u.getX();
 		double dy = v.getY() - u.getY();
+		double dz = v.getZ() - u.getZ();
 
 /// delta := e.v.pos - e.u.pos
-		double deltaDistance = v.distance(u);
+		double deltaDistance = context.layout3D ? v.distance3D(u) : v.distance(u);
 
 		double fa = forceA(attraction_constant, deltaDistance, e.getWeight());
 
@@ -471,15 +488,16 @@ public class BioLayoutFRAlgorithmTask extends BioLayoutAlgorithmTask {
 /// e.u.disp := e.u.disp + (delta/abs(delta)) * fa(abs(delta))
 		double xVector = dx*fa;
 		double yVector = dy*fa;
+		double zVector = context.layout3D ? dz*fa : 0;
 		if (u.isLocked() && v.isLocked()) {
 			return; // shouldn't happen
 		} else if (u.isLocked()) {
-			v.decrementDisp(xVector * 2, yVector * 2);
+			v.decrementDisp(xVector * 2, yVector * 2, zVector * 2);
 		} else if (v.isLocked()) {
-			u.incrementDisp(xVector * 2, yVector * 2);
+			u.incrementDisp(xVector * 2, yVector * 2, zVector * 2);
 		} else {
-			v.decrementDisp(xVector, yVector);
-			u.incrementDisp(xVector, yVector);
+			v.decrementDisp(xVector, yVector, zVector);
+			u.incrementDisp(xVector, yVector, zVector);
 		}
 	}
 
@@ -489,27 +507,34 @@ public class BioLayoutFRAlgorithmTask extends BioLayoutAlgorithmTask {
 	 * @param v the node we're pulling
 	 * @param xAverage the X portion of the location that's pulling us
 	 * @param yAverage the Y portion of the location that's pulling us
+	 * @param zAverage the Z portion of the location that's pulling us
 	 */
-	private void calculateGravity(LayoutNode v,double xAverage, double yAverage)
+	private void calculateGravity(LayoutNode v,double xAverage, double yAverage, double zAverage)
 	{
 		double dx = v.getX() - xAverage;
 		double dy = v.getY() - yAverage;
-		double distance = Math.sqrt(Math.pow(dx,2) + Math.pow(dy,2));
+		double dz = v.getZ() - zAverage;
+		
+		double distance = context.layout3D
+				          ? Math.sqrt(Math.pow(dx,2) + Math.pow(dy,2) + Math.pow(dz,2))
+				          : Math.sqrt(Math.pow(dx,2) + Math.pow(dy,2));
+		
 		//double theta = Math.atan(dy/dx);
 		//double xSign = Math.signum(dx);
 		//double ySign = Math.signum(dy);
 		if(distance == 0) distance = EPSILON;
+		
 		double phi = (1 +v.getDegree())/3;
 		double force = gravity_constant*distance*phi;
 		double xVector = dx*force;
 		double yVector = dy*force;
+		double zVector = context.layout3D ? dz*force : 0;
 		if (v.isLocked()) {
 			return; 
 		}// shouldn't happen
 		
 		else {
-			// System.out.println("Gravity adjustment = "+xVector+", "+yVector);
-			v.decrementDisp( xVector, yVector);
+			v.decrementDisp(xVector, yVector, zVector);
 		}
 	}
 
@@ -524,7 +549,10 @@ public class BioLayoutFRAlgorithmTask extends BioLayoutAlgorithmTask {
 	 */
 /// v.pos := v.pos + (v.disp/|v.disp|) * min (v.disp, t);
 	private void calculatePosition(LayoutNode v, double temp) {
-		double deltaDistance = v.distance(v.getXDisp(), v.getYDisp());
+		
+		double deltaDistance = context.layout3D 
+				               ? v.distance3D(v.getXDisp(), v.getYDisp(), v.getZDisp())
+				               : v.distance(v.getXDisp(), v.getYDisp());
 
 		double newXDisp = v.getXDisp() / deltaDistance * Math.min(deltaDistance, temp);
 
@@ -537,7 +565,13 @@ public class BioLayoutFRAlgorithmTask extends BioLayoutAlgorithmTask {
 		if (Double.isNaN(newYDisp)) {
 			newYDisp = 0;
 		}
-		v.increment(newXDisp, newYDisp);
+		
+		double newZDisp = 0;
+		if(context.layout3D) {
+			newZDisp = v.getZDisp() / deltaDistance * Math.min(deltaDistance, temp);
+		}
+		
+		v.increment(newXDisp, newYDisp, newZDisp);
 
 /// v.pos.x := min(W/2, max(-W/2, v.pos.x));
 /// v.pos.y := min(L/2, max(-L/2, v.pos.y));
@@ -592,6 +626,10 @@ public class BioLayoutFRAlgorithmTask extends BioLayoutAlgorithmTask {
 		        // System.out.println("Size: "+width+" x "+height);
 		        // System.out.println("maxDistance = "+maxDistance);
 		        // System.out.println("maxVelocity = "+maxVelocity);
+		
+		// kind of a hack but keeps calculations simple
+		// MKTODO For 3D we cheat and just make the depth equal to width, means code above is unaltered
+		this.depth = this.width;
 		/*
 		*/
 	}
@@ -600,7 +638,10 @@ public class BioLayoutFRAlgorithmTask extends BioLayoutAlgorithmTask {
 	 * Calculate the attraction and repulsion constants.
 	 */
 	private void calculateForces() {
-		double force = Math.sqrt((this.height * this.width) / partition.nodeCount());
+		double force = context.layout3D 
+				       ? Math.pow((this.height * this.width * this.depth) / partition.nodeCount(), 1.0/3.0)
+				       : Math.sqrt((this.height * this.width) / partition.nodeCount());
+		
 		attraction_constant = force * context.attraction_multiplier;
 		repulsion_constant = force * context.repulsion_multiplier;
 		gravity_constant = context.gravity_multiplier;

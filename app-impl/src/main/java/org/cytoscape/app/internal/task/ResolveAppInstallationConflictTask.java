@@ -27,18 +27,9 @@ public class ResolveAppInstallationConflictTask extends AbstractTask {
 
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
-		if (replaceApp == JOptionPane.YES_OPTION) {
+		if (replaceApp == JOptionPane.OK_OPTION) {
+			appManager.installApp(appToInstall);
 			appManager.uninstallApp(conflictingApp);
-			appManager.installApp(appToInstall);
-		}
-		
-		else if (replaceApp == JOptionPane.NO_OPTION) {
-			// Install both
-			appManager.installApp(appToInstall);
-		}
-		
-		else if (replaceApp == JOptionPane.CANCEL_OPTION) {
-			// Do nothing
 		}
 	}
 	

@@ -39,8 +39,8 @@ import javax.swing.JPanel;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 
-import org.cytoscape.view.vizmap.gui.internal.theme.ThemeManager;
-import org.cytoscape.view.vizmap.gui.internal.theme.ThemeManager.CyFont;
+import org.cytoscape.util.swing.IconManager;
+import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
 import org.cytoscape.view.vizmap.gui.internal.view.cellrenderer.CyColorCellRenderer;
 import org.cytoscape.view.vizmap.gui.internal.view.editor.valueeditor.CyColorChooser;
 
@@ -49,10 +49,7 @@ import com.l2fprod.common.beans.editor.ColorPropertyEditor;
 import com.l2fprod.common.swing.ComponentFactory;
 import com.l2fprod.common.swing.PercentLayout;
 
-/**
- * ColorPropertyEditor. <br>
- * 
- */
+
 public class CyColorPropertyEditor extends AbstractPropertyEditor {
 
 	private CyColorCellRenderer label;
@@ -63,25 +60,23 @@ public class CyColorPropertyEditor extends AbstractPropertyEditor {
 
 	private final CyColorChooser chooser;
 
-	/**
-	 * Creates a new CyColorPropertyEditor object.
-	 * @param themeManager 
-	 */
-	public CyColorPropertyEditor(final CyColorChooser chooser, final ThemeManager themeMgr) {
+	public CyColorPropertyEditor(final CyColorChooser chooser, final ServicesUtil servicesUtil) {
 		this.chooser = chooser;
 
 		SwingUtilities.invokeLater(new Runnable() {
 
 			@Override
 			public void run() {
+				final IconManager iconManager = servicesUtil.get(IconManager.class);
+				
 				editor = new JPanel(new PercentLayout(PercentLayout.HORIZONTAL, 0));
 				((JPanel) editor).add("*", label = new CyColorCellRenderer());
 				label.setOpaque(false);
 				
 				((JPanel) editor).add(editBtn = ComponentFactory.Helper.getFactory().createMiniButton());
-				editBtn.setText("\uF141");
+				editBtn.setText(IconManager.ICON_ELLIPSIS_H);
 				editBtn.setToolTipText("Edit color");
-				editBtn.setFont(themeMgr.getFont(CyFont.FONTAWESOME_FONT).deriveFont(14.0f));
+				editBtn.setFont(iconManager.getIconFont(14.0f));
 				editBtn.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
 						selectColor();
@@ -89,9 +84,9 @@ public class CyColorPropertyEditor extends AbstractPropertyEditor {
 				});
 				
 				((JPanel) editor).add(removeBtn = ComponentFactory.Helper.getFactory().createMiniButton());
-				removeBtn.setText("\uF014");
+				removeBtn.setText(IconManager.ICON_TRASH_O);
 				removeBtn.setToolTipText("Remove color");
-				removeBtn.setFont(themeMgr.getFont(CyFont.FONTAWESOME_FONT).deriveFont(14.0f));
+				removeBtn.setFont(iconManager.getIconFont(14.0f));
 				removeBtn.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
 						selectNull();

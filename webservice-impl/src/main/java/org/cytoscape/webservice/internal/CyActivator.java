@@ -37,32 +37,26 @@ import org.cytoscape.io.webservice.TableImportWebServiceClient;
 import org.cytoscape.io.webservice.WebServiceClient;
 import org.cytoscape.io.webservice.swing.WebServiceGUI;
 import org.cytoscape.service.util.AbstractCyActivator;
-import org.cytoscape.util.swing.OpenBrowser;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.webservice.internal.task.ShowImportDialogAction;
 import org.cytoscape.webservice.internal.ui.WebServiceGUIImpl;
 import org.cytoscape.webservice.internal.ui.WebServiceImportDialog;
-import org.cytoscape.work.swing.DialogTaskManager;
 import org.osgi.framework.BundleContext;
 
 public class CyActivator extends AbstractCyActivator {
 
-	public CyActivator() {
-		super();
-	}
-
 	@Override
 	public void start(BundleContext bc) {
+		CyServiceRegistrar serviceRegistrar = getService(bc, CyServiceRegistrar.class);
 		CySwingApplication cySwingApplicationServiceRef = getService(bc, CySwingApplication.class);
-		DialogTaskManager taskManagerServiceRef = getService(bc, DialogTaskManager.class);
-		OpenBrowser openBrowser = getService(bc, OpenBrowser.class);
 		
 		// UI for Network Import Clients
 		WebServiceImportDialog<NetworkImportWebServiceClient> unifiedNetworkImportDialog = new WebServiceImportDialog<NetworkImportWebServiceClient>(
-				NetworkImportWebServiceClient.class, "Import Network from Web Service", cySwingApplicationServiceRef, taskManagerServiceRef, openBrowser);
+				NetworkImportWebServiceClient.class, "Import Network from Web Service", serviceRegistrar);
 		
 		// UI for Table Import Clients
 		WebServiceImportDialog<TableImportWebServiceClient> unifiedTableImportDialog = new WebServiceImportDialog<TableImportWebServiceClient>(
-				TableImportWebServiceClient.class, "Import Data Table from Web Service", cySwingApplicationServiceRef, taskManagerServiceRef, openBrowser);
+				TableImportWebServiceClient.class, "Import Data Table from Web Service", serviceRegistrar);
 		
 		WebServiceGUIImpl webServiceGui = new WebServiceGUIImpl();
 		webServiceGui.addClient(NetworkImportWebServiceClient.class, unifiedNetworkImportDialog);

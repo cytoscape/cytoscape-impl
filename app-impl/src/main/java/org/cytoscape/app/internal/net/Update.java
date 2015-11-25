@@ -25,6 +25,7 @@ package org.cytoscape.app.internal.net;
  */
 
 import org.cytoscape.app.internal.manager.App;
+import org.cytoscape.app.internal.manager.AppManager;
 
 /**
  * This class represents a downloadable update for an app.
@@ -72,6 +73,16 @@ public class Update {
 	 */
 	public WebApp.Release getRelease() {
 		return release;
+	}
+	
+	public boolean isInstalled(AppManager appManager) {
+		for(App other: appManager.getApps()) {
+			if (app.getAppName().equalsIgnoreCase(other.getAppName()) &&
+				WebQuerier.compareVersions(release.getReleaseVersion(), other.getVersion()) == 0 &&
+				app.getSha512Checksum().equalsIgnoreCase(release.getSha512Checksum()))
+				return true;
+		}
+		return false;
 	}
 	
 	public void setApp(App app) {

@@ -24,16 +24,13 @@ package org.cytoscape.ding.customgraphics;
  * #L%
  */
 
-import java.awt.Shape;
 import java.awt.geom.AffineTransform;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.cytoscape.ding.ObjectPosition;
 import org.cytoscape.ding.Position;
-import org.cytoscape.ding.impl.DNodeView;
 import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
-import org.cytoscape.graph.render.stateful.PaintFactory;
 
 public class CustomGraphicsPositionCalculator {
 	
@@ -63,27 +60,21 @@ public class CustomGraphicsPositionCalculator {
 	
 	/**
 	 * Creates new custom graphics in new location
-	 * 
-	 * @param p
-	 * @param nv
-	 * @param cg
-	 * @return
 	 */
-	public static CustomGraphicLayer transform(final ObjectPosition p, final DNodeView nv, final CustomGraphicLayer cg) {		
+	public static CustomGraphicLayer transform(final ObjectPosition p, final double width, final double height,
+			final CustomGraphicLayer layer) {		
 		final Position anc = p.getAnchor();
 		final Position ancN = p.getTargetAnchor();
 		
-		final double nodeW = nv.getWidth();
-		final double nodeH = nv.getHeight();
-		final double cgW = cg.getBounds2D().getWidth();
-		final double cgH = cg.getBounds2D().getHeight();
+		final double cgW = layer.getBounds2D().getWidth();
+		final double cgH = layer.getBounds2D().getHeight();
 		
 		final Float[] disp1 = DISPLACEMENT_MAP.get(anc);
 		final Float[] disp2 = DISPLACEMENT_MAP.get(ancN);
 		
 		// 1. Displacement for graphics
-		final double dispX = -disp1[0] * nodeW;
-		final double dispY = -disp1[1] * nodeH;
+		final double dispX = -disp1[0] * width;
+		final double dispY = -disp1[1] * height;
 		
 		final double dispNX = disp2[0] * cgW;
 		final double dispNY = disp2[1] * cgH;
@@ -94,6 +85,6 @@ public class CustomGraphicsPositionCalculator {
 		
 		final AffineTransform tf = AffineTransform.getTranslateInstance(totalDispX, totalDispY);
 
-		return cg.transform(tf);
+		return layer.transform(tf);
 	}
 }

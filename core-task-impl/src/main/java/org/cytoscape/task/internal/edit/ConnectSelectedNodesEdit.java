@@ -60,9 +60,9 @@ final class ConnectSelectedNodesEdit extends AbstractCyEdit {
 			network.getRow(newEdge).set(
 					CyNetwork.NAME,
 					network.getRow(source).get(CyNetwork.NAME, String.class) + " ("
-							+ ConnectSelectedNodesTask.INTERACTION + ") "
+							+ ConnectSelectedNodesTask.DEFAULT_INTERACTION + ") "
 							+ network.getRow(target).get(CyNetwork.NAME, String.class));
-			network.getRow(newEdge).set(CyEdge.INTERACTION, ConnectSelectedNodesTask.INTERACTION);
+			network.getRow(newEdge).set(CyEdge.INTERACTION, ConnectSelectedNodesTask.DEFAULT_INTERACTION);
 			newEdges.add(newEdge);
 		}
 		edges = newEdges;

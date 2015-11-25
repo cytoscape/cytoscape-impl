@@ -34,13 +34,18 @@ import java.util.Set;
 
 import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
 import org.cytoscape.ding.customgraphics.CustomGraphicsRange;
-import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
 import org.cytoscape.ding.customgraphics.NullCustomGraphics;
 import org.cytoscape.ding.impl.DLineType;
 import org.cytoscape.ding.impl.ObjectPositionImpl;
+import org.cytoscape.ding.impl.strokes.AnimatedLongDashStroke;
+import org.cytoscape.ding.impl.strokes.AnimatedDashDotStroke;
+import org.cytoscape.ding.impl.strokes.AnimatedEqualDashStroke;
 import org.cytoscape.ding.impl.strokes.BackwardSlashStroke;
 import org.cytoscape.ding.impl.strokes.ContiguousArrowStroke;
+import org.cytoscape.ding.impl.strokes.DashDotStroke;
+import org.cytoscape.ding.impl.strokes.EqualDashStroke;
 import org.cytoscape.ding.impl.strokes.ForwardSlashStroke;
+import org.cytoscape.ding.impl.strokes.LongDashStroke;
 import org.cytoscape.ding.impl.strokes.ParallelStroke;
 import org.cytoscape.ding.impl.strokes.PipeStroke;
 import org.cytoscape.ding.impl.strokes.SeparateArrowStroke;
@@ -56,10 +61,12 @@ import org.cytoscape.view.model.DiscreteRange;
 import org.cytoscape.view.model.NullDataType;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.model.Visualizable;
+import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.presentation.property.BooleanVisualProperty;
 import org.cytoscape.view.presentation.property.DefaultVisualizableVisualProperty;
 import org.cytoscape.view.presentation.property.DoubleVisualProperty;
+import org.cytoscape.view.presentation.property.NodeShapeVisualProperty;
 import org.cytoscape.view.presentation.property.NullVisualProperty;
 import org.cytoscape.view.presentation.property.PaintVisualProperty;
 import org.cytoscape.view.presentation.property.values.LineType;
@@ -67,12 +74,18 @@ import org.cytoscape.view.presentation.property.values.NodeShape;
 
 
 public class DVisualLexicon extends BasicVisualLexicon {
+	
 	// Set of custom graphics positions.
-	private static final Set<VisualProperty<?>> CG_POSITIONS = new HashSet<VisualProperty<?>>();
-	private static final Set<VisualProperty<CyCustomGraphics>> CG = new HashSet<VisualProperty<CyCustomGraphics>>();
-	private static final Set<VisualProperty<?>> CG_SIZE = new HashSet<VisualProperty<?>>();
-	private static final Map<VisualProperty<?>, VisualProperty<Double>> CG_TO_SIZE = new HashMap<VisualProperty<?>, VisualProperty<Double>>();
-	private static final Map<VisualProperty<?>, VisualProperty<ObjectPosition>> CG_TO_POSITION = new HashMap<VisualProperty<?>, VisualProperty<ObjectPosition>>();
+	private static final Set<VisualProperty<ObjectPosition>> CG_POSITIONS = new HashSet<>();
+	private static final Set<VisualProperty<CyCustomGraphics>> CG = new HashSet<>();
+	private static final Set<VisualProperty<Double>> CG_SIZE = new HashSet<>();
+	
+	private static final Map<VisualProperty<CyCustomGraphics>, VisualProperty<Double>> CG_TO_SIZE = new HashMap<>();
+	private static final Map<VisualProperty<CyCustomGraphics>, VisualProperty<ObjectPosition>> CG_TO_POSITION = new HashMap<>();
+	private static final Map<VisualProperty<Double>, VisualProperty<CyCustomGraphics>> SIZE_TO_CG = new HashMap<>();
+	
+	private static final Set<VisualProperty<?>> UNSUPPORTED_VP_SET = new HashSet<VisualProperty<?>>();
+
 
 	// Root of Ding's VP tree.
 	public static final VisualProperty<NullDataType> DING_ROOT = new NullVisualProperty(
@@ -114,106 +127,113 @@ public class DVisualLexicon extends BasicVisualLexicon {
 
 	public static final VisualProperty<Double> NODE_CUSTOMGRAPHICS_SIZE_1 = new DoubleVisualProperty(
 			0.0, NONE_ZERO_POSITIVE_DOUBLE_RANGE,
-			"NODE_CUSTOMGRAPHICS_SIZE_1", "Node Custom Graphics Size 1",
+			"NODE_CUSTOMGRAPHICS_SIZE_1", "Node Image/Chart Size 1",
 			CyNode.class);
 	public static final VisualProperty<Double> NODE_CUSTOMGRAPHICS_SIZE_2 = new DoubleVisualProperty(
 			0.0, NONE_ZERO_POSITIVE_DOUBLE_RANGE,
-			"NODE_CUSTOMGRAPHICS_SIZE_2", "Node Custom Graphics Size 2",
+			"NODE_CUSTOMGRAPHICS_SIZE_2", "Node Image/Chart Size 2",
 			CyNode.class);
 	public static final VisualProperty<Double> NODE_CUSTOMGRAPHICS_SIZE_3 = new DoubleVisualProperty(
 			0.0, NONE_ZERO_POSITIVE_DOUBLE_RANGE,
-			"NODE_CUSTOMGRAPHICS_SIZE_3", "Node Custom Graphics Size 3",
+			"NODE_CUSTOMGRAPHICS_SIZE_3", "Node Image/Chart Size 3",
 			CyNode.class);
 	public static final VisualProperty<Double> NODE_CUSTOMGRAPHICS_SIZE_4 = new DoubleVisualProperty(
 			0.0, NONE_ZERO_POSITIVE_DOUBLE_RANGE,
-			"NODE_CUSTOMGRAPHICS_SIZE_4", "Node Custom Graphics Size 4",
+			"NODE_CUSTOMGRAPHICS_SIZE_4", "Node Image/Chart Size 4",
 			CyNode.class);
 	public static final VisualProperty<Double> NODE_CUSTOMGRAPHICS_SIZE_5 = new DoubleVisualProperty(
 			0.0, NONE_ZERO_POSITIVE_DOUBLE_RANGE,
-			"NODE_CUSTOMGRAPHICS_SIZE_5", "Node Custom Graphics Size 5",
+			"NODE_CUSTOMGRAPHICS_SIZE_5", "Node Image/Chart Size 5",
 			CyNode.class);
 	public static final VisualProperty<Double> NODE_CUSTOMGRAPHICS_SIZE_6 = new DoubleVisualProperty(
 			0.0, NONE_ZERO_POSITIVE_DOUBLE_RANGE,
-			"NODE_CUSTOMGRAPHICS_SIZE_6", "Node Custom Graphics Size 6",
+			"NODE_CUSTOMGRAPHICS_SIZE_6", "Node Image/Chart Size 6",
 			CyNode.class);
 	public static final VisualProperty<Double> NODE_CUSTOMGRAPHICS_SIZE_7 = new DoubleVisualProperty(
 			0.0, NONE_ZERO_POSITIVE_DOUBLE_RANGE,
-			"NODE_CUSTOMGRAPHICS_SIZE_7", "Node Custom Graphics Size 7",
+			"NODE_CUSTOMGRAPHICS_SIZE_7", "Node Image/Chart Size 7",
 			CyNode.class);
 	public static final VisualProperty<Double> NODE_CUSTOMGRAPHICS_SIZE_8 = new DoubleVisualProperty(
 			0.0, NONE_ZERO_POSITIVE_DOUBLE_RANGE,
-			"NODE_CUSTOMGRAPHICS_SIZE_8", "Node Custom Graphics Size 8",
+			"NODE_CUSTOMGRAPHICS_SIZE_8", "Node Image/Chart Size 8",
 			CyNode.class);
 	public static final VisualProperty<Double> NODE_CUSTOMGRAPHICS_SIZE_9 = new DoubleVisualProperty(
 			0.0, NONE_ZERO_POSITIVE_DOUBLE_RANGE,
-			"NODE_CUSTOMGRAPHICS_SIZE_9", "Node Custom Graphics Size 9",
+			"NODE_CUSTOMGRAPHICS_SIZE_9", "Node Image/Chart Size 9",
 			CyNode.class);
 
 	public static final VisualProperty<CyCustomGraphics> NODE_CUSTOMGRAPHICS_1 = new CustomGraphicsVisualProperty(
 			NullCustomGraphics.getNullObject(), CG_RANGE,
-			"NODE_CUSTOMGRAPHICS_1", "Node Custom Graphics 1", CyNode.class);
+			"NODE_CUSTOMGRAPHICS_1", "Node Image/Chart 1", CyNode.class);
 	public static final VisualProperty<CyCustomGraphics> NODE_CUSTOMGRAPHICS_2 = new CustomGraphicsVisualProperty(
 			NullCustomGraphics.getNullObject(), CG_RANGE,
-			"NODE_CUSTOMGRAPHICS_2", "Node Custom Graphics 2", CyNode.class);
+			"NODE_CUSTOMGRAPHICS_2", "Node Image/Chart 2", CyNode.class);
 	public static final VisualProperty<CyCustomGraphics> NODE_CUSTOMGRAPHICS_3 = new CustomGraphicsVisualProperty(
 			NullCustomGraphics.getNullObject(), CG_RANGE,
-			"NODE_CUSTOMGRAPHICS_3", "Node Custom Graphics 3", CyNode.class);
+			"NODE_CUSTOMGRAPHICS_3", "Node Image/Chart 3", CyNode.class);
 	public static final VisualProperty<CyCustomGraphics> NODE_CUSTOMGRAPHICS_4 = new CustomGraphicsVisualProperty(
 			NullCustomGraphics.getNullObject(), CG_RANGE,
-			"NODE_CUSTOMGRAPHICS_4", "Node Custom Graphics 4", CyNode.class);
+			"NODE_CUSTOMGRAPHICS_4", "Node Image/Chart 4", CyNode.class);
 	public static final VisualProperty<CyCustomGraphics> NODE_CUSTOMGRAPHICS_5 = new CustomGraphicsVisualProperty(
 			NullCustomGraphics.getNullObject(), CG_RANGE,
-			"NODE_CUSTOMGRAPHICS_5", "Node Custom Graphics 5", CyNode.class);
+			"NODE_CUSTOMGRAPHICS_5", "Node Image/Chart 5", CyNode.class);
 	public static final VisualProperty<CyCustomGraphics> NODE_CUSTOMGRAPHICS_6 = new CustomGraphicsVisualProperty(
 			NullCustomGraphics.getNullObject(), CG_RANGE,
-			"NODE_CUSTOMGRAPHICS_6", "Node Custom Graphics 6", CyNode.class);
+			"NODE_CUSTOMGRAPHICS_6", "Node Image/Chart 6", CyNode.class);
 	public static final VisualProperty<CyCustomGraphics> NODE_CUSTOMGRAPHICS_7 = new CustomGraphicsVisualProperty(
 			NullCustomGraphics.getNullObject(), CG_RANGE,
-			"NODE_CUSTOMGRAPHICS_7", "Node Custom Graphics 7", CyNode.class);
+			"NODE_CUSTOMGRAPHICS_7", "Node Image/Chart 7", CyNode.class);
 	public static final VisualProperty<CyCustomGraphics> NODE_CUSTOMGRAPHICS_8 = new CustomGraphicsVisualProperty(
 			NullCustomGraphics.getNullObject(), CG_RANGE,
-			"NODE_CUSTOMGRAPHICS_8", "Node Custom Graphics 8", CyNode.class);
+			"NODE_CUSTOMGRAPHICS_8", "Node Image/Chart 8", CyNode.class);
 	public static final VisualProperty<CyCustomGraphics> NODE_CUSTOMGRAPHICS_9 = new CustomGraphicsVisualProperty(
 			NullCustomGraphics.getNullObject(), CG_RANGE,
-			"NODE_CUSTOMGRAPHICS_9", "Node Custom Graphics 9", CyNode.class);
+			"NODE_CUSTOMGRAPHICS_9", "Node Image/Chart 9", CyNode.class);
 
 	// Location of custom graphics
 	public static final VisualProperty<ObjectPosition> NODE_CUSTOMGRAPHICS_POSITION_1 = new ObjectPositionVisualProperty(
 			ObjectPositionImpl.DEFAULT_POSITION,
 			"NODE_CUSTOMGRAPHICS_POSITION_1",
-			"Node Custom Graphics Position 1", CyNode.class);
+			"Node Image/Chart Position 1", CyNode.class);
 	public static final VisualProperty<ObjectPosition> NODE_CUSTOMGRAPHICS_POSITION_2 = new ObjectPositionVisualProperty(
 			ObjectPositionImpl.DEFAULT_POSITION,
 			"NODE_CUSTOMGRAPHICS_POSITION_2",
-			"Node Custom Graphics Position 2", CyNode.class);
+			"Node Image/Chart Position 2", CyNode.class);
 	public static final VisualProperty<ObjectPosition> NODE_CUSTOMGRAPHICS_POSITION_3 = new ObjectPositionVisualProperty(
 			ObjectPositionImpl.DEFAULT_POSITION,
 			"NODE_CUSTOMGRAPHICS_POSITION_3",
-			"Node Custom Graphics Position 3", CyNode.class);
+			"Node Image/Chart Position 3", CyNode.class);
 	public static final VisualProperty<ObjectPosition> NODE_CUSTOMGRAPHICS_POSITION_4 = new ObjectPositionVisualProperty(
 			ObjectPositionImpl.DEFAULT_POSITION,
 			"NODE_CUSTOMGRAPHICS_POSITION_4",
-			"Node Custom Graphics Position 4", CyNode.class);
+			"Node Image/Chart Position 4", CyNode.class);
 	public static final VisualProperty<ObjectPosition> NODE_CUSTOMGRAPHICS_POSITION_5 = new ObjectPositionVisualProperty(
 			ObjectPositionImpl.DEFAULT_POSITION,
 			"NODE_CUSTOMGRAPHICS_POSITION_5",
-			"Node Custom Graphics Position 5", CyNode.class);
+			"Node Image/Chart Position 5", CyNode.class);
 	public static final VisualProperty<ObjectPosition> NODE_CUSTOMGRAPHICS_POSITION_6 = new ObjectPositionVisualProperty(
 			ObjectPositionImpl.DEFAULT_POSITION,
 			"NODE_CUSTOMGRAPHICS_POSITION_6",
-			"Node Custom Graphics Position 6", CyNode.class);
+			"Node Image/Chart Position 6", CyNode.class);
 	public static final VisualProperty<ObjectPosition> NODE_CUSTOMGRAPHICS_POSITION_7 = new ObjectPositionVisualProperty(
 			ObjectPositionImpl.DEFAULT_POSITION,
 			"NODE_CUSTOMGRAPHICS_POSITION_7",
-			"Node Custom Graphics Position 7", CyNode.class);
+			"Node Image/Chart Position 7", CyNode.class);
 	public static final VisualProperty<ObjectPosition> NODE_CUSTOMGRAPHICS_POSITION_8 = new ObjectPositionVisualProperty(
 			ObjectPositionImpl.DEFAULT_POSITION,
 			"NODE_CUSTOMGRAPHICS_POSITION_8",
-			"Node Custom Graphics Position 8", CyNode.class);
+			"Node Image/Chart Position 8", CyNode.class);
 	public static final VisualProperty<ObjectPosition> NODE_CUSTOMGRAPHICS_POSITION_9 = new ObjectPositionVisualProperty(
 			ObjectPositionImpl.DEFAULT_POSITION,
 			"NODE_CUSTOMGRAPHICS_POSITION_9",
-			"Node Custom Graphics Position 9", CyNode.class);
+			"Node Image/Chart Position 9", CyNode.class);
+
+	// Compound Node VPs
+	public static final VisualProperty<NodeShape> COMPOUND_NODE_SHAPE = 
+	 	new NodeShapeVisualProperty(NodeShapeVisualProperty.ROUND_RECTANGLE, "COMPOUND_NODE_SHAPE", "Shape (Compound Node)", CyNode.class);
+	public static final VisualProperty<Double> COMPOUND_NODE_PADDING = 
+		new DoubleVisualProperty(10.0, ARBITRARY_DOUBLE_RANGE, "COMPOUND_NODE_PADDING", "Padding (Compound Node)", CyNode.class);
+	// TODO: transarency?
 
 	// Edge VPs
 	public static final VisualProperty<Paint> EDGE_SOURCE_ARROW_SELECTED_PAINT = new PaintVisualProperty(
@@ -263,9 +283,21 @@ public class DVisualLexicon extends BasicVisualLexicon {
 					1.0f));
 	private static final DLineType SEPARATE_ARROW = new DLineType(
 			"Separate Arrow", "SEPARATE_ARROW", new SeparateArrowStroke(1.0f));
-	
-	
 
+	// For marquee or marching ants animations.  Not sure what the
+	// right number of these
+	private static final DLineType MARQUEE_DASH = new DLineType(
+			"Marquee Dash", "MARQUEE_DASH", 
+			new AnimatedLongDashStroke(1.0f,0.0f));
+
+	private static final DLineType MARQUEE_EQUAL = new DLineType(
+			"Marquee Equal Dash", "MARQUEE_EQUAL", 
+			new AnimatedEqualDashStroke(1.0f,0.0f));
+
+	private static final DLineType MARQUEE_DASH_DOT = new DLineType(
+			"Marquee Dash Dot", "MARQUEE_DASH_DOT", 
+			new AnimatedDashDotStroke(1.0f, 0.0f));
+	
 	static {
 		CG.add(NODE_CUSTOMGRAPHICS_1);
 		CG.add(NODE_CUSTOMGRAPHICS_2);
@@ -307,24 +339,31 @@ public class DVisualLexicon extends BasicVisualLexicon {
 		CG_TO_SIZE.put(NODE_CUSTOMGRAPHICS_8, NODE_CUSTOMGRAPHICS_SIZE_8);
 		CG_TO_SIZE.put(NODE_CUSTOMGRAPHICS_9, NODE_CUSTOMGRAPHICS_SIZE_9);
 
-		CG_TO_POSITION.put(NODE_CUSTOMGRAPHICS_1,
-				NODE_CUSTOMGRAPHICS_POSITION_1);
-		CG_TO_POSITION.put(NODE_CUSTOMGRAPHICS_2,
-				NODE_CUSTOMGRAPHICS_POSITION_2);
-		CG_TO_POSITION.put(NODE_CUSTOMGRAPHICS_3,
-				NODE_CUSTOMGRAPHICS_POSITION_3);
-		CG_TO_POSITION.put(NODE_CUSTOMGRAPHICS_4,
-				NODE_CUSTOMGRAPHICS_POSITION_4);
-		CG_TO_POSITION.put(NODE_CUSTOMGRAPHICS_5,
-				NODE_CUSTOMGRAPHICS_POSITION_5);
-		CG_TO_POSITION.put(NODE_CUSTOMGRAPHICS_6,
-				NODE_CUSTOMGRAPHICS_POSITION_6);
-		CG_TO_POSITION.put(NODE_CUSTOMGRAPHICS_7,
-				NODE_CUSTOMGRAPHICS_POSITION_7);
-		CG_TO_POSITION.put(NODE_CUSTOMGRAPHICS_8,
-				NODE_CUSTOMGRAPHICS_POSITION_8);
-		CG_TO_POSITION.put(NODE_CUSTOMGRAPHICS_9,
-				NODE_CUSTOMGRAPHICS_POSITION_9);
+		CG_TO_POSITION.put(NODE_CUSTOMGRAPHICS_1, NODE_CUSTOMGRAPHICS_POSITION_1);
+		CG_TO_POSITION.put(NODE_CUSTOMGRAPHICS_2, NODE_CUSTOMGRAPHICS_POSITION_2);
+		CG_TO_POSITION.put(NODE_CUSTOMGRAPHICS_3, NODE_CUSTOMGRAPHICS_POSITION_3);
+		CG_TO_POSITION.put(NODE_CUSTOMGRAPHICS_4, NODE_CUSTOMGRAPHICS_POSITION_4);
+		CG_TO_POSITION.put(NODE_CUSTOMGRAPHICS_5, NODE_CUSTOMGRAPHICS_POSITION_5);
+		CG_TO_POSITION.put(NODE_CUSTOMGRAPHICS_6, NODE_CUSTOMGRAPHICS_POSITION_6);
+		CG_TO_POSITION.put(NODE_CUSTOMGRAPHICS_7, NODE_CUSTOMGRAPHICS_POSITION_7);
+		CG_TO_POSITION.put(NODE_CUSTOMGRAPHICS_8, NODE_CUSTOMGRAPHICS_POSITION_8);
+		CG_TO_POSITION.put(NODE_CUSTOMGRAPHICS_9, NODE_CUSTOMGRAPHICS_POSITION_9);
+		
+		SIZE_TO_CG.put(NODE_CUSTOMGRAPHICS_SIZE_1, NODE_CUSTOMGRAPHICS_1);
+		SIZE_TO_CG.put(NODE_CUSTOMGRAPHICS_SIZE_2, NODE_CUSTOMGRAPHICS_2);
+		SIZE_TO_CG.put(NODE_CUSTOMGRAPHICS_SIZE_3, NODE_CUSTOMGRAPHICS_3);
+		SIZE_TO_CG.put(NODE_CUSTOMGRAPHICS_SIZE_4, NODE_CUSTOMGRAPHICS_4);
+		SIZE_TO_CG.put(NODE_CUSTOMGRAPHICS_SIZE_5, NODE_CUSTOMGRAPHICS_5);
+		SIZE_TO_CG.put(NODE_CUSTOMGRAPHICS_SIZE_6, NODE_CUSTOMGRAPHICS_6);
+		SIZE_TO_CG.put(NODE_CUSTOMGRAPHICS_SIZE_7, NODE_CUSTOMGRAPHICS_7);
+		SIZE_TO_CG.put(NODE_CUSTOMGRAPHICS_SIZE_8, NODE_CUSTOMGRAPHICS_8);
+		SIZE_TO_CG.put(NODE_CUSTOMGRAPHICS_SIZE_9, NODE_CUSTOMGRAPHICS_9);
+		
+		UNSUPPORTED_VP_SET.add(BasicVisualLexicon.NODE_SELECTED);
+		UNSUPPORTED_VP_SET.add(BasicVisualLexicon.EDGE_SELECTED);
+		UNSUPPORTED_VP_SET.add(BasicVisualLexicon.NODE_DEPTH);
+		UNSUPPORTED_VP_SET.add(BasicVisualLexicon.NETWORK_CENTER_Z_LOCATION);
+		UNSUPPORTED_VP_SET.add(BasicVisualLexicon.NETWORK_DEPTH);
 	}
 
 	public DVisualLexicon(final CustomGraphicsManager manager) {
@@ -339,6 +378,10 @@ public class DVisualLexicon extends BasicVisualLexicon {
 		((DiscreteRange<LineType>) EDGE_LINE_TYPE.getRange()).addRangeValue(SEPARATE_ARROW);
 		((DiscreteRange<LineType>) EDGE_LINE_TYPE.getRange()).addRangeValue(SINEWAVE);
 		((DiscreteRange<LineType>) EDGE_LINE_TYPE.getRange()).addRangeValue(VERTICAL_SLASH);
+
+		((DiscreteRange<LineType>) EDGE_LINE_TYPE.getRange()).addRangeValue(MARQUEE_DASH);
+		((DiscreteRange<LineType>) EDGE_LINE_TYPE.getRange()).addRangeValue(MARQUEE_EQUAL);
+		((DiscreteRange<LineType>) EDGE_LINE_TYPE.getRange()).addRangeValue(MARQUEE_DASH_DOT);
 		
 		// Add Ding-dependent node shapes.
 		((DiscreteRange<NodeShape>) NODE_SHAPE.getRange()).addRangeValue(DNodeShape.VEE);
@@ -349,6 +392,9 @@ public class DVisualLexicon extends BasicVisualLexicon {
 		addVisualProperty(NETWORK_EDGE_SELECTION, NETWORK);
 
 		addVisualProperty(NODE_LABEL_POSITION, NODE);
+		addVisualProperty(COMPOUND_NODE_SHAPE, NODE);
+		addVisualProperty(COMPOUND_NODE_PADDING, NODE);
+		// addVisualProperty(COMPOUND_NODE_TRANSPARENCY, NODE);
 
 		// Parent of Custom Graphics related
 		addVisualProperty(NODE_CUSTOMPAINT_1, NODE_PAINT);
@@ -439,25 +485,37 @@ public class DVisualLexicon extends BasicVisualLexicon {
 		addIdentifierMapping(CyEdge.class, "edgeCurved", EDGE_CURVED);
 	}
 
-	static Set<VisualProperty<?>> getGraphicsPositionVP() {
+	static Set<VisualProperty<ObjectPosition>> getGraphicsPositionVP() {
 		return CG_POSITIONS;
 	}
 
-	static Set<VisualProperty<?>> getGraphicsSizeVP() {
+	static Set<VisualProperty<Double>> getGraphicsSizeVP() {
 		return CG_SIZE;
 	}
 
-	public static VisualProperty<Double> getAssociatedCustomGraphicsSizeVP(
-			VisualProperty<?> cgVP) {
+	public static VisualProperty<Double> getAssociatedCustomGraphicsSizeVP(VisualProperty<?> cgVP) {
 		return CG_TO_SIZE.get(cgVP);
 	}
 
-	public static VisualProperty<ObjectPosition> getAssociatedCustomGraphicsPositionVP(
-			VisualProperty<?> cgVP) {
+	public static VisualProperty<ObjectPosition> getAssociatedCustomGraphicsPositionVP(VisualProperty<?> cgVP) {
 		return CG_TO_POSITION.get(cgVP);
 	}
 	
+	@SuppressWarnings("rawtypes")
+	public static VisualProperty<CyCustomGraphics> getAssociatedCustomGraphicsVP(VisualProperty<Double> cgSizeVP) {
+		return SIZE_TO_CG.get(cgSizeVP);
+	}
+	
+	@SuppressWarnings("rawtypes")
 	public static Set<VisualProperty<CyCustomGraphics>> getCustomGraphicsVisualProperties() {
 		return CG;
+	}
+	
+	@Override
+	public boolean isSupported(final VisualProperty<?> vp) {
+		if (UNSUPPORTED_VP_SET.contains(vp))
+			return false;
+		
+		return super.isSupported(vp);
 	}
 }

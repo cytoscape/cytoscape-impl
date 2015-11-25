@@ -33,6 +33,7 @@ import java.awt.RenderingHints;
 import java.awt.Stroke;
 
 import javax.swing.JComponent;
+import javax.swing.UIManager;
 
 import org.jdesktop.swingx.JXMultiThumbSlider;
 import org.jdesktop.swingx.multislider.ThumbRenderer;
@@ -45,9 +46,9 @@ public final class TriangleThumbRenderer extends JComponent implements ThumbRend
 
 	private final static long serialVersionUID = 1202339877445372L;
 
-	private static final Color SELECTED_COLOR = Color.red;
-	private static final Color DEFAULT_COLOR = Color.DARK_GRAY;
-	private static final Color BACKGROUND_COLOR = Color.white;
+	private final Color FOCUS_COLOR = UIManager.getColor("Focus.color");
+	private final Color DEFAULT_COLOR = UIManager.getColor("Label.foreground");;
+	private final Color BACKGROUND_COLOR = UIManager.getColor("Table.background");
 
 	private static final Stroke DEF_STROKE = new BasicStroke(1.0f);
 
@@ -78,8 +79,9 @@ public final class TriangleThumbRenderer extends JComponent implements ThumbRend
 		outline.addPoint(5, 9);
 
 		g2d.setStroke(DEF_STROKE);
+		
 		if (selected || selectedIndex == currentIndex)
-			g2d.setColor(SELECTED_COLOR);
+			g2d.setColor(FOCUS_COLOR);
 		else
 			g2d.setColor(DEFAULT_COLOR);
 
@@ -100,7 +102,7 @@ public final class TriangleThumbRenderer extends JComponent implements ThumbRend
 			this.setForeground((Color) currentValue);
 		else {
 			if (selected)
-				this.setForeground(SELECTED_COLOR);
+				this.setForeground(FOCUS_COLOR);
 			else
 				this.setForeground(DEFAULT_COLOR);
 		}

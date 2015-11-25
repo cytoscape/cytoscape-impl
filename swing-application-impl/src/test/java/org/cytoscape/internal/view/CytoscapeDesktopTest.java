@@ -1,7 +1,7 @@
 package org.cytoscape.internal.view;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.when;
 
 import java.awt.Component;
 import java.util.Properties;
@@ -16,6 +16,7 @@ import org.cytoscape.application.swing.CytoPanelComponent2;
 import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.work.swing.DialogTaskManager;
 import org.cytoscape.work.swing.TaskStatusPanelFactory;
 import org.junit.Before;
@@ -33,6 +34,7 @@ public class CytoscapeDesktopTest {
 	@Mock CyEventHelper eh;
 	@Mock DialogTaskManager taskMgr;
 	@Mock TaskStatusPanelFactory taskStatusPanelFactory;
+	@Mock IconManager icoMgr;
 	
 	@Before
 	public void setUp() throws Exception {
@@ -41,7 +43,6 @@ public class CytoscapeDesktopTest {
 		final JPanel panel = new JPanel();
 		when(taskStatusPanelFactory.createTaskStatusPanel()).thenReturn(panel);
 		
-		IconManagerImpl icoMgr = new IconManagerImpl();
 		CytoscapeMenus menus = new CytoscapeMenus(new CytoscapeMenuBar(), new CytoscapeToolBar());
 		
 		desktop = new CytoscapeDesktop(menus, netViewMgr, shut, eh, registrar, taskMgr, taskStatusPanelFactory, icoMgr);

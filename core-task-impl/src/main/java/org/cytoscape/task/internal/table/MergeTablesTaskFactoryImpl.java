@@ -59,12 +59,11 @@ public class MergeTablesTaskFactoryImpl extends AbstractTaskFactory implements M
 		this.tableMgr = tableMgr;
 	}
 	
+	@Override
 	public TaskIterator createTaskIterator() {
 		return new TaskIterator(new MergeTablesTask(tableMgr, rootNetMgr, networkManager));
 	}
 	
-	
-
 	@Override
 	public TaskIterator createTaskIterator(final CyTable sourceTable,final CyTable targetTable,
 			List<String> sourceColumnsList, String sourceKeyColumn,boolean mergeColumnVirtual, boolean mapToNetworks,

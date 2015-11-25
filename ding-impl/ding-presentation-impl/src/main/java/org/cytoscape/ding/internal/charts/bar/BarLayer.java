@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.cytoscape.ding.customgraphics.Orientation;
+import org.cytoscape.ding.impl.strokes.EqualDashStroke;
 import org.cytoscape.ding.internal.charts.AbstractChartLayer;
 import org.cytoscape.ding.internal.charts.CustomCategoryItemLabelGenerator;
 import org.cytoscape.ding.internal.charts.LabelPosition;
@@ -33,6 +34,7 @@ import org.jfree.ui.TextAnchor;
 public class BarLayer extends AbstractChartLayer<CategoryDataset> {
 	
 	private final BarChartType type;
+	private final boolean showRangeZeroBaseline;
 	private final double separation;
 	private final Orientation orientation;
 	private final boolean singleCategory;
@@ -47,19 +49,24 @@ public class BarLayer extends AbstractChartLayer<CategoryDataset> {
 					final boolean showItemLabels,
 					final boolean showDomainAxis,
 					final boolean showRangeAxis,
+					final boolean showRangeZeroBaseline,
+					final float itemFontSize,
 					final LabelPosition domainLabelPosition,
 					final List<Color> colors,
 					final float axisWidth,
 					final Color axisColor,
+					final float axisFontSize,
 					final float borderWidth,
 					final Color borderColor,
 					final double separation,
 					final List<Double> range,
 					final Orientation orientation,
 					final Rectangle2D bounds) {
-        super(data, itemLabels, domainLabels, rangeLabels, showItemLabels, showDomainAxis, showRangeAxis,
-        		domainLabelPosition, colors, axisWidth, axisColor, borderWidth, borderColor, range, bounds);
+        super(data, itemLabels, domainLabels, rangeLabels, showItemLabels, showDomainAxis, showRangeAxis, itemFontSize,
+        		domainLabelPosition, colors, axisWidth, axisColor, axisFontSize, borderWidth, borderColor, range,
+        		bounds);
 		this.type = type;
+		this.showRangeZeroBaseline = showRangeZeroBaseline;
 		this.separation = separation;
 		this.orientation = orientation;
 		singleCategory = data.size() == 1;
@@ -122,6 +129,12 @@ public class BarLayer extends AbstractChartLayer<CategoryDataset> {
 		plot.setBackgroundAlpha(0.0f);
 		plot.setRangeAxisLocation(AxisLocation.BOTTOM_OR_LEFT);
 		
+		if (showRangeZeroBaseline) {
+			plot.setRangeZeroBaselineVisible(true);
+			plot.setRangeZeroBaselinePaint(axisColor);
+			plot.setRangeZeroBaselineStroke(new EqualDashStroke(axisWidth));
+		}
+		
 		final BasicStroke axisStroke = new BasicStroke(axisWidth, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
 		
 		final CategoryAxis domainAxis = (CategoryAxis) plot.getDomainAxis();
@@ -173,7 +186,7 @@ public class BarLayer extends AbstractChartLayer<CategoryDataset> {
 		renderer.setDrawBarOutline(true);
 		renderer.setBaseItemLabelGenerator(showItemLabels ? new CustomCategoryItemLabelGenerator(itemLabels) : null);
 		renderer.setBaseItemLabelsVisible(showItemLabels);
-		renderer.setBaseItemLabelFont(renderer.getBaseItemLabelFont().deriveFont(labelFontSize));
+		renderer.setBaseItemLabelFont(renderer.getBaseItemLabelFont().deriveFont(itemFontSize));
 		renderer.setBaseItemLabelPaint(labelColor);
 		renderer.setItemMargin(separation);
 		

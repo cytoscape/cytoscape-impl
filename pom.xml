@@ -6,7 +6,7 @@
 	<parent>
 		<artifactId>parent</artifactId>
 		<groupId>org.cytoscape</groupId>
-		<version>3.2.1</version>
+		<version>3.3.0</version>
 		<relativePath>../parent</relativePath>
 	</parent>
 
@@ -17,14 +17,12 @@
 	<version>3.2.1</version>
 
 	<properties>
-		<cytoscape.api.version>3.2.1</cytoscape.api.version>
-		<cytoscape.support.version>3.2.1</cytoscape.support.version>
+		<cytoscape.api.version>3.3.0</cytoscape.api.version>
+		<cytoscape.support.version>3.3.0</cytoscape.support.version>
 	</properties>
 
 
 	<modules>
-		<module>biopax-impl</module>
-		<module>command-dialog-impl</module>
 		<module>command-executor-impl</module>
 		<module>ding-impl</module>
 		<module>editor-impl</module>
@@ -35,8 +33,6 @@
 		<module>filter2-impl</module>
 		<module>graphml-impl</module>
 		<module>group-impl</module>
-		<module>group-data-impl</module>
-		<module>group-view-impl</module>
 		<module>io-impl</module>
 		<module>json-impl</module>
 		<module>layout-cytoscape-impl</module>
@@ -47,13 +43,9 @@
 		<module>log-swing-impl</module>
 		<module>manual-layout-impl</module>
 		<module>model-impl</module>
-		<module>network-analyzer-impl</module>
-		<module>network-merge-impl</module>
 		<module>app-impl</module>
 		<module>presentation-impl</module>
 		<module>property-impl</module>
-		<module>psi-mi-impl</module>
-		<module>sbml-impl</module>
 		<module>search-impl</module>
 		<module>session-impl</module>
 		<module>help-impl</module>
@@ -65,23 +57,18 @@
 		<module>vizmap-gui-core-impl</module>
 		<module>vizmap-gui-impl</module>
 		<module>vizmap-impl</module>
-		<module>webservice-biomart-client-impl</module>
 		<module>webservice-impl</module>
 		<module>work-headless-impl</module>
 		<module>work-impl</module>
 		<module>work-swing-impl</module>
 		<module>application-impl</module>
-		<module>webservice-psicquic-client-impl</module>
 		<module>datasource-impl</module>
-		<module>datasource-biogrid-impl</module>
-		<module>welcome-impl</module>
 		<module>gui-cmdline-parser-impl</module>
 		<module>edge-bundler-impl</module>
 		<module>scripting-impl</module>
 		<module>core-task-impl</module>
 		<module>headless-application-impl</module>
 		<module>headless-cmdline-parser-impl</module>
-		<module>rest-impl</module>
 	</modules>
 
 	<!-- Managed dependency.  If bundles are shared by everyone, it should be moved to dependencies section! -->

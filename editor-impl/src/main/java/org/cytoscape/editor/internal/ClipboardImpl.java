@@ -59,11 +59,13 @@ public class ClipboardImpl {
 	private final Map<CyNode, Map<VisualProperty<?>, Object>> nodeBypass;
 	private final Map<CyEdge, Map<VisualProperty<?>, Object>> edgeBypassMap;
 	private final Map<CyNode, double[]> nodePositions;
+	private boolean cutOperation;
 
 	// Row maps
 	private Map<CyIdentifiable, CyRow> oldSharedRowMap;
 	private Map<CyIdentifiable, CyRow> oldLocalRowMap;
 	private Map<CyIdentifiable, CyRow> oldHiddenRowMap;
+	private Map<CyRow, Map<String, Object>> oldValueMap;
 
 	private double xCenter, yCenter;
 	
@@ -72,17 +74,24 @@ public class ClipboardImpl {
 	public ClipboardImpl(final CyNetworkView networkView,
 						 final Set<CyNode> nodes,
 						 final Set<CyEdge> edges,
+						 boolean cut,
 						 final VisualLexicon lexicon,
-			CyEventHelper eventHelper) {
+						 CyEventHelper eventHelper) {
 		this.sourceView = networkView;
 		this.nodes = nodes;
 		this.edges = edges;
 		this.eventHelper = eventHelper;
+		this.cutOperation = cut;
 
 		CyNetwork sourceNetwork = sourceView.getModel();
 		oldSharedRowMap = new WeakHashMap<CyIdentifiable, CyRow>();
 		oldLocalRowMap = new WeakHashMap<CyIdentifiable, CyRow>();
 		oldHiddenRowMap = new WeakHashMap<CyIdentifiable, CyRow>();
+
+		// For local and hidden rows, we also need to keep track of
+		// the values since they will be removed when the row gets removed
+		// This is only really necessary for cut operations
+		oldValueMap = new WeakHashMap<CyRow, Map<String, Object>>();
 
 		// We need the root network to get the shared attributes
 		CyRootNetwork sourceRootNetwork = ((CySubNetwork)sourceNetwork).getRootNetwork();
@@ -375,20 +384,26 @@ public class ClipboardImpl {
 			// Case 2: different subnetwork, same root
 			targetNetwork.addNode(node);
 			newNode = node;
+			// rowMap.put(oldSharedRowMap.get(node),
+			//            targetNetwork.getRow(newNode, CyNetwork.DEFAULT_ATTRS));
 			rowMap.put(oldLocalRowMap.get(node),
 			           targetNetwork.getRow(newNode, CyNetwork.LOCAL_ATTRS));
 			rowMap.put(oldHiddenRowMap.get(node),
 			           targetNetwork.getRow(newNode, CyNetwork.HIDDEN_ATTRS));
 		} else {
 			// Case 3: Copying the node to the same network
-			newNode = targetNetwork.addNode();
+			// newNode = targetNetwork.addNode();
 			// Copy in the hidden attributes
+			newNode = targetNetwork.addNode();
 			rowMap.put(oldHiddenRowMap.get(node),
 			           targetNetwork.getRow(newNode, CyNetwork.HIDDEN_ATTRS));
 			// Copy in the local attributes
 			rowMap.put(oldLocalRowMap.get(node),
 			           targetNetwork.getRow(newNode, CyNetwork.LOCAL_ATTRS));
-			targetNetwork.addNode(node);
+			// Copy in the default attributes
+			// rowMap.put(oldSharedRowMap.get(node),
+			//            targetNetwork.getRow(newNode, CyNetwork.DEFAULT_ATTRS));
+			// targetNetwork.addNode(node);
 		}
 		
 		return newNode;
@@ -402,7 +417,12 @@ public class ClipboardImpl {
 			CyTable destTable = targetRow.getTable();
 			CyTable sourceTable = sourceRow.getTable();
 
-			Map<String, Object> oldDataMap = sourceRow.getAllValues();
+			Map<String, Object> oldDataMap;
+			if (oldValueMap.containsKey(sourceRow))
+				oldDataMap = oldValueMap.get(sourceRow);
+			else
+				oldDataMap = sourceRow.getAllValues();
+
 			for (String colName: oldDataMap.keySet()) {
 				CyColumn column = destTable.getColumn(colName);
 
@@ -433,6 +453,7 @@ public class ClipboardImpl {
 					targetRow.set(colName, oldDataMap.get(colName));
 				} catch (IllegalArgumentException e) {
 					// Log a warning
+					System.out.println("Set failed!  "+e);
 				} 
 			}
 		}
@@ -440,8 +461,27 @@ public class ClipboardImpl {
 
 	public void addRows(CyIdentifiable object, CyRootNetwork sourceRootNetwork, CyNetwork sourceNetwork) {
 		oldSharedRowMap.put(object, sourceRootNetwork.getRow(object, CyRootNetwork.SHARED_ATTRS));
-		oldLocalRowMap.put(object, sourceNetwork.getRow(object, CyNetwork.LOCAL_ATTRS));
-		oldHiddenRowMap.put(object, sourceNetwork.getRow(object, CyNetwork.HIDDEN_ATTRS));
+
+
+		CyRow localRow = sourceNetwork.getRow(object, CyNetwork.LOCAL_ATTRS); // Careful, this is actually a facade
+		oldLocalRowMap.put(object, localRow);
+
+		if (cutOperation) {
+			// If we cut this object, then the row data was removed.  We need to copy the local data for it
+			oldValueMap.put(localRow, copyRowValues(localRow));
+		}
+
+		CyRow hiddenRow = sourceNetwork.getRow(object, CyNetwork.HIDDEN_ATTRS);
+		oldHiddenRowMap.put(object, hiddenRow);
+
+		if (cutOperation) {
+			oldValueMap.put(hiddenRow, copyRowValues(hiddenRow));
+		}
+	}
+
+	private Map<String, Object> copyRowValues(CyRow row) {
+		// Make a copy of the row values
+		return new HashMap<>(row.getAllValues());
 	}
 
 	private double[] saveNodePosition(final View<CyNode> view) {

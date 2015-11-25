@@ -59,22 +59,44 @@ public class DownloadSite {
 		this.siteUrl = siteUrl;
 	}
 
-	@Override
-	public String toString() {
-		return this.siteName;
-	}
 	
-	/**
-	 * Returns true if the given site has same name and Url.
-	 * @param downloadSite Other site
-	 * @return <code>true</code> if other site has same name and Url, <code>false</code> otherwise.
-	 */
-	public boolean sameSiteAs(DownloadSite downloadSite) {
-		if (downloadSite.siteName.equals(this.siteName)
-				&& downloadSite.siteUrl.equals(this.siteUrl)) {
-			return true;
-		} else {
+	
+	@Override
+	public int hashCode() {
+		final int prime = 7;
+		int result = 11;
+		result = prime * result + ((siteName == null) ? 0 : siteName.hashCode());
+		result = prime * result + ((siteUrl == null) ? 0 : siteUrl.hashCode());
+		
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) return true;
+		if (obj == null) return false;
+		if (getClass() != obj.getClass()) return false;
+		
+		DownloadSite other = (DownloadSite) obj;
+		
+		if (siteName == null) {
+			if (other.siteName != null)
+				return false;
+		} else if (!siteName.equals(other.siteName)) {
 			return false;
 		}
+		if (siteUrl == null) {
+			if (other.siteUrl != null)
+				return false;
+		} else if (!siteUrl.equals(other.siteUrl)) {
+			return false;
+		}
+		
+		return true;
+	}
+
+	@Override
+	public String toString() {
+		return siteName;
 	}
 }

@@ -16,7 +16,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -25,6 +24,7 @@ import java.util.Set;
 import org.cytoscape.application.CyVersion;
 import org.cytoscape.ding.DVisualLexicon;
 import org.cytoscape.ding.Justification;
+import org.cytoscape.ding.NetworkViewTestSupport;
 import org.cytoscape.ding.ObjectPosition;
 import org.cytoscape.ding.Position;
 import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
@@ -38,8 +38,10 @@ import org.cytoscape.io.internal.write.json.serializer.ValueSerializerManager;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.CyNetworkViewFactory;
+import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.VisualLexicon;
-import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.property.ArrowShapeVisualProperty;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.presentation.property.LineTypeVisualProperty;
@@ -49,7 +51,6 @@ import org.cytoscape.view.vizmap.VisualMappingFunction;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.VisualPropertyDependency;
 import org.cytoscape.view.vizmap.VisualStyle;
-import org.cytoscape.view.vizmap.internal.VisualLexiconManager;
 import org.cytoscape.view.vizmap.internal.VisualStyleFactoryImpl;
 import org.cytoscape.view.vizmap.internal.mappings.ContinuousMappingFactory;
 import org.cytoscape.view.vizmap.internal.mappings.DiscreteMappingFactory;
@@ -61,11 +62,13 @@ import org.cytoscape.work.TaskMonitor;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.MockitoAnnotations;
+import org.mockito.asm.util.CheckAnnotationAdapter;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-public class CytoscapeJsVisualStyleSerializerTest {
+public class CytoscapeJsVisualStyleSerializerTest extends AbstractJsonNetworkViewWriterTest {
 
 	private CytoscapeJsVisualStyleSerializer serializer;
 
@@ -76,15 +79,26 @@ public class CytoscapeJsVisualStyleSerializerTest {
 	private ContinuousMappingFactory continuousFactory;
 	private DiscreteMappingFactory discreteFactory;
 
+	private CyNetworkViewManager viewManager;
+	
+
+	
 	@Before
 	public void setUp() throws Exception {
+		super.setUp();
+		MockitoAnnotations.initMocks(this);
+		
+		Set<CyNetworkView> views = new HashSet<>();
+		views.add(view);
+		viewManager = mock(CyNetworkViewManager.class);
+		when(viewManager.getNetworkViewSet()).thenReturn(views);
 
 		final CyVersion cyVersion = mock(CyVersion.class); 
 		final CustomGraphicsManager cgManager = mock(CustomGraphicsManager.class);
 		lexicon = new DVisualLexicon(cgManager);
 		
 		final ValueSerializerManager manager = new ValueSerializerManager();
-		serializer = new CytoscapeJsVisualStyleSerializer(manager, lexicon, cyVersion);
+		serializer = new CytoscapeJsVisualStyleSerializer(manager, lexicon, cyVersion, viewManager);
 
 		final CyEventHelper eventHelper = mock(CyEventHelper.class);
 		passthroughFactory = new PassthroughMappingFactory(eventHelper);
@@ -97,6 +111,8 @@ public class CytoscapeJsVisualStyleSerializerTest {
 		
 		// Simple test to check Visual Style contents
 		assertEquals("vs1", style.getTitle());
+		
+			
 	}
 
 	@After
@@ -104,22 +120,17 @@ public class CytoscapeJsVisualStyleSerializerTest {
 	}
 
 	private final VisualStyle generateVisualStyle(final VisualLexicon lexicon) {
-
-		final VisualLexiconManager lexManager = mock(VisualLexiconManager.class);
 		final Set<VisualLexicon> lexSet = new HashSet<VisualLexicon>();
 		lexSet.add(lexicon);
-		final Collection<VisualProperty<?>> nodeVP = lexicon.getAllDescendants(BasicVisualLexicon.NODE);
-		final Collection<VisualProperty<?>> edgeVP = lexicon.getAllDescendants(BasicVisualLexicon.EDGE);
-		when(lexManager.getNodeVisualProperties()).thenReturn(nodeVP);
-		when(lexManager.getEdgeVisualProperties()).thenReturn(edgeVP);
 
-		when(lexManager.getAllVisualLexicon()).thenReturn(lexSet);
-
-		final CyServiceRegistrar serviceRegistrar = mock(CyServiceRegistrar.class);
-		final VisualMappingFunctionFactory ptFactory = mock(VisualMappingFunctionFactory.class);
 		final CyEventHelper eventHelper = mock(CyEventHelper.class);
-		final VisualStyleFactoryImpl visualStyleFactory = new VisualStyleFactoryImpl(lexManager, serviceRegistrar,
-				ptFactory, eventHelper);
+		
+		final CyServiceRegistrar serviceRegistrar = mock(CyServiceRegistrar.class);
+		when(serviceRegistrar.getService(CyEventHelper.class)).thenReturn(eventHelper);
+		
+		final VisualMappingFunctionFactory ptFactory = mock(VisualMappingFunctionFactory.class);
+		final VisualStyleFactoryImpl visualStyleFactory = new VisualStyleFactoryImpl(serviceRegistrar,
+				ptFactory);
 
 		return visualStyleFactory.createVisualStyle("vs1");
 	}
@@ -293,6 +304,26 @@ public class CytoscapeJsVisualStyleSerializerTest {
 		}
 		testLocked(writeVS("target/vs-locked.json"));
 	}
+	
+	@Test
+	public void testBypass() throws Exception {
+		final Set<VisualPropertyDependency<?>> locks = style.getAllVisualPropertyDependencies();
+		for(VisualPropertyDependency<?> dep: locks) {
+			dep.setDependency(false);
+		}
+		// Add bypass
+		view.getNodeViews().stream()
+			.forEach(view->view.setLockedValue(BasicVisualLexicon.NODE_FILL_COLOR, Color.ORANGE));
+
+		view.getEdgeViews().stream()
+			.forEach(view->view.setLockedValue(BasicVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT, Color.RED));
+		
+		// Set only one
+		view.getNodeViews().iterator().next().setLockedValue(BasicVisualLexicon.NODE_WIDTH, 123.0d);
+		view.getEdgeViews().iterator().next().setLockedValue(BasicVisualLexicon.EDGE_WIDTH, 20.0d);
+		
+		testBypassValues(writeVS("target/vs.json"));
+	}
 
 	
 	private final File writeVS(final String fileName) throws Exception {
@@ -305,7 +336,7 @@ public class CytoscapeJsVisualStyleSerializerTest {
 		styles.add(style);
 
 		final ObjectMapper jsMapper = new ObjectMapper();
-		jsMapper.registerModule(new CytoscapeJsVisualStyleModule(lexicon, cyVersion));
+		jsMapper.registerModule(new CytoscapeJsVisualStyleModule(lexicon, cyVersion, viewManager));
 
 		File temp = new File(fileName);
 		OutputStream os = new FileOutputStream(temp);
@@ -314,7 +345,6 @@ public class CytoscapeJsVisualStyleSerializerTest {
 
 		return temp;
 	}
-	
 	
 	private final void testUnlocked(File temp) throws Exception {
 		final JsonNode rootNode = read(temp);
@@ -325,6 +355,7 @@ public class CytoscapeJsVisualStyleSerializerTest {
 		final JsonNode rootNode = read(temp);
 		testDefaultsLocked(rootNode);
 	}
+	
 	
 	private final JsonNode read(File generatedJsonFile) throws IOException {
 		final FileInputStream fileInputStream = new FileInputStream(generatedJsonFile);
@@ -501,5 +532,77 @@ public class CytoscapeJsVisualStyleSerializerTest {
 		assertEquals("rgb(222,100,10)", edgeCSS.get("line-color").asText());
 		assertEquals("rgb(222,100,10)", edgeCSS.get("source-arrow-color").asText());
 		assertEquals("rgb(222,100,10)", edgeCSS.get("target-arrow-color").asText());
+	}
+	
+	private void testBypassValues(File temp) throws Exception {
+		final JsonNode rootNode = read(temp);
+		assertTrue(rootNode.isArray());
+		assertEquals(1, rootNode.size());
+		JsonNode styleNode = rootNode.get(0).get("style");
+		assertNotNull(styleNode);
+		
+		Set<JsonNode> bypassNodes = new HashSet<>();
+		for(JsonNode n: styleNode) {
+			JsonNode selector = n.get("selector");
+			
+			String value = selector.asText();
+			if(value.startsWith("node[ id =")) {
+				bypassNodes.add(n);
+			}
+		}
+		
+		Set<JsonNode> bypassEdges = new HashSet<>();
+		for(JsonNode n: styleNode) {
+			JsonNode selector = n.get("selector");
+			
+			String value = selector.asText();
+			if(value.startsWith("edge[ id =")) {
+				bypassEdges.add(n);
+			}
+		}
+		
+		assertEquals(view.getModel().getNodeCount(), bypassNodes.size());
+		
+		bypassNodes.stream()
+			.map(node->node.get("css"))
+			.forEach(cssNode->checkNodeBypassElement(cssNode));
+		
+		bypassEdges.stream()
+			.map(node->node.get("css"))
+			.forEach(cssNode->checkEdgeBypassElement(cssNode));
+		
+	}
+	
+	private final void checkNodeBypassElement(JsonNode cssNode) {
+		assertNotNull(cssNode);
+		assertTrue(cssNode.isObject());
+		
+		if(cssNode.size() == 1) {
+			JsonNode colorNode = cssNode.get("background-color");
+			assertNotNull(colorNode);
+			assertEquals("rgb(255,200,0)", colorNode.asText());
+		} else {
+			assertEquals(2, cssNode.size());
+			JsonNode widthNode = cssNode.get("width");
+			assertNotNull(widthNode);
+			assertEquals(Double.valueOf(123), (Double)widthNode.asDouble());
+		}
+	}
+	
+	private final void checkEdgeBypassElement(JsonNode cssNode) {
+		assertNotNull(cssNode);
+		assertTrue(cssNode.isObject());
+		
+		if(cssNode.size() == 1) {
+			JsonNode colorNode = cssNode.get("line-color");
+			assertNotNull(colorNode);
+			assertEquals("rgb(255,0,0)", colorNode.asText());
+		} else {
+			System.out.println(cssNode);
+			assertEquals(2, cssNode.size());
+			JsonNode widthNode = cssNode.get("width");
+			assertNotNull(widthNode);
+			assertEquals(Double.valueOf(20), (Double)widthNode.asDouble());
+		}
 	}
 }

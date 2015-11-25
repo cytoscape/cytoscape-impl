@@ -27,6 +27,7 @@ package org.cytoscape.tableimport.internal.reader.ontology;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.io.File;
 
@@ -37,6 +38,7 @@ import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.NetworkTestSupport;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.junit.After;
 import org.junit.Before;
@@ -48,8 +50,9 @@ public class OBOReaderTest {
 	private String ySlim = "goslim_yeast.obo.obo";
 	private String genericSlim = "goslim_generic.obo.obo";
 
-	private CyNetworkViewFactory cyNetworkViewFactory;
-	private CyNetworkFactory cyNetworkFactory;
+	private CyServiceRegistrar serviceRegistrar;
+	private CyNetworkViewFactory netViewFactory;
+	private CyNetworkFactory netFactory;
 	private CyEventHelper eventHelper;
 
 	private NetworkViewTestSupport viewSupport;
@@ -60,9 +63,14 @@ public class OBOReaderTest {
 		viewSupport = new NetworkViewTestSupport();
 		netSupport = new NetworkTestSupport();
 		
-		cyNetworkViewFactory = viewSupport.getNetworkViewFactory();
-		cyNetworkFactory = netSupport.getNetworkFactory();
+		netViewFactory = viewSupport.getNetworkViewFactory();
+		netFactory = netSupport.getNetworkFactory();
 		eventHelper = mock(CyEventHelper.class);
+		
+		serviceRegistrar = mock(CyServiceRegistrar.class);
+		when(serviceRegistrar.getService(CyNetworkViewFactory.class)).thenReturn(netViewFactory);
+		when(serviceRegistrar.getService(CyNetworkFactory.class)).thenReturn(netFactory);
+		when(serviceRegistrar.getService(CyEventHelper.class)).thenReturn(eventHelper);
 	}
 
 	@After
@@ -86,8 +94,7 @@ public class OBOReaderTest {
 	}
 	
 	private CyNetwork testFile(File file) throws Exception {
-		final OBOReader reader = new OBOReader(file.getName(), file.toURI().toURL().openStream(), cyNetworkViewFactory,
-				cyNetworkFactory, eventHelper);
+		final OBOReader reader = new OBOReader(file.getName(), file.toURI().toURL().openStream(), serviceRegistrar);
 		
 		reader.run(null);
 		

@@ -31,14 +31,15 @@ public class PieLayer extends AbstractChartLayer<PieDataset> {
 	public PieLayer(final Map<String, List<Double>> data,
 					final List<String> itemLabels,
 					final boolean showLabels,
+					final float itemFontSize,
 					final List<Color> colors,
 					final float borderWidth,
 					final Color borderColor,
 					final double startAngle,
 					final Rotation rotation,
 					final Rectangle2D bounds) {
-        super(data, itemLabels, null, null, showLabels, false, false, LabelPosition.STANDARD, colors, 0.0f,
-        		TRANSPARENT_COLOR, borderWidth, borderColor, null, bounds);
+		super(data, itemLabels, null, null, showLabels, false, false, itemFontSize, LabelPosition.STANDARD, colors,
+				0.0f, TRANSPARENT_COLOR, 0.0f, borderWidth, borderColor, null, bounds);
         this.startAngle = startAngle;
         this.rotation = rotation;
         this.labels = new HashMap<String, String>();
@@ -94,12 +95,11 @@ public class PieLayer extends AbstractChartLayer<PieDataset> {
 		plot.setShadowYOffset(0.0);
 		plot.setLabelGenerator(showItemLabels ? new CustomPieSectionLabelGenerator(labels) : null);
 		plot.setSimpleLabels(true);
-		plot.setLabelFont(plot.getLabelFont().deriveFont(labelFontSize));
+		plot.setLabelFont(plot.getLabelFont().deriveFont(itemFontSize));
 		plot.setLabelBackgroundPaint(TRANSPARENT_COLOR);
 		plot.setLabelOutlinePaint(TRANSPARENT_COLOR);
 		plot.setLabelShadowPaint(TRANSPARENT_COLOR);
 		plot.setLabelPaint(labelColor);
-		plot.setLabelFont(plot.getLabelFont().deriveFont(1.0f));
 		
 		final BasicStroke stroke = new BasicStroke(borderWidth, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
 		

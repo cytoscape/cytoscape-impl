@@ -2,7 +2,7 @@ package org.cytoscape.ding.internal.charts.box;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.ding.internal.charts.AbstractChartEditor;
-import org.cytoscape.ding.internal.util.IconManager;
+import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.view.presentation.property.values.CyColumnIdentifierFactory;
 
 public class BoxChartEditor extends AbstractChartEditor<BoxChart> {
@@ -13,7 +13,7 @@ public class BoxChartEditor extends AbstractChartEditor<BoxChart> {
 	
 	public BoxChartEditor(final BoxChart chart, final CyApplicationManager appMgr, final IconManager iconMgr,
 			final CyColumnIdentifierFactory colIdFactory) {
-		super(chart, Number.class, true, true, true, false, false, false, true, appMgr, iconMgr, colIdFactory);
+		super(chart, Number.class, true, true, true, false, false, false, true, true, appMgr, iconMgr, colIdFactory);
 		
 		getDomainAxisVisibleCkb().setVisible(false);
 	}

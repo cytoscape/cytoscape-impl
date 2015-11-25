@@ -58,6 +58,7 @@ public class URLImageCustomGraphics <ImageCustomGraphicLayer>
 	}
 	
 	private static final String DEF_TAG = "bitmap image";
+	private static final float DEF_FIT_RATIO = 1.0f;
 
 	private ImageCustomGraphicLayer icg;
 
@@ -68,6 +69,8 @@ public class URLImageCustomGraphics <ImageCustomGraphicLayer>
 	
 	public URLImageCustomGraphics(Long id, String url) throws IOException {
 		super(id, url);
+		fitRatio = DEF_FIT_RATIO;
+		
 		// Special case.  We include a number of images as part of our bundles.  The
 		// resulting URL's are not really helpful, so we need to massage the displayName
 		// here.
@@ -91,9 +94,12 @@ public class URLImageCustomGraphics <ImageCustomGraphicLayer>
 	 */
 	public URLImageCustomGraphics(Long id, String name, BufferedImage img) {
 		super(id, name);
+		
 		if (img == null)
 			throw new IllegalArgumentException("Image cannot be null.");
 
+		fitRatio = DEF_FIT_RATIO;
+		
 		if (displayName.startsWith("bundle:")) {
 			int index = displayName.lastIndexOf("/");
 			displayName = displayName.substring(index+1);

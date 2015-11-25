@@ -1,5 +1,8 @@
 package org.cytoscape.ding.impl.editor;
 
+import static javax.swing.GroupLayout.DEFAULT_SIZE;
+import static javax.swing.GroupLayout.PREFERRED_SIZE;
+
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dialog.ModalityType;
@@ -18,9 +21,10 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
+import javax.swing.GroupLayout;
+import javax.swing.GroupLayout.Alignment;
 import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -35,16 +39,20 @@ import javax.swing.event.ChangeListener;
 import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
 import org.cytoscape.ding.customgraphics.CyCustomGraphics2Manager;
 import org.cytoscape.ding.customgraphics.NullCustomGraphics;
+import org.cytoscape.ding.customgraphicsmgr.internal.ui.CustomGraphicsBrowser;
+import org.cytoscape.ding.customgraphicsmgr.internal.ui.CustomGraphicsManagerDialog;
 import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.util.swing.LookAndFeelUtil;
+import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2Factory;
 import org.cytoscape.view.vizmap.gui.DefaultViewPanel;
-import org.cytoscape.view.vizmap.gui.editor.ValueEditor;
+import org.cytoscape.view.vizmap.gui.editor.VisualPropertyValueEditor;
 
 @SuppressWarnings({ "rawtypes", "unchecked" })
-public class CyCustomGraphicsValueEditor extends JPanel implements ValueEditor<CyCustomGraphics> {
+public class CyCustomGraphicsValueEditor implements VisualPropertyValueEditor<CyCustomGraphics> {
 
 	private static final long serialVersionUID = 3276556808025021859L;
 
@@ -65,6 +73,7 @@ public class CyCustomGraphicsValueEditor extends JPanel implements ValueEditor<C
 
 	private final CustomGraphicsManager customGraphicsMgr;
 	private final CyCustomGraphics2Manager customGraphics2Mgr;
+	private final CustomGraphicsBrowser browser;
 	private final CyServiceRegistrar serviceRegistrar;
 	
 	private JDialog dialog;
@@ -73,9 +82,11 @@ public class CyCustomGraphicsValueEditor extends JPanel implements ValueEditor<C
 	
 	public CyCustomGraphicsValueEditor(final CustomGraphicsManager customGraphicsMgr,
 									   final CyCustomGraphics2Manager customGraphics2Mgr,
+									   final CustomGraphicsBrowser browser,
 									   final CyServiceRegistrar serviceRegistrar) {
 		this.customGraphicsMgr = customGraphicsMgr;
 		this.customGraphics2Mgr = customGraphics2Mgr;
+		this.browser = browser;
 		this.serviceRegistrar = serviceRegistrar;
 		cg2PnlMap = new HashMap<>();
 	}
@@ -84,7 +95,7 @@ public class CyCustomGraphicsValueEditor extends JPanel implements ValueEditor<C
 	
 	@Override
 	public <S extends CyCustomGraphics> CyCustomGraphics<? extends CustomGraphicLayer> showEditor(
-			final Component parent, final S initialValue) {
+			final Component parent, final S initialValue, final VisualProperty<S> vp) {
 		oldCustomGraphics = initialValue;
 		
 		// Make sure it initializes only after the Cytoscape UI (specially DefaultViewPanel) is ready
@@ -113,7 +124,6 @@ public class CyCustomGraphicsValueEditor extends JPanel implements ValueEditor<C
 		final Window owner = parent != null ? SwingUtilities.getWindowAncestor(parent) : null;
 		dialog = new JDialog(owner, ModalityType.APPLICATION_MODAL);
 		dialog.setMinimumSize(new Dimension(400, 600));
-		dialog.add(this);
 		dialog.setTitle("Graphics");
 		dialog.setResizable(false);
 		
@@ -124,10 +134,23 @@ public class CyCustomGraphicsValueEditor extends JPanel implements ValueEditor<C
 			}
 		});
 		
-		setLayout(new BorderLayout());
+		final GroupLayout layout = new GroupLayout(dialog.getContentPane());
+		dialog.getContentPane().setLayout(layout);
+		layout.setAutoCreateContainerGaps(true);
+		layout.setAutoCreateGaps(true);
 		
-		add(getGroupTpn(), BorderLayout.CENTER);
-		add(getBottomPnl(), BorderLayout.SOUTH);
+		layout.setHorizontalGroup(layout.createParallelGroup(Alignment.CENTER, true)
+				.addComponent(getGroupTpn(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				.addComponent(getBottomPnl(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+		);
+		layout.setVerticalGroup(layout.createSequentialGroup()
+				.addComponent(getGroupTpn(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				.addComponent(getBottomPnl())
+		);
+		
+		LookAndFeelUtil.setDefaultOkCancelKeyStrokes(dialog.getRootPane(), getApplyBtn().getAction(),
+				getCancelBtn().getAction());
+		dialog.getRootPane().setDefaultButton(getApplyBtn());
 	}
 	
 	private void refreshUI() {
@@ -196,13 +219,7 @@ public class CyCustomGraphicsValueEditor extends JPanel implements ValueEditor<C
 	
 	private JPanel getBottomPnl() {
 		if (bottomPnl == null) {
-			bottomPnl = new JPanel();
-			bottomPnl.setLayout(new BoxLayout(bottomPnl, BoxLayout.X_AXIS));
-			bottomPnl.add(getRemoveBtn());
-			bottomPnl.add(Box.createVerticalStrut(35));
-			bottomPnl.add(Box.createHorizontalGlue());
-			bottomPnl.add(getCancelBtn());
-			bottomPnl.add(getApplyBtn());
+			bottomPnl = LookAndFeelUtil.createOkCancelPanel(getApplyBtn(), getCancelBtn(), getRemoveBtn());
 		}
 		
 		return bottomPnl;
@@ -221,7 +238,7 @@ public class CyCustomGraphicsValueEditor extends JPanel implements ValueEditor<C
 		
 		if (cg2Pnl == null) {
 			cg2Pnl = new CustomGraphics2Panel(group);
-			cg2Pnl.setOpaque(false);
+			cg2Pnl.setOpaque(!LookAndFeelUtil.isAquaLAF()); // Transparent if Aqua
 			cg2PnlMap.put(group, cg2Pnl);
 		}
 		
@@ -242,10 +259,10 @@ public class CyCustomGraphicsValueEditor extends JPanel implements ValueEditor<C
 		return removeBtn;
 	}
 	
+	@SuppressWarnings("serial")
 	private JButton getCancelBtn() {
 		if (cancelBtn == null) {
-			cancelBtn = new JButton("Cancel");
-			cancelBtn.addActionListener(new ActionListener() {
+			cancelBtn = new JButton(new AbstractAction("Cancel") {
 				@Override
 				public void actionPerformed(final ActionEvent e) {
 					cancel();
@@ -256,10 +273,10 @@ public class CyCustomGraphicsValueEditor extends JPanel implements ValueEditor<C
 		return cancelBtn;
 	}
 	
+	@SuppressWarnings("serial")
 	private JButton getApplyBtn() {
 		if (applyBtn == null) {
-			applyBtn = new JButton("Apply");
-			applyBtn.addActionListener(new ActionListener() {
+			applyBtn = new JButton(new AbstractAction("Apply") {
 				@Override
 				public void actionPerformed(final ActionEvent e) {
 					apply();
@@ -278,12 +295,35 @@ public class CyCustomGraphicsValueEditor extends JPanel implements ValueEditor<C
 		
 		private DiscreteValueList<CyCustomGraphics> graphicsList;
 		
+		@SuppressWarnings("serial")
 		public GraphicsPanel() {
-			JScrollPane scrollPane = new JScrollPane();
+			final JScrollPane scrollPane = new JScrollPane();
 			scrollPane.setViewportView(getGraphicsList());
 			
-			setLayout(new BorderLayout());
-			add(scrollPane);
+			final JButton openImgMgrBtn = new JButton(new AbstractAction("Open Image Manager...") {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					final CustomGraphicsManagerDialog dialog = 
+							new CustomGraphicsManagerDialog(customGraphicsMgr, browser, serviceRegistrar);
+					dialog.setVisible(true);
+					
+					updateList();
+				}
+			});
+			
+			final GroupLayout layout = new GroupLayout(this);
+			this.setLayout(layout);
+			layout.setAutoCreateContainerGaps(false);
+			layout.setAutoCreateGaps(true);
+			
+			layout.setHorizontalGroup(layout.createParallelGroup(Alignment.CENTER, true)
+					.addComponent(scrollPane, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+					.addComponent(openImgMgrBtn, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+			);
+			layout.setVerticalGroup(layout.createSequentialGroup()
+					.addComponent(scrollPane, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+					.addComponent(openImgMgrBtn, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+			);
 		}
 		
 		public void updateList() {
@@ -412,7 +452,7 @@ public class CyCustomGraphicsValueEditor extends JPanel implements ValueEditor<C
 					this.cg2 = selectedEditorPn.getCg2();
 			}
 			
-			getTypeTpn().setPreferredSize(new Dimension(maxWidth + 40, 400));
+			getTypeTpn().setPreferredSize(new Dimension(maxWidth + 40, 520));
 		}
 		
 		private JTabbedPane getTypeTpn() {
@@ -457,8 +497,8 @@ public class CyCustomGraphicsValueEditor extends JPanel implements ValueEditor<C
 			CustomGraphics2EditorPane(final CyCustomGraphics2Factory<?> factory) {
 				this.factory = factory;
 				this.setBorder(BorderFactory.createEmptyBorder());
-				this.setOpaque(false);
-				this.getViewport().setOpaque(false);
+				this.setOpaque(!LookAndFeelUtil.isAquaLAF()); // Transparent if Aqua
+				this.getViewport().setOpaque(!LookAndFeelUtil.isAquaLAF());
 			}
 			
 			void update(final CyCustomGraphics2 initialCg2) {

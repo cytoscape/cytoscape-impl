@@ -24,6 +24,15 @@ package org.cytoscape.app.internal.ui.downloadsites;
  * #L%
  */
 
+import static javax.swing.GroupLayout.DEFAULT_SIZE;
+import static javax.swing.GroupLayout.PREFERRED_SIZE;
+import static javax.swing.GroupLayout.Alignment.CENTER;
+import static javax.swing.GroupLayout.Alignment.LEADING;
+import static javax.swing.GroupLayout.Alignment.TRAILING;
+
+import java.awt.Frame;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -31,116 +40,116 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
+import javax.swing.AbstractAction;
+import javax.swing.GroupLayout;
+import javax.swing.GroupLayout.Alignment;
+import javax.swing.JButton;
+import javax.swing.JDialog;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.JTextField;
+import javax.swing.LayoutStyle.ComponentPlacement;
+import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
+import javax.swing.WindowConstants;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 
-import org.cytoscape.app.internal.manager.App;
-import org.cytoscape.app.internal.net.Update;
 import org.cytoscape.app.internal.net.WebQuerier;
 import org.cytoscape.app.internal.ui.downloadsites.DownloadSitesManager.DownloadSitesChangedEvent;
 import org.cytoscape.app.internal.ui.downloadsites.DownloadSitesManager.DownloadSitesChangedListener;
+import org.cytoscape.util.swing.LookAndFeelUtil;
 
-public class ManageDownloadSitesDialog extends javax.swing.JDialog {
+public class ManageDownloadSitesDialog extends JDialog {
 
 	private static final long serialVersionUID = -5333266960245441850L;
 	
-	private javax.swing.JButton addSiteButton;
-    private javax.swing.JButton closeButton;
-    private javax.swing.JButton editSiteButton;
-    private javax.swing.JLabel listedSitesLabel;
-    private javax.swing.JButton removeSiteButton;
-    private javax.swing.JButton resetToDefaultButton;
-    private javax.swing.JLabel siteNameLabel;
-    private javax.swing.JTextField siteNameTextField;
-    private javax.swing.JLabel siteUrlLabel;
-    private javax.swing.JTextField siteUrlTextField;
-    private javax.swing.JScrollPane sitesScrollPane;
-    private javax.swing.JTable sitesTable;
+	private JButton newButton;
+    private JButton closeButton;
+    private JButton saveButton;
+    private JButton removeButton;
+    private JLabel listedSitesLabel;
+    private JLabel siteNameLabel;
+    private JTextField siteNameTextField;
+    private JLabel siteUrlLabel;
+    private JTextField siteUrlTextField;
+    private JScrollPane sitesScrollPane;
+    private JTable sitesTable;
 	
     private DownloadSitesManager downloadSitesManager;
     private DownloadSitesChangedListener downloadSitesChangedListener;
     
 
-    public ManageDownloadSitesDialog(java.awt.Frame parent, 
-    		boolean modal, DownloadSitesManager downloadSitesManager) {
-        super(parent, modal);
+    public ManageDownloadSitesDialog(Frame parent, DownloadSitesManager downloadSitesManager) {
+        super(parent, ModalityType.APPLICATION_MODAL);
         
         this.downloadSitesManager = downloadSitesManager;
-        
         initComponents();
         
         this.downloadSitesChangedListener = new DownloadSitesChangedListener() {
-			
 			@Override
-			public void downloadSitesChanged(
-					DownloadSitesChangedEvent downloadSitesChangedEvent) {
-				
-//				System.out.println("Sites changed event");
-				
+			public void downloadSitesChanged(DownloadSitesChangedEvent downloadSitesChangedEvent) {
 				repopulateTable();
 			}
 		};
 		
-        DownloadSite site1 = new DownloadSite();
-        site1.setSiteName("site1");
-        site1.setSiteUrl("url1");
-        
-        DownloadSite site2 = new DownloadSite();
-        site2.setSiteName("site2");
-        site2.setSiteUrl("url2");
-        
-        DownloadSite site3 = new DownloadSite();
-        site3.setSiteName("site3");
-        site3.setSiteUrl("url3");
-        
-        downloadSitesManager.loadDownloadSites();
-        
-        // System.out.println("Sites loaded, count: " + downloadSitesManager.getDownloadSites().size());
         if (downloadSitesManager.getDownloadSites().size() == 0) {
         	for (DownloadSite downloadSite : WebQuerier.DEFAULT_DOWNLOAD_SITES) {
         		downloadSitesManager.addDownloadSite(downloadSite);
         	}
         
-        	// System.out.println("Sites added, count: " + downloadSitesManager.getDownloadSites().size());
         	downloadSitesManager.saveDownloadSites();
         }
 
-        downloadSitesManager.addDownloadSitesChangedListener(
-        		downloadSitesChangedListener);
+        downloadSitesManager.addDownloadSitesChangedListener(downloadSitesChangedListener);
         
         repopulateTable();
-        
-        /*
-        downloadSitesManager.addDownloadSite(site1);
-        downloadSitesManager.addDownloadSite(site2);
-        downloadSitesManager.addDownloadSite(site3);
-        */
-        
         setupDescriptionListener();
+        update();
+        updateSaveButton();
     }
 
-    private void initComponents() {
-
-    	sitesScrollPane = new javax.swing.JScrollPane();
-        sitesTable = new javax.swing.JTable();
-        addSiteButton = new javax.swing.JButton();
-        editSiteButton = new javax.swing.JButton();
-        removeSiteButton = new javax.swing.JButton();
-        siteNameLabel = new javax.swing.JLabel();
-        siteNameTextField = new javax.swing.JTextField();
-        siteUrlLabel = new javax.swing.JLabel();
-        siteUrlTextField = new javax.swing.JTextField();
-        resetToDefaultButton = new javax.swing.JButton();
-        closeButton = new javax.swing.JButton();
-        listedSitesLabel = new javax.swing.JLabel();
-
-        setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+    @SuppressWarnings("serial")
+	private void initComponents() {
+    	setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Manage Download Sites");
+    	
+        listedSitesLabel = new JLabel("Listed sites: 0");
+        sitesTable = new JTable();
+    	sitesScrollPane = new JScrollPane(sitesTable);
+        newButton = new JButton("New");
+        saveButton = new JButton("Save");
+        removeButton = new JButton("Remove");
+        siteNameLabel = new JLabel("Site Name:");
+        siteNameTextField = new JTextField();
+        siteUrlLabel = new JLabel("URL:");
+        siteUrlTextField = new JTextField();
 
-        sitesTable.setModel(new javax.swing.table.DefaultTableModel(
+        final DocumentListener docListener = new DocumentListener() {
+			@Override
+			public void removeUpdate(DocumentEvent e) {
+				updateSaveButton();
+			}
+			@Override
+			public void insertUpdate(DocumentEvent e) {
+				updateSaveButton();
+			}
+			@Override
+			public void changedUpdate(DocumentEvent e) {
+				updateSaveButton();
+			}
+		};
+        
+        siteNameTextField.getDocument().addDocumentListener(docListener);
+        siteUrlTextField.getDocument().addDocumentListener(docListener);
+        
+        sitesTable.setModel(new DefaultTableModel(
             new Object [][] {
 
             },
@@ -152,203 +161,153 @@ public class ManageDownloadSitesDialog extends javax.swing.JDialog {
                 false, false
             };
 
+            @Override
             public boolean isCellEditable(int rowIndex, int columnIndex) {
                 return canEdit [columnIndex];
             }
         });
-        sitesTable.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
-        sitesScrollPane.setViewportView(sitesTable);
+        sitesTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         sitesTable.getColumnModel().getColumn(0).setPreferredWidth(50);
         sitesTable.getColumnModel().getColumn(1).setPreferredWidth(285);
 
-        addSiteButton.setText("Add");
-        addSiteButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                addSiteButtonActionPerformed(evt);
+        newButton.addActionListener(new ActionListener() {
+        	@Override
+            public void actionPerformed(ActionEvent evt) {
+                newButtonActionPerformed(evt);
             }
         });
 
-        editSiteButton.setText("Edit");
-        editSiteButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                editSiteButtonActionPerformed(evt);
+        saveButton.addActionListener(new ActionListener() {
+        	@Override
+            public void actionPerformed(ActionEvent evt) {
+                saveButtonActionPerformed(evt);
             }
         });
 
-        removeSiteButton.setText("Remove");
-        removeSiteButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                removeSiteButtonActionPerformed(evt);
+        removeButton.addActionListener(new ActionListener() {
+        	@Override
+            public void actionPerformed(ActionEvent evt) {
+                removeButtonActionPerformed(evt);
             }
         });
 
-        siteNameLabel.setText("Site Name");
+        LookAndFeelUtil.equalizeSize(newButton, removeButton, saveButton);
+        
+        closeButton = new JButton(new AbstractAction("Close") {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				dispose();
+			}
+		});
 
-        siteUrlLabel.setText("URL");
+        final JPanel detailPanel = new JPanel();
+        detailPanel.setBorder(LookAndFeelUtil.createPanelBorder());
+        {
+        	final GroupLayout layout = new GroupLayout(detailPanel);
+        	detailPanel.setLayout(layout);
+            layout.setAutoCreateContainerGaps(true);
+            layout.setAutoCreateGaps(true);
+            
+            layout.setHorizontalGroup(layout.createParallelGroup(CENTER, true)
+            		.addGroup(layout.createSequentialGroup()
+							.addGroup(layout.createParallelGroup(TRAILING)
+									.addComponent(siteNameLabel)
+									.addComponent(siteUrlLabel)
+							)
+							.addGroup(layout.createParallelGroup(LEADING, true)
+									.addComponent(siteNameTextField)
+									.addComponent(siteUrlTextField)
+							)
+					)
+            		.addGroup(layout.createSequentialGroup()
+		            		.addComponent(newButton, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+		            		.addPreferredGap(ComponentPlacement.UNRELATED, DEFAULT_SIZE, Short.MAX_VALUE)
+		            		.addComponent(removeButton, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+							.addComponent(saveButton, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					)
+            );
+            layout.setVerticalGroup(layout.createSequentialGroup()
+                    .addGroup(layout.createParallelGroup(Alignment.CENTER, false)
+    	                    .addComponent(siteNameLabel)
+    	                    .addComponent(siteNameTextField, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+    	             )
+                    .addGroup(layout.createParallelGroup(Alignment.CENTER, false)
+    	                    .addComponent(siteUrlLabel)
+    	                    .addComponent(siteUrlTextField, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+    	             )
+                    .addGroup(layout.createParallelGroup(Alignment.CENTER, false)
+                    		.addComponent(newButton, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+                    		.addComponent(removeButton, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+                    		.addComponent(saveButton, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+                    )
+            );
+        }
+        
+        final JPanel buttonPanel = LookAndFeelUtil.createOkCancelPanel(null, closeButton);
 
-        siteUrlTextField.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                siteUrlTextFieldActionPerformed(evt);
-            }
-        });
-
-        resetToDefaultButton.setText("Reset Sites");
-
-        closeButton.setText("Close");
-        closeButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                closeButtonActionPerformed(evt);
-            }
-        });
-
-        listedSitesLabel.setText("Listed sites: 0");
-
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
-        getContentPane().setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(sitesScrollPane)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(siteNameLabel)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(siteNameTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 119, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(siteUrlLabel)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(siteUrlTextField))
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(addSiteButton)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(editSiteButton)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(removeSiteButton)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(closeButton, javax.swing.GroupLayout.PREFERRED_SIZE, 79, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(resetToDefaultButton))
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(listedSitesLabel)
-                        .addGap(0, 0, Short.MAX_VALUE)))
-                .addContainerGap())
+        final JPanel contents = new JPanel();
+        final GroupLayout layout = new GroupLayout(contents);
+        contents.setLayout(layout);
+        layout.setAutoCreateContainerGaps(true);
+        layout.setAutoCreateGaps(true);
+        
+        layout.setHorizontalGroup(layout.createParallelGroup(Alignment.LEADING)
+				.addComponent(listedSitesLabel)
+		        .addComponent(sitesScrollPane)
+		        .addComponent(detailPanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+		        .addComponent(buttonPanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
         );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(listedSitesLabel)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(sitesScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 216, Short.MAX_VALUE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(siteNameLabel)
-                    .addComponent(siteNameTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(siteUrlLabel)
-                    .addComponent(siteUrlTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(editSiteButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(removeSiteButton)
-                        .addComponent(closeButton)
-                        .addComponent(resetToDefaultButton))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addGap(0, 0, Short.MAX_VALUE)
-                        .addComponent(addSiteButton)
-                        .addContainerGap())))
+        layout.setVerticalGroup(layout.createSequentialGroup()
+                .addComponent(listedSitesLabel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+                .addComponent(sitesScrollPane, DEFAULT_SIZE, 120, Short.MAX_VALUE)
+                .addComponent(detailPanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+                .addComponent(buttonPanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
         );
 
+        getContentPane().add(contents);
         pack();
         
-        closeButton.setVisible(false);
-        
-    }// </editor-fold>
-
-    private void addSiteButtonActionPerformed(java.awt.event.ActionEvent evt) {
-    	final DownloadSite downloadSite = new DownloadSite();
-    	
-    	String enteredSiteName = getEnteredSiteName();
-    	String enteredSiteUrl = getEnteredUrl();
-    	
-    	downloadSite.setSiteName(enteredSiteName);
-    	downloadSite.setSiteUrl(enteredSiteUrl);
-    	
-    	if (enteredSiteName.trim().length() == 0
-    			|| enteredSiteUrl.trim().length() == 0) {
-    		return;
-    	}
-    	
-    	downloadSitesManager.addDownloadSite(downloadSite);
-
-		downloadSitesManager.saveDownloadSites();
-		
-    	if (sitesTable.getModel() instanceof DefaultTableModel) {
-    		
-    		// Make the added site selected
-    		SwingUtilities.invokeLater(new Runnable() {
-				
-				@Override
-				public void run() {
-					
-					DefaultTableModel tableModel = (DefaultTableModel) sitesTable.getModel();
-		    		
-		    		Integer rowIndex = null;
-		    		DownloadSite siteInTable = null;
-		    		
-//		    		System.out.println("Finding row index");
-					
-					for (int i = 0; i < tableModel.getRowCount(); i++) {
-		    			Object o = tableModel.getValueAt(i, 0);
-		    			
-//		    			System.out.println(o);
-		    			
-		    			if (o instanceof DownloadSite) {
-		    				siteInTable = (DownloadSite) o;
-		    				
-		    				if (siteInTable == downloadSite) {
-		    					rowIndex = i;
-//		    					System.out.println("Row index found: " + i);
-		    				}
-		    			}
-		    		}
-		    		
-		    		if (rowIndex != null) {
-		    		
-		        		final int selectionRowIndex = rowIndex;
-		    			
-//						System.out.println("Setting row index: " + selectionRowIndex);
-						
-						sitesTable.getSelectionModel().setSelectionInterval(
-								selectionRowIndex, selectionRowIndex);
-					
-		    		}
-				}
-			});
-    	}
+        LookAndFeelUtil.setDefaultOkCancelKeyStrokes(getRootPane(), null, closeButton.getAction());
     }
 
-    private void editSiteButtonActionPerformed(java.awt.event.ActionEvent evt) {
+    private void newButtonActionPerformed(ActionEvent evt) {
+    	sitesTable.getSelectionModel().clearSelection();
+    	siteNameTextField.requestFocusInWindow();
+    }
+    
+    private void saveButtonActionPerformed(ActionEvent evt) {
     	DownloadSite downloadSite = getSelectedSite();
     	
     	if (downloadSite == null) {
-    		JOptionPane.showMessageDialog(this, "Select a site to edit it");
+    		// Save new site...
+        	String enteredSiteName = getEnteredSiteName();
+        	String enteredSiteUrl = getEnteredUrl();
+        	
+        	if (enteredSiteName.trim().isEmpty() || enteredSiteUrl.trim().isEmpty())
+        		return;
+        	
+        	downloadSite = new DownloadSite();
+        	downloadSite.setSiteName(enteredSiteName);
+        	downloadSite.setSiteUrl(enteredSiteUrl);
+        	
+        	downloadSitesManager.addDownloadSite(downloadSite);
+    		downloadSitesManager.saveDownloadSites();
+    		
+    		update();
     	} else if (isLastCopyOfDefaultSite(downloadSite)) {
     		JOptionPane.showMessageDialog(this, "That is a default site, cannot edit");
-    		
-    	} else {    		
+    	} else {
+    		// Save existing site...
     		downloadSite.setSiteName(getEnteredSiteName());
     		downloadSite.setSiteUrl(getEnteredUrl());
     		
     		// Tell the manager one of its sites changed
     		downloadSitesManager.notifyDownloadSitesChanged();
-
     		downloadSitesManager.saveDownloadSites();
     	}
     }
 
-    private void removeSiteButtonActionPerformed(java.awt.event.ActionEvent evt) {
+    private void removeButtonActionPerformed(ActionEvent evt) {
         DownloadSite downloadSite = getSelectedSite();
         
         if (downloadSite == null) {
@@ -357,27 +316,22 @@ public class ManageDownloadSitesDialog extends javax.swing.JDialog {
         // If it is the last copy of a default download site, don't allow removing it
         } else if (isLastCopyOfDefaultSite(downloadSite)) {
         	JOptionPane.showMessageDialog(this, "That is a default site, cannot remove");
-        	
         } else {
         	final int selectionIndex = sitesTable.getSelectedRow();
-        	
         	DownloadSite siteToRemove = null;
         	
         	for (DownloadSite availableSite : downloadSitesManager.getDownloadSites()) {
         		if (availableSite.getSiteName().equals(downloadSite.getSiteName())
         			&& availableSite.getSiteUrl().equals(downloadSite.getSiteUrl())) {
-        			
         			siteToRemove = availableSite;
         		}
         	}
         	
         	if (siteToRemove != null) {
         		downloadSitesManager.removeDownloadSite(siteToRemove);
-
         		downloadSitesManager.saveDownloadSites();
         		
         		SwingUtilities.invokeLater(new Runnable() {
-					
 					@Override
 					public void run() {
 						int rowCount = sitesTable.getRowCount();
@@ -385,14 +339,12 @@ public class ManageDownloadSitesDialog extends javax.swing.JDialog {
 						if (rowCount == 0) {
 							return;
 						} else if (selectionIndex > 0) {
-							sitesTable.getSelectionModel().setSelectionInterval(
-									selectionIndex - 1, selectionIndex - 1);
+							sitesTable.getSelectionModel().setSelectionInterval(selectionIndex - 1, selectionIndex - 1);
 						} else if (selectionIndex == 0) {
 							sitesTable.getSelectionModel().setSelectionInterval(0, 0);
 						}
 					}
 				});
-        		
         	}
         }
     }
@@ -408,34 +360,23 @@ public class ManageDownloadSitesDialog extends javax.swing.JDialog {
     	boolean isDefaultSite = false;
 		int copiesOfSite = 0;
 		
-		// Don't allow editing if it's one of default sites, and it's the last
-		// copy of that default site
+		// Don't allow editing if it's one of default sites, and it's the last copy of that default site
 		for (DownloadSite defaultSite : WebQuerier.DEFAULT_DOWNLOAD_SITES) {
-			if (downloadSite.sameSiteAs(defaultSite)) {
+			if (downloadSite.equals(defaultSite))
 				isDefaultSite = true;
-			}
 		}
 		
 		if (isDefaultSite) {
     		for (DownloadSite registeredSite : downloadSitesManager.getDownloadSites()) {
-    			if (registeredSite.sameSiteAs(downloadSite)) {
+    			if (registeredSite.equals(downloadSite))
     				copiesOfSite++;
-    			}
     		}
 		}
 		
 		return (isDefaultSite && copiesOfSite <= 1);
     }
     
-    private void siteUrlTextFieldActionPerformed(java.awt.event.ActionEvent evt) {
-    }
-    
-    private void closeButtonActionPerformed(java.awt.event.ActionEvent evt) {
-        this.dispose();
-    }
-    
     private void repopulateTable() {
-    	
     	final DefaultTableModel tableModel = new DefaultTableModel(
 	            new Object [][] {
 	            },
@@ -459,7 +400,6 @@ public class ManageDownloadSitesDialog extends javax.swing.JDialog {
     	
     	// Sort by name
     	Collections.sort(downloadSites, new Comparator<DownloadSite>() {
-
 			@Override
 			public int compare(DownloadSite o1, DownloadSite o2) {
 				return o1.getSiteName().compareTo(o2.getSiteName());
@@ -474,7 +414,6 @@ public class ManageDownloadSitesDialog extends javax.swing.JDialog {
     	}
     	
     	SwingUtilities.invokeLater(new Runnable() {
-    		
 			@Override
 			public void run() {
 		    	sitesTable.setModel(tableModel);
@@ -493,28 +432,45 @@ public class ManageDownloadSitesDialog extends javax.swing.JDialog {
      */
     private void setupDescriptionListener() {
     	sitesTable.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
-			
 			@Override
 			public void valueChanged(ListSelectionEvent e) {
-				if (!e.getValueIsAdjusting()) {
-					updateTextFields();
-				}
+				if (!e.getValueIsAdjusting())
+					update();
 			}
 		});
     }
     
-    private void updateTextFields() {
-    	DownloadSite selectedSite = getSelectedSite();
+    private void update() {
+    	final DownloadSite selectedSite = getSelectedSite();
+    	final boolean isNew = selectedSite == null;
+    	final boolean isDefault = selectedSite != null && isLastCopyOfDefaultSite(selectedSite);
     	
     	if (selectedSite != null) {
     		siteNameTextField.setText(selectedSite.getSiteName());
     		siteUrlTextField.setText(selectedSite.getSiteUrl());
+    		saveButton.setText("Save");
     	} else {
     		siteNameTextField.setText("");
     		siteUrlTextField.setText("");
+    		saveButton.setText("Add");
     	}
     	
+		siteNameTextField.setEnabled(!isDefault);
+		siteUrlTextField.setEnabled(!isDefault);
+    	newButton.setEnabled(!isNew);
+    	removeButton.setEnabled(!isNew && !isDefault);
+    	saveButton.setEnabled(false);
     }
+    
+    private void updateSaveButton() {
+    	final DownloadSite selectedSite = getSelectedSite();
+    	final boolean isDefault = selectedSite != null && isLastCopyOfDefaultSite(selectedSite);
+    	
+    	if (isDefault)
+    		saveButton.setEnabled(false);
+    	else
+    		saveButton.setEnabled(!getEnteredSiteName().trim().isEmpty() && !getEnteredUrl().trim().isEmpty());
+	}
     
     private String getEnteredUrl() {
     	return siteUrlTextField.getText();
@@ -529,17 +485,15 @@ public class ManageDownloadSitesDialog extends javax.swing.JDialog {
     	int[] selectedRows = sitesTable.getSelectedRows();
     	
         for (int index = 0; index < selectedRows.length; index++) {
-        	
         	DownloadSite downloadSite = (DownloadSite) sitesTable.getModel().getValueAt(
         			sitesTable.convertRowIndexToModel(selectedRows[index]), 0);
         	
         	selectedSites.add(downloadSite);
         }
     	
-        if (selectedSites.size() > 0) {
+        if (selectedSites.size() > 0)
         	return selectedSites.iterator().next();
-        } else {
-        	return null;
-        }
+        
+        return null;
     }
 }

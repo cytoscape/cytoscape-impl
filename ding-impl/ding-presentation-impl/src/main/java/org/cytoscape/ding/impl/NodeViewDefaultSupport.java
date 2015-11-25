@@ -93,6 +93,10 @@ final class NodeViewDefaultSupport extends AbstractViewDefaultSupport {
 			setLabelWidth(newSize);
 		} else if (vp == BasicVisualLexicon.NODE_NESTED_NETWORK_IMAGE_VISIBLE) {
 			setNestedNetworkImgVisible(Boolean.TRUE.equals(value));
+		} else {
+			synchronized (lock) {
+				nodeDetails.setDefaultValue(vp, value);
+			}
 		}
 	}
 
@@ -127,19 +131,27 @@ final class NodeViewDefaultSupport extends AbstractViewDefaultSupport {
 	}
 
 	void setTransparency(int trans) {
-		nodeDetails.setTransparencyDefault(trans);
+		synchronized (lock) {
+			nodeDetails.setTransparencyDefault(trans);
+		}
 
 		setSelectedPaint(nodeDetails.m_selectedPaintDefault);
 		setUnselectedPaint(nodeDetails.m_unselectedPaintDefault);
 	}
 	
 	void setBorderTransparency(int trans) {
-		nodeDetails.setBorderTransparencyDefault(trans);
+		synchronized (lock) {
+			nodeDetails.setBorderTransparencyDefault(trans);
+		}
+		
 		setBorderPaint(nodeDetails.m_borderPaintDefault);
 	}
 	
 	void setLabelTransparency(int trans) {
-		nodeDetails.setLabelTransparencyDefault(trans);
+		synchronized (lock) {
+			nodeDetails.setLabelTransparencyDefault(trans);
+		}
+		
 		setTextPaint(nodeDetails.m_labelPaintDefault);
 	}
 
@@ -194,6 +206,9 @@ final class NodeViewDefaultSupport extends AbstractViewDefaultSupport {
 			nodeDetails.setLabelJustifyDefault(labelPosition.getJustify().getConversionConstant());
 			nodeDetails.setLabelOffsetVectorXDefault(labelPosition.getOffsetX());
 			nodeDetails.setLabelOffsetVectorYDefault(labelPosition.getOffsetY());
+			// We need to do this so that getVisualProperty calls that fall through to 
+			// the default return this value.
+			nodeDetails.setDefaultValue(DVisualLexicon.NODE_LABEL_POSITION, labelPosition);
 		}
 	}
 	

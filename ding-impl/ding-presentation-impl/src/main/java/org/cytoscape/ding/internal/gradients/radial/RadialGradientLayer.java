@@ -16,7 +16,7 @@ public class RadialGradientLayer extends AbstractGradientLayer {
 	
 	protected Point2D center;
 	protected float radius;
-	protected Rectangle2D rectangle = new Rectangle(0, 0, 1, 1);
+	protected Rectangle2D rectangle = new Rectangle(0, 0, 100, 100);
 
 	// ==[ CONSTRUCTORS ]===============================================================================================
 	

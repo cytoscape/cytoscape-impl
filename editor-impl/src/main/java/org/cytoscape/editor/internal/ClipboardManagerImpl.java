@@ -63,15 +63,19 @@ public final class ClipboardManagerImpl {
 	}
 
 	public void copy(CyNetworkView networkView, Set<CyNode> nodes, Set<CyEdge> edges) {
-		final VisualLexicon lexicon = vmMgr.getAllVisualLexicon().iterator().next();
-		currentClipboard = new ClipboardImpl(networkView, nodes, edges, lexicon, eventHelper);
+		copy(networkView, nodes, edges, false);
 	}
 
 	public void cut(CyNetworkView networkView, Set<CyNode> nodes, Set<CyEdge> edges) {
-		copy(networkView, nodes, edges);
+		copy(networkView, nodes, edges, true);
 		networkView.getModel().removeEdges(edges);
 		networkView.getModel().removeNodes(nodes);
 		networkView.updateView();
+	}
+
+	public void copy(CyNetworkView networkView, Set<CyNode> nodes, Set<CyEdge> edges, boolean cut) {
+		final VisualLexicon lexicon = vmMgr.getAllVisualLexicon().iterator().next();
+		currentClipboard = new ClipboardImpl(networkView, nodes, edges, cut, lexicon, eventHelper);
 	}
 
 	public List<CyIdentifiable> paste(CyNetworkView targetView, double x, double y) {

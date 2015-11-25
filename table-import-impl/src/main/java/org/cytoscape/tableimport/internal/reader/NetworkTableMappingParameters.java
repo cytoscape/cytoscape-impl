@@ -24,24 +24,18 @@ package org.cytoscape.tableimport.internal.reader;
  * #L%
  */
 
-import static org.cytoscape.tableimport.internal.reader.TextTableReader.ObjectType.*;
-
-import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.List;
 
+import org.cytoscape.tableimport.internal.util.AttributeDataType;
+import org.cytoscape.tableimport.internal.util.SourceColumnSemantic;
+import org.cytoscape.tableimport.internal.util.TypeUtil;
+
 /**
- * Text table <---> CyAttribute & CyNetwork mapping parameters for network
- * table.
- *
- * @since Cytoscape 2.4
- * @version 0.9
- *
- * @author Keiichiro Ono
- *
+ * Text table <---> CyAttribute & CyNetwork mapping parameters for network table.
  */
 public class NetworkTableMappingParameters extends AbstractMappingParameters {
-	private static final String DEF_INTERACTION = "pp";
+	
 	private final Integer source;
 	private final Integer target;
 	private final Integer interaction;
@@ -49,30 +43,22 @@ public class NetworkTableMappingParameters extends AbstractMappingParameters {
 
 	/**
 	 * Creates a new NetworkTableMappingParameters object.
-	 *
-	 * @param delimiters  DOCUMENT ME!
-	 * @param listDelimiter  DOCUMENT ME!
-	 * @param attributeNames  DOCUMENT ME!
-	 * @param attributeTypes  DOCUMENT ME!
-	 * @param listAttributeTypes  DOCUMENT ME!
-	 * @param importFlag  DOCUMENT ME!
-	 * @param source  DOCUMENT ME!
-	 * @param target  DOCUMENT ME!
-	 * @param interaction  DOCUMENT ME!
-	 * @param defInteraction  DOCUMENT ME!
-	 *
-	 * @throws Exception  DOCUMENT ME!
 	 */
-	public NetworkTableMappingParameters(List<String> delimiters, String listDelimiter,
-	                                     String[] attributeNames, Byte[] attributeTypes,
-	                                     Byte[] listAttributeTypes,
-	                                     boolean[] importFlag,
-	                                     Integer source, Integer target, Integer interaction,
-	                                     final String defInteraction, 
-	                                     int startNumber, String commentChar) throws Exception {
-		
-		
-		super(delimiters, listDelimiter,attributeNames , attributeTypes, listAttributeTypes, importFlag, startNumber, commentChar);
+	public NetworkTableMappingParameters(
+			final String name,
+			final List<String> delimiters,
+			final String[] listDelimiters,
+			final String[] attributeNames,
+			final AttributeDataType[] dataTypes,
+			final SourceColumnSemantic[] types,
+			final Integer source,
+			final Integer target,
+			final Integer interaction,
+			final String defInteraction,
+			final int startNumber,
+			final String commentChar
+	) throws Exception {
+		super(name, delimiters, listDelimiters, attributeNames , dataTypes, types, startNumber, commentChar);
 
 		this.source = source;
 		this.target = target;
@@ -80,57 +66,27 @@ public class NetworkTableMappingParameters extends AbstractMappingParameters {
 		this.defInteraction = defInteraction;
 	}
 
-	public NetworkTableMappingParameters(InputStream is, String fileType) throws Exception {
-		
+	public NetworkTableMappingParameters(final InputStream is, final String fileType) throws Exception {
 		super(is, fileType);
 		this.source = -1;
 		this.target = -1;
 		this.interaction = -1;
 		this.defInteraction = "";
-		
 	}
 
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @return  DOCUMENT ME!
-	 */
 	public Integer getSourceIndex() {
 		return source;
 	}
 
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @return  DOCUMENT ME!
-	 */
 	public Integer getTargetIndex() {
 		return target;
 	}
 
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @return  DOCUMENT ME!
-	 */
 	public Integer getInteractionIndex() {
 		return interaction;
 	}
 
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @return  DOCUMENT ME!
-	 */
 	public String getDefaultInteraction() {
-		if (defInteraction == null) {
-			return DEF_INTERACTION;
-		} else {
-			return defInteraction;
-		}
+		return defInteraction == null ? TypeUtil.DEFAULT_INTERACTION : defInteraction;
 	}
-
-
-	
-
 }

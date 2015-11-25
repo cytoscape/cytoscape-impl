@@ -25,15 +25,16 @@ package org.cytoscape.io.internal.read;
  */
 
 import org.apache.commons.io.FilenameUtils;
+import org.cytoscape.application.CyUserLog;
 import org.cytoscape.io.CyFileFilter;
 import org.cytoscape.io.DataCategory;
 import org.cytoscape.io.read.InputStreamTaskFactory;
 import org.cytoscape.io.util.StreamUtil;
 import org.cytoscape.work.Task;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.log4j.Logger;
 
 import java.io.BufferedInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
@@ -48,7 +49,8 @@ import java.util.concurrent.CopyOnWriteArraySet;
 
 public class GenericReaderManager<T extends InputStreamTaskFactory, R extends Task> {
 
-	private static final Logger logger = LoggerFactory.getLogger(GenericReaderManager.class);
+	private static final Logger userLogger = Logger.getLogger(CyUserLog.NAME);
+	private static final Logger logger = Logger.getLogger(GenericReaderManager.class);
 
 	// This is a HACK! We need re-design this filtering mechanism.
 	private static final String DEFAULT_READER_FACTORY_CLASS = "org.cytoscape.tableimport.internal.ImportNetworkTableReaderFactory";
@@ -75,7 +77,7 @@ public class GenericReaderManager<T extends InputStreamTaskFactory, R extends Ta
 		if (factory == null)
 			logger.warn("Specified factory is null.");
 		else if (factory.getFileFilter().getDataCategory() == category) {
-			logger.debug("adding IO taskFactory (factory = " + factory + ", category = " + category + ")");
+			// logger.debug("adding IO taskFactory (factory = " + factory + ", category = " + category + ")");
 			factories.add(factory);
 		}
 	}
@@ -134,8 +136,8 @@ public class GenericReaderManager<T extends InputStreamTaskFactory, R extends Ta
 
 		// No compatible factory is available.
 		if (factoryTable.isEmpty() && defaultFactory == null) {
-			logger.warn("No reader found for uri: " + uri.toString());
-			throw new NullPointerException("Could not find reader.");
+			userLogger.warn("No reader found for uri: " + uri.toString());
+			throw new IllegalStateException("Don't know how to read "+ uri.toString());
 		} else if(factoryList.size() == 1) {
 			// There is only one compatible reader factory.  Use it:
 			chosenFactory = factoryList.get(0);
@@ -151,8 +153,10 @@ public class GenericReaderManager<T extends InputStreamTaskFactory, R extends Ta
 				else {
 					if (factoryTable.containsKey(""))
 						chosenFactory = factoryTable.get("");
-					else
-						throw new NullPointerException("Could not find reader factory.");
+					else {
+						userLogger.warn("Can't figure out how to read: " + uri.toString() + " from extension");
+						throw new IllegalStateException("Can't figure out how to read "+uri.toString()+" from extension");
+					}
 				}
 			}
 		}
@@ -165,9 +169,10 @@ public class GenericReaderManager<T extends InputStreamTaskFactory, R extends Ta
 				stream = new BufferedInputStream(stream);
 			}
 			return (R) chosenFactory.createTaskIterator(stream, inputName).next();
-
+		} catch (FileNotFoundException e) {
+			throw new IllegalStateException("File '"+inputName+"' not found:", e);
 		} catch (IOException e) {
-			logger.warn("Error opening stream to URI: " + uri.toString(), e);
+			userLogger.warn("Error opening stream to URI: " + uri.toString(), e);
 			throw new IllegalStateException("Could not open stream for reader.", e);
 		}
 	}
@@ -182,21 +187,21 @@ public class GenericReaderManager<T extends InputStreamTaskFactory, R extends Ta
 
 			for (T factory : factories) {
 				CyFileFilter cff = factory.getFileFilter();
-				logger.debug("trying READER: " + factory + " with filter: " + cff);
+				// logger.debug("trying READER: " + factory + " with filter: " + cff);
 
 				// Because we don't know who will provide the file filter or
 				// what they might do with the InputStream, we provide a copy
 				// of the first 2KB rather than the stream itself.
 				if (cff.accepts(CopyInputStream.copyKBytes(stream, 1), category)) {
-					logger.debug("successfully matched READER " + factory);
+					// logger.debug("successfully matched READER " + factory);
 					return (R) factory.createTaskIterator(stream, inputName).next();
 				}
 			}
 		} catch (IOException ioe) {
-			logger.warn("Error setting input stream", ioe);
+			userLogger.warn("Error setting input stream", ioe);
 		}
 
-		logger.warn("No reader found for input stream");
+		userLogger.warn("No reader found for input stream");
 		return null;
 	}
 }

@@ -95,7 +95,7 @@ public class NnfWriter implements CyWriter {
 			encounteredNodes.add(sourceID);
 			writer.write(escapeID(sourceID) + " ");
 
-			String interactionName = network.getRow(edge).get("interaction", String.class); 
+			String interactionName = network.getRow(edge).get(CyEdge.INTERACTION, String.class); 
 			
 			if (interactionName == null)
 				interactionName = "xx";

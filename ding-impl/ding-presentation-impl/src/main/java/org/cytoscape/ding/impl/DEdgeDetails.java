@@ -63,6 +63,9 @@ import org.cytoscape.view.presentation.property.values.ArrowShape;
 import org.cytoscape.view.presentation.property.values.Bend;
 import org.cytoscape.view.presentation.property.values.LineType;
 
+import org.cytoscape.ding.impl.strokes.AnimatedStroke;
+import org.cytoscape.ding.impl.strokes.WidthStroke;
+
 /**
  * Values stored in this object will be used renderer. Be careful to keep these
  * values consistent!
@@ -112,7 +115,7 @@ final class DEdgeDetails extends EdgeDetails {
 	String m_labelTextDefault;
 	Font m_labelFontDefault = EDGE_LABEL_FONT_FACE.getDefault();
 	Paint m_labelPaintDefault = EDGE_LABEL_COLOR.getDefault();
-	Double m_labelWidthDefault;
+	Double m_labelWidthDefault = DVisualLexicon.EDGE_LABEL_WIDTH.getDefault();
 	Paint m_selectedPaintDefault = EDGE_SELECTED_PAINT.getDefault();
 	Paint m_unselectedPaintDefault = EDGE_UNSELECTED_PAINT.getDefault();
 	Paint m_colorLowDetailDefault = EDGE_UNSELECTED_PAINT.getDefault();
@@ -190,6 +193,10 @@ final class DEdgeDetails extends EdgeDetails {
 		m_edgeTooltips.remove(edgeIdx);
 		m_edgeTansparencies.remove(edgeIdx);
 		m_edgeLabelTansparencies.remove(edgeIdx);
+	}
+	
+	public <V> void setDefaultValue(final VisualProperty<V> vp, V value) {
+		defaultValues.put(vp, value);
 	}
 
 	@Override
@@ -360,7 +367,7 @@ final class DEdgeDetails extends EdgeDetails {
 
 	void setTargetArrowDefault(final byte arrow) {
 		m_targetArrowDefault = arrow;
-		defaultValues.put(DVisualLexicon.EDGE_SOURCE_ARROW_SHAPE, DArrowShape.getArrowShape(m_sourceArrowDefault));
+		defaultValues.put(DVisualLexicon.EDGE_TARGET_ARROW_SHAPE, DArrowShape.getArrowShape(m_targetArrowDefault));
 	}
 
 	/*
@@ -478,14 +485,24 @@ final class DEdgeDetails extends EdgeDetails {
 	public Stroke getStroke(final CyEdge edge) {
 		Stroke stroke = null;
 		final DEdgeView dev = dGraphView.getDEdgeView(edge);
+
+		if (dev == null) return null;
 		
 		if (dev.isValueLocked(DVisualLexicon.EDGE_LINE_TYPE) || dev.isValueLocked(DVisualLexicon.EDGE_WIDTH)) {
 			// If one of these properties are locked, the stroke has to be recreated
 			final LineType lineType = dev.getVisualProperty(DVisualLexicon.EDGE_LINE_TYPE);
 			stroke = DLineType.getDLineType(lineType).getStroke(getWidth(edge));
+
+			// We need to handle animated edges with some care...
+			if (stroke instanceof AnimatedStroke) {
+				Stroke oldStroke = m_segmentStrokes.get(edge);
+				if (oldStroke != null && oldStroke.getClass().equals(stroke.getClass())) {
+					stroke = ((WidthStroke)oldStroke).newInstanceForWidth(getWidth(edge));
+				}
+			}
 		} else {
 			stroke = m_segmentStrokes.get(edge);
-			
+
 			if (stroke == null) {
 				if (m_segmentStrokeDefault == null)
 					stroke = super.getStroke(edge);
@@ -493,6 +510,11 @@ final class DEdgeDetails extends EdgeDetails {
 					stroke = m_segmentStrokeDefault;
 			}
 		}
+
+		if (stroke instanceof AnimatedStroke)
+			dGraphView.addAnimatedEdge(dev);
+		else
+			dGraphView.removeAnimatedEdge(dev);
 
 		return stroke;
 	}
@@ -506,9 +528,9 @@ final class DEdgeDetails extends EdgeDetails {
 	 * A null paint has the special meaning to remove overridden paint.
 	 */
 	void overrideSegmentStroke(final CyEdge edge, final Stroke stroke) {
-		if ((stroke == null) || stroke.equals(super.getStroke(edge)))
+		if ((stroke == null) || stroke.equals(super.getStroke(edge))) {
 			m_segmentStrokes.remove(edge);
-		else {
+		} else {
 			m_segmentStrokes.put(edge, stroke);
 			isCleared = false;
 		}
@@ -876,11 +898,14 @@ final class DEdgeDetails extends EdgeDetails {
 
 	@Override
 	public double getLabelWidth(final CyEdge edge) {
-		// Check bypass
+		// Check bypass first
 		final DEdgeView dev = dGraphView.getDEdgeView(edge);
-		// TODO: Edge Label width?
-
+		
+		if (dev.isValueLocked(DVisualLexicon.EDGE_LABEL_WIDTH))
+			return dev.getVisualProperty(DVisualLexicon.EDGE_LABEL_WIDTH);
+		
 		final Double width = m_labelWidths.get(edge);
+		
 		if (width == null) {
 			if (m_labelWidthDefault == null)
 				return super.getLabelWidth(edge);
@@ -893,11 +918,11 @@ final class DEdgeDetails extends EdgeDetails {
 
 	void setLabelWidthDefault(double width) {
 		m_labelWidthDefault = width;
+		defaultValues.put(DVisualLexicon.EDGE_LABEL_WIDTH, m_labelWidthDefault);
 	}
 
-	/*
-	 * A negative width value has the special meaning to remove overridden
-	 * width.
+	/**
+	 * A negative width value has the special meaning to remove overridden width.
 	 */
 	void overrideLabelWidth(final CyEdge edge, final double width) {
 		if ((width < 0.0) || (width == super.getLabelWidth(edge)))
@@ -1225,9 +1250,9 @@ final class DEdgeDetails extends EdgeDetails {
 			anchorInx = anchorInx / 2;
 
 		if (dGraphView.m_selectedAnchors.count((edge.getSUID() << 6) | anchorInx) > 0)
-			return dGraphView.getAnchorSelectedPaint();
+			return getSelectedPaint(edge);
 		else
-			return dGraphView.getAnchorUnselectedPaint();
+			return getUnselectedPaint(edge);
 	}
 	
 	public <T, V extends T> V getDefaultValue(VisualProperty<T> vp) {

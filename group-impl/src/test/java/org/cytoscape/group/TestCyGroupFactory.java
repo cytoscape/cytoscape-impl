@@ -53,9 +53,10 @@ public class TestCyGroupFactory {
 
 	public static CyGroupFactory getFactory() {
 		DummyCyEventHelper deh = new DummyCyEventHelper();
-		CyGroupManagerImpl mgr = new CyGroupManagerImpl(deh);
 		
 		final CyServiceRegistrar serviceRegistrar = mock(CyServiceRegistrar.class);
+		CyGroupManagerImpl mgr = new CyGroupManagerImpl(serviceRegistrar, deh);
+
 		final VisualMappingManager vmMgr = mock(VisualMappingManager.class);
 		when(serviceRegistrar.getService(VisualMappingManager.class)).thenReturn(vmMgr);
 		final CyNetworkViewManager netViewMgr = mock(CyNetworkViewManager.class);
@@ -63,7 +64,7 @@ public class TestCyGroupFactory {
 		
 		final LockedVisualPropertiesManager lvpMgr = new LockedVisualPropertiesManager(serviceRegistrar);
 		
-		CyGroupFactoryImpl groupFactory = new CyGroupFactoryImpl(deh, mgr, lvpMgr, serviceRegistrar);
+		CyGroupFactoryImpl groupFactory = new CyGroupFactoryImpl(mgr, lvpMgr, deh);
 		
 		return groupFactory; 
 	}

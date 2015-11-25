@@ -34,6 +34,7 @@ import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableManager;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.tableimport.internal.reader.ontology.GeneAssociationReader;
 import org.cytoscape.tableimport.internal.reader.ontology.OBOReader;
 import org.cytoscape.work.AbstractTask;
@@ -52,15 +53,12 @@ public class MapGeneAssociationTask extends AbstractTask {
 
 	private static final Logger logger = LoggerFactory.getLogger(MapGeneAssociationTask.class);
 
-	private final CyNetworkManager networkManager;
 	private final CyTableReader tableReader;
-	private final CyTableManager tableManager;
+	private final CyServiceRegistrar serviceRegistrar;
 
-	MapGeneAssociationTask(final CyTableReader tableReader, final CyTableManager tableManager,
-			final CyNetworkManager networkManager) {
+	MapGeneAssociationTask(final CyTableReader tableReader, final CyServiceRegistrar serviceRegistrar) {
 		this.tableReader = tableReader;
-		this.tableManager = tableManager;
-		this.networkManager = networkManager;
+		this.serviceRegistrar = serviceRegistrar;
 	}
 
 	@Override
@@ -73,7 +71,7 @@ public class MapGeneAssociationTask extends AbstractTask {
 		if (tables == null || tables[0] == null)
 			throw new NullPointerException("Could not find table.");
 
-		tableManager.addTable(tables[0]);
+		serviceRegistrar.getService(CyTableManager.class).addTable(tables[0]);
 
 		mapping(taskMonitor, tables[0]);
 		taskMonitor.setProgress(1.0d);
@@ -82,7 +80,8 @@ public class MapGeneAssociationTask extends AbstractTask {
 	private void mapping(TaskMonitor taskMonitor, final CyTable globalTable) {
 		taskMonitor.setProgress(0.0d);
 
-		final Set<CyNetwork> networks = networkManager.getNetworkSet();
+		final Set<CyNetwork> networks = serviceRegistrar.getService(CyNetworkManager.class).getNetworkSet();
+		
 		if (networks.isEmpty())
 			return;
 

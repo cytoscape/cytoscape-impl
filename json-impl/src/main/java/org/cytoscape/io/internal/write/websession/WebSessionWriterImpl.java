@@ -54,7 +54,7 @@ public class WebSessionWriterImpl extends AbstractTask implements CyWriter, WebS
 	private final VizmapWriterFactory jsonStyleWriterFactory;
 	private final VisualMappingManager vmm;
 	private final CytoscapeJsNetworkWriterFactory cytoscapejsWriterFactory;
-	private final CyNetworkViewManager viewManager;
+	protected final CyNetworkViewManager viewManager;
 
 	private final Map<String, File> name2fileMap;
 	

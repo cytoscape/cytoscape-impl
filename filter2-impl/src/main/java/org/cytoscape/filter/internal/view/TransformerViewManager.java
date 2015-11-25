@@ -2,6 +2,7 @@ package org.cytoscape.filter.internal.view;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -19,6 +20,7 @@ import org.cytoscape.model.CyNetwork;
 public class TransformerViewManager {
 
 	private Map<String, TransformerViewFactory> viewFactories;
+	private Map<String, Map<String,String>> viewProperties;
 	private List<TransformerViewElement> filterConditionViewElements;
 	private List<TransformerViewElement> chainTransformerViewElements;
 	private TransformerManager transformerManager;
@@ -27,9 +29,10 @@ public class TransformerViewManager {
 	
 	public TransformerViewManager(TransformerManager transformerManager) {
 		this.transformerManager = transformerManager;
-		viewFactories = new ConcurrentHashMap<String, TransformerViewFactory>(16, 0.75f, 2);
-		filterConditionViewElements = new ArrayList<TransformerViewElement>();
-		chainTransformerViewElements = new ArrayList<TransformerViewElement>();
+		viewFactories = new ConcurrentHashMap<>(16, 0.75f, 2);
+		viewProperties = new ConcurrentHashMap<>(16, 0.75f, 2);
+		filterConditionViewElements = new ArrayList<>();
+		chainTransformerViewElements = new ArrayList<>();
 	}
 	
 	public JComponent createView(Transformer<CyNetwork, CyIdentifiable> transformer) {
@@ -39,7 +42,14 @@ public class TransformerViewManager {
 		}
 		return viewFactory.createView(transformer);
 	}
-
+	
+	public String getAddButtonTooltip(Transformer<?,?> transformer) {
+		Map<String,String> props = viewProperties.get(transformer.getId());
+		if(props == null)
+			return null;
+		return props.get("addButtonTooltip");
+	}
+	
 	public void registerTransformerViewFactory(TransformerViewFactory factory, Map<String, String> properties) {
 		Transformer<?, ?> transformer = transformerManager.createTransformer(factory.getId());
 		if (!transformer.getContextType().equals(CyNetwork.class)) {
@@ -59,6 +69,7 @@ public class TransformerViewManager {
 			
 			TransformerViewElement element = new TransformerViewElement(transformer.getName(), factory.getId());
 			viewFactories.put(factory.getId(), factory);
+			viewProperties.put(factory.getId(), new HashMap<>(properties));
 			list.add(element);
 			Collections.sort(list);
 		}

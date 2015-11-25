@@ -26,10 +26,10 @@ package org.cytoscape.model;
 
 
 import static org.junit.Assert.*;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-
 import org.cytoscape.equations.Interpreter;
 import org.cytoscape.equations.internal.interpreter.InterpreterImpl;
 import org.cytoscape.event.CyEventHelper;
@@ -42,6 +42,7 @@ import org.cytoscape.model.internal.CyTableFactoryImpl;
 import org.cytoscape.model.internal.CyTableImpl;
 import org.cytoscape.model.internal.CyTableManagerImpl;
 import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.session.CyNetworkNaming;
 
 import static org.mockito.Mockito.*;
 
@@ -49,12 +50,16 @@ import static org.mockito.Mockito.*;
 public class CyTableManagerTest extends AbstractCyTableManagerTest {
 	
 	private CyEventHelper eventHelper = new DummyCyEventHelper();
-	
+	private CyNetworkNaming namingUtil = mock(CyNetworkNaming.class);
+	private CyServiceRegistrar serviceRegistrar = mock(CyServiceRegistrar.class);
 
 	@Before
 	public void setUp() {
+		when(serviceRegistrar.getService(CyEventHelper.class)).thenReturn(eventHelper);
+		when(serviceRegistrar.getService(CyNetworkNaming.class)).thenReturn(namingUtil);
+		
 		networkTableMgr = new CyNetworkTableManagerImpl();
-		networkManager = new CyNetworkManagerImpl(eventHelper);
+		networkManager = new CyNetworkManagerImpl(serviceRegistrar);
 		mgr = new CyTableManagerImpl(eventHelper, networkTableMgr, networkManager);
 		
 		assertNotNull(mgr);

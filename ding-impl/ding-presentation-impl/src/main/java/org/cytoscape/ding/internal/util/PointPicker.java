@@ -1,6 +1,9 @@
 package org.cytoscape.ding.internal.util;
 
 
+import static javax.swing.GroupLayout.DEFAULT_SIZE;
+import static javax.swing.GroupLayout.PREFERRED_SIZE;
+
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -21,8 +24,10 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 
 import org.cytoscape.ding.internal.charts.AbstractChartEditor.DoubleInputVerifier;
+import org.cytoscape.util.swing.LookAndFeelUtil;
 
 /**
  * Editor that allows users to select a coordinate on a square with the mouse.
@@ -97,15 +102,15 @@ public class PointPicker extends JPanel {
     	xLbl = new JLabel("x");
     	yLbl = new JLabel("y");
     	
-    	setOpaque(false);
+    	setOpaque(!LookAndFeelUtil.isAquaLAF()); // Transparent if Aqua
     	
     	final GroupLayout layout = new GroupLayout(this);
 		this.setLayout(layout);
 		layout.setAutoCreateContainerGaps(true);
+		layout.setAutoCreateGaps(true);
 		
 		layout.setHorizontalGroup(layout.createSequentialGroup()
-				.addComponent(getCanvas(), GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
-						GroupLayout.PREFERRED_SIZE)
+				.addComponent(getCanvas(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 				.addGap(4)
 				.addGroup(layout.createParallelGroup(Alignment.LEADING, true)
 						.addGroup(layout.createSequentialGroup()
@@ -122,15 +127,13 @@ public class PointPicker extends JPanel {
 				.addComponent(getCanvas())
 				.addGroup(layout.createSequentialGroup()
 						.addGap((int)fieldY)
-						.addGroup(layout.createParallelGroup(Alignment.CENTER, true)
+						.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
 								.addComponent(xLbl)
-								.addComponent(getXTxt(), GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
-								          GroupLayout.PREFERRED_SIZE)
+								.addComponent(getXTxt(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 						)
-						.addGroup(layout.createParallelGroup(Alignment.CENTER, true)
+						.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
 								.addComponent(yLbl)
-								.addComponent(getYTxt(), GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
-								          GroupLayout.PREFERRED_SIZE)
+								.addComponent(getYTxt(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 						)
 				)
 		);
@@ -148,7 +151,7 @@ public class PointPicker extends JPanel {
     		    }
     		};
     		
-    		canvas.setOpaque(false);
+    		canvas.setOpaque(!LookAndFeelUtil.isAquaLAF()); // Transparent if Aqua
     		canvas.setMinimumSize(new Dimension((int) size, (int) size));
     		canvas.setPreferredSize(new Dimension((int) size, (int) size));
     		
@@ -279,13 +282,13 @@ public class PointPicker extends JPanel {
 		final int w = (int) fieldWidth;
 		final int h = (int) fieldHeight;
 
-		g2.setColor(Color.LIGHT_GRAY);
+		g2.setColor(UIManager.getColor("Panel.background"));
 		g2.fillRect(x, y, w, h);
-		g2.setColor(Color.DARK_GRAY);
+		g2.setColor(UIManager.getColor("Label.disabledForeground"));
 		g2.drawRect(x, y, w, h);
 
-		drawTarget(g2, 3.2f, Color.DARK_GRAY);
-		drawTarget(g2, 1.0f, Color.WHITE);
+		drawTarget(g2, 3.2f, UIManager.getColor("Label.foreground"));
+		drawTarget(g2, 1.0f, UIManager.getColor("Table.background"));
 	}
     
     protected void drawTarget(final Graphics2D g2, final float strokeWidth, final Color strokeColor) {

@@ -29,14 +29,16 @@ public class LinearGradientLayer extends AbstractGradientLayer {
 	// ==[ PUBLIC METHODS ]=============================================================================================
 	
 //	/**
-//	 * Used to visually test it.
+//	 * Used to visually test it (the superclass needs to implement Cy2DGraphicLayer).
 //	 */
 //	@Override
-//	public void draw(Graphics2D g, final Rectangle2D area, final Shape shape) {
-//		super.draw(g, area, shape);
+//	public void draw(final Graphics2D g, final Shape shape, final CyNetworkView networkView,
+//			final View<? extends CyIdentifiable> view) {
+//		super.draw(g, shape, networkView, view);
 //		
 //		double ax;
 //		double ay;
+//		final Rectangle2D area = shape.getBounds2D();
 //		g.setStroke(new BasicStroke(0.5f));
 //		
 //		double d = Math.max(area.getWidth(), area.getHeight());
@@ -84,7 +86,7 @@ public class LinearGradientLayer extends AbstractGradientLayer {
 	@Override
 	public CustomGraphicLayer transform(final AffineTransform xform) {
 		final LinearGradientLayer newLayer = new LinearGradientLayer(angle, fractions, colors);
-		newLayer.rectangle = xform.createTransformedShape(rectangle) .getBounds2D();
+		newLayer.rectangle = xform.createTransformedShape(rectangle).getBounds2D();
 		
 		return newLayer;
 	}

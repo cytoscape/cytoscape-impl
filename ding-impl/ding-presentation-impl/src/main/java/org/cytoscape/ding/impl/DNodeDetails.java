@@ -29,10 +29,9 @@ import java.awt.Font;
 import java.awt.Paint;
 import java.awt.Stroke;
 import java.awt.TexturePaint;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -43,11 +42,11 @@ import org.cytoscape.ding.Justification;
 import org.cytoscape.ding.Label;
 import org.cytoscape.ding.ObjectPosition;
 import org.cytoscape.ding.Position;
+import org.cytoscape.graph.render.stateful.CustomGraphicsInfo;
 import org.cytoscape.graph.render.stateful.NodeDetails;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualProperty;
-import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
+import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.presentation.property.values.LineType;
 import org.cytoscape.view.presentation.property.values.NodeShape;
@@ -56,10 +55,10 @@ import org.cytoscape.view.presentation.property.values.NodeShape;
  * Access to the methods of this class should be synchronized externally if
  * there is a threat of multiple threads.
  */
-class DNodeDetails extends NodeDetails {
+public class DNodeDetails extends NodeDetails {
 
 	// Parent Network View
-	private final DGraphView dGraphView;
+	protected final DGraphView dGraphView;
 	private final Object m_deletedEntry = new Object();
 	
 	private final Map<VisualProperty<?>, Object> defaultValues;
@@ -84,8 +83,6 @@ class DNodeDetails extends NodeDetails {
 	Map<CyNode, Integer> m_labelJustifys = new ConcurrentHashMap<CyNode, Integer>(16, 0.75f, 2);
 	Map<CyNode, Double> m_labelOffsetXs = new ConcurrentHashMap<CyNode, Double>(16, 0.75f, 2);
 	Map<CyNode, Double> m_labelOffsetYs = new ConcurrentHashMap<CyNode, Double>(16, 0.75f, 2);
-	Map<CyNode, Double> m_width = new ConcurrentHashMap<CyNode, Double>(16, 0.75f, 2);
-	Map<CyNode, List<CustomGraphicLayer>> m_customGraphics = new ConcurrentHashMap<CyNode, List<CustomGraphicLayer>>(16, 0.75f, 2);
 	Map<CyNode, Integer> m_nodeTansparencies = new ConcurrentHashMap<CyNode, Integer>(16, 0.75f, 2);
 	Map<CyNode, Integer> m_nodeBorderTansparencies = new ConcurrentHashMap<CyNode, Integer>(16, 0.75f, 2);
 	Map<CyNode, Integer> m_nodeLabelTansparencies = new ConcurrentHashMap<CyNode, Integer>(16, 0.75f, 2);
@@ -148,18 +145,12 @@ class DNodeDetails extends NodeDetails {
 		m_labelJustifys = new ConcurrentHashMap<CyNode, Integer>(16, 0.75f, 2);
 		m_labelOffsetXs = new ConcurrentHashMap<CyNode, Double>(16, 0.75f, 2);
 		m_labelOffsetYs = new ConcurrentHashMap<CyNode, Double>(16, 0.75f, 2);
-		m_width = new ConcurrentHashMap<CyNode, Double>(16, 0.75f, 2);
 		m_selectedPaints = new ConcurrentHashMap<CyNode, Paint>(16, 0.75f, 2);
-		m_customGraphics = new ConcurrentHashMap<CyNode, List<CustomGraphicLayer>>(16, 0.75f, 2);
 		this.m_nodeTansparencies = new ConcurrentHashMap<CyNode, Integer>(16, 0.75f, 2);
 		this.m_nodeBorderTansparencies = new ConcurrentHashMap<CyNode, Integer>(16, 0.75f, 2);
 		this.m_nodeLabelTansparencies = new ConcurrentHashMap<CyNode, Integer>(16, 0.75f, 2);
 		m_nodeZ = new ConcurrentHashMap<CyNode, Double>(16, 0.75f, 2);
 		m_nestedNetworkImgVisible = new ConcurrentHashMap<CyNode, Boolean>(16, 0.75f, 2);
-
-		// Clear all Custom Graphics
-		for (final View<CyNode> nv : dGraphView.getNodeViews())
-			((DNodeView) nv).removeAllCustomGraphics();
 
 		isCleared = true;
 	}
@@ -202,6 +193,10 @@ class DNodeDetails extends NodeDetails {
 		m_nestedNetworkImgVisible.remove(nodeIdx);
 	}
 
+	public <V> void setDefaultValue(final VisualProperty<V> vp, V value) {
+		defaultValues.put(vp, value);
+	}
+	
 	@Override
 	public Color getColorLowDetail(final CyNode node) {
 		boolean isSelected;
@@ -401,6 +396,20 @@ class DNodeDetails extends NodeDetails {
 		}
 	}
 
+	@Override
+	public double getWidth(final CyNode node) {
+		final DNodeView dnv = dGraphView.getDNodeView(node);
+		
+		return dnv.getWidth();
+	}
+	
+	@Override
+	public double getHeight(final CyNode node) {
+		final DNodeView dnv = dGraphView.getDNodeView(node);
+		
+		return dnv.getHeight();
+	}
+	
 	@Override
 	public float getBorderWidth(final CyNode node) {
 		// Check bypass
@@ -722,17 +731,13 @@ class DNodeDetails extends NodeDetails {
 	}
 
 	@Override
-	public int getCustomGraphicCount(final CyNode node) {
-		final DNodeView dnv = (DNodeView) dGraphView.getDNodeView(node);
-		return dnv.getNumCustomGraphics();
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	public Map<VisualProperty<CyCustomGraphics>, CustomGraphicsInfo> getCustomGraphics(final CyNode node) {
+		final DNodeView dnv = dGraphView.getDNodeView(node);
+		
+		return dnv != null ? dnv.getCustomGraphics() : Collections.EMPTY_MAP;
 	}
-
-	@Override
-	public Iterator<CustomGraphicLayer> getCustomGraphics(final CyNode node) {
-		final DNodeView dnv = (DNodeView) dGraphView.getDNodeView(node);
-		return dnv.customGraphicIterator();
-	}
-
+	
 	@Override
 	public byte getLabelTextAnchor(final CyNode node, final int labelInx) {
 		// Check bypass
@@ -759,7 +764,15 @@ class DNodeDetails extends NodeDetails {
 	}
 
 	void overrideLabelTextAnchor(final CyNode node, final int inx, final int anchor) {
-		if (convertG2ND(anchor) == super.getLabelTextAnchor(node, inx))
+		// Three possibilities:
+		//  1) We have no default and the anchor is the same as in NodeDetails
+		//  2) We have a default and the anchor is the same as the default
+		//  3) The anchor is different altogether
+		if (m_labelTextAnchorDefault == null &&
+				convertG2ND(anchor) == super.getLabelTextAnchor(node, inx))
+			m_labelTextAnchors.remove(node);
+		else if (m_labelTextAnchorDefault != null &&
+		         convertG2ND(anchor) == m_labelTextAnchorDefault.byteValue())
 			m_labelTextAnchors.remove(node);
 		else {
 			m_labelTextAnchors.put(node, Integer.valueOf(anchor));
@@ -793,7 +806,15 @@ class DNodeDetails extends NodeDetails {
 	}
 
 	void overrideLabelNodeAnchor(final CyNode node, final int inx, final int anchor) {
-		if (convertG2ND(anchor) == super.getLabelNodeAnchor(node, inx))
+		// Three possibilities:
+		//  1) We have no default and the anchor is the same as in NodeDetails
+		//  2) We have a default and the anchor is the same as the default
+		//  3) The anchor is different altogether
+		if (m_labelNodeAnchorDefault == null &&
+				convertG2ND(anchor) == super.getLabelNodeAnchor(node, inx))
+			m_labelNodeAnchors.remove(node);
+		else if (m_labelNodeAnchorDefault != null &&
+		         convertG2ND(anchor) == m_labelNodeAnchorDefault.byteValue())
 			m_labelNodeAnchors.remove(node);
 		else {
 			m_labelNodeAnchors.put(node, Integer.valueOf(anchor));
@@ -826,7 +847,15 @@ class DNodeDetails extends NodeDetails {
 	}
 
 	void overrideLabelOffsetVectorX(final CyNode node, final int inx, final double x) {
-		if (((float) x) == super.getLabelOffsetVectorX(node, inx))
+		// Three possibilities:
+		//  1) We have no default and the offset is the same as in NodeDetails
+		//  2) We have a default and the offset is the same as the default
+		//  3) The offset is different altogether
+		if (m_labelOffsetVectorXDefault == null &&
+		    ((float) x) == super.getLabelOffsetVectorX(node, inx))
+			m_labelOffsetXs.remove(node);
+		else if (m_labelOffsetVectorXDefault != null &&
+		         ((float) x) == m_labelOffsetVectorXDefault.floatValue())
 			m_labelOffsetXs.remove(node);
 		else {
 			m_labelOffsetXs.put(node, new Double(x));
@@ -859,7 +888,15 @@ class DNodeDetails extends NodeDetails {
 	}
 
 	void overrideLabelOffsetVectorY(final CyNode node, final int inx, final double y) {
-		if (((float) y) == super.getLabelOffsetVectorY(node, inx))
+		// Three possibilities:
+		//  1) We have no default and the offset is the same as in NodeDetails
+		//  2) We have a default and the offset is the same as the default
+		//  3) The offset is different altogether
+		if (m_labelOffsetVectorYDefault == null &&
+		    ((float) y) == super.getLabelOffsetVectorY(node, inx))
+			m_labelOffsetXs.remove(node);
+		else if (m_labelOffsetVectorYDefault != null &&
+		         ((float) y) == m_labelOffsetVectorYDefault.floatValue())
 			m_labelOffsetYs.remove(node);
 		else {
 			m_labelOffsetYs.put(node, new Double(y));
@@ -893,7 +930,15 @@ class DNodeDetails extends NodeDetails {
 	}
 
 	void overrideLabelJustify(final CyNode node, final int inx, final int justify) {
-		if (convertG2ND(justify) == super.getLabelJustify(node, inx))
+		// Three possibilities:
+		//  1) We have no default and the offset is the same as in NodeDetails
+		//  2) We have a default and the offset is the same as the default
+		//  3) The offset is different altogether
+		if (m_labelJustifyDefault == null &&
+		    convertG2ND(justify) == super.getLabelJustify(node, inx))
+			m_labelJustifys.remove(node);
+		else if (m_labelJustifyDefault != null &&
+		    convertG2ND(justify) == m_labelJustifyDefault)
 			m_labelJustifys.remove(node);
 		else {
 			m_labelJustifys.put(node, Integer.valueOf(justify));
@@ -903,13 +948,20 @@ class DNodeDetails extends NodeDetails {
 
 	@Override
 	public double getLabelWidth(CyNode node) {
+		// Check bypass first
+		final DNodeView dnv = dGraphView.getDNodeView(node);
+		
+		if (dnv.isValueLocked(DVisualLexicon.NODE_LABEL_WIDTH))
+			return dnv.getVisualProperty(DVisualLexicon.NODE_LABEL_WIDTH);
+		
 		final Double o = m_labelWidths.get(node);
 
-		if (o == null)
+		if (o == null) {
 			if (m_labelWidthDefault == null)
 				return super.getLabelWidth(node);
 			else
 				return m_labelWidthDefault.doubleValue();
+		}
 
 		return o;
 	}

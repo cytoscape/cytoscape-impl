@@ -24,14 +24,14 @@ package org.cytoscape.internal.view;
  * #L%
  */
 
-import static org.cytoscape.internal.view.IconManager.*;
+import static org.cytoscape.util.swing.IconManager.ICON_SQUARE_O;
+import static org.cytoscape.util.swing.IconManager.ICON_THUMB_TACK;
+import static org.cytoscape.util.swing.IconManager.ICON_REMOVE;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
-import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -67,6 +67,7 @@ import org.cytoscape.application.swing.CytoPanelState;
 import org.cytoscape.application.swing.events.CytoPanelComponentSelectedEvent;
 import org.cytoscape.application.swing.events.CytoPanelStateChangedEvent;
 import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.util.swing.IconManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -102,8 +103,6 @@ public class CytoPanelImp extends JPanel implements CytoPanel, ChangeListener {
 	private static final int EAST_MAX_HEIGHT = 600;
 	
 	private static final int BUTTON_SIZE = 18;
-	
-	private static final Color FG_COLOR = Color.BLACK;
 	
 	/**
 	 * The JTabbedPane we hide.
@@ -166,11 +165,6 @@ public class CytoPanelImp extends JPanel implements CytoPanel, ChangeListener {
 	 * The float/dock button.
 	 */
 	private static final int FLOAT_PANEL_SCALE_FACTOR = 2;
-
-	/**
-	 * Color of the dock/float button panel.
-	 */
-	private static Color FLOAT_PANEL_COLOR = new Color(224, 224, 224);
 
 	/* the following constants should probably move into common constants class */
 
@@ -555,7 +549,6 @@ public class CytoPanelImp extends JPanel implements CytoPanel, ChangeListener {
 		final JPanel floatDockPanel = new JPanel();
 		final BoxLayout boxLayout = new BoxLayout(floatDockPanel, BoxLayout.X_AXIS);
 		floatDockPanel.setLayout(boxLayout);
-		floatDockPanel.setBackground(FLOAT_PANEL_COLOR);
 		
 		floatDockPanel.add(Box.createHorizontalStrut(8));
 		floatDockPanel.add(floatLabel);
@@ -600,8 +593,7 @@ public class CytoPanelImp extends JPanel implements CytoPanel, ChangeListener {
 	 */
 	private void initLabel() {
 		floatLabel = new JLabel(getTitle());
-		floatLabel.setFont(new Font("SansSerif", Font.PLAIN, 12));
-		floatLabel.setBackground(FLOAT_PANEL_COLOR);
+		floatLabel.setFont(floatLabel.getFont().deriveFont(12.0f));
 		floatLabel.setBorder(new EmptyBorder(0, 5, 0, 0));
 	}
 
@@ -610,7 +602,7 @@ public class CytoPanelImp extends JPanel implements CytoPanel, ChangeListener {
 	 */
 	private void initButtons() {
 		// Create Float / Dock Button
-		floatButton = new JButton(ICON_CHECK_EMPTY);
+		floatButton = new JButton(ICON_SQUARE_O);
 		floatButton.setToolTipText(TOOL_TIP_FLOAT);
 		styleButton(floatButton);
 		floatButton.setFont(iconManager.getIconFont(12));
@@ -668,7 +660,7 @@ public class CytoPanelImp extends JPanel implements CytoPanel, ChangeListener {
 			externalWindow.setTitle(getTitle());
 
 			// set proper button icon/text
-			floatButton.setText(ICON_PUSHPIN);
+			floatButton.setText(ICON_THUMB_TACK);
 			floatButton.setToolTipText(TOOL_TIP_DOCK);
 
 			// set float label text
@@ -817,8 +809,7 @@ public class CytoPanelImp extends JPanel implements CytoPanel, ChangeListener {
 	
 	private static void styleButton(final AbstractButton btn) {
 		btn.setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 2));
-		btn.setForeground(FG_COLOR);
-		btn.setBackground(FLOAT_PANEL_COLOR);
+		btn.setContentAreaFilled(false);
 		btn.setMinimumSize(new Dimension(BUTTON_SIZE, BUTTON_SIZE));
 		btn.setPreferredSize(new Dimension(BUTTON_SIZE, BUTTON_SIZE));
 		btn.setSize(new Dimension(BUTTON_SIZE, BUTTON_SIZE));

@@ -1,6 +1,8 @@
 package org.cytoscape.ding.internal.charts;
 
+import java.awt.AlphaComposite;
 import java.awt.Color;
+import java.awt.Composite;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.Shape;
@@ -22,6 +24,7 @@ import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
 import org.cytoscape.view.presentation.customgraphics.Cy2DGraphicLayer;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.CategoryLabelPositions;
+import org.jfree.chart.plot.Plot;
 import org.jfree.data.category.CategoryDataset;
 import org.jfree.data.category.DefaultCategoryDataset;
 import org.jfree.data.general.Dataset;
@@ -49,10 +52,10 @@ public abstract class AbstractChartLayer<T extends Dataset> implements Cy2DGraph
 	protected final float borderWidth;
 	protected final Color borderColor;
 	protected Color labelColor = Color.DARK_GRAY;
-	protected float labelFontSize = 2.0f;
+	protected float itemFontSize;
 	protected float axisWidth;
 	protected Color axisColor;
-	protected float axisFontSize = 2.0f;
+	protected float axisFontSize;
 	protected List<Double> range;
 	
 	protected Rectangle2D bounds;
@@ -71,10 +74,12 @@ public abstract class AbstractChartLayer<T extends Dataset> implements Cy2DGraph
 								 final boolean showItemLabels,
 								 final boolean showDomainAxis,
 								 final boolean showRangeAxis,
+								 final float itemFontSize,
 								 final LabelPosition domainLabelPosition,
 								 final List<Color> colors,
 								 final float axisWidth,
 								 final Color axisColor,
+								 final float axisFontSize,
 								 final float borderWidth,
 								 final Color borderColor,
 								 final List<Double> range,
@@ -86,10 +91,12 @@ public abstract class AbstractChartLayer<T extends Dataset> implements Cy2DGraph
 		this.showItemLabels = showItemLabels;
 		this.showDomainAxis = showDomainAxis;
 		this.showRangeAxis = showRangeAxis;
+		this.itemFontSize = itemFontSize;
 		this.domainLabelPosition = domainLabelPosition;
 		this.colors = colors;
 		this.axisWidth = axisWidth;
 		this.axisColor = axisColor;
+		this.axisFontSize = axisFontSize;
 		this.borderWidth = borderWidth;
 		this.borderColor = borderColor;
 		this.bounds = scaledBounds = bounds;
@@ -123,8 +130,19 @@ public abstract class AbstractChartLayer<T extends Dataset> implements Cy2DGraph
 		final AffineTransform at = new AffineTransform();
 		at.scale(invScale, invScale);
 		g.transform(at);
+
+		// Check to see if we have a current alpha composite
+		Composite comp = g.getComposite();
+		if (comp instanceof AlphaComposite) {
+			float alpha = ((AlphaComposite)comp).getAlpha();
+			JFreeChart fc = getChart();
+			Plot plot = fc.getPlot();
+			plot.setForegroundAlpha(alpha);
+			fc.draw(g, newBounds);
+		} else {
+			getChart().draw(g, newBounds);
+		}
 		
-		getChart().draw(g, newBounds);
 		
 		// Make sure Graphics2D is "back to normal" before returning
 		try {

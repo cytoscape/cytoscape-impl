@@ -36,21 +36,18 @@ import org.cytoscape.work.undo.UndoSupport;
 
 
 public class StackedNodeLayout extends AbstractLayoutAlgorithm {
-	/**
-	 * Creates a new StackedNodeLayout object.
-	 *
-	 * @param x_position  DOCUMENT ME!
-	 * @param y_start_position  DOCUMENT ME!
-	 * @param nodes  DOCUMENT ME!
-	 */
-	public StackedNodeLayout(UndoSupport undo) {
-		super("stacked-node-layout", "Stacked Node Layout",undo);
+	
+	public StackedNodeLayout(final UndoSupport undoSupport) {
+		super("stacked-node-layout", "Stacked Node Layout", undoSupport);
 	}
 
-	public TaskIterator createTaskIterator(CyNetworkView networkView, Object context, Set<View<CyNode>> nodesToLayOut, String attr) {
-		return new TaskIterator(new StackedNodeLayoutTask(toString(), networkView, (StackedNodeLayoutContext)context, nodesToLayOut, attr,undoSupport));
+	@Override
+	public TaskIterator createTaskIterator(CyNetworkView networkView, Object context, Set<View<CyNode>> nodesToLayOut,
+			String attr) {
+		return new TaskIterator(new StackedNodeLayoutTask(toString(), networkView, (StackedNodeLayoutContext) context,
+				nodesToLayOut, attr, undoSupport));
 	}
-	
+
 	@Override
 	public StackedNodeLayoutContext createLayoutContext() {
 		return new StackedNodeLayoutContext();

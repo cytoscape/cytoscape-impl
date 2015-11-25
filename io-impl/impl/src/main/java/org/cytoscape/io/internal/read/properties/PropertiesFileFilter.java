@@ -26,8 +26,6 @@ package org.cytoscape.io.internal.read.properties;
 
 import java.io.InputStream;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.cytoscape.io.BasicCyFileFilter;
 import org.cytoscape.io.DataCategory;
@@ -35,22 +33,14 @@ import org.cytoscape.io.util.StreamUtil;
 
 public class PropertiesFileFilter extends BasicCyFileFilter {
 
-	protected Matcher matcher;
-
 	public PropertiesFileFilter(Set<String> extensions, Set<String> contentTypes,
 			String description, DataCategory category, StreamUtil streamUtil) {
 		super(extensions, contentTypes, description, category, streamUtil);
-
-		Pattern p = Pattern.compile("^.+=.+$", Pattern.DOTALL);
-	 	matcher = p.matcher("");
 	}
 
 	public PropertiesFileFilter(String[] extensions, String[] contentTypes,
 			String description, DataCategory category, StreamUtil streamUtil) {
 		super(extensions, contentTypes, description, category, streamUtil);
-
-		Pattern p = Pattern.compile("^.+=.+$", Pattern.DOTALL);
-	 	matcher = p.matcher("");
 	}
 
 	@Override
@@ -68,12 +58,7 @@ public class PropertiesFileFilter extends BasicCyFileFilter {
 			return false;
 		if (header.contains("<bookmarks") && header.contains("xmlns"))
 			return false;
-
-		// This is the real test to see if we're a .props file
-		// TODO can we find a better test?
-		if(matcher.reset(header).matches()) 
-			return true;
 		
-		return false;
+		return true;
 	}
 }

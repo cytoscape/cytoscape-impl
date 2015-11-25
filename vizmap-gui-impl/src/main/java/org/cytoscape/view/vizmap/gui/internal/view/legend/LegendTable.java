@@ -46,15 +46,17 @@ import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
 
+@SuppressWarnings("serial")
 public class LegendTable extends JPanel {
 
-	private static final long serialVersionUID = 3066611687984212582L;
+	static final Color BACKGROUND_COLOR = Color.WHITE;
+	static final Color FOREGROUND_COLOR = Color.BLACK;
 	
 	private final CyApplicationManager appManager;
-	private VisualProperty<Object> vp;
+	private VisualProperty<?> vp;
 	private JTable legendTable;
 
-	public LegendTable(final Object[][] data, final VisualProperty<Object> vp, final ServicesUtil servicesUtil) {
+	public LegendTable(final Object[][] data, final VisualProperty<?> vp, final ServicesUtil servicesUtil) {
 		this.appManager = servicesUtil.get(CyApplicationManager.class);
 		this.vp = vp;
 		
@@ -80,12 +82,13 @@ public class LegendTable extends JPanel {
 		add(legendTable, SwingConstants.CENTER);
 	}
 
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private Object getIcon(final Object value) {
 		if (value == null)
 			return null;
 		
 		RenderingEngine<CyNetwork> engine = appManager.getCurrentRenderingEngine();
-		Icon icon = engine.createIcon(vp, value, 32, 32);
+		Icon icon = engine.createIcon((VisualProperty)vp, value, 32, 32);
 		return icon;
 	}
 
@@ -100,22 +103,24 @@ public class LegendTable extends JPanel {
 			labels[i].setHorizontalAlignment(SwingConstants.LEADING);
 			labels[i].setVerticalTextPosition(SwingConstants.CENTER);
 			labels[i].setHorizontalTextPosition(SwingConstants.LEADING);
-			labels[i].setForeground(Color.DARK_GRAY);
+			labels[i].setForeground(FOREGROUND_COLOR);
 			labels[i].setBorder(new EmptyBorder(10, 0, 7, 10));
 			labels[i].setFont(new Font("SansSerif", Font.BOLD, 14));
 		}
 
 		titles.setLayout(new GridLayout(1, 2));
-		titles.setBackground(Color.white);
+		titles.setBackground(BACKGROUND_COLOR);
 
 		titles.add(labels[0]);
 		titles.add(labels[1]);
-		titles.setBorder(new MatteBorder(0, 0, 1, 0, Color.DARK_GRAY));
+		titles.setBorder(new MatteBorder(0, 0, 1, 0, FOREGROUND_COLOR));
 
 		return titles;
 	}
 
 	public class LegendCellRenderer implements TableCellRenderer {
+		
+		@Override
 		public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,
 				boolean hasFocus, int row, int column) {
 			final JLabel cell = new JLabel();

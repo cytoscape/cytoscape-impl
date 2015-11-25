@@ -24,18 +24,17 @@ package org.cytoscape.ding.customgraphics.bitmap;
  * #L%
  */
 
-import java.awt.Paint;
-import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.TexturePaint;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
 
+import org.cytoscape.ding.customgraphics.paint.TexturePaintFactory;
 import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
 import org.cytoscape.view.presentation.customgraphics.ImageCustomGraphicLayer;
-import org.cytoscape.ding.customgraphics.paint.TexturePaintFactory;
 
 public class ImageCustomGraphicImpl implements ImageCustomGraphicLayer {
+	
 	private Rectangle2D bounds;
 	private TexturePaintFactory pf;
 
@@ -53,9 +52,9 @@ public class ImageCustomGraphicImpl implements ImageCustomGraphicLayer {
 		return pf.getPaint(bounds);
 	}
 
+	@Override
 	public CustomGraphicLayer transform(AffineTransform xform) {
 		Shape s = xform.createTransformedShape(bounds);
 		return new ImageCustomGraphicImpl(s.getBounds2D(), pf);
 	}
-	
 }

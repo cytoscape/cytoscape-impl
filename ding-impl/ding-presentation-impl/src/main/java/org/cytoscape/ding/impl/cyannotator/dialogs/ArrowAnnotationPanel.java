@@ -24,410 +24,382 @@ package org.cytoscape.ding.impl.cyannotator.dialogs;
  * #L%
  */
 
+import static javax.swing.GroupLayout.DEFAULT_SIZE;
+import static javax.swing.GroupLayout.PREFERRED_SIZE;
+import static javax.swing.GroupLayout.Alignment.CENTER;
+import static javax.swing.GroupLayout.Alignment.LEADING;
+import static javax.swing.GroupLayout.Alignment.TRAILING;
 
 import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Font;
 import java.awt.Paint;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import javax.swing.BorderFactory;
-import javax.swing.AbstractListModel;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.List;
+
 import javax.swing.DefaultComboBoxModel;
-import javax.swing.JButton;
+import javax.swing.GroupLayout;
+import javax.swing.GroupLayout.Alignment;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JList;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 import javax.swing.JSlider;
-import javax.swing.border.TitledBorder;
-import javax.swing.event.ChangeListener;
+import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.event.ChangeEvent;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
+import javax.swing.event.ChangeListener;
 
-import java.awt.Component;
-
+import org.cytoscape.ding.impl.cyannotator.annotations.ArrowAnnotationImpl;
+import org.cytoscape.util.swing.ColorButton;
+import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.presentation.annotations.ArrowAnnotation;
 import org.cytoscape.view.presentation.annotations.ArrowAnnotation.AnchorType;
 import org.cytoscape.view.presentation.annotations.ArrowAnnotation.ArrowEnd;
 
-import org.cytoscape.ding.impl.cyannotator.annotations.ArrowAnnotationImpl;
-import org.cytoscape.ding.impl.cyannotator.annotations.ArrowAnnotationImpl.ArrowType;
-
-public class ArrowAnnotationPanel extends javax.swing.JPanel {
-	private int WIDTH = 500;
-	private int HEIGHT = 500;
-	private int TOP = 10;
-	private int LEFT = 10;
-	private int COLUMN1 = 175;
-	private int COLUMN2 = 250;
-	private int RIGHT = WIDTH-10;
-	private int ARROWHEIGHT = 190;
-
-	private ArrowAnnotationImpl preview;
-	private PreviewPanel previewPanel;
+@SuppressWarnings("serial")
+public class ArrowAnnotationPanel extends JPanel {
 	
-	private ArrowAnnotation mAnnotation;
+	private PreviewPanel previewPanel;
+	private ArrowAnnotationImpl preview;
+	
+	private ArrowAnnotation annotation;
 
-	public ArrowAnnotationPanel(ArrowAnnotationImpl mAnnotation, PreviewPanel previewPanel, int width, int height) {
-		this.mAnnotation=mAnnotation;
+	public ArrowAnnotationPanel(ArrowAnnotationImpl annotation, PreviewPanel previewPanel) {
+		this.annotation = annotation;
 		this.previewPanel = previewPanel;
-		this.preview=(ArrowAnnotationImpl)previewPanel.getPreviewAnnotation();
-		this.WIDTH = width;
-		this.HEIGHT = height;
+		this.preview = (ArrowAnnotationImpl) previewPanel.getAnnotation();
+
 		initComponents();
-		setSize(width,height);
 	}
 
 	private void initComponents() {
+		setBorder(LookAndFeelUtil.createPanelBorder());
 
-		setMaximumSize(new Dimension(WIDTH, HEIGHT));
-		setMinimumSize(new Dimension(WIDTH, HEIGHT));
-		setLayout(null);
-		setBorder(BorderFactory.createLoweredBevelBorder());
-
-		// Upper left components
-		//
-		int y = TOP;
-
-		final JCheckBox lineColor = new JCheckBox();
-		final JButton sLineColorButton = new JButton();
-		final JSlider lineOValue = new JSlider(0, 100);
-
-		// Line color
-		{
-			lineColor.setText("Line Color");
-			if (mAnnotation.getLineColor() != null) 
-				lineColor.setSelected(true);
-
-			lineColor.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent evt) {
-					if(lineColor.isSelected()) {
-						sLineColorButton.setEnabled(true);
-					} else {
-						sLineColorButton.setEnabled(false);
-						preview.setLineColor(null);
-					}
-					previewPanel.repaint();
-				}
-			});		
-			add(lineColor);
-			lineColor.setBounds(LEFT, y, lineColor.getPreferredSize().width, 20);
-
-			sLineColorButton.setText("Select Line Color");
-			if(lineColor.isSelected())
-				sLineColorButton.setEnabled(true);
-			else
-				sLineColorButton.setEnabled(false);
-
-			sLineColorButton.setBounds(COLUMN2, y, sLineColorButton.getPreferredSize().width, 20);
-			sLineColorButton.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent evt) {
-			    sLineColorButtonActionPerformed(evt, lineOValue.getValue());
-				}
-			});	  
-
-			add(sLineColorButton);
-		}
-
-		// Line opacity
-		{
-			y += 25;
-			final JLabel lineOLabel = new JLabel("Line Opacity");
-			lineOLabel.setBounds(LEFT, y, lineOLabel.getPreferredSize().width, 20);
-			add(lineOLabel);
-
-			lineOValue.setMajorTickSpacing(100);
-			lineOValue.setPaintTicks(true);
-			lineOValue.setPaintLabels(true);
-			lineOValue.setValue(100);
-			lineOValue.setBounds(COLUMN2, y, RIGHT-COLUMN2, lineOValue.getPreferredSize().height);
-			if (lineColor.isSelected())
-				lineOValue.setEnabled(true);
-			else
-				lineOValue.setEnabled(false);
-			lineOValue.addChangeListener(new ChangeListener() {
-				public void stateChanged(ChangeEvent evt) {
-					preview.setLineColor(mixColor(preview.getLineColor(),lineOValue.getValue()));
-					previewPanel.repaint();
-				}
-			});
-
-			add(lineOValue);
-		}
-
-		// Line width
-		{
-			y = y+50;
-			JLabel jLabel6 = new JLabel();
-			jLabel6.setText("Line Thickness");
-			jLabel6.setBounds(LEFT, y, jLabel6.getPreferredSize().width, 14);
-			add(jLabel6);
-
-			final JComboBox eThickness = new JComboBox();
-			eThickness.setModel(new DefaultComboBoxModel(new String[] { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15" }));
-			eThickness.setSelectedIndex(1);
-			for(int i=0;i<eThickness.getModel().getSize();i++){
-				if( ((int)mAnnotation.getLineWidth())==Integer.parseInt((String)eThickness.getModel().getElementAt(i)) ){
-					eThickness.setSelectedIndex(i);
-				break;
-				}
-			}
-			eThickness.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent evt) {
-						preview.setLineWidth( Integer.parseInt( (String)(eThickness.getModel().getSelectedItem()) ) );
-						previewPanel.repaint();
-				}
-			});	 
-			eThickness.setBounds(COLUMN2, y, 48, 20);
-			add(eThickness);
-		}
-
-		y += 25;
-		JPanel sourcePanel = getArrowPanel(ArrowEnd.SOURCE);
-		add(sourcePanel);
-		// sourcePanel.setLocation(LEFT, y);
-		sourcePanel.setBounds(LEFT, y, WIDTH-15, ARROWHEIGHT);
+		final JLabel label1 = new JLabel("Line Color:");
+		final JLabel label2 = new JLabel("Line Opacity:");
+		final JLabel label3 = new JLabel("Line Width:");
 		
-		y += ARROWHEIGHT+10;
-		JPanel targetPanel = getArrowPanel(ArrowEnd.TARGET);
-		add(targetPanel);
-		// targetPanel.setLocation(LEFT, y);
-		targetPanel.setBounds(LEFT, y, WIDTH-15, ARROWHEIGHT);
+		final ColorButton lineColorButton = new ColorButton((Color) preview.getLineColor());
+		lineColorButton.setToolTipText("Select line color...");
+		
+		final JSlider lineOpacitySlider = new JSlider(0, 100);
 
+		final JCheckBox lineColorCheck = new JCheckBox();
+		lineColorCheck.setSelected(annotation.getLineColor() != null);
+		lineColorCheck.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent evt) {
+				if (lineColorCheck.isSelected()) {
+					lineColorButton.setEnabled(true);
+					lineOpacitySlider.setEnabled(true);
+					preview.setLineColor(mixColor(lineColorButton.getColor(), lineOpacitySlider.getValue()));
+				} else {
+					lineColorButton.setEnabled(false);
+					lineOpacitySlider.setEnabled(false);
+					preview.setLineColor(null);
+				}
+				previewPanel.repaint();
+			}
+		});
+
+		lineColorButton.setEnabled(lineColorCheck.isSelected());
+		lineColorButton.addPropertyChangeListener("color", new PropertyChangeListener() {
+			@Override
+			public void propertyChange(PropertyChangeEvent evt) {
+				preview.setLineColor(mixColor((Color) evt.getNewValue(), lineOpacitySlider.getValue()));
+				previewPanel.repaint();
+			}
+		});
+
+		lineOpacitySlider.setMajorTickSpacing(100);
+		lineOpacitySlider.setMinorTickSpacing(25);
+		lineOpacitySlider.setPaintTicks(true);
+		lineOpacitySlider.setPaintLabels(true);
+		lineOpacitySlider.setValue(100);
+		lineOpacitySlider.setEnabled(lineColorCheck.isSelected());
+		lineOpacitySlider.addChangeListener(new ChangeListener() {
+			@Override
+			public void stateChanged(ChangeEvent evt) {
+				preview.setLineColor(mixColor(preview.getLineColor(), lineOpacitySlider.getValue()));
+				previewPanel.repaint();
+			}
+		});
+
+		final JComboBox<String> lineWidthCombo = new JComboBox<>();
+		lineWidthCombo.setModel(new DefaultComboBoxModel<String>(
+				new String[] { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15" }));
+		lineWidthCombo.setSelectedIndex(1);
+		
+		for (int i = 0; i < lineWidthCombo.getModel().getSize(); i++) {
+			if (((int) annotation.getLineWidth()) == Integer
+					.parseInt((String) lineWidthCombo.getModel().getElementAt(i))) {
+				lineWidthCombo.setSelectedIndex(i);
+				break;
+			}
+		}
+		
+		lineWidthCombo.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent evt) {
+				preview.setLineWidth(Integer.parseInt((String) (lineWidthCombo.getModel().getSelectedItem())));
+				previewPanel.repaint();
+			}
+		});
+
+		final JPanel sourcePanel = getArrowPanel(ArrowEnd.SOURCE);
+		final JPanel targetPanel = getArrowPanel(ArrowEnd.TARGET);
+
+		final GroupLayout layout = new GroupLayout(this);
+		setLayout(layout);
+		layout.setAutoCreateContainerGaps(true);
+		layout.setAutoCreateGaps(!LookAndFeelUtil.isAquaLAF());
+		
+		layout.setHorizontalGroup(layout.createParallelGroup(CENTER, true)
+				.addGroup(layout.createSequentialGroup()
+						.addGap(10, 20, Short.MAX_VALUE)
+						.addGroup(layout.createParallelGroup(TRAILING, true)
+								.addComponent(label1)
+								.addComponent(label2)
+								.addComponent(label3)
+						)
+						.addPreferredGap(ComponentPlacement.RELATED)
+						.addGroup(layout.createParallelGroup(Alignment.LEADING, true)
+								.addGroup(layout.createSequentialGroup()
+										.addComponent(lineColorCheck, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+										.addComponent(lineColorButton, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+								)
+								.addComponent(lineOpacitySlider, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+								.addComponent(lineWidthCombo, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						)
+						.addGap(10, 20, Short.MAX_VALUE)
+				)
+				.addGroup(layout.createSequentialGroup()
+						.addComponent(sourcePanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+						.addPreferredGap(ComponentPlacement.RELATED)
+						.addComponent(targetPanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				)
+		);
+		layout.setVerticalGroup(layout.createSequentialGroup()
+				.addGroup(layout.createParallelGroup(CENTER, false)
+						.addComponent(label1)
+						.addComponent(lineColorCheck)
+						.addComponent(lineColorButton, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				)
+				.addGroup(layout.createParallelGroup(LEADING, false)
+						.addComponent(label2)
+						.addComponent(lineOpacitySlider, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				)
+				.addGroup(layout.createParallelGroup(CENTER, false)
+						.addComponent(label3)
+						.addComponent(lineWidthCombo, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				)
+				.addPreferredGap(ComponentPlacement.UNRELATED)
+				.addGroup(layout.createParallelGroup(LEADING, true)
+						.addComponent(sourcePanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addComponent(targetPanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				)
+		);
+		
 		iModifySAPreview();	
 	}
 
-	public void iModifySAPreview(){
+	public void iModifySAPreview() {
 		// Line parameters
-		preview.setLineWidth( mAnnotation.getLineWidth() );
-		preview.setLineColor( mAnnotation.getLineColor() );
+		preview.setLineWidth(annotation.getLineWidth());
+		preview.setLineColor(annotation.getLineColor());
 
 		// Source arrow parameters
-		preview.setArrowType(ArrowEnd.SOURCE, 
-		                     mAnnotation.getArrowType(ArrowEnd.SOURCE));
-		preview.setArrowSize(ArrowEnd.SOURCE, 
-		                     mAnnotation.getArrowSize(ArrowEnd.SOURCE));
-		preview.setArrowColor(ArrowEnd.SOURCE, 
-		                      mAnnotation.getArrowColor(ArrowEnd.SOURCE));
-		preview.setAnchorType(ArrowEnd.SOURCE, 
-		                      mAnnotation.getAnchorType(ArrowEnd.SOURCE));
+		preview.setArrowType(ArrowEnd.SOURCE, annotation.getArrowType(ArrowEnd.SOURCE));
+		preview.setArrowSize(ArrowEnd.SOURCE, annotation.getArrowSize(ArrowEnd.SOURCE));
+		preview.setArrowColor(ArrowEnd.SOURCE, annotation.getArrowColor(ArrowEnd.SOURCE));
+		preview.setAnchorType(ArrowEnd.SOURCE, annotation.getAnchorType(ArrowEnd.SOURCE));
 
 		// Target arrow parameters
-		preview.setArrowType(ArrowEnd.TARGET, 
-		                     mAnnotation.getArrowType(ArrowEnd.TARGET));
-		preview.setArrowSize(ArrowEnd.TARGET, 
-		                     mAnnotation.getArrowSize(ArrowEnd.TARGET));
-		preview.setArrowColor(ArrowEnd.TARGET, 
-		                      mAnnotation.getArrowColor(ArrowEnd.TARGET));
-		preview.setAnchorType(ArrowEnd.TARGET, 
-		                      mAnnotation.getAnchorType(ArrowEnd.TARGET));
-	
+		preview.setArrowType(ArrowEnd.TARGET, annotation.getArrowType(ArrowEnd.TARGET));
+		preview.setArrowSize(ArrowEnd.TARGET, annotation.getArrowSize(ArrowEnd.TARGET));
+		preview.setArrowColor(ArrowEnd.TARGET, annotation.getArrowColor(ArrowEnd.TARGET));
+		preview.setAnchorType(ArrowEnd.TARGET, annotation.getAnchorType(ArrowEnd.TARGET));
+
 		previewPanel.repaint();
-	}	
-	
+	}
+
 	public ArrowAnnotationImpl getPreview() {
 		return preview;
 	}
 
 	private JPanel getArrowPanel(final ArrowEnd end) {
-		// Source arrow
-		JPanel arrowPanel = new JPanel();
-		arrowPanel.setLayout(null);
-		TitledBorder title = BorderFactory.createTitledBorder("Source Arrow");
-		if (end == ArrowEnd.TARGET)
-			title = BorderFactory.createTitledBorder("Target Arrow");
-		arrowPanel.setBorder(title);
+		final JLabel label1 = new JLabel("Shape:");
+		final JLabel label2 = new JLabel("Color:");
+		final JLabel label3 = new JLabel("Opacity:");
+		final JLabel label4 = new JLabel("Size:");
+		final JLabel label5 = new JLabel("Anchor:");
+		
+		final JComboBox<String> arrowTypeCombo = new JComboBox<>();
+		final List<String> arrows = annotation.getSupportedArrows();
+		arrowTypeCombo.setModel(new DefaultComboBoxModel<String>(arrows.toArray(new String[arrows.size()])));
+		arrowTypeCombo.setSelectedItem(annotation.getArrowType(end));
+		arrowTypeCombo.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent evt) {
+				preview.setArrowType(end, (String) arrowTypeCombo.getSelectedItem());
+				previewPanel.repaint();
+			}
+		});
 
-		int arrowY = 30;
-
-		// Arrow label
-		{
-			JLabel jLabel5 = new JLabel();
-			jLabel5.setFont(new Font("Tahoma", 1, 12));
-			jLabel5.setText("Arrow Type:");
-			jLabel5.setBounds(LEFT, arrowY, jLabel5.getPreferredSize().width, 20);
-			arrowPanel.add(jLabel5);
-		}
-
-		// Arrow list
-		{
-			final JComboBox arrowList = new JComboBox();
-			arrowList.setModel(new DefaultComboBoxModel(mAnnotation.getSupportedArrows().toArray()));
-			arrowList.setSelectedItem(mAnnotation.getArrowType(end));
-			arrowList.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent evt) {
-						preview.setArrowType(end, (String)arrowList.getSelectedItem());
-						previewPanel.repaint();
-				}
-			});		    
-			arrowList.setBounds(COLUMN2, arrowY, 140, 20);
-			arrowPanel.add(arrowList);
-		}
-
-		arrowY += 25;
-
-		// Arrow color
-		final JCheckBox arrowColor = new JCheckBox();
-		final JButton sArrowColorButton = new JButton();
-		final JSlider arrowOValue = new JSlider(0, 100);
-		{
-			arrowColor.setText("Arrow Color");
-			if (mAnnotation.getArrowColor(end) != null) 
-				arrowColor.setSelected(true);
-			arrowColor.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent evt) {
-					if(arrowColor.isSelected()) {
-						sArrowColorButton.setEnabled(true);
-					} else {
-						sArrowColorButton.setEnabled(false);
-						preview.setArrowColor(end, null);
-					}
-				}
-			});		
-			arrowPanel.add(arrowColor);
-			arrowColor.setBounds(LEFT, arrowY, arrowColor.getPreferredSize().width, 20);
-
-			if (end == ArrowEnd.SOURCE)
-				sArrowColorButton.setText("Select Source Arrow Color");
-			else
-				sArrowColorButton.setText("Select Target Arrow Color");
-
-			if(arrowColor.isSelected())
-				sArrowColorButton.setEnabled(true);
-			else
-				sArrowColorButton.setEnabled(false);
-
-			sArrowColorButton.setBounds(COLUMN2, arrowY, sArrowColorButton.getPreferredSize().width, 20);
-			sArrowColorButton.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent evt) {
-			    sArrowColorButtonActionPerformed(evt, end, arrowOValue.getValue());
-				}
-			});	  
-	
-			arrowPanel.add(sArrowColorButton);
-		}
-
-
-		// Arrow opacity
-		{
-			arrowY += 25;
-			JLabel fillOLabel = new JLabel("Arrowhead Opacity");
-			fillOLabel.setBounds(LEFT, arrowY, fillOLabel.getPreferredSize().width, 20);
-			arrowPanel.add(fillOLabel);
-
-			arrowOValue.setMajorTickSpacing(100);
-			arrowOValue.setPaintTicks(true);
-			arrowOValue.setPaintLabels(true);
-			arrowOValue.setValue(100);
-			arrowOValue.setBounds(COLUMN2, arrowY, RIGHT-COLUMN2-20, arrowOValue.getPreferredSize().height);
-			arrowOValue.setEnabled(false);
-			arrowOValue.addChangeListener(new ChangeListener() {
-				public void stateChanged(ChangeEvent evt) {
-					preview.setArrowColor(end, mixColor(preview.getArrowColor(end),arrowOValue.getValue()));
-					previewPanel.repaint();
-				}
-			});
-			arrowPanel.add(arrowOValue);
-			
-		}	
-
-		// Arrow size
-		{
-			arrowY += 50;
-			JLabel jLabel6 = new JLabel();
-			jLabel6.setText("Arrow Size");
-			jLabel6.setBounds(LEFT, arrowY, jLabel6.getPreferredSize().width, 14);
-			arrowPanel.add(jLabel6);
-
-			final JComboBox aSize = new JComboBox();
-			aSize.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20" }));
-			aSize.setSelectedIndex(1);
-			for(int i=0;i<aSize.getModel().getSize();i++){
-				if( ((int)mAnnotation.getArrowSize(end))==Integer.parseInt((String)aSize.getModel().getElementAt(i)) ){
-					aSize.setSelectedIndex(i);
-				break;
+		final ColorButton arrowColorButton = new ColorButton((Color) preview.getArrowColor(end));
+		arrowColorButton.setToolTipText("Select arrow color...");
+		
+		final JSlider arrowOpacitySlider = new JSlider(0, 100);
+		
+		final JCheckBox arrowColorCheck = new JCheckBox();
+		arrowColorCheck.setSelected(annotation.getArrowColor(end) != null);
+		arrowColorCheck.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent evt) {
+				if (arrowColorCheck.isSelected()) {
+					arrowColorButton.setEnabled(true);
+					arrowOpacitySlider.setEnabled(true);
+					preview.setArrowColor(end, mixColor(arrowColorButton.getColor(), arrowOpacitySlider.getValue()));
+				} else {
+					arrowColorButton.setEnabled(false);
+					arrowOpacitySlider.setEnabled(false);
+					preview.setArrowColor(end, null);
 				}
 			}
-			aSize.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent evt) {
-						preview.setArrowSize(end, Integer.parseInt(aSize.getModel().getSelectedItem().toString()));
-						previewPanel.repaint();
-				}
-			});	 
-			aSize.setBounds(COLUMN2, arrowY, 48, 20);
-			arrowPanel.add(aSize);
+		});
+
+		arrowColorButton.setEnabled(arrowColorCheck.isSelected());
+		arrowColorButton.addPropertyChangeListener("color", new PropertyChangeListener() {
+			@Override
+			public void propertyChange(PropertyChangeEvent evt) {
+				preview.setArrowColor(end, mixColor((Color) evt.getNewValue(), arrowOpacitySlider.getValue()));
+				previewPanel.repaint();
+			}
+		});
+
+		arrowOpacitySlider.setMajorTickSpacing(100);
+		arrowOpacitySlider.setMinorTickSpacing(25);
+		arrowOpacitySlider.setPaintTicks(true);
+		arrowOpacitySlider.setPaintLabels(true);
+		arrowOpacitySlider.setValue(100);
+		arrowOpacitySlider.setEnabled(arrowColorCheck.isSelected());
+		arrowOpacitySlider.addChangeListener(new ChangeListener() {
+			@Override
+			public void stateChanged(ChangeEvent evt) {
+				preview.setArrowColor(end, mixColor(preview.getArrowColor(end), arrowOpacitySlider.getValue()));
+				previewPanel.repaint();
+			}
+		});
+
+		final JComboBox<String> arrowSizeCombo = new JComboBox<>();
+		arrowSizeCombo.setModel(new DefaultComboBoxModel<String>(
+				new String[] { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", 
+						       "11", "12", "13", "14", "15", "16", "17", "18", "19", "20" }
+		));
+		arrowSizeCombo.setSelectedIndex(1);
+
+		for (int i = 0; i < arrowSizeCombo.getModel().getSize(); i++) {
+			if (((int) annotation.getArrowSize(end)) == Integer
+					.parseInt((String) arrowSizeCombo.getModel().getElementAt(i))) {
+				arrowSizeCombo.setSelectedIndex(i);
+				break;
+			}
 		}
 
-		{
-			arrowY += 25;
-			JLabel jLabel7 = new JLabel();
-			jLabel7.setText("Anchor type");
-			jLabel7.setBounds(LEFT, arrowY, jLabel7.getPreferredSize().width, 14);
-			arrowPanel.add(jLabel7);
+		arrowSizeCombo.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent evt) {
+				preview.setArrowSize(end, Integer.parseInt(arrowSizeCombo.getModel().getSelectedItem().toString()));
+				previewPanel.repaint();
+			}
+		});
 
-			final JComboBox aSize = new JComboBox();
-			aSize.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Edge", "Center" }));
-			if(mAnnotation.getAnchorType(end)==AnchorType.CENTER)
-				aSize.setSelectedIndex(1);
-			else
-				aSize.setSelectedIndex(0);
+		final JComboBox<String> anchorTypeCombo = new JComboBox<>();
+		anchorTypeCombo.setModel(new DefaultComboBoxModel<String>(new String[] { "Edge", "Center" }));
 
-			aSize.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent evt) {
-						if (aSize.getModel().getSelectedItem().equals("Center"))
-							preview.setAnchorType(end, AnchorType.CENTER);
-						else
-							preview.setAnchorType(end, AnchorType.ANCHOR);
-						previewPanel.repaint();
-				}
-			});	 
-			aSize.setBounds(COLUMN2, arrowY, 70, 20);
-			arrowPanel.add(aSize);
-		}
+		if (annotation.getAnchorType(end) == AnchorType.CENTER)
+			anchorTypeCombo.setSelectedIndex(1);
+		else
+			anchorTypeCombo.setSelectedIndex(0);
+
+		anchorTypeCombo.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent evt) {
+				if (anchorTypeCombo.getModel().getSelectedItem().equals("Center"))
+					preview.setAnchorType(end, AnchorType.CENTER);
+				else
+					preview.setAnchorType(end, AnchorType.ANCHOR);
+
+				previewPanel.repaint();
+			}
+		});
+		
+		final JPanel arrowPanel = new JPanel();
+		arrowPanel.setBorder(
+				LookAndFeelUtil.createTitledBorder(end == ArrowEnd.TARGET ? "Target Arrow" : "Source Arrow"));
+		
+		if (LookAndFeelUtil.isAquaLAF())
+			arrowPanel.setOpaque(false);
+		
+		final GroupLayout layout = new GroupLayout(arrowPanel);
+		arrowPanel.setLayout(layout);
+		layout.setAutoCreateContainerGaps(true);
+		layout.setAutoCreateGaps(!LookAndFeelUtil.isAquaLAF());
+		
+		layout.setHorizontalGroup(layout.createSequentialGroup()
+				.addGroup(layout.createParallelGroup(TRAILING, true)
+						.addComponent(label1)
+						.addComponent(label2)
+						.addComponent(label3)
+						.addComponent(label4)
+						.addComponent(label5)
+				)
+				.addPreferredGap(ComponentPlacement.RELATED)
+				.addGroup(layout.createParallelGroup(Alignment.LEADING, true)
+						.addComponent(arrowTypeCombo, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addGroup(layout.createSequentialGroup()
+								.addComponent(arrowColorCheck, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+								.addComponent(arrowColorButton, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						)
+						.addComponent(arrowOpacitySlider, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+						.addComponent(arrowSizeCombo, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addComponent(anchorTypeCombo, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				)
+		);
+		layout.setVerticalGroup(layout.createSequentialGroup()
+				.addGroup(layout.createParallelGroup(CENTER, false)
+						.addComponent(label1)
+						.addComponent(arrowTypeCombo, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				)
+				.addGroup(layout.createParallelGroup(CENTER, false)
+						.addComponent(label2)
+						.addComponent(arrowColorCheck, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addComponent(arrowColorButton, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				)
+				.addGroup(layout.createParallelGroup(LEADING, false)
+						.addComponent(label3)
+						.addComponent(arrowOpacitySlider, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				)
+				.addGroup(layout.createParallelGroup(CENTER, false)
+						.addComponent(label4)
+						.addComponent(arrowSizeCombo, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				)
+				.addGroup(layout.createParallelGroup(CENTER, false)
+						.addComponent(label5)
+						.addComponent(anchorTypeCombo, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				)
+		);
 
 		return arrowPanel;
 	}
-	
-	private void sArrowColorButtonActionPerformed(ActionEvent evt, final ArrowEnd end, final int opacity) {
-		//Set Line Color Button
-		final SelectColor sLineSelectColor=new SelectColor(mAnnotation.getArrowColor(end));
-		sLineSelectColor.setOKListener( new ActionListener() {
-			public void actionPerformed(ActionEvent evt) {
-				Color clr = sLineSelectColor.getColor();
-				preview.setArrowColor(end, mixColor(clr,opacity));
-				previewPanel.repaint();
-			}
-		});
-	
-		sLineSelectColor.setSize(435, 420);
-		sLineSelectColor.setVisible(true);
-	}
-
-	private void sLineColorButtonActionPerformed(ActionEvent evt, final int opacity) {
-		//Set Line Color Button
-		final SelectColor sLineSelectColor=new SelectColor(mAnnotation.getLineColor());
-		sLineSelectColor.setOKListener( new ActionListener() {
-			public void actionPerformed(ActionEvent evt) {
-				Color clr = sLineSelectColor.getColor();
-				preview.setLineColor(mixColor(clr,opacity));
-				previewPanel.repaint();
-			}
-		});
-	
-		sLineSelectColor.setSize(435, 420);
-		sLineSelectColor.setVisible(true);
-	}
 
 	private Paint mixColor(Paint p, int value) {
-		if (p == null || !(p instanceof Color)) return p;
-		Color c = (Color)p;
-		return new Color(c.getRed(), c.getGreen(), c.getBlue(), value*255/100);
+		if (p == null || !(p instanceof Color))
+			return p;
+
+		Color c = (Color) p;
+
+		return new Color(c.getRed(), c.getGreen(), c.getBlue(), value * 255 / 100);
 	}
-
 }
-

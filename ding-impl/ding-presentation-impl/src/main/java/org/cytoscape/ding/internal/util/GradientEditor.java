@@ -7,6 +7,7 @@ import java.awt.GradientPaint;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Polygon;
+import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -20,6 +21,9 @@ import java.util.List;
 import javax.swing.JButton;
 import javax.swing.JColorChooser;
 import javax.swing.JPanel;
+import javax.swing.UIManager;
+
+import org.cytoscape.util.swing.LookAndFeelUtil;
 
 /**
  * A generic editor for configuring a multiple point varying gradient.
@@ -120,12 +124,14 @@ public class GradientEditor extends JPanel {
 		super.paintComponent(g1d);
 		
 		final Graphics2D g = (Graphics2D) g1d;
+		g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+		
 		width = getWidth() - 30;
 		x = 10;
 		y = 20;
 		barHeight = 25;
 		
-		final Color lineColor = isEnabled() ? Color.DARK_GRAY : Color.LIGHT_GRAY;
+		final Color lineColor = UIManager.getColor(isEnabled() ? "Label.disabledForeground" : "Separator.foreground");
 		
 		for (int i = 0; i < controlPoints.size() - 1; i++) {
 			ControlPoint now = controlPoints.get(i);
@@ -145,7 +151,7 @@ public class GradientEditor extends JPanel {
 			g.translate(10 + (width * pt.getPosition()), y + barHeight);
 			g.setColor(pt.getColor());
 			g.fillPolygon(poly);
-			g.setColor(pt == selected? Color.BLACK : lineColor);
+			g.setColor(pt == selected? UIManager.getColor("Focus.color") : lineColor);
 			g.setStroke(new BasicStroke(pt == selected ? 1.5f : 1.0f));
 			g.drawPolygon(poly);
 			
@@ -265,7 +271,7 @@ public class GradientEditor extends JPanel {
 	
 	private void init() {
 		setLayout(null);
-		setOpaque(false);
+		setOpaque(!LookAndFeelUtil.isAquaLAF()); // Transparent if Aqua
 		
 		addBtn.setBounds(20, 70, 75, 20);
 		add(addBtn);

@@ -36,17 +36,17 @@ public class ForceDirectedLayoutContext implements TunableValidator {
 	@ContainsTunables
 	public EdgeWeighter edgeWeighter = new EdgeWeighter();
 	
-	@Tunable(description="Number of Iterations")
+	@Tunable(description="Number of Iterations:")
 	public int numIterations = 100;
-	@Tunable(description="Default Spring Coefficient")
+	@Tunable(description="Default Spring Coefficient:")
 	public double defaultSpringCoefficient = 1e-4;
-	@Tunable(description="Default Spring Length")
+	@Tunable(description="Default Spring Length:")
 	public double defaultSpringLength = 50.0;
-	@Tunable(description="Default Node Mass")
+	@Tunable(description="Default Node Mass:")
 	public double defaultNodeMass = 3.0;
-	@Tunable(description="Force deterministic layouts (slower)")
+	@Tunable(description="Force deterministic layouts (slower):")
 	public boolean isDeterministic;
-	@Tunable(description="Don't partition graph before layout", groups="Standard settings")
+	@Tunable(description="Don't partition graph before layout:", groups="Standard Settings")
 	public boolean singlePartition;
 
 	@Override

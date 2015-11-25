@@ -28,21 +28,12 @@ import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NETWOR
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NETWORK_WIDTH;
 
 import java.awt.Graphics2D;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.FocusAdapter;
-import java.awt.event.FocusEvent;
 import java.awt.image.BufferedImage;
 import java.io.OutputStream;
-import java.security.PublicKey;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Set;
 
 import javax.imageio.ImageIO;
-import javax.swing.BoundedRangeModel;
-import javax.swing.JFormattedTextField;
-import javax.swing.JPanel;
 
 import org.cytoscape.io.write.CyWriter;
 import org.cytoscape.view.presentation.RenderingEngine;
@@ -54,7 +45,6 @@ import org.cytoscape.work.util.BoundedDouble;
 import org.cytoscape.work.util.ListSingleSelection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.cytoscape.work.AbstractTunableHandler;
 
 
 /**
@@ -67,11 +57,11 @@ public class BitmapWriter extends AbstractTask implements CyWriter {
 
 	//****
 	@ProvidesTitle
-	public String getTitle() { return "Image parameters"; }
+	public String getTitle() { return "Image Parameters"; }
 
 	//****
 	public BoundedDouble zoom;
-	@Tunable(description = "Zoom (%)",groups={"Image Size"},params="alignments=vertical;slider=true",listenForChange={"WidthInPixels","HeightInPixels", "WidthInInches", "HeightInInches"}, format="###'%'")
+	@Tunable(description = "Zoom (%):",groups={"Image Size"},params="alignments=vertical;slider=true",listenForChange={"WidthInPixels","HeightInPixels", "WidthInInches", "HeightInInches"}, format="###'%'")
 	public BoundedDouble getZoom(){
 		return zoom;
 	}
@@ -91,7 +81,7 @@ public class BitmapWriter extends AbstractTask implements CyWriter {
 	//****
 	
 	public int widthInPixels;
-	@Tunable(description = "Width (px)",groups={"Image Size"},params="alignments=vertical",listenForChange={"Zoom","HeightInPixels", "WidthInInches", "HeightInInches"})
+	@Tunable(description = "Width (px):",groups={"Image Size"},params="alignments=vertical",listenForChange={"Zoom","HeightInPixels", "WidthInInches", "HeightInInches"})
 	public int getWidthInPixels(){
 		return widthInPixels;
 	}
@@ -109,7 +99,7 @@ public class BitmapWriter extends AbstractTask implements CyWriter {
 	
 	//****
 	public int heightInPixels;
-	@Tunable(description = "Height (px)",groups={"Image Size"},params="alignments=vertical",listenForChange={"Zoom","WidthInPixels", "WidthInInches", "HeightInInches"})
+	@Tunable(description = "Height (px):",groups={"Image Size"},params="alignments=vertical",listenForChange={"Zoom","WidthInPixels", "WidthInInches", "HeightInInches"})
 	public int getHeightInPixels(){
 		return heightInPixels;
 	}
@@ -127,7 +117,7 @@ public class BitmapWriter extends AbstractTask implements CyWriter {
 	
 	//****
 	public double widthInInches;
-	@Tunable(description = "Width (inches)",groups={"Image Size"},params="alignments=vertical",listenForChange={"Resolution", "Zoom", "HeightInPixels", "WidthInPixels" , "HeightInInches"})
+	@Tunable(description = "Width (inches):",groups={"Image Size"},params="alignments=vertical",listenForChange={"Resolution", "Zoom", "HeightInPixels", "WidthInPixels" , "HeightInInches"})
 	public double getWidthInInches(){
 		return widthInInches;
 	}
@@ -146,7 +136,7 @@ public class BitmapWriter extends AbstractTask implements CyWriter {
 	
 	//****
 	public double heightInInches;
-	@Tunable(description = "Height (inches)",groups={"Image Size"},params="alignments=vertical",listenForChange={"Resolution", "Zoom", "HeightInPixels", "WidthInPixels", "WidthInInches"})
+	@Tunable(description = "Height (inches):",groups={"Image Size"},params="alignments=vertical",listenForChange={"Resolution", "Zoom", "HeightInPixels", "WidthInPixels", "WidthInInches"})
 	public double getHeightInInches(){
 		return heightInInches;
 	}
@@ -164,7 +154,7 @@ public class BitmapWriter extends AbstractTask implements CyWriter {
 	
 	//****
 	public ListSingleSelection<Integer> resolution;
-	@Tunable(description = "Resolution (DPI)",groups={"Image Size"},params="alignments=vertical")
+	@Tunable(description = "Resolution (DPI):",groups={"Image Size"},params="alignments=vertical")
 	public ListSingleSelection<Integer> getResolution(){
 		return resolution;
 	}

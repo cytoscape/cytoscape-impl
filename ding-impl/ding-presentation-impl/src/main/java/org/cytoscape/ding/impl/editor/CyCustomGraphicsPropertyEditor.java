@@ -30,8 +30,9 @@ import java.awt.event.ActionListener;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 
+import org.cytoscape.util.swing.IconManager;
+import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
-import org.cytoscape.view.vizmap.gui.editor.ValueEditor;
 
 import com.l2fprod.common.beans.editor.AbstractPropertyEditor;
 import com.l2fprod.common.swing.ComponentFactory;
@@ -40,22 +41,26 @@ import com.l2fprod.common.swing.PercentLayout;
 
 public class CyCustomGraphicsPropertyEditor extends AbstractPropertyEditor {
 
-	private final ValueEditor<CyCustomGraphics> valueEditor;
+	private final CyCustomGraphicsValueEditor valueEditor;
 	private CyCustomGraphicsCellRenderer label;
 	private JButton button;
+	private VisualProperty<CyCustomGraphics> visualProperty;
 	private CyCustomGraphics customGraphics;
 	private CyCustomGraphics oldCustomGraphics;
 	
-	public CyCustomGraphicsPropertyEditor(final ValueEditor<CyCustomGraphics> valueEditor) {
+	public CyCustomGraphicsPropertyEditor(final CyCustomGraphicsValueEditor valueEditor, final IconManager iconManager) {
 		this.valueEditor = valueEditor;
-
-// TODO just use double-click to open editor--remove buttons!!!		
-
+		
 		editor = new JPanel(new PercentLayout(PercentLayout.HORIZONTAL, 0));
+		((JPanel) editor).setOpaque(false);
+		
 		((JPanel) editor).add("*", label = new CyCustomGraphicsCellRenderer());
 		label.setOpaque(false);
-		((JPanel) editor).add(button = ComponentFactory.Helper.getFactory().createMiniButton());
 		
+		// TODO just use double-click to open editor--remove buttons!!!	
+		((JPanel) editor).add(button = ComponentFactory.Helper.getFactory().createMiniButton());
+		button.setText(IconManager.ICON_ELLIPSIS_H);
+		button.setFont(iconManager.getIconFont(13.0f));
 		button.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -64,7 +69,8 @@ public class CyCustomGraphicsPropertyEditor extends AbstractPropertyEditor {
 		});
 		
 		((JPanel) editor).add(button = ComponentFactory.Helper.getFactory().createMiniButton());
-		button.setText("X");
+		button.setText(IconManager.ICON_REMOVE);
+		button.setFont(iconManager.getIconFont(13.0f));
 		button.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -74,7 +80,6 @@ public class CyCustomGraphicsPropertyEditor extends AbstractPropertyEditor {
 				firePropertyChange(old, null);
 			}
 		});
-		((JPanel) editor).setOpaque(false);
 	}
 	
 	@Override
@@ -88,9 +93,13 @@ public class CyCustomGraphicsPropertyEditor extends AbstractPropertyEditor {
 		label.setValue(value);
 	}
 	
+	public void setVisualProperty(final VisualProperty<CyCustomGraphics> visualProperty) {
+		this.visualProperty = visualProperty;
+	}
+	
 	private void editChart() {
 		//TODO: set correct parent
-		final CyCustomGraphics newVal = valueEditor.showEditor(null, customGraphics);
+		final CyCustomGraphics newVal = valueEditor.showEditor(null, customGraphics, visualProperty);
 
 		if (newVal != null) {
 			setValue(newVal);

@@ -74,31 +74,24 @@ public class VisualStyleImpl implements VisualStyle, VisualMappingFunctionChange
 	private final Object lock = new Object();
 	
 	/**
-	 * 
-	 * @param title
-	 *            Title of the new Visual Style
+	 * @param title Title of the new Visual Style
 	 * @param lexManager
 	 */
-	public VisualStyleImpl(final String title, final VisualLexiconManager lexManager,
-			final CyServiceRegistrar serviceRegistrar, final CyEventHelper eventHelper) {
-
-		if (lexManager == null)
-			throw new NullPointerException("Lexicon Manager is missing.");
-
-		if (title == null)
+	public VisualStyleImpl(final String title, final CyServiceRegistrar serviceRegistrar) {
+ 		if (title == null)
 			this.title = DEFAULT_TITLE;
 		else
 			this.title = title;
 
-		this.eventHelper = eventHelper;
+		this.eventHelper = serviceRegistrar.getService(CyEventHelper.class);;
 
 		mappings = new HashMap<VisualProperty<?>, VisualMappingFunction<?, ?>>();
 		styleDefaults = new HashMap<VisualProperty<?>, Object>();
 
 		// Init Apply handlers for node, egde and network.
-		final ApplyToNetworkHandler applyToNetworkHandler = new ApplyToNetworkHandler(this, lexManager);
-		final ApplyToNodeHandler applyToNodeHandler = new ApplyToNodeHandler(this, lexManager);
-		final ApplyToEdgeHandler applyToEdgeHandler = new ApplyToEdgeHandler(this, lexManager);
+		final ApplyToNetworkHandler applyToNetworkHandler = new ApplyToNetworkHandler(this, serviceRegistrar);
+		final ApplyToNodeHandler applyToNodeHandler = new ApplyToNodeHandler(this, serviceRegistrar);
+		final ApplyToEdgeHandler applyToEdgeHandler = new ApplyToEdgeHandler(this, serviceRegistrar);
 		
 		serviceRegistrar.registerAllServices(applyToNetworkHandler, new Properties());
 		serviceRegistrar.registerAllServices(applyToNodeHandler, new Properties());

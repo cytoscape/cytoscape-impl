@@ -25,25 +25,40 @@ package org.cytoscape.work.internal.tunables;
  */
 
 
-import org.cytoscape.io.DataCategory;
-import org.cytoscape.util.swing.FileChooserFilter;
-import org.cytoscape.util.swing.FileUtil;
-import org.cytoscape.work.Tunable;
-import org.cytoscape.work.internal.tunables.utils.GUIDefaults;
-import org.cytoscape.work.internal.tunables.utils.SupportedFileTypesManager;
-import org.cytoscape.work.swing.AbstractGUITunableHandler;
-import org.cytoscape.work.swing.DirectlyPresentableTunableHandler;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static javax.swing.GroupLayout.DEFAULT_SIZE;
+import static javax.swing.GroupLayout.PREFERRED_SIZE;
+import static org.cytoscape.work.internal.tunables.utils.GUIDefaults.setTooltip;
+import static org.cytoscape.work.internal.tunables.utils.GUIDefaults.updateFieldPanel;
 
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.*;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Window;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.swing.BorderFactory;
+import javax.swing.GroupLayout;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
+
+import org.cytoscape.io.DataCategory;
+import org.cytoscape.util.swing.FileChooserFilter;
+import org.cytoscape.util.swing.FileUtil;
+import org.cytoscape.util.swing.LookAndFeelUtil;
+import org.cytoscape.work.Tunable;
+import org.cytoscape.work.internal.tunables.utils.SupportedFileTypesManager;
+import org.cytoscape.work.swing.AbstractGUITunableHandler;
+import org.cytoscape.work.swing.DirectlyPresentableTunableHandler;
 
 
 /**
@@ -51,20 +66,15 @@ import java.util.List;
  *
  * @author pasteur
  */
-public class FileHandler extends AbstractGUITunableHandler  implements DirectlyPresentableTunableHandler{
-	
-	private static final Logger logger = LoggerFactory.getLogger(FileHandler.class);
-	
-	private static final Font FILE_NAME_FONT = new Font("SansSerif", Font.PLAIN, 10);
-	private static final Dimension PANEL_SIZE_DIMENSION = new Dimension(500, 80);
+public class FileHandler extends AbstractGUITunableHandler implements DirectlyPresentableTunableHandler{
 	
 	private final FileUtil fileUtil;
 
-	private JButton chooseButton;
-	private JTextField fileTextField;
+	private JPanel controlPanel;
+	private JButton browseButton;
+	private JTextField textField;
 	private ImageIcon image;
-	private JLabel titleLabel;
-	private GroupLayout layout;
+	private JLabel label;
 	private SupportedFileTypesManager fileTypesManager;
 	private boolean input;
 	private List<FileChooserFilter> filters;
@@ -92,19 +102,18 @@ public class FileHandler extends AbstractGUITunableHandler  implements DirectlyP
 		super(field, obj, t);
 		this.fileTypesManager = fileTypesManager;
 		this.fileUtil = fileUtil;
-		init(fileTypesManager);
+		init();
 	}
-
 
 	public FileHandler(final Method getter, final Method setter, final Object instance, final Tunable tunable,
 			final SupportedFileTypesManager fileTypesManager, final FileUtil fileUtil) {
 		super(getter, setter, instance, tunable);
 		this.fileTypesManager = fileTypesManager;
 		this.fileUtil = fileUtil;
-		init(fileTypesManager);
+		init();
 	}
 
-	private void init(final SupportedFileTypesManager fileTypesManager) {
+	private void init() {
 		input = isInput();
 
 		final String fileCategory = getFileCategory();
@@ -115,14 +124,14 @@ public class FileHandler extends AbstractGUITunableHandler  implements DirectlyP
 		defaultString = "Please select " + a + " " + displayName + " file...";
 
 		setGui();
-		setLayout();
-		panel.setLayout(layout);
+		
+		updateFieldPanel(panel, label, controlPanel, horizontal);
+		setTooltip(getTooltip(), textField, browseButton);
 	}
 
 	private boolean isVowel(char ch){
 		ch=Character.toLowerCase(ch);
 		return ch=='a' ||ch=='e' ||ch=='i' ||ch=='o' ||ch=='u';
-
 	}
 
 	/**
@@ -131,84 +140,96 @@ public class FileHandler extends AbstractGUITunableHandler  implements DirectlyP
 	 * It creates a new <code>File</code> from the selected file in the FileChooser, or from the path to a file, entered by the user in the field
 	 * The initial <code>File</code> object <code>o</code> is set with this new file
 	 */
+	@Override
 	public void handle() {
 		try {
-			if (fileTextField.getText().equals(defaultString) || fileTextField.getText().isEmpty() )
+			if (textField.getText().equals(defaultString) || textField.getText().isEmpty()) {
 				setValue(null);
-			else
-			{
-				String path = fileTextField.getText();
+			} else {
+				String path = textField.getText();
 				File file = null;
-				if( path.contains(System.getProperty("file.separator")) )
-				{
+				
+				if (path.contains(System.getProperty("file.separator"))) {
 					file = new File(path);
-				}
-				else
-				{
+				} else {
 					file = new File(System.getProperty("user.home"), path);
 				}
 				setValue(file);
 			}
-		} catch(Exception e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
 
+	@Override
 	public void update(){
-		
 		final int load_or_save = input ? FileUtil.LOAD : FileUtil.SAVE;
 
 		// Use the panel's parent if we have it, otherwise use the possible
 		// parent specified in setFileTunableDirectly. 
 		Component parentComponent = SwingUtilities.getWindowAncestor(panel);
-		if ( parentComponent == null )
+		
+		if (parentComponent == null)
 			parentComponent = possibleParent;
-		final File file = fileUtil.getFile(parentComponent, titleLabel.getText(), load_or_save, filters);
+		
+		final File file = fileUtil.getFile(parentComponent, label.getText(), load_or_save, filters);
+		
 		if (file != null) {
-			fileTextField.setText(file.getAbsolutePath());
-		}else{
-			fileTextField.setText(defaultString);
+			textField.setText(file.getAbsolutePath());
+		} else {
+			textField.setText(defaultString);
 		}
 	}
 	
-	//construction of the GUI depending on the file type expected:
-	//	-field to display the file's path
-	//	-button to open the FileCHooser
-	//add listener to the field and button
+	/** Construction of the GUI depending on the file type expected */
 	private void setGui() {
-		//titleSeparator = new JSeparator();
-		titleLabel = new JLabel();
-		titleLabel.setFont(GUIDefaults.LABEL_FONT);
-		titleLabel.setBorder(BorderFactory.createEmptyBorder(5, 0, 1, 5));
-		image = new ImageIcon(getClass().getResource("/images/ximian/stock_open.png"));
-		fileTextField = new JTextField();
-		fileTextField.setEditable(false);
-		fileTextField.setBackground(Color.LIGHT_GRAY);
-		fileTextField.setFont(new Font(null, Font.ITALIC,12));
-		chooseButton = new JButton(input ? "Open a File..." : "Browse...", image);
-		chooseButton.setActionCommand(input ? "open" : "save");
-		chooseButton.addActionListener(new myFileActionListener());
+		label = new JLabel();
+		image = new ImageIcon(getClass().getResource("/images/open-file-24.png"));
+		
+		textField = new JTextField();
+		textField.setEditable(false);
+		textField.setForeground(UIManager.getColor("Label.disabledForeground"));
+		textField.setFont(textField.getFont().deriveFont(LookAndFeelUtil.getSmallFontSize()));
+		
+		browseButton = new JButton( (input ? "Open File..." : "Browse..."), (input ? image : null) );
+		browseButton.setActionCommand(input ? "open" : "save");
+		browseButton.addActionListener(new MyFileActionListener());
+		
+		if (input) // To prevent the button from getting too tall because of the icon
+			browseButton.setPreferredSize(
+					new Dimension(browseButton.getPreferredSize().width, new JButton("X").getPreferredSize().height));
 
 		//set title and textfield text for the file type
 		final String fileCategory = getFileCategory();
-		fileTextField.setText(defaultString);
-		String description = this.getDescription();
-		if(description == null || description.isEmpty())
-			titleLabel.setText((input ? "Load " : "Save ") + initialCaps(fileCategory) + " File");
-		else
-			titleLabel.setText(description);
+		textField.setText(defaultString);
+		final String description = getDescription();
 		
-		panel.setPreferredSize(PANEL_SIZE_DIMENSION);
+		if (description == null || description.isEmpty())
+			label.setText((input ? "Load " : "Save ") + initialCaps(fileCategory) + " File");
+		else
+			label.setText(description);
+		
+		controlPanel = new JPanel();
+		final GroupLayout layout = new GroupLayout(controlPanel);
+		controlPanel.setLayout(layout);
+		layout.setAutoCreateContainerGaps(false);
+		layout.setAutoCreateGaps(true);
 
-		// Set the tooltip.  Note that at this point, we're setting
-		// the tooltip on the entire panel.  This may or may not be
-		// the right thing to do.
-		if (getTooltip() != null && getTooltip().length() > 0) {
-			final ToolTipManager tipManager = ToolTipManager.sharedInstance();
-			tipManager.setInitialDelay(1);
-			tipManager.setDismissDelay(7500);
-			panel.setToolTipText(getTooltip());
-		}
+		layout.setHorizontalGroup(layout.createSequentialGroup()
+				.addComponent(textField, DEFAULT_SIZE, 400, Short.MAX_VALUE)
+				.addComponent(browseButton, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+		);
+		layout.setVerticalGroup(layout.createParallelGroup(GroupLayout.Alignment.CENTER, false)
+				.addComponent(textField, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				.addComponent(browseButton, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+		);
+		
+		// Workaround to correctly v-align the label
+		final int lh = label.getPreferredSize().height;
+		final int ch = controlPanel.getPreferredSize().height;
+		
+		if (lh < ch)
+			label.setBorder(BorderFactory.createEmptyBorder((ch-lh)/2, 0, (ch-lh)/2, 0));
 	}
 
 	private String getFileCategory() {
@@ -226,40 +247,6 @@ public class FileHandler extends AbstractGUITunableHandler  implements DirectlyP
 			return Character.toUpperCase(s.charAt(0)) + s.substring(1).toLowerCase();
 	}
 
-	// displays the panel's component in a good view
-	private void setLayout() {
-		layout = new GroupLayout(panel);
-
-		layout.setHorizontalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-					  .addGroup(layout.createSequentialGroup()
-						    .addContainerGap()
-						    .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-							      .addComponent(titleLabel,GroupLayout.PREFERRED_SIZE,350,GroupLayout.PREFERRED_SIZE)
-//							      .addComponent(titleSeparator,GroupLayout.DEFAULT_SIZE,350,Short.MAX_VALUE)
-							      .addGroup(layout.createSequentialGroup()
-									.addComponent(fileTextField,GroupLayout.DEFAULT_SIZE,350,Short.MAX_VALUE)
-									.addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-									.addComponent(chooseButton))
-							      )
-						    .addContainerGap()));
-
-		layout.setVerticalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-					.addGroup(layout.createSequentialGroup()
-						  .addContainerGap()
-						  .addComponent(titleLabel)
-//						  .addGap(8, 8, 8)
-//						  .addComponent(titleSeparator,GroupLayout.PREFERRED_SIZE,GroupLayout.DEFAULT_SIZE,GroupLayout.PREFERRED_SIZE)
-						  .addGap(7, 7, 7)
-						  .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-						  .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-							    .addComponent(chooseButton)
-							    .addComponent(fileTextField))
-						  .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED,3, Short.MAX_VALUE)
-						  .addContainerGap()));
-	}
-
-	
-
 	@Override
 	public boolean isForcedToSetDirectly() {
 		return getParams().getProperty("ForceSetDirectly", "true").equalsIgnoreCase("true");
@@ -274,14 +261,16 @@ public class FileHandler extends AbstractGUITunableHandler  implements DirectlyP
 	public boolean setTunableDirectly (Window possibleParent) {
 		this.possibleParent = possibleParent;
 		setGui();
-		myFileActionListener action = new myFileActionListener();
+		MyFileActionListener action = new MyFileActionListener();
 		action.actionPerformed(null);
 		handle();
-		return !fileTextField.getText().equals(defaultString);
+		
+		return !textField.getText().equals(defaultString);
 	}
 
 	// Click on the "open" or "save" button action listener
-	private final class myFileActionListener implements ActionListener{
+	private final class MyFileActionListener implements ActionListener{
+		@Override
 		public void actionPerformed(ActionEvent ae) {
 			final int load_or_save = input ? FileUtil.LOAD : FileUtil.SAVE;
 				
@@ -289,8 +278,10 @@ public class FileHandler extends AbstractGUITunableHandler  implements DirectlyP
 				//In case of export, we can not detect the filter current used, so we we use filter "All image files" or 
 				//"All network files" when export image or network
 				FileChooserFilter filter = null;
+				
 				for (int i=0; i<filters.size(); i++){
 					filter = filters.get(i);
+					
 					if (filter.getDescription().trim().equalsIgnoreCase("All image files") ||
 					    filter.getDescription().trim().equalsIgnoreCase("All network files")){
 						filters = new ArrayList<FileChooserFilter>();
@@ -303,24 +294,24 @@ public class FileHandler extends AbstractGUITunableHandler  implements DirectlyP
 			// Use the panel's parent if we have it, otherwise use the possible
 			// parent specified in setFileTunableDirectly. 
 			Component parentComponent = SwingUtilities.getWindowAncestor(panel);
-			if ( parentComponent == null )
+			
+			if (parentComponent == null)
 				parentComponent = possibleParent;
 	
-			final File file = fileUtil.getFile(parentComponent, titleLabel.getText(), load_or_save, filters);
-			if (file != null) {
-				fileTextField.setFont(FILE_NAME_FONT);
-				fileTextField.setText(file.getAbsolutePath());
-			}
+			final File file = fileUtil.getFile(parentComponent, label.getText(), load_or_save, filters);
+			
+			if (file != null)
+				textField.setText(file.getAbsolutePath());
 		}
 	}
 
+	@Override
 	public String getState(){
 		try{
-			return fileTextField.getText();
+			return textField.getText();
 		}catch(Exception e){
 			e.printStackTrace();
 		}
 		return "";
 	}
-	
 }

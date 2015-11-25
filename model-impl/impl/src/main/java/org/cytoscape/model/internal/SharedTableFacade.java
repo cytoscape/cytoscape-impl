@@ -28,6 +28,7 @@ package org.cytoscape.model.internal;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
@@ -47,13 +48,16 @@ public final class SharedTableFacade extends AbstractTableFacade implements CyTa
 	private final CyRootNetwork rootNetwork; 
 	private final Class<? extends CyIdentifiable> type;
 	private final CyNetworkTableManager netTableMgr;
+	private final CyEventHelper cyEventHelper;
 
-	public SharedTableFacade(CyTable shared, CyRootNetwork rootNetwork, Class<? extends CyIdentifiable> type, CyNetworkTableManager netTableMgr ) {
-		super(shared);
+	public SharedTableFacade(CyTable shared, CyRootNetwork rootNetwork, Class<? extends CyIdentifiable> type, 
+	                         CyNetworkTableManager netTableMgr, CyEventHelper cyEventHelper ) {
+		super(shared, cyEventHelper);
 		this.shared = shared;
 		this.rootNetwork = rootNetwork;
 		this.type = type;
 		this.netTableMgr = netTableMgr;
+		this.cyEventHelper = cyEventHelper;
 	}
 
 	CyTable getActualTable() {

@@ -41,6 +41,7 @@ import org.cytoscape.work.Tunable;
  * Specific instance of AbstractLoadNetworkTask that loads a File.
  */
 public class LoadNetworkFileTask extends AbstractLoadNetworkTask {
+	
 	@Tunable(description = "Network file to load", params = "fileCategory=network;input=true")
 	public File file;
 
@@ -49,14 +50,18 @@ public class LoadNetworkFileTask extends AbstractLoadNetworkTask {
 		return "Load Network from File";
 	}
 	
-	public LoadNetworkFileTask(CyNetworkReaderManager mgr, CyNetworkManager netmgr,
-			final CyNetworkViewManager networkViewManager, final Properties props, CyNetworkNaming namingUtil, final VisualMappingManager vmm, final CyNetworkViewFactory nullNetworkViewFactory) {
+	public LoadNetworkFileTask(
+			final CyNetworkReaderManager mgr,
+			final CyNetworkManager netmgr,
+			final CyNetworkViewManager networkViewManager,
+			final Properties props,
+			final CyNetworkNaming namingUtil,
+			final VisualMappingManager vmm,
+			final CyNetworkViewFactory nullNetworkViewFactory) {
 		super(mgr, netmgr, networkViewManager, props, namingUtil, vmm, nullNetworkViewFactory);
 	}
 
-	/**
-	 * Executes Task.
-	 */
+	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
 		this.taskMonitor = taskMonitor;
 		

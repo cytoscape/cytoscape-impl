@@ -21,7 +21,6 @@ import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.service.util.AbstractCyActivator;
-import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.osgi.framework.BundleContext;
@@ -30,20 +29,19 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * Activator for JSON support module.
- * 
- * 
  */
 public class CyActivator extends AbstractCyActivator {
+	
 	public CyActivator() {
 		super();
 	}
 
+	@Override
 	public void start(BundleContext bc) {
 		// Importing Services
 		final CyApplicationConfiguration appConfig = getService(bc, CyApplicationConfiguration.class);
 		final CyVersion cyVersion = getService(bc, CyVersion.class);
 		final StreamUtil streamUtil = getService(bc, StreamUtil.class);
-		final CyNetworkViewFactory cyNetworkViewFactory = getService(bc, CyNetworkViewFactory.class);
 		final CyNetworkFactory cyNetworkFactory = getService(bc, CyNetworkFactory.class);
 		final CyApplicationManager applicationManager = getService(bc, CyApplicationManager.class);
 		final CyNetworkManager cyNetworkManager = getService(bc, CyNetworkManager.class);
@@ -55,7 +53,7 @@ public class CyActivator extends AbstractCyActivator {
 		final BasicCyFileFilter cytoscapejsReaderFilter = new BasicCyFileFilter(new String[] { "cyjs", "json" },
 				new String[] { "application/json" }, "Cytoscape.js JSON", DataCategory.NETWORK, streamUtil);
 		final CytoscapeJsNetworkReaderFactory jsReaderFactory = new CytoscapeJsNetworkReaderFactory(
-				cytoscapejsReaderFilter, cyNetworkViewFactory, cyNetworkFactory, cyNetworkManager, cyRootNetworkManager);
+				cytoscapejsReaderFilter, applicationManager, cyNetworkFactory, cyNetworkManager, cyRootNetworkManager);
 		final Properties cytoscapeJsNetworkReaderFactoryProps = new Properties();
 
 		// This is the unique identifier for this reader. 3rd party developer
@@ -83,7 +81,7 @@ public class CyActivator extends AbstractCyActivator {
 
 		// For Visual Style
 		final CytoscapeJsVisualStyleWriterFactory jsonVSWriterFactory = new CytoscapeJsVisualStyleWriterFactory(
-				vizmapJsonFilter, applicationManager, cyVersion);
+				vizmapJsonFilter, applicationManager, cyVersion, viewManager);
 
 		// Use this ID to get this service in other bundles.
 		final Properties jsVisualStyleWriterFactoryProperties = new Properties();
@@ -106,5 +104,12 @@ public class CyActivator extends AbstractCyActivator {
 		Properties simpleWebSessionWriterFactoryProps = new Properties();
 		simpleWebSessionWriterFactoryProps.put(ID, "simpleWebSessionWriterFactory");
 		registerAllServices(bc, simpleWebSessionWriterFactory, simpleWebSessionWriterFactoryProps);
+		
+		final CySessionWriterFactory zippedJsonWriterFactory = new WebSessionWriterFactoryImpl(
+				jsonVSWriterFactory, vmm, cytoscapejsWriterFactory, viewManager, webSessionFilter, appConfig,
+				applicationManager, WebSessionWriterFactoryImpl.ZIP_EXPORT);
+		Properties zippedJsonWriterFactoryProps = new Properties();
+		zippedJsonWriterFactoryProps.put(ID, "zippedJsonWriterFactory");
+		registerAllServices(bc, zippedJsonWriterFactory, zippedJsonWriterFactoryProps);
 	}
 }

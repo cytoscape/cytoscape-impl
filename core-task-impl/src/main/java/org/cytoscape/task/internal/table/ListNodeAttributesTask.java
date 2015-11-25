@@ -63,7 +63,7 @@ public class ListNodeAttributesTask extends AbstractTableDataTask implements Obs
 
 		columnList = networkTable.getColumns();
 
-		taskMonitor.showMessage(TaskMonitor.Level.INFO, "   Node attributes for network "+DataUtils.getNetworkTitle(network)+":");
+		taskMonitor.showMessage(TaskMonitor.Level.INFO, "   Node columns for network "+DataUtils.getNetworkTitle(network)+":");
 		for (CyColumn column: columnList) {
 			if (column.getType().equals(List.class))
 				taskMonitor.showMessage(TaskMonitor.Level.INFO, 

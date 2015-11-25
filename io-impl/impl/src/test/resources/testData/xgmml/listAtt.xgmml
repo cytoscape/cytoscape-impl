@@ -4,9 +4,13 @@
 	xmlns:cy="http://www.cytoscape.org" xmlns="http://www.cs.rpi.edu/XGMML"
 	directed="1">
 	
-	<att type="list" name="empty_list"/>
-	<att type="list" name="null_value_list">
+	<att type="list" name="null_value_list"/>
+	<att type="list" name="empty_list_1" cy:elementType="String"/>
+	<att type="list" name="empty_list_2">
 		<att type="string" />
+	</att>
+	<att type="list" name="list_with_empty_string">
+		<att type="string" value="" />
 	</att>
 	<att type="list" name="int_list">
 		<att type="integer" value="1" />

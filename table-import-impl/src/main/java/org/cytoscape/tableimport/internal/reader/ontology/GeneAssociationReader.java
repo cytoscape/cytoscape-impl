@@ -24,13 +24,15 @@ package org.cytoscape.tableimport.internal.reader.ontology;
  * #L%
  */
 
-import static org.cytoscape.tableimport.internal.reader.TextFileDelimiters.TAB;
+import static org.cytoscape.tableimport.internal.reader.TextDelimiter.PIPE;
+import static org.cytoscape.tableimport.internal.reader.TextDelimiter.TAB;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -43,6 +45,7 @@ import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.CyTableManager;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.tableimport.internal.util.OntologyDAGManager;
 import org.cytoscape.tableimport.internal.util.OntologyUtil;
 import org.cytoscape.work.AbstractTask;
@@ -56,7 +59,7 @@ public class GeneAssociationReader extends AbstractTask implements CyTableReader
 
 	private static final String COMPATIBLE_VERSION = "gaf-version: 2.0";
 	private static final String TAXON_RESOURCE_FILE = "tax_report.txt";
-	private static final String LIST_DELIMITER = "\\|";
+	private static final String LIST_DELIMITER = PIPE.getDelimiter();
 
 	// The following columns should be handled as List in GA v2 spec.
 	private static final List<Integer> LIST_INDEX = new ArrayList<Integer>();
@@ -77,7 +80,7 @@ public class GeneAssociationReader extends AbstractTask implements CyTableReader
 
 	private static final String EVIDENCE_SUFFIX = " Evidence Code";
 	private static final String REFERENCE_SUFFIX = " DB Reference";
-	private static final String GA_DELIMITER = TAB.toString();
+	private static final String GA_DELIMITER = TAB.getDelimiter();
 
 	// This is minimum required fields. Max is 17 for v2
 	private static final int EXPECTED_COL_COUNT = 15;
@@ -88,7 +91,6 @@ public class GeneAssociationReader extends AbstractTask implements CyTableReader
 	private InputStream is;
 	private Map<String, String> speciesMap;
 	private CyNetwork ontologyDAG;
-	private final CyTableFactory tableFactory;
 
 	private final String tableName;
 
@@ -98,21 +100,18 @@ public class GeneAssociationReader extends AbstractTask implements CyTableReader
 
 	private final String ontologyDagName;
 	private List<String> termIDList;
-	private final CyTableManager tableManager;
+	private final CyServiceRegistrar serviceRegistrar;
 
 	/**
 	 * Package protected because only in unit testing do we need to specify the
 	 * taxon resource file. Normal operation should use one of the other
 	 * constructors.
 	 */
-	public GeneAssociationReader(final CyTableFactory tableFactory, final String ontologyDagName, final InputStream is,
-			final String tableName, final CyTableManager tableManager) throws IOException {
-		
-		logger.debug("DAG Manager key = " + ontologyDagName);
+	public GeneAssociationReader(final String ontologyDagName, final InputStream is,
+			final String tableName, final CyServiceRegistrar serviceRegistrar) throws IOException {
 		this.ontologyDagName = ontologyDagName;
-		this.tableFactory = tableFactory;
 		this.is = is;
-		this.tableManager = tableManager;
+		this.serviceRegistrar = serviceRegistrar;
 
 		this.tableName = tableName;
 		// Load taxonomy map
@@ -129,7 +128,7 @@ public class GeneAssociationReader extends AbstractTask implements CyTableReader
 		BufferedReader taxonFileReader = null;
 
 		try {
-			taxonFileReader = new BufferedReader(new InputStreamReader(taxUrl.openStream()));
+			taxonFileReader = new BufferedReader(new InputStreamReader(taxUrl.openStream(), Charset.forName("UTF-8").newDecoder()));
 			final OntologyUtil ontologyUtil = new OntologyUtil();
 			this.speciesMap = ontologyUtil.getTaxonMap(taxonFileReader);
 		} finally {
@@ -152,7 +151,7 @@ public class GeneAssociationReader extends AbstractTask implements CyTableReader
 			termIDList = ontologyDAG.getDefaultNodeTable().getColumn(CyNetwork.NAME).getValues(String.class);
 		}
 		
-		BufferedReader bufRd = new BufferedReader(new InputStreamReader(is));
+		BufferedReader bufRd = new BufferedReader(new InputStreamReader(is, Charset.forName("UTF-8").newDecoder()));
 		String line = null;
 		String[] parts;
 
@@ -163,7 +162,8 @@ public class GeneAssociationReader extends AbstractTask implements CyTableReader
 		}
 
 		// Create result table
-		table = tableFactory.createTable(tableName, CyNetwork.NAME, String.class, true, true);
+		table = serviceRegistrar.getService(CyTableFactory.class)
+				.createTable(tableName, CyNetwork.NAME, String.class, true, true);
 		createColumns();
 
 		while ((line = bufRd.readLine()) != null) {
@@ -184,7 +184,7 @@ public class GeneAssociationReader extends AbstractTask implements CyTableReader
 		tables = new CyTable[1];
 		tables[0] = table;
 
-		tableManager.addTable(table);
+		serviceRegistrar.getService(CyTableManager.class).addTable(table);
 	}
 
 	private void createColumns() {

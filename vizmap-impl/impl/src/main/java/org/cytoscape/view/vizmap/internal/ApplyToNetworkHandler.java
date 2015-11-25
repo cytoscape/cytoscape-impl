@@ -24,7 +24,9 @@ package org.cytoscape.view.vizmap.internal;
  * #L%
  */
 
+import java.util.ArrayDeque;
 import java.util.Collection;
+import java.util.Deque;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Set;
@@ -32,11 +34,14 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.NetworkViewRenderer;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualLexicon;
@@ -55,8 +60,8 @@ public class ApplyToNetworkHandler extends AbstractApplyHandler<CyNetwork> {
 	private static final Logger logger = LoggerFactory.getLogger(ApplyToNetworkHandler.class);
 
 	
-	ApplyToNetworkHandler(VisualStyle style, VisualLexiconManager lexManager) {
-		super(style, lexManager, CyNetwork.class);
+	ApplyToNetworkHandler(final VisualStyle style, final CyServiceRegistrar serviceRegistrar) {
+		super(style, serviceRegistrar, CyNetwork.class);
 	}
 
 	@Override
@@ -79,19 +84,22 @@ public class ApplyToNetworkHandler extends AbstractApplyHandler<CyNetwork> {
 		for (final View<?> v : edgeViews)
 			v.clearVisualProperties();
 		
-		// TODO: what if there is another Lexicon?
-		final VisualLexicon lex = lexManager.getAllVisualLexicon().iterator().next();
+		// Get current Visual Lexicon
+		final CyApplicationManager appMgr = serviceRegistrar.getService(CyApplicationManager.class);
+		final VisualLexicon lexicon = appMgr.getCurrentNetworkViewRenderer()
+				.getRenderingEngineFactory(NetworkViewRenderer.DEFAULT_CONTEXT)
+				.getVisualLexicon();
 		
-		applyDefaultsInParallel(netView, lexManager.getNodeVisualProperties(), lex);
-		applyDefaultsInParallel(netView, lexManager.getEdgeVisualProperties(), lex);
-		applyDefaultsInParallel(netView, lexManager.getNetworkVisualProperties(), lex);
+		applyDefaultsInParallel(netView, lexicon.getVisualLexiconNode(BasicVisualLexicon.NODE));
+		applyDefaultsInParallel(netView, lexicon.getVisualLexiconNode(BasicVisualLexicon.EDGE));
+		applyDefaultsInParallel(netView, lexicon.getVisualLexiconNode(BasicVisualLexicon.NETWORK));
 
 		applyDependencies(netView);
 		
 		final ExecutorService exe = Executors.newCachedThreadPool();
-		exe.submit(new ApplyMappingsTask(netView, nodeViews, BasicVisualLexicon.NODE, lex));
-		exe.submit(new ApplyMappingsTask(netView, edgeViews, BasicVisualLexicon.EDGE, lex));
-		exe.submit(new ApplyMappingsTask(netView, networkViewSet, BasicVisualLexicon.NETWORK, lex));
+		exe.submit(new ApplyMappingsTask(netView, nodeViews, BasicVisualLexicon.NODE, lexicon));
+		exe.submit(new ApplyMappingsTask(netView, edgeViews, BasicVisualLexicon.EDGE, lexicon));
+		exe.submit(new ApplyMappingsTask(netView, networkViewSet, BasicVisualLexicon.NETWORK, lexicon));
 		
 		try {
 			exe.shutdown();
@@ -101,14 +109,16 @@ public class ApplyToNetworkHandler extends AbstractApplyHandler<CyNetwork> {
 		}
 	}
 	
-	private void applyDefaultsInParallel(final CyNetworkView netView, final Collection<VisualProperty<?>> vps,
-			final VisualLexicon lex) {
+	private void applyDefaultsInParallel(final CyNetworkView netView, final VisualLexiconNode rootNode) {
 		final ExecutorService exe = Executors.newCachedThreadPool();
+		final Deque<VisualLexiconNode> deque = new ArrayDeque<>();
+		deque.addAll(rootNode.getChildren());
 		
-		for (final VisualProperty<?> vp : vps) {
-			final VisualLexiconNode node = lex.getVisualLexiconNode(vp);
+		while (!deque.isEmpty()) {
+			final VisualLexiconNode node = deque.pop();
+			final VisualProperty<?> vp = node.getVisualProperty();
 			
-			if (node == null)
+			if (vp.getTargetDataType() != rootNode.getVisualProperty().getTargetDataType())
 				continue;
 			
 			final Collection<VisualLexiconNode> children = node.getChildren();
@@ -123,6 +133,8 @@ public class ApplyToNetworkHandler extends AbstractApplyHandler<CyNetwork> {
 				
 				exe.submit(new ApplyDefaultTask(netView, vp, defaultValue));
 			}
+			
+			deque.addAll(children);
 		}
 		
 		try {

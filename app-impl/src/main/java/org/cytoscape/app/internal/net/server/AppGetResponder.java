@@ -210,10 +210,10 @@ public class AppGetResponder {
 		private void installOrUpdate(App app) throws AppInstallException, AppUninstallException {
 			// Check if another version of the app is already installed.
 			App installedApp = getInstalledApp(app);
+			appManager.installApp(app);
 			if (installedApp != null) {
 				appManager.uninstallApp(installedApp);
 			}
-			appManager.installApp(app);
 		}
 		
 		private App getInstalledApp(App referenceApp) {

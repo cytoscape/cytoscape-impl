@@ -24,20 +24,19 @@ package org.cytoscape.graph.render.stateful;
  * #L%
  */
 
-import org.cytoscape.graph.render.immed.GraphGraphics;
-import org.cytoscape.model.CyNode;
-import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
-
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Paint;
 import java.awt.Stroke;
 import java.awt.TexturePaint;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
+import java.util.Collections;
 import java.util.Map;
+
+import org.cytoscape.graph.render.immed.GraphGraphics;
+import org.cytoscape.model.CyNode;
+import org.cytoscape.view.model.VisualProperty;
+import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
 
 
 /**
@@ -50,6 +49,7 @@ import java.util.Map;
  * to become familiar with the API cytoscape.render.immed.GraphGraphics.
  */
 public class NodeDetails {
+	
 	/**
 	 * Specifies that an anchor point lies at the center of a bounding box.
 	 */
@@ -129,6 +129,14 @@ public class NodeDetails {
 	
 	private static final Stroke DEF_BORDER_STROKE = new BasicStroke(2.0f);
 
+	public double getWidth(final CyNode node) {
+		return 0.0;
+	}
+
+	public double getHeight(final CyNode node) {
+		return 0.0;
+	}
+	
 	/**
 	 * Returns the color of node in low detail rendering mode. By default this
 	 * method returns Color.red. It is an error to return null in this method.
@@ -140,7 +148,7 @@ public class NodeDetails {
 	 * detail rendering mode they are.
 	 */
 	public Color getColorLowDetail(final CyNode node) {
-		return Color.red;
+		return Color.RED;
 	}
 
 	/**
@@ -159,7 +167,7 @@ public class NodeDetails {
 	 * method returns Color.red. It is an error to return null in this method.
 	 */
 	public Paint getFillPaint(final CyNode node) {
-		return Color.red;
+		return Color.RED;
 	}
 
 	/**
@@ -364,6 +372,11 @@ public class NodeDetails {
 		return LABEL_WRAP_JUSTIFY_CENTER;
 	}
 
+	@SuppressWarnings("unchecked")
+	public Map<VisualProperty<CyCustomGraphics>, CustomGraphicsInfo> getCustomGraphics(final CyNode node) {
+		return Collections.EMPTY_MAP;
+	}
+	
 	/**
 	 * Specifies the X component of the vector that separates the location of a
 	 * rendered graphic from the node's anchor point for that graphic. By
@@ -396,53 +409,6 @@ public class NodeDetails {
 	 */
 	public float graphicOffsetVectorY(final CyNode node, final int graphicInx) {
 		return 0.0f;
-	}
-
-	/**
-	 * A thread-safe method returning the number of custom graphics associated
-	 * with a given Node. If none are associated, zero is returned. NOTE: This
-	 * method should be abstract, but since it isn't, any real use should
-	 * override this method in a subclass.
-	 * 
-	 * @see #getCustomGraphics(int)
-	 * @since Cytoscape 2.6
-	 */
-	public int getCustomGraphicCount(final CyNode node) {
-		return 0;
-	}
-
-	/**
-	 * Return a non-null, read-only Iterator over all CustomGraphicLayers contained
-	 * in this Node. The Iterator will return each CustomGraphicLayer in draw order.
-	 * The Iterator cannot be used to modify the underlying set of
-	 * CustomGraphicLayers. NOTE: This method should be abstract, but since it isn't,
-	 * any real use should override this method in a subclass.
-	 * 
-	 * @return The CustomGraphicLayers Iterator. If no CustomGraphicLayers are associated
-	 *         with this Node, an empty Iterator is returned.
-	 * @throws UnsupportedOperationException
-	 *             if an attempt is made to use the Iterator's remove() method.
-	 * @since Cytoscape 2.6
-	 * @see #customGraphicsLock(int)
-	 */
-	// Should probably be getCustomGraphics(), but all the methods
-	// seem to have this form.
-	public Iterator<CustomGraphicLayer> getCustomGraphics(final CyNode node) {
-		return new Iterator<CustomGraphicLayer>() {
-			private Iterator<CustomGraphicLayer> _iterator = new ArrayList<CustomGraphicLayer>(0).iterator();
-
-			public boolean hasNext() {
-				return _iterator.hasNext();
-			}
-
-			public CustomGraphicLayer next() {
-				return _iterator.next();
-			}
-
-			public void remove() {
-				throw new UnsupportedOperationException();
-			}
-		};
 	}
 
 	/**

@@ -45,25 +45,29 @@ import org.cytoscape.work.Tunable;
  * Specific instance of AbstractLoadNetworkTask that loads a URL.
  */
 public class LoadNetworkURLTask extends AbstractLoadNetworkTask {
-	@Tunable(description="The URL to load", params = "fileCategory=network;input=true")
+	
+	@Tunable(description="The URL to load:", params = "fileCategory=network;input=true")
 	public URL url;
 	
 	StreamUtil streamUtil;
 
 	static String BAD_INTERNET_SETTINGS_MSG = "<html><p>Cytoscape has failed to connect to the URL. Please ensure that:</p><p><ol><li>the URL is correct,</li><li>your computer is able to connect to the Internet, and</li><li>your proxy settings are correct.</li></ol></p><p>The reason for the failure is: %s</html>";
 
-	public LoadNetworkURLTask(CyNetworkReaderManager mgr, 
-				  CyNetworkManager netmgr, final CyNetworkViewManager networkViewManager,
-				  final Properties props,
-				  CyNetworkNaming namingUtil, StreamUtil streamUtil, final VisualMappingManager vmm, final CyNetworkViewFactory nullNetworkViewFactory)
-	{
+	public LoadNetworkURLTask(
+			final CyNetworkReaderManager mgr,
+			final CyNetworkManager netmgr,
+			final CyNetworkViewManager networkViewManager,
+			final Properties props,
+			final CyNetworkNaming namingUtil,
+			final StreamUtil streamUtil,
+			final VisualMappingManager vmm,
+			final CyNetworkViewFactory nullNetworkViewFactory
+	) {
 		super(mgr, netmgr, networkViewManager, props, namingUtil, vmm, nullNetworkViewFactory);
 		this.streamUtil = streamUtil;
 	}
 
-	/**
-	 * Executes Task.
-	 */
+	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
 		if (url == null)
 			throw new NullPointerException("url is null");

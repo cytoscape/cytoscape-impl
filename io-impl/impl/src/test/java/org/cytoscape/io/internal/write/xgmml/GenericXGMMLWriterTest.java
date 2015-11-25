@@ -81,22 +81,28 @@ public class GenericXGMMLWriterTest extends AbstractXGMMLWriterTest {
 		net.getRow(net).set("test_list_int", Arrays.asList(new Integer[]{ 1 }));
 		write(net);
 		assertEquals("integer", evalString("/x:graph/x:att[@name=\"test_int\"]/@type"));
+		assertEquals("Integer", evalString("/x:graph/x:att[@name=\"test_int\"]/@cy:type"));
 		assertEquals(Integer.MAX_VALUE, evalNumber("/x:graph/x:att[@name=\"test_int\"]/@value"));
 		assertEquals("list", evalString("/x:graph/x:att[@name=\"test_list_int\"]/@type"));
+		assertEquals("List", evalString("/x:graph/x:att[@name=\"test_list_int\"]/@cy:type"));
 		assertEquals("integer", evalString("/x:graph/x:att[@name=\"test_list_int\"]/x:att[@value=\"1\"]/@type"));
+		assertEquals("Integer", evalString("/x:graph/x:att[@name=\"test_list_int\"]/x:att[@value=\"1\"]/@cy:type"));
 	}
 	
 	@Test
-	public void testLongAttributeSavedAsReal() {
+	public void testLongAttributeSavedAsInteger() {
 		net.getRow(net).getTable().createColumn("test_long", Long.class, false);
 		net.getRow(net).set("test_long", Long.MAX_VALUE);
 		net.getRow(net).getTable().createListColumn("test_list_long", Long.class, false);
 		net.getRow(net).set("test_list_long", Arrays.asList(new Long[]{ 1L }));
 		write(net);
-		assertEquals("real", evalString("/x:graph/x:att[@name=\"test_long\"]/@type"));
+		assertEquals("integer", evalString("/x:graph/x:att[@name=\"test_long\"]/@type"));
+		assertEquals("Long", evalString("/x:graph/x:att[@name=\"test_long\"]/@cy:type"));
 		assertEquals(Long.MAX_VALUE, evalNumber("/x:graph/x:att[@name=\"test_long\"]/@value"));
 		assertEquals("list", evalString("/x:graph/x:att[@name=\"test_list_long\"]/@type"));
-		assertEquals("real", evalString("/x:graph/x:att[@name=\"test_list_long\"]/x:att[@value=\"1\"]/@type"));
+		assertEquals("List", evalString("/x:graph/x:att[@name=\"test_list_long\"]/@cy:type"));
+		assertEquals("integer", evalString("/x:graph/x:att[@name=\"test_list_long\"]/x:att[@value=\"1\"]/@type"));
+		assertEquals("Long", evalString("/x:graph/x:att[@name=\"test_list_long\"]/x:att[@value=\"1\"]/@cy:type"));
 	}
 	
 	@Test
@@ -107,9 +113,12 @@ public class GenericXGMMLWriterTest extends AbstractXGMMLWriterTest {
 		net.getRow(net).set("test_list_double", Arrays.asList(new Double[]{ 1.2D }));
 		write(net);
 		assertEquals("real", evalString("/x:graph/x:att[@name=\"test_double\"]/@type"));
+		assertEquals("Double", evalString("/x:graph/x:att[@name=\"test_double\"]/@cy:type"));
 		assertEquals(Double.MAX_VALUE, new Double(evalString("/x:graph/x:att[@name=\"test_double\"]/@value")), 0.0);
 		assertEquals("list", evalString("/x:graph/x:att[@name=\"test_list_double\"]/@type"));
+		assertEquals("List", evalString("/x:graph/x:att[@name=\"test_list_double\"]/@cy:type"));
 		assertEquals("real", evalString("/x:graph/x:att[@name=\"test_list_double\"]/x:att[@value=\"1.2\"]/@type"));
+		assertEquals("Double", evalString("/x:graph/x:att[@name=\"test_list_double\"]/x:att[@value=\"1.2\"]/@cy:type"));
 	}
 	
 	@Test
@@ -120,9 +129,12 @@ public class GenericXGMMLWriterTest extends AbstractXGMMLWriterTest {
 		net.getRow(net).set("test_list_str", Arrays.asList(new String[]{ "A", "B" }));
 		write(net);
 		assertEquals("string", evalString("/x:graph/x:att[@name=\"test_str\"]/@type"));
+		assertEquals("String", evalString("/x:graph/x:att[@name=\"test_str\"]/@cy:type"));
 		assertEquals("My String", evalString("/x:graph/x:att[@name=\"test_str\"]/@value"));
 		assertEquals("list", evalString("/x:graph/x:att[@name=\"test_list_str\"]/@type"));
+		assertEquals("List", evalString("/x:graph/x:att[@name=\"test_list_str\"]/@cy:type"));
 		assertEquals("string", evalString("/x:graph/x:att[@name=\"test_list_str\"]/x:att[@value=\"B\"]/@type"));
+		assertEquals("String", evalString("/x:graph/x:att[@name=\"test_list_str\"]/x:att[@value=\"B\"]/@cy:type"));
 	}
 	
 	@Test
@@ -134,11 +146,29 @@ public class GenericXGMMLWriterTest extends AbstractXGMMLWriterTest {
 		write(net);
 		// see http://www.cs.rpi.edu/research/groups/pb/punin/public_html/XGMML/draft-xgmml-20010628.html#BT
 		assertEquals("boolean", evalString("/x:graph/x:att[@name=\"test_bool\"]/@type"));
+		assertEquals("Boolean", evalString("/x:graph/x:att[@name=\"test_bool\"]/@cy:type"));
 		assertEquals("1", evalString("/x:graph/x:att[@name=\"test_bool\"]/@value")); // XGMML boolean [0|1]
 		assertEquals("list", evalString("/x:graph/x:att[@name=\"test_list_bool\"]/@type"));
+		assertEquals("List", evalString("/x:graph/x:att[@name=\"test_list_bool\"]/@cy:type"));
 		assertEquals("boolean", evalString("/x:graph/x:att[@name=\"test_list_bool\"]/x:att[1]/@type"));
+		assertEquals("Boolean", evalString("/x:graph/x:att[@name=\"test_list_bool\"]/x:att[1]/@cy:type"));
 		assertEquals("1", evalString("/x:graph/x:att[@name=\"test_list_bool\"]/x:att[1]/@value"));
 		assertEquals("0", evalString("/x:graph/x:att[@name=\"test_list_bool\"]/x:att[last()]/@value"));
+	}
+	
+	@Test
+	public void testListAttributeSavedAsTypedList() { // Even if the value is null or an empty list!
+		net.getRow(net).getTable().createListColumn("test_list_int", Integer.class, false);
+		net.getRow(net).getTable().createListColumn("test_list_long", Long.class, false);
+		net.getRow(net).getTable().createListColumn("test_list_double", Double.class, false);
+		net.getRow(net).getTable().createListColumn("test_list_str", String.class, false);
+		net.getRow(net).getTable().createListColumn("test_list_bool", Boolean.class, false);
+		write(net);
+		assertEquals("Integer", evalString("/x:graph/x:att[@name=\"test_list_int\"]/@cy:elementType"));
+		assertEquals("Long", evalString("/x:graph/x:att[@name=\"test_list_long\"]/@cy:elementType"));
+		assertEquals("Double", evalString("/x:graph/x:att[@name=\"test_list_double\"]/@cy:elementType"));
+		assertEquals("String", evalString("/x:graph/x:att[@name=\"test_list_str\"]/@cy:elementType"));
+		assertEquals("Boolean", evalString("/x:graph/x:att[@name=\"test_list_bool\"]/@cy:elementType"));
 	}
 	
 	@Test

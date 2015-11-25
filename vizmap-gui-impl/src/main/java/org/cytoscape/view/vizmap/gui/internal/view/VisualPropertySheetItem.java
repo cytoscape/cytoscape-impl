@@ -55,6 +55,8 @@ import javax.swing.plaf.basic.BasicButtonUI;
 import javax.swing.table.TableCellEditor;
 
 import org.cytoscape.model.CyNode;
+import org.cytoscape.util.swing.IconManager;
+import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.view.vizmap.VisualMappingFunction;
@@ -62,8 +64,7 @@ import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.VisualPropertyDependency;
 import org.cytoscape.view.vizmap.gui.internal.VizMapperProperty;
 import org.cytoscape.view.vizmap.gui.internal.model.LockedValueState;
-import org.cytoscape.view.vizmap.gui.internal.theme.ThemeManager;
-import org.cytoscape.view.vizmap.gui.internal.theme.ThemeManager.CyFont;
+import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
 import org.cytoscape.view.vizmap.gui.internal.util.VisualPropertyUtil;
 import org.cytoscape.view.vizmap.gui.internal.view.editor.mappingeditor.ContinuousMappingEditorPanel;
 import org.cytoscape.view.vizmap.mappings.ContinuousMapping;
@@ -83,6 +84,10 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 
 	public enum MessageType { INFO, WARNING, ERROR	}
 
+	private static final String DISCRETE_ICON = IconManager.ICON_ELLIPSIS_V + " " + IconManager.ICON_ELLIPSIS_V;
+	private static final String CONTINUOUS_ICON = IconManager.ICON_ELLIPSIS_V + " " + IconManager.ICON_ARROWS_V;
+	private static final String PASSTHROUGH_ICON = IconManager.ICON_ELLIPSIS_V + " " + IconManager.ICON_ANGLE_RIGHT;
+	
 	private static final int HEIGHT = 32;
 	private static final int PROP_SHEET_ROW_HEIGHT = 24;
 	private static final int MAPPING_IMG_ROW_HEIGHT = 90;
@@ -95,18 +100,8 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 	private static final int MSG_ICON_WIDTH = 18;
 	private static final int MSG_ICON_HEIGHT = 15;
 	
-	static final Color BG_COLOR = Color.WHITE;
-	static final Color FG_COLOR = Color.DARK_GRAY;
-	static final Color SELECTED_BG_COLOR = new Color(222, 234, 252);
-	
-	static final Color BTN_BORDER_COLOR = new Color(200, 200, 200);
-	static final Color BTN_BORDER_DISABLED_COLOR = new Color(248, 248, 248);
 	static final int BTN_H_MARGIN = 1;
 	static final int BTN_BORDER_WIDTH = 1;
-	
-	static final Color INFO_COLOR = Color.LIGHT_GRAY;
-	static final Color WARN_COLOR = new Color(184, 174, 105);
-	static final Color ERR_COLOR = new Color(109, 73, 74);
 	
 	private JPanel topPnl;
 	private JPanel mappingPnl;
@@ -127,23 +122,23 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 	
 	private final VisualPropertySheetItemModel<T> model;
 	private final VizMapPropertyBuilder vizMapPropertyBuilder;
-	private final ThemeManager themeMgr;
+	private final ServicesUtil servicesUtil;
 
 	// ==[ CONSTRUCTORS ]===============================================================================================
 	
 	public VisualPropertySheetItem(final VisualPropertySheetItemModel<T> model,
 								   final VizMapPropertyBuilder vizMapPropertyBuilder,
-								   final ThemeManager themeMgr) {
+								   final ServicesUtil servicesUtil) {
 		if (model == null)
 			throw new IllegalArgumentException("'model' must not be null");
 		if (vizMapPropertyBuilder == null)
 			throw new IllegalArgumentException("'vizMapPropertyBuilder' must not be null");
-		if (themeMgr == null)
-			throw new IllegalArgumentException("'themeMgr' must not be null");
+		if (servicesUtil == null)
+			throw new IllegalArgumentException("'servicesUtil' must not be null");
 		
 		this.model = model;
 		this.vizMapPropertyBuilder = vizMapPropertyBuilder;
-		this.themeMgr = themeMgr;
+		this.servicesUtil = servicesUtil;
 		disabledBtnIcon = getIcon(null, VALUE_ICON_WIDTH, VALUE_ICON_HEIGHT);
 		
 		init();
@@ -227,11 +222,13 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 			bypassBtn.setEnabled(isEnabled() && state != LockedValueState.DISABLED);
 			
 			if (state == LockedValueState.ENABLED_MULTIPLE_VALUES) {
-				bypassBtn.setForeground(Color.GRAY);
-				bypassBtn.setFont(themeMgr.getFont(CyFont.FONTAWESOME_FONT).deriveFont(19.0f));
-				bypassBtn.setText("\uF059"); // icon-question-sign
+				final IconManager iconManager = servicesUtil.get(IconManager.class);
+				
+				bypassBtn.setForeground(LookAndFeelUtil.getInfoColor());
+				bypassBtn.setFont(iconManager.getIconFont(19.0f));
+				bypassBtn.setText(IconManager.ICON_QUESTION_CIRCLE);
 			} else {
-				bypassBtn.setForeground(FG_COLOR);
+				bypassBtn.setForeground(getForegroundColor());
 				bypassBtn.setFont(UIManager.getFont("Button.font"));
 				bypassBtn.setText("");
 			}
@@ -371,8 +368,8 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 	// ==[ PRIVATE METHODS ]============================================================================================
 	
 	private void init() {
-		setBackground(BG_COLOR);
-		setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, BTN_BORDER_COLOR));
+		setBackground(getBackgroundColor());
+		setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, getButtonBorderColor()));
 		setLayout(new BorderLayout());
 		
 		add(getTopPnl(), BorderLayout.NORTH);
@@ -463,8 +460,7 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 	protected JPanel getMappingPnl() {
 		if (mappingPnl == null) {
 			mappingPnl = new JPanel();
-			mappingPnl.setBackground(new Color(125, 125, 125));
-			mappingPnl.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(125, 125, 125)));
+			mappingPnl.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, UIManager.getColor("Separator.foreground")));
 			mappingPnl.setLayout(new BorderLayout());
 			mappingPnl.setVisible(false);
 			
@@ -590,6 +586,7 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 	protected JCheckBox getDependencyCkb() {
 		if (dependencyCkb == null) {
 			dependencyCkb = new JCheckBox();
+			dependencyCkb.setOpaque(false);
 			dependencyCkb.setSelected(model.isDependencyEnabled());
 		}
 		
@@ -612,6 +609,8 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 						collapse();
 					else
 						expand();
+					
+					updateMappingIcon();
 				}
 			});
 			getMappingPnl().addComponentListener(new ComponentAdapter() {
@@ -619,11 +618,15 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 				public void componentShown(final ComponentEvent ce) {
 					if (mappingBtn != null)
 						mappingBtn.setSelected(true);
+					
+					updateMappingIcon();
 				}
 				@Override
 				public void componentHidden(final ComponentEvent ce) {
 					if (mappingBtn != null)
 						mappingBtn.setSelected(false);
+					
+					updateMappingIcon();
 				}
 			});
 		}
@@ -645,13 +648,15 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 	
 	protected JButton getRemoveMappingBtn() {
 		if (removeMappingBtn == null) {
-			removeMappingBtn = new JButton("\uF014"); // icon-trash
+			final IconManager iconManager = servicesUtil.get(IconManager.class);
+			
+			removeMappingBtn = new JButton(IconManager.ICON_TRASH_O); // icon-trash
 			removeMappingBtn.setToolTipText("Remove Mapping");
 			removeMappingBtn.setBorderPainted(false);
 			removeMappingBtn.setContentAreaFilled(false);
 			removeMappingBtn.setOpaque(false);
 			removeMappingBtn.setFocusable(false);
-			removeMappingBtn.setFont(themeMgr.getFont(CyFont.FONTAWESOME_FONT).deriveFont(18.0f));
+			removeMappingBtn.setFont(iconManager.getIconFont(18.0f));
 			removeMappingBtn.setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 2));
 			updateRemoveMappingBtn();
 		}
@@ -670,10 +675,12 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 	
 	public JLabel getMsgIconLbl() {
 		if (msgIconLbl == null) {
+			final IconManager iconManager = servicesUtil.get(IconManager.class);
+			
 			msgIconLbl = new JLabel(" ");
 			msgIconLbl.setHorizontalTextPosition(SwingConstants.CENTER);
 			msgIconLbl.setPreferredSize(new Dimension(MSG_ICON_WIDTH, MSG_ICON_HEIGHT));
-			msgIconLbl.setFont(themeMgr.getFont(CyFont.FONTAWESOME_FONT).deriveFont(16.0f));
+			msgIconLbl.setFont(iconManager.getIconFont(16.0f));
 			
 			// Hack to prolong a tooltip’s visible delay
 			// Thanks to: http://tech.chitgoks.com/2010/05/31/disable-tooltip-delay-in-java-swing/
@@ -694,6 +701,26 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 		}
 		
 		return msgIconLbl;
+	}
+	
+	static Color getBackgroundColor() {
+		return UIManager.getColor("Table.background");
+	}
+	
+	static Color getSelectedBackgroundColor() {
+		return UIManager.getColor("Table.selectionBackground");
+	}
+	
+	static Color getForegroundColor() {
+		return UIManager.getColor("Table.foreground");
+	}
+	
+	static Color getButtonBorderColor() {
+		return UIManager.getColor("Separator.foreground");
+	}
+	
+	static Color getDisabledButtonBorderColor() {
+		return UIManager.getColor("Table.background");
 	}
 	
 	@SuppressWarnings({ "unchecked", "rawtypes" })
@@ -728,7 +755,8 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 	}
 	
 	private void updateSelection() {
-		getTopPnl().setBackground(selected ? SELECTED_BG_COLOR : BG_COLOR);
+		getTopPnl().setBackground(selected ? getSelectedBackgroundColor() : getBackgroundColor());
+		repaint();
 	}
 	
 	private void updateMessageIcon(final MessageType type) {
@@ -736,14 +764,14 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 		Color fg = null;
 		
 		if (type == MessageType.INFO) {
-			text = "\uF05A"; // icon-info-sign
-			fg = INFO_COLOR;
+			text = IconManager.ICON_INFO_CIRCLE;
+			fg = LookAndFeelUtil.getInfoColor();
 		} else if (type == MessageType.WARNING) {
-			text = "\uF071"; // icon-warning-sign
-			fg = WARN_COLOR;
+			text = IconManager.ICON_WARNING;
+			fg = LookAndFeelUtil.getWarnColor();
 		} else if (type == MessageType.ERROR) {
-			text = "\uF056"; // icon-minus-sign
-			fg = ERR_COLOR;
+			text = IconManager.ICON_MINUS_CIRCLE;
+			fg = LookAndFeelUtil.getErrorColor();
 		}
 		
 		getMsgIconLbl().setText(text);
@@ -757,19 +785,26 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 		final JToggleButton btn = getMappingBtn();
 		final VisualMappingFunction<?, T> mapping = model.getVisualMappingFunction();
 		final String colName = mapping != null ? mapping.getMappingColumnName() : null;
-		btn.setFont(themeMgr.getFont(CyFont.FONTAWESOME_FONT).deriveFont(16.0f));
+		
+		final IconManager iconManager = servicesUtil.get(IconManager.class);
+		btn.setFont(iconManager.getIconFont(16.0f));
+		
+		if (btn.isSelected())
+			btn.setForeground(UIManager.getColor("Table.focusCellForeground"));
+		else
+			btn.setForeground(getForegroundColor());
 		
 		if (mapping == null) {
 			btn.setText("");
 			btn.setToolTipText("No Mapping");
 		} else if (mapping instanceof DiscreteMapping) {
-			btn.setText("\uF142 \uF142"); // icon-ellipsis-vertical
+			btn.setText(DISCRETE_ICON);
 			btn.setToolTipText("Discrete Mapping for column \"" + colName + "\"");
 		} else if (mapping instanceof ContinuousMapping) {
-			btn.setText("\uF142 \uF07D"); // icon-ellipsis-vertical + icon-resize-vertical
+			btn.setText(CONTINUOUS_ICON);
 			btn.setToolTipText("Continuous Mapping for column \"" + colName + "\"");
 		} else if (mapping instanceof PassthroughMapping) {
-			btn.setText("\uF142 \uF105"); // icon-ellipsis-vertical + icon-angle-right
+			btn.setText(PASSTHROUGH_ICON);
 			btn.setToolTipText("Passthrough Mapping for column \"" + colName + "\"");
 		}
 	}
@@ -837,14 +872,6 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 				return null;
 			} else {
 				final Property prop = ((Item) getValueAt(row, 0)).getProperty();
-				final Color fontColor;
-
-				if (prop != null && prop.getValue() != null && prop.getValue().getClass() == Color.class)
-					fontColor = (Color) prop.getValue();
-				else
-					fontColor = FG_COLOR;
-
-				final String colorString = Integer.toHexString(fontColor.getRGB());
 
 				if (prop == null)
 					return null;
@@ -855,15 +882,12 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 					return "Click to edit this mapping...";
 
 				if (displayName.equals(VizMapPropertyBuilder.COLUMN) || displayName.equals(VizMapPropertyBuilder.MAPPING_TYPE))
-					return "<html><Body BgColor=\"white\"><font Size=\"4\" Color=\"#" + colorString.substring(2, 8)
-							+ "\"><strong>" + prop.getDisplayName() + " = " + prop.getValue()
-							+ "</font></strong></body></html>";
+					return prop.getDisplayName() + ": " + prop.getValue();
 				else
-					return "<html><Body BgColor=\"white\"><font Size=\"4\" Color=\"#" + colorString.substring(2, 8)
-							+ "\"><strong>" + prop.getDisplayName() + ": "
+					return "<html>" + prop.getDisplayName() + ": "
 							+ (prop.getValue() != null ? 
 									VisualPropertyUtil.getDisplayString(prop.getValue()) : "<i>default value</i>")
-							+ "</font></strong></body></html>";
+							+ "</html>";
 			}
 		}
 		
@@ -910,7 +934,9 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 			setContentAreaFilled(false);
 			setOpaque(false);
 			setFocusPainted(false);
-			setFont(themeMgr.getFont(CyFont.FONTAWESOME_FONT).deriveFont(17.0f));
+			
+			final IconManager iconManager = servicesUtil.get(IconManager.class);
+			setFont(iconManager.getIconFont(17.0f));
 			
 			addActionListener(al);
 			setSelected(selected);
@@ -918,17 +944,13 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 	    
 	    @Override
 	    public void setSelected(final boolean b) {
-	    	setText(b ? "\uF0D7": "\uF0D9"); // icon-caret-down : icon-caret-left
+	    	setText(b ? IconManager.ICON_CARET_DOWN : IconManager.ICON_CARET_LEFT);
 	    	super.setSelected(b);
 	    }
 	}
 
 	static class VizMapperButton extends JButton {
 
-		static final Color BG_COLOR_1 = new Color(226, 226, 226);
-		static final Color BG_COLOR_2 = Color.WHITE;
-		static final Color BG_DISABLED_COLOR = new Color(248, 248, 248);
-		
 		VizMapperButton() {
 			setContentAreaFilled(false);
 		}
@@ -944,9 +966,11 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 			final Paint p;
 			
 			if (btn.isEnabled())
-				p = new GradientPaint(new Point(0, 0), BG_COLOR_1, new Point(0, btn.getHeight()), BG_COLOR_2);
+				p = new GradientPaint(
+						new Point(0, 0), UIManager.getColor("Button.background"), 
+						new Point(0, btn.getHeight()), UIManager.getColor("Table.background"));
 			else
-				p = BG_DISABLED_COLOR;
+				p = UIManager.getColor("Button.background");
 			
 			g2.setPaint(p);
 			g2.fillRect(0, 0, btn.getWidth(), btn.getHeight());
@@ -973,10 +997,8 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 		public static final int CENTER = 2;
 		public static final int SOUTH = 3;
 		
-		static final Color BG_OVER_COLOR = new Color(224, 232, 246);
-		static final Color BORDER_OVER_COLOR = new Color(152, 180, 226);
-		static final Color BG_SELECTED_COLOR = new Color(193, 210, 238);
-		static final Color BORDER_SELECTED_COLOR = new Color(125, 125, 125);
+		final Color BG_OVER_COLOR = UIManager.getColor("Table.selectionBackground");
+		final Color BG_SELECTED_COLOR = UIManager.getColor("Table.focusCellBackground");
 		
 		private final int anchor;
 		
@@ -1003,8 +1025,8 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 			btn.setVerticalAlignment(SwingConstants.CENTER);
 			btn.setHorizontalAlignment(SwingConstants.CENTER);
 			btn.setFocusPainted(false);
-			btn.setBackground(BG_COLOR);
-			btn.setForeground(FG_COLOR);
+			btn.setBackground(getBackgroundColor());
+			btn.setForeground(getForegroundColor());
 			btn.setFocusable(false);
 			btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
 			
@@ -1017,7 +1039,7 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 																BTN_BORDER_WIDTH,
 																anchor == SOUTH ? 0: BTN_BORDER_WIDTH,
 																BTN_BORDER_WIDTH,
-																BTN_BORDER_COLOR);
+																getButtonBorderColor());
 				borderEnabled =  BorderFactory.createCompoundBorder(border, padBorder);
 			}
 			{
@@ -1025,7 +1047,7 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 																BTN_BORDER_WIDTH,
 																anchor == SOUTH ? 0: BTN_BORDER_WIDTH,
 																BTN_BORDER_WIDTH,
-																BTN_BORDER_DISABLED_COLOR);
+																getDisabledButtonBorderColor());
 				borderDisabled =  BorderFactory.createCompoundBorder(border, padBorder);
 			}
 			

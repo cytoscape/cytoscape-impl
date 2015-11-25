@@ -24,172 +24,87 @@ package org.cytoscape.tableimport.internal.reader;
  * #L%
  */
 
-import org.cytoscape.model.CyNetwork;
-
-//import cytoscape.data.CyAttributesUtils;
-
-//import cytoscape.data.synonyms.Aliases;
-import static org.cytoscape.tableimport.internal.reader.TextFileDelimiters.*;
-import org.cytoscape.tableimport.internal.reader.TextTableReader.ObjectType;
-import static org.cytoscape.tableimport.internal.reader.TextTableReader.ObjectType.*;
-
-import org.cytoscape.model.CyEdge;
-import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyTableManager;
-
 import java.io.IOException;
 import java.io.InputStream;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
+import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import org.cytoscape.tableimport.internal.util.AttributeTypes;
-import org.cytoscape.tableimport.internal.util.CytoscapeServices;
-import org.cytoscape.model.CyTable;
+
+import org.cytoscape.tableimport.internal.util.AttributeDataType;
+import org.cytoscape.tableimport.internal.util.SourceColumnSemantic;
 
 /**
- * Parameter object for text table <---> CyAttributes mapping.<br>
- * <p>
- *  This object will be used by all attribute readers.
- * </p>
- *
- * @since Cytoscape 2.4
- * @version 0.9
- * @author Keiichiro Ono
- *
+ * Parameter object for text table <---> CyAttributes mapping.
+ * This object will be used by all attribute readers.
  */
 public class AttributeMappingParameters extends AbstractMappingParameters {
 
-	
-	private String[] attributeNames;
-	private Byte[] attributeTypes;
-	private Byte[] listAttributeTypes;
 	private final int keyIndex;
-	private boolean[] importFlag;
-	private boolean caseSensitive;
 	
 	public AttributeMappingParameters(InputStream is, String fileType) {
 		super(is, fileType);
 
 		this.keyIndex = -1;
-		}
-	
-	public AttributeMappingParameters( final List<String> delimiters,
-	                                  final String listDelimiter, final int keyIndex, final String[] attrNames,
-	                                  Byte[] attributeTypes, Byte[] listAttributeTypes,
-	                                  boolean[] importFlag, boolean caseSensitive) throws Exception {
-		this( delimiters, listDelimiter, keyIndex, attrNames, attributeTypes, listAttributeTypes, importFlag, 
-				caseSensitive, 0, null);
 	}
 	
-	public AttributeMappingParameters(final List<String> delimiters,
-            final String listDelimiter, final int keyIndex,
+	public AttributeMappingParameters(
+			final String name,
+			final List<String> delimiters,
+			final String[] listDelimiters,
+			final int keyIndex,
+			final String[] attrNames,
+			final AttributeDataType[] dataTypes,
+	        final SourceColumnSemantic[] types
+	) throws Exception {
+		this(name, delimiters, listDelimiters, keyIndex, attrNames, dataTypes, types, 0, null);
+	}
+	
+	public AttributeMappingParameters(
+			final String name,
+			final List<String> delimiters,
+            final String[] listDelimiters,
+            final int keyIndex,
             final String[] attrNames,
-            Byte[] attributeTypes, Byte[] listAttributeTypes,
-            boolean[] importFlag, Boolean caseSensitive, int startNumber, String commentChar)
-throws Exception {
+            final AttributeDataType[] dataTypes,
+            final SourceColumnSemantic[] types,
+            final int startNumber,
+            final String commentChar
+    ) throws Exception {
+		super(name, delimiters, listDelimiters, attrNames, dataTypes, types, startNumber, commentChar);
 		
-		super(delimiters, listDelimiter, attrNames, attributeTypes,listAttributeTypes, importFlag, startNumber, commentChar);
-		
-		this.caseSensitive = caseSensitive;
-		
-		
-		if (attrNames == null) {
+		if (attrNames == null)
 			throw new Exception("attributeNames should not be null.");
-		}
 
 		/*
 		 * Error check: Key column number should be smaller than actual number
 		 * of columns in the text table.
 		 */
-		if (attrNames.length < keyIndex) {
+		if (attrNames.length < keyIndex)
 			throw new IOException("Key is out of range.");
-		}
 		
-		this.listAttributeTypes = listAttributeTypes;
-
 		this.keyIndex = keyIndex;
-		this.attributeNames = attrNames;
 		
 		/*
 		 * If not specified, import everything as String attributes.
 		 */
-		if (attributeTypes == null) {
-			this.attributeTypes = new Byte[attrNames.length];
-
-			for (int i = 0; i < attrNames.length; i++) {
-				this.attributeTypes[i] = AttributeTypes.TYPE_STRING;
-			}
+		if (dataTypes == null) {
+			this.dataTypes = new AttributeDataType[attrNames.length];
+			Arrays.fill(this.dataTypes, AttributeDataType.TYPE_STRING);
 		} else {
-			this.attributeTypes = attributeTypes;
+			this.dataTypes = dataTypes;
 		}
 
 		/*
 		 * If not specified, import everything.
 		 */
-		if (importFlag == null) {
-			this.importFlag = new boolean[attrNames.length];
-
-			for (int i = 0; i < this.importFlag.length; i++) {
-				this.importFlag[i] = true;
-			}
+		if (types == null) {
+			this.types = new SourceColumnSemantic[attrNames.length];
+			Arrays.fill(this.types, SourceColumnSemantic.ATTR);
 		} else {
-			this.importFlag = importFlag;
+			this.types = types;
 		}
-
-		
 	}
 	
-	
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @return  DOCUMENT ME!
-	 */
-	public String[] getAttributeNames() {
-		// TODO Auto-generated method stub
-		return attributeNames;
-	}
-
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @return  DOCUMENT ME!
-	 */
-	public Byte[] getAttributeTypes() {
-		return attributeTypes;
-	}
-
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @return  DOCUMENT ME!
-	 */
-	public Byte[] getListAttributeTypes() {
-		return listAttributeTypes;
-	}
-
-	
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @return  DOCUMENT ME!
-	 */
 	public int getKeyIndex() {
-		// TODO Auto-generated method stub
 		return keyIndex;
 	}
-	
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @return  DOCUMENT ME!
-	 */
-	public Boolean getCaseSensitive() {
-		return caseSensitive;
-	}
-	
 }

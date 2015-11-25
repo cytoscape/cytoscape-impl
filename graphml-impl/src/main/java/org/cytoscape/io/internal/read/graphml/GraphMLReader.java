@@ -29,8 +29,8 @@ import java.io.InputStream;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.io.read.AbstractCyNetworkReader;
-import org.cytoscape.io.read.CyNetworkReader;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
@@ -40,8 +40,6 @@ import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.view.layout.CyLayoutAlgorithm;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.CyNetworkViewFactory;
-import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskMonitor;
@@ -60,10 +58,13 @@ public class GraphMLReader extends AbstractCyNetworkReader {
 	private GraphMLParser parser;
 	private TaskMonitor taskMonitor;
 
-	public GraphMLReader(InputStream inputStream, final CyLayoutAlgorithmManager layouts,
-			final CyNetworkFactory cyNetworkFactory, final CyNetworkViewFactory cyNetworkViewFactory, 
-			final CyNetworkManager cyNetworkManager, final CyRootNetworkManager cyRootNetworkManager) {
-		super(inputStream, cyNetworkViewFactory, cyNetworkFactory, cyNetworkManager, cyRootNetworkManager);
+	public GraphMLReader(final InputStream inputStream,
+						 final CyLayoutAlgorithmManager layouts,
+						 final CyApplicationManager cyApplicationManager,
+						 final CyNetworkFactory cyNetworkFactory,
+						 final CyNetworkManager cyNetworkManager,
+						 final CyRootNetworkManager cyRootNetworkManager) {
+		super(inputStream, cyApplicationManager, cyNetworkFactory, cyNetworkManager, cyRootNetworkManager);
 		if (inputStream == null)
 			throw new NullPointerException("Input stream is null");
 
@@ -74,7 +75,7 @@ public class GraphMLReader extends AbstractCyNetworkReader {
 
 	@Override
 	public CyNetwork[] getNetworks() {
-		if(parser == null)
+		if (parser == null)
 			throw new IllegalStateException("Parser is not initialized.");
 		
 		return parser.getCyNetworks();
@@ -90,10 +91,14 @@ public class GraphMLReader extends AbstractCyNetworkReader {
 			final XMLReader xmlReader = sp.getXMLReader();
 			
 			CyRootNetwork root = getRootNetwork();
-			CySubNetwork newNetwork = null;
-			if(root== null) {
+			final CySubNetwork newNetwork;
+			
+			if (root != null) {
+				newNetwork = root.addSubNetwork();
+			} else {
+				// Need to create new network with new root.
 				newNetwork = (CySubNetwork) cyNetworkFactory.createNetwork();
-				root = cyRootNetworkManager.getRootNetwork(newNetwork);
+				root = newNetwork.getRootNetwork();
 			}
 			
 			parser = new GraphMLParser(taskMonitor, cyNetworkFactory, cyRootNetworkManager, root, newNetwork);
@@ -111,7 +116,7 @@ public class GraphMLReader extends AbstractCyNetworkReader {
 
 	@Override
 	public CyNetworkView buildCyNetworkView(CyNetwork network) {
-		final CyNetworkView view = cyNetworkViewFactory.createNetworkView(network);
+		final CyNetworkView view = getNetworkViewFactory().createNetworkView(network);
 
 		final CyLayoutAlgorithm layout = layouts.getDefaultLayout();
 		TaskIterator itr = layout.createTaskIterator(view, layout.getDefaultLayoutContext(),CyLayoutAlgorithm.ALL_NODE_VIEWS, "");

@@ -123,7 +123,7 @@ class PopupMenuHelper {
 				m_view.manager.execute(tf.createTaskIterator(ev, m_view));
 			}
 			else {
-				String edgeLabel = m_view.getModel().getRow(ev.getModel()).get("interaction",String.class);
+				String edgeLabel = m_view.getModel().getRow(ev.getModel()).get(CyEdge.INTERACTION, String.class);
 				JPopupMenu menu = createMenu(edgeLabel);
 				JMenuTracker tracker = new JMenuTracker(menu);
 
@@ -482,7 +482,9 @@ class PopupMenuHelper {
 		else
 			item = new JMenuItem(action);
 
-		item.setEnabled(tf.isReady());
+		boolean ready = tf.isReady();
+		item.setEnabled(ready);
+		action.setEnabled(ready);
 
 		item.setToolTipText(toolTipText);
 		return item;

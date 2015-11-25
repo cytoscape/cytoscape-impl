@@ -68,7 +68,7 @@ public class SetEdgeAttributeTask extends AbstractTableDataTask {
 		 	                                edge,
 		 	                                columnTunable.getValueMap(edgeTable));
 
-			taskMonitor.showMessage(TaskMonitor.Level.INFO, "   Set "+count+" edge attribute values for edge "+DataUtils.getEdgeName(edgeTable, edge));
+			taskMonitor.showMessage(TaskMonitor.Level.INFO, "   Set "+count+" edge table values for edge "+DataUtils.getEdgeName(edgeTable, edge));
 		}
 	}
 

@@ -24,6 +24,7 @@ package org.cytoscape.internal.view;
  * #L%
  */
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.events.SetCurrentNetworkEvent;
 import org.cytoscape.application.events.SetCurrentNetworkListener;
 import org.cytoscape.application.events.SetCurrentNetworkViewEvent;
@@ -35,6 +36,7 @@ import org.cytoscape.model.events.NetworkDestroyedEvent;
 import org.cytoscape.model.events.NetworkDestroyedListener;
 import org.cytoscape.model.events.RowsSetEvent;
 import org.cytoscape.model.events.RowsSetListener;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.events.SessionAboutToBeLoadedEvent;
 import org.cytoscape.session.events.SessionAboutToBeLoadedListener;
 import org.cytoscape.session.events.SessionAboutToBeSavedEvent;
@@ -51,6 +53,8 @@ import org.cytoscape.view.model.events.NetworkViewAddedEvent;
 import org.cytoscape.view.model.events.NetworkViewAddedListener;
 import org.cytoscape.view.model.events.NetworkViewDestroyedEvent;
 import org.cytoscape.view.model.events.NetworkViewDestroyedListener;
+import org.cytoscape.view.model.events.UpdateNetworkPresentationEvent;
+import org.cytoscape.view.model.events.UpdateNetworkPresentationListener;
 
 import javax.swing.SwingUtilities;
 
@@ -64,12 +68,14 @@ public class ToolBarEnableUpdater implements NetworkAddedListener, NetworkDestro
 		NetworkViewAddedListener, NetworkViewDestroyedListener, SetCurrentNetworkListener,
 		SetCurrentNetworkViewListener, RowsSetListener, SessionAboutToBeLoadedListener, SessionLoadedListener,
 		SessionAboutToBeSavedListener, SessionSavedListener, SessionLoadCancelledListener,
-		SessionSaveCancelledListener {
+		SessionSaveCancelledListener, UpdateNetworkPresentationListener {
 
 	private final CytoscapeToolBar toolbar;
+	private final CyServiceRegistrar serviceRegistrar;
 
-	public ToolBarEnableUpdater(final CytoscapeToolBar toolbar) {
+	public ToolBarEnableUpdater(final CytoscapeToolBar toolbar, final CyServiceRegistrar serviceRegistrar) {
 		this.toolbar = toolbar;
+		this.serviceRegistrar = serviceRegistrar;
 	}
 
 	@Override
@@ -140,6 +146,12 @@ public class ToolBarEnableUpdater implements NetworkAddedListener, NetworkDestro
 		updateToolbar();
 	}
 
+	@Override
+	public void handleEvent(UpdateNetworkPresentationEvent e) {
+		if (e.getSource().equals(serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetworkView()))
+			updateToolbar();
+	}
+	
 	private void updateToolbar() {
 		SwingUtilities.invokeLater( new Runnable() {
 			public void run() {

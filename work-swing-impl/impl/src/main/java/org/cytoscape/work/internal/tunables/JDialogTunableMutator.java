@@ -31,7 +31,8 @@ import javax.swing.JPanel;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
+import org.cytoscape.work.internal.tunables.utils.SimplePanel;
+import org.cytoscape.work.internal.tunables.utils.TunableDialog;
 import org.cytoscape.work.swing.RequestsUIHelper;
 import org.cytoscape.work.swing.TunableUIHelper;
 
@@ -66,10 +67,10 @@ public class JDialogTunableMutator extends JPanelTunableMutator implements Tunab
 	/** Provides an initialised logger. */
 	private Logger logger = LoggerFactory.getLogger(JDialogTunableMutator.class);
 
-	private Window parent = null;
+	private Window parent;
 
 	private Dialog.ModalityType modality = Dialog.DEFAULT_MODALITY_TYPE;
-	private	Window dialogWindow = null;
+	private	Window dialogWindow;
 
 	/**
 	 * Constructor.
@@ -90,11 +91,11 @@ public class JDialogTunableMutator extends JPanelTunableMutator implements Tunab
 	 */
 	public void setConfigurationContext(Object win, boolean resetContext) {
 		if (win == null) {
-			if(resetContext)
-			{
+			if (resetContext) {
 				handlerMap.clear();
 				titleProviderMap.clear();
 			}
+			
 			return;
 		}
 
@@ -105,11 +106,12 @@ public class JDialogTunableMutator extends JPanelTunableMutator implements Tunab
 					+ win.getClass());
 	}
 
+	@Override
 	public JPanel buildConfiguration(Object objectWithTunables) {
 		return super.buildConfiguration(objectWithTunables, parent);
 	}
 
-	/** {@inheritDoc} */
+	@Override
 	public boolean validateAndWriteBack(Object objectWithTunables) {
 		final JPanel panel = buildConfiguration(objectWithTunables, parent);
 		return validateAndWriteBack(panel, objectWithTunables);
@@ -129,6 +131,11 @@ public class JDialogTunableMutator extends JPanelTunableMutator implements Tunab
 				((RequestsUIHelper)objectWithTunables).setUIHelper(this);
 			}
 
+			// If the tunables panel has no visible controls, it means the user can't do anything with it,
+			// so just validate it and continue; no need to show the dialog.
+			if (panel instanceof SimplePanel && !((SimplePanel)panel).hasVisibleControls(panel))
+				return super.validateAndWriteBack(objectWithTunables);
+			
 			return displayGUI(panel, objectWithTunables);
 		}
 	}
@@ -144,7 +151,7 @@ public class JDialogTunableMutator extends JPanelTunableMutator implements Tunab
 	 */
 	private boolean displayGUI(final JPanel optionPanel, Object objectWithTunables) {
 		TunableDialog tunableDialog;
-		boolean result = false;
+		boolean valid = false;
 		String userInput;
 
 		do {
@@ -157,22 +164,20 @@ public class JDialogTunableMutator extends JPanelTunableMutator implements Tunab
 			tunableDialog.setVisible(true);
 
 			userInput = tunableDialog.getUserInput();
-			if (userInput.equalsIgnoreCase("OK")) {
-				result = super.validateAndWriteBack(objectWithTunables);
-			}
-		} while (userInput.equalsIgnoreCase("OK") == true && result == false);
+			
+			if (userInput.equalsIgnoreCase("OK"))
+				valid = super.validateAndWriteBack(objectWithTunables);
+		} while (userInput.equalsIgnoreCase("OK") && !valid);
 
-		if (userInput.equalsIgnoreCase("OK")) {
-			return result;
-		} else {
-			return false;
-		}
+		return userInput.equalsIgnoreCase("OK") ? valid : false;
 	}
 
+	@Override
 	public Window getParent() {
 		return dialogWindow;
 	}
 
+	@Override
 	public void setModality(Dialog.ModalityType modality) {
 		this.modality = modality;
 	}

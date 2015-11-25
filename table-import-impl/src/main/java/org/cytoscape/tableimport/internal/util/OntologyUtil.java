@@ -31,6 +31,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.StringTokenizer;
@@ -186,7 +187,7 @@ public class OntologyUtil {
 			// proxy server
 			// and because pages may be cached:
 			try {
-				htmlPageReader = new BufferedReader(new InputStreamReader(URLUtil.getBasicInputStream(taxonURL)));
+				htmlPageReader = new BufferedReader(new InputStreamReader(URLUtil.getBasicInputStream(taxonURL), Charset.forName("UTF-8").newDecoder()));
 
 				while ((txName == null) && ((curLine = htmlPageReader.readLine()) != null)) {
 					curLine.trim();

@@ -1,5 +1,8 @@
 package org.cytoscape.tableimport.internal.reader;
 
+import org.cytoscape.tableimport.internal.util.AttributeDataType;
+import org.cytoscape.tableimport.internal.util.SourceColumnSemantic;
+
 /*
  * #%L
  * Cytoscape Table Import Impl (table-import-impl)
@@ -24,49 +27,18 @@ package org.cytoscape.tableimport.internal.reader;
  * #L%
  */
 
-import org.cytoscape.tableimport.internal.reader.TextTableReader.ObjectType;
 
-import java.util.List;
-
-
-/**
- *
-  */
 public interface MappingParameter {
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @return  DOCUMENT ME!
-	 */
+	
+	public String getName();
+	
 	public int getColumnCount();
-
-
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @return  DOCUMENT ME!
-	 */
-	public boolean[] getImportFlag();
-
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @return  DOCUMENT ME!
-	 */
+	
 	public String[] getAttributeNames();
 
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @return  DOCUMENT ME!
-	 */
-	public Byte[] getAttributeTypes();
+	public AttributeDataType[] getDataTypes();
+	
+	public SourceColumnSemantic[] getTypes();
 
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @return  DOCUMENT ME!
-	 */
-	public String getListDelimiter();
-
+	public String[] getListDelimiters();
 }

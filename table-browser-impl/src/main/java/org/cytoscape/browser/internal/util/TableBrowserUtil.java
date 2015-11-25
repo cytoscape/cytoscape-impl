@@ -28,14 +28,36 @@ package org.cytoscape.browser.internal.util;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyTable;
 
 public final class TableBrowserUtil {
 
 	private static final int EOF = -1;
 
+	/**
+	 *  Creates a Map with the CyColumn names and their types as mapped to the types used by attribute equations.
+	 *  Types (and associated names) not used by attribute equations are omitted.
+	 *
+	 *  @param table the attributes to map
+	 *  @param ignore if not null, skip the attribute with this name
+	 */
+	public static Map<String, Class<?>> getAttNameToTypeMap(final CyTable table, final String ignore) {
+		final Map<String, Class<?>> map = new HashMap<>();
+		
+		for (final CyColumn column : table.getColumns())
+			map.put(column.getName(), column.getType());
+		
+		if (ignore != null)
+			map.remove(ignore);
+		
+		return map;
+	}
+	
 	public static Object parseLong(final String text, final StringBuilder errorMessage) {
 		try {
 			return Long.valueOf(text);
@@ -112,9 +134,9 @@ public final class TableBrowserUtil {
 		ITEM_OR_CLOSING_BRACE_EXPECTED, ITEM_EXPECTED, END_OF_INPUT_EXPECTED
 	};
 
-	@SuppressWarnings (value={"unchecked", "fallthrough"})
-	static List parseList(final String text, final Class<?> listElementType, final StringBuilder errorMessage) {
-		final List newList = new ArrayList();
+	@SuppressWarnings("fallthrough")
+	static List<Object> parseList(final String text, final Class<?> listElementType, final StringBuilder errorMessage) {
+		final List<Object> newList = new ArrayList<>();
 		final StringReader reader = new StringReader(text);
 
 		ListParserState state = ListParserState.OPENING_BRACE_EXPECTED;

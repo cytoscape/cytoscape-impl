@@ -14,12 +14,13 @@ import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.ding.customgraphics.ColorScheme;
 import org.cytoscape.ding.internal.charts.AbstractChartEditor;
 import org.cytoscape.ding.internal.charts.ColorSchemeEditor;
-import org.cytoscape.ding.internal.util.IconManager;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
+import org.cytoscape.util.swing.IconManager;
+import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.presentation.property.values.CyColumnIdentifier;
 import org.cytoscape.view.presentation.property.values.CyColumnIdentifierFactory;
 
@@ -34,7 +35,7 @@ public class PieChartEditor extends AbstractChartEditor<PieChart> {
 	
 	public PieChartEditor(final PieChart chart, final CyApplicationManager appMgr, final IconManager iconMgr,
 			final CyColumnIdentifierFactory colIdFactory) {
-		super(chart, Number.class, false, false, false, true, false, false, false, appMgr, iconMgr, colIdFactory);
+		super(chart, Number.class, false, false, false, true, false, false, false, false, appMgr, iconMgr, colIdFactory);
 		
 		domainLabelPositionLbl.setVisible(false);
 		getDomainLabelPositionCmb().setVisible(false);
@@ -47,7 +48,7 @@ public class PieChartEditor extends AbstractChartEditor<PieChart> {
 	@Override
 	protected void createLabels() {
 		super.createLabels();
-		startAngleLbl = new JLabel("Start Angle (degrees)");
+		startAngleLbl = new JLabel("Start Angle (degrees):");
 	}
 	
 	@Override
@@ -58,6 +59,7 @@ public class PieChartEditor extends AbstractChartEditor<PieChart> {
 		final GroupLayout layout = new GroupLayout(p);
 		p.setLayout(layout);
 		layout.setAutoCreateContainerGaps(false);
+		layout.setAutoCreateGaps(!LookAndFeelUtil.isAquaLAF());
 		
 		layout.setHorizontalGroup(layout.createParallelGroup(Alignment.LEADING, true)
 				.addGroup(layout.createSequentialGroup()

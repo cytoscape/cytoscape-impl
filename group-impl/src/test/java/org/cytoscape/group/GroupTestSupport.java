@@ -50,8 +50,8 @@ public class GroupTestSupport {
 		
 		final LockedVisualPropertiesManager lvpMgr = new LockedVisualPropertiesManager(serviceRegistrar);
 		
-		groupManager = new CyGroupManagerImpl(help);
-		groupFactory = new CyGroupFactoryImpl(help, groupManager, lvpMgr, serviceRegistrar);
+		groupManager = new CyGroupManagerImpl(serviceRegistrar, help);
+		groupFactory = new CyGroupFactoryImpl(groupManager, lvpMgr, help);
 	}
 
 	public CyGroupFactory getGroupFactory() {

@@ -1,0 +1,8 @@
+{
+  "name": "cyjs-util",
+  "version": "1.0.0",
+  "description": "Generate test files using Cytoscape.js",
+  "dependencies": {
+    "cytoscape": "latest"
+  }
+}

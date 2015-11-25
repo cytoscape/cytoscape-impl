@@ -24,6 +24,10 @@ package org.cytoscape.view.vizmap.gui.internal.view;
  * #L%
  */
 
+import static javax.swing.GroupLayout.DEFAULT_SIZE;
+import static javax.swing.GroupLayout.PREFERRED_SIZE;
+import static org.cytoscape.util.swing.LookAndFeelUtil.isAquaLAF;
+
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -52,24 +56,23 @@ import javax.swing.ActionMap;
 import javax.swing.BorderFactory;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.GroupLayout;
+import javax.swing.GroupLayout.Alignment;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.InputMap;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
-import javax.swing.JList;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
-import javax.swing.JPopupMenu.Separator;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JTabbedPane;
 import javax.swing.KeyStroke;
-import javax.swing.LayoutStyle;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import javax.swing.border.Border;
 
 import org.cytoscape.application.swing.CyAction;
@@ -78,6 +81,7 @@ import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.util.swing.GravityTracker;
+import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.MenuGravityTracker;
 import org.cytoscape.util.swing.PopupMenuGravityTracker;
 import org.cytoscape.view.model.CyNetworkView;
@@ -88,8 +92,7 @@ import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.gui.DefaultViewEditor;
 import org.cytoscape.view.vizmap.gui.DefaultViewPanel;
 import org.cytoscape.view.vizmap.gui.VizMapGUI;
-import org.cytoscape.view.vizmap.gui.internal.theme.ThemeManager;
-import org.cytoscape.view.vizmap.gui.internal.theme.ThemeManager.CyFont;
+import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
 
 /**
  * VizMapper UI main panel.
@@ -108,8 +111,6 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 	protected VisualStyleDropDownButton stylesBtn;
 	protected DefaultComboBoxModel stylesCmbModel;
 
-	private final ThemeManager themeMgr;
-	
 	/** Menu items under the options button */
 	private JPopupMenu mainMenu;
 	private PopupMenuGravityTracker mainMenuGravityTracker;
@@ -124,6 +125,7 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 
 	private CyNetworkView previewNetView;
 	private RenderingEngineFactory<CyNetwork> engineFactory; // TODO refactor
+	private ServicesUtil servicesUtil;
 	
 	// ==[ CONSTRUCTORS ]===============================================================================================
 	
@@ -131,14 +133,14 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 	 * Create new instance of VizMapperMainPanel object. GUI layout is handled
 	 * by abstract class.
 	 */
-	public VizMapperMainPanel(final ThemeManager themeMgr) {
-		if (themeMgr == null)
-			throw new IllegalArgumentException("'themeMgr' must not be null");
+	public VizMapperMainPanel(final ServicesUtil servicesUtil) {
+		if (servicesUtil == null)
+			throw new IllegalArgumentException("'servicesUtil' must not be null");
 		
-		this.themeMgr = themeMgr;
+		this.servicesUtil = servicesUtil;
 		
-		vpSheetMap = new HashMap<Class<? extends CyIdentifiable>, VisualPropertySheet>();
-		defViewPanelsMap = new HashMap<String, JPanel>();
+		vpSheetMap = new HashMap<>();
+		defViewPanelsMap = new HashMap<>();
 
 		init();
 	}
@@ -323,39 +325,47 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 
 	private void init() {
 		setMinimumSize(new Dimension(420, getMinimumSize().height));
-		setOpaque(false);
+		setOpaque(!isAquaLAF());
+		
 		final GroupLayout layout = new GroupLayout(this);
 		this.setLayout(layout);
+		layout.setAutoCreateContainerGaps(!isAquaLAF());
+		layout.setAutoCreateGaps(!isAquaLAF());
 		
-		layout.setHorizontalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-				.addComponent(getStylesPnl(), GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-				.addComponent(getPropertiesPn(), GroupLayout.DEFAULT_SIZE, 280, Short.MAX_VALUE));
-		layout.setVerticalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING).addGroup(
-				layout.createSequentialGroup()
-						.addComponent(getStylesPnl(), GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
-								GroupLayout.PREFERRED_SIZE).addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-						.addComponent(getPropertiesPn(), GroupLayout.DEFAULT_SIZE, 510, Short.MAX_VALUE)));
+		layout.setHorizontalGroup(layout.createParallelGroup(Alignment.LEADING)
+				.addComponent(getStylesPnl(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				.addComponent(getPropertiesPn(), DEFAULT_SIZE, 280, Short.MAX_VALUE)
+		);
+		layout.setVerticalGroup(layout.createParallelGroup(Alignment.LEADING)
+				.addGroup(layout.createSequentialGroup()
+						.addComponent(getStylesPnl(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addComponent(getPropertiesPn(), DEFAULT_SIZE, 510, Short.MAX_VALUE)
+				)
+		);
 	}
 	
 	private JPanel getStylesPnl() {
 		if (stylesPnl == null) {
 			stylesPnl = new JPanel();
-			stylesPnl.setOpaque(false);
+			stylesPnl.setOpaque(!isAquaLAF());
 			
-			final GroupLayout stylesPanelLayout = new GroupLayout(stylesPnl);
-			stylesPnl.setLayout(stylesPanelLayout);
+			// TODO: For some reason, the Styles button is naturally taller than the Options one on Nimbus and Windows.
+			//       Let's force it to have the same height.
+			getStylesBtn().setPreferredSize(
+					new Dimension(getStylesBtn().getPreferredSize().width, getOptionsBtn().getPreferredSize().height));
 			
-			stylesPanelLayout.setHorizontalGroup(stylesPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
-					.addGroup(stylesPanelLayout.createSequentialGroup()
-							.addComponent(getStylesBtn(), 0, 146, Short.MAX_VALUE)
-							.addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-							.addComponent(getOptionsBtn(), GroupLayout.PREFERRED_SIZE, 64, GroupLayout.PREFERRED_SIZE)
-					));
-			stylesPanelLayout.setVerticalGroup(stylesPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
-					.addComponent(getStylesBtn(), GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
-							GroupLayout.PREFERRED_SIZE)
-					.addComponent(getOptionsBtn())
-					);
+			final GroupLayout layout = new GroupLayout(stylesPnl);
+			stylesPnl.setLayout(layout);
+			layout.setAutoCreateGaps(!isAquaLAF());
+			
+			layout.setHorizontalGroup(layout.createSequentialGroup()
+					.addComponent(getStylesBtn(), 0, 146, Short.MAX_VALUE)
+					.addComponent(getOptionsBtn(), PREFERRED_SIZE, 64, PREFERRED_SIZE)
+			);
+			layout.setVerticalGroup(layout.createParallelGroup(Alignment.LEADING, false)
+					.addComponent(getStylesBtn(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(getOptionsBtn(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+			);
 		}
 		
 		return stylesPnl;
@@ -380,10 +390,12 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 	
 	DropDownMenuButton getOptionsBtn() {
 		if (optionsBtn == null) {
+			final IconManager iconManager = servicesUtil.get(IconManager.class);
+			
 			optionsBtn = new DropDownMenuButton(getMainMenu(), false);
 			optionsBtn.setToolTipText("Options...");
-			optionsBtn.setFont(themeMgr.getFont(CyFont.FONTAWESOME_FONT).deriveFont(11.0f));
-			optionsBtn.setText("\uF0D7"); // icon-caret-down
+			optionsBtn.setFont(iconManager.getIconFont(11.0f));
+			optionsBtn.setText(IconManager.ICON_CARET_DOWN);
 		}
 		
 		return optionsBtn;
@@ -488,19 +500,17 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 		
 		public VisualStyleDropDownButton() {
 			super(true);
-			styles = new LinkedList<VisualStyle>();
-			vsPanelMap = new HashMap<VisualStyle, JPanel>();
-			engineMap = new HashMap<String, RenderingEngine<CyNetwork>>();
+			styles = new LinkedList<>();
+			vsPanelMap = new HashMap<>();
+			engineMap = new HashMap<>();
 			
 			setHorizontalAlignment(LEFT);
 			
-			final JList list = new JList();
-			BG_COLOR = list.getBackground();
-			FG_COLOR = list.getForeground();
-			SEL_BG_COLOR = list.getSelectionBackground();
-			SEL_FG_COLOR = list.getSelectionForeground();
-			Separator sep = new Separator();
-			BORDER_COLOR = sep.getForeground();
+			BG_COLOR = UIManager.getColor("TextField.background");
+			FG_COLOR = UIManager.getColor("TextField.foreground");
+			SEL_BG_COLOR = UIManager.getColor("Table.focusCellBackground");
+			SEL_FG_COLOR = UIManager.getColor("Table.focusCellForeground");
+			BORDER_COLOR = UIManager.getColor("Separator.foreground");
 			
 			addActionListener(new ActionListener() {
 				@Override
@@ -589,14 +599,25 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 			setFocus(selectedItem);
 			
 			final JScrollPane scr = new JScrollPane(mainPnl);
-			scr.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-			dialog.add(scr);
+			scr.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+			
+			final GroupLayout layout = new GroupLayout(dialog.getContentPane());
+			dialog.getContentPane().setLayout(layout);
+			layout.setAutoCreateGaps(false);
+			layout.setAutoCreateContainerGaps(false);
+			
+			layout.setHorizontalGroup(layout.createSequentialGroup()
+					.addComponent(scr, 500, DEFAULT_SIZE, 1060)
+			);
+			layout.setVerticalGroup(layout.createSequentialGroup()
+					.addComponent(scr, DEFAULT_SIZE, DEFAULT_SIZE, 660)
+			);
+			
+			dialog.getContentPane().add(scr);
 			
 			final Point pt = getLocationOnScreen(); 
 			dialog.setLocation(pt.x, pt.y);
 			dialog.pack();
-			// TODO set maximum size
-//			dialog.setSize(new Dimension(dialog.getSize().width, 390));
 			dialog.setVisible(true);
 			dialog.requestFocus();
 		}
@@ -636,7 +657,6 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 			
 			// Preview image
 			if (engineFactory != null && previewNetView != null) {
-				// TODO review
 				final RenderingEngine<CyNetwork> engine = getRenderingEngine(vs);
 				
 				if (engine != null) {

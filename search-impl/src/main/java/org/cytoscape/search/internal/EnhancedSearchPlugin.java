@@ -24,114 +24,102 @@ package org.cytoscape.search.internal;
  * #L%
  */
 
-
-
 import java.awt.Component;
+import java.util.Collection;
+import java.util.Iterator;
 
-import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.events.SetCurrentNetworkViewEvent;
 import org.cytoscape.application.events.SetCurrentNetworkViewListener;
 import org.cytoscape.application.swing.AbstractToolBarComponent;
-import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.events.ColumnDeletedEvent;
+import org.cytoscape.model.events.ColumnDeletedListener;
 import org.cytoscape.model.events.NetworkAboutToBeDestroyedEvent;
 import org.cytoscape.model.events.NetworkAboutToBeDestroyedListener;
-import org.cytoscape.session.events.SessionLoadedEvent;
-import org.cytoscape.session.events.SessionLoadedListener;
-import org.cytoscape.application.swing.CySwingApplication;
-import org.cytoscape.search.internal.ui.EnhancedSearchPanel;
-import org.cytoscape.view.model.CyNetworkViewManager;
-import org.cytoscape.work.swing.DialogTaskManager;
-import org.cytoscape.model.events.RowsSetListener;
-import org.cytoscape.model.events.RowsSetEvent;
-import org.cytoscape.model.events.ColumnDeletedListener;
-import org.cytoscape.model.events.ColumnDeletedEvent;
+import org.cytoscape.model.events.RemovedEdgesEvent;
+import org.cytoscape.model.events.RemovedEdgesListener;
 import org.cytoscape.model.events.RemovedNodesEvent;
 import org.cytoscape.model.events.RemovedNodesListener;
-import org.cytoscape.model.events.RemovedEdgesListener;
-import org.cytoscape.model.events.RemovedEdgesEvent;
 import org.cytoscape.model.events.RowSetRecord;
-import java.util.Collection;
-import java.util.Iterator;
+import org.cytoscape.model.events.RowsSetEvent;
+import org.cytoscape.model.events.RowsSetListener;
+import org.cytoscape.search.internal.ui.EnhancedSearchPanel;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.session.events.SessionLoadedEvent;
+import org.cytoscape.session.events.SessionLoadedListener;
 
 
 public class EnhancedSearchPlugin extends AbstractToolBarComponent
 	implements SetCurrentNetworkViewListener, NetworkAboutToBeDestroyedListener,
-	           SessionLoadedListener,RowsSetListener, ColumnDeletedListener, RemovedNodesListener, RemovedEdgesListener
-{
+	           SessionLoadedListener,RowsSetListener, ColumnDeletedListener, RemovedNodesListener,
+	           RemovedEdgesListener {
+	
 	private final EnhancedSearchManager searchMgr;
 	private final EnhancedSearchPanel searchPnl; 
-	static CyEventHelper eventHelper;
-	public static boolean attributeChanged = false;
 	
-	public EnhancedSearchPlugin(final CySwingApplication desktopApp,
-	                            final CyApplicationManager appManager, 
-	                            final DialogTaskManager taskMgr,
-	                            final CyEventHelper eventHelper, final CyNetworkViewManager viewManager)
-	{
-		
+	public static boolean attributeChanged;
+	
+	public EnhancedSearchPlugin(final CyServiceRegistrar serviceRegistrar) {
 		searchMgr = new EnhancedSearchManager();
+		
 		// Add a text-field and a search button on tool-bar
-		searchPnl = new EnhancedSearchPanel(appManager, viewManager, searchMgr, taskMgr);
-		this.setToolBarGravity(9.8f);
-		EnhancedSearchPlugin.eventHelper = eventHelper;
+		searchPnl = new EnhancedSearchPanel(searchMgr, serviceRegistrar);
+		setToolBarGravity(9.8f);
 	}
 
-	@Override	
-	public Component getComponent(){
+	@Override
+	public Component getComponent() {
 		return searchPnl;
 	}
-	
 
 	@Override
 	public void handleEvent(SetCurrentNetworkViewEvent e) {
 		//
 	}
-	
+
 	@Override
 	public void handleEvent(SessionLoadedEvent e) {
 		// reset the state of the search-manager
-		if (searchMgr != null){
-			searchMgr.clear();			
-		}	
+		if (searchMgr != null) {
+			searchMgr.clear();
+		}
 	}
 
 	@Override
 	public void handleEvent(NetworkAboutToBeDestroyedEvent e) {
-		// remove the index of network to be destroyed 
-		if (searchMgr != null){
+		// remove the index of network to be destroyed
+		if (searchMgr != null) {
 			CyNetwork network = e.getNetwork();
-			searchMgr.removeNetworkIndex(network);			
+			searchMgr.removeNetworkIndex(network);
 		}
 	}
-	
-	@Override	
-	public void handleEvent(ColumnDeletedEvent e){
-		this.attributeChanged = true;
+
+	@Override
+	public void handleEvent(ColumnDeletedEvent e) {
+		attributeChanged = true;
 	}
 	
 	@Override
 	public void handleEvent(RowsSetEvent e) {
-		
 		Collection<RowSetRecord> records = e.getPayloadCollection();
-
-		Iterator<RowSetRecord> it= records.iterator();
-		while (it.hasNext()){
-			// Ignore the change of selection attribute 
-			if (!it.next().getColumn().equalsIgnoreCase("selected")){
-				this.attributeChanged = true;
+		Iterator<RowSetRecord> it = records.iterator();
+		
+		while (it.hasNext()) {
+			// Ignore the change of selection attribute
+			if (!it.next().getColumn().equalsIgnoreCase("selected")) {
+				attributeChanged = true;
 				break;
-			}			
+			}
 		}		
 	}
-	
-	@Override	
-	public void handleEvent(RemovedNodesEvent e){
-		this.attributeChanged = true;
+
+	@Override
+	public void handleEvent(RemovedNodesEvent e) {
+		attributeChanged = true;
 	}
 
-	@Override	
-	public void handleEvent(RemovedEdgesEvent e){
-		this.attributeChanged = true;
+	@Override
+	public void handleEvent(RemovedEdgesEvent e) {
+		attributeChanged = true;
 	}
 }

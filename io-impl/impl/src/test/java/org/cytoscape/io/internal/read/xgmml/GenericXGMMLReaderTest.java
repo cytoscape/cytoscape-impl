@@ -167,20 +167,67 @@ public class GenericXGMMLReaderTest extends AbstractNetworkReaderTest {
 		assertFalse(defNetTbl.getColumn(CyNetwork.SELECTED).getVirtualColumnInfo().isVirtual());
 	}
 	
+	/**
+	 * Make sure the custom attributes "cy:type" and "cy:elementType" are used
+	 * to create the correct column types, when they are available (i.e. XGMML exported from Cytoscape v3.3+)
+	 */
+	@Test
+	public void testCustomCyAttTypes() throws Exception {
+		List<CyNetworkView> views = getViews("simple_3.3.xgmml");
+		CyNetwork net = checkSingleNetwork(views, 1, 1);
+		assertCustomColumnsAreMutable(net);
+		
+		CyTable defNodeTbl = net.getDefaultNodeTable();
+		CyTable defEdgeTbl = net.getDefaultEdgeTable();
+		CyTable defNetTbl = net.getDefaultNetworkTable();
+		
+		assertEquals(String.class, defNodeTbl.getColumn("node_att_1").getType());
+		assertEquals(List.class, defNodeTbl.getColumn("node_att_2").getType());
+		assertEquals(Long.class, defNodeTbl.getColumn("node_att_2").getListElementType());
+		assertEquals(Integer.class, defNodeTbl.getColumn("node_att_3").getType());
+		assertEquals(Long.class, defNodeTbl.getColumn("node_att_4").getType());
+		
+		assertEquals(Double.class, defEdgeTbl.getColumn("edge_att_1").getType());
+		assertEquals(List.class, defEdgeTbl.getColumn("edge_att_2").getType());
+		assertEquals(String.class, defEdgeTbl.getColumn("edge_att_2").getListElementType());
+		
+		assertEquals(Boolean.class, defNetTbl.getColumn("net_att_1").getType());
+		assertEquals(List.class, defNetTbl.getColumn("net_att_2").getType());
+		assertEquals(Integer.class, defNetTbl.getColumn("net_att_2").getListElementType());
+	}
+	
 	@Test
 	public void testIgnoreEmptyListAtt() throws Exception {
 		List<CyNetworkView> views = getViews("listAtt.xgmml");
 		CyNetwork net = checkSingleNetwork(views, 0, 0);
 		// The column should not be created, because the List type is not known
-		assertNull(net.getDefaultNetworkTable().getColumn("empty_list"));
+		assertNull(net.getDefaultNetworkTable().getColumn("null_value_list"));
 	}
 	
 	@Test
-	public void testCreateEmptyListAtt() throws Exception {
+	public void testCreateEmptyList1Att() throws Exception {
 		List<CyNetworkView> views = getViews("listAtt.xgmml");
 		CyNetwork net = checkSingleNetwork(views, 0, 0);
-		// The column should not be created, because the List type is not known
-		assertTrue(net.getRow(net).getList("null_value_list", String.class).isEmpty());
+		// In this case, it must contain an empty list: []
+		assertTrue(net.getRow(net).getList("empty_list_1", String.class).isEmpty());
+	}
+	
+	@Test
+	public void testCreateEmptyList2Att() throws Exception {
+		List<CyNetworkView> views = getViews("listAtt.xgmml");
+		CyNetwork net = checkSingleNetwork(views, 0, 0);
+		// In this case, it must contain an empty list as well: []
+		assertTrue(net.getRow(net).getList("empty_list_2", String.class).isEmpty());
+	}
+	
+	@Test
+	public void testCreateListAttWithEmptyString() throws Exception {
+		List<CyNetworkView> views = getViews("listAtt.xgmml");
+		CyNetwork net = checkSingleNetwork(views, 0, 0);
+		// In this case, it must contain a list with one element (an empty String): [""]
+		List<String> list = net.getRow(net).getList("list_with_empty_string", String.class);
+		assertEquals(1, list.size());
+		assertTrue(list.get(0).isEmpty());
 	}
 	
 	@Test
@@ -324,8 +371,9 @@ public class GenericXGMMLReaderTest extends AbstractNetworkReaderTest {
 
 	@Test
 	public void testIsLockedVisualProperty() throws Exception {
-		reader = new GenericXGMMLReader(new ByteArrayInputStream("".getBytes("UTF-8")), viewFactory, netFactory,
-				renderingEngineMgr, readDataMgr, parser, unrecognizedVisualPropertyMgr, this.networkManager, this.rootNetworkManager, this.cyApplicationManager);
+		reader = new GenericXGMMLReader(new ByteArrayInputStream("".getBytes("UTF-8")), netFactory,
+				renderingEngineMgr, readDataMgr, parser, unrecognizedVisualPropertyMgr, networkManager,
+				rootNetworkManager, applicationManager);
 		
 		CyNetwork network = mock(CyNetwork.class);
 		assertFalse(reader.isLockedVisualProperty(network, "GRAPH_VIEW_ZOOM"));
@@ -487,8 +535,9 @@ public class GenericXGMMLReaderTest extends AbstractNetworkReaderTest {
 		SessionUtil.setReadingSessionFile(false);
 		
 		File f = new File("./src/test/resources/testData/xgmml/" + file);
-		reader = new GenericXGMMLReader(new FileInputStream(f), viewFactory, netFactory,
-				renderingEngineMgr, readDataMgr, parser, unrecognizedVisualPropertyMgr, this.networkManager, this.rootNetworkManager, this.cyApplicationManager);
+		reader = new GenericXGMMLReader(new FileInputStream(f), netFactory,
+				renderingEngineMgr, readDataMgr, parser, unrecognizedVisualPropertyMgr,
+				networkManager, rootNetworkManager, applicationManager);
 		reader.run(taskMonitor);
 
 		final CyNetwork[] networks = reader.getNetworks();

@@ -30,9 +30,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
-import java.util.HashMap;
 import java.util.Map;
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.io.read.AbstractCyNetworkReader;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
@@ -45,7 +45,6 @@ import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.view.layout.CyLayoutAlgorithm;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskMonitor;
@@ -57,6 +56,7 @@ import org.slf4j.LoggerFactory;
  * provides the graph and attributes objects constructed from the file.
  */
 public class SIFNetworkReader extends AbstractCyNetworkReader {
+	
 	private static final Logger logger = LoggerFactory.getLogger(SIFNetworkReader.class);
 
 	private static final String TAB = "\t";
@@ -67,10 +67,13 @@ public class SIFNetworkReader extends AbstractCyNetworkReader {
 	
 	private TaskMonitor parentTaskMonitor;
 	
-	public SIFNetworkReader(InputStream is, final CyLayoutAlgorithmManager layouts,
-			final CyNetworkViewFactory cyNetworkViewFactory, final CyNetworkFactory cyNetworkFactory,
-			final CyNetworkManager cyNetworkManager, final CyRootNetworkManager cyRootNetworkManager) {
-		super(is, cyNetworkViewFactory, cyNetworkFactory, cyNetworkManager, cyRootNetworkManager);
+	public SIFNetworkReader(final InputStream is,
+							final CyLayoutAlgorithmManager layouts,
+							final CyApplicationManager cyApplicationManager,
+							final CyNetworkFactory cyNetworkFactory,
+							final CyNetworkManager cyNetworkManager,
+							final CyRootNetworkManager cyRootNetworkManager) {
+		super(is, cyApplicationManager, cyNetworkFactory, cyNetworkManager, cyRootNetworkManager);
 		this.layouts = layouts;
 	}
 
@@ -94,15 +97,13 @@ public class SIFNetworkReader extends AbstractCyNetworkReader {
 		final BufferedReader br =
 			new BufferedReader(new InputStreamReader(inputStream, Charset.forName("UTF-8").newDecoder()), 128*1024);
 
-		CySubNetwork subNetwork = null;
-		final CyRootNetwork rootNetwork = getRootNetwork();
+		CyRootNetwork root = getRootNetwork();
+		final CySubNetwork newNetwork;
 		
-		if(rootNetwork != null) {
-			subNetwork = rootNetwork.addSubNetwork();
-		} else {
-			// Need to create new network with new root.
-			subNetwork = (CySubNetwork) cyNetworkFactory.createNetwork();
-		}
+		if (root != null)
+			newNetwork = root.addSubNetwork();
+		else // Need to create new network with new root.
+			newNetwork = (CySubNetwork) cyNetworkFactory.createNetwork();
 
 		Map<Object, CyNode> nMap = getNodeMap();
 		
@@ -111,17 +112,16 @@ public class SIFNetworkReader extends AbstractCyNetworkReader {
 		final String firstLine = br.readLine();
 		if (firstLine.contains(TAB))
 			delimiter = TAB;
-		createEdge(new Interaction(firstLine.trim(), delimiter), subNetwork, nMap);
+		createEdge(new Interaction(firstLine.trim(), delimiter), newNetwork, nMap);
 
 		tm.setProgress(0.15);
 		tm.setStatusMessage("Processing the interactions...");
 		int numInteractionsRead = 0;
+		
 		while ((line = br.readLine()) != null) {
 			if (cancelled) {
 				// Cancel called. Clean up the garbage.
 				nMap.clear();
-				nMap = null;
-				subNetwork = null;
 				br.close();
 				return;
 			}
@@ -131,7 +131,7 @@ public class SIFNetworkReader extends AbstractCyNetworkReader {
 
 			try {
 				final Interaction itr = new Interaction(line, delimiter);
-				createEdge(itr, subNetwork, nMap);
+				createEdge(itr, newNetwork, nMap);
 			} catch (Exception e) {
 				// Simply ignore invalid lines.
 				continue;
@@ -147,11 +147,9 @@ public class SIFNetworkReader extends AbstractCyNetworkReader {
 		nMap.clear();
 		nMap = null;
 
-		this.networks = new CyNetwork[] {subNetwork};
+		this.networks = new CyNetwork[] { newNetwork };
 		tm.setProgress(1.0);
-		logger.debug("SIF file loaded: ID = " + subNetwork.getSUID());
 	}
-	
 	
 	private void createEdge(final Interaction itr, final CySubNetwork subNetwork, final Map<Object, CyNode> nMap) {
 		CyNode sourceNode = nMap.get(itr.getSource());
@@ -192,15 +190,15 @@ public class SIFNetworkReader extends AbstractCyNetworkReader {
 		edgeNameBuilder.append(target);
 		return edgeNameBuilder.toString();
 	}
-	
 
 	@Override
 	public CyNetworkView buildCyNetworkView(CyNetwork network) {
-		final CyNetworkView view = cyNetworkViewFactory.createNetworkView(network);
+		final CyNetworkView view = getNetworkViewFactory().createNetworkView(network);
 
 		final CyLayoutAlgorithm layout = layouts.getDefaultLayout();
 		TaskIterator itr = layout.createTaskIterator(view, layout.getDefaultLayoutContext(), CyLayoutAlgorithm.ALL_NODE_VIEWS, "");
 		Task nextTask = itr.next();
+		
 		try {
 			nextTask.run(parentTaskMonitor);
 		} catch (Exception e) {

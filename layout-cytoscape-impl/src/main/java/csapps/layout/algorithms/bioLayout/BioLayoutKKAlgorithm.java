@@ -61,17 +61,20 @@ import org.cytoscape.work.undo.UndoSupport;
  * @version 0.9
  */
 public class BioLayoutKKAlgorithm  extends BioLayoutAlgorithm {
-	public BioLayoutKKAlgorithm(boolean supportEdgeWeights, UndoSupport undo) {
-		super((supportEdgeWeights ?  "kamada-kawai" : "kamada-kawai-noweight"),
-		      (supportEdgeWeights ?  "Edge-weighted Spring Embedded Layout" : "Spring Embedded Layout"),
-		      supportEdgeWeights, undo);
-	}
 	
-	public TaskIterator createTaskIterator(CyNetworkView networkView, Object context, Set<View<CyNode>> nodesToLayOut, String attrName) {
-		return new TaskIterator(
-			new BioLayoutKKAlgorithmTask(toString(), networkView, nodesToLayOut, (BioLayoutKKContext)context, supportWeights, attrName, undoSupport));
+	public BioLayoutKKAlgorithm(final boolean supportEdgeWeights, final UndoSupport undoSupport) {
+		super((supportEdgeWeights ? "kamada-kawai" : "kamada-kawai-noweight"),
+				(supportEdgeWeights ? "Edge-weighted Spring Embedded Layout" : "Spring Embedded Layout"),
+				supportEdgeWeights, undoSupport);
 	}
-	
+
+	@Override
+	public TaskIterator createTaskIterator(CyNetworkView networkView, Object context, Set<View<CyNode>> nodesToLayOut,
+			String attrName) {
+		return new TaskIterator(new BioLayoutKKAlgorithmTask(toString(), networkView, nodesToLayOut,
+				(BioLayoutKKContext) context, supportWeights, attrName, undoSupport));
+	}
+
 	@Override
 	public BioLayoutKKContext createLayoutContext() {
 		return new BioLayoutKKContext();

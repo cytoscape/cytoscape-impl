@@ -24,7 +24,19 @@ package org.cytoscape.io.internal.read.graphml;
  * #L%
  */
 
-import static org.cytoscape.io.internal.read.graphml.GraphMLToken.*;
+import static org.cytoscape.io.internal.read.graphml.GraphMLToken.ATTRNAME;
+import static org.cytoscape.io.internal.read.graphml.GraphMLToken.ATTRTYPE;
+import static org.cytoscape.io.internal.read.graphml.GraphMLToken.DATA;
+import static org.cytoscape.io.internal.read.graphml.GraphMLToken.DEFAULT;
+import static org.cytoscape.io.internal.read.graphml.GraphMLToken.DIRECTED;
+import static org.cytoscape.io.internal.read.graphml.GraphMLToken.EDGE;
+import static org.cytoscape.io.internal.read.graphml.GraphMLToken.EDGEDEFAULT;
+import static org.cytoscape.io.internal.read.graphml.GraphMLToken.GRAPH;
+import static org.cytoscape.io.internal.read.graphml.GraphMLToken.ID;
+import static org.cytoscape.io.internal.read.graphml.GraphMLToken.KEY;
+import static org.cytoscape.io.internal.read.graphml.GraphMLToken.NODE;
+import static org.cytoscape.io.internal.read.graphml.GraphMLToken.SOURCE;
+import static org.cytoscape.io.internal.read.graphml.GraphMLToken.TARGET;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -39,6 +51,8 @@ import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.model.CyRow;
+import org.cytoscape.model.CyTable;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.model.subnetwork.CySubNetwork;
@@ -71,7 +85,6 @@ public class GraphMLParser extends DefaultHandler {
 	
 	private String currentTag = null;
 
-	private final CyNetworkFactory networkFactory;
 	private final CyRootNetworkManager rootNetworkManager;
 
 	private boolean directed = true;
@@ -99,7 +112,6 @@ public class GraphMLParser extends DefaultHandler {
 	 */
 	GraphMLParser(final TaskMonitor tm, final CyNetworkFactory networkFactory,
 			final CyRootNetworkManager rootNetworkManager, final CyRootNetwork root, final CyNetwork newNetwork) {
-		this.networkFactory = networkFactory;
 		this.rootNetworkManager = rootNetworkManager;
 
 		networkStack = new Stack<CyNetwork>();
@@ -292,16 +304,29 @@ public class GraphMLParser extends DefaultHandler {
 		}
 		
 		final String columnName = datanameMap.get(currentAttributeKey);
-		final CyColumn column = currentNetwork.getRow(currentObject).getTable().getColumn(columnName);
+		final CyColumn column;
+		final CyTable table;
+		final CyRow row;
+		if(currentObject == null) {
+			// This is a network data.
+			table = currentNetwork.getDefaultNetworkTable();
+			column = table.getColumn(columnName);
+			row = table.getRow(currentNetwork.getSUID());
+			
+		} else {
+			table = currentNetwork.getRow(currentObject).getTable();
+			column = table.getColumn(columnName);
+			row = table.getRow(currentObject.getSUID());
+		}
+		
 		if (column == null) {
 			// Need to create new column
-			currentNetwork.getRow(currentObject).getTable()
-					.createColumn(columnName, attrTag.getDataType(), false);
+			table.createColumn(columnName, attrTag.getDataType(), false);
 		}
 
 		try {
 			final Object value = attrTag.getObjectValue(finalString);
-			currentNetwork.getRow(currentObject).set(columnName, value);
+			row.set(columnName, value);
 		} catch (Exception e) {
 			logger.warn("Could not parse value: " + finalString, e);
 		}

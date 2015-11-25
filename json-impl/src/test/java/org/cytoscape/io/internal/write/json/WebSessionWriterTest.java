@@ -107,7 +107,7 @@ public class WebSessionWriterTest {
 		final Set<CyNetworkView> views = new HashSet<CyNetworkView>();
 		views.add(view);
 
-		this.jsonStyleWriterFactory = new CytoscapeJsVisualStyleWriterFactory(filter, appManager, cyVersion);
+		this.jsonStyleWriterFactory = new CytoscapeJsVisualStyleWriterFactory(filter, appManager, cyVersion, viewManager);
 		when(viewManager.getNetworkViewSet()).thenReturn(views);
 	}
 

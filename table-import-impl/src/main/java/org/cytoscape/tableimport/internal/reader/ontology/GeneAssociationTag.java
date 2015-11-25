@@ -33,7 +33,6 @@ package org.cytoscape.tableimport.internal.reader.ontology;
  * </p>
  *
  * <strong>This is for GAF v2</strong>
- * 
  */
 public enum GeneAssociationTag {
 	DB("DB"),
@@ -67,10 +66,7 @@ public enum GeneAssociationTag {
 	}
 
 	/**
-	 * Since this enum represents column names, we can find the index of the tag
-	 * by using this method.
-	 * <br>
-	 * @return
+	 * Since this enum represents column names, we can find the index of the tag by using this method.
 	 */
 	public int getPosition() {
 		final GeneAssociationTag[] tags = values();

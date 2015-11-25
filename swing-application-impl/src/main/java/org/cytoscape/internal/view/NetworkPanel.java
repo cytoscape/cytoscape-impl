@@ -25,9 +25,10 @@ package org.cytoscape.internal.view;
  */
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.Image;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -61,8 +62,10 @@ import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
+import javax.swing.UIManager;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
+import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeSelectionModel;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
@@ -82,6 +85,10 @@ import org.cytoscape.model.events.NetworkAboutToBeDestroyedEvent;
 import org.cytoscape.model.events.NetworkAboutToBeDestroyedListener;
 import org.cytoscape.model.events.NetworkAddedEvent;
 import org.cytoscape.model.events.NetworkAddedListener;
+import org.cytoscape.model.events.RemovedEdgesEvent;
+import org.cytoscape.model.events.RemovedEdgesListener;
+import org.cytoscape.model.events.RemovedNodesEvent;
+import org.cytoscape.model.events.RemovedNodesListener;
 import org.cytoscape.model.events.RowSetRecord;
 import org.cytoscape.model.events.RowsSetEvent;
 import org.cytoscape.model.events.RowsSetListener;
@@ -106,19 +113,18 @@ import org.cytoscape.work.swing.DialogTaskManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@SuppressWarnings("serial")
 public class NetworkPanel extends JPanel implements CytoPanelComponent2,
 		TreeSelectionListener, SetSelectedNetworksListener,
 		NetworkAddedListener, NetworkViewAddedListener, NetworkAboutToBeDestroyedListener,
-		NetworkViewAboutToBeDestroyedListener, RowsSetListener {
-
-	private final static long serialVersionUID = 1213748836763243L;
+		NetworkViewAboutToBeDestroyedListener, RowsSetListener,
+    RemovedEdgesListener, RemovedNodesListener {
 
 	private static final Logger logger = LoggerFactory.getLogger(NetworkPanel.class);
 
 	private static final String TITLE = "Network";
 	private static final String ID = "org.cytoscape.Network";
 	
-	static final Color FONT_COLOR = new Color(20, 20, 20);
 	private static final int TABLE_ROW_HEIGHT = 16;
 	private static final Dimension PANEL_SIZE = new Dimension(400, 700);
 
@@ -154,16 +160,6 @@ public class NetworkPanel extends JPanel implements CytoPanelComponent2,
 	private CyRootNetwork selectedRoot;
 	private Set<CyRootNetwork> selectedRootSet;
 
-	private final Icon icon;
-	
-	/**
-	 * 
-	 * @param appMgr
-	 * @param netMgr
-	 * @param netViewMgr
-	 * @param bird
-	 * @param taskMgr
-	 */
 	public NetworkPanel(final CyApplicationManager appMgr,
 						final CyNetworkManager netMgr,
 						final CyNetworkViewManager netViewMgr,
@@ -171,10 +167,8 @@ public class NetworkPanel extends JPanel implements CytoPanelComponent2,
 						final DialogTaskManager taskMgr,
 						final DynamicTaskFactoryProvisioner factoryProvisioner,
 						final EditNetworkTitleTaskFactory networkTitleEditor) {
-		super();
-
-		this.treeNodeMap = new HashMap<Long, NetworkTreeNode>();
-		this.provisionerMap = new HashMap<Object, TaskFactory>();
+		this.treeNodeMap = new HashMap<>();
+		this.provisionerMap = new HashMap<>();
 		this.appMgr = appMgr;
 		this.netMgr = netMgr;
 		this.netViewMgr = netViewMgr;
@@ -185,19 +179,17 @@ public class NetworkPanel extends JPanel implements CytoPanelComponent2,
 		treeTableModel = new NetworkTreeTableModel(this, root);
 		treeTable = new JTreeTable(treeTableModel);
 		
-		icon = new ImageIcon(getClass().getResource("/images/class_hi.gif"));
-		
 		initialize();
 
-		this.actionGravityMap = new HashMap<JMenuItem, Double>();
+		this.actionGravityMap = new HashMap<>();
 		
 		// create and populate the popup window
 		popup = new JPopupMenu();
-		popupMap = new WeakHashMap<TaskFactory, JMenuItem>();
-		popupActions = new WeakHashMap<TaskFactory, CyAction>();
-		nameTables = new WeakHashMap<CyTable, CyNetwork>();
-		nodeEdgeTables = new WeakHashMap<CyTable, CyNetwork>();
-		this.network2nodeMap = new WeakHashMap<CyNetwork, NetworkTreeNode>();
+		popupMap = new WeakHashMap<>();
+		popupActions = new WeakHashMap<>();
+		nameTables = new WeakHashMap<>();
+		nodeEdgeTables = new WeakHashMap<>();
+		this.network2nodeMap = new WeakHashMap<>();
 
 		
 		setNavigator(bird.getBirdsEyeView());
@@ -260,7 +252,7 @@ public class NetworkPanel extends JPanel implements CytoPanelComponent2,
 
 	@Override
 	public Icon getIcon() {
-		return icon;
+		return null;
 	}
 	
 	protected void initialize() {
@@ -272,19 +264,15 @@ public class NetworkPanel extends JPanel implements CytoPanelComponent2,
 		treeTable.getTree().setRootVisible(false);
 
 		ToolTipManager.sharedInstance().registerComponent(treeTable);
-
-		treeTable.getTree().setCellRenderer(new TreeCellRenderer(treeTable));
-		treeTable.setBackground(Color.white);
-		treeTable.setSelectionBackground(new Color(200, 200, 200, 150));
+		
+		treeTable.getTree().setCellRenderer(new TreeCellRenderer());
 
 		treeTable.getColumn("Network").setPreferredWidth(250);
 		treeTable.getColumn("Nodes").setPreferredWidth(45);
 		treeTable.getColumn("Edges").setPreferredWidth(45);
 
-		treeTable.setBackground(Color.WHITE);
+		treeTable.setBackground(UIManager.getColor("Table.background"));
 		treeTable.setRowHeight(TABLE_ROW_HEIGHT);
-		treeTable.setForeground(FONT_COLOR);
-		treeTable.setSelectionForeground(FONT_COLOR);
 		treeTable.setCellSelectionEnabled(false);
 		treeTable.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 		treeTable.getTree().setSelectionModel(new DefaultTreeSelectionModel());
@@ -293,7 +281,7 @@ public class NetworkPanel extends JPanel implements CytoPanelComponent2,
 		navigatorPanel.setLayout(new BorderLayout());
 		navigatorPanel.setPreferredSize(new Dimension(280, 280));
 		navigatorPanel.setSize(new Dimension(280, 280));
-		navigatorPanel.setBackground(Color.white);
+		navigatorPanel.setBackground(UIManager.getColor("Table.background"));
 
 		JScrollPane scroll = new JScrollPane(treeTable);
 
@@ -504,6 +492,26 @@ public class NetworkPanel extends JPanel implements CytoPanelComponent2,
 	}
 
 	@Override
+	public void handleEvent(final RemovedNodesEvent e) {
+		SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				treeTable.repaint();
+			}
+		});
+	}
+
+	@Override
+	public void handleEvent(final RemovedEdgesEvent e) {
+		SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				treeTable.repaint();
+			}
+		});
+	}
+
+	@Override
 	public void handleEvent(final SetSelectedNetworksEvent e) {
 		updateNetworkTreeSelection();
 	}
@@ -521,10 +529,8 @@ public class NetworkPanel extends JPanel implements CytoPanelComponent2,
 				if (node != null) {
 					final Collection<CyNetworkView> views = netViewMgr.getNetworkViews(netView.getModel());
 					
-					if (views.isEmpty()) {
-						node.setNodeColor(NetworkTreeNode.DEF_NODE_COLOR);
+					if (views.isEmpty())
 						treeTable.repaint();
-					}
 				}
 			}
 		});
@@ -540,10 +546,8 @@ public class NetworkPanel extends JPanel implements CytoPanelComponent2,
 				logger.debug("Network view added to NetworkPanel: " + netView);
 				final NetworkTreeNode node = treeNodeMap.get(netView.getModel().getSUID());
 				
-				if (node != null) {
-					node.setNodeColor(Color.black);
+				if (node != null)
 					treeTable.repaint();
-				}
 			}
 		});
 	}
@@ -669,9 +673,6 @@ public class NetworkPanel extends JPanel implements CytoPanelComponent2,
 			// Register top-level node to map
 			if (parentNetwork != null)
 				treeNodeMap.put(parentNetwork.getSUID(), parentTreeNode);
-
-			if (netViewMgr.viewExists(network))
-				dmtn.setNodeColor(Color.black);
 
 			treeNodeMap.put(network.getSUID(), dmtn);
 			
@@ -1035,6 +1036,56 @@ public class NetworkPanel extends JPanel implements CytoPanelComponent2,
 				editRootNetworTitle.setEnabled(selectedRootSet.size() == 1);
 				rootPopupMenu.show(e.getComponent(), e.getX(), e.getY());
 			}
+		}
+	}
+	
+	class TreeCellRenderer extends DefaultTreeCellRenderer {
+
+		private final static long serialVersionUID = 1213748836751014L;
+		
+		private final String NETWORK_ICON = "/images/network_16.png";
+		private final String NETWORK_LEAF_ICON = "/images/blank_icon_16.png";
+
+		private final Dimension CELL_SIZE = new Dimension(1200, 40);
+
+		TreeCellRenderer() {
+			final Image iconImage = Toolkit.getDefaultToolkit().getImage(getClass().getResource(NETWORK_ICON));
+			final ImageIcon icon = new ImageIcon(iconImage);
+
+			// If we don't provide a leaf Icon, a default one will be used.
+			final Image iconImageLeaf = Toolkit.getDefaultToolkit().getImage(getClass().getResource(NETWORK_LEAF_ICON));
+			final ImageIcon iconLeaf = new ImageIcon(iconImageLeaf);
+			
+			setClosedIcon(icon);
+			setOpenIcon(icon);
+			setLeafIcon(iconLeaf);
+		}
+
+		@Override
+		public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel, boolean expanded,
+				boolean leaf, int row, boolean hasFocus) {
+			super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
+
+			setPreferredSize(CELL_SIZE);
+			setSize(CELL_SIZE);
+			setBackground(sel ? UIManager.getColor("Table.focusCellBackground") : UIManager.getColor("Table.background"));
+			setForeground(sel ? UIManager.getColor("Table.focusCellForeground") : UIManager.getColor("Table.foreground"));
+			
+			final NetworkTreeNode treeNode = value instanceof NetworkTreeNode ? (NetworkTreeNode) value : null;
+
+			if (treeNode != null && treeNode.getNetwork() instanceof CySubNetwork) {
+				if (!sel)
+					setForeground(netViewMgr.viewExists(treeNode.getNetwork()) ?
+							UIManager.getColor("Table.foreground") : UIManager.getColor("TextField.inactiveForeground"));
+				
+				try {
+					setToolTipText(treeNode.getNetwork().getRow(treeNode.getNetwork()).get(CyNetwork.NAME, String.class));
+				} catch (NullPointerException e) {
+					// It's possible that the network got deleted but we haven't been notified yet.
+				}
+			}
+			
+			return this;
 		}
 	}
 }

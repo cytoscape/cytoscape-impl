@@ -115,15 +115,24 @@ final class EdgeViewDefaultSupport extends AbstractViewDefaultSupport {
 			final int currentLabelTransparency = edgeDetails.labelTransparencyDefault;
 			if (newLabelTransparency != currentLabelTransparency)
 				setLabelTransparency(newLabelTransparency);
+		} else if (vp == DVisualLexicon.EDGE_LABEL_WIDTH) {
+			double newSize = ((Number) value).doubleValue();
+			setLabelWidth(newSize);
 		} else if (vp == EDGE_CURVED) {
 			setCurved((Boolean) value);
 		} else if (vp == EDGE_BEND) {
 			setBend((Bend) value);
+		} else {
+			synchronized (lock) {
+				edgeDetails.setDefaultValue(vp, value);
+			}
 		}
 	}
 
 	private void setBend(final Bend bend) {
-		edgeDetails.setEdgeBendDefault(bend);
+		synchronized (lock) {
+			edgeDetails.setEdgeBendDefault(bend);
+		}
 	}
 
 	private void setCurved(final Boolean curved) {
@@ -136,21 +145,32 @@ final class EdgeViewDefaultSupport extends AbstractViewDefaultSupport {
 	}
 
 	private void setTransparency(int trans) {
-		if (trans < 0 || trans > 255)
-			trans = DVisualLexicon.EDGE_TRANSPARENCY.getDefault();
-		
-		edgeDetails.setTransparencyDefault(trans);
+		synchronized (lock) {
+			if (trans < 0 || trans > 255)
+				trans = DVisualLexicon.EDGE_TRANSPARENCY.getDefault();
+			
+			edgeDetails.setTransparencyDefault(trans);
+		}
 
 		setSelectedPaint(edgeDetails.m_selectedPaintDefault);
 		setUnselectedPaint(edgeDetails.m_unselectedPaintDefault);
 	}
 	
 	private void setLabelTransparency(int trans) {
-		if (trans < 0 || trans > 255)
-			trans = DVisualLexicon.EDGE_LABEL_TRANSPARENCY.getDefault();
-
-		edgeDetails.setLabelTransparencyDefault(trans);
+		synchronized (lock) {
+			if (trans < 0 || trans > 255)
+				trans = DVisualLexicon.EDGE_LABEL_TRANSPARENCY.getDefault();
+	
+			edgeDetails.setLabelTransparencyDefault(trans);
+		}
+		
 		setTextPaint(edgeDetails.m_labelPaintDefault);
+	}
+	
+	void setLabelWidth(double width) {
+		synchronized (lock) {
+			edgeDetails.setLabelWidthDefault(width);
+		}
 	}
 
 	private void setStrokeWidth(float width) {

@@ -25,6 +25,7 @@ package org.cytoscape.group.internal;
  */
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -37,16 +38,24 @@ import org.cytoscape.group.CyGroup;
 import org.cytoscape.group.CyGroupManager;
 import org.cytoscape.group.events.GroupAboutToBeDestroyedEvent;
 import org.cytoscape.group.events.GroupAddedEvent;
+import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
+import org.cytoscape.model.events.AddedEdgesEvent;
+import org.cytoscape.model.events.AddedEdgesListener;
+import org.cytoscape.model.events.AboutToRemoveEdgesEvent;
+import org.cytoscape.model.events.AboutToRemoveEdgesListener;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
+import org.cytoscape.service.util.CyServiceRegistrar;
 
 /**
  * An implementation of CyNetworkManager.
  */
-public class CyGroupManagerImpl implements CyGroupManager {
-	private final CyEventHelper cyEventHelper;
+public class CyGroupManagerImpl implements CyGroupManager, AddedEdgesListener, 
+                                           AboutToRemoveEdgesListener {
+	private final CyServiceRegistrar cyServiceRegistrar;
+	private CyEventHelper cyEventHelper;
 
 	private Set<CyGroup> groupSet;
 	private Map<CyRootNetwork, Set<CyGroup>> rootMap;
@@ -58,9 +67,11 @@ public class CyGroupManagerImpl implements CyGroupManager {
 	 * 
 	 * @param cyEventHelper
 	 */
-	public CyGroupManagerImpl(final CyEventHelper cyEventHelper) {
+	public CyGroupManagerImpl(final CyServiceRegistrar cyServiceRegistrar, 
+		                        final CyEventHelper cyEventHelper) {
 		this.groupSet = new HashSet<CyGroup>();
 		this.rootMap = new HashMap<CyRootNetwork, Set<CyGroup>>();
+		this.cyServiceRegistrar = cyServiceRegistrar;
 		this.cyEventHelper = cyEventHelper;
 	}
 
@@ -203,6 +214,62 @@ public class CyGroupManagerImpl implements CyGroupManager {
 			return null;
 		}
 		return rhRow.getList(GROUP_LIST_ATTRIBUTE, Long.class);
+	}
+
+	/**
+	 * Method to get a service.  This is only called from within the group-impl
+	 * bundle and is not part of the API.
+	 */
+	public <S> S getService(Class<S> serviceClass) {
+		return cyServiceRegistrar.getService(serviceClass);
+	}
+
+	/**
+	 * Method to get a service.  This is only called from within the group-impl
+	 * bundle and is not part of the API.
+	 */
+	public <S> S getService(Class<S> serviceClass, String search) {
+		return cyServiceRegistrar.getService(serviceClass, search);
+	}
+
+	public void handleEvent(AddedEdgesEvent addedEdgesEvent) {
+		CyNetwork net = addedEdgesEvent.getSource();
+		Collection<CyEdge> edges = addedEdgesEvent.getPayloadCollection();
+
+		Set<CyGroup> groups = getGroupSet(net);
+		if (groups == null || groups.size() == 0) return;
+
+		List<CyEdge> edgesToAdd = new ArrayList<>();
+		for (CyGroup group: groups) {
+			CyGroupImpl gImpl = (CyGroupImpl)group;
+			if (gImpl.isCollapsing() || gImpl.isExpanding()) 
+				continue;
+			for (CyEdge edge: edges) {
+				if (!gImpl.isMeta(edge) && gImpl.isConnectingEdge(edge))
+					edgesToAdd.add(edge);
+			}
+			group.addEdges(edgesToAdd);
+		}
+	}
+
+	public void handleEvent(AboutToRemoveEdgesEvent removedEdgesEvent) {
+		CyNetwork net = removedEdgesEvent.getSource();
+		Collection<CyEdge> edges = removedEdgesEvent.getEdges();
+
+		Set<CyGroup> groups = getGroupSet(net);
+		if (groups == null || groups.size() == 0) return;
+
+		List<CyEdge> edgesToRemove = new ArrayList<>();
+		for (CyGroup group: groups) {
+			CyGroupImpl gImpl = (CyGroupImpl)group;
+
+			if (gImpl.isCollapsing() || gImpl.isExpanding()) 
+				continue;
+			for (CyEdge edge: edges) {
+				edgesToRemove.add(edge);
+			}
+			group.removeEdges(edgesToRemove);
+		}
 	}
 
 	private void addGroupToRootMap(CyGroup group) {

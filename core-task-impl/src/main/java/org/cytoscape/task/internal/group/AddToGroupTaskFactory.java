@@ -24,33 +24,20 @@ package org.cytoscape.task.internal.group;
  * #L%
  */
 
-import java.util.List;
-
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.group.CyGroupFactory;
-import org.cytoscape.group.CyGroupManager;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyTableUtil;
-import org.cytoscape.task.AbstractNetworkViewTaskFactory;
-import org.cytoscape.task.NodeViewTaskFactory;
-import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.View;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.work.AbstractTaskFactory;
-import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskIterator;
-import org.cytoscape.work.undo.UndoSupport;
 
 public class AddToGroupTaskFactory extends AbstractTaskFactory {
-	private CyApplicationManager appMgr;
-	private CyGroupManager mgr;
+	
+	private final CyServiceRegistrar serviceRegistrar;
 
-	public AddToGroupTaskFactory(CyApplicationManager appMgr, CyGroupManager mgr) {
-		this.appMgr = appMgr;
-		this.mgr = mgr;
+	public AddToGroupTaskFactory(final CyServiceRegistrar serviceRegistrar) {
+		this.serviceRegistrar = serviceRegistrar;
 	}
 
+	@Override
 	public TaskIterator createTaskIterator() {
-		return new TaskIterator(new AddToGroupTask(appMgr, mgr));
+		return new TaskIterator(new AddToGroupTask(serviceRegistrar));
 	}
 }

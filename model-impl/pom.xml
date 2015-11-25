@@ -3,11 +3,10 @@
 	<parent>
 		<groupId>org.cytoscape</groupId>
 		<artifactId>impl-parent</artifactId>
-		<version>3.2.1</version>
+		<version>3.3.0</version>
 	</parent>
 
 	<artifactId>model-impl-parent</artifactId>
-  <version>3.2.1</version>
 	<packaging>pom</packaging>
 	<name>Cytoscape Model Impl Parent (${project.artifactId})</name>
 
@@ -17,7 +16,6 @@
 		<module>performance-debug</module>
 		<module>table-performance-debug</module>
 	</modules>
-
 
 	<build>
 		<plugins>
@@ -89,6 +87,10 @@
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>event-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>session-api</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>

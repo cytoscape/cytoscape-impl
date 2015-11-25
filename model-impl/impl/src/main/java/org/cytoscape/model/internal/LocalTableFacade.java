@@ -27,6 +27,7 @@ package org.cytoscape.model.internal;
 
 import java.util.List;
 
+import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
@@ -50,11 +51,13 @@ public final class LocalTableFacade extends AbstractTableFacade implements CyTab
 	private static final Logger logger = LoggerFactory.getLogger(LocalTableFacade.class);
 	private final SharedTableFacade shared;
 	private final CyTable local;
+	private final CyEventHelper cyEventHelper;
 
-	public LocalTableFacade(CyTable local, SharedTableFacade shared) {
-		super(local);
+	public LocalTableFacade(CyTable local, SharedTableFacade shared, CyEventHelper cyEventHelper) {
+		super(local, cyEventHelper);
 		this.local = local;
 		this.shared = shared;
+		this.cyEventHelper = cyEventHelper;
 
 		// this adds virtual columns for any existing columns already in the shared table
 		for (CyColumn col: shared.getActualTable().getColumns()){

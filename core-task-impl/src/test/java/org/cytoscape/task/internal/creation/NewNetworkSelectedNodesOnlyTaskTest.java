@@ -47,6 +47,7 @@ import org.cytoscape.model.CyNode;
 import org.cytoscape.model.NetworkTestSupport;
 import org.cytoscape.model.internal.CyNetworkManagerImpl;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.CyNetworkNaming;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
@@ -68,7 +69,9 @@ public class NewNetworkSelectedNodesOnlyTaskTest {
 	private CyRootNetworkManager cyroot = support.getRootNetworkFactory();
 	private CyNetworkViewFactory cnvf = viewSupport.getNetworkViewFactory();
 	CyEventHelper eventHelper = new DummyCyEventHelper();
-	private CyNetworkManager netmgr = new CyNetworkManagerImpl(eventHelper);
+	private CyNetworkNaming namingUtil = mock(CyNetworkNaming.class);
+    private CyServiceRegistrar serviceRegistrar = mock(CyServiceRegistrar.class);
+	private CyNetworkManager netmgr = new CyNetworkManagerImpl(serviceRegistrar);
 	private CyNetworkViewManager networkViewManager = mock(CyNetworkViewManager.class);
 	private CyNetworkNaming cyNetworkNaming = mock(CyNetworkNaming.class);
 	private VisualMappingManager vmm = mock(VisualMappingManager.class);
@@ -78,6 +81,9 @@ public class NewNetworkSelectedNodesOnlyTaskTest {
 
 	@Before
 	public void setUp() throws Exception {
+		when(serviceRegistrar.getService(CyEventHelper.class)).thenReturn(eventHelper);
+        when(serviceRegistrar.getService(CyNetworkNaming.class)).thenReturn(namingUtil);
+		
 		when(renderingEngineManager.getRenderingEngines(any(View.class))).thenReturn(Collections.EMPTY_LIST);
 	}
 	

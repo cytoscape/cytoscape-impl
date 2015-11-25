@@ -25,21 +25,23 @@ package org.cytoscape.work.internal.tunables;
  */
 
 
-import java.awt.BorderLayout;
+import static org.cytoscape.work.internal.tunables.utils.GUIDefaults.updateFieldPanel;
+import static org.cytoscape.work.internal.tunables.utils.GUIDefaults.setTooltip;
+
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.FocusAdapter;
-import java.awt.event.FocusEvent;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.text.DecimalFormat;
 import java.text.ParsePosition;
-import java.util.Properties;
-import javax.swing.*;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ListSelectionEvent;
+
+import javax.swing.JFormattedTextField;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JTextField;
+import javax.swing.UIManager;
 
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.internal.tunables.utils.GUIDefaults;
@@ -52,14 +54,13 @@ import org.cytoscape.work.swing.AbstractGUITunableHandler;
  * @author pasteur
  */
 public abstract class AbstractNumberHandler extends AbstractGUITunableHandler implements ActionListener {
+	
 	private JFormattedTextField textField;
 	private DecimalFormat format;
 
 	/**
-	 * Base class for all of the numeric tunables
-	 *
-	 * It creates the Swing component for this Object (JTextField) that contains the initial value of the Double Object annotated as <code>Tunable</code>, its description, and displays it in a proper way
-	 *
+	 * It creates the Swing component for this Object (JTextField) that contains the initial value
+	 * of the Double Object annotated as <code>Tunable</code>, its description, and displays it in a proper way.
 	 *
 	 * @param f field that has been annotated
 	 * @param o object contained in <code>f</code>
@@ -77,11 +78,12 @@ public abstract class AbstractNumberHandler extends AbstractGUITunableHandler im
 
 	private void init() {
 		format = null;
+		
 		if (getFormat() != null && getFormat().length() > 0) {
 			format = new DecimalFormat(getFormat());
 		}
 
-		Number d;
+		Number d = null;
 		try {
 			d = (Number)getNumberValue();
 		} catch(final Exception e) {
@@ -98,34 +100,19 @@ public abstract class AbstractNumberHandler extends AbstractGUITunableHandler im
 				format = new DecimalFormat();
 		}
 
-		//set Gui
+		// Set Gui
 		textField = new JFormattedTextField(format.format(d));
-		textField.setPreferredSize(GUIDefaults.TEXT_BOX_DIMENSION);
-		panel = new JPanel(new BorderLayout(GUIDefaults.hGap, GUIDefaults.vGap));
-		JLabel label = new JLabel(getDescription());
-		label.setFont(GUIDefaults.LABEL_FONT);
-		label.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+		textField.setPreferredSize(new Dimension(GUIDefaults.TEXT_BOX_WIDTH, textField.getPreferredSize().height));
 		textField.setHorizontalAlignment(JTextField.RIGHT);
 		textField.addActionListener(this);
-		if (horizontal) {
-			panel.add(label, BorderLayout.NORTH);
-			panel.add(textField, BorderLayout.SOUTH);
-		} else {
-			panel.add(label, BorderLayout.WEST);
-			panel.add(textField, BorderLayout.EAST);
-		}
-
-		// Set the tooltip.  Note that at this point, we're setting
-		// the tooltip on the entire panel.  This may or may not be
-		// the right thing to do.
-		if (getTooltip() != null && getTooltip().length() > 0) {
-			final ToolTipManager tipManager = ToolTipManager.sharedInstance();
-			tipManager.setInitialDelay(1);
-			tipManager.setDismissDelay(7500);
-			panel.setToolTipText(getTooltip());
-		}
+		
+		final JLabel label = new JLabel(getDescription());
+		
+		updateFieldPanel(panel, label, textField, horizontal);
+		setTooltip(getTooltip(), label, textField);
 	}
 
+	@Override
 	public void update(){
 		Number d;
 		try {
@@ -136,21 +123,23 @@ public abstract class AbstractNumberHandler extends AbstractGUITunableHandler im
 		}
 	}
 	
-	
 	/**
-	 * Catches the value inserted in the JTextField, parses it to a <code>Double</code> value, and tries to set it to the initial object. If it can't, throws an exception that displays the source error to the user
+	 * Catches the value inserted in the JTextField, parses it to a <code>Double</code> value,
+	 * and tries to set it to the initial object.
+	 * If it can't, throws an exception that displays the source error to the user
 	 */
+	@Override
 	public void handle() {
-		textField.setBackground(Color.white);
-
+		textField.setBackground(UIManager.getColor("TextField.background"));
 		Number prev = getNumberValue();
 		Number d = null;
+		
 		try {
 			d = getFieldValue(textField.getText());
 		} catch(NumberFormatException nfe) {
-			// Got a format exception -- try parsing it according
-			// to the format
+			// Got a format exception -- try parsing it according to the format
 			d = format.parse(textField.getText(), new ParsePosition(0));
+			
 			if (d == null) {
 				displayError(prev);
 				return;
@@ -174,6 +163,7 @@ public abstract class AbstractNumberHandler extends AbstractGUITunableHandler im
 	/**
 	 * To get the item that is currently selected
 	 */
+	@Override
 	public String getState() {
 		if ( textField == null )
 			return "";
@@ -190,6 +180,7 @@ public abstract class AbstractNumberHandler extends AbstractGUITunableHandler im
 	 *
 	 *  @param ae specifics of the event (ignored!)
 	 */
+	@Override
 	public void actionPerformed(ActionEvent ae) {
 		handle();
 	}
@@ -204,18 +195,21 @@ public abstract class AbstractNumberHandler extends AbstractGUITunableHandler im
 
 	private void displayError(Number prev) {
 		String type = "A floating point number";
+		
 		if (getType().equals(Integer.class) || 
 				getType().equals(Long.class) ||
 				getType().equals(int.class) ||
 				getType().equals(long.class))
 			type = "An integer value";
-		textField.setBackground(Color.red);
-		JOptionPane.showMessageDialog(null,
-										type+" was expected. Value will be set to previous value: " + 
-										prev, 
-										"Error", JOptionPane.ERROR_MESSAGE);
+		
+		textField.setBackground(Color.RED);
+		JOptionPane.showMessageDialog(
+				null,
+				type+" was expected. Value will be set to previous value: " + prev, 
+				"Error",
+				JOptionPane.ERROR_MESSAGE
+		);
 		textField.setText(format.format(prev));
-		textField.setBackground(Color.white);
+		textField.setBackground(UIManager.getColor("TextField.background"));
 	}
 }
-

@@ -74,16 +74,16 @@ public class EdgeBundlerTask extends AbstractNetworkViewTask {
 	
 	private static final String BEND_MAP_COLUMN = "BEND_MAP_ID";
 
-	@Tunable(description = "Number of handles")
+	@Tunable(description = "Number of handles:")
 	public int numNubs = 3;
 
-	@Tunable(description = "Spring constant")
+	@Tunable(description = "Spring constant:")
 	public double K = 3e-3;
 
-	@Tunable(description = "Compatability threshold")
+	@Tunable(description = "Compatability threshold:")
 	public double COMPATABILITY_THRESHOLD = 0.3;
 
-	@Tunable(description = "Maximum iterations")
+	@Tunable(description = "Maximum iterations:")
 	public int maxIterations = 500;
 	
 

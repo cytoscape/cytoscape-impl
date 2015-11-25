@@ -25,58 +25,57 @@ package org.cytoscape.tableimport.internal.tunable;
  */
 
 import java.awt.BorderLayout;
-import java.awt.LayoutManager;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-import javax.swing.GroupLayout;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.GroupLayout.Alignment;
-import javax.swing.LayoutStyle;
 
-import org.cytoscape.model.CyTableManager;
-import org.cytoscape.tableimport.internal.reader.AttributeMappingParameters;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.tableimport.internal.reader.NetworkTableMappingParameters;
 import org.cytoscape.tableimport.internal.ui.ImportTablePanel;
+import org.cytoscape.tableimport.internal.util.ImportType;
+import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.swing.AbstractGUITunableHandler;
 
-import org.cytoscape.tableimport.internal.util.CytoscapeServices;
-import org.cytoscape.util.swing.FileUtil;
-import java.util.Map;
-import java.util.HashMap;
-
 public class NetworkTableMappingParametersHandler extends AbstractGUITunableHandler {
 
-	private final int dialogType;
-    private final CyTableManager tableManager;
+	private final ImportType dialogType;
+    private final CyServiceRegistrar serviceRegistrar;
     
 	private ImportTablePanel importTablePanel;
 	private NetworkTableMappingParameters ntmp;
-	private final FileUtil fileUtil;
     
-	protected NetworkTableMappingParametersHandler(Field field,Object instance, Tunable tunable, 
-			final int dialogType, final CyTableManager tableManager) {
+	protected NetworkTableMappingParametersHandler(
+			final Field field,
+			final Object instance,
+			final Tunable tunable, 
+			final ImportType dialogType,
+			final CyServiceRegistrar serviceRegistrar
+	) {
 		super(field, instance, tunable);
 		this.dialogType = dialogType;
-		this.tableManager = tableManager;
-		this.fileUtil = CytoscapeServices.fileUtil;
+		this.serviceRegistrar = serviceRegistrar;
 		init();
 	}
 	
-	
-	protected NetworkTableMappingParametersHandler(final Method getter, final Method setter, final Object instance, final Tunable tunable,
-			final int dialogType, final CyTableManager tableManager) {
+	protected NetworkTableMappingParametersHandler(
+			final Method getter,
+			final Method setter,
+			final Object instance,
+			final Tunable tunable,
+			final ImportType dialogType,
+			final CyServiceRegistrar serviceRegistrar
+	) {
 		super(getter, setter, instance, tunable);
 		this.dialogType = dialogType;
-		this.tableManager = tableManager;
-		this.fileUtil = CytoscapeServices.fileUtil;
+		this.serviceRegistrar = serviceRegistrar;
 		init();
 	}
 	
-	private void init(){
-		
+	private void init() {
 		try {
 			ntmp = (NetworkTableMappingParameters) getValue();
 		} catch (IllegalAccessException e1) {
@@ -87,23 +86,36 @@ public class NetworkTableMappingParametersHandler extends AbstractGUITunableHand
 			e1.printStackTrace();
 		} 
 		
+		panel = new JPanel(new BorderLayout());
+		
 		try {
-			importTablePanel =
-				new ImportTablePanel(dialogType, ntmp.is,
-				                     ntmp.fileType, null,null, null, null,
-				                     null, null, null, tableManager, fileUtil); 
+			importTablePanel = new ImportTablePanel(dialogType, ntmp.is, ntmp.fileType, null, serviceRegistrar); 
 		} catch (Exception e) {
-			throw new IllegalStateException("Could not initialize ImportTablePanel.", e);
+			final JLabel errorLabel = new JLabel(
+					"<html><h3>Error: Could not Initialize Preview.</h3>" +
+					"<p>The selected file may be empty or contain invalid entries.<br>" +
+					"Please check the contents of the original file and try again.</p></html>"
+			);
+			errorLabel.setForeground(LookAndFeelUtil.getErrorColor());
+			errorLabel.setHorizontalTextPosition(JLabel.CENTER);
+			errorLabel.setHorizontalAlignment(JLabel.CENTER);
+			errorLabel.setFont(errorLabel.getFont().deriveFont(LookAndFeelUtil.getSmallFontSize()));
+
+			panel.add(errorLabel, BorderLayout.CENTER);
+			
+			return;
 		}
-		panel = new JPanel(new BorderLayout(10, 10));
+		
 		panel.add(importTablePanel, BorderLayout.CENTER);
 	}
 	
 	@Override
 	public void handle() {
-		try{
-			ntmp = importTablePanel.getNetworkTableMappingParameters();
-			setValue(ntmp);
+		try {
+			if (importTablePanel != null) {
+				ntmp = importTablePanel.getNetworkTableMappingParameters();
+				setValue(ntmp);
+			}
 		} catch (IllegalAccessException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -114,7 +126,5 @@ public class NetworkTableMappingParametersHandler extends AbstractGUITunableHand
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
 	}
-
 }

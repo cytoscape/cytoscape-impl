@@ -51,6 +51,7 @@ public class RingLayer extends AbstractChartLayer<PieDataset> {
 	public RingLayer(final Map<String, List<Double>> data,
 					 final List<String> labels,
 					 final boolean showLabels,
+					 final float itemFontSize,
 					 final List<Color> colors,
 					 final float borderWidth,
 					 final Color borderColor,
@@ -58,8 +59,8 @@ public class RingLayer extends AbstractChartLayer<PieDataset> {
 					 final double hole,
 					 final Rotation rotation,
 					 final Rectangle2D bounds) {
-        super(data, labels, null, null, showLabels, false, false, LabelPosition.STANDARD, colors, 0.0f,
-        		TRANSPARENT_COLOR, borderWidth, borderColor, null, bounds);
+        super(data, labels, null, null, showLabels, false, false, itemFontSize, LabelPosition.STANDARD, colors, 0.0f,
+        		TRANSPARENT_COLOR, 0.0f, borderWidth, borderColor, null, bounds);
         this.startAngle = startAngle;
         this.hole = hole;
         this.rotation = rotation;
@@ -110,6 +111,7 @@ public class RingLayer extends AbstractChartLayer<PieDataset> {
 	}
 	
 	@Override
+	@SuppressWarnings("unchecked")
 	protected JFreeChart getChart() {
 		if (datasetList == null || chartList == null) {
 			createDataset();
@@ -198,7 +200,7 @@ public class RingLayer extends AbstractChartLayer<PieDataset> {
 		plot.setLabelBackgroundPaint(TRANSPARENT_COLOR);
 		plot.setLabelOutlinePaint(TRANSPARENT_COLOR);
 		plot.setLabelShadowPaint(TRANSPARENT_COLOR);
-		plot.setLabelFont(plot.getLabelFont().deriveFont(1.0f));
+		plot.setLabelFont(plot.getLabelFont().deriveFont(itemFontSize));
 		
 		final BasicStroke stroke = new BasicStroke(borderWidth, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
 		plot.setSeparatorStroke(stroke);

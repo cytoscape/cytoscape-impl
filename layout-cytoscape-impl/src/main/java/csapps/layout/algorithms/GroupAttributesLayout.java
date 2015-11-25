@@ -24,9 +24,7 @@ package csapps.layout.algorithms;
  * #L%
  */
 
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import org.cytoscape.model.CyNode;
@@ -45,21 +43,19 @@ import org.cytoscape.work.undo.UndoSupport;
   1 and 2 in the first partition and nodes 3 and 4 in the second partition.  Each
   partition is drawn in a circle.
 */
-/**
- *
- */
 public class GroupAttributesLayout extends AbstractLayoutAlgorithm {
-	/**
-	 * Creates a new GroupAttributesLayout object.
-	 */
-	public GroupAttributesLayout(UndoSupport undo) {
-		super("attributes-layout", "Group Attributes Layout", undo);
+	
+	public GroupAttributesLayout(final UndoSupport undoSupport) {
+		super("attributes-layout", "Group Attributes Layout", undoSupport);
 	}
 
-	public TaskIterator createTaskIterator(CyNetworkView networkView, Object context, Set<View<CyNode>> nodesToLayOut, String attrName) {
-		return new TaskIterator(new GroupAttributesLayoutTask(toString(), networkView, nodesToLayOut, (GroupAttributesLayoutContext)context, attrName, undoSupport));
+	@Override
+	public TaskIterator createTaskIterator(CyNetworkView networkView, Object context, Set<View<CyNode>> nodesToLayOut,
+			String attrName) {
+		return new TaskIterator(new GroupAttributesLayoutTask(toString(), networkView, nodesToLayOut,
+				(GroupAttributesLayoutContext) context, attrName, undoSupport));
 	}
-	
+
 	@Override
 	public Set<Class<?>> getSupportedNodeAttributeTypes() {
 		Set<Class<?>> ret = new HashSet<Class<?>>();
@@ -71,15 +67,14 @@ public class GroupAttributesLayout extends AbstractLayoutAlgorithm {
 
 		return ret;
 	}
-	
+
 	@Override
 	public GroupAttributesLayoutContext createLayoutContext() {
 		return new GroupAttributesLayoutContext();
 	}
-	
+
 	@Override
 	public boolean getSupportsSelectedOnly() {
 		return true;
 	}
-
 }

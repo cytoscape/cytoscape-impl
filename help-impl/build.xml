@@ -18,7 +18,7 @@ available here:
 
 	<artifact:pom id="mypom" file="pom.xml" />
 	<property name="basedir" value="."/>
-	<property name="xep.home" value="/cellar/users/mes/XEP"/>
+	<property name="xep.home" value="/usr/local/XEP"/>
 	<property name="images.dir" value="${basedir}/src/docbkx/images"/>
 	<property name="manual.dir" value="${basedir}/src/docbkx"/>
 	<propertyregex property="version" input="${mypom.version}" regexp="(\d+\.\d+\.\d+).*" select="\1" />

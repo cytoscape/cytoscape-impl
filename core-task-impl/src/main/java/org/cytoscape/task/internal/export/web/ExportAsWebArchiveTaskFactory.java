@@ -16,6 +16,8 @@ public class ExportAsWebArchiveTaskFactory extends AbstractTaskFactory {
 	
 	private CySessionWriterFactory fullWriterFactory;
 	private CySessionWriterFactory simpleWriterFactory;
+	private CySessionWriterFactory zippedWriterFactory;
+	
 	private final CyNetworkManager networkManager;
 	
 	
@@ -45,6 +47,10 @@ public class ExportAsWebArchiveTaskFactory extends AbstractTaskFactory {
 		if (id.equals("simpleWebSessionWriterFactory")) {
 			this.simpleWriterFactory = writerFactory;
 		}
+		
+		if (id.equals("zippedJsonWriterFactory")) {
+			this.zippedWriterFactory = writerFactory;
+		}
 	}
 
 	@SuppressWarnings("rawtypes")
@@ -67,7 +73,8 @@ public class ExportAsWebArchiveTaskFactory extends AbstractTaskFactory {
 			}
 		}
 		
-		final ExportAsWebArchiveTask exportTask = new ExportAsWebArchiveTask(fullWriterFactory, simpleWriterFactory);
+		final ExportAsWebArchiveTask exportTask = 
+				new ExportAsWebArchiveTask(fullWriterFactory, simpleWriterFactory, zippedWriterFactory);
 		
 		if(showWarning) {
 			return new TaskIterator(new ShowWarningTask(exportTask));

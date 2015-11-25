@@ -70,6 +70,7 @@ import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyleFactory;
 import org.cytoscape.work.TaskManager;
+import org.cytoscape.work.properties.TunablePropertySerializerFactory;
 import org.cytoscape.work.swing.DialogTaskManager;
 import org.cytoscape.work.swing.PanelTaskManager;
 import org.cytoscape.work.undo.UndoSupport;
@@ -119,6 +120,7 @@ public class CyAppAdapterImplTest /*extends CyAppAdapterTest*/ {
 			mock(RenderingEngineManager.class),
 			mock(TaskManager.class),
 			mock(UndoSupport.class),
+			mock(TunablePropertySerializerFactory.class),
 			mock(VisualMappingFunctionFactory.class),
 			mock(VisualMappingFunctionFactory.class),
 			mock(VisualMappingFunctionFactory.class),

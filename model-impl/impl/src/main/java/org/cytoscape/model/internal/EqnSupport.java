@@ -43,31 +43,27 @@ import org.slf4j.LoggerFactory;
 
 
 class EqnSupport {
+	
 	private static final Logger logger = LoggerFactory.getLogger(EqnSupport.class);
 
 	private EqnSupport() { } // Don't ever create an instance of this class!
 
-	static boolean scalarEquationIsCompatible(final Object equationCandidate,
-						  final Class targetType)
-	{
+	static boolean scalarEquationIsCompatible(final Object equationCandidate, final Class<?> targetType) {
 		if (!(equationCandidate instanceof Equation))
 			return false;
 
-		final Equation equation = (Equation)equationCandidate;
-		final Class<?> eqnReturnType = equation.getType();
+		final Equation equation = (Equation) equationCandidate;
+		final Class<?> eqType = equation.getType();
 
-		if (targetType == Double.class || targetType == Boolean.class
-		    || targetType == Integer.class || targetType == Long.class)
-			return eqnReturnType == Double.class || eqnReturnType == Long.class
-			       || eqnReturnType == Boolean.class;
-		else if (targetType == String.class)
+		if (targetType == String.class)
 			return true; // Everything can be turned into a String!
-		else
-			return false;
+		if (targetType == Boolean.class || Number.class.isAssignableFrom(targetType))
+			return eqType == Boolean.class || Number.class.isAssignableFrom(eqType);
+		
+		return false;
 	}
 
-	static boolean listEquationIsCompatible(final Equation equation, final Class listElementType)
-	{
+	static boolean listEquationIsCompatible(final Equation equation, final Class<?> listElementType) {
 		// TODO: We no longer support strongly typed lists so this always
 		// returns true.  If we ever re-introduce strongly typed lists, we
 		// should modify this to do the appropriate checks.
@@ -138,15 +134,11 @@ class EqnSupport {
 				else {
 					currentlyActiveAttributes.clear();
 					try {
-						lastInternalError.append(
-							"Missing value for referenced column \""
-							+ attribRef + "\".");
+						lastInternalError.append("Missing value for referenced column \"" + attribRef + "\".");
 					} catch (Exception e) {
 						// Intentionally empty!
 					}
-					logger.warn("Missing value for \"" + attribRef
-					            + "\" while evaluating an equation (ID:" + key
-					            + ", column name:" + columnName + ")");
+					logger.warn("Missing value for \"" + attribRef + "\" while evaluating an equation (ID:" + key + ", column name:" + columnName + ")");
 					return null;
 				}
 			}
@@ -156,14 +148,11 @@ class EqnSupport {
 			} catch (final Exception e) {
 				currentlyActiveAttributes.clear();
 				try {
-					lastInternalError.append("Bad column reference to \""
-								 + attribRef + "\".");
+					lastInternalError.append("Bad column reference to \"" + attribRef + "\".");
 				} catch (Exception e2) {
 					// Intentionally empty!
 				}
-				logger.warn("Bad column reference to \"" + attribRef
-				            + "\" while evaluating an equation (ID:" + key
-				            + ", column name:" + columnName + ")");
+				logger.warn("Bad column reference to \"" + attribRef + "\" while evaluating an equation (ID:" + key + ", column name:" + columnName + ")");
 				return null;
 			}
 		}
@@ -179,8 +168,7 @@ class EqnSupport {
 			} catch (Exception e2) {
 				// Intentionally empty!
 			}
-			logger.warn("Error while evaluating an equation: " + e.getMessage() + " (ID:"
-			            + key + ", column name:" + columnName + ")");
+			logger.warn("Error while evaluating an equation: " + e.getMessage() + " (ID:" + key + ", column name:" + columnName + ")");
 			return null;
 		}
 	}

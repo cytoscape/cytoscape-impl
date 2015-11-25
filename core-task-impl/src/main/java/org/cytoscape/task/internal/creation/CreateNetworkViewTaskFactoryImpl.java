@@ -82,11 +82,11 @@ public class CreateNetworkViewTaskFactoryImpl extends AbstractNetworkCollectionT
 		if (layoutMgr == null)
 			return new TaskIterator(1, new CreateNetworkViewTask(undoSupport, networks, 
 																 netViewMgr, layoutMgr, eventHelper, 
-			                                                     vmm, renderingEngineMgr, viewRenderers));
+			                                                     vmm, renderingEngineMgr, appMgr, viewRenderers));
 		else
 			return new TaskIterator(2, new CreateNetworkViewTask(undoSupport, networks, 
 																 netViewMgr, layoutMgr, eventHelper, 
-			                                                     vmm, renderingEngineMgr, viewRenderers));
+			                                                     vmm, renderingEngineMgr, appMgr, viewRenderers));
 	}
 
 	@Override

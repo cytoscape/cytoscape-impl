@@ -151,7 +151,7 @@ public class StartupConfig {
 
 	public void setRestPort(String args) {
 		if (args == null || args.length() == 0)
-			args = "8080";
+			args = "1234";
 		else {
 			try {
 				Integer port = Integer.valueOf(args);
@@ -161,7 +161,7 @@ public class StartupConfig {
 				return;
 			}
 		}
-		localProps.setProperty("restPort", args);
+		localProps.setProperty("rest.port", args);
 		taskStart = true;
 	}
 
@@ -172,7 +172,7 @@ public class StartupConfig {
 		
 		for (String name : args){
 			try{
-			if (StreamUtil.URL_PATTERN.matches(name))
+			if (name.matches(StreamUtil.URL_PATTERN))
 				networkURLs.add(new URL(name));
 			else 
 				networkFiles.add(new File(name));

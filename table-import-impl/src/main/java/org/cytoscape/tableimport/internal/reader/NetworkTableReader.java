@@ -26,44 +26,34 @@ package org.cytoscape.tableimport.internal.reader;
 
 //import cytoscape.data.readers.AbstractGraphReader;
 
-import org.cytoscape.tableimport.internal.util.CytoscapeServices;
-import org.cytoscape.tableimport.internal.util.URLUtil;
-import org.cytoscape.work.TaskMonitor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-
-import java.net.URL;
 import java.nio.charset.Charset;
-
+import java.nio.charset.MalformedInputException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
+
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**
- * Network text table reader. This implemets GraphReader just like other network
- * file readers.<br>
- *
- * @since Cytoscape 2.4
- * @version 0.8
- * @author Keiichiro Ono
- *
+ * Network text table reader. This implements GraphReader just like other network file readers.
  */
 public class NetworkTableReader extends AbstractGraphReader implements TextTableReader {
+	
 	protected static final String COMMENT_CHAR = "!";
-	protected final NetworkTableMappingParameters nmp;
-	//protected final URL sourceURL;
+	
+	protected final NetworkTableMappingParameters mapping;
 	protected final NetworkLineParser parser;
 	protected final List<Long> nodeList;
 	protected final List<Long> edgeList;
@@ -72,66 +62,46 @@ public class NetworkTableReader extends AbstractGraphReader implements TextTable
 	protected final InputStream is;
 
 	protected CyNetwork network;
-//	private Map<Object, CyNode> nMap;
 	
 	private static final Logger logger = LoggerFactory.getLogger(NetworkTableReader.class);
 
-	/**
-	 * Creates a new NetworkTableReader object.
-	 *
-	 * @param networkName  DOCUMENT ME!
-	 * @param sourceURL  DOCUMENT ME!
-	 * @param nmp  DOCUMENT ME!
-	 * @param startLineNumber  DOCUMENT ME!
-	 * @param commentChar  DOCUMENT ME!
-	 */
-	public NetworkTableReader(final String networkName, final InputStream is,
-	                          final NetworkTableMappingParameters nmp,
-	                          final Map<Object, CyNode> nMap, final CyRootNetwork rootNetwork) 
-	{
-		super(networkName);
-		//this.sourceURL = sourceURL;
-		this.is = is;
-		this.nmp = nmp;
-		this.startLineNumber = nmp.getStartLineNumber();
-		this.nodeList = new ArrayList<Long>();
-		this.edgeList = new ArrayList<Long>();
-		this.commentChar = nmp.getCommentChar();
+	public NetworkTableReader(final String networkName,
+							  final InputStream is,
+	                          final NetworkTableMappingParameters mapping,
+	                          final Map<Object, CyNode> nMap,
+	                          final CyRootNetwork rootNetwork,
+	                          final CyServiceRegistrar serviceRegistrar) {
+		super(networkName, serviceRegistrar);
 		
-		parser = new NetworkLineParser(nodeList, edgeList, nmp, nMap, rootNetwork);
+		this.is = is;
+		this.mapping = mapping;
+		this.startLineNumber = mapping.getStartLineNumber();
+		this.nodeList = new ArrayList<>();
+		this.edgeList = new ArrayList<>();
+		this.commentChar = mapping.getCommentChar();
+		
+		parser = new NetworkLineParser(nodeList, edgeList, mapping, nMap, rootNetwork, serviceRegistrar);
 	}
 
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @return  DOCUMENT ME!
-	 */
-	public List getColumnNames() {
-		List<String> colNames = new ArrayList<String>();
-
-		for (String name : nmp.getAttributeNames()) {
-			colNames.add(name);
-		}
-
-		return colNames;
+	@Override
+	public List<String> getColumnNames() {
+		return Arrays.asList(mapping.getAttributeNames());
 	}
 
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @throws IOException DOCUMENT ME!
-	 */
-	public void readTable(CyTable table) throws IOException {
-		//InputStream is = null;
+	@Override
+	public void readTable(final CyTable table) throws IOException {
 		String line;
 
 		network.getRow(network).set("name", this.getNetworkName());
 		parser.setNetwork(network);
+
+		// TODO: it would be really useful to be able to try to recover from a UTF-8 decoder failure
+		// by resetting the stream and attempting to start over with ISO-8859-1.  Unfortunately, the
+		// way our reader code is structured, we can't easily do this.
 		
 		try {
 			BufferedReader bufRd = null;
 
-			//is = URLUtil.getInputStream(sourceURL);
 			try {
 				bufRd = new BufferedReader(new InputStreamReader(is,Charset.forName("UTF-8").newDecoder()));
 				/*
@@ -148,7 +118,7 @@ public class NetworkTableReader extends AbstractGraphReader implements TextTable
 						&& line.startsWith(commentChar)) {
 						skipped++;
 					} else if ((line.trim().length() > 0) && ((startLineNumber + skipped) <= lineCount)) {
-						String[] parts = line.split(nmp.getDelimiterRegEx());
+						String[] parts = line.split(mapping.getDelimiterRegEx());
 						try {
 							parser.parseEntry(parts);
 						} catch (Exception ex) {
@@ -158,11 +128,11 @@ public class NetworkTableReader extends AbstractGraphReader implements TextTable
 
 					lineCount++;
 				}
-			}
-			finally {
-				if (bufRd != null) {
+			} catch (MalformedInputException mie) {
+				throw new IOException("Unable to import network: illegal character encoding in input");
+			} finally {
+				if (bufRd != null)
 					bufRd.close();
-				}
 			}
 		}
 		finally {
@@ -172,25 +142,13 @@ public class NetworkTableReader extends AbstractGraphReader implements TextTable
 		}
 	}
 
-
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @throws IOException DOCUMENT ME!
-	 */
-	//@Override
+	@Override
 	public void read() throws IOException {
 		readTable(null);
 	}
 
-
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @return  DOCUMENT ME!
-	 */
+	@Override
 	public String getReport() {
-
 		final StringBuffer sb = new StringBuffer();
 		sb.append(network.getNodeCount() + " nodes and " + network.getEdgeCount() + " edges are loaded.\n");
 		sb.append("New network name is " + super.getNetworkName() + "\n\n");
@@ -198,11 +156,13 @@ public class NetworkTableReader extends AbstractGraphReader implements TextTable
 		return sb.toString();		
 	}
 	
+	@Override
 	public void setNetwork(CyNetwork network){
 		this.network = network;
 	}
 	
+	@Override
 	public MappingParameter getMappingParameter(){
-		return nmp;
+		return mapping;
 	}
 }

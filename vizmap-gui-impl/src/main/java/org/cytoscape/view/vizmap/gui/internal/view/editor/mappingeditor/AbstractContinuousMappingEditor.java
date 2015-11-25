@@ -25,6 +25,7 @@ package org.cytoscape.view.vizmap.gui.internal.view.editor.mappingeditor;
  */
 
 import java.awt.BorderLayout;
+import java.awt.Dialog.ModalityType;
 import java.awt.Dimension;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -36,6 +37,8 @@ import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
+import org.cytoscape.application.swing.CySwingApplication;
+import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.vizmap.gui.editor.ContinuousMappingEditor;
 import org.cytoscape.view.vizmap.gui.editor.EditorManager;
 import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
@@ -45,9 +48,6 @@ import com.l2fprod.common.beans.editor.AbstractPropertyEditor;
 
 public abstract class AbstractContinuousMappingEditor<K extends Number, V> extends AbstractPropertyEditor implements
 		ContinuousMappingEditor<K, V> {
-
-	private static final Dimension DEF_SIZE = new Dimension(550, 400);
-	private static final Dimension MIN_SIZE = new Dimension(300, 350);
 
 	protected ContinuousMapping<K, V> mapping;
 	protected ContinuousMappingEditorPanel<K, V> editorPanel;
@@ -71,22 +71,22 @@ public abstract class AbstractContinuousMappingEditor<K extends Number, V> exten
 		((JPanel) editor).add(iconLabel, BorderLayout.CENTER);
 
 		this.editor.addMouseListener(new MouseAdapter() {
-
 			@Override
-			public void mouseClicked(MouseEvent ev) {
+			public void mousePressed(MouseEvent e) {
 				// Open only one editor at a time.
 				if (isEditorDialogActive) {
 					// Bring it to the front
 					if (currentDialog != null)
 						currentDialog.toFront();
+					
 					return;
 				}
 
-				final JDialog editorDialog = new JDialog();
-				initComponents(editorDialog);
+				final JDialog dialog = new JDialog(servicesUtil.get(CySwingApplication.class).getJFrame(),
+						ModalityType.APPLICATION_MODAL);
+				initComponents(dialog);
 
-				editorDialog.addWindowListener(new WindowAdapter() {
-
+				dialog.addWindowListener(new WindowAdapter() {
 					@Override
 					public void windowClosed(WindowEvent evt) {
 						final Dimension size = editor.getSize();
@@ -95,22 +95,22 @@ public abstract class AbstractContinuousMappingEditor<K extends Number, V> exten
 					}
 				});
 
-				editorDialog.setTitle("Continuous Mapping Editor for " + mapping.getVisualProperty().getDisplayName());
-				editorDialog.setLocationRelativeTo(editor);
-				editorDialog.setModalityType(JDialog.DEFAULT_MODALITY_TYPE);
-				editorDialog.setVisible(true);
+				dialog.setLocationRelativeTo(editor);
+				dialog.setVisible(true);
 				isEditorDialogActive = true;
-				currentDialog = editorDialog;
+				currentDialog = dialog;
 			}
 
 			private void initComponents(final JDialog dialog) {
-				dialog.setLayout(new BorderLayout());
+				dialog.setTitle("Continuous Mapping Editor for " + mapping.getVisualProperty().getDisplayName());
 				dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+				
 				dialog.getContentPane().add(editorPanel, BorderLayout.CENTER);
 
-				dialog.setPreferredSize(DEF_SIZE);
-				dialog.setMinimumSize(MIN_SIZE);
-
+				LookAndFeelUtil.setDefaultOkCancelKeyStrokes(dialog.getRootPane(), editorPanel.getOkButton().getAction(),
+						editorPanel.getCancelButton().getAction());
+				dialog.getRootPane().setDefaultButton(editorPanel.getOkButton());
+				
 				dialog.pack();
 			}
 		});

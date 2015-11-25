@@ -24,6 +24,7 @@ package org.cytoscape.internal.view;
  * #L%
  */
 
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.KeyboardFocusManager;
 import java.awt.Point;
@@ -41,6 +42,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.WeakHashMap;
 
+import javax.swing.BorderFactory;
 import javax.swing.JDesktopPane;
 import javax.swing.JInternalFrame;
 import javax.swing.SwingUtilities;
@@ -72,6 +74,7 @@ import org.cytoscape.session.events.SessionLoadCancelledEvent;
 import org.cytoscape.session.events.SessionLoadCancelledListener;
 import org.cytoscape.session.events.SessionLoadedEvent;
 import org.cytoscape.session.events.SessionLoadedListener;
+import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.View;
@@ -115,10 +118,6 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 		ColumnDeletedListener, ColumnNameChangedListener, ViewChangedListener {
 
 	private static final Logger logger = LoggerFactory.getLogger(NetworkViewManager.class);
-
-	// TODO Where should we store these property constants?
-	private static final String VIEW_THRESHOLD = "viewThreshold";
-	private static final int DEF_VIEW_THRESHOLD = 10000;
 
 	private static final int MINIMUM_WIN_WIDTH = 200;
 	private static final int MINIMUM_WIN_HEIGHT = 200;
@@ -296,27 +295,7 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 		logger.debug("\n\n\nView Manager got Network view added event.  Adding view to manager: NetworkViewManager: View ID = "
 				+ nvae.getNetworkView().getSUID() + "\n\n\n");
 
-		final String viewThresholdString = props.getProperty(VIEW_THRESHOLD);
-		int viewThreshold;
-		
-		try {
-			viewThreshold = Integer.parseInt(viewThresholdString);
-		} catch (Exception e) {
-			viewThreshold = DEF_VIEW_THRESHOLD;
-			logger.warn("Could not parse view threshold property.  Use default value: " + DEF_VIEW_THRESHOLD);
-		}
-
 		final CyNetworkView networkView = nvae.getNetworkView();
-		final CyNetwork model = networkView.getModel();
-		final int graphObjectCount = model.getNodeCount() + model.getEdgeCount();
-		
-		// Render only when graph size is smaller than threshold.
-		if (graphObjectCount > viewThreshold) {
-			logger.info("Network is too big to visualize.  This may take very long time to render. " +
-					"(Current View Threshold = " + viewThreshold + ")");
-			// TODO: Should we cancel visualization?
-		}
-		
 		render(networkView);
 	}
 
@@ -383,6 +362,11 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 		// Create a new InternalFrame and put the CyNetworkView Component into it
 		final String title = getTitle(view);
 		final JInternalFrame iframe = new JInternalFrame(title, true, true, true, true);
+		// This is to work around a bug with Mac JInternalFrame L&F that causes large borders (#3352)
+		if (LookAndFeelUtil.isAquaLAF()) {
+			iframe.putClientProperty("JInternalFrame.frameType", "normal");
+			iframe.getRootPane().setBorder(BorderFactory.createMatteBorder(0, 1, 1, 1, new Color(128, 128, 128, 128)));
+		}
 		
 		// This is for force move title bar to the desktop if it's out of range.
 		iframe.addMouseListener(new MouseAdapter() {
@@ -414,10 +398,18 @@ public class NetworkViewManager extends InternalFrameAdapter implements NetworkV
 		}
 		
 		iFrameMap.put(iframe, view);
+		
+		
+		NetworkViewRenderer renderer;
+		String rendererId = view.getRendererId();
+		if(rendererId == null)
+			renderer = appMgr.getDefaultNetworkViewRenderer();
+		renderer = appMgr.getNetworkViewRenderer(rendererId);
+		if(renderer == null)
+			renderer = appMgr.getDefaultNetworkViewRenderer();
 
 		final long start = System.currentTimeMillis();
 		logger.debug("Rendering start: view model = " + view.getSUID());
-		NetworkViewRenderer renderer = appMgr.getCurrentNetworkViewRenderer();
 		RenderingEngineFactory<CyNetwork> engineFactory = renderer.getRenderingEngineFactory(NetworkViewRenderer.DEFAULT_CONTEXT);
 		final RenderingEngine<CyNetwork> renderingEngine = engineFactory.createRenderingEngine(iframe, view);
 		renderingEngineMgr.addRenderingEngine(renderingEngine);

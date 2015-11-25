@@ -24,9 +24,10 @@ package org.cytoscape.io.internal.util;
  * #L%
  */
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.FileInputStream;
 import java.net.Authenticator;
 import java.net.CookieHandler;
 import java.net.CookieManager;
@@ -44,30 +45,32 @@ import java.util.zip.ZipInputStream;
 
 import javax.xml.bind.DatatypeConverter;
 
+import org.cytoscape.application.CyUserLog;
 import org.cytoscape.io.util.StreamUtil;
 import org.cytoscape.property.CyProperty;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.apache.log4j.Logger;
 
 /**
  * 
  */
 public class StreamUtilImpl implements StreamUtil {
 
-	private static final Logger logger = LoggerFactory.getLogger(StreamUtilImpl.class);
+	private static final Logger logger = Logger.getLogger(CyUserLog.NAME);
+	
 	private static final String GZIP = ".gz";
 	private static final String ZIP = ".zip";
 	private static final String JAR = ".jar";
 
 	private static final int msConnectionTimeout = 2000;
-	private Properties properties;
 	
 	private String userName;
 	private String password;
 	
-	public StreamUtilImpl(CyProperty<Properties> proxyProperties) {
-		properties = proxyProperties.getProperties();
+	private final CyServiceRegistrar serviceRegistrar;
+	
+	public StreamUtilImpl(final CyServiceRegistrar serviceRegistrar) {
+		this.serviceRegistrar = serviceRegistrar;
 		
 		CookieHandler.setDefault(new CookieManager(null, CookiePolicy.ACCEPT_ALL));
 		Authenticator.setDefault(new Authenticator() {
@@ -83,10 +86,15 @@ public class StreamUtilImpl implements StreamUtil {
 
 	@Override
 	public InputStream getInputStream(String name) throws IOException {
-		if (name.matches(StreamUtil.URL_PATTERN)) 
-			return getInputStream(new URL(name));
-		else 
-			return new FileInputStream(name);
+		try {
+			if (name.matches(StreamUtil.URL_PATTERN)) 
+				return getInputStream(new URL(name));
+			else 
+				return new FileInputStream(name);
+		} catch (FileNotFoundException fnf) {
+			logger.error("The file "+name+" doesn't exist or can't be opened: "+fnf.getMessage());
+			return null;
+		}
 	}
 	
 	/**
@@ -120,20 +128,24 @@ public class StreamUtilImpl implements StreamUtil {
 		return newIs;
 	}
 
-
+	@SuppressWarnings("unchecked")
 	private Proxy getProxy() {
-		String proxyType = properties.getProperty("proxy.server.type");
-		if ("direct".equals(proxyType)) {
+		final CyProperty<Properties> cyProperty = 
+				serviceRegistrar.getService(CyProperty.class, "(cyPropertyName=cytoscape3.props)");
+		
+		final Properties properties = cyProperty.getProperties();
+		final String proxyType = properties.getProperty("proxy.server.type");
+		
+		if ("direct".equals(proxyType))
 			return Proxy.NO_PROXY;
-		}
+		
 		String hostName = properties.getProperty("proxy.server");
 		String portString = properties.getProperty("proxy.server.port");
 		userName = properties.getProperty("proxy.server.userName");
 		String encodedPassword = properties.getProperty("proxy.server.password");
 		
-		if (userName != null && userName.isEmpty()) {
+		if (userName != null && userName.isEmpty())
 			userName = null;
-		}
 		
 		if (encodedPassword != null) {
 			try {
@@ -146,18 +158,18 @@ public class StreamUtilImpl implements StreamUtil {
 		try {
 			int port = Integer.parseInt(portString);
 			Type type = null;
-			if ("http".equals(proxyType)) {
+			
+			if ("http".equals(proxyType))
 				type = Type.HTTP;
-			}
-			if ("socks".equals(proxyType)) {
+			if ("socks".equals(proxyType))
 				type = Type.SOCKS;
-			}
-			if (type == null) {
+			if (type == null)
 				return Proxy.NO_PROXY;
-			}
+			
 			return new Proxy(type, new InetSocketAddress(hostName, port));
 		} catch (NumberFormatException e) {
 		}
+		
 		return Proxy.NO_PROXY;
 	}
 

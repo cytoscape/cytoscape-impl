@@ -24,7 +24,11 @@ package org.cytoscape.io.internal.read.session;
  * #L%
  */
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.util.HashSet;
 import java.util.Properties;
@@ -34,8 +38,9 @@ import org.cytoscape.io.DataCategory;
 import org.cytoscape.io.internal.util.StreamUtilImpl;
 import org.cytoscape.io.util.StreamUtil;
 import org.cytoscape.property.CyProperty;
-import org.cytoscape.property.SimpleCyProperty;
 import org.cytoscape.property.CyProperty.SavePolicy;
+import org.cytoscape.property.SimpleCyProperty;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -50,8 +55,12 @@ public class SessionFileFilterTest {
 		contentTypes = new HashSet<String>();
 		
 		Properties properties = new Properties();
-		CyProperty<Properties> cyProperties = new SimpleCyProperty<Properties>("test", properties, Properties.class, SavePolicy.DO_NOT_SAVE);		
-		streamUtil = new StreamUtilImpl(cyProperties);
+		CyProperty<Properties> cyProperties = new SimpleCyProperty<Properties>("test", properties, Properties.class, SavePolicy.DO_NOT_SAVE);
+		
+		CyServiceRegistrar serviceRegistrar = mock(CyServiceRegistrar.class);
+		when(serviceRegistrar.getService(CyProperty.class, "(cyPropertyName=cytoscape3.props)")).thenReturn(cyProperties);
+		
+		streamUtil = new StreamUtilImpl(serviceRegistrar);
 	}
 	
 	@Test

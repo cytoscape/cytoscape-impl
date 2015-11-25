@@ -50,7 +50,6 @@ import org.apache.commons.io.IOUtils;
 import org.cytoscape.app.internal.exception.AppDownloadException;
 import org.cytoscape.app.internal.manager.App;
 import org.cytoscape.app.internal.manager.AppManager;
-import org.cytoscape.app.internal.manager.AppParser;
 import org.cytoscape.app.internal.manager.AppParser.ChecksumException;
 import org.cytoscape.app.internal.net.WebApp.Release;
 import org.cytoscape.app.internal.ui.downloadsites.DownloadSite;
@@ -63,9 +62,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.swing.SwingUtilities;
-import javax.swing.JOptionPane;
 
 /**
  * This class is responsible for querying the Cytoscape App Store web service to obtain
@@ -681,7 +677,7 @@ public class WebQuerier {
 		// installed app. Runtime performance is
 		// (num_installed_apps * num_web_apps * releases_per_web_app)
 		
-		for (App app : appManager.getApps()) {
+		for (App app : appManager.getInstalledApps()) {
 			
 			if (app.getSha512Checksum() == null) {
 				try {
@@ -702,12 +698,13 @@ public class WebQuerier {
 						
 						if (release.getSha512Checksum().trim().length() > 0
 								&& sha512checksum.indexOf(release.getSha512Checksum()) != -1) {
-							
-							webApp.setCorrespondingApp(app);
-							
-							// For convenience, set the app's description field
-							if (app.getDescription() == null) {
-								app.setDescription(webApp.getDescription());
+							if(webApp.getCorrespondingApp() == null || webApp.getCorrespondingApp().isDetached() ||
+									compareVersions(webApp.getCorrespondingApp().getVersion(), app.getVersion()) > 0) {
+								webApp.setCorrespondingApp(app);
+								// For convenience, set the app's description field
+								if (app.getDescription() == null) {
+									app.setDescription(webApp.getDescription());
+								}
 							}
 						}
 					}

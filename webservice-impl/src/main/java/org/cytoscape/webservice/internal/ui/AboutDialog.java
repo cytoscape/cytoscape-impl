@@ -24,26 +24,38 @@ package org.cytoscape.webservice.internal.ui;
  * #L%
  */
 
+import static javax.swing.GroupLayout.DEFAULT_SIZE;
+import static javax.swing.GroupLayout.PREFERRED_SIZE;
+
 import java.awt.Dialog;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.Window;
+import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 
+import javax.swing.AbstractAction;
+import javax.swing.BorderFactory;
 import javax.swing.GroupLayout;
+import javax.swing.GroupLayout.Alignment;
 import javax.swing.Icon;
+import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JEditorPane;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.LayoutStyle;
+import javax.swing.JSeparator;
 import javax.swing.ScrollPaneConstants;
+import javax.swing.UIDefaults;
 import javax.swing.WindowConstants;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.util.swing.OpenBrowser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,18 +72,16 @@ public final class AboutDialog extends JDialog implements HyperlinkListener {
 
 	private static final Dimension WINDOW_SIZE = new Dimension(500, 400);
 
-	private final OpenBrowser openBrowser;
+	private final CyServiceRegistrar serviceRegistrar;
 
+	private JLabel titleLabel;
 	private JEditorPane mainEditorPane;
 	private JScrollPane mainScrollPane;
-	private JLabel titleLabel;
-	private JPanel titlePanel;
-	private JPanel mainPanel;
 
 	/** Creates new form WSAboutDialog */
-	public AboutDialog(Window parent, Dialog.ModalityType modal, final OpenBrowser openBrowser) {
+	public AboutDialog(Window parent, Dialog.ModalityType modal, final CyServiceRegistrar serviceRegistrar) {
 		super(parent, modal);
-		this.openBrowser = openBrowser;
+		this.serviceRegistrar = serviceRegistrar;
 		initComponents();
 		mainEditorPane.setEditable(false);
 		mainEditorPane.addHyperlinkListener(this);
@@ -82,18 +92,18 @@ public final class AboutDialog extends JDialog implements HyperlinkListener {
 	}
 
 	public AboutDialog(Window parent, Dialog.ModalityType modal, String title, Icon icon, URL contentURL,
-			final OpenBrowser openBrowser) {
+			final CyServiceRegistrar serviceRegistrar) {
 		super(parent, modal);
-		this.openBrowser = openBrowser;
+		this.serviceRegistrar = serviceRegistrar;
 		initComponents();
 		mainEditorPane.setContentType("text/html");
 		this.setPreferredSize(WINDOW_SIZE);
 		this.setSize(WINDOW_SIZE);
 	}
 
-	public void showDialog(String title, Icon icon, String description) {
+	public void showDialog(final String title, final String description) {
+		setTitle("About " + title);
 		titleLabel.setText(title);
-		titleLabel.setIcon(icon);
 
 		URL target = null;
 		mainEditorPane.putClientProperty(JEditorPane.HONOR_DISPLAY_PROPERTIES, Boolean.TRUE);
@@ -120,65 +130,79 @@ public final class AboutDialog extends JDialog implements HyperlinkListener {
 		}
 	}
 
+	@SuppressWarnings("serial")
 	private void initComponents() {
-		titlePanel = new JPanel();
-		titleLabel = new JLabel();
-		mainPanel = new JPanel();
-		mainScrollPane = new JScrollPane();
-		mainEditorPane = new JEditorPane();
-
-		setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 		setTitle("About");
-
-		titlePanel.setBackground(new java.awt.Color(255, 255, 255));
-
-		titleLabel.setFont(new java.awt.Font("SansSerif", 0, 18));
-		titleLabel.setText("Client Name Here");
-
-		GroupLayout titlePanelLayout = new GroupLayout(titlePanel);
-		titlePanel.setLayout(titlePanelLayout);
-		titlePanelLayout.setHorizontalGroup(titlePanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
-				.addGroup(
-						titlePanelLayout.createSequentialGroup().addContainerGap()
-								.addComponent(titleLabel, GroupLayout.DEFAULT_SIZE, 340, Short.MAX_VALUE)
-								.addContainerGap()));
-		titlePanelLayout.setVerticalGroup(titlePanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING).addGroup(
-				titlePanelLayout.createSequentialGroup().addContainerGap()
-						.addComponent(titleLabel, GroupLayout.DEFAULT_SIZE, 32, Short.MAX_VALUE).addContainerGap()));
-
-		mainPanel.setBackground(new java.awt.Color(255, 255, 255));
-
-		mainScrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-		mainScrollPane.setFont(new java.awt.Font("SansSerif", 0, 12));
-
+		setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+		
+		mainEditorPane = new JEditorPane();
+		mainEditorPane.setBorder(BorderFactory.createEmptyBorder());
 		mainEditorPane.setEditable(false);
+		mainEditorPane.setBackground(getBackground());
+		
+		if (LookAndFeelUtil.isNimbusLAF()) {
+			// Nimbus does not respect background color settings for JEditorPane,
+			// so this is necessary to override its color:
+			final UIDefaults defaults = new UIDefaults();
+			defaults.put("EditorPane[Enabled].backgroundPainter", getBackground());
+			mainEditorPane.putClientProperty("Nimbus.Overrides", defaults);
+			mainEditorPane.putClientProperty("Nimbus.Overrides.InheritDefaults", true);
+		}
+		
+		mainScrollPane = new JScrollPane();
+		mainScrollPane.setBorder(BorderFactory.createEmptyBorder());
+		mainScrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 		mainScrollPane.setViewportView(mainEditorPane);
+		
+		titleLabel = new JLabel(); // Client name to be set here...
+		titleLabel.setFont(new Font(titleLabel.getName(), Font.BOLD, 18));
+		titleLabel.setHorizontalAlignment(JLabel.CENTER);
 
-		final GroupLayout mainPanelLayout = new GroupLayout(mainPanel);
-		mainPanel.setLayout(mainPanelLayout);
-		mainPanelLayout.setHorizontalGroup(mainPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING).addGroup(
-				mainPanelLayout.createSequentialGroup().addContainerGap().addComponent(mainScrollPane)
-						.addContainerGap()));
-		mainPanelLayout.setVerticalGroup(mainPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
-				.addGroup(
-						mainPanelLayout.createSequentialGroup().addContainerGap()
-								.addComponent(mainScrollPane, GroupLayout.DEFAULT_SIZE, 215, Short.MAX_VALUE)
-								.addContainerGap()));
+		final JButton closeButton = new JButton(new AbstractAction("Close") {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				dispose();
+			}
+		});
+		
+		final JPanel buttonPanel = LookAndFeelUtil.createOkCancelPanel(closeButton, null);
+		final JPanel contents = new JPanel();
+		
+		final JSeparator sep1 = new JSeparator();
+		final JSeparator sep2 = new JSeparator();
+		
+		final GroupLayout layout = new GroupLayout(contents);
+		contents.setLayout(layout);
+		layout.setAutoCreateContainerGaps(true);
+		layout.setAutoCreateGaps(true);
+		
+		layout.setHorizontalGroup(layout.createSequentialGroup()
+				.addGap(20)
+				.addGroup(layout.createParallelGroup(Alignment.LEADING)
+						.addComponent(titleLabel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+						.addComponent(sep1, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+						.addComponent(mainScrollPane, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+						.addComponent(sep2, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+						.addComponent(buttonPanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				)
+				.addGap(20)
+		);
+		layout.setVerticalGroup(layout.createSequentialGroup()
+				.addComponent(titleLabel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				.addComponent(sep1, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				.addComponent(mainScrollPane, DEFAULT_SIZE, 215, Short.MAX_VALUE)
+				.addComponent(sep2, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				.addComponent(buttonPanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+		);
 
-		GroupLayout layout = new GroupLayout(getContentPane());
-		getContentPane().setLayout(layout);
-		layout.setHorizontalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-				.addComponent(titlePanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-				.addComponent(mainPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE));
-		layout.setVerticalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING).addGroup(
-				layout.createSequentialGroup()
-						.addComponent(titlePanel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
-								GroupLayout.PREFERRED_SIZE).addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-						.addComponent(mainPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)));
-
+		getContentPane().add(contents);
+		
+		LookAndFeelUtil.setDefaultOkCancelKeyStrokes(getRootPane(), closeButton.getAction(), closeButton.getAction());
+		getRootPane().setDefaultButton(closeButton);
 		pack();
-	} // </editor-fold>
+	}
 
+	@Override
 	public void hyperlinkUpdate(HyperlinkEvent e) {
 		if (e.getEventType() != HyperlinkEvent.EventType.ACTIVATED)
 			return;
@@ -186,7 +210,7 @@ public final class AboutDialog extends JDialog implements HyperlinkListener {
 		String url = e.getURL().toString();
 
 		try {
-			openBrowser.openURL(url);
+			serviceRegistrar.getService(OpenBrowser.class).openURL(url);
 		} catch (Exception err) {
 			logger.warn("Unable to open browser for " + url.toString(), err);
 		}

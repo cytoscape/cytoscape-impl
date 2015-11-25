@@ -132,8 +132,8 @@ final class DeleteEdit extends AbstractCyEdit {
 
 	@Override
 	public void redo() {
-		net.removeNodes(nodes);
 		net.removeEdges(edges);
+		net.removeNodes(nodes);
 
 		final Collection<CyNetworkView> views = netViewMgr.getNetworkViews(net);
 		CyNetworkView netView = null;

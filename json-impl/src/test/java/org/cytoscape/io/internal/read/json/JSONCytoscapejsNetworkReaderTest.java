@@ -1,8 +1,12 @@
 package org.cytoscape.io.internal.read.json;
 
 import static org.cytoscape.model.CyEdge.Type.DIRECTED;
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.mock;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -10,6 +14,8 @@ import java.io.InputStream;
 import java.util.Collection;
 import java.util.List;
 
+import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.NetworkViewRenderer;
 import org.cytoscape.ding.NetworkViewTestSupport;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyEdge;
@@ -30,20 +36,26 @@ import org.cytoscape.work.TaskMonitor;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
 public class JSONCytoscapejsNetworkReaderTest {
 
 	private NetworkViewTestSupport support = new NetworkViewTestSupport();
 	private final CyNetworkFactory networkFactory = support.getNetworkFactory();
 	private final CyNetworkViewFactory viewFactory = support.getNetworkViewFactory();
-	private final CyRootNetworkManager rootNetworkManager = mock(CyRootNetworkManager.class);
 	private final CyNetworkManager networkManager = support.getNetworkManager();
 
-	private TaskMonitor tm;
+	@Mock private TaskMonitor tm;
+	@Mock private CyApplicationManager appManager;
+	@Mock private NetworkViewRenderer netViewRenderer;
+	@Mock private CyRootNetworkManager rootNetworkManager;
 
 	@Before
 	public void setUp() throws Exception {
-		this.tm = mock(TaskMonitor.class);
+		MockitoAnnotations.initMocks(this);
+		when(netViewRenderer.getNetworkViewFactory()).thenReturn(viewFactory);
+		when(appManager.getDefaultNetworkViewRenderer()).thenReturn(netViewRenderer);
 	}
 
 	@After
@@ -53,8 +65,8 @@ public class JSONCytoscapejsNetworkReaderTest {
 	private CyNetworkView loadNetwork(final File testFile) throws Exception {
 
 		InputStream is = new FileInputStream(testFile);
-		CytoscapeJsNetworkReader reader = new CytoscapeJsNetworkReader(null, is, viewFactory, networkFactory, networkManager,
-				rootNetworkManager);
+		CytoscapeJsNetworkReader reader = new CytoscapeJsNetworkReader(null, is, appManager, networkFactory,
+				networkManager, rootNetworkManager);
 		reader.run(tm);
 		is.close();
 		final CyNetwork[] networks = reader.getNetworks();
@@ -90,6 +102,14 @@ public class JSONCytoscapejsNetworkReaderTest {
 		final File testFile = new File("src/test/resources/testData/complex-data.json");
 		final CyNetworkView view = loadNetwork(testFile);
 		testComplex(view);
+	}
+	
+	@Test
+	public void testElementList() throws Exception {
+		// Element list generated with Cytoscape.js ( cy.elements().jsons() )
+		final File testFile = new File("src/test/resources/testData/element_list.json");
+		final CyNetworkView view = loadNetwork(testFile);
+		testElement(view);
 	}
 	
 	private final void testComplex(final CyNetworkView view) {
@@ -238,9 +258,6 @@ public class JSONCytoscapejsNetworkReaderTest {
 		return edge;
 	}
 	
-	
-	
-	
 	private final void testYeast(final CyNetworkView view) {
 		final CyNetwork network = view.getModel();
 
@@ -336,5 +353,24 @@ public class JSONCytoscapejsNetworkReaderTest {
 		final Collection<CyRow> match3 = network.getDefaultNodeTable().getMatchingRows(CyNetwork.NAME, "foo");
 		assertNotNull(match3);
 		assertEquals(0, match3.size());
+	}
+	
+	
+	private final void testElement(final CyNetworkView view) {
+		final CyNetwork network = view.getModel();
+
+		// Check network table
+		final String networkName = network.getRow(network).get(CyNetwork.NAME, String.class);
+		final String networkSharedName = network.getRow(network).get("shared_name", String.class);
+		assertEquals(null, networkName);
+		assertEquals(null, networkSharedName);
+		
+		// Type checking
+		final CyColumn idColumn = network.getDefaultNodeTable().getColumn("id");
+		assertNotNull(idColumn);
+		assertEquals(String.class, idColumn.getType());
+		
+		assertEquals(100, network.getNodeCount());
+		assertEquals(100, network.getEdgeCount());
 	}
 }

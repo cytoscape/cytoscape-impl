@@ -11,6 +11,7 @@ import org.cytoscape.filter.TransformerManager;
 import org.cytoscape.filter.model.CompositeFilter;
 import org.cytoscape.filter.model.Filter;
 import org.cytoscape.filter.model.NamedTransformer;
+import org.cytoscape.filter.model.SubFilterTransformer;
 import org.cytoscape.filter.model.Transformer;
 import org.cytoscape.io.internal.util.FilterIO;
 import org.cytoscape.io.read.CyTransformerReader;
@@ -92,14 +93,25 @@ public class CyTransformerReaderImpl implements CyTransformerReader {
 		if (transformer instanceof CompositeFilter) {
 			readCompositeFilter(parser, (CompositeFilter<?, ?>) transformer);
 		}
-		
-		assertNextToken(parser, JsonToken.END_OBJECT);
+		else if (transformer instanceof SubFilterTransformer) {
+			SubFilterTransformer<?,?> sft = (SubFilterTransformer<?,?>) transformer;
+			readCompositeFilter(parser, sft.getCompositeFilter());
+		}
+		else {
+			assertNextToken(parser, JsonToken.END_OBJECT);
+		}
 		return transformer;
 	}
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private void readCompositeFilter(JsonParser parser, CompositeFilter composite) throws IOException {
-		assertEquals(JsonToken.FIELD_NAME, parser.nextToken());
+		JsonToken firstToken = parser.nextToken();
+		if(firstToken == JsonToken.END_OBJECT) {
+			return;
+		}
+		if(firstToken != JsonToken.FIELD_NAME) {
+			throw new IOException("Expected: " + JsonToken.FIELD_NAME + ". Got: " + firstToken);
+		}
 		assertEquals(FilterIO.TRANSFORMERS_FIELD, parser.getCurrentName());
 		assertEquals(JsonToken.START_ARRAY, parser.nextToken());
 		while (true) {
@@ -110,6 +122,7 @@ public class CyTransformerReaderImpl implements CyTransformerReader {
 			composite.append(filter);
 		}
 		assertEquals(JsonToken.END_ARRAY, parser.getCurrentToken());
+		assertNextToken(parser, JsonToken.END_OBJECT);
 	}
 
 	private Map<String, Object> readParameters(JsonParser parser, Transformer<?, ?> transformer) throws IOException {

@@ -24,9 +24,15 @@ package org.cytoscape.command.internal.available.dummies;
  * #L%
  */
 
-import org.cytoscape.view.model.*;
-import org.cytoscape.model.*;
 import java.util.Collection;
+
+import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyIdentifiable;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNode;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.View;
+import org.cytoscape.view.model.VisualProperty;
 
 
 public class DummyNetworkView implements CyNetworkView {
@@ -51,4 +57,5 @@ public class DummyNetworkView implements CyNetworkView {
 	@Override public void dispose() {}
 	@Override public boolean isDirectlyLocked(VisualProperty<?> vp) { return false; }
 	@Override public void clearVisualProperties() {}
+	@Override public String getRendererId() { return null; }
 }

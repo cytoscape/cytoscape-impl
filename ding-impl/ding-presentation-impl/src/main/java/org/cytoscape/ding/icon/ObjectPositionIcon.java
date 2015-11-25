@@ -50,7 +50,7 @@ public class ObjectPositionIcon extends VisualPropertyIcon<ObjectPosition> {
 		g2d.translate(x,  y);
 		g2d.fillRect(0, 0, width, height);
 		
-		final ObjectPlacerGraphic lp = new ObjectPlacerGraphic(width, false, "Label");
+		final ObjectPlacerGraphic lp = new ObjectPlacerGraphic(width, false, "LABEL");
 		lp.setObjectPosition(value);
 		lp.applyPosition();
 		lp.paint(g2d);

@@ -34,9 +34,9 @@ public class AttributeCircleLayoutContext  implements TunableValidator {
 //	@Tunable(description="Node attribute to be use")
 //	public ListSingleSelection<Integer> attrName;
 	
-	@Tunable(description = "Circle size")
+	@Tunable(description = "Circle size:")
 	public double spacing = 100.0;
-	@Tunable(description = "Don't partition graph before layout", groups = "Standard settings")
+	@Tunable(description = "Don't partition graph before layout:", groups = "Standard Settings")
 	public boolean singlePartition;
 
 

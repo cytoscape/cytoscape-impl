@@ -1,5 +1,18 @@
 package org.cytoscape.internal.layout.ui;
 
+import java.awt.event.ActionEvent;
+import java.util.Map;
+
+import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.events.SetCurrentNetworkViewEvent;
+import org.cytoscape.application.events.SetCurrentNetworkViewListener;
+import org.cytoscape.application.swing.AbstractCyAction;
+import org.cytoscape.application.swing.CySwingApplication;
+import org.cytoscape.task.DynamicTaskFactoryProvisioner;
+import org.cytoscape.view.layout.CyLayoutAlgorithm;
+import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
+import org.cytoscape.view.model.CyNetworkViewManager;
+import org.cytoscape.work.swing.PanelTaskManager;
 /*
  * #%L
  * Cytoscape Swing Application Impl (swing-application-impl)
@@ -25,48 +38,28 @@ package org.cytoscape.internal.layout.ui;
  */
 
 
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.application.events.SetCurrentNetworkViewEvent;
-import org.cytoscape.application.events.SetCurrentNetworkViewListener;
-import org.cytoscape.application.swing.CySwingApplication;
-import org.cytoscape.application.swing.AbstractCyAction;
-import org.cytoscape.property.CyProperty;
-import org.cytoscape.task.DynamicTaskFactoryProvisioner;
-import org.cytoscape.view.layout.CyLayoutAlgorithm;
-import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
-import org.cytoscape.view.model.CyNetworkViewManager;
-import org.cytoscape.work.swing.PanelTaskManager;
-
-import java.awt.event.ActionEvent;
-import java.util.Map;
-
-
 public class SettingsAction extends AbstractCyAction implements SetCurrentNetworkViewListener {
+	
 	private final static long serialVersionUID = 1202339874289357L;
-
-	private CyLayoutAlgorithmManager cyl;
-	private CySwingApplication desk;
-	private PanelTaskManager tm;
-	private CyProperty cytoscapePropertiesServiceRef;
-	private CyApplicationManager appMgr;
 
 	private LayoutSettingsDialog settingsDialog;
 
-	public SettingsAction(final CyLayoutAlgorithmManager cyl, final CySwingApplication desk, final CyApplicationManager appMgr, final CyNetworkViewManager networkViewManager,
-			final PanelTaskManager tm, CyProperty cytoscapePropertiesServiceRef, DynamicTaskFactoryProvisioner factoryProvisioner)
-	{
-		super("Settings...",appMgr,"networkAndView", networkViewManager);
-		this.appMgr = appMgr;
+	public SettingsAction(
+			final CyLayoutAlgorithmManager cyl,
+			final CySwingApplication desk,
+			final CyApplicationManager appMgr,
+			final LayoutSettingsManager layoutSettingsMgr,
+			final CyNetworkViewManager networkViewManager,
+			final PanelTaskManager tm,
+			final DynamicTaskFactoryProvisioner factoryProvisioner
+	) {
+		super("Settings...", appMgr, "networkAndView", networkViewManager);
 		setPreferredMenu("Layout");
 		setMenuGravity(3.0f);
-		this.cyl = cyl;
-		this.desk = desk;
-		this.tm = tm;
-		this.cytoscapePropertiesServiceRef = cytoscapePropertiesServiceRef;
-		
-		settingsDialog = new LayoutSettingsDialog(cyl, desk, appMgr, tm, this.cytoscapePropertiesServiceRef, factoryProvisioner );
+		settingsDialog = new LayoutSettingsDialog(cyl, desk, appMgr, layoutSettingsMgr, tm, factoryProvisioner);
 	}
 
+	@Override
 	public void actionPerformed(ActionEvent e) {
 		settingsDialog.actionPerformed(e);
 	}

@@ -24,307 +24,281 @@ package org.cytoscape.ding.impl.cyannotator.dialogs;
  * #L%
  */
 
+import static javax.swing.GroupLayout.DEFAULT_SIZE;
+import static javax.swing.GroupLayout.PREFERRED_SIZE;
+import static javax.swing.GroupLayout.Alignment.CENTER;
+import static javax.swing.GroupLayout.Alignment.LEADING;
+import static javax.swing.GroupLayout.Alignment.TRAILING;
 
 import java.awt.Color;
-import java.awt.Paint;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.GroupLayout;
+import javax.swing.GroupLayout.Alignment;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 import javax.swing.JSlider;
-import javax.swing.border.TitledBorder;
-import javax.swing.event.ChangeListener;
+import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.event.ChangeEvent;
-
-import java.awt.Component;
+import javax.swing.event.ChangeListener;
 
 import org.cytoscape.ding.impl.cyannotator.annotations.ImageAnnotationImpl;
+import org.cytoscape.util.swing.ColorButton;
+import org.cytoscape.util.swing.LookAndFeelUtil;
 
-public class ImageAnnotationPanel extends javax.swing.JPanel {
-	private int WIDTH = 500;
-	private int HEIGHT = 200;
-	private int TOP = 10;
-	private int LEFT = 10;
-	private int COLUMN1 = 175;
-	private int COLUMN2 = 305;
-	private int RIGHT = WIDTH-10;
-
-	private javax.swing.JPanel jPanel1;
-	private JSlider borderOValue;
-	private JSlider opacityValue;
-	private JSlider contrastValue;
-	private JSlider brightnessValue;
-	private JComboBox eThickness;
-	private JCheckBox edgeColor;
-	private JButton sECButton;
+@SuppressWarnings("serial")
+public class ImageAnnotationPanel extends JPanel {
+	
+	private JCheckBox borderColorCheck;
+	private ColorButton borderColorButton;
+	private JComboBox<String> borderWidthCombo;
+	private JSlider borderOpacitySlider;
+	private JSlider opacitySlider;
+	private JSlider brightnessSlider;
+	private JSlider contrastSlider;
 
 	private ImageAnnotationImpl preview;
 	private PreviewPanel previewPanel;
-	
-	private ImageAnnotationImpl mAnnotation;
 
-	public ImageAnnotationPanel(ImageAnnotationImpl mAnnotation, PreviewPanel previewPanel, int width, int height) {
-		this.mAnnotation=mAnnotation;
+	private ImageAnnotationImpl annotation;
+
+	public ImageAnnotationPanel(ImageAnnotationImpl mAnnotation, PreviewPanel previewPanel) {
+		this.annotation = mAnnotation;
 		this.previewPanel = previewPanel;
-		this.preview=(ImageAnnotationImpl)previewPanel.getPreviewAnnotation();
-		this.WIDTH = width;
-		this.HEIGHT = height;
+		this.preview = (ImageAnnotationImpl) previewPanel.getAnnotation();
+
 		initComponents();
-		setSize(width,height);
 	}
 
 	private void initComponents() {
-		setMaximumSize(new java.awt.Dimension(WIDTH, HEIGHT));
-		setMinimumSize(new java.awt.Dimension(WIDTH, HEIGHT));
-		setLayout(null);
-		setBorder(BorderFactory.createLoweredBevelBorder());
+		setBorder(LookAndFeelUtil.createPanelBorder());
 
-		// Upper left components
-		//
-
-		int y = TOP;
-		// Border color
-		{
-			// Border color
-			edgeColor = new javax.swing.JCheckBox();
-			edgeColor.setText("Border Color");
-			if (mAnnotation.getBorderColor() != null) edgeColor.setSelected(true);
-			edgeColor.addActionListener(new java.awt.event.ActionListener() {
-				public void actionPerformed(java.awt.event.ActionEvent evt) {
-				    edgeColorActionPerformed(evt);
-				}
-			});		
-			add(edgeColor);
-			edgeColor.setBounds(LEFT, y, edgeColor.getPreferredSize().width, 20);
-	
-			sECButton = new javax.swing.JButton();
-			sECButton.setText("Select Edge Color");
-			if(edgeColor.isSelected())
-				sECButton.setEnabled(true);
-			else
-				sECButton.setEnabled(false);
-	
-			sECButton.addActionListener(new java.awt.event.ActionListener() {
-				public void actionPerformed(java.awt.event.ActionEvent evt) {
-				    sECButtonActionPerformed(evt);
-				}
-			});	   
-			add(sECButton);
-			sECButton.setBounds(COLUMN1, y, sECButton.getPreferredSize().width, 20);
-		}
-	
-		// Border opacity
-		{
-			y = y+25;
-			JLabel borderOLabel = new JLabel("Border Opacity");
-			borderOLabel.setBounds(LEFT, y, borderOLabel.getPreferredSize().width, 20);
-			add(borderOLabel);
-	
-			borderOValue = new JSlider(0, 100);
-			borderOValue.setMajorTickSpacing(100);
-			borderOValue.setPaintTicks(true);
-			borderOValue.setPaintLabels(true);
-			borderOValue.setBounds(COLUMN1, y, RIGHT-COLUMN1, borderOValue.getPreferredSize().height);
-			if (mAnnotation.getBorderOpacity() != 100.0 || edgeColor.isSelected()) {
-				borderOValue.setEnabled(true);
-				// System.out.println("BorderOpacity = "+mAnnotation.getBorderOpacity());
-				borderOValue.setValue((int)mAnnotation.getBorderOpacity());
-			} else {
-				borderOValue.setValue(100);
-				borderOValue.setEnabled(false);
-			}
-			borderOValue.addChangeListener(new ChangeListener() {
-				public void stateChanged(ChangeEvent evt) {
-					updateBorderOpacity(borderOValue.getValue());
-				}
-			});
-			add(borderOValue);
-		}
-
-		// Border thickness
-		{
-			y = y+50;
-			JLabel jLabel6 = new JLabel();
-			jLabel6.setText("Border Thickness");
-			jLabel6.setBounds(LEFT, y, jLabel6.getPreferredSize().width, 14);
-			add(jLabel6);
-
-			eThickness = new javax.swing.JComboBox();
-			eThickness.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13" }));
-			eThickness.setSelectedIndex(1);
-			for(int i=0;i<eThickness.getModel().getSize();i++){
-				if( ((int)mAnnotation.getBorderWidth())==Integer.parseInt((String)eThickness.getModel().getElementAt(i)) ){
-					eThickness.setSelectedIndex(i);
-				break;
-				}
-			}
-			eThickness.addActionListener(new java.awt.event.ActionListener() {
-				public void actionPerformed(java.awt.event.ActionEvent evt) {
-				    eThicknessActionPerformed(evt);
-				}
-			});	 
-			eThickness.setBounds(COLUMN1, y, 42, 20);
-			add(eThickness);
-		}
-
-		y = y+35;
-		JLabel adjustmentsLabel = new JLabel("Image Adjustments");
-		adjustmentsLabel.setBounds(LEFT, y, adjustmentsLabel.getPreferredSize().width, 
-		                           adjustmentsLabel.getPreferredSize().height);
-		add(adjustmentsLabel);
-		// Image opacity
-		{
-			y = y+25;
-			JLabel opacityLabel = new JLabel("Opacity");
-			opacityLabel.setBounds(LEFT+5, y, opacityLabel.getPreferredSize().width, 20);
-			add(opacityLabel);
-
-			opacityValue = new JSlider(0, 100);
-			opacityValue.setMajorTickSpacing(100);
-			opacityValue.setPaintTicks(true);
-			opacityValue.setPaintLabels(true);
-			opacityValue.setEnabled(true);
-			if (mAnnotation.getImageOpacity() != 100.0 || edgeColor.isSelected()) {
-				opacityValue.setValue((int)(mAnnotation.getImageOpacity()*100));
-			} else {
-				opacityValue.setValue(100);
-			}
-			opacityValue.setBounds(COLUMN1, y, RIGHT-COLUMN1, opacityValue.getPreferredSize().height);
-			opacityValue.addChangeListener(new ChangeListener() {
-				public void stateChanged(ChangeEvent evt) {
-					updateOpacity(opacityValue.getValue());
-				}
-			});
-			add(opacityValue);
-		}
-
-		// Brightness
-		{
-			y = y+50;
-			JLabel lightLabel = new JLabel("Brightness");
-			lightLabel.setBounds(LEFT+5, y, lightLabel.getPreferredSize().width, 20);
-			add(lightLabel);
-
-			brightnessValue = new JSlider(-100, 100);
-			brightnessValue.setMajorTickSpacing(100);
-			brightnessValue.setPaintTicks(true);
-			brightnessValue.setPaintLabels(true);
-			brightnessValue.setValue(0);
-			brightnessValue.setBounds(COLUMN1, y, RIGHT-COLUMN1, brightnessValue.getPreferredSize().height);
-			brightnessValue.addChangeListener(new ChangeListener() {
-				public void stateChanged(ChangeEvent evt) {
-					updateBrightness(brightnessValue.getValue());
-				}
-			});
-			add(brightnessValue);
-		}
-
-		// Contrast
-		{
-			y = y+50;
-			JLabel contrastLabel = new JLabel("Contrast");
-			contrastLabel.setBounds(LEFT+5, y, contrastLabel.getPreferredSize().width, 20);
-			add(contrastLabel);
-
-			contrastValue = new JSlider(-100, 100);
-			contrastValue.setMajorTickSpacing(100);
-			contrastValue.setPaintTicks(true);
-			contrastValue.setPaintLabels(true);
-			contrastValue.setValue(0);
-			contrastValue.setBounds(COLUMN1, y, RIGHT-COLUMN1, contrastValue.getPreferredSize().height);
-			contrastValue.addChangeListener(new ChangeListener() {
-				public void stateChanged(ChangeEvent evt) {
-					updateContrast(contrastValue.getValue());
-				}
-			});
-			add(contrastValue);
-		}
-
-		iModifySAPreview();	
-	}
-	
-	public ImageAnnotationImpl getPreview(){
-		return preview;
-	}
-	
-	public void iModifySAPreview(){
-		preview.setBorderColor(mAnnotation.getBorderColor());
-		preview.setBorderWidth( Integer.parseInt( (String)(eThickness.getModel().getSelectedItem()) ) );
-		preview.setImageOpacity((float)opacityValue.getValue()/100.0f);
-		preview.setImageBrightness(brightnessValue.getValue());
-		preview.setImageContrast(contrastValue.getValue());
-		previewPanel.repaint();
-	}	
-	
-	public void modifySAPreview(){
-		preview.setBorderWidth( Integer.parseInt( (String)(eThickness.getModel().getSelectedItem()) ) );
-	
-		previewPanel.repaint();
-	}	    
-
-	private void edgeColorActionPerformed(java.awt.event.ActionEvent evt) {
-		//Edge Color
-		if(edgeColor.isSelected()) {
-			sECButton.setEnabled(true);
-			borderOValue.setEnabled(true);
-		} else {
-			sECButton.setEnabled(false);
-			preview.setBorderColor(null);
-			borderOValue.setEnabled(false);
-		}
-	}
-
-	private void eThicknessActionPerformed(java.awt.event.ActionEvent evt) {
-		//Edge Thickness
-		modifySAPreview();
-	}
-
-	private void sECButtonActionPerformed(java.awt.event.ActionEvent evt) {
-		//sECButton
-		final SelectColor sASelectColor=new SelectColor(mAnnotation.getBorderColor());
-		sASelectColor.setOKListener( new ActionListener() {
+		final JLabel label1 = new JLabel("Border Color:");
+		final JLabel label2 = new JLabel("Border Opacity:");
+		final JLabel label3 = new JLabel("Border Width:");
+		final JLabel label4 = new JLabel("Opacity:");
+		final JLabel label5 = new JLabel("Brightness:");
+		final JLabel label6 = new JLabel("Contrast:");
+		
+		borderColorCheck = new JCheckBox();
+		borderColorCheck.setSelected(annotation.getBorderColor() != null);
+		borderColorCheck.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent evt) {
-				Color clr = sASelectColor.getColor();
-				preview.setBorderColor(clr);
+				borderColorCheckActionPerformed(evt);
+			}
+		});
+
+		borderColorButton = new ColorButton((Color) preview.getBorderColor());
+		borderColorButton.setToolTipText("Select border color...");
+		borderColorButton.setEnabled(borderColorCheck.isSelected());
+		borderColorButton.addPropertyChangeListener("color", new PropertyChangeListener() {
+			@Override
+			public void propertyChange(PropertyChangeEvent evt) {
+				preview.setBorderColor((Color) evt.getNewValue());
 				previewPanel.repaint();
 			}
 		});
 		
-		sASelectColor.setSize(435, 420);
-		sASelectColor.setVisible(true);		
-		//2 -> EdgeColor
+		borderOpacitySlider = new JSlider(0, 100);
+		borderOpacitySlider.setMajorTickSpacing(100);
+		borderOpacitySlider.setMinorTickSpacing(25);
+		borderOpacitySlider.setPaintTicks(true);
+		borderOpacitySlider.setPaintLabels(true);
+
+		if (annotation.getBorderOpacity() != 100.0 || borderColorCheck.isSelected()) {
+			borderOpacitySlider.setEnabled(true);
+			borderOpacitySlider.setValue((int) annotation.getBorderOpacity());
+		} else {
+			borderOpacitySlider.setValue(100);
+			borderOpacitySlider.setEnabled(false);
+		}
+
+		borderOpacitySlider.addChangeListener(new ChangeListener() {
+			@Override
+			public void stateChanged(ChangeEvent evt) {
+				updateBorderOpacity(borderOpacitySlider.getValue());
+			}
+		});
+
+		borderWidthCombo = new JComboBox<>();
+		borderWidthCombo.setModel(new DefaultComboBoxModel<String>(
+				new String[] { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13" }));
+		borderWidthCombo.setSelectedIndex(1);
+
+		for (int i = 0; i < borderWidthCombo.getModel().getSize(); i++) {
+			if (((int) annotation.getBorderWidth()) == Integer
+					.parseInt((String) borderWidthCombo.getModel().getElementAt(i))) {
+				borderWidthCombo.setSelectedIndex(i);
+				break;
+			}
+		}
+
+		borderWidthCombo.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent evt) {
+				modifySAPreview();
+			}
+		});
+
+		opacitySlider = new JSlider(0, 100);
+		opacitySlider.setMajorTickSpacing(100);
+		opacitySlider.setMinorTickSpacing(25);
+		opacitySlider.setPaintTicks(true);
+		opacitySlider.setPaintLabels(true);
+		opacitySlider.setEnabled(true);
+
+		if (annotation.getImageOpacity() != 100.0 || borderColorCheck.isSelected())
+			opacitySlider.setValue((int) (annotation.getImageOpacity() * 100));
+		else
+			opacitySlider.setValue(100);
+
+		opacitySlider.addChangeListener(new ChangeListener() {
+			@Override
+			public void stateChanged(ChangeEvent evt) {
+				updateOpacity(opacitySlider.getValue());
+			}
+		});
+
+		brightnessSlider = new JSlider(-100, 100);
+		brightnessSlider.setMajorTickSpacing(100);
+		brightnessSlider.setMinorTickSpacing(25);
+		brightnessSlider.setPaintTicks(true);
+		brightnessSlider.setPaintLabels(true);
+		brightnessSlider.setValue(0);
+		brightnessSlider.addChangeListener(new ChangeListener() {
+			@Override
+			public void stateChanged(ChangeEvent evt) {
+				updateBrightness(brightnessSlider.getValue());
+			}
+		});
+
+		contrastSlider = new JSlider(-100, 100);
+		contrastSlider.setMajorTickSpacing(100);
+		contrastSlider.setMinorTickSpacing(25);
+		contrastSlider.setPaintTicks(true);
+		contrastSlider.setPaintLabels(true);
+		contrastSlider.setValue(0);
+		contrastSlider.addChangeListener(new ChangeListener() {
+			@Override
+			public void stateChanged(ChangeEvent evt) {
+				updateContrast(contrastSlider.getValue());
+			}
+		});
+		
+		final GroupLayout layout = new GroupLayout(this);
+		setLayout(layout);
+		layout.setAutoCreateContainerGaps(true);
+		layout.setAutoCreateGaps(!LookAndFeelUtil.isAquaLAF());
+		
+		layout.setHorizontalGroup(layout.createSequentialGroup()
+				.addGap(0, 20, Short.MAX_VALUE)
+				.addGroup(layout.createParallelGroup(TRAILING, true)
+						.addComponent(label1)
+						.addComponent(label2)
+						.addComponent(label3)
+						.addComponent(label4)
+						.addComponent(label5)
+						.addComponent(label6)
+				)
+				.addPreferredGap(ComponentPlacement.RELATED)
+				.addGroup(layout.createParallelGroup(Alignment.LEADING, true)
+						.addGroup(layout.createSequentialGroup()
+								.addComponent(borderColorCheck)
+								.addComponent(borderColorButton)
+						)
+						.addComponent(borderOpacitySlider, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addComponent(borderWidthCombo, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addComponent(opacitySlider, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addComponent(brightnessSlider, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addComponent(contrastSlider, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				)
+				.addGap(0, 20, Short.MAX_VALUE)
+		);
+		layout.setVerticalGroup(layout.createSequentialGroup()
+				.addGroup(layout.createParallelGroup(CENTER, false)
+						.addComponent(label1)
+						.addComponent(borderColorCheck)
+						.addComponent(borderColorButton, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				)
+				.addGroup(layout.createParallelGroup(LEADING, false)
+						.addComponent(label2)
+						.addComponent(borderOpacitySlider, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				)
+				.addGroup(layout.createParallelGroup(CENTER, false)
+						.addComponent(label3)
+						.addComponent(borderWidthCombo, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				)
+				.addGap(20)
+				.addGroup(layout.createParallelGroup(LEADING, false)
+						.addComponent(label4)
+						.addComponent(opacitySlider, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				)
+				.addGroup(layout.createParallelGroup(LEADING, false)
+						.addComponent(label5)
+						.addComponent(brightnessSlider, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				)
+				.addGroup(layout.createParallelGroup(LEADING, false)
+						.addComponent(label6)
+						.addComponent(contrastSlider, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				)
+		);
+
+		iModifySAPreview();
+	}
+
+	public ImageAnnotationImpl getPreview() {
+		return preview;
+	}
+
+	public void iModifySAPreview() {
+		preview.setBorderColor(annotation.getBorderColor());
+		preview.setBorderWidth(Integer.parseInt((String) (borderWidthCombo.getModel().getSelectedItem())));
+		preview.setImageOpacity((float) opacitySlider.getValue() / 100.0f);
+		preview.setImageBrightness(brightnessSlider.getValue());
+		preview.setImageContrast(contrastSlider.getValue());
+		previewPanel.repaint();
+	}
+
+	public void modifySAPreview() {
+		preview.setBorderWidth(Integer.parseInt((String) (borderWidthCombo.getModel().getSelectedItem())));
+		previewPanel.repaint();
+	}
+
+	private void borderColorCheckActionPerformed(ActionEvent evt) {
+		if (borderColorCheck.isSelected()) {
+			borderColorButton.setEnabled(true);
+			borderOpacitySlider.setEnabled(true);
+		} else {
+			borderColorButton.setEnabled(false);
+			preview.setBorderColor(null);
+			borderOpacitySlider.setEnabled(false);
+		}
 	}
 
 	private void updateBorderOpacity(int opacity) {
-		preview.setBorderOpacity((double)opacity);
+		preview.setBorderOpacity((double) opacity);
 		previewPanel.repaint();
 	}
 
 	private void updateOpacity(int opacity) {
-		preview.setImageOpacity((float)opacity/100.0f); 
+		preview.setImageOpacity((float) opacity / 100.0f);
 		previewPanel.repaint();
 	}
 
 	private void updateBrightness(int brightness) {
-		preview.setImageBrightness(brightness); 
+		preview.setImageBrightness(brightness);
 		previewPanel.repaint();
 	}
 
 	private void updateContrast(int contrast) {
-		preview.setImageContrast(contrast); 
+		preview.setImageContrast(contrast);
 		previewPanel.repaint();
 	}
-
-	private Paint mixColor(Paint p, int value) {
-		if (p == null || !(p instanceof Color)) return p;
-		Color c = (Color)p;
-		return new Color(c.getRed(), c.getGreen(), c.getBlue(), value*255/100);
-	}
 }
-

@@ -37,8 +37,6 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.VolatileImage;
 import java.awt.print.Printable;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ExecutorService;
 import java.util.List;
 import java.util.Properties;
 import java.util.Timer;
@@ -46,8 +44,8 @@ import java.util.TimerTask;
 
 import javax.swing.Icon;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 
-import org.cytoscape.application.NetworkViewRenderer;
 import org.cytoscape.ding.GraphView;
 import org.cytoscape.ding.impl.events.ViewportChangeListener;
 import org.cytoscape.model.CyEdge;
@@ -70,8 +68,8 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 	
 	private static final Dimension MIN_SIZE = new Dimension(180, 180);
 	
-	private static final Color VIEW_WINDOW_COLOR =  new Color(10, 10, 255, 80);
-	
+	private final Color VIEW_WINDOW_COLOR;
+	private final Color VIEW_WINDOW_BORDER_COLOR;
 	
 	// Ratio of the graph image to panel size 
 	private static final double SCALE_FACTOR = 0.97;
@@ -106,8 +104,8 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 	private int imageWidth;
 	private int imageHeight;
 	private Timer redrawTimer;
-	private UpdateImage redrawTask = null;
-	private	BirdsEyeViewLOD bevLOD = null;
+	private UpdateImage redrawTask;
+	private	BirdsEyeViewLOD bevLOD;
 
 	/**
 	 * Creates a new BirdsEyeView object.
@@ -116,8 +114,6 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 	 *            The view to monitor
 	 */
 	public BirdsEyeView(final DGraphView viewModel, final CyServiceRegistrar registrar) {
-		super();
-
 		if (viewModel == null)
 			throw new NullPointerException("DGraphView is null.");
 
@@ -126,6 +122,11 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 
 		m_cLis = new InnerContentChangeListener();
 		m_vLis = new InnerViewportChangeListener();
+		
+		Color c = UIManager.getColor("Table.focusCellBackground");
+		VIEW_WINDOW_COLOR = new Color(c.getRed(), c.getGreen(), c.getBlue(), 60);
+		c = UIManager.getColor("Table.background");
+		VIEW_WINDOW_BORDER_COLOR = new Color(c.getRed(), c.getGreen(), c.getBlue(), 90);
 
 		addMouseListener(new InnerMouseListener());
 		addMouseMotionListener(new InnerMouseMotionListener());
@@ -139,7 +140,6 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 
 		this.viewModel.m_navigationCanvas = this;
 	}
-
 	
 	private void initializeView(final GraphView view) {
 		viewModel.addContentChangeListener(m_cLis);
@@ -213,7 +213,6 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 		boundChanged = true;
 	}
 
-	
 	/**
 	 * Render actual image on the panel.
 	 */
@@ -297,6 +296,8 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 		// Draw the view area window		
 		g.setColor(VIEW_WINDOW_COLOR);
 		g.fillRect(x, y, rectWidth, rectHeight);
+		g.setColor(VIEW_WINDOW_BORDER_COLOR);
+		g.drawRect(x, y, rectWidth, rectHeight);
 		
 		boundChanged = false; imageUpdated = false;
 	}
@@ -320,8 +321,8 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 		repaint();
 	}
 
-	
-	@Override public void paint(Graphics g) {
+	@Override
+	public void paint(Graphics g) {
 		update(g);
 	}
 
@@ -329,6 +330,7 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 		/**
 		 * Will be called when something is changed in the main view.
 		 */
+		@Override
 		public void contentChanged() {
 			// System.out.println("ContentChanged: ");
 			imageUpdated = true;
@@ -342,6 +344,7 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 		/**
 		 * Update the view if panned.
 		 */
+		@Override
 		public void viewportChanged(int w, int h, double newXCenter, double newYCenter, double newScaleFactor) {
 			m_viewWidth = w;
 			m_viewHeight = h;
@@ -459,6 +462,7 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 		return DingRenderer.ID;
 	}
 
+	// XXX: Use javax.swing.Timer instead?  This would then be an ActionEvent.
 	class UpdateImage extends TimerTask {
 		private final double[] extents;
 		private final double xCenter;
@@ -474,6 +478,7 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 			this.g = g;
 		}
 
+		@Override
 		public void run() {
 			try {
 				final GraphicsConfiguration gc = getGraphicsConfiguration();
@@ -501,7 +506,9 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 			boundChanged = false;
 
 			// We need to do a repaint so that we get the selection area
-			repaint();
+			SwingUtilities.invokeLater(new Runnable() {
+				public void run() { repaint(); }
+			});
 		}
 	}
 }

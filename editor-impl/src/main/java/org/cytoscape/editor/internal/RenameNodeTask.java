@@ -24,7 +24,6 @@ package org.cytoscape.editor.internal;
  * #L%
  */
 
-import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
@@ -38,11 +37,12 @@ import org.cytoscape.work.Tunable;
 import org.cytoscape.work.undo.UndoSupport;
 
 public class RenameNodeTask extends AbstractTask {
+	
 	CyNetwork net = null;
 	CyNode node = null;
 	final UndoSupport undoSupport;
 
-	@Tunable(description="New name for node")
+	@Tunable(description="New name for node:")
 	public String newName = null;
 	
 	public RenameNodeTask(final CyNetworkView netView, final View<?extends CyIdentifiable> objView, 
@@ -54,6 +54,7 @@ public class RenameNodeTask extends AbstractTask {
 		}
 	}
 
+	@Override
 	public void run(TaskMonitor tm) throws Exception {
 		if (node == null) return;
 

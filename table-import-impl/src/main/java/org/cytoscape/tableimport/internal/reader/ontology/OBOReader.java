@@ -45,19 +45,20 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.io.read.CyNetworkReader;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.model.CyIdentifiable;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.tableimport.internal.util.OntologyDAGManager;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
@@ -70,7 +71,7 @@ public class OBOReader extends AbstractTask implements CyNetworkReader {
 
 	private static final Logger logger = LoggerFactory.getLogger(OBOReader.class);
 
-	private static final String[] COMPATIBLE_VERSIONS = { "1.2" };
+	//private static final String[] COMPATIBLE_VERSIONS = { "1.2" };
 	
 	public static final String DAG_ATTR = "Ontology DAG";
 	
@@ -81,47 +82,39 @@ public class OBOReader extends AbstractTask implements CyNetworkReader {
 	protected static final String TERM_TAG = "[Term]";
 	private List<String[]> interactionList;
 
-	private final CyNetworkViewFactory cyNetworkViewFactory;
-	private final CyNetworkFactory cyNetworkFactory;
-	private final CyEventHelper eventHelper;
-
 	// DAG
 	private CyNetwork ontologyDAG;
 	private CyNetwork[] networks;
 
 	private Map<String, String> header;
-
-	private final InputStream inputStream;
-
-	private final Map<String, CyNode> termID2nodeMap;
 	
+	private final InputStream inputStream;
+	private final Map<String, CyNode> termID2nodeMap;
 	private final String dagName;
+	private final CyServiceRegistrar serviceRegistrar;
 
-	public OBOReader(final String dagName, final InputStream oboStream, final CyNetworkViewFactory cyNetworkViewFactory,
-			final CyNetworkFactory cyNetworkFactory, final CyEventHelper eventHelper) {
+	public OBOReader(final String dagName, final InputStream oboStream, final CyServiceRegistrar serviceRegistrar) {
 		this.inputStream = oboStream;
-		this.cyNetworkFactory = cyNetworkFactory;
-		this.cyNetworkViewFactory = cyNetworkViewFactory;
-		this.eventHelper = eventHelper;
 		this.dagName = dagName;
+		this.serviceRegistrar = serviceRegistrar;
 
 		termID2nodeMap = new HashMap<String, CyNode>();
 		networks = new CyNetwork[1];
 		interactionList = new ArrayList<String[]>();
 	}
-
 	
 	@Override
 	public void run(TaskMonitor tm) throws Exception {
-
-		BufferedReader bufRd = new BufferedReader(new InputStreamReader(inputStream));
+		BufferedReader bufRd = new BufferedReader(new InputStreamReader(inputStream, Charset.forName("UTF-8").newDecoder()));
 		String line;
 
 		// Create new DAG
-		this.ontologyDAG = cyNetworkFactory.createNetwork();
+		this.ontologyDAG = serviceRegistrar.getService(CyNetworkFactory.class).createNetwork();
+		
 		try {
 			// Phase 1: read header information
 			header = new HashMap<String, String>();
+			
 			while ((line = bufRd.readLine()) != null) {
 				if (line.startsWith(TERM_TAG))
 					break;
@@ -130,6 +123,7 @@ public class OBOReader extends AbstractTask implements CyNetworkReader {
 				else if (line.trim().length() != 0)
 					parseHeader(line);
 			}
+			
 			mapHeader();
 
 			// Phase 2: read actual contents
@@ -147,7 +141,6 @@ public class OBOReader extends AbstractTask implements CyNetworkReader {
 		OntologyDAGManager.addOntologyDAG(dagName, ontologyDAG);
 		logger.debug("Number of terms loaded = " + this.termID2nodeMap.size());
 		termID2nodeMap.clear();
-		
 	}
 
 	private void parseHeader(final String line) {
@@ -177,7 +170,6 @@ public class OBOReader extends AbstractTask implements CyNetworkReader {
 		networkTable.getRow(ontologyDAG.getSUID()).set(DAG_ATTR, true);
 		ontologyDAG.getRow(ontologyDAG).set(CyNetwork.NAME, dagName);
 	}
-
 
 	private void readEntry(final BufferedReader rd) throws IOException {
 		String id = "";
@@ -349,8 +341,11 @@ public class OBOReader extends AbstractTask implements CyNetworkReader {
 	}
 
 	@Override
-	public CyNetworkView buildCyNetworkView(CyNetwork arg0) {
-		final CyNetworkView view = cyNetworkViewFactory.createNetworkView(ontologyDAG);
+	public CyNetworkView buildCyNetworkView(final CyNetwork net) {
+		final CyNetworkViewFactory netViewFactory = serviceRegistrar.getService(CyApplicationManager.class)
+				.getDefaultNetworkViewRenderer().getNetworkViewFactory();
+		final CyNetworkView view = netViewFactory.createNetworkView(ontologyDAG);
+		
 		return view;
 	}
 

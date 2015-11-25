@@ -47,9 +47,6 @@ public class GenericXGMMLReaderFactory extends AbstractNetworkReaderFactory {
 	private final XGMMLParser parser;
 	private final ReadDataManager readDataMgr;
 	private final UnrecognizedVisualPropertyManager unrecognizedVisualPropertyMgr;
-	private final CyNetworkManager cyNetworkManager;;
-	private final CyRootNetworkManager cyRootNetworkManager;
-	private CyApplicationManager cyApplicationManager;
 	
 	public GenericXGMMLReaderFactory(final CyFileFilter filter,
 			                         final CyNetworkViewFactory cyNetworkViewFactory,
@@ -61,20 +58,16 @@ public class GenericXGMMLReaderFactory extends AbstractNetworkReaderFactory {
 									 final CyNetworkManager cyNetworkManager, 
 									 final CyRootNetworkManager cyRootNetworkManager,
 									 final CyApplicationManager cyApplicationManager) {
-		super(filter, cyNetworkViewFactory, cyNetworkFactory);
+		super(filter, cyApplicationManager, cyNetworkFactory, cyNetworkManager, cyRootNetworkManager);
 		this.renderingEngineMgr = renderingEngineMgr;
 		this.readDataMgr = readDataMgr;
 		this.parser = parser;
 		this.unrecognizedVisualPropertyMgr = unrecognizedVisualPropertyMgr;
-		this.cyNetworkManager = cyNetworkManager;
-		this.cyRootNetworkManager = cyRootNetworkManager;
-		this.cyApplicationManager = cyApplicationManager;
 	}
 
 	@Override
 	public TaskIterator createTaskIterator(InputStream inputStream, String inputName) {
-		return new TaskIterator(new GenericXGMMLReader(inputStream, cyNetworkViewFactory, cyNetworkFactory,
-				renderingEngineMgr, readDataMgr, parser, unrecognizedVisualPropertyMgr, cyNetworkManager, 
-				cyRootNetworkManager, cyApplicationManager));
+		return new TaskIterator(new GenericXGMMLReader(inputStream, cyNetworkFactory, renderingEngineMgr, readDataMgr,
+				parser, unrecognizedVisualPropertyMgr, cyNetworkManager, cyRootNetworkManager, cyApplicationManager));
 	}
 }

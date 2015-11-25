@@ -25,41 +25,24 @@ package org.cytoscape.task.internal.networkobjects;
  */
 
 
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.task.destroy.DeleteSelectedNodesAndEdgesTaskFactory;
-import org.cytoscape.view.model.CyNetworkViewManager;
-import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.AbstractNetworkTaskFactory;
+import org.cytoscape.task.destroy.DeleteSelectedNodesAndEdgesTaskFactory;
 import org.cytoscape.work.TaskIterator;
-import org.cytoscape.work.undo.UndoSupport;
 
 
-public class DeleteSelectedNodesAndEdgesTaskFactoryImpl extends AbstractNetworkTaskFactory implements DeleteSelectedNodesAndEdgesTaskFactory {
-	private final CyApplicationManager appMgr;
-	private final UndoSupport undoSupport;
-	private final CyNetworkViewManager networkViewManager;
-	private final VisualMappingManager visualMappingManager;
-	private final CyEventHelper eventHelper;
+public class DeleteSelectedNodesAndEdgesTaskFactoryImpl extends AbstractNetworkTaskFactory implements
+		DeleteSelectedNodesAndEdgesTaskFactory {
+	
+	private final CyServiceRegistrar serviceRegistrar;
 
-	public DeleteSelectedNodesAndEdgesTaskFactoryImpl(final CyApplicationManager appMgr,
-	                                                  final UndoSupport undoSupport,
-	                                                  final CyNetworkViewManager networkViewManager,
-	                                                  final VisualMappingManager visualMappingManager,
-	                                                  final CyEventHelper eventHelper)
-	{
-		this.undoSupport          = undoSupport;
-		this.networkViewManager   = networkViewManager;
-		this.visualMappingManager = visualMappingManager;
-		this.eventHelper          = eventHelper;
-		this.appMgr               = appMgr;
+	public DeleteSelectedNodesAndEdgesTaskFactoryImpl(final CyServiceRegistrar serviceRegistrar) {
+		this.serviceRegistrar = serviceRegistrar;
 	}
 
+	@Override
 	public TaskIterator createTaskIterator(CyNetwork network) {
-		return new TaskIterator(
-			new DeleteSelectedNodesAndEdgesTask(network, appMgr, undoSupport, 
-							    networkViewManager,
-							    visualMappingManager, eventHelper));
+		return new TaskIterator(new DeleteSelectedNodesAndEdgesTask(network, serviceRegistrar));
 	}
 }

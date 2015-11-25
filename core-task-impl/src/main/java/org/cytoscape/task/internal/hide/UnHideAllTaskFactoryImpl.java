@@ -25,29 +25,13 @@ package org.cytoscape.task.internal.hide;
  */
 
 
-import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.task.AbstractNetworkViewTaskFactory;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.hide.UnHideAllTaskFactory;
-import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.vizmap.VisualMappingManager;
-import org.cytoscape.work.TaskIterator;
-import org.cytoscape.work.undo.UndoSupport;
 
 
-public class UnHideAllTaskFactoryImpl extends AbstractNetworkViewTaskFactory implements UnHideAllTaskFactory {
-	private final UndoSupport undoSupport;
-	private final CyEventHelper eventHelper;
-	private final VisualMappingManager vmMgr;
-
-	public UnHideAllTaskFactoryImpl(final UndoSupport undoSupport,
-									final CyEventHelper eventHelper,
-									final VisualMappingManager vmMgr) {
-		this.undoSupport = undoSupport;
-		this.eventHelper = eventHelper;
-		this.vmMgr = vmMgr;
+public class UnHideAllTaskFactoryImpl extends AbstractUnHideTaskFactory implements UnHideAllTaskFactory {
+	
+	public UnHideAllTaskFactoryImpl(final CyServiceRegistrar serviceRegistrar) {
+		super("Show all nodes and edges", true, true, serviceRegistrar);
 	}
-
-	public TaskIterator createTaskIterator(CyNetworkView view) {
-		return new TaskIterator(new UnHideAllTask(undoSupport, eventHelper, vmMgr, view));
-	} 
 }

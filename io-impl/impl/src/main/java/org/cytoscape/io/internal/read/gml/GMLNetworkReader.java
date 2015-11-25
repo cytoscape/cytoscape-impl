@@ -51,7 +51,6 @@ import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualProperty;
@@ -120,7 +119,7 @@ public class GMLNetworkReader extends AbstractCyNetworkReader {
 	private static String ARROW_LAST = "last";
 
 	private static String OUTLINE_WIDTH = "outline_width";
-	private static String DEFAULT_EDGE_INTERACTION = "pp";
+	private static String DEFAULT_EDGE_INTERACTION = "interacts with";
 
 	private static final String VIZMAP_PREFIX = "vizmap:";
 
@@ -144,6 +143,7 @@ public class GMLNetworkReader extends AbstractCyNetworkReader {
 	private Vector<String> nodeNames;
 	private List<Map<String, Object>> nodeAttributes;
 	private List<Map<String, Object>> edgeAttributes;
+	private boolean graphDirected = true; // use pre-3.0 cytoscape's as default
 
 	private final RenderingEngineManager renderingEngineManager;
 	private final UnrecognizedVisualPropertyManager unrecognizedVisualPropertyMgr;
@@ -186,14 +186,13 @@ public class GMLNetworkReader extends AbstractCyNetworkReader {
 
 	public GMLNetworkReader(
 			final InputStream inputStream,
+			final CyApplicationManager cyApplicationManager,
 			final CyNetworkFactory networkFactory,
-			final CyNetworkViewFactory viewFactory,
 			final RenderingEngineManager renderingEngineManager,
 			final UnrecognizedVisualPropertyManager unrecognizedVisualPropertyMgr,
 			final CyNetworkManager cyNetworkManager,
 			final CyRootNetworkManager cyRootNetworkManager) {
-		
-		super(inputStream, viewFactory, networkFactory, cyNetworkManager, cyRootNetworkManager);
+		super(inputStream, cyApplicationManager, networkFactory, cyNetworkManager, cyRootNetworkManager);
 		this.renderingEngineManager = renderingEngineManager;
 		this.unrecognizedVisualPropertyMgr = unrecognizedVisualPropertyMgr;
 
@@ -207,12 +206,14 @@ public class GMLNetworkReader extends AbstractCyNetworkReader {
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
 		taskMonitor.setProgress(0.0);
+		
 		try {
 			keyVals = (new GMLParser(inputStream)).parseList();
 		} catch (Exception io) {
 			io.printStackTrace();
 			throw new RuntimeException(io.getMessage());
 		}
+		
 		taskMonitor.setProgress(0.05);
 		initializeStructures();
 		taskMonitor.setProgress(0.1);
@@ -220,7 +221,8 @@ public class GMLNetworkReader extends AbstractCyNetworkReader {
 		taskMonitor.setProgress(0.3);
 
 		final CyRootNetwork rootNetwork = getRootNetwork();
-		if(rootNetwork != null) {
+		
+		if (rootNetwork != null) {
 			this.network = rootNetwork.addSubNetwork();
 		} else {
 			// Need to create new network with new root.
@@ -229,13 +231,14 @@ public class GMLNetworkReader extends AbstractCyNetworkReader {
 
 		createGraph(taskMonitor);
 		taskMonitor.setProgress(0.8);
+		
 		this.networks = new CyNetwork[] { network };
 		taskMonitor.setProgress(1.0);
 	}
 
 	@Override
 	public CyNetworkView buildCyNetworkView(CyNetwork network) {
-		view = cyNetworkViewFactory.createNetworkView(network);
+		view = getNetworkViewFactory().createNetworkView(network);
 
 		releaseStructures();
 		layout(view);
@@ -411,6 +414,8 @@ public class GMLNetworkReader extends AbstractCyNetworkReader {
 				readNode((List<KeyValue>) keyVal.value);
 			else if (keyVal.key.equals(EDGE))
 				readEdge((List<KeyValue>) keyVal.value);
+			else if (keyVal.key.equals(IS_DIRECTED))
+				graphDirected = ((Integer)keyVal.value).intValue() ==  1;
 		}
 	}
 
@@ -478,7 +483,7 @@ public class GMLNetworkReader extends AbstractCyNetworkReader {
 		String label = DEFAULT_EDGE_INTERACTION;
 		boolean containsSource = false;
 		boolean containsTarget = false;
-		Boolean isDirected = Boolean.TRUE; // use pre-3.0 cytoscape's as default
+		boolean isDirected = graphDirected; // default to the graph setting
 		int source = 0;
 		int target = 0;
 		KeyValue rootIndexPair = null;
@@ -496,13 +501,20 @@ public class GMLNetworkReader extends AbstractCyNetworkReader {
 			} else if (keyVal.key.equals(ROOT_INDEX)) {
 				rootIndexPair = keyVal;
 			} else if (keyVal.key.equals(IS_DIRECTED)) {
-				if (((Integer) keyVal.value) == 1) {
-					isDirected = Boolean.FALSE;
-				} else {
-					isDirected = Boolean.TRUE;
+				// graph setting can be overridden by 'directed' attribute on an edge
+				if(keyVal.value instanceof Integer) {
+					isDirected = ((Integer)keyVal.value) == 1;
 				}
-			} else if (!keyVal.key.equals(GRAPHICS)
-					&& !keyVal.key.startsWith(VIZMAP_PREFIX)) {
+				else if(keyVal.value instanceof String) {
+					String v = (String)keyVal.value;
+					// custom to Cytoscape
+					isDirected = v.equalsIgnoreCase("y") || v.equalsIgnoreCase("yes") || v.equalsIgnoreCase("true") || v.equals("1");
+				}
+				else {
+					// if the 'directed' attribute exists but its value is not interpreted as 'true' then it is false
+					isDirected = false; 
+				}
+			} else if (!keyVal.key.equals(GRAPHICS) && !keyVal.key.startsWith(VIZMAP_PREFIX)) {
 				attr.put(keyVal.key, keyVal.value);
 			}
 		}

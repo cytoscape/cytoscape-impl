@@ -40,6 +40,7 @@ import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTableUtil;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.AbstractNetworkTask;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
@@ -52,49 +53,36 @@ public class IndexAndSearchTask extends AbstractNetworkTask {
 	
 	private static final Logger logger = LoggerFactory.getLogger(IndexAndSearchTask.class);
 	
-	private boolean interrupted = false;
-	
 	private final EnhancedSearch enhancedSearch;
-	private final CyNetworkViewManager viewManager;
-	private final CyApplicationManager appManager;
-
-	public String query;
+	private final String query;
+	
+	private final CyServiceRegistrar serviceRegistrar;
 
 	/**
 	 * The constructor. Any necessary data that is <i>not</i> provided by
 	 * the user should be provided as arguments to the constructor.
 	 */
-	public IndexAndSearchTask(final CyNetwork network, final EnhancedSearch enhancedSearch,
-			final String query, final CyNetworkViewManager viewManager,
-			final CyApplicationManager appManager) {
-
-		// Will set a CyNetwork field called "net".
+	public IndexAndSearchTask(final CyNetwork network, final EnhancedSearch enhancedSearch, final String query,
+			final CyServiceRegistrar serviceRegistrar) {
 		super(network);
 		this.enhancedSearch = enhancedSearch;
 		this.query = query;
-		this.viewManager = viewManager;
-		this.appManager = appManager;
+		this.serviceRegistrar = serviceRegistrar;
 	}
 
 	@Override
 	public void run(final TaskMonitor taskMonitor) {
-				
-		logger.debug("Index and search start.");
-		
 		// Give the task a title.
 		taskMonitor.setTitle("Searching the network");
 
 		// Index the given network or use existing index
 		RAMDirectory idx = null;
-
 		final String status = enhancedSearch.getNetworkIndexStatus(network);
-		logger.debug("Index status = " + status);
 		
-		if (status != null && status.equalsIgnoreCase(EnhancedSearch.INDEX_SET) && !EnhancedSearchPlugin.attributeChanged)
-		{
+		if (status != null && status.equalsIgnoreCase(EnhancedSearch.INDEX_SET)
+				&& !EnhancedSearchPlugin.attributeChanged) {
 			idx = enhancedSearch.getNetworkIndex(network);
-		}
-		else {
+		} else {
 			taskMonitor.setStatusMessage("Indexing network");
 			final EnhancedSearchIndex indexHandler = new EnhancedSearchIndex(network, taskMonitor);
 			idx = indexHandler.getIndex();
@@ -102,7 +90,7 @@ public class IndexAndSearchTask extends AbstractNetworkTask {
 			EnhancedSearchPlugin.attributeChanged = false;
 		}
 
-		if (interrupted)
+		if (cancelled)
 			return;
 
 		// Execute query
@@ -110,28 +98,32 @@ public class IndexAndSearchTask extends AbstractNetworkTask {
 		EnhancedSearchQuery queryHandler = new EnhancedSearchQuery(network, idx);
 		queryHandler.executeQuery(query);
 
-		if (interrupted)
+		if (cancelled)
 			return;
 		
 		showResults(queryHandler, taskMonitor);
 		updateView();
-		
 	}
 
 	/**
 	 * If view(s) exists for the current network, update them.
 	 */
 	private void updateView() {
+		final CyNetworkViewManager viewManager = serviceRegistrar.getService(CyNetworkViewManager.class);
+		final CyApplicationManager appManager = serviceRegistrar.getService(CyApplicationManager.class);
+		
 		final Collection<CyNetworkView> views = viewManager.getNetworkViews(network);
 		CyNetworkView targetView = null;
-		if(views.size() != 0)
+		
+		if (views.size() != 0)
 			targetView = views.iterator().next();
-		
-		if(targetView != null)
+
+		if (targetView != null)
 			targetView.updateView();
-		
+
 		final CyNetworkView view = appManager.getCurrentNetworkView();
-		if(view != null )
+		
+		if (view != null)
 			view.updateView();
 	}
 
@@ -142,6 +134,7 @@ public class IndexAndSearchTask extends AbstractNetworkTask {
 
 		int nodeHitCount = queryHandler.getNodeHitCount();
 		int edgeHitCount = queryHandler.getEdgeHitCount();
+		
 		if (nodeHitCount == 0 && edgeHitCount == 0) {
 			taskMonitor.setStatusMessage("Could not find any match.");
 			taskMonitor.setTitle("Search Finished");
@@ -159,15 +152,14 @@ public class IndexAndSearchTask extends AbstractNetworkTask {
 		}
 
 		List<CyNode> nodeList = CyTableUtil.getNodesInState(network, CyNetwork.SELECTED, true);
-		for (CyNode n : nodeList) {
-			network.getRow(n).set(CyNetwork.SELECTED,false);
-		}
-		List<CyEdge> edgeList = CyTableUtil.getEdgesInState(network, CyNetwork.SELECTED, true);
-		for (CyEdge e : edgeList) {
-			network.getRow(e).set(CyNetwork.SELECTED, false);
-		}
-
 		
+		for (CyNode n : nodeList)
+			network.getRow(n).set(CyNetwork.SELECTED,false);
+		
+		List<CyEdge> edgeList = CyTableUtil.getEdgesInState(network, CyNetwork.SELECTED, true);
+		
+		for (CyEdge e : edgeList)
+			network.getRow(e).set(CyNetwork.SELECTED, false);
 
 		taskMonitor.setStatusMessage("Selecting " + nodeHitCount + " and " + edgeHitCount + " edges");
 
@@ -176,33 +168,31 @@ public class IndexAndSearchTask extends AbstractNetworkTask {
 
 		final Iterator<String> nodeIt = nodeHits.iterator();
 		int numCompleted = 0;
-		while (nodeIt.hasNext() && !interrupted) {
+
+		while (nodeIt.hasNext() && !cancelled) {
 			int currESPIndex = Integer.parseInt(nodeIt.next().toString());
 			CyNode currNode = network.getNode(currESPIndex);
+
 			if (currNode != null)
 				network.getRow(currNode).set(CyNetwork.SELECTED, true);
 			else
-				System.out.println("Unknown node identifier " + (currESPIndex));
+				logger.warn("Unknown node identifier " + (currESPIndex));
 
 			taskMonitor.setProgress(numCompleted++ / nodeHitCount);
 		}
 
 		final Iterator<String> edgeIt = edgeHits.iterator();
 		numCompleted = 0;
-		while (edgeIt.hasNext() && !interrupted) {
+
+		while (edgeIt.hasNext() && !cancelled) {
 			int currESPIndex = Integer.parseInt(edgeIt.next().toString());
 			CyEdge currEdge = network.getEdge(currESPIndex);
 			if (currEdge != null)
 				network.getRow(currEdge).set(CyNetwork.SELECTED, true);
 			else
-				System.out.println("Unknown edge identifier " + (currESPIndex));
+				logger.warn("Unknown edge identifier " + (currESPIndex));
 
 			taskMonitor.setProgress(++numCompleted / edgeHitCount);
 		}
-	}
-
-	@Override
-	public void cancel() {
-		this.interrupted = true;
 	}
 }

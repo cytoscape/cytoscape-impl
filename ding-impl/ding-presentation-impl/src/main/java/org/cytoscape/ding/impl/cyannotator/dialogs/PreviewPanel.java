@@ -1,5 +1,9 @@
 package org.cytoscape.ding.impl.cyannotator.dialogs;
 
+import static javax.swing.GroupLayout.DEFAULT_SIZE;
+import static javax.swing.GroupLayout.PREFERRED_SIZE;
+import static javax.swing.GroupLayout.Alignment.LEADING;
+
 /*
  * #%L
  * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
@@ -24,50 +28,75 @@ package org.cytoscape.ding.impl.cyannotator.dialogs;
  * #L%
  */
 
-
 import java.awt.Color;
-import java.awt.Graphics;
-import java.awt.Paint;
 
 import javax.swing.BorderFactory;
+import javax.swing.GroupLayout;
 import javax.swing.JComponent;
-import javax.swing.JFrame;
-import javax.swing.border.TitledBorder;
-
-import java.awt.Component;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.UIManager;
 
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
 
-public class PreviewPanel extends javax.swing.JPanel {
-	DingAnnotation mAnnotation;
+@SuppressWarnings("serial")
+public class PreviewPanel extends JPanel {
+	
+	private final DingAnnotation annotation;
 
-	public PreviewPanel(DingAnnotation annotation, int width, int height) {
-		this.mAnnotation=annotation;
-		JComponent c = mAnnotation.getComponent();
-		mAnnotation.setUsedForPreviews(true);
+	public PreviewPanel(DingAnnotation annotation) {
+		this.annotation = annotation;
 		
-		// System.out.println("Panel size = "+width+"x"+height);
-		// System.out.println("Annotation size = "+c.getWidth()+"x"+c.getHeight());
-		c.setLocation((width-c.getWidth())/2+5,(height-c.getHeight())/2+5);
+		annotation.setUsedForPreviews(true);
+		final Color background = (Color) annotation.getCyAnnotator().getView().getBackgroundPaint();
+		
+		final JComponent c = annotation.getComponent();
 		c.setOpaque(false);
+		c.setBackground(new Color(255, 255, 255, 0)); // Make the component background transparent
 
-		// Get the background paint for this view
-		Paint backgroundPaint = mAnnotation.getCyAnnotator().getView().getBackgroundPaint();
-		setBackground((Color)backgroundPaint); // Set our background to match
-		c.setBackground(new Color(255,255,255,0)); // Make our background transparent
-
-		// Border it
-		TitledBorder title = BorderFactory.createTitledBorder("Preview");
-		setBorder(title);
-		setLayout(null);
-
-		// Create the preview panel
+		final JLabel label = new JLabel("Preview:");
+		
+		final JPanel panel = new JPanel();
+		panel.setBorder(BorderFactory.createLineBorder(UIManager.getColor("Separator.foreground")));
+		panel.setBackground(background); // Set our background to match
+		
+		{
+			final GroupLayout layout = new GroupLayout(panel);
+			panel.setLayout(layout);
+			layout.setAutoCreateContainerGaps(false);
+			layout.setAutoCreateGaps(false);
+			
+			layout.setHorizontalGroup(layout.createSequentialGroup()
+					.addGap(10, 20, Short.MAX_VALUE)
+					.addComponent(c, c.getWidth(), c.getWidth(), PREFERRED_SIZE)
+					.addGap(10, 20, Short.MAX_VALUE)
+			);
+			layout.setVerticalGroup(layout.createSequentialGroup()
+					.addGap(10, 20, Short.MAX_VALUE)
+					.addComponent(c, c.getHeight(), c.getHeight(), PREFERRED_SIZE)
+					.addGap(10, 20, Short.MAX_VALUE)
+			);
+		}
+		
+		final GroupLayout layout = new GroupLayout(this);
+		setLayout(layout);
+		layout.setAutoCreateContainerGaps(true);
+		layout.setAutoCreateGaps(true);
+		
+		layout.setHorizontalGroup(layout.createParallelGroup(LEADING, true)
+				.addComponent(label)
+				.addComponent(panel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+		);
+		layout.setVerticalGroup(layout.createSequentialGroup()
+				.addComponent(label, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				.addComponent(panel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+		);
+		
 		add(c);
-		setBounds(10,10,width,height);
 		repaint();
 	}
 
-	public DingAnnotation getPreviewAnnotation() {
-		return mAnnotation;
+	public DingAnnotation getAnnotation() {
+		return annotation;
 	}
 }

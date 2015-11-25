@@ -59,8 +59,8 @@ import org.cytoscape.view.vizmap.gui.editor.ContinuousMappingCellRendererFactory
 import org.cytoscape.view.vizmap.gui.editor.EditorManager;
 import org.cytoscape.view.vizmap.gui.editor.ListEditor;
 import org.cytoscape.view.vizmap.gui.editor.ValueEditor;
-import org.cytoscape.view.vizmap.gui.editor.VisualPropertyValueEditor;
 import org.cytoscape.view.vizmap.gui.editor.VisualPropertyEditor;
+import org.cytoscape.view.vizmap.gui.editor.VisualPropertyValueEditor;
 import org.cytoscape.view.vizmap.gui.internal.model.AttributeSetProxy;
 import org.cytoscape.view.vizmap.gui.internal.model.MappingFunctionFactoryProxy;
 import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
@@ -275,6 +275,13 @@ public class EditorManagerImpl implements EditorManager {
 			return (ValueEditor<V>) this.valueEditors.get(dataType);
 		}
 	}
+	
+	@SuppressWarnings("unchecked")
+	public <V> VisualPropertyValueEditor<V> getVisualPropertyValueEditor(final VisualProperty<V> vp) {
+		synchronized (mutex) {
+			return (VisualPropertyValueEditor<V>) vizPropValueEditors.get(vp.getRange().getType());
+		}
+	}
 
 	/**
 	 * Editor name is NODE, EDGE, or NETWORK.
@@ -321,14 +328,16 @@ public class EditorManagerImpl implements EditorManager {
 					continue;
 	
 				if (range instanceof DiscreteRange<?>) {
-					if (this.getValueEditor(range.getType()) == null) {
-						final DiscreteValueEditor<?> valEditor = new DiscreteValueEditor(range.getType(),
-								((DiscreteRange) range).values(), vp, servicesUtil);
-						this.addValueEditor(valEditor, null);
+					DiscreteValueEditor<?> valEditor = (DiscreteValueEditor) getVisualPropertyValueEditor(vp);
+					
+					if (valEditor == null) {
+						valEditor = new DiscreteValueEditor(range.getType(), ((DiscreteRange) range).values(),
+								servicesUtil);
+						this.addVisualPropertyValueEditor(valEditor, null);
 					}
 	
-					final CyDiscreteValuePropertyEditor<?> discretePropEditor = new CyDiscreteValuePropertyEditor(
-							(DiscreteValueEditor) this.getValueEditor(range.getType()));
+					final CyDiscreteValuePropertyEditor<?> discretePropEditor =
+							new CyDiscreteValuePropertyEditor(valEditor);
 					
 					final Set values = ((DiscreteRange)range).values();
 					// FIXME how can we manage the custom icon size based on value type?

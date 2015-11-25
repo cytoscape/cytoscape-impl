@@ -43,7 +43,11 @@ public class NodeLinkoutTaskFactory extends AbstractNodeViewTaskFactory {
 	}
 
 	public TaskIterator createTaskIterator(View<CyNode> nodeView, CyNetworkView netView) {
-		return new TaskIterator(new LinkoutTask(link, browser, netView.getModel(), nodeView.getModel()));
+		return new TaskIterator(createTask(nodeView, netView));
+	}
+	
+	private LinkoutTask createTask(View<CyNode> nodeView, CyNetworkView netView) {
+		return new LinkoutTask(link, browser, netView.getModel(), nodeView.getModel());
 	}
 
 	public String getLink() {
@@ -52,5 +56,13 @@ public class NodeLinkoutTaskFactory extends AbstractNodeViewTaskFactory {
 
 	public void setLink(String link) {
 		this.link = link;
+	}
+	
+	@Override
+	public boolean isReady(View<CyNode> nodeView, CyNetworkView netView) {
+		if(!super.isReady(nodeView, netView))
+			return false;
+		LinkoutTask task = createTask(nodeView, netView);
+		return task.isValidUrl();
 	}
 }

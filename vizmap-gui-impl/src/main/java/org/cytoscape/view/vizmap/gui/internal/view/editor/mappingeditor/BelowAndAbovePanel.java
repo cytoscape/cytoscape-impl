@@ -38,6 +38,7 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 import javax.swing.JPanel;
+import javax.swing.UIManager;
 
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.vizmap.mappings.BoundaryRangeValues;
@@ -48,7 +49,8 @@ final class BelowAndAbovePanel extends JPanel {
 
 	private final static long serialVersionUID = 1202339876961477L;
 
-	private static final Stroke OUTLINE_STROKE = new BasicStroke(1.0f);
+	public static final int ARROW_SIZE = 18;
+	public static final Stroke OUTLINE_STROKE = new BasicStroke(1.0f);
 
 	private final VisualProperty<?> vp;
 	private final boolean isBelow;
@@ -77,6 +79,7 @@ final class BelowAndAbovePanel extends JPanel {
 		});
 	}
 
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private void processDoubleClick(MouseEvent e) {
 		if (e.getClickCount() == 2) {
 			Object newValue = null;
@@ -129,7 +132,9 @@ final class BelowAndAbovePanel extends JPanel {
 	public void setColor(final Color newColor) {
 		this.boxColor = newColor;
 		this.repaint();
-		this.getParent().repaint();
+		
+		if (this.getParent() != null)
+			this.getParent().repaint();
 	}
 
 	/**
@@ -146,17 +151,20 @@ final class BelowAndAbovePanel extends JPanel {
 		g2d.setColor(boxColor);
 
 		if (isBelow) {
-			poly.addPoint(18, 0);
-			poly.addPoint(18, 20);
-			poly.addPoint(0, 10);
+			final int cw = getSize().width; // component width
+			
+			poly.addPoint(cw, 0);
+			poly.addPoint(cw, ARROW_SIZE);
+			poly.addPoint(cw - ARROW_SIZE, ARROW_SIZE / 2);
 		} else {
 			poly.addPoint(0, 0);
-			poly.addPoint(0, 20);
-			poly.addPoint(18, 10);
+			poly.addPoint(0, ARROW_SIZE);
+			poly.addPoint(ARROW_SIZE, ARROW_SIZE / 2);
 		}
 
 		g2d.fillPolygon(poly);
-		g2d.setColor(Color.DARK_GRAY);
+		
+		g2d.setColor(UIManager.getColor("Label.disabledForeground"));
 		g2d.draw(poly);
 	}
 }

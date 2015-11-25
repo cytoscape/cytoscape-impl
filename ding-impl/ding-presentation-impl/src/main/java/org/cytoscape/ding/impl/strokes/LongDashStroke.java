@@ -27,7 +27,6 @@ package org.cytoscape.ding.impl.strokes;
 import java.awt.BasicStroke;
 
 public class LongDashStroke extends BasicStroke implements WidthStroke {
-
 	float width;
 
 	public LongDashStroke(float width) {

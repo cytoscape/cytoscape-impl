@@ -41,7 +41,7 @@ class FinalStatusMessageUpdateTask extends AbstractTask {
 
 	public void run(final TaskMonitor taskMonitor) throws Exception {
 		for (CyTable table : reader.getTables())
-			taskMonitor.setStatusMessage("Successfully loaded attribute table: " + table.getTitle());
+			taskMonitor.setStatusMessage("Successfully loaded table: " + table.getTitle());
 
 		taskMonitor.setProgress(1.0);
 	}

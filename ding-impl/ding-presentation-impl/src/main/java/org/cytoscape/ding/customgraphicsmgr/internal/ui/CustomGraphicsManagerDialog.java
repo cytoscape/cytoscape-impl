@@ -24,6 +24,9 @@ package org.cytoscape.ding.customgraphicsmgr.internal.ui;
  * #L%
  */
 
+import static javax.swing.GroupLayout.DEFAULT_SIZE;
+import static javax.swing.GroupLayout.PREFERRED_SIZE;
+
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -33,21 +36,28 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 
 import javax.imageio.ImageIO;
+import javax.swing.AbstractAction;
+import javax.swing.BorderFactory;
 import javax.swing.GroupLayout;
+import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
+import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
-import javax.swing.LayoutStyle;
+import javax.swing.UIManager;
 import javax.swing.WindowConstants;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
 import org.cytoscape.ding.customgraphics.bitmap.URLImageCustomGraphics;
-import org.cytoscape.ding.internal.util.IconManager;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.util.swing.IconManager;
+import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,19 +67,20 @@ import org.slf4j.LoggerFactory;
  * Main UI for managing on-memory library of Custom Graphics
  * 
  */
-public class CustomGraphicsManagerDialog extends javax.swing.JDialog {
+public class CustomGraphicsManagerDialog extends JDialog {
 
 	private static final long serialVersionUID = 7681270324415099781L;
 	
 	private static final Logger logger = LoggerFactory.getLogger(CustomGraphicsManagerDialog.class);
 	
 	private JButton addButton;
-	private JPanel buttonPanel;
 	private JButton deleteButton;
+	private JButton closeButton;
 	private JScrollPane leftScrollPane;
 	private JSplitPane mainSplitPane;
 	private JScrollPane rightScrollPane;
-	
+	private JPanel leftPanel;
+	private JPanel buttonPanel;
 	
 	// List of graphics available
 	private final CustomGraphicsBrowser browser;
@@ -78,44 +89,66 @@ public class CustomGraphicsManagerDialog extends javax.swing.JDialog {
 	private final CustomGraphicsManager manager;
 	private final IconManager iconManager;
 
-	public CustomGraphicsManagerDialog(final CustomGraphicsManager manager, final CyApplicationManager appManager,
-			final CustomGraphicsBrowser browser, final IconManager iconManager) {
+	public CustomGraphicsManagerDialog(
+			final CustomGraphicsManager manager,
+			final CustomGraphicsBrowser browser,
+			final CyServiceRegistrar serviceRegistrar
+	) {
+		super(serviceRegistrar.getService(CySwingApplication.class).getJFrame(), ModalityType.APPLICATION_MODAL);
+		
 		if (browser == null)
 			throw new NullPointerException("CustomGraphicsBrowser is null.");
 
 		this.manager = manager;
 		this.browser = browser;
-		this.iconManager = iconManager;
+		this.iconManager = serviceRegistrar.getService(IconManager.class);
 		
-		this.setModal(false);
 		initComponents();
 
-		detail = new CustomGraphicsDetailPanel(appManager);
+		detail = new CustomGraphicsDetailPanel(serviceRegistrar.getService(CyApplicationManager.class));
 
 		this.leftScrollPane.setViewportView(browser);
 		this.rightScrollPane.setViewportView(detail);
-		this.setPreferredSize(new Dimension(850, 550));
-		this.setTitle("Custom Graphics Manager");
+		this.setPreferredSize(new Dimension(880, 580));
+		this.setTitle("Image Manager");
 
 		this.browser.addListSelectionListener(detail);
 		pack();
 	}
 
+	@SuppressWarnings("serial")
 	private void initComponents() {
-		buttonPanel = new JPanel();
 		deleteButton = new JButton();
 		addButton = new JButton();
 		mainSplitPane = new JSplitPane();
 		leftScrollPane = new JScrollPane();
 		rightScrollPane = new JScrollPane();
-
+		leftPanel = new JPanel();
+		
+		mainSplitPane.setBorder(null);
 		rightScrollPane.setBorder(null);
+		leftScrollPane.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, UIManager.getColor("Separator.foreground")));
+		leftPanel.setBorder(BorderFactory.createLineBorder(UIManager.getColor("Separator.foreground")));
 		
 		setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 
-		deleteButton.setText(IconManager.ICON_TRASH);
-		deleteButton.setFont(iconManager.getIconFont(16.0f));
-		deleteButton.setToolTipText("Remove Selected Graphics");
+		addButton.setText(IconManager.ICON_PLUS);
+		addButton.setFont(iconManager.getIconFont(18.0f));
+		addButton.setToolTipText("Add Images");
+		addButton.putClientProperty("JButton.buttonType", "segmentedGradient"); // Mac OS only
+		addButton.putClientProperty("JButton.segmentPosition", "middle"); // Mac OS only
+		addButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent evt) {
+				addButtonActionPerformed(evt);
+			}
+		});
+		
+		deleteButton.setText(IconManager.ICON_TRASH_O);
+		deleteButton.setFont(iconManager.getIconFont(18.0f));
+		deleteButton.setToolTipText("Remove Selected Images");
+		deleteButton.putClientProperty("JButton.buttonType", "segmentedGradient"); // Mac OS only
+		deleteButton.putClientProperty("JButton.segmentPosition", "only"); // Mac OS only
 		deleteButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent evt) {
@@ -123,49 +156,59 @@ public class CustomGraphicsManagerDialog extends javax.swing.JDialog {
 			}
 		});
 
-		addButton.setText(IconManager.ICON_FOLDER_OPEN_ALT);
-		addButton.setFont(iconManager.getIconFont(16.0f));
-		addButton.setToolTipText("Add Image(s)");
-		addButton.addActionListener(new ActionListener() {
+		closeButton = new JButton(new AbstractAction("Close") {
 			@Override
-			public void actionPerformed(ActionEvent evt) {
-				addButtonActionPerformed(evt);
+			public void actionPerformed(ActionEvent e) {
+				dispose();
 			}
 		});
-
-		GroupLayout buttonPanelLayout = new GroupLayout(buttonPanel);
-		buttonPanel.setLayout(buttonPanelLayout);
-		buttonPanelLayout.setAutoCreateContainerGaps(true);
-		buttonPanelLayout.setAutoCreateGaps(true);
 		
-		buttonPanelLayout.setHorizontalGroup(buttonPanelLayout.createSequentialGroup()
-				.addContainerGap(580, Short.MAX_VALUE)
-				.addComponent(addButton, GroupLayout.PREFERRED_SIZE, 50, GroupLayout.PREFERRED_SIZE)
-				.addComponent(deleteButton, GroupLayout.PREFERRED_SIZE, 50, GroupLayout.PREFERRED_SIZE)
-		);
-		buttonPanelLayout.setVerticalGroup(buttonPanelLayout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-				.addComponent(deleteButton)
-				.addComponent(addButton)
-		);
-
+		buttonPanel = LookAndFeelUtil.createOkCancelPanel(null, closeButton);
+		
 		mainSplitPane.setDividerLocation(230);
-		mainSplitPane.setLeftComponent(leftScrollPane);
+		mainSplitPane.setLeftComponent(leftPanel);
 		mainSplitPane.setRightComponent(rightScrollPane);
-
-		GroupLayout layout = new GroupLayout(getContentPane());
-		getContentPane().setLayout(layout);
 		
-		layout.setHorizontalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-				.addComponent(buttonPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-				.addComponent(mainSplitPane, GroupLayout.DEFAULT_SIZE, 690,	Short.MAX_VALUE)
-		);
-		layout.setVerticalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-				.addGroup(GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-						.addComponent(mainSplitPane, GroupLayout.DEFAULT_SIZE, 552, Short.MAX_VALUE)
-						.addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-						.addComponent(buttonPanel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-				)
-		);
+		{
+			final GroupLayout layout = new GroupLayout(leftPanel);
+			leftPanel.setLayout(layout);
+			layout.setAutoCreateContainerGaps(false);
+			layout.setAutoCreateGaps(false);
+			
+			layout.setHorizontalGroup(layout.createParallelGroup(GroupLayout.Alignment.CENTER)
+					.addComponent(leftScrollPane, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+					.addGroup(layout.createSequentialGroup()
+							.addComponent(addButton, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+							.addComponent(deleteButton, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+					)
+			);
+			layout.setVerticalGroup(layout.createSequentialGroup()
+					.addComponent(leftScrollPane, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+					.addGroup(layout.createParallelGroup(GroupLayout.Alignment.CENTER, false)
+							.addComponent(addButton)
+							.addComponent(deleteButton)
+					)
+			);
+		}
+		{
+			final GroupLayout layout = new GroupLayout(getContentPane());
+			getContentPane().setLayout(layout);
+			layout.setAutoCreateContainerGaps(true);
+			layout.setAutoCreateGaps(true);
+			
+			layout.setHorizontalGroup(layout.createParallelGroup(Alignment.CENTER)
+					.addComponent(mainSplitPane, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+					.addComponent(buttonPanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+			);
+			layout.setVerticalGroup(layout.createParallelGroup(Alignment.LEADING)
+					.addGroup(Alignment.TRAILING, layout.createSequentialGroup()
+							.addComponent(mainSplitPane, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+							.addComponent(buttonPanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					)
+			);
+		}
+		
+		LookAndFeelUtil.setDefaultOkCancelKeyStrokes(getRootPane(), null, closeButton.getAction());
 
 		pack();
 	}

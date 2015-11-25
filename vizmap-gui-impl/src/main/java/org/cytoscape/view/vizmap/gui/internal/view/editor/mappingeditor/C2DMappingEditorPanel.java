@@ -24,7 +24,6 @@ package org.cytoscape.view.vizmap.gui.internal.view.editor.mappingeditor;
  * #L%
  */
 
-import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -60,9 +59,9 @@ public class C2DMappingEditorPanel<V> extends ContinuousMappingEditorPanel<Numbe
 
 		this.editorManager = editorManager;
 
-		this.iconPanel.setVisible(false);
-		this.belowPanel.setVisible(false);
-		this.abovePanel.setVisible(false);
+		this.getIconPanel().setVisible(false);
+		this.getBelowPanel().setVisible(false);
+		this.getAbovePanel().setVisible(false);
 		
 		initSlider();
 	}
@@ -78,19 +77,19 @@ public class C2DMappingEditorPanel<V> extends ContinuousMappingEditorPanel<Numbe
 		if (mapping.getPointCount() == 0) {
 			ratio = 50f;
 			// Add new slider at center
-			slider.getModel().addThumb(ratio, defValue);
+			getSlider().getModel().addThumb(ratio, defValue);
 			newRange = new BoundaryRangeValues<V>(below, defValue, above);
 			
 		} else {
 			ratio = 70f;
 			// Add a new thumb with default value
-			slider.getModel().addThumb(ratio, defValue);
+			getSlider().getModel().addThumb(ratio, defValue);
 
 			// Pick Up first point.
 			final ContinuousMappingPoint<Number, V> previousPoint = mapping.getPoint(mapping.getPointCount() - 1);
 			final BoundaryRangeValues<V> previousRange = previousPoint.getRange();
 
-			V lesserVal = slider.getModel().getSortedThumbs().get(slider.getModel().getThumbCount() - 1).getObject();
+			V lesserVal = getSlider().getModel().getSortedThumbs().get(getSlider().getModel().getThumbCount() - 1).getObject();
 			V equalVal = defValue;
 			V greaterVal = previousRange.greaterValue;
 
@@ -100,15 +99,14 @@ public class C2DMappingEditorPanel<V> extends ContinuousMappingEditorPanel<Numbe
 		mapping.addPoint(maxValue*(ratio/100), newRange);
 		updateMap();
 
-		slider.repaint();
+		getSlider().repaint();
 		repaint();
 	}
-
 	
 	@Override
 	protected void updateMap() {
 		// FIXME
-		final List<Thumb<V>> thumbs = slider.getModel().getSortedThumbs();
+		final List<Thumb<V>> thumbs = getSlider().getModel().getSortedThumbs();
 
 		final double minValue = tracer.getMin(type);
 		final double valRange = tracer.getRange(type);
@@ -156,10 +154,10 @@ public class C2DMappingEditorPanel<V> extends ContinuousMappingEditorPanel<Numbe
 
 	@Override
 	protected void deleteButtonActionPerformed(ActionEvent evt) {
-		final int selectedIndex = slider.getSelectedIndex();
+		final int selectedIndex = getSlider().getSelectedIndex();
 
 		if (0 <= selectedIndex) {
-			slider.getModel().removeThumb(selectedIndex);
+			getSlider().getModel().removeThumb(selectedIndex);
 			mapping.removePoint(selectedIndex);
 			updateMap();
 			repaint();
@@ -167,11 +165,7 @@ public class C2DMappingEditorPanel<V> extends ContinuousMappingEditorPanel<Numbe
 	}
 
 	private void initSlider() {
-		Dimension dim = new Dimension(600, 100);
-		setPreferredSize(dim);
-		setSize(dim);
-		setMinimumSize(new Dimension(300, 80));
-		slider.updateUI();
+		getSlider().updateUI();
 
 		final double minValue = tracer.getMin(type);
 		final double maxValue = tracer.getMax(type);
@@ -179,12 +173,12 @@ public class C2DMappingEditorPanel<V> extends ContinuousMappingEditorPanel<Numbe
 		final C2DMappingEditorPanel<V> parentComponent = this;
 		final DefaultViewPanel defViewPanel = servicesUtil.get(DefaultViewPanel.class);
 		
-		slider.addMouseListener(new MouseAdapter() {
+		getSlider().addMouseListener(new MouseAdapter() {
 
 			// Handle value icon click.
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				int range = ((DiscreteTrackRenderer<Number, V>) slider.getTrackRenderer()).getRangeID(e.getX(),
+				int range = ((DiscreteTrackRenderer<Number, V>) getSlider().getTrackRenderer()).getRangeID(e.getX(),
 						e.getY());
 
 				V newValue = null;
@@ -204,17 +198,17 @@ public class C2DMappingEditorPanel<V> extends ContinuousMappingEditorPanel<Numbe
 
 					if (range == 0) {
 						below = newValue;
-					} else if (range == slider.getModel().getThumbCount()) {
+					} else if (range == getSlider().getModel().getThumbCount()) {
 						above = newValue;
 					} else {
-						slider.getModel().getSortedThumbs().get(range).setObject(newValue);
+						getSlider().getModel().getSortedThumbs().get(range).setObject(newValue);
 					}
 
 					updateMap();
 
-					slider.setTrackRenderer(new DiscreteTrackRenderer<Number, V>(mapping, below, above, tracer,
+					getSlider().setTrackRenderer(new DiscreteTrackRenderer<Number, V>(mapping, below, above, tracer,
 							defViewPanel.getRenderingEngine()));
-					slider.repaint();
+					getSlider().repaint();
 				}
 			}
 		});
@@ -228,7 +222,7 @@ public class C2DMappingEditorPanel<V> extends ContinuousMappingEditorPanel<Numbe
 			bound = point.getRange();
 
 			fraction = ((Number) ((point.getValue().doubleValue() - minValue) / actualRange)).floatValue() * 100;
-			slider.getModel().addThumb(fraction, bound.equalValue);
+			getSlider().getModel().addThumb(fraction, bound.equalValue);
 		}
 
 		
@@ -254,27 +248,25 @@ public class C2DMappingEditorPanel<V> extends ContinuousMappingEditorPanel<Numbe
 		DiscreteTrackRenderer<Number, V> dRend = new DiscreteTrackRenderer<Number, V>(mapping, below, above, tracer,
 				defViewPanel.getRenderingEngine());
 
-		slider.setThumbRenderer(thumbRend);
-		slider.setTrackRenderer(dRend);
-//		slider.addMouseListener(new ThumbMouseListener());
+		getSlider().setThumbRenderer(thumbRend);
+		getSlider().setTrackRenderer(dRend);
 	}
-
 
 	@Override
 	public ImageIcon drawIcon(int iconWidth, int iconHeight, boolean detail) {
-		DiscreteTrackRenderer<Number, V> rend = (DiscreteTrackRenderer<Number, V>) slider.getTrackRenderer();
-		rend.getRendererComponent(slider);
+		DiscreteTrackRenderer<Number, V> rend = (DiscreteTrackRenderer<Number, V>) getSlider().getTrackRenderer();
+		rend.getRendererComponent(getSlider());
 
 		return rend.getTrackGraphicIcon(iconWidth, iconHeight);
 	}
 	
 	public ImageIcon getLegend(final int width, final int height) {
 
-		if (slider.getTrackRenderer() instanceof DiscreteTrackRenderer == false)
+		if (getSlider().getTrackRenderer() instanceof DiscreteTrackRenderer == false)
 			return null;
 
-		DiscreteTrackRenderer<Number, V> rend = (DiscreteTrackRenderer<Number, V>) slider.getTrackRenderer();
-		rend.getRendererComponent(slider);
+		DiscreteTrackRenderer<Number, V> rend = (DiscreteTrackRenderer<Number, V>) getSlider().getTrackRenderer();
+		rend.getRendererComponent(getSlider());
 
 		return rend.getLegend(width, height);
 	}

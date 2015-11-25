@@ -12,12 +12,16 @@ public abstract class AbstractGradient<T extends CustomGraphicLayer> extends Abs
 	public static final String GRADIENT_FRACTIONS = "cy_gradientFractions";
 	public static final String GRADIENT_COLORS = "cy_gradientColors";
 	
+	public static final float DEF_FIT_RATIO = 1.0f;
+	
 	protected AbstractGradient(final String displayName) {
 		super(displayName);
+		fitRatio = DEF_FIT_RATIO;
 	}
 	
 	protected AbstractGradient(final String displayName, final String input) {
 		super(displayName, input);
+		fitRatio = DEF_FIT_RATIO;
 	}
 	
 	protected AbstractGradient(final AbstractGradient<T> gradient) {
@@ -27,6 +31,7 @@ public abstract class AbstractGradient<T extends CustomGraphicLayer> extends Abs
 	
 	protected AbstractGradient(final String displayName, final Map<String, Object> properties) {
 		super(displayName, properties);
+		fitRatio = DEF_FIT_RATIO;
 	}
 	
 	@Override

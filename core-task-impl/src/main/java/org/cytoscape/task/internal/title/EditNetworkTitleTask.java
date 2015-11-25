@@ -27,18 +27,17 @@ package org.cytoscape.task.internal.title;
 
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.session.CyNetworkNaming;
 import org.cytoscape.task.AbstractNetworkTask;
 import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
-import org.cytoscape.work.undo.UndoSupport;
-import java.util.Iterator;
 import org.cytoscape.work.TunableValidator;
+import org.cytoscape.work.undo.UndoSupport;
 
 
 public class EditNetworkTitleTask extends AbstractNetworkTask implements TunableValidator {
+	
 	private final UndoSupport undoSupport;
 	private final CyNetworkManager cyNetworkManagerServiceRef;
 	private final CyNetworkNaming cyNetworkNamingServiceRef;
@@ -49,14 +48,18 @@ public class EditNetworkTitleTask extends AbstractNetworkTask implements Tunable
 		return "Rename Network";
 	}
 	
-	@Tunable(description = "New title")
+	@Tunable(description = "New title:")
 	public String name;
 
 	@Tunable(description = "Network to rename", context="nogui")
 	public CyNetwork sourceNetwork = null;
 
-	public EditNetworkTitleTask(final UndoSupport undoSupport, final CyNetwork net, CyNetworkManager cyNetworkManagerServiceRef,
-			CyNetworkNaming cyNetworkNamingServiceRef) {
+	public EditNetworkTitleTask(
+			final UndoSupport undoSupport,
+			final CyNetwork net,
+			final CyNetworkManager cyNetworkManagerServiceRef,
+			final CyNetworkNaming cyNetworkNamingServiceRef
+	) {
 		super(net);
 		this.undoSupport = undoSupport;
 		this.cyNetworkManagerServiceRef = cyNetworkManagerServiceRef;
@@ -80,18 +83,16 @@ public class EditNetworkTitleTask extends AbstractNetworkTask implements Tunable
 			// Inform user duplicated network title!
 			try {
 				errMsg.append("Duplicated network name.");	
-			}
-			catch (Exception e){
+			} catch (Exception e){
 				System.out.println("Warning: Duplicated network name.");
 			}
 			return ValidationState.INVALID;			
 		}
 
-		
 		return ValidationState.OK;		
 	}
 	
-	
+	@Override
 	public void run(TaskMonitor e) {
 		e.setProgress(0.0);
 		if (sourceNetwork == null)
@@ -100,8 +101,7 @@ public class EditNetworkTitleTask extends AbstractNetworkTask implements Tunable
 		e.setProgress(0.3);
 		network.getRow(sourceNetwork).set(CyNetwork.NAME, name);
 		e.setProgress(0.6);
-		undoSupport.postEdit(
-			new NetworkTitleEdit(sourceNetwork, oldTitle));
+		undoSupport.postEdit(new NetworkTitleEdit(sourceNetwork, oldTitle));
 		
 		e.setProgress(1.0);
 	}

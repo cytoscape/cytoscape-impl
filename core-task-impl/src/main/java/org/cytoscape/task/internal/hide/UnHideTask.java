@@ -24,88 +24,85 @@ package org.cytoscape.task.internal.hide;
  * #L%
  */
 
-import java.util.Collection;
+
+import java.util.ArrayList;
 import java.util.List;
 
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.model.CyTableUtil;
+import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.work.AbstractTask;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.task.AbstractNetworkViewTask;
 import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.CyNetworkViewManager;
-import org.cytoscape.view.model.View;
 import org.cytoscape.view.vizmap.VisualMappingManager;
-import org.cytoscape.view.vizmap.VisualStyle;
-import org.cytoscape.work.ContainsTunables;
 import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.undo.UndoSupport;
 
-import org.cytoscape.task.internal.utils.NodeAndEdgeTunable;
 
+public class UnHideTask extends AbstractNetworkViewTask {
+	
+	private final String description;
+	private final boolean unhideNodes;
+	private final boolean unhideEdges;
+	private final CyServiceRegistrar serviceRegistrar;
 
-public class UnHideTask extends AbstractTask {
-	private CyApplicationManager appMgr;
-	private CyNetworkViewManager viewMgr;
-	private VisualMappingManager vmMgr;
-
-	@ContainsTunables
-	public NodeAndEdgeTunable tunable;
-
-	public UnHideTask(final CyApplicationManager appMgr, final CyNetworkViewManager viewManager,
-	                final VisualMappingManager vmMgr) {
-		super();
-		this.vmMgr = vmMgr;
-		this.viewMgr = viewManager;
-		this.appMgr = appMgr;
-		tunable = new NodeAndEdgeTunable(appMgr);
+	public UnHideTask(
+			final String description,
+			final boolean unhideNodes,
+			final boolean unhideEdges,
+			final CyNetworkView view,
+			final CyServiceRegistrar serviceRegistrar
+	) {
+		super(view);
+		this.description = description;
+		this.unhideNodes = unhideNodes;
+		this.unhideEdges = unhideEdges;
+		this.serviceRegistrar = serviceRegistrar;
 	}
 
+	@Override
 	public void run(TaskMonitor e) {
 		e.setProgress(0.0);
-
-		List<CyEdge> edges = tunable.getEdgeList();
-		List<CyNode> nodes = tunable.getNodeList();
-		CyNetwork net = tunable.getNetwork();
-
-		if ((edges == null||edges.size() == 0) && (nodes == null||nodes.size() == 0)) {
-			e.showMessage(TaskMonitor.Level.ERROR, "Must specify nodes or edges to show");
-			return;
+		
+		final CyNetwork network = view.getModel();
+		final List<CyIdentifiable> elements = new ArrayList<>();
+		List<CyNode> nodes = null;
+		List<CyEdge> edges = null;
+		e.setProgress(0.1);
+		
+		if (unhideNodes) {
+			nodes = network.getNodeList();
+			elements.addAll(nodes);
 		}
-
-		Collection<CyNetworkView> views = viewMgr.getNetworkViews(net);
-		if (views == null || views.size() == 0) {
-			e.showMessage(TaskMonitor.Level.ERROR, "Network "+net.toString()+" doesn't have a view");
-			return;
+		
+		if (unhideEdges) {
+			edges = network.getEdgeList();
+			elements.addAll(edges);
 		}
-
-		// We only handle a single view at this point.  At some point, we'll
-		// have to come up with a way to name views...
-		int nodeCount = 0;
-		int edgeCount = 0;
-		for (CyNetworkView view: views) {
-			VisualStyle style = vmMgr.getVisualStyle(view);
-			if (nodes != null) {
-				HideUtils.setVisibleNodes(nodes, true, view);
-				nodeCount = nodes.size();
-				for (CyNode node: nodes) {
-					View<CyNode> nodeView = view.getNodeView(node);
-					style.apply(net.getRow(node), nodeView);
-				}
-			}
-			if (edges != null) {
-				HideUtils.setVisibleEdges(edges, true, view);
-				edgeCount = edges.size();
-				for (CyEdge edge: edges) {
-					View<CyEdge> edgeView = view.getEdgeView(edge);
-					style.apply(net.getRow(edge), edgeView);
-				}
-			}
-			view.updateView();
-		}
-
-		e.showMessage(TaskMonitor.Level.INFO, "Showed "+nodeCount+" nodes and "+edgeCount+" edges");
-
+		
+		e.setProgress(0.2);
+		
+		final UndoSupport undoSupport = serviceRegistrar.getService(UndoSupport.class);
+		final CyEventHelper eventHelper = serviceRegistrar.getService(CyEventHelper.class);
+		final VisualMappingManager vmMgr = serviceRegistrar.getService(VisualMappingManager.class);
+		
+		undoSupport.postEdit(new HideEdit(description, view, elements, true, eventHelper, vmMgr));
+		e.setProgress(0.3);
+		
+		if (nodes != null)
+			HideUtils.setVisibleNodes(nodes, true, view);
+		
+		e.setProgress(0.5);
+		
+		if (edges != null)
+			HideUtils.setVisibleEdges(edges, true, view);
+		
+		e.setProgress(0.7);
+		
+		vmMgr.getVisualStyle(view).apply(view);
+		view.updateView();
 		e.setProgress(1.0);
-	}
+	} 
 }

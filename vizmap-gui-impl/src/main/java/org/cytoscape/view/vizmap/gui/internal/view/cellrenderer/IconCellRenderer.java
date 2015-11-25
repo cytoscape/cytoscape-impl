@@ -26,7 +26,6 @@ package org.cytoscape.view.vizmap.gui.internal.view.cellrenderer;
 
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Font;
 import java.lang.reflect.Method;
 import java.util.Map;
 
@@ -39,6 +38,7 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.ListCellRenderer;
+import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.table.TableCellRenderer;
 
@@ -52,14 +52,9 @@ public class IconCellRenderer<T> extends JPanel implements TableCellRenderer, Li
 	
 	private static final long serialVersionUID = 8942821990143018260L;
 	
-	private static final Color BG_COLOR = Color.WHITE;
-	private static final Color SELECTED_BG_COLOR = new Color(222, 234, 252);
-	private static final Font SELECTED_FONT = new Font("SansSerif", Font.ITALIC, 14);
-	private static final Font NORMAL_FONT = new Font("SansSerif", Font.PLAIN, 14);
-	private static final Color BORDER_COLOR = new Color(200, 200, 200);
-	private static final Border BORDER = BorderFactory.createCompoundBorder(
-			BorderFactory.createMatteBorder(0, 0, 1, 0, BORDER_COLOR),
-			BorderFactory.createEmptyBorder(4, 4, 4, 4));
+	private static final float FONT_SIZE = 14.0f;
+	
+	
 
 	final JLabel iconLbl;
 	final JLabel textLbl;
@@ -86,8 +81,15 @@ public class IconCellRenderer<T> extends JPanel implements TableCellRenderer, Li
 												  final boolean isSelected,
 												  final boolean cellHasFocus) {
 		update(value, isSelected, cellHasFocus);
-		setBackground(isSelected ? SELECTED_BG_COLOR : BG_COLOR);
-		textLbl.setFont(isSelected ? SELECTED_FONT : NORMAL_FONT);
+		setBackground(isSelected ?
+				UIManager.getColor("Table.selectionBackground") : UIManager.getColor("Table.background"));
+		textLbl.setFont(UIManager.getFont("TextField.font").deriveFont(FONT_SIZE));
+		
+		final Color BORDER_COLOR = UIManager.getColor("Separator.foreground");
+		final Border BORDER = BorderFactory.createCompoundBorder(
+				BorderFactory.createMatteBorder(0, 0, 1, 0, BORDER_COLOR),
+				BorderFactory.createEmptyBorder(4, 4, 4, 4)
+		);
 		setBorder(BORDER);
 		
 		return this;
@@ -106,7 +108,8 @@ public class IconCellRenderer<T> extends JPanel implements TableCellRenderer, Li
 	
 	@SuppressWarnings("unchecked")
 	private void update(final Object value, final boolean isSelected, final boolean hasFocus) {
-		setBackground(isSelected ? SELECTED_BG_COLOR : BG_COLOR);
+		setBackground(isSelected ?
+				UIManager.getColor("Table.selectionBackground") : UIManager.getColor("Table.background"));
 		final String label = getLabel((T)value);
 		final Icon icon = icons.get(value);
 		

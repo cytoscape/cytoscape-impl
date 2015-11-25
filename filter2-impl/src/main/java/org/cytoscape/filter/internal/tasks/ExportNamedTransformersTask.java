@@ -11,7 +11,8 @@ import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 
 public class ExportNamedTransformersTask extends AbstractTask {
-	@Tunable(description="Choose File to Save", params="fileCategory=unspecified;input=false")
+	
+	@Tunable(description="Choose File to Save:", params="fileCategory=unspecified;input=false")
 	public File file;
 	
 	private FilterIO filterIo;

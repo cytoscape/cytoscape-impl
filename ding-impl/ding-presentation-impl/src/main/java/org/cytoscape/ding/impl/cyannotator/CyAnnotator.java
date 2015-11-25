@@ -44,6 +44,8 @@ import java.awt.Component;
 import java.awt.Point;
 import java.awt.geom.Point2D;
 
+import javax.swing.SwingUtilities;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -133,6 +135,14 @@ public class CyAnnotator {
 	}
 
 	public void loadAnnotations() {
+		// Make sure we're on the EDT since we directly add annotations to the canvas
+		if (!SwingUtilities.isEventDispatchThread()) {
+			SwingUtilities.invokeLater(new Runnable() {
+				public void run() { loadAnnotations(); }
+			});
+			return;
+		}
+
 		// System.out.println("Loading annotations");
 		CyNetwork network = view.getModel();
 		// Now, see if this network has any existing annotations
@@ -286,15 +296,29 @@ public class CyAnnotator {
 		return null;
 	}
 
-	public void setSelectedAnnotation(DingAnnotation a, boolean selected) {
+	public void setSelectedAnnotation(final DingAnnotation a, final boolean selected) {
+		if (!SwingUtilities.isEventDispatchThread()) {
+			SwingUtilities.invokeLater( new Runnable() {
+				public void run() {setSelectedAnnotation(a, selected);}
+			});
+			return;
+		}
+
 		if (selected) {
-			a.getCanvas().requestFocusInWindow();
+			requestFocusInWindow(a);
 			selectedAnnotations.add(a);
 		} else
 			selectedAnnotations.remove(a);
 	}
 
 	public void clearSelectedAnnotations() {
+		if (!SwingUtilities.isEventDispatchThread()) {
+			SwingUtilities.invokeLater( new Runnable() {
+				public void run() {clearSelectedAnnotations();}
+			});
+			return;
+		}
+
 		boolean repaintForeGround = false;
 		boolean repaintBackGround = false;
 		for (DingAnnotation a: new ArrayList<DingAnnotation>(selectedAnnotations)) {
@@ -316,7 +340,7 @@ public class CyAnnotator {
 	public void resizeShape(ShapeAnnotationImpl shape) {
 		resizing = shape;
 		if (resizing != null)
-			resizing.getCanvas().requestFocusInWindow();
+			requestFocusInWindow(resizing);
 	}
 
 	public ShapeAnnotationImpl getResizeShape() {
@@ -326,7 +350,7 @@ public class CyAnnotator {
 	public void positionArrow(ArrowAnnotationImpl arrow) {
 		repositioning = arrow;
 		if (repositioning != null)
-			repositioning.getCanvas().requestFocusInWindow();
+			requestFocusInWindow(repositioning);
 	}
 
 	public ArrowAnnotationImpl getRepositioningArrow() {
@@ -344,7 +368,7 @@ public class CyAnnotator {
 		}
 		moving = annotation;
 		if (moving != null)
-			moving.getCanvas().requestFocusInWindow();
+			requestFocusInWindow(moving);
 	}
 
 	public DingAnnotation getMovingAnnotation() {
@@ -390,6 +414,18 @@ public class CyAnnotator {
 			result.put(keyValue[0], keyValue[1]);
 		}
 		return result;
+	}
+
+	private void requestFocusInWindow(final Annotation annotation) {
+		if (!SwingUtilities.isEventDispatchThread()) {
+			SwingUtilities.invokeLater( new Runnable() {
+				public void run() { requestFocusInWindow(annotation); }
+			});
+			return;
+		}
+		if (annotation != null && annotation instanceof DingAnnotation) {
+			((DingAnnotation)annotation).getCanvas().requestFocusInWindow();
+		}
 	}
 
 /*

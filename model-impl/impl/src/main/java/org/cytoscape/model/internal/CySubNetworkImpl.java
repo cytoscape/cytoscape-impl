@@ -25,7 +25,9 @@ package org.cytoscape.model.internal;
  */
 
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyEdge;
@@ -226,11 +228,26 @@ public final class CySubNetworkImpl extends DefaultTablesNetwork implements CySu
 			return false;
 		eventHelper.fireEvent(new AboutToRemoveNodesEvent(this, nodes));
 
-		for(CyNode node: nodes)
-			if (this.containsNode(node))
-				getRow(node).set(CyNetwork.SELECTED, false);
+		CyTable hiddenTable = getTable(CyNode.class, CyNetwork.HIDDEN_ATTRS);
+		CyTable localTable = getTable(CyNode.class, CyNetwork.LOCAL_ATTRS);
+		CyTable defaultTable = getTable(CyNode.class, CyNetwork.DEFAULT_ATTRS);
+		List<Long> suids = new ArrayList<>();
+
+		for(CyNode node: nodes) {
+			if (this.containsNode(node)) {
+				Long suid = node.getSUID();
+				if (defaultTable.rowExists(suid))
+					suids.add(suid);
+				// getRow(node).set(CyNetwork.SELECTED, false);
+			}
+		}
 
 		boolean ret = removeNodesInternal(nodes);
+
+		hiddenTable.deleteRows(suids);
+		defaultTable.deleteRows(suids);
+		// Shouldn't be needed since the default table is a facade on the local table
+		// localTable.deleteRows(suids);
 
 		if ( ret ){
 			eventHelper.fireEvent(new RemovedNodesEvent(this));
@@ -248,11 +265,23 @@ public final class CySubNetworkImpl extends DefaultTablesNetwork implements CySu
 		// since this is only a notification, maybe that's OK.
 		eventHelper.fireEvent(new AboutToRemoveEdgesEvent(this, edges));
 
+		CyTable hiddenTable = getTable(CyEdge.class, CyNetwork.HIDDEN_ATTRS);
+		CyTable localTable = getTable(CyEdge.class, CyNetwork.LOCAL_ATTRS);
+		CyTable defaultTable = getTable(CyEdge.class, CyNetwork.DEFAULT_ATTRS);
+		List<Long> suids = new ArrayList<>();
+
 		for(CyEdge edge: edges)
-			if (this.containsEdge(edge))
-				getRow(edge).set(CyNetwork.SELECTED, false);
+			if (this.containsEdge(edge)) {
+				// getRow(edge).set(CyNetwork.SELECTED, false);
+				suids.add(edge.getSUID());
+			}
 
 		boolean ret = removeEdgesInternal(edges);
+
+		hiddenTable.deleteRows(suids);
+		defaultTable.deleteRows(suids);
+		// Shouldn't be needed since the default table is a facade on the local table
+		// localTable.deleteRows(suids);
 
 		if ( ret ){
 			eventHelper.fireEvent(new RemovedEdgesEvent(this));

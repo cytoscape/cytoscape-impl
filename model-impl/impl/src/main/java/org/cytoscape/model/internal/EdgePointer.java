@@ -33,6 +33,7 @@ import org.cytoscape.model.CyEdge;
  * You should only touch this if you know what you're doing.
  */
 final class EdgePointer {
+	
 	final CyEdge cyEdge;
 	final long index;
 	final boolean directed;
@@ -61,7 +62,6 @@ final class EdgePointer {
 	}
 
 	private void insertSelf() {
-
 		nextOutEdge = source.firstOutEdge;
 
 		if (source.firstOutEdge != null)
@@ -85,17 +85,11 @@ final class EdgePointer {
 		}
 
 		// Self-edge
-		if (source == target) {
-			if (directed) {
-				source.selfEdges++;
-			} else {
-				source.undDegree--;
-			}
-		}
+		if (source == target)
+			source.selfEdges++;
 	}
 
 	void remove() {
-
 		if (prevOutEdge != null)
 			prevOutEdge.nextOutEdge = nextOutEdge;
 		else
@@ -121,18 +115,12 @@ final class EdgePointer {
 		}
 
 		// Self-edge.
-		if (source == target) {
-			if (directed) {
-				source.selfEdges--;
-			} else {
-				source.undDegree--;
-			}
-		}
+		if (source == target)
+			source.selfEdges--;
 
 		nextOutEdge = null; // ?? wasn't here in DynamicGraph
 		prevOutEdge = null;
 		nextInEdge = null;
 		prevInEdge = null;
 	}
-
 }

@@ -15,29 +15,31 @@ import javax.swing.JRootPane;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.events.SetCurrentNetworkEvent;
-import org.cytoscape.filter.internal.column.ColumnFilterFactory;
-import org.cytoscape.filter.internal.column.ColumnFilterViewFactory;
-import org.cytoscape.filter.internal.degree.DegreeFilterFactory;
-import org.cytoscape.filter.internal.degree.DegreeFilterViewFactory;
-import org.cytoscape.filter.internal.interaction.InteractionTransformerFactory;
-import org.cytoscape.filter.internal.interaction.InteractionTransformerViewFactory;
-import org.cytoscape.filter.internal.topology.TopologyFilterFactory;
-import org.cytoscape.filter.internal.topology.TopologyFilterViewFactory;
+import org.cytoscape.filter.internal.filters.column.ColumnFilterFactory;
+import org.cytoscape.filter.internal.filters.column.ColumnFilterViewFactory;
+import org.cytoscape.filter.internal.filters.degree.DegreeFilterFactory;
+import org.cytoscape.filter.internal.filters.degree.DegreeFilterViewFactory;
+import org.cytoscape.filter.internal.filters.topology.TopologyFilterFactory;
+import org.cytoscape.filter.internal.filters.topology.TopologyFilterViewFactory;
+import org.cytoscape.filter.internal.transformers.interaction.InteractionTransformerFactory;
+import org.cytoscape.filter.internal.transformers.interaction.InteractionTransformerViewFactory;
 import org.cytoscape.filter.internal.view.FilterPanel;
 import org.cytoscape.filter.internal.view.FilterPanelController;
-import org.cytoscape.filter.internal.view.FilterWorker;
-import org.cytoscape.filter.internal.view.IconManager;
-import org.cytoscape.filter.internal.view.IconManagerImpl;
-import org.cytoscape.filter.internal.view.LazyWorkQueue;
 import org.cytoscape.filter.internal.view.SelectPanel;
 import org.cytoscape.filter.internal.view.TransformerPanel;
 import org.cytoscape.filter.internal.view.TransformerPanelController;
 import org.cytoscape.filter.internal.view.TransformerViewManager;
-import org.cytoscape.filter.internal.view.TransformerWorker;
+import org.cytoscape.filter.internal.view.look.FilterPanelStyle;
+import org.cytoscape.filter.internal.view.look.StandardStyle;
+import org.cytoscape.filter.internal.work.FilterWorker;
+import org.cytoscape.filter.internal.work.LazyWorkQueue;
+import org.cytoscape.filter.internal.work.TransformerManagerImpl;
+import org.cytoscape.filter.internal.work.TransformerWorker;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.NetworkTestSupport;
+import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.work.TaskManager;
 import org.mockito.Mock;
@@ -49,6 +51,7 @@ public class UiScaffold {
 	
 	@Mock CyApplicationManager applicationManager;
 	@Mock CyNetworkView networkView;
+	@Mock IconManager iconManager;
 	
 	void start() {
 		MockitoAnnotations.initMocks(this);
@@ -91,24 +94,23 @@ public class UiScaffold {
 		ModelMonitor modelMonitor = new ModelMonitor();
 		modelMonitor.handleEvent(new SetCurrentNetworkEvent(applicationManager, network));
 		
-		IconManager iconManager = new IconManagerImpl();
-
+		FilterPanelStyle style = new StandardStyle();
 		TransformerViewManager transformerViewManager = new TransformerViewManager(transformerManager);
-		transformerViewManager.registerTransformerViewFactory(new ColumnFilterViewFactory(modelMonitor, iconManager), properties);
-		transformerViewManager.registerTransformerViewFactory(new DegreeFilterViewFactory(modelMonitor), properties);
-		transformerViewManager.registerTransformerViewFactory(new TopologyFilterViewFactory(), properties);
-		transformerViewManager.registerTransformerViewFactory(new InteractionTransformerViewFactory(), properties);
+		transformerViewManager.registerTransformerViewFactory(new ColumnFilterViewFactory(style, modelMonitor), properties);
+		transformerViewManager.registerTransformerViewFactory(new DegreeFilterViewFactory(style, modelMonitor), properties);
+		transformerViewManager.registerTransformerViewFactory(new TopologyFilterViewFactory(style), properties);
+		transformerViewManager.registerTransformerViewFactory(new InteractionTransformerViewFactory(style), properties);
 
 		LazyWorkQueue queue = new LazyWorkQueue();
 		
 		FilterWorker filterWorker = new FilterWorker(queue, applicationManager);
 		FilterIO filterIo = null;
 		TaskManager<?, ?> taskManager = null;
-		FilterPanelController filterPanelController = new FilterPanelController(transformerManager, transformerViewManager, filterWorker, modelMonitor, filterIo, taskManager, iconManager);
+		FilterPanelController filterPanelController = new FilterPanelController(transformerManager, transformerViewManager, filterWorker, modelMonitor, filterIo, taskManager, style, iconManager);
 		FilterPanel filterPanel = new FilterPanel(filterPanelController, iconManager, filterWorker);
 		
 		TransformerWorker transformerWorker = new TransformerWorker(queue, applicationManager, transformerManager);
-		TransformerPanelController transformerPanelController = new TransformerPanelController(transformerManager, transformerViewManager, filterPanelController, transformerWorker, filterIo, taskManager, iconManager);
+		TransformerPanelController transformerPanelController = new TransformerPanelController(transformerManager, transformerViewManager, filterPanelController, transformerWorker, filterIo, taskManager, style, iconManager);
 		TransformerPanel transformerPanel = new TransformerPanel(transformerPanelController, iconManager, transformerWorker);
 		
 		SelectPanel selectPanel = new SelectPanel(filterPanel, transformerPanel);
