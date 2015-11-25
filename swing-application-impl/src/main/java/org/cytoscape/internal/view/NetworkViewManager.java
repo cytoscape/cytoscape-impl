@@ -1,56 +1,19 @@
 package org.cytoscape.internal.view;
 
-/*
- * #%L
- * Cytoscape Swing Application Impl (swing-application-impl)
- * $Id:$
- * $HeadURL:$
- * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * #L%
- */
-
-import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.KeyboardFocusManager;
-import java.awt.Point;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.beans.PropertyVetoException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 import java.util.WeakHashMap;
 
-import javax.swing.BorderFactory;
 import javax.swing.JDesktopPane;
 import javax.swing.JInternalFrame;
 import javax.swing.SwingUtilities;
-import javax.swing.event.InternalFrameAdapter;
-import javax.swing.event.InternalFrameEvent;
-import javax.swing.event.InternalFrameListener;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.NetworkViewRenderer;
@@ -69,7 +32,6 @@ import org.cytoscape.model.events.ColumnNameChangedListener;
 import org.cytoscape.model.events.RowSetRecord;
 import org.cytoscape.model.events.RowsSetEvent;
 import org.cytoscape.model.events.RowsSetListener;
-import org.cytoscape.property.CyProperty;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.events.SessionAboutToBeLoadedEvent;
 import org.cytoscape.session.events.SessionAboutToBeLoadedListener;
@@ -77,7 +39,6 @@ import org.cytoscape.session.events.SessionLoadCancelledEvent;
 import org.cytoscape.session.events.SessionLoadCancelledListener;
 import org.cytoscape.session.events.SessionLoadedEvent;
 import org.cytoscape.session.events.SessionLoadedListener;
-import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.View;
@@ -122,9 +83,6 @@ public class NetworkViewManager implements NetworkViewAddedListener,
 
 	private static final Logger logger = LoggerFactory.getLogger(NetworkViewManager.class);
 
-	private static final int MINIMUM_WIN_WIDTH = 200;
-	private static final int MINIMUM_WIN_HEIGHT = 200;
-
 	@Deprecated
 	private final JDesktopPane desktopPane;
 	
@@ -136,7 +94,6 @@ public class NetworkViewManager implements NetworkViewAddedListener,
 	private final Set<CyNetworkView> viewUpdateRequired;
 
 	private final Map<JInternalFrame, CyNetworkView> iFrameMap;
-	private final Map<JInternalFrame, InternalFrameListener> frameListeners;
 	
 	/** columnIdentifier -> { valueInfo -> [views] }*/
 	private final Map<CyColumnIdentifier, Map<MappedVisualPropertyValueInfo, Set<View<?>>>> mappedValuesMap;
@@ -157,11 +114,11 @@ public class NetworkViewManager implements NetworkViewAddedListener,
 		presentationContainerMap = new WeakHashMap<>();
 		presentationMap = new WeakHashMap<>();
 		iFrameMap = new WeakHashMap<>();
-		frameListeners = new HashMap<>();
 		viewUpdateRequired = new HashSet<>();
 		mappedValuesMap = new HashMap<>();
 		
-		networkViewsPanel.addPropertyChangeListener("currentNetworkView", new PropertyChangeListener() {
+		networkViewsPanel.getNetworkViewGrid().addPropertyChangeListener("currentNetworkView",
+				new PropertyChangeListener() {
 			@Override
 			public void propertyChange(PropertyChangeEvent e) {
 				final CyNetworkView targetView = (CyNetworkView) e.getNewValue();
@@ -288,18 +245,31 @@ public class NetworkViewManager implements NetworkViewAddedListener,
 	private final void removeView(final CyNetworkView view) {
 		try {
 			if (renderAsInternalFrame) {
-				JInternalFrame frame = presentationContainerMap.get(view);
-				
-				if (frame != null) {
-					RenderingEngine<CyNetwork> removed = presentationMap.remove(view);
-					
-					viewUpdateRequired.remove(frame);
-					iFrameMap.remove(frame);
-					disposeFrame(frame);
-					serviceRegistrar.getService(RenderingEngineManager.class).removeRenderingEngine(removed);
-				}
+//				JInternalFrame frame = presentationContainerMap.get(view);
+//				
+//				if (frame != null) {
+//					RenderingEngine<CyNetwork> removed = presentationMap.remove(view);
+//					
+//					viewUpdateRequired.remove(frame);
+//					iFrameMap.remove(frame);
+//					disposeFrame(frame);
+//					serviceRegistrar.getService(RenderingEngineManager.class).removeRenderingEngine(removed);
+//				}
 			} else {
-				getNetworkViewsPanel().remove(view);
+				SwingUtilities.invokeLater(new Runnable() {
+					@Override
+					public void run() {
+						getNetworkViewsPanel().remove(view);
+						final RenderingEngine<CyNetwork> removed = presentationMap.remove(view);
+						
+						new Thread() {
+							@Override
+							public void run() {
+								serviceRegistrar.getService(RenderingEngineManager.class).removeRenderingEngine(removed);
+							}
+						}.start();
+					}
+				});
 			}
 		} catch (Exception e) {
 			logger.error("Network View unable to be killed", e);
@@ -310,177 +280,179 @@ public class NetworkViewManager implements NetworkViewAddedListener,
 		}
 	}
 
-	private void disposeFrame(final JInternalFrame frame) throws PropertyVetoException {
-		if (!SwingUtilities.isEventDispatchThread()) {
-			SwingUtilities.invokeLater(new Runnable() {
-				@Override
-				public void run() {
-					try {
-						disposeFrame(frame);
-					} catch (PropertyVetoException e) {
-						logger.error("Network View unable to be killed", e);
-					}
-				}
-			});
-			return;
-		}
-		
-		frame.getRootPane().getLayeredPane().removeAll();
-		frame.getRootPane().getContentPane().removeAll();
-		frame.setClosed(true);
-		
-//		frame.removeInternalFrameListener(this);
-		InternalFrameListener frameListener = frameListeners.remove(frame);
-		
-		if (frameListener != null)
-			frame.removeInternalFrameListener(frameListener);
-		
-		frame.dispose();
-	}
+//	private void disposeFrame(final JInternalFrame frame) throws PropertyVetoException {
+//		if (!SwingUtilities.isEventDispatchThread()) {
+//			SwingUtilities.invokeLater(new Runnable() {
+//				@Override
+//				public void run() {
+//					try {
+//						disposeFrame(frame);
+//					} catch (PropertyVetoException e) {
+//						logger.error("Network View unable to be killed", e);
+//					}
+//				}
+//			});
+//			return;
+//		}
+//		
+//		frame.getRootPane().getLayeredPane().removeAll();
+//		frame.getRootPane().getContentPane().removeAll();
+//		frame.setClosed(true);
+//		
+////		frame.removeInternalFrameListener(this);
+//		InternalFrameListener frameListener = frameListeners.remove(frame);
+//		
+//		if (frameListener != null)
+//			frame.removeInternalFrameListener(frameListener);
+//		
+//		frame.dispose();
+//	}
 
 	/**
 	 * Create a visualization container and add presentation to it.
 	 */
 	private final void render(final CyNetworkView view) {
-		// If already registered in this manager, do not render.
-		if (presentationContainerMap.containsKey(view))
-			return;
-
-		// Create a new panel or frame  and put the CyNetworkView Component into it
-		final String title = getTitle(view);
-		
-		NetworkViewRenderer renderer = null;
-		String rendererId = view.getRendererId();
-		final CyApplicationManager appMgr = serviceRegistrar.getService(CyApplicationManager.class);
-		
-		if (rendererId != null)
-			renderer = appMgr.getNetworkViewRenderer(rendererId);
-		
-		if (renderer == null)
-			renderer = appMgr.getDefaultNetworkViewRenderer();
-
-		RenderingEngineFactory<CyNetwork> engineFactory = renderer
-				.getRenderingEngineFactory(NetworkViewRenderer.DEFAULT_CONTEXT);
-		
-		if (renderAsInternalFrame)
-			renderAsInternalFrame(title, view, engineFactory);
-		else
-			renderAsPanel(view, engineFactory);
-	}
-	
-	private void renderAsPanel(final CyNetworkView view, final RenderingEngineFactory<CyNetwork> engineFactory) {
-		final RenderingEngine<CyNetwork> renderingEngine =
-				getNetworkViewsPanel().addNetworkView(view, engineFactory);
-		serviceRegistrar.getService(RenderingEngineManager.class).addRenderingEngine(renderingEngine);
-	}
-
-	@SuppressWarnings("unchecked")
-	private void renderAsInternalFrame(final String title, final CyNetworkView view,
-			final RenderingEngineFactory<CyNetwork> engineFactory) {
-		final JInternalFrame iframe = new JInternalFrame(title, true, true, true, true);
-		
-		// This is to work around a bug with Mac JInternalFrame L&F that causes large borders (#3352)
-		if (LookAndFeelUtil.isAquaLAF()) {
-			iframe.putClientProperty("JInternalFrame.frameType", "normal");
-			iframe.getRootPane().setBorder(BorderFactory.createMatteBorder(0, 1, 1, 1, new Color(128, 128, 128, 128)));
-		}
-		
-		// This is for force move title bar to the desktop if it's out of range.
-		iframe.addMouseListener(new MouseAdapter() {
+		SwingUtilities.invokeLater(new Runnable() {
 			@Override
-			public void mouseReleased(MouseEvent e) {
-				final Point originalPoint = iframe.getLocation();
-				if (originalPoint.y < 0)
-					iframe.setLocation(originalPoint.x, 0);
-			}
-		});
+			public void run() {
+				// If already registered in this manager, do not render.
+				if (getNetworkViewsPanel().isRendered(view))
+					return;
 
-		final InternalFrameAdapter frameListener = new InternalFrameAdapter() {
-			@Override
-			public void internalFrameClosing(InternalFrameEvent e) {
-				final CyNetworkViewManager netViewMgr = serviceRegistrar.getService(CyNetworkViewManager.class);
+				NetworkViewRenderer renderer = null;
+				final String rendererId = view.getRendererId();
+				final CyApplicationManager appMgr = serviceRegistrar.getService(CyApplicationManager.class);
 				
-				if (netViewMgr.getNetworkViewSet().contains(view))
-					netViewMgr.destroyNetworkView(view);
+				if (rendererId != null)
+					renderer = appMgr.getNetworkViewRenderer(rendererId);
+				
+				if (renderer == null)
+					renderer = appMgr.getDefaultNetworkViewRenderer();
 
-				// See bug #1178 (item #3)
-				KeyboardFocusManager.getCurrentKeyboardFocusManager().clearGlobalFocusOwner();
-			}
-		};
-		
-		iframe.addInternalFrameListener(frameListener);
-		frameListeners.put(iframe, frameListener);
-		
-		desktopPane.add(iframe);
-		
-		synchronized (presentationContainerMap) {
-			presentationContainerMap.put(view, iframe);
-		}
-		
-		iFrameMap.put(iframe, view);
-		
-		final RenderingEngine<CyNetwork> renderingEngine = engineFactory.createRenderingEngine(iframe, view);
-		serviceRegistrar.getService(RenderingEngineManager.class).addRenderingEngine(renderingEngine);
-		
-		presentationMap.put(view, renderingEngine);
-		iframe.pack();
-
-		// create cascade iframe
-		int x = 0;
-		int y = 0;
-		JInternalFrame refFrame = null;
-		JInternalFrame[] allFrames = desktopPane.getAllFrames();
-
-		// frame Location
-		if (allFrames.length > 1)
-			refFrame = allFrames[0];
-
-		if (refFrame != null) {
-			x = refFrame.getLocation().x + 20;
-			y = refFrame.getLocation().y + 20;
-		}
-
-		if (x > (desktopPane.getWidth() - MINIMUM_WIN_WIDTH))
-			x = desktopPane.getWidth() - MINIMUM_WIN_WIDTH;
-		if (y > (desktopPane.getHeight() - MINIMUM_WIN_HEIGHT))
-			y = desktopPane.getHeight() - MINIMUM_WIN_HEIGHT;
-		if (x < 0)
-			x = 0;
-		if (y < 0)
-			y = 0;
-
-		iframe.setLocation(x, y);
-
-		// maximize the frame if the specified property is set
-		final CyProperty<Properties> cyProp = serviceRegistrar.getService(CyProperty.class, "(cyPropertyName=cytoscape3.props)");
-		final String max = cyProp.getProperties().getProperty("maximizeViewOnCreate");
-
-		if ((max != null) && Boolean.parseBoolean(max)) {
-			try {
-				iframe.setMaximum(true);
-			} catch (PropertyVetoException pve) {
-				logger.warn("Could not maximize frame.", pve);
-			}
-		} else {
-			int w = view.getVisualProperty(BasicVisualLexicon.NETWORK_WIDTH).intValue();
-			int h = view.getVisualProperty(BasicVisualLexicon.NETWORK_HEIGHT).intValue();
-			boolean resizable = !view.isValueLocked(BasicVisualLexicon.NETWORK_WIDTH) &&
-					!view.isValueLocked(BasicVisualLexicon.NETWORK_HEIGHT);
-			updateNetworkFrameSize(view, w, h, resizable);
-		}
-
-		// Display it and add listeners
-		iframe.addComponentListener(new ComponentAdapter() {
-			@Override
-			public void componentResized(ComponentEvent e) {
-				view.setVisualProperty(BasicVisualLexicon.NETWORK_WIDTH, (double)iframe.getContentPane().getWidth());
-				view.setVisualProperty(BasicVisualLexicon.NETWORK_HEIGHT, (double)iframe.getContentPane().getHeight());
+				final RenderingEngineFactory<CyNetwork> engineFactory = renderer
+						.getRenderingEngineFactory(NetworkViewRenderer.DEFAULT_CONTEXT);
+				
+				final RenderingEngine<CyNetwork> renderingEngine =
+						getNetworkViewsPanel().addNetworkView(view, engineFactory, !loadingSession);
+				
+				new Thread() {
+					@Override
+					public void run() {
+						serviceRegistrar.getService(RenderingEngineManager.class).addRenderingEngine(renderingEngine);
+					}
+				}.start();
 			}
 		});
-		
-//		iframe.addInternalFrameListener(this);
-		iframe.setVisible(true);
 	}
+
+//	@SuppressWarnings("unchecked")
+//	private void renderAsInternalFrame(final String title, final CyNetworkView view,
+//			final RenderingEngineFactory<CyNetwork> engineFactory) {
+//		final JInternalFrame iframe = new JInternalFrame(title, true, true, true, true);
+//		
+//		// This is to work around a bug with Mac JInternalFrame L&F that causes large borders (#3352)
+//		if (LookAndFeelUtil.isAquaLAF()) {
+//			iframe.putClientProperty("JInternalFrame.frameType", "normal");
+//			iframe.getRootPane().setBorder(BorderFactory.createMatteBorder(0, 1, 1, 1, new Color(128, 128, 128, 128)));
+//		}
+//		
+//		// This is for force move title bar to the desktop if it's out of range.
+//		iframe.addMouseListener(new MouseAdapter() {
+//			@Override
+//			public void mouseReleased(MouseEvent e) {
+//				final Point originalPoint = iframe.getLocation();
+//				if (originalPoint.y < 0)
+//					iframe.setLocation(originalPoint.x, 0);
+//			}
+//		});
+//
+//		final InternalFrameAdapter frameListener = new InternalFrameAdapter() {
+//			@Override
+//			public void internalFrameClosing(InternalFrameEvent e) {
+//				final CyNetworkViewManager netViewMgr = serviceRegistrar.getService(CyNetworkViewManager.class);
+//				
+//				if (netViewMgr.getNetworkViewSet().contains(view))
+//					netViewMgr.destroyNetworkView(view);
+//
+				// TODO
+//				// See bug #1178 (item #3)
+//				KeyboardFocusManager.getCurrentKeyboardFocusManager().clearGlobalFocusOwner();
+//			}
+//		};
+//		
+//		iframe.addInternalFrameListener(frameListener);
+//		frameListeners.put(iframe, frameListener);
+//		
+//		desktopPane.add(iframe);
+//		
+//		synchronized (presentationContainerMap) {
+//			presentationContainerMap.put(view, iframe);
+//		}
+//		
+//		iFrameMap.put(iframe, view);
+//		
+//		final RenderingEngine<CyNetwork> renderingEngine = engineFactory.createRenderingEngine(iframe, view);
+//		serviceRegistrar.getService(RenderingEngineManager.class).addRenderingEngine(renderingEngine);
+//		
+//		presentationMap.put(view, renderingEngine);
+//		iframe.pack();
+//
+//		// create cascade iframe
+//		int x = 0;
+//		int y = 0;
+//		JInternalFrame refFrame = null;
+//		JInternalFrame[] allFrames = desktopPane.getAllFrames();
+//
+//		// frame Location
+//		if (allFrames.length > 1)
+//			refFrame = allFrames[0];
+//
+//		if (refFrame != null) {
+//			x = refFrame.getLocation().x + 20;
+//			y = refFrame.getLocation().y + 20;
+//		}
+//
+//		if (x > (desktopPane.getWidth() - MINIMUM_WIN_WIDTH))
+//			x = desktopPane.getWidth() - MINIMUM_WIN_WIDTH;
+//		if (y > (desktopPane.getHeight() - MINIMUM_WIN_HEIGHT))
+//			y = desktopPane.getHeight() - MINIMUM_WIN_HEIGHT;
+//		if (x < 0)
+//			x = 0;
+//		if (y < 0)
+//			y = 0;
+//
+//		iframe.setLocation(x, y);
+//
+//		// maximize the frame if the specified property is set
+//		final CyProperty<Properties> cyProp = serviceRegistrar.getService(CyProperty.class, "(cyPropertyName=cytoscape3.props)");
+//		final String max = cyProp.getProperties().getProperty("maximizeViewOnCreate");
+//
+//		if ((max != null) && Boolean.parseBoolean(max)) {
+//			try {
+//				iframe.setMaximum(true);
+//			} catch (PropertyVetoException pve) {
+//				logger.warn("Could not maximize frame.", pve);
+//			}
+//		} else {
+//			int w = view.getVisualProperty(BasicVisualLexicon.NETWORK_WIDTH).intValue();
+//			int h = view.getVisualProperty(BasicVisualLexicon.NETWORK_HEIGHT).intValue();
+//			boolean resizable = !view.isValueLocked(BasicVisualLexicon.NETWORK_WIDTH) &&
+//					!view.isValueLocked(BasicVisualLexicon.NETWORK_HEIGHT);
+//			updateNetworkFrameSize(view, w, h, resizable);
+//		}
+//
+//		// Display it and add listeners
+//		iframe.addComponentListener(new ComponentAdapter() {
+//			@Override
+//			public void componentResized(ComponentEvent e) {
+//				view.setVisualProperty(BasicVisualLexicon.NETWORK_WIDTH, (double)iframe.getContentPane().getWidth());
+//				view.setVisualProperty(BasicVisualLexicon.NETWORK_HEIGHT, (double)iframe.getContentPane().getHeight());
+//			}
+//		});
+//		
+////		iframe.addInternalFrameListener(this);
+//		iframe.setVisible(true);
+//	}
 
 	private String getTitle(final CyNetworkView view) {
 		String title = view.getVisualProperty(BasicVisualLexicon.NETWORK_TITLE);
@@ -521,6 +493,9 @@ public class NetworkViewManager implements NetworkViewAddedListener,
 	}
 	
 	private void onCurrentNetworkViewChanged(final CyNetworkView view) {
+		if (loadingSession)
+			return;
+		
 		final CyNetworkView curView = getNetworkViewsPanel().getCurrentNetworkView();
 		
 		// Same as current focus; no need to update view
@@ -555,7 +530,7 @@ public class NetworkViewManager implements NetworkViewAddedListener,
 			}
 		});
 		
-		if (loadingSession || iFrameMap.isEmpty())
+		if (loadingSession || getNetworkViewsPanel().isEmpty())
 			return;
 		
 		final CyNetworkTableManager netTblMgr = serviceRegistrar.getService(CyNetworkTableManager.class);
@@ -693,6 +668,7 @@ public class NetworkViewManager implements NetworkViewAddedListener,
 	public void handleEvent(final UpdateNetworkPresentationEvent e) {
 		final CyNetworkView view = e.getSource();
 		
+		// TODO
 		final String title = getTitle(view);
 		updateNetworkFrameTitle(view, title);
 		
@@ -711,7 +687,12 @@ public class NetworkViewManager implements NetworkViewAddedListener,
 		final CyNetworkView netView = e.getSource();
 		
 		// Ask the Views Panel to update the thumbnail for the affected network view
-		getNetworkViewsPanel().updateThumbnail(netView);
+		SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				getNetworkViewsPanel().updateThumbnail(netView);
+			}
+		});
 		
 		// Look for MappableVisualPropertyValue objects, so they can be saved for future reference
 		for (final ViewChangeRecord<?> record : e.getPayloadCollection()) {
@@ -756,11 +737,20 @@ public class NetworkViewManager implements NetworkViewAddedListener,
 	@Override
 	public void handleEvent(final SessionLoadCancelledEvent e) {
 		loadingSession = false;
+		// TODO Destroy rendered views
 	}
 	
 	@Override
 	public void handleEvent(final SessionLoadedEvent e) {
 		loadingSession = false;
+		
+		SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				getNetworkViewsPanel().setCurrentNetworkView(
+						serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetworkView());
+			}
+		});
 	}
 	
 	private Set<VisualStyle> findStylesWithMappedColumn(final String columnName) {
@@ -862,7 +852,7 @@ public class NetworkViewManager implements NetworkViewAddedListener,
 			vs.apply(view);
 			view.updateView();
 		} else {
-			this.viewUpdateRequired.add(view);
+			viewUpdateRequired.add(view);
 		}
 	}
 	

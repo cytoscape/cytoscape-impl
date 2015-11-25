@@ -2,7 +2,6 @@ package org.cytoscape.internal.view;
 
 import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
-import static javax.swing.GroupLayout.Alignment.CENTER;
 import static javax.swing.GroupLayout.Alignment.LEADING;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NETWORK_BACKGROUND_PAINT;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NETWORK_HEIGHT;
@@ -138,14 +137,26 @@ public class NetworkViewGrid extends JPanel implements Scrollable {
 		return thumbnailPanels == null || thumbnailPanels.isEmpty();
 	}
 	
+	private boolean contains(final RenderingEngine<CyNetwork> re) {
+		synchronized (lock) {
+			return engines.contains(re);
+		}
+	}
+	
 	protected void addThumbnail(final RenderingEngine<CyNetwork> re) {
-		engines.add(re);
-		dirty = true;
+		synchronized (lock) {
+			if (!contains(re)) {
+				engines.add(re);
+				dirty = true;
+			}
+		}
 	}
 	
 	protected void removeThumbnail(final RenderingEngine<CyNetwork> re) {
-		engines.remove(re);
-		dirty = true;
+		synchronized (lock) {
+			engines.remove(re);
+			dirty = true;
+		}
 	}
 	
 	protected ThumbnailPanel getCurrentThumbnailPanel() {
@@ -158,25 +169,30 @@ public class NetworkViewGrid extends JPanel implements Scrollable {
 		}
 	}
 	
-	protected void setCurrentNetworkView(final CyNetworkView view) {
+	protected void setCurrentNetworkView(final CyNetworkView newView) {
 		synchronized (lock) {
-			if ((currentNetworkView == null && view == null) || 
-					(currentNetworkView != null && currentNetworkView.equals(view)))
+			if ((currentNetworkView == null && newView == null) || 
+					(currentNetworkView != null && currentNetworkView.equals(newView)))
 				return;
 			
-			currentNetworkView = view;
+			final CyNetworkView oldView = currentNetworkView;
+			currentNetworkView = newView;
 			
 			for (ThumbnailPanel tp : thumbnailPanels.values())
 				tp.update();
+			
+			firePropertyChange("currentNetworkView", oldView, newView);
 		}
 	}
 	
 	protected void update(final int thumbnailSize) {
-		dirty = dirty || thumbnailSize != this.thumbnailSize; // TODO separate both conditions
-		this.thumbnailSize = thumbnailSize;
-		
-		if (!dirty) // TODO: Only update images a few times a second or less;
-			return;
+		synchronized (lock) {
+			dirty = dirty || thumbnailSize != this.thumbnailSize; // TODO separate both conditions
+			this.thumbnailSize = thumbnailSize;
+			
+			if (!dirty) // TODO: Only update images a few times a second or less;
+				return;
+		}
 		
 		// TODO Do not recreate if only changing thumbnail size (always use same big image?)
 		recreateThumbnails();
@@ -404,8 +420,14 @@ public class NetworkViewGrid extends JPanel implements Scrollable {
 			
 			currentLabel = new JLabel(IconManager.ICON_BOOKMARK);
 			currentLabel.setFont(iconManager.getIconFont(24.0f));
-			currentLabel.setForeground(UIManager.getColor("Focus.color"));
 			currentLabel.setMinimumSize(currentLabel.getPreferredSize());
+			currentLabel.addMouseListener(new MouseAdapter() {
+				@Override
+				public void mousePressed(MouseEvent e) {
+					if (!isCurrent())
+						setCurrentNetworkView(getNetworkView());
+				}
+			});
 			
 			final Dimension d = new Dimension(size - BORDER_WIDTH, size - BORDER_WIDTH);
 			this.setMinimumSize(d);
@@ -476,6 +498,10 @@ public class NetworkViewGrid extends JPanel implements Scrollable {
 			return selected;
 		}
 		
+		boolean isCurrent() {
+			return getNetworkView().equals(currentNetworkView);
+		}
+		
 		void update() {
 			final CyNetworkView netView = getNetworkView();
 			final CyNetwork network = netView.getModel();
@@ -486,11 +512,12 @@ public class NetworkViewGrid extends JPanel implements Scrollable {
 			setToolTipText("<html><center>" + title + "<br>(" + netName + ")</center></html>");
 			getTitleLabel().setText(title);
 			
-			final boolean isCurrent = netView.equals(currentNetworkView);
-			currentLabel.setText(isCurrent ? IconManager.ICON_BOOKMARK_O : " ");
-			currentLabel.setToolTipText(isCurrent ? "Current Network View" : null);
+			currentLabel.setText(IconManager.ICON_BOOKMARK_O);
+			currentLabel.setForeground(UIManager.getColor(isCurrent() ? "Focus.color" : "Table.background"));
+			currentLabel.setToolTipText(isCurrent() ? "Current Network View" : "Set Current Network View");
+			
 			getTitleLabel().setForeground(
-					UIManager.getColor(isCurrent ? "Label.foreground" : "Label.disabledForeground"));
+					UIManager.getColor(isCurrent() ? "Label.foreground" : "Label.disabledForeground"));
 			
 			this.updateSelection();
 		}
@@ -593,7 +620,7 @@ public class NetworkViewGrid extends JPanel implements Scrollable {
 			
 			g2.setColor(UIManager.getColor("Label.foreground"));
 			g2.setStroke(new BasicStroke(1));
-			g2.drawRect(0,  0, c.getWidth(), c.getHeight());
+			g2.drawRect(0,  0, c.getWidth() - 1, c.getHeight() - 1);
 			
 			g2.dispose();
 		}

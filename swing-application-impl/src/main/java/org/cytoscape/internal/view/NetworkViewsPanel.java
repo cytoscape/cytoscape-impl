@@ -49,7 +49,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JSlider;
 import javax.swing.JTextField;
-import javax.swing.JToolBar;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
@@ -74,8 +73,8 @@ public class NetworkViewsPanel extends JPanel {
 
 	private JPanel contentPane;
 	private JPanel toolBarsPanel;
-	private JToolBar gridToolBar;
-	private JToolBar viewToolBar;
+	private JPanel gridToolBar;
+	private JPanel viewToolBar;
 	private final CardLayout cardLayout;
 	private final NetworkViewGrid networkViewGrid;
 	private JScrollPane gridScrollPane;
@@ -148,7 +147,7 @@ public class NetworkViewsPanel extends JPanel {
 	}
 	
 	public RenderingEngine<CyNetwork> addNetworkView(final CyNetworkView view,
-			final RenderingEngineFactory<CyNetwork> engineFactory) {
+			final RenderingEngineFactory<CyNetwork> engineFactory, boolean showView) {
 		if (isRendered(view))
 			return null;
 		
@@ -161,15 +160,17 @@ public class NetworkViewsPanel extends JPanel {
 				
 				if ((oldView == null && view == null) || (oldView != null && oldView.equals(view)))
 					return;
-				
-				firePropertyChange("currentNetworkView", oldView, view);
 			}
 		});
 		
 		viewContainers.put(vc.getName(), vc);
 		networkViewGrid.addThumbnail(vc.getRenderingEngine());
 		getContentPane().add(vc, vc.getName());
-		show(vc.getName());
+		
+		if (showView)
+			show(vc.getName());
+		else
+			showGrid();
 		
 		return vc.getRenderingEngine();
 	}
@@ -216,9 +217,9 @@ public class NetworkViewsPanel extends JPanel {
 			if (isGridMode()) {
 				final JFrame frame = viewFrames.get(name);
 				
-				if (frame != null)
+				if (frame != null) {
 					showFrame(frame);
-				else if (networkViewGrid.getCurrentThumbnailPanel() != null)
+				} else if (networkViewGrid.getCurrentThumbnailPanel() != null)
 					networkViewGrid.scrollRectToVisible(networkViewGrid.getCurrentThumbnailPanel().getBounds());
 			} else {
 				show(name);
@@ -295,6 +296,14 @@ public class NetworkViewsPanel extends JPanel {
 		networkViewGrid.updateThumbnail(view);
 	}
 	
+	public boolean isEmpty() {
+		return viewFrames.isEmpty() && viewContainers.isEmpty();
+	}
+	
+	public NetworkViewGrid getNetworkViewGrid() {
+		return networkViewGrid;
+	}
+	
 	private void show(final CyNetworkView view) {
 		if (view != null)
 			show(NetworkViewContainer.createUniqueName(view));
@@ -310,13 +319,15 @@ public class NetworkViewsPanel extends JPanel {
 				cardLayout.show(getContentPane(), name);
 				updateToolBars();
 				
-				// FIXME Why view not refreshing???
 				final NetworkViewContainer vc = viewContainers.get(name);
 				
 				if (vc != null) {
+					// FIXME Why is view not being displayed???
+					vc.getNetworkView().setVisualProperty(BasicVisualLexicon.NETWORK_SCALE_FACTOR,
+							vc.getNetworkView().getVisualProperty(BasicVisualLexicon.NETWORK_SCALE_FACTOR));
+					vc.getNetworkView().updateView();
 					vc.invalidate();
 					vc.updateUI();
-					vc.getNetworkView().updateView();
 				}
 			} 
 		} else {
@@ -367,12 +378,12 @@ public class NetworkViewsPanel extends JPanel {
 							items.size() + " Network View" + (items.size() == 1 ? "" : "s") +
 							" selected");
 		
-		getGridToolBar().invalidate();
+		getGridToolBar().updateUI();
 	}
 
 	private void updateViewToolBar(final NetworkViewContainer vc) {
 		getViewTitleLabel().setText(vc.getTitle());
-		getViewToolBar().invalidate();
+		getViewToolBar().updateUI();
 	}
 
 	private NetworkViewContainer getCurrentViewContainer() {
@@ -400,6 +411,7 @@ public class NetworkViewsPanel extends JPanel {
 		add(getToolBarsPanel(), BorderLayout.SOUTH);
 		
 		updateToolBars();
+		showGrid();
 	}
 	
 	private JPanel getContentPane() {
@@ -427,10 +439,10 @@ public class NetworkViewsPanel extends JPanel {
 		return toolBarsPanel;
 	}
 	
-	private JToolBar getGridToolBar() {
+	private JPanel getGridToolBar() {
 		if (gridToolBar == null) {
-			gridToolBar = new JToolBar("gridToolBar", JToolBar.HORIZONTAL);
-			gridToolBar.setFloatable(false);
+			gridToolBar = new JPanel();
+			gridToolBar.setName("gridToolBar");
 			
 			final JSeparator sep = new JSeparator(JSeparator.VERTICAL);
 			
@@ -466,10 +478,10 @@ public class NetworkViewsPanel extends JPanel {
 		return gridToolBar;
 	}
 	
-	private JToolBar getViewToolBar() {
+	private JPanel getViewToolBar() {
 		if (viewToolBar == null) {
-			viewToolBar = new JToolBar("viewToolBar", JToolBar.HORIZONTAL);
-			viewToolBar.setFloatable(false);
+			viewToolBar = new JPanel();
+			viewToolBar.setName("viewToolBar");
 			
 			final JSeparator sep = new JSeparator(JSeparator.VERTICAL);
 			
@@ -796,7 +808,7 @@ public class NetworkViewsPanel extends JPanel {
 		getViewTitleTextField().setText(null);
 		getViewTitleTextField().setVisible(false);
 		getViewTitleLabel().setVisible(true);
-		getViewToolBar().invalidate();
+		getViewToolBar().updateUI();
 	}
 	
 	static void styleButton(final AbstractButton btn, final Font font) {
