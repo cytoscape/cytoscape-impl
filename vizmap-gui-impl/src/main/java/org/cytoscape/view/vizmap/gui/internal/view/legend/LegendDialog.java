@@ -33,10 +33,6 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.util.Collection;
-import java.util.Iterator;
-
-import javax.imageio.spi.IIORegistry;
-import javax.imageio.spi.ImageWriterSpi;
 
 import javax.imageio.spi.IIORegistry;
 import javax.imageio.spi.ImageWriterSpi;

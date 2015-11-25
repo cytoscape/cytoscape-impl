@@ -14,7 +14,6 @@
 	<packaging>pom</packaging>
 	<!-- Implementation bundles can have different version number -->
 	<name>Cytoscape Implementation Parent Project POM</name>
-	<version>3.2.1</version>
 
 	<properties>
 		<cytoscape.api.version>3.3.0</cytoscape.api.version>

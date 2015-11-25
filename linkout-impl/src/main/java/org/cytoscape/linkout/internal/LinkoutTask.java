@@ -32,9 +32,6 @@ import java.net.URLEncoder;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import java.net.URLEncoder;
-import java.io.UnsupportedEncodingException;
-
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.util.swing.OpenBrowser;

@@ -84,9 +84,6 @@ public class NewEmptyNetworkTask extends AbstractTask {
 	public void setRootNetworkList(ListSingleSelection<String> roots) {
 		rootNetworkList = roots;
 	}
-
-	@Tunable(description = "Name of network: ", groups=" ", gravity=3.0)
-	public String name = "Network";
 	
 	@Tunable(description = "Network Name:", gravity=2.0)
 	public String name = "Network";

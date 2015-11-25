@@ -36,7 +36,6 @@ import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import javax.swing.event.TableModelEvent;
 import javax.swing.table.AbstractTableModel;
-import javax.swing.SwingUtilities;
 
 import org.cytoscape.browser.internal.util.TableBrowserUtil;
 import org.cytoscape.browser.internal.util.ValidatedObjectAndEditString;

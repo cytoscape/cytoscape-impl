@@ -264,7 +264,6 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
 		int width = (int) (shapeWidth * scaleFactor / getZoom());
 		int height = (int) (shapeHeight * scaleFactor / getZoom());
 
-
 		double savedBorder = borderWidth;
 		boolean selected = isSelected();
 		borderWidth = borderWidth * scaleFactor / getZoom();

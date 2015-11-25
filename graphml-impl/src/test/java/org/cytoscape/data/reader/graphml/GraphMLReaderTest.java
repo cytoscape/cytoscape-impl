@@ -83,7 +83,6 @@ public class GraphMLReaderTest {
 		when(netViewRenderer.getNetworkViewFactory()).thenReturn(viewFactory);
 		when(appManager.getDefaultNetworkViewRenderer()).thenReturn(netViewRenderer);
 	}
-	
 
 	@After
 	public void tearDown() throws Exception {
