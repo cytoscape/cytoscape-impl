@@ -1,6 +1,5 @@
 package org.cytoscape.internal.view;
 
-import java.awt.Dimension;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Collection;
@@ -89,18 +88,16 @@ public class NetworkViewManager implements NetworkViewAddedListener,
 	private final NetworkViewsPanel networkViewsPanel;
 
 	// Key is MODEL ID
-	private final Map<CyNetworkView, JInternalFrame> presentationContainerMap;
 	private final Map<CyNetworkView, RenderingEngine<CyNetwork>> presentationMap;
 	private final Set<CyNetworkView> viewUpdateRequired;
 
-	private final Map<JInternalFrame, CyNetworkView> iFrameMap;
-	
 	/** columnIdentifier -> { valueInfo -> [views] }*/
 	private final Map<CyColumnIdentifier, Map<MappedVisualPropertyValueInfo, Set<View<?>>>> mappedValuesMap;
 	
 	private volatile boolean loadingSession;
-	private boolean renderAsInternalFrame;
 
+	private Object lock = new Object();
+	
 	private final CyServiceRegistrar serviceRegistrar;
 	
 	public NetworkViewManager(final CyHelpBroker help, final CyServiceRegistrar serviceRegistrar) {
@@ -111,14 +108,13 @@ public class NetworkViewManager implements NetworkViewAddedListener,
 		// add Help hooks
 		help.getHelpBroker().enableHelp(desktopPane, "network-view-manager", null);
 
-		presentationContainerMap = new WeakHashMap<>();
 		presentationMap = new WeakHashMap<>();
-		iFrameMap = new WeakHashMap<>();
 		viewUpdateRequired = new HashSet<>();
 		mappedValuesMap = new HashMap<>();
 		
-		networkViewsPanel.getNetworkViewGrid().addPropertyChangeListener("currentNetworkView",
-				new PropertyChangeListener() {
+		final NetworkViewGrid networkViewGrid = networkViewsPanel.getNetworkViewGrid();
+		
+		networkViewGrid.addPropertyChangeListener("currentNetworkView", new PropertyChangeListener() {
 			@Override
 			public void propertyChange(PropertyChangeEvent e) {
 				final CyNetworkView targetView = (CyNetworkView) e.getNewValue();
@@ -153,6 +149,22 @@ public class NetworkViewManager implements NetworkViewAddedListener,
 				}
 			}
 		});
+		
+		networkViewGrid.addPropertyChangeListener("networkViews", new PropertyChangeListener() {
+			@Override
+			@SuppressWarnings("unchecked")
+			public void propertyChange(PropertyChangeEvent e) {
+				final Collection<CyNetworkView> newSet = (Collection<CyNetworkView>) e.getNewValue();
+				
+				final CyNetworkViewManager netViewMgr = serviceRegistrar.getService(CyNetworkViewManager.class);
+				final Set<CyNetworkView> currentSet = netViewMgr.getNetworkViewSet();
+				
+				for (CyNetworkView view : currentSet) {
+					if (!newSet.contains(view))
+						netViewMgr.destroyNetworkView(view);
+				}
+			}
+		});
 	}
 
 	public NetworkViewsPanel getNetworkViewsPanel() {
@@ -180,7 +192,7 @@ public class NetworkViewManager implements NetworkViewAddedListener,
 			throw new IllegalArgumentException("NetworkViewManager.getInternalFrame(), argument is null");
 		}
 
-		return presentationContainerMap.get(view);
+		return null; // TODO Fix for backwards compatibility
 	}
 	
 	public CyNetworkView getNetworkView(JInternalFrame frame) throws IllegalArgumentException {
@@ -188,7 +200,7 @@ public class NetworkViewManager implements NetworkViewAddedListener,
 			throw new IllegalArgumentException("NetworkViewManager.getNetworkView(), argument is null");
 		}
 		
-		return iFrameMap.get(frame);
+		return null; // TODO Fix for backwards compatibility
 	}
 
 	// // Event Handlers ////
@@ -243,70 +255,29 @@ public class NetworkViewManager implements NetworkViewAddedListener,
 	}
 
 	private final void removeView(final CyNetworkView view) {
-		try {
-			if (renderAsInternalFrame) {
-//				JInternalFrame frame = presentationContainerMap.get(view);
-//				
-//				if (frame != null) {
-//					RenderingEngine<CyNetwork> removed = presentationMap.remove(view);
-//					
-//					viewUpdateRequired.remove(frame);
-//					iFrameMap.remove(frame);
-//					disposeFrame(frame);
-//					serviceRegistrar.getService(RenderingEngineManager.class).removeRenderingEngine(removed);
-//				}
-			} else {
-				SwingUtilities.invokeLater(new Runnable() {
-					@Override
-					public void run() {
-						getNetworkViewsPanel().remove(view);
-						final RenderingEngine<CyNetwork> removed = presentationMap.remove(view);
-						
+		SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					getNetworkViewsPanel().remove(view);
+					viewUpdateRequired.remove(view);
+					final RenderingEngine<CyNetwork> removed = presentationMap.remove(view);
+					
+					if (removed != null) {
 						new Thread() {
 							@Override
 							public void run() {
-								serviceRegistrar.getService(RenderingEngineManager.class).removeRenderingEngine(removed);
+								serviceRegistrar.getService(RenderingEngineManager.class)
+										.removeRenderingEngine(removed);
 							}
 						}.start();
 					}
-				});
+				} catch (Exception e) {
+					logger.error("Unable to destroy Network View", e);
+				}
 			}
-		} catch (Exception e) {
-			logger.error("Network View unable to be killed", e);
-		}
-
-		synchronized (presentationContainerMap) {
-			presentationContainerMap.remove(view);
-		}
+		});
 	}
-
-//	private void disposeFrame(final JInternalFrame frame) throws PropertyVetoException {
-//		if (!SwingUtilities.isEventDispatchThread()) {
-//			SwingUtilities.invokeLater(new Runnable() {
-//				@Override
-//				public void run() {
-//					try {
-//						disposeFrame(frame);
-//					} catch (PropertyVetoException e) {
-//						logger.error("Network View unable to be killed", e);
-//					}
-//				}
-//			});
-//			return;
-//		}
-//		
-//		frame.getRootPane().getLayeredPane().removeAll();
-//		frame.getRootPane().getContentPane().removeAll();
-//		frame.setClosed(true);
-//		
-////		frame.removeInternalFrameListener(this);
-//		InternalFrameListener frameListener = frameListeners.remove(frame);
-//		
-//		if (frameListener != null)
-//			frame.removeInternalFrameListener(frameListener);
-//		
-//		frame.dispose();
-//	}
 
 	/**
 	 * Create a visualization container and add presentation to it.
@@ -454,44 +425,6 @@ public class NetworkViewManager implements NetworkViewAddedListener,
 //		iframe.setVisible(true);
 //	}
 
-	private String getTitle(final CyNetworkView view) {
-		String title = view.getVisualProperty(BasicVisualLexicon.NETWORK_TITLE);
-		
-		if (title == null || title.trim().isEmpty()) {
-			title = view.getModel().getRow(view.getModel()).get(CyNetwork.NAME, String.class);
-			view.setVisualProperty(BasicVisualLexicon.NETWORK_TITLE, title);
-		}
-		
-		return title;
-	}
-	
-	private void updateNetworkFrameSize(final CyNetworkView view, int width, int height, boolean resizable) {
-		final JInternalFrame frame = presentationContainerMap.get(view);
-
-		if (frame == null)
-			return;
-
-		if (width > 0 && height > 0) {
-			if (width != frame.getContentPane().getWidth() && 
-				height != frame.getContentPane().getHeight()) {
-				frame.getContentPane().setPreferredSize(new Dimension(width, height));
-				frame.pack();
-			}
-		}
-		
-		frame.setResizable(resizable);
-		frame.setMaximizable(resizable);
-	}
-	
-	private void updateNetworkFrameTitle(final CyNetworkView view, final String title) {
-		if (title != null && !title.trim().isEmpty()) {
-			final JInternalFrame frame = presentationContainerMap.get(view);
-	
-			if (frame != null)
-				frame.setTitle(title);
-		}
-	}
-	
 	private void onCurrentNetworkViewChanged(final CyNetworkView view) {
 		if (loadingSession)
 			return;
@@ -518,6 +451,9 @@ public class NetworkViewManager implements NetworkViewAddedListener,
 	
 	@Override
 	public void handleEvent(final RowsSetEvent e) {
+		if (loadingSession || getNetworkViewsPanel().isEmpty())
+			return;
+		
 		final CyTable tbl = e.getSource();
 		
 		// Update Network View Title
@@ -529,9 +465,6 @@ public class NetworkViewManager implements NetworkViewAddedListener,
 				updateNetworkViewTitle(nameRecords, tbl);
 			}
 		});
-		
-		if (loadingSession || getNetworkViewsPanel().isEmpty())
-			return;
 		
 		final CyNetworkTableManager netTblMgr = serviceRegistrar.getService(CyNetworkTableManager.class);
 		final CyNetwork net = netTblMgr.getNetworkForTable(tbl);
@@ -566,7 +499,7 @@ public class NetworkViewManager implements NetworkViewAddedListener,
 	}
 	
 	private void onColumnChanged(final CyTable tbl, final String columnName) {
-		if (loadingSession || iFrameMap.isEmpty())
+		if (loadingSession || networkViewsPanel.isEmpty())
 			return;
 		
 		final CyNetworkTableManager netTblMgr = serviceRegistrar.getService(CyNetworkTableManager.class);
@@ -596,24 +529,30 @@ public class NetworkViewManager implements NetworkViewAddedListener,
 	
 	private final void updateNetworkViewTitle(final Collection<RowSetRecord> records, final CyTable source) {
 		for (final RowSetRecord record : records) {
-			if (CyNetwork.NAME.equals(record.getColumn())) {
-				// assume payload collection is for same column
-				synchronized (iFrameMap) {
-					for (final JInternalFrame targetIF : iFrameMap.keySet()) {
-						final CyNetworkView view = iFrameMap.get(targetIF);
+			if (CyNetwork.NAME.equals(record.getColumn())) { // TODO test again
+				final CyNetworkViewManager netViewMgr = serviceRegistrar.getService(CyNetworkViewManager.class);
+				
+				// Assume payload collection is for same column
+				synchronized (lock) {
+					for (CyNetworkView view : netViewMgr.getNetworkViewSet()) {
 						final CyNetwork net = view.getModel();
 
 						if (net.getDefaultNetworkTable() == source) {
-							final String title = record.getRow().get(CyNetwork.NAME, String.class);
-							// We should guarantee this visual property is up to date
-							view.setVisualProperty(BasicVisualLexicon.NETWORK_TITLE, title);
-
-							// Do not update the title with the new network name
-							// if this visual property is locked
-							if (!view.isValueLocked(BasicVisualLexicon.NETWORK_TITLE))
-								targetIF.setTitle(title);
-
-							return; // assuming just one row is set.
+							final String name = record.getRow().get(CyNetwork.NAME, String.class);
+							final String title = view.getVisualProperty(BasicVisualLexicon.NETWORK_TITLE);
+							
+							// TODO: Only update the view's title if the current title and the network name are in sync,
+							// because users can change the Network View title at any time
+							if (name != null && title == null || title.trim().isEmpty()) {
+								view.setVisualProperty(BasicVisualLexicon.NETWORK_TITLE, name);
+	
+								// Does not need to update the rendered title with the new network name
+								// if this visual property is locked
+								if (!view.isValueLocked(BasicVisualLexicon.NETWORK_TITLE))
+									networkViewsPanel.update(view);
+	
+								return; // assuming just one row is set.
+							}
 						}
 					}
 				}
@@ -622,7 +561,7 @@ public class NetworkViewManager implements NetworkViewAddedListener,
 	}
 	
 	public void setUpdateFlag(final CyNetworkView view) {
-		this.viewUpdateRequired.add(view);
+		viewUpdateRequired.add(view);
 	}
 
 	@Override
@@ -630,7 +569,7 @@ public class NetworkViewManager implements NetworkViewAddedListener,
 		if (loadingSession)
 			return;
 		
-		if (e.getSource() != null && !iFrameMap.isEmpty()) {
+		if (e.getSource() != null && !networkViewsPanel.isEmpty()) {
 			final Set<CyNetworkView> viewsSet = findNetworkViewsWithStyles(Collections.singleton(e.getSource()));
 			
 			for (final CyNetworkView view : viewsSet)
@@ -667,19 +606,7 @@ public class NetworkViewManager implements NetworkViewAddedListener,
 	@Override
 	public void handleEvent(final UpdateNetworkPresentationEvent e) {
 		final CyNetworkView view = e.getSource();
-		
-		// TODO
-		final String title = getTitle(view);
-		updateNetworkFrameTitle(view, title);
-		
-		if (renderAsInternalFrame) {
-			final int w = view.getVisualProperty(BasicVisualLexicon.NETWORK_WIDTH).intValue();
-			final int h = view.getVisualProperty(BasicVisualLexicon.NETWORK_HEIGHT).intValue();
-			final boolean resizable = !view.isValueLocked(BasicVisualLexicon.NETWORK_WIDTH) &&
-					!view.isValueLocked(BasicVisualLexicon.NETWORK_HEIGHT);
-			
-			updateNetworkFrameSize(view, w, h, resizable);
-		}
+		networkViewsPanel.update(view);
 	}
 	
 	@Override

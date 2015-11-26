@@ -26,10 +26,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.NavigableMap;
 import java.util.Set;
 import java.util.TreeMap;
@@ -61,7 +63,7 @@ public class NetworkViewGrid extends JPanel implements Scrollable {
 	private static int BORDER_WIDTH = 2;
 	private static int PAD = 5;
 	
-	private Set<RenderingEngine<CyNetwork>> engines;
+	private Map<CyNetworkView, RenderingEngine<CyNetwork>> engines;
 	private final TreeMap<CyNetworkView, ThumbnailPanel> thumbnailPanels;
 	private CyNetworkView currentNetworkView;
 	private int thumbnailSize;
@@ -78,7 +80,7 @@ public class NetworkViewGrid extends JPanel implements Scrollable {
 	public NetworkViewGrid(final CyServiceRegistrar serviceRegistrar) {
 		this.serviceRegistrar = serviceRegistrar;
 		
-		engines = new LinkedHashSet<>();
+		engines = new HashMap<>();
 		thumbnailPanels = new TreeMap<>(comparator = new NetworkViewTitleComparator());
 		
 		// TODO: Listener to update when grip panel resized
@@ -104,12 +106,62 @@ public class NetworkViewGrid extends JPanel implements Scrollable {
 		update(thumbnailSize);
 	}
 	
-	public ThumbnailPanel getThumbnailPanel(final CyNetworkView view) {
+	public ThumbnailPanel getItem(final CyNetworkView view) {
 		return thumbnailPanels.get(view);
+	}
+	
+	public Collection<ThumbnailPanel> getItems() {
+		return thumbnailPanels.values();
+	}
+	
+	protected ThumbnailPanel getCurrentItem() {
+		return currentNetworkView != null ? thumbnailPanels.get(currentNetworkView) : null;
+	}
+	
+	public ThumbnailPanel firstItem() {
+		return thumbnailPanels.firstEntry().getValue();
 	}
 	
 	public int indexOf(final ThumbnailPanel tp) {
 		return new ArrayList<CyNetworkView>(thumbnailPanels.keySet()).indexOf(tp.getNetworkView());
+	}
+	
+	public boolean isEmpty() {
+		return thumbnailPanels.isEmpty();
+	}
+	
+	public void addItem(final RenderingEngine<CyNetwork> re) {
+		synchronized (lock) {
+			if (!contains(re)) {
+				final Collection<CyNetworkView> oldViews = getNetworkViews();
+				engines.put((CyNetworkView)re.getViewModel(), re);
+				dirty = true;
+				firePropertyChange("networkViews", oldViews, getNetworkViews());
+			}
+		}
+	}
+	
+	public void removeItems(final Collection<RenderingEngine<CyNetwork>> enginesToRemove) {
+		synchronized (lock) {
+			if (enginesToRemove != null && !enginesToRemove.isEmpty()) {
+				final Collection<CyNetworkView> oldViews = getNetworkViews();
+				boolean removed = false;
+				
+				for (RenderingEngine<CyNetwork> re : enginesToRemove) {
+					if (engines.remove(re.getViewModel()) != null) {
+						removed = true;
+						dirty = true;
+					}
+				}
+				
+				if (removed)
+					firePropertyChange("networkViews", oldViews, getNetworkViews());
+			}
+		}
+	}
+	
+	public Collection<CyNetworkView> getNetworkViews() {
+		return new ArrayList<>(engines.keySet());
 	}
 	
 	@Override
@@ -139,28 +191,8 @@ public class NetworkViewGrid extends JPanel implements Scrollable {
 	
 	private boolean contains(final RenderingEngine<CyNetwork> re) {
 		synchronized (lock) {
-			return engines.contains(re);
+			return engines.containsKey(re.getViewModel());
 		}
-	}
-	
-	protected void addThumbnail(final RenderingEngine<CyNetwork> re) {
-		synchronized (lock) {
-			if (!contains(re)) {
-				engines.add(re);
-				dirty = true;
-			}
-		}
-	}
-	
-	protected void removeThumbnail(final RenderingEngine<CyNetwork> re) {
-		synchronized (lock) {
-			engines.remove(re);
-			dirty = true;
-		}
-	}
-	
-	protected ThumbnailPanel getCurrentThumbnailPanel() {
-		return currentNetworkView != null ? thumbnailPanels.get(currentNetworkView) : null;
 	}
 	
 	protected CyNetworkView getCurrentNetworkView() {
@@ -199,7 +231,7 @@ public class NetworkViewGrid extends JPanel implements Scrollable {
 	}
 	
 	protected void updateThumbnail(final CyNetworkView view) {
-		final ThumbnailPanel tp = getThumbnailPanel(view);
+		final ThumbnailPanel tp = getItem(view);
 		
 		if (tp != null)
 			tp.updateIcon();
@@ -209,18 +241,12 @@ public class NetworkViewGrid extends JPanel implements Scrollable {
 		return thumbnailSize;
 	}
 	
-	protected Collection<ThumbnailPanel> getItems() {
-		return thumbnailPanels.values();
-	}
-	
 	protected void selectAll() {
-		for (ThumbnailPanel tp : thumbnailPanels.values())
-			tp.setSelected(true);
+		setSelectedItems(getItems());
 	}
 	
 	protected void deselectAll() {
-		for (ThumbnailPanel tp : thumbnailPanels.values())
-			tp.setSelected(false);
+		setSelectedItems(Collections.emptyList());
 	}
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
@@ -229,12 +255,17 @@ public class NetworkViewGrid extends JPanel implements Scrollable {
 			selectionHead = item;
 		} else if (SwingUtilities.isLeftMouseButton(e)) {
 			// LEFT-CLICK...
+			final Set<ThumbnailPanel> oldValue = new HashSet<>(getSelectedItems());
+			boolean changed = false;
+			
 			final boolean isMac = LookAndFeelUtil.isMac();
 			
 			if ((isMac && e.isMetaDown()) || (!isMac && e.isControlDown())) {
 				// COMMAND button down on MacOS or CONTROL button down on another OS.
 				// Toggle this item's selection state
 				item.setSelected(!item.isSelected());
+				changed = true;
+				
 				// Find new selection range head
 				selectionHead = item.isSelected() ? item : findNextSelectionHead(selectionHead);
 			} else {
@@ -248,6 +279,7 @@ public class NetworkViewGrid extends JPanel implements Scrollable {
 						changeRangeSelection(selectionHead, (selectionTail = item), true);
 					} else if (!item.isSelected()) {
 						item.setSelected(true);
+						changed = true;
 					}
 				} else {
 					setSelectedItems((Set) (Collections.singleton(item)));
@@ -256,33 +288,52 @@ public class NetworkViewGrid extends JPanel implements Scrollable {
 				if (getSelectedItems().size() == 1)
 					selectionHead = item;
 			}
+			
+			if (changed)
+				firePropertyChange("selectedItems", oldValue, getSelectedItems());
 		}
 	}
 	
-	protected void setSelectedItems(final Set<ThumbnailPanel> selectedItems) {
+	protected void setSelectedItems(final Collection<ThumbnailPanel> selectedItems) {
+		final Set<ThumbnailPanel> oldValue = new HashSet<>(getSelectedItems());
+		boolean changed = false;
+		
 		for (final ThumbnailPanel tp : thumbnailPanels.values()) {
-			 tp.setSelected(selectedItems != null && selectedItems.contains(tp));
-			 
-			 if (!tp.isSelected()) {
-				 if (tp == selectionHead) selectionHead = null;
-				 if (tp == selectionTail) selectionTail = null;
-			 }
+			final boolean selected = selectedItems != null && selectedItems.contains(tp);
+			
+			if (tp.isSelected() != selected) {
+				tp.setSelected(selected);
+				changed = true;
+			}
+
+			if (!tp.isSelected()) {
+				if (tp == selectionHead) selectionHead = null;
+				if (tp == selectionTail) selectionTail = null;
+			}
 		}
+		
+		if (changed)
+			firePropertyChange("selectedItems", oldValue, getSelectedItems());
 	}
 	
-	protected Set<ThumbnailPanel> getSelectedItems() {
-		 final Set<ThumbnailPanel> set = new HashSet<>();
+	protected List<ThumbnailPanel> getSelectedItems() {
+		 final List<ThumbnailPanel> list = new ArrayList<>();
 		 
-		 for (final ThumbnailPanel tp : thumbnailPanels.values()) {
+		 for (Entry<CyNetworkView, ThumbnailPanel> entry : thumbnailPanels.entrySet()) {
+			 final ThumbnailPanel tp = entry.getValue();
+			 
 			 if (tp.isSelected())
-				 set.add(tp);
+				 list.add(tp);
 		 }
 		 
-		 return set;
+		 return list;
 	}
 	
 	private void changeRangeSelection(final ThumbnailPanel item1, final ThumbnailPanel item2,
 			final boolean selected) {
+		final Set<ThumbnailPanel> oldValue = new HashSet<>(getSelectedItems());
+		boolean changed = false;
+		
 		final NavigableMap<CyNetworkView, ThumbnailPanel> subMap;
 		
 		if (comparator.compare(item1.getNetworkView(), item2.getNetworkView()) <= 0)
@@ -293,9 +344,16 @@ public class NetworkViewGrid extends JPanel implements Scrollable {
 		for (final Map.Entry<CyNetworkView, ThumbnailPanel> entry : subMap.entrySet()) {
 			final ThumbnailPanel nextItem = entry.getValue();
 			
-			if (nextItem.isVisible())
-				nextItem.setSelected(selected);
+			if (nextItem.isVisible()) {
+				if (nextItem.isSelected() != selected) {
+					nextItem.setSelected(selected);
+					changed = true;
+				}
+			}
 		}
+		
+		if (changed)
+			firePropertyChange("selectedItems", oldValue, getSelectedItems());
 	}
 	
 	private ThumbnailPanel findNextSelectionHead(final ThumbnailPanel fromItem) {
@@ -340,7 +398,7 @@ public class NetworkViewGrid extends JPanel implements Scrollable {
 		if (size == null)
 			return;
 		
-		final Set<ThumbnailPanel> previousSelection = getSelectedItems();
+		final List<ThumbnailPanel> previousSelection = getSelectedItems();
 		
 		removeAll();
 		thumbnailPanels.clear();
@@ -358,7 +416,7 @@ public class NetworkViewGrid extends JPanel implements Scrollable {
 			
 			setLayout(new GridLayout(rows, cols));
 			
-			for (RenderingEngine<CyNetwork> engine : engines) {
+			for (RenderingEngine<CyNetwork> engine : engines.values()) {
 				final ThumbnailPanel tp = new ThumbnailPanel(engine, this.thumbnailSize);
 				thumbnailPanels.put(tp.getNetworkView(), tp);
 				
@@ -485,11 +543,12 @@ public class NetworkViewGrid extends JPanel implements Scrollable {
 			this.update();
 		}
 		
-		void setSelected(boolean newValue) {
+		private void setSelected(boolean newValue) {
 			if (this.selected != newValue) {
 				final boolean oldValue = this.selected;
 				this.selected = newValue;
 				updateSelection();
+				
 				firePropertyChange("selected", oldValue, newValue);
 			}
 		}

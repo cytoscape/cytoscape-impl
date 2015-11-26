@@ -9,12 +9,12 @@ import javax.swing.JLayeredPane;
 import javax.swing.JRootPane;
 import javax.swing.RootPaneContainer;
 
+import org.cytoscape.internal.util.ViewUtil;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.view.presentation.RenderingEngineFactory;
-import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 
 @SuppressWarnings("serial")
 public class NetworkViewContainer extends JComponent implements RootPaneContainer {
@@ -33,7 +33,7 @@ public class NetworkViewContainer extends JComponent implements RootPaneContaine
 		this.engineFactory = engineFactory;
 		this.serviceRegistrar = serviceRegistrar;
 		
-		setName(createUniqueName(networkView));
+		setName(ViewUtil.createUniqueKey(networkView));
 		rootPane = new JRootPane();
 		
 		init();
@@ -91,15 +91,7 @@ public class NetworkViewContainer extends JComponent implements RootPaneContaine
 		add(getRootPane(), BorderLayout.CENTER);
 	}
 	
-	protected String getTitle() {
-		return networkView.getVisualProperty(BasicVisualLexicon.NETWORK_TITLE);
-	}
-	
 	protected CyNetworkView getNetworkView() {
 		return networkView;
-	}
-	
-	protected static String createUniqueName(final CyNetworkView view) {
-		return view.getSUID() + "__" + view.getRendererId() + "__" + view.hashCode();
 	}
 }
