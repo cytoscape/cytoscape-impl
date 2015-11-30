@@ -24,6 +24,8 @@ package org.cytoscape.internal.view;
  * #L%
  */
 
+import static org.cytoscape.internal.util.ViewUtil.invokeOnEDT;
+
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -34,7 +36,6 @@ import java.util.Set;
 import java.util.WeakHashMap;
 
 import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
 import org.cytoscape.application.CyApplicationManager;
@@ -103,7 +104,7 @@ public class BirdsEyeViewHandler implements SetCurrentRenderingEngineListener, N
 	public void handleEvent(final SetCurrentRenderingEngineEvent e) {
 		final RenderingEngine<CyNetwork> newEngine = e.getRenderingEngine();
 		
-		SwingUtilities.invokeLater(new Runnable() {
+		invokeOnEDT(new Runnable() {
 			@Override
 			public void run() {
 				updateBEV(newEngine);
@@ -115,7 +116,7 @@ public class BirdsEyeViewHandler implements SetCurrentRenderingEngineListener, N
 	public void handleEvent(final NetworkViewDestroyedEvent e) {
 		final CyNetworkViewManager manager = e.getSource();
 		
-		SwingUtilities.invokeLater(new Runnable() {
+		invokeOnEDT(new Runnable() {
 			@Override
 			public void run() {
 				removeView(manager);
@@ -134,8 +135,9 @@ public class BirdsEyeViewHandler implements SetCurrentRenderingEngineListener, N
 		
 				if (presentationPanel == null) {
 					presentationPanel = new JPanel();
-					NetworkViewRenderer renderer = appManager.getCurrentNetworkViewRenderer();
-					RenderingEngineFactory<CyNetwork> bevFactory = renderer.getRenderingEngineFactory(NetworkViewRenderer.BIRDS_EYE_CONTEXT);
+					final NetworkViewRenderer renderer = appManager.getCurrentNetworkViewRenderer();
+					final RenderingEngineFactory<CyNetwork> bevFactory =
+							renderer.getRenderingEngineFactory(NetworkViewRenderer.BIRDS_EYE_CONTEXT);
 					viewToEngineMap.put(newView, bevFactory.createRenderingEngine(presentationPanel, newView));
 					presentationMap.put((CyNetworkView) newView, presentationPanel);
 				}
@@ -157,7 +159,7 @@ public class BirdsEyeViewHandler implements SetCurrentRenderingEngineListener, N
 	}
 
 	private final void removeView(final CyNetworkViewManager manager) {
-		Set<CyNetworkView> toBeRemoved = new HashSet<CyNetworkView>();
+		final Set<CyNetworkView> toBeRemoved = new HashSet<>();
 		
 		for (CyNetworkView view : presentationMap.keySet()) {
 			if (manager.getNetworkViewSet().contains(view) == false)
@@ -166,13 +168,13 @@ public class BirdsEyeViewHandler implements SetCurrentRenderingEngineListener, N
 
 		for (CyNetworkView view : toBeRemoved) {
 			presentationMap.remove(view);
-			RenderingEngine<?> engine = viewToEngineMap.remove(view);
+			final RenderingEngine<?> engine = viewToEngineMap.remove(view);
+			
 			if (engine != null)
 				engine.dispose();
 		}
 
 		toBeRemoved.clear();
-		toBeRemoved = null;
 
 		// Cleanup the visualization container
 		if (appManager.getCurrentNetworkView() == null) {

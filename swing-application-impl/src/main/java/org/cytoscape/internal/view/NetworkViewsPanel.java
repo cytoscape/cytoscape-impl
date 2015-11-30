@@ -5,13 +5,14 @@ import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static javax.swing.GroupLayout.Alignment.CENTER;
 import static org.cytoscape.internal.view.NetworkViewGrid.MAX_THUMBNAIL_SIZE;
 import static org.cytoscape.internal.view.NetworkViewGrid.MIN_THUMBNAIL_SIZE;
-import static org.cytoscape.util.swing.IconManager.*;
+import static org.cytoscape.util.swing.IconManager.ICON_ARROW_LEFT;
 import static org.cytoscape.util.swing.IconManager.ICON_ARROW_RIGHT;
 import static org.cytoscape.util.swing.IconManager.ICON_CHECK_SQUARE;
 import static org.cytoscape.util.swing.IconManager.ICON_EXTERNAL_LINK_SQUARE;
 import static org.cytoscape.util.swing.IconManager.ICON_SHARE_ALT_SQUARE;
 import static org.cytoscape.util.swing.IconManager.ICON_SQUARE_O;
 import static org.cytoscape.util.swing.IconManager.ICON_TH;
+import static org.cytoscape.util.swing.IconManager.ICON_THUMB_TACK;
 import static org.cytoscape.util.swing.IconManager.ICON_TRASH_O;
 
 import java.awt.BorderLayout;
@@ -52,7 +53,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JSlider;
 import javax.swing.JTextField;
-import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -247,12 +247,7 @@ public class NetworkViewsPanel extends JPanel {
 		frame.addComponentListener(new ComponentAdapter() {
 			@Override
 			public void componentResized(ComponentEvent e) {
-				SwingUtilities.invokeLater(new Runnable() {
-					@Override
-					public void run() {
-						networkViewGrid.updateThumbnail(view);
-					}
-				});
+				networkViewGrid.updateThumbnail(view);
 			};
 		});
 		
@@ -466,12 +461,7 @@ public class NetworkViewsPanel extends JPanel {
 					tp.addComponentListener(new ComponentAdapter() {
 						@Override
 						public void componentResized(ComponentEvent e) {
-							SwingUtilities.invokeLater(new Runnable() {
-								@Override
-								public void run() {
-									networkViewGrid.updateThumbnail(tp.getNetworkView());
-								}
-							});
+							networkViewGrid.updateThumbnail(tp.getNetworkView());
 						};
 					});
 				}

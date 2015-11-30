@@ -1,5 +1,7 @@
 package org.cytoscape.internal.view;
 
+import static org.cytoscape.internal.util.ViewUtil.invokeOnEDT;
+
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Collection;
@@ -12,7 +14,6 @@ import java.util.WeakHashMap;
 
 import javax.swing.JDesktopPane;
 import javax.swing.JInternalFrame;
-import javax.swing.SwingUtilities;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.NetworkViewRenderer;
@@ -208,7 +209,7 @@ public class NetworkViewManager implements NetworkViewAddedListener,
 	public void handleEvent(SetCurrentNetworkViewEvent e) {
 		final CyNetworkView view = e.getNetworkView();
 		
-		SwingUtilities.invokeLater(new Runnable() {
+		invokeOnEDT(new Runnable() {
 			@Override
 			public void run() {
 				onCurrentNetworkViewChanged(view);
@@ -231,7 +232,7 @@ public class NetworkViewManager implements NetworkViewAddedListener,
 		
 		final CyNetworkView curView = view;
 		
-		SwingUtilities.invokeLater(new Runnable() {
+		invokeOnEDT(new Runnable() {
 			@Override
 			public void run() {
 				onCurrentNetworkViewChanged(curView);
@@ -255,7 +256,7 @@ public class NetworkViewManager implements NetworkViewAddedListener,
 	}
 
 	private final void removeView(final CyNetworkView view) {
-		SwingUtilities.invokeLater(new Runnable() {
+		invokeOnEDT(new Runnable() {
 			@Override
 			public void run() {
 				try {
@@ -283,7 +284,7 @@ public class NetworkViewManager implements NetworkViewAddedListener,
 	 * Create a visualization container and add presentation to it.
 	 */
 	private final void render(final CyNetworkView view) {
-		SwingUtilities.invokeLater(new Runnable() {
+		invokeOnEDT(new Runnable() {
 			@Override
 			public void run() {
 				// If already registered in this manager, do not render.
@@ -305,6 +306,7 @@ public class NetworkViewManager implements NetworkViewAddedListener,
 				
 				final RenderingEngine<CyNetwork> renderingEngine =
 						getNetworkViewsPanel().addNetworkView(view, engineFactory, !loadingSession);
+				presentationMap.put(view, renderingEngine);
 				
 				new Thread() {
 					@Override
@@ -459,7 +461,7 @@ public class NetworkViewManager implements NetworkViewAddedListener,
 		// Update Network View Title
 		final Collection<RowSetRecord> nameRecords = e.getColumnRecords(CyNetwork.NAME);
 		
-		SwingUtilities.invokeLater(new Runnable() {
+		invokeOnEDT(new Runnable() {
 			@Override
 			public void run() {
 				updateNetworkViewTitle(nameRecords, tbl);
@@ -614,7 +616,7 @@ public class NetworkViewManager implements NetworkViewAddedListener,
 		final CyNetworkView netView = e.getSource();
 		
 		// Ask the Views Panel to update the thumbnail for the affected network view
-		SwingUtilities.invokeLater(new Runnable() {
+		invokeOnEDT(new Runnable() {
 			@Override
 			public void run() {
 				getNetworkViewsPanel().updateThumbnail(netView);
@@ -671,7 +673,7 @@ public class NetworkViewManager implements NetworkViewAddedListener,
 	public void handleEvent(final SessionLoadedEvent e) {
 		loadingSession = false;
 		
-		SwingUtilities.invokeLater(new Runnable() {
+		invokeOnEDT(new Runnable() {
 			@Override
 			public void run() {
 				getNetworkViewsPanel().setCurrentNetworkView(
