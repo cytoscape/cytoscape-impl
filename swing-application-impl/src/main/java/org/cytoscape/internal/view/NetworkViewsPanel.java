@@ -351,14 +351,8 @@ public class NetworkViewsPanel extends JPanel {
 				
 				final NetworkViewContainer vc = viewContainers.get(name);
 				
-				if (vc != null) {
-					// FIXME Why is view not being displayed???
-					vc.getNetworkView().setVisualProperty(BasicVisualLexicon.NETWORK_SCALE_FACTOR,
-							vc.getNetworkView().getVisualProperty(BasicVisualLexicon.NETWORK_SCALE_FACTOR));
+				if (vc != null)
 					vc.getNetworkView().updateView();
-					vc.invalidate();
-					vc.updateUI();
-				}
 			} 
 		} else {
 			showGrid();

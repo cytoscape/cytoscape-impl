@@ -24,10 +24,8 @@ package org.cytoscape.ding.impl;
  * #L%
  */
 
-
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -63,7 +61,6 @@ import java.util.regex.Pattern;
 
 import javax.imageio.ImageIO;
 import javax.swing.Icon;
-import javax.swing.JLayeredPane;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 
@@ -112,7 +109,6 @@ import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.spacial.SpacialEntry2DEnumerator;
 import org.cytoscape.spacial.SpacialIndex2D;
 import org.cytoscape.spacial.SpacialIndex2DFactory;
-//FIXME
 import org.cytoscape.spacial.internal.dummy.DummySpacialFactory;
 import org.cytoscape.task.EdgeViewTaskFactory;
 import org.cytoscape.task.NetworkViewLocationTaskFactory;
@@ -305,17 +301,17 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	/**
 	 * State variable for when nodes have moved.
 	 */
-	volatile boolean m_contentChanged = false;
+	volatile boolean m_contentChanged;
 
 	/**
 	 * State variable for when visual properties have changed
 	 */
-	volatile boolean m_visualChanged = false;
+	volatile boolean m_visualChanged;
 
 	/**
 	 * State variable for when zooming/panning have changed.
 	 */
-	volatile boolean m_viewportChanged = false;
+	volatile boolean m_viewportChanged;
 
 	/**
 	 * List of listeners.
@@ -330,17 +326,17 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	/**
 	 *
 	 */
-	int m_lastSize = 0;
+	int m_lastSize;
 
 	/**
 	 * Used for caching texture paint.
 	 */
-	Paint m_lastPaint = null;
+	Paint m_lastPaint;
 
 	/**
 	 * Used for caching texture paint.
 	 */
-	Paint m_lastTexturePaint = null;
+	Paint m_lastTexturePaint;
 	
 	/**
 	 * Snapshot of current view.  Will be updated by CONTENT_CHANGED event.
@@ -622,7 +618,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 
 			// Update the view after listener events are fired because listeners
 			// may change something in the graph.
-			updateView();
+			updateView(false);
 		}
 	}
 
@@ -1088,10 +1084,10 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		synchronized (m_lock) {
 			if (m_spacial.queryOverlap(Float.NEGATIVE_INFINITY, Float.NEGATIVE_INFINITY,
 			                           Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY,
-			                           m_extentsBuff, 0, false).numRemaining() == 0) {
+			                           m_extentsBuff, 0, false).numRemaining() == 0)
 				return;
-			}
-			else if(m_networkCanvas.getWidth() == 0 || m_networkCanvas.getHeight() == 0)
+			
+			if (m_networkCanvas.getWidth() == 0 || m_networkCanvas.getHeight() == 0)
 				return;
 
 			// At this point, we actually want doubles
@@ -1125,7 +1121,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		}
 		
 		if (updateView)
-			this.updateView();
+			updateView(false);
 	}
 	
 	/**
@@ -1141,11 +1137,15 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	 */
 	@Override
 	public void updateView() {
-		//System.out.println(this.toString() + ": Update view called: " + this.model);
-		//Thread.dumpStack();
-		
-		//final long start = System.currentTimeMillis();
+		updateView(true);
+	}
+	
+	private void updateView(final boolean forceRedraw) {
 		cyEventHelper.flushPayloadEvents();
+		
+		if (forceRedraw)
+			m_contentChanged = true;
+		
 		m_networkCanvas.repaint();
 		
 		//Check if image size has changed if so, visual property needs to be changed as well
@@ -1155,8 +1155,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 			setVisualProperty(BasicVisualLexicon.NETWORK_WIDTH,(double)imageWidth);
 			setVisualProperty(BasicVisualLexicon.NETWORK_HEIGHT,(double)imageHeight);
 		}
-		//System.out.println("Repaint finished in " + (System.currentTimeMillis() - start) + " msec.");
-		// Fire for updating other presentations.
+		
 		cyEventHelper.fireEvent(new UpdateNetworkPresentationEvent(this));
 	}
 
@@ -1549,7 +1548,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 			}
 		}
 			
-		updateView();
+		updateView(false);
 	}
 
 	/**
@@ -2811,6 +2810,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	 * edge marquee, but could be extended in the future  *
 	 * to support other kinds of animations.              *
 	 *****************************************************/
+	@Override
 	public void actionPerformed(ActionEvent e) {
 		// If we're not even drawing dashed edges, no sense in trying to do marquee
 		if ((m_networkCanvas.getLastRenderDetail() & GraphRenderer.LOD_DASHED_EDGES) == 0) {
