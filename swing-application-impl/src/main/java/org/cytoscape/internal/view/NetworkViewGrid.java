@@ -122,6 +122,10 @@ public class NetworkViewGrid extends JPanel implements Scrollable {
 		return thumbnailPanels.firstEntry().getValue();
 	}
 	
+	public ThumbnailPanel lastItem() {
+		return thumbnailPanels.lastEntry().getValue();
+	}
+	
 	public int indexOf(final ThumbnailPanel tp) {
 		return new ArrayList<CyNetworkView>(thumbnailPanels.keySet()).indexOf(tp.getNetworkView());
 	}

@@ -5,8 +5,6 @@ import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static javax.swing.GroupLayout.Alignment.CENTER;
 import static org.cytoscape.internal.view.NetworkViewGrid.MAX_THUMBNAIL_SIZE;
 import static org.cytoscape.internal.view.NetworkViewGrid.MIN_THUMBNAIL_SIZE;
-import static org.cytoscape.util.swing.IconManager.ICON_ARROW_LEFT;
-import static org.cytoscape.util.swing.IconManager.ICON_ARROW_RIGHT;
 import static org.cytoscape.util.swing.IconManager.ICON_CHECK_SQUARE;
 import static org.cytoscape.util.swing.IconManager.ICON_EXTERNAL_LINK_SQUARE;
 import static org.cytoscape.util.swing.IconManager.ICON_SHARE_ALT_SQUARE;
@@ -91,8 +89,6 @@ public class NetworkViewsPanel extends JPanel {
 	private JSlider thumbnailSlider;
 	
 	private JButton gridModeButton;
-	private JButton previousViewButton;
-	private JButton nextViewButton;
 	private JButton detachViewButton;
 	private JLabel viewTitleLabel;
 	private JTextField viewTitleTextField;
@@ -124,10 +120,7 @@ public class NetworkViewsPanel extends JPanel {
 		vc.addComponentListener(new ComponentAdapter() {
 			@Override
 			public void componentShown(ComponentEvent e) {
-				final CyNetworkView oldView = getCurrentNetworkView();
-				
-				if ((oldView == null && view == null) || (oldView != null && oldView.equals(view)))
-					return;
+				view.updateView();
 			}
 		});
 		
@@ -246,8 +239,14 @@ public class NetworkViewsPanel extends JPanel {
 		});
 		frame.addComponentListener(new ComponentAdapter() {
 			@Override
+			public void componentShown(ComponentEvent e) {
+				view.updateView();
+			}
+			@Override
 			public void componentResized(ComponentEvent e) {
-				networkViewGrid.updateThumbnail(view);
+				view.setVisualProperty(BasicVisualLexicon.NETWORK_WIDTH, (double)frame.getContentPane().getWidth());
+				view.setVisualProperty(BasicVisualLexicon.NETWORK_HEIGHT, (double)frame.getContentPane().getHeight());
+				view.updateView();
 			};
 		});
 		
@@ -256,16 +255,14 @@ public class NetworkViewsPanel extends JPanel {
 		final boolean resizable = !view.isValueLocked(BasicVisualLexicon.NETWORK_WIDTH) &&
 				!view.isValueLocked(BasicVisualLexicon.NETWORK_HEIGHT);
 		
-		if (w > 0 && h > 0) {
+		if (w > 0 && h > 0)
 			frame.getContentPane().setPreferredSize(new Dimension(w, h));
-		}
 		
 		showGrid();
 		
 		frame.pack();
 		frame.setResizable(resizable);
 		frame.setVisible(true);
-		view.updateView();
 	}
 	
 	public void reattachNetworkView(final CyNetworkView view) {
@@ -348,11 +345,6 @@ public class NetworkViewsPanel extends JPanel {
 			} else if (viewContainers.containsKey(name)) {
 				cardLayout.show(getContentPane(), name);
 				updateToolBars();
-				
-				final NetworkViewContainer vc = viewContainers.get(name);
-				
-				if (vc != null)
-					vc.getNetworkView().updateView();
 			} 
 		} else {
 			showGrid();
@@ -557,8 +549,6 @@ public class NetworkViewsPanel extends JPanel {
 			layout.setHorizontalGroup(layout.createSequentialGroup()
 					.addContainerGap()
 					.addComponent(getGridModeButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addComponent(getPreviousViewButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addComponent(getNextViewButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(getDetachViewButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(sep, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(getViewTitleLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
@@ -569,8 +559,6 @@ public class NetworkViewsPanel extends JPanel {
 			);
 			layout.setVerticalGroup(layout.createParallelGroup(CENTER, true)
 					.addComponent(getGridModeButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addComponent(getPreviousViewButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addComponent(getNextViewButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(getDetachViewButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(sep, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 					.addComponent(getViewTitleLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
@@ -740,54 +728,25 @@ public class NetworkViewsPanel extends JPanel {
 		return gridModeButton;
 	}
 	
-	private JButton getPreviousViewButton() {
-		if (previousViewButton == null) {
-			previousViewButton = new JButton(ICON_ARROW_LEFT);
-			previousViewButton.setToolTipText("Previous View");
-			styleButton(previousViewButton, serviceRegistrar.getService(IconManager.class).getIconFont(14.0f));
-			
-			previousViewButton.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					cardLayout.previous(getContentPane());
-					updateToolBars();
-				}
-			});
-		}
-		
-		return previousViewButton;
-	}
-	
-	private JButton getNextViewButton() {
-		if (nextViewButton == null) {
-			nextViewButton = new JButton(ICON_ARROW_RIGHT);
-			nextViewButton.setToolTipText("Next View");
-			styleButton(nextViewButton, serviceRegistrar.getService(IconManager.class).getIconFont(14.0f));
-			
-			nextViewButton.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					cardLayout.next(getContentPane());
-					updateToolBars();
-				}
-			});
-		}
-		
-		return nextViewButton;
-	}
-	
 	private JLabel getViewTitleLabel() {
 		if (viewTitleLabel == null) {
 			viewTitleLabel = new JLabel();
-			viewTitleLabel.setToolTipText("Double-click to change the title...");
+			viewTitleLabel.setToolTipText("Click to change the title...");
 			viewTitleLabel.setFont(viewTitleLabel.getFont().deriveFont(LookAndFeelUtil.getSmallFontSize()));
 			viewTitleLabel.setMinimumSize(new Dimension(viewTitleLabel.getPreferredSize().width,
 					getViewTitleTextField().getPreferredSize().height));
 			viewTitleLabel.addMouseListener(new MouseAdapter() {
 				@Override
 				public void mouseClicked(MouseEvent e) {
-					if (e.getClickCount() == 2)
-						showViewTitleEditor();
+					showViewTitleEditor();
+				}
+				@Override
+				public void mouseEntered(MouseEvent e) {
+					viewTitleLabel.setForeground(UIManager.getColor("Focus.color"));
+				}
+				@Override
+				public void mouseExited(MouseEvent e) {
+					viewTitleLabel.setForeground(UIManager.getColor("Label.foreground"));
 				}
 			});
 		}
