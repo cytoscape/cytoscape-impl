@@ -299,9 +299,9 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	final LongBTree m_selectedAnchors;
 
 	/**
-	 * State variable for when nodes have moved.
+	 * Flag that indicates that the content has changed and the graph needs to be redrawn.
 	 */
-	volatile boolean m_contentChanged;
+	private volatile boolean contentChanged;
 
 	/**
 	 * State variable for when visual properties have changed
@@ -311,7 +311,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	/**
 	 * State variable for when zooming/panning have changed.
 	 */
-	volatile boolean m_viewportChanged;
+	private volatile boolean viewportChanged;
 
 	/**
 	 * List of listeners.
@@ -457,9 +457,9 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		m_defaultNodeXMax = m_defaultNodeXMin + DNodeView.DEFAULT_WIDTH;
 		m_defaultNodeYMax = m_defaultNodeYMin + DNodeView.DEFAULT_HEIGHT;
 		m_networkCanvas = new InnerCanvas(m_lock, this, undo);
-		m_backgroundCanvas = new ArbitraryGraphicsCanvas(this, m_networkCanvas, Color.white, true, true);
+		m_backgroundCanvas = new ArbitraryGraphicsCanvas(this, m_networkCanvas, Color.white, true);
 		addViewportChangeListener(m_backgroundCanvas);
-		m_foregroundCanvas = new ArbitraryGraphicsCanvas(this, m_networkCanvas, Color.white, true, false);
+		m_foregroundCanvas = new ArbitraryGraphicsCanvas(this, m_networkCanvas, Color.white, false);
 		addViewportChangeListener(m_foregroundCanvas);
 		m_selectedNodes = new LongBTree();
 		m_selectedEdges = new LongBTree();
@@ -562,7 +562,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 					((DNodeView) getDNodeView(unselectedNodes[i]))
 							.unselectInternal();
 
-				m_contentChanged = true;
+				setContentChanged();
 			}
 		}
 
@@ -604,7 +604,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 				for (int i = 0; i < unselectedEdges.length; i++)
 					getDEdgeView(unselectedEdges[i]).unselectInternal();
 
-				m_contentChanged = true;
+				setContentChanged();
 			}
 		}
 
@@ -715,7 +715,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 				m_backgroundCanvas.setBackground((Color) paint);
 				m_networkCanvas.setBackground((Color)paint); // for antialiasing...
 				m_foregroundCanvas.setBackground((Color)paint); // for antialiasing...
-				m_contentChanged = true;
+				setContentChanged();
 			} else {
 				logger.debug("DGraphView.setBackgroundPaint(), Color not found.");
 			}
@@ -763,7 +763,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 			if (newView == null)
 				return nodeViewMap.get(node);
 
-			m_contentChanged = true;
+			setContentChanged();
 		}
 
 		// final GraphViewChangeListener listener = m_lis[0];
@@ -834,7 +834,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 			dEdgeView = new DEdgeView(this, edge, handleFactory, lexicon, cyEventHelper);
 
 			edgeViewMap.put(edge, dEdgeView);
-			m_contentChanged = true;
+			setContentChanged();
 		}
 
 		// Under no circumstances should we be holding m_lock when the listener
@@ -940,7 +940,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 			// If this node was hidden, it won't be in m_spacial.
 			m_spacial.delete(nodeInx);
 
-			m_contentChanged = true;
+			setContentChanged();
 		}
 
 		/*
@@ -1013,7 +1013,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 			returnThis = removeEdgeViewInternal(edge);
 
 			if (returnThis != null) {
-				m_contentChanged = true;
+				setContentChanged();
 			}
 		}
 
@@ -1030,6 +1030,34 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		return returnThis;
 	}
 
+	public boolean isDirty() {
+		return isContentChanged() || isViewportChanged();
+	}
+	
+	public boolean isContentChanged() {
+		return contentChanged;
+	}
+	
+	public void setContentChanged() {
+		setContentChanged(true);
+	}
+	
+	private void setContentChanged(final boolean b) {
+		contentChanged = b;
+	}
+	
+	public boolean isViewportChanged() {
+		return viewportChanged;
+	}
+	
+	public void setViewportChanged() {
+		setViewportChanged(true);
+	}
+	
+	private void setViewportChanged(final boolean b) {
+		viewportChanged = b;
+	}
+	
 	/**
 	 * Should synchronize around m_lock.
 	 */
@@ -1074,7 +1102,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	public void setZoom(final double zoom) {
 		synchronized (m_lock) {
 			m_networkCanvas.m_scaleFactor = checkZoom(zoom, m_networkCanvas.m_scaleFactor);
-			m_viewportChanged = true;
+			setViewportChanged();
 		}
 	}
 
@@ -1144,7 +1172,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		cyEventHelper.flushPayloadEvents();
 		
 		if (forceRedraw)
-			m_contentChanged = true;
+			setContentChanged();
 		
 		m_networkCanvas.repaint();
 		
@@ -1312,7 +1340,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 					return false;
 
 				eView.unselectInternal();
-				m_contentChanged = true;
+				setContentChanged();
 			}
 
 			return true;
@@ -1345,7 +1373,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 				nView.m_hiddenYMax = m_extentsBuff[3];
 				m_drawPersp.removeNodes(Collections.singletonList(nnode));
 				m_spacial.delete(nodeInx);
-				m_contentChanged = true;
+				setContentChanged();
 			}
 			return true;
 		} else {
@@ -1386,7 +1414,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 
 				m_spacial.insert(nodeInx, nView.m_hiddenXMin, nView.m_hiddenYMin, nView.m_hiddenXMax,
 						nView.m_hiddenYMax, nView.getZPosition());
-				m_contentChanged = true;
+				setContentChanged();
 			}
 
 			/*
@@ -1433,7 +1461,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 				if (!m_drawPersp.addEdge(newEdge))
 					return false;
 
-				m_contentChanged = true;
+				setContentChanged();
 			}
 
 			return true;
@@ -1468,7 +1496,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	public void setCenter(double x, double y) {
 		synchronized (m_lock) {
             m_networkCanvas.setCenter(x,y);
-			m_viewportChanged = true;
+			setViewportChanged();
 			
 			// Update view model
 			// TODO: don't do it from here?
@@ -1600,7 +1628,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	public void setGraphLOD(GraphLOD lod) {
 		synchronized (m_lock) {
 			m_networkCanvas.m_lod[0] = lod;
-			m_contentChanged = true;
+			setContentChanged();
 		}
 	}
 
@@ -1762,7 +1790,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		} catch (Exception e) { 
 			// We probably had a node or edge view removed out from underneath us.  Just quietly return, but
 			// set content changed so we redraw again
-			m_contentChanged = true;
+			setContentChanged();
 		}
 		// }
 
@@ -1849,8 +1877,9 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
  			                                             yCenter, scale, haveZOrder, dependencies);
 		// }
 		} catch (Exception e) { e.printStackTrace(); }
-		m_contentChanged = false;
-		m_viewportChanged = false;
+		
+		setContentChanged(false);
+		setViewportChanged(false);
 		m_visualChanged = true;
 
 		return lastRenderDetail;
@@ -1878,8 +1907,8 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 			}
 		} catch (Exception e) {e.printStackTrace();}
 		
-		m_contentChanged = false;
-		m_viewportChanged = false;
+		setContentChanged(false);
+		setViewportChanged(false);
 		m_visualChanged = true;
 		
 		return lastRenderDetail;
@@ -2825,7 +2854,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 				Stroke as = ((AnimatedStroke)s).newInstanceForNextOffset();
 				synchronized (m_lock) {
 					m_edgeDetails.overrideSegmentStroke(edge, as);
-					m_contentChanged = true;
+					setContentChanged();
 				}
 			} else if (s == null) {
 				removeMe.add(edgeView);

@@ -132,7 +132,6 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 		m_undo = undo;
 		m_lod[0] = new GraphLOD(); // Default LOD.
 		m_backgroundColor = Color.WHITE;
-		m_isVisible = true;
 		m_isOpaque = false;
 		m_xCenter = 0.0d;
 		m_yCenter = 0.0d;
@@ -161,7 +160,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 				// System.out.println("hideEdgesTimer expired");
 				hideEdgesTimer.stop();
 				m_lod[0].setDrawEdges(true);
-				m_view.m_viewportChanged = true;
+				m_view.setViewportChanged();
 				repaint();
 			}
 		};
@@ -181,11 +180,10 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 				m_grafx = grafx;
 				
 				if (m_view != null)
-					m_view.m_viewportChanged = true;
+					m_view.setViewportChanged();
 			}
 		}
 	}
-
 
 	@Override
 	public void update(Graphics g) {
@@ -203,22 +201,19 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 		m_fontMetrics = g.getFontMetrics();
 
 		synchronized (m_lock) {
-			if (m_view.m_contentChanged || m_view.m_viewportChanged) {
-				// System.out.println("contentChanged = "+m_view.m_contentChanged+", viewportChanged = "+m_view.m_viewportChanged);
-				contentChanged = m_view.m_contentChanged;
-				viewportChanged = m_view.m_viewportChanged;
+			if (m_view.isDirty()) {
+				contentChanged = m_view.isContentChanged();
+				viewportChanged = m_view.isViewportChanged();
 				renderGraph(m_grafx,/* setLastRenderDetail = */ true, m_lod[0]);
-				m_view.m_contentChanged = false;
-				m_view.m_viewportChanged = false;
 				xCenter = m_xCenter;
 				yCenter = m_yCenter;
 				scaleFactor = m_scaleFactor;
 			}
 		}
 
-		// if canvas is visible, draw it (could be made invisible via DingCanvas api)
-		if (m_isVisible) {
-			// Should this be on the AWT thread?
+		// if canvas is visible, draw it
+		if (isVisible()) {
+			// TODO Should this be on the AWT thread?
 			g.drawImage(m_img, 0, 0, null);
 		}
 
@@ -507,7 +502,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 
 			m_button1NodeDrag = true;
 		}
-		m_view.m_contentChanged = true;	
+		m_view.setContentChanged();	
 	}
 	
 	private int toggleSelectedEdge(long chosenEdge, MouseEvent e) {
@@ -569,7 +564,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 		}
 
 		m_button1NodeDrag = true;
-		m_view.m_contentChanged = true;
+		m_view.setContentChanged();
 		return chosenEdgeSelected;
 	}
 	
@@ -613,7 +608,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 			selectedNodes[i] = nodes.nextLong();
 
 		if (selectedNodes.length > 0)
-			m_view.m_contentChanged = true;	
+			m_view.setContentChanged();	
 		return selectedNodes;
 	}
 	
@@ -642,7 +637,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 			                                                          false);
 
 			if (hits.numRemaining() > 0)
-				m_view.m_contentChanged = true;
+				m_view.setContentChanged();
 
 			while (hits.numRemaining() > 0) {
 				final long hit = hits.nextLong();
@@ -675,7 +670,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 			selectedEdges[i] = edges.nextLong();
 
 		if (selectedEdges.length > 0)
-			m_view.m_contentChanged = true;
+			m_view.setContentChanged();
 		return selectedEdges;
 	}
 
@@ -884,7 +879,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 			m_scaleFactor = m_scaleFactor * factor;
 		}
 
-		m_view.m_viewportChanged = true;
+		m_view.setViewportChanged();
 		
 		// Update view model.
 		m_view.setVisualProperty(BasicVisualLexicon.NETWORK_SCALE_FACTOR, m_scaleFactor);
@@ -989,8 +984,6 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 		                                             m_xCenter, m_yCenter, m_scaleFactor, new LongHash(), nodes, edges);
 		if (setLastRenderDetail)
 			m_lastRenderDetail = lastRenderDetail;
-
-		m_view.m_contentChanged = false;
 
 		repaint();
 	}
@@ -1117,7 +1110,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 			double newY = m_yCenter - (deltaY / m_scaleFactor);
             setCenter(newX, newY);
 		}
-		m_view.m_viewportChanged = true;
+		m_view.setViewportChanged();
 		setHideEdges();
 		repaint();
 	}
@@ -1368,7 +1361,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 					}
 					if (!m_lod[0].getDrawEdges()) {
 						m_lod[0].setDrawEdges(true);
-						m_view.m_viewportChanged = true;
+						m_view.setViewportChanged();
 					}
 	
 					if ((selectedNodes != null) && (selectedNodes.length > 0)) {
@@ -1379,14 +1372,12 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 						select(DGraphView.makeEdgeList(selectedEdges,m_view), CyNode.class, true);
 					}
 					
-					m_view.m_contentChanged = false;
 					repaint();
 				} else {
-					m_view.m_contentChanged = true;
+					m_view.setContentChanged();
 					repaint();
 				}
 			}
-			
 	
 			if (m_undoable_edit != null)
 				m_undoable_edit.post();
@@ -1402,7 +1393,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 				m_undoable_edit.post();
 
 			m_lod[0].setDrawEdges(true);
-			m_view.m_viewportChanged = true;
+			m_view.setViewportChanged();
 			repaint();
 		}
 	
@@ -1532,7 +1523,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 					}
 	
 					if ((selectedNodes.length > 0) || (m_view.m_selectedAnchors.size() > 0))
-						m_view.m_contentChanged = true;
+						m_view.setContentChanged();
 					if ((selectedNodes.length > 0) && (m_view.m_selectedAnchors.size() == 0)) {
 						setHideEdges();
 					}
@@ -1563,7 +1554,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
                 setCenter(newX, newY);
 			}
 	
-			m_view.m_viewportChanged = true;
+			m_view.setViewportChanged();
 			m_view.setVisualProperty(BasicVisualLexicon.NETWORK_CENTER_X_LOCATION, m_xCenter);
 			m_view.setVisualProperty(BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION, m_yCenter);
 			

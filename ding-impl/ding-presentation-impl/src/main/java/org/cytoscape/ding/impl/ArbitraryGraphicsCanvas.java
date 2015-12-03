@@ -91,13 +91,12 @@ public class ArbitraryGraphicsCanvas extends DingCanvas implements ViewportChang
 	 * @param isOpaque boolean
 	 */
 	public ArbitraryGraphicsCanvas(DGraphView dGraphView,
-	                               InnerCanvas innerCanvas, Color backgroundColor,
-	                               boolean isVisible, boolean isOpaque) {
-		// init members
+	                               InnerCanvas innerCanvas,
+	                               Color backgroundColor,
+	                               boolean isOpaque) {
 		m_dGraphView = dGraphView;
 		m_innerCanvas = innerCanvas;
 		m_backgroundColor = backgroundColor;
-		m_isVisible = isVisible;
 		m_isOpaque = isOpaque;
 		m_componentToNodeMap = new HashMap<Component, CyNode>();
 		m_componentToPointMap = new HashMap<Component, Point>();
@@ -283,14 +282,9 @@ public class ArbitraryGraphicsCanvas extends DingCanvas implements ViewportChang
 			clearImage(image2D);
 
 			// now paint children
-			if (m_isVisible){
-				// System.out.println("ArbitraryGraphicsCanvas: paintChildren");
-				// Component[] components = getComponents();
-				// for (Component c: components) {
-				// 	System.out.println("Child: "+c);
-				// }
+			if (isVisible())
 				this.paintChildren(image2D);
-			}
+			
 			image2D.dispose();
 			// render image
 			graphics.drawImage(m_img, 0, 0, null);

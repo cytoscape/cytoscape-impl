@@ -54,23 +54,9 @@ public abstract class DingCanvas extends JComponent {
 	protected Color m_backgroundColor;
 
 	/**
-	 * ref to visibility boolean
-	 */
-	protected boolean m_isVisible;
-
-	/**
 	 * ref to opaque boolean
 	 */
 	protected boolean m_isOpaque;
-
-	/**
-	 * Show or hides this component depending on value of parameter.
-	 *
-	 * @param isVisible boolean
-	 */
-	public void setVisible(boolean isVisible) {
-		m_isVisible = isVisible;
-	}
 
 	/**
 	 * Sets opacity of component
