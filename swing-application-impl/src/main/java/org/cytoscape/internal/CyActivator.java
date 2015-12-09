@@ -102,13 +102,11 @@ import org.cytoscape.internal.view.help.HelpContactHelpDeskTaskFactory;
 import org.cytoscape.internal.view.help.HelpContentsTaskFactory;
 import org.cytoscape.internal.view.help.HelpReportABugTaskFactory;
 import org.cytoscape.io.datasource.DataSourceManager;
-import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.events.NetworkDestroyedListener;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.property.bookmark.BookmarksUtil;
 import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.session.CySessionManager;
 import org.cytoscape.session.events.SessionLoadedListener;
 import org.cytoscape.task.DynamicTaskFactoryProvisioner;
 import org.cytoscape.task.NetworkCollectionTaskFactory;
@@ -116,9 +114,6 @@ import org.cytoscape.task.NetworkTaskFactory;
 import org.cytoscape.task.NetworkViewCollectionTaskFactory;
 import org.cytoscape.task.NetworkViewTaskFactory;
 import org.cytoscape.task.TableTaskFactory;
-import org.cytoscape.task.edit.EditNetworkTitleTaskFactory;
-import org.cytoscape.task.write.SaveSessionAsTaskFactory;
-import org.cytoscape.util.swing.FileUtil;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.util.swing.OpenBrowser;
@@ -129,7 +124,6 @@ import org.cytoscape.view.model.events.NetworkViewDestroyedListener;
 import org.cytoscape.view.presentation.property.values.CyColumnIdentifierFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.work.ServiceProperties;
-import org.cytoscape.work.SynchronousTaskManager;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.properties.TunablePropertySerializerFactory;
 import org.cytoscape.work.swing.DialogTaskManager;
@@ -158,9 +152,7 @@ public class CyActivator extends AbstractCyActivator {
 		CyApplicationConfiguration cyApplicationConfigurationServiceRef = getService(bc, CyApplicationConfiguration.class);
 		CyVersion cyVersionServiceRef = getService(bc, CyVersion.class);
 		CyApplicationManager cyApplicationManagerServiceRef = getService(bc, CyApplicationManager.class);
-		CySessionManager cySessionManagerServiceRef = getService(bc, CySessionManager.class);
 		CyNetworkViewManager cyNetworkViewManagerServiceRef = getService(bc, CyNetworkViewManager.class);
-		CyNetworkManager cyNetworkManagerServiceRef = getService(bc, CyNetworkManager.class);
 		DialogTaskManager dialogTaskManagerServiceRef = getService(bc, DialogTaskManager.class);
 		PanelTaskManager panelTaskManagerServiceRef = getService(bc, PanelTaskManager.class);
 		TaskStatusPanelFactory taskStatusPanelFactoryRef = getService(bc, TaskStatusPanelFactory.class);
@@ -173,10 +165,8 @@ public class CyActivator extends AbstractCyActivator {
 		CyServiceRegistrar cyServiceRegistrarServiceRef = getService(bc, CyServiceRegistrar.class);
 		OpenBrowser openBrowserServiceRef = getService(bc, OpenBrowser.class);
 		VisualMappingManager visualMappingManagerServiceRef  = getService(bc, VisualMappingManager.class);
-		FileUtil fileUtilServiceRef = getService(bc, FileUtil.class);
 		DynamicTaskFactoryProvisioner dynamicTaskFactoryProvisionerServiceRef = getService(bc, DynamicTaskFactoryProvisioner.class);
 		DataSourceManager dsManagerServiceRef = getService(bc, DataSourceManager.class);
-		EditNetworkTitleTaskFactory editNetworkTitleTFServiceRef  = getService(bc, EditNetworkTitleTaskFactory.class);
 		TunablePropertySerializerFactory tunablePropertySerializerFactoryRef =  getService(bc, TunablePropertySerializerFactory.class);
 		
 		//////////////		
@@ -202,13 +192,7 @@ public class CyActivator extends AbstractCyActivator {
 		BirdsEyeViewHandler birdsEyeViewHandler = new BirdsEyeViewHandler(cyApplicationManagerServiceRef,
 		                                                                  cyNetworkViewManagerServiceRef);
 
-		NetworkPanel networkPanel = new NetworkPanel(cyApplicationManagerServiceRef,
-		                                             cyNetworkManagerServiceRef,
-		                                             cyNetworkViewManagerServiceRef,
-		                                             birdsEyeViewHandler,
-		                                             dialogTaskManagerServiceRef,
-		                                             dynamicTaskFactoryProvisionerServiceRef,
-		                                             editNetworkTitleTFServiceRef);
+		NetworkPanel networkPanel = new NetworkPanel(birdsEyeViewHandler, cyServiceRegistrarServiceRef);
 
 		CytoscapeDesktop cytoscapeDesktop = new CytoscapeDesktop(cytoscapeMenus,
 		                                                         networkViewManager,
@@ -221,21 +205,10 @@ public class CyActivator extends AbstractCyActivator {
 
 		CyDesktopManager cyDesktopManager = new CyDesktopManager(cytoscapeDesktop, networkViewManager);
 
-		SynchronousTaskManager<?> synchronousTaskManagerServiceRef = getService(bc, SynchronousTaskManager.class);
-
-		SaveSessionAsTaskFactory saveTaskFactoryServiceRef = getService(bc, SaveSessionAsTaskFactory.class);
-
 		SessionIO sessionIO = new SessionIO();
 
-		SessionHandler sessionHandler = new SessionHandler(cytoscapeDesktop,
-														   cyNetworkManagerServiceRef,
-														   networkViewManager,
-														   synchronousTaskManagerServiceRef,
-														   saveTaskFactoryServiceRef,
-														   sessionIO,
-														   cySessionManagerServiceRef,
-														   fileUtilServiceRef,
-														   networkPanel);
+		SessionHandler sessionHandler = new SessionHandler(cytoscapeDesktop, networkViewManager, sessionIO,
+				networkPanel, cyServiceRegistrarServiceRef);
 
 		PrintAction printAction = new PrintAction(cyApplicationManagerServiceRef, 
 		                                          cyNetworkViewManagerServiceRef, 

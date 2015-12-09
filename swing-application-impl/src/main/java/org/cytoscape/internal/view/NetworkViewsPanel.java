@@ -202,9 +202,9 @@ public class NetworkViewsPanel extends JPanel {
 			if (isGridMode()) {
 				final NetworkViewFrame frame = getNetworkViewFrame(view);
 				
-				if (frame != null) {
+				if (frame != null)
 					showFrame(frame);
-				} else if (networkViewGrid.getCurrentItem() != null)
+				else if (networkViewGrid.getCurrentItem() != null)
 					networkViewGrid.scrollRectToVisible(networkViewGrid.getCurrentItem().getBounds());
 			} else {
 				show(ViewUtil.createUniqueKey(view));
