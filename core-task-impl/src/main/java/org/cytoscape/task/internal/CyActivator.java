@@ -841,7 +841,7 @@ public class CyActivator extends AbstractCyActivator {
 		destroyNetworkTaskFactoryProps.setProperty(PREFERRED_MENU,"Edit");
 		destroyNetworkTaskFactoryProps.setProperty(ACCELERATOR,"cmd shift w");
 		destroyNetworkTaskFactoryProps.setProperty(ENABLE_FOR,ENABLE_FOR_NETWORK);
-		destroyNetworkTaskFactoryProps.setProperty(TITLE,"Destroy Network");
+		destroyNetworkTaskFactoryProps.setProperty(TITLE,"Destroy Networks");
 		destroyNetworkTaskFactoryProps.setProperty(IN_NETWORK_PANEL_CONTEXT_MENU,"true");
 		destroyNetworkTaskFactoryProps.setProperty(MENU_GRAVITY,"3.2");
 		//destroyNetworkTaskFactoryProps.setProperty(COMMAND,"destroy");
