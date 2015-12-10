@@ -70,7 +70,7 @@ public class CreateNetworkViewTaskFactoryImpl extends AbstractNetworkCollectionT
 		this.vmm = vmm;
 		this.renderingEngineMgr = renderingEngineMgr;
 		this.appMgr = appMgr;
-		viewRenderers = new HashSet<NetworkViewRenderer>();
+		viewRenderers = new HashSet<>();
 	}
 
 	@Override
@@ -99,17 +99,6 @@ public class CreateNetworkViewTaskFactoryImpl extends AbstractNetworkCollectionT
 		return appMgr.getCurrentNetwork() != null;
 	}
 	
-	// TODO delete this method when multiple views per network is completely supported
-	@Override
-	public boolean isReady(Collection<CyNetwork> networks) {
-		for (CyNetwork n : networks) {
-			if (netViewMgr.getNetworkViews(n).isEmpty())
-				return true;
-		}
-		
-		return false;
-	}
-
 	public void addNetworkViewRenderer(final NetworkViewRenderer renderer, final Map<?, ?> props) {
 		viewRenderers.add(renderer);
 	}

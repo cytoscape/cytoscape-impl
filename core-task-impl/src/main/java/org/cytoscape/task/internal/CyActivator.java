@@ -29,6 +29,7 @@ import static org.cytoscape.application.swing.ActionEnableSupport.ENABLE_FOR_NET
 import static org.cytoscape.application.swing.ActionEnableSupport.ENABLE_FOR_SELECTED_EDGES;
 import static org.cytoscape.application.swing.ActionEnableSupport.ENABLE_FOR_SELECTED_NODES;
 import static org.cytoscape.application.swing.ActionEnableSupport.ENABLE_FOR_SELECTED_NODES_OR_EDGES;
+import static org.cytoscape.application.swing.ActionEnableSupport.ENABLE_FOR_SINGLE_NETWORK;
 import static org.cytoscape.work.ServiceProperties.ACCELERATOR;
 import static org.cytoscape.work.ServiceProperties.COMMAND;
 import static org.cytoscape.work.ServiceProperties.COMMAND_DESCRIPTION;
@@ -920,7 +921,7 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc,fitContentTaskFactory,NetworkTaskFactory.class, fitContentTaskFactoryProps);
 
 		Properties editNetworkTitleTaskFactoryProps = new Properties();
-		editNetworkTitleTaskFactoryProps.setProperty(ENABLE_FOR,"singleNetwork");
+		editNetworkTitleTaskFactoryProps.setProperty(ENABLE_FOR,ENABLE_FOR_SINGLE_NETWORK);
 		editNetworkTitleTaskFactoryProps.setProperty(PREFERRED_MENU,"Edit");
 		editNetworkTitleTaskFactoryProps.setProperty(MENU_GRAVITY,"5.5");
 		editNetworkTitleTaskFactoryProps.setProperty(TITLE,"Rename Network...");
@@ -937,7 +938,7 @@ public class CyActivator extends AbstractCyActivator {
 		// No ENABLE_FOR because that is handled by the isReady() methdod of the task factory.
 		createNetworkViewTaskFactoryProps.setProperty(PREFERRED_MENU,"Edit");
 		createNetworkViewTaskFactoryProps.setProperty(MENU_GRAVITY,"3.0");
-		createNetworkViewTaskFactoryProps.setProperty(TITLE,"Create View");
+		createNetworkViewTaskFactoryProps.setProperty(TITLE,"Create Views");
 		createNetworkViewTaskFactoryProps.setProperty(IN_NETWORK_PANEL_CONTEXT_MENU,"true");
 		registerService(bc,createNetworkViewTaskFactory,NetworkCollectionTaskFactory.class, createNetworkViewTaskFactoryProps);
 		registerService(bc,createNetworkViewTaskFactory,CreateNetworkViewTaskFactory.class, createNetworkViewTaskFactoryProps);
@@ -947,7 +948,7 @@ public class CyActivator extends AbstractCyActivator {
 		Properties createNetworkViewCommandProps = new Properties();
 		createNetworkViewCommandProps.setProperty(COMMAND,"create");
 		createNetworkViewCommandProps.setProperty(COMMAND_NAMESPACE,"view");
-		createNetworkViewCommandProps.setProperty(COMMAND_DESCRIPTION,"Create a new view for a network");
+		createNetworkViewCommandProps.setProperty(COMMAND_DESCRIPTION,"Create a new view for a network"); // TODO test again: for current network or selected ones?
 		registerService(bc,createNetworkViewTaskFactory,TaskFactory.class, createNetworkViewCommandProps);
 
 		Properties exportNetworkTaskFactoryProps = new Properties();

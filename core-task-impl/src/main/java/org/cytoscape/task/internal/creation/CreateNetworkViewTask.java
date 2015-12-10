@@ -118,8 +118,8 @@ public class CreateNetworkViewTask extends AbstractNetworkCollectionTask
 		this.renderingEngineMgr = renderingEngineMgr;
 		this.appMgr = appMgr;
 		this.sourceView = sourceView;
-		this.result = new ArrayList<CyNetworkView>();
-		this.viewRenderers = new TreeSet<NetworkViewRenderer>(new Comparator<NetworkViewRenderer>() {
+		this.result = new ArrayList<>();
+		this.viewRenderers = new TreeSet<>(new Comparator<NetworkViewRenderer>() {
 			@Override
 			public int compare(NetworkViewRenderer r1, NetworkViewRenderer r2) {
 				return r1.toString().compareToIgnoreCase(r2.toString());
@@ -130,34 +130,28 @@ public class CreateNetworkViewTask extends AbstractNetworkCollectionTask
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
 		taskMonitor.setProgress(0.0);
-		taskMonitor.setTitle("Creating Network View");
-		taskMonitor.setStatusMessage("Creating network view...");
+		
+		final Collection<CyNetwork> netList = network != null ? Collections.singletonList(network) : networks;
+		final int total = netList.size();
+		
+		taskMonitor.setTitle("Creating Network View" + (total == 1 ? "" : "s"));
+		taskMonitor.setStatusMessage("Creating " + total + " network view" + (total == 1 ? "" : "s") + "...");
 		
 		if (viewFactory == null && viewRenderers.size() > 1) {
 			// Let the user choose the network view renderer first
-			final ChooseViewRendererTask chooseRendererTask = new ChooseViewRendererTask(networks);
+			final ChooseViewRendererTask chooseRendererTask = new ChooseViewRendererTask(netList);
 			insertTasksAfterCurrentTask(chooseRendererTask);
 		} else {
 			final VisualStyle style = vmMgr.getCurrentVisualStyle();
-			Collection<CyNetwork> graphs = networks;
-	
-			if (network != null)
-				graphs = Collections.singletonList(network);
-			
 			int i = 0;
-			int viewCount = graphs.size();
+			int viewCount = netList.size();
 			
-			for (final CyNetwork n : graphs) {
-				if (netViewMgr.getNetworkViews(n).isEmpty()) { // TODO delete this check when multiple views per network is supported
-					result.add(createView(n, style, taskMonitor));
-					taskMonitor.setStatusMessage("Network view successfully created for:  "
-							+ n.getRow(n).get(CyNetwork.NAME, String.class));
-					i++;
-					taskMonitor.setProgress((i / (double) viewCount));
-				}
-				else
-					taskMonitor.setStatusMessage("Network view already present for:  "
-							+ n.getRow(n).get(CyNetwork.NAME, String.class));
+			for (final CyNetwork n : netList) {
+				result.add(createView(n, style, taskMonitor));
+				taskMonitor.setStatusMessage("Network view successfully created for:  "
+						+ n.getRow(n).get(CyNetwork.NAME, String.class));
+				i++;
+				taskMonitor.setProgress((i / (double) viewCount));
 			}
 		}
 	
@@ -186,14 +180,13 @@ public class CreateNetworkViewTask extends AbstractNetworkCollectionTask
 				style.apply(view);
 			}
 
-			// If a source view has been provided, use that to set the X/Y
-			// positions of the
+			// If a source view has been provided, use that to set the X/Y positions of the
 			// nodes along with the visual style.
 			if (sourceView != null) {
 				insertTasksAfterCurrentTask(new CopyExistingViewTask(vmMgr, renderingEngineMgr, view, sourceView, null,
 						null, true));
 			} else if (layoutMgr != null && layout == true) {
-				final Set<CyNetworkView> views = new HashSet<CyNetworkView>();
+				final Set<CyNetworkView> views = new HashSet<>();
 				views.add(view);
 				insertTasksAfterCurrentTask(new ApplyPreferredLayoutTask(views, layoutMgr));
 //				executeInParallel(view, style, new ApplyPreferredLayoutTask(views, layoutMgr), tMonitor);
@@ -291,7 +284,7 @@ public class CreateNetworkViewTask extends AbstractNetworkCollectionTask
 		
 		public ChooseViewRendererTask(final Collection<CyNetwork> networks) {
 			super(networks);
-			renderers = new ListSingleSelection<NetworkViewRenderer>(new ArrayList<NetworkViewRenderer>(viewRenderers));
+			renderers = new ListSingleSelection<>(new ArrayList<>(viewRenderers));
 			
 			final NetworkViewRenderer defViewRenderer = appMgr.getDefaultNetworkViewRenderer();
 			
