@@ -21,47 +21,42 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.UIManager;
 
+import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 
 @SuppressWarnings("serial")
-public class RootNetworkPanel extends JPanel {
+public class RootNetworkPanel extends AbstractNetworkPanel<CyRootNetwork> {
 
 	private ExpandCollapseButton expandCollapseBtn;
-	private JLabel nameLabel;
 	private JLabel networkCountLabel;
 	private JPanel subNetListPanel;
 	
-	private RootNetworkPanelModel model;
-	private final Map<CySubNetwork, SubNetworkPanel> items = new WeakHashMap<>();
-	
-	private final CyServiceRegistrar serviceRegistrar;
+	private Map<CySubNetwork, SubNetworkPanel> items;
 	
 	public RootNetworkPanel(final RootNetworkPanelModel model, final CyServiceRegistrar serviceRegistrar) {
-		this.serviceRegistrar = serviceRegistrar;
-		setModel(model);
-		init();
+		super(model, serviceRegistrar);
 	}
 	
 	public SubNetworkPanel addItem(final CySubNetwork network) {
-		if (!items.containsKey(network)) {
+		if (!getItems().containsKey(network)) {
 			final SubNetworkPanelModel model = new SubNetworkPanelModel(network, serviceRegistrar);
 			
 			final SubNetworkPanel subNetPanel = new SubNetworkPanel(model, serviceRegistrar);
 			subNetPanel.setAlignmentX(LEFT_ALIGNMENT);
 			
 			getSubNetListPanel().add(subNetPanel);
-			items.put(network, subNetPanel);
+			getItems().put(network, subNetPanel);
 			
 			updateRootPanel();
 		}
 		
-		return items.get(network);
+		return getItems().get(network);
 	}
 	
 	public SubNetworkPanel removeItem(final CySubNetwork network) {
-		final SubNetworkPanel subNetPanel = items.remove(network);
+		final SubNetworkPanel subNetPanel = getItems().remove(network);
 		
 		if (subNetPanel != null)
 			getSubNetListPanel().remove(subNetPanel);
@@ -70,20 +65,20 @@ public class RootNetworkPanel extends JPanel {
 	}
 	
 	public void removeAllItems() {
-		items.clear();
+		getItems().clear();
 		getSubNetListPanel().removeAll();
 	}
 	
 	public SubNetworkPanel getItem(final CySubNetwork network) {
-		return items.get(network);
+		return getItems().get(network);
 	}
 	
 	public Collection<SubNetworkPanel> getAllItems() {
-		return new ArrayList<>(items.values());
+		return new ArrayList<>(getItems().values());
 	}
 	
 	public boolean isEmpty() {
-		return items.isEmpty();
+		return getItems().isEmpty();
 	}
 	
 	public void expand() {
@@ -104,17 +99,7 @@ public class RootNetworkPanel extends JPanel {
 		return getSubNetListPanel().isVisible();
 	}
 	
-	public RootNetworkPanelModel getModel() {
-		return model;
-	}
-	
-	public void setModel(final RootNetworkPanelModel newModel) {
-		final RootNetworkPanelModel oldModel = model;
-		model = newModel;
-		update();
-        firePropertyChange("model", oldModel, newModel);
-	}
-	
+	@Override
 	public void update() {
 		updateRootPanel();
 		
@@ -122,18 +107,17 @@ public class RootNetworkPanel extends JPanel {
 			snp.update();
 	}
 	
-	private void updateRootPanel() {
-		getNameLabel().setText(model.getRootNetworkName());
-		getNameLabel().setToolTipText(model.getRootNetworkName());
-		
-		final int netCount = model.getSubNetworkCount();
+	protected void updateRootPanel() {
+		super.update();
+		final int netCount = getModel().getSubNetworkCount();
 		
 		getNetworkCountLabel().setText("" + netCount);
 		getNetworkCountLabel().setToolTipText(
 				"This collection has " + netCount + " network" + (netCount == 1 ? "" : "s"));
 	}
 	
-	private void init() {
+	@Override
+	protected void init() {
 		setBackground(UIManager.getColor("Table.background"));
 		setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, UIManager.getColor("Separator.foreground")));
 		
@@ -181,15 +165,6 @@ public class RootNetworkPanel extends JPanel {
 		return expandCollapseBtn;
 	}
 	
-	private JLabel getNameLabel() {
-		if (nameLabel == null) {
-			nameLabel = new JLabel();
-			nameLabel.setFont(nameLabel.getFont().deriveFont(LookAndFeelUtil.getSmallFontSize()));
-		}
-		
-		return nameLabel;
-	}
-	
 	private JLabel getNetworkCountLabel() {
 		if (networkCountLabel == null) {
 			networkCountLabel = new JLabel();
@@ -225,5 +200,9 @@ public class RootNetworkPanel extends JPanel {
 		}
 		
 		return subNetListPanel;
+	}
+	
+	public Map<CySubNetwork, SubNetworkPanel> getItems() {
+		return items != null ? items : (items = new WeakHashMap<>());
 	}
 }

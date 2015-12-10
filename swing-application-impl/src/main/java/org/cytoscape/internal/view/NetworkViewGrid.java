@@ -570,7 +570,13 @@ public class NetworkViewGrid extends JPanel implements Scrollable {
 			final CyNetwork network = netView.getModel();
 			
 			final String title = netView.getVisualProperty(NETWORK_TITLE);
-			final String netName = network.getRow(network).get(CyNetwork.NAME, String.class);
+			String netName = null;
+			
+			try {
+				netName = network.getRow(network).get(CyNetwork.NAME, String.class);
+			} catch (Exception e) {
+				netName = "";
+			}
 			
 			setToolTipText("<html><center>" + title + "<br>(" + netName + ")</center></html>");
 			getTitleLabel().setText(title);

@@ -52,7 +52,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -84,7 +83,7 @@ import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.internal.task.TaskFactoryTunableAction;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.model.CyRow;
+import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.events.NetworkAboutToBeDestroyedEvent;
 import org.cytoscape.model.events.NetworkAboutToBeDestroyedListener;
@@ -111,6 +110,7 @@ import org.cytoscape.task.NetworkCollectionTaskFactory;
 import org.cytoscape.task.NetworkTaskFactory;
 import org.cytoscape.task.NetworkViewCollectionTaskFactory;
 import org.cytoscape.task.NetworkViewTaskFactory;
+import org.cytoscape.task.create.CreateNetworkViewTaskFactory;
 import org.cytoscape.task.destroy.DestroyNetworkTaskFactory;
 import org.cytoscape.task.edit.EditNetworkTitleTaskFactory;
 import org.cytoscape.util.swing.IconManager;
@@ -128,7 +128,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @SuppressWarnings("serial")
-public class NetworkPanel extends JPanel implements CytoPanelComponent2, SetSelectedNetworksListener,
+public class MainNetworkPanel extends JPanel implements CytoPanelComponent2, SetSelectedNetworksListener,
 		NetworkAddedListener, NetworkViewAddedListener, NetworkAboutToBeDestroyedListener, NetworkDestroyedListener,
 		NetworkViewDestroyedListener, RowsSetListener, RemovedEdgesListener, RemovedNodesListener,
 		SessionAboutToBeLoadedListener, SessionLoadedListener {
@@ -176,9 +176,9 @@ public class NetworkPanel extends JPanel implements CytoPanelComponent2, SetSele
 	private CyServiceRegistrar serviceRegistrar;
 	
 	@SuppressWarnings("unused")
-	private static final Logger logger = LoggerFactory.getLogger(NetworkPanel.class);
+	private static final Logger logger = LoggerFactory.getLogger(MainNetworkPanel.class);
 
-	public NetworkPanel(final BirdsEyeViewHandler bird, final CyServiceRegistrar serviceRegistrar) {
+	public MainNetworkPanel(final BirdsEyeViewHandler bird, final CyServiceRegistrar serviceRegistrar) {
 		this.serviceRegistrar = serviceRegistrar;
 		
 		popup = new JPopupMenu();
@@ -197,14 +197,26 @@ public class NetworkPanel extends JPanel implements CytoPanelComponent2, SetSele
 		});
 		rootPopupMenu.add(editRootNetworTitle);
 		
-		final JMenuItem selectAllSubNetsMenuItem = new JMenuItem("Select All Networks");
-		selectAllSubNetsMenuItem.addActionListener(new ActionListener() {
+		addPropertyChangeListener("selectedNetworks", new PropertyChangeListener() {
 			@Override
-			public void actionPerformed(ActionEvent e) {
-				selectAllSubnetwork();
+			public void propertyChange(final PropertyChangeEvent e) {
+				new Thread() {
+					@Override
+					@SuppressWarnings("unchecked")
+					public void run() {
+						final CyApplicationManager appMgr = serviceRegistrar.getService(CyApplicationManager.class);
+						final List<CyNetwork> selectedNetworks = (List<CyNetwork>) e.getNewValue();
+						
+						// If no selected networks, set null to current network first,
+						// or the current one will be selected again by the application!
+						if (selectedNetworks == null || selectedNetworks.isEmpty())
+							appMgr.setCurrentNetwork(null);
+						
+						appMgr.setSelectedNetworks(selectedNetworks);
+					}
+				}.start();
 			}
 		});
-		rootPopupMenu.add(selectAllSubNetsMenuItem);
 	}
 
 	@Override
@@ -426,7 +438,7 @@ public class NetworkPanel extends JPanel implements CytoPanelComponent2, SetSele
 			selectAllNetworksButton.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(final ActionEvent e) {
-					selectAllSubNetworks();
+					selectAll();
 				}
 			});
 		}
@@ -443,7 +455,7 @@ public class NetworkPanel extends JPanel implements CytoPanelComponent2, SetSele
 			deselectAllNetworksButton.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(final ActionEvent e) {
-					deselectAllSubNetworks();
+					deselectAll();
 				}
 			});
 		}
@@ -454,7 +466,7 @@ public class NetworkPanel extends JPanel implements CytoPanelComponent2, SetSele
 	private JButton getCreateButton() {
 		if (createButton == null) {
 			createButton = new JButton(ICON_PLUS);
-			createButton.setToolTipText("Create...");
+			createButton.setToolTipText("Add...");
 			styleButton(createButton, serviceRegistrar.getService(IconManager.class).getIconFont(ICON_FONT_SIZE));
 
 			createButton.addActionListener(new ActionListener() {
@@ -512,14 +524,31 @@ public class NetworkPanel extends JPanel implements CytoPanelComponent2, SetSele
 	
 	private JPopupMenu getCreateMenu() {
 		final JPopupMenu menu = new JPopupMenu();
+		final Collection<SubNetworkPanel> selectedItems = getSelectedSubNetworkItems();
 		
 		{
-			final JMenuItem mi = new JMenuItem("New View");
-			menu.add(mi);
+			final String text;
 			
-			// TODO If more than 1 renderer...
-			// new JMenu("New View from Renderer");
+			if (selectedItems.isEmpty())
+				text = "Create Views";
+			else
+				text = "Create " + selectedItems.size() + " View" + (selectedItems.size() == 1 ? "" : "s");
+			
+			final JMenuItem mi = new JMenuItem(text);
+			mi.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					final DialogTaskManager taskMgr = serviceRegistrar.getService(DialogTaskManager.class);
+					final CreateNetworkViewTaskFactory taskFactory = serviceRegistrar.getService(CreateNetworkViewTaskFactory.class);
+					taskMgr.execute(taskFactory.createTaskIterator(getNetworks(selectedItems)));
+				}
+			});
+			mi.setEnabled(!selectedItems.isEmpty());
+			menu.add(mi);
 		}
+		
+		// TODO If more than 1 renderer...
+		// new JMenu("New View from Renderer");
 		
 		return menu;
 	}
@@ -567,12 +596,26 @@ public class NetworkPanel extends JPanel implements CytoPanelComponent2, SetSele
 		updateNetworkToolBar();
 	}
 	
-	public void setSelectedNetworks(final List<CyNetwork> selectedNetworks) {
+	/**
+	 * @return All the selected subnetworks.
+	 */
+	public List<CyNetwork> getSelectedNetworks() {
+		final List<CyNetwork> list = new ArrayList<>();
+		
+		for (SubNetworkPanel snp : getAllSubNetworkItems()) {
+			if (snp.isSelected())
+				list.add(snp.getModel().getNetwork());
+		}
+		
+		return list;
+	}
+	
+	public void updateNetworkSelection(final List<CyNetwork> selectedNetworks) {
 		ignoreSelectionEvents = true;
 		
 		try {
 			for (SubNetworkPanel snp : getAllSubNetworkItems())
-				snp.setSelected(selectedNetworks.contains(snp.getModel().getSubNetwork()));
+				snp.setSelected(selectedNetworks.contains(snp.getModel().getNetwork()));
 		} finally {
 			ignoreSelectionEvents = false;
 
@@ -599,55 +642,55 @@ public class NetworkPanel extends JPanel implements CytoPanelComponent2, SetSele
 		updateNetworkToolBar();
 	}
 	
-	public void addTaskFactory(TaskFactory factory, @SuppressWarnings("rawtypes") Map props) {
+	public void addTaskFactory(TaskFactory factory, Map<?, ?> props) {
 		addFactory(factory, props);
 	}
 
-	public void removeTaskFactory(TaskFactory factory, @SuppressWarnings("rawtypes") Map props) {
+	public void removeTaskFactory(TaskFactory factory, Map<?, ?> props) {
 		removeFactory(factory);
 	}
 
-	public void addNetworkCollectionTaskFactory(NetworkCollectionTaskFactory factory, @SuppressWarnings("rawtypes") Map props) {
+	public void addNetworkCollectionTaskFactory(NetworkCollectionTaskFactory factory, Map<?, ?> props) {
 		final DynamicTaskFactoryProvisioner factoryProvisioner = serviceRegistrar.getService(DynamicTaskFactoryProvisioner.class);
 		TaskFactory provisioner = factoryProvisioner.createFor(factory);
 		provisionerMap.put(factory, provisioner);
 		addFactory(provisioner, props);
 	}
 
-	public void removeNetworkCollectionTaskFactory(NetworkCollectionTaskFactory factory, @SuppressWarnings("rawtypes") Map props) {
+	public void removeNetworkCollectionTaskFactory(NetworkCollectionTaskFactory factory, Map<?, ?> props) {
 		removeFactory(provisionerMap.remove(factory));
 	}
 
-	public void addNetworkViewCollectionTaskFactory(NetworkViewCollectionTaskFactory factory, @SuppressWarnings("rawtypes") Map props) {
+	public void addNetworkViewCollectionTaskFactory(NetworkViewCollectionTaskFactory factory, Map<?, ?> props) {
 		final DynamicTaskFactoryProvisioner factoryProvisioner = serviceRegistrar.getService(DynamicTaskFactoryProvisioner.class);
 		TaskFactory provisioner = factoryProvisioner.createFor(factory);
 		provisionerMap.put(factory, provisioner);
 		addFactory(provisioner, props);
 	}
 
-	public void removeNetworkViewCollectionTaskFactory(NetworkViewCollectionTaskFactory factory, @SuppressWarnings("rawtypes") Map props) {
+	public void removeNetworkViewCollectionTaskFactory(NetworkViewCollectionTaskFactory factory, Map<?, ?> props) {
 		removeFactory(provisionerMap.remove(factory));
 	}
 
-	public void addNetworkTaskFactory(NetworkTaskFactory factory, @SuppressWarnings("rawtypes") Map props) {
+	public void addNetworkTaskFactory(NetworkTaskFactory factory, Map<?, ?> props) {
 		final DynamicTaskFactoryProvisioner factoryProvisioner = serviceRegistrar.getService(DynamicTaskFactoryProvisioner.class);
 		TaskFactory provisioner = factoryProvisioner.createFor(factory);
 		provisionerMap.put(factory, provisioner);
 		addFactory(provisioner, props);
 	}
 
-	public void removeNetworkTaskFactory(NetworkTaskFactory factory, @SuppressWarnings("rawtypes") Map props) {
+	public void removeNetworkTaskFactory(NetworkTaskFactory factory, Map<?, ?> props) {
 		removeFactory(provisionerMap.remove(factory));
 	}
 
-	public void addNetworkViewTaskFactory(final NetworkViewTaskFactory factory, @SuppressWarnings("rawtypes") Map props) {
+	public void addNetworkViewTaskFactory(final NetworkViewTaskFactory factory, Map<?, ?> props) {
 		final DynamicTaskFactoryProvisioner factoryProvisioner = serviceRegistrar.getService(DynamicTaskFactoryProvisioner.class);
 		TaskFactory provisioner = factoryProvisioner.createFor(factory);
 		provisionerMap.put(factory, provisioner);
 		addFactory(provisioner, props);
 	}
 
-	public void removeNetworkViewTaskFactory(NetworkViewTaskFactory factory, @SuppressWarnings("rawtypes") Map props) {
+	public void removeNetworkViewTaskFactory(NetworkViewTaskFactory factory, Map<?, ?> props) {
 		removeFactory(provisionerMap.remove(factory));
 	}
 
@@ -703,47 +746,28 @@ public class NetworkPanel extends JPanel implements CytoPanelComponent2, SetSele
 
 	@Override
 	public void handleEvent(final RowsSetEvent e) {
-		if (loadingSession)
+		if (loadingSession || getRootNetworkListPanel().isEmpty())
 			return;
 		
-		final Collection<RowSetRecord> payload = e.getPayloadCollection();
-		if (payload.size() == 0)
-			return;
-
-		final RowSetRecord record = e.getPayloadCollection().iterator().next();
-		if (record == null)
+		// We only care about network name changes
+		final Collection<RowSetRecord> nameRecords = e.getColumnRecords(CyNetwork.NAME);
+		
+		if (nameRecords == null || nameRecords.isEmpty())
 			return;
 		
-		final CyTable table = e.getSource();
-		final CyNetwork network = nameTables.get(table);
+		final CyTable tbl = e.getSource();
+		final CyNetworkTableManager netTblMgr = serviceRegistrar.getService(CyNetworkTableManager.class);
+		final CyNetwork net = netTblMgr.getNetworkForTable(tbl);
 		
-		// Case 1: Network name/title updated
-		if (network != null && record.getColumn().equals(CyNetwork.NAME)) {
-			final CyRow row = payload.iterator().next().getRow();
-			final String newTitle = row.get(CyNetwork.NAME, String.class);
-//			final NetworkTreeNode node = this.network2nodeMap.get(network);
-//			final String oldTitle = treeTableModel.getValueAt(node, 0).toString();
-
-//			if (newTitle.equals(oldTitle) == false) {
-//				invokeOnEDT(new Runnable() {
-//					@Override
-//					public void run() {
-//						treeTableModel.setValueAt(newTitle, node, 0);
-//						treeTable.repaint();
-//					}
-//				});
-//			}
-			return;
-		}
-
-		final CyNetwork updateSelected = nodeEdgeTables.get(table);
-
-		// Case 2: Selection updated.
-		if (updateSelected != null && record.getColumn().equals(CyNetwork.SELECTED)) {
+		// And if there is no related view, nothing needs to be done
+		if (net != null && tbl.equals(net.getDefaultNetworkTable())) {
 			invokeOnEDT(new Runnable() {
 				@Override
 				public void run() {
-//					treeTable.repaint();
+					final AbstractNetworkPanel<?> item = getNetworkItem(net);
+					
+					if (item != null)
+						item.update();
 				}
 			});
 		}
@@ -777,7 +801,7 @@ public class NetworkPanel extends JPanel implements CytoPanelComponent2, SetSele
 		invokeOnEDT(new Runnable() {
 			@Override
 			public void run() {
-				setSelectedNetworks(e.getNetworks());
+				updateNetworkSelection(e.getNetworks());
 			}
 		});
 	}
@@ -894,6 +918,10 @@ public class NetworkPanel extends JPanel implements CytoPanelComponent2, SetSele
 				if (!ignoreSelectionEvents) {
 					updateNetworkSelectionLabel();
 					updateNetworkToolBar();
+					
+					final List<CyNetwork> oldSelection = getSelectedNetworks();
+					oldSelection.remove(subNetPanel.getModel().getNetwork());
+					fireSelectedNetworksChange(oldSelection);
 				}
 			}
 		});
@@ -992,69 +1020,6 @@ public class NetworkPanel extends JPanel implements CytoPanelComponent2, SetSele
 		});
 	}
 
-	@Deprecated
-	private void selectAllSubnetwork(){
-		if (selectedRootSet == null)
-			return;
-		
-		final List<CyNetwork> selectedNetworks = new LinkedList<>();
-		CyNetwork cn = null;
-//		NetworkTreeNode node = null;
-//		
-//		for (final CyRootNetwork root : selectedRootSet) {
-//			// This is a "network set" node...
-//			// When selecting root node, all of the subnetworks are selected.
-//			node = this.network2nodeMap.get(root);
-//			
-//			// Creates a list of all selected networks
-//			List<CySubNetwork> subNetworks = root.getSubNetworkList();
-//			
-//			for (CySubNetwork sn : subNetworks) {
-//				if (netMgr.networkExists(sn.getSUID()))
-//					selectedNetworks.add(sn);
-//			}
-//			
-//			cn = root;
-//		}
-//		
-//		// Determine the current network
-//		if (!selectedNetworks.isEmpty())
-//			cn = ((NetworkTreeNode) node.getFirstChild()).getNetwork();
-		
-		final CyNetworkManager netMgr = serviceRegistrar.getService(CyNetworkManager.class);
-		final CyNetworkViewManager netViewMgr = serviceRegistrar.getService(CyNetworkViewManager.class);
-		
-		final List<CyNetworkView> selectedViews = new ArrayList<>();
-		
-		for (final CyNetwork n : selectedNetworks) {
-			final Collection<CyNetworkView> views = netViewMgr.getNetworkViews(n);
-			
-			if (!views.isEmpty())
-				selectedViews.addAll(views);
-		}
-		
-		// No need to set the same network again. It should prevent infinite loops.
-		// Also check if the network still exists (it could have been removed by another thread).
-		if (cn == null || netMgr.networkExists(cn.getSUID())) {
-			final CyApplicationManager appMgr = serviceRegistrar.getService(CyApplicationManager.class);
-			
-			if (cn == null || !cn.equals(appMgr.getCurrentNetwork()))
-				appMgr.setCurrentNetwork(cn);
-		
-			CyNetworkView cv = null;
-			
-			// Try to get the first view of the current network
-			final Collection<CyNetworkView> cnViews = cn != null ? netViewMgr.getNetworkViews(cn) : null;
-			cv = (cnViews == null || cnViews.isEmpty()) ? null : cnViews.iterator().next();
-			
-			if (cv == null || !cv.equals(appMgr.getCurrentNetworkView()))
-				appMgr.setCurrentNetworkView(cv);
-			
-			appMgr.setSelectedNetworks(selectedNetworks);
-			appMgr.setSelectedNetworkViews(selectedViews);
-		}
-	}
-
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private void addFactory(final TaskFactory factory, final Map props) {
 		final CyApplicationManager appMgr = serviceRegistrar.getService(CyApplicationManager.class);
@@ -1104,6 +1069,15 @@ public class NetworkPanel extends JPanel implements CytoPanelComponent2, SetSele
 		CyAction action = popupActions.remove(factory);
 		if (action != null)
 			popup.removePopupMenuListener(action);
+	}
+	
+	private AbstractNetworkPanel<?> getNetworkItem(final CyNetwork net) {
+		if (net instanceof CySubNetwork)
+			return getSubNetworkPanel(net);
+		if (net instanceof CyRootNetwork)
+			return getRootNetworkListPanel().getItem((CyRootNetwork) net);
+		
+		return null; // Should never happen!
 	}
 	
 	private SubNetworkPanel getSubNetworkPanel(final CyNetwork net) {
@@ -1191,30 +1165,47 @@ public class NetworkPanel extends JPanel implements CytoPanelComponent2, SetSele
 		updateCollapseExpandButtons();
 	}
 	
-	private void selectAllSubNetworks() {
-		ignoreSelectionEvents = true;
-		
-		try {
-			for (final SubNetworkPanel snp : getAllSubNetworkItems())
-				snp.setSelected(true);
-		} finally {
-			ignoreSelectionEvents = false;
-			updateNetworkHeader();
-			updateNetworkToolBar();
-		}
+	private void selectAll() {
+		setSelectedToAllItems(true);
 	}
 	
-	private void deselectAllSubNetworks() {
+	private void deselectAll() {
+		setSelectedToAllItems(false);
+	}
+	
+	private void setSelectedToAllItems(final boolean selected) {
+		final List<CyNetwork> oldSelection = getSelectedNetworks();
+		boolean changed = false;
 		ignoreSelectionEvents = true;
 		
 		try {
-			for (final SubNetworkPanel snp : getAllSubNetworkItems())
-				snp.setSelected(false);
+			for (final AbstractNetworkPanel<?> p : getAllItems()) {
+				if (p.isSelected() != selected) {
+					p.setSelected(selected);
+					
+					if (p.getModel().getNetwork() instanceof CySubNetwork)
+						changed = true;
+				}
+			}
 		} finally {
 			ignoreSelectionEvents = false;
 			updateNetworkHeader();
 			updateNetworkToolBar();
 		}
+		
+		if (changed)
+			fireSelectedNetworksChange(oldSelection);
+	}
+	
+	private Collection<AbstractNetworkPanel<?>> getAllItems() {
+		final ArrayList<AbstractNetworkPanel<?>> list = new ArrayList<>();
+		
+		for (final RootNetworkPanel item : getRootNetworkListPanel().getAllItems()) {
+			list.add(item);
+			list.addAll(item.getAllItems());
+		}
+		
+		return list;
 	}
 	
 	private Collection<SubNetworkPanel> getAllSubNetworkItems() {
@@ -1254,9 +1245,13 @@ public class NetworkPanel extends JPanel implements CytoPanelComponent2, SetSele
 		final ArrayList<CyNetwork> list = new ArrayList<>();
 		
 		for (final SubNetworkPanel snp : items)
-			list.add(snp.getModel().getSubNetwork());
+			list.add(snp.getModel().getNetwork());
 		
 		return list;
+	}
+	
+	private void fireSelectedNetworksChange(final Collection<CyNetwork> oldValue) {
+		firePropertyChange("selectedNetworks", oldValue, getSelectedNetworks());
 	}
 	
 	static void styleButton(final AbstractButton btn, final Font font) {
@@ -1291,7 +1286,7 @@ public class NetworkPanel extends JPanel implements CytoPanelComponent2, SetSele
 		
 		RootNetworkPanel addItem(final CyRootNetwork rootNetwork) {
 			if (!items.containsKey(rootNetwork)) {
-				final RootNetworkPanelModel model = new RootNetworkPanelModel(rootNetwork);
+				final RootNetworkPanelModel model = new RootNetworkPanelModel(rootNetwork, serviceRegistrar);
 				final RootNetworkPanel rootNetworkPanel = new RootNetworkPanel(model, serviceRegistrar);
 				items.put(rootNetwork, rootNetworkPanel);
 				
