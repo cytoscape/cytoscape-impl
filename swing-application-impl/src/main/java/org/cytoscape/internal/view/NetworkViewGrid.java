@@ -99,7 +99,7 @@ public class NetworkViewGrid extends JPanel implements Scrollable {
 			@Override
 			public void mousePressed(final MouseEvent e) {
 				if (!e.isPopupTrigger())
-					setSelectedItems(Collections.emptySet());
+					deselectAll();
 			}
 		});
 		
