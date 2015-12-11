@@ -4,10 +4,12 @@ import static org.cytoscape.internal.util.ViewUtil.invokeOnEDT;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
@@ -21,6 +23,10 @@ import org.cytoscape.application.events.SetCurrentNetworkEvent;
 import org.cytoscape.application.events.SetCurrentNetworkListener;
 import org.cytoscape.application.events.SetCurrentNetworkViewEvent;
 import org.cytoscape.application.events.SetCurrentNetworkViewListener;
+import org.cytoscape.application.events.SetSelectedNetworkViewsEvent;
+import org.cytoscape.application.events.SetSelectedNetworkViewsListener;
+import org.cytoscape.application.events.SetSelectedNetworksEvent;
+import org.cytoscape.application.events.SetSelectedNetworksListener;
 import org.cytoscape.application.swing.CyHelpBroker;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkTableManager;
@@ -77,7 +83,8 @@ import org.slf4j.LoggerFactory;
  */
 public class NetworkViewManager implements NetworkViewAddedListener,
 		NetworkViewAboutToBeDestroyedListener, SetCurrentNetworkViewListener, SetCurrentNetworkListener,
-		RowsSetListener, VisualStyleChangedListener, SetCurrentVisualStyleListener, UpdateNetworkPresentationListener,
+		SetSelectedNetworkViewsListener, SetSelectedNetworksListener, RowsSetListener,
+		VisualStyleChangedListener, SetCurrentVisualStyleListener, UpdateNetworkPresentationListener,
 		VisualStyleSetListener, SessionAboutToBeLoadedListener, SessionLoadCancelledListener, SessionLoadedListener,
 		ColumnDeletedListener, ColumnNameChangedListener, ViewChangedListener {
 
@@ -96,6 +103,7 @@ public class NetworkViewManager implements NetworkViewAddedListener,
 	private final Map<CyColumnIdentifier, Map<MappedVisualPropertyValueInfo, Set<View<?>>>> mappedValuesMap;
 	
 	private volatile boolean loadingSession;
+	private volatile boolean ignoreSeletedNetworkViewsEvents;
 
 	private Object lock = new Object();
 	
@@ -147,6 +155,17 @@ public class NetworkViewManager implements NetworkViewAddedListener,
 					
 					if (currentEngine != null)
 						appMgr.setCurrentRenderingEngine(null);
+				}
+			}
+		});
+		
+		networkViewsPanel.addPropertyChangeListener("seletedNetworkViews", new PropertyChangeListener() {
+			@Override
+			@SuppressWarnings("unchecked")
+			public void propertyChange(PropertyChangeEvent e) {
+				if (!ignoreSeletedNetworkViewsEvents) {
+					final CyApplicationManager appMgr = serviceRegistrar.getService(CyApplicationManager.class);
+					appMgr.setSelectedNetworkViews((List<CyNetworkView>) e.getNewValue());
 				}
 			}
 		});
@@ -205,6 +224,7 @@ public class NetworkViewManager implements NetworkViewAddedListener,
 	}
 
 	// // Event Handlers ////
+	
 	@Override
 	public void handleEvent(SetCurrentNetworkViewEvent e) {
 		final CyNetworkView view = e.getNetworkView();
@@ -253,6 +273,219 @@ public class NetworkViewManager implements NetworkViewAddedListener,
 	public void handleEvent(final NetworkViewAddedEvent nvae) {
 		final CyNetworkView networkView = nvae.getNetworkView();
 		render(networkView);
+	}
+	
+	@Override
+	public void handleEvent(final SetSelectedNetworksEvent e) {
+		// Select all views of the selected networks
+		final List<CyNetworkView> selectedViews = new ArrayList<>();
+		final CyNetworkViewManager netViewMgr = serviceRegistrar.getService(CyNetworkViewManager.class);
+		final List<CyNetwork> networks = e.getNetworks();
+		
+		for (CyNetwork net : networks)
+			selectedViews.addAll(netViewMgr.getNetworkViews(net));
+		
+		invokeOnEDT(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					getNetworkViewsPanel().setSelectedNetworkViews(selectedViews);
+				} finally {
+				}
+			}
+		});
+	}
+
+	@Override
+	public void handleEvent(final SetSelectedNetworkViewsEvent e) {
+		invokeOnEDT(new Runnable() {
+			@Override
+			public void run() {
+				ignoreSeletedNetworkViewsEvents = true;
+				
+				try {
+					getNetworkViewsPanel().setSelectedNetworkViews(e.getNetworkViews());
+				} finally {
+					ignoreSeletedNetworkViewsEvents = false;
+				}
+			}
+		});
+	}
+	
+	@Override
+	public void handleEvent(final VisualStyleChangedEvent e) {
+		if (loadingSession)
+			return;
+		
+		if (e.getSource() != null && !getNetworkViewsPanel().isEmpty()) {
+			final Set<CyNetworkView> viewsSet = findNetworkViewsWithStyles(Collections.singleton(e.getSource()));
+			
+			for (final CyNetworkView view : viewsSet)
+				updateView(view, null);
+		}
+	}
+
+	@Override
+	public void handleEvent(final SetCurrentVisualStyleEvent e) {
+		if (loadingSession)
+			return;
+		
+		final VisualStyle style = e.getVisualStyle();
+		
+		if (style != null) {
+			final CyNetworkView curView = getNetworkViewsPanel().getCurrentNetworkView();
+			
+			if (curView != null) {
+				final VisualMappingManager vmm = serviceRegistrar.getService(VisualMappingManager.class);
+				vmm.setVisualStyle(style, curView);
+			}
+		}
+	}
+	
+	@Override
+	public void handleEvent(final VisualStyleSetEvent e) {
+		if (loadingSession)
+			return;
+		
+		final CyNetworkView view = e.getNetworkView();
+		updateView(view, null);
+	}
+	
+	@Override
+	public void handleEvent(final UpdateNetworkPresentationEvent e) {
+		final CyNetworkView view = e.getSource();
+		getNetworkViewsPanel().update(view);
+	}
+	
+	@Override
+	public void handleEvent(final ViewChangedEvent<?> e) {
+		final CyNetworkView netView = e.getSource();
+		
+		// Ask the Views Panel to update the thumbnail for the affected network view
+		invokeOnEDT(new Runnable() {
+			@Override
+			public void run() {
+				getNetworkViewsPanel().updateThumbnail(netView);
+			}
+		});
+		
+		// Look for MappableVisualPropertyValue objects, so they can be saved for future reference
+		for (final ViewChangeRecord<?> record : e.getPayloadCollection()) {
+			if (!record.isLockedValue())
+				continue;
+			
+			final View<?> view = record.getView();
+			final Object value = record.getValue();
+			
+			if (value instanceof MappableVisualPropertyValue) {
+				final Set<CyColumnIdentifier> columnIds = ((MappableVisualPropertyValue)value).getMappedColumns();
+				
+				if (columnIds == null)
+					continue;
+				
+				final VisualProperty<?> vp = record.getVisualProperty();
+				
+				for (final CyColumnIdentifier colId : columnIds) {
+					Map<MappedVisualPropertyValueInfo, Set<View<?>>> mvpInfoMap = mappedValuesMap.get(colId);
+					
+					if (mvpInfoMap == null)
+						mappedValuesMap.put(colId, mvpInfoMap = new HashMap<>());
+					
+					final MappedVisualPropertyValueInfo mvpInfo =
+							new MappedVisualPropertyValueInfo((MappableVisualPropertyValue)value, vp, netView);
+					Set<View<?>> viewSet = mvpInfoMap.get(mvpInfo);
+					
+					if (viewSet == null)
+						mvpInfoMap.put(mvpInfo, viewSet = new HashSet<View<?>>());
+					
+					viewSet.add(view);
+				}
+			}
+		}
+	}
+
+	@Override
+	public void handleEvent(final SessionAboutToBeLoadedEvent e) {
+		loadingSession = true;
+	}
+	
+	@Override
+	public void handleEvent(final SessionLoadCancelledEvent e) {
+		loadingSession = false;
+		// TODO Destroy rendered views
+	}
+	
+	@Override
+	public void handleEvent(final SessionLoadedEvent e) {
+		loadingSession = false;
+		
+		invokeOnEDT(new Runnable() {
+			@Override
+			public void run() {
+				getNetworkViewsPanel().setCurrentNetworkView(
+						serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetworkView());
+			}
+		});
+	}
+	
+	@Override
+	public void handleEvent(final ColumnDeletedEvent e) {
+		onColumnChanged(e.getSource(), e.getColumnName());
+	}
+	
+	@Override
+	public void handleEvent(final ColumnNameChangedEvent e) {
+		onColumnChanged(e.getSource(), e.getOldColumnName());
+		onColumnChanged(e.getSource(), e.getNewColumnName());
+	}
+	
+	@Override
+	public void handleEvent(final RowsSetEvent e) {
+		if (loadingSession || getNetworkViewsPanel().isEmpty())
+			return;
+		
+		final CyTable tbl = e.getSource();
+		
+		// Update Network View Title
+		final Collection<RowSetRecord> nameRecords = e.getColumnRecords(CyNetwork.NAME);
+		
+		invokeOnEDT(new Runnable() {
+			@Override
+			public void run() {
+				updateNetworkViewTitle(nameRecords, tbl);
+			}
+		});
+		
+		final CyNetworkTableManager netTblMgr = serviceRegistrar.getService(CyNetworkTableManager.class);
+		final CyNetwork net = netTblMgr.getNetworkForTable(tbl);
+		
+		final CyNetworkViewManager netViewMgr = serviceRegistrar.getService(CyNetworkViewManager.class);
+		
+		// Is this column from a network table?
+		// And if there is no related view, nothing needs to be done
+		if ( net != null && netViewMgr.viewExists(net) && 
+				(tbl.equals(net.getDefaultNodeTable()) || tbl.equals(net.getDefaultEdgeTable())) ) {
+			final Collection<CyNetworkView> networkViews = netViewMgr.getNetworkViews(net);
+			final Set<CyNetworkView> viewsToUpdate = new HashSet<>();
+			
+			for (final RowSetRecord record : e.getPayloadCollection()) {
+				final String columnName = record.getColumn();
+				
+				// Reapply locked values that map to changed columns
+				final boolean lockedValuesApplyed = reapplyLockedValues(columnName, networkViews);
+				
+				if (lockedValuesApplyed)
+					viewsToUpdate.addAll(networkViews);
+				
+				// Find views that had their styles affected by the RowsSetEvent
+				final Set<VisualStyle> styles = findStylesWithMappedColumn(columnName);
+				viewsToUpdate.addAll(findNetworkViewsWithStyles(styles));
+			}
+			
+			// Update views
+			for (final CyNetworkView view : viewsToUpdate)
+				updateView(view, null);
+		}
 	}
 
 	private final void removeView(final CyNetworkView view) {
@@ -440,68 +673,8 @@ public class NetworkViewManager implements NetworkViewAddedListener,
 		getNetworkViewsPanel().setCurrentNetworkView(view);
 	}
 
-	@Override
-	public void handleEvent(final ColumnDeletedEvent e) {
-		onColumnChanged(e.getSource(), e.getColumnName());
-	}
-	
-	@Override
-	public void handleEvent(final ColumnNameChangedEvent e) {
-		onColumnChanged(e.getSource(), e.getOldColumnName());
-		onColumnChanged(e.getSource(), e.getNewColumnName());
-	}
-	
-	@Override
-	public void handleEvent(final RowsSetEvent e) {
-		if (loadingSession || getNetworkViewsPanel().isEmpty())
-			return;
-		
-		final CyTable tbl = e.getSource();
-		
-		// Update Network View Title
-		final Collection<RowSetRecord> nameRecords = e.getColumnRecords(CyNetwork.NAME);
-		
-		invokeOnEDT(new Runnable() {
-			@Override
-			public void run() {
-				updateNetworkViewTitle(nameRecords, tbl);
-			}
-		});
-		
-		final CyNetworkTableManager netTblMgr = serviceRegistrar.getService(CyNetworkTableManager.class);
-		final CyNetwork net = netTblMgr.getNetworkForTable(tbl);
-		
-		final CyNetworkViewManager netViewMgr = serviceRegistrar.getService(CyNetworkViewManager.class);
-		
-		// Is this column from a network table?
-		// And if there is no related view, nothing needs to be done
-		if ( net != null && netViewMgr.viewExists(net) && 
-				(tbl.equals(net.getDefaultNodeTable()) || tbl.equals(net.getDefaultEdgeTable())) ) {
-			final Collection<CyNetworkView> networkViews = netViewMgr.getNetworkViews(net);
-			final Set<CyNetworkView> viewsToUpdate = new HashSet<>();
-			
-			for (final RowSetRecord record : e.getPayloadCollection()) {
-				final String columnName = record.getColumn();
-				
-				// Reapply locked values that map to changed columns
-				final boolean lockedValuesApplyed = reapplyLockedValues(columnName, networkViews);
-				
-				if (lockedValuesApplyed)
-					viewsToUpdate.addAll(networkViews);
-				
-				// Find views that had their styles affected by the RowsSetEvent
-				final Set<VisualStyle> styles = findStylesWithMappedColumn(columnName);
-				viewsToUpdate.addAll(findNetworkViewsWithStyles(styles));
-			}
-			
-			// Update views
-			for (final CyNetworkView view : viewsToUpdate)
-				updateView(view, null);
-		}
-	}
-	
 	private void onColumnChanged(final CyTable tbl, final String columnName) {
-		if (loadingSession || networkViewsPanel.isEmpty())
+		if (loadingSession || getNetworkViewsPanel().isEmpty())
 			return;
 		
 		final CyNetworkTableManager netTblMgr = serviceRegistrar.getService(CyNetworkTableManager.class);
@@ -551,7 +724,7 @@ public class NetworkViewManager implements NetworkViewAddedListener,
 								// Does not need to update the rendered title with the new network name
 								// if this visual property is locked
 								if (!view.isValueLocked(BasicVisualLexicon.NETWORK_TITLE))
-									networkViewsPanel.update(view);
+									getNetworkViewsPanel().update(view);
 	
 								return; // assuming just one row is set.
 							}
@@ -566,122 +739,6 @@ public class NetworkViewManager implements NetworkViewAddedListener,
 		viewUpdateRequired.add(view);
 	}
 
-	@Override
-	public void handleEvent(final VisualStyleChangedEvent e) {
-		if (loadingSession)
-			return;
-		
-		if (e.getSource() != null && !networkViewsPanel.isEmpty()) {
-			final Set<CyNetworkView> viewsSet = findNetworkViewsWithStyles(Collections.singleton(e.getSource()));
-			
-			for (final CyNetworkView view : viewsSet)
-				updateView(view, null);
-		}
-	}
-
-	@Override
-	public void handleEvent(final SetCurrentVisualStyleEvent e) {
-		if (loadingSession)
-			return;
-		
-		final VisualStyle style = e.getVisualStyle();
-		
-		if (style != null) {
-			final CyNetworkView curView = getNetworkViewsPanel().getCurrentNetworkView();
-			
-			if (curView != null) {
-				final VisualMappingManager vmm = serviceRegistrar.getService(VisualMappingManager.class);
-				vmm.setVisualStyle(style, curView);
-			}
-		}
-	}
-	
-	@Override
-	public void handleEvent(final VisualStyleSetEvent e) {
-		if (loadingSession)
-			return;
-		
-		final CyNetworkView view = e.getNetworkView();
-		updateView(view, null);
-	}
-	
-	@Override
-	public void handleEvent(final UpdateNetworkPresentationEvent e) {
-		final CyNetworkView view = e.getSource();
-		networkViewsPanel.update(view);
-	}
-	
-	@Override
-	public void handleEvent(final ViewChangedEvent<?> e) {
-		final CyNetworkView netView = e.getSource();
-		
-		// Ask the Views Panel to update the thumbnail for the affected network view
-		invokeOnEDT(new Runnable() {
-			@Override
-			public void run() {
-				getNetworkViewsPanel().updateThumbnail(netView);
-			}
-		});
-		
-		// Look for MappableVisualPropertyValue objects, so they can be saved for future reference
-		for (final ViewChangeRecord<?> record : e.getPayloadCollection()) {
-			if (!record.isLockedValue())
-				continue;
-			
-			final View<?> view = record.getView();
-			final Object value = record.getValue();
-			
-			if (value instanceof MappableVisualPropertyValue) {
-				final Set<CyColumnIdentifier> columnIds = ((MappableVisualPropertyValue)value).getMappedColumns();
-				
-				if (columnIds == null)
-					continue;
-				
-				final VisualProperty<?> vp = record.getVisualProperty();
-				
-				for (final CyColumnIdentifier colId : columnIds) {
-					Map<MappedVisualPropertyValueInfo, Set<View<?>>> mvpInfoMap = mappedValuesMap.get(colId);
-					
-					if (mvpInfoMap == null)
-						mappedValuesMap.put(colId, mvpInfoMap = new HashMap<>());
-					
-					final MappedVisualPropertyValueInfo mvpInfo =
-							new MappedVisualPropertyValueInfo((MappableVisualPropertyValue)value, vp, netView);
-					Set<View<?>> viewSet = mvpInfoMap.get(mvpInfo);
-					
-					if (viewSet == null)
-						mvpInfoMap.put(mvpInfo, viewSet = new HashSet<View<?>>());
-					
-					viewSet.add(view);
-				}
-			}
-		}
-	}
-
-	@Override
-	public void handleEvent(final SessionAboutToBeLoadedEvent e) {
-		loadingSession = true;
-	}
-	
-	@Override
-	public void handleEvent(final SessionLoadCancelledEvent e) {
-		loadingSession = false;
-		// TODO Destroy rendered views
-	}
-	
-	@Override
-	public void handleEvent(final SessionLoadedEvent e) {
-		loadingSession = false;
-		
-		invokeOnEDT(new Runnable() {
-			@Override
-			public void run() {
-				getNetworkViewsPanel().setCurrentNetworkView(
-						serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetworkView());
-			}
-		});
-	}
-	
 	private Set<VisualStyle> findStylesWithMappedColumn(final String columnName) {
 		final Set<VisualStyle> styles = new HashSet<VisualStyle>();
 		final CyApplicationManager appMgr = serviceRegistrar.getService(CyApplicationManager.class);

@@ -36,9 +36,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.swing.AbstractButton;
 import javax.swing.BorderFactory;
@@ -189,6 +191,21 @@ public class NetworkViewsPanel extends JPanel {
 		}
 	}
 	
+	public void setSelectedNetworkViews(final List<CyNetworkView> networkViews) {
+		final Set<ThumbnailPanel> selectedItems = new HashSet<>();
+		
+		for (ThumbnailPanel tp : networkViewGrid.getItems()) {
+			if (networkViews.contains(tp.getNetworkView()))
+				selectedItems.add(tp);
+		}
+			
+		networkViewGrid.setSelectedItems(selectedItems);
+	}
+	
+	public List<CyNetworkView> getSeletedNetworkViews() {
+		return getNetworkViews(networkViewGrid.getSelectedItems());
+	}
+
 	public CyNetworkView getCurrentNetworkView() {
 		return networkViewGrid.getCurrentNetworkView();
 	}
@@ -456,8 +473,13 @@ public class NetworkViewsPanel extends JPanel {
 		
 		networkViewGrid.addPropertyChangeListener("selectedItems", new PropertyChangeListener() {
 			@Override
+			@SuppressWarnings("unchecked")
 			public void propertyChange(PropertyChangeEvent e) {
 				updateGridToolBar();
+				
+				firePropertyChange("seletedNetworkViews",
+						getNetworkViews((Collection<ThumbnailPanel>) e.getOldValue()),
+						getNetworkViews((Collection<ThumbnailPanel>) e.getNewValue()));
 			}
 		});
 		
@@ -581,7 +603,7 @@ public class NetworkViewsPanel extends JPanel {
 				@Override
 				public void mousePressed(final MouseEvent e) {
 					if (!e.isPopupTrigger())
-						networkViewGrid.setSelectedItems(Collections.emptySet());
+						networkViewGrid.deselectAll();
 				}
 			});
 		}
@@ -901,6 +923,15 @@ public class NetworkViewsPanel extends JPanel {
 		getViewTitleTextField().setVisible(false);
 		getViewTitleLabel().setVisible(true);
 		getViewToolBar().updateUI();
+	}
+	
+	private static List<CyNetworkView> getNetworkViews(final Collection<ThumbnailPanel> thumbnailPanels) {
+		final List<CyNetworkView> views = new ArrayList<>();
+		
+		for (ThumbnailPanel tp : thumbnailPanels)
+			views.add(tp.getNetworkView());
+		
+		return views;
 	}
 	
 	static void styleButton(final AbstractButton btn, final Font font) {
