@@ -67,7 +67,7 @@ public class SubNetworkPanel extends AbstractNetworkPanel<CySubNetwork> {
 		);
 	}
 	
-	private JLabel getViewIconLabel() {
+	protected JLabel getViewIconLabel() {
 		if (viewIconLabel == null) {
 			final IconManager iconManager = serviceRegistrar.getService(IconManager.class);
 			

@@ -71,4 +71,9 @@ public abstract class AbstractNetworkPanel<T extends CyNetwork> extends JPanel {
 	}
 	
 	protected abstract void init();
+	
+	@Override
+	public String toString() {
+		return getNameLabel().getText();
+	}
 }

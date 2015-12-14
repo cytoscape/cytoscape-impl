@@ -10,9 +10,9 @@ import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.WeakHashMap;
 
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
@@ -31,6 +31,7 @@ public class RootNetworkPanel extends AbstractNetworkPanel<CyRootNetwork> {
 
 	private ExpandCollapseButton expandCollapseBtn;
 	private JLabel networkCountLabel;
+	private JPanel headerPanel;
 	private JPanel subNetListPanel;
 	
 	private Map<CySubNetwork, SubNetworkPanel> items;
@@ -73,7 +74,7 @@ public class RootNetworkPanel extends AbstractNetworkPanel<CyRootNetwork> {
 		return getItems().get(network);
 	}
 	
-	public Collection<SubNetworkPanel> getAllItems() {
+	public List<SubNetworkPanel> getAllItems() {
 		return new ArrayList<>(getItems().values());
 	}
 	
@@ -117,6 +118,12 @@ public class RootNetworkPanel extends AbstractNetworkPanel<CyRootNetwork> {
 	}
 	
 	@Override
+	protected void updateSelection() {
+		getHeaderPanel().setBackground(
+				UIManager.getColor(isSelected() ? "Table.selectionBackground" : "Table.background"));
+	}
+	
+	@Override
 	protected void init() {
 		setBackground(UIManager.getColor("Table.background"));
 		setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, UIManager.getColor("Separator.foreground")));
@@ -124,27 +131,18 @@ public class RootNetworkPanel extends AbstractNetworkPanel<CyRootNetwork> {
 		final GroupLayout layout = new GroupLayout(this);
 		setLayout(layout);
 		layout.setAutoCreateContainerGaps(!LookAndFeelUtil.isAquaLAF());
-		layout.setAutoCreateGaps(true);
+		layout.setAutoCreateGaps(false);
 		
-		layout.setHorizontalGroup(layout.createSequentialGroup()
-				.addContainerGap()
-				.addComponent(getExpandCollapseBtn(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-				.addGroup(layout.createParallelGroup(LEADING, true)
-					.addGroup(layout.createSequentialGroup()
-							.addComponent(getNameLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-							.addGap(0, 10, Short.MAX_VALUE)
-							.addComponent(getNetworkCountLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-							.addContainerGap()
-					)
-					.addComponent(getSubNetListPanel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+		layout.setHorizontalGroup(layout.createParallelGroup(LEADING, true)
+				.addComponent(getHeaderPanel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				.addGroup(layout.createSequentialGroup()
+						.addContainerGap()
+						.addGap(getExpandCollapseBtn().getPreferredSize().width)
+						.addComponent(getSubNetListPanel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 				)
 		);
 		layout.setVerticalGroup(layout.createSequentialGroup()
-				.addGroup(layout.createParallelGroup(CENTER, true)
-						.addComponent(getExpandCollapseBtn(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-						.addComponent(getNameLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-						.addComponent(getNetworkCountLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-				)
+				.addComponent(getHeaderPanel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 				.addComponent(getSubNetListPanel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 		);
 	}
@@ -165,7 +163,7 @@ public class RootNetworkPanel extends AbstractNetworkPanel<CyRootNetwork> {
 		return expandCollapseBtn;
 	}
 	
-	private JLabel getNetworkCountLabel() {
+	protected JLabel getNetworkCountLabel() {
 		if (networkCountLabel == null) {
 			networkCountLabel = new JLabel();
 			networkCountLabel.setFont(networkCountLabel.getFont().deriveFont(LookAndFeelUtil.getSmallFontSize()));
@@ -174,6 +172,34 @@ public class RootNetworkPanel extends AbstractNetworkPanel<CyRootNetwork> {
 		}
 		
 		return networkCountLabel;
+	}
+	
+	protected JPanel getHeaderPanel() {
+		if (headerPanel == null) {
+			headerPanel = new JPanel();
+			headerPanel.setBackground(UIManager.getColor("Table.background"));
+			
+			final GroupLayout layout = new GroupLayout(headerPanel);
+			headerPanel.setLayout(layout);
+			layout.setAutoCreateContainerGaps(!LookAndFeelUtil.isAquaLAF());
+			layout.setAutoCreateGaps(true);
+			
+			layout.setHorizontalGroup(layout.createSequentialGroup()
+					.addContainerGap()
+					.addComponent(getExpandCollapseBtn(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(getNameLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addGap(0, 10, Short.MAX_VALUE)
+					.addComponent(getNetworkCountLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addContainerGap()
+			);
+			layout.setVerticalGroup(layout.createParallelGroup(CENTER, true)
+					.addComponent(getExpandCollapseBtn(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(getNameLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(getNetworkCountLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+			);
+		}
+		
+		return headerPanel;
 	}
 	
 	private JPanel getSubNetListPanel() {
@@ -203,6 +229,6 @@ public class RootNetworkPanel extends AbstractNetworkPanel<CyRootNetwork> {
 	}
 	
 	public Map<CySubNetwork, SubNetworkPanel> getItems() {
-		return items != null ? items : (items = new WeakHashMap<>());
+		return items != null ? items : (items = new LinkedHashMap<>());
 	}
 }
