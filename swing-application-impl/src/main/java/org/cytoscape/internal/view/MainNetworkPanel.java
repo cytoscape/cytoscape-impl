@@ -546,13 +546,20 @@ public class MainNetworkPanel extends JPanel implements CytoPanelComponent2, Set
 		final JPopupMenu menu = new JPopupMenu();
 		final Collection<SubNetworkPanel> selectedItems = getSelectedSubNetworkItems();
 		
+//		final CyApplicationManager appMgr = serviceRegistrar.getService(CyApplicationManager.class);
+//		final Set<NetworkViewRenderer> renderers = appMgr.getNetworkViewRendererSet();
+//		final int totalRenderers = renderers.size();
+		
 		{
-			final String text;
+			String text = null;
 			
 			if (selectedItems.isEmpty())
 				text = "Create Views";
 			else
 				text = "Create " + selectedItems.size() + " View" + (selectedItems.size() == 1 ? "" : "s");
+			
+//			if (totalRenderers > 1)
+//				text += " (default renderer)";
 			
 			final JMenuItem mi = new JMenuItem(text);
 			mi.addActionListener(new ActionListener() {
@@ -566,6 +573,32 @@ public class MainNetworkPanel extends JPanel implements CytoPanelComponent2, Set
 			mi.setEnabled(!selectedItems.isEmpty());
 			menu.add(mi);
 		}
+
+		// TODO
+//		if (totalRenderers > 1) {
+//			final JMenu m = new JMenu("New View from Renderer");
+//			menu.add(m);
+//			
+//			final List<NetworkViewRenderer> sortedList = new ArrayList<>(renderers);
+//			final Collator collator = Collator.getInstance(Locale.getDefault());
+//			Collections.sort(sortedList, new Comparator<NetworkViewRenderer>() {
+//				@Override
+//				public int compare(NetworkViewRenderer r1, NetworkViewRenderer r2) {
+//					return collator.compare(r1.toString(), r2.toString());
+//				}
+//			});
+//			
+//			for (NetworkViewRenderer r : sortedList) {
+//				final JMenuItem mi = new JMenuItem(r.toString());
+//				mi.addActionListener(new ActionListener() {
+//					@Override
+//					public void actionPerformed(ActionEvent e) {
+//						// TODO
+//					}
+//				});
+//				m.add(mi);
+//			}
+//		}
 		
 		// TODO If more than 1 renderer...
 		// new JMenu("New View from Renderer");
@@ -1411,11 +1444,15 @@ public class MainNetworkPanel extends JPanel implements CytoPanelComponent2, Set
 		final List<AbstractNetworkPanel<?>> items = getAllItems(false);
 		final int idx1 = items.indexOf(item1);
 		final int idx2 = items.indexOf(item2);
-		System.out.println(idx1 + " - " + idx2);
-		final List<AbstractNetworkPanel<?>> subList = items.subList(idx1 + 1, idx2 + 1);
 		
-		if (idx1 > idx2)
+		final List<AbstractNetworkPanel<?>> subList;
+		
+		if (idx2 >= idx1) {
+			subList = items.subList(idx1 + 1, idx2 + 1);
+		} else {
+			subList = items.subList(idx2, idx1);
 			Collections.reverse(subList);
+		}
 		
 		for (final AbstractNetworkPanel<?> nextItem : subList) {
 			if (nextItem.isVisible() && nextItem.isSelected() != selected) {
@@ -1566,7 +1603,7 @@ public class MainNetworkPanel extends JPanel implements CytoPanelComponent2, Set
 
 		@Override
 		public boolean getScrollableTracksViewportHeight() {
-			return true;
+			return items == null || items.isEmpty();
 		}
 	}
 	

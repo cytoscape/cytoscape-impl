@@ -47,6 +47,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
 
+import org.cytoscape.internal.util.ViewUtil;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.IconManager;
@@ -568,15 +569,8 @@ public class NetworkViewGrid extends JPanel implements Scrollable {
 		void update() {
 			final CyNetworkView netView = getNetworkView();
 			final CyNetwork network = netView.getModel();
-			
-			final String title = netView.getVisualProperty(NETWORK_TITLE);
-			String netName = null;
-			
-			try {
-				netName = network.getRow(network).get(CyNetwork.NAME, String.class);
-			} catch (Exception e) {
-				netName = "";
-			}
+			final String title = ViewUtil.getTitle(netView);
+			final String netName = ViewUtil.getName(network);
 			
 			setToolTipText("<html><center>" + title + "<br>(" + netName + ")</center></html>");
 			getTitleLabel().setText(title);

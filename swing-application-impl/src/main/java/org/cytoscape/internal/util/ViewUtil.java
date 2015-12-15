@@ -8,11 +8,22 @@ import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 
 public final class ViewUtil {
 
+	public static String getName(final CyNetwork network) {
+		String name = "";
+		
+		try {
+			name = network.getRow(network).get(CyNetwork.NAME, String.class);
+		} catch (Exception e) {
+		}
+		
+		return name;
+	}
+	
 	public static String getTitle(final CyNetworkView view) {
 		String title = view.getVisualProperty(BasicVisualLexicon.NETWORK_TITLE);
 		
 		if (title == null || title.trim().isEmpty())
-			title = view.getModel().getRow(view.getModel()).get(CyNetwork.NAME, String.class);
+			title = getName(view.getModel());
 		
 		return title;
 	}

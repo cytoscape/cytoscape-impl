@@ -104,7 +104,7 @@ public class RootNetworkPanel extends AbstractNetworkPanel<CyRootNetwork> {
 	public void update() {
 		updateRootPanel();
 		
-		for (SubNetworkPanel snp : getAllItems())
+		for (SubNetworkPanel snp : getItems().values())
 			snp.update();
 	}
 	
@@ -228,7 +228,7 @@ public class RootNetworkPanel extends AbstractNetworkPanel<CyRootNetwork> {
 		return subNetListPanel;
 	}
 	
-	public Map<CySubNetwork, SubNetworkPanel> getItems() {
+	private Map<CySubNetwork, SubNetworkPanel> getItems() {
 		return items != null ? items : (items = new LinkedHashMap<>());
 	}
 }

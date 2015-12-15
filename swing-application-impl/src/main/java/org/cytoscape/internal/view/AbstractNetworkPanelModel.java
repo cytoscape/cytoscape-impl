@@ -3,6 +3,7 @@ package org.cytoscape.internal.view;
 import java.beans.PropertyChangeSupport;
 import java.util.Collection;
 
+import org.cytoscape.internal.util.ViewUtil;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkView;
@@ -46,7 +47,7 @@ public abstract class AbstractNetworkPanelModel<T extends CyNetwork> {
 	}
 	
 	public String getNetworkName() {
-		return getNetwork().getRow(getNetwork()).get(CyNetwork.NAME, String.class);
+		return ViewUtil.getName(getNetwork());
 	}
 
 	public abstract int getSubNetworkCount();
