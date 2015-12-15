@@ -43,6 +43,8 @@ import java.awt.Font;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -62,19 +64,24 @@ import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
 
+import javax.swing.AbstractAction;
 import javax.swing.AbstractButton;
+import javax.swing.ActionMap;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.GroupLayout;
 import javax.swing.Icon;
+import javax.swing.InputMap;
 import javax.swing.JButton;
 import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
+import javax.swing.KeyStroke;
 import javax.swing.Scrollable;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
@@ -174,6 +181,7 @@ public class MainNetworkPanel extends JPanel implements CytoPanelComponent2, Set
 
 	private AbstractNetworkPanel<?> selectionHead;
 	private AbstractNetworkPanel<?> selectionTail;
+	private AbstractNetworkPanel<?> lastSelected;
 	
 	private boolean loadingSession;
 	private boolean ignoreSelectionEvents;
@@ -671,14 +679,28 @@ public class MainNetworkPanel extends JPanel implements CytoPanelComponent2, Set
 		ignoreSelectionEvents = true;
 		
 		try {
-			for (SubNetworkPanel snp : getAllSubNetworkItems())
+			for (SubNetworkPanel snp : getAllSubNetworkItems()) {
+				if (!snp.isVisible()) {
+					final RootNetworkPanel rnp =
+							getRootNetworkListPanel().getItem(snp.getModel().getNetwork().getRootNetwork());
+					
+					if (rnp != null)
+						rnp.expand();
+				}
+				
 				setSelected(snp, selectedNetworks.contains(snp.getModel().getNetwork()));
+			}
 		} finally {
 			ignoreSelectionEvents = false;
-
-			updateNetworkHeader();
-			updateNetworkToolBar();
 		}
+		
+		final List<AbstractNetworkPanel<?>> selectedItems = getSelectedItems();
+		selectionHead = selectedItems.isEmpty() ? null : selectedItems.get(0);
+		selectionTail = selectedItems.size() > 1 ? selectedItems.get(selectedItems.size() - 1) : null;
+		lastSelected = selectedItems.isEmpty() ? null : selectedItems.get(selectedItems.size() - 1);
+		
+		updateNetworkHeader();
+		updateNetworkToolBar();
 	}
 	
 	public void clear() {
@@ -694,6 +716,8 @@ public class MainNetworkPanel extends JPanel implements CytoPanelComponent2, Set
 			doNotUpdateCollapseExpandButtons = false;
 			ignoreSelectionEvents = false;
 		}
+		
+		lastSelected = selectionHead = selectionTail = null;
 		
 		updateNetworkHeader();
 		updateNetworkToolBar();
@@ -795,8 +819,10 @@ public class MainNetworkPanel extends JPanel implements CytoPanelComponent2, Set
 		invokeOnEDT(new Runnable() {
 			@Override
 			public void run() {
-				if (net instanceof CySubNetwork)
-					addNetwork((CySubNetwork) net);
+				if (net instanceof CySubNetwork) {
+					SubNetworkPanel snp = addNetwork((CySubNetwork) net);
+					selectAndSetCurrent(snp);
+				}
 			}
 		});
 	}
@@ -954,12 +980,14 @@ public class MainNetworkPanel extends JPanel implements CytoPanelComponent2, Set
 	
 	// // Private Methods // //
 	
-	private void addNetwork(final CySubNetwork network) {
+	private SubNetworkPanel addNetwork(final CySubNetwork network) {
 		final CyRootNetwork rootNetwork = network.getRootNetwork();
 		RootNetworkPanel rootNetPanel = getRootNetworkListPanel().getItem(rootNetwork);
 		
 		if (rootNetPanel == null) {
 			rootNetPanel = getRootNetworkListPanel().addItem(rootNetwork);
+			setKeyBindings(rootNetPanel);
+			
 			final RootNetworkPanel item = rootNetPanel;
 			
 			item.addPropertyChangeListener("expanded", new PropertyChangeListener() {
@@ -991,6 +1019,8 @@ public class MainNetworkPanel extends JPanel implements CytoPanelComponent2, Set
 		}
 		
 		final SubNetworkPanel subNetPanel = rootNetPanel.addItem(network);
+		setKeyBindings(subNetPanel);
+		
 		subNetPanel.addPropertyChangeListener("selected", new PropertyChangeListener() {
 			@Override
 			public void propertyChange(final PropertyChangeEvent e) {
@@ -1018,6 +1048,7 @@ public class MainNetworkPanel extends JPanel implements CytoPanelComponent2, Set
 		// Scroll to new item
 		rootNetPanel.expand();
 		getRootNetworkScroll().scrollRectToVisible(subNetPanel.getBounds());
+		subNetPanel.requestFocus();
 		
 		// first see if it is not in the tree already
 //		if (this.network2nodeMap.get(network) == null) {
@@ -1081,6 +1112,8 @@ public class MainNetworkPanel extends JPanel implements CytoPanelComponent2, Set
 		nameTables.put(network.getDefaultNetworkTable(), network);
 		nodeEdgeTables.put(network.getDefaultNodeTable(), network);
 		nodeEdgeTables.put(network.getDefaultEdgeTable(), network);
+		
+		return subNetPanel;
 	}
 	
 	/**
@@ -1184,6 +1217,20 @@ public class MainNetworkPanel extends JPanel implements CytoPanelComponent2, Set
 		return null; // Should never happen!
 	}
 	
+	private AbstractNetworkPanel<?> getPreviousItem(final AbstractNetworkPanel<?> item, final boolean includeInvisible) {
+		final List<AbstractNetworkPanel<?>> allItems = getAllItems(includeInvisible);
+		int index = allItems.indexOf(item);
+		
+		return index > 0 ? allItems.get(index - 1) : null;
+	}
+	
+	private AbstractNetworkPanel<?> getNextItem(final AbstractNetworkPanel<?> item, final boolean includeInvisible) {
+		final List<AbstractNetworkPanel<?>> allItems = getAllItems(includeInvisible);
+		int index = allItems.indexOf(item);
+		
+		return index >= 0 && index < allItems.size() - 1 ? allItems.get(index + 1) : null;
+	}
+	
 	private SubNetworkPanel getSubNetworkPanel(final CyNetwork net) {
 		if (net instanceof CySubNetwork) {
 			final CySubNetwork subNet = (CySubNetwork) net;
@@ -1270,11 +1317,19 @@ public class MainNetworkPanel extends JPanel implements CytoPanelComponent2, Set
 	}
 	
 	private void selectAll() {
-		setSelectedItems(getAllItems(false));
+		final List<AbstractNetworkPanel<?>> allItems = getAllItems(false);
+		
+		if (!allItems.isEmpty()) {
+			setSelectedItems(getAllItems(false));
+			selectionHead = allItems.get(0);
+			selectionTail = allItems.get(allItems.size() - 1);
+			lastSelected = selectionTail;
+		}
 	}
 	
 	private void deselectAll() {
 		setSelectedItems(Collections.emptyList());
+		lastSelected = selectionHead = selectionTail = null;
 	}
 	
 	private List<AbstractNetworkPanel<?>> getAllItems(final boolean includeInvisible) {
@@ -1322,6 +1377,25 @@ public class MainNetworkPanel extends JPanel implements CytoPanelComponent2, Set
 		
 		if (changed)
 			fireSelectedNetworksChange(oldSelection);
+	}
+	
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	private void selectAndSetCurrent(final AbstractNetworkPanel<?> item) {
+		if (item == null)
+			return;
+		
+		// Change current network first
+		final CyApplicationManager appMgr = serviceRegistrar.getService(CyApplicationManager.class);
+		
+		if (item.getModel().getNetwork() instanceof CySubNetwork)
+			appMgr.setCurrentNetwork(item.getModel().getNetwork());
+		else
+			appMgr.setCurrentNetwork(null);
+		
+		// Then select the clicked icon
+		setSelectedItems((Set) (Collections.singleton(item)));
+		lastSelected = selectionHead = item;
+		selectionTail = null;
 	}
 	
 	private Collection<SubNetworkPanel> getAllSubNetworkItems() {
@@ -1377,10 +1451,12 @@ public class MainNetworkPanel extends JPanel implements CytoPanelComponent2, Set
 		return list;
 	}
 	
-	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private void onMousePressedItem(final MouseEvent e, final AbstractNetworkPanel<?> item) {
+		item.requestFocusInWindow();
+		
 		if (e.isPopupTrigger()) {
-			selectionHead = item;
+			if (!item.isSelected())
+				selectAndSetCurrent(item);
 		} else if (SwingUtilities.isLeftMouseButton(e)) {
 			// LEFT-CLICK...
 			final boolean isMac = LookAndFeelUtil.isMac();
@@ -1391,52 +1467,52 @@ public class MainNetworkPanel extends JPanel implements CytoPanelComponent2, Set
 				item.setSelected(!item.isSelected());
 				// Find new selection range head
 				selectionHead = item.isSelected() ? item : findNextSelectionHead(selectionHead);
+				lastSelected = selectionHead;
 			} else {
 				if (e.isShiftDown()) {
-					if (selectionHead != null && selectionHead.isVisible() && selectionHead.isSelected()
-							&& selectionHead != item) {
-						final Set<CyNetwork> oldSelection = getSelectedNetworks(false);
-						boolean changed = false;
-						ignoreSelectionEvents = true;
-						
-						try {
-							// First deselect previous range, if there is a tail
-							if (selectionTail != null)
-								changed = changeRangeSelection(selectionHead, selectionTail, false);
-							
-							// Now select the new range
-							changed = changed | changeRangeSelection(selectionHead, (selectionTail = item), true);
-						} finally {
-							ignoreSelectionEvents = false;
-	
-							updateNetworkHeader();
-							updateNetworkToolBar();
-						}
-						
-						if (changed)
-							fireSelectedNetworksChange(oldSelection);
-					} else if (!item.isSelected()) {
-						item.setSelected(true);
-					}
+					selectRange(item);
 				} else {
-					// No SHIFT/CTRL pressed: Change current network first
-					final CyApplicationManager appMgr = serviceRegistrar.getService(CyApplicationManager.class);
-					
-					if (item.getModel().getNetwork() instanceof CySubNetwork)
-						appMgr.setCurrentNetwork(item.getModel().getNetwork());
-					else
-						appMgr.setCurrentNetwork(null);
-					
-					// Then select the clicked icon
-					setSelectedItems((Set) (Collections.singleton(item)));
+					// No SHIFT/CTRL pressed
+					selectAndSetCurrent(item);
 				}
 				
-				if (getSelectedItems().size() == 1)
-					selectionHead = item;
+				if (getSelectedItems().size() == 1) {
+					lastSelected = selectionHead = item;
+					selectionTail = null;
+				}
 			}
 		}
 	}
-	
+
+	private void selectRange(final AbstractNetworkPanel<?> target) {
+		if (selectionHead != null && selectionHead.isVisible() && selectionHead.isSelected()
+				&& selectionHead != target) {
+			final Set<CyNetwork> oldSelection = getSelectedNetworks(false);
+			boolean changed = false;
+			ignoreSelectionEvents = true;
+			
+			try {
+				// First deselect previous range, if there is a tail
+				if (selectionTail != null)
+					changed = changeRangeSelection(selectionHead, selectionTail, false);
+				
+				// Now select the new range
+				changed = changed | changeRangeSelection(selectionHead, (selectionTail = target), true);
+			} finally {
+				ignoreSelectionEvents = false;
+
+				updateNetworkHeader();
+				updateNetworkToolBar();
+			}
+			
+			if (changed)
+				fireSelectedNetworksChange(oldSelection);
+		} else if (!target.isSelected()) {
+			target.setSelected(true);
+			lastSelected = target;
+		}
+	}
+
 	private boolean changeRangeSelection(final AbstractNetworkPanel<?> item1, final AbstractNetworkPanel<?> item2,
 			final boolean selected) {
 		boolean changed = false;
@@ -1449,9 +1525,11 @@ public class MainNetworkPanel extends JPanel implements CytoPanelComponent2, Set
 		
 		if (idx2 >= idx1) {
 			subList = items.subList(idx1 + 1, idx2 + 1);
+			lastSelected = selectionTail;
 		} else {
 			subList = items.subList(idx2, idx1);
 			Collections.reverse(subList);
+			lastSelected = selectionHead;
 		}
 		
 		for (final AbstractNetworkPanel<?> nextItem : subList) {
@@ -1498,6 +1576,26 @@ public class MainNetworkPanel extends JPanel implements CytoPanelComponent2, Set
 		return head;
 	}
 	
+	private void setKeyBindings(final JComponent comp) {
+		final ActionMap actionMap = comp.getActionMap();
+		final InputMap inputMap = comp.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+		final int CTRL = LookAndFeelUtil.isMac() ? InputEvent.META_DOWN_MASK :  InputEvent.CTRL_DOWN_MASK;
+
+		inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_UP, 0), KeyAction.VK_UP);
+		inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, 0), KeyAction.VK_DOWN);
+		inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_UP, InputEvent.SHIFT_DOWN_MASK), KeyAction.VK_SHIFT_UP);
+		inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, InputEvent.SHIFT_DOWN_MASK), KeyAction.VK_SHIFT_DOWN);
+		inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_A, CTRL), KeyAction.VK_CTRL_A);
+		inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_A, CTRL + InputEvent.SHIFT_DOWN_MASK), KeyAction.VK_CTRL_SHIFT_A);
+		
+		actionMap.put(KeyAction.VK_UP, new KeyAction(KeyAction.VK_UP));
+		actionMap.put(KeyAction.VK_DOWN, new KeyAction(KeyAction.VK_DOWN));
+		actionMap.put(KeyAction.VK_SHIFT_UP, new KeyAction(KeyAction.VK_SHIFT_UP));
+		actionMap.put(KeyAction.VK_SHIFT_DOWN, new KeyAction(KeyAction.VK_SHIFT_DOWN));
+		actionMap.put(KeyAction.VK_CTRL_A, new KeyAction(KeyAction.VK_CTRL_A));
+		actionMap.put(KeyAction.VK_CTRL_SHIFT_A, new KeyAction(KeyAction.VK_CTRL_SHIFT_A));
+	}
+
 	private void fireSelectedNetworksChange(final Collection<CyNetwork> oldValue) {
 		firePropertyChange("selectedSubNetworks", oldValue, getSelectedNetworks(false));
 	}
@@ -1733,6 +1831,55 @@ public class MainNetworkPanel extends JPanel implements CytoPanelComponent2, Set
 				
 				editRootNetworTitle.setEnabled(selectedRootSet.size() == 1);
 				rootPopupMenu.show(e.getComponent(), e.getX(), e.getY());
+			}
+		}
+	}
+	
+	private class KeyAction extends AbstractAction {
+
+		final static String VK_UP = "VK_UP";
+		final static String VK_DOWN = "VK_DOWN";
+		final static String VK_SHIFT_UP = "VK_SHIFT_UP";
+		final static String VK_SHIFT_DOWN = "VK_SHIFT_DOWN";
+		final static String VK_CTRL_A = "VK_CTRL_A";
+		final static String VK_CTRL_SHIFT_A = "VK_CTRL_SHIFT_A";
+		
+		KeyAction(final String actionCommand) {
+			putValue(ACTION_COMMAND_KEY, actionCommand);
+		}
+
+		@Override
+		public void actionPerformed(final ActionEvent e) {
+			final String cmd = e.getActionCommand();
+			final List<AbstractNetworkPanel<?>> allItems = getAllItems(false);
+			
+			if (allItems.isEmpty())
+				return;
+			
+			if (cmd.equals(VK_UP)) {
+				if (lastSelected != null) {
+					final AbstractNetworkPanel<?> previous = getPreviousItem(lastSelected, false);
+					selectAndSetCurrent(previous != null ? previous : allItems.get(0));
+				}
+			} else if (cmd.equals(VK_DOWN)) {
+				if (lastSelected != null) {
+					final AbstractNetworkPanel<?> next = getNextItem(lastSelected, false);
+					selectAndSetCurrent(next != null ? next : allItems.get(allItems.size() - 1));
+				}
+			} else if (cmd.equals(VK_SHIFT_UP)) {
+				final AbstractNetworkPanel<?> previous = getPreviousItem(lastSelected, false);
+				
+				if (previous != null)
+					selectRange(previous);
+			} else if (cmd.equals(VK_SHIFT_DOWN)) {
+				final AbstractNetworkPanel<?> next = getNextItem(lastSelected, false);
+				
+				if (next != null)
+					selectRange(next);
+			} else if (cmd.equals(VK_CTRL_A)) {
+				selectAll();
+			} else if (cmd.equals(VK_CTRL_SHIFT_A)) {
+				deselectAll();
 			}
 		}
 	}
