@@ -16,6 +16,9 @@ public final class ViewUtil {
 		} catch (Exception e) {
 		}
 		
+		if (name == null || name.trim().isEmpty())
+			name = "? (SUID: " + network.getSUID() + ")";
+		
 		return name;
 	}
 	
