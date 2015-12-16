@@ -564,26 +564,29 @@ public class MainNetworkPanel extends JPanel implements CytoPanelComponent2, Set
 
 		if (totalRenderers > 1) {
 			final JMenu m = new JMenu(createViewText + " by");
+			m.setEnabled(!selectedItems.isEmpty());
 			menu.add(m);
 			
-			final List<NetworkViewRenderer> sortedList = new ArrayList<>(renderers);
-			final Collator collator = Collator.getInstance(Locale.getDefault());
-			Collections.sort(sortedList, new Comparator<NetworkViewRenderer>() {
-				@Override
-				public int compare(NetworkViewRenderer r1, NetworkViewRenderer r2) {
-					return collator.compare(r1.toString(), r2.toString());
-				}
-			});
-			
-			for (NetworkViewRenderer r : sortedList) {
-				final JMenuItem mi = new JMenuItem(r.toString());
-				mi.addActionListener(new ActionListener() {
+			if (!selectedItems.isEmpty()) {
+				final List<NetworkViewRenderer> sortedList = new ArrayList<>(renderers);
+				final Collator collator = Collator.getInstance(Locale.getDefault());
+				Collections.sort(sortedList, new Comparator<NetworkViewRenderer>() {
 					@Override
-					public void actionPerformed(ActionEvent e) {
-						taskMgr.execute(taskFactory.createTaskIterator(selectedNetworks, r.getNetworkViewFactory()));
+					public int compare(NetworkViewRenderer r1, NetworkViewRenderer r2) {
+						return collator.compare(r1.toString(), r2.toString());
 					}
 				});
-				m.add(mi);
+				
+				for (NetworkViewRenderer r : sortedList) {
+					final JMenuItem mi = new JMenuItem(r.toString());
+					mi.addActionListener(new ActionListener() {
+						@Override
+						public void actionPerformed(ActionEvent e) {
+							taskMgr.execute(taskFactory.createTaskIterator(selectedNetworks, r.getNetworkViewFactory()));
+						}
+					});
+					m.add(mi);
+				}
 			}
 		}
 		
