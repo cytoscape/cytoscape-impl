@@ -127,6 +127,19 @@ public class CreateNetworkViewTask extends AbstractNetworkCollectionTask
 		});
 	}
 
+	public CreateNetworkViewTask(final UndoSupport undoSupport,
+								 final Collection<CyNetwork> networks,
+								 final CyNetworkViewFactory viewFactory,
+								 final CyNetworkViewManager netViewMgr,
+								 final CyLayoutAlgorithmManager layoutMgr,
+								 final CyEventHelper eventHelper,
+								 final VisualMappingManager vmMgr,
+								 final RenderingEngineManager renderingEngineMgr,
+								 final CyApplicationManager appMgr) {
+		this(undoSupport, networks, viewFactory, netViewMgr, layoutMgr, eventHelper, vmMgr, renderingEngineMgr, appMgr,
+				null);
+	}
+
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
 		taskMonitor.setProgress(0.0);

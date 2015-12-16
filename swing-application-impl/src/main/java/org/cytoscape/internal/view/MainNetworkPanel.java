@@ -50,16 +50,19 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
@@ -76,6 +79,7 @@ import javax.swing.JButton;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
@@ -88,6 +92,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.NetworkViewRenderer;
 import org.cytoscape.application.events.SetSelectedNetworksEvent;
 import org.cytoscape.application.events.SetSelectedNetworksListener;
 import org.cytoscape.application.swing.CyAction;
@@ -129,6 +134,7 @@ import org.cytoscape.task.edit.EditNetworkTitleTaskFactory;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.events.NetworkViewAddedEvent;
 import org.cytoscape.view.model.events.NetworkViewAddedListener;
@@ -553,63 +559,54 @@ public class MainNetworkPanel extends JPanel implements CytoPanelComponent2, Set
 	private JPopupMenu getCreateMenu() {
 		final JPopupMenu menu = new JPopupMenu();
 		final Collection<SubNetworkPanel> selectedItems = getSelectedSubNetworkItems();
+		final Set<CyNetwork> selectedNetworks = getNetworks(selectedItems);
 		
-//		final CyApplicationManager appMgr = serviceRegistrar.getService(CyApplicationManager.class);
-//		final Set<NetworkViewRenderer> renderers = appMgr.getNetworkViewRendererSet();
-//		final int totalRenderers = renderers.size();
+		final CyApplicationManager appMgr = serviceRegistrar.getService(CyApplicationManager.class);
+		final DialogTaskManager taskMgr = serviceRegistrar.getService(DialogTaskManager.class);
+		final CreateNetworkViewTaskFactory taskFactory = serviceRegistrar.getService(CreateNetworkViewTaskFactory.class);
+		
+		final Set<NetworkViewRenderer> renderers = appMgr.getNetworkViewRendererSet();
+		final int totalRenderers = renderers.size();
+		
+		String createViewText = "New View" + (selectedItems.size() == 1 ? "" : "s");
 		
 		{
-			String text = null;
-			
-			if (selectedItems.isEmpty())
-				text = "Create Views";
-			else
-				text = "Create " + selectedItems.size() + " View" + (selectedItems.size() == 1 ? "" : "s");
-			
-//			if (totalRenderers > 1)
-//				text += " (default renderer)";
-			
-			final JMenuItem mi = new JMenuItem(text);
+			final JMenuItem mi = new JMenuItem(createViewText + (totalRenderers > 1 ? " (Default Renderer)" : ""));
 			mi.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					final DialogTaskManager taskMgr = serviceRegistrar.getService(DialogTaskManager.class);
-					final CreateNetworkViewTaskFactory taskFactory = serviceRegistrar.getService(CreateNetworkViewTaskFactory.class);
-					taskMgr.execute(taskFactory.createTaskIterator(getNetworks(selectedItems)));
+					final CyNetworkViewFactory viewFactory = appMgr.getDefaultNetworkViewRenderer().getNetworkViewFactory();
+					taskMgr.execute(taskFactory.createTaskIterator(selectedNetworks, viewFactory));
 				}
 			});
 			mi.setEnabled(!selectedItems.isEmpty());
 			menu.add(mi);
 		}
 
-		// TODO
-//		if (totalRenderers > 1) {
-//			final JMenu m = new JMenu("New View from Renderer");
-//			menu.add(m);
-//			
-//			final List<NetworkViewRenderer> sortedList = new ArrayList<>(renderers);
-//			final Collator collator = Collator.getInstance(Locale.getDefault());
-//			Collections.sort(sortedList, new Comparator<NetworkViewRenderer>() {
-//				@Override
-//				public int compare(NetworkViewRenderer r1, NetworkViewRenderer r2) {
-//					return collator.compare(r1.toString(), r2.toString());
-//				}
-//			});
-//			
-//			for (NetworkViewRenderer r : sortedList) {
-//				final JMenuItem mi = new JMenuItem(r.toString());
-//				mi.addActionListener(new ActionListener() {
-//					@Override
-//					public void actionPerformed(ActionEvent e) {
-//						// TODO
-//					}
-//				});
-//				m.add(mi);
-//			}
-//		}
-		
-		// TODO If more than 1 renderer...
-		// new JMenu("New View from Renderer");
+		if (totalRenderers > 1) {
+			final JMenu m = new JMenu(createViewText + " by");
+			menu.add(m);
+			
+			final List<NetworkViewRenderer> sortedList = new ArrayList<>(renderers);
+			final Collator collator = Collator.getInstance(Locale.getDefault());
+			Collections.sort(sortedList, new Comparator<NetworkViewRenderer>() {
+				@Override
+				public int compare(NetworkViewRenderer r1, NetworkViewRenderer r2) {
+					return collator.compare(r1.toString(), r2.toString());
+				}
+			});
+			
+			for (NetworkViewRenderer r : sortedList) {
+				final JMenuItem mi = new JMenuItem(r.toString());
+				mi.addActionListener(new ActionListener() {
+					@Override
+					public void actionPerformed(ActionEvent e) {
+						taskMgr.execute(taskFactory.createTaskIterator(selectedNetworks, r.getNetworkViewFactory()));
+					}
+				});
+				m.add(mi);
+			}
+		}
 		
 		return menu;
 	}
