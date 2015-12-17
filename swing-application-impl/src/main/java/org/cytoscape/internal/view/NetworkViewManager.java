@@ -93,7 +93,7 @@ public class NetworkViewManager implements NetworkViewAddedListener,
 	@Deprecated
 	private final JDesktopPane desktopPane;
 	
-	private final NetworkViewsPanel networkViewsPanel;
+	private final NetworkViewMainPanel networkViewMainPanel;
 
 	// Key is MODEL ID
 	private final Map<CyNetworkView, RenderingEngine<CyNetwork>> presentationMap;
@@ -112,7 +112,7 @@ public class NetworkViewManager implements NetworkViewAddedListener,
 	public NetworkViewManager(final CyHelpBroker help, final CyServiceRegistrar serviceRegistrar) {
 		this.serviceRegistrar = serviceRegistrar;
 		this.desktopPane = new JDesktopPane();
-		this.networkViewsPanel = new NetworkViewsPanel(serviceRegistrar);
+		this.networkViewMainPanel = new NetworkViewMainPanel(serviceRegistrar);
 
 		// add Help hooks
 		help.getHelpBroker().enableHelp(desktopPane, "network-view-manager", null);
@@ -121,7 +121,7 @@ public class NetworkViewManager implements NetworkViewAddedListener,
 		viewUpdateRequired = new HashSet<>();
 		mappedValuesMap = new HashMap<>();
 		
-		final NetworkViewGrid networkViewGrid = networkViewsPanel.getNetworkViewGrid();
+		final NetworkViewGrid networkViewGrid = networkViewMainPanel.getNetworkViewGrid();
 		
 		networkViewGrid.addPropertyChangeListener("currentNetworkView", new PropertyChangeListener() {
 			@Override
@@ -159,7 +159,7 @@ public class NetworkViewManager implements NetworkViewAddedListener,
 			}
 		});
 		
-		networkViewsPanel.addPropertyChangeListener("seletedNetworkViews", new PropertyChangeListener() {
+		networkViewMainPanel.addPropertyChangeListener("selectedNetworkViews", new PropertyChangeListener() {
 			@Override
 			@SuppressWarnings("unchecked")
 			public void propertyChange(PropertyChangeEvent e) {
@@ -187,8 +187,8 @@ public class NetworkViewManager implements NetworkViewAddedListener,
 		});
 	}
 
-	public NetworkViewsPanel getNetworkViewsPanel() {
-		return networkViewsPanel;
+	public NetworkViewMainPanel getNetworkViewMainPanel() {
+		return networkViewMainPanel;
 	}
 	
 	/**
@@ -289,7 +289,7 @@ public class NetworkViewManager implements NetworkViewAddedListener,
 			@Override
 			public void run() {
 				try {
-					getNetworkViewsPanel().setSelectedNetworkViews(selectedViews);
+					getNetworkViewMainPanel().setSelectedNetworkViews(selectedViews);
 				} finally {
 				}
 			}
@@ -304,7 +304,7 @@ public class NetworkViewManager implements NetworkViewAddedListener,
 				ignoreSeletedNetworkViewsEvents = true;
 				
 				try {
-					getNetworkViewsPanel().setSelectedNetworkViews(e.getNetworkViews());
+					getNetworkViewMainPanel().setSelectedNetworkViews(e.getNetworkViews());
 				} finally {
 					ignoreSeletedNetworkViewsEvents = false;
 				}
@@ -317,7 +317,7 @@ public class NetworkViewManager implements NetworkViewAddedListener,
 		if (loadingSession)
 			return;
 		
-		if (e.getSource() != null && !getNetworkViewsPanel().isEmpty()) {
+		if (e.getSource() != null && !getNetworkViewMainPanel().isEmpty()) {
 			final Set<CyNetworkView> viewsSet = findNetworkViewsWithStyles(Collections.singleton(e.getSource()));
 			
 			for (final CyNetworkView view : viewsSet)
@@ -333,7 +333,7 @@ public class NetworkViewManager implements NetworkViewAddedListener,
 		final VisualStyle style = e.getVisualStyle();
 		
 		if (style != null) {
-			final CyNetworkView curView = getNetworkViewsPanel().getCurrentNetworkView();
+			final CyNetworkView curView = getNetworkViewMainPanel().getCurrentNetworkView();
 			
 			if (curView != null) {
 				final VisualMappingManager vmm = serviceRegistrar.getService(VisualMappingManager.class);
@@ -354,7 +354,7 @@ public class NetworkViewManager implements NetworkViewAddedListener,
 	@Override
 	public void handleEvent(final UpdateNetworkPresentationEvent e) {
 		final CyNetworkView view = e.getSource();
-		getNetworkViewsPanel().update(view);
+		getNetworkViewMainPanel().update(view);
 	}
 	
 	@Override
@@ -365,7 +365,7 @@ public class NetworkViewManager implements NetworkViewAddedListener,
 		invokeOnEDT(new Runnable() {
 			@Override
 			public void run() {
-				getNetworkViewsPanel().updateThumbnail(netView);
+				getNetworkViewMainPanel().updateThumbnail(netView);
 			}
 		});
 		
@@ -422,7 +422,7 @@ public class NetworkViewManager implements NetworkViewAddedListener,
 		invokeOnEDT(new Runnable() {
 			@Override
 			public void run() {
-				getNetworkViewsPanel().setCurrentNetworkView(
+				getNetworkViewMainPanel().setCurrentNetworkView(
 						serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetworkView());
 			}
 		});
@@ -441,7 +441,7 @@ public class NetworkViewManager implements NetworkViewAddedListener,
 	
 	@Override
 	public void handleEvent(final RowsSetEvent e) {
-		if (loadingSession || getNetworkViewsPanel().isEmpty())
+		if (loadingSession || getNetworkViewMainPanel().isEmpty())
 			return;
 		
 		final CyTable tbl = e.getSource();
@@ -493,7 +493,7 @@ public class NetworkViewManager implements NetworkViewAddedListener,
 			@Override
 			public void run() {
 				try {
-					getNetworkViewsPanel().remove(view);
+					getNetworkViewMainPanel().remove(view);
 					viewUpdateRequired.remove(view);
 					final RenderingEngine<CyNetwork> removed = presentationMap.remove(view);
 					
@@ -521,7 +521,7 @@ public class NetworkViewManager implements NetworkViewAddedListener,
 			@Override
 			public void run() {
 				// If already registered in this manager, do not render.
-				if (getNetworkViewsPanel().isRendered(view))
+				if (getNetworkViewMainPanel().isRendered(view))
 					return;
 
 				NetworkViewRenderer renderer = null;
@@ -538,7 +538,7 @@ public class NetworkViewManager implements NetworkViewAddedListener,
 						.getRenderingEngineFactory(NetworkViewRenderer.DEFAULT_CONTEXT);
 				
 				final RenderingEngine<CyNetwork> renderingEngine =
-						getNetworkViewsPanel().addNetworkView(view, engineFactory, !loadingSession);
+						getNetworkViewMainPanel().addNetworkView(view, engineFactory, !loadingSession);
 				presentationMap.put(view, renderingEngine);
 				
 				new Thread() {
@@ -664,17 +664,17 @@ public class NetworkViewManager implements NetworkViewAddedListener,
 		if (loadingSession)
 			return;
 		
-		final CyNetworkView curView = getNetworkViewsPanel().getCurrentNetworkView();
+		final CyNetworkView curView = getNetworkViewMainPanel().getCurrentNetworkView();
 		
 		// Same as current focus; no need to update view
 		if ((curView == null && view == null) || (curView != null && curView.equals(view)))
 			return;
 		
-		getNetworkViewsPanel().setCurrentNetworkView(view);
+		getNetworkViewMainPanel().setCurrentNetworkView(view);
 	}
 
 	private void onColumnChanged(final CyTable tbl, final String columnName) {
-		if (loadingSession || getNetworkViewsPanel().isEmpty())
+		if (loadingSession || getNetworkViewMainPanel().isEmpty())
 			return;
 		
 		final CyNetworkTableManager netTblMgr = serviceRegistrar.getService(CyNetworkTableManager.class);
@@ -724,7 +724,7 @@ public class NetworkViewManager implements NetworkViewAddedListener,
 								// Does not need to update the rendered title with the new network name
 								// if this visual property is locked
 								if (!view.isValueLocked(BasicVisualLexicon.NETWORK_TITLE))
-									getNetworkViewsPanel().update(view);
+									getNetworkViewMainPanel().update(view);
 	
 								return; // assuming just one row is set.
 							}

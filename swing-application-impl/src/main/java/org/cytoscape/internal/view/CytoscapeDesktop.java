@@ -28,7 +28,6 @@ import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
 
 import java.awt.BorderLayout;
-import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Toolkit;
 import java.awt.event.WindowAdapter;
@@ -266,12 +265,12 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 				iconManager);
 
 		// determine proper network view manager component
-		Component networkViewComp = networkViewManager.getNetworkViewsPanel();
+		final JPanel networkViewPanel = networkViewManager.getNetworkViewMainPanel();
 
 		// create the split pane - we show this on startup
 		BiModalJSplitPane splitPane = new BiModalJSplitPane(this, JSplitPane.HORIZONTAL_SPLIT,
 		                                                    BiModalJSplitPane.MODE_HIDE_SPLIT,
-		                                                    networkViewComp, cytoPanelEast);
+		                                                    networkViewPanel, cytoPanelEast);
 
 		// set the cytopanelcontainer
 		cytoPanelEast.setCytoPanelContainer(splitPane);

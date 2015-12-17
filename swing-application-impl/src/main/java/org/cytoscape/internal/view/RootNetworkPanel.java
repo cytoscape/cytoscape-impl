@@ -135,11 +135,7 @@ public class RootNetworkPanel extends AbstractNetworkPanel<CyRootNetwork> {
 		
 		layout.setHorizontalGroup(layout.createParallelGroup(LEADING, true)
 				.addComponent(getHeaderPanel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-				.addGroup(layout.createSequentialGroup()
-						.addContainerGap()
-						.addGap(getExpandCollapseBtn().getPreferredSize().width)
-						.addComponent(getSubNetListPanel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-				)
+				.addComponent(getSubNetListPanel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 		);
 		layout.setVerticalGroup(layout.createSequentialGroup()
 				.addComponent(getHeaderPanel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
@@ -182,10 +178,9 @@ public class RootNetworkPanel extends AbstractNetworkPanel<CyRootNetwork> {
 			final GroupLayout layout = new GroupLayout(headerPanel);
 			headerPanel.setLayout(layout);
 			layout.setAutoCreateContainerGaps(!LookAndFeelUtil.isAquaLAF());
-			layout.setAutoCreateGaps(true);
+			layout.setAutoCreateGaps(false);
 			
 			layout.setHorizontalGroup(layout.createSequentialGroup()
-					.addContainerGap()
 					.addComponent(getExpandCollapseBtn(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(getNameLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addGap(0, 10, Short.MAX_VALUE)

@@ -661,6 +661,11 @@ public class NetworkViewGrid extends JPanel implements Scrollable {
 			
 			return image;
 		}
+		
+		@Override
+		public String toString() {
+			return getNetworkView().getVisualProperty(NETWORK_TITLE);
+		}
 	}
 	
 	private class ThumbnailIcon extends ImageIcon {

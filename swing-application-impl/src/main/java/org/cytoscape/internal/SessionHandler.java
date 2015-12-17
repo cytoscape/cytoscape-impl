@@ -57,7 +57,7 @@ import org.cytoscape.internal.io.sessionstate.NetworkFrame;
 import org.cytoscape.internal.io.sessionstate.NetworkFrames;
 import org.cytoscape.internal.io.sessionstate.SessionState;
 import org.cytoscape.internal.view.CytoscapeDesktop;
-import org.cytoscape.internal.view.MainNetworkPanel;
+import org.cytoscape.internal.view.NetworkMainPanel;
 import org.cytoscape.internal.view.NetworkViewManager;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
@@ -87,7 +87,7 @@ public class SessionHandler implements CyShutdownListener, SessionLoadedListener
 	private final CytoscapeDesktop desktop;
 	private final NetworkViewManager netViewMgr;
 	private final SessionIO sessionIO;
-	private final MainNetworkPanel netPanel;
+	private final NetworkMainPanel netPanel;
 	private final CyServiceRegistrar serviceRegistrar;
 	
 	private static final Logger logger = LoggerFactory.getLogger(SessionHandler.class);
@@ -96,7 +96,7 @@ public class SessionHandler implements CyShutdownListener, SessionLoadedListener
 			final CytoscapeDesktop desktop,
 			final NetworkViewManager netViewMgr,
 			final SessionIO sessionIO,
-			final MainNetworkPanel netPanel,
+			final NetworkMainPanel netPanel,
 			final CyServiceRegistrar serviceRegistrar
 	) {
 		this.desktop = desktop;

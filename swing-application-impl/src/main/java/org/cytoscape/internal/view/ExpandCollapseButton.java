@@ -12,9 +12,9 @@ import org.cytoscape.util.swing.IconManager;
 @SuppressWarnings("serial")
 public class ExpandCollapseButton extends JButton {
 	
+	static final int WIDTH = 32;
+	static final int HEIGHT = 24;
 	private static final float FONT_SIZE = 17.0f;
-	private static final int WIDTH = 24;
-	private static final int HEIGHT = 24;
 	
 	public ExpandCollapseButton(final boolean selected, final ActionListener al,
     		final CyServiceRegistrar serviceRegistrar) {
@@ -31,7 +31,7 @@ public class ExpandCollapseButton extends JButton {
 		setMinimumSize(d);
 		setPreferredSize(d);
 		setMaximumSize(d);
-		setBorder(BorderFactory.createEmptyBorder(2, 4, 2, 4));
+		setBorder(BorderFactory.createEmptyBorder(2, 0, 2, 0));
 		
 		addActionListener(al);
 		setSelected(selected);

@@ -69,7 +69,7 @@ import org.cytoscape.view.presentation.RenderingEngineFactory;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 
 @SuppressWarnings("serial")
-public class NetworkViewsPanel extends JPanel {
+public class NetworkViewMainPanel extends JPanel {
 
 	private static final String GRID_NAME = "__NETWORK_VIEW_GRID__";
 
@@ -101,7 +101,7 @@ public class NetworkViewsPanel extends JPanel {
 	
 	private final CyServiceRegistrar serviceRegistrar;
 	
-	public NetworkViewsPanel(final CyServiceRegistrar serviceRegistrar) {
+	public NetworkViewMainPanel(final CyServiceRegistrar serviceRegistrar) {
 		this.serviceRegistrar = serviceRegistrar;
 		
 		viewContainers = new LinkedHashMap<>();
@@ -202,7 +202,7 @@ public class NetworkViewsPanel extends JPanel {
 		networkViewGrid.setSelectedItems(selectedItems);
 	}
 	
-	public List<CyNetworkView> getSeletedNetworkViews() {
+	public List<CyNetworkView> getSelectedNetworkViews() {
 		return getNetworkViews(networkViewGrid.getSelectedItems());
 	}
 
@@ -434,7 +434,7 @@ public class NetworkViewsPanel extends JPanel {
 			if (comp.isVisible())
 				current = comp;
 		}
-		System.out.println("\t\t>> " + current.getName() + "\n");
+		
 		return current;
 	}
 	
@@ -477,7 +477,7 @@ public class NetworkViewsPanel extends JPanel {
 			public void propertyChange(PropertyChangeEvent e) {
 				updateGridToolBar();
 				
-				firePropertyChange("seletedNetworkViews",
+				firePropertyChange("selectedNetworkViews",
 						getNetworkViews((Collection<ThumbnailPanel>) e.getOldValue()),
 						getNetworkViews((Collection<ThumbnailPanel>) e.getNewValue()));
 			}
@@ -811,7 +811,7 @@ public class NetworkViewsPanel extends JPanel {
 					
 					if (vc != null) {
 						if (JOptionPane.showConfirmDialog(
-								NetworkViewsPanel.this,
+								NetworkViewMainPanel.this,
 								"Are you sure you want to destroy this Network View?\nThis action cannot be undone.",
 								"Destroy Network View",
 								JOptionPane.OK_CANCEL_OPTION,
@@ -839,7 +839,7 @@ public class NetworkViewsPanel extends JPanel {
 					
 					if (selectedItems != null && !selectedItems.isEmpty()) {
 						if (JOptionPane.showConfirmDialog(
-								NetworkViewsPanel.this,
+								NetworkViewMainPanel.this,
 								"Are you sure you want to destroy the selected Network Views?\nThis action cannot be undone.",
 								"Destroy Network Views",
 								JOptionPane.OK_CANCEL_OPTION,

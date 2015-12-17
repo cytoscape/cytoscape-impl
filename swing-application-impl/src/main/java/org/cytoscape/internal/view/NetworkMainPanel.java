@@ -145,7 +145,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @SuppressWarnings("serial")
-public class MainNetworkPanel extends JPanel implements CytoPanelComponent2, SetSelectedNetworksListener,
+public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, SetSelectedNetworksListener,
 		NetworkAddedListener, NetworkViewAddedListener, NetworkAboutToBeDestroyedListener, NetworkDestroyedListener,
 		NetworkViewDestroyedListener, RowsSetListener, RemovedEdgesListener, RemovedNodesListener,
 		SessionAboutToBeLoadedListener, SessionLoadedListener {
@@ -193,9 +193,9 @@ public class MainNetworkPanel extends JPanel implements CytoPanelComponent2, Set
 	private CyServiceRegistrar serviceRegistrar;
 	
 	@SuppressWarnings("unused")
-	private static final Logger logger = LoggerFactory.getLogger(MainNetworkPanel.class);
+	private static final Logger logger = LoggerFactory.getLogger(NetworkMainPanel.class);
 
-	public MainNetworkPanel(final BirdsEyeViewHandler bird, final CyServiceRegistrar serviceRegistrar) {
+	public NetworkMainPanel(final BirdsEyeViewHandler bird, final CyServiceRegistrar serviceRegistrar) {
 		this.serviceRegistrar = serviceRegistrar;
 		
 		popup = new JPopupMenu();
@@ -1308,7 +1308,10 @@ public class MainNetworkPanel extends JPanel implements CytoPanelComponent2, Set
 		if (item == null)
 			return;
 		
-		// Change current network first
+		// First select the clicked item
+		setSelectedItems((Set) (Collections.singleton(item)));
+		
+		// Then change the current network
 		final CyApplicationManager appMgr = serviceRegistrar.getService(CyApplicationManager.class);
 		
 		if (item.getModel().getNetwork() instanceof CySubNetwork)
@@ -1316,8 +1319,6 @@ public class MainNetworkPanel extends JPanel implements CytoPanelComponent2, Set
 		else
 			appMgr.setCurrentNetwork(null);
 		
-		// Then select the clicked icon
-		setSelectedItems((Set) (Collections.singleton(item)));
 		lastSelected = selectionHead = item;
 		selectionTail = null;
 	}
