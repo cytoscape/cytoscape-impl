@@ -27,7 +27,7 @@ package org.cytoscape.internal.view;
 import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static javax.swing.GroupLayout.Alignment.CENTER;
-import static org.cytoscape.internal.util.ViewUtil.invokeOnEDT;
+import static javax.swing.SwingUtilities.invokeLater;
 import static org.cytoscape.util.swing.IconManager.ICON_ANGLE_DOUBLE_DOWN;
 import static org.cytoscape.util.swing.IconManager.ICON_ANGLE_DOUBLE_UP;
 import static org.cytoscape.util.swing.IconManager.ICON_CHECK_SQUARE;
@@ -779,7 +779,7 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, Set
 	
 	@Override
 	public void handleEvent(final NetworkDestroyedEvent e) {
-		invokeOnEDT(new Runnable() {
+		invokeLater(new Runnable() {
 			@Override
 			public void run() {
 				updateCollapseExpandButtons();
@@ -795,7 +795,7 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, Set
 		
 		final CyNetwork net = e.getNetwork();
 		
-		invokeOnEDT(new Runnable() {
+		invokeLater(new Runnable() {
 			@Override
 			public void run() {
 				if (net instanceof CySubNetwork) {
@@ -823,7 +823,7 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, Set
 		
 		// And if there is no related view, nothing needs to be done
 		if (net != null && tbl.equals(net.getDefaultNetworkTable())) {
-			invokeOnEDT(new Runnable() {
+			invokeLater(new Runnable() {
 				@Override
 				public void run() {
 					final AbstractNetworkPanel<?> item = getNetworkItem(net);
@@ -837,7 +837,7 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, Set
 
 	@Override
 	public void handleEvent(final RemovedNodesEvent e) {
-		invokeOnEDT(new Runnable() {
+		invokeLater(new Runnable() {
 			@Override
 			public void run() {
 //				treeTable.repaint();
@@ -847,7 +847,7 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, Set
 
 	@Override
 	public void handleEvent(final RemovedEdgesEvent e) {
-		invokeOnEDT(new Runnable() {
+		invokeLater(new Runnable() {
 			@Override
 			public void run() {
 //				treeTable.repaint();
@@ -860,7 +860,7 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, Set
 		if (loadingSession)
 			return;
 		
-		invokeOnEDT(new Runnable() {
+		invokeLater(new Runnable() {
 			@Override
 			public void run() {
 				updateNetworkSelection(e.getNetworks());
@@ -870,7 +870,7 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, Set
 
 	@Override
 	public void handleEvent(final NetworkViewDestroyedEvent e) {
-		invokeOnEDT(new Runnable() {
+		invokeLater(new Runnable() {
 			@Override
 			public void run() {
 				getRootNetworkListPanel().update();
@@ -885,7 +885,7 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, Set
 		
 		final CyNetworkView netView = nde.getNetworkView();
 		
-		invokeOnEDT(new Runnable() {
+		invokeLater(new Runnable() {
 			@Override
 			public void run() {
 				final SubNetworkPanel subNetPanel = getSubNetworkPanel(netView.getModel());
@@ -1043,7 +1043,7 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, Set
 		nameTables.values().removeAll(Collections.singletonList(network));
 		nodeEdgeTables.values().removeAll(Collections.singletonList(network));
 		
-		invokeOnEDT(new Runnable() {
+		invokeLater(new Runnable() {
 			@Override
 			public void run() {
 				final CyRootNetwork rootNet = network.getRootNetwork();

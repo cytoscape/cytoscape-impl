@@ -1,7 +1,5 @@
 package org.cytoscape.internal;
 
-import static org.cytoscape.internal.util.ViewUtil.invokeOnEDT;
-
 /*
  * #%L
  * Cytoscape Swing Application Impl (swing-application-impl)
@@ -25,6 +23,8 @@ import static org.cytoscape.internal.util.ViewUtil.invokeOnEDT;
  * <http://www.gnu.org/licenses/lgpl-2.1.html>.
  * #L%
  */
+
+import static javax.swing.SwingUtilities.invokeLater;
 
 import java.io.File;
 import java.math.BigInteger;
@@ -411,7 +411,7 @@ public class SessionHandler implements CyShutdownListener, SessionLoadedListener
 		final List<CyNetwork> selectedNetworks =
 				serviceRegistrar.getService(CyApplicationManager.class).getSelectedNetworks();
 		
-		invokeOnEDT(new Runnable() {
+		invokeLater(new Runnable() {
 			@Override
 			public void run() {
 				netPanel.setNetworks(sortedNetworks);
