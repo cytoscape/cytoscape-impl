@@ -101,6 +101,10 @@ import org.cytoscape.internal.task.TaskFactoryTunableAction;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyTable;
+import org.cytoscape.model.events.AddedEdgesEvent;
+import org.cytoscape.model.events.AddedEdgesListener;
+import org.cytoscape.model.events.AddedNodesEvent;
+import org.cytoscape.model.events.AddedNodesListener;
 import org.cytoscape.model.events.NetworkAboutToBeDestroyedEvent;
 import org.cytoscape.model.events.NetworkAboutToBeDestroyedListener;
 import org.cytoscape.model.events.NetworkAddedEvent;
@@ -147,8 +151,8 @@ import org.slf4j.LoggerFactory;
 @SuppressWarnings("serial")
 public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, SetSelectedNetworksListener,
 		NetworkAddedListener, NetworkViewAddedListener, NetworkAboutToBeDestroyedListener, NetworkDestroyedListener,
-		NetworkViewDestroyedListener, RowsSetListener, RemovedEdgesListener, RemovedNodesListener,
-		SessionAboutToBeLoadedListener, SessionLoadedListener {
+		NetworkViewDestroyedListener, RowsSetListener, AddedNodesListener, AddedEdgesListener, RemovedEdgesListener,
+		RemovedNodesListener, SessionAboutToBeLoadedListener, SessionLoadedListener {
 
 	public static final float ICON_FONT_SIZE = 22.0f;
 	
@@ -185,6 +189,8 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, Set
 	private AbstractNetworkPanel<?> selectionHead;
 	private AbstractNetworkPanel<?> selectionTail;
 	private AbstractNetworkPanel<?> lastSelected;
+	
+	private boolean showNodeEdgeCount = true;  // Use CyProperty (user preference only)
 	
 	private boolean loadingSession;
 	private boolean ignoreSelectionEvents;
@@ -296,16 +302,18 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, Set
 			
 			final GroupLayout layout = new GroupLayout(networkHeader);
 			networkHeader.setLayout(layout);
-			layout.setAutoCreateContainerGaps(true);
+			layout.setAutoCreateContainerGaps(!LookAndFeelUtil.isAquaLAF());
 			layout.setAutoCreateGaps(true);
 			
 			layout.setHorizontalGroup(layout.createSequentialGroup()
+					.addContainerGap()
 					.addComponent(getExpandAllButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(getCollapseAllButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addGap(0, 10, Short.MAX_VALUE)
 					.addComponent(getNetworkSelectionLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addGap(0, 10, Short.MAX_VALUE)
 					.addComponent(getOptionsButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addContainerGap()
 			);
 			layout.setVerticalGroup(layout.createParallelGroup(CENTER, true)
 					.addComponent(getExpandAllButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
@@ -521,6 +529,21 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, Set
 		final JPopupMenu menu = new JPopupMenu();
 		
 		{
+			final JMenuItem mi = new JCheckBoxMenuItem("Show Number of Nodes and edges");
+			mi.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					showNodeEdgeCount = mi.isSelected();
+					
+					for (final RootNetworkPanel item : getRootNetworkListPanel().getAllItems())
+						item.setShowNodeEdgeCount(mi.isSelected());
+				}
+			});
+			mi.setSelected(showNodeEdgeCount);
+			menu.add(mi);
+		}
+		
+		{
 			final JMenuItem mi = new JCheckBoxMenuItem("Show Network Toolbar");
 			mi.addActionListener(new ActionListener() {
 				@Override
@@ -660,8 +683,7 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, Set
 		try {
 			for (SubNetworkPanel snp : getAllSubNetworkItems()) {
 				if (!snp.isVisible()) {
-					final RootNetworkPanel rnp =
-							getRootNetworkListPanel().getItem(snp.getModel().getNetwork().getRootNetwork());
+					final RootNetworkPanel rnp = getRootNetworkPanel(snp.getModel().getNetwork().getRootNetwork());
 					
 					if (rnp != null)
 						rnp.expand();
@@ -782,6 +804,7 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, Set
 		invokeLater(new Runnable() {
 			@Override
 			public void run() {
+				getRootNetworkListPanel().update();
 				updateCollapseExpandButtons();
 				updateNetworkToolBar();
 			}
@@ -836,23 +859,23 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, Set
 	}
 
 	@Override
+	public void handleEvent(final AddedEdgesEvent e) {
+		updateNodeEdgeCount(e.getSource());
+	}
+
+	@Override
+	public void handleEvent(final AddedNodesEvent e) {
+		updateNodeEdgeCount(e.getSource());
+	}
+	
+	@Override
 	public void handleEvent(final RemovedNodesEvent e) {
-		invokeLater(new Runnable() {
-			@Override
-			public void run() {
-//				treeTable.repaint();
-			}
-		});
+		updateNodeEdgeCount(e.getSource());
 	}
 
 	@Override
 	public void handleEvent(final RemovedEdgesEvent e) {
-		invokeLater(new Runnable() {
-			@Override
-			public void run() {
-//				treeTable.repaint();
-			}
-		});
+		updateNodeEdgeCount(e.getSource());
 	}
 
 	@Override
@@ -896,72 +919,11 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, Set
 		});
 	}
 	
-//	/**
-//	 * This method highlights a network in the NetworkPanel.
-//	 */
-//	@Override
-//	public void valueChanged(final TreeSelectionEvent e) {
-//		if (ignoreTreeSelectionEvents)
-//			return;
-//
-//		final JTree tree = treeTable.getTree();
-//
-//		// Sets the "current" network based on last node in the tree selected
-//		final NetworkTreeNode node = (NetworkTreeNode) tree.getLastSelectedPathComponent();
-//		
-//		if (node == null || node.getUserObject() == null)
-//			return;
-//
-//		CyNetwork cn = node.getNetwork();
-//		final List<CyNetwork> selectedNetworks = new LinkedList<>();
-//	
-//		// Regular multiple networks selection...
-//		try {
-//			// Create a list of all selected networks
-//			for (int i = tree.getMinSelectionRow(); i <= tree.getMaxSelectionRow(); i++) {
-//				NetworkTreeNode tn = (NetworkTreeNode) tree.getPathForRow(i).getLastPathComponent();
-//				
-//				if (tn != null && tn.getUserObject() != null && tree.isRowSelected(i))
-//					selectedNetworks.add(tn.getNetwork());
-//			}
-//		} catch (Exception ex) {
-//			logger.error("Error creating the list of selected networks", ex);
-//		}
-//		
-//		final List<CyNetworkView> selectedViews = new ArrayList<>();
-//		
-//		for (final CyNetwork n : selectedNetworks) {
-//			final Collection<CyNetworkView> views = netViewMgr.getNetworkViews(n);
-//			
-//			if (!views.isEmpty())
-//				selectedViews.addAll(views);
-//		}
-//		
-//		// No need to set the same network again. It should prevent infinite loops.
-//		// Also check if the network still exists (it could have been removed by another thread).
-//		if (cn == null || netMgr.networkExists(cn.getSUID())) {
-//			if (cn == null || !cn.equals(appMgr.getCurrentNetwork()))
-//				appMgr.setCurrentNetwork(cn);
-//		
-//			CyNetworkView cv = null;
-//			
-//			// Try to get the first view of the current network
-//			final Collection<CyNetworkView> cnViews = cn != null ? netViewMgr.getNetworkViews(cn) : null;
-//			cv = (cnViews == null || cnViews.isEmpty()) ? null : cnViews.iterator().next();
-//			
-//			if (cv == null || !cv.equals(appMgr.getCurrentNetworkView()))
-//				appMgr.setCurrentNetworkView(cv);
-//			
-//			appMgr.setSelectedNetworks(selectedNetworks);
-//			appMgr.setSelectedNetworkViews(selectedViews);
-//		}
-//	}
-	
 	// // Private Methods // //
 	
 	private SubNetworkPanel addNetwork(final CySubNetwork network) {
 		final CyRootNetwork rootNetwork = network.getRootNetwork();
-		RootNetworkPanel rootNetPanel = getRootNetworkListPanel().getItem(rootNetwork);
+		RootNetworkPanel rootNetPanel = getRootNetworkPanel(rootNetwork);
 		
 		if (rootNetPanel == null) {
 			rootNetPanel = getRootNetworkListPanel().addItem(rootNetwork);
@@ -1047,7 +1009,7 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, Set
 			@Override
 			public void run() {
 				final CyRootNetwork rootNet = network.getRootNetwork();
-				final RootNetworkPanel item = getRootNetworkListPanel().getItem(rootNet);
+				final RootNetworkPanel item = getRootNetworkPanel(rootNet);
 				item.removeItem(network);
 				
 				if (item.isEmpty()) {
@@ -1136,7 +1098,7 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, Set
 		if (net instanceof CySubNetwork)
 			return getSubNetworkPanel(net);
 		if (net instanceof CyRootNetwork)
-			return getRootNetworkListPanel().getItem((CyRootNetwork) net);
+			return getRootNetworkPanel(net);
 		
 		return null; // Should never happen!
 	}
@@ -1155,11 +1117,18 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, Set
 		return index >= 0 && index < allItems.size() - 1 ? allItems.get(index + 1) : null;
 	}
 	
+	private RootNetworkPanel getRootNetworkPanel(final CyNetwork net) {
+		if (net instanceof CyRootNetwork)
+			return getRootNetworkListPanel().getItem((CyRootNetwork) net);
+		
+		return null;
+	}
+	
 	private SubNetworkPanel getSubNetworkPanel(final CyNetwork net) {
 		if (net instanceof CySubNetwork) {
 			final CySubNetwork subNet = (CySubNetwork) net;
 			final CyRootNetwork rootNet = subNet.getRootNetwork();
-			final RootNetworkPanel rootNetPanel = getRootNetworkListPanel().getItem(rootNet);
+			final RootNetworkPanel rootNetPanel = getRootNetworkPanel(rootNet);
 			
 			if (rootNetPanel != null)
 				return rootNetPanel.getItem(subNet);
@@ -1180,6 +1149,21 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, Set
 		getSelectAllNetworksButton().setEnabled(selectedCount < networkCount);
 		getDeselectAllNetworksButton().setEnabled(selectedCount > 0);
 		getDestroySelectedItemsButton().setEnabled(selectedCount > 0);
+	}
+	
+	private void updateNodeEdgeCount(final CyNetwork network) {
+		if (network instanceof CySubNetwork == false)
+			return;
+		
+		invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				final RootNetworkPanel rootItem = getRootNetworkPanel(((CySubNetwork)network).getRootNetwork());
+				
+				if (rootItem != null)
+					rootItem.updateCountInfo();
+			}
+		});
 	}
 	
 	private void updateCollapseExpandButtons() {
@@ -1571,7 +1555,7 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, Set
 		RootNetworkPanel addItem(final CyRootNetwork rootNetwork) {
 			if (!items.containsKey(rootNetwork)) {
 				final RootNetworkPanelModel model = new RootNetworkPanelModel(rootNetwork, serviceRegistrar);
-				final RootNetworkPanel rootNetworkPanel = new RootNetworkPanel(model, serviceRegistrar);
+				final RootNetworkPanel rootNetworkPanel = new RootNetworkPanel(model, showNodeEdgeCount, serviceRegistrar);
 				rootNetworkPanel.setAlignmentX(LEFT_ALIGNMENT);
 				
 				items.put(rootNetwork, rootNetworkPanel);

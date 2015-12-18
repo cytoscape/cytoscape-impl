@@ -199,27 +199,11 @@ public class NetworkViewManager implements NetworkViewAddedListener,
 		return desktopPane;
 	}
 
-	/**
-	 * Given a CyNetworkView, returns the internal frame.
-	 * 
-	 * @param view
-	 *            CyNetworkView
-	 * @return JInternalFrame
-	 * @throws IllegalArgumentException
-	 */
 	public JInternalFrame getInternalFrame(CyNetworkView view) throws IllegalArgumentException {
-		if (view == null) {
-			throw new IllegalArgumentException("NetworkViewManager.getInternalFrame(), argument is null");
-		}
-
 		return null; // TODO Fix for backwards compatibility
 	}
 	
 	public CyNetworkView getNetworkView(JInternalFrame frame) throws IllegalArgumentException {
-		if (frame == null) {
-			throw new IllegalArgumentException("NetworkViewManager.getNetworkView(), argument is null");
-		}
-		
 		return null; // TODO Fix for backwards compatibility
 	}
 

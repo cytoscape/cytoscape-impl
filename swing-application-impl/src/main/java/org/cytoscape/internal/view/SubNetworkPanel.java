@@ -24,9 +24,19 @@ public class SubNetworkPanel extends AbstractNetworkPanel<CySubNetwork> {
 	
 	private JLabel viewCountLabel;
 	private JLabel viewIconLabel;
+	private JLabel nodeCountLabel;
+	private JLabel edgeCountLabel;
 	
 	public SubNetworkPanel(final SubNetworkPanelModel model, final CyServiceRegistrar serviceRegistrar) {
 		super(model, serviceRegistrar);
+	}
+	
+	@Override
+	public Dimension getMaximumSize() {
+		final Dimension size = getPreferredSize();
+	    size.width = Short.MAX_VALUE;
+	    
+	    return size;
 	}
 	
 	@Override
@@ -34,7 +44,6 @@ public class SubNetworkPanel extends AbstractNetworkPanel<CySubNetwork> {
 		super.update();
 		
 		final int viewCount = getModel().getViewCount();
-		
 		String viewCountText = " ";
 		
 		if (viewCount > 9)
@@ -48,14 +57,13 @@ public class SubNetworkPanel extends AbstractNetworkPanel<CySubNetwork> {
 		getViewIconLabel().setForeground(
 				UIManager.getColor(viewCount == 0 ? "Label.disabledForeground" : "Label.foreground"));
 		getViewIconLabel().setToolTipText((viewCount > 0 ? viewCount : "No") + " view" + (viewCount == 1 ? "" : "s"));
+		
+		updateCountLabels();
 	}
 	
-	@Override
-	public Dimension getMaximumSize() {
-		final Dimension size = getPreferredSize();
-	    size.width = Short.MAX_VALUE;
-	    
-	    return size;
+	protected void updateCountLabels() {
+		getNodeCountLabel().setText("" + getModel().getNodeCount());
+		getEdgeCountLabel().setText("" + getModel().getEdgeCount());
 	}
 	
 	@Override
@@ -74,12 +82,19 @@ public class SubNetworkPanel extends AbstractNetworkPanel<CySubNetwork> {
 				.addComponent(getViewIconLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 				.addPreferredGap(ComponentPlacement.RELATED)
 				.addComponent(getNameLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				.addPreferredGap(ComponentPlacement.RELATED)
+				.addGap(0, 0, Short.MAX_VALUE)
+				.addComponent(getNodeCountLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				.addPreferredGap(ComponentPlacement.UNRELATED)
+				.addComponent(getEdgeCountLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 				.addContainerGap()
 		);
 		layout.setVerticalGroup(layout.createParallelGroup(CENTER, true)
 				.addComponent(getViewCountLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 				.addComponent(getViewIconLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 				.addComponent(getNameLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				.addComponent(getNodeCountLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				.addComponent(getEdgeCountLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 		);
 	}
 	
@@ -110,5 +125,27 @@ public class SubNetworkPanel extends AbstractNetworkPanel<CySubNetwork> {
 		}
 		
 		return viewIconLabel;
+	}
+	
+	protected JLabel getNodeCountLabel() {
+		if (nodeCountLabel == null) {
+			nodeCountLabel = new JLabel();
+			nodeCountLabel.setFont(nodeCountLabel.getFont().deriveFont(LookAndFeelUtil.getSmallFontSize()));
+			nodeCountLabel.setHorizontalAlignment(JLabel.RIGHT);
+			nodeCountLabel.setForeground(UIManager.getColor("Label.disabledForeground"));
+		}
+		
+		return nodeCountLabel;
+	}
+	
+	protected JLabel getEdgeCountLabel() {
+		if (edgeCountLabel == null) {
+			edgeCountLabel = new JLabel();
+			edgeCountLabel.setFont(edgeCountLabel.getFont().deriveFont(LookAndFeelUtil.getSmallFontSize()));
+			edgeCountLabel.setHorizontalAlignment(JLabel.RIGHT);
+			edgeCountLabel.setForeground(UIManager.getColor("Label.disabledForeground"));
+		}
+		
+		return edgeCountLabel;
 	}
 }
