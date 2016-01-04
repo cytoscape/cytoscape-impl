@@ -289,9 +289,7 @@ public class NetworkViewMainPanel extends JPanel {
 			viewFrames.remove(frame.getName());
 			
 			final NetworkViewContainer vc = frame.getNetworkViewContainer();
-			vc.setContentPane(frame.getContentPane());
-			vc.setLayeredPane(frame.getLayeredPane());
-			vc.setGlassPane(frame.getGlassPane());
+			vc.setRootPane(frame.getRootPane());
 			
 			frame.dispose();
 			

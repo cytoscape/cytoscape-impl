@@ -1,6 +1,7 @@
 package org.cytoscape.internal.view;
 
 import javax.swing.JFrame;
+import javax.swing.JRootPane;
 
 import org.cytoscape.internal.util.ViewUtil;
 import org.cytoscape.model.CyNetwork;
@@ -15,7 +16,7 @@ public class NetworkViewFrame extends JFrame {
 	
 	private final CyServiceRegistrar serviceRegistrar;
 
-	public NetworkViewFrame(NetworkViewContainer vc, final CyServiceRegistrar serviceRegistrar) {
+	public NetworkViewFrame(final NetworkViewContainer vc, final CyServiceRegistrar serviceRegistrar) {
 		super(ViewUtil.getTitle(vc.getNetworkView()));
 		
 		setName(vc.getName());
@@ -24,9 +25,9 @@ public class NetworkViewFrame extends JFrame {
 		this.networkViewContainer = vc;
 		this.serviceRegistrar = serviceRegistrar;
 		
-		setContentPane(vc.getContentPane());
-		setLayeredPane(vc.getLayeredPane());
-		setGlassPane(vc.getGlassPane());
+		final JRootPane rp = vc.getRootPane();
+		vc.setRootPane(new JRootPane());
+		setRootPane(rp);
 	}
 	
 	protected NetworkViewContainer getNetworkViewContainer() {

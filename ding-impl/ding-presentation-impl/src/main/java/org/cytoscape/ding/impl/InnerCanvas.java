@@ -910,20 +910,10 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 		return m_lastRenderDetail;
 	}
 
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @param s DOCUMENT ME!
-	 */
 	public void setSelecting(boolean s) {
 		selecting = s;
 	}
 
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @return  DOCUMENT ME!
-	 */
 	public boolean isSelecting() {
 		return selecting;
 	}
