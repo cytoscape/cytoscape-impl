@@ -24,7 +24,7 @@ package org.cytoscape.internal.view;
  * #L%
  */
 
-import static javax.swing.SwingUtilities.invokeLater;
+import static org.cytoscape.internal.util.ViewUtil.invokeOnEDT;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -104,7 +104,7 @@ public class BirdsEyeViewHandler implements SetCurrentRenderingEngineListener, N
 	public void handleEvent(final SetCurrentRenderingEngineEvent e) {
 		final RenderingEngine<CyNetwork> newEngine = e.getRenderingEngine();
 		
-		invokeLater(new Runnable() {
+		invokeOnEDT(new Runnable() {
 			@Override
 			public void run() {
 				updateBEV(newEngine);
@@ -116,7 +116,7 @@ public class BirdsEyeViewHandler implements SetCurrentRenderingEngineListener, N
 	public void handleEvent(final NetworkViewDestroyedEvent e) {
 		final CyNetworkViewManager manager = e.getSource();
 		
-		invokeLater(new Runnable() {
+		invokeOnEDT(new Runnable() {
 			@Override
 			public void run() {
 				removeView(manager);

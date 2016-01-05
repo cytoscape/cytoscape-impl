@@ -1,33 +1,9 @@
 package org.cytoscape.internal.view;
 
-/*
- * #%L
- * Cytoscape Swing Application Impl (swing-application-impl)
- * $Id:$
- * $HeadURL:$
- * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * #L%
- */
-
 import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static javax.swing.GroupLayout.Alignment.CENTER;
-import static javax.swing.SwingUtilities.invokeLater;
+import static org.cytoscape.internal.util.ViewUtil.invokeOnEDT;
 import static org.cytoscape.util.swing.IconManager.ICON_ANGLE_DOUBLE_DOWN;
 import static org.cytoscape.util.swing.IconManager.ICON_ANGLE_DOUBLE_UP;
 import static org.cytoscape.util.swing.IconManager.ICON_CHECK_SQUARE;
@@ -147,6 +123,30 @@ import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.swing.DialogTaskManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+/*
+ * #%L
+ * Cytoscape Swing Application Impl (swing-application-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
 
 @SuppressWarnings("serial")
 public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, SetSelectedNetworksListener,
@@ -801,7 +801,7 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, Set
 	
 	@Override
 	public void handleEvent(final NetworkDestroyedEvent e) {
-		invokeLater(new Runnable() {
+		invokeOnEDT(new Runnable() {
 			@Override
 			public void run() {
 				getRootNetworkListPanel().update();
@@ -818,7 +818,7 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, Set
 		
 		final CyNetwork net = e.getNetwork();
 		
-		invokeLater(new Runnable() {
+		invokeOnEDT(new Runnable() {
 			@Override
 			public void run() {
 				if (net instanceof CySubNetwork) {
@@ -846,7 +846,7 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, Set
 		
 		// And if there is no related view, nothing needs to be done
 		if (net != null && tbl.equals(net.getDefaultNetworkTable())) {
-			invokeLater(new Runnable() {
+			invokeOnEDT(new Runnable() {
 				@Override
 				public void run() {
 					final AbstractNetworkPanel<?> item = getNetworkItem(net);
@@ -883,7 +883,7 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, Set
 		if (loadingSession)
 			return;
 		
-		invokeLater(new Runnable() {
+		invokeOnEDT(new Runnable() {
 			@Override
 			public void run() {
 				updateNetworkSelection(e.getNetworks());
@@ -893,7 +893,7 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, Set
 
 	@Override
 	public void handleEvent(final NetworkViewDestroyedEvent e) {
-		invokeLater(new Runnable() {
+		invokeOnEDT(new Runnable() {
 			@Override
 			public void run() {
 				getRootNetworkListPanel().update();
@@ -908,7 +908,7 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, Set
 		
 		final CyNetworkView netView = nde.getNetworkView();
 		
-		invokeLater(new Runnable() {
+		invokeOnEDT(new Runnable() {
 			@Override
 			public void run() {
 				final SubNetworkPanel subNetPanel = getSubNetworkPanel(netView.getModel());
@@ -1005,7 +1005,7 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, Set
 		nameTables.values().removeAll(Collections.singletonList(network));
 		nodeEdgeTables.values().removeAll(Collections.singletonList(network));
 		
-		invokeLater(new Runnable() {
+		invokeOnEDT(new Runnable() {
 			@Override
 			public void run() {
 				final CyRootNetwork rootNet = network.getRootNetwork();
@@ -1155,7 +1155,7 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, Set
 		if (network instanceof CySubNetwork == false)
 			return;
 		
-		invokeLater(new Runnable() {
+		invokeOnEDT(new Runnable() {
 			@Override
 			public void run() {
 				final RootNetworkPanel rootItem = getRootNetworkPanel(((CySubNetwork)network).getRootNetwork());

@@ -24,7 +24,7 @@ package org.cytoscape.internal;
  * #L%
  */
 
-import static javax.swing.SwingUtilities.invokeLater;
+import static org.cytoscape.internal.util.ViewUtil.invokeOnEDT;
 
 import java.io.File;
 import java.math.BigInteger;
@@ -40,7 +40,6 @@ import java.util.Set;
 
 import javax.swing.JInternalFrame;
 import javax.swing.JOptionPane;
-import javax.swing.SwingUtilities;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.events.CyShutdownEvent;
@@ -169,7 +168,7 @@ public class SessionHandler implements CyShutdownListener, SessionLoadedListener
 		final File f1 = saveSessionState(e);
 		final File f2 = saveNetworkList(e);
 		
-		final List<File> files = new ArrayList<File>();
+		final List<File> files = new ArrayList<>();
 		if (f1 != null) files.add(f1);
 		if (f2 != null) files.add(f2);
 		
@@ -189,7 +188,7 @@ public class SessionHandler implements CyShutdownListener, SessionLoadedListener
 		if (sess == null)
 			return;
 		
-		SwingUtilities.invokeLater(new Runnable() {
+		invokeOnEDT(new Runnable() {
 			@Override
 			public void run() {
 				postLoading(sess);
@@ -411,7 +410,7 @@ public class SessionHandler implements CyShutdownListener, SessionLoadedListener
 		final List<CyNetwork> selectedNetworks =
 				serviceRegistrar.getService(CyApplicationManager.class).getSelectedNetworks();
 		
-		invokeLater(new Runnable() {
+		invokeOnEDT(new Runnable() {
 			@Override
 			public void run() {
 				netPanel.setNetworks(sortedNetworks);
