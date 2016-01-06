@@ -49,6 +49,7 @@ import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JRootPane;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JSlider;
@@ -99,9 +100,12 @@ public class NetworkViewMainPanel extends JPanel {
 	private final Map<String, NetworkViewContainer> viewContainers;
 	private final Map<String, NetworkViewFrame> viewFrames;
 	
-	private final CyServiceRegistrar serviceRegistrar;
+	private final CytoscapeMenus cyMenus;
 	
-	public NetworkViewMainPanel(final CyServiceRegistrar serviceRegistrar) {
+	private final CyServiceRegistrar serviceRegistrar;
+
+	public NetworkViewMainPanel(final CytoscapeMenus cyMenus, final CyServiceRegistrar serviceRegistrar) {
+		this.cyMenus = cyMenus;
 		this.serviceRegistrar = serviceRegistrar;
 		
 		viewContainers = new LinkedHashMap<>();
@@ -246,9 +250,21 @@ public class NetworkViewMainPanel extends JPanel {
 		viewContainers.remove(name);
 		
 		final NetworkViewFrame frame = new NetworkViewFrame(vc, serviceRegistrar);
+		
+		if (!LookAndFeelUtil.isMac())
+			frame.setJMenuBar(cyMenus.getJMenuBar());
+		
 		viewFrames.put(name, frame);
 		
 		frame.addWindowListener(new WindowAdapter() {
+			@Override
+			public void windowActivated(WindowEvent e) {
+				// This is necessary because the same menu bar is used by other frames, including CytoscapeDesktop
+				if (LookAndFeelUtil.isMac()) {
+					frame.setJMenuBar(cyMenus.getJMenuBar());
+					cyMenus.getJMenuBar().updateUI();
+				}
+			}
 			@Override
 			public void windowClosed(WindowEvent e) {
 				reattachNetworkView(view);
@@ -286,13 +302,13 @@ public class NetworkViewMainPanel extends JPanel {
 		final NetworkViewFrame frame = getNetworkViewFrame(view);
 		
 		if (frame != null) {
-			viewFrames.remove(frame.getName());
-			
 			final NetworkViewContainer vc = frame.getNetworkViewContainer();
-			vc.setRootPane(frame.getRootPane());
+			final JRootPane rootPane = frame.getRootPane();
 			
 			frame.dispose();
+			viewFrames.remove(vc.getName());
 			
+			vc.setRootPane(rootPane);
 			getContentPane().add(vc, vc.getName());
 			viewContainers.put(vc.getName(), vc);
 			show(vc.getName());

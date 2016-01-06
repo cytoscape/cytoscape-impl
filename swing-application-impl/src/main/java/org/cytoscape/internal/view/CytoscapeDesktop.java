@@ -157,17 +157,24 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 
 		statusToolBar = setupStatusPanel(taskStatusPanelFactory);
 
-		setJMenuBar(cyMenus.getJMenuBar());
-
-		if (MacFullScreenEnabler.supportsNativeFullScreenMode()) {
+		if (MacFullScreenEnabler.supportsNativeFullScreenMode())
 			MacFullScreenEnabler.setEnabled(this, true);
-		}
 
-		//don't automatically close window. Let shutdown.exit(returnVal)
-		//handle this
+		//don't automatically close window. Let shutdown.exit(returnVal) handle this
 		setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 
+		if (!LookAndFeelUtil.isMac())
+			setJMenuBar(cyMenus.getJMenuBar());
+		
 		addWindowListener(new WindowAdapter() {
+			@Override
+			public void windowActivated(WindowEvent e) {
+				// This is necessary because the same menu bar can be used by other frames
+				if (LookAndFeelUtil.isMac()) {
+					setJMenuBar(cyMenus.getJMenuBar());
+					cyMenus.getJMenuBar().updateUI();
+				}
+			}
 			@Override
 			public void windowClosing(WindowEvent we) {
 				shutdown.exit(0);

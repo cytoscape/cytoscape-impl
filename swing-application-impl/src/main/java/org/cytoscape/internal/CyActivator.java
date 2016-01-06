@@ -94,6 +94,7 @@ import org.cytoscape.internal.view.CytoscapeMenus;
 import org.cytoscape.internal.view.CytoscapeToolBar;
 import org.cytoscape.internal.view.MacFullScreenEnabler;
 import org.cytoscape.internal.view.NetworkMainPanel;
+import org.cytoscape.internal.view.NetworkViewMainPanel;
 import org.cytoscape.internal.view.NetworkViewManager;
 import org.cytoscape.internal.view.ToolBarEnableUpdater;
 import org.cytoscape.internal.view.help.ArrangeTaskFactory;
@@ -187,7 +188,10 @@ public class CyActivator extends AbstractCyActivator {
 		ToolBarEnableUpdater toolBarEnableUpdater =
 				new ToolBarEnableUpdater(cytoscapeToolBar, cyServiceRegistrarServiceRef);
 
-		NetworkViewManager networkViewManager = new NetworkViewManager(cyHelpBroker, cyServiceRegistrarServiceRef);
+		NetworkViewMainPanel networkViewMainPanel = new NetworkViewMainPanel(cytoscapeMenus, cyServiceRegistrarServiceRef);
+		NetworkViewManager networkViewManager = new NetworkViewManager(networkViewMainPanel,
+																	   cyHelpBroker,
+																	   cyServiceRegistrarServiceRef);
 
 		BirdsEyeViewHandler birdsEyeViewHandler = new BirdsEyeViewHandler(cyApplicationManagerServiceRef,
 		                                                                  cyNetworkViewManagerServiceRef);

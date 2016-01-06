@@ -19,7 +19,7 @@ public class NetworkViewFrame extends JFrame {
 	public NetworkViewFrame(final NetworkViewContainer vc, final CyServiceRegistrar serviceRegistrar) {
 		super(ViewUtil.getTitle(vc.getNetworkView()));
 		
-		setName(vc.getName());
+		setName("Frame." + vc.getName());
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		
 		this.networkViewContainer = vc;

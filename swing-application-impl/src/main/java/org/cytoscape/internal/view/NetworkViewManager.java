@@ -109,10 +109,14 @@ public class NetworkViewManager implements NetworkViewAddedListener,
 	
 	private final CyServiceRegistrar serviceRegistrar;
 	
-	public NetworkViewManager(final CyHelpBroker help, final CyServiceRegistrar serviceRegistrar) {
+	public NetworkViewManager(
+			final NetworkViewMainPanel networkViewMainPanel,
+			final CyHelpBroker help,
+			final CyServiceRegistrar serviceRegistrar
+	) {
 		this.serviceRegistrar = serviceRegistrar;
 		this.desktopPane = new JDesktopPane();
-		this.networkViewMainPanel = new NetworkViewMainPanel(serviceRegistrar);
+		this.networkViewMainPanel = networkViewMainPanel;
 
 		// add Help hooks
 		help.getHelpBroker().enableHelp(desktopPane, "network-view-manager", null);
