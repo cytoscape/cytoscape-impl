@@ -190,7 +190,7 @@ public class RootNetworkPanel extends AbstractNetworkPanel<CyRootNetwork> {
 		
 		final GroupLayout layout = new GroupLayout(this);
 		setLayout(layout);
-		layout.setAutoCreateContainerGaps(!LookAndFeelUtil.isAquaLAF());
+		layout.setAutoCreateContainerGaps(false);
 		layout.setAutoCreateGaps(false);
 		
 		layout.setHorizontalGroup(layout.createParallelGroup(LEADING, true)
@@ -259,7 +259,7 @@ public class RootNetworkPanel extends AbstractNetworkPanel<CyRootNetwork> {
 			
 			final GroupLayout layout = new GroupLayout(headerPanel);
 			headerPanel.setLayout(layout);
-			layout.setAutoCreateContainerGaps(!LookAndFeelUtil.isAquaLAF());
+			layout.setAutoCreateContainerGaps(false);
 			layout.setAutoCreateGaps(false);
 			
 			layout.setHorizontalGroup(layout.createParallelGroup(LEADING, true)

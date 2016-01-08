@@ -302,7 +302,7 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, Set
 			
 			final GroupLayout layout = new GroupLayout(networkHeader);
 			networkHeader.setLayout(layout);
-			layout.setAutoCreateContainerGaps(!LookAndFeelUtil.isAquaLAF());
+			layout.setAutoCreateContainerGaps(false);
 			layout.setAutoCreateGaps(true);
 			
 			layout.setHorizontalGroup(layout.createSequentialGroup()

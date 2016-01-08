@@ -72,7 +72,7 @@ public class SubNetworkPanel extends AbstractNetworkPanel<CySubNetwork> {
 		
 		final GroupLayout layout = new GroupLayout(this);
 		setLayout(layout);
-		layout.setAutoCreateContainerGaps(!LookAndFeelUtil.isAquaLAF());
+		layout.setAutoCreateContainerGaps(false);
 		layout.setAutoCreateGaps(false);
 		
 		layout.setHorizontalGroup(layout.createSequentialGroup()
