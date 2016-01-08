@@ -50,7 +50,6 @@ import javax.swing.border.Border;
 import org.cytoscape.internal.util.ViewUtil;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.presentation.RenderingEngine;
@@ -61,8 +60,9 @@ public class NetworkViewGrid extends JPanel implements Scrollable {
 	public static int MIN_THUMBNAIL_SIZE = 100;
 	public static int MAX_THUMBNAIL_SIZE = 500;
 	
-	private static int BORDER_WIDTH = 2;
-	private static int PAD = 5;
+	private static int BORDER_WIDTH = 3;
+	private static int PAD = 10;
+	private static int GAP = 2;
 	
 	private Map<CyNetworkView, RenderingEngine<CyNetwork>> engines;
 	private final TreeMap<CyNetworkView, ThumbnailPanel> thumbnailPanels;
@@ -288,6 +288,9 @@ public class NetworkViewGrid extends JPanel implements Scrollable {
 					}
 				} else {
 					setSelectedItems((Set) (Collections.singleton(item)));
+					
+					if (!item.isCurrent())
+						setCurrentNetworkView(item.getNetworkView());
 				}
 				
 				if (getSelectedItems().size() == 1)
@@ -410,7 +413,6 @@ public class NetworkViewGrid extends JPanel implements Scrollable {
 		
 		// TODO Print some info? E.g. "No network views"
 		if (engines != null && !engines.isEmpty()) {
-			System.out.println("\n--> " + this.thumbnailSize);
 			this.thumbnailSize = Math.max(this.thumbnailSize, MIN_THUMBNAIL_SIZE);
 			this.thumbnailSize = Math.min(this.thumbnailSize, MAX_THUMBNAIL_SIZE);
 			this.thumbnailSize = Math.min(this.thumbnailSize, size.width);
@@ -457,40 +459,51 @@ public class NetworkViewGrid extends JPanel implements Scrollable {
 	
 	class ThumbnailPanel extends JPanel {
 		
-		private JLabel currentLabel;
 		private JLabel titleLabel;
 		private JLabel imageLabel;
 		private ThumbnailIcon icon;
 		
 		private boolean selected;
+		private boolean hover;
 		
 		private final RenderingEngine<CyNetwork> engine;
 		
+		
+		private Border EMPTY_BORDER = BorderFactory.createEmptyBorder(1, 1, 1, 1);
+		private Border CURRENT_BORDER = BorderFactory.createLineBorder(UIManager.getColor("Table.focusCellBackground"), 1);
+		
 		private Border DEFAULT_BORDER = BorderFactory.createCompoundBorder(
-				BorderFactory.createEmptyBorder(1, 1, 1, 1),
-				BorderFactory.createLineBorder(UIManager.getColor("Separator.foreground"), 1)
+				EMPTY_BORDER,
+				BorderFactory.createCompoundBorder(
+						BorderFactory.createLineBorder(UIManager.getColor("Separator.foreground"), 1),
+						EMPTY_BORDER
+				)
+		);
+		private Border DEFAULT_CURRENT_BORDER = BorderFactory.createCompoundBorder(
+				EMPTY_BORDER,
+				BorderFactory.createCompoundBorder(
+						BorderFactory.createLineBorder(UIManager.getColor("Separator.foreground"), 1),
+						CURRENT_BORDER
+				)
 		);
 		private Border HOVER_BORDER = BorderFactory.createCompoundBorder(
-				BorderFactory.createEmptyBorder(1, 1, 1, 1),
-				BorderFactory.createLineBorder(UIManager.getColor("Focus.color"), 1)
+				EMPTY_BORDER,
+				BorderFactory.createCompoundBorder(
+						BorderFactory.createLineBorder(UIManager.getColor("Focus.color"), 1),
+						EMPTY_BORDER
+				)
+		);
+		private Border HOVER_CURRENT_BORDER = BorderFactory.createCompoundBorder(
+				EMPTY_BORDER,
+				BorderFactory.createCompoundBorder(
+						BorderFactory.createLineBorder(UIManager.getColor("Focus.color"), 1),
+						CURRENT_BORDER
+				)
 		);
 
 		ThumbnailPanel(final RenderingEngine<CyNetwork> engine, final int size) {
 			this.engine = engine;
 			this.setBorder(DEFAULT_BORDER);
-			
-			final IconManager iconManager = serviceRegistrar.getService(IconManager.class);
-			
-			currentLabel = new JLabel(IconManager.ICON_BOOKMARK);
-			currentLabel.setFont(iconManager.getIconFont(24.0f));
-			currentLabel.setMinimumSize(currentLabel.getPreferredSize());
-			currentLabel.addMouseListener(new MouseAdapter() {
-				@Override
-				public void mousePressed(MouseEvent e) {
-					if (!isCurrent())
-						setCurrentNetworkView(getNetworkView());
-				}
-			});
 			
 			final Dimension d = new Dimension(size - BORDER_WIDTH, size - BORDER_WIDTH);
 			this.setMinimumSize(d);
@@ -499,48 +512,38 @@ public class NetworkViewGrid extends JPanel implements Scrollable {
 			final GroupLayout layout = new GroupLayout(this);
 			this.setLayout(layout);
 			layout.setAutoCreateContainerGaps(false);
-			layout.setAutoCreateGaps(true);
+			layout.setAutoCreateGaps(false);
 			
 			layout.setHorizontalGroup(layout.createParallelGroup(LEADING, true)
 					.addGroup(layout.createSequentialGroup()
-							.addGap(2)
-							.addComponent(currentLabel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-							.addGap(2, 2, Short.MAX_VALUE)
+							.addGap(GAP, GAP, Short.MAX_VALUE)
 							.addComponent(getTitleLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-							.addGap(2, 2, Short.MAX_VALUE)
-							.addGap(currentLabel.getPreferredSize().width)
-							.addGap(2)
+							.addGap(GAP, GAP, Short.MAX_VALUE)
 					)
 					.addGroup(layout.createSequentialGroup()
-							.addGap(PAD)
-							.addGap(0, 0, Short.MAX_VALUE)
+							.addGap(PAD, PAD, Short.MAX_VALUE)
 							.addComponent(getImageLabel())
-							.addGap(0, 0, Short.MAX_VALUE)
-							.addGap(PAD)
+							.addGap(PAD, PAD, Short.MAX_VALUE)
 					)
 			);
 			layout.setVerticalGroup(layout.createSequentialGroup()
-					.addGroup(layout.createParallelGroup(LEADING, true)
-							.addComponent(currentLabel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-							.addGroup(layout.createSequentialGroup()
-									.addGap(PAD)
-									.addComponent(getTitleLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-							)
-					)
-					.addGap(0, 0, Short.MAX_VALUE)
+					.addGap(GAP)
+					.addComponent(getTitleLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addGap(GAP, GAP, Short.MAX_VALUE)
 					.addComponent(getImageLabel())
-					.addGap(0, 0, Short.MAX_VALUE)
-					.addGap(PAD)
+					.addGap(PAD, PAD, Short.MAX_VALUE)
 			);
 			
 			this.addMouseListener(new MouseAdapter() {
 				@Override
 				public void mouseEntered(MouseEvent e) {
-					setBorder(HOVER_BORDER);
+					hover = true;
+					updateBorder();
 				}
 				@Override
 				public void mouseExited(MouseEvent e) {
-					setBorder(DEFAULT_BORDER);
+					hover = false;
+					updateBorder();
 				}
 			});
 			
@@ -575,32 +578,36 @@ public class NetworkViewGrid extends JPanel implements Scrollable {
 			setToolTipText("<html><center>" + title + "<br>(" + netName + ")</center></html>");
 			getTitleLabel().setText(title);
 			
-			currentLabel.setText(IconManager.ICON_BOOKMARK_O);
-			currentLabel.setForeground(UIManager.getColor(isCurrent() ? "Focus.color" : "Table.background"));
-			currentLabel.setToolTipText(isCurrent() ? "Current Network View" : "Set Current Network View");
-			
-			getTitleLabel().setForeground(
-					UIManager.getColor(isCurrent() ? "Label.foreground" : "Label.disabledForeground"));
-			
 			this.updateSelection();
+			this.updateBorder();
 		}
 		
 		void updateIcon() {
-			final Dimension size = this.getPreferredSize();
+			final Dimension size = this.getSize();
 			
-			if (size != null) {
-				int imgWidth = size.width - BORDER_WIDTH - 2 * PAD;
-				int imgHeight = imgWidth - getTitleLabel().getPreferredSize().height;
-				final Image img = createThumbnail(imgWidth, imgHeight);
-				icon = img != null ? new ThumbnailIcon(img, getNetworkView()) : null;
-				imageLabel.setIcon(icon);
+			if (size != null && getTitleLabel().getSize() != null) {
+				int imgWidth = size.width - 2 * BORDER_WIDTH - 2 * PAD;
+				int imgHeight = size.height - 2 * BORDER_WIDTH - 2 * GAP - getTitleLabel().getSize().height - PAD;
 				
-				updateUI();
+				if (imgWidth > 0 && imgHeight > 0) {
+					final Image img = createThumbnail(imgWidth, imgHeight);
+					icon = img != null ? new ThumbnailIcon(img, getNetworkView()) : null;
+					imageLabel.setIcon(icon);
+				
+					updateUI();
+				}
 			}
 		}
 		
 		private void updateSelection() {
 			this.setBackground(UIManager.getColor(selected ? "Table.selectionBackground" : "Panel.background"));
+		}
+		
+		private void updateBorder() {
+			if (isCurrent())
+				setBorder(hover ? HOVER_CURRENT_BORDER : DEFAULT_CURRENT_BORDER);
+			else
+				setBorder(hover ? HOVER_BORDER : DEFAULT_BORDER);
 		}
 		
 		CyNetworkView getNetworkView() {
@@ -632,7 +639,7 @@ public class NetworkViewGrid extends JPanel implements Scrollable {
 		 * @param h Image height
 		 * @return
 		 */
-		private Image createThumbnail(final int w, final int h) {
+		private Image createThumbnail(double w, double h) {
 			final CyNetworkView netView = getNetworkView();
 			netView.updateView();
 			final double nw = netView.getVisualProperty(NETWORK_WIDTH);
@@ -650,7 +657,7 @@ public class NetworkViewGrid extends JPanel implements Scrollable {
             
 			final BufferedImage image = new BufferedImage(iw, ih, BufferedImage.TYPE_INT_RGB);
 			
-			if (w > 0 && h > 0 && nw > 0 && nh > 0) {
+			if (nw > 0 && nh > 0) {
 				final Graphics2D g = (Graphics2D) image.getGraphics();
 				g.scale(scale, scale);
 				g.translate(0, 1);
