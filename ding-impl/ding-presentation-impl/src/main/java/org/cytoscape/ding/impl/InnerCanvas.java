@@ -1,5 +1,36 @@
 package org.cytoscape.ding.impl;
 
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.FontMetrics;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Image;
+import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
+import java.awt.event.MouseWheelEvent;
+import java.awt.event.MouseWheelListener;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.GeneralPath;
+import java.awt.geom.Line2D;
+import java.awt.geom.Point2D;
+import java.awt.image.BufferedImage;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+
+import javax.swing.JComponent;
+import javax.swing.Timer;
+import javax.swing.UIManager;
+
 /*
  * #%L
  * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
@@ -28,8 +59,7 @@ package org.cytoscape.ding.impl;
 import org.cytoscape.ding.EdgeView;
 import org.cytoscape.ding.NodeView;
 import org.cytoscape.ding.ViewChangeEdit;
-import org.cytoscape.ding.impl.DNodeView;
-import org.cytoscape.ding.impl.events.*;
+import org.cytoscape.ding.impl.events.ViewportChangeListener;
 import org.cytoscape.graph.render.export.ImageImposter;
 import org.cytoscape.graph.render.immed.EdgeAnchors;
 import org.cytoscape.graph.render.immed.GraphGraphics;
@@ -41,8 +71,8 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.model.events.RowsSetEvent;
 import org.cytoscape.model.events.RowSetRecord;
+import org.cytoscape.model.events.RowsSetEvent;
 import org.cytoscape.util.intr.LongEnumerator;
 import org.cytoscape.util.intr.LongHash;
 import org.cytoscape.util.intr.LongStack;
@@ -51,19 +81,6 @@ import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.presentation.property.values.Bend;
 import org.cytoscape.view.presentation.property.values.Handle;
 import org.cytoscape.work.undo.UndoSupport;
-
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.*;
-import java.awt.geom.AffineTransform;
-import java.awt.geom.GeneralPath;
-import java.awt.geom.Line2D;
-import java.awt.geom.Point2D;
-import java.awt.image.BufferedImage;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
 
 /**
  * Canvas to be used for drawing actual network visualization
@@ -137,23 +154,24 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 		m_yCenter = 0.0d;
 		m_scaleFactor = 1.0d;
 		m_hash = new LongHash();
-		addMouseListener(this);
-		addMouseMotionListener(this);
-		addMouseWheelListener(this);
-		addKeyListener(this);
-		setFocusable(true);
+		
+		addEdgeMode = new AddEdgeStateMonitor(this, m_view);
 		popup = new PopupMenuHelper(m_view, this);
-
+		
 		mousePressedDelegator = new MousePressedDelegator();
 		mouseReleasedDelegator = new MouseReleasedDelegator();
 		mouseDraggedDelegator = new MouseDraggedDelegator();
 		addEdgeMousePressedDelegator = new AddEdgeMousePressedDelegator();
 
-		addEdgeMode = new AddEdgeStateMonitor(this,m_view);
-
 		SELECTION_RECT_BORDER_COLOR_1 = UIManager.getColor("Focus.color");
 		SELECTION_RECT_BORDER_COLOR_2 = new Color(255, 255, 255, 160);
 		
+		addMouseListener(this);
+		addMouseMotionListener(this);
+		addMouseWheelListener(this);
+		addKeyListener(this);
+		setFocusable(true);
+
 		// Timer to reset edge drawing
 		ActionListener taskPerformer = new ActionListener() {
 			public void actionPerformed(ActionEvent evt) {
@@ -1557,6 +1575,10 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 	}
 
 	public void dispose() {
+		removeMouseListener(this);
+		removeMouseMotionListener(this);
+		removeMouseWheelListener(this);
+		removeKeyListener(this);
 		m_view = null;
 		m_undoable_edit = null;
 		addEdgeMode = null;
