@@ -20,6 +20,8 @@ import java.util.TreeSet;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.NetworkViewRenderer;
+import org.cytoscape.application.events.CyStartEvent;
+import org.cytoscape.application.events.CyStartListener;
 import org.cytoscape.application.events.SetCurrentNetworkEvent;
 import org.cytoscape.application.events.SetCurrentNetworkListener;
 import org.cytoscape.application.events.SetCurrentNetworkViewEvent;
@@ -63,7 +65,7 @@ public class VizMapperProxy extends Proxy
 							  		   VisualStyleChangedListener, SetCurrentVisualStyleListener,
 							  		   SetCurrentNetworkListener, SetCurrentNetworkViewListener,
 							  		   SessionAboutToBeLoadedListener, SessionLoadCancelledListener,
-							  		   SessionLoadedListener {
+							  		   SessionLoadedListener, CyStartListener {
 
 	public static final String NAME = "VisualStyleProxy";
 	public static final String PRESET_VIZMAP_FILE = "default_vizmap.xml";
@@ -71,6 +73,7 @@ public class VizMapperProxy extends Proxy
 	private final SortedSet<VisualStyle> visualStyles;
 	private final ServicesUtil servicesUtil;
 
+	private volatile boolean cytoscapeStarted;
 	private volatile boolean loadingSession;
 
 	// ==[ CONSTRUCTORS ]===============================================================================================
@@ -117,7 +120,7 @@ public class VizMapperProxy extends Proxy
 			}
 		}
 		
-		if (changed)
+		if (changed && cytoscapeStarted)
 			sendNotification(VISUAL_STYLE_SET_CHANGED, updatedStyles);
 	}
 
@@ -280,7 +283,7 @@ public class VizMapperProxy extends Proxy
 			changed = visualStyles.add(vs);
 		}
 		
-		if (changed && !loadingSession)
+		if (changed && cytoscapeStarted && !loadingSession)
 			sendNotification(VISUAL_STYLE_ADDED, vs);
 	}
 	
@@ -293,32 +296,37 @@ public class VizMapperProxy extends Proxy
 			changed = visualStyles.remove(vs);
 		}
 		
-		if (changed && !loadingSession)
+		if (changed && cytoscapeStarted && !loadingSession)
 			sendNotification(VISUAL_STYLE_REMOVED, vs);
 	}
 	
 	@Override
 	public void handleEvent(final VisualStyleChangedEvent e) {
-		if (!loadingSession)
+		if (cytoscapeStarted && !loadingSession)
 			sendNotification(VISUAL_STYLE_UPDATED, e.getSource());
 	}
 	
 	@Override
 	public void handleEvent(final SetCurrentVisualStyleEvent e) {
-		if (!loadingSession)
+		if (cytoscapeStarted && !loadingSession)
 			sendNotification(CURRENT_VISUAL_STYLE_CHANGED, e.getVisualStyle());
 	}
 	
 	@Override
 	public void handleEvent(final SetCurrentNetworkEvent e) {
-		if (!loadingSession)
+		if (cytoscapeStarted && !loadingSession)
 			sendNotification(CURRENT_NETWORK_CHANGED, e.getNetwork());
 	}
 	
 	@Override
 	public void handleEvent(final SetCurrentNetworkViewEvent e) {
-		if (!loadingSession)
+		if (cytoscapeStarted && !loadingSession)
 			sendNotification(CURRENT_NETWORK_VIEW_CHANGED, e.getNetworkView());
+	}
+	
+	@Override
+	public void handleEvent(final CyStartEvent e) {
+		cytoscapeStarted = true;
 	}
 	
 	@Override
