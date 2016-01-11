@@ -291,6 +291,7 @@ public class NetworkViewMainPanel extends JPanel {
 		if (w > 0 && h > 0)
 			frame.getContentPane().setPreferredSize(new Dimension(w, h));
 		
+		getNetworkViewGrid().setDetached(vc.getNetworkView(), true);
 		showGrid();
 		
 		frame.pack();
@@ -309,8 +310,10 @@ public class NetworkViewMainPanel extends JPanel {
 			viewFrames.remove(vc.getName());
 			
 			vc.setRootPane(rootPane);
+			vc.setDetached(false);
 			getContentPane().add(vc, vc.getName());
 			viewContainers.put(vc.getName(), vc);
+			getNetworkViewGrid().setDetached(vc.getNetworkView(), false);
 			show(vc.getName());
 		}
 	}
@@ -882,7 +885,7 @@ public class NetworkViewMainPanel extends JPanel {
 	
 	private JSlider getThumbnailSlider() {
 		if (thumbnailSlider == null) {
-			final int value = Math.round(MIN_THUMBNAIL_SIZE + (MAX_THUMBNAIL_SIZE - MIN_THUMBNAIL_SIZE) / 4.0f);
+			final int value = Math.round(MIN_THUMBNAIL_SIZE + (MAX_THUMBNAIL_SIZE - MIN_THUMBNAIL_SIZE) / 3.0f);
 			thumbnailSlider = new JSlider(MIN_THUMBNAIL_SIZE, MAX_THUMBNAIL_SIZE, value);
 			thumbnailSlider.setToolTipText("Thumbnail Size");
 			thumbnailSlider.putClientProperty("JComponent.sizeVariant", "mini"); // Aqua (Mac OS X) only

@@ -36,6 +36,8 @@ public class NetworkViewContainer extends JComponent implements RootPaneContaine
      * false, but is set to true when the <code>NetworkViewContainer</code> is constructed.
      */
     private boolean rootPaneCheckingEnabled;
+    
+    private boolean detached;
 	
 	private final CyServiceRegistrar serviceRegistrar;
 
@@ -49,6 +51,14 @@ public class NetworkViewContainer extends JComponent implements RootPaneContaine
 		init();
 		
 		renderingEngine = engineFactory.createRenderingEngine(this, networkView);
+	}
+	
+	public boolean isDetached() {
+		return detached;
+	}
+	
+	public void setDetached(boolean detached) {
+		this.detached = detached;
 	}
 	
 	@Override

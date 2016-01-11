@@ -27,6 +27,7 @@ public class NetworkViewFrame extends JFrame {
 		
 		final JRootPane rp = vc.getRootPane();
 		vc.setRootPane(new JRootPane());
+		vc.setDetached(true);
 		setRootPane(rp);
 	}
 	

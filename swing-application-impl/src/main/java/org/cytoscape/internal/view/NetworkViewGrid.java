@@ -49,6 +49,7 @@ import javax.swing.border.Border;
 
 import org.cytoscape.internal.util.ViewUtil;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.model.CyNetworkView;
@@ -222,6 +223,10 @@ public class NetworkViewGrid extends JPanel implements Scrollable {
 		}
 	}
 	
+	protected void setDetached(final CyNetworkView view, final boolean b) {
+		getItem(view).setDetached(b);
+	}
+	
 	protected void update(final int thumbnailSize) {
 		synchronized (lock) {
 			dirty = dirty || thumbnailSize != this.thumbnailSize; // TODO separate both conditions
@@ -251,6 +256,7 @@ public class NetworkViewGrid extends JPanel implements Scrollable {
 	}
 	
 	protected void deselectAll() {
+		setCurrentNetworkView(null);
 		setSelectedItems(Collections.emptyList());
 	}
 	
@@ -465,24 +471,26 @@ public class NetworkViewGrid extends JPanel implements Scrollable {
 		
 		private boolean selected;
 		private boolean hover;
+		private boolean detached;
 		
 		private final RenderingEngine<CyNetwork> engine;
 		
 		
 		private Border EMPTY_BORDER = BorderFactory.createEmptyBorder(1, 1, 1, 1);
+		private Border SIMPLE_BORDER = BorderFactory.createLineBorder(UIManager.getColor("Separator.foreground"), 1);
 		private Border CURRENT_BORDER = BorderFactory.createLineBorder(UIManager.getColor("Table.focusCellBackground"), 1);
 		
 		private Border DEFAULT_BORDER = BorderFactory.createCompoundBorder(
 				EMPTY_BORDER,
 				BorderFactory.createCompoundBorder(
-						BorderFactory.createLineBorder(UIManager.getColor("Separator.foreground"), 1),
+						SIMPLE_BORDER,
 						EMPTY_BORDER
 				)
 		);
 		private Border DEFAULT_CURRENT_BORDER = BorderFactory.createCompoundBorder(
 				EMPTY_BORDER,
 				BorderFactory.createCompoundBorder(
-						BorderFactory.createLineBorder(UIManager.getColor("Separator.foreground"), 1),
+						SIMPLE_BORDER,
 						CURRENT_BORDER
 				)
 		);
@@ -500,6 +508,10 @@ public class NetworkViewGrid extends JPanel implements Scrollable {
 						CURRENT_BORDER
 				)
 		);
+		
+		private Border IMG_ATTACHED_BORDER = SIMPLE_BORDER;
+		private Border IMG_DETACHED_BORDER = BorderFactory.createDashedBorder(
+				UIManager.getColor("Label.foreground"), 1.0f, 2.0f, 2.0f, true);
 
 		ThumbnailPanel(final RenderingEngine<CyNetwork> engine, final int size) {
 			this.engine = engine;
@@ -555,7 +567,7 @@ public class NetworkViewGrid extends JPanel implements Scrollable {
 			if (this.selected != newValue) {
 				final boolean oldValue = this.selected;
 				this.selected = newValue;
-				updateSelection();
+				updateBackground();
 				
 				firePropertyChange("selected", oldValue, newValue);
 			}
@@ -569,6 +581,15 @@ public class NetworkViewGrid extends JPanel implements Scrollable {
 			return getNetworkView().equals(currentNetworkView);
 		}
 		
+		boolean isDetached() {
+			return detached;
+		}
+		
+		void setDetached(boolean detached) {
+			this.detached = detached;
+			this.updateImageBorder();
+		}
+		
 		void update() {
 			final CyNetworkView netView = getNetworkView();
 			final CyNetwork network = netView.getModel();
@@ -578,8 +599,9 @@ public class NetworkViewGrid extends JPanel implements Scrollable {
 			setToolTipText("<html><center>" + title + "<br>(" + netName + ")</center></html>");
 			getTitleLabel().setText(title);
 			
-			this.updateSelection();
+			this.updateBackground();
 			this.updateBorder();
+			this.updateImageBorder();
 		}
 		
 		void updateIcon() {
@@ -599,7 +621,7 @@ public class NetworkViewGrid extends JPanel implements Scrollable {
 			}
 		}
 		
-		private void updateSelection() {
+		private void updateBackground() {
 			this.setBackground(UIManager.getColor(selected ? "Table.selectionBackground" : "Panel.background"));
 		}
 		
@@ -608,6 +630,10 @@ public class NetworkViewGrid extends JPanel implements Scrollable {
 				setBorder(hover ? HOVER_CURRENT_BORDER : DEFAULT_CURRENT_BORDER);
 			else
 				setBorder(hover ? HOVER_BORDER : DEFAULT_BORDER);
+		}
+		
+		private void updateImageBorder() {
+			getImageLabel().setBorder(detached ? IMG_DETACHED_BORDER : IMG_ATTACHED_BORDER);
 		}
 		
 		CyNetworkView getNetworkView() {
@@ -693,9 +719,10 @@ public class NetworkViewGrid extends JPanel implements Scrollable {
 			
 			super.paintIcon(c, g, x, y);
 			
-			g2.setColor(UIManager.getColor("Label.foreground"));
-			g2.setStroke(new BasicStroke(1));
-			g2.drawRect(0,  0, c.getWidth() - 1, c.getHeight() - 1);
+			// Border
+			g2.setColor(UIManager.getColor("Separator.background"));
+			g2.setStroke(new BasicStroke(2));
+			g2.drawRect(1,  1, c.getWidth() - 2, c.getHeight() - 2);
 			
 			g2.dispose();
 		}
@@ -707,13 +734,22 @@ public class NetworkViewGrid extends JPanel implements Scrollable {
 		
 		@Override
 		public int compare(final CyNetworkView v1, final CyNetworkView v2) {
-			String t1 = v1.getVisualProperty(NETWORK_TITLE);
-			String t2 = v2.getVisualProperty(NETWORK_TITLE);
-			if (t1 == null) t1 = "";
-			if (t2 == null) t2 = "";
+			// Sort by view title, but group them by collection (root-network) and subnetwork
+			Long rootId1 = ((CySubNetwork)v1.getModel()).getRootNetwork().getSUID();
+			Long rootId2 = ((CySubNetwork)v1.getModel()).getRootNetwork().getSUID();
+			int value = rootId1.compareTo(rootId2);
 			
-			return collator.compare(t1, t2);
+			if (value != 0) // Views from different collections
+				return value;
+			
+			// Views from the same collection:
+			value = v1.getModel().getSUID().compareTo(v2.getModel().getSUID());
+			
+			if (value != 0) // Views from different networks in the same collection
+				return value;
+			
+			// Views from the same network:
+			return collator.compare(ViewUtil.getTitle(v1), ViewUtil.getTitle(v2));
 		}
-
 	}
 }
