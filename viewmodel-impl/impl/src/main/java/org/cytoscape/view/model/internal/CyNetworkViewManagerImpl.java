@@ -26,6 +26,7 @@ package org.cytoscape.view.model.internal;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
@@ -57,13 +58,9 @@ public class CyNetworkViewManagerImpl implements CyNetworkViewManager, NetworkAb
 
 	private final Object lock = new Object();
 
-	/**
-	 * 
-	 * @param cyEventHelper
-	 */
 	public CyNetworkViewManagerImpl(final CyEventHelper cyEventHelper, final CyNetworkManager netMgr) {
-		networkViewMap = new WeakHashMap<CyNetwork, Collection<CyNetworkView>>();
-		viewsAboutToBeDestroyed = new HashSet<CyNetworkView>();
+		networkViewMap = new WeakHashMap<>();
+		viewsAboutToBeDestroyed = new HashSet<>();
 		this.cyEventHelper = cyEventHelper;
 		this.netMgr = netMgr;
 	}
@@ -78,26 +75,29 @@ public class CyNetworkViewManagerImpl implements CyNetworkViewManager, NetworkAb
 	@Override
 	public void handleEvent(final NetworkAboutToBeDestroyedEvent event) {
 		final CyNetwork network = event.getNetwork();
+		
 		synchronized (lock) {
-			if (viewExists(network)) {
-				// Remove ALL views associated with this network model
-				for (final CyNetworkView view : networkViewMap.get(network))
-					destroyNetworkView(view);
-			}
+			// Remove ALL views associated with this network model
+			final Collection<CyNetworkView> viewList = getNetworkViews(network);
+			
+			for (final CyNetworkView view : viewList)
+				destroyNetworkView(view);
 		}
 	}
 
 	@Override
 	public Set<CyNetworkView> getNetworkViewSet() {
-		final Set<CyNetworkView> views = new HashSet<CyNetworkView>();
+		final Set<CyNetworkView> views = new LinkedHashSet<>();
 		
 		synchronized (lock) {
 			final Collection<Collection<CyNetworkView>> vals = networkViewMap.values();
+			
 			for (Collection<CyNetworkView> setFoViews : vals)
 				views.addAll(setFoViews);
 	
 			views.removeAll(viewsAboutToBeDestroyed);
 		}
+		
 		return views;
 	}
 
@@ -106,24 +106,16 @@ public class CyNetworkViewManagerImpl implements CyNetworkViewManager, NetworkAb
 		synchronized (lock) {
 			final Collection<CyNetworkView> views = networkViewMap.get(network); 
 			
-			if(views != null)
-				return views;
-			else
-				return new HashSet<CyNetworkView>();
+			return views != null ? new LinkedHashSet<>(views) : new LinkedHashSet<>();
 		}
 	}
 
 	@Override
 	public boolean viewExists(final CyNetwork network) {
 		synchronized (lock) {
-			if(networkViewMap.containsKey(network) == false)
-				return false;
-			
 			final Collection<CyNetworkView> views = networkViewMap.get(network);
-			if(views.size() == 0)
-				return false;
-			else
-				return true;
+			
+			return views != null && !views.isEmpty();
 		}
 	}
 
@@ -184,7 +176,8 @@ public class CyNetworkViewManagerImpl implements CyNetworkViewManager, NetworkAb
 			Collection<CyNetworkView> existingSet = networkViewMap.get(network);
 
 			if (existingSet == null)
-				existingSet = new HashSet<CyNetworkView>();
+				existingSet = new LinkedHashSet<>();
+			
 			existingSet.add(view);
 			networkViewMap.put(network, existingSet);
 		}
