@@ -9,6 +9,8 @@ import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NETWOR
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NETWORK_WIDTH;
 
 import java.awt.BasicStroke;
+import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Graphics;
@@ -62,6 +64,7 @@ public class NetworkViewGrid extends JPanel implements Scrollable {
 	public static int MAX_THUMBNAIL_SIZE = 500;
 	
 	private static int BORDER_WIDTH = 3;
+	private static int IMG_BORDER_WIDTH = 2;
 	private static int PAD = 10;
 	private static int GAP = 2;
 	
@@ -467,6 +470,7 @@ public class NetworkViewGrid extends JPanel implements Scrollable {
 		
 		private JLabel titleLabel;
 		private JLabel imageLabel;
+		private JPanel imagePanel;
 		private ThumbnailIcon icon;
 		
 		private boolean selected;
@@ -475,10 +479,12 @@ public class NetworkViewGrid extends JPanel implements Scrollable {
 		
 		private final RenderingEngine<CyNetwork> engine;
 		
+		private final Color BORDER_COLOR = UIManager.getColor("Separator.foreground");
+		private final Color HOVER_COLOR = UIManager.getColor("Focus.color");
 		
 		private Border EMPTY_BORDER = BorderFactory.createEmptyBorder(1, 1, 1, 1);
-		private Border SIMPLE_BORDER = BorderFactory.createLineBorder(UIManager.getColor("Separator.foreground"), 1);
-		private Border CURRENT_BORDER = BorderFactory.createLineBorder(UIManager.getColor("Table.focusCellBackground"), 1);
+		private Border SIMPLE_BORDER = BorderFactory.createLineBorder(BORDER_COLOR, 1);
+		private Border HOVER_BORDER = BorderFactory.createLineBorder(HOVER_COLOR, 1);
 		
 		private Border DEFAULT_BORDER = BorderFactory.createCompoundBorder(
 				EMPTY_BORDER,
@@ -487,32 +493,56 @@ public class NetworkViewGrid extends JPanel implements Scrollable {
 						EMPTY_BORDER
 				)
 		);
-		private Border DEFAULT_CURRENT_BORDER = BorderFactory.createCompoundBorder(
+		private Border DEFAULT_HOVER_BORDER = BorderFactory.createCompoundBorder(
 				EMPTY_BORDER,
 				BorderFactory.createCompoundBorder(
-						SIMPLE_BORDER,
-						CURRENT_BORDER
+						EMPTY_BORDER,
+						HOVER_BORDER
 				)
 		);
-		private Border HOVER_BORDER = BorderFactory.createCompoundBorder(
-				EMPTY_BORDER,
+		private Border MIDDLE_SIBLING_BORDER = BorderFactory.createCompoundBorder(
+				BorderFactory.createEmptyBorder(1, 0, 1, 0),
 				BorderFactory.createCompoundBorder(
-						BorderFactory.createLineBorder(UIManager.getColor("Focus.color"), 1),
+						BorderFactory.createMatteBorder(1, 0, 1, 0, BORDER_COLOR),
 						EMPTY_BORDER
 				)
 		);
-		private Border HOVER_CURRENT_BORDER = BorderFactory.createCompoundBorder(
-				EMPTY_BORDER,
+		private Border FIRST_SIBLING_BORDER = BorderFactory.createCompoundBorder(
+				BorderFactory.createEmptyBorder(1, 1, 1, 0),
 				BorderFactory.createCompoundBorder(
-						BorderFactory.createLineBorder(UIManager.getColor("Focus.color"), 1),
-						CURRENT_BORDER
+						BorderFactory.createMatteBorder(1, 1, 1, 0, BORDER_COLOR),
+						EMPTY_BORDER
+				)
+		);
+		private Border LAST_SIBLING_BORDER = BorderFactory.createCompoundBorder(
+				BorderFactory.createEmptyBorder(1, 0, 1, 1),
+				BorderFactory.createCompoundBorder(
+						BorderFactory.createMatteBorder(1, 0, 1, 1, BORDER_COLOR),
+						EMPTY_BORDER
+				)
+		);
+		private Border MIDDLE_SIBLING_HOVER_BORDER = BorderFactory.createCompoundBorder(
+				BorderFactory.createEmptyBorder(1, 0, 1, 0),
+				BorderFactory.createCompoundBorder(
+						BorderFactory.createMatteBorder(1, 0, 1, 0, BORDER_COLOR),
+						HOVER_BORDER
+				)
+		);
+		private Border FIRST_SIBLING_HOVER_BORDER = BorderFactory.createCompoundBorder(
+				BorderFactory.createEmptyBorder(1, 1, 1, 0),
+				BorderFactory.createCompoundBorder(
+						BorderFactory.createMatteBorder(1, 1, 1, 0, BORDER_COLOR),
+						HOVER_BORDER
+				)
+		);
+		private Border LAST_SIBLING_HOVER_BORDER = BorderFactory.createCompoundBorder(
+				BorderFactory.createEmptyBorder(1, 0, 1, 1),
+				BorderFactory.createCompoundBorder(
+						BorderFactory.createMatteBorder(1, 0, 1, 1, BORDER_COLOR),
+						HOVER_BORDER
 				)
 		);
 		
-		private Border IMG_ATTACHED_BORDER = SIMPLE_BORDER;
-		private Border IMG_DETACHED_BORDER = BorderFactory.createDashedBorder(
-				UIManager.getColor("Label.foreground"), 1.0f, 2.0f, 2.0f, true);
-
 		ThumbnailPanel(final RenderingEngine<CyNetwork> engine, final int size) {
 			this.engine = engine;
 			this.setBorder(DEFAULT_BORDER);
@@ -534,7 +564,7 @@ public class NetworkViewGrid extends JPanel implements Scrollable {
 					)
 					.addGroup(layout.createSequentialGroup()
 							.addGap(PAD, PAD, Short.MAX_VALUE)
-							.addComponent(getImageLabel())
+							.addComponent(getImagePanel())
 							.addGap(PAD, PAD, Short.MAX_VALUE)
 					)
 			);
@@ -542,7 +572,7 @@ public class NetworkViewGrid extends JPanel implements Scrollable {
 					.addGap(GAP)
 					.addComponent(getTitleLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addGap(GAP, GAP, Short.MAX_VALUE)
-					.addComponent(getImageLabel())
+					.addComponent(getImagePanel())
 					.addGap(PAD, PAD, Short.MAX_VALUE)
 			);
 			
@@ -590,6 +620,36 @@ public class NetworkViewGrid extends JPanel implements Scrollable {
 			this.updateImageBorder();
 		}
 		
+		boolean isFirstSibling() {
+			final CyNetworkView netView = getNetworkView();
+			final CyNetwork net = netView.getModel();
+			final Entry<CyNetworkView, ThumbnailPanel> previous = thumbnailPanels.lowerEntry(netView);
+			final Entry<CyNetworkView, ThumbnailPanel> next = thumbnailPanels.higherEntry(netView);
+			
+			return ((previous == null || !previous.getKey().getModel().equals(net))
+					&& next != null && next.getKey().getModel().equals(net));
+		}
+		
+		boolean isMiddleSibling() {
+			final CyNetworkView netView = getNetworkView();
+			final CyNetwork net = netView.getModel();
+			final Entry<CyNetworkView, ThumbnailPanel> previous = thumbnailPanels.lowerEntry(netView);
+			final Entry<CyNetworkView, ThumbnailPanel> next = thumbnailPanels.higherEntry(netView);
+			
+			return (previous != null && previous.getKey().getModel().equals(net)
+					&& next != null && next.getKey().getModel().equals(net));
+		}
+		
+		boolean isLastSibling() {
+			final CyNetworkView netView = getNetworkView();
+			final CyNetwork net = netView.getModel();
+			final Entry<CyNetworkView, ThumbnailPanel> previous = thumbnailPanels.lowerEntry(netView);
+			final Entry<CyNetworkView, ThumbnailPanel> next = thumbnailPanels.higherEntry(netView);
+			
+			return ((next == null || !next.getKey().getModel().equals(net))
+					&& previous != null && previous.getKey().getModel().equals(net));
+		}
+		
 		void update() {
 			final CyNetworkView netView = getNetworkView();
 			final CyNetwork network = netView.getModel();
@@ -598,6 +658,14 @@ public class NetworkViewGrid extends JPanel implements Scrollable {
 			
 			setToolTipText("<html><center>" + title + "<br>(" + netName + ")</center></html>");
 			getTitleLabel().setText(title);
+			getTitleLabel().setForeground(
+					UIManager.getColor(isCurrent() ? "Label.foreground" : "Label.disabledForeground"));
+			
+			final int maxTitleWidth = (int) Math.round(this.getPreferredSize().getWidth() - 2 * BORDER_WIDTH - 2 * GAP);
+			final Dimension titleSize = new Dimension(maxTitleWidth, getTitleLabel().getPreferredSize().height);
+			getTitleLabel().setPreferredSize(titleSize);
+			getTitleLabel().setMaximumSize(titleSize);
+			getTitleLabel().setSize(titleSize);
 			
 			this.updateBackground();
 			this.updateBorder();
@@ -608,13 +676,22 @@ public class NetworkViewGrid extends JPanel implements Scrollable {
 			final Dimension size = this.getSize();
 			
 			if (size != null && getTitleLabel().getSize() != null) {
-				int imgWidth = size.width - 2 * BORDER_WIDTH - 2 * PAD;
-				int imgHeight = size.height - 2 * BORDER_WIDTH - 2 * GAP - getTitleLabel().getSize().height - PAD;
+				int lh = getTitleLabel().getSize().height;
+				
+				int imgWidth = size.width - 2 * BORDER_WIDTH - 2 * PAD - 2 * IMG_BORDER_WIDTH;
+				int imgHeight = size.height - 2 * BORDER_WIDTH - 2 * GAP - lh - PAD - 2 * IMG_BORDER_WIDTH;
 				
 				if (imgWidth > 0 && imgHeight > 0) {
 					final Image img = createThumbnail(imgWidth, imgHeight);
-					icon = img != null ? new ThumbnailIcon(img, getNetworkView()) : null;
-					imageLabel.setIcon(icon);
+					icon = img != null ? new ThumbnailIcon(img) : null;
+					getImageLabel().setIcon(icon);
+					getImagePanel().setVisible(icon != null);
+					
+					if (icon != null) {
+						getImagePanel().setPreferredSize(new Dimension(icon.getIconWidth(), icon.getIconHeight()));
+						getImagePanel().setMaximumSize(new Dimension(icon.getIconWidth(), icon.getIconHeight()));
+						getImagePanel().setSize(new Dimension(icon.getIconWidth(), icon.getIconHeight()));
+					}
 				
 					updateUI();
 				}
@@ -622,18 +699,47 @@ public class NetworkViewGrid extends JPanel implements Scrollable {
 		}
 		
 		private void updateBackground() {
-			this.setBackground(UIManager.getColor(selected ? "Table.selectionBackground" : "Panel.background"));
+			this.setBackground(getBackgroundColor());
 		}
 		
 		private void updateBorder() {
-			if (isCurrent())
-				setBorder(hover ? HOVER_CURRENT_BORDER : DEFAULT_CURRENT_BORDER);
+			if (isFirstSibling())
+				setBorder(hover? FIRST_SIBLING_HOVER_BORDER : FIRST_SIBLING_BORDER);
+			else if (isMiddleSibling())
+				setBorder(hover? MIDDLE_SIBLING_HOVER_BORDER : MIDDLE_SIBLING_BORDER);
+			else if (isLastSibling())
+				setBorder(hover? LAST_SIBLING_HOVER_BORDER : LAST_SIBLING_BORDER);
 			else
-				setBorder(hover ? HOVER_BORDER : DEFAULT_BORDER);
+				setBorder(hover ? DEFAULT_HOVER_BORDER : DEFAULT_BORDER);
 		}
 		
 		private void updateImageBorder() {
-			getImageLabel().setBorder(detached ? IMG_DETACHED_BORDER : IMG_ATTACHED_BORDER);
+			final Border gapBorder = BorderFactory.createLineBorder(getBackgroundColor(), 1);
+			final Border lineBorder;
+			
+			if (isDetached())
+				lineBorder = BorderFactory.createDashedBorder(
+						UIManager.getColor(isCurrent() ? "Table.focusCellBackground" : "Label.foreground"),
+						1.0f, 2.0f, 2.0f, true
+				);
+			else
+				lineBorder = BorderFactory.createLineBorder(
+						UIManager.getColor(isCurrent() ? "Table.focusCellBackground" : "Separator.foreground"),
+						1
+				);
+			
+			final Border border;
+			
+			if (isCurrent() || isDetached())
+				border = BorderFactory.createCompoundBorder(lineBorder, gapBorder);
+			else
+				border = BorderFactory.createCompoundBorder(gapBorder, lineBorder);
+			
+			getImagePanel().setBorder(border);
+		}
+		
+		private Color getBackgroundColor() {
+			return UIManager.getColor(selected ? "Table.selectionBackground" : "Panel.background");
 		}
 		
 		CyNetworkView getNetworkView() {
@@ -645,7 +751,6 @@ public class NetworkViewGrid extends JPanel implements Scrollable {
 				titleLabel = new JLabel();
 				titleLabel.setHorizontalAlignment(JLabel.CENTER);
 				titleLabel.setFont(titleLabel.getFont().deriveFont(LookAndFeelUtil.getSmallFontSize()));
-				titleLabel.setForeground(UIManager.getColor("Label.disabledForeground"));
 			}
 			
 			return titleLabel;
@@ -658,6 +763,18 @@ public class NetworkViewGrid extends JPanel implements Scrollable {
 			}
 			
 			return imageLabel;
+		}
+		
+		JPanel getImagePanel() {
+			if (imagePanel == null) {
+				imagePanel = new JPanel();
+				imagePanel.setOpaque(false);
+				imagePanel.setVisible(false);
+				imagePanel.setLayout(new BorderLayout());
+				imagePanel.add(getImageLabel(), BorderLayout.CENTER);
+			}
+			
+			return imagePanel;
 		}
 		
 		/**
@@ -699,32 +816,37 @@ public class NetworkViewGrid extends JPanel implements Scrollable {
 		public String toString() {
 			return getNetworkView().getVisualProperty(NETWORK_TITLE);
 		}
-	}
-	
-	private class ThumbnailIcon extends ImageIcon {
 		
-		private CyNetworkView networkView;
-		
-		ThumbnailIcon(final Image image, final CyNetworkView networkView) {
-			super(image);
-			this.networkView = networkView;
-		}
-		
-		@Override
-		public synchronized void paintIcon(Component c, Graphics g, int x, int y) {
-			final Graphics2D g2 = (Graphics2D) g.create();
+		private class ThumbnailIcon extends ImageIcon {
 			
-			g2.setPaint(networkView.getVisualProperty(NETWORK_BACKGROUND_PAINT));
-			g2.drawRect(0,  0, c.getWidth(), c.getHeight());
+			private CyNetworkView networkView;
 			
-			super.paintIcon(c, g, x, y);
+			ThumbnailIcon(final Image image) {
+				super(image);
+				this.networkView = getNetworkView();
+			}
 			
-			// Border
-			g2.setColor(UIManager.getColor("Separator.background"));
-			g2.setStroke(new BasicStroke(2));
-			g2.drawRect(1,  1, c.getWidth() - 2, c.getHeight() - 2);
-			
-			g2.dispose();
+			@Override
+			public synchronized void paintIcon(Component c, Graphics g, int x, int y) {
+				final Graphics2D g2 = (Graphics2D) g.create();
+				
+				g2.setPaint(networkView.getVisualProperty(NETWORK_BACKGROUND_PAINT));
+				g2.drawRect(0,  0, c.getWidth(), c.getHeight());
+				
+				super.paintIcon(c, g, x, y);
+				
+				g2.setColor(UIManager.getColor("Separator.background"));
+				
+				if (isDetached()) {
+					g2.setStroke(new BasicStroke(2));
+					g2.drawRect(1,  1, c.getWidth() - 2, c.getHeight() - 2);
+				} else {
+					g2.setStroke(new BasicStroke(2));
+					g2.drawRect(0,  0, c.getWidth() - 1, c.getHeight() - 1);
+				}
+				
+				g2.dispose();
+			}
 		}
 	}
 	
