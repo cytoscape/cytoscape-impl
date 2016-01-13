@@ -68,8 +68,6 @@ import javax.swing.UIManager;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.NetworkViewRenderer;
-import org.cytoscape.application.events.SetSelectedNetworksEvent;
-import org.cytoscape.application.events.SetSelectedNetworksListener;
 import org.cytoscape.application.swing.CyAction;
 import org.cytoscape.application.swing.CytoPanelComponent2;
 import org.cytoscape.application.swing.CytoPanelName;
@@ -149,8 +147,8 @@ import org.slf4j.LoggerFactory;
  */
 
 @SuppressWarnings("serial")
-public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, SetSelectedNetworksListener,
-		NetworkAddedListener, NetworkViewAddedListener, NetworkAboutToBeDestroyedListener, NetworkDestroyedListener,
+public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, NetworkAddedListener,
+		NetworkViewAddedListener, NetworkAboutToBeDestroyedListener, NetworkDestroyedListener,
 		NetworkViewDestroyedListener, RowsSetListener, AddedNodesListener, AddedEdgesListener, RemovedEdgesListener,
 		RemovedNodesListener, SessionAboutToBeLoadedListener, SessionLoadedListener {
 
@@ -207,27 +205,6 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, Set
 		popup = new JPopupMenu();
 		init();
 		setNavigator(bird.getBirdsEyeView());
-		
-		addPropertyChangeListener("selectedSubNetworks", new PropertyChangeListener() {
-			@Override
-			public void propertyChange(final PropertyChangeEvent e) {
-				new Thread() {
-					@Override
-					@SuppressWarnings("unchecked")
-					public void run() {
-						final CyApplicationManager appMgr = serviceRegistrar.getService(CyApplicationManager.class);
-						final Collection<CyNetwork> selectedNetworks = (Collection<CyNetwork>) e.getNewValue();
-						
-						// If no selected networks, set null to current network first,
-						// or the current one will be selected again by the application!
-						if (selectedNetworks == null || selectedNetworks.isEmpty())
-							appMgr.setCurrentNetwork(null);
-						
-						appMgr.setSelectedNetworks(new ArrayList<>(selectedNetworks));
-					}
-				}.start();
-			}
-		});
 	}
 
 	@Override
@@ -677,7 +654,7 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, Set
 		return list;
 	}
 	
-	public void updateNetworkSelection(final List<CyNetwork> selectedNetworks) {
+	public void setSelectedNetworks(final List<CyNetwork> selectedNetworks) {
 		ignoreSelectionEvents = true;
 		
 		try {
@@ -876,19 +853,6 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, Set
 	@Override
 	public void handleEvent(final RemovedEdgesEvent e) {
 		updateNodeEdgeCount(e.getSource());
-	}
-
-	@Override
-	public void handleEvent(final SetSelectedNetworksEvent e) {
-		if (loadingSession)
-			return;
-		
-		invokeOnEDT(new Runnable() {
-			@Override
-			public void run() {
-				updateNetworkSelection(e.getNetworks());
-			}
-		});
 	}
 
 	@Override

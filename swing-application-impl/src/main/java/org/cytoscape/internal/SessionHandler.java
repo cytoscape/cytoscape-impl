@@ -57,7 +57,7 @@ import org.cytoscape.internal.io.sessionstate.NetworkFrames;
 import org.cytoscape.internal.io.sessionstate.SessionState;
 import org.cytoscape.internal.view.CytoscapeDesktop;
 import org.cytoscape.internal.view.NetworkMainPanel;
-import org.cytoscape.internal.view.NetworkViewManager;
+import org.cytoscape.internal.view.NetworkViewMediator;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.service.util.CyServiceRegistrar;
@@ -84,7 +84,7 @@ public class SessionHandler implements CyShutdownListener, SessionLoadedListener
 	private final Map<String, CytoPanelName> CYTOPANEL_NAMES = new LinkedHashMap<>();
 	
 	private final CytoscapeDesktop desktop;
-	private final NetworkViewManager netViewMgr;
+	private final NetworkViewMediator netViewMediator;
 	private final SessionIO sessionIO;
 	private final NetworkMainPanel netPanel;
 	private final CyServiceRegistrar serviceRegistrar;
@@ -93,13 +93,13 @@ public class SessionHandler implements CyShutdownListener, SessionLoadedListener
 	
 	public SessionHandler(
 			final CytoscapeDesktop desktop,
-			final NetworkViewManager netViewMgr,
+			final NetworkViewMediator netViewMediator,
 			final SessionIO sessionIO,
 			final NetworkMainPanel netPanel,
 			final CyServiceRegistrar serviceRegistrar
 	) {
 		this.desktop = desktop;
-		this.netViewMgr = netViewMgr;
+		this.netViewMediator = netViewMediator;
 		this.sessionIO = sessionIO;
 		this.netPanel = netPanel;
 		this.serviceRegistrar = serviceRegistrar;
@@ -203,10 +203,10 @@ public class SessionHandler implements CyShutdownListener, SessionLoadedListener
 		final NetworkFrames netFrames = new NetworkFrames();
 		sessState.setNetworkFrames(netFrames);
 
-		final JInternalFrame[] internalFrames = netViewMgr.getDesktopPane().getAllFrames();
+		final JInternalFrame[] internalFrames = netViewMediator.getDesktopPane().getAllFrames();
 
 		for (JInternalFrame iframe : internalFrames) {
-			final CyNetworkView view = netViewMgr.getNetworkView(iframe);
+			final CyNetworkView view = netViewMediator.getNetworkView(iframe);
 
 			if (view == null) {
 				logger.error("Cannot save position of network frame \"" + iframe.getTitle()
@@ -325,7 +325,7 @@ public class SessionHandler implements CyShutdownListener, SessionLoadedListener
 				}
 				
 				if (view != null) {
-					final JInternalFrame iframe = netViewMgr.getInternalFrame(view);
+					final JInternalFrame iframe = netViewMediator.getInternalFrame(view);
 					
 					if (iframe != null) {
 						iframe.moveToBack(); // In order to restore its z-index
@@ -414,7 +414,8 @@ public class SessionHandler implements CyShutdownListener, SessionLoadedListener
 			@Override
 			public void run() {
 				netPanel.setNetworks(sortedNetworks);
-				netPanel.updateNetworkSelection(selectedNetworks);
+				netPanel.setSelectedNetworks(selectedNetworks);
+				// TODO update View selection as well
 			}
 		});
 	}

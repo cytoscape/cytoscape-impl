@@ -38,16 +38,16 @@ public class CyDesktopManager implements CyNetworkViewDesktopMgr {
 	public static int MINIMUM_WIN_WIDTH = 200;
 	public static int MINIMUM_WIN_HEIGHT = 200;
 	public final CytoscapeDesktop desk;
-	public final NetworkViewManager viewManager;
+	public final NetworkViewMediator netViewMediator;
 		
-	public CyDesktopManager(final CytoscapeDesktop desk, final NetworkViewManager viewManager) { 
+	public CyDesktopManager(final CytoscapeDesktop desk, final NetworkViewMediator netViewMediator) { 
 		this.desk = desk;
-		this.viewManager = viewManager;
+		this.netViewMediator = netViewMediator;
 	}
 
 	@Override
 	public Dimension getDesktopViewAreaSize() {
-		JDesktopPane desktop = desk.getNetworkViewManager().getDesktopPane();
+		JDesktopPane desktop = desk.getNetworkViewMediator().getDesktopPane();
 		
 		return desktop.getSize();
 	}
@@ -55,7 +55,7 @@ public class CyDesktopManager implements CyNetworkViewDesktopMgr {
 	@Override
 	public Rectangle getBounds (CyNetworkView view) {
 		try {
-			JInternalFrame frame = viewManager.getInternalFrame(view);
+			JInternalFrame frame = netViewMediator.getInternalFrame(view);
 			if (frame != null)
 				return frame.getBounds();
 		} catch (Exception e) {
@@ -67,7 +67,7 @@ public class CyDesktopManager implements CyNetworkViewDesktopMgr {
 	@Override
 	public void setBounds (CyNetworkView view, Rectangle bounds) {
 		try {
-			JInternalFrame frame = viewManager.getInternalFrame(view);
+			JInternalFrame frame = netViewMediator.getInternalFrame(view);
 			if (frame == null)
 				return;
 			// It is CRITICAL that this setMaximum be performed before the setBounds().
@@ -86,7 +86,7 @@ public class CyDesktopManager implements CyNetworkViewDesktopMgr {
 	// Arrange all windows in the desktop according to the given style
 	@Override
 	public void arrangeWindows(ArrangeType pStyle) {
-		JDesktopPane desktop = desk.getNetworkViewManager().getDesktopPane();
+		JDesktopPane desktop = desk.getNetworkViewMediator().getDesktopPane();
 		
 		final Dimension desktopSize = desktop.getSize();
 		
@@ -272,7 +272,7 @@ public class CyDesktopManager implements CyNetworkViewDesktopMgr {
 			
 	//Closes all open windows
 	public  void closeAllWindows() {
-		JDesktopPane desktop = desk.getNetworkViewManager().getDesktopPane();
+		JDesktopPane desktop = desk.getNetworkViewMediator().getDesktopPane();
 		JInternalFrame[] allFrames = desktop.getAllFrames();
 		for (int i= allFrames.length -1; i>=0; i--) {
 			allFrames[i].dispose();			

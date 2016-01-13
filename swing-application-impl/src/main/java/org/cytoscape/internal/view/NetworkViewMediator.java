@@ -4,12 +4,10 @@ import static org.cytoscape.internal.util.ViewUtil.invokeOnEDT;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
@@ -23,10 +21,6 @@ import org.cytoscape.application.events.SetCurrentNetworkEvent;
 import org.cytoscape.application.events.SetCurrentNetworkListener;
 import org.cytoscape.application.events.SetCurrentNetworkViewEvent;
 import org.cytoscape.application.events.SetCurrentNetworkViewListener;
-import org.cytoscape.application.events.SetSelectedNetworkViewsEvent;
-import org.cytoscape.application.events.SetSelectedNetworkViewsListener;
-import org.cytoscape.application.events.SetSelectedNetworksEvent;
-import org.cytoscape.application.events.SetSelectedNetworksListener;
 import org.cytoscape.application.swing.CyHelpBroker;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkTableManager;
@@ -78,17 +72,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Managing views (presentations) in current session.
- * 
+ * This class mediates the communication between the Network View UI and the rest of Cytoscape.
  */
-public class NetworkViewManager implements NetworkViewAddedListener,
-		NetworkViewAboutToBeDestroyedListener, SetCurrentNetworkViewListener, SetCurrentNetworkListener,
-		SetSelectedNetworkViewsListener, SetSelectedNetworksListener, RowsSetListener,
-		VisualStyleChangedListener, SetCurrentVisualStyleListener, UpdateNetworkPresentationListener,
-		VisualStyleSetListener, SessionAboutToBeLoadedListener, SessionLoadCancelledListener, SessionLoadedListener,
-		ColumnDeletedListener, ColumnNameChangedListener, ViewChangedListener {
+public class NetworkViewMediator implements NetworkViewAddedListener, NetworkViewAboutToBeDestroyedListener,
+		SetCurrentNetworkViewListener, SetCurrentNetworkListener, RowsSetListener, VisualStyleChangedListener,
+		SetCurrentVisualStyleListener, UpdateNetworkPresentationListener, VisualStyleSetListener,
+		SessionAboutToBeLoadedListener, SessionLoadCancelledListener, SessionLoadedListener, ColumnDeletedListener,
+		ColumnNameChangedListener, ViewChangedListener {
 
-	private static final Logger logger = LoggerFactory.getLogger(NetworkViewManager.class);
+	private static final Logger logger = LoggerFactory.getLogger(NetworkViewMediator.class);
 
 	@Deprecated
 	private final JDesktopPane desktopPane;
@@ -103,13 +95,12 @@ public class NetworkViewManager implements NetworkViewAddedListener,
 	private final Map<CyColumnIdentifier, Map<MappedVisualPropertyValueInfo, Set<View<?>>>> mappedValuesMap;
 	
 	private volatile boolean loadingSession;
-	private volatile boolean ignoreSeletedNetworkViewsEvents;
 
 	private Object lock = new Object();
 	
 	private final CyServiceRegistrar serviceRegistrar;
 	
-	public NetworkViewManager(
+	public NetworkViewMediator(
 			final NetworkViewMainPanel networkViewMainPanel,
 			final CyHelpBroker help,
 			final CyServiceRegistrar serviceRegistrar
@@ -132,18 +123,10 @@ public class NetworkViewManager implements NetworkViewAddedListener,
 			public void propertyChange(PropertyChangeEvent e) {
 				final CyNetworkView targetView = (CyNetworkView) e.getNewValue();
 				
-				final CyApplicationManager appMgr = serviceRegistrar.getService(CyApplicationManager.class);
 				final CyNetworkViewManager netViewMgr = serviceRegistrar.getService(CyNetworkViewManager.class);
-				final RenderingEngine<CyNetwork> currentEngine = appMgr.getCurrentRenderingEngine();
 				
 				if (targetView != null) {
 					if (netViewMgr.getNetworkViewSet().contains(targetView)) {
-						if (!targetView.equals(appMgr.getCurrentNetworkView()))
-							appMgr.setCurrentNetworkView(targetView);
-			
-						if (currentEngine == null || currentEngine.getViewModel() != targetView)
-							appMgr.setCurrentRenderingEngine(presentationMap.get(targetView));
-						
 						if (viewUpdateRequired.contains(targetView)) {
 							viewUpdateRequired.remove(targetView);
 							
@@ -153,23 +136,6 @@ public class NetworkViewManager implements NetworkViewAddedListener,
 							targetView.updateView();
 						}
 					}
-				} else {
-					if (appMgr.getCurrentNetworkView() != null)
-						appMgr.setCurrentNetworkView(targetView);
-					
-					if (currentEngine != null)
-						appMgr.setCurrentRenderingEngine(null);
-				}
-			}
-		});
-		
-		networkViewMainPanel.addPropertyChangeListener("selectedNetworkViews", new PropertyChangeListener() {
-			@Override
-			@SuppressWarnings("unchecked")
-			public void propertyChange(PropertyChangeEvent e) {
-				if (!ignoreSeletedNetworkViewsEvents) {
-					final CyApplicationManager appMgr = serviceRegistrar.getService(CyApplicationManager.class);
-					appMgr.setSelectedNetworkViews((List<CyNetworkView>) e.getNewValue());
 				}
 			}
 		});
@@ -215,7 +181,25 @@ public class NetworkViewManager implements NetworkViewAddedListener,
 	
 	@Override
 	public void handleEvent(SetCurrentNetworkViewEvent e) {
+		if (loadingSession)
+			return;
+		
 		final CyNetworkView view = e.getNetworkView();
+		
+		// Set current RenderingEngine
+		final CyApplicationManager appMgr = serviceRegistrar.getService(CyApplicationManager.class);
+		final RenderingEngine<CyNetwork> currentEngine = appMgr.getCurrentRenderingEngine();
+		
+		if (view != null) {
+			final CyNetworkViewManager netViewMgr = serviceRegistrar.getService(CyNetworkViewManager.class);
+			
+			if (netViewMgr.getNetworkViewSet().contains(view)) {
+				if (currentEngine == null || currentEngine.getViewModel() != view)
+					appMgr.setCurrentRenderingEngine(presentationMap.get(view));
+			}
+		} else if (currentEngine != null) {
+			appMgr.setCurrentRenderingEngine(null);
+		}
 		
 		invokeOnEDT(new Runnable() {
 			@Override
@@ -261,43 +245,6 @@ public class NetworkViewManager implements NetworkViewAddedListener,
 	public void handleEvent(final NetworkViewAddedEvent nvae) {
 		final CyNetworkView networkView = nvae.getNetworkView();
 		render(networkView);
-	}
-	
-	@Override
-	public void handleEvent(final SetSelectedNetworksEvent e) {
-		// Select all views of the selected networks
-		final List<CyNetworkView> selectedViews = new ArrayList<>();
-		final CyNetworkViewManager netViewMgr = serviceRegistrar.getService(CyNetworkViewManager.class);
-		final List<CyNetwork> networks = e.getNetworks();
-		
-		for (CyNetwork net : networks)
-			selectedViews.addAll(netViewMgr.getNetworkViews(net));
-		
-		invokeOnEDT(new Runnable() {
-			@Override
-			public void run() {
-				try {
-					getNetworkViewMainPanel().setSelectedNetworkViews(selectedViews);
-				} finally {
-				}
-			}
-		});
-	}
-
-	@Override
-	public void handleEvent(final SetSelectedNetworkViewsEvent e) {
-		invokeOnEDT(new Runnable() {
-			@Override
-			public void run() {
-				ignoreSeletedNetworkViewsEvents = true;
-				
-				try {
-					getNetworkViewMainPanel().setSelectedNetworkViews(e.getNetworkViews());
-				} finally {
-					ignoreSeletedNetworkViewsEvents = false;
-				}
-			}
-		});
 	}
 	
 	@Override
@@ -407,11 +354,24 @@ public class NetworkViewManager implements NetworkViewAddedListener,
 	public void handleEvent(final SessionLoadedEvent e) {
 		loadingSession = false;
 		
+		final CyNetworkView view = serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetworkView();
+		
+		if (view != null) {
+			final CyNetworkViewManager netViewMgr = serviceRegistrar.getService(CyNetworkViewManager.class);
+			
+			if (netViewMgr.getNetworkViewSet().contains(view)) {
+				final CyApplicationManager appMgr = serviceRegistrar.getService(CyApplicationManager.class);
+				final RenderingEngine<CyNetwork> currentEngine = appMgr.getCurrentRenderingEngine();
+				
+				if (currentEngine == null || currentEngine.getViewModel() != view)
+					appMgr.setCurrentRenderingEngine(presentationMap.get(view));
+			}
+		}
+		
 		invokeOnEDT(new Runnable() {
 			@Override
 			public void run() {
-				getNetworkViewMainPanel().setCurrentNetworkView(
-						serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetworkView());
+				getNetworkViewMainPanel().setCurrentNetworkView(view);
 			}
 		});
 	}

@@ -94,8 +94,9 @@ import org.cytoscape.internal.view.CytoscapeMenus;
 import org.cytoscape.internal.view.CytoscapeToolBar;
 import org.cytoscape.internal.view.MacFullScreenEnabler;
 import org.cytoscape.internal.view.NetworkMainPanel;
+import org.cytoscape.internal.view.NetworkSelectionMediator;
 import org.cytoscape.internal.view.NetworkViewMainPanel;
-import org.cytoscape.internal.view.NetworkViewManager;
+import org.cytoscape.internal.view.NetworkViewMediator;
 import org.cytoscape.internal.view.ToolBarEnableUpdater;
 import org.cytoscape.internal.view.help.ArrangeTaskFactory;
 import org.cytoscape.internal.view.help.HelpAboutTaskFactory;
@@ -188,18 +189,18 @@ public class CyActivator extends AbstractCyActivator {
 		ToolBarEnableUpdater toolBarEnableUpdater =
 				new ToolBarEnableUpdater(cytoscapeToolBar, cyServiceRegistrarServiceRef);
 
-		NetworkViewMainPanel networkViewMainPanel = new NetworkViewMainPanel(cytoscapeMenus, cyServiceRegistrarServiceRef);
-		NetworkViewManager networkViewManager = new NetworkViewManager(networkViewMainPanel,
-																	   cyHelpBroker,
-																	   cyServiceRegistrarServiceRef);
+		NetworkViewMainPanel netViewMainPanel = new NetworkViewMainPanel(cytoscapeMenus, cyServiceRegistrarServiceRef);
+		NetworkViewMediator netViewMediator = new NetworkViewMediator(netViewMainPanel,
+																	  cyHelpBroker,
+																	  cyServiceRegistrarServiceRef);
 
 		BirdsEyeViewHandler birdsEyeViewHandler = new BirdsEyeViewHandler(cyApplicationManagerServiceRef,
 		                                                                  cyNetworkViewManagerServiceRef);
 
-		NetworkMainPanel networkPanel = new NetworkMainPanel(birdsEyeViewHandler, cyServiceRegistrarServiceRef);
-
+		NetworkMainPanel netMainPanel = new NetworkMainPanel(birdsEyeViewHandler, cyServiceRegistrarServiceRef);
+		
 		CytoscapeDesktop cytoscapeDesktop = new CytoscapeDesktop(cytoscapeMenus,
-		                                                         networkViewManager,
+		                                                         netViewMediator,
 		                                                         cytoscapeShutdownServiceRef,
 		                                                         cyEventHelperServiceRef,
 		                                                         cyServiceRegistrarServiceRef,
@@ -207,12 +208,12 @@ public class CyActivator extends AbstractCyActivator {
 		                                                         taskStatusPanelFactoryRef,
 		                                                         iconManagerServiceRef);
 
-		CyDesktopManager cyDesktopManager = new CyDesktopManager(cytoscapeDesktop, networkViewManager);
+		CyDesktopManager cyDesktopManager = new CyDesktopManager(cytoscapeDesktop, netViewMediator);
 
 		SessionIO sessionIO = new SessionIO();
 
-		SessionHandler sessionHandler = new SessionHandler(cytoscapeDesktop, networkViewManager, sessionIO,
-				networkPanel, cyServiceRegistrarServiceRef);
+		SessionHandler sessionHandler = new SessionHandler(cytoscapeDesktop, netViewMediator, sessionIO,
+				netMainPanel, cyServiceRegistrarServiceRef);
 
 		PrintAction printAction = new PrintAction(cyApplicationManagerServiceRef, 
 		                                          cyNetworkViewManagerServiceRef, 
@@ -274,10 +275,11 @@ public class CyActivator extends AbstractCyActivator {
 		                                                               cyNetworkViewManagerServiceRef, 
 		                                                               visualMappingManagerServiceRef,
 		                                                               rowViewTracker,
-		                                                               networkViewManager,
+		                                                               netViewMediator,
 		                                                               cyColumnIdentifierFactory);
 		
 		RecentSessionManager recentSessionManager = new RecentSessionManager(cyServiceRegistrarServiceRef);
+		NetworkSelectionMediator networkSelectionMediator = new NetworkSelectionMediator(netMainPanel, netViewMainPanel, cyServiceRegistrarServiceRef);
 		
 		registerService(bc, cyHelpBroker, CyHelpBroker.class, new Properties());
 		registerService(bc, undoAction, CyAction.class, new Properties());
@@ -351,8 +353,8 @@ public class CyActivator extends AbstractCyActivator {
 		                arrangeVerticalTaskFactoryProps);
 		
 		registerAllServices(bc, cytoscapeDesktop, new Properties());
-		registerAllServices(bc, networkPanel, new Properties());
-		registerAllServices(bc, networkViewManager, new Properties());
+		registerAllServices(bc, netMainPanel, new Properties());
+		registerAllServices(bc, netViewMediator, new Properties());
 		registerAllServices(bc, birdsEyeViewHandler, new Properties());
 		registerService(bc, undoMonitor, SetCurrentNetworkViewListener.class, new Properties());
 		registerService(bc, undoMonitor, NetworkDestroyedListener.class, new Properties());
@@ -367,6 +369,7 @@ public class CyActivator extends AbstractCyActivator {
 		registerAllServices(bc, toolBarEnableUpdater, new Properties());
 		registerService(bc, configDirPropertyWriter, CyShutdownListener.class, new Properties());
 		registerAllServices(bc, recentSessionManager, new Properties());
+		registerAllServices(bc, networkSelectionMediator, new Properties());
 
 		registerServiceListener(bc, cytoscapeDesktop, "addAction", "removeAction", CyAction.class);
 		registerServiceListener(bc, preferenceAction, "addCyProperty", "removeCyProperty",
@@ -393,14 +396,14 @@ public class CyActivator extends AbstractCyActivator {
 		registerServiceListener(bc, settingsAction, "addLayout", "removeLayout", CyLayoutAlgorithm.class);
 		
 		// For Network Panel context menu
-		registerServiceListener(bc, networkPanel, "addNetworkViewTaskFactory",
+		registerServiceListener(bc, netMainPanel, "addNetworkViewTaskFactory",
 		                        "removeNetworkViewTaskFactory", NetworkViewTaskFactory.class, CONTEXT_MENU_FILTER);
-		registerServiceListener(bc, networkPanel, "addNetworkTaskFactory",
+		registerServiceListener(bc, netMainPanel, "addNetworkTaskFactory",
 		                        "removeNetworkTaskFactory", NetworkTaskFactory.class, CONTEXT_MENU_FILTER);
-		registerServiceListener(bc, networkPanel, "addNetworkViewCollectionTaskFactory",
+		registerServiceListener(bc, netMainPanel, "addNetworkViewCollectionTaskFactory",
 		                        "removeNetworkViewCollectionTaskFactory",
 		                        NetworkViewCollectionTaskFactory.class, CONTEXT_MENU_FILTER);
-		registerServiceListener(bc, networkPanel, "addNetworkCollectionTaskFactory",
+		registerServiceListener(bc, netMainPanel, "addNetworkCollectionTaskFactory",
 		                        "removeNetworkCollectionTaskFactory",
 		                        NetworkCollectionTaskFactory.class, CONTEXT_MENU_FILTER);
 		
