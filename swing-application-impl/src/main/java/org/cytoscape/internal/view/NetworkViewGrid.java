@@ -296,10 +296,11 @@ public class NetworkViewGrid extends JPanel implements Scrollable {
 						changed = true;
 					}
 				} else {
-					setSelectedItems((Set) (Collections.singleton(item)));
-					
+					// Set this item as current first, otherwise the previous one will not be deselected
 					if (!item.isCurrent())
 						setCurrentNetworkView(item.getNetworkView());
+					
+					setSelectedItems((Set) (Collections.singleton(item)));
 				}
 				
 				if (getSelectedItems().size() == 1)
