@@ -68,6 +68,8 @@ import javax.swing.UIManager;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.NetworkViewRenderer;
+import org.cytoscape.application.events.SetCurrentNetworkEvent;
+import org.cytoscape.application.events.SetCurrentNetworkListener;
 import org.cytoscape.application.swing.CyAction;
 import org.cytoscape.application.swing.CytoPanelComponent2;
 import org.cytoscape.application.swing.CytoPanelName;
@@ -150,7 +152,7 @@ import org.slf4j.LoggerFactory;
 public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, NetworkAddedListener,
 		NetworkViewAddedListener, NetworkAboutToBeDestroyedListener, NetworkDestroyedListener,
 		NetworkViewDestroyedListener, RowsSetListener, AddedNodesListener, AddedEdgesListener, RemovedEdgesListener,
-		RemovedNodesListener, SessionAboutToBeLoadedListener, SessionLoadedListener {
+		SetCurrentNetworkListener, RemovedNodesListener, SessionAboutToBeLoadedListener, SessionLoadedListener {
 
 	public static final float ICON_FONT_SIZE = 22.0f;
 	
@@ -881,6 +883,11 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, Net
 					subNetPanel.update();
 			}
 		});
+	}
+	
+	@Override
+	public void handleEvent(final SetCurrentNetworkEvent e) {
+		getRootNetworkListPanel().update();
 	}
 	
 	// // Private Methods // //

@@ -22,6 +22,7 @@ import org.cytoscape.util.swing.LookAndFeelUtil;
 @SuppressWarnings("serial")
 public class SubNetworkPanel extends AbstractNetworkPanel<CySubNetwork> {
 	
+	private JLabel currentLabel;
 	private JLabel viewCountLabel;
 	private JLabel viewIconLabel;
 	private JLabel nodeCountLabel;
@@ -58,7 +59,13 @@ public class SubNetworkPanel extends AbstractNetworkPanel<CySubNetwork> {
 				UIManager.getColor(viewCount == 0 ? "Label.disabledForeground" : "Label.foreground"));
 		getViewIconLabel().setToolTipText((viewCount > 0 ? viewCount : "No") + " view" + (viewCount == 1 ? "" : "s"));
 		
+		updateCurrentLabel();
 		updateCountLabels();
+	}
+	
+	protected void updateCurrentLabel() {
+		getCurrentLabel().setText(getModel().isCurrent() ? IconManager.ICON_CIRCLE : " ");
+		getCurrentLabel().setToolTipText(getModel().isCurrent() ? "Current Network" : null);
 	}
 	
 	protected void updateCountLabels() {
@@ -75,9 +82,12 @@ public class SubNetworkPanel extends AbstractNetworkPanel<CySubNetwork> {
 		layout.setAutoCreateContainerGaps(false);
 		layout.setAutoCreateGaps(false);
 		
+		final int CURR_LABEL_W = getCurrentLabel().getWidth();
+		
 		layout.setHorizontalGroup(layout.createSequentialGroup()
 				.addContainerGap()
-				.addGap(ExpandCollapseButton.WIDTH - getViewCountLabel().getPreferredSize().width)
+				.addComponent(getCurrentLabel(), CURR_LABEL_W, CURR_LABEL_W, CURR_LABEL_W)
+				.addGap(ExpandCollapseButton.WIDTH - CURR_LABEL_W - getViewCountLabel().getPreferredSize().width)
 				.addComponent(getViewCountLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 				.addComponent(getViewIconLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 				.addPreferredGap(ComponentPlacement.RELATED)
@@ -90,6 +100,7 @@ public class SubNetworkPanel extends AbstractNetworkPanel<CySubNetwork> {
 				.addContainerGap()
 		);
 		layout.setVerticalGroup(layout.createParallelGroup(CENTER, true)
+				.addComponent(getCurrentLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 				.addComponent(getViewCountLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 				.addComponent(getViewIconLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 				.addComponent(getNameLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
@@ -98,6 +109,19 @@ public class SubNetworkPanel extends AbstractNetworkPanel<CySubNetwork> {
 		);
 	}
 	
+	protected JLabel getCurrentLabel() {
+		if (currentLabel == null) {
+			currentLabel = new JLabel(IconManager.ICON_CIRCLE); // Just to get the preferred size with the icon font
+			currentLabel.setFont(serviceRegistrar.getService(IconManager.class).getIconFont(10.0f));
+			currentLabel.setMinimumSize(currentLabel.getPreferredSize());
+			currentLabel.setMaximumSize(currentLabel.getPreferredSize());
+			currentLabel.setSize(currentLabel.getPreferredSize());
+			currentLabel.setForeground(UIManager.getColor("Focus.color"));
+		}
+		
+		return currentLabel;
+	}
+
 	protected JLabel getViewCountLabel() {
 		if (viewCountLabel == null) {
 			viewCountLabel = new JLabel("\u2089"); // Set this initial text just to get the preferred size
