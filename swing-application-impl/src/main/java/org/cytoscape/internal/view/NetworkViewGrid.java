@@ -9,11 +9,8 @@ import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NETWOR
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NETWORK_TITLE;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NETWORK_WIDTH;
 
-import java.awt.BasicStroke;
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GridLayout;
 import java.awt.Image;
@@ -66,7 +63,7 @@ public class NetworkViewGrid extends JPanel implements Scrollable {
 	public static int MAX_THUMBNAIL_SIZE = 500;
 	
 	private static int BORDER_WIDTH = 3;
-	private static int IMG_BORDER_WIDTH = 2;
+	private static int IMG_BORDER_WIDTH = 1;
 	private static int PAD = 10;
 	private static int GAP = 2;
 	
@@ -476,7 +473,6 @@ public class NetworkViewGrid extends JPanel implements Scrollable {
 		private JLabel continueLeftLabel;
 		private JLabel continueRightLabel;
 		private JLabel imageLabel;
-		private ThumbnailIcon icon;
 		
 		private boolean selected;
 		private boolean hover;
@@ -556,6 +552,10 @@ public class NetworkViewGrid extends JPanel implements Scrollable {
 			this.setMinimumSize(d);
 			this.setPreferredSize(d);
 			
+			final int CURR_LABEL_W = getCurrentLabel().getWidth();
+			final int CL_LABEL_W = getContinueLeftLabel().getWidth();
+			final int CR_LABEL_W = getContinueRightLabel().getWidth();
+			
 			final GroupLayout layout = new GroupLayout(this);
 			this.setLayout(layout);
 			layout.setAutoCreateContainerGaps(false);
@@ -564,19 +564,21 @@ public class NetworkViewGrid extends JPanel implements Scrollable {
 			layout.setHorizontalGroup(layout.createParallelGroup(LEADING, true)
 					.addGroup(layout.createSequentialGroup()
 							.addGap(PAD)
-							.addComponent(getCurrentLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+							.addComponent(getCurrentLabel(), CURR_LABEL_W, CURR_LABEL_W, CURR_LABEL_W)
 							.addGap(GAP, GAP, Short.MAX_VALUE)
 							.addComponent(getTitleLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 							.addGap(GAP, GAP, Short.MAX_VALUE)
-							.addGap(getCurrentLabel().getPreferredSize().width)
+							.addGap(CURR_LABEL_W)
 							.addGap(PAD)
 					)
 					.addGroup(layout.createSequentialGroup()
-							.addComponent(getContinueLeftLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-							.addGap(0, 0, Short.MAX_VALUE)
-							.addComponent(getImageLabel())
-							.addGap(0, 0, Short.MAX_VALUE)
-							.addComponent(getContinueRightLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+							.addGap(GAP)
+							.addComponent(getContinueLeftLabel(), CL_LABEL_W, CL_LABEL_W, CL_LABEL_W)
+							.addGap(GAP, GAP, Short.MAX_VALUE)
+							.addComponent(getImageLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+							.addGap(GAP, GAP, Short.MAX_VALUE)
+							.addComponent(getContinueRightLabel(), CR_LABEL_W, CR_LABEL_W, CR_LABEL_W)
+							.addGap(GAP)
 					)
 			);
 			layout.setVerticalGroup(layout.createParallelGroup(CENTER, true)
@@ -587,9 +589,10 @@ public class NetworkViewGrid extends JPanel implements Scrollable {
 									.addComponent(getCurrentLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 									.addComponent(getTitleLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 							)
-							.addGap(GAP, GAP, Short.MAX_VALUE)
-							.addComponent(getImageLabel())
-							.addGap(PAD, PAD, Short.MAX_VALUE)
+							.addGap(0, 0, Short.MAX_VALUE)
+							.addGap(GAP)
+							.addComponent(getImageLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+							.addGap(PAD)
 					)
 					.addComponent(getContinueRightLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 			);
@@ -678,8 +681,6 @@ public class NetworkViewGrid extends JPanel implements Scrollable {
 			
 			setToolTipText("<html><center>" + title + "<br>(" + netName + ")</center></html>");
 			getTitleLabel().setText(title);
-			getTitleLabel().setForeground(
-					UIManager.getColor(isCurrent() ? "Label.foreground" : "Label.disabledForeground"));
 			
 			final int maxTitleWidth = (int) Math.round(
 					getPreferredSize().getWidth()
@@ -702,14 +703,15 @@ public class NetworkViewGrid extends JPanel implements Scrollable {
 			final Dimension size = this.getSize();
 			
 			if (size != null && getTitleLabel().getSize() != null) {
-				int lh = getTitleLabel().getSize().height;
+				int clw = getContinueLeftLabel().getWidth();
+				int lh = getTitleLabel().getHeight();
 				
-				int imgWidth = size.width - 2 * BORDER_WIDTH - 2 * PAD - 2 * IMG_BORDER_WIDTH;
-				int imgHeight = size.height - 2 * BORDER_WIDTH - 2 * GAP - lh - PAD - 2 * IMG_BORDER_WIDTH;
+				int iw = size.width - 2 * BORDER_WIDTH - 4 * GAP - 2 * clw - IMG_BORDER_WIDTH;
+				int ih = size.height - 2 * BORDER_WIDTH - 2 * GAP - lh - PAD - IMG_BORDER_WIDTH;
 				
-				if (imgWidth > 0 && imgHeight > 0) {
-					final Image img = createThumbnail(imgWidth, imgHeight);
-					icon = img != null ? new ThumbnailIcon(img) : null;
+				if (iw > 0 && ih > 0) {
+					final Image img = createThumbnail(iw, ih);
+					final ImageIcon icon = img != null ? new ImageIcon(img) : null;
 					getImageLabel().setIcon(icon);
 					updateUI();
 				}
@@ -774,7 +776,6 @@ public class NetworkViewGrid extends JPanel implements Scrollable {
 		JLabel getContinueLeftLabel() {
 			if (continueLeftLabel == null) {
 				continueLeftLabel = createContinueLabel();
-				continueLeftLabel.setHorizontalAlignment(JLabel.CENTER);
 			}
 			
 			return continueLeftLabel;
@@ -783,7 +784,6 @@ public class NetworkViewGrid extends JPanel implements Scrollable {
 		JLabel getContinueRightLabel() {
 			if (continueRightLabel == null) {
 				continueRightLabel = createContinueLabel();
-				continueRightLabel.setHorizontalAlignment(JLabel.CENTER);
 			}
 			
 			return continueRightLabel;
@@ -793,7 +793,8 @@ public class NetworkViewGrid extends JPanel implements Scrollable {
 			if (imageLabel == null) {
 				imageLabel = new JLabel();
 				imageLabel.setOpaque(true);
-				imageLabel.setBorder(BorderFactory.createLineBorder(UIManager.getColor("Label.foreground"), 1));
+				imageLabel.setBorder(
+						BorderFactory.createLineBorder(UIManager.getColor("Label.foreground"), IMG_BORDER_WIDTH));
 			}
 			
 			return imageLabel;
@@ -803,16 +804,15 @@ public class NetworkViewGrid extends JPanel implements Scrollable {
 		 * Used to indicate that a sibling view is in the previous or next row.
 		 */
 		private JLabel createContinueLabel() {
-			final JLabel label = new JLabel();
+			final JLabel label = new JLabel(IconManager.ICON_MINUS);
 			final IconManager iconManager = serviceRegistrar.getService(IconManager.class);
 			label.setFont(iconManager.getIconFont(12.0f));
+			label.setHorizontalAlignment(JLabel.CENTER);
 			label.setForeground(UIManager.getColor("Label.foreground"));
 			
-			final Dimension d = new Dimension(PAD, PAD);
-			label.setPreferredSize(d);
-			label.setMaximumSize(d);
-			label.setMaximumSize(d);
-			label.setSize(d);
+			label.setMinimumSize(currentLabel.getPreferredSize());
+			label.setMaximumSize(currentLabel.getPreferredSize());
+			label.setSize(currentLabel.getPreferredSize());
 			
 			return label;
 		}
@@ -823,65 +823,54 @@ public class NetworkViewGrid extends JPanel implements Scrollable {
 		 * @return
 		 */
 		private Image createThumbnail(double w, double h) {
-			final CyNetworkView netView = getNetworkView();
-			netView.updateView();
-			final double nw = netView.getVisualProperty(NETWORK_WIDTH);
-			final double nh = netView.getVisualProperty(NETWORK_HEIGHT);
-			
-			final double imgRatio = w / h;
-			final double viewRatio = nw / nh;
-            final double scale = imgRatio < viewRatio ? w / nw  :  h / nh;
-			
-            final int iw = (int) Math.round(nw * scale);
-            final int ih = (int) Math.round(nh * scale);
+			final int iw = (int) Math.round(w);
+            final int ih = (int) Math.round(h);
             
             if (iw <= 0 || ih <= 0)
-            	return null; 
-            
-			final BufferedImage image = new BufferedImage(iw, ih, BufferedImage.TYPE_INT_RGB);
+            	return null;
 			
-			if (nw > 0 && nh > 0) {
+            BufferedImage image = null;
+            
+			final CyNetworkView netView = getNetworkView();
+			netView.updateView();
+			
+			// Fit network view image to available rectangle area
+			final double vw = netView.getVisualProperty(NETWORK_WIDTH);
+			final double vh = netView.getVisualProperty(NETWORK_HEIGHT);
+			
+			if (vw > 0 && vh > 0) {
+				final double rectRatio = h / w;
+				final double viewRatio = vh / vw;
+	            final double scale = viewRatio > rectRatio ? w / vw  :  h / vh;
+				
+	            // Create scaled view image that is big enough to be clipped later
+	            final int svw = (int) Math.round(vw * scale);
+	            final int svh = (int) Math.round(vh * scale);
+	            image = new BufferedImage(svw, svh, BufferedImage.TYPE_INT_ARGB);
+	            
 				final Graphics2D g = (Graphics2D) image.getGraphics();
 				g.scale(scale, scale);
-				g.translate(0, 1);
-				
 				engine.printCanvas(g);
 				g.dispose();
+				
+				// Clip the image
+				image = image.getSubimage((svw - iw) / 2, (svh - ih) / 2, iw, ih);
+			} else {
+				image = new BufferedImage(iw, ih, BufferedImage.TYPE_INT_RGB);
+				
+				final Graphics2D g2 = image.createGraphics();
+				final Paint bg = netView.getVisualProperty(NETWORK_BACKGROUND_PAINT);
+				g2.setPaint(bg);
+				g2.drawRect(IMG_BORDER_WIDTH, IMG_BORDER_WIDTH, iw, ih);
+				g2.dispose();
 			}
-			
+            
 			return image;
 		}
 		
 		@Override
 		public String toString() {
 			return getNetworkView().getVisualProperty(NETWORK_TITLE);
-		}
-		
-		private class ThumbnailIcon extends ImageIcon {
-			
-			private CyNetworkView networkView;
-			
-			ThumbnailIcon(final Image image) {
-				super(image);
-				this.networkView = getNetworkView();
-			}
-			
-			@Override
-			public synchronized void paintIcon(Component c, Graphics g, int x, int y) {
-				final Graphics2D g2 = (Graphics2D) g.create();
-				
-				final Paint bg = networkView.getVisualProperty(NETWORK_BACKGROUND_PAINT);
-				g2.setPaint(bg);
-				g2.drawRect(0,  0, c.getWidth(), c.getHeight());
-				
-				super.paintIcon(c, g, x, y);
-				
-				g2.setPaint(bg);
-				g2.setStroke(new BasicStroke(2));
-				g2.drawRect(0,  0, c.getWidth() - 1, c.getHeight() - 1);
-				
-				g2.dispose();
-			}
 		}
 	}
 	
