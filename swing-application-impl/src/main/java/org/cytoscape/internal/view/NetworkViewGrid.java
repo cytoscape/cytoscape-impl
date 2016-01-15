@@ -2,6 +2,7 @@ package org.cytoscape.internal.view;
 
 import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
+import static javax.swing.GroupLayout.Alignment.CENTER;
 import static javax.swing.GroupLayout.Alignment.LEADING;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NETWORK_BACKGROUND_PAINT;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NETWORK_HEIGHT;
@@ -9,7 +10,6 @@ import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NETWOR
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NETWORK_WIDTH;
 
 import java.awt.BasicStroke;
-import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -17,6 +17,7 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GridLayout;
 import java.awt.Image;
+import java.awt.Paint;
 import java.awt.Rectangle;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
@@ -53,6 +54,7 @@ import org.cytoscape.internal.util.ViewUtil;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.presentation.RenderingEngine;
@@ -469,9 +471,11 @@ public class NetworkViewGrid extends JPanel implements Scrollable {
 	
 	class ThumbnailPanel extends JPanel {
 		
+		private JLabel currentLabel;
 		private JLabel titleLabel;
+		private JLabel continueLeftLabel;
+		private JLabel continueRightLabel;
 		private JLabel imageLabel;
-		private JPanel imagePanel;
 		private ThumbnailIcon icon;
 		
 		private boolean selected;
@@ -559,22 +563,35 @@ public class NetworkViewGrid extends JPanel implements Scrollable {
 			
 			layout.setHorizontalGroup(layout.createParallelGroup(LEADING, true)
 					.addGroup(layout.createSequentialGroup()
+							.addGap(PAD)
+							.addComponent(getCurrentLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 							.addGap(GAP, GAP, Short.MAX_VALUE)
 							.addComponent(getTitleLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 							.addGap(GAP, GAP, Short.MAX_VALUE)
+							.addGap(getCurrentLabel().getPreferredSize().width)
+							.addGap(PAD)
 					)
 					.addGroup(layout.createSequentialGroup()
-							.addGap(PAD, PAD, Short.MAX_VALUE)
-							.addComponent(getImagePanel())
-							.addGap(PAD, PAD, Short.MAX_VALUE)
+							.addComponent(getContinueLeftLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+							.addGap(0, 0, Short.MAX_VALUE)
+							.addComponent(getImageLabel())
+							.addGap(0, 0, Short.MAX_VALUE)
+							.addComponent(getContinueRightLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					)
 			);
-			layout.setVerticalGroup(layout.createSequentialGroup()
-					.addGap(GAP)
-					.addComponent(getTitleLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addGap(GAP, GAP, Short.MAX_VALUE)
-					.addComponent(getImagePanel())
-					.addGap(PAD, PAD, Short.MAX_VALUE)
+			layout.setVerticalGroup(layout.createParallelGroup(CENTER, true)
+					.addComponent(getContinueLeftLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addGroup(layout.createSequentialGroup()
+							.addGap(GAP)
+							.addGroup(layout.createParallelGroup(CENTER, false)
+									.addComponent(getCurrentLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+									.addComponent(getTitleLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+							)
+							.addGap(GAP, GAP, Short.MAX_VALUE)
+							.addComponent(getImageLabel())
+							.addGap(PAD, PAD, Short.MAX_VALUE)
+					)
+					.addComponent(getContinueRightLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 			);
 			
 			this.addMouseListener(new MouseAdapter() {
@@ -618,7 +635,6 @@ public class NetworkViewGrid extends JPanel implements Scrollable {
 		
 		void setDetached(boolean detached) {
 			this.detached = detached;
-			this.updateImageBorder();
 		}
 		
 		boolean isFirstSibling() {
@@ -657,12 +673,21 @@ public class NetworkViewGrid extends JPanel implements Scrollable {
 			final String title = ViewUtil.getTitle(netView);
 			final String netName = ViewUtil.getName(network);
 			
+			getCurrentLabel().setText(isCurrent() ? IconManager.ICON_CIRCLE : " ");
+			getCurrentLabel().setToolTipText(isCurrent() ? "Current Network View" : null);
+			
 			setToolTipText("<html><center>" + title + "<br>(" + netName + ")</center></html>");
 			getTitleLabel().setText(title);
 			getTitleLabel().setForeground(
 					UIManager.getColor(isCurrent() ? "Label.foreground" : "Label.disabledForeground"));
 			
-			final int maxTitleWidth = (int) Math.round(this.getPreferredSize().getWidth() - 2 * BORDER_WIDTH - 2 * GAP);
+			final int maxTitleWidth = (int) Math.round(
+					getPreferredSize().getWidth()
+					- 2 * BORDER_WIDTH
+					- 2 * PAD
+					- 2 * GAP 
+					- 2 * getCurrentLabel().getWidth()
+			);
 			final Dimension titleSize = new Dimension(maxTitleWidth, getTitleLabel().getPreferredSize().height);
 			getTitleLabel().setPreferredSize(titleSize);
 			getTitleLabel().setMaximumSize(titleSize);
@@ -670,7 +695,7 @@ public class NetworkViewGrid extends JPanel implements Scrollable {
 			
 			this.updateBackground();
 			this.updateBorder();
-			this.updateImageBorder();
+			this.updateContinueLabels();
 		}
 		
 		void updateIcon() {
@@ -686,14 +711,6 @@ public class NetworkViewGrid extends JPanel implements Scrollable {
 					final Image img = createThumbnail(imgWidth, imgHeight);
 					icon = img != null ? new ThumbnailIcon(img) : null;
 					getImageLabel().setIcon(icon);
-					getImagePanel().setVisible(icon != null);
-					
-					if (icon != null) {
-						getImagePanel().setPreferredSize(new Dimension(icon.getIconWidth(), icon.getIconHeight()));
-						getImagePanel().setMaximumSize(new Dimension(icon.getIconWidth(), icon.getIconHeight()));
-						getImagePanel().setSize(new Dimension(icon.getIconWidth(), icon.getIconHeight()));
-					}
-				
 					updateUI();
 				}
 			}
@@ -714,29 +731,13 @@ public class NetworkViewGrid extends JPanel implements Scrollable {
 				setBorder(hover ? DEFAULT_HOVER_BORDER : DEFAULT_BORDER);
 		}
 		
-		private void updateImageBorder() {
-			final Border gapBorder = BorderFactory.createLineBorder(getBackgroundColor(), 1);
-			final Border lineBorder;
+		private void updateContinueLabels() {
+			final boolean first = isFirstSibling();
+			final boolean middle = isMiddleSibling();
+			final boolean last = isLastSibling();
 			
-			if (isDetached())
-				lineBorder = BorderFactory.createDashedBorder(
-						UIManager.getColor(isCurrent() ? "Table.focusCellBackground" : "Label.foreground"),
-						1.0f, 2.0f, 2.0f, true
-				);
-			else
-				lineBorder = BorderFactory.createLineBorder(
-						UIManager.getColor(isCurrent() ? "Table.focusCellBackground" : "Separator.foreground"),
-						1
-				);
-			
-			final Border border;
-			
-			if (isCurrent() || isDetached())
-				border = BorderFactory.createCompoundBorder(lineBorder, gapBorder);
-			else
-				border = BorderFactory.createCompoundBorder(gapBorder, lineBorder);
-			
-			getImagePanel().setBorder(border);
+			getContinueLeftLabel().setText(middle || last ? IconManager.ICON_MINUS : " ");
+			getContinueRightLabel().setText(first || middle ? IconManager.ICON_MINUS : " ");
 		}
 		
 		private Color getBackgroundColor() {
@@ -745,6 +746,19 @@ public class NetworkViewGrid extends JPanel implements Scrollable {
 		
 		CyNetworkView getNetworkView() {
 			return (CyNetworkView) engine.getViewModel();
+		}
+		
+		JLabel getCurrentLabel() {
+			if (currentLabel == null) {
+				currentLabel = new JLabel(IconManager.ICON_CIRCLE); // Just to get the preferred size with the icon font
+				currentLabel.setFont(serviceRegistrar.getService(IconManager.class).getIconFont(10.0f));
+				currentLabel.setMinimumSize(currentLabel.getPreferredSize());
+				currentLabel.setMaximumSize(currentLabel.getPreferredSize());
+				currentLabel.setSize(currentLabel.getPreferredSize());
+				currentLabel.setForeground(UIManager.getColor("Focus.color"));
+			}
+			
+			return currentLabel;
 		}
 		
 		JLabel getTitleLabel() {
@@ -757,25 +771,50 @@ public class NetworkViewGrid extends JPanel implements Scrollable {
 			return titleLabel;
 		}
 		
+		JLabel getContinueLeftLabel() {
+			if (continueLeftLabel == null) {
+				continueLeftLabel = createContinueLabel();
+				continueLeftLabel.setHorizontalAlignment(JLabel.CENTER);
+			}
+			
+			return continueLeftLabel;
+		}
+		
+		JLabel getContinueRightLabel() {
+			if (continueRightLabel == null) {
+				continueRightLabel = createContinueLabel();
+				continueRightLabel.setHorizontalAlignment(JLabel.CENTER);
+			}
+			
+			return continueRightLabel;
+		}
+		
 		JLabel getImageLabel() {
 			if (imageLabel == null) {
 				imageLabel = new JLabel();
 				imageLabel.setOpaque(true);
+				imageLabel.setBorder(BorderFactory.createLineBorder(UIManager.getColor("Label.foreground"), 1));
 			}
 			
 			return imageLabel;
 		}
 		
-		JPanel getImagePanel() {
-			if (imagePanel == null) {
-				imagePanel = new JPanel();
-				imagePanel.setOpaque(false);
-				imagePanel.setVisible(false);
-				imagePanel.setLayout(new BorderLayout());
-				imagePanel.add(getImageLabel(), BorderLayout.CENTER);
-			}
+		/**
+		 * Used to indicate that a sibling view is in the previous or next row.
+		 */
+		private JLabel createContinueLabel() {
+			final JLabel label = new JLabel();
+			final IconManager iconManager = serviceRegistrar.getService(IconManager.class);
+			label.setFont(iconManager.getIconFont(12.0f));
+			label.setForeground(UIManager.getColor("Label.foreground"));
 			
-			return imagePanel;
+			final Dimension d = new Dimension(PAD, PAD);
+			label.setPreferredSize(d);
+			label.setMaximumSize(d);
+			label.setMaximumSize(d);
+			label.setSize(d);
+			
+			return label;
 		}
 		
 		/**
@@ -831,20 +870,15 @@ public class NetworkViewGrid extends JPanel implements Scrollable {
 			public synchronized void paintIcon(Component c, Graphics g, int x, int y) {
 				final Graphics2D g2 = (Graphics2D) g.create();
 				
-				g2.setPaint(networkView.getVisualProperty(NETWORK_BACKGROUND_PAINT));
+				final Paint bg = networkView.getVisualProperty(NETWORK_BACKGROUND_PAINT);
+				g2.setPaint(bg);
 				g2.drawRect(0,  0, c.getWidth(), c.getHeight());
 				
 				super.paintIcon(c, g, x, y);
 				
-				g2.setColor(UIManager.getColor("Separator.background"));
-				
-				if (isDetached()) {
-					g2.setStroke(new BasicStroke(2));
-					g2.drawRect(1,  1, c.getWidth() - 2, c.getHeight() - 2);
-				} else {
-					g2.setStroke(new BasicStroke(2));
-					g2.drawRect(0,  0, c.getWidth() - 1, c.getHeight() - 1);
-				}
+				g2.setPaint(bg);
+				g2.setStroke(new BasicStroke(2));
+				g2.drawRect(0,  0, c.getWidth() - 1, c.getHeight() - 1);
 				
 				g2.dispose();
 			}
