@@ -51,6 +51,7 @@ import org.cytoscape.equations.EquationCompiler;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyTable;
+import org.cytoscape.property.CyProperty;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.events.SessionAboutToBeSavedEvent;
 import org.cytoscape.session.events.SessionAboutToBeSavedListener;
@@ -302,5 +303,13 @@ public abstract class AbstractTableBrowser extends JPanel
 		}
 		
 		TableColumnStatFileIO.write(tableColumnStatList, e, this.appFileName );	
+	}
+	
+	@SuppressWarnings("unchecked")
+	protected boolean showPrivateTables() {
+		final CyProperty<Properties> cyProp =
+				serviceRegistrar.getService(CyProperty.class, "(cyPropertyName=cytoscape3.props)");
+		
+		return cyProp != null && "true".equalsIgnoreCase(cyProp.getProperties().getProperty("showPrivateTables"));
 	}
 }
