@@ -1313,7 +1313,7 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, Net
 		int count = 0;
 		
 		for (final RootNetworkPanel item : getRootNetworkListPanel().getAllItems())
-			count += item.getModel().getSubNetworkCount();
+			count += item.getAllItems().size();
 		
 		return count;
 	}

@@ -2,6 +2,7 @@ package org.cytoscape.internal.view;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
@@ -14,7 +15,16 @@ public class RootNetworkPanelModel extends AbstractNetworkPanelModel<CyRootNetwo
 	
 	@Override
 	public int getSubNetworkCount() {
-		return getNetwork().getSubNetworkList().size();
+		int count = 0;
+		final CyNetworkManager netManager = serviceRegistrar.getService(CyNetworkManager.class);
+		
+		// Count number of public subnetworks
+		for (CySubNetwork net : getNetwork().getSubNetworkList()) {
+			if (netManager.networkExists(net.getSUID()))
+				count++;
+		}
+		
+		return count;
 	}
 
 	@Override

@@ -133,7 +133,7 @@ public class RootNetworkPanel extends AbstractNetworkPanel<CyRootNetwork> {
 	
 	protected void updateRootPanel() {
 		super.update();
-		final int netCount = getModel().getSubNetworkCount();
+		final int netCount = getItems().values().size();
 		
 		getNetworkCountLabel().setText("" + netCount);
 		getNetworkCountLabel().setToolTipText(
