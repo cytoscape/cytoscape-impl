@@ -186,25 +186,30 @@ public class NetworkViewMediator implements NetworkViewAddedListener, NetworkVie
 		
 		final CyNetworkView view = e.getNetworkView();
 		
-		// Set current RenderingEngine
-		final CyApplicationManager appMgr = serviceRegistrar.getService(CyApplicationManager.class);
-		final RenderingEngine<CyNetwork> currentEngine = appMgr.getCurrentRenderingEngine();
-		
-		if (view != null) {
-			final CyNetworkViewManager netViewMgr = serviceRegistrar.getService(CyNetworkViewManager.class);
-			
-			if (netViewMgr.getNetworkViewSet().contains(view)) {
-				if (currentEngine == null || currentEngine.getViewModel() != view)
-					appMgr.setCurrentRenderingEngine(presentationMap.get(view));
-			}
-		} else if (currentEngine != null) {
-			appMgr.setCurrentRenderingEngine(null);
-		}
-		
 		invokeOnEDT(new Runnable() {
 			@Override
 			public void run() {
 				onCurrentNetworkViewChanged(view);
+				
+				final CyApplicationManager appMgr = serviceRegistrar.getService(CyApplicationManager.class);
+				final RenderingEngine<CyNetwork> currentEngine = appMgr.getCurrentRenderingEngine();
+				
+				new Thread() {
+					@Override
+					public void run() {
+						// Set current RenderingEngine
+						if (view != null) {
+							final CyNetworkViewManager netViewMgr = serviceRegistrar.getService(CyNetworkViewManager.class);
+							
+							if (netViewMgr.getNetworkViewSet().contains(view)) {
+								if (currentEngine == null || currentEngine.getViewModel() != view)
+									appMgr.setCurrentRenderingEngine(presentationMap.get(view));
+							}
+						} else if (view == null && currentEngine != null) {
+							appMgr.setCurrentRenderingEngine(null);
+						}
+					};
+				}.start();
 			}
 		});
 	}
