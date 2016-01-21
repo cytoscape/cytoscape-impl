@@ -22,14 +22,31 @@ import org.cytoscape.util.swing.LookAndFeelUtil;
 @SuppressWarnings("serial")
 public class SubNetworkPanel extends AbstractNetworkPanel<CySubNetwork> {
 	
+	private static int INDENT_WIDTH = 20;
+	
 	private JLabel currentLabel;
+	private JLabel indentLabel;
 	private JLabel viewCountLabel;
 	private JLabel viewIconLabel;
 	private JLabel nodeCountLabel;
 	private JLabel edgeCountLabel;
 	
+	private int depth;
+	
 	public SubNetworkPanel(final SubNetworkPanelModel model, final CyServiceRegistrar serviceRegistrar) {
 		super(model, serviceRegistrar);
+	}
+	
+	public int getDepth() {
+		return depth;
+	}
+	
+	public void setDepth(final int newValue) {
+		if (newValue != depth) {
+			final int oldValue = depth;
+			depth = newValue;
+			firePropertyChange("depth", oldValue, newValue);
+		}
 	}
 	
 	@Override
@@ -60,12 +77,21 @@ public class SubNetworkPanel extends AbstractNetworkPanel<CySubNetwork> {
 		getViewIconLabel().setToolTipText((viewCount > 0 ? viewCount : "No") + " view" + (viewCount == 1 ? "" : "s"));
 		
 		updateCurrentLabel();
+		updateIndentation();
 		updateCountLabels();
 	}
 	
 	protected void updateCurrentLabel() {
 		getCurrentLabel().setText(getModel().isCurrent() ? IconManager.ICON_CIRCLE : " ");
 		getCurrentLabel().setToolTipText(getModel().isCurrent() ? "Current Network" : null);
+	}
+	
+	protected void updateIndentation() {
+		final Dimension d = new Dimension(depth * INDENT_WIDTH, getIndentLabel().getPreferredSize().height);
+		getIndentLabel().setPreferredSize(d);
+		getIndentLabel().setMinimumSize(d);
+		getIndentLabel().setMaximumSize(d);
+		getIndentLabel().setSize(d);
 	}
 	
 	protected void updateCountLabels() {
@@ -87,6 +113,7 @@ public class SubNetworkPanel extends AbstractNetworkPanel<CySubNetwork> {
 		layout.setHorizontalGroup(layout.createSequentialGroup()
 				.addContainerGap()
 				.addComponent(getCurrentLabel(), CURR_LABEL_W, CURR_LABEL_W, CURR_LABEL_W)
+				.addComponent(getIndentLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 				.addGap(ExpandCollapseButton.WIDTH - CURR_LABEL_W - getViewCountLabel().getPreferredSize().width)
 				.addComponent(getViewCountLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 				.addComponent(getViewIconLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
@@ -101,6 +128,7 @@ public class SubNetworkPanel extends AbstractNetworkPanel<CySubNetwork> {
 		);
 		layout.setVerticalGroup(layout.createParallelGroup(CENTER, true)
 				.addComponent(getCurrentLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				.addComponent(getIndentLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 				.addComponent(getViewCountLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 				.addComponent(getViewIconLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 				.addComponent(getNameLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
@@ -122,6 +150,14 @@ public class SubNetworkPanel extends AbstractNetworkPanel<CySubNetwork> {
 		return currentLabel;
 	}
 
+	protected JLabel getIndentLabel() {
+		if (indentLabel == null) {
+			indentLabel = new JLabel(" ");
+		}
+		
+		return indentLabel;
+	}
+	
 	protected JLabel getViewCountLabel() {
 		if (viewCountLabel == null) {
 			viewCountLabel = new JLabel("\u2089"); // Set this initial text just to get the preferred size

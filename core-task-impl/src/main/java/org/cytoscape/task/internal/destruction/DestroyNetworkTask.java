@@ -29,7 +29,10 @@ import java.util.Collection;
 
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
+import org.cytoscape.model.subnetwork.CyRootNetwork;
+import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.task.AbstractNetworkCollectionTask;
+import org.cytoscape.task.internal.utils.DataUtils;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 
@@ -62,18 +65,44 @@ public class DestroyNetworkTask extends AbstractNetworkCollectionTask {
 					return;
 				}
 				
-				netmgr.destroyNetwork(network);
+				destroyNetwork(network);
 			} else {
 				networkCount = networks.size();
 				
 				for (CyNetwork n : networks) {
-					netmgr.destroyNetwork(n);
+					destroyNetwork(n);
 					i++;
 					tm.setProgress((i / (double) networkCount));
 				}
 			}
 			
 			tm.setProgress(1.0);
+		}
+	}
+
+	private void destroyNetwork(final CyNetwork net) {
+		CyRootNetwork rootNet = null;
+		CySubNetwork parentNet = null;
+		
+		if (net instanceof CySubNetwork) {
+			rootNet = ((CySubNetwork) net).getRootNetwork();
+			final Long suid = DataUtils.getParentNetworkSUID((CySubNetwork) net);
+			
+			if (suid != null && netmgr.getNetwork(suid) instanceof CySubNetwork)
+				parentNet = (CySubNetwork) netmgr.getNetwork(suid);
+		}
+		
+		netmgr.destroyNetwork(net);
+		
+		if (net instanceof CySubNetwork)
+			updateParentNetworkData(net.getSUID(), rootNet, (parentNet != null ? parentNet.getSUID() : null));
+	}
+	
+	private void updateParentNetworkData(final Long destroyedSUID, final CyRootNetwork rootNet,
+			final Long newParentSUID) {
+		for (CySubNetwork sn : rootNet.getSubNetworkList()) {
+			if (destroyedSUID.equals(DataUtils.getParentNetworkSUID(sn)))
+				DataUtils.saveParentNetworkSUID(sn, newParentSUID);
 		}
 	}
 }
