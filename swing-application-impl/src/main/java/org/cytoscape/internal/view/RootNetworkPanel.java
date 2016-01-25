@@ -7,7 +7,6 @@ import static javax.swing.GroupLayout.Alignment.LEADING;
 
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
@@ -22,7 +21,6 @@ import javax.swing.BoxLayout;
 import javax.swing.GroupLayout;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.UIManager;
 
 import org.cytoscape.model.CyNetwork;
@@ -40,10 +38,7 @@ public class RootNetworkPanel extends AbstractNetworkPanel<CyRootNetwork> {
 	
 	private ExpandCollapseButton expandCollapseBtn;
 	private JLabel networkCountLabel;
-	private JLabel nodesLabel;
-	private JLabel edgesLabel;
 	private JPanel headerPanel;
-	private JPanel subNetInfoHeaderPanel;
 	private JPanel subNetListPanel;
 	
 	private Map<CySubNetwork, SubNetworkPanel> items;
@@ -103,7 +98,6 @@ public class RootNetworkPanel extends AbstractNetworkPanel<CyRootNetwork> {
 	
 	public void expand() {
 		if (!isExpanded()) {
-			getSubNetInfoHeaderPanel().setVisible(true);
 			getSubNetListPanel().setVisible(true);
 			firePropertyChange("expanded", false, true);
 		}
@@ -111,7 +105,6 @@ public class RootNetworkPanel extends AbstractNetworkPanel<CyRootNetwork> {
 	
 	public void collapse() {
 		if (isExpanded()) {
-			getSubNetInfoHeaderPanel().setVisible(false);
 			getSubNetListPanel().setVisible(false);
 			firePropertyChange("expanded", true, false);
 		}
@@ -157,10 +150,8 @@ public class RootNetworkPanel extends AbstractNetworkPanel<CyRootNetwork> {
 	}
 	
 	protected void updateCountInfo() {
-		getSubNetInfoHeaderPanel().setVisible(showNodeEdgeCount);
-		
-		int nodeLabelWidth = getNodesLabel().getPreferredSize().width;
-		int edgeLabelWidth = getEdgesLabel().getPreferredSize().width;
+		int nodeLabelWidth = 0;
+		int edgeLabelWidth = 0;
 		
 		for (SubNetworkPanel snp : getItems().values()) {
 			snp.getNodeCountLabel().setVisible(showNodeEdgeCount);
@@ -179,11 +170,6 @@ public class RootNetworkPanel extends AbstractNetworkPanel<CyRootNetwork> {
 			return;
 		
 		// Apply max width values to all labels so they align properly
-		final Dimension ntd = new Dimension(nodeLabelWidth, getNodesLabel().getPreferredSize().height); // node title
-		final Dimension etd = new Dimension(edgeLabelWidth, getEdgesLabel().getPreferredSize().height); // edge title
-		getNodesLabel().setPreferredSize(ntd);
-		getEdgesLabel().setPreferredSize(etd);
-		
 		for (SubNetworkPanel snp : getItems().values()) {
 			final Dimension nd = new Dimension(nodeLabelWidth, snp.getNodeCountLabel().getPreferredSize().height);
 			final Dimension ed = new Dimension(edgeLabelWidth, snp.getEdgeCountLabel().getPreferredSize().height);
@@ -196,7 +182,6 @@ public class RootNetworkPanel extends AbstractNetworkPanel<CyRootNetwork> {
 	protected void updateSelection() {
 		final Color c = UIManager.getColor(isSelected() ? "Table.selectionBackground" : "Table.background");
 		getHeaderPanel().setBackground(c);
-		getSubNetInfoHeaderPanel().setBackground(c);
 	}
 	
 	@Override
@@ -246,28 +231,6 @@ public class RootNetworkPanel extends AbstractNetworkPanel<CyRootNetwork> {
 		return networkCountLabel;
 	}
 	
-	protected JLabel getNodesLabel() {
-		if (nodesLabel == null) {
-			nodesLabel = new JLabel("Nodes");
-			nodesLabel.setFont(nodesLabel.getFont().deriveFont(LookAndFeelUtil.getSmallFontSize()).deriveFont(Font.BOLD));
-			nodesLabel.setHorizontalAlignment(JLabel.RIGHT);
-			nodesLabel.setForeground(UIManager.getColor("Label.disabledForeground"));
-		}
-		
-		return nodesLabel;
-	}
-	
-	protected JLabel getEdgesLabel() {
-		if (edgesLabel == null) {
-			edgesLabel = new JLabel("Edges");
-			edgesLabel.setFont(edgesLabel.getFont().deriveFont(LookAndFeelUtil.getSmallFontSize()).deriveFont(Font.BOLD));
-			edgesLabel.setHorizontalAlignment(JLabel.RIGHT);
-			edgesLabel.setForeground(UIManager.getColor("Label.disabledForeground"));
-		}
-		
-		return edgesLabel;
-	}
-	
 	protected JPanel getHeaderPanel() {
 		if (headerPanel == null) {
 			headerPanel = new JPanel();
@@ -278,53 +241,21 @@ public class RootNetworkPanel extends AbstractNetworkPanel<CyRootNetwork> {
 			layout.setAutoCreateContainerGaps(false);
 			layout.setAutoCreateGaps(false);
 			
-			layout.setHorizontalGroup(layout.createParallelGroup(LEADING, true)
-					.addGroup(layout.createSequentialGroup()
-							.addComponent(getExpandCollapseBtn(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-							.addComponent(getNameLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-							.addGap(0, 10, Short.MAX_VALUE)
-							.addComponent(getNetworkCountLabel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-							.addContainerGap()
-					)
-					.addComponent(getSubNetInfoHeaderPanel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+			layout.setHorizontalGroup(layout.createSequentialGroup()
+					.addComponent(getExpandCollapseBtn(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(getNameLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addGap(0, 10, Short.MAX_VALUE)
+					.addComponent(getNetworkCountLabel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+					.addContainerGap()
 			);
-			layout.setVerticalGroup(layout.createSequentialGroup()
-					.addGroup(layout.createParallelGroup(CENTER, true)
-							.addComponent(getExpandCollapseBtn(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-							.addComponent(getNameLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-							.addComponent(getNetworkCountLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					)
-					.addComponent(getSubNetInfoHeaderPanel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+			layout.setVerticalGroup(layout.createParallelGroup(CENTER, true)
+					.addComponent(getExpandCollapseBtn(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(getNameLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(getNetworkCountLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 			);
 		}
 		
 		return headerPanel;
-	}
-	
-	private JPanel getSubNetInfoHeaderPanel() {
-		if (subNetInfoHeaderPanel == null) {
-			subNetInfoHeaderPanel = new JPanel();
-			subNetInfoHeaderPanel.setBackground(UIManager.getColor("Table.background"));
-			
-			final GroupLayout layout = new GroupLayout(subNetInfoHeaderPanel);
-			subNetInfoHeaderPanel.setLayout(layout);
-			layout.setAutoCreateContainerGaps(false);
-			layout.setAutoCreateGaps(false);
-			
-			layout.setHorizontalGroup(layout.createSequentialGroup()
-					.addGap(0, 0, Short.MAX_VALUE)
-					.addComponent(getNodesLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addPreferredGap(ComponentPlacement.UNRELATED)
-					.addComponent(getEdgesLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addContainerGap()
-			);
-			layout.setVerticalGroup(layout.createParallelGroup(CENTER, true)
-					.addComponent(getNodesLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addComponent(getEdgesLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-			);
-		}
-		
-		return subNetInfoHeaderPanel;
 	}
 	
 	private JPanel getSubNetListPanel() {

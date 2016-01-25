@@ -187,7 +187,7 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, Net
 	private AbstractNetworkPanel<?> selectionTail;
 	private AbstractNetworkPanel<?> lastSelected;
 	
-	private boolean showNodeEdgeCount = true;  // Use CyProperty (user preference only)
+	private boolean showNodeEdgeCount = false;  // TODO Use CyProperty (user preference only)
 	
 	private boolean loadingSession;
 	private boolean ignoreSelectionEvents;
