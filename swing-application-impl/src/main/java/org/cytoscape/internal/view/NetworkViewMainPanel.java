@@ -47,7 +47,6 @@ import javax.swing.BorderFactory;
 import javax.swing.GroupLayout;
 import javax.swing.JButton;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRootPane;
 import javax.swing.JScrollPane;
@@ -62,12 +61,14 @@ import org.cytoscape.internal.util.ViewUtil;
 import org.cytoscape.internal.view.NetworkViewGrid.ThumbnailPanel;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.task.destroy.DestroyNetworkViewTaskFactory;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.view.presentation.RenderingEngineFactory;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
+import org.cytoscape.work.swing.DialogTaskManager;
 
 @SuppressWarnings("serial")
 public class NetworkViewMainPanel extends JPanel {
@@ -831,14 +832,10 @@ public class NetworkViewMainPanel extends JPanel {
 					final NetworkViewContainer vc = getCurrentViewContainer();
 					
 					if (vc != null) {
-						if (JOptionPane.showConfirmDialog(
-								NetworkViewMainPanel.this,
-								"Are you sure you want to destroy this Network View?\nThis action cannot be undone.",
-								"Destroy Network View",
-								JOptionPane.OK_CANCEL_OPTION,
-								JOptionPane.WARNING_MESSAGE
-							) == JOptionPane.OK_OPTION)
-						remove(vc.getNetworkView());
+						final DialogTaskManager taskMgr = serviceRegistrar.getService(DialogTaskManager.class);
+						final DestroyNetworkViewTaskFactory taskFactory =
+								serviceRegistrar.getService(DestroyNetworkViewTaskFactory.class);
+						taskMgr.execute(taskFactory.createTaskIterator(Collections.singleton(vc.getNetworkView())));
 					}
 				}
 			});
@@ -856,19 +853,13 @@ public class NetworkViewMainPanel extends JPanel {
 			destroySelectedViewsButton.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					final List<ThumbnailPanel> selectedItems = networkViewGrid.getSelectedItems();
+					final List<CyNetworkView> selectedViews = getSelectedNetworkViews();
 					
-					if (selectedItems != null && !selectedItems.isEmpty()) {
-						if (JOptionPane.showConfirmDialog(
-								NetworkViewMainPanel.this,
-								"Are you sure you want to destroy the selected Network Views?\nThis action cannot be undone.",
-								"Destroy Network Views",
-								JOptionPane.OK_CANCEL_OPTION,
-								JOptionPane.WARNING_MESSAGE
-							) == JOptionPane.OK_OPTION) {
-							for (ThumbnailPanel tp : selectedItems)
-								remove(tp.getNetworkView());
-						}
+					if (selectedViews != null && !selectedViews.isEmpty()) {
+						final DialogTaskManager taskMgr = serviceRegistrar.getService(DialogTaskManager.class);
+						final DestroyNetworkViewTaskFactory taskFactory =
+								serviceRegistrar.getService(DestroyNetworkViewTaskFactory.class);
+						taskMgr.execute(taskFactory.createTaskIterator(selectedViews));
 					}
 				}
 			});
