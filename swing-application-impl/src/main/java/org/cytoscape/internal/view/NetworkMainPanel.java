@@ -10,7 +10,6 @@ import static org.cytoscape.util.swing.IconManager.ICON_CHECK_SQUARE;
 import static org.cytoscape.util.swing.IconManager.ICON_COG;
 import static org.cytoscape.util.swing.IconManager.ICON_PLUS;
 import static org.cytoscape.util.swing.IconManager.ICON_SQUARE_O;
-import static org.cytoscape.util.swing.IconManager.ICON_TRASH_O;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -107,7 +106,6 @@ import org.cytoscape.task.NetworkTaskFactory;
 import org.cytoscape.task.NetworkViewCollectionTaskFactory;
 import org.cytoscape.task.NetworkViewTaskFactory;
 import org.cytoscape.task.create.CreateNetworkViewTaskFactory;
-import org.cytoscape.task.destroy.DestroyNetworkTaskFactory;
 import org.cytoscape.task.edit.EditNetworkTitleTaskFactory;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
@@ -174,7 +172,6 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, Net
 	private JButton selectAllNetworksButton;
 	private JButton deselectAllNetworksButton;
 	private JButton createButton;
-	private JButton destroySelectedItemsButton;
 
 	private final JPopupMenu popup;
 	private JMenuItem editRootNetworTitle;
@@ -388,7 +385,8 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, Net
 		if (networkToolBar == null) {
 			networkToolBar = new JPanel();
 			
-			final JPanel filler = new JPanel();
+			final JPanel filler1 = new JPanel();
+			final JPanel filler2 = new JPanel();
 					
 			final GroupLayout layout = new GroupLayout(networkToolBar);
 			networkToolBar.setLayout(layout);
@@ -402,16 +400,16 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, Net
 					.addGap(0, 10, Short.MAX_VALUE)
 					.addComponent(getCreateButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addGap(0, 10, Short.MAX_VALUE)
-					.addComponent(filler, PREFERRED_SIZE, getDestroySelectedItemsButton().getPreferredSize().width, PREFERRED_SIZE) // To center the create button
-					.addComponent(getDestroySelectedItemsButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(filler1, PREFERRED_SIZE, getSelectAllNetworksButton().getPreferredSize().width, PREFERRED_SIZE) // To center the create button
+					.addComponent(filler2, PREFERRED_SIZE, getDeselectAllNetworksButton().getPreferredSize().width, PREFERRED_SIZE) // To center the create button
 					.addContainerGap()
 			);
 			layout.setVerticalGroup(layout.createParallelGroup(CENTER, true)
 					.addComponent(getSelectAllNetworksButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(getDeselectAllNetworksButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(getCreateButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addComponent(filler, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addComponent(getDestroySelectedItemsButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(filler1, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(filler2, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 			);
 		}
 		
@@ -467,29 +465,6 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, Net
 		}
 		
 		return createButton;
-	}
-	
-	private JButton getDestroySelectedItemsButton() {
-		if (destroySelectedItemsButton == null) {
-			destroySelectedItemsButton = new JButton(ICON_TRASH_O);
-			destroySelectedItemsButton.setToolTipText("Destroy Selected Networks");
-			styleButton(destroySelectedItemsButton, serviceRegistrar.getService(IconManager.class).getIconFont(ICON_FONT_SIZE));
-			
-			destroySelectedItemsButton.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					final Set<CyNetwork> networks = getSelectedNetworks(true);
-					
-					if (!networks.isEmpty()) {
-						final DialogTaskManager taskMgr = serviceRegistrar.getService(DialogTaskManager.class);
-						final DestroyNetworkTaskFactory taskFactory = serviceRegistrar.getService(DestroyNetworkTaskFactory.class);
-						taskMgr.execute(taskFactory.createTaskIterator(networks));
-					}
-				}
-			});
-		}
-		
-		return destroySelectedItemsButton;
 	}
 	
 	private JPanel getNavigatorPanel() {
@@ -1119,7 +1094,6 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, Net
 		
 		getSelectAllNetworksButton().setEnabled(selectedCount < networkCount);
 		getDeselectAllNetworksButton().setEnabled(selectedCount > 0);
-		getDestroySelectedItemsButton().setEnabled(selectedCount > 0);
 	}
 	
 	private void updateNodeEdgeCount(final CyNetwork network) {
