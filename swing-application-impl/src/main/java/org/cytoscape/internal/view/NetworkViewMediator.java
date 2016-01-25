@@ -176,6 +176,10 @@ public class NetworkViewMediator implements NetworkViewAddedListener, NetworkVie
 	public CyNetworkView getNetworkView(JInternalFrame frame) throws IllegalArgumentException {
 		return null; // TODO Fix for backwards compatibility
 	}
+	
+	public Set<NetworkViewFrame> getAllNetworkViewFrames() {
+		return getNetworkViewMainPanel().getAllNetworkViewFrames();
+	}
 
 	// // Event Handlers ////
 	

@@ -365,6 +365,10 @@ public class NetworkViewMainPanel extends JPanel {
 		return networkViewGrid;
 	}
 	
+	public Set<NetworkViewFrame> getAllNetworkViewFrames() {
+		return new HashSet<>(viewFrames.values());
+	}
+	
 	private void show(final CyNetworkView view) {
 		if (view != null)
 			show(ViewUtil.createUniqueKey(view));
