@@ -1,10 +1,14 @@
 package org.cytoscape.internal.view;
 
 import java.awt.Dimension;
+import java.awt.GraphicsConfiguration;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
+import java.awt.Insets;
 import java.awt.Rectangle;
-import java.util.HashSet;
+import java.awt.Toolkit;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 import javax.swing.JDesktopPane;
@@ -44,8 +48,9 @@ public class CyDesktopManager implements CyNetworkViewDesktopMgr {
 	
 	public static int MINIMUM_WIN_WIDTH = 200;
 	public static int MINIMUM_WIN_HEIGHT = 200;
-	public final CytoscapeDesktop desk;
-	public final NetworkViewMediator netViewMediator;
+	
+	private final CytoscapeDesktop desk;
+	private final NetworkViewMediator netViewMediator;
 		
 	public CyDesktopManager(final CytoscapeDesktop desk, final NetworkViewMediator netViewMediator) { 
 		this.desk = desk;
@@ -63,6 +68,7 @@ public class CyDesktopManager implements CyNetworkViewDesktopMgr {
 	public Rectangle getBounds (CyNetworkView view) {
 		try {
 			JInternalFrame frame = netViewMediator.getInternalFrame(view);
+			
 			if (frame != null)
 				return frame.getBounds();
 		} catch (Exception e) {
@@ -75,8 +81,10 @@ public class CyDesktopManager implements CyNetworkViewDesktopMgr {
 	public void setBounds (CyNetworkView view, Rectangle bounds) {
 		try {
 			JInternalFrame frame = netViewMediator.getInternalFrame(view);
+			
 			if (frame == null)
 				return;
+			
 			// It is CRITICAL that this setMaximum be performed before the setBounds().
 			// If frame's state is such that isMaximum() is true, then it seems to
 			// ignore any setBounds() statements until the iFrame is in a non-maximum
@@ -94,19 +102,44 @@ public class CyDesktopManager implements CyNetworkViewDesktopMgr {
 	public void arrangeWindows(final ArrangeType type) {
 		final GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
 		final GraphicsDevice[] devices = ge.getScreenDevices();
+		final CyNetworkView currentView = netViewMediator.getNetworkViewMainPanel().getCurrentNetworkView();
 		
 		final Set<NetworkViewFrame> allViewFrames = netViewMediator.getAllNetworkViewFrames();
 		
+		// Group frames by monitor
 		for (GraphicsDevice gd : devices) {
-			final Set<NetworkViewFrame> frames = new HashSet<>();
+			final GraphicsConfiguration gc = gd.getDefaultConfiguration();
+			final List<NetworkViewFrame> frames = new ArrayList<>();
 			
 			for (NetworkViewFrame f : allViewFrames) {
-				if (f.getGraphicsConfiguration().equals(gd.getDefaultConfiguration()))
-					frames.add(f);
+				if (f.getGraphicsConfiguration().equals(gc)) {
+					if (type == ArrangeType.CASCADE) {
+						// If cascade, the current view frame must be the last one in order to be totally visible
+						final NetworkViewFrame lastFrame = frames.isEmpty() ? null : frames.get(frames.size() - 1);
+						final CyNetworkView lastView = lastFrame == null ? null : lastFrame.getNetworkView();
+						
+						if (lastView != null && lastView.equals(currentView))
+							frames.add(frames.size() - 1, f);
+						else
+							frames.add(f);
+					} else {
+						frames.add(f);
+					}
+				}
 			}
 			
-			final Rectangle bounds = gd.getDefaultConfiguration().getBounds();
-			arrangeWindows(frames.toArray(new NetworkViewFrame[frames.size()]), type, bounds);
+			if (!frames.isEmpty()) {
+				// Calculate the actual screen area by removing screen insets such as Menu Bars, Docks, etc.
+				final Rectangle bounds = gc.getBounds();
+				final Insets screenInsets = Toolkit.getDefaultToolkit().getScreenInsets(gc);
+				final Rectangle effectiveScreenArea = new Rectangle();
+				effectiveScreenArea.x = bounds.x + screenInsets.left;
+				effectiveScreenArea.y = bounds.y + screenInsets.top;
+				effectiveScreenArea.height = bounds.height - screenInsets.top - screenInsets.bottom;
+				effectiveScreenArea.width = bounds.width - screenInsets.left - screenInsets.right;
+
+				arrangeWindows(frames.toArray(new NetworkViewFrame[frames.size()]), type, effectiveScreenArea);
+			}
 		}
 	}
 	
@@ -116,6 +149,8 @@ public class CyDesktopManager implements CyNetworkViewDesktopMgr {
 		if (frameCount == 0)
 			return;
 
+		final int screenX = bounds.x;
+		final int screenY = bounds.y;
 		final int screenWidth = bounds.width;
 		final int screenHeight = bounds.height;
 		
@@ -160,6 +195,7 @@ public class CyDesktopManager implements CyNetworkViewDesktopMgr {
 							h[i - j - 1] = screenHeight - y[i - 1];
 						}
 					}
+					
 					// start of another block
 					x[i] = x[i - blockSize] + delta_block;
 
@@ -181,6 +217,7 @@ public class CyDesktopManager implements CyNetworkViewDesktopMgr {
 					// use the same (w, h) as previous block
 					w[frameCount - 1 - i] = w[frameCount - blockSize - 1];
 					h[frameCount - 1 - i] = h[frameCount - blockSize - 1];
+					
 					// If w is too wider to fit to the screen, adjust it
 					if (w[frameCount - 1 - i] > screenWidth - x[frameCount - 1])
 						w[frameCount - 1 - i] = screenWidth - x[frameCount - 1];
@@ -198,9 +235,11 @@ public class CyDesktopManager implements CyNetworkViewDesktopMgr {
 				}
 			}
 			
-			//Arrange all frames on the screen
+			// Arrange all frames on the screen
 			for (int i = 0; i < frameCount; i++) {
-				frames[frameCount - 1 - i].setBounds(x[i], y[i], w[i], h[i]);
+				final NetworkViewFrame f = frames[i];
+				f.setBounds(x[i] + screenX, y[i] + screenY, w[i], h[i]);
+				f.toFront();
 			}
 		} else if (type == ArrangeType.GRID) {
 			// Determine the max_col and max_row for grid layout
@@ -229,7 +268,7 @@ public class CyDesktopManager implements CyNetworkViewDesktopMgr {
 				for (int i = 0; i < gridLayout[col]; i++) {
 					int x = col * w;
 					int y = (gridLayout[col] - i - 1) * h;
-					frames[curFrame--].setBounds(x, y, w, h);
+					frames[curFrame--].setBounds(x + screenX, y + screenY, w, h);
 				}
 			}
 		} else if (type == ArrangeType.HORIZONTAL) {
@@ -256,7 +295,7 @@ public class CyDesktopManager implements CyNetworkViewDesktopMgr {
 				if (y > screenHeight - MINIMUM_WIN_HEIGHT)
 					y = screenHeight - MINIMUM_WIN_HEIGHT;
 
-				frames[frameCount - i - 1].setBounds(x, y, w, h);
+				frames[frameCount - i - 1].setBounds(x + screenX, y + screenY, w, h);
 			}
 		} else if (type == ArrangeType.VERTICAL) {
 			int x = 0;
@@ -282,7 +321,7 @@ public class CyDesktopManager implements CyNetworkViewDesktopMgr {
 				if (x > screenWidth - MINIMUM_WIN_WIDTH)
 					x = screenWidth - MINIMUM_WIN_WIDTH;
 
-				frames[frameCount - i - 1].setBounds(x, y, w, h);
+				frames[frameCount - i - 1].setBounds(x + screenX, y + screenY, w, h);
 			}
 		}
 		
@@ -295,20 +334,19 @@ public class CyDesktopManager implements CyNetworkViewDesktopMgr {
 	private void getGridLayout(final int pTotal, final int pCol, final int pRow, int[] gridLayout) {
 		if (pTotal > pRow) {
 			int row = -1;
-			if (pTotal%pCol == 0) {
-				row = pTotal/pCol;
-				gridLayout[pCol-1] = row;
+
+			if (pTotal % pCol == 0) {
+				row = pTotal / pCol;
+				gridLayout[pCol - 1] = row;
+			} else {
+				row = pRow;
+				gridLayout[pCol - 1] = pRow;
 			}
-			else {
-				row = pRow;				
-				gridLayout[pCol-1] = pRow;
-			}
-			getGridLayout(pTotal-row, pCol-1,row, gridLayout);
-		}
-		else {
+			
+			getGridLayout(pTotal - row, pCol - 1, row, gridLayout);
+		} else {
 			gridLayout[0] = pTotal;
-		}		
+		}	
 	}
-	
 }
 

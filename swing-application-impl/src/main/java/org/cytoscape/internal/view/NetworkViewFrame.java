@@ -42,4 +42,9 @@ public class NetworkViewFrame extends JFrame {
 	protected CyNetworkView getNetworkView() {
 		return networkViewContainer.getNetworkView();
 	}
+	
+	@Override
+	public String toString() {
+		return "NetworkViewFrame: " + getNetworkView();
+	}
 }
