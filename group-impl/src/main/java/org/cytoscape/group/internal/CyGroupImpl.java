@@ -940,6 +940,8 @@ public class CyGroupImpl implements CyGroup {
 	 * This is used by the compound node code in particular.
 	 */
 	public void setGroupNodeShown(CyNetwork net, boolean showGroupNode) {
+		// System.out.println("Setting group node shown to "+showGroupNode);
+		// Thread.dumpStack();
 		synchronized (lock) {
 			if (showGroupNode && !nodeShownSet.contains(net.getSUID())) {
 				// System.out.println("Setting node shown to true");

@@ -463,6 +463,7 @@ public class GroupViewCollapseHandler implements GroupAboutToCollapseListener,
 	 */
 	public void handleEvent(SessionLoadedEvent e) {
 		getServices();
+		// System.out.println("SessionLoadedEvent");
 		try {
 		// For each network
 		for (CyNetworkView networkView: e.getLoadedSession().getNetworkViews()) {
@@ -471,10 +472,23 @@ public class GroupViewCollapseHandler implements GroupAboutToCollapseListener,
 			for (CyGroup group: cyGroupManager.getGroupSet(network)) {
 				GroupViewType groupViewType = cyGroupSettings.getGroupViewType(group);
 
+				// System.out.println("Session loaded group "+group+" with a view type of "+groupViewType);
+
 				// If the group is a compound node and if it is expanded,
 				if (groupViewType.equals(GroupViewType.COMPOUND) ||
 				    groupViewType.equals(GroupViewType.SINGLENODE)) {
-					if (network.containsNode(group.getGroupNode())) {
+
+					// If it's really collapsed, all of our children will
+					// be absent from the network.  Check that first
+					boolean haveChildren = true;
+					for (CyNode node: group.getNodeList()) {
+						if (!network.containsNode(node)) {
+							haveChildren = false;
+							break;
+						}
+					}
+
+					if (haveChildren && network.containsNode(group.getGroupNode())) {
 						// At this point, because of the way we create the
 						// group, it will think it's collapsed.  Change
 						// that.
