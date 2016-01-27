@@ -127,6 +127,8 @@ public class NetworkViewMainPanel extends JPanel {
 		vc.addComponentListener(new ComponentAdapter() {
 			@Override
 			public void componentShown(ComponentEvent e) {
+				setCurrentNetworkView(view);
+				setSelectedNetworkViews(Collections.singletonList(view));
 				view.updateView();
 			}
 		});
@@ -136,7 +138,7 @@ public class NetworkViewMainPanel extends JPanel {
 		getContentPane().add(vc, vc.getName());
 		
 		if (showView)
-			show(vc.getName());
+			showViewContainer(vc.getName());
 		else
 			showGrid();
 		
@@ -222,14 +224,10 @@ public class NetworkViewMainPanel extends JPanel {
 			showGrid();
 		} else {
 			if (isGridMode()) {
-				final NetworkViewFrame frame = getNetworkViewFrame(view);
-				
-				if (frame != null)
-					showFrame(frame);
-				else if (networkViewGrid.getCurrentItem() != null)
+				if (networkViewGrid.getCurrentItem() != null)
 					networkViewGrid.scrollRectToVisible(networkViewGrid.getCurrentItem().getBounds());
 			} else {
-				show(ViewUtil.createUniqueKey(view));
+				showViewContainer(ViewUtil.createUniqueKey(view));
 			}
 		}
 	}
@@ -240,9 +238,9 @@ public class NetworkViewMainPanel extends JPanel {
 		networkViewGrid.update(getThumbnailSlider().getValue()); // TODO remove it when already updating after view changes
 	}
 	
-	public void dettachNetworkView(final CyNetworkView view) {
+	public NetworkViewFrame detachNetworkView(final CyNetworkView view) {
 		if (view == null)
-			return;
+			return null;
 		
 		final NetworkViewContainer vc = getNetworkViewContainer(view);
 		final String name = vc.getName();
@@ -269,6 +267,20 @@ public class NetworkViewMainPanel extends JPanel {
 			@Override
 			public void windowClosed(WindowEvent e) {
 				reattachNetworkView(view);
+			}
+			@Override
+			public void windowOpened(WindowEvent e) {
+				// Add another window listener so subsequent Window Activated events trigger
+				// a current view change action.
+				// It has to be done this way (after the Open event), otherwise it can cause infinite loops
+				// when detaching more than one view at the same time.
+				frame.addWindowListener(new WindowAdapter() {
+					@Override
+					public void windowActivated(WindowEvent e) {
+						setCurrentNetworkView(frame.getNetworkView());
+						setSelectedNetworkViews(Collections.singletonList(frame.getNetworkView()));
+					}
+				});
 			}
 		});
 		frame.addComponentListener(new ComponentAdapter() {
@@ -298,6 +310,8 @@ public class NetworkViewMainPanel extends JPanel {
 		frame.pack();
 		frame.setResizable(resizable);
 		frame.setVisible(true);
+		
+		return frame;
 	}
 	
 	public void reattachNetworkView(final CyNetworkView view) {
@@ -315,7 +329,7 @@ public class NetworkViewMainPanel extends JPanel {
 			getContentPane().add(vc, vc.getName());
 			viewContainers.put(vc.getName(), vc);
 			getNetworkViewGrid().setDetached(vc.getNetworkView(), false);
-			show(vc.getName());
+			showViewContainer(vc.getName());
 		}
 	}
 	
@@ -370,18 +384,14 @@ public class NetworkViewMainPanel extends JPanel {
 		return new HashSet<>(viewFrames.values());
 	}
 	
-	private void show(final CyNetworkView view) {
+	private void showViewContainer(final CyNetworkView view) {
 		if (view != null)
-			show(ViewUtil.createUniqueKey(view));
+			showViewContainer(ViewUtil.createUniqueKey(view));
 	}
 	
-	private void show(final String name) {
+	private void showViewContainer(final String name) {
 		if (name != null) {
-			final NetworkViewFrame frame = viewFrames.get(name);
-			
-			if (frame != null) {
-				showFrame(frame);
-			} else if (viewContainers.containsKey(name)) {
+			if (viewContainers.containsKey(name)) {
 				cardLayout.show(getContentPane(), name);
 				updateToolBars();
 			} 
@@ -390,7 +400,7 @@ public class NetworkViewMainPanel extends JPanel {
 		}
 	}
 
-	private void showFrame(final NetworkViewFrame frame) {
+	private void showViewFrame(final NetworkViewFrame frame) {
 		frame.setVisible(true);
 		frame.toFront();
 		showGrid();
@@ -478,8 +488,13 @@ public class NetworkViewMainPanel extends JPanel {
 						@Override
 						public void mouseClicked(MouseEvent e) {
 							if (e.getClickCount() == 2) {
-								setCurrentNetworkView(tp.getNetworkView());
-								show(tp.getNetworkView());
+								// Double-Click: set this one as current and show attached view or view frame
+								final NetworkViewFrame frame = getNetworkViewFrame(tp.getNetworkView());
+									
+								if (frame != null)
+									showViewFrame(frame);
+								else
+									showViewContainer(tp.getNetworkView());
 							}
 						}
 					});
@@ -676,15 +691,17 @@ public class NetworkViewMainPanel extends JPanel {
 			viewModeButton.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					if (getCurrentNetworkView() != null) {
-						show(getCurrentNetworkView());
+					final CyNetworkView currentView = getCurrentNetworkView();
+					
+					if (currentView != null) {
+						showViewContainer(currentView);
 					} else {
 						final List<ThumbnailPanel> selectedItems = networkViewGrid.getSelectedItems();
 						
 						if (!selectedItems.isEmpty())
-							show(selectedItems.get(0).getNetworkView());
+							showViewContainer(selectedItems.get(0).getNetworkView());
 						else if (!networkViewGrid.isEmpty())
-							show(networkViewGrid.firstItem().getNetworkView());
+							showViewContainer(networkViewGrid.firstItem().getNetworkView());
 					}
 				}
 			});
@@ -703,7 +720,7 @@ public class NetworkViewMainPanel extends JPanel {
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					if (getCurrentViewContainer() != null)
-						dettachNetworkView(getCurrentNetworkView());
+						detachNetworkView(getCurrentNetworkView());
 				}
 			});
 		}
@@ -723,10 +740,20 @@ public class NetworkViewMainPanel extends JPanel {
 					final List<ThumbnailPanel> selectedItems = networkViewGrid.getSelectedItems();
 					
 					if (selectedItems != null) {
+						// Get the current view first
+						final CyNetworkView currentView = getCurrentNetworkView();
+						
+						// Detach the views
 						for (ThumbnailPanel tp : selectedItems) {
 							if (getNetworkViewContainer(tp.getNetworkView()) != null)
-								dettachNetworkView(tp.getNetworkView());
+								detachNetworkView(tp.getNetworkView());
 						}
+						
+						// Set the original current view by bringing its frame to front, if it is detached
+						final NetworkViewFrame frame = getNetworkViewFrame(currentView);
+						
+						if (frame != null)
+							frame.toFront();
 					}
 				}
 			});
