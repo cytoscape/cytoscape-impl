@@ -27,21 +27,31 @@ package org.cytoscape.internal.view.help;
 
 import org.cytoscape.application.swing.CyNetworkViewDesktopMgr.ArrangeType;
 import org.cytoscape.internal.view.CyDesktopManager;
+import org.cytoscape.internal.view.NetworkViewMediator;
 import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.TaskIterator;
 
 
 public class ArrangeTaskFactory extends AbstractTaskFactory {
 
-	private CyDesktopManager desktopMgr;
-	private ArrangeType arrange;
+	private final ArrangeType arrange;
+	private final CyDesktopManager desktopMgr;
+	private final NetworkViewMediator netViewMediator;
 
-	public ArrangeTaskFactory(CyDesktopManager desktopMgr, ArrangeType arrange) {
-		this.desktopMgr = desktopMgr;
+	public ArrangeTaskFactory(final ArrangeType arrange, final CyDesktopManager desktopMgr,
+			final NetworkViewMediator netViewMediator) {
 		this.arrange = arrange;
+		this.desktopMgr = desktopMgr;
+		this.netViewMediator = netViewMediator;
 	}
 
+	@Override
 	public TaskIterator createTaskIterator() {
 		return new TaskIterator(new ArrangeTask(desktopMgr, arrange));
-	} 
+	}
+	
+	@Override
+	public boolean isReady() {
+		return super.isReady() && !netViewMediator.getAllNetworkViewFrames().isEmpty();
+	}
 }
