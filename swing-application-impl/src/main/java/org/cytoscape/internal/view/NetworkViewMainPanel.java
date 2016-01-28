@@ -18,6 +18,7 @@ import java.awt.CardLayout;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
@@ -46,13 +47,16 @@ import javax.swing.AbstractButton;
 import javax.swing.BorderFactory;
 import javax.swing.GroupLayout;
 import javax.swing.JButton;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JMenuBar;
 import javax.swing.JPanel;
 import javax.swing.JRootPane;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JSlider;
 import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -249,19 +253,29 @@ public class NetworkViewMainPanel extends JPanel {
 		viewContainers.remove(name);
 		
 		final NetworkViewFrame frame = new NetworkViewFrame(vc, serviceRegistrar);
-		
-		if (!LookAndFeelUtil.isMac())
-			frame.setJMenuBar(cyMenus.getJMenuBar());
-		
 		viewFrames.put(name, frame);
+		
+		if (!LookAndFeelUtil.isAquaLAF())
+			frame.setJMenuBar(cyMenus.createDummyMenuBar());
 		
 		frame.addWindowListener(new WindowAdapter() {
 			@Override
 			public void windowActivated(WindowEvent e) {
 				// This is necessary because the same menu bar is used by other frames, including CytoscapeDesktop
-				if (LookAndFeelUtil.isMac()) {
-					frame.setJMenuBar(cyMenus.getJMenuBar());
-					cyMenus.getJMenuBar().updateUI();
+				final JMenuBar menuBar = cyMenus.getJMenuBar();
+				final Window window = SwingUtilities.getWindowAncestor(menuBar);
+
+				if (!frame.equals(window)) {
+					if (window instanceof JFrame && !LookAndFeelUtil.isAquaLAF()) {
+						// Do this first, or the user could see the menu disappearing from the out-of-focus windows
+						final JMenuBar dummyMenuBar = cyMenus.createDummyMenuBar();
+						((JFrame) window).setJMenuBar(dummyMenuBar);
+						dummyMenuBar.updateUI();
+						window.repaint();
+					}
+
+					frame.setJMenuBar(menuBar);
+					menuBar.updateUI();
 				}
 			}
 			@Override

@@ -30,6 +30,7 @@ import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Toolkit;
+import java.awt.Window;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.Dictionary;
@@ -163,16 +164,26 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 		//don't automatically close window. Let shutdown.exit(returnVal) handle this
 		setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 
-		if (!LookAndFeelUtil.isMac())
-			setJMenuBar(cyMenus.getJMenuBar());
+		setJMenuBar(cyMenus.getJMenuBar());
 		
 		addWindowListener(new WindowAdapter() {
 			@Override
 			public void windowActivated(WindowEvent e) {
 				// This is necessary because the same menu bar can be used by other frames
-				if (LookAndFeelUtil.isMac()) {
-					setJMenuBar(cyMenus.getJMenuBar());
-					cyMenus.getJMenuBar().updateUI();
+				final JMenuBar menuBar = cyMenus.getJMenuBar();
+				final Window window = SwingUtilities.getWindowAncestor(menuBar);
+				
+				if (!CytoscapeDesktop.this.equals(window)) {
+					if (window instanceof JFrame && !LookAndFeelUtil.isAquaLAF()) {
+						// Do this first, or the user could see the menu disappearing from the out-of-focus windows
+						final JMenuBar dummyMenuBar = cyMenus.createDummyMenuBar();
+						((JFrame) window).setJMenuBar(dummyMenuBar);
+						dummyMenuBar.updateUI();
+						window.repaint();
+					}
+					
+					setJMenuBar(menuBar);
+					menuBar.updateUI();
 				}
 			}
 			@Override

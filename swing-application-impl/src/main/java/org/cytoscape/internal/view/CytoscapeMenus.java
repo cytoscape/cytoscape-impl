@@ -123,4 +123,21 @@ public class CytoscapeMenus {
 		if (action.isInToolBar())
 			toolBar.addAction(action);
 	}
+
+	public JMenuBar createDummyMenuBar() {
+		final JMenuBar dummy = new JMenuBar();
+		
+		if (menuBar != null) {
+			final int menuCount = menuBar.getMenuCount();
+			
+			for (int i = 0; i < menuCount; i++) {
+				final JMenu menu = menuBar.getMenu(i);
+				
+				if (menu != null)
+					dummy.add(new JMenu(menu.getText()));
+			}
+		}
+		
+		return dummy;
+	}
 }
