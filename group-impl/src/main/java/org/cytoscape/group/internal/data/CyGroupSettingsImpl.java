@@ -42,6 +42,7 @@ import org.cytoscape.group.CyGroup;
 import org.cytoscape.group.CyGroupSettingsManager;
 import org.cytoscape.group.CyGroupSettingsManager.DoubleClickAction;
 import org.cytoscape.group.CyGroupSettingsManager.GroupViewType;
+import org.cytoscape.group.internal.CyGroupImpl;
 import org.cytoscape.group.internal.CyGroupManagerImpl;
 import org.cytoscape.group.data.Aggregator;
 import org.cytoscape.group.data.AttributeHandlingType;
@@ -201,8 +202,11 @@ public class CyGroupSettingsImpl implements GroupAddedListener,
 
 	@Override
 	public GroupViewType getGroupViewType(CyGroup group) {
-		if (groupViewTypeMap.containsKey(group))
+		if (groupViewTypeMap.containsKey(group)) {
+			// System.out.println("getGroupViewType("+group+") = "+groupViewTypeMap.get(group));
 			return groupViewTypeMap.get(group);
+		}
+		// System.out.println("getGroupViewType("+group+") = default ("+groupViewType+")");
 		return groupViewType;
 	}
 
@@ -214,12 +218,26 @@ public class CyGroupSettingsImpl implements GroupAddedListener,
 
 	@Override
 	public void setGroupViewType(CyGroup group, GroupViewType groupViewType) {
+		// System.out.println("setGroupViewType("+group+") to "+groupViewType);
 		if (group != null) {
 			GroupViewType oldType = getGroupViewType(group);
 			groupViewTypeMap.put(group, groupViewType);
 			updateSettingsInTable(group);
-			if (!loadingNewGroup)
+			if (!loadingNewGroup) {
 				eventHelper.fireEvent(new GroupViewTypeChangedEvent(group, oldType, groupViewType));
+			} else {
+				// During session loading, we may have mis-identified the group view type because
+				// we using the default.  If we did that, we might have incorrectly set the 
+				// group node shown flag.  Fix that now...
+				if (!oldType.equals(GroupViewType.NONE) && groupViewType.equals(GroupViewType.NONE)) {
+					for (CyNetwork net: group.getNetworkSet()) {
+						// Careful -- the network set includes the root
+						if (net.equals(group.getRootNetwork()))
+							continue;
+						((CyGroupImpl)group).setGroupNodeShown(net, false);
+					}
+				}
+			}
 		} else {
 			this.groupViewType = groupViewType;
 			updateProperties();
@@ -776,8 +794,10 @@ public class CyGroupSettingsImpl implements GroupAddedListener,
 	 * @return true if we were able to load the settings, false otherwise
 	 */
 	public boolean loadSettingsFromTable(CyGroup group, CyNetwork network) {
+		// System.out.println("Loading settings for "+group+" in network "+network+" ("+network.getSUID()+")");
 		CyTable table = network.getTable(CyNode.class, CyNetwork.DEFAULT_ATTRS);
 		if (table.getColumn(VIEW_SETTINGS) == null) {
+			// System.out.println("Oops -- no settings column");
 			return false;
 		}
 

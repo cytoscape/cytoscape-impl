@@ -32,8 +32,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import javax.swing.GroupLayout;
@@ -57,11 +59,11 @@ import org.cytoscape.app.internal.net.Update;
 import org.cytoscape.app.internal.net.UpdateManager;
 import org.cytoscape.app.internal.net.WebApp;
 import org.cytoscape.app.internal.net.WebQuerier;
-import org.cytoscape.app.internal.task.InstallAppFromNetworkTask;
+import org.cytoscape.app.internal.task.InstallAppsFromWebAppTask;
+import org.cytoscape.app.internal.task.InstallUpdatesTask;
 import org.cytoscape.app.internal.ui.downloadsites.DownloadSite;
 import org.cytoscape.app.internal.ui.downloadsites.DownloadSitesManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
-import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.FinishStatus;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.Task;
@@ -295,32 +297,8 @@ public class CheckForUpdatesPanel extends JPanel {
     }
     
     private void installUpdates(final Set<Update> updates) {
-    	final int updateCount = updates.size();
-        int count = 0;
         TaskIterator ti = new TaskIterator();
-        for (Update update: updates) {
-        	count++;
-        	final int currentCount = count;
-	        ti.append(new TaskIterator(new AbstractTask() {
-	
-				@Override
-				public void run(TaskMonitor taskMonitor) throws Exception {
-					taskMonitor.setTitle("Install Updates");
-					taskMonitor.setTitle("Installing update " 
-							+ update.getRelease().getReleaseVersion() 
-							+ " for " + update.getApp().getAppName() 
-							+ " (" + currentCount + "/" + updateCount + ")");
-					taskMonitor.setStatusMessage("Checking update status...");
-					
-					
-					if(!update.isInstalled(appManager)) {
-						// update not already installed
-						insertTasksAfterCurrentTask(new InstallAppFromNetworkTask(update.getWebApp(), appManager.getWebQuerier(), appManager));
-					}
-				}
-        	
-        }));
-        }
+        ti.append(new InstallUpdatesTask(updates, appManager));
         taskManager.execute(ti, new TaskObserver(){
 
 			@Override

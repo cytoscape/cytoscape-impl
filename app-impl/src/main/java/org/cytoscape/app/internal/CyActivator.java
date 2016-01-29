@@ -41,7 +41,7 @@ import org.cytoscape.app.internal.net.server.CyHttpdFactoryImpl;
 import org.cytoscape.app.internal.net.server.LocalhostServerSocketFactory;
 import org.cytoscape.app.internal.net.server.OriginOptionsBeforeResponse;
 import org.cytoscape.app.internal.net.server.ScreenOriginsBeforeResponse;
-import org.cytoscape.app.internal.tunable.AppInstallationConflictHandlerFactory;
+import org.cytoscape.app.internal.tunable.AppConflictHandlerFactory;
 import org.cytoscape.app.internal.ui.downloadsites.DownloadSitesManager;
 import org.cytoscape.app.swing.CySwingAppAdapter;
 import org.cytoscape.application.CyApplicationConfiguration;
@@ -405,8 +405,8 @@ public class CyActivator extends AbstractCyActivator {
 		final UpdateManager updateManager = new UpdateManager(appManager, downloadSitesManager);
 		registerService(bc, updateManager, AppsFinishedStartingListener.class, new Properties());
 		
-		final AppInstallationConflictHandlerFactory appInstallationConflictHandlerFactory = new AppInstallationConflictHandlerFactory();
-		registerService(bc,appInstallationConflictHandlerFactory,GUITunableHandlerFactory.class, new Properties());
+		final AppConflictHandlerFactory appConflictHandlerFactory = new AppConflictHandlerFactory();
+		registerService(bc,appConflictHandlerFactory,GUITunableHandlerFactory.class, new Properties());
 		
 		// AbstractCyAction implementation for updated app manager
 		AppManagerAction appManagerAction = new AppManagerAction(
