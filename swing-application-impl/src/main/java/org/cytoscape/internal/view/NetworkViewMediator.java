@@ -144,13 +144,21 @@ public class NetworkViewMediator implements NetworkViewAddedListener, NetworkVie
 			@Override
 			@SuppressWarnings("unchecked")
 			public void propertyChange(PropertyChangeEvent e) {
-				final Collection<CyNetworkView> newSet = (Collection<CyNetworkView>) e.getNewValue();
+				if (loadingSession)
+					return;
 				
-				final CyNetworkViewManager netViewMgr = serviceRegistrar.getService(CyNetworkViewManager.class);
-				final Set<CyNetworkView> currentSet = netViewMgr.getNetworkViewSet();
+				final Collection<CyNetworkView> oldSet = (Collection<CyNetworkView>) e.getOldValue();
 				
-				for (CyNetworkView view : currentSet) {
-					if (!newSet.contains(view))
+				if (oldSet != null && !oldSet.isEmpty()) {
+					final Collection<CyNetworkView> newSet = (Collection<CyNetworkView>) e.getNewValue();
+					final Collection<CyNetworkView> deletedSet = new HashSet<>(oldSet);
+					
+					if (newSet != null)
+						deletedSet.removeAll(newSet);
+					
+					final CyNetworkViewManager netViewMgr = serviceRegistrar.getService(CyNetworkViewManager.class);
+					
+					for (CyNetworkView view : deletedSet)
 						netViewMgr.destroyNetworkView(view);
 				}
 			}
