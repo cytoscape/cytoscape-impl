@@ -60,6 +60,7 @@ import org.cytoscape.internal.view.NetworkMainPanel;
 import org.cytoscape.internal.view.NetworkViewMediator;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
+import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.CySession;
 import org.cytoscape.session.CySessionManager;
@@ -297,12 +298,25 @@ public class SessionHandler implements CyShutdownListener, SessionLoadedListener
 					setCytoPanelStates(sessState.getCytopanels());
 				}
 				
-				if (netList != null)
-					addSessionNetworks(netList.getNetwork(), sess);
+				if (netList == null) {
+					// Probably a Cy2 session file, which does not provide a separate "network_list" file
+					// so let's get the orders from the networks in the CySession file
+					// (we just assume the Session Reader sent the networks in the correct order in a LinkedHashSet)
+					final Set<CyNetwork> netSet = sess.getNetworks();
+					final Map<Long, Integer> netOrder = new HashMap<>();
+					int count = 0;
+					
+					for (CyNetwork n : netSet)
+						netOrder.put(n.getSUID(), count++);
+						
+					setSessionNetworks(netOrder);
+				} else {
+					setSessionNetworks(netList.getNetwork(), sess);
+				}
 			}
 		}
 	}
-
+	
 	/**
 	 * Restore each network frame's location.
 	 * @param frames
@@ -375,26 +389,37 @@ public class SessionHandler implements CyShutdownListener, SessionLoadedListener
 		}
 	}
 	
-	private void addSessionNetworks(final List<Network> netInfoList, final CySession sess) {
-		final Map<Long, Integer> order = new HashMap<>();
+	private void setSessionNetworks(final List<Network> netInfoList, final CySession sess) {
+		final Map<Long, Integer> netOrder = new HashMap<>();
 		
 		for (final Network n : netInfoList) {
 			final CyNetwork net = sess.getObject(n.getId(), CyNetwork.class); // in order to retrieve the new SUID
 			
 			if (net != null)
-				order.put(net.getSUID(), n.getOrder());
+				netOrder.put(net.getSUID(), n.getOrder());
 		}
 		
+		setSessionNetworks(netOrder);
+	}
+	
+	/**
+	 * @param netOrder Maps CyNetwork SUID to the network position
+	 */
+	private void setSessionNetworks(final Map<Long, Integer> netOrder) {
 		final CyNetworkManager netMgr = serviceRegistrar.getService(CyNetworkManager.class);
-		final Set<CyNetwork> networks = netMgr.getNetworkSet();
-		final List<CyNetwork> sortedNetworks = new ArrayList<>(networks);
+		final List<CySubNetwork> sortedNetworks = new ArrayList<>();
 		
-		Collections.sort(sortedNetworks, new Comparator<CyNetwork>() {
+		for (CyNetwork n : netMgr.getNetworkSet()) {
+			if (n instanceof CySubNetwork && netMgr.networkExists(n.getSUID()))
+				sortedNetworks.add((CySubNetwork) n);
+		}
+		
+		Collections.sort(sortedNetworks, new Comparator<CySubNetwork>() {
 			@Override
-			public int compare(final CyNetwork n1, final CyNetwork n2) {
+			public int compare(final CySubNetwork n1, final CySubNetwork n2) {
 				try {
-					Integer o1 = order.get(n1.getSUID());
-					Integer o2 = order.get(n2.getSUID());
+					Integer o1 = netOrder.get(n1.getSUID());
+					Integer o2 = netOrder.get(n2.getSUID());
 					if (o1 == null) o1 = -1;
 					if (o2 == null) o2 = -1;
 					

@@ -593,22 +593,21 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, Net
 	/**
 	 * Replace the current network list with the passed ones.
 	 */
-	public void setNetworks(final Collection<CyNetwork> networks) {
+	public void setNetworks(final Collection<CySubNetwork> networks) {
 		clear();
 				
 		ignoreSelectionEvents = true;
 		doNotUpdateCollapseExpandButtons = true;
 		
 		try {
-			for (final CyNetwork n : networks) {
-				if (n instanceof CySubNetwork)
-					addNetwork((CySubNetwork) n);
-			}
+			for (final CySubNetwork n : networks)
+				addNetwork((CySubNetwork) n);
 		} finally {
 			doNotUpdateCollapseExpandButtons = false;
 			ignoreSelectionEvents = false;
 		}
 
+		getRootNetworkListPanel().update();
 		updateNetworkHeader();
 		updateNetworkToolBar();
 	}
@@ -956,16 +955,19 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, Net
 			public void run() {
 				final CyRootNetwork rootNet = network.getRootNetwork();
 				final RootNetworkPanel item = getRootNetworkPanel(rootNet);
-				item.removeItem(network);
 				
-				if (item.isEmpty()) {
-					getRootNetworkListPanel().removeItem(rootNet);
-					nameTables.values().removeAll(Collections.singletonList(rootNet));
-					nodeEdgeTables.values().removeAll(Collections.singletonList(rootNet));
+				if (item != null) {
+					item.removeItem(network);
+					
+					if (item.isEmpty()) {
+						getRootNetworkListPanel().removeItem(rootNet);
+						nameTables.values().removeAll(Collections.singletonList(rootNet));
+						nodeEdgeTables.values().removeAll(Collections.singletonList(rootNet));
+					}
+					
+					updateNetworkHeader();
+					updateNetworkToolBar();
 				}
-				
-				updateNetworkHeader();
-				updateNetworkToolBar();
 			}
 		});
 	}

@@ -23,9 +23,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.UIManager;
 
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.model.CyTable;
+import org.cytoscape.internal.util.ViewUtil;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
@@ -34,8 +32,6 @@ import org.cytoscape.util.swing.LookAndFeelUtil;
 @SuppressWarnings("serial")
 public class RootNetworkPanel extends AbstractNetworkPanel<CyRootNetwork> {
 
-	protected static final String PARENT_NETWORK_COLUMN = "__parentNetwork.SUID";
-	
 	private ExpandCollapseButton expandCollapseBtn;
 	private JLabel networkCountLabel;
 	private JPanel headerPanel;
@@ -293,24 +289,10 @@ public class RootNetworkPanel extends AbstractNetworkPanel<CyRootNetwork> {
 		CySubNetwork parent = net;
 		
 		do {
-			parent = getParent(parent);
+			parent = ViewUtil.getParent(parent, serviceRegistrar);
 			depth++;
 		} while (parent != null);
 		
 		return depth;
-	}
-	
-	private CySubNetwork getParent(final CySubNetwork net) {
-		final CyTable hiddenTable = net.getTable(CyNetwork.class, CyNetwork.HIDDEN_ATTRS);
-		final Long suid = hiddenTable.getRow(net.getSUID()).get(PARENT_NETWORK_COLUMN, Long.class);
-		
-		if (suid != null) {
-			final CyNetwork parent = serviceRegistrar.getService(CyNetworkManager.class).getNetwork(suid);
-			
-			if (parent instanceof CySubNetwork)
-				return (CySubNetwork) parent;
-		}
-		
-		return null;
 	}
 }

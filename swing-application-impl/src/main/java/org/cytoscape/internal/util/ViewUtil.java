@@ -3,11 +3,17 @@ package org.cytoscape.internal.util;
 import javax.swing.SwingUtilities;
 
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNetworkManager;
+import org.cytoscape.model.CyTable;
+import org.cytoscape.model.subnetwork.CySubNetwork;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 
 public final class ViewUtil {
 
+	public static final String PARENT_NETWORK_COLUMN = "__parentNetwork.SUID";
+	
 	public static String getName(final CyNetwork network) {
 		String name = "";
 		
@@ -33,6 +39,20 @@ public final class ViewUtil {
 	
 	public static String createUniqueKey(final CyNetworkView view) {
 		return view.getSUID() + "__" + view.getRendererId() + "__" + view.hashCode();
+	}
+	
+	public static CySubNetwork getParent(final CySubNetwork net, final CyServiceRegistrar serviceRegistrar) {
+		final CyTable hiddenTable = net.getTable(CyNetwork.class, CyNetwork.HIDDEN_ATTRS);
+		final Long suid = hiddenTable.getRow(net.getSUID()).get(PARENT_NETWORK_COLUMN, Long.class);
+		
+		if (suid != null) {
+			final CyNetwork parent = serviceRegistrar.getService(CyNetworkManager.class).getNetwork(suid);
+			
+			if (parent instanceof CySubNetwork)
+				return (CySubNetwork) parent;
+		}
+		
+		return null;
 	}
 	
 	/**
