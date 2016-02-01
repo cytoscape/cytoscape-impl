@@ -571,21 +571,15 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, Net
 	}
 
 	public Map<Long, Integer> getNetworkListOrder() {
-		Map<Long, Integer> order = new HashMap<>();
+		final Map<Long, Integer> order = new HashMap<>();
 		
-		// Save the network orders
-//		final JTree tree = treeTable.getTree();
-//		
-//		for (final Entry<CyNetwork, NetworkTreeNode> entry : network2nodeMap.entrySet()) {
-//			final CyNetwork net = entry.getKey();
-//			final NetworkTreeNode node = entry.getValue();
-//			
-//			if (node != null) {
-//				final TreePath tp = new TreePath(node.getPath());
-//				final int row = tree.getRowForPath(tp);
-//				order.put(net.getSUID(), row);
-//			}
-//		}
+		final List<SubNetworkPanel> items = getAllSubNetworkItems();
+		int count = 0;
+		
+		for (SubNetworkPanel snp : items) {
+			final CySubNetwork net = snp.getModel().getNetwork();
+			order.put(net.getSUID(), count++);
+		}
 				
 		return order;
 	}
@@ -1254,7 +1248,7 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, Net
 		selectionTail = null;
 	}
 	
-	private Collection<SubNetworkPanel> getAllSubNetworkItems() {
+	private List<SubNetworkPanel> getAllSubNetworkItems() {
 		final ArrayList<SubNetworkPanel> list = new ArrayList<>();
 		
 		for (final RootNetworkPanel item : getRootNetworkListPanel().getAllItems())
