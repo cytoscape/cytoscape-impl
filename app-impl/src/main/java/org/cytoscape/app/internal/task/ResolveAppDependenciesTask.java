@@ -94,11 +94,19 @@ public class ResolveAppDependenciesTask extends AbstractTask {
 						throw new Exception("Cannot access the App Store to resolve dependencies. Please check your internet connection.");
 					WebApp webApp = findWebAppForDep(dep, webApps);
 					if(webApp == null)
-						throw new Exception("Cannot find dependency for " + dependencyStack.firstElement() +": " + dep.getName());
-					taskMonitor.setStatusMessage("Downloading dependency for " + dependencyStack.firstElement() +": "+ webApp.getFullName());
+						throw new Exception("Cannot find dependency: " + dependencyStack.firstElement()
+								+ " requires " + dep.getName() + ", which is not available in the App Store");
 					
-					File appFile = appManager.getWebQuerier().downloadApp(webApp, null, new File(appManager.getDownloadedAppsPath()), status);
-					dependencyApp = appManager.getAppParser().parseApp(appFile);	
+					List<Release> releases = webApp.getReleases();
+					Release latestRelease = releases.get(releases.size() - 1);
+					if(WebQuerier.compareVersions(dep.getVersion(), latestRelease.getReleaseVersion()) >= 0) {
+						taskMonitor.setStatusMessage("Downloading dependency for " + dependencyStack.firstElement() +": "+ webApp.getFullName());
+						File appFile = appManager.getWebQuerier().downloadApp(webApp, null, new File(appManager.getDownloadedAppsPath()), status);
+						dependencyApp = appManager.getAppParser().parseApp(appFile);
+					}
+					else
+						throw new Exception("Cannot find dependency: " + dependencyStack.firstElement() + " requires "  +dep.getName() +" "
+								+ dep.getVersion() + " or later, latest release in App Store is " + latestRelease.getReleaseVersion());
 				}
 				resolveAppDependencies(dependencyApp);
 			}
@@ -119,11 +127,7 @@ public class ResolveAppDependenciesTask extends AbstractTask {
 	private WebApp findWebAppForDep(App.Dependency dep, Collection<WebApp> webApps) {
 		for(WebApp webApp: webApps) {
 			if(webApp.getName().equalsIgnoreCase(dep.getName())){
-				List<Release> releases = webApp.getReleases();
-				Release latestRelease = releases.get(releases.size() - 1);
-				if(WebQuerier.compareVersions(dep.getVersion(), latestRelease.getReleaseVersion()) >= 0) {
-					return webApp;
-				}
+				return webApp;
 			}
 		}
 		return null;
