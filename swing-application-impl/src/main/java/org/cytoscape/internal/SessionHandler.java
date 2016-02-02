@@ -204,6 +204,7 @@ public class SessionHandler implements CyShutdownListener, SessionLoadedListener
 		final NetworkFrames netFrames = new NetworkFrames();
 		sessState.setNetworkFrames(netFrames);
 
+		// TODO
 		final JInternalFrame[] internalFrames = netViewMediator.getDesktopPane().getAllFrames();
 
 		for (JInternalFrame iframe : internalFrames) {

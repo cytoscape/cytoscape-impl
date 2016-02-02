@@ -1,5 +1,7 @@
 package org.cytoscape.internal.view;
 
+import java.awt.GraphicsConfiguration;
+
 import javax.swing.JFrame;
 import javax.swing.JRootPane;
 
@@ -16,8 +18,9 @@ public class NetworkViewFrame extends JFrame {
 	
 	private final CyServiceRegistrar serviceRegistrar;
 
-	public NetworkViewFrame(final NetworkViewContainer vc, final CyServiceRegistrar serviceRegistrar) {
-		super(ViewUtil.getTitle(vc.getNetworkView()));
+	public NetworkViewFrame(final NetworkViewContainer vc, final GraphicsConfiguration gc,
+			final CyServiceRegistrar serviceRegistrar) {
+		super(ViewUtil.getTitle(vc.getNetworkView()), gc);
 		
 		setName("Frame." + vc.getName());
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);

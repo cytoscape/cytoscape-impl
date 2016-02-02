@@ -226,7 +226,10 @@ public class NetworkViewGrid extends JPanel implements Scrollable {
 	}
 	
 	protected void setDetached(final CyNetworkView view, final boolean b) {
-		getItem(view).setDetached(b);
+		final ThumbnailPanel item = getItem(view);
+		
+		if (item != null)
+			item.setDetached(b);
 	}
 	
 	protected void update(final int thumbnailSize) {

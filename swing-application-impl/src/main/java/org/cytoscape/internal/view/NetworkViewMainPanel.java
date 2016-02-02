@@ -18,6 +18,7 @@ import java.awt.CardLayout;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.GraphicsConfiguration;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -61,6 +62,7 @@ import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.internal.util.ViewUtil;
 import org.cytoscape.internal.view.NetworkViewGrid.ThumbnailPanel;
 import org.cytoscape.model.CyNetwork;
@@ -105,8 +107,9 @@ public class NetworkViewMainPanel extends JPanel {
 	private final Map<String, NetworkViewContainer> viewContainers;
 	private final Map<String, NetworkViewFrame> viewFrames;
 	
-	private final CytoscapeMenus cyMenus;
+	private NetworkViewFrame currentViewFrame;
 	
+	private final CytoscapeMenus cyMenus;
 	private final CyServiceRegistrar serviceRegistrar;
 
 	public NetworkViewMainPanel(final CytoscapeMenus cyMenus, final CyServiceRegistrar serviceRegistrar) {
@@ -126,8 +129,9 @@ public class NetworkViewMainPanel extends JPanel {
 		if (isRendered(view))
 			return null;
 		
-		final NetworkViewContainer vc = new NetworkViewContainer(view, engineFactory, serviceRegistrar);
+		final GraphicsConfiguration gc = currentViewFrame != null ? currentViewFrame.getGraphicsConfiguration() : null;
 		
+		final NetworkViewContainer vc = new NetworkViewContainer(view, engineFactory, serviceRegistrar);
 		vc.addComponentListener(new ComponentAdapter() {
 			@Override
 			public void componentShown(ComponentEvent e) {
@@ -141,10 +145,18 @@ public class NetworkViewMainPanel extends JPanel {
 		networkViewGrid.addItem(vc.getRenderingEngine());
 		getContentPane().add(vc, vc.getName());
 		
-		if (showView)
+		if (showView) {
+			// Always show attached container first, even if it will be detached later
+			// so the thumbnail can be generated
 			showViewContainer(vc.getName());
-		else
+			
+			// If the latest focused view was in a detached frame,
+			// detach the new one as well and put it in the same monitor
+			if (gc != null)
+				detachNetworkView(view, gc);
+		} else {
 			showGrid();
+		}
 		
 		return vc.getRenderingEngine();
 	}
@@ -246,13 +258,23 @@ public class NetworkViewMainPanel extends JPanel {
 		if (view == null)
 			return null;
 		
+		final GraphicsConfiguration gc = serviceRegistrar.getService(CySwingApplication.class).getJFrame()
+				.getGraphicsConfiguration();
+		
+		return detachNetworkView(view, gc);
+	}
+	
+	public NetworkViewFrame detachNetworkView(final CyNetworkView view, final GraphicsConfiguration gc) {
+		if (view == null)
+			return null;
+		
 		final NetworkViewContainer vc = getNetworkViewContainer(view);
 		final String name = vc.getName();
 		
 		cardLayout.removeLayoutComponent(vc);
 		viewContainers.remove(name);
 		
-		final NetworkViewFrame frame = new NetworkViewFrame(vc, serviceRegistrar);
+		final NetworkViewFrame frame = new NetworkViewFrame(vc, gc, serviceRegistrar);
 		viewFrames.put(name, frame);
 		
 		if (!LookAndFeelUtil.isAquaLAF())
@@ -261,6 +283,8 @@ public class NetworkViewMainPanel extends JPanel {
 		frame.addWindowListener(new WindowAdapter() {
 			@Override
 			public void windowActivated(WindowEvent e) {
+				currentViewFrame = frame;
+				
 				// This is necessary because the same menu bar is used by other frames, including CytoscapeDesktop
 				final JMenuBar menuBar = cyMenus.getJMenuBar();
 				final Window window = SwingUtilities.getWindowAncestor(menuBar);
@@ -405,9 +429,13 @@ public class NetworkViewMainPanel extends JPanel {
 	
 	private void showViewContainer(final String name) {
 		if (name != null) {
-			if (viewContainers.containsKey(name)) {
+			final NetworkViewContainer viewContainer = viewContainers.get(name);
+			
+			if (viewContainer != null) {
 				cardLayout.show(getContentPane(), name);
+				viewContainer.getNetworkView().updateView();
 				updateToolBars();
+				currentViewFrame = null;
 			} 
 		} else {
 			showGrid();
@@ -418,6 +446,7 @@ public class NetworkViewMainPanel extends JPanel {
 		frame.setVisible(true);
 		frame.toFront();
 		showGrid();
+		frame.getNetworkView().updateView();
 	}
 	
 	private boolean isGridMode() {

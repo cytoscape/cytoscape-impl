@@ -59,6 +59,7 @@ public class CyDesktopManager implements CyNetworkViewDesktopMgr {
 
 	@Override
 	public Dimension getDesktopViewAreaSize() {
+		// TODO
 		JDesktopPane desktop = desk.getNetworkViewMediator().getDesktopPane();
 		
 		return desktop.getSize();
