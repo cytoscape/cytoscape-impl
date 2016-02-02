@@ -14,6 +14,7 @@ import javax.swing.JLabel;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.UIManager;
 
+import org.cytoscape.internal.util.ViewUtil;
 import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.IconManager;
@@ -47,6 +48,19 @@ public class SubNetworkPanel extends AbstractNetworkPanel<CySubNetwork> {
 			depth = newValue;
 			firePropertyChange("depth", oldValue, newValue);
 		}
+	}
+	
+	public boolean isDescendantOf(final CySubNetwork parentNet) {
+		CySubNetwork net = getModel().getNetwork();
+		
+		while (net != null) {
+			net = ViewUtil.getParent(net, serviceRegistrar);
+			
+			if (parentNet.equals(net))
+				return true;
+		}
+		
+		return false;
 	}
 	
 	@Override

@@ -14,7 +14,7 @@ import java.awt.event.ComponentEvent;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
@@ -37,7 +37,7 @@ public class RootNetworkPanel extends AbstractNetworkPanel<CyRootNetwork> {
 	private JPanel headerPanel;
 	private JPanel subNetListPanel;
 	
-	private Map<CySubNetwork, SubNetworkPanel> items;
+	private LinkedHashMap<CySubNetwork, SubNetworkPanel> items;
 	private boolean showNodeEdgeCount;
 	
 	public RootNetworkPanel(final RootNetworkPanelModel model, final boolean showNodeEdgeCount,
@@ -53,8 +53,51 @@ public class RootNetworkPanel extends AbstractNetworkPanel<CyRootNetwork> {
 			final SubNetworkPanel subNetPanel = new SubNetworkPanel(model, serviceRegistrar);
 			subNetPanel.setAlignmentX(LEFT_ALIGNMENT);
 			
-			getSubNetListPanel().add(subNetPanel);
-			getItems().put(network, subNetPanel);
+			final CySubNetwork parentNet = ViewUtil.getParent(network, serviceRegistrar);
+			
+			if (parentNet == null) {
+				// No parent network? So just add it to the end of the list...
+				getSubNetListPanel().add(subNetPanel);
+				getItems().put(network, subNetPanel);
+			} else {
+				// It has a parent network, so let's find the position where it must be inserted...
+				final LinkedHashMap<CySubNetwork, SubNetworkPanel> newItems = new LinkedHashMap<>();
+				boolean newItemAdded = false; // New item added to the map?
+				boolean parentItemFound = false;
+				
+				for (Entry<CySubNetwork, SubNetworkPanel> entry : getItems().entrySet()) {
+					if (!newItemAdded) {
+						if (!parentItemFound && entry.getKey().equals(parentNet)) {
+							// We found the parent of the new item
+							parentItemFound = true;
+						} else if (parentItemFound) {
+							// When we find the next item that is not a descendant of the same parent,
+							// we know this is the position where the new item must be inserted
+							if (!entry.getValue().isDescendantOf(parentNet)) {
+								newItems.put(network, subNetPanel);
+								newItemAdded = true;
+							}
+						}
+					}
+					
+					newItems.put(entry.getKey(), entry.getValue());
+				}
+				
+				if (!newItemAdded) {
+					// Just add the new item to the end...
+					getSubNetListPanel().add(subNetPanel);
+					getItems().put(network, subNetPanel);
+				} else {
+					// Rebuild the whole list...
+					getSubNetListPanel().removeAll();
+					getItems().clear();
+				
+					for (Entry<CySubNetwork, SubNetworkPanel> entry : newItems.entrySet()) {
+						getSubNetListPanel().add(entry.getValue());
+						getItems().put(entry.getKey(), entry.getValue());
+					}
+				}
+			}
 			
 			updateRootPanel();
 			updateCountInfo();
@@ -140,7 +183,6 @@ public class RootNetworkPanel extends AbstractNetworkPanel<CyRootNetwork> {
 	protected void updateItemsDepth() {
 		for (SubNetworkPanel snp : getItems().values()) {
 			int depth = getDepth(snp.getModel().getNetwork());
-			System.out.println(snp.getModel().getNetwork() +  " >> " + depth);
 			snp.setDepth(depth);
 		}
 	}
@@ -280,7 +322,7 @@ public class RootNetworkPanel extends AbstractNetworkPanel<CyRootNetwork> {
 		return subNetListPanel;
 	}
 	
-	private Map<CySubNetwork, SubNetworkPanel> getItems() {
+	private LinkedHashMap<CySubNetwork, SubNetworkPanel> getItems() {
 		return items != null ? items : (items = new LinkedHashMap<>());
 	}
 	

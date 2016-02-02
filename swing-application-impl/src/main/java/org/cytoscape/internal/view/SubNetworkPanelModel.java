@@ -6,22 +6,8 @@ import org.cytoscape.service.util.CyServiceRegistrar;
 
 public class SubNetworkPanelModel extends AbstractNetworkPanelModel<CySubNetwork> {
 
-	private int depth;
-	
 	public SubNetworkPanelModel(final CySubNetwork subNetwork, final CyServiceRegistrar serviceRegistrar) {
 		super(subNetwork, serviceRegistrar);
-	}
-	
-	public int getDepth() {
-		return depth;
-	}
-	
-	public void setDepth(final int newValue) {
-		if (newValue != depth) {
-			final int oldValue = depth;
-			depth = newValue;
-			changeSupport.firePropertyChange("depth", oldValue, newValue);
-		}
 	}
 	
 	@Override
