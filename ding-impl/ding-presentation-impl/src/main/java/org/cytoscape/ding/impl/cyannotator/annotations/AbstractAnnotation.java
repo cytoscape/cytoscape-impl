@@ -144,6 +144,7 @@ public class AbstractAnnotation extends JComponent implements DingAnnotation {
 			this.canvas = (ArbitraryGraphicsCanvas)(view.getCanvas(DGraphView.Canvas.FOREGROUND_CANVAS));
 			this.canvasName = DGraphView.Canvas.FOREGROUND_CANVAS;
 		}
+
 		arrowList = new HashSet<ArrowAnnotation>();
 		setLocation((int)coords.getX(), (int)coords.getY());
 		if (argMap.containsKey(ANNOTATION_ID))
@@ -408,6 +409,10 @@ public class AbstractAnnotation extends JComponent implements DingAnnotation {
 
 		if (parent != null)
 			argMap.put(PARENT_ID, parent.getUUID().toString());
+
+		int zOrder = canvas.getComponentZOrder(getComponent());
+		if (zOrder != 0)
+			argMap.put(Z, Integer.toString(zOrder));
 
 		return argMap;
 	}

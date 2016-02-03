@@ -160,6 +160,8 @@ public class CyAnnotator {
 		List<Map<String,String>> arrowList = 
 		    new ArrayList<Map<String, String>>(); // Keep a list of arrows
 
+		Map<DingAnnotation, Integer> zOrderMap = new HashMap<>();
+
 		if (annotations != null) {
 			for (String s: annotations) {
 				Map<String, String> argMap = createArgMap(s);
@@ -176,11 +178,18 @@ public class CyAnnotator {
 				Annotation a = annotationFactoryManager.createAnnotation(type,view,argMap);
 				if (a != null && a instanceof DingAnnotation) {
 					annotation = (DingAnnotation)a;
-	
-					if (annotation.getCanvas() != null)
+
+					if (annotation.getCanvas() != null) {
 						annotation.getCanvas().add(annotation.getComponent());
-					else
+					} else {
 						foreGroundCanvas.add(annotation.getComponent());
+					}
+				}
+
+				int zOrder = 0;
+				if (argMap.containsKey(Annotation.Z)) {
+					zOrder = Integer.parseInt(argMap.get(Annotation.Z));
+					zOrderMap.put(annotation, zOrder);
 				}
 
 				// Now that we've added the annotation, update
@@ -199,6 +208,11 @@ public class CyAnnotator {
 				Annotation annotation = annotationFactoryManager.createAnnotation(type,view,argMap);
 				if (annotation instanceof ArrowAnnotationImpl) {
 					ArrowAnnotationImpl arrow = (ArrowAnnotationImpl)annotation;
+					int zOrder = 0;
+					if (argMap.containsKey(Annotation.Z)) {
+						zOrder = Integer.parseInt(argMap.get(Annotation.Z	));
+						zOrderMap.put(arrow, zOrder);
+					}
 					arrow.getSource().addArrow(arrow);
 					if (arrow.getCanvas() != null)
 						arrow.getCanvas().add(arrow.getComponent());
@@ -208,6 +222,16 @@ public class CyAnnotator {
 					addAnnotation(arrow);
 				}
 			}
+
+			// Now, handle our Z-Order.  This needs to be done after everything else is
+			// added to make sure that we have the proper number of components
+			for (DingAnnotation a: zOrderMap.keySet()) {
+				if (a.getCanvas() != null)
+					a.getCanvas().setComponentZOrder(a.getComponent(), zOrderMap.get(a));
+				else
+					foreGroundCanvas.setComponentZOrder(a.getComponent(), zOrderMap.get(a));
+			}
+
 		}
 	}
 
