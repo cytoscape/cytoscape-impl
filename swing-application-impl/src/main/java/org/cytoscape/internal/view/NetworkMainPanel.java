@@ -6,10 +6,8 @@ import static javax.swing.GroupLayout.Alignment.CENTER;
 import static org.cytoscape.internal.util.ViewUtil.invokeOnEDT;
 import static org.cytoscape.util.swing.IconManager.ICON_ANGLE_DOUBLE_DOWN;
 import static org.cytoscape.util.swing.IconManager.ICON_ANGLE_DOUBLE_UP;
-import static org.cytoscape.util.swing.IconManager.ICON_CHECK_SQUARE;
 import static org.cytoscape.util.swing.IconManager.ICON_COG;
 import static org.cytoscape.util.swing.IconManager.ICON_PLUS;
-import static org.cytoscape.util.swing.IconManager.ICON_SQUARE_O;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -169,8 +167,6 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, Net
 	private JButton collapseAllButton;
 	private JButton optionsBtn;
 	private JLabel networkSelectionLabel;
-	private JButton selectAllNetworksButton;
-	private JButton deselectAllNetworksButton;
 	private JButton createButton;
 
 	private final JPopupMenu popup;
@@ -385,9 +381,6 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, Net
 		if (networkToolBar == null) {
 			networkToolBar = new JPanel();
 			
-			final JPanel filler1 = new JPanel();
-			final JPanel filler2 = new JPanel();
-					
 			final GroupLayout layout = new GroupLayout(networkToolBar);
 			networkToolBar.setLayout(layout);
 			layout.setAutoCreateContainerGaps(false);
@@ -395,59 +388,17 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, Net
 			
 			layout.setHorizontalGroup(layout.createSequentialGroup()
 					.addContainerGap()
-					.addComponent(getSelectAllNetworksButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addComponent(getDeselectAllNetworksButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addGap(0, 10, Short.MAX_VALUE)
 					.addComponent(getCreateButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addGap(0, 10, Short.MAX_VALUE)
-					.addComponent(filler1, PREFERRED_SIZE, getSelectAllNetworksButton().getPreferredSize().width, PREFERRED_SIZE) // To center the create button
-					.addComponent(filler2, PREFERRED_SIZE, getDeselectAllNetworksButton().getPreferredSize().width, PREFERRED_SIZE) // To center the create button
 					.addContainerGap()
 			);
 			layout.setVerticalGroup(layout.createParallelGroup(CENTER, true)
-					.addComponent(getSelectAllNetworksButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addComponent(getDeselectAllNetworksButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(getCreateButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addComponent(filler1, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addComponent(filler2, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 			);
 		}
 		
 		return networkToolBar;
-	}
-	
-	private JButton getSelectAllNetworksButton() {
-		if (selectAllNetworksButton == null) {
-			selectAllNetworksButton = new JButton(ICON_CHECK_SQUARE + " " + ICON_CHECK_SQUARE);
-			selectAllNetworksButton.setToolTipText("Select All Networks");
-			styleButton(selectAllNetworksButton, serviceRegistrar.getService(IconManager.class).getIconFont(ICON_FONT_SIZE / 2));
-
-			selectAllNetworksButton.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(final ActionEvent e) {
-					selectAll();
-				}
-			});
-		}
-
-		return selectAllNetworksButton;
-	}
-	
-	private JButton getDeselectAllNetworksButton() {
-		if (deselectAllNetworksButton == null) {
-			deselectAllNetworksButton = new JButton(ICON_SQUARE_O + " " + ICON_SQUARE_O);
-			deselectAllNetworksButton.setToolTipText("Deselect All Networks");
-			styleButton(deselectAllNetworksButton, serviceRegistrar.getService(IconManager.class).getIconFont(ICON_FONT_SIZE / 2));
-
-			deselectAllNetworksButton.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(final ActionEvent e) {
-					deselectAll();
-				}
-			});
-		}
-
-		return deselectAllNetworksButton;
 	}
 	
 	private JButton getCreateButton() {
@@ -1085,11 +1036,7 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, Net
 	}
 	
 	private void updateNetworkToolBar() {
-		final int networkCount = getSubNetworkCount();
-		final int selectedCount = getSelectedSubNetworkCount();
-		
-		getSelectAllNetworksButton().setEnabled(selectedCount < networkCount);
-		getDeselectAllNetworksButton().setEnabled(selectedCount > 0);
+		// Nothing to do here for now...
 	}
 	
 	private void updateNodeEdgeCount(final CyNetwork network) {

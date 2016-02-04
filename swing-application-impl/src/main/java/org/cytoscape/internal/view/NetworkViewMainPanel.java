@@ -5,11 +5,9 @@ import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static javax.swing.GroupLayout.Alignment.CENTER;
 import static org.cytoscape.internal.view.NetworkViewGrid.MAX_THUMBNAIL_SIZE;
 import static org.cytoscape.internal.view.NetworkViewGrid.MIN_THUMBNAIL_SIZE;
-import static org.cytoscape.util.swing.IconManager.ICON_CHECK_SQUARE;
 import static org.cytoscape.util.swing.IconManager.ICON_COLUMNS;
 import static org.cytoscape.util.swing.IconManager.ICON_EXTERNAL_LINK_SQUARE;
 import static org.cytoscape.util.swing.IconManager.ICON_SHARE_ALT_SQUARE;
-import static org.cytoscape.util.swing.IconManager.ICON_SQUARE_O;
 import static org.cytoscape.util.swing.IconManager.ICON_TH;
 import static org.cytoscape.util.swing.IconManager.ICON_THUMB_TACK;
 import static org.cytoscape.util.swing.IconManager.ICON_TRASH_O;
@@ -98,8 +96,6 @@ public class NetworkViewMainPanel extends JPanel {
 	
 	private JButton viewModeButton;
 	private JButton comparisonModeButton;
-	private JButton selectAllViewsButton;
-	private JButton deselectAllViewsButton;
 	private JLabel selectionLabel;
 	private JButton detachSelectedViewsButton;
 	private JButton reattachAllViewsButton;
@@ -110,7 +106,6 @@ public class NetworkViewMainPanel extends JPanel {
 	private JButton detachViewButton;
 	private JLabel viewTitleLabel;
 	private JTextField viewTitleTextField;
-	private JButton destroyViewButton;
 	
 	private JButton gridModeButton2;
 	private JButton endComparisonButton;
@@ -584,9 +579,6 @@ public class NetworkViewMainPanel extends JPanel {
 		getComparisonModeButton().setEnabled(selectedItems.size() == 2);
 		getDestroySelectedViewsButton().setEnabled(!selectedItems.isEmpty());
 		
-		getSelectAllViewsButton().setEnabled(selectedItems.size() < items.size());
-		getDeselectAllViewsButton().setEnabled(!selectedItems.isEmpty());
-		
 		getDetachSelectedViewsButton().setEnabled(!selectedItems.isEmpty());
 		getReattachAllViewsButton().setEnabled(!viewFrames.isEmpty());
 		
@@ -720,8 +712,6 @@ public class NetworkViewMainPanel extends JPanel {
 			layout.setHorizontalGroup(layout.createSequentialGroup()
 					.addContainerGap()
 					.addComponent(getViewModeButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addComponent(getSelectAllViewsButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addComponent(getDeselectAllViewsButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(getComparisonModeButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(getDetachSelectedViewsButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(getReattachAllViewsButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
@@ -735,8 +725,6 @@ public class NetworkViewMainPanel extends JPanel {
 			);
 			layout.setVerticalGroup(layout.createParallelGroup(CENTER, true)
 					.addComponent(getViewModeButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addComponent(getSelectAllViewsButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addComponent(getDeselectAllViewsButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(getComparisonModeButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(getDetachSelectedViewsButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(getReattachAllViewsButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
@@ -770,7 +758,6 @@ public class NetworkViewMainPanel extends JPanel {
 					.addComponent(getViewTitleLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(getViewTitleTextField(), 100, 260, 320)
 					.addGap(0, 10, Short.MAX_VALUE)
-					.addComponent(getDestroyViewButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addContainerGap()
 			);
 			layout.setVerticalGroup(layout.createParallelGroup(CENTER, true)
@@ -779,7 +766,6 @@ public class NetworkViewMainPanel extends JPanel {
 					.addComponent(sep, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 					.addComponent(getViewTitleLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(getViewTitleTextField(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addComponent(getDestroyViewButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 			);
 		}
 		
@@ -831,40 +817,6 @@ public class NetworkViewMainPanel extends JPanel {
 		}
 		
 		return gridScrollPane;
-	}
-	
-	private JButton getSelectAllViewsButton() {
-		if (selectAllViewsButton == null) {
-			selectAllViewsButton = new JButton(ICON_CHECK_SQUARE + " " + ICON_CHECK_SQUARE);
-			selectAllViewsButton.setToolTipText("Select All Network Views");
-			styleButton(selectAllViewsButton, serviceRegistrar.getService(IconManager.class).getIconFont(11.0f));
-
-			selectAllViewsButton.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(final ActionEvent e) {
-					networkViewGrid.selectAll();
-				}
-			});
-		}
-
-		return selectAllViewsButton;
-	}
-	
-	private JButton getDeselectAllViewsButton() {
-		if (deselectAllViewsButton == null) {
-			deselectAllViewsButton = new JButton(ICON_SQUARE_O + " " + ICON_SQUARE_O);
-			deselectAllViewsButton.setToolTipText("Deselect All Network Views");
-			styleButton(deselectAllViewsButton, serviceRegistrar.getService(IconManager.class).getIconFont(11.0f));
-
-			deselectAllViewsButton.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(final ActionEvent e) {
-					networkViewGrid.deselectAll();
-				}
-			});
-		}
-
-		return deselectAllViewsButton;
 	}
 	
 	private JButton getViewModeButton() {
@@ -1127,30 +1079,6 @@ public class NetworkViewMainPanel extends JPanel {
 		}
 		
 		return viewTitleTextField;
-	}
-	
-	private JButton getDestroyViewButton() {
-		if (destroyViewButton == null) {
-			destroyViewButton = new JButton(ICON_TRASH_O);
-			destroyViewButton.setToolTipText("Destroy Network View");
-			styleButton(destroyViewButton, serviceRegistrar.getService(IconManager.class).getIconFont(22.0f));
-			
-			destroyViewButton.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					final NetworkViewContainer vc = getCurrentViewContainer();
-					
-					if (vc != null) {
-						final DialogTaskManager taskMgr = serviceRegistrar.getService(DialogTaskManager.class);
-						final DestroyNetworkViewTaskFactory taskFactory =
-								serviceRegistrar.getService(DestroyNetworkViewTaskFactory.class);
-						taskMgr.execute(taskFactory.createTaskIterator(Collections.singleton(vc.getNetworkView())));
-					}
-				}
-			});
-		}
-		
-		return destroyViewButton;
 	}
 	
 	private JButton getDestroySelectedViewsButton() {
