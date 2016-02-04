@@ -429,6 +429,12 @@ public class NetworkViewMainPanel extends JPanel {
 			
 			if (vc != null && vc.equals(getCurrentViewContainer()))
 				updateViewToolBar(view);
+			
+			for (NetworkViewComparisonPanel cp : comparisonPanels.values()) {
+				if (cp.getContainer1().getNetworkView().equals(view)
+						|| cp.getContainer2().getNetworkView().equals(view))
+					cp.update();
+			}
 		}
 	}
 	

@@ -1,13 +1,23 @@
 package org.cytoscape.internal.view;
 
+import static javax.swing.GroupLayout.DEFAULT_SIZE;
+import static javax.swing.GroupLayout.PREFERRED_SIZE;
+import static javax.swing.GroupLayout.Alignment.CENTER;
+
 import java.awt.BorderLayout;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 
+import javax.swing.BorderFactory;
+import javax.swing.GroupLayout;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRootPane;
 import javax.swing.JSplitPane;
+import javax.swing.UIManager;
 
+import org.cytoscape.internal.util.ViewUtil;
+import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.model.CyNetworkView;
 
 /*
@@ -41,6 +51,8 @@ public class NetworkViewComparisonPanel extends JPanel {
 	public static final int VERTICAL = JSplitPane.VERTICAL_SPLIT;
 	
 	private JSplitPane splitPane;
+	private ViewPanel viewPanel1;
+	private ViewPanel viewPanel2;
 	
 	private final int orientation;
 	private final NetworkViewContainer container1;
@@ -76,6 +88,11 @@ public class NetworkViewComparisonPanel extends JPanel {
 		init();
 	}
 
+	public void update() {
+		getViewPanel1().update();
+		getViewPanel2().update();
+	}
+	
 	public void dispose() {
 		getContainer1().setRootPane(rootPane1);
 		getContainer2().setRootPane(rootPane2);
@@ -110,11 +127,27 @@ public class NetworkViewComparisonPanel extends JPanel {
 	
 	protected JSplitPane getSplitPane() {
 		if (splitPane == null) {
-			splitPane = new JSplitPane(orientation, rootPane1, rootPane2);
+			splitPane = new JSplitPane(orientation, getViewPanel1(), getViewPanel2());
 			splitPane.setResizeWeight(0.5);
 		}
 		
 		return splitPane;
+	}
+	
+	private ViewPanel getViewPanel1() {
+		if (viewPanel1 == null) {
+			viewPanel1 = new ViewPanel(container1);
+		}
+		
+		return viewPanel1;
+	}
+	
+	private ViewPanel getViewPanel2() {
+		if (viewPanel2 == null) {
+			viewPanel2 = new ViewPanel(container2);
+		}
+		
+		return viewPanel2;
 	}
 	
 	@Override
@@ -166,5 +199,72 @@ public class NetworkViewComparisonPanel extends JPanel {
 		}
 		
 		return "NetworkViewComparisonPanel_" + suid1 + "::" + suid2;
+	}
+	
+	private class ViewPanel extends JPanel {
+		
+		private JPanel titlePanel;
+		private JLabel titleLabel;
+		
+		private final NetworkViewContainer networkViewContainer;
+
+		ViewPanel(final NetworkViewContainer networkViewContainer) {
+			this.networkViewContainer = networkViewContainer;
+			
+			setBorder(BorderFactory.createLineBorder(UIManager.getColor("Separator.foreground")));
+			
+			setLayout(new BorderLayout());
+			add(getNetworkViewContainer().getRootPane(), BorderLayout.CENTER);
+			add(getTitlePanel(), BorderLayout.SOUTH);
+		}
+		
+		NetworkViewContainer getNetworkViewContainer() {
+			return networkViewContainer;
+		}
+		
+		CyNetworkView getNetworkView() {
+			return getNetworkViewContainer().getNetworkView();
+		}
+		
+		void update() {
+			final String title = ViewUtil.getTitle(getNetworkView());
+			getTitleLabel().setText(title);
+			getTitleLabel().setToolTipText(title);
+		}
+		
+		JPanel getTitlePanel() {
+			if (titlePanel == null) {
+				titlePanel = new JPanel();
+				titlePanel.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, 
+						UIManager.getColor("Separator.foreground")));
+				
+				final GroupLayout layout = new GroupLayout(titlePanel);
+				titlePanel.setLayout(layout);
+				layout.setAutoCreateContainerGaps(false);
+				layout.setAutoCreateGaps(true);
+				
+				layout.setHorizontalGroup(layout.createSequentialGroup()
+						.addContainerGap()
+						.addGap(0, 0, Short.MAX_VALUE)
+						.addComponent(getTitleLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addGap(0, 0, Short.MAX_VALUE)
+						.addContainerGap()
+				);
+				layout.setVerticalGroup(layout.createParallelGroup(CENTER, true)
+						.addComponent(getTitleLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				);
+			}
+			
+			return titlePanel;
+		}
+		
+		JLabel getTitleLabel() {
+			if (titleLabel == null) {
+				titleLabel = new JLabel();
+				titleLabel.setFont(titleLabel.getFont().deriveFont(LookAndFeelUtil.getSmallFontSize()));
+			}
+			
+			return titleLabel;
+		}
 	}
 }
