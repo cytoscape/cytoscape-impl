@@ -1415,8 +1415,10 @@ public class CyGroupImpl implements CyGroup {
 	private void copyAttributes(CyNetwork net, CyIdentifiable object, Map<String, Object> values, CyRow row) {
 		CyTable table = row.getTable();
 		for (CyColumn column: table.getColumns()) {
-			if (column.getVirtualColumnInfo().isVirtual() || 
-			    column.getVirtualColumnInfo().isImmutable())
+			// if (column.getVirtualColumnInfo().isVirtual() || 
+			//     column.getVirtualColumnInfo().isImmutable())
+			// 	continue;
+			if (column.getVirtualColumnInfo().isVirtual())
 				continue;
 
 			if (values.containsKey(column.getName())) {
