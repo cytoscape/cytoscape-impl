@@ -26,10 +26,8 @@ package org.cytoscape.browser.internal.view;
 
 import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
-import static org.cytoscape.util.swing.IconManager.ICON_CHECK_SQUARE;
 import static org.cytoscape.util.swing.IconManager.ICON_COLUMNS;
 import static org.cytoscape.util.swing.IconManager.ICON_PLUS;
-import static org.cytoscape.util.swing.IconManager.ICON_SQUARE_O;
 import static org.cytoscape.util.swing.IconManager.ICON_TABLE;
 import static org.cytoscape.util.swing.IconManager.ICON_TIMES_CIRCLE;
 import static org.cytoscape.util.swing.IconManager.ICON_TRASH_O;
@@ -46,9 +44,7 @@ import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -95,7 +91,6 @@ import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.work.swing.DialogTaskManager;
 
 
-
 /**
  * Toolbar for the Browser.  All buttons related to this should be placed here.
  */
@@ -124,8 +119,6 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 	private JButton createNewAttributeButton;
 	private JButton deleteAttributeButton;
 	private JButton deleteTableButton;
-	private JButton selectAllAttributesButton;
-	private JButton unselectAllAttributesButton;
 	private JButton formulaBuilderButton;
 	
 	private final JComboBox<CyTable> tableChooser;
@@ -237,20 +230,6 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 						break;
 					}
 				}
-			} else if (comp == selectAllAttributesButton) {
-				for (final CyColumn column : attrs.getColumns()) {
-					if (!browserTable.isColumnVisible(column.getName())) {
-						enabled = true;
-						break;
-					}
-				}
-			} else if (comp == unselectAllAttributesButton) {
-				for (final CyColumn column : attrs.getColumns()) {
-					if (browserTable.isColumnVisible(column.getName())) {
-						enabled = true;
-						break;
-					}
-				}
 			} else if (comp == formulaBuilderButton) {
 				final int row = browserTable.getSelectedRow();
 				final int column = browserTable.getSelectedColumn();
@@ -279,16 +258,16 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 			addComponent(selectionModeButton, ComponentPlacement.RELATED);
 		
 		addComponent(getSelectButton(), ComponentPlacement.RELATED);
-		addComponent(getSelectAllButton(), ComponentPlacement.RELATED);
-		addComponent(getUnselectAllButton(), ComponentPlacement.RELATED);
 		addComponent(getNewButton(), ComponentPlacement.RELATED);
 		addComponent(getDeleteButton(), ComponentPlacement.RELATED);
 		addComponent(getDeleteTableButton(), ComponentPlacement.RELATED);
 		addComponent(getFunctionBuilderButton(), ComponentPlacement.RELATED);
 //		addComponent(getMapGlobalTableButton(). ComponentPlacement.RELATED);
 		
-		if (tableChooser != null)
+		if (tableChooser != null) {
+			hToolBarGroup.addGap(0, 20, Short.MAX_VALUE);
 			addComponent(tableChooser, ComponentPlacement.UNRELATED);
+		}
 		
 		updateEnableState();
 	}
@@ -647,57 +626,6 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 		return deleteTableButton;
 	}
 	
-	private JButton getSelectAllButton() {
-		if (selectAllAttributesButton == null) {
-			selectAllAttributesButton = new JButton(ICON_CHECK_SQUARE + " " + ICON_CHECK_SQUARE);
-			selectAllAttributesButton.setToolTipText("Show All Columns");
-			styleButton(selectAllAttributesButton, iconMgr.getIconFont(ICON_FONT_SIZE / 2.0f));
-
-			selectAllAttributesButton.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(final ActionEvent e) {
-					try {
-						final CyTable table = browserTableModel.getDataTable();
-						final Set<String> allAttrNames = new HashSet<String>();
-						
-						for (final CyColumn column : table.getColumns())
-							allAttrNames.add(column.getName());
-						
-						browserTable.setVisibleAttributeNames(allAttrNames);
-						updateEnableState();
-
-						// ***DO NOT *** Resize column
-						//ColumnResizer.adjustColumnPreferredWidths(browserTableModel.getTable());
-					} catch (Exception ex) {
-					}
-				}
-			});
-		}
-
-		return selectAllAttributesButton;
-	}
-
-	private JButton getUnselectAllButton() {
-		if (unselectAllAttributesButton == null) {
-			unselectAllAttributesButton = new JButton(ICON_SQUARE_O + " " + ICON_SQUARE_O);
-			unselectAllAttributesButton.setToolTipText("Hide All Columns");
-			styleButton(unselectAllAttributesButton, iconMgr.getIconFont(ICON_FONT_SIZE / 2.0f));
-
-			unselectAllAttributesButton.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(final ActionEvent e) {
-					try {
-						browserTable.setVisibleAttributeNames(Collections.emptyList());
-						updateEnableState();
-					} catch (Exception ex) {
-					}
-				}
-			});
-		}
-
-		return unselectAllAttributesButton;
-	}
-
 	private void removeAttribute() {
 		final JFrame frame = (JFrame)SwingUtilities.getRoot(this);
 		final DeletionDialog dDialog = new DeletionDialog(frame, browserTableModel.getDataTable());
