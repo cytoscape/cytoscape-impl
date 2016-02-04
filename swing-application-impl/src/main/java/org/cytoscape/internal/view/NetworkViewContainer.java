@@ -184,4 +184,9 @@ public class NetworkViewContainer extends JComponent implements RootPaneContaine
 	private void setRootPaneCheckingEnabled(boolean enabled) {
 		rootPaneCheckingEnabled = enabled;
 	}
+	
+	@Override
+	public String toString() {
+		return networkView.toString();
+	}
 }

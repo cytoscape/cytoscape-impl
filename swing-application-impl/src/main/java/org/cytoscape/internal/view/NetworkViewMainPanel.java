@@ -6,6 +6,7 @@ import static javax.swing.GroupLayout.Alignment.CENTER;
 import static org.cytoscape.internal.view.NetworkViewGrid.MAX_THUMBNAIL_SIZE;
 import static org.cytoscape.internal.view.NetworkViewGrid.MIN_THUMBNAIL_SIZE;
 import static org.cytoscape.util.swing.IconManager.ICON_CHECK_SQUARE;
+import static org.cytoscape.util.swing.IconManager.ICON_COLUMNS;
 import static org.cytoscape.util.swing.IconManager.ICON_EXTERNAL_LINK_SQUARE;
 import static org.cytoscape.util.swing.IconManager.ICON_SHARE_ALT_SQUARE;
 import static org.cytoscape.util.swing.IconManager.ICON_SQUARE_O;
@@ -13,13 +14,16 @@ import static org.cytoscape.util.swing.IconManager.ICON_TH;
 import static org.cytoscape.util.swing.IconManager.ICON_THUMB_TACK;
 import static org.cytoscape.util.swing.IconManager.ICON_TRASH_O;
 
+import java.awt.AWTEvent;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GraphicsConfiguration;
+import java.awt.Toolkit;
 import java.awt.Window;
+import java.awt.event.AWTEventListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
@@ -46,6 +50,7 @@ import java.util.Set;
 
 import javax.swing.AbstractButton;
 import javax.swing.BorderFactory;
+import javax.swing.BoxLayout;
 import javax.swing.GroupLayout;
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -56,6 +61,7 @@ import javax.swing.JRootPane;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JSlider;
+import javax.swing.JSplitPane;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
@@ -85,11 +91,13 @@ public class NetworkViewMainPanel extends JPanel {
 	private JPanel toolBarsPanel;
 	private JPanel gridToolBar;
 	private JPanel viewToolBar;
+	private JPanel comparisonToolBar;
 	private final CardLayout cardLayout;
 	private final NetworkViewGrid networkViewGrid;
 	private JScrollPane gridScrollPane;
 	
 	private JButton viewModeButton;
+	private JButton comparisonModeButton;
 	private JButton selectAllViewsButton;
 	private JButton deselectAllViewsButton;
 	private JLabel selectionLabel;
@@ -98,16 +106,23 @@ public class NetworkViewMainPanel extends JPanel {
 	private JButton destroySelectedViewsButton;
 	private JSlider thumbnailSlider;
 	
-	private JButton gridModeButton;
+	private JButton gridModeButton1;
 	private JButton detachViewButton;
 	private JLabel viewTitleLabel;
 	private JTextField viewTitleTextField;
 	private JButton destroyViewButton;
 	
+	private JButton gridModeButton2;
+	private JButton endComparisonButton;
+	private JButton detachComparedViewsButton;
+	
 	private final Map<String, NetworkViewContainer> viewContainers;
 	private final Map<String, NetworkViewFrame> viewFrames;
+	private final Map<String, NetworkViewComparisonPanel> comparisonPanels;
 	
 	private NetworkViewFrame currentViewFrame;
+	
+	private ComparisonModeAWTEventListener comparisonModeAWTEventListener;
 	
 	private final CytoscapeMenus cyMenus;
 	private final CyServiceRegistrar serviceRegistrar;
@@ -118,6 +133,7 @@ public class NetworkViewMainPanel extends JPanel {
 		
 		viewContainers = new LinkedHashMap<>();
 		viewFrames = new HashMap<>();
+		comparisonPanels = new HashMap<>();
 		cardLayout = new CardLayout();
 		networkViewGrid = new NetworkViewGrid(serviceRegistrar);
 		
@@ -189,6 +205,8 @@ public class NetworkViewMainPanel extends JPanel {
 					
 					break;
 				}
+			} else if (c instanceof NetworkViewComparisonPanel) {
+				// TODO
 			}
 		}
 		
@@ -269,6 +287,10 @@ public class NetworkViewMainPanel extends JPanel {
 			return null;
 		
 		final NetworkViewContainer vc = getNetworkViewContainer(view);
+		
+		if (vc == null)
+			return null;
+		
 		final String name = vc.getName();
 		
 		cardLayout.removeLayoutComponent(vc);
@@ -406,7 +428,7 @@ public class NetworkViewMainPanel extends JPanel {
 			final NetworkViewContainer vc = getNetworkViewContainer(view);
 			
 			if (vc != null && vc.equals(getCurrentViewContainer()))
-				updateViewToolBar(vc);
+				updateViewToolBar(view);
 		}
 	}
 	
@@ -436,7 +458,20 @@ public class NetworkViewMainPanel extends JPanel {
 				viewContainer.getNetworkView().updateView();
 				updateToolBars();
 				currentViewFrame = null;
-			} 
+			} else {
+				for (NetworkViewComparisonPanel cp : comparisonPanels.values()) {
+					if (name.equals(cp.getName())
+							|| name.equals(cp.getContainer1().getName())
+							|| name.equals(cp.getContainer2().getName())) {
+						cardLayout.show(getContentPane(), cp.getName());
+						cp.getContainer1().getNetworkView().updateView();
+						cp.getContainer2().getNetworkView().updateView();
+						updateToolBars();
+						currentViewFrame = null;
+						break;
+					}
+				}
+			}
 		} else {
 			showGrid();
 		}
@@ -449,6 +484,68 @@ public class NetworkViewMainPanel extends JPanel {
 		frame.getNetworkView().updateView();
 	}
 	
+	private void showComparisonPanel(final int orientation, final CyNetworkView view1, final CyNetworkView view2) {
+		final String key = NetworkViewComparisonPanel.createUniqueKey(view1, view2);
+		NetworkViewComparisonPanel cp = comparisonPanels.get(key);
+		
+		if (cp == null) {
+			final NetworkViewFrame frame1 = getNetworkViewFrame(view1);
+			
+			if (frame1 != null)
+				reattachNetworkView(view1);
+			
+			final NetworkViewFrame frame2 = getNetworkViewFrame(view2);
+			
+			if (frame2 != null)
+				reattachNetworkView(view2);
+			
+			final NetworkViewContainer vc1 = getNetworkViewContainer(view1);
+			final NetworkViewContainer vc2 = getNetworkViewContainer(view2);
+			
+			cardLayout.removeLayoutComponent(vc1);
+			viewContainers.remove(vc1.getName());
+			cardLayout.removeLayoutComponent(vc2);
+			viewContainers.remove(vc2.getName());
+			
+			cp = new NetworkViewComparisonPanel(orientation, vc1, vc2);
+			
+			if (comparisonModeAWTEventListener == null)
+				Toolkit.getDefaultToolkit().addAWTEventListener(
+						comparisonModeAWTEventListener = new ComparisonModeAWTEventListener(),
+						MouseEvent.MOUSE_MOTION_EVENT_MASK
+				);
+			
+			getContentPane().add(cp, cp.getName());
+			comparisonPanels.put(cp.getName(), cp);
+		}
+		
+		if (cp != null)
+			showViewContainer(cp.getName());
+	}
+	
+	private void endComparison(final NetworkViewComparisonPanel cp) {
+		if (cp != null) {
+			final NetworkViewContainer vc1 = cp.getContainer1();
+			final NetworkViewContainer vc2 = cp.getContainer2();
+			
+			cardLayout.removeLayoutComponent(cp);
+			comparisonPanels.remove(cp.getName());
+			cp.dispose(); // Don't forget to call this method!
+			
+			if (comparisonModeAWTEventListener != null) {
+				Toolkit.getDefaultToolkit().removeAWTEventListener(comparisonModeAWTEventListener);
+				comparisonModeAWTEventListener = null;
+			}
+			
+			getContentPane().add(vc1, vc1.getName());
+			viewContainers.put(vc2.getName(), vc2);
+			getContentPane().add(vc2, vc2.getName());
+			viewContainers.put(vc1.getName(), vc1);
+			
+			showViewContainer(vc1.getName());
+		}
+	}
+	
 	private boolean isGridMode() {
 		return getCurrentCard() == getGridScrollPane();
 	}
@@ -458,10 +555,16 @@ public class NetworkViewMainPanel extends JPanel {
 		
 		if (currentCard instanceof NetworkViewContainer) {
 			getGridToolBar().setVisible(false);
+			getComparisonToolBar().setVisible(false);
 			getViewToolBar().setVisible(true);
-			updateViewToolBar((NetworkViewContainer) currentCard);
+			updateViewToolBar(((NetworkViewContainer) currentCard).getNetworkView());
+		} else if (currentCard instanceof NetworkViewComparisonPanel) {
+			getGridToolBar().setVisible(false);
+			getViewToolBar().setVisible(false);
+			getComparisonToolBar().setVisible(true);
 		} else {
 			getViewToolBar().setVisible(false);
+			getComparisonToolBar().setVisible(false);
 			getGridToolBar().setVisible(true);
 			updateGridToolBar();
 		}
@@ -472,6 +575,7 @@ public class NetworkViewMainPanel extends JPanel {
 		final List<ThumbnailPanel> selectedItems = networkViewGrid.getSelectedItems();
 		
 		getViewModeButton().setEnabled(!items.isEmpty());
+		getComparisonModeButton().setEnabled(selectedItems.size() == 2);
 		getDestroySelectedViewsButton().setEnabled(!selectedItems.isEmpty());
 		
 		getSelectAllViewsButton().setEnabled(selectedItems.size() < items.size());
@@ -491,11 +595,11 @@ public class NetworkViewMainPanel extends JPanel {
 		getGridToolBar().updateUI();
 	}
 
-	private void updateViewToolBar(final NetworkViewContainer vc) {
-		getViewTitleLabel().setText(ViewUtil.getTitle(vc.getNetworkView()));
+	private void updateViewToolBar(final CyNetworkView view) {
+		getViewTitleLabel().setText(view != null ? ViewUtil.getTitle(view) : "");
 		getViewToolBar().updateUI();
 	}
-
+	
 	private NetworkViewContainer getCurrentViewContainer() {
 		final Component c = getCurrentCard();
 
@@ -581,13 +685,15 @@ public class NetworkViewMainPanel extends JPanel {
 	
 	private JPanel getToolBarsPanel() {
 		if (toolBarsPanel == null) {
-			toolBarsPanel = new JPanel(new BorderLayout());
+			toolBarsPanel = new JPanel();
+			toolBarsPanel.setLayout(new BoxLayout(toolBarsPanel, BoxLayout.Y_AXIS));
 			
 			toolBarsPanel.setBorder(
 					BorderFactory.createMatteBorder(1, 0, 0, 0, UIManager.getColor("Separator.foreground")));
 			
-			toolBarsPanel.add(getGridToolBar(), BorderLayout.NORTH);
-			toolBarsPanel.add(getViewToolBar(), BorderLayout.SOUTH);
+			toolBarsPanel.add(getGridToolBar());
+			toolBarsPanel.add(getViewToolBar());
+			toolBarsPanel.add(getComparisonToolBar());
 		}
 		
 		return toolBarsPanel;
@@ -610,6 +716,7 @@ public class NetworkViewMainPanel extends JPanel {
 					.addComponent(getViewModeButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(getSelectAllViewsButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(getDeselectAllViewsButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(getComparisonModeButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(getDetachSelectedViewsButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(getReattachAllViewsButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addGap(0, 10, Short.MAX_VALUE)
@@ -624,6 +731,7 @@ public class NetworkViewMainPanel extends JPanel {
 					.addComponent(getViewModeButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(getSelectAllViewsButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(getDeselectAllViewsButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(getComparisonModeButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(getDetachSelectedViewsButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(getReattachAllViewsButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(getSelectionLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
@@ -650,7 +758,7 @@ public class NetworkViewMainPanel extends JPanel {
 			
 			layout.setHorizontalGroup(layout.createSequentialGroup()
 					.addContainerGap()
-					.addComponent(getGridModeButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(getGridModeButton1(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(getDetachViewButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(sep, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(getViewTitleLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
@@ -660,7 +768,7 @@ public class NetworkViewMainPanel extends JPanel {
 					.addContainerGap()
 			);
 			layout.setVerticalGroup(layout.createParallelGroup(CENTER, true)
-					.addComponent(getGridModeButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(getGridModeButton1(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(getDetachViewButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(sep, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 					.addComponent(getViewTitleLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
@@ -670,6 +778,34 @@ public class NetworkViewMainPanel extends JPanel {
 		}
 		
 		return viewToolBar;
+	}
+	
+	private JPanel getComparisonToolBar() {
+		if (comparisonToolBar == null) {
+			comparisonToolBar = new JPanel();
+			comparisonToolBar.setName("comparisonToolBar");
+			
+			final GroupLayout layout = new GroupLayout(comparisonToolBar);
+			comparisonToolBar.setLayout(layout);
+			layout.setAutoCreateContainerGaps(false);
+			layout.setAutoCreateGaps(true);
+			
+			layout.setHorizontalGroup(layout.createSequentialGroup()
+					.addContainerGap()
+					.addComponent(getGridModeButton2(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(getEndComparisonButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(getDetachComparedViewsButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addGap(0, 10, Short.MAX_VALUE)
+					.addContainerGap()
+			);
+			layout.setVerticalGroup(layout.createParallelGroup(CENTER, true)
+					.addComponent(getGridModeButton2(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(getEndComparisonButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(getDetachComparedViewsButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+			);
+		}
+		
+		return comparisonToolBar;
 	}
 	
 	private JScrollPane getGridScrollPane() {
@@ -753,6 +889,27 @@ public class NetworkViewMainPanel extends JPanel {
 		return viewModeButton;
 	}
 	
+	private JButton getComparisonModeButton() {
+		if (comparisonModeButton == null) {
+			comparisonModeButton = new JButton(ICON_COLUMNS);
+			comparisonModeButton.setToolTipText("Compare 2 Network Views");
+			styleButton(comparisonModeButton, serviceRegistrar.getService(IconManager.class).getIconFont(22.0f));
+			
+			comparisonModeButton.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					final List<CyNetworkView> selectedViews = getSelectedNetworkViews();
+					
+					if (selectedViews.size() == 2)
+						showComparisonPanel(
+								NetworkViewComparisonPanel.HORIZONTAL, selectedViews.get(0), selectedViews.get(1));
+				}
+			});
+		}
+		
+		return comparisonModeButton;
+	}
+	
 	private JButton getDetachViewButton() {
 		if (detachViewButton == null) {
 			detachViewButton = new JButton(ICON_EXTERNAL_LINK_SQUARE);
@@ -825,13 +982,11 @@ public class NetworkViewMainPanel extends JPanel {
 		return reattachAllViewsButton;
 	}
 	
-	private JButton getGridModeButton() {
-		if (gridModeButton == null) {
-			gridModeButton = new JButton(ICON_TH);
-			gridModeButton.setToolTipText("Show Thumbnails");
-			styleButton(gridModeButton, serviceRegistrar.getService(IconManager.class).getIconFont(22.0f));
+	private JButton getGridModeButton1() {
+		if (gridModeButton1 == null) {
+			gridModeButton1 = createGridModeButton();
 			
-			gridModeButton.addActionListener(new ActionListener() {
+			gridModeButton1.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					showGrid();
@@ -839,9 +994,87 @@ public class NetworkViewMainPanel extends JPanel {
 			});
 		}
 		
-		return gridModeButton;
+		return gridModeButton1;
 	}
 	
+	private JButton getGridModeButton2() {
+		if (gridModeButton2 == null) {
+			gridModeButton2 = createGridModeButton();
+			
+			gridModeButton2.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					final Component currentCard = getCurrentCard();
+					
+					if (currentCard instanceof NetworkViewComparisonPanel)
+						endComparison((NetworkViewComparisonPanel) currentCard);
+					
+					showGrid();
+				}
+			});
+		}
+		
+		return gridModeButton2;
+	}
+	
+	private JButton createGridModeButton() {
+		final JButton btn = new JButton(ICON_TH);
+		btn.setToolTipText("Show Thumbnails");
+		styleButton(btn, serviceRegistrar.getService(IconManager.class).getIconFont(22.0f));
+		
+		return btn;
+	}
+	
+	private JButton getEndComparisonButton() {
+		if (endComparisonButton == null) {
+			endComparisonButton = new JButton(ICON_SHARE_ALT_SQUARE);
+			endComparisonButton.setToolTipText("End Network View Comparison");
+			styleButton(endComparisonButton, serviceRegistrar.getService(IconManager.class).getIconFont(22.0f));
+			
+			endComparisonButton.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					final Component currentCard = getCurrentCard();
+					
+					if (currentCard instanceof NetworkViewComparisonPanel)
+						endComparison((NetworkViewComparisonPanel) currentCard);
+				}
+			});
+		}
+		
+		return endComparisonButton;
+	}
+	
+	private JButton getDetachComparedViewsButton() {
+		if (detachComparedViewsButton == null) {
+			detachComparedViewsButton = new JButton(ICON_EXTERNAL_LINK_SQUARE);
+			detachComparedViewsButton.setToolTipText("Detach Both Network Views");
+			styleButton(detachComparedViewsButton, serviceRegistrar.getService(IconManager.class).getIconFont(22.0f));
+			
+			detachComparedViewsButton.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					final Component currentCard = getCurrentCard();
+					
+					if (currentCard instanceof NetworkViewComparisonPanel) {
+						final NetworkViewComparisonPanel cp = (NetworkViewComparisonPanel) currentCard;
+						final CyNetworkView view1 = cp.getContainer1().getNetworkView();
+						final CyNetworkView view2 = cp.getContainer2().getNetworkView();
+						
+						// End comparison first
+						endComparison(cp);
+						
+						// Then detach the views
+						detachNetworkView(view1);
+						detachNetworkView(view2);
+					}
+				}
+			});
+		}
+		
+		return detachComparedViewsButton;
+	}
+
 	private JLabel getViewTitleLabel() {
 		if (viewTitleLabel == null) {
 			viewTitleLabel = new JLabel();
@@ -1023,4 +1256,39 @@ public class NetworkViewMainPanel extends JPanel {
 		btn.setBorderPainted(false);
 		btn.setPreferredSize(new Dimension(32, 32));
 	}
+	
+	private class ComparisonModeAWTEventListener implements AWTEventListener {
+	
+        @Override
+        public void eventDispatched(AWTEvent event) {
+            if (event instanceof MouseEvent) {
+                MouseEvent me = (MouseEvent) event;
+                final Component currentCard = getCurrentCard();
+                
+                if (currentCard instanceof NetworkViewComparisonPanel == false)
+                	return;
+                
+                final NetworkViewComparisonPanel cp = (NetworkViewComparisonPanel) currentCard;
+                final JSplitPane splitPane = cp.getSplitPane();
+                
+                if (splitPane.getBounds().contains(me.getPoint())) {
+                    me = SwingUtilities.convertMouseEvent(me.getComponent(), me, splitPane);
+                    
+                    final Component left = splitPane.getLeftComponent();
+                    final Component right = splitPane.getRightComponent();
+                    
+                    final CyNetworkView currentView = getCurrentNetworkView();
+                    CyNetworkView newView = null;
+                    
+                    if (left != null && left.getBounds().contains(me.getPoint()))
+                    	newView = cp.getContainer1().getNetworkView();
+                    else if (right != null && right.getBounds().contains(me.getPoint()))
+                        newView = cp.getContainer2().getNetworkView();
+                    
+                    if (newView != null && !newView.equals(currentView))
+                        setCurrentNetworkView(newView);
+                }
+            }
+        }
+    }
 }
