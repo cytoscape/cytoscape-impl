@@ -410,46 +410,47 @@ public class NetworkViewMediator implements NetworkViewAddedListener, NetworkVie
 			return;
 		
 		final CyTable tbl = e.getSource();
-		
-		// Update Network View Title
-		final Collection<RowSetRecord> nameRecords = e.getColumnRecords(CyNetwork.NAME);
-		
-		invokeOnEDT(new Runnable() {
-			@Override
-			public void run() {
-				updateNetworkViewTitle(nameRecords, tbl);
-			}
-		});
-		
 		final CyNetworkTableManager netTblMgr = serviceRegistrar.getService(CyNetworkTableManager.class);
 		final CyNetwork net = netTblMgr.getNetworkForTable(tbl);
-		
 		final CyNetworkViewManager netViewMgr = serviceRegistrar.getService(CyNetworkViewManager.class);
 		
 		// Is this column from a network table?
 		// And if there is no related view, nothing needs to be done
-		if ( net != null && netViewMgr.viewExists(net) && 
-				(tbl.equals(net.getDefaultNodeTable()) || tbl.equals(net.getDefaultEdgeTable())) ) {
-			final Collection<CyNetworkView> networkViews = netViewMgr.getNetworkViews(net);
-			final Set<CyNetworkView> viewsToUpdate = new HashSet<>();
+		if (net != null && netViewMgr.viewExists(net)) {
+			// Update Network View Title
+			final Collection<RowSetRecord> nameRecords = e.getColumnRecords(CyNetwork.NAME);
 			
-			for (final RowSetRecord record : e.getPayloadCollection()) {
-				final String columnName = record.getColumn();
+			if (!nameRecords.isEmpty())
+				updateNetworkViewTitle(nameRecords, tbl);
+			
+			if (tbl.equals(net.getDefaultNodeTable()) || tbl.equals(net.getDefaultEdgeTable())) {
+				final Collection<CyNetworkView> networkViews = netViewMgr.getNetworkViews(net);
+				final Set<CyNetworkView> viewsToUpdate = new HashSet<>();
 				
-				// Reapply locked values that map to changed columns
-				final boolean lockedValuesApplyed = reapplyLockedValues(columnName, networkViews);
+				// Update node/edge selection info
+				final Collection<RowSetRecord> selectedRecords = e.getColumnRecords(CyNetwork.SELECTED);
 				
-				if (lockedValuesApplyed)
-					viewsToUpdate.addAll(networkViews);
+				if (!selectedRecords.isEmpty())
+					viewsToUpdate.addAll(netViewMgr.getNetworkViews(net));
 				
-				// Find views that had their styles affected by the RowsSetEvent
-				final Set<VisualStyle> styles = findStylesWithMappedColumn(columnName);
-				viewsToUpdate.addAll(findNetworkViewsWithStyles(styles));
+				for (final RowSetRecord record : e.getPayloadCollection()) {
+					final String columnName = record.getColumn();
+					
+					// Reapply locked values that map to changed columns
+					final boolean lockedValuesApplyed = reapplyLockedValues(columnName, networkViews);
+					
+					if (lockedValuesApplyed)
+						viewsToUpdate.addAll(networkViews);
+					
+					// Find views that had their styles affected by the RowsSetEvent
+					final Set<VisualStyle> styles = findStylesWithMappedColumn(columnName);
+					viewsToUpdate.addAll(findNetworkViewsWithStyles(styles));
+				}
+				
+				// Update views
+				for (final CyNetworkView view : viewsToUpdate)
+					updateView(view, null);
 			}
-			
-			// Update views
-			for (final CyNetworkView view : viewsToUpdate)
-				updateView(view, null);
 		}
 	}
 
@@ -688,8 +689,14 @@ public class NetworkViewMediator implements NetworkViewAddedListener, NetworkVie
 	
 								// Does not need to update the rendered title with the new network name
 								// if this visual property is locked
-								if (!view.isValueLocked(BasicVisualLexicon.NETWORK_TITLE))
-									getNetworkViewMainPanel().update(view);
+								if (!view.isValueLocked(BasicVisualLexicon.NETWORK_TITLE)) {
+									invokeOnEDT(new Runnable() {
+										@Override
+										public void run() {
+											getNetworkViewMainPanel().update(view);
+										}
+									});
+								}
 	
 								return; // assuming just one row is set.
 							}

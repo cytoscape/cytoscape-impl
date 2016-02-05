@@ -5,8 +5,10 @@ import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static javax.swing.GroupLayout.Alignment.CENTER;
 import static org.cytoscape.internal.view.NetworkViewGrid.MAX_THUMBNAIL_SIZE;
 import static org.cytoscape.internal.view.NetworkViewGrid.MIN_THUMBNAIL_SIZE;
-import static org.cytoscape.util.swing.IconManager.ICON_COLUMNS;
+import static org.cytoscape.util.swing.IconManager.ICON_CARET_LEFT;
+import static org.cytoscape.util.swing.IconManager.ICON_CARET_RIGHT;
 import static org.cytoscape.util.swing.IconManager.ICON_EXTERNAL_LINK_SQUARE;
+import static org.cytoscape.util.swing.IconManager.ICON_EYE_SLASH;
 import static org.cytoscape.util.swing.IconManager.ICON_SHARE_ALT_SQUARE;
 import static org.cytoscape.util.swing.IconManager.ICON_TH;
 import static org.cytoscape.util.swing.IconManager.ICON_THUMB_TACK;
@@ -96,7 +98,7 @@ public class NetworkViewMainPanel extends JPanel {
 	
 	private JButton viewModeButton;
 	private JButton comparisonModeButton;
-	private JLabel selectionLabel;
+	private JLabel viewSelectionLabel;
 	private JButton detachSelectedViewsButton;
 	private JButton reattachAllViewsButton;
 	private JButton destroySelectedViewsButton;
@@ -106,9 +108,10 @@ public class NetworkViewMainPanel extends JPanel {
 	private JButton detachViewButton;
 	private JLabel viewTitleLabel;
 	private JTextField viewTitleTextField;
+	private JLabel nodeEdgeSelectionLabel;
+	private JLabel hiddenInfoLabel;
 	
 	private JButton gridModeButton2;
-	private JButton endComparisonButton;
 	private JButton detachComparedViewsButton;
 	
 	private final Map<String, NetworkViewContainer> viewContainers;
@@ -543,7 +546,7 @@ public class NetworkViewMainPanel extends JPanel {
 			getContentPane().add(vc2, vc2.getName());
 			viewContainers.put(vc1.getName(), vc1);
 			
-			showViewContainer(vc1.getName());
+			showGrid();
 		}
 	}
 	
@@ -583,9 +586,9 @@ public class NetworkViewMainPanel extends JPanel {
 		getReattachAllViewsButton().setEnabled(!viewFrames.isEmpty());
 		
 		if (items.isEmpty())
-			getSelectionLabel().setText(null);
+			getViewSelectionLabel().setText(null);
 		else
-			getSelectionLabel().setText(
+			getViewSelectionLabel().setText(
 					selectedItems.size() + " of " + 
 							items.size() + " Network View" + (items.size() == 1 ? "" : "s") +
 							" selected");
@@ -595,6 +598,50 @@ public class NetworkViewMainPanel extends JPanel {
 
 	private void updateViewToolBar(final CyNetworkView view) {
 		getViewTitleLabel().setText(view != null ? ViewUtil.getTitle(view) : "");
+		
+		{
+			if (view != null) {
+				final int nodes = view.getModel().getNodeCount();
+				final int edges = view.getModel().getEdgeCount();
+				final int selNodes = view.getModel().getDefaultNodeTable().countMatchingRows(CyNetwork.SELECTED,
+						Boolean.TRUE);
+				final int selEdges = view.getModel().getDefaultEdgeTable().countMatchingRows(CyNetwork.SELECTED,
+						Boolean.TRUE);
+
+				String text = "Selected: " +
+						selNodes + "/" + nodes + " node" + (nodes == 1 ? "" : "s") + ", " +
+						selEdges + "/" + edges + " edge" + (edges == 1 ? "" : "s");
+				
+				getNodeEdgeSelectionLabel().setText(text);
+			} else {
+				getNodeEdgeSelectionLabel().setText("");
+			}
+		}
+		{
+			final int nodes = ViewUtil.getHiddenNodeCount(view);
+			final int edges = ViewUtil.getHiddenEdgeCount(view);
+			
+			String text = "<html>";
+			
+			if (nodes > 0 || edges > 0) {
+				if (nodes > 0)
+					text += ( "<b>" + nodes + "</b> hidden node" + (nodes > 1 ? "s" : "") );
+				if (edges > 0)
+					text += (
+							(nodes > 0 ? "<br>" : "") + 
+							"<b>" + edges + "</b> hidden edge" + (edges > 1 ? "s" : "")
+					);
+			} else {
+				text += "No hidden nodes or edges";
+			}
+			
+			text += "</html>";
+			
+			getHiddenInfoLabel().setForeground(
+					UIManager.getColor(nodes > 0 || edges > 0 ? "Focus.color" : "Separator.foreground"));
+			getHiddenInfoLabel().setToolTipText(text);
+		}
+		
 		getViewToolBar().updateUI();
 	}
 	
@@ -716,7 +763,7 @@ public class NetworkViewMainPanel extends JPanel {
 					.addComponent(getDetachSelectedViewsButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(getReattachAllViewsButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addGap(0, 10, Short.MAX_VALUE)
-					.addComponent(getSelectionLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(getViewSelectionLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addGap(0, 10, Short.MAX_VALUE)
 					.addComponent(getDestroySelectedViewsButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(sep, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
@@ -728,7 +775,7 @@ public class NetworkViewMainPanel extends JPanel {
 					.addComponent(getComparisonModeButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(getDetachSelectedViewsButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(getReattachAllViewsButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addComponent(getSelectionLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(getViewSelectionLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(getDestroySelectedViewsButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(sep, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 					.addComponent(getThumbnailSlider(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
@@ -743,7 +790,9 @@ public class NetworkViewMainPanel extends JPanel {
 			viewToolBar = new JPanel();
 			viewToolBar.setName("viewToolBar");
 			
-			final JSeparator sep = new JSeparator(JSeparator.VERTICAL);
+			final JSeparator sep1 = new JSeparator(JSeparator.VERTICAL);
+			final JSeparator sep2 = new JSeparator(JSeparator.VERTICAL);
+			final JSeparator sep3 = new JSeparator(JSeparator.VERTICAL);
 			
 			final GroupLayout layout = new GroupLayout(viewToolBar);
 			viewToolBar.setLayout(layout);
@@ -754,18 +803,26 @@ public class NetworkViewMainPanel extends JPanel {
 					.addContainerGap()
 					.addComponent(getGridModeButton1(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(getDetachViewButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addComponent(sep, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(sep1, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(getViewTitleLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(getViewTitleTextField(), 100, 260, 320)
 					.addGap(0, 10, Short.MAX_VALUE)
+					.addComponent(sep2, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(getNodeEdgeSelectionLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(sep3, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(getHiddenInfoLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addContainerGap()
 			);
 			layout.setVerticalGroup(layout.createParallelGroup(CENTER, true)
 					.addComponent(getGridModeButton1(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(getDetachViewButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addComponent(sep, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+					.addComponent(sep1, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 					.addComponent(getViewTitleLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(getViewTitleTextField(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(sep2, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+					.addComponent(getNodeEdgeSelectionLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(sep3, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+					.addComponent(getHiddenInfoLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 			);
 		}
 		
@@ -785,14 +842,12 @@ public class NetworkViewMainPanel extends JPanel {
 			layout.setHorizontalGroup(layout.createSequentialGroup()
 					.addContainerGap()
 					.addComponent(getGridModeButton2(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addComponent(getEndComparisonButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(getDetachComparedViewsButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addGap(0, 10, Short.MAX_VALUE)
 					.addContainerGap()
 			);
 			layout.setVerticalGroup(layout.createParallelGroup(CENTER, true)
 					.addComponent(getGridModeButton2(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addComponent(getEndComparisonButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(getDetachComparedViewsButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 			);
 		}
@@ -849,7 +904,7 @@ public class NetworkViewMainPanel extends JPanel {
 	
 	private JButton getComparisonModeButton() {
 		if (comparisonModeButton == null) {
-			comparisonModeButton = new JButton(ICON_COLUMNS);
+			comparisonModeButton = new JButton(ICON_CARET_RIGHT + ICON_CARET_LEFT);
 			comparisonModeButton.setToolTipText("Compare 2 Network Views");
 			styleButton(comparisonModeButton, serviceRegistrar.getService(IconManager.class).getIconFont(22.0f));
 			
@@ -966,8 +1021,6 @@ public class NetworkViewMainPanel extends JPanel {
 					
 					if (currentCard instanceof NetworkViewComparisonPanel)
 						endComparison((NetworkViewComparisonPanel) currentCard);
-					
-					showGrid();
 				}
 			});
 		}
@@ -981,26 +1034,6 @@ public class NetworkViewMainPanel extends JPanel {
 		styleButton(btn, serviceRegistrar.getService(IconManager.class).getIconFont(22.0f));
 		
 		return btn;
-	}
-	
-	private JButton getEndComparisonButton() {
-		if (endComparisonButton == null) {
-			endComparisonButton = new JButton(ICON_SHARE_ALT_SQUARE);
-			endComparisonButton.setToolTipText("End Network View Comparison");
-			styleButton(endComparisonButton, serviceRegistrar.getService(IconManager.class).getIconFont(22.0f));
-			
-			endComparisonButton.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					final Component currentCard = getCurrentCard();
-					
-					if (currentCard instanceof NetworkViewComparisonPanel)
-						endComparison((NetworkViewComparisonPanel) currentCard);
-				}
-			});
-		}
-		
-		return endComparisonButton;
 	}
 	
 	private JButton getDetachComparedViewsButton() {
@@ -1059,7 +1092,7 @@ public class NetworkViewMainPanel extends JPanel {
 		return viewTitleLabel;
 	}
 	
-	public JTextField getViewTitleTextField() {
+	private JTextField getViewTitleTextField() {
 		if (viewTitleTextField == null) {
 			viewTitleTextField = new JTextField();
 			viewTitleTextField.putClientProperty("JComponent.sizeVariant", "mini"); // Aqua (Mac OS X) only
@@ -1079,6 +1112,24 @@ public class NetworkViewMainPanel extends JPanel {
 		}
 		
 		return viewTitleTextField;
+	}
+	
+	private JLabel getNodeEdgeSelectionLabel() {
+		if (nodeEdgeSelectionLabel == null) {
+			nodeEdgeSelectionLabel = new JLabel();
+			nodeEdgeSelectionLabel.setFont(viewSelectionLabel.getFont().deriveFont(LookAndFeelUtil.getSmallFontSize()));
+		}
+		
+		return nodeEdgeSelectionLabel;
+	}
+	
+	private JLabel getHiddenInfoLabel() {
+		if (hiddenInfoLabel == null) {
+			hiddenInfoLabel = new JLabel(ICON_EYE_SLASH);
+			hiddenInfoLabel.setFont(serviceRegistrar.getService(IconManager.class).getIconFont(22.0f));
+		}
+		
+		return hiddenInfoLabel;
 	}
 	
 	private JButton getDestroySelectedViewsButton() {
@@ -1105,14 +1156,14 @@ public class NetworkViewMainPanel extends JPanel {
 		return destroySelectedViewsButton;
 	}
 	
-	private JLabel getSelectionLabel() {
-		if (selectionLabel == null) {
-			selectionLabel = new JLabel();
-			selectionLabel.setHorizontalAlignment(JLabel.CENTER);
-			selectionLabel.setFont(selectionLabel.getFont().deriveFont(LookAndFeelUtil.getSmallFontSize()));
+	private JLabel getViewSelectionLabel() {
+		if (viewSelectionLabel == null) {
+			viewSelectionLabel = new JLabel();
+			viewSelectionLabel.setHorizontalAlignment(JLabel.CENTER);
+			viewSelectionLabel.setFont(viewSelectionLabel.getFont().deriveFont(LookAndFeelUtil.getSmallFontSize()));
 		}
 		
-		return selectionLabel;
+		return viewSelectionLabel;
 	}
 	
 	private JSlider getThumbnailSlider() {
@@ -1188,7 +1239,9 @@ public class NetworkViewMainPanel extends JPanel {
 		btn.setBorder(null);
 		btn.setContentAreaFilled(false);
 		btn.setBorderPainted(false);
-		btn.setPreferredSize(new Dimension(32, 32));
+		
+		final Dimension d = btn.getPreferredSize();
+		btn.setPreferredSize(new Dimension(d.width + 10, d.height + 5));
 	}
 	
 	private class ComparisonModeAWTEventListener implements AWTEventListener {

@@ -2,12 +2,15 @@ package org.cytoscape.internal.util;
 
 import javax.swing.SwingUtilities;
 
+import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
+import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 
 public final class ViewUtil {
@@ -35,6 +38,32 @@ public final class ViewUtil {
 			title = getName(view.getModel());
 		
 		return title;
+	}
+	
+	public static int getHiddenNodeCount(final CyNetworkView view) {
+		int count = 0;
+		
+		if (view != null) {
+			for (View<CyNode> nv : view.getNodeViews()) {
+				if (nv.getVisualProperty(BasicVisualLexicon.NODE_VISIBLE) == Boolean.FALSE)
+					count++;
+			}
+		}
+		
+		return count;
+	}
+	
+	public static int getHiddenEdgeCount(final CyNetworkView view) {
+		int count = 0;
+		
+		if (view != null) {
+			for (View<CyEdge> ev : view.getEdgeViews()) {
+				if (ev.getVisualProperty(BasicVisualLexicon.EDGE_VISIBLE) == Boolean.FALSE)
+					count++;
+			}
+		}
+		
+		return count;
 	}
 	
 	public static String createUniqueKey(final CyNetworkView view) {
