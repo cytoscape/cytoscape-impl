@@ -33,6 +33,7 @@
 		<module>graphml-impl</module>
 		<module>group-impl</module>
 		<module>io-impl</module>
+		<module>jobs-impl</module>
 		<module>json-impl</module>
 		<module>layout-cytoscape-impl</module>
 		<module>layout-impl</module>
