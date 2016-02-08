@@ -3,6 +3,9 @@ package org.cytoscape.internal.view;
 import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static javax.swing.GroupLayout.Alignment.CENTER;
+import static org.cytoscape.internal.util.ViewUtil.styleToolBarButton;
+import static org.cytoscape.util.swing.IconManager.ICON_EXTERNAL_LINK_SQUARE;
+import static org.cytoscape.util.swing.IconManager.ICON_TH;
 
 import java.awt.BorderLayout;
 import java.awt.event.ComponentAdapter;
@@ -10,14 +13,14 @@ import java.awt.event.ComponentEvent;
 
 import javax.swing.BorderFactory;
 import javax.swing.GroupLayout;
-import javax.swing.JLabel;
+import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JRootPane;
 import javax.swing.JSplitPane;
 import javax.swing.UIManager;
 
-import org.cytoscape.internal.util.ViewUtil;
-import org.cytoscape.util.swing.LookAndFeelUtil;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.view.model.CyNetworkView;
 
 /*
@@ -54,19 +57,29 @@ public class NetworkViewComparisonPanel extends JPanel {
 	private ViewPanel viewPanel1;
 	private ViewPanel viewPanel2;
 	
+	private JPanel comparisonToolBar;
+	private JButton gridModeButton;
+	private JButton detachComparedViewsButton;
+	
 	private final int orientation;
 	private final NetworkViewContainer container1;
 	private final JRootPane rootPane1;
 	private final NetworkViewContainer container2;
 	private final JRootPane rootPane2;
 	
+	private final CyServiceRegistrar serviceRegistrar;
+	
 	/**
 	 * @param orientation {@link NetworkViewComparisonPanel#HORIZONTAL} or {@link NetworkViewComparisonPanel#VERTICAL}
 	 * @param container1
 	 * @param container2
 	 */
-	public NetworkViewComparisonPanel(final int orientation, final NetworkViewContainer container1,
-			final NetworkViewContainer container2) {
+	public NetworkViewComparisonPanel(
+			final int orientation,
+			final NetworkViewContainer container1,
+			final NetworkViewContainer container2,
+			final CyServiceRegistrar serviceRegistrar
+	) {
 		if (orientation != JSplitPane.HORIZONTAL_SPLIT && orientation != JSplitPane.VERTICAL_SPLIT)
 			throw new IllegalArgumentException("'orientation' must be " + HORIZONTAL + " or " + VERTICAL + ".");
 		if (container1 == null)
@@ -81,9 +94,10 @@ public class NetworkViewComparisonPanel extends JPanel {
 		this.rootPane1 = container1.getRootPane();
 		this.container2 = container2;
 		this.rootPane2 = container2.getRootPane();
+		this.serviceRegistrar = serviceRegistrar;
 		
-		container1.setDetached(false);
-		container2.setDetached(false);
+		container1.setComparing(true);
+		container2.setComparing(true);
 		
 		init();
 	}
@@ -96,6 +110,8 @@ public class NetworkViewComparisonPanel extends JPanel {
 	public void dispose() {
 		getContainer1().setRootPane(rootPane1);
 		getContainer2().setRootPane(rootPane2);
+		getContainer1().setComparing(false);
+		getContainer2().setComparing(false);
 	}
 	
 	public int getOrientation() {
@@ -115,12 +131,15 @@ public class NetworkViewComparisonPanel extends JPanel {
 		
 		setLayout(new BorderLayout());
 		add(getSplitPane(), BorderLayout.CENTER);
+		add(getComparisonToolBar(), BorderLayout.SOUTH);
 		
 		addComponentListener(new ComponentAdapter() {
 			@Override
 			public void componentShown(ComponentEvent e) {
 				getContainer1().getNetworkView().updateView();
+				getContainer1().update();
 				getContainer2().getNetworkView().updateView();
+				getContainer2().update();
 			}
 		});
 	}
@@ -148,6 +167,52 @@ public class NetworkViewComparisonPanel extends JPanel {
 		}
 		
 		return viewPanel2;
+	}
+	
+	private JPanel getComparisonToolBar() {
+		if (comparisonToolBar == null) {
+			comparisonToolBar = new JPanel();
+			comparisonToolBar.setName("comparisonToolBar");
+			
+			final GroupLayout layout = new GroupLayout(comparisonToolBar);
+			comparisonToolBar.setLayout(layout);
+			layout.setAutoCreateContainerGaps(false);
+			layout.setAutoCreateGaps(true);
+			
+			layout.setHorizontalGroup(layout.createSequentialGroup()
+					.addContainerGap()
+					.addComponent(getGridModeButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(getDetachComparedViewsButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addGap(0, 10, Short.MAX_VALUE)
+					.addContainerGap()
+			);
+			layout.setVerticalGroup(layout.createParallelGroup(CENTER, true)
+					.addComponent(getGridModeButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(getDetachComparedViewsButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+			);
+		}
+		
+		return comparisonToolBar;
+	}
+	
+	JButton getGridModeButton() {
+		if (gridModeButton == null) {
+			gridModeButton = new JButton(ICON_TH);
+			gridModeButton.setToolTipText("Show Thumbnails");
+			styleToolBarButton(gridModeButton, serviceRegistrar.getService(IconManager.class).getIconFont(22.0f));
+		}
+		
+		return gridModeButton;
+	}
+	
+	JButton getDetachComparedViewsButton() {
+		if (detachComparedViewsButton == null) {
+			detachComparedViewsButton = new JButton(ICON_EXTERNAL_LINK_SQUARE);
+			detachComparedViewsButton.setToolTipText("Detach Both Network Views");
+			styleToolBarButton(detachComparedViewsButton, serviceRegistrar.getService(IconManager.class).getIconFont(22.0f));
+		}
+		
+		return detachComparedViewsButton;
 	}
 	
 	@Override
@@ -203,9 +268,6 @@ public class NetworkViewComparisonPanel extends JPanel {
 	
 	private class ViewPanel extends JPanel {
 		
-		private JPanel titlePanel;
-		private JLabel titleLabel;
-		
 		private final NetworkViewContainer networkViewContainer;
 
 		ViewPanel(final NetworkViewContainer networkViewContainer) {
@@ -215,7 +277,6 @@ public class NetworkViewComparisonPanel extends JPanel {
 			
 			setLayout(new BorderLayout());
 			add(getNetworkViewContainer().getRootPane(), BorderLayout.CENTER);
-			add(getTitlePanel(), BorderLayout.SOUTH);
 		}
 		
 		NetworkViewContainer getNetworkViewContainer() {
@@ -227,44 +288,7 @@ public class NetworkViewComparisonPanel extends JPanel {
 		}
 		
 		void update() {
-			final String title = ViewUtil.getTitle(getNetworkView());
-			getTitleLabel().setText(title);
-			getTitleLabel().setToolTipText(title);
-		}
-		
-		JPanel getTitlePanel() {
-			if (titlePanel == null) {
-				titlePanel = new JPanel();
-				titlePanel.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, 
-						UIManager.getColor("Separator.foreground")));
-				
-				final GroupLayout layout = new GroupLayout(titlePanel);
-				titlePanel.setLayout(layout);
-				layout.setAutoCreateContainerGaps(false);
-				layout.setAutoCreateGaps(true);
-				
-				layout.setHorizontalGroup(layout.createSequentialGroup()
-						.addContainerGap()
-						.addGap(0, 0, Short.MAX_VALUE)
-						.addComponent(getTitleLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-						.addGap(0, 0, Short.MAX_VALUE)
-						.addContainerGap()
-				);
-				layout.setVerticalGroup(layout.createParallelGroup(CENTER, true)
-						.addComponent(getTitleLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-				);
-			}
-			
-			return titlePanel;
-		}
-		
-		JLabel getTitleLabel() {
-			if (titleLabel == null) {
-				titleLabel = new JLabel();
-				titleLabel.setFont(titleLabel.getFont().deriveFont(LookAndFeelUtil.getSmallFontSize()));
-			}
-			
-			return titleLabel;
+			getNetworkViewContainer().update();
 		}
 	}
 }

@@ -29,9 +29,10 @@ public class NetworkViewFrame extends JFrame {
 		this.serviceRegistrar = serviceRegistrar;
 		
 		final JRootPane rp = vc.getRootPane();
-		vc.setRootPane(new JRootPane());
 		vc.setDetached(true);
+		vc.setComparing(false);
 		setRootPane(rp);
+		vc.update();
 	}
 	
 	protected NetworkViewContainer getNetworkViewContainer() {

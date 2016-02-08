@@ -84,7 +84,6 @@ import org.cytoscape.internal.undo.RedoAction;
 import org.cytoscape.internal.undo.UndoAction;
 import org.cytoscape.internal.util.HSLColor;
 import org.cytoscape.internal.util.undo.UndoMonitor;
-import org.cytoscape.internal.view.BirdsEyeViewHandler;
 import org.cytoscape.internal.view.CyDesktopManager;
 import org.cytoscape.internal.view.CyHelpBrokerImpl;
 import org.cytoscape.internal.view.CytoscapeDesktop;
@@ -194,10 +193,7 @@ public class CyActivator extends AbstractCyActivator {
 																	  cyHelpBroker,
 																	  cyServiceRegistrarServiceRef);
 
-		BirdsEyeViewHandler birdsEyeViewHandler = new BirdsEyeViewHandler(cyApplicationManagerServiceRef,
-		                                                                  cyNetworkViewManagerServiceRef);
-
-		NetworkMainPanel netMainPanel = new NetworkMainPanel(birdsEyeViewHandler, cyServiceRegistrarServiceRef);
+		NetworkMainPanel netMainPanel = new NetworkMainPanel(cyServiceRegistrarServiceRef);
 		
 		CytoscapeDesktop cytoscapeDesktop = new CytoscapeDesktop(cytoscapeMenus,
 		                                                         netViewMediator,
@@ -353,7 +349,6 @@ public class CyActivator extends AbstractCyActivator {
 		registerAllServices(bc, cytoscapeDesktop, new Properties());
 		registerAllServices(bc, netMainPanel, new Properties());
 		registerAllServices(bc, netViewMediator, new Properties());
-		registerAllServices(bc, birdsEyeViewHandler, new Properties());
 		registerService(bc, undoMonitor, SetCurrentNetworkViewListener.class, new Properties());
 		registerService(bc, undoMonitor, NetworkDestroyedListener.class, new Properties());
 		registerService(bc, undoMonitor, NetworkViewDestroyedListener.class, new Properties());

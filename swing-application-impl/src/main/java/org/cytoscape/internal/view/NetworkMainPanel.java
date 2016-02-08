@@ -56,7 +56,6 @@ import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
-import javax.swing.JSplitPane;
 import javax.swing.KeyStroke;
 import javax.swing.Scrollable;
 import javax.swing.SwingConstants;
@@ -157,8 +156,6 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, Net
 	
 	private static final Dimension PANEL_SIZE = new Dimension(400, 700);
 
-	private JPanel navigatorPanel;
-	private JSplitPane split;
 	private JScrollPane rootNetworkScroll;
 	private RootNetworkListPanel rootNetworkListPanel;
 	private JPanel networkHeader;
@@ -194,12 +191,11 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, Net
 	@SuppressWarnings("unused")
 	private static final Logger logger = LoggerFactory.getLogger(NetworkMainPanel.class);
 
-	public NetworkMainPanel(final BirdsEyeViewHandler bird, final CyServiceRegistrar serviceRegistrar) {
+	public NetworkMainPanel(final CyServiceRegistrar serviceRegistrar) {
 		this.serviceRegistrar = serviceRegistrar;
 		
 		popup = new JPopupMenu();
 		init();
-		setNavigator(bird.getBirdsEyeView());
 	}
 
 	@Override
@@ -228,25 +224,15 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, Net
 	}
 	
 	private void init() {
-		setLayout(new BorderLayout());
 		setPreferredSize(PANEL_SIZE);
 		setSize(PANEL_SIZE);
 		setOpaque(!LookAndFeelUtil.isAquaLAF()); // Transparent if Aqua
 
-		final JPanel topPanel = new JPanel(new BorderLayout());
-		topPanel.setOpaque(!LookAndFeelUtil.isAquaLAF());
-		topPanel.add(getNetworkHeader(), BorderLayout.NORTH);
-		topPanel.add(getRootNetworkScroll(), BorderLayout.CENTER);
-		topPanel.add(getNetworkToolBar(), BorderLayout.SOUTH);
+		setLayout(new BorderLayout());
+		add(getNetworkHeader(), BorderLayout.NORTH);
+		add(getRootNetworkScroll(), BorderLayout.CENTER);
+		add(getNetworkToolBar(), BorderLayout.SOUTH);
 		
-		split = new JSplitPane(JSplitPane.VERTICAL_SPLIT, topPanel, getNavigatorPanel());
-		split.setOpaque(!LookAndFeelUtil.isAquaLAF());
-		split.setBorder(BorderFactory.createEmptyBorder());
-		split.setResizeWeight(1);
-		split.setDividerLocation(400);
-
-		add(split, BorderLayout.CENTER);
-
 		updateNetworkHeader();
 		updateNetworkToolBar();
 	}
@@ -416,18 +402,6 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, Net
 		}
 		
 		return createButton;
-	}
-	
-	private JPanel getNavigatorPanel() {
-		if (navigatorPanel == null) {
-			navigatorPanel = new JPanel();
-			navigatorPanel.setLayout(new BorderLayout());
-			navigatorPanel.setPreferredSize(new Dimension(280, 280));
-			navigatorPanel.setSize(new Dimension(280, 280));
-			navigatorPanel.setBackground(UIManager.getColor("Table.background"));
-		}
-		
-		return navigatorPanel;
 	}
 	
 	private JPopupMenu getNetworkOptionsMenu() {
@@ -672,11 +646,6 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, Net
 
 	public void removeNetworkViewTaskFactory(NetworkViewTaskFactory factory, Map<?, ?> props) {
 		removeFactory(provisionerMap.remove(factory));
-	}
-
-	public void setNavigator(final Component comp) {
-		getNavigatorPanel().removeAll();
-		getNavigatorPanel().add(comp, BorderLayout.CENTER);
 	}
 
 	// // Event handlers // //

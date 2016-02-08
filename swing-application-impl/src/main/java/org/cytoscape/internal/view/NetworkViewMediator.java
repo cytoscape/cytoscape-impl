@@ -248,13 +248,13 @@ public class NetworkViewMediator implements NetworkViewAddedListener, NetworkVie
 			}
 		});
 	}
-
+	
 	@Override
 	public void handleEvent(NetworkViewAboutToBeDestroyedEvent nvde) {
 		final CyNetworkView view = nvde.getNetworkView();
 		removeView(view);
 	}
-
+	
 	/**
 	 * Adding new network view model to this manager. Then, render presentation.
 	 */

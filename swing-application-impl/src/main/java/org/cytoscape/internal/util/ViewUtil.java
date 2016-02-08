@@ -1,5 +1,9 @@
 package org.cytoscape.internal.util;
 
+import java.awt.Dimension;
+import java.awt.Font;
+
+import javax.swing.AbstractButton;
 import javax.swing.SwingUtilities;
 
 import org.cytoscape.model.CyEdge;
@@ -82,6 +86,16 @@ public final class ViewUtil {
 		}
 		
 		return null;
+	}
+	
+	public static void styleToolBarButton(final AbstractButton btn, final Font font) {
+		btn.setFont(font);
+		btn.setBorder(null);
+		btn.setContentAreaFilled(false);
+		btn.setBorderPainted(false);
+		
+		final Dimension d = btn.getPreferredSize();
+		btn.setPreferredSize(new Dimension(d.width + 10, d.height + 5));
 	}
 	
 	/**

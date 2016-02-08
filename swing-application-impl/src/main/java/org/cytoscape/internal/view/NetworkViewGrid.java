@@ -4,11 +4,19 @@ import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static javax.swing.GroupLayout.Alignment.CENTER;
 import static javax.swing.GroupLayout.Alignment.LEADING;
+import static org.cytoscape.internal.util.ViewUtil.styleToolBarButton;
+import static org.cytoscape.util.swing.IconManager.ICON_CARET_LEFT;
+import static org.cytoscape.util.swing.IconManager.ICON_CARET_RIGHT;
+import static org.cytoscape.util.swing.IconManager.ICON_EXTERNAL_LINK_SQUARE;
+import static org.cytoscape.util.swing.IconManager.ICON_SHARE_ALT_SQUARE;
+import static org.cytoscape.util.swing.IconManager.ICON_THUMB_TACK;
+import static org.cytoscape.util.swing.IconManager.ICON_TRASH_O;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NETWORK_BACKGROUND_PAINT;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NETWORK_HEIGHT;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NETWORK_TITLE;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NETWORK_WIDTH;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
@@ -39,13 +47,19 @@ import java.util.TreeMap;
 import javax.swing.BorderFactory;
 import javax.swing.GroupLayout;
 import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JSeparator;
+import javax.swing.JSlider;
 import javax.swing.Scrollable;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 import org.cytoscape.internal.util.ViewUtil;
 import org.cytoscape.model.CyNetwork;
@@ -57,7 +71,9 @@ import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.presentation.RenderingEngine;
 
 @SuppressWarnings("serial")
-public class NetworkViewGrid extends JPanel implements Scrollable {
+public class NetworkViewGrid extends JPanel {
+	
+	public static final String GRID_NAME = "__NETWORK_VIEW_GRID__";
 	
 	public static int MIN_THUMBNAIL_SIZE = 100;
 	public static int MAX_THUMBNAIL_SIZE = 500;
@@ -66,6 +82,17 @@ public class NetworkViewGrid extends JPanel implements Scrollable {
 	private static int IMG_BORDER_WIDTH = 1;
 	private static int PAD = 10;
 	private static int GAP = 2;
+	
+	private GridPanel gridPanel;
+	private JScrollPane gridScrollPane;
+	private JPanel toolBar;
+	private JButton viewModeButton;
+	private JButton comparisonModeButton;
+	private JLabel viewSelectionLabel;
+	private JButton detachSelectedViewsButton;
+	private JButton reattachAllViewsButton;
+	private JButton destroySelectedViewsButton;
+	private JSlider thumbnailSlider;
 	
 	private Map<CyNetworkView, RenderingEngine<CyNetwork>> engines;
 	private final TreeMap<CyNetworkView, ThumbnailPanel> thumbnailPanels;
@@ -87,27 +114,7 @@ public class NetworkViewGrid extends JPanel implements Scrollable {
 		engines = new HashMap<>();
 		thumbnailPanels = new TreeMap<>(comparator = new NetworkViewTitleComparator());
 		
-		// TODO: Listener to update when grip panel resized
-		addComponentListener(new ComponentAdapter() {
-			@Override
-			public void componentShown(ComponentEvent e) {
-				update(thumbnailSize);
-			}
-			@Override
-			public void componentResized(ComponentEvent e) {
-				update(thumbnailSize);
-			}
-		});
-		
-		addMouseListener(new MouseAdapter() {
-			@Override
-			public void mousePressed(final MouseEvent e) {
-				if (!e.isPopupTrigger())
-					deselectAll();
-			}
-		});
-		
-		update(thumbnailSize);
+		init();
 	}
 	
 	public ThumbnailPanel getItem(final CyNetworkView view) {
@@ -172,31 +179,6 @@ public class NetworkViewGrid extends JPanel implements Scrollable {
 		return new ArrayList<>(engines.keySet());
 	}
 	
-	@Override
-	public Dimension getPreferredScrollableViewportSize() {
-		return getPreferredSize();
-	}
-
-	@Override
-	public int getScrollableUnitIncrement(Rectangle visibleRect, int orientation, int direction) {
-		return 10;
-	}
-
-	@Override
-	public int getScrollableBlockIncrement(Rectangle visibleRect, int orientation, int direction) {
-		return ((orientation == SwingConstants.VERTICAL) ? visibleRect.height : visibleRect.width) - 10;
-	}
-
-	@Override
-	public boolean getScrollableTracksViewportWidth() {
-		return true;
-	}
-
-	@Override
-	public boolean getScrollableTracksViewportHeight() {
-		return thumbnailPanels == null || thumbnailPanels.isEmpty();
-	}
-	
 	private boolean contains(final RenderingEngine<CyNetwork> re) {
 		synchronized (lock) {
 			return engines.containsKey(re.getViewModel());
@@ -243,6 +225,28 @@ public class NetworkViewGrid extends JPanel implements Scrollable {
 		
 		// TODO Do not recreate if only changing thumbnail size (always use same big image?)
 		recreateThumbnails();
+		updateToolBar();
+	}
+	
+	protected void updateToolBar() {
+		final Collection<ThumbnailPanel> items = getItems();
+		final List<ThumbnailPanel> selectedItems = getSelectedItems();
+		
+		getViewModeButton().setEnabled(!items.isEmpty());
+		getComparisonModeButton().setEnabled(selectedItems.size() == 2);
+		getDestroySelectedViewsButton().setEnabled(!selectedItems.isEmpty());
+		
+		getDetachSelectedViewsButton().setEnabled(!selectedItems.isEmpty());
+		
+		if (items.isEmpty())
+			getViewSelectionLabel().setText(null);
+		else
+			getViewSelectionLabel().setText(
+					selectedItems.size() + " of " + 
+							items.size() + " Network View" + (items.size() == 1 ? "" : "s") +
+							" selected");
+		
+		getToolBar().updateUI();
 	}
 	
 	protected void updateThumbnail(final CyNetworkView view) {
@@ -412,6 +416,36 @@ public class NetworkViewGrid extends JPanel implements Scrollable {
 		return head;
 	}
 	
+	private void init() {
+		setName(GRID_NAME);
+		
+		setLayout(new BorderLayout());
+		add(getGridScrollPane(), BorderLayout.CENTER);
+		add(getToolBar(), BorderLayout.SOUTH);
+		
+		// TODO: Listener to update when grip panel resized
+		addComponentListener(new ComponentAdapter() {
+			@Override
+			public void componentShown(ComponentEvent e) {
+				update(thumbnailSize);
+			}
+			@Override
+			public void componentResized(ComponentEvent e) {
+				update(thumbnailSize);
+			}
+		});
+		
+		addMouseListener(new MouseAdapter() {
+			@Override
+			public void mousePressed(final MouseEvent e) {
+				if (!e.isPopupTrigger())
+					deselectAll();
+			}
+		});
+		
+		update(thumbnailSize);
+	}
+	
 	private void recreateThumbnails() {
 		final Dimension size = getSize();
 		
@@ -420,7 +454,7 @@ public class NetworkViewGrid extends JPanel implements Scrollable {
 		
 		final List<ThumbnailPanel> previousSelection = getSelectedItems();
 		
-		removeAll();
+		getGridPanel().removeAll();
 		thumbnailPanels.clear();
 		
 		// TODO Print some info? E.g. "No network views"
@@ -433,7 +467,7 @@ public class NetworkViewGrid extends JPanel implements Scrollable {
 			int cols = Math.floorDiv(size.width, this.thumbnailSize);
 			int rows = (int) Math.round(Math.ceil((float)total / (float)cols));
 			
-			setLayout(new GridLayout(rows, cols));
+			getGridPanel().setLayout(new GridLayout(rows, cols));
 			
 			for (RenderingEngine<CyNetwork> engine : engines.values()) {
 				final ThumbnailPanel tp = new ThumbnailPanel(engine, this.thumbnailSize);
@@ -451,7 +485,7 @@ public class NetworkViewGrid extends JPanel implements Scrollable {
 			}
 			
 			for (Map.Entry<CyNetworkView, ThumbnailPanel> entry : thumbnailPanels.entrySet())
-				add(entry.getValue());
+				getGridPanel().add(entry.getValue());
 			
 			if (thumbnailPanels.size() < cols) {
 				final int diff = cols - thumbnailPanels.size();
@@ -459,14 +493,162 @@ public class NetworkViewGrid extends JPanel implements Scrollable {
 				for (int i = 0; i < diff; i++) {
 					final JPanel filler = new JPanel();
 					filler.setOpaque(false);
-					add(filler);
+					getGridPanel().add(filler);
 				}
 			}
 		}
 		
 		dirty = false;
-		updateUI();
+		getGridPanel().updateUI();
 		firePropertyChange("thumbnailPanels", null, thumbnailPanels.values());
+	}
+	
+	private GridPanel getGridPanel() {
+		if (gridPanel == null) {
+			gridPanel = new GridPanel();
+		}
+		
+		return gridPanel;
+	}
+	
+	private JScrollPane getGridScrollPane() {
+		if (gridScrollPane == null) {
+			gridScrollPane = new JScrollPane(getGridPanel(),
+					JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+			gridScrollPane.getViewport().setBackground(getGridPanel().getBackground());
+			
+			gridScrollPane.getViewport().addMouseListener(new MouseAdapter() {
+				@Override
+				public void mousePressed(final MouseEvent e) {
+					if (!e.isPopupTrigger())
+						deselectAll();
+				}
+			});
+		}
+		
+		return gridScrollPane;
+	}
+	
+	private JPanel getToolBar() {
+		if (toolBar == null) {
+			toolBar = new JPanel();
+			toolBar.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, UIManager.getColor("Separator.foreground")));
+			
+			final JSeparator sep = new JSeparator(JSeparator.VERTICAL);
+			
+			final GroupLayout layout = new GroupLayout(toolBar);
+			toolBar.setLayout(layout);
+			layout.setAutoCreateContainerGaps(false);
+			layout.setAutoCreateGaps(true);
+			
+			layout.setHorizontalGroup(layout.createSequentialGroup()
+					.addContainerGap()
+					.addComponent(getViewModeButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(getComparisonModeButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(getDetachSelectedViewsButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(getReattachAllViewsButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addGap(0, 10, Short.MAX_VALUE)
+					.addComponent(getViewSelectionLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addGap(0, 10, Short.MAX_VALUE)
+					.addComponent(getDestroySelectedViewsButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(sep, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(getThumbnailSlider(), 100, 100, 100)
+					.addContainerGap()
+			);
+			layout.setVerticalGroup(layout.createParallelGroup(CENTER, true)
+					.addComponent(getViewModeButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(getComparisonModeButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(getDetachSelectedViewsButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(getReattachAllViewsButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(getViewSelectionLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(getDestroySelectedViewsButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(sep, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+					.addComponent(getThumbnailSlider(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+			);
+		}
+		
+		return toolBar;
+	}
+	
+	JButton getViewModeButton() {
+		if (viewModeButton == null) {
+			viewModeButton = new JButton(ICON_SHARE_ALT_SQUARE);
+			viewModeButton.setToolTipText("Show Network View");
+			styleToolBarButton(viewModeButton, serviceRegistrar.getService(IconManager.class).getIconFont(22.0f));
+		}
+		
+		return viewModeButton;
+	}
+	
+	JButton getComparisonModeButton() {
+		if (comparisonModeButton == null) {
+			comparisonModeButton = new JButton(ICON_CARET_RIGHT + ICON_CARET_LEFT);
+			comparisonModeButton.setToolTipText("Compare 2 Network Views");
+			styleToolBarButton(comparisonModeButton, serviceRegistrar.getService(IconManager.class).getIconFont(22.0f));
+		}
+		
+		return comparisonModeButton;
+	}
+	
+	JButton getDetachSelectedViewsButton() {
+		if (detachSelectedViewsButton == null) {
+			detachSelectedViewsButton = new JButton(ICON_EXTERNAL_LINK_SQUARE);
+			detachSelectedViewsButton.setToolTipText("Detach Selected Network Views");
+			styleToolBarButton(detachSelectedViewsButton, serviceRegistrar.getService(IconManager.class).getIconFont(22.0f));
+		}
+		
+		return detachSelectedViewsButton;
+	}
+	
+	JButton getReattachAllViewsButton() {
+		if (reattachAllViewsButton == null) {
+			reattachAllViewsButton = new JButton(ICON_THUMB_TACK + " " + ICON_THUMB_TACK);
+			reattachAllViewsButton.setToolTipText("Reattach All Network Views");
+			styleToolBarButton(reattachAllViewsButton, serviceRegistrar.getService(IconManager.class).getIconFont(14.0f));
+		}
+		
+		return reattachAllViewsButton;
+	}
+	
+	JButton getDestroySelectedViewsButton() {
+		if (destroySelectedViewsButton == null) {
+			destroySelectedViewsButton = new JButton(ICON_TRASH_O);
+			destroySelectedViewsButton.setToolTipText("Destroy Selected Network Views");
+			styleToolBarButton(destroySelectedViewsButton, serviceRegistrar.getService(IconManager.class).getIconFont(22.0f));
+		}
+		
+		return destroySelectedViewsButton;
+	}
+	
+	private JLabel getViewSelectionLabel() {
+		if (viewSelectionLabel == null) {
+			viewSelectionLabel = new JLabel();
+			viewSelectionLabel.setHorizontalAlignment(JLabel.CENTER);
+			viewSelectionLabel.setFont(viewSelectionLabel.getFont().deriveFont(LookAndFeelUtil.getSmallFontSize()));
+		}
+		
+		return viewSelectionLabel;
+	}
+	
+	protected JSlider getThumbnailSlider() {
+		if (thumbnailSlider == null) {
+			final int value = Math.round(MIN_THUMBNAIL_SIZE + (MAX_THUMBNAIL_SIZE - MIN_THUMBNAIL_SIZE) / 3.0f);
+			thumbnailSlider = new JSlider(MIN_THUMBNAIL_SIZE, MAX_THUMBNAIL_SIZE, value);
+			thumbnailSlider.setToolTipText("Thumbnail Size");
+			thumbnailSlider.putClientProperty("JComponent.sizeVariant", "mini"); // Aqua (Mac OS X) only
+			
+			thumbnailSlider.addChangeListener(new ChangeListener() {
+				@Override
+				public void stateChanged(ChangeEvent e) {
+					if (!thumbnailSlider.getValueIsAdjusting()) {
+						final int thumbSize = thumbnailSlider.getValue();
+						update(thumbSize);
+					}
+				}
+			});
+		}
+		
+		return thumbnailSlider;
 	}
 	
 	class ThumbnailPanel extends JPanel {
@@ -483,7 +665,7 @@ public class NetworkViewGrid extends JPanel implements Scrollable {
 		
 		private final RenderingEngine<CyNetwork> engine;
 		
-		private final Color BORDER_COLOR = UIManager.getColor("Separator.foreground");
+		private final Color BORDER_COLOR = UIManager.getColor("Label.disabledForeground");
 		private final Color HOVER_COLOR = UIManager.getColor("Focus.color");
 		
 		private Border EMPTY_BORDER = BorderFactory.createEmptyBorder(1, 1, 1, 1);
@@ -811,7 +993,7 @@ public class NetworkViewGrid extends JPanel implements Scrollable {
 			final IconManager iconManager = serviceRegistrar.getService(IconManager.class);
 			label.setFont(iconManager.getIconFont(12.0f));
 			label.setHorizontalAlignment(JLabel.CENTER);
-			label.setForeground(UIManager.getColor("Label.foreground"));
+			label.setForeground(UIManager.getColor("Label.disabledForeground"));
 			
 			label.setMinimumSize(currentLabel.getPreferredSize());
 			label.setMaximumSize(currentLabel.getPreferredSize());
@@ -849,16 +1031,21 @@ public class NetworkViewGrid extends JPanel implements Scrollable {
 	            // Create scaled view image that is big enough to be clipped later
 	            final int svw = (int) Math.round(vw * scale);
 	            final int svh = (int) Math.round(vh * scale);
-	            image = new BufferedImage(svw, svh, BufferedImage.TYPE_INT_ARGB);
 	            
-				final Graphics2D g = (Graphics2D) image.getGraphics();
-				g.scale(scale, scale);
-				engine.printCanvas(g);
-				g.dispose();
-				
-				// Clip the image
-				image = image.getSubimage((svw - iw) / 2, (svh - ih) / 2, iw, ih);
-			} else {
+	            if (svw > 0 && svh > 0) {
+		            image = new BufferedImage(svw, svh, BufferedImage.TYPE_INT_ARGB);
+		            
+					final Graphics2D g = (Graphics2D) image.getGraphics();
+					g.scale(scale, scale);
+					engine.printCanvas(g);
+					g.dispose();
+					
+					// Clip the image
+					image = image.getSubimage((svw - iw) / 2, (svh - ih) / 2, iw, ih);
+	            }
+			}
+			
+			if (image == null) {
 				image = new BufferedImage(iw, ih, BufferedImage.TYPE_INT_RGB);
 				
 				final Graphics2D g2 = image.createGraphics();
@@ -874,6 +1061,34 @@ public class NetworkViewGrid extends JPanel implements Scrollable {
 		@Override
 		public String toString() {
 			return getNetworkView().getVisualProperty(NETWORK_TITLE);
+		}
+	}
+	
+	private class GridPanel extends JPanel implements Scrollable {
+		
+		@Override
+		public Dimension getPreferredScrollableViewportSize() {
+			return getPreferredSize();
+		}
+
+		@Override
+		public int getScrollableUnitIncrement(Rectangle visibleRect, int orientation, int direction) {
+			return 10;
+		}
+
+		@Override
+		public int getScrollableBlockIncrement(Rectangle visibleRect, int orientation, int direction) {
+			return ((orientation == SwingConstants.VERTICAL) ? visibleRect.height : visibleRect.width) - 10;
+		}
+
+		@Override
+		public boolean getScrollableTracksViewportWidth() {
+			return true;
+		}
+
+		@Override
+		public boolean getScrollableTracksViewportHeight() {
+			return thumbnailPanels == null || thumbnailPanels.isEmpty();
 		}
 	}
 	

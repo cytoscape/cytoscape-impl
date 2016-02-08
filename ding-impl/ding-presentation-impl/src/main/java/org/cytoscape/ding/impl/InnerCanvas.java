@@ -279,9 +279,12 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 	public void print(Graphics g) {
 		isPrinting = true;
 		
-		if (m_view != null)
-			renderGraph(new GraphGraphics(
-					new ImageImposter(g, getWidth(), getHeight()), /* debug = */ false, /* clear = */ false), 
+		final int w = getWidth();
+		final int h = getHeight();
+		
+		if (m_view != null && w > 0 && h > 0)
+			renderGraph(
+					new GraphGraphics(new ImageImposter(g, w, h), /* debug = */ false, /* clear = */ false), 
 					/* setLastRenderDetail = */ false, m_view.m_printLOD);
 		
 		isPrinting = false;
