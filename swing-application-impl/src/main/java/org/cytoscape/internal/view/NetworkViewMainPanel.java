@@ -358,6 +358,11 @@ public class NetworkViewMainPanel extends JPanel {
 			final NetworkViewContainer vc = frame.getNetworkViewContainer();
 			final JRootPane rootPane = frame.getRootPane();
 			
+			// To prevent error
+			// "IllegalArgumentException: adding a container to a container on a different GraphicsDevice"
+			// when using multiple monitors
+			rootPane.getParent().remove(rootPane);
+			
 			frame.dispose();
 			viewFrames.remove(vc.getName());
 			
