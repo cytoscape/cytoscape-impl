@@ -303,8 +303,9 @@ public class CyCustomGraphicsValueEditor implements VisualPropertyValueEditor<Cy
 			final JButton openImgMgrBtn = new JButton(new AbstractAction("Open Image Manager...") {
 				@Override
 				public void actionPerformed(ActionEvent e) {
+					final Window owner = SwingUtilities.getWindowAncestor(GraphicsPanel.this);
 					final CustomGraphicsManagerDialog dialog = 
-							new CustomGraphicsManagerDialog(customGraphicsMgr, browser, serviceRegistrar);
+							new CustomGraphicsManagerDialog(owner, customGraphicsMgr, browser, serviceRegistrar);
 					dialog.setVisible(true);
 					
 					updateList();
