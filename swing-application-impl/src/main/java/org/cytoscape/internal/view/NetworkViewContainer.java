@@ -11,31 +11,20 @@ import static org.cytoscape.util.swing.IconManager.ICON_TH;
 import static org.cytoscape.util.swing.IconManager.ICON_THUMB_TACK;
 
 import java.awt.BorderLayout;
-import java.awt.Component;
-import java.awt.Container;
 import java.awt.Dimension;
-import java.awt.LayoutManager;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.beans.PropertyVetoException;
 
 import javax.swing.BorderFactory;
 import javax.swing.GroupLayout;
 import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.JDesktopPane;
-import javax.swing.JInternalFrame;
 import javax.swing.JLabel;
-import javax.swing.JLayeredPane;
 import javax.swing.JPanel;
-import javax.swing.JRootPane;
 import javax.swing.JSeparator;
 import javax.swing.JTextField;
-import javax.swing.RootPaneContainer;
 import javax.swing.UIManager;
-import javax.swing.plaf.basic.BasicInternalFrameUI;
 
 import org.cytoscape.internal.util.ViewUtil;
 import org.cytoscape.model.CyNetwork;
@@ -47,20 +36,13 @@ import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.view.presentation.RenderingEngineFactory;
 
 @SuppressWarnings("serial")
-public class NetworkViewContainer extends JComponent implements RootPaneContainer {
+public class NetworkViewContainer extends SimpleRootPaneContainer {
 	
 	private final CyNetworkView networkView;
 	private final RenderingEngineFactory<CyNetwork> engineFactory;
 	private final RenderingEngine<CyNetwork> renderingEngine;
 
-	/**
-     * The <code>JRootPane</code> instance that manages the <code>contentPane</code>
-     * and optional <code>menuBar</code> for this frame, as well as the <code>glassPane</code>.
-     */
-	protected JRootPane rootPane;
-	
-	private JDesktopPane viewDesktopPane;
-	private JInternalFrame viewInternalFrame;
+	private SimpleRootPaneContainer visualizationContainer;
 	
 	private JPanel toolBar;
 	private JButton gridModeButton;
@@ -78,13 +60,6 @@ public class NetworkViewContainer extends JComponent implements RootPaneContaine
 	final JSeparator sep3 = new JSeparator(JSeparator.VERTICAL);
 	final JSeparator sep4 = new JSeparator(JSeparator.VERTICAL);
 	
-	/**
-     * If true then calls to <code>add</code> and <code>setLayout</code>
-     * will be forwarded to the <code>contentPane</code>. This is initially
-     * false, but is set to true when the <code>NetworkViewContainer</code> is constructed.
-     */
-    private boolean rootPaneCheckingEnabled;
-    
     private boolean detached;
     private boolean comparing;
 	
@@ -102,7 +77,7 @@ public class NetworkViewContainer extends JComponent implements RootPaneContaine
 		setName(ViewUtil.createUniqueKey(networkView));
 		init();
 		
-		renderingEngine = engineFactory.createRenderingEngine(viewInternalFrame, networkView);
+		renderingEngine = engineFactory.createRenderingEngine(getVisualizationContainer(), networkView);
 	}
 	
 	public boolean isDetached() {
@@ -207,110 +182,7 @@ public class NetworkViewContainer extends JComponent implements RootPaneContaine
 		getBirdsEyeViewPanel().dispose();
 	}
 	
-	@Override
-	public JRootPane getRootPane() {
-        return rootPane;
-    }
-	
-	protected void setRootPane(JRootPane root) {
-		if (rootPane != null)
-			remove(rootPane);
-		
-		JRootPane oldValue = getRootPane();
-		rootPane = root;
-		
-		if (rootPane != null) {
-			boolean checkingEnabled = isRootPaneCheckingEnabled();
-			
-			try {
-				setRootPaneCheckingEnabled(false);
-				add(rootPane, BorderLayout.CENTER);
-			} finally {
-				setRootPaneCheckingEnabled(checkingEnabled);
-			}
-		}
-		
-		firePropertyChange("rootPane", oldValue, root);
-    }
-	
-	@Override
-	public Container getContentPane() {
-        return getRootPane().getContentPane();
-    }
-	
-	@Override
-	public void setContentPane(final Container c) {
-		Container oldValue = getContentPane();
-        getRootPane().setContentPane(c);
-        firePropertyChange("contentPane", oldValue, c);
-	}
-	
-	@Override
-	public JLayeredPane getLayeredPane() {
-		return getRootPane().getLayeredPane();
-	}
-	
-	@Override
-    public void setLayeredPane(JLayeredPane layered) {
-        final JLayeredPane oldValue = getLayeredPane();
-        getRootPane().setLayeredPane(layered);
-        firePropertyChange("layeredPane", oldValue, layered);
-    }
-	
-	@Override
-	public Component getGlassPane() {
-		return getRootPane().getGlassPane();
-	}
-	
-	@Override
-    public void setGlassPane(Component glass) {
-        Component oldValue = getGlassPane();
-        getRootPane().setGlassPane(glass);
-        firePropertyChange("glassPane", oldValue, glass);
-    }
-	
-    /**
-     * Removes the specified component from the container. If
-     * <code>comp</code> is not the <code>rootPane</code>, this will forward
-     * the call to the <code>contentPane</code>. This will do nothing if
-     * <code>comp</code> is not a child of the <code>JFrame</code> or <code>contentPane</code>.
-     */
-	@Override
-	public void remove(Component comp) {
-		final int oldCount = getComponentCount();
-		super.remove(comp);
-		
-		if (oldCount == getComponentCount())
-			getContentPane().remove(comp);
-	}
-
-    /**
-     * Overridden to conditionally forward the call to the <code>contentPane</code>.
-     * Refer to {@link javax.swing.RootPaneContainer} for more information.
-     */
-	@Override
-	public void setLayout(LayoutManager manager) {
-		if (isRootPaneCheckingEnabled())
-			getContentPane().setLayout(manager);
-		else
-			super.setLayout(manager);
-	}
-	
-	/**
-     * This method is overridden to conditionally forward calls to the <code>contentPane</code>.
-     * By default, children are added to the <code>contentPane</code> instead
-     * of the frame, refer to {@link javax.swing.RootPaneContainer} for details.
-     */
-	@Override
-	protected void addImpl(Component comp, Object constraints, int index) {
-		if (isRootPaneCheckingEnabled())
-			getContentPane().add(comp, constraints, index);
-		else
-			super.addImpl(comp, constraints, index);
-	}
-	
 	private void init() {
-		final JRootPane rp = new JRootPane();
 		final JPanel glassPane = new JPanel();
 		
 		{
@@ -331,25 +203,13 @@ public class NetworkViewContainer extends JComponent implements RootPaneContaine
 			);
 		}
 		
-		rp.setGlassPane(glassPane);
+		getRootPane().setGlassPane(glassPane);
 		glassPane.setOpaque(false);
 		glassPane.setVisible(true);
 		
-		setRootPane(rp);
-		setLayout(new BorderLayout());
-		add(getRootPane(), BorderLayout.CENTER);
-		
 		getContentPane().setLayout(new BorderLayout());
-		getContentPane().add(getViewDesktopPane(), BorderLayout.CENTER);
+		getContentPane().add(getVisualizationContainer(), BorderLayout.CENTER);
 		getContentPane().add(getToolBar(), BorderLayout.SOUTH);
-		
-		getViewInternalFrame().setVisible(true);
-		
-		try {
-			getViewInternalFrame().setMaximum(true);
-		} catch (PropertyVetoException e) {
-			e.printStackTrace();
-		}
 	}
 	
 	protected RenderingEngine<CyNetwork> getRenderingEngine() {
@@ -360,35 +220,12 @@ public class NetworkViewContainer extends JComponent implements RootPaneContaine
 		return networkView;
 	}
 	
-	private boolean isRootPaneCheckingEnabled() {
-		return rootPaneCheckingEnabled;
-	}
-
-	private void setRootPaneCheckingEnabled(boolean enabled) {
-		rootPaneCheckingEnabled = enabled;
-	}
-	
-	private JDesktopPane getViewDesktopPane() {
-		if (viewDesktopPane == null) {
-			viewDesktopPane = new JDesktopPane();
-			viewDesktopPane.add(getViewInternalFrame());
+	private SimpleRootPaneContainer getVisualizationContainer() {
+		if (visualizationContainer == null) {
+			visualizationContainer = new SimpleRootPaneContainer();
 		}
 		
-		return viewDesktopPane;
-	}
-	
-	private JInternalFrame getViewInternalFrame() {
-		if (viewInternalFrame == null) {
-			viewInternalFrame = new JInternalFrame("");
-			viewInternalFrame.setIconifiable(false);
-			viewInternalFrame.setClosable(false);
-			
-			// Remove border and title bar
-			viewInternalFrame.setBorder(null);
-			((BasicInternalFrameUI) viewInternalFrame.getUI()).setNorthPane(null);
-		}
-		
-		return viewInternalFrame;
+		return visualizationContainer;
 	}
 	
 	JPanel getToolBar() {
