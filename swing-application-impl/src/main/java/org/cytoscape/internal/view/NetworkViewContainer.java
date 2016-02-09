@@ -35,6 +35,7 @@ import javax.swing.JSeparator;
 import javax.swing.JTextField;
 import javax.swing.RootPaneContainer;
 import javax.swing.UIManager;
+import javax.swing.plaf.basic.BasicInternalFrameUI;
 
 import org.cytoscape.internal.util.ViewUtil;
 import org.cytoscape.model.CyNetwork;
@@ -381,7 +382,10 @@ public class NetworkViewContainer extends JComponent implements RootPaneContaine
 			viewInternalFrame = new JInternalFrame("");
 			viewInternalFrame.setIconifiable(false);
 			viewInternalFrame.setClosable(false);
+			
+			// Remove border and title bar
 			viewInternalFrame.setBorder(null);
+			((BasicInternalFrameUI) viewInternalFrame.getUI()).setNorthPane(null);
 		}
 		
 		return viewInternalFrame;
