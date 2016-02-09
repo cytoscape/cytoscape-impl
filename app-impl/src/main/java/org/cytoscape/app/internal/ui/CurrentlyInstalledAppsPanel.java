@@ -28,6 +28,7 @@ import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
 
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
@@ -529,12 +530,9 @@ public class CurrentlyInstalledAppsPanel extends JPanel {
     	deps = deps.substring(0, deps.length() - 1);
     	JTextArea textArea = new JTextArea(deps);
     	textArea.setRows(Math.min(otherAppsDependingOn.size(), 10));
-    	textArea.setColumns(1);
 		textArea.setEditable(false);
 		textArea.setHighlighter(null); // disables text selection
 		textArea.setBorder(null);
-		textArea.setLineWrap(true);
-		textArea.setWrapStyleWord(true);
 		textArea.setOpaque(false);
 		
     	JScrollPane scrollPane = new JScrollPane(textArea);
@@ -547,6 +545,11 @@ public class CurrentlyInstalledAppsPanel extends JPanel {
     	JLabel message = new JLabel("Continue?");
     	message.setAlignmentX(LEFT_ALIGNMENT);
     	panel.add(message);
+    	Dimension size = panel.getPreferredSize();
+    	if(size.width > 600) {
+    		size.width = 600;
+    		panel.setPreferredSize(size);
+    	}
     	int confirm = JOptionPane.showConfirmDialog(this, panel, "Warning", JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE);
     	return (confirm == JOptionPane.OK_OPTION);
     }
