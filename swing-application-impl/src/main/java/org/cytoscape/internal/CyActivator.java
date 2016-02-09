@@ -560,7 +560,7 @@ public class CyActivator extends AbstractCyActivator {
 				UIManager.put("Label.disabledForeground", UIManager.getColor("nimbusDisabledText"));
 				UIManager.put("Button.disabledForeground", UIManager.getColor("nimbusDisabledText"));
 				UIManager.put("Button.disabledText", UIManager.getColor("nimbusDisabledText"));
-				UIManager.put("Focus.color", UIManager.getColor("nimbusFocus"));
+				UIManager.put("Focus.color", new Color(115, 164, 209));
 				UIManager.put("TextField.selectionBackground", UIManager.getColor("nimbusSelectionBackground"));
 				UIManager.put(
 						"TableHeader.cellBorder", 
