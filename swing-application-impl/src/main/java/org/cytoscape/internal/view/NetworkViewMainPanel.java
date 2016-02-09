@@ -363,6 +363,7 @@ public class NetworkViewMainPanel extends JPanel {
 			// when using multiple monitors
 			rootPane.getParent().remove(rootPane);
 			
+			frame.setJMenuBar(null);
 			frame.dispose();
 			viewFrames.remove(vc.getName());
 			
