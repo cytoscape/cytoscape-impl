@@ -58,7 +58,6 @@ import org.cytoscape.io.webservice.events.DataImportFinishedEvent;
 import org.cytoscape.io.webservice.swing.WebServiceGUI;
 import org.cytoscape.io.write.*;
 import org.cytoscape.jobs.CyJobManager;
-import org.cytoscape.jobs.utils.JSONCyJobData;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyTableFactory;
@@ -222,7 +221,6 @@ public class CyAppAdapterImpl implements CySwingAppAdapter {
 	private Transformers transformers;
 	private TransformerViewFactory transformerViewFactory;
 	private CyJobManager cyjobManager;
-	private JSONCyJobData jsonJobData;
 
 /// from core-task api
 	private LoadVizmapFileTaskFactory loadVizmapFileTaskFactory;

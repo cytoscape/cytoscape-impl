@@ -35,6 +35,8 @@ import org.cytoscape.application.CyUserLog;
 import org.cytoscape.jobs.CyJob;
 import org.cytoscape.jobs.CyJobHandler;
 import org.cytoscape.jobs.CyJobStatus;
+import org.cytoscape.jobs.CyJobStatus.Status;
+import org.cytoscape.work.TaskMonitor;
 
 import org.apache.log4j.Logger;
 
@@ -49,7 +51,8 @@ public class SimpleCyJobMonitor implements CyJobHandler {
 
 	public void handleJob(CyJob job, CyJobStatus status) {
 		String jobId = job.getJobId();
-		switch(status) {
+		Status stat = status.getStatus();
+		switch(stat) {
 			case FAILED:
 				logger.error("Job "+jobId+" has failed!");
 				break;
@@ -69,15 +72,19 @@ public class SimpleCyJobMonitor implements CyJobHandler {
 
 			case FINISHED:
 				logger.info("Job "+jobId+" has finished");
+				// The final version of this will call loadResults
 				break;
 			case SUBMITTED:
 				logger.info("Job "+jobId+" was submitted");
 				break;
 			case QUEUED:
 				logger.info("Job "+jobId+" has been queued");
+				break;
 			case RUNNING:
 				logger.info("Job "+jobId+" is running");
 				break;
 		}
 	}
+
+	public void loadResults(CyJob job, TaskMonitor monitor) {}
 }

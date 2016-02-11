@@ -27,15 +27,18 @@ package org.cytoscape.jobs.internal;
 import java.util.Properties;
 
 import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.jobs.CyJobExecutionService;
 import org.cytoscape.jobs.CyJobHandler;
 import org.cytoscape.jobs.CyJobManager;
 import org.cytoscape.property.PropertyUpdatedListener;
 import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.session.events.SessionAboutToBeSavedListener;
 import org.cytoscape.session.events.SessionLoadedListener;
 import static org.cytoscape.work.ServiceProperties.*;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
+
 
 public class CyActivator extends AbstractCyActivator {
 	public CyActivator() {
@@ -63,6 +66,14 @@ public class CyActivator extends AbstractCyActivator {
 
 		CyJobManagerImpl cyJobManager = new CyJobManagerImpl(cyServiceRegistrarServiceRef, cyEventHelper, jobMonitor);
 		registerService(bc,cyJobManager,CyJobManager.class, new Properties());
+
+		// Our job manager also needs to handle the registration of jobs handlers and job session handlers
+		registerServiceListener(bc, cyJobManager, "addJobHandler", "removeJobHandler", CyJobHandler.class);
+		registerServiceListener(bc, cyJobManager, "addExecutionService", "removeExecutionService", CyJobExecutionService.class);
+
+		// Our job manager also needs to know about session load and save
+		registerService(bc,cyJobManager,SessionAboutToBeSavedListener.class, new Properties());
+		registerService(bc,cyJobManager,SessionLoadedListener.class, new Properties());
 
 	}
 

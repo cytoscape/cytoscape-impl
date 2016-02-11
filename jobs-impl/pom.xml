@@ -120,6 +120,13 @@
 			<version>9.0.0</version>
 		</dependency>
 		<dependency>
+			<groupId>com.googlecode.json-simple</groupId>
+			<artifactId>json-simple</artifactId>
+			<version>1.1.1</version>
+			<optional>true</optional>
+		</dependency>
+
+		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>session-api</artifactId>
 		</dependency>
