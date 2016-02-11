@@ -173,7 +173,7 @@ public class CyJobManagerImpl implements CyJobManager,
 		exServiceMap.put(exService.getServiceName(), exService);
 	}
 
-	public void removeJobHandler(CyJobExecutionService exService, Map<?, ?> properties) {
+	public void removeExecutionService(CyJobExecutionService exService, Map<?, ?> properties) {
 		String clazz = exService.getServiceName();
 		if (exServiceMap.containsKey(clazz))
 			exServiceMap.remove(clazz);
