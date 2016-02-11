@@ -131,6 +131,13 @@ public class CyJobManagerImpl implements CyJobManager,
 	}
 
 	@Override
+	public void associateHandler(CyJob job, String jobHandlerName, int pollInterval) {
+		if (handlerMap.containsKey(jobHandlerName)) {
+			associateHandler(job, handlerMap.get(jobHandlerName), pollInterval);
+		}
+	}
+
+	@Override
 	public CyJobStatus cancelJob(CyJob job) {
 		removeJob(job);
 		return job.getJobExecutionService().cancelJob(job);
