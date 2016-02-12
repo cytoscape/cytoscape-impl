@@ -84,7 +84,6 @@ import org.cytoscape.internal.undo.RedoAction;
 import org.cytoscape.internal.undo.UndoAction;
 import org.cytoscape.internal.util.HSLColor;
 import org.cytoscape.internal.util.undo.UndoMonitor;
-import org.cytoscape.internal.view.BirdsEyeViewHandler;
 import org.cytoscape.internal.view.CyDesktopManager;
 import org.cytoscape.internal.view.CyHelpBrokerImpl;
 import org.cytoscape.internal.view.CytoscapeDesktop;
@@ -93,8 +92,10 @@ import org.cytoscape.internal.view.CytoscapeMenuPopulator;
 import org.cytoscape.internal.view.CytoscapeMenus;
 import org.cytoscape.internal.view.CytoscapeToolBar;
 import org.cytoscape.internal.view.MacFullScreenEnabler;
-import org.cytoscape.internal.view.NetworkPanel;
-import org.cytoscape.internal.view.NetworkViewManager;
+import org.cytoscape.internal.view.NetworkMainPanel;
+import org.cytoscape.internal.view.NetworkSelectionMediator;
+import org.cytoscape.internal.view.NetworkViewMainPanel;
+import org.cytoscape.internal.view.NetworkViewMediator;
 import org.cytoscape.internal.view.ToolBarEnableUpdater;
 import org.cytoscape.internal.view.help.ArrangeTaskFactory;
 import org.cytoscape.internal.view.help.HelpAboutTaskFactory;
@@ -102,14 +103,11 @@ import org.cytoscape.internal.view.help.HelpContactHelpDeskTaskFactory;
 import org.cytoscape.internal.view.help.HelpContentsTaskFactory;
 import org.cytoscape.internal.view.help.HelpReportABugTaskFactory;
 import org.cytoscape.io.datasource.DataSourceManager;
-import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.events.NetworkDestroyedListener;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.property.bookmark.BookmarksUtil;
 import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.session.CySessionManager;
 import org.cytoscape.session.events.SessionLoadedListener;
 import org.cytoscape.task.DynamicTaskFactoryProvisioner;
 import org.cytoscape.task.NetworkCollectionTaskFactory;
@@ -117,9 +115,6 @@ import org.cytoscape.task.NetworkTaskFactory;
 import org.cytoscape.task.NetworkViewCollectionTaskFactory;
 import org.cytoscape.task.NetworkViewTaskFactory;
 import org.cytoscape.task.TableTaskFactory;
-import org.cytoscape.task.edit.EditNetworkTitleTaskFactory;
-import org.cytoscape.task.write.SaveSessionAsTaskFactory;
-import org.cytoscape.util.swing.FileUtil;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.util.swing.OpenBrowser;
@@ -127,11 +122,9 @@ import org.cytoscape.view.layout.CyLayoutAlgorithm;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.events.NetworkViewDestroyedListener;
-import org.cytoscape.view.presentation.RenderingEngineManager;
 import org.cytoscape.view.presentation.property.values.CyColumnIdentifierFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.work.ServiceProperties;
-import org.cytoscape.work.SynchronousTaskManager;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.properties.TunablePropertySerializerFactory;
 import org.cytoscape.work.swing.DialogTaskManager;
@@ -156,15 +149,11 @@ public class CyActivator extends AbstractCyActivator {
 		
 		setLookAndFeel(cytoscapePropertiesServiceRef.getProperties());
 		
-		RenderingEngineManager renderingEngineManagerServiceRef = getService(bc, RenderingEngineManager.class);
 		CyShutdown cytoscapeShutdownServiceRef = getService(bc, CyShutdown.class);
 		CyApplicationConfiguration cyApplicationConfigurationServiceRef = getService(bc, CyApplicationConfiguration.class);
 		CyVersion cyVersionServiceRef = getService(bc, CyVersion.class);
 		CyApplicationManager cyApplicationManagerServiceRef = getService(bc, CyApplicationManager.class);
-		CySessionManager cySessionManagerServiceRef = getService(bc, CySessionManager.class);
 		CyNetworkViewManager cyNetworkViewManagerServiceRef = getService(bc, CyNetworkViewManager.class);
-		CyNetworkManager cyNetworkManagerServiceRef = getService(bc, CyNetworkManager.class);
-		CyNetworkTableManager cyNetworkTableManagerServiceRef = getService(bc, CyNetworkTableManager.class);
 		DialogTaskManager dialogTaskManagerServiceRef = getService(bc, DialogTaskManager.class);
 		PanelTaskManager panelTaskManagerServiceRef = getService(bc, PanelTaskManager.class);
 		TaskStatusPanelFactory taskStatusPanelFactoryRef = getService(bc, TaskStatusPanelFactory.class);
@@ -177,10 +166,8 @@ public class CyActivator extends AbstractCyActivator {
 		CyServiceRegistrar cyServiceRegistrarServiceRef = getService(bc, CyServiceRegistrar.class);
 		OpenBrowser openBrowserServiceRef = getService(bc, OpenBrowser.class);
 		VisualMappingManager visualMappingManagerServiceRef  = getService(bc, VisualMappingManager.class);
-		FileUtil fileUtilServiceRef = getService(bc, FileUtil.class);
 		DynamicTaskFactoryProvisioner dynamicTaskFactoryProvisionerServiceRef = getService(bc, DynamicTaskFactoryProvisioner.class);
 		DataSourceManager dsManagerServiceRef = getService(bc, DataSourceManager.class);
-		EditNetworkTitleTaskFactory editNetworkTitleTFServiceRef  = getService(bc, EditNetworkTitleTaskFactory.class);
 		TunablePropertySerializerFactory tunablePropertySerializerFactoryRef =  getService(bc, TunablePropertySerializerFactory.class);
 		
 		//////////////		
@@ -201,28 +188,15 @@ public class CyActivator extends AbstractCyActivator {
 		ToolBarEnableUpdater toolBarEnableUpdater =
 				new ToolBarEnableUpdater(cytoscapeToolBar, cyServiceRegistrarServiceRef);
 
-		NetworkViewManager networkViewManager = new NetworkViewManager(cyApplicationManagerServiceRef,
-		                                                               cyNetworkViewManagerServiceRef, 
-		                                                               renderingEngineManagerServiceRef,
-		                                                               cytoscapePropertiesServiceRef,
-		                                                               cyHelpBroker,
-		                                                               visualMappingManagerServiceRef,
-		                                                               cyNetworkTableManagerServiceRef,
-		                                                               cyColumnIdentifierFactory);
+		NetworkViewMainPanel netViewMainPanel = new NetworkViewMainPanel(cytoscapeMenus, cyServiceRegistrarServiceRef);
+		NetworkViewMediator netViewMediator = new NetworkViewMediator(netViewMainPanel,
+																	  cyHelpBroker,
+																	  cyServiceRegistrarServiceRef);
 
-		BirdsEyeViewHandler birdsEyeViewHandler = new BirdsEyeViewHandler(cyApplicationManagerServiceRef,
-		                                                                  cyNetworkViewManagerServiceRef);
-
-		NetworkPanel networkPanel = new NetworkPanel(cyApplicationManagerServiceRef,
-		                                             cyNetworkManagerServiceRef,
-		                                             cyNetworkViewManagerServiceRef,
-		                                             birdsEyeViewHandler,
-		                                             dialogTaskManagerServiceRef,
-		                                             dynamicTaskFactoryProvisionerServiceRef,
-		                                             editNetworkTitleTFServiceRef);
-
+		NetworkMainPanel netMainPanel = new NetworkMainPanel(cyServiceRegistrarServiceRef);
+		
 		CytoscapeDesktop cytoscapeDesktop = new CytoscapeDesktop(cytoscapeMenus,
-		                                                         networkViewManager,
+		                                                         netViewMediator,
 		                                                         cytoscapeShutdownServiceRef,
 		                                                         cyEventHelperServiceRef,
 		                                                         cyServiceRegistrarServiceRef,
@@ -230,23 +204,12 @@ public class CyActivator extends AbstractCyActivator {
 		                                                         taskStatusPanelFactoryRef,
 		                                                         iconManagerServiceRef);
 
-		CyDesktopManager cyDesktopManager = new CyDesktopManager(cytoscapeDesktop, networkViewManager);
-
-		SynchronousTaskManager<?> synchronousTaskManagerServiceRef = getService(bc, SynchronousTaskManager.class);
-
-		SaveSessionAsTaskFactory saveTaskFactoryServiceRef = getService(bc, SaveSessionAsTaskFactory.class);
+		CyDesktopManager cyDesktopManager = new CyDesktopManager(cytoscapeDesktop, netViewMediator);
 
 		SessionIO sessionIO = new SessionIO();
 
-		SessionHandler sessionHandler = new SessionHandler(cytoscapeDesktop,
-														   cyNetworkManagerServiceRef,
-														   networkViewManager,
-														   synchronousTaskManagerServiceRef,
-														   saveTaskFactoryServiceRef,
-														   sessionIO,
-														   cySessionManagerServiceRef,
-														   fileUtilServiceRef,
-														   networkPanel);
+		SessionHandler sessionHandler = new SessionHandler(cytoscapeDesktop, netViewMediator, sessionIO,
+				netMainPanel, cyServiceRegistrarServiceRef);
 
 		PrintAction printAction = new PrintAction(cyApplicationManagerServiceRef, 
 		                                          cyNetworkViewManagerServiceRef, 
@@ -281,18 +244,16 @@ public class CyActivator extends AbstractCyActivator {
 		                                                   panelTaskManagerServiceRef,
 		                                                   dynamicTaskFactoryProvisionerServiceRef);
 
-		HelpContentsTaskFactory helpContentsTaskFactory = new HelpContentsTaskFactory(cyHelpBroker,
-		                                                                              cytoscapeDesktop);
+		HelpContentsTaskFactory helpContentsTaskFactory = new HelpContentsTaskFactory(cyHelpBroker, cytoscapeDesktop);
 		HelpContactHelpDeskTaskFactory helpContactHelpDeskTaskFactory = new HelpContactHelpDeskTaskFactory(openBrowserServiceRef);
 		HelpReportABugTaskFactory helpReportABugTaskFactory = new HelpReportABugTaskFactory(openBrowserServiceRef, cyVersionServiceRef);
 		HelpAboutTaskFactory helpAboutTaskFactory = new HelpAboutTaskFactory(cyVersionServiceRef, cytoscapeDesktop);
-		ArrangeTaskFactory arrangeGridTaskFactory = new ArrangeTaskFactory(cyDesktopManager, GRID);
-		ArrangeTaskFactory arrangeCascadeTaskFactory = new ArrangeTaskFactory(cyDesktopManager,
-		                                                                      CASCADE);
-		ArrangeTaskFactory arrangeHorizontalTaskFactory = new ArrangeTaskFactory(cyDesktopManager,
-		                                                                         HORIZONTAL);
-		ArrangeTaskFactory arrangeVerticalTaskFactory = new ArrangeTaskFactory(cyDesktopManager,
-		                                                                       VERTICAL);
+		
+		ArrangeTaskFactory arrangeGridTaskFactory = new ArrangeTaskFactory(GRID, cyDesktopManager, netViewMediator);
+		ArrangeTaskFactory arrangeCascadeTaskFactory = new ArrangeTaskFactory(CASCADE, cyDesktopManager, netViewMediator);
+		ArrangeTaskFactory arrangeHorizontalTaskFactory = new ArrangeTaskFactory(HORIZONTAL, cyDesktopManager, netViewMediator);
+		ArrangeTaskFactory arrangeVerticalTaskFactory = new ArrangeTaskFactory(VERTICAL, cyDesktopManager, netViewMediator);
+		
 		CytoPanelAction cytoPanelWestAction = new CytoPanelAction(WEST, true, cytoscapeDesktop, 1.0f);
 		CytoPanelAction cytoPanelSouthAction = new CytoPanelAction(SOUTH, true, cytoscapeDesktop, 1.1f);
 		CytoPanelAction cytoPanelEastAction = new CytoPanelAction(EAST, false, cytoscapeDesktop, 1.2f);
@@ -308,10 +269,11 @@ public class CyActivator extends AbstractCyActivator {
 		                                                               cyNetworkViewManagerServiceRef, 
 		                                                               visualMappingManagerServiceRef,
 		                                                               rowViewTracker,
-		                                                               networkViewManager,
+		                                                               netViewMediator,
 		                                                               cyColumnIdentifierFactory);
 		
 		RecentSessionManager recentSessionManager = new RecentSessionManager(cyServiceRegistrarServiceRef);
+		NetworkSelectionMediator networkSelectionMediator = new NetworkSelectionMediator(netMainPanel, netViewMainPanel, cyServiceRegistrarServiceRef);
 		
 		registerService(bc, cyHelpBroker, CyHelpBroker.class, new Properties());
 		registerService(bc, undoAction, CyAction.class, new Properties());
@@ -385,9 +347,8 @@ public class CyActivator extends AbstractCyActivator {
 		                arrangeVerticalTaskFactoryProps);
 		
 		registerAllServices(bc, cytoscapeDesktop, new Properties());
-		registerAllServices(bc, networkPanel, new Properties());
-		registerAllServices(bc, networkViewManager, new Properties());
-		registerAllServices(bc, birdsEyeViewHandler, new Properties());
+		registerAllServices(bc, netMainPanel, new Properties());
+		registerAllServices(bc, netViewMediator, new Properties());
 		registerService(bc, undoMonitor, SetCurrentNetworkViewListener.class, new Properties());
 		registerService(bc, undoMonitor, NetworkDestroyedListener.class, new Properties());
 		registerService(bc, undoMonitor, NetworkViewDestroyedListener.class, new Properties());
@@ -401,6 +362,7 @@ public class CyActivator extends AbstractCyActivator {
 		registerAllServices(bc, toolBarEnableUpdater, new Properties());
 		registerService(bc, configDirPropertyWriter, CyShutdownListener.class, new Properties());
 		registerAllServices(bc, recentSessionManager, new Properties());
+		registerAllServices(bc, networkSelectionMediator, new Properties());
 
 		registerServiceListener(bc, cytoscapeDesktop, "addAction", "removeAction", CyAction.class);
 		registerServiceListener(bc, preferenceAction, "addCyProperty", "removeCyProperty",
@@ -427,14 +389,14 @@ public class CyActivator extends AbstractCyActivator {
 		registerServiceListener(bc, settingsAction, "addLayout", "removeLayout", CyLayoutAlgorithm.class);
 		
 		// For Network Panel context menu
-		registerServiceListener(bc, networkPanel, "addNetworkViewTaskFactory",
+		registerServiceListener(bc, netMainPanel, "addNetworkViewTaskFactory",
 		                        "removeNetworkViewTaskFactory", NetworkViewTaskFactory.class, CONTEXT_MENU_FILTER);
-		registerServiceListener(bc, networkPanel, "addNetworkTaskFactory",
+		registerServiceListener(bc, netMainPanel, "addNetworkTaskFactory",
 		                        "removeNetworkTaskFactory", NetworkTaskFactory.class, CONTEXT_MENU_FILTER);
-		registerServiceListener(bc, networkPanel, "addNetworkViewCollectionTaskFactory",
+		registerServiceListener(bc, netMainPanel, "addNetworkViewCollectionTaskFactory",
 		                        "removeNetworkViewCollectionTaskFactory",
 		                        NetworkViewCollectionTaskFactory.class, CONTEXT_MENU_FILTER);
-		registerServiceListener(bc, networkPanel, "addNetworkCollectionTaskFactory",
+		registerServiceListener(bc, netMainPanel, "addNetworkCollectionTaskFactory",
 		                        "removeNetworkCollectionTaskFactory",
 		                        NetworkCollectionTaskFactory.class, CONTEXT_MENU_FILTER);
 		
@@ -570,7 +532,11 @@ public class CyActivator extends AbstractCyActivator {
 				UIManager.put("TableHeader.background", UIManager.getColor("Table.background"));
 				UIManager.put("Table.gridColor", UIManager.getColor("Table.background"));
 				UIManager.put("Separator.foreground", new Color(208, 208, 208));
-				UIManager.put("Focus.color", UIManager.getColor("TextField.selectionBackground"));
+				
+				final Color selBgColor = UIManager.getColor("TextField.selectionBackground");
+				
+				if (selBgColor != null)
+					UIManager.put("Focus.color", new Color(selBgColor.getRGB()));
 			} else if (LookAndFeelUtil.isNimbusLAF()) {
 				// Nimbus (usually Linux)
 				// Translating Nimbus default colors to more standard UIManager keys
@@ -598,7 +564,14 @@ public class CyActivator extends AbstractCyActivator {
 				UIManager.put("Label.disabledForeground", UIManager.getColor("nimbusDisabledText"));
 				UIManager.put("Button.disabledForeground", UIManager.getColor("nimbusDisabledText"));
 				UIManager.put("Button.disabledText", UIManager.getColor("nimbusDisabledText"));
-				UIManager.put("Focus.color", UIManager.getColor("nimbusFocus"));
+				
+				Color nimbusColor = UIManager.getColor("nimbusFocus");
+				
+				if (nimbusColor == null)
+					nimbusColor = new Color(115, 164, 209);
+				
+				UIManager.put("Focus.color", new Color(nimbusColor.getRGB()));
+				
 				UIManager.put("TextField.selectionBackground", UIManager.getColor("nimbusSelectionBackground"));
 				UIManager.put(
 						"TableHeader.cellBorder", 

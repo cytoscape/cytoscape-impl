@@ -32,7 +32,7 @@ import java.util.Set;
 import javax.swing.SwingUtilities;
 
 import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.internal.view.NetworkViewManager;
+import org.cytoscape.internal.view.NetworkViewMediator;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
@@ -65,17 +65,17 @@ public class RowsSetViewUpdater implements RowsSetListener {
 	private final VisualMappingManager vmm;
 	private final CyNetworkViewManager vm;
 	private final CyApplicationManager am;
-	private final NetworkViewManager viewManager;
+	private final NetworkViewMediator netViewMediator;
 	private final RowViewTracker tracker;
 	private final CyColumnIdentifierFactory colIdFactory;
 
 	public RowsSetViewUpdater(final CyApplicationManager am, final CyNetworkViewManager vm,
-			final VisualMappingManager vmm, final RowViewTracker tracker, final NetworkViewManager viewManager,
+			final VisualMappingManager vmm, final RowViewTracker tracker, final NetworkViewMediator netViewMediator,
 			final CyColumnIdentifierFactory colIdFactory) {
 		this.am = am;
 		this.vm = vm;
 		this.vmm = vmm;
-		this.viewManager = viewManager;
+		this.netViewMediator = netViewMediator;
 		this.tracker = tracker;
 		this.colIdFactory = colIdFactory;
 	}
@@ -91,6 +91,7 @@ public class RowsSetViewUpdater implements RowsSetListener {
 	@Override
 	public void handleEvent(final RowsSetEvent e) {
 		SwingUtilities.invokeLater(new Runnable() {
+			@Override
 			public void run() {
 				updateView(e);
 			}
@@ -168,7 +169,7 @@ public class RowsSetViewUpdater implements RowsSetListener {
 					final VisualStyle style = vmm.getVisualStyle(view);
 					if (style == vs) {
 						// Same style is in use. Need to apply.
-						viewManager.setUpdateFlag(view);
+						netViewMediator.setUpdateFlag(view);
 					}
 				}
 			}

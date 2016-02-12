@@ -28,10 +28,9 @@ package org.cytoscape.ding.impl;
 import java.awt.BorderLayout;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
-import java.util.Properties;
 
 import javax.swing.JComponent;
-import javax.swing.JInternalFrame;
+import javax.swing.RootPaneContainer;
 
 import org.cytoscape.ding.impl.cyannotator.AnnotationFactoryManager;
 import org.cytoscape.event.CyEventHelper;
@@ -47,7 +46,6 @@ import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.view.presentation.RenderingEngineFactory;
-import org.cytoscape.view.presentation.RenderingEngineManager;
 import org.cytoscape.view.presentation.property.values.HandleFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.work.swing.DialogTaskManager;
@@ -132,38 +130,32 @@ public class DingRenderingEngineFactory implements RenderingEngineFactory<CyNetw
 					"Ding accepts CyNetworkView only.");
 
 		final CyNetworkView targetView = (CyNetworkView) view;
-
 		DGraphView dgv = null;
-		if (presentationContainer instanceof JComponent) {
-
-			logger.debug("Start rendering presentation by Ding: "
-					+ targetView.getSUID());
-
-			
-			if(view instanceof DGraphView) {
+		
+		if (presentationContainer instanceof JComponent || presentationContainer instanceof RootPaneContainer) {
+			if (view instanceof DGraphView) {
 				dgv = (DGraphView) view;				
-			}
-			else {
+			} else {
 				dgv = new DGraphView(targetView,
 					rootNetworkManager, undo, spacialFactory, dingLexicon,
 					vtfListener,dialogTaskManager, eventHelper, annMgr, dingGraphLOD, vmm, netViewMgr, handleFactory, registrar);
 				dgv.registerServices();
 			}
+			
 			vtfListener.viewMap.put(targetView, new WeakReference<DGraphView>(dgv));
 
-			if (presentationContainer instanceof JInternalFrame) {
-				final JInternalFrame inFrame = (JInternalFrame) presentationContainer;
-				final InternalFrameComponent ifComp = new InternalFrameComponent(inFrame.getLayeredPane(), dgv);
-				inFrame.getContentPane().add(ifComp);
+			if (presentationContainer instanceof RootPaneContainer) {
+				final RootPaneContainer container = (RootPaneContainer) presentationContainer;
+				final InternalFrameComponent ifComp = new InternalFrameComponent(container.getLayeredPane(), dgv);
+				container.setContentPane(ifComp);
 			} else {
 				final JComponent component = (JComponent) presentationContainer;
 				component.setLayout(new BorderLayout());
 				component.add(dgv.getComponent(), BorderLayout.CENTER);
 			}
-
 		} else {
 			throw new IllegalArgumentException(
-					"frame object is not of type JInternalFrame, which is invalid for this implementation of PresentationFactory");
+					"frame object is not of type JComponent or RootPaneContainer, which is invalid for this implementation of PresentationFactory");
 		}
 
 		return dgv;

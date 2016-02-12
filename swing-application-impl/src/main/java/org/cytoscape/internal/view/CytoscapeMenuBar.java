@@ -1,5 +1,22 @@
 package org.cytoscape.internal.view;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.swing.Action;
+import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.KeyStroke;
+
+import org.cytoscape.application.swing.AbstractCyAction;
+import org.cytoscape.application.swing.CyAction;
+import org.cytoscape.util.swing.GravityTracker;
+import org.cytoscape.util.swing.JMenuTracker;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /*
  * #%L
  * Cytoscape Swing Application Impl (swing-application-impl)
@@ -24,24 +41,11 @@ package org.cytoscape.internal.view;
  * #L%
  */
 
-
-import javax.swing.*;
-import java.util.HashMap;
-import java.util.Map;
-
-
-import org.cytoscape.application.swing.AbstractCyAction;
-import org.cytoscape.application.swing.CyAction;
-import org.cytoscape.util.swing.JMenuTracker;
-import org.cytoscape.util.swing.GravityTracker;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-
 public class CytoscapeMenuBar extends JMenuBar {
+	
 	private final static long serialVersionUID = 1202339868642259L;
 	private final static Logger logger = LoggerFactory.getLogger(CytoscapeMenuBar.class);
+	
 	private final Map<Action,JMenuItem> actionMenuItemMap; 
 	private final JMenuTracker menuTracker;
 

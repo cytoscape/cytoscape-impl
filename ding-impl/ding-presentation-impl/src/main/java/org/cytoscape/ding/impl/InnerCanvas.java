@@ -1,5 +1,36 @@
 package org.cytoscape.ding.impl;
 
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.FontMetrics;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Image;
+import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
+import java.awt.event.MouseWheelEvent;
+import java.awt.event.MouseWheelListener;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.GeneralPath;
+import java.awt.geom.Line2D;
+import java.awt.geom.Point2D;
+import java.awt.image.BufferedImage;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+
+import javax.swing.JComponent;
+import javax.swing.Timer;
+import javax.swing.UIManager;
+
 /*
  * #%L
  * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
@@ -28,8 +59,7 @@ package org.cytoscape.ding.impl;
 import org.cytoscape.ding.EdgeView;
 import org.cytoscape.ding.NodeView;
 import org.cytoscape.ding.ViewChangeEdit;
-import org.cytoscape.ding.impl.DNodeView;
-import org.cytoscape.ding.impl.events.*;
+import org.cytoscape.ding.impl.events.ViewportChangeListener;
 import org.cytoscape.graph.render.export.ImageImposter;
 import org.cytoscape.graph.render.immed.EdgeAnchors;
 import org.cytoscape.graph.render.immed.GraphGraphics;
@@ -41,8 +71,8 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.model.events.RowsSetEvent;
 import org.cytoscape.model.events.RowSetRecord;
+import org.cytoscape.model.events.RowsSetEvent;
 import org.cytoscape.util.intr.LongEnumerator;
 import org.cytoscape.util.intr.LongHash;
 import org.cytoscape.util.intr.LongStack;
@@ -51,19 +81,6 @@ import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.presentation.property.values.Bend;
 import org.cytoscape.view.presentation.property.values.Handle;
 import org.cytoscape.work.undo.UndoSupport;
-
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.*;
-import java.awt.geom.AffineTransform;
-import java.awt.geom.GeneralPath;
-import java.awt.geom.Line2D;
-import java.awt.geom.Point2D;
-import java.awt.image.BufferedImage;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
 
 /**
  * Canvas to be used for drawing actual network visualization
@@ -132,36 +149,36 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 		m_undo = undo;
 		m_lod[0] = new GraphLOD(); // Default LOD.
 		m_backgroundColor = Color.WHITE;
-		m_isVisible = true;
 		m_isOpaque = false;
 		m_xCenter = 0.0d;
 		m_yCenter = 0.0d;
 		m_scaleFactor = 1.0d;
 		m_hash = new LongHash();
-		addMouseListener(this);
-		addMouseMotionListener(this);
-		addMouseWheelListener(this);
-		addKeyListener(this);
-		setFocusable(true);
+		
+		addEdgeMode = new AddEdgeStateMonitor(this, m_view);
 		popup = new PopupMenuHelper(m_view, this);
-
+		
 		mousePressedDelegator = new MousePressedDelegator();
 		mouseReleasedDelegator = new MouseReleasedDelegator();
 		mouseDraggedDelegator = new MouseDraggedDelegator();
 		addEdgeMousePressedDelegator = new AddEdgeMousePressedDelegator();
 
-		addEdgeMode = new AddEdgeStateMonitor(this,m_view);
-
 		SELECTION_RECT_BORDER_COLOR_1 = UIManager.getColor("Focus.color");
 		SELECTION_RECT_BORDER_COLOR_2 = new Color(255, 255, 255, 160);
 		
+		addMouseListener(this);
+		addMouseMotionListener(this);
+		addMouseWheelListener(this);
+		addKeyListener(this);
+		setFocusable(true);
+
 		// Timer to reset edge drawing
 		ActionListener taskPerformer = new ActionListener() {
 			public void actionPerformed(ActionEvent evt) {
 				// System.out.println("hideEdgesTimer expired");
 				hideEdgesTimer.stop();
 				m_lod[0].setDrawEdges(true);
-				m_view.m_viewportChanged = true;
+				m_view.setViewportChanged();
 				repaint();
 			}
 		};
@@ -179,11 +196,12 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 			synchronized (m_lock) {
 				m_img = img;
 				m_grafx = grafx;
-				m_view.m_viewportChanged = true;
+				
+				if (m_view != null)
+					m_view.setViewportChanged();
 			}
 		}
 	}
-
 
 	@Override
 	public void update(Graphics g) {
@@ -201,22 +219,19 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 		m_fontMetrics = g.getFontMetrics();
 
 		synchronized (m_lock) {
-			if (m_view.m_contentChanged || m_view.m_viewportChanged) {
-				// System.out.println("contentChanged = "+m_view.m_contentChanged+", viewportChanged = "+m_view.m_viewportChanged);
-				contentChanged = m_view.m_contentChanged;
-				viewportChanged = m_view.m_viewportChanged;
+			if (m_view.isDirty()) {
+				contentChanged = m_view.isContentChanged();
+				viewportChanged = m_view.isViewportChanged();
 				renderGraph(m_grafx,/* setLastRenderDetail = */ true, m_lod[0]);
-				m_view.m_contentChanged = false;
-				m_view.m_viewportChanged = false;
 				xCenter = m_xCenter;
 				yCenter = m_yCenter;
 				scaleFactor = m_scaleFactor;
 			}
 		}
 
-		// if canvas is visible, draw it (could be made invisible via DingCanvas api)
-		if (m_isVisible) {
-			// Should this be on the AWT thread?
+		// if canvas is visible, draw it
+		if (isVisible()) {
+			// TODO Should this be on the AWT thread?
 			g.drawImage(m_img, 0, 0, null);
 		}
 
@@ -263,9 +278,15 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 	@Override
 	public void print(Graphics g) {
 		isPrinting = true;
-		renderGraph(new GraphGraphics(
-				new ImageImposter(g, getWidth(), getHeight()), /* debug = */ false, /* clear = */ false), 
-				/* setLastRenderDetail = */ false, m_view.m_printLOD);
+		
+		final int w = getWidth();
+		final int h = getHeight();
+		
+		if (m_view != null && w > 0 && h > 0)
+			renderGraph(
+					new GraphGraphics(new ImageImposter(g, w, h), /* debug = */ false, /* clear = */ false), 
+					/* setLastRenderDetail = */ false, m_view.m_printLOD);
+		
 		isPrinting = false;
 	}
 
@@ -274,7 +295,10 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 	public void printNoImposter(Graphics g) {
 		isPrinting = true;
 		final Image img = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_ARGB);
-		renderGraph(new GraphGraphics(img, false, false), /* setLastRenderDetail = */ false, m_view.m_printLOD);
+		
+		if (m_view != null)
+			renderGraph(new GraphGraphics(img, false, false), /* setLastRenderDetail = */ false, m_view.m_printLOD);
+		
 		isPrinting = false;
 	}
 
@@ -499,7 +523,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 
 			m_button1NodeDrag = true;
 		}
-		m_view.m_contentChanged = true;	
+		m_view.setContentChanged();	
 	}
 	
 	private int toggleSelectedEdge(long chosenEdge, MouseEvent e) {
@@ -561,7 +585,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 		}
 
 		m_button1NodeDrag = true;
-		m_view.m_contentChanged = true;
+		m_view.setContentChanged();
 		return chosenEdgeSelected;
 	}
 	
@@ -605,7 +629,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 			selectedNodes[i] = nodes.nextLong();
 
 		if (selectedNodes.length > 0)
-			m_view.m_contentChanged = true;	
+			m_view.setContentChanged();	
 		return selectedNodes;
 	}
 	
@@ -634,7 +658,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 			                                                          false);
 
 			if (hits.numRemaining() > 0)
-				m_view.m_contentChanged = true;
+				m_view.setContentChanged();
 
 			while (hits.numRemaining() > 0) {
 				final long hit = hits.nextLong();
@@ -667,7 +691,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 			selectedEdges[i] = edges.nextLong();
 
 		if (selectedEdges.length > 0)
-			m_view.m_contentChanged = true;
+			m_view.setContentChanged();
 		return selectedEdges;
 	}
 
@@ -876,7 +900,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 			m_scaleFactor = m_scaleFactor * factor;
 		}
 
-		m_view.m_viewportChanged = true;
+		m_view.setViewportChanged();
 		
 		// Update view model.
 		m_view.setVisualProperty(BasicVisualLexicon.NETWORK_SCALE_FACTOR, m_scaleFactor);
@@ -907,20 +931,10 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 		return m_lastRenderDetail;
 	}
 
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @param s DOCUMENT ME!
-	 */
 	public void setSelecting(boolean s) {
 		selecting = s;
 	}
 
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @return  DOCUMENT ME!
-	 */
 	public boolean isSelecting() {
 		return selecting;
 	}
@@ -981,8 +995,6 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 		                                             m_xCenter, m_yCenter, m_scaleFactor, new LongHash(), nodes, edges);
 		if (setLastRenderDetail)
 			m_lastRenderDetail = lastRenderDetail;
-
-		m_view.m_contentChanged = false;
 
 		repaint();
 	}
@@ -1109,7 +1121,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 			double newY = m_yCenter - (deltaY / m_scaleFactor);
             setCenter(newX, newY);
 		}
-		m_view.m_viewportChanged = true;
+		m_view.setViewportChanged();
 		setHideEdges();
 		repaint();
 	}
@@ -1360,7 +1372,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 					}
 					if (!m_lod[0].getDrawEdges()) {
 						m_lod[0].setDrawEdges(true);
-						m_view.m_viewportChanged = true;
+						m_view.setViewportChanged();
 					}
 	
 					if ((selectedNodes != null) && (selectedNodes.length > 0)) {
@@ -1371,14 +1383,12 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 						select(DGraphView.makeEdgeList(selectedEdges,m_view), CyNode.class, true);
 					}
 					
-					m_view.m_contentChanged = false;
 					repaint();
 				} else {
-					m_view.m_contentChanged = true;
+					m_view.setContentChanged();
 					repaint();
 				}
 			}
-			
 	
 			if (m_undoable_edit != null)
 				m_undoable_edit.post();
@@ -1394,7 +1404,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 				m_undoable_edit.post();
 
 			m_lod[0].setDrawEdges(true);
-			m_view.m_viewportChanged = true;
+			m_view.setViewportChanged();
 			repaint();
 		}
 	
@@ -1524,7 +1534,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 					}
 	
 					if ((selectedNodes.length > 0) || (m_view.m_selectedAnchors.size() > 0))
-						m_view.m_contentChanged = true;
+						m_view.setContentChanged();
 					if ((selectedNodes.length > 0) && (m_view.m_selectedAnchors.size() == 0)) {
 						setHideEdges();
 					}
@@ -1555,7 +1565,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
                 setCenter(newX, newY);
 			}
 	
-			m_view.m_viewportChanged = true;
+			m_view.setViewportChanged();
 			m_view.setVisualProperty(BasicVisualLexicon.NETWORK_CENTER_X_LOCATION, m_xCenter);
 			m_view.setVisualProperty(BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION, m_yCenter);
 			
@@ -1568,6 +1578,10 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 	}
 
 	public void dispose() {
+		removeMouseListener(this);
+		removeMouseMotionListener(this);
+		removeMouseWheelListener(this);
+		removeKeyListener(this);
 		m_view = null;
 		m_undoable_edit = null;
 		addEdgeMode = null;

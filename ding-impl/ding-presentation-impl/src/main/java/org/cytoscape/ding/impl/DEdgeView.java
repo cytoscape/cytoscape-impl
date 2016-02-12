@@ -96,7 +96,7 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 	public void setStrokeWidth(final float width) {
 		synchronized (graphView.m_lock) {
 			graphView.m_edgeDetails.overrideSegmentThickness(model, width);
-			graphView.m_contentChanged = true;
+			graphView.setContentChanged();
 		}
 	}
 
@@ -105,7 +105,7 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 	public void setStroke(Stroke stroke) {
 		synchronized (graphView.m_lock) {
 			graphView.m_edgeDetails.overrideSegmentStroke(model, stroke);
-			graphView.m_contentChanged = true;
+			graphView.setContentChanged();
 			if (stroke instanceof AnimatedStroke) {
 				graphView.addAnimatedEdge(this);
 			} else {
@@ -119,7 +119,7 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 		if ((lineType == EdgeView.CURVED_LINES) || (lineType == EdgeView.STRAIGHT_LINES)) {
 			synchronized (graphView.m_lock) {
 				graphView.m_edgeDetails.overrideLineCurved(model, lineType);
-				graphView.m_contentChanged = true;
+				graphView.setContentChanged();
 			}
 		} else
 			throw new IllegalArgumentException("unrecognized line type");
@@ -136,7 +136,7 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 			graphView.m_edgeDetails.setUnselectedPaint(model, transpColor);
 			
 			if (!isSelected()) {
-				graphView.m_contentChanged = true;
+				graphView.setContentChanged();
 			}
 		}
 	}
@@ -152,7 +152,7 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 			graphView.m_edgeDetails.setSelectedPaint(model, transpColor);
 			
 			if (isSelected()) {
-				graphView.m_contentChanged = true;
+				graphView.setContentChanged();
 			}
 		}
 	}
@@ -167,7 +167,7 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 			graphView.m_edgeDetails.overrideSourceArrowSelectedPaint(model, transpColor);
 			
 			if (isSelected()) {
-				graphView.m_contentChanged = true;
+				graphView.setContentChanged();
 			}
 		}
 	}
@@ -182,7 +182,7 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 			graphView.m_edgeDetails.overrideTargetArrowSelectedPaint(model, transpColor);
 			
 			if (isSelected()) {
-				graphView.m_contentChanged = true;
+				graphView.setContentChanged();
 			}
 		}
 	}
@@ -197,7 +197,7 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 			graphView.m_edgeDetails.overrideSourceArrowPaint(model, transpColor);
 			
 			if (!isSelected()) {
-				graphView.m_contentChanged = true;
+				graphView.setContentChanged();
 			}
 		}
 	}
@@ -212,7 +212,7 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 			graphView.m_edgeDetails.overrideTargetArrowPaint(model, transpColor);
 			
 			if (!isSelected()) {
-				graphView.m_contentChanged = true;
+				graphView.setContentChanged();
 			}
 		}
 	}
@@ -224,7 +224,7 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 			somethingChanged = selectInternal(false);
 
 			// if (somethingChanged)
-			// 	graphView.m_contentChanged = true;
+			// 	graphView.setContentChanged();
 		}
 	}
 
@@ -262,7 +262,7 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 			somethingChanged = unselectInternal();
 
 			// if (somethingChanged)
-			// 	graphView.m_contentChanged = true;
+			// 	graphView.setContentChanged();
 		}
 	}
 
@@ -305,7 +305,7 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 			graphView.m_edgeDetails.overrideSourceArrow(model, (byte) rendererTypeID);
 		}
 
-		graphView.m_contentChanged = true;
+		graphView.setContentChanged();
 	}
 
 	@Override
@@ -314,7 +314,7 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 			graphView.m_edgeDetails.overrideTargetArrow(model, (byte) rendererTypeID);
 		}
 
-		graphView.m_contentChanged = true;
+		graphView.setContentChanged();
 
 	}
 
@@ -340,7 +340,7 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 			if (textPaint != null) {
 				final Paint transparentColor = getTransparentColor(textPaint, graphView.m_edgeDetails.getLabelTransparency(model));
 				graphView.m_edgeDetails.overrideLabelPaint(model, 0, transparentColor);
-				graphView.m_contentChanged = true;
+				graphView.setContentChanged();
 			}
 		}
 	}
@@ -362,7 +362,7 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 			else
 				graphView.m_edgeDetails.overrideLabelCount(model, 1);
 
-			graphView.m_contentChanged = true;
+			graphView.setContentChanged();
 		}
 	}
 
@@ -377,7 +377,7 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 	public void setFont(final Font font) {
 		synchronized (graphView.m_lock) {
 			graphView.m_edgeDetails.overrideLabelFont(model, 0, font);
-			graphView.m_contentChanged = true;
+			graphView.setContentChanged();
 		}
 	}
 
@@ -483,7 +483,7 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 						(float) (handleLocation.getY() + (graphView.getAnchorSize() / 2.0d)), 0.0);
 			}
 
-			graphView.m_contentChanged = true;
+			graphView.setContentChanged();
 		}
 	}
 
@@ -509,7 +509,7 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 						graphView.m_selectedAnchors.insert((model.getSUID() << 6) | j);
 				}
 			}
-			graphView.m_contentChanged = true;
+			graphView.setContentChanged();
 		}
 	}
 
@@ -558,7 +558,7 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 	public void setLabelWidth(double width) {
 		synchronized (graphView.m_lock) {
 			graphView.m_edgeDetails.overrideLabelWidth(model, width);
-			graphView.m_contentChanged = true;
+			graphView.setContentChanged();
 		}
 	}
 
@@ -579,7 +579,7 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 			setTargetEdgeEndPaint(graphView.m_edgeDetails.getTargetArrowPaint(model));
 			setSourceEdgeEndPaint(graphView.m_edgeDetails.getSourceArrowPaint(model));
 			
-			graphView.m_contentChanged = true;
+			graphView.setContentChanged();
 		}
 	}
 	
@@ -596,7 +596,7 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 			
 			graphView.m_edgeDetails.overrideLabelTransparency(model, transparency);
 			setTextPaint(graphView.m_edgeDetails.getLabelPaint(model, 0));
-			graphView.m_contentChanged = true;
+			graphView.setContentChanged();
 		}
 	}
 	
@@ -608,7 +608,7 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 				graphView.m_edgeDetails.m_edgeBends.put(model, bend);
 			}
 		}
-		graphView.m_contentChanged = true;
+		graphView.setContentChanged();
 	}
 	
 	@Override

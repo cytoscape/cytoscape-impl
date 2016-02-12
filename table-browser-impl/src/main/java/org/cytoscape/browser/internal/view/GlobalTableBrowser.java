@@ -104,7 +104,7 @@ public class GlobalTableBrowser extends AbstractTableBrowser
 	public void handleEvent(final TableAboutToBeDeletedEvent e) {
 		final CyTable cyTable = e.getTable();
 		
-		if (cyTable.isPublic()) {
+		if (cyTable.isPublic() || showPrivateTables()) {
 			final GlobalTableComboBoxModel comboBoxModel = (GlobalTableComboBoxModel) tableChooser.getModel();
 			comboBoxModel.removeItem(cyTable);
 			attributeBrowserToolBar.updateEnableState(tableChooser);
@@ -137,7 +137,7 @@ public class GlobalTableBrowser extends AbstractTableBrowser
 	public void handleEvent(TableAddedEvent e) {
 		final CyTable newTable = e.getTable();
 
-		if (newTable.isPublic()) {
+		if (newTable.isPublic() || showPrivateTables()) {
 			final CyTableManager tableManager = serviceRegistrar.getService(CyTableManager.class);
 			
 			if (tableManager.getGlobalTables().contains(newTable)) {
@@ -162,8 +162,9 @@ public class GlobalTableBrowser extends AbstractTableBrowser
 	public void handleEvent(TablePrivacyChangedEvent e) {
 		final CyTable table = e.getSource();
 		final GlobalTableComboBoxModel comboBoxModel = (GlobalTableComboBoxModel) tableChooser.getModel();
+		final boolean showPrivateTables = showPrivateTables();
 		
-		if (!table.isPublic()){
+		if (!table.isPublic() && !showPrivateTables){
 			comboBoxModel.removeItem(table);
 
 			if (comboBoxModel.getSize() == 0) {
@@ -178,7 +179,7 @@ public class GlobalTableBrowser extends AbstractTableBrowser
 					}
 				});
 			}
-		} else {
+		} else if (table.isPublic() || showPrivateTables) {
 			comboBoxModel.addAndSetSelectedItem(table);
 		}
 		

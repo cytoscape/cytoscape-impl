@@ -1,5 +1,28 @@
 package org.cytoscape.internal.layout.ui;
 
+import static org.cytoscape.work.ServiceProperties.INSERT_SEPARATOR_AFTER;
+import static org.cytoscape.work.ServiceProperties.INSERT_SEPARATOR_BEFORE;
+import static org.cytoscape.work.ServiceProperties.MENU_GRAVITY;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
+import javax.swing.event.MenuEvent;
+import javax.swing.event.MenuListener;
+
+import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.internal.view.CytoscapeMenuBar;
+import org.cytoscape.model.CyColumn;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyTable;
+import org.cytoscape.util.swing.GravityTracker;
+import org.cytoscape.view.layout.CyLayoutAlgorithm;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.work.swing.DialogTaskManager;
+
 /*
  * #%L
  * Cytoscape Swing Application Impl (swing-application-impl)
@@ -24,41 +47,20 @@ package org.cytoscape.internal.layout.ui;
  * #L%
  */
 
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.application.swing.CySwingApplication;
-import org.cytoscape.internal.view.CytoscapeMenuBar;
-import org.cytoscape.model.CyColumn;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyTable;
-import org.cytoscape.work.TaskManager;
-import static org.cytoscape.work.ServiceProperties.*;
-import org.cytoscape.work.swing.DialogTaskManager;
-import org.cytoscape.util.swing.GravityTracker;
-import org.cytoscape.util.swing.JMenuTracker;
-import org.cytoscape.view.layout.CyLayoutAlgorithm;
-import org.cytoscape.view.model.CyNetworkView;
-
-import java.util.*;
-import javax.swing.JMenu;
-import javax.swing.JMenuItem;
-import javax.swing.event.MenuEvent;
-import javax.swing.event.MenuListener;
-
-
 public class LayoutMenuPopulator implements MenuListener {
 
-		private Map<CyLayoutAlgorithm, Map> algorithmMap;
-		private Map<CyLayoutAlgorithm, JMenuItem> menuMap;
-		private Map<CyLayoutAlgorithm, Boolean> separatorMap;
-    private CyApplicationManager appMgr;
-    private DialogTaskManager tm;
-    private GravityTracker gravityTracker; 
-    private JMenu layoutMenu;
+	private Map<CyLayoutAlgorithm, Map> algorithmMap;
+	private Map<CyLayoutAlgorithm, JMenuItem> menuMap;
+	private Map<CyLayoutAlgorithm, Boolean> separatorMap;
+	private CyApplicationManager appMgr;
+	private DialogTaskManager tm;
+	private GravityTracker gravityTracker;
+	private JMenu layoutMenu;
 
     public LayoutMenuPopulator(CytoscapeMenuBar menuBar, CyApplicationManager appMgr, DialogTaskManager tm) {
-        algorithmMap = new HashMap<CyLayoutAlgorithm,Map>();
-        menuMap = new HashMap<CyLayoutAlgorithm,JMenuItem>();
-        separatorMap = new HashMap<CyLayoutAlgorithm,Boolean>();
+        algorithmMap = new HashMap<>();
+        menuMap = new HashMap<>();
+        separatorMap = new HashMap<>();
         this.appMgr = appMgr;
         this.tm = tm;
         this.gravityTracker = menuBar.getMenuTracker().getGravityTracker("Layout");
@@ -77,25 +79,13 @@ public class LayoutMenuPopulator implements MenuListener {
         }
     }
 
-    /**
-     *  DOCUMENT ME!
-     *
-     * @param e DOCUMENT ME!
-     */
+    @Override
     public void menuCanceled(MenuEvent e) { } ;
 
-    /**
-     *  DOCUMENT ME!
-     *
-     * @param e DOCUMENT ME!
-     */
+    @Override
     public void menuDeselected(MenuEvent e) { } ;
 
-    /**
-     *  DOCUMENT ME!
-     *
-     * @param e DOCUMENT ME!
-     */
+    @Override
     public void menuSelected(MenuEvent e) {
         CyNetworkView view = appMgr.getCurrentNetworkView();
         CyNetwork network = appMgr.getCurrentNetwork();
@@ -145,13 +135,13 @@ public class LayoutMenuPopulator implements MenuListener {
                 gravityTracker.addMenuItem(newMenu, gravity);
             }
 
-						if (separatorAfter && !separatorMap.containsKey(layout)) {
-                gravityTracker.addMenuSeparator(gravity+0.0001);
-                separatorMap.put(layout, Boolean.TRUE);
-						} else if (separatorBefore && !separatorMap.containsKey(layout)) {
-                gravityTracker.addMenuSeparator(gravity-0.0001);
-                separatorMap.put(layout, Boolean.TRUE);
-						}
+			if (separatorAfter && !separatorMap.containsKey(layout)) {
+				gravityTracker.addMenuSeparator(gravity + 0.0001);
+				separatorMap.put(layout, Boolean.TRUE);
+			} else if (separatorBefore && !separatorMap.containsKey(layout)) {
+				gravityTracker.addMenuSeparator(gravity - 0.0001);
+				separatorMap.put(layout, Boolean.TRUE);
+			}
         }
     }
     
@@ -173,5 +163,4 @@ public class LayoutMenuPopulator implements MenuListener {
         else
             return true;
     }
-    
 }

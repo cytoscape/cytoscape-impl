@@ -221,13 +221,10 @@ public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurr
 	@Override
 	public void handleEvent(final SetCurrentNetworkEvent e) {
 		final CyNetwork currentNetwork = e.getNetwork();
-		// System.out.println("Handling SetCurrentNetworkEvent");
-		
 		
 		invokeOnEDT(new Runnable() {
 			@Override
 			public void run() {
-				// System.out.println("Updating table "+currentTable+" to new network");
 				if (currentNetwork != null) {
 					if (objType == CyNode.class) {
 						currentTable = currentNetwork.getDefaultNodeTable();
@@ -243,7 +240,6 @@ public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurr
 				}
 		
 				final Set<CyTable> tables = getPublicTables(currentNetwork);
-
 				ignoreSetCurrentTable = true;
 				
 				try {
@@ -276,7 +272,7 @@ public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurr
 	public void handleEvent(final TableAddedEvent e) {
 		final CyTable newTable = e.getTable();
 
-		if (newTable.isPublic()) {
+		if (newTable.isPublic() || showPrivateTables()) {
 			final CyApplicationManager applicationManager = serviceRegistrar.getService(CyApplicationManager.class);
 			final CyNetworkTableManager netTableManager = serviceRegistrar.getService(CyNetworkTableManager.class);
 			
@@ -372,15 +368,19 @@ public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurr
 	}
 	
 	private Set<CyTable> getPublicTables(CyNetwork currentNetwork) {
-		final Set<CyTable> tables = new LinkedHashSet<CyTable>();
+		final Set<CyTable> tables = new LinkedHashSet<>();
 		if (currentNetwork == null) return tables;
 		
 		final CyNetworkTableManager netTableManager = serviceRegistrar.getService(CyNetworkTableManager.class);
 		final Map<String, CyTable> map = netTableManager.getTables(currentNetwork, objType);
 		
-		for (final CyTable tbl : map.values()) {
-			if (tbl.isPublic())
-				tables.add(tbl);
+		if (showPrivateTables()) {
+			tables.addAll(map.values());
+		} else {
+			for (final CyTable tbl : map.values()) {
+				if (tbl.isPublic())
+					tables.add(tbl);
+			}
 		}
 		
 		return tables;

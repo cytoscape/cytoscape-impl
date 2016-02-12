@@ -401,9 +401,6 @@ public interface GraphView {
 	// for export
 	public Image createImage(int width, int height, double shrink);
 
-	// for internal frame component support
-	public Container getContainer(JLayeredPane jlp);
-
 	// used by editor
 	public NodeView getPickedNodeView(Point2D pt);
 

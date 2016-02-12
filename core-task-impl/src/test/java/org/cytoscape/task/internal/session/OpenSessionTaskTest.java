@@ -31,7 +31,6 @@ import static org.mockito.Mockito.when;
 import java.io.File;
 import java.util.Collections;
 
-import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.group.CyGroupManager;
 import org.cytoscape.io.read.CySessionReader;
@@ -56,7 +55,6 @@ public class OpenSessionTaskTest {
 	@Mock private TaskMonitor tm;
 	@Mock private CySessionManager mgr;
 	@Mock private CySessionReaderManager readerMgr;
-	@Mock private CyApplicationManager appMgr;
 	@Mock private CyNetworkManager netMgr;
 	@Mock private CyTableManager tableMgr;
 	@Mock private CyNetworkTableManager netTableMgr;
@@ -85,7 +83,7 @@ public class OpenSessionTaskTest {
 	
 	@Test
 	public void testRun() throws Exception {
-		final OpenSessionTask t = new OpenSessionTask(mgr, readerMgr, appMgr, netMgr, tableMgr, netTableMgr, grMgr, tracker, eventHelper);
+		final OpenSessionTask t = new OpenSessionTask(mgr, readerMgr, netMgr, tableMgr, netTableMgr, grMgr, tracker, eventHelper);
 		OpenSessionWithoutWarningTask t2 = t.new OpenSessionWithoutWarningTask();
 		t2.file = sampleFile;
 		t2.setTaskIterator(new TaskIterator(t2));

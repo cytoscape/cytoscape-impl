@@ -33,9 +33,12 @@ import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
+import org.cytoscape.model.subnetwork.CySubNetwork;
 
 public class DataUtils {
 
+	public static final String PARENT_NETWORK_COLUMN = "__parentNetwork.SUID";
+	
 	public static String getNodeName(CyTable table, CyNode node) {
 		String name = table.getRow(node.getSUID()).get(CyNetwork.NAME, String.class);
 		name += " (SUID: "+node.getSUID()+")";
@@ -181,4 +184,23 @@ public class DataUtils {
 		return s1;
 	}
 
+	/**
+	 * Save provenance info (parent subnetwork), which is used by the GUI.
+	 * @param net
+	 * @param parentSUID SUID of the parent network
+	 */
+	public static void saveParentNetworkSUID(final CySubNetwork net, final Long parentSUID) {
+		final CyTable hiddenTable = net.getTable(CyNetwork.class, CyNetwork.HIDDEN_ATTRS);
+		
+		if (hiddenTable.getColumn(PARENT_NETWORK_COLUMN) == null)
+			hiddenTable.createColumn(PARENT_NETWORK_COLUMN, Long.class, true);
+		
+		hiddenTable.getRow(net.getSUID()).set(PARENT_NETWORK_COLUMN, parentSUID);
+	}
+
+	public static Long getParentNetworkSUID(final CySubNetwork net) {
+		final CyTable table = net.getTable(CyNetwork.class, CyNetwork.HIDDEN_ATTRS);
+		
+		return table != null ? table.getRow(net.getSUID()).get(PARENT_NETWORK_COLUMN, Long.class) : null;
+	}
 }

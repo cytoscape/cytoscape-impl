@@ -28,7 +28,6 @@ package org.cytoscape.task.internal.session;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.group.CyGroupManager;
 import org.cytoscape.io.read.CySessionReaderManager;
@@ -50,7 +49,6 @@ public class OpenSessionTaskFactoryTest {
 	@Mock private TaskMonitor tm;
 	@Mock private CySessionManager mgr;
 	@Mock private CySessionReaderManager readerMgr;
-	@Mock private CyApplicationManager appMgr;
 	@Mock private CyNetworkManager netMgr;
 	@Mock private CyTableManager tableMgr;
 	@Mock private CyNetworkTableManager netTableMgr;
@@ -63,7 +61,7 @@ public class OpenSessionTaskFactoryTest {
 	public void testRun() throws Exception {
 		MockitoAnnotations.initMocks(this);
 		
-		OpenSessionTaskFactoryImpl factory = new OpenSessionTaskFactoryImpl(mgr, readerMgr, appMgr, netMgr, tableMgr,
+		OpenSessionTaskFactoryImpl factory = new OpenSessionTaskFactoryImpl(mgr, readerMgr, netMgr, tableMgr,
 				netTableMgr, grMgr, tracker, ts, eventHelper);
 		
 		TaskIterator ti = factory.createTaskIterator();

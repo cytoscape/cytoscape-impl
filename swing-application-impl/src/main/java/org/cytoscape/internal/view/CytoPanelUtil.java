@@ -39,6 +39,9 @@ import java.awt.*;
  * @author Ethan Cerami, Ben Gross
  */
 public class CytoPanelUtil {
+	
+	static final int BUTTON_SIZE = 18;
+	
 	/**
 	 * String used to compare against os.name System property -
 	 * to determine if we are running on Windows platform.
@@ -105,6 +108,17 @@ public class CytoPanelUtil {
 		return p;
 	}
 
+	public static void styleButton(final AbstractButton btn) {
+		btn.setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 2));
+		btn.setMinimumSize(new Dimension(BUTTON_SIZE, BUTTON_SIZE));
+		btn.setPreferredSize(new Dimension(BUTTON_SIZE, BUTTON_SIZE));
+		btn.setSize(new Dimension(BUTTON_SIZE, BUTTON_SIZE));
+		btn.setRolloverEnabled(false);
+		btn.setFocusPainted(false);
+		btn.setFocusable(false);
+		btn.setContentAreaFilled(false);
+	}
+	
 	/**
 	 * Determines if we are running on Windows platform.
 	 */

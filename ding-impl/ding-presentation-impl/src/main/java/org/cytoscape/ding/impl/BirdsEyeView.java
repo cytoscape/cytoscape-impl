@@ -57,6 +57,8 @@ import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Swing component to display overview of the network.
@@ -106,6 +108,8 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 	private Timer redrawTimer;
 	private UpdateImage redrawTask;
 	private	BirdsEyeViewLOD bevLOD;
+	
+	private static final Logger logger = LoggerFactory.getLogger(BirdsEyeView.class);
 
 	/**
 	 * Creates a new BirdsEyeView object.
@@ -305,16 +309,20 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 	public void updateSubgraph(List<CyNode> nodes, List<CyEdge> edges) {
 		// System.out.println("BirdsEyeView: updateSubgraph with "+nodes.size()+" nodes and "+edges.size()+" edges");
 		try {
-		if (networkImage == null) {
-			// System.out.println("BirdsEyeView: updateSubgraph creating network image");
-			final GraphicsConfiguration gc = getGraphicsConfiguration();
-			networkImage = gc.createCompatibleVolatileImage(imageWidth, imageHeight, VolatileImage.OPAQUE);
-		}
-		// Now draw the network
-		viewModel.drawSnapshot(networkImage, new BirdsEyeViewLOD(viewModel.getGraphLOD()), viewModel.getBackgroundPaint(),
-							m_extents[0], m_extents[1], m_myXCenter, m_myYCenter, m_myScaleFactor, nodes, edges);
+			if (networkImage == null) {
+				// System.out.println("BirdsEyeView: updateSubgraph creating network image");
+				final GraphicsConfiguration gc = getGraphicsConfiguration();
+				
+				if (gc != null)
+					networkImage = gc.createCompatibleVolatileImage(imageWidth, imageHeight, VolatileImage.OPAQUE);
+			}
+			
+			// Now draw the network
+			viewModel.drawSnapshot(networkImage, new BirdsEyeViewLOD(viewModel.getGraphLOD()),
+					viewModel.getBackgroundPaint(), m_extents[0], m_extents[1], m_myXCenter, m_myYCenter,
+					m_myScaleFactor, nodes, edges);
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error("Error updating subgraph", e);
 		}
 
 		boundChanged = false; imageUpdated = false; imageDirty = true;
@@ -484,7 +492,6 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 				final GraphicsConfiguration gc = getGraphicsConfiguration();
 				VolatileImage networkImage2 = gc.createCompatibleVolatileImage(imageWidth, imageHeight, VolatileImage.OPAQUE);
 
-				long timeBegin = System.currentTimeMillis();
 				// Now draw the network
 				// System.out.println("Drawing snapshot");
 				if (viewModel.getGraphLOD() instanceof DingGraphLOD)
@@ -499,9 +506,9 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 				imageDirty = false;
 				networkImage = networkImage2;
 			} catch (Exception e) {
-				e.printStackTrace();
+				logger.error("UpdateImage Error", e);
 			}
-			// System.out.println("...done");
+			
 			imageUpdated = false;
 			boundChanged = false;
 

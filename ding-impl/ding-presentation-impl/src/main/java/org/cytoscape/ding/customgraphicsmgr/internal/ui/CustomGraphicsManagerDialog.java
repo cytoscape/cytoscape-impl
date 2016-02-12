@@ -28,6 +28,7 @@ import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
 
 import java.awt.Dimension;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
@@ -52,7 +53,6 @@ import javax.swing.WindowConstants;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
 import org.cytoscape.ding.customgraphics.bitmap.URLImageCustomGraphics;
 import org.cytoscape.service.util.CyServiceRegistrar;
@@ -90,11 +90,12 @@ public class CustomGraphicsManagerDialog extends JDialog {
 	private final IconManager iconManager;
 
 	public CustomGraphicsManagerDialog(
+			final Window owner,
 			final CustomGraphicsManager manager,
 			final CustomGraphicsBrowser browser,
 			final CyServiceRegistrar serviceRegistrar
 	) {
-		super(serviceRegistrar.getService(CySwingApplication.class).getJFrame(), ModalityType.APPLICATION_MODAL);
+		super(owner, ModalityType.APPLICATION_MODAL);
 		
 		if (browser == null)
 			throw new NullPointerException("CustomGraphicsBrowser is null.");

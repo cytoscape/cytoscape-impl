@@ -28,9 +28,9 @@ import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
 
 import java.awt.BorderLayout;
-import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Toolkit;
+import java.awt.Window;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.Dictionary;
@@ -105,7 +105,7 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 	 * The NetworkViewManager can support three types of interfaces.
 	 * Tabbed/InternalFrame/ExternalFrame
 	 */
-	protected NetworkViewManager networkViewManager;
+	protected NetworkViewMediator netViewMediator;
 
 	//
 	// CytoPanel Variables
@@ -127,7 +127,7 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 	 * Creates a new CytoscapeDesktop object.
 	 */
 	public CytoscapeDesktop(final CytoscapeMenus cyMenus,
-							final NetworkViewManager networkViewManager,
+							final NetworkViewMediator netViewMediator,
 							final CyShutdown shut,
 							final CyEventHelper eh,
 							final CyServiceRegistrar registrar,
@@ -137,7 +137,7 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 		super(TITLE_PREFIX_STRING + NEW_SESSION_NAME);
 
 		this.cyMenus = cyMenus;
-		this.networkViewManager = networkViewManager;
+		this.netViewMediator = netViewMediator;
 		this.shutdown = shut;
 		this.cyEventHelper = eh;
 		this.registrar = registrar;
@@ -151,24 +151,41 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 		mainPanel.setLayout(new BorderLayout());
 
 		// create the CytoscapeDesktop
-		final BiModalJSplitPane masterPane = setupCytoPanels(networkViewManager);
+		final BiModalJSplitPane masterPane = setupCytoPanels(netViewMediator);
 
 		mainPanel.add(masterPane, BorderLayout.CENTER);
 		mainPanel.add(cyMenus.getJToolBar(), BorderLayout.NORTH);
 
 		statusToolBar = setupStatusPanel(taskStatusPanelFactory);
 
-		setJMenuBar(cyMenus.getJMenuBar());
-
-		if (MacFullScreenEnabler.supportsNativeFullScreenMode()) {
+		if (MacFullScreenEnabler.supportsNativeFullScreenMode())
 			MacFullScreenEnabler.setEnabled(this, true);
-		}
 
-		//don't automatically close window. Let shutdown.exit(returnVal)
-		//handle this
+		//don't automatically close window. Let shutdown.exit(returnVal) handle this
 		setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 
+		setJMenuBar(cyMenus.getJMenuBar());
+		
 		addWindowListener(new WindowAdapter() {
+			@Override
+			public void windowActivated(WindowEvent e) {
+				// This is necessary because the same menu bar can be used by other frames
+				final JMenuBar menuBar = cyMenus.getJMenuBar();
+				final Window window = SwingUtilities.getWindowAncestor(menuBar);
+				
+				if (!CytoscapeDesktop.this.equals(window)) {
+					if (window instanceof JFrame && !LookAndFeelUtil.isAquaLAF()) {
+						// Do this first, or the user could see the menu disappearing from the out-of-focus windows
+						final JMenuBar dummyMenuBar = cyMenus.createDummyMenuBar();
+						((JFrame) window).setJMenuBar(dummyMenuBar);
+						dummyMenuBar.updateUI();
+						window.repaint();
+					}
+					
+					setJMenuBar(menuBar);
+					menuBar.updateUI();
+				}
+			}
 			@Override
 			public void windowClosing(WindowEvent we) {
 				shutdown.exit(0);
@@ -239,13 +256,13 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 	 *
 	 * @param networkPanel
 	 *            to load on left side of right bimodal.
-	 * @param networkViewManager
+	 * @param netViewMediator
 	 *            to load on left side (CytoPanel West).
 	 * @return BiModalJSplitPane Object.
 	 */
-	private BiModalJSplitPane setupCytoPanels(NetworkViewManager networkViewManager) {
+	private BiModalJSplitPane setupCytoPanels(NetworkViewMediator netViewMediator) {
 		// bimodals that our Cytopanels Live within
-		final BiModalJSplitPane topRightPane = createTopRightPane(networkViewManager);
+		final BiModalJSplitPane topRightPane = createTopRightPane(netViewMediator);
 		final BiModalJSplitPane rightPane = createRightPane(topRightPane);
 		final BiModalJSplitPane masterPane = createMasterPane(rightPane);
 		createBottomLeft();
@@ -256,22 +273,21 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 	/**
 	 * Creates the TopRight Pane.
 	 *
-	 * @param networkViewManager
-	 *            to load on left side of top right bimodal.
+	 * @param netViewMediator to load on left side of top right bimodal.
 	 * @return BiModalJSplitPane Object.
 	 */
-	private BiModalJSplitPane createTopRightPane(NetworkViewManager networkViewManager) {
+	private BiModalJSplitPane createTopRightPane(NetworkViewMediator netViewMediator) {
 		// create cytopanel with tabs along the top
 		cytoPanelEast = new CytoPanelImp(CytoPanelName.EAST, JTabbedPane.TOP, CytoPanelState.HIDE, cyEventHelper, this,
 				iconManager);
 
 		// determine proper network view manager component
-		Component networkViewComp = (Component) networkViewManager.getDesktopPane();
+		final JPanel networkViewPanel = netViewMediator.getNetworkViewMainPanel();
 
 		// create the split pane - we show this on startup
 		BiModalJSplitPane splitPane = new BiModalJSplitPane(this, JSplitPane.HORIZONTAL_SPLIT,
 		                                                    BiModalJSplitPane.MODE_HIDE_SPLIT,
-		                                                    networkViewComp, cytoPanelEast);
+		                                                    networkViewPanel, cytoPanelEast);
 
 		// set the cytopanelcontainer
 		cytoPanelEast.setCytoPanelContainer(splitPane);
@@ -363,8 +379,8 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 		return splitPane;
 	}
 
-	NetworkViewManager getNetworkViewManager() {
-		return networkViewManager;
+	NetworkViewMediator getNetworkViewMediator() {
+		return netViewMediator;
 	}
 
 	public void addAction(CyAction action, Dictionary<?, ?> props) {

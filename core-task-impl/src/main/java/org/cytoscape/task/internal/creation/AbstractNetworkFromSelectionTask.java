@@ -47,6 +47,7 @@ import org.cytoscape.model.VirtualColumnInfo;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.session.CyNetworkNaming;
+import org.cytoscape.task.internal.utils.DataUtils;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
@@ -159,6 +160,7 @@ abstract class AbstractNetworkFromSelectionTask extends AbstractCreationTask {
 		tm.setProgress(0.5);
 		
 		newNet.getRow(newNet).set(CyNetwork.NAME, getNetworkName());
+		DataUtils.saveParentNetworkSUID(newNet, parentNetwork.getSUID());
 
 		networkManager.addNetwork(newNet);
 		tm.setProgress(0.6);
@@ -169,7 +171,8 @@ abstract class AbstractNetworkFromSelectionTask extends AbstractCreationTask {
 		
 		// Pick a CyNetworkViewFactory that is appropriate for the sourceView
 		CyNetworkViewFactory sourceViewFactory = viewFactory;
-		if(sourceView != null) {
+		
+		if (sourceView != null) {
 			NetworkViewRenderer networkViewRenderer = appMgr.getNetworkViewRenderer(sourceView.getRendererId());
 			if(networkViewRenderer != null) {
 				sourceViewFactory = networkViewRenderer.getNetworkViewFactory();
@@ -209,7 +212,7 @@ abstract class AbstractNetworkFromSelectionTask extends AbstractCreationTask {
 					colInfo.getTargetJoinKey(), col.isImmutable());
 
 		else
-			if(!checkCol.getVirtualColumnInfo().isVirtual() ||
+			if (!checkCol.getVirtualColumnInfo().isVirtual() ||
 					!checkCol.getVirtualColumnInfo().getSourceTable().equals(colInfo.getSourceTable()) ||
 					!checkCol.getVirtualColumnInfo().getSourceColumn().equals(colInfo.getSourceColumn()))
 				subTable.addVirtualColumn(col.getName(), colInfo.getSourceColumn(), colInfo.getSourceTable(), 

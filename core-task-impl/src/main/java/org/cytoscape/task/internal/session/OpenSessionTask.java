@@ -30,7 +30,6 @@ import java.io.File;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.group.CyGroup;
 import org.cytoscape.group.CyGroupManager;
@@ -46,7 +45,6 @@ import org.cytoscape.session.CySessionManager;
 import org.cytoscape.session.events.SessionAboutToBeLoadedEvent;
 import org.cytoscape.session.events.SessionLoadCancelledEvent;
 import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
@@ -66,7 +64,6 @@ public class OpenSessionTask extends AbstractTask {
 	
 	private final CySessionManager sessionMgr;
 	private final CySessionReaderManager readerMgr;
-	private final CyApplicationManager appManager;
 	private final CyNetworkManager netManager;
 	private final CyTableManager tableManager;
 	private final CyNetworkTableManager netTableManager;
@@ -82,7 +79,6 @@ public class OpenSessionTask extends AbstractTask {
 	 */
 	public OpenSessionTask(final CySessionManager mgr,
 						   final CySessionReaderManager readerManager,
-						   final CyApplicationManager appManager,
 						   final CyNetworkManager netManager,
 						   final CyTableManager tableManager,
 						   final CyNetworkTableManager netTableManager,
@@ -91,7 +87,6 @@ public class OpenSessionTask extends AbstractTask {
 						   final CyEventHelper eventHelper) {
 		this.sessionMgr = mgr;
 		this.readerMgr = readerManager;
-		this.appManager = appManager;
 		this.netManager = netManager;
 		this.tableManager = tableManager;
 		this.netTableManager = netTableManager;
@@ -182,12 +177,6 @@ public class OpenSessionTask extends AbstractTask {
 				throw new NullPointerException("Session could not be read for file: " + file);
 
 			sessionMgr.setCurrentSession(newSession, file.getAbsolutePath());
-			
-			// Set Current network: this is necessary to update GUI.
-			final RenderingEngine<CyNetwork> currentEngine = appManager.getCurrentRenderingEngine();
-			
-			if (currentEngine != null)
-				appManager.setCurrentRenderingEngine(currentEngine);
 			
 			taskMonitor.setProgress(1.0);
 			taskMonitor.setStatusMessage("Session file " + file + " successfully loaded.");

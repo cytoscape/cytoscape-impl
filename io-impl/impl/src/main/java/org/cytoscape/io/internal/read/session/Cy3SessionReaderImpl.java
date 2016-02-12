@@ -228,6 +228,11 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 		restoreEquations();
 		
 		tm.setProgress(0.6);
+		tm.setTitle("Update network columns");
+		tm.setStatusMessage("Moving column \"" + CY2_PARENT_NETWORK_COLUMN + "\"...");
+		moveParentNetworkColumn();
+		
+		tm.setProgress(0.65);
 		tm.setTitle("Extract network views");
 		tm.setStatusMessage("Extracting network views...");
 		// Read the session file again, this time to extract the network views
@@ -698,6 +703,34 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 					logger.error("Unexpected error while restoring equation: " + equation.toString(), e);
 				}
 				variableNameToTypeMap.put(name, expectedType);
+			}
+		}
+	}
+	
+	private void moveParentNetworkColumn() {
+		for (CyNetwork net : networks) {
+			try {
+				final CyTable tbl = net.getRow(net, CyNetwork.LOCAL_ATTRS).getTable();
+				
+				// Remove this old column from the local table (used until v3.3)
+				// and create a new one with the same value in the hidden table
+				if (tbl.getColumn(CY2_PARENT_NETWORK_COLUMN) != null) {
+					final CyRow row = tbl.getRow(net.getSUID());
+					final Long parentSUID = row.get(CY2_PARENT_NETWORK_COLUMN, Long.class);
+					
+					final CyRow hRow = net.getRow(net, CyNetwork.HIDDEN_ATTRS);
+					final CyTable hTbl = hRow.getTable();
+					
+					if (hTbl.getColumn(CY3_PARENT_NETWORK_COLUMN) == null)
+						hTbl.createColumn(CY3_PARENT_NETWORK_COLUMN, Long.class, false);
+					
+					if (parentSUID != null)
+						hRow.set(CY3_PARENT_NETWORK_COLUMN, parentSUID);
+					
+					tbl.deleteColumn(CY2_PARENT_NETWORK_COLUMN);
+				}
+			} catch (Exception e) {
+				logger.error("Unexpected error while moving column \"" + CY2_PARENT_NETWORK_COLUMN + "\"", e);
 			}
 		}
 	}

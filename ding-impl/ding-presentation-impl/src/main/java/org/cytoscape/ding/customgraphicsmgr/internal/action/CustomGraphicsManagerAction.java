@@ -1,5 +1,8 @@
 package org.cytoscape.ding.customgraphicsmgr.internal.action;
 
+import java.awt.Component;
+import java.awt.Window;
+
 /*
  * #%L
  * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
@@ -27,7 +30,11 @@ package org.cytoscape.ding.customgraphicsmgr.internal.action;
 
 import java.awt.event.ActionEvent;
 
+import javax.swing.JMenuItem;
+import javax.swing.SwingUtilities;
+
 import org.cytoscape.application.swing.AbstractCyAction;
+import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
 import org.cytoscape.ding.customgraphicsmgr.internal.ui.CustomGraphicsBrowser;
 import org.cytoscape.ding.customgraphicsmgr.internal.ui.CustomGraphicsManagerDialog;
@@ -58,7 +65,21 @@ public class CustomGraphicsManagerAction extends AbstractCyAction {
 
 	@Override
 	public void actionPerformed(ActionEvent evt) {
-		final CustomGraphicsManagerDialog dialog = new CustomGraphicsManagerDialog(cgManager, browser, serviceRegistrar);
+		final CySwingApplication swingApplication = serviceRegistrar.getService(CySwingApplication.class);
+		Window owner = null;
+		
+		if (evt.getSource() instanceof JMenuItem) {
+			if (swingApplication.getJMenuBar() != null)
+				owner = SwingUtilities.getWindowAncestor(swingApplication.getJMenuBar());
+		} else if (evt.getSource() instanceof Component) {
+			owner = SwingUtilities.getWindowAncestor((Component) evt.getSource());
+		}
+		
+		if (owner == null)
+			owner = swingApplication.getJFrame();
+		
+		final CustomGraphicsManagerDialog dialog =
+				new CustomGraphicsManagerDialog(owner, cgManager, browser, serviceRegistrar);
 		dialog.setVisible(true);
 	}
 }

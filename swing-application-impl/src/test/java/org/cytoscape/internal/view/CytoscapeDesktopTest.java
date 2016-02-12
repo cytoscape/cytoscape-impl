@@ -28,7 +28,7 @@ public class CytoscapeDesktopTest {
 
 	CytoscapeDesktop desktop;
 	
-	@Mock NetworkViewManager netViewMgr;
+	@Mock NetworkViewMediator netViewMediator;
 	@Mock CyServiceRegistrar registrar;
 	@Mock CyShutdown shut;
 	@Mock CyEventHelper eh;
@@ -45,7 +45,7 @@ public class CytoscapeDesktopTest {
 		
 		CytoscapeMenus menus = new CytoscapeMenus(new CytoscapeMenuBar(), new CytoscapeToolBar());
 		
-		desktop = new CytoscapeDesktop(menus, netViewMgr, shut, eh, registrar, taskMgr, taskStatusPanelFactory, icoMgr);
+		desktop = new CytoscapeDesktop(menus, netViewMediator, shut, eh, registrar, taskMgr, taskStatusPanelFactory, icoMgr);
 	}
 	
 	@Test
