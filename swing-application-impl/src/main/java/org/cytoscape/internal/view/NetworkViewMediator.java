@@ -389,6 +389,10 @@ public class NetworkViewMediator implements NetworkViewAddedListener, NetworkVie
 			@Override
 			public void run() {
 				getNetworkViewMainPanel().setCurrentNetworkView(view);
+				
+				// Always show the current view in the View Mode when opening older session files (up to version 3.3)
+				if (view != null)
+					getNetworkViewMainPanel().showViewContainer(view);
 			}
 		});
 	}

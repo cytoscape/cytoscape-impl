@@ -532,7 +532,11 @@ public class CyActivator extends AbstractCyActivator {
 				UIManager.put("TableHeader.background", UIManager.getColor("Table.background"));
 				UIManager.put("Table.gridColor", UIManager.getColor("Table.background"));
 				UIManager.put("Separator.foreground", new Color(208, 208, 208));
-				UIManager.put("Focus.color", UIManager.getColor("TextField.selectionBackground"));
+				
+				final Color selBgColor = UIManager.getColor("TextField.selectionBackground");
+				
+				if (selBgColor != null)
+					UIManager.put("Focus.color", new Color(selBgColor.getRGB()));
 			} else if (LookAndFeelUtil.isNimbusLAF()) {
 				// Nimbus (usually Linux)
 				// Translating Nimbus default colors to more standard UIManager keys
@@ -560,7 +564,14 @@ public class CyActivator extends AbstractCyActivator {
 				UIManager.put("Label.disabledForeground", UIManager.getColor("nimbusDisabledText"));
 				UIManager.put("Button.disabledForeground", UIManager.getColor("nimbusDisabledText"));
 				UIManager.put("Button.disabledText", UIManager.getColor("nimbusDisabledText"));
-				UIManager.put("Focus.color", new Color(115, 164, 209));
+				
+				Color nimbusColor = UIManager.getColor("nimbusFocus");
+				
+				if (nimbusColor == null)
+					nimbusColor = new Color(115, 164, 209);
+				
+				UIManager.put("Focus.color", new Color(nimbusColor.getRGB()));
+				
 				UIManager.put("TextField.selectionBackground", UIManager.getColor("nimbusSelectionBackground"));
 				UIManager.put(
 						"TableHeader.cellBorder", 

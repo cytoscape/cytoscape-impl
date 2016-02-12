@@ -3,7 +3,6 @@ package org.cytoscape.internal.view;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 
-import javax.swing.BorderFactory;
 import javax.swing.JPanel;
 import javax.swing.UIManager;
 
@@ -62,7 +61,6 @@ public class BirdsEyeViewPanel extends JPanel {
 	
 	private void init() {
 		setBackground(UIManager.getColor("Table.background"));
-		setBorder(BorderFactory.createLineBorder(UIManager.getColor("Separator.foreground")));
 		
 		setLayout(new BorderLayout());
 		add(getPresentationPanel(), BorderLayout.CENTER);

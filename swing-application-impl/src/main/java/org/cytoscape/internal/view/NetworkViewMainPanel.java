@@ -2,7 +2,6 @@ package org.cytoscape.internal.view;
 
 import static org.cytoscape.internal.util.ViewUtil.createUniqueKey;
 import static org.cytoscape.internal.util.ViewUtil.getTitle;
-import static org.cytoscape.internal.util.ViewUtil.invokeOnEDT;
 
 import java.awt.AWTEvent;
 import java.awt.BorderLayout;
@@ -51,15 +50,11 @@ import org.cytoscape.internal.view.NetworkViewGrid.ThumbnailPanel;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.destroy.DestroyNetworkViewTaskFactory;
-import org.cytoscape.task.visualize.ApplyPreferredLayoutTaskFactory;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.view.presentation.RenderingEngineFactory;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
-import org.cytoscape.work.FinishStatus;
-import org.cytoscape.work.ObservableTask;
-import org.cytoscape.work.TaskObserver;
 import org.cytoscape.work.swing.DialogTaskManager;
 
 @SuppressWarnings("serial")
@@ -125,12 +120,6 @@ public class NetworkViewMainPanel extends JPanel {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				reattachNetworkView(view);
-			}
-		});
-		vc.getApplyPreferredLayoutButton().addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				applyPreferredLayout(Collections.singleton(view));
 			}
 		});
 		vc.getViewTitleTextField().addActionListener(new ActionListener() {
@@ -444,7 +433,7 @@ public class NetworkViewMainPanel extends JPanel {
 		return new HashSet<>(viewFrames.values());
 	}
 	
-	private void showViewContainer(final CyNetworkView view) {
+	public void showViewContainer(final CyNetworkView view) {
 		if (view != null)
 			showViewContainer(createUniqueKey(view));
 	}
@@ -599,31 +588,7 @@ public class NetworkViewMainPanel extends JPanel {
 		return null;
 	}
 	
-	private void applyPreferredLayout(final Collection<CyNetworkView> views) {
-		final ApplyPreferredLayoutTaskFactory factory =
-				serviceRegistrar.getService(ApplyPreferredLayoutTaskFactory.class);
-		
-		if (views != null && factory.isReady(views)) {
-			final DialogTaskManager taskManager = serviceRegistrar.getService(DialogTaskManager.class);
-			taskManager.execute(factory.createTaskIterator(views), new TaskObserver() {
-				@Override
-				public void taskFinished(ObservableTask task) {
-				}
-				@Override
-				public void allFinished(FinishStatus finishStatus) {
-					invokeOnEDT(new Runnable() {
-						@Override
-						public void run() {
-							for (CyNetworkView v : views)
-								v.updateView();
-						}
-					});
-				}
-			});
-		}
-	}
-	
-	private boolean isGridMode() {
+	public boolean isGridMode() {
 		return getCurrentCard() == networkViewGrid;
 	}
 	
