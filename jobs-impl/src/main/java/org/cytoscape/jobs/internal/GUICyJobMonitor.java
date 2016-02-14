@@ -25,17 +25,20 @@ package org.cytoscape.jobs.internal;
  */
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import org.cytoscape.application.CyUserLog;
+import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.jobs.CyJob;
 import org.cytoscape.jobs.CyJobHandler;
 import org.cytoscape.jobs.CyJobStatus;
 import org.cytoscape.jobs.CyJobStatus.Status;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.AbstractTaskFactory;
+import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskMonitor;
 
 import org.apache.log4j.Logger;
@@ -43,15 +46,34 @@ import org.apache.log4j.Logger;
 /**
  * An implementation of CyJobManager.
  */
-public class SimpleCyJobMonitor implements CyJobHandler {
+public class GUICyJobMonitor extends AbstractTaskFactory implements CyJobHandler {
 	final Logger logger;
-	public SimpleCyJobMonitor() {
+	final CyServiceRegistrar serviceRegistrar;
+	final ConcurrentMap<CyJob, CyJobStatus> statusMap;
+	final GUIJobDialog dialog;
+
+	public GUICyJobMonitor(CyServiceRegistrar registrar) {
+		this.serviceRegistrar = registrar;
 		logger = Logger.getLogger(CyUserLog.NAME);
+		statusMap = new ConcurrentHashMap<>();
+		CySwingApplication swingApp = registrar.getService(CySwingApplication.class);
+		dialog = new GUIJobDialog(serviceRegistrar, swingApp, statusMap);
+	}
+
+	public TaskIterator createTaskIterator() {
+		return new TaskIterator(new AbstractTask() {
+			public void run(TaskMonitor monitor) {
+				dialog.setVisible(true);
+			}
+		});
 	}
 
 	public void handleJob(CyJob job, CyJobStatus status) {
 		String jobId = job.getJobId();
 		Status stat = status.getStatus();
+		statusMap.put(job, status);
+		dialog.mapChanged();
+
 		switch(stat) {
 			case FAILED:
 				logger.error("Job "+jobId+" has failed!");
@@ -86,5 +108,7 @@ public class SimpleCyJobMonitor implements CyJobHandler {
 		}
 	}
 
+	// This isn't used by us.
 	public void loadData(CyJob job, TaskMonitor monitor) {}
+
 }

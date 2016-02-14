@@ -36,6 +36,7 @@ import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.events.SessionAboutToBeSavedListener;
 import org.cytoscape.session.events.SessionLoadedListener;
 import static org.cytoscape.work.ServiceProperties.*;
+import org.cytoscape.work.TaskFactory;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
 
@@ -61,7 +62,12 @@ public class CyActivator extends AbstractCyActivator {
 			jobMonitor = new SimpleCyJobMonitor();
 		} else {
 			// So, if we have a GUI, start up our jobs monitor
-			jobMonitor = new SimpleCyJobMonitor();
+			jobMonitor = new GUICyJobMonitor(cyServiceRegistrarServiceRef);
+			Properties guiJobProperties = new Properties();
+			guiJobProperties.setProperty(TITLE, "Job Status Monitor");
+			guiJobProperties.setProperty(PREFERRED_MENU, "Tools");
+			guiJobProperties.setProperty(IN_TOOL_BAR, "true");
+			registerService(bc,jobMonitor,TaskFactory.class, guiJobProperties);
 		}
 
 		CyJobManagerImpl cyJobManager = new CyJobManagerImpl(cyServiceRegistrarServiceRef, cyEventHelper, jobMonitor);
