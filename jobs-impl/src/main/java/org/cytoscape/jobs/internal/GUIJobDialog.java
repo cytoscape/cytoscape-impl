@@ -170,13 +170,17 @@ public class GUIJobDialog extends JDialog {
 	}
 
 	class CancelButton extends JButton {
+		static final long serialVersionUID = 1004L;
 		final CyJob job;
 		public CancelButton(final CyJob job) {
 			super("Cancel Job");
 			this.job = job;
 			setAction(new AbstractAction() {
+				static final long serialVersionUID = 1005L;
 				public void actionPerformed(ActionEvent e) {
 					job.getJobExecutionService().cancelJob(job);
+					jobList.remove(job);
+					statusMap.remove(job);
 				}
 			});
 		}
@@ -187,6 +191,7 @@ public class GUIJobDialog extends JDialog {
 		final CyJobStatus jobStatus;
 		final int messageType;
 		final JDialog parent;
+		static final long serialVersionUID = 1006L;
 
 		public ErrorButton(final CyJob job, final CyJobStatus jobStatus, 
 		                   final JDialog dialog, final int messageType) {
@@ -196,10 +201,13 @@ public class GUIJobDialog extends JDialog {
 			this.parent = dialog;
 			this.messageType = messageType;
 			setAction(new AbstractAction() {
+				static final long serialVersionUID = 1007L;
 				public void actionPerformed(ActionEvent e) {
 					JOptionPane.showMessageDialog(parent, jobStatus.toString(),
 					                              "Job "+jobToString(job),
 																				messageType);
+					jobList.remove(job);
+					statusMap.remove(job);
 				}
 			});
 		}
@@ -207,14 +215,18 @@ public class GUIJobDialog extends JDialog {
 
 	class LoadDataButton extends JButton {
 		final CyJob job;
+		static final long serialVersionUID = 1008L;
 
 		public LoadDataButton(final CyJob job) {
 			super("Load data");
 			this.job = job;
 			setAction(new AbstractAction() {
+				static final long serialVersionUID = 1009L;
 				public void actionPerformed(ActionEvent e) {
-					TaskManager taskManager = serviceRegistrar.getService(TaskManager.class);
+					TaskManager<?,?> taskManager = serviceRegistrar.getService(TaskManager.class);
 					taskManager.execute(new TaskIterator(new LoadDataTask(job)));
+					jobList.remove(job);
+					statusMap.remove(job);
 				}
 			});
 		}
