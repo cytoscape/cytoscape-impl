@@ -79,11 +79,6 @@ public class NetworkViewGrid extends JPanel {
 	public static int MIN_THUMBNAIL_SIZE = 100;
 	public static int MAX_THUMBNAIL_SIZE = 500;
 	
-	private static int BORDER_WIDTH = 3;
-	private static int IMG_BORDER_WIDTH = 1;
-	private static int PAD = 10;
-	private static int GAP = 2;
-	
 	private GridPanel gridPanel;
 	private JScrollPane gridScrollPane;
 	private JPanel toolBar;
@@ -662,12 +657,22 @@ public class NetworkViewGrid extends JPanel {
 	
 	class ThumbnailPanel extends JPanel {
 		
-		private int MARGING_THICKNESS = 1;
+		static final int PAD = 4;
+		static final int GAP = 1;
+		
+		/** Margin Thickness */
+		static final int MT = 3;
+		/** Border Thickness */
+		static final int BT = 1;
+		/** Padding Thickness */
+		static final int PT = 1;
+		/** Total border thickness */
+		static final int BORDER_WIDTH = MT + BT + PT;
+		
+		static final int IMG_BORDER_WIDTH = 1;
 		
 		private JLabel currentLabel;
 		private JLabel titleLabel;
-		private JLabel continueLeftLabel;
-		private JLabel continueRightLabel;
 		private JLabel imageLabel;
 		
 		private boolean selected;
@@ -679,9 +684,9 @@ public class NetworkViewGrid extends JPanel {
 		private final Color BORDER_COLOR = UIManager.getColor("Label.foreground");
 		private final Color HOVER_COLOR = UIManager.getColor("Focus.color");
 		
-		private Border EMPTY_BORDER = BorderFactory.createEmptyBorder(1, 1, 1, 1);
-		private Border MARGIN_BORDER = BorderFactory.createLineBorder(getBackgroundColor(), MARGING_THICKNESS);
-		private Border SIMPLE_BORDER = BorderFactory.createLineBorder(BORDER_COLOR, 1);
+		private Border EMPTY_BORDER = BorderFactory.createEmptyBorder(PT, PT, PT, PT);
+		private Border MARGIN_BORDER = BorderFactory.createLineBorder(getBackgroundColor(), MT);
+		private Border SIMPLE_BORDER = BorderFactory.createLineBorder(BORDER_COLOR, BT);
 		
 		private Border DEFAULT_BORDER = BorderFactory.createCompoundBorder(
 				MARGIN_BORDER,
@@ -693,50 +698,50 @@ public class NetworkViewGrid extends JPanel {
 		private Border DEFAULT_HOVER_BORDER = BorderFactory.createCompoundBorder(
 				MARGIN_BORDER,
 				BorderFactory.createCompoundBorder(
-						BorderFactory.createLineBorder(HOVER_COLOR, 1),
+						BorderFactory.createLineBorder(HOVER_COLOR, BT),
 						EMPTY_BORDER
 				)
 		);
 		private Border MIDDLE_SIBLING_BORDER = BorderFactory.createCompoundBorder(
-				BorderFactory.createMatteBorder(1, 0, 1, 0, getBackgroundColor()),
+				BorderFactory.createMatteBorder(MT, 0, MT, 0, getBackgroundColor()),
 				BorderFactory.createCompoundBorder(
-						BorderFactory.createMatteBorder(1, 0, 1, 0, BORDER_COLOR),
+						BorderFactory.createMatteBorder(BT, 0, BT, 0, BORDER_COLOR),
 						EMPTY_BORDER
 				)
 		);
 		private Border FIRST_SIBLING_BORDER = BorderFactory.createCompoundBorder(
-				BorderFactory.createMatteBorder(1, 1, 1, 0, getBackgroundColor()),
+				BorderFactory.createMatteBorder(MT, MT, MT, 0, getBackgroundColor()),
 				BorderFactory.createCompoundBorder(
-						BorderFactory.createMatteBorder(1, 1, 1, 0, BORDER_COLOR),
+						BorderFactory.createMatteBorder(BT, BT, BT, 0, BORDER_COLOR),
 						EMPTY_BORDER
 				)
 		);
 		private Border LAST_SIBLING_BORDER = BorderFactory.createCompoundBorder(
-				BorderFactory.createMatteBorder(1, 0, 1, 1, getBackgroundColor()),
+				BorderFactory.createMatteBorder(MT, 0, MT, MT, getBackgroundColor()),
 				BorderFactory.createCompoundBorder(
-						BorderFactory.createMatteBorder(1, 0, 1, 1, BORDER_COLOR),
+						BorderFactory.createMatteBorder(BT, 0, BT, BT, BORDER_COLOR),
 						EMPTY_BORDER
 				)
 		);
 		private Border MIDDLE_SIBLING_HOVER_BORDER = BorderFactory.createCompoundBorder(
-				BorderFactory.createMatteBorder(1, 0, 1, 0, getBackgroundColor()),
+				BorderFactory.createMatteBorder(MT, 0, MT, 0, getBackgroundColor()),
 				BorderFactory.createCompoundBorder(
-						BorderFactory.createMatteBorder(1, 1, 1, 1, HOVER_COLOR),
-						BorderFactory.createEmptyBorder(1, 0, 1, 0)
+						BorderFactory.createMatteBorder(BT, BT, BT, BT, HOVER_COLOR),
+						BorderFactory.createEmptyBorder(PT, 0, PT, 0)
 				)
 		);
 		private Border FIRST_SIBLING_HOVER_BORDER = BorderFactory.createCompoundBorder(
-				BorderFactory.createMatteBorder(1, 1, 1, 0, getBackgroundColor()),
+				BorderFactory.createMatteBorder(MT, MT, MT, 0, getBackgroundColor()),
 				BorderFactory.createCompoundBorder(
-						BorderFactory.createMatteBorder(1, 1, 1, 1, HOVER_COLOR),
-						BorderFactory.createEmptyBorder(1, 1, 1, 0)
+						BorderFactory.createMatteBorder(BT, BT, BT, BT, HOVER_COLOR),
+						BorderFactory.createEmptyBorder(PT, PT, PT, 0)
 				)
 		);
 		private Border LAST_SIBLING_HOVER_BORDER = BorderFactory.createCompoundBorder(
-				BorderFactory.createMatteBorder(1, 0, 1, 1, getBackgroundColor()),
+				BorderFactory.createMatteBorder(MT, 0, MT, MT, getBackgroundColor()),
 				BorderFactory.createCompoundBorder(
-						BorderFactory.createMatteBorder(1, 1, 1, 1, HOVER_COLOR),
-						BorderFactory.createEmptyBorder(1, 0, 1, 1)
+						BorderFactory.createMatteBorder(BT, BT, BT, BT, HOVER_COLOR),
+						BorderFactory.createEmptyBorder(PT, 0, PT, PT)
 				)
 		);
 		
@@ -749,8 +754,6 @@ public class NetworkViewGrid extends JPanel {
 			this.setPreferredSize(d);
 			
 			final int CURR_LABEL_W = getCurrentLabel().getWidth();
-			final int CL_LABEL_W = getContinueLeftLabel().getWidth();
-			final int CR_LABEL_W = getContinueRightLabel().getWidth();
 			
 			final GroupLayout layout = new GroupLayout(this);
 			this.setLayout(layout);
@@ -768,29 +771,20 @@ public class NetworkViewGrid extends JPanel {
 							.addGap(PAD)
 					)
 					.addGroup(layout.createSequentialGroup()
-							.addGap(GAP)
-							.addComponent(getContinueLeftLabel(), CL_LABEL_W, CL_LABEL_W, CL_LABEL_W)
-							.addGap(GAP, GAP, Short.MAX_VALUE)
+							.addGap(PAD, PAD, Short.MAX_VALUE)
 							.addComponent(getImageLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-							.addGap(GAP, GAP, Short.MAX_VALUE)
-							.addComponent(getContinueRightLabel(), CR_LABEL_W, CR_LABEL_W, CR_LABEL_W)
-							.addGap(GAP)
+							.addGap(PAD, PAD, Short.MAX_VALUE)
 					)
 			);
-			layout.setVerticalGroup(layout.createParallelGroup(CENTER, true)
-					.addComponent(getContinueLeftLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addGroup(layout.createSequentialGroup()
-							.addGap(GAP)
-							.addGroup(layout.createParallelGroup(CENTER, false)
-									.addComponent(getCurrentLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-									.addComponent(getTitleLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-							)
-							.addGap(0, 0, Short.MAX_VALUE)
-							.addGap(GAP)
-							.addComponent(getImageLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-							.addGap(PAD)
+			layout.setVerticalGroup(layout.createSequentialGroup()
+					.addGap(GAP)
+					.addGroup(layout.createParallelGroup(CENTER, false)
+							.addComponent(getCurrentLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+							.addComponent(getTitleLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					)
-					.addComponent(getContinueRightLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addGap(GAP)
+					.addComponent(getImageLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addGap(PAD, PAD, Short.MAX_VALUE)
 			);
 			
 			this.addMouseListener(new MouseAdapter() {
@@ -883,8 +877,10 @@ public class NetworkViewGrid extends JPanel {
 			setToolTipText("<html><center>" + title + "<br>(" + netName + ")</center></html>");
 			getTitleLabel().setText(title);
 			
+			final Dimension size = getSize() != null ? getSize() : getPreferredSize();
+			
 			final int maxTitleWidth = (int) Math.round(
-					getPreferredSize().getWidth()
+					size.getWidth()
 					- 2 * BORDER_WIDTH
 					- 2 * PAD
 					- 2 * GAP 
@@ -896,18 +892,16 @@ public class NetworkViewGrid extends JPanel {
 			getTitleLabel().setSize(titleSize);
 			
 			this.updateBorder();
-			this.updateContinueLabels();
 		}
 		
 		void updateIcon() {
 			final Dimension size = this.getSize();
 			
 			if (size != null && getTitleLabel().getSize() != null) {
-				int clw = getContinueLeftLabel().getWidth();
 				int lh = getTitleLabel().getHeight();
 				
-				int iw = size.width - 2 * BORDER_WIDTH - 4 * GAP - 2 * clw - IMG_BORDER_WIDTH;
-				int ih = size.height - 2 * BORDER_WIDTH - 2 * GAP - lh - PAD - IMG_BORDER_WIDTH;
+				int iw = size.width - 2 * BORDER_WIDTH - 2 * PAD - 2 * IMG_BORDER_WIDTH;
+				int ih = size.height - 2 * BORDER_WIDTH - 2 * GAP - lh - PAD - 2 * IMG_BORDER_WIDTH;
 				
 				if (iw > 0 && ih > 0) {
 					final Image img = createThumbnail(iw, ih);
@@ -927,15 +921,6 @@ public class NetworkViewGrid extends JPanel {
 				setBorder(hover? LAST_SIBLING_HOVER_BORDER : LAST_SIBLING_BORDER);
 			else
 				setBorder(hover ? DEFAULT_HOVER_BORDER : DEFAULT_BORDER);
-		}
-		
-		private void updateContinueLabels() {
-			final boolean first = isFirstSibling();
-			final boolean middle = isMiddleSibling();
-			final boolean last = isLastSibling();
-			
-			getContinueLeftLabel().setText(middle || last ? IconManager.ICON_MINUS : " ");
-			getContinueRightLabel().setText(first || middle ? IconManager.ICON_MINUS : " ");
 		}
 		
 		CyNetworkView getNetworkView() {
@@ -965,22 +950,6 @@ public class NetworkViewGrid extends JPanel {
 			return titleLabel;
 		}
 		
-		JLabel getContinueLeftLabel() {
-			if (continueLeftLabel == null) {
-				continueLeftLabel = createContinueLabel();
-			}
-			
-			return continueLeftLabel;
-		}
-		
-		JLabel getContinueRightLabel() {
-			if (continueRightLabel == null) {
-				continueRightLabel = createContinueLabel();
-			}
-			
-			return continueRightLabel;
-		}
-		
 		JLabel getImageLabel() {
 			if (imageLabel == null) {
 				final Color color = UIManager.getColor("Table.selectionBackground");
@@ -1003,23 +972,6 @@ public class NetworkViewGrid extends JPanel {
 			}
 			
 			return imageLabel;
-		}
-		
-		/**
-		 * Used to indicate that a sibling view is in the previous or next row.
-		 */
-		private JLabel createContinueLabel() {
-			final JLabel label = new JLabel(IconManager.ICON_MINUS);
-			final IconManager iconManager = serviceRegistrar.getService(IconManager.class);
-			label.setFont(iconManager.getIconFont(12.0f));
-			label.setHorizontalAlignment(JLabel.CENTER);
-			label.setForeground(UIManager.getColor("Label.disabledForeground"));
-			
-			label.setMinimumSize(currentLabel.getPreferredSize());
-			label.setMaximumSize(currentLabel.getPreferredSize());
-			label.setSize(currentLabel.getPreferredSize());
-			
-			return label;
 		}
 		
 		/**
