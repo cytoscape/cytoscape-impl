@@ -218,27 +218,6 @@ public class GUIJobDialog extends JDialog {
 		}
 	}
 
-	class LoadDataTask extends AbstractTask {
-		final CyJob job;
-		public LoadDataTask(final CyJob job) {
-			this.job = job;
-		}
-
-		public void run(TaskMonitor monitor) {
-			CyJobHandler jobHandler = job.getJobHandler();
-			// System.out.println("Load data task");
-			if (jobHandler != null) {
-				// System.out.println("Calling loadData");
-				jobHandler.loadData(job, monitor);
-			}
-
-			jobManager.removeJob(job);
-			jobList.remove(job);
-			statusMap.remove(job);
-			mapChanged();
-		}
-	}
-
 	class JTableButtonRenderer extends JButton implements TableCellRenderer {
 		public JTableButtonRenderer() {
 			setOpaque(true);
@@ -320,6 +299,28 @@ public class GUIJobDialog extends JDialog {
 			JOptionPane.showMessageDialog(parent, jobStatus.toString(),
 			                              "Job "+jobToString(job),
 																		messageType);
+			jobManager.removeJob(job);
+			jobList.remove(job);
+			statusMap.remove(job);
+			mapChanged();
+		}
+	}
+
+	class LoadDataTask extends AbstractTask {
+		final CyJob job;
+		public LoadDataTask(final CyJob job) {
+			this.job = job;
+		}
+
+		public void run(TaskMonitor monitor) {
+			monitor.setTitle("Loading data for "+job.toString());
+			CyJobHandler jobHandler = job.getJobHandler();
+			// System.out.println("Load data task");
+			if (jobHandler != null) {
+				// System.out.println("Calling loadData");
+				jobHandler.loadData(job, monitor);
+			}
+
 			jobManager.removeJob(job);
 			jobList.remove(job);
 			statusMap.remove(job);

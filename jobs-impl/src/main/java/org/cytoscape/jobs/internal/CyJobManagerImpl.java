@@ -107,7 +107,6 @@ public class CyJobManagerImpl implements CyJobManager,
 	@Override
 	public void removeJob(CyJob job) {
 		synchronized (jobsList) {
-			System.out.println("Removing job "+job.toString());
 			jobsList.remove(job);
 		}
 		jobHandlerMap.remove(job);
