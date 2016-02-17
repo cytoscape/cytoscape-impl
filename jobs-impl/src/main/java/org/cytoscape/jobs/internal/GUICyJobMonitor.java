@@ -51,13 +51,16 @@ public class GUICyJobMonitor extends AbstractTaskFactory implements CyJobHandler
 	final CyServiceRegistrar serviceRegistrar;
 	final ConcurrentMap<CyJob, CyJobStatus> statusMap;
 	final GUIJobDialog dialog;
+	final CyJobManagerImpl jobManager;
 
-	public GUICyJobMonitor(CyServiceRegistrar registrar) {
+	public GUICyJobMonitor(CyServiceRegistrar registrar, CyJobManagerImpl jobManager) {
 		this.serviceRegistrar = registrar;
+		this.jobManager = jobManager;
+		jobManager.setJobMonitor(this);
 		logger = Logger.getLogger(CyUserLog.NAME);
 		statusMap = new ConcurrentHashMap<>();
 		CySwingApplication swingApp = registrar.getService(CySwingApplication.class);
-		dialog = new GUIJobDialog(serviceRegistrar, swingApp, statusMap);
+		dialog = new GUIJobDialog(serviceRegistrar, swingApp, statusMap, jobManager);
 	}
 
 	public TaskIterator createTaskIterator() {
@@ -71,39 +74,42 @@ public class GUICyJobMonitor extends AbstractTaskFactory implements CyJobHandler
 	public void handleJob(CyJob job, CyJobStatus status) {
 		String jobId = job.getJobId();
 		Status stat = status.getStatus();
+		if (statusMap.containsKey(job) && statusMap.get(job).getStatus().equals(stat))
+			return;
+
 		statusMap.put(job, status);
 		dialog.mapChanged();
 
+		// Temporary - for debugging purposes
 		switch(stat) {
 			case FAILED:
-				logger.error("Job "+jobId+" has failed!");
+				logger.error("JobManager: Job "+jobId+" has failed!");
 				break;
 			case ERROR:
-				logger.error("Job "+jobId+" has experienced an error!");
+				logger.error("JobManager: Job "+jobId+" has experienced an error!");
 				break;
 
 			case CANCELED:
-				logger.warn("Job "+jobId+" has been canceled!");
+				logger.warn("JobManager: Job "+jobId+" has been canceled!");
 				break;
 			case PURGED:
-				logger.warn("Job "+jobId+" has been purged!");
+				logger.warn("JobManager: Job "+jobId+" has been purged!");
 				break;
 			case TERMINATED:
-				logger.warn("Job "+jobId+" was terminated");
+				logger.warn("JobManager: Job "+jobId+" was terminated");
 				break;
 
 			case FINISHED:
-				logger.info("Job "+jobId+" has finished");
-				// The final version of this will call loadResults
+				logger.info("JobManager: Job "+jobId+" has finished");
 				break;
 			case SUBMITTED:
-				logger.info("Job "+jobId+" was submitted");
+				logger.info("JobManager: Job "+jobId+" was submitted");
 				break;
 			case QUEUED:
-				logger.info("Job "+jobId+" has been queued");
+				logger.info("JobManager: Job "+jobId+" has been queued");
 				break;
 			case RUNNING:
-				logger.info("Job "+jobId+" is running");
+				logger.info("JobManager: Job "+jobId+" is running");
 				break;
 		}
 	}

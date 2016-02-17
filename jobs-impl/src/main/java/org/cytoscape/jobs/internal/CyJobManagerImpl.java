@@ -58,7 +58,7 @@ public class CyJobManagerImpl implements CyJobManager,
 																	       SessionLoadedListener {
 	private final CyServiceRegistrar cyServiceRegistrar;
 	private CyEventHelper cyEventHelper;
-	CyJobHandler jobMonitor;
+	private CyJobHandler jobMonitor;
 	final Logger logger;
 
 	List<CyJob> jobsList;
@@ -67,7 +67,7 @@ public class CyJobManagerImpl implements CyJobManager,
 	ConcurrentMap<CyJob, CyJobStatus> statusMap;
 	ConcurrentMap<String, CyJobHandler> handlerMap;
 	ConcurrentMap<String, CyJobExecutionService> exServiceMap;
-	final Timer pollTimer;
+	Timer pollTimer;
 
 	/**
 	 * 
@@ -75,11 +75,9 @@ public class CyJobManagerImpl implements CyJobManager,
 	 * @param cyEventHelper
 	 */
 	public CyJobManagerImpl(final CyServiceRegistrar cyServiceRegistrar, 
-		                      final CyEventHelper cyEventHelper, 
-													final CyJobHandler jobMonitor) {
+		                      final CyEventHelper cyEventHelper) { 
 		this.cyServiceRegistrar = cyServiceRegistrar;
 		this.cyEventHelper = cyEventHelper;
-		this.jobMonitor = jobMonitor;
 		logger = Logger.getLogger(CyUserLog.NAME);
 
 		jobsList = new ArrayList<>();
@@ -90,6 +88,10 @@ public class CyJobManagerImpl implements CyJobManager,
 		exServiceMap = new ConcurrentHashMap<>();
 
 		pollTimer = new Timer("Job Status Poller", true);
+	}
+
+	public void setJobMonitor(CyJobHandler handler) {
+		jobMonitor = handler;
 	}
 
 	@Override
@@ -105,12 +107,14 @@ public class CyJobManagerImpl implements CyJobManager,
 	@Override
 	public void removeJob(CyJob job) {
 		synchronized (jobsList) {
+			System.out.println("Removing job "+job.toString());
 			jobsList.remove(job);
 		}
 		jobHandlerMap.remove(job);
 		intervalMap.remove(job);
-		if (jobsList.size() == 0)
-			pollTimer.cancel();
+		if (jobsList.size() == 0) {
+			resetTimer();
+		}
 	}
 
 	@Override
@@ -179,10 +183,15 @@ public class CyJobManagerImpl implements CyJobManager,
 			exServiceMap.remove(clazz);
 	}
 
+	public void resetTimer() {
+		pollTimer.cancel();
+		pollTimer = new Timer("Job Status Poller", true);
+	}
+
 	@Override
 	public void handleEvent(SessionAboutToBeSavedEvent e) {
 		// Cancel our timer
-		pollTimer.cancel();
+		resetTimer();
 
 		String tmpDir = System.getProperty("java.io.tmpdir");
 		List<File> jobFiles = new ArrayList<>();
@@ -209,12 +218,16 @@ public class CyJobManagerImpl implements CyJobManager,
 				logger.error("Failed to save jobs in session: "+ioe.getMessage());
 			}
 		}
+
+		// Restart our timer
+		if (jobsList.size() > 0)
+			pollTimer.schedule(new Poller(), 1000);
 	}
 
 	@Override
 	public void handleEvent(SessionLoadedEvent e) {
 		// Cancel our timer
-		pollTimer.cancel();
+		resetTimer();
 
 		CySession session = e.getLoadedSession();
 		Map<String, List<File>> appFileList = session.getAppFileListMap();
@@ -237,6 +250,7 @@ public class CyJobManagerImpl implements CyJobManager,
 
 	class Poller extends TimerTask {
 		public void run() {
+			resetTimer();
 			List<CyJob> orphans = new ArrayList<>();
 			for (CyJob job: intervalMap.keySet()) {
 				if (intervalMap.get(job).ready()) {
@@ -246,7 +260,8 @@ public class CyJobManagerImpl implements CyJobManager,
 
 					if (jobHandlerMap.containsKey(job))
 						jobHandlerMap.get(job).handleJob(job, status);
-					else if (status.isDone())
+
+					if (status.isDone())
 						// Orphan
 						orphans.add(job);
 
@@ -257,7 +272,7 @@ public class CyJobManagerImpl implements CyJobManager,
 			}
 			for (CyJob job: orphans) removeJob(job);
 			if (jobsList.size() > 0)
-				pollTimer.schedule(this, 1000);
+				pollTimer.schedule(new Poller(), 1000);
 		}
 	}
 

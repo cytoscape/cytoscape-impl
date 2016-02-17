@@ -24,20 +24,28 @@ package org.cytoscape.jobs.internal;
  * #L%
  */
 
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import javax.swing.AbstractAction;
+import javax.swing.DefaultCellEditor;
 import javax.swing.JDialog;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.UIManager;
 import javax.swing.table.AbstractTableModel;
+import javax.swing.table.TableCellEditor;
+import javax.swing.table.TableCellRenderer;
+import javax.swing.WindowConstants;
 
 import org.cytoscape.application.CyUserLog;
 import org.cytoscape.application.swing.CySwingApplication;
@@ -61,26 +69,46 @@ public class GUIJobDialog extends JDialog {
 	final CyServiceRegistrar serviceRegistrar;
 	final ConcurrentMap<CyJob, CyJobStatus> statusMap;
 	final List<CyJob> jobList;
+	final CyJobManagerImpl jobManager;
+	JobTableModel jobTableModel;
 	static final long serialVersionUID = 1001L;
+	final JDialog jobDialog;
 
 	public GUIJobDialog(CyServiceRegistrar registrar, 
 	                    CySwingApplication swingApp,
-	                    ConcurrentMap<CyJob, CyJobStatus> statusMap) {
-		super(swingApp.getJFrame(),"Job Monitor");
+	                    ConcurrentMap<CyJob, CyJobStatus> statusMap,
+											CyJobManagerImpl jobManager) {
+		super();
+		this.setTitle("Job Monitor");
 		this.serviceRegistrar = registrar;
 		this.statusMap = statusMap;
+		this.jobManager = jobManager;
 		this.jobList = new ArrayList<>();
 		for (CyJob job: statusMap.keySet()) {
 			jobList.add(job);
 		}
 		initUI();
+		pack();
+		// setLocationRelativeTo(swingApp.getJFrame());
+		setLocationRelativeTo(null);
+		setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+		jobDialog = this;
 	}
 
 	public void initUI() {
 		// Create table of jobs
-		JTable table = new JTable(new JobTableModel(this));
+		jobTableModel = new JobTableModel(this);
+		JTable table = new JTable(jobTableModel);
+		table.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
 		// Put in JScrollPane
 		JScrollPane scrollPane = new JScrollPane(table);
+		// Set up our button renderer
+		TableCellRenderer buttonRenderer = new JTableButtonRenderer();
+		table.setDefaultRenderer(JButton.class, buttonRenderer);
+		TableCellEditor buttonEditor = new ButtonEditor(new JCheckBox());
+		table.setDefaultEditor(JButton.class, buttonEditor);
+		table.setRowHeight(30);
+
 		// add to dialog
 		add(scrollPane);
 		setPreferredSize(new Dimension(500,100));
@@ -91,11 +119,26 @@ public class GUIJobDialog extends JDialog {
 		for (CyJob job: statusMap.keySet()) {
 			jobList.add(job);
 		}
+		jobTableModel.fireTableDataChanged();
 	}
 
 	public String jobToString(CyJob job) {
 		return job.getJobName()+"("+job.getJobId()+")";
 	}
+
+	String getButtonText(String action) {
+		if (action == null) return "";
+		if (action.equals("cancel"))
+			return "Cancel Job";
+		if (action.equals("error"))
+			return "Show Error";
+		if (action.equals("warning"))
+			return "Show Error";
+		if (action.equals("load"))
+			return "Load Data";
+		return null;
+	}
+
 
 	class JobTableModel extends AbstractTableModel {
 		static final long serialVersionUID = 1002L;
@@ -136,7 +179,9 @@ public class GUIJobDialog extends JDialog {
 		}
 
 		public int getRowCount() { return statusMap.size(); }
+
 		public int getColumnCount() { return 4; }
+
 		public Object getValueAt(int row, int column) {
 			CyJob job = jobList.get(row);
 			CyJobStatus status = statusMap.get(job);
@@ -151,84 +196,25 @@ public class GUIJobDialog extends JDialog {
 			case 3:
 				switch (jobStatus) {
 					case ERROR:
-						return new ErrorButton(job, status, jobDialog, JOptionPane.ERROR_MESSAGE); 
+						return "error";
+						// return new ErrorButton(job, status, jobDialog, JOptionPane.ERROR_MESSAGE); 
 					case FAILED:
 					case PURGED:
 					case TERMINATED:
-						return new ErrorButton(job, status, jobDialog, JOptionPane.WARNING_MESSAGE); 
+					case UNKNOWN:
+						return "warning";
+						// return new ErrorButton(job, status, jobDialog, JOptionPane.WARNING_MESSAGE); 
 					case QUEUED:
 					case RUNNING:
 					case SUBMITTED:
-					case UNKNOWN:
-						return new CancelButton(job);
+						return "cancel";
+						// return new CancelButton(job);
 					case FINISHED:
-						return new LoadDataButton(job);
+						return "load";
+						// return new LoadDataButton(job);
 				}
 			}
 			return null;
-		}
-	}
-
-	class CancelButton extends JButton {
-		static final long serialVersionUID = 1004L;
-		final CyJob job;
-		public CancelButton(final CyJob job) {
-			super("Cancel Job");
-			this.job = job;
-			setAction(new AbstractAction() {
-				static final long serialVersionUID = 1005L;
-				public void actionPerformed(ActionEvent e) {
-					job.getJobExecutionService().cancelJob(job);
-					jobList.remove(job);
-					statusMap.remove(job);
-				}
-			});
-		}
-	}
-
-	class ErrorButton extends JButton {
-		final CyJob job;
-		final CyJobStatus jobStatus;
-		final int messageType;
-		final JDialog parent;
-		static final long serialVersionUID = 1006L;
-
-		public ErrorButton(final CyJob job, final CyJobStatus jobStatus, 
-		                   final JDialog dialog, final int messageType) {
-			super("Show Error");
-			this.job = job;
-			this.jobStatus = jobStatus;
-			this.parent = dialog;
-			this.messageType = messageType;
-			setAction(new AbstractAction() {
-				static final long serialVersionUID = 1007L;
-				public void actionPerformed(ActionEvent e) {
-					JOptionPane.showMessageDialog(parent, jobStatus.toString(),
-					                              "Job "+jobToString(job),
-																				messageType);
-					jobList.remove(job);
-					statusMap.remove(job);
-				}
-			});
-		}
-	}
-
-	class LoadDataButton extends JButton {
-		final CyJob job;
-		static final long serialVersionUID = 1008L;
-
-		public LoadDataButton(final CyJob job) {
-			super("Load data");
-			this.job = job;
-			setAction(new AbstractAction() {
-				static final long serialVersionUID = 1009L;
-				public void actionPerformed(ActionEvent e) {
-					TaskManager<?,?> taskManager = serviceRegistrar.getService(TaskManager.class);
-					taskManager.execute(new TaskIterator(new LoadDataTask(job)));
-					jobList.remove(job);
-					statusMap.remove(job);
-				}
-			});
 		}
 	}
 
@@ -240,8 +226,104 @@ public class GUIJobDialog extends JDialog {
 
 		public void run(TaskMonitor monitor) {
 			CyJobHandler jobHandler = job.getJobHandler();
-			if (jobHandler != null)
+			// System.out.println("Load data task");
+			if (jobHandler != null) {
+				// System.out.println("Calling loadData");
 				jobHandler.loadData(job, monitor);
+			}
+
+			jobManager.removeJob(job);
+			jobList.remove(job);
+			statusMap.remove(job);
+			mapChanged();
+		}
+	}
+
+	class JTableButtonRenderer extends JButton implements TableCellRenderer {
+		public JTableButtonRenderer() {
+			setOpaque(true);
+		}
+
+		@Override
+		public Component getTableCellRendererComponent(JTable table, Object value, 
+		                                               boolean isSelected, boolean hasFocus, 
+																		               int row, int column) {
+			if (isSelected) {
+				setForeground(table.getSelectionForeground());
+				setBackground(table.getSelectionBackground());
+			} else {
+				setForeground(table.getForeground());
+				setBackground(UIManager.getColor("Button.background"));
+			}
+			
+			setText(getButtonText((String)value));
+			return this;
+		}
+	}
+
+	class ButtonEditor extends DefaultCellEditor {
+		protected JButton button;
+		private String action;
+		private boolean isPushed;
+		private CyJob job;
+		private CyJobStatus jobStatus;
+
+		public ButtonEditor(JCheckBox checkBox) {
+			super(checkBox);
+			button = new JButton();
+			button.setOpaque(true);
+			button.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					fireEditingStopped();
+				}
+			});
+		}
+
+		@Override
+		public Component getTableCellEditorComponent(JTable table, Object value,
+		                                             boolean isSelected, 
+																		             int row, int column) {
+			action = (String)value;
+			button.setText(getButtonText(action));
+			isPushed = true;
+			job = jobList.get(row);
+			jobStatus = statusMap.get(job);
+			return button;
+		}
+
+		public Object getCellEditorValue() {
+			if (isPushed) {
+				isPushed = false;
+				if (action.equals("cancel")) {
+					// System.out.println("Cancelling job");
+					CyJobStatus status = job.getJobExecutionService().cancelJob(job);
+					if (status.getStatus().equals(Status.CANCELED)) {
+						jobManager.removeJob(job);
+						jobList.remove(job);
+						statusMap.remove(job);
+						mapChanged();
+					}
+				} else if (action.equals("error")) {
+					showMessage(jobDialog, JOptionPane.ERROR_MESSAGE);
+				} else if (action.equals("warning")) {
+					showMessage(jobDialog, JOptionPane.WARNING_MESSAGE);
+				} else if (action.equals("load")) {
+					// System.out.println("Loading data");
+					TaskManager<?,?> taskManager = serviceRegistrar.getService(TaskManager.class);
+					taskManager.execute(new TaskIterator(new LoadDataTask(job)));
+				}
+			}
+			return action;
+		}
+
+		void showMessage(JDialog parent, int messageType) {
+			JOptionPane.showMessageDialog(parent, jobStatus.toString(),
+			                              "Job "+jobToString(job),
+																		messageType);
+			jobManager.removeJob(job);
+			jobList.remove(job);
+			statusMap.remove(job);
+			mapChanged();
 		}
 	}
 

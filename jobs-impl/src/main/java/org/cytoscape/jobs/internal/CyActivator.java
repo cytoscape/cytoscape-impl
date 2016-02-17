@@ -57,21 +57,21 @@ public class CyActivator extends AbstractCyActivator {
 		ServiceReference ref = 
 			bc.getServiceReference("org.cytoscape.application.swing.CySwingApplication");
 
+		CyJobManagerImpl cyJobManager = new CyJobManagerImpl(cyServiceRegistrarServiceRef, cyEventHelper);
+		registerService(bc,cyJobManager,CyJobManager.class, new Properties());
+
 		if (ref == null) {
 			haveGUI = false;
 			jobMonitor = new SimpleCyJobMonitor();
 		} else {
 			// So, if we have a GUI, start up our jobs monitor
-			jobMonitor = new GUICyJobMonitor(cyServiceRegistrarServiceRef);
+			jobMonitor = new GUICyJobMonitor(cyServiceRegistrarServiceRef, cyJobManager);
 			Properties guiJobProperties = new Properties();
 			guiJobProperties.setProperty(TITLE, "Job Status Monitor");
 			guiJobProperties.setProperty(PREFERRED_MENU, "Tools");
 			guiJobProperties.setProperty(IN_TOOL_BAR, "true");
 			registerService(bc,jobMonitor,TaskFactory.class, guiJobProperties);
 		}
-
-		CyJobManagerImpl cyJobManager = new CyJobManagerImpl(cyServiceRegistrarServiceRef, cyEventHelper, jobMonitor);
-		registerService(bc,cyJobManager,CyJobManager.class, new Properties());
 
 		// Our job manager also needs to handle the registration of jobs handlers and job session handlers
 		registerServiceListener(bc, cyJobManager, "addJobHandler", "removeJobHandler", CyJobHandler.class);
