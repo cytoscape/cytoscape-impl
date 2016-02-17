@@ -302,6 +302,7 @@ public class NetworkViewPreviewDialog extends JDialog {
 			
 			getTitleLabel().setText(title);
 			getTitleLabel().setToolTipText(title);
+			getImageLabel().setToolTipText(title);
 			
 			final int maxTitleWidth = (int) Math.round(
 					getPreferredSize().getWidth()

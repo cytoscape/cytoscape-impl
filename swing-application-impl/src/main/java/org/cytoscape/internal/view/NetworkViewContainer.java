@@ -414,8 +414,10 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 	private BirdsEyeViewPanel getBirdsEyeViewPanel() {
 		if (birdsEyeViewPanel == null) {
 			birdsEyeViewPanel = new BirdsEyeViewPanel(getNetworkView(), serviceRegistrar);
-			birdsEyeViewPanel.setBorder(
-					BorderFactory.createMatteBorder(1, 1, 0, 0, UIManager.getColor("Separator.foreground")));
+			birdsEyeViewPanel.setBorder(BorderFactory.createCompoundBorder(
+					BorderFactory.createMatteBorder(1, 1, 0, 0, UIManager.getColor("Table.background")),
+					BorderFactory.createMatteBorder(1, 1, 1, 1, UIManager.getColor("Focus.color"))
+			));
 			birdsEyeViewPanel.setVisible(true);
 		}
 		
