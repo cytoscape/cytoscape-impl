@@ -1566,7 +1566,10 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, Net
 		
 		if (item.getModel().getViewCount() > 0) {
 			final Window windowAncestor = SwingUtilities.getWindowAncestor(item);
-			viewDialog = new NetworkViewPreviewDialog(network, windowAncestor, serviceRegistrar);
+			final CyNetworkView currentView = serviceRegistrar.getService(CyApplicationManager.class)
+					.getCurrentNetworkView();
+			
+			viewDialog = new NetworkViewPreviewDialog(network, currentView, windowAncestor, serviceRegistrar);
 			
 			viewDialog.addWindowFocusListener(new WindowFocusListener() {
 				@Override
@@ -1582,6 +1585,14 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, Net
 				public void keyPressed(KeyEvent e) {
 					if (e.getKeyCode() == KeyEvent.VK_ESCAPE)
 						disposeViewPopup();
+				}
+			});
+			viewDialog.addPropertyChangeListener("currentNetworkView", new PropertyChangeListener() {
+				@Override
+				public void propertyChange(PropertyChangeEvent evt) {
+					disposeViewPopup();
+					serviceRegistrar.getService(CyApplicationManager.class)
+							.setCurrentNetworkView((CyNetworkView) evt.getNewValue());
 				}
 			});
 			

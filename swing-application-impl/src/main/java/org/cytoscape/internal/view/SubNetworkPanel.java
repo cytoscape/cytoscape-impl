@@ -7,6 +7,8 @@ import static org.cytoscape.util.swing.IconManager.ICON_SHARE_ALT;
 import static org.cytoscape.util.swing.IconManager.ICON_SHARE_ALT_SQUARE;
 
 import java.awt.Dimension;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
 import javax.swing.BorderFactory;
 import javax.swing.GroupLayout;
@@ -85,16 +87,21 @@ public class SubNetworkPanel extends AbstractNetworkPanel<CySubNetwork> {
 		
 		getViewCountLabel().setText(viewCountText);
 		
-		getViewIconLabel().setText(viewCount == 0 ? ICON_SHARE_ALT : ICON_SHARE_ALT_SQUARE);
-		getViewIconLabel().setForeground(
-				UIManager.getColor(viewCount == 0 ? "Label.disabledForeground" : "Label.foreground"));
-		getViewIconLabel().setToolTipText((viewCount > 0 ? viewCount : "No") + " view" + (viewCount == 1 ? "" : "s"));
-		
+		updateViewIconLabel();
 		updateCurrentLabel();
 		updateIndentation();
 		updateCountLabels();
 	}
 	
+	private void updateViewIconLabel() {
+		final int viewCount = getModel().getViewCount();
+		
+		getViewIconLabel().setText(viewCount == 0 ? ICON_SHARE_ALT : ICON_SHARE_ALT_SQUARE);
+		getViewIconLabel().setForeground(
+				UIManager.getColor(viewCount == 0 ? "Label.disabledForeground" : "Label.foreground"));
+		getViewIconLabel().setToolTipText((viewCount > 0 ? viewCount : "No") + " view" + (viewCount == 1 ? "" : "s"));
+	}
+
 	protected void updateCurrentLabel() {
 		getCurrentLabel().setText(getModel().isCurrent() ? IconManager.ICON_CIRCLE : " ");
 		getCurrentLabel().setToolTipText(getModel().isCurrent() ? "Current Network" : null);
@@ -196,6 +203,23 @@ public class SubNetworkPanel extends AbstractNetworkPanel<CySubNetwork> {
 			
 			viewIconLabel = new JLabel(ICON_SHARE_ALT_SQUARE);
 			viewIconLabel.setFont(iconManager.getIconFont(16.0f));
+			
+			viewIconLabel.addMouseListener(new MouseAdapter() {
+				@Override
+				public void mouseEntered(MouseEvent e) {
+					final int viewCount = getModel().getViewCount();
+					
+					if (viewCount > 0)
+						getViewIconLabel().setForeground(UIManager.getColor("Focus.color"));
+				}
+				@Override
+				public void mouseExited(MouseEvent e) {
+					final int viewCount = getModel().getViewCount();
+					
+					if (viewCount > 0)
+						updateViewIconLabel();
+				}
+			});
 		}
 		
 		return viewIconLabel;

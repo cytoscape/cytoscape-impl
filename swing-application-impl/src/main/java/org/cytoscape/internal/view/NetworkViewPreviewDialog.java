@@ -36,7 +36,6 @@ import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
 
-import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.internal.util.ViewUtil;
 import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
@@ -53,8 +52,8 @@ public class NetworkViewPreviewDialog extends JDialog {
 	private static int MAX_VISIBLE_THUMBNAILS = 3;
 	
 	private static int DEFAULT_THUMBNAIL_SIZE = 120;
-	private static int PAD = 0;
-	private static int GAP = 0;
+	private static int PAD = 1;
+	private static int GAP = 1;
 	private static int BORDER_WIDTH = 2;
 	private static int IMG_BORDER_WIDTH = 0;
 	
@@ -66,10 +65,11 @@ public class NetworkViewPreviewDialog extends JDialog {
 	private final CySubNetwork network;
 	private final CyServiceRegistrar serviceRegistrar;
 
-	public NetworkViewPreviewDialog(final CySubNetwork network, final Window owner,
+	public NetworkViewPreviewDialog(final CySubNetwork network, final CyNetworkView currentView, final Window owner,
 			final CyServiceRegistrar serviceRegistrar) {
 		super(owner);
 		this.network = network;
+		this.currentNetworkView = currentView;
 		this.serviceRegistrar = serviceRegistrar;
 		init();
 	}
@@ -100,6 +100,21 @@ public class NetworkViewPreviewDialog extends JDialog {
 		return network;
 	}
 	
+	public CyNetworkView getCurrentNetworkView() {
+		return currentNetworkView;
+	}
+	
+	/**
+	 * @param newValue Must not be null.
+	 */
+	private void setCurrentNetworkView(final CyNetworkView newValue) {
+		if (!newValue.equals(currentNetworkView)) {
+			final CyNetworkView oldValue = currentNetworkView;
+			currentNetworkView = newValue;
+			firePropertyChange("currentNetworkView", oldValue, newValue);
+		}
+	}
+	
 	private void init() {
 		setUndecorated(true);
 		setBackground(getBackgroundColor());
@@ -124,6 +139,7 @@ public class NetworkViewPreviewDialog extends JDialog {
 			scrollPane = new JScrollPane(getGridPanel());
 			scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
 			scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+			scrollPane.getViewport().setBackground(getBackgroundColor());
 		}
 		
 		return scrollPane;
@@ -132,12 +148,11 @@ public class NetworkViewPreviewDialog extends JDialog {
 	private JPanel getGridPanel() {
 		if (gridPanel == null) {
 			gridPanel = new GridPanel();
-			gridPanel.setBackground(getBackgroundColor());
+			gridPanel.setOpaque(false);
 			gridPanel.setLayout(new BoxLayout(gridPanel, BoxLayout.X_AXIS));
 			
 			final CyNetworkViewManager netViewManager = serviceRegistrar.getService(CyNetworkViewManager.class);
 			final RenderingEngineManager engineManager = serviceRegistrar.getService(RenderingEngineManager.class);
-			final CyApplicationManager applicationManager = serviceRegistrar.getService(CyApplicationManager.class);
 			final Collection<CyNetworkView> netViews = netViewManager.getNetworkViews(network);
 			
 			for (CyNetworkView view : netViews) {
@@ -146,16 +161,6 @@ public class NetworkViewPreviewDialog extends JDialog {
 				for (RenderingEngine<?> re : engines) {
 					final ThumbnailPanel tp = new ThumbnailPanel(re, DEFAULT_THUMBNAIL_SIZE);
 					gridPanel.add(tp);
-					
-					tp.addMouseListener(new MouseAdapter() {
-						@Override
-						public void mousePressed(final MouseEvent e) {
-							// TODO do not set the current view directly to the OSGI manager!
-							if (!view.equals(applicationManager.getCurrentNetworkView()))
-								applicationManager.setCurrentNetworkView(view);
-						}
-					});
-					
 					break;
 				}
 			}
@@ -226,6 +231,7 @@ public class NetworkViewPreviewDialog extends JDialog {
 		ThumbnailPanel(final RenderingEngine<?> engine, final int size) {
 			this.engine = engine;
 			this.setBorder(DEFAULT_BORDER);
+			this.setOpaque(false);
 			
 			final Dimension d = new Dimension(size - BORDER_WIDTH, size - BORDER_WIDTH);
 			this.setMinimumSize(d);
@@ -248,11 +254,7 @@ public class NetworkViewPreviewDialog extends JDialog {
 							.addGap(CURR_LABEL_W)
 							.addGap(PAD)
 					)
-					.addGroup(layout.createSequentialGroup()
-							.addGap(GAP, GAP, Short.MAX_VALUE)
-							.addComponent(getImageLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-							.addGap(GAP, GAP, Short.MAX_VALUE)
-					)
+					.addComponent(getImageLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 			);
 			layout.setVerticalGroup(layout.createSequentialGroup()
 					.addGap(GAP)
@@ -262,7 +264,7 @@ public class NetworkViewPreviewDialog extends JDialog {
 					)
 					.addGap(GAP)
 					.addComponent(getImageLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addGap(PAD, PAD, Short.MAX_VALUE)
+					.addGap(0, 0, Short.MAX_VALUE)
 			);
 			
 			this.addMouseListener(new MouseAdapter() {
@@ -275,6 +277,10 @@ public class NetworkViewPreviewDialog extends JDialog {
 				public void mouseExited(MouseEvent e) {
 					hover = false;
 					updateBorder();
+				}
+				@Override
+				public void mousePressed(final MouseEvent e) {
+					setCurrentNetworkView(getNetworkView());
 				}
 			});
 			
@@ -300,7 +306,7 @@ public class NetworkViewPreviewDialog extends JDialog {
 			getCurrentLabel().setText(isCurrent() ? IconManager.ICON_CIRCLE : " ");
 			
 			getTitleLabel().setText(title);
-			getTitleLabel().setToolTipText(title);
+			this.setToolTipText(title);
 			
 			final int maxTitleWidth = (int) Math.round(
 					getPreferredSize().getWidth()
@@ -324,8 +330,8 @@ public class NetworkViewPreviewDialog extends JDialog {
 			if (size != null && getTitleLabel().getSize() != null) {
 				int lh = getTitleLabel().getHeight();
 				
-				int iw = size.width - 2 * BORDER_WIDTH - 4 * GAP - IMG_BORDER_WIDTH;
-				int ih = size.height - 2 * BORDER_WIDTH - 2 * GAP - lh - PAD - IMG_BORDER_WIDTH;
+				int iw = size.width - 2 * BORDER_WIDTH - IMG_BORDER_WIDTH;
+				int ih = size.height - 2 * BORDER_WIDTH - 2 * GAP - lh - IMG_BORDER_WIDTH;
 				
 				if (iw > 0 && ih > 0) {
 					final Image img = createThumbnail(iw, ih);
@@ -337,7 +343,7 @@ public class NetworkViewPreviewDialog extends JDialog {
 		}
 		
 		private void updateBorder() {
-			setBorder(hover ? DEFAULT_HOVER_BORDER : DEFAULT_BORDER);
+			setBorder(hover && !isCurrent() ? DEFAULT_HOVER_BORDER : DEFAULT_BORDER);
 		}
 		
 		CyNetworkView getNetworkView() {
