@@ -6,20 +6,12 @@ import static javax.swing.GroupLayout.Alignment.CENTER;
 import static org.cytoscape.util.swing.IconManager.ICON_SHARE_ALT;
 import static org.cytoscape.util.swing.IconManager.ICON_SHARE_ALT_SQUARE;
 
-import java.awt.AWTEvent;
 import java.awt.Dimension;
-import java.awt.Point;
-import java.awt.Toolkit;
-import java.awt.Window;
-import java.awt.event.AWTEventListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 
 import javax.swing.BorderFactory;
 import javax.swing.GroupLayout;
 import javax.swing.JLabel;
 import javax.swing.LayoutStyle.ComponentPlacement;
-import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
 import org.cytoscape.internal.util.ViewUtil;
@@ -41,11 +33,6 @@ public class SubNetworkPanel extends AbstractNetworkPanel<CySubNetwork> {
 	private JLabel edgeCountLabel;
 	
 	private int depth;
-	private ViewIconMouseListener viewIconMouseListener;
-	
-	private NetworkViewPreviewDialog previewDialog;
-	private PreviewAWTEventListener previewAWTEventListener;
-	private long previewDialogClosingTime;
 	
 	public SubNetworkPanel(final SubNetworkPanelModel model, final CyServiceRegistrar serviceRegistrar) {
 		super(model, serviceRegistrar);
@@ -106,14 +93,6 @@ public class SubNetworkPanel extends AbstractNetworkPanel<CySubNetwork> {
 		updateCurrentLabel();
 		updateIndentation();
 		updateCountLabels();
-		
-		if (viewCount > 0) {
-			if (viewIconMouseListener == null)
-				getViewIconLabel().addMouseListener(viewIconMouseListener = new ViewIconMouseListener());
-		} else if (viewIconMouseListener != null) {
-			getViewIconLabel().removeMouseListener(viewIconMouseListener);
-			viewIconMouseListener = null;
-		}
 	}
 	
 	protected void updateCurrentLabel() {
@@ -245,66 +224,4 @@ public class SubNetworkPanel extends AbstractNetworkPanel<CySubNetwork> {
 		
 		return edgeCountLabel;
 	}
-	
-	private class ViewIconMouseListener extends MouseAdapter {
-		
-		@Override
-		public void mouseEntered(MouseEvent e) {
-			if (previewDialog != null || previewDialogClosingTime >= System.currentTimeMillis() - 500)
-				return;
-			
-			if (getModel().getViewCount() > 0) {
-				if (previewDialog == null) {
-					final Window windowAncestor = SwingUtilities.getWindowAncestor(SubNetworkPanel.this);
-					previewDialog = new NetworkViewPreviewDialog(getModel().getNetwork(), windowAncestor, serviceRegistrar);
-					
-					if (previewAWTEventListener == null)
-						previewAWTEventListener = new PreviewAWTEventListener();
-					
-					Toolkit.getDefaultToolkit().addAWTEventListener(previewAWTEventListener,
-							MouseEvent.MOUSE_MOTION_EVENT_MASK);
-				}
-				
-				final Point screenPt = getViewIconLabel().getLocationOnScreen();
-				final Point compPt = getViewIconLabel().getLocation();
-				int xOffset = screenPt.x - compPt.x - getViewIconLabel().getWidth() / 2;
-				int yOffset = screenPt.y - compPt.y + getViewIconLabel().getBounds().height;
-			    final Point pt = getViewIconLabel().getBounds().getLocation();
-			    pt.translate(xOffset, yOffset);
-			    
-				previewDialog.setLocation(pt);
-				previewDialog.setVisible(true);
-				previewDialog.requestFocusInWindow();
-			}
-		}
-	}
-	
-	private class PreviewAWTEventListener implements AWTEventListener {
-		
-        @Override
-        public void eventDispatched(AWTEvent event) {
-            if (event instanceof MouseEvent) {
-                final MouseEvent me1 = (MouseEvent) event;
-                
-                if (previewDialog != null) {
-                	final MouseEvent me2 = SwingUtilities.convertMouseEvent(me1.getComponent(), me1, previewDialog.getRootPane());
-                	
-                	// Check if cursor is outside the dialog
-                	if (!previewDialog.getRootPane().getBounds().contains(me2.getPoint())) {
-                		// Also check if not inside the icon label
-                		final MouseEvent me3 = SwingUtilities.convertMouseEvent(me1.getComponent(), me1, getViewIconLabel().getParent());
-                		
-                		if (!getViewIconLabel().getBounds().contains(me3.getPoint())) {
-	                		previewDialogClosingTime = System.currentTimeMillis();
-		                    previewDialog.dispose();
-							previewDialog = null;
-							
-							if (previewAWTEventListener != null)
-								Toolkit.getDefaultToolkit().removeAWTEventListener(previewAWTEventListener);
-                		}
-                	}
-                }
-            }
-        }
-    }
 }

@@ -240,11 +240,6 @@ public class NetworkViewPreviewDialog extends JDialog {
 			
 			layout.setHorizontalGroup(layout.createParallelGroup(LEADING, true)
 					.addGroup(layout.createSequentialGroup()
-							.addGap(GAP, GAP, Short.MAX_VALUE)
-							.addComponent(getImageLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-							.addGap(GAP, GAP, Short.MAX_VALUE)
-					)
-					.addGroup(layout.createSequentialGroup()
 							.addGap(PAD)
 							.addComponent(getCurrentLabel(), CURR_LABEL_W, CURR_LABEL_W, CURR_LABEL_W)
 							.addGap(GAP, GAP, Short.MAX_VALUE)
@@ -253,17 +248,21 @@ public class NetworkViewPreviewDialog extends JDialog {
 							.addGap(CURR_LABEL_W)
 							.addGap(PAD)
 					)
+					.addGroup(layout.createSequentialGroup()
+							.addGap(GAP, GAP, Short.MAX_VALUE)
+							.addComponent(getImageLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+							.addGap(GAP, GAP, Short.MAX_VALUE)
+					)
 			);
 			layout.setVerticalGroup(layout.createSequentialGroup()
-					.addGap(GAP)
-					.addComponent(getImageLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addGap(0, 0, Short.MAX_VALUE)
 					.addGap(GAP)
 					.addGroup(layout.createParallelGroup(CENTER, false)
 							.addComponent(getCurrentLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 							.addComponent(getTitleLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					)
-					.addGap(PAD)
+					.addGap(GAP)
+					.addComponent(getImageLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addGap(PAD, PAD, Short.MAX_VALUE)
 			);
 			
 			this.addMouseListener(new MouseAdapter() {
@@ -302,7 +301,6 @@ public class NetworkViewPreviewDialog extends JDialog {
 			
 			getTitleLabel().setText(title);
 			getTitleLabel().setToolTipText(title);
-			getImageLabel().setToolTipText(title);
 			
 			final int maxTitleWidth = (int) Math.round(
 					getPreferredSize().getWidth()

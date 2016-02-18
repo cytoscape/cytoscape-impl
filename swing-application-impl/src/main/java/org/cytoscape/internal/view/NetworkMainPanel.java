@@ -13,14 +13,19 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
+import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowFocusListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.text.Collator;
@@ -185,6 +190,8 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, Net
 	private boolean loadingSession;
 	private boolean ignoreSelectionEvents;
 	private boolean doNotUpdateCollapseExpandButtons;
+	
+	private NetworkViewPreviewDialog viewDialog;
 
 	private CyServiceRegistrar serviceRegistrar;
 	
@@ -806,7 +813,7 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, Net
 					updateCollapseExpandButtons();
 				}
 			});
-			addMouseListeners(item, item.getHeaderPanel(), item.getNetworkCountLabel(), item.getNameLabel());
+			addMouseListenersForSelection(item, item.getHeaderPanel(), item.getNetworkCountLabel(), item.getNameLabel());
 		}
 		
 		final SubNetworkPanel subNetPanel = rootNetPanel.addItem(network);
@@ -825,7 +832,15 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, Net
 				}
 			}
 		});
-		addMouseListeners(subNetPanel, subNetPanel, subNetPanel.getNameLabel(), subNetPanel.getViewIconLabel());
+		
+		addMouseListenersForSelection(subNetPanel, subNetPanel, subNetPanel.getNameLabel(), subNetPanel.getViewIconLabel());
+		
+		subNetPanel.getViewIconLabel().addMouseListener(new MouseAdapter() {
+			@Override
+			public void mousePressed(MouseEvent e) {
+				maybeShowViewPopup(subNetPanel);
+			}
+		});
 		
 		// Scroll to new item
 		rootNetPanel.expand();
@@ -839,7 +854,7 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, Net
 		return subNetPanel;
 	}
 	
-	private void addMouseListeners(final AbstractNetworkPanel<?> item, final JComponent... components) {
+	private void addMouseListenersForSelection(final AbstractNetworkPanel<?> item, final JComponent... components) {
 		// This mouse listener listens for mouse pressed events to select the list items
 		final MouseListener selectionListener = new MouseAdapter() {
 			@Override
@@ -1487,19 +1502,19 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, Net
 		
 		@Override
 		public void mousePressed(MouseEvent e) {
-			maybeShowPopup(e);
+			maybeShowPopupMenu(e);
 		}
 
 		// On Windows, popup is triggered by mouse release, not press 
 		@Override
 		public void mouseReleased(MouseEvent e) {
-			maybeShowPopup(e);
+			maybeShowPopupMenu(e);
 		}
 
 		/**
 		 * if the mouse press is of the correct type, this function will maybe display the popup
 		 */
-		private final void maybeShowPopup(final MouseEvent e) {
+		private final void maybeShowPopupMenu(final MouseEvent e) {
 			// Ignore if not valid trigger.
 			if (!e.isPopupTrigger())
 				return;
@@ -1536,6 +1551,57 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, Net
 				editRootNetworTitle.setEnabled(selectedItems.size() == 1);
 				rootPopupMenu.show(e.getComponent(), e.getX(), e.getY());
 			}
+		}
+	}
+	
+	private void maybeShowViewPopup(final SubNetworkPanel item) {
+		final CySubNetwork network = item.getModel().getNetwork();
+		
+		if (viewDialog != null) {
+			if (viewDialog.getNetwork().equals(network)) // Clicking the same item--will probably never happen
+				return;
+		
+			disposeViewPopup();
+		}
+		
+		if (item.getModel().getViewCount() > 0) {
+			final Window windowAncestor = SwingUtilities.getWindowAncestor(item);
+			viewDialog = new NetworkViewPreviewDialog(network, windowAncestor, serviceRegistrar);
+			
+			viewDialog.addWindowFocusListener(new WindowFocusListener() {
+				@Override
+				public void windowLostFocus(WindowEvent e) {
+					disposeViewPopup();
+				}
+				@Override
+				public void windowGainedFocus(WindowEvent e) {
+				}
+			});
+			viewDialog.addKeyListener(new KeyAdapter() {
+				@Override
+				public void keyPressed(KeyEvent e) {
+					if (e.getKeyCode() == KeyEvent.VK_ESCAPE)
+						disposeViewPopup();
+				}
+			});
+			
+			final Point screenPt = item.getViewIconLabel().getLocationOnScreen();
+			final Point compPt = item.getViewIconLabel().getLocation();
+			int xOffset = screenPt.x - compPt.x - item.getViewIconLabel().getWidth() / 2;
+			int yOffset = screenPt.y - compPt.y + item.getViewIconLabel().getBounds().height - 2;
+		    final Point pt = item.getViewIconLabel().getBounds().getLocation();
+		    pt.translate(xOffset, yOffset);
+		    
+			viewDialog.setLocation(pt);
+			viewDialog.setVisible(true);
+			viewDialog.requestFocusInWindow();
+		}
+	}
+	
+	private void disposeViewPopup() {
+		if (viewDialog != null) {
+			viewDialog.dispose();
+			viewDialog = null;
 		}
 	}
 	
