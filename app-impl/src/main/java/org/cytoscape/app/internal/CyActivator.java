@@ -434,9 +434,6 @@ public class CyActivator extends AbstractCyActivator {
 //		cyPropertyRef.getProperties().put("testkey1", "testval1");
 //		cyPropertyRef.getProperties().setProperty("testkey2", "testval2");
 		
-		// Fire event "start up mostly finished". This seems to close the Cytoscape splash screen and show the actual UI.
-		cyEventHelperRef.fireEvent(new CyStartEvent(this));
-		
 		/*
 		for (DownloadSite site : WebQuerier.DEFAULT_DOWNLOAD_SITES) {
 			System.out.println(site.getSiteName());
