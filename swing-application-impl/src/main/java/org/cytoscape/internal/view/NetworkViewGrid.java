@@ -197,7 +197,7 @@ public class NetworkViewGrid extends JPanel {
 			currentNetworkView = newView;
 			
 			for (ThumbnailPanel tp : thumbnailPanels.values())
-				tp.update();
+				tp.update(false);
 			
 			firePropertyChange("currentNetworkView", oldView, newView);
 		}
@@ -210,6 +210,7 @@ public class NetworkViewGrid extends JPanel {
 			item.setDetached(b);
 	}
 	
+	/** Updates the whole grid and recreate the thumbnails **/
 	protected void update(final int thumbnailSize) {
 		synchronized (lock) {
 			dirty = dirty || thumbnailSize != this.thumbnailSize; // TODO separate both conditions
@@ -245,6 +246,7 @@ public class NetworkViewGrid extends JPanel {
 		getToolBar().updateUI();
 	}
 	
+	/** Updates the image only */ 
 	protected void updateThumbnail(final CyNetworkView view) {
 		final ThumbnailPanel tp = getItem(view);
 		
@@ -800,8 +802,7 @@ public class NetworkViewGrid extends JPanel {
 				}
 			});
 			
-			this.updateIcon();
-			this.update();
+			this.update(true);
 		}
 		
 		@Override
@@ -865,7 +866,7 @@ public class NetworkViewGrid extends JPanel {
 					&& previous != null && previous.getKey().getModel().equals(net));
 		}
 		
-		void update() {
+		void update(final boolean redraw) {
 			final CyNetworkView netView = getNetworkView();
 			final CyNetwork network = netView.getModel();
 			final String title = ViewUtil.getTitle(netView);
@@ -892,6 +893,9 @@ public class NetworkViewGrid extends JPanel {
 			getTitleLabel().setSize(titleSize);
 			
 			this.updateBorder();
+			
+			if (redraw)
+				updateIcon();
 		}
 		
 		void updateIcon() {

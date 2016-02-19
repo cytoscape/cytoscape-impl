@@ -305,8 +305,14 @@ public class NetworkViewMediator implements NetworkViewAddedListener, NetworkVie
 	
 	@Override
 	public void handleEvent(final UpdateNetworkPresentationEvent e) {
-		final CyNetworkView view = e.getSource();
-		getNetworkViewMainPanel().update(view);
+		final CyNetworkView netView = e.getSource();
+		
+		invokeOnEDT(new Runnable() {
+			@Override
+			public void run() {
+				getNetworkViewMainPanel().update(netView);
+			}
+		});
 	}
 	
 	@Override
@@ -317,7 +323,16 @@ public class NetworkViewMediator implements NetworkViewAddedListener, NetworkVie
 		invokeOnEDT(new Runnable() {
 			@Override
 			public void run() {
-				getNetworkViewMainPanel().updateThumbnail(netView);
+				// If the Grid is not visible, just flag this view as dirty.
+				// IMPORTANT: If we update the grid thumbnail before the actual view canvas is updated,
+				//            Ding flags itself as not dirty and thinks it does not need
+				//            to redraw the main view anymore.
+				if (getNetworkViewMainPanel().isGridMode()) {
+					getNetworkViewMainPanel().updateThumbnail(netView);
+				} else {
+					getNetworkViewMainPanel().update(netView);
+					getNetworkViewMainPanel().setDirtyThumbnail(netView);
+				}
 			}
 		});
 		

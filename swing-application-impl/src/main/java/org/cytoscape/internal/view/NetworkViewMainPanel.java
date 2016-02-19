@@ -68,6 +68,8 @@ public class NetworkViewMainPanel extends JPanel {
 	private final Map<String, NetworkViewFrame> viewFrames;
 	private final Map<String, NetworkViewComparisonPanel> comparisonPanels;
 	
+	private final Set<CyNetworkView> dirtyThumbnails;
+	
 	private NetworkViewFrame currentViewFrame;
 	
 	private ComparisonModeAWTEventListener comparisonModeAWTEventListener;
@@ -82,6 +84,8 @@ public class NetworkViewMainPanel extends JPanel {
 		viewContainers = new LinkedHashMap<>();
 		viewFrames = new HashMap<>();
 		comparisonPanels = new HashMap<>();
+		dirtyThumbnails = new HashSet<>();
+		
 		cardLayout = new CardLayout();
 		networkViewGrid = createNetworkViewGrid();
 		
@@ -143,6 +147,7 @@ public class NetworkViewMainPanel extends JPanel {
 			// Always show attached container first, even if it will be detached later
 			// so the thumbnail can be generated
 			showViewContainer(vc.getName());
+			setDirtyThumbnail(view);
 			
 			// If the latest focused view was in a detached frame,
 			// detach the new one as well and put it in the same monitor
@@ -163,6 +168,8 @@ public class NetworkViewMainPanel extends JPanel {
 	public void remove(final CyNetworkView view) {
 		if (view == null)
 			return;
+		
+		dirtyThumbnails.remove(view);
 		
 		RenderingEngine<CyNetwork> re = null;
 		final int total = getContentPane().getComponentCount();
@@ -244,9 +251,16 @@ public class NetworkViewMainPanel extends JPanel {
 	}
 	
 	public void showGrid() {
-		cardLayout.show(getContentPane(), networkViewGrid.getName());
-		networkViewGrid.update(networkViewGrid.getThumbnailSlider().getValue()); // TODO remove it when already updating after view changes
-		networkViewGrid.getReattachAllViewsButton().setEnabled(!viewFrames.isEmpty());
+		if (!isGridMode()) {
+			cardLayout.show(getContentPane(), networkViewGrid.getName());
+			networkViewGrid.update(networkViewGrid.getThumbnailSlider().getValue()); // TODO remove it when already updating after view changes
+			networkViewGrid.getReattachAllViewsButton().setEnabled(!viewFrames.isEmpty());
+			
+			final HashSet<CyNetworkView> dirtySet = new HashSet<>(dirtyThumbnails);
+			
+			for (CyNetworkView view : dirtySet)
+				updateThumbnail(view);
+		}
 	}
 	
 	public NetworkViewFrame detachNetworkView(final CyNetworkView view) {
@@ -379,14 +393,32 @@ public class NetworkViewMainPanel extends JPanel {
 	
 	public void updateThumbnail(final CyNetworkView view) {
 		networkViewGrid.updateThumbnail(view);
+		dirtyThumbnails.remove(view);
+	}
+	
+	public void updateThumbnailPanel(final CyNetworkView view, final boolean redraw) {
+		// If the Grid is not visible, just flag this view as dirty.
+		// IMPORTANT: If we update the grid thumbnail before the actual view canvas is updated,
+		//            Ding flags itself as not dirty and thinks it does not need
+		//            to redraw the main view anymore.
+		if (isGridMode()) {
+			final ThumbnailPanel tp = networkViewGrid.getItem(view);
+			
+			if (tp != null)
+				tp.update(redraw);
+			
+			if (redraw)
+				dirtyThumbnails.remove(view);
+		} else {
+			setDirtyThumbnail(view);
+		}
+	}
+	
+	public void setDirtyThumbnail(final CyNetworkView view) {
+		dirtyThumbnails.add(view);
 	}
 	
 	public void update(final CyNetworkView view) {
-		final ThumbnailPanel tp = networkViewGrid.getItem(view);
-		
-		if (tp != null)
-			tp.update();
-		
 		final NetworkViewFrame frame = getNetworkViewFrame(view);
 		
 		if (frame != null) {
@@ -408,6 +440,8 @@ public class NetworkViewMainPanel extends JPanel {
 			}
 			
 			frame.setResizable(resizable);
+			frame.getNetworkViewContainer().update();
+			frame.invalidate();
 		} else if (!isGridMode()) {
 			final NetworkViewContainer vc = getNetworkViewContainer(view);
 			
@@ -419,6 +453,8 @@ public class NetworkViewMainPanel extends JPanel {
 			if (cp != null)
 				cp.update();
 		}
+		
+		updateThumbnailPanel(view, false);
 	}
 	
 	public boolean isEmpty() {
@@ -723,7 +759,7 @@ public class NetworkViewMainPanel extends JPanel {
 					tp.addComponentListener(new ComponentAdapter() {
 						@Override
 						public void componentResized(ComponentEvent e) {
-							networkViewGrid.updateThumbnail(tp.getNetworkView());
+							updateThumbnail(tp.getNetworkView());
 						};
 					});
 				}
@@ -780,10 +816,7 @@ public class NetworkViewMainPanel extends JPanel {
 				final CyNetworkView view = vc.getNetworkView();
 				view.setVisualProperty(BasicVisualLexicon.NETWORK_TITLE, text);
 				
-				final ThumbnailPanel tp = networkViewGrid.getCurrentItem();
-				
-				if (tp != null)
-					tp.update();
+				updateThumbnailPanel(view, false);
 			}
 		}
 		

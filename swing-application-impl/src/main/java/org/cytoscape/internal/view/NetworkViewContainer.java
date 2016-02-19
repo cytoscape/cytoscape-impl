@@ -105,6 +105,7 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 	}
 	
 	public void update() {
+		getVisualizationContainer().repaint();
 		updateTollBar();
 		
 		if (getBirdsEyeViewPanel().isVisible())
