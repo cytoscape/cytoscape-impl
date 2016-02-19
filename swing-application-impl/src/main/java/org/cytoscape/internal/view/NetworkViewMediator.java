@@ -160,6 +160,10 @@ public class NetworkViewMediator implements NetworkViewAddedListener, NetworkVie
 					
 					for (CyNetworkView view : deletedSet)
 						netViewMgr.destroyNetworkView(view);
+					
+					if (!deletedSet.isEmpty())
+						getNetworkViewMainPanel().getNetworkViewGrid()
+								.update(getNetworkViewMainPanel().getNetworkViewGrid().getThumbnailSlider().getValue());
 				}
 			}
 		});
