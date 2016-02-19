@@ -7,7 +7,6 @@ import static org.cytoscape.internal.util.ViewUtil.invokeOnEDT;
 import static org.cytoscape.util.swing.IconManager.ICON_ANGLE_DOUBLE_DOWN;
 import static org.cytoscape.util.swing.IconManager.ICON_ANGLE_DOUBLE_UP;
 import static org.cytoscape.util.swing.IconManager.ICON_COG;
-import static org.cytoscape.util.swing.IconManager.ICON_PLUS;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -28,18 +27,15 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowFocusListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.ListIterator;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
@@ -56,7 +52,6 @@ import javax.swing.JButton;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
-import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
@@ -68,7 +63,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
 import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.application.NetworkViewRenderer;
 import org.cytoscape.application.events.SetCurrentNetworkEvent;
 import org.cytoscape.application.events.SetCurrentNetworkListener;
 import org.cytoscape.application.swing.CyAction;
@@ -107,12 +101,10 @@ import org.cytoscape.task.NetworkCollectionTaskFactory;
 import org.cytoscape.task.NetworkTaskFactory;
 import org.cytoscape.task.NetworkViewCollectionTaskFactory;
 import org.cytoscape.task.NetworkViewTaskFactory;
-import org.cytoscape.task.create.CreateNetworkViewTaskFactory;
 import org.cytoscape.task.edit.EditNetworkTitleTaskFactory;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.events.NetworkViewAddedEvent;
 import org.cytoscape.view.model.events.NetworkViewAddedListener;
@@ -164,12 +156,10 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, Net
 	private JScrollPane rootNetworkScroll;
 	private RootNetworkListPanel rootNetworkListPanel;
 	private JPanel networkHeader;
-	private JPanel networkToolBar;
 	private JButton expandAllButton;
 	private JButton collapseAllButton;
 	private JButton optionsBtn;
 	private JLabel networkSelectionLabel;
-	private JButton createButton;
 
 	private final JPopupMenu popup;
 	private JMenuItem editRootNetworTitle;
@@ -238,7 +228,6 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, Net
 		setLayout(new BorderLayout());
 		add(getNetworkHeader(), BorderLayout.NORTH);
 		add(getRootNetworkScroll(), BorderLayout.CENTER);
-		add(getNetworkToolBar(), BorderLayout.SOUTH);
 		
 		updateNetworkHeader();
 		updateNetworkToolBar();
@@ -370,47 +359,6 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, Net
 		return networkSelectionLabel;
 	}
 	
-	private JPanel getNetworkToolBar() {
-		if (networkToolBar == null) {
-			networkToolBar = new JPanel();
-			
-			final GroupLayout layout = new GroupLayout(networkToolBar);
-			networkToolBar.setLayout(layout);
-			layout.setAutoCreateContainerGaps(false);
-			layout.setAutoCreateGaps(true);
-			
-			layout.setHorizontalGroup(layout.createSequentialGroup()
-					.addContainerGap()
-					.addGap(0, 10, Short.MAX_VALUE)
-					.addComponent(getCreateButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addGap(0, 10, Short.MAX_VALUE)
-					.addContainerGap()
-			);
-			layout.setVerticalGroup(layout.createParallelGroup(CENTER, true)
-					.addComponent(getCreateButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-			);
-		}
-		
-		return networkToolBar;
-	}
-	
-	private JButton getCreateButton() {
-		if (createButton == null) {
-			createButton = new JButton(ICON_PLUS);
-			createButton.setToolTipText("Add...");
-			styleButton(createButton, serviceRegistrar.getService(IconManager.class).getIconFont(ICON_FONT_SIZE));
-
-			createButton.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(final ActionEvent e) {
-					getCreateMenu().show(createButton, 0, createButton.getHeight());
-				}
-			});
-		}
-		
-		return createButton;
-	}
-	
 	private JPopupMenu getNetworkOptionsMenu() {
 		final JPopupMenu menu = new JPopupMenu();
 		
@@ -429,79 +377,9 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, Net
 			menu.add(mi);
 		}
 		
-		{
-			final JMenuItem mi = new JCheckBoxMenuItem("Show Network Toolbar");
-			mi.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					getNetworkToolBar().setVisible(!getNetworkToolBar().isVisible());
-				}
-			});
-			mi.setSelected(getNetworkToolBar().isVisible());
-			menu.add(mi);
-		}
-		
 		return menu;
 	}
 	
-	private JPopupMenu getCreateMenu() {
-		final JPopupMenu menu = new JPopupMenu();
-		final Collection<SubNetworkPanel> selectedItems = getSelectedSubNetworkItems();
-		final Set<CyNetwork> selectedNetworks = getNetworks(selectedItems);
-		
-		final CyApplicationManager appMgr = serviceRegistrar.getService(CyApplicationManager.class);
-		final DialogTaskManager taskMgr = serviceRegistrar.getService(DialogTaskManager.class);
-		final CreateNetworkViewTaskFactory taskFactory = serviceRegistrar.getService(CreateNetworkViewTaskFactory.class);
-		
-		final Set<NetworkViewRenderer> renderers = appMgr.getNetworkViewRendererSet();
-		final int totalRenderers = renderers.size();
-		
-		String createViewText = "New View" + (selectedItems.size() == 1 ? "" : "s");
-		
-		{
-			final JMenuItem mi = new JMenuItem(createViewText + (totalRenderers > 1 ? " (Default Renderer)" : ""));
-			mi.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					final CyNetworkViewFactory viewFactory = appMgr.getDefaultNetworkViewRenderer().getNetworkViewFactory();
-					taskMgr.execute(taskFactory.createTaskIterator(selectedNetworks, viewFactory));
-				}
-			});
-			mi.setEnabled(!selectedItems.isEmpty());
-			menu.add(mi);
-		}
-
-		if (totalRenderers > 1) {
-			final JMenu m = new JMenu(createViewText + " by");
-			m.setEnabled(!selectedItems.isEmpty());
-			menu.add(m);
-			
-			if (!selectedItems.isEmpty()) {
-				final List<NetworkViewRenderer> sortedList = new ArrayList<>(renderers);
-				final Collator collator = Collator.getInstance(Locale.getDefault());
-				Collections.sort(sortedList, new Comparator<NetworkViewRenderer>() {
-					@Override
-					public int compare(NetworkViewRenderer r1, NetworkViewRenderer r2) {
-						return collator.compare(r1.toString(), r2.toString());
-					}
-				});
-				
-				for (NetworkViewRenderer r : sortedList) {
-					final JMenuItem mi = new JMenuItem(r.toString());
-					mi.addActionListener(new ActionListener() {
-						@Override
-						public void actionPerformed(ActionEvent e) {
-							taskMgr.execute(taskFactory.createTaskIterator(selectedNetworks, r.getNetworkViewFactory()));
-						}
-					});
-					m.add(mi);
-				}
-			}
-		}
-		
-		return menu;
-	}
-
 	public Map<Long, Integer> getNetworkListOrder() {
 		final Map<Long, Integer> order = new HashMap<>();
 		
