@@ -94,6 +94,7 @@ public class NetworkViewGrid extends JPanel {
 	private final TreeMap<CyNetworkView, ThumbnailPanel> thumbnailPanels;
 	private CyNetworkView currentNetworkView;
 	private int thumbnailSize;
+	private int maxThumbnailSize;
 	private boolean dirty;
 	private Comparator<CyNetworkView> comparator;
 	
@@ -213,8 +214,15 @@ public class NetworkViewGrid extends JPanel {
 	/** Updates the whole grid and recreate the thumbnails **/
 	protected void update(final int thumbnailSize) {
 		synchronized (lock) {
-			dirty = dirty || thumbnailSize != this.thumbnailSize; // TODO separate both conditions
+			dirty = dirty || thumbnailSize < this.thumbnailSize || thumbnailSize > this.maxThumbnailSize;
 			this.thumbnailSize = thumbnailSize;
+			
+			final Dimension size = getSize();
+			
+			if (!dirty && size != null && size.width > 0) {
+				final int cols = calculateColumns(thumbnailSize, size.width);
+				dirty = cols != ((GridLayout) getGridPanel().getLayout()).getColumns();
+			}
 			
 			if (!dirty) // TODO: Only update images a few times a second or less;
 				return;
@@ -447,7 +455,7 @@ public class NetworkViewGrid extends JPanel {
 	private void recreateThumbnails() {
 		final Dimension size = getSize();
 		
-		if (size == null)
+		if (size == null || size.width <= 0)
 			return;
 		
 		final List<ThumbnailPanel> previousSelection = getSelectedItems();
@@ -457,18 +465,14 @@ public class NetworkViewGrid extends JPanel {
 		
 		// TODO Print some info? E.g. "No network views"
 		if (engines != null && !engines.isEmpty()) {
-			this.thumbnailSize = Math.max(this.thumbnailSize, MIN_THUMBNAIL_SIZE);
-			this.thumbnailSize = Math.min(this.thumbnailSize, MAX_THUMBNAIL_SIZE);
-			this.thumbnailSize = Math.min(this.thumbnailSize, size.width);
+			maxThumbnailSize = maxThumbnailSize(thumbnailSize, size.width);
 			
-			int total = engines.size();
-			int cols = Math.floorDiv(size.width, this.thumbnailSize);
-			int rows = (int) Math.round(Math.ceil((float)total / (float)cols));
-			
+			int cols = calculateColumns(maxThumbnailSize, size.width);
+			int rows = calculateRows(engines.size(), cols);
 			getGridPanel().setLayout(new GridLayout(rows, cols));
 			
 			for (RenderingEngine<CyNetwork> engine : engines.values()) {
-				final ThumbnailPanel tp = new ThumbnailPanel(engine, this.thumbnailSize);
+				final ThumbnailPanel tp = new ThumbnailPanel(engine, maxThumbnailSize);
 				thumbnailPanels.put(tp.getNetworkView(), tp);
 				
 				tp.addMouseListener(new MouseAdapter() {
@@ -500,10 +504,11 @@ public class NetworkViewGrid extends JPanel {
 		getGridPanel().updateUI();
 		firePropertyChange("thumbnailPanels", null, thumbnailPanels.values());
 	}
-	
+
 	private GridPanel getGridPanel() {
 		if (gridPanel == null) {
 			gridPanel = new GridPanel();
+			gridPanel.setLayout(new GridLayout());
 			gridPanel.setBackground(getBackgroundColor());
 			gridPanel.setBorder(BorderFactory.createLineBorder(getBackgroundColor(), 1));
 			gridPanel.setOpaque(false);
@@ -651,6 +656,22 @@ public class NetworkViewGrid extends JPanel {
 		}
 		
 		return thumbnailSlider;
+	}
+	
+	private static int calculateColumns(final int thumbnailSize, final int gridWidth) {
+		return thumbnailSize > 0 ? Math.floorDiv(gridWidth, thumbnailSize) : 0;
+	}
+	
+	private static int calculateRows(final int total, final int cols) {
+		return (int) Math.round(Math.ceil((float)total / (float)cols));
+	}
+	
+	private static int maxThumbnailSize(int thumbnailSize, final int gridWidth) {
+		thumbnailSize = Math.max(thumbnailSize, MIN_THUMBNAIL_SIZE);
+		thumbnailSize = Math.min(thumbnailSize, MAX_THUMBNAIL_SIZE);
+		thumbnailSize = Math.min(thumbnailSize, gridWidth);
+		
+		return thumbnailSize;
 	}
 	
 	private static Color getBackgroundColor() {
@@ -803,6 +824,13 @@ public class NetworkViewGrid extends JPanel {
 			});
 			
 			this.update(true);
+			
+			this.addComponentListener(new ComponentAdapter() {
+				@Override
+				public void componentResized(ComponentEvent e) {
+					updateTitleLabel();
+				}
+			});
 		}
 		
 		@Override
@@ -867,18 +895,63 @@ public class NetworkViewGrid extends JPanel {
 		}
 		
 		void update(final boolean redraw) {
-			final CyNetworkView netView = getNetworkView();
-			final CyNetwork network = netView.getModel();
-			final String title = ViewUtil.getTitle(netView);
-			final String netName = ViewUtil.getName(network);
+			updateCurrentLabel();
+			updateBorder();
+			updateTitleLabel();
 			
+			if (redraw)
+				updateIcon();
+		}
+
+		void updateIcon() {
+			final Dimension size = this.getSize();
+			
+			if (size != null && getTitleLabel().getSize() != null) {
+				int lh = getTitleLabel().getHeight();
+				
+				int iw = size.width - 2 * BORDER_WIDTH - 2 * PAD - 2 * IMG_BORDER_WIDTH;
+				int ih = size.height - 2 * BORDER_WIDTH - 2 * GAP - lh - PAD - 2 * IMG_BORDER_WIDTH;
+				
+				if (iw > 0 && ih > 0) {
+					final Paint bgPaint = getNetworkView().getVisualProperty(NETWORK_BACKGROUND_PAINT);
+					
+					if (bgPaint instanceof Color)
+						getImageLabel().setBackground((Color) bgPaint);
+					
+					final Image img = createThumbnail(iw, ih);
+					final ImageIcon icon = img != null ? new ImageIcon(img) : null;
+					getImageLabel().setIcon(icon);
+					updateUI();
+				}
+			}
+		}
+		
+		private void updateCurrentLabel() {
 			getCurrentLabel().setText(isCurrent() ? IconManager.ICON_CIRCLE : " ");
 			getCurrentLabel().setToolTipText(isCurrent() ? "Current Network View" : null);
-			
+		}
+		
+		private void updateBorder() {
+			if (isFirstSibling())
+				setBorder(hover? FIRST_SIBLING_HOVER_BORDER : FIRST_SIBLING_BORDER);
+			else if (isMiddleSibling())
+				setBorder(hover? MIDDLE_SIBLING_HOVER_BORDER : MIDDLE_SIBLING_BORDER);
+			else if (isLastSibling())
+				setBorder(hover? LAST_SIBLING_HOVER_BORDER : LAST_SIBLING_BORDER);
+			else
+				setBorder(hover ? DEFAULT_HOVER_BORDER : DEFAULT_BORDER);
+		}
+		
+		private void updateTitleLabel() {
+			final String title = ViewUtil.getTitle(getNetworkView());
+			final String netName = ViewUtil.getName(getNetworkView().getModel());
 			setToolTipText("<html><center>" + title + "<br>(" + netName + ")</center></html>");
 			getTitleLabel().setText(title);
 			
-			final Dimension size = getSize() != null ? getSize() : getPreferredSize();
+			Dimension size = getSize();
+			
+			if (size == null || size.width <= 0)
+				size = getPreferredSize();
 			
 			final int maxTitleWidth = (int) Math.round(
 					size.getWidth()
@@ -891,40 +964,6 @@ public class NetworkViewGrid extends JPanel {
 			getTitleLabel().setPreferredSize(titleSize);
 			getTitleLabel().setMaximumSize(titleSize);
 			getTitleLabel().setSize(titleSize);
-			
-			this.updateBorder();
-			
-			if (redraw)
-				updateIcon();
-		}
-		
-		void updateIcon() {
-			final Dimension size = this.getSize();
-			
-			if (size != null && getTitleLabel().getSize() != null) {
-				int lh = getTitleLabel().getHeight();
-				
-				int iw = size.width - 2 * BORDER_WIDTH - 2 * PAD - 2 * IMG_BORDER_WIDTH;
-				int ih = size.height - 2 * BORDER_WIDTH - 2 * GAP - lh - PAD - 2 * IMG_BORDER_WIDTH;
-				
-				if (iw > 0 && ih > 0) {
-					final Image img = createThumbnail(iw, ih);
-					final ImageIcon icon = img != null ? new ImageIcon(img) : null;
-					getImageLabel().setIcon(icon);
-					updateUI();
-				}
-			}
-		}
-		
-		private void updateBorder() {
-			if (isFirstSibling())
-				setBorder(hover? FIRST_SIBLING_HOVER_BORDER : FIRST_SIBLING_BORDER);
-			else if (isMiddleSibling())
-				setBorder(hover? MIDDLE_SIBLING_HOVER_BORDER : MIDDLE_SIBLING_BORDER);
-			else if (isLastSibling())
-				setBorder(hover? LAST_SIBLING_HOVER_BORDER : LAST_SIBLING_BORDER);
-			else
-				setBorder(hover ? DEFAULT_HOVER_BORDER : DEFAULT_BORDER);
 		}
 		
 		CyNetworkView getNetworkView() {
@@ -993,7 +1032,6 @@ public class NetworkViewGrid extends JPanel {
             BufferedImage image = null;
             
 			final CyNetworkView netView = getNetworkView();
-			netView.updateView();
 			
 			// Fit network view image to available rectangle area
 			final double vw = netView.getVisualProperty(NETWORK_WIDTH);
