@@ -2194,8 +2194,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	}
 
 	/**
-	 * This method is used by BitmapExporter to export network as graphics (png,
-	 * jpg, bmp)
+	 * This method is used by BitmapExporter to export network as graphics (png, jpg, bmp)
 	 */
 	@Override
 	public void printNoImposter(Graphics g) {
@@ -2396,17 +2395,23 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 
 	@Override
 	public void printCanvas(Graphics printCanvas) {
-		logger.debug("PrintCanvas called: " + printCanvas);
+		final boolean changed = isContentChanged();
 		
 		// Check properties related to printing:
 		boolean exportAsShape = false;
 		final String exportAsShapeString = props.getProperty("exportTextAsShape");
+		
 		if (exportAsShapeString != null)
 			exportAsShape = Boolean.parseBoolean(exportAsShapeString);
-		setPrintingTextAsShape(exportAsShape);
 		
+		setPrintingTextAsShape(exportAsShape);
 		print(printCanvas);
-		logger.debug("PrintCanvas Done: ");
+		
+		// Keep previous content-changed flag, otherwise the actual view canvas may not be updated next time.
+		// (this method is usually only used to export the View as image, create thumbnails, etc,
+		// therefore it should not flag the Graph View as updated, because the actual view canvas
+		// may still have to be redrawn after this).
+		setContentChanged(changed);
 	}
 
 	@Override
