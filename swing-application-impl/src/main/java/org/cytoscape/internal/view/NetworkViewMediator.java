@@ -819,9 +819,7 @@ public class NetworkViewMediator implements NetworkViewAddedListener, NetworkVie
 		if (view == null)
 			return;
 		
-		final CyApplicationManager appMgr = serviceRegistrar.getService(CyApplicationManager.class);
-		
-		if (view.equals(appMgr.getCurrentNetworkView())) {
+		if (getNetworkViewMainPanel().isGridMode() || view.equals(getNetworkViewMainPanel().getCurrentNetworkView())) {
 			if (vs == null) {
 				final VisualMappingManager vmm = serviceRegistrar.getService(VisualMappingManager.class);
 				vs = vmm.getVisualStyle(view);
