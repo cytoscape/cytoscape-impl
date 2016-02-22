@@ -328,9 +328,6 @@ public class NetworkViewMediator implements NetworkViewAddedListener, NetworkVie
 			@Override
 			public void run() {
 				// If the Grid is not visible, just flag this view as dirty.
-				// IMPORTANT: If we update the grid thumbnail before the actual view canvas is updated,
-				//            Ding flags itself as not dirty and thinks it does not need
-				//            to redraw the main view anymore.
 				if (getNetworkViewMainPanel().isGridMode()) {
 					getNetworkViewMainPanel().updateThumbnail(netView);
 				} else {

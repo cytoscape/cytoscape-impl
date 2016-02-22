@@ -3,15 +3,14 @@ package org.cytoscape.internal.view;
 import static org.cytoscape.internal.util.ViewUtil.createUniqueKey;
 import static org.cytoscape.internal.util.ViewUtil.getTitle;
 
-import java.awt.AWTEvent;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.GraphicsConfiguration;
-import java.awt.Toolkit;
+import java.awt.Point;
 import java.awt.Window;
-import java.awt.event.AWTEventListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
@@ -19,8 +18,14 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
+import java.awt.event.MouseWheelEvent;
+import java.awt.event.MouseWheelListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
@@ -40,12 +45,11 @@ import javax.swing.BorderFactory;
 import javax.swing.JFrame;
 import javax.swing.JMenuBar;
 import javax.swing.JPanel;
-import javax.swing.JRootPane;
-import javax.swing.JSplitPane;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
 import org.cytoscape.application.swing.CySwingApplication;
+import org.cytoscape.internal.view.NetworkViewComparisonPanel.ViewPanel;
 import org.cytoscape.internal.view.NetworkViewGrid.ThumbnailPanel;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
@@ -72,7 +76,7 @@ public class NetworkViewMainPanel extends JPanel {
 	
 	private NetworkViewFrame currentViewFrame;
 	
-	private ComparisonModeAWTEventListener comparisonModeAWTEventListener;
+	private final MouseEventRedispatcher mouseEventRedispatcher;
 	
 	private final CytoscapeMenus cyMenus;
 	private final CyServiceRegistrar serviceRegistrar;
@@ -85,6 +89,8 @@ public class NetworkViewMainPanel extends JPanel {
 		viewFrames = new HashMap<>();
 		comparisonPanels = new HashMap<>();
 		dirtyThumbnails = new HashSet<>();
+		
+		mouseEventRedispatcher = new MouseEventRedispatcher();
 		
 		cardLayout = new CardLayout();
 		networkViewGrid = createNetworkViewGrid();
@@ -105,7 +111,6 @@ public class NetworkViewMainPanel extends JPanel {
 			public void componentShown(ComponentEvent e) {
 				setCurrentNetworkView(view);
 				setSelectedNetworkViews(Collections.singletonList(view));
-				view.updateView();
 			}
 		});
 		vc.getGridModeButton().addActionListener(new ActionListener() {
@@ -130,14 +135,30 @@ public class NetworkViewMainPanel extends JPanel {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				changeCurrentViewTitle(vc);
+				vc.requestFocusInWindow();
+			}
+		});
+		vc.getViewTitleTextField().addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyPressed(KeyEvent e) {
+				if (e.getKeyCode() == KeyEvent.VK_ESCAPE)
+					cancelViewTitleChange(vc);
 			}
 		});
 		vc.getViewTitleTextField().addFocusListener(new FocusAdapter() {
 			@Override
 			public void focusLost(FocusEvent e) {
 				changeCurrentViewTitle(vc);
+				vc.requestFocusInWindow();
+				addMouseEventRedispatcher(mouseEventRedispatcher, vc.getGlassPane());
+			}
+			@Override
+			public void focusGained(FocusEvent e) {
+				removeMouseEventRedispatcher(mouseEventRedispatcher, vc.getGlassPane());
 			}
 		});
+		
+		addMouseEventRedispatcher(mouseEventRedispatcher, vc.getGlassPane());
 		
 		viewContainers.put(vc.getName(), vc);
 		networkViewGrid.addItem(vc.getRenderingEngine());
@@ -288,6 +309,9 @@ public class NetworkViewMainPanel extends JPanel {
 		viewContainers.remove(name);
 		
 		final NetworkViewFrame frame = new NetworkViewFrame(vc, gc, serviceRegistrar);
+		vc.setDetached(true);
+		vc.setComparing(false);
+		
 		viewFrames.put(name, frame);
 		
 		if (!LookAndFeelUtil.isAquaLAF())
@@ -336,10 +360,6 @@ public class NetworkViewMainPanel extends JPanel {
 		});
 		frame.addComponentListener(new ComponentAdapter() {
 			@Override
-			public void componentShown(ComponentEvent e) {
-				view.updateView();
-			}
-			@Override
 			public void componentResized(ComponentEvent e) {
 				view.setVisualProperty(BasicVisualLexicon.NETWORK_WIDTH, (double)frame.getContentPane().getWidth());
 				view.setVisualProperty(BasicVisualLexicon.NETWORK_HEIGHT, (double)frame.getContentPane().getHeight());
@@ -370,18 +390,11 @@ public class NetworkViewMainPanel extends JPanel {
 		
 		if (frame != null) {
 			final NetworkViewContainer vc = frame.getNetworkViewContainer();
-			final JRootPane rootPane = frame.getRootPane();
-			
-			// To prevent error
-			// "IllegalArgumentException: adding a container to a container on a different GraphicsDevice"
-			// when using multiple monitors
-			rootPane.getParent().remove(rootPane);
 			
 			frame.setJMenuBar(null);
 			frame.dispose();
 			viewFrames.remove(vc.getName());
 			
-			vc.setRootPane(rootPane);
 			vc.setDetached(false);
 			vc.setComparing(false);
 			getContentPane().add(vc, vc.getName());
@@ -469,18 +482,26 @@ public class NetworkViewMainPanel extends JPanel {
 		return new HashSet<>(viewFrames.values());
 	}
 	
-	public void showViewContainer(final CyNetworkView view) {
-		if (view != null)
-			showViewContainer(createUniqueKey(view));
+	/**
+	 * @param view
+	 * @return The current NetworkViewContainer
+	 */
+	public NetworkViewContainer showViewContainer(final CyNetworkView view) {
+		return view != null ? showViewContainer(createUniqueKey(view)) : null;
 	}
 	
-	private void showViewContainer(final String name) {
+	/**
+	 * @param name
+	 * @return The current NetworkViewContainer
+	 */
+	private NetworkViewContainer showViewContainer(final String name) {
+		NetworkViewContainer viewContainer = null;
+		
 		if (name != null) {
-			final NetworkViewContainer viewContainer = viewContainers.get(name);
+			viewContainer = viewContainers.get(name);
 			
 			if (viewContainer != null) {
 				cardLayout.show(getContentPane(), name);
-				viewContainer.getNetworkView().updateView();
 				viewContainer.update();
 				currentViewFrame = null;
 			} else {
@@ -489,10 +510,9 @@ public class NetworkViewMainPanel extends JPanel {
 							|| name.equals(cp.getContainer1().getName())
 							|| name.equals(cp.getContainer2().getName())) {
 						cardLayout.show(getContentPane(), cp.getName());
-						cp.getContainer1().getNetworkView().updateView();
-						cp.getContainer2().getNetworkView().updateView();
 						cp.update();
 						currentViewFrame = null;
+						viewContainer = cp.getViewPanel1().isCurrent() ? cp.getContainer1() : cp.getContainer2();
 						break;
 					}
 				}
@@ -500,16 +520,18 @@ public class NetworkViewMainPanel extends JPanel {
 		} else {
 			showGrid();
 		}
+		
+		return viewContainer;
 	}
 
 	private void showViewFrame(final NetworkViewFrame frame) {
 		frame.setVisible(true);
 		frame.toFront();
 		showGrid();
-		frame.getNetworkView().updateView();
 	}
 	
 	private void showComparisonPanel(final int orientation, final CyNetworkView view1, final CyNetworkView view2) {
+		final CyNetworkView currentView = getCurrentNetworkView();
 		final String key = NetworkViewComparisonPanel.createUniqueKey(view1, view2);
 		NetworkViewComparisonPanel cp = comparisonPanels.get(key);
 		
@@ -545,7 +567,7 @@ public class NetworkViewMainPanel extends JPanel {
 			viewContainers.remove(vc2.getName());
 			
 			// Now we can create the comparison panel
-			cp = new NetworkViewComparisonPanel(orientation, vc1, vc2, serviceRegistrar);
+			cp = new NetworkViewComparisonPanel(orientation, vc1, vc2, currentView, serviceRegistrar);
 			
 			cp.getGridModeButton().addActionListener(new ActionListener() {
 				@Override
@@ -577,11 +599,13 @@ public class NetworkViewMainPanel extends JPanel {
 				}
 			});
 			
-			if (comparisonModeAWTEventListener == null)
-				Toolkit.getDefaultToolkit().addAWTEventListener(
-						comparisonModeAWTEventListener = new ComparisonModeAWTEventListener(),
-						MouseEvent.MOUSE_MOTION_EVENT_MASK
-				);
+			cp.addPropertyChangeListener("currentNetworkView", new PropertyChangeListener() {
+				@Override
+				public void propertyChange(PropertyChangeEvent evt) {
+					final CyNetworkView newCurrentView = (CyNetworkView) evt.getNewValue();
+					setCurrentNetworkView(newCurrentView);
+				}
+			});
 			
 			getContentPane().add(cp, cp.getName());
 			comparisonPanels.put(cp.getName(), cp);
@@ -599,11 +623,6 @@ public class NetworkViewMainPanel extends JPanel {
 			cardLayout.removeLayoutComponent(cp);
 			comparisonPanels.remove(cp.getName());
 			cp.dispose(); // Don't forget to call this method!
-			
-			if (comparisonModeAWTEventListener != null) {
-				Toolkit.getDefaultToolkit().removeAWTEventListener(comparisonModeAWTEventListener);
-				comparisonModeAWTEventListener = null;
-			}
 			
 			getContentPane().add(vc1, vc1.getName());
 			viewContainers.put(vc2.getName(), vc2);
@@ -749,10 +768,14 @@ public class NetworkViewMainPanel extends JPanel {
 								// Double-Click: set this one as current and show attached view or view frame
 								final NetworkViewFrame frame = getNetworkViewFrame(tp.getNetworkView());
 									
-								if (frame != null)
+								if (frame != null) {
 									showViewFrame(frame);
-								else
-									showViewContainer(tp.getNetworkView());
+								} else {
+									final NetworkViewContainer vc = showViewContainer(tp.getNetworkView());
+									
+									if (vc != null)
+										vc.getContentPane().requestFocusInWindow();
+								}
 							}
 						}
 					});
@@ -826,6 +849,12 @@ public class NetworkViewMainPanel extends JPanel {
 		vc.getToolBar().updateUI();
 	}
 	
+	private void cancelViewTitleChange(final NetworkViewContainer vc) {
+		vc.getViewTitleTextField().setText(null);
+		vc.getViewTitleTextField().setVisible(false);
+		vc.getViewTitleLabel().setVisible(true);
+	}
+	
 	private static List<CyNetworkView> getNetworkViews(final Collection<ThumbnailPanel> thumbnailPanels) {
 		final List<CyNetworkView> views = new ArrayList<>();
 		
@@ -835,38 +864,132 @@ public class NetworkViewMainPanel extends JPanel {
 		return views;
 	}
 	
-	private class ComparisonModeAWTEventListener implements AWTEventListener {
+	private static void addMouseEventRedispatcher(final MouseEventRedispatcher redispatcher, final Component source) {
+		source.addMouseListener(redispatcher);
+		source.addMouseMotionListener(redispatcher);
+		source.addMouseWheelListener(redispatcher);
+	}
 	
-        @Override
-        public void eventDispatched(AWTEvent event) {
-            if (event instanceof MouseEvent) {
-                MouseEvent me = (MouseEvent) event;
-                final Component currentCard = getCurrentCard();
-                
-                if (currentCard instanceof NetworkViewComparisonPanel == false)
-                	return;
-                
-                final NetworkViewComparisonPanel cp = (NetworkViewComparisonPanel) currentCard;
-                final JSplitPane splitPane = cp.getSplitPane();
-                
-                if (splitPane.getBounds().contains(me.getPoint())) {
-                    me = SwingUtilities.convertMouseEvent(me.getComponent(), me, splitPane);
-                    
-                    final Component left = splitPane.getLeftComponent();
-                    final Component right = splitPane.getRightComponent();
-                    
-                    final CyNetworkView currentView = getCurrentNetworkView();
-                    CyNetworkView newView = null;
-                    
-                    if (left != null && left.getBounds().contains(me.getPoint()))
-                    	newView = cp.getContainer1().getNetworkView();
-                    else if (right != null && right.getBounds().contains(me.getPoint()))
-                        newView = cp.getContainer2().getNetworkView();
-                    
-                    if (newView != null && !newView.equals(currentView))
-                        setCurrentNetworkView(newView);
-                }
-            }
-        }
-    }
+	private static void removeMouseEventRedispatcher(final MouseEventRedispatcher redispatcher, final Component source) {
+		source.removeMouseListener(redispatcher);
+		source.removeMouseMotionListener(redispatcher);
+		source.removeMouseWheelListener(redispatcher);
+	}
+	
+	private class MouseEventRedispatcher implements MouseListener, MouseMotionListener, MouseWheelListener {
+		
+		// MouseListener
+		@Override
+		public void mouseReleased(MouseEvent e) {
+			redispatchMouseEvent(e, e.getComponent());
+		}
+
+		@Override
+		public void mousePressed(MouseEvent e) {
+			redispatchMouseEvent(e, e.getComponent());
+			final Container target = getTarget(e.getComponent());
+
+			if (target != null)
+				target.requestFocusInWindow();
+		}
+
+		@Override
+		public void mouseExited(MouseEvent e) {
+			redispatchMouseEvent(e, e.getComponent());
+		}
+
+		@Override
+		public void mouseEntered(MouseEvent e) {
+			redispatchMouseEvent(e, e.getComponent());
+		}
+
+		@Override
+		public void mouseClicked(MouseEvent e) {
+			redispatchMouseEvent(e, e.getComponent());
+		}
+
+		// MouseMotionListener
+		@Override
+		public void mouseMoved(MouseEvent e) {
+			redispatchMouseEvent(e, e.getComponent());
+		}
+
+		@Override
+		public void mouseDragged(MouseEvent e) {
+			redispatchMouseEvent(e, e.getComponent());
+		}
+
+		// MouseWheelListener
+		@Override
+		public void mouseWheelMoved(MouseWheelEvent e) {
+			redispatchMouseEvent(e, e.getComponent());
+		}
+		
+		private void redispatchMouseEvent(final MouseEvent e, final Component source) {
+			final Container target = getTarget(source);
+			
+			if (target == null)
+				return;
+			
+			final Point glassPanePoint = e.getPoint();
+			Point containerPoint = SwingUtilities.convertPoint(source, glassPanePoint, target);
+
+			if (containerPoint.y >= 0) {
+				// The mouse event is probably over the content pane, so find out which component it's over
+				final Component comp = SwingUtilities.getDeepestComponentAt(target, containerPoint.x, containerPoint.y);
+				
+				if (comp != null) {
+					// Forward events over the check box.
+					final Point componentPoint = SwingUtilities.convertPoint(source, glassPanePoint, comp);
+					final MouseEvent newMouseEvent;
+					
+					if (e instanceof MouseWheelEvent) {
+						final MouseWheelEvent we = ((MouseWheelEvent) e);
+						
+						newMouseEvent = new MouseWheelEvent(comp, e.getID(), e.getWhen(), e.getModifiers(),
+								componentPoint.x, componentPoint.y, e.getClickCount(), e.isPopupTrigger(),
+								we.getScrollType(), we.getScrollAmount(), we.getWheelRotation());
+					} else {
+						newMouseEvent = new MouseEvent(comp, e.getID(), e.getWhen(), e.getModifiers(),
+								componentPoint.x, componentPoint.y, e.getClickCount(), e.isPopupTrigger());
+					}
+					
+					comp.dispatchEvent(newMouseEvent);
+				}
+			}
+		}
+		
+		private Container getTarget(final Component source) {
+			final NetworkViewContainer vc = getParentContainer(source, NetworkViewContainer.class);
+			
+			if (vc != null) // View Mode (docked View)
+				return vc.getContentPane();
+			
+			final ViewPanel vp = getParentContainer(source, ViewPanel.class); // Compare mode
+			
+			if (vp != null)
+				return vp.getNetworkViewContainer().getContentPane();
+			
+			final NetworkViewFrame vf = getParentContainer(source, NetworkViewFrame.class); // Detached view
+			
+			if (vf != null)
+				return vf.getNetworkViewContainer().getContentPane();
+			
+			return null;
+		}
+		
+		@SuppressWarnings("unchecked")
+		private <T extends Container> T getParentContainer(Component c, Class<T> type) {
+			Container parent = c.getParent();
+			
+			while (parent != null) {
+				if (parent.getClass() == type)
+					return (T) parent;
+				
+				parent = parent.getParent();
+			}
+			
+			return null;
+		}
+	}
 }

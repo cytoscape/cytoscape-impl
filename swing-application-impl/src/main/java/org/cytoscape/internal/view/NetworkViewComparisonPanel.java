@@ -10,6 +10,8 @@ import static org.cytoscape.util.swing.IconManager.ICON_TH;
 import java.awt.BorderLayout;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
 
 import javax.swing.BorderFactory;
 import javax.swing.GroupLayout;
@@ -67,6 +69,8 @@ public class NetworkViewComparisonPanel extends JPanel {
 	private final NetworkViewContainer container2;
 	private final JRootPane rootPane2;
 	
+	private CyNetworkView currentNetworkView;
+	
 	private final CyServiceRegistrar serviceRegistrar;
 	
 	/**
@@ -78,6 +82,7 @@ public class NetworkViewComparisonPanel extends JPanel {
 			final int orientation,
 			final NetworkViewContainer container1,
 			final NetworkViewContainer container2,
+			final CyNetworkView currentNetworkView,
 			final CyServiceRegistrar serviceRegistrar
 	) {
 		if (orientation != JSplitPane.HORIZONTAL_SPLIT && orientation != JSplitPane.VERTICAL_SPLIT)
@@ -88,18 +93,36 @@ public class NetworkViewComparisonPanel extends JPanel {
 			throw new IllegalArgumentException("'container2' must not be null.");
 		if (container1.equals(container2))
 			throw new IllegalArgumentException("The view containers must not be the same.");
+		if (!container1.getNetworkView().equals(currentNetworkView) &&
+				!container2.getNetworkView().equals(currentNetworkView))
+			throw new IllegalArgumentException("'currentNetworkView' must be in container1 or container2.");
 		
 		this.orientation = orientation;
 		this.container1 = container1;
 		this.rootPane1 = container1.getRootPane();
 		this.container2 = container2;
 		this.rootPane2 = container2.getRootPane();
+		this.currentNetworkView = currentNetworkView;
 		this.serviceRegistrar = serviceRegistrar;
 		
 		container1.setComparing(true);
 		container2.setComparing(true);
 		
 		init();
+	}
+	
+	public CyNetworkView getCurrentNetworkView() {
+		return currentNetworkView;
+	}
+	
+	public void setCurrentNetworkView(final CyNetworkView newValue) {
+		if (newValue != currentNetworkView) {
+			final CyNetworkView oldValue = currentNetworkView;
+			currentNetworkView = newValue;
+			update();
+			
+			firePropertyChange("currentNetworkView", oldValue, newValue);
+		}
 	}
 
 	public void update() {
@@ -136,12 +159,16 @@ public class NetworkViewComparisonPanel extends JPanel {
 		addComponentListener(new ComponentAdapter() {
 			@Override
 			public void componentShown(ComponentEvent e) {
-				getContainer1().getNetworkView().updateView();
-				getContainer1().update();
-				getContainer2().getNetworkView().updateView();
-				getContainer2().update();
+				requestFocusInWindow();
+				
+				if (getViewPanel1().isCurrent())
+					getContainer1().getContentPane().requestFocusInWindow();
+				else if (getViewPanel2().isCurrent())
+					getContainer2().getContentPane().requestFocusInWindow();
 			}
 		});
+		
+		update();
 	}
 	
 	protected JSplitPane getSplitPane() {
@@ -153,7 +180,7 @@ public class NetworkViewComparisonPanel extends JPanel {
 		return splitPane;
 	}
 	
-	private ViewPanel getViewPanel1() {
+	protected ViewPanel getViewPanel1() {
 		if (viewPanel1 == null) {
 			viewPanel1 = new ViewPanel(container1);
 		}
@@ -161,7 +188,7 @@ public class NetworkViewComparisonPanel extends JPanel {
 		return viewPanel1;
 	}
 	
-	private ViewPanel getViewPanel2() {
+	protected ViewPanel getViewPanel2() {
 		if (viewPanel2 == null) {
 			viewPanel2 = new ViewPanel(container2);
 		}
@@ -266,17 +293,28 @@ public class NetworkViewComparisonPanel extends JPanel {
 		return "NetworkViewComparisonPanel_" + suid1 + "::" + suid2;
 	}
 	
-	private class ViewPanel extends JPanel {
+	protected class ViewPanel extends JPanel {
 		
 		private final NetworkViewContainer networkViewContainer;
 
 		ViewPanel(final NetworkViewContainer networkViewContainer) {
 			this.networkViewContainer = networkViewContainer;
 			
-			setBorder(BorderFactory.createLineBorder(UIManager.getColor("Separator.foreground")));
-			
 			setLayout(new BorderLayout());
 			add(getNetworkViewContainer().getRootPane(), BorderLayout.CENTER);
+			
+			updateBorder();
+			
+			networkViewContainer.getContentPane().addFocusListener(new FocusAdapter() {
+				@Override
+				public void focusGained(FocusEvent e) {
+					setCurrentNetworkView(ViewPanel.this.getNetworkView());
+				}
+			});
+		}
+		
+		boolean isCurrent() {
+			return this.getNetworkView().equals(getCurrentNetworkView());
 		}
 		
 		NetworkViewContainer getNetworkViewContainer() {
@@ -288,7 +326,13 @@ public class NetworkViewComparisonPanel extends JPanel {
 		}
 		
 		void update() {
+			updateBorder();
 			getNetworkViewContainer().update();
+		}
+		
+		private void updateBorder() {
+			setBorder(BorderFactory.createLineBorder(
+					UIManager.getColor(isCurrent() ? "Focus.color" : "Separator.foreground")));
 		}
 	}
 }

@@ -1,5 +1,6 @@
 package org.cytoscape.internal.view;
 
+import java.awt.BorderLayout;
 import java.awt.GraphicsConfiguration;
 
 import javax.swing.JFrame;
@@ -15,6 +16,7 @@ import org.cytoscape.view.presentation.RenderingEngine;
 public class NetworkViewFrame extends JFrame {
 
 	private final NetworkViewContainer networkViewContainer;
+	private final JRootPane containerRootPane;
 	
 	private final CyServiceRegistrar serviceRegistrar;
 
@@ -28,10 +30,9 @@ public class NetworkViewFrame extends JFrame {
 		this.networkViewContainer = vc;
 		this.serviceRegistrar = serviceRegistrar;
 		
-		final JRootPane rp = vc.getRootPane();
-		vc.setDetached(true);
-		vc.setComparing(false);
-		setRootPane(rp);
+		containerRootPane = vc.getRootPane();
+		
+		getContentPane().add(containerRootPane, BorderLayout.CENTER);
 		vc.update();
 	}
 	
@@ -45,6 +46,19 @@ public class NetworkViewFrame extends JFrame {
 	
 	protected CyNetworkView getNetworkView() {
 		return networkViewContainer.getNetworkView();
+	}
+	
+	@Override
+	public void dispose() {
+		// To prevent error
+		// "IllegalArgumentException: adding a container to a container on a different GraphicsDevice"
+		// when using multiple monitors
+		getContentPane().removeAll();
+		remove(getRootPane());
+		
+		super.dispose();
+		
+		networkViewContainer.setRootPane(containerRootPane);
 	}
 	
 	@Override

@@ -244,6 +244,7 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, Net
 	private RootNetworkListPanel getRootNetworkListPanel() {
 		if (rootNetworkListPanel == null) {
 			rootNetworkListPanel = new RootNetworkListPanel();
+			setKeyBindings(rootNetworkListPanel);
 		}
 		
 		return rootNetworkListPanel;

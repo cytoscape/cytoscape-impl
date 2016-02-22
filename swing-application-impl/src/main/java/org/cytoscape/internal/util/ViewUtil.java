@@ -94,6 +94,7 @@ public final class ViewUtil {
 		btn.setContentAreaFilled(false);
 		btn.setBorderPainted(false);
 		btn.setFocusPainted(false);
+		btn.setFocusable(false);
 		
 		final Dimension d = btn.getPreferredSize();
 		btn.setPreferredSize(new Dimension(d.width + 10, d.height + 5));
