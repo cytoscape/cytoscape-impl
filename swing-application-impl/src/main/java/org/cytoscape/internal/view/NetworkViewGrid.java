@@ -18,15 +18,19 @@ import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NETWOR
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GridLayout;
 import java.awt.Image;
+import java.awt.KeyboardFocusManager;
 import java.awt.Paint;
 import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
@@ -45,15 +49,21 @@ import java.util.NavigableMap;
 import java.util.Set;
 import java.util.TreeMap;
 
+import javax.swing.AbstractAction;
+import javax.swing.ActionMap;
 import javax.swing.BorderFactory;
 import javax.swing.GroupLayout;
 import javax.swing.ImageIcon;
+import javax.swing.InputMap;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JSlider;
+import javax.swing.JTable;
+import javax.swing.KeyStroke;
 import javax.swing.Scrollable;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
@@ -61,6 +71,7 @@ import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.text.JTextComponent;
 
 import org.cytoscape.internal.util.ViewUtil;
 import org.cytoscape.model.CyNetwork;
@@ -277,6 +288,8 @@ public class NetworkViewGrid extends JPanel {
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	private void onMousePressedItem(final MouseEvent e, final ThumbnailPanel item) {
+		item.requestFocusInWindow();
+		
 		if (e.isPopupTrigger()) {
 			selectionHead = item;
 		} else if (SwingUtilities.isLeftMouseButton(e)) {
@@ -424,6 +437,8 @@ public class NetworkViewGrid extends JPanel {
 	
 	private void init() {
 		setName(GRID_NAME);
+		setFocusable(true);
+		setRequestFocusEnabled(true);
 		
 		setLayout(new BorderLayout());
 		add(getGridScrollPane(), BorderLayout.CENTER);
@@ -448,6 +463,8 @@ public class NetworkViewGrid extends JPanel {
 					deselectAll();
 			}
 		});
+		
+		setKeyBindings(this);
 		
 		update(thumbnailSize);
 	}
@@ -481,6 +498,8 @@ public class NetworkViewGrid extends JPanel {
 						onMousePressedItem(e, tp);
 					}
 				});
+				
+				setKeyBindings(tp);
 				
 				if (previousSelection.contains(tp))
 					tp.setSelected(true);
@@ -517,7 +536,7 @@ public class NetworkViewGrid extends JPanel {
 		return gridPanel;
 	}
 	
-	private JScrollPane getGridScrollPane() {
+	protected JScrollPane getGridScrollPane() {
 		if (gridScrollPane == null) {
 			gridScrollPane = new JScrollPane(getGridPanel(),
 					JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
@@ -580,7 +599,7 @@ public class NetworkViewGrid extends JPanel {
 	JButton getViewModeButton() {
 		if (viewModeButton == null) {
 			viewModeButton = new JButton(ICON_SHARE_ALT_SQUARE);
-			viewModeButton.setToolTipText("Show Network View");
+			viewModeButton.setToolTipText("Show Network View (V)");
 			styleToolBarButton(viewModeButton, serviceRegistrar.getService(IconManager.class).getIconFont(22.0f));
 		}
 		
@@ -590,7 +609,7 @@ public class NetworkViewGrid extends JPanel {
 	JButton getComparisonModeButton() {
 		if (comparisonModeButton == null) {
 			comparisonModeButton = new JButton(ICON_CARET_RIGHT + ICON_CARET_LEFT);
-			comparisonModeButton.setToolTipText("Compare 2 Network Views");
+			comparisonModeButton.setToolTipText("Compare 2 Network Views (C)");
 			styleToolBarButton(comparisonModeButton, serviceRegistrar.getService(IconManager.class).getIconFont(22.0f));
 		}
 		
@@ -656,6 +675,17 @@ public class NetworkViewGrid extends JPanel {
 		}
 		
 		return thumbnailSlider;
+	}
+	
+	private void setKeyBindings(final JComponent comp) {
+		final ActionMap actionMap = comp.getActionMap();
+		final InputMap inputMap = comp.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
+
+		inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_V, 0), KeyAction.VK_V);
+		inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_C, 0), KeyAction.VK_C);
+		
+		actionMap.put(KeyAction.VK_V, new KeyAction(KeyAction.VK_V));
+		actionMap.put(KeyAction.VK_C, new KeyAction(KeyAction.VK_C));
 	}
 	
 	private static int calculateColumns(final int thumbnailSize, final int gridWidth) {
@@ -770,6 +800,10 @@ public class NetworkViewGrid extends JPanel {
 		
 		ThumbnailPanel(final RenderingEngine<CyNetwork> engine, final int size) {
 			this.engine = engine;
+			
+			this.setFocusable(true);
+			this.setRequestFocusEnabled(true);
+			
 			this.setBorder(DEFAULT_BORDER);
 			
 			final Dimension d = new Dimension(size - BORDER_WIDTH, size - BORDER_WIDTH);
@@ -1103,6 +1137,32 @@ public class NetworkViewGrid extends JPanel {
 		@Override
 		public boolean getScrollableTracksViewportHeight() {
 			return thumbnailPanels == null || thumbnailPanels.isEmpty();
+		}
+	}
+	
+	private class KeyAction extends AbstractAction {
+
+		final static String VK_V = "VK_V";
+		final static String VK_C = "VK_C";
+		
+		KeyAction(final String actionCommand) {
+			putValue(ACTION_COMMAND_KEY, actionCommand);
+		}
+
+		@Override
+		public void actionPerformed(final ActionEvent e) {
+			final Component focusOwner = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner();
+			
+			if (focusOwner instanceof JTextComponent || focusOwner instanceof JTable ||
+					!NetworkViewGrid.this.isVisible() || isEmpty())
+				return; // We don't want to steal the key event from these components
+			
+			final String cmd = e.getActionCommand();
+			
+			if (cmd.equals(VK_V))
+				getViewModeButton().doClick();
+			else if (cmd.equals(VK_C))
+				getComparisonModeButton().doClick();
 		}
 	}
 	

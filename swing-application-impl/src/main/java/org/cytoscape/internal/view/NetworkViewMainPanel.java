@@ -117,6 +117,7 @@ public class NetworkViewMainPanel extends JPanel {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				showGrid();
+				networkViewGrid.requestFocusInWindow();
 			}
 		});
 		vc.getDetachViewButton().addActionListener(new ActionListener() {
@@ -574,8 +575,10 @@ public class NetworkViewMainPanel extends JPanel {
 				public void actionPerformed(ActionEvent e) {
 					final Component currentCard = getCurrentCard();
 					
-					if (currentCard instanceof NetworkViewComparisonPanel)
+					if (currentCard instanceof NetworkViewComparisonPanel) {
 						endComparison((NetworkViewComparisonPanel) currentCard);
+						networkViewGrid.requestFocusInWindow();
+					}
 				}
 			});
 			
@@ -671,17 +674,21 @@ public class NetworkViewMainPanel extends JPanel {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				final CyNetworkView currentView = getCurrentNetworkView();
+				NetworkViewContainer viewContainer = null;
 				
 				if (currentView != null) {
-					showViewContainer(currentView);
+					viewContainer = showViewContainer(currentView);
 				} else {
 					final List<ThumbnailPanel> selectedItems = networkViewGrid.getSelectedItems();
 					
 					if (!selectedItems.isEmpty())
-						showViewContainer(selectedItems.get(0).getNetworkView());
+						viewContainer = showViewContainer(selectedItems.get(0).getNetworkView());
 					else if (!networkViewGrid.isEmpty())
-						showViewContainer(networkViewGrid.firstItem().getNetworkView());
+						viewContainer = showViewContainer(networkViewGrid.firstItem().getNetworkView());
 				}
+				
+				if (viewContainer != null)
+					viewContainer.getContentPane().requestFocusInWindow();
 			}
 		});
 		

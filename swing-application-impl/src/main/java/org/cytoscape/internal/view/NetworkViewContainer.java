@@ -12,21 +12,32 @@ import static org.cytoscape.util.swing.IconManager.ICON_TH;
 import static org.cytoscape.util.swing.IconManager.ICON_THUMB_TACK;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.Cursor;
 import java.awt.Dimension;
+import java.awt.KeyboardFocusManager;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
+import javax.swing.AbstractAction;
+import javax.swing.ActionMap;
 import javax.swing.BorderFactory;
 import javax.swing.GroupLayout;
+import javax.swing.InputMap;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSeparator;
+import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.KeyStroke;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.UIManager;
+import javax.swing.text.JTextComponent;
 
 import org.cytoscape.internal.util.ViewUtil;
 import org.cytoscape.model.CyNetwork;
@@ -100,8 +111,13 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 	public void setComparing(boolean comparing) {
 		this.comparing = comparing;
 		
-		if (comparing)
+		if (comparing) {
 			this.detached = false;
+			
+			// Hide Navigator when starting Compare Mode
+			if (getBirdsEyeViewPanel().isVisible())
+				getBirdsEyeViewButton().doClick();
+		}
 	}
 	
 	public void update() {
@@ -153,7 +169,7 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 
 	private void updateBirdsEyeButton() {
 		final boolean bevVisible = getBirdsEyeViewPanel().isVisible();
-		getBirdsEyeViewButton().setToolTipText((bevVisible ? "Hide" : "Show") + " Navigator");
+		getBirdsEyeViewButton().setToolTipText((bevVisible ? "Hide" : "Show") + " Navigator (N)");
 		getBirdsEyeViewButton().setForeground(UIManager.getColor(bevVisible ? "Focus.color" : "Button.foreground"));
 	}
 	
@@ -165,6 +181,9 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 	}
 	
 	private void init() {
+		setFocusable(true);
+		setRequestFocusEnabled(true);
+		
 		final JPanel glassPane = new JPanel();
 		
 		{
@@ -191,6 +210,9 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 		getContentPane().setLayout(new BorderLayout());
 		getContentPane().add(getVisualizationContainer(), BorderLayout.CENTER);
 		getContentPane().add(getToolBar(), BorderLayout.SOUTH);
+		
+		setKeyBindings(this);
+		setKeyBindings(getRootPane());
 	}
 	
 	protected RenderingEngine<CyNetwork> getRenderingEngine() {
@@ -253,7 +275,7 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 	JButton getGridModeButton() {
 		if (gridModeButton == null) {
 			gridModeButton = new JButton(ICON_TH);
-			gridModeButton.setToolTipText("Show Thumbnails");
+			gridModeButton.setToolTipText("Show Grid (G)");
 			styleToolBarButton(gridModeButton, serviceRegistrar.getService(IconManager.class).getIconFont(22.0f));
 		}
 		
@@ -292,15 +314,8 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 				public void mouseClicked(MouseEvent e) {
 					showViewTitleEditor();
 				}
-				@Override
-				public void mouseEntered(MouseEvent e) {
-					viewTitleLabel.setForeground(UIManager.getColor("Focus.color"));
-				}
-				@Override
-				public void mouseExited(MouseEvent e) {
-					viewTitleLabel.setForeground(UIManager.getColor("Label.foreground"));
-				}
 			});
+			viewTitleLabel.setCursor(new Cursor(Cursor.TEXT_CURSOR));
 		}
 		
 		return viewTitleLabel;
@@ -412,13 +427,15 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 		return birdsEyeViewButton;
 	}
 	
-	private BirdsEyeViewPanel getBirdsEyeViewPanel() {
+	BirdsEyeViewPanel getBirdsEyeViewPanel() {
 		if (birdsEyeViewPanel == null) {
 			birdsEyeViewPanel = new BirdsEyeViewPanel(getNetworkView(), serviceRegistrar);
 			birdsEyeViewPanel.setBorder(BorderFactory.createCompoundBorder(
 					BorderFactory.createMatteBorder(1, 1, 0, 0, UIManager.getColor("Table.background")),
 					BorderFactory.createMatteBorder(1, 1, 1, 1, UIManager.getColor("Focus.color"))
 			));
+			birdsEyeViewPanel.setFocusable(true);
+			birdsEyeViewPanel.setRequestFocusEnabled(true);
 			birdsEyeViewPanel.setVisible(true);
 		}
 		
@@ -454,5 +471,44 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 		
 		tooltip += "</html>";
 		return tooltip;
+	}
+	
+	private void setKeyBindings(final JComponent comp) {
+		final ActionMap actionMap = comp.getActionMap();
+		final InputMap inputMap = comp.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
+
+		inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_G, 0), KeyAction.VK_G);
+		inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_N, 0), KeyAction.VK_N);
+		
+		actionMap.put(KeyAction.VK_G, new KeyAction(KeyAction.VK_G));
+		actionMap.put(KeyAction.VK_N, new KeyAction(KeyAction.VK_N));
+	}
+	
+	private class KeyAction extends AbstractAction {
+
+		final static String VK_G = "VK_G";
+		final static String VK_N = "VK_N";
+		
+		KeyAction(final String actionCommand) {
+			putValue(ACTION_COMMAND_KEY, actionCommand);
+		}
+
+		@Override
+		public void actionPerformed(final ActionEvent e) {
+			final Component focusOwner = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner();
+			
+			if (focusOwner instanceof JTextComponent || focusOwner instanceof JTable ||
+					!NetworkViewContainer.this.getContentPane().isVisible())
+				return; // We don't want to steal the key event from these components
+			
+			final String cmd = e.getActionCommand();
+			
+			if (cmd.equals(VK_G)) {
+				getGridModeButton().doClick();
+			} else if (cmd.equals(VK_N)) {
+				// Toggle Navigator (bird's eye view) visibility state
+				getBirdsEyeViewButton().doClick();
+			}
+		}
 	}
 }

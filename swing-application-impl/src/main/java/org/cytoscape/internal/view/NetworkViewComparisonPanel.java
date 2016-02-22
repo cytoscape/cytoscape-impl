@@ -225,7 +225,7 @@ public class NetworkViewComparisonPanel extends JPanel {
 	JButton getGridModeButton() {
 		if (gridModeButton == null) {
 			gridModeButton = new JButton(ICON_TH);
-			gridModeButton.setToolTipText("Show Thumbnails");
+			gridModeButton.setToolTipText("Show Grid (G)");
 			styleToolBarButton(gridModeButton, serviceRegistrar.getService(IconManager.class).getIconFont(22.0f));
 		}
 		
