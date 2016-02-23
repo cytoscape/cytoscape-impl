@@ -2,17 +2,24 @@ package org.cytoscape.internal.view;
 
 import static org.cytoscape.internal.util.ViewUtil.invokeOnEDT;
 
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import javax.swing.JFrame;
+
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.events.CyStartEvent;
+import org.cytoscape.application.events.CyStartListener;
 import org.cytoscape.application.events.SetSelectedNetworkViewsEvent;
 import org.cytoscape.application.events.SetSelectedNetworkViewsListener;
 import org.cytoscape.application.events.SetSelectedNetworksEvent;
 import org.cytoscape.application.events.SetSelectedNetworksListener;
+import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.events.SessionAboutToBeLoadedEvent;
@@ -28,7 +35,7 @@ import org.cytoscape.view.model.CyNetworkViewManager;
  * that makes sense to the end user.
  */
 public class NetworkSelectionMediator implements SetSelectedNetworksListener, SetSelectedNetworkViewsListener,
-		SessionAboutToBeLoadedListener, SessionLoadedListener {
+		SessionAboutToBeLoadedListener, SessionLoadedListener, CyStartListener {
 
 	private boolean loadingSession;
 	private boolean ignoreNetworkSelectionEvents;
@@ -116,6 +123,25 @@ public class NetworkSelectionMediator implements SetSelectedNetworksListener, Se
 		});
 	}
 
+	@Override
+	public void handleEvent(final CyStartEvent e) {
+		final JFrame cyFrame = serviceRegistrar.getService(CySwingApplication.class).getJFrame();
+		
+		cyFrame.addWindowListener(new WindowAdapter() {
+			@Override
+			public void windowActivated(WindowEvent e) {
+				// Set the visible View card as current when the main Cytoscape window gains focus again,
+				// if necessary (usually when there are detached view frames)
+				final NetworkViewContainer vc = netViewMainPanel.getCurrentViewContainer();
+				
+				if (vc != null && !vc.getNetworkView().equals(netViewMainPanel.getCurrentNetworkView())) {
+					final CyApplicationManager appMgr = serviceRegistrar.getService(CyApplicationManager.class);
+					appMgr.setCurrentNetworkView(vc.getNetworkView());
+				}
+			}
+		});
+	}
+	
 	@Override
 	public void handleEvent(final SessionAboutToBeLoadedEvent e) {
 		loadingSession = true;

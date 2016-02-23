@@ -655,7 +655,10 @@ public class NetworkViewMainPanel extends JPanel {
 		return getCurrentCard() == networkViewGrid;
 	}
 	
-	private NetworkViewContainer getCurrentViewContainer() {
+	/**
+	 * @return The current attached View container
+	 */
+	protected NetworkViewContainer getCurrentViewContainer() {
 		final Component c = getCurrentCard();
 
 		return c instanceof NetworkViewContainer ? (NetworkViewContainer) c : null;
