@@ -238,7 +238,7 @@ public class CyApplicationManagerImpl implements CyApplicationManager,
 	}
 
 	@Override
-	public void setCurrentNetworkView(final CyNetworkView view) {System.out.println(view);
+	public void setCurrentNetworkView(final CyNetworkView view) {
 		List<CyEvent<?>> eventsToFire = new ArrayList<CyEvent<?>>();
 
 		synchronized (lock) {
