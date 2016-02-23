@@ -258,16 +258,18 @@ public class NetworkViewMainPanel extends JPanel {
 	}
 	
 	public void setCurrentNetworkView(final CyNetworkView view) {
-		networkViewGrid.setCurrentNetworkView(view);
+		final boolean currentViewChanged = networkViewGrid.setCurrentNetworkView(view);
 		
-		if (view == null) {
-			showGrid();
-		} else {
-			if (isGridMode()) {
-				if (networkViewGrid.getCurrentItem() != null)
-					networkViewGrid.scrollRectToVisible(networkViewGrid.getCurrentItem().getBounds());
+		if (currentViewChanged) {
+			if (view == null) {
+				showGrid();
 			} else {
-				showViewContainer(createUniqueKey(view));
+				if (isGridMode()) {
+					if (networkViewGrid.getCurrentItem() != null)
+						networkViewGrid.scrollRectToVisible(networkViewGrid.getCurrentItem().getBounds());
+				} else {
+					showViewContainer(createUniqueKey(view));
+				}
 			}
 		}
 	}
@@ -304,16 +306,20 @@ public class NetworkViewMainPanel extends JPanel {
 		if (vc == null)
 			return null;
 		
-		final String name = vc.getName();
+		// Show grid first to prevent changing the current view
+		getNetworkViewGrid().setDetached(vc.getNetworkView(), true);
+		showGrid();
 		
+		// Remove the container from the card layout
 		cardLayout.removeLayoutComponent(vc);
-		viewContainers.remove(name);
+		viewContainers.remove(vc.getName());
 		
+		// Create and show the frame
 		final NetworkViewFrame frame = new NetworkViewFrame(vc, gc, serviceRegistrar);
 		vc.setDetached(true);
 		vc.setComparing(false);
 		
-		viewFrames.put(name, frame);
+		viewFrames.put(vc.getName(), frame);
 		
 		if (!LookAndFeelUtil.isAquaLAF())
 			frame.setJMenuBar(cyMenus.createDummyMenuBar());
@@ -376,9 +382,6 @@ public class NetworkViewMainPanel extends JPanel {
 		if (w > 0 && h > 0)
 			frame.getContentPane().setPreferredSize(new Dimension(w, h));
 		
-		getNetworkViewGrid().setDetached(vc.getNetworkView(), true);
-		showGrid();
-		
 		frame.pack();
 		frame.setResizable(resizable);
 		frame.setVisible(true);
@@ -400,8 +403,10 @@ public class NetworkViewMainPanel extends JPanel {
 			vc.setComparing(false);
 			getContentPane().add(vc, vc.getName());
 			viewContainers.put(vc.getName(), vc);
-			getNetworkViewGrid().setDetached(vc.getNetworkView(), false);
-			showViewContainer(vc.getName());
+			getNetworkViewGrid().setDetached(view, false);
+			
+			if (view.equals(getCurrentNetworkView()))
+				showViewContainer(vc.getName());
 		}
 	}
 	

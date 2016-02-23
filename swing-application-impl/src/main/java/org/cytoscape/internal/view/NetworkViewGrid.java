@@ -199,11 +199,11 @@ public class NetworkViewGrid extends JPanel {
 		}
 	}
 	
-	protected void setCurrentNetworkView(final CyNetworkView newView) {
+	protected boolean setCurrentNetworkView(final CyNetworkView newView) {
 		synchronized (lock) {
 			if ((currentNetworkView == null && newView == null) || 
 					(currentNetworkView != null && currentNetworkView.equals(newView)))
-				return;
+				return false;
 			
 			final CyNetworkView oldView = currentNetworkView;
 			currentNetworkView = newView;
@@ -213,6 +213,8 @@ public class NetworkViewGrid extends JPanel {
 			
 			firePropertyChange("currentNetworkView", oldView, newView);
 		}
+		
+		return true;
 	}
 	
 	protected void setDetached(final CyNetworkView view, final boolean b) {
