@@ -29,15 +29,27 @@ public class NetworkViewFrame extends JFrame {
 		
 		this.networkViewContainer = vc;
 		this.serviceRegistrar = serviceRegistrar;
-		
 		containerRootPane = vc.getRootPane();
 		
+		// To prevent error this error when using multiple monitors:
+		// "IllegalArgumentException: adding a container to a container on a different GraphicsDevice".
+		vc.setRootPane(new JRootPane());
+		
 		getContentPane().add(containerRootPane, BorderLayout.CENTER);
-		vc.update();
+		update();
 	}
 	
 	protected NetworkViewContainer getNetworkViewContainer() {
 		return networkViewContainer;
+	}
+	
+	/**
+	 * Use this method to get the original NetworkViewContainer's JRootPane
+	 * instead of {@link #getNetworkViewContainer()#getRootPane()}.
+	 * @return The JRootPane that contains the rendered view.
+	 */
+	protected JRootPane getContainerRootPane() {
+		return containerRootPane;
 	}
 	
 	protected RenderingEngine<CyNetwork> getRenderingEngine() {
@@ -48,11 +60,14 @@ public class NetworkViewFrame extends JFrame {
 		return networkViewContainer.getNetworkView();
 	}
 	
+	public void update() {
+		getNetworkViewContainer().update();
+	}
+	
 	@Override
 	public void dispose() {
-		// To prevent error
-		// "IllegalArgumentException: adding a container to a container on a different GraphicsDevice"
-		// when using multiple monitors
+		// To prevent error this error when using multiple monitors:
+		// "IllegalArgumentException: adding a container to a container on a different GraphicsDevice".
 		getContentPane().removeAll();
 		remove(getRootPane());
 		

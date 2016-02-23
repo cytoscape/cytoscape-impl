@@ -454,7 +454,7 @@ public class NetworkViewMainPanel extends JPanel {
 			}
 			
 			frame.setResizable(resizable);
-			frame.getNetworkViewContainer().update();
+			frame.update();
 			frame.invalidate();
 		} else if (!isGridMode()) {
 			final NetworkViewContainer vc = getNetworkViewContainer(view);
@@ -980,7 +980,7 @@ public class NetworkViewMainPanel extends JPanel {
 			final NetworkViewFrame vf = getParentContainer(source, NetworkViewFrame.class); // Detached view
 			
 			if (vf != null)
-				return vf.getNetworkViewContainer().getContentPane();
+				return vf.getContainerRootPane().getContentPane();
 			
 			return null;
 		}
