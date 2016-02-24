@@ -34,6 +34,8 @@ import java.awt.Window;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.Dictionary;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 
 import javax.swing.BorderFactory;
@@ -383,38 +385,45 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 		return netViewMediator;
 	}
 
-	public void addAction(CyAction action, Dictionary<?, ?> props) {
-		cyMenus.addAction(action);
+	public void addAction(CyAction action, Map<?, ?> props) {
+		cyMenus.addAction(action, props);
 	}
 
+	@Override
 	public void addAction(CyAction action) {
-		cyMenus.addAction(action);
+		cyMenus.addAction(action, new HashMap<>());
 	}
 
-	public void removeAction(CyAction action, Dictionary<?, ?> props) {
+	public void removeAction(CyAction action, Map<?, ?> props) {
 		cyMenus.removeAction(action);
 	}
 
+	@Override
 	public void removeAction(CyAction action) {
 		cyMenus.removeAction(action);
 	}
 
+	@Override
 	public JMenu getJMenu(String name) {
 		return cyMenus.getJMenu(name);
 	}
 
+	@Override
 	public JMenuBar getJMenuBar() {
 		return cyMenus.getJMenuBar();
 	}
 
+	@Override
 	public JToolBar getJToolBar() {
 		return cyMenus.getJToolBar();
 	}
 
+	@Override
 	public JFrame getJFrame() {
 		return this;
 	}
 
+	@Override
 	public CytoPanel getCytoPanel(final CytoPanelName compassDirection) {
 		return getCytoPanelInternal(compassDirection);
 	}

@@ -56,9 +56,9 @@ public class CytoscapeToolBar extends JToolBar {
 	 */
 	public CytoscapeToolBar() {
 		super("Cytoscape Tools");
-		actionButtonMap = new HashMap<CyAction,JButton>();
-		componentGravity = new HashMap<Object,Float>();
-		orderedList = new ArrayList<Object>();
+		actionButtonMap = new HashMap<>();
+		componentGravity = new HashMap<>();
+		orderedList = new ArrayList<>();
 		
 		setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, (new JSeparator()).getForeground()));
 	}
@@ -76,19 +76,9 @@ public class CytoscapeToolBar extends JToolBar {
 		if ( actionButtonMap.containsKey( action ) )
 			return false;
 
-		action.updateEnableState();
+		final JButton button = createToolBarButton(action);
 
-		JButton button = new JButton(action); 
-		button.setBorderPainted(false);
-		button.setRolloverEnabled(true);
-		button.setHideActionText(true);
 		componentGravity.put(button,action.getToolbarGravity());
-
-		//  If SHORT_DESCRIPTION exists, use this as tool-tip
-		String shortDescription = (String) action.getValue(Action.SHORT_DESCRIPTION);
-		if (shortDescription != null) 
-			button.setToolTipText(shortDescription);
-
 		actionButtonMap.put(action, button);
 		int addInd = getInsertLocation(action.getToolbarGravity());
 		orderedList.add(addInd, button);
@@ -169,5 +159,22 @@ public class CytoscapeToolBar extends JToolBar {
 			this.remove(tbc.getComponent());
 			this.repaint();
 		}	
+	}
+	
+	public static JButton createToolBarButton(CyAction action) {
+		action.updateEnableState();
+		
+		final JButton button = new JButton(action); 
+		button.setBorderPainted(false);
+		button.setRolloverEnabled(true);
+		button.setHideActionText(true);
+
+		//  If SHORT_DESCRIPTION exists, use this as tool-tip
+		final String shortDescription = (String) action.getValue(Action.SHORT_DESCRIPTION);
+		
+		if (shortDescription != null) 
+			button.setToolTipText(shortDescription);
+		
+		return button;
 	}
 }

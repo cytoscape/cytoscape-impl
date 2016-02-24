@@ -5,6 +5,7 @@ import java.awt.GraphicsConfiguration;
 
 import javax.swing.JFrame;
 import javax.swing.JRootPane;
+import javax.swing.JToolBar;
 
 import org.cytoscape.internal.util.ViewUtil;
 import org.cytoscape.model.CyNetwork;
@@ -15,18 +16,20 @@ import org.cytoscape.view.presentation.RenderingEngine;
 @SuppressWarnings("serial")
 public class NetworkViewFrame extends JFrame {
 
+	private final JToolBar toolBar;
 	private final NetworkViewContainer networkViewContainer;
 	private final JRootPane containerRootPane;
 	
 	private final CyServiceRegistrar serviceRegistrar;
 
 	public NetworkViewFrame(final NetworkViewContainer vc, final GraphicsConfiguration gc,
-			final CyServiceRegistrar serviceRegistrar) {
+			final JToolBar toolBar, final CyServiceRegistrar serviceRegistrar) {
 		super(ViewUtil.getTitle(vc.getNetworkView()), gc);
 		
 		setName("Frame." + vc.getName());
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		
+		this.toolBar = toolBar;
 		this.networkViewContainer = vc;
 		this.serviceRegistrar = serviceRegistrar;
 		containerRootPane = vc.getRootPane();
@@ -36,7 +39,17 @@ public class NetworkViewFrame extends JFrame {
 		vc.setRootPane(new JRootPane());
 		
 		getContentPane().add(containerRootPane, BorderLayout.CENTER);
+		
+		if (toolBar != null) {
+			toolBar.setFloatable(false);
+			getContentPane().add(toolBar, BorderLayout.NORTH);
+		}
+		
 		update();
+	}
+	
+	public JToolBar getToolBar() {
+		return toolBar;
 	}
 	
 	protected NetworkViewContainer getNetworkViewContainer() {

@@ -1,12 +1,34 @@
 package org.cytoscape.internal.view;
 
+import static org.cytoscape.work.ServiceProperties.IN_MENU_BAR;
+
+import java.util.HashMap;
+import java.util.IdentityHashMap;
+import java.util.Map;
+
+import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.swing.CyAction;
+import org.cytoscape.internal.task.CytoPanelTaskFactoryTunableAction;
+import org.cytoscape.internal.task.TaskFactoryTunableAction;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.task.DynamicTaskFactoryProvisioner;
+import org.cytoscape.task.NetworkCollectionTaskFactory;
+import org.cytoscape.task.NetworkTaskFactory;
+import org.cytoscape.task.NetworkViewCollectionTaskFactory;
+import org.cytoscape.task.NetworkViewTaskFactory;
+import org.cytoscape.task.TableTaskFactory;
+import org.cytoscape.view.model.CyNetworkViewManager;
+import org.cytoscape.work.TaskFactory;
+import org.cytoscape.work.swing.DialogTaskManager;
+import org.cytoscape.work.swing.PanelTaskManager;
+
 /*
  * #%L
  * Cytoscape Swing Application Impl (swing-application-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,32 +46,6 @@ package org.cytoscape.internal.view;
  * #L%
  */
 
-
-
-import java.util.HashMap;
-import java.util.IdentityHashMap;
-import java.util.Map;
-
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.application.swing.CyAction;
-import org.cytoscape.application.swing.CySwingApplication;
-import org.cytoscape.internal.task.CytoPanelTaskFactoryTunableAction;
-import org.cytoscape.internal.task.TaskFactoryTunableAction;
-import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.task.DynamicTaskFactoryProvisioner;
-import org.cytoscape.task.NetworkCollectionTaskFactory;
-import org.cytoscape.task.NetworkTaskFactory;
-import org.cytoscape.task.NetworkViewCollectionTaskFactory;
-import org.cytoscape.task.NetworkViewTaskFactory;
-import org.cytoscape.task.TableTaskFactory;
-import org.cytoscape.view.model.CyNetworkViewManager;
-import org.cytoscape.work.TaskFactory;
-import org.cytoscape.work.swing.DialogTaskManager;
-import org.cytoscape.work.swing.PanelTaskManager;
-
-import static org.cytoscape.work.ServiceProperties.IN_MENU_BAR;
-
-
 /**
  * Creates the menu and tool bars for a Cytoscape window object. It
  * also provides access to individual menus and items.<BR>
@@ -59,7 +55,8 @@ import static org.cytoscape.work.ServiceProperties.IN_MENU_BAR;
  * </p>
  */
 public class CytoscapeMenuPopulator {
-	final private CySwingApplication app;
+	
+	final private CytoscapeDesktop app;
 	final private PanelTaskManager panelTaskManager;
 	final private DialogTaskManager dialogTaskManager;
 	final private CyApplicationManager appManager;
@@ -76,11 +73,10 @@ public class CytoscapeMenuPopulator {
 	 * Creates a new CytoscapeMenus object. This will construct the basic bar objects, 
 	 * but won't fill them with menu items and associated action listeners.
 	 */
-	public CytoscapeMenuPopulator(final CySwingApplication app, final DialogTaskManager dialogTaskManager,
-	                  final PanelTaskManager panelTaskManager,
-				      final CyApplicationManager appManager, final CyNetworkViewManager networkViewManager, final CyServiceRegistrar registrar,
-				      DynamicTaskFactoryProvisioner factoryProvisioner)
-	{
+	public CytoscapeMenuPopulator(final CytoscapeDesktop app, final DialogTaskManager dialogTaskManager,
+			final PanelTaskManager panelTaskManager, final CyApplicationManager appManager,
+			final CyNetworkViewManager networkViewManager, final CyServiceRegistrar registrar,
+			DynamicTaskFactoryProvisioner factoryProvisioner) {
 		this.app = app;
 		this.networkViewManager = networkViewManager;
 		this.dialogTaskManager = dialogTaskManager;
@@ -93,32 +89,31 @@ public class CytoscapeMenuPopulator {
 		provisionerMap = new IdentityHashMap<Object, TaskFactory>();
 	}
 
-	public void addTaskFactory(TaskFactory factory, Map props) {
+	public void addTaskFactory(TaskFactory factory, Map<String, String> props) {
 		String pref = (String)(props.get("preferredTaskManager"));
 		if (pref != null && pref.equals("panel")) {
-			addAction(new CytoPanelTaskFactoryTunableAction(factory, null, panelTaskManager, 
-			                                                props, appManager, networkViewManager, registrar), 
-			                                                factory);
+			addAction(new CytoPanelTaskFactoryTunableAction(factory, null, panelTaskManager, props, appManager,
+					networkViewManager, registrar), factory, props);
 		} else {
 			addFactory(factory, props);
 		}
 	}
 
-	public void removeTaskFactory(TaskFactory factory, Map props) {
+	public void removeTaskFactory(TaskFactory factory, Map<String, String> props) {
 		removeFactory(factory, props);
 	}
 
-	public void addNetworkTaskFactory(NetworkTaskFactory factory, Map props) {
+	public void addNetworkTaskFactory(NetworkTaskFactory factory, Map<String, String> props) {
 		TaskFactory provisioner = factoryProvisioner.createFor(factory);
 		provisionerMap.put(factory, provisioner);
 		addFactory(provisioner, props);
 	}
 
-	public void removeNetworkTaskFactory(NetworkTaskFactory factory, Map props) {
+	public void removeNetworkTaskFactory(NetworkTaskFactory factory, Map<String, String> props) {
 		removeFactory(provisionerMap.get(factory), props);
 	}
 
-	public void addNetworkViewTaskFactory(NetworkViewTaskFactory factory, Map props) {
+	public void addNetworkViewTaskFactory(NetworkViewTaskFactory factory, Map<String, String> props) {
 		// Check to make sure this is supposed to be in the menus
 		if (props.containsKey(IN_MENU_BAR) && !Boolean.parseBoolean(props.get(IN_MENU_BAR).toString()))
 			return;
@@ -127,56 +122,56 @@ public class CytoscapeMenuPopulator {
 		addFactory(provisioner, props);
 	}
 
-	public void removeNetworkViewTaskFactory(NetworkViewTaskFactory factory, Map props) {
+	public void removeNetworkViewTaskFactory(NetworkViewTaskFactory factory, Map<String, String> props) {
 		removeFactory(provisionerMap.get(factory), props);
 	}
 
-	public void addNetworkViewCollectionTaskFactory(NetworkViewCollectionTaskFactory factory, Map props) {
+	public void addNetworkViewCollectionTaskFactory(NetworkViewCollectionTaskFactory factory, Map<String, String> props) {
 		TaskFactory provisioner = factoryProvisioner.createFor(factory);
 		provisionerMap.put(factory, provisioner);
 		addFactory(provisioner, props);
 	}
 
-	public void removeNetworkViewCollectionTaskFactory(NetworkViewCollectionTaskFactory factory, Map props) {
+	public void removeNetworkViewCollectionTaskFactory(NetworkViewCollectionTaskFactory factory, Map<String, String> props) {
 		removeFactory(provisionerMap.get(factory), props);
 	}
 	
-	public void addNetworkCollectionTaskFactory(NetworkCollectionTaskFactory factory, Map props) {
+	public void addNetworkCollectionTaskFactory(NetworkCollectionTaskFactory factory, Map<String, String> props) {
 		TaskFactory provisioner = factoryProvisioner.createFor(factory);
 		provisionerMap.put(factory, provisioner);
 		addFactory(provisioner, props);
 	}
 
-	public void removeNetworkCollectionTaskFactory(NetworkCollectionTaskFactory factory, Map props) {
+	public void removeNetworkCollectionTaskFactory(NetworkCollectionTaskFactory factory, Map<String, String> props) {
 		removeFactory(provisionerMap.get(factory), props);
 	}
 	
-	public void addTableTaskFactory(TableTaskFactory factory, Map props) {
+	public void addTableTaskFactory(TableTaskFactory factory, Map<String, String> props) {
 		TaskFactory provisioner = factoryProvisioner.createFor(factory);
 		provisionerMap.put(factory, provisioner);
 		addFactory(provisioner, props);
 	}
 	
-	public void removeTableTaskFactory(TableTaskFactory factory, Map props) {
+	public void removeTableTaskFactory(TableTaskFactory factory, Map<String, String> props) {
 		removeFactory(provisionerMap.get(factory), props);
 	}
 	
-	private void addFactory(TaskFactory factory, Map props) {
+	private void addFactory(TaskFactory factory, Map<String, String> props) {
 		CyAction action;
 		if ( props.containsKey("enableFor") )
 			action = new TaskFactoryTunableAction(dialogTaskManager, factory, props, appManager, networkViewManager);
 		else	
 			action = new TaskFactoryTunableAction(dialogTaskManager, factory, props);
 
-		addAction(action,factory);
+		addAction(action, factory, props);
 	}
 
-	private void addAction(CyAction action, TaskFactory factory) {
-		taskMap.put(factory,action);
-		app.addAction(action);
+	private void addAction(CyAction action, TaskFactory factory, Map<String, String> props) {
+		taskMap.put(factory, action);
+		app.addAction(action, props);
 	}
 
-	private void removeFactory(TaskFactory factory, Map props) {
+	private void removeFactory(TaskFactory factory, Map<String, String> props) {
 		final CyAction action = taskMap.remove(factory);
 		if (action != null) {
 			if (action.isInMenuBar())

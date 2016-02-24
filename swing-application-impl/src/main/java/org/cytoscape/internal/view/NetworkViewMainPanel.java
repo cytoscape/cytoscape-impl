@@ -315,7 +315,7 @@ public class NetworkViewMainPanel extends JPanel {
 		viewContainers.remove(vc.getName());
 		
 		// Create and show the frame
-		final NetworkViewFrame frame = new NetworkViewFrame(vc, gc, serviceRegistrar);
+		final NetworkViewFrame frame = new NetworkViewFrame(vc, gc, cyMenus.createViewFrameToolBar(), serviceRegistrar);
 		vc.setDetached(true);
 		vc.setComparing(false);
 		
