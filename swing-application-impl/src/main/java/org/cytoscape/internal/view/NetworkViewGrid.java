@@ -30,6 +30,7 @@ import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -466,7 +467,9 @@ public class NetworkViewGrid extends JPanel {
 			}
 		});
 		
-		setKeyBindings(this);
+		setGlobalKeyBindings(this);
+		setSelectionKeyBindings(this);
+		setSelectionKeyBindings(getGridScrollPane().getViewport());
 		
 		update(thumbnailSize);
 	}
@@ -501,7 +504,7 @@ public class NetworkViewGrid extends JPanel {
 					}
 				});
 				
-				setKeyBindings(tp);
+				setSelectionKeyBindings(tp);
 				
 				if (previousSelection.contains(tp))
 					tp.setSelected(true);
@@ -550,6 +553,11 @@ public class NetworkViewGrid extends JPanel {
 				public void mousePressed(final MouseEvent e) {
 					if (!e.isPopupTrigger())
 						deselectAll();
+					
+					final Collection<ThumbnailPanel> items = getItems();
+					
+					if (!items.isEmpty())
+						items.iterator().next().requestFocusInWindow();
 				}
 			});
 		}
@@ -679,7 +687,7 @@ public class NetworkViewGrid extends JPanel {
 		return thumbnailSlider;
 	}
 	
-	private void setKeyBindings(final JComponent comp) {
+	private void setGlobalKeyBindings(final JComponent comp) {
 		final ActionMap actionMap = comp.getActionMap();
 		final InputMap inputMap = comp.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
 
@@ -688,6 +696,18 @@ public class NetworkViewGrid extends JPanel {
 		
 		actionMap.put(KeyAction.VK_V, new KeyAction(KeyAction.VK_V));
 		actionMap.put(KeyAction.VK_C, new KeyAction(KeyAction.VK_C));
+	}
+	
+	private void setSelectionKeyBindings(final JComponent comp) {
+		final ActionMap actionMap = comp.getActionMap();
+		final InputMap inputMap = comp.getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+		final int CTRL = LookAndFeelUtil.isMac() ? InputEvent.META_DOWN_MASK :  InputEvent.CTRL_DOWN_MASK;
+
+		inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_A, CTRL), KeyAction.VK_CTRL_A);
+		inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_A, CTRL + InputEvent.SHIFT_DOWN_MASK), KeyAction.VK_CTRL_SHIFT_A);
+		
+		actionMap.put(KeyAction.VK_CTRL_A, new KeyAction(KeyAction.VK_CTRL_A));
+		actionMap.put(KeyAction.VK_CTRL_SHIFT_A, new KeyAction(KeyAction.VK_CTRL_SHIFT_A));
 	}
 	
 	private static int calculateColumns(final int thumbnailSize, final int gridWidth) {
@@ -1146,6 +1166,8 @@ public class NetworkViewGrid extends JPanel {
 
 		final static String VK_V = "VK_V";
 		final static String VK_C = "VK_C";
+		final static String VK_CTRL_A = "VK_CTRL_A";
+		final static String VK_CTRL_SHIFT_A = "VK_CTRL_SHIFT_A";
 		
 		KeyAction(final String actionCommand) {
 			putValue(ACTION_COMMAND_KEY, actionCommand);
@@ -1165,6 +1187,10 @@ public class NetworkViewGrid extends JPanel {
 				getViewModeButton().doClick();
 			else if (cmd.equals(VK_C))
 				getComparisonModeButton().doClick();
+			else if (cmd.equals(VK_CTRL_A))
+				selectAll();
+			else if (cmd.equals(VK_CTRL_SHIFT_A))
+				deselectAll();
 		}
 	}
 	
