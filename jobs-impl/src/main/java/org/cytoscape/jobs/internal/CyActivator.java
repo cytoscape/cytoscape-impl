@@ -37,6 +37,7 @@ import org.cytoscape.session.events.SessionAboutToBeSavedListener;
 import org.cytoscape.session.events.SessionLoadedListener;
 import static org.cytoscape.work.ServiceProperties.*;
 import org.cytoscape.work.TaskFactory;
+import org.cytoscape.work.swing.StatusBarPanelFactory;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
 
@@ -64,8 +65,14 @@ public class CyActivator extends AbstractCyActivator {
 			haveGUI = false;
 			jobMonitor = new SimpleCyJobMonitor();
 		} else {
+			// So, if we have a GUI, create and register our status bar
+			JobStatusBar statusBar = new JobStatusBar(cyServiceRegistrarServiceRef);
+			Properties statusBarProperties = new Properties();
+			statusBarProperties.setProperty("type", "JobStatus");
+			registerService(bc,statusBar,StatusBarPanelFactory.class, statusBarProperties);
+			
 			// So, if we have a GUI, start up our jobs monitor
-			jobMonitor = new GUICyJobMonitor(cyServiceRegistrarServiceRef, cyJobManager);
+			jobMonitor = new GUICyJobMonitor(cyServiceRegistrarServiceRef, cyJobManager, statusBar);
 			Properties guiJobProperties = new Properties();
 			guiJobProperties.setProperty(TITLE, "Job Status Monitor");
 			guiJobProperties.setProperty(PREFERRED_MENU, "Tools");

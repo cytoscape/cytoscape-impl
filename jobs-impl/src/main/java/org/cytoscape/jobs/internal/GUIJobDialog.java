@@ -70,6 +70,7 @@ public class GUIJobDialog extends JDialog {
 	final ConcurrentMap<CyJob, CyJobStatus> statusMap;
 	final List<CyJob> jobList;
 	final CyJobManagerImpl jobManager;
+	final GUICyJobMonitor jobMonitor;
 	JobTableModel jobTableModel;
 	static final long serialVersionUID = 1001L;
 	final JDialog jobDialog;
@@ -77,12 +78,14 @@ public class GUIJobDialog extends JDialog {
 	public GUIJobDialog(CyServiceRegistrar registrar, 
 	                    CySwingApplication swingApp,
 	                    ConcurrentMap<CyJob, CyJobStatus> statusMap,
-											CyJobManagerImpl jobManager) {
+											CyJobManagerImpl jobManager,
+											GUICyJobMonitor jobMonitor) {
 		super();
 		this.setTitle("Job Monitor");
 		this.serviceRegistrar = registrar;
 		this.statusMap = statusMap;
 		this.jobManager = jobManager;
+		this.jobMonitor = jobMonitor;
 		this.jobList = new ArrayList<>();
 		for (CyJob job: statusMap.keySet()) {
 			jobList.add(job);
@@ -196,11 +199,12 @@ public class GUIJobDialog extends JDialog {
 			case 3:
 				switch (jobStatus) {
 					case ERROR:
+					case FAILED:
 						return "error";
 						// return new ErrorButton(job, status, jobDialog, JOptionPane.ERROR_MESSAGE); 
-					case FAILED:
 					case PURGED:
 					case TERMINATED:
+					case CANCELED:
 					case UNKNOWN:
 						return "warning";
 						// return new ErrorButton(job, status, jobDialog, JOptionPane.WARNING_MESSAGE); 
@@ -278,9 +282,8 @@ public class GUIJobDialog extends JDialog {
 					CyJobStatus status = job.getJobExecutionService().cancelJob(job);
 					if (status.getStatus().equals(Status.CANCELED)) {
 						jobManager.removeJob(job);
-						jobList.remove(job);
-						statusMap.remove(job);
 						mapChanged();
+						jobMonitor.handleJob(job, status);
 					}
 				} else if (action.equals("error")) {
 					showMessage(jobDialog, JOptionPane.ERROR_MESSAGE);
@@ -303,6 +306,7 @@ public class GUIJobDialog extends JDialog {
 			jobList.remove(job);
 			statusMap.remove(job);
 			mapChanged();
+			jobMonitor.updateIcon();
 		}
 	}
 

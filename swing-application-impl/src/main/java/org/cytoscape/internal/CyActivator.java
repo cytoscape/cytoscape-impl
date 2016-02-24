@@ -130,7 +130,6 @@ import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.properties.TunablePropertySerializerFactory;
 import org.cytoscape.work.swing.DialogTaskManager;
 import org.cytoscape.work.swing.PanelTaskManager;
-import org.cytoscape.work.swing.TaskStatusPanelFactory;
 import org.cytoscape.work.swing.undo.SwingUndoSupport;
 import org.osgi.framework.BundleContext;
 import org.slf4j.Logger;
@@ -157,7 +156,6 @@ public class CyActivator extends AbstractCyActivator {
 		CyNetworkViewManager cyNetworkViewManagerServiceRef = getService(bc, CyNetworkViewManager.class);
 		DialogTaskManager dialogTaskManagerServiceRef = getService(bc, DialogTaskManager.class);
 		PanelTaskManager panelTaskManagerServiceRef = getService(bc, PanelTaskManager.class);
-		TaskStatusPanelFactory taskStatusPanelFactoryRef = getService(bc, TaskStatusPanelFactory.class);
 		CyColumnIdentifierFactory cyColumnIdentifierFactory = getService(bc, CyColumnIdentifierFactory.class);
 		IconManager iconManagerServiceRef = getService(bc, IconManager.class);
 		BookmarksUtil bookmarksUtilServiceRef = getService(bc, BookmarksUtil.class);
@@ -202,7 +200,6 @@ public class CyActivator extends AbstractCyActivator {
 		                                                         cyEventHelperServiceRef,
 		                                                         cyServiceRegistrarServiceRef,
 		                                                         dialogTaskManagerServiceRef,
-		                                                         taskStatusPanelFactoryRef,
 		                                                         iconManagerServiceRef);
 
 		CyDesktopManager cyDesktopManager = new CyDesktopManager(cytoscapeDesktop, netViewMediator);

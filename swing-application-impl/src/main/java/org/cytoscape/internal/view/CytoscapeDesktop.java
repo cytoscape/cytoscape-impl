@@ -31,6 +31,8 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Toolkit;
 import java.awt.Window;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.Dictionary;
@@ -73,7 +75,7 @@ import org.cytoscape.session.events.SessionSavedListener;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.work.swing.DialogTaskManager;
-import org.cytoscape.work.swing.TaskStatusPanelFactory;
+import org.cytoscape.work.swing.StatusBarPanelFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -123,7 +125,9 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 	private final CyEventHelper cyEventHelper;
 	private final CyServiceRegistrar registrar;
 	private final IconManager iconManager;
-	private final JToolBar statusToolBar;
+	private JToolBar statusToolBar = null;
+	private StatusBarPanelFactory taskStatusPanelFactory = null;
+	private StatusBarPanelFactory jobStatusPanelFactory = null;
 
 	/**
 	 * Creates a new CytoscapeDesktop object.
@@ -134,7 +138,6 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 							final CyEventHelper eh,
 							final CyServiceRegistrar registrar,
 							final DialogTaskManager taskManager,
-							final TaskStatusPanelFactory taskStatusPanelFactory,
 							final IconManager iconManager) {
 		super(TITLE_PREFIX_STRING + NEW_SESSION_NAME);
 
@@ -145,6 +148,8 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 		this.registrar = registrar;
 		this.iconManager = iconManager;
 		
+		taskManager.setExecutionContext(this);
+
 		setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource(SMALL_ICON)));
 
 		mainPanel = new JPanel();
@@ -156,7 +161,7 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 		mainPanel.add(masterPane, BorderLayout.CENTER);
 		mainPanel.add(cyMenus.getJToolBar(), BorderLayout.NORTH);
 
-		statusToolBar = setupStatusPanel(taskStatusPanelFactory);
+		// statusToolBar = setupStatusPanel(jobStatusPanelFactory, taskStatusPanelFactory);
 
 		if (MacFullScreenEnabler.supportsNativeFullScreenMode())
 			MacFullScreenEnabler.setEnabled(this, true);
@@ -169,8 +174,6 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 		addWindowListener(new WindowAdapter() {
 			@Override
 			public void windowActivated(WindowEvent e) {
-				taskManager.setExecutionContext(CytoscapeDesktop.this);
-				
 				// This is necessary because the same menu bar can be used by other frames
 				final JMenuBar menuBar = cyMenus.getJMenuBar();
 				final Window window = SwingUtilities.getWindowAncestor(menuBar);
@@ -194,6 +197,21 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 			}
 		});
 
+		addComponentListener(new ComponentAdapter() {
+			@Override
+			public void componentHidden(ComponentEvent e) { }
+
+			@Override
+			public void componentShown(ComponentEvent e) {
+				// We need to do this later in the cycle to make sure everything is loaded
+				if (jobStatusPanelFactory == null || taskStatusPanelFactory == null) {
+					jobStatusPanelFactory = registrar.getService(StatusBarPanelFactory.class, "(type=JobStatus)");
+					taskStatusPanelFactory = registrar.getService(StatusBarPanelFactory.class, "(type=TaskStatus)");
+					statusToolBar = setupStatusPanel(jobStatusPanelFactory, taskStatusPanelFactory);
+				}
+			}
+		});
+
 		// Prepare to show the desktop...
 		setContentPane(mainPanel);
 		pack();
@@ -210,12 +228,15 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 		// visible by the StartupMostlyFinished class, found elsewhere.
 	}
 
-	private JToolBar setupStatusPanel(TaskStatusPanelFactory taskStatusPanelFactory) {
+	private JToolBar setupStatusPanel(StatusBarPanelFactory jobStatusPanelFactory,
+	                                  StatusBarPanelFactory taskStatusPanelFactory) {
 		final JPanel taskStatusPanel = taskStatusPanelFactory.createTaskStatusPanel();
+		final JPanel jobStatusPanel = jobStatusPanelFactory.createTaskStatusPanel();
 		final JToolBar statusToolBar = new JToolBar();
 		final MemStatusPanel memStatusPanel = new MemStatusPanel();
 		
 		if (LookAndFeelUtil.isNimbusLAF()) {
+			jobStatusPanel.setOpaque(false);
 			taskStatusPanel.setOpaque(false);
 			statusToolBar.setOpaque(false);
 			memStatusPanel.setOpaque(false);
@@ -228,9 +249,10 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 		statusPanel.setLayout(layout);
 		layout.setAutoCreateContainerGaps(false);
 		layout.setAutoCreateGaps(false);
-		
+
 		layout.setHorizontalGroup(layout.createSequentialGroup()
 				.addContainerGap()
+				.addComponent(jobStatusPanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 				.addComponent(taskStatusPanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 				.addPreferredGap(ComponentPlacement.UNRELATED)
 				.addComponent(statusToolBar, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
@@ -241,6 +263,7 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 		layout.setVerticalGroup(layout.createSequentialGroup()
 				.addGap(LookAndFeelUtil.isWinLAF() ? 5 : 0)
 				.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
+						.addComponent(jobStatusPanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 						.addComponent(taskStatusPanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 						.addComponent(statusToolBar, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 						.addComponent(memStatusPanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
@@ -389,7 +412,6 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 		cyMenus.addAction(action, props);
 	}
 
-	@Override
 	public void addAction(CyAction action) {
 		cyMenus.addAction(action, new HashMap<>());
 	}
@@ -398,32 +420,26 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 		cyMenus.removeAction(action);
 	}
 
-	@Override
 	public void removeAction(CyAction action) {
 		cyMenus.removeAction(action);
 	}
 
-	@Override
 	public JMenu getJMenu(String name) {
 		return cyMenus.getJMenu(name);
 	}
 
-	@Override
 	public JMenuBar getJMenuBar() {
 		return cyMenus.getJMenuBar();
 	}
 
-	@Override
 	public JToolBar getJToolBar() {
 		return cyMenus.getJToolBar();
 	}
 
-	@Override
 	public JFrame getJFrame() {
 		return this;
 	}
 
-	@Override
 	public CytoPanel getCytoPanel(final CytoPanelName compassDirection) {
 		return getCytoPanelInternal(compassDirection);
 	}
