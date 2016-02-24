@@ -2395,7 +2395,8 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 
 	@Override
 	public void printCanvas(Graphics printCanvas) {
-		final boolean changed = isContentChanged();
+		final boolean contentChanged = isContentChanged();
+		final boolean viewportChanged = isViewportChanged();
 		
 		// Check properties related to printing:
 		boolean exportAsShape = false;
@@ -2407,11 +2408,12 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		setPrintingTextAsShape(exportAsShape);
 		print(printCanvas);
 		
-		// Keep previous content-changed flag, otherwise the actual view canvas may not be updated next time.
+		// Keep previous dirty flags, otherwise the actual view canvas may not be updated next time.
 		// (this method is usually only used to export the View as image, create thumbnails, etc,
 		// therefore it should not flag the Graph View as updated, because the actual view canvas
 		// may still have to be redrawn after this).
-		setContentChanged(changed);
+		setContentChanged(contentChanged);
+		setViewportChanged(viewportChanged);
 	}
 
 	@Override
