@@ -327,6 +327,9 @@ public class NetworkViewMainPanel extends JPanel {
 		frame.addWindowListener(new WindowAdapter() {
 			@Override
 			public void windowActivated(WindowEvent e) {
+				// So Tunable dialogs open in the same monitor of the current frame
+				serviceRegistrar.getService(DialogTaskManager.class).setExecutionContext(frame);
+				
 				currentViewFrame = frame;
 				
 				// This is necessary because the same menu bar is used by other frames, including CytoscapeDesktop

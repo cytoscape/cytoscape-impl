@@ -145,8 +145,6 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 		this.registrar = registrar;
 		this.iconManager = iconManager;
 		
-		taskManager.setExecutionContext(this);
-
 		setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource(SMALL_ICON)));
 
 		mainPanel = new JPanel();
@@ -171,6 +169,8 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 		addWindowListener(new WindowAdapter() {
 			@Override
 			public void windowActivated(WindowEvent e) {
+				taskManager.setExecutionContext(CytoscapeDesktop.this);
+				
 				// This is necessary because the same menu bar can be used by other frames
 				final JMenuBar menuBar = cyMenus.getJMenuBar();
 				final Window window = SwingUtilities.getWindowAncestor(menuBar);
