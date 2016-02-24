@@ -9,6 +9,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.WeakHashMap;
 
@@ -32,6 +33,7 @@ import org.cytoscape.model.events.ColumnNameChangedListener;
 import org.cytoscape.model.events.RowSetRecord;
 import org.cytoscape.model.events.RowsSetEvent;
 import org.cytoscape.model.events.RowsSetListener;
+import org.cytoscape.property.CyProperty;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.events.SessionAboutToBeLoadedEvent;
 import org.cytoscape.session.events.SessionAboutToBeLoadedListener;
@@ -80,6 +82,8 @@ public class NetworkViewMediator implements NetworkViewAddedListener, NetworkVie
 		SessionAboutToBeLoadedListener, SessionLoadCancelledListener, SessionLoadedListener, ColumnDeletedListener,
 		ColumnNameChangedListener, ViewChangedListener {
 
+	private static final String SHOW_VIEW_TOOLBARS_KEY = "showDetachedViewToolBars";
+	
 	private static final Logger logger = LoggerFactory.getLogger(NetworkViewMediator.class);
 
 	@Deprecated
@@ -191,6 +195,22 @@ public class NetworkViewMediator implements NetworkViewAddedListener, NetworkVie
 	
 	public Set<NetworkViewFrame> getAllNetworkViewFrames() {
 		return getNetworkViewMainPanel().getAllNetworkViewFrames();
+	}
+	
+	public boolean isViewToolBarsVisible() {
+		final Properties props = (Properties) 
+				serviceRegistrar.getService(CyProperty.class, "(cyPropertyName=cytoscape3.props)").getProperties();
+		
+		return props.getProperty(SHOW_VIEW_TOOLBARS_KEY, "true").equalsIgnoreCase("true");
+	}
+	
+	public void setViewToolBarsVisible(final boolean b) {
+		for (NetworkViewFrame frame : getAllNetworkViewFrames())
+			frame.setToolBarVisible(b);
+		
+		final Properties props = (Properties) 
+				serviceRegistrar.getService(CyProperty.class, "(cyPropertyName=cytoscape3.props)").getProperties();
+		props.setProperty(SHOW_VIEW_TOOLBARS_KEY, "" + b);
 	}
 
 	// // Event Handlers ////

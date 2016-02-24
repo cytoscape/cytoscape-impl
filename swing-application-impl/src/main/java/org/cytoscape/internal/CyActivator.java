@@ -63,6 +63,7 @@ import org.cytoscape.application.swing.ToolBarComponent;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.internal.actions.BookmarkAction;
 import org.cytoscape.internal.actions.CytoPanelAction;
+import org.cytoscape.internal.actions.DetachedViewToolBarAction;
 import org.cytoscape.internal.actions.ExitAction;
 import org.cytoscape.internal.actions.FullScreenAction;
 import org.cytoscape.internal.actions.FullScreenMacAction;
@@ -258,6 +259,8 @@ public class CyActivator extends AbstractCyActivator {
 		CytoPanelAction cytoPanelSouthAction = new CytoPanelAction(SOUTH, true, cytoscapeDesktop, 1.1f);
 		CytoPanelAction cytoPanelEastAction = new CytoPanelAction(EAST, false, cytoscapeDesktop, 1.2f);
 		CytoPanelAction cytoPanelSouthWestAction = new CytoPanelAction(SOUTH_WEST, false, cytoscapeDesktop, 1.3f);
+		
+		DetachedViewToolBarAction detachedViewToolBarAction = new DetachedViewToolBarAction(1.4f, netViewMediator);
 
 		UndoMonitor undoMonitor = new UndoMonitor(undoSupportServiceRef,
 		                                          cytoscapePropertiesServiceRef);
@@ -287,6 +290,7 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc, cytoPanelSouthAction, CyAction.class, new Properties());
 		registerService(bc, cytoPanelEastAction, CyAction.class, new Properties());
 		registerService(bc, cytoPanelSouthWestAction, CyAction.class, new Properties());
+		registerService(bc, detachedViewToolBarAction, CyAction.class, new Properties());
 		registerService(bc, cyDesktopManager, CyNetworkViewDesktopMgr.class, new Properties());
 
 		Properties helpContentsTaskFactoryProps = new Properties();

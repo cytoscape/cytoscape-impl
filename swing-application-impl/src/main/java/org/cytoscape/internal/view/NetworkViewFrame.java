@@ -2,6 +2,7 @@ package org.cytoscape.internal.view;
 
 import java.awt.BorderLayout;
 import java.awt.GraphicsConfiguration;
+import java.util.Properties;
 
 import javax.swing.JFrame;
 import javax.swing.JRootPane;
@@ -9,6 +10,7 @@ import javax.swing.JToolBar;
 
 import org.cytoscape.internal.util.ViewUtil;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.property.CyProperty;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.presentation.RenderingEngine;
@@ -42,6 +44,11 @@ public class NetworkViewFrame extends JFrame {
 		
 		if (toolBar != null) {
 			toolBar.setFloatable(false);
+			
+			final Properties props = (Properties) 
+					serviceRegistrar.getService(CyProperty.class, "(cyPropertyName=cytoscape3.props)").getProperties();
+			setToolBarVisible(props.getProperty("showDetachedViewToolBars", "true").equalsIgnoreCase("true"));
+			
 			getContentPane().add(toolBar, BorderLayout.NORTH);
 		}
 		
@@ -50,6 +57,10 @@ public class NetworkViewFrame extends JFrame {
 	
 	public JToolBar getToolBar() {
 		return toolBar;
+	}
+	
+	public void setToolBarVisible(final boolean b) {
+		getToolBar().setVisible(b);
 	}
 	
 	protected NetworkViewContainer getNetworkViewContainer() {
