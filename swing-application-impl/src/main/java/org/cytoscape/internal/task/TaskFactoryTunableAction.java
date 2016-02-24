@@ -70,6 +70,7 @@ public class TaskFactoryTunableAction extends AbstractCyAction {
 		this.factory = factory;
 	}
 
+	@Override
 	public void actionPerformed(ActionEvent a) {
 		logger.debug("About to execute task from factory: " + factory.toString());
 
