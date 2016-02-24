@@ -285,7 +285,7 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 	JButton getDetachViewButton() {
 		if (detachViewButton == null) {
 			detachViewButton = new JButton(ICON_EXTERNAL_LINK_SQUARE);
-			detachViewButton.setToolTipText("Detach Network View");
+			detachViewButton.setToolTipText("Detach View");
 			styleToolBarButton(detachViewButton, serviceRegistrar.getService(IconManager.class).getIconFont(22.0f));
 		}
 		
@@ -295,7 +295,7 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 	JButton getReattachViewButton() {
 		if (reattachViewButton == null) {
 			reattachViewButton = new JButton(ICON_THUMB_TACK);
-			reattachViewButton.setToolTipText("Reattach Network View");
+			reattachViewButton.setToolTipText("Reattach View");
 			styleToolBarButton(reattachViewButton, serviceRegistrar.getService(IconManager.class).getIconFont(14.0f));
 		}
 		

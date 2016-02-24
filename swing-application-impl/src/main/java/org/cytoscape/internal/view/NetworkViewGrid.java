@@ -262,7 +262,7 @@ public class NetworkViewGrid extends JPanel {
 		else
 			getViewSelectionLabel().setText(
 					selectedItems.size() + " of " + 
-							items.size() + " Network View" + (items.size() == 1 ? "" : "s") +
+							items.size() + " View" + (items.size() == 1 ? "" : "s") +
 							" selected");
 		
 		getToolBar().updateUI();
@@ -609,7 +609,7 @@ public class NetworkViewGrid extends JPanel {
 	JButton getViewModeButton() {
 		if (viewModeButton == null) {
 			viewModeButton = new JButton(ICON_SHARE_ALT_SQUARE);
-			viewModeButton.setToolTipText("Show Network View (V)");
+			viewModeButton.setToolTipText("Show View (V)");
 			styleToolBarButton(viewModeButton, serviceRegistrar.getService(IconManager.class).getIconFont(22.0f));
 		}
 		
@@ -619,7 +619,7 @@ public class NetworkViewGrid extends JPanel {
 	JButton getComparisonModeButton() {
 		if (comparisonModeButton == null) {
 			comparisonModeButton = new JButton(ICON_CARET_RIGHT + ICON_CARET_LEFT);
-			comparisonModeButton.setToolTipText("Compare 2 Network Views (C)");
+			comparisonModeButton.setToolTipText("Compare 2 Views (C)");
 			styleToolBarButton(comparisonModeButton, serviceRegistrar.getService(IconManager.class).getIconFont(22.0f));
 		}
 		
@@ -629,7 +629,7 @@ public class NetworkViewGrid extends JPanel {
 	JButton getDetachSelectedViewsButton() {
 		if (detachSelectedViewsButton == null) {
 			detachSelectedViewsButton = new JButton(ICON_EXTERNAL_LINK_SQUARE);
-			detachSelectedViewsButton.setToolTipText("Detach Selected Network Views");
+			detachSelectedViewsButton.setToolTipText("Detach Selected Views");
 			styleToolBarButton(detachSelectedViewsButton, serviceRegistrar.getService(IconManager.class).getIconFont(22.0f));
 		}
 		
@@ -639,7 +639,7 @@ public class NetworkViewGrid extends JPanel {
 	JButton getReattachAllViewsButton() {
 		if (reattachAllViewsButton == null) {
 			reattachAllViewsButton = new JButton(ICON_THUMB_TACK + " " + ICON_THUMB_TACK);
-			reattachAllViewsButton.setToolTipText("Reattach All Network Views");
+			reattachAllViewsButton.setToolTipText("Reattach All Views");
 			styleToolBarButton(reattachAllViewsButton, serviceRegistrar.getService(IconManager.class).getIconFont(14.0f));
 		}
 		
@@ -649,7 +649,7 @@ public class NetworkViewGrid extends JPanel {
 	JButton getDestroySelectedViewsButton() {
 		if (destroySelectedViewsButton == null) {
 			destroySelectedViewsButton = new JButton(ICON_TRASH_O);
-			destroySelectedViewsButton.setToolTipText("Destroy Selected Network Views");
+			destroySelectedViewsButton.setToolTipText("Destroy Selected Views");
 			styleToolBarButton(destroySelectedViewsButton, serviceRegistrar.getService(IconManager.class).getIconFont(22.0f));
 		}
 		
@@ -984,7 +984,7 @@ public class NetworkViewGrid extends JPanel {
 		
 		private void updateCurrentLabel() {
 			getCurrentLabel().setText(isCurrent() ? IconManager.ICON_CIRCLE : " ");
-			getCurrentLabel().setToolTipText(isCurrent() ? "Current Network View" : null);
+			getCurrentLabel().setToolTipText(isCurrent() ? "Current View" : null);
 		}
 		
 		private void updateBorder() {
