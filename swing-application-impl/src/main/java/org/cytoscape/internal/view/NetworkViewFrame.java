@@ -80,7 +80,7 @@ public class NetworkViewFrame extends JFrame {
 		return networkViewContainer.getRenderingEngine();
 	}
 	
-	protected CyNetworkView getNetworkView() {
+	public CyNetworkView getNetworkView() {
 		return networkViewContainer.getNetworkView();
 	}
 	

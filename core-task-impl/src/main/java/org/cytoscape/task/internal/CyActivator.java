@@ -840,7 +840,6 @@ public class CyActivator extends AbstractCyActivator {
 
 		Properties destroyNetworkTaskFactoryProps = new Properties();
 		destroyNetworkTaskFactoryProps.setProperty(PREFERRED_MENU,"Edit");
-		destroyNetworkTaskFactoryProps.setProperty(ACCELERATOR,"cmd shift w");
 		destroyNetworkTaskFactoryProps.setProperty(ENABLE_FOR,ENABLE_FOR_NETWORK);
 		destroyNetworkTaskFactoryProps.setProperty(TITLE,"Destroy Networks");
 		destroyNetworkTaskFactoryProps.setProperty(IN_NETWORK_PANEL_CONTEXT_MENU,"true");
@@ -859,7 +858,6 @@ public class CyActivator extends AbstractCyActivator {
 
 		Properties destroyNetworkViewTaskFactoryProps = new Properties();
 		destroyNetworkViewTaskFactoryProps.setProperty(PREFERRED_MENU,"Edit");
-		destroyNetworkViewTaskFactoryProps.setProperty(ACCELERATOR,"cmd w");
 		destroyNetworkViewTaskFactoryProps.setProperty(ENABLE_FOR,ENABLE_FOR_NETWORK_AND_VIEW);
 		destroyNetworkViewTaskFactoryProps.setProperty(TITLE,"Destroy Views");
 		destroyNetworkViewTaskFactoryProps.setProperty(IN_NETWORK_PANEL_CONTEXT_MENU,"true");
@@ -871,6 +869,8 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc,destroyNetworkViewTaskFactory,DestroyNetworkViewTaskFactory.class, destroyNetworkViewTaskFactoryProps);
 
 		Properties zoomInTaskFactoryProps = new Properties();
+		zoomInTaskFactoryProps.setProperty(PREFERRED_MENU,"View");
+		zoomInTaskFactoryProps.setProperty(MENU_GRAVITY,"6.3");
 		zoomInTaskFactoryProps.setProperty(ACCELERATOR,"cmd equals");
 		zoomInTaskFactoryProps.setProperty(LARGE_ICON_URL,getClass().getResource("/images/icons/zoom-in-32.png").toString());
 		zoomInTaskFactoryProps.setProperty(ENABLE_FOR,ENABLE_FOR_NETWORK_AND_VIEW);
@@ -883,6 +883,9 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc,zoomInTaskFactory,NetworkTaskFactory.class, zoomInTaskFactoryProps);
 
 		Properties zoomOutTaskFactoryProps = new Properties();
+		zoomOutTaskFactoryProps.setProperty(PREFERRED_MENU,"View");
+		zoomOutTaskFactoryProps.setProperty(MENU_GRAVITY,"6.4");
+		zoomOutTaskFactoryProps.setProperty(INSERT_SEPARATOR_AFTER,"true");
 		zoomOutTaskFactoryProps.setProperty(ACCELERATOR,"cmd minus");
 		zoomOutTaskFactoryProps.setProperty(LARGE_ICON_URL,getClass().getResource("/images/icons/zoom-out-32.png").toString());
 		zoomOutTaskFactoryProps.setProperty(ENABLE_FOR,ENABLE_FOR_NETWORK_AND_VIEW);
@@ -895,7 +898,9 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc,zoomOutTaskFactory,NetworkTaskFactory.class, zoomOutTaskFactoryProps);
 
 		Properties fitSelectedTaskFactoryProps = new Properties();
-		fitSelectedTaskFactoryProps.setProperty(ACCELERATOR,"cmd shift f");
+		fitSelectedTaskFactoryProps.setProperty(PREFERRED_MENU,"View");
+		fitSelectedTaskFactoryProps.setProperty(MENU_GRAVITY,"6.2");
+		fitSelectedTaskFactoryProps.setProperty(ACCELERATOR,"cmd 9");
 		fitSelectedTaskFactoryProps.setProperty(LARGE_ICON_URL,getClass().getResource("/images/icons/zoom-selected-32.png").toString());
 		fitSelectedTaskFactoryProps.setProperty(ENABLE_FOR,ENABLE_FOR_SELECTED_NODES_OR_EDGES);
 		fitSelectedTaskFactoryProps.setProperty(TITLE,"Fit Selected");
@@ -908,7 +913,9 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc,fitSelectedTaskFactory,NetworkTaskFactory.class, fitSelectedTaskFactoryProps);
 
 		Properties fitContentTaskFactoryProps = new Properties();
-		fitContentTaskFactoryProps.setProperty(ACCELERATOR,"cmd f");
+		fitContentTaskFactoryProps.setProperty(PREFERRED_MENU,"View");
+		fitContentTaskFactoryProps.setProperty(MENU_GRAVITY,"6.1");
+		fitContentTaskFactoryProps.setProperty(ACCELERATOR,"cmd 0");
 		fitContentTaskFactoryProps.setProperty(LARGE_ICON_URL,getClass().getResource("/images/icons/zoom-fit-32.png").toString());
 		fitContentTaskFactoryProps.setProperty(ENABLE_FOR,ENABLE_FOR_NETWORK_AND_VIEW);
 		fitContentTaskFactoryProps.setProperty(TITLE,"Fit Content");

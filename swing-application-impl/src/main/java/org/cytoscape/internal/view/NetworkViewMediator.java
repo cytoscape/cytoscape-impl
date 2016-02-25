@@ -197,6 +197,14 @@ public class NetworkViewMediator implements NetworkViewAddedListener, NetworkVie
 		return getNetworkViewMainPanel().getAllNetworkViewFrames();
 	}
 	
+	public NetworkViewFrame getNetworkViewFrame(final CyNetworkView view) {
+		return getNetworkViewMainPanel().getNetworkViewFrame(view);
+	}
+	
+	public void reattachNetworkView(final CyNetworkView view) {
+		getNetworkViewMainPanel().reattachNetworkView(view);
+	}
+	
 	public boolean isViewToolBarsVisible() {
 		final Properties props = (Properties) 
 				serviceRegistrar.getService(CyProperty.class, "(cyPropertyName=cytoscape3.props)").getProperties();

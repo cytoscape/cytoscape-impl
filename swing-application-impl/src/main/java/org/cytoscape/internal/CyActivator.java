@@ -62,6 +62,7 @@ import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.application.swing.ToolBarComponent;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.internal.actions.BookmarkAction;
+import org.cytoscape.internal.actions.CloseWindowAction;
 import org.cytoscape.internal.actions.CytoPanelAction;
 import org.cytoscape.internal.actions.DetachedViewToolBarAction;
 import org.cytoscape.internal.actions.ExitAction;
@@ -261,6 +262,8 @@ public class CyActivator extends AbstractCyActivator {
 		CytoPanelAction cytoPanelSouthWestAction = new CytoPanelAction(SOUTH_WEST, false, cytoscapeDesktop, 1.3f);
 		
 		DetachedViewToolBarAction detachedViewToolBarAction = new DetachedViewToolBarAction(1.4f, netViewMediator);
+		
+		CloseWindowAction closeWindowAction = new CloseWindowAction(6.1f, netViewMediator);
 
 		UndoMonitor undoMonitor = new UndoMonitor(undoSupportServiceRef,
 		                                          cytoscapePropertiesServiceRef);
@@ -291,6 +294,7 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc, cytoPanelEastAction, CyAction.class, new Properties());
 		registerService(bc, cytoPanelSouthWestAction, CyAction.class, new Properties());
 		registerService(bc, detachedViewToolBarAction, CyAction.class, new Properties());
+		registerService(bc, closeWindowAction, CyAction.class, new Properties());
 		registerService(bc, cyDesktopManager, CyNetworkViewDesktopMgr.class, new Properties());
 
 		Properties helpContentsTaskFactoryProps = new Properties();
@@ -334,8 +338,7 @@ public class CyActivator extends AbstractCyActivator {
 
 		Properties arrangeHorizontalTaskFactoryProps = new Properties();
 		arrangeHorizontalTaskFactoryProps.setProperty(ServiceProperties.ENABLE_FOR, "networkAndView");
-		arrangeHorizontalTaskFactoryProps.setProperty(PREFERRED_MENU,
-		                                              "View.Arrange Network Windows[8]");
+		arrangeHorizontalTaskFactoryProps.setProperty(PREFERRED_MENU, "View.Arrange Network Windows[8]");
 		arrangeHorizontalTaskFactoryProps.setProperty(TITLE, "Horizontal");
 		arrangeHorizontalTaskFactoryProps.setProperty(MENU_GRAVITY, "3.0");
 		registerService(bc, arrangeHorizontalTaskFactory, TaskFactory.class,
@@ -343,8 +346,7 @@ public class CyActivator extends AbstractCyActivator {
 
 		Properties arrangeVerticalTaskFactoryProps = new Properties();
 		arrangeVerticalTaskFactoryProps.setProperty(ServiceProperties.ENABLE_FOR, "networkAndView");
-		arrangeVerticalTaskFactoryProps.setProperty(PREFERRED_MENU,
-		                                            "View.Arrange Network Windows[8]");
+		arrangeVerticalTaskFactoryProps.setProperty(PREFERRED_MENU, "View.Arrange Network Windows[8]");
 		arrangeVerticalTaskFactoryProps.setProperty(TITLE, "Vertical");
 		arrangeVerticalTaskFactoryProps.setProperty(MENU_GRAVITY, "4.0");
 		registerService(bc, arrangeVerticalTaskFactory, TaskFactory.class,
