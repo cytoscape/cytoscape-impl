@@ -306,7 +306,11 @@ public class InstallAppsPanel extends JPanel {
 
         DefaultMutableTreeNode treeNode1 = new DefaultMutableTreeNode("root");
         DefaultMutableTreeNode treeNode2 = new DefaultMutableTreeNode("all apps (0)");
+        DefaultMutableTreeNode treeNode3 = new DefaultMutableTreeNode("collections (0)");
+        DefaultMutableTreeNode treeNode4 = new DefaultMutableTreeNode("apps by tag");
         treeNode1.add(treeNode2);
+        treeNode1.add(treeNode3);
+        treeNode1.add(treeNode4);
         tagsTree.setModel(new DefaultTreeModel(treeNode1));
         tagsTree.setFocusable(false);
         tagsTree.setRootVisible(false);
@@ -606,20 +610,19 @@ public class InstallAppsPanel extends JPanel {
     			+ " (" + availableApps.size() + ")");
     	root.add(allAppsTreeNode);
     	
+    	DefaultMutableTreeNode collectionsTreeNode = new DefaultMutableTreeNode("collections (0)");
+    	
     	DefaultMutableTreeNode appsByTagTreeNode = new DefaultMutableTreeNode("apps by tag");
     	
-    	// Only show the "apps by tag" node if we have at least 1 app
-    	if (availableApps.size() > 0) {
-    		root.add(appsByTagTreeNode);
-    	}
-    	
-    	DefaultMutableTreeNode treeNode = null;
     	for (final WebQuerier.AppTag appTag : sortedTags) {
-    		if (appTag.getCount() > 0) {
-    			treeNode = new DefaultMutableTreeNode(appTag);
-    			appsByTagTreeNode.add(treeNode);
-    		}
+    		if(appTag.getName().equals("collections"))
+    			collectionsTreeNode.setUserObject(appTag);
+    		else
+    			appsByTagTreeNode.add(new DefaultMutableTreeNode(appTag));
     	}
+
+    	root.add(collectionsTreeNode);
+    	root.add(appsByTagTreeNode);
     	
     	tagsTree.setModel(new DefaultTreeModel(root));
     	// tagsTree.expandRow(2);
