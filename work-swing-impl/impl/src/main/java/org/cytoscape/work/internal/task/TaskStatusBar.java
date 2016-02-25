@@ -26,13 +26,13 @@ import org.cytoscape.work.FinishStatus;
 import org.cytoscape.work.TaskMonitor.Level;
 import org.cytoscape.work.internal.tunables.utils.GUIDefaults;
 import org.cytoscape.work.internal.tunables.utils.GUIDefaults.TaskIcon;
-import org.cytoscape.work.swing.TaskStatusPanelFactory;
+import org.cytoscape.work.swing.StatusBarPanelFactory;
 
 /**
  * Manages the task's status bar's UI at the bottom of the Cytoscape desktop.
  */
 @SuppressWarnings("serial")
-public class TaskStatusBar extends JPanel implements TaskStatusPanelFactory {
+public class TaskStatusBar extends JPanel implements StatusBarPanelFactory {
 
 	public static final String TASK_HISTORY_CLICK = "task-history-click";
 

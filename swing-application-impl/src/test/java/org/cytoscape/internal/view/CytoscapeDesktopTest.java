@@ -18,7 +18,7 @@ import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.work.swing.DialogTaskManager;
-import org.cytoscape.work.swing.TaskStatusPanelFactory;
+import org.cytoscape.work.swing.StatusBarPanelFactory;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -33,7 +33,7 @@ public class CytoscapeDesktopTest {
 	@Mock CyShutdown shut;
 	@Mock CyEventHelper eh;
 	@Mock DialogTaskManager taskMgr;
-	@Mock TaskStatusPanelFactory taskStatusPanelFactory;
+	@Mock StatusBarPanelFactory taskStatusPanelFactory;
 	@Mock IconManager icoMgr;
 	
 	@Before
@@ -45,7 +45,7 @@ public class CytoscapeDesktopTest {
 		
 		CytoscapeMenus menus = new CytoscapeMenus(new CytoscapeMenuBar(), new CytoscapeToolBar());
 		
-		desktop = new CytoscapeDesktop(menus, netViewMediator, shut, eh, registrar, taskMgr, taskStatusPanelFactory, icoMgr);
+		desktop = new CytoscapeDesktop(menus, netViewMediator, shut, eh, registrar, taskMgr, icoMgr);
 	}
 	
 	@Test

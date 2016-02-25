@@ -51,16 +51,19 @@ public class GUICyJobMonitor extends AbstractTaskFactory implements CyJobHandler
 	final CyServiceRegistrar serviceRegistrar;
 	final ConcurrentMap<CyJob, CyJobStatus> statusMap;
 	final GUIJobDialog dialog;
+	final JobStatusBar statusBar;
 	final CyJobManagerImpl jobManager;
 
-	public GUICyJobMonitor(CyServiceRegistrar registrar, CyJobManagerImpl jobManager) {
+	public GUICyJobMonitor(CyServiceRegistrar registrar, CyJobManagerImpl jobManager, JobStatusBar statusBar) {
 		this.serviceRegistrar = registrar;
 		this.jobManager = jobManager;
+		this.statusBar = statusBar;
 		jobManager.setJobMonitor(this);
 		logger = Logger.getLogger(CyUserLog.NAME);
 		statusMap = new ConcurrentHashMap<>();
 		CySwingApplication swingApp = registrar.getService(CySwingApplication.class);
-		dialog = new GUIJobDialog(serviceRegistrar, swingApp, statusMap, jobManager);
+		dialog = new GUIJobDialog(serviceRegistrar, swingApp, statusMap, jobManager, this);
+		statusBar.setDialog(dialog);
 	}
 
 	public TaskIterator createTaskIterator() {
@@ -79,6 +82,7 @@ public class GUICyJobMonitor extends AbstractTaskFactory implements CyJobHandler
 
 		statusMap.put(job, status);
 		dialog.mapChanged();
+		statusBar.updateIcon(statusMap.values());
 
 		// Temporary - for debugging purposes
 		switch(stat) {
@@ -112,6 +116,10 @@ public class GUICyJobMonitor extends AbstractTaskFactory implements CyJobHandler
 				logger.info("JobManager: Job "+jobId+" is running");
 				break;
 		}
+	}
+
+	public void updateIcon() {
+		statusBar.updateIcon(statusMap.values());
 	}
 
 	// This isn't used by us.
