@@ -223,7 +223,7 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 		return networkView;
 	}
 	
-	private SimpleRootPaneContainer getVisualizationContainer() {
+	protected SimpleRootPaneContainer getVisualizationContainer() {
 		if (visualizationContainer == null) {
 			visualizationContainer = new SimpleRootPaneContainer();
 		}

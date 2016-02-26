@@ -896,12 +896,9 @@ public class NetworkViewMainPanel extends JPanel {
 	
 	private class MouseEventRedispatcher implements MouseListener, MouseMotionListener, MouseWheelListener {
 		
-		// MouseListener
-		@Override
-		public void mouseReleased(MouseEvent e) {
-			redispatchMouseEvent(e, e.getComponent());
-		}
+		private boolean dragging;
 
+		// MouseListener
 		@Override
 		public void mousePressed(MouseEvent e) {
 			redispatchMouseEvent(e, e.getComponent());
@@ -909,6 +906,12 @@ public class NetworkViewMainPanel extends JPanel {
 
 			if (target != null)
 				target.requestFocusInWindow();
+		}
+		
+		@Override
+		public void mouseReleased(MouseEvent e) {
+			redispatchMouseEvent(e, e.getComponent(), dragging == true);
+			dragging = false;
 		}
 
 		@Override
@@ -934,7 +937,8 @@ public class NetworkViewMainPanel extends JPanel {
 
 		@Override
 		public void mouseDragged(MouseEvent e) {
-			redispatchMouseEvent(e, e.getComponent());
+			dragging = true;
+			redispatchMouseEvent(e, e.getComponent(), true);
 		}
 
 		// MouseWheelListener
@@ -944,7 +948,12 @@ public class NetworkViewMainPanel extends JPanel {
 		}
 		
 		private void redispatchMouseEvent(final MouseEvent e, final Component source) {
-			final Container target = getTarget(source);
+			redispatchMouseEvent(e, source, false);
+		}
+		
+		private void redispatchMouseEvent(final MouseEvent e, final Component source,
+				final boolean constrainToVizContainerBounds) {
+			Container target = getTarget(source);
 			
 			if (target == null)
 				return;
@@ -952,28 +961,47 @@ public class NetworkViewMainPanel extends JPanel {
 			final Point glassPanePoint = e.getPoint();
 			Point containerPoint = SwingUtilities.convertPoint(source, glassPanePoint, target);
 
-			if (containerPoint.y >= 0) {
-				// The mouse event is probably over the content pane, so find out which component it's over
-				final Component comp = SwingUtilities.getDeepestComponentAt(target, containerPoint.x, containerPoint.y);
+			if (containerPoint.y < 0 && !constrainToVizContainerBounds)
+				return;
 				
-				if (comp != null) {
-					// Forward events over the check box.
-					final Point componentPoint = SwingUtilities.convertPoint(source, glassPanePoint, comp);
-					final MouseEvent newMouseEvent;
+			// The mouse event is probably over the content pane, so find out which component it's over
+			if (constrainToVizContainerBounds) {
+				// Workaround that allows mouse dragged and released to work when panning the view or
+				// drag-selecting nodes/edges
+				final SimpleRootPaneContainer vizContainer = getVisualizationContainer(source);
+				
+				if (vizContainer != null) {
+					if (containerPoint.x < vizContainer.getX())
+						containerPoint.x = vizContainer.getX();
+					else if (containerPoint.x > vizContainer.getX() + vizContainer.getWidth() - 1)
+						containerPoint.x = vizContainer.getX() + vizContainer.getWidth() - 1;
 					
-					if (e instanceof MouseWheelEvent) {
-						final MouseWheelEvent we = ((MouseWheelEvent) e);
-						
-						newMouseEvent = new MouseWheelEvent(comp, e.getID(), e.getWhen(), e.getModifiers(),
-								componentPoint.x, componentPoint.y, e.getClickCount(), e.isPopupTrigger(),
-								we.getScrollType(), we.getScrollAmount(), we.getWheelRotation());
-					} else {
-						newMouseEvent = new MouseEvent(comp, e.getID(), e.getWhen(), e.getModifiers(),
-								componentPoint.x, componentPoint.y, e.getClickCount(), e.isPopupTrigger());
-					}
-					
-					comp.dispatchEvent(newMouseEvent);
+					if (containerPoint.y < vizContainer.getY())
+						containerPoint.y = vizContainer.getY();
+					else if (containerPoint.y > vizContainer.getY() + vizContainer.getHeight() - 1)
+						containerPoint.y = vizContainer.getY() + vizContainer.getHeight() - 1;
 				}
+			}
+			
+			Component comp = SwingUtilities.getDeepestComponentAt(target, containerPoint.x, containerPoint.y);
+			
+			if (comp != null) {
+				// Forward events over the check box.
+				final Point componentPoint = SwingUtilities.convertPoint(source, glassPanePoint, comp);
+				final MouseEvent newMouseEvent;
+				
+				if (e instanceof MouseWheelEvent) {
+					final MouseWheelEvent we = ((MouseWheelEvent) e);
+					
+					newMouseEvent = new MouseWheelEvent(comp, e.getID(), e.getWhen(), e.getModifiers(),
+							componentPoint.x, componentPoint.y, e.getClickCount(), e.isPopupTrigger(),
+							we.getScrollType(), we.getScrollAmount(), we.getWheelRotation());
+				} else {
+					newMouseEvent = new MouseEvent(comp, e.getID(), e.getWhen(), e.getModifiers(),
+							componentPoint.x, componentPoint.y, e.getClickCount(), e.isPopupTrigger());
+				}
+				
+				comp.dispatchEvent(newMouseEvent);
 			}
 		}
 		
@@ -992,6 +1020,25 @@ public class NetworkViewMainPanel extends JPanel {
 			
 			if (vf != null)
 				return vf.getContainerRootPane().getContentPane();
+			
+			return null;
+		}
+		
+		private SimpleRootPaneContainer getVisualizationContainer(final Component source) {
+			final NetworkViewContainer vc = getParentContainer(source, NetworkViewContainer.class);
+			
+			if (vc != null) // View Mode (docked View)
+				return vc.getVisualizationContainer();
+			
+			final ViewPanel vp = getParentContainer(source, ViewPanel.class); // Compare mode
+			
+			if (vp != null)
+				return vp.getNetworkViewContainer().getVisualizationContainer();
+			
+			final NetworkViewFrame vf = getParentContainer(source, NetworkViewFrame.class); // Detached view
+			
+			if (vf != null)
+				return vf.getNetworkViewContainer().getVisualizationContainer();
 			
 			return null;
 		}
