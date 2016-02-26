@@ -24,7 +24,6 @@ public class CloseWindowAction extends AbstractCyAction {
 		
 		setPreferredMenu("File");
 		setMenuGravity(menuGravity);
-		insertSeparatorBefore = true;
 		
 		final int CTRL = LookAndFeelUtil.isMac() ? InputEvent.META_DOWN_MASK :  InputEvent.CTRL_DOWN_MASK;
 		setAcceleratorKeyStroke(KeyStroke.getKeyStroke(KeyEvent.VK_W, CTRL));
