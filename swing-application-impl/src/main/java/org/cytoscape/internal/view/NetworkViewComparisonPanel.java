@@ -124,6 +124,10 @@ public class NetworkViewComparisonPanel extends JPanel {
 			firePropertyChange("currentNetworkView", oldValue, newValue);
 		}
 	}
+	
+	public NetworkViewContainer getCurrentContainer() {
+		return getContainer1().getNetworkView().equals(getCurrentNetworkView()) ? getContainer1() : getContainer2();
+	}
 
 	public void update() {
 		getViewPanel1().update();

@@ -3,14 +3,16 @@ package org.cytoscape.internal.view;
 import static org.cytoscape.internal.util.ViewUtil.createUniqueKey;
 import static org.cytoscape.internal.util.ViewUtil.getTitle;
 
+import java.awt.AWTEvent;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Component;
-import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.GraphicsConfiguration;
-import java.awt.Point;
+import java.awt.KeyboardFocusManager;
+import java.awt.Toolkit;
 import java.awt.Window;
+import java.awt.event.AWTEventListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
@@ -22,10 +24,6 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.awt.event.MouseMotionListener;
-import java.awt.event.MouseWheelEvent;
-import java.awt.event.MouseWheelListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
@@ -49,7 +47,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
 import org.cytoscape.application.swing.CySwingApplication;
-import org.cytoscape.internal.view.NetworkViewComparisonPanel.ViewPanel;
 import org.cytoscape.internal.view.NetworkViewGrid.ThumbnailPanel;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
@@ -76,7 +73,7 @@ public class NetworkViewMainPanel extends JPanel {
 	
 	private NetworkViewFrame currentViewFrame;
 	
-	private final MouseEventRedispatcher mouseEventRedispatcher;
+	private final ComparisonModeAWTEventListener comparisonModeAWTEventListener;
 	
 	private final CytoscapeMenus cyMenus;
 	private final CyServiceRegistrar serviceRegistrar;
@@ -90,7 +87,7 @@ public class NetworkViewMainPanel extends JPanel {
 		comparisonPanels = new HashMap<>();
 		dirtyThumbnails = new HashSet<>();
 		
-		mouseEventRedispatcher = new MouseEventRedispatcher();
+		comparisonModeAWTEventListener = new ComparisonModeAWTEventListener();
 		
 		cardLayout = new CardLayout();
 		networkViewGrid = createNetworkViewGrid();
@@ -151,15 +148,14 @@ public class NetworkViewMainPanel extends JPanel {
 			public void focusLost(FocusEvent e) {
 				changeCurrentViewTitle(vc);
 				vc.requestFocusInWindow();
-				addMouseEventRedispatcher(mouseEventRedispatcher, vc.getGlassPane());
+				Toolkit.getDefaultToolkit().addAWTEventListener(comparisonModeAWTEventListener,
+						MouseEvent.MOUSE_EVENT_MASK);
 			}
 			@Override
 			public void focusGained(FocusEvent e) {
-				removeMouseEventRedispatcher(mouseEventRedispatcher, vc.getGlassPane());
+				Toolkit.getDefaultToolkit().removeAWTEventListener(comparisonModeAWTEventListener);
 			}
 		});
-		
-		addMouseEventRedispatcher(mouseEventRedispatcher, vc.getGlassPane());
 		
 		viewContainers.put(vc.getName(), vc);
 		networkViewGrid.addItem(vc.getRenderingEngine());
@@ -820,6 +816,8 @@ public class NetworkViewMainPanel extends JPanel {
 			}
 		});
 		
+		Toolkit.getDefaultToolkit().addAWTEventListener(comparisonModeAWTEventListener, MouseEvent.MOUSE_EVENT_MASK);
+		
 		// Update
 		showGrid();
 	}
@@ -882,179 +880,50 @@ public class NetworkViewMainPanel extends JPanel {
 		return views;
 	}
 	
-	private static void addMouseEventRedispatcher(final MouseEventRedispatcher redispatcher, final Component source) {
-		source.addMouseListener(redispatcher);
-		source.addMouseMotionListener(redispatcher);
-		source.addMouseWheelListener(redispatcher);
-	}
-	
-	private static void removeMouseEventRedispatcher(final MouseEventRedispatcher redispatcher, final Component source) {
-		source.removeMouseListener(redispatcher);
-		source.removeMouseMotionListener(redispatcher);
-		source.removeMouseWheelListener(redispatcher);
-	}
-	
-	private class MouseEventRedispatcher implements MouseListener, MouseMotionListener, MouseWheelListener {
+	private class ComparisonModeAWTEventListener implements AWTEventListener {
 		
-		private boolean dragging;
-
-		// MouseListener
-		@Override
-		public void mousePressed(MouseEvent e) {
-			redispatchMouseEvent(e, e.getComponent());
-			final Container target = getTarget(e.getComponent());
-
-			if (target != null)
-				target.requestFocusInWindow();
-		}
-		
-		@Override
-		public void mouseReleased(MouseEvent e) {
-			redispatchMouseEvent(e, e.getComponent(), dragging == true);
-			dragging = false;
-		}
-
-		@Override
-		public void mouseExited(MouseEvent e) {
-			redispatchMouseEvent(e, e.getComponent());
-		}
-
-		@Override
-		public void mouseEntered(MouseEvent e) {
-			redispatchMouseEvent(e, e.getComponent());
-		}
-
-		@Override
-		public void mouseClicked(MouseEvent e) {
-			redispatchMouseEvent(e, e.getComponent());
-		}
-
-		// MouseMotionListener
-		@Override
-		public void mouseMoved(MouseEvent e) {
-			redispatchMouseEvent(e, e.getComponent());
-		}
-
-		@Override
-		public void mouseDragged(MouseEvent e) {
-			dragging = true;
-			redispatchMouseEvent(e, e.getComponent(), true);
-		}
-
-		// MouseWheelListener
-		@Override
-		public void mouseWheelMoved(MouseWheelEvent e) {
-			redispatchMouseEvent(e, e.getComponent());
-		}
-		
-		private void redispatchMouseEvent(final MouseEvent e, final Component source) {
-			redispatchMouseEvent(e, source, false);
-		}
-		
-		private void redispatchMouseEvent(final MouseEvent e, final Component source,
-				final boolean constrainToVizContainerBounds) {
-			Container target = getTarget(source);
-			
-			if (target == null)
-				return;
-			
-			final Point glassPanePoint = e.getPoint();
-			Point containerPoint = SwingUtilities.convertPoint(source, glassPanePoint, target);
-
-			if (containerPoint.y < 0 && !constrainToVizContainerBounds)
-				return;
+        @Override
+        public void eventDispatched(AWTEvent event) {
+            if (event.getID() == MouseEvent.MOUSE_PRESSED && event instanceof MouseEvent) {
+				final KeyboardFocusManager keyboardFocusManager = KeyboardFocusManager.getCurrentKeyboardFocusManager();
+				final Window window = keyboardFocusManager.getActiveWindow();
 				
-			// The mouse event is probably over the content pane, so find out which component it's over
-			if (constrainToVizContainerBounds) {
-				// Workaround that allows mouse dragged and released to work when panning the view or
-				// drag-selecting nodes/edges
-				final SimpleRootPaneContainer vizContainer = getVisualizationContainer(source);
+				if (!(window instanceof NetworkViewFrame || window instanceof CytoscapeDesktop))
+					return;
 				
-				if (vizContainer != null) {
-					if (containerPoint.x < vizContainer.getX())
-						containerPoint.x = vizContainer.getX();
-					else if (containerPoint.x > vizContainer.getX() + vizContainer.getWidth() - 1)
-						containerPoint.x = vizContainer.getX() + vizContainer.getWidth() - 1;
-					
-					if (containerPoint.y < vizContainer.getY())
-						containerPoint.y = vizContainer.getY();
-					else if (containerPoint.y > vizContainer.getY() + vizContainer.getHeight() - 1)
-						containerPoint.y = vizContainer.getY() + vizContainer.getHeight() - 1;
-				}
-			}
-			
-			Component comp = SwingUtilities.getDeepestComponentAt(target, containerPoint.x, containerPoint.y);
-			
-			if (comp != null) {
-				// Forward events over the check box.
-				final Point componentPoint = SwingUtilities.convertPoint(source, glassPanePoint, comp);
-				final MouseEvent newMouseEvent;
-				
-				if (e instanceof MouseWheelEvent) {
-					final MouseWheelEvent we = ((MouseWheelEvent) e);
-					
-					newMouseEvent = new MouseWheelEvent(comp, e.getID(), e.getWhen(), e.getModifiers(),
-							componentPoint.x, componentPoint.y, e.getClickCount(), e.isPopupTrigger(),
-							we.getScrollType(), we.getScrollAmount(), we.getWheelRotation());
-				} else {
-					newMouseEvent = new MouseEvent(comp, e.getID(), e.getWhen(), e.getModifiers(),
-							componentPoint.x, componentPoint.y, e.getClickCount(), e.isPopupTrigger());
-				}
-				
-				comp.dispatchEvent(newMouseEvent);
-			}
-		}
-		
-		private Container getTarget(final Component source) {
-			final NetworkViewContainer vc = getParentContainer(source, NetworkViewContainer.class);
-			
-			if (vc != null) // View Mode (docked View)
-				return vc.getContentPane();
-			
-			final ViewPanel vp = getParentContainer(source, ViewPanel.class); // Compare mode
-			
-			if (vp != null)
-				return vp.getNetworkViewContainer().getContentPane();
-			
-			final NetworkViewFrame vf = getParentContainer(source, NetworkViewFrame.class); // Detached view
-			
-			if (vf != null)
-				return vf.getContainerRootPane().getContentPane();
-			
-			return null;
-		}
-		
-		private SimpleRootPaneContainer getVisualizationContainer(final Component source) {
-			final NetworkViewContainer vc = getParentContainer(source, NetworkViewContainer.class);
-			
-			if (vc != null) // View Mode (docked View)
-				return vc.getVisualizationContainer();
-			
-			final ViewPanel vp = getParentContainer(source, ViewPanel.class); // Compare mode
-			
-			if (vp != null)
-				return vp.getNetworkViewContainer().getVisualizationContainer();
-			
-			final NetworkViewFrame vf = getParentContainer(source, NetworkViewFrame.class); // Detached view
-			
-			if (vf != null)
-				return vf.getNetworkViewContainer().getVisualizationContainer();
-			
-			return null;
-		}
-		
-		@SuppressWarnings("unchecked")
-		private <T extends Container> T getParentContainer(Component c, Class<T> type) {
-			Container parent = c.getParent();
-			
-			while (parent != null) {
-				if (parent.getClass() == type)
-					return (T) parent;
-				
-				parent = parent.getParent();
-			}
-			
-			return null;
-		}
-	}
+				// Detect if a new view container received the mouse pressed event.
+				// If so, it must request focus.
+				MouseEvent me = (MouseEvent) event;
+                NetworkViewContainer vc = null;
+                Component target = null;
+                
+                // Find the view container to be verified
+                if (window instanceof NetworkViewFrame) {
+                	vc = ((NetworkViewFrame) window).getNetworkViewContainer();
+                	target = ((NetworkViewFrame) window).getContainerRootPane().getContentPane();
+                } else {
+                	final Component currentCard = getCurrentCard();
+                	
+                	if (currentCard instanceof NetworkViewContainer) {
+                		vc = (NetworkViewContainer) currentCard;
+                		target = vc.getContentPane();
+                	} else if (currentCard instanceof NetworkViewComparisonPanel) {
+                		// Get the view component which is not in focus
+                		final NetworkViewComparisonPanel cp = (NetworkViewComparisonPanel) currentCard;
+                		final NetworkViewContainer currentContainer = cp.getCurrentContainer();
+                		vc = currentContainer == cp.getContainer1() ? cp.getContainer2() : cp.getContainer1();
+                		target = vc.getContentPane();
+                	}
+                }
+                
+                if (target != null) {
+                	me = SwingUtilities.convertMouseEvent(me.getComponent(), me, target);
+                	
+                	// Received the mouse event? So it should get focus now.
+                	if (target.getBounds().contains(me.getPoint()))
+                		target.requestFocusInWindow();
+                }
+            }
+        }
+    }
 }
