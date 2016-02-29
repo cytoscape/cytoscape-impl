@@ -38,6 +38,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOCase;
@@ -229,9 +231,12 @@ public class AppManager implements FrameworkListener {
 	void attemptInitialization() {
 		synchronized (lock ) {
 			if (!isInitialized && startLevel.getStartLevel() >= APP_START_LEVEL) {
-				// Initialize the apps list and start apps
-				initializeApps();
-				isInitialized = true;
+				final ExecutorService service = Executors.newSingleThreadExecutor();
+				service.submit(()-> {
+					// Initialize the apps list and start apps
+					initializeApps();
+					isInitialized = true;
+				});
 			}
 		}
 	}
