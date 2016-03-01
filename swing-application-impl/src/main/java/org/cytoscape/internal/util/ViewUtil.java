@@ -2,6 +2,7 @@ package org.cytoscape.internal.util;
 
 import java.awt.Dimension;
 import java.awt.Font;
+import java.util.Properties;
 
 import javax.swing.AbstractButton;
 import javax.swing.SwingUtilities;
@@ -12,6 +13,7 @@ import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.subnetwork.CySubNetwork;
+import org.cytoscape.property.CyProperty;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
@@ -19,6 +21,10 @@ import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 
 public final class ViewUtil {
 
+	public static final String CY_PROPERTY_NAME = "(cyPropertyName=cytoscape3.props)";
+	public static final String SHOW_NODE_EDGE_COUNT_KEY = "showNodeEdgeCount";
+	public static final String SHOW_NETWORK_PROVENANCE_HIERARCHY_KEY = "showNetworkProvenanceHierarchy";
+	
 	public static final String PARENT_NETWORK_COLUMN = "__parentNetwork.SUID";
 	
 	public static String getName(final CyNetwork network) {
@@ -98,6 +104,25 @@ public final class ViewUtil {
 		
 		final Dimension d = btn.getPreferredSize();
 		btn.setPreferredSize(new Dimension(d.width + 10, d.height + 5));
+	}
+	
+	public static String getViewProperty(final String key, final CyServiceRegistrar serviceRegistrar) {
+		return getViewProperty(key, null, serviceRegistrar);
+	}
+	
+	@SuppressWarnings("unchecked")
+	public static String getViewProperty(final String key, final String defaultValue,
+			final CyServiceRegistrar serviceRegistrar) {
+		final CyProperty<Properties> cyProps = serviceRegistrar.getService(CyProperty.class, CY_PROPERTY_NAME);
+
+		return cyProps.getProperties().getProperty(key, defaultValue);
+	}
+
+	@SuppressWarnings("unchecked")
+	public static void setViewProperty(final String key, final String value,
+			final CyServiceRegistrar serviceRegistrar) {
+		final CyProperty<Properties> cyProps = serviceRegistrar.getService(CyProperty.class, CY_PROPERTY_NAME);
+		cyProps.getProperties().setProperty(key, value);
 	}
 	
 	/**

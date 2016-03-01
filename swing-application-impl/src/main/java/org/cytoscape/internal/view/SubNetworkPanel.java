@@ -35,9 +35,14 @@ public class SubNetworkPanel extends AbstractNetworkPanel<CySubNetwork> {
 	private JLabel edgeCountLabel;
 	
 	private int depth;
+	private boolean showIndentation;
 	
-	public SubNetworkPanel(final SubNetworkPanelModel model, final CyServiceRegistrar serviceRegistrar) {
+	public SubNetworkPanel(final SubNetworkPanelModel model, final boolean showIndentation,
+			final CyServiceRegistrar serviceRegistrar) {
 		super(model, serviceRegistrar);
+		
+		if (showIndentation != this.showIndentation)
+			setShowIndentation(showIndentation);
 	}
 	
 	public int getDepth() {
@@ -63,6 +68,16 @@ public class SubNetworkPanel extends AbstractNetworkPanel<CySubNetwork> {
 		}
 		
 		return false;
+	}
+	
+	public void setShowIndentation(final boolean newValue) {
+		if (newValue != showIndentation) {
+			final boolean oldValue = showIndentation;
+			showIndentation = newValue;
+			updateIndentation();
+			repaint();
+			firePropertyChange("showIndentation", oldValue, newValue);
+		}
 	}
 	
 	@Override
@@ -91,6 +106,7 @@ public class SubNetworkPanel extends AbstractNetworkPanel<CySubNetwork> {
 		updateCurrentLabel();
 		updateIndentation();
 		updateCountLabels();
+		repaint();
 	}
 	
 	private void updateViewIconLabel() {
@@ -108,7 +124,8 @@ public class SubNetworkPanel extends AbstractNetworkPanel<CySubNetwork> {
 	}
 	
 	protected void updateIndentation() {
-		final Dimension d = new Dimension(depth * INDENT_WIDTH, getIndentLabel().getPreferredSize().height);
+		final int indent = showIndentation ? depth * INDENT_WIDTH : 0;
+		final Dimension d = new Dimension(indent, getIndentLabel().getPreferredSize().height);
 		getIndentLabel().setPreferredSize(d);
 		getIndentLabel().setMinimumSize(d);
 		getIndentLabel().setMaximumSize(d);

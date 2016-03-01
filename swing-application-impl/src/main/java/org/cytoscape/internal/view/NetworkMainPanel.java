@@ -71,6 +71,7 @@ import org.cytoscape.application.swing.CyAction;
 import org.cytoscape.application.swing.CytoPanelComponent2;
 import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.internal.task.TaskFactoryTunableAction;
+import org.cytoscape.internal.util.ViewUtil;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyTable;
@@ -176,8 +177,6 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, Net
 	private AbstractNetworkPanel<?> selectionHead;
 	private AbstractNetworkPanel<?> selectionTail;
 	private AbstractNetworkPanel<?> lastSelected;
-	
-	private boolean showNodeEdgeCount = false;  // TODO Use CyProperty (user preference only)
 	
 	private boolean loadingSession;
 	private boolean ignoreSelectionEvents;
@@ -372,17 +371,25 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, Net
 		final JPopupMenu menu = new JPopupMenu();
 		
 		{
+			final JMenuItem mi = new JCheckBoxMenuItem("Show Network Provenance Hierarchy");
+			mi.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					setShowNetworkProvenanceHierarchy(mi.isSelected());
+				}
+			});
+			mi.setSelected(isShowNetworkProvenanceHierarchy());
+			menu.add(mi);
+		}
+		{
 			final JMenuItem mi = new JCheckBoxMenuItem("Show Number of Nodes and edges");
 			mi.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					showNodeEdgeCount = mi.isSelected();
-					
-					for (final RootNetworkPanel item : getRootNetworkListPanel().getAllItems())
-						item.setShowNodeEdgeCount(mi.isSelected());
+					setShowNodeEdgeCount(mi.isSelected());
 				}
 			});
-			mi.setSelected(showNodeEdgeCount);
+			mi.setSelected(isShowNodeEdgeCount());
 			menu.add(mi);
 		}
 		
@@ -554,6 +561,29 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, Net
 		
 		popupActionMap.remove(action);
 		popup.removePopupMenuListener(action);
+	}
+	
+	public boolean isShowNodeEdgeCount() {
+		return "true".equalsIgnoreCase(ViewUtil.getViewProperty(ViewUtil.SHOW_NODE_EDGE_COUNT_KEY, serviceRegistrar));
+	}
+	
+	public void setShowNodeEdgeCount(final boolean b) {
+		for (final RootNetworkPanel item : getRootNetworkListPanel().getAllItems())
+			item.setShowNodeEdgeCount(b);
+		
+		ViewUtil.setViewProperty(ViewUtil.SHOW_NODE_EDGE_COUNT_KEY, "" + b, serviceRegistrar);
+	}
+	
+	public boolean isShowNetworkProvenanceHierarchy() {
+		return "true".equalsIgnoreCase(
+				ViewUtil.getViewProperty(ViewUtil.SHOW_NETWORK_PROVENANCE_HIERARCHY_KEY, serviceRegistrar));
+	}
+	
+	public void setShowNetworkProvenanceHierarchy(final boolean b) {
+		for (final RootNetworkPanel item : getRootNetworkListPanel().getAllItems())
+			item.setShowIndentation(b);
+		
+		ViewUtil.setViewProperty(ViewUtil.SHOW_NETWORK_PROVENANCE_HIERARCHY_KEY, "" + b, serviceRegistrar);
 	}
 
 	// // Event handlers // //
@@ -1363,7 +1393,8 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, Net
 		RootNetworkPanel addItem(final CyRootNetwork rootNetwork) {
 			if (!items.containsKey(rootNetwork)) {
 				final RootNetworkPanelModel model = new RootNetworkPanelModel(rootNetwork, serviceRegistrar);
-				final RootNetworkPanel rootNetworkPanel = new RootNetworkPanel(model, showNodeEdgeCount, serviceRegistrar);
+				final RootNetworkPanel rootNetworkPanel = new RootNetworkPanel(model, isShowNodeEdgeCount(),
+						isShowNetworkProvenanceHierarchy(), serviceRegistrar);
 				rootNetworkPanel.setAlignmentX(LEFT_ALIGNMENT);
 				
 				rootNetworkPanel.addComponentListener(new ComponentAdapter() {
