@@ -860,7 +860,6 @@ public class CyActivator extends AbstractCyActivator {
 		destroyNetworkViewTaskFactoryProps.setProperty(PREFERRED_MENU,"Edit");
 		destroyNetworkViewTaskFactoryProps.setProperty(ENABLE_FOR,ENABLE_FOR_NETWORK_AND_VIEW);
 		destroyNetworkViewTaskFactoryProps.setProperty(TITLE,"Destroy Views");
-		destroyNetworkViewTaskFactoryProps.setProperty(IN_NETWORK_PANEL_CONTEXT_MENU,"true");
 		destroyNetworkViewTaskFactoryProps.setProperty(MENU_GRAVITY,"3.1");
 		destroyNetworkViewTaskFactoryProps.setProperty(COMMAND,"destroy");
 		destroyNetworkViewTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"view");

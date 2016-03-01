@@ -168,8 +168,8 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, Net
 	
 	private HashMap<JMenuItem, Double> actionGravityMap = new HashMap<>();
 	private final Map<Object, TaskFactory> provisionerMap = new HashMap<>();
-	private final Map<TaskFactory, JMenuItem> popupMap = new WeakHashMap<>();
-	private final Map<TaskFactory, CyAction> popupActions = new WeakHashMap<>();
+	private final Map<Object, JMenuItem> popupMap = new WeakHashMap<>();
+	private final Map<Object, CyAction> popupActionMap = new WeakHashMap<>();
 	private final Map<CyTable, CyNetwork> nameTables = new WeakHashMap<>();
 	private final Map<CyTable, CyNetwork> nodeEdgeTables = new WeakHashMap<>();
 
@@ -541,6 +541,20 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, Net
 	public void removeNetworkViewTaskFactory(NetworkViewTaskFactory factory, Map<?, ?> props) {
 		removeFactory(provisionerMap.remove(factory));
 	}
+	
+	public void addCyAction(final CyAction action, Map<?, ?> props) {
+		addAction(action);
+	}
+	
+	public void removeCyAction(final CyAction action, Map<?, ?> props) {
+		final JMenuItem item = popupMap.remove(action);
+		
+		if (item != null)
+			popup.remove(item);
+		
+		popupActionMap.remove(action);
+		popup.removePopupMenuListener(action);
+	}
 
 	// // Event handlers // //
 	
@@ -811,7 +825,19 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, Net
 		actionGravityMap.put(item, gravity);
 		
 		popupMap.put(factory, item);
-		popupActions.put(factory, action);
+		popupActionMap.put(factory, action);
+		int menuIndex = getMenuIndexByGravity(item);
+		popup.insert(item, menuIndex);
+		popup.addPopupMenuListener(action);
+	}
+	
+	private void addAction(final CyAction action) {
+		final JMenuItem item = new JMenuItem(action);
+		final double gravity = action.getMenuGravity();
+		actionGravityMap.put(item, gravity);
+		
+		popupMap.put(action, item);
+		popupActionMap.put(action, action);
 		int menuIndex = getMenuIndexByGravity(item);
 		popup.insert(item, menuIndex);
 		popup.addPopupMenuListener(action);
@@ -847,12 +873,12 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, Net
 	}
 	
 	private void removeFactory(TaskFactory factory) {
-		JMenuItem item = popupMap.remove(factory);
+		final JMenuItem item = popupMap.remove(factory);
 		
 		if (item != null)
 			popup.remove(item);
 		
-		CyAction action = popupActions.remove(factory);
+		final CyAction action = popupActionMap.remove(factory);
 		
 		if (action != null)
 			popup.removePopupMenuListener(action);
@@ -1447,7 +1473,7 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, Net
 			
 			if (network instanceof CySubNetwork) {
 				// Enable or disable the actions
-				for (CyAction action : popupActions.values())
+				for (CyAction action : popupActionMap.values())
 					action.updateEnableState();
 
 				// Show popup menu

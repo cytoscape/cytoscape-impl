@@ -1,29 +1,6 @@
 package org.cytoscape.internal;
 
-/*
- * #%L
- * Cytoscape Swing Application Impl (swing-application-impl)
- * $Id:$
- * $HeadURL:$
- * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * #L%
- */
-
+import static org.cytoscape.application.swing.ActionEnableSupport.ENABLE_FOR_NETWORK_AND_VIEW;
 import static org.cytoscape.application.swing.CyNetworkViewDesktopMgr.ArrangeType.CASCADE;
 import static org.cytoscape.application.swing.CyNetworkViewDesktopMgr.ArrangeType.GRID;
 import static org.cytoscape.application.swing.CyNetworkViewDesktopMgr.ArrangeType.HORIZONTAL;
@@ -33,6 +10,7 @@ import static org.cytoscape.application.swing.CytoPanelName.SOUTH;
 import static org.cytoscape.application.swing.CytoPanelName.SOUTH_WEST;
 import static org.cytoscape.application.swing.CytoPanelName.WEST;
 import static org.cytoscape.work.ServiceProperties.ACCELERATOR;
+import static org.cytoscape.work.ServiceProperties.IN_NETWORK_PANEL_CONTEXT_MENU;
 import static org.cytoscape.work.ServiceProperties.MENU_GRAVITY;
 import static org.cytoscape.work.ServiceProperties.PREFERRED_MENU;
 import static org.cytoscape.work.ServiceProperties.TITLE;
@@ -64,6 +42,7 @@ import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.internal.actions.BookmarkAction;
 import org.cytoscape.internal.actions.CloseWindowAction;
 import org.cytoscape.internal.actions.CytoPanelAction;
+import org.cytoscape.internal.actions.DestroyNetworkViewsAction;
 import org.cytoscape.internal.actions.DetachedViewToolBarAction;
 import org.cytoscape.internal.actions.ExitAction;
 import org.cytoscape.internal.actions.FullScreenAction;
@@ -135,6 +114,30 @@ import org.cytoscape.work.swing.undo.SwingUndoSupport;
 import org.osgi.framework.BundleContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+/*
+ * #%L
+ * Cytoscape Swing Application Impl (swing-application-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
 
 /**
  *
@@ -259,8 +262,8 @@ public class CyActivator extends AbstractCyActivator {
 		CytoPanelAction cytoPanelSouthWestAction = new CytoPanelAction(SOUTH_WEST, false, cytoscapeDesktop, 1.3f);
 		
 		DetachedViewToolBarAction detachedViewToolBarAction = new DetachedViewToolBarAction(1.4f, netViewMediator);
-		
 		CloseWindowAction closeWindowAction = new CloseWindowAction(6.1f, netViewMediator);
+		DestroyNetworkViewsAction destroyNetworkViewsAction = new DestroyNetworkViewsAction(3.0f, cyServiceRegistrarServiceRef);
 
 		UndoMonitor undoMonitor = new UndoMonitor(undoSupportServiceRef,
 		                                          cytoscapePropertiesServiceRef);
@@ -317,7 +320,7 @@ public class CyActivator extends AbstractCyActivator {
 
 		
 		Properties arrangeGridTaskFactoryProps = new Properties();
-		arrangeGridTaskFactoryProps.setProperty(ServiceProperties.ENABLE_FOR, "networkAndView");
+		arrangeGridTaskFactoryProps.setProperty(ServiceProperties.ENABLE_FOR, ENABLE_FOR_NETWORK_AND_VIEW);
 		arrangeGridTaskFactoryProps.setProperty(ACCELERATOR,"cmd g");
 		arrangeGridTaskFactoryProps.setProperty(PREFERRED_MENU, "View.Arrange Network Windows[8]");
 		arrangeGridTaskFactoryProps.setProperty(TITLE, "Grid");
@@ -325,7 +328,7 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc, arrangeGridTaskFactory, TaskFactory.class, arrangeGridTaskFactoryProps);
 
 		Properties arrangeCascadeTaskFactoryProps = new Properties();
-		arrangeCascadeTaskFactoryProps.setProperty(ServiceProperties.ENABLE_FOR, "networkAndView");
+		arrangeCascadeTaskFactoryProps.setProperty(ServiceProperties.ENABLE_FOR, ENABLE_FOR_NETWORK_AND_VIEW);
 		arrangeCascadeTaskFactoryProps.setProperty(PREFERRED_MENU,
 		                                           "View.Arrange Network Windows[8]");
 		arrangeCascadeTaskFactoryProps.setProperty(TITLE, "Cascade");
@@ -334,7 +337,7 @@ public class CyActivator extends AbstractCyActivator {
 		                arrangeCascadeTaskFactoryProps);
 
 		Properties arrangeHorizontalTaskFactoryProps = new Properties();
-		arrangeHorizontalTaskFactoryProps.setProperty(ServiceProperties.ENABLE_FOR, "networkAndView");
+		arrangeHorizontalTaskFactoryProps.setProperty(ServiceProperties.ENABLE_FOR, ENABLE_FOR_NETWORK_AND_VIEW);
 		arrangeHorizontalTaskFactoryProps.setProperty(PREFERRED_MENU, "View.Arrange Network Windows[8]");
 		arrangeHorizontalTaskFactoryProps.setProperty(TITLE, "Horizontal");
 		arrangeHorizontalTaskFactoryProps.setProperty(MENU_GRAVITY, "3.0");
@@ -342,12 +345,16 @@ public class CyActivator extends AbstractCyActivator {
 		                arrangeHorizontalTaskFactoryProps);
 
 		Properties arrangeVerticalTaskFactoryProps = new Properties();
-		arrangeVerticalTaskFactoryProps.setProperty(ServiceProperties.ENABLE_FOR, "networkAndView");
+		arrangeVerticalTaskFactoryProps.setProperty(ServiceProperties.ENABLE_FOR, ENABLE_FOR_NETWORK_AND_VIEW);
 		arrangeVerticalTaskFactoryProps.setProperty(PREFERRED_MENU, "View.Arrange Network Windows[8]");
 		arrangeVerticalTaskFactoryProps.setProperty(TITLE, "Vertical");
 		arrangeVerticalTaskFactoryProps.setProperty(MENU_GRAVITY, "4.0");
 		registerService(bc, arrangeVerticalTaskFactory, TaskFactory.class,
 		                arrangeVerticalTaskFactoryProps);
+		
+		Properties destroyNetworkViewsActionProps = new Properties();
+		destroyNetworkViewsActionProps.setProperty(IN_NETWORK_PANEL_CONTEXT_MENU, "true");
+		registerAllServices(bc, destroyNetworkViewsAction, destroyNetworkViewsActionProps);
 		
 		registerAllServices(bc, cytoscapeDesktop, new Properties());
 		registerAllServices(bc, netMainPanel, new Properties());
@@ -392,16 +399,15 @@ public class CyActivator extends AbstractCyActivator {
 		registerServiceListener(bc, settingsAction, "addLayout", "removeLayout", CyLayoutAlgorithm.class);
 		
 		// For Network Panel context menu
-		registerServiceListener(bc, netMainPanel, "addNetworkViewTaskFactory",
-		                        "removeNetworkViewTaskFactory", NetworkViewTaskFactory.class, CONTEXT_MENU_FILTER);
-		registerServiceListener(bc, netMainPanel, "addNetworkTaskFactory",
-		                        "removeNetworkTaskFactory", NetworkTaskFactory.class, CONTEXT_MENU_FILTER);
-		registerServiceListener(bc, netMainPanel, "addNetworkViewCollectionTaskFactory",
-		                        "removeNetworkViewCollectionTaskFactory",
+		registerServiceListener(bc, netMainPanel, "addNetworkViewTaskFactory", "removeNetworkViewTaskFactory",
+				                NetworkViewTaskFactory.class, CONTEXT_MENU_FILTER);
+		registerServiceListener(bc, netMainPanel, "addNetworkTaskFactory", "removeNetworkTaskFactory",
+				                NetworkTaskFactory.class, CONTEXT_MENU_FILTER);
+		registerServiceListener(bc, netMainPanel, "addNetworkViewCollectionTaskFactory", "removeNetworkViewCollectionTaskFactory",
 		                        NetworkViewCollectionTaskFactory.class, CONTEXT_MENU_FILTER);
-		registerServiceListener(bc, netMainPanel, "addNetworkCollectionTaskFactory",
-		                        "removeNetworkCollectionTaskFactory",
+		registerServiceListener(bc, netMainPanel, "addNetworkCollectionTaskFactory", "removeNetworkCollectionTaskFactory",
 		                        NetworkCollectionTaskFactory.class, CONTEXT_MENU_FILTER);
+		registerServiceListener(bc, netMainPanel, "addCyAction", "removeCyAction", CyAction.class, CONTEXT_MENU_FILTER);
 		
 		registerServiceListener(bc, configDirPropertyWriter, "addCyProperty", "removeCyProperty",
 		                        CyProperty.class);
