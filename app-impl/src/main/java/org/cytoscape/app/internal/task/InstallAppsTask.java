@@ -30,7 +30,7 @@ public class InstallAppsTask extends AbstractTask {
 				taskMonitor.setStatusMessage("Installing " + appToInstall.getAppName());
 			
 			appManager.installApp(appToInstall);
-			if(appToReplace != null)
+			if(appToReplace != null && !appToInstall.getVersion().equals(appToReplace.getVersion()))
 				appManager.uninstallApp(appToReplace);
 		}
 
