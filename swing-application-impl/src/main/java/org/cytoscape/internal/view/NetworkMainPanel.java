@@ -66,8 +66,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
 import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.application.events.SetCurrentNetworkEvent;
-import org.cytoscape.application.events.SetCurrentNetworkListener;
 import org.cytoscape.application.swing.CyAction;
 import org.cytoscape.application.swing.CytoPanelComponent2;
 import org.cytoscape.application.swing.CytoPanelName;
@@ -150,7 +148,7 @@ import org.slf4j.LoggerFactory;
 public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, NetworkAddedListener,
 		NetworkViewAddedListener, NetworkAboutToBeDestroyedListener, NetworkDestroyedListener,
 		NetworkViewDestroyedListener, RowsSetListener, AddedNodesListener, AddedEdgesListener, RemovedEdgesListener,
-		SetCurrentNetworkListener, RemovedNodesListener, SessionAboutToBeLoadedListener, SessionLoadedListener {
+		RemovedNodesListener, SessionAboutToBeLoadedListener, SessionLoadedListener {
 
 	public static final float ICON_FONT_SIZE = 22.0f;
 	
@@ -237,7 +235,7 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, Net
 		updateNetworkToolBar();
 	}
 	
-	private JScrollPane getRootNetworkScroll() {
+	JScrollPane getRootNetworkScroll() {
 		if (rootNetworkScroll == null) {
 			rootNetworkScroll = new JScrollPane(getRootNetworkListPanel());
 			rootNetworkScroll.addComponentListener(new ComponentAdapter() {
@@ -251,7 +249,7 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, Net
 		return rootNetworkScroll;
 	}
 	
-	private RootNetworkListPanel getRootNetworkListPanel() {
+	RootNetworkListPanel getRootNetworkListPanel() {
 		if (rootNetworkListPanel == null) {
 			rootNetworkListPanel = new RootNetworkListPanel();
 			setKeyBindings(rootNetworkListPanel);
@@ -588,6 +586,25 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, Net
 		
 		ViewUtil.setViewProperty(ViewUtil.SHOW_NETWORK_PROVENANCE_HIERARCHY_KEY, "" + b, serviceRegistrar);
 	}
+	
+	public void scrollTo(final CyNetwork network) {
+		final AbstractNetworkPanel<?> target;
+		
+		if (network instanceof CySubNetwork)
+			target = getSubNetworkPanel(network);
+		else
+			target = getRootNetworkPanel(network);
+		
+		if (target != null) {
+			if (target instanceof SubNetworkPanel) {
+				final RootNetworkPanel rnp = getRootNetworkPanel(
+						((SubNetworkPanel) target).getModel().getNetwork().getRootNetwork());
+				rnp.expand();
+			}
+			
+			((JComponent) target.getParent()).scrollRectToVisible(target.getBounds());
+		}
+	}
 
 	// // Event handlers // //
 	
@@ -714,11 +731,6 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, Net
 		});
 	}
 	
-	@Override
-	public void handleEvent(final SetCurrentNetworkEvent e) {
-		getRootNetworkListPanel().update();
-	}
-	
 	// // Private Methods // //
 	
 	private SubNetworkPanel addNetwork(final CySubNetwork network) {
@@ -778,7 +790,7 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, Net
 		
 		// Scroll to new item
 		rootNetPanel.expand();
-		getRootNetworkScroll().scrollRectToVisible(subNetPanel.getBounds());
+		scrollTo(network);
 		subNetPanel.requestFocus();
 		
 		nameTables.put(network.getDefaultNetworkTable(), network);
@@ -940,14 +952,14 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, Net
 		return index >= 0 && index < allItems.size() - 1 ? allItems.get(index + 1) : null;
 	}
 	
-	private RootNetworkPanel getRootNetworkPanel(final CyNetwork net) {
+	RootNetworkPanel getRootNetworkPanel(final CyNetwork net) {
 		if (net instanceof CyRootNetwork)
 			return getRootNetworkListPanel().getItem((CyRootNetwork) net);
 		
 		return null;
 	}
 	
-	private SubNetworkPanel getSubNetworkPanel(final CyNetwork net) {
+	SubNetworkPanel getSubNetworkPanel(final CyNetwork net) {
 		if (net instanceof CySubNetwork) {
 			final CySubNetwork subNet = (CySubNetwork) net;
 			final CyRootNetwork rootNet = subNet.getRootNetwork();
@@ -1058,7 +1070,7 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, Net
 		lastSelected = selectionHead = selectionTail = null;
 	}
 	
-	private List<AbstractNetworkPanel<?>> getAllItems(final boolean includeInvisible) {
+	List<AbstractNetworkPanel<?>> getAllItems(final boolean includeInvisible) {
 		final ArrayList<AbstractNetworkPanel<?>> list = new ArrayList<>();
 		
 		for (final RootNetworkPanel item : getRootNetworkListPanel().getAllItems()) {
@@ -1071,7 +1083,7 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, Net
 		return list;
 	}
 	
-	private List<AbstractNetworkPanel<?>> getSelectedItems() {
+	List<AbstractNetworkPanel<?>> getSelectedItems() {
 		final List<AbstractNetworkPanel<?>> items = getAllItems(true);
 		final Iterator<AbstractNetworkPanel<?>> iterator = items.iterator();
 		
@@ -1125,7 +1137,7 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, Net
 		selectionTail = null;
 	}
 	
-	private List<SubNetworkPanel> getAllSubNetworkItems() {
+	List<SubNetworkPanel> getAllSubNetworkItems() {
 		final ArrayList<SubNetworkPanel> list = new ArrayList<>();
 		
 		for (final RootNetworkPanel item : getRootNetworkListPanel().getAllItems())
@@ -1134,7 +1146,7 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, Net
 		return list;
 	}
 	
-	private Collection<RootNetworkPanel> getSelectedRootNetworkItems() {
+	Collection<RootNetworkPanel> getSelectedRootNetworkItems() {
 		final ArrayList<RootNetworkPanel> list = new ArrayList<>();
 		
 		for (final RootNetworkPanel rnp : getRootNetworkListPanel().getAllItems()) {
@@ -1145,7 +1157,7 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, Net
 		return list;
 	}
 	
-	private Collection<SubNetworkPanel> getSelectedSubNetworkItems() {
+	Collection<SubNetworkPanel> getSelectedSubNetworkItems() {
 		final ArrayList<SubNetworkPanel> list = new ArrayList<>();
 		
 		for (final SubNetworkPanel snp : getAllSubNetworkItems()) {
@@ -1156,7 +1168,7 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, Net
 		return list;
 	}
 	
-	private int getSubNetworkCount() {
+	int getSubNetworkCount() {
 		int count = 0;
 		
 		for (final RootNetworkPanel item : getRootNetworkListPanel().getAllItems())
@@ -1165,7 +1177,7 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, Net
 		return count;
 	}
 	
-	private int getSelectedSubNetworkCount() {
+	int getSelectedSubNetworkCount() {
 		return getSelectedSubNetworkItems().size();
 	}
 	
@@ -1337,7 +1349,7 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, Net
 	
 	// // Private Classes // //
 	
-	private class RootNetworkListPanel extends JPanel implements Scrollable {
+	class RootNetworkListPanel extends JPanel implements Scrollable {
 		
 		private final JPanel filler = new JPanel();
 		private boolean scrollableTracksViewportHeight;

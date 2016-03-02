@@ -15,6 +15,8 @@ import javax.swing.JFrame;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.events.CyStartEvent;
 import org.cytoscape.application.events.CyStartListener;
+import org.cytoscape.application.events.SetCurrentNetworkEvent;
+import org.cytoscape.application.events.SetCurrentNetworkListener;
 import org.cytoscape.application.events.SetSelectedNetworkViewsEvent;
 import org.cytoscape.application.events.SetSelectedNetworkViewsListener;
 import org.cytoscape.application.events.SetSelectedNetworksEvent;
@@ -35,7 +37,7 @@ import org.cytoscape.view.model.CyNetworkViewManager;
  * that makes sense to the end user.
  */
 public class NetworkSelectionMediator implements SetSelectedNetworksListener, SetSelectedNetworkViewsListener,
-		SessionAboutToBeLoadedListener, SessionLoadedListener, CyStartListener {
+		SetCurrentNetworkListener, SessionAboutToBeLoadedListener, SessionLoadedListener, CyStartListener {
 
 	private boolean loadingSession;
 	private boolean ignoreNetworkSelectionEvents;
@@ -150,6 +152,19 @@ public class NetworkSelectionMediator implements SetSelectedNetworksListener, Se
 	@Override
 	public void handleEvent(final SessionLoadedEvent e) {
 		loadingSession = false;
+	}
+	
+	@Override
+	public void handleEvent(final SetCurrentNetworkEvent e) {
+		netMainPanel.getRootNetworkListPanel().update();
+		
+		if (e.getNetwork() != null) {
+			netMainPanel.scrollTo(e.getNetwork());
+			final SubNetworkPanel subNetPanel = netMainPanel.getSubNetworkPanel(e.getNetwork());
+			
+			if (subNetPanel != null)
+				subNetPanel.requestFocus();
+		}
 	}
 	
 	@Override
