@@ -40,6 +40,7 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.swing.BorderFactory;
+import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JMenuBar;
 import javax.swing.JPanel;
@@ -73,7 +74,7 @@ public class NetworkViewMainPanel extends JPanel {
 	
 	private NetworkViewFrame currentViewFrame;
 	
-	private final ComparisonModeAWTEventListener comparisonModeAWTEventListener;
+	private final MousePressedAWTEventListener mousePressedAWTEventListener;
 	
 	private final CytoscapeMenus cyMenus;
 	private final CyServiceRegistrar serviceRegistrar;
@@ -87,7 +88,7 @@ public class NetworkViewMainPanel extends JPanel {
 		comparisonPanels = new HashMap<>();
 		dirtyThumbnails = new HashSet<>();
 		
-		comparisonModeAWTEventListener = new ComparisonModeAWTEventListener();
+		mousePressedAWTEventListener = new MousePressedAWTEventListener();
 		
 		cardLayout = new CardLayout();
 		networkViewGrid = createNetworkViewGrid();
@@ -148,12 +149,12 @@ public class NetworkViewMainPanel extends JPanel {
 			public void focusLost(FocusEvent e) {
 				changeCurrentViewTitle(vc);
 				vc.requestFocusInWindow();
-				Toolkit.getDefaultToolkit().addAWTEventListener(comparisonModeAWTEventListener,
+				Toolkit.getDefaultToolkit().addAWTEventListener(mousePressedAWTEventListener,
 						MouseEvent.MOUSE_EVENT_MASK);
 			}
 			@Override
 			public void focusGained(FocusEvent e) {
-				Toolkit.getDefaultToolkit().removeAWTEventListener(comparisonModeAWTEventListener);
+				Toolkit.getDefaultToolkit().removeAWTEventListener(mousePressedAWTEventListener);
 			}
 		});
 		
@@ -261,8 +262,10 @@ public class NetworkViewMainPanel extends JPanel {
 				showGrid();
 			} else {
 				if (isGridMode()) {
-					if (networkViewGrid.getCurrentItem() != null)
-						networkViewGrid.scrollRectToVisible(networkViewGrid.getCurrentItem().getBounds());
+					final ThumbnailPanel tp = networkViewGrid.getCurrentItem();
+					
+					if (tp != null && tp.getParent() instanceof JComponent)
+						((JComponent) tp.getParent()).scrollRectToVisible(tp.getBounds());
 				} else {
 					showViewContainer(createUniqueKey(view));
 				}
@@ -816,7 +819,7 @@ public class NetworkViewMainPanel extends JPanel {
 			}
 		});
 		
-		Toolkit.getDefaultToolkit().addAWTEventListener(comparisonModeAWTEventListener, MouseEvent.MOUSE_EVENT_MASK);
+		Toolkit.getDefaultToolkit().addAWTEventListener(mousePressedAWTEventListener, MouseEvent.MOUSE_EVENT_MASK);
 		
 		// Update
 		showGrid();
@@ -880,7 +883,7 @@ public class NetworkViewMainPanel extends JPanel {
 		return views;
 	}
 	
-	private class ComparisonModeAWTEventListener implements AWTEventListener {
+	private class MousePressedAWTEventListener implements AWTEventListener {
 		
         @Override
         public void eventDispatched(AWTEvent event) {
