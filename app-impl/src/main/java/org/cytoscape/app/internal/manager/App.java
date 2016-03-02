@@ -250,7 +250,8 @@ public abstract class App {
 	public boolean heuristicEquals(App other) {
 		
 		// Return false if different app names
-		if (appName.equalsIgnoreCase(other.appName)
+		if (bundledApp == other.bundledApp
+				&& appName.equalsIgnoreCase(other.appName)
 				&& WebQuerier.compareVersions(version, other.version) == 0) {
 
 			if (sha512Checksum != null && other.sha512Checksum != null) {

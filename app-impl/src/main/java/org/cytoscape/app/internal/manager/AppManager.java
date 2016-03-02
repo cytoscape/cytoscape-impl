@@ -317,7 +317,7 @@ public class AppManager implements FrameworkListener {
 				String appName = app.getAppName().toLowerCase();
 				App currentVersion = appsToStart.get(appName);
 				if(app.isCompatible(version) && (currentVersion == null ||  
-						WebQuerier.compareVersions(currentVersion.getVersion(), app.getVersion()) > 0))
+						compareApps(currentVersion, app) > 0))
 					appsToStart.put(appName, app);
 			}
 			else {
@@ -349,6 +349,14 @@ public class AppManager implements FrameworkListener {
 		if(!startApps(otherAppsToStart))
 			userLogger.warn("One or more apps failed to load or start");		
 		eventHelper.fireEvent(new AppsFinishedStartingEvent(this));
+	}
+	
+	private int compareApps(App app1, App app2) {
+		int result = WebQuerier.compareVersions(app1.getVersion(), app2.getVersion());
+		if(result == 0) {
+			result = ((Boolean) app2.isBundledApp()).compareTo(app1.isBundledApp());
+		}
+		return result;
 	}
 	
 	private boolean startApps(Collection<App> apps) {
@@ -426,7 +434,7 @@ public class AppManager implements FrameworkListener {
 					else if(parsedApp.isCompatible(version) && parsedApp.getAppName().equals(app.getAppName())) {
 						try {
 							if(!app.isDetached() && app.isCompatible(version)) {
-								if(WebQuerier.compareVersions(parsedApp.getVersion(), app.getVersion()) > 0)
+								if(compareApps(parsedApp, app) > 0)
 									startApp = false;
 								else {
 									app.unload(AppManager.this);
@@ -518,7 +526,7 @@ public class AppManager implements FrameworkListener {
 					if(!app.isDetached() && app.isCompatible(version) && 
 							app.getAppName().equalsIgnoreCase(registeredApp.getAppName())) {
 						if(appToStart == null || 
-								WebQuerier.compareVersions(appToStart.getVersion(), app.getVersion()) > 0) 
+								compareApps(appToStart, app) > 0) 
 							appToStart = app;
 					}
 				}
