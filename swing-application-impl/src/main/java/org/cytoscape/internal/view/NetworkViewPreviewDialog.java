@@ -281,6 +281,7 @@ public class NetworkViewPreviewDialog extends JDialog {
 				@Override
 				public void mousePressed(final MouseEvent e) {
 					setCurrentNetworkView(getNetworkView());
+					dispose();
 				}
 			});
 			

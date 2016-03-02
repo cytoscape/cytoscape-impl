@@ -25,6 +25,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowFocusListener;
 import java.beans.PropertyChangeEvent;
@@ -142,6 +143,8 @@ import org.slf4j.LoggerFactory;
  * <http://www.gnu.org/licenses/lgpl-2.1.html>.
  * #L%
  */
+
+// TODO Create a mediator class for Network UI components
 
 @SuppressWarnings("serial")
 public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, NetworkAddedListener,
@@ -1535,7 +1538,7 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, Net
 			if (viewDialog.getNetwork().equals(network)) // Clicking the same item--will probably never happen
 				return;
 		
-			disposeViewPopup();
+			viewDialog.dispose();
 		}
 		
 		if (item.getModel().getViewCount() > 0) {
@@ -1548,23 +1551,29 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, Net
 			viewDialog.addWindowFocusListener(new WindowFocusListener() {
 				@Override
 				public void windowLostFocus(WindowEvent e) {
-					disposeViewPopup();
+					viewDialog.dispose();
 				}
 				@Override
 				public void windowGainedFocus(WindowEvent e) {
+				}
+			});
+			viewDialog.addWindowListener(new WindowAdapter() {
+				@Override
+				public void windowClosed(WindowEvent e) {
+					viewDialog = null;
 				}
 			});
 			viewDialog.addKeyListener(new KeyAdapter() {
 				@Override
 				public void keyPressed(KeyEvent e) {
 					if (e.getKeyCode() == KeyEvent.VK_ESCAPE)
-						disposeViewPopup();
+						viewDialog.dispose();
 				}
 			});
 			viewDialog.addPropertyChangeListener("currentNetworkView", new PropertyChangeListener() {
 				@Override
 				public void propertyChange(PropertyChangeEvent evt) {
-					disposeViewPopup();
+					// Move to NetworkSelectionMediator
 					serviceRegistrar.getService(CyApplicationManager.class)
 							.setCurrentNetworkView((CyNetworkView) evt.getNewValue());
 				}
@@ -1580,13 +1589,6 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, Net
 			viewDialog.setLocation(pt);
 			viewDialog.setVisible(true);
 			viewDialog.requestFocusInWindow();
-		}
-	}
-	
-	private void disposeViewPopup() {
-		if (viewDialog != null) {
-			viewDialog.dispose();
-			viewDialog = null;
 		}
 	}
 	
