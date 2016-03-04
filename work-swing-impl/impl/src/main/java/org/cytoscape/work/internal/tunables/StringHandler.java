@@ -29,8 +29,6 @@ import static org.cytoscape.work.internal.tunables.utils.GUIDefaults.updateField
 import static org.cytoscape.work.internal.tunables.utils.GUIDefaults.setTooltip;
 
 import java.awt.Dimension;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
@@ -38,6 +36,8 @@ import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
 import javax.swing.text.DefaultFormatter;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.swing.AbstractGUITunableHandler;
@@ -50,7 +50,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author pasteur
  */
-public class StringHandler extends AbstractGUITunableHandler implements ActionListener {
+public class StringHandler extends AbstractGUITunableHandler implements DocumentListener {
 	
 	private static final Logger logger = LoggerFactory.getLogger(StringHandler.class);
 	
@@ -90,7 +90,7 @@ public class StringHandler extends AbstractGUITunableHandler implements ActionLi
 		textField.setValue(s);
 		textField.setPreferredSize(new Dimension(TEXT_BOX_WIDTH, textField.getPreferredSize().height));
 		textField.setHorizontalAlignment(JTextField.LEFT);
-		textField.addActionListener(this);
+		textField.getDocument().addDocumentListener(this);
 
 		final JLabel label = new JLabel(getDescription());
 		
@@ -146,7 +146,17 @@ public class StringHandler extends AbstractGUITunableHandler implements ActionLi
 	}
 	
 	@Override
-	public void actionPerformed(ActionEvent e) {
-		handle();
-	}
+    	public void insertUpdate (DocumentEvent evt) {
+                handle();
+    	}
+
+    	@Override
+    	public void removeUpdate (DocumentEvent evt) {
+                handle();
+    	}
+    	
+    	@Override
+    	public void changedUpdate (DocumentEvent evt) {
+                handle();
+    	}
 }
