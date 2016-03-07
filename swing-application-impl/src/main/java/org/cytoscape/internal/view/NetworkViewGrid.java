@@ -115,8 +115,6 @@ public class NetworkViewGrid extends JPanel {
 	
 	private final CyServiceRegistrar serviceRegistrar;
 	
-	private final Object lock = new Object();
-	
 	public NetworkViewGrid(final CyServiceRegistrar serviceRegistrar) {
 		this.serviceRegistrar = serviceRegistrar;
 		
@@ -155,32 +153,28 @@ public class NetworkViewGrid extends JPanel {
 	}
 	
 	public void addItem(final RenderingEngine<CyNetwork> re) {
-		synchronized (lock) {
-			if (!contains(re)) {
-				final Collection<CyNetworkView> oldViews = getNetworkViews();
-				engines.put((CyNetworkView)re.getViewModel(), re);
-				dirty = true;
-				firePropertyChange("networkViews", oldViews, getNetworkViews());
-			}
+		if (!contains(re)) {
+			final Collection<CyNetworkView> oldViews = getNetworkViews();
+			engines.put((CyNetworkView)re.getViewModel(), re);
+			dirty = true;
+			firePropertyChange("networkViews", oldViews, getNetworkViews());
 		}
 	}
 	
 	public void removeItems(final Collection<RenderingEngine<CyNetwork>> enginesToRemove) {
-		synchronized (lock) {
-			if (enginesToRemove != null && !enginesToRemove.isEmpty()) {
-				final Collection<CyNetworkView> oldViews = getNetworkViews();
-				boolean removed = false;
-				
-				for (RenderingEngine<CyNetwork> re : enginesToRemove) {
-					if (engines.remove(re.getViewModel()) != null) {
-						removed = true;
-						dirty = true;
-					}
+		if (enginesToRemove != null && !enginesToRemove.isEmpty()) {
+			final Collection<CyNetworkView> oldViews = getNetworkViews();
+			boolean removed = false;
+			
+			for (RenderingEngine<CyNetwork> re : enginesToRemove) {
+				if (engines.remove(re.getViewModel()) != null) {
+					removed = true;
+					dirty = true;
 				}
-				
-				if (removed)
-					firePropertyChange("networkViews", oldViews, getNetworkViews());
 			}
+			
+			if (removed)
+				firePropertyChange("networkViews", oldViews, getNetworkViews());
 		}
 	}
 	
@@ -189,31 +183,25 @@ public class NetworkViewGrid extends JPanel {
 	}
 	
 	private boolean contains(final RenderingEngine<CyNetwork> re) {
-		synchronized (lock) {
-			return engines.containsKey(re.getViewModel());
-		}
+		return engines.containsKey(re.getViewModel());
 	}
 	
 	protected CyNetworkView getCurrentNetworkView() {
-		synchronized (lock) {
-			return currentNetworkView;
-		}
+		return currentNetworkView;
 	}
 	
 	protected boolean setCurrentNetworkView(final CyNetworkView newView) {
-		synchronized (lock) {
-			if ((currentNetworkView == null && newView == null) || 
-					(currentNetworkView != null && currentNetworkView.equals(newView)))
-				return false;
-			
-			final CyNetworkView oldView = currentNetworkView;
-			currentNetworkView = newView;
-			
-			for (ThumbnailPanel tp : thumbnailPanels.values())
-				tp.update(false);
-			
-			firePropertyChange("currentNetworkView", oldView, newView);
-		}
+		if ((currentNetworkView == null && newView == null) || 
+				(currentNetworkView != null && currentNetworkView.equals(newView)))
+			return false;
+		
+		final CyNetworkView oldView = currentNetworkView;
+		currentNetworkView = newView;
+		
+		for (ThumbnailPanel tp : thumbnailPanels.values())
+			tp.update(false);
+		
+		firePropertyChange("currentNetworkView", oldView, newView);
 		
 		return true;
 	}
@@ -227,20 +215,18 @@ public class NetworkViewGrid extends JPanel {
 	
 	/** Updates the whole grid and recreate the thumbnails **/
 	protected void update(final int thumbnailSize) {
-		synchronized (lock) {
-			dirty = dirty || thumbnailSize < this.thumbnailSize || thumbnailSize > this.maxThumbnailSize;
-			this.thumbnailSize = thumbnailSize;
-			
-			final Dimension size = getSize();
-			
-			if (!dirty && size != null && size.width > 0) {
-				final int cols = calculateColumns(thumbnailSize, size.width);
-				dirty = cols != ((GridLayout) getGridPanel().getLayout()).getColumns();
-			}
-			
-			if (!dirty) // TODO: Only update images a few times a second or less;
-				return;
+		dirty = dirty || thumbnailSize < this.thumbnailSize || thumbnailSize > this.maxThumbnailSize;
+		this.thumbnailSize = thumbnailSize;
+		
+		final Dimension size = getSize();
+		
+		if (!dirty && size != null && size.width > 0) {
+			final int cols = calculateColumns(thumbnailSize, size.width);
+			dirty = cols != ((GridLayout) getGridPanel().getLayout()).getColumns();
 		}
+		
+		if (!dirty) // TODO: Only update images a few times a second or less;
+			return;
 		
 		// TODO Do not recreate if only changing thumbnail size (always use same big image?)
 		recreateThumbnails();

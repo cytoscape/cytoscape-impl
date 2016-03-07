@@ -48,6 +48,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
 import org.cytoscape.application.swing.CySwingApplication;
+import org.cytoscape.internal.util.Util;
 import org.cytoscape.internal.view.NetworkViewGrid.ThumbnailPanel;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
@@ -236,6 +237,9 @@ public class NetworkViewMainPanel extends JPanel {
 	}
 	
 	public void setSelectedNetworkViews(final List<CyNetworkView> networkViews) {
+		if (Util.equalSets(networkViews, getSelectedNetworkViews()))
+			return;
+		
 		final Set<ThumbnailPanel> selectedItems = new HashSet<>();
 		
 		for (ThumbnailPanel tp : networkViewGrid.getItems()) {

@@ -70,6 +70,7 @@ import org.cytoscape.application.swing.CyAction;
 import org.cytoscape.application.swing.CytoPanelComponent2;
 import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.internal.task.TaskFactoryTunableAction;
+import org.cytoscape.internal.util.Util;
 import org.cytoscape.internal.util.ViewUtil;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkTableManager;
@@ -452,6 +453,9 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, Net
 	}
 	
 	public void setSelectedNetworks(final List<CyNetwork> selectedNetworks) {
+		if (Util.equalSets(selectedNetworks, getSelectedNetworks(false)))
+			return;
+		
 		ignoreSelectionEvents = true;
 		
 		try {
@@ -643,13 +647,10 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, Net
 		
 		final CyNetwork net = e.getNetwork();
 		
-		invokeOnEDT(new Runnable() {
-			@Override
-			public void run() {
-				if (net instanceof CySubNetwork) {
-					SubNetworkPanel snp = addNetwork((CySubNetwork) net);
-					selectAndSetCurrent(snp);
-				}
+		invokeOnEDT(() -> {
+			if (net instanceof CySubNetwork) {
+				SubNetworkPanel snp = addNetwork((CySubNetwork) net);
+				selectAndSetCurrent(snp);
 			}
 		});
 	}
@@ -671,14 +672,11 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, Net
 		
 		// And if there is no related view, nothing needs to be done
 		if (net != null && tbl.equals(net.getDefaultNetworkTable())) {
-			invokeOnEDT(new Runnable() {
-				@Override
-				public void run() {
-					final AbstractNetworkPanel<?> item = getNetworkItem(net);
-					
-					if (item != null)
-						item.update();
-				}
+			invokeOnEDT(() -> {
+				final AbstractNetworkPanel<?> item = getNetworkItem(net);
+				
+				if (item != null)
+					item.update();
 			});
 		}
 	}
@@ -705,11 +703,8 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, Net
 
 	@Override
 	public void handleEvent(final NetworkViewDestroyedEvent e) {
-		invokeOnEDT(new Runnable() {
-			@Override
-			public void run() {
-				getRootNetworkListPanel().update();
-			}
+		invokeOnEDT(() -> {
+			getRootNetworkListPanel().update();
 		});
 	}
 
@@ -720,14 +715,11 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, Net
 		
 		final CyNetworkView netView = nde.getNetworkView();
 		
-		invokeOnEDT(new Runnable() {
-			@Override
-			public void run() {
-				final SubNetworkPanel subNetPanel = getSubNetworkPanel(netView.getModel());
-				
-				if (subNetPanel != null)
-					subNetPanel.update();
-			}
+		invokeOnEDT(() -> {
+			final SubNetworkPanel subNetPanel = getSubNetworkPanel(netView.getModel());
+			
+			if (subNetPanel != null)
+				subNetPanel.update();
 		});
 	}
 	
@@ -825,24 +817,21 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, Net
 		nameTables.values().removeAll(Collections.singletonList(network));
 		nodeEdgeTables.values().removeAll(Collections.singletonList(network));
 		
-		invokeOnEDT(new Runnable() {
-			@Override
-			public void run() {
-				final CyRootNetwork rootNet = network.getRootNetwork();
-				final RootNetworkPanel item = getRootNetworkPanel(rootNet);
+		invokeOnEDT(() -> {
+			final CyRootNetwork rootNet = network.getRootNetwork();
+			final RootNetworkPanel item = getRootNetworkPanel(rootNet);
+			
+			if (item != null) {
+				item.removeItem(network);
 				
-				if (item != null) {
-					item.removeItem(network);
-					
-					if (item.isEmpty()) {
-						getRootNetworkListPanel().removeItem(rootNet);
-						nameTables.values().removeAll(Collections.singletonList(rootNet));
-						nodeEdgeTables.values().removeAll(Collections.singletonList(rootNet));
-					}
-					
-					updateNetworkHeader();
-					updateNetworkToolBar();
+				if (item.isEmpty()) {
+					getRootNetworkListPanel().removeItem(rootNet);
+					nameTables.values().removeAll(Collections.singletonList(rootNet));
+					nodeEdgeTables.values().removeAll(Collections.singletonList(rootNet));
 				}
+				
+				updateNetworkHeader();
+				updateNetworkToolBar();
 			}
 		});
 	}
@@ -985,14 +974,11 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, Net
 		if (network instanceof CySubNetwork == false)
 			return;
 		
-		invokeOnEDT(new Runnable() {
-			@Override
-			public void run() {
-				final RootNetworkPanel rootItem = getRootNetworkPanel(((CySubNetwork)network).getRootNetwork());
-				
-				if (rootItem != null)
-					rootItem.updateCountInfo();
-			}
+		invokeOnEDT(() -> {
+			final RootNetworkPanel rootItem = getRootNetworkPanel(((CySubNetwork)network).getRootNetwork());
+			
+			if (rootItem != null)
+				rootItem.updateCountInfo();
 		});
 	}
 	

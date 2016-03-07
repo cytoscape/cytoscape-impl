@@ -29,6 +29,9 @@ public abstract class AbstractNetworkPanel<T extends CyNetwork> extends JPanel {
 	}
 
 	public void setModel(final AbstractNetworkPanelModel<T> newModel) {
+		if (newModel == null)
+			throw new IllegalArgumentException("'newModel' must not be null.");
+		
 		final AbstractNetworkPanelModel<T> oldModel = model;
 		model = newModel;
 		update();

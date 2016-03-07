@@ -23,6 +23,7 @@ import org.cytoscape.application.events.SetCurrentNetworkListener;
 import org.cytoscape.application.events.SetCurrentNetworkViewEvent;
 import org.cytoscape.application.events.SetCurrentNetworkViewListener;
 import org.cytoscape.application.swing.CyHelpBroker;
+import org.cytoscape.internal.util.ViewUtil;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyTable;
@@ -73,6 +74,31 @@ import org.cytoscape.view.vizmap.events.VisualStyleSetListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/*
+ * #%L
+ * Cytoscape Swing Application Impl (swing-application-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
+
+
 /**
  * This class mediates the communication between the Network View UI and the rest of Cytoscape.
  */
@@ -100,8 +126,6 @@ public class NetworkViewMediator implements NetworkViewAddedListener, NetworkVie
 	
 	private volatile boolean loadingSession;
 
-	private Object lock = new Object();
-	
 	private final CyServiceRegistrar serviceRegistrar;
 	
 	public NetworkViewMediator(
@@ -206,10 +230,7 @@ public class NetworkViewMediator implements NetworkViewAddedListener, NetworkVie
 	}
 	
 	public boolean isViewToolBarsVisible() {
-		final Properties props = (Properties) 
-				serviceRegistrar.getService(CyProperty.class, "(cyPropertyName=cytoscape3.props)").getProperties();
-		
-		return props.getProperty(SHOW_VIEW_TOOLBARS_KEY, "true").equalsIgnoreCase("true");
+		return ViewUtil.getViewProperty(SHOW_VIEW_TOOLBARS_KEY, "true", serviceRegistrar).equalsIgnoreCase("true");
 	}
 	
 	public void setViewToolBarsVisible(final boolean b) {
@@ -230,31 +251,25 @@ public class NetworkViewMediator implements NetworkViewAddedListener, NetworkVie
 		
 		final CyNetworkView view = e.getNetworkView();
 		
-		invokeOnEDT(new Runnable() {
-			@Override
-			public void run() {
-				onCurrentNetworkViewChanged(view);
-				
-				final CyApplicationManager appMgr = serviceRegistrar.getService(CyApplicationManager.class);
-				final RenderingEngine<CyNetwork> currentEngine = appMgr.getCurrentRenderingEngine();
-				
-				new Thread() {
-					@Override
-					public void run() {
-						// Set current RenderingEngine
-						if (view != null) {
-							final CyNetworkViewManager netViewMgr = serviceRegistrar.getService(CyNetworkViewManager.class);
-							
-							if (netViewMgr.getNetworkViewSet().contains(view)) {
-								if (currentEngine == null || currentEngine.getViewModel() != view)
-									appMgr.setCurrentRenderingEngine(presentationMap.get(view));
-							}
-						} else if (view == null && currentEngine != null) {
-							appMgr.setCurrentRenderingEngine(null);
-						}
-					};
-				}.start();
-			}
+		invokeOnEDT(() -> {
+			onCurrentNetworkViewChanged(view);
+			
+			final CyApplicationManager appMgr = serviceRegistrar.getService(CyApplicationManager.class);
+			final RenderingEngine<CyNetwork> currentEngine = appMgr.getCurrentRenderingEngine();
+			
+			new Thread(() -> {
+				// Set current RenderingEngine
+				if (view != null) {
+					final CyNetworkViewManager netViewMgr = serviceRegistrar.getService(CyNetworkViewManager.class);
+					
+					if (netViewMgr.getNetworkViewSet().contains(view)) {
+						if (currentEngine == null || currentEngine.getViewModel() != view)
+							appMgr.setCurrentRenderingEngine(presentationMap.get(view));
+					}
+				} else if (view == null && currentEngine != null) {
+					appMgr.setCurrentRenderingEngine(null);
+				}
+			}).start();
 		});
 	}
 
@@ -273,11 +288,8 @@ public class NetworkViewMediator implements NetworkViewAddedListener, NetworkVie
 		
 		final CyNetworkView curView = view;
 		
-		invokeOnEDT(new Runnable() {
-			@Override
-			public void run() {
-				onCurrentNetworkViewChanged(curView);
-			}
+		invokeOnEDT(() -> {
+			onCurrentNetworkViewChanged(curView);
 		});
 	}
 	
@@ -339,11 +351,8 @@ public class NetworkViewMediator implements NetworkViewAddedListener, NetworkVie
 	public void handleEvent(final UpdateNetworkPresentationEvent e) {
 		final CyNetworkView netView = e.getSource();
 		
-		invokeOnEDT(new Runnable() {
-			@Override
-			public void run() {
-				getNetworkViewMainPanel().update(netView);
-			}
+		invokeOnEDT(() -> {
+			getNetworkViewMainPanel().update(netView);
 		});
 	}
 	
@@ -352,16 +361,13 @@ public class NetworkViewMediator implements NetworkViewAddedListener, NetworkVie
 		final CyNetworkView netView = e.getSource();
 		
 		// Ask the Views Panel to update the thumbnail for the affected network view
-		invokeOnEDT(new Runnable() {
-			@Override
-			public void run() {
-				// If the Grid is not visible, just flag this view as dirty.
-				if (getNetworkViewMainPanel().isGridMode()) {
-					getNetworkViewMainPanel().updateThumbnail(netView);
-				} else {
-					getNetworkViewMainPanel().update(netView);
-					getNetworkViewMainPanel().setDirtyThumbnail(netView);
-				}
+		invokeOnEDT(() -> {
+			// If the Grid is not visible, just flag this view as dirty.
+			if (getNetworkViewMainPanel().isGridMode()) {
+				getNetworkViewMainPanel().updateThumbnail(netView);
+			} else {
+				getNetworkViewMainPanel().update(netView);
+				getNetworkViewMainPanel().setDirtyThumbnail(netView);
 			}
 		});
 		
@@ -429,15 +435,12 @@ public class NetworkViewMediator implements NetworkViewAddedListener, NetworkVie
 			}
 		}
 		
-		invokeOnEDT(new Runnable() {
-			@Override
-			public void run() {
-				getNetworkViewMainPanel().setCurrentNetworkView(view);
-				
-				// Always show the current view in the View Mode when opening older session files (up to version 3.3)
-				if (view != null)
-					getNetworkViewMainPanel().showViewContainer(view);
-			}
+		invokeOnEDT(() -> {
+			getNetworkViewMainPanel().setCurrentNetworkView(view);
+			
+			// Always show the current view in the View Mode when opening older session files (up to version 3.3)
+			if (view != null)
+				getNetworkViewMainPanel().showViewContainer(view);
 		});
 	}
 	
@@ -503,26 +506,19 @@ public class NetworkViewMediator implements NetworkViewAddedListener, NetworkVie
 	}
 
 	private final void removeView(final CyNetworkView view) {
-		invokeOnEDT(new Runnable() {
-			@Override
-			public void run() {
-				try {
-					getNetworkViewMainPanel().remove(view);
-					viewUpdateRequired.remove(view);
-					final RenderingEngine<CyNetwork> removed = presentationMap.remove(view);
-					
-					if (removed != null) {
-						new Thread() {
-							@Override
-							public void run() {
-								serviceRegistrar.getService(RenderingEngineManager.class)
-										.removeRenderingEngine(removed);
-							}
-						}.start();
-					}
-				} catch (Exception e) {
-					logger.error("Unable to destroy Network View", e);
+		invokeOnEDT(() -> {
+			try {
+				getNetworkViewMainPanel().remove(view);
+				viewUpdateRequired.remove(view);
+				final RenderingEngine<CyNetwork> removed = presentationMap.remove(view);
+				
+				if (removed != null) {
+					new Thread(() -> {
+						serviceRegistrar.getService(RenderingEngineManager.class).removeRenderingEngine(removed);
+					}).start();
 				}
+			} catch (Exception e) {
+				logger.error("Unable to destroy Network View", e);
 			}
 		});
 	}
@@ -531,37 +527,31 @@ public class NetworkViewMediator implements NetworkViewAddedListener, NetworkVie
 	 * Create a visualization container and add presentation to it.
 	 */
 	private final void render(final CyNetworkView view) {
-		invokeOnEDT(new Runnable() {
-			@Override
-			public void run() {
-				// If already registered in this manager, do not render.
-				if (getNetworkViewMainPanel().isRendered(view))
-					return;
+		invokeOnEDT(() -> {
+			// If already registered in this manager, do not render.
+			if (getNetworkViewMainPanel().isRendered(view))
+				return;
 
-				NetworkViewRenderer renderer = null;
-				final String rendererId = view.getRendererId();
-				final CyApplicationManager appMgr = serviceRegistrar.getService(CyApplicationManager.class);
-				
-				if (rendererId != null)
-					renderer = appMgr.getNetworkViewRenderer(rendererId);
-				
-				if (renderer == null)
-					renderer = appMgr.getDefaultNetworkViewRenderer();
+			NetworkViewRenderer renderer = null;
+			final String rendererId = view.getRendererId();
+			final CyApplicationManager appMgr = serviceRegistrar.getService(CyApplicationManager.class);
+			
+			if (rendererId != null)
+				renderer = appMgr.getNetworkViewRenderer(rendererId);
+			
+			if (renderer == null)
+				renderer = appMgr.getDefaultNetworkViewRenderer();
 
-				final RenderingEngineFactory<CyNetwork> engineFactory = renderer
-						.getRenderingEngineFactory(NetworkViewRenderer.DEFAULT_CONTEXT);
-				
-				final RenderingEngine<CyNetwork> renderingEngine =
-						getNetworkViewMainPanel().addNetworkView(view, engineFactory, !loadingSession);
-				presentationMap.put(view, renderingEngine);
-				
-				new Thread() {
-					@Override
-					public void run() {
-						serviceRegistrar.getService(RenderingEngineManager.class).addRenderingEngine(renderingEngine);
-					}
-				}.start();
-			}
+			final RenderingEngineFactory<CyNetwork> engineFactory = renderer
+					.getRenderingEngineFactory(NetworkViewRenderer.DEFAULT_CONTEXT);
+			
+			final RenderingEngine<CyNetwork> renderingEngine =
+					getNetworkViewMainPanel().addNetworkView(view, engineFactory, !loadingSession);
+			presentationMap.put(view, renderingEngine);
+			
+			new Thread(() -> {
+				serviceRegistrar.getService(RenderingEngineManager.class).addRenderingEngine(renderingEngine);
+			}).start();
 		});
 	}
 
@@ -613,32 +603,27 @@ public class NetworkViewMediator implements NetworkViewAddedListener, NetworkVie
 				final CyNetworkViewManager netViewMgr = serviceRegistrar.getService(CyNetworkViewManager.class);
 				
 				// Assume payload collection is for same column
-				synchronized (lock) {
-					for (CyNetworkView view : netViewMgr.getNetworkViewSet()) {
-						final CyNetwork net = view.getModel();
+				for (CyNetworkView view : netViewMgr.getNetworkViewSet()) {
+					final CyNetwork net = view.getModel();
 
-						if (net.getDefaultNetworkTable() == source) {
-							final String name = record.getRow().get(CyNetwork.NAME, String.class);
-							final String title = view.getVisualProperty(BasicVisualLexicon.NETWORK_TITLE);
-							
-							// TODO: Only update the view's title if the current title and the network name are in sync,
-							// because users can change the Network View title at any time
-							if (name != null && title == null || title.trim().isEmpty()) {
-								view.setVisualProperty(BasicVisualLexicon.NETWORK_TITLE, name);
-	
-								// Does not need to update the rendered title with the new network name
-								// if this visual property is locked
-								if (!view.isValueLocked(BasicVisualLexicon.NETWORK_TITLE)) {
-									invokeOnEDT(new Runnable() {
-										@Override
-										public void run() {
-											getNetworkViewMainPanel().update(view);
-										}
-									});
-								}
-	
-								return; // assuming just one row is set.
+					if (net.getDefaultNetworkTable() == source) {
+						final String name = record.getRow().get(CyNetwork.NAME, String.class);
+						final String title = view.getVisualProperty(BasicVisualLexicon.NETWORK_TITLE);
+						
+						// TODO: Only update the view's title if the current title and the network name are in sync,
+						// because users can change the Network View title at any time
+						if (name != null && title == null || title.trim().isEmpty()) {
+							view.setVisualProperty(BasicVisualLexicon.NETWORK_TITLE, name);
+
+							// Does not need to update the rendered title with the new network name
+							// if this visual property is locked
+							if (!view.isValueLocked(BasicVisualLexicon.NETWORK_TITLE)) {
+								invokeOnEDT(() -> {
+									getNetworkViewMainPanel().update(view);
+								});
 							}
+
+							return; // assuming just one row is set.
 						}
 					}
 				}

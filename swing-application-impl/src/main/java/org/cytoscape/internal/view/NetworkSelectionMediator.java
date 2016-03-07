@@ -8,7 +8,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 
 import javax.swing.JFrame;
 
@@ -22,6 +21,7 @@ import org.cytoscape.application.events.SetSelectedNetworkViewsListener;
 import org.cytoscape.application.events.SetSelectedNetworksEvent;
 import org.cytoscape.application.events.SetSelectedNetworksListener;
 import org.cytoscape.application.swing.CySwingApplication;
+import org.cytoscape.internal.util.Util;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.events.SessionAboutToBeLoadedEvent;
@@ -40,12 +40,14 @@ public class NetworkSelectionMediator implements SetSelectedNetworksListener, Se
 		SetCurrentNetworkListener, SessionAboutToBeLoadedListener, SessionLoadedListener, CyStartListener {
 
 	private boolean loadingSession;
-	private boolean ignoreNetworkSelectionEvents;
-	private boolean ignoreNetworkViewSelectionEvents;
+	private boolean ignoreSetSelectedNetworksEvent;
+	private boolean ignoreSetSelectedViewsEvent;
 	
 	private final NetworkMainPanel netMainPanel;
 	private final NetworkViewMainPanel netViewMainPanel;
 	private final CyServiceRegistrar serviceRegistrar;
+	
+	private final Object lock = new Object();
 
 	public NetworkSelectionMediator(final NetworkMainPanel netMainPanel, final NetworkViewMainPanel netViewMainPanel,
 			final CyServiceRegistrar serviceRegistrar) {
@@ -55,38 +57,49 @@ public class NetworkSelectionMediator implements SetSelectedNetworksListener, Se
 		
 		netMainPanel.addPropertyChangeListener("selectedSubNetworks", new PropertyChangeListener() {
 			@Override
+			@SuppressWarnings("unchecked")
 			public void propertyChange(final PropertyChangeEvent e) {
-				if (ignoreNetworkSelectionEvents)
+				if (loadingSession)
 					return;
 				
-				new Thread() {
-					@Override
-					@SuppressWarnings("unchecked")
-					public void run() {
-						final CyApplicationManager appMgr = serviceRegistrar.getService(CyApplicationManager.class);
-						final Collection<CyNetwork> selectedNetworks = (Collection<CyNetwork>) e.getNewValue();
+				synchronized (lock) {
+					final Collection<CyNetwork> selectedNetworks = (Collection<CyNetwork>) e.getNewValue();
+					final Collection<CyNetworkView> selectedViews = Util.getNetworkViews(selectedNetworks,
+							serviceRegistrar);
+
+					final CyApplicationManager appMgr = serviceRegistrar.getService(CyApplicationManager.class);
+					final boolean setSelectedViews = !Util.equalSets(selectedViews, appMgr.getSelectedNetworkViews());
+					final boolean setSelectedNetworks = !Util.equalSets(selectedNetworks, appMgr.getSelectedNetworks());
+					
+					if (!setSelectedNetworks && !setSelectedViews)
+						return;
+					
+					new Thread(() -> {
+						ignoreSetSelectedNetworksEvent = true;
 						
-						// If no selected networks, set null to current network first,
-						// or the current one will be selected again by the application!
-						if (selectedNetworks == null || selectedNetworks.isEmpty())
-							appMgr.setCurrentNetwork(null);
+						try {
+							if (setSelectedNetworks) {
+								// If no selected networks, set null to current network first,
+								// or the current one will be selected again by the application!
+								if (selectedNetworks == null || selectedNetworks.isEmpty())
+									appMgr.setCurrentNetwork(null);
+								
+								// Ask Cytoscape to set these networks as selected
+								appMgr.setSelectedNetworks(new ArrayList<>(selectedNetworks));
+							}
 						
-						// Ask Cytoscape to set these networks as selected
-						appMgr.setSelectedNetworks(new ArrayList<>(selectedNetworks));
-						
-						// Also ask Cytoscape to select all views of the selected networks
-						final List<CyNetworkView> selectedViews = new ArrayList<>();
-						final CyNetworkViewManager netViewMgr = serviceRegistrar.getService(CyNetworkViewManager.class);
-						
-						for (CyNetwork net : selectedNetworks)
-							selectedViews.addAll(netViewMgr.getNetworkViews(net));
-						
-						if (selectedViews.isEmpty())
-							appMgr.setCurrentNetworkView(null);
-						
-						appMgr.setSelectedNetworkViews(selectedViews);
-					}
-				}.start();
+							// Also ask Cytoscape to select all views of the selected networks
+							if (setSelectedViews) {
+								if (selectedViews.isEmpty())
+									appMgr.setCurrentNetworkView(null);
+								
+								appMgr.setSelectedNetworkViews(new ArrayList<>(selectedViews));
+							}
+						} finally {
+							ignoreSetSelectedNetworksEvent = false;
+						}
+					}).start();
+				}
 			}
 		});
 		
@@ -94,11 +107,40 @@ public class NetworkSelectionMediator implements SetSelectedNetworksListener, Se
 			@Override
 			@SuppressWarnings("unchecked")
 			public void propertyChange(PropertyChangeEvent e) {
-				if (ignoreNetworkViewSelectionEvents)
+				if (loadingSession)
 					return;
 				
-				final CyApplicationManager appMgr = serviceRegistrar.getService(CyApplicationManager.class);
-				appMgr.setSelectedNetworkViews((List<CyNetworkView>) e.getNewValue());
+				synchronized (lock) {
+					final Collection<CyNetworkView> selectedViews = (Collection<CyNetworkView>) e.getNewValue();
+					final Collection<CyNetwork> selectedNetworks = Util.getNetworks(selectedViews);
+					
+					final CyApplicationManager appMgr = serviceRegistrar.getService(CyApplicationManager.class);
+					final boolean setSelectedViews = !Util.equalSets(selectedViews, appMgr.getSelectedNetworkViews());
+					final boolean setSelectedNetworks = !Util.equalSets(selectedNetworks, appMgr.getSelectedNetworks());
+					
+					if (!setSelectedViews && !setSelectedNetworks)
+						return;
+					
+					new Thread(() -> {
+						ignoreSetSelectedViewsEvent = true;
+						
+						try {
+							// Ask Cytoscape to set these views as selected
+							if (setSelectedViews) {
+								if (selectedViews.isEmpty())
+									appMgr.setCurrentNetworkView(null);
+								
+								appMgr.setSelectedNetworkViews(new ArrayList<>(selectedViews));
+							}
+							
+							// Also ask Cytoscape to select all networks that have the selected views
+							if (setSelectedNetworks)
+								appMgr.setSelectedNetworks(new ArrayList<>(selectedNetworks));
+						} finally {
+							ignoreSetSelectedViewsEvent = false;
+						}
+					}).start();
+				}
 			}
 		});
 		
@@ -107,19 +149,23 @@ public class NetworkSelectionMediator implements SetSelectedNetworksListener, Se
 		networkViewGrid.addPropertyChangeListener("currentNetworkView", new PropertyChangeListener() {
 			@Override
 			public void propertyChange(PropertyChangeEvent e) {
-				final CyNetworkView targetView = (CyNetworkView) e.getNewValue();
-				
-				final CyApplicationManager appMgr = serviceRegistrar.getService(CyApplicationManager.class);
-				final CyNetworkViewManager netViewMgr = serviceRegistrar.getService(CyNetworkViewManager.class);
-				
-				if (targetView != null) {
-					if (netViewMgr.getNetworkViewSet().contains(targetView)) {
-						if (!targetView.equals(appMgr.getCurrentNetworkView()))
-							appMgr.setCurrentNetworkView(targetView);
-					}
-				} else {
-					if (appMgr.getCurrentNetworkView() != null)
-						appMgr.setCurrentNetworkView(targetView);
+				synchronized (lock) {
+					new Thread(() -> {
+						final CyNetworkView targetView = (CyNetworkView) e.getNewValue();
+						
+						final CyApplicationManager appMgr = serviceRegistrar.getService(CyApplicationManager.class);
+						final CyNetworkViewManager netViewMgr = serviceRegistrar.getService(CyNetworkViewManager.class);
+						
+						if (targetView != null) {
+							if (netViewMgr.getNetworkViewSet().contains(targetView)) {
+								if (!targetView.equals(appMgr.getCurrentNetworkView()))
+									appMgr.setCurrentNetworkView(targetView);
+							}
+						} else {
+							if (appMgr.getCurrentNetworkView() != null)
+								appMgr.setCurrentNetworkView(targetView);
+						}
+					}).start();
 				}
 			}
 		});
@@ -156,49 +202,42 @@ public class NetworkSelectionMediator implements SetSelectedNetworksListener, Se
 	
 	@Override
 	public void handleEvent(final SetCurrentNetworkEvent e) {
-		netMainPanel.getRootNetworkListPanel().update();
-		
-		if (e.getNetwork() != null) {
-			netMainPanel.scrollTo(e.getNetwork());
-			final SubNetworkPanel subNetPanel = netMainPanel.getSubNetworkPanel(e.getNetwork());
+		invokeOnEDT(() -> {
+			netMainPanel.getRootNetworkListPanel().update();
 			
-			if (subNetPanel != null)
-				subNetPanel.requestFocus();
-		}
-	}
-	
-	@Override
-	public void handleEvent(final SetSelectedNetworksEvent e) {
-		if (loadingSession)
-			return;
-		
-		invokeOnEDT(new Runnable() {
-			@Override
-			public void run() {
-				ignoreNetworkSelectionEvents = true;
+			if (e.getNetwork() != null) {
+				netMainPanel.scrollTo(e.getNetwork());
+				final SubNetworkPanel subNetPanel = netMainPanel.getSubNetworkPanel(e.getNetwork());
 				
-				try {
-					netMainPanel.setSelectedNetworks(e.getNetworks());
-				} finally {
-					ignoreNetworkSelectionEvents = false;
-				}
+				if (subNetPanel != null)
+					subNetPanel.requestFocus();
 			}
 		});
 	}
 	
 	@Override
+	public void handleEvent(final SetSelectedNetworksEvent e) {
+		if (loadingSession || ignoreSetSelectedNetworksEvent)
+			return;
+		
+		if (Util.equalSets(e.getNetworks(), netMainPanel.getSelectedNetworks(false)))
+			return;
+		
+		invokeOnEDT(() -> {
+			netMainPanel.setSelectedNetworks(e.getNetworks());
+		});
+	}
+	
+	@Override
 	public void handleEvent(final SetSelectedNetworkViewsEvent e) {
-		invokeOnEDT(new Runnable() {
-			@Override
-			public void run() {
-				ignoreNetworkViewSelectionEvents = true;
-				
-				try {
-					netViewMainPanel.setSelectedNetworkViews(e.getNetworkViews());
-				} finally {
-					ignoreNetworkViewSelectionEvents = false;
-				}
-			}
+		if (loadingSession || ignoreSetSelectedViewsEvent)
+			return;
+		
+		if (Util.equalSets(e.getNetworkViews(), netViewMainPanel.getSelectedNetworkViews()))
+			return;
+		
+		invokeOnEDT(() -> {
+			netViewMainPanel.setSelectedNetworkViews(e.getNetworkViews());
 		});
 	}
 }
