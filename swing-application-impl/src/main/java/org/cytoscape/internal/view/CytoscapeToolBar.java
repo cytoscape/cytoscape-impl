@@ -1,12 +1,27 @@
 package org.cytoscape.internal.view;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.swing.Action;
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
+import javax.swing.JSeparator;
+import javax.swing.JToolBar;
+
+import org.cytoscape.application.swing.CyAction;
+import org.cytoscape.application.swing.ToolBarComponent;
+
 /*
  * #%L
  * Cytoscape Swing Application Impl (swing-application-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,20 +39,6 @@ package org.cytoscape.internal.view;
  * #L%
  */
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import javax.swing.Action;
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JSeparator;
-import javax.swing.JToolBar;
-
-import org.cytoscape.application.swing.CyAction;
-import org.cytoscape.application.swing.ToolBarComponent;
 
 /**
  * Implementation of Toolbar on the Cytoscape Desktop applicaiton.

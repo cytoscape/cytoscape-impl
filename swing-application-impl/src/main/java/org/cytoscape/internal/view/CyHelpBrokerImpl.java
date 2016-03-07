@@ -1,12 +1,21 @@
 package org.cytoscape.internal.view;
 
+import java.net.URL;
+
+import javax.help.HelpBroker;
+import javax.help.HelpSet;
+
+import org.cytoscape.application.swing.CyHelpBroker;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /*
  * #%L
  * Cytoscape Swing Application Impl (swing-application-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -23,15 +32,6 @@ package org.cytoscape.internal.view;
  * <http://www.gnu.org/licenses/lgpl-2.1.html>.
  * #L%
  */
-
-import javax.help.HelpBroker;
-import javax.help.HelpSet;
-import java.net.URL;
-
-import org.cytoscape.application.swing.CyHelpBroker;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 
 /**

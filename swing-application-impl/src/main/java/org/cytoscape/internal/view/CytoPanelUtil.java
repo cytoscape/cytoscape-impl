@@ -1,12 +1,22 @@
 package org.cytoscape.internal.view;
 
+
+import java.awt.Dimension;
+import java.awt.Point;
+import java.awt.Rectangle;
+
+import javax.swing.AbstractButton;
+import javax.swing.BorderFactory;
+
+import org.cytoscape.application.swing.CytoPanelName;
+
 /*
  * #%L
  * Cytoscape Swing Application Impl (swing-application-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -23,14 +33,6 @@ package org.cytoscape.internal.view;
  * <http://www.gnu.org/licenses/lgpl-2.1.html>.
  * #L%
  */
-
-
-import org.cytoscape.application.swing.CytoPanelName;
-
-import javax.swing.*;
-import java.awt.*;
-
-
 
 /**
  * Contains methods to assist with various
