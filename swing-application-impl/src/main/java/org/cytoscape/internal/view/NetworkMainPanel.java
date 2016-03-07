@@ -459,15 +459,17 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, Net
 		ignoreSelectionEvents = true;
 		
 		try {
-			for (SubNetworkPanel snp : getAllSubNetworkItems()) {
-				if (!snp.isVisible()) {
-					final RootNetworkPanel rnp = getRootNetworkPanel(snp.getModel().getNetwork().getRootNetwork());
-					
-					if (rnp != null)
-						rnp.expand();
-				}
+			for (final RootNetworkPanel rnp : getRootNetworkListPanel().getAllItems()) {
+				setSelected(rnp, selectedNetworks.contains(rnp.getModel().getNetwork()));
 				
-				setSelected(snp, selectedNetworks.contains(snp.getModel().getNetwork()));
+				for (SubNetworkPanel snp : rnp.getAllItems()) {
+					final boolean selected = selectedNetworks.contains(snp.getModel().getNetwork());
+					
+					if (selected && !rnp.isExpanded())
+						rnp.expand();
+					
+					setSelected(snp, selected);
+				}
 			}
 		} finally {
 			ignoreSelectionEvents = false;
