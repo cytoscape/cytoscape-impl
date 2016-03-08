@@ -25,7 +25,6 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowFocusListener;
@@ -67,56 +66,18 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
 import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.application.swing.CyAction;
 import org.cytoscape.application.swing.CytoPanelComponent2;
 import org.cytoscape.application.swing.CytoPanelName;
-import org.cytoscape.internal.task.TaskFactoryTunableAction;
 import org.cytoscape.internal.util.Util;
 import org.cytoscape.internal.util.ViewUtil;
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.model.events.AddedEdgesEvent;
-import org.cytoscape.model.events.AddedEdgesListener;
-import org.cytoscape.model.events.AddedNodesEvent;
-import org.cytoscape.model.events.AddedNodesListener;
-import org.cytoscape.model.events.NetworkAboutToBeDestroyedEvent;
-import org.cytoscape.model.events.NetworkAboutToBeDestroyedListener;
-import org.cytoscape.model.events.NetworkAddedEvent;
-import org.cytoscape.model.events.NetworkAddedListener;
-import org.cytoscape.model.events.NetworkDestroyedEvent;
-import org.cytoscape.model.events.NetworkDestroyedListener;
-import org.cytoscape.model.events.RemovedEdgesEvent;
-import org.cytoscape.model.events.RemovedEdgesListener;
-import org.cytoscape.model.events.RemovedNodesEvent;
-import org.cytoscape.model.events.RemovedNodesListener;
-import org.cytoscape.model.events.RowSetRecord;
-import org.cytoscape.model.events.RowsSetEvent;
-import org.cytoscape.model.events.RowsSetListener;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.session.events.SessionAboutToBeLoadedEvent;
-import org.cytoscape.session.events.SessionAboutToBeLoadedListener;
-import org.cytoscape.session.events.SessionLoadedEvent;
-import org.cytoscape.session.events.SessionLoadedListener;
-import org.cytoscape.task.DynamicTaskFactoryProvisioner;
-import org.cytoscape.task.NetworkCollectionTaskFactory;
-import org.cytoscape.task.NetworkTaskFactory;
-import org.cytoscape.task.NetworkViewCollectionTaskFactory;
-import org.cytoscape.task.NetworkViewTaskFactory;
-import org.cytoscape.task.edit.EditNetworkTitleTaskFactory;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.CyNetworkViewManager;
-import org.cytoscape.view.model.events.NetworkViewAddedEvent;
-import org.cytoscape.view.model.events.NetworkViewAddedListener;
-import org.cytoscape.view.model.events.NetworkViewDestroyedEvent;
-import org.cytoscape.view.model.events.NetworkViewDestroyedListener;
-import org.cytoscape.work.ServiceProperties;
-import org.cytoscape.work.TaskFactory;
-import org.cytoscape.work.swing.DialogTaskManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -144,13 +105,8 @@ import org.slf4j.LoggerFactory;
  * #L%
  */
 
-// TODO Create a mediator class for Network UI components
-
 @SuppressWarnings("serial")
-public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, NetworkAddedListener,
-		NetworkViewAddedListener, NetworkAboutToBeDestroyedListener, NetworkDestroyedListener,
-		NetworkViewDestroyedListener, RowsSetListener, AddedNodesListener, AddedEdgesListener, RemovedEdgesListener,
-		RemovedNodesListener, SessionAboutToBeLoadedListener, SessionLoadedListener {
+public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 
 	public static final float ICON_FONT_SIZE = 22.0f;
 	
@@ -167,13 +123,6 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, Net
 	private JButton optionsBtn;
 	private JLabel networkSelectionLabel;
 
-	private final JPopupMenu popup;
-	private JMenuItem editRootNetworTitle;
-	
-	private HashMap<JMenuItem, Double> actionGravityMap = new HashMap<>();
-	private final Map<Object, TaskFactory> provisionerMap = new HashMap<>();
-	private final Map<Object, JMenuItem> popupMap = new WeakHashMap<>();
-	private final Map<Object, CyAction> popupActionMap = new WeakHashMap<>();
 	private final Map<CyTable, CyNetwork> nameTables = new WeakHashMap<>();
 	private final Map<CyTable, CyNetwork> nodeEdgeTables = new WeakHashMap<>();
 
@@ -181,7 +130,6 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, Net
 	private AbstractNetworkPanel<?> selectionTail;
 	private AbstractNetworkPanel<?> lastSelected;
 	
-	private boolean loadingSession;
 	private boolean ignoreSelectionEvents;
 	private boolean doNotUpdateCollapseExpandButtons;
 	
@@ -195,7 +143,6 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, Net
 	public NetworkMainPanel(final CyServiceRegistrar serviceRegistrar) {
 		this.serviceRegistrar = serviceRegistrar;
 		
-		popup = new JPopupMenu();
 		init();
 	}
 
@@ -234,7 +181,6 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, Net
 		add(getRootNetworkScroll(), BorderLayout.CENTER);
 		
 		updateNetworkHeader();
-		updateNetworkToolBar();
 	}
 	
 	JScrollPane getRootNetworkScroll() {
@@ -432,7 +378,6 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, Net
 
 		getRootNetworkListPanel().update();
 		updateNetworkHeader();
-		updateNetworkToolBar();
 		updateNodeEdgeCount();
 	}
 	
@@ -483,7 +428,6 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, Net
 		lastSelected = selectedItems.isEmpty() ? null : selectedItems.get(selectedItems.size() - 1);
 		
 		updateNetworkHeader();
-		updateNetworkToolBar();
 	}
 	
 	public void clear() {
@@ -503,73 +447,6 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, Net
 		lastSelected = selectionHead = selectionTail = null;
 		
 		updateNetworkHeader();
-		updateNetworkToolBar();
-	}
-	
-	public void addTaskFactory(TaskFactory factory, Map<?, ?> props) {
-		addFactory(factory, props);
-	}
-
-	public void removeTaskFactory(TaskFactory factory, Map<?, ?> props) {
-		removeFactory(factory);
-	}
-
-	public void addNetworkCollectionTaskFactory(NetworkCollectionTaskFactory factory, Map<?, ?> props) {
-		final DynamicTaskFactoryProvisioner factoryProvisioner = serviceRegistrar.getService(DynamicTaskFactoryProvisioner.class);
-		TaskFactory provisioner = factoryProvisioner.createFor(factory);
-		provisionerMap.put(factory, provisioner);
-		addFactory(provisioner, props);
-	}
-
-	public void removeNetworkCollectionTaskFactory(NetworkCollectionTaskFactory factory, Map<?, ?> props) {
-		removeFactory(provisionerMap.remove(factory));
-	}
-
-	public void addNetworkViewCollectionTaskFactory(NetworkViewCollectionTaskFactory factory, Map<?, ?> props) {
-		final DynamicTaskFactoryProvisioner factoryProvisioner = serviceRegistrar.getService(DynamicTaskFactoryProvisioner.class);
-		TaskFactory provisioner = factoryProvisioner.createFor(factory);
-		provisionerMap.put(factory, provisioner);
-		addFactory(provisioner, props);
-	}
-
-	public void removeNetworkViewCollectionTaskFactory(NetworkViewCollectionTaskFactory factory, Map<?, ?> props) {
-		removeFactory(provisionerMap.remove(factory));
-	}
-
-	public void addNetworkTaskFactory(NetworkTaskFactory factory, Map<?, ?> props) {
-		final DynamicTaskFactoryProvisioner factoryProvisioner = serviceRegistrar.getService(DynamicTaskFactoryProvisioner.class);
-		TaskFactory provisioner = factoryProvisioner.createFor(factory);
-		provisionerMap.put(factory, provisioner);
-		addFactory(provisioner, props);
-	}
-
-	public void removeNetworkTaskFactory(NetworkTaskFactory factory, Map<?, ?> props) {
-		removeFactory(provisionerMap.remove(factory));
-	}
-
-	public void addNetworkViewTaskFactory(final NetworkViewTaskFactory factory, Map<?, ?> props) {
-		final DynamicTaskFactoryProvisioner factoryProvisioner = serviceRegistrar.getService(DynamicTaskFactoryProvisioner.class);
-		TaskFactory provisioner = factoryProvisioner.createFor(factory);
-		provisionerMap.put(factory, provisioner);
-		addFactory(provisioner, props);
-	}
-
-	public void removeNetworkViewTaskFactory(NetworkViewTaskFactory factory, Map<?, ?> props) {
-		removeFactory(provisionerMap.remove(factory));
-	}
-	
-	public void addCyAction(final CyAction action, Map<?, ?> props) {
-		addAction(action);
-	}
-	
-	public void removeCyAction(final CyAction action, Map<?, ?> props) {
-		final JMenuItem item = popupMap.remove(action);
-		
-		if (item != null)
-			popup.remove(item);
-		
-		popupActionMap.remove(action);
-		popup.removePopupMenuListener(action);
 	}
 	
 	public boolean isShowNodeEdgeCount() {
@@ -611,125 +488,9 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, Net
 		}
 	}
 
-	// // Event handlers // //
-	
-	@Override
-	public void handleEvent(final SessionAboutToBeLoadedEvent e) {
-		loadingSession = true;
-	}
-	
-	@Override
-	public void handleEvent(final SessionLoadedEvent e) {
-		loadingSession = false;
-	}
-	
-	@Override
-	public void handleEvent(final NetworkAboutToBeDestroyedEvent e) {
-		if (e.getNetwork() instanceof CySubNetwork) {
-			removeNetwork((CySubNetwork) e.getNetwork());
-			updateNodeEdgeCount();
-		}
-	}
-	
-	@Override
-	public void handleEvent(final NetworkDestroyedEvent e) {
-		invokeOnEDT(new Runnable() {
-			@Override
-			public void run() {
-				getRootNetworkListPanel().update();
-				updateCollapseExpandButtons();
-				updateNetworkToolBar();
-			}
-		});
-	}
-
-	@Override
-	public void handleEvent(final NetworkAddedEvent e) {
-		if (loadingSession)
-			return;
-		
-		final CyNetwork net = e.getNetwork();
-		
-		invokeOnEDT(() -> {
-			if (net instanceof CySubNetwork) {
-				final SubNetworkPanel snp = addNetwork((CySubNetwork) net);
-				selectAndSetCurrent(snp);
-				updateNodeEdgeCount();
-			}
-		});
-	}
-
-	@Override
-	public void handleEvent(final RowsSetEvent e) {
-		if (loadingSession || getRootNetworkListPanel().isEmpty())
-			return;
-		
-		// We only care about network name changes
-		final Collection<RowSetRecord> nameRecords = e.getColumnRecords(CyNetwork.NAME);
-		
-		if (nameRecords == null || nameRecords.isEmpty())
-			return;
-		
-		final CyTable tbl = e.getSource();
-		final CyNetworkTableManager netTblMgr = serviceRegistrar.getService(CyNetworkTableManager.class);
-		final CyNetwork net = netTblMgr.getNetworkForTable(tbl);
-		
-		// And if there is no related network, nothing needs to be done
-		if (net != null && tbl.equals(net.getDefaultNetworkTable())) {
-			invokeOnEDT(() -> {
-				final AbstractNetworkPanel<?> item = getNetworkItem(net);
-				
-				if (item != null)
-					item.update();
-			});
-		}
-	}
-
-	@Override
-	public void handleEvent(final AddedEdgesEvent e) {
-		updateNodeEdgeCount();
-	}
-
-	@Override
-	public void handleEvent(final AddedNodesEvent e) {
-		updateNodeEdgeCount();
-	}
-	
-	@Override
-	public void handleEvent(final RemovedNodesEvent e) {
-		updateNodeEdgeCount();
-	}
-
-	@Override
-	public void handleEvent(final RemovedEdgesEvent e) {
-		updateNodeEdgeCount();
-	}
-
-	@Override
-	public void handleEvent(final NetworkViewDestroyedEvent e) {
-		invokeOnEDT(() -> {
-			getRootNetworkListPanel().update();
-		});
-	}
-
-	@Override
-	public void handleEvent(final NetworkViewAddedEvent nde) {
-		if (loadingSession)
-			return;
-		
-		final CyNetworkView netView = nde.getNetworkView();
-		
-		invokeOnEDT(() -> {
-			final SubNetworkPanel subNetPanel = getSubNetworkPanel(netView.getModel());
-			
-			if (subNetPanel != null)
-				subNetPanel.update();
-		});
-	}
-	
 	// // Private Methods // //
 	
-	private SubNetworkPanel addNetwork(final CySubNetwork network) {
+	protected SubNetworkPanel addNetwork(final CySubNetwork network) {
 		final CyRootNetwork rootNetwork = network.getRootNetwork();
 		RootNetworkPanel rootNetPanel = getRootNetworkPanel(rootNetwork);
 		
@@ -755,7 +516,8 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, Net
 					updateCollapseExpandButtons();
 				}
 			});
-			addMouseListenersForSelection(item, item.getHeaderPanel(), item.getNetworkCountLabel(), item.getNameLabel());
+			
+			firePropertyChange("rootNetworkPanelCreated", null, item);
 		}
 		
 		final SubNetworkPanel subNetPanel = rootNetPanel.addItem(network);
@@ -766,7 +528,6 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, Net
 			public void propertyChange(final PropertyChangeEvent e) {
 				if (!ignoreSelectionEvents) {
 					updateNetworkSelectionLabel();
-					updateNetworkToolBar();
 					
 					final Set<CyNetwork> oldSelection = getSelectedNetworks(false);
 					oldSelection.remove(subNetPanel.getModel().getNetwork());
@@ -774,15 +535,14 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, Net
 				}
 			}
 		});
-		
-		addMouseListenersForSelection(subNetPanel, subNetPanel, subNetPanel.getNameLabel(), subNetPanel.getViewIconLabel());
-		
 		subNetPanel.getViewIconLabel().addMouseListener(new MouseAdapter() {
 			@Override
 			public void mousePressed(MouseEvent e) {
 				maybeShowViewPopup(subNetPanel);
 			}
 		});
+		
+		firePropertyChange("subNetworkPanelCreated", null, subNetPanel);
 		
 		// Scroll to new item
 		rootNetPanel.expand();
@@ -796,28 +556,10 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, Net
 		return subNetPanel;
 	}
 	
-	private void addMouseListenersForSelection(final AbstractNetworkPanel<?> item, final JComponent... components) {
-		// This mouse listener listens for mouse pressed events to select the list items
-		final MouseListener selectionListener = new MouseAdapter() {
-			@Override
-			public void mousePressed(MouseEvent e) {
-				onMousePressedItem(e, item);
-			};
-		};
-		
-		// This mouse listener listens for the right-click events to show the pop-up window
-		final PopupListener popupListener = new PopupListener(item);
-		
-		for (JComponent c : components) {
-			c.addMouseListener(selectionListener);
-			c.addMouseListener(popupListener);
-		}
-	}
-
 	/**
 	 * Remove a network from the panel.
 	 */
-	private void removeNetwork(final CySubNetwork network) {
+	protected void removeNetwork(final CySubNetwork network) {
 		nameTables.values().removeAll(Collections.singletonList(network));
 		nodeEdgeTables.values().removeAll(Collections.singletonList(network));
 		
@@ -835,52 +577,10 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, Net
 				}
 				
 				updateNetworkHeader();
-				updateNetworkToolBar();
 			}
 		});
 	}
 
-	@SuppressWarnings({ "unchecked", "rawtypes" })
-	private void addFactory(final TaskFactory factory, final Map props) {
-		final CyApplicationManager appMgr = serviceRegistrar.getService(CyApplicationManager.class);
-		final CyNetworkViewManager netViewMgr = serviceRegistrar.getService(CyNetworkViewManager.class);
-		final DialogTaskManager taskMgr = serviceRegistrar.getService(DialogTaskManager.class);
-		
-		final CyAction action;
-		
-		if (props.containsKey("enableFor"))
-			action = new TaskFactoryTunableAction(taskMgr, factory, props, appMgr, netViewMgr);
-		else
-			action = new TaskFactoryTunableAction(taskMgr, factory, props);
-
-		final JMenuItem item = new JMenuItem(action);
-
-		Double gravity = 10.0;
-		
-		if (props.containsKey(ServiceProperties.MENU_GRAVITY))
-			gravity = Double.valueOf(props.get(ServiceProperties.MENU_GRAVITY).toString());
-		
-		actionGravityMap.put(item, gravity);
-		
-		popupMap.put(factory, item);
-		popupActionMap.put(factory, action);
-		int menuIndex = getMenuIndexByGravity(item);
-		popup.insert(item, menuIndex);
-		popup.addPopupMenuListener(action);
-	}
-	
-	private void addAction(final CyAction action) {
-		final JMenuItem item = new JMenuItem(action);
-		final double gravity = action.getMenuGravity();
-		actionGravityMap.put(item, gravity);
-		
-		popupMap.put(action, item);
-		popupActionMap.put(action, action);
-		int menuIndex = getMenuIndexByGravity(item);
-		popup.insert(item, menuIndex);
-		popup.addPopupMenuListener(action);
-	}
-	
 	private boolean setSelected(final AbstractNetworkPanel<?> item, final boolean selected) {
 		if (item.isSelected() != selected) {
 			item.setSelected(selected);
@@ -896,33 +596,7 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, Net
 		return false;
 	}
 
-	private int getMenuIndexByGravity(JMenuItem item) {
-		Double gravity = this.actionGravityMap.get(item);
-		Double gravityX;
-
-		for (int i = 0; i < popup.getComponentCount(); i++) {
-			gravityX = this.actionGravityMap.get(popup.getComponent(i));
-
-			if (gravity < gravityX)
-				return i;
-		}
-
-		return popup.getComponentCount();
-	}
-	
-	private void removeFactory(TaskFactory factory) {
-		final JMenuItem item = popupMap.remove(factory);
-		
-		if (item != null)
-			popup.remove(item);
-		
-		final CyAction action = popupActionMap.remove(factory);
-		
-		if (action != null)
-			popup.removePopupMenuListener(action);
-	}
-	
-	private AbstractNetworkPanel<?> getNetworkItem(final CyNetwork net) {
+	protected AbstractNetworkPanel<?> getNetworkItem(final CyNetwork net) {
 		if (net instanceof CySubNetwork)
 			return getSubNetworkPanel(net);
 		if (net instanceof CyRootNetwork)
@@ -970,11 +644,7 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, Net
 		updateNetworkSelectionLabel();
 	}
 	
-	private void updateNetworkToolBar() {
-		// Nothing to do here for now...
-	}
-	
-	private void updateNodeEdgeCount() {
+	protected void updateNodeEdgeCount() {
 		invokeOnEDT(() -> {
 			int nodeLabelWidth = 0;
 			int edgeLabelWidth = 0;
@@ -1011,7 +681,7 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, Net
 		});
 	}
 	
-	private void updateCollapseExpandButtons() {
+	protected void updateCollapseExpandButtons() {
 		if (doNotUpdateCollapseExpandButtons)
 			return;
 		
@@ -1125,7 +795,6 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, Net
 		} finally {
 			ignoreSelectionEvents = false;
 			updateNetworkHeader();
-			updateNetworkToolBar();
 		}
 		
 		if (changed)
@@ -1133,13 +802,14 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, Net
 	}
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	private void selectAndSetCurrent(final AbstractNetworkPanel<?> item) {
+	protected void selectAndSetCurrent(final AbstractNetworkPanel<?> item) {
 		if (item == null)
 			return;
 		
 		// First select the clicked item
 		setSelectedItems((Set) (Collections.singleton(item)));
 		
+		// TODO don't call the manager here
 		// Then change the current network
 		final CyApplicationManager appMgr = serviceRegistrar.getService(CyApplicationManager.class);
 		
@@ -1205,7 +875,7 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, Net
 		return list;
 	}
 	
-	private void onMousePressedItem(final MouseEvent e, final AbstractNetworkPanel<?> item) {
+	protected void onMousePressedItem(final MouseEvent e, final AbstractNetworkPanel<?> item) {
 		item.requestFocusInWindow();
 		
 		if (e.isPopupTrigger()) {
@@ -1254,9 +924,7 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, Net
 				changed = changed | changeRangeSelection(selectionHead, (selectionTail = target), true);
 			} finally {
 				ignoreSelectionEvents = false;
-
 				updateNetworkHeader();
-				updateNetworkToolBar();
 			}
 			
 			if (changed)
@@ -1487,74 +1155,6 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, Net
 		@Override
 		public boolean getScrollableTracksViewportHeight() {
 			return scrollableTracksViewportHeight;
-		}
-	}
-	
-	/**
-	 * This class listens to mouse events from the TreeTable, if the mouse event
-	 * is one that is canonically associated with a popup menu (ie, a right
-	 * click) it will pop up the menu with option for destroying view, creating
-	 * view, and destroying network (this is platform specific apparently)
-	 */
-	private final class PopupListener extends MouseAdapter {
-
-		final AbstractNetworkPanel<?> item;
-		
-		PopupListener(final AbstractNetworkPanel<?> item) {
-			this.item = item;
-		}
-		
-		@Override
-		public void mousePressed(MouseEvent e) {
-			maybeShowPopupMenu(e);
-		}
-
-		// On Windows, popup is triggered by mouse release, not press 
-		@Override
-		public void mouseReleased(MouseEvent e) {
-			maybeShowPopupMenu(e);
-		}
-
-		/**
-		 * if the mouse press is of the correct type, this function will maybe display the popup
-		 */
-		private final void maybeShowPopupMenu(final MouseEvent e) {
-			// Ignore if not valid trigger.
-			if (!e.isPopupTrigger())
-				return;
-
-			// If the item is not selected, select it first
-			final List<AbstractNetworkPanel<?>> selectedItems = getSelectedItems();
-			
-			if (!selectedItems.contains(item))
-				selectAndSetCurrent(item);
-			
-			final DialogTaskManager taskMgr = serviceRegistrar.getService(DialogTaskManager.class);
-			final CyNetwork network = item.getModel().getNetwork();
-			
-			if (network instanceof CySubNetwork) {
-				// Enable or disable the actions
-				for (CyAction action : popupActionMap.values())
-					action.updateEnableState();
-
-				// Show popup menu
-				popup.show(e.getComponent(), e.getX(), e.getY());
-			} else {
-				final JPopupMenu rootPopupMenu = new JPopupMenu();
-				
-				editRootNetworTitle = new JMenuItem("Rename Network Collection...");
-				editRootNetworTitle.addActionListener(new ActionListener() {
-					@Override
-					public void actionPerformed(ActionEvent e) {
-						final EditNetworkTitleTaskFactory taskFactory = serviceRegistrar.getService(EditNetworkTitleTaskFactory.class);
-						taskMgr.execute(taskFactory.createTaskIterator(network));
-					}
-				});
-				rootPopupMenu.add(editRootNetworTitle);
-				
-				editRootNetworTitle.setEnabled(selectedItems.size() == 1);
-				rootPopupMenu.show(e.getComponent(), e.getX(), e.getY());
-			}
 		}
 	}
 	

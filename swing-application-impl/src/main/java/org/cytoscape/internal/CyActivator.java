@@ -74,6 +74,7 @@ import org.cytoscape.internal.view.CytoscapeMenus;
 import org.cytoscape.internal.view.CytoscapeToolBar;
 import org.cytoscape.internal.view.MacFullScreenEnabler;
 import org.cytoscape.internal.view.NetworkMainPanel;
+import org.cytoscape.internal.view.NetworkMediator;
 import org.cytoscape.internal.view.NetworkSelectionMediator;
 import org.cytoscape.internal.view.NetworkViewMainPanel;
 import org.cytoscape.internal.view.NetworkViewMediator;
@@ -197,6 +198,7 @@ public class CyActivator extends AbstractCyActivator {
 																	  cyServiceRegistrarServiceRef);
 
 		NetworkMainPanel netMainPanel = new NetworkMainPanel(cyServiceRegistrarServiceRef);
+		NetworkMediator netMediator = new NetworkMediator(netMainPanel, cyServiceRegistrarServiceRef);
 		
 		CytoscapeDesktop cytoscapeDesktop = new CytoscapeDesktop(cytoscapeMenus,
 		                                                         netViewMediator,
@@ -358,6 +360,7 @@ public class CyActivator extends AbstractCyActivator {
 		
 		registerAllServices(bc, cytoscapeDesktop, new Properties());
 		registerAllServices(bc, netMainPanel, new Properties());
+		registerAllServices(bc, netMediator, new Properties());
 		registerAllServices(bc, netViewMediator, new Properties());
 		registerService(bc, undoMonitor, SetCurrentNetworkViewListener.class, new Properties());
 		registerService(bc, undoMonitor, NetworkDestroyedListener.class, new Properties());
@@ -399,20 +402,18 @@ public class CyActivator extends AbstractCyActivator {
 		registerServiceListener(bc, settingsAction, "addLayout", "removeLayout", CyLayoutAlgorithm.class);
 		
 		// For Network Panel context menu
-		registerServiceListener(bc, netMainPanel, "addNetworkViewTaskFactory", "removeNetworkViewTaskFactory",
+		registerServiceListener(bc, netMediator, "addNetworkViewTaskFactory", "removeNetworkViewTaskFactory",
 				                NetworkViewTaskFactory.class, CONTEXT_MENU_FILTER);
-		registerServiceListener(bc, netMainPanel, "addNetworkTaskFactory", "removeNetworkTaskFactory",
+		registerServiceListener(bc, netMediator, "addNetworkTaskFactory", "removeNetworkTaskFactory",
 				                NetworkTaskFactory.class, CONTEXT_MENU_FILTER);
-		registerServiceListener(bc, netMainPanel, "addNetworkViewCollectionTaskFactory", "removeNetworkViewCollectionTaskFactory",
+		registerServiceListener(bc, netMediator, "addNetworkViewCollectionTaskFactory", "removeNetworkViewCollectionTaskFactory",
 		                        NetworkViewCollectionTaskFactory.class, CONTEXT_MENU_FILTER);
-		registerServiceListener(bc, netMainPanel, "addNetworkCollectionTaskFactory", "removeNetworkCollectionTaskFactory",
+		registerServiceListener(bc, netMediator, "addNetworkCollectionTaskFactory", "removeNetworkCollectionTaskFactory",
 		                        NetworkCollectionTaskFactory.class, CONTEXT_MENU_FILTER);
-		registerServiceListener(bc, netMainPanel, "addCyAction", "removeCyAction", CyAction.class, CONTEXT_MENU_FILTER);
+		registerServiceListener(bc, netMediator, "addCyAction", "removeCyAction", CyAction.class, CONTEXT_MENU_FILTER);
 		
-		registerServiceListener(bc, configDirPropertyWriter, "addCyProperty", "removeCyProperty",
-		                        CyProperty.class);
-		registerServiceListener(bc, layoutMenuPopulator, "addLayout", "removeLayout",
-		                        CyLayoutAlgorithm.class);
+		registerServiceListener(bc, configDirPropertyWriter, "addCyProperty", "removeCyProperty", CyProperty.class);
+		registerServiceListener(bc, layoutMenuPopulator, "addLayout", "removeLayout", CyLayoutAlgorithm.class);
 
 		if (LookAndFeelUtil.isMac()) {
 			new MacCyActivator().start(bc);
