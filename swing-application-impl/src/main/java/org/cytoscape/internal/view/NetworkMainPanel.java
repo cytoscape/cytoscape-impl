@@ -12,6 +12,7 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.FontMetrics;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Window;
@@ -432,6 +433,7 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, Net
 		getRootNetworkListPanel().update();
 		updateNetworkHeader();
 		updateNetworkToolBar();
+		updateNodeEdgeCount();
 	}
 	
 	/**
@@ -575,9 +577,6 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, Net
 	}
 	
 	public void setShowNodeEdgeCount(final boolean b) {
-		for (final RootNetworkPanel item : getRootNetworkListPanel().getAllItems())
-			item.setShowNodeEdgeCount(b);
-		
 		ViewUtil.setViewProperty(ViewUtil.SHOW_NODE_EDGE_COUNT_KEY, "" + b, serviceRegistrar);
 	}
 	
@@ -626,8 +625,10 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, Net
 	
 	@Override
 	public void handleEvent(final NetworkAboutToBeDestroyedEvent e) {
-		if (e.getNetwork() instanceof CySubNetwork)
+		if (e.getNetwork() instanceof CySubNetwork) {
 			removeNetwork((CySubNetwork) e.getNetwork());
+			updateNodeEdgeCount();
+		}
 	}
 	
 	@Override
@@ -651,8 +652,9 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, Net
 		
 		invokeOnEDT(() -> {
 			if (net instanceof CySubNetwork) {
-				SubNetworkPanel snp = addNetwork((CySubNetwork) net);
+				final SubNetworkPanel snp = addNetwork((CySubNetwork) net);
 				selectAndSetCurrent(snp);
+				updateNodeEdgeCount();
 			}
 		});
 	}
@@ -672,7 +674,7 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, Net
 		final CyNetworkTableManager netTblMgr = serviceRegistrar.getService(CyNetworkTableManager.class);
 		final CyNetwork net = netTblMgr.getNetworkForTable(tbl);
 		
-		// And if there is no related view, nothing needs to be done
+		// And if there is no related network, nothing needs to be done
 		if (net != null && tbl.equals(net.getDefaultNetworkTable())) {
 			invokeOnEDT(() -> {
 				final AbstractNetworkPanel<?> item = getNetworkItem(net);
@@ -685,22 +687,22 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, Net
 
 	@Override
 	public void handleEvent(final AddedEdgesEvent e) {
-		updateNodeEdgeCount(e.getSource());
+		updateNodeEdgeCount();
 	}
 
 	@Override
 	public void handleEvent(final AddedNodesEvent e) {
-		updateNodeEdgeCount(e.getSource());
+		updateNodeEdgeCount();
 	}
 	
 	@Override
 	public void handleEvent(final RemovedNodesEvent e) {
-		updateNodeEdgeCount(e.getSource());
+		updateNodeEdgeCount();
 	}
 
 	@Override
 	public void handleEvent(final RemovedEdgesEvent e) {
-		updateNodeEdgeCount(e.getSource());
+		updateNodeEdgeCount();
 	}
 
 	@Override
@@ -972,15 +974,40 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, Net
 		// Nothing to do here for now...
 	}
 	
-	private void updateNodeEdgeCount(final CyNetwork network) {
-		if (network instanceof CySubNetwork == false)
-			return;
-		
+	private void updateNodeEdgeCount() {
 		invokeOnEDT(() -> {
-			final RootNetworkPanel rootItem = getRootNetworkPanel(((CySubNetwork)network).getRootNetwork());
+			int nodeLabelWidth = 0;
+			int edgeLabelWidth = 0;
 			
-			if (rootItem != null)
-				rootItem.updateCountInfo();
+			for (SubNetworkPanel snp : getAllSubNetworkItems()) {
+				snp.getNodeCountLabel().setVisible(isShowNodeEdgeCount());
+				snp.getEdgeCountLabel().setVisible(isShowNodeEdgeCount());
+				
+				if (isShowNodeEdgeCount()) {
+					// Update node/edge count label text
+					snp.updateCountLabels();
+					// Get max label width
+					final FontMetrics nfm = snp.getNodeCountLabel().getFontMetrics(snp.getNodeCountLabel().getFont());
+					final FontMetrics efm = snp.getEdgeCountLabel().getFontMetrics(snp.getEdgeCountLabel().getFont());
+					
+					nodeLabelWidth = Math.max(nodeLabelWidth, nfm.stringWidth(snp.getNodeCountLabel().getText()));
+					edgeLabelWidth = Math.max(edgeLabelWidth, efm.stringWidth(snp.getEdgeCountLabel().getText()));
+				}
+			}
+			
+			if (!isShowNodeEdgeCount())
+				return;
+			
+			// Apply max width values to all labels so they align properly
+			for (SubNetworkPanel snp : getAllSubNetworkItems()) {
+				final Dimension nd = new Dimension(nodeLabelWidth, snp.getNodeCountLabel().getPreferredSize().height);
+				snp.getNodeCountLabel().setPreferredSize(nd);
+				snp.getNodeCountLabel().setSize(nd);
+				
+				final Dimension ed = new Dimension(edgeLabelWidth, snp.getEdgeCountLabel().getPreferredSize().height);
+				snp.getEdgeCountLabel().setPreferredSize(ed);
+				snp.getEdgeCountLabel().setSize(ed);
+			}
 		});
 	}
 	
@@ -1396,7 +1423,7 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2, Net
 		RootNetworkPanel addItem(final CyRootNetwork rootNetwork) {
 			if (!items.containsKey(rootNetwork)) {
 				final RootNetworkPanelModel model = new RootNetworkPanelModel(rootNetwork, serviceRegistrar);
-				final RootNetworkPanel rootNetworkPanel = new RootNetworkPanel(model, isShowNodeEdgeCount(),
+				final RootNetworkPanel rootNetworkPanel = new RootNetworkPanel(model,
 						isShowNetworkProvenanceHierarchy(), serviceRegistrar);
 				rootNetworkPanel.setAlignmentX(LEFT_ALIGNMENT);
 				

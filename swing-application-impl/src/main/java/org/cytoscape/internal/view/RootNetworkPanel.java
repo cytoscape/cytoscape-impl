@@ -6,7 +6,6 @@ import static javax.swing.GroupLayout.Alignment.CENTER;
 import static javax.swing.GroupLayout.Alignment.LEADING;
 
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
@@ -63,13 +62,11 @@ public class RootNetworkPanel extends AbstractNetworkPanel<CyRootNetwork> {
 	private JPanel subNetListPanel;
 	
 	private LinkedHashMap<CySubNetwork, SubNetworkPanel> items;
-	private boolean showNodeEdgeCount;
 	private boolean showIndentation;
 	
-	public RootNetworkPanel(final RootNetworkPanelModel model, final boolean showNodeEdgeCount,
-			final boolean showIndentation, final CyServiceRegistrar serviceRegistrar) {
+	public RootNetworkPanel(final RootNetworkPanelModel model, final boolean showIndentation,
+			final CyServiceRegistrar serviceRegistrar) {
 		super(model, serviceRegistrar);
-		this.showNodeEdgeCount = showNodeEdgeCount;
 		this.showIndentation = showIndentation;
 	}
 	
@@ -127,7 +124,6 @@ public class RootNetworkPanel extends AbstractNetworkPanel<CyRootNetwork> {
 			}
 			
 			updateRootPanel();
-			updateCountInfo();
 		}
 		
 		return getItems().get(network);
@@ -139,7 +135,6 @@ public class RootNetworkPanel extends AbstractNetworkPanel<CyRootNetwork> {
 		if (subNetPanel != null) {
 			getSubNetListPanel().remove(subNetPanel);
 			updateRootPanel();
-			updateCountInfo();
 			updateIndentation();
 		}
 		
@@ -181,13 +176,6 @@ public class RootNetworkPanel extends AbstractNetworkPanel<CyRootNetwork> {
 		return getSubNetListPanel().isVisible();
 	}
 	
-	public void setShowNodeEdgeCount(final boolean newValue) {
-		if (newValue != showNodeEdgeCount) {
-			showNodeEdgeCount = newValue;
-			updateCountInfo();
-		}
-	}
-	
 	public void setShowIndentation(final boolean newValue) {
 		if (newValue != showIndentation) {
 			showIndentation = newValue;
@@ -205,7 +193,6 @@ public class RootNetworkPanel extends AbstractNetworkPanel<CyRootNetwork> {
 			snp.update();
 		}
 		
-		updateCountInfo();
 		updateIndentation();
 	}
 	
@@ -222,35 +209,6 @@ public class RootNetworkPanel extends AbstractNetworkPanel<CyRootNetwork> {
 		for (SubNetworkPanel snp : getItems().values()) {
 			int depth = getDepth(snp.getModel().getNetwork());
 			snp.setDepth(depth);
-		}
-	}
-	
-	protected void updateCountInfo() {
-		int nodeLabelWidth = 0;
-		int edgeLabelWidth = 0;
-		
-		for (SubNetworkPanel snp : getItems().values()) {
-			snp.getNodeCountLabel().setVisible(showNodeEdgeCount);
-			snp.getEdgeCountLabel().setVisible(showNodeEdgeCount);
-			
-			if (showNodeEdgeCount) {
-				// Update node/edge count label text
-				snp.updateCountLabels();
-				// Get max label width
-				nodeLabelWidth = Math.max(nodeLabelWidth, snp.getNodeCountLabel().getPreferredSize().width);
-				edgeLabelWidth = Math.max(edgeLabelWidth, snp.getEdgeCountLabel().getPreferredSize().width);
-			}
-		}
-		
-		if (!showNodeEdgeCount)
-			return;
-		
-		// Apply max width values to all labels so they align properly
-		for (SubNetworkPanel snp : getItems().values()) {
-			final Dimension nd = new Dimension(nodeLabelWidth, snp.getNodeCountLabel().getPreferredSize().height);
-			final Dimension ed = new Dimension(edgeLabelWidth, snp.getEdgeCountLabel().getPreferredSize().height);
-			snp.getNodeCountLabel().setPreferredSize(nd);
-			snp.getEdgeCountLabel().setPreferredSize(ed);
 		}
 	}
 	
