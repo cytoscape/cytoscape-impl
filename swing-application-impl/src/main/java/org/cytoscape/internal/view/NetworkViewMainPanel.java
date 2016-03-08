@@ -84,7 +84,6 @@ import org.cytoscape.work.swing.DialogTaskManager;
  * #L%
  */
 
-
 @SuppressWarnings("serial")
 public class NetworkViewMainPanel extends JPanel {
 

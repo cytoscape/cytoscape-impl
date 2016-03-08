@@ -16,6 +16,8 @@ import org.cytoscape.application.events.CyStartEvent;
 import org.cytoscape.application.events.CyStartListener;
 import org.cytoscape.application.events.SetCurrentNetworkEvent;
 import org.cytoscape.application.events.SetCurrentNetworkListener;
+import org.cytoscape.application.events.SetCurrentNetworkViewEvent;
+import org.cytoscape.application.events.SetCurrentNetworkViewListener;
 import org.cytoscape.application.events.SetSelectedNetworkViewsEvent;
 import org.cytoscape.application.events.SetSelectedNetworkViewsListener;
 import org.cytoscape.application.events.SetSelectedNetworksEvent;
@@ -62,7 +64,8 @@ import org.cytoscape.view.model.CyNetworkViewManager;
  * that makes sense to the end user.
  */
 public class NetworkSelectionMediator implements SetSelectedNetworksListener, SetSelectedNetworkViewsListener,
-		SetCurrentNetworkListener, SessionAboutToBeLoadedListener, SessionLoadedListener, CyStartListener {
+		SetCurrentNetworkListener, SetCurrentNetworkViewListener, SessionAboutToBeLoadedListener, SessionLoadedListener,
+		CyStartListener {
 
 	private boolean loadingSession;
 	private boolean ignoreSetSelectedNetworksEvent;
@@ -175,20 +178,24 @@ public class NetworkSelectionMediator implements SetSelectedNetworksListener, Se
 			@Override
 			public void propertyChange(PropertyChangeEvent e) {
 				synchronized (lock) {
+					final CyNetworkView view = (CyNetworkView) e.getNewValue();
+					
+					final CyApplicationManager appMgr = serviceRegistrar.getService(CyApplicationManager.class);
+					final CyNetworkView currentView = appMgr.getCurrentNetworkView();
+					
+					if ((view == null && currentView == null) || (view != null && view.equals(currentView)))
+						return;
+					
 					new Thread(() -> {
-						final CyNetworkView targetView = (CyNetworkView) e.getNewValue();
-						
-						final CyApplicationManager appMgr = serviceRegistrar.getService(CyApplicationManager.class);
 						final CyNetworkViewManager netViewMgr = serviceRegistrar.getService(CyNetworkViewManager.class);
 						
-						if (targetView != null) {
-							if (netViewMgr.getNetworkViewSet().contains(targetView)) {
-								if (!targetView.equals(appMgr.getCurrentNetworkView()))
-									appMgr.setCurrentNetworkView(targetView);
+						if (view != null) {
+							if (netViewMgr.getNetworkViewSet().contains(view)) {
+								if (!view.equals(appMgr.getCurrentNetworkView()))
+									appMgr.setCurrentNetworkView(view);
 							}
 						} else {
-							if (appMgr.getCurrentNetworkView() != null)
-								appMgr.setCurrentNetworkView(targetView);
+							appMgr.setCurrentNetworkView(view);
 						}
 					}).start();
 				}
@@ -237,6 +244,18 @@ public class NetworkSelectionMediator implements SetSelectedNetworksListener, Se
 				if (subNetPanel != null)
 					subNetPanel.requestFocus();
 			}
+		});
+	}
+	
+	@Override
+	public void handleEvent(final SetCurrentNetworkViewEvent e) {
+		if (loadingSession)
+			return;
+		
+		final CyNetworkView view = e.getNetworkView();
+		
+		invokeOnEDT(() -> {
+			netViewMainPanel.setCurrentNetworkView(view);
 		});
 	}
 	

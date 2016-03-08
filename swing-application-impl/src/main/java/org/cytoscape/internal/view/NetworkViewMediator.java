@@ -18,8 +18,6 @@ import javax.swing.JInternalFrame;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.NetworkViewRenderer;
-import org.cytoscape.application.events.SetCurrentNetworkEvent;
-import org.cytoscape.application.events.SetCurrentNetworkListener;
 import org.cytoscape.application.events.SetCurrentNetworkViewEvent;
 import org.cytoscape.application.events.SetCurrentNetworkViewListener;
 import org.cytoscape.application.swing.CyHelpBroker;
@@ -98,15 +96,14 @@ import org.slf4j.LoggerFactory;
  * #L%
  */
 
-
 /**
  * This class mediates the communication between the Network View UI and the rest of Cytoscape.
  */
-public class NetworkViewMediator implements NetworkViewAddedListener, NetworkViewAboutToBeDestroyedListener,
-		SetCurrentNetworkViewListener, SetCurrentNetworkListener, RowsSetListener, VisualStyleChangedListener,
-		SetCurrentVisualStyleListener, UpdateNetworkPresentationListener, VisualStyleSetListener,
-		SessionAboutToBeLoadedListener, SessionLoadCancelledListener, SessionLoadedListener, ColumnDeletedListener,
-		ColumnNameChangedListener, ViewChangedListener {
+public class NetworkViewMediator
+		implements NetworkViewAddedListener, NetworkViewAboutToBeDestroyedListener, SetCurrentNetworkViewListener,
+		RowsSetListener, VisualStyleChangedListener, SetCurrentVisualStyleListener, UpdateNetworkPresentationListener,
+		VisualStyleSetListener, SessionAboutToBeLoadedListener, SessionLoadCancelledListener, SessionLoadedListener,
+		ColumnDeletedListener, ColumnNameChangedListener, ViewChangedListener {
 
 	private static final String SHOW_VIEW_TOOLBARS_KEY = "showDetachedViewToolBars";
 	
@@ -252,8 +249,6 @@ public class NetworkViewMediator implements NetworkViewAddedListener, NetworkVie
 		final CyNetworkView view = e.getNetworkView();
 		
 		invokeOnEDT(() -> {
-			onCurrentNetworkViewChanged(view);
-			
 			final CyApplicationManager appMgr = serviceRegistrar.getService(CyApplicationManager.class);
 			final RenderingEngine<CyNetwork> currentEngine = appMgr.getCurrentRenderingEngine();
 			
@@ -273,26 +268,6 @@ public class NetworkViewMediator implements NetworkViewAddedListener, NetworkVie
 		});
 	}
 
-	@Override
-	public void handleEvent(SetCurrentNetworkEvent e) {
-		final CyNetwork net = e.getNetwork();
-		CyNetworkView view = null;
-		
-		if (net != null) {
-			final CyNetworkViewManager netViewMgr = serviceRegistrar.getService(CyNetworkViewManager.class);
-			final Collection<CyNetworkView> views = netViewMgr.getNetworkViews(net);
-			
-			if (!views.isEmpty())
-				view = views.iterator().next();
-		}
-		
-		final CyNetworkView curView = view;
-		
-		invokeOnEDT(() -> {
-			onCurrentNetworkViewChanged(curView);
-		});
-	}
-	
 	@Override
 	public void handleEvent(NetworkViewAboutToBeDestroyedEvent nvde) {
 		final CyNetworkView view = nvde.getNetworkView();
@@ -556,19 +531,6 @@ public class NetworkViewMediator implements NetworkViewAddedListener, NetworkVie
 				serviceRegistrar.getService(RenderingEngineManager.class).addRenderingEngine(renderingEngine);
 			}).start();
 		});
-	}
-
-	private void onCurrentNetworkViewChanged(final CyNetworkView view) {
-		if (loadingSession)
-			return;
-		
-		final CyNetworkView curView = getNetworkViewMainPanel().getCurrentNetworkView();
-		
-		// Same as current focus; no need to update view
-		if ((curView == null && view == null) || (curView != null && curView.equals(view)))
-			return;
-		
-		getNetworkViewMainPanel().setCurrentNetworkView(view);
 	}
 
 	private void onColumnChanged(final CyTable tbl, final String columnName) {
