@@ -29,8 +29,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.cytoscape.equations.EquationCompiler;
 import org.cytoscape.equations.Equation;
+import org.cytoscape.equations.EquationCompiler;
 import org.cytoscape.equations.Interpreter;
 import org.cytoscape.equations.internal.BooleanList;
 import org.cytoscape.equations.internal.EquationCompilerImpl;
@@ -39,23 +39,21 @@ import org.cytoscape.equations.internal.StringList;
 import org.cytoscape.equations.internal.interpreter.InterpreterImpl;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.event.DummyCyEventHelper;
-import org.cytoscape.model.CyIdentifiable;
+import org.cytoscape.model.events.RowSetRecord;
+import org.cytoscape.model.events.TableAddedEvent;
 import org.cytoscape.model.internal.CyNetworkManagerImpl;
 import org.cytoscape.model.internal.CyNetworkTableManagerImpl;
 import org.cytoscape.model.internal.CyTableImpl;
 import org.cytoscape.model.internal.CyTableManagerImpl;
-import org.cytoscape.model.events.RowSetRecord;
-import org.cytoscape.model.events.TableAddedEvent;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.CyNetworkNaming;
-
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
+import java.util.Arrays;
 
 
 public class CyTableTest extends AbstractCyTableTest {
@@ -246,7 +244,54 @@ public class CyTableTest extends AbstractCyTableTest {
 		row1.set("ss", compiler.getEquation());
 
 		assertEquals(row1.get("ss", String.class), "XXXabc");
+		
+		List<String> values = table.getColumn("ss").getValues(String.class);
+		assertEquals(1, values.size());
+		assertEquals("XXXabc", values.get(0));
 	}
+	
+	@Test
+	public void testColumnWithAnEquationReferenceToVirtualColumn() {
+		table.createColumn("ss", String.class, false);
+		CyRow row1 = table.getRow(1L);
+		CyRow row2 =  table2.getRow(1L);
+		table2.createColumn("s", String.class, true);
+		table.addVirtualColumn("s1", "s", table2, table.getPrimaryKey().getName(), true);
+		
+		row1.set("ss", "abc");
+
+		final Map<String, Class<?>> varnameToTypeMap = new HashMap<String, Class<?>>();
+		varnameToTypeMap.put("ss", String.class);
+		compiler.compile("=\"XXX\"&$ss", varnameToTypeMap);
+		row2.set("s", compiler.getEquation());
+
+		assertEquals("XXXabc", row1.get("s1", String.class));
+		
+		List<String> values = table.getColumn("s1").getValues(String.class);
+		assertEquals(1, values.size());
+		assertEquals("XXXabc", values.get(0));
+	}
+	
+	
+	@Test
+	public void testVirtualColumnGetColumnValues() {
+		table.createColumn("s", String.class, false);
+		table.getRow(1L).set("s", "a");
+		table.getRow(2L).set("s", "b");
+		table.getRow(3L).set("s", "c");
+		table.getRow(4L).set("s", "d");
+		
+		table2.addVirtualColumn("sv", "s", table, table2.getPrimaryKey().getName(), true);
+		
+		assertEquals(0, table2.getRowCount());
+		table2.getRow(1L);
+		table2.getRow(2L);
+		assertEquals(2, table2.getRowCount());
+		
+		List<String> values = table2.getColumn("sv").getValues(String.class);
+		assertEquals(values, Arrays.asList("a", "b"));
+	}
+	
 	
 	@Test
 	public void testDefaultColumnValue() {
