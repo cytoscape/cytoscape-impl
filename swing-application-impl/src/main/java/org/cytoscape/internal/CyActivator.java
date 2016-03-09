@@ -301,68 +301,71 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc, closeWindowAction, CyAction.class, new Properties());
 		registerService(bc, cyDesktopManager, CyNetworkViewDesktopMgr.class, new Properties());
 
-		Properties helpContentsTaskFactoryProps = new Properties();
-		helpContentsTaskFactoryProps.setProperty(PREFERRED_MENU, "Help");
-		helpContentsTaskFactoryProps.setProperty(TITLE, "Contents...");
-		helpContentsTaskFactoryProps.setProperty(MENU_GRAVITY,"1.0");
-		helpContentsTaskFactoryProps.setProperty(TOOLTIP, "Show Help Contents...");
-		registerService(bc, helpContentsTaskFactory, TaskFactory.class, helpContentsTaskFactoryProps);
-
-		Properties helpContactHelpDeskTaskFactoryProps = new Properties();
-		helpContactHelpDeskTaskFactoryProps.setProperty(PREFERRED_MENU, "Help");
-		helpContactHelpDeskTaskFactoryProps.setProperty(MENU_GRAVITY,"7.0");	
-		helpContactHelpDeskTaskFactoryProps.setProperty(TITLE, "Contact Help Desk...");
-		registerService(bc, helpContactHelpDeskTaskFactory, TaskFactory.class,
-		                helpContactHelpDeskTaskFactoryProps);
-
-		Properties helpReportABugTaskFactoryProps = new Properties();
-		helpReportABugTaskFactoryProps.setProperty(PREFERRED_MENU, "Help");
-		helpReportABugTaskFactoryProps.setProperty(TITLE, "Report a Bug...");
-		helpReportABugTaskFactoryProps.setProperty(MENU_GRAVITY,"8.0");
-		registerService(bc, helpReportABugTaskFactory, TaskFactory.class,
-		                helpReportABugTaskFactoryProps);
-
-		
-		Properties arrangeGridTaskFactoryProps = new Properties();
-		arrangeGridTaskFactoryProps.setProperty(ServiceProperties.ENABLE_FOR, ENABLE_FOR_NETWORK_AND_VIEW);
-		arrangeGridTaskFactoryProps.setProperty(ACCELERATOR,"cmd g");
-		arrangeGridTaskFactoryProps.setProperty(PREFERRED_MENU, "View.Arrange Network Windows[8]");
-		arrangeGridTaskFactoryProps.setProperty(TITLE, "Grid");
-		arrangeGridTaskFactoryProps.setProperty(MENU_GRAVITY, "1.0");
-		registerService(bc, arrangeGridTaskFactory, TaskFactory.class, arrangeGridTaskFactoryProps);
-
-		Properties arrangeCascadeTaskFactoryProps = new Properties();
-		arrangeCascadeTaskFactoryProps.setProperty(ServiceProperties.ENABLE_FOR, ENABLE_FOR_NETWORK_AND_VIEW);
-		arrangeCascadeTaskFactoryProps.setProperty(PREFERRED_MENU,
-		                                           "View.Arrange Network Windows[8]");
-		arrangeCascadeTaskFactoryProps.setProperty(TITLE, "Cascade");
-		arrangeCascadeTaskFactoryProps.setProperty(MENU_GRAVITY, "2.0");
-		registerService(bc, arrangeCascadeTaskFactory, TaskFactory.class,
-		                arrangeCascadeTaskFactoryProps);
-
-		Properties arrangeHorizontalTaskFactoryProps = new Properties();
-		arrangeHorizontalTaskFactoryProps.setProperty(ServiceProperties.ENABLE_FOR, ENABLE_FOR_NETWORK_AND_VIEW);
-		arrangeHorizontalTaskFactoryProps.setProperty(PREFERRED_MENU, "View.Arrange Network Windows[8]");
-		arrangeHorizontalTaskFactoryProps.setProperty(TITLE, "Horizontal");
-		arrangeHorizontalTaskFactoryProps.setProperty(MENU_GRAVITY, "3.0");
-		registerService(bc, arrangeHorizontalTaskFactory, TaskFactory.class,
-		                arrangeHorizontalTaskFactoryProps);
-
-		Properties arrangeVerticalTaskFactoryProps = new Properties();
-		arrangeVerticalTaskFactoryProps.setProperty(ServiceProperties.ENABLE_FOR, ENABLE_FOR_NETWORK_AND_VIEW);
-		arrangeVerticalTaskFactoryProps.setProperty(PREFERRED_MENU, "View.Arrange Network Windows[8]");
-		arrangeVerticalTaskFactoryProps.setProperty(TITLE, "Vertical");
-		arrangeVerticalTaskFactoryProps.setProperty(MENU_GRAVITY, "4.0");
-		registerService(bc, arrangeVerticalTaskFactory, TaskFactory.class,
-		                arrangeVerticalTaskFactoryProps);
-		
-		Properties destroyNetworkViewsActionProps = new Properties();
-		destroyNetworkViewsActionProps.setProperty(IN_NETWORK_PANEL_CONTEXT_MENU, "true");
-		registerAllServices(bc, destroyNetworkViewsAction, destroyNetworkViewsActionProps);
-		
-		Properties destroyNetworksActionProps = new Properties();
-		destroyNetworksActionProps.setProperty(IN_NETWORK_PANEL_CONTEXT_MENU, "true");
-		registerAllServices(bc, destroyNetworksAction, destroyNetworksActionProps);
+		{
+			Properties props = new Properties();
+			props.setProperty(PREFERRED_MENU, "Help");
+			props.setProperty(TITLE, "Contents...");
+			props.setProperty(MENU_GRAVITY, "1.0");
+			props.setProperty(TOOLTIP, "Show Help Contents...");
+			registerService(bc, helpContentsTaskFactory, TaskFactory.class, props);
+		}
+		{
+			Properties props = new Properties();
+			props.setProperty(PREFERRED_MENU, "Help");
+			props.setProperty(MENU_GRAVITY, "7.0");
+			props.setProperty(TITLE, "Contact Help Desk...");
+			registerService(bc, helpContactHelpDeskTaskFactory, TaskFactory.class, props);
+		}
+		{
+			Properties props = new Properties();
+			props.setProperty(PREFERRED_MENU, "Help");
+			props.setProperty(TITLE, "Report a Bug...");
+			props.setProperty(MENU_GRAVITY, "8.0");
+			registerService(bc, helpReportABugTaskFactory, TaskFactory.class, props);
+		}
+		{
+			Properties props = new Properties();
+			props.setProperty(ServiceProperties.ENABLE_FOR, ENABLE_FOR_NETWORK_AND_VIEW);
+			props.setProperty(ACCELERATOR, "cmd g");
+			props.setProperty(PREFERRED_MENU, "View.Arrange Network Windows[8]");
+			props.setProperty(TITLE, "Grid");
+			props.setProperty(MENU_GRAVITY, "1.0");
+			registerService(bc, arrangeGridTaskFactory, TaskFactory.class, props);
+		}
+		{
+			Properties props = new Properties();
+			props.setProperty(ServiceProperties.ENABLE_FOR, ENABLE_FOR_NETWORK_AND_VIEW);
+			props.setProperty(PREFERRED_MENU, "View.Arrange Network Windows[8]");
+			props.setProperty(TITLE, "Cascade");
+			props.setProperty(MENU_GRAVITY, "2.0");
+			registerService(bc, arrangeCascadeTaskFactory, TaskFactory.class, props);
+		}
+		{
+			Properties props = new Properties();
+			props.setProperty(ServiceProperties.ENABLE_FOR, ENABLE_FOR_NETWORK_AND_VIEW);
+			props.setProperty(PREFERRED_MENU, "View.Arrange Network Windows[8]");
+			props.setProperty(TITLE, "Horizontal");
+			props.setProperty(MENU_GRAVITY, "3.0");
+			registerService(bc, arrangeHorizontalTaskFactory, TaskFactory.class, props);
+		}
+		{
+			Properties props = new Properties();
+			props.setProperty(ServiceProperties.ENABLE_FOR, ENABLE_FOR_NETWORK_AND_VIEW);
+			props.setProperty(PREFERRED_MENU, "View.Arrange Network Windows[8]");
+			props.setProperty(TITLE, "Vertical");
+			props.setProperty(MENU_GRAVITY, "4.0");
+			registerService(bc, arrangeVerticalTaskFactory, TaskFactory.class, props);
+		}
+		{
+			Properties props = new Properties();
+			props.setProperty(IN_NETWORK_PANEL_CONTEXT_MENU, "true");
+			registerAllServices(bc, destroyNetworkViewsAction, props);
+		}
+		{
+			Properties props = new Properties();
+			props.setProperty(IN_NETWORK_PANEL_CONTEXT_MENU, "true");
+			registerAllServices(bc, destroyNetworksAction, props);
+		}
 		
 		registerAllServices(bc, cytoscapeDesktop, new Properties());
 		registerAllServices(bc, netMainPanel, new Properties());
@@ -424,12 +427,11 @@ public class CyActivator extends AbstractCyActivator {
 		if (LookAndFeelUtil.isMac()) {
 			new MacCyActivator().start(bc);
 		} else {
-			Properties helpAboutTaskFactoryProps = new Properties();
-			helpAboutTaskFactoryProps.setProperty(PREFERRED_MENU, "Help");
-			helpAboutTaskFactoryProps.setProperty(TITLE, "About...");
-			helpAboutTaskFactoryProps.setProperty(MENU_GRAVITY,"10.0");
-
-			registerService(bc, helpAboutTaskFactory, TaskFactory.class, helpAboutTaskFactoryProps);
+			Properties props = new Properties();
+			props.setProperty(PREFERRED_MENU, "Help");
+			props.setProperty(TITLE, "About...");
+			props.setProperty(MENU_GRAVITY,"10.0");
+			registerService(bc, helpAboutTaskFactory, TaskFactory.class, props);
 			
 			registerService(bc, exitAction, CyAction.class, new Properties());
 		}
