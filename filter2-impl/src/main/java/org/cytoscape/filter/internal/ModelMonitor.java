@@ -61,7 +61,9 @@ public class ModelMonitor implements SetCurrentNetworkListener,
 	
 	private Map<DegreeFilterView, DegreeFilterController> degreeViews;
 	private Map<ColumnFilterView, ColumnFilterController> columnViews;
+	
 	private List<InteractivityChangedListener> interactivityChangedListeners;
+	private Map<CyNetwork,Boolean> interactivityState;
 	
 	public ModelMonitor() {
 		nodeDegreeRange = new DegreeRange();
@@ -72,10 +74,11 @@ public class ModelMonitor implements SetCurrentNetworkListener,
 		defaultColumnName = new ColumnComboBoxElement("Choose column...");
 		columnNames.add(defaultColumnName);
 		
-		interactivityChangedListeners = new CopyOnWriteArrayList<InteractivityChangedListener>();
+		interactivityChangedListeners = new CopyOnWriteArrayList<>();
+		interactivityState = new WeakHashMap<>();
 		
-		degreeViews = new WeakHashMap<DegreeFilterView, DegreeFilterController>();
-		columnViews = new WeakHashMap<ColumnFilterView, ColumnFilterController>();
+		degreeViews = new WeakHashMap<>();
+		columnViews = new WeakHashMap<>();
 		
 		enabled = true;
 	}
@@ -148,14 +151,23 @@ public class ModelMonitor implements SetCurrentNetworkListener,
 			}
 			network = model;
 			
-			int totalObjects = network.getNodeCount() + network.getEdgeCount();
-			boolean isInteractive = totalObjects < INTERACTIVITY_THRESHOLD;
+			
+			boolean isInteractive;
+			if(interactivityState.containsKey(network)) {
+				isInteractive = interactivityState.get(network);
+			}
+			else {
+				int totalObjects = network.getNodeCount() + network.getEdgeCount();
+				isInteractive = totalObjects < INTERACTIVITY_THRESHOLD;
+			}
+			
 			setInteractive(isInteractive);
 			notifyInteractivityListeners(isInteractive);
 		}
 	}
 	
 	public void setInteractive(boolean isInteractive) {
+		interactivityState.put(network, isInteractive);
 		clearNumericData();
 		updateColumnNames(network);
 		if (isInteractive) {
