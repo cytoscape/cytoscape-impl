@@ -32,6 +32,7 @@ import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -102,10 +103,13 @@ public class NetworkViewMainPanel extends JPanel {
 	private final MousePressedAWTEventListener mousePressedAWTEventListener;
 	
 	private final CytoscapeMenus cyMenus;
+	private final Comparator<CyNetworkView> viewComparator;
 	private final CyServiceRegistrar serviceRegistrar;
 
-	public NetworkViewMainPanel(final CytoscapeMenus cyMenus, final CyServiceRegistrar serviceRegistrar) {
+	public NetworkViewMainPanel(final CytoscapeMenus cyMenus, final Comparator<CyNetworkView> viewComparator,
+			final CyServiceRegistrar serviceRegistrar) {
 		this.cyMenus = cyMenus;
+		this.viewComparator = viewComparator;
 		this.serviceRegistrar = serviceRegistrar;
 		
 		viewContainers = new LinkedHashMap<>();
@@ -706,7 +710,7 @@ public class NetworkViewMainPanel extends JPanel {
 	}
 	
 	private NetworkViewGrid createNetworkViewGrid() {
-		final NetworkViewGrid nvg = new NetworkViewGrid(serviceRegistrar);
+		final NetworkViewGrid nvg = new NetworkViewGrid(viewComparator, serviceRegistrar);
 		
 		nvg.getViewModeButton().addActionListener(new ActionListener() {
 			@Override

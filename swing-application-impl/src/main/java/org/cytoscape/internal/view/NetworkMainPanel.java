@@ -361,6 +361,18 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 		return order;
 	}
 	
+	public int indexOf(final CyNetwork network) {
+		int idx = -1;
+		final AbstractNetworkPanel<?> item = getNetworkItem(network);
+		
+		if (item != null) {
+			final List<AbstractNetworkPanel<?>> allItems = getAllItems(true);
+			idx = allItems.indexOf(item);
+		}
+		
+		return idx;
+	}
+	
 	/**
 	 * Replace the current network list with the passed ones.
 	 */

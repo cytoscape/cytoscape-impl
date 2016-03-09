@@ -19,6 +19,9 @@ import static org.cytoscape.work.ServiceProperties.TOOLTIP;
 import java.awt.Color;
 import java.awt.Font;
 import java.lang.reflect.InvocationTargetException;
+import java.text.Collator;
+import java.util.Comparator;
+import java.util.Locale;
 import java.util.Properties;
 
 import javax.swing.BorderFactory;
@@ -63,6 +66,7 @@ import org.cytoscape.internal.shutdown.ConfigDirPropertyWriter;
 import org.cytoscape.internal.undo.RedoAction;
 import org.cytoscape.internal.undo.UndoAction;
 import org.cytoscape.internal.util.HSLColor;
+import org.cytoscape.internal.util.ViewUtil;
 import org.cytoscape.internal.util.undo.UndoMonitor;
 import org.cytoscape.internal.view.CyDesktopManager;
 import org.cytoscape.internal.view.CyHelpBrokerImpl;
@@ -100,6 +104,7 @@ import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.util.swing.OpenBrowser;
 import org.cytoscape.view.layout.CyLayoutAlgorithm;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
+import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.events.NetworkViewDestroyedListener;
 import org.cytoscape.view.presentation.property.values.CyColumnIdentifierFactory;
@@ -182,12 +187,13 @@ public class CyActivator extends AbstractCyActivator {
 
 		ToolBarEnableUpdater toolBarEnableUpdater = new ToolBarEnableUpdater(cytoscapeToolBar, serviceRegistrar);
 
-		NetworkViewMainPanel netViewMainPanel = new NetworkViewMainPanel(cytoscapeMenus, serviceRegistrar);
-		NetworkViewMediator netViewMediator = new NetworkViewMediator(netViewMainPanel, cyHelpBroker, serviceRegistrar);
-
 		NetworkMainPanel netMainPanel = new NetworkMainPanel(serviceRegistrar);
 		NetworkMediator netMediator = new NetworkMediator(netMainPanel, serviceRegistrar);
 		
+		ViewComparator viewComparator = new ViewComparator(netMainPanel);
+		NetworkViewMainPanel netViewMainPanel = new NetworkViewMainPanel(cytoscapeMenus, viewComparator, serviceRegistrar);
+		NetworkViewMediator netViewMediator = new NetworkViewMediator(netViewMainPanel, cyHelpBroker, serviceRegistrar);
+
 		CytoscapeDesktop cytoscapeDesktop = new CytoscapeDesktop(cytoscapeMenus, netViewMediator, serviceRegistrar);
 
 		CyDesktopManager cyDesktopManager = new CyDesktopManager(cytoscapeDesktop, netViewMediator);
@@ -624,5 +630,35 @@ public class CyActivator extends AbstractCyActivator {
 		UIManager.put("CyColor.complement",     new Color(29, 105, 149));
 		UIManager.put("CyColor.complement(+1)", new Color(56, 120, 158));
 		UIManager.put("CyColor.complement(+2)", new Color(92, 149, 183));
+	}
+	
+	private class ViewComparator implements Comparator<CyNetworkView> {
+
+		private final NetworkMainPanel netMainPanel;
+		private final Collator collator;
+		
+		ViewComparator(final NetworkMainPanel netMainPanel) {
+			this.netMainPanel = netMainPanel;
+			collator = Collator.getInstance(Locale.getDefault());
+		}
+		
+		@Override
+		public int compare(final CyNetworkView v1, final CyNetworkView v2) {
+			// Sort by view title, but group them by collection (root-network) and subnetwork
+			final Integer idx1 = netMainPanel.indexOf(v1.getModel());
+			final Integer idx2 = netMainPanel.indexOf(v2.getModel());
+			int value = idx1.compareTo(idx2);
+			
+			if (value == 0) {
+				// Views from the same network? Sort alphabetically...
+				value = collator.compare(ViewUtil.getTitle(v1), ViewUtil.getTitle(v2));
+			
+				// Same title? Just use their SUIDs then...
+				if (value == 0)
+					value = v1.getSUID().compareTo(v2.getSUID());
+			}
+			
+			return value;
+		}
 	}
 }

@@ -35,7 +35,6 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
-import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -43,7 +42,6 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.NavigableMap;
@@ -76,7 +74,6 @@ import javax.swing.text.JTextComponent;
 
 import org.cytoscape.internal.util.ViewUtil;
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
@@ -132,18 +129,19 @@ public class NetworkViewGrid extends JPanel {
 	private int thumbnailSize;
 	private int maxThumbnailSize;
 	private boolean dirty;
-	private Comparator<CyNetworkView> comparator;
+	private final Comparator<CyNetworkView> viewComparator;
 	
 	private ThumbnailPanel selectionHead;
 	private ThumbnailPanel selectionTail;
 	
 	private final CyServiceRegistrar serviceRegistrar;
 	
-	public NetworkViewGrid(final CyServiceRegistrar serviceRegistrar) {
+	public NetworkViewGrid(final Comparator<CyNetworkView> viewComparator, final CyServiceRegistrar serviceRegistrar) {
+		this.viewComparator = viewComparator;
 		this.serviceRegistrar = serviceRegistrar;
 		
 		engines = new HashMap<>();
-		thumbnailPanels = new TreeMap<>(comparator = new NetworkViewTitleComparator());
+		thumbnailPanels = new TreeMap<>(viewComparator);
 		
 		init();
 	}
@@ -391,7 +389,7 @@ public class NetworkViewGrid extends JPanel {
 		
 		final NavigableMap<CyNetworkView, ThumbnailPanel> subMap;
 		
-		if (comparator.compare(item1.getNetworkView(), item2.getNetworkView()) <= 0)
+		if (viewComparator.compare(item1.getNetworkView(), item2.getNetworkView()) <= 0)
 			subMap = thumbnailPanels.subMap(item1.getNetworkView(), false, item2.getNetworkView(), true);
 		else
 			subMap = thumbnailPanels.subMap(item2.getNetworkView(), true, item1.getNetworkView(), false);
@@ -1230,31 +1228,6 @@ public class NetworkViewGrid extends JPanel {
 				selectAll();
 			else if (cmd.equals(VK_CTRL_SHIFT_A))
 				deselectAll();
-		}
-	}
-	
-	private class NetworkViewTitleComparator implements Comparator<CyNetworkView> {
-
-		private Collator collator = Collator.getInstance(Locale.getDefault());
-		
-		@Override
-		public int compare(final CyNetworkView v1, final CyNetworkView v2) {
-			// Sort by view title, but group them by collection (root-network) and subnetwork
-			Long rootId1 = ((CySubNetwork)v1.getModel()).getRootNetwork().getSUID();
-			Long rootId2 = ((CySubNetwork)v1.getModel()).getRootNetwork().getSUID();
-			int value = rootId1.compareTo(rootId2);
-			
-			if (value != 0) // Views from different collections
-				return value;
-			
-			// Views from the same collection:
-			value = v1.getModel().getSUID().compareTo(v2.getModel().getSUID());
-			
-			if (value != 0) // Views from different networks in the same collection
-				return value;
-			
-			// Views from the same network:
-			return collator.compare(ViewUtil.getTitle(v1), ViewUtil.getTitle(v2));
 		}
 	}
 }
