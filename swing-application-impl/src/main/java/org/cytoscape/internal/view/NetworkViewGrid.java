@@ -107,7 +107,6 @@ import org.cytoscape.view.presentation.RenderingEngine;
  * #L%
  */
 
-
 @SuppressWarnings("serial")
 public class NetworkViewGrid extends JPanel {
 	
@@ -250,10 +249,9 @@ public class NetworkViewGrid extends JPanel {
 			dirty = cols != ((GridLayout) getGridPanel().getLayout()).getColumns();
 		}
 		
-		if (!dirty) // TODO: Only update images a few times a second or less;
+		if (!dirty)
 			return;
 		
-		// TODO Do not recreate if only changing thumbnail size (always use same big image?)
 		recreateThumbnails();
 		updateToolBar();
 	}
@@ -458,7 +456,6 @@ public class NetworkViewGrid extends JPanel {
 		add(getGridScrollPane(), BorderLayout.CENTER);
 		add(getToolBar(), BorderLayout.SOUTH);
 		
-		// TODO: Listener to update when grip panel resized
 		addComponentListener(new ComponentAdapter() {
 			@Override
 			public void componentShown(ComponentEvent e) {
@@ -496,7 +493,6 @@ public class NetworkViewGrid extends JPanel {
 		getGridPanel().removeAll();
 		thumbnailPanels.clear();
 		
-		// TODO Print some info? E.g. "No network views"
 		if (engines != null && !engines.isEmpty()) {
 			maxThumbnailSize = maxThumbnailSize(thumbnailSize, size.width);
 			
@@ -1140,8 +1136,40 @@ public class NetworkViewGrid extends JPanel {
 		}
 		
 		@Override
+		public int hashCode() {
+			final int prime = 5;
+			int result = 3;
+			result = prime * result + getOuterType().hashCode();
+			result = prime * result + ((engine == null) ? 0 : engine.hashCode());
+			return result;
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj) return true;
+			if (obj == null) return false;
+			if (getClass() != obj.getClass()) return false;
+			
+			ThumbnailPanel other = (ThumbnailPanel) obj;
+			if (!getOuterType().equals(other.getOuterType())) return false;
+			
+			if (engine == null) {
+				if (other.engine != null)
+					return false;
+			} else if (!engine.equals(other.engine)) {
+				return false;
+			}
+			
+			return true;
+		}
+
+		@Override
 		public String toString() {
 			return getNetworkView().getVisualProperty(NETWORK_TITLE);
+		}
+
+		private NetworkViewGrid getOuterType() {
+			return NetworkViewGrid.this;
 		}
 	}
 	
