@@ -41,8 +41,10 @@ import java.util.concurrent.TimeoutException;
 
 import javax.xml.bind.DatatypeConverter;
 
+import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.io.util.StreamUtil;
 import org.cytoscape.property.CyProperty;
+import org.cytoscape.property.PropertyUpdatedEvent;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
@@ -87,13 +89,17 @@ public class ProxySettingsTask2 extends AbstractTask implements TunableValidator
 	public String password;
 	
 	private final StreamUtil streamUtil;
+	private final CyEventHelper eventHelper;
 
 	private final Map<String,String> oldSettings;
+	private final CyProperty<Properties> proxyProperties;
 	private final Properties properties;
 
 
-	public ProxySettingsTask2(CyProperty<Properties> proxyProperties, final StreamUtil streamUtil) {
+	public ProxySettingsTask2(CyProperty<Properties> proxyProperties, final StreamUtil streamUtil, final CyEventHelper eventHelper) {
+		this.proxyProperties = proxyProperties;
 		this.streamUtil = streamUtil;
+		this.eventHelper = eventHelper;
 		oldSettings = new HashMap<String,String>();
 		properties = proxyProperties.getProperties();
 		try {
@@ -189,6 +195,12 @@ public class ProxySettingsTask2 extends AbstractTask implements TunableValidator
 	public void run(TaskMonitor taskMonitor) {
 		taskMonitor.setProgress(0.0);
 		storeProxySettings();
+		for(String key: oldSettings.keySet()) {
+			if(!oldSettings.get(key).equals(properties.get(key))) {
+				eventHelper.fireEvent(new PropertyUpdatedEvent(proxyProperties));
+				break;
+			}
+		}
 		oldSettings.clear();
 		
 		taskMonitor.setProgress(1.0);
@@ -201,7 +213,7 @@ public class ProxySettingsTask2 extends AbstractTask implements TunableValidator
 				oldSettings.put(key, properties.getProperty(key));
 			properties.remove(key);
 		}
-
+		
 		String proxyType = type.getSelectedValue(); 
 		if ("direct".equals(proxyType)) {
 			properties.setProperty(PROXY_TYPE, proxyType);
