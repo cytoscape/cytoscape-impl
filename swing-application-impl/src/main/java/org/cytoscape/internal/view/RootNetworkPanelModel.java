@@ -1,7 +1,5 @@
 package org.cytoscape.internal.view;
 
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CySubNetwork;
@@ -50,18 +48,5 @@ public class RootNetworkPanelModel extends AbstractNetworkPanelModel<CyRootNetwo
 		}
 		
 		return count;
-	}
-
-	@Override
-	public boolean isCurrent() {
-		final CyApplicationManager applicationManager = serviceRegistrar.getService(CyApplicationManager.class);
-		final CyNetwork currentNetwork = applicationManager.getCurrentNetwork();
-		
-		for (CySubNetwork sn : getNetwork().getSubNetworkList()) {
-			if (sn.equals(currentNetwork))
-				return true;
-		}
-		
-		return false;
 	}
 }

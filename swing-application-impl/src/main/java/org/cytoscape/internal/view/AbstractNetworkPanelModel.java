@@ -1,5 +1,6 @@
 package org.cytoscape.internal.view;
 
+import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.Collection;
 
@@ -37,6 +38,7 @@ import org.cytoscape.view.model.CyNetworkViewManager;
 public abstract class AbstractNetworkPanelModel<T extends CyNetwork> {
 
 	private T network;
+	private boolean current;
 	
 	protected final PropertyChangeSupport changeSupport = new PropertyChangeSupport(this);
 	protected final CyServiceRegistrar serviceRegistrar;
@@ -75,7 +77,33 @@ public abstract class AbstractNetworkPanelModel<T extends CyNetwork> {
 		return ViewUtil.getName(getNetwork());
 	}
 
+	public boolean isCurrent() {
+		return current;
+	}
+	
+	public void setCurrent(final boolean newValue) {
+		if (current != newValue) {
+			final boolean oldValue = current;
+			current = newValue;
+			changeSupport.firePropertyChange("current", oldValue, newValue);
+		}
+	}
+	
 	public abstract int getSubNetworkCount();
+	
+	public void addPropertyChangeListener(String propertyName, PropertyChangeListener listener) {
+		changeSupport.addPropertyChangeListener(propertyName, listener);
+	}
 
-	public abstract boolean isCurrent();
+	public void removePropertyChangeListener(String propertyName, PropertyChangeListener listener) {
+		changeSupport.removePropertyChangeListener(propertyName, listener);
+	}
+
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        changeSupport.addPropertyChangeListener(listener);
+    }
+    
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+		changeSupport.removePropertyChangeListener(listener);
+	}
 }

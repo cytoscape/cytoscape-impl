@@ -123,6 +123,8 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 	private JButton optionsBtn;
 	private JLabel networkSelectionLabel;
 
+	private CyNetwork currentNetwork;
+	
 	private final Map<CyTable, CyNetwork> nameTables = new WeakHashMap<>();
 	private final Map<CyTable, CyNetwork> nodeEdgeTables = new WeakHashMap<>();
 
@@ -810,24 +812,36 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 	}
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	protected void selectAndSetCurrent(final AbstractNetworkPanel<?> item) {
+	void selectAndSetCurrent(final AbstractNetworkPanel<?> item) {
 		if (item == null)
 			return;
 		
 		// First select the clicked item
 		setSelectedItems((Set) (Collections.singleton(item)));
-		
-		// TODO don't call the manager here
-		// Then change the current network
-		final CyApplicationManager appMgr = serviceRegistrar.getService(CyApplicationManager.class);
-		
-		if (item.getModel().getNetwork() instanceof CySubNetwork)
-			appMgr.setCurrentNetwork(item.getModel().getNetwork());
-		else
-			appMgr.setCurrentNetwork(null);
-		
 		lastSelected = selectionHead = item;
 		selectionTail = null;
+		
+		setCurrentNetwork(item.getModel().getNetwork());
+	}
+	
+	void setCurrentNetwork(final CyNetwork newValue) {
+		if ((currentNetwork == null && newValue != null)
+				|| (currentNetwork != null && !currentNetwork.equals(newValue))) {
+			final CyNetwork oldValue = currentNetwork;
+			currentNetwork = newValue;
+			
+			getRootNetworkListPanel().update();
+			
+			if (newValue != null) {
+				scrollTo(newValue);
+				final SubNetworkPanel subNetPanel = getSubNetworkPanel(newValue);
+				
+				if (subNetPanel != null)
+					subNetPanel.requestFocus();
+			}
+			
+			firePropertyChange("currentNetwork", oldValue, newValue);
+		}
 	}
 	
 	List<SubNetworkPanel> getAllSubNetworkItems() {
@@ -1064,8 +1078,20 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 		}
 		
 		void update() {
-			for (final RootNetworkPanel item : getAllItems())
-				item.update();
+			for (final RootNetworkPanel rnp : getAllItems()) {
+				boolean currentRoot = false;
+				
+				for (final SubNetworkPanel snp : rnp.getAllItems()) {
+					final boolean current = snp.getModel().getNetwork().equals(currentNetwork);
+					snp.getModel().setCurrent(current);
+					
+					if (current)
+						currentRoot = true;
+				}
+				
+				rnp.getModel().setCurrent(currentRoot);
+				rnp.update();
+			}
 			
 			updateScrollableTracksViewportHeight();
 		}
@@ -1204,7 +1230,7 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 			viewDialog.addPropertyChangeListener("currentNetworkView", new PropertyChangeListener() {
 				@Override
 				public void propertyChange(PropertyChangeEvent evt) {
-					// Move to NetworkSelectionMediator
+					// TODO Move to NetworkSelectionMediator
 					serviceRegistrar.getService(CyApplicationManager.class)
 							.setCurrentNetworkView((CyNetworkView) evt.getNewValue());
 				}
