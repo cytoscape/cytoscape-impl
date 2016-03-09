@@ -43,6 +43,7 @@ import org.cytoscape.internal.actions.BookmarkAction;
 import org.cytoscape.internal.actions.CloseWindowAction;
 import org.cytoscape.internal.actions.CytoPanelAction;
 import org.cytoscape.internal.actions.DestroyNetworkViewsAction;
+import org.cytoscape.internal.actions.DestroyNetworksAction;
 import org.cytoscape.internal.actions.DetachedViewToolBarAction;
 import org.cytoscape.internal.actions.ExitAction;
 import org.cytoscape.internal.actions.FullScreenAction;
@@ -265,7 +266,8 @@ public class CyActivator extends AbstractCyActivator {
 		
 		DetachedViewToolBarAction detachedViewToolBarAction = new DetachedViewToolBarAction(1.4f, netViewMediator);
 		CloseWindowAction closeWindowAction = new CloseWindowAction(6.1f, netViewMediator);
-		DestroyNetworkViewsAction destroyNetworkViewsAction = new DestroyNetworkViewsAction(3.0f, cyServiceRegistrarServiceRef);
+		DestroyNetworkViewsAction destroyNetworkViewsAction = new DestroyNetworkViewsAction(3.1f, cyServiceRegistrarServiceRef);
+		DestroyNetworksAction destroyNetworksAction = new DestroyNetworksAction(3.2f, netMainPanel, cyServiceRegistrarServiceRef);
 
 		UndoMonitor undoMonitor = new UndoMonitor(undoSupportServiceRef,
 		                                          cytoscapePropertiesServiceRef);
@@ -357,6 +359,10 @@ public class CyActivator extends AbstractCyActivator {
 		Properties destroyNetworkViewsActionProps = new Properties();
 		destroyNetworkViewsActionProps.setProperty(IN_NETWORK_PANEL_CONTEXT_MENU, "true");
 		registerAllServices(bc, destroyNetworkViewsAction, destroyNetworkViewsActionProps);
+		
+		Properties destroyNetworksActionProps = new Properties();
+		destroyNetworksActionProps.setProperty(IN_NETWORK_PANEL_CONTEXT_MENU, "true");
+		registerAllServices(bc, destroyNetworksAction, destroyNetworksActionProps);
 		
 		registerAllServices(bc, cytoscapeDesktop, new Properties());
 		registerAllServices(bc, netMainPanel, new Properties());

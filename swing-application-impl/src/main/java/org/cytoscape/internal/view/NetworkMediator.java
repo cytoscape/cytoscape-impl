@@ -21,6 +21,7 @@ import javax.swing.JPopupMenu;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CyAction;
+import org.cytoscape.internal.actions.DestroyNetworksAction;
 import org.cytoscape.internal.task.TaskFactoryTunableAction;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkTableManager;
@@ -97,7 +98,6 @@ public class NetworkMediator
 		RemovedEdgesListener, RemovedNodesListener, SessionAboutToBeLoadedListener, SessionLoadedListener {
 
 	private final JPopupMenu popup;
-	private JMenuItem editRootNetworTitle;
 	
 	private final Map<Object, JMenuItem> popupMap = new WeakHashMap<>();
 	private HashMap<JMenuItem, Double> actionGravityMap = new HashMap<>();
@@ -451,17 +451,27 @@ public class NetworkMediator
 			} else {
 				final JPopupMenu rootPopupMenu = new JPopupMenu();
 				
-				editRootNetworTitle = new JMenuItem("Rename Network Collection...");
-				editRootNetworTitle.addActionListener(new ActionListener() {
-					@Override
-					public void actionPerformed(ActionEvent e) {
-						final EditNetworkTitleTaskFactory taskFactory = serviceRegistrar.getService(EditNetworkTitleTaskFactory.class);
-						taskMgr.execute(taskFactory.createTaskIterator(network));
-					}
-				});
-				rootPopupMenu.add(editRootNetworTitle);
+				{
+					final JMenuItem mi = new JMenuItem("Rename Network Collection...");
+					mi.addActionListener(new ActionListener() {
+						@Override
+						public void actionPerformed(ActionEvent e) {
+							final EditNetworkTitleTaskFactory factory = serviceRegistrar
+									.getService(EditNetworkTitleTaskFactory.class);
+							taskMgr.execute(factory.createTaskIterator(network));
+						}
+					});
+					rootPopupMenu.add(mi);
+					mi.setEnabled(selectedItems.size() == 1);
+				}
+				{
+					final DestroyNetworksAction action = new DestroyNetworksAction(0.0f, networkMainPanel,
+							serviceRegistrar);
+					final JMenuItem mi = new JMenuItem(action);
+					rootPopupMenu.add(mi);
+					action.updateEnableState();
+				}
 				
-				editRootNetworTitle.setEnabled(selectedItems.size() == 1);
 				rootPopupMenu.show(e.getComponent(), e.getX(), e.getY());
 			}
 		}

@@ -430,6 +430,14 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 		updateNetworkHeader();
 	}
 	
+	public int countSelectedRootNetworks() {
+		return getSelectedRootNetworkItems().size();
+	}
+	
+	public int countSelectedSubNetworks() {
+		return getSelectedSubNetworkItems().size();
+	}
+	
 	public void clear() {
 		nameTables.clear();
 		nodeEdgeTables.clear();
@@ -709,7 +717,7 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 		if (total == 0) {
 			getNetworkSelectionLabel().setText(null);
 		} else {
-			final int selected = getSelectedSubNetworkCount();
+			final int selected = countSelectedSubNetworks();
 			getNetworkSelectionLabel().setText(
 					selected + " of " + total + " Network" + (total == 1 ? "" : "s") + " selected");
 		}
@@ -860,10 +868,6 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 			count += item.getAllItems().size();
 		
 		return count;
-	}
-	
-	int getSelectedSubNetworkCount() {
-		return getSelectedSubNetworkItems().size();
 	}
 	
 	private static Set<CyNetwork> getNetworks(final Collection<SubNetworkPanel> items) {
