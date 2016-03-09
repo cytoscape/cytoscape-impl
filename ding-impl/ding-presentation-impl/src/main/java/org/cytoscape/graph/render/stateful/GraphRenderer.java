@@ -157,6 +157,9 @@ public final class GraphRenderer {
 	                                    final Set<VisualPropertyDependency<?>> dependencies) {
 		nodeBuff.empty(); // Make sure we keep our promise.
 
+		if (grafx == null || grafx.image == null)
+			return 0;
+		
 		final CyNetwork graph = netView.getModel();
 		
 		// Define the visible window in node coordinate space.
