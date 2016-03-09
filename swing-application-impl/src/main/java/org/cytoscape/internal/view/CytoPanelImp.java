@@ -42,6 +42,7 @@ import org.cytoscape.application.swing.CytoPanelState;
 import org.cytoscape.application.swing.events.CytoPanelComponentSelectedEvent;
 import org.cytoscape.application.swing.events.CytoPanelStateChangedEvent;
 import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.slf4j.Logger;
@@ -71,7 +72,6 @@ import org.slf4j.LoggerFactory;
  * #L%
  */
 
-
 /**
  * The CytoPanel class extends JPanel to provide the following functionality:
  * <UL>
@@ -82,9 +82,8 @@ import org.slf4j.LoggerFactory;
  *
  * @author Ethan Cerami, Benjamin Gross
  */
+@SuppressWarnings("serial")
 public class CytoPanelImp extends JPanel implements CytoPanel, ChangeListener {
-	
-	private final static long serialVersionUID = 1202339868245830L;
 	
 	private final static Logger logger = LoggerFactory.getLogger(CytoPanelImp.class);
 
@@ -176,36 +175,29 @@ public class CytoPanelImp extends JPanel implements CytoPanel, ChangeListener {
 	// The dock button tool tip.
 	private static final String TOOL_TIP_CLOSE = "Close Window";
 
-	private final CyEventHelper cyEventHelper;
-	private final IconManager iconManager;
 	private final JFrame parent;
 	
 	private final Map<String, CytoPanelComponent2> componentsById;
 
-	/**
-	 * Constructor.
-	 *
-	 * @param compassDirection  Compass direction of this CytoPanel.
-	 * @param tabPlacement      Tab placement of this CytoPanel.
-	 * @param cytoPanelState    The starting CytoPanel state.
-	 */
-	public CytoPanelImp(final CytoPanelName compassDirection,
-						final int tabPlacement,
-						final CytoPanelState cytoPanelState,
-						final CyEventHelper eh,
-						final CySwingApplication cySwingApp,
-						final IconManager iconManager) {
-		this.cyEventHelper = eh;
+	private final CyServiceRegistrar serviceRegistrar;
+
+	public CytoPanelImp(
+			final CytoPanelName compassDirection,
+			final int tabPlacement,
+			final CytoPanelState cytoPanelState,
+			final CySwingApplication cySwingApp,
+			final CyServiceRegistrar serviceRegistrar
+	) {
 		this.parent = cySwingApp.getJFrame();
-		componentsById = new HashMap<String, CytoPanelComponent2>();
+		this.compassDirection = compassDirection;
+		this.serviceRegistrar = serviceRegistrar;
+		
+		componentsById = new HashMap<>();
 		
 		// setup our tabbed pane
 		tabbedPane = new JTabbedPane(tabPlacement);
 		tabbedPane.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
 		tabbedPane.addChangeListener(this);
-
-		this.compassDirection = compassDirection;
-		this.iconManager = iconManager;
 
 		// construct our panel
 		constructPanel();
@@ -600,6 +592,8 @@ public class CytoPanelImp extends JPanel implements CytoPanel, ChangeListener {
 	 * Initializes the button.
 	 */
 	private void initButtons() {
+		final IconManager iconManager = serviceRegistrar.getService(IconManager.class);
+		
 		// Create Float / Dock Button
 		floatButton = new JButton(ICON_SQUARE_O);
 		floatButton.setToolTipText(TOOL_TIP_FLOAT);
@@ -781,23 +775,25 @@ public class CytoPanelImp extends JPanel implements CytoPanel, ChangeListener {
 	 * @param notificationType What type of notification to perform.
 	 */
 	private void notifyListeners(int notificationType) {
-			// determine what event to fire
-			switch (notificationType) {
-				case NOTIFICATION_STATE_CHANGE:
-					cyEventHelper.fireEvent(new CytoPanelStateChangedEvent(this, this, cytoPanelState));
-					break;
+		final CyEventHelper eventHelper = serviceRegistrar.getService(CyEventHelper.class);
 
-				case NOTIFICATION_COMPONENT_SELECTED:
-					int selectedIndex = tabbedPane.getSelectedIndex();
-					cyEventHelper.fireEvent(new CytoPanelComponentSelectedEvent(this,this,selectedIndex));
-					break;
-
-				case NOTIFICATION_COMPONENT_ADDED:
-					break;
-
-				case NOTIFICATION_COMPONENT_REMOVED:
-					break;
-			}
+		// determine what event to fire
+		switch (notificationType) {
+			case NOTIFICATION_STATE_CHANGE:
+				eventHelper.fireEvent(new CytoPanelStateChangedEvent(this, this, cytoPanelState));
+				break;
+	
+			case NOTIFICATION_COMPONENT_SELECTED:
+				int selectedIndex = tabbedPane.getSelectedIndex();
+				eventHelper.fireEvent(new CytoPanelComponentSelectedEvent(this, this, selectedIndex));
+				break;
+	
+			case NOTIFICATION_COMPONENT_ADDED:
+				break;
+	
+			case NOTIFICATION_COMPONENT_REMOVED:
+				break;
+		}
 	}
 
 	

@@ -27,9 +27,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 
-import org.cytoscape.application.CyApplicationConfiguration;
 import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.application.CyShutdown;
 import org.cytoscape.application.CyVersion;
 import org.cytoscape.application.events.CyShutdownListener;
 import org.cytoscape.application.events.SetCurrentNetworkViewListener;
@@ -98,7 +96,6 @@ import org.cytoscape.task.NetworkTaskFactory;
 import org.cytoscape.task.NetworkViewCollectionTaskFactory;
 import org.cytoscape.task.NetworkViewTaskFactory;
 import org.cytoscape.task.TableTaskFactory;
-import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.util.swing.OpenBrowser;
 import org.cytoscape.view.layout.CyLayoutAlgorithm;
@@ -141,9 +138,6 @@ import org.slf4j.LoggerFactory;
  * #L%
  */
 
-/**
- *
- */
 public class CyActivator extends AbstractCyActivator {
 	
 	private static final String CONTEXT_MENU_FILTER = "(" + ServiceProperties.IN_NETWORK_PANEL_CONTEXT_MENU + "=true)";
@@ -151,38 +145,34 @@ public class CyActivator extends AbstractCyActivator {
 	@Override
 	@SuppressWarnings("unchecked")
 	public void start(BundleContext bc) throws Exception {
-		CyProperty<Properties> cytoscapePropertiesServiceRef = getService(bc, CyProperty.class, "(cyPropertyName=cytoscape3.props)");
+		CyProperty<Properties> cyProperty = getService(bc, CyProperty.class, "(cyPropertyName=cytoscape3.props)");
 		
-		setLookAndFeel(cytoscapePropertiesServiceRef.getProperties());
+		setLookAndFeel(cyProperty.getProperties());
 		
-		CyShutdown cytoscapeShutdownServiceRef = getService(bc, CyShutdown.class);
-		CyApplicationConfiguration cyApplicationConfigurationServiceRef = getService(bc, CyApplicationConfiguration.class);
-		CyVersion cyVersionServiceRef = getService(bc, CyVersion.class);
-		CyApplicationManager cyApplicationManagerServiceRef = getService(bc, CyApplicationManager.class);
-		CyNetworkViewManager cyNetworkViewManagerServiceRef = getService(bc, CyNetworkViewManager.class);
-		DialogTaskManager dialogTaskManagerServiceRef = getService(bc, DialogTaskManager.class);
-		PanelTaskManager panelTaskManagerServiceRef = getService(bc, PanelTaskManager.class);
-		CyColumnIdentifierFactory cyColumnIdentifierFactory = getService(bc, CyColumnIdentifierFactory.class);
-		IconManager iconManagerServiceRef = getService(bc, IconManager.class);
-		BookmarksUtil bookmarksUtilServiceRef = getService(bc, BookmarksUtil.class);
-		CyLayoutAlgorithmManager cyLayoutsServiceRef = getService(bc, CyLayoutAlgorithmManager.class);
-		SwingUndoSupport undoSupportServiceRef = getService(bc, SwingUndoSupport.class);
-		CyEventHelper cyEventHelperServiceRef = getService(bc, CyEventHelper.class);
-		CyServiceRegistrar cyServiceRegistrarServiceRef = getService(bc, CyServiceRegistrar.class);
-		OpenBrowser openBrowserServiceRef = getService(bc, OpenBrowser.class);
-		VisualMappingManager visualMappingManagerServiceRef  = getService(bc, VisualMappingManager.class);
-		DynamicTaskFactoryProvisioner dynamicTaskFactoryProvisionerServiceRef = getService(bc, DynamicTaskFactoryProvisioner.class);
-		DataSourceManager dsManagerServiceRef = getService(bc, DataSourceManager.class);
-		TunablePropertySerializerFactory tunablePropertySerializerFactoryRef =  getService(bc, TunablePropertySerializerFactory.class);
+		CyVersion cyVersion = getService(bc, CyVersion.class);
+		CyApplicationManager applicationManager = getService(bc, CyApplicationManager.class);
+		CyNetworkViewManager netViewManager = getService(bc, CyNetworkViewManager.class);
+		DialogTaskManager dialogTaskManager = getService(bc, DialogTaskManager.class);
+		PanelTaskManager panelTaskManager = getService(bc, PanelTaskManager.class);
+		CyColumnIdentifierFactory cyColumnIdFactory = getService(bc, CyColumnIdentifierFactory.class);
+		BookmarksUtil bookmarksUtil = getService(bc, BookmarksUtil.class);
+		CyLayoutAlgorithmManager layoutManager = getService(bc, CyLayoutAlgorithmManager.class);
+		SwingUndoSupport undoSupport = getService(bc, SwingUndoSupport.class);
+		CyEventHelper eventHelper = getService(bc, CyEventHelper.class);
+		CyServiceRegistrar serviceRegistrar = getService(bc, CyServiceRegistrar.class);
+		OpenBrowser openBrowser = getService(bc, OpenBrowser.class);
+		VisualMappingManager visualMappingManager = getService(bc, VisualMappingManager.class);
+		DynamicTaskFactoryProvisioner dynamicTaskFactoryProvisioner = getService(bc, DynamicTaskFactoryProvisioner.class);
+		DataSourceManager dsManager = getService(bc, DataSourceManager.class);
+		TunablePropertySerializerFactory tunablePropSerializerFactory = getService(bc, TunablePropertySerializerFactory.class);
 		
 		//////////////		
-		UndoAction undoAction = new UndoAction(undoSupportServiceRef);
-		RedoAction redoAction = new RedoAction(undoSupportServiceRef);
-		ConfigDirPropertyWriter configDirPropertyWriter = new ConfigDirPropertyWriter(dialogTaskManagerServiceRef,
-		                                                                              cyApplicationConfigurationServiceRef);
+		UndoAction undoAction = new UndoAction(undoSupport);
+		RedoAction redoAction = new RedoAction(undoSupport);
+		ConfigDirPropertyWriter configDirPropertyWriter = new ConfigDirPropertyWriter(serviceRegistrar);
 		CyHelpBrokerImpl cyHelpBroker = new CyHelpBrokerImpl();
-		PreferencesDialogFactoryImpl preferencesDialogFactory = new PreferencesDialogFactoryImpl(cyEventHelperServiceRef);
-		BookmarkDialogFactoryImpl bookmarkDialogFactory = new BookmarkDialogFactoryImpl(dsManagerServiceRef);
+		PreferencesDialogFactoryImpl preferencesDialogFactory = new PreferencesDialogFactoryImpl(eventHelper);
+		BookmarkDialogFactoryImpl bookmarkDialogFactory = new BookmarkDialogFactoryImpl(dsManager);
 		
 		registerService(bc, bookmarkDialogFactory, SessionLoadedListener.class, new Properties());
 		
@@ -190,69 +180,58 @@ public class CyActivator extends AbstractCyActivator {
 		CytoscapeToolBar cytoscapeToolBar = new CytoscapeToolBar();
 		CytoscapeMenus cytoscapeMenus = new CytoscapeMenus(cytoscapeMenuBar, cytoscapeToolBar);
 
-		ToolBarEnableUpdater toolBarEnableUpdater =
-				new ToolBarEnableUpdater(cytoscapeToolBar, cyServiceRegistrarServiceRef);
+		ToolBarEnableUpdater toolBarEnableUpdater = new ToolBarEnableUpdater(cytoscapeToolBar, serviceRegistrar);
 
-		NetworkViewMainPanel netViewMainPanel = new NetworkViewMainPanel(cytoscapeMenus, cyServiceRegistrarServiceRef);
-		NetworkViewMediator netViewMediator = new NetworkViewMediator(netViewMainPanel,
-																	  cyHelpBroker,
-																	  cyServiceRegistrarServiceRef);
+		NetworkViewMainPanel netViewMainPanel = new NetworkViewMainPanel(cytoscapeMenus, serviceRegistrar);
+		NetworkViewMediator netViewMediator = new NetworkViewMediator(netViewMainPanel, cyHelpBroker, serviceRegistrar);
 
-		NetworkMainPanel netMainPanel = new NetworkMainPanel(cyServiceRegistrarServiceRef);
-		NetworkMediator netMediator = new NetworkMediator(netMainPanel, cyServiceRegistrarServiceRef);
+		NetworkMainPanel netMainPanel = new NetworkMainPanel(serviceRegistrar);
+		NetworkMediator netMediator = new NetworkMediator(netMainPanel, serviceRegistrar);
 		
-		CytoscapeDesktop cytoscapeDesktop = new CytoscapeDesktop(cytoscapeMenus,
-		                                                         netViewMediator,
-		                                                         cytoscapeShutdownServiceRef,
-		                                                         cyEventHelperServiceRef,
-		                                                         cyServiceRegistrarServiceRef,
-		                                                         dialogTaskManagerServiceRef,
-		                                                         iconManagerServiceRef);
+		CytoscapeDesktop cytoscapeDesktop = new CytoscapeDesktop(cytoscapeMenus, netViewMediator, serviceRegistrar);
 
 		CyDesktopManager cyDesktopManager = new CyDesktopManager(cytoscapeDesktop, netViewMediator);
 
 		SessionIO sessionIO = new SessionIO();
 
 		SessionHandler sessionHandler = new SessionHandler(cytoscapeDesktop, netViewMediator, sessionIO,
-				netMainPanel, cyServiceRegistrarServiceRef);
+				netMainPanel, serviceRegistrar);
 
-		PrintAction printAction = new PrintAction(cyApplicationManagerServiceRef, 
-		                                          cyNetworkViewManagerServiceRef, 
-		                                          cytoscapePropertiesServiceRef);
+		PrintAction printAction = new PrintAction(applicationManager, netViewManager, cyProperty);
 
-		ExitAction exitAction = new ExitAction( cytoscapeShutdownServiceRef);
+		ExitAction exitAction = new ExitAction(serviceRegistrar);
 
 		PreferenceAction preferenceAction = new PreferenceAction(cytoscapeDesktop,
 		                                                         preferencesDialogFactory,
-		                                                         bookmarksUtilServiceRef);
+		                                                         bookmarksUtil);
 
 		BookmarkAction bookmarkAction = new BookmarkAction(cytoscapeDesktop, bookmarkDialogFactory);
 
 		LayoutMenuPopulator layoutMenuPopulator = new LayoutMenuPopulator(cytoscapeMenuBar,
-		                                                                  cyApplicationManagerServiceRef, 
-		                                                                  dialogTaskManagerServiceRef);
+		                                                                  applicationManager, 
+		                                                                  dialogTaskManager);
 
 		CytoscapeMenuPopulator cytoscapeMenuPopulator = new CytoscapeMenuPopulator(cytoscapeDesktop,
-		                                                                           dialogTaskManagerServiceRef,
-		                                                                           panelTaskManagerServiceRef,
-		                                                                           cyApplicationManagerServiceRef, 
-		                                                                           cyNetworkViewManagerServiceRef,
-		                                                                           cyServiceRegistrarServiceRef,
-		                                                                           dynamicTaskFactoryProvisionerServiceRef);
+		                                                                           dialogTaskManager,
+		                                                                           panelTaskManager,
+		                                                                           applicationManager, 
+		                                                                           netViewManager,
+		                                                                           serviceRegistrar,
+		                                                                           dynamicTaskFactoryProvisioner);
 
-		LayoutSettingsManager layoutSettingsManager = new LayoutSettingsManager(cyServiceRegistrarServiceRef, tunablePropertySerializerFactoryRef);
+		LayoutSettingsManager layoutSettingsManager = new LayoutSettingsManager(serviceRegistrar, tunablePropSerializerFactory);
 		
-		SettingsAction settingsAction = new SettingsAction(cyLayoutsServiceRef, cytoscapeDesktop,
-		                                                   cyApplicationManagerServiceRef, 
+		SettingsAction settingsAction = new SettingsAction(layoutManager, cytoscapeDesktop,
+		                                                   applicationManager, 
 		                                                   layoutSettingsManager,
-		                                                   cyNetworkViewManagerServiceRef,
-		                                                   panelTaskManagerServiceRef,
-		                                                   dynamicTaskFactoryProvisionerServiceRef);
+		                                                   netViewManager,
+		                                                   panelTaskManager,
+		                                                   dynamicTaskFactoryProvisioner);
 
 		HelpContentsTaskFactory helpContentsTaskFactory = new HelpContentsTaskFactory(cyHelpBroker, cytoscapeDesktop);
-		HelpContactHelpDeskTaskFactory helpContactHelpDeskTaskFactory = new HelpContactHelpDeskTaskFactory(openBrowserServiceRef);
-		HelpReportABugTaskFactory helpReportABugTaskFactory = new HelpReportABugTaskFactory(openBrowserServiceRef, cyVersionServiceRef);
-		HelpAboutTaskFactory helpAboutTaskFactory = new HelpAboutTaskFactory(cyVersionServiceRef, cytoscapeDesktop);
+		HelpContactHelpDeskTaskFactory helpContactHelpDeskTaskFactory = new HelpContactHelpDeskTaskFactory(openBrowser);
+		HelpReportABugTaskFactory helpReportABugTaskFactory = new HelpReportABugTaskFactory(openBrowser, cyVersion);
+		HelpAboutTaskFactory helpAboutTaskFactory = new HelpAboutTaskFactory(cyVersion, cytoscapeDesktop);
 		
 		ArrangeTaskFactory arrangeGridTaskFactory = new ArrangeTaskFactory(GRID, cyDesktopManager, netViewMediator);
 		ArrangeTaskFactory arrangeCascadeTaskFactory = new ArrangeTaskFactory(CASCADE, cyDesktopManager, netViewMediator);
@@ -266,24 +245,24 @@ public class CyActivator extends AbstractCyActivator {
 		
 		DetachedViewToolBarAction detachedViewToolBarAction = new DetachedViewToolBarAction(1.4f, netViewMediator);
 		CloseWindowAction closeWindowAction = new CloseWindowAction(6.1f, netViewMediator);
-		DestroyNetworkViewsAction destroyNetworkViewsAction = new DestroyNetworkViewsAction(3.1f, cyServiceRegistrarServiceRef);
-		DestroyNetworksAction destroyNetworksAction = new DestroyNetworksAction(3.2f, netMainPanel, cyServiceRegistrarServiceRef);
+		DestroyNetworkViewsAction destroyNetworkViewsAction = new DestroyNetworkViewsAction(3.1f, serviceRegistrar);
+		DestroyNetworksAction destroyNetworksAction = new DestroyNetworksAction(3.2f, netMainPanel, serviceRegistrar);
 
-		UndoMonitor undoMonitor = new UndoMonitor(undoSupportServiceRef,
-		                                          cytoscapePropertiesServiceRef);
+		UndoMonitor undoMonitor = new UndoMonitor(undoSupport,
+		                                          cyProperty);
 		RowViewTracker rowViewTracker = new RowViewTracker();
 		SelectEdgeViewUpdater selecteEdgeViewUpdater = new SelectEdgeViewUpdater(rowViewTracker);
 		SelectNodeViewUpdater selecteNodeViewUpdater = new SelectNodeViewUpdater(rowViewTracker);
 		
-		RowsSetViewUpdater rowsSetViewUpdater = new RowsSetViewUpdater(cyApplicationManagerServiceRef, 
-		                                                               cyNetworkViewManagerServiceRef, 
-		                                                               visualMappingManagerServiceRef,
+		RowsSetViewUpdater rowsSetViewUpdater = new RowsSetViewUpdater(applicationManager, 
+		                                                               netViewManager, 
+		                                                               visualMappingManager,
 		                                                               rowViewTracker,
 		                                                               netViewMediator,
-		                                                               cyColumnIdentifierFactory);
+		                                                               cyColumnIdFactory);
 		
-		RecentSessionManager recentSessionManager = new RecentSessionManager(cyServiceRegistrarServiceRef);
-		NetworkSelectionMediator networkSelectionMediator = new NetworkSelectionMediator(netMainPanel, netViewMainPanel, cyServiceRegistrarServiceRef);
+		RecentSessionManager recentSessionManager = new RecentSessionManager(serviceRegistrar);
+		NetworkSelectionMediator networkSelectionMediator = new NetworkSelectionMediator(netMainPanel, netViewMainPanel, serviceRegistrar);
 		
 		registerService(bc, cyHelpBroker, CyHelpBroker.class, new Properties());
 		registerService(bc, undoAction, CyAction.class, new Properties());

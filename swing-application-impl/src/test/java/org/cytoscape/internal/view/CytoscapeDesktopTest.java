@@ -39,13 +39,17 @@ public class CytoscapeDesktopTest {
 	@Before
 	public void setUp() throws Exception {
 		MockitoAnnotations.initMocks(this);
+		when(registrar.getService(CyShutdown.class)).thenReturn(shut);
+		when(registrar.getService(CyEventHelper.class)).thenReturn(eh);
+		when(registrar.getService(DialogTaskManager.class)).thenReturn(taskMgr);
+		when(registrar.getService(IconManager.class)).thenReturn(icoMgr);
 		
 		final JPanel panel = new JPanel();
 		when(taskStatusPanelFactory.createTaskStatusPanel()).thenReturn(panel);
 		
 		CytoscapeMenus menus = new CytoscapeMenus(new CytoscapeMenuBar(), new CytoscapeToolBar());
 		
-		desktop = new CytoscapeDesktop(menus, netViewMediator, shut, eh, registrar, taskMgr, icoMgr);
+		desktop = new CytoscapeDesktop(menus, netViewMediator, registrar);
 	}
 	
 	@Test
