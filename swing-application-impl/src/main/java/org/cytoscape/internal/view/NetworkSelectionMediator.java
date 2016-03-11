@@ -190,7 +190,6 @@ public class NetworkSelectionMediator implements SetSelectedNetworksListener, Se
 		
 		if (vc == null || vc.getNetworkView().equals(appMgr.getCurrentNetworkView()))
 			return;
-		System.out.println("$ setCurrent ViewContainer: " + vc.getNetworkView());
 		
 		new Thread(() -> {
 			appMgr.setCurrentNetworkView(vc.getNetworkView());
@@ -266,8 +265,6 @@ public class NetworkSelectionMediator implements SetSelectedNetworksListener, Se
 					return;
 			}
 			
-			System.out.println(": Cur NET: " + network);
-			
 			CyNetworkView currentView = null;
 			Collection<CyNetworkView> selectedViews = viewMainPanel.getSelectedNetworkViews();
 			Collection<CyNetwork> selectedNetworks = netMainPanel.getSelectedNetworks(false);
@@ -312,7 +309,6 @@ public class NetworkSelectionMediator implements SetSelectedNetworksListener, Se
 				if (Util.equalSets(selectedNetworks, appMgr.getSelectedNetworks()))
 					return;
 			}
-			System.out.println("> Networks: " + selectedNetworks);
 			
 			CyNetworkView currentView = viewMainPanel.getCurrentNetworkView();
 			CyNetwork currentNet = netMainPanel.getCurrentNetwork();
