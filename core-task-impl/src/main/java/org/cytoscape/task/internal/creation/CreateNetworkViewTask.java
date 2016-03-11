@@ -29,6 +29,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -70,7 +71,7 @@ public class CreateNetworkViewTask extends AbstractNetworkCollectionTask
 	private final RenderingEngineManager renderingEngineMgr;
 	private final CyApplicationManager appMgr;
 	private final CyNetworkView sourceView;
-	private	Collection<CyNetworkView> result;
+	private	List<CyNetworkView> result;
 
 	@Tunable(description="Network to create a view for", context="nogui")
 	public CyNetwork network;
@@ -155,19 +156,38 @@ public class CreateNetworkViewTask extends AbstractNetworkCollectionTask
 			final ChooseViewRendererTask chooseRendererTask = new ChooseViewRendererTask(netList);
 			insertTasksAfterCurrentTask(chooseRendererTask);
 		} else {
+			final CyNetwork curNet = appMgr.getCurrentNetwork();
+			CyNetworkView curView = null;
+			
 			final VisualStyle style = vmMgr.getCurrentVisualStyle();
 			int i = 0;
 			int viewCount = netList.size();
 			
 			for (final CyNetwork n : netList) {
-				result.add(createView(n, style, taskMonitor));
+				final CyNetworkView view = createView(n, style, taskMonitor);
+				result.add(view);
+				
+				if (n.equals(curNet))
+					curView = view;
+				
 				taskMonitor.setStatusMessage("Network view successfully created for:  "
 						+ n.getRow(n).get(CyNetwork.NAME, String.class));
 				i++;
 				taskMonitor.setProgress((i / (double) viewCount));
 			}
+			
+			if (curView == null && !result.isEmpty())
+				curView = result.get(result.size() - 1);
+			
+			if (curView != null) {
+				final List<CyNetworkView> selectedViews = new ArrayList<>(appMgr.getSelectedNetworkViews());
+				selectedViews.add(curView);
+				
+				appMgr.setCurrentNetworkView(curView);
+				appMgr.setSelectedNetworkViews(selectedViews);
+			}
 		}
-	
+		
 		taskMonitor.setProgress(1.0);
 	}
 

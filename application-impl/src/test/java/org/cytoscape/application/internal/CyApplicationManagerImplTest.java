@@ -1,12 +1,43 @@
 package org.cytoscape.application.internal;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.anyLong;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import org.cytoscape.application.NetworkViewRenderer;
+import org.cytoscape.ding.NetworkViewTestSupport;
+import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNetworkManager;
+import org.cytoscape.model.CyTable;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.presentation.RenderingEngine;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+
 /*
  * #%L
  * Cytoscape Application Impl (application-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2008 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2008 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,39 +55,11 @@ package org.cytoscape.application.internal;
  * #L%
  */
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import org.cytoscape.application.NetworkViewRenderer;
-import org.cytoscape.ding.NetworkViewTestSupport;
-import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.model.CyTable;
-import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.CyNetworkViewManager;
-import org.cytoscape.view.presentation.RenderingEngine;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-
 public class CyApplicationManagerImplTest {
 
-	@Mock
-	private CyEventHelper evtHelper;
-	@Mock
-	private CyNetworkManager netMgr;
-	@Mock
-	private CyNetworkViewManager netViewMgr;
+	@Mock private CyServiceRegistrar serviceRegistrar;
+	@Mock private CyEventHelper evtHelper;
+	@Mock private CyNetworkManager netMgr;
 	
 	private CyApplicationManagerImpl appMgr;
 	private NetworkViewTestSupport nvtSupport;
@@ -66,16 +69,15 @@ public class CyApplicationManagerImplTest {
 		MockitoAnnotations.initMocks(this);
 		
 		nvtSupport = new NetworkViewTestSupport();
-		final Set<CyNetworkView> views = new HashSet<CyNetworkView>();
-		final Set<CyNetwork> networks = new HashSet<CyNetwork>();
+		final Set<CyNetwork> networks = new HashSet<>();
 		
 		when(netMgr.getNetworkSet()).thenReturn(networks);
 		when(netMgr.networkExists(anyLong())).thenReturn(false);
-		when(netViewMgr.getNetworkViewSet()).thenReturn(views);
-		when(netViewMgr.viewExists(any(CyNetwork.class))).thenReturn(false);
-		when(netViewMgr.getNetworkViews(any(CyNetwork.class))).thenReturn(new HashSet<CyNetworkView>());
 		
-		appMgr = new CyApplicationManagerImpl(evtHelper, netMgr, netViewMgr);
+		when(serviceRegistrar.getService(CyEventHelper.class)).thenReturn(evtHelper);
+		when(serviceRegistrar.getService(CyNetworkManager.class)).thenReturn(netMgr);
+		
+		appMgr = new CyApplicationManagerImpl(serviceRegistrar);
 	}
 
 	@Test
@@ -95,16 +97,15 @@ public class CyApplicationManagerImplTest {
 		appMgr.setCurrentNetworkView(view);
 		appMgr.setCurrentNetwork(null);
 		assertNull(appMgr.getCurrentNetwork());
-		assertNull(appMgr.getCurrentNetworkView());
+		assertNotNull(appMgr.getCurrentNetworkView());
 	}
 	
 	@Test
-	public void testSetNullCurrentNetworkView() {
+	public void testSetNullCurrentView() {
 		final CyNetworkView view = newNetworkView();
 		appMgr.setCurrentNetworkView(view);
 		appMgr.setCurrentNetworkView(null);
 		assertNull(appMgr.getCurrentNetworkView());
-		assertEquals(view.getModel(), appMgr.getCurrentNetwork());
 	}
 	
 	@Test
@@ -131,7 +132,7 @@ public class CyApplicationManagerImplTest {
 	}
 	
 	@Test
-	public void testSetNullSelectedNetworkViews() {
+	public void testSetNullSelectedViews() {
 		appMgr.setSelectedNetworkViews(null);
 		assertTrue(appMgr.getSelectedNetworkViews().isEmpty());
 	}
@@ -144,10 +145,9 @@ public class CyApplicationManagerImplTest {
 	}
 	
 	@Test
-	public void testSetEmptySelectedNetworkViews() {
-		appMgr.setSelectedNetworkViews(new ArrayList<CyNetworkView>());
+	public void testSetEmptySelectedViews() {
+		appMgr.setSelectedNetworkViews(new ArrayList<>());
 		assertTrue(appMgr.getSelectedNetworkViews().isEmpty());
-		assertTrue(appMgr.getSelectedNetworks().isEmpty());
 	}
 	
 	@Test
@@ -156,25 +156,6 @@ public class CyApplicationManagerImplTest {
 		CyNetwork net = view.getModel();
 		appMgr.setCurrentNetwork(net);
 		assertEquals(net, appMgr.getCurrentNetwork());
-		assertEquals(view, appMgr.getCurrentNetworkView());
-		// The current network is selected
-		List<CyNetwork> selNets = appMgr.getSelectedNetworks();
-		assertEquals(1, selNets.size());
-		assertTrue(selNets.contains(net));
-	}
-	
-	@Test
-	public void testSetUnselectedCurrentNetworkChangesNetworkSelection() {
-		// Setting a current network that is not selected changes the network selection
-		CyNetwork n1 = newNetwork();
-		CyNetwork n2 = newNetwork();
-		CyNetwork n3 = newNetwork();
-		appMgr.setSelectedNetworks(Arrays.asList(new CyNetwork[]{ n1, n2 }));
-		appMgr.setCurrentNetwork(n3);
-		
-		assertEquals(n3, appMgr.getCurrentNetwork());
-		assertEquals(1, appMgr.getSelectedNetworks().size());
-		assertTrue(appMgr.getSelectedNetworks().contains(n3));
 	}
 	
 	@Test
@@ -191,24 +172,30 @@ public class CyApplicationManagerImplTest {
 	}
 	
 	@Test
-	public void testSetCurrentNetworkView() {
-		CyNetworkView view = newNetworkView();
-		appMgr.setCurrentNetworkView(view);
-		assertEquals(view, appMgr.getCurrentNetworkView());
-		assertEquals(view.getModel(), appMgr.getCurrentNetwork());
-		// The current view is selected
-		List<CyNetwork> selNets = appMgr.getSelectedNetworks();
-		assertEquals(1, selNets.size());
-		assertTrue(selNets.contains(view.getModel()));
-		// The current view is selected
-		List<CyNetworkView> selViews = appMgr.getSelectedNetworkViews();
-		assertEquals(1, selViews.size());
-		assertTrue(selViews.contains(view));
+	public void testSetUnselectedCurrentNetworkChangesNetworkSelection() {
+		// Setting a current view that is not selected changes the network view selection
+		CyNetworkView v1 = newNetworkView();
+		CyNetworkView v2 = newNetworkView();
+		CyNetworkView v3 = newNetworkView();
+		appMgr.setSelectedNetworks(Arrays.asList(new CyNetwork[]{ v1.getModel(), v2.getModel() }));
+		appMgr.setCurrentNetwork(v3.getModel());
+		
+		assertEquals(v3.getModel(), appMgr.getCurrentNetwork());
+		assertEquals(1, appMgr.getSelectedNetworks().size());
+		assertTrue(appMgr.getSelectedNetworks().contains(v3.getModel()));
 	}
 	
 	@Test
-	public void testSetUnselectedCurrentNetworkViewChangesViewSelection() {
-		// Setting a current view that is not selected changes the network view selection
+	public void testSetCurrentView() {
+		CyNetworkView view = newNetworkView();
+		appMgr.setCurrentNetworkView(view);
+		assertEquals(view, appMgr.getCurrentNetworkView());
+	}
+	
+	@Test
+	public void testSetUnselectedCurrentViewDoesNotChangesViewSelection() {
+		// Setting a current view that is not selected does NOT change the network view selection,
+		// otherwise it could cause a lot of UI related issues
 		CyNetworkView v1 = newNetworkView();
 		CyNetworkView v2 = newNetworkView();
 		CyNetworkView v3 = newNetworkView();
@@ -216,12 +203,12 @@ public class CyApplicationManagerImplTest {
 		appMgr.setCurrentNetworkView(v3);
 		
 		assertEquals(v3, appMgr.getCurrentNetworkView());
-		assertEquals(1, appMgr.getSelectedNetworkViews().size());
-		assertTrue(appMgr.getSelectedNetworkViews().contains(v3));
+		assertEquals(2, appMgr.getSelectedNetworkViews().size());
+		assertFalse(appMgr.getSelectedNetworkViews().contains(v3));
 	}
 	
 	@Test
-	public void testSetSelectedCurrentNetworkViewDoesNotChangeViewSelection() {
+	public void testSetSelectedCurrentViewDoesNotChangeViewSelection() {
 		// Setting a current  view that is already selected does NOT change the network view selection state
 		CyNetworkView v1 = newNetworkView();
 		CyNetworkView v2 = newNetworkView();
@@ -254,24 +241,7 @@ public class CyApplicationManagerImplTest {
 	}
 	
 	@Test
-	public void testSetSelectedNetworksIncludesCurrent() {
-		final CyNetwork n1 = newNetwork();
-		final CyNetwork n2 = newNetwork();
-		final CyNetwork n3 = newNetwork();
-		final List<CyNetwork> nets = Arrays.asList(new CyNetwork[]{n1, n2});
-		
-		appMgr.setCurrentNetwork(n3);
-		appMgr.setSelectedNetworks(nets);
-		final List<CyNetwork> selectedNets = appMgr.getSelectedNetworks();
-		
-		assertEquals(3, selectedNets.size());
-		assertTrue(selectedNets.containsAll(nets));
-		assertTrue(selectedNets.contains(n3));
-		assertEquals(n3, appMgr.getCurrentNetwork()); // Shouldn't change the current network
-	}
-	
-	@Test
-	public void testSetSelectedNetworkViews() {
+	public void testSetSelectedViews() {
 		final List<CyNetwork> nets = Collections.singletonList(newNetwork());
 		appMgr.setSelectedNetworks(nets);
 		
@@ -292,7 +262,7 @@ public class CyApplicationManagerImplTest {
 	}
 	
 	@Test
-	public void testSetSelectedNetworkViewsIncludesCurrent() {
+	public void testSetSelectedViewsNotAffectedByCurrent() {
 		final CyNetworkView v1 = newNetworkView();
 		final CyNetworkView v2 = newNetworkView();
 		final CyNetworkView v3 = newNetworkView();
@@ -302,9 +272,9 @@ public class CyApplicationManagerImplTest {
 		appMgr.setSelectedNetworkViews(views);
 		final List<CyNetworkView> selectedViews = appMgr.getSelectedNetworkViews();
 		
-		assertEquals(3, selectedViews.size());
+		assertEquals(2, selectedViews.size());
 		assertTrue(selectedViews.containsAll(views));
-		assertTrue(selectedViews.contains(v3));
+		assertFalse(selectedViews.contains(v3));
 		assertEquals(v3, appMgr.getCurrentNetworkView()); // Shouldn't change the current network view
 	}
 	
@@ -324,7 +294,7 @@ public class CyApplicationManagerImplTest {
 	}
 	
 	@Test
-	public void testGetDefaultNetworkViewRenderer() {
+	public void testGetDefaultViewRenderer() {
 		NetworkViewRenderer renderer1 = mock(NetworkViewRenderer.class);
 		when(renderer1.getId()).thenReturn("C");
 		NetworkViewRenderer renderer2 = mock(NetworkViewRenderer.class);
@@ -348,7 +318,7 @@ public class CyApplicationManagerImplTest {
 	private CyNetworkView newNetworkView() {
 		CyNetworkView view = nvtSupport.getNetworkView();
 		registerNetwork(view.getModel());
-		registerNetworkView(view);
+		
 		return view;
 	}
 	
@@ -365,14 +335,6 @@ public class CyApplicationManagerImplTest {
 		netMgr.getNetworkSet().add(net);
 		when(netMgr.getNetwork(net.getSUID())).thenReturn(net);
 		when(netMgr.networkExists(net.getSUID())).thenReturn(true);
-	}
-	
-	private void registerNetworkView(CyNetworkView view) {
-		netViewMgr.getNetworkViewSet().add(view);
-		when(netViewMgr.viewExists(view.getModel())).thenReturn(true);
-		Set<CyNetworkView> views = new HashSet<CyNetworkView>(netViewMgr.getNetworkViews(view.getModel()));
-		views.add(view);
-		when(netViewMgr.getNetworkViews(view.getModel())).thenReturn(views);
 	}
 	
 	private void assertSelected(boolean selected, CyNetwork... networks) {

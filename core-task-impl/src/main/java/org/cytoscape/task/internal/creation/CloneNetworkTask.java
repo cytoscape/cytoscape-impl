@@ -82,7 +82,7 @@ public class CloneNetworkTask extends AbstractCreationTask implements Observable
 	private final CyGroupFactory groupFactory;
 	private final RenderingEngineManager renderingEngineMgr;
 	private final CyNetworkViewFactory nullNetworkViewFactory;
-	private CyNetworkView result = null;
+	private CyNetworkView result;
 
 	public CloneNetworkTask(final CyNetwork net,
 							final CyNetworkManager netmgr,
@@ -115,7 +115,6 @@ public class CloneNetworkTask extends AbstractCreationTask implements Observable
 
 	public void run(TaskMonitor tm) {
 		tm.setProgress(0.0);
-		final long start = System.currentTimeMillis();
 		logger.debug("Clone Network Task start");
 		
 		// Create copied network model
@@ -123,9 +122,12 @@ public class CloneNetworkTask extends AbstractCreationTask implements Observable
 		tm.setProgress(0.4);
 		final Collection<CyNetworkView> views = networkViewManager.getNetworkViews(parentNetwork);
 		CyNetworkView origView = null;
+		
 		if (views.size() != 0)
 			origView = views.iterator().next(); 
+		
 		networkManager.addNetwork(newNet);
+		appMgr.setCurrentNetwork(newNet);
 		tm.setProgress(0.6);
 
 		if (origView != null) {
@@ -134,10 +136,12 @@ public class CloneNetworkTask extends AbstractCreationTask implements Observable
 			CopyExistingViewTask task = new CopyExistingViewTask(vmm, renderingEngineMgr, newView, origView, new2OrigNodeMap, new2OrigEdgeMap, false);
 			insertTasksAfterCurrentTask(task);
 			// Let the CopyExistingViewTask respond to the Observer (if any)
+			appMgr.setCurrentNetworkView(newView);
+			appMgr.setSelectedNetworkViews(Collections.singletonList(newView));
 		} else {
 			result = nullNetworkViewFactory.createNetworkView(newNet);
 		}
-
+		
 		tm.setProgress(1.0);
 	}
 
