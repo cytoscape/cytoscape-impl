@@ -270,7 +270,6 @@ import org.cytoscape.task.write.ExportSelectedTableTaskFactory;
 import org.cytoscape.task.write.ExportTableTaskFactory;
 import org.cytoscape.task.write.ExportVizmapTaskFactory;
 import org.cytoscape.task.write.SaveSessionAsTaskFactory;
-import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
@@ -513,18 +512,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(ENABLE_FOR, ENABLE_FOR_SELECTED_NODES_OR_EDGES);
 			props.setProperty(TITLE, "Delete Selected Nodes and Edges");
 			props.setProperty(MENU_GRAVITY, "5.0");
-			String delete_acc = "DELETE";
-			boolean is_mac = false;
-			try {
-			    is_mac = LookAndFeelUtil.isMac();
-			}
-			catch (final Exception e) {
-			    // Do nothing, will simply behave as if not mac.
-			}
-			if (is_mac) {
-			    delete_acc = "BACK_SPACE";
-			}
-			props.setProperty(ACCELERATOR, delete_acc);
+			props.setProperty(ACCELERATOR, "DELETE");
 			props.setProperty(COMMAND, "delete");
 			props.setProperty(COMMAND_NAMESPACE, "network");
 			props.setProperty(COMMAND_DESCRIPTION, "Delete nodes or edges from a network");
