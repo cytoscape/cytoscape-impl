@@ -413,7 +413,7 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 		return list;
 	}
 	
-	public void setSelectedNetworks(final List<CyNetwork> selectedNetworks) {
+	public void setSelectedNetworks(final Collection<CyNetwork> selectedNetworks) {
 		if (Util.equalSets(selectedNetworks, getSelectedNetworks(false)))
 			return;
 		
@@ -834,6 +834,10 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 		selectionTail = null;
 		
 		setCurrentNetwork(item.getModel().getNetwork());
+	}
+	
+	CyNetwork getCurrentNetwork() {
+		return currentNetwork;
 	}
 	
 	void setCurrentNetwork(final CyNetwork newValue) {

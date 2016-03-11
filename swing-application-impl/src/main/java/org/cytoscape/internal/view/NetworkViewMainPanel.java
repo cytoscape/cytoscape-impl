@@ -45,6 +45,7 @@ import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JMenuBar;
 import javax.swing.JPanel;
+import javax.swing.JToggleButton;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
@@ -99,6 +100,7 @@ public class NetworkViewMainPanel extends JPanel {
 	private final Set<CyNetworkView> dirtyThumbnails;
 	
 	private NetworkViewFrame currentViewFrame;
+	private boolean gridMode;
 	
 	private final MousePressedAWTEventListener mousePressedAWTEventListener;
 	
@@ -133,38 +135,19 @@ public class NetworkViewMainPanel extends JPanel {
 		final GraphicsConfiguration gc = currentViewFrame != null ? currentViewFrame.getGraphicsConfiguration() : null;
 		
 		final NetworkViewContainer vc = new NetworkViewContainer(view, engineFactory, serviceRegistrar);
-		vc.addComponentListener(new ComponentAdapter() {
-			@Override
-			public void componentShown(ComponentEvent e) {
-				setCurrentNetworkView(view);
-				setSelectedNetworkViews(Collections.singletonList(view));
-			}
+		vc.getGridModeButton().addActionListener((ActionEvent e) -> {
+			setGridMode(true);
+			networkViewGrid.requestFocusInWindow();
 		});
-		vc.getGridModeButton().addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				showGrid();
-				networkViewGrid.requestFocusInWindow();
-			}
+		vc.getDetachViewButton().addActionListener((ActionEvent e) -> {
+			detachNetworkView(view);
 		});
-		vc.getDetachViewButton().addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				detachNetworkView(view);
-			}
+		vc.getReattachViewButton().addActionListener((ActionEvent e) -> {
+			reattachNetworkView(view);
 		});
-		vc.getReattachViewButton().addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				reattachNetworkView(view);
-			}
-		});
-		vc.getViewTitleTextField().addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				changeCurrentViewTitle(vc);
-				vc.requestFocusInWindow();
-			}
+		vc.getViewTitleTextField().addActionListener((ActionEvent e) -> {
+			changeCurrentViewTitle(vc);
+			vc.requestFocusInWindow();
 		});
 		vc.getViewTitleTextField().addKeyListener(new KeyAdapter() {
 			@Override
@@ -192,17 +175,22 @@ public class NetworkViewMainPanel extends JPanel {
 		getContentPane().add(vc, vc.getName());
 		
 		if (showView) {
-			// Always show attached container first, even if it will be detached later
-			// so the thumbnail can be generated
-			showViewContainer(vc.getName());
 			setDirtyThumbnail(view);
+			
+			if (isGridMode())
+				updateGrid();
+			else
+				showViewContainer(vc.getName());
 			
 			// If the latest focused view was in a detached frame,
 			// detach the new one as well and put it in the same monitor
 			if (gc != null)
 				detachNetworkView(view, gc);
 		} else {
-			showGrid();
+			if (isGridMode())
+				updateGrid();
+			else
+				setGridMode(true);
 		}
 		
 		return vc.getRenderingEngine();
@@ -264,7 +252,7 @@ public class NetworkViewMainPanel extends JPanel {
 		}
 	}
 	
-	public void setSelectedNetworkViews(final List<CyNetworkView> networkViews) {
+	public void setSelectedNetworkViews(final Collection<CyNetworkView> networkViews) {
 		if (Util.equalSets(networkViews, getSelectedNetworkViews()))
 			return;
 		
@@ -294,28 +282,39 @@ public class NetworkViewMainPanel extends JPanel {
 				showGrid();
 			} else {
 				if (isGridMode()) {
-					final ThumbnailPanel tp = networkViewGrid.getCurrentItem();
-					
-					if (tp != null && tp.getParent() instanceof JComponent)
-						((JComponent) tp.getParent()).scrollRectToVisible(tp.getBounds());
+					if (isGridVisible())
+						updateGrid();
+					else
+						showGrid();
 				} else {
 					showViewContainer(createUniqueKey(view));
+				}
+				
+				if (isGridVisible()) {
+					final ThumbnailPanel tp = networkViewGrid.getCurrentItem();
+				
+					if (tp != null && tp.getParent() instanceof JComponent)
+						((JComponent) tp.getParent()).scrollRectToVisible(tp.getBounds());
 				}
 			}
 		}
 	}
 	
 	public void showGrid() {
-		if (!isGridMode()) {
+		if (!isGridVisible()) {
 			cardLayout.show(getContentPane(), networkViewGrid.getName());
-			networkViewGrid.update(networkViewGrid.getThumbnailSlider().getValue()); // TODO remove it when already updating after view changes
-			networkViewGrid.getReattachAllViewsButton().setEnabled(!viewFrames.isEmpty());
-			
-			final HashSet<CyNetworkView> dirtySet = new HashSet<>(dirtyThumbnails);
-			
-			for (CyNetworkView view : dirtySet)
-				updateThumbnail(view);
+			updateGrid();
 		}
+	}
+
+	public void updateGrid() {
+		networkViewGrid.update(networkViewGrid.getThumbnailSlider().getValue()); // TODO remove it when already updating after view changes
+		networkViewGrid.getReattachAllViewsButton().setEnabled(!viewFrames.isEmpty());
+		
+		final HashSet<CyNetworkView> dirtySet = new HashSet<>(dirtyThumbnails);
+		
+		for (CyNetworkView view : dirtySet)
+			updateThumbnail(view);
 	}
 	
 	public NetworkViewFrame detachNetworkView(final CyNetworkView view) {
@@ -393,8 +392,8 @@ public class NetworkViewMainPanel extends JPanel {
 				frame.addWindowListener(new WindowAdapter() {
 					@Override
 					public void windowActivated(WindowEvent e) {
-						setCurrentNetworkView(frame.getNetworkView());
 						setSelectedNetworkViews(Collections.singletonList(frame.getNetworkView()));
+						setCurrentNetworkView(frame.getNetworkView());
 					}
 				});
 			}
@@ -439,7 +438,7 @@ public class NetworkViewMainPanel extends JPanel {
 			viewContainers.put(vc.getName(), vc);
 			getNetworkViewGrid().setDetached(view, false);
 			
-			if (view.equals(getCurrentNetworkView()))
+			if (!isGridMode() && view.equals(getCurrentNetworkView()))
 				showViewContainer(vc.getName());
 		}
 	}
@@ -451,10 +450,7 @@ public class NetworkViewMainPanel extends JPanel {
 	
 	public void updateThumbnailPanel(final CyNetworkView view, final boolean redraw) {
 		// If the Grid is not visible, just flag this view as dirty.
-		// IMPORTANT: If we update the grid thumbnail before the actual view canvas is updated,
-		//            Ding flags itself as not dirty and thinks it does not need
-		//            to redraw the main view anymore.
-		if (isGridMode()) {
+		if (isGridVisible()) {
 			final ThumbnailPanel tp = networkViewGrid.getItem(view);
 			
 			if (tp != null)
@@ -495,7 +491,7 @@ public class NetworkViewMainPanel extends JPanel {
 			frame.setResizable(resizable);
 			frame.update();
 			frame.invalidate();
-		} else if (!isGridMode()) {
+		} else if (!isGridVisible()) {
 			final NetworkViewContainer vc = getNetworkViewContainer(view);
 			
 			if (vc != null && vc.equals(getCurrentViewContainer()))
@@ -570,7 +566,7 @@ public class NetworkViewMainPanel extends JPanel {
 		showGrid();
 	}
 	
-	private void showComparisonPanel(final int orientation, final CyNetworkView view1, final CyNetworkView view2) {
+	protected void showComparisonPanel(final int orientation, final CyNetworkView view1, final CyNetworkView view2) {
 		final CyNetworkView currentView = getCurrentNetworkView();
 		final String key = NetworkViewComparisonPanel.createUniqueKey(view1, view2);
 		NetworkViewComparisonPanel cp = comparisonPanels.get(key);
@@ -653,8 +649,10 @@ public class NetworkViewMainPanel extends JPanel {
 			comparisonPanels.put(cp.getName(), cp);
 		}
 		
-		if (cp != null)
+		if (cp != null) {
+			setGridMode(false);
 			showViewContainer(cp.getName());
+		}
 	}
 	
 	private void endComparison(final NetworkViewComparisonPanel cp) {
@@ -685,7 +683,27 @@ public class NetworkViewMainPanel extends JPanel {
 		return null;
 	}
 	
-	public boolean isGridMode() {
+	public void setGridMode(final boolean newValue) {
+		final boolean changed = newValue != gridMode;
+		final boolean oldValue = gridMode;
+		gridMode = newValue;
+		
+		final JToggleButton btn = gridMode ? networkViewGrid.getGridModeButton() : networkViewGrid.getViewModeButton();
+		networkViewGrid.getModeButtonGroup().setSelected(btn.getModel(), true);
+		networkViewGrid.updateModeButtons();
+		
+		if (newValue)
+			showGrid();
+		
+		if (changed)
+			firePropertyChange("gridMode", oldValue, newValue);
+	}
+	
+	protected boolean isGridMode() {
+		return gridMode;
+	}
+	
+	protected boolean isGridVisible() {
 		return getCurrentCard() == networkViewGrid;
 	}
 	
@@ -711,39 +729,6 @@ public class NetworkViewMainPanel extends JPanel {
 	
 	private NetworkViewGrid createNetworkViewGrid() {
 		final NetworkViewGrid nvg = new NetworkViewGrid(viewComparator, serviceRegistrar);
-		
-		nvg.getViewModeButton().addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				final CyNetworkView currentView = getCurrentNetworkView();
-				NetworkViewContainer viewContainer = null;
-				
-				if (currentView != null) {
-					viewContainer = showViewContainer(currentView);
-				} else {
-					final List<ThumbnailPanel> selectedItems = networkViewGrid.getSelectedItems();
-					
-					if (!selectedItems.isEmpty())
-						viewContainer = showViewContainer(selectedItems.get(0).getNetworkView());
-					else if (!networkViewGrid.isEmpty())
-						viewContainer = showViewContainer(networkViewGrid.firstItem().getNetworkView());
-				}
-				
-				if (viewContainer != null)
-					viewContainer.getContentPane().requestFocusInWindow();
-			}
-		});
-		
-		nvg.getComparisonModeButton().addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				final List<CyNetworkView> selectedViews = getSelectedNetworkViews();
-
-				if (selectedViews.size() == 2)
-					showComparisonPanel(NetworkViewComparisonPanel.HORIZONTAL, selectedViews.get(0),
-							selectedViews.get(1));
-			}
-		});
 		
 		nvg.getDetachSelectedViewsButton().addActionListener(new ActionListener() {
 			@Override
@@ -802,6 +787,11 @@ public class NetworkViewMainPanel extends JPanel {
 		setLayout(new BorderLayout());
 		add(getContentPane(), BorderLayout.CENTER);
 		
+		final JToggleButton selectedBtn = isGridMode() ? networkViewGrid.getGridModeButton()
+				: networkViewGrid.getViewModeButton();
+		networkViewGrid.getModeButtonGroup().setSelected(selectedBtn.getModel(), true);
+		networkViewGrid.updateModeButtons();
+		
 		// Add Listeners
 		networkViewGrid.addPropertyChangeListener("thumbnailPanels", new PropertyChangeListener() {
 			@Override
@@ -824,6 +814,8 @@ public class NetworkViewMainPanel extends JPanel {
 									
 									if (vc != null)
 										vc.getContentPane().requestFocusInWindow();
+									
+									setGridMode(false);
 								}
 							}
 						}
