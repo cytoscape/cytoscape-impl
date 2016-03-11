@@ -182,7 +182,6 @@ public class ColumnFilterViewFactory implements TransformerViewFactory {
 		private JLabel booleanLabel;
 		private JPanel booleanPanel;
 		
-		private FocusListener textFieldFocusListener;
 		private DocumentListener textFieldDocumentListener;
 		private ActionListener predicateComboBoxActionListener;
 		private ActionListener nameComboBoxActionListener;
@@ -358,11 +357,6 @@ public class ColumnFilterViewFactory implements TransformerViewFactory {
 		
 		
 		private void addListeners() {
-			textField.addFocusListener(textFieldFocusListener = new FocusAdapter() {
-				public void focusLost(FocusEvent event) {
-					filter.setCriterion(textField.getText());
-				}
-			});
 			textField.getDocument().addDocumentListener(textFieldDocumentListener = new DocumentListenerAdapter() {
 				public void update(DocumentEvent event) {
 					filter.setCriterion(textField.getText());
@@ -397,7 +391,6 @@ public class ColumnFilterViewFactory implements TransformerViewFactory {
 		
 
 		private void removeListeners() {
-			textField.removeFocusListener(textFieldFocusListener);
 			textField.getDocument().removeDocumentListener(textFieldDocumentListener);
 			predicateComboBox.removeActionListener(predicateComboBoxActionListener);
 			nameComboBox.removeActionListener(nameComboBoxActionListener);
