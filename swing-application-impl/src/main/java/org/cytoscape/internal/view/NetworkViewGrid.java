@@ -1048,7 +1048,9 @@ public class NetworkViewGrid extends JPanel {
 		private void updateTitleLabel() {
 			final String title = ViewUtil.getTitle(getNetworkView());
 			final String netName = ViewUtil.getName(getNetworkView().getModel());
-			setToolTipText("<html><center>" + title + "<br>(" + netName + ")</center></html>");
+			setToolTipText(title);
+// TODO Use this one when multiple views is supported, to show the network name			
+//			setToolTipText("<html><center>" + title + "<br>(" + netName + ")</center></html>");
 			getTitleLabel().setText(title);
 			
 			Dimension size = getSize();

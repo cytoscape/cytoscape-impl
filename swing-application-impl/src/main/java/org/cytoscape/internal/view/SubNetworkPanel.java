@@ -7,8 +7,6 @@ import static org.cytoscape.util.swing.IconManager.ICON_SHARE_ALT;
 import static org.cytoscape.util.swing.IconManager.ICON_SHARE_ALT_SQUARE;
 
 import java.awt.Dimension;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 
 import javax.swing.BorderFactory;
 import javax.swing.GroupLayout;
@@ -45,7 +43,6 @@ import org.cytoscape.util.swing.LookAndFeelUtil;
  * <http://www.gnu.org/licenses/lgpl-2.1.html>.
  * #L%
  */
-
 
 @SuppressWarnings("serial")
 public class SubNetworkPanel extends AbstractNetworkPanel<CySubNetwork> {
@@ -245,23 +242,24 @@ public class SubNetworkPanel extends AbstractNetworkPanel<CySubNetwork> {
 			
 			viewIconLabel = new JLabel(ICON_SHARE_ALT_SQUARE);
 			viewIconLabel.setFont(iconManager.getIconFont(16.0f));
-			
-			viewIconLabel.addMouseListener(new MouseAdapter() {
-				@Override
-				public void mouseEntered(MouseEvent e) {
-					final int viewCount = getModel().getViewCount();
-					
-					if (viewCount > 0)
-						getViewIconLabel().setForeground(UIManager.getColor("Focus.color"));
-				}
-				@Override
-				public void mouseExited(MouseEvent e) {
-					final int viewCount = getModel().getViewCount();
-					
-					if (viewCount > 0)
-						updateViewIconLabel();
-				}
-			});
+
+// TODO Uncomment when multiple views support is enabled
+//			viewIconLabel.addMouseListener(new MouseAdapter() {
+//				@Override
+//				public void mouseEntered(MouseEvent e) {
+//					final int viewCount = getModel().getViewCount();
+//					
+//					if (viewCount > 0)
+//						getViewIconLabel().setForeground(UIManager.getColor("Focus.color"));
+//				}
+//				@Override
+//				public void mouseExited(MouseEvent e) {
+//					final int viewCount = getModel().getViewCount();
+//					
+//					if (viewCount > 0)
+//						updateViewIconLabel();
+//				}
+//			});
 		}
 		
 		return viewIconLabel;

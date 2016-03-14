@@ -13,14 +13,11 @@ import static org.cytoscape.util.swing.IconManager.ICON_THUMB_TACK;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
-import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.KeyboardFocusManager;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 
 import javax.swing.AbstractAction;
 import javax.swing.ActionMap;
@@ -334,13 +331,14 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 			viewTitleLabel.setFont(viewTitleLabel.getFont().deriveFont(LookAndFeelUtil.getSmallFontSize()));
 			viewTitleLabel.setMinimumSize(new Dimension(viewTitleLabel.getPreferredSize().width,
 					getViewTitleTextField().getPreferredSize().height));
-			viewTitleLabel.addMouseListener(new MouseAdapter() {
-				@Override
-				public void mouseClicked(MouseEvent e) {
-					showViewTitleEditor();
-				}
-			});
-			viewTitleLabel.setCursor(new Cursor(Cursor.TEXT_CURSOR));
+// TODO Uncomment when multiple views support is enabled
+//			viewTitleLabel.addMouseListener(new MouseAdapter() {
+//				@Override
+//				public void mouseClicked(MouseEvent e) {
+//					showViewTitleEditor();
+//				}
+//			});
+//			viewTitleLabel.setCursor(new Cursor(Cursor.TEXT_CURSOR));
 		}
 		
 		return viewTitleLabel;

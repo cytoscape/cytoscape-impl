@@ -557,12 +557,13 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 				}
 			}
 		});
-		subNetPanel.getViewIconLabel().addMouseListener(new MouseAdapter() {
-			@Override
-			public void mousePressed(MouseEvent e) {
-				maybeShowViewPopup(subNetPanel);
-			}
-		});
+// TODO Uncomment when multiple views support is enabled
+//		subNetPanel.getViewIconLabel().addMouseListener(new MouseAdapter() {
+//			@Override
+//			public void mousePressed(MouseEvent e) {
+//				maybeShowViewPopup(subNetPanel);
+//			}
+//		});
 		
 		firePropertyChange("subNetworkPanelCreated", null, subNetPanel);
 		
