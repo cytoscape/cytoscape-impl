@@ -292,13 +292,15 @@ public class BarChartEditor extends AbstractChartEditor<BarChart> {
 			double sum = 0;
 			
 			for (final Number v : values) {
-				final double dv = v.doubleValue();
-				
-				if (stacked) {
-					sum += dv;
-				} else {
-					min = Math.min(min, dv);
-					max = Math.max(max, dv);
+				if (v != null) {
+					final double dv = v.doubleValue();
+					
+					if (stacked) {
+						sum += dv;
+					} else {
+						min = Math.min(min, dv);
+						max = Math.max(max, dv);
+					}
 				}
 			}
 			
