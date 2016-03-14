@@ -1758,13 +1758,15 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	@Override
 	public void xformComponentToNodeCoords(double[] coords) {
 		synchronized (m_lock) {
-			m_networkCanvas.m_grafx.xformImageToNodeCoords(coords);
+			if (m_networkCanvas != null && m_networkCanvas.m_grafx != null)
+				m_networkCanvas.m_grafx.xformImageToNodeCoords(coords);
 		}
 	}
 	
 	public void xformNodeToComponentCoords(double[] coords) {
 		synchronized (m_lock) {
-			m_networkCanvas.m_grafx.xformNodetoImageCoords(coords);
+			if (m_networkCanvas != null && m_networkCanvas.m_grafx != null)
+				m_networkCanvas.m_grafx.xformNodetoImageCoords(coords);
 		}
 	}
 
