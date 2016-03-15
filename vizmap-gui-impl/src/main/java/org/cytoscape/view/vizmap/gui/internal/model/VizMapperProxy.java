@@ -276,6 +276,9 @@ public class VizMapperProxy extends Proxy
 	
 	@Override
 	public void handleEvent(final VisualStyleAddedEvent e) {
+		if (!cytoscapeStarted)
+			return;
+		
 		final VisualStyle vs = e.getVisualStyleAdded();
 		boolean changed = false;
 		
@@ -283,12 +286,15 @@ public class VizMapperProxy extends Proxy
 			changed = visualStyles.add(vs);
 		}
 		
-		if (changed && cytoscapeStarted && !loadingSession)
+		if (changed && !loadingSession)
 			sendNotification(VISUAL_STYLE_ADDED, vs);
 	}
 	
 	@Override
 	public void handleEvent(final VisualStyleAboutToBeRemovedEvent e) {
+		if (!cytoscapeStarted)
+			return;
+		
 		final VisualStyle vs = e.getVisualStyleToBeRemoved();
 		boolean changed = false;
 		
@@ -296,7 +302,7 @@ public class VizMapperProxy extends Proxy
 			changed = visualStyles.remove(vs);
 		}
 		
-		if (changed && cytoscapeStarted && !loadingSession)
+		if (changed && !loadingSession)
 			sendNotification(VISUAL_STYLE_REMOVED, vs);
 	}
 	
@@ -327,6 +333,7 @@ public class VizMapperProxy extends Proxy
 	@Override
 	public void handleEvent(final CyStartEvent e) {
 		cytoscapeStarted = true;
+		getFacade().sendNotification(LOAD_DEFAULT_VISUAL_STYLES);
 	}
 	
 	@Override
