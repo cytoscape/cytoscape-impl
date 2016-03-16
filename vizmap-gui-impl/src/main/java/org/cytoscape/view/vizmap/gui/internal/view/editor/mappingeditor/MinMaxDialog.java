@@ -54,26 +54,33 @@ public class MinMaxDialog extends JDialog {
 	private JTextField minTextField;
 	private JButton okButton;
 	private JPanel mainPanel;
+	private JButton colMinMaxButton;
 	
 	private Double min;
 	private Double max;
+	
+	private double colMin;
+	private double colMax;
 
-	public MinMaxDialog(final Window parent, Double min, Double max) {
+	public MinMaxDialog(final Window parent, double min, double max, double colMin, double colMax) {
 		super(parent, ModalityType.APPLICATION_MODAL);
 		
 		this.setLocationRelativeTo(parent);
 		this.min = min;
 		this.max = max;
 		
+		this.colMin = colMin;
+		this.colMax = colMax;
+		
 		initComponents();
 
-		this.minTextField.setText(min.toString());
-		this.maxTextField.setText(max.toString());
+		this.minTextField.setText(String.valueOf(min));
+		this.maxTextField.setText(String.valueOf(max));
 	}
 
-	public static Double[] getMinMax(double min, double max, final Window parent) {
+	public static Double[] getMinMax(double min, double max, double colMin, double colMax, final Window parent) {
 		Double[] minMax = new Double[2];
-		dialog = new MinMaxDialog(parent, min, max);
+		dialog = new MinMaxDialog(parent, min, max, colMin, colMax);
 		dialog.setLocationRelativeTo(parent);
 		dialog.setVisible(true);
 
@@ -100,6 +107,13 @@ public class MinMaxDialog extends JDialog {
 		
 		maxTextField = new JTextField();
 		maxTextField.setHorizontalAlignment(JTextField.RIGHT);
+		
+		colMinMaxButton = new JButton("Use column min/max");
+		
+		colMinMaxButton.addActionListener(e -> {
+			minTextField.setText(String.valueOf(colMin));
+			maxTextField.setText(String.valueOf(colMax));
+		});
 		
 		final JPanel buttonPanel = LookAndFeelUtil.createOkCancelPanel(getOkButton(), getCancelButton());
 		
@@ -137,7 +151,8 @@ public class MinMaxDialog extends JDialog {
 			layout.setAutoCreateGaps(true);
 			layout.setAutoCreateContainerGaps(true);
 			
-			layout.setHorizontalGroup(layout.createSequentialGroup()
+			layout.setHorizontalGroup(
+				layout.createSequentialGroup()
 					.addGroup(layout.createParallelGroup(Alignment.TRAILING, false)
 							.addComponent(minLabel)
 							.addComponent(maxLabel)
@@ -145,9 +160,12 @@ public class MinMaxDialog extends JDialog {
 					.addGroup(layout.createParallelGroup(Alignment.LEADING, false)
 							.addComponent(minTextField, 182, 182, 182)
 							.addComponent(maxTextField, 182, 182, 182)
+							.addComponent(colMinMaxButton)
 					)
+					
 			);
-			layout.setVerticalGroup(layout.createSequentialGroup()
+			layout.setVerticalGroup(
+				layout.createSequentialGroup()
 					.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
 							.addComponent(minLabel)
 							.addComponent(minTextField)
@@ -156,6 +174,7 @@ public class MinMaxDialog extends JDialog {
 							.addComponent(maxLabel)
 							.addComponent(maxTextField)
 					)
+					.addComponent(colMinMaxButton)
 			);
 		}
 		
