@@ -12,6 +12,7 @@ import static org.cytoscape.util.swing.IconManager.ICON_TH;
 import static org.cytoscape.util.swing.IconManager.ICON_THUMB_TACK;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.KeyboardFocusManager;
@@ -83,6 +84,7 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 	private JButton gridModeButton;
 	private JButton detachViewButton;
 	private JButton reattachViewButton;
+	private JLabel currentLabel;
 	private JLabel viewTitleLabel;
 	private JTextField viewTitleTextField;
 	private JPanel infoPanel;
@@ -97,15 +99,18 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 	
     private boolean detached;
     private boolean comparing;
+    private boolean current;
 	
 	private final CyServiceRegistrar serviceRegistrar;
 
 	public NetworkViewContainer(
 			final CyNetworkView networkView,
+			final boolean current,
 			final RenderingEngineFactory<CyNetwork> engineFactory,
 			final CyServiceRegistrar serviceRegistrar
 	) {
 		this.networkView = networkView;
+		this.current = current;
 		this.engineFactory = engineFactory;
 		this.serviceRegistrar = serviceRegistrar;
 		
@@ -142,6 +147,20 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 		}
 	}
 	
+	public boolean isCurrent() {
+		return current;
+	}
+	
+	public void setCurrent(final boolean newValue) {
+		if (current != newValue) {
+			final boolean oldValue = current;
+			current = newValue;
+			
+			updateCurrentLabel();
+			firePropertyChange("current", oldValue, newValue);
+		}
+	}
+	
 	public void update() {
 		getVisualizationContainer().repaint();
 		updateTollBar();
@@ -155,6 +174,7 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 		getDetachViewButton().setVisible(!isDetached() && !isComparing());
 		getReattachViewButton().setVisible(isDetached());
 		sep1.setVisible(!isComparing());
+		getCurrentLabel().setVisible(isComparing());
 		
 		final CyNetworkView view = getNetworkView();
 		getViewTitleLabel().setText(view != null ? ViewUtil.getTitle(view) : "");
@@ -187,6 +207,11 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 		
 		updateBirdsEyeButton();
 		getToolBar().updateUI();
+	}
+	
+	protected void updateCurrentLabel() {
+		getCurrentLabel().setForeground(isCurrent() ? UIManager.getColor("Focus.color") : new Color(0, 0, 0, 0));
+		getCurrentLabel().setToolTipText(isCurrent() ? "Current Network" : null);
 	}
 
 	private void updateBirdsEyeButton() {
@@ -235,6 +260,8 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 		
 		setKeyBindings(this);
 		setKeyBindings(getRootPane());
+		
+		updateTollBar();
 	}
 	
 	protected RenderingEngine<CyNetwork> getRenderingEngine() {
@@ -271,6 +298,8 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 					.addPreferredGap(ComponentPlacement.RELATED)
 					.addComponent(getReattachViewButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(sep1, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(getCurrentLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addPreferredGap(ComponentPlacement.RELATED)
 					.addComponent(getViewTitleLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(getViewTitleTextField(), 100, 260, 320)
 					.addGap(0, 10, Short.MAX_VALUE)
@@ -284,6 +313,7 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 					.addComponent(getDetachViewButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(getReattachViewButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(sep1, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+					.addComponent(getCurrentLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(getViewTitleLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(getViewTitleTextField(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(getInfoPanel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
@@ -322,6 +352,19 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 		}
 		
 		return reattachViewButton;
+	}
+	
+	JLabel getCurrentLabel() {
+		if (currentLabel == null) {
+			currentLabel = new JLabel(IconManager.ICON_CIRCLE); // Just to get the preferred size with the icon font
+			currentLabel.setFont(serviceRegistrar.getService(IconManager.class).getIconFont(10.0f));
+			currentLabel.setMinimumSize(currentLabel.getPreferredSize());
+			currentLabel.setMaximumSize(currentLabel.getPreferredSize());
+			currentLabel.setSize(currentLabel.getPreferredSize());
+			currentLabel.setForeground(UIManager.getColor("Focus.color"));
+		}
+		
+		return currentLabel;
 	}
 	
 	JLabel getViewTitleLabel() {

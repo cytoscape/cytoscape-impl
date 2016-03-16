@@ -134,7 +134,9 @@ public class NetworkViewMainPanel extends JPanel {
 		
 		final GraphicsConfiguration gc = currentViewFrame != null ? currentViewFrame.getGraphicsConfiguration() : null;
 		
-		final NetworkViewContainer vc = new NetworkViewContainer(view, engineFactory, serviceRegistrar);
+		final NetworkViewContainer vc = new NetworkViewContainer(view, view.equals(getCurrentNetworkView()),
+				engineFactory, serviceRegistrar);
+		
 		vc.getGridModeButton().addActionListener((ActionEvent e) -> {
 			setGridMode(true);
 			networkViewGrid.requestFocusInWindow();
@@ -518,6 +520,20 @@ public class NetworkViewMainPanel extends JPanel {
 		return new HashSet<>(viewFrames.values());
 	}
 	
+	public Set<NetworkViewContainer> getAllNetworkViewContainers() {
+		final Set<NetworkViewContainer> set = new HashSet<>(viewContainers.values());
+		
+		for (NetworkViewFrame f : viewFrames.values())
+			set.add(f.getNetworkViewContainer());
+		
+		for (NetworkViewComparisonPanel c : comparisonPanels.values()) {
+			set.add(c.getContainer1());
+			set.add(c.getContainer2());
+		}
+		
+		return set;
+	}
+	
 	/**
 	 * @param view
 	 * @return The current NetworkViewContainer
@@ -781,6 +797,7 @@ public class NetworkViewMainPanel extends JPanel {
 		return nvg;
 	}
 	
+	@SuppressWarnings("unchecked")
 	private void init() {
 		setBorder(BorderFactory.createMatteBorder(0, 1, 1, 1, UIManager.getColor("Separator.foreground")));
 		
@@ -793,54 +810,53 @@ public class NetworkViewMainPanel extends JPanel {
 		networkViewGrid.updateModeButtons();
 		
 		// Add Listeners
-		networkViewGrid.addPropertyChangeListener("thumbnailPanels", new PropertyChangeListener() {
-			@Override
-			public void propertyChange(PropertyChangeEvent e) {
-				networkViewGrid.updateToolBar();
-				networkViewGrid.getReattachAllViewsButton().setEnabled(!viewFrames.isEmpty()); // TODO Should not be done here
-				
-				for (ThumbnailPanel tp : networkViewGrid.getItems()) {
-					tp.addMouseListener(new MouseAdapter() {
-						@Override
-						public void mouseClicked(MouseEvent e) {
-							if (e.getClickCount() == 2) {
-								// Double-Click: set this one as current and show attached view or view frame
-								final NetworkViewFrame frame = getNetworkViewFrame(tp.getNetworkView());
-									
-								if (frame != null) {
-									showViewFrame(frame);
-								} else {
-									final NetworkViewContainer vc = showViewContainer(tp.getNetworkView());
-									
-									if (vc != null)
-										vc.getContentPane().requestFocusInWindow();
-									
-									setGridMode(false);
-								}
+		networkViewGrid.addPropertyChangeListener("thumbnailPanels", (PropertyChangeEvent e) -> {
+			networkViewGrid.updateToolBar();
+			networkViewGrid.getReattachAllViewsButton().setEnabled(!viewFrames.isEmpty()); // TODO Should not be done here
+			
+			for (ThumbnailPanel tp : networkViewGrid.getItems()) {
+				tp.addMouseListener(new MouseAdapter() {
+					@Override
+					public void mouseClicked(MouseEvent e) {
+						if (e.getClickCount() == 2) {
+							// Double-Click: set this one as current and show attached view or view frame
+							final NetworkViewFrame frame = getNetworkViewFrame(tp.getNetworkView());
+								
+							if (frame != null) {
+								showViewFrame(frame);
+							} else {
+								final NetworkViewContainer vc = showViewContainer(tp.getNetworkView());
+								
+								if (vc != null)
+									vc.getContentPane().requestFocusInWindow();
+								
+								setGridMode(false);
 							}
 						}
-					});
-					tp.addComponentListener(new ComponentAdapter() {
-						@Override
-						public void componentResized(ComponentEvent e) {
-							updateThumbnail(tp.getNetworkView());
-						};
-					});
-				}
+					}
+				});
+				tp.addComponentListener(new ComponentAdapter() {
+					@Override
+					public void componentResized(ComponentEvent e) {
+						updateThumbnail(tp.getNetworkView());
+					};
+				});
 			}
 		});
 		
-		networkViewGrid.addPropertyChangeListener("selectedItems", new PropertyChangeListener() {
-			@Override
-			@SuppressWarnings("unchecked")
-			public void propertyChange(PropertyChangeEvent e) {
-				networkViewGrid.updateToolBar();
-				networkViewGrid.getReattachAllViewsButton().setEnabled(!viewFrames.isEmpty()); // TODO
-				
-				firePropertyChange("selectedNetworkViews",
-						getNetworkViews((Collection<ThumbnailPanel>) e.getOldValue()),
-						getNetworkViews((Collection<ThumbnailPanel>) e.getNewValue()));
-			}
+		networkViewGrid.addPropertyChangeListener("selectedItems", (PropertyChangeEvent e) -> {
+			networkViewGrid.updateToolBar();
+			networkViewGrid.getReattachAllViewsButton().setEnabled(!viewFrames.isEmpty()); // TODO
+			
+			firePropertyChange("selectedNetworkViews",
+					getNetworkViews((Collection<ThumbnailPanel>) e.getOldValue()),
+					getNetworkViews((Collection<ThumbnailPanel>) e.getNewValue()));
+		});
+		networkViewGrid.addPropertyChangeListener("currentNetworkView", (PropertyChangeEvent e) -> {
+			final CyNetworkView curView = (CyNetworkView) e.getNewValue();
+			
+			for (NetworkViewContainer vc : getAllNetworkViewContainers())
+				vc.setCurrent(vc.getNetworkView().equals(curView));
 		});
 		
 		Toolkit.getDefaultToolkit().addAWTEventListener(mousePressedAWTEventListener, MouseEvent.MOUSE_EVENT_MASK);
