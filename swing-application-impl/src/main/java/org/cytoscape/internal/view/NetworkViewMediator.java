@@ -403,12 +403,6 @@ public class NetworkViewMediator
 				final Collection<CyNetworkView> networkViews = netViewMgr.getNetworkViews(net);
 				final Set<CyNetworkView> viewsToUpdate = new HashSet<>();
 				
-				// Update node/edge selection info
-				final Collection<RowSetRecord> selectedRecords = e.getColumnRecords(CyNetwork.SELECTED);
-				
-				if (!selectedRecords.isEmpty())
-					viewsToUpdate.addAll(netViewMgr.getNetworkViews(net));
-				
 				for (final RowSetRecord record : e.getPayloadCollection()) {
 					final String columnName = record.getColumn();
 					
