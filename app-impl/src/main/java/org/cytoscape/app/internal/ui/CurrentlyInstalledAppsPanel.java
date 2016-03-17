@@ -559,7 +559,8 @@ public class CurrentlyInstalledAppsPanel extends JPanel {
     	for(App app: apps) {
     		List<App> dependencies = new ArrayList<App>();
     		for(App installedApp: appManager.getInstalledApps())  {
-    			if(!apps.contains(installedApp) && installedApp.getDependencies() != null)
+    			if(!installedApp.getAppName().equalsIgnoreCase("core apps") 
+    					&& !apps.contains(installedApp) && installedApp.getDependencies() != null)
 	    			for (App.Dependency dep: installedApp.getDependencies()) {
 	    				if(app.getAppName().equalsIgnoreCase(dep.getName()) &&
 	    						WebQuerier.compareVersions(dep.getVersion(), app.getVersion()) >= 0)
