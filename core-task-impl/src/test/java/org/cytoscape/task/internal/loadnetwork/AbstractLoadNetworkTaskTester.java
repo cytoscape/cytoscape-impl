@@ -32,12 +32,14 @@ import static org.mockito.Mockito.when;
 import java.net.URI;
 import java.util.Properties;
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.io.read.CyNetworkReader;
 import org.cytoscape.io.read.CyNetworkReaderManager;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.property.CyProperty;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.CyNetworkNaming;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
@@ -55,6 +57,8 @@ public class AbstractLoadNetworkTaskTester {
 	CyProperty<Properties> props;
 	CyNetworkNaming namingUtil;
 	SynchronousTaskManager synchronousTaskManager;
+	CyApplicationManager applicationManager;
+	CyServiceRegistrar serviceRegistrar;
 
 	CyNetwork net;
 	CyNetworkView view;
@@ -98,5 +102,10 @@ public class AbstractLoadNetworkTaskTester {
 
 		namingUtil = mock(CyNetworkNaming.class);
 		synchronousTaskManager = mock(SynchronousTaskManager.class);
+		
+		applicationManager = mock(CyApplicationManager.class);
+		
+		serviceRegistrar = mock(CyServiceRegistrar.class);
+		when(serviceRegistrar.getService(CyApplicationManager.class)).thenReturn(applicationManager);
 	}
 }

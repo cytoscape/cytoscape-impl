@@ -40,7 +40,7 @@ public class LoadNetworkURLTaskFactoryTest extends AbstractLoadNetworkTaskTester
 
 		CyNetworkViewFactory nullNetworkViewFactory = new NullCyNetworkViewFactory();
 		LoadNetworkURLTaskFactoryImpl factory = new LoadNetworkURLTaskFactoryImpl(mgr, netmgr, networkViewManager,
-				props, namingUtil, streamUtil, vmm, nullNetworkViewFactory);
+				props, namingUtil, streamUtil, vmm, nullNetworkViewFactory, serviceRegistrar);
 
 		TaskMonitor taskMonitor = mock(TaskMonitor.class);
 		TaskObserver observer = mock(TaskObserver.class);
