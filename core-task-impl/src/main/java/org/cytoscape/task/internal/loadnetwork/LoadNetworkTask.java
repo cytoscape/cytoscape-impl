@@ -29,6 +29,7 @@ import java.util.Properties;
 import org.cytoscape.io.read.CyNetworkReader;
 import org.cytoscape.io.read.CyNetworkReaderManager;
 import org.cytoscape.model.CyNetworkManager;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.CyNetworkNaming;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
@@ -56,9 +57,10 @@ public class LoadNetworkTask extends AbstractLoadNetworkTask {
 			final Properties props,
 			final CyNetworkNaming namingUtil,
 			final VisualMappingManager vmm,
-			final CyNetworkViewFactory nullNetworkViewFactory
+			final CyNetworkViewFactory nullNetworkViewFactory,
+			final CyServiceRegistrar serviceRegistrar
 	) {
-		super(mgr, netmgr, networkViewManager, props, namingUtil, vmm, nullNetworkViewFactory);
+		super(mgr, netmgr, networkViewManager, props, namingUtil, vmm, nullNetworkViewFactory, serviceRegistrar);
 		this.reader = reader;
 		this.name = networkName;
 	}

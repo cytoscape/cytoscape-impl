@@ -30,6 +30,7 @@ import java.util.Properties;
 import org.cytoscape.io.read.CyNetworkReader;
 import org.cytoscape.io.read.CyNetworkReaderManager;
 import org.cytoscape.model.CyNetworkManager;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.CyNetworkNaming;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
@@ -65,6 +66,7 @@ abstract public class AbstractLoadNetworkTask extends AbstractTask {
 	protected CyNetworkNaming namingUtil;
 	protected final VisualMappingManager vmm;
 	protected final CyNetworkViewFactory nullNetworkViewFactory;
+	protected final CyServiceRegistrar serviceRegistrar;
 
 	public AbstractLoadNetworkTask(
 			final CyNetworkReaderManager mgr,
@@ -73,7 +75,8 @@ abstract public class AbstractLoadNetworkTask extends AbstractTask {
 			final Properties props,
 			final CyNetworkNaming namingUtil,
 			final VisualMappingManager vmm,
-			final CyNetworkViewFactory nullNetworkViewFactory
+			final CyNetworkViewFactory nullNetworkViewFactory,
+			final CyServiceRegistrar serviceRegistrar
 	) {
 		this.mgr = mgr;
 		this.networkManager = networkManager;
@@ -82,6 +85,7 @@ abstract public class AbstractLoadNetworkTask extends AbstractTask {
 		this.namingUtil = namingUtil;
 		this.vmm = vmm;
 		this.nullNetworkViewFactory = nullNetworkViewFactory;
+		this.serviceRegistrar = serviceRegistrar;
 
 		this.viewThreshold = getViewThreshold();
 	}
@@ -97,7 +101,7 @@ abstract public class AbstractLoadNetworkTask extends AbstractTask {
 		}
 		
 		GenerateNetworkViewsTask generateViewsTask = new GenerateNetworkViewsTask(name, viewReader, networkManager,
-				networkViewManager, namingUtil, viewThreshold, vmm, nullNetworkViewFactory);
+				networkViewManager, namingUtil, viewThreshold, vmm, nullNetworkViewFactory, serviceRegistrar);
 		insertTasksAfterCurrentTask(viewReader, generateViewsTask);
 		
 		if (taskMonitor != null)

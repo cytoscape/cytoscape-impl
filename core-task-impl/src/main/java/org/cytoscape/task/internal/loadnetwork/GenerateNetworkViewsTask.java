@@ -28,11 +28,13 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.io.read.CyNetworkReader;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CySubNetwork;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.CyNetworkNaming;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
@@ -55,6 +57,7 @@ class GenerateNetworkViewsTask extends AbstractTask implements ObservableTask {
 	private final int viewThreshold;
 	private final VisualMappingManager vmm;
 	private final CyNetworkViewFactory nullNetworkViewFactory;
+	private final CyServiceRegistrar serviceRegistrar;
 	private	Collection<CyNetworkView> results;
 
 	public GenerateNetworkViewsTask(
@@ -65,7 +68,8 @@ class GenerateNetworkViewsTask extends AbstractTask implements ObservableTask {
 			final CyNetworkNaming namingUtil,
 			final int viewThreshold,
 			final VisualMappingManager vmm,
-			final CyNetworkViewFactory nullNetworkViewFactory
+			final CyNetworkViewFactory nullNetworkViewFactory,
+			final CyServiceRegistrar serviceRegistrar
 	) {
 		this.name = name;
 		this.viewReader = viewReader;
@@ -75,6 +79,7 @@ class GenerateNetworkViewsTask extends AbstractTask implements ObservableTask {
 		this.viewThreshold = viewThreshold;
 		this.vmm = vmm;
 		this.nullNetworkViewFactory = nullNetworkViewFactory;
+		this.serviceRegistrar = serviceRegistrar;
 	}
 
 	@Override
@@ -187,6 +192,8 @@ class GenerateNetworkViewsTask extends AbstractTask implements ObservableTask {
 				&& !view.isSet(BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION)
 				&& !view.isSet(BasicVisualLexicon.NETWORK_CENTER_Z_LOCATION))
 			view.fitContent();
+		
+		serviceRegistrar.getService(CyApplicationManager.class).setCurrentNetworkView(view);
 		
 		results.add(view);
 	}
