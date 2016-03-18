@@ -57,10 +57,12 @@ public class CytoscapeToolBar extends JToolBar {
 	 */
 	public CytoscapeToolBar() {
 		super("Cytoscape Tools");
+		
 		actionButtonMap = new HashMap<>();
 		componentGravity = new HashMap<>();
 		orderedList = new ArrayList<>();
 		
+		setFloatable(false);
 		setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, (new JSeparator()).getForeground()));
 	}
 
@@ -128,7 +130,6 @@ public class CytoscapeToolBar extends JToolBar {
 	 * otherwise if there's a button for the action, remove it.
 	 */
 	public boolean removeAction(CyAction action) {
-
 		JButton button = actionButtonMap.remove(action);
 
 		if (button == null) {
