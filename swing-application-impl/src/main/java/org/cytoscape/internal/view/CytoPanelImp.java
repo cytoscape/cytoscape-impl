@@ -13,6 +13,7 @@ import java.awt.FontMetrics;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
@@ -23,7 +24,6 @@ import java.util.Map;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
-import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -145,7 +145,7 @@ public class CytoPanelImp extends JPanel implements CytoPanel, ChangeListener {
 	/**
 	 * External window used to hold the floating CytoPanel.
 	 */
-	private JDialog externalWindow;
+	private JFrame externalWindow;
 
 	/**
 	 * The label which contains the tab title - not sure if its needed.
@@ -636,7 +636,7 @@ public class CytoPanelImp extends JPanel implements CytoPanel, ChangeListener {
 
 		if (!isFloating()) {
 			// new window to place this CytoPanel
-			externalWindow = new JDialog(parent);
+			externalWindow = new JFrame(parent.getGraphicsConfiguration());
 			
 			// add listener to handle when window is closed
 			addWindowListener();
@@ -753,7 +753,7 @@ public class CytoPanelImp extends JPanel implements CytoPanel, ChangeListener {
 	 *
 	 * @param externalWindow ExternalWindow Object.
 	 */
-	private void setLocationOfExternalWindow(JDialog externalWindow) {
+	private void setLocationOfExternalWindow(Window externalWindow) {
 		Toolkit tk = Toolkit.getDefaultToolkit();
 		Dimension screenDimension = tk.getScreenSize();
 
