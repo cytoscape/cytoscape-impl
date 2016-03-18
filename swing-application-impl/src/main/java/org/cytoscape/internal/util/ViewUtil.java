@@ -11,6 +11,7 @@ import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.property.CyProperty;
@@ -107,7 +108,8 @@ public final class ViewUtil {
 	
 	public static CySubNetwork getParent(final CySubNetwork net, final CyServiceRegistrar serviceRegistrar) {
 		final CyTable hiddenTable = net.getTable(CyNetwork.class, CyNetwork.HIDDEN_ATTRS);
-		final Long suid = hiddenTable.getRow(net.getSUID()).get(PARENT_NETWORK_COLUMN, Long.class);
+		final CyRow row = hiddenTable != null ? hiddenTable.getRow(net.getSUID()) : null;
+		final Long suid = row != null ? row.get(PARENT_NETWORK_COLUMN, Long.class) : null;
 		
 		if (suid != null) {
 			final CyNetwork parent = serviceRegistrar.getService(CyNetworkManager.class).getNetwork(suid);
