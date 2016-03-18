@@ -164,6 +164,10 @@ public class CreateNetworkViewTask extends AbstractNetworkCollectionTask
 			int viewCount = netList.size();
 			
 			for (final CyNetwork n : netList) {
+				// TODO Remove this check when multiple views per network is supported
+				if (netViewMgr.viewExists(n))
+					continue;
+				
 				final CyNetworkView view = createView(n, style, taskMonitor);
 				result.add(view);
 				
