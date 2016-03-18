@@ -50,7 +50,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
 import org.cytoscape.application.swing.CySwingApplication;
-import org.cytoscape.internal.util.Util;
 import org.cytoscape.internal.view.NetworkViewGrid.ThumbnailPanel;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
@@ -255,21 +254,11 @@ public class NetworkViewMainPanel extends JPanel {
 	}
 	
 	public void setSelectedNetworkViews(final Collection<CyNetworkView> networkViews) {
-		if (Util.equalSets(networkViews, getSelectedNetworkViews()))
-			return;
-		
-		final Set<ThumbnailPanel> selectedItems = new HashSet<>();
-		
-		for (ThumbnailPanel tp : networkViewGrid.getItems()) {
-			if (networkViews.contains(tp.getNetworkView()))
-				selectedItems.add(tp);
-		}
-			
-		networkViewGrid.setSelectedItems(selectedItems);
+		networkViewGrid.setSelectedNetworkViews(networkViews);
 	}
 	
 	public List<CyNetworkView> getSelectedNetworkViews() {
-		return getNetworkViews(networkViewGrid.getSelectedItems());
+		return networkViewGrid.getSelectedNetworkViews();
 	}
 
 	public CyNetworkView getCurrentNetworkView() {
@@ -844,13 +833,13 @@ public class NetworkViewMainPanel extends JPanel {
 			}
 		});
 		
+		networkViewGrid.addPropertyChangeListener("selectedNetworkViews", (PropertyChangeEvent e) -> {
+			// Just fire the same event
+			firePropertyChange("selectedNetworkViews", e.getOldValue(), e.getNewValue());
+		});
 		networkViewGrid.addPropertyChangeListener("selectedItems", (PropertyChangeEvent e) -> {
 			networkViewGrid.updateToolBar();
 			networkViewGrid.getReattachAllViewsButton().setEnabled(!viewFrames.isEmpty()); // TODO
-			
-			firePropertyChange("selectedNetworkViews",
-					getNetworkViews((Collection<ThumbnailPanel>) e.getOldValue()),
-					getNetworkViews((Collection<ThumbnailPanel>) e.getNewValue()));
 		});
 		networkViewGrid.addPropertyChangeListener("currentNetworkView", (PropertyChangeEvent e) -> {
 			final CyNetworkView curView = (CyNetworkView) e.getNewValue();
@@ -912,15 +901,6 @@ public class NetworkViewMainPanel extends JPanel {
 		vc.getViewTitleTextField().setText(null);
 		vc.getViewTitleTextField().setVisible(false);
 		vc.getViewTitleLabel().setVisible(true);
-	}
-	
-	private static List<CyNetworkView> getNetworkViews(final Collection<ThumbnailPanel> thumbnailPanels) {
-		final List<CyNetworkView> views = new ArrayList<>();
-		
-		for (ThumbnailPanel tp : thumbnailPanels)
-			views.add(tp.getNetworkView());
-		
-		return views;
 	}
 	
 	private class MousePressedAWTEventListener implements AWTEventListener {

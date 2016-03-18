@@ -36,6 +36,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
+import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -77,6 +78,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.JTextComponent;
 
+import org.cytoscape.internal.util.Util;
 import org.cytoscape.internal.util.ViewUtil;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
@@ -133,22 +135,25 @@ public class NetworkViewGrid extends JPanel {
 	private Map<CyNetworkView, RenderingEngine<CyNetwork>> engines;
 	private final TreeMap<CyNetworkView, ThumbnailPanel> thumbnailPanels;
 	private CyNetworkView currentNetworkView;
+	private final List<CyNetworkView> selectedNetworkViews;
 	private int thumbnailSize;
 	private int maxThumbnailSize;
 	private boolean dirty;
+	private boolean ignoreSelectedItemsEvent;
 	private final Comparator<CyNetworkView> viewComparator;
 	
 	private ThumbnailPanel selectionHead;
 	private ThumbnailPanel selectionTail;
 	
 	private final CyServiceRegistrar serviceRegistrar;
-	
+
 	public NetworkViewGrid(final Comparator<CyNetworkView> viewComparator, final CyServiceRegistrar serviceRegistrar) {
 		this.viewComparator = viewComparator;
 		this.serviceRegistrar = serviceRegistrar;
 		
 		engines = new HashMap<>();
 		thumbnailPanels = new TreeMap<>(viewComparator);
+		selectedNetworkViews = new ArrayList<>();
 		
 		init();
 	}
@@ -362,7 +367,39 @@ public class NetworkViewGrid extends JPanel {
 		}
 	}
 	
-	protected void setSelectedItems(final Collection<ThumbnailPanel> selectedItems) {
+	protected List<CyNetworkView> getSelectedNetworkViews() {
+		return new ArrayList<>(selectedNetworkViews);
+	}
+	
+	protected void setSelectedNetworkViews(final Collection<CyNetworkView> networkViews) {
+		if (Util.equalSets(networkViews, selectedNetworkViews))
+			return;
+		
+		final List<CyNetworkView> oldValue = new ArrayList<>(selectedNetworkViews);
+		selectedNetworkViews.clear();
+		
+		if (networkViews != null)
+			selectedNetworkViews.addAll(networkViews);
+		
+		final Set<ThumbnailPanel> selectedItems = new HashSet<>();
+		
+		for (ThumbnailPanel tp : getItems()) {
+			if (selectedNetworkViews.contains(tp.getNetworkView()))
+				selectedItems.add(tp);
+		}
+		
+		ignoreSelectedItemsEvent = true;
+		
+		try {
+			setSelectedItems(selectedItems);
+		} finally {
+			ignoreSelectedItemsEvent = false;
+		}
+		
+		firePropertyChange("selectedNetworkViews", oldValue, new HashSet<>(selectedNetworkViews));
+	}
+	
+	private void setSelectedItems(final Collection<ThumbnailPanel> selectedItems) {
 		final Set<ThumbnailPanel> oldValue = new HashSet<>(getSelectedItems());
 		boolean changed = false;
 		
@@ -460,6 +497,7 @@ public class NetworkViewGrid extends JPanel {
 		return head;
 	}
 	
+	@SuppressWarnings("unchecked")
 	private void init() {
 		setName(GRID_NAME);
 		setFocusable(true);
@@ -497,6 +535,11 @@ public class NetworkViewGrid extends JPanel {
 		setSelectionKeyBindings(getGridScrollPane().getViewport());
 		
 		update(thumbnailSize);
+		
+		addPropertyChangeListener("selectedItems", (PropertyChangeEvent e) -> {
+			if (!ignoreSelectedItemsEvent)
+				setSelectedNetworkViews(getNetworkViews((Collection<ThumbnailPanel>) e.getNewValue()));
+		});
 	}
 	
 	private void recreateThumbnails() {
@@ -777,6 +820,15 @@ public class NetworkViewGrid extends JPanel {
 		return UIManager.getColor("Label.disabledForeground");
 	}
 	
+	static List<CyNetworkView> getNetworkViews(final Collection<ThumbnailPanel> thumbnailPanels) {
+		final List<CyNetworkView> views = new ArrayList<>();
+		
+		for (ThumbnailPanel tp : thumbnailPanels)
+			views.add(tp.getNetworkView());
+		
+		return views;
+	}
+	
 	class ThumbnailPanel extends JPanel {
 		
 		static final int PAD = 4;
@@ -925,6 +977,9 @@ public class NetworkViewGrid extends JPanel {
 					updateBorder();
 				}
 			});
+			
+			if (selectedNetworkViews.contains(engine.getViewModel()))
+				selected = true;
 			
 			this.update(true);
 			

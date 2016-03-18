@@ -151,7 +151,18 @@ public class NetworkSelectionMediator implements SetSelectedNetworksListener, Se
 		}
 		
 		invokeOnEDT(() -> {
+			Collection<CyNetworkView> selectedViews = viewMainPanel.getSelectedNetworkViews();
+			
+			// Synchronize the UI first
+			if (view != null) {
+				if (!selectedViews.contains(view))
+					selectedViews = Collections.singleton(view);
+			} else {
+				selectedViews = Collections.emptySet();
+			}
+						
 			viewMainPanel.setCurrentNetworkView(view);
+			viewMainPanel.setSelectedNetworkViews(selectedViews);
 		});
 	}
 	
@@ -384,9 +395,9 @@ public class NetworkSelectionMediator implements SetSelectedNetworksListener, Se
 				}
 				
 				// Synchronize the UI first
+				viewMainPanel.setCurrentNetworkView(currentView);
 				netMainPanel.setCurrentNetwork(currentNet);
 				netMainPanel.setSelectedNetworks(selectedNetworks);
-				viewMainPanel.setSelectedNetworkViews(selectedViews);
 				
 				// Then update the related Cytoscape states
 				updateApplicationManager(currentNet, currentView, selectedNetworks, selectedViews);
