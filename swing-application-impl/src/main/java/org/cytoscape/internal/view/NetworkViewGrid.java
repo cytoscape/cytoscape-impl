@@ -216,6 +216,17 @@ public class NetworkViewGrid extends JPanel {
 		return new ArrayList<>(engines.keySet());
 	}
 	
+	public void scrollToCurrentItem() {
+		final ThumbnailPanel tp = getCurrentItem();
+		
+		if (tp != null && tp.getParent() instanceof JComponent) {
+			if (!isValid()) // If invalid, the thumbnail panel may not be ready yet, usually with 0 width/height
+				validate();
+			
+			((JComponent) tp.getParent()).scrollRectToVisible(tp.getBounds());
+		}
+	}
+	
 	private boolean contains(final RenderingEngine<CyNetwork> re) {
 		return engines.containsKey(re.getViewModel());
 	}

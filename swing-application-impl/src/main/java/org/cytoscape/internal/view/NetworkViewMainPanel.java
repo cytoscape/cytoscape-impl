@@ -41,7 +41,6 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.swing.BorderFactory;
-import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JMenuBar;
 import javax.swing.JPanel;
@@ -276,26 +275,29 @@ public class NetworkViewMainPanel extends JPanel {
 					if (isGridVisible())
 						updateGrid();
 					else
-						showGrid();
+						showGrid(true);
 				} else {
 					showViewContainer(createUniqueKey(view));
 				}
 				
-				if (isGridVisible()) {
-					final ThumbnailPanel tp = networkViewGrid.getCurrentItem();
-				
-					if (tp != null && tp.getParent() instanceof JComponent)
-						((JComponent) tp.getParent()).scrollRectToVisible(tp.getBounds());
-				}
+				if (isGridVisible())
+					networkViewGrid.scrollToCurrentItem();
 			}
 		}
 	}
 	
 	public void showGrid() {
+		showGrid(false);
+	}
+	
+	public void showGrid(final boolean scrollToCurrentItem) {
 		if (!isGridVisible()) {
 			cardLayout.show(getContentPane(), networkViewGrid.getName());
 			updateGrid();
 		}
+		
+		if (scrollToCurrentItem)
+			networkViewGrid.scrollToCurrentItem();
 	}
 
 	public void updateGrid() {
@@ -329,7 +331,7 @@ public class NetworkViewMainPanel extends JPanel {
 		
 		// Show grid first to prevent changing the current view
 		getNetworkViewGrid().setDetached(vc.getNetworkView(), true);
-		showGrid();
+		showGrid(true);
 		
 		// Remove the container from the card layout
 		cardLayout.removeLayoutComponent(vc);
@@ -698,7 +700,7 @@ public class NetworkViewMainPanel extends JPanel {
 		networkViewGrid.updateModeButtons();
 		
 		if (newValue)
-			showGrid();
+			showGrid(changed);
 		
 		if (changed)
 			firePropertyChange("gridMode", oldValue, newValue);
