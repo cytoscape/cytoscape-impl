@@ -108,7 +108,7 @@ public class MinMaxDialog extends JDialog {
 		maxTextField = new JTextField();
 		maxTextField.setHorizontalAlignment(JTextField.RIGHT);
 		
-		colMinMaxButton = new JButton("Use column min/max");
+		colMinMaxButton = new JButton("Reset");
 		
 		colMinMaxButton.addActionListener(e -> {
 			minTextField.setText(String.valueOf(colMin));
