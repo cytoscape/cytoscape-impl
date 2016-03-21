@@ -23,9 +23,7 @@ package org.cytoscape.view.vizmap.gui.internal.view.editor.mappingeditor;
  * <http://www.gnu.org/licenses/lgpl-2.1.html>.
  * #L%
  */
-
-import static javax.swing.GroupLayout.DEFAULT_SIZE;
-import static javax.swing.GroupLayout.PREFERRED_SIZE;
+import static javax.swing.GroupLayout.*;
 
 import java.awt.Window;
 import java.awt.event.ActionEvent;
@@ -160,7 +158,7 @@ public class MinMaxDialog extends JDialog {
 					.addGroup(layout.createParallelGroup(Alignment.LEADING, false)
 							.addComponent(minTextField, 182, 182, 182)
 							.addComponent(maxTextField, 182, 182, 182)
-							.addComponent(colMinMaxButton)
+							.addComponent(colMinMaxButton, Alignment.TRAILING)
 					)
 					
 			);
