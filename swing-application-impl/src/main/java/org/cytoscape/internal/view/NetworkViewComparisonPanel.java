@@ -344,7 +344,7 @@ public class NetworkViewComparisonPanel extends JPanel {
 		}
 		
 		boolean isCurrent() {
-			return this.getNetworkView().equals(getCurrentNetworkView());
+			return networkViewContainer.isCurrent();
 		}
 		
 		NetworkViewContainer getNetworkViewContainer() {
