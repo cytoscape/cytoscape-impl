@@ -282,7 +282,7 @@ public class NetworkViewGrid extends JPanel {
 		final List<ThumbnailPanel> selectedItems = getSelectedItems();
 		
 		updateModeButtons();
-		getComparisonModeButton().setEnabled(selectedItems.size() == 2);
+		getComparisonModeButton().setEnabled(selectedItems.size() > 1);
 		getDestroySelectedViewsButton().setEnabled(!selectedItems.isEmpty());
 		
 		getDetachSelectedViewsButton().setEnabled(!selectedItems.isEmpty());
@@ -718,7 +718,7 @@ public class NetworkViewGrid extends JPanel {
 	JButton getComparisonModeButton() {
 		if (comparisonModeButton == null) {
 			comparisonModeButton = new JButton(ICON_CARET_RIGHT + ICON_CARET_LEFT);
-			comparisonModeButton.setToolTipText("Compare 2 Views (C)");
+			comparisonModeButton.setToolTipText("Compare Views (C)");
 			styleToolBarButton(comparisonModeButton, serviceRegistrar.getService(IconManager.class).getIconFont(22.0f));
 		}
 		

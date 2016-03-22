@@ -8,6 +8,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -458,12 +459,11 @@ public class NetworkViewMediator
 		});
 		
 		vg.getComparisonModeButton().addActionListener((ActionEvent e) -> {
-			final List<CyNetworkView> selectedViews = viewMainPanel.getSelectedNetworkViews();
+			final Set<CyNetworkView> selectedViews = new LinkedHashSet<>(viewMainPanel.getSelectedNetworkViews());
 
-			if (selectedViews.size() == 2) {
+			if (selectedViews.size() > 1) {
 				viewMainPanel.setGridMode(false);
-				viewMainPanel.showComparisonPanel(NetworkViewComparisonPanel.HORIZONTAL, selectedViews.get(0),
-						selectedViews.get(1));
+				viewMainPanel.showComparisonPanel(selectedViews);
 			}
 		});
 		

@@ -36,6 +36,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -517,10 +518,8 @@ public class NetworkViewMainPanel extends JPanel {
 		for (NetworkViewFrame f : viewFrames.values())
 			set.add(f.getNetworkViewContainer());
 		
-		for (NetworkViewComparisonPanel c : comparisonPanels.values()) {
-			set.add(c.getContainer1());
-			set.add(c.getContainer2());
-		}
+		for (NetworkViewComparisonPanel c : comparisonPanels.values())
+			set.addAll(c.getAllContainers());
 		
 		return set;
 	}
@@ -548,16 +547,26 @@ public class NetworkViewMainPanel extends JPanel {
 				viewContainer.update();
 				currentViewFrame = null;
 			} else {
+				NetworkViewComparisonPanel foundCompPanel = null;
+				
 				for (NetworkViewComparisonPanel cp : comparisonPanels.values()) {
-					if (name.equals(cp.getName())
-							|| name.equals(cp.getContainer1().getName())
-							|| name.equals(cp.getContainer2().getName())) {
-						cardLayout.show(getContentPane(), cp.getName());
-						cp.update();
-						currentViewFrame = null;
-						viewContainer = cp.getViewPanel1().isCurrent() ? cp.getContainer1() : cp.getContainer2();
-						break;
+					if (name.equals(cp.getName())) {
+						foundCompPanel = cp;
+					} else {
+						for (NetworkViewContainer vc : cp.getAllContainers()) {
+							if (name.equals(vc.getName())) {
+								foundCompPanel = cp;
+								break;
+							}
+						}
 					}
+				}
+				
+				if (foundCompPanel != null) {
+					cardLayout.show(getContentPane(), foundCompPanel.getName());
+					foundCompPanel.update();
+					currentViewFrame = null;
+					viewContainer = foundCompPanel.getCurrentContainer();
 				}
 			}
 		} else {
@@ -573,44 +582,40 @@ public class NetworkViewMainPanel extends JPanel {
 		showGrid();
 	}
 	
-	protected void showComparisonPanel(final int orientation, final CyNetworkView view1, final CyNetworkView view2) {
+	protected void showComparisonPanel(final Set<CyNetworkView> views) {
 		final CyNetworkView currentView = getCurrentNetworkView();
-		final String key = NetworkViewComparisonPanel.createUniqueKey(view1, view2);
+		final String key = NetworkViewComparisonPanel.createUniqueKey(views);
 		NetworkViewComparisonPanel cp = comparisonPanels.get(key);
 		
 		if (cp == null) {
 			// End previous comparison panels that have one of the new selected views first
-			cp = getComparisonPanel(view1);
+			for (CyNetworkView v : views) {
+				cp = getComparisonPanel(v);
+				
+				if (cp != null)
+					endComparison(cp);
+			}
 			
-			if (cp != null)
-				endComparison(cp);
-			
-			cp = getComparisonPanel(view2);
-			
-			if (cp != null)
-				endComparison(cp);
+			final Set<NetworkViewContainer> containersToCompare = new LinkedHashSet<>();
 			
 			// Then check if any of the views are detached
-			final NetworkViewFrame frame1 = getNetworkViewFrame(view1);
+			for (CyNetworkView v : views) {
+				final NetworkViewFrame frame = getNetworkViewFrame(v);
 			
-			if (frame1 != null)
-				reattachNetworkView(view1);
-			
-			final NetworkViewFrame frame2 = getNetworkViewFrame(view2);
-			
-			if (frame2 != null)
-				reattachNetworkView(view2);
-			
-			final NetworkViewContainer vc1 = getNetworkViewContainer(view1);
-			final NetworkViewContainer vc2 = getNetworkViewContainer(view2);
-			
-			cardLayout.removeLayoutComponent(vc1);
-			viewContainers.remove(vc1.getName());
-			cardLayout.removeLayoutComponent(vc2);
-			viewContainers.remove(vc2.getName());
+				if (frame != null)
+					reattachNetworkView(v);
+				
+				final NetworkViewContainer vc = getNetworkViewContainer(v);
+				
+				if (vc != null) {
+					cardLayout.removeLayoutComponent(vc);
+					viewContainers.remove(vc.getName());
+					containersToCompare.add(vc);
+				}
+			}
 			
 			// Now we can create the comparison panel
-			cp = new NetworkViewComparisonPanel(orientation, vc1, vc2, currentView, serviceRegistrar);
+			cp = new NetworkViewComparisonPanel(containersToCompare, currentView, serviceRegistrar);
 			
 			cp.getGridModeButton().addActionListener(new ActionListener() {
 				@Override
@@ -631,15 +636,14 @@ public class NetworkViewMainPanel extends JPanel {
 					
 					if (currentCard instanceof NetworkViewComparisonPanel) {
 						final NetworkViewComparisonPanel cp = (NetworkViewComparisonPanel) currentCard;
-						final CyNetworkView view1 = cp.getContainer1().getNetworkView();
-						final CyNetworkView view2 = cp.getContainer2().getNetworkView();
+						final Set<CyNetworkView>views = cp.getAllNetworkViews();
 						
 						// End comparison first
 						endComparison(cp);
 						
 						// Then detach the views
-						detachNetworkView(view1);
-						detachNetworkView(view2);
+						for (CyNetworkView v : views)
+							detachNetworkView(v);
 					}
 				}
 			});
@@ -664,17 +668,14 @@ public class NetworkViewMainPanel extends JPanel {
 	
 	private void endComparison(final NetworkViewComparisonPanel cp) {
 		if (cp != null) {
-			final NetworkViewContainer vc1 = cp.getContainer1();
-			final NetworkViewContainer vc2 = cp.getContainer2();
-			
 			cardLayout.removeLayoutComponent(cp);
 			comparisonPanels.remove(cp.getName());
 			cp.dispose(); // Don't forget to call this method!
 			
-			getContentPane().add(vc1, vc1.getName());
-			viewContainers.put(vc2.getName(), vc2);
-			getContentPane().add(vc2, vc2.getName());
-			viewContainers.put(vc1.getName(), vc1);
+			for (NetworkViewContainer vc : cp.getAllContainers()) {
+				getContentPane().add(vc, vc.getName());
+				viewContainers.put(vc.getName(), vc);
+			}
 			
 			showGrid();
 		}
@@ -682,8 +683,7 @@ public class NetworkViewMainPanel extends JPanel {
 	
 	private NetworkViewComparisonPanel getComparisonPanel(final CyNetworkView view) {
 		for (NetworkViewComparisonPanel cp : comparisonPanels.values()) {
-			if (cp.getContainer1().getNetworkView().equals(view)
-					|| cp.getContainer2().getNetworkView().equals(view))
+			if (cp.contains(view))
 				return cp;
 		}
 		
@@ -788,7 +788,6 @@ public class NetworkViewMainPanel extends JPanel {
 		return nvg;
 	}
 	
-	@SuppressWarnings("unchecked")
 	private void init() {
 		setBorder(BorderFactory.createMatteBorder(0, 1, 1, 1, UIManager.getColor("Separator.foreground")));
 		
@@ -919,34 +918,35 @@ public class NetworkViewMainPanel extends JPanel {
 				// Detect if a new view container received the mouse pressed event.
 				// If so, it must request focus.
 				MouseEvent me = (MouseEvent) event;
-                NetworkViewContainer vc = null;
-                Component target = null;
+                final Set<Component> targets = new HashSet<>();
                 
                 // Find the view container to be verified
                 if (window instanceof NetworkViewFrame) {
-                	vc = ((NetworkViewFrame) window).getNetworkViewContainer();
-                	target = ((NetworkViewFrame) window).getContainerRootPane().getContentPane();
+                	targets.add(((NetworkViewFrame) window).getContainerRootPane().getContentPane());
                 } else {
                 	final Component currentCard = getCurrentCard();
                 	
                 	if (currentCard instanceof NetworkViewContainer) {
-                		vc = (NetworkViewContainer) currentCard;
-                		target = vc.getContentPane();
+                		final NetworkViewContainer vc = (NetworkViewContainer) currentCard;
+                		targets.add(vc.getContentPane());
                 	} else if (currentCard instanceof NetworkViewComparisonPanel) {
                 		// Get the view component which is not in focus
                 		final NetworkViewComparisonPanel cp = (NetworkViewComparisonPanel) currentCard;
                 		final NetworkViewContainer currentContainer = cp.getCurrentContainer();
-                		vc = currentContainer == cp.getContainer1() ? cp.getContainer2() : cp.getContainer1();
-                		target = vc.getContentPane();
+                		
+                		for (NetworkViewContainer vc : cp.getAllContainers()) {
+                			if (vc != currentContainer)
+                				targets.add(vc.getContentPane());
+                		}
                 	}
                 }
                 
-                if (target != null) {
-                	me = SwingUtilities.convertMouseEvent(me.getComponent(), me, target);
+                for (Component c : targets) {
+                	me = SwingUtilities.convertMouseEvent(me.getComponent(), me, c);
                 	
                 	// Received the mouse event? So it should get focus now.
-                	if (target.getBounds().contains(me.getPoint()))
-                		target.requestFocusInWindow();
+                	if (c.getBounds().contains(me.getPoint()))
+                		c.requestFocusInWindow();
                 }
             }
         }

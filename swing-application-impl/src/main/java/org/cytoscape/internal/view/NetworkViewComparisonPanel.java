@@ -8,10 +8,20 @@ import static org.cytoscape.util.swing.IconManager.ICON_EXTERNAL_LINK_SQUARE;
 import static org.cytoscape.util.swing.IconManager.ICON_TH;
 
 import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.GridLayout;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import javax.swing.BorderFactory;
 import javax.swing.GroupLayout;
@@ -55,58 +65,33 @@ public class NetworkViewComparisonPanel extends JPanel {
 	public static final int HORIZONTAL = JSplitPane.HORIZONTAL_SPLIT;
 	public static final int VERTICAL = JSplitPane.VERTICAL_SPLIT;
 	
-	private JSplitPane splitPane;
-	private ViewPanel viewPanel1;
-	private ViewPanel viewPanel2;
-	
+	private JPanel gridPanel;
 	private JPanel comparisonToolBar;
 	private JButton gridModeButton;
 	private JButton detachComparedViewsButton;
 	
-	private final int orientation;
-	private final NetworkViewContainer container1;
-	private final JRootPane rootPane1;
-	private final NetworkViewContainer container2;
-	private final JRootPane rootPane2;
+	private final Map<CyNetworkView, ViewPanel> viewPanels = new LinkedHashMap<>();
+	private final Map<CyNetworkView, JRootPane> rootPanes = new LinkedHashMap<>();
 	
 	private CyNetworkView currentNetworkView;
 	
 	private final CyServiceRegistrar serviceRegistrar;
 	
-	/**
-	 * @param orientation {@link NetworkViewComparisonPanel#HORIZONTAL} or {@link NetworkViewComparisonPanel#VERTICAL}
-	 * @param container1
-	 * @param container2
-	 */
 	public NetworkViewComparisonPanel(
-			final int orientation,
-			final NetworkViewContainer container1,
-			final NetworkViewContainer container2,
+			final Set<NetworkViewContainer> containers,
 			final CyNetworkView currentNetworkView,
 			final CyServiceRegistrar serviceRegistrar
 	) {
-		if (orientation != JSplitPane.HORIZONTAL_SPLIT && orientation != JSplitPane.VERTICAL_SPLIT)
-			throw new IllegalArgumentException("'orientation' must be " + HORIZONTAL + " or " + VERTICAL + ".");
-		if (container1 == null)
-			throw new IllegalArgumentException("'container1' must not be null.");
-		if (container2 == null)
-			throw new IllegalArgumentException("'container2' must not be null.");
-		if (container1.equals(container2))
-			throw new IllegalArgumentException("The view containers must not be the same.");
-		if (!container1.getNetworkView().equals(currentNetworkView) &&
-				!container2.getNetworkView().equals(currentNetworkView))
-			throw new IllegalArgumentException("'currentNetworkView' must be in container1 or container2.");
+		if (containers == null || containers.isEmpty())
+			throw new IllegalArgumentException("'containers' must not be null or empty.");
 		
-		this.orientation = orientation;
-		this.container1 = container1;
-		this.rootPane1 = container1.getRootPane();
-		this.container2 = container2;
-		this.rootPane2 = container2.getRootPane();
 		this.currentNetworkView = currentNetworkView;
 		this.serviceRegistrar = serviceRegistrar;
 		
-		container1.setComparing(true);
-		container2.setComparing(true);
+		for (NetworkViewContainer vc : containers) {
+			viewPanels.put(vc.getNetworkView(), new ViewPanel(vc));
+			rootPanes.put(vc.getNetworkView(), vc.getRootPane());
+		}
 		
 		init();
 	}
@@ -125,39 +110,66 @@ public class NetworkViewComparisonPanel extends JPanel {
 		}
 	}
 	
+	public Set<CyNetworkView> getAllNetworkViews() {
+		final Set<CyNetworkView> set = new LinkedHashSet<>();
+		
+		for (ViewPanel vp : viewPanels.values())
+			set.add(vp.getNetworkView());
+		
+		return set;
+	}
+	
+	public Set<NetworkViewContainer> getAllContainers() {
+		final Set<NetworkViewContainer> set = new LinkedHashSet<>();
+		
+		for (ViewPanel vp : viewPanels.values())
+			set.add(vp.getNetworkViewContainer());
+		
+		return set;
+	}
+	
 	public NetworkViewContainer getCurrentContainer() {
-		return getContainer1().getNetworkView().equals(getCurrentNetworkView()) ? getContainer1() : getContainer2();
+		for (ViewPanel vp : viewPanels.values()) {
+			if (currentNetworkView.equals(vp.getNetworkView()))
+				return vp.getNetworkViewContainer();
+		}
+		
+		return null;
+	}
+	
+	public boolean contains(final CyNetworkView view) {
+		for (ViewPanel vp : viewPanels.values()) {
+			if (vp.getNetworkView().equals(view))
+				return true;
+		}
+		
+		return false;
 	}
 
 	public void update() {
-		getViewPanel1().update();
-		getViewPanel2().update();
+		for (ViewPanel vp : viewPanels.values())
+			vp.update();
 	}
 	
 	public void dispose() {
-		getContainer1().setRootPane(rootPane1);
-		getContainer2().setRootPane(rootPane2);
-		getContainer1().setComparing(false);
-		getContainer2().setComparing(false);
-	}
-	
-	public int getOrientation() {
-		return orientation;
-	}
-	
-	public NetworkViewContainer getContainer1() {
-		return container1;
-	}
-	
-	public NetworkViewContainer getContainer2() {
-		return container2;
+		for (ViewPanel vp : viewPanels.values()) {
+			vp.getNetworkViewContainer().setRootPane(rootPanes.get(vp.getNetworkView()));
+			vp.getNetworkViewContainer().setComparing(false);
+		}
 	}
 	
 	private void init() {
-		setName(createUniqueKey(container1.getNetworkView(), container2.getNetworkView()));
+		final Set<CyNetworkView> views = new LinkedHashSet<>();
+		
+		for (ViewPanel vp : viewPanels.values()) {
+			vp.getNetworkViewContainer().setComparing(true);
+			views.add(vp.getNetworkView());
+		}
+		
+		setName(createUniqueKey(views));
 		
 		setLayout(new BorderLayout());
-		add(getSplitPane(), BorderLayout.CENTER);
+		add(getGridPanel(), BorderLayout.CENTER);
 		add(getComparisonToolBar(), BorderLayout.SOUTH);
 		
 		addComponentListener(new ComponentAdapter() {
@@ -165,39 +177,32 @@ public class NetworkViewComparisonPanel extends JPanel {
 			public void componentShown(ComponentEvent e) {
 				requestFocusInWindow();
 				
-				if (getViewPanel1().isCurrent())
-					getContainer1().getContentPane().requestFocusInWindow();
-				else if (getViewPanel2().isCurrent())
-					getContainer2().getContentPane().requestFocusInWindow();
+				for (ViewPanel vp : viewPanels.values()) {
+					if (vp.isCurrent()) {
+						vp.getNetworkViewContainer().getContentPane().requestFocusInWindow();
+						break;
+					}
+				}
+				
+				arrangePanels();
+				update();
+			}
+			@Override
+			public void componentResized(ComponentEvent e) {
+				arrangePanels();
 			}
 		});
 		
+		arrangePanels();
 		update();
 	}
 	
-	protected JSplitPane getSplitPane() {
-		if (splitPane == null) {
-			splitPane = new JSplitPane(orientation, getViewPanel1(), getViewPanel2());
-			splitPane.setResizeWeight(0.5);
+	private JPanel getGridPanel() {
+		if (gridPanel == null) {
+			gridPanel = new JPanel();
 		}
 		
-		return splitPane;
-	}
-	
-	protected ViewPanel getViewPanel1() {
-		if (viewPanel1 == null) {
-			viewPanel1 = new ViewPanel(container1);
-		}
-		
-		return viewPanel1;
-	}
-	
-	protected ViewPanel getViewPanel2() {
-		if (viewPanel2 == null) {
-			viewPanel2 = new ViewPanel(container2);
-		}
-		
-		return viewPanel2;
+		return gridPanel;
 	}
 	
 	private JPanel getComparisonToolBar() {
@@ -247,11 +252,6 @@ public class NetworkViewComparisonPanel extends JPanel {
 	}
 	
 	@Override
-	public String toString() {
-		return container1 + " :: " + container2;
-	}
-
-	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 7;
@@ -282,19 +282,45 @@ public class NetworkViewComparisonPanel extends JPanel {
 		return true;
 	}
 	
-	public static String createUniqueKey(final CyNetworkView view1, final CyNetworkView view2) {
-		// The name should be unique
-		long suid1 = view1.getSUID();
-		long suid2 = view2.getSUID();
+	public static String createUniqueKey(final Collection<CyNetworkView> views) {
+		// Sort the views by SUID first
+		final List<CyNetworkView> list = new ArrayList<>(views);
+		Collections.sort(list, (CyNetworkView o1, CyNetworkView o2) -> {
+			return o1.getSUID().compareTo(o2.getSUID());
+		});
 		
-		// The lower SUID value always comes first
-		if (suid2 < suid1) {
-			long temp = suid1;
-			suid1 = suid2;
-			suid2 = temp;
+		return "NetworkViewComparisonPanel_" + list.hashCode();
+	}
+	
+	private void arrangePanels() {
+		getGridPanel().removeAll();
+		
+		final Dimension size = getGridPanel().getSize();
+		
+		if (size == null || size.width <= 0 || size.height <= 0)
+			return;
+		
+		if (!viewPanels.isEmpty()) {
+			int cols = 0;
+			int rows = 0;
+			
+			if (viewPanels.size() == 2) {
+				boolean portrait = size.width >= size.height; 
+				rows = portrait ? 1 : 2;
+				cols = portrait ? 2 : 1;
+			} else {
+				int sqrt = (int) Math.ceil(Math.sqrt(viewPanels.size()));
+				cols = sqrt;
+				rows = sqrt;
+			}
+			
+			getGridPanel().setLayout(new GridLayout(rows, cols));
+			
+			for (ViewPanel vp : viewPanels.values())
+				getGridPanel().add(vp);
 		}
 		
-		return "NetworkViewComparisonPanel_" + suid1 + "::" + suid2;
+		getGridPanel().updateUI();
 	}
 	
 	protected class ViewPanel extends JPanel {
