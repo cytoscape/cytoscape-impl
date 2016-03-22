@@ -20,6 +20,10 @@ import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.events.SetCurrentNetworkEvent;
+import org.cytoscape.application.events.SetCurrentNetworkListener;
+import org.cytoscape.application.events.SetSelectedNetworksEvent;
+import org.cytoscape.application.events.SetSelectedNetworksListener;
 import org.cytoscape.application.swing.CyAction;
 import org.cytoscape.internal.actions.DestroyNetworksAction;
 import org.cytoscape.internal.task.TaskFactoryTunableAction;
@@ -95,7 +99,8 @@ import org.cytoscape.work.swing.DialogTaskManager;
 public class NetworkMediator
 		implements NetworkAddedListener, NetworkViewAddedListener, NetworkAboutToBeDestroyedListener,
 		NetworkDestroyedListener, NetworkViewDestroyedListener, RowsSetListener, AddedNodesListener, AddedEdgesListener,
-		RemovedEdgesListener, RemovedNodesListener, SessionAboutToBeLoadedListener, SessionLoadedListener {
+		RemovedEdgesListener, RemovedNodesListener, SessionAboutToBeLoadedListener, SessionLoadedListener,
+		SetCurrentNetworkListener, SetSelectedNetworksListener {
 
 	private final JPopupMenu popup;
 	
@@ -242,6 +247,16 @@ public class NetworkMediator
 			if (subNetPanel != null)
 				subNetPanel.update();
 		});
+	}
+	
+	@Override
+	public void handleEvent(final SetCurrentNetworkEvent e) {
+		updatePopupMenuItems();
+	}
+	
+	@Override
+	public void handleEvent(final SetSelectedNetworksEvent e) {
+		updatePopupMenuItems();
 	}
 	
 	public void addTaskFactory(TaskFactory factory, Map<?, ?> props) {
@@ -397,6 +412,14 @@ public class NetworkMediator
 		}
 	}
 	
+	private void updatePopupMenuItems() {
+		invokeOnEDT(() -> {
+			// Enable or disable the actions
+			for (CyAction action : popupActionMap.values())
+				action.updateEnableState();
+		});
+	}
+	
 	// // Classes // //
 	
 	/**
@@ -433,20 +456,18 @@ public class NetworkMediator
 				return;
 
 			// If the item is not selected, select it first
-			final List<AbstractNetworkPanel<?>> selectedItems = networkMainPanel.getSelectedItems();
+			List<AbstractNetworkPanel<?>> selectedItems = networkMainPanel.getSelectedItems();
 			
-			if (!selectedItems.contains(item))
+			if (!selectedItems.contains(item)) {
 				networkMainPanel.selectAndSetCurrent(item);
+				selectedItems = networkMainPanel.getSelectedItems();
+			}
 			
 			final DialogTaskManager taskMgr = serviceRegistrar.getService(DialogTaskManager.class);
 			final CyNetwork network = item.getModel().getNetwork();
 			
 			if (network instanceof CySubNetwork) {
-				// Enable or disable the actions
-				for (CyAction action : popupActionMap.values())
-					action.updateEnableState();
-
-				// Show popup menu
+				updatePopupMenuItems();
 				popup.show(e.getComponent(), e.getX(), e.getY());
 			} else {
 				final JPopupMenu rootPopupMenu = new JPopupMenu();

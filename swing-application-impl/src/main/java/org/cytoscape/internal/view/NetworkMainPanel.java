@@ -913,10 +913,7 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 	protected void onMousePressedItem(final MouseEvent e, final AbstractNetworkPanel<?> item) {
 		item.requestFocusInWindow();
 		
-		if (e.isPopupTrigger()) {
-			if (!item.isSelected())
-				selectAndSetCurrent(item);
-		} else if (SwingUtilities.isLeftMouseButton(e)) {
+		if (!e.isPopupTrigger() && SwingUtilities.isLeftMouseButton(e)) {
 			// LEFT-CLICK...
 			final boolean isMac = LookAndFeelUtil.isMac();
 			
