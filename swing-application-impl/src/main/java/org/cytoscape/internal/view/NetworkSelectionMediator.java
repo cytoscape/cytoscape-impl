@@ -387,11 +387,9 @@ public class NetworkSelectionMediator implements SetSelectedNetworksListener, Se
 				if (selectedViews.isEmpty()) {
 					currentView = null;
 					currentNet = null;
-				} else {
-					if (!selectedViews.contains(currentView))
-						currentView = selectedViews.iterator().next();
-				
-					currentNet = selectedNetworks.iterator().next();
+				} else if (!selectedViews.contains(currentView)) {
+					currentView = selectedViews.iterator().next();
+					currentNet = currentView.getModel();
 				}
 				
 				// Synchronize the UI first
