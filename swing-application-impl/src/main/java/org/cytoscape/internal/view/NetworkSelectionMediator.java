@@ -235,10 +235,10 @@ public class NetworkSelectionMediator implements SetSelectedNetworksListener, Se
 			final Collection<CyNetwork> selectedNetworks, final Collection<CyNetworkView> selectedViews) {
 		new Thread(() -> {
 			final CyApplicationManager appMgr = serviceRegistrar.getService(CyApplicationManager.class);
-			appMgr.setCurrentNetwork(currentNetwork);
-			appMgr.setCurrentNetworkView(currentView);
 			appMgr.setSelectedNetworks(new ArrayList<>(selectedNetworks));
+			appMgr.setCurrentNetwork(currentNetwork);
 			appMgr.setSelectedNetworkViews(new ArrayList<>(selectedViews));
+			appMgr.setCurrentNetworkView(currentView);
 		}).start();
 	}
 	
