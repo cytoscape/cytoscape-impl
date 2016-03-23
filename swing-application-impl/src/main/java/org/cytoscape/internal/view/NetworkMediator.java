@@ -22,6 +22,10 @@ import javax.swing.JPopupMenu;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.events.SetCurrentNetworkEvent;
 import org.cytoscape.application.events.SetCurrentNetworkListener;
+import org.cytoscape.application.events.SetCurrentNetworkViewEvent;
+import org.cytoscape.application.events.SetCurrentNetworkViewListener;
+import org.cytoscape.application.events.SetSelectedNetworkViewsEvent;
+import org.cytoscape.application.events.SetSelectedNetworkViewsListener;
 import org.cytoscape.application.events.SetSelectedNetworksEvent;
 import org.cytoscape.application.events.SetSelectedNetworksListener;
 import org.cytoscape.application.swing.CyAction;
@@ -100,7 +104,8 @@ public class NetworkMediator
 		implements NetworkAddedListener, NetworkViewAddedListener, NetworkAboutToBeDestroyedListener,
 		NetworkDestroyedListener, NetworkViewDestroyedListener, RowsSetListener, AddedNodesListener, AddedEdgesListener,
 		RemovedEdgesListener, RemovedNodesListener, SessionAboutToBeLoadedListener, SessionLoadedListener,
-		SetCurrentNetworkListener, SetSelectedNetworksListener {
+		SetCurrentNetworkListener, SetCurrentNetworkViewListener, SetSelectedNetworksListener,
+		SetSelectedNetworkViewsListener {
 
 	private final JPopupMenu popup;
 	
@@ -255,7 +260,17 @@ public class NetworkMediator
 	}
 	
 	@Override
+	public void handleEvent(final SetCurrentNetworkViewEvent e) {
+		updatePopupMenuItems();
+	}
+	
+	@Override
 	public void handleEvent(final SetSelectedNetworksEvent e) {
+		updatePopupMenuItems();
+	}
+	
+	@Override
+	public void handleEvent(final SetSelectedNetworkViewsEvent e) {
 		updatePopupMenuItems();
 	}
 	
