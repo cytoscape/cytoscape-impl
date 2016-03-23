@@ -477,6 +477,7 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 	
 	public void setShowNodeEdgeCount(final boolean b) {
 		ViewUtil.setViewProperty(ViewUtil.SHOW_NODE_EDGE_COUNT_KEY, "" + b, serviceRegistrar);
+		updateNodeEdgeCount();
 	}
 	
 	public boolean isShowNetworkProvenanceHierarchy() {
