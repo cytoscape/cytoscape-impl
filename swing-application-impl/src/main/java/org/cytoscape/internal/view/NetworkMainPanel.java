@@ -741,6 +741,11 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 	}
 	
 	private void collapseAllRootNetworks() {
+		// First deselect all subnetwork items, to prevent selection issues
+		// caused by selection and current net/view events being fired
+		// every time one of the root panels is collapsed
+		setSelectedItems(getSelectedRootNetworkItems()); // Keep only root networks that are already selected
+		
 		doNotUpdateCollapseExpandButtons = true;
 		final Collection<RootNetworkPanel> allItems = getRootNetworkListPanel().getAllItems();
 		
@@ -803,7 +808,7 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 		return items;
 	}
 
-	private void setSelectedItems(final Collection<AbstractNetworkPanel<?>> items) {
+	private void setSelectedItems(final Collection<? extends AbstractNetworkPanel<?>> items) {
 		final Set<CyNetwork> oldSelection = getSelectedNetworks(false);
 		boolean changed = false;
 		ignoreSelectionEvents = true;
