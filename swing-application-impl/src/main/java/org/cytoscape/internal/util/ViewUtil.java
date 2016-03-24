@@ -122,6 +122,10 @@ public final class ViewUtil {
 	}
 	
 	public static void styleToolBarButton(final AbstractButton btn, final Font font) {
+		styleToolBarButton(btn, font, true);
+	}
+	
+	public static void styleToolBarButton(final AbstractButton btn, final Font font, final boolean addPadding) {
 		btn.setFont(font);
 		btn.setBorder(null);
 		btn.setContentAreaFilled(false);
@@ -129,8 +133,10 @@ public final class ViewUtil {
 		btn.setFocusPainted(false);
 		btn.setFocusable(false);
 		
-		final Dimension d = btn.getPreferredSize();
-		btn.setPreferredSize(new Dimension(d.width + 10, d.height + 5));
+		if (addPadding) {
+			final Dimension d = btn.getPreferredSize();
+			btn.setPreferredSize(new Dimension(d.width + 10, d.height + 5));
+		}
 	}
 	
 	public static String getViewProperty(final String key, final CyServiceRegistrar serviceRegistrar) {

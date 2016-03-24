@@ -130,7 +130,7 @@ public class NetworkViewComparisonPanel extends JPanel {
 	
 	public NetworkViewContainer getCurrentContainer() {
 		for (ViewPanel vp : viewPanels.values()) {
-			if (currentNetworkView.equals(vp.getNetworkView()))
+			if (vp.getNetworkView().equals(currentNetworkView))
 				return vp.getNetworkViewContainer();
 		}
 		
@@ -209,6 +209,8 @@ public class NetworkViewComparisonPanel extends JPanel {
 		if (comparisonToolBar == null) {
 			comparisonToolBar = new JPanel();
 			comparisonToolBar.setName("comparisonToolBar");
+			comparisonToolBar.setBorder(
+					BorderFactory.createMatteBorder(1, 0, 0, 0, UIManager.getColor("Separator.foreground")));
 			
 			final GroupLayout layout = new GroupLayout(comparisonToolBar);
 			comparisonToolBar.setLayout(layout);

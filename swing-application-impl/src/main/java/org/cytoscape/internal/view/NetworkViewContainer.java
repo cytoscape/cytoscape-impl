@@ -96,6 +96,8 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 	private BirdsEyeViewPanel birdsEyeViewPanel;
 	
 	final JSeparator sep1 = new JSeparator(JSeparator.VERTICAL);
+	final JSeparator sep2 = new JSeparator(JSeparator.VERTICAL);
+	final JSeparator sep3 = new JSeparator(JSeparator.VERTICAL);
 	
     private boolean detached;
     private boolean comparing;
@@ -178,6 +180,7 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 		
 		final CyNetworkView view = getNetworkView();
 		getViewTitleLabel().setText(view != null ? ViewUtil.getTitle(view) : "");
+		getViewTitleLabel().setToolTipText(view != null ? ViewUtil.getTitle(view) : null);
 		
 		if (getInfoPanel().isVisible()) {
 			// Selected nodes/edges info
@@ -205,6 +208,9 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 					hn > 0 || he > 0 ? LookAndFeelUtil.getWarnColor() : UIManager.getColor("Label.disabledForeground"));
 		}
 		
+		if (isComparing())
+			updateCurrentLabel();
+		
 		updateBirdsEyeButton();
 		getToolBar().updateUI();
 	}
@@ -213,7 +219,7 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 		getCurrentLabel().setForeground(isCurrent() ? UIManager.getColor("Focus.color") : new Color(0, 0, 0, 0));
 		getCurrentLabel().setToolTipText(isCurrent() ? "Current Network" : null);
 	}
-
+	
 	private void updateBirdsEyeButton() {
 		final boolean bevVisible = getBirdsEyeViewPanel().isVisible();
 		getBirdsEyeViewButton().setToolTipText((bevVisible ? "Hide" : "Show") + " Navigator (N)");
@@ -300,11 +306,12 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 					.addComponent(sep1, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(getCurrentLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addPreferredGap(ComponentPlacement.RELATED)
-					.addComponent(getViewTitleLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(getViewTitleLabel())
 					.addComponent(getViewTitleTextField(), 100, 260, 320)
 					.addGap(0, 10, Short.MAX_VALUE)
-					.addPreferredGap(ComponentPlacement.UNRELATED)
+					.addComponent(sep2, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(getInfoPanel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(sep3, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(getBirdsEyeViewButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addContainerGap()
 			);
@@ -316,7 +323,9 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 					.addComponent(getCurrentLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(getViewTitleLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(getViewTitleTextField(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(sep2, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 					.addComponent(getInfoPanel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(sep3, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 					.addComponent(getBirdsEyeViewButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 			);
 		}
@@ -370,7 +379,7 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 	JLabel getViewTitleLabel() {
 		if (viewTitleLabel == null) {
 			viewTitleLabel = new JLabel();
-			viewTitleLabel.setToolTipText("Click to change the title...");
+//			viewTitleLabel.setToolTipText("Click to change the title...");
 			viewTitleLabel.setFont(viewTitleLabel.getFont().deriveFont(LookAndFeelUtil.getSmallFontSize()));
 			viewTitleLabel.setMinimumSize(new Dimension(viewTitleLabel.getPreferredSize().width,
 					getViewTitleTextField().getPreferredSize().height));
@@ -400,7 +409,6 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 	private JPanel getInfoPanel() {
 		if (infoPanel == null) {
 			infoPanel = new JPanel();
-			infoPanel.setBorder(LookAndFeelUtil.createPanelBorder());
 			
 			if (LookAndFeelUtil.isAquaLAF())
 				infoPanel.setOpaque(false);
@@ -476,7 +484,9 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 	private JButton getBirdsEyeViewButton() {
 		if (birdsEyeViewButton == null) {
 			birdsEyeViewButton = new JButton(ICON_CROSSHAIRS);
-			styleToolBarButton(birdsEyeViewButton, serviceRegistrar.getService(IconManager.class).getIconFont(22.0f));
+			
+			styleToolBarButton(birdsEyeViewButton, serviceRegistrar.getService(IconManager.class).getIconFont(22.0f),
+					false);
 			
 			birdsEyeViewButton.addActionListener(new ActionListener() {
 				@Override
