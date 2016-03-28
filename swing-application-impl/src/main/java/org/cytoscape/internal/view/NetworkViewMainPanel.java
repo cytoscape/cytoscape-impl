@@ -28,7 +28,6 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -45,11 +44,11 @@ import javax.swing.BorderFactory;
 import javax.swing.JFrame;
 import javax.swing.JMenuBar;
 import javax.swing.JPanel;
-import javax.swing.JToggleButton;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
 import org.cytoscape.application.swing.CySwingApplication;
+import org.cytoscape.internal.view.GridViewToggleModel.Mode;
 import org.cytoscape.internal.view.NetworkViewGrid.ThumbnailPanel;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
@@ -91,6 +90,7 @@ public class NetworkViewMainPanel extends JPanel {
 	private JPanel contentPane;
 	private final CardLayout cardLayout;
 	private final NetworkViewGrid networkViewGrid;
+	private final GridViewToggleModel gridViewToggleModel;
 	
 	private final Map<String, NetworkViewContainer> viewContainers;
 	private final Map<String, NetworkViewFrame> viewFrames;
@@ -99,7 +99,6 @@ public class NetworkViewMainPanel extends JPanel {
 	private final Set<CyNetworkView> dirtyThumbnails;
 	
 	private NetworkViewFrame currentViewFrame;
-	private boolean gridMode;
 	
 	private final MousePressedAWTEventListener mousePressedAWTEventListener;
 	
@@ -107,8 +106,13 @@ public class NetworkViewMainPanel extends JPanel {
 	private final Comparator<CyNetworkView> viewComparator;
 	private final CyServiceRegistrar serviceRegistrar;
 
-	public NetworkViewMainPanel(final CytoscapeMenus cyMenus, final Comparator<CyNetworkView> viewComparator,
-			final CyServiceRegistrar serviceRegistrar) {
+	public NetworkViewMainPanel(
+			final GridViewToggleModel gridViewToggleModel,
+			final CytoscapeMenus cyMenus,
+			final Comparator<CyNetworkView> viewComparator,
+			final CyServiceRegistrar serviceRegistrar
+	) {
+		this.gridViewToggleModel = gridViewToggleModel;
 		this.cyMenus = cyMenus;
 		this.viewComparator = viewComparator;
 		this.serviceRegistrar = serviceRegistrar;
@@ -134,12 +138,8 @@ public class NetworkViewMainPanel extends JPanel {
 		final GraphicsConfiguration gc = currentViewFrame != null ? currentViewFrame.getGraphicsConfiguration() : null;
 		
 		final NetworkViewContainer vc = new NetworkViewContainer(view, view.equals(getCurrentNetworkView()),
-				engineFactory, serviceRegistrar);
+				engineFactory, gridViewToggleModel, serviceRegistrar);
 		
-		vc.getGridModeButton().addActionListener((ActionEvent e) -> {
-			setGridMode(true);
-			networkViewGrid.requestFocusInWindow();
-		});
 		vc.getDetachViewButton().addActionListener((ActionEvent e) -> {
 			detachNetworkView(view);
 		});
@@ -175,9 +175,9 @@ public class NetworkViewMainPanel extends JPanel {
 		networkViewGrid.addItem(vc.getRenderingEngine());
 		getContentPane().add(vc, vc.getName());
 		
+		setDirtyThumbnail(view);
+		
 		if (showView) {
-			setDirtyThumbnail(view);
-			
 			if (isGridMode())
 				updateGrid();
 			else
@@ -187,19 +187,14 @@ public class NetworkViewMainPanel extends JPanel {
 			// detach the new one as well and put it in the same monitor
 			if (gc != null)
 				detachNetworkView(view, gc);
-		} else {
-			if (isGridMode())
-				updateGrid();
-			else
-				setGridMode(true);
 		}
 		
 		return vc.getRenderingEngine();
 	}
 	
 	public boolean isRendered(final CyNetworkView view) {
-		final String name = createUniqueKey(view);
-		return viewContainers.containsKey(name) || viewFrames.containsKey(name);
+		final String key = createUniqueKey(view);
+		return viewContainers.containsKey(key) || viewFrames.containsKey(key);
 	}
 
 	public void remove(final CyNetworkView view) {
@@ -533,28 +528,28 @@ public class NetworkViewMainPanel extends JPanel {
 	}
 	
 	/**
-	 * @param name
+	 * @param key
 	 * @return The current NetworkViewContainer
 	 */
-	private NetworkViewContainer showViewContainer(final String name) {
+	private NetworkViewContainer showViewContainer(final String key) {
 		NetworkViewContainer viewContainer = null;
 		
-		if (name != null) {
-			viewContainer = viewContainers.get(name);
+		if (key != null) {
+			viewContainer = viewContainers.get(key);
 			
 			if (viewContainer != null) {
-				cardLayout.show(getContentPane(), name);
+				cardLayout.show(getContentPane(), key);
 				viewContainer.update();
 				currentViewFrame = null;
 			} else {
 				NetworkViewComparisonPanel foundCompPanel = null;
 				
 				for (NetworkViewComparisonPanel cp : comparisonPanels.values()) {
-					if (name.equals(cp.getName())) {
+					if (key.equals(cp.getName())) {
 						foundCompPanel = cp;
 					} else {
 						for (NetworkViewContainer vc : cp.getAllContainers()) {
-							if (name.equals(vc.getName())) {
+							if (key.equals(vc.getName())) {
 								foundCompPanel = cp;
 								break;
 							}
@@ -567,6 +562,11 @@ public class NetworkViewMainPanel extends JPanel {
 					foundCompPanel.update();
 					currentViewFrame = null;
 					viewContainer = foundCompPanel.getCurrentContainer();
+				} else {
+					final NetworkViewFrame frame = getNetworkViewFrame(key);
+					
+					if (frame != null)
+						showViewFrame(frame);
 				}
 			}
 		} else {
@@ -579,7 +579,6 @@ public class NetworkViewMainPanel extends JPanel {
 	private void showViewFrame(final NetworkViewFrame frame) {
 		frame.setVisible(true);
 		frame.toFront();
-		showGrid();
 	}
 	
 	protected void showComparisonPanel(final Set<CyNetworkView> views) {
@@ -615,19 +614,7 @@ public class NetworkViewMainPanel extends JPanel {
 			}
 			
 			// Now we can create the comparison panel
-			cp = new NetworkViewComparisonPanel(containersToCompare, currentView, serviceRegistrar);
-			
-			cp.getGridModeButton().addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					final Component currentCard = getCurrentCard();
-					
-					if (currentCard instanceof NetworkViewComparisonPanel) {
-						endComparison((NetworkViewComparisonPanel) currentCard);
-						networkViewGrid.requestFocusInWindow();
-					}
-				}
-			});
+			cp = new NetworkViewComparisonPanel(gridViewToggleModel, containersToCompare, currentView, serviceRegistrar);
 			
 			cp.getDetachComparedViewsButton().addActionListener(new ActionListener() {
 				@Override
@@ -648,12 +635,9 @@ public class NetworkViewMainPanel extends JPanel {
 				}
 			});
 			
-			cp.addPropertyChangeListener("currentNetworkView", new PropertyChangeListener() {
-				@Override
-				public void propertyChange(PropertyChangeEvent evt) {
-					final CyNetworkView newCurrentView = (CyNetworkView) evt.getNewValue();
-					setCurrentNetworkView(newCurrentView);
-				}
+			cp.addPropertyChangeListener("currentNetworkView", (PropertyChangeEvent evt) -> {
+				final CyNetworkView newCurrentView = (CyNetworkView) evt.getNewValue();
+				setCurrentNetworkView(newCurrentView);
 			});
 			
 			getContentPane().add(cp, cp.getName());
@@ -661,12 +645,12 @@ public class NetworkViewMainPanel extends JPanel {
 		}
 		
 		if (cp != null) {
-			setGridMode(false);
+			gridViewToggleModel.setMode(Mode.VIEW);
 			showViewContainer(cp.getName());
 		}
 	}
 	
-	private void endComparison(final NetworkViewComparisonPanel cp) {
+	protected void endComparison(final NetworkViewComparisonPanel cp) {
 		if (cp != null) {
 			cardLayout.removeLayoutComponent(cp);
 			comparisonPanels.remove(cp.getName());
@@ -690,24 +674,8 @@ public class NetworkViewMainPanel extends JPanel {
 		return null;
 	}
 	
-	public void setGridMode(final boolean newValue) {
-		final boolean changed = newValue != gridMode;
-		final boolean oldValue = gridMode;
-		gridMode = newValue;
-		
-		final JToggleButton btn = gridMode ? networkViewGrid.getGridModeButton() : networkViewGrid.getViewModeButton();
-		networkViewGrid.getModeButtonGroup().setSelected(btn.getModel(), true);
-		networkViewGrid.updateModeButtons();
-		
-		if (newValue)
-			showGrid(changed);
-		
-		if (changed)
-			firePropertyChange("gridMode", oldValue, newValue);
-	}
-	
 	protected boolean isGridMode() {
-		return gridMode;
+		return gridViewToggleModel.getMode() == Mode.GRID;
 	}
 	
 	protected boolean isGridVisible() {
@@ -723,7 +691,7 @@ public class NetworkViewMainPanel extends JPanel {
 		return c instanceof NetworkViewContainer ? (NetworkViewContainer) c : null;
 	}
 	
-	private Component getCurrentCard() {
+	protected Component getCurrentCard() {
 		Component current = null;
 		
 		for (Component comp : getContentPane().getComponents()) {
@@ -735,53 +703,44 @@ public class NetworkViewMainPanel extends JPanel {
 	}
 	
 	private NetworkViewGrid createNetworkViewGrid() {
-		final NetworkViewGrid nvg = new NetworkViewGrid(viewComparator, serviceRegistrar);
+		final NetworkViewGrid nvg = new NetworkViewGrid(gridViewToggleModel, viewComparator, serviceRegistrar);
 		
-		nvg.getDetachSelectedViewsButton().addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				final List<ThumbnailPanel> selectedItems = networkViewGrid.getSelectedItems();
+		nvg.getDetachSelectedViewsButton().addActionListener((ActionEvent e) -> {
+			final List<ThumbnailPanel> selectedItems = networkViewGrid.getSelectedItems();
 
-				if (selectedItems != null) {
-					// Get the current view first
-					final CyNetworkView currentView = getCurrentNetworkView();
+			if (selectedItems != null) {
+				// Get the current view first
+				final CyNetworkView currentView = getCurrentNetworkView();
 
-					// Detach the views
-					for (ThumbnailPanel tp : selectedItems) {
-						if (getNetworkViewContainer(tp.getNetworkView()) != null)
-							detachNetworkView(tp.getNetworkView());
-					}
-
-					// Set the original current view by bringing its frame to front, if it is detached
-					final NetworkViewFrame frame = getNetworkViewFrame(currentView);
-
-					if (frame != null)
-						frame.toFront();
+				// Detach the views
+				for (ThumbnailPanel tp : selectedItems) {
+					if (getNetworkViewContainer(tp.getNetworkView()) != null)
+						detachNetworkView(tp.getNetworkView());
 				}
+
+				// Set the original current view by bringing its frame to front, if it is detached
+				final NetworkViewFrame frame = getNetworkViewFrame(currentView);
+
+				if (frame != null)
+					frame.toFront();
 			}
 		});
 		
-		nvg.getReattachAllViewsButton().addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				final Collection<NetworkViewFrame> allFrames = new ArrayList<>(viewFrames.values());
+		nvg.getReattachAllViewsButton().addActionListener((ActionEvent e) -> {
+			final Collection<NetworkViewFrame> allFrames = new ArrayList<>(viewFrames.values());
 
-				for (NetworkViewFrame f : allFrames)
-					reattachNetworkView(f.getNetworkView());
-			}
+			for (NetworkViewFrame f : allFrames)
+				reattachNetworkView(f.getNetworkView());
 		});
 		
-		nvg.getDestroySelectedViewsButton().addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				final List<CyNetworkView> selectedViews = getSelectedNetworkViews();
-				
-				if (selectedViews != null && !selectedViews.isEmpty()) {
-					final DialogTaskManager taskMgr = serviceRegistrar.getService(DialogTaskManager.class);
-					final DestroyNetworkViewTaskFactory taskFactory =
-							serviceRegistrar.getService(DestroyNetworkViewTaskFactory.class);
-					taskMgr.execute(taskFactory.createTaskIterator(selectedViews));
-				}
+		nvg.getDestroySelectedViewsButton().addActionListener((ActionEvent e) -> {
+			final List<CyNetworkView> selectedViews = getSelectedNetworkViews();
+			
+			if (selectedViews != null && !selectedViews.isEmpty()) {
+				final DialogTaskManager taskMgr = serviceRegistrar.getService(DialogTaskManager.class);
+				final DestroyNetworkViewTaskFactory taskFactory =
+						serviceRegistrar.getService(DestroyNetworkViewTaskFactory.class);
+				taskMgr.execute(taskFactory.createTaskIterator(selectedViews));
 			}
 		});
 		
@@ -793,11 +752,6 @@ public class NetworkViewMainPanel extends JPanel {
 		
 		setLayout(new BorderLayout());
 		add(getContentPane(), BorderLayout.CENTER);
-		
-		final JToggleButton selectedBtn = isGridMode() ? networkViewGrid.getGridModeButton()
-				: networkViewGrid.getViewModeButton();
-		networkViewGrid.getModeButtonGroup().setSelected(selectedBtn.getModel(), true);
-		networkViewGrid.updateModeButtons();
 		
 		// Add Listeners
 		networkViewGrid.addPropertyChangeListener("thumbnailPanels", (PropertyChangeEvent e) -> {
@@ -812,16 +766,10 @@ public class NetworkViewMainPanel extends JPanel {
 							// Double-Click: set this one as current and show attached view or view frame
 							final NetworkViewFrame frame = getNetworkViewFrame(tp.getNetworkView());
 								
-							if (frame != null) {
+							if (frame != null)
 								showViewFrame(frame);
-							} else {
-								final NetworkViewContainer vc = showViewContainer(tp.getNetworkView());
-								
-								if (vc != null)
-									vc.getContentPane().requestFocusInWindow();
-								
-								setGridMode(false);
-							}
+							else
+								gridViewToggleModel.setMode(Mode.VIEW);
 						}
 					}
 				});
@@ -871,7 +819,11 @@ public class NetworkViewMainPanel extends JPanel {
 	}
 	
 	protected NetworkViewFrame getNetworkViewFrame(final CyNetworkView view) {
-		return view != null ? viewFrames.get(createUniqueKey(view)) : null;
+		return getNetworkViewFrame(createUniqueKey(view));
+	}
+	
+	protected NetworkViewFrame getNetworkViewFrame(final String key) {
+		return key != null ? viewFrames.get(key) : null;
 	}
 	
 	private void changeCurrentViewTitle(final NetworkViewContainer vc) {

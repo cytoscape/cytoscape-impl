@@ -75,6 +75,7 @@ import org.cytoscape.internal.view.CytoscapeMenuBar;
 import org.cytoscape.internal.view.CytoscapeMenuPopulator;
 import org.cytoscape.internal.view.CytoscapeMenus;
 import org.cytoscape.internal.view.CytoscapeToolBar;
+import org.cytoscape.internal.view.GridViewToggleModel;
 import org.cytoscape.internal.view.MacFullScreenEnabler;
 import org.cytoscape.internal.view.NetworkMainPanel;
 import org.cytoscape.internal.view.NetworkMediator;
@@ -191,8 +192,9 @@ public class CyActivator extends AbstractCyActivator {
 		NetworkMediator netMediator = new NetworkMediator(netMainPanel, serviceRegistrar);
 		
 		ViewComparator viewComparator = new ViewComparator(netMainPanel);
-		NetworkViewMainPanel netViewMainPanel = new NetworkViewMainPanel(cytoscapeMenus, viewComparator, serviceRegistrar);
-		NetworkViewMediator netViewMediator = new NetworkViewMediator(netViewMainPanel, cyHelpBroker, serviceRegistrar);
+		GridViewToggleModel gridViewToggleModel = new GridViewToggleModel(GridViewToggleModel.Mode.VIEW);
+		NetworkViewMainPanel netViewMainPanel = new NetworkViewMainPanel(gridViewToggleModel, cytoscapeMenus, viewComparator, serviceRegistrar);
+		NetworkViewMediator netViewMediator = new NetworkViewMediator(netViewMainPanel, gridViewToggleModel, cyHelpBroker, serviceRegistrar);
 
 		CytoscapeDesktop cytoscapeDesktop = new CytoscapeDesktop(cytoscapeMenus, netViewMediator, serviceRegistrar);
 

@@ -8,7 +8,6 @@ import static org.cytoscape.util.swing.IconManager.ICON_CHECK_SQUARE;
 import static org.cytoscape.util.swing.IconManager.ICON_CROSSHAIRS;
 import static org.cytoscape.util.swing.IconManager.ICON_EXTERNAL_LINK_SQUARE;
 import static org.cytoscape.util.swing.IconManager.ICON_EYE_SLASH;
-import static org.cytoscape.util.swing.IconManager.ICON_TH;
 import static org.cytoscape.util.swing.IconManager.ICON_THUMB_TACK;
 
 import java.awt.BorderLayout;
@@ -81,7 +80,6 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 	private SimpleRootPaneContainer visualizationContainer;
 	
 	private JPanel toolBar;
-	private JButton gridModeButton;
 	private JButton detachViewButton;
 	private JButton reattachViewButton;
 	private JLabel currentLabel;
@@ -94,10 +92,12 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 	private JLabel hiddenLabel;
 	private JButton birdsEyeViewButton;
 	private BirdsEyeViewPanel birdsEyeViewPanel;
+	private final GridViewTogglePanel gridViewTogglePanel;
 	
 	final JSeparator sep1 = new JSeparator(JSeparator.VERTICAL);
 	final JSeparator sep2 = new JSeparator(JSeparator.VERTICAL);
 	final JSeparator sep3 = new JSeparator(JSeparator.VERTICAL);
+	final JSeparator sep4 = new JSeparator(JSeparator.VERTICAL);
 	
     private boolean detached;
     private boolean comparing;
@@ -109,11 +109,13 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 			final CyNetworkView networkView,
 			final boolean current,
 			final RenderingEngineFactory<CyNetwork> engineFactory,
+			final GridViewToggleModel gridViewToggleModel,
 			final CyServiceRegistrar serviceRegistrar
 	) {
 		this.networkView = networkView;
 		this.current = current;
 		this.engineFactory = engineFactory;
+		this.gridViewTogglePanel = new GridViewTogglePanel(gridViewToggleModel, serviceRegistrar);
 		this.serviceRegistrar = serviceRegistrar;
 		
 		setName(ViewUtil.createUniqueKey(networkView));
@@ -172,10 +174,11 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 	}
 	
 	protected void updateTollBar() {
-		getGridModeButton().setVisible(!isDetached() && !isComparing());
+		gridViewTogglePanel.setVisible(!isDetached() && !isComparing());
+		sep1.setVisible(!isComparing());
 		getDetachViewButton().setVisible(!isDetached() && !isComparing());
 		getReattachViewButton().setVisible(isDetached());
-		sep1.setVisible(!isComparing());
+		sep2.setVisible(!isComparing());
 		getCurrentLabel().setVisible(isComparing());
 		
 		final CyNetworkView view = getNetworkView();
@@ -298,49 +301,43 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 			
 			layout.setHorizontalGroup(layout.createSequentialGroup()
 					.addContainerGap()
-					.addComponent(getGridModeButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(gridViewTogglePanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addPreferredGap(ComponentPlacement.RELATED)
+					.addComponent(sep1, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addPreferredGap(ComponentPlacement.RELATED)
 					.addComponent(getDetachViewButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addPreferredGap(ComponentPlacement.RELATED)
 					.addComponent(getReattachViewButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addComponent(sep1, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addPreferredGap(ComponentPlacement.RELATED)
+					.addComponent(sep2, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(getCurrentLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addPreferredGap(ComponentPlacement.RELATED)
 					.addComponent(getViewTitleLabel())
 					.addComponent(getViewTitleTextField(), 100, 260, 320)
 					.addGap(0, 10, Short.MAX_VALUE)
-					.addComponent(sep2, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addComponent(getInfoPanel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(sep3, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(getInfoPanel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(sep4, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(getBirdsEyeViewButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addContainerGap()
 			);
 			layout.setVerticalGroup(layout.createParallelGroup(CENTER, false)
-					.addComponent(getGridModeButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(gridViewTogglePanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(sep1, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 					.addComponent(getDetachViewButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(getReattachViewButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addComponent(sep1, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+					.addComponent(sep2, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 					.addComponent(getCurrentLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(getViewTitleLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(getViewTitleTextField(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addComponent(sep2, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-					.addComponent(getInfoPanel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(sep3, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+					.addComponent(getInfoPanel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(sep4, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 					.addComponent(getBirdsEyeViewButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 			);
 		}
 		
 		return toolBar;
-	}
-	
-	JButton getGridModeButton() {
-		if (gridModeButton == null) {
-			gridModeButton = new JButton(ICON_TH);
-			gridModeButton.setToolTipText("Show Grid (G)");
-			styleToolBarButton(gridModeButton, serviceRegistrar.getService(IconManager.class).getIconFont(22.0f));
-		}
-		
-		return gridModeButton;
 	}
 	
 	JButton getDetachViewButton() {
@@ -553,16 +550,12 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 		final ActionMap actionMap = comp.getActionMap();
 		final InputMap inputMap = comp.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
 
-		inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_G, 0), KeyAction.VK_G);
 		inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_N, 0), KeyAction.VK_N);
-		
-		actionMap.put(KeyAction.VK_G, new KeyAction(KeyAction.VK_G));
 		actionMap.put(KeyAction.VK_N, new KeyAction(KeyAction.VK_N));
 	}
 	
 	private class KeyAction extends AbstractAction {
 
-		final static String VK_G = "VK_G";
 		final static String VK_N = "VK_N";
 		
 		KeyAction(final String actionCommand) {
@@ -579,9 +572,7 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 			
 			final String cmd = e.getActionCommand();
 			
-			if (cmd.equals(VK_G)) {
-				getGridModeButton().doClick();
-			} else if (cmd.equals(VK_N)) {
+			if (cmd.equals(VK_N)) {
 				// Toggle Navigator (bird's eye view) visibility state
 				getBirdsEyeViewButton().doClick();
 			}

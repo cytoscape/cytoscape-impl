@@ -5,7 +5,6 @@ import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static javax.swing.GroupLayout.Alignment.CENTER;
 import static org.cytoscape.internal.util.ViewUtil.styleToolBarButton;
 import static org.cytoscape.util.swing.IconManager.ICON_EXTERNAL_LINK_SQUARE;
-import static org.cytoscape.util.swing.IconManager.ICON_TH;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -28,11 +27,14 @@ import javax.swing.GroupLayout;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JRootPane;
+import javax.swing.JSeparator;
 import javax.swing.JSplitPane;
+import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.UIManager;
 
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.IconManager;
+import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.model.CyNetworkView;
 
 /*
@@ -67,8 +69,8 @@ public class NetworkViewComparisonPanel extends JPanel {
 	
 	private JPanel gridPanel;
 	private JPanel comparisonToolBar;
-	private JButton gridModeButton;
 	private JButton detachComparedViewsButton;
+	private final GridViewTogglePanel gridViewTogglePanel;
 	
 	private final Map<CyNetworkView, ViewPanel> viewPanels = new LinkedHashMap<>();
 	private final Map<CyNetworkView, JRootPane> rootPanes = new LinkedHashMap<>();
@@ -78,6 +80,7 @@ public class NetworkViewComparisonPanel extends JPanel {
 	private final CyServiceRegistrar serviceRegistrar;
 	
 	public NetworkViewComparisonPanel(
+			final GridViewToggleModel gridViewToggleModel,
 			final Set<NetworkViewContainer> containers,
 			final CyNetworkView currentNetworkView,
 			final CyServiceRegistrar serviceRegistrar
@@ -87,6 +90,8 @@ public class NetworkViewComparisonPanel extends JPanel {
 		
 		this.currentNetworkView = currentNetworkView;
 		this.serviceRegistrar = serviceRegistrar;
+		
+		gridViewTogglePanel = new GridViewTogglePanel(gridViewToggleModel, serviceRegistrar);
 		
 		for (NetworkViewContainer vc : containers) {
 			viewPanels.put(vc.getNetworkView(), new ViewPanel(vc));
@@ -212,35 +217,35 @@ public class NetworkViewComparisonPanel extends JPanel {
 			comparisonToolBar.setBorder(
 					BorderFactory.createMatteBorder(1, 0, 0, 0, UIManager.getColor("Separator.foreground")));
 			
+			final JSeparator sep1 = new JSeparator(JSeparator.VERTICAL);
+			final JSeparator sep2 = new JSeparator(JSeparator.VERTICAL);
+			
 			final GroupLayout layout = new GroupLayout(comparisonToolBar);
 			comparisonToolBar.setLayout(layout);
 			layout.setAutoCreateContainerGaps(false);
-			layout.setAutoCreateGaps(true);
+			layout.setAutoCreateGaps(!LookAndFeelUtil.isAquaLAF());
 			
 			layout.setHorizontalGroup(layout.createSequentialGroup()
 					.addContainerGap()
-					.addComponent(getGridModeButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(gridViewTogglePanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addPreferredGap(ComponentPlacement.RELATED)
+					.addComponent(sep1, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addPreferredGap(ComponentPlacement.RELATED)
 					.addComponent(getDetachComparedViewsButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addPreferredGap(ComponentPlacement.RELATED)
+					.addComponent(sep2, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addGap(0, 10, Short.MAX_VALUE)
 					.addContainerGap()
 			);
 			layout.setVerticalGroup(layout.createParallelGroup(CENTER, true)
-					.addComponent(getGridModeButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(gridViewTogglePanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(sep1, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 					.addComponent(getDetachComparedViewsButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(sep2, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 			);
 		}
 		
 		return comparisonToolBar;
-	}
-	
-	JButton getGridModeButton() {
-		if (gridModeButton == null) {
-			gridModeButton = new JButton(ICON_TH);
-			gridModeButton.setToolTipText("Show Grid (G)");
-			styleToolBarButton(gridModeButton, serviceRegistrar.getService(IconManager.class).getIconFont(22.0f));
-		}
-		
-		return gridModeButton;
 	}
 	
 	JButton getDetachComparedViewsButton() {

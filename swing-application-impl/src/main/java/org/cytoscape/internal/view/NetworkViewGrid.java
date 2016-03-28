@@ -5,11 +5,7 @@ import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static javax.swing.GroupLayout.Alignment.CENTER;
 import static javax.swing.GroupLayout.Alignment.LEADING;
 import static org.cytoscape.internal.util.ViewUtil.styleToolBarButton;
-import static org.cytoscape.util.swing.IconManager.ICON_CARET_LEFT;
-import static org.cytoscape.util.swing.IconManager.ICON_CARET_RIGHT;
 import static org.cytoscape.util.swing.IconManager.ICON_EXTERNAL_LINK_SQUARE;
-import static org.cytoscape.util.swing.IconManager.ICON_SHARE_ALT_SQUARE;
-import static org.cytoscape.util.swing.IconManager.ICON_TH;
 import static org.cytoscape.util.swing.IconManager.ICON_THUMB_TACK;
 import static org.cytoscape.util.swing.IconManager.ICON_TRASH_O;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NETWORK_BACKGROUND_PAINT;
@@ -53,8 +49,6 @@ import java.util.TreeMap;
 import javax.swing.AbstractAction;
 import javax.swing.ActionMap;
 import javax.swing.BorderFactory;
-import javax.swing.ButtonGroup;
-import javax.swing.ButtonModel;
 import javax.swing.GroupLayout;
 import javax.swing.ImageIcon;
 import javax.swing.InputMap;
@@ -66,7 +60,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JSlider;
 import javax.swing.JTable;
-import javax.swing.JToggleButton;
 import javax.swing.KeyStroke;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.Scrollable;
@@ -122,15 +115,12 @@ public class NetworkViewGrid extends JPanel {
 	private GridPanel gridPanel;
 	private JScrollPane gridScrollPane;
 	private JPanel toolBar;
-	private JToggleButton gridModeButton;
-	private JToggleButton viewModeButton;
-	private ButtonGroup modeButtonGroup;
-	private JButton comparisonModeButton;
 	private JLabel viewSelectionLabel;
 	private JButton detachSelectedViewsButton;
 	private JButton reattachAllViewsButton;
 	private JButton destroySelectedViewsButton;
 	private JSlider thumbnailSlider;
+	private final GridViewTogglePanel gridViewTogglePanel;
 	
 	private Map<CyNetworkView, RenderingEngine<CyNetwork>> engines;
 	private final TreeMap<CyNetworkView, ThumbnailPanel> thumbnailPanels;
@@ -138,7 +128,7 @@ public class NetworkViewGrid extends JPanel {
 	private final List<CyNetworkView> selectedNetworkViews;
 	private int thumbnailSize;
 	private int maxThumbnailSize;
-	private boolean dirty;
+	private boolean dirty = true;
 	private boolean ignoreSelectedItemsEvent;
 	private final Comparator<CyNetworkView> viewComparator;
 	
@@ -147,13 +137,19 @@ public class NetworkViewGrid extends JPanel {
 	
 	private final CyServiceRegistrar serviceRegistrar;
 
-	public NetworkViewGrid(final Comparator<CyNetworkView> viewComparator, final CyServiceRegistrar serviceRegistrar) {
+	public NetworkViewGrid(
+			final GridViewToggleModel gridViewToggleModel,
+			final Comparator<CyNetworkView> viewComparator,
+			final CyServiceRegistrar serviceRegistrar
+	) {
 		this.viewComparator = viewComparator;
 		this.serviceRegistrar = serviceRegistrar;
 		
 		engines = new HashMap<>();
 		thumbnailPanels = new TreeMap<>(viewComparator);
 		selectedNetworkViews = new ArrayList<>();
+		
+		gridViewTogglePanel = new GridViewTogglePanel(gridViewToggleModel, serviceRegistrar);
 		
 		init();
 	}
@@ -281,8 +277,7 @@ public class NetworkViewGrid extends JPanel {
 		final Collection<ThumbnailPanel> items = getItems();
 		final List<ThumbnailPanel> selectedItems = getSelectedItems();
 		
-		updateModeButtons();
-		getComparisonModeButton().setEnabled(selectedItems.size() > 1);
+		gridViewTogglePanel.update();
 		getDestroySelectedViewsButton().setEnabled(!selectedItems.isEmpty());
 		
 		getDetachSelectedViewsButton().setEnabled(!selectedItems.isEmpty());
@@ -296,15 +291,6 @@ public class NetworkViewGrid extends JPanel {
 							" selected");
 		
 		getToolBar().updateUI();
-	}
-	
-	protected void updateModeButtons() {
-		final ButtonModel selBtnModel = modeButtonGroup.getSelection();
-		
-		getGridModeButton().setForeground(UIManager
-				.getColor(selBtnModel == getGridModeButton().getModel() ? "Focus.color" : "Button.foreground"));
-		getViewModeButton().setForeground(UIManager
-				.getColor(selBtnModel == getViewModeButton().getModel() ? "Focus.color" : "Button.foreground"));
 	}
 	
 	/** Updates the image only */ 
@@ -514,10 +500,6 @@ public class NetworkViewGrid extends JPanel {
 		setFocusable(true);
 		setRequestFocusEnabled(true);
 		
-		modeButtonGroup = new ButtonGroup();
-		modeButtonGroup.add(getGridModeButton());
-		modeButtonGroup.add(getViewModeButton());
-		
 		setLayout(new BorderLayout());
 		add(getGridScrollPane(), BorderLayout.CENTER);
 		add(getToolBar(), BorderLayout.SOUTH);
@@ -541,7 +523,6 @@ public class NetworkViewGrid extends JPanel {
 			}
 		});
 		
-		setGlobalKeyBindings(this);
 		setSelectionKeyBindings(this);
 		setSelectionKeyBindings(getGridScrollPane().getViewport());
 		
@@ -648,7 +629,10 @@ public class NetworkViewGrid extends JPanel {
 			toolBar = new JPanel();
 			toolBar.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, UIManager.getColor("Separator.foreground")));
 			
-			final JSeparator sep = new JSeparator(JSeparator.VERTICAL);
+			final JSeparator sep1 = new JSeparator(JSeparator.VERTICAL);
+			final JSeparator sep2 = new JSeparator(JSeparator.VERTICAL);
+			final JSeparator sep3 = new JSeparator(JSeparator.VERTICAL);
+			final JSeparator sep4 = new JSeparator(JSeparator.VERTICAL);
 			
 			final GroupLayout layout = new GroupLayout(toolBar);
 			toolBar.setLayout(layout);
@@ -657,72 +641,42 @@ public class NetworkViewGrid extends JPanel {
 			
 			layout.setHorizontalGroup(layout.createSequentialGroup()
 					.addContainerGap()
-					.addComponent(getGridModeButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addComponent(getViewModeButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addPreferredGap(ComponentPlacement.UNRELATED)
-					.addComponent(getComparisonModeButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(gridViewTogglePanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addPreferredGap(ComponentPlacement.RELATED)
+					.addComponent(sep1, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addPreferredGap(ComponentPlacement.RELATED)
 					.addComponent(getDetachSelectedViewsButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addPreferredGap(ComponentPlacement.RELATED)
 					.addComponent(getReattachAllViewsButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addPreferredGap(ComponentPlacement.RELATED)
+					.addComponent(sep2, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addGap(0, 10, Short.MAX_VALUE)
 					.addComponent(getViewSelectionLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addGap(0, 10, Short.MAX_VALUE)
+					.addComponent(sep3, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addPreferredGap(ComponentPlacement.RELATED)
 					.addComponent(getDestroySelectedViewsButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addPreferredGap(ComponentPlacement.RELATED)
-					.addComponent(sep, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(sep4, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addPreferredGap(ComponentPlacement.RELATED)
 					.addComponent(getThumbnailSlider(), 100, 100, 100)
 					.addContainerGap()
 			);
 			layout.setVerticalGroup(layout.createParallelGroup(CENTER, true)
-					.addComponent(getGridModeButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addComponent(getViewModeButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addComponent(getComparisonModeButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(gridViewTogglePanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(sep1, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 					.addComponent(getDetachSelectedViewsButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(getReattachAllViewsButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(sep2, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 					.addComponent(getViewSelectionLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(sep3, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 					.addComponent(getDestroySelectedViewsButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addComponent(sep, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+					.addComponent(sep4, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 					.addComponent(getThumbnailSlider(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 			);
 		}
 		
 		return toolBar;
-	}
-	
-	JToggleButton getGridModeButton() {
-		if (gridModeButton == null) {
-			gridModeButton = new JToggleButton(ICON_TH);
-			gridModeButton.setToolTipText("Show Grid (G)");
-			styleToolBarButton(gridModeButton, serviceRegistrar.getService(IconManager.class).getIconFont(22.0f));
-		}
-		
-		return gridModeButton;
-	}
-	
-	JToggleButton getViewModeButton() {
-		if (viewModeButton == null) {
-			viewModeButton = new JToggleButton(ICON_SHARE_ALT_SQUARE);
-			viewModeButton.setToolTipText("Show View (V)");
-			styleToolBarButton(viewModeButton, serviceRegistrar.getService(IconManager.class).getIconFont(22.0f));
-		}
-		
-		return viewModeButton;
-	}
-	
-	ButtonGroup getModeButtonGroup() {
-		return modeButtonGroup;
-	}
-	
-	JButton getComparisonModeButton() {
-		if (comparisonModeButton == null) {
-			comparisonModeButton = new JButton(ICON_CARET_RIGHT + ICON_CARET_LEFT);
-			comparisonModeButton.setToolTipText("Compare Views (C)");
-			styleToolBarButton(comparisonModeButton, serviceRegistrar.getService(IconManager.class).getIconFont(22.0f));
-		}
-		
-		return comparisonModeButton;
 	}
 	
 	JButton getDetachSelectedViewsButton() {
@@ -784,19 +738,6 @@ public class NetworkViewGrid extends JPanel {
 		}
 		
 		return thumbnailSlider;
-	}
-	
-	private void setGlobalKeyBindings(final JComponent comp) {
-		final ActionMap actionMap = comp.getActionMap();
-		final InputMap inputMap = comp.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
-
-		inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_G, 0), KeyAction.VK_G);
-		inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_V, 0), KeyAction.VK_V);
-		inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_C, 0), KeyAction.VK_C);
-		
-		actionMap.put(KeyAction.VK_G, new KeyAction(KeyAction.VK_G));
-		actionMap.put(KeyAction.VK_V, new KeyAction(KeyAction.VK_V));
-		actionMap.put(KeyAction.VK_C, new KeyAction(KeyAction.VK_C));
 	}
 	
 	private void setSelectionKeyBindings(final JComponent comp) {
@@ -1311,9 +1252,6 @@ public class NetworkViewGrid extends JPanel {
 	
 	private class KeyAction extends AbstractAction {
 
-		final static String VK_G = "VK_G";
-		final static String VK_V = "VK_V";
-		final static String VK_C = "VK_C";
 		final static String VK_CTRL_A = "VK_CTRL_A";
 		final static String VK_CTRL_SHIFT_A = "VK_CTRL_SHIFT_A";
 		
@@ -1331,13 +1269,7 @@ public class NetworkViewGrid extends JPanel {
 			
 			final String cmd = e.getActionCommand();
 			
-			if (cmd.equals(VK_G))
-				getGridModeButton().doClick();
-			else if (cmd.equals(VK_V))
-				getViewModeButton().doClick();
-			else if (cmd.equals(VK_C))
-				getComparisonModeButton().doClick();
-			else if (cmd.equals(VK_CTRL_A))
+			if (cmd.equals(VK_CTRL_A))
 				selectAll();
 			else if (cmd.equals(VK_CTRL_SHIFT_A))
 				deselectAll();

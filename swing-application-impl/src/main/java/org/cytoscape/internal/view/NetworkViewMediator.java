@@ -2,7 +2,7 @@ package org.cytoscape.internal.view;
 
 import static org.cytoscape.internal.util.ViewUtil.invokeOnEDT;
 
-import java.awt.event.ActionEvent;
+import java.awt.Component;
 import java.beans.PropertyChangeEvent;
 import java.util.Collection;
 import java.util.Collections;
@@ -24,6 +24,7 @@ import org.cytoscape.application.events.SetCurrentNetworkViewEvent;
 import org.cytoscape.application.events.SetCurrentNetworkViewListener;
 import org.cytoscape.application.swing.CyHelpBroker;
 import org.cytoscape.internal.util.ViewUtil;
+import org.cytoscape.internal.view.GridViewToggleModel.Mode;
 import org.cytoscape.internal.view.NetworkViewGrid.ThumbnailPanel;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkTableManager;
@@ -116,6 +117,7 @@ public class NetworkViewMediator
 	private final JDesktopPane desktopPane;
 	
 	private final NetworkViewMainPanel networkViewMainPanel;
+	private final GridViewToggleModel gridViewToggleModel;
 
 	// Key is MODEL ID
 	private final Map<CyNetworkView, RenderingEngine<CyNetwork>> presentationMap;
@@ -130,12 +132,14 @@ public class NetworkViewMediator
 	
 	public NetworkViewMediator(
 			final NetworkViewMainPanel networkViewMainPanel,
+			final GridViewToggleModel gridViewToggleModel,
 			final CyHelpBroker help,
 			final CyServiceRegistrar serviceRegistrar
 	) {
-		this.serviceRegistrar = serviceRegistrar;
-		this.desktopPane = new JDesktopPane();
 		this.networkViewMainPanel = networkViewMainPanel;
+		this.gridViewToggleModel = gridViewToggleModel;
+		this.desktopPane = new JDesktopPane();
+		this.serviceRegistrar = serviceRegistrar;
 
 		// add Help hooks
 		help.getHelpBroker().enableHelp(desktopPane, "network-view-manager", null);
@@ -362,7 +366,7 @@ public class NetworkViewMediator
 			getNetworkViewMainPanel().setCurrentNetworkView(view);
 			
 			// Always show the current view in the View Mode when opening older session files (up to version 3.3)
-			if (view != null)
+			if (view != null && !getNetworkViewMainPanel().isGridMode())
 				getNetworkViewMainPanel().showViewContainer(view);
 			else
 				getNetworkViewMainPanel().getNetworkViewGrid()
@@ -430,43 +434,46 @@ public class NetworkViewMediator
 		final NetworkViewMainPanel viewMainPanel = getNetworkViewMainPanel();
 		final NetworkViewGrid vg = viewMainPanel.getNetworkViewGrid();
 		
-		vg.getGridModeButton().addActionListener((ActionEvent e) -> {
-			viewMainPanel.setGridMode(true);
-			vg.requestFocusInWindow();
-		});
-		
-		vg.getViewModeButton().addActionListener((ActionEvent e) -> {
-			viewMainPanel.setGridMode(false);
+		gridViewToggleModel.addPropertyChangeListener("mode", (PropertyChangeEvent evt) -> {
+			final Mode mode = (Mode) evt.getNewValue();
 			
-			final CyNetworkView currentView = vg.getCurrentNetworkView();
-			NetworkViewContainer viewContainer = null;
-			
-			if (currentView != null) {
-				viewContainer = viewMainPanel.showViewContainer(currentView);
-			} else {
-				final List<ThumbnailPanel> selectedItems = vg.getSelectedItems();
+			if (mode == Mode.GRID) {
+				final Component currentCard = viewMainPanel.getCurrentCard();
 				
-				if (!selectedItems.isEmpty())
-					viewContainer = viewMainPanel.showViewContainer(selectedItems.get(0).getNetworkView());
-				else if (!vg.isEmpty())
-					viewContainer = viewMainPanel.showViewContainer(vg.firstItem().getNetworkView());
-			}
-			
-			if (viewContainer != null) {
-				viewMainPanel.setCurrentNetworkView(viewContainer.getNetworkView());
-				viewContainer.getContentPane().requestFocusInWindow();
-			}
-		});
-		
-		vg.getComparisonModeButton().addActionListener((ActionEvent e) -> {
-			final Set<CyNetworkView> selectedViews = new LinkedHashSet<>(viewMainPanel.getSelectedNetworkViews());
+				if (currentCard instanceof NetworkViewComparisonPanel)
+					viewMainPanel.endComparison((NetworkViewComparisonPanel) currentCard);
+				else
+					viewMainPanel.showGrid(true);
+				
+				vg.requestFocusInWindow();
+			} else if (mode == Mode.VIEW) {
+				final Set<CyNetworkView> selectedViews = new LinkedHashSet<>(viewMainPanel.getSelectedNetworkViews());
 
-			if (selectedViews.size() > 1) {
-				viewMainPanel.setGridMode(false);
-				viewMainPanel.showComparisonPanel(selectedViews);
+				if (selectedViews.size() > 1) {
+					viewMainPanel.showComparisonPanel(selectedViews);
+				} else {
+					final CyNetworkView currentView = vg.getCurrentNetworkView();
+					NetworkViewContainer viewContainer = null;
+					
+					if (currentView != null) {
+						viewContainer = viewMainPanel.showViewContainer(currentView);
+					} else {
+						final List<ThumbnailPanel> selectedItems = vg.getSelectedItems();
+						
+						if (!selectedItems.isEmpty())
+							viewContainer = viewMainPanel.showViewContainer(selectedItems.get(0).getNetworkView());
+						else if (!vg.isEmpty())
+							viewContainer = viewMainPanel.showViewContainer(vg.firstItem().getNetworkView());
+					}
+					
+					if (viewContainer != null) {
+						viewMainPanel.setCurrentNetworkView(viewContainer.getNetworkView());
+						viewContainer.getContentPane().requestFocusInWindow();
+					}
+				}
 			}
 		});
-		
+
 		vg.addPropertyChangeListener("currentNetworkView", (PropertyChangeEvent e) -> {
 			final CyNetworkView targetView = (CyNetworkView) e.getNewValue();
 			
