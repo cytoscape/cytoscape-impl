@@ -38,7 +38,7 @@ import org.cytoscape.application.CyUserLog;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.jobs.CyJob;
 import org.cytoscape.jobs.CyJobExecutionService;
-import org.cytoscape.jobs.CyJobHandler;
+import org.cytoscape.jobs.CyJobMonitor;
 import org.cytoscape.jobs.CyJobManager;
 import org.cytoscape.jobs.CyJobStatus;
 import org.cytoscape.service.util.CyServiceRegistrar;
@@ -58,14 +58,14 @@ public class CyJobManagerImpl implements CyJobManager,
 																	       SessionLoadedListener {
 	private final CyServiceRegistrar cyServiceRegistrar;
 	private CyEventHelper cyEventHelper;
-	private CyJobHandler jobMonitor;
+	private CyJobMonitor jobMonitor;
 	final Logger logger;
 
 	List<CyJob> jobsList;
-	ConcurrentMap<CyJob, CyJobHandler> jobHandlerMap;
+	ConcurrentMap<CyJob, CyJobMonitor> jobMonitorMap;
 	ConcurrentMap<CyJob, IntervalCounter> intervalMap;
 	ConcurrentMap<CyJob, CyJobStatus> statusMap;
-	ConcurrentMap<String, CyJobHandler> handlerMap;
+	ConcurrentMap<String, CyJobMonitor> monitorMap;
 	ConcurrentMap<String, CyJobExecutionService> exServiceMap;
 	Timer pollTimer;
 
@@ -81,27 +81,27 @@ public class CyJobManagerImpl implements CyJobManager,
 		logger = Logger.getLogger(CyUserLog.NAME);
 
 		jobsList = new ArrayList<>();
-		jobHandlerMap = new ConcurrentHashMap<>();
+		jobMonitorMap = new ConcurrentHashMap<>();
 		intervalMap = new ConcurrentHashMap<>();
 		statusMap = new ConcurrentHashMap<>();
-		handlerMap = new ConcurrentHashMap<>();
+		monitorMap = new ConcurrentHashMap<>();
 		exServiceMap = new ConcurrentHashMap<>();
 
 		pollTimer = new Timer("Job Status Poller", true);
 	}
 
-	public void setJobMonitor(CyJobHandler handler) {
-		jobMonitor = handler;
+	public void setJobMonitor(CyJobMonitor monitor) {
+		jobMonitor = monitor;
 	}
 
 	@Override
-	public void addJob(CyJob job, CyJobHandler jobHandler, int pollInterval) {
+	public void addJob(CyJob job, CyJobMonitor jobMonitor, int pollInterval) {
 		if (jobsList.size() == 0)
 			pollTimer.schedule(new Poller(), 1000);
 		synchronized (jobsList) {
 			jobsList.add(job);
 		}
-		associateHandler(job, jobHandler, pollInterval);
+		associateMonitor(job, jobMonitor, pollInterval);
 	}
 
 	@Override
@@ -109,7 +109,7 @@ public class CyJobManagerImpl implements CyJobManager,
 		synchronized (jobsList) {
 			jobsList.remove(job);
 		}
-		jobHandlerMap.remove(job);
+		jobMonitorMap.remove(job);
 		intervalMap.remove(job);
 		if (jobsList.size() == 0) {
 			resetTimer();
@@ -117,14 +117,14 @@ public class CyJobManagerImpl implements CyJobManager,
 	}
 
 	@Override
-	public void associateHandler(CyJob job, CyJobHandler jobHandler, int pollInterval) {
+	public void associateMonitor(CyJob job, CyJobMonitor jobMonitor, int pollInterval) {
 		if (jobsList.contains(job)) {
-			if (jobHandler == null) {
-				jobHandler = job.getJobHandler();
+			if (jobMonitor == null) {
+				jobMonitor = job.getJobMonitor();
 			}
 
-			if (jobHandler != null) {
-				jobHandlerMap.put(job, jobHandler);
+			if (jobMonitor != null) {
+				jobMonitorMap.put(job, jobMonitor);
 				if (pollInterval <= 0)
 					pollInterval = job.getPollInterval();
 
@@ -134,9 +134,9 @@ public class CyJobManagerImpl implements CyJobManager,
 	}
 
 	@Override
-	public void associateHandler(CyJob job, String jobHandlerName, int pollInterval) {
-		if (handlerMap.containsKey(jobHandlerName)) {
-			associateHandler(job, handlerMap.get(jobHandlerName), pollInterval);
+	public void associateMonitor(CyJob job, String jobMonitorName, int pollInterval) {
+		if (monitorMap.containsKey(jobMonitorName)) {
+			associateMonitor(job, monitorMap.get(jobMonitorName), pollInterval);
 		}
 	}
 
@@ -160,16 +160,16 @@ public class CyJobManagerImpl implements CyJobManager,
 	}
 
 	/*
-	 * OSGi interfaces to track the list of CyJobHandlers and CyJobSessionHandlers
+	 * OSGi interfaces to track the list of CyJobMonitors and CyJobSessionHandlers
 	 */
-	public void addJobHandler(CyJobHandler handler, Map<?, ?> properties) {
-		handlerMap.put(handler.getClass().getCanonicalName(), handler);
+	public void addJobMonitor(CyJobMonitor monitor, Map<?, ?> properties) {
+		monitorMap.put(monitor.getClass().getCanonicalName(), monitor);
 	}
 
-	public void removeJobHandler(CyJobHandler handler, Map<?, ?> properties) {
-		String clazz = handler.getClass().getCanonicalName();
-		if (handlerMap.containsKey(clazz))
-			handlerMap.remove(clazz);
+	public void removeJobMonitor(CyJobMonitor monitor, Map<?, ?> properties) {
+		String clazz = monitor.getClass().getCanonicalName();
+		if (monitorMap.containsKey(clazz))
+			monitorMap.remove(clazz);
 	}
 
 	public void addExecutionService(CyJobExecutionService exService, Map<?, ?> properties) {
@@ -257,8 +257,8 @@ public class CyJobManagerImpl implements CyJobManager,
 					if (statusMap.containsKey(job) && statusMap.get(job).equals(status))
 						continue;
 
-					if (jobHandlerMap.containsKey(job))
-						jobHandlerMap.get(job).handleJob(job, status);
+					if (jobMonitorMap.containsKey(job))
+						jobMonitorMap.get(job).jobStatusChanged(job, status);
 
 					if (status.isDone())
 						// Orphan
@@ -266,7 +266,7 @@ public class CyJobManagerImpl implements CyJobManager,
 
 					statusMap.put(job, status);
 					// The jobMonitor should call loadResults
-					jobMonitor.handleJob(job, status);
+					jobMonitor.jobStatusChanged(job, status);
 				}
 			}
 			for (CyJob job: orphans) removeJob(job);

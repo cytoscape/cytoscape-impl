@@ -28,7 +28,7 @@ import java.util.Properties;
 
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.jobs.CyJobExecutionService;
-import org.cytoscape.jobs.CyJobHandler;
+import org.cytoscape.jobs.CyJobMonitor;
 import org.cytoscape.jobs.CyJobManager;
 import org.cytoscape.property.PropertyUpdatedListener;
 import org.cytoscape.service.util.AbstractCyActivator;
@@ -51,7 +51,7 @@ public class CyActivator extends AbstractCyActivator {
 		CyServiceRegistrar cyServiceRegistrarServiceRef = getService(bc,CyServiceRegistrar.class);
 		CyEventHelper cyEventHelper = getService(bc,CyEventHelper.class);
 
-		CyJobHandler jobMonitor;
+		CyJobMonitor jobMonitor;
 
 		// See if we have a graphics console or not
 		boolean haveGUI = true;
@@ -81,7 +81,7 @@ public class CyActivator extends AbstractCyActivator {
 		}
 
 		// Our job manager also needs to handle the registration of jobs handlers and job session handlers
-		registerServiceListener(bc, cyJobManager, "addJobHandler", "removeJobHandler", CyJobHandler.class);
+		registerServiceListener(bc, cyJobManager, "addJobMonitor", "removeJobMonitor", CyJobMonitor.class);
 		registerServiceListener(bc, cyJobManager, "addExecutionService", "removeExecutionService", CyJobExecutionService.class);
 
 		// Our job manager also needs to know about session load and save

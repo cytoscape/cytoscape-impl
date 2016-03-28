@@ -50,7 +50,7 @@ import javax.swing.WindowConstants;
 import org.cytoscape.application.CyUserLog;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.jobs.CyJob;
-import org.cytoscape.jobs.CyJobHandler;
+import org.cytoscape.jobs.CyJobMonitor;
 import org.cytoscape.jobs.CyJobStatus;
 import org.cytoscape.jobs.CyJobStatus.Status;
 import org.cytoscape.service.util.CyServiceRegistrar;
@@ -283,7 +283,7 @@ public class GUIJobDialog extends JDialog {
 					if (status.getStatus().equals(Status.CANCELED)) {
 						jobManager.removeJob(job);
 						mapChanged();
-						jobMonitor.handleJob(job, status);
+						jobMonitor.jobStatusChanged(job, status);
 					}
 				} else if (action.equals("error")) {
 					showMessage(jobDialog, JOptionPane.ERROR_MESSAGE);
@@ -318,11 +318,11 @@ public class GUIJobDialog extends JDialog {
 
 		public void run(TaskMonitor monitor) {
 			monitor.setTitle("Loading data for "+job.toString());
-			CyJobHandler jobHandler = job.getJobHandler();
+			CyJobMonitor jobMonitor = job.getJobMonitor();
 			// System.out.println("Load data task");
-			if (jobHandler != null) {
+			if (jobMonitor != null) {
 				// System.out.println("Calling loadData");
-				jobHandler.loadData(job, monitor);
+				jobMonitor.loadData(job, monitor);
 			}
 
 			jobManager.removeJob(job);

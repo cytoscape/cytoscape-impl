@@ -33,7 +33,7 @@ import java.util.TimerTask;
 
 import org.cytoscape.application.CyUserLog;
 import org.cytoscape.jobs.CyJob;
-import org.cytoscape.jobs.CyJobHandler;
+import org.cytoscape.jobs.CyJobMonitor;
 import org.cytoscape.jobs.CyJobStatus;
 import org.cytoscape.jobs.CyJobStatus.Status;
 import org.cytoscape.work.TaskMonitor;
@@ -43,13 +43,14 @@ import org.apache.log4j.Logger;
 /**
  * An implementation of CyJobManager.
  */
-public class SimpleCyJobMonitor implements CyJobHandler {
+public class SimpleCyJobMonitor implements CyJobMonitor {
 	final Logger logger;
 	public SimpleCyJobMonitor() {
 		logger = Logger.getLogger(CyUserLog.NAME);
 	}
 
-	public void handleJob(CyJob job, CyJobStatus status) {
+	@Override
+	public void jobStatusChanged(CyJob job, CyJobStatus status) {
 		String jobId = job.getJobId();
 		Status stat = status.getStatus();
 		switch(stat) {

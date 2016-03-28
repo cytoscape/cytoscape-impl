@@ -32,7 +32,7 @@ import java.util.concurrent.ConcurrentMap;
 import org.cytoscape.application.CyUserLog;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.jobs.CyJob;
-import org.cytoscape.jobs.CyJobHandler;
+import org.cytoscape.jobs.CyJobMonitor;
 import org.cytoscape.jobs.CyJobStatus;
 import org.cytoscape.jobs.CyJobStatus.Status;
 import org.cytoscape.service.util.CyServiceRegistrar;
@@ -46,7 +46,7 @@ import org.apache.log4j.Logger;
 /**
  * An implementation of CyJobManager.
  */
-public class GUICyJobMonitor extends AbstractTaskFactory implements CyJobHandler {
+public class GUICyJobMonitor extends AbstractTaskFactory implements CyJobMonitor {
 	final Logger logger;
 	final CyServiceRegistrar serviceRegistrar;
 	final ConcurrentMap<CyJob, CyJobStatus> statusMap;
@@ -74,7 +74,7 @@ public class GUICyJobMonitor extends AbstractTaskFactory implements CyJobHandler
 		});
 	}
 
-	public void handleJob(CyJob job, CyJobStatus status) {
+	public void jobStatusChanged(CyJob job, CyJobStatus status) {
 		String jobId = job.getJobId();
 		Status stat = status.getStatus();
 		if (statusMap.containsKey(job) && statusMap.get(job).getStatus().equals(stat))
