@@ -80,15 +80,17 @@ public class DestroyNetworkViewsAction extends AbstractCyAction {
 	public void updateEnableState() {
 		final List<CyNetwork> networks = serviceRegistrar.getService(CyApplicationManager.class).getSelectedNetworks();
 		final CyNetworkViewManager netViewManager = serviceRegistrar.getService(CyNetworkViewManager.class);
+		int count = 0;
 		
-		for (CyNetwork n : networks) {
-			if (netViewManager.viewExists(n)) {
-				setEnabled(true);
-				return;
-			}
-		}
+		for (CyNetwork n : networks)
+			count += netViewManager.getNetworkViews(n).size();
 		
-		setEnabled(false);
+		if (count > 0)
+			setName("Destroy " + count + " View" + (count == 1 ? "" : "s"));
+		else
+			setName("Destroy Views");
+		
+		setEnabled(count > 0);
 	}
 	
 	@Override

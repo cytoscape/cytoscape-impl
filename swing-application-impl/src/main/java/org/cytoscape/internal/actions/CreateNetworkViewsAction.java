@@ -1,15 +1,17 @@
 package org.cytoscape.internal.actions;
 
 import java.awt.event.ActionEvent;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.event.PopupMenuEvent;
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.AbstractCyAction;
-import org.cytoscape.internal.view.NetworkMainPanel;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.task.destroy.DestroyNetworkTaskFactory;
+import org.cytoscape.task.create.CreateNetworkViewTaskFactory;
+import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.work.swing.DialogTaskManager;
 
 /*
@@ -36,16 +38,17 @@ import org.cytoscape.work.swing.DialogTaskManager;
  * #L%
  */
 
+/**
+ * This action simply delegates to {@link CreateNetworkViewTaskFactory}, but it is necessary
+ * because we want to change the action name dynamically.
+ */
 @SuppressWarnings("serial")
-public class DestroyNetworksAction extends AbstractCyAction {
-	
-	private final NetworkMainPanel netPanel;
+public class CreateNetworkViewsAction extends AbstractCyAction {
+
 	private final CyServiceRegistrar serviceRegistrar;
 
-	public DestroyNetworksAction(final float menuGravity, final NetworkMainPanel netPanel,
-			final CyServiceRegistrar serviceRegistrar) {
-		super("Destroy Networks");
-		this.netPanel = netPanel;
+	public CreateNetworkViewsAction(final float menuGravity, final CyServiceRegistrar serviceRegistrar) {
+		super("Create Views");
 		this.serviceRegistrar = serviceRegistrar;
 		
 		setMenuGravity(menuGravity);
@@ -53,38 +56,41 @@ public class DestroyNetworksAction extends AbstractCyAction {
 
 	@Override
 	public void actionPerformed(final ActionEvent e) {
-		final Set<CyNetwork> subNetworks = getSelectedSubNetworks();
+		final List<CyNetwork> networks = serviceRegistrar.getService(CyApplicationManager.class).getSelectedNetworks();
 		
-		if (!subNetworks.isEmpty()) {
-			final DestroyNetworkTaskFactory factory = serviceRegistrar.getService(DestroyNetworkTaskFactory.class);
+		if (!networks.isEmpty()) {
+			final CreateNetworkViewTaskFactory factory =
+					serviceRegistrar.getService(CreateNetworkViewTaskFactory.class);
 			final DialogTaskManager taskManager = serviceRegistrar.getService(DialogTaskManager.class);
 			
-			taskManager.execute(factory.createTaskIterator(subNetworks));
+			taskManager.execute(factory.createTaskIterator(networks));
 		}
 	}
-
+	
 	@Override
 	public void updateEnableState() {
-		final int colCount = netPanel.countSelectedRootNetworks();
-		final int netCount = netPanel.countSelectedSubNetworks(false);
+		final List<CyNetwork> networks = serviceRegistrar.getService(CyApplicationManager.class).getSelectedNetworks();
+		final List<CyNetwork> networksWithoutViews = new ArrayList<>();
+		final CyNetworkViewManager netViewManager = serviceRegistrar.getService(CyNetworkViewManager.class);
 		
-		setEnabled(colCount > 0 || netCount > 0);
+		// TODO Remove when multiple views per network are fully supported
+		for (CyNetwork n : networks) {
+			if (!netViewManager.viewExists(n))
+				networksWithoutViews.add(n);
+		}
 		
-		setName(
-				"Destroy " +
-				(colCount > 0 ? "Collection" : "") + (colCount > 1 ? "s" : "") +
-				(colCount > 0 && netCount > 0 ? " and " : "") +
-				(netCount > 0 ? "Network" : "") + (netCount > 1 ? "s" : "")
-		);
+		int count = networksWithoutViews.size();
+		
+		if (count > 0)
+			setName("Create " + count + " View" + (count == 1 ? "" : "s"));
+		else
+			setName("Create Views");
+		
+		setEnabled(count > 0);
 	}
 	
 	@Override
 	public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
 		updateEnableState();
-	}
-	
-	private Set<CyNetwork> getSelectedSubNetworks() {
-		// Includes subnetworks from selected collections as well
-		return netPanel.getSelectedNetworks(true);
 	}
 }

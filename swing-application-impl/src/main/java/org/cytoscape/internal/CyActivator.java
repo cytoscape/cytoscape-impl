@@ -42,6 +42,7 @@ import org.cytoscape.application.swing.ToolBarComponent;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.internal.actions.BookmarkAction;
 import org.cytoscape.internal.actions.CloseWindowAction;
+import org.cytoscape.internal.actions.CreateNetworkViewsAction;
 import org.cytoscape.internal.actions.CytoPanelAction;
 import org.cytoscape.internal.actions.DestroyNetworkViewsAction;
 import org.cytoscape.internal.actions.DestroyNetworksAction;
@@ -253,6 +254,7 @@ public class CyActivator extends AbstractCyActivator {
 		
 		DetachedViewToolBarAction detachedViewToolBarAction = new DetachedViewToolBarAction(1.4f, netViewMediator);
 		CloseWindowAction closeWindowAction = new CloseWindowAction(6.1f, netViewMediator);
+		CreateNetworkViewsAction createNetworkViewsAction = new CreateNetworkViewsAction(3.0f, serviceRegistrar);
 		DestroyNetworkViewsAction destroyNetworkViewsAction = new DestroyNetworkViewsAction(3.1f, serviceRegistrar);
 		DestroyNetworksAction destroyNetworksAction = new DestroyNetworksAction(3.2f, netMainPanel, serviceRegistrar);
 
@@ -342,6 +344,11 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(TITLE, "Vertical");
 			props.setProperty(MENU_GRAVITY, "4.0");
 			registerService(bc, arrangeVerticalTaskFactory, TaskFactory.class, props);
+		}
+		{
+			Properties props = new Properties();
+			props.setProperty(IN_NETWORK_PANEL_CONTEXT_MENU, "true");
+			registerAllServices(bc, createNetworkViewsAction, props);
 		}
 		{
 			Properties props = new Properties();
