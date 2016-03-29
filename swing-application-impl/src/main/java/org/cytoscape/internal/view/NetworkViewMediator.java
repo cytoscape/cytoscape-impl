@@ -27,6 +27,7 @@ import org.cytoscape.internal.util.ViewUtil;
 import org.cytoscape.internal.view.GridViewToggleModel.Mode;
 import org.cytoscape.internal.view.NetworkViewGrid.ThumbnailPanel;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.events.ColumnDeletedEvent;
@@ -597,22 +598,29 @@ public class NetworkViewMediator
 	}
 	
 	private final void updateNetworkViewTitle(final Collection<RowSetRecord> records, final CyTable source) {
+		final CyNetworkManager netMgr = serviceRegistrar.getService(CyNetworkManager.class);
+		final CyNetworkViewManager netViewMgr = serviceRegistrar.getService(CyNetworkViewManager.class);
+		
 		for (final RowSetRecord record : records) {
-			if (CyNetwork.NAME.equals(record.getColumn())) { // TODO test again
-				final CyNetworkViewManager netViewMgr = serviceRegistrar.getService(CyNetworkViewManager.class);
-				
+			if (CyNetwork.NAME.equals(record.getColumn())) {
 				// Assume payload collection is for same column
-				for (CyNetworkView view : netViewMgr.getNetworkViewSet()) {
-					final CyNetwork net = view.getModel();
-
+				for (CyNetwork net : netMgr.getNetworkSet()) {
 					if (net.getDefaultNetworkTable() == source) {
 						final String name = record.getRow().get(CyNetwork.NAME, String.class);
-						final String title = view.getVisualProperty(BasicVisualLexicon.NETWORK_TITLE);
 						
-						// TODO: Only update the view's title if the current title and the network name are in sync,
-						// because users can change the Network View title at any time
-						if (name != null && title == null || title.trim().isEmpty()) {
-							view.setVisualProperty(BasicVisualLexicon.NETWORK_TITLE, name);
+						if (name == null || name.trim().isEmpty())
+							continue;
+						
+						final Collection<CyNetworkView> netViews = netViewMgr.getNetworkViews(net);
+						int count = 0;
+						
+						for (CyNetworkView view : netViews) {
+							// TODO: Only update the view's title if the current title and the network name are in sync,
+							// because users can change the Network View title at any time
+							String title = name.trim();
+							title += (" View" + (netViews.size() > 1 ? " (" + ++count + ")" : "")); // TODO
+							
+							view.setVisualProperty(BasicVisualLexicon.NETWORK_TITLE, title);
 
 							// Does not need to update the rendered title with the new network name
 							// if this visual property is locked
@@ -621,9 +629,9 @@ public class NetworkViewMediator
 									getNetworkViewMainPanel().update(view);
 								});
 							}
-
-							return; // assuming just one row is set.
 						}
+						
+						break;
 					}
 				}
 			}
