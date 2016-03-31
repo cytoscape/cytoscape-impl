@@ -289,7 +289,7 @@ public class NetworkViewMainPanel extends JPanel {
 		}
 	}
 	
-	public void setCurrentNetworkWithoutView(final CyNetwork network) {
+	public void showNullView(final CyNetwork network) {
 		if (isGridMode()) {
 			if (isGridVisible())
 				updateGrid();

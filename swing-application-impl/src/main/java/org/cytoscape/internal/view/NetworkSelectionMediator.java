@@ -232,6 +232,11 @@ public class NetworkSelectionMediator implements SetSelectedNetworksListener, Se
 			viewMainPanel.getNetworkViewGrid().removePropertyChangeListener(propName, gridPanelPropChangeListener);
 	}
 	
+	private void maybeShowNullView(final CyNetworkView view, final CyNetwork network) {
+		if (view == null && network == null)
+			viewMainPanel.showNullView(null);
+	}
+	
 	private void updateApplicationManager(final CyNetwork currentNetwork, final CyNetworkView currentView,
 			final Collection<CyNetwork> selectedNetworks, final Collection<CyNetworkView> selectedViews) {
 		new Thread(() -> {
@@ -268,7 +273,7 @@ public class NetworkSelectionMediator implements SetSelectedNetworksListener, Se
 				return;
 			
 			if (e.getNewValue() == null || e.getNewValue() instanceof CyRootNetwork)
-				viewMainPanel.setCurrentNetworkWithoutView((CyNetwork) e.getNewValue());
+				viewMainPanel.showNullView((CyNetwork) e.getNewValue());
 			
 			final CyNetwork network = e.getNewValue() instanceof CySubNetwork ? (CyNetwork) e.getNewValue() : null;
 			final CyApplicationManager appMgr = serviceRegistrar.getService(CyApplicationManager.class);
@@ -306,8 +311,7 @@ public class NetworkSelectionMediator implements SetSelectedNetworksListener, Se
 			viewMainPanel.setSelectedNetworkViews(selectedViews);
 			viewMainPanel.setCurrentNetworkView(currentView);
 			
-			if (currentView == null && network == null)
-				viewMainPanel.setCurrentNetworkWithoutView(null);
+			maybeShowNullView(currentView, network);
 			
 			// Then update the related Cytoscape states
 			updateApplicationManager(network, currentView, selectedNets, selectedViews);
@@ -353,7 +357,7 @@ public class NetworkSelectionMediator implements SetSelectedNetworksListener, Se
 			if (currentView != null)
 				viewMainPanel.setCurrentNetworkView(currentView);
 			else
-				viewMainPanel.setCurrentNetworkWithoutView(currentNet);
+				viewMainPanel.showNullView(currentNet);
 			
 			viewMainPanel.setSelectedNetworkViews(selectedViews);
 			
@@ -411,8 +415,7 @@ public class NetworkSelectionMediator implements SetSelectedNetworksListener, Se
 				netMainPanel.setCurrentNetwork(currentNet);
 				netMainPanel.setSelectedNetworks(selectedNetworks);
 				
-				if (currentView == null && currentNet == null)
-					viewMainPanel.setCurrentNetworkWithoutView(null);
+				maybeShowNullView(currentView, currentNet);
 				
 				// Then update the related Cytoscape states
 				updateApplicationManager(currentNet, currentView, selectedNetworks, selectedViews);
@@ -464,9 +467,12 @@ public class NetworkSelectionMediator implements SetSelectedNetworksListener, Se
 				if (currentNet != null) {
 					final CyNetworkViewManager viewMgr = serviceRegistrar.getService(CyNetworkViewManager.class);
 				
-					if (!viewMgr.viewExists(currentNet)) {
-						currentNet = null;
-						selectedNets = Collections.emptySet();
+					for (CyNetwork net : selectedNets) {
+						if (viewMgr.viewExists(net)) {
+							currentNet = null;
+							selectedNets = Collections.emptySet();
+							break;
+						}
 					}
 				}
 				
@@ -478,8 +484,7 @@ public class NetworkSelectionMediator implements SetSelectedNetworksListener, Se
 			netMainPanel.setCurrentNetwork(currentNet);
 			netMainPanel.setSelectedNetworks(selectedNets);
 			
-			if (view == null && currentNet == null)
-				viewMainPanel.setCurrentNetworkWithoutView(null);
+			maybeShowNullView(view, currentNet);
 			
 			// Then update the related Cytoscape states
 			updateApplicationManager(currentNet, view, selectedNets, selectedViews);
