@@ -18,5 +18,5 @@ vizmapper.cntMapperUpperLimit=2000
 undo.limit=10
 showQuickStartAtStartup=false
 showNodeEdgeCount=true
-showNetworkProvenanceHierarchy=false
+showNetworkProvenanceHierarchy=true
 taskStackSize=10485760
