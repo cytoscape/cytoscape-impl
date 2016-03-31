@@ -197,7 +197,7 @@ public class NetworkViewGrid extends JPanel {
 			boolean removed = false;
 			
 			for (RenderingEngine<CyNetwork> re : enginesToRemove) {
-				if (engines.remove(re.getViewModel()) != null) {
+				if (re != null && engines.remove(re.getViewModel()) != null) {
 					removed = true;
 					dirty = true;
 				}

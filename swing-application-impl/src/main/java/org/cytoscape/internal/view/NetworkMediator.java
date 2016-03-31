@@ -142,6 +142,10 @@ public class NetworkMediator
 		});
 	}
 	
+	public CyNetwork getCurrentNetwork() {
+		return networkMainPanel.getCurrentNetwork();
+	}
+	
 	// // Event handlers // //
 
 	@Override

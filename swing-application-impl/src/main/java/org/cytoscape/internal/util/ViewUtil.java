@@ -103,7 +103,11 @@ public final class ViewUtil {
 	}
 	
 	public static String createUniqueKey(final CyNetworkView view) {
-		return view.getSUID() + "__" + view.getRendererId() + "__" + view.hashCode();
+		return "__CyNetworkView_" + view.getSUID();
+	}
+	
+	public static String createUniqueKey(final CyNetwork net) {
+		return "__CyNetwork_" + (net != null ? net.getSUID() : "null");
 	}
 	
 	public static CySubNetwork getParent(final CySubNetwork net, final CyServiceRegistrar serviceRegistrar) {

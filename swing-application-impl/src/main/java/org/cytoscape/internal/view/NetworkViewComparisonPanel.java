@@ -142,6 +142,12 @@ public class NetworkViewComparisonPanel extends JPanel {
 		return null;
 	}
 	
+	public NetworkViewContainer getContainer(final CyNetworkView view) {
+		final ViewPanel vp = viewPanels.get(view);
+		
+		return vp != null ? vp.getNetworkViewContainer() : null;
+	}
+	
 	public boolean contains(final CyNetworkView view) {
 		for (ViewPanel vp : viewPanels.values()) {
 			if (vp.getNetworkView().equals(view))
@@ -150,7 +156,19 @@ public class NetworkViewComparisonPanel extends JPanel {
 		
 		return false;
 	}
-
+	
+	public void removeView(final CyNetworkView view) {
+		if (view != null && viewPanels.containsKey(view)) {
+			viewPanels.remove(view);
+			rootPanes.remove(view);
+			arrangePanels();
+		}
+	}
+	
+	public int viewCount() {
+		return viewPanels.size();
+	}
+	
 	public void update() {
 		for (ViewPanel vp : viewPanels.values())
 			vp.update();

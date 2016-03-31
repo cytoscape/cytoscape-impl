@@ -118,6 +118,7 @@ public class NetworkViewMediator
 	private final JDesktopPane desktopPane;
 	
 	private final NetworkViewMainPanel networkViewMainPanel;
+	private final NetworkMediator networkMediator;
 	private final GridViewToggleModel gridViewToggleModel;
 
 	// Key is MODEL ID
@@ -133,11 +134,13 @@ public class NetworkViewMediator
 	
 	public NetworkViewMediator(
 			final NetworkViewMainPanel networkViewMainPanel,
+			final NetworkMediator networkMediator,
 			final GridViewToggleModel gridViewToggleModel,
 			final CyHelpBroker help,
 			final CyServiceRegistrar serviceRegistrar
 	) {
 		this.networkViewMainPanel = networkViewMainPanel;
+		this.networkMediator = networkMediator;
 		this.gridViewToggleModel = gridViewToggleModel;
 		this.desktopPane = new JDesktopPane();
 		this.serviceRegistrar = serviceRegistrar;
@@ -367,11 +370,19 @@ public class NetworkViewMediator
 			getNetworkViewMainPanel().setCurrentNetworkView(view);
 			
 			// Always show the current view in the View Mode when opening older session files (up to version 3.3)
-			if (view != null && !getNetworkViewMainPanel().isGridMode())
-				getNetworkViewMainPanel().showViewContainer(view);
-			else
+			if (!getNetworkViewMainPanel().isGridMode()) {
+				if (view != null) {
+					getNetworkViewMainPanel().showViewContainer(view);
+				} else {
+					final CyNetwork net = serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetwork();
+					
+					if (net != null)
+						getNetworkViewMainPanel().showNullViewContainer(net);
+				}
+			} else {
 				getNetworkViewMainPanel().getNetworkViewGrid()
 						.update(getNetworkViewMainPanel().getNetworkViewGrid().getThumbnailSlider().getValue());
+			}
 		});
 	}
 	
@@ -430,7 +441,6 @@ public class NetworkViewMediator
 		}
 	}
 
-	@SuppressWarnings("unchecked")
 	private void initComponents() {
 		final NetworkViewMainPanel viewMainPanel = getNetworkViewMainPanel();
 		final NetworkViewGrid vg = viewMainPanel.getNetworkViewGrid();
@@ -443,9 +453,8 @@ public class NetworkViewMediator
 				
 				if (currentCard instanceof NetworkViewComparisonPanel)
 					viewMainPanel.endComparison((NetworkViewComparisonPanel) currentCard);
-				else
-					viewMainPanel.showGrid(true);
 				
+				viewMainPanel.showGrid(true);
 				vg.requestFocusInWindow();
 			} else if (mode == Mode.VIEW) {
 				final Set<CyNetworkView> selectedViews = new LinkedHashSet<>(viewMainPanel.getSelectedNetworkViews());
@@ -493,35 +502,26 @@ public class NetworkViewMediator
 				}
 			}
 		});
-		
-		vg.addPropertyChangeListener("networkViews", (PropertyChangeEvent e) -> {
-			if (loadingSession)
-				return;
-			
-			final Collection<CyNetworkView> oldSet = (Collection<CyNetworkView>) e.getOldValue();
-			
-			if (oldSet != null && !oldSet.isEmpty()) {
-				final Collection<CyNetworkView> newSet = (Collection<CyNetworkView>) e.getNewValue();
-				final Collection<CyNetworkView> deletedSet = new HashSet<>(oldSet);
-				
-				if (newSet != null)
-					deletedSet.removeAll(newSet);
-				
-				final CyNetworkViewManager netViewMgr = serviceRegistrar.getService(CyNetworkViewManager.class);
-				
-				for (CyNetworkView view : deletedSet)
-					netViewMgr.destroyNetworkView(view);
-				
-				if (!deletedSet.isEmpty())
-					vg.update(vg.getThumbnailSlider().getValue());
-			}
-		});
 	}
 	
 	private final void removeView(final CyNetworkView view) {
 		invokeOnEDT(() -> {
 			try {
 				getNetworkViewMainPanel().remove(view);
+				
+				if (!getNetworkViewMainPanel().isGridMode()) {
+					final CyNetwork curNet = networkMediator.getCurrentNetwork();
+					
+					if (curNet != null) {
+						final CyNetworkViewManager netViewMgr = serviceRegistrar.getService(CyNetworkViewManager.class);
+						
+						if (!netViewMgr.viewExists(curNet))
+							getNetworkViewMainPanel().showNullViewContainer(curNet);
+					} else {
+						getNetworkViewMainPanel().showNullViewContainer(null);
+					}
+				}
+				
 				viewUpdateRequired.remove(view);
 				final RenderingEngine<CyNetwork> removed = presentationMap.remove(view);
 				

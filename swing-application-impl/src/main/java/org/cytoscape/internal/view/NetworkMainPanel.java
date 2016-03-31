@@ -765,6 +765,7 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 	
 	private void deselectAll() {
 		setSelectedItems(Collections.emptyList());
+		setCurrentNetwork(null);
 		lastSelected = selectionHead = selectionTail = null;
 	}
 	

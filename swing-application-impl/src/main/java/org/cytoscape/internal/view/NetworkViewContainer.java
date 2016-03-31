@@ -17,6 +17,8 @@ import java.awt.Dimension;
 import java.awt.KeyboardFocusManager;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.awt.event.KeyEvent;
 
 import javax.swing.AbstractAction;
@@ -44,6 +46,7 @@ import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.view.presentation.RenderingEngineFactory;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 
 /*
  * #%L
@@ -186,6 +189,9 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 		getViewTitleLabel().setToolTipText(view != null ? ViewUtil.getTitle(view) : null);
 		
 		if (getInfoPanel().isVisible()) {
+			if (view.getModel().getDefaultNodeTable() == null || view.getModel().getDefaultEdgeTable() == null)
+				return; // The view has probably been disposed
+			
 			// Selected nodes/edges info
 			final int sn = view.getModel().getDefaultNodeTable().countMatchingRows(CyNetwork.SELECTED, Boolean.TRUE);
 			final int se = view.getModel().getDefaultEdgeTable().countMatchingRows(CyNetwork.SELECTED, Boolean.TRUE);
@@ -229,7 +235,13 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 		getBirdsEyeViewButton().setForeground(UIManager.getColor(bevVisible ? "Focus.color" : "Button.foreground"));
 	}
 	
-	public void dispose() {
+	private void updateViewSize() {
+		networkView.setVisualProperty(BasicVisualLexicon.NETWORK_WIDTH, (double) getContentPane().getWidth());
+		networkView.setVisualProperty(BasicVisualLexicon.NETWORK_HEIGHT, (double) getContentPane().getHeight());
+		networkView.updateView();
+	}
+	
+	void dispose() {
 		getRootPane().getLayeredPane().removeAll();
 		getRootPane().getContentPane().removeAll();
 		
@@ -267,10 +279,18 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 		getContentPane().add(getVisualizationContainer(), BorderLayout.CENTER);
 		getContentPane().add(getToolBar(), BorderLayout.SOUTH);
 		
+		getRootPane().addComponentListener(new ComponentAdapter() {
+			@Override
+			public void componentResized(ComponentEvent e) {
+				updateViewSize();
+			};
+		});
+		
 		setKeyBindings(this);
 		setKeyBindings(getRootPane());
 		
 		updateTollBar();
+		updateViewSize();
 	}
 	
 	protected RenderingEngine<CyNetwork> getRenderingEngine() {
