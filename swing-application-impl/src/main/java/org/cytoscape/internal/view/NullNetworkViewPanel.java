@@ -61,7 +61,8 @@ public class NullNetworkViewPanel extends JPanel {
 	
 	private JPanel centerPanel;
 	private JPanel toolBar;
-	private JLabel iconLabel;
+	private JLabel infoLabel;
+	private JLabel infoIconLabel;
 	private JLabel gapLabel;
 	private JButton reattachViewButton;
 	private JLabel titleLabel;
@@ -113,23 +114,22 @@ public class NullNetworkViewPanel extends JPanel {
 	}
 	
 	private void update() {
-		getCenterPanel().setToolTipText(network == null && networkView == null ? "No networks selected" : null);
-		
 		if (networkView != null) {
-			getIconLabel().setText(ICON_EXTERNAL_LINK_SQUARE);
-			getIconLabel().setToolTipText("This view is detached");
+			getInfoIconLabel().setText(ICON_EXTERNAL_LINK_SQUARE);
+			getInfoIconLabel().setToolTipText("This view is detached");
 		} else if (network != null) {
-			getIconLabel().setText(ICON_BAN);
-			getIconLabel().setToolTipText(
+			getInfoIconLabel().setText(ICON_BAN);
+			getInfoIconLabel().setToolTipText(
 					network instanceof CySubNetwork ?
 							"This network has no views" : "A network collection cannot have views"
 			);
 		} else {
-			getIconLabel().setText(null);
-			getIconLabel().setToolTipText(null);
+			getInfoIconLabel().setText(null);
+			getInfoIconLabel().setToolTipText(null);
 		}
 		
-		getIconLabel().setVisible(networkView != null || network != null);
+		getInfoIconLabel().setVisible(networkView != null || network != null);
+		getInfoLabel().setVisible(network == null && networkView == null);
 		getCreateViewButton().setVisible(networkView == null && network instanceof CySubNetwork);
 		getReattachViewButton().setVisible(networkView != null);
 		sep2.setVisible(networkView != null);
@@ -177,7 +177,8 @@ public class NullNetworkViewPanel extends JPanel {
 					.addGap(0, 0, Short.MAX_VALUE)
 					.addGroup(layout.createParallelGroup(CENTER, true)
 							.addComponent(getGapLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-							.addComponent(getIconLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+							.addComponent(getInfoIconLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+							.addComponent(getInfoLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 							.addComponent(getCreateViewButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					)
 					.addGap(0, 0, Short.MAX_VALUE)
@@ -186,7 +187,8 @@ public class NullNetworkViewPanel extends JPanel {
 					.addGap(0, 0, Short.MAX_VALUE)
 					.addComponent(getGapLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addPreferredGap(ComponentPlacement.UNRELATED)
-					.addComponent(getIconLabel())
+					.addComponent(getInfoIconLabel())
+					.addComponent(getInfoLabel())
 					.addPreferredGap(ComponentPlacement.UNRELATED)
 					.addComponent(getCreateViewButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addGap(0, 0, Short.MAX_VALUE)
@@ -232,19 +234,30 @@ public class NullNetworkViewPanel extends JPanel {
 		return toolBar;
 	}
 	
-	JLabel getIconLabel() {
-		if (iconLabel == null) {
-			iconLabel = new JLabel();
-			iconLabel.setFont(serviceRegistrar.getService(IconManager.class).getIconFont(96.0f));
-			iconLabel.setHorizontalAlignment(JLabel.CENTER);
-			iconLabel.setVerticalAlignment(JLabel.CENTER);
+	private JLabel getInfoLabel() {
+		if (infoLabel == null) {
+			infoLabel = new JLabel("No networks selected");
+			infoLabel.setFont(infoLabel.getFont().deriveFont(18.0f));
+			infoLabel.setEnabled(false);
+			infoLabel.setForeground(UIManager.getColor("Label.disabledForeground"));
+		}
+		
+		return infoLabel;
+	}
+	
+	JLabel getInfoIconLabel() {
+		if (infoIconLabel == null) {
+			infoIconLabel = new JLabel();
+			infoIconLabel.setFont(serviceRegistrar.getService(IconManager.class).getIconFont(96.0f));
+			infoIconLabel.setHorizontalAlignment(JLabel.CENTER);
+			infoIconLabel.setVerticalAlignment(JLabel.CENTER);
 			
 			Color c = UIManager.getColor("Label.disabledForeground");
 			c = new Color(c.getRed(), c.getGreen(), c.getBlue(), 40);
-			iconLabel.setForeground(c);
+			infoIconLabel.setForeground(c);
 		}
 		
-		return iconLabel;
+		return infoIconLabel;
 	}
 	
 	private JLabel getGapLabel() {

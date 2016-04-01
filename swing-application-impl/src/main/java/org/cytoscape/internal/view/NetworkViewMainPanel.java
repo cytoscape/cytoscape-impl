@@ -804,7 +804,7 @@ public class NetworkViewMainPanel extends JPanel {
 				taskManager.execute(factory.createTaskIterator(Collections.singleton(nullViewPanel.getNetwork())));
 			}
 		});
-		nullViewPanel.getIconLabel().addMouseListener(new MouseAdapter() {
+		nullViewPanel.getInfoIconLabel().addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				if (!e.isPopupTrigger() && nullViewPanel.getNetworkView() != null) {
