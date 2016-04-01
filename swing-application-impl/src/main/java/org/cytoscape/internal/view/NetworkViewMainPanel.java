@@ -96,9 +96,9 @@ public class NetworkViewMainPanel extends JPanel {
 	private final GridViewToggleModel gridViewToggleModel;
 	
 	private final Map<String, NetworkViewContainer> viewContainers;
-	private final Map<String, NullNetworkViewPanel> nullViewPanels;
 	private final Map<String, NetworkViewFrame> viewFrames;
 	private final Map<String, NetworkViewComparisonPanel> comparisonPanels;
+	private final NullNetworkViewPanel nullViewPanel;
 	
 	private final Set<CyNetworkView> dirtyThumbnails;
 	
@@ -122,7 +122,6 @@ public class NetworkViewMainPanel extends JPanel {
 		this.serviceRegistrar = serviceRegistrar;
 		
 		viewContainers = new LinkedHashMap<>();
-		nullViewPanels = new HashMap<>();
 		viewFrames = new HashMap<>();
 		comparisonPanels = new HashMap<>();
 		dirtyThumbnails = new HashSet<>();
@@ -131,6 +130,7 @@ public class NetworkViewMainPanel extends JPanel {
 		
 		cardLayout = new CardLayout();
 		networkViewGrid = createNetworkViewGrid();
+		nullViewPanel = new NullNetworkViewPanel(gridViewToggleModel, serviceRegistrar);
 		
 		init();
 	}
@@ -232,7 +232,7 @@ public class NetworkViewMainPanel extends JPanel {
 					}
 				} else if (c instanceof NullNetworkViewPanel) {
 					if (view.equals(((NullNetworkViewPanel) c).getNetworkView()));
-						removeCard((NullNetworkViewPanel) c);
+						nullViewPanel.update((CyNetwork) null);
 				}
 			}
 		}
@@ -355,7 +355,7 @@ public class NetworkViewMainPanel extends JPanel {
 		removeCard(vc);
 		
 		if (!isGridMode())
-			showNullViewContainer(view, true);
+			showNullViewContainer(view);
 		
 		// Create and show the frame
 		final NetworkViewFrame frame = new NetworkViewFrame(vc, gc, cyMenus.createViewFrameToolBar(), serviceRegistrar);
@@ -535,68 +535,14 @@ public class NetworkViewMainPanel extends JPanel {
 		return set;
 	}
 	
-	public NullNetworkViewPanel showNullViewContainer(final CyNetwork net) {
-		final CySubNetwork subNet = net instanceof CySubNetwork ? (CySubNetwork) net : null;
-		
-		final String key = createUniqueKey(subNet);
-		NullNetworkViewPanel panel = nullViewPanels.get(key);
-		
-		if (panel == null) {
-			panel = new NullNetworkViewPanel(subNet, gridViewToggleModel, serviceRegistrar);
-			nullViewPanels.put(key, panel);
-			
-			panel.getCreateViewButton().addActionListener((ActionEvent e) -> {
-				if (subNet != null) {
-					final CreateNetworkViewTaskFactory factory =
-							serviceRegistrar.getService(CreateNetworkViewTaskFactory.class);
-					final DialogTaskManager taskManager = serviceRegistrar.getService(DialogTaskManager.class);
-					taskManager.execute(factory.createTaskIterator(Collections.singleton(subNet)));
-				}
-			});
-		}
-		
-		if (panel.getParent() != getContentPane()) {
-			getContentPane().add(panel, key);
-			cardLayout.addLayoutComponent(panel, key);
-		}
-		
-		return showNullViewContainer(key);
+	public void showNullViewContainer(final CyNetwork net) {
+		nullViewPanel.update(net instanceof CySubNetwork ? (CySubNetwork) net : null);
+		showNullViewContainer();
 	}
 	
-	public NullNetworkViewPanel showNullViewContainer(final CyNetworkView view, final boolean detached) {
-		final String key = createUniqueKey(view);
-		NullNetworkViewPanel panel = nullViewPanels.get(key);
-		
-		if (panel == null) {
-			panel = new NullNetworkViewPanel(view, detached, gridViewToggleModel, serviceRegistrar);
-			nullViewPanels.put(key, panel);
-			
-			if (detached) {
-				panel.getIconLabel().addMouseListener(new MouseAdapter() {
-					@Override
-					public void mouseClicked(MouseEvent e) {
-						if (!e.isPopupTrigger()) {
-							final NetworkViewFrame frame = getNetworkViewFrame(view);
-							
-							if (frame != null)
-								showViewFrame(frame);
-						}
-					}
-				});
-				
-				panel.getReattachViewButton().addActionListener((ActionEvent e) -> {
-					reattachNetworkView(view);
-				});
-			}
-		}
-		
-		if (panel.getParent() != getContentPane())
-			getContentPane().add(panel, key);
-		
-		// Add again, because it may have been removed
-		cardLayout.addLayoutComponent(panel, key);
-		
-		return showNullViewContainer(key);
+	public void showNullViewContainer(final CyNetworkView view) {
+		nullViewPanel.update(view);
+		showNullViewContainer();
 	}
 	
 	public NetworkViewContainer showViewContainer(final CyNetworkView view) {
@@ -641,7 +587,7 @@ public class NetworkViewMainPanel extends JPanel {
 						showViewFrame(frame);
 						
 						if (!isGridMode())
-							showNullViewContainer(frame.getNetworkView(), true);
+							showNullViewContainer(frame.getNetworkView());
 					}
 				}
 			}
@@ -652,18 +598,8 @@ public class NetworkViewMainPanel extends JPanel {
 		return viewContainer;
 	}
 	
-	private NullNetworkViewPanel showNullViewContainer(final String key) {
-		if (key == null)
-			return null;
-		
-		NullNetworkViewPanel panel = nullViewPanels.get(key);
-		
-		if (panel != null) {
-			cardLayout.show(getContentPane(), key);
-			panel.update();
-		}
-		
-		return panel;
+	private void showNullViewContainer() {
+		cardLayout.show(getContentPane(), nullViewPanel.getName());
 	}
 
 	private void showViewFrame(final NetworkViewFrame frame) {
@@ -769,8 +705,6 @@ public class NetworkViewMainPanel extends JPanel {
 			viewContainers.remove(((NetworkViewContainer) comp).getName());
 		else if (comp instanceof NetworkViewComparisonPanel)
 			comparisonPanels.remove(((NetworkViewComparisonPanel) comp).getName());
-		else if (comp instanceof NullNetworkViewPanel)
-			nullViewPanels.remove(((NullNetworkViewPanel) comp).getName());
 		
 		cardLayout.removeLayoutComponent(comp);
 		getContentPane().remove(comp);
@@ -856,6 +790,30 @@ public class NetworkViewMainPanel extends JPanel {
 		add(getContentPane(), BorderLayout.CENTER);
 		
 		// Add Listeners
+		nullViewPanel.getCreateViewButton().addActionListener((ActionEvent e) -> {
+			if (nullViewPanel.getNetwork() instanceof CySubNetwork) {
+				final CreateNetworkViewTaskFactory factory =
+						serviceRegistrar.getService(CreateNetworkViewTaskFactory.class);
+				final DialogTaskManager taskManager = serviceRegistrar.getService(DialogTaskManager.class);
+				taskManager.execute(factory.createTaskIterator(Collections.singleton(nullViewPanel.getNetwork())));
+			}
+		});
+		nullViewPanel.getIconLabel().addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				if (!e.isPopupTrigger() && nullViewPanel.getNetworkView() != null) {
+					final NetworkViewFrame frame = getNetworkViewFrame(nullViewPanel.getNetworkView());
+					
+					if (frame != null)
+						showViewFrame(frame);
+				}
+			}
+		});
+		nullViewPanel.getReattachViewButton().addActionListener((ActionEvent e) -> {
+			if (nullViewPanel.getNetworkView() != null)
+				reattachNetworkView(nullViewPanel.getNetworkView());
+		});
+		
 		networkViewGrid.addPropertyChangeListener("thumbnailPanels", (PropertyChangeEvent e) -> {
 			networkViewGrid.updateToolBar();
 			networkViewGrid.getReattachAllViewsButton().setEnabled(!viewFrames.isEmpty()); // TODO Should not be done here
@@ -883,7 +841,6 @@ public class NetworkViewMainPanel extends JPanel {
 				});
 			}
 		});
-		
 		networkViewGrid.addPropertyChangeListener("selectedNetworkViews", (PropertyChangeEvent e) -> {
 			// Just fire the same event
 			firePropertyChange("selectedNetworkViews", e.getOldValue(), e.getNewValue());
@@ -909,7 +866,8 @@ public class NetworkViewMainPanel extends JPanel {
 		if (contentPane == null) {
 			contentPane = new JPanel();
 			contentPane.setLayout(cardLayout);
-			// Add the first panel in the card layout
+			
+			contentPane.add(nullViewPanel, nullViewPanel.getName());
 			contentPane.add(networkViewGrid, networkViewGrid.getName());
 		}
 		

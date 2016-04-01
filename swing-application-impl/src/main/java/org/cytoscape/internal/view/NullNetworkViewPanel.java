@@ -11,6 +11,7 @@ import static org.cytoscape.util.swing.LookAndFeelUtil.isAquaLAF;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Dimension;
 
 import javax.swing.BorderFactory;
 import javax.swing.GroupLayout;
@@ -56,56 +57,35 @@ import org.cytoscape.view.model.CyNetworkView;
 @SuppressWarnings("serial")
 public class NullNetworkViewPanel extends JPanel {
 
+	public static final String NAME = "__NULL_VIEW_PANEL__";
+	
 	private JPanel centerPanel;
 	private JPanel toolBar;
 	private JLabel iconLabel;
+	private JLabel gapLabel;
 	private JButton reattachViewButton;
 	private JLabel titleLabel;
 	private JButton createViewButton;
 	private final GridViewTogglePanel gridViewTogglePanel;
 	
-	private final CyNetworkView networkView;
-	private final CyNetwork network;
-	private final boolean detached;
+	private final JSeparator sep1 = new JSeparator(JSeparator.VERTICAL);
+	private final JSeparator sep2 = new JSeparator(JSeparator.VERTICAL);
+	
+	private CyNetworkView networkView;
+	private CyNetwork network;
 	
 	private final CyServiceRegistrar serviceRegistrar;
 
-	/**
-	 * @param network Can be null
-	 * @param gridViewToggleModel
-	 * @param serviceRegistrar
-	 */
 	public NullNetworkViewPanel(
-			final CyNetwork network,
 			final GridViewToggleModel gridViewToggleModel,
 			final CyServiceRegistrar serviceRegistrar
 	) {
-		this.networkView = null;
-		this.network = network;
-		this.detached = false;
-		this.serviceRegistrar = serviceRegistrar;
 		this.gridViewTogglePanel = new GridViewTogglePanel(gridViewToggleModel, serviceRegistrar);
+		this.serviceRegistrar = serviceRegistrar;
 		
-		setName(ViewUtil.createUniqueKey(network));
 		init();
 	}
-	
-	public NullNetworkViewPanel(
-			final CyNetworkView networkView,
-			final boolean detached,
-			final GridViewToggleModel gridViewToggleModel,
-			final CyServiceRegistrar serviceRegistrar
-	) {
-		this.networkView = networkView;
-		this.network = networkView.getModel();
-		this.detached = detached;
-		this.serviceRegistrar = serviceRegistrar;
-		this.gridViewTogglePanel = new GridViewTogglePanel(gridViewToggleModel, serviceRegistrar);
-		
-		setName(ViewUtil.createUniqueKey(networkView));
-		init();
-	}
-	
+
 	public CyNetwork getNetwork() {
 		return network;
 	}
@@ -114,18 +94,67 @@ public class NullNetworkViewPanel extends JPanel {
 		return networkView;
 	}
 	
-	protected void update() {
+	/**
+	 * @param network Can be null
+	 */
+	public void update(final CyNetwork network) {
+		this.network = network;
+		this.networkView = null;
+		update();
+	}
+	
+	/**
+	 * @param networkView Must not be null
+	 */
+	public void update(final CyNetworkView networkView) {
+		this.networkView = networkView;
+		this.network = networkView.getModel();
+		update();
+	}
+	
+	private void update() {
+		getCenterPanel().setToolTipText(network == null && networkView == null ? "No networks selected" : null);
+		
+		if (networkView != null) {
+			getIconLabel().setText(ICON_EXTERNAL_LINK_SQUARE);
+			getIconLabel().setToolTipText("This view is detached");
+		} else if (network != null) {
+			getIconLabel().setText(ICON_BAN);
+			getIconLabel().setToolTipText(
+					network instanceof CySubNetwork ?
+							"This network has no views" : "A network collection cannot have views"
+			);
+		} else {
+			getIconLabel().setText(null);
+			getIconLabel().setToolTipText(null);
+		}
+		
+		getIconLabel().setVisible(networkView != null || network != null);
+		getCreateViewButton().setVisible(networkView == null && network instanceof CySubNetwork);
+		getReattachViewButton().setVisible(networkView != null);
+		sep2.setVisible(networkView != null);
+		
 		if (networkView != null)
 			getTitleLabel().setText(ViewUtil.getTitle(networkView));
 		else if (network != null)
 			getTitleLabel().setText(ViewUtil.getName(network));
+		else
+			getTitleLabel().setText(null);
+		
+		final Dimension d = new Dimension(
+				1,
+				network != null && networkView == null ? getCreateViewButton().getPreferredSize().height : 0
+		);
+		getGapLabel().setPreferredSize(d);
+		getGapLabel().setMinimumSize(d);
+		getGapLabel().setMaximumSize(d);
+		getGapLabel().setSize(d);
 		
 		getToolBar().updateUI();
 	}
 	
 	private void init() {
-		setFocusable(true);
-		setRequestFocusEnabled(true);
+		setName(NAME);
 		
 		setLayout(new BorderLayout());
 		add(getCenterPanel(), BorderLayout.CENTER);
@@ -139,12 +168,6 @@ public class NullNetworkViewPanel extends JPanel {
 			centerPanel = new JPanel();
 			centerPanel.setLayout(new BorderLayout());
 			
-			if (network == null && networkView == null)
-				centerPanel.setToolTipText("No networks selected");
-			
-			final int vgap =
-					network != null && networkView == null ? getCreateViewButton().getPreferredSize().height : 0;
-			
 			final GroupLayout layout = new GroupLayout(centerPanel);
 			centerPanel.setLayout(layout);
 			layout.setAutoCreateContainerGaps(true);
@@ -153,6 +176,7 @@ public class NullNetworkViewPanel extends JPanel {
 			layout.setHorizontalGroup(layout.createSequentialGroup()
 					.addGap(0, 0, Short.MAX_VALUE)
 					.addGroup(layout.createParallelGroup(CENTER, true)
+							.addComponent(getGapLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 							.addComponent(getIconLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 							.addComponent(getCreateViewButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					)
@@ -160,7 +184,7 @@ public class NullNetworkViewPanel extends JPanel {
 			);
 			layout.setVerticalGroup(layout.createSequentialGroup()
 					.addGap(0, 0, Short.MAX_VALUE)
-					.addGap(vgap)
+					.addComponent(getGapLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addPreferredGap(ComponentPlacement.UNRELATED)
 					.addComponent(getIconLabel())
 					.addPreferredGap(ComponentPlacement.UNRELATED)
@@ -176,11 +200,6 @@ public class NullNetworkViewPanel extends JPanel {
 		if (toolBar == null) {
 			toolBar = new JPanel();
 			toolBar.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, UIManager.getColor("Separator.foreground")));
-			
-			final JSeparator sep1 = new JSeparator(JSeparator.VERTICAL);
-			final JSeparator sep2 = new JSeparator(JSeparator.VERTICAL);
-			
-			sep2.setVisible(getReattachViewButton().isVisible());
 			
 			final GroupLayout layout = new GroupLayout(toolBar);
 			toolBar.setLayout(layout);
@@ -217,20 +236,6 @@ public class NullNetworkViewPanel extends JPanel {
 		if (iconLabel == null) {
 			iconLabel = new JLabel();
 			iconLabel.setFont(serviceRegistrar.getService(IconManager.class).getIconFont(96.0f));
-			
-			if (networkView != null) {
-				iconLabel.setText(ICON_EXTERNAL_LINK_SQUARE);
-				
-				if (detached)
-					iconLabel.setToolTipText("This view is detached");
-			} else if (network != null) {
-				iconLabel.setText(ICON_BAN);
-				iconLabel.setToolTipText(
-						network instanceof CySubNetwork ?
-								"This network has no views" : "A network collection cannot have views"
-				);
-			}
-			
 			iconLabel.setHorizontalAlignment(JLabel.CENTER);
 			iconLabel.setVerticalAlignment(JLabel.CENTER);
 			
@@ -242,14 +247,19 @@ public class NullNetworkViewPanel extends JPanel {
 		return iconLabel;
 	}
 	
+	private JLabel getGapLabel() {
+		if (gapLabel == null) {
+			gapLabel = new JLabel(" ");
+		}
+		
+		return gapLabel;
+	}
+	
 	JButton getReattachViewButton() {
 		if (reattachViewButton == null) {
-			reattachViewButton = new JButton(ICON_THUMB_TACK);
+			reattachViewButton = new JButton(" " + ICON_THUMB_TACK + " ");
 			reattachViewButton.setToolTipText("Reattach View");
 			styleToolBarButton(reattachViewButton, serviceRegistrar.getService(IconManager.class).getIconFont(14.0f));
-			
-			reattachViewButton.setVisible(networkView != null);
-			reattachViewButton.setEnabled(networkView != null && detached);
 		}
 		
 		return reattachViewButton;
@@ -273,8 +283,6 @@ public class NullNetworkViewPanel extends JPanel {
 				createViewButton.putClientProperty("JButton.buttonType", "gradient");
 				createViewButton.putClientProperty("JComponent.sizeVariant", "small");
 			}
-			
-			createViewButton.setVisible(networkView == null && network instanceof CySubNetwork);
 		}
 		
 		return createViewButton;

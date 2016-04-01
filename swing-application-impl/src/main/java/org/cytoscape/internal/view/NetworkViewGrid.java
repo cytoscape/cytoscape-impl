@@ -107,7 +107,7 @@ import org.cytoscape.view.presentation.RenderingEngine;
 @SuppressWarnings("serial")
 public class NetworkViewGrid extends JPanel {
 	
-	public static final String GRID_NAME = "__NETWORK_VIEW_GRID__";
+	public static final String NAME = "__NETWORK_VIEW_GRID__";
 	
 	public static int MIN_THUMBNAIL_SIZE = 100;
 	public static int MAX_THUMBNAIL_SIZE = 500;
@@ -496,7 +496,7 @@ public class NetworkViewGrid extends JPanel {
 	
 	@SuppressWarnings("unchecked")
 	private void init() {
-		setName(GRID_NAME);
+		setName(NAME);
 		setFocusable(true);
 		setRequestFocusEnabled(true);
 		

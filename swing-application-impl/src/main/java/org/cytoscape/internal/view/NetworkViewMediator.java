@@ -518,7 +518,7 @@ public class NetworkViewMediator
 						if (!netViewMgr.viewExists(curNet))
 							getNetworkViewMainPanel().showNullViewContainer(curNet);
 					} else {
-						getNetworkViewMainPanel().showNullViewContainer(null);
+						getNetworkViewMainPanel().showNullViewContainer((CyNetwork) null);
 					}
 				}
 				

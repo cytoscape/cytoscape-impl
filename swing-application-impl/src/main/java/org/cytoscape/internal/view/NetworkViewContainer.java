@@ -13,6 +13,7 @@ import static org.cytoscape.util.swing.IconManager.ICON_THUMB_TACK;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.KeyboardFocusManager;
 import java.awt.event.ActionEvent;
@@ -24,6 +25,8 @@ import java.awt.event.KeyEvent;
 import javax.swing.AbstractAction;
 import javax.swing.ActionMap;
 import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.Box.Filler;
 import javax.swing.GroupLayout;
 import javax.swing.InputMap;
 import javax.swing.JButton;
@@ -94,6 +97,7 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 	private JLabel selectionLabel;
 	private JLabel hiddenLabel;
 	private JButton birdsEyeViewButton;
+	private Filler bottomFiller;
 	private BirdsEyeViewPanel birdsEyeViewPanel;
 	private final GridViewTogglePanel gridViewTogglePanel;
 	
@@ -143,6 +147,9 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 	}
 	
 	public void setComparing(boolean comparing) {
+		if (this.comparing == comparing)
+			return;
+	
 		this.comparing = comparing;
 		
 		if (comparing) {
@@ -151,6 +158,12 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 			// Hide Navigator when starting Compare Mode
 			if (getBirdsEyeViewPanel().isVisible())
 				getBirdsEyeViewButton().doClick();
+			
+			removeKeyBindings(this);
+			removeKeyBindings(getRootPane());
+		} else {
+			setKeyBindings(this);
+			setKeyBindings(getRootPane());
 		}
 	}
 	
@@ -178,7 +191,7 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 	
 	protected void updateTollBar() {
 		gridViewTogglePanel.setVisible(!isDetached() && !isComparing());
-		sep1.setVisible(!isComparing());
+		sep1.setVisible(!isDetached() && !isComparing());
 		getDetachViewButton().setVisible(!isDetached() && !isComparing());
 		getReattachViewButton().setVisible(isDetached());
 		sep2.setVisible(!isComparing());
@@ -222,6 +235,7 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 		
 		updateBirdsEyeButton();
 		getToolBar().updateUI();
+		updateGlassPane();
 	}
 	
 	protected void updateCurrentLabel() {
@@ -235,10 +249,19 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 		getBirdsEyeViewButton().setForeground(UIManager.getColor(bevVisible ? "Focus.color" : "Button.foreground"));
 	}
 	
-	private void updateViewSize() {
-		networkView.setVisualProperty(BasicVisualLexicon.NETWORK_WIDTH, (double) getContentPane().getWidth());
-		networkView.setVisualProperty(BasicVisualLexicon.NETWORK_HEIGHT, (double) getContentPane().getHeight());
+	void updateViewSize() {
+		final Container c = getVisualizationContainer().getContentPane();
+		networkView.setVisualProperty(BasicVisualLexicon.NETWORK_WIDTH, (double) c.getWidth());
+		networkView.setVisualProperty(BasicVisualLexicon.NETWORK_HEIGHT, (double) c.getHeight());
 		networkView.updateView();
+	}
+	
+	protected void updateGlassPane() {
+		final Dimension size = getToolBar().getSize();
+		getBottomFiller().setMinimumSize(size);
+		getBottomFiller().setPreferredSize(size);
+		getBottomFiller().setMaximumSize(size);
+		getBottomFiller().setSize(size);
 	}
 	
 	void dispose() {
@@ -260,14 +283,17 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 			layout.setAutoCreateContainerGaps(false);
 			layout.setAutoCreateGaps(false);
 			
-			layout.setHorizontalGroup(layout.createSequentialGroup()
-					.addGap(0, 0, Short.MAX_VALUE)
-					.addComponent(getBirdsEyeViewPanel(), 10, 200, 200)
+			layout.setHorizontalGroup(layout.createParallelGroup()
+					.addGroup(layout.createSequentialGroup()
+							.addGap(0, 0, Short.MAX_VALUE)
+							.addComponent(getBirdsEyeViewPanel(), 10, 200, 200)
+					)
+					.addComponent(getBottomFiller())
 			);
 			layout.setVerticalGroup(layout.createSequentialGroup()
 					.addGap(0, 0, Short.MAX_VALUE)
 					.addComponent(getBirdsEyeViewPanel(), 10, 200, 200)
-					.addGap(getToolBar().getPreferredSize().height)
+					.addComponent(getBottomFiller())
 			);
 		}
 		
@@ -282,7 +308,8 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 		getRootPane().addComponentListener(new ComponentAdapter() {
 			@Override
 			public void componentResized(ComponentEvent e) {
-				updateViewSize();
+				if (!detached) // if detached, let the View frame handle it
+					updateViewSize();
 			};
 		});
 		
@@ -372,7 +399,7 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 	
 	JButton getReattachViewButton() {
 		if (reattachViewButton == null) {
-			reattachViewButton = new JButton(ICON_THUMB_TACK);
+			reattachViewButton = new JButton(" " + ICON_THUMB_TACK + " ");
 			reattachViewButton.setToolTipText("Reattach View");
 			styleToolBarButton(reattachViewButton, serviceRegistrar.getService(IconManager.class).getIconFont(14.0f));
 		}
@@ -498,7 +525,7 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 		return hiddenLabel;
 	}
 	
-	private JButton getBirdsEyeViewButton() {
+	JButton getBirdsEyeViewButton() {
 		if (birdsEyeViewButton == null) {
 			birdsEyeViewButton = new JButton(ICON_CROSSHAIRS);
 			
@@ -518,6 +545,15 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 		}
 		
 		return birdsEyeViewButton;
+	}
+	
+	private Filler getBottomFiller() {
+		if (bottomFiller == null) {
+			final Dimension d = getToolBar().getPreferredSize();
+			bottomFiller = new Box.Filler(d, d, d);
+		}
+		
+		return bottomFiller;
 	}
 	
 	BirdsEyeViewPanel getBirdsEyeViewPanel() {
@@ -572,6 +608,14 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 
 		inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_N, 0), KeyAction.VK_N);
 		actionMap.put(KeyAction.VK_N, new KeyAction(KeyAction.VK_N));
+	}
+	
+	private void removeKeyBindings(final JComponent comp) {
+		final ActionMap actionMap = comp.getActionMap();
+		final InputMap inputMap = comp.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
+		
+		inputMap.remove(KeyStroke.getKeyStroke(KeyEvent.VK_N, 0));
+		actionMap.remove(KeyAction.VK_N);
 	}
 	
 	private class KeyAction extends AbstractAction {

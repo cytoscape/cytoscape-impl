@@ -2,6 +2,10 @@ package org.cytoscape.internal.view;
 
 import java.awt.BorderLayout;
 import java.awt.GraphicsConfiguration;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.util.Properties;
 
 import javax.swing.JFrame;
@@ -53,17 +57,21 @@ public class NetworkViewFrame extends JFrame {
 			final JToolBar toolBar, final CyServiceRegistrar serviceRegistrar) {
 		super(ViewUtil.getTitle(vc.getNetworkView()), gc);
 		
-		setName("Frame." + vc.getName());
-		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-		
 		this.toolBar = toolBar;
 		this.networkViewContainer = vc;
 		this.serviceRegistrar = serviceRegistrar;
 		containerRootPane = vc.getRootPane();
 		
+		init();
+	}
+	
+	private void init() {
+		setName("Frame." + networkViewContainer.getName());
+		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		
 		// To prevent error this error when using multiple monitors:
 		// "IllegalArgumentException: adding a container to a container on a different GraphicsDevice".
-		vc.setRootPane(new JRootPane());
+		networkViewContainer.setRootPane(new JRootPane());
 		
 		getContentPane().add(containerRootPane, BorderLayout.CENTER);
 		
@@ -77,9 +85,23 @@ public class NetworkViewFrame extends JFrame {
 			getContentPane().add(toolBar, BorderLayout.NORTH);
 		}
 		
+		addWindowListener(new WindowAdapter() {
+			@Override
+			public void windowOpened(WindowEvent e) {
+				networkViewContainer.update();
+				networkViewContainer.updateViewSize();
+			}
+		});
+		addComponentListener(new ComponentAdapter() {
+			@Override
+			public void componentResized(ComponentEvent e) {
+				networkViewContainer.updateViewSize();
+			};
+		});
+		
 		update();
 	}
-	
+
 	public JToolBar getToolBar() {
 		return toolBar;
 	}
