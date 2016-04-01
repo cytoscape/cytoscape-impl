@@ -430,13 +430,14 @@ public class SessionHandler implements CyShutdownListener, SessionLoadedListener
 			}
 		});
 		
-		final List<CyNetwork> selectedNetworks =
-				serviceRegistrar.getService(CyApplicationManager.class).getSelectedNetworks();
+		CyApplicationManager applicationMgr = serviceRegistrar.getService(CyApplicationManager.class);
+		final List<CyNetwork> selectedNetworks = applicationMgr.getSelectedNetworks();
+		final List<CyNetworkView> selectedViews = applicationMgr.getSelectedNetworkViews();
 		
 		invokeOnEDT(() -> {
 			netPanel.setNetworks(sortedNetworks);
 			netPanel.setSelectedNetworks(selectedNetworks);
-			// TODO update View selection as well
+			netViewMediator.getNetworkViewMainPanel().setSelectedNetworkViews(selectedViews);
 		});
 	}
 }
