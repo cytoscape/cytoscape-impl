@@ -95,7 +95,11 @@ public class NetworkViewMainPanel extends JPanel {
 	private final NetworkViewGrid networkViewGrid;
 	private final GridViewToggleModel gridViewToggleModel;
 	
-	private final Map<String, NetworkViewContainer> viewContainers;
+	/** Attached View Containers */
+	private final Map<CyNetworkView, NetworkViewContainer> allViewContainers;
+	/** Attached View Containers */
+	private final Map<String, NetworkViewContainer> viewCards;
+	/** Detached View Frames */
 	private final Map<String, NetworkViewFrame> viewFrames;
 	private final Map<String, NetworkViewComparisonPanel> comparisonPanels;
 	private final NullNetworkViewPanel nullViewPanel;
@@ -121,7 +125,8 @@ public class NetworkViewMainPanel extends JPanel {
 		this.viewComparator = viewComparator;
 		this.serviceRegistrar = serviceRegistrar;
 		
-		viewContainers = new LinkedHashMap<>();
+		allViewContainers = new HashMap<>();
+		viewCards = new LinkedHashMap<>();
 		viewFrames = new HashMap<>();
 		comparisonPanels = new HashMap<>();
 		dirtyThumbnails = new HashSet<>();
@@ -176,7 +181,8 @@ public class NetworkViewMainPanel extends JPanel {
 			}
 		});
 		
-		viewContainers.put(vc.getName(), vc);
+		allViewContainers.put(view, vc);
+		viewCards.put(vc.getName(), vc);
 		networkViewGrid.addItem(vc.getRenderingEngine());
 		getContentPane().add(vc, vc.getName());
 		
@@ -198,15 +204,16 @@ public class NetworkViewMainPanel extends JPanel {
 	}
 	
 	public boolean isRendered(final CyNetworkView view) {
-		final String key = createUniqueKey(view);
-		return viewContainers.containsKey(key) || viewFrames.containsKey(key);
+		return allViewContainers.containsKey(view);
 	}
 
 	public void remove(final CyNetworkView view) {
 		if (view == null)
 			return;
 		
+		allViewContainers.remove(view);
 		dirtyThumbnails.remove(view);
+		
 		final Component[] components = getContentPane().getComponents();
 		
 		if (components != null) {
@@ -343,7 +350,7 @@ public class NetworkViewMainPanel extends JPanel {
 		if (view == null)
 			return null;
 		
-		final NetworkViewContainer vc = getNetworkViewContainer(view);
+		final NetworkViewContainer vc = getNetworkViewCard(view);
 		
 		if (vc == null)
 			return null;
@@ -440,7 +447,7 @@ public class NetworkViewMainPanel extends JPanel {
 			vc.setDetached(false);
 			vc.setComparing(false);
 			getContentPane().add(vc, vc.getName());
-			viewContainers.put(vc.getName(), vc);
+			viewCards.put(vc.getName(), vc);
 			getNetworkViewGrid().setDetached(view, false);
 			
 			if (!isGridMode() && view.equals(getCurrentNetworkView()))
@@ -497,7 +504,7 @@ public class NetworkViewMainPanel extends JPanel {
 			frame.update();
 			frame.invalidate();
 		} else if (!isGridVisible()) {
-			final NetworkViewContainer vc = getNetworkViewContainer(view);
+			final NetworkViewContainer vc = getNetworkViewCard(view);
 			
 			if (vc != null && vc.equals(getCurrentViewContainer()))
 				vc.update();
@@ -511,8 +518,15 @@ public class NetworkViewMainPanel extends JPanel {
 		updateThumbnailPanel(view, false);
 	}
 	
+	public void updateSelectionInfo(final CyNetworkView view) {
+		final NetworkViewContainer vc = getNetworkViewContainer(view);
+		
+		if (vc != null)
+			vc.updateInfoPanel();
+	}
+	
 	public boolean isEmpty() {
-		return viewFrames.isEmpty() && viewContainers.isEmpty();
+		return allViewContainers.isEmpty();
 	}
 	
 	public NetworkViewGrid getNetworkViewGrid() {
@@ -524,15 +538,7 @@ public class NetworkViewMainPanel extends JPanel {
 	}
 	
 	public Set<NetworkViewContainer> getAllNetworkViewContainers() {
-		final Set<NetworkViewContainer> set = new HashSet<>(viewContainers.values());
-		
-		for (NetworkViewFrame f : viewFrames.values())
-			set.add(f.getNetworkViewContainer());
-		
-		for (NetworkViewComparisonPanel c : comparisonPanels.values())
-			set.addAll(c.getAllContainers());
-		
-		return set;
+		return new HashSet<>(allViewContainers.values());
 	}
 	
 	public void showNullViewContainer(final CyNetwork net) {
@@ -553,7 +559,7 @@ public class NetworkViewMainPanel extends JPanel {
 		NetworkViewContainer viewContainer = null;
 		
 		if (key != null) {
-			viewContainer = viewContainers.get(key);
+			viewContainer = viewCards.get(key);
 			
 			if (viewContainer != null) {
 				cardLayout.show(getContentPane(), key);
@@ -630,7 +636,7 @@ public class NetworkViewMainPanel extends JPanel {
 				if (frame != null)
 					reattachNetworkView(v);
 				
-				final NetworkViewContainer vc = getNetworkViewContainer(v);
+				final NetworkViewContainer vc = getNetworkViewCard(v);
 				
 				if (vc != null) {
 					removeCard(vc);
@@ -683,7 +689,7 @@ public class NetworkViewMainPanel extends JPanel {
 			
 			for (NetworkViewContainer vc : cp.getAllContainers()) {
 				getContentPane().add(vc, vc.getName());
-				viewContainers.put(vc.getName(), vc);
+				viewCards.put(vc.getName(), vc);
 			}
 		}
 	}
@@ -702,7 +708,7 @@ public class NetworkViewMainPanel extends JPanel {
 			return;
 		
 		if (comp instanceof NetworkViewContainer)
-			viewContainers.remove(((NetworkViewContainer) comp).getName());
+			viewCards.remove(((NetworkViewContainer) comp).getName());
 		else if (comp instanceof NetworkViewComparisonPanel)
 			comparisonPanels.remove(((NetworkViewComparisonPanel) comp).getName());
 		
@@ -750,7 +756,7 @@ public class NetworkViewMainPanel extends JPanel {
 
 				// Detach the views
 				for (ThumbnailPanel tp : selectedItems) {
-					if (getNetworkViewContainer(tp.getNetworkView()) != null)
+					if (getNetworkViewCard(tp.getNetworkView()) != null)
 						detachNetworkView(tp.getNetworkView());
 				}
 
@@ -874,8 +880,12 @@ public class NetworkViewMainPanel extends JPanel {
 		return contentPane;
 	}
 
-	private NetworkViewContainer getNetworkViewContainer(final CyNetworkView view) {
-		return view != null ? viewContainers.get(createUniqueKey(view)) : null;
+	protected NetworkViewContainer getNetworkViewContainer(final CyNetworkView view) {
+		return view != null ? allViewContainers.get(view) : null;
+	}
+	
+	private NetworkViewContainer getNetworkViewCard(final CyNetworkView view) {
+		return view != null ? viewCards.get(createUniqueKey(view)) : null;
 	}
 	
 	protected NetworkViewFrame getNetworkViewFrame(final CyNetworkView view) {

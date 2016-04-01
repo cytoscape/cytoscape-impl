@@ -201,7 +201,20 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 		getViewTitleLabel().setText(view != null ? ViewUtil.getTitle(view) : "");
 		getViewTitleLabel().setToolTipText(view != null ? ViewUtil.getTitle(view) : null);
 		
+		updateInfoPanel();
+		
+		if (isComparing())
+			updateCurrentLabel();
+		
+		updateBirdsEyeButton();
+		getToolBar().updateUI();
+		updateGlassPane();
+	}
+	
+	protected void updateInfoPanel() {
 		if (getInfoPanel().isVisible()) {
+			final CyNetworkView view = getNetworkView();
+			
 			if (view.getModel().getDefaultNodeTable() == null || view.getModel().getDefaultEdgeTable() == null)
 				return; // The view has probably been disposed
 			
@@ -229,13 +242,6 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 			getHiddenIconLabel().setForeground(
 					hn > 0 || he > 0 ? LookAndFeelUtil.getWarnColor() : UIManager.getColor("Label.disabledForeground"));
 		}
-		
-		if (isComparing())
-			updateCurrentLabel();
-		
-		updateBirdsEyeButton();
-		getToolBar().updateUI();
-		updateGlassPane();
 	}
 	
 	protected void updateCurrentLabel() {
