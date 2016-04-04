@@ -589,12 +589,8 @@ public class NetworkViewMainPanel extends JPanel {
 				} else {
 					final NetworkViewFrame frame = getNetworkViewFrame(key);
 					
-					if (frame != null) {
-						showViewFrame(frame);
-						
-						if (!isGridMode())
-							showNullViewContainer(frame.getNetworkView());
-					}
+					if (frame != null && !isGridMode())
+						showNullViewContainer(frame.getNetworkView());
 				}
 			}
 		} else {
