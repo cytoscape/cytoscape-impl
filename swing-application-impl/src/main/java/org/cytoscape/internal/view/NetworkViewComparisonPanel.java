@@ -4,7 +4,12 @@ import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static javax.swing.GroupLayout.Alignment.CENTER;
 import static org.cytoscape.internal.util.ViewUtil.styleToolBarButton;
+import static org.cytoscape.util.swing.IconManager.ICON_COG;
+import static org.cytoscape.util.swing.IconManager.ICON_COGS;
+import static org.cytoscape.util.swing.IconManager.ICON_ELLIPSIS_H;
+import static org.cytoscape.util.swing.IconManager.ICON_ELLIPSIS_V;
 import static org.cytoscape.util.swing.IconManager.ICON_EXTERNAL_LINK_SQUARE;
+import static org.cytoscape.util.swing.IconManager.ICON_TH_LARGE;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -32,8 +37,11 @@ import javax.swing.BorderFactory;
 import javax.swing.GroupLayout;
 import javax.swing.InputMap;
 import javax.swing.JButton;
+import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JRootPane;
 import javax.swing.JSeparator;
 import javax.swing.JSplitPane;
@@ -43,6 +51,7 @@ import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.UIManager;
 import javax.swing.text.JTextComponent;
 
+import org.cytoscape.internal.util.Util;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
@@ -75,18 +84,46 @@ import org.cytoscape.view.model.CyNetworkView;
 @SuppressWarnings("serial")
 public class NetworkViewComparisonPanel extends JPanel {
 
+	public enum Arrangement {
+		AUTO("Auto Arrange", ICON_COGS),
+		GRID("Grid", ICON_TH_LARGE),
+		HORIZONTAL("Horizontal", ICON_ELLIPSIS_H),
+		VERTICAL("Vertical", ICON_ELLIPSIS_V);
+		
+		private final String name;
+		private final String icon;
+		
+		Arrangement(final String name, final String icon) {
+			this.name = name;
+			this.icon = icon;
+		}
+		
+		public String getIcon() {
+			return icon;
+		}
+		
+		@Override
+		public String toString() {
+			return name;
+		}
+	}
+	
 	public static final int HORIZONTAL = JSplitPane.HORIZONTAL_SPLIT;
 	public static final int VERTICAL = JSplitPane.VERTICAL_SPLIT;
+	
+	private static final float ICON_FONT_SIZE = 22.0f;
 	
 	private JPanel gridPanel;
 	private JPanel comparisonToolBar;
 	private JButton detachComparedViewsButton;
+	private JButton optionsBtn;
 	private final GridViewTogglePanel gridViewTogglePanel;
 	
 	private final Map<CyNetworkView, ViewPanel> viewPanels = new LinkedHashMap<>();
 	private final Map<CyNetworkView, JRootPane> rootPanes = new LinkedHashMap<>();
 	
 	private CyNetworkView currentNetworkView;
+	private Arrangement arrangement = Arrangement.AUTO;
 	
 	private final CyServiceRegistrar serviceRegistrar;
 	
@@ -180,6 +217,17 @@ public class NetworkViewComparisonPanel extends JPanel {
 		return viewPanels.size();
 	}
 	
+	public Arrangement getArrangement() {
+		return arrangement;
+	}
+	
+	public void setArrangement(final Arrangement arrangement) {
+		if (this.arrangement != arrangement) {
+			this.arrangement = arrangement;
+			arrangePanels();
+		}
+	}
+	
 	public void update() {
 		for (ViewPanel vp : viewPanels.values())
 			vp.update();
@@ -250,6 +298,7 @@ public class NetworkViewComparisonPanel extends JPanel {
 			
 			final JSeparator sep1 = new JSeparator(JSeparator.VERTICAL);
 			final JSeparator sep2 = new JSeparator(JSeparator.VERTICAL);
+			final JSeparator sep3 = new JSeparator(JSeparator.VERTICAL);
 			
 			final GroupLayout layout = new GroupLayout(comparisonToolBar);
 			comparisonToolBar.setLayout(layout);
@@ -266,6 +315,8 @@ public class NetworkViewComparisonPanel extends JPanel {
 					.addPreferredGap(ComponentPlacement.RELATED)
 					.addComponent(sep2, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addGap(0, 10, Short.MAX_VALUE)
+					.addComponent(sep3, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(getOptionsButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addContainerGap()
 			);
 			layout.setVerticalGroup(layout.createParallelGroup(CENTER, true)
@@ -273,6 +324,8 @@ public class NetworkViewComparisonPanel extends JPanel {
 					.addComponent(sep1, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 					.addComponent(getDetachComparedViewsButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(sep2, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+					.addComponent(sep3, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+					.addComponent(getOptionsButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 			);
 		}
 		
@@ -283,10 +336,41 @@ public class NetworkViewComparisonPanel extends JPanel {
 		if (detachComparedViewsButton == null) {
 			detachComparedViewsButton = new JButton(ICON_EXTERNAL_LINK_SQUARE);
 			detachComparedViewsButton.setToolTipText("Detach Both Views");
-			styleToolBarButton(detachComparedViewsButton, serviceRegistrar.getService(IconManager.class).getIconFont(22.0f));
+			styleToolBarButton(detachComparedViewsButton,
+					serviceRegistrar.getService(IconManager.class).getIconFont(ICON_FONT_SIZE));
 		}
 		
 		return detachComparedViewsButton;
+	}
+	
+	private JButton getOptionsButton() {
+		if (optionsBtn == null) {
+			optionsBtn = new JButton(ICON_COG);
+			optionsBtn.setToolTipText("Options...");
+			styleToolBarButton(optionsBtn,
+					serviceRegistrar.getService(IconManager.class).getIconFont(ICON_FONT_SIZE * 4/5));
+			
+			optionsBtn.addActionListener((ActionEvent e) -> {
+				getOptionsMenu().show(optionsBtn, 0, optionsBtn.getHeight());
+			});
+		}
+		
+		return optionsBtn;
+	}
+	
+	private JPopupMenu getOptionsMenu() {
+		final JPopupMenu menu = new JPopupMenu();
+		
+		for (Arrangement arrangement : Arrangement.values()) {
+			final JMenuItem mi = new JCheckBoxMenuItem(arrangement.toString());
+			mi.addActionListener((ActionEvent e) -> {
+				setArrangement(arrangement);
+			});
+			mi.setSelected(this.arrangement == arrangement);
+			menu.add(mi);
+		}
+		
+		return menu;
 	}
 	
 	@Override
@@ -339,17 +423,59 @@ public class NetworkViewComparisonPanel extends JPanel {
 			return;
 		
 		if (!viewPanels.isEmpty()) {
-			int cols = 0;
-			int rows = 0;
+			final int n = viewPanels.size();
 			
-			if (viewPanels.size() == 2) {
-				boolean portrait = size.width >= size.height; 
-				rows = portrait ? 1 : 2;
-				cols = portrait ? 2 : 1;
-			} else {
-				int sqrt = (int) Math.ceil(Math.sqrt(viewPanels.size()));
-				cols = sqrt;
-				rows = sqrt;
+			// Starts with Horizontal Arrangement
+			int rows = 1;
+			int cols = n;
+			
+			switch (arrangement) {
+				case AUTO:
+					double w = size.getWidth() / cols;
+					double h = size.getHeight() / rows;
+					
+					final int BAR_HEIGHT = 25; // The height of the view container's status bar, approximately
+					double ratio = Util.squarenessRatio(w, h - BAR_HEIGHT); // cell width:height ratio
+					
+					// Pick the pair the gives us the most desirable cell width:height ratio
+					for (int i = 1; i < n; i++) {
+						int c = n - i;
+						
+						int r = (int) Math.ceil((double) n / c);
+						w = size.getWidth() / c;
+						h = size.getHeight() / r;
+						double newRatio = Util.squarenessRatio(w, h - BAR_HEIGHT);
+						
+						// Is this ratio more squared than the previous one
+						if (newRatio < ratio) {
+							ratio = newRatio;
+							rows = r;
+							cols = c;
+						}
+					}
+					
+					break;
+					
+				case GRID:
+					if (viewPanels.size() == 2) {
+						boolean portrait = size.width >= size.height; 
+						rows = portrait ? 1 : 2;
+						cols = portrait ? 2 : 1;
+					} else {
+						int sqrt = (int) Math.ceil(Math.sqrt(viewPanels.size()));
+						cols = sqrt;
+						rows = sqrt;
+					}
+					
+					break;
+					
+				case VERTICAL:
+					rows = n;
+					cols = 1;
+					
+					break;
+					
+				default:
 			}
 			
 			getGridPanel().setLayout(new GridLayout(rows, cols));
