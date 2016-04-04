@@ -650,15 +650,21 @@ public class NetworkViewMainPanel extends JPanel {
 					
 					if (currentCard instanceof NetworkViewComparisonPanel) {
 						final NetworkViewComparisonPanel cp = (NetworkViewComparisonPanel) currentCard;
+						final CyNetworkView currentView = getCurrentNetworkView(); // Get the current view first
 						final Set<CyNetworkView>views = cp.getAllNetworkViews();
 						
 						// End comparison first
 						endComparison(cp);
 						
-						
 						// Then detach the views
 						for (CyNetworkView v : views)
 							detachNetworkView(v);
+						
+						// Set the original current view by bringing its frame to front, if it is detached
+						final NetworkViewFrame frame = getNetworkViewFrame(currentView);
+
+						if (frame != null)
+							frame.toFront();
 					}
 				}
 			});
