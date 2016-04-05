@@ -1,29 +1,5 @@
 package org.cytoscape.task.internal.creation;
 
-/*
- * #%L
- * Cytoscape Core Task Impl (core-task-impl)
- * $Id:$
- * $HeadURL:$
- * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * #L%
- */
-
 import java.awt.Dimension;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -57,15 +33,37 @@ import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.presentation.RenderingEngineManager;
 import org.cytoscape.view.vizmap.VisualMappingManager;
+import org.cytoscape.view.vizmap.VisualStyle;
+import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+/*
+ * #%L
+ * Cytoscape Core Task Impl (core-task-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
 
 public class CloneNetworkTask extends AbstractCreationTask implements ObservableTask {
 	
-	private static final Logger logger = LoggerFactory.getLogger(CloneNetworkTask.class);
-
 	private Map<CyNode, CyNode> orig2NewNodeMap;
 	private Map<CyNode, CyNode> new2OrigNodeMap;
 	private Map<CyEdge, CyEdge> new2OrigEdgeMap;
@@ -82,6 +80,7 @@ public class CloneNetworkTask extends AbstractCreationTask implements Observable
 	private final CyGroupFactory groupFactory;
 	private final RenderingEngineManager renderingEngineMgr;
 	private final CyNetworkViewFactory nullNetworkViewFactory;
+	
 	private CyNetworkView result;
 
 	public CloneNetworkTask(final CyNetwork net,
@@ -115,30 +114,30 @@ public class CloneNetworkTask extends AbstractCreationTask implements Observable
 
 	public void run(TaskMonitor tm) {
 		tm.setProgress(0.0);
-		logger.debug("Clone Network Task start");
 		
 		// Create copied network model
 		final CyNetwork newNet = cloneNetwork(parentNetwork);
-		tm.setProgress(0.4);
+		tm.setProgress(0.5);
+		
 		final Collection<CyNetworkView> views = networkViewManager.getNetworkViews(parentNetwork);
-		CyNetworkView origView = null;
 		
-		if (views.size() != 0)
-			origView = views.iterator().next(); 
+		// TODO What if the network has more than one view
+		final CyNetworkView origView = views.size() != 0 ? views.iterator().next() : null; 
 		
-		networkManager.addNetwork(newNet);
-		appMgr.setCurrentNetwork(newNet);
-		tm.setProgress(0.6);
-
 		if (origView != null) {
+			final VisualStyle style = vmm.getVisualStyle(origView);
 	        final CyNetworkView newView = netViewFactory.createNetworkView(newNet);
-			networkViewManager.addNetworkView(newView);
-			CopyExistingViewTask task = new CopyExistingViewTask(vmm, renderingEngineMgr, newView, origView, new2OrigNodeMap, new2OrigEdgeMap, false);
-			insertTasksAfterCurrentTask(task);
-			// Let the CopyExistingViewTask respond to the Observer (if any)
-			appMgr.setCurrentNetworkView(newView);
-			appMgr.setSelectedNetworkViews(Collections.singletonList(newView));
+	        tm.setProgress(0.6);
+	        
+	        // Let the CopyExistingViewTask respond to the Observer (if any)
+			final CopyExistingViewTask copyExistingViewTask = new CopyExistingViewTask(renderingEngineMgr, newView,
+					origView, style, new2OrigNodeMap, new2OrigEdgeMap, false);
+			final RegisterNetworkTask registerNetworkTask = new RegisterNetworkTask(newView, style);
+			insertTasksAfterCurrentTask(copyExistingViewTask, registerNetworkTask);
 		} else {
+			final RegisterNetworkTask registerNetworkTask = new RegisterNetworkTask(newNet);
+			insertTasksAfterCurrentTask(registerNetworkTask);
+			
 			result = nullNetworkViewFactory.createNetworkView(newNet);
 		}
 		
@@ -422,6 +421,60 @@ public class CloneNetworkTask extends AbstractCreationTask implements Observable
 			// then we have to set the value, because the rows of the new root table may not have been copied yet
 			if (!info.isVirtual() || rootTables.containsValue(info.getSourceTable()))
 				to.set(name, from.getRaw(name));
+		}
+	}
+	
+	/**
+	 * Registers a new Network and/or Network View and set them as current.
+	 */
+	private class RegisterNetworkTask extends AbstractTask {
+
+		private final CyNetwork network;
+		private final CyNetworkView view;
+		private final VisualStyle style;
+		
+		public RegisterNetworkTask(final CyNetwork network) {
+			this.network = network;
+			this.view = null;
+			this.style = null;
+		}
+		
+		public RegisterNetworkTask(final CyNetworkView view, final VisualStyle style) {
+			this.network = view.getModel();
+			this.view = view;
+			this.style = style;
+		}
+		
+		@Override
+		public void run(TaskMonitor tm) throws Exception {
+			tm.setProgress(0.0);
+			
+			if (!networkManager.networkExists(network.getSUID()))
+				networkManager.addNetwork(network);
+			
+			tm.setProgress(0.1);
+			
+			if (view != null) {
+				networkViewManager.addNetworkView(view);
+				tm.setProgress(0.2);
+				
+				if (style != null) {
+					vmm.setVisualStyle(style, view);
+					tm.setProgress(0.8);
+				}
+			}
+			
+			if (view != null) {
+				appMgr.setCurrentNetworkView(view);
+				appMgr.setSelectedNetworkViews(Collections.singletonList(view));
+				tm.setProgress(0.9);
+				
+				view.updateView();
+			} else {
+				appMgr.setCurrentNetwork(network);
+			}
+			
+			tm.setProgress(1.0);
 		}
 	}
 }
