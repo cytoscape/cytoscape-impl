@@ -74,6 +74,10 @@ public final class Util {
 		return views;
 	}
 	
+	public static double squarenessRatio(final double w, final double h) {
+		return Math.abs(1.0 - (w > h ? w / h : h / w));
+	}
+	
 	private Util() {
 	}
 }

@@ -427,7 +427,7 @@ public class NetworkViewMediator
 						getNetworkViewMainPanel().updateSelectionInfo(view);
 				}
 
-				// Update views with styles affcteted by this RowsSetEvent
+				// Update views with styles affected by this RowsSetEvent
 				final Set<CyNetworkView> viewsToUpdate = new HashSet<>();
 				
 				for (final RowSetRecord record : e.getPayloadCollection()) {

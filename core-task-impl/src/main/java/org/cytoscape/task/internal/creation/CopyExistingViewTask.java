@@ -1,12 +1,29 @@
 package org.cytoscape.task.internal.creation;
 
+import java.util.Collection;
+import java.util.Map;
+
+import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyNode;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.View;
+import org.cytoscape.view.model.VisualLexicon;
+import org.cytoscape.view.model.VisualProperty;
+import org.cytoscape.view.presentation.RenderingEngine;
+import org.cytoscape.view.presentation.RenderingEngineManager;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
+import org.cytoscape.view.vizmap.VisualStyle;
+import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.ObservableTask;
+import org.cytoscape.work.TaskMonitor;
+
 /*
  * #%L
  * Cytoscape Core Task Impl (core-task-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,26 +41,6 @@ package org.cytoscape.task.internal.creation;
  * #L%
  */
 
-
-import java.util.Collection;
-import java.util.Map;
-
-import org.cytoscape.model.CyEdge;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNode;
-import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.View;
-import org.cytoscape.view.model.VisualLexicon;
-import org.cytoscape.view.model.VisualProperty;
-import org.cytoscape.view.presentation.RenderingEngine;
-import org.cytoscape.view.presentation.RenderingEngineManager;
-import org.cytoscape.view.presentation.property.BasicVisualLexicon;
-import org.cytoscape.view.vizmap.VisualMappingManager;
-import org.cytoscape.view.vizmap.VisualStyle;
-import org.cytoscape.work.AbstractTask;
-import org.cytoscape.work.ObservableTask;
-import org.cytoscape.work.TaskMonitor;
-
 /**
  * A utility task that copies the node positions and visual style to a new
  * network view from an existing network view.
@@ -52,23 +49,22 @@ class CopyExistingViewTask extends AbstractTask implements ObservableTask {
 
 	private final CyNetworkView newView;
 	private final CyNetworkView sourceView;
-	private final VisualMappingManager vmm;
+	private final VisualStyle style;
 	private RenderingEngineManager renderingEngineMgr;
 	private final Map<CyNode,CyNode> new2sourceNodeMap;
 	private final Map<CyEdge, CyEdge> new2sourceEdgeMap;
 	private final boolean fitContent; 
 
-	CopyExistingViewTask(final VisualMappingManager vmm,
-						 final RenderingEngineManager renderingEngineMgr,
+	CopyExistingViewTask(final RenderingEngineManager renderingEngineMgr,
 	                     final CyNetworkView newView, 
-	                     final CyNetworkView sourceView, 
+	                     final CyNetworkView sourceView,
+	                     final VisualStyle style,
 	                     final Map<CyNode, CyNode> new2sourceNodeMap /*may be null*/,
 	                     final Map<CyEdge, CyEdge> new2sourceEdgeMap /*may be null*/,
 	                     final boolean fitContent) {
-		super();
 		this.newView = newView;
 		this.sourceView = sourceView;
-		this.vmm = vmm;
+		this.style = style;
 		this.renderingEngineMgr = renderingEngineMgr;
 		this.new2sourceNodeMap = new2sourceNodeMap;
 		this.new2sourceEdgeMap = new2sourceEdgeMap;
@@ -149,15 +145,15 @@ class CopyExistingViewTask extends AbstractTask implements ObservableTask {
 		}
 		
 		tm.setProgress(0.9);
-
-		final VisualStyle style = vmm.getVisualStyle(sourceView);
-		vmm.setVisualStyle(style, newView);
-		style.apply(newView);
-		newView.updateView();
+		
+		if (style != null) {
+			style.apply(newView);
+			newView.updateView();
+		}
 		
 		if (fitContent)
 			newView.fitContent();
-		
+
 		tm.setProgress(1.0);
 	}
 

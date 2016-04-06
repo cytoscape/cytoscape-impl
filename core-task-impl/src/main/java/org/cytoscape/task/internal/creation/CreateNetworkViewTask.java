@@ -220,8 +220,8 @@ public class CreateNetworkViewTask extends AbstractNetworkCollectionTask
 			// If a source view has been provided, use that to set the X/Y positions of the
 			// nodes along with the visual style.
 			if (sourceView != null) {
-				insertTasksAfterCurrentTask(new CopyExistingViewTask(vmMgr, renderingEngineMgr, view, sourceView, null,
-						null, true));
+				insertTasksAfterCurrentTask(
+						new CopyExistingViewTask(renderingEngineMgr, view, sourceView, style, null, null, true));
 			} else if (layoutMgr != null && layout == true) {
 				final Set<CyNetworkView> views = new HashSet<>();
 				views.add(view);
