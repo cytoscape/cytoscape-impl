@@ -127,7 +127,6 @@ public class NetworkViewGrid extends JPanel {
 	private final Comparator<CyNetworkView> viewComparator;
 	
 	private final ThumbnailCache thumbnailCache;
-	private final ImageIcon spinner;
 	
 	private ThumbnailPanel selectionHead;
 	private ThumbnailPanel selectionTail;
@@ -148,7 +147,6 @@ public class NetworkViewGrid extends JPanel {
 		
 		thumbnailCache = new ThumbnailCache(MAX_THUMBNAIL_SIZE);
 		gridViewTogglePanel = new GridViewTogglePanel(gridViewToggleModel, serviceRegistrar);
-		spinner = new ImageIcon(getClass().getResource("/images/Ajax-loader.gif"));
 		
 		init();
 	}
