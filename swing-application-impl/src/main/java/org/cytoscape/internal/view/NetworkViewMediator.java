@@ -48,6 +48,7 @@ import org.cytoscape.session.events.SessionLoadedListener;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.View;
+import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedEvent;
 import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedListener;
@@ -572,8 +573,13 @@ public class NetworkViewMediator
 					getNetworkViewMainPanel().addNetworkView(view, engineFactory, !loadingSession);
 			presentationMap.put(view, renderingEngine);
 			
+			final boolean isCurrentView = view.equals(appMgr.getCurrentNetworkView());
+			
 			new Thread(() -> {
 				serviceRegistrar.getService(RenderingEngineManager.class).addRenderingEngine(renderingEngine);
+				
+				if (isCurrentView)
+					appMgr.setCurrentRenderingEngine(renderingEngine);
 			}).start();
 		});
 	}
@@ -653,12 +659,17 @@ public class NetworkViewMediator
 	}
 
 	private Set<VisualStyle> findStylesWithMappedColumn(final String columnName) {
-		final Set<VisualStyle> styles = new HashSet<VisualStyle>();
-		final CyApplicationManager appMgr = serviceRegistrar.getService(CyApplicationManager.class);
-		final RenderingEngine<CyNetwork> renderer = appMgr.getCurrentRenderingEngine();
+		final Set<VisualStyle> styles = new HashSet<>();
 		
-		if (columnName != null && renderer != null) {
-			final Set<VisualProperty<?>> properties = renderer.getVisualLexicon().getAllVisualProperties();
+		if (columnName != null) {
+			final CyApplicationManager appMgr = serviceRegistrar.getService(CyApplicationManager.class);
+			final RenderingEngineManager engineMgr = serviceRegistrar.getService(RenderingEngineManager.class);
+			
+			final RenderingEngine<CyNetwork> renderer = appMgr.getCurrentRenderingEngine();
+			final VisualLexicon lexicon = renderer != null ? renderer.getVisualLexicon()
+					: engineMgr.getDefaultVisualLexicon();
+			
+			final Set<VisualProperty<?>> properties = lexicon.getAllVisualProperties();
 			final VisualMappingManager vmm = serviceRegistrar.getService(VisualMappingManager.class);
 			
 			for (final VisualStyle vs : vmm.getAllVisualStyles()) {
@@ -687,7 +698,7 @@ public class NetworkViewMediator
 	}
 	
 	private Set<CyNetworkView> findNetworkViewsWithStyles(final Set<VisualStyle> styles) {
-		final Set<CyNetworkView> result = new HashSet<CyNetworkView>();
+		final Set<CyNetworkView> result = new HashSet<>();
 		
 		if (styles == null || styles.isEmpty())
 			return result;
