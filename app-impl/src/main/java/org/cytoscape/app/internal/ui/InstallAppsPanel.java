@@ -592,6 +592,8 @@ public class InstallAppsPanel extends JPanel {
     	// Get all available apps and tags
     	Set<WebApp> availableApps = webQuerier.getAllApps();
     	Set<WebQuerier.AppTag> availableTags = webQuerier.getAllTags();
+    	if(availableApps == null || availableTags == null)
+    		return;
     	
     	List<WebQuerier.AppTag> sortedTags = new LinkedList<WebQuerier.AppTag>(availableTags);
     	
@@ -661,11 +663,14 @@ public class InstallAppsPanel extends JPanel {
     }
     
     private void fillResultsTree(Set<WebApp> webApps) {
-    	appManager.getWebQuerier().checkWebAppInstallStatus(
-    			appManager.getWebQuerier().getAllApps(), appManager);
+    	if(webApps == null) {
+    		resultsTree.setModel(new DefaultTreeModel(null));
+    		resultsTreeApps = new HashSet<WebApp>();
+    		return;
+    	}
     	
-    	Set<WebApp> appsToShow = webApps;
-    	List<WebApp> sortedApps = new LinkedList<WebApp>(appsToShow);
+    	appManager.getWebQuerier().checkWebAppInstallStatus(webApps, appManager);
+    	List<WebApp> sortedApps = new LinkedList<WebApp>(webApps);
     	
     	// Sort apps by alphabetical order
     	Collections.sort(sortedApps, new Comparator<WebApp>() {
