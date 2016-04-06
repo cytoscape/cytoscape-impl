@@ -1,17 +1,10 @@
 package org.cytoscape.internal.view;
 
-import static javax.swing.GroupLayout.DEFAULT_SIZE;
-import static javax.swing.GroupLayout.PREFERRED_SIZE;
+import static javax.swing.GroupLayout.*;
 import static javax.swing.GroupLayout.Alignment.CENTER;
-import static javax.swing.GroupLayout.Alignment.LEADING;
 import static org.cytoscape.internal.util.ViewUtil.styleToolBarButton;
-import static org.cytoscape.util.swing.IconManager.ICON_EXTERNAL_LINK_SQUARE;
-import static org.cytoscape.util.swing.IconManager.ICON_THUMB_TACK;
-import static org.cytoscape.util.swing.IconManager.ICON_TRASH_O;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NETWORK_BACKGROUND_PAINT;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NETWORK_HEIGHT;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NETWORK_TITLE;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NETWORK_WIDTH;
+import static org.cytoscape.util.swing.IconManager.*;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.*;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -45,6 +38,7 @@ import java.util.Map.Entry;
 import java.util.NavigableMap;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.concurrent.CompletableFuture;
 
 import javax.swing.AbstractAction;
 import javax.swing.ActionMap;
@@ -132,6 +126,8 @@ public class NetworkViewGrid extends JPanel {
 	private boolean ignoreSelectedItemsEvent;
 	private final Comparator<CyNetworkView> viewComparator;
 	
+	private final ThumbnailCache thumbnailCache;
+	
 	private ThumbnailPanel selectionHead;
 	private ThumbnailPanel selectionTail;
 	
@@ -149,6 +145,7 @@ public class NetworkViewGrid extends JPanel {
 		thumbnailPanels = new TreeMap<>(viewComparator);
 		selectedNetworkViews = new ArrayList<>();
 		
+		thumbnailCache = new ThumbnailCache(MAX_THUMBNAIL_SIZE);
 		gridViewTogglePanel = new GridViewTogglePanel(gridViewToggleModel, serviceRegistrar);
 		
 		init();
@@ -294,11 +291,11 @@ public class NetworkViewGrid extends JPanel {
 	}
 	
 	/** Updates the image only */ 
-	protected void updateThumbnail(final CyNetworkView view) {
+	protected void updateThumbnail(final CyNetworkView view, boolean forceRedraw) {
 		final ThumbnailPanel tp = getItem(view);
 		
 		if (tp != null)
-			tp.updateIcon();
+			tp.updateIcon(forceRedraw);
 	}
 
 	protected int getThumbnailSize() {
@@ -806,6 +803,7 @@ public class NetworkViewGrid extends JPanel {
 		private boolean detached;
 		
 		private final RenderingEngine<CyNetwork> engine;
+		private CompletableFuture<Image> cancelFuture = null;
 		
 		private final Color BORDER_COLOR = UIManager.getColor("Label.foreground");
 		private final Color HOVER_COLOR = UIManager.getColor("Focus.color");
@@ -890,7 +888,7 @@ public class NetworkViewGrid extends JPanel {
 			layout.setAutoCreateContainerGaps(false);
 			layout.setAutoCreateGaps(false);
 			
-			layout.setHorizontalGroup(layout.createParallelGroup(LEADING, true)
+			layout.setHorizontalGroup(layout.createParallelGroup(CENTER, true)
 					.addGroup(layout.createSequentialGroup()
 							.addGap(PAD)
 							.addComponent(getCurrentLabel(), CURR_LABEL_W, CURR_LABEL_W, CURR_LABEL_W)
@@ -1010,10 +1008,11 @@ public class NetworkViewGrid extends JPanel {
 			updateTitleLabel();
 			
 			if (redraw)
-				updateIcon();
+				updateIcon(false);
 		}
+		
 
-		void updateIcon() {
+		void updateIcon(boolean forceRedraw) {
 			final Dimension size = this.getSize();
 			
 			if (size != null && getTitleLabel().getSize() != null) {
@@ -1023,15 +1022,44 @@ public class NetworkViewGrid extends JPanel {
 				int ih = size.height - 2 * BORDER_WIDTH - 2 * GAP - lh - PAD - 2 * IMG_BORDER_WIDTH;
 				
 				if (iw > 0 && ih > 0) {
-					final Paint bgPaint = getNetworkView().getVisualProperty(NETWORK_BACKGROUND_PAINT);
+					CyNetworkView netView = getNetworkView();
 					
-					if (bgPaint instanceof Color)
-						getImageLabel().setBackground((Color) bgPaint);
+					if(forceRedraw) {
+						thumbnailCache.invalidate(netView);
+					}
 					
-					final Image img = createThumbnail(iw, ih);
-					final ImageIcon icon = img != null ? new ImageIcon(img) : null;
-					getImageLabel().setIcon(icon);
-					updateUI();
+					if(cancelFuture != null) {
+						cancelFuture.complete(null); 
+						cancelFuture = null;
+					}
+					cancelFuture = new CompletableFuture<>();
+					
+					// Start rendering the real thumbnail
+					CompletableFuture<Image> imageFuture = thumbnailCache.getThumbnailAsync(engine, netView, iw, ih);
+					
+					if(!imageFuture.isDone()) {
+						// Use a "loading" placeholder image
+						BufferedImage loadingImage = new BufferedImage(iw, ih, BufferedImage.TYPE_INT_RGB);
+						final Graphics2D g2 = loadingImage.createGraphics();
+						final Paint bg = netView.getVisualProperty(NETWORK_BACKGROUND_PAINT);
+						g2.setPaint(bg);
+						g2.fillRect(0, 0, iw, ih);
+						g2.dispose();
+						getImageLabel().setIcon(new ImageIcon(loadingImage));
+					}
+					
+					// update when real thumbnail image is available
+					imageFuture.acceptEitherAsync(cancelFuture, image -> {
+						if(image != null) { // null if canceled
+							final Paint bgPaint = netView.getVisualProperty(NETWORK_BACKGROUND_PAINT);
+							if (bgPaint instanceof Color)
+								getImageLabel().setBackground((Color) bgPaint);
+							
+							final ImageIcon icon = image != null ? new ImageIcon(image) : null;
+							getImageLabel().setIcon(icon);
+							updateUI();
+						}
+					}, thumbnailCache.getExecutor());
 				}
 			}
 		}

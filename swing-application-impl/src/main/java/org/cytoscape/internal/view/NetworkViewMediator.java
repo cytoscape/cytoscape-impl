@@ -296,7 +296,7 @@ public class NetworkViewMediator
 		invokeOnEDT(() -> {
 			// If the Grid is not visible, just flag this view as dirty.
 			if (getNetworkViewMainPanel().isGridVisible()) {
-				getNetworkViewMainPanel().updateThumbnail(netView);
+				getNetworkViewMainPanel().updateThumbnail(netView, false);
 			} else {
 				getNetworkViewMainPanel().update(netView);
 				getNetworkViewMainPanel().setDirtyThumbnail(netView);

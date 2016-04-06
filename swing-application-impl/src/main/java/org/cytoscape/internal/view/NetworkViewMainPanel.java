@@ -1,7 +1,6 @@
 package org.cytoscape.internal.view;
 
-import static org.cytoscape.internal.util.ViewUtil.createUniqueKey;
-import static org.cytoscape.internal.util.ViewUtil.getTitle;
+import static org.cytoscape.internal.util.ViewUtil.*;
 
 import java.awt.AWTEvent;
 import java.awt.BorderLayout;
@@ -333,7 +332,7 @@ public class NetworkViewMainPanel extends JPanel {
 		final HashSet<CyNetworkView> dirtySet = new HashSet<>(dirtyThumbnails);
 		
 		for (CyNetworkView view : dirtySet)
-			updateThumbnail(view);
+			updateThumbnail(view, true);
 	}
 	
 	public NetworkViewFrame detachNetworkView(final CyNetworkView view) {
@@ -455,8 +454,8 @@ public class NetworkViewMainPanel extends JPanel {
 		}
 	}
 	
-	public void updateThumbnail(final CyNetworkView view) {
-		networkViewGrid.updateThumbnail(view);
+	public void updateThumbnail(final CyNetworkView view, boolean forceRedraw) {
+		networkViewGrid.updateThumbnail(view, forceRedraw);
 		dirtyThumbnails.remove(view);
 	}
 	
@@ -844,7 +843,7 @@ public class NetworkViewMainPanel extends JPanel {
 				tp.addComponentListener(new ComponentAdapter() {
 					@Override
 					public void componentResized(ComponentEvent e) {
-						updateThumbnail(tp.getNetworkView());
+						updateThumbnail(tp.getNetworkView(), false);
 					};
 				});
 			}
