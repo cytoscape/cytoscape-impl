@@ -256,7 +256,6 @@ public class InstallAppsPanel extends JPanel {
 						buildTagsTree();
 						
 						fillResultsTree(appManager.getWebQuerier().getAllApps());
-                        hasTagTreeBeenPopulated = true;
 					}
 					
 				});
@@ -630,9 +629,13 @@ public class InstallAppsPanel extends JPanel {
     	// tagsTree.expandRow(2);
     	
     	currentSelectedAppTag = null;
+        hasTagTreeBeenPopulated = true;
     }
  
     private void updateResultsTree() {
+    	// bild tags tree if it hasn't been populated
+    	if(!hasTagTreeBeenPopulated)
+    		buildTagsTree();
     	
     	TreePath selectionPath = tagsTree.getSelectionPath();
     	
@@ -657,7 +660,7 @@ public class InstallAppsPanel extends JPanel {
 	    		resultsTree.setModel(new DefaultTreeModel(null));	    		
 	    	}
     	} else {
-    		// fillResultsTree(appManager.getWebQuerier().getAllApps());
+    		fillResultsTree(appManager.getWebQuerier().getAllApps());
 //    		System.out.println("selection path null, not updating results tree");
     	}
     }
