@@ -195,11 +195,11 @@ public class CyActivator extends AbstractCyActivator {
 		ViewComparator viewComparator = new ViewComparator(netMainPanel);
 		GridViewToggleModel gridViewToggleModel = new GridViewToggleModel(GridViewToggleModel.Mode.VIEW);
 		NetworkViewMainPanel netViewMainPanel = new NetworkViewMainPanel(gridViewToggleModel, cytoscapeMenus, viewComparator, serviceRegistrar);
-		NetworkViewMediator netViewMediator = new NetworkViewMediator(netViewMainPanel, netMediator, gridViewToggleModel, cyHelpBroker, serviceRegistrar);
+		NetworkViewMediator netViewMediator = new NetworkViewMediator(netViewMainPanel, netMediator, gridViewToggleModel, serviceRegistrar);
 
 		CytoscapeDesktop cytoscapeDesktop = new CytoscapeDesktop(cytoscapeMenus, netViewMediator, serviceRegistrar);
 
-		CyDesktopManager cyDesktopManager = new CyDesktopManager(cytoscapeDesktop, netViewMediator);
+		CyDesktopManager cyDesktopManager = new CyDesktopManager(netViewMediator);
 
 		SessionIO sessionIO = new SessionIO();
 

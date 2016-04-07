@@ -3,7 +3,6 @@ package org.cytoscape.internal.view;
 import static org.cytoscape.internal.util.ViewUtil.invokeOnEDT;
 
 import java.awt.Component;
-import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
@@ -24,8 +23,6 @@ import java.util.Set;
 import java.util.WeakHashMap;
 
 import javax.swing.JComponent;
-import javax.swing.JDesktopPane;
-import javax.swing.JInternalFrame;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 
@@ -33,7 +30,6 @@ import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.NetworkViewRenderer;
 import org.cytoscape.application.events.SetCurrentNetworkViewEvent;
 import org.cytoscape.application.events.SetCurrentNetworkViewListener;
-import org.cytoscape.application.swing.CyHelpBroker;
 import org.cytoscape.internal.util.ViewUtil;
 import org.cytoscape.internal.view.GridViewToggleModel.Mode;
 import org.cytoscape.internal.view.NetworkViewGrid.ThumbnailPanel;
@@ -128,9 +124,6 @@ public class NetworkViewMediator
 	
 	private static final Logger logger = LoggerFactory.getLogger(NetworkViewMediator.class);
 
-	@Deprecated
-	private final JDesktopPane desktopPane;
-	
 	private final NetworkViewMainPanel networkViewMainPanel;
 	private final NetworkMediator networkMediator;
 	private final GridViewToggleModel gridViewToggleModel;
@@ -150,17 +143,12 @@ public class NetworkViewMediator
 			final NetworkViewMainPanel networkViewMainPanel,
 			final NetworkMediator networkMediator,
 			final GridViewToggleModel gridViewToggleModel,
-			final CyHelpBroker help,
 			final CyServiceRegistrar serviceRegistrar
 	) {
 		this.networkViewMainPanel = networkViewMainPanel;
 		this.networkMediator = networkMediator;
 		this.gridViewToggleModel = gridViewToggleModel;
-		this.desktopPane = new JDesktopPane();
 		this.serviceRegistrar = serviceRegistrar;
-
-		// add Help hooks
-		help.getHelpBroker().enableHelp(desktopPane, "network-view-manager", null);
 
 		presentationMap = new WeakHashMap<>();
 		viewUpdateRequired = new HashSet<>();
@@ -177,24 +165,8 @@ public class NetworkViewMediator
 		return getNetworkViewMainPanel().getNetworkViewGrid();
 	}
 	
-	public Dimension getDesktopViewAreaSize() {
-		return getNetworkViewMainPanel().getSize();
-	}
-
-	/**
-	 * Desktop for JInternalFrames which contains actual network presentations.
-	 */
-	@Deprecated
-	public JDesktopPane getDesktopPane() {
-		return desktopPane;
-	}
-
-	public JInternalFrame getInternalFrame(CyNetworkView view) throws IllegalArgumentException {
-		return null; // TODO Fix for backwards compatibility
-	}
-	
-	public CyNetworkView getNetworkView(JInternalFrame frame) throws IllegalArgumentException {
-		return null; // TODO Fix for backwards compatibility
+	public NetworkViewContainer getNetworkViewCard(final CyNetworkView view) {
+		return getNetworkViewMainPanel().getNetworkViewCard(view);
 	}
 	
 	public Set<NetworkViewFrame> getAllNetworkViewFrames() {
@@ -486,12 +458,13 @@ public class NetworkViewMediator
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	private void initComponents() {
 		final NetworkViewMainPanel viewMainPanel = getNetworkViewMainPanel();
 		final NetworkViewGrid vg = viewMainPanel.getNetworkViewGrid();
 		
-		gridViewToggleModel.addPropertyChangeListener("mode", (PropertyChangeEvent evt) -> {
-			final Mode mode = (Mode) evt.getNewValue();
+		gridViewToggleModel.addPropertyChangeListener("mode", (PropertyChangeEvent e) -> {
+			final Mode mode = (Mode) e.getNewValue();
 			
 			if (mode == Mode.GRID) {
 				final Component currentCard = viewMainPanel.getCurrentCard();

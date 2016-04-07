@@ -8,7 +8,6 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -126,19 +125,13 @@ public class NetworkMediator
 		
 		popup = new JPopupMenu();
 		
-		networkMainPanel.addPropertyChangeListener("rootNetworkPanelCreated", new PropertyChangeListener() {
-			@Override
-			public void propertyChange(PropertyChangeEvent evt) {
-				final RootNetworkPanel p = (RootNetworkPanel) evt.getNewValue();
-				addMouseListenersForSelection(p, p.getHeaderPanel(), p.getNetworkCountLabel(), p.getNameLabel());
-			}
+		networkMainPanel.addPropertyChangeListener("rootNetworkPanelCreated", (PropertyChangeEvent evt) -> {
+			final RootNetworkPanel p = (RootNetworkPanel) evt.getNewValue();
+			addMouseListenersForSelection(p, p.getHeaderPanel(), p.getNetworkCountLabel(), p.getNameLabel());
 		});
-		networkMainPanel.addPropertyChangeListener("subNetworkPanelCreated", new PropertyChangeListener() {
-			@Override
-			public void propertyChange(PropertyChangeEvent evt) {
-				final SubNetworkPanel p = (SubNetworkPanel) evt.getNewValue();
-				addMouseListenersForSelection(p, p, p.getNameLabel(), p.getViewIconLabel());
-			}
+		networkMainPanel.addPropertyChangeListener("subNetworkPanelCreated", (PropertyChangeEvent evt) -> {
+			final SubNetworkPanel p = (SubNetworkPanel) evt.getNewValue();
+			addMouseListenersForSelection(p, p, p.getNameLabel(), p.getViewIconLabel());
 		});
 	}
 	

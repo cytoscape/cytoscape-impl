@@ -364,10 +364,6 @@ public class CytoscapeDesktop extends JFrame
 		return splitPane;
 	}
 
-	NetworkViewMediator getNetworkViewMediator() {
-		return netViewMediator;
-	}
-
 	public void addAction(CyAction action, Map<?, ?> props) {
 		cyMenus.addAction(action, props);
 	}

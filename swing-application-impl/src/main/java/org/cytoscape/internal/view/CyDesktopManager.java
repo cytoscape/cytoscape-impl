@@ -11,9 +11,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import javax.swing.JDesktopPane;
-import javax.swing.JInternalFrame;
-
 import org.cytoscape.application.swing.CyNetworkViewDesktopMgr;
 import org.cytoscape.view.model.CyNetworkView;
 
@@ -41,60 +38,42 @@ import org.cytoscape.view.model.CyNetworkView;
  * #L%
  */
 
-
 public class CyDesktopManager implements CyNetworkViewDesktopMgr {
 	
 	public static int MINIMUM_WIN_WIDTH = 200;
 	public static int MINIMUM_WIN_HEIGHT = 200;
 	
-	private final CytoscapeDesktop desk;
 	private final NetworkViewMediator netViewMediator;
 		
-	public CyDesktopManager(final CytoscapeDesktop desk, final NetworkViewMediator netViewMediator) { 
-		this.desk = desk;
+	public CyDesktopManager(final NetworkViewMediator netViewMediator) { 
 		this.netViewMediator = netViewMediator;
 	}
 
 	@Override
 	public Dimension getDesktopViewAreaSize() {
-		// TODO
-		JDesktopPane desktop = desk.getNetworkViewMediator().getDesktopPane();
+		return netViewMediator.getNetworkViewMainPanel().getSize();
+	}
+
+	@Override
+	public Rectangle getBounds(final CyNetworkView view) {
+		Rectangle bounds = null;
+		final NetworkViewFrame frame = netViewMediator.getNetworkViewFrame(view);
 		
-		return desktop.getSize();
-	}
-
-	@Override
-	public Rectangle getBounds (CyNetworkView view) {
-		try {
-			JInternalFrame frame = netViewMediator.getInternalFrame(view);
+		if (frame != null) {
+			bounds = frame.getBounds();
+		} else {
+			final NetworkViewContainer card = netViewMediator.getNetworkViewCard(view);
 			
-			if (frame != null)
-				return frame.getBounds();
-		} catch (Exception e) {
-			// Fall through
+			if (card != null)
+				bounds = card.getBounds();
 		}
-		return null;
+		
+		return bounds;
 	}
 
 	@Override
-	public void setBounds (CyNetworkView view, Rectangle bounds) {
-		try {
-			JInternalFrame frame = netViewMediator.getInternalFrame(view);
-			
-			if (frame == null)
-				return;
-			
-			// It is CRITICAL that this setMaximum be performed before the setBounds().
-			// If frame's state is such that isMaximum() is true, then it seems to
-			// ignore any setBounds() statements until the iFrame is in a non-maximum
-			// state. The result of this is that frame will use its previous
-			// setting for the frame bounds when the frame is restored
-			// (set to non Maximum state):
-			frame.setMaximum(false);
-			frame.setBounds(bounds);
-		} catch (Exception e) {
-			return;
-		}	
+	public void setBounds(CyNetworkView view, Rectangle bounds) {
+		// Does not do anything anymore since version 3.4...
 	}
 	
 	@Override
@@ -129,17 +108,22 @@ public class CyDesktopManager implements CyNetworkViewDesktopMgr {
 			
 			if (!frames.isEmpty()) {
 				// Calculate the actual screen area by removing screen insets such as Menu Bars, Docks, etc.
-				final Rectangle bounds = gc.getBounds();
-				final Insets screenInsets = Toolkit.getDefaultToolkit().getScreenInsets(gc);
-				final Rectangle effectiveScreenArea = new Rectangle();
-				effectiveScreenArea.x = bounds.x + screenInsets.left;
-				effectiveScreenArea.y = bounds.y + screenInsets.top;
-				effectiveScreenArea.height = bounds.height - screenInsets.top - screenInsets.bottom;
-				effectiveScreenArea.width = bounds.width - screenInsets.left - screenInsets.right;
-
+				final Rectangle effectiveScreenArea = getEffectiveScreenArea(gc);
 				arrangeWindows(frames.toArray(new NetworkViewFrame[frames.size()]), type, effectiveScreenArea);
 			}
 		}
+	}
+
+	private Rectangle getEffectiveScreenArea(final GraphicsConfiguration gc) {
+		final Rectangle bounds = gc.getBounds();
+		final Insets screenInsets = Toolkit.getDefaultToolkit().getScreenInsets(gc);
+		final Rectangle rect = new Rectangle();
+		rect.x = bounds.x + screenInsets.left;
+		rect.y = bounds.y + screenInsets.top;
+		rect.height = bounds.height - screenInsets.top - screenInsets.bottom;
+		rect.width = bounds.width - screenInsets.left - screenInsets.right;
+		
+		return rect;
 	}
 	
 	private void arrangeWindows(final NetworkViewFrame[] frames, final ArrangeType type, final Rectangle bounds) {

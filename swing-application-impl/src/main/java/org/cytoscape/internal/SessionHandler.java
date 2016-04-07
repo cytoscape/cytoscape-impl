@@ -3,7 +3,6 @@ package org.cytoscape.internal;
 import static org.cytoscape.internal.util.ViewUtil.invokeOnEDT;
 
 import java.io.File;
-import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -14,7 +13,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import javax.swing.JInternalFrame;
 import javax.swing.JOptionPane;
 
 import org.cytoscape.application.CyApplicationManager;
@@ -28,8 +26,6 @@ import org.cytoscape.internal.io.networklist.Network;
 import org.cytoscape.internal.io.networklist.NetworkList;
 import org.cytoscape.internal.io.sessionstate.Cytopanel;
 import org.cytoscape.internal.io.sessionstate.Cytopanels;
-import org.cytoscape.internal.io.sessionstate.NetworkFrame;
-import org.cytoscape.internal.io.sessionstate.NetworkFrames;
 import org.cytoscape.internal.io.sessionstate.SessionState;
 import org.cytoscape.internal.view.CytoscapeDesktop;
 import org.cytoscape.internal.view.NetworkMainPanel;
@@ -197,30 +193,6 @@ public class SessionHandler implements CyShutdownListener, SessionLoadedListener
 	private File saveSessionState(final SessionAboutToBeSavedEvent e) {
 		final SessionState sessState = new SessionState();
 
-		// Network Frames
-		final NetworkFrames netFrames = new NetworkFrames();
-		sessState.setNetworkFrames(netFrames);
-
-		// TODO
-		final JInternalFrame[] internalFrames = netViewMediator.getDesktopPane().getAllFrames();
-
-		for (JInternalFrame iframe : internalFrames) {
-			final CyNetworkView view = netViewMediator.getNetworkView(iframe);
-
-			if (view == null) {
-				logger.error("Cannot save position of network frame \"" + iframe.getTitle()
-						+ "\": Network View is null.");
-				continue;
-			}
-
-			final NetworkFrame nf = new NetworkFrame();
-			nf.setNetworkViewID(view.getSUID().toString());
-			nf.setX(BigInteger.valueOf(iframe.getX()));
-			nf.setY(BigInteger.valueOf(iframe.getY()));
-
-			netFrames.getNetworkFrame().add(nf);
-		}
-
 		// CytoPanels States
 		final Cytopanels cytopanels = new Cytopanels();
 		sessState.setCytopanels(cytopanels);
@@ -291,10 +263,8 @@ public class SessionHandler implements CyShutdownListener, SessionLoadedListener
 						netList = sessionIO.read(f, NetworkList.class);
 				}
 				
-				if (sessState != null) {
-					setNetworkFrameLocations(sessState.getNetworkFrames(), sess);
+				if (sessState != null)
 					setCytoPanelStates(sessState.getCytopanels());
-				}
 				
 				if (netList == null) {
 					// Probably a Cy2 session file, which does not provide a separate "network_list" file
@@ -310,47 +280,6 @@ public class SessionHandler implements CyShutdownListener, SessionLoadedListener
 					setSessionNetworks(netOrder);
 				} else {
 					setSessionNetworks(netList.getNetwork(), sess);
-				}
-			}
-		}
-	}
-	
-	/**
-	 * Restore each network frame's location.
-	 * @param frames
-	 */
-	private void setNetworkFrameLocations(final NetworkFrames frames, final CySession sess) {
-		if (frames != null) {
-			final List<NetworkFrame> framesList = frames.getNetworkFrame();
-			
-			for (NetworkFrame nf : framesList) {
-				final String oldIdStr = nf.getNetworkViewID(); // ID in the original session--it's probably different now
-				CyNetworkView view = null;
-				
-				// Try to convert the old ID to Long--only works if the loaded session is a 3.0 format
-				try {
-					final Long oldSuid = Long.valueOf(oldIdStr);
-					view = sess.getObject(oldSuid, CyNetworkView.class);
-				} catch (NumberFormatException nfe) {
-					logger.debug("The old network view id is not a number: " + oldIdStr);
-					view = sess.getObject(oldIdStr, CyNetworkView.class);
-				}
-				
-				if (view != null) {
-					final JInternalFrame iframe = netViewMediator.getInternalFrame(view);
-					
-					if (iframe != null) {
-						iframe.moveToBack(); // In order to restore its z-index
-						
-						if (nf.getX() != null && nf.getY() != null) {
-							int x = nf.getX().intValue();
-							int y = nf.getY().intValue();
-							iframe.setLocation(x, y);
-						}
-					}
-				} else {
-					logger.warn("Cannot restore network frame's position: Network View not found for former ID \""
-							+ oldIdStr + "\".");
 				}
 			}
 		}

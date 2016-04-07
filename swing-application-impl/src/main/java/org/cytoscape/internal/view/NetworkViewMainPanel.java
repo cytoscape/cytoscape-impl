@@ -872,7 +872,7 @@ public class NetworkViewMainPanel extends JPanel {
 		return view != null ? allViewContainers.get(view) : null;
 	}
 	
-	private NetworkViewContainer getNetworkViewCard(final CyNetworkView view) {
+	protected NetworkViewContainer getNetworkViewCard(final CyNetworkView view) {
 		return view != null ? viewCards.get(createUniqueKey(view)) : null;
 	}
 	
