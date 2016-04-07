@@ -288,6 +288,18 @@ public class NetworkViewMediator
 		});
 	}
 	
+	
+	private static boolean hasNonResizeEvent(final ViewChangedEvent<?> e) {
+		for(ViewChangeRecord<?> record : e.getPayloadCollection()) {
+			VisualProperty<?> vp = record.getVisualProperty();
+			if(!BasicVisualLexicon.NETWORK_WIDTH.equals(vp) && !BasicVisualLexicon.NETWORK_HEIGHT.equals(vp)) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	
 	@Override
 	public void handleEvent(final ViewChangedEvent<?> e) {
 		final CyNetworkView netView = e.getSource();
@@ -296,7 +308,9 @@ public class NetworkViewMediator
 		invokeOnEDT(() -> {
 			// If the Grid is not visible, just flag this view as dirty.
 			if (getNetworkViewMainPanel().isGridVisible()) {
-				getNetworkViewMainPanel().updateThumbnail(netView, false);
+				if(hasNonResizeEvent(e)) {
+					getNetworkViewMainPanel().updateThumbnail(netView, true);
+				}
 			} else {
 				getNetworkViewMainPanel().update(netView);
 				getNetworkViewMainPanel().setDirtyThumbnail(netView);
