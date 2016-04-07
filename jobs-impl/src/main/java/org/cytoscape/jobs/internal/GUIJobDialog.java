@@ -24,55 +24,54 @@ package org.cytoscape.jobs.internal;
  * #L%
  */
 
+import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import javax.swing.AbstractAction;
 import javax.swing.DefaultCellEditor;
-import javax.swing.JDialog;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JDialog;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.UIManager;
+import javax.swing.WindowConstants;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
-import javax.swing.WindowConstants;
 
-import org.cytoscape.application.CyUserLog;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.jobs.CyJob;
 import org.cytoscape.jobs.CyJobMonitor;
 import org.cytoscape.jobs.CyJobStatus;
 import org.cytoscape.jobs.CyJobStatus.Status;
 import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.work.AbstractTask;
-import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskManager;
 import org.cytoscape.work.TaskMonitor;
 
-import org.apache.log4j.Logger;
-
 /**
  * An implementation of CyJobManager.
  */
+@SuppressWarnings("serial")
 public class GUIJobDialog extends JDialog {
+	
 	final CyServiceRegistrar serviceRegistrar;
 	final ConcurrentMap<CyJob, CyJobStatus> statusMap;
 	final List<CyJob> jobList;
 	final CyJobManagerImpl jobManager;
 	final GUICyJobMonitor jobMonitor;
 	JobTableModel jobTableModel;
-	static final long serialVersionUID = 1001L;
 	final JDialog jobDialog;
 
 	public GUIJobDialog(CyServiceRegistrar registrar, 
@@ -105,16 +104,26 @@ public class GUIJobDialog extends JDialog {
 		table.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
 		// Put in JScrollPane
 		JScrollPane scrollPane = new JScrollPane(table);
+		scrollPane.setPreferredSize(new Dimension(500, 100));
 		// Set up our button renderer
 		TableCellRenderer buttonRenderer = new JTableButtonRenderer();
 		table.setDefaultRenderer(JButton.class, buttonRenderer);
 		TableCellEditor buttonEditor = new ButtonEditor(new JCheckBox());
 		table.setDefaultEditor(JButton.class, buttonEditor);
 		table.setRowHeight(30);
-
+		// Create bottom panel
+		JButton closeButton = new JButton(new AbstractAction("Close") {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				dispose();
+			}
+		});
+		JPanel bottomPanel = LookAndFeelUtil.createOkCancelPanel(null, closeButton);
+		LookAndFeelUtil.setDefaultOkCancelKeyStrokes(getRootPane(), null, closeButton.getAction());
 		// add to dialog
-		add(scrollPane);
-		setPreferredSize(new Dimension(500,100));
+		setLayout(new BorderLayout());
+		add(scrollPane, BorderLayout.CENTER);
+		add(bottomPanel, BorderLayout.SOUTH);
 	}
 
 	public void mapChanged() {
