@@ -485,18 +485,14 @@ public class NetworkViewMediator
 					
 					if (currentView != null) {
 						viewContainer = viewMainPanel.showViewContainer(currentView);
-					} else {
-						final List<ThumbnailPanel> selectedItems = vg.getSelectedItems();
-						
-						if (!selectedItems.isEmpty())
-							viewContainer = viewMainPanel.showViewContainer(selectedItems.get(0).getNetworkView());
-						else if (!vg.isEmpty())
-							viewContainer = viewMainPanel.showViewContainer(vg.firstItem().getNetworkView());
-					}
 					
-					if (viewContainer != null) {
-						viewMainPanel.setCurrentNetworkView(viewContainer.getNetworkView());
-						viewContainer.getContentPane().requestFocusInWindow();
+						if (viewContainer != null) {
+							viewMainPanel.setCurrentNetworkView(viewContainer.getNetworkView());
+							viewContainer.getContentPane().requestFocusInWindow();
+						}
+					} else {
+						final CyNetwork currentNet = networkMediator.getCurrentNetwork();
+						viewMainPanel.showNullViewContainer(currentNet);
 					}
 				}
 			}
