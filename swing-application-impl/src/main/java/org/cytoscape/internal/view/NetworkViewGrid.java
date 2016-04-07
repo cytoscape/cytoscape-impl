@@ -1,16 +1,21 @@
 package org.cytoscape.internal.view;
 
-import static javax.swing.GroupLayout.*;
+import static javax.swing.GroupLayout.DEFAULT_SIZE;
+import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static javax.swing.GroupLayout.Alignment.CENTER;
 import static org.cytoscape.internal.util.ViewUtil.styleToolBarButton;
-import static org.cytoscape.util.swing.IconManager.*;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.*;
+import static org.cytoscape.util.swing.IconManager.ICON_EXTERNAL_LINK_SQUARE;
+import static org.cytoscape.util.swing.IconManager.ICON_THUMB_TACK;
+import static org.cytoscape.util.swing.IconManager.ICON_TRASH_O;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NETWORK_BACKGROUND_PAINT;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NETWORK_HEIGHT;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NETWORK_TITLE;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NETWORK_WIDTH;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GridLayout;
 import java.awt.Image;
@@ -766,7 +771,7 @@ public class NetworkViewGrid extends JPanel {
 	}
 	
 	private static Color getBackgroundColor() {
-		return UIManager.getColor("Label.disabledForeground");
+		return UIManager.getColor("Panel.background");
 	}
 	
 	static List<CyNetworkView> getNetworkViews(final Collection<ThumbnailPanel> thumbnailPanels) {
@@ -784,7 +789,7 @@ public class NetworkViewGrid extends JPanel {
 		static final int GAP = 1;
 		
 		/** Margin Thickness */
-		static final int MT = 3;
+		static final int MT = 1;
 		/** Border Thickness */
 		static final int BT = 1;
 		/** Padding Thickness */
@@ -799,14 +804,13 @@ public class NetworkViewGrid extends JPanel {
 		private JLabel imageLabel;
 		
 		private boolean selected;
-		private boolean hover;
 		private boolean detached;
 		
 		private final RenderingEngine<CyNetwork> engine;
 		private CompletableFuture<Image> cancelFuture = null;
 		
-		private final Color BORDER_COLOR = UIManager.getColor("Label.foreground");
-		private final Color HOVER_COLOR = UIManager.getColor("Focus.color");
+		private final Color BORDER_COLOR = UIManager.getColor("Separator.foreground");
+		private final Color SEL_COLOR = UIManager.getColor("Table.focusCellBackground");
 		
 		private Border EMPTY_BORDER = BorderFactory.createEmptyBorder(PT, PT, PT, PT);
 		private Border MARGIN_BORDER = BorderFactory.createLineBorder(getBackgroundColor(), MT);
@@ -822,7 +826,7 @@ public class NetworkViewGrid extends JPanel {
 		private Border DEFAULT_HOVER_BORDER = BorderFactory.createCompoundBorder(
 				MARGIN_BORDER,
 				BorderFactory.createCompoundBorder(
-						BorderFactory.createLineBorder(HOVER_COLOR, BT),
+						BorderFactory.createLineBorder(SEL_COLOR, BT),
 						EMPTY_BORDER
 				)
 		);
@@ -847,24 +851,24 @@ public class NetworkViewGrid extends JPanel {
 						EMPTY_BORDER
 				)
 		);
-		private Border MIDDLE_SIBLING_HOVER_BORDER = BorderFactory.createCompoundBorder(
+		private Border MIDDLE_SIBLING_SEL_BORDER = BorderFactory.createCompoundBorder(
 				BorderFactory.createMatteBorder(MT, 0, MT, 0, getBackgroundColor()),
 				BorderFactory.createCompoundBorder(
-						BorderFactory.createMatteBorder(BT, BT, BT, BT, HOVER_COLOR),
+						BorderFactory.createMatteBorder(BT, BT, BT, BT, SEL_COLOR),
 						BorderFactory.createEmptyBorder(PT, 0, PT, 0)
 				)
 		);
-		private Border FIRST_SIBLING_HOVER_BORDER = BorderFactory.createCompoundBorder(
+		private Border FIRST_SIBLING_SEL_BORDER = BorderFactory.createCompoundBorder(
 				BorderFactory.createMatteBorder(MT, MT, MT, 0, getBackgroundColor()),
 				BorderFactory.createCompoundBorder(
-						BorderFactory.createMatteBorder(BT, BT, BT, BT, HOVER_COLOR),
+						BorderFactory.createMatteBorder(BT, BT, BT, BT, SEL_COLOR),
 						BorderFactory.createEmptyBorder(PT, PT, PT, 0)
 				)
 		);
-		private Border LAST_SIBLING_HOVER_BORDER = BorderFactory.createCompoundBorder(
+		private Border LAST_SIBLING_SEL_BORDER = BorderFactory.createCompoundBorder(
 				BorderFactory.createMatteBorder(MT, 0, MT, MT, getBackgroundColor()),
 				BorderFactory.createCompoundBorder(
-						BorderFactory.createMatteBorder(BT, BT, BT, BT, HOVER_COLOR),
+						BorderFactory.createMatteBorder(BT, BT, BT, BT, SEL_COLOR),
 						BorderFactory.createEmptyBorder(PT, 0, PT, PT)
 				)
 		);
@@ -876,6 +880,7 @@ public class NetworkViewGrid extends JPanel {
 			this.setRequestFocusEnabled(true);
 			
 			this.setBorder(DEFAULT_BORDER);
+			this.setBackground(UIManager.getColor("Table.background"));
 			
 			final Dimension d = new Dimension(size - BORDER_WIDTH, size - BORDER_WIDTH);
 			this.setMinimumSize(d);
@@ -915,19 +920,6 @@ public class NetworkViewGrid extends JPanel {
 					.addGap(PAD, PAD, Short.MAX_VALUE)
 			);
 			
-			this.addMouseListener(new MouseAdapter() {
-				@Override
-				public void mouseEntered(MouseEvent e) {
-					hover = true;
-					updateBorder();
-				}
-				@Override
-				public void mouseExited(MouseEvent e) {
-					hover = false;
-					updateBorder();
-				}
-			});
-			
 			if (selectedNetworkViews.contains(engine.getViewModel()))
 				selected = true;
 			
@@ -943,13 +935,14 @@ public class NetworkViewGrid extends JPanel {
 		
 		@Override
 		public Color getBackground() {
-			return UIManager.getColor(selected ? "Table.selectionBackground" : "Panel.background");
+			return UIManager.getColor(selected ? "Table.focusCellBackground" : "Table.background");
 		}
 		
 		private void setSelected(boolean newValue) {
 			if (this.selected != newValue) {
 				final boolean oldValue = this.selected;
 				this.selected = newValue;
+				this.updateBorder();
 				this.repaint();
 				
 				firePropertyChange("selected", oldValue, newValue);
@@ -1071,13 +1064,13 @@ public class NetworkViewGrid extends JPanel {
 		
 		private void updateBorder() {
 			if (isFirstSibling())
-				setBorder(hover? FIRST_SIBLING_HOVER_BORDER : FIRST_SIBLING_BORDER);
+				setBorder(selected ? FIRST_SIBLING_SEL_BORDER : FIRST_SIBLING_BORDER);
 			else if (isMiddleSibling())
-				setBorder(hover? MIDDLE_SIBLING_HOVER_BORDER : MIDDLE_SIBLING_BORDER);
+				setBorder(selected? MIDDLE_SIBLING_SEL_BORDER : MIDDLE_SIBLING_BORDER);
 			else if (isLastSibling())
-				setBorder(hover? LAST_SIBLING_HOVER_BORDER : LAST_SIBLING_BORDER);
+				setBorder(selected? LAST_SIBLING_SEL_BORDER : LAST_SIBLING_BORDER);
 			else
-				setBorder(hover ? DEFAULT_HOVER_BORDER : DEFAULT_BORDER);
+				setBorder(selected ? DEFAULT_HOVER_BORDER : DEFAULT_BORDER);
 		}
 		
 		private void updateTitleLabel() {
@@ -1112,12 +1105,11 @@ public class NetworkViewGrid extends JPanel {
 		
 		JLabel getCurrentLabel() {
 			if (currentLabel == null) {
-				currentLabel = new JLabel(IconManager.ICON_CIRCLE); // Just to get the preferred size with the icon font
+				currentLabel = new ThumbnailLabel(IconManager.ICON_CIRCLE, true); // Just to get the preferred size with the icon font
 				currentLabel.setFont(serviceRegistrar.getService(IconManager.class).getIconFont(10.0f));
 				currentLabel.setMinimumSize(currentLabel.getPreferredSize());
 				currentLabel.setMaximumSize(currentLabel.getPreferredSize());
 				currentLabel.setSize(currentLabel.getPreferredSize());
-				currentLabel.setForeground(UIManager.getColor("Focus.color"));
 			}
 			
 			return currentLabel;
@@ -1125,7 +1117,7 @@ public class NetworkViewGrid extends JPanel {
 		
 		JLabel getTitleLabel() {
 			if (titleLabel == null) {
-				titleLabel = new JLabel();
+				titleLabel = new ThumbnailLabel(false);
 				titleLabel.setHorizontalAlignment(JLabel.CENTER);
 				titleLabel.setFont(titleLabel.getFont().deriveFont(LookAndFeelUtil.getSmallFontSize()));
 			}
@@ -1135,20 +1127,7 @@ public class NetworkViewGrid extends JPanel {
 		
 		JLabel getImageLabel() {
 			if (imageLabel == null) {
-				final Color color = UIManager.getColor("Table.selectionBackground");
-				final Color selColor = new Color(color.getRed(), color.getGreen(), color.getBlue(), 160);
-				
-				imageLabel = new JLabel() {
-					@Override
-					public void paint(Graphics g) {
-						super.paint(g);
-						
-						if (selected) {
-							g.setColor(selColor);
-							g.fillRect(0, 0, getWidth(), getHeight());
-						}
-					};
-				};
+				imageLabel = new JLabel();
 				imageLabel.setOpaque(true);
 				imageLabel.setBorder(
 						BorderFactory.createLineBorder(UIManager.getColor("Label.foreground"), IMG_BORDER_WIDTH));
@@ -1247,6 +1226,26 @@ public class NetworkViewGrid extends JPanel {
 
 		private NetworkViewGrid getOuterType() {
 			return NetworkViewGrid.this;
+		}
+		
+		private class ThumbnailLabel extends JLabel {
+
+			private final boolean highlightWhenCurrent;
+
+			public ThumbnailLabel(final boolean highlightWhenCurrent) {
+				this.highlightWhenCurrent = highlightWhenCurrent;
+			}
+
+			public ThumbnailLabel(final String text, final boolean highlightWhenCurrent) {
+				this(highlightWhenCurrent);
+				setText(text);
+			}
+			
+			@Override
+			public Color getForeground() {
+				final String defColor = highlightWhenCurrent ? "Focus.color" : "Label.foreground";
+				return UIManager.getColor(selected ? "Table.focusCellForeground" : defColor);
+			}
 		}
 	}
 	
