@@ -5,11 +5,7 @@ import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static javax.swing.GroupLayout.Alignment.CENTER;
 import static org.cytoscape.internal.util.ViewUtil.styleToolBarButton;
 import static org.cytoscape.util.swing.IconManager.ICON_COG;
-import static org.cytoscape.util.swing.IconManager.ICON_COGS;
-import static org.cytoscape.util.swing.IconManager.ICON_ELLIPSIS_H;
-import static org.cytoscape.util.swing.IconManager.ICON_ELLIPSIS_V;
 import static org.cytoscape.util.swing.IconManager.ICON_EXTERNAL_LINK_SQUARE;
-import static org.cytoscape.util.swing.IconManager.ICON_TH_LARGE;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -85,21 +81,15 @@ import org.cytoscape.view.model.CyNetworkView;
 public class NetworkViewComparisonPanel extends JPanel {
 
 	public enum Arrangement {
-		AUTO("Auto Arrange", ICON_COGS),
-		GRID("Grid", ICON_TH_LARGE),
-		HORIZONTAL("Horizontal", ICON_ELLIPSIS_H),
-		VERTICAL("Vertical", ICON_ELLIPSIS_V);
+		AUTO("Auto Arrange"),
+		GRID("Grid"),
+		HORIZONTAL("Side by Side"),
+		VERTICAL("Vertical Stack");
 		
 		private final String name;
-		private final String icon;
 		
-		Arrangement(final String name, final String icon) {
+		Arrangement(final String name) {
 			this.name = name;
-			this.icon = icon;
-		}
-		
-		public String getIcon() {
-			return icon;
 		}
 		
 		@Override
