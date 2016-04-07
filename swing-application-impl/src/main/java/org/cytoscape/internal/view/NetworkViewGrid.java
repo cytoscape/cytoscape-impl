@@ -114,6 +114,7 @@ public class NetworkViewGrid extends JPanel {
 	private GridPanel gridPanel;
 	private JScrollPane gridScrollPane;
 	private JPanel toolBar;
+	private JLabel infoLabel;
 	private JLabel viewSelectionLabel;
 	private JButton detachSelectedViewsButton;
 	private JButton reattachAllViewsButton;
@@ -547,7 +548,24 @@ public class NetworkViewGrid extends JPanel {
 		getGridPanel().removeAll();
 		thumbnailPanels.clear();
 		
-		if (engines != null && !engines.isEmpty()) {
+		if (engines == null || engines.isEmpty()) {
+			// Just show an info label
+			final GroupLayout layout = new GroupLayout(getGridPanel());
+			getGridPanel().setLayout(layout);
+			layout.setAutoCreateContainerGaps(true);
+			layout.setAutoCreateGaps(true);
+			
+			layout.setHorizontalGroup(layout.createSequentialGroup()
+					.addGap(0, 0, Short.MAX_VALUE)
+					.addComponent(getInfoLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addGap(0, 0, Short.MAX_VALUE)
+			);
+			layout.setVerticalGroup(layout.createSequentialGroup()
+					.addGap(0, 0, Short.MAX_VALUE)
+					.addComponent(getInfoLabel())
+					.addGap(0, 0, Short.MAX_VALUE)
+			);
+		} else {
 			maxThumbnailSize = maxThumbnailSize(thumbnailSize, size.width);
 			
 			int cols = calculateColumns(maxThumbnailSize, size.width);
@@ -702,6 +720,17 @@ public class NetworkViewGrid extends JPanel {
 		}
 		
 		return destroySelectedViewsButton;
+	}
+	
+	private JLabel getInfoLabel() {
+		if (infoLabel == null) {
+			infoLabel = new JLabel("No views");
+			infoLabel.setFont(infoLabel.getFont().deriveFont(18.0f));
+			infoLabel.setEnabled(false);
+			infoLabel.setForeground(UIManager.getColor("Label.disabledForeground"));
+		}
+		
+		return infoLabel;
 	}
 	
 	private JLabel getViewSelectionLabel() {
