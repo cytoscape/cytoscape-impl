@@ -266,7 +266,11 @@ public class NetworkViewGrid extends JPanel {
 		
 		if (!dirty && size != null && size.width > 0) {
 			final int cols = calculateColumns(thumbnailSize, size.width);
-			dirty = cols != ((GridLayout) getGridPanel().getLayout()).getColumns();
+			
+			if (getGridPanel().getLayout() instanceof GridLayout)
+				dirty = cols != ((GridLayout) getGridPanel().getLayout()).getColumns();
+			else
+				dirty = true;
 		}
 		
 		if (!dirty)
@@ -604,7 +608,6 @@ public class NetworkViewGrid extends JPanel {
 	private GridPanel getGridPanel() {
 		if (gridPanel == null) {
 			gridPanel = new GridPanel();
-			gridPanel.setLayout(new GridLayout());
 			gridPanel.setBackground(getBackgroundColor());
 			gridPanel.setBorder(BorderFactory.createLineBorder(getBackgroundColor(), 1));
 			gridPanel.setOpaque(false);
