@@ -317,7 +317,7 @@ public class NetworkViewGrid extends JPanel {
 	}
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	private void onMousePressedItem(final MouseEvent e, final ThumbnailPanel item) {
+	void onMousePressedItem(final MouseEvent e, final ThumbnailPanel item) {
 		item.requestFocusInWindow();
 		
 		if (e.isPopupTrigger()) {
@@ -557,13 +557,6 @@ public class NetworkViewGrid extends JPanel {
 			for (RenderingEngine<CyNetwork> engine : engines.values()) {
 				final ThumbnailPanel tp = new ThumbnailPanel(engine, maxThumbnailSize);
 				thumbnailPanels.put(tp.getNetworkView(), tp);
-				
-				tp.addMouseListener(new MouseAdapter() {
-					@Override
-					public void mousePressed(final MouseEvent e) {
-						onMousePressedItem(e, tp);
-					}
-				});
 				
 				setSelectionKeyBindings(tp);
 				

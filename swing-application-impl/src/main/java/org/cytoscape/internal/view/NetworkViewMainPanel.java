@@ -1,6 +1,7 @@
 package org.cytoscape.internal.view;
 
-import static org.cytoscape.internal.util.ViewUtil.*;
+import static org.cytoscape.internal.util.ViewUtil.createUniqueKey;
+import static org.cytoscape.internal.util.ViewUtil.getTitle;
 
 import java.awt.AWTEvent;
 import java.awt.BorderLayout;
@@ -14,8 +15,6 @@ import java.awt.Window;
 import java.awt.event.AWTEventListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
@@ -335,6 +334,20 @@ public class NetworkViewMainPanel extends JPanel {
 			updateThumbnail(view, true);
 	}
 	
+	public void detachNetworkViews(final Collection<CyNetworkView> views) {
+		final CyNetworkView currentView = getCurrentNetworkView(); // Get the current view first
+		
+		// Then detach the views
+		for (CyNetworkView v : views)
+			detachNetworkView(v);
+		
+		// Set the original current view by bringing its frame to front, if it is detached
+		final NetworkViewFrame frame = getNetworkViewFrame(currentView);
+
+		if (frame != null)
+			frame.toFront();
+	}
+	
 	public NetworkViewFrame detachNetworkView(final CyNetworkView view) {
 		if (view == null)
 			return null;
@@ -362,6 +375,9 @@ public class NetworkViewMainPanel extends JPanel {
 		
 		if (!isGridMode())
 			showNullViewContainer(view);
+		
+		if (viewFrames.get(vc.getName()) != null)
+			return viewFrames.get(vc.getName());
 		
 		// Create and show the frame
 		final NetworkViewFrame frame = new NetworkViewFrame(vc, gc, cyMenus.createViewFrameToolBar(), serviceRegistrar);
@@ -560,6 +576,9 @@ public class NetworkViewMainPanel extends JPanel {
 		if (key != null) {
 			viewContainer = viewCards.get(key);
 			
+			if (isGridMode())
+				gridViewToggleModel.setMode(Mode.VIEW);
+			
 			if (viewContainer != null) {
 				cardLayout.show(getContentPane(), key);
 				viewContainer.update();
@@ -603,7 +622,7 @@ public class NetworkViewMainPanel extends JPanel {
 		cardLayout.show(getContentPane(), nullViewPanel.getName());
 	}
 
-	private void showViewFrame(final NetworkViewFrame frame) {
+	protected void showViewFrame(final NetworkViewFrame frame) {
 		frame.setVisible(true);
 		frame.toFront();
 	}
@@ -649,21 +668,12 @@ public class NetworkViewMainPanel extends JPanel {
 					
 					if (currentCard instanceof NetworkViewComparisonPanel) {
 						final NetworkViewComparisonPanel cp = (NetworkViewComparisonPanel) currentCard;
-						final CyNetworkView currentView = getCurrentNetworkView(); // Get the current view first
 						final Set<CyNetworkView>views = cp.getAllNetworkViews();
 						
 						// End comparison first
 						endComparison(cp);
-						
 						// Then detach the views
-						for (CyNetworkView v : views)
-							detachNetworkView(v);
-						
-						// Set the original current view by bringing its frame to front, if it is detached
-						final NetworkViewFrame frame = getNetworkViewFrame(currentView);
-
-						if (frame != null)
-							frame.toFront();
+						detachNetworkViews(views);
 					}
 				}
 			});
@@ -824,29 +834,6 @@ public class NetworkViewMainPanel extends JPanel {
 		networkViewGrid.addPropertyChangeListener("thumbnailPanels", (PropertyChangeEvent e) -> {
 			networkViewGrid.updateToolBar();
 			networkViewGrid.getReattachAllViewsButton().setEnabled(!viewFrames.isEmpty()); // TODO Should not be done here
-			
-			for (ThumbnailPanel tp : networkViewGrid.getItems()) {
-				tp.addMouseListener(new MouseAdapter() {
-					@Override
-					public void mouseClicked(MouseEvent e) {
-						if (e.getClickCount() == 2) {
-							// Double-Click: set this one as current and show attached view or view frame
-							final NetworkViewFrame frame = getNetworkViewFrame(tp.getNetworkView());
-								
-							if (frame != null)
-								showViewFrame(frame);
-							else
-								gridViewToggleModel.setMode(Mode.VIEW);
-						}
-					}
-				});
-				tp.addComponentListener(new ComponentAdapter() {
-					@Override
-					public void componentResized(ComponentEvent e) {
-						updateThumbnail(tp.getNetworkView(), false);
-					};
-				});
-			}
 		});
 		networkViewGrid.addPropertyChangeListener("selectedNetworkViews", (PropertyChangeEvent e) -> {
 			// Just fire the same event

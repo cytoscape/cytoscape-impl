@@ -3,6 +3,14 @@ package org.cytoscape.internal.view;
 import static org.cytoscape.internal.util.ViewUtil.invokeOnEDT;
 
 import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.beans.PropertyChangeEvent;
 import java.util.Collection;
 import java.util.Collections;
@@ -15,8 +23,11 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.WeakHashMap;
 
+import javax.swing.JComponent;
 import javax.swing.JDesktopPane;
 import javax.swing.JInternalFrame;
+import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.NetworkViewRenderer;
@@ -45,6 +56,7 @@ import org.cytoscape.session.events.SessionLoadCancelledEvent;
 import org.cytoscape.session.events.SessionLoadCancelledListener;
 import org.cytoscape.session.events.SessionLoadedEvent;
 import org.cytoscape.session.events.SessionLoadedListener;
+import org.cytoscape.task.destroy.DestroyNetworkViewTaskFactory;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.View;
@@ -75,6 +87,7 @@ import org.cytoscape.view.vizmap.events.VisualStyleChangedEvent;
 import org.cytoscape.view.vizmap.events.VisualStyleChangedListener;
 import org.cytoscape.view.vizmap.events.VisualStyleSetEvent;
 import org.cytoscape.view.vizmap.events.VisualStyleSetListener;
+import org.cytoscape.work.swing.DialogTaskManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -160,6 +173,14 @@ public class NetworkViewMediator
 		return networkViewMainPanel;
 	}
 	
+	public NetworkViewGrid getNetworkViewGrid() {
+		return getNetworkViewMainPanel().getNetworkViewGrid();
+	}
+	
+	public Dimension getDesktopViewAreaSize() {
+		return getNetworkViewMainPanel().getSize();
+	}
+
 	/**
 	 * Desktop for JInternalFrames which contains actual network presentations.
 	 */
@@ -395,8 +416,7 @@ public class NetworkViewMediator
 						getNetworkViewMainPanel().showNullViewContainer(net);
 				}
 			} else {
-				getNetworkViewMainPanel().getNetworkViewGrid()
-						.update(getNetworkViewMainPanel().getNetworkViewGrid().getThumbnailSlider().getValue());
+				getNetworkViewGrid().update(getNetworkViewGrid().getThumbnailSlider().getValue());
 			}
 		});
 	}
@@ -525,6 +545,21 @@ public class NetworkViewMediator
 						targetView.updateView();
 					}
 				}
+			}
+		});
+		
+		vg.addPropertyChangeListener("thumbnailPanels", (PropertyChangeEvent e) -> {
+			final Collection<ThumbnailPanel> thumbnails = (Collection<ThumbnailPanel>) e.getNewValue();
+			
+			for (ThumbnailPanel tp : thumbnails) {
+				addMouseListeners(tp, tp, tp.getTitleLabel(), tp.getCurrentLabel(), tp.getImageLabel());
+				
+				tp.addComponentListener(new ComponentAdapter() {
+					@Override
+					public void componentResized(ComponentEvent e) {
+						getNetworkViewMainPanel().updateThumbnail(tp.getNetworkView(), false);
+					};
+				});
 			}
 		});
 	}
@@ -776,6 +811,118 @@ public class NetworkViewMediator
 			view.updateView();
 		} else {
 			viewUpdateRequired.add(view);
+		}
+	}
+	
+	private void addMouseListeners(final ThumbnailPanel tp, final JComponent... components) {
+		// This mouse listener listens for mouse pressed events to select the list items
+		final MouseListener selectionListener = new MouseAdapter() {
+			@Override
+			public void mousePressed(final MouseEvent e) {
+				getNetworkViewGrid().onMousePressedItem(e, tp);
+			}
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				if (e.getClickCount() == 2) {
+					// Double-Click: set this one as current and show attached view or view frame
+					final NetworkViewFrame frame = getNetworkViewFrame(tp.getNetworkView());
+						
+					if (frame != null)
+						getNetworkViewMainPanel().showViewFrame(frame);
+					else
+						gridViewToggleModel.setMode(Mode.VIEW);
+				}
+			}
+		};
+		
+		// This mouse listener listens for the right-click events to show the pop-up window
+		final PopupListener popupListener = new PopupListener(tp);
+		
+		for (JComponent c : components) {
+			c.addMouseListener(selectionListener);
+			c.addMouseListener(popupListener);
+		}
+	}
+	
+	private final class PopupListener extends MouseAdapter {
+
+		final ThumbnailPanel item;
+		
+		PopupListener(final ThumbnailPanel item) {
+			this.item = item;
+		}
+		
+		@Override
+		public void mousePressed(MouseEvent e) {
+			maybeShowPopupMenu(e);
+		}
+
+		// On Windows, popup is triggered by mouse release, not press 
+		@Override
+		public void mouseReleased(MouseEvent e) {
+			maybeShowPopupMenu(e);
+		}
+
+		/**
+		 * if the mouse press is of the correct type, this function will maybe display the popup
+		 */
+		private final void maybeShowPopupMenu(final MouseEvent e) {
+			// Ignore if not valid trigger.
+			if (!e.isPopupTrigger())
+				return;
+
+			// If the item is not selected, select it first
+			if (!getNetworkViewMainPanel().getSelectedNetworkViews().contains(item.getNetworkView())) {
+				getNetworkViewMainPanel().setCurrentNetworkView(item.getNetworkView());
+				getNetworkViewMainPanel().setSelectedNetworkViews(Collections.singleton(item.getNetworkView()));
+			}
+			
+			final List<CyNetworkView> selectedViews = getNetworkViewMainPanel().getSelectedNetworkViews();
+			final DialogTaskManager taskMgr = serviceRegistrar.getService(DialogTaskManager.class);
+			
+			final JPopupMenu popupMenu = new JPopupMenu();
+			
+			{
+				final JMenuItem mi = new JMenuItem("Show View" + (selectedViews.size() == 1 ? "" : "s"));
+				mi.addActionListener(new ActionListener() {
+					@Override
+					public void actionPerformed(ActionEvent e) {
+						if (selectedViews.size() == 1)
+							getNetworkViewMainPanel().showViewContainer(selectedViews.iterator().next());
+						else if (selectedViews.size() > 1)
+							getNetworkViewMainPanel().showComparisonPanel(new HashSet<>(selectedViews));
+					}
+				});
+				popupMenu.add(mi);
+				mi.setEnabled(!selectedViews.isEmpty());
+			}
+			{
+				final JMenuItem mi = new JMenuItem("Detach View" + (selectedViews.size() == 1 ? "" : "s"));
+				mi.addActionListener(new ActionListener() {
+					@Override
+					public void actionPerformed(ActionEvent e) {
+						getNetworkViewMainPanel().detachNetworkViews(selectedViews);
+					}
+				});
+				popupMenu.add(mi);
+				mi.setEnabled(!selectedViews.isEmpty());
+			}
+			popupMenu.addSeparator();
+			{
+				final JMenuItem mi = new JMenuItem("Destroy View" + (selectedViews.size() == 1 ? "" : "s"));
+				mi.addActionListener(new ActionListener() {
+					@Override
+					public void actionPerformed(ActionEvent e) {
+						final DestroyNetworkViewTaskFactory factory = serviceRegistrar
+								.getService(DestroyNetworkViewTaskFactory.class);
+						taskMgr.execute(factory.createTaskIterator(selectedViews));
+					}
+				});
+				popupMenu.add(mi);
+				mi.setEnabled(!selectedViews.isEmpty());
+			}
+			
+			popupMenu.show(e.getComponent(), e.getX(), e.getY());
 		}
 	}
 	
