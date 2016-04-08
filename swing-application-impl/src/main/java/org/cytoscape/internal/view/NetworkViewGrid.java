@@ -287,8 +287,6 @@ public class NetworkViewGrid extends JPanel {
 		gridViewTogglePanel.update();
 		getDestroySelectedViewsButton().setEnabled(!selectedItems.isEmpty());
 		
-		getDetachSelectedViewsButton().setEnabled(!selectedItems.isEmpty());
-		
 		if (items.isEmpty())
 			getViewSelectionLabel().setText(null);
 		else
@@ -297,7 +295,29 @@ public class NetworkViewGrid extends JPanel {
 							items.size() + " View" + (items.size() == 1 ? "" : "s") +
 							" selected");
 		
+		updateDetachReattachButtons();
 		getToolBar().updateUI();
+	}
+	
+	protected void updateDetachReattachButtons() {
+		boolean hasAttached = false;
+		boolean hasDetached = false;
+		
+		for (ThumbnailPanel tp : getSelectedItems()) {
+			if (!tp.isDetached()) {
+				hasAttached = true;
+				break;
+			}
+		}
+		for (ThumbnailPanel tp : getItems()) {
+			if (tp.isDetached()) {
+				hasDetached = true;
+				break;
+			}
+		}
+		
+		getDetachSelectedViewsButton().setEnabled(hasAttached);
+		getReattachAllViewsButton().setEnabled(hasDetached);
 	}
 	
 	/** Updates the image only */ 
@@ -987,7 +1007,10 @@ public class NetworkViewGrid extends JPanel {
 		}
 		
 		void setDetached(boolean detached) {
-			this.detached = detached;
+			if (detached != this.detached) {
+				this.detached = detached;
+				updateDetachReattachButtons();
+			}
 		}
 		
 		boolean isFirstSibling() {

@@ -326,8 +326,6 @@ public class NetworkViewMainPanel extends JPanel {
 
 	public void updateGrid() {
 		networkViewGrid.update(networkViewGrid.getThumbnailSlider().getValue()); // TODO remove it when already updating after view changes
-		networkViewGrid.getReattachAllViewsButton().setEnabled(!viewFrames.isEmpty());
-		
 		final HashSet<CyNetworkView> dirtySet = new HashSet<>(dirtyThumbnails);
 		
 		for (CyNetworkView view : dirtySet)
@@ -833,7 +831,6 @@ public class NetworkViewMainPanel extends JPanel {
 		
 		networkViewGrid.addPropertyChangeListener("thumbnailPanels", (PropertyChangeEvent e) -> {
 			networkViewGrid.updateToolBar();
-			networkViewGrid.getReattachAllViewsButton().setEnabled(!viewFrames.isEmpty()); // TODO Should not be done here
 		});
 		networkViewGrid.addPropertyChangeListener("selectedNetworkViews", (PropertyChangeEvent e) -> {
 			// Just fire the same event
@@ -841,7 +838,6 @@ public class NetworkViewMainPanel extends JPanel {
 		});
 		networkViewGrid.addPropertyChangeListener("selectedItems", (PropertyChangeEvent e) -> {
 			networkViewGrid.updateToolBar();
-			networkViewGrid.getReattachAllViewsButton().setEnabled(!viewFrames.isEmpty()); // TODO
 		});
 		networkViewGrid.addPropertyChangeListener("currentNetworkView", (PropertyChangeEvent e) -> {
 			final CyNetworkView curView = (CyNetworkView) e.getNewValue();

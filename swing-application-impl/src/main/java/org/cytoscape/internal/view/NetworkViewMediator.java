@@ -874,7 +874,17 @@ public class NetworkViewMediator
 					}
 				});
 				popupMenu.add(mi);
-				mi.setEnabled(!selectedViews.isEmpty());
+				
+				boolean hasAttached = false;
+				
+				for (CyNetworkView view : selectedViews) {
+					if (getNetworkViewMainPanel().getNetworkViewFrame(view) == null) {
+						hasAttached = true;
+						break;
+					}
+				}
+				
+				mi.setEnabled(hasAttached);
 			}
 			popupMenu.addSeparator();
 			{
