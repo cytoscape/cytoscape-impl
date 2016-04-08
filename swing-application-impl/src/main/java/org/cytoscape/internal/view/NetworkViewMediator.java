@@ -792,7 +792,7 @@ public class NetworkViewMediator
 			}
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				if (e.getClickCount() == 2) {
+				if (e.getClickCount() == 2 && !e.isPopupTrigger()) {
 					// Double-Click: set this one as current and show attached view or view frame
 					final NetworkViewFrame frame = getNetworkViewFrame(tp.getNetworkView());
 						
