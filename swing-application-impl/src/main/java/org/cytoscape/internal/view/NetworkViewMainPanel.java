@@ -262,6 +262,15 @@ public class NetworkViewMainPanel extends JPanel {
 			updateGrid();
 	}
 	
+	public boolean hasViews(final CyNetwork network) {
+		for (CyNetworkView view : allViewContainers.keySet()) {
+			if (view.getModel().equals(network))
+				return true;
+		}
+		
+		return false;
+	}
+	
 	public void setSelectedNetworkViews(final Collection<CyNetworkView> networkViews) {
 		networkViewGrid.setSelectedNetworkViews(networkViews);
 	}

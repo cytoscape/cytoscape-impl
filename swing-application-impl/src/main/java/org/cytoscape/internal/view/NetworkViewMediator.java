@@ -542,9 +542,7 @@ public class NetworkViewMediator
 					final CyNetwork curNet = networkMediator.getCurrentNetwork();
 					
 					if (curNet != null) {
-						final CyNetworkViewManager netViewMgr = serviceRegistrar.getService(CyNetworkViewManager.class);
-						
-						if (!netViewMgr.viewExists(curNet))
+						if (!getNetworkViewMainPanel().hasViews(curNet))
 							getNetworkViewMainPanel().showNullViewContainer(curNet);
 					} else {
 						getNetworkViewMainPanel().showNullViewContainer((CyNetwork) null);
