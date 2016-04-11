@@ -256,10 +256,21 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 	}
 	
 	void updateViewSize() {
+		boolean updated = false;
 		final Container c = getVisualizationContainer().getContentPane();
-		networkView.setVisualProperty(BasicVisualLexicon.NETWORK_WIDTH, (double) c.getWidth());
-		networkView.setVisualProperty(BasicVisualLexicon.NETWORK_HEIGHT, (double) c.getHeight());
-		networkView.updateView();
+		
+		if (c.getWidth() > 0) {
+			networkView.setVisualProperty(BasicVisualLexicon.NETWORK_WIDTH, (double) c.getWidth());
+			updated = true;
+		}
+		
+		if (c.getHeight() > 0) {
+			networkView.setVisualProperty(BasicVisualLexicon.NETWORK_HEIGHT, (double) c.getHeight());
+			updated = true;
+		}
+		
+		if (updated)
+			networkView.updateView();
 	}
 	
 	protected void updateGlassPane() {

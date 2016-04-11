@@ -386,6 +386,14 @@ public class NetworkViewMainPanel extends JPanel {
 		if (viewFrames.get(vc.getName()) != null)
 			return viewFrames.get(vc.getName());
 		
+		final Double width = view.getVisualProperty(BasicVisualLexicon.NETWORK_WIDTH);
+		final Double height = view.getVisualProperty(BasicVisualLexicon.NETWORK_HEIGHT);
+		
+		if (width == null || width <= 0)
+			view.setVisualProperty(BasicVisualLexicon.NETWORK_WIDTH, 600.0);
+		if (height == null || height <= 0)
+			view.setVisualProperty(BasicVisualLexicon.NETWORK_HEIGHT, 500.0);
+		
 		// Create and show the frame
 		final NetworkViewFrame frame = new NetworkViewFrame(vc, gc, cyMenus.createViewFrameToolBar(), serviceRegistrar);
 		vc.setDetached(true);
@@ -447,7 +455,7 @@ public class NetworkViewMainPanel extends JPanel {
 				!view.isValueLocked(BasicVisualLexicon.NETWORK_HEIGHT);
 		
 		if (w > 0 && h > 0)
-			frame.getContentPane().setPreferredSize(new Dimension(w, h));
+			frame.getNetworkViewContainer().getVisualizationContainer().setPreferredSize(new Dimension(w, h));
 		
 		frame.pack();
 		frame.setResizable(resizable);
