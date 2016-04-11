@@ -555,7 +555,6 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 		// Scroll to new item
 		rootNetPanel.expand();
 		scrollTo(network);
-		subNetPanel.requestFocus();
 		
 		nameTables.put(network.getDefaultNetworkTable(), network);
 		nodeEdgeTables.put(network.getDefaultNodeTable(), network);

@@ -559,14 +559,6 @@ public class NetworkViewGrid extends JPanel {
 			}
 		});
 		
-		addMouseListener(new MouseAdapter() {
-			@Override
-			public void mousePressed(final MouseEvent e) {
-				if (!e.isPopupTrigger())
-					deselectAll();
-			}
-		});
-		
 		setSelectionKeyBindings(this);
 		setSelectionKeyBindings(getGridScrollPane().getViewport());
 		
