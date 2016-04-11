@@ -25,7 +25,6 @@ package org.cytoscape.task.internal.loadnetwork;
  */
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 import org.cytoscape.application.CyApplicationManager;
@@ -36,6 +35,7 @@ import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.CyNetworkNaming;
+import org.cytoscape.task.AbstractNetworkTask;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
@@ -58,7 +58,7 @@ class GenerateNetworkViewsTask extends AbstractTask implements ObservableTask {
 	private final VisualMappingManager vmm;
 	private final CyNetworkViewFactory nullNetworkViewFactory;
 	private final CyServiceRegistrar serviceRegistrar;
-	private	Collection<CyNetworkView> results;
+	private	List<CyNetworkView> results;
 
 	public GenerateNetworkViewsTask(
 			final String name,
@@ -153,6 +153,21 @@ class GenerateNetworkViewsTask extends AbstractTask implements ObservableTask {
 		
 		if (!largeNetworks.isEmpty())
 			insertTasksAfterCurrentTask(new ConfirmCreateNetworkViewsTask(largeNetworks));
+		
+		if (networks != null && networks.length > 0)
+			insertTasksAfterCurrentTask(new AbstractNetworkTask(networks[0]) {
+				@Override
+				public void run(TaskMonitor taskMonitor) throws Exception {
+					final CyNetworkViewManager netViewManager = serviceRegistrar.getService(CyNetworkViewManager.class);
+					final List<CyNetworkView> views = new ArrayList<>(netViewManager.getNetworkViews(network));
+					
+					final CyApplicationManager applicationManager = serviceRegistrar.getService(CyApplicationManager.class);
+					applicationManager.setCurrentNetwork(network);
+					
+					if (!views.isEmpty())
+						applicationManager.setCurrentNetworkView(views.get(0));
+				}
+			});
 	}
 
 	@Override
@@ -192,8 +207,6 @@ class GenerateNetworkViewsTask extends AbstractTask implements ObservableTask {
 				&& !view.isSet(BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION)
 				&& !view.isSet(BasicVisualLexicon.NETWORK_CENTER_Z_LOCATION))
 			view.fitContent();
-		
-		serviceRegistrar.getService(CyApplicationManager.class).setCurrentNetworkView(view);
 		
 		results.add(view);
 	}

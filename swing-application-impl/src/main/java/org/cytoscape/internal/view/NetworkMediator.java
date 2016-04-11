@@ -176,8 +176,7 @@ public class NetworkMediator
 
 		invokeOnEDT(() -> {
 			if (net instanceof CySubNetwork) {
-				final SubNetworkPanel snp = networkMainPanel.addNetwork((CySubNetwork) net);
-				networkMainPanel.selectAndSetCurrent(snp);
+				networkMainPanel.addNetwork((CySubNetwork) net);
 				networkMainPanel.updateNodeEdgeCount();
 			}
 		});

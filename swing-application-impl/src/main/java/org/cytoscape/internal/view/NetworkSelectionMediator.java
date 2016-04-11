@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 
 import javax.swing.JFrame;
 
@@ -60,7 +61,6 @@ import org.cytoscape.view.model.CyNetworkViewManager;
  * <http://www.gnu.org/licenses/lgpl-2.1.html>.
  * #L%
  */
-
 
 /**
  * This class acts as an intermediary between the CyNetwork/CyNetworkView selection events
@@ -123,9 +123,8 @@ public class NetworkSelectionMediator implements SetSelectedNetworksListener, Se
 	
 	@Override
 	public void handleEvent(final SetCurrentNetworkEvent e) {
-		final CyNetwork network = e.getNetwork();
-		
 		synchronized (lock) {
+			final CyNetwork network = e.getNetwork();
 			final CyNetwork currentNet = netMainPanel.getCurrentNetwork();
 			
 			if ((currentNet == null && network == null) || (currentNet != null && currentNet.equals(network)))
@@ -133,6 +132,7 @@ public class NetworkSelectionMediator implements SetSelectedNetworksListener, Se
 		}
 		
 		invokeOnEDT(() -> {
+			final CyNetwork network = serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetwork();
 			netMainPanel.setCurrentNetwork(network);
 		});
 	}
@@ -142,9 +142,8 @@ public class NetworkSelectionMediator implements SetSelectedNetworksListener, Se
 		if (loadingSession)
 			return;
 		
-		final CyNetworkView view = e.getNetworkView();
-		
 		synchronized (lock) {
+			final CyNetworkView view = e.getNetworkView();
 			final CyNetworkView currentView = viewMainPanel.getCurrentNetworkView();
 			
 			if ((currentView == null && view == null) || (currentView != null && currentView.equals(view)))
@@ -152,6 +151,7 @@ public class NetworkSelectionMediator implements SetSelectedNetworksListener, Se
 		}
 		
 		invokeOnEDT(() -> {
+			final CyNetworkView view = serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetworkView();
 			Collection<CyNetworkView> selectedViews = viewMainPanel.getSelectedNetworkViews();
 			
 			// Synchronize the UI first
@@ -178,7 +178,9 @@ public class NetworkSelectionMediator implements SetSelectedNetworksListener, Se
 		}
 		
 		invokeOnEDT(() -> {
-			netMainPanel.setSelectedNetworks(e.getNetworks());
+			final List<CyNetwork> networks = serviceRegistrar.getService(CyApplicationManager.class)
+					.getSelectedNetworks();
+			netMainPanel.setSelectedNetworks(networks);
 		});
 	}
 	
@@ -193,7 +195,9 @@ public class NetworkSelectionMediator implements SetSelectedNetworksListener, Se
 		}
 		
 		invokeOnEDT(() -> {
-			viewMainPanel.setSelectedNetworkViews(e.getNetworkViews());
+			final List<CyNetworkView> views = serviceRegistrar.getService(CyApplicationManager.class)
+					.getSelectedNetworkViews();
+			viewMainPanel.setSelectedNetworkViews(views);
 		});
 	}
 	
