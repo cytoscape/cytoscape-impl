@@ -107,5 +107,6 @@ public class AbstractLoadNetworkTaskTester {
 		
 		serviceRegistrar = mock(CyServiceRegistrar.class);
 		when(serviceRegistrar.getService(CyApplicationManager.class)).thenReturn(applicationManager);
+		when(serviceRegistrar.getService(CyNetworkViewManager.class)).thenReturn(networkViewManager);
 	}
 }
