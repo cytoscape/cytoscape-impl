@@ -37,6 +37,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -126,6 +127,7 @@ public class NetworkViewGrid extends JPanel {
 	private final TreeMap<CyNetworkView, ThumbnailPanel> thumbnailPanels;
 	private CyNetworkView currentNetworkView;
 	private final List<CyNetworkView> selectedNetworkViews;
+	private final Set<CyNetworkView> detachedViews;
 	private int thumbnailSize;
 	private int maxThumbnailSize;
 	private boolean dirty = true;
@@ -150,6 +152,7 @@ public class NetworkViewGrid extends JPanel {
 		engines = new HashMap<>();
 		thumbnailPanels = new TreeMap<>(viewComparator);
 		selectedNetworkViews = new ArrayList<>();
+		detachedViews = new HashSet<>();
 		
 		thumbnailCache = new ThumbnailCache(MAX_THUMBNAIL_SIZE);
 		gridViewTogglePanel = new GridViewTogglePanel(gridViewToggleModel, serviceRegistrar);
@@ -206,8 +209,10 @@ public class NetworkViewGrid extends JPanel {
 				}
 			}
 			
-			if (removed)
+			if (removed) {
+				updateToolBar();
 				firePropertyChange("networkViews", oldViews, getNetworkViews());
+			}
 		}
 	}
 	
@@ -250,11 +255,21 @@ public class NetworkViewGrid extends JPanel {
 		return true;
 	}
 	
-	protected void setDetached(final CyNetworkView view, final boolean b) {
-		final ThumbnailPanel item = getItem(view);
+	protected boolean isDetached(final CyNetworkView view) {
+		return detachedViews.contains(view);
+	}
+	
+	protected void setDetached(final CyNetworkView view, final boolean newValue) {
+		final boolean oldValue = isDetached(view);
 		
-		if (item != null)
-			item.setDetached(b);
+		if (newValue != oldValue) {
+			if (newValue)
+				detachedViews.add(view);
+			else
+				detachedViews.remove(view);
+			
+			updateDetachReattachButtons();
+		}
 	}
 	
 	/** Updates the whole grid and recreate the thumbnails **/
@@ -299,18 +314,18 @@ public class NetworkViewGrid extends JPanel {
 		getToolBar().updateUI();
 	}
 	
-	protected void updateDetachReattachButtons() {
+	private void updateDetachReattachButtons() {
 		boolean hasAttached = false;
 		boolean hasDetached = false;
 		
 		for (ThumbnailPanel tp : getSelectedItems()) {
-			if (!tp.isDetached()) {
+			if (!isDetached(tp.getNetworkView())) {
 				hasAttached = true;
 				break;
 			}
 		}
 		for (ThumbnailPanel tp : getItems()) {
-			if (tp.isDetached()) {
+			if (isDetached(tp.getNetworkView())) {
 				hasDetached = true;
 				break;
 			}
@@ -420,6 +435,7 @@ public class NetworkViewGrid extends JPanel {
 			ignoreSelectedItemsEvent = false;
 		}
 		
+		updateToolBar();
 		firePropertyChange("selectedNetworkViews", oldValue, new HashSet<>(selectedNetworkViews));
 	}
 	
@@ -535,6 +551,7 @@ public class NetworkViewGrid extends JPanel {
 			@Override
 			public void componentShown(ComponentEvent e) {
 				update(thumbnailSize);
+				updateToolBar();
 			}
 			@Override
 			public void componentResized(ComponentEvent e) {
@@ -589,6 +606,8 @@ public class NetworkViewGrid extends JPanel {
 					.addComponent(getInfoLabel())
 					.addGap(0, 0, Short.MAX_VALUE)
 			);
+			
+			detachedViews.clear();
 		} else {
 			maxThumbnailSize = maxThumbnailSize(thumbnailSize, size.width);
 			
@@ -618,9 +637,15 @@ public class NetworkViewGrid extends JPanel {
 					getGridPanel().add(filler);
 				}
 			}
+			
+			for (Iterator<CyNetworkView> iter = detachedViews.iterator(); iter.hasNext();) {
+				if (!thumbnailPanels.containsKey(iter.next()))
+					iter.remove();
+			}
 		}
 		
 		dirty = false;
+		updateToolBar();
 		getGridPanel().updateUI();
 		firePropertyChange("thumbnailPanels", null, new ArrayList<>(thumbnailPanels.values()));
 	}
@@ -849,7 +874,6 @@ public class NetworkViewGrid extends JPanel {
 		private JLabel imageLabel;
 		
 		private boolean selected;
-		private boolean detached;
 		
 		private final RenderingEngine<CyNetwork> engine;
 		private CompletableFuture<Image> cancelFuture = null;
@@ -1000,17 +1024,6 @@ public class NetworkViewGrid extends JPanel {
 		
 		boolean isCurrent() {
 			return getNetworkView().equals(currentNetworkView);
-		}
-		
-		boolean isDetached() {
-			return detached;
-		}
-		
-		void setDetached(boolean detached) {
-			if (detached != this.detached) {
-				this.detached = detached;
-				updateDetachReattachButtons();
-			}
 		}
 		
 		boolean isFirstSibling() {

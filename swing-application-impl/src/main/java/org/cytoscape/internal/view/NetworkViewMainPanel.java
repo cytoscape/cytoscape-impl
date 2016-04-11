@@ -846,15 +846,9 @@ public class NetworkViewMainPanel extends JPanel {
 				reattachNetworkView(nullViewPanel.getNetworkView());
 		});
 		
-		networkViewGrid.addPropertyChangeListener("thumbnailPanels", (PropertyChangeEvent e) -> {
-			networkViewGrid.updateToolBar();
-		});
 		networkViewGrid.addPropertyChangeListener("selectedNetworkViews", (PropertyChangeEvent e) -> {
 			// Just fire the same event
 			firePropertyChange("selectedNetworkViews", e.getOldValue(), e.getNewValue());
-		});
-		networkViewGrid.addPropertyChangeListener("selectedItems", (PropertyChangeEvent e) -> {
-			networkViewGrid.updateToolBar();
 		});
 		networkViewGrid.addPropertyChangeListener("currentNetworkView", (PropertyChangeEvent e) -> {
 			final CyNetworkView curView = (CyNetworkView) e.getNewValue();
