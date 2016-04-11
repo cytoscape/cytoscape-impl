@@ -178,6 +178,8 @@ public class CytoscapeDesktop extends JFrame
 					setJMenuBar(menuBar);
 					menuBar.updateUI();
 				}
+				
+				taskManager.setExecutionContext(CytoscapeDesktop.this);
 			}
 			@Override
 			public void windowClosing(WindowEvent we) {

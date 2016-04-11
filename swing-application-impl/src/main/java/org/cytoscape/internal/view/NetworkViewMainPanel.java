@@ -104,8 +104,6 @@ public class NetworkViewMainPanel extends JPanel {
 	
 	private final Set<CyNetworkView> dirtyThumbnails;
 	
-	private NetworkViewFrame currentViewFrame;
-	
 	private final MousePressedAWTEventListener mousePressedAWTEventListener;
 	
 	private final CytoscapeMenus cyMenus;
@@ -143,6 +141,7 @@ public class NetworkViewMainPanel extends JPanel {
 		if (isRendered(view))
 			return null;
 		
+		final NetworkViewFrame currentViewFrame = getNetworkViewFrame(getCurrentNetworkView());
 		final GraphicsConfiguration gc = currentViewFrame != null ? currentViewFrame.getGraphicsConfiguration() : null;
 		
 		final NetworkViewContainer vc = new NetworkViewContainer(view, view.equals(getCurrentNetworkView()),
@@ -410,8 +409,6 @@ public class NetworkViewMainPanel extends JPanel {
 				// So Tunable dialogs open in the same monitor of the current frame
 				serviceRegistrar.getService(DialogTaskManager.class).setExecutionContext(frame);
 				
-				currentViewFrame = frame;
-				
 				// This is necessary because the same menu bar is used by other frames, including CytoscapeDesktop
 				final JMenuBar menuBar = cyMenus.getJMenuBar();
 				final Window window = SwingUtilities.getWindowAncestor(menuBar);
@@ -484,7 +481,7 @@ public class NetworkViewMainPanel extends JPanel {
 				showViewContainer(vc.getName());
 		}
 	}
-	
+
 	public void updateThumbnail(final CyNetworkView view, boolean forceRedraw) {
 		networkViewGrid.updateThumbnail(view, forceRedraw);
 		dirtyThumbnails.remove(view);
@@ -597,7 +594,6 @@ public class NetworkViewMainPanel extends JPanel {
 			if (viewContainer != null) {
 				cardLayout.show(getContentPane(), key);
 				viewContainer.update();
-				currentViewFrame = null;
 			} else {
 				NetworkViewComparisonPanel foundCompPanel = null;
 				
@@ -617,7 +613,6 @@ public class NetworkViewMainPanel extends JPanel {
 				if (foundCompPanel != null) {
 					cardLayout.show(getContentPane(), foundCompPanel.getName());
 					foundCompPanel.update();
-					currentViewFrame = null;
 					viewContainer = foundCompPanel.getCurrentContainer();
 				} else {
 					final NetworkViewFrame frame = getNetworkViewFrame(key);
@@ -884,7 +879,7 @@ public class NetworkViewMainPanel extends JPanel {
 	}
 	
 	protected NetworkViewFrame getNetworkViewFrame(final CyNetworkView view) {
-		return getNetworkViewFrame(createUniqueKey(view));
+		return view != null ? getNetworkViewFrame(createUniqueKey(view)) : null;
 	}
 	
 	protected NetworkViewFrame getNetworkViewFrame(final String key) {
