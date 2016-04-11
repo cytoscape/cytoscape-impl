@@ -178,7 +178,7 @@ public class SubNetworkPanel extends AbstractNetworkPanel<CySubNetwork> {
 				.addComponent(getViewCountLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 				.addComponent(getViewIconLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 				.addPreferredGap(ComponentPlacement.RELATED)
-				.addComponent(getNameLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				.addComponent(getNameLabel())
 				.addPreferredGap(ComponentPlacement.RELATED)
 				.addGap(0, 0, Short.MAX_VALUE)
 				.addComponent(getNodeCountLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)

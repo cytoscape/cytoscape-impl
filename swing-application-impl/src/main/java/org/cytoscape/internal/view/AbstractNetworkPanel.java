@@ -1,5 +1,7 @@
 package org.cytoscape.internal.view;
 
+import java.awt.Dimension;
+
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.UIManager;
@@ -84,6 +86,8 @@ public abstract class AbstractNetworkPanel<T extends CyNetwork> extends JPanel {
 		if (nameLabel == null) {
 			nameLabel = new JLabel();
 			nameLabel.setFont(nameLabel.getFont().deriveFont(LookAndFeelUtil.getSmallFontSize()));
+			nameLabel.setMinimumSize(
+					new Dimension(nameLabel.getPreferredSize().width, nameLabel.getPreferredSize().height));
 		}
 		
 		return nameLabel;

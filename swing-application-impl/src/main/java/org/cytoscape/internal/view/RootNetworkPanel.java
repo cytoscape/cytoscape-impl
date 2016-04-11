@@ -282,7 +282,7 @@ public class RootNetworkPanel extends AbstractNetworkPanel<CyRootNetwork> {
 			
 			layout.setHorizontalGroup(layout.createSequentialGroup()
 					.addComponent(getExpandCollapseBtn(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addComponent(getNameLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(getNameLabel())
 					.addGap(0, 10, Short.MAX_VALUE)
 					.addComponent(getNetworkCountLabel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 					.addContainerGap()
