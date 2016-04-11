@@ -840,13 +840,8 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 			
 			getRootNetworkListPanel().update();
 			
-			if (newValue != null) {
+			if (newValue != null)
 				scrollTo(newValue);
-				final SubNetworkPanel subNetPanel = getSubNetworkPanel(newValue);
-				
-				if (subNetPanel != null)
-					subNetPanel.requestFocus();
-			}
 			
 			firePropertyChange("currentNetwork", oldValue, newValue);
 		}
