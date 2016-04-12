@@ -26,21 +26,17 @@ package org.cytoscape.ding.impl;
 
 
 import java.awt.BorderLayout;
-import java.util.Properties;
+import java.util.WeakHashMap;
 
 import javax.swing.JComponent;
 
-import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualLexicon;
-import org.cytoscape.view.model.events.UpdateNetworkPresentationEvent;
-import org.cytoscape.view.model.events.UpdateNetworkPresentationListener;
 import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.view.presentation.RenderingEngineFactory;
-import org.cytoscape.view.presentation.RenderingEngineManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,23 +48,31 @@ public class DingNavigationRenderingEngineFactory implements RenderingEngineFact
 	
 	private static final Logger logger = LoggerFactory.getLogger(DingNavigationRenderingEngineFactory.class);
 	
-	private final RenderingEngineManager renderingEngineManager;
 	private final VisualLexicon dingLexicon;
 	private final CyServiceRegistrar registrar;
+	private final WeakHashMap<View<CyNetwork>, Object> locks;
 	
 	
-	private final CyApplicationManager appManager;
-
-	public DingNavigationRenderingEngineFactory(final CyServiceRegistrar registrar, final VisualLexicon dingLexicon,
-			final RenderingEngineManager renderingEngineManager, final CyApplicationManager appManager) {
+	public synchronized Object getLock(View<CyNetwork> view) {
+		Object lock = locks.get(view);
+		if(lock == null) {
+			locks.put(view, lock = new Object());
+		}
+		return lock;
+	}
+	
+	public DingNavigationRenderingEngineFactory(final CyServiceRegistrar registrar, final VisualLexicon dingLexicon) {
 		this.dingLexicon = dingLexicon;
-		this.renderingEngineManager = renderingEngineManager;
-		this.appManager = appManager;
 		this.registrar = registrar;
+		this.locks = new WeakHashMap<>();
 	}
 
 	@Override
 	public RenderingEngine<CyNetwork> createRenderingEngine(final Object visualizationContainer, final View<CyNetwork> view) {
+		return createRenderingEngine(visualizationContainer, view, true);
+	}
+	
+	RenderingEngine<CyNetwork> createRenderingEngine(final Object visualizationContainer, final View<CyNetwork> view, boolean showNavigationRectangle) {
 		if (visualizationContainer == null)
 			throw new IllegalArgumentException(
 					"Visualization container is null.  This should be an JComponent for this rendering engine.");
@@ -89,10 +93,10 @@ public class DingNavigationRenderingEngineFactory implements RenderingEngineFact
 		
 		logger.debug("Start adding BEV.");
 		final JComponent container = (JComponent) visualizationContainer;
-		//final RenderingEngine<CyNetwork> engine = appManager.getCurrentRenderingEngine();
 		
 		// Create instance of an engine.
-		final BirdsEyeView bev = new BirdsEyeView(dgv, registrar);
+		Object timerLock = getLock(view);
+		final BirdsEyeView bev = new BirdsEyeView(dgv, registrar, timerLock, showNavigationRectangle);
 
 		container.setLayout(new BorderLayout());
 		container.add(bev, BorderLayout.CENTER);

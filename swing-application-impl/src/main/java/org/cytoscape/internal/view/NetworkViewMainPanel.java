@@ -1,7 +1,6 @@
 package org.cytoscape.internal.view;
 
-import static org.cytoscape.internal.util.ViewUtil.createUniqueKey;
-import static org.cytoscape.internal.util.ViewUtil.getTitle;
+import static org.cytoscape.internal.util.ViewUtil.*;
 
 import java.awt.AWTEvent;
 import java.awt.BorderLayout;
@@ -102,8 +101,6 @@ public class NetworkViewMainPanel extends JPanel {
 	private final Map<String, NetworkViewComparisonPanel> comparisonPanels;
 	private final NullNetworkViewPanel nullViewPanel;
 	
-	private final Set<CyNetworkView> dirtyThumbnails;
-	
 	private final MousePressedAWTEventListener mousePressedAWTEventListener;
 	
 	private final CytoscapeMenus cyMenus;
@@ -125,7 +122,6 @@ public class NetworkViewMainPanel extends JPanel {
 		viewCards = new LinkedHashMap<>();
 		viewFrames = new HashMap<>();
 		comparisonPanels = new HashMap<>();
-		dirtyThumbnails = new HashSet<>();
 		
 		mousePressedAWTEventListener = new MousePressedAWTEventListener();
 		
@@ -137,7 +133,7 @@ public class NetworkViewMainPanel extends JPanel {
 	}
 
 	public RenderingEngine<CyNetwork> addNetworkView(final CyNetworkView view,
-			final RenderingEngineFactory<CyNetwork> engineFactory, boolean showView) {
+			final RenderingEngineFactory<CyNetwork> engineFactory, final RenderingEngineFactory<CyNetwork> thumbnailFactory, boolean showView) {
 		if (isRendered(view))
 			return null;
 		
@@ -145,7 +141,7 @@ public class NetworkViewMainPanel extends JPanel {
 		final GraphicsConfiguration gc = currentViewFrame != null ? currentViewFrame.getGraphicsConfiguration() : null;
 		
 		final NetworkViewContainer vc = new NetworkViewContainer(view, view.equals(getCurrentNetworkView()),
-				engineFactory, gridViewToggleModel, serviceRegistrar);
+				engineFactory, thumbnailFactory, gridViewToggleModel, serviceRegistrar);
 		
 		vc.getDetachViewButton().addActionListener((ActionEvent e) -> {
 			detachNetworkView(view);
@@ -180,10 +176,8 @@ public class NetworkViewMainPanel extends JPanel {
 		
 		allViewContainers.put(view, vc);
 		viewCards.put(vc.getName(), vc);
-		networkViewGrid.addItem(vc.getRenderingEngine());
+		networkViewGrid.addItem(vc.getRenderingEngine(), vc.getThumbnailEngineFactory());
 		getContentPane().add(vc, vc.getName());
-		
-		setDirtyThumbnail(view);
 		
 		if (showView) {
 			if (isGridMode())
@@ -209,7 +203,6 @@ public class NetworkViewMainPanel extends JPanel {
 			return;
 		
 		allViewContainers.remove(view);
-		dirtyThumbnails.remove(view);
 		
 		final Component[] components = getContentPane().getComponents();
 		
@@ -334,10 +327,6 @@ public class NetworkViewMainPanel extends JPanel {
 
 	public void updateGrid() {
 		networkViewGrid.update(networkViewGrid.getThumbnailSlider().getValue()); // TODO remove it when already updating after view changes
-		final HashSet<CyNetworkView> dirtySet = new HashSet<>(dirtyThumbnails);
-		
-		for (CyNetworkView view : dirtySet)
-			updateThumbnail(view, true);
 	}
 	
 	public void detachNetworkViews(final Collection<CyNetworkView> views) {
@@ -482,10 +471,6 @@ public class NetworkViewMainPanel extends JPanel {
 		}
 	}
 
-	public void updateThumbnail(final CyNetworkView view, boolean forceRedraw) {
-		networkViewGrid.updateThumbnail(view, forceRedraw);
-		dirtyThumbnails.remove(view);
-	}
 	
 	public void updateThumbnailPanel(final CyNetworkView view, final boolean redraw) {
 		// If the Grid is not visible, just flag this view as dirty.
@@ -494,17 +479,9 @@ public class NetworkViewMainPanel extends JPanel {
 			
 			if (tp != null)
 				tp.update(redraw);
-			
-			if (redraw)
-				dirtyThumbnails.remove(view);
-		} else {
-			setDirtyThumbnail(view);
 		}
 	}
 	
-	public void setDirtyThumbnail(final CyNetworkView view) {
-		dirtyThumbnails.add(view);
-	}
 	
 	public void update(final CyNetworkView view) {
 		final NetworkViewFrame frame = getNetworkViewFrame(view);

@@ -80,8 +80,8 @@ import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 public class NetworkViewContainer extends SimpleRootPaneContainer {
 	
 	private final CyNetworkView networkView;
-	private final RenderingEngineFactory<CyNetwork> engineFactory;
 	private final RenderingEngine<CyNetwork> renderingEngine;
+	private final RenderingEngineFactory<CyNetwork> thumbnailEngineFactory;
 
 	private SimpleRootPaneContainer visualizationContainer;
 	
@@ -116,12 +116,12 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 			final CyNetworkView networkView,
 			final boolean current,
 			final RenderingEngineFactory<CyNetwork> engineFactory,
+			final RenderingEngineFactory<CyNetwork> thumbnailFactory, 
 			final GridViewToggleModel gridViewToggleModel,
 			final CyServiceRegistrar serviceRegistrar
 	) {
 		this.networkView = networkView;
 		this.current = current;
-		this.engineFactory = engineFactory;
 		this.gridViewTogglePanel = new GridViewTogglePanel(gridViewToggleModel, serviceRegistrar);
 		this.serviceRegistrar = serviceRegistrar;
 		
@@ -129,6 +129,7 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 		init();
 		
 		renderingEngine = engineFactory.createRenderingEngine(getVisualizationContainer(), networkView);
+		thumbnailEngineFactory = thumbnailFactory;
 	}
 	
 	public boolean isDetached() {
@@ -339,6 +340,10 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 	
 	protected RenderingEngine<CyNetwork> getRenderingEngine() {
 		return renderingEngine;
+	}
+	
+	protected RenderingEngineFactory<CyNetwork> getThumbnailEngineFactory() {
+		return thumbnailEngineFactory;
 	}
 	
 	protected CyNetworkView getNetworkView() {

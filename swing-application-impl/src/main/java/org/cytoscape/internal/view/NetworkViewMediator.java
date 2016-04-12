@@ -5,8 +5,6 @@ import static org.cytoscape.internal.util.ViewUtil.invokeOnEDT;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -22,7 +20,6 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.WeakHashMap;
 
-import javax.swing.JComponent;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 
@@ -282,31 +279,14 @@ public class NetworkViewMediator
 	}
 	
 	
-	private static boolean hasNonResizeEvent(final ViewChangedEvent<?> e) {
-		for(ViewChangeRecord<?> record : e.getPayloadCollection()) {
-			VisualProperty<?> vp = record.getVisualProperty();
-			if(!BasicVisualLexicon.NETWORK_WIDTH.equals(vp) && !BasicVisualLexicon.NETWORK_HEIGHT.equals(vp)) {
-				return true;
-			}
-		}
-		return false;
-	}
-	
-	
 	@Override
 	public void handleEvent(final ViewChangedEvent<?> e) {
 		final CyNetworkView netView = e.getSource();
 		
 		// Ask the Views Panel to update the thumbnail for the affected network view
 		invokeOnEDT(() -> {
-			// If the Grid is not visible, just flag this view as dirty.
-			if (getNetworkViewMainPanel().isGridVisible()) {
-				if(hasNonResizeEvent(e)) {
-					getNetworkViewMainPanel().updateThumbnail(netView, true);
-				}
-			} else {
+			if (!getNetworkViewMainPanel().isGridVisible()) {
 				getNetworkViewMainPanel().update(netView);
-				getNetworkViewMainPanel().setDirtyThumbnail(netView);
 			}
 		});
 		
@@ -521,14 +501,7 @@ public class NetworkViewMediator
 			final Collection<ThumbnailPanel> thumbnails = (Collection<ThumbnailPanel>) e.getNewValue();
 			
 			for (ThumbnailPanel tp : thumbnails) {
-				addMouseListeners(tp, tp, tp.getTitleLabel(), tp.getCurrentLabel(), tp.getImageLabel());
-				
-				tp.addComponentListener(new ComponentAdapter() {
-					@Override
-					public void componentResized(ComponentEvent e) {
-						getNetworkViewMainPanel().updateThumbnail(tp.getNetworkView(), false);
-					};
-				});
+				addMouseListeners(tp, tp, tp.getTitleLabel(), tp.getCurrentLabel(), tp.getImagePanel().getGlassPane());
 			}
 		});
 	}
@@ -584,9 +557,11 @@ public class NetworkViewMediator
 
 			final RenderingEngineFactory<CyNetwork> engineFactory = renderer
 					.getRenderingEngineFactory(NetworkViewRenderer.DEFAULT_CONTEXT);
+			final RenderingEngineFactory<CyNetwork> thumbnailFactory = renderer
+					.getRenderingEngineFactory(NetworkViewRenderer.THUMBNAIL_CONTEXT);
 			
 			final RenderingEngine<CyNetwork> renderingEngine =
-					getNetworkViewMainPanel().addNetworkView(view, engineFactory, !loadingSession);
+					getNetworkViewMainPanel().addNetworkView(view, engineFactory, thumbnailFactory, !loadingSession);
 			presentationMap.put(view, renderingEngine);
 			
 			final boolean isCurrentView = view.equals(appMgr.getCurrentNetworkView());
@@ -781,7 +756,7 @@ public class NetworkViewMediator
 		}
 	}
 	
-	private void addMouseListeners(final ThumbnailPanel tp, final JComponent... components) {
+	private void addMouseListeners(final ThumbnailPanel tp, final Component... components) {
 		// This mouse listener listens for mouse pressed events to select the list items
 		final MouseListener selectionListener = new MouseAdapter() {
 			@Override
@@ -805,7 +780,7 @@ public class NetworkViewMediator
 		// This mouse listener listens for the right-click events to show the pop-up window
 		final PopupListener popupListener = new PopupListener(tp);
 		
-		for (JComponent c : components) {
+		for (Component c : components) {
 			c.addMouseListener(selectionListener);
 			c.addMouseListener(popupListener);
 		}

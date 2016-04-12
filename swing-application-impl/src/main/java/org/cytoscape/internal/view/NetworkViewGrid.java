@@ -1,26 +1,17 @@
 package org.cytoscape.internal.view;
 
-import static javax.swing.GroupLayout.DEFAULT_SIZE;
-import static javax.swing.GroupLayout.PREFERRED_SIZE;
+import static javax.swing.GroupLayout.*;
 import static javax.swing.GroupLayout.Alignment.CENTER;
 import static org.cytoscape.internal.util.ViewUtil.styleToolBarButton;
-import static org.cytoscape.util.swing.IconManager.ICON_EXTERNAL_LINK_SQUARE;
-import static org.cytoscape.util.swing.IconManager.ICON_THUMB_TACK;
-import static org.cytoscape.util.swing.IconManager.ICON_TRASH_O;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NETWORK_BACKGROUND_PAINT;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NETWORK_HEIGHT;
+import static org.cytoscape.util.swing.IconManager.*;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NETWORK_TITLE;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NETWORK_WIDTH;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.Graphics2D;
 import java.awt.GridLayout;
-import java.awt.Image;
 import java.awt.KeyboardFocusManager;
-import java.awt.Paint;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ComponentAdapter;
@@ -29,7 +20,6 @@ import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -44,18 +34,17 @@ import java.util.Map.Entry;
 import java.util.NavigableMap;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.concurrent.CompletableFuture;
 
 import javax.swing.AbstractAction;
 import javax.swing.ActionMap;
 import javax.swing.BorderFactory;
 import javax.swing.GroupLayout;
-import javax.swing.ImageIcon;
 import javax.swing.InputMap;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JRootPane;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JSlider;
@@ -79,6 +68,7 @@ import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.presentation.RenderingEngine;
+import org.cytoscape.view.presentation.RenderingEngineFactory;
 
 /*
  * #%L
@@ -123,7 +113,8 @@ public class NetworkViewGrid extends JPanel {
 	private JSlider thumbnailSlider;
 	private final GridViewTogglePanel gridViewTogglePanel;
 	
-	private Map<CyNetworkView, RenderingEngine<CyNetwork>> engines;
+	private Map<CyNetworkView, RenderingEngines> engines;
+	
 	private final TreeMap<CyNetworkView, ThumbnailPanel> thumbnailPanels;
 	private CyNetworkView currentNetworkView;
 	private final List<CyNetworkView> selectedNetworkViews;
@@ -133,8 +124,6 @@ public class NetworkViewGrid extends JPanel {
 	private boolean dirty = true;
 	private boolean ignoreSelectedItemsEvent;
 	private final Comparator<CyNetworkView> viewComparator;
-	
-	private final ThumbnailCache thumbnailCache;
 	
 	private ThumbnailPanel selectionHead;
 	private ThumbnailPanel selectionTail;
@@ -154,7 +143,6 @@ public class NetworkViewGrid extends JPanel {
 		selectedNetworkViews = new ArrayList<>();
 		detachedViews = new HashSet<>();
 		
-		thumbnailCache = new ThumbnailCache(MAX_THUMBNAIL_SIZE);
 		gridViewTogglePanel = new GridViewTogglePanel(gridViewToggleModel, serviceRegistrar);
 		
 		init();
@@ -188,10 +176,10 @@ public class NetworkViewGrid extends JPanel {
 		return thumbnailPanels.isEmpty();
 	}
 	
-	public void addItem(final RenderingEngine<CyNetwork> re) {
+	public void addItem(final RenderingEngine<CyNetwork> re, final RenderingEngineFactory<CyNetwork> thumbnailFactory) {
 		if (!contains(re)) {
 			final Collection<CyNetworkView> oldViews = getNetworkViews();
-			engines.put((CyNetworkView)re.getViewModel(), re);
+			engines.put((CyNetworkView)re.getViewModel(), new RenderingEngines(re, thumbnailFactory));
 			dirty = true;
 			firePropertyChange("networkViews", oldViews, getNetworkViews());
 		}
@@ -335,13 +323,6 @@ public class NetworkViewGrid extends JPanel {
 		getReattachAllViewsButton().setEnabled(hasDetached);
 	}
 	
-	/** Updates the image only */ 
-	protected void updateThumbnail(final CyNetworkView view, boolean forceRedraw) {
-		final ThumbnailPanel tp = getItem(view);
-		
-		if (tp != null)
-			tp.updateIcon(forceRedraw);
-	}
 
 	protected int getThumbnailSize() {
 		return thumbnailSize;
@@ -607,8 +588,8 @@ public class NetworkViewGrid extends JPanel {
 			int rows = calculateRows(engines.size(), cols);
 			getGridPanel().setLayout(new GridLayout(rows, cols));
 			
-			for (RenderingEngine<CyNetwork> engine : engines.values()) {
-				final ThumbnailPanel tp = new ThumbnailPanel(engine, maxThumbnailSize);
+			for (RenderingEngines engines : engines.values()) {
+				final ThumbnailPanel tp = new ThumbnailPanel(engines, maxThumbnailSize);
 				thumbnailPanels.put(tp.getNetworkView(), tp);
 				
 				setSelectionKeyBindings(tp);
@@ -845,6 +826,17 @@ public class NetworkViewGrid extends JPanel {
 		return views;
 	}
 	
+	
+	private static class RenderingEngines {
+		public final RenderingEngine<CyNetwork> networkEngine;
+		public final RenderingEngineFactory<CyNetwork> thumbnailEngineFactory;
+		
+		public RenderingEngines(RenderingEngine<CyNetwork> networkEngine, RenderingEngineFactory<CyNetwork> thumbnailEngineFactory) {
+			this.networkEngine = networkEngine;
+			this.thumbnailEngineFactory = thumbnailEngineFactory;
+		}
+	}
+	
 	class ThumbnailPanel extends JPanel {
 		
 		static final int PAD = 4;
@@ -863,12 +855,11 @@ public class NetworkViewGrid extends JPanel {
 		
 		private JLabel currentLabel;
 		private JLabel titleLabel;
-		private JLabel imageLabel;
+		private JRootPane imagePanel;
 		
 		private boolean selected;
 		
-		private final RenderingEngine<CyNetwork> engine;
-		private CompletableFuture<Image> cancelFuture = null;
+		private final RenderingEngines engines;
 		
 		private final Color BORDER_COLOR = UIManager.getColor("Separator.foreground");
 		private final Color SEL_COLOR = UIManager.getColor("Table.focusCellBackground");
@@ -934,8 +925,8 @@ public class NetworkViewGrid extends JPanel {
 				)
 		);
 		
-		ThumbnailPanel(final RenderingEngine<CyNetwork> engine, final int size) {
-			this.engine = engine;
+		ThumbnailPanel(final RenderingEngines engines, final int size) {
+			this.engines = engines;
 			
 			this.setFocusable(true);
 			this.setRequestFocusEnabled(true);
@@ -965,9 +956,9 @@ public class NetworkViewGrid extends JPanel {
 							.addGap(PAD)
 					)
 					.addGroup(layout.createSequentialGroup()
-							.addGap(PAD, PAD, Short.MAX_VALUE)
-							.addComponent(getImageLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-							.addGap(PAD, PAD, Short.MAX_VALUE)
+							.addGap(PAD, PAD, PAD)
+							.addComponent(getImagePanel(), PREFERRED_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+							.addGap(PAD, PAD, PAD)
 					)
 			);
 			layout.setVerticalGroup(layout.createSequentialGroup()
@@ -977,11 +968,11 @@ public class NetworkViewGrid extends JPanel {
 							.addComponent(getTitleLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					)
 					.addGap(GAP)
-					.addComponent(getImageLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addGap(PAD, PAD, Short.MAX_VALUE)
+					.addComponent(getImagePanel(), PREFERRED_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+					.addGap(PAD, PAD, PAD)
 			);
 			
-			if (selectedNetworkViews.contains(engine.getViewModel()))
+			if (selectedNetworkViews.contains(engines.networkEngine.getViewModel()))
 				selected = true;
 			
 			this.update(true);
@@ -1052,62 +1043,6 @@ public class NetworkViewGrid extends JPanel {
 			updateCurrentLabel();
 			updateBorder();
 			updateTitleLabel();
-			
-			if (redraw)
-				updateIcon(false);
-		}
-		
-
-		void updateIcon(boolean forceRedraw) {
-			final Dimension size = this.getSize();
-			
-			if (size != null && getTitleLabel().getSize() != null) {
-				int lh = getTitleLabel().getHeight();
-				
-				int iw = size.width - 2 * BORDER_WIDTH - 2 * PAD - 2 * IMG_BORDER_WIDTH;
-				int ih = size.height - 2 * BORDER_WIDTH - 2 * GAP - lh - PAD - 2 * IMG_BORDER_WIDTH;
-				
-				if (iw > 0 && ih > 0) {
-					CyNetworkView netView = getNetworkView();
-					
-					if(forceRedraw) {
-						thumbnailCache.invalidate(netView);
-					}
-					
-					if(cancelFuture != null) {
-						cancelFuture.complete(null); 
-						cancelFuture = null;
-					}
-					cancelFuture = new CompletableFuture<>();
-					
-					// Start rendering the real thumbnail
-					CompletableFuture<Image> imageFuture = thumbnailCache.getThumbnailAsync(engine, netView, iw, ih);
-					
-					if(!imageFuture.isDone()) {
-						// Use a "loading" placeholder image
-						BufferedImage loadingImage = new BufferedImage(iw, ih, BufferedImage.TYPE_INT_RGB);
-						final Graphics2D g2 = loadingImage.createGraphics();
-						final Paint bg = netView.getVisualProperty(NETWORK_BACKGROUND_PAINT);
-						g2.setPaint(bg);
-						g2.fillRect(0, 0, iw, ih);
-						g2.dispose();
-						getImageLabel().setIcon(new ImageIcon(loadingImage));
-					}
-					
-					// update when real thumbnail image is available
-					imageFuture.acceptEitherAsync(cancelFuture, image -> {
-						if(image != null) { // null if canceled
-							final Paint bgPaint = netView.getVisualProperty(NETWORK_BACKGROUND_PAINT);
-							if (bgPaint instanceof Color)
-								getImageLabel().setBackground((Color) bgPaint);
-							
-							final ImageIcon icon = image != null ? new ImageIcon(image) : null;
-							getImageLabel().setIcon(icon);
-							updateUI();
-						}
-					}, thumbnailCache.getExecutor());
-				}
-			}
 		}
 		
 		private void updateCurrentLabel() {
@@ -1153,7 +1088,7 @@ public class NetworkViewGrid extends JPanel {
 		}
 		
 		CyNetworkView getNetworkView() {
-			return (CyNetworkView) engine.getViewModel();
+			return (CyNetworkView) engines.networkEngine.getViewModel();
 		}
 		
 		JLabel getCurrentLabel() {
@@ -1178,108 +1113,25 @@ public class NetworkViewGrid extends JPanel {
 			return titleLabel;
 		}
 		
-		JLabel getImageLabel() {
-			if (imageLabel == null) {
-				imageLabel = new JLabel();
-				imageLabel.setOpaque(true);
-				imageLabel.setBorder(
+		JRootPane getImagePanel() {
+			if (imagePanel == null) {
+				imagePanel = new JRootPane();
+				imagePanel.setBorder(
 						BorderFactory.createLineBorder(UIManager.getColor("Label.foreground"), IMG_BORDER_WIDTH));
+				
+				imagePanel.getGlassPane().setVisible(true);
+				
+				engines.thumbnailEngineFactory.createRenderingEngine(imagePanel.getContentPane(), getNetworkView());
 			}
 			
-			return imageLabel;
+			return imagePanel;
 		}
 		
-		/**
-		 * @param w Image width
-		 * @param h Image height
-		 * @return
-		 */
-		private Image createThumbnail(double w, double h) {
-			final int iw = (int) Math.round(w);
-            final int ih = (int) Math.round(h);
-            
-            if (iw <= 0 || ih <= 0)
-            	return null;
-			
-            BufferedImage image = null;
-            
-			final CyNetworkView netView = getNetworkView();
-			
-			// Fit network view image to available rectangle area
-			final double vw = netView.getVisualProperty(NETWORK_WIDTH);
-			final double vh = netView.getVisualProperty(NETWORK_HEIGHT);
-			
-			if (vw > 0 && vh > 0) {
-				final double rectRatio = h / w;
-				final double viewRatio = vh / vw;
-	            final double scale = viewRatio > rectRatio ? w / vw  :  h / vh;
-				
-	            // Create scaled view image that is big enough to be clipped later
-	            final int svw = (int) Math.round(vw * scale);
-	            final int svh = (int) Math.round(vh * scale);
-	            
-	            if (svw > 0 && svh > 0) {
-		            image = new BufferedImage(svw, svh, BufferedImage.TYPE_INT_ARGB);
-		            
-					final Graphics2D g = (Graphics2D) image.getGraphics();
-					g.scale(scale, scale);
-					engine.printCanvas(g);
-					g.dispose();
-					
-					// Clip the image
-					image = image.getSubimage((svw - iw) / 2, (svh - ih) / 2, iw, ih);
-	            }
-			}
-			
-			if (image == null) {
-				image = new BufferedImage(iw, ih, BufferedImage.TYPE_INT_RGB);
-				
-				final Graphics2D g2 = image.createGraphics();
-				final Paint bg = netView.getVisualProperty(NETWORK_BACKGROUND_PAINT);
-				g2.setPaint(bg);
-				g2.drawRect(IMG_BORDER_WIDTH, IMG_BORDER_WIDTH, iw, ih);
-				g2.dispose();
-			}
-            
-			return image;
-		}
-		
-		@Override
-		public int hashCode() {
-			final int prime = 5;
-			int result = 3;
-			result = prime * result + getOuterType().hashCode();
-			result = prime * result + ((engine == null) ? 0 : engine.hashCode());
-			return result;
-		}
-
-		@Override
-		public boolean equals(Object obj) {
-			if (this == obj) return true;
-			if (obj == null) return false;
-			if (getClass() != obj.getClass()) return false;
-			
-			ThumbnailPanel other = (ThumbnailPanel) obj;
-			if (!getOuterType().equals(other.getOuterType())) return false;
-			
-			if (engine == null) {
-				if (other.engine != null)
-					return false;
-			} else if (!engine.equals(other.engine)) {
-				return false;
-			}
-			
-			return true;
-		}
-
 		@Override
 		public String toString() {
 			return getNetworkView().getVisualProperty(NETWORK_TITLE);
 		}
 
-		private NetworkViewGrid getOuterType() {
-			return NetworkViewGrid.this;
-		}
 		
 		private class ThumbnailLabel extends JLabel {
 
