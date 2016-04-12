@@ -1,9 +1,12 @@
 package org.cytoscape.internal.view;
 
-import static javax.swing.GroupLayout.*;
+import static javax.swing.GroupLayout.DEFAULT_SIZE;
+import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static javax.swing.GroupLayout.Alignment.CENTER;
 import static org.cytoscape.internal.util.ViewUtil.styleToolBarButton;
-import static org.cytoscape.util.swing.IconManager.*;
+import static org.cytoscape.util.swing.IconManager.ICON_EXTERNAL_LINK_SQUARE;
+import static org.cytoscape.util.swing.IconManager.ICON_THUMB_TACK;
+import static org.cytoscape.util.swing.IconManager.ICON_TRASH_O;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NETWORK_TITLE;
 
 import java.awt.BorderLayout;
@@ -950,7 +953,7 @@ public class NetworkViewGrid extends JPanel {
 							.addGap(PAD)
 							.addComponent(getCurrentLabel(), CURR_LABEL_W, CURR_LABEL_W, CURR_LABEL_W)
 							.addGap(GAP, GAP, Short.MAX_VALUE)
-							.addComponent(getTitleLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+							.addComponent(getTitleLabel())
 							.addGap(GAP, GAP, Short.MAX_VALUE)
 							.addGap(CURR_LABEL_W)
 							.addGap(PAD)
@@ -1068,23 +1071,6 @@ public class NetworkViewGrid extends JPanel {
 // TODO Use this one when multiple views is supported, to show the network name			
 //			setToolTipText("<html><center>" + title + "<br>(" + netName + ")</center></html>");
 			getTitleLabel().setText(title);
-			
-			Dimension size = getSize();
-			
-			if (size == null || size.width <= 0)
-				size = getPreferredSize();
-			
-			final int maxTitleWidth = (int) Math.round(
-					size.getWidth()
-					- 2 * BORDER_WIDTH
-					- 2 * PAD
-					- 2 * GAP 
-					- 2 * getCurrentLabel().getWidth()
-			);
-			final Dimension titleSize = new Dimension(maxTitleWidth, getTitleLabel().getPreferredSize().height);
-			getTitleLabel().setPreferredSize(titleSize);
-			getTitleLabel().setMaximumSize(titleSize);
-			getTitleLabel().setSize(titleSize);
 		}
 		
 		CyNetworkView getNetworkView() {
@@ -1108,6 +1094,7 @@ public class NetworkViewGrid extends JPanel {
 				titleLabel = new ThumbnailLabel(false);
 				titleLabel.setHorizontalAlignment(JLabel.CENTER);
 				titleLabel.setFont(titleLabel.getFont().deriveFont(LookAndFeelUtil.getSmallFontSize()));
+				titleLabel.setMinimumSize(titleLabel.getPreferredSize());
 			}
 			
 			return titleLabel;
