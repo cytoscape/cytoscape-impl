@@ -1109,47 +1109,49 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	private void fitContent(final boolean updateView) {
 		cyEventHelper.flushPayloadEvents();
 
-		synchronized (m_lock) {
-			if (m_spacial.queryOverlap(Float.NEGATIVE_INFINITY, Float.NEGATIVE_INFINITY,
-			                           Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY,
-			                           m_extentsBuff, 0, false).numRemaining() == 0)
-				return;
-			
-			if (m_networkCanvas.getWidth() == 0 || m_networkCanvas.getHeight() == 0)
-				return;
-
-			// At this point, we actually want doubles
-			m_extentsBuffD[0] = (double)m_extentsBuff[0];
-			m_extentsBuffD[1] = (double)m_extentsBuff[1];
-			m_extentsBuffD[2] = (double)m_extentsBuff[2];
-			m_extentsBuffD[3] = (double)m_extentsBuff[3];
-
-			// Adjust the content based on the foreground canvas
-			m_foregroundCanvas.adjustBounds(m_extentsBuffD);
-			// Adjust the content based on the background canvas
-			m_backgroundCanvas.adjustBounds(m_extentsBuffD);
-
-			if (!isValueLocked(BasicVisualLexicon.NETWORK_CENTER_X_LOCATION))
-				setVisualProperty(BasicVisualLexicon.NETWORK_CENTER_X_LOCATION,
-						(m_extentsBuffD[0] + m_extentsBuffD[2]) / 2.0d);
-			
-			if (!isValueLocked(BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION))
-				setVisualProperty(BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION,
-						(m_extentsBuffD[1] + m_extentsBuffD[3]) / 2.0d);
-
-			if (!isValueLocked(BasicVisualLexicon.NETWORK_SCALE_FACTOR)) {
-				// Apply a factor 0.98 to zoom, so that it leaves a small border around the network and any annotations.
-				final double zoom = Math.min(((double) m_networkCanvas.getWidth()) / 
-				                             (m_extentsBuffD[2] - m_extentsBuffD[0]), 
-				                              ((double) m_networkCanvas.getHeight()) / 
-				                             (m_extentsBuffD[3] - m_extentsBuffD[1])) * 0.98;
-				// Update view model.  Zoom Level should be modified.
-				setVisualProperty(BasicVisualLexicon.NETWORK_SCALE_FACTOR, zoom);
+		SwingUtilities.invokeLater(() -> {
+			synchronized (m_lock) {
+				if (m_spacial.queryOverlap(Float.NEGATIVE_INFINITY, Float.NEGATIVE_INFINITY,
+				                           Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY,
+				                           m_extentsBuff, 0, false).numRemaining() == 0)
+					return;
+				
+				if (m_networkCanvas.getWidth() == 0 || m_networkCanvas.getHeight() == 0)
+					return;
+	
+				// At this point, we actually want doubles
+				m_extentsBuffD[0] = (double)m_extentsBuff[0];
+				m_extentsBuffD[1] = (double)m_extentsBuff[1];
+				m_extentsBuffD[2] = (double)m_extentsBuff[2];
+				m_extentsBuffD[3] = (double)m_extentsBuff[3];
+	
+				// Adjust the content based on the foreground canvas
+				m_foregroundCanvas.adjustBounds(m_extentsBuffD);
+				// Adjust the content based on the background canvas
+				m_backgroundCanvas.adjustBounds(m_extentsBuffD);
+	
+				if (!isValueLocked(BasicVisualLexicon.NETWORK_CENTER_X_LOCATION))
+					setVisualProperty(BasicVisualLexicon.NETWORK_CENTER_X_LOCATION,
+							(m_extentsBuffD[0] + m_extentsBuffD[2]) / 2.0d);
+				
+				if (!isValueLocked(BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION))
+					setVisualProperty(BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION,
+							(m_extentsBuffD[1] + m_extentsBuffD[3]) / 2.0d);
+	
+				if (!isValueLocked(BasicVisualLexicon.NETWORK_SCALE_FACTOR)) {
+					// Apply a factor 0.98 to zoom, so that it leaves a small border around the network and any annotations.
+					final double zoom = Math.min(((double) m_networkCanvas.getWidth()) / 
+					                             (m_extentsBuffD[2] - m_extentsBuffD[0]), 
+					                              ((double) m_networkCanvas.getHeight()) / 
+					                             (m_extentsBuffD[3] - m_extentsBuffD[1])) * 0.98;
+					// Update view model.  Zoom Level should be modified.
+					setVisualProperty(BasicVisualLexicon.NETWORK_SCALE_FACTOR, zoom);
+				}
 			}
-		}
-		
-		if (updateView)
-			updateView(false);
+			
+			if (updateView)
+				updateView(false);
+		});
 	}
 	
 	/**
@@ -2553,18 +2555,14 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		} else if (vp == BasicVisualLexicon.NETWORK_WIDTH) {
 			// This actually sets the size on the canvas, so we need to make sure
 			// this runs on the AWT thread
-			SwingUtilities.invokeLater(new Runnable() {
-				public void run() {
-					m_networkCanvas.setSize(((Double)value).intValue(), m_networkCanvas.getHeight());
-				}
+			SwingUtilities.invokeLater(() -> {
+				m_networkCanvas.setSize(((Double)value).intValue(), m_networkCanvas.getHeight());
 			});
 		} else if (vp == BasicVisualLexicon.NETWORK_HEIGHT) {
 			// This actually sets the size on the canvas, so we need to make sure
 			// this runs on the AWT thread
-			SwingUtilities.invokeLater(new Runnable() {
-				public void run() {
-					m_networkCanvas.setSize(m_networkCanvas.getWidth(), ((Double)value).intValue());
-				}
+			SwingUtilities.invokeLater(() -> {
+				m_networkCanvas.setSize(m_networkCanvas.getWidth(), ((Double)value).intValue());
 			});
 		}
 	}
