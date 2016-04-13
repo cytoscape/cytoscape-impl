@@ -162,10 +162,18 @@ class GenerateNetworkViewsTask extends AbstractTask implements ObservableTask {
 					final List<CyNetworkView> views = new ArrayList<>(netViewManager.getNetworkViews(network));
 					
 					final CyApplicationManager applicationManager = serviceRegistrar.getService(CyApplicationManager.class);
-					applicationManager.setCurrentNetwork(network);
+					boolean currentViewSet = false;
 					
-					if (!views.isEmpty())
-						applicationManager.setCurrentNetworkView(views.get(0));
+					for (CyNetworkView v : views) {
+						if (v.getModel().equals(network)) {
+							applicationManager.setCurrentNetworkView(v);
+							currentViewSet = true;
+							break;
+						}
+					}
+					
+					if (!currentViewSet)
+						applicationManager.setCurrentNetwork(network);
 				}
 			});
 	}

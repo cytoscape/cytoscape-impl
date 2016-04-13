@@ -132,8 +132,7 @@ public class NetworkSelectionMediator implements SetSelectedNetworksListener, Se
 		}
 		
 		invokeOnEDT(() -> {
-			final CyNetwork network = serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetwork();
-			netMainPanel.setCurrentNetwork(network);
+			syncFrom(serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetwork());
 		});
 	}
 
@@ -178,9 +177,9 @@ public class NetworkSelectionMediator implements SetSelectedNetworksListener, Se
 		}
 		
 		invokeOnEDT(() -> {
-			final List<CyNetwork> networks = serviceRegistrar.getService(CyApplicationManager.class)
+			final List<CyNetwork> selectedNets = serviceRegistrar.getService(CyApplicationManager.class)
 					.getSelectedNetworks();
-			netMainPanel.setSelectedNetworks(networks);
+			syncFrom(selectedNets);
 		});
 	}
 	
@@ -199,6 +198,91 @@ public class NetworkSelectionMediator implements SetSelectedNetworksListener, Se
 					.getSelectedNetworkViews();
 			viewMainPanel.setSelectedNetworkViews(views);
 		});
+	}
+	
+	private void syncFrom(final CyNetwork currentNet) {
+		CyNetworkView currentView = viewMainPanel.getCurrentNetworkView();
+		Collection<CyNetworkView> selectedViews = viewMainPanel.getSelectedNetworkViews();
+		Collection<CyNetwork> selectedNets = netMainPanel.getSelectedNetworks(false);
+		
+		if (currentNet != null) {
+			final CyNetworkViewManager viewMgr = serviceRegistrar.getService(CyNetworkViewManager.class);
+			final Collection<CyNetworkView> views = viewMgr.getNetworkViews(currentNet);
+			
+			// If the new current network is not selected, reset the selection and select the current one only
+			if (!selectedNets.contains(currentNet))
+				selectedNets = Collections.singleton(currentNet);
+			
+			// Set new current network view, unless the current view's model is already the new current network
+			if (currentView == null || !currentView.getModel().equals(currentNet))
+				currentView = views.isEmpty() ? null : views.iterator().next();
+			
+			if (currentView == null)
+				selectedViews = Collections.emptySet();
+			else if (!selectedViews.contains(currentView))
+				selectedViews = Collections.singleton(currentView);
+		} else {
+			currentView = null;
+			selectedNets = Collections.emptySet();
+			selectedViews = Collections.emptySet();
+		}
+		
+		// First update the UI
+		removePropertyChangeListeners();
+		
+		try {
+			netMainPanel.setCurrentNetwork(currentNet);
+			netMainPanel.setSelectedNetworks(selectedNets);
+			viewMainPanel.setSelectedNetworkViews(selectedViews);
+			viewMainPanel.setCurrentNetworkView(currentView);
+			
+			maybeShowNullView(currentView, currentNet);
+		} finally {
+			addPropertyChangeListeners();
+		}
+		
+		// Then update the related Cytoscape states
+		updateApplicationManager(currentNet, currentView, selectedNets, selectedViews);
+	}
+	
+	private void syncFrom(final Collection<CyNetwork> selectedNets) {
+		CyNetworkView currentView = viewMainPanel.getCurrentNetworkView();
+		CyNetwork currentNet = netMainPanel.getCurrentNetwork();
+		Collection<CyNetworkView> selectedViews = Util.getNetworkViews(selectedNets, serviceRegistrar);
+		
+		if (selectedNets.isEmpty()) {
+			currentNet = null;
+			currentView = null;
+		} else {
+			if (currentNet == null || !selectedNets.contains(currentNet))
+				currentNet = selectedNets.iterator().next();
+			
+			if (currentView == null || !currentView.getModel().equals(currentNet)) {
+				final CyNetworkViewManager viewMgr = serviceRegistrar.getService(CyNetworkViewManager.class);
+				final Collection<CyNetworkView> views = viewMgr.getNetworkViews(currentNet);
+				
+				currentView = views == null || views.isEmpty() ? null : views.iterator().next();
+			}
+		}
+			
+		// Synchronize the UI first
+		removePropertyChangeListeners();
+		
+		try {
+			netMainPanel.setCurrentNetwork(currentNet);
+			
+			if (currentView != null)
+				viewMainPanel.setCurrentNetworkView(currentView);
+			else
+				viewMainPanel.showNullView(currentNet);
+			
+			viewMainPanel.setSelectedNetworkViews(selectedViews);
+		} finally {
+			addPropertyChangeListeners();
+		}
+		
+		// Then update the related Cytoscape states
+		updateApplicationManager(currentNet, currentView, selectedNets, selectedViews);
 	}
 	
 	private void setCurrent(final NetworkViewContainer vc) {
@@ -237,8 +321,8 @@ public class NetworkSelectionMediator implements SetSelectedNetworksListener, Se
 	}
 	
 	private void maybeShowNullView(final CyNetworkView view, final CyNetwork network) {
-		if (view == null && network == null)
-			viewMainPanel.showNullView(null);
+		if (view == null)
+			viewMainPanel.showNullView(network);
 	}
 	
 	private void updateApplicationManager(final CyNetwork currentNetwork, final CyNetworkView currentView,
@@ -259,16 +343,10 @@ public class NetworkSelectionMediator implements SetSelectedNetworksListener, Se
 		@Override
 		public void propertyChange(PropertyChangeEvent e) {
 			if (Arrays.asList(PROP_NAMES).contains(e.getPropertyName())) {
-				removePropertyChangeListeners();
-				
-				try {
-					if (e.getPropertyName().equals("currentNetwork"))
-						handleCurrentNetworkChange(e);
-					else if (e.getPropertyName().equals("selectedSubNetworks"))
-						handleSelectedSubNetworksChange(e);
-				} finally {
-					addPropertyChangeListeners();
-				}
+				if (e.getPropertyName().equals("currentNetwork"))
+					handleCurrentNetworkChange(e);
+				else if (e.getPropertyName().equals("selectedSubNetworks"))
+					handleSelectedSubNetworksChange(e);
 			}
 		}
 		
@@ -289,36 +367,7 @@ public class NetworkSelectionMediator implements SetSelectedNetworksListener, Se
 					return;
 			}
 			
-			CyNetworkView currentView = null;
-			Collection<CyNetworkView> selectedViews = viewMainPanel.getSelectedNetworkViews();
-			Collection<CyNetwork> selectedNets = netMainPanel.getSelectedNetworks(false);
-			
-			if (network != null) {
-				final CyNetworkViewManager viewMgr = serviceRegistrar.getService(CyNetworkViewManager.class);
-				
-				// If the new current network is not selected, reset the selection and select the current one only
-				if (!selectedNets.contains(network)) {
-					selectedNets = Collections.singleton(network);
-					selectedViews = viewMgr.getNetworkViews(network);
-				}
-				
-				// Set new current network view, unless the current view's model is already the new current network
-				if (!selectedViews.isEmpty())
-					currentView = selectedViews.iterator().next();
-			} else {
-				selectedNets = Collections.emptySet();
-				selectedViews = Collections.emptySet();
-			}
-			
-			// Synchronize the UI first
-			netMainPanel.setSelectedNetworks(selectedNets);
-			viewMainPanel.setSelectedNetworkViews(selectedViews);
-			viewMainPanel.setCurrentNetworkView(currentView);
-			
-			maybeShowNullView(currentView, network);
-			
-			// Then update the related Cytoscape states
-			updateApplicationManager(network, currentView, selectedNets, selectedViews);
+			syncFrom(network);
 		}
 
 		@SuppressWarnings("unchecked")
@@ -326,47 +375,17 @@ public class NetworkSelectionMediator implements SetSelectedNetworksListener, Se
 			if (loadingSession)
 				return;
 			
-			final Collection<CyNetwork> selectedNetworks = (Collection<CyNetwork>) e.getNewValue();
+			final Collection<CyNetwork> selectedNets = (Collection<CyNetwork>) e.getNewValue();
 			
 			synchronized (lock) {
 				// Then update the related Cytoscape states
 				final CyApplicationManager appMgr = serviceRegistrar.getService(CyApplicationManager.class);
 				
-				if (Util.equalSets(selectedNetworks, appMgr.getSelectedNetworks()))
+				if (Util.equalSets(selectedNets, appMgr.getSelectedNetworks()))
 					return;
 			}
 			
-			CyNetworkView currentView = viewMainPanel.getCurrentNetworkView();
-			CyNetwork currentNet = netMainPanel.getCurrentNetwork();
-			Collection<CyNetworkView> selectedViews = Util.getNetworkViews(selectedNetworks, serviceRegistrar);
-			
-			if (selectedNetworks.isEmpty()) {
-				currentNet = null;
-				currentView = null;
-			} else {
-				if (currentNet == null || !selectedNetworks.contains(currentNet))
-					currentNet = selectedNetworks.iterator().next();
-				
-				if (currentView == null || !currentView.getModel().equals(currentNet)) {
-					final CyNetworkViewManager viewMgr = serviceRegistrar.getService(CyNetworkViewManager.class);
-					final Collection<CyNetworkView> views = viewMgr.getNetworkViews(currentNet);
-					
-					currentView = views == null || views.isEmpty() ? null : views.iterator().next();
-				}
-			}
-				
-			// Synchronize the UI first
-			netMainPanel.setCurrentNetwork(currentNet);
-			
-			if (currentView != null)
-				viewMainPanel.setCurrentNetworkView(currentView);
-			else
-				viewMainPanel.showNullView(currentNet);
-			
-			viewMainPanel.setSelectedNetworkViews(selectedViews);
-			
-			// Then update the related Cytoscape states
-			updateApplicationManager(currentNet, currentView, selectedNetworks, selectedViews);
+			syncFrom(selectedNets);
 		}
 	}
 	
