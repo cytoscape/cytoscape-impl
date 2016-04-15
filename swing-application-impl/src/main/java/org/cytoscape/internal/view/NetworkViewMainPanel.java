@@ -133,13 +133,13 @@ public class NetworkViewMainPanel extends JPanel {
 		init();
 	}
 
-	public RenderingEngine<CyNetwork> addNetworkView(final CyNetworkView view,
-			final RenderingEngineFactory<CyNetwork> engineFactory, final RenderingEngineFactory<CyNetwork> thumbnailFactory, boolean showView) {
+	public RenderingEngine<CyNetwork> addNetworkView(
+			final CyNetworkView view,
+			final RenderingEngineFactory<CyNetwork> engineFactory,
+			final RenderingEngineFactory<CyNetwork> thumbnailFactory
+	) {
 		if (isRendered(view))
 			return null;
-		
-		final NetworkViewFrame currentViewFrame = getNetworkViewFrame(getCurrentNetworkView());
-		final GraphicsConfiguration gc = currentViewFrame != null ? currentViewFrame.getGraphicsConfiguration() : null;
 		
 		final NetworkViewContainer vc = new NetworkViewContainer(view, view.equals(getCurrentNetworkView()),
 				engineFactory, thumbnailFactory, gridViewToggleModel, serviceRegistrar);
@@ -180,17 +180,8 @@ public class NetworkViewMainPanel extends JPanel {
 		networkViewGrid.addItem(vc.getRenderingEngine(), vc.getThumbnailEngineFactory());
 		getContentPane().add(vc, vc.getName());
 		
-		if (showView) {
-			if (isGridMode())
-				updateGrid();
-			else
-				showViewContainer(vc.getName());
-			
-			// If the latest focused view was in a detached frame,
-			// detach the new one as well and put it in the same monitor
-			if (gc != null)
-				detachNetworkView(view, gc);
-		}
+		if (isGridMode())
+			updateGrid();
 		
 		return vc.getRenderingEngine();
 	}
@@ -292,6 +283,15 @@ public class NetworkViewMainPanel extends JPanel {
 				
 				if (isGridVisible())
 					networkViewGrid.scrollToCurrentItem();
+				
+				final NetworkViewContainer vc = getNetworkViewContainer(view);
+				
+				if (vc != null) {
+					final Window window = SwingUtilities.getWindowAncestor(vc);
+					
+					if (window != null && !window.isActive())
+						window.toFront();
+				}
 			}
 		}
 	}

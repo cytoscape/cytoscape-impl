@@ -561,7 +561,7 @@ public class NetworkViewMediator
 					.getRenderingEngineFactory(NetworkViewRenderer.THUMBNAIL_CONTEXT);
 			
 			final RenderingEngine<CyNetwork> renderingEngine =
-					getNetworkViewMainPanel().addNetworkView(view, engineFactory, thumbnailFactory, !loadingSession);
+					getNetworkViewMainPanel().addNetworkView(view, engineFactory, thumbnailFactory);
 			presentationMap.put(view, renderingEngine);
 			
 			final boolean isCurrentView = view.equals(appMgr.getCurrentNetworkView());
