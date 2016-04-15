@@ -196,7 +196,6 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 			GraphGraphics grafx = new GraphGraphics(img, false, true);
 
 			synchronized (m_lock) {
-				m_img = img;
 				m_grafx = grafx;
 				
 				if (m_view != null)
@@ -228,13 +227,16 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 				xCenter = m_xCenter;
 				yCenter = m_yCenter;
 				scaleFactor = m_scaleFactor;
+				
+				// set the publicly accessible image object *after* it has been rendered
+				m_img = m_grafx.image;
 			}
 		}
 
 		// if canvas is visible, draw it
 		if (isVisible()) {
 			// TODO Should this be on the AWT thread?
-			g.drawImage(m_img, 0, 0, null);
+			g.drawImage(m_grafx.image, 0, 0, null);
 		}
 
 		if ((m_selectionRect != null) && (this.isSelecting())) {
