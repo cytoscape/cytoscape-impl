@@ -28,7 +28,6 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowFocusListener;
 import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -507,21 +506,18 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 			
 			final RootNetworkPanel item = rootNetPanel;
 			
-			item.addPropertyChangeListener("expanded", new PropertyChangeListener() {
-				@Override
-				public void propertyChange(final PropertyChangeEvent e) {
-					// Deselect its selected subnetworks first
-					if (e.getNewValue() == Boolean.FALSE) {
-						final List<AbstractNetworkPanel<?>> selectedItems = getSelectedItems();
-						
-						if (!selectedItems.isEmpty()) {
-							selectedItems.removeAll(item.getAllItems());
-							setSelectedItems(selectedItems);
-						}
-					}
+			item.addPropertyChangeListener("expanded", (PropertyChangeEvent e) -> {
+				// Deselect its selected subnetworks first
+				if (e.getNewValue() == Boolean.FALSE) {
+					final List<AbstractNetworkPanel<?>> selectedItems = getSelectedItems();
 					
-					updateCollapseExpandButtons();
+					if (!selectedItems.isEmpty()) {
+						selectedItems.removeAll(item.getAllItems());
+						setSelectedItems(selectedItems);
+					}
 				}
+				
+				updateCollapseExpandButtons();
 			});
 			
 			firePropertyChange("rootNetworkPanelCreated", null, item);
@@ -530,16 +526,19 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 		final SubNetworkPanel subNetPanel = rootNetPanel.addItem(network);
 		setKeyBindings(subNetPanel);
 		
-		subNetPanel.addPropertyChangeListener("selected", new PropertyChangeListener() {
-			@Override
-			public void propertyChange(final PropertyChangeEvent e) {
-				if (!ignoreSelectionEvents) {
-					updateNetworkSelectionLabel();
-					
-					final Set<CyNetwork> oldSelection = getSelectedNetworks(false);
+		subNetPanel.addPropertyChangeListener("selected", (PropertyChangeEvent e) -> {
+			if (!ignoreSelectionEvents) {
+				updateNetworkSelectionLabel();
+				
+				final boolean selected = (boolean) e.getNewValue();
+				final Set<CyNetwork> oldSelection = getSelectedNetworks(false);
+				
+				if (selected) // Then it did not belong to the old selection value
 					oldSelection.remove(subNetPanel.getModel().getNetwork());
-					fireSelectedNetworksChange(oldSelection);
-				}
+				else // It means it was selected before
+					oldSelection.add(subNetPanel.getModel().getNetwork());
+				
+				fireSelectedNetworksChange(oldSelection);
 			}
 		});
 // TODO Uncomment when multiple views support is enabled
@@ -1226,13 +1225,10 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 						viewDialog.dispose();
 				}
 			});
-			viewDialog.addPropertyChangeListener("currentNetworkView", new PropertyChangeListener() {
-				@Override
-				public void propertyChange(PropertyChangeEvent evt) {
-					// TODO Move to NetworkSelectionMediator
-					serviceRegistrar.getService(CyApplicationManager.class)
-							.setCurrentNetworkView((CyNetworkView) evt.getNewValue());
-				}
+			viewDialog.addPropertyChangeListener("currentNetworkView", (PropertyChangeEvent evt) -> {
+				// TODO Move to NetworkSelectionMediator
+				serviceRegistrar.getService(CyApplicationManager.class)
+						.setCurrentNetworkView((CyNetworkView) evt.getNewValue());
 			});
 			
 			final Point screenPt = item.getViewIconLabel().getLocationOnScreen();
