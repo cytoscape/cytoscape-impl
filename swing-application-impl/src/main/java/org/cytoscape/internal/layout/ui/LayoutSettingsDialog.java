@@ -28,6 +28,7 @@ import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static org.cytoscape.util.swing.LookAndFeelUtil.isAquaLAF;
 
 import java.awt.Component;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
@@ -60,15 +61,14 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
-import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 
 import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.DynamicTaskFactoryProvisioner;
 import org.cytoscape.task.NetworkViewTaskFactory;
 import org.cytoscape.util.swing.LookAndFeelUtil;
@@ -93,6 +93,8 @@ import org.cytoscape.work.util.ListSingleSelection;
 @SuppressWarnings("serial")
 public class LayoutSettingsDialog extends JDialog implements ActionListener {
 	
+	private static final String UNWEIGHTED = "(none)";
+	
 	private CyLayoutAlgorithm currentLayout;
 	private TaskFactory currentAction;
 
@@ -108,12 +110,7 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
     private JButton applyBtn;
     private JButton doneBtn;
 
-	private CyLayoutAlgorithmManager layoutAlgorithmMgr;
-	private CySwingApplication swingApp;
-	private CyApplicationManager appMgr;
 	private LayoutSettingsManager layoutSettingsMgr;
-	private PanelTaskManager taskMgr;
-	private DynamicTaskFactoryProvisioner factoryProvisioner;
 	private LayoutAttributeTunable layoutAttrTunable;
 	private final SelectedTunable selectedTunable;
 	
@@ -122,25 +119,20 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 	
 	private Set<CyLayoutAlgorithm> tunablesToSave = new HashSet<>();
 	
-	private static final String UNWEIGHTED = "(none)";
-
+	private final CyServiceRegistrar serviceRegistrar;
+	
 	/**
 	 * Creates a new LayoutSettingsDialog object.
 	 */
-	public LayoutSettingsDialog(final CyLayoutAlgorithmManager cyLayoutAlgorithmManager, 
-	                            final CySwingApplication desktop,
-	                            final CyApplicationManager appMgr,
-	                            final LayoutSettingsManager layoutSettingsMgr,
-	                            final PanelTaskManager taskManager,
-	                            DynamicTaskFactoryProvisioner factoryProvisioner) {
-		super(desktop.getJFrame(), "Layout Settings", false);
+	public LayoutSettingsDialog(
+			final Window owner,
+			final LayoutSettingsManager layoutSettingsMgr,
+			final CyServiceRegistrar serviceRegistrar
+	) {
+		super(owner, "Layout Settings", ModalityType.MODELESS);
 
-		this.layoutAlgorithmMgr = cyLayoutAlgorithmManager;
-		this.swingApp = desktop;
-		this.appMgr = appMgr;
 		this.layoutSettingsMgr = layoutSettingsMgr;
-		this.taskMgr = taskManager;
-		this.factoryProvisioner = factoryProvisioner;
+		this.serviceRegistrar = serviceRegistrar;
 		
 		initComponents();
 		selectedTunable = new SelectedTunable();
@@ -184,38 +176,27 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 			if (!initialized) {
 				initialize();
 				updatePrefAlgorithmCmb();
-				setLocationRelativeTo(swingApp.getJFrame());
+				setLocationRelativeTo(getOwner());
 				pack();
 			}
-			setNetworkView(appMgr.getCurrentNetworkView());
 			setVisible(true);
 			initialized = true;
 		}
+		
+		setNetworkView(serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetworkView());
 	}
-
+	
     void addLayout(CyLayoutAlgorithm layout) {
-    	if (initialized) {
-	    	// Initialize again
-	    	SwingUtilities.invokeLater(new Runnable() {
-	    		@Override
-	    		public void run() {
-	    	        initialize();
-	    		}
-	    	});
-    	}
+    	if (initialized) // Initialize again
+			initialize();
     }
 
     void removeLayout(final CyLayoutAlgorithm layout) {
     	if (initialized) {
-	    	SwingUtilities.invokeLater(new Runnable() {
-	    		@Override
-	    		public void run() {
-	    	    	if (currentLayout == layout) {
-	    	    		getAlgorithmPnl().removeAll();
-	    	    	}
-	    	    	initialize();
-	    		}
-	    	});
+			if (currentLayout == layout)
+				getAlgorithmPnl().removeAll();
+			
+			initialize();
     	}
     }
 
@@ -254,7 +235,7 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 					return collator.compare(o1.toString(), o2.toString());
 				}
 			});
-			allLayouts.addAll(layoutAlgorithmMgr.getAllLayouts());
+			allLayouts.addAll(serviceRegistrar.getService(CyLayoutAlgorithmManager.class).getAllLayouts());
 			
 			// Populate the algorithm selectors
 			getAlgorithmCmb().removeAllItems();
@@ -275,7 +256,8 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 	}
 	
 	private void updatePrefAlgorithmCmb() {
-		final CyLayoutAlgorithm defLayout = layoutAlgorithmMgr.getDefaultLayout();
+		final CyLayoutAlgorithm defLayout = serviceRegistrar.getService(CyLayoutAlgorithmManager.class)
+				.getDefaultLayout();
 		
 		if (defLayout != null && !defLayout.equals(getPrefAlgorithmCmb().getSelectedItem()))
 			getPrefAlgorithmCmb().setSelectedItem(defLayout);
@@ -392,6 +374,7 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					final Object context = currentLayout.getDefaultLayoutContext();
+					final PanelTaskManager taskMgr = serviceRegistrar.getService(PanelTaskManager.class);
 					
 					if (taskMgr.validateAndApplyTunables(context))
 						taskMgr.execute(currentAction.createTaskIterator());
@@ -407,7 +390,7 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 			doneBtn = new JButton(new AbstractAction("Done") {
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					setVisible(false);
+					dispose();
 				}
 			});
 		}
@@ -430,10 +413,14 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 					
 					if (o instanceof CyLayoutAlgorithm) {
 						currentLayout = (CyLayoutAlgorithm) o;
+						final PanelTaskManager taskMgr = serviceRegistrar.getService(PanelTaskManager.class);
+						final CyApplicationManager appMgr = serviceRegistrar.getService(CyApplicationManager.class);
+						
 						//Checking if the context has already been charged, if so there is no need to do it again
 						final Object context = currentLayout.getDefaultLayoutContext();
 						tunablesToSave.add(currentLayout);
 
+						final DynamicTaskFactoryProvisioner factoryProvisioner = serviceRegistrar.getService(DynamicTaskFactoryProvisioner.class);
 						final TaskFactory provisioner = factoryProvisioner.createFor(wrapWithContext(currentLayout, context));
 						final JPanel tunablePnl = taskMgr.getConfiguration(provisioner, context);
 
@@ -482,6 +469,8 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 					if (initializing)
 						return;
 					
+					final CyLayoutAlgorithmManager layoutAlgorithmMgr = serviceRegistrar
+							.getService(CyLayoutAlgorithmManager.class);
 					final CyLayoutAlgorithm layout = (CyLayoutAlgorithm) prefAlgorithmCmb.getSelectedItem();
 					
 					if (layout != null && !layout.equals(layoutAlgorithmMgr.getDefaultLayout()))
@@ -493,7 +482,9 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 		return prefAlgorithmCmb;
 	}
 	
-	void setNetworkView(CyNetworkView view) {
+	void setNetworkView(final CyNetworkView view) {
+		getApplyBtn().setEnabled(view != null);
+		
 		if (layoutAttrPnl == null)
 			return;
 		
@@ -501,11 +492,14 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 		layoutAttrTunable = new LayoutAttributeTunable();
 		
 		if (view != null) {
-			List<String> attributeList = getAttributeList(view.getModel(), currentLayout.getSupportedNodeAttributeTypes(), currentLayout.getSupportedEdgeAttributeTypes());
+			List<String> attributeList = getAttributeList(view.getModel(),
+					currentLayout.getSupportedNodeAttributeTypes(), currentLayout.getSupportedEdgeAttributeTypes());
 			
 			if (attributeList.size() > 0) {
 				layoutAttrTunable.layoutAttribute = new ListSingleSelection<String>(attributeList);
 				layoutAttrTunable.layoutAttribute.setSelectedValue(attributeList.get(0));
+				
+				final PanelTaskManager taskMgr = serviceRegistrar.getService(PanelTaskManager.class);
 				JPanel panel = taskMgr.getConfiguration(null, layoutAttrTunable);
 				setPanelsTransparent(panel);
 				layoutAttrPnl.add(panel);
@@ -629,14 +623,15 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 		}
 	}
 	
-	
 	private void saveLayoutContexts() {
-		for(CyLayoutAlgorithm layout : tunablesToSave) {
-        	layoutSettingsMgr.saveLayoutContext(taskMgr, layout);
+		final PanelTaskManager taskMgr = serviceRegistrar.getService(PanelTaskManager.class);
+
+		for (CyLayoutAlgorithm layout : tunablesToSave) {
+			layoutSettingsMgr.saveLayoutContext(taskMgr, layout);
 		}
+
 		tunablesToSave.clear();
 	}
-	
 	
 	public static class SelectedTunable {
 		@Tunable(description="Layout only selected nodes:")

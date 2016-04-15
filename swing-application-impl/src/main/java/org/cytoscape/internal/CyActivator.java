@@ -105,7 +105,6 @@ import org.cytoscape.task.TableTaskFactory;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.util.swing.OpenBrowser;
 import org.cytoscape.view.layout.CyLayoutAlgorithm;
-import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.events.NetworkViewDestroyedListener;
@@ -163,7 +162,6 @@ public class CyActivator extends AbstractCyActivator {
 		PanelTaskManager panelTaskManager = getService(bc, PanelTaskManager.class);
 		CyColumnIdentifierFactory cyColumnIdFactory = getService(bc, CyColumnIdentifierFactory.class);
 		BookmarksUtil bookmarksUtil = getService(bc, BookmarksUtil.class);
-		CyLayoutAlgorithmManager layoutManager = getService(bc, CyLayoutAlgorithmManager.class);
 		SwingUndoSupport undoSupport = getService(bc, SwingUndoSupport.class);
 		CyEventHelper eventHelper = getService(bc, CyEventHelper.class);
 		CyServiceRegistrar serviceRegistrar = getService(bc, CyServiceRegistrar.class);
@@ -230,12 +228,7 @@ public class CyActivator extends AbstractCyActivator {
 
 		LayoutSettingsManager layoutSettingsManager = new LayoutSettingsManager(serviceRegistrar, tunablePropSerializerFactory);
 		
-		SettingsAction settingsAction = new SettingsAction(layoutManager, cytoscapeDesktop,
-		                                                   applicationManager, 
-		                                                   layoutSettingsManager,
-		                                                   netViewManager,
-		                                                   panelTaskManager,
-		                                                   dynamicTaskFactoryProvisioner);
+		SettingsAction settingsAction = new SettingsAction(layoutSettingsManager, serviceRegistrar);
 
 		HelpContentsTaskFactory helpContentsTaskFactory = new HelpContentsTaskFactory(cyHelpBroker, cytoscapeDesktop);
 		HelpContactHelpDeskTaskFactory helpContactHelpDeskTaskFactory = new HelpContactHelpDeskTaskFactory(openBrowser);
