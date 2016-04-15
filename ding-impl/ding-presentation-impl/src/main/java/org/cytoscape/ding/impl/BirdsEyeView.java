@@ -70,7 +70,7 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 	
 	private final static long serialVersionUID = 1202416511863994L;
 	
-	private static final Dimension MIN_SIZE = new Dimension(50, 50);
+	private static final Dimension MIN_SIZE = new Dimension(180, 180);
 	
 	private final Color VIEW_WINDOW_COLOR;
 	private final Color VIEW_WINDOW_BORDER_COLOR;
@@ -111,9 +111,6 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 	private UpdateImage redrawTask;
 	private	BirdsEyeViewLOD bevLOD;
 	
-	private final Object timerLock;
-	private final boolean drawRectangle;
-	
 	private static final Logger logger = LoggerFactory.getLogger(BirdsEyeView.class);
 
 	/**
@@ -122,14 +119,12 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 	 * @param viewModel
 	 *            The view to monitor
 	 */
-	public BirdsEyeView(final DGraphView viewModel, final CyServiceRegistrar registrar, final Object timerLock, boolean drawRectangle) {
+	public BirdsEyeView(final DGraphView viewModel, final CyServiceRegistrar registrar) {
 		if (viewModel == null)
 			throw new NullPointerException("DGraphView is null.");
 
 		this.viewModel = viewModel;
 		this.registrar = registrar;
-		this.timerLock = timerLock;
-		this.drawRectangle = drawRectangle;
 
 		m_cLis = new InnerContentChangeListener();
 		m_vLis = new InnerViewportChangeListener();
@@ -143,6 +138,7 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 		addMouseWheelListener(new InnerMouseWheelListener());
 		addMouseMotionListener(new InnerMouseMotionListener());
 		setPreferredSize(MIN_SIZE);
+		setMinimumSize(MIN_SIZE);
 
 		initializeView(viewModel);
 
@@ -294,23 +290,21 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 			// System.out.println("Rendering network image - done");
 		}
 
-		if(drawRectangle) {
-			// Compute view area
-			final int rectWidth = (int) (m_myScaleFactor * (((double) m_viewWidth) / m_viewScaleFactor));
-			final int rectHeight = (int) (m_myScaleFactor * (((double) m_viewHeight) / m_viewScaleFactor));
-			
-			final double rectXCenter = (((double) getWidth()) / 2.0d) + (m_myScaleFactor * (m_viewXCenter - m_myXCenter));
-			final double rectYCenter = (((double) getHeight()) / 2.0d) + (m_myScaleFactor * (m_viewYCenter - m_myYCenter));
-			
-			final int x = (int) (rectXCenter - (rectWidth/2));
-			final int y = (int) (rectYCenter - (rectHeight/2));
-			
-			// Draw the view area window		
-			g.setColor(VIEW_WINDOW_COLOR);
-			g.fillRect(x, y, rectWidth, rectHeight);
-			g.setColor(VIEW_WINDOW_BORDER_COLOR);
-			g.drawRect(x, y, rectWidth, rectHeight);
-		}
+		// Compute view area
+		final int rectWidth = (int) (m_myScaleFactor * (((double) m_viewWidth) / m_viewScaleFactor));
+		final int rectHeight = (int) (m_myScaleFactor * (((double) m_viewHeight) / m_viewScaleFactor));
+		
+		final double rectXCenter = (((double) getWidth()) / 2.0d) + (m_myScaleFactor * (m_viewXCenter - m_myXCenter));
+		final double rectYCenter = (((double) getHeight()) / 2.0d) + (m_myScaleFactor * (m_viewYCenter - m_myYCenter));
+		
+		final int x = (int) (rectXCenter - (rectWidth/2));
+		final int y = (int) (rectYCenter - (rectHeight/2));
+		
+		// Draw the view area window		
+		g.setColor(VIEW_WINDOW_COLOR);
+		g.fillRect(x, y, rectWidth, rectHeight);
+		g.setColor(VIEW_WINDOW_BORDER_COLOR);
+		g.drawRect(x, y, rectWidth, rectHeight);
 		
 		boundChanged = false; imageUpdated = false;
 	}
@@ -528,12 +522,8 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 
 				if (imageDirty)
 					bevLOD.setDrawEdges(true);
-				
-				synchronized (timerLock) {
-					viewModel.drawSnapshot(networkImage2, bevLOD, viewModel.getBackgroundPaint(),
-							extents[0], extents[1], xCenter, yCenter, scale);
-				}
-				
+				viewModel.drawSnapshot(networkImage2, bevLOD, viewModel.getBackgroundPaint(),
+						extents[0], extents[1], xCenter, yCenter, scale);
 				imageDirty = false;
 				networkImage = networkImage2;
 			} catch (Exception e) {

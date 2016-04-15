@@ -26,7 +26,6 @@ package org.cytoscape.ding.impl;
 
 
 import java.awt.BorderLayout;
-import java.util.WeakHashMap;
 
 import javax.swing.JComponent;
 
@@ -50,29 +49,15 @@ public class DingNavigationRenderingEngineFactory implements RenderingEngineFact
 	
 	private final VisualLexicon dingLexicon;
 	private final CyServiceRegistrar registrar;
-	private final WeakHashMap<View<CyNetwork>, Object> locks;
-	
-	
-	public synchronized Object getLock(View<CyNetwork> view) {
-		Object lock = locks.get(view);
-		if(lock == null) {
-			locks.put(view, lock = new Object());
-		}
-		return lock;
-	}
+
 	
 	public DingNavigationRenderingEngineFactory(final CyServiceRegistrar registrar, final VisualLexicon dingLexicon) {
 		this.dingLexicon = dingLexicon;
 		this.registrar = registrar;
-		this.locks = new WeakHashMap<>();
 	}
 
 	@Override
 	public RenderingEngine<CyNetwork> createRenderingEngine(final Object visualizationContainer, final View<CyNetwork> view) {
-		return createRenderingEngine(visualizationContainer, view, true);
-	}
-	
-	RenderingEngine<CyNetwork> createRenderingEngine(final Object visualizationContainer, final View<CyNetwork> view, boolean showNavigationRectangle) {
 		if (visualizationContainer == null)
 			throw new IllegalArgumentException(
 					"Visualization container is null.  This should be an JComponent for this rendering engine.");
@@ -95,8 +80,7 @@ public class DingNavigationRenderingEngineFactory implements RenderingEngineFact
 		final JComponent container = (JComponent) visualizationContainer;
 		
 		// Create instance of an engine.
-		Object timerLock = getLock(view);
-		final BirdsEyeView bev = new BirdsEyeView(dgv, registrar, timerLock, showNavigationRectangle);
+		final BirdsEyeView bev = new BirdsEyeView(dgv, registrar);
 
 		container.setLayout(new BorderLayout());
 		container.add(bev, BorderLayout.CENTER);
