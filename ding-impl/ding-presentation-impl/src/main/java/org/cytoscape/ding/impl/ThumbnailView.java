@@ -61,7 +61,7 @@ public class ThumbnailView extends Component implements RenderingEngine<CyNetwor
 	@Override 
 	public void update(Graphics g) {
 		if(isVisible()) {
-			long start = System.currentTimeMillis();
+			//long start = System.currentTimeMillis();
 			
 			viewModel.m_networkCanvas.ensureInitialized();
 	
@@ -78,7 +78,7 @@ public class ThumbnailView extends Component implements RenderingEngine<CyNetwor
 			
 			if(bgImage != null && netImage != null && fgImage != null) {
 				// Fast path
-				System.out.println("fast path");
+				//System.out.println("fast path");
 				// Take the pre-rendered image directly from the canvas and scale it for the thumbnail
 				drawThumbnailLayer(g, w, h, bgImage);
 				drawThumbnailLayer(g, w, h, netImage);
@@ -86,7 +86,7 @@ public class ThumbnailView extends Component implements RenderingEngine<CyNetwor
 			}
 			else {
 				// Slow path
-				System.out.println("slow path");
+				//System.out.println("slow path");
 				// If the view hasn't been rendered yet then the cached images won't be available (can happen on session load).
 				// In this case we need to force it to render the thumbnail.
 				
@@ -106,8 +106,8 @@ public class ThumbnailView extends Component implements RenderingEngine<CyNetwor
 				drawThumbnailLayer(g, w, h, bufferedImage);
 			}
 			
-			long time = System.currentTimeMillis() - start;
-			System.out.println("ThumbnailView.update() done: " + time);
+			//long time = System.currentTimeMillis() - start;
+			//System.out.println("ThumbnailView.update() done: " + time);
 		}
 	}
 	
