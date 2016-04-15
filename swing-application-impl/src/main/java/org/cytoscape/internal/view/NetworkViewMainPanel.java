@@ -1,6 +1,7 @@
 package org.cytoscape.internal.view;
 
-import static org.cytoscape.internal.util.ViewUtil.*;
+import static org.cytoscape.internal.util.ViewUtil.createUniqueKey;
+import static org.cytoscape.internal.util.ViewUtil.getTitle;
 
 import java.awt.AWTEvent;
 import java.awt.BorderLayout;

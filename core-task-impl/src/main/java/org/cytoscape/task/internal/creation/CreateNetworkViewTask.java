@@ -157,7 +157,7 @@ public class CreateNetworkViewTask extends AbstractNetworkCollectionTask
 			insertTasksAfterCurrentTask(chooseRendererTask);
 		} else {
 			final CyNetwork curNet = appMgr.getCurrentNetwork();
-			CyNetworkView curView = null;
+			CyNetworkView curView = appMgr.getCurrentNetworkView();
 			
 			final VisualStyle style = vmMgr.getCurrentVisualStyle();
 			int i = 0;
@@ -171,7 +171,7 @@ public class CreateNetworkViewTask extends AbstractNetworkCollectionTask
 				final CyNetworkView view = createView(n, style, taskMonitor);
 				result.add(view);
 				
-				if (n.equals(curNet))
+				if (curView == null && n.equals(curNet))
 					curView = view;
 				
 				taskMonitor.setStatusMessage("Network view successfully created for:  "
@@ -180,16 +180,25 @@ public class CreateNetworkViewTask extends AbstractNetworkCollectionTask
 				taskMonitor.setProgress((i / (double) viewCount));
 			}
 			
-			if (curView == null && !result.isEmpty())
-				curView = result.get(result.size() - 1);
+			final List<CyNetwork> selectedNetworks = appMgr.getSelectedNetworks();
+			final List<CyNetworkView> selectedViews = new ArrayList<>(appMgr.getSelectedNetworkViews());
+			boolean setSelectedViews = false;
 			
-			if (curView != null) {
-				final List<CyNetworkView> selectedViews = new ArrayList<>(appMgr.getSelectedNetworkViews());
-				selectedViews.add(curView);
-				
-				appMgr.setCurrentNetworkView(curView);
-				appMgr.setSelectedNetworkViews(selectedViews);
+			for (CyNetworkView view : result) {
+				if (selectedNetworks.contains(view.getModel())) {
+					selectedViews.add(view);
+					setSelectedViews = true;
+				}
 			}
+			
+			if (curView == null && !selectedViews.isEmpty())
+				curView = selectedViews.get(0);
+			
+			if (setSelectedViews)
+				appMgr.setSelectedNetworkViews(selectedViews);
+			
+			if (curView != null)
+				appMgr.setCurrentNetworkView(curView);
 		}
 		
 		taskMonitor.setProgress(1.0);
