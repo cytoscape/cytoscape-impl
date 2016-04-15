@@ -23,24 +23,7 @@ package org.cytoscape.ding;
  * <http://www.gnu.org/licenses/lgpl-2.1.html>.
  * #L%
  */
-
-import static org.cytoscape.work.ServiceProperties.ENABLE_FOR;
-import static org.cytoscape.work.ServiceProperties.ID;
-import static org.cytoscape.work.ServiceProperties.INSERT_SEPARATOR_AFTER;
-import static org.cytoscape.work.ServiceProperties.INSERT_SEPARATOR_BEFORE;
-import static org.cytoscape.work.ServiceProperties.IN_CONTEXT_MENU;
-import static org.cytoscape.work.ServiceProperties.IN_MENU_BAR;
-import static org.cytoscape.work.ServiceProperties.IN_NETWORK_PANEL_CONTEXT_MENU;
-import static org.cytoscape.work.ServiceProperties.MENU_GRAVITY;
-import static org.cytoscape.work.ServiceProperties.NETWORK_ADD_MENU;
-import static org.cytoscape.work.ServiceProperties.NETWORK_DELETE_MENU;
-import static org.cytoscape.work.ServiceProperties.NETWORK_EDIT_MENU;
-import static org.cytoscape.work.ServiceProperties.NETWORK_GROUP_MENU;
-import static org.cytoscape.work.ServiceProperties.NETWORK_SELECT_MENU;
-import static org.cytoscape.work.ServiceProperties.NODE_ADD_MENU;
-import static org.cytoscape.work.ServiceProperties.PREFERRED_ACTION;
-import static org.cytoscape.work.ServiceProperties.PREFERRED_MENU;
-import static org.cytoscape.work.ServiceProperties.TITLE;
+import static org.cytoscape.work.ServiceProperties.*;
 
 import java.net.URL;
 import java.util.Enumeration;
@@ -222,7 +205,7 @@ public class CyActivator extends AbstractCyActivator {
 				spacialIndex2DFactoryServiceRef, dVisualLexicon, dialogTaskManager,
 				cyServiceRegistrarRef, cyNetworkTableManagerServiceRef, cyEventHelperServiceRef,
 				vtfListener, annotationFactoryManager, dingGraphLOD, vmmServiceRef,cyNetworkViewManagerServiceRef, handleFactory);
-		DingThumbnailRenderingEngineFactory dingThumbnailRenderingEngineFactory = new DingThumbnailRenderingEngineFactory(dingNavigationRenderingEngineFactory);
+		DingThumbnailRenderingEngineFactory dingThumbnailRenderingEngineFactory = new DingThumbnailRenderingEngineFactory(dVisualLexicon);
 		
 		AddEdgeNodeViewTaskFactoryImpl addEdgeNodeViewTaskFactory = new AddEdgeNodeViewTaskFactoryImpl(vmmServiceRef, cyEventHelperServiceRef);
 
