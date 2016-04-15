@@ -26,24 +26,23 @@ package org.cytoscape.ding.impl;
 
 
 import java.awt.AlphaComposite;
-import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Composite;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Image;
 import java.awt.Point;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.awt.image.VolatileImage;
-
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.cytoscape.ding.impl.events.ViewportChangeListener;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
+import org.cytoscape.ding.impl.events.ViewportChangeListener;
 import org.cytoscape.model.CyNode;
 
 
@@ -79,6 +78,11 @@ public class ArbitraryGraphicsCanvas extends DingCanvas implements ViewportChang
  	 * Flag to record that we're printing since we don't use the PrinterGraphics interface
  	 */
 	private boolean isPrinting = false;
+	
+	/**
+	 * Rendered image.
+	 */
+	private Image img;
 
 	/**
 	 * Constructor.
@@ -173,7 +177,7 @@ public class ArbitraryGraphicsCanvas extends DingCanvas implements ViewportChang
 		// our bounds have changed, create a new image with new size
 		if ((width > 1) && (height > 1)) {
 			// create the buffered image
-			m_img = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+			img = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
 			// update children's bounds
 			setBoundsChildren();
 		}
@@ -274,9 +278,9 @@ public class ArbitraryGraphicsCanvas extends DingCanvas implements ViewportChang
 	 */
 	public void paint(Graphics graphics) {
 		// only paint if we have an image to paint on
-		if (m_img != null) {
+		if (img != null) {
 			// get image graphics
-			final Graphics2D image2D = ((BufferedImage) m_img).createGraphics();
+			final Graphics2D image2D = ((BufferedImage) img).createGraphics();
 
 			// first clear the image
 			clearImage(image2D);
@@ -287,7 +291,10 @@ public class ArbitraryGraphicsCanvas extends DingCanvas implements ViewportChang
 			
 			image2D.dispose();
 			// render image
-			graphics.drawImage(m_img, 0, 0, null);
+			graphics.drawImage(img, 0, 0, null);
+			
+			// Make img publicly available *after* it has been rendered
+			m_img = img;
 		}
                 
 	}
@@ -352,7 +359,7 @@ public class ArbitraryGraphicsCanvas extends DingCanvas implements ViewportChang
 	 * image2D Graphics2D
 	 */
 	private void clearImage(Graphics2D image2D) {
-		if (m_img != null) {
+		if (img != null) {
 			// set color alpha based on opacity setting
 			int alpha = (m_isOpaque) ? 255 : 0;
 			Color backgroundColor = new Color(m_backgroundColor.getRed(), m_backgroundColor.getGreen(),
@@ -362,7 +369,7 @@ public class ArbitraryGraphicsCanvas extends DingCanvas implements ViewportChang
 			Composite origComposite = image2D.getComposite();
 			image2D.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC));
 			image2D.setPaint(backgroundColor);
-			image2D.fillRect(0, 0, m_img.getWidth(null), m_img.getHeight(null));
+			image2D.fillRect(0, 0, img.getWidth(null), img.getHeight(null));
 			image2D.setComposite(origComposite);
 		}
 	}

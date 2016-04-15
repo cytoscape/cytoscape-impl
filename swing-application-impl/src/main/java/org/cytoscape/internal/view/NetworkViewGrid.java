@@ -12,6 +12,7 @@ import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NETWOR
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.KeyboardFocusManager;
@@ -563,6 +564,10 @@ public class NetworkViewGrid extends JPanel {
 		final List<ThumbnailPanel> previousSelection = getSelectedItems();
 		
 		getGridPanel().removeAll();
+		
+		for(ThumbnailPanel tp : thumbnailPanels.values()) {
+			tp.getThumbnailRenderingEngine().dispose();
+		}
 		thumbnailPanels.clear();
 		
 		if (engines == null || engines.isEmpty()) {
@@ -859,6 +864,7 @@ public class NetworkViewGrid extends JPanel {
 		private JLabel currentLabel;
 		private JLabel titleLabel;
 		private JRootPane imagePanel;
+		private RenderingEngine<?> thumbnailRenderer;
 		
 		private boolean selected;
 		
@@ -1103,15 +1109,20 @@ public class NetworkViewGrid extends JPanel {
 		JRootPane getImagePanel() {
 			if (imagePanel == null) {
 				imagePanel = new JRootPane();
-				imagePanel.setBorder(
-						BorderFactory.createLineBorder(UIManager.getColor("Label.foreground"), IMG_BORDER_WIDTH));
+				imagePanel.setBorder(BorderFactory.createLineBorder(UIManager.getColor("Label.foreground"), IMG_BORDER_WIDTH));
 				
 				imagePanel.getGlassPane().setVisible(true);
 				
-				engines.thumbnailEngineFactory.createRenderingEngine(imagePanel.getContentPane(), getNetworkView());
+				Container contentPane = imagePanel.getContentPane();
+				CyNetworkView netView = getNetworkView();
+				thumbnailRenderer = engines.thumbnailEngineFactory.createRenderingEngine(contentPane, netView);
 			}
 			
 			return imagePanel;
+		}
+		
+		public RenderingEngine<?> getThumbnailRenderingEngine() {
+			return thumbnailRenderer;
 		}
 		
 		@Override
