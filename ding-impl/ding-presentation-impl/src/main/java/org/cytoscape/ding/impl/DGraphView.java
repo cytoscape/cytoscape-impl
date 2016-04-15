@@ -6,7 +6,7 @@ package org.cytoscape.ding.impl;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -61,7 +61,6 @@ import java.util.regex.Pattern;
 
 import javax.imageio.ImageIO;
 import javax.swing.Icon;
-import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 
 import org.cytoscape.application.swing.CyEdgeViewContextMenuFactory;
@@ -82,6 +81,7 @@ import org.cytoscape.ding.impl.events.ViewportChangeListener;
 import org.cytoscape.ding.impl.events.ViewportChangeListenerChain;
 import org.cytoscape.ding.impl.strokes.AnimatedStroke;
 import org.cytoscape.ding.impl.visualproperty.CustomGraphicsVisualProperty;
+import org.cytoscape.ding.internal.util.ViewUtil;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.graph.render.immed.GraphGraphics;
 import org.cytoscape.graph.render.stateful.GraphLOD;
@@ -1109,7 +1109,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	private void fitContent(final boolean updateView) {
 		cyEventHelper.flushPayloadEvents();
 
-		SwingUtilities.invokeLater(() -> {
+		ViewUtil.invokeOnEDT(() -> {
 			synchronized (m_lock) {
 				if (m_spacial.queryOverlap(Float.NEGATIVE_INFINITY, Float.NEGATIVE_INFINITY,
 				                           Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY,
@@ -2555,13 +2555,13 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		} else if (vp == BasicVisualLexicon.NETWORK_WIDTH) {
 			// This actually sets the size on the canvas, so we need to make sure
 			// this runs on the AWT thread
-			SwingUtilities.invokeLater(() -> {
+			ViewUtil.invokeOnEDT(() -> {
 				m_networkCanvas.setSize(((Double)value).intValue(), m_networkCanvas.getHeight());
 			});
 		} else if (vp == BasicVisualLexicon.NETWORK_HEIGHT) {
 			// This actually sets the size on the canvas, so we need to make sure
 			// this runs on the AWT thread
-			SwingUtilities.invokeLater(() -> {
+			ViewUtil.invokeOnEDT(() -> {
 				m_networkCanvas.setSize(m_networkCanvas.getWidth(), ((Double)value).intValue());
 			});
 		}
