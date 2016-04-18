@@ -1,34 +1,10 @@
 package org.cytoscape.internal.dialogs;
 
-/*
- * #%L
- * Cytoscape Swing Application Impl (swing-application-impl)
- * $Id:$
- * $HeadURL:$
- * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * #L%
- */
-
 import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
 
 import java.awt.Component;
-import java.awt.Frame;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -65,18 +41,39 @@ import javax.swing.event.ListSelectionListener;
 import org.cytoscape.io.DataCategory;
 import org.cytoscape.io.datasource.DataSourceManager;
 import org.cytoscape.io.datasource.DefaultDataSource;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 
-/**
- *
+/*
+ * #%L
+ * Cytoscape Swing Application Impl (swing-application-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
  */
+
 @SuppressWarnings("serial")
-public class BookmarkDialogImpl extends JDialog implements ActionListener, ListSelectionListener, ItemListener {
+public class BookmarkDialog extends JDialog implements ActionListener, ListSelectionListener, ItemListener {
 
 	private String bookmarkCategory;
 
 	private String[] bookmarkCategories = { "network", "table", "image","properties","session","script","vizmap", "unspecified" };
-	private DataSourceManager dsManagerServiceRef;
 
 	private JButton btnAddBookmark;
 	private JButton btnDeleteBookmark;
@@ -86,9 +83,12 @@ public class BookmarkDialogImpl extends JDialog implements ActionListener, ListS
 	private JScrollPane scrollPane;
 	private JList<org.cytoscape.io.datasource.DataSource> listBookmark;
 	
-	public BookmarkDialogImpl(Frame pParent, DataSourceManager dsManagerServiceRef) {
-		super(pParent, ModalityType.APPLICATION_MODAL);
-		this.dsManagerServiceRef = dsManagerServiceRef;
+	private final CyServiceRegistrar serviceRegistrar;
+	
+	public BookmarkDialog(final Window owner, final CyServiceRegistrar serviceRegistrar) {
+		super(owner, ModalityType.APPLICATION_MODAL);
+		
+		this.serviceRegistrar = serviceRegistrar;
 		
 		this.setTitle("Bookmark Manager");
 		initComponents();
@@ -98,7 +98,7 @@ public class BookmarkDialogImpl extends JDialog implements ActionListener, ListS
 
 		setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 		pack();
-		setLocationRelativeTo(pParent);
+		setLocationRelativeTo(owner);
 		setResizable(false);
 	}
 
@@ -208,27 +208,28 @@ public class BookmarkDialogImpl extends JDialog implements ActionListener, ListS
 	}
 
 	public void loadBookmarks() {
+		final DataSourceManager dsManager = serviceRegistrar.getService(DataSourceManager.class);
 		Collection<org.cytoscape.io.datasource.DataSource> theDataSourceCollection = new HashSet<>();
 		final String selectedItem = (String) cmbCategory.getSelectedItem();
 		
 		if (selectedItem.equals("network")){
-			theDataSourceCollection = dsManagerServiceRef.getDataSources(org.cytoscape.io.DataCategory.NETWORK); 			
+			theDataSourceCollection = dsManager.getDataSources(org.cytoscape.io.DataCategory.NETWORK); 			
 		} else if (selectedItem.equals("table")){
-			theDataSourceCollection = dsManagerServiceRef.getDataSources(org.cytoscape.io.DataCategory.TABLE); 						
+			theDataSourceCollection = dsManager.getDataSources(org.cytoscape.io.DataCategory.TABLE); 						
 		} else if (selectedItem.equals("image")){
-			theDataSourceCollection = dsManagerServiceRef.getDataSources(org.cytoscape.io.DataCategory.IMAGE); 						
+			theDataSourceCollection = dsManager.getDataSources(org.cytoscape.io.DataCategory.IMAGE); 						
 		} else if (selectedItem.equals("properties")){
-			theDataSourceCollection = dsManagerServiceRef.getDataSources(org.cytoscape.io.DataCategory.PROPERTIES);			
+			theDataSourceCollection = dsManager.getDataSources(org.cytoscape.io.DataCategory.PROPERTIES);			
 		} else if (selectedItem.equals("session")){
-			theDataSourceCollection = dsManagerServiceRef.getDataSources(org.cytoscape.io.DataCategory.SESSION);
+			theDataSourceCollection = dsManager.getDataSources(org.cytoscape.io.DataCategory.SESSION);
 		} else if (selectedItem.equals("script")){
-			theDataSourceCollection = dsManagerServiceRef.getDataSources(org.cytoscape.io.DataCategory.SCRIPT);
+			theDataSourceCollection = dsManager.getDataSources(org.cytoscape.io.DataCategory.SCRIPT);
 		} else if (selectedItem.equals("vizmap")){
-			theDataSourceCollection = dsManagerServiceRef.getDataSources(org.cytoscape.io.DataCategory.VIZMAP);
+			theDataSourceCollection = dsManager.getDataSources(org.cytoscape.io.DataCategory.VIZMAP);
 		} else if (selectedItem.equals("unspecified")){
-			theDataSourceCollection = dsManagerServiceRef.getDataSources(org.cytoscape.io.DataCategory.UNSPECIFIED);
+			theDataSourceCollection = dsManager.getDataSources(org.cytoscape.io.DataCategory.UNSPECIFIED);
 		} else {
-			theDataSourceCollection = dsManagerServiceRef.getDataSources(org.cytoscape.io.DataCategory.UNSPECIFIED);
+			theDataSourceCollection = dsManager.getDataSources(org.cytoscape.io.DataCategory.UNSPECIFIED);
 		}
 		 
 		Iterator<org.cytoscape.io.datasource.DataSource> it = theDataSourceCollection.iterator();
@@ -274,7 +275,8 @@ public class BookmarkDialogImpl extends JDialog implements ActionListener, ListS
 				MyListModel theModel = (MyListModel) listBookmark.getModel();
 				theModel.removeElement(listBookmark.getSelectedIndex());
 
-				this.dsManagerServiceRef.deleteDataSource(theDataSource);
+				final DataSourceManager dsManager = serviceRegistrar.getService(DataSourceManager.class);
+				dsManager.deleteDataSource(theDataSource);
 
 				if (theModel.getSize() == 0) {
 					btnEditBookmark.setEnabled(false);
@@ -393,6 +395,8 @@ public class BookmarkDialogImpl extends JDialog implements ActionListener, ListS
 		}
 
 		private void onOKButtonActionPerformed(ActionEvent e) {
+			final DataSourceManager dsManager = serviceRegistrar.getService(DataSourceManager.class);
+			
 			if (mode.equalsIgnoreCase("new")) {
 				name = tfName.getText();
 				URLstr = tfURL.getText();
@@ -418,14 +422,14 @@ public class BookmarkDialogImpl extends JDialog implements ActionListener, ListS
 				org.cytoscape.io.datasource.DataSource theDataSource = new DefaultDataSource(name, 
 						provider, "", getCategoryByName(this.categoryName), newURL);
 
-				if (BookmarkDialogImpl.this.dsManagerServiceRef.containsDataSource(theDataSource)){
+				if (dsManager.containsDataSource(theDataSource)){
 					String msg = "Bookmark already existed.";
 					// display info dialog
 					JOptionPane.showMessageDialog(parent, msg, "Warning", JOptionPane.INFORMATION_MESSAGE);
 					return;						
 				}
 									
-				BookmarkDialogImpl.this.dsManagerServiceRef.saveDataSource(theDataSource);
+				dsManager.saveDataSource(theDataSource);
 				
 				this.dispose();
 			} else if (mode.equalsIgnoreCase("edit")) {
@@ -452,8 +456,8 @@ public class BookmarkDialogImpl extends JDialog implements ActionListener, ListS
 				org.cytoscape.io.datasource.DataSource theDataSource = new DefaultDataSource(name, 
 						provider, this.dataSource.getDescription(), this.dataSource.getDataCategory(), newURL);
 				
-				BookmarkDialogImpl.this.dsManagerServiceRef.deleteDataSource(this.dataSource);
-				BookmarkDialogImpl.this.dsManagerServiceRef.saveDataSource(theDataSource);		
+				dsManager.deleteDataSource(this.dataSource);
+				dsManager.saveDataSource(theDataSource);		
 
 				this.dispose();
 			}

@@ -2,15 +2,11 @@ package org.cytoscape.internal.layout.ui;
 
 import static org.cytoscape.internal.util.ViewUtil.invokeOnEDT;
 
-import java.awt.Component;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.Map;
-
-import javax.swing.JMenuItem;
-import javax.swing.SwingUtilities;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.events.SetCurrentNetworkViewEvent;
@@ -18,6 +14,7 @@ import org.cytoscape.application.events.SetCurrentNetworkViewListener;
 import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.application.swing.ActionEnableSupport;
 import org.cytoscape.application.swing.CySwingApplication;
+import org.cytoscape.internal.util.ViewUtil;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.layout.CyLayoutAlgorithm;
 import org.cytoscape.view.model.CyNetworkViewManager;
@@ -71,17 +68,7 @@ public class SettingsAction extends AbstractCyAction implements SetCurrentNetwor
 	public void actionPerformed(ActionEvent evt) {
 		if (settingsDialog == null) {
 			final CySwingApplication swingApplication = serviceRegistrar.getService(CySwingApplication.class);
-			Window owner = null;
-			
-			if (evt.getSource() instanceof JMenuItem) {
-				if (swingApplication.getJMenuBar() != null)
-					owner = SwingUtilities.getWindowAncestor(swingApplication.getJMenuBar());
-			} else if (evt.getSource() instanceof Component) {
-				owner = SwingUtilities.getWindowAncestor((Component) evt.getSource());
-			}
-			
-			if (owner == null)
-				owner = swingApplication.getJFrame();
+			final Window owner = ViewUtil.getWindowAncestor(evt, swingApplication);
 			
 			settingsDialog = new LayoutSettingsDialog(owner, layoutSettingsMgr, serviceRegistrar);
 			

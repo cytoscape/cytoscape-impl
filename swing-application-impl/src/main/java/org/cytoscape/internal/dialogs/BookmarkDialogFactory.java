@@ -1,12 +1,22 @@
 package org.cytoscape.internal.dialogs;
 
+import static org.cytoscape.internal.util.ViewUtil.invokeOnEDT;
+
+import java.awt.Window;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.session.events.SessionLoadedEvent;
+import org.cytoscape.session.events.SessionLoadedListener;
+
 /*
  * #%L
  * Cytoscape Swing Application Impl (swing-application-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,59 +34,42 @@ package org.cytoscape.internal.dialogs;
  * #L%
  */
 
-import java.awt.Frame;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.ArrayList;
+public class BookmarkDialogFactory implements SessionLoadedListener {
 
-
-import javax.swing.SwingUtilities;
-
-import org.cytoscape.io.DataCategory;
-import org.cytoscape.io.datasource.DataSourceManager;
-import org.cytoscape.property.CyProperty;
-//import org.cytoscape.property.bookmark.Bookmarks;
-//import org.cytoscape.property.bookmark.Category;
-//import org.cytoscape.property.bookmark.DataSource;
-//import org.cytoscape.property.bookmark.BookmarksUtil;
-import org.cytoscape.session.CySession;
-import org.cytoscape.session.events.SessionLoadedEvent;
-import org.cytoscape.session.events.SessionLoadedListener;
-
-public class BookmarkDialogFactoryImpl implements SessionLoadedListener {
-
-//	private CyProperty<Bookmarks> bookmarksProp;
-//	private BookmarksUtil bkUtil;
-	private DataSourceManager dsManagerServiceRef;
-
-	private BookmarkDialogImpl bmDialog= null;;
+	private BookmarkDialog dialog;
 	
-	public BookmarkDialogFactoryImpl(/*CyProperty<Bookmarks> bookmarksProp, BookmarksUtil bkUtil,*/ DataSourceManager dsManagerServiceRef) {
-//		this.bookmarksProp = bookmarksProp;
-//		this.bkUtil = bkUtil;
-		this.dsManagerServiceRef = dsManagerServiceRef;
+	private final CyServiceRegistrar serviceRegistrar;
+
+	public BookmarkDialogFactory(final CyServiceRegistrar serviceRegistrar) {
+		this.serviceRegistrar = serviceRegistrar;
 	}
 
-	public BookmarkDialogImpl getBookmarkDialog(Frame parent) {
-		bmDialog = new BookmarkDialogImpl(parent, /*bookmarksProp.getProperties(), bkUtil,*/ dsManagerServiceRef); 
-		return bmDialog;
+	public BookmarkDialog getBookmarkDialog(final Window owner) {
+		if (dialog == null) {
+			dialog = new BookmarkDialog(owner, serviceRegistrar);
+			dialog.addWindowListener(new WindowAdapter() {
+				@Override
+				public void windowClosed(WindowEvent e) {
+					dialog = null;
+				}
+			});
+		}
+		
+		return dialog;
 	}
 	
 	@Override
 	public void handleEvent(final SessionLoadedEvent e) {
-		
-		SwingUtilities.invokeLater(new Runnable() {
-			@Override
-			public void run() {
-				if (BookmarkDialogFactoryImpl.this.bmDialog != null){
-					BookmarkDialogFactoryImpl.this.bmDialog.loadBookmarks();					
-				}
-//				updateBookmarks(e.getLoadedSession());
-			}
+		invokeOnEDT(() -> {
+			if (BookmarkDialogFactory.this.dialog != null)
+				BookmarkDialogFactory.this.dialog.loadBookmarks();					
+			
+//			updateBookmarks(e.getLoadedSession());
 		});
+	}
+	
+	public boolean isDialogVisible() {
+		return dialog != null && dialog.isVisible();
 	}
 	
 //	private void updateBookmarks(final CySession sess) {

@@ -39,7 +39,6 @@ import org.cytoscape.application.swing.CyHelpBroker;
 import org.cytoscape.application.swing.CyNetworkViewDesktopMgr;
 import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.application.swing.ToolBarComponent;
-import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.internal.actions.BookmarkAction;
 import org.cytoscape.internal.actions.CloseWindowAction;
 import org.cytoscape.internal.actions.CreateNetworkViewsAction;
@@ -53,8 +52,8 @@ import org.cytoscape.internal.actions.FullScreenMacAction;
 import org.cytoscape.internal.actions.PreferenceAction;
 import org.cytoscape.internal.actions.PrintAction;
 import org.cytoscape.internal.actions.RecentSessionManager;
-import org.cytoscape.internal.dialogs.BookmarkDialogFactoryImpl;
-import org.cytoscape.internal.dialogs.PreferencesDialogFactoryImpl;
+import org.cytoscape.internal.dialogs.BookmarkDialogFactory;
+import org.cytoscape.internal.dialogs.PreferencesDialogFactory;
 import org.cytoscape.internal.io.SessionIO;
 import org.cytoscape.internal.layout.ui.LayoutMenuPopulator;
 import org.cytoscape.internal.layout.ui.LayoutSettingsManager;
@@ -89,10 +88,8 @@ import org.cytoscape.internal.view.help.HelpAboutTaskFactory;
 import org.cytoscape.internal.view.help.HelpContactHelpDeskTaskFactory;
 import org.cytoscape.internal.view.help.HelpContentsTaskFactory;
 import org.cytoscape.internal.view.help.HelpReportABugTaskFactory;
-import org.cytoscape.io.datasource.DataSourceManager;
 import org.cytoscape.model.events.NetworkDestroyedListener;
 import org.cytoscape.property.CyProperty;
-import org.cytoscape.property.bookmark.BookmarksUtil;
 import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.events.SessionLoadedListener;
@@ -161,14 +158,11 @@ public class CyActivator extends AbstractCyActivator {
 		DialogTaskManager dialogTaskManager = getService(bc, DialogTaskManager.class);
 		PanelTaskManager panelTaskManager = getService(bc, PanelTaskManager.class);
 		CyColumnIdentifierFactory cyColumnIdFactory = getService(bc, CyColumnIdentifierFactory.class);
-		BookmarksUtil bookmarksUtil = getService(bc, BookmarksUtil.class);
 		SwingUndoSupport undoSupport = getService(bc, SwingUndoSupport.class);
-		CyEventHelper eventHelper = getService(bc, CyEventHelper.class);
 		CyServiceRegistrar serviceRegistrar = getService(bc, CyServiceRegistrar.class);
 		OpenBrowser openBrowser = getService(bc, OpenBrowser.class);
 		VisualMappingManager visualMappingManager = getService(bc, VisualMappingManager.class);
 		DynamicTaskFactoryProvisioner dynamicTaskFactoryProvisioner = getService(bc, DynamicTaskFactoryProvisioner.class);
-		DataSourceManager dsManager = getService(bc, DataSourceManager.class);
 		TunablePropertySerializerFactory tunablePropSerializerFactory = getService(bc, TunablePropertySerializerFactory.class);
 		
 		//////////////		
@@ -176,8 +170,8 @@ public class CyActivator extends AbstractCyActivator {
 		RedoAction redoAction = new RedoAction(undoSupport);
 		ConfigDirPropertyWriter configDirPropertyWriter = new ConfigDirPropertyWriter(serviceRegistrar);
 		CyHelpBrokerImpl cyHelpBroker = new CyHelpBrokerImpl();
-		PreferencesDialogFactoryImpl preferencesDialogFactory = new PreferencesDialogFactoryImpl(eventHelper);
-		BookmarkDialogFactoryImpl bookmarkDialogFactory = new BookmarkDialogFactoryImpl(dsManager);
+		PreferencesDialogFactory preferencesDialogFactory = new PreferencesDialogFactory(serviceRegistrar);
+		BookmarkDialogFactory bookmarkDialogFactory = new BookmarkDialogFactory(serviceRegistrar);
 		
 		registerService(bc, bookmarkDialogFactory, SessionLoadedListener.class, new Properties());
 		
@@ -208,9 +202,7 @@ public class CyActivator extends AbstractCyActivator {
 
 		ExitAction exitAction = new ExitAction(serviceRegistrar);
 
-		PreferenceAction preferenceAction = new PreferenceAction(cytoscapeDesktop,
-		                                                         preferencesDialogFactory,
-		                                                         bookmarksUtil);
+		PreferenceAction preferenceAction = new PreferenceAction(cytoscapeDesktop, preferencesDialogFactory);
 
 		BookmarkAction bookmarkAction = new BookmarkAction(cytoscapeDesktop, bookmarkDialogFactory);
 

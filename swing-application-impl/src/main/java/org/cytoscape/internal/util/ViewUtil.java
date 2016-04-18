@@ -1,12 +1,17 @@
 package org.cytoscape.internal.util;
 
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.Window;
+import java.awt.event.ActionEvent;
 import java.util.Properties;
 
 import javax.swing.AbstractButton;
+import javax.swing.JMenuItem;
 import javax.swing.SwingUtilities;
 
+import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
@@ -161,6 +166,23 @@ public final class ViewUtil {
 		final CyProperty<Properties> cyProps = serviceRegistrar.getService(CyProperty.class, CY_PROPERTY_NAME);
 		cyProps.getProperties().setProperty(key, value);
 	}
+	
+	public static Window getWindowAncestor(final ActionEvent evt, final CySwingApplication swingApplication) {
+		Window window = null;
+		
+		if (evt.getSource() instanceof JMenuItem) {
+			if (swingApplication.getJMenuBar() != null)
+				window = SwingUtilities.getWindowAncestor(swingApplication.getJMenuBar());
+		} else if (evt.getSource() instanceof Component) {
+			window = SwingUtilities.getWindowAncestor((Component) evt.getSource());
+		}
+		
+		if (window == null)
+			window = swingApplication.getJFrame();
+		
+		return window;
+	}
+
 	
 	/**
 	 * Utility method that invokes the code in Runnable.run on the AWT Event Dispatch Thread.

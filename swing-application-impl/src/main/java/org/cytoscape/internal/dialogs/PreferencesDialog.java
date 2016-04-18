@@ -1,34 +1,10 @@
 package org.cytoscape.internal.dialogs;
 
-/*
- * #%L
- * Cytoscape Swing Application Impl (swing-application-impl)
- * $Id:$
- * $HeadURL:$
- * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * #L%
- */
-
 import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
 
 import java.awt.Dimension;
-import java.awt.Frame;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -61,23 +37,39 @@ import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.property.PropertyUpdatedEvent;
 import org.cytoscape.property.SimpleCyProperty;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.LookAndFeelUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-
-/**
- *
+/*
+ * #%L
+ * Cytoscape Swing Application Impl (swing-application-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
  */
-public class PreferencesDialogImpl extends JDialog implements ItemListener, ActionListener, ListSelectionListener {
+
+@SuppressWarnings("serial")
+public class PreferencesDialog extends JDialog implements ItemListener, ActionListener, ListSelectionListener {
 	
-	private final static long serialVersionUID = 1202339873396288L;
-	private static final Logger logger = LoggerFactory.getLogger(PreferencesDialogImpl.class);
-	private final CyEventHelper  eventHelper;
-	
-	private Map<String, Properties> propMap = new HashMap<String,Properties>();
-	private Map<String, CyProperty> cyPropMap;
-	private Map<String, Boolean> itemChangedMap = new HashMap<String, Boolean>();
+	private Map<String, Properties> propMap = new HashMap<>();
+	private Map<String, CyProperty<?>> cyPropMap;
+	private Map<String, Boolean> itemChangedMap = new HashMap<>();
 
 	private JComboBox<String> cmbPropCategories = new JComboBox<>();	
 	private JScrollPane propsTablePane = new JScrollPane();
@@ -87,18 +79,15 @@ public class PreferencesDialogImpl extends JDialog implements ItemListener, Acti
 	private JButton modifyPropBtn = new JButton("Modify");
 	private JButton closeButton;
 	
-	/**
-	 * Creates a new PreferencesDialog object.
-	 *
-	 * @param owner  DOCUMENT ME!
-	 */
-	public PreferencesDialogImpl(Frame owner, CyEventHelper eh, 
-			Map<String, Properties> propMap, Map<String, CyProperty> cyPropMap) {
-		super(owner);
+	private final CyServiceRegistrar serviceRegistrar;
+	
+	public PreferencesDialog(Window owner, Map<String, Properties> propMap,
+			Map<String, CyProperty<?>> cyPropMap, final CyServiceRegistrar serviceRegistrar) {
+		super(owner, ModalityType.APPLICATION_MODAL);
 		
 		this.propMap = propMap;
 		this.cyPropMap = cyPropMap;
-		this.eventHelper = eh;
+		this.serviceRegistrar = serviceRegistrar;
 		
 		for (String key: propMap.keySet())
 			itemChangedMap.put(key, false);
@@ -122,7 +111,6 @@ public class PreferencesDialogImpl extends JDialog implements ItemListener, Acti
 		pack();
 		// set location relative to owner/parent
 		setLocationRelativeTo(owner);
-		setModalityType(DEFAULT_MODALITY_TYPE);
 		setResizable(false);
 	}
 
@@ -261,11 +249,12 @@ public class PreferencesDialogImpl extends JDialog implements ItemListener, Acti
 		prefsTable.getSelectionModel().addListSelectionListener(this);
 	}
     
-	@SuppressWarnings("serial")
 	private void initGUI() throws Exception {
 		closeButton = new JButton(new AbstractAction("Close") {
 			@Override
 			public void actionPerformed(ActionEvent e) {
+				final CyEventHelper eventHelper = serviceRegistrar.getService(CyEventHelper.class);
+				
 				for (String key: itemChangedMap.keySet()){
 					if (itemChangedMap.get(key)){
 						PropertyUpdatedEvent event = new PropertyUpdatedEvent(cyPropMap.get(key));

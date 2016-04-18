@@ -1,12 +1,21 @@
 package org.cytoscape.internal.actions;
 
+import java.awt.Window;
+import java.awt.event.ActionEvent;
+
+import org.cytoscape.application.swing.AbstractCyAction;
+import org.cytoscape.application.swing.CySwingApplication;
+import org.cytoscape.internal.dialogs.BookmarkDialog;
+import org.cytoscape.internal.dialogs.BookmarkDialogFactory;
+import org.cytoscape.internal.util.ViewUtil;
+
 /*
  * #%L
  * Cytoscape Swing Application Impl (swing-application-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,29 +33,19 @@ package org.cytoscape.internal.actions;
  * #L%
  */
 
-
-import java.awt.event.ActionEvent;
-
-import org.cytoscape.application.swing.AbstractCyAction;
-import org.cytoscape.application.swing.CySwingApplication;
-import org.cytoscape.internal.dialogs.BookmarkDialogFactoryImpl;
-import org.cytoscape.internal.dialogs.BookmarkDialogImpl;
-
-
+@SuppressWarnings("serial")
 public class BookmarkAction extends AbstractCyAction {
 	
-	private final static long serialVersionUID = 120233986993206L;
-	
-	private CySwingApplication desktop;
+	private final CySwingApplication desktop;
 
-	private BookmarkDialogFactoryImpl bookmarkDialogFactory;
+	private final BookmarkDialogFactory dialogFactory;
 	
 	/**
 	 * Creates a new BookmarkAction object.
 	 */
-	public BookmarkAction(CySwingApplication desktop, BookmarkDialogFactoryImpl bookmarkDialogFactory) {
+	public BookmarkAction(final CySwingApplication desktop, final BookmarkDialogFactory dialogFactory) {
 		super("Bookmarks...");
-		this.bookmarkDialogFactory = bookmarkDialogFactory;
+		this.dialogFactory = dialogFactory;
 		setPreferredMenu("Edit.Preferences");
 		setMenuGravity(2.0f);
 		this.desktop = desktop;
@@ -54,7 +53,13 @@ public class BookmarkAction extends AbstractCyAction {
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		final BookmarkDialogImpl bookmarkDialog = bookmarkDialogFactory.getBookmarkDialog(desktop.getJFrame());
+		final Window owner = ViewUtil.getWindowAncestor(e, desktop);
+		final BookmarkDialog bookmarkDialog = dialogFactory.getBookmarkDialog(owner);
 		bookmarkDialog.showDialog();
+	}
+	
+	@Override
+	public boolean isEnabled() {
+		return !dialogFactory.isDialogVisible();
 	}
 }
