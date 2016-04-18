@@ -6,7 +6,7 @@ package org.cytoscape.ding.impl.cyannotator.create;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -29,31 +29,40 @@ import java.util.Map;
 
 import javax.swing.JDialog;
 
-import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.presentation.annotations.Annotation;
-import org.cytoscape.view.presentation.annotations.BoundedTextAnnotation;
-
 import org.cytoscape.ding.impl.DGraphView;
-import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.impl.cyannotator.annotations.BoundedTextAnnotationImpl;
 import org.cytoscape.ding.impl.cyannotator.dialogs.BoundedTextAnnotationDialog;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.presentation.annotations.BoundedTextAnnotation;
 
-public class BoundedTextAnnotationFactory implements DingAnnotationFactory<BoundedTextAnnotation> {
+public class BoundedTextAnnotationFactory extends AbstractDingAnnotationFactory<BoundedTextAnnotation> {
 
+	public BoundedTextAnnotationFactory(final CyServiceRegistrar serviceRegistrar) {
+		super(serviceRegistrar);
+	}
+	
+	@Override
 	public JDialog createAnnotationDialog(DGraphView view, Point2D location) {
-		return new BoundedTextAnnotationDialog(view, location);
+		return new BoundedTextAnnotationDialog(view, location, getActiveWindow());
 	}
 
-	public BoundedTextAnnotation createAnnotation(Class<? extends BoundedTextAnnotation> type, CyNetworkView view, Map<String, String> argMap) {
+	@Override
+	public BoundedTextAnnotation createAnnotation(Class<? extends BoundedTextAnnotation> type, CyNetworkView view,
+			Map<String, String> argMap) {
 		if (!(view instanceof DGraphView))
 			return null;
 
 		DGraphView dView = (DGraphView) view;
-		if ( type.equals(BoundedTextAnnotation.class) ) {
-			BoundedTextAnnotationImpl a = new BoundedTextAnnotationImpl(dView.getCyAnnotator(), dView, argMap);
+		
+		if (type.equals(BoundedTextAnnotation.class)) {
+			final BoundedTextAnnotationImpl a = new BoundedTextAnnotationImpl(dView.getCyAnnotator(), dView, argMap,
+					getActiveWindow());
 			a.update();
-			return (BoundedTextAnnotation)a;
-		} else 
+			
+			return (BoundedTextAnnotation) a;
+		} else {
 			return null;
+		}
 	}
 }

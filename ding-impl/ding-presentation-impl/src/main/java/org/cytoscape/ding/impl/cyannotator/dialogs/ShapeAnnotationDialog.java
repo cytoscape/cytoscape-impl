@@ -6,7 +6,7 @@ package org.cytoscape.ding.impl.cyannotator.dialogs;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -30,6 +30,7 @@ import static javax.swing.GroupLayout.Alignment.LEADING;
 
 import java.awt.Point;
 import java.awt.Robot;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.geom.Point2D;
 
@@ -62,17 +63,19 @@ public class ShapeAnnotationDialog extends JDialog {
 	private ShapeAnnotationImpl preview;
 	private final boolean create;
 		
-	public ShapeAnnotationDialog(DGraphView view, Point2D start) {
+	public ShapeAnnotationDialog(final DGraphView view, final Point2D start, final Window owner) {
+		super(owner);
 		this.view = view;
 		this.cyAnnotator = view.getCyAnnotator();
 		this.startingLocation = start;
-		this.shapeAnnotation = new ShapeAnnotationImpl(cyAnnotator, view, 400, 400);
+		this.shapeAnnotation = new ShapeAnnotationImpl(cyAnnotator, view, 400, 400, owner);
 		this.create = true;
 
 		initComponents();		        
 	}
 
-	public ShapeAnnotationDialog(ShapeAnnotationImpl mAnnotation) {
+	public ShapeAnnotationDialog(final ShapeAnnotationImpl mAnnotation, final Window owner) {
+		super(owner);
 		this.shapeAnnotation = mAnnotation;
 		this.cyAnnotator = mAnnotation.getCyAnnotator();
 		this.view = cyAnnotator.getView();
@@ -89,7 +92,7 @@ public class ShapeAnnotationDialog extends JDialog {
 		setTitle(create ? "Create Shape Annotation" : "Modify Shape Annotation");
 		
 		// Create the preview panel
-		preview = new ShapeAnnotationImpl(shapeAnnotation, 150, 150);
+		preview = new ShapeAnnotationImpl(shapeAnnotation, 150, 150, getOwner());
 		preview.setUsedForPreviews(true);
 		preview.getComponent().setSize(152, 152);
 		final PreviewPanel previewPanel = new PreviewPanel(preview);

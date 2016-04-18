@@ -6,7 +6,7 @@ package org.cytoscape.ding.impl.cyannotator.annotations;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -33,6 +33,7 @@ import java.awt.Graphics2D;
 import java.awt.Paint;
 import java.awt.Point;
 import java.awt.RenderingHints;
+import java.awt.Window;
 import java.awt.geom.Point2D;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -44,31 +45,20 @@ import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.SwingUtilities;
 
+import org.cytoscape.ding.impl.ArbitraryGraphicsCanvas;
+import org.cytoscape.ding.impl.ContentChangeListener;
+import org.cytoscape.ding.impl.DGraphView;
+import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.annotations.ArrowAnnotation;
 import org.cytoscape.view.presentation.annotations.GroupAnnotation;
 import org.cytoscape.view.presentation.annotations.TextAnnotation;
 
-import org.cytoscape.ding.impl.ArbitraryGraphicsCanvas;
-import org.cytoscape.ding.impl.ContentChangeListener;
-import org.cytoscape.ding.impl.DGraphView;
-import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
-import org.cytoscape.ding.impl.cyannotator.annotations.ArrowAnnotationImpl;
-import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
-
-/**
- *
- * @author Avinash Thummala
- */
-
-//A BasicAnnotation Class
-//
-
-public class AbstractAnnotation extends JComponent implements DingAnnotation {
-	private static int nextAnnotationNumber = 0;
-
-	private boolean selected=false;
+@SuppressWarnings("serial")
+public abstract class AbstractAnnotation extends JComponent implements DingAnnotation {
+	
+	private boolean selected;
 
 	private double globalZoom = 1.0;
 	private double myZoom = 1.0;
@@ -78,18 +68,20 @@ public class AbstractAnnotation extends JComponent implements DingAnnotation {
 
 	private Set<ArrowAnnotation> arrowList;
 
-	protected boolean usedForPreviews=false;
+	protected boolean usedForPreviews;
 	protected DGraphView view;
 	protected ArbitraryGraphicsCanvas canvas;
-	protected GroupAnnotationImpl parent = null;
+	protected GroupAnnotationImpl parent;
 	protected CyAnnotator cyAnnotator;
 
-	protected static final String ID="id";
-	protected static final String TYPE="type";
-	protected static final String ANNOTATION_ID="uuid";
-	protected static final String PARENT_ID="parent";
+	protected static final String ID = "id";
+	protected static final String TYPE = "type";
+	protected static final String ANNOTATION_ID = "uuid";
+	protected static final String PARENT_ID = "parent";
 
-	protected Map<String, String> savedArgMap = null;
+	protected Map<String, String> savedArgMap;
+
+	protected final Window owner;
 
 	/**
 	 * This constructor is used to create an empty annotation
@@ -97,46 +89,52 @@ public class AbstractAnnotation extends JComponent implements DingAnnotation {
 	 * to be functional, it must be added to the AnnotationManager
 	 * and setView must be called.
 	 */
-	public AbstractAnnotation(Map<String, String> argMap) {
-		arrowList = new HashSet<ArrowAnnotation>();
+	protected AbstractAnnotation(Map<String, String> argMap, Window owner) {
+		this.owner = owner;
+		arrowList = new HashSet<>();
 		savedArgMap = argMap;
 	}
 
-	public AbstractAnnotation(CyAnnotator cyAnnotator, DGraphView view) {
+	protected AbstractAnnotation(CyAnnotator cyAnnotator, DGraphView view, Window owner) {
+		this.owner = owner;
 		this.view = view;
 		this.cyAnnotator = cyAnnotator;
-		arrowList = new HashSet<ArrowAnnotation>();
+		arrowList = new HashSet<>();
 		this.canvas = (ArbitraryGraphicsCanvas)(view.getCanvas(DGraphView.Canvas.FOREGROUND_CANVAS));
 		this.canvasName = DGraphView.Canvas.FOREGROUND_CANVAS;
 		this.globalZoom = view.getZoom();
 	}
 
-	public AbstractAnnotation(AbstractAnnotation c) {
+	protected AbstractAnnotation(AbstractAnnotation c, Window owner) {
+		this.owner = owner;
 		this.view = c.view;
 		this.cyAnnotator = c.cyAnnotator;
-		arrowList = new HashSet<ArrowAnnotation>(c.arrowList);
+		arrowList = new HashSet<>(c.arrowList);
 		this.canvas = c.canvas;
 		this.canvasName = c.canvasName;
 	}
 
-	public AbstractAnnotation(CyAnnotator cyAnnotator, DGraphView view, 
-	                          double x, double y, double zoom) {
+	protected AbstractAnnotation(CyAnnotator cyAnnotator, DGraphView view, double x, double y, double zoom,
+			Window owner) {
+		this.owner = owner;
 		this.cyAnnotator = cyAnnotator;
 		this.view = view;
 		this.globalZoom=zoom;
 		this.canvas = (ArbitraryGraphicsCanvas)(view.getCanvas(DGraphView.Canvas.FOREGROUND_CANVAS));
 		this.canvasName = DGraphView.Canvas.FOREGROUND_CANVAS;
-		arrowList = new HashSet<ArrowAnnotation>();
+		arrowList = new HashSet<>();
 		// super.setBackground(Color.BLUE);
 		setLocation((int)x, (int)y);
 	}
 
-	public AbstractAnnotation(CyAnnotator cyAnnotator, DGraphView view, Map<String, String> argMap) {
+	protected AbstractAnnotation(CyAnnotator cyAnnotator, DGraphView view, Map<String, String> argMap, Window owner) {
+		this.owner = owner;
 		this.cyAnnotator = cyAnnotator;
 		this.view = view;
 		Point2D coords = getComponentCoordinates(argMap);
 		this.globalZoom = getDouble(argMap, ZOOM, 1.0);
 		String canvasString = getString(argMap, CANVAS, FOREGROUND);
+		
 		if (canvasString != null && canvasString.equals(BACKGROUND)) {
 			this.canvas = (ArbitraryGraphicsCanvas)(view.getCanvas(DGraphView.Canvas.BACKGROUND_CANVAS));
 			this.canvasName = DGraphView.Canvas.BACKGROUND_CANVAS;
@@ -145,14 +143,17 @@ public class AbstractAnnotation extends JComponent implements DingAnnotation {
 			this.canvasName = DGraphView.Canvas.FOREGROUND_CANVAS;
 		}
 
-		arrowList = new HashSet<ArrowAnnotation>();
+		arrowList = new HashSet<>();
 		setLocation((int)coords.getX(), (int)coords.getY());
+		
 		if (argMap.containsKey(ANNOTATION_ID))
 			this.uuid = UUID.fromString(argMap.get(ANNOTATION_ID));
+		
 		if (argMap.containsKey(PARENT_ID)) {
 			// See if the parent already exists
 			UUID parent_uuid = UUID.fromString(argMap.get(PARENT_ID));
 			DingAnnotation parentAnnotation = cyAnnotator.getAnnotation(parent_uuid);
+			
 			if (parentAnnotation != null && parentAnnotation instanceof GroupAnnotation) {
 				// It does -- add ourselves to it
 				((GroupAnnotation)parentAnnotation).addMember((Annotation)this);
@@ -160,7 +161,6 @@ public class AbstractAnnotation extends JComponent implements DingAnnotation {
 				// It doesn't -- let the parent add us
 			}
 		}
-		
 	}
 
 	public void setView(DGraphView view) {

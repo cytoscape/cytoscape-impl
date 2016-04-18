@@ -6,7 +6,7 @@ package org.cytoscape.ding.impl.cyannotator.tasks;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,35 +24,28 @@ package org.cytoscape.ding.impl.cyannotator.tasks;
  * #L%
  */
 
-
-
 import java.awt.geom.Point2D;
-import java.awt.datatransfer.Transferable;
 
-import org.cytoscape.view.presentation.annotations.AnnotationFactory; 
 import org.cytoscape.task.NetworkViewLocationTaskFactory;
 import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.work.TaskIterator;
-import org.cytoscape.ding.impl.cyannotator.AnnotationFactoryManager; 
-
+import org.cytoscape.view.presentation.annotations.AnnotationFactory;
+import org.cytoscape.work.TaskIterator; 
 
 public class AddAnnotationTaskFactory implements NetworkViewLocationTaskFactory {
-	private final AnnotationFactory annotationFactory;
 	
-	public AddAnnotationTaskFactory( AnnotationFactory annotationFactory) {
+	private final AnnotationFactory<?> annotationFactory;
+	
+	public AddAnnotationTaskFactory(final AnnotationFactory<?> annotationFactory) {
 		this.annotationFactory = annotationFactory;
 	}
 	
 	@Override
-	public TaskIterator createTaskIterator(CyNetworkView networkView,
-			Point2D javaPt, Point2D xformPt) {
+	public TaskIterator createTaskIterator(CyNetworkView networkView, Point2D javaPt, Point2D xformPt) {
 		return new TaskIterator(new AddAnnotationTask(networkView, javaPt, annotationFactory));
-
 	}
 
 	@Override
-	public boolean isReady(CyNetworkView networkView, Point2D javaPt,
-			Point2D xformPt) {
+	public boolean isReady(CyNetworkView networkView, Point2D javaPt, Point2D xformPt) {
 		return true;
 	}
 }

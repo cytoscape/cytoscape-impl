@@ -6,7 +6,7 @@ package org.cytoscape.ding.impl.cyannotator.create;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -29,32 +29,40 @@ import java.util.Map;
 
 import javax.swing.JDialog;
 
-import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.presentation.annotations.Annotation;
-import org.cytoscape.view.presentation.annotations.TextAnnotation;
-
 import org.cytoscape.ding.impl.DGraphView;
-import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.impl.cyannotator.annotations.TextAnnotationImpl;
 import org.cytoscape.ding.impl.cyannotator.dialogs.TextAnnotationDialog;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.presentation.annotations.TextAnnotation;
 
-public class TextAnnotationFactory implements DingAnnotationFactory<TextAnnotation> {
+public class TextAnnotationFactory extends AbstractDingAnnotationFactory<TextAnnotation> {
 
+	public TextAnnotationFactory(final CyServiceRegistrar serviceRegistrar) {
+		super(serviceRegistrar);
+	}
+	
+	@Override
 	public JDialog createAnnotationDialog(DGraphView view, Point2D location) {
-		return new TextAnnotationDialog(view, location);
+		return new TextAnnotationDialog(view, location, getActiveWindow());
 	}
 
 	@Override
-	public TextAnnotation createAnnotation(Class<? extends TextAnnotation> type, CyNetworkView view, Map<String, String> argMap) {
+	public TextAnnotation createAnnotation(Class<? extends TextAnnotation> type, CyNetworkView view,
+			Map<String, String> argMap) {
 		if (!(view instanceof DGraphView))
 			return null;
 
 		DGraphView dView = (DGraphView) view;
-		if ( type.equals(TextAnnotation.class) ) {
-			TextAnnotationImpl a = new TextAnnotationImpl(dView.getCyAnnotator(), dView, argMap);
+		
+		if (type.equals(TextAnnotation.class)) {
+			final TextAnnotationImpl a = new TextAnnotationImpl(dView.getCyAnnotator(), dView, argMap,
+					getActiveWindow());
 			a.update();
-			return (TextAnnotation)a;
-		} else 
+			
+			return (TextAnnotation) a;
+		} else {
 			return null;
+		}
 	}
 }

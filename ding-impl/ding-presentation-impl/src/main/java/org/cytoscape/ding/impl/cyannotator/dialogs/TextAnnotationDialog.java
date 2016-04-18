@@ -6,7 +6,7 @@ package org.cytoscape.ding.impl.cyannotator.dialogs;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -28,6 +28,7 @@ import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static javax.swing.GroupLayout.Alignment.LEADING;
 
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.geom.Point2D;
 
@@ -60,17 +61,19 @@ public class TextAnnotationDialog extends JDialog {
 	private final TextAnnotationImpl mAnnotation;
 	private TextAnnotationImpl preview;
 
-	public TextAnnotationDialog(DGraphView view, Point2D start) {
+	public TextAnnotationDialog(final DGraphView view, final Point2D start, final Window owner) {
+		super(owner);
 		this.view = view;
 		this.cyAnnotator = view.getCyAnnotator();
 		this.startingLocation = start;
-		this.mAnnotation = new TextAnnotationImpl(cyAnnotator, view);
+		this.mAnnotation = new TextAnnotationImpl(cyAnnotator, view, owner);
 		create = true;
 
 		initComponents();
 	}
 
-	public TextAnnotationDialog(TextAnnotationImpl mAnnotation) {
+	public TextAnnotationDialog(final TextAnnotationImpl mAnnotation, final Window owner) {
+		super(owner);
 		this.mAnnotation = mAnnotation;
 		this.cyAnnotator = mAnnotation.getCyAnnotator();
 		this.view = cyAnnotator.getView();
@@ -87,7 +90,7 @@ public class TextAnnotationDialog extends JDialog {
 		setTitle(create ? "Create Text Annotation" : "Modify Text Annotation");
 		
 		// Create the preview panel
-		preview = new TextAnnotationImpl(cyAnnotator, view);
+		preview = new TextAnnotationImpl(cyAnnotator, view, getOwner());
 		preview.setUsedForPreviews(true);
 		preview.getComponent().setSize(PREVIEW_WIDTH-10, PREVIEW_HEIGHT-10);
 		PreviewPanel previewPanel = new PreviewPanel(preview);

@@ -6,7 +6,7 @@ package org.cytoscape.ding.impl.cyannotator.annotations;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -33,37 +33,37 @@ import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
+import java.awt.Window;
 import java.awt.font.FontRenderContext;
 import java.util.Map;
 
 import javax.swing.JDialog;
 
-import org.cytoscape.view.presentation.annotations.TextAnnotation;
-
 import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 // import org.cytoscape.ding.impl.cyannotator.api.TextAnnotation;
 import org.cytoscape.ding.impl.cyannotator.dialogs.TextAnnotationDialog;
+import org.cytoscape.view.presentation.annotations.TextAnnotation;
 
+@SuppressWarnings("serial")
 public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnotation {
+	
 	private String text = "";
-
-	private double lastScaleFactor = -1;
 
 	protected float fontSize = 0.0f;
 	protected Font font = null;
 	protected int initialFontSize=12;
 	protected Color textColor = Color.BLACK;
 
-	public TextAnnotationImpl(CyAnnotator cyAnnotator, DGraphView view) { 
-		super(cyAnnotator, view); 
+	public TextAnnotationImpl(CyAnnotator cyAnnotator, DGraphView view, Window owner) { 
+		super(cyAnnotator, view, owner); 
 		this.font=new Font("Arial", Font.PLAIN, initialFontSize);
 		this.fontSize = (float)initialFontSize;
 		this.text = "Text Annotation";
 	}
 
-	public TextAnnotationImpl(TextAnnotationImpl c) {
-		super(c);
+	public TextAnnotationImpl(TextAnnotationImpl c, Window owner) {
+		super(c, owner);
 		this.text = c.getText();
 		this.textColor = c.getTextColor();
 		this.fontSize = (float)c.getFontSize();
@@ -71,8 +71,8 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 	}
 
 	public TextAnnotationImpl(CyAnnotator cyAnnotator, DGraphView view, 
-	                          int x, int y, String text, int compCount, double zoom){
-		super(cyAnnotator, view, x, y, zoom);
+	                          int x, int y, String text, int compCount, double zoom, Window owner){
+		super(cyAnnotator, view, x, y, zoom, owner);
 		this.text=text;
 		this.font=new Font("Arial", Font.PLAIN, initialFontSize);
 		this.fontSize = (float)initialFontSize;
@@ -82,15 +82,16 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 	// This constructor is used to construct a text annotation from an
 	// argument map.
 	// Need to make sure all arguments have reasonable options
-	public TextAnnotationImpl(CyAnnotator cyAnnotator, DGraphView view, Map<String, String> argMap) {
-		super(cyAnnotator, view, argMap);
+	public TextAnnotationImpl(CyAnnotator cyAnnotator, DGraphView view, Map<String, String> argMap, Window owner) {
+		super(cyAnnotator, view, argMap, owner);
 		this.font = getArgFont(argMap, "Arial", Font.PLAIN, initialFontSize);
-    this.textColor = getColor(argMap, COLOR, Color.BLACK);
+		this.textColor = getColor(argMap, COLOR, Color.BLACK);
 		this.text = getString(argMap, TEXT, "");
 		this.fontSize = font.getSize();
 		setSize(getAnnotationWidth(), getAnnotationHeight());
 	}
 
+	@Override
 	public Map<String,String> getArgMap() {
 		Map<String, String> argMap = super.getArgMap();
 		argMap.put(TYPE,TextAnnotation.class.getName());
@@ -188,7 +189,7 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 	}
 
 	public JDialog getModifyDialog() {
-		return new TextAnnotationDialog(this);
+		return new TextAnnotationDialog(this, owner);
 	}
 
 

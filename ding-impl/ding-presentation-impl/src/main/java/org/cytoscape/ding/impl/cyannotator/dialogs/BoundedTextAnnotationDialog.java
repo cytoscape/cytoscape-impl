@@ -6,7 +6,7 @@ package org.cytoscape.ding.impl.cyannotator.dialogs;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -30,6 +30,7 @@ import static javax.swing.GroupLayout.Alignment.LEADING;
 
 import java.awt.Point;
 import java.awt.Robot;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.geom.Point2D;
 
@@ -65,17 +66,19 @@ public class BoundedTextAnnotationDialog extends JDialog {
 	private BoundedTextAnnotationImpl preview;
 	private final boolean create;
 		
-	public BoundedTextAnnotationDialog(DGraphView view, Point2D start) {
+	public BoundedTextAnnotationDialog(final DGraphView view, final Point2D start, final Window owner) {
+		super(owner);
 		this.view = view;
 		this.cyAnnotator = view.getCyAnnotator();
 		this.startingLocation = start;
-		this.mAnnotation = new BoundedTextAnnotationImpl(cyAnnotator, view);
+		this.mAnnotation = new BoundedTextAnnotationImpl(cyAnnotator, view, owner);
 		this.create = true;
 
 		initComponents();		        
 	}
 
-	public BoundedTextAnnotationDialog(BoundedTextAnnotationImpl mAnnotation) {
+	public BoundedTextAnnotationDialog(final BoundedTextAnnotationImpl mAnnotation, final Window owner) {
+		super(owner);
 		this.mAnnotation=mAnnotation;
 		this.cyAnnotator = mAnnotation.getCyAnnotator();
 		this.view = cyAnnotator.getView();
@@ -92,7 +95,7 @@ public class BoundedTextAnnotationDialog extends JDialog {
 		setTitle(create ? "Create Bounded Text Annotation" : "Modify Bounded Text Annotation");
 		
 		// Create the preview panel
-		preview = new BoundedTextAnnotationImpl(cyAnnotator, view);
+		preview = new BoundedTextAnnotationImpl(cyAnnotator, view, getOwner());
 		preview.setUsedForPreviews(true);
 		preview.setText(mAnnotation.getText());
 		preview.setFont(mAnnotation.getFont());

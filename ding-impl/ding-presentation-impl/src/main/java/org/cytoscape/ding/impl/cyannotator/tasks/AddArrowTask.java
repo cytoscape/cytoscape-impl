@@ -6,7 +6,7 @@ package org.cytoscape.ding.impl.cyannotator.tasks;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,34 +24,24 @@ package org.cytoscape.ding.impl.cyannotator.tasks;
  * #L%
  */
 
-
-
 import java.awt.geom.Point2D;
 
 import javax.swing.JDialog;
 import javax.swing.SwingUtilities;
 
 import org.cytoscape.ding.impl.DGraphView;
+import org.cytoscape.ding.impl.cyannotator.create.AbstractDingAnnotationFactory;
 import org.cytoscape.task.AbstractNetworkViewTask;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.presentation.annotations.AnnotationFactory;
 import org.cytoscape.work.TaskMonitor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import org.cytoscape.ding.impl.cyannotator.create.DingAnnotationFactory;
-import org.cytoscape.ding.impl.cyannotator.create.ArrowAnnotationFactory;
 
 public class AddArrowTask extends AbstractNetworkViewTask {
 
 	private final Point2D location;
-	private static int new_node_index =1;
-	private final AnnotationFactory annotationFactory; 
+	private final AnnotationFactory<?> annotationFactory; 
 
-	private static final Logger logger = LoggerFactory.getLogger(AddArrowTask.class);
-	
-	
-	public AddArrowTask(CyNetworkView view, Point2D location, AnnotationFactory annotationFactory) {
+	public AddArrowTask(CyNetworkView view, Point2D location, AnnotationFactory<?> annotationFactory) {
 		super(view);
 		this.location = location;
 		this.annotationFactory = annotationFactory;
@@ -59,15 +49,12 @@ public class AddArrowTask extends AbstractNetworkViewTask {
 
 	@Override
 	public void run(TaskMonitor tm) throws Exception {
-		
-		if ( view instanceof DGraphView && annotationFactory instanceof DingAnnotationFactory ) {
-			SwingUtilities.invokeLater( new Runnable() {
-				public void run() {
-			
-		 			JDialog dialog = ((DingAnnotationFactory)annotationFactory).createAnnotationDialog((DGraphView)view, location);	
-					dialog.setLocation((int)location.getX(), (int)location.getY());
-					dialog.setVisible(true);
-				}
+		if (view instanceof DGraphView && annotationFactory instanceof AbstractDingAnnotationFactory) {
+			SwingUtilities.invokeLater(() -> {
+				final JDialog dialog = ((AbstractDingAnnotationFactory<?>) annotationFactory)
+						.createAnnotationDialog((DGraphView) view, location);
+				dialog.setLocation((int) location.getX(), (int) location.getY());
+				dialog.setVisible(true);
 			});
 		}
 	}

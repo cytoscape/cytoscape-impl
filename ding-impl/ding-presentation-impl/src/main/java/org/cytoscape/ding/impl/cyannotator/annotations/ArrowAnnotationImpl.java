@@ -6,7 +6,7 @@ package org.cytoscape.ding.impl.cyannotator.annotations;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -32,6 +32,7 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Paint;
 import java.awt.Rectangle;
+import java.awt.Window;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
@@ -41,17 +42,17 @@ import java.util.UUID;
 
 import javax.swing.JDialog;
 
-import org.cytoscape.view.presentation.annotations.Annotation;
-import org.cytoscape.view.presentation.annotations.ArrowAnnotation;
-import org.cytoscape.view.presentation.annotations.ArrowAnnotation.AnchorType;
-
 import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.ding.impl.DNodeView;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.impl.cyannotator.dialogs.ArrowAnnotationDialog;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.view.presentation.annotations.Annotation;
+import org.cytoscape.view.presentation.annotations.ArrowAnnotation;
 
+@SuppressWarnings("serial")
 public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnnotation {
+	
 	private Paint lineColor = Color.BLACK; // These are paint's so we can do gradients
 	private float lineWidth = 1.0f;
 
@@ -67,7 +68,6 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 	private Paint targetColor = null;
 	private double targetSize = 1.0;
 
-	private double previousZoom = 1.0;
 	private double shapeWidth = 0.0;
 	private double shapeHeight = 0.0;
 
@@ -94,31 +94,38 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 	protected static final String TARGETCOLOR = "targetColor";
 
 
-  public enum ArrowType {
-    CIRCLE ("Circle"),
-    CLOSED ("Closed Arrow"),
-    CONCAVE ("Concave Arrow"),
-    DIAMOND ("Diamond"),
-    OPEN ("Open Arrow"),
-    NONE ("No Arrow"),
-    TRIANGLE ("Triangular Head"),
-    TSHAPE ("T-Shape");
+	public enum ArrowType {
+		CIRCLE("Circle"),
+		CLOSED("Closed Arrow"),
+		CONCAVE("Concave Arrow"),
+		DIAMOND("Diamond"),
+		OPEN("Open Arrow"),
+		NONE("No Arrow"),
+		TRIANGLE("Triangular Head"),
+		TSHAPE("T-Shape");
 
-    private final String name;
-    ArrowType (String name) {
-      this.name = name;
-    }
-    public String arrowName() { return this.name; }
+		private final String name;
 
-    public String toString() { return this.name; }
-  }
+		ArrowType(String name) {
+			this.name = name;
+		}
 
-	public ArrowAnnotationImpl(CyAnnotator cyAnnotator, DGraphView view) {
-		super(cyAnnotator, view);
+		public String arrowName() {
+			return this.name;
+		}
+
+		@Override
+		public String toString() {
+			return this.name;
+		}
 	}
 
-	public ArrowAnnotationImpl(ArrowAnnotationImpl c) {
-		super(c);
+	public ArrowAnnotationImpl(CyAnnotator cyAnnotator, DGraphView view, Window owner) {
+		super(cyAnnotator, view, owner);
+	}
+
+	public ArrowAnnotationImpl(ArrowAnnotationImpl c, Window owner) {
+		super(c, owner);
 
 		// Line parameters
 		this.lineColor = c.lineColor;
@@ -137,12 +144,23 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 		this.targetSize = c.targetSize;
 	}
 
-  public ArrowAnnotationImpl(CyAnnotator cyAnnotator, DGraphView view,
-	                           DingAnnotation source, Object target, float lineWidth,
-	                           Paint lineColor, 
-	                           ArrowType sourceType, Paint sourceColor, float sourceSize,
-	                           ArrowType targetType, Paint targetColor, float targetSize) {
-		super(cyAnnotator, view, source.getComponent().getX(), source.getComponent().getY(), view.getZoom());
+	public ArrowAnnotationImpl(
+			CyAnnotator cyAnnotator,
+			DGraphView view,
+			DingAnnotation source,
+			Object target,
+			float lineWidth,
+			Paint lineColor,
+			ArrowType sourceType,
+			Paint sourceColor,
+			float sourceSize,
+			ArrowType targetType,
+			Paint targetColor,
+			float targetSize,
+			Window owner
+	) {
+		super(cyAnnotator, view, source.getComponent().getX(), source.getComponent().getY(), view.getZoom(),
+				owner);
 
 		// Line parameters
 		this.lineColor = lineColor;
@@ -161,12 +179,17 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 		this.targetSize = targetSize;
 
 		updateBounds();
-  }
+	}
 
-  public ArrowAnnotationImpl(CyAnnotator cyAnnotator, DGraphView view, Map<String, String> argMap) {
-    super(cyAnnotator, view, argMap);
+	public ArrowAnnotationImpl(
+			CyAnnotator cyAnnotator,
+			DGraphView view,
+			Map<String, String> argMap,
+			Window owner
+	) {
+		super(cyAnnotator, view, argMap, owner);
 
-    this.lineColor = getColor(argMap, ARROWCOLOR, Color.BLACK);
+		this.lineColor = getColor(argMap, ARROWCOLOR, Color.BLACK);
 		this.lineWidth = getFloat(argMap, ARROWTHICKNESS, 1.0f);
 
 		// Source
@@ -176,14 +199,14 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 		}
 
 		// Source Arrow
-    this.sourceType = GraphicsUtilities.getArrowType(argMap, SOURCETYPE, ArrowType.NONE);
-    this.sourceSize = getDouble(argMap, SOURCESIZE, 5.0);
-    this.sourceColor = getColor(argMap, SOURCECOLOR, null); // A null color = line color
+		this.sourceType = GraphicsUtilities.getArrowType(argMap, SOURCETYPE, ArrowType.NONE);
+		this.sourceSize = getDouble(argMap, SOURCESIZE, 5.0);
+		this.sourceColor = getColor(argMap, SOURCECOLOR, null); // A null color = line color
 
 		// Target Arrow
-    this.targetType = GraphicsUtilities.getArrowType(argMap, TARGETTYPE, ArrowType.NONE);
-    this.targetSize = getDouble(argMap, TARGETSIZE, 5.0);
-    this.targetColor = getColor(argMap, TARGETCOLOR, null); // A null color = line color
+		this.targetType = GraphicsUtilities.getArrowType(argMap, TARGETTYPE, ArrowType.NONE);
+		this.targetSize = getDouble(argMap, TARGETSIZE, 5.0);
+		this.targetColor = getColor(argMap, TARGETCOLOR, null); // A null color = line color
 
 		// Figure out the target
 		if (argMap.containsKey(TARGETPOINT)) {
@@ -202,7 +225,7 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 			String[] xy = point.split(",");
 			double x = Double.parseDouble(xy[0]);
 			double y = Double.parseDouble(xy[1]);
-			DNodeView nv = (DNodeView)view.getPickedNodeView(new Point2D.Double(x,y));
+			DNodeView nv = (DNodeView) view.getPickedNodeView(new Point2D.Double(x, y));
 			target = nv.getModel();
 		}
 		updateBounds();
@@ -228,7 +251,6 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 		} else if (target instanceof Annotation) {
 			argMap.put(TARGETANN,((DingAnnotation)target).getUUID().toString());
 		} else if (target instanceof CyNode) {
-			CyNode node = (CyNode)target;
 			DNodeView nv = (DNodeView)view.getNodeView((CyNode)target);
 			double xCenter = nv.getXPosition();
 			double yCenter = nv.getYPosition();
@@ -356,12 +378,15 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 
 	@Override
 	public void setSpecificZoom(double zoom) {
-		float factor=(float)(zoom/getSpecificZoom());
 		super.setSpecificZoom(zoom);		
 	}
 
-	public List<String> getSupportedArrows() { return GraphicsUtilities.getSupportedArrowTypeNames(); }
+	@Override
+	public List<String> getSupportedArrows() {
+		return GraphicsUtilities.getSupportedArrowTypeNames();
+	}
     
+	@Override
 	public void drawAnnotation(Graphics g, double x, double y, double scaleFactor) {
 		super.drawAnnotation(g, x, y, scaleFactor);
 
@@ -416,6 +441,7 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 		setSelected(selected);
 	}
 
+	@Override
 	public void paint(Graphics g) {
 		super.paint(g);
 		if (canvas.isPrinting())
@@ -424,6 +450,7 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 			drawArrow(g, false);
 	}
 
+	@Override
 	public void print(Graphics g) {
 		boolean selected = isSelected();
 		setSelected(false);
@@ -492,8 +519,9 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 		setSize((int)shapeWidth, (int)shapeHeight);
 	}
 
+	@Override
 	public JDialog getModifyDialog() {
-		return new ArrowAnnotationDialog(this);
+		return new ArrowAnnotationDialog(this, owner);
 	}
 
 	private Line2D getRelativeLine(Line2D line, double x, double y, 

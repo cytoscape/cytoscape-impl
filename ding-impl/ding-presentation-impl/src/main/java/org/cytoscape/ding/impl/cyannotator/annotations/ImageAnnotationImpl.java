@@ -6,7 +6,7 @@ package org.cytoscape.ding.impl.cyannotator.annotations;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -25,8 +25,6 @@ package org.cytoscape.ding.impl.cyannotator.annotations;
  */
 
 import java.awt.AlphaComposite;
-import java.awt.BasicStroke;
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -34,44 +32,41 @@ import java.awt.Image;
 import java.awt.Paint;
 import java.awt.RenderingHints;
 import java.awt.Shape;
+import java.awt.Window;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.RescaleOp;
 import java.awt.image.VolatileImage;
 import java.net.URL;
-
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
 import javax.swing.JDialog;
 
-import org.cytoscape.view.presentation.annotations.ImageAnnotation;
-
 import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
 import org.cytoscape.ding.customgraphics.ImageUtil;
 import org.cytoscape.ding.customgraphics.bitmap.URLImageCustomGraphics;
-import org.cytoscape.ding.impl.cyannotator.annotations.ShapeAnnotationImpl;
 import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 // import org.cytoscape.ding.impl.cyannotator.api.ImageAnnotation;
 import org.cytoscape.ding.impl.cyannotator.dialogs.ImageAnnotationDialog;
+import org.cytoscape.view.presentation.annotations.ImageAnnotation;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@SuppressWarnings("serial")
 public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnnotation {
+	
 	private BufferedImage image;
 	private	URL url = null;
 
-	private static final float MAX_CONTRAST=4.0f;
-	
-	// protected double shapeWidth=0, shapeHeight=0;
 	private BufferedImage resizedImage;
 	private float opacity = 1.0f;
 	private int brightness = 0;
 	private int contrast = 0;
-	private CyCustomGraphics cg = null;
+	private CyCustomGraphics cg;
 	protected CustomGraphicsManager customGraphicsManager;
 
 	private static final Logger logger = LoggerFactory.getLogger(ImageAnnotationImpl.class);
@@ -83,10 +78,12 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 		}
 	}
 
-	public ImageAnnotationImpl(CyAnnotator cyAnnotator, DGraphView view) { super(cyAnnotator, view, 0, 0); }
+	public ImageAnnotationImpl(CyAnnotator cyAnnotator, DGraphView view, Window owner) {
+		super(cyAnnotator, view, 0, 0, owner);
+	}
 
-	public ImageAnnotationImpl(ImageAnnotationImpl c) { 
-		super((ShapeAnnotationImpl)c, 0, 0);
+	public ImageAnnotationImpl(ImageAnnotationImpl c, Window owner) { 
+		super((ShapeAnnotationImpl)c, 0, 0, owner);
 		this.image = c.image;
 		this.customGraphicsManager = c.customGraphicsManager;
 		shapeWidth=image.getWidth();
@@ -100,8 +97,9 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 
 	public ImageAnnotationImpl(CyAnnotator cyAnnotator, DGraphView view, double x, double y, 
 	                           URL url, BufferedImage image, double zoom, 
-	                           CustomGraphicsManager customGraphicsManager) {
-		super(cyAnnotator, view, x, y, ShapeType.RECTANGLE, 0, 0, null, null, 0.0f);
+	                           CustomGraphicsManager customGraphicsManager,
+	                           Window owner) {
+		super(cyAnnotator, view, x, y, ShapeType.RECTANGLE, 0, 0, null, null, 0.0f, owner);
 		this.image=image;
 		this.customGraphicsManager = customGraphicsManager;
 		shapeWidth=image.getWidth();
@@ -115,8 +113,9 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 	}
 
 	public ImageAnnotationImpl(CyAnnotator cyAnnotator, DGraphView view, 
-	                           Map<String, String> argMap, CustomGraphicsManager customGraphicsManager) {
-		super(cyAnnotator, view, argMap);
+	                           Map<String, String> argMap, CustomGraphicsManager customGraphicsManager,
+	                           Window owner) {
+		super(cyAnnotator, view, argMap, owner);
 		this.customGraphicsManager = customGraphicsManager;
 
 		shapeWidth = getDouble(argMap, ImageAnnotation.WIDTH, 100.0);
@@ -148,6 +147,7 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 		}
 	}
 
+	@Override
 	public Map<String,String> getArgMap() {
 		Map<String, String> argMap = super.getArgMap();
 		argMap.put(TYPE,ImageAnnotation.class.getName());
@@ -344,8 +344,9 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 		customGraphicsManager.setUsedInCurrentSession(cg, false);
 	}
 
+	@Override
 	public JDialog getModifyDialog() {
-			return new ImageAnnotationDialog(this);
+		return new ImageAnnotationDialog(this, owner);
 	}
 
 	@Override

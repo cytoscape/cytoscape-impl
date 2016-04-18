@@ -29,26 +29,36 @@ import java.util.Map;
 
 import javax.swing.JDialog;
 
-import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.presentation.annotations.ArrowAnnotation;
-
 import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.ding.impl.cyannotator.annotations.ArrowAnnotationImpl;
 import org.cytoscape.ding.impl.cyannotator.dialogs.ArrowAnnotationDialog;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.presentation.annotations.ArrowAnnotation;
 
-public class ArrowAnnotationFactory implements DingAnnotationFactory<ArrowAnnotation> {
+public class ArrowAnnotationFactory extends AbstractDingAnnotationFactory<ArrowAnnotation> {
 
+	public ArrowAnnotationFactory(final CyServiceRegistrar serviceRegistrar) {
+		super(serviceRegistrar);
+	}
+	
+	@Override
 	public JDialog createAnnotationDialog(DGraphView view, Point2D location) {
-		return new ArrowAnnotationDialog(view, location);
+		return new ArrowAnnotationDialog(view, location, getActiveWindow());
 	}
 
-	public ArrowAnnotation createAnnotation(Class<? extends ArrowAnnotation> type, CyNetworkView view, Map<String, String> argMap) {
+	@Override
+	public ArrowAnnotation createAnnotation(Class<? extends ArrowAnnotation> type, CyNetworkView view,
+			Map<String, String> argMap) {
 		if (!(view instanceof DGraphView))
 			return null;
 
 		DGraphView dView = (DGraphView) view;
+
 		if (type.equals(ArrowAnnotation.class))
-			return (ArrowAnnotation)(new ArrowAnnotationImpl(dView.getCyAnnotator(), dView, argMap));
+			return (ArrowAnnotation) (new ArrowAnnotationImpl(dView.getCyAnnotator(), dView, argMap,
+					getActiveWindow()));
+
 		return null;
 	}
 }

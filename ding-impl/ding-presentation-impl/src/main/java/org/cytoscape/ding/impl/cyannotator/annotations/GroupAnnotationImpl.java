@@ -6,7 +6,7 @@ package org.cytoscape.ding.impl.cyannotator.annotations;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -28,14 +28,12 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Paint;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.Window;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
-
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -43,15 +41,14 @@ import java.util.UUID;
 import javax.swing.JDialog;
 import javax.swing.SwingUtilities;
 
-import org.cytoscape.view.presentation.annotations.Annotation;
-import org.cytoscape.view.presentation.annotations.GroupAnnotation;
-
-import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
 import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
+import org.cytoscape.view.presentation.annotations.Annotation;
+import org.cytoscape.view.presentation.annotations.GroupAnnotation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@SuppressWarnings("serial")
 public class GroupAnnotationImpl extends AbstractAnnotation implements GroupAnnotation {
 
 	List<DingAnnotation> annotations = null;
@@ -59,17 +56,17 @@ public class GroupAnnotationImpl extends AbstractAnnotation implements GroupAnno
 
 	private static final Logger logger = LoggerFactory.getLogger(GroupAnnotationImpl.class);
 
-	public GroupAnnotationImpl(CyAnnotator cyAnnotator, DGraphView view) { 
-		super(cyAnnotator, view); 
+	public GroupAnnotationImpl(CyAnnotator cyAnnotator, DGraphView view, Window owner) { 
+		super(cyAnnotator, view, owner); 
 	}
 
-	public GroupAnnotationImpl(GroupAnnotationImpl c) { 
-		super(c);
+	public GroupAnnotationImpl(GroupAnnotationImpl c, Window owner) { 
+		super(c, owner);
 	}
 
 	public GroupAnnotationImpl(CyAnnotator cyAnnotator, DGraphView view, double x, double y, 
-	                           List<Annotation> annotations, double zoom) {
-		super(cyAnnotator, view);
+	                           List<Annotation> annotations, double zoom, Window owner) {
+		super(cyAnnotator, view, owner);
 		this.annotations  = new ArrayList<DingAnnotation>();
 		for (Annotation a: annotations) {
 			if (a instanceof DingAnnotation)
@@ -78,8 +75,8 @@ public class GroupAnnotationImpl extends AbstractAnnotation implements GroupAnno
 	}
 
 	public GroupAnnotationImpl(CyAnnotator cyAnnotator, DGraphView view, 
-	                           Map<String, String> argMap) {
-		super(cyAnnotator, view, argMap);
+	                           Map<String, String> argMap, Window owner) {
+		super(cyAnnotator, view, argMap, owner);
 
 		// Get the UUIDs of all of the annotations
 		if (argMap.containsKey(MEMBERS)) {

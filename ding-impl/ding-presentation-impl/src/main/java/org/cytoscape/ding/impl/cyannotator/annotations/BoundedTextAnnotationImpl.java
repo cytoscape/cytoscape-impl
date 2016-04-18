@@ -6,7 +6,7 @@ package org.cytoscape.ding.impl.cyannotator.annotations;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -32,34 +32,33 @@ import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Paint;
+import java.awt.Window;
 import java.awt.font.FontRenderContext;
 import java.util.Map;
 
 import javax.swing.JDialog;
-
-import org.cytoscape.view.presentation.annotations.BoundedTextAnnotation;
-import org.cytoscape.view.presentation.annotations.TextAnnotation;
 
 import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 // import org.cytoscape.ding.impl.cyannotator.api.BoundedTextAnnotation;
 // import org.cytoscape.ding.impl.cyannotator.api.TextAnnotation;
 import org.cytoscape.ding.impl.cyannotator.dialogs.BoundedTextAnnotationDialog;
+import org.cytoscape.view.presentation.annotations.BoundedTextAnnotation;
+import org.cytoscape.view.presentation.annotations.TextAnnotation;
 
+@SuppressWarnings("serial")
 public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl 
                                        implements BoundedTextAnnotation, TextAnnotation {
 	private String text;
 	private boolean shapeIsFit = false;
-
-	private double lastScaleFactor = -1;
 
 	protected float fontSize = 0.0f;
 	protected Font font = null;
 	protected int initialFontSize=12;
 	protected Color textColor = Color.BLACK;
 	
-	public BoundedTextAnnotationImpl(CyAnnotator cyAnnotator, DGraphView view) { 
-		super(cyAnnotator, view, 100, 100);
+	public BoundedTextAnnotationImpl(CyAnnotator cyAnnotator, DGraphView view, Window owner) { 
+		super(cyAnnotator, view, 100, 100, owner);
 		this.font=new Font("Arial", Font.PLAIN, initialFontSize);
 		this.fontSize = (float)initialFontSize;
 		this.text = "Text Annotation";
@@ -67,15 +66,16 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 		              getTextHeight((Graphics2D)this.getGraphics())+4);
 	}
 
-	public BoundedTextAnnotationImpl(CyAnnotator cyAnnotator, DGraphView view, double width, double height) { 
-		super(cyAnnotator, view, width, height);
+	public BoundedTextAnnotationImpl(CyAnnotator cyAnnotator, DGraphView view, double width, double height,
+			Window owner) { 
+		super(cyAnnotator, view, width, height, owner);
 		this.font=new Font("Arial", Font.PLAIN, initialFontSize);
 		this.fontSize = (float)initialFontSize;
 		this.text = "Text Annotation";
 	}
 
-	public BoundedTextAnnotationImpl(BoundedTextAnnotationImpl c) { 
-		super(c, 100, 100);
+	public BoundedTextAnnotationImpl(BoundedTextAnnotationImpl c, Window owner) { 
+		super(c, 100, 100, owner);
 		this.text = c.getText();
 		this.textColor = c.getTextColor();
 		this.fontSize = (float)c.getFontSize();
@@ -86,18 +86,19 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
                                    double x, double y, ShapeType shapeType,
                                    double width, double height,
                                    Paint fillColor, Paint edgeColor,
-                                   float edgeThickness, String text, int compCount, double zoom){
-		super(cyAnnotator, view, x, y, shapeType, width, height, fillColor, edgeColor, edgeThickness);
+                                   float edgeThickness, String text, int compCount, double zoom,
+                                   Window owner) {
+		super(cyAnnotator, view, x, y, shapeType, width, height, fillColor, edgeColor, edgeThickness, owner);
 		this.text=text;
 		this.font=new Font("Arial", Font.PLAIN, initialFontSize);
 		this.fontSize = (float)initialFontSize;
 	}
 
 	public BoundedTextAnnotationImpl(CyAnnotator cyAnnotator, DGraphView view, 
-	                                 Map<String, String> argMap) {
-		super(cyAnnotator, view, argMap);
+	                                 Map<String, String> argMap, Window owner) {
+		super(cyAnnotator, view, argMap, owner);
 		this.font = getArgFont(argMap, "Arial", Font.PLAIN, initialFontSize);
-    this.textColor = getColor(argMap, COLOR, Color.BLACK);
+		this.textColor = getColor(argMap, COLOR, Color.BLACK);
 		this.text = getString(argMap, TEXT, "");
 		this.fontSize = font.getSize();
 
@@ -150,8 +151,9 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 		setSize((int)width+2, (int)height+2);
 	}
 	
+	@Override
 	public JDialog getModifyDialog() {
-			return new BoundedTextAnnotationDialog(this);
+			return new BoundedTextAnnotationDialog(this, owner);
 	}
 
 	@Override
