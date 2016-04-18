@@ -1,12 +1,9 @@
 package org.cytoscape.internal.view;
 
-import static javax.swing.GroupLayout.DEFAULT_SIZE;
-import static javax.swing.GroupLayout.PREFERRED_SIZE;
+import static javax.swing.GroupLayout.*;
 import static javax.swing.GroupLayout.Alignment.CENTER;
 import static org.cytoscape.internal.util.ViewUtil.styleToolBarButton;
-import static org.cytoscape.util.swing.IconManager.ICON_EXTERNAL_LINK_SQUARE;
-import static org.cytoscape.util.swing.IconManager.ICON_THUMB_TACK;
-import static org.cytoscape.util.swing.IconManager.ICON_TRASH_O;
+import static org.cytoscape.util.swing.IconManager.*;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NETWORK_TITLE;
 
 import java.awt.BorderLayout;
@@ -36,6 +33,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.NavigableMap;
+import java.util.Optional;
 import java.util.Set;
 import java.util.TreeMap;
 
@@ -566,7 +564,7 @@ public class NetworkViewGrid extends JPanel {
 		getGridPanel().removeAll();
 		
 		for(ThumbnailPanel tp : thumbnailPanels.values()) {
-			tp.getThumbnailRenderingEngine().dispose();
+			tp.getThumbnailRenderingEngine().ifPresent(RenderingEngine::dispose);
 		}
 		thumbnailPanels.clear();
 		
@@ -837,11 +835,11 @@ public class NetworkViewGrid extends JPanel {
 	
 	private static class RenderingEngines {
 		public final RenderingEngine<CyNetwork> networkEngine;
-		public final RenderingEngineFactory<CyNetwork> thumbnailEngineFactory;
+		public final Optional<RenderingEngineFactory<CyNetwork>> thumbnailEngineFactory;
 		
 		public RenderingEngines(RenderingEngine<CyNetwork> networkEngine, RenderingEngineFactory<CyNetwork> thumbnailEngineFactory) {
 			this.networkEngine = networkEngine;
-			this.thumbnailEngineFactory = thumbnailEngineFactory;
+			this.thumbnailEngineFactory = Optional.ofNullable(thumbnailEngineFactory);
 		}
 	}
 	
@@ -864,7 +862,7 @@ public class NetworkViewGrid extends JPanel {
 		private JLabel currentLabel;
 		private JLabel titleLabel;
 		private JRootPane imagePanel;
-		private RenderingEngine<?> thumbnailRenderer;
+		private Optional<RenderingEngine<?>> thumbnailRenderer = Optional.empty();
 		
 		private boolean selected;
 		
@@ -1112,16 +1110,32 @@ public class NetworkViewGrid extends JPanel {
 				imagePanel.setBorder(BorderFactory.createLineBorder(UIManager.getColor("Label.foreground"), IMG_BORDER_WIDTH));
 				
 				imagePanel.getGlassPane().setVisible(true);
-				
 				Container contentPane = imagePanel.getContentPane();
-				CyNetworkView netView = getNetworkView();
-				thumbnailRenderer = engines.thumbnailEngineFactory.createRenderingEngine(contentPane, netView);
+				
+				if(engines.thumbnailEngineFactory.isPresent()) {
+					RenderingEngineFactory<CyNetwork> engineFactory = engines.thumbnailEngineFactory.get();
+					CyNetworkView netView = getNetworkView();
+					thumbnailRenderer = Optional.of(engineFactory.createRenderingEngine(contentPane, netView));
+				}
+				else {
+					JLabel label = new JLabel(IconManager.ICON_SHARE_ALT_SQUARE);
+					label.setFont(serviceRegistrar.getService(IconManager.class).getIconFont(40.0f));
+					Color c = UIManager.getColor("Label.disabledForeground");
+					c = new Color(c.getRed(), c.getGreen(), c.getBlue(), 40);
+					label.setForeground(c);
+					
+					label.setHorizontalAlignment(JLabel.CENTER);
+					label.setVerticalAlignment(JLabel.CENTER);
+					contentPane.setLayout(new BorderLayout());
+					contentPane.add(label, BorderLayout.CENTER);
+					thumbnailRenderer = Optional.empty();
+				}
 			}
 			
 			return imagePanel;
 		}
 		
-		public RenderingEngine<?> getThumbnailRenderingEngine() {
+		public Optional<RenderingEngine<?>> getThumbnailRenderingEngine() {
 			return thumbnailRenderer;
 		}
 		
