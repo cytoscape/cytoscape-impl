@@ -14,6 +14,9 @@ import javax.swing.Icon;
 import org.cytoscape.ding.impl.DGraphView.Canvas;
 import org.cytoscape.ding.impl.events.ViewportChangeListener;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyTable;
+import org.cytoscape.model.events.RowsSetEvent;
+import org.cytoscape.model.events.RowsSetListener;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
@@ -26,7 +29,7 @@ import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 
 @SuppressWarnings("serial")
-public class ThumbnailView extends Component implements RenderingEngine<CyNetwork>, ViewChangedListener {
+public class ThumbnailView extends Component implements RenderingEngine<CyNetwork>, ViewChangedListener, RowsSetListener {
 
 	
 	private final DGraphView viewModel;
@@ -67,13 +70,24 @@ public class ThumbnailView extends Component implements RenderingEngine<CyNetwor
 		CyNetworkView source = e.getSource();
 		if(source.equals(viewModel)) {
 			if(!viewModel.getComponent().isShowing() && hasNonResizeEvent(e)) {
-				System.out.println("not visible");
 				forceRender = true;
 			}
 			repaint();
 		}
 	}
 	
+	@Override
+	public void handleEvent(RowsSetEvent e) {	
+		if(!e.containsColumn(CyNetwork.SELECTED))
+			return;
+		
+		CyTable source = e.getSource();
+		CyNetwork model = viewModel.getModel();
+		if(!viewModel.getComponent().isShowing() && (source == model.getDefaultNodeTable() || source == model.getDefaultEdgeTable())) {
+			forceRender = true;
+			repaint();
+		}
+	}
 	
 	void registerServices() {
 		registrar.registerAllServices(this, new Properties());
@@ -180,12 +194,10 @@ public class ThumbnailView extends Component implements RenderingEngine<CyNetwor
 	}
 	
 	
-	
 	private static boolean hasNonResizeEvent(final ViewChangedEvent<?> e) {
 		for(ViewChangeRecord<?> record : e.getPayloadCollection()) {
 			VisualProperty<?> vp = record.getVisualProperty();
 			if(!BasicVisualLexicon.NETWORK_WIDTH.equals(vp) && !BasicVisualLexicon.NETWORK_HEIGHT.equals(vp)) {
-				System.out.println("vp:" + vp);
 				return true;
 			}
 		}
