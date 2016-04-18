@@ -205,7 +205,7 @@ public class CyActivator extends AbstractCyActivator {
 				spacialIndex2DFactoryServiceRef, dVisualLexicon, dialogTaskManager,
 				cyServiceRegistrarRef, cyNetworkTableManagerServiceRef, cyEventHelperServiceRef,
 				vtfListener, annotationFactoryManager, dingGraphLOD, vmmServiceRef,cyNetworkViewManagerServiceRef, handleFactory);
-		DingThumbnailRenderingEngineFactory dingThumbnailRenderingEngineFactory = new DingThumbnailRenderingEngineFactory(dVisualLexicon);
+		DingThumbnailRenderingEngineFactory dingThumbnailRenderingEngineFactory = new DingThumbnailRenderingEngineFactory(dVisualLexicon, cyServiceRegistrarServiceRef);
 		
 		AddEdgeNodeViewTaskFactoryImpl addEdgeNodeViewTaskFactory = new AddEdgeNodeViewTaskFactoryImpl(vmmServiceRef, cyEventHelperServiceRef);
 

@@ -14,39 +14,76 @@ import javax.swing.Icon;
 import org.cytoscape.ding.impl.DGraphView.Canvas;
 import org.cytoscape.ding.impl.events.ViewportChangeListener;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualProperty;
+import org.cytoscape.view.model.events.ViewChangeRecord;
+import org.cytoscape.view.model.events.ViewChangedEvent;
+import org.cytoscape.view.model.events.ViewChangedListener;
 import org.cytoscape.view.presentation.RenderingEngine;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 
 @SuppressWarnings("serial")
-public class ThumbnailView extends Component implements RenderingEngine<CyNetwork> {
+public class ThumbnailView extends Component implements RenderingEngine<CyNetwork>, ViewChangedListener {
 
 	
 	private final DGraphView viewModel;
+	private final CyServiceRegistrar registrar;
 	
 	private ContentChangeListener contentListener;
 	private ViewportChangeListener viewportListener;
 	
+	private boolean forceRender = false;
 	
-	public ThumbnailView(final DGraphView viewModel) {
+	
+	public ThumbnailView(final DGraphView viewModel, CyServiceRegistrar registrar) {
 		if (viewModel == null)
 			throw new NullPointerException("DGraphView is null.");
+		if (registrar == null)
+			throw new NullPointerException("registrar is null.");
 
 		this.viewModel = viewModel;
+		this.registrar = registrar;
 		
-		contentListener  = this::repaint;
-		viewportListener = (w, h, xCenter, yCenter, scale) -> repaint();
+		contentListener  = () -> {
+			forceRender = false;
+			repaint();
+		};
+		viewportListener = (w, h, xCenter, yCenter, scale) -> {
+			forceRender = false;
+			repaint();
+		};
 		
 		viewModel.addContentChangeListener(contentListener);
 		viewModel.addViewportChangeListener(viewportListener);
 	}
 	
+	@Override
+	public void handleEvent(ViewChangedEvent<?> e) {
+		// Ensure that the thumbnail updates when a visual property changes,
+		// because the ContentChangeListener won't fire if the network view isn't visible.
+		CyNetworkView source = e.getSource();
+		if(source.equals(viewModel)) {
+			if(!viewModel.getComponent().isShowing() && hasNonResizeEvent(e)) {
+				System.out.println("not visible");
+				forceRender = true;
+			}
+			repaint();
+		}
+	}
+	
+	
+	void registerServices() {
+		registrar.registerAllServices(this, new Properties());
+	}
 	
 	@Override
 	public void dispose() {
 		viewModel.removeContentChangeListener(contentListener);
 		viewModel.removeViewportChangeListener(viewportListener);
+		registrar.unregisterAllServices(this);
 	}
 		
 	
@@ -76,34 +113,32 @@ public class ThumbnailView extends Component implements RenderingEngine<CyNetwor
 			Image netImage = netCanvas.getImage();
 			Image fgImage  = fgCanvas.getImage();
 			
-			if(bgImage != null && netImage != null && fgImage != null) {
-				// Fast path
-				//System.out.println("fast path");
-				// Take the pre-rendered image directly from the canvas and scale it for the thumbnail
-				drawThumbnailLayer(g, w, h, bgImage);
-				drawThumbnailLayer(g, w, h, netImage);
-				drawThumbnailLayer(g, w, h, fgImage);
-			}
-			else {
+			if(forceRender || bgImage == null || netImage == null || fgImage == null) {
 				// Slow path
-				//System.out.println("slow path");
 				// If the view hasn't been rendered yet then the cached images won't be available (can happen on session load).
-				// In this case we need to force it to render the thumbnail.
+				// If a visual property has changed but the view hasn't rendered yet then the images are stale.
+				// In these cases we need to force a render of the thumbnail.
 				
-				// assume the canvases are the same size
-				int vw = netCanvas.getWidth();
+				int vw = netCanvas.getWidth();  // assume the canvases are the same size
 				int vh = netCanvas.getHeight();
 				
 				BufferedImage bufferedImage = new BufferedImage(vw, vh, BufferedImage.TYPE_INT_ARGB);
 				Graphics g2 = bufferedImage.getGraphics();
 				
-				// Painting will cause the images to be cached, so next time the fast path will run.
+				// Painting will cause the images to be cached, so next time the fast path should run.
 				bgCanvas.paint(g2);
 				netCanvas.paint(g2);
 				fgCanvas.paint(g2);
 				g2.dispose();
 				
 				drawThumbnailLayer(g, w, h, bufferedImage);
+				forceRender = false;
+			}
+			else {
+				// Fast path, take the pre-rendered cached images and scale them.
+				drawThumbnailLayer(g, w, h, bgImage);
+				drawThumbnailLayer(g, w, h, netImage);
+				drawThumbnailLayer(g, w, h, fgImage);
 			}
 			
 			//long time = System.currentTimeMillis() - start;
@@ -131,20 +166,33 @@ public class ThumbnailView extends Component implements RenderingEngine<CyNetwor
 		final int svw = (int) Math.round(vw * scale);
 		final int svh = (int) Math.round(vh * scale);
 
-		// Scale
+		// scale
 		BufferedImage resized = new BufferedImage(svw, svh, BufferedImage.TYPE_INT_ARGB);
 		Graphics2D g = resized.createGraphics();
 		g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
 		g.drawImage(image, 0, 0, svw, svh, 0, 0, vw, vh, null);
 		g.dispose();
 
-		// Clip
+		// clip
 		Image thumbnail = resized.getSubimage((svw - w) / 2, (svh - h) / 2, w, h);
 		
 		return thumbnail;
 	}
 	
-
+	
+	
+	private static boolean hasNonResizeEvent(final ViewChangedEvent<?> e) {
+		for(ViewChangeRecord<?> record : e.getPayloadCollection()) {
+			VisualProperty<?> vp = record.getVisualProperty();
+			if(!BasicVisualLexicon.NETWORK_WIDTH.equals(vp) && !BasicVisualLexicon.NETWORK_HEIGHT.equals(vp)) {
+				System.out.println("vp:" + vp);
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	
 	
 	@Override
 	public View<CyNetwork> getViewModel() {
