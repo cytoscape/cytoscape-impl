@@ -30,6 +30,7 @@ import org.cytoscape.internal.io.sessionstate.SessionState;
 import org.cytoscape.internal.view.CytoscapeDesktop;
 import org.cytoscape.internal.view.NetworkMainPanel;
 import org.cytoscape.internal.view.NetworkViewMediator;
+import org.cytoscape.internal.view.SubNetworkPanel;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.subnetwork.CySubNetwork;
@@ -44,6 +45,7 @@ import org.cytoscape.task.write.SaveSessionAsTaskFactory;
 import org.cytoscape.util.swing.FileChooserFilter;
 import org.cytoscape.util.swing.FileUtil;
 import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.work.SynchronousTaskManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -359,12 +361,20 @@ public class SessionHandler implements CyShutdownListener, SessionLoadedListener
 			}
 		});
 		
-		CyApplicationManager applicationMgr = serviceRegistrar.getService(CyApplicationManager.class);
+		final CyApplicationManager applicationMgr = serviceRegistrar.getService(CyApplicationManager.class);
+		final CyNetworkViewManager netViewMgr = serviceRegistrar.getService(CyNetworkViewManager.class);
+		
 		final List<CyNetwork> selectedNetworks = applicationMgr.getSelectedNetworks();
 		final List<CyNetworkView> selectedViews = applicationMgr.getSelectedNetworkViews();
 		
 		invokeOnEDT(() -> {
 			netPanel.setNetworks(sortedNetworks);
+			
+			for (SubNetworkPanel snp : netPanel.getAllSubNetworkItems()) {
+				final int count = netViewMgr.getNetworkViews(snp.getModel().getNetwork()).size();
+				snp.getModel().setViewCount(count);
+			}
+			
 			netPanel.setSelectedNetworks(selectedNetworks);
 			netViewMediator.getNetworkViewMainPanel().setSelectedNetworkViews(selectedViews);
 		});

@@ -7,6 +7,7 @@ import static org.cytoscape.util.swing.IconManager.ICON_SHARE_ALT;
 import static org.cytoscape.util.swing.IconManager.ICON_SHARE_ALT_SQUARE;
 
 import java.awt.Dimension;
+import java.beans.PropertyChangeEvent;
 
 import javax.swing.BorderFactory;
 import javax.swing.GroupLayout;
@@ -67,6 +68,17 @@ public class SubNetworkPanel extends AbstractNetworkPanel<CySubNetwork> {
 			setShowIndentation(showIndentation);
 	}
 	
+	@Override
+	public void setModel(AbstractNetworkPanelModel<CySubNetwork> model) {
+		if (model != null) {
+			model.addPropertyChangeListener("viewCount", (PropertyChangeEvent evt) -> {
+				updateViewInfo();
+			});
+		}
+		
+		super.setModel(model);
+	}
+	
 	public int getDepth() {
 		return depth;
 	}
@@ -114,6 +126,14 @@ public class SubNetworkPanel extends AbstractNetworkPanel<CySubNetwork> {
 	public void update() {
 		super.update();
 		
+		updateCurrentLabel();
+		updateViewInfo();
+		updateIndentation();
+		updateCountLabels();
+		repaint();
+	}
+	
+	private void updateViewInfo() {
 		final int viewCount = getModel().getViewCount();
 		String viewCountText = " ";
 		
@@ -125,9 +145,6 @@ public class SubNetworkPanel extends AbstractNetworkPanel<CySubNetwork> {
 		getViewCountLabel().setText(viewCountText);
 		
 		updateViewIconLabel();
-		updateCurrentLabel();
-		updateIndentation();
-		updateCountLabels();
 		repaint();
 	}
 	

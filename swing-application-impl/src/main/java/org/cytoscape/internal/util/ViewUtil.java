@@ -182,7 +182,6 @@ public final class ViewUtil {
 		
 		return window;
 	}
-
 	
 	/**
 	 * Utility method that invokes the code in Runnable.run on the AWT Event Dispatch Thread.

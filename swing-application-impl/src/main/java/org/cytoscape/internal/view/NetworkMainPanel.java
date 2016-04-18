@@ -767,7 +767,7 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 		lastSelected = selectionHead = selectionTail = null;
 	}
 	
-	List<AbstractNetworkPanel<?>> getAllItems(final boolean includeInvisible) {
+	public List<AbstractNetworkPanel<?>> getAllItems(final boolean includeInvisible) {
 		final ArrayList<AbstractNetworkPanel<?>> list = new ArrayList<>();
 		
 		for (final RootNetworkPanel item : getRootNetworkListPanel().getAllItems()) {
@@ -845,7 +845,7 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 		}
 	}
 	
-	List<SubNetworkPanel> getAllSubNetworkItems() {
+	public List<SubNetworkPanel> getAllSubNetworkItems() {
 		final ArrayList<SubNetworkPanel> list = new ArrayList<>();
 		
 		for (final RootNetworkPanel item : getRootNetworkListPanel().getAllItems())

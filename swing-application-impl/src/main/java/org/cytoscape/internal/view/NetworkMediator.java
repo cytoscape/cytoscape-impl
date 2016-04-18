@@ -64,6 +64,8 @@ import org.cytoscape.task.NetworkViewTaskFactory;
 import org.cytoscape.task.edit.EditNetworkTitleTaskFactory;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
+import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedEvent;
+import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedListener;
 import org.cytoscape.view.model.events.NetworkViewAddedEvent;
 import org.cytoscape.view.model.events.NetworkViewAddedListener;
 import org.cytoscape.view.model.events.NetworkViewDestroyedEvent;
@@ -99,12 +101,11 @@ import org.cytoscape.work.swing.DialogTaskManager;
 /**
  * This class mediates the communication between the Network UI and the rest of Cytoscape.
  */
-public class NetworkMediator
-		implements NetworkAddedListener, NetworkViewAddedListener, NetworkAboutToBeDestroyedListener,
-		NetworkDestroyedListener, NetworkViewDestroyedListener, RowsSetListener, AddedNodesListener, AddedEdgesListener,
-		RemovedEdgesListener, RemovedNodesListener, SessionAboutToBeLoadedListener, SessionLoadedListener,
-		SetCurrentNetworkListener, SetCurrentNetworkViewListener, SetSelectedNetworksListener,
-		SetSelectedNetworkViewsListener {
+public class NetworkMediator implements NetworkAddedListener, NetworkViewAddedListener,
+		NetworkAboutToBeDestroyedListener, NetworkDestroyedListener, NetworkViewAboutToBeDestroyedListener,
+		NetworkViewDestroyedListener, RowsSetListener, AddedNodesListener, AddedEdgesListener, RemovedEdgesListener,
+		RemovedNodesListener, SessionAboutToBeLoadedListener, SessionLoadedListener, SetCurrentNetworkListener,
+		SetCurrentNetworkViewListener, SetSelectedNetworksListener, SetSelectedNetworkViewsListener {
 
 	private final JPopupMenu popup;
 	
@@ -229,24 +230,32 @@ public class NetworkMediator
 	}
 
 	@Override
+	public void handleEvent(final NetworkViewAboutToBeDestroyedEvent e) {
+		if (loadingSession)
+			return;
+		
+		invokeOnEDT(() -> {
+			updateViewCount(e.getNetworkView());
+		});
+	}
+	
+	@Override
 	public void handleEvent(final NetworkViewDestroyedEvent e) {
+		if (loadingSession)
+			return;
+		
 		invokeOnEDT(() -> {
 			networkMainPanel.getRootNetworkListPanel().update();
 		});
 	}
 
 	@Override
-	public void handleEvent(final NetworkViewAddedEvent nde) {
+	public void handleEvent(final NetworkViewAddedEvent e) {
 		if (loadingSession)
 			return;
 
-		final CyNetworkView netView = nde.getNetworkView();
-
 		invokeOnEDT(() -> {
-			final SubNetworkPanel subNetPanel = networkMainPanel.getSubNetworkPanel(netView.getModel());
-
-			if (subNetPanel != null)
-				subNetPanel.update();
+			updateViewCount(e.getNetworkView());
 		});
 	}
 	
@@ -429,6 +438,16 @@ public class NetworkMediator
 			for (CyAction action : popupActionMap.values())
 				action.updateEnableState();
 		});
+	}
+	
+	private void updateViewCount(final CyNetworkView view) {
+		final SubNetworkPanel subNetPanel = networkMainPanel.getSubNetworkPanel(view.getModel());
+
+		if (subNetPanel != null) {
+			final int count = serviceRegistrar.getService(CyNetworkViewManager.class)
+					.getNetworkViews(view.getModel()).size();
+			subNetPanel.getModel().setViewCount(count);
+		}
 	}
 	
 	// // Classes // //
