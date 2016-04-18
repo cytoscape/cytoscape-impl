@@ -5,6 +5,7 @@ import java.awt.BorderLayout;
 import javax.swing.JComponent;
 
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualLexicon;
@@ -18,9 +19,11 @@ import org.cytoscape.view.presentation.RenderingEngineFactory;
 public class DingThumbnailRenderingEngineFactory implements RenderingEngineFactory<CyNetwork> {
 	
 	private final VisualLexicon dingLexicon;
+	private final CyServiceRegistrar registrar;
 
-	public DingThumbnailRenderingEngineFactory(final VisualLexicon dingLexicon) {
+	public DingThumbnailRenderingEngineFactory(final VisualLexicon dingLexicon, final CyServiceRegistrar registrar) {
 		this.dingLexicon = dingLexicon;
+		this.registrar = registrar;
 	}
 
 	@Override
@@ -46,7 +49,9 @@ public class DingThumbnailRenderingEngineFactory implements RenderingEngineFacto
 		final JComponent container = (JComponent) visualizationContainer;
 		
 		// Create instance of an engine.
-		final ThumbnailView bev = new ThumbnailView(dgv);
+		final ThumbnailView bev = new ThumbnailView(dgv, registrar);
+		
+		bev.registerServices();
 
 		container.setLayout(new BorderLayout());
 		container.add(bev, BorderLayout.CENTER);
