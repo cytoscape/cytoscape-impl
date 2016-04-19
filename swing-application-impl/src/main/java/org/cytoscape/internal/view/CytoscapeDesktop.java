@@ -244,6 +244,7 @@ public class CytoscapeDesktop extends JFrame
 		layout.setHorizontalGroup(layout.createSequentialGroup()
 				.addContainerGap()
 				.addComponent(jobStatusPanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				.addPreferredGap(ComponentPlacement.RELATED)
 				.addComponent(taskStatusPanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 				.addPreferredGap(ComponentPlacement.UNRELATED)
 				.addComponent(statusToolBar, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
