@@ -38,6 +38,7 @@ import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.LayoutStyle.ComponentPlacement;
+import javax.swing.Timer;
 import javax.swing.UIManager;
 import javax.swing.text.JTextComponent;
 
@@ -109,6 +110,8 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
     private boolean detached;
     private boolean comparing;
     private boolean current;
+    
+    private Timer resizeTimer;
 	
 	private final CyServiceRegistrar serviceRegistrar;
 
@@ -257,21 +260,9 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 	}
 	
 	void updateViewSize() {
-		boolean updated = false;
-		final Container c = getVisualizationContainer().getContentPane();
-		
-		if (c.getWidth() > 0) {
-			networkView.setVisualProperty(BasicVisualLexicon.NETWORK_WIDTH, (double) c.getWidth());
-			updated = true;
-		}
-		
-		if (c.getHeight() > 0) {
-			networkView.setVisualProperty(BasicVisualLexicon.NETWORK_HEIGHT, (double) c.getHeight());
-			updated = true;
-		}
-		
-		if (updated)
-			networkView.updateView();
+		resizeTimer.stop();
+		resizeTimer.setInitialDelay(100);
+		resizeTimer.start();
 	}
 	
 	protected void updateGlassPane() {
@@ -335,7 +326,11 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 		setKeyBindings(getRootPane());
 		
 		updateTollBar();
-		updateViewSize();
+		
+		resizeTimer = new Timer(0, new ResizeActionListener());
+		resizeTimer.setRepeats(false);
+		resizeTimer.setCoalesce(true);
+		resizeTimer.start();
 	}
 	
 	protected RenderingEngine<CyNetwork> getRenderingEngine() {
@@ -662,6 +657,30 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 				// Toggle Navigator (bird's eye view) visibility state
 				getBirdsEyeViewButton().doClick();
 			}
+		}
+	}
+	
+	private class ResizeActionListener implements ActionListener {
+
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			boolean updated = false;
+			final Container c = getVisualizationContainer().getContentPane();
+			
+			if (c.getWidth() > 0) {
+				networkView.setVisualProperty(BasicVisualLexicon.NETWORK_WIDTH, (double) c.getWidth());
+				updated = true;
+			}
+			
+			if (c.getHeight() > 0) {
+				networkView.setVisualProperty(BasicVisualLexicon.NETWORK_HEIGHT, (double) c.getHeight());
+				updated = true;
+			}
+			
+			if (updated)
+				networkView.updateView();
+			
+			resizeTimer.stop();
 		}
 	}
 }
