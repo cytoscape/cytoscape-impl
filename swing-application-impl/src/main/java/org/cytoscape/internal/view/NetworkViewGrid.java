@@ -1,9 +1,12 @@
 package org.cytoscape.internal.view;
 
-import static javax.swing.GroupLayout.*;
+import static javax.swing.GroupLayout.DEFAULT_SIZE;
+import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static javax.swing.GroupLayout.Alignment.CENTER;
 import static org.cytoscape.internal.util.ViewUtil.styleToolBarButton;
-import static org.cytoscape.util.swing.IconManager.*;
+import static org.cytoscape.util.swing.IconManager.ICON_EXTERNAL_LINK_SQUARE;
+import static org.cytoscape.util.swing.IconManager.ICON_THUMB_TACK;
+import static org.cytoscape.util.swing.IconManager.ICON_TRASH_O;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NETWORK_TITLE;
 
 import java.awt.BorderLayout;
@@ -563,9 +566,10 @@ public class NetworkViewGrid extends JPanel {
 		
 		getGridPanel().removeAll();
 		
-		for(ThumbnailPanel tp : thumbnailPanels.values()) {
+		for (ThumbnailPanel tp : thumbnailPanels.values()) {
 			tp.getThumbnailRenderingEngine().ifPresent(RenderingEngine::dispose);
 		}
+		
 		thumbnailPanels.clear();
 		
 		if (engines == null || engines.isEmpty()) {
@@ -586,7 +590,10 @@ public class NetworkViewGrid extends JPanel {
 					.addGap(0, 0, Short.MAX_VALUE)
 			);
 			
+			// Clear cache
 			detachedViews.clear();
+			selectedNetworkViews.clear();
+			currentNetworkView = null;
 		} else {
 			maxThumbnailSize = maxThumbnailSize(thumbnailSize, size.width);
 			
@@ -617,10 +624,19 @@ public class NetworkViewGrid extends JPanel {
 				}
 			}
 			
+			// Clear cache
 			for (Iterator<CyNetworkView> iter = detachedViews.iterator(); iter.hasNext();) {
 				if (!thumbnailPanels.containsKey(iter.next()))
 					iter.remove();
 			}
+			
+			for (Iterator<CyNetworkView> iter = selectedNetworkViews.iterator(); iter.hasNext();) {
+				if (!thumbnailPanels.containsKey(iter.next()))
+					iter.remove();
+			}
+			
+			if (currentNetworkView != null && !thumbnailPanels.containsKey(currentNetworkView))
+				currentNetworkView = null;
 		}
 		
 		dirty = false;
