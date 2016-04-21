@@ -663,6 +663,23 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 				}
 			}
 		}
+		
+		if (!networks.isEmpty()) {
+			// Select the last network that has a view, since Cy2 files do not contain the network selection info
+			final CyNetwork[] array = networks.toArray(new CyNetwork[networks.size()]);
+			
+			for (int i = array.length - 1; i >= 0; i--) {
+				final CyNetwork net = array[i];
+				final CyRow row = net.getRow(net);
+				final String netName = row.get(CyNetwork.NAME, String.class);
+				final CyNetworkView view = networkViewLookup.get(netName);
+				
+				if (view != null) {
+					row.set(CyNetwork.SELECTED, true);
+					break;
+				}
+			}
+		}
 	}
 
 	private CyNetworkView getNetworkView(final String name) {
