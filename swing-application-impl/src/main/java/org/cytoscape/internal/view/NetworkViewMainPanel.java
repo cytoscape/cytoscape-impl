@@ -415,6 +415,14 @@ public class NetworkViewMainPanel extends JPanel {
 					frame.setJMenuBar(menuBar);
 					menuBar.updateUI();
 				}
+				
+				if (LookAndFeelUtil.isAquaLAF() && menuBar.equals(frame.getJMenuBar()))
+					cyMenus.setMenuBarVisible(true);
+			}
+			@Override
+			public void windowDeactivated(WindowEvent e) {
+				if (LookAndFeelUtil.isAquaLAF() && cyMenus.getJMenuBar().equals(frame.getJMenuBar()))
+					cyMenus.setMenuBarVisible(false);
 			}
 			@Override
 			public void windowClosed(WindowEvent e) {

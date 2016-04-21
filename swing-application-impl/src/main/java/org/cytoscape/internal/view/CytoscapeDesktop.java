@@ -175,6 +175,9 @@ public class CytoscapeDesktop extends JFrame
 						window.repaint();
 					}
 					
+					if (LookAndFeelUtil.isAquaLAF())
+						cyMenus.setMenuBarVisible(true);
+					
 					setJMenuBar(menuBar);
 					menuBar.updateUI();
 				}

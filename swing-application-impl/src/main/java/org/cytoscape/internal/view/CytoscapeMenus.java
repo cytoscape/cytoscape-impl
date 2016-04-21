@@ -185,6 +185,19 @@ public class CytoscapeMenus {
 			viewFrameActions.add(action);
 	}
 
+	public void setMenuBarVisible(final boolean b) {
+		if (menuBar != null) {
+			final int menuCount = menuBar.getMenuCount();
+
+			for (int i = 0; i < menuCount - 1; i++) {
+				final JMenu menu = menuBar.getMenu(i);
+
+				if (menu != null && menu.isVisible() != b)
+					menu.setVisible(b);
+			}
+		}
+	}
+	
 	public JMenuBar createDummyMenuBar() {
 		final JMenuBar dummy = new JMenuBar();
 		

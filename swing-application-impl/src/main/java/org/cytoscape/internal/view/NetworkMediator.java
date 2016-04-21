@@ -126,11 +126,12 @@ public class NetworkMediator implements NetworkAddedListener, NetworkViewAddedLi
 		
 		networkMainPanel.addPropertyChangeListener("rootNetworkPanelCreated", (PropertyChangeEvent evt) -> {
 			final RootNetworkPanel p = (RootNetworkPanel) evt.getNewValue();
-			addMouseListenersForSelection(p, p.getHeaderPanel(), p.getNetworkCountLabel(), p.getNameLabel());
+			addMouseListenersForSelection(p, p.getHeaderPanel(), p.getNetworkCountLabel(), p.getNameLabel(), p);
 		});
 		networkMainPanel.addPropertyChangeListener("subNetworkPanelCreated", (PropertyChangeEvent evt) -> {
 			final SubNetworkPanel p = (SubNetworkPanel) evt.getNewValue();
-			addMouseListenersForSelection(p, p, p.getNameLabel(), p.getViewIconLabel());
+			addMouseListenersForSelection(p, p.getNameLabel(), p.getViewIconLabel(), p.getViewCountLabel(),
+					p.getNodeCountLabel(), p.getEdgeCountLabel(), p);
 		});
 	}
 	
