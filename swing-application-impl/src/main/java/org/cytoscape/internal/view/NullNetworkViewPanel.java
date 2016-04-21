@@ -4,8 +4,8 @@ import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static javax.swing.GroupLayout.Alignment.CENTER;
 import static org.cytoscape.internal.util.ViewUtil.styleToolBarButton;
-import static org.cytoscape.util.swing.IconManager.ICON_BAN;
 import static org.cytoscape.util.swing.IconManager.ICON_EXTERNAL_LINK_SQUARE;
+import static org.cytoscape.util.swing.IconManager.ICON_SHARE_ALT;
 import static org.cytoscape.util.swing.IconManager.ICON_THUMB_TACK;
 import static org.cytoscape.util.swing.LookAndFeelUtil.isAquaLAF;
 
@@ -118,7 +118,7 @@ public class NullNetworkViewPanel extends JPanel {
 			getInfoIconLabel().setText(ICON_EXTERNAL_LINK_SQUARE);
 			getInfoIconLabel().setToolTipText("This view is detached");
 		} else if (network != null) {
-			getInfoIconLabel().setText(ICON_BAN);
+			getInfoIconLabel().setText(ICON_SHARE_ALT);
 			getInfoIconLabel().setToolTipText(
 					network instanceof CySubNetwork ?
 							"This network has no views" : "A network collection cannot have views"
