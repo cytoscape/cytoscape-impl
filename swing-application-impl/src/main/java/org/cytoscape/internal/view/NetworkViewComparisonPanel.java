@@ -325,7 +325,7 @@ public class NetworkViewComparisonPanel extends JPanel {
 	JButton getDetachComparedViewsButton() {
 		if (detachComparedViewsButton == null) {
 			detachComparedViewsButton = new JButton(ICON_EXTERNAL_LINK_SQUARE);
-			detachComparedViewsButton.setToolTipText("Detach Both Views");
+			detachComparedViewsButton.setToolTipText("Detach All Views");
 			styleToolBarButton(detachComparedViewsButton,
 					serviceRegistrar.getService(IconManager.class).getIconFont(ICON_FONT_SIZE));
 		}
