@@ -625,7 +625,7 @@ public class NetworkViewMediator
 							// TODO: Only update the view's title if the current title and the network name are in sync,
 							// because users can change the Network View title at any time
 							String title = name.trim();
-							title += (" View" + (netViews.size() > 1 ? " (" + ++count + ")" : "")); // TODO
+							title += (netViews.size() > 1 ? " (" + ++count + ")" : "");
 							
 							view.setVisualProperty(BasicVisualLexicon.NETWORK_TITLE, title);
 

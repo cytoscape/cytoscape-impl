@@ -214,7 +214,7 @@ public class CreateNetworkViewTask extends AbstractNetworkCollectionTask
 			// Create a default title
 			final Collection<CyNetworkView> netViews = netViewMgr.getNetworkViews(network);
 			String title = network.getDefaultNetworkTable().getRow(network.getSUID()).get(CyNetwork.NAME, String.class);
-			title += (" View" + (netViews.isEmpty() ? "" : " (" + (netViews.size() + 1) + ")")); // TODO
+			title += (netViews.isEmpty() ? "" : " (" + (netViews.size() + 1) + ")");
 			
 			view.setVisualProperty(BasicVisualLexicon.NETWORK_TITLE, title);
 			
