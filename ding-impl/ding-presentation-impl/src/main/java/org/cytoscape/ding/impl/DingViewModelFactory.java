@@ -35,6 +35,7 @@ import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.spacial.SpacialIndex2DFactory;
+import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
@@ -60,6 +61,7 @@ public class DingViewModelFactory implements CyNetworkViewFactory {
 	private DialogTaskManager dialogTaskManager;
 	private final CyNetworkTableManager tableMgr;
 	private final CyEventHelper eventHelper;
+	private final IconManager iconManager;
 	private ViewTaskFactoryListener vtfListener;
 	private final AnnotationFactoryManager annMgr;
 	
@@ -72,8 +74,8 @@ public class DingViewModelFactory implements CyNetworkViewFactory {
 	public DingViewModelFactory(CyTableFactory dataTableFactory, CyRootNetworkManager rootNetworkManager,
 			UndoSupport undo, SpacialIndex2DFactory spacialFactory, VisualLexicon dingLexicon, 
 			DialogTaskManager dialogTaskManager,
-			CyServiceRegistrar registrar, CyNetworkTableManager tableMgr, CyEventHelper eventHelper, 
-			ViewTaskFactoryListener vtfListener,
+			CyServiceRegistrar registrar, CyNetworkTableManager tableMgr, CyEventHelper eventHelper,
+			IconManager iconManager, ViewTaskFactoryListener vtfListener,
 			AnnotationFactoryManager annMgr, DingGraphLOD dingGraphLOD, final VisualMappingManager vmm,
 			final CyNetworkViewManager netViewMgr, final HandleFactory handleFactory) {
 
@@ -86,6 +88,7 @@ public class DingViewModelFactory implements CyNetworkViewFactory {
 		this.registrar = registrar;
 		this.tableMgr = tableMgr;
 		this.eventHelper = eventHelper;
+		this.iconManager = iconManager;
 		this.vtfListener = vtfListener;
 		this.annMgr = annMgr;
 		this.dingGraphLOD = dingGraphLOD;
@@ -101,7 +104,7 @@ public class DingViewModelFactory implements CyNetworkViewFactory {
 			throw new IllegalArgumentException("Cannot create view without model.");
 
 		final DGraphView dgv = new DGraphView(network, rootNetworkManager, undo, spacialFactory, dingLexicon,
-				vtfListener, dialogTaskManager, eventHelper, annMgr, dingGraphLOD, vmm, netViewMgr, handleFactory, registrar);
+				vtfListener, dialogTaskManager, eventHelper, annMgr, dingGraphLOD, vmm, netViewMgr, handleFactory, iconManager, registrar);
 
 		dgv.registerServices();
 

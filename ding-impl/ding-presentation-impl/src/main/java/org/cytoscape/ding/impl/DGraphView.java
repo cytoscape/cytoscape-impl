@@ -118,6 +118,7 @@ import org.cytoscape.util.intr.LongBTree;
 import org.cytoscape.util.intr.LongEnumerator;
 import org.cytoscape.util.intr.LongHash;
 import org.cytoscape.util.intr.LongStack;
+import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.View;
@@ -396,10 +397,11 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 			final VisualMappingManager vmm,
 			final CyNetworkViewManager netViewMgr,
 			final HandleFactory handleFactory,
+			final IconManager iconManager,
 			final CyServiceRegistrar registrar
 	) {
 		this(view.getModel(), cyRoot, undo, spacialFactory, dingLexicon, vtfl, manager, eventHelper, annMgr,
-				dingGraphLOD, vmm, netViewMgr, handleFactory, registrar);
+				dingGraphLOD, vmm, netViewMgr, handleFactory, iconManager, registrar);
 	}
 	
 	public DGraphView(
@@ -416,6 +418,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 			final VisualMappingManager vmm,
 			final CyNetworkViewManager netViewMgr,
 			final HandleFactory handleFactory,
+			final IconManager iconManager,
 			final CyServiceRegistrar registrar
 	) {
 		super(model, dingLexicon, cyEventHelper);
@@ -456,7 +459,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		m_defaultNodeYMin = 0.0f;
 		m_defaultNodeXMax = m_defaultNodeXMin + DNodeView.DEFAULT_WIDTH;
 		m_defaultNodeYMax = m_defaultNodeYMin + DNodeView.DEFAULT_HEIGHT;
-		m_networkCanvas = new InnerCanvas(m_lock, this, undo);
+		m_networkCanvas = new InnerCanvas(m_lock, this, undo, iconManager);
 		m_backgroundCanvas = new ArbitraryGraphicsCanvas(this, m_networkCanvas, Color.white, true);
 		addViewportChangeListener(m_backgroundCanvas);
 		m_foregroundCanvas = new ArbitraryGraphicsCanvas(this, m_networkCanvas, Color.white, false);

@@ -2,12 +2,16 @@ package org.cytoscape.ding.impl;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Container;
+import java.awt.Cursor;
+import java.awt.Dimension;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
@@ -29,6 +33,7 @@ import java.util.Collections;
 import java.util.List;
 
 import javax.swing.JComponent;
+import javax.swing.JLabel;
 import javax.swing.Timer;
 import javax.swing.UIManager;
 
@@ -52,6 +57,7 @@ import org.cytoscape.model.events.RowsSetEvent;
 import org.cytoscape.util.intr.LongEnumerator;
 import org.cytoscape.util.intr.LongHash;
 import org.cytoscape.util.intr.LongStack;
+import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
@@ -131,6 +137,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 	private boolean enablePopupMenu = true;
 
 	private UndoSupport m_undo;
+	private IconManager m_iconManager;
 
 	private int m_currMouseButton;
 	private int m_lastXMousePos;
@@ -144,11 +151,14 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 
 	private AddEdgeStateMonitor addEdgeMode;
 	private Timer hideEdgesTimer;
+	private Cursor moveCursor;
+	
 
-	InnerCanvas(Object lock, DGraphView view, UndoSupport undo) {
+	InnerCanvas(Object lock, DGraphView view, UndoSupport undo, IconManager iconManager) {
 		m_lock = lock;
 		m_view = view;
 		m_undo = undo;
+		m_iconManager = iconManager;
 		m_lod[0] = new GraphLOD(); // Default LOD.
 		m_backgroundColor = Color.WHITE;
 		m_isOpaque = false;
@@ -1223,8 +1233,12 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 				if (chosenNode < 0 && chosenEdge < 0 && chosenAnchor < 0) {
 					m_button1NodeDrag = false;
 					
-					if (isDragSelectionKeyDown(e))
+					if (isDragSelectionKeyDown(e)) {
 						m_selectionRect = new Rectangle(m_lastXMousePos, m_lastYMousePos, 0, 0);
+						changeCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+					} else {
+						changeCursor(getMoveCursor());
+					}
 				}
 			}
 	
@@ -1358,6 +1372,8 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 					singleRightClick(e);
 					break;
 			}
+			
+			changeCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 		}
 
 		@Override
@@ -1402,7 +1418,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 					
 					repaint();
 				} else if (draggingCanvas) {
-					draggingCanvas = false;
+					setDraggingCanvas(false);
 					
 					if (m_undoable_edit != null)
 						m_undoable_edit.post();
@@ -1451,7 +1467,64 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 				m_undoable_edit.post();
 		}
 	}
+	
+	int numFrames = 10;
+	
+	
+	private void setDraggingCanvas(boolean draggingCanvas) {
+		this.draggingCanvas = draggingCanvas;
+		
+		Cursor cursor;
+		if(draggingCanvas)
+			cursor = getMoveCursor();
+		else
+			cursor = Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR);
 
+		changeCursor(cursor);
+	}
+
+	private void changeCursor(Cursor cursor) {
+		String componentName = "__CyNetworkView_" + m_view.getSUID(); // see ViewUtil.createUniqueKey(CyNetworkView)
+		Container parent = this;
+		while(parent != null) {
+			if(componentName.equals(parent.getName())) {
+				parent.setCursor(cursor);
+				break;
+			}
+			parent = parent.getParent();
+		}
+	}
+	
+	private Cursor getMoveCursor() {
+		if(moveCursor == null) {
+			Cursor cursor;
+			if(LookAndFeelUtil.isMac()) {
+				Dimension size = Toolkit.getDefaultToolkit().getBestCursorSize(24, 24);
+				Image image = new BufferedImage(size.width, size.height, BufferedImage.TYPE_INT_ARGB);
+				Graphics graphics = image.getGraphics();
+				
+				String icon = IconManager.ICON_ARROWS;
+				JLabel label = new JLabel();
+				label.setBounds(0 , 0, size.width, size.height);
+				label.setText(icon);
+				label.setFont(m_iconManager.getIconFont(14));
+				label.paint(graphics);
+				graphics.dispose();
+				
+				cursor = Toolkit.getDefaultToolkit().createCustomCursor(image, new Point(0,0), "custom:" + (int)icon.charAt(0));
+			}
+			else {
+				cursor = Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR);
+				if(cursor == null) {
+					cursor = new Cursor(Cursor.MOVE_CURSOR);
+				}
+			}
+			moveCursor = cursor;
+		}
+		return moveCursor;
+	}
+	
+	
 	private final class MouseDraggedDelegator extends ButtonDelegator {
 		
 		// delegate based on the originally-pressed button so as not to change actions mid-click
@@ -1572,7 +1645,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 					}
 				}
 			} else if (!isDragSelectionKeyDown(e)) {
-				draggingCanvas = true;
+				setDraggingCanvas(true);
 				double deltaX = e.getX() - m_lastXMousePos;
 				double deltaY = e.getY() - m_lastYMousePos;
 				m_lastXMousePos = e.getX();

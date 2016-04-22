@@ -44,6 +44,7 @@ import org.cytoscape.spacial.internal.rtree.RTreeFactory;
 import org.cytoscape.task.EdgeViewTaskFactory;
 import org.cytoscape.task.NetworkViewTaskFactory;
 import org.cytoscape.task.NodeViewTaskFactory;
+import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.view.model.AbstractCyNetworkViewTest;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.VisualLexicon;
@@ -78,6 +79,8 @@ public class DNetworkViewTest extends AbstractCyNetworkViewTest {
 	@Mock
 	private CyEventHelper eventHelper;
 	@Mock
+	private IconManager iconManager;
+	@Mock
 	private CyNetworkTableManager tableMgr;
 	@Mock
 	private AnnotationFactoryManager annMgr;
@@ -110,7 +113,7 @@ public class DNetworkViewTest extends AbstractCyNetworkViewTest {
 				vtfl,
 				/*nodeViewTFs, edgeViewTFs, emptySpaceTFs, dropNodeViewTFs, 
 				dropEmptySpaceTFs, */
-				manager, eventHelper, annMgr, dingGRaphLOD, vmm, netViewMgr, handleFactory, registrar);
+				manager, eventHelper, annMgr, dingGRaphLOD, vmm, netViewMgr, handleFactory, iconManager, registrar);
 	}
 	
 	@Override

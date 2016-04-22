@@ -12,6 +12,7 @@ import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.spacial.SpacialIndex2DFactory;
+import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualLexicon;
@@ -28,12 +29,12 @@ public class DingVisualStyleRenderingEngineFactory extends DingRenderingEngineFa
 			SpacialIndex2DFactory spacialFactory, VisualLexicon dingLexicon,
 			DialogTaskManager dialogTaskManager, CyServiceRegistrar registrar,
 			CyNetworkTableManager tableMgr, CyEventHelper eventHelper,
-			ViewTaskFactoryListener vtfListener,
+			IconManager iconManager, ViewTaskFactoryListener vtfListener,
 			AnnotationFactoryManager annMgr, DingGraphLOD dingGraphLOD,
 			VisualMappingManager vmm, CyNetworkViewManager netViewMgr,
 			HandleFactory handleFactory) {
 		super(dataTableFactory, rootNetworkManager, undo, spacialFactory, dingLexicon,
-				dialogTaskManager, registrar, tableMgr, eventHelper, vtfListener,
+				dialogTaskManager, registrar, tableMgr, eventHelper, iconManager, vtfListener,
 				annMgr, dingGraphLOD, vmm, netViewMgr, handleFactory);
 	}
 
