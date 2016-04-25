@@ -1472,15 +1472,11 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 	
 	
 	private void setDraggingCanvas(boolean draggingCanvas) {
-		this.draggingCanvas = draggingCanvas;
-		
-		Cursor cursor;
-		if(draggingCanvas)
-			cursor = getMoveCursor();
-		else
-			cursor = Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR);
-
-		changeCursor(cursor);
+		if(this.draggingCanvas != draggingCanvas) {
+			this.draggingCanvas = draggingCanvas;
+			Cursor cursor = draggingCanvas ? getMoveCursor() : Cursor.getDefaultCursor();
+			changeCursor(cursor);
+		}
 	}
 
 	private void changeCursor(Cursor cursor) {
