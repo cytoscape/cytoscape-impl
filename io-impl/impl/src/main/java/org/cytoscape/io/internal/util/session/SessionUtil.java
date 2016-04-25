@@ -65,7 +65,10 @@ public class SessionUtil {
 	private static boolean readingSessionFile; // TODO: delete it and find a better solution!
 	
 	private static final Logger logger = LoggerFactory.getLogger(SessionUtil.class);
-	
+
+	private SessionUtil() {
+	}
+
 	public static String escape(String text) {
 		try {
 			return URLEncoder.encode(text, "UTF-8").replace("-", "%2D");

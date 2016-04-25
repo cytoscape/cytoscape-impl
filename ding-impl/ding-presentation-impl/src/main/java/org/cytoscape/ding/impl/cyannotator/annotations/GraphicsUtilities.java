@@ -92,6 +92,9 @@ class GraphicsUtilities {
 		ArrowType.TRIANGLE.arrowName(), 
 		ArrowType.TSHAPE.arrowName());
 
+	private GraphicsUtilities() {
+	}
+
 	static public Shape getShape(String shapeName, double x, double y, double width, double height) {
 		ShapeType shapeType = getShapeType(shapeName);
 		switch(shapeType) {

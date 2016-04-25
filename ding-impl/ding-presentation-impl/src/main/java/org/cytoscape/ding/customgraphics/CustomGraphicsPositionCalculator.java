@@ -56,8 +56,11 @@ public class CustomGraphicsPositionCalculator {
 		
 		DISPLACEMENT_MAP.put(Position.EAST,  new Float[]{0.5f, 0f});
 	}
-	
-	
+
+	private CustomGraphicsPositionCalculator() {
+	}
+
+
 	/**
 	 * Creates new custom graphics in new location
 	 */

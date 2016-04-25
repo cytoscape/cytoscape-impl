@@ -45,7 +45,10 @@ public class FilterUtil {
 	public static final String SESSION_FILE_NAME = "session_filters.props";
 	public static final String DYNAMIC_FILTER_THRESHOLD = "dynamicFilterThreshold";
 	public static final int DEFAULT_DYNAMIC_FILTER_THRESHOLD = 1000;
-	
+
+	private FilterUtil() {
+	}
+
 	// do selection on given network
 	public static void doSelection(CompositeFilter pFilter, CyApplicationManager applicationManager) {
 //		// TODO: What do we do about CyInit*?

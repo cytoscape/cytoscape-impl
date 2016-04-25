@@ -29,6 +29,9 @@ import java.awt.Window;
 import com.apple.eawt.FullScreenUtilities;
 
 public class MacFullScreenEnabler {
+	private MacFullScreenEnabler() {
+	}
+
 	public static void setEnabled(Window window, boolean b) {
 		FullScreenUtilities.setWindowCanFullScreen(window, true);
 	}

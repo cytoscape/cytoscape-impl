@@ -36,6 +36,9 @@ import org.cytoscape.filter.internal.widgets.autocomplete.index.TextIndex;
  * @author Ethan Cerami
  */
 public class ComboBoxFactory {
+	private ComboBoxFactory() {
+	}
+
 	/**
 	 * Creates a new TextIndex Combo Box.
 	 *

@@ -38,7 +38,10 @@ import org.cytoscape.model.subnetwork.CySubNetwork;
 public class DataUtils {
 
 	public static final String PARENT_NETWORK_COLUMN = "__parentNetwork.SUID";
-	
+
+	private DataUtils() {
+	}
+
 	public static String getNodeName(CyTable table, CyNode node) {
 		String name = table.getRow(node.getSUID()).get(CyNetwork.NAME, String.class);
 		name += " (SUID: "+node.getSUID()+")";

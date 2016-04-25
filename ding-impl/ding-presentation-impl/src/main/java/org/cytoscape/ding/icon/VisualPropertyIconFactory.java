@@ -46,8 +46,11 @@ import org.cytoscape.view.presentation.property.values.NodeShape;
  * Static factory for icons.
  *
  */
-public class VisualPropertyIconFactory {	
-	
+public class VisualPropertyIconFactory {
+
+	private VisualPropertyIconFactory() {
+	}
+
 	public static <V> Icon createIcon(V value, int w, int h) {
 		if(value == null)
 			return null;

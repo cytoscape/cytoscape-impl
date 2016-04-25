@@ -30,6 +30,9 @@ import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.model.Visualizable;
 
 public class VisualPropertyUtil {
+	private VisualPropertyUtil() {
+	}
+
 	@SuppressWarnings("unchecked")
 	public static <T> T get(VisualLexicon lexicon, View<?> view, String id, VisualProperty<Visualizable> root, Class<T> type) {
 		for (VisualProperty<?> property : lexicon.getAllDescendants(root)) {

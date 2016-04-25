@@ -10,6 +10,9 @@ import javax.swing.ImageIcon;
 
 public class ViewUtils {
 
+	private ViewUtils() {
+	}
+
 	public static ImageIcon resizeIcon(final ImageIcon icon, int width, int height) {
 		final Image img = icon.getImage().getScaledInstance(width, height, Image.SCALE_AREA_AVERAGING);
 		final BufferedImage bi = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);

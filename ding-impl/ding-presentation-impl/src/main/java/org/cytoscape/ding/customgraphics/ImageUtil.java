@@ -34,7 +34,10 @@ import java.awt.image.WritableRaster;
 import java.util.Hashtable;
 
 public class ImageUtil {
-	
+
+
+	private ImageUtil() {
+	}
 
 	public static BufferedImage toBufferedImage(final Image image) throws InterruptedException {
 		if (image instanceof BufferedImage)

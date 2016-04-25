@@ -37,6 +37,9 @@ import java.util.BitSet;
  */
  // TODO Turn into JUnit tests
 public class BitSetPerformance {
+	private BitSetPerformance() {
+	}
+
 	/**
 	 * This test is analagous to
 	 * cytoscape.intr.util.test.MinIntHeapPerformance, only

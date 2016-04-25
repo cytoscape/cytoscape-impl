@@ -78,6 +78,9 @@ public class ViewUtils {
 	private static final double Z_OFFSET = -100.0; // Offset for group nodes
 	private static final int COMPOUND_NODE_TRANSPARENCY = 50;
 
+	private ViewUtils() {
+	}
+
 	public static void applyStyle(final Collection<? extends CyIdentifiable> elements,
 	                              final Collection<CyNetworkView> networkViews,
 	                              final VisualMappingManager cyStyleManager) {

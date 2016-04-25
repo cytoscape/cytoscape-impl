@@ -32,7 +32,10 @@ public class ViewUtil {
 	public static final Border COMPOSITE_PANEL_BORDER = BorderFactory.createCompoundBorder(
 			new DashedBorder(UIManager.getColor("Separator.foreground"), 3),
 			BorderFactory.createEmptyBorder(INTERNAL_VERTICAL_PADDING, 0, INTERNAL_VERTICAL_PADDING, 0));
-	
+
+	private ViewUtil() {
+	}
+
 	public static void configureFilterView(JComponent component) {
 		component.setBackground(UNSELECTED_BACKGROUND_COLOR);
 		component.setBorder(COMPOSITE_PANEL_BORDER);

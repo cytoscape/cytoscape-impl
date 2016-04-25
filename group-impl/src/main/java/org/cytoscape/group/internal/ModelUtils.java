@@ -50,6 +50,9 @@ import org.cytoscape.model.subnetwork.CySubNetwork;
  */
 public class ModelUtils {
 
+	private ModelUtils() {
+	}
+
 	public static void createColumnIfNeeded(CyTable table, String name, Class type) {
 		if (table.getColumn(name) == null)
 			table.createColumn(name, type, false);

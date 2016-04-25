@@ -45,6 +45,9 @@ public class ColorUtil {
 		buildColorCodeTable(ColorUtil.class.getClassLoader().getResource(COLOR_CODE_RESOURCE));
 	}
 
+	private ColorUtil() {
+	}
+
 	private static void buildColorCodeTable(final URL resourceURL) {
 		BufferedReader bufRd = null;
 		String line;

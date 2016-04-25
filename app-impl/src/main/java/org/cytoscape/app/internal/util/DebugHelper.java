@@ -29,6 +29,9 @@ package org.cytoscape.app.internal.util;
  */
 public class DebugHelper {
 	private static boolean debug = false;
+
+	private DebugHelper() {
+	}
 //	private static boolean debug = true;
 	
 	public static void print(String message) {

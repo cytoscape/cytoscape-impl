@@ -50,6 +50,9 @@ public class URLUtil {
 
 	private static int msConnectionTimeout = 2000;
 
+	private URLUtil() {
+	}
+
 	/**
 	 * Gets the an input stream given a URL.
 	 * 

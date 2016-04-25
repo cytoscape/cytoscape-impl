@@ -31,6 +31,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
 public class CopyInputStream {
+	private CopyInputStream() {
+	}
+
 	/**
 	 * @param is The InputStream to be copied.
 	 * @param kb The number of kilobytes to read. For example, 

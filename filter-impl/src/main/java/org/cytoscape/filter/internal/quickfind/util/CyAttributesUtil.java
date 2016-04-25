@@ -42,6 +42,9 @@ import org.cytoscape.model.CyTable;
  * @author Ethan Cerami
  */
 public class CyAttributesUtil {
+	private CyAttributesUtil() {
+	}
+
 	/**
 	 * Regardless of attribute type, this method will always return attribute
 	 * values as an array of String objects.  For example, given an attribute of

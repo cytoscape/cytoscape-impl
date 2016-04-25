@@ -36,13 +36,16 @@ import org.cytoscape.application.swing.CySwingApplication;
 
 public class Utils {
 
+	private Utils() {
+	}
+
 	/*
-	 * dumbSplit splits a string on delimiter boundaries and doesn't try any
-	 * cute optimizations that the Java split would. For example, two
-	 * delimiters in a row are interpreted as delimiting an empty string.
-	 * So, this function returns one string for each delimiter and the
-	 * string that precedes any delimiter.
-	 */
+         * dumbSplit splits a string on delimiter boundaries and doesn't try any
+         * cute optimizations that the Java split would. For example, two
+         * delimiters in a row are interpreted as delimiting an empty string.
+         * So, this function returns one string for each delimiter and the
+         * string that precedes any delimiter.
+         */
 	public static String[] dumbSplit(String s, char delimiter) {
 		if (s == null) {
 			return null;

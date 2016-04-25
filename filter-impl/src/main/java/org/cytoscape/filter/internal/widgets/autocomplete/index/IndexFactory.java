@@ -31,6 +31,9 @@ package org.cytoscape.filter.internal.widgets.autocomplete.index;
  * @author Ethan Cerami.
  */
 public class IndexFactory {
+	private IndexFactory() {
+	}
+
 	/**
 	 * Gets the default implementation of the TextIndex interface.
 	 *
