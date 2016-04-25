@@ -209,7 +209,7 @@ public class EditorManagerImpl implements EditorManager {
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public <V> V showVisualPropertyValueEditor(final Component parentComponent, final VisualProperty<V> type,
 			V initialValue) throws Exception {
-		V newValue = null;
+		V newValue;
 		final Class<?> valueType = type.getRange().getType();
 		final VisualPropertyValueEditor<V> vizPropEditor = (VisualPropertyValueEditor<V>) vizPropValueEditors.get(valueType);
 		final ValueEditor<V> editor = (ValueEditor<V>) valueEditors.get(valueType);

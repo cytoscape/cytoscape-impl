@@ -57,7 +57,7 @@ public class AnnotationFactoryManager {
 	// This method is used to create annotations when we're reading the serialization from a saved
 	// session.  Note that we need to do some funky things with the type to support backwares compatibility
 	public Annotation createAnnotation(String type, CyNetworkView view, Map<String,String> argMap) {
-		Class clazz = null;
+		Class clazz;
 		try{
 			clazz = Class.forName(type);
 			if (Annotation.class.isAssignableFrom(clazz))

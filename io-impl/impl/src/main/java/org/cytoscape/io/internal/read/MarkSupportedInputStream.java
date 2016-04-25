@@ -43,7 +43,7 @@ public class MarkSupportedInputStream extends InputStream {
 		super();
 		ByteArrayOutputStream copy = new ByteArrayOutputStream();
 		int read = 0;
-		int chunk = 0;
+		int chunk;
 		byte[] data = new byte[1024];
 		
 		while(-1 != (chunk = eis.read(data))) { 

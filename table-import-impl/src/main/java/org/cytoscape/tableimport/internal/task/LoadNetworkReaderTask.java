@@ -146,7 +146,7 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 			tempFile = File.createTempFile("temp", this.fileType);
 			tempFile.deleteOnExit();
 			FileOutputStream os = new FileOutputStream(tempFile);
-			int read = 0;
+			int read;
 			byte[] bytes = new byte[1024];
 		 
 			while ((read = is.read(bytes)) != -1) {
@@ -161,7 +161,7 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 			e.printStackTrace();
 		}
 		
-		List<String> tempList = new ArrayList<>();
+		List<String> tempList;
 		tempList = new ArrayList<>();
 		tempList.add(TextDelimiter.TAB.getDelimiter());
 		tempList.add(TextDelimiter.COMMA.getDelimiter());
@@ -223,7 +223,7 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 			);
 			
 			colCount = previewPanel.getPreviewTable().getColumnModel().getColumnCount();
-			Object curName = null;
+			Object curName;
 			
 			if (firstRowAsColumnNames) {
 				previewPanel.setFirstRowAsColumnNames();

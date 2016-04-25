@@ -134,7 +134,7 @@ public class DingRenderingEngineFactory implements RenderingEngineFactory<CyNetw
 					"Ding accepts CyNetworkView only.");
 
 		final CyNetworkView targetView = (CyNetworkView) view;
-		DGraphView dgv = null;
+		DGraphView dgv;
 		
 		if (presentationContainer instanceof JComponent || presentationContainer instanceof RootPaneContainer) {
 			if (view instanceof DGraphView) {

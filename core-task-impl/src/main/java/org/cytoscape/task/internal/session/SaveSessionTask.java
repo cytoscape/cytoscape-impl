@@ -67,8 +67,8 @@ public class SaveSessionTask extends AbstractTask {
 
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
-		CySession session = null;
-		File file = null;
+		CySession session;
+		File file;
 		
 		try {
 			taskMonitor.setProgress(0.05);

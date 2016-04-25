@@ -147,7 +147,7 @@ public class FileHandler extends AbstractGUITunableHandler implements DirectlyPr
 				setValue(null);
 			} else {
 				String path = textField.getText();
-				File file = null;
+				File file;
 				
 				if (path.contains(System.getProperty("file.separator"))) {
 					file = new File(path);
@@ -277,7 +277,7 @@ public class FileHandler extends AbstractGUITunableHandler implements DirectlyPr
 			if (load_or_save == FileUtil.SAVE){
 				//In case of export, we can not detect the filter current used, so we we use filter "All image files" or 
 				//"All network files" when export image or network
-				FileChooserFilter filter = null;
+				FileChooserFilter filter;
 				
 				for (int i=0; i<filters.size(); i++){
 					filter = filters.get(i);

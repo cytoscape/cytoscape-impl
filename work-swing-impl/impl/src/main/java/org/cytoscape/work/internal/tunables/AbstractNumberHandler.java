@@ -83,7 +83,7 @@ public abstract class AbstractNumberHandler extends AbstractGUITunableHandler im
 			format = new DecimalFormat(getFormat());
 		}
 
-		Number d = null;
+		Number d;
 		try {
 			d = (Number)getNumberValue();
 		} catch(final Exception e) {
@@ -132,7 +132,7 @@ public abstract class AbstractNumberHandler extends AbstractGUITunableHandler im
 	public void handle() {
 		textField.setBackground(UIManager.getColor("TextField.background"));
 		Number prev = getNumberValue();
-		Number d = null;
+		Number d;
 		
 		try {
 			d = getFieldValue(textField.getText());

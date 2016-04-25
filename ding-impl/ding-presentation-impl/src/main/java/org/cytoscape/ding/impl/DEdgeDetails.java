@@ -444,7 +444,7 @@ final class DEdgeDetails extends EdgeDetails {
 
 	@Override
 	public float getWidth(final CyEdge edge) {
-		Float w = null;
+		Float w;
 		// Bypass check
 		final DEdgeView edv = dGraphView.getDEdgeView(edge);
 		
@@ -483,7 +483,7 @@ final class DEdgeDetails extends EdgeDetails {
 
 	@Override
 	public Stroke getStroke(final CyEdge edge) {
-		Stroke stroke = null;
+		Stroke stroke;
 		final DEdgeView dev = dGraphView.getDEdgeView(edge);
 
 		if (dev == null) return null;
@@ -556,7 +556,7 @@ final class DEdgeDetails extends EdgeDetails {
 	}
 
 	Paint getUnselectedPaint(final CyEdge edge) {
-		Paint paint = null;
+		Paint paint;
 		Integer trans = null;
 		final DEdgeView dev = dGraphView.getDEdgeView(edge);
 		
@@ -586,7 +586,7 @@ final class DEdgeDetails extends EdgeDetails {
 	}
 
 	Paint getSelectedPaint(final CyEdge edge) {
-		Paint paint = null;
+		Paint paint;
 		Integer trans = null;
 		final DEdgeView dev = dGraphView.getDEdgeView(edge);
 		
@@ -808,7 +808,7 @@ final class DEdgeDetails extends EdgeDetails {
 	@Override
 	public Font getLabelFont(final CyEdge edge, final int labelInx) {
 		Number size = null;
-		Font font = null;
+		Font font;
 		final DEdgeView dev = dGraphView.getDEdgeView(edge);
 		
 		// Check bypass
@@ -854,7 +854,7 @@ final class DEdgeDetails extends EdgeDetails {
 
 	@Override
 	public Paint getLabelPaint(final CyEdge edge, final int labelInx) {
-		Paint paint = null;
+		Paint paint;
 		Integer trans = null;
 		final DEdgeView dev = dGraphView.getDEdgeView(edge);
 		

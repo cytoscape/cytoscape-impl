@@ -1789,7 +1789,7 @@ public final class RTree implements SpacialIndex2D, java.io.Serializable {
 		}
 
 		public final long nextLong() {
-			long returnThis = -1L;
+			long returnThis;
 
 			if (currentStack == null) {
 				returnThis = currentLeafNode.objKeys[currentInx];

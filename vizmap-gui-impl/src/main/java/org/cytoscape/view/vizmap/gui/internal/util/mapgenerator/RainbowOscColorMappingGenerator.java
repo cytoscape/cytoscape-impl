@@ -54,8 +54,8 @@ public class RainbowOscColorMappingGenerator extends
 				.floatValue();
 
 		float hue = 0;
-		float sat = 0;
-		float br = 0;
+		float sat;
+		float br;
 
 		final Map<T, Color> valueMap = new HashMap<T, Color>();
 

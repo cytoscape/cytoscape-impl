@@ -141,7 +141,7 @@ public final class TableBrowserUtil {
 
 		ListParserState state = ListParserState.OPENING_BRACE_EXPECTED;
 		for (;;) {
-			int ch = EOF;
+			int ch;
 			try {
 				reader.mark(0);
 				ch = reader.read();
@@ -215,7 +215,7 @@ public final class TableBrowserUtil {
 			return getString(reader, errorMessage);
 		else if (listElementType == Integer.class || listElementType == Long.class) {
 			// Process optional leading sign:
-			int ch = EOF;
+			int ch;
 			try {
 				reader.mark(0);
 				ch = reader.read();

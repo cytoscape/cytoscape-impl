@@ -94,8 +94,8 @@ public class LinearGradientLayer extends AbstractGradientLayer {
 	// ==[ PRIVATE METHODS ]============================================================================================
 	
 	private static Line2D getGradientAxis(final Rectangle2D bounds, final double angle) {
-		Point2D start = null;
-		Point2D end = null;
+		Point2D start;
+		Point2D end;
 		
 		double x1 = bounds.getMinX();
 		double y1 = bounds.getMinY();

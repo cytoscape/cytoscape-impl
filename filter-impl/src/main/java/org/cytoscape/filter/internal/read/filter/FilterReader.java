@@ -161,7 +161,7 @@ public final class FilterReader {
 
 		// Seperate AdvancedSetting from the rest
 		int startIndex = -1, endIndex = -1;
-		String line = null;
+		String line;
 
 		for (int i = 0; i < strList.size(); i++) {
 			line = strList.get(i);
@@ -346,7 +346,7 @@ public final class FilterReader {
 	
 	private AdvancedSetting getAdvancedSettingFromStr(List<String> pAdvSettingStrVect) {
 		AdvancedSetting advSetting = new AdvancedSetting();
-		String line = null;
+		String line;
 
 		for (int i = 0; i < pAdvSettingStrVect.size(); i++) {
 			line = pAdvSettingStrVect.get(i);
@@ -386,7 +386,7 @@ public final class FilterReader {
 	
 	private void getTopologyFilterFromStr(TopologyFilter pFilter, List<String> pFilterStrVect,
 			Collection<CompositeFilter> filters) {
-		String line = null;
+		String line;
 		
 		for (int i = 0; i < pFilterStrVect.size(); i++) {
 			line = pFilterStrVect.get(i);
@@ -434,7 +434,7 @@ public final class FilterReader {
 	
 	private void getInteractionFilterFromStr(InteractionFilter pFilter, List<String> pFilterStrVect,
 			Collection<CompositeFilter> filters) {
-		String line = null;
+		String line;
 
 		for (int i = 0; i < pFilterStrVect.size(); i++) {
 			line = pFilterStrVect.get(i);

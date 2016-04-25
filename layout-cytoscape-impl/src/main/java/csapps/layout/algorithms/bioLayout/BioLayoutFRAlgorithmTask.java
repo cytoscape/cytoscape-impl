@@ -138,7 +138,7 @@ public class BioLayoutFRAlgorithmTask extends BioLayoutAlgorithmTask {
 	public void layoutPartition(LayoutPartition partition) {
 		this.partition = partition;
 
-		LayoutPoint initialLocation = null;
+		LayoutPoint initialLocation;
 
 		/* Get all of our profiles */
 		/*
@@ -187,7 +187,7 @@ public class BioLayoutFRAlgorithmTask extends BioLayoutAlgorithmTask {
 
 		// Main algorithm
 		// iterProfile.start();
-		int iteration = 0;
+		int iteration;
 
 		for (iteration = 0; (iteration < context.nIterations) && !cancelled; iteration++) {
 			if ((temp = doOneIteration(iteration, temp)) == 0)
@@ -240,8 +240,8 @@ public class BioLayoutFRAlgorithmTask extends BioLayoutAlgorithmTask {
 
 		// Not quite done, yet.  If we're only laying out selected nodes, we need
 		// to migrate the selected nodes back to their starting position
-		double xDelta = 0.0;
-		double yDelta = 0.0;
+		double xDelta;
+		double yDelta;
 		double zDelta = 0.0;
 		final LayoutPoint finalLocation = partition.getAverageLocation();
 		xDelta = finalLocation.getX() - initialLocation.getX();

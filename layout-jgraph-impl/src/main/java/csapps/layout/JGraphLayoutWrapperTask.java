@@ -126,7 +126,7 @@ public class JGraphLayoutWrapperTask extends AbstractLayoutTask{
 		//initialize();
 
 		double currentProgress = 0;
-		double percentProgressPerIter = 0;
+		double percentProgressPerIter;
 		CyNetwork network = networkView.getModel();
 		Map j_giny_node_map = new HashMap(); //PrimeFinder.nextPrime(network.getNodeCount()));
 		Map giny_j_node_map = new HashMap(); //PrimeFinder.nextPrime(network.getNodeCount()));

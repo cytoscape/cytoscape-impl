@@ -313,9 +313,9 @@ public class FilterSettingPanel extends JPanel {
 	
 	private class MyMouseInputAdapter extends MouseInputAdapter {
 		public void mouseMoved(MouseEvent e) {
-			String toolTipText = "";
-			JRangeSliderExtended _range = null;
-			NumberRangeModel _model = null;
+			String toolTipText;
+			JRangeSliderExtended _range;
+			NumberRangeModel _model;
 			Object _obj = e.getSource();			
 			if (_obj instanceof JRangeSliderExtended) {
 				_range = (JRangeSliderExtended) _obj;

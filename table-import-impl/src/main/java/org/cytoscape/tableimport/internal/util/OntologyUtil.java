@@ -50,7 +50,7 @@ public class OntologyUtil {
 
 	public String getSpecies(final BufferedReader taxRd, final BufferedReader gaRd) throws IOException {
 		String sp = null;
-		String curLine = null;
+		String curLine;
 
 		while ((sp == null) && (null != (curLine = gaRd.readLine()))) {
 			curLine.trim();
@@ -85,7 +85,7 @@ public class OntologyUtil {
 	
 	public String taxIdToName(String taxId, final BufferedReader taxRd) throws IOException {
 		String name = null;
-		String curLine = null;
+		String curLine;
 
 		taxRd.readLine();
 
@@ -117,8 +117,8 @@ public class OntologyUtil {
 		
 		final Map<String, String> taxonMap = new HashMap<String, String>();
 		
-		String name = null;
-		String curLine = null;
+		String name;
+		String curLine;
 
 		if (taxonFile.canRead() == true) {
 			BufferedReader taxonFileRd = null;
@@ -155,7 +155,7 @@ public class OntologyUtil {
 	public Map<String, String> getTaxonMap(BufferedReader taxonFileReader) throws IOException {
 		final Map<String, String> taxonMap = new HashMap<String, String>();
 
-		String curLine = null;
+		String curLine;
 
 		taxonFileReader.readLine();
 
@@ -172,9 +172,9 @@ public class OntologyUtil {
 
 	private String getTaxonFromNCBI(String id) throws MalformedURLException {
 		String txName = null;
-		URL taxonURL = null;
+		URL taxonURL;
 		BufferedReader htmlPageReader = null;
-		String curLine = null;
+		String curLine;
 
 		String targetId = id + "&lvl=0";
 

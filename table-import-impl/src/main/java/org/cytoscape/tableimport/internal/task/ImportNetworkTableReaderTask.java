@@ -83,7 +83,7 @@ public class ImportNetworkTableReaderTask extends AbstractTask implements CyNetw
 			File tempFile = File.createTempFile("temp", this.fileType);
 			tempFile.deleteOnExit();
 			FileOutputStream os = new FileOutputStream(tempFile);
-			int read = 0;
+			int read;
 			byte[] bytes = new byte[1024];
 		 
 			while ((read = is.read(bytes)) != -1) {

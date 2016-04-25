@@ -209,7 +209,7 @@ public class BookmarkDialog extends JDialog implements ActionListener, ListSelec
 
 	public void loadBookmarks() {
 		final DataSourceManager dsManager = serviceRegistrar.getService(DataSourceManager.class);
-		Collection<org.cytoscape.io.datasource.DataSource> theDataSourceCollection = new HashSet<>();
+		Collection<org.cytoscape.io.datasource.DataSource> theDataSourceCollection;
 		final String selectedItem = (String) cmbCategory.getSelectedItem();
 		
 		if (selectedItem.equals("network")){

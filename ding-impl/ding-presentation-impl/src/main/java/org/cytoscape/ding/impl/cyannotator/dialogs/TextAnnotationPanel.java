@@ -148,7 +148,7 @@ public class TextAnnotationPanel extends JPanel {
 		if (fontSize % 2 != 0)
 			fontSize++;
 
-		int i = 0;
+		int i;
 
 		for (i = 0; i < fontSizeList.getModel().getSize(); i++) {
 			if (fontSize == Integer.parseInt((String) fontSizeList.getModel().getElementAt(i))) {

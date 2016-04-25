@@ -831,7 +831,7 @@ public class CircularLayoutAlgorithmTask extends AbstractPartitionLayoutTask {
 		if (idealPosition < 0)
 			startPos += outerPositionsTaken.length;
 
-		int i = 0;
+		int i;
 		int alreadyFound = 0;
 		int startOfAlFound = -1;
 		boolean found = false;

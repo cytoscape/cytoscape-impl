@@ -168,7 +168,7 @@ public class CreditScreen {
 			g.drawString(version, xPos, 120);
 
 			int i = 1;
-			int y = yPos;
+			int y;
 
 			for ( String sub : lines ) {
 				y = yPos + (12 * i);

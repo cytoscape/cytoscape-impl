@@ -99,7 +99,7 @@ public final class TableColumnStatFileIO {
 
 					final InputStreamReader reader = new InputStreamReader(is);
 					final BufferedReader br = new BufferedReader(reader);
-					String line = null;
+					String line;
 					while ((line = br.readLine()) != null){
 
 						String[] split = line.split(",");

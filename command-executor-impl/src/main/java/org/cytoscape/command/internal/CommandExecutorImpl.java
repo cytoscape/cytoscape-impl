@@ -181,7 +181,7 @@ public class CommandExecutorImpl {
 	}
 
 	private void handleCommand(String commandLine, TaskMonitor tm, TaskObserver observer) throws Exception {
-		String ns = null;
+		String ns;
 		if ((ns = isNamespace(commandLine)) == null) {
 			throw new RuntimeException("Failed to find command namespace: '"+commandLine+"'");
 		}

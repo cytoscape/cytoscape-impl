@@ -83,7 +83,7 @@ public class StringFilter extends AtomicFilter {
 		List<CyEdge> edges_list=null;
 
 		// Initialize the bitset
-		int objectCount = -1;
+		int objectCount;
 		if (index_type == QuickFind.INDEX_NODES) {
 			nodes_list = network.getNodeList();
 			objectCount = nodes_list.size();
@@ -118,7 +118,7 @@ public class StringFilter extends AtomicFilter {
 
 		Object[] hit_objs = hit0.getAssociatedObjects();
 
-		int index=-1;
+		int index;
 		if (index_type == QuickFind.INDEX_NODES) {
 			for (Object obj : hit_objs) {
 				index = nodes_list.indexOf(obj);	

@@ -116,7 +116,7 @@ public class LinkoutTask extends AbstractTask {
 				continue;
 
 			String attrValue = raw.toString();
-			String attrValueEscaped = null;
+			String attrValueEscaped;
 			try {
 				attrValueEscaped = URLEncoder.encode(attrValue, "UTF-8");
 			} catch (UnsupportedEncodingException e) {

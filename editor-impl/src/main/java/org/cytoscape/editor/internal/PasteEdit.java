@@ -75,7 +75,7 @@ public class PasteEdit extends AbstractCyEdit {
 	}
 
 	public void redo() {
-		List<CyIdentifiable> pastedObjects = null;
+		List<CyIdentifiable> pastedObjects;
 		if (this.xformPt == null)
 			pastedObjects = clipboard.paste(view, 0.0, 0.0);
 		else
@@ -84,7 +84,7 @@ public class PasteEdit extends AbstractCyEdit {
 		// Apply visual style
 		VisualStyle vs = vmm.getVisualStyle(view);
 		for (CyIdentifiable element: pastedObjects) {
-			View<? extends CyIdentifiable> elementView = null;
+			View<? extends CyIdentifiable> elementView;
 			if (element instanceof CyNode)
 				elementView = view.getNodeView((CyNode)element);
 			else if (element instanceof CyEdge)

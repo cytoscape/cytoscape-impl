@@ -139,7 +139,7 @@ public class DefaultAttributeTableReader implements TextTableReader {
 					} catch (Exception e) { }
 				} else { //Use the "old" method for splitting the lines.
 					String line;
-					String[] parts = null;
+					String[] parts;
 					
 					while ((line = bufRd.readLine()) != null) {
 						/*

@@ -131,7 +131,7 @@ public class CytoscapeMenuBar extends JMenuBar {
 		if (menu_item == null)
 			return false;
 
-		String menu_name = null;
+		String menu_name;
 		if (action.isInMenuBar())
 			menu_name = action.getPreferredMenu();
 		else

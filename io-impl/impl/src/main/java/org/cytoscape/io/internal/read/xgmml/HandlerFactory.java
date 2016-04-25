@@ -213,7 +213,7 @@ public class HandlerFactory {
 	 */
 	private void buildMap(Object[][] table, Map<ParseState, Map<String, SAXState>> map) {
 		int size = table.length;
-		Map<String, SAXState> internalMap = null;
+		Map<String, SAXState> internalMap;
 		
 		for (int i = 0; i < size; i++) {
 			SAXState st = new SAXState((ParseState) table[i][0],

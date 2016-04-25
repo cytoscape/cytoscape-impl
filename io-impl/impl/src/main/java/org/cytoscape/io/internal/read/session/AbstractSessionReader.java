@@ -229,7 +229,7 @@ public abstract class AbstractSessionReader extends AbstractTask implements CySe
 		int count = 0;
 	
 		try {
-			ZipEntry zen = null;
+			ZipEntry zen;
 	
 			// Extract cysession.xml and the other files, except the XGMML ones:
 			while ((zen = zis.getNextEntry()) != null && !cancelled) {
@@ -277,7 +277,7 @@ public abstract class AbstractSessionReader extends AbstractTask implements CySe
 		try {
 			sourceInputStream.reset();
 			zis = new ZipInputStream(sourceInputStream);
-			ZipEntry zen = null;
+			ZipEntry zen;
 			boolean found = false;
 
 			while (!found && (zen = zis.getNextEntry()) != null) {

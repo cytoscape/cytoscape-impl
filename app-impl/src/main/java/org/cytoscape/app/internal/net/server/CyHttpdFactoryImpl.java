@@ -224,7 +224,7 @@ class CyHttpdImpl implements CyHttpd
         public void run()
         {
             // Create a server socket
-            ServerSocket serverSocket = null;
+            ServerSocket serverSocket;
             while (true)
             {
 	            try
@@ -266,7 +266,7 @@ class CyHttpdImpl implements CyHttpd
             {
                 
                 // Create a new http server connection from the incoming socket
-                DefaultHttpServerConnection connection = null;
+                DefaultHttpServerConnection connection;
                 try {
                     final Socket socket = serverSocket.accept();
                     logger.info("Server socket received connection from {}", socket.getInetAddress().getHostAddress());

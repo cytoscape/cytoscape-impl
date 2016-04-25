@@ -132,7 +132,7 @@ class MeasuredLineCreator {
 	
 		for ( String line : rawLines ) {
 			double currentWidth = 0;
-			double wordWidth = 0; 
+			double wordWidth; 
 			double wordHeight = 0; 
 			StringBuilder currentLine = new StringBuilder();
 

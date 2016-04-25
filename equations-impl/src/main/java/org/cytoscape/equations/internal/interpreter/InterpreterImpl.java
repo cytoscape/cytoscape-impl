@@ -63,7 +63,7 @@ public class InterpreterImpl implements Interpreter {
 
 		final Object[] code = equation.getCode();
 
-		int index = -1;
+		int index;
 		try {
 			for (index = 0; index < code.length; ++index) {
 				final Object instrOrArg = code[index];

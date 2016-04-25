@@ -86,7 +86,7 @@ public class BookmarkDataSourceBuilder {
 					final String name = ds.getName();
 					final String description = "From Bookmarks";
 					final String provider = "Example";
-					URL url = null;
+					URL url;
 					try {
 						url = new URL(location);
 					} catch (MalformedURLException e) {

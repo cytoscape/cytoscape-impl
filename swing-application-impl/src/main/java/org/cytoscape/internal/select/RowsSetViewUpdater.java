@@ -108,7 +108,7 @@ public class RowsSetViewUpdater implements RowsSetListener {
 		
 		// 1: Update current network view
 		final Collection<CyNetworkView> views = vm.getNetworkViews(network);
-		CyNetworkView networkView = null;
+		CyNetworkView networkView;
 		if (views.isEmpty())
 			return;
 		else

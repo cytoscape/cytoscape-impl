@@ -48,7 +48,7 @@ public class ReindexTask extends AbstractNetworkTask {
 	public void run(final TaskMonitor taskMonitor) {
 
 		// Index the given network or use existing index
-		RAMDirectory idx = null;
+		RAMDirectory idx;
 
 		taskMonitor.setStatusMessage("Re-indexing network");
 		EnhancedSearchIndex indexHandler = new EnhancedSearchIndex(network, taskMonitor);

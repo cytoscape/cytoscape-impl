@@ -217,14 +217,14 @@ public class WebQuerier {
 	 */
 	private String query(String url) throws IOException {
 		// Convert the string url to a URL object
-		URL parsedUrl = null;
+		URL parsedUrl;
 		try {
 			parsedUrl = new URL(url);
 		} catch (MalformedURLException e) {
 			throw new IOException("Malformed url, " + e.getMessage());
 		}
 		
-		String result = null;
+		String result;
 	
 		HttpURLConnection connection = (HttpURLConnection) streamUtil.getURLConnection(parsedUrl);
 		connection.setRequestProperty(REQUEST_JSON_HEADER_KEY, REQUEST_JSON_HEADER_VALUE);
@@ -313,7 +313,7 @@ public class WebQuerier {
 
 		Set<WebApp> result = new HashSet<WebApp>();
 		
-		String jsonResult = null;
+		String jsonResult;
 		try {
 			// Obtain information about the app from the website
 			jsonResult = query(currentAppStoreUrl + "backend/all_apps");
@@ -324,7 +324,7 @@ public class WebQuerier {
 			
 			// Parse the JSON result
 			JSONArray jsonArray = new JSONArray(jsonResult);
-			JSONObject jsonObject = null;
+			JSONObject jsonObject;
 			String keyName;
 			
 			for (int index = 0; index < jsonArray.length(); index++) {
@@ -546,7 +546,7 @@ public class WebQuerier {
 				releaseToDownload = compatibleReleases.get(compatibleReleases.size() - 1);
 			}
 			
-			URL downloadUrl = null;
+			URL downloadUrl;
 			try {
 				downloadUrl = new URL(currentAppStoreUrl + releaseToDownload.getRelativeUrl());
 			} catch (MalformedURLException e) {
@@ -833,7 +833,7 @@ public class WebQuerier {
 		Map<Release, WebApp> allReleases = new HashMap<Release, WebApp>(
 				appsByUrl.get(DEFAULT_APP_STORE_URL).size());
 		
-		List<Release> appReleases = null;
+		List<Release> appReleases;
 		for (WebApp webApp : allWebApps) {
 			
 			appReleases = webApp.getReleases();

@@ -319,7 +319,7 @@ public class DNodeDetails extends NodeDetails {
 	 * Note: this will be used for BOTH unselected and selected.
 	 */
 	public Paint getUnselectedPaint(final CyNode node) {
-		Paint paint = null;
+		Paint paint;
 		Integer trans = null;
 		final DNodeView dev = dGraphView.getDNodeView(node);
 		
@@ -491,7 +491,7 @@ public class DNodeDetails extends NodeDetails {
 		if (dnv == null)
 			return DVisualLexicon.NODE_BORDER_PAINT.getDefault();
 		
-		Paint paint = null;
+		Paint paint;
 		Integer trans = null;
 		
 		// First check if transparency is locked, because the stored colors may not contain the correct alpha value
@@ -643,7 +643,7 @@ public class DNodeDetails extends NodeDetails {
 	@Override
 	public Font getLabelFont(CyNode node, int labelInx) {
 		Number size = null;
-		Font font = null;
+		Font font;
 		final DNodeView dnv = dGraphView.getDNodeView(node);
 		
 		// Check bypass
@@ -689,7 +689,7 @@ public class DNodeDetails extends NodeDetails {
 
 	@Override
 	public Paint getLabelPaint(final CyNode node, final int labelInx) {
-		Paint paint = null;
+		Paint paint;
 		Integer trans = null;
 		final DNodeView dnv = dGraphView.getDNodeView(node);
 		

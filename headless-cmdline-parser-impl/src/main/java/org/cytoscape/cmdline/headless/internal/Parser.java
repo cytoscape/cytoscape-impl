@@ -91,7 +91,7 @@ public class Parser {
 
 		// try to parse the cmd line
 		CommandLineParser parser = new PosixParser();
-		CommandLine line = null;
+		CommandLine line;
 
 		// first load the simple exit options
 		try {

@@ -126,7 +126,7 @@ public class URLUtil {
 					"getURLConnection was given a null 'source' argument.");
 		}
 		Proxy cytoProxy = ProxyHandler.getProxyServer();
-		URLConnection uc = null;
+		URLConnection uc;
 		if (cytoProxy == null) {
 			uc = source.openConnection();
 		} else {

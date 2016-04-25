@@ -226,8 +226,8 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 
 		// Traverse using recursive call
 		final int numChildren = children.size();
-		Child child = null;
-		Network childNet = null;
+		Child child;
+		Network childNet;
 		
 		for (int i = 0; i < numChildren; i++) {
 			if (cancelled) return;
@@ -375,8 +375,8 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 
 		try {
 			// Write input stream into tmp file
-			BufferedWriter out = null;
-			BufferedReader in = null;
+			BufferedWriter out;
+			BufferedReader in;
 
 			in = new BufferedReader(new InputStreamReader(is, Charset.forName("UTF-8").newDecoder()));
 			out = new BufferedWriter(new FileWriter(file));

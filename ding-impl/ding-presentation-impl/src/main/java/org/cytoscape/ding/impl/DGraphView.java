@@ -2132,7 +2132,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		final LongStack edgeStack = new LongStack();
 		queryDrawnEdges((int) pt.getX(), (int) pt.getY(), (int) pt.getX(), (int) pt.getY(), edgeStack);
 
-		long chosenEdge = 0;
+		long chosenEdge;
 		chosenEdge = (edgeStack.size() > 0) ? edgeStack.peek() : -1;
 
 		if (chosenEdge >= 0) {
@@ -2581,7 +2581,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	
 	@Override
 	public <T> T getVisualProperty(final VisualProperty<T> vp) {
-		Object value = null;
+		Object value;
 		
 		if (vp == DVisualLexicon.NETWORK_NODE_SELECTION) {
 			value = nodeSelectionEnabled();

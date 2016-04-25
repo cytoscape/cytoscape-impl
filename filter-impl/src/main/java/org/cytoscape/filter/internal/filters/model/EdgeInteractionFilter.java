@@ -117,7 +117,7 @@ public class EdgeInteractionFilter extends InteractionFilter {
 			return false;
 		}
 						
-		int nodeIndex = -1;
+		int nodeIndex;
 		for (int i=0; i < adjacentNodes.size(); i++) {
 			nodeIndex = nodes.indexOf(adjacentNodes.get(i));
 		

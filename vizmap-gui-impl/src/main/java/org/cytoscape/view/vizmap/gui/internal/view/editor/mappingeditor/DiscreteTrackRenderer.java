@@ -391,7 +391,7 @@ public class DiscreteTrackRenderer<K, V> extends JComponent implements VizMapTra
 		double valueRange = tracer.getRange(vp);
 
 		int track_width = iconWidth;
-		int trackHeight = iconHeight - 8;
+		int trackHeight;
 		
 		if (detail) {
 			trackHeight = iconHeight - 30;
@@ -430,7 +430,7 @@ public class DiscreteTrackRenderer<K, V> extends JComponent implements VizMapTra
 			return new ImageIcon(bi);
 		}
 
-		int newX = 0;
+		int newX;
 
 		Point2D p1 = new Point2D.Float(0, 5);
 		Point2D p2 = new Point2D.Float(0, 5);
@@ -484,7 +484,7 @@ public class DiscreteTrackRenderer<K, V> extends JComponent implements VizMapTra
 		g.setColor(LABEL_COLOR);
 		
 		if (detail) {
-			String fNum = null;
+			String fNum;
 
 			for (int j = 0; j < fractions.length; j++) {
 				fNum = String.format("%.2f", ((fractions[j] / 100) * valueRange) + minValue);

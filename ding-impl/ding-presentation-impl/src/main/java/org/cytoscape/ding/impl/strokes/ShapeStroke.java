@@ -53,8 +53,8 @@ public abstract class ShapeStroke implements WidthStroke {
 		float points[] = new float[6];
 		float moveX = 0, moveY = 0;
 		float lastX = 0, lastY = 0;
-		float thisX = 0, thisY = 0;
-		int type = 0;
+		float thisX, thisY;
+		int type;
 		boolean first = false;
 		float next = 0;
 		int currentShape = 0;

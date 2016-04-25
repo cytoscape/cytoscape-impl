@@ -127,8 +127,8 @@ public class JRangeSliderExtended extends JRangeSlider implements ChangeListener
 
 		DecimalFormat format;
 
-        String lowStr = null;
-        String highStr = null;
+        String lowStr;
+        String highStr;
         if (low instanceof Integer) {
             lowStr = Integer.toString((Integer) low);
             highStr = Integer.toString((Integer) high);

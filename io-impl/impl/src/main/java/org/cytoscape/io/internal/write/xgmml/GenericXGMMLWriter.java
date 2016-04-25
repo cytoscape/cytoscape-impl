@@ -761,7 +761,7 @@ public class GenericXGMMLWriter extends AbstractTask implements CyWriter {
                 depth++;
                 // iterate through the list
                 for (Object obj : listAttr) {
-                    String sAttr = null;
+                    String sAttr;
                     
                     if (obj instanceof Boolean) {
                         sAttr = ObjectTypeMap.toXGMMLBoolean((Boolean) obj);

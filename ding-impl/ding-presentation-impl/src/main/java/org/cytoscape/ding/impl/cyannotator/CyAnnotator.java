@@ -186,7 +186,7 @@ public class CyAnnotator {
 					}
 				}
 
-				int zOrder = 0;
+				int zOrder;
 				if (argMap.containsKey(Annotation.Z)) {
 					zOrder = Integer.parseInt(argMap.get(Annotation.Z));
 					zOrderMap.put(annotation, zOrder);
@@ -208,7 +208,7 @@ public class CyAnnotator {
 				Annotation annotation = annotationFactoryManager.createAnnotation(type,view,argMap);
 				if (annotation instanceof ArrowAnnotationImpl) {
 					ArrowAnnotationImpl arrow = (ArrowAnnotationImpl)annotation;
-					int zOrder = 0;
+					int zOrder;
 					if (argMap.containsKey(Annotation.Z)) {
 						zOrder = Integer.parseInt(argMap.get(Annotation.Z	));
 						zOrderMap.put(arrow, zOrder);

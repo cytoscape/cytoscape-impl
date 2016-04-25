@@ -105,7 +105,7 @@ public class ExcelAttributeSheetReader implements TextTableReader {
 	 */
 	private String[] createElementStringArray(Row row) {
 		String[] cells = new String[mapping.getColumnCount()];
-		Cell cell = null;
+		Cell cell;
 
 		for (short i = 0; i < mapping.getColumnCount(); i++) {
 			cell = row.getCell(i);

@@ -45,7 +45,7 @@ abstract class QueueProcesser implements Runnable
 	{
 		while (true)
 		{
-			PaxLoggingEvent event = null;
+			PaxLoggingEvent event;
 			try
 			{
 				event = queue.take();

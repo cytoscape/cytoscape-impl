@@ -135,7 +135,7 @@ import org.cytoscape.work.TaskIterator;
 
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					String url = "none found"; 
+					String url; 
 					synchronized (this) {
 						url = menuTitleURLMap.get( menuTitle );	
 					}

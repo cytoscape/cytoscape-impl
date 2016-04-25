@@ -48,7 +48,7 @@ public class OpenBrowserImpl implements OpenBrowser {
 	 */
 	@Override
 	public boolean openURL(final String url) {
-        URI uri = null;
+        URI uri;
         try {
             uri = new URI(url);
         } catch (URISyntaxException e) {

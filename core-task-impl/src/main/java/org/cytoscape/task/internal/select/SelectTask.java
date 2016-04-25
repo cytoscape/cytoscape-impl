@@ -127,7 +127,7 @@ public class SelectTask extends AbstractSelectTask {
 
 		if (!firstNeighbors.getSelectedValue().equals("none")) {
 			// Handle topology option
-			CyEdge.Type type = CyEdge.Type.ANY;
+			CyEdge.Type type;
 
 			if (firstNeighbors.getSelectedValue().equals("incoming"))
 				type = CyEdge.Type.INCOMING;

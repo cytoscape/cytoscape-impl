@@ -73,7 +73,7 @@ public class IntegerListAggregator extends AbstractAggregator<List<Integer>> {
 			List <Integer> agg = new ArrayList<Integer>();
 			List <List<Integer>> aggMed = new ArrayList<>();
 			Set <Integer> aggset = new HashSet<Integer>();
-			List <Integer> aggregation = null;
+			List <Integer> aggregation;
 
 			if (type == AttributeHandlingType.NONE) return null;
 			if (!listType.equals(Integer.class)) return null;

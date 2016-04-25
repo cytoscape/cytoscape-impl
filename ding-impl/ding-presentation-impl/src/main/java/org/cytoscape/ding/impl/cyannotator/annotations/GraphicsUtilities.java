@@ -153,7 +153,7 @@ class GraphicsUtilities {
 		//if (!isPrinting && border < 1.0f) border = 1.0f;
 		// System.out.println("Border width = "+border+", isPrinting = "+isPrinting);
 
-		Shape shape = null;
+		Shape shape;
 		if (annotation.getShapeType().equals(ShapeType.CUSTOM.shapeName())) {
       final double destX = x + border;
       final double destY = y + border;

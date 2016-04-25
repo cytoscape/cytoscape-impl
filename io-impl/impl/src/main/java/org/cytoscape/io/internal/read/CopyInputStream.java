@@ -39,7 +39,7 @@ public class CopyInputStream {
 	public static InputStream copyKBytes(InputStream is, int kb ) throws IOException {
 		ByteArrayOutputStream copy = new ByteArrayOutputStream();
 		int read = 0;
-		int chunk = 0;
+		int chunk;
 		byte[] data = new byte[1024];
 		
 		while((-1 != (chunk = is.read(data))) && ( kb-- > 0 ) ) {

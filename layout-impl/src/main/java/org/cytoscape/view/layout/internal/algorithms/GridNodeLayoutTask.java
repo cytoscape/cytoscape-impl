@@ -63,8 +63,8 @@ public class GridNodeLayoutTask extends AbstractLayoutTask {
 	 */
 	@Override
 	final protected void doLayout(final TaskMonitor taskMonitor) {
-		double currX = 0.0d;
-		double currY = 0.0d;
+		double currX;
+		double currY;
 		double initialX = 0.0d;
 		double initialY = 0.0d;
 

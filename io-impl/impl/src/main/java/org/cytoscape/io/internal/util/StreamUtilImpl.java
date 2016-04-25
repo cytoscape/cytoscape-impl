@@ -197,7 +197,7 @@ public class StreamUtilImpl implements StreamUtil {
 		if (source == null)
 			throw new NullPointerException("getURLConnection was given a null 'source' argument.");
 		
-		URLConnection uc = null;
+		URLConnection uc;
 		
 		Proxy cytoProxy = getProxy();
 		if (cytoProxy == null) {

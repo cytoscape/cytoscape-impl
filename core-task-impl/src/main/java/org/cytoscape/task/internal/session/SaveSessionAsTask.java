@@ -69,7 +69,7 @@ public class SaveSessionAsTask extends AbstractTask {
 
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
-		CySession session = null;
+		@SuppressWarnings("UnusedAssignment") CySession session;
 		
 		try {
 			taskMonitor.setProgress(0.05);

@@ -36,9 +36,9 @@ public class HandleNode extends AbstractHandler {
 	@Override
 	public ParseState handle(final String tag, final Attributes atts, final ParseState current) throws SAXException {
 		final String href = atts.getValue(ReadDataManager.XLINK, "href");
-		Object id = null;
-		String label = null;
-		CyNode node = null;
+		Object id;
+		String label;
+		CyNode node;
 		final CyNetwork curNet = manager.getCurrentNetwork();
 		final CyNetwork rootNet = manager.getRootNetwork();
 		

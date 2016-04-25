@@ -217,7 +217,7 @@ public class QuickFindImpl implements QuickFind {
 		} else
 			maxProgress = getGraphObjectCount(cyNetwork, indexType);
 
-		GenericIndex index = null;
+		GenericIndex index;
 		if (controllingAttribute.equals(QuickFind.INDEX_ALL_ATTRIBUTES)) {
 			//  Option 1:  Index all attributes
 			index = createIndex(indexType, String.class, controllingAttribute);

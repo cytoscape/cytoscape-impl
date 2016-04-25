@@ -102,7 +102,7 @@ public class URLHandler extends AbstractGUITunableHandler {
 		
 		if (dataSources != null) {
 			for (DataSource ds : dataSources) {
-				String link = null;
+				String link;
 				link = ds.getLocation().toString();
 				final String sourceName = ds.getName();
 				final String provider = ds.getProvider();

@@ -134,7 +134,7 @@ public class LoadTableReaderTask extends AbstractTask implements CyTableReader, 
 			File tempFile = File.createTempFile("temp", this.fileType);
 			tempFile.deleteOnExit();
 			FileOutputStream os = new FileOutputStream(tempFile);
-			int read = 0;
+			int read;
 			byte[] bytes = new byte[1024];
 		 
 			while ((read = is.read(bytes)) != -1) {
@@ -210,7 +210,7 @@ public class LoadTableReaderTask extends AbstractTask implements CyTableReader, 
 		);
 		
 		colCount = previewPanel.getPreviewTable().getColumnModel().getColumnCount();
-		Object curName = null;
+		Object curName;
 		
 		if (firstRowAsColumnNames) {
 			previewPanel.setFirstRowAsColumnNames();

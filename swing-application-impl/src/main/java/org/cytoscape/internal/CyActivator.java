@@ -416,7 +416,7 @@ public class CyActivator extends AbstractCyActivator {
 		}
 
 		// Full screen actions.  This is platform dependent
-		FullScreenAction fullScreenAction = null;
+		FullScreenAction fullScreenAction;
 		
 		if (LookAndFeelUtil.isMac()) {
 			if (MacFullScreenEnabler.supportsNativeFullScreenMode()) {

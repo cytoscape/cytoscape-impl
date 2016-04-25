@@ -82,7 +82,7 @@ final class BelowAndAbovePanel extends JPanel {
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private void processDoubleClick(MouseEvent e) {
 		if (e.getClickCount() == 2) {
-			Object newValue = null;
+			@SuppressWarnings("UnusedAssignment") Object newValue;
 
 			if (Paint.class.isAssignableFrom(vp.getRange().getType()) == false)
 				return;
@@ -94,7 +94,7 @@ final class BelowAndAbovePanel extends JPanel {
 
 			setColor((Color) newValue);
 
-			BoundaryRangeValues brv = null;
+			@SuppressWarnings("UnusedAssignment") BoundaryRangeValues brv;
 			BoundaryRangeValues original;
 			ContinuousMappingPoint originalPoint;
 			

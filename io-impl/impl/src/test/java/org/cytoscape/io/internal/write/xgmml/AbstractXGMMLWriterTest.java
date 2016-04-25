@@ -211,7 +211,7 @@ public abstract class AbstractXGMMLWriterTest {
 	}
 
 	protected GenericXGMMLWriter newWriter(CyIdentifiable netOrView) {
-		GenericXGMMLWriter writer = null;
+		GenericXGMMLWriter writer;
 		
 		if (netOrView instanceof CyNetworkView)
 			writer = new GenericXGMMLWriter(out, renderingEngineMgr, (CyNetworkView) netOrView, unrecogVisPropMgr,

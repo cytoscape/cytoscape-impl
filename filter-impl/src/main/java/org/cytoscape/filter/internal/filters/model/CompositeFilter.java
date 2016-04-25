@@ -103,10 +103,10 @@ public class CompositeFilter implements CyFilter {
 	}
 	
 	public boolean passesFilter(Object obj) {
-		List<CyNode> nodes_list = null;
-		List<CyEdge> edges_list=null;
+		List<CyNode> nodes_list;
+		List<CyEdge> edges_list;
 
-		int index = -1;
+		int index;
 		if (obj instanceof CyNode) {
 			nodes_list = network.getNodeList();
 			index = nodes_list.lastIndexOf(obj);	

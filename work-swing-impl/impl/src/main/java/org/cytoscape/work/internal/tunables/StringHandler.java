@@ -75,7 +75,7 @@ public class StringHandler extends AbstractGUITunableHandler implements ActionLi
 	}
 
 	private void init() {
-		String s = null;
+		String s;
 		
 		try {
 			s = (String)getValue();
@@ -100,7 +100,7 @@ public class StringHandler extends AbstractGUITunableHandler implements ActionLi
 	
 	@Override
 	public void update(){
-		String s = null;
+		String s;
 		try {
 			s = (String)getValue();
 			textField.setValue(s);

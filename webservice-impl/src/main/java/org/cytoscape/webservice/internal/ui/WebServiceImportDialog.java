@@ -337,7 +337,7 @@ public class WebServiceImportDialog<T> extends JDialog {
 		if (selected == null)
 			return;
 
-		WebServiceClient client = null;
+		WebServiceClient client;
 		
 		if (selected instanceof WebServiceClient) {
 			client = (WebServiceClient) selected;

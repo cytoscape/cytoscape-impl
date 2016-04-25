@@ -125,7 +125,7 @@ public class SimpleApp extends App {
 				throw new AppLoadingException("No copy of app jar for instancing was found");
 			}
 			
-			URL appURL = null;
+			URL appURL;
 			try {
 				appURL = installFile.toURI().toURL();
 			} catch (MalformedURLException e) {

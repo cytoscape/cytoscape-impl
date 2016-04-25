@@ -286,7 +286,7 @@ public class CyGradientTrackRenderer extends JComponent implements VizMapTrackRe
 		int strWidth;
 		float[] fractions = null;
 		Point2D start = new Point2D.Float(0, 0);
-		Point2D end = null;
+		Point2D end;
 
 		if (detail) {
 			end = new Point2D.Float(iconWidth - 3, iconHeight - 30);
@@ -333,7 +333,7 @@ public class CyGradientTrackRenderer extends JComponent implements VizMapTrackRe
 		g2.setColor(LABEL_COLOR);
 
 		if (detail && (fractions != null)) {
-			String fNum = null;
+			String fNum;
 
 			for (int i = 0; i < fractions.length; i++) {
 				fNum = String.format("%.2f", (fractions[i] * range) + minValue);

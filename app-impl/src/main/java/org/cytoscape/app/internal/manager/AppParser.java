@@ -110,7 +110,7 @@ public class AppParser {
 		}
 		
 		// Attempt to parse the file as a jar file
-		JarFile jarFile = null;
+		JarFile jarFile;
 		try {
 			jarFile = new JarFile(file);
 		} catch (IOException e) {
@@ -190,7 +190,7 @@ public class AppParser {
 		}
 		
 		// Bundle apps are instantiated by OSGi using their activator classes
-		String entryClassName = null;
+		String entryClassName;
 		if (!bundleApp) {
 			// Obtain the fully-qualified name of the class to instantiate upon app installation
 			entryClassName = manifest.getMainAttributes().getValue(APP_CLASS_TAG);
@@ -207,7 +207,7 @@ public class AppParser {
 		}
 		
 		// Obtain the human-readable name of the app
-		String readableName = null;
+		String readableName;
 		if (!bundleApp) {
 			readableName = manifest.getMainAttributes().getValue(APP_READABLE_NAME_TAG);
 			
@@ -227,7 +227,7 @@ public class AppParser {
 		}
 		
 		// Obtain the version of the app, in major.minor.patch[-tag] format, ie. 3.0.0-SNAPSHOT or 1.2.3
-		String appVersion = null;
+		String appVersion;
 		if (!bundleApp) {
 			appVersion = manifest.getMainAttributes().getValue(APP_VERSION_TAG);
 			
@@ -250,7 +250,7 @@ public class AppParser {
 				}
 			}
 		}
-		String compatibleVersions = null;
+		String compatibleVersions;
 		if (bundleApp) {
 			compatibleVersions = manifest.getMainAttributes().getValue("Import-Package");
 			if (compatibleVersions == null || compatibleVersions.trim().length() == 0) {
