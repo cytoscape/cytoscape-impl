@@ -217,7 +217,7 @@ class GraphicsUtilities {
 	}
 
 	static public String serializeShape(final Shape s) {
-        final StringBuffer buffer = new StringBuffer();
+        final StringBuilder buffer = new StringBuilder();
         final PathIterator i = s.getPathIterator(null);
         switch (i.getWindingRule()) {
             case PathIterator.WIND_EVEN_ODD:
