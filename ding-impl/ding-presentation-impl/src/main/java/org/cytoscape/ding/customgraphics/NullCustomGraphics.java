@@ -35,7 +35,7 @@ import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
  */
 public class NullCustomGraphics extends AbstractDCustomGraphics<CustomGraphicLayer> {
 	
-	public static Image DEF_IMAGE = IconUtil.emptyIcon(24, 24).getImage();
+	public static final Image DEF_IMAGE = IconUtil.emptyIcon(24, 24).getImage();
 	
 	static final CyCustomGraphics<CustomGraphicLayer> NULL = new NullCustomGraphics();
 

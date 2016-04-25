@@ -46,7 +46,7 @@ public class ObjectPositionImpl implements ObjectPosition {
 	private static final Pattern p = Pattern
 			.compile("^([NSEWC]{1,2}+),([NSEWC]{1,2}+),([clr]{1}+),(-?\\d+(.\\d+)?),(-?\\d+(.\\d+)?)$");
 	
-	public static ObjectPosition DEFAULT_POSITION = new ObjectPositionImpl();
+	public static final ObjectPosition DEFAULT_POSITION = new ObjectPositionImpl();
 	
 	private Position objectAnchor;
 	private Position targetAnchor;

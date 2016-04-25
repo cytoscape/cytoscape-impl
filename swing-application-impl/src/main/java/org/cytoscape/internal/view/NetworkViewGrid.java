@@ -104,8 +104,8 @@ public class NetworkViewGrid extends JPanel {
 	
 	public static final String NAME = "__NETWORK_VIEW_GRID__";
 	
-	public static int MIN_THUMBNAIL_SIZE = 100;
-	public static int MAX_THUMBNAIL_SIZE = 500;
+	public static final int MIN_THUMBNAIL_SIZE = 100;
+	public static final int MAX_THUMBNAIL_SIZE = 500;
 	
 	private GridPanel gridPanel;
 	private JScrollPane gridScrollPane;
