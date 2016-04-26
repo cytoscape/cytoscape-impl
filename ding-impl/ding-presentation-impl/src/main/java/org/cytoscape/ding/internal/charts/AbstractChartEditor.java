@@ -1348,11 +1348,11 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 			selModel = new DefaultListModel<>();
 			
 			// Filter all columns that are list of numbers
-			for (final CyColumnIdentifier colId : columns.keySet()) {
-				final CyColumn c = columns.get(colId);
+			for (final Map.Entry<CyColumnIdentifier, CyColumn> entry : columns.entrySet()) {
+				final CyColumn c = entry.getValue();
 				
 				if (isDataColumn(c))
-					dataColumns.add(colId);
+					dataColumns.add(entry.getKey());
 			}
 			
 			final JLabel allColumnsLbl = new JLabel("Available Columns:");

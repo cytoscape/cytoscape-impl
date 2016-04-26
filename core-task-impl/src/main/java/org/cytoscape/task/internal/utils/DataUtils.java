@@ -93,10 +93,10 @@ public class DataUtils {
 			return "{}";
 
 		String result = "{";
-		for (Object key: data.keySet()) {
-			Object v = data.get(key);
+		for (Object o : data.entrySet()) {
+			Object v = ((Map.Entry) o).getValue();
 			if (v == null) continue;
-			result += key.toString()+":";
+			result += ((Map.Entry) o).getKey().toString()+":";
 			if (v instanceof List)
 				result += convertListToString((List)v)+",";
 			else if (v instanceof Map)

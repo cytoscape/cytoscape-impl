@@ -283,10 +283,10 @@ public abstract class AbstractTableBrowser extends JPanel
 		Map<CyTable, BrowserTable>  browserTables = getAllBrowserTablesMap();
 		List<TableColumnStat> tableColumnStatList = new ArrayList<>();
 
-		for (CyTable table :  browserTables.keySet()){
-			TableColumnStat tcs = new TableColumnStat(table.getTitle());
+		for (Map.Entry<CyTable, BrowserTable> entry : browserTables.entrySet()){
+			TableColumnStat tcs = new TableColumnStat(entry.getKey().getTitle());
 
-			BrowserTable browserTable = browserTables.get(table);
+			BrowserTable browserTable = entry.getValue();
 			BrowserTableModel model = (BrowserTableModel) browserTable.getModel();
 			BrowserTableColumnModel colM = (BrowserTableColumnModel) browserTable.getColumnModel();
 			List<String> visAttrs = browserTable.getVisibleAttributeNames();

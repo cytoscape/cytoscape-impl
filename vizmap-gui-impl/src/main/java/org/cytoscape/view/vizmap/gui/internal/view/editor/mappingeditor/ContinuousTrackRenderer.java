@@ -380,13 +380,13 @@ public class ContinuousTrackRenderer<K extends Number, V extends Number>
 		g.setColor(TRACK_COLOR);
 		g.setStroke(new BasicStroke(1.5f));
 
-		for (Integer key : verticesList.keySet()) {
-			Point p = verticesList.get(key);
+		for (Map.Entry<Integer, Point> entry : verticesList.entrySet()) {
+			Point p = entry.getValue();
 			if (clickFlag) {
 				int diffX = Math.abs(p.x - (curPoint.x - 6));
 				int diffY = Math.abs(p.y - (curPoint.y - 12));
 
-				if (((diffX < 6) && (diffY < 6)) || (key == selectedIdx)) {
+				if (((diffX < 6) && (diffY < 6)) || (entry.getKey() == selectedIdx)) {
 					g.setColor(FOCUS_COLOR);
 					g.setStroke(new BasicStroke(2.5f));
 				} else {

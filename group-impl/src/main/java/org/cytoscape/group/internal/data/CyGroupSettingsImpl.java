@@ -347,13 +347,13 @@ public class CyGroupSettingsImpl implements GroupAddedListener,
 			}
 		}
 		synchronized (lock) {
-			for (Class<?> cKey: allGroupDefaultMap.keySet())
-				defMap.put(cKey, allGroupDefaultMap.get(cKey));
-			for (Class<?> cKey: allGroupListDefaultMap.keySet())
-				defListMap.put(cKey, allGroupListDefaultMap.get(cKey));
+			for (Map.Entry<Class<?>, Aggregator<?>> entry : allGroupDefaultMap.entrySet())
+				defMap.put(entry.getKey(), entry.getValue());
+			for (Map.Entry<Class<?>, Aggregator<?>> entry : allGroupListDefaultMap.entrySet())
+				defListMap.put(entry.getKey(), entry.getValue());
 			Map<CyColumn,Aggregator<?>> ovMap = new HashMap<CyColumn, Aggregator<?>>();
-			for (CyColumn cKey: allGroupOverrideMap.keySet())
-				ovMap.put(cKey, allGroupOverrideMap.get(cKey));
+			for (Map.Entry<CyColumn, Aggregator<?>> entry : allGroupOverrideMap.entrySet())
+				ovMap.put(entry.getKey(), entry.getValue());
 			groupMap.put(addedGroup, new GroupSpecificMaps(defMap, defListMap, ovMap));
 		}
 		// Now override these with any settings from the table
@@ -761,8 +761,8 @@ public class CyGroupSettingsImpl implements GroupAddedListener,
 			if (overrides == null || overrides.size() == 0)
 				return;
 
-			for (CyColumn column: overrides.keySet()) {
-				aggrOverrideSettings.add(column.getName()+"="+overrides.get(column).toString());
+			for (Map.Entry<CyColumn, Aggregator<?>> entry : overrides.entrySet()) {
+				aggrOverrideSettings.add(entry.getKey().getName()+"="+ entry.getValue().toString());
 			}
 
 			// currentNetwork.getRow(group.getGroupNode(), CyNetwork.HIDDEN_ATTRS).set(AGGREGATION_OVERRIDE_SETTINGS, aggrOverrideSettings);
@@ -901,11 +901,11 @@ public class CyGroupSettingsImpl implements GroupAddedListener,
 	 */
 	public String encodeAggregationOverrides() {
 		String str = "";
-		for (CyColumn column: allGroupOverrideMap.keySet()) {
+		for (Map.Entry<CyColumn, Aggregator<?>> entry : allGroupOverrideMap.entrySet()) {
 			if (str.length() == 0)
-				str = column.getName()+"="+allGroupOverrideMap.get(column).toString();
+				str = entry.getKey().getName()+"="+ entry.getValue().toString();
 			else
-				str += "\t"+column.getName()+"="+allGroupOverrideMap.get(column).toString();
+				str += "\t"+ entry.getKey().getName()+"="+ entry.getValue().toString();
 		}
 		return str;
 	}

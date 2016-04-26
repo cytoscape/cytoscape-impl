@@ -64,8 +64,8 @@ class Framework {
 	 */
 	static boolean executeTest(final String equation, final Map<String, Object> variablesAndValues, final Object expectedResult) {
 		final Map<String, Class<?>> varNameToTypeMap = new HashMap<String, Class<?>>();
-		for (final String variableName : variablesAndValues.keySet())
-			varNameToTypeMap.put(variableName, variablesAndValues.get(variableName).getClass());
+		for (final Map.Entry<String, Object> entry : variablesAndValues.entrySet())
+			varNameToTypeMap.put(entry.getKey(), entry.getValue().getClass());
 		
 		try {
 			if (!compiler.compile(equation, varNameToTypeMap)) {
@@ -79,8 +79,8 @@ class Framework {
 
 		final Map<String, IdentDescriptor> nameToDescriptorMap = new HashMap<String, IdentDescriptor>();
 		try {
-			for (final String variableName : variablesAndValues.keySet())
-				nameToDescriptorMap.put(variableName, new IdentDescriptor(variablesAndValues.get(variableName)));
+			for (final Map.Entry<String, Object> entry : variablesAndValues.entrySet())
+				nameToDescriptorMap.put(entry.getKey(), new IdentDescriptor(entry.getValue()));
 		} catch (final Exception e) {
 			System.err.println("Error while processing variables for \"" + equation + "\": " + e.getMessage());
 			return false;
@@ -115,8 +115,8 @@ class Framework {
 	 */
 	static boolean executeTestExpectFailure(final String equation, final Map<String, Object> variablesAndValues) {
 		final Map<String, Class<?>> varNameToTypeMap = new HashMap<String, Class<?>>();
-		for (final String variableName : variablesAndValues.keySet())
-			varNameToTypeMap.put(variableName, variablesAndValues.get(variableName).getClass());
+		for (final Map.Entry<String, Object> entry : variablesAndValues.entrySet())
+			varNameToTypeMap.put(entry.getKey(), entry.getValue().getClass());
 		
 		try {
 			if (!compiler.compile(equation, varNameToTypeMap)) {
@@ -130,8 +130,8 @@ class Framework {
 
 		final Map<String, IdentDescriptor> nameToDescriptorMap = new HashMap<String, IdentDescriptor>();
 		try {
-			for (final String variableName : variablesAndValues.keySet())
-				nameToDescriptorMap.put(variableName, new IdentDescriptor(variablesAndValues.get(variableName)));
+			for (final Map.Entry<String, Object> entry : variablesAndValues.entrySet())
+				nameToDescriptorMap.put(entry.getKey(), new IdentDescriptor(entry.getValue()));
 		} catch (final Exception e) {
 			System.err.println("Error while processing variables for \"" + equation + "\": " + e.getMessage());
 			return true;

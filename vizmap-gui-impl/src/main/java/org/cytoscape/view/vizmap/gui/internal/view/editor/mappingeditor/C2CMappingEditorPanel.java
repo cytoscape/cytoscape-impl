@@ -28,6 +28,7 @@ import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.List;
+import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
@@ -191,8 +192,8 @@ public class C2CMappingEditorPanel<K extends Number, V extends Number> extends C
 			sortedPoints.put(val.doubleValue(), point);
 		}
 
-		for (Double key : sortedPoints.keySet()) {
-			ContinuousMappingPoint<K, V> point = sortedPoints.get(key);
+		for (Map.Entry<Double, ContinuousMappingPoint<K, V>> entry : sortedPoints.entrySet()) {
+			ContinuousMappingPoint<K, V> point = entry.getValue();
 			bound = point.getRange();
 			fraction = ((Number) ((point.getValue().doubleValue() - minValue.doubleValue()) / actualRange.doubleValue()))
 					.floatValue() * 100d;

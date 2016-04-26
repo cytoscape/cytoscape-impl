@@ -167,14 +167,14 @@ public class AttributeSetProxy extends Proxy
 		final String newAttrName = e.getColumnName();
 		final CyTable table = e.getSource();
 
-		for (CyNetwork network : tableSets.keySet()) {
-			Map<Class<? extends CyIdentifiable>, Set<CyTable>> tMap = tableSets.get(network);
+		for (Map.Entry<CyNetwork, Map<Class<? extends CyIdentifiable>, Set<CyTable>>> cyNetworkMapEntry : tableSets.entrySet()) {
+			Map<Class<? extends CyIdentifiable>, Set<CyTable>> tMap = cyNetworkMapEntry.getValue();
 			
 			for (final Class<? extends CyIdentifiable> objectType : graphObjects) {
 				final Set<CyTable> targetTables = tMap.get(objectType);
 				
 				if (targetTables.contains(table)) {
-					attrSets.get(network)
+					attrSets.get(cyNetworkMapEntry.getKey())
 							.get(objectType)
 							.getAttrMap()
 							.put(newAttrName, table.getColumn(newAttrName).getType());
@@ -188,14 +188,14 @@ public class AttributeSetProxy extends Proxy
 	public void handleEvent(final ColumnDeletedEvent e) {
 		final CyTable table = e.getSource();
 
-		for (CyNetwork network : tableSets.keySet()) {
-			Map<Class<? extends CyIdentifiable>, Set<CyTable>> tMap = tableSets.get(network);
+		for (Map.Entry<CyNetwork, Map<Class<? extends CyIdentifiable>, Set<CyTable>>> cyNetworkMapEntry : tableSets.entrySet()) {
+			Map<Class<? extends CyIdentifiable>, Set<CyTable>> tMap = cyNetworkMapEntry.getValue();
 			
 			for (final Class<? extends CyIdentifiable> objectType : graphObjects) {
 				final Set<CyTable> targetTables = tMap.get(objectType);
 				
 				if (targetTables.contains(table)) {
-					attrSets.get(network).get(objectType).getAttrMap().remove(e.getColumnName());
+					attrSets.get(cyNetworkMapEntry.getKey()).get(objectType).getAttrMap().remove(e.getColumnName());
 					
 					return;
 				}
@@ -207,18 +207,18 @@ public class AttributeSetProxy extends Proxy
 	public void handleEvent(final ColumnNameChangedEvent e) {
 		final CyTable table = e.getSource();
 
-		for (CyNetwork network : tableSets.keySet()) {
-			Map<Class<? extends CyIdentifiable>, Set<CyTable>> tMap = tableSets.get(network);
+		for (Map.Entry<CyNetwork, Map<Class<? extends CyIdentifiable>, Set<CyTable>>> cyNetworkMapEntry : tableSets.entrySet()) {
+			Map<Class<? extends CyIdentifiable>, Set<CyTable>> tMap = cyNetworkMapEntry.getValue();
 			
 			for (final Class<? extends CyIdentifiable> objectType : graphObjects) {
 				final Set<CyTable> targetTables = tMap.get(objectType);
 				
 				if (targetTables.contains(table)) {
-					attrSets.get(network)
+					attrSets.get(cyNetworkMapEntry.getKey())
 							.get(objectType)
 							.getAttrMap()
 							.remove(e.getOldColumnName());
-					attrSets.get(network)
+					attrSets.get(cyNetworkMapEntry.getKey())
 							.get(objectType)
 							.getAttrMap()
 							.put(e.getNewColumnName(), table.getColumn(e.getNewColumnName()).getType());

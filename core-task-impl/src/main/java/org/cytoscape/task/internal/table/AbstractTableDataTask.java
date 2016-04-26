@@ -73,10 +73,10 @@ public abstract class AbstractTableDataTask extends AbstractTask {
 
 		int count = 0;
 		CyRow row = table.getRow(id.getSUID());
-		for (CyColumn column: valueMap.keySet()) {
-			Class type = column.getType();
-				String name = column.getName();
-			Object value = valueMap.get(column);
+		for (Map.Entry<CyColumn, Object> entry : valueMap.entrySet()) {
+			Class type = entry.getKey().getType();
+				String name = entry.getKey().getName();
+			Object value = entry.getValue();
 			if (value != null) {
 				row.set(name, type.cast(value));
 				count++;

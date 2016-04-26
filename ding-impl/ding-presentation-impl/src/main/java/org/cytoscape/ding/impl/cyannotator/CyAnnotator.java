@@ -225,11 +225,11 @@ public class CyAnnotator {
 
 			// Now, handle our Z-Order.  This needs to be done after everything else is
 			// added to make sure that we have the proper number of components
-			for (DingAnnotation a: zOrderMap.keySet()) {
-				if (a.getCanvas() != null)
-					a.getCanvas().setComponentZOrder(a.getComponent(), zOrderMap.get(a));
+			for (Map.Entry<DingAnnotation, Integer> entry : zOrderMap.entrySet()) {
+				if (entry.getKey().getCanvas() != null)
+					entry.getKey().getCanvas().setComponentZOrder(entry.getKey().getComponent(), entry.getValue());
 				else
-					foreGroundCanvas.setComponentZOrder(a.getComponent(), zOrderMap.get(a));
+					foreGroundCanvas.setComponentZOrder(entry.getKey().getComponent(), entry.getValue());
 			}
 
 		}
@@ -402,9 +402,9 @@ public class CyAnnotator {
 	private void updateNetworkAttributes(CyNetwork network) {
 		// Convert the annotation to a list
 		List<Map<String,String>> networkAnnotations = new ArrayList<Map<String, String>>();
-		for (DingAnnotation annotation: annotationMap.keySet()) {
+		for (Map.Entry<DingAnnotation, Map<String, String>> entry : annotationMap.entrySet()) {
 			if (view.getModel().equals(network))
-				networkAnnotations.add(annotationMap.get(annotation));
+				networkAnnotations.add(entry.getValue());
 		}
 		// Save it in the network attributes
 		List<String>networkAnnotation = convertAnnotationMap(networkAnnotations);
@@ -418,8 +418,8 @@ public class CyAnnotator {
 
 		for (Map<String,String> map: networkAnnotations) {
 			String entry = "";
-			for (String key: map.keySet()) {
-				entry += "|"+key+"="+map.get(key);
+			for (Map.Entry<String, String> mapEntry : map.entrySet()) {
+				entry += "|"+ mapEntry.getKey() +"="+ mapEntry.getValue();
 			}
 			result.add(entry.substring(1));
 		}

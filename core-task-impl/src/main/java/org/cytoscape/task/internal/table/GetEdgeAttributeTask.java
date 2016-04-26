@@ -78,9 +78,9 @@ public class GetEdgeAttributeTask extends AbstractTableDataTask implements Obser
 			edgeDataMap.put(edge, edgeData);
 
 			taskMonitor.showMessage(TaskMonitor.Level.INFO, "   Edge table values for edge "+DataUtils.getEdgeName(edgeTable, edge)+":");
-			for (String column: edgeData.keySet()) {
-				if (edgeData.get(column) != null)
-					taskMonitor.showMessage(TaskMonitor.Level.INFO, "        "+column+"="+DataUtils.convertData(edgeData.get(column)));
+			for (Map.Entry<String, Object> entry : edgeData.entrySet()) {
+				if (entry.getValue() != null)
+					taskMonitor.showMessage(TaskMonitor.Level.INFO, "        "+ entry.getKey() +"="+DataUtils.convertData(entry.getValue()));
 			}
 		}
 	}

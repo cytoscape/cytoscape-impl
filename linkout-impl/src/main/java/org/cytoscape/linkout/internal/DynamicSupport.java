@@ -129,15 +129,15 @@ import org.cytoscape.work.TaskIterator;
 
 		setURLs(network, entries);
 		
-		for(final String menuTitle: menuTitleURLMap.keySet()){
-			JMenuItem subMenu = new JMenuItem(menuTitle);
+		for(final Map.Entry<String, String> entry : menuTitleURLMap.entrySet()){
+			JMenuItem subMenu = new JMenuItem(entry.getKey());
 			subMenu.addActionListener(new ActionListener() {
 
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					String url = "none found"; 
 					synchronized (this) {
-						url = menuTitleURLMap.get( menuTitle );	
+						url = entry.getValue();	
 					}
 					synTaskManager.execute(new TaskIterator(new LinkoutTask(url, browser, network, tableEntries )));
 				}

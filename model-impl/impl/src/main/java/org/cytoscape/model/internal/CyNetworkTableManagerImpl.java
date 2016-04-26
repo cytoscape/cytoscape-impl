@@ -73,9 +73,9 @@ public class CyNetworkTableManagerImpl implements CyNetworkTableManager {
 		synchronized (lock) {
 			for (Map<Class<? extends CyIdentifiable>, Map<String, CyTable>> typeMap: tables.values()) {
 				for (Map<String, CyTable> stMap: typeMap.values()) {
-					for (String ns: stMap.keySet()) {
-						if (stMap.get(ns).equals(table)) {
-							return ns;
+					for (Entry<String, CyTable> entry : stMap.entrySet()) {
+						if (entry.getValue().equals(table)) {
+							return entry.getKey();
 						}
 					}
 				}

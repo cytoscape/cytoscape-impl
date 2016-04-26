@@ -58,9 +58,9 @@ public class BoxLayer extends AbstractChartLayer<BoxAndWhiskerCategoryDataset> {
 	protected BoxAndWhiskerCategoryDataset createDataset() {
 		final DefaultBoxAndWhiskerCategoryDataset dataset = new DefaultBoxAndWhiskerCategoryDataset();
 		
-		for (String series : data.keySet()) {
-			final List<Double> values = data.get(series);
-			dataset.add(values, series, "1"); // switch series and category name so labels are displayed for series
+		for (Map.Entry<String, List<Double>> stringListEntry : data.entrySet()) {
+			final List<Double> values = stringListEntry.getValue();
+			dataset.add(values, stringListEntry.getKey(), "1"); // switch series and category name so labels are displayed for series
 		}
 		
 		return dataset;

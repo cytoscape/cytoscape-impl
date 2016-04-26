@@ -520,9 +520,9 @@ public class CurrentlyInstalledAppsPanel extends JPanel {
     	panel.add(title);
     	panel.add(Box.createVerticalStrut(title.getPreferredSize().height));
     	String deps = "";
-    	for(App app: otherAppsDependingOn.keySet()) {
-    		deps +=  app.getAppName() + " (required by";
-    		for(App otherAppDependingOn: otherAppsDependingOn.get(app)) {
+    	for(Map.Entry<App, Collection<App>> entry : otherAppsDependingOn.entrySet()) {
+    		deps += entry.getKey().getAppName() + " (required by";
+    		for(App otherAppDependingOn: entry.getValue()) {
     			deps += " " + otherAppDependingOn.getAppName() + ",";
     		}
     		deps = deps.substring(0, deps.length() - 1) + ")\n";

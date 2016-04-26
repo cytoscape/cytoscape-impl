@@ -250,8 +250,8 @@ public class EditorManagerImpl implements EditorManager {
 	public List<PropertyEditor> getCellEditors() {
 		List<PropertyEditor> ret = new ArrayList<PropertyEditor>();
 
-		for (Class<?> type : editors.keySet())
-			ret.add(editors.get(type).getPropertyEditor());
+		for (Map.Entry<Class<?>, VisualPropertyEditor<?>> entry : editors.entrySet())
+			ret.add(entry.getValue().getPropertyEditor());
 
 		return ret;
 	}

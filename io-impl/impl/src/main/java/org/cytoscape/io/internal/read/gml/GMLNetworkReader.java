@@ -578,8 +578,8 @@ public class GMLNetworkReader extends AbstractCyNetworkReader {
 
 	private void setAttributes(final CyIdentifiable obj,
 			final CyNetwork network, final Map<String, Object> attrMap) {
-		for (String name : attrMap.keySet()) {
-			final Object val = attrMap.get(name);
+		for (Map.Entry<String, Object> entry : attrMap.entrySet()) {
+			final Object val = entry.getValue();
 
 			if (val == null)
 				continue;
@@ -595,21 +595,21 @@ public class GMLNetworkReader extends AbstractCyNetworkReader {
 
 			final CyRow row = network.getRow(obj);
 			final CyTable table = row.getTable();
-			final CyColumn column = table.getColumn(name);
+			final CyColumn column = table.getColumn(entry.getKey());
 
 			if (column == null)
-				table.createColumn(name, type, false);
+				table.createColumn(entry.getKey(), type, false);
 
 			try {
 				if (type == Double.class)
-					row.set(name, (Double) val);
+					row.set(entry.getKey(), (Double) val);
 				else if (type == Integer.class)
-					row.set(name, (Integer) val);
+					row.set(entry.getKey(), (Integer) val);
 				else
-					row.set(name, val.toString());
+					row.set(entry.getKey(), val.toString());
 			} catch (Exception e) {
 				logger.error("Cannot set value \"" + val + "\" (" + type
-						+ ") to column \"" + name + "\" of table \"" + table
+						+ ") to column \"" + entry.getKey() + "\" of table \"" + table
 						+ "\".", e);
 				continue;
 			}

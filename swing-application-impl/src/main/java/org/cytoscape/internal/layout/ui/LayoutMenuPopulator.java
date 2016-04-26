@@ -97,8 +97,8 @@ public class LayoutMenuPopulator implements MenuListener {
         boolean enableMenuItem = checkEnabled();
 
         // Get all of the algorithms
-        for ( CyLayoutAlgorithm layout : algorithmMap.keySet() ) {
-            Map props = algorithmMap.get(layout);
+        for (Map.Entry<CyLayoutAlgorithm, Map> entry : algorithmMap.entrySet()) {
+            Map props = entry.getValue();
             double gravity = 1000.0;
             if (props.get(MENU_GRAVITY) != null)
                 gravity = Double.parseDouble((String)props.get(MENU_GRAVITY));
@@ -112,35 +112,35 @@ public class LayoutMenuPopulator implements MenuListener {
                 separatorBefore = Boolean.parseBoolean((String)props.get(INSERT_SEPARATOR_BEFORE));
 
             // Remove the old menu
-            if (menuMap.containsKey(layout)) {
-                layoutMenu.remove(menuMap.remove(layout));
+            if (menuMap.containsKey(entry.getKey())) {
+                layoutMenu.remove(menuMap.remove(entry.getKey()));
             }
         
             boolean usesNodeAttrs = false;
             if (network != null)
-                usesNodeAttrs = hasValidAttributes(layout.getSupportedNodeAttributeTypes(),network.getDefaultNodeTable());
+                usesNodeAttrs = hasValidAttributes(entry.getKey().getSupportedNodeAttributeTypes(),network.getDefaultNodeTable());
             boolean usesEdgeAttrs = false;
             if (network != null)
-                usesEdgeAttrs = hasValidAttributes(layout.getSupportedEdgeAttributeTypes(),network.getDefaultEdgeTable());
-            boolean usesSelected = (layout.getSupportsSelectedOnly() && someSelected);
+                usesEdgeAttrs = hasValidAttributes(entry.getKey().getSupportedEdgeAttributeTypes(),network.getDefaultEdgeTable());
+            boolean usesSelected = (entry.getKey().getSupportsSelectedOnly() && someSelected);
 
             if (usesNodeAttrs || usesEdgeAttrs || usesSelected) {
-                JMenu newMenu = new DynamicLayoutMenu(layout,network,enableMenuItem,appMgr,
+                JMenu newMenu = new DynamicLayoutMenu(entry.getKey(),network,enableMenuItem,appMgr,
                                                       tm,usesNodeAttrs,usesEdgeAttrs,usesSelected);
-                menuMap.put(layout, newMenu);
+                menuMap.put(entry.getKey(), newMenu);
                 gravityTracker.addMenu(newMenu, gravity);
             } else {
-                JMenuItem newMenu = new StaticLayoutMenu(layout,enableMenuItem,appMgr,tm);
-                menuMap.put(layout, newMenu);
+                JMenuItem newMenu = new StaticLayoutMenu(entry.getKey(),enableMenuItem,appMgr,tm);
+                menuMap.put(entry.getKey(), newMenu);
                 gravityTracker.addMenuItem(newMenu, gravity);
             }
 
-			if (separatorAfter && !separatorMap.containsKey(layout)) {
+			if (separatorAfter && !separatorMap.containsKey(entry.getKey())) {
 				gravityTracker.addMenuSeparator(gravity + 0.0001);
-				separatorMap.put(layout, Boolean.TRUE);
-			} else if (separatorBefore && !separatorMap.containsKey(layout)) {
+				separatorMap.put(entry.getKey(), Boolean.TRUE);
+			} else if (separatorBefore && !separatorMap.containsKey(entry.getKey())) {
 				gravityTracker.addMenuSeparator(gravity - 0.0001);
-				separatorMap.put(layout, Boolean.TRUE);
+				separatorMap.put(entry.getKey(), Boolean.TRUE);
 			}
         }
     }
