@@ -279,12 +279,10 @@ public class BrowserTableTest {
 		rscs.add(rsc);
 		
 		try {
-			SwingUtilities.invokeAndWait( new Runnable() {
-				public void run() {
-					browserTable.handleEvent(new RowsSetEvent(table, rscs));
-					assertEquals(1, browserTable.getSelectedRowCount());
-				}
-			});
+			SwingUtilities.invokeAndWait(() -> {
+                browserTable.handleEvent(new RowsSetEvent(table, rscs));
+                assertEquals(1, browserTable.getSelectedRowCount());
+            });
 		} catch (InterruptedException e) {
 			assertEquals(1, browserTable.getSelectedRowCount());
 		} catch (InvocationTargetException e) {

@@ -284,24 +284,9 @@ public class GradientEditor extends JPanel {
 		delBtn.setEnabled(false);
 		add(delBtn);
 		
-		addBtn.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				addPoint();
-			}
-		});
-		delBtn.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				delPoint();
-			}
-		});
-		editBtn.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				editPoint();
-			}
-		});
+		addBtn.addActionListener(e -> addPoint());
+		delBtn.addActionListener(e -> delPoint());
+		editBtn.addActionListener(e -> editPoint());
 		
 		poly.addPoint(0, 0);
 		poly.addPoint(5, 10);
@@ -417,18 +402,16 @@ public class GradientEditor extends JPanel {
 		final ControlPoint firstPt = controlPoints.get(0);
 		final ControlPoint lastPt  = controlPoints.get(controlPoints.size()-1);
 		
-		final Comparator<ControlPoint> compare = new Comparator<ControlPoint>() {
-			public int compare(ControlPoint first, ControlPoint second) {
-				if (first == firstPt)
-					return -1;
-				if (second == lastPt)
-					return -1;
-				
-				float a = first.getPosition();
-				float b = second.getPosition();
-				return (int) ((a-b) * 10000);
-			}
-		};
+		final Comparator<ControlPoint> compare = (first, second) -> {
+            if (first == firstPt)
+                return -1;
+            if (second == lastPt)
+                return -1;
+            
+            float a = first.getPosition();
+            float b = second.getPosition();
+            return (int) ((a-b) * 10000);
+        };
 		
 		Collections.sort(controlPoints, compare);
 	}

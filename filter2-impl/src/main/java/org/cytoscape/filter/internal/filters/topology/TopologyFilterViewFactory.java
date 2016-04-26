@@ -112,24 +112,18 @@ public class TopologyFilterViewFactory implements TransformerViewFactory {
 			thresholdField = style.createFormattedTextField(ViewUtil.createIntegerFormatter(0, Integer.MAX_VALUE));
 			thresholdField.setHorizontalAlignment(JTextField.TRAILING);
 			thresholdField.setColumns(3);
-			thresholdField.addPropertyChangeListener("value", new PropertyChangeListener() {
-				@Override
-				public void propertyChange(PropertyChangeEvent event) {
-					Integer value = (Integer) thresholdField.getValue();
-					controller.setThreshold(value);
-				}
-			});
+			thresholdField.addPropertyChangeListener("value", event -> {
+                Integer value = (Integer) thresholdField.getValue();
+                controller.setThreshold(value);
+            });
 			
 			distanceField = style.createFormattedTextField(ViewUtil.createIntegerFormatter(1, Integer.MAX_VALUE));
 			distanceField.setHorizontalAlignment(JTextField.TRAILING);
 			distanceField.setColumns(3);
-			distanceField.addPropertyChangeListener("value", new PropertyChangeListener() {
-				@Override
-				public void propertyChange(PropertyChangeEvent event) {
-					Integer value = (Integer) distanceField.getValue();
-					controller.setDistance(value);
-				}
-			});
+			distanceField.addPropertyChangeListener("value", event -> {
+                Integer value = (Integer) distanceField.getValue();
+                controller.setDistance(value);
+            });
 			
 			label1 = style.createLabel("Nodes with ");
 			label2 = style.createLabel(" neighbours within distance ");
@@ -137,15 +131,12 @@ public class TopologyFilterViewFactory implements TransformerViewFactory {
 			
 			atLeastCombo = new BooleanComboBox(style, "at least", "less than");
 			
-			atLeastCombo.addStateChangeListener(new StateChangeListener() {
-				@Override
-				public void stateChanged(boolean atLeast) {
-					if(atLeast)
-						controller.setGreaterThanOrEqual();
-					else
-						controller.setLessThan();
-				}
-			});
+			atLeastCombo.addStateChangeListener(atLeast -> {
+                if(atLeast)
+                    controller.setGreaterThanOrEqual();
+                else
+                    controller.setLessThan();
+            });
 			
 			layout = new GroupLayout(this);
 			layout.setAutoCreateContainerGaps(false);

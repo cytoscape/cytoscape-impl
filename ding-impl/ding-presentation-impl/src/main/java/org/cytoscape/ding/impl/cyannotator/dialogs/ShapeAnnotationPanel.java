@@ -110,34 +110,21 @@ public class ShapeAnnotationPanel extends JPanel {
 		});
 		shapeList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		shapeList.setSelectedValue(annotation.getShapeType(), true);
-		shapeList.addListSelectionListener(new ListSelectionListener() {
-			@Override
-			public void valueChanged(ListSelectionEvent evt) {
-				shapeListValueChanged(evt);
-			}
-		});
+		shapeList.addListSelectionListener(evt -> shapeListValueChanged(evt));
 		
 		final JScrollPane scrollPane = new JScrollPane(shapeList);
 
 		fillColorCheck = new JCheckBox();
 		fillColorCheck.setSelected(annotation.getFillColor() != null);
-		fillColorCheck.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent evt) {
-				fillColorCheckActionPerformed(evt);
-			}
-		});
+		fillColorCheck.addActionListener(evt -> fillColorCheckActionPerformed(evt));
 
 		fillColorButton = new ColorButton((Color) preview.getFillColor());
 		fillColorButton.setToolTipText("Select fill color...");
 		fillColorButton.setEnabled(fillColorCheck.isSelected());
-		fillColorButton.addPropertyChangeListener("color", new PropertyChangeListener() {
-			@Override
-			public void propertyChange(PropertyChangeEvent evt) {
-				preview.setFillColor((Color) evt.getNewValue());
-				previewPanel.repaint();
-			}
-		});
+		fillColorButton.addPropertyChangeListener("color", evt -> {
+            preview.setFillColor((Color) evt.getNewValue());
+            previewPanel.repaint();
+        });
 
 		fillOpacitySlider = new JSlider(0, 100);
 		fillOpacitySlider.setMajorTickSpacing(100);
@@ -153,32 +140,19 @@ public class ShapeAnnotationPanel extends JPanel {
 			fillOpacitySlider.setEnabled(false);
 		}
 
-		fillOpacitySlider.addChangeListener(new ChangeListener() {
-			@Override
-			public void stateChanged(ChangeEvent evt) {
-				updateFillOpacity(fillOpacitySlider.getValue());
-			}
-		});
+		fillOpacitySlider.addChangeListener(evt -> updateFillOpacity(fillOpacitySlider.getValue()));
 
 		borderColorCheck = new JCheckBox();
 		borderColorCheck.setSelected(annotation.getBorderColor() != null);
-		borderColorCheck.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent evt) {
-				borderColorCheckActionPerformed(evt);
-			}
-		});
+		borderColorCheck.addActionListener(evt -> borderColorCheckActionPerformed(evt));
 
 		borderColorButton = new ColorButton((Color) preview.getBorderColor());
 		borderColorButton.setToolTipText("Select border color...");
 		borderColorButton.setEnabled(borderColorCheck.isSelected());
-		borderColorButton.addPropertyChangeListener("color", new PropertyChangeListener() {
-			@Override
-			public void propertyChange(PropertyChangeEvent evt) {
-				preview.setBorderColor((Color) evt.getNewValue());
-				previewPanel.repaint();
-			}
-		});
+		borderColorButton.addPropertyChangeListener("color", evt -> {
+            preview.setBorderColor((Color) evt.getNewValue());
+            previewPanel.repaint();
+        });
 		
 		borderOpacitySlider = new JSlider(0, 100);
 		borderOpacitySlider.setMajorTickSpacing(100);
@@ -194,12 +168,7 @@ public class ShapeAnnotationPanel extends JPanel {
 			borderOpacitySlider.setEnabled(false);
 		}
 
-		borderOpacitySlider.addChangeListener(new ChangeListener() {
-			@Override
-			public void stateChanged(ChangeEvent evt) {
-				updateBorderOpacity(borderOpacitySlider.getValue());
-			}
-		});
+		borderOpacitySlider.addChangeListener(evt -> updateBorderOpacity(borderOpacitySlider.getValue()));
 
 		borderWidthCombo = new JComboBox<>();
 		borderWidthCombo.setModel(new DefaultComboBoxModel<String>(
@@ -213,12 +182,7 @@ public class ShapeAnnotationPanel extends JPanel {
 			}
 		}
 
-		borderWidthCombo.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent evt) {
-				borderWidthActionPerformed(evt);
-			}
-		});
+		borderWidthCombo.addActionListener(evt -> borderWidthActionPerformed(evt));
 		
 		final GroupLayout layout = new GroupLayout(this);
 		setLayout(layout);

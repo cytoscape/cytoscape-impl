@@ -153,11 +153,9 @@ public class ToolBarEnableUpdater implements NetworkAddedListener, NetworkDestro
 	}
 	
 	private void updateToolbar() {
-		SwingUtilities.invokeLater( new Runnable() {
-			public void run() {
-				for (final CyAction action : toolbar.getAllToolBarActions())
-					action.updateEnableState();
-			}
-		});
+		SwingUtilities.invokeLater(() -> {
+            for (final CyAction action : toolbar.getAllToolBarActions())
+                action.updateEnableState();
+        });
 	}
 }

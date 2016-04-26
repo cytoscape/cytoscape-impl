@@ -41,16 +41,8 @@ public class RangeChooser<N extends Number & Comparable<N>> extends JPanel {
 		highField.setColumns(6);
 		
 		
-		sliderListener = new ChangeListener() {
-			public void stateChanged(ChangeEvent event) {
-				controller.sliderChanged();
-			}
-		};
-		textListener = new PropertyChangeListener() {
-			public void propertyChange(PropertyChangeEvent event) {
-				controller.textFieldChanged();
-			}
-		};
+		sliderListener = event -> controller.sliderChanged();
+		textListener = event -> controller.textFieldChanged();
 		
 		addListeners(controller);
 		

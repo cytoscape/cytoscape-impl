@@ -150,23 +150,20 @@ class MemStatusPanel extends JPanel {
 		final JButton gcBtn = new JButton("Free Unused Memory");
 		gcBtn.putClientProperty("JButton.buttonType", "gradient");
 		makeSmall(gcBtn);
-		gcBtn.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				gcBtn.setEnabled(false);
-				gcBtn.setText("Freeing Memory...");
-				
-				SwingUtilities.invokeLater(new Runnable() {
-					@Override
-					public void run() {
-						performGC();
-						updateMemStatus();
-						gcBtn.setText("Free Unusued Memory");
-						gcBtn.setEnabled(true);
-					}
-				});
-			}
-		});
+		gcBtn.addActionListener(e -> {
+            gcBtn.setEnabled(false);
+            gcBtn.setText("Freeing Memory...");
+            
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    performGC();
+                    updateMemStatus();
+                    gcBtn.setText("Free Unusued Memory");
+                    gcBtn.setEnabled(true);
+                }
+            });
+        });
 		gcBtn.setToolTipText("<html>Try to free memory&mdash;may temporarily freeze Cytoscape</html>");
 		gcBtn.setVisible(false);
 
@@ -174,22 +171,14 @@ class MemStatusPanel extends JPanel {
 		memStatusBtn.setHorizontalTextPosition(JButton.RIGHT);
 		memStatusBtn.putClientProperty("JButton.buttonType", "gradient");
 		makeSmall(memStatusBtn);
-		memStatusBtn.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				memAmountLabel.setVisible(memStatusBtn.isSelected());
-				gcBtn.setVisible(memStatusBtn.isSelected());
-			}
-		});
+		memStatusBtn.addActionListener(e -> {
+            memAmountLabel.setVisible(memStatusBtn.isSelected());
+            gcBtn.setVisible(memStatusBtn.isSelected());
+        });
 		memStatusBtn.setHorizontalTextPosition(SwingConstants.LEFT);
 		memStatusBtn.setFocusPainted(false);
 
-		final Timer updateTimer = new Timer(MEM_UPDATE_DELAY_MS, new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				updateMemStatus();
-			}
-		});
+		final Timer updateTimer = new Timer(MEM_UPDATE_DELAY_MS, e -> updateMemStatus());
 		updateTimer.setRepeats(true);
 		updateTimer.start();
 

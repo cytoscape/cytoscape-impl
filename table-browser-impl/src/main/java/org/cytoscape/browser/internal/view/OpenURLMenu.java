@@ -70,13 +70,10 @@ public class OpenURLMenu extends JMenu {
 
 			for (final String name : children.keySet()) {
 				JMenuItem dbLink = new JMenuItem(name);
-				dbLink.addActionListener(new ActionListener() {
-					@Override
-					public void actionPerformed(ActionEvent e) {
-						final String url = structure.get(category).get(name).replace("%ID%", value);
-						openBrowser.openURL(url);
-					}
-				});
+				dbLink.addActionListener(e -> {
+                    final String url = structure.get(category).get(name).replace("%ID%", value);
+                    openBrowser.openURL(url);
+                });
 				cat.add(dbLink);
 			}
 

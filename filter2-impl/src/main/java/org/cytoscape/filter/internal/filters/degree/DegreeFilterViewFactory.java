@@ -88,12 +88,10 @@ public class DegreeFilterViewFactory implements TransformerViewFactory {
 				highValue = pair.getHigh();
 			}
 			
-			chooserController = RangeChooserController.forInteger(style, new RangeListener<Integer>() {
-				public void rangeChanged(Integer low, Integer high) {
-					Number[] range = { low, high };
-					filter.setCriterion(range);
-				}
-			});
+			chooserController = RangeChooserController.forInteger(style, (low, high) -> {
+                Number[] range = { low, high };
+                filter.setCriterion(range);
+            });
 			
 			chooserController.reset(lowValue.intValue(), highValue.intValue(), pair.getLow(), pair.getHigh());
 		}
@@ -170,21 +168,13 @@ public class DegreeFilterViewFactory implements TransformerViewFactory {
 			
 			edgeTypeComboBox = style.createCombo(new DynamicComboBoxModel<ComboItem<Type>>(edgeTypeComboBoxModel));
 			
-			edgeTypeComboBox.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					ComboItem<Type> type = edgeTypeComboBox.getItemAt(edgeTypeComboBox.getSelectedIndex());
-					controller.setEdgeType(type.getValue());
-				}
-			});
+			edgeTypeComboBox.addActionListener(e -> {
+                ComboItem<Type> type = edgeTypeComboBox.getItemAt(edgeTypeComboBox.getSelectedIndex());
+                controller.setEdgeType(type.getValue());
+            });
 			
 			isOrIsNotCombo = new BooleanComboBox(style, "is", "is not");
-			isOrIsNotCombo.addStateChangeListener(new StateChangeListener() {
-				@Override
-				public void stateChanged(boolean is) {
-					controller.setIsOrIsNot(is);
-				}
-			});
+			isOrIsNotCombo.addStateChangeListener(is -> controller.setIsOrIsNot(is));
 			
 			chooser = controller.chooserController.getRangeChooser();
 			

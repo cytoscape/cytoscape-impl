@@ -72,12 +72,7 @@ public class VizmapWriter extends TunableAbstractCyWriter<VizmapWriterFactory, V
 		
 		final Collator collator = Collator.getInstance(Locale.getDefault());
 		
-		Collections.sort(allStyles, new Comparator<VisualStyle>() {
-			@Override
-			public int compare(final VisualStyle vs1, VisualStyle vs2) {
-				return collator.compare(vs1.getTitle(), vs2.getTitle());
-			}
-		});
+		Collections.sort(allStyles, (vs1, vs2) -> collator.compare(vs1.getTitle(), vs2.getTitle()));
 		
 		styles = new ListMultipleSelection<>(allStyles);
 		// Select the current style by default

@@ -178,17 +178,15 @@ public class GroupAttributesLayoutTask extends AbstractLayoutTask {
 		List<T> keys = new ArrayList<T>(map.keySet());
 		Collections.sort(keys);
 
-		Comparator<CyNode> comparator = new Comparator<CyNode>() {
-			public int compare(CyNode node1, CyNode node2) {
-				// FIXME: this code was originally comparing node1.getIdentifier() to node2.getIdentifier()
-				// I'm not sure that comparing the indices of the nodes gets the same effect
-				// on the other hand, nodes don't have a human-readable uid in 3.0
-				Long a = node1.getSUID();
-				Long b = node2.getSUID();
+		Comparator<CyNode> comparator = (node1, node2) -> {
+            // FIXME: this code was originally comparing node1.getIdentifier() to node2.getIdentifier()
+            // I'm not sure that comparing the indices of the nodes gets the same effect
+            // on the other hand, nodes don't have a human-readable uid in 3.0
+            Long a = node1.getSUID();
+            Long b = node2.getSUID();
 
-				return a.compareTo(b);
-			}
-		};
+            return a.compareTo(b);
+        };
 
 		List<List<CyNode>> sortedlist = new ArrayList<List<CyNode>>(map.keySet().size());
 

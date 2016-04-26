@@ -137,12 +137,7 @@ public class BoundedHandler<T extends AbstractBounded, N> extends AbstractGUITun
 			slider = new TunableSlider(title, (Number)bounded.getLowerBound(), (Number)bounded.getUpperBound(),
 			                      (Number)bounded.getValue(), bounded.isLowerBoundStrict(), bounded.isUpperBoundStrict(),
 			                      format);
-			slider.addChangeListener(new ChangeListener() {
-				@Override
-				public void stateChanged(ChangeEvent e) {
-					handle();
-				}
-			});
+			slider.addChangeListener(e -> handle());
 			
 			updateFieldPanel(panel, label, slider, horizontal);
 			panel.validate();
@@ -158,12 +153,7 @@ public class BoundedHandler<T extends AbstractBounded, N> extends AbstractGUITun
 			boundedField = new TunableBoundedField((Number)bounded.getValue(), (Number)bounded.getLowerBound(),
 			                                  (Number)bounded.getUpperBound(), bounded.isLowerBoundStrict(),
 			                                  bounded.isUpperBoundStrict());
-			boundedField.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					handle();
-				}
-			});
+			boundedField.addActionListener(e -> handle());
 			boundedField.addFocusListener(new FocusAdapter() {
 				@Override
 				public void focusLost(FocusEvent e) {

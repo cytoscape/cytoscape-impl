@@ -264,11 +264,7 @@ public class GUIJobDialog extends JDialog {
 			super(checkBox);
 			button = new JButton();
 			button.setOpaque(true);
-			button.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-					fireEditingStopped();
-				}
-			});
+			button.addActionListener(e -> fireEditingStopped());
 		}
 
 		@Override

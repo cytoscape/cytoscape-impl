@@ -245,15 +245,12 @@ public class RootNetworkPanel extends AbstractNetworkPanel<CyRootNetwork> {
 	
 	private ExpandCollapseButton getExpandCollapseBtn() {
 		if (expandCollapseBtn == null) {
-			expandCollapseBtn = new ExpandCollapseButton(isExpanded(), new ActionListener() {
-				@Override
-				public void actionPerformed(final ActionEvent ae) {
-					if (isExpanded())
-						collapse();
-					else
-						expand();
-				}
-			}, serviceRegistrar);
+			expandCollapseBtn = new ExpandCollapseButton(isExpanded(), ae -> {
+                if (isExpanded())
+                    collapse();
+                else
+                    expand();
+            }, serviceRegistrar);
 		}
 		
 		return expandCollapseBtn;

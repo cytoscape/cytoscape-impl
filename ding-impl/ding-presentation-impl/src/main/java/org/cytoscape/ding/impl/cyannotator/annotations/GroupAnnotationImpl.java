@@ -102,11 +102,7 @@ public class GroupAnnotationImpl extends AbstractAnnotation implements GroupAnno
 		// We muck with the ZOrder directly, so we need
 		// to make sure we're on the EDT
 		if (!SwingUtilities.isEventDispatchThread()) {
-			SwingUtilities.invokeLater( new Runnable() {
-				public void run() {
-					addMember(member);
-				}
-			});
+			SwingUtilities.invokeLater(() -> addMember(member));
 			return;
 		}
 
@@ -248,9 +244,7 @@ public class GroupAnnotationImpl extends AbstractAnnotation implements GroupAnno
 
 	private void updateBounds() {
 		if (!SwingUtilities.isEventDispatchThread()) {
-			SwingUtilities.invokeLater( new Runnable() {
-				public void run() { updateBounds(); }
-			});
+			SwingUtilities.invokeLater(() -> updateBounds());
 			return;
 		}
 		// Calculate the bounding box of all of our children

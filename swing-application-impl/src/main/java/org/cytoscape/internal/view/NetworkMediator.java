@@ -500,14 +500,11 @@ public class NetworkMediator implements NetworkAddedListener, NetworkViewAddedLi
 				
 				{
 					final JMenuItem mi = new JMenuItem("Rename Network Collection...");
-					mi.addActionListener(new ActionListener() {
-						@Override
-						public void actionPerformed(ActionEvent e) {
-							final EditNetworkTitleTaskFactory factory = serviceRegistrar
-									.getService(EditNetworkTitleTaskFactory.class);
-							taskMgr.execute(factory.createTaskIterator(network));
-						}
-					});
+					mi.addActionListener(e1 -> {
+                        final EditNetworkTitleTaskFactory factory = serviceRegistrar
+                                .getService(EditNetworkTitleTaskFactory.class);
+                        taskMgr.execute(factory.createTaskIterator(network));
+                    });
 					rootPopupMenu.add(mi);
 					mi.setEnabled(selectedItems.size() == 1);
 				}

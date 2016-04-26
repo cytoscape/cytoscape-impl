@@ -826,26 +826,18 @@ public class NetworkViewMediator
 			
 			{
 				final JMenuItem mi = new JMenuItem("Show View" + (selectedViews.size() == 1 ? "" : "s"));
-				mi.addActionListener(new ActionListener() {
-					@Override
-					public void actionPerformed(ActionEvent e) {
-						if (selectedViews.size() == 1)
-							getNetworkViewMainPanel().showViewContainer(selectedViews.iterator().next());
-						else if (selectedViews.size() > 1)
-							getNetworkViewMainPanel().showComparisonPanel(new HashSet<>(selectedViews));
-					}
-				});
+				mi.addActionListener(e1 -> {
+                    if (selectedViews.size() == 1)
+                        getNetworkViewMainPanel().showViewContainer(selectedViews.iterator().next());
+                    else if (selectedViews.size() > 1)
+                        getNetworkViewMainPanel().showComparisonPanel(new HashSet<>(selectedViews));
+                });
 				popupMenu.add(mi);
 				mi.setEnabled(!selectedViews.isEmpty());
 			}
 			{
 				final JMenuItem mi = new JMenuItem("Detach View" + (selectedViews.size() == 1 ? "" : "s"));
-				mi.addActionListener(new ActionListener() {
-					@Override
-					public void actionPerformed(ActionEvent e) {
-						getNetworkViewMainPanel().detachNetworkViews(selectedViews);
-					}
-				});
+				mi.addActionListener(e1 -> getNetworkViewMainPanel().detachNetworkViews(selectedViews));
 				popupMenu.add(mi);
 				
 				boolean hasAttached = false;
@@ -862,14 +854,11 @@ public class NetworkViewMediator
 			popupMenu.addSeparator();
 			{
 				final JMenuItem mi = new JMenuItem("Destroy View" + (selectedViews.size() == 1 ? "" : "s"));
-				mi.addActionListener(new ActionListener() {
-					@Override
-					public void actionPerformed(ActionEvent e) {
-						final DestroyNetworkViewTaskFactory factory = serviceRegistrar
-								.getService(DestroyNetworkViewTaskFactory.class);
-						taskMgr.execute(factory.createTaskIterator(selectedViews));
-					}
-				});
+				mi.addActionListener(e1 -> {
+                    final DestroyNetworkViewTaskFactory factory = serviceRegistrar
+                            .getService(DestroyNetworkViewTaskFactory.class);
+                    taskMgr.execute(factory.createTaskIterator(selectedViews));
+                });
 				popupMenu.add(mi);
 				mi.setEnabled(!selectedViews.isEmpty());
 			}

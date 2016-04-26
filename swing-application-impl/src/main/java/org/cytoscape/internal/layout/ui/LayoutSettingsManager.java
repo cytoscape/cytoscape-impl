@@ -38,12 +38,7 @@ public class LayoutSettingsManager {
 	
 
 	public void addLayout(final CyLayoutAlgorithm layout, Map<?,?> props) {
-		executorService.execute(new Runnable() {
-			@Override
-			public void run() {
-				restoreLayoutContext(layout);
-			}
-		}); 
+		executorService.execute(() -> restoreLayoutContext(layout)); 
     }
     
     public void removeLayout(final CyLayoutAlgorithm layout, Map<?,?> props) {

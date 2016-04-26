@@ -76,12 +76,7 @@ public abstract class AbstractGradientEditor<T extends AbstractCustomGraphics2<?
 			grEditor = new GradientEditor(fractions, colors);
 			
 			// Add listener--update gradient when user interacts with the UI
-			grEditor.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					updateGradient();
-				}
-			});
+			grEditor.addActionListener(e -> updateGradient());
 			
 			if (fractions == null || fractions.size() < 2) {
 				gradient.set(GRADIENT_FRACTIONS, getGrEditor().getPositions());

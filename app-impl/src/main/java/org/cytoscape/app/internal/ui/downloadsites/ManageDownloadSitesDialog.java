@@ -92,12 +92,7 @@ public class ManageDownloadSitesDialog extends JDialog {
         this.downloadSitesManager = downloadSitesManager;
         initComponents();
         
-        this.downloadSitesChangedListener = new DownloadSitesChangedListener() {
-			@Override
-			public void downloadSitesChanged(DownloadSitesChangedEvent downloadSitesChangedEvent) {
-				repopulateTable();
-			}
-		};
+        this.downloadSitesChangedListener = downloadSitesChangedEvent -> repopulateTable();
 		
         if (downloadSitesManager.getDownloadSites().size() == 0) {
         	for (DownloadSite downloadSite : WebQuerier.DEFAULT_DOWNLOAD_SITES) {
@@ -170,26 +165,11 @@ public class ManageDownloadSitesDialog extends JDialog {
         sitesTable.getColumnModel().getColumn(0).setPreferredWidth(50);
         sitesTable.getColumnModel().getColumn(1).setPreferredWidth(285);
 
-        newButton.addActionListener(new ActionListener() {
-        	@Override
-            public void actionPerformed(ActionEvent evt) {
-                newButtonActionPerformed(evt);
-            }
-        });
+        newButton.addActionListener(evt -> newButtonActionPerformed(evt));
 
-        saveButton.addActionListener(new ActionListener() {
-        	@Override
-            public void actionPerformed(ActionEvent evt) {
-                saveButtonActionPerformed(evt);
-            }
-        });
+        saveButton.addActionListener(evt -> saveButtonActionPerformed(evt));
 
-        removeButton.addActionListener(new ActionListener() {
-        	@Override
-            public void actionPerformed(ActionEvent evt) {
-                removeButtonActionPerformed(evt);
-            }
-        });
+        removeButton.addActionListener(evt -> removeButtonActionPerformed(evt));
 
         LookAndFeelUtil.equalizeSize(newButton, removeButton, saveButton);
         
@@ -331,20 +311,17 @@ public class ManageDownloadSitesDialog extends JDialog {
         		downloadSitesManager.removeDownloadSite(siteToRemove);
         		downloadSitesManager.saveDownloadSites();
         		
-        		SwingUtilities.invokeLater(new Runnable() {
-					@Override
-					public void run() {
-						int rowCount = sitesTable.getRowCount();
-						
-						if (rowCount == 0) {
-							return;
-						} else if (selectionIndex > 0) {
-							sitesTable.getSelectionModel().setSelectionInterval(selectionIndex - 1, selectionIndex - 1);
-						} else if (selectionIndex == 0) {
-							sitesTable.getSelectionModel().setSelectionInterval(0, 0);
-						}
-					}
-				});
+        		SwingUtilities.invokeLater(() -> {
+                    int rowCount = sitesTable.getRowCount();
+                    
+                    if (rowCount == 0) {
+                        return;
+                    } else if (selectionIndex > 0) {
+                        sitesTable.getSelectionModel().setSelectionInterval(selectionIndex - 1, selectionIndex - 1);
+                    } else if (selectionIndex == 0) {
+                        sitesTable.getSelectionModel().setSelectionInterval(0, 0);
+                    }
+                });
         	}
         }
     }
@@ -399,12 +376,7 @@ public class ManageDownloadSitesDialog extends JDialog {
     			downloadSitesManager.getDownloadSites());
     	
     	// Sort by name
-    	Collections.sort(downloadSites, new Comparator<DownloadSite>() {
-			@Override
-			public int compare(DownloadSite o1, DownloadSite o2) {
-				return o1.getSiteName().compareTo(o2.getSiteName());
-			}
-		});
+    	Collections.sort(downloadSites, (o1, o2) -> o1.getSiteName().compareTo(o2.getSiteName()));
     	
     	for (DownloadSite downloadSite : downloadSites) {
     		tableModel.addRow(new Object[]{
@@ -413,17 +385,14 @@ public class ManageDownloadSitesDialog extends JDialog {
     		});
     	}
     	
-    	SwingUtilities.invokeLater(new Runnable() {
-			@Override
-			public void run() {
-		    	sitesTable.setModel(tableModel);
-		    	
-		    	sitesTable.getColumnModel().getColumn(0).setPreferredWidth(140);
-		        sitesTable.getColumnModel().getColumn(1).setPreferredWidth(285);
-		        
-		        listedSitesLabel.setText("Listed sites: " + downloadSites.size());
-			}
-    	});
+    	SwingUtilities.invokeLater(() -> {
+            sitesTable.setModel(tableModel);
+            
+            sitesTable.getColumnModel().getColumn(0).setPreferredWidth(140);
+            sitesTable.getColumnModel().getColumn(1).setPreferredWidth(285);
+            
+            listedSitesLabel.setText("Listed sites: " + downloadSites.size());
+        });
     }
     
     /**
@@ -431,13 +400,10 @@ public class ManageDownloadSitesDialog extends JDialog {
      * events in order to update the text fields
      */
     private void setupDescriptionListener() {
-    	sitesTable.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
-			@Override
-			public void valueChanged(ListSelectionEvent e) {
-				if (!e.getValueIsAdjusting())
-					update();
-			}
-		});
+    	sitesTable.getSelectionModel().addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting())
+                update();
+        });
     }
     
     private void update() {

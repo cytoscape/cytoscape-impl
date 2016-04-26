@@ -193,14 +193,10 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 		this.graphView = graphView;
 		
 		this.cgInfoMap = new TreeMap<VisualProperty<CyCustomGraphics>, CustomGraphicsInfo>(
-				new Comparator<VisualProperty<CyCustomGraphics>>() {
-
-					@Override
-					public int compare(VisualProperty<CyCustomGraphics> vp1, VisualProperty<CyCustomGraphics> vp2) {
-						// Sort by: Custom Graphics 1, 2, 3, etc.
-						return vp1.getIdString().compareTo(vp2.getIdString());
-					}
-				});
+				(vp1, vp2) -> {
+                    // Sort by: Custom Graphics 1, 2, 3, etc.
+                    return vp1.getIdString().compareTo(vp2.getIdString());
+                });
 	}
 	
 	@Override

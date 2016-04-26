@@ -276,14 +276,11 @@ public class TransformerManagerImpl implements TransformerManager {
 		public UnbufferedExecutionStrategy(int maximumThreads) {
 			this.maximumThreads = maximumThreads;
 			workQueue = new ArrayBlockingQueue<Runnable>(maximumThreads);
-			executor = new ThreadPoolExecutor(maximumThreads, maximumThreads, Integer.MAX_VALUE, TimeUnit.SECONDS, workQueue, new ThreadFactory() {
-				@Override
-				public Thread newThread(Runnable r) {
-					Thread thread = new Thread(r);
-					thread.setDaemon(true);
-					return thread;
-				}
-			});
+			executor = new ThreadPoolExecutor(maximumThreads, maximumThreads, Integer.MAX_VALUE, TimeUnit.SECONDS, workQueue, r -> {
+                Thread thread = new Thread(r);
+                thread.setDaemon(true);
+                return thread;
+            });
 		}
 
 		@Override
@@ -304,13 +301,10 @@ public class TransformerManagerImpl implements TransformerManager {
 			
 			for (int i = 0; i < totalWorkers; i++) {
 				final Iterator<E> iterator = iterators[i];
-				Runnable worker = new Runnable() {
-					@Override
-					public void run() {
-						execute(context, transformers, iterator, sink);
-						finished.release();
-					}
-				};
+				Runnable worker = () -> {
+                    execute(context, transformers, iterator, sink);
+                    finished.release();
+                };
 				executor.execute(worker);
 			}
 			try {

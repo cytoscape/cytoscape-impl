@@ -34,12 +34,7 @@ public class FilterPanel extends AbstractPanel<FilterElement, FilterPanelControl
 		worker.setView(this);
 		
 		applyAutomaticallyCheckBox = new JCheckBox("Apply when filter changes"); 
-		applyAutomaticallyCheckBox.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent event) {
-				controller.setInteractive(applyAutomaticallyCheckBox.isSelected(), FilterPanel.this);
-			}
-		});
+		applyAutomaticallyCheckBox.addActionListener(event -> controller.setInteractive(applyAutomaticallyCheckBox.isSelected(), FilterPanel.this));
 		applyAutomaticallyCheckBox.setOpaque(!isAquaLAF());
 		
 		applyAutomaticallyCheckBox.setToolTipText("<html>Apply the filter automatically when the filter definition changes.<br>(Turned off by default for networks that are very large.)</html>");

@@ -793,15 +793,12 @@ public class NetworkViewGrid extends JPanel {
 			thumbnailSlider.setToolTipText("Thumbnail Size");
 			thumbnailSlider.putClientProperty("JComponent.sizeVariant", "mini"); // Aqua (Mac OS X) only
 			
-			thumbnailSlider.addChangeListener(new ChangeListener() {
-				@Override
-				public void stateChanged(ChangeEvent e) {
-					if (!thumbnailSlider.getValueIsAdjusting()) {
-						final int thumbSize = thumbnailSlider.getValue();
-						update(thumbSize);
-					}
-				}
-			});
+			thumbnailSlider.addChangeListener(e -> {
+                if (!thumbnailSlider.getValueIsAdjusting()) {
+                    final int thumbSize = thumbnailSlider.getValue();
+                    update(thumbSize);
+                }
+            });
 		}
 		
 		return thumbnailSlider;

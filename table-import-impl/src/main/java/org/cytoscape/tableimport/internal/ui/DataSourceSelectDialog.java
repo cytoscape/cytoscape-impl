@@ -121,12 +121,7 @@ public class DataSourceSelectDialog extends JDialog {
 		});
 
 		browseButton.setToolTipText("Add data source from local file system...");
-		browseButton.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent evt) {
-				browseButtonActionPerformed(evt);
-			}
-		});
+		browseButton.addActionListener(evt -> browseButtonActionPerformed(evt));
 
 		final JPanel contentPane = new JPanel();
 		final GroupLayout layout = new GroupLayout(contentPane);

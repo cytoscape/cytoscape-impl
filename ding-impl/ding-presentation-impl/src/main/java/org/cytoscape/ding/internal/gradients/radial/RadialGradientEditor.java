@@ -64,13 +64,10 @@ public class RadialGradientEditor extends AbstractGradientEditor<RadialGradient>
 			final Point2D center = gradient.get(CENTER, Point2D.class, new Point2D.Double(0.5, 0.5));
 			pointPicker = new PointPicker(100, 12, center);
 			
-			pointPicker.addPropertyChangeListener("value", new PropertyChangeListener() {
-				@Override
-				public void propertyChange(PropertyChangeEvent e) {
-					final Point2D newCenter = (Point2D) e.getNewValue();
-		            gradient.set(CENTER, newCenter);
-				}
-			});
+			pointPicker.addPropertyChangeListener("value", e -> {
+                final Point2D newCenter = (Point2D) e.getNewValue();
+                gradient.set(CENTER, newCenter);
+            });
 		}
 		
 		return pointPicker;

@@ -227,12 +227,10 @@ public class EquationTest {
 		
 		for(int i = 1; i <= N; i++) {
 			final int n = i;
-			taskList.add(new Callable<Double>() {
-				public Double call() throws Exception {
-					CyRow row = table.getRow((long)n);
-					return row.get("e3", Double.class);
-				}
-			});
+			taskList.add(() -> {
+                CyRow row = table.getRow((long)n);
+                return row.get("e3", Double.class);
+            });
 		}
 		
 		ExecutorService executor = Executors.newFixedThreadPool(20);

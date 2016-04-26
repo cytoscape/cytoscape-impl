@@ -164,11 +164,7 @@ public class AppManagerDialog extends JDialog {
 
     public void showNetworkError() {
         if (!SwingUtilities.isEventDispatchThread()) {
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    showNetworkError();
-                }
-            });
+            SwingUtilities.invokeLater(() -> showNetworkError());
         } else {
             networkErrorLabel.setVisible(true);
         }
@@ -176,11 +172,7 @@ public class AppManagerDialog extends JDialog {
 
     public void hideNetworkError() {
         if (!SwingUtilities.isEventDispatchThread()) {
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    hideNetworkError();
-                }
-            });
+            SwingUtilities.invokeLater(() -> hideNetworkError());
         } else {
             networkErrorLabel.setVisible(false);
         }

@@ -166,12 +166,7 @@ public class PerformanceScaffold {
 
 		int doSubject(CyNetwork network) {
 			final AtomicInteger hits = new AtomicInteger();
-			TransformerSink<CyIdentifiable> sink = new TransformerSink<CyIdentifiable>() {
-				@Override
-				public void collect(CyIdentifiable element) {
-					hits.incrementAndGet();
-				}
-			};
+			TransformerSink<CyIdentifiable> sink = element -> hits.incrementAndGet();
 			transformerManager.execute(network, subjectTransformers, sink);
 			return hits.intValue();
 		}

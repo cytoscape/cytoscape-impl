@@ -70,12 +70,7 @@ public class TaskStatusBar extends JPanel implements StatusBarPanelFactory {
 		if (!LookAndFeelUtil.isAquaLAF())
 			showBtn.setPreferredSize(new Dimension(32, showBtn.getPreferredSize().height));
 		
-		clearingTimer = new Timer(CLEAR_DELAY_MS, new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				clearStatusBar();
-			}
-		});
+		clearingTimer = new Timer(CLEAR_DELAY_MS, e -> clearStatusBar());
 		clearingTimer.setRepeats(false);
 
 		final GroupLayout layout = new GroupLayout(this);
@@ -149,12 +144,7 @@ public class TaskStatusBar extends JPanel implements StatusBarPanelFactory {
 	
 	public void setTitle(final String type, final TaskIcon icon, final String title) {
 		if (!SwingUtilities.isEventDispatchThread()) {
-			SwingUtilities.invokeLater(new Runnable() {
-				@Override
-				public void run() {
-					setTitle(type, icon, title);
-				}
-			});
+			SwingUtilities.invokeLater(() -> setTitle(type, icon, title));
 			return;
 		}
 		

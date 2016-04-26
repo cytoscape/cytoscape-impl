@@ -60,11 +60,7 @@ public class BooleanComboBox extends JPanel {
 	private Map<StateChangeListener, ActionListener> actionListeners = new IdentityHashMap<>();
 	
 	public void addStateChangeListener(StateChangeListener listener) {
-		ActionListener actionListener = new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				listener.stateChanged(booleanValue());
-			}
-		};
+		ActionListener actionListener = e -> listener.stateChanged(booleanValue());
 		actionListeners.put(listener, actionListener);
 		combo.addActionListener(actionListener);
 	}

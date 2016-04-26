@@ -79,18 +79,14 @@ public class ColumnFilterViewFactory implements TransformerViewFactory {
 		public Controller(ColumnFilter filter) {
 			this.filter = filter;
 			
-			intChooserController = RangeChooserController.forInteger(style, new RangeListener<Integer>() {
-				public void rangeChanged(Integer low, Integer high) {
-					Number[] range = { low, high };
-					filter.setCriterion(range);
-				}
-			});
-			doubleChooserController = RangeChooserController.forDouble(style, new RangeListener<Double>() {
-				public void rangeChanged(Double low, Double high) {
-					Number[] range = { low, high };
-					filter.setCriterion(range);
-				}
-			});
+			intChooserController = RangeChooserController.forInteger(style, (low, high) -> {
+                Number[] range = { low, high };
+                filter.setCriterion(range);
+            });
+			doubleChooserController = RangeChooserController.forDouble(style, (low, high) -> {
+                Number[] range = { low, high };
+                filter.setCriterion(range);
+            });
 		}
 
 		@Override
@@ -357,36 +353,18 @@ public class ColumnFilterViewFactory implements TransformerViewFactory {
 		
 		
 		private void addListeners() {
-			textField.getDocument().addDocumentListener(textFieldDocumentListener = new DocumentListenerAdapter() {
-				public void update(DocumentEvent event) {
-					filter.setCriterion(textField.getText());
-				}
-			});
+			textField.getDocument().addDocumentListener(textFieldDocumentListener = (DocumentListenerAdapter) event -> filter.setCriterion(textField.getText()));
 			
-			predicateComboBox.addActionListener(predicateComboBoxActionListener = new ActionListener() {
-				public void actionPerformed(ActionEvent event) {
-					ComboItem<Predicate> selected = predicateComboBox.getItemAt(predicateComboBox.getSelectedIndex());
-					filter.setPredicate(selected.getValue());
-				}
-			});
+			predicateComboBox.addActionListener(predicateComboBoxActionListener = event -> {
+                ComboItem<Predicate> selected = predicateComboBox.getItemAt(predicateComboBox.getSelectedIndex());
+                filter.setPredicate(selected.getValue());
+            });
 			
-			nameComboBox.addActionListener(nameComboBoxActionListener = new ActionListener() {
-				public void actionPerformed(ActionEvent event) {
-					handleColumnSelected();
-				}
-			});
+			nameComboBox.addActionListener(nameComboBoxActionListener = event -> handleColumnSelected());
 			
-			numericNegateComboBox.addStateChangeListener(numericNegateComboBoxStateChangeListener = new StateChangeListener() {
-				public void stateChanged(boolean is) {
-					filter.setPredicate(is ? Predicate.BETWEEN : Predicate.IS_NOT_BETWEEN);
-				}
-			});
+			numericNegateComboBox.addStateChangeListener(numericNegateComboBoxStateChangeListener = is -> filter.setPredicate(is ? Predicate.BETWEEN : Predicate.IS_NOT_BETWEEN));
 			
-			booleanComboBox.addStateChangeListener(booleanComboBoxStateChangeListener = new StateChangeListener() {
-				public void stateChanged(boolean isTrue) {
-					filter.setCriterion(isTrue);
-				}
-			});
+			booleanComboBox.addStateChangeListener(booleanComboBoxStateChangeListener = isTrue -> filter.setCriterion(isTrue));
 		}
 		
 

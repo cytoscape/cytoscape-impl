@@ -138,24 +138,14 @@ public class CustomGraphicsManagerDialog extends JDialog {
 		addButton.setToolTipText("Add Images");
 		addButton.putClientProperty("JButton.buttonType", "segmentedGradient"); // Mac OS only
 		addButton.putClientProperty("JButton.segmentPosition", "middle"); // Mac OS only
-		addButton.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent evt) {
-				addButtonActionPerformed(evt);
-			}
-		});
+		addButton.addActionListener(evt -> addButtonActionPerformed(evt));
 		
 		deleteButton.setText(IconManager.ICON_TRASH_O);
 		deleteButton.setFont(iconManager.getIconFont(18.0f));
 		deleteButton.setToolTipText("Remove Selected Images");
 		deleteButton.putClientProperty("JButton.buttonType", "segmentedGradient"); // Mac OS only
 		deleteButton.putClientProperty("JButton.segmentPosition", "only"); // Mac OS only
-		deleteButton.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent evt) {
-				deleteButtonActionPerformed(evt);
-			}
-		});
+		deleteButton.addActionListener(evt -> deleteButtonActionPerformed(evt));
 
 		closeButton = new JButton(new AbstractAction("Close") {
 			@Override

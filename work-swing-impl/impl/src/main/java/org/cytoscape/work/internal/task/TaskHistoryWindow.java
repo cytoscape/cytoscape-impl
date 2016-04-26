@@ -44,13 +44,10 @@ public class TaskHistoryWindow {
 		styleSheet.addRule("ul {list-style-type: none;}");
 
 		final JButton clearButton = new JButton("Clear Display");
-		clearButton.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				taskHistory.clear();
-				update();
-			}
-		});
+		clearButton.addActionListener(e -> {
+            taskHistory.clear();
+            update();
+        });
 		
 		final JButton closeButton = new JButton(new AbstractAction("Close") {
 			@Override
@@ -86,12 +83,7 @@ public class TaskHistoryWindow {
 		LookAndFeelUtil.setDefaultOkCancelKeyStrokes(dialog.getRootPane(), null, closeButton.getAction());
 		dialog.getRootPane().setDefaultButton(closeButton);
 
-		taskHistory.setFinishListener(new TaskHistory.FinishListener() {
-			@Override
-			public void taskFinished(final TaskHistory.History history) {
-				update();
-			}
-		});
+		taskHistory.setFinishListener(history -> update());
 
 		dialog.pack();
 		open();
@@ -245,12 +237,7 @@ public class TaskHistoryWindow {
 		if (SwingUtilities.isEventDispatchThread()) {
 			pane.setText(content);
 		} else {
-			SwingUtilities.invokeLater(new Runnable() {
-				@Override
-				public void run() {
-					pane.setText(content);
-				}
-			});
+			SwingUtilities.invokeLater(() -> pane.setText(content));
 		}
 	}
 }

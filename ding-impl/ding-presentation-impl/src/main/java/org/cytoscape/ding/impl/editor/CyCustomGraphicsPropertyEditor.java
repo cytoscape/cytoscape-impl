@@ -61,25 +61,17 @@ public class CyCustomGraphicsPropertyEditor extends AbstractPropertyEditor {
 		((JPanel) editor).add(button = ComponentFactory.Helper.getFactory().createMiniButton());
 		button.setText(IconManager.ICON_ELLIPSIS_H);
 		button.setFont(iconManager.getIconFont(13.0f));
-		button.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				editChart();
-			}
-		});
+		button.addActionListener(e -> editChart());
 		
 		((JPanel) editor).add(button = ComponentFactory.Helper.getFactory().createMiniButton());
 		button.setText(IconManager.ICON_REMOVE);
 		button.setFont(iconManager.getIconFont(13.0f));
-		button.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				CyCustomGraphics old = customGraphics;
-				label.setValue(null);
-				customGraphics = null;
-				firePropertyChange(old, null);
-			}
-		});
+		button.addActionListener(e -> {
+            CyCustomGraphics old = customGraphics;
+            label.setValue(null);
+            customGraphics = null;
+            firePropertyChange(old, null);
+        });
 	}
 	
 	@Override

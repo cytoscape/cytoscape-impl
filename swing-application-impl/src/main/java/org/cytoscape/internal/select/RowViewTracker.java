@@ -69,21 +69,19 @@ public class RowViewTracker implements NetworkViewAddedListener,
 	}
 
 	public void handleEvent(final NetworkViewAddedEvent e) {
-		SwingUtilities.invokeLater(new Runnable() {
-			public void run() {
-				final CyNetworkView view = e.getNetworkView();
-				final CyNetwork net = view.getModel(); 
-				Map<CyRow, View<? extends CyIdentifiable>> rowViewMap = getRowViewMapInternal(view);
+		SwingUtilities.invokeLater(() -> {
+            final CyNetworkView view = e.getNetworkView();
+            final CyNetwork net = view.getModel(); 
+            Map<CyRow, View<? extends CyIdentifiable>> rowViewMap = getRowViewMapInternal(view);
 
-				for ( View<CyNode> nv : view.getNodeViews() )
-					rowViewMap.put( net.getRow(nv.getModel()), nv);
-		
-				for ( View<CyEdge> ev : view.getEdgeViews() ) 
-					rowViewMap.put( net.getRow(ev.getModel()), ev);
-				
-				addTables(view);
-			}
-		});
+            for ( View<CyNode> nv : view.getNodeViews() )
+                rowViewMap.put( net.getRow(nv.getModel()), nv);
+    
+            for ( View<CyEdge> ev : view.getEdgeViews() ) 
+                rowViewMap.put( net.getRow(ev.getModel()), ev);
+            
+            addTables(view);
+        });
 	}
 	
 	protected void addTables(CyNetworkView view) {
@@ -125,73 +123,63 @@ public class RowViewTracker implements NetworkViewAddedListener,
 	}
 
 	public void handleEvent(final AddedNodeViewsEvent e) {
-		SwingUtilities.invokeLater(new Runnable() {
-			public void run() {
-				final CyNetworkView view = e.getSource();
-				final CyNetwork net = view.getModel(); 
-				Map<CyRow, View<? extends CyIdentifiable>> rowViewMap = getRowViewMapInternal(view);
-				
-				for ( View<CyNode> v : e.getNodeViews()) 
-					if (net.containsNode(v.getModel())) 
-						rowViewMap.put( net.getRow(v.getModel()), v );
-			}
-		});
+		SwingUtilities.invokeLater(() -> {
+            final CyNetworkView view = e.getSource();
+            final CyNetwork net = view.getModel(); 
+            Map<CyRow, View<? extends CyIdentifiable>> rowViewMap = getRowViewMapInternal(view);
+            
+            for ( View<CyNode> v : e.getNodeViews()) 
+                if (net.containsNode(v.getModel())) 
+                    rowViewMap.put( net.getRow(v.getModel()), v );
+        });
 	}
 	
 	public void handleEvent(final AddedEdgeViewsEvent e) {
-		SwingUtilities.invokeLater(new Runnable() {
-			public void run() {
-				final CyNetworkView view = e.getSource();
-				final CyNetwork net = view.getModel(); 
-				Map<CyRow, View<? extends CyIdentifiable>> rowViewMap = getRowViewMapInternal(view);
+		SwingUtilities.invokeLater(() -> {
+            final CyNetworkView view = e.getSource();
+            final CyNetwork net = view.getModel(); 
+            Map<CyRow, View<? extends CyIdentifiable>> rowViewMap = getRowViewMapInternal(view);
 
-				for ( View<CyEdge> v : e.getEdgeViews()) 
-					if (net.containsEdge(v.getModel())) 
-						rowViewMap.put( net.getRow(v.getModel()), v );
-			}
-		});
+            for ( View<CyEdge> v : e.getEdgeViews()) 
+                if (net.containsEdge(v.getModel())) 
+                    rowViewMap.put( net.getRow(v.getModel()), v );
+        });
 	}
 	
 	public void handleEvent(final AboutToRemoveNodeViewsEvent e) {
-		SwingUtilities.invokeLater(new Runnable() {
-			public void run() {
-				Map<CyRow, View<? extends CyIdentifiable>> rowViewMap = rowViewMapsByNetworkView.get(e.getSource());
-				if (rowViewMap == null) {
-					return;
-				}
-				
-				Collection<View<? extends CyIdentifiable>> values = rowViewMap.values();
-				for ( View<CyNode> v : e.getPayloadCollection()) {
-					values.remove(v);
-				}
-			}
-		});
+		SwingUtilities.invokeLater(() -> {
+            Map<CyRow, View<? extends CyIdentifiable>> rowViewMap = rowViewMapsByNetworkView.get(e.getSource());
+            if (rowViewMap == null) {
+                return;
+            }
+            
+            Collection<View<? extends CyIdentifiable>> values = rowViewMap.values();
+            for ( View<CyNode> v : e.getPayloadCollection()) {
+                values.remove(v);
+            }
+        });
 	}
 	
 	public void handleEvent(final AboutToRemoveEdgeViewsEvent e) {
-		SwingUtilities.invokeLater(new Runnable() {
-			public void run() {
-				Map<CyRow, View<? extends CyIdentifiable>> rowViewMap = rowViewMapsByNetworkView.get(e.getSource());
-				if (rowViewMap == null) {
-					return;
-				}
-				
-				Collection<View<? extends CyIdentifiable>> values = rowViewMap.values();
-				for ( View<CyEdge> v : e.getPayloadCollection()) 
-					values.remove(v);
-			}
-		});
+		SwingUtilities.invokeLater(() -> {
+            Map<CyRow, View<? extends CyIdentifiable>> rowViewMap = rowViewMapsByNetworkView.get(e.getSource());
+            if (rowViewMap == null) {
+                return;
+            }
+            
+            Collection<View<? extends CyIdentifiable>> values = rowViewMap.values();
+            for ( View<CyEdge> v : e.getPayloadCollection()) 
+                values.remove(v);
+        });
 	}
 	
 	@Override
 	public void handleEvent(final NetworkViewAboutToBeDestroyedEvent e) {
-		SwingUtilities.invokeLater(new Runnable() {
-			public void run() {
-				CyNetworkView view = e.getNetworkView();
-				rowViewMapsByNetworkView.remove(view);
-				removeTables(view);
-			}
-		});
+		SwingUtilities.invokeLater(() -> {
+            CyNetworkView view = e.getNetworkView();
+            rowViewMapsByNetworkView.remove(view);
+            removeTables(view);
+        });
 	}
 	
 	private Map<CyRow, View<? extends CyIdentifiable>> getRowViewMapInternal(CyNetworkView view) {

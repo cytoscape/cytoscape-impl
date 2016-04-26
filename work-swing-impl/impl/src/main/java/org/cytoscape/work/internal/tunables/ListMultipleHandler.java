@@ -111,21 +111,13 @@ public class ListMultipleHandler<T> extends AbstractGUITunableHandler
 		
 		// Select All/None buttons
 		selectAllButton = new JButton("Select All");
-		selectAllButton.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(final ActionEvent e) {
-				if (listModel.getSize() > 0)
-					itemsContainerList.getSelectionModel().setSelectionInterval(0, listModel.getSize() - 1);
-			}
-		});
+		selectAllButton.addActionListener(e -> {
+            if (listModel.getSize() > 0)
+                itemsContainerList.getSelectionModel().setSelectionInterval(0, listModel.getSize() - 1);
+        });
 		
 		selectNoneButton = new JButton("Select None");
-		selectNoneButton.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(final ActionEvent e) {
-				itemsContainerList.getSelectionModel().clearSelection();
-			}
-		});
+		selectNoneButton.addActionListener(e -> itemsContainerList.getSelectionModel().clearSelection());
 		selectNoneButton.setEnabled(false);
 		
 		if (isAquaLAF()) {

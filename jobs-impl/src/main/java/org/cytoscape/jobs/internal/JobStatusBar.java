@@ -90,15 +90,12 @@ public class JobStatusBar extends JPanel implements StatusBarPanelFactory {
 		showBtn.setText(JobsIcon.JOBS.getText());
 		showBtn.putClientProperty("JButton.buttonType", "gradient"); // Aqua LAF only
 		showBtn.putClientProperty("JComponent.sizeVariant", "small");
-		showBtn.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				showBtn.setText(JobsIcon.JOBS.getText());
-				showBtn.setForeground(JobsIcon.JOBS.getForeground());
-				if (statusDialog != null)
-					statusDialog.setVisible(true);
-			}
-		});
+		showBtn.addActionListener(e -> {
+            showBtn.setText(JobsIcon.JOBS.getText());
+            showBtn.setForeground(JobsIcon.JOBS.getForeground());
+            if (statusDialog != null)
+                statusDialog.setVisible(true);
+        });
 		showBtn.setToolTipText("Show Job Status...");
 		showBtn.setFocusPainted(false);
 		
@@ -162,12 +159,7 @@ public class JobStatusBar extends JPanel implements StatusBarPanelFactory {
 
 	public void setIcon(final JobsIcon icon) {
 		if (!SwingUtilities.isEventDispatchThread()) {
-			SwingUtilities.invokeLater(new Runnable() {
-				@Override
-				public void run() {
-					setIcon(icon);
-				}
-			});
+			SwingUtilities.invokeLater(() -> setIcon(icon));
 			return;
 		}
 

@@ -162,11 +162,7 @@ class CyStatusBar extends JPanel {
 		showConsoleBtn.setOpaque(false);
 		showConsoleBtn.setToolTipText("Open User Messages");
 		
-		showConsoleBtn.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				userMessagesDialog.open();
-			}
-		});
+		showConsoleBtn.addActionListener(e -> userMessagesDialog.open());
 
 		messageLabel = new JLabel();
 
@@ -175,32 +171,28 @@ class CyStatusBar extends JPanel {
 		memAmountLabel.setVisible(false);
 
 		final JButton gcBtn = new JButton("Free Unused Memory");
-		gcBtn.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				gcBtn.setEnabled(false);
-				gcBtn.setText("Freeing Memory...");
-				SwingUtilities.invokeLater(new Runnable() {
-					public void run() {
-						performGC();
-						updateMemStatus();
-						gcBtn.setText("Free Unusued Memory");
-						gcBtn.setEnabled(true);
-					}
-				});
-			}
-		});
+		gcBtn.addActionListener(e -> {
+            gcBtn.setEnabled(false);
+            gcBtn.setText("Freeing Memory...");
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    performGC();
+                    updateMemStatus();
+                    gcBtn.setText("Free Unusued Memory");
+                    gcBtn.setEnabled(true);
+                }
+            });
+        });
 		gcBtn.setVisible(false);
 		gcBtn.setToolTipText("<html>Try to free unused memory.<br><br><i>Warning:</i> freeing memory may freeze Cytoscape for several seconds.</html>");
 		setFontSize(gcBtn, 9);
 
 		memStatusBtn = new JToggleButton();
 		setFontSize(memStatusBtn, 9);
-		memStatusBtn.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				memAmountLabel.setVisible(memStatusBtn.isSelected());
-				gcBtn.setVisible(memStatusBtn.isSelected());
-			}
-		});
+		memStatusBtn.addActionListener(e -> {
+            memAmountLabel.setVisible(memStatusBtn.isSelected());
+            gcBtn.setVisible(memStatusBtn.isSelected());
+        });
 		memStatusBtn.setHorizontalTextPosition(SwingConstants.LEFT);
 
 		final GridBagConstraints c = new GridBagConstraints();
@@ -233,11 +225,7 @@ class CyStatusBar extends JPanel {
 
 		app.getStatusToolBar().add(statusBarPanel);
 
-		final Timer updateTimer = new Timer(MEM_UPDATE_DELAY_MS, new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				updateMemStatus();
-			}
-		});
+		final Timer updateTimer = new Timer(MEM_UPDATE_DELAY_MS, e -> updateMemStatus());
 		updateTimer.setRepeats(true);
 		updateTimer.start();
 	}

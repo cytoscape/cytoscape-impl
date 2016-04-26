@@ -121,12 +121,7 @@ public class CompositeFilterPanel<P extends SelectPanelComponent> extends JPanel
 	@Override
 	public void updateLayout() {
 		if (!SwingUtilities.isEventDispatchThread()) {
-			SwingUtilities.invokeLater(new Runnable() {
-				@Override
-				public void run() {
-					updateLayout();
-				}
-			});
+			SwingUtilities.invokeLater(() -> updateLayout());
 			return;
 		}
 		removeAll();
@@ -189,13 +184,10 @@ public class CompositeFilterPanel<P extends SelectPanelComponent> extends JPanel
 		String tooltip = compositeFilterController.getAddButtonTooltip();
 		button.setToolTipText(tooltip == null ? "Add new condition..." : tooltip);
 		button.putClientProperty("JButton.buttonType", "gradient");
-		button.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent event) {
-				JPopupMenu menu = filterPanelController.createAddConditionMenu(CompositeFilterPanel.this);
-				menu.show(button, 0, button.getHeight());
-			}
-		});
+		button.addActionListener(event -> {
+            JPopupMenu menu = filterPanelController.createAddConditionMenu(CompositeFilterPanel.this);
+            menu.show(button, 0, button.getHeight());
+        });
 		return button;
 	}
 	
@@ -211,13 +203,7 @@ public class CompositeFilterPanel<P extends SelectPanelComponent> extends JPanel
 		@SuppressWarnings("unchecked")
 		ComboBoxModel<CombiningMethodElement> comboBoxModel = new DynamicComboBoxModel<>(methods);
 		final JComboBox<CombiningMethodElement> combiningMethodComboBox = filterPanelController.getStyle().createCombo(comboBoxModel);
-		combiningMethodComboBox.addActionListener(new ActionListener() {
-			@SuppressWarnings("unchecked")
-			@Override
-			public void actionPerformed(ActionEvent event) {
-				model.setType(((CombiningMethodElement)combiningMethodComboBox.getSelectedItem()).combiningMethod);
-			}
-		});
+		combiningMethodComboBox.addActionListener(event -> model.setType(((CombiningMethodElement)combiningMethodComboBox.getSelectedItem()).combiningMethod));
 		
 		DynamicComboBoxModel.select(combiningMethodComboBox, 0, new Matcher<CombiningMethodElement>() {
 			@Override

@@ -167,12 +167,7 @@ public class BarChartEditor extends AbstractChartEditor<BarChart> {
 		if (groupedRd == null) {
 			groupedRd = new JRadioButton("Grouped");
 			
-			groupedRd.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					setType();
-				}
-			});
+			groupedRd.addActionListener(e -> setType());
 		}
 		
 		return groupedRd;
@@ -182,12 +177,7 @@ public class BarChartEditor extends AbstractChartEditor<BarChart> {
 		if (stackedRd == null) {
 			stackedRd = new JRadioButton("Stacked");
 			
-			stackedRd.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					setType();
-				}
-			});
+			stackedRd.addActionListener(e -> setType());
 		}
 		
 		return stackedRd;
@@ -197,12 +187,7 @@ public class BarChartEditor extends AbstractChartEditor<BarChart> {
 		if (heatStripsRd == null) {
 			heatStripsRd = new JRadioButton("Heat Strips");
 			
-			heatStripsRd.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					setType();
-				}
-			});
+			heatStripsRd.addActionListener(e -> setType());
 		}
 		
 		return heatStripsRd;
@@ -212,12 +197,7 @@ public class BarChartEditor extends AbstractChartEditor<BarChart> {
 		if (upDownRd == null) {
 			upDownRd = new JRadioButton("Up-Down");
 			
-			upDownRd.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					setType();
-				}
-			});
+			upDownRd.addActionListener(e -> setType());
 		}
 		
 		return upDownRd;

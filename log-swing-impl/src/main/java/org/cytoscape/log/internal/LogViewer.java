@@ -72,15 +72,11 @@ public class LogViewer
 		// update to document. If we wrap the scrolling code in an
 		// invokeLater() call, this will ensure the scroll bar will move
 		// to the bottom.
-		SwingUtilities.invokeLater(new Runnable()
-		{
-			public void run()
-			{
-				JScrollBar scrollBar = scrollPane.getVerticalScrollBar();
-				if (scrollBar != null)
-					scrollBar.setValue(scrollBar.getMaximum());
-			}
-		});
+		SwingUtilities.invokeLater(() -> {
+            JScrollBar scrollBar = scrollPane.getVerticalScrollBar();
+            if (scrollBar != null)
+                scrollBar.setValue(scrollBar.getMaximum());
+        });
 	}
 
 	public void clear()

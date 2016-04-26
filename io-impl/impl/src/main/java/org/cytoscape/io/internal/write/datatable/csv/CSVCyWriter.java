@@ -87,19 +87,16 @@ public class CSVCyWriter implements CyWriter {
 				columns.add(column);
 			}
 			taskMonitor.setProgress(0.2);
-			Collections.sort(columns, new Comparator<CyColumn>() {
-				@Override
-				public int compare(CyColumn o1, CyColumn o2) {
-					// First column should be primary key
-					if (o1.isPrimaryKey()) {
-						return -1;
-					}
-					if (o2.isPrimaryKey()) {
-						return 1;
-					}
-					return o1.getName().compareToIgnoreCase(o2.getName());
-				}
-			});
+			Collections.sort(columns, (o1, o2) -> {
+                // First column should be primary key
+                if (o1.isPrimaryKey()) {
+                    return -1;
+                }
+                if (o2.isPrimaryKey()) {
+                    return 1;
+                }
+                return o1.getName().compareToIgnoreCase(o2.getName());
+            });
 			taskMonitor.setProgress(0.4);
 			if (writeSchema) {
 				writeVersion(writer);

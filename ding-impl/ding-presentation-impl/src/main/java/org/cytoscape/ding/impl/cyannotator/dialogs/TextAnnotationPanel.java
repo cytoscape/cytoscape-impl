@@ -162,42 +162,19 @@ public class TextAnnotationPanel extends JPanel {
 
 		iModifyTAPreview();
 
-		fontStyleList.addListSelectionListener(new ListSelectionListener() {
-			@Override
-			public void valueChanged(ListSelectionEvent evt) {
-				fontStyleListValueChanged(evt);
-			}
-		});
+		fontStyleList.addListSelectionListener(evt -> fontStyleListValueChanged(evt));
 
-		fontTypeList.addListSelectionListener(new ListSelectionListener() {
-			@Override
-			public void valueChanged(ListSelectionEvent evt) {
-				fontTypeListValueChanged(evt);
-			}
-		});
+		fontTypeList.addListSelectionListener(evt -> fontTypeListValueChanged(evt));
 
-		fontSizeList.addListSelectionListener(new ListSelectionListener() {
-			@Override
-			public void valueChanged(ListSelectionEvent evt) {
-				fontSizeListValueChanged(evt);
-			}
-		});
+		fontSizeList.addListSelectionListener(evt -> fontSizeListValueChanged(evt));
 
 		textColorButton.setToolTipText("Select text color...");
-		textColorButton.addPropertyChangeListener("color", new PropertyChangeListener() {
-			@Override
-			public void propertyChange(PropertyChangeEvent evt) {
-				preview.setTextColor((Color) evt.getNewValue());
-				previewPanel.repaint();
-			}
-		});
+		textColorButton.addPropertyChangeListener("color", evt -> {
+            preview.setTextColor((Color) evt.getNewValue());
+            previewPanel.repaint();
+        });
 
-		annotationText.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent evt) {
-				annotationTextActionPerformed(evt);
-			}
-		});
+		annotationText.addActionListener(evt -> annotationTextActionPerformed(evt));
 		
 		final GroupLayout layout = new GroupLayout(this);
 		setLayout(layout);

@@ -122,20 +122,10 @@ public class OntologyPanelBuilder {
 			}
 		});
 
-		panel.ontologyComboBox.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent evt) {
-				ontologyComboBoxActionPerformed(evt);
-			}
-		});
+		panel.ontologyComboBox.addActionListener(evt -> ontologyComboBoxActionPerformed(evt));
 
 		panel.browseOntologyButton.setToolTipText("Browse local ontology file...");
-		panel.browseOntologyButton.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent evt) {
-				browseOntologyButtonActionPerformed(evt);
-			}
-		});
+		panel.browseOntologyButton.addActionListener(evt -> browseOntologyButtonActionPerformed(evt));
 
 		panel.annotationComboBox.setName("annotationComboBox");
 
@@ -161,20 +151,10 @@ public class OntologyPanelBuilder {
 			}
 		});
 
-		panel.annotationComboBox.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent evt) {
-				annotationComboBoxActionPerformed(evt);
-			}
-		});
+		panel.annotationComboBox.addActionListener(evt -> annotationComboBoxActionPerformed(evt));
 
 		panel.browseAnnotationButton.setToolTipText("Browse local annotation file...");
-		panel.browseAnnotationButton.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent evt) {
-				browseAnnotationButtonActionPerformed(evt);
-			}
-		});
+		panel.browseAnnotationButton.addActionListener(evt -> browseAnnotationButtonActionPerformed(evt));
 	}
 
 	private void ontologyComboBoxActionPerformed(ActionEvent evt) {

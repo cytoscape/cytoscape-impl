@@ -246,13 +246,10 @@ public class PopupMenuHelper {
 		if (urlString == null || urlString.toString().startsWith("http:") == false) {
 			openLinkItem.setEnabled(false);
 		} else {
-			openLinkItem.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					final OpenBrowser openBrowser = serviceRegistrar.getService(OpenBrowser.class);
-					openBrowser.openURL(urlString.toString());
-				}
-			});
+			openLinkItem.addActionListener(e -> {
+                final OpenBrowser openBrowser = serviceRegistrar.getService(OpenBrowser.class);
+                openBrowser.openURL(urlString.toString());
+            });
 		}
 
 		return openLinkItem;

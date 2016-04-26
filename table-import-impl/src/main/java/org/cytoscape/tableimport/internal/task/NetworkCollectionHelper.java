@@ -184,12 +184,7 @@ public class NetworkCollectionHelper extends AbstractTask {
 		// so the combo-box does not appear to the user, since there is nothing to select anyway.
 		if (rendererSet.size() > 1) {
 			renderers.addAll(rendererSet);
-			Collections.sort(renderers, new Comparator<NetworkViewRenderer>() {
-				@Override
-				public int compare(NetworkViewRenderer r1, NetworkViewRenderer r2) {
-					return r1.toString().compareToIgnoreCase(r2.toString());
-				}
-			});
+			Collections.sort(renderers, (r1, r2) -> r1.toString().compareToIgnoreCase(r2.toString()));
 		}
 		
 		rendererList = new ListSingleSelection<>(renderers);
@@ -284,15 +279,12 @@ public class NetworkCollectionHelper extends AbstractTask {
 		if (!names.isEmpty()) {
 			final Collator collator = Collator.getInstance(Locale.getDefault());
 			
-			Collections.sort(names, new Comparator<String>() {
-				@Override
-				public int compare(String s1, String s2) {
-					if (s1 == null && s2 == null) return 0;
-					if (s1 == null) return -1;
-					if (s2 == null) return 1;
-					return collator.compare(s1, s2);
-				}
-			});
+			Collections.sort(names, (s1, s2) -> {
+                if (s1 == null && s2 == null) return 0;
+                if (s1 == null) return -1;
+                if (s2 == null) return 1;
+                return collator.compare(s1, s2);
+            });
 		}
 	}
 }

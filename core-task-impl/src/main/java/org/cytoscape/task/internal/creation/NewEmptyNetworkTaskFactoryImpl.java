@@ -72,12 +72,9 @@ public class NewEmptyNetworkTaskFactoryImpl extends AbstractTaskFactory implemen
 		this.vmMgr = vmMgr;
 		this.rootNetMgr = rootNetMgr;
 		this.appMgr = appMgr;
-		viewRenderers = new TreeSet<NetworkViewRenderer>(new Comparator<NetworkViewRenderer>() {
-			@Override
-			public int compare(NetworkViewRenderer r1, NetworkViewRenderer r2) {
-				return r1.toString().compareToIgnoreCase(r2.toString());
-			}
-		});
+		viewRenderers = new TreeSet<NetworkViewRenderer>((r1, r2) -> {
+            return r1.toString().compareToIgnoreCase(r2.toString());
+        });
 	}
 
 	@Override

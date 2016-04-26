@@ -65,11 +65,7 @@ public class CyEventHelperImpl implements CyEventHelper {
 
 		// This thread just flushes any accumulated payload events.
 		// It is scheduled to run repeatedly at a fixed interval.
-        final Runnable payloadChecker = new Runnable() {
-            public void run() {
-                flushPayloadEvents();
-            }
-        };
+        final Runnable payloadChecker = () -> flushPayloadEvents();
         payloadEventMonitor.scheduleAtFixedRate(payloadChecker, CyEventHelper.DEFAULT_PAYLOAD_INTERVAL_MILLIS, CyEventHelper.DEFAULT_PAYLOAD_INTERVAL_MILLIS, TimeUnit.MILLISECONDS);
 	}	
 

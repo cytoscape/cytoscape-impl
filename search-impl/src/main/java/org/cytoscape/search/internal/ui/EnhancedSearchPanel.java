@@ -110,12 +110,7 @@ public class EnhancedSearchPanel extends JPanel {
 				tfSearchText.setFont(defFont);
 		}
 		
-		tfSearchText.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent evt) {
-				tfSearchTextActionPerformed(evt);
-			}
-		});
+		tfSearchText.addActionListener(evt -> tfSearchTextActionPerformed(evt));
 		tfSearchText.addFocusListener(new FocusListener() {
 			@Override
 			public void focusGained(FocusEvent e) {
