@@ -198,7 +198,7 @@ public class VisualPropertySheet extends JPanel{
 				@SuppressWarnings("unchecked")
 				public void mouseClicked(final MouseEvent e) {
 					if (!e.isShiftDown() || e.isControlDown()) // Deselect all items
-						setSelectedItems(Collections.EMPTY_SET);
+						setSelectedItems(Collections.<VisualPropertySheetItem<?>>emptySet());
 				}
 			});
 			

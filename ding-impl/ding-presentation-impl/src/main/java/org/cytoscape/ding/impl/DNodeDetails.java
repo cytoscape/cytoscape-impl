@@ -735,7 +735,7 @@ public class DNodeDetails extends NodeDetails {
 	public Map<VisualProperty<CyCustomGraphics>, CustomGraphicsInfo> getCustomGraphics(final CyNode node) {
 		final DNodeView dnv = dGraphView.getDNodeView(node);
 		
-		return dnv != null ? dnv.getCustomGraphics() : Collections.EMPTY_MAP;
+		return dnv != null ? dnv.getCustomGraphics() : Collections.emptyMap();
 	}
 	
 	@Override

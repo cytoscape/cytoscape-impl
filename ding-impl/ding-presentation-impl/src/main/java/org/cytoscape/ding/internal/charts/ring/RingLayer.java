@@ -129,7 +129,7 @@ public class RingLayer extends AbstractChartLayer<PieDataset> {
 				}
 			} else {
 				// Just to show the "no data" text
-				final JFreeChart chart = createChart(createPieDataset(Collections.EMPTY_LIST), 1.0, 0.0);
+				final JFreeChart chart = createChart(createPieDataset(Collections.<Double>emptyList()), 1.0, 0.0);
 				chartList.add(chart);
 			}
 		}

@@ -115,7 +115,7 @@ public class MappingIntegrationTest {
         when(serviceRegistrar.getService(TunableSetter.class)).thenReturn(ts);
         when(serviceRegistrar.getService(CyApplicationManager.class)).thenReturn(appMgr);
         
-		when(renderingEngineManager.getRenderingEngines(any(View.class))).thenReturn(Collections.EMPTY_LIST);
+		when(renderingEngineManager.getRenderingEngines(any(View.class))).thenReturn(Collections.<org.cytoscape.view.presentation.RenderingEngine<?>>emptyList());
 	}
 	
 	@Test

@@ -302,9 +302,9 @@ public class CyApplicationManagerImplTest {
 		NetworkViewRenderer renderer3 = mock(NetworkViewRenderer.class);
 		when(renderer3.getId()).thenReturn("A");
 		
-		appMgr.addNetworkViewRenderer(renderer1, Collections.EMPTY_MAP);
-		appMgr.addNetworkViewRenderer(renderer2, Collections.EMPTY_MAP);
-		appMgr.addNetworkViewRenderer(renderer3, Collections.EMPTY_MAP);
+		appMgr.addNetworkViewRenderer(renderer1, Collections.emptyMap());
+		appMgr.addNetworkViewRenderer(renderer2, Collections.emptyMap());
+		appMgr.addNetworkViewRenderer(renderer3, Collections.emptyMap());
 		
 		assertEquals(3, appMgr.getNetworkViewRendererSet().size());
 		assertEquals(renderer1, appMgr.getDefaultNetworkViewRenderer());

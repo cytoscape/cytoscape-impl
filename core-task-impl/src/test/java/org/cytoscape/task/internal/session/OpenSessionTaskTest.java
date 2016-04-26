@@ -72,7 +72,7 @@ public class OpenSessionTaskTest {
 	public void initMocks() {
 		MockitoAnnotations.initMocks(this);
 		
-		when(netTableMgr.getNetworkSet()).thenReturn(Collections.EMPTY_SET);
+		when(netTableMgr.getNetworkSet()).thenReturn(Collections.<org.cytoscape.model.CyNetwork>emptySet());
 		
 		sampleFile = new File("./src/test/resources/test_session1.cys");
 		when(readerMgr.getReader(sampleFile.toURI(),sampleFile.getName())).thenReturn(reader);

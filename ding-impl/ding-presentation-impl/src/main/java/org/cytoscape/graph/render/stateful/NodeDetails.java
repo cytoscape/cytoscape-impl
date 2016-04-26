@@ -374,7 +374,7 @@ public class NodeDetails {
 
 	@SuppressWarnings("unchecked")
 	public Map<VisualProperty<CyCustomGraphics>, CustomGraphicsInfo> getCustomGraphics(final CyNode node) {
-		return Collections.EMPTY_MAP;
+		return Collections.emptyMap();
 	}
 	
 	/**

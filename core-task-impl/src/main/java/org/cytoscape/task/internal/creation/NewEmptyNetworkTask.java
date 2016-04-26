@@ -158,7 +158,7 @@ public class NewEmptyNetworkTask extends AbstractTask {
 			if (defViewRenderer != null && viewRenderers.contains(defViewRenderer))
 				renderers.setSelectedValue(defViewRenderer);
 		} else {
-			renderers = new ListSingleSelection<>(Collections.EMPTY_LIST);
+			renderers = new ListSingleSelection<>(Collections.emptyList());
 		}
 	}
 

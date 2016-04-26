@@ -84,7 +84,7 @@ public class NewNetworkSelectedNodesEdgesTaskTest {
 		when(serviceRegistrar.getService(CyEventHelper.class)).thenReturn(eventHelper);
         when(serviceRegistrar.getService(CyNetworkNaming.class)).thenReturn(namingUtil);
 		
-		when(renderingEngineManager.getRenderingEngines(any(View.class))).thenReturn(Collections.EMPTY_LIST);
+		when(renderingEngineManager.getRenderingEngines(any(View.class))).thenReturn(Collections.<org.cytoscape.view.presentation.RenderingEngine<?>>emptyList());
 	}
 
 	@Test

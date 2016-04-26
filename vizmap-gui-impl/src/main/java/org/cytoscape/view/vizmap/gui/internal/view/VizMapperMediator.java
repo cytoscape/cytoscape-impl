@@ -940,7 +940,7 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 		final Set<View<CyNode>> selectedNodeViews = vmProxy.getSelectedNodeViews(curNetView);
 		final Set<View<CyEdge>> selectedEdgeViews = vmProxy.getSelectedEdgeViews(curNetView);
 		final Set<View<CyNetwork>> selectedNetViews = curNetView != null ?
-				Collections.singleton((View<CyNetwork>) curNetView) : Collections.EMPTY_SET;
+				Collections.singleton((View<CyNetwork>) curNetView) : Collections.emptySet();
 		final RenderingEngine<CyNetwork> engine = vizMapperMainPanel.getRenderingEngine();
 		
 		for (final VisualProperty<?> vp : vpList) {
@@ -1194,7 +1194,7 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 			updateLockedValues(vmProxy.getSelectedNodeViews(currentView), CyNode.class);
 			updateLockedValues(vmProxy.getSelectedEdgeViews(currentView), CyEdge.class);
 		} else {
-			updateLockedValues(Collections.EMPTY_SET, CyNetwork.class);
+			updateLockedValues(Collections.emptySet(), CyNetwork.class);
 		}
 	}
 	
