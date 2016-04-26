@@ -93,7 +93,7 @@ public class SetEdgePropertiesTask extends AbstractPropertyTask {
 				try {
 					VisualProperty vp = getProperty(network, edge, property.trim());
 					setPropertyValue(network, edge, vp, value);
-					taskMonitor.showMessage(TaskMonitor.Level.INFO, "       "+vp.getDisplayName()+" set to "+value.toString());
+					taskMonitor.showMessage(TaskMonitor.Level.INFO, "       "+vp.getDisplayName()+" set to "+value);
 				} catch (Exception e) {
 					taskMonitor.showMessage(TaskMonitor.Level.ERROR, e.getMessage());
 					return;

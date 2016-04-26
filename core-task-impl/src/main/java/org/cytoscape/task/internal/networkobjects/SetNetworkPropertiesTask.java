@@ -86,7 +86,7 @@ public class SetNetworkPropertiesTask extends AbstractPropertyTask {
 			try {
 				VisualProperty vp = getProperty(network, network, property.trim());
 				setPropertyValue(network, network, vp, value);
-				taskMonitor.showMessage(TaskMonitor.Level.INFO, DataUtils.getNetworkTitle(network)+" "+vp.getDisplayName()+" set to "+value.toString());
+				taskMonitor.showMessage(TaskMonitor.Level.INFO, DataUtils.getNetworkTitle(network)+" "+vp.getDisplayName()+" set to "+value);
 			} catch (Exception e) {
 				taskMonitor.showMessage(TaskMonitor.Level.ERROR, e.getMessage());
 				return;
