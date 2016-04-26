@@ -26,7 +26,7 @@ public class InstallAppsFromFileTask extends AbstractTask {
 		taskMonitor.setTitle("Install from File");
 		taskMonitor.setTitle("");
 		
-		List<App> apps = new ArrayList<App>();
+		List<App> apps = new ArrayList<>();
 		for(File appFile: appFiles) {
 			App app = appManager.getAppParser().parseApp(appFile);
 			apps.add(app);

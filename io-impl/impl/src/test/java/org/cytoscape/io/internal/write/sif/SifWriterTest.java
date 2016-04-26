@@ -80,7 +80,7 @@ public class SifWriterTest {
 				.newDecoder()));
 		String line = null;
 
-		final List<String> lines = new ArrayList<String>();
+		final List<String> lines = new ArrayList<>();
 		while ((line = reader.readLine()) != null) {
 			lines.add(line);
 			System.out.println("Line = " + line);

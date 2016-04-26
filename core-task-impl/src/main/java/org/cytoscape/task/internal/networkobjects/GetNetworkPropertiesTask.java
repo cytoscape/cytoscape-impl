@@ -53,7 +53,7 @@ public class GetNetworkPropertiesTask extends AbstractPropertyTask implements Ob
 	public GetNetworkPropertiesTask(CyApplicationManager appMgr, CyNetworkViewManager viewManager,
 	                                RenderingEngineManager reManager) {
 		super(appMgr, viewManager, reManager);
-		propertyMap = new HashMap<String, Object>();
+		propertyMap = new HashMap<>();
 	}
 
 	@Override

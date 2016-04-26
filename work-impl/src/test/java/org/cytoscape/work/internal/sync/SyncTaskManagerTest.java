@@ -46,7 +46,7 @@ public class SyncTaskManagerTest {
 		stm.addTunableHandlerFactory( new SyncTunableHandlerFactory(), new Properties() );
 		SyncTaskManager taskManager = new SyncTaskManager(stm);
 
-		Map<String,Object> map = new HashMap<String,Object>();
+		Map<String,Object> map = new HashMap<>();
 		map.put("tstring","hello");
 
 		taskManager.setExecutionContext(map);

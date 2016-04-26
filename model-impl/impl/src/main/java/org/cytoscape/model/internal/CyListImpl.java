@@ -270,7 +270,7 @@ public class CyListImpl<T> implements List<T> {
 
 	@Override
 	public List<T> subList(int fromIndex, int toIndex) {
-		return new CyListImpl<T>(elementType, delegate.subList(fromIndex, toIndex), eventHelper, row, column, table);
+		return new CyListImpl<>(elementType, delegate.subList(fromIndex, toIndex), eventHelper, row, column, table);
 	}
 
 	@Override

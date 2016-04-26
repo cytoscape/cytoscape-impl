@@ -100,7 +100,7 @@ public final class RTree implements SpacialIndex2D, java.io.Serializable {
 		m_minBranches = Math.max(2, (int) (((double) (m_maxBranches + 1)) * 0.4d));
 		m_root = new Node(m_maxBranches, true);
 		m_entryMap = new LongObjHash();
-		m_zOrderMap = new HashMap<Long,Double>();
+		m_zOrderMap = new HashMap<>();
 		m_deletedEntries = 0;
 		m_mapExpansionThreshold = LongObjHash.maxCapacity(m_entryMap.size());
 		m_objKeyBuff = new long[m_maxBranches + 1];
@@ -126,7 +126,7 @@ public final class RTree implements SpacialIndex2D, java.io.Serializable {
 	public final void empty() {
 		m_root = new Node(m_maxBranches, true);
 		m_entryMap = new LongObjHash();
-		m_zOrderMap = new HashMap<Long,Double>();
+		m_zOrderMap = new HashMap<>();
 		m_deletedEntries = 0;
 		m_mapExpansionThreshold = LongObjHash.maxCapacity(m_entryMap.size());
 	}

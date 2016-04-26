@@ -411,7 +411,7 @@ public class FilterSettingPanel extends JPanel {
 					JRangeSliderExtended theSlider = (JRangeSliderExtended) srcObj; 
 					NumberRangeModel model = (NumberRangeModel) theSlider.getModel();
 					
-					Vector<String> boundVect = new Vector<String>();
+					Vector<String> boundVect = new Vector<>();
 					boundVect.add(model.getLowValue().toString());
 					boundVect.add(model.getHighValue().toString());
 					boundVect.add(model.getMinValue().toString());

@@ -52,16 +52,16 @@ public abstract class AbstractLayoutTaskTest {
 	
 	protected String name;
 	
-	protected Set<Class<?>> supportedNodeAttributeTypes = new HashSet<Class<?>>();
-	protected Set<Class<?>> supportedEdgeAttributeTypes = new HashSet<Class<?>>();
-	protected List<String> initialAttributes = new ArrayList<String>();
+	protected Set<Class<?>> supportedNodeAttributeTypes = new HashSet<>();
+	protected Set<Class<?>> supportedEdgeAttributeTypes = new HashSet<>();
+	protected List<String> initialAttributes = new ArrayList<>();
 	
 	final NetworkViewTestSupport support = new NetworkViewTestSupport();
 	final CyNetwork network = support.getNetworkFactory().createNetwork();
 	CyNode source = network.addNode();
 	CyNode target = network.addNode();
 	CyEdge edge = network.addEdge(source, target, true);
-	protected Set<View<CyNode>> nodesToLayOut = new HashSet<View<CyNode>>();
+	protected Set<View<CyNode>> nodesToLayOut = new HashSet<>();
 	
 	protected final CyNetworkView networkView = support.getNetworkViewFactory().createNetworkView(network);
 

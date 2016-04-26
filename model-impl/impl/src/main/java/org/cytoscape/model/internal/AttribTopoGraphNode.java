@@ -42,7 +42,7 @@ public class AttribTopoGraphNode implements TopoGraphNode {
 
 	public AttribTopoGraphNode(final String nodeName, final Collection<String> dependents) {
 		this.nodeName = nodeName;
-		this.dependents = Collections.newSetFromMap(new ConcurrentHashMap<TopoGraphNode, Boolean>(16, 0.75f, 2));
+		this.dependents = Collections.newSetFromMap(new ConcurrentHashMap<>(16, 0.75f, 2));
 
 		for (final String dependent : dependents)
 			this.dependents.add(new AttribTopoGraphNode(dependent));
@@ -50,7 +50,7 @@ public class AttribTopoGraphNode implements TopoGraphNode {
 
 	private AttribTopoGraphNode(final String nodeName) {
 		this.nodeName = nodeName;
-		this.dependents = new HashSet<TopoGraphNode>();
+		this.dependents = new HashSet<>();
 	}
 
 	public String getNodeName() { return nodeName; }

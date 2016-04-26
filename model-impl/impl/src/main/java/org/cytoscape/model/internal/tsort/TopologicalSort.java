@@ -50,10 +50,10 @@ public class TopologicalSort {
 	public static List<TopoGraphNode> sort(final Collection<TopoGraphNode> nodes)
 		throws IllegalStateException
 	{
-		final List<TopoGraphNode> order = new ArrayList<TopoGraphNode>();
-		final Set<TopoGraphNode> visited = new HashSet<TopoGraphNode>();
+		final List<TopoGraphNode> order = new ArrayList<>();
+		final Set<TopoGraphNode> visited = new HashSet<>();
 
-		final Set<TopoGraphNode> alreadySeen = new HashSet<TopoGraphNode>();
+		final Set<TopoGraphNode> alreadySeen = new HashSet<>();
 		for (final TopoGraphNode n : nodes) {
 			alreadySeen.clear();
 			visit(n, alreadySeen, visited, order);

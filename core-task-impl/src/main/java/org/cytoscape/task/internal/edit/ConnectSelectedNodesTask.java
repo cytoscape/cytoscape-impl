@@ -78,7 +78,7 @@ public class ConnectSelectedNodesTask extends AbstractTask {
 		int selectedNodesCount = selectedNodes.size();
 		int i = 0;
 
-		final List<CyEdge> newEdges = new ArrayList<CyEdge>();
+		final List<CyEdge> newEdges = new ArrayList<>();
 
 		eventHelper.silenceEventSource(network);
 		for (final CyNode source : selectedNodes) {

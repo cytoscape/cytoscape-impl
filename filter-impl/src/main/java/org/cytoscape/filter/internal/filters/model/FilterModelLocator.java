@@ -36,8 +36,8 @@ import org.slf4j.LoggerFactory;
 
 public class FilterModelLocator {
 
-	private Vector<CompositeFilter> filters = new Vector<CompositeFilter>();
-	private List<FiltersChangedListener> filtersChangedListeners = new ArrayList<FiltersChangedListener>();
+	private Vector<CompositeFilter> filters = new Vector<>();
+	private List<FiltersChangedListener> filtersChangedListeners = new ArrayList<>();
 	
 	private static final Logger logger = LoggerFactory.getLogger(FilterModelLocator.class);
 	
@@ -78,7 +78,7 @@ public class FilterModelLocator {
 	}
 	
 	public Vector<CompositeFilter> getFilters() {
-		return new Vector<CompositeFilter>(filters);
+		return new Vector<>(filters);
 	}
 	
 	public void addListener(FiltersChangedListener listener) {

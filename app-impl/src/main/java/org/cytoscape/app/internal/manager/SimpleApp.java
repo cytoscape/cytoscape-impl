@@ -106,7 +106,7 @@ public class SimpleApp extends App {
 	public void load(AppManager appManager) throws AppLoadingException {
 		if (appConstructor != null) return;
 			// Make a copy used to create app instance
-			LinkedList<String> uniqueNameDirectory = new LinkedList<String>();
+			LinkedList<String> uniqueNameDirectory = new LinkedList<>();
 			uniqueNameDirectory.add(appManager.getTemporaryInstallPath());
 			
 			try {

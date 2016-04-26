@@ -39,7 +39,7 @@ public class CustomGraphicsRange extends DiscreteRange<CyCustomGraphics>  {
 	private CustomGraphicsManager manager;
 	
 	public CustomGraphicsRange() {
-		super(CyCustomGraphics.class, new HashSet<CyCustomGraphics>());
+		super(CyCustomGraphics.class, new HashSet<>());
 	}
 
 	public void setManager(final CustomGraphicsManager manager) {
@@ -58,7 +58,7 @@ public class CustomGraphicsRange extends DiscreteRange<CyCustomGraphics>  {
 
 	@Override
 	public Set<CyCustomGraphics> values() {
-		Set<CyCustomGraphics> sortedSet = new TreeSet<CyCustomGraphics>(new CGComparator());
+		Set<CyCustomGraphics> sortedSet = new TreeSet<>(new CGComparator());
 		sortedSet.addAll(manager.getAllCustomGraphics());
 		return sortedSet;
 	}

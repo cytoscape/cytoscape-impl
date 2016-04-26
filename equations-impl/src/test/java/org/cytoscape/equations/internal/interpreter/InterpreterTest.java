@@ -57,79 +57,79 @@ public class InterpreterTest extends TestCase {
 	private final Interpreter interpreter = new InterpreterImpl();
 
 	public void testSimpleStringConcatExpr() throws Exception {
-		final Map<String, Class<?>> attribNameToTypeMap = new HashMap<String, Class<?>>();
+		final Map<String, Class<?>> attribNameToTypeMap = new HashMap<>();
 		attribNameToTypeMap.put("s1", String.class);
 		assertTrue(compiler.compile("=\"Fred\"&${s1}", attribNameToTypeMap));
-		final Map<String, IdentDescriptor> nameToDescriptorMap = new HashMap<String, IdentDescriptor>();
+		final Map<String, IdentDescriptor> nameToDescriptorMap = new HashMap<>();
 		nameToDescriptorMap.put("s1", new IdentDescriptor("Bob"));
 		assertEquals("FredBob", interpreter.execute(compiler.getEquation(), nameToDescriptorMap));
 	}
 
 	public void testSimpleExpr() throws Exception {
-		final Map<String, Class<?>> attribNameToTypeMap = new HashMap<String, Class<?>>();
+		final Map<String, Class<?>> attribNameToTypeMap = new HashMap<>();
 		attribNameToTypeMap.put("BOB", Double.class);
 		assertTrue(compiler.compile("=42 - 12 + 3 * (4 - 2) + ${BOB:12}", attribNameToTypeMap));
-		final Map<String, IdentDescriptor> nameToDescriptorMap = new HashMap<String, IdentDescriptor>();
+		final Map<String, IdentDescriptor> nameToDescriptorMap = new HashMap<>();
 		nameToDescriptorMap.put("BOB", new IdentDescriptor(-10.0));
 		assertEquals(new Double(26.0), interpreter.execute(compiler.getEquation(), nameToDescriptorMap));
 	}
 
 	public void testUnaryPlusAndMinus() throws Exception {
-		final Map<String, Class<?>> attribNameToTypeMap = new HashMap<String, Class<?>>();
+		final Map<String, Class<?>> attribNameToTypeMap = new HashMap<>();
 		attribNameToTypeMap.put("attr1", Double.class);
 		attribNameToTypeMap.put("attr2", Double.class);
 		assertTrue(compiler.compile("=-17.8E-14", attribNameToTypeMap));
 		assertTrue(compiler.compile("=+(${attr1} + ${attr2})", attribNameToTypeMap));
-		final Map<String, IdentDescriptor> nameToDescriptorMap = new HashMap<String, IdentDescriptor>();
+		final Map<String, IdentDescriptor> nameToDescriptorMap = new HashMap<>();
 		nameToDescriptorMap.put("attr1", new IdentDescriptor(5.5));
 		nameToDescriptorMap.put("attr2", new IdentDescriptor(6.5));
 		assertEquals(new Double(12.0), interpreter.execute(compiler.getEquation(), nameToDescriptorMap));
 	}
 
 	public void testBinaryMinus() throws Exception {
-		final Map<String, Class<?>> attribNameToTypeMap = new HashMap<String, Class<?>>();
+		final Map<String, Class<?>> attribNameToTypeMap = new HashMap<>();
 		attribNameToTypeMap.put("attr1", Double.class);
 		attribNameToTypeMap.put("attr2", Double.class);
 		assertTrue(compiler.compile("=-17.8E-14", attribNameToTypeMap));
 		assertTrue(compiler.compile("=1-1.5", attribNameToTypeMap));
-		final Map<String, IdentDescriptor> nameToDescriptorMap = new HashMap<String, IdentDescriptor>();
+		final Map<String, IdentDescriptor> nameToDescriptorMap = new HashMap<>();
 		nameToDescriptorMap.put("attr1", new IdentDescriptor(5.5));
 		nameToDescriptorMap.put("attr2", new IdentDescriptor(6.5));
 		assertEquals(new Double(-0.5), interpreter.execute(compiler.getEquation(), nameToDescriptorMap));
 	}
 
 	public void testUnaryPlusAndMinus2() throws Exception {
-		final Map<String, Class<?>> attribNameToTypeMap = new HashMap<String, Class<?>>();
+		final Map<String, Class<?>> attribNameToTypeMap = new HashMap<>();
 		attribNameToTypeMap.put("attr1", Long.class);
 		assertTrue(compiler.compile("=-$attr1", attribNameToTypeMap));
-		final Map<String, IdentDescriptor> nameToDescriptorMap = new HashMap<String, IdentDescriptor>();
+		final Map<String, IdentDescriptor> nameToDescriptorMap = new HashMap<>();
 		nameToDescriptorMap.put("attr1", new IdentDescriptor(5L));
 		assertEquals(new Double(-5.0), interpreter.execute(compiler.getEquation(), nameToDescriptorMap));
 	}
 
 	public void testFunctionCall() throws Exception {
-		final Map<String, Class<?>> attribNameToTypeMap = new HashMap<String, Class<?>>();
+		final Map<String, Class<?>> attribNameToTypeMap = new HashMap<>();
 		assertTrue(compiler.compile("=42 + log(4 - 2)", attribNameToTypeMap));
-		final Map<String, IdentDescriptor> nameToDescriptorMap = new HashMap<String, IdentDescriptor>();
+		final Map<String, IdentDescriptor> nameToDescriptorMap = new HashMap<>();
 		assertEquals(new Double(42.0 + Math.log10(4.0 - 2.0)),
 			     interpreter.execute(compiler.getEquation(), nameToDescriptorMap));
 	}
 
 	public void testExponentiation() throws Exception {
-		final Map<String, Class<?>> attribNameToTypeMap = new HashMap<String, Class<?>>();
+		final Map<String, Class<?>> attribNameToTypeMap = new HashMap<>();
 		assertTrue(compiler.compile("=2^3^4 - 0.0002", attribNameToTypeMap));
-		final Map<String, IdentDescriptor> nameToDescriptorMap = new HashMap<String, IdentDescriptor>();
+		final Map<String, IdentDescriptor> nameToDescriptorMap = new HashMap<>();
 		assertEquals(new Double(Math.pow(2.0, Math.pow(3.0, 4.0)) - 0.0002),
 			     interpreter.execute(compiler.getEquation(), nameToDescriptorMap));
 	}
 
 	public void testComparisons() throws Exception {
-		final Map<String, Class<?>> attribNameToTypeMap = new HashMap<String, Class<?>>();
+		final Map<String, Class<?>> attribNameToTypeMap = new HashMap<>();
 		attribNameToTypeMap.put("x", Double.class);
 		attribNameToTypeMap.put("y", Double.class);
 		attribNameToTypeMap.put("limit", Double.class);
 		assertTrue(compiler.compile("=${x} <= ${y}", attribNameToTypeMap));
-		final Map<String, IdentDescriptor> nameToDescriptorMap = new HashMap<String, IdentDescriptor>();
+		final Map<String, IdentDescriptor> nameToDescriptorMap = new HashMap<>();
 		nameToDescriptorMap.put("x", new IdentDescriptor(1.2));
 		nameToDescriptorMap.put("y", new IdentDescriptor(-3.8e-12));
 		nameToDescriptorMap.put("limit", new IdentDescriptor(-65.23e12));
@@ -140,30 +140,30 @@ public class InterpreterTest extends TestCase {
 	}
 
 	public void testVarargs() throws Exception {
-		final Map<String, Class<?>> attribNameToTypeMap = new HashMap<String, Class<?>>();
+		final Map<String, Class<?>> attribNameToTypeMap = new HashMap<>();
 		assertFalse(compiler.compile("=LOG()", attribNameToTypeMap));
 		assertTrue(compiler.compile("=LOG(1)", attribNameToTypeMap));
 		assertTrue(compiler.compile("=LOG(1,2)", attribNameToTypeMap));
-		final Map<String, IdentDescriptor> nameToDescriptorMap = new HashMap<String, IdentDescriptor>();
+		final Map<String, IdentDescriptor> nameToDescriptorMap = new HashMap<>();
 		assertEquals(new Double(Math.log(1.0) / Math.log(2.0)),
 			     interpreter.execute(compiler.getEquation(), nameToDescriptorMap));
 		assertFalse(compiler.compile("=LOG(1,2,3)", attribNameToTypeMap));
 	}
 
 	public void testFixedArgs() throws Exception {
-		final Map<String, Class<?>> attribNameToTypeMap = new HashMap<String, Class<?>>();
+		final Map<String, Class<?>> attribNameToTypeMap = new HashMap<>();
 		assertFalse(compiler.compile("=ABS()", attribNameToTypeMap));
 		assertTrue(compiler.compile("=ABS(-1.5e10)", attribNameToTypeMap));
-		final Map<String, IdentDescriptor> nameToDescriptorMap = new HashMap<String, IdentDescriptor>();
+		final Map<String, IdentDescriptor> nameToDescriptorMap = new HashMap<>();
 		assertEquals(new Double(1.5e10), interpreter.execute(compiler.getEquation(), nameToDescriptorMap));
 		assertFalse(compiler.compile("=ABS(1,2)", attribNameToTypeMap));
 	}
 
 	public void testDEFINED() throws Exception {
-		final Map<String, Class<?>> attribNameToTypeMap = new HashMap<String, Class<?>>();
+		final Map<String, Class<?>> attribNameToTypeMap = new HashMap<>();
 		attribNameToTypeMap.put("x", Double.class);
 		assertTrue(compiler.compile("=defined(x)", attribNameToTypeMap));
-		final Map<String, IdentDescriptor> nameToDescriptorMap = new HashMap<String, IdentDescriptor>();
+		final Map<String, IdentDescriptor> nameToDescriptorMap = new HashMap<>();
 		nameToDescriptorMap.put("x", new IdentDescriptor(1.2));
 		assertEquals(new Boolean(true), interpreter.execute(compiler.getEquation(), nameToDescriptorMap));
 
@@ -172,10 +172,10 @@ public class InterpreterTest extends TestCase {
 	}
 
 	public void testIntegerToFloatingPointConversion() throws Exception {
-		final Map<String, Class<?>> attribNameToTypeMap = new HashMap<String, Class<?>>();
+		final Map<String, Class<?>> attribNameToTypeMap = new HashMap<>();
 		attribNameToTypeMap.put("BOB", Long.class);
 
-		final Map<String, IdentDescriptor> nameToDescriptorMap = new HashMap<String, IdentDescriptor>();
+		final Map<String, IdentDescriptor> nameToDescriptorMap = new HashMap<>();
 		nameToDescriptorMap.put("BOB", new IdentDescriptor(new Long(3)));
 
 		assertTrue(compiler.compile("=$BOB > 5.3", attribNameToTypeMap));
@@ -186,10 +186,10 @@ public class InterpreterTest extends TestCase {
 	}
 
 	public void testMixedModeArithmetic() throws Exception {
-		final Map<String, Class<?>> attribNameToTypeMap = new HashMap<String, Class<?>>();
+		final Map<String, Class<?>> attribNameToTypeMap = new HashMap<>();
 		attribNameToTypeMap.put("x", Long.class);
 
-		final Map<String, IdentDescriptor> nameToDescriptorMap = new HashMap<String, IdentDescriptor>();
+		final Map<String, IdentDescriptor> nameToDescriptorMap = new HashMap<>();
 		nameToDescriptorMap.put("x", new IdentDescriptor(new Long(3)));
 
 		assertTrue(compiler.compile("=$x + 2.0", attribNameToTypeMap));
@@ -205,10 +205,10 @@ public class InterpreterTest extends TestCase {
 		if (eqnParser.getFunction(badReturnFunction.getName()) == null) // Avoid duplicate registration!
 			eqnParser.registerFunction(badReturnFunction);
 
-		final Map<String, Class<?>> attribNameToTypeMap = new HashMap<String, Class<?>>();
+		final Map<String, Class<?>> attribNameToTypeMap = new HashMap<>();
 		assertTrue(compiler.compile("=BAD()", attribNameToTypeMap));
 
-		final Map<String, IdentDescriptor> nameToDescriptorMap = new HashMap<String, IdentDescriptor>();
+		final Map<String, IdentDescriptor> nameToDescriptorMap = new HashMap<>();
 		try {
 			interpreter.execute(compiler.getEquation(), nameToDescriptorMap);
 		} catch (final IllegalStateException e) {
@@ -217,8 +217,8 @@ public class InterpreterTest extends TestCase {
 	}
 
 	public void testComparisonsWithBooleans() throws Exception {
-		final Map<String, Class<?>> attribNameToTypeMap = new HashMap<String, Class<?>>();
-		final Map<String, IdentDescriptor> nameToDescriptorMap = new HashMap<String, IdentDescriptor>();
+		final Map<String, Class<?>> attribNameToTypeMap = new HashMap<>();
+		final Map<String, IdentDescriptor> nameToDescriptorMap = new HashMap<>();
 
 		assertTrue(compiler.compile("=TRUE < FALSE", attribNameToTypeMap));
                 assertEquals(new Boolean(false), interpreter.execute(compiler.getEquation(), nameToDescriptorMap));

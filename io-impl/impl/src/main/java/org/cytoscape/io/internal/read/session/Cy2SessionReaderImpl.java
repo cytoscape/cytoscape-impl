@@ -432,7 +432,7 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 				}
 			}
 
-			final CyProperty<Properties> cyProps = new SimpleCyProperty<Properties>("session", newProps,
+			final CyProperty<Properties> cyProps = new SimpleCyProperty<>("session", newProps,
 					Properties.class, CyProperty.SavePolicy.SESSION_FILE);
 			properties.add(cyProps);
 		}
@@ -443,7 +443,7 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 		reader.run(taskMonitor);
 		
 		final Bookmarks bookmarks = (Bookmarks) reader.getProperty();
-		final CyProperty<Bookmarks> cyProps = new SimpleCyProperty<Bookmarks>("bookmarks", bookmarks, Bookmarks.class,
+		final CyProperty<Bookmarks> cyProps = new SimpleCyProperty<>("bookmarks", bookmarks, Bookmarks.class,
 				CyProperty.SavePolicy.SESSION_FILE);
 		properties.add(cyProps);
 	}

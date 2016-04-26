@@ -133,8 +133,8 @@ public class CyGroupAggregationSettings {
 	/**********************************
 	 * Default aggregation overrides  *
 	 *********************************/
-	public ListSingleSelection<String> attrSelection = 
-		new ListSingleSelection<String>(Collections.singletonList("No attributes available"));
+	public ListSingleSelection<String> attrSelection =
+			new ListSingleSelection<>(Collections.singletonList("No attributes available"));
 
 	@Tunable(description="Attribute to override:", 
 	         groups={"Attribute Aggregation Settings", "Aggregation Overrides"},
@@ -143,7 +143,7 @@ public class CyGroupAggregationSettings {
 	public ListSingleSelection<String> getAttrSelection() {
 		// Now, build the list of attributes -- we'll focus on 
 		// node attributes for now
-		List<String> attrList = new ArrayList<String>();
+		List<String> attrList = new ArrayList<>();
 		currentNetwork = appMgr.getCurrentNetwork();
 		if (currentNetwork != null) {
 			for (CyColumn column: currentNetwork.getDefaultNodeTable().getColumns()) {
@@ -153,7 +153,7 @@ public class CyGroupAggregationSettings {
 		} else {
 			attrList.add("No attributes available");
 		}
-		attrSelection = new ListSingleSelection<String>(attrList);
+		attrSelection = new ListSingleSelection<>(attrList);
 		return attrSelection;
 	}
 	public void setAttrSelection(ListSingleSelection<String> input) {
@@ -171,7 +171,7 @@ public class CyGroupAggregationSettings {
 			if (aggregationType != null)
 				aggregationType.setPossibleValues(cyAggManager.getAggregators(NoneAggregator.class));
 			else
-				aggregationType = new ListSingleSelection<Aggregator<?>>(cyAggManager.getAggregators(NoneAggregator.class));
+				aggregationType = new ListSingleSelection<>(cyAggManager.getAggregators(NoneAggregator.class));
 			return "-- No Network --";
 		}
 
@@ -188,10 +188,10 @@ public class CyGroupAggregationSettings {
 				aggregationType.setPossibleValues(cyAggManager.getAggregators(column.getType()));
 		} else {
 			if (column.getType().equals(List.class))
-				aggregationType = 
-								new ListSingleSelection<Aggregator<?>>(cyAggManager.getListAggregators(column.getListElementType()));
+				aggregationType =
+						new ListSingleSelection<>(cyAggManager.getListAggregators(column.getListElementType()));
 			else
-				aggregationType = new ListSingleSelection<Aggregator<?>>(cyAggManager.getAggregators(column.getType()));
+				aggregationType = new ListSingleSelection<>(cyAggManager.getAggregators(column.getType()));
 		}
 
 		// Now, if we already have an override for this attribute, make sure that
@@ -224,7 +224,7 @@ public class CyGroupAggregationSettings {
 		// We need to do this because Cytoscape's Tunables processing doesn't correctly
 		// order listenForChange initializations
 		if (aggregationType == null) {
-			aggregationType = new ListSingleSelection<Aggregator<?>>(cyAggManager.getAggregators(NoneAggregator.class));
+			aggregationType = new ListSingleSelection<>(cyAggManager.getAggregators(NoneAggregator.class));
 		}
 		return aggregationType;
 	}
@@ -249,7 +249,7 @@ public class CyGroupAggregationSettings {
 		this.settings = settings;
 		this.group = group;
 		this.appMgr = cyGroupMgr.getService(CyApplicationManager.class);
-		this.overrides = new HashMap<CyColumn, Aggregator<?>>();
+		this.overrides = new HashMap<>();
 		this.enableAttributeAggregation = settings.getEnableAttributeAggregation();
 
 		initializeDefaults();
@@ -321,7 +321,7 @@ public class CyGroupAggregationSettings {
 					break;
 				}
 			}
-			ListSingleSelection<Aggregator<?>> lss = new ListSingleSelection<Aggregator<?>>(aggs);
+			ListSingleSelection<Aggregator<?>> lss = new ListSingleSelection<>(aggs);
 
 			if (def != null) {
 				// If we've never initialized our default aggregations, do so now
@@ -345,7 +345,7 @@ public class CyGroupAggregationSettings {
 					break;
 				}
 			}
-			ListSingleSelection<Aggregator<?>> lss = new ListSingleSelection<Aggregator<?>>(aggs);
+			ListSingleSelection<Aggregator<?>> lss = new ListSingleSelection<>(aggs);
 
 			if (def != null) {
 				// If we've never initialized our default aggregations, do so now

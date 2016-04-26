@@ -82,7 +82,7 @@ public class DoubleAggregator extends AbstractAggregator {
 				aggregation = Double.MAX_VALUE;
 				break;
 			case MEDIAN:
-				valueList = new ArrayList<Double>();
+				valueList = new ArrayList<>();
 				break;
 			}
 

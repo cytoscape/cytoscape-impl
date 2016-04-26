@@ -150,7 +150,7 @@ public class StringToModelImpl implements StringToModel {
 		Set<CyRow> rows = parseList(nodeList, net.getDefaultNodeTable());
 		if (rows == null) return null;
 
-		List<CyNode> nodes = new ArrayList<CyNode>();
+		List<CyNode> nodes = new ArrayList<>();
 		for (CyRow row: rows) {
 			Long suid = row.get(CyNetwork.SUID, Long.class);
 			nodes.add(net.getNode(suid));
@@ -178,7 +178,7 @@ public class StringToModelImpl implements StringToModel {
 		Set<CyRow> rows =  parseList(edgeList, net.getDefaultEdgeTable());
 		if (rows == null) return null;
 
-		List<CyEdge> edges = new ArrayList<CyEdge>();
+		List<CyEdge> edges = new ArrayList<>();
 		for (CyRow row: rows) {
 			Long suid = row.get(CyNetwork.SUID, Long.class);
 			edges.add(net.getEdge(suid));
@@ -196,15 +196,15 @@ public class StringToModelImpl implements StringToModel {
 
 		Set<CyRow> rows =  parseList(rowList, table);
 		if (rows == null) return null;
-		return new ArrayList<CyRow>(rows);
+		return new ArrayList<>(rows);
 	}
 
 	private Set<CyRow> parseList(String list, CyTable table) {
 		// Use a HashSet to we only get one of each CyIdentifiable
-		Set<CyRow> rows = new HashSet<CyRow>();
+		Set<CyRow> rows = new HashSet<>();
 
 		// Create a map so we only have to traverse the table once!
-		Map<String, List<String>> columnMap = new HashMap<String,List<String>>();
+		Map<String, List<String>> columnMap = new HashMap<>();
 
 		for (String token: list.split(",")) {
 			String[] t = token.trim().split(":");
@@ -244,7 +244,7 @@ public class StringToModelImpl implements StringToModel {
 
 	private void updateMap(Map<String, List<String>>map, String key, String value) {
 		if (!map.containsKey(key))
-			map.put(key, new ArrayList<String>());
+			map.put(key, new ArrayList<>());
 
 		map.get(key).add(value);
 	}

@@ -42,12 +42,12 @@ public class BendImpl implements Bend {
 	private final List<Handle> handles;
 	
 	public BendImpl() {
-		this.handles = new CopyOnWriteArrayList<Handle>();
+		this.handles = new CopyOnWriteArrayList<>();
 	}
 
 	public BendImpl(BendImpl bend)
 	{
-		this.handles = new CopyOnWriteArrayList<Handle>();
+		this.handles = new CopyOnWriteArrayList<>();
 		for( Handle h : bend.handles)
 		{
 			HandleImpl handle = (HandleImpl)h;

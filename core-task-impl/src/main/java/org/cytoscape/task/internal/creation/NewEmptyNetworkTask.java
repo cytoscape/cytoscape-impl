@@ -152,7 +152,7 @@ public class NewEmptyNetworkTask extends AbstractTask {
 		// If there is only one registered renderer, we don't want to add it to the List Selection,
 		// so the combo-box does not appear to the user, since there is nothing to select anyway.
 		if (viewRenderers.size() > 1) {
-			renderers = new ListSingleSelection<NetworkViewRenderer>(new ArrayList<>(viewRenderers));
+			renderers = new ListSingleSelection<>(new ArrayList<>(viewRenderers));
 			final NetworkViewRenderer defViewRenderer = appMgr.getDefaultNetworkViewRenderer();
 			
 			if (defViewRenderer != null && viewRenderers.contains(defViewRenderer))

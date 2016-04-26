@@ -82,9 +82,9 @@ public class StartupConfig {
 		this.taskManager = taskManager;
 		
 		this.registrar = registrar;
-		networkFiles= new ArrayList<File>();
-		networkURLs = new ArrayList<URL>();
-		vizmapFiles = new ArrayList<File>();
+		networkFiles= new ArrayList<>();
+		networkURLs = new ArrayList<>();
+		vizmapFiles = new ArrayList<>();
 	}
 
 	public void setProperties(String[] potentialProps) {
@@ -167,8 +167,8 @@ public class StartupConfig {
 
 	public void setNetworks(String[] args){
 		
-		networkFiles = new ArrayList<File>();
-		networkURLs = new ArrayList<URL>();
+		networkFiles = new ArrayList<>();
+		networkURLs = new ArrayList<>();
 		
 		for (String name : args){
 			try{
@@ -186,7 +186,7 @@ public class StartupConfig {
 
 	public void setVizMapProps(String[] args){
 		
-		vizmapFiles = new ArrayList<File>();
+		vizmapFiles = new ArrayList<>();
 		
 		for (String name: args){
 			try{
@@ -204,7 +204,7 @@ public class StartupConfig {
 		// no need to do this in a task since it's so fast
 		//globalProps.putAll(localProps);
 		
-		CyProperty<Properties> commandline = new SimpleCyProperty<Properties>("commandline", localProps,
+		CyProperty<Properties> commandline = new SimpleCyProperty<>("commandline", localProps,
 				Properties.class, CyProperty.SavePolicy.DO_NOT_SAVE);
 		Properties cmdlnProps = new Properties();
 		cmdlnProps.setProperty("cyPropertyName","commandline.props");
@@ -220,7 +220,7 @@ public class StartupConfig {
 		// disable it here.
 		globalProps.setProperty("tempHideWelcomeScreen","true");
 
-		ArrayList<TaskIterator> taskIteratorList = new ArrayList<TaskIterator>();
+		ArrayList<TaskIterator> taskIteratorList = new ArrayList<>();
 		
 		if ( sessionName != null ) 	{
 			taskIteratorList.add( loadSession.createTaskIterator(sessionName));

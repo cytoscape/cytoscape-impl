@@ -44,7 +44,7 @@ class VirtualColumnAdder implements ColumnCreatedListener {
 	private final Object lock = new Object();
 	
 	VirtualColumnAdder() {
-		tables = new WeakMapList<CyTable,CyTable>(); 
+		tables = new WeakMapList<>(); 
 	}
 
 	public void handleEvent(ColumnCreatedEvent e) {

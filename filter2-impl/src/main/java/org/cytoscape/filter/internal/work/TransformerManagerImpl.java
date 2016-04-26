@@ -39,10 +39,10 @@ public class TransformerManagerImpl implements TransformerManager {
 		bufferedStrategy = new BufferedExecutionStrategy();
 		unbufferedStrategy = new UnbufferedExecutionStrategy(maximumThreads);
 		
-		sources = new ConcurrentHashMap<Class<?>, TransformerSource<?,?>>(16, 0.75f, 2);
-		filterFactories = new ConcurrentHashMap<String, FilterFactory<?,?>>(16, 0.75f, 2);
-		elementTransformerFactories = new ConcurrentHashMap<String, ElementTransformerFactory<?,?>>(16, 0.75f, 2);
-		holisticTransformerFactories = new ConcurrentHashMap<String, HolisticTransformerFactory<?,?>>(16, 0.75f, 2);
+		sources = new ConcurrentHashMap<>(16, 0.75f, 2);
+		filterFactories = new ConcurrentHashMap<>(16, 0.75f, 2);
+		elementTransformerFactories = new ConcurrentHashMap<>(16, 0.75f, 2);
+		holisticTransformerFactories = new ConcurrentHashMap<>(16, 0.75f, 2);
 	}
 	
 	@Override
@@ -129,7 +129,7 @@ public class TransformerManagerImpl implements TransformerManager {
 	
 	<C, E> TransformerBuffer<C, E> createTransformerBuffer(TransformerSource<C, E> source, C context) {
 		Class<C> contextType = source.getContextType();
-		return new DefaultBuffer<C, E>(contextType, source.getElementType(), source.getElementCount(context), 4);
+		return new DefaultBuffer<>(contextType, source.getElementType(), source.getElementCount(context), 4);
 	}
 	
 	public void registerTransformerSource(TransformerSource<?, ?> source, Map<String, String> properties) {
@@ -152,7 +152,7 @@ public class TransformerManagerImpl implements TransformerManager {
 	
 	@Override
 	public <C, E> CompositeFilter<C, E> createCompositeFilter(Class<C> contextType, Class<E> elementType) {
-		return new CompositeFilterImpl<C, E>(contextType, elementType);
+		return new CompositeFilterImpl<>(contextType, elementType);
 	}
 	
 	public void registerFilterFactory(FilterFactory<?, ?> factory, Map<String, String> properties) {
@@ -275,7 +275,7 @@ public class TransformerManagerImpl implements TransformerManager {
 		
 		public UnbufferedExecutionStrategy(int maximumThreads) {
 			this.maximumThreads = maximumThreads;
-			workQueue = new ArrayBlockingQueue<Runnable>(maximumThreads);
+			workQueue = new ArrayBlockingQueue<>(maximumThreads);
 			executor = new ThreadPoolExecutor(maximumThreads, maximumThreads, Integer.MAX_VALUE, TimeUnit.SECONDS, workQueue, new ThreadFactory() {
 				@Override
 				public Thread newThread(Runnable r) {

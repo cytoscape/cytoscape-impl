@@ -36,7 +36,7 @@ import org.cytoscape.work.TunableRecorder;
 /**
  */
 public class TunableRecorderManager {  
-	private List<TunableRecorder> recorders = new ArrayList<TunableRecorder>();
+	private List<TunableRecorder> recorders = new ArrayList<>();
 
 	public void addTunableRecorder(TunableRecorder tr, Map props) {
 		if ( !recorders.contains(tr) )

@@ -96,7 +96,7 @@ public class CSVCyReader implements CyTableReader {
 		                                               columns[0].getType(), info.isPublic(),
 		                                               true);
 
-		final Map<String, Class<?>> variableNameToTypeMap = new HashMap<String, Class<?>>();
+		final Map<String, Class<?>> variableNameToTypeMap = new HashMap<>();
 		for (final ColumnInfo colInfo : columns)
 			variableNameToTypeMap.put(colInfo.getName(), colInfo.getType() == Integer.class ? Long.class : colInfo.getType());
 
@@ -157,7 +157,7 @@ public class CSVCyReader implements CyTableReader {
 
 	Object parseValue(Class<?> type, Class<?> listElementType, String value) {
 		if (type.equals(List.class)) {
-			List<Object> list = new ArrayList<Object>();
+			List<Object> list = new ArrayList<>();
 			String[] values = value.split("\n");
 			for (String item : values) {
 				list.add(parseValue(listElementType, null, item));

@@ -165,7 +165,7 @@ public class MergeDataTableTaskTest {
 		((CySubNetworkImpl) net1).handleEvent(new NetworkAddedEvent(netMgr, net1));
 
 		
-		List<CyNetwork> firstnetlist = new ArrayList<CyNetwork>(netMgr.getNetworkSet());
+		List<CyNetwork> firstnetlist = new ArrayList<>(netMgr.getNetworkSet());
 		
 		//creating a table for mapping to all networks
 		table1 = new CyTableImpl("dummy table", "ID", String.class, true, true, 
@@ -178,7 +178,7 @@ public class MergeDataTableTaskTest {
 		row2.set(table1sCol, table1sRow2);
 		
 		root = rootNetMgr.getRootNetwork(net1);
-		List<String> listCols = new ArrayList<String>();
+		List<String> listCols = new ArrayList<>();
 		listCols.add(table1sCol);
 		mapping(table1,listCols,"ID", true, net1, root, root.getDefaultNodeTable().getColumn(CyRootNetwork.SHARED_NAME),false);
 		//check the mapping by task
@@ -197,12 +197,12 @@ public class MergeDataTableTaskTest {
 		newNetTask.run(mock(TaskMonitor.class));
 		
 		
-		List<CyNetwork> secondNetList  = new ArrayList<CyNetwork>(netMgr.getNetworkSet());
+		List<CyNetwork> secondNetList  = new ArrayList<>(netMgr.getNetworkSet());
 		secondNetList.removeAll(firstnetlist);
 		assertEquals(1, secondNetList.size());
 
 		subnet1 = secondNetList.get(0);
-		secondNetList  = new ArrayList<CyNetwork>(netMgr.getNetworkSet());
+		secondNetList  = new ArrayList<>(netMgr.getNetworkSet());
 		
 		((CySubNetworkImpl) subnet1).handleEvent(new NetworkAddedEvent(netMgr, subnet1));
 		
@@ -225,7 +225,7 @@ public class MergeDataTableTaskTest {
 		row4.set(table2sCol,table2sRow2);
 		
 		root = rootNetMgr.getRootNetwork(net1);
-		listCols = new ArrayList<String>();
+		listCols = new ArrayList<>();
 		listCols.add(table2sCol);
 		mapping(table2,listCols,"ID", true, net1,root, root.getDefaultNodeTable().getColumn(CyRootNetwork.SHARED_NAME), true);
 		//check the mapping by task
@@ -247,7 +247,7 @@ public class MergeDataTableTaskTest {
 	
 		
 		
-		List<CyNetwork> thirdNetList  = new ArrayList<CyNetwork>(netMgr.getNetworkSet());
+		List<CyNetwork> thirdNetList  = new ArrayList<>(netMgr.getNetworkSet());
 		thirdNetList.removeAll(secondNetList);
 		assertEquals(1, thirdNetList.size());
 		subnet2 = thirdNetList.get(0);		
@@ -295,7 +295,7 @@ public class MergeDataTableTaskTest {
 		
 		tableMgr.addTable(table4);
 		
-		List<String> listCols2 = new ArrayList<String>();
+		List<String> listCols2 = new ArrayList<>();
 		listCols2.add(table3sCol);
 		
 		mappingGlobalTable(table3,table4,listCols2,table2sCol,false,null,null,table4.getColumn(table2sCol),false);
@@ -309,7 +309,7 @@ public class MergeDataTableTaskTest {
 	public void mapping(CyTable sourceTable,List<String> sourceColumnsList, String sourceKeyColumn,boolean mergeColumnVirtual, CyNetwork net,CyRootNetwork rootNet, CyColumn col, boolean selectedOnly) throws Exception{
 		
 		MergeTablesTaskFactoryImpl mappingTF = new MergeTablesTaskFactoryImpl(tableMgr,netMgr, ts, rootNetMgr);
-		List<CyNetwork> nets = new ArrayList<CyNetwork>();
+		List<CyNetwork> nets = new ArrayList<>();
 		nets.add(net);
 		
 		TaskIterator ti = mappingTF.createTaskIterator(sourceTable,null,sourceColumnsList,sourceKeyColumn,mergeColumnVirtual, true,selectedOnly, nets ,rootNet,col, CyNode.class);
@@ -325,7 +325,7 @@ public class MergeDataTableTaskTest {
     public void mappingGlobalTable(CyTable sourceTable,CyTable targetTable,List<String> sourceColumnsList, String sourceKeyColumn,boolean mergeColumnVirtual, CyNetwork net,CyRootNetwork rootNet, CyColumn col, boolean selectedOnly) throws Exception{
 		
 		MergeTablesTaskFactoryImpl mappingTF = new MergeTablesTaskFactoryImpl(tableMgr,netMgr, ts, rootNetMgr);
-		List<CyNetwork> nets = new ArrayList<CyNetwork>();
+		List<CyNetwork> nets = new ArrayList<>();
 		if(net != null)
 			nets.add(net);
 		

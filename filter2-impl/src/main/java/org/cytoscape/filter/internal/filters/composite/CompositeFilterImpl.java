@@ -23,7 +23,7 @@ public class CompositeFilterImpl<C, E> extends AbstractTransformer<C, E> impleme
 	
 	public CompositeFilterImpl(Class<C> contextType, Class<E> elementType) {
 		type = DEFAULT_TYPE;
-		filters = new ArrayList<Filter<C,E>>();
+		filters = new ArrayList<>();
 		this.contextType = contextType;
 		this.elementType = elementType;
 	}

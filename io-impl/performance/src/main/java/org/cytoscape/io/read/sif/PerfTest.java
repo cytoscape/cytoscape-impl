@@ -99,7 +99,7 @@ public class PerfTest {
 		netMgr = nts.getNetworkManager();
 		
 		properties = new Properties();
-		CyProperty<Properties> cyProperties = new SimpleCyProperty<Properties>("Test", properties, Properties.class, DO_NOT_SAVE);	
+		CyProperty<Properties> cyProperties = new SimpleCyProperty<>("Test", properties, Properties.class, DO_NOT_SAVE);	
 		NetworkViewTestSupport nvts = new NetworkViewTestSupport();
 		setViewThreshold(DEF_THRESHOLD);
 	
@@ -212,7 +212,7 @@ public class PerfTest {
         for ( CyNode n : net.getNodeList() ) {
             if ( i++ > 1000 ) break;
             List<CyNode> nl = net.getNeighborList(n,CyEdge.Type.ANY);
-            Set<CyEdge> es = new HashSet<CyEdge>();
+            Set<CyEdge> es = new HashSet<>();
             for ( CyNode nn : nl ) {
                 List<CyEdge> ee = net.getConnectingEdgeList(n,nn,CyEdge.Type.ANY);
                 es.addAll(ee);

@@ -90,7 +90,7 @@ public class WebServiceImportDialog<T> extends JDialog {
 	private Set<WebServiceClient> clients;
 
 	// Client-Dependent GUI panels
-	private Map<WebServiceClient, Container> serviceUIPanels = new HashMap<WebServiceClient, Container>();
+	private Map<WebServiceClient, Container> serviceUIPanels = new HashMap<>();
 	private int numClients;
 
 	private final Class<T> type;
@@ -105,7 +105,7 @@ public class WebServiceImportDialog<T> extends JDialog {
 		this.serviceRegistrar = serviceRegistrar;
 
 		numClients = 0;
-		this.clients = new HashSet<WebServiceClient>();
+		this.clients = new HashSet<>();
 
 		initGUI();
 

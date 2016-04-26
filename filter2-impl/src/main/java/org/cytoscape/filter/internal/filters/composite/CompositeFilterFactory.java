@@ -20,7 +20,7 @@ public class CompositeFilterFactory<C, E> implements FilterFactory<C, E> {
 
 	@Override
 	public Filter<C, E> createFilter() {
-		return new CompositeFilterImpl<C, E>(contextType, elementType);
+		return new CompositeFilterImpl<>(contextType, elementType);
 	}
 
 }

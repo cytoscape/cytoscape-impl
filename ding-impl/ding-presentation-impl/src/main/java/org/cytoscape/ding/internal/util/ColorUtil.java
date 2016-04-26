@@ -33,7 +33,7 @@ public final class ColorUtil {
 	private ColorUtil() {}
 	
 	public static List<Color> parseColorList(String[] inputArray) {
-		List<Color> colors = new ArrayList<Color>();
+		List<Color> colors = new ArrayList<>();
 		
 		// A color in the array can either be a hex value or a text color
 		for (String colorString : inputArray) {
@@ -84,7 +84,7 @@ public final class ColorUtil {
 	}
 	
 	public static List<Color> getContrastingColors(final List<Color> colors) {
-		final List<Color> list = new ArrayList<Color>();
+		final List<Color> list = new ArrayList<>();
 		
 		if (colors != null) {
 			for (final Color c : colors)

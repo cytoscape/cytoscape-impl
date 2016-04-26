@@ -42,7 +42,7 @@ public class CalculatorConverterFactory {
 	 * @return
 	 */
 	public Set<CalculatorConverter> getConverters(final String propsKey) {
-		Set<CalculatorConverter> convs = new HashSet<CalculatorConverter>();
+		Set<CalculatorConverter> convs = new HashSet<>();
 
 		if (CalculatorConverter.isConvertible(propsKey)) {
 			Set<String> keys = updateLegacyPropsKey(propsKey);
@@ -62,7 +62,7 @@ public class CalculatorConverterFactory {
 	 * @return
 	 */
 	static Set<String> updateLegacyPropsKey(final String propsKey) {
-		final Set<String> keys = new HashSet<String>();
+		final Set<String> keys = new HashSet<>();
 		final String[] tokens = propsKey.split("\\.");
 		
 		if (tokens.length < 3)

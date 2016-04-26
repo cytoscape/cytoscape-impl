@@ -712,7 +712,7 @@ public enum ColorKeyword {
 	}
 	
 	private void addKeyword(ColorKeyword col) {
-		if (cMap == null) cMap = new HashMap<String,ColorKeyword>();
+		if (cMap == null) cMap = new HashMap<>();
 		cMap.put(col.getLabel(), col);
 	}
 

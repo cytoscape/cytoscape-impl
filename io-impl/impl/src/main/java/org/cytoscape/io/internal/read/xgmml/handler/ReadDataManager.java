@@ -196,22 +196,22 @@ public class ReadDataManager {
 		edgeBendX = null;
 		edgeBendY = null;
 		
-		networkStack = new Stack<Object>();
-		compoundNodeStack = new Stack<CyNode>();
+		networkStack = new Stack<>();
+		compoundNodeStack = new Stack<>();
 		
-		publicNetworks = new LinkedHashSet<CyNetwork>();
-		equations = new Hashtable<CyRow, Map<String, String>>();
+		publicNetworks = new LinkedHashSet<>();
+		equations = new Hashtable<>();
 		
-		networkGraphics = new LinkedHashMap<Long, Map<String, String>>();
-		nodeGraphics = new LinkedHashMap<Long, Map<String, String>>();
-		edgeGraphics = new LinkedHashMap<Long, Map<String, String>>();
+		networkGraphics = new LinkedHashMap<>();
+		nodeGraphics = new LinkedHashMap<>();
+		edgeGraphics = new LinkedHashMap<>();
 		
 		networkViewId = null;
 		networkId = null;
 		visualStyleName = null;
 		rendererId = null;
-		viewGraphics = new LinkedHashMap<Object, Map<String,String>>();
-		viewLockedGraphics = new LinkedHashMap<Object, Map<String,String>>();
+		viewGraphics = new LinkedHashMap<>();
+		viewLockedGraphics = new LinkedHashMap<>();
 	}
 	
 	public void dispose() {
@@ -285,7 +285,7 @@ public class ReadDataManager {
 			Map<String, String> attributes = graphics.get(element.getSUID());
 
 			if (attributes == null) {
-				attributes = new HashMap<String, String>();
+				attributes = new HashMap<>();
 				graphics.put(element.getSUID(), attributes);
 			}
 
@@ -306,7 +306,7 @@ public class ReadDataManager {
 		Map<String, String> attributes = graphics.get(oldModelId);
 
 		if (attributes == null) {
-			attributes = new HashMap<String, String>();
+			attributes = new HashMap<>();
 			graphics.put(oldModelId, attributes);
 		}
 
@@ -368,7 +368,7 @@ public class ReadDataManager {
 		Map<String, String> colEquationMap = equations.get(row);
 		
 		if (colEquationMap == null) {
-			colEquationMap = new HashMap<String, String>();
+			colEquationMap = new HashMap<>();
 			equations.put(row, colEquationMap);
 		}
 		
@@ -383,7 +383,7 @@ public class ReadDataManager {
 			CyRow row = entry.getKey();
 			Map<String, String> colEquationMap = entry.getValue();
 			
-			Map<String, Class<?>> colNameTypeMap = new Hashtable<String, Class<?>>();
+			Map<String, Class<?>> colNameTypeMap = new Hashtable<>();
 			Collection<CyColumn> columns = row.getTable().getColumns();
 			
 			for (CyColumn col : columns) {
@@ -540,7 +540,7 @@ public class ReadDataManager {
         				extEdgeIds = nphRow.getList(EXTERNAL_EDGE_ATTRIBUTE, Long.class);
         						
         				if (extEdgeIds == null) {
-        					nphRow.set(EXTERNAL_EDGE_ATTRIBUTE, new ArrayList<Long>());
+        					nphRow.set(EXTERNAL_EDGE_ATTRIBUTE, new ArrayList<>());
         					extEdgeIds = nphRow.getList(EXTERNAL_EDGE_ATTRIBUTE, Long.class);
         				}
         			}

@@ -39,7 +39,7 @@ public class ArgRecorder extends AbstractTunableInterceptor<ArgHandler> {
 	private static final Logger logger = LoggerFactory.getLogger(ArgRecorder.class);
 
 	public List<String> findArgs(Object o) {
-		List<String> desc = new ArrayList<String>();
+		List<String> desc = new ArrayList<>();
 		for (final ArgHandler p : getHandlers(o)) {
 			if (p instanceof BasicArgHandler &&
 			    ((BasicArgHandler)p).getContext() == Tunable.GUI_CONTEXT)

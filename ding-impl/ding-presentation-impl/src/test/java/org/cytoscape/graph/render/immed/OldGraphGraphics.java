@@ -214,7 +214,7 @@ public final class OldGraphGraphics {
 	private final Line2D.Double m_line2d = new Line2D.Double();
 	private final double[] m_polyCoords = // I need this for extra precision.
 	new double[2 * CUSTOM_SHAPE_MAX_VERTICES];
-	private final HashMap<Byte, double[]> m_customShapes = new HashMap<Byte, double[]>();
+	private final HashMap<Byte, double[]> m_customShapes = new HashMap<>();
 	private final double[] m_ptsBuff = new double[4];
 
 	// package scoped for unit testing
@@ -1255,7 +1255,7 @@ public final class OldGraphGraphics {
 	 * @return
 	 */
 	private static Map<Byte, Shape> getShapes(final ShapeTypes type) {
-		final Map<Byte, Shape> shapeMap = new HashMap<Byte, Shape>();
+		final Map<Byte, Shape> shapeMap = new HashMap<>();
 
 		final int minIndex;
 		final int maxIndex;

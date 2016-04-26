@@ -50,12 +50,12 @@ public class TableEventHelperFacade implements CyEventHelper {
 	
 	public TableEventHelperFacade(CyEventHelper actualHelper) {
 		this.actualHelper = actualHelper;	
-		this.facadeMap = new WeakHashMap<CyTable,Reference<LocalTableFacade>>(); 
+		this.facadeMap = new WeakHashMap<>(); 
 	}
 
 	void registerFacade(LocalTableFacade facade) {
 		synchronized (lock) {
-			facadeMap.put(facade.getLocalTable(),new WeakReference<LocalTableFacade>(facade));
+			facadeMap.put(facade.getLocalTable(), new WeakReference<>(facade));
 		}
 	}
 

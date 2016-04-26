@@ -1183,7 +1183,7 @@ public final class GraphRenderer {
 
 		public SpacialEntry2DEnumeratorZSort (SpacialIndex2D nodePositions, SpacialEntry2DEnumerator nodeHits) {
 			// Get arrays of SUIDs, extents, Z
-			this.entryList = new ArrayList<ZSpacialEntry>();
+			this.entryList = new ArrayList<>();
 			while (nodeHits.numRemaining() > 0) {
 				float[] extents = new float[4];
 				long suid = nodeHits.nextExtents(extents, 0);

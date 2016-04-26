@@ -42,7 +42,7 @@ public class DownloadSitesManager {
 	public static final String DOWNLOAD_SITE_NAME_KEY_PREFIX = "appStoreDownloadSiteName";
 	public static final String DOWNLOAD_SITE_URL_KEY_PREFIX = "appStoreDownloadSiteUrl";
 	
-	private List<DownloadSite> downloadSites = new LinkedList<DownloadSite>();
+	private List<DownloadSite> downloadSites = new LinkedList<>();
 	
 	/** A reference to the {@link CyProperty} object 
 	 */
@@ -55,7 +55,7 @@ public class DownloadSitesManager {
 	
 	public DownloadSitesManager(CyProperty<Properties> cyProperty) {
 		this.cyProperty = cyProperty;
-		this.downloadSitesChangedListeners = new HashSet<DownloadSitesChangedListener>();
+		this.downloadSitesChangedListeners = new HashSet<>();
 		
 		loadDownloadSites();
 	}
@@ -65,7 +65,7 @@ public class DownloadSitesManager {
 	 * @return <code>true</code> on success, <code>false</code> on failure.
 	 */
 	public boolean loadDownloadSites() {
-		List<DownloadSite> newDownloadSites = new LinkedList<DownloadSite>();
+		List<DownloadSite> newDownloadSites = new LinkedList<>();
 		boolean loadFailed = false;
 		
 		String downloadSiteCountString = 
@@ -103,7 +103,7 @@ public class DownloadSitesManager {
 			// Remove extra entries
 			boolean isExtraKey;
 			
-			Set<Object> keysToRemove = new HashSet<Object>();
+			Set<Object> keysToRemove = new HashSet<>();
 			
 			for (Object key : cyProperty.getProperties().keySet()) {
 				

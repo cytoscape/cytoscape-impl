@@ -48,8 +48,8 @@ public class TaskHistory implements Iterable<Object> {
     // Use a byte to reference FinishStatus.Type to save memory
     volatile byte finishType = -1;
     volatile Class<?> firstTaskClass;
-    final AtomicReference<String> title = new AtomicReference<String>();
-    final ConcurrentLinkedQueue<Message> messages = new ConcurrentLinkedQueue<Message>();
+    final AtomicReference<String> title = new AtomicReference<>();
+    final ConcurrentLinkedQueue<Message> messages = new ConcurrentLinkedQueue<>();
 
     protected History() {}
 
@@ -95,7 +95,7 @@ public class TaskHistory implements Iterable<Object> {
     }
   }
 
-  final ConcurrentLinkedQueue<Object> histories = new ConcurrentLinkedQueue<Object>();
+  final ConcurrentLinkedQueue<Object> histories = new ConcurrentLinkedQueue<>();
   volatile FinishListener finishListener = null;
 
   /**

@@ -50,12 +50,12 @@ public class GMLFileFilterTest {
 	
 	@Before
 	public void setUp() {
-		Set<String> extensions = new HashSet<String>();
-		Set<String> contentTypes = new HashSet<String>();
+		Set<String> extensions = new HashSet<>();
+		Set<String> contentTypes = new HashSet<>();
 		String description = "GML";
 		
 		Properties properties = new Properties();
-		CyProperty<Properties> cyProperties = new SimpleCyProperty<Properties>("test", properties, Properties.class, SavePolicy.DO_NOT_SAVE);
+		CyProperty<Properties> cyProperties = new SimpleCyProperty<>("test", properties, Properties.class, SavePolicy.DO_NOT_SAVE);
 		
 		CyServiceRegistrar serviceRegistrar = mock(CyServiceRegistrar.class);
 		when(serviceRegistrar.getService(CyProperty.class, "(cyPropertyName=cytoscape3.props)")).thenReturn(cyProperties);

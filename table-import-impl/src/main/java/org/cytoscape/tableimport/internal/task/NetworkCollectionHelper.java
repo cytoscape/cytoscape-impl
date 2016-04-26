@@ -85,7 +85,7 @@ public class NetworkCollectionHelper extends AbstractTask {
 			}	
 		}
 		else {
-			setTargetColumnList(new ListSingleSelection<String>());
+			setTargetColumnList(new ListSingleSelection<>());
 		}
 
 		rootNetworkList = roots;
@@ -122,10 +122,10 @@ public class NetworkCollectionHelper extends AbstractTask {
 		}
 		
 		if (colNames.isEmpty() || (colNames.size() == 1 && colNames.contains(CyRootNetwork.SHARED_NAME)))
-			return new ListSingleSelection<String>();
+			return new ListSingleSelection<>();
 		
 		sort(colNames);
-		ListSingleSelection<String> targetColumns = new ListSingleSelection<String>(colNames);
+		ListSingleSelection<String> targetColumns = new ListSingleSelection<>(colNames);
 		if (targetColumns.getPossibleValues().contains(CyRootNetwork.SHARED_NAME))
 			targetColumns.setSelectedValue(CyRootNetwork.SHARED_NAME);
 		

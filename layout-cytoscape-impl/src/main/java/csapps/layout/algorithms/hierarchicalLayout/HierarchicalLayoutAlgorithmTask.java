@@ -127,8 +127,8 @@ public class HierarchicalLayoutAlgorithmTask extends AbstractLayoutTask {
 			return;
 		}
 
-		HashMap<Long, Integer> suid2Index = new HashMap<Long, Integer>(numLayoutNodes);
-		List<View<CyNode>> nodeViews = new ArrayList<View<CyNode>>(nodesToLayOut);
+		HashMap<Long, Integer> suid2Index = new HashMap<>(numLayoutNodes);
+		List<View<CyNode>> nodeViews = new ArrayList<>(nodesToLayOut);
 		
 		int index = 0;
 		for (View<CyNode> view : nodeViews) {
@@ -237,7 +237,7 @@ public class HierarchicalLayoutAlgorithmTask extends AbstractLayoutTask {
 
 			layer[x] = reducedTmp[x].getVertexLayers();
 
-			LinkedList<Integer> layerWithDummy = new LinkedList<Integer>();
+			LinkedList<Integer> layerWithDummy = new LinkedList<>();
 
 			for (int i = 0; i < layer[x].length; i++)
 				layerWithDummy.add(Integer.valueOf(layer[x][i]));
@@ -252,10 +252,10 @@ public class HierarchicalLayoutAlgorithmTask extends AbstractLayoutTask {
 
 			/* Insertion of the dummy nodes in the graph */
 			Edge[] allEdges = component[x].GetEdges();
-			LinkedList<Edge> edgesWithAdd = new LinkedList<Edge>();
+			LinkedList<Edge> edgesWithAdd = new LinkedList<>();
 			int dummyStart = component[x].getNodecount();
 			dummyStartForComp[x] = dummyStart;
-			dummy2Edge[x] = new HashMap<Integer, Edge>();
+			dummy2Edge[x] = new HashMap<>();
 
 			//System.out.println(allEdges.length);
 
@@ -344,7 +344,7 @@ public class HierarchicalLayoutAlgorithmTask extends AbstractLayoutTask {
 		renumber = newRenumber;
 		cI = newcI;
 
-		edges = new LinkedList<Edge>();
+		edges = new LinkedList<>();
 
 		for (int i = 0; i < reduced.length; i++) {
 			edge = reduced[i].GetEdges();
@@ -548,7 +548,7 @@ public class HierarchicalLayoutAlgorithmTask extends AbstractLayoutTask {
 				                                                             renumber[edgeTo]);
 
 				if (myEdges2EdgeViews[cI[edgeFrom]] == null)
-					myEdges2EdgeViews[cI[edgeFrom]] = new HashMap<Edge, View<CyEdge>>();
+					myEdges2EdgeViews[cI[edgeFrom]] = new HashMap<>();
 
 				myEdges2EdgeViews[cI[edgeFrom]].put(theEdge, ev);
 			}
@@ -643,7 +643,7 @@ public class HierarchicalLayoutAlgorithmTask extends AbstractLayoutTask {
 	                                 int startInd, int endInd) {
 		double layerMin = 0;
 
-		HashMap<Integer, HierarchyFlowLayoutOrderNode> nodesBak2HFLON = new HashMap<Integer, HierarchyFlowLayoutOrderNode>();
+		HashMap<Integer, HierarchyFlowLayoutOrderNode> nodesBak2HFLON = new HashMap<>();
 
 		for (int i = startInd; i <= endInd; i++)
 			nodesBak2HFLON.put(Integer.valueOf(nodes[i].graphIndex), nodes[i]);
@@ -733,7 +733,7 @@ public class HierarchicalLayoutAlgorithmTask extends AbstractLayoutTask {
 		LinkedList<Integer>[] edgesTo = theGraph.GetEdgesTo();
 
 		LayerOrderNode[] lon = new LayerOrderNode[endInd - startInd + 1];
-		HashMap<Integer, LayerOrderNode> ind2Lon = new HashMap<Integer, LayerOrderNode>();
+		HashMap<Integer, LayerOrderNode> ind2Lon = new HashMap<>();
 
 		for (int i = 0; i <= (endInd - startInd); i++) {
 			boolean dum = false;

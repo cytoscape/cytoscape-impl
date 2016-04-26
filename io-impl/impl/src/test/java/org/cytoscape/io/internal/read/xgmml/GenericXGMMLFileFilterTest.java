@@ -29,12 +29,12 @@ public class GenericXGMMLFileFilterTest {
 	
 	@Before
 	public void setUp() {
-		Set<String> extensions = new HashSet<String>();
-		Set<String> contentTypes = new HashSet<String>();
+		Set<String> extensions = new HashSet<>();
+		Set<String> contentTypes = new HashSet<>();
 		String description = "XGMML";
 		
 		Properties props = new Properties();
-		CyProperty<Properties> cyProperties = new SimpleCyProperty<Properties>("test", props, Properties.class, SavePolicy.DO_NOT_SAVE);	
+		CyProperty<Properties> cyProperties = new SimpleCyProperty<>("test", props, Properties.class, SavePolicy.DO_NOT_SAVE);	
 		
 		CyServiceRegistrar serviceRegistrar = mock(CyServiceRegistrar.class);
 		when(serviceRegistrar.getService(CyProperty.class, "(cyPropertyName=cytoscape3.props)")).thenReturn(cyProperties);

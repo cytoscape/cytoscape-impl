@@ -52,7 +52,7 @@ public class ExportNetworkImageTaskFactoryTest {
 
 	@Before
 	public void setUp() throws Exception {
-		final List<CyFileFilter> filters = new ArrayList<CyFileFilter>();
+		final List<CyFileFilter> filters = new ArrayList<>();
 		final CyFileFilter dummyFilter = mock(CyFileFilter.class);
 		when(dummyFilter.getDescription()).thenReturn("dummy description");
 		filters.add(dummyFilter);

@@ -40,7 +40,7 @@ public class CustomGraphicsPositionCalculator {
 	private static final Map<Position, Float[]> DISPLACEMENT_MAP;
 	
 	static {
-		DISPLACEMENT_MAP = new HashMap<Position, Float[]>();
+		DISPLACEMENT_MAP = new HashMap<>();
 		
 		DISPLACEMENT_MAP.put(Position.CENTER, new Float[]{0f, 0f} );
 		

@@ -108,7 +108,7 @@ public class SIFInterpreterTask extends AbstractNetworkViewTask {
 
 					} else if (terms.length > 3) {
 						// process multiple targets and one source
-						List<View<CyNode>> nodeViews = new ArrayList<View<CyNode>>();
+						List<View<CyNode>> nodeViews = new ArrayList<>();
 						String interactionType = terms[1];
 						
 						for (int i = 2; i < terms.length; i++) {

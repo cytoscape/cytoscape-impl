@@ -42,7 +42,7 @@ public class PieLayer extends AbstractChartLayer<PieDataset> {
 				0.0f, TRANSPARENT_COLOR, 0.0f, borderWidth, borderColor, null, bounds);
         this.startAngle = startAngle;
         this.rotation = rotation;
-        this.labels = new HashMap<String, String>();
+        this.labels = new HashMap<>();
 	}
 	
 	// ==[ PRIVATE METHODS ]============================================================================================

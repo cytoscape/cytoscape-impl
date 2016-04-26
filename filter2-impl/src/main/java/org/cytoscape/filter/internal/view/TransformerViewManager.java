@@ -96,13 +96,13 @@ public class TransformerViewManager {
 	
 	List<TransformerViewElement> getFilterConditionViewElements() {
 		synchronized (lock) {
-			return new ArrayList<TransformerViewElement>(filterConditionViewElements);
+			return new ArrayList<>(filterConditionViewElements);
 		}
 	}
 	
 	List<TransformerViewElement> getChainTransformerViewElements() {
 		synchronized (lock) {
-			return new ArrayList<TransformerViewElement>(chainTransformerViewElements);
+			return new ArrayList<>(chainTransformerViewElements);
 		}
 	}
 	

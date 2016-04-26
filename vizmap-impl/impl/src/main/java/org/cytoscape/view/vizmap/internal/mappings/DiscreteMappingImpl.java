@@ -59,7 +59,7 @@ public class DiscreteMappingImpl<K, V> extends AbstractVisualMappingFunction<K, 
 	public DiscreteMappingImpl(final String attrName, final Class<K> attrType, final VisualProperty<V> vp,
 			final CyEventHelper eventHelper) {
 		super(attrName, attrType, vp, eventHelper);
-		attribute2visualMap = new HashMap<K, V>();
+		attribute2visualMap = new HashMap<>();
 	}
 
 	@Override

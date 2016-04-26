@@ -35,7 +35,7 @@ import junit.framework.*;
 
 public class StDevTest extends TestCase {
 	public void testAll() throws Exception {
-                final List<Object> numbers = new ArrayList<Object>();
+                final List<Object> numbers = new ArrayList<>();
                 numbers.add(new Double(5.0));
                 numbers.add(new Long(3L));
                 numbers.add(new Double(4.0));
@@ -43,7 +43,7 @@ public class StDevTest extends TestCase {
                 numbers.add(new Long(3L));
                 numbers.add(new Long(4L));
                 numbers.add(new Long(5L));
-		final Map<String, Object> variablesAndValues = new HashMap<String, Object>();
+		final Map<String, Object> variablesAndValues = new HashMap<>();
 		variablesAndValues.put("list", numbers);
 		assertTrue(Framework.executeTest("=STDEV($list)", variablesAndValues, Double.valueOf(0.816496580927726)));
 		assertTrue(Framework.executeTest("=STDEV(-3.0,-3,\"-3.0\")", Double.valueOf(0.0)));

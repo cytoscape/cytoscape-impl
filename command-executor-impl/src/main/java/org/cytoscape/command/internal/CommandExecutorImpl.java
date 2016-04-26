@@ -51,8 +51,8 @@ public class CommandExecutorImpl {
 
 	private final static Logger logger = LoggerFactory.getLogger(CommandExecutorImpl.class);
 
-	private final Map<String, Map<String,Executor>> commandExecutorMap = 
-	                                             new HashMap<String,Map<String,Executor>>();
+	private final Map<String, Map<String,Executor>> commandExecutorMap =
+			new HashMap<>();
 
 	private final CommandTunableInterceptorImpl interceptor; 
 	private final CyApplicationManager appMgr;
@@ -119,7 +119,7 @@ public class CommandExecutorImpl {
 		synchronized (lock) {
 			Map<String, Executor> map = commandExecutorMap.get(namespace);
 			if ( map == null ) {
-				map = new HashMap<String,Executor>();
+				map = new HashMap<>();
 				commandExecutorMap.put(namespace, map);
 			}
 			map.put(command,ex);
@@ -186,7 +186,7 @@ public class CommandExecutorImpl {
 			throw new RuntimeException("Failed to find command namespace: '"+commandLine+"'");
 		}
 
-		Map<String, Object> settings = new HashMap<String, Object>();
+		Map<String, Object> settings = new HashMap<>();
 		String comm = parseInput(commandLine.substring(ns.length()).trim(), settings);
 
 		String sub = null;
@@ -201,7 +201,7 @@ public class CommandExecutorImpl {
 		if (sub == null && (comm != null && comm.length() > 0))
 			throw new RuntimeException("Failed to find command: '" + comm +"' (from namespace: " + ns + ")");
 
-		Map<String, Object> modifiedSettings = new HashMap<String, Object>();
+		Map<String, Object> modifiedSettings = new HashMap<>();
 		// Now check the arguments
 		List<String> argList = availableCommands.getArguments(ns, comm);
 		for (String inputArg: settings.keySet()) {
@@ -252,7 +252,7 @@ public class CommandExecutorImpl {
 		st.wordChars('.', '.');
 		st.wordChars('0', '9');
 
-		List<String> tokenList = new ArrayList<String>();
+		List<String> tokenList = new ArrayList<>();
 		int tokenIndex = 0;
 		int i;
 		try {

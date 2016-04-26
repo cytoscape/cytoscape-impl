@@ -66,7 +66,7 @@ public class DegreeSortedCircleLayoutTask extends AbstractPartitionLayoutTask {
 			table.createColumn(DEGREE_ATTR_NAME, Integer.class, false);
 
 		// just add the unlocked nodes
-		final List<LayoutNode> nodes = new ArrayList<LayoutNode>();
+		final List<LayoutNode> nodes = new ArrayList<>();
 		for (final LayoutNode ln : partition.getNodeList()) {
 			if (!ln.isLocked())
 				nodes.add(ln);

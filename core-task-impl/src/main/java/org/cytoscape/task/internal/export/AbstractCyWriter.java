@@ -102,8 +102,8 @@ public abstract class AbstractCyWriter<S extends CyWriterFactory,T extends CyWri
 			throw new NullPointerException("CyWriterManager is null");
 		this.writerManager = writerManager;
 
-		descriptionFilterMap = new TreeMap<String,CyFileFilter>();
-		extensionFilterMap = new TreeMap<String,CyFileFilter>();
+		descriptionFilterMap = new TreeMap<>();
+		extensionFilterMap = new TreeMap<>();
 		for (CyFileFilter f : writerManager.getAvailableWriterFilters()) {
 			descriptionFilterMap.put(f.getDescription(), f);
 			for ( String ext : f.getExtensions() ) {

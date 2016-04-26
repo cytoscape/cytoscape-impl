@@ -112,9 +112,9 @@ public class GenericXGMMLWriter extends AbstractTask implements CyWriter {
     protected final RenderingEngineManager renderingEngineMgr;
     private final GroupUtil groupUtil;
 
-    protected final Map<CyNode, CyNode> writtenNodeMap = new WeakHashMap<CyNode, CyNode>();
-    protected final Map<CyEdge, CyEdge> writtenEdgeMap = new WeakHashMap<CyEdge, CyEdge>();
-    protected final Map<CyNetwork, CyNetwork> writtenNetMap = new WeakHashMap<CyNetwork, CyNetwork>();
+    protected final Map<CyNode, CyNode> writtenNodeMap = new WeakHashMap<>();
+    protected final Map<CyEdge, CyEdge> writtenEdgeMap = new WeakHashMap<>();
+    protected final Map<CyNetwork, CyNetwork> writtenNetMap = new WeakHashMap<>();
 
     protected int depth = 0;
     private String indentString = "";
@@ -160,7 +160,7 @@ public class GenericXGMMLWriter extends AbstractTask implements CyWriter {
         } else {
             this.network = network;
             this.rootNetwork = rootNetworkMgr.getRootNetwork(network);
-            this.subNetworks = new HashSet<CySubNetwork>();
+            this.subNetworks = new HashSet<>();
         }
         
         // Create our indent string (480 blanks);
@@ -367,7 +367,7 @@ public class GenericXGMMLWriter extends AbstractTask implements CyWriter {
      * @throws IOException
      */
     protected void writeNodes() throws IOException {
-        List<CyNode> pointerNodes = new ArrayList<CyNode>();
+        List<CyNode> pointerNodes = new ArrayList<>();
 
         for (CyNode node : network.getNodeList()) {
             // Save all of the nodes with network pointers until last
@@ -535,9 +535,9 @@ public class GenericXGMMLWriter extends AbstractTask implements CyWriter {
             root = BasicVisualLexicon.NETWORK;
         
         final Collection<VisualProperty<?>> visualProperties = visualLexicon.getAllDescendants(root);
-        final List<VisualProperty<?>> attProperties = new ArrayList<VisualProperty<?>>(); // To be written as att tags
-        final List<VisualProperty<?>> lockedProperties = new ArrayList<VisualProperty<?>>();
-        final Set<String> writtenKeys = new HashSet<String>();
+        final List<VisualProperty<?>> attProperties = new ArrayList<>(); // To be written as att tags
+        final List<VisualProperty<?>> lockedProperties = new ArrayList<>();
+        final Set<String> writtenKeys = new HashSet<>();
         
         for (VisualProperty vp : visualProperties) {
             // If network, ignore node and edge visual properties,
@@ -1004,7 +1004,7 @@ public class GenericXGMMLWriter extends AbstractTask implements CyWriter {
      * @return A set with all the subnetworks that should be serialized.
      */
     protected Set<CySubNetwork> getSerializableSubNetworks(final CyRootNetwork rootNet) {
-        final Set<CySubNetwork> serializableSet = new LinkedHashSet<CySubNetwork>();
+        final Set<CySubNetwork> serializableSet = new LinkedHashSet<>();
         final List<CySubNetwork> subNetList = rootNet.getSubNetworkList();
         final CySubNetwork baseNetwork = rootNet.getBaseNetwork();
         

@@ -62,8 +62,8 @@ public class GeneAssociationReader extends AbstractTask implements CyTableReader
 	private static final String LIST_DELIMITER = PIPE.getDelimiter();
 
 	// The following columns should be handled as List in GA v2 spec.
-	private static final List<Integer> LIST_INDEX = new ArrayList<Integer>();
-	private static final Map<String, String> NAMESPACE_MAP = new HashMap<String, String>();
+	private static final List<Integer> LIST_INDEX = new ArrayList<>();
+	private static final Map<String, String> NAMESPACE_MAP = new HashMap<>();
 	
 	static {
 		LIST_INDEX.add(4);
@@ -247,7 +247,7 @@ public class GeneAssociationReader extends AbstractTask implements CyTableReader
 
 				List<String> currentList = row.getList(namespace, String.class);
 				if (currentList == null)
-					currentList = new ArrayList<String>();
+					currentList = new ArrayList<>();
 
 				if (currentList.contains(goidString) == false)
 					currentList.add(goidString);
@@ -265,7 +265,7 @@ public class GeneAssociationReader extends AbstractTask implements CyTableReader
 
 				List<String> valueList = row.getList(columnName, String.class);
 				if (valueList == null)
-					valueList = new ArrayList<String>();
+					valueList = new ArrayList<>();
 				if (valueList.contains(value) == false)
 					valueList.add(value);
 				row.set(columnName, valueList);
@@ -290,7 +290,7 @@ public class GeneAssociationReader extends AbstractTask implements CyTableReader
 				// Create consolidated id list attribute.
 				List<String> synList = row.getList(SYNONYM_COL_NAME, String.class);
 				if (synList == null)
-					synList = new ArrayList<String>();
+					synList = new ArrayList<>();
 
 				if (tag == GeneAssociationTag.DB_OBJECT_SYNONYM) {
 					final String[] vals = entries[i].split(LIST_DELIMITER);
@@ -310,7 +310,7 @@ public class GeneAssociationReader extends AbstractTask implements CyTableReader
 
 					List<String> listVals = row.getList(tag.toString(), String.class);
 					if (listVals == null)
-						listVals = new ArrayList<String>();
+						listVals = new ArrayList<>();
 					for (String val : vals) {
 						if (listVals.contains(val) == false)
 							listVals.add(val);

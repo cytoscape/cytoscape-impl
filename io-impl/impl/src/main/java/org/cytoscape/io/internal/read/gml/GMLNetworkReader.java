@@ -123,8 +123,8 @@ public class GMLNetworkReader extends AbstractCyNetworkReader {
 
 	private static final String VIZMAP_PREFIX = "vizmap:";
 
-	private static Map<String, ArrowShape> legacyArrowShapes = new HashMap<String, ArrowShape>();
-	private static Map<String, ArrowShape> yedArrowShapes = new HashMap<String, ArrowShape>();
+	private static Map<String, ArrowShape> legacyArrowShapes = new HashMap<>();
+	private static Map<String, ArrowShape> yedArrowShapes = new HashMap<>();
 
 	// Entries in the file
 	private List<KeyValue> keyVals;
@@ -197,10 +197,10 @@ public class GMLNetworkReader extends AbstractCyNetworkReader {
 		this.unrecognizedVisualPropertyMgr = unrecognizedVisualPropertyMgr;
 
 		// Set new style name
-		edgeNames = new Vector<CyEdge>();
-		nodeNames = new Vector<String>();
-		nodeAttributes = new ArrayList<Map<String, Object>>();
-		edgeAttributes = new ArrayList<Map<String, Object>>();
+		edgeNames = new Vector<>();
+		nodeNames = new Vector<>();
+		nodeAttributes = new ArrayList<>();
+		edgeAttributes = new ArrayList<>();
 	}
 
 	@Override
@@ -251,14 +251,14 @@ public class GMLNetworkReader extends AbstractCyNetworkReader {
 	}
 
 	protected void initializeStructures() {
-		nodes = new ArrayList<Integer>();
-		sources = new ArrayList<Integer>();
-		targets = new ArrayList<Integer>();
-		directionalityFlags = new ArrayList<Boolean>();
-		nodeLabels = new Vector<String>();
-		edgeLabels = new Vector<String>();
-		edgeRootIndexPairs = new Vector<KeyValue>();
-		nodeRootIndexPairs = new Vector<KeyValue>();
+		nodes = new ArrayList<>();
+		sources = new ArrayList<>();
+		targets = new ArrayList<>();
+		directionalityFlags = new ArrayList<>();
+		nodeLabels = new Vector<>();
+		edgeLabels = new Vector<>();
+		edgeRootIndexPairs = new Vector<>();
+		nodeRootIndexPairs = new Vector<>();
 	}
 
 	protected void releaseStructures() {
@@ -281,11 +281,11 @@ public class GMLNetworkReader extends AbstractCyNetworkReader {
 	 * on a node that was skipped, then that edge will be skipped as well.
 	 */
 	protected void createGraph(TaskMonitor taskMonitor) {
-		nodeIDMap = new HashMap<String, CyNode>(nodes.size());
+		nodeIDMap = new HashMap<>(nodes.size());
 		Map<Object, CyNode> nMap = getNodeMap();
 
-		Map<Integer, Integer> gml_id2order = new HashMap<Integer, Integer>(nodes.size());
-		Set<String> nodeNameSet = new HashSet<String>(nodes.size());
+		Map<Integer, Integer> gml_id2order = new HashMap<>(nodes.size());
+		Set<String> nodeNameSet = new HashSet<>(nodes.size());
 
 		// Add All Nodes to Network
 		for (int idx = 0; idx < nodes.size(); idx++) {
@@ -328,7 +328,7 @@ public class GMLNetworkReader extends AbstractCyNetworkReader {
 
 		nodeNameSet = null;
 
-		Set<String> edgeNameSet = new HashSet<String>(sources.size());
+		Set<String> edgeNameSet = new HashSet<>(sources.size());
 
 		// Add All Edges to Network
 		for (int idx = 0; idx < sources.size(); idx++) {
@@ -428,7 +428,7 @@ public class GMLNetworkReader extends AbstractCyNetworkReader {
 		boolean containsId = false;
 		int id = 0;
 		KeyValue rootIndexPair = null;
-		final Map<String, Object> attr = new HashMap<String, Object>();
+		final Map<String, Object> attr = new HashMap<>();
 
 		for (KeyValue keyVal : list) {
 			if (keyVal.key.equals(ID)) {
@@ -487,7 +487,7 @@ public class GMLNetworkReader extends AbstractCyNetworkReader {
 		int source = 0;
 		int target = 0;
 		KeyValue rootIndexPair = null;
-		final Map<String, Object> attr = new HashMap<String, Object>();
+		final Map<String, Object> attr = new HashMap<>();
 
 		for (KeyValue keyVal : list) {
 			if (keyVal.key.equals(SOURCE)) {
@@ -646,7 +646,7 @@ public class GMLNetworkReader extends AbstractCyNetworkReader {
 	private void layoutNode(final CyNetworkView netView,
 			final List<KeyValue> list) {
 		Long rootIndex = null;
-		final List<KeyValue> graphicsList = new ArrayList<KeyValue>();
+		final List<KeyValue> graphicsList = new ArrayList<>();
 		String label = null;
 
 		@SuppressWarnings("unused")
@@ -800,7 +800,7 @@ public class GMLNetworkReader extends AbstractCyNetworkReader {
 
 	private Set<VisualProperty<?>> getVisualProperties(
 			final Class<? extends CyIdentifiable> type, final String key) {
-		final Set<VisualProperty<?>> set = new LinkedHashSet<VisualProperty<?>>();
+		final Set<VisualProperty<?>> set = new LinkedHashSet<>();
 
 		if (type == CyEdge.class && key.equals(FILL)) {
 			set.add(BasicVisualLexicon.EDGE_UNSELECTED_PAINT);

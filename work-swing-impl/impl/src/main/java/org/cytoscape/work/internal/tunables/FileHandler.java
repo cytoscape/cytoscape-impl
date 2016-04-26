@@ -284,7 +284,7 @@ public class FileHandler extends AbstractGUITunableHandler implements DirectlyPr
 					
 					if (filter.getDescription().trim().equalsIgnoreCase("All image files") ||
 					    filter.getDescription().trim().equalsIgnoreCase("All network files")){
-						filters = new ArrayList<FileChooserFilter>();
+						filters = new ArrayList<>();
 						filters.add(filter);
 						break;
 					}

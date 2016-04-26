@@ -63,7 +63,7 @@ public class BitmapWriterTest {
 	
 	@Before
 	public void init(){
-		Set<String> mySet = new HashSet<String>();
+		Set<String> mySet = new HashSet<>();
 		for( String s : ImageIO.getWriterFormatNames()){
 			mySet.add(s);
 		}

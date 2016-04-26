@@ -78,7 +78,7 @@ public class IntegerAggregator extends AbstractAggregator {
 				aggregation = Integer.MAX_VALUE;
 				break;
 			case MEDIAN:
-				valueList = new ArrayList<Integer>();
+				valueList = new ArrayList<>();
 				break;
 			}
 

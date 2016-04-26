@@ -80,8 +80,8 @@ public abstract class AbstractApplyHandler<T extends CyIdentifiable> implements 
 		else
 			rootVisualProperty = BasicVisualLexicon.NETWORK;
 		
-		dependencyParents = new ConcurrentHashMap<VisualProperty<?>, Set<VisualPropertyDependency<?>>>(16, 0.75f, 2);
-		dependencyChildren = new ConcurrentHashMap<VisualProperty<?>, Set<VisualPropertyDependency<?>>>(16, 0.75f, 2);
+		dependencyParents = new ConcurrentHashMap<>(16, 0.75f, 2);
+		dependencyChildren = new ConcurrentHashMap<>(16, 0.75f, 2);
 	}
 
 	@Override
@@ -103,7 +103,7 @@ public abstract class AbstractApplyHandler<T extends CyIdentifiable> implements 
 				.getRenderingEngineFactory(NetworkViewRenderer.DEFAULT_CONTEXT)
 				.getVisualLexicon();
 		
-		final LinkedList<VisualLexiconNode> descendants = new LinkedList<VisualLexiconNode>();
+		final LinkedList<VisualLexiconNode> descendants = new LinkedList<>();
 		descendants.addAll(lexicon.getVisualLexiconNode(rootVisualProperty).getChildren());
 		
 		while (!descendants.isEmpty()) {
@@ -195,7 +195,7 @@ public abstract class AbstractApplyHandler<T extends CyIdentifiable> implements 
 			
 			if (depSet == null)
 				dependencyParents.put(parent, 
-						depSet = Collections.synchronizedSet(new HashSet<VisualPropertyDependency<?>>()));
+						depSet = Collections.synchronizedSet(new HashSet<>()));
 			
 			depSet.add(dep);
 			
@@ -204,7 +204,7 @@ public abstract class AbstractApplyHandler<T extends CyIdentifiable> implements 
 				
 				if (childSet == null)
 					dependencyChildren.put(child,
-							childSet = Collections.synchronizedSet(new HashSet<VisualPropertyDependency<?>>()));
+							childSet = Collections.synchronizedSet(new HashSet<>()));
 				
 				childSet.add(dep);
 			}

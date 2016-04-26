@@ -70,9 +70,9 @@ public class IntegerListAggregator extends AbstractAggregator<List<Integer>> {
 
 		public List<Integer>  aggregate(CyTable table, CyGroup group, CyColumn column) {
 			Class<?> listType = column.getListElementType();
-			List <Integer> agg = new ArrayList<Integer>();
+			List <Integer> agg = new ArrayList<>();
 			List <List<Integer>> aggMed = new ArrayList<>();
-			Set <Integer> aggset = new HashSet<Integer>();
+			Set <Integer> aggset = new HashSet<>();
 			List <Integer> aggregation = null;
 
 			if (type == AttributeHandlingType.NONE) return null;
@@ -136,14 +136,14 @@ public class IntegerListAggregator extends AbstractAggregator<List<Integer>> {
 			}
 
 			if (type == AttributeHandlingType.UNIQUE)
-				aggregation = new ArrayList<Integer>(aggset);
+				aggregation = new ArrayList<>(aggset);
 			else if (type == AttributeHandlingType.AVG) {
-				aggregation = new ArrayList<Integer>();
+				aggregation = new ArrayList<>();
 				for (Integer v: agg) {
 					aggregation.add(Math.round((float)v/(float)nodeCount));
 				}
 			} else if (type == AttributeHandlingType.MEDIAN) {
-				aggregation = new ArrayList<Integer>();
+				aggregation = new ArrayList<>();
 				for (List<Integer> valueList: aggMed) {
 					Integer[] vArray = new Integer[valueList.size()];
 					vArray = valueList.toArray(vArray);

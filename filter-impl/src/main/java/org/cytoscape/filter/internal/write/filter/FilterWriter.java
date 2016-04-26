@@ -109,7 +109,7 @@ public class FilterWriter {
 			return null;
 		}
 
-		ArrayList<CompositeFilter> retFilterList = new ArrayList<CompositeFilter>();
+		ArrayList<CompositeFilter> retFilterList = new ArrayList<>();
 
 		for (int i = 0; i < pFilters.length; i++) {
 			CompositeFilter theFilter = (CompositeFilter) pFilters[i];
@@ -137,8 +137,8 @@ public class FilterWriter {
 		}
 
 		// Separate TopologyFilter from other CompositeFilter
-		List<TopologyFilter> topoFilterVect = new ArrayList<TopologyFilter>();
-		List<CompositeFilter> otherFilterVect = new ArrayList<CompositeFilter>();
+		List<TopologyFilter> topoFilterVect = new ArrayList<>();
+		List<CompositeFilter> otherFilterVect = new ArrayList<>();
 
 		for (Object obj : pAllFilterVect) {
 			if (obj instanceof TopologyFilter) {
@@ -152,7 +152,7 @@ public class FilterWriter {
 		// other compositeFilter
 		CompositeFilter[] sortedFilters = otherFilterVect.toArray(new CompositeFilter[otherFilterVect.size()]);
 		Arrays.sort(sortedFilters, (new CompositeFilterCmp<CompositeFilter>()));
-		List<CompositeFilter> sortedFilterList = new ArrayList<CompositeFilter>();
+		List<CompositeFilter> sortedFilterList = new ArrayList<>();
 
 		for (int i = 0; i < sortedFilters.length; i++) {
 			sortedFilterList.add(sortedFilters[i]);
@@ -183,7 +183,7 @@ public class FilterWriter {
 		
 		private static int getTreeDepth(CompositeFilter pFilter, int pDepthLevel) {
 			List<CyFilter> childrenList = pFilter.getChildren();
-			List<CompositeFilter> theList = new ArrayList<CompositeFilter>();
+			List<CompositeFilter> theList = new ArrayList<>();
 
 			// Find all the child compositeFilter
 			for (int i = 0; i < childrenList.size(); i++) {

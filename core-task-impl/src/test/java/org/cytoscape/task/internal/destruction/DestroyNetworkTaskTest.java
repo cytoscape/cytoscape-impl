@@ -60,7 +60,7 @@ public class DestroyNetworkTaskTest {
 	public void testDestroyNetworkTask() throws Exception {
 		final CyNetwork network1 = support.getNetwork();
 		final CyNetwork network2 = support.getNetwork();
-		final Set<CyNetwork> networks = new HashSet<CyNetwork>();
+		final Set<CyNetwork> networks = new HashSet<>();
 		networks.add(network1);
 		networks.add(network2);
 		

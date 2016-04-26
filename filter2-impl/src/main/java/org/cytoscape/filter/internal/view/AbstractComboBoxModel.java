@@ -12,7 +12,7 @@ public abstract class AbstractComboBoxModel implements ComboBoxModel {
 	private List<ListDataListener> listeners;
 
 	public AbstractComboBoxModel() {
-		listeners = new CopyOnWriteArrayList<ListDataListener>();
+		listeners = new CopyOnWriteArrayList<>();
 	}
 	
 	@Override

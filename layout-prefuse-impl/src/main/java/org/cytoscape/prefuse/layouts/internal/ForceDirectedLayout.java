@@ -86,7 +86,7 @@ public class ForceDirectedLayout extends AbstractLayoutAlgorithm {
 
 	@Override
 	public Set<Class<?>> getSupportedEdgeAttributeTypes() {
-		final Set<Class<?>> ret = new HashSet<Class<?>>();
+		final Set<Class<?>> ret = new HashSet<>();
 
 		ret.add(Integer.class);
 		ret.add(Double.class);

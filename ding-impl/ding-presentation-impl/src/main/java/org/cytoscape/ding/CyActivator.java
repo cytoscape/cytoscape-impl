@@ -658,7 +658,7 @@ public class CyActivator extends AbstractCyActivator {
 	 */
 	private Set<URL> getdefaultImageURLs(BundleContext bc) {
 		Enumeration<URL> e = bc.getBundle().findEntries("images/sampleCustomGraphics", "*.png", true);
-		final Set<URL> defaultImageUrls = new HashSet<URL>();
+		final Set<URL> defaultImageUrls = new HashSet<>();
 		while (e.hasMoreElements())
 			defaultImageUrls.add(e.nextElement());
 		

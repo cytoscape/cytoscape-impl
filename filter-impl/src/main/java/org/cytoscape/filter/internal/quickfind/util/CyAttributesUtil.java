@@ -126,7 +126,7 @@ public class CyAttributesUtil {
 	 */
 	public static String[] getDistinctAttributeValues(CyNetwork network, Iterator<? extends CyIdentifiable> iterator,
 	                                                  String attributeKey, int numDistinctValues) {
-		Set<String> set = new HashSet<String>();
+		Set<String> set = new HashSet<>();
 		int counter = 0;
 
 		while (iterator.hasNext() && (counter < numDistinctValues)) {

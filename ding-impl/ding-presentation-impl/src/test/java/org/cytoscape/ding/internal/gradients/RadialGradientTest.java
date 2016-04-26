@@ -18,7 +18,7 @@ public class RadialGradientTest extends AbstractCustomGraphics2Test {
 
 	@Before
 	public void setUp() throws Exception {
-		props1 = new HashMap<String, Object>();
+		props1 = new HashMap<>();
 		props1.put(GRADIENT_COLORS, asList(Color.WHITE, Color.RED, Color.BLUE, Color.GREEN));
 		props1.put(GRADIENT_FRACTIONS, asList(0.0f, 0.25f, 0.75f, 1.0f));
 		props1.put(CENTER, new Point2D.Float(0.25f, 0.5f));

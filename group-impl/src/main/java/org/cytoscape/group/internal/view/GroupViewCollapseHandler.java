@@ -552,7 +552,7 @@ public class GroupViewCollapseHandler implements GroupAboutToCollapseListener,
 	private void addMemberEdges(CyGroup group, CyNetwork network) {
 		CyRootNetwork rootNetwork = ((CySubNetwork)network).getRootNetwork();
 		CyNode groupNode = group.getGroupNode();
-		List<CyEdge> newEdges = new ArrayList<CyEdge>();
+		List<CyEdge> newEdges = new ArrayList<>();
 		for (CyNode node: group.getNodeList()) {
 			if (!network.containsEdge(groupNode, node)) {
 				CyEdge edge = network.addEdge(groupNode, node, true);

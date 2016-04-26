@@ -53,7 +53,7 @@ class PayloadAccumulator<S,P,E extends CyPayloadEvent<S,P>> {
 			throw new IllegalArgumentException("no valid source class found.");
 			
 		constructor = eventType.getConstructor(sourceClass, Collection.class);
-		payloadList = new ArrayList<P>();
+		payloadList = new ArrayList<>();
 	}
 
 	E newEventInstance(Object source) throws InstantiationException, IllegalAccessException, InvocationTargetException, ClassCastException {
@@ -81,7 +81,7 @@ class PayloadAccumulator<S,P,E extends CyPayloadEvent<S,P>> {
 				return null;
 	
 			List<P> ret = payloadList;
-			payloadList = new ArrayList<P>();
+			payloadList = new ArrayList<>();
 			return ret;
 		}
 	}

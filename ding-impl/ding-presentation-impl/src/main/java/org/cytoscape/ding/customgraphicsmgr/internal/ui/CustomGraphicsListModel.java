@@ -48,7 +48,7 @@ public class CustomGraphicsListModel extends AbstractListModel {
 
 	public CustomGraphicsListModel() {
 		super();
-		graphics = new ArrayList<CyCustomGraphics>();
+		graphics = new ArrayList<>();
 		comp = new CGComparator();
 	}
 

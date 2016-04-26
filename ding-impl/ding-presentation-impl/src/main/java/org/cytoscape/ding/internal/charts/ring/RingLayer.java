@@ -64,7 +64,7 @@ public class RingLayer extends AbstractChartLayer<PieDataset> {
         this.startAngle = startAngle;
         this.hole = hole;
         this.rotation = rotation;
-        this.labels = new HashMap<String, String>();
+        this.labels = new HashMap<>();
 	}
 	
 	// ==[ PUBLIC METHODS ]=============================================================================================
@@ -87,7 +87,7 @@ public class RingLayer extends AbstractChartLayer<PieDataset> {
 	
 	@Override
 	protected PieDataset createDataset() {
-		datasetList = new ArrayList<PieDataset>();
+		datasetList = new ArrayList<>();
 		
 		for (final String category : data.keySet()) {
 			final List<Double> values = data.get(category);
@@ -116,7 +116,7 @@ public class RingLayer extends AbstractChartLayer<PieDataset> {
 		if (datasetList == null || chartList == null) {
 			createDataset();
 			final int total = datasetList.size();
-			chartList = new ArrayList<JFreeChart>(total);
+			chartList = new ArrayList<>(total);
 			
 			if (total > 0) {
 				int count = 0;

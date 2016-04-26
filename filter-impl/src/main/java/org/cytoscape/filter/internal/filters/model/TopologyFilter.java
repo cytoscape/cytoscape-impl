@@ -123,7 +123,7 @@ public class TopologyFilter extends CompositeFilter {
 			objectCount = nodes_list.size();
 			
 			//Create an index mapping between RootGraphIndex and index in current network
-			HashMap<CyNode, Integer> indexMap = new HashMap<CyNode, Integer>();
+			HashMap<CyNode, Integer> indexMap = new HashMap<>();
 			for (int i = 0; i < objectCount; i++) {
 				CyNode node = nodes_list.get(i);
 				indexMap.put(node, i);
@@ -197,7 +197,7 @@ public class TopologyFilter extends CompositeFilter {
 	
 	private boolean isHit(CyNode pObj, HashMap<CyNode, Integer> pIndexMap) {
 		// Get all the neighbors for pNode that pass the given filter
-		Set<CyNode> neighborSet = new HashSet<CyNode>();
+		Set<CyNode> neighborSet = new HashSet<>();
 		getNeighbors(pObj, neighborSet, withinDistance);
 		
 		//Exclude self from the neighbor

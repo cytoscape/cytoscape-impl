@@ -121,7 +121,7 @@ public class SIFNetworkViewReaderTest extends AbstractNetworkReaderTest {
 	private List<CyNetworkView> getViews(String file) throws Exception {
 		final SIFNetworkReader snvp = readFile(file);
 		final CyNetwork[] networks = snvp.getNetworks(); 
-		final List<CyNetworkView> views = new ArrayList<CyNetworkView>();
+		final List<CyNetworkView> views = new ArrayList<>();
 		
 		for(CyNetwork network: networks) {
 			views.add(snvp.buildCyNetworkView(network));

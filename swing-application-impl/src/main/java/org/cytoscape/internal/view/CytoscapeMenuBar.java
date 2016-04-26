@@ -55,7 +55,7 @@ public class CytoscapeMenuBar extends JMenuBar {
 	 * Default constructor.
 	 */
 	public CytoscapeMenuBar() {
-		actionMenuItemMap = new HashMap<Action,JMenuItem>();
+		actionMenuItemMap = new HashMap<>();
 		menuTracker = new JMenuTracker(this);
 
 		// Load the first menu, just to please the layouter. Also make sure the

@@ -361,7 +361,7 @@ public class CheckForUpdatesPanel extends JPanel {
      * @return A set of {@link Update} objects corresponding to selected apps in the table
      */
     private Set<Update> getSelectedUpdates() {
-        Set<Update> selectedUpdates = new HashSet<Update>();
+        Set<Update> selectedUpdates = new HashSet<>();
     	 int[] selectedRows = updatesTable.getSelectedRows();
     	
         for (int index = 0; index < selectedRows.length; index++) {

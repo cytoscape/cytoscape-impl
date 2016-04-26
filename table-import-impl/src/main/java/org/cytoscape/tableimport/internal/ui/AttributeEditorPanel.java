@@ -197,7 +197,7 @@ public class AttributeEditorPanel extends JPanel {
 			typeVGroup.addComponent(btn);
 		}
 		
-		setStyles(new ArrayList<JToggleButton>(typeButtons.values()));
+		setStyles(new ArrayList<>(typeButtons.values()));
 		
 		final JLabel typeLabel = new JLabel("Meaning:");
 		typeLabel.putClientProperty("JComponent.sizeVariant", "small");
@@ -297,16 +297,16 @@ public class AttributeEditorPanel extends JPanel {
 			listDelimiterComboBox = new JComboBox<>();
 			listDelimiterComboBox.putClientProperty("JComponent.sizeVariant", "small");
 			listDelimiterComboBox.setModel(
-					new DefaultComboBoxModel<String>(new String[] {
+					new DefaultComboBoxModel<>(new String[]{
 							PIPE.toString(),
-	                        COLON.toString(),
-	                        SLASH.toString(),
-	                        BACKSLASH.toString(),
-	                        COMMA.toString(),
-	                        SPACE.toString(),
-	                        TAB.toString(),
-	                        OTHER
-	                    }));
+							COLON.toString(),
+							SLASH.toString(),
+							BACKSLASH.toString(),
+							COMMA.toString(),
+							SPACE.toString(),
+							TAB.toString(),
+							OTHER
+					}));
 			
 			final ListCellRenderer<? super String> renderer = listDelimiterComboBox.getRenderer();
 			

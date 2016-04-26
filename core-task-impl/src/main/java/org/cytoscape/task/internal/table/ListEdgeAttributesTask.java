@@ -82,6 +82,6 @@ public class ListEdgeAttributesTask extends AbstractTableDataTask implements Obs
 			}
 			return returnString.substring(0, returnString.length()-1)+"]";
 		}
-		return new ArrayList<CyColumn>(columnList);
+		return new ArrayList<>(columnList);
 	}
 }

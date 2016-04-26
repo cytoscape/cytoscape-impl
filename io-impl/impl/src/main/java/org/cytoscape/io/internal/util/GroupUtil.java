@@ -86,7 +86,7 @@ public class GroupUtil {
 		if (networks == null)
 			return;
 
-		addedNodes = new HashMap<CyNetwork, List<CyNode>>();
+		addedNodes = new HashMap<>();
 		
 		for (CyNetwork net: networks) {
 			if (!(net instanceof CySubNetwork))
@@ -108,7 +108,7 @@ public class GroupUtil {
 		if (networks == null)
 			return;
 
-		Map <CyNetwork, CyNetworkView> viewMap = new HashMap<CyNetwork, CyNetworkView>();
+		Map <CyNetwork, CyNetworkView> viewMap = new HashMap<>();
 		if (views != null)
 			for (CyNetworkView view: views)
 				viewMap.put(view.getModel(), view);
@@ -134,7 +134,7 @@ public class GroupUtil {
 		Set<CyGroup> groupSet = groupMgr.getGroupSet(network);
 
 		// For each group see if it's expanded, but present
-		List<CyNode> groupNodes = new ArrayList<CyNode>();
+		List<CyNode> groupNodes = new ArrayList<>();
 		for (CyGroup group: groupSet) {
 			if (!group.isCollapsed(network)) {
 				if (network.containsNode(group.getGroupNode())) {
@@ -150,7 +150,7 @@ public class GroupUtil {
 		CyRootNetwork rootNetwork = ((CySubNetwork)network).getRootNetwork();
 		// Don't need to worry about this for collapsed groups
 		List<CyNode> groupNodes = getExpandedGroups(network);
-		List<CyEdge> groupNodeEdges = new ArrayList<CyEdge>();
+		List<CyEdge> groupNodeEdges = new ArrayList<>();
 		for (CyNode groupNode : groupNodes) {
 			groupNodeEdges.addAll(rootNetwork.getAdjacentEdgeList(groupNode, CyEdge.Type.ANY));
 		}
@@ -161,7 +161,7 @@ public class GroupUtil {
 		// Get all of our groups in this network
 		Set<CyGroup> groupSet = groupMgr.getGroupSet(network);
 
-		List<CyEdge> externalEdges = new ArrayList<CyEdge>();
+		List<CyEdge> externalEdges = new ArrayList<>();
 		for (CyGroup group: groupSet) {
 			// Don't need to worry about this for expanded groups
 			if (group.isCollapsed(network)) {
@@ -180,7 +180,7 @@ public class GroupUtil {
 		
 		for (final CyNetwork net : networks) {
 			if (net instanceof CySubNetwork)
-				createGroups((CySubNetwork) net, viewSet, new HashSet<CyNode>());
+				createGroups((CySubNetwork) net, viewSet, new HashSet<>());
 		}
 	}
 
@@ -285,7 +285,7 @@ public class GroupUtil {
 			// CyRow groupNodeRow = net.getRow(n, CyNetwork.HIDDEN_ATTRS);
 			if (snRow.isSet(EXTERNAL_EDGE_ATTRIBUTE)) {
 				List<Long> externalIDs = snRow.getList(EXTERNAL_EDGE_ATTRIBUTE, Long.class);
-				List<CyEdge> externalEdges = new ArrayList<CyEdge>();
+				List<CyEdge> externalEdges = new ArrayList<>();
 				
 				for (Long suid: externalIDs) {
 					CyEdge newEdge = rootNet.getEdge(suid);
@@ -353,7 +353,7 @@ public class GroupUtil {
 	}
 	
 	public Set<CyGroup> getGroups(final Collection<CyNetwork> networks) {
-		final Set<CyGroup> groups = new HashSet<CyGroup>();
+		final Set<CyGroup> groups = new HashSet<>();
 
 		for (final CyNetwork net : networks)
 			groups.addAll(groupMgr.getGroupSet(net));
@@ -374,7 +374,7 @@ public class GroupUtil {
 		Set<CyEdge> externalEdges = group.getExternalEdgeList();
 
 		// Save the SUIDs for each edge
-		List<Long> externalEdgeSUIDs = new ArrayList<Long>();
+		List<Long> externalEdgeSUIDs = new ArrayList<>();
 		for (CyEdge edge: externalEdges) {
 			externalEdgeSUIDs.add(edge.getSUID());
 		}
@@ -405,8 +405,8 @@ public class GroupUtil {
 		if (groupShownColumn == null)
 			hiddenTable.createListColumn(GROUP_NODE_SHOWN_ATTRIBUTE, Long.class, true);
 
-		List<Long> collapsedList = new ArrayList<Long>();
-		List<Long> groupNodeShownList = new ArrayList<Long>();
+		List<Long> collapsedList = new ArrayList<>();
+		List<Long> groupNodeShownList = new ArrayList<>();
 		for (CyNetwork net: group.getNetworkSet()) {
 			if(group.isCollapsed(net)) {
 				collapsedList.add(net.getSUID());
@@ -435,7 +435,7 @@ public class GroupUtil {
 			if (addedNodes.containsKey(net))
 				nodeList = addedNodes.get(net);
 			else
-				nodeList = new ArrayList<CyNode>();
+				nodeList = new ArrayList<>();
 			nodeList.add(node);
 			addedNodes.put(net, nodeList);
 		}
@@ -458,9 +458,9 @@ public class GroupUtil {
 			CyRow row = hiddenSubTable.getRow(child.getSUID());
 
 			// Load the existing information in, if any
-			List<Long> networks = new ArrayList<Long>();
-			List<Double> xLocation = new ArrayList<Double>();
-			List<Double> yLocation = new ArrayList<Double>();
+			List<Long> networks = new ArrayList<>();
+			List<Double> xLocation = new ArrayList<>();
+			List<Double> yLocation = new ArrayList<>();
 
 			if (row.isSet(GROUP_NETWORKS_ATTRIBUTE))
 				networks = row.getList(GROUP_NETWORKS_ATTRIBUTE, Long.class);

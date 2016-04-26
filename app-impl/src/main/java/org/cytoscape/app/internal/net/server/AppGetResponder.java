@@ -75,7 +75,7 @@ public class AppGetResponder {
         }
 
         protected Map<String,String> jsonRespond(CyHttpRequest request, Matcher matchedURI) {
-            Map<String, String> responseData = new HashMap<String, String>();
+            Map<String, String> responseData = new HashMap<>();
             String appName = matchedURI.group(1);
             if (appName != null && appName.length() != 0) {
                 String status = "not-found";
@@ -113,7 +113,7 @@ public class AppGetResponder {
         }
 
         protected Map<String,String> jsonRespond(CyHttpRequest request, Matcher matchedURI) {
-            Map<String, String> responseData = new HashMap<String, String>();
+            Map<String, String> responseData = new HashMap<>();
 			String appName = matchedURI.group(1);
 			final String version = matchedURI.group(2);
 			

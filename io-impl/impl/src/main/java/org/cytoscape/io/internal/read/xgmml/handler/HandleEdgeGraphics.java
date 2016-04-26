@@ -42,7 +42,7 @@ public class HandleEdgeGraphics extends AbstractHandler {
 			final String name = atts.getValue("name");
 
 			if (name != null && name.equals(EDGE_BEND)) {
-				manager.handleList = new ArrayList<String>();
+				manager.handleList = new ArrayList<>();
 				return ParseState.EDGE_BEND;
 			} else if (name != null && !name.equals("cytoscapeEdgeGraphicsAttributes")) {
 				manager.addGraphicsAttribute(manager.getCurrentEdge(), name, atts.getValue("value"));

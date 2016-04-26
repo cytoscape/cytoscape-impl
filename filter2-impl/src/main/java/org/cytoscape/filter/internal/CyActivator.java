@@ -88,7 +88,7 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(context, new DegreeFilterFactory(), FilterFactory.class, new Properties());
 		registerService(context, new ColumnFilterFactory(), FilterFactory.class, new Properties());
 		registerService(context, new TopologyFilterFactory(), FilterFactory.class, new Properties());
-		registerService(context, new CompositeFilterFactory<CyNetwork, CyIdentifiable>(CyNetwork.class, CyIdentifiable.class), FilterFactory.class, new Properties());
+		registerService(context, new CompositeFilterFactory<>(CyNetwork.class, CyIdentifiable.class), FilterFactory.class, new Properties());
 		
 		// Transformers
 		registerService(context, new InteractionTransformerFactory(), ElementTransformerFactory.class, new Properties());

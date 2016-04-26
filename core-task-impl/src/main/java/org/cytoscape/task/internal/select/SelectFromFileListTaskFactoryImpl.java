@@ -64,7 +64,7 @@ public class SelectFromFileListTaskFactoryImpl extends AbstractNetworkTaskFactor
 
 	@Override
 	public TaskIterator createTaskIterator(CyNetwork network, File file) {
-		final Map<String, Object> m = new HashMap<String, Object>();
+		final Map<String, Object> m = new HashMap<>();
 		m.put("file", file);
 
 		return tunableSetter.createTaskIterator(this.createTaskIterator(network), m); 

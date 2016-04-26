@@ -83,7 +83,7 @@ public class VisualStyleTest extends AbstractVisualStyleTest {
 		// Create root node.
 		final NullVisualProperty minimalRoot = new NullVisualProperty("MINIMAL_ROOT", "Minimal Root Visual Property");
 		final BasicVisualLexicon minimalLex = new BasicVisualLexicon(minimalRoot);
-		final Set<VisualLexicon> lexSet = new HashSet<VisualLexicon>();
+		final Set<VisualLexicon> lexSet = new HashSet<>();
 		lexSet.add(minimalLex);
 
 		final VisualMappingFunctionFactory ptFactory = mock(VisualMappingFunctionFactory.class);
@@ -144,8 +144,8 @@ public class VisualStyleTest extends AbstractVisualStyleTest {
 	
 	private long runApplyLocal(final CyNetworkView largeNetworkView) {
 		// Pick 5 random nodes in the network
-		final List<View<CyNode>> views = new ArrayList<View<CyNode>>(largeNetworkView.getNodeViews());
-		Set<View<CyNode>> targets = new HashSet<View<CyNode>>();
+		final List<View<CyNode>> views = new ArrayList<>(largeNetworkView.getNodeViews());
+		Set<View<CyNode>> targets = new HashSet<>();
 		for (int i = 0; i < 5; i++) {
 			double rand = Math.random();
 			int index = (int) (NETWORK_SIZE * rand);

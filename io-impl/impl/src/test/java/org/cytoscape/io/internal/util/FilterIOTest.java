@@ -83,7 +83,7 @@ public class FilterIOTest {
 		degreeFilter.setCriterion(new Double[] { 0.2, 5.5 });
 		degreeFilter.setEdgeType(CyEdge.Type.ANY);
 		
-		CompositeFilter<CyNetwork, CyIdentifiable> composite = new CompositeFilterImpl<CyNetwork, CyIdentifiable>(CyNetwork.class, CyIdentifiable.class);
+		CompositeFilter<CyNetwork, CyIdentifiable> composite = new CompositeFilterImpl<>(CyNetwork.class, CyIdentifiable.class);
 		composite.setType(Type.ANY);
 		composite.append(degreeFilter);
 		
@@ -95,7 +95,7 @@ public class FilterIOTest {
 		TransformerManagerImpl transformerManager = new TransformerManagerImpl();
 		Map<String, String> properties = Collections.emptyMap();
 		transformerManager.registerFilterFactory(new DegreeFilterFactory(), properties);
-		transformerManager.registerFilterFactory(new CompositeFilterFactory<CyNetwork, CyIdentifiable>(CyNetwork.class, CyIdentifiable.class), properties);
+		transformerManager.registerFilterFactory(new CompositeFilterFactory<>(CyNetwork.class, CyIdentifiable.class), properties);
 		
 		CyTransformerReaderImpl reader = new CyTransformerReaderImpl();
 		reader.registerTransformerManager(transformerManager, null);
@@ -200,7 +200,7 @@ public class FilterIOTest {
 	public void testLoadOldTopologyFilter() throws IOException {
 		TransformerManagerImpl transformerManager = new TransformerManagerImpl();
 		Map<String, String> properties = Collections.emptyMap();
-		transformerManager.registerFilterFactory(new CompositeFilterFactory<CyNetwork, CyIdentifiable>(CyNetwork.class, CyIdentifiable.class), properties);
+		transformerManager.registerFilterFactory(new CompositeFilterFactory<>(CyNetwork.class, CyIdentifiable.class), properties);
 		transformerManager.registerFilterFactory(new TopologyFilterFactory(), properties);
 		transformerManager.registerFilterFactory(new ColumnFilterFactory(), properties);
 		
@@ -303,10 +303,10 @@ public class FilterIOTest {
 		public Integer[] integerArrayField = new Integer[] { 1, 2, 3 };
 		
 		@Tunable
-		public ListSingleSelection<Object> listSingleSelection = new ListSingleSelection<Object>("Hello", "World");
+		public ListSingleSelection<Object> listSingleSelection = new ListSingleSelection<>("Hello", "World");
 		
 		@Tunable
-		public ListMultipleSelection<Object> listMultipleSelection = new ListMultipleSelection<Object>("Hello", "World");
+		public ListMultipleSelection<Object> listMultipleSelection = new ListMultipleSelection<>("Hello", "World");
 
 		public DummyFilter() {
 			listSingleSelection.setSelectedValue(listSingleSelection.getPossibleValues().get(1));

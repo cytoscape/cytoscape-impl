@@ -102,7 +102,7 @@ public class ColumnSelector extends JPanel {
 		this.serviceRegistrar = serviceRegistrar;
 		
 		final Collator collator = Collator.getInstance(Locale.getDefault());
-		this.columns = new TreeMap<String, CyColumn>(new Comparator<String>() {
+		this.columns = new TreeMap<>(new Comparator<String>() {
 			@Override
 			public int compare(String s1, String s2) {
 				return collator.compare(s1, s2);

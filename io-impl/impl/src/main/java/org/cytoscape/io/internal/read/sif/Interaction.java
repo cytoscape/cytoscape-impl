@@ -39,7 +39,7 @@ final class Interaction {
 	Interaction(final String rawText, final String delimiter) {
 		final StringTokenizer strtok = new StringTokenizer(rawText, delimiter);
 		int counter = 0;
-		targets = new ArrayList<String>();
+		targets = new ArrayList<>();
 
 		while (strtok.hasMoreTokens()) {
 			if (counter == 0)

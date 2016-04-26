@@ -184,31 +184,31 @@ public class ExpressionReader extends AbstractTableReader {
 			geneNames.clear();
 		}
 
-		geneNames = new Vector<String>(0, expand);
+		geneNames = new Vector<>(0, expand);
 
 		if (geneDescripts != null) {
 			geneDescripts.clear();
 		}
 
-		geneDescripts = new Vector<String>(0, expand);
+		geneDescripts = new Vector<>(0, expand);
 
 		if (condNames != null) {
 			condNames.clear();
 		}
 
-		condNames = new Vector<String>();
+		condNames = new Vector<>();
 
 		if (geneNameToIndex != null) {
 			geneNameToIndex.clear();
 		}
 
-		geneNameToIndex = new HashMap<String,Integer>();
+		geneNameToIndex = new HashMap<>();
 
 		if (condNameToIndex != null) {
 			condNameToIndex.clear();
 		}
 
-		condNameToIndex = new HashMap<String,Integer>();
+		condNameToIndex = new HashMap<>();
 		minExp = Double.MAX_VALUE;
 		maxExp = Double.MIN_VALUE;
 		minSig = Double.MAX_VALUE;
@@ -218,7 +218,7 @@ public class ExpressionReader extends AbstractTableReader {
 			allMeasurements.clear();
 		}
 
-		allMeasurements = new Vector<Vector<mRNAMeasurement>>(0, expand);
+		allMeasurements = new Vector<>(0, expand);
 	}
 
 	@Override
@@ -325,7 +325,7 @@ public class ExpressionReader extends AbstractTableReader {
 			}
 			
 			/* the next numConds tokens are the condition names */
-			Vector<String> cNames = new Vector<String>(numberOfConditions);
+			Vector<String> cNames = new Vector<>(numberOfConditions);
 
 			for (int i = 0; i < numberOfConditions; i++)
 				cNames.add(headerTok.nextToken());
@@ -370,7 +370,7 @@ public class ExpressionReader extends AbstractTableReader {
 				taskMonitor.setStatusMessage("Reading in Data...");
 
 			final boolean mappingByKeyAttribute = false; // FIXME: I just made this up!
-			final Map<String, List<String>> attributeToId = new HashMap<String, List<String>>(); // FIXME: I just made this up!
+			final Map<String, List<String>> attributeToId = new HashMap<>(); // FIXME: I just made this up!
 			while ((line = input.readLine()) != null) {
 				++lineCount;
 				parseOneLine(line, lineCount, expectPvals, mappingByKeyAttribute, attributeToId, hasCOMMON);
@@ -401,7 +401,7 @@ public class ExpressionReader extends AbstractTableReader {
 	}
 
 	private Map<String,List<String>> getAttributeToIdList(CyNetwork network, String keyAttributeName) throws IOException {
-		Map<String,List<String>> attributeToIdList = new HashMap<String,List<String>>();
+		Map<String,List<String>> attributeToIdList = new HashMap<>();
 		// TODO needs to be converted to create a CyTable with node keys rather than looking
 		// up all node ids.
 		List<CyNode> allNodes = network.getNodeList(); 
@@ -416,7 +416,7 @@ public class ExpressionReader extends AbstractTableReader {
 				if (attributeValue != null) {
 					List<String> genesThisAttribute = attributeToIdList.get(attributeValue);
 					if (genesThisAttribute == null) {
-						genesThisAttribute = new ArrayList<String>();
+						genesThisAttribute = new ArrayList<>();
 						genesThisAttribute.add(nodeName);
 						attributeToIdList.put(attributeValue, genesThisAttribute);
 					}
@@ -465,7 +465,7 @@ public class ExpressionReader extends AbstractTableReader {
 				headerTok.nextToken();
 			}
 
-			HashMap<Object,Object> names = new HashMap<Object,Object>();
+			HashMap<Object,Object> names = new HashMap<>();
 
 			while ((!retval) && headerTok.hasMoreTokens()) {
 				String title = headerTok.nextToken();
@@ -536,7 +536,7 @@ public class ExpressionReader extends AbstractTableReader {
 				sigData[i] = expData[i];
 		}
 
-		List<String> gNames = new ArrayList<String>();
+		List<String> gNames = new ArrayList<>();
 
 		if (mappingByAttribute) {
 			List<String> names = attributeToId.get(firstToken);
@@ -544,7 +544,7 @@ public class ExpressionReader extends AbstractTableReader {
 				gNames = names;
 			}
 		} else {
-			gNames = new ArrayList<String>();
+			gNames = new ArrayList<>();
 			gNames.add(firstToken);
 		}
 
@@ -554,7 +554,7 @@ public class ExpressionReader extends AbstractTableReader {
 			/* store descriptor token */
 			geneDescripts.add(geneDescript);
 
-			Vector<mRNAMeasurement> measurements = new Vector<mRNAMeasurement>(numConds);
+			Vector<mRNAMeasurement> measurements = new Vector<>(numConds);
 
 			for (int jj = 0; jj < numConds; jj++) {
 				mRNAMeasurement m = new mRNAMeasurement(expData[jj], sigData[jj]);

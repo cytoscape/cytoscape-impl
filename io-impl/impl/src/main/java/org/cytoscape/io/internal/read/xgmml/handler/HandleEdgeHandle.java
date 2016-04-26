@@ -80,7 +80,7 @@ public class HandleEdgeHandle extends AbstractHandler {
 			
 			if (manager.edgeBendX != null && manager.edgeBendY != null) {
 				if (manager.handleList == null)
-					manager.handleList = new ArrayList<String>();
+					manager.handleList = new ArrayList<>();
 				
 				manager.handleList.add(manager.edgeBendX + "," + manager.edgeBendY);
 				manager.edgeBendX = null;

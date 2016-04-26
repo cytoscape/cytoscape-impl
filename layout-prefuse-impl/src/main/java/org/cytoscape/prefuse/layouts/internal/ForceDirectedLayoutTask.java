@@ -79,7 +79,7 @@ public class ForceDirectedLayoutTask extends AbstractPartitionLayoutTask {
 		m_fsim.addForce(new SpringForce());
 		m_fsim.addForce(new DragForce());
 
-		forceItems = new HashMap<LayoutNode, ForceItem>();
+		forceItems = new HashMap<>();
 	}
 	
 	

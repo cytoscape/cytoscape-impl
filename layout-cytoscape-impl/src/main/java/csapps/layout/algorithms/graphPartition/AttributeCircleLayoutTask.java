@@ -60,7 +60,7 @@ public class AttributeCircleLayoutTask extends AbstractPartitionLayoutTask {
 	 */
 	public void layoutPartition(LayoutPartition partition) {
 		// just add the unlocked nodes
-		List<LayoutNode> nodes = new ArrayList<LayoutNode>();
+		List<LayoutNode> nodes = new ArrayList<>();
 		for ( LayoutNode ln : partition.getNodeList() ) {
 			if ( !ln.isLocked() ) {
 				nodes.add(ln);

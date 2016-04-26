@@ -53,7 +53,7 @@ public class ViewWriterTest extends AbstractCyWriterTest {
 		final RenderingEngine re = mock(RenderingEngine.class);
 		fileFilter = mock(CyFileFilter.class);
 		when(fileFilter.getDescription()).thenReturn("A dummy filter");
-		final List<CyFileFilter> filters = new ArrayList<CyFileFilter>();
+		final List<CyFileFilter> filters = new ArrayList<>();
 		filters.add(fileFilter);
 		when(pwm.getAvailableWriterFilters()).thenReturn(filters);
 		cyWriter = new ViewWriter(pwm, view, re);

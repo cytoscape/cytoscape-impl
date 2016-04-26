@@ -201,9 +201,9 @@ public class AppManager implements FrameworkListener {
 		this.bundleContext = bundleContext;
 		
 		appParser = new AppParser();
-		appListeners = new CopyOnWriteArrayList<AppsChangedListener>();
+		appListeners = new CopyOnWriteArrayList<>();
 		
-		apps = new CopyOnWriteArraySet<App>();
+		apps = new CopyOnWriteArraySet<>();
 
 		// cleanKarafDeployDirectory();
 		purgeTemporaryDirectories();
@@ -305,7 +305,7 @@ public class AppManager implements FrameworkListener {
 		Set<App> installedApps = obtainAppsFromDirectory(getBundledAppsPath(), true);
 		installedApps.addAll(obtainAppsFromDirectory(new File(getInstalledAppsPath()), false));
 		
-		Map<String, App> appsToStart = new HashMap<String, App>();
+		Map<String, App> appsToStart = new HashMap<>();
 		for(App app: installedApps) {
 			boolean appRegistered = false;
 			for (App regApp : apps) {
@@ -327,7 +327,7 @@ public class AppManager implements FrameworkListener {
 			}
 		}
 		
-		Set<App> coreAppsToStart = new HashSet<App>();
+		Set<App> coreAppsToStart = new HashSet<>();
 		App coreAppsMetaApp = appsToStart.get("core apps");
 		if(coreAppsMetaApp != null && coreAppsMetaApp.getDependencies() != null) {
 			for(App.Dependency dep: coreAppsMetaApp.getDependencies()) {
@@ -343,7 +343,7 @@ public class AppManager implements FrameworkListener {
 			userLogger.warn("One or more core apps failed to load or start");
 		eventHelper.fireEvent(new CyStartEvent(this));
 		
-		Set<App> otherAppsToStart = new HashSet<App>(appsToStart.values());
+		Set<App> otherAppsToStart = new HashSet<>(appsToStart.values());
 		otherAppsToStart.removeAll(coreAppsToStart);
 		
 		if(!startApps(otherAppsToStart))
@@ -896,7 +896,7 @@ public class AppManager implements FrameworkListener {
 	 * @return The set of all installed apps.
 	 */
 	public Set<App> getInstalledApps() {
-		final Set<App> installedApps = new HashSet<App>();
+		final Set<App> installedApps = new HashSet<>();
 		
 		for (App app : apps) {
 			if (app.getStatus() != AppStatus.INACTIVE
@@ -1105,7 +1105,7 @@ public class AppManager implements FrameworkListener {
 		// Obtain all files in the given directory with supported extensions, perform a non-recursive search
 		Collection<File> files = FileUtils.listFiles(directory, APP_EXTENSIONS, false); 
 		
-		Set<App> parsedApps = new HashSet<App>();
+		Set<App> parsedApps = new HashSet<>();
 		
 		App app;
 		for (File file : files) {

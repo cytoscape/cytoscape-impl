@@ -63,8 +63,8 @@ public class CyListenerAdapter {
 	 */
 	public CyListenerAdapter(BundleContext bc) {
 		this.bc = bc;
-		serviceTrackers = new ConcurrentHashMap<Class<?>,ServiceTracker>(16, 0.75f, 2);
-		silencedSources = new WeakHashMap<Object, Object>();
+		serviceTrackers = new ConcurrentHashMap<>(16, 0.75f, 2);
+		silencedSources = new WeakHashMap<>();
 
 		// used only for printing a coherent event trace
 		fireCount = 0;

@@ -38,7 +38,7 @@ public class FiltersChangedEvent {
 	}
 	
 	public FiltersChangedEvent(final Vector<CompositeFilter> filters, final CompositeFilter currentFilter) {
-		this.filters = filters != null ? filters : new Vector<CompositeFilter>();
+		this.filters = filters != null ? filters : new Vector<>();
 		
 		if (currentFilter != null)
 			this.currentFilter = currentFilter;

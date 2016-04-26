@@ -46,7 +46,7 @@ public class ColumnFilter extends AbstractTransformer<CyNetwork, CyIdentifiable>
 	private Boolean booleanCriterion;
 	
 	public ColumnFilter() {
-		type = new ListSingleSelection<String>(NODES, EDGES, NODES_AND_EDGES);
+		type = new ListSingleSelection<>(NODES, EDGES, NODES_AND_EDGES);
 		type.addListener(new ListChangeListener<String>() {
 			@Override
 			public void selectionChanged(ListSelection<String> source) {

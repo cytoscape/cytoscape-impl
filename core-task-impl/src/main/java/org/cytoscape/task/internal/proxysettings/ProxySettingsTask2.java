@@ -74,7 +74,7 @@ public class ProxySettingsTask2 extends AbstractTask implements TunableValidator
     private static final List<String> PROXY_TYPES = Arrays.asList("direct", "http", "socks");
 
 	@Tunable(description="Type:")
-	public ListSingleSelection<String> type = new ListSingleSelection<String>(PROXY_TYPES);
+	public ListSingleSelection<String> type = new ListSingleSelection<>(PROXY_TYPES);
 
 	@Tunable(description="Proxy Server:",groups={"Options"},dependsOn="type!=direct")
 	public String hostname="";
@@ -100,7 +100,7 @@ public class ProxySettingsTask2 extends AbstractTask implements TunableValidator
 		this.proxyProperties = proxyProperties;
 		this.streamUtil = streamUtil;
 		this.eventHelper = eventHelper;
-		oldSettings = new HashMap<String,String>();
+		oldSettings = new HashMap<>();
 		properties = proxyProperties.getProperties();
 		try {
             final String proxyType = properties.getProperty(PROXY_TYPE);
@@ -164,7 +164,7 @@ public class ProxySettingsTask2 extends AbstractTask implements TunableValidator
 	
 		storeProxySettings();
 
-		FutureTask<Exception> task = new FutureTask<Exception>(new TestProxySettings(streamUtil));
+		FutureTask<Exception> task = new FutureTask<>(new TestProxySettings(streamUtil));
 		Exception result = null;
 		try {
 			new Thread(task).start();

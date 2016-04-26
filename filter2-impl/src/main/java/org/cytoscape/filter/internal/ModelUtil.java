@@ -19,7 +19,7 @@ public class ModelUtil {
 		public NamedTransformerImpl(String name, Transformer<?, ?>... transformers) {
 			this.name = name;
 			
-			this.transformers = new CopyOnWriteArrayList<Transformer<Object, Object>>();
+			this.transformers = new CopyOnWriteArrayList<>();
 			for (Transformer<?, ?> transformer : transformers) {
 				this.transformers.add((Transformer<Object, Object>) transformer);
 			}

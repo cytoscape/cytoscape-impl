@@ -43,7 +43,7 @@ public class CyTransformerReaderImpl implements CyTransformerReader {
 		try {
 			assertNextToken(parser, JsonToken.START_ARRAY);
 			
-			List<NamedTransformer<?, ?>> namedTransformers = new ArrayList<NamedTransformer<?,?>>();
+			List<NamedTransformer<?, ?>> namedTransformers = new ArrayList<>();
 			while (parser.nextToken() != JsonToken.END_ARRAY) {
 				assertEquals(JsonToken.START_OBJECT, parser.getCurrentToken());
 				assertField(parser, FilterIO.NAME_FIELD);
@@ -51,7 +51,7 @@ public class CyTransformerReaderImpl implements CyTransformerReader {
 				assertField(parser, FilterIO.TRANSFORMERS_FIELD);
 				assertNextToken(parser, JsonToken.START_ARRAY);
 				
-				List<Transformer<?, ?>> transformers = new ArrayList<Transformer<?,?>>();
+				List<Transformer<?, ?>> transformers = new ArrayList<>();
 				while (true) {
 					Transformer<?, ?> transformer = readTransformer(parser);
 					if (transformer == null) {
@@ -126,7 +126,7 @@ public class CyTransformerReaderImpl implements CyTransformerReader {
 	}
 
 	private Map<String, Object> readParameters(JsonParser parser, Transformer<?, ?> transformer) throws IOException {
-		Map<String, Object> parameters = new HashMap<String, Object>();
+		Map<String, Object> parameters = new HashMap<>();
 		while (parser.nextToken() != JsonToken.END_OBJECT) {
 			assertEquals(JsonToken.FIELD_NAME, parser.getCurrentToken());
 			String name = parser.getCurrentName();
@@ -156,7 +156,7 @@ public class CyTransformerReaderImpl implements CyTransformerReader {
 	}
 	
 	private List<Object> readArray(JsonParser parser) throws IOException {
-		List<Object> list = new ArrayList<Object>();
+		List<Object> list = new ArrayList<>();
 		while (parser.nextToken() != JsonToken.END_ARRAY) {
 			list.add(readCurrentValue(parser));
 		}

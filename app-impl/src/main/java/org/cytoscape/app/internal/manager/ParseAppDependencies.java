@@ -34,7 +34,7 @@ public class ParseAppDependencies {
 	 */
 	private static AbstractMap<String, String> mapAppAttrs(String app)
 			throws Exception {
-		HashMap<String, String> attrMap = new HashMap<String, String>();
+		HashMap<String, String> attrMap = new HashMap<>();
 
 		String[] attrList = Utils.dumbSplit(app, ATTR_DELIMITER);
 		for (int index = 0; index < attrList.length; index++) {
@@ -76,7 +76,7 @@ public class ParseAppDependencies {
 	 */
 	private static AbstractMap<String, Range> parseAppNameDependencies(
 			String manifestList, String packageQualifier) throws Exception {
-		AbstractMap<String, Range> appVersions = new HashMap<String, Range>();
+		AbstractMap<String, Range> appVersions = new HashMap<>();
 		ArrayList<String> appList = splitByPkg(manifestList);
 		for (String app : appList) {
 			if (app.startsWith(packageQualifier)) {

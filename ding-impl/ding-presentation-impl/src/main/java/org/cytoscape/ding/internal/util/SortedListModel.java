@@ -50,7 +50,7 @@ public class SortedListModel<E> extends AbstractListModel<E> {
 
 		// Get base model info.
 		int size = model.getSize();
-		sortedModel = new ArrayList<SortedListEntry>(size);
+		sortedModel = new ArrayList<>(size);
 		
 		for (int x = 0; x < size; ++x) {
 			SortedListEntry entry = new SortedListEntry(x);

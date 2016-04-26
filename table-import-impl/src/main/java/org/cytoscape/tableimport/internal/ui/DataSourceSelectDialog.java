@@ -219,13 +219,13 @@ public class DataSourceSelectDialog extends JDialog {
 
 		if (sourceType == ONTOLOGY_TYPE) {
 			final FileChooserFilter filter = new FileChooserFilter("OBO File", "obo");
-			List<FileChooserFilter> filterCollection = new ArrayList<FileChooserFilter>(1);
+			List<FileChooserFilter> filterCollection = new ArrayList<>(1);
 			filterCollection.add(filter);
 			file = fileUtil.getFile(this.getParent(), "Select OBO Source File", FileUtil.LOAD, filterCollection);
 
 		} else {
 			// Currently, there is no pre-defined extension for this file type.
-			final List<FileChooserFilter> filterCollection = new ArrayList<FileChooserFilter>();
+			final List<FileChooserFilter> filterCollection = new ArrayList<>();
 			file = fileUtil.getFile(this.getParent(), "Select Gene Annotation Source File", FileUtil.LOAD,
 					filterCollection);
 		}

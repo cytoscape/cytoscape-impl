@@ -51,10 +51,10 @@ public abstract class AbstractGroupTask extends AbstractTask {
 	protected List<CyGroup> getGroupList(TaskMonitor tm, String groupList) {
 		Set<CyGroup> allGroups = groupMgr.getGroupSet(net);
 		if (groupList.equalsIgnoreCase("all")) {
-			return new ArrayList<CyGroup>(allGroups);
+			return new ArrayList<>(allGroups);
 		}
 		String[] groups = DataUtils.getCSV(groupList);
-		List<CyGroup> returnGroups = new ArrayList<CyGroup>();
+		List<CyGroup> returnGroups = new ArrayList<>();
 		for (String groupName: groups) {
 			CyGroup group = getGroup(groupName);
 			if (group != null) {
@@ -95,7 +95,7 @@ public abstract class AbstractGroupTask extends AbstractTask {
 
 	protected Set<CyGroup>getGroups(CyNetwork net, List<CyNode>nodeList) {
 
-		Set<CyGroup> groupList = new HashSet<CyGroup>();
+		Set<CyGroup> groupList = new HashSet<>();
 
 		// For each node that is in a group, or is a group, add it to our list
 		for (CyNode node: nodeList) {

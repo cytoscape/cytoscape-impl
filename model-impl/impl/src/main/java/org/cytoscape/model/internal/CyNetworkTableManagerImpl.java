@@ -48,7 +48,7 @@ public class CyNetworkTableManagerImpl implements CyNetworkTableManager {
 		// for the CyTable maps too because CyNetworks may be holding a
 		// reference to them.  This set up allows us to automatically clean
 		// up this map whenever CyNetworks get garbage collected.
-		tables = new WeakHashMap<CyNetwork, Map<Class<? extends CyIdentifiable>, Map<String, CyTable>>>();
+		tables = new WeakHashMap<>();
 	}
 
 	@Override
@@ -102,8 +102,8 @@ public class CyNetworkTableManagerImpl implements CyNetworkTableManager {
 		synchronized (lock) {
 			Map<Class<? extends CyIdentifiable>, Map<String, CyTable>> byType = tables.get(network);
 			if (byType == null) {
-				byType = new HashMap<Class<? extends CyIdentifiable>, Map<String,CyTable>>();
-				final Map<String, CyTable> type2Tables = new HashMap<String, CyTable>();
+				byType = new HashMap<>();
+				final Map<String, CyTable> type2Tables = new HashMap<>();
 				type2Tables.put(namespace, table);
 				byType.put(type, type2Tables);
 				tables.put(network, byType);
@@ -112,7 +112,7 @@ public class CyNetworkTableManagerImpl implements CyNetworkTableManager {
 			
 			Map<String, CyTable> reference = byType.get(type);
 			if (reference == null) {
-				final Map<String, CyTable> type2Tables = new HashMap<String, CyTable>();
+				final Map<String, CyTable> type2Tables = new HashMap<>();
 				type2Tables.put(namespace, table);
 				byType.put(type, type2Tables);
 				tables.put(network, byType);

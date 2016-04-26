@@ -66,7 +66,7 @@ public class ListColumnsTask extends AbstractTableDataTask implements Observable
 			return;
 		}
 
-		columns = new ArrayList<CyColumn> (requestedTable.getColumns());
+		columns = new ArrayList<>(requestedTable.getColumns());
 		taskMonitor.showMessage(TaskMonitor.Level.INFO, 
 		                        "Columns for table "+getTableDescription(requestedTable)+":");
 		for (CyColumn column: columns)

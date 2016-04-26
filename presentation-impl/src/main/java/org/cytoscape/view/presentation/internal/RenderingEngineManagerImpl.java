@@ -70,8 +70,8 @@ public class RenderingEngineManagerImpl implements RenderingEngineManager, Netwo
 			throw new IllegalArgumentException("CyEventHelper cannot be null.");
 		
 		this.eventHelper = eventHelper;
-		this.renderingEngineMap = new WeakHashMap<View<?>, Collection<RenderingEngine<?>>>();
-		this.factoryMap = new HashMap<String, RenderingEngineFactory<?>>();
+		this.renderingEngineMap = new WeakHashMap<>();
+		this.factoryMap = new HashMap<>();
 	}
 
 	/**
@@ -89,7 +89,7 @@ public class RenderingEngineManagerImpl implements RenderingEngineManager, Netwo
 
 	@Override
 	public Collection<RenderingEngine<?>> getAllRenderingEngines() {
-		final Set<RenderingEngine<?>> allEngines = new HashSet<RenderingEngine<?>>();
+		final Set<RenderingEngine<?>> allEngines = new HashSet<>();
 		
 		synchronized (lock) {
 			for(Collection<RenderingEngine<?>> engines: renderingEngineMap.values())
@@ -107,7 +107,7 @@ public class RenderingEngineManagerImpl implements RenderingEngineManager, Netwo
 			Collection<RenderingEngine<?>> currentVals = renderingEngineMap.get(viewModel);
 			
 			if(currentVals == null)
-				currentVals = new HashSet<RenderingEngine<?>>();
+				currentVals = new HashSet<>();
 			
 			currentVals.add(renderingEngine);
 			

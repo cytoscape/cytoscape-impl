@@ -206,7 +206,7 @@ public class CyAttributesReader extends AbstractTask implements CyTableReader {
 					val = val.substring(0, val.length() - 1).trim();
 
 					String[] elms = val.split("::");
-					final List<Object> elmsBuff = new ArrayList<Object>();
+					final List<Object> elmsBuff = new ArrayList<>();
 
 					for (String vs : elms) {
 						vs = decodeString(vs);

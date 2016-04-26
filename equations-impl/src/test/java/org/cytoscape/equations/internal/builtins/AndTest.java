@@ -35,12 +35,12 @@ import junit.framework.*;
 
 public class AndTest extends TestCase {
 	public void testAll() throws Exception {
-		final List<Object> list = new ArrayList<Object>();
+		final List<Object> list = new ArrayList<>();
 		list.add("false");
 		list.add(Long.valueOf(0L));
 		list.add(Double.valueOf(1.3));
 
-		final Map<String, Object> variablesAndValues = new HashMap<String, Object>();
+		final Map<String, Object> variablesAndValues = new HashMap<>();
 		variablesAndValues.put("LIST", list);
 
 		assertTrue(Framework.executeTest("=AND($LIST,\"false\",FALSE)", variablesAndValues, Boolean.valueOf(false)));

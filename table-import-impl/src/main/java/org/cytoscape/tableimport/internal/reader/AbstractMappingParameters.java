@@ -60,7 +60,7 @@ public abstract class AbstractMappingParameters implements MappingParameter{
 	public String fileType;
 	
 	public AbstractMappingParameters(final InputStream is, final String fileType) {
-		this.delimiters = new ArrayList<String>();
+		this.delimiters = new ArrayList<>();
 		this.delimiters.add(DEF_DELIMITER);
 		this.is = is;
 		this.fileType = fileType;

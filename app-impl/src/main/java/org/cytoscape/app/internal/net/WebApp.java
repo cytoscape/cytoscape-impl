@@ -156,8 +156,8 @@ public class WebApp {
 	}
 	
 	public WebApp() {
-		appTags = new HashSet<AppTag>();
-		releases = new LinkedList<Release>();
+		appTags = new HashSet<>();
+		releases = new LinkedList<>();
 		
 		correspondingApp = null;
 	}

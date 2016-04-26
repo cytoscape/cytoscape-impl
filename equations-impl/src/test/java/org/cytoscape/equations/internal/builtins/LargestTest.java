@@ -36,13 +36,13 @@ import junit.framework.*;
 public class LargestTest extends TestCase {
 	public void testAll() throws Exception {
 		// A list w/ an odd number of elements:
-                final List<Object> numbers = new ArrayList<Object>();
+                final List<Object> numbers = new ArrayList<>();
                 numbers.add(new Double(5.5));
                 numbers.add(new Long(-1L));
                 numbers.add(new Double(10.0));
                 numbers.add(new Double(3.1));
                 numbers.add(new Long(4L));
-		final Map<String, Object> variablesAndValues = new HashMap<String, Object>();
+		final Map<String, Object> variablesAndValues = new HashMap<>();
 		variablesAndValues.put("list", numbers);
 		assertTrue(Framework.executeTest("=LARGEST($list,3)", variablesAndValues, Double.valueOf(4.0)));
 		assertTrue(Framework.executeTest("=LARGEST($list, 1)", variablesAndValues, Double.valueOf(10)));
@@ -50,7 +50,7 @@ public class LargestTest extends TestCase {
 
 
 		// A list w/ an even number of elements:                                                                                           
-		final List<Object> numbers2 = new ArrayList<Object>();
+		final List<Object> numbers2 = new ArrayList<>();
 		numbers2.add(new Double(5.5));
 		numbers2.add(new Long(-1L));
 		numbers2.add(new Double(10.0));

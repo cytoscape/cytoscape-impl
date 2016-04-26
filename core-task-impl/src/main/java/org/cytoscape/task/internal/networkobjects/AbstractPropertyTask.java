@@ -129,7 +129,7 @@ public abstract class AbstractPropertyTask extends AbstractTask {
 
 	public List<String> listProperties(Class <? extends CyIdentifiable> type, CyNetwork network) {
 		Collection<CyNetworkView> views = viewManager.getNetworkViews(network);
-		List<String> propertyList = new ArrayList<String>();
+		List<String> propertyList = new ArrayList<>();
 		for (CyNetworkView view: views) {
 			for (RenderingEngine<?> rEngine: reManager.getRenderingEngines(view)) {
 				VisualLexicon lex = rEngine.getVisualLexicon();

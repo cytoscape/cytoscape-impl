@@ -35,17 +35,17 @@ import junit.framework.*;
 
 public class NthTest extends TestCase {
 	public void testAll() throws Exception {
-                final List<Object> list1 = new ArrayList<Object>();
+                final List<Object> list1 = new ArrayList<>();
                 list1.add(3.0);
                 list1.add(new Integer(2));
                 list1.add(5.0);
                 list1.add(new String("1"));
                 list1.add(4.0);
-		final Map<String, Object> variablesAndValues = new HashMap<String, Object>();
+		final Map<String, Object> variablesAndValues = new HashMap<>();
 		variablesAndValues.put("list1", list1);
 		assertTrue(Framework.executeTest("=NTH(${list1}, 3)", variablesAndValues, Double.valueOf(5.0)));
 		assertTrue(Framework.executeTest("=NTH(${list1}, 2)", variablesAndValues, Long.valueOf(2)));
-                final List<Object> list2 = new ArrayList<Object>();
+                final List<Object> list2 = new ArrayList<>();
                 list2.add(1.0);
                 list2.add(new Integer(2));
                 list2.add(4.0);

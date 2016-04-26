@@ -26,7 +26,7 @@ public class CyNetworkSource implements TransformerSource<CyNetwork, CyIdentifia
 	@Override
 	public List<CyIdentifiable> getElementList(CyNetwork network) {
 		int total = network.getNodeCount() + network.getEdgeCount();
-		List<CyIdentifiable> elements = new ArrayList<CyIdentifiable>(total);
+		List<CyIdentifiable> elements = new ArrayList<>(total);
 		elements.addAll(network.getNodeList());
 		elements.addAll(network.getEdgeList());
 		return elements;

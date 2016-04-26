@@ -69,8 +69,8 @@ public class CyGroupManagerImpl implements CyGroupManager, AddedEdgesListener,
 	 */
 	public CyGroupManagerImpl(final CyServiceRegistrar cyServiceRegistrar, 
 		                        final CyEventHelper cyEventHelper) {
-		this.groupSet = new HashSet<CyGroup>();
-		this.rootMap = new HashMap<CyRootNetwork, Set<CyGroup>>();
+		this.groupSet = new HashSet<>();
+		this.rootMap = new HashMap<>();
 		this.cyServiceRegistrar = cyServiceRegistrar;
 		this.cyEventHelper = cyEventHelper;
 	}
@@ -78,7 +78,7 @@ public class CyGroupManagerImpl implements CyGroupManager, AddedEdgesListener,
 	@Override
 	public Set<CyGroup> getGroupSet(CyNetwork network) {
 		synchronized (lock) {
-			Set<CyGroup> groupNetSet = new HashSet<CyGroup>();
+			Set<CyGroup> groupNetSet = new HashSet<>();
 			for (CyGroup group: groupSet) {
 				if (group.isInNetwork(network))
 					groupNetSet.add(group);
@@ -119,7 +119,7 @@ public class CyGroupManagerImpl implements CyGroupManager, AddedEdgesListener,
 	@Override
 	public List<CyGroup> getGroupsForNode(CyNode node) {
 		synchronized (lock) {
-			List<CyGroup> returnList = new ArrayList<CyGroup>();
+			List<CyGroup> returnList = new ArrayList<>();
 	
 			// This is a little inefficient....
 			for (CyGroup group: groupSet) {
@@ -134,7 +134,7 @@ public class CyGroupManagerImpl implements CyGroupManager, AddedEdgesListener,
 	@Override
 	public List<CyGroup> getGroupsForNode(CyNode node, CyNetwork network) {
 		synchronized (lock) {
-			List<CyGroup> returnList = new ArrayList<CyGroup>();
+			List<CyGroup> returnList = new ArrayList<>();
 			for (CyGroup group: groupSet) {
 				if (group.isInNetwork(network) &&
 				    group.getGroupNetwork().containsNode(node))
@@ -188,7 +188,7 @@ public class CyGroupManagerImpl implements CyGroupManager, AddedEdgesListener,
 	@Override
 	public void reset() {
 		synchronized (lock) {
-			this.groupSet = new HashSet<CyGroup>();
+			this.groupSet = new HashSet<>();
 		}
 	}
 
@@ -277,7 +277,7 @@ public class CyGroupManagerImpl implements CyGroupManager, AddedEdgesListener,
 			if (rootMap.containsKey(group.getRootNetwork()))
 				rootMap.get(group.getRootNetwork()).add(group);
 			else {
-				Set<CyGroup>groupNetSet = new HashSet<CyGroup>();
+				Set<CyGroup>groupNetSet = new HashSet<>();
 				groupNetSet.add(group);
 				rootMap.put(group.getRootNetwork(),groupNetSet);
 			}
@@ -291,7 +291,7 @@ public class CyGroupManagerImpl implements CyGroupManager, AddedEdgesListener,
 			rhRow.getTable().createListColumn(GROUP_LIST_ATTRIBUTE, Long.class, false);
 		}
 
-		List<Long> groupSUIDs = new ArrayList<Long>();
+		List<Long> groupSUIDs = new ArrayList<>();
 		for (CyGroup g: getGroupSet(rootNet)) {
 			groupSUIDs.add(g.getGroupNode().getSUID());
 		}

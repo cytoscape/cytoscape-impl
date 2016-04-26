@@ -55,8 +55,8 @@ public class CreateTableTask extends AbstractTableDataTask implements Observable
 	public String keyColumn = null;
 
 	@Tunable (description="Type of key column", context="nogui")
-	public ListSingleSelection<String> keyColumnType =  
-		new ListSingleSelection<String>("integer", "long", "double", "string", "boolean");
+	public ListSingleSelection<String> keyColumnType =
+			new ListSingleSelection<>("integer", "long", "double", "string", "boolean");
 
 	public CreateTableTask(CyApplicationManager appMgr, CyTableFactory factory, CyTableManager tableMgr) {
 		super(tableMgr);

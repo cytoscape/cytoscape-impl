@@ -37,8 +37,8 @@ public class StaticTaskFactoryProvisioner {
 	
 	public TaskFactory createFor(final TableCellTaskFactory factory, final CyColumn column,
 			final Object primaryKeyValue) {
-		final Reference<CyColumn> columnReference = new WeakReference<CyColumn>(column);
-		final Reference<Object> keyReference = new WeakReference<Object>(primaryKeyValue);
+		final Reference<CyColumn> columnReference = new WeakReference<>(column);
+		final Reference<Object> keyReference = new WeakReference<>(primaryKeyValue);
 		
 		return new TaskFactory() {
 			@Override
@@ -53,7 +53,7 @@ public class StaticTaskFactoryProvisioner {
 	}
 	
 	public TaskFactory createFor(final TableColumnTaskFactory factory, final CyColumn column) {
-		final Reference<CyColumn> columnReference = new WeakReference<CyColumn>(column);
+		final Reference<CyColumn> columnReference = new WeakReference<>(column);
 		
 		return new TaskFactory() {
 			@Override

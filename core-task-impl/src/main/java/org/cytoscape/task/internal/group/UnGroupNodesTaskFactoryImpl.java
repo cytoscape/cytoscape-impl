@@ -67,7 +67,7 @@ public class UnGroupNodesTaskFactoryImpl implements NetworkViewTaskFactory,
 			return false;
 		}
 		
-		List<CyNode> nodeList = new ArrayList<CyNode>();
+		List<CyNode> nodeList = new ArrayList<>();
 		nodeList.add(nodeView.getModel());
 
 		CyNetwork net = netView.getModel();
@@ -94,7 +94,7 @@ public class UnGroupNodesTaskFactoryImpl implements NetworkViewTaskFactory,
 
 	public TaskIterator createTaskIterator(View<CyNode> nodeView, 
 	                                       CyNetworkView netView) {
-		List<CyNode> nodeList = new ArrayList<CyNode>();
+		List<CyNode> nodeList = new ArrayList<>();
 		CyNetwork net = netView.getModel();
 
 		nodeList.add(nodeView.getModel());
@@ -117,7 +117,7 @@ public class UnGroupNodesTaskFactoryImpl implements NetworkViewTaskFactory,
 
 	private Set<CyGroup>getGroups(CyNetwork net, List<CyNode>nodeList) {
 
-		Set<CyGroup> groupList = new HashSet<CyGroup>();
+		Set<CyGroup> groupList = new HashSet<>();
 
 		// For each node that is in a group, or is a group, add it to our list
 		for (CyNode node: nodeList) {

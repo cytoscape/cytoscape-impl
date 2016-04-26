@@ -75,7 +75,7 @@ public class ContinuousMappingImpl<K, V> extends AbstractVisualMappingFunction<K
 		if (Number.class.isAssignableFrom(attrType) == false)
 			throw new IllegalArgumentException("Column type should be Number.");
 		
-		this.points = new ArrayList<ContinuousMappingPoint<K, V>>();
+		this.points = new ArrayList<>();
 
 		// TODO FIXME use factory here.
 		// Create Interpolator
@@ -99,7 +99,7 @@ public class ContinuousMappingImpl<K, V> extends AbstractVisualMappingFunction<K
 
 	@Override
 	public void addPoint(K value, BoundaryRangeValues<V> brv) {
-		points.add(new ContinuousMappingPoint<K, V>(value, brv, this, eventHelper));
+		points.add(new ContinuousMappingPoint<>(value, brv, this, eventHelper));
 		eventHelper.addEventPayload((VisualMappingFunction) this, new VisualMappingFunctionChangeRecord(),
 				VisualMappingFunctionChangedEvent.class);
 	}

@@ -85,7 +85,7 @@ public final class FilterReader {
 	 *  Construct the filter objects based on the string representation of each filter.
 	 */
 	public Collection<CompositeFilter> read(final InputStream in) {
-		final Collection<CompositeFilter> filters = new LinkedHashSet<CompositeFilter>();
+		final Collection<CompositeFilter> filters = new LinkedHashSet<>();
 		final InputStreamReader reader = new InputStreamReader(in);
 		
 		try {
@@ -115,7 +115,7 @@ public final class FilterReader {
 
 				if (oneLine.trim().startsWith("<Composite>") || oneLine.trim().startsWith("<TopologyFilter>")
 						|| oneLine.trim().startsWith("<InteractionFilter>")) {
-					List<String> filterStrVect = new ArrayList<String>();
+					List<String> filterStrVect = new ArrayList<>();
 					filterStrVect.add(oneLine);
 
 					while ((oneLine = br.readLine()) != null) {
@@ -156,8 +156,8 @@ public final class FilterReader {
 			isInteractionFilter = true;
 		}
 
-		List<String> advSettingStrVect = new ArrayList<String>();
-		List<String> filterStrVect = new ArrayList<String>();
+		List<String> advSettingStrVect = new ArrayList<>();
+		List<String> filterStrVect = new ArrayList<>();
 
 		// Seperate AdvancedSetting from the rest
 		int startIndex = -1, endIndex = -1;
@@ -206,7 +206,7 @@ public final class FilterReader {
 			return retFilter;
 		}
 
-		Collection<CompositeFilter> allFilters = new LinkedHashSet<CompositeFilter>();
+		Collection<CompositeFilter> allFilters = new LinkedHashSet<>();
 
 		for (int i = 0; i < filterStrVect.size(); i++) {
 			line = filterStrVect.get(i);
@@ -255,7 +255,7 @@ public final class FilterReader {
 				}
 
 				if (dataType.equalsIgnoreCase("double")) {
-					NumericFilter<Double> _numFilter = new NumericFilter<Double>(quickFind);
+					NumericFilter<Double> _numFilter = new NumericFilter<>(quickFind);
 					_numFilter.setParent(retFilter);
 					_numFilter.setControllingAttribute(_values[0]);
 					_numFilter.setNegation((new Boolean(_values[1])).booleanValue());
@@ -264,7 +264,7 @@ public final class FilterReader {
 					_numFilter.setIndexType((new Integer(_values[4])).intValue());
 					retFilter.addChild(_numFilter);
 				} else { // dataType = "int"
-					NumericFilter<Integer> _numFilter = new NumericFilter<Integer>(quickFind);
+					NumericFilter<Integer> _numFilter = new NumericFilter<>(quickFind);
 					_numFilter.setParent(retFilter);
 					_numFilter.setControllingAttribute(_values[0]);
 					_numFilter.setNegation((new Boolean(_values[1])).booleanValue());

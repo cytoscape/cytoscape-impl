@@ -84,7 +84,7 @@ public class CyTableManagerImpl implements CyTableManager, NetworkAboutToBeDestr
 		this.networkTableManager = networkTableManager;
 		this.networkManager = networkManager;
 
-		tables = new HashMap<Long, CyTable>();
+		tables = new HashMap<>();
 	}
 
 
@@ -124,7 +124,7 @@ public class CyTableManagerImpl implements CyTableManager, NetworkAboutToBeDestr
 	@Override
 	public Set<CyTable> getAllTables(final boolean includePrivate) {
 		synchronized (lock) {
-			final Set<CyTable> res = new HashSet<CyTable>();
+			final Set<CyTable> res = new HashSet<>();
 	
 			for (final Long key : tables.keySet()) {
 				if (includePrivate || tables.get(key).isPublic())
@@ -192,8 +192,8 @@ public class CyTableManagerImpl implements CyTableManager, NetworkAboutToBeDestr
 
 	@Override
 	public Set<CyTable> getGlobalTables() {
-		final Set<CyTable> nonGlobalTables = new HashSet<CyTable>();
-		final Set<CyTable> globalTables = new HashSet<CyTable>();
+		final Set<CyTable> nonGlobalTables = new HashSet<>();
+		final Set<CyTable> globalTables = new HashSet<>();
 		final Set<CyNetwork> networks = networkTableManager.getNetworkSet();
 
 		for (final CyNetwork network : networks) {
@@ -211,7 +211,7 @@ public class CyTableManagerImpl implements CyTableManager, NetworkAboutToBeDestr
 
 	@Override
 	public Set<CyTable> getLocalTables(final Class<? extends CyIdentifiable> type) {
-		final Set<CyTable> localTables = new HashSet<CyTable>();
+		final Set<CyTable> localTables = new HashSet<>();
 
 		final Set<CyNetwork> networks = networkManager.getNetworkSet();
 

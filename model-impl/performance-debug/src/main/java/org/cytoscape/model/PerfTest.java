@@ -68,7 +68,7 @@ public class PerfTest {
 
 		// create nodes
 		final int NODE_COUNT = 50000;
-		final List<CyNode> nodes = new ArrayList<CyNode>(NODE_COUNT);
+		final List<CyNode> nodes = new ArrayList<>(NODE_COUNT);
 		for (int i = 0; i < NODE_COUNT; i++) {
 			nodes.add(network.addNode());
 		}
@@ -78,7 +78,7 @@ public class PerfTest {
 
 		// create edges
 		final int EDGE_COUNT = 100000;
-		final List<CyEdge> edges = new ArrayList<CyEdge>(EDGE_COUNT);
+		final List<CyEdge> edges = new ArrayList<>(EDGE_COUNT);
 		for (int i = 0; i < EDGE_COUNT; i++) {
 			final CyNode source = nodes.get(rand.nextInt(NODE_COUNT));
 			final CyNode target = nodes.get(rand.nextInt(NODE_COUNT));
@@ -92,7 +92,7 @@ public class PerfTest {
 		for ( CyNode n : network.getNodeList() ) {
 			if ( i++ > 1000 ) break;
 			List<CyNode> nl = network.getNeighborList(n,CyEdge.Type.ANY);
-			Set<CyEdge> es = new HashSet<CyEdge>();
+			Set<CyEdge> es = new HashSet<>();
 			for ( CyNode nn : nl ) {
 				List<CyEdge> ee = network.getConnectingEdgeList(n,nn,CyEdge.Type.ANY);
 				es.addAll(ee);

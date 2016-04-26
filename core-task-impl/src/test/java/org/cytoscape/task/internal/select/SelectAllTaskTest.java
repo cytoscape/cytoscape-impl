@@ -57,7 +57,7 @@ public class SelectAllTaskTest extends AbstractSelectTaskTester {
 		when(net.getDefaultEdgeTable()).thenReturn(edgeTable);
 		UndoSupport undoSupport = mock(UndoSupport.class);
 
-		Set<CyRow> deselectedNodes = new HashSet<CyRow>();
+		Set<CyRow> deselectedNodes = new HashSet<>();
 		deselectedNodes.add(r3);
 		deselectedNodes.add(r4);
 		when(nodeTable.getMatchingRows(CyNetwork.SELECTED, false)).thenReturn(deselectedNodes);
@@ -67,7 +67,7 @@ public class SelectAllTaskTest extends AbstractSelectTaskTester {
 		when (r4.get(CyNetwork.SUID, Long.class)).thenReturn(4L);
 		when (net.getNode(4L)).thenReturn(e4);
 
-		Set<CyRow> deselectedEdges = new HashSet<CyRow>();
+		Set<CyRow> deselectedEdges = new HashSet<>();
 		deselectedEdges.add(r1);
 		deselectedEdges.add(r2);
 		when(edgeTable.getMatchingRows(CyNetwork.SELECTED, false)).thenReturn(deselectedEdges);

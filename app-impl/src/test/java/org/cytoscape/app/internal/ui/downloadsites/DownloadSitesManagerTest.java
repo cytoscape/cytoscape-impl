@@ -47,7 +47,7 @@ public class DownloadSitesManagerTest {
 		// Create new DownloadSitesManager
 		Properties properties = new Properties();
 		
-		CyProperty<Properties> cyProperty = new SimpleCyProperty<Properties>(
+		CyProperty<Properties> cyProperty = new SimpleCyProperty<>(
 				"TestProperties", properties, properties.getClass(), DO_NOT_SAVE);
 		
 		DownloadSitesManager downloadSitesManager = new DownloadSitesManager(cyProperty);

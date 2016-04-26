@@ -452,8 +452,8 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		m_edgeDetails = new DEdgeDetails(this);
 		nodeViewDefaultSupport = new NodeViewDefaultSupport(m_nodeDetails, m_lock);
 		edgeViewDefaultSupport = new EdgeViewDefaultSupport(m_edgeDetails, m_lock);
-		nodeViewMap = new ConcurrentHashMap<CyNode, NodeView>(16, 0.75f, 2);
-		edgeViewMap = new ConcurrentHashMap<CyEdge, EdgeView>(16, 0.75f, 2);
+		nodeViewMap = new ConcurrentHashMap<>(16, 0.75f, 2);
+		edgeViewMap = new ConcurrentHashMap<>(16, 0.75f, 2);
 		m_printLOD = new PrintLOD();
 		m_defaultNodeXMin = 0.0f;
 		m_defaultNodeYMin = 0.0f;
@@ -496,15 +496,15 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		//Updating the snapshot for nested networks
 		this.addContentChangeListener(new DGraphViewContentChangeListener());
 
-		nodeSelectionList = new ArrayList<CyNode>();
-		edgeSelectionList = new ArrayList<CyEdge>();
+		nodeSelectionList = new ArrayList<>();
+		edgeSelectionList = new ArrayList<>();
 		if (!dingGraphLOD.detail(m_drawPersp.getNodeCount(), m_drawPersp.getEdgeCount()))
 			largeModel = true;
 
 		dummySpacialFactory = new DummySpacialFactory(this);
 
 		// Animation
-		animatedEdges = Collections.newSetFromMap(new ConcurrentHashMap<DEdgeView, Boolean>());
+		animatedEdges = Collections.newSetFromMap(new ConcurrentHashMap<>());
 
 
 		animationTimer = new Timer(200, this);
@@ -658,7 +658,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		synchronized (m_lock) {
 			// all nodes from the btree
 			final LongEnumerator elms = m_selectedNodes.searchRange(Integer.MIN_VALUE, Integer.MAX_VALUE, false);
-			final ArrayList<CyNode> returnThis = new ArrayList<CyNode>();
+			final ArrayList<CyNode> returnThis = new ArrayList<>();
 
 			while (elms.numRemaining() > 0)
 				// GINY requires all node indices to be negative (why?),
@@ -696,7 +696,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	public List<CyEdge> getSelectedEdges() {
 		synchronized (m_lock) {
 			final LongEnumerator elms = m_selectedEdges.searchRange(Integer.MIN_VALUE, Integer.MAX_VALUE, false);
-			final ArrayList<CyEdge> returnThis = new ArrayList<CyEdge>();
+			final ArrayList<CyEdge> returnThis = new ArrayList<>();
 
 			while (elms.numRemaining() > 0)
 				returnThis.add(model.getEdge(elms.nextLong()));
@@ -1239,7 +1239,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	@Override
 	public List<EdgeView> getEdgeViewsList() {
 		synchronized (m_lock) {
-			final ArrayList<EdgeView> returnThis = new ArrayList<EdgeView>( edgeViewMap.size());
+			final ArrayList<EdgeView> returnThis = new ArrayList<>(edgeViewMap.size());
 			final Iterator<EdgeView> values = edgeViewMap.values().iterator();
 
 			while (values.hasNext())
@@ -1265,7 +1265,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 				return null;
 			}
 
-			final ArrayList<EdgeView> returnThis = new ArrayList<EdgeView>();
+			final ArrayList<EdgeView> returnThis = new ArrayList<>();
 			Iterator<CyEdge> it = edges.iterator();
 
 			while (it.hasNext()) {
@@ -1838,8 +1838,8 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 
 		// Make a copy of the nodes and edges arrays to avoid a conflict with selection events
 		// The assumption here is that these arrays are relatively small
-		List<CyNode> nodes = new ArrayList<CyNode>(nodeList);
-		List<CyEdge> edges = new ArrayList<CyEdge>(edgeList);
+		List<CyNode> nodes = new ArrayList<>(nodeList);
+		List<CyEdge> edges = new ArrayList<>(edgeList);
 
 		// Make sure the graphics is initialized
 		if (!graphics.isInitialized())
@@ -2183,7 +2183,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	}
 
 	public List<NodeView> getNodeViewsList() {
-		ArrayList<NodeView> list = new ArrayList<NodeView>(getNodeViewCount());
+		ArrayList<NodeView> list = new ArrayList<>(getNodeViewCount());
 		for (CyNode nn : getNetwork().getNodeList())
 			list.add(getDNodeView(nn.getSUID()));
 
@@ -2274,13 +2274,13 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	}
 
 	static <X> List<X> makeList(X nodeOrEdge) {
-		List<X> nl = new ArrayList<X>(1);
+		List<X> nl = new ArrayList<>(1);
 		nl.add(nodeOrEdge);
 		return nl;
 	}
 
 	static List<CyNode> makeNodeList(long[] nodeids, GraphView view) {
-		List<CyNode> l = new ArrayList<CyNode>(nodeids.length);
+		List<CyNode> l = new ArrayList<>(nodeids.length);
 		for (long nid : nodeids)
 			l.add(((DNodeView)view.getDNodeView(nid)).getModel());
 
@@ -2289,8 +2289,8 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 
 	static List<CyEdge> makeEdgeList(long[] edgeids, GraphView view) {
 		if (view == null || edgeids == null || edgeids.length == 0)
-			return new ArrayList<CyEdge>();
-		List<CyEdge> l = new ArrayList<CyEdge>(edgeids.length);
+			return new ArrayList<>();
+		List<CyEdge> l = new ArrayList<>(edgeids.length);
 		for (long nid : edgeids) {
 			if (view.getDEdgeView(nid) != null)
 				l.add(view.getDEdgeView(nid).getCyEdge());
@@ -2428,7 +2428,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		if (model != e.getSource())
 			return;
 
-		List<View<CyNode>> nvs = new ArrayList<View<CyNode>>(e.getNodes().size());
+		List<View<CyNode>> nvs = new ArrayList<>(e.getNodes().size());
 		for ( CyNode n : e.getNodes()) {
 			View<CyNode> v = this.getNodeView(n);
 			if ( v != null)
@@ -2449,7 +2449,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		if (model != e.getSource())
 			return;
 
-		List<View<CyEdge>> evs = new ArrayList<View<CyEdge>>(e.getEdges().size());
+		List<View<CyEdge>> evs = new ArrayList<>(e.getEdges().size());
 		for ( CyEdge edge : e.getEdges() ) {
 			View<CyEdge> v = getEdgeView(edge);
 			if ( v != null)

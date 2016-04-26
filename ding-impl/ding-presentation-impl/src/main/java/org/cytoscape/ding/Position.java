@@ -91,7 +91,7 @@ public enum Position {
 	
 	public static SortedSet<String> getDisplayNames() {
 		if(displayNames == null) {
-			displayNames = new TreeSet<String>();
+			displayNames = new TreeSet<>();
 			for(Position p: values()) {
 				displayNames.add(p.displayName);
 			}

@@ -229,7 +229,7 @@ public class JPanelTunableMutator extends AbstractTunableInterceptor<GUITunableH
 			}
 	
 			if (!panelMap.containsKey(handlers)) {
-				Map<String, JPanel> panels = new HashMap<String, JPanel>();
+				Map<String, JPanel> panels = new HashMap<>();
 				final JPanel topLevel = new SimplePanel(true);
 				panels.put(TOP_GROUP, topLevel);
 	
@@ -544,7 +544,7 @@ public class JPanelTunableMutator extends AbstractTunableInterceptor<GUITunableH
 	 * Get information about the Groups and parameters to create the proper GUI.
 	 */
 	private Map<String, Boolean> processGroupParams(GUITunableHandler gh, String paramName, String defaultValue) {
-		final Map<String, Boolean> groupMap = new HashMap<String, Boolean>();
+		final Map<String, Boolean> groupMap = new HashMap<>();
 
 		final String[] groups = gh.getGroups();
 		// empty string splits to single element array containing string "" 

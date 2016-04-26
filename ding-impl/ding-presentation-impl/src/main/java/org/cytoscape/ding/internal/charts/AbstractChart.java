@@ -80,7 +80,7 @@ public abstract class AbstractChart<T extends CustomGraphicLayer> extends Abstra
 	
 	@Override
 	public Set<CyColumnIdentifier> getMappedColumns() {
-		final Set<CyColumnIdentifier> set = new HashSet<CyColumnIdentifier>();
+		final Set<CyColumnIdentifier> set = new HashSet<>();
 		set.addAll(getList(DATA_COLUMNS, CyColumnIdentifier.class));
 		
 		if (get(SHOW_ITEM_LABELS, Boolean.class, Boolean.FALSE))
@@ -114,7 +114,7 @@ public abstract class AbstractChart<T extends CustomGraphicLayer> extends Abstra
 			return data;
 
 		final CyTable table = row.getTable();
-		final List<Double> singleSeriesValues = new ArrayList<Double>();
+		final List<Double> singleSeriesValues = new ArrayList<>();
 		final StringBuilder singleSeriesKey = new StringBuilder();
 		int singleSeriesIndex = -1;
 		int count = 0;
@@ -126,7 +126,7 @@ public abstract class AbstractChart<T extends CustomGraphicLayer> extends Abstra
 				continue;
 			
 			final String colName = column.getName();
-			final List<Double> values = new ArrayList<Double>();
+			final List<Double> values = new ArrayList<>();
 			
 			if (column.getType() == List.class) {
 				// List Column: One column = one data series
@@ -279,7 +279,7 @@ public abstract class AbstractChart<T extends CustomGraphicLayer> extends Abstra
 			final List<CyColumnIdentifier> dataColumns = getList(DATA_COLUMNS, CyColumnIdentifier.class);
 			data = getDataFromColumns(network, model, dataColumns);
 		} else {
-			data = new HashMap<String, List<Double>>();
+			data = new HashMap<>();
 			data.put("Values", values);
 		}
 		

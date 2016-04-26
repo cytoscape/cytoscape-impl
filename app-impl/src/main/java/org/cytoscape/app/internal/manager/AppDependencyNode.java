@@ -37,8 +37,8 @@ import org.cytoscape.app.internal.manager.App.AppStatus;
 // This class represents a node in the app dependency graph, where each node corresponds to an app.
 public class AppDependencyNode {
 	
-	private Set<AppDependencyNode> dependencies = new HashSet<AppDependencyNode>();
-	private Set<AppDependencyNode> parents = new HashSet<AppDependencyNode>();
+	private Set<AppDependencyNode> dependencies = new HashSet<>();
+	private Set<AppDependencyNode> parents = new HashSet<>();
 	
 	private String currentAppName;
 	private String currentAppVersion;
@@ -72,19 +72,19 @@ public class AppDependencyNode {
 	public List<String> getMissingDependencies(AppManager appManager) {
 		
 		// Hash current apps into slots
-		Map<String, App> currentApps = new HashMap<String, App>();
+		Map<String, App> currentApps = new HashMap<>();
 		
 		for (App app : appManager.getApps()) {
 			currentApps.put(app.getAppName() + " " + app.getVersion(), app);
 		}
 		
-		Queue<AppDependencyNode> dependenciesToCheck = new LinkedList<AppDependencyNode>();
+		Queue<AppDependencyNode> dependenciesToCheck = new LinkedList<>();
 		
 		for (AppDependencyNode node : dependencies) {
 			dependenciesToCheck.add(node);	
 		}
 		
-		List<String> missingDependencies = new LinkedList<String>();
+		List<String> missingDependencies = new LinkedList<>();
 		
 		// To check if a dependency is missing, check if it was hashed into the hash table from
 		// a few lines above

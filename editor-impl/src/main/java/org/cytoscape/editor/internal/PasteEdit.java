@@ -59,8 +59,8 @@ public class PasteEdit extends AbstractCyEdit {
 	}
 
 	public void undo() {
-		List<CyNode> nodeList = new ArrayList<CyNode>();
-		List<CyEdge> edgeList = new ArrayList<CyEdge>();
+		List<CyNode> nodeList = new ArrayList<>();
+		List<CyEdge> edgeList = new ArrayList<>();
 		for (CyIdentifiable object: pastedObjects) {
 			// Remove edges first
 			if (object instanceof CyEdge)

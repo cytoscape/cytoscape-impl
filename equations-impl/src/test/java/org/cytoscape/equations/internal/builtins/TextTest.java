@@ -33,7 +33,7 @@ import junit.framework.*;
 
 public class TextTest extends TestCase {
 	public void testSingleArgInvocation() throws Exception {
-		final Map<String, Object> variablesAndValues = new HashMap<String, Object>();
+		final Map<String, Object> variablesAndValues = new HashMap<>();
 		variablesAndValues.put("nan", Double.NaN);
 
 		assertTrue(Framework.executeTest("=TEXT($nan)", variablesAndValues, "NaN"));

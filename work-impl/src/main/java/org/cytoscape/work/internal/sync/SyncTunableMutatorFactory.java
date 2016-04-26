@@ -36,7 +36,7 @@ public class SyncTunableMutatorFactory {
 	}
 	
 	public SyncTunableMutator<?> createMutator() {
-		SyncTunableMutator<?> mutator = new SyncTunableMutator<Object>();
+		SyncTunableMutator<?> mutator = new SyncTunableMutator<>();
 		mutator.addTunableHandlerFactory(handlerFactory, new Properties());		
 		return mutator;
 	}

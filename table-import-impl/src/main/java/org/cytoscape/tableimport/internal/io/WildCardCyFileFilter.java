@@ -35,7 +35,7 @@ import java.util.Set;
  */
 public class WildCardCyFileFilter extends BasicCyFileFilter {
 
-	private List<String> blackList = new ArrayList<String>();
+	private List<String> blackList = new ArrayList<>();
 
 	/**
 	 * Creates a file filter from the specified arguments. Note that a "."

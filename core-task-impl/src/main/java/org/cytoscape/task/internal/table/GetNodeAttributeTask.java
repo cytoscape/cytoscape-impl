@@ -65,7 +65,7 @@ public class GetNodeAttributeTask extends AbstractTableDataTask implements Obser
 
 		CyTable nodeTable = getNetworkTable(network, CyNode.class, columnTunable.getNamespace());
 
-		nodeDataMap = new HashMap<CyIdentifiable, Map<String, Object>>();
+		nodeDataMap = new HashMap<>();
 		
 		for (CyNode node: nodeTunable.getNodeList()) {
 			Map<String, Object> nodeData = getCyIdentifierData(nodeTable, 

@@ -58,7 +58,7 @@ public class GroupAttributesLayout extends AbstractLayoutAlgorithm {
 
 	@Override
 	public Set<Class<?>> getSupportedNodeAttributeTypes() {
-		Set<Class<?>> ret = new HashSet<Class<?>>();
+		Set<Class<?>> ret = new HashSet<>();
 
 		ret.add(Integer.class);
 		ret.add(Double.class);

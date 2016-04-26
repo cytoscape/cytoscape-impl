@@ -53,7 +53,7 @@ public final class RenameColumnTaskFactoryImpl extends AbstractTableColumnTaskFa
 	}
 	@Override
 	public TaskIterator createTaskIterator(CyColumn column, String newColumnName) {
-		final Map<String, Object> m = new HashMap<String, Object>();
+		final Map<String, Object> m = new HashMap<>();
 		m.put("newColumnName", newColumnName);
 
 		return tunableSetter.createTaskIterator(this.createTaskIterator(column), m); 

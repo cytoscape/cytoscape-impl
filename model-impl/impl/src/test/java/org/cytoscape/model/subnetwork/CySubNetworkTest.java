@@ -83,7 +83,7 @@ public class CySubNetworkTest extends AbstractCySubNetworkTest {
 		CyNode nx3 = sub.addNode();
 		CyNode nx4 = sub.addNode();
 
-		List<CyNode> nodes = new ArrayList<CyNode>();
+		List<CyNode> nodes = new ArrayList<>();
 		nodes.add(nx1);
 		nodes.add(nx2);
 		nodes.add(nx3);
@@ -123,7 +123,7 @@ public class CySubNetworkTest extends AbstractCySubNetworkTest {
 		CyEdge ex2 = sub.addEdge(nx2,nx3,false);
 		CyEdge ex3 = sub.addEdge(nx3,nx4,true);
 
-		List<CyEdge> edges = new ArrayList<CyEdge>();
+		List<CyEdge> edges = new ArrayList<>();
 		edges.add(ex1);
 		edges.add(ex2);
 		edges.add(ex3);

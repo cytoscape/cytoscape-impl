@@ -192,7 +192,7 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 
 		this.graphView = graphView;
 		
-		this.cgInfoMap = new TreeMap<VisualProperty<CyCustomGraphics>, CustomGraphicsInfo>(
+		this.cgInfoMap = new TreeMap<>(
 				new Comparator<VisualProperty<CyCustomGraphics>>() {
 
 					@Override

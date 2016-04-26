@@ -53,7 +53,7 @@ public class ExportNetworkTaskFactoryImpl extends AbstractNetworkTaskFactory imp
 
 	@Override
 	public TaskIterator createTaskIterator(CyNetwork network, File file) {
-		final Map<String, Object> m = new HashMap<String, Object>();
+		final Map<String, Object> m = new HashMap<>();
 		m.put("OutputFile", file);
 
 		CyNetworkWriter writer = new CyNetworkWriter(writerManager, network);

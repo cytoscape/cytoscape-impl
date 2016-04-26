@@ -501,7 +501,7 @@ class PopupMenuHelper {
 		}
 
 		// otherwise figure out if any TaskFactories match the specified preferred action
-		java.util.List<T> usableTFs = new ArrayList<T>();
+		java.util.List<T> usableTFs = new ArrayList<>();
 		for ( T evtf : tfs.keySet() ) {
 			String prefAction = (String)(tfs.get( evtf ).get(PREFERRED_ACTION));
 			// assume action is NEW if no action specified

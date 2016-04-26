@@ -126,7 +126,7 @@ public class DNetworkViewTest extends AbstractCyNetworkViewTest {
 		node4 = network.addNode();
 		node5 = network.addNode();
 
-		List<CyNode> nl = new ArrayList<CyNode>();
+		List<CyNode> nl = new ArrayList<>();
 		nl.add(node1);
 		nl.add(node2);
 		nl.add(node3);
@@ -142,7 +142,7 @@ public class DNetworkViewTest extends AbstractCyNetworkViewTest {
 		edge7 = network.addEdge(node4, node5, true);
 		edge8 = network.addEdge(node2, node5, true);
 
-		List<CyEdge> el = new ArrayList<CyEdge>();
+		List<CyEdge> el = new ArrayList<>();
 		el.add(edge1);
 		el.add(edge2);
 		el.add(edge3);

@@ -589,7 +589,7 @@ public class FormulaBuilderDialog extends JDialog {
 	 *  @returns null, if "expression" is invalid, or, the type of "expression" if it was valid
 	 */
 	private Class<?> expressionIsValid(final List<Class<?>> validArgTypes, final String expression) {
-		final Map<String, Class<?>> attribNamesAndTypes = new HashMap<String, Class<?>>();
+		final Map<String, Class<?>> attribNamesAndTypes = new HashMap<>();
 		for (final CyColumn column : tableModel.getDataTable().getColumns())
 			attribNamesAndTypes.put(column.getName(), column.getType());
 
@@ -643,7 +643,7 @@ public class FormulaBuilderDialog extends JDialog {
 
 		getAttribNamesComboBox().removeAllItems();
 		final List<Class<?>> possibleArgTypes = getPossibleNextArgumentTypes();
-		final ArrayList<String> possibleAttribNames = new ArrayList<String>(20);
+		final ArrayList<String> possibleAttribNames = new ArrayList<>(20);
 		final Collection<CyColumn> columns = tableModel.getDataTable().getColumns();
 		
 		for (final CyColumn column : columns) {

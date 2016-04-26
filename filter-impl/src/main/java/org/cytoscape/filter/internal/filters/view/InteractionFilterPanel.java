@@ -163,7 +163,7 @@ public class InteractionFilterPanel extends JPanel implements ItemListener{
 		//CompositeFilter emptyFilter = new CompositeFilter("None");
 		Vector<CompositeFilter> allFilters = modelLocator.getFilters();
 		
-        PassFilterWidestStringComboBoxModel pfwscbm = new PassFilterWidestStringComboBoxModel(new Vector<CompositeFilter>(allFilters));
+        PassFilterWidestStringComboBoxModel pfwscbm = new PassFilterWidestStringComboBoxModel(new Vector<>(allFilters));
         cmbPassFilter.setModel(pfwscbm);
         
         if (theFilter.getPassFilter() != null) {

@@ -129,7 +129,7 @@ public class MapTableToNetworkTableTaskTest {
 	
 	public static void mapping(CyTable table, CyNetwork net, boolean selectedOnly) throws Exception{
 		MapTableToNetworkTablesTaskFactoryImpl mappingTF = new MapTableToNetworkTablesTaskFactoryImpl(netMgr, ts, rootNetMgr);
-		List<CyNetwork> nets = new ArrayList<CyNetwork>();
+		List<CyNetwork> nets = new ArrayList<>();
 		nets.add(net);
 		
 		TaskIterator ti = mappingTF.createTaskIterator(table, selectedOnly, nets , CyNode.class);

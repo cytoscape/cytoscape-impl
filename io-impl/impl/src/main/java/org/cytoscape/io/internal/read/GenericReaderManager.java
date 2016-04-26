@@ -64,7 +64,7 @@ public class GenericReaderManager<T extends InputStreamTaskFactory, R extends Ta
 		this.category = category;
 		this.streamUtil = streamUtil;
 
-		factories = new CopyOnWriteArraySet<T>();
+		factories = new CopyOnWriteArraySet<>();
 	}
 
 	/**
@@ -112,8 +112,8 @@ public class GenericReaderManager<T extends InputStreamTaskFactory, R extends Ta
 		// import)
 		T defaultFactory = null;
 
-		final List<T> factoryList = new ArrayList<T>();
-		final Map<String, T> factoryTable = new HashMap<String, T>();
+		final List<T> factoryList = new ArrayList<>();
+		final Map<String, T> factoryTable = new HashMap<>();
 
 		// Pick compatible reader factories.
 		for (final T factory : factories) {

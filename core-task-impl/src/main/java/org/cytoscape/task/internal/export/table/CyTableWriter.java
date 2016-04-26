@@ -65,7 +65,7 @@ public final class CyTableWriter extends TunableAbstractCyWriter<CyTableWriterFa
 				availableFormats.add(format);
 		}
 		
-		options = new ListSingleSelection<String>(availableFormats);
+		options = new ListSingleSelection<>(availableFormats);
 	}
 	
 	void setDefaultFileFormatUsingFileExt(final File file) {

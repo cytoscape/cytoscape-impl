@@ -77,10 +77,10 @@ public class CyTableFactoryImpl implements CyTableFactory {
 	}
 
 	private class WeakEventDelegator implements TableAddedListener {
-		List<WeakReference<TableAddedListener>> tables = new ArrayList<WeakReference<TableAddedListener>>();  
+		List<WeakReference<TableAddedListener>> tables = new ArrayList<>();  
 
 		public void addListener(TableAddedListener t) {
-			tables.add(new WeakReference<TableAddedListener>(t));
+			tables.add(new WeakReference<>(t));
 		}
 		
 		public void handleEvent(TableAddedEvent e) {

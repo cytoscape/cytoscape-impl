@@ -112,7 +112,7 @@ public class ListSingleHandler<T> extends AbstractGUITunableHandler
 	@SuppressWarnings("unchecked")
 	public void update() {
 		if (combobox == null) return;
-		combobox.setModel(new DefaultComboBoxModel<T>((T[])getSingleSelection().getPossibleValues().toArray()));
+		combobox.setModel(new DefaultComboBoxModel<>((T[]) getSingleSelection().getPossibleValues().toArray()));
 		combobox.setSelectedItem(getSingleSelection().getSelectedValue());
 		combobox.setEnabled(combobox.getModel().getSize() > 1);
 		panel.setVisible(combobox.getModel().getSize() > 0);

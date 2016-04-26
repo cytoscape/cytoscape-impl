@@ -66,7 +66,7 @@ public final class SharedTableFacade extends AbstractTableFacade implements CyTa
 
 	private List<CyTable> localTables() {
 		logger.debug("  - looking for local tables: ");
-		List<CyTable> tables = new ArrayList<CyTable>();
+		List<CyTable> tables = new ArrayList<>();
 		final CyTable rootTbl = netTableMgr.getTable(rootNetwork, type, CyNetwork.LOCAL_ATTRS);
 		
 		if (rootTbl != null)

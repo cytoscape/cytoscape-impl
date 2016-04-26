@@ -58,7 +58,7 @@ public class HandleListAttribute extends AbstractHandler {
 
         if (List.class.isAssignableFrom(column.getType())) {
             if (manager.listAttrHolder == null) {
-                manager.listAttrHolder = new ArrayList<Object>();
+                manager.listAttrHolder = new ArrayList<>();
                 row.set(name, manager.listAttrHolder);
             }
 

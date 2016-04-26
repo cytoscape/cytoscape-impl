@@ -35,15 +35,15 @@ import junit.framework.*;
 
 public class IListTest extends TestCase {
 	public void testAll() throws Exception {
-                final List<Object> numbers = new ArrayList<Object>();
+                final List<Object> numbers = new ArrayList<>();
                 numbers.add(Double.valueOf(1.0));
                 numbers.add(Integer.valueOf(2));
                 numbers.add(Double.valueOf(3.0));
                 numbers.add("4");
                 numbers.add(Double.valueOf(5.0));
-		final Map<String, Object> variablesAndValues = new HashMap<String, Object>();
+		final Map<String, Object> variablesAndValues = new HashMap<>();
 		variablesAndValues.put("numbers", numbers);
-		final List<Long> expectedResult = new ArrayList<Long>();
+		final List<Long> expectedResult = new ArrayList<>();
 		expectedResult.add(1L);
 		expectedResult.add(2L);
 		expectedResult.add(3L);
@@ -53,7 +53,7 @@ public class IListTest extends TestCase {
 		expectedResult.add(7L);
 		assertTrue(Framework.executeTest("=ILIST($numbers, 6, 7)", variablesAndValues, expectedResult));
 
-		final List<Long> emptyList = new ArrayList<Long>();
+		final List<Long> emptyList = new ArrayList<>();
 		assertTrue(Framework.executeTest("=ILIST()", emptyList));
 
 		assertTrue(Framework.executeTestExpectFailure("=ILIST(\"abc\")"));

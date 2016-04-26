@@ -52,7 +52,7 @@ public class EquationTest {
 	}
 
 	Equation parseEquation(String equation, CyTable context) {
-		Map<String, Class<?>> typeMap = new HashMap<String, Class<?>>();
+		Map<String, Class<?>> typeMap = new HashMap<>();
 		for (CyColumn column : context.getColumns()) {
 			Class<?> type = column.getType();
 			if(type == Integer.class)
@@ -120,13 +120,13 @@ public class EquationTest {
 		table3.createListColumn("name", String.class, false);
 		table3.addVirtualColumn("virtual2", "virtual", table2, "SUID", false);
 		
-		List<String> list1 = new ArrayList<String>();
+		List<String> list1 = new ArrayList<>();
 		list1.add("1");
 		
-		List<String> list2 = new ArrayList<String>();
+		List<String> list2 = new ArrayList<>();
 		list2.add("2");
 		
-		List<String> list3 = new ArrayList<String>();
+		List<String> list3 = new ArrayList<>();
 		list3.add("3");
 
 		CyRow row1 = table1.getRow(1L);
@@ -163,7 +163,7 @@ public class EquationTest {
 
 		// Overwrite equation with normal attribute.  Both ends of
 		// VirtualColumn should give the same answer.
-		List<String> other = new ArrayList<String>();
+		List<String> other = new ArrayList<>();
 		other.add("other");
 		row1.set("real", other);
 		

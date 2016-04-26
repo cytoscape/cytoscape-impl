@@ -134,7 +134,7 @@ public class SessionHandler implements CyShutdownListener, SessionLoadedListener
 			
 			if (sessionFileName == null || sessionFileName.isEmpty()) {
 				FileChooserFilter filter = new FileChooserFilter("Session File", "cys");
-				List<FileChooserFilter> filterCollection = new ArrayList<FileChooserFilter>(1);
+				List<FileChooserFilter> filterCollection = new ArrayList<>(1);
 				filterCollection.add(filter);
 				
 				final FileUtil fileUtil = serviceRegistrar.getService(FileUtil.class);

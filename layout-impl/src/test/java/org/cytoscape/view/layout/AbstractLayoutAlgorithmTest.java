@@ -86,13 +86,13 @@ public abstract class AbstractLayoutAlgorithmTest {
 
 		final CyNetworkView networkView = support.getNetworkViewFactory().createNetworkView(network);
 		Object layoutContext = layout.createLayoutContext();
-		Set<View<CyNode>> nodesToLayOut = new HashSet<View<CyNode>>();
+		Set<View<CyNode>> nodesToLayOut = new HashSet<>();
 		nodesToLayOut.add(networkView.getNodeView(source));
 		nodesToLayOut.add(networkView.getNodeView(target));
 
 		assertFalse(layout.isReady(null, null, null, null));
 		assertFalse(layout.isReady(null, layoutContext, null, ""));
-		Set<View<CyNode>> emptySet = new HashSet<View<CyNode>>();
+		Set<View<CyNode>> emptySet = new HashSet<>();
 		CyNetworkView emptyView = support.getNetworkView();
 		assertFalse(layout.isReady(emptyView, layoutContext, emptySet, "asdf"));
 

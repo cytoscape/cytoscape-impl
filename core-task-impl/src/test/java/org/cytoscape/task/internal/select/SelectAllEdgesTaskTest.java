@@ -55,7 +55,7 @@ public class SelectAllEdgesTaskTest extends AbstractSelectTaskTester {
 		when(net.getDefaultEdgeTable()).thenReturn(edgeTable);
 		UndoSupport undoSupport = mock(UndoSupport.class);
 
-		Set<CyRow> deselectedEdges = new HashSet<CyRow>();
+		Set<CyRow> deselectedEdges = new HashSet<>();
 		deselectedEdges.add(r1);
 		deselectedEdges.add(r2);
 		when(edgeTable.getMatchingRows(CyNetwork.SELECTED, false)).thenReturn(deselectedEdges);

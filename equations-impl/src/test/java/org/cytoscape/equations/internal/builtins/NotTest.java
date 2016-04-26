@@ -33,7 +33,7 @@ import junit.framework.*;
 
 public class NotTest extends TestCase {
 	public void testAll() throws Exception {
-		final Map<String, Object> variablesAndValues = new HashMap<String, Object>();
+		final Map<String, Object> variablesAndValues = new HashMap<>();
 		variablesAndValues.put("logical", Boolean.valueOf(true));
 		assertTrue(Framework.executeTest("=NOT(true)", Boolean.valueOf(false)));
 		assertTrue(Framework.executeTest("=NOT(false)", Boolean.valueOf(true)));

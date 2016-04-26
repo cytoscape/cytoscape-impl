@@ -67,7 +67,7 @@ public class GroupAnnotationImpl extends AbstractAnnotation implements GroupAnno
 	public GroupAnnotationImpl(CyAnnotator cyAnnotator, DGraphView view, double x, double y, 
 	                           List<Annotation> annotations, double zoom, Window owner) {
 		super(cyAnnotator, view, owner);
-		this.annotations  = new ArrayList<DingAnnotation>();
+		this.annotations  = new ArrayList<>();
 		for (Annotation a: annotations) {
 			if (a instanceof DingAnnotation)
 				this.annotations.add((DingAnnotation)a);
@@ -90,7 +90,7 @@ public class GroupAnnotationImpl extends AbstractAnnotation implements GroupAnno
 				if (a != null) {
 					// Yup, add it in to our list
 					if (annotations == null) 
-						annotations = new ArrayList<DingAnnotation>();
+						annotations = new ArrayList<>();
 					annotations.add(a);
 				}
 			}
@@ -111,7 +111,7 @@ public class GroupAnnotationImpl extends AbstractAnnotation implements GroupAnno
 		}
 
 		if (member instanceof DingAnnotation) {
-			if (annotations == null) annotations = new ArrayList<DingAnnotation>();
+			if (annotations == null) annotations = new ArrayList<>();
 			DingAnnotation dMember = (DingAnnotation)member;
 			if (!annotations.contains(dMember))
 				annotations.add(dMember);
@@ -131,7 +131,7 @@ public class GroupAnnotationImpl extends AbstractAnnotation implements GroupAnno
 
 	@Override
 	public List<Annotation> getMembers() {
-		return new ArrayList<Annotation>(annotations);
+		return new ArrayList<>(annotations);
 	}
 
 	@Override

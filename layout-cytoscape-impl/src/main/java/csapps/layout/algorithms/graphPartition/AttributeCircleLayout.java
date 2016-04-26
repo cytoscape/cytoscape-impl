@@ -69,7 +69,7 @@ public class AttributeCircleLayout extends AbstractLayoutAlgorithm {
 
 	@Override
 	public Set<Class<?>> getSupportedNodeAttributeTypes() {
-		Set<Class<?>> ret = new HashSet<Class<?>>();
+		Set<Class<?>> ret = new HashSet<>();
 		if (!supportNodeAttributes)
 			return ret;
 

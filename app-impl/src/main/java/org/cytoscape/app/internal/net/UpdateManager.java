@@ -72,7 +72,7 @@ public class UpdateManager implements AppsFinishedStartingListener {
 		this.appManager = appManager;
 		this.downloadSitesManager = downloadSitesManager;
 		
-		this.updatesChangedListeners = new CopyOnWriteArrayList<UpdatesChangedListener>();
+		this.updatesChangedListeners = new CopyOnWriteArrayList<>();
 		this.updates = null;
 		
 		lastUpdateCheckTime = null;
@@ -99,7 +99,7 @@ public class UpdateManager implements AppsFinishedStartingListener {
 	}
 	
 	public Set<Update> getUpdates() {
-		Set<Update> updatesCopy = new HashSet<Update>();
+		Set<Update> updatesCopy = new HashSet<>();
 		
 		synchronized (updateMutex) {
 			for (Update update : updates) {

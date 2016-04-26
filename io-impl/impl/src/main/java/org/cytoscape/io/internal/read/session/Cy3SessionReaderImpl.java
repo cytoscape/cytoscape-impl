@@ -110,8 +110,8 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 	public static final Pattern GLOBAL_TABLE_PATTERN = Pattern.compile(".*/(global/(\\d+)-([^/]+)[.]cytable)");
 	public static final Pattern PROPERTIES_PATTERN = Pattern.compile(".*/"+PROPERTIES_FOLDER+"?(([^/]+)[.](props|properties))");
 	
-	private final Map<Long/*network_suid*/, CyNetwork> networkLookup = new LinkedHashMap<Long, CyNetwork>();
-	private final Map<Long/*old_network_id*/, Set<CyTableMetadataBuilder>> networkTableMap = new HashMap<Long, Set<CyTableMetadataBuilder>>();
+	private final Map<Long/*network_suid*/, CyNetwork> networkLookup = new LinkedHashMap<>();
+	private final Map<Long/*old_network_id*/, Set<CyTableMetadataBuilder>> networkTableMap = new HashMap<>();
 
 	private final SUIDUpdater suidUpdater;
 	private final CyNetworkReaderManager networkReaderMgr;
@@ -162,9 +162,9 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 		if (compiler == null) throw new NullPointerException("equation compiler is null.");
 		this.compiler = compiler;
 		
-		virtualColumns = new LinkedList<VirtualColumn>();
-		filenameTableMap = new HashMap<String, CyTable>();
-		builderFilenameMap = new HashMap<CyTableMetadataBuilder, String>();
+		virtualColumns = new LinkedList<>();
+		filenameTableMap = new HashMap<>();
+		builderFilenameMap = new HashMap<>();
 	}
 	
 	@Override
@@ -291,7 +291,7 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 			Set<CyTableMetadataBuilder> builders = networkTableMap.get(oldNetId);
 			
 			if (builders == null) {
-				builders = new HashSet<CyTableMetadataBuilder>();
+				builders = new HashSet<>();
 				networkTableMap.put(oldNetId, builders);
 			}
 			
@@ -422,7 +422,7 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 
 		// Put the file into appFileListMap
 		if (!appFileListMap.containsKey(appName))
-			appFileListMap.put(appName, new ArrayList<File>());
+			appFileListMap.put(appName, new ArrayList<>());
 
 		List<File> fileList = appFileListMap.get(appName);
 		fileList.add(file);
@@ -453,13 +453,13 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 				String propsName = matcher.group(2);
 				
 				if (propsName != null) {
-					cyProps = new SimpleCyProperty<Properties>(propsName, props, Properties.class,
+					cyProps = new SimpleCyProperty<>(propsName, props, Properties.class,
 							CyProperty.SavePolicy.SESSION_FILE);
 					
 				}
 			}
 		} else if (obj instanceof Bookmarks) {
-			cyProps = new SimpleCyProperty<Bookmarks>("bookmarks", (Bookmarks)obj, Bookmarks.class,
+			cyProps = new SimpleCyProperty<>("bookmarks", (Bookmarks) obj, Bookmarks.class,
 					CyProperty.SavePolicy.SESSION_FILE);
 		} else {
 			// TODO: get name and create the CyProperty for unknown types
@@ -474,7 +474,7 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 		if (virtualColumns == null)
 			return;
 		
-		final Queue<VirtualColumn> queue = new LinkedList<VirtualColumn>();
+		final Queue<VirtualColumn> queue = new LinkedList<>();
 		queue.addAll(virtualColumns);
 		
 		// Will be used to prevent infinite loops if there are circular references or missing table/columns
@@ -671,7 +671,7 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 	}
 
 	private void restoreEquations(CyTable table) {
-		Map<String, Class<?>> variableNameToTypeMap = new HashMap<String, Class<?>>();
+		Map<String, Class<?>> variableNameToTypeMap = new HashMap<>();
 		for (CyColumn column : table.getColumns()) {
 			variableNameToTypeMap.put(column.getName(), column.getType() == Integer.class ? Long.class : column.getType());
 		}

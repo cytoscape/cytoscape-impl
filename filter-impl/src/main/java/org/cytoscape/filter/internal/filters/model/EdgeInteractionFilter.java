@@ -102,7 +102,7 @@ public class EdgeInteractionFilter extends InteractionFilter {
 	private boolean isHit(CyEdge pEdge, BitSet pPassFilter_nodeBits, List<CyNode> nodes) {
 		
 		// Get the list of relevant nodes for this edge
-		List<CyNode> adjacentNodes = new ArrayList<CyNode>();
+		List<CyNode> adjacentNodes = new ArrayList<>();
 		
 		if (nodeType == NODE_SOURCE) {
 			adjacentNodes.add(pEdge.getSource());

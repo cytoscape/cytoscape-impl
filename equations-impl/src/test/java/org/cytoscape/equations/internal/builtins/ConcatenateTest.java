@@ -35,13 +35,13 @@ import junit.framework.*;
 
 public class ConcatenateTest extends TestCase {
 	public void testAll() throws Exception {
-                final List<Object> numbers = new ArrayList<Object>();
+                final List<Object> numbers = new ArrayList<>();
                 numbers.add(Double.valueOf(1.0));
                 numbers.add(Integer.valueOf(2));
                 numbers.add(Double.valueOf(3.0));
                 numbers.add("4.01");
                 numbers.add(Double.valueOf(5.0));
-		final Map<String, Object> variablesAndValues = new HashMap<String, Object>();
+		final Map<String, Object> variablesAndValues = new HashMap<>();
 		variablesAndValues.put("numbers", numbers);
 		assertTrue(Framework.executeTest("=Concatenate($numbers, \"ab\", \"\")", variablesAndValues, "1234.015ab"));
 		assertTrue(Framework.executeTest("=CONCATENATE()", ""));

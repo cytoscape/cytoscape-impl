@@ -77,7 +77,7 @@ public class PerformanceScaffold {
 		long start;
 		
 		start = System.currentTimeMillis();
-		List<CyNode> nodes = new ArrayList<CyNode>();
+		List<CyNode> nodes = new ArrayList<>();
 		for (int i = 0; i < totalNodes; i++) {
 			CyNode node = network.addNode();
 			int valueIndex = random.nextInt(values.length);
@@ -99,7 +99,7 @@ public class PerformanceScaffold {
 		Map<String, String> properties = Collections.emptyMap();
 		transformerManager.registerTransformerSource(new CyNetworkSource(), properties);
 		
-		List<UseCase> useCases = new ArrayList<UseCase>();
+		List<UseCase> useCases = new ArrayList<>();
 		QuickFind quickFind = new QuickFindImpl();
 		useCases.add(new NumberAttributeUseCase(quickFind, 0, transformerManager));
 		useCases.add(new StringAttributeUseCase(quickFind, values[values.length - 1], transformerManager));
@@ -207,7 +207,7 @@ public class PerformanceScaffold {
 			FilterUtil.getQuickFindIndex(quickFind, filter.getControllingAttribute(), network, filter.getIndexType());
 			System.out.printf("Index\t%s\t%d\n", filter.getControllingAttribute(), System.currentTimeMillis() - start);
 
-			subjectTransformers = new ArrayList<Transformer<CyNetwork,CyIdentifiable>>();
+			subjectTransformers = new ArrayList<>();
 			ColumnFilter filter2 = new ColumnFilter();
 			filter2.setColumnName(LIST_STRING_COLUMN);
 			filter2.setCriterion(searchTerm);
@@ -240,7 +240,7 @@ public class PerformanceScaffold {
 			filter.setNetwork(network);
 			baselineFilter = filter;
 			
-			subjectTransformers = new ArrayList<Transformer<CyNetwork,CyIdentifiable>>();
+			subjectTransformers = new ArrayList<>();
 			DegreeFilter filter2 = new DegreeFilter();
 			filter2.setCriterion(minDegree);
 			filter2.setEdgeType(CyEdge.Type.ANY);
@@ -266,7 +266,7 @@ public class PerformanceScaffold {
 		
 		@Override
 		void setUp(CyNetwork network) {
-			NumericFilter<Integer> filter = new NumericFilter<Integer>(quickFind);
+			NumericFilter<Integer> filter = new NumericFilter<>(quickFind);
 			filter.setControllingAttribute(INTEGER_COLUMN);
 			filter.setRange(searchTerm, searchTerm);
 			filter.setNetwork(network);
@@ -276,7 +276,7 @@ public class PerformanceScaffold {
 			FilterUtil.getQuickFindIndex(quickFind, filter.getControllingAttribute(), network, filter.getIndexType());
 			System.out.printf("Index\t%s\t%d\n", filter.getControllingAttribute(), System.currentTimeMillis() - start);
 
-			subjectTransformers = new ArrayList<Transformer<CyNetwork,CyIdentifiable>>();
+			subjectTransformers = new ArrayList<>();
 			ColumnFilter filter2 = new ColumnFilter();
 			filter2.setColumnName(INTEGER_COLUMN);
 			filter2.setCriterion(searchTerm);

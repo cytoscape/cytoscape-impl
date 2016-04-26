@@ -146,7 +146,7 @@ class CyStatusBar extends JPanel {
 	{
 		super();
 
-		levelToIconMap = new HashMap<String,Icon>();
+		levelToIconMap = new HashMap<>();
 		for (final Map.Entry<String,String> levelToIconPath : levelToIconPathMap.entrySet()) {
 			final Icon icon = new ImageIcon(getClass().getResource(levelToIconPath.getValue()));
 			levelToIconMap.put(levelToIconPath.getKey(), icon);

@@ -58,14 +58,14 @@ public class ListTablesTask extends AbstractTableDataTask implements ObservableT
 		super(tableMgr);
 		this.appMgr = appMgr;
 		this.networkTableMgr = networkTableMgr;
-		type = new ListSingleSelection<String>("network", "node", "edge", "unattached", "all");
+		type = new ListSingleSelection<>("network", "node", "edge", "unattached", "all");
 		type.setSelectedValue("all");
 	}
 
 	@Override
 	public void run(final TaskMonitor taskMonitor) {
 		Set<CyTable> allTables = cyTableManager.getAllTables(includePrivate);
-		tables = new ArrayList<CyTable>();
+		tables = new ArrayList<>();
 		String requestedType = type.getSelectedValue();
 		String requestedNamespace = getNamespace(namespace);
 

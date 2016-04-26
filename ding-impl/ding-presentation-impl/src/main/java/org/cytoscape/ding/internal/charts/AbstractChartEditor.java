@@ -242,8 +242,8 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 		this.colIdFactory = colIdFactory;
 		
 		final Comparator<CyColumnIdentifier> columnComparator = new ColumnComparator();
-		columns = new TreeMap<CyColumnIdentifier, CyColumn>(columnComparator);
-		labelColumns = new TreeMap<CyColumnIdentifier, CyColumn>(columnComparator);
+		columns = new TreeMap<>(columnComparator);
+		labelColumns = new TreeMap<>(columnComparator);
 		
 		// TODO Move it to a shared "Chart Column Manager"
 		final CyNetwork net = appMgr.getCurrentNetwork();
@@ -649,7 +649,7 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 	
 	protected ColorSchemeEditor<T> getColorSchemeEditor() {
 		if (colorSchemeEditor == null) {
-			colorSchemeEditor = new ColorSchemeEditor<T>(chart, getColorSchemes(), columnIsSeries,
+			colorSchemeEditor = new ColorSchemeEditor<>(chart, getColorSchemes(), columnIsSeries,
 					appMgr.getCurrentNetwork(), iconMgr);
 		}
 		
@@ -1343,7 +1343,7 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 		private JButton moveDownBtn;
 
 		protected DataPanel() {
-			dataColumns = new LinkedHashSet<CyColumnIdentifier>();
+			dataColumns = new LinkedHashSet<>();
 			allModel = new DefaultListModel<>();
 			selModel = new DefaultListModel<>();
 			
@@ -1450,7 +1450,7 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 			if (allColumnsLs == null) {
 				allColumnsLs = new JList<>();
 				allColumnsLs.setModel(
-						new SortedListModel<CyColumnIdentifier>(allModel, SortOrder.ASCENDING, new ColumnComparator()));
+						new SortedListModel<>(allModel, SortOrder.ASCENDING, new ColumnComparator()));
 				allColumnsLs.setCellRenderer(new CyColumnCellRenderer(true));
 				
 				allColumnsLs.getSelectionModel().addListSelectionListener(new ListSelectionListener() {

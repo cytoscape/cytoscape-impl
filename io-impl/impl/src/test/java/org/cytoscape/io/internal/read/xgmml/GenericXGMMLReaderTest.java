@@ -460,7 +460,7 @@ public class GenericXGMMLReaderTest extends AbstractNetworkReaderTest {
 	
 	private void assertCustomColumnsAreMutable(CyNetwork net) {
 		// User or non-default columns should be immutable
-		List<CyTable> tables = new ArrayList<CyTable>();
+		List<CyTable> tables = new ArrayList<>();
 		tables.add(net.getTable(CyNetwork.class, LOCAL_ATTRS));
 		tables.add(net.getTable(CyNetwork.class, HIDDEN_ATTRS));
 		tables.add(net.getTable(CyNetwork.class, DEFAULT_ATTRS));
@@ -541,7 +541,7 @@ public class GenericXGMMLReaderTest extends AbstractNetworkReaderTest {
 		reader.run(taskMonitor);
 
 		final CyNetwork[] networks = reader.getNetworks();
-		final List<CyNetworkView> views = new ArrayList<CyNetworkView>();
+		final List<CyNetworkView> views = new ArrayList<>();
 
 		for (CyNetwork network : networks) {
 			views.add(reader.buildCyNetworkView(network));

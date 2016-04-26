@@ -64,7 +64,7 @@ public class DLineType implements LineType {
 	private static final Map<LineType, DLineType> DEF_LINE_TYPE_MAP;
 
 	static {
-		DEF_LINE_TYPE_MAP = new HashMap<LineType, DLineType>();
+		DEF_LINE_TYPE_MAP = new HashMap<>();
 		DEF_LINE_TYPE_MAP.put(LineTypeVisualProperty.SOLID, SOLID);
 		DEF_LINE_TYPE_MAP.put(LineTypeVisualProperty.LONG_DASH, LONG_DASH);
 		DEF_LINE_TYPE_MAP.put(LineTypeVisualProperty.DOT, DOT);

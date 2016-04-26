@@ -70,9 +70,9 @@ public class LongListAggregator extends AbstractAggregator<List<Long>> {
 
 		public List<Long>  aggregate(CyTable table, CyGroup group, CyColumn column) {
 			Class<?> listType = column.getListElementType();
-			List <Long> agg = new ArrayList<Long>();
+			List <Long> agg = new ArrayList<>();
 			List <List<Long>> aggMed = new ArrayList<>();
-			Set <Long> aggset = new HashSet<Long>();
+			Set <Long> aggset = new HashSet<>();
 			List <Long> aggregation = null;
 
 			if (type == AttributeHandlingType.NONE) return null;
@@ -136,14 +136,14 @@ public class LongListAggregator extends AbstractAggregator<List<Long>> {
 			}
 
 			if (type == AttributeHandlingType.UNIQUE)
-				aggregation = new ArrayList<Long>(aggset);
+				aggregation = new ArrayList<>(aggset);
 			else if (type == AttributeHandlingType.AVG) {
-				aggregation = new ArrayList<Long>();
+				aggregation = new ArrayList<>();
 				for (Long v: agg) {
 					aggregation.add(Math.round((double)v/(double)nodeCount));
 				}
 			} else if (type == AttributeHandlingType.MEDIAN) {
-				aggregation = new ArrayList<Long>();
+				aggregation = new ArrayList<>();
 				for (List<Long> valueList: aggMed) {
 					Long[] vArray = new Long[valueList.size()];
 					vArray = valueList.toArray(vArray);

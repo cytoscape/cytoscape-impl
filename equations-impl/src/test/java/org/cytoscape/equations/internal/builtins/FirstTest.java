@@ -35,16 +35,16 @@ import junit.framework.*;
 
 public class FirstTest extends TestCase {
 	public void testAll() throws Exception {
-                final List<Object> list1 = new ArrayList<Object>();
+                final List<Object> list1 = new ArrayList<>();
                 list1.add(3.0);
                 list1.add(new Integer(2));
                 list1.add(5.0);
                 list1.add(new String("1"));
                 list1.add(4.0);
-		final Map<String, Object> variablesAndValues = new HashMap<String, Object>();
+		final Map<String, Object> variablesAndValues = new HashMap<>();
 		variablesAndValues.put("list1", list1);
 		assertTrue(Framework.executeTest("=FIRST(${list1})", variablesAndValues, Double.valueOf(3.0)));
-                final List<Object> list2 = new ArrayList<Object>();
+                final List<Object> list2 = new ArrayList<>();
 		variablesAndValues.put("list2", list2);
 		assertTrue(Framework.executeTestExpectFailure("=FIRST(${list2})"));
 	}

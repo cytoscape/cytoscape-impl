@@ -66,12 +66,12 @@ public class HideUtilsTest {
 	
 	@Before
 	public void initMocks() {
-		edges = new ArrayList<CyEdge>();
+		edges = new ArrayList<>();
 		edges.add(edge1);
 		edges.add(edge2);
 		edges.add(edge3);
 		
-		nodes = new ArrayList<CyNode>();
+		nodes = new ArrayList<>();
 		nodes.add(node1);
 		nodes.add(node2);
 		nodes.add(node3);

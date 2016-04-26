@@ -85,8 +85,8 @@ public class CytoscapeMenuPopulator {
 		this.registrar = registrar;
 		this.factoryProvisioner = factoryProvisioner;
 
-		taskMap = new HashMap<TaskFactory,CyAction>();
-		provisionerMap = new IdentityHashMap<Object, TaskFactory>();
+		taskMap = new HashMap<>();
+		provisionerMap = new IdentityHashMap<>();
 	}
 
 	public void addTaskFactory(TaskFactory factory, Map<String, String> props) {

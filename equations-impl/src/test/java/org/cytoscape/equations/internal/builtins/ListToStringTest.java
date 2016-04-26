@@ -35,12 +35,12 @@ import junit.framework.*;
 
 public class ListToStringTest extends TestCase {
 	public void testAll() throws Exception {
-		final List<Object> list = new ArrayList<Object>();
+		final List<Object> list = new ArrayList<>();
 		list.add("Fred");
 		list.add(Long.valueOf(3L));
 		list.add(Double.valueOf(1.3));
 
-		final Map<String, Object> variablesAndValues = new HashMap<String, Object>();
+		final Map<String, Object> variablesAndValues = new HashMap<>();
 		variablesAndValues.put("LIST", list);
 
 		assertTrue(Framework.executeTest("=LISTTOSTRING($LIST,\",\")", variablesAndValues, new String("Fred,3,1.3")));

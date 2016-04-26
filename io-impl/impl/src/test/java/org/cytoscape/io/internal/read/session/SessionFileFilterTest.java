@@ -51,11 +51,11 @@ public class SessionFileFilterTest {
 	
 	@Before
 	public void setUp() {
-		extensions = new HashSet<String>();
-		contentTypes = new HashSet<String>();
+		extensions = new HashSet<>();
+		contentTypes = new HashSet<>();
 		
 		Properties properties = new Properties();
-		CyProperty<Properties> cyProperties = new SimpleCyProperty<Properties>("test", properties, Properties.class, SavePolicy.DO_NOT_SAVE);
+		CyProperty<Properties> cyProperties = new SimpleCyProperty<>("test", properties, Properties.class, SavePolicy.DO_NOT_SAVE);
 		
 		CyServiceRegistrar serviceRegistrar = mock(CyServiceRegistrar.class);
 		when(serviceRegistrar.getService(CyProperty.class, "(cyPropertyName=cytoscape3.props)")).thenReturn(cyProperties);

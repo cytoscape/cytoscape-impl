@@ -53,7 +53,7 @@ public class DestroyNetworkTaskFactoryImpl extends AbstractNetworkCollectionTask
 
 	@Override
 	public TaskIterator createTaskIterator() {
-		return new TaskIterator(new DestroyNetworkTask(new ArrayList<CyNetwork>(), netmgr));
+		return new TaskIterator(new DestroyNetworkTask(new ArrayList<>(), netmgr));
 	} 
 	
 	@Override

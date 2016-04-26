@@ -27,7 +27,7 @@ public class GroupAnnotationsTask extends AbstractNetworkViewTask {
 			cyAnnotator.addAnnotation(group);
 
 			// Now, add all of the children
-			for (DingAnnotation child : new ArrayList<DingAnnotation>(cyAnnotator.getSelectedAnnotations())) {
+			for (DingAnnotation child : new ArrayList<>(cyAnnotator.getSelectedAnnotations())) {
 				group.addMember(child);
 				child.setSelected(false);
 			}

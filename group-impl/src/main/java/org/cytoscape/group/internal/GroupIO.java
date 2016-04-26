@@ -117,7 +117,7 @@ public class GroupIO implements SessionAboutToBeSavedListener, SessionAboutToBeL
 		if (allGroups.isEmpty())
 			return;
 		
-		final List<File> files = new ArrayList<File>();
+		final List<File> files = new ArrayList<>();
 		
 		try {
 			final File root = File.createTempFile(NAMESPACE, ".temp");

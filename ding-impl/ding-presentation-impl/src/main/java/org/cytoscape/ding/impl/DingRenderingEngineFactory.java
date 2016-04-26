@@ -146,7 +146,7 @@ public class DingRenderingEngineFactory implements RenderingEngineFactory<CyNetw
 				dgv.registerServices();
 			}
 			
-			vtfListener.viewMap.put(targetView, new WeakReference<DGraphView>(dgv));
+			vtfListener.viewMap.put(targetView, new WeakReference<>(dgv));
 
 			if (presentationContainer instanceof RootPaneContainer) {
 				final RootPaneContainer container = (RootPaneContainer) presentationContainer;

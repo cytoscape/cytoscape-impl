@@ -115,7 +115,7 @@ public class OntologyUtil {
 
 	public Map<String, String> getTaxonMap(File taxonFile) throws IOException {
 		
-		final Map<String, String> taxonMap = new HashMap<String, String>();
+		final Map<String, String> taxonMap = new HashMap<>();
 		
 		String name = null;
 		String curLine = null;
@@ -153,7 +153,7 @@ public class OntologyUtil {
 
 	
 	public Map<String, String> getTaxonMap(BufferedReader taxonFileReader) throws IOException {
-		final Map<String, String> taxonMap = new HashMap<String, String>();
+		final Map<String, String> taxonMap = new HashMap<>();
 
 		String curLine = null;
 

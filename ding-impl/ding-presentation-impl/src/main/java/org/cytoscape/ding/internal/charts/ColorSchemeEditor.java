@@ -196,7 +196,7 @@ public class ColorSchemeEditor<T extends AbstractCustomGraphics2<?>> extends JPa
 			if (newScheme || colors.isEmpty()) {
 				if (CUSTOM.equals(scheme)) {
 					int newSize = Math.max(colors.size(), nColors);
-					colors = new ArrayList<Color>(newSize);
+					colors = new ArrayList<>(newSize);
 					
 					for (int i = 0; i < newSize; i++)
 						colors.add(i%2 == 0 ? DEFAULT_COLOR : DEFAULT_COLOR.darker());
@@ -337,7 +337,7 @@ public class ColorSchemeEditor<T extends AbstractCustomGraphics2<?>> extends JPa
 		
 		private void onColorsUpdated() {
 			final Component[] rows = getColorListPnl().getComponents();
-			final List<Color> newColors = new ArrayList<Color>();
+			final List<Color> newColors = new ArrayList<>();
 			
 			if (rows != null) {
 				for (final Component c : rows) {

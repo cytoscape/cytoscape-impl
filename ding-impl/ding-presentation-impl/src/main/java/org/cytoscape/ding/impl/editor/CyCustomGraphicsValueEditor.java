@@ -340,7 +340,7 @@ public class CyCustomGraphicsValueEditor implements VisualPropertyValueEditor<Cy
 			if (graphicsList == null) {
 				DefaultViewPanel defViewPanel = serviceRegistrar.getService(DefaultViewPanel.class);
 				
-				graphicsList = new DiscreteValueList<CyCustomGraphics>(CyCustomGraphics.class, null, defViewPanel);
+				graphicsList = new DiscreteValueList<>(CyCustomGraphics.class, null, defViewPanel);
 				graphicsList.addMouseListener(new MouseAdapter() {
 					@Override
 					public void mouseClicked(final MouseEvent evt) {
@@ -421,7 +421,7 @@ public class CyCustomGraphicsValueEditor implements VisualPropertyValueEditor<Cy
 							this.cg2 = initialCg2;
 						}
 					} else {
-						initialCg2 = cf.getInstance(new HashMap<String, Object>());
+						initialCg2 = cf.getInstance(new HashMap<>());
 						this.cg2 = null;
 					}
 					
@@ -471,7 +471,7 @@ public class CyCustomGraphicsValueEditor implements VisualPropertyValueEditor<Cy
 							
 							if (cg2 == null || !cf.getSupportedClass().isAssignableFrom(cg2.getClass()))
 								cg2 = cf.getInstance(
-										cg2 != null ? cg2.getProperties() : new HashMap<String, Object>());
+										cg2 != null ? cg2.getProperties() : new HashMap<>());
 								
 							((CustomGraphics2EditorPane)c).update(cg2);
 						}

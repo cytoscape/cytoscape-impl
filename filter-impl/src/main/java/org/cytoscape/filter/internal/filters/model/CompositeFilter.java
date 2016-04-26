@@ -52,21 +52,21 @@ public class CompositeFilter implements CyFilter {
 	protected AdvancedSetting advancedSetting = null;
 	//private int indexType = -1; //QuickFind.INDEX_NODES //QuickFind.INDEX_EDGES 
 	protected CyNetwork network;
-	protected Hashtable<CompositeFilter, Boolean> compositeNotTab = new Hashtable<CompositeFilter, Boolean>();
+	protected Hashtable<CompositeFilter, Boolean> compositeNotTab = new Hashtable<>();
 	protected CyApplicationManager applicationManager;
 	
 	private static Logger logger = LoggerFactory.getLogger(CompositeFilter.class);
 	
 	public CompositeFilter(CyApplicationManager applicationManager) {
 		advancedSetting = new AdvancedSetting();
-		children = new LinkedList<CyFilter>();
+		children = new LinkedList<>();
 		this.applicationManager = applicationManager;
 	}
 
 	public CompositeFilter(String pName) {
 		name = pName;
 		advancedSetting = new AdvancedSetting();
-		children = new LinkedList<CyFilter>();
+		children = new LinkedList<>();
 	}
 		
 	public void setNetwork(CyNetwork pNetwork) {

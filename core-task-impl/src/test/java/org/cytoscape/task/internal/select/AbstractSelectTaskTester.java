@@ -70,7 +70,7 @@ public class AbstractSelectTaskTester {
 	when(view.getModel()).thenReturn(net);
 
 	networkViewManager = mock(CyNetworkViewManager.class);
-	Collection<CyNetworkView> views = new HashSet<CyNetworkView>();
+	Collection<CyNetworkView> views = new HashSet<>();
 	views.add(view);
 	when(networkViewManager.getNetworkViews(any(CyNetwork.class))).thenReturn(views);
 
@@ -86,7 +86,7 @@ public class AbstractSelectTaskTester {
 	e2 = mock(CyEdge.class);
 	when(net.getRow(e2)).thenReturn(r2);
 
-	List<CyEdge> el = new ArrayList<CyEdge>();
+	List<CyEdge> el = new ArrayList<>();
 	el.add(e1);
 	el.add(e2);
 	when(net.getEdgeList()).thenReturn(el);
@@ -101,7 +101,7 @@ public class AbstractSelectTaskTester {
 	e4 = mock(CyNode.class);
 	when(net.getRow(e4)).thenReturn(r4);
 
-	List<CyNode> nl = new ArrayList<CyNode>();
+	List<CyNode> nl = new ArrayList<>();
 	nl.add(e3);
 	nl.add(e4);
 	when(net.getNodeList()).thenReturn(nl);

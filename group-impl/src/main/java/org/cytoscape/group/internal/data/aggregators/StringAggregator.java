@@ -93,7 +93,7 @@ public class StringAggregator extends AbstractAggregator {
 					break;
 				case MCV:
 					if (histo == null) 
-						histo = new HashMap<String, Integer>();
+						histo = new HashMap<>();
 					if (histo.containsKey(value))
 						histo.put(value, histo.get(value).intValue()+1);
 					else
@@ -101,7 +101,7 @@ public class StringAggregator extends AbstractAggregator {
 					break;
 				case UNIQUE:
 					if (unique == null)
-						unique = new HashSet<String>();
+						unique = new HashSet<>();
 					unique.add(value);
 					break;
 				}

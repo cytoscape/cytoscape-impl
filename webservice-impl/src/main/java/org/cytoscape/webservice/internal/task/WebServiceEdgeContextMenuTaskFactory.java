@@ -38,7 +38,7 @@ public class WebServiceEdgeContextMenuTaskFactory extends AbstractEdgeViewTaskFa
 
 	@Override
 	public TaskIterator createTaskIterator(View<CyEdge> edgeView, CyNetworkView networkView) {
-		return new TaskIterator(new WebServiceContextMenuTask<CyEdge>(edgeView));
+		return new TaskIterator(new WebServiceContextMenuTask<>(edgeView));
 	}
 
 }

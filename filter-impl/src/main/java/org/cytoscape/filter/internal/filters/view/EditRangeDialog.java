@@ -213,7 +213,7 @@ public class EditRangeDialog extends JDialog implements ActionListener {
     public static void main(String args[]) {
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-            	Vector<String> _boundsVect = new Vector<String>();
+            	Vector<String> _boundsVect = new Vector<>();
             	_boundsVect.add("0.51");
             	_boundsVect.add("1.08");
             	_boundsVect.add("-0.1");

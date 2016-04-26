@@ -53,7 +53,7 @@ public class ExportNetworkViewTaskFactoryImpl extends AbstractNetworkViewTaskFac
 
 	@Override
 	public TaskIterator createTaskIterator(CyNetworkView view, File file) {
-		final Map<String, Object> m = new HashMap<String, Object>();
+		final Map<String, Object> m = new HashMap<>();
 		m.put("OutputFile", file);
 
 		CyNetworkViewWriter writer = new CyNetworkViewWriter(writerManager, view);

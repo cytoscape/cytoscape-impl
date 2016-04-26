@@ -35,12 +35,12 @@ import org.cytoscape.work.util.ListSingleSelection;
 public class ColumnTypeTunable {
 	
 	@Tunable (description="Type of column", context="nogui")
-	public ListSingleSelection<String> type =  
-		new ListSingleSelection<String>("integer", "long", "double", "string", "boolean", "list");
+	public ListSingleSelection<String> type =
+			new ListSingleSelection<>("integer", "long", "double", "string", "boolean", "list");
 
 	@Tunable (description="Type of list elements", context="nogui")
-	public ListSingleSelection<String> listType = 
-		new ListSingleSelection<String>("integer", "long", "double", "string", "boolean");
+	public ListSingleSelection<String> listType =
+			new ListSingleSelection<>("integer", "long", "double", "string", "boolean");
 
 	public ColumnTypeTunable() { }
 

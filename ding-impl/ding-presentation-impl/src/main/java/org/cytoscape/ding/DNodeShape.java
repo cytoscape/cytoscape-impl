@@ -65,7 +65,7 @@ public class DNodeShape implements NodeShape {
 	private static final Map<NodeShape, DNodeShape> DEF_SHAPE_MAP;
 
 	static {
-		DEF_SHAPE_MAP = new HashMap<NodeShape, DNodeShape>();
+		DEF_SHAPE_MAP = new HashMap<>();
 		DEF_SHAPE_MAP.put(NodeShapeVisualProperty.RECTANGLE, RECTANGLE);
 		DEF_SHAPE_MAP.put(NodeShapeVisualProperty.DIAMOND, DIAMOND);
 		DEF_SHAPE_MAP.put(NodeShapeVisualProperty.ELLIPSE, ELLIPSE);

@@ -84,27 +84,27 @@ public class ClipboardImpl {
 		this.cutOperation = cut;
 
 		CyNetwork sourceNetwork = sourceView.getModel();
-		oldSharedRowMap = new WeakHashMap<CyIdentifiable, CyRow>();
-		oldLocalRowMap = new WeakHashMap<CyIdentifiable, CyRow>();
-		oldHiddenRowMap = new WeakHashMap<CyIdentifiable, CyRow>();
+		oldSharedRowMap = new WeakHashMap<>();
+		oldLocalRowMap = new WeakHashMap<>();
+		oldHiddenRowMap = new WeakHashMap<>();
 
 		// For local and hidden rows, we also need to keep track of
 		// the values since they will be removed when the row gets removed
 		// This is only really necessary for cut operations
-		oldValueMap = new WeakHashMap<CyRow, Map<String, Object>>();
+		oldValueMap = new WeakHashMap<>();
 
 		// We need the root network to get the shared attributes
 		CyRootNetwork sourceRootNetwork = ((CySubNetwork)sourceNetwork).getRootNetwork();
 
 		// save bypass values and the positions of the nodes
-		nodeBypass = new HashMap<CyNode, Map<VisualProperty<?>,Object>>();
-		edgeBypassMap = new HashMap<CyEdge, Map<VisualProperty<?>,Object>>();
+		nodeBypass = new HashMap<>();
+		edgeBypassMap = new HashMap<>();
 		final Collection<VisualProperty<?>> nodeProps = lexicon.getAllDescendants(BasicVisualLexicon.NODE);
 		final Collection<VisualProperty<?>> edgeProps = lexicon.getAllDescendants(BasicVisualLexicon.EDGE);
 		
 		xCenter = 0.0;
 		yCenter = 0.0;
-		nodePositions = new HashMap<CyNode, double[]>();
+		nodePositions = new HashMap<>();
 		
 		for (CyNode node: nodes) {
 			if (networkView != null) {
@@ -169,8 +169,8 @@ public class ClipboardImpl {
 	}
 
 	public List<CyIdentifiable> paste(CyNetworkView targetView, double x, double y) {
-		final List<CyIdentifiable> pastedObjects = new ArrayList<CyIdentifiable>();
-		final Map<CyRow, CyRow> rowMap = new HashMap<CyRow, CyRow>();
+		final List<CyIdentifiable> pastedObjects = new ArrayList<>();
+		final Map<CyRow, CyRow> rowMap = new HashMap<>();
 
 		// We need to do this in 4 passes.
 		// In pass 1, we'll add all of the nodes and store their (possibly new) SUID.
@@ -180,7 +180,7 @@ public class ClipboardImpl {
 		// Note that if we add any nodes, we'll only add edges to nodes that exist.  
 
 		// Pass 1: add the nodes 
-		final Map<CyNode, CyNode> newNodeMap = new HashMap<CyNode, CyNode>();
+		final Map<CyNode, CyNode> newNodeMap = new HashMap<>();
 		
 		for (CyNode node : nodes) {
 			CyNode newNode = pasteNode(sourceView, targetView, node, rowMap);
@@ -189,7 +189,7 @@ public class ClipboardImpl {
 		}
 
 		// Pass 2: add the edges
-		final Map<CyEdge, CyEdge> newEdgeMap = new HashMap<CyEdge, CyEdge>();
+		final Map<CyEdge, CyEdge> newEdgeMap = new HashMap<>();
 		
 		for (CyEdge edge : edges) {
 			CyEdge newEdge = pasteEdge(sourceView, targetView, edge, rowMap, newNodeMap, pastedObjects);
@@ -504,7 +504,7 @@ public class ClipboardImpl {
 				Map<VisualProperty<?>, Object> vpMap = bypassMap.get(view.getModel());
 				
 				if (vpMap == null)
-					bypassMap.put(view.getModel(), vpMap = new HashMap<VisualProperty<?>, Object>());
+					bypassMap.put(view.getModel(), vpMap = new HashMap<>());
 				
 				vpMap.put(vp, view.getVisualProperty(vp));
 			}

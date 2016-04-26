@@ -111,7 +111,7 @@ public class ImportNoGuiNetworkReaderFactory extends AbstractTaskFactory {
 				name = ((LoadNetworkReaderTask)netReader).getName();
 			
 			viewThreshold = getViewThreshold();
-			results = new ArrayList<CyNetworkView>();
+			results = new ArrayList<>();
 			
 			for (CyNetwork network : networks) {
 				// Use original name if exists

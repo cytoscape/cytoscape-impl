@@ -38,7 +38,7 @@ final class SaveColumn {
 	final List<PrimaryKeyAndValue> keysAndValues;
 
 	SaveColumn(final CyTable table, final String columnName) {
-		keysAndValues = new ArrayList<PrimaryKeyAndValue>(table.getRowCount());
+		keysAndValues = new ArrayList<>(table.getRowCount());
 		final String primarykeyName = table.getPrimaryKey().getName();
 		for (final CyRow row : table.getAllRows()) {
 			final Object primaryKey = row.getRaw(primarykeyName);

@@ -67,7 +67,7 @@ public class DataUtils {
 
 	public static <T> List<T> convertStringList(String value, Class<T> listElementType) {
 		String[] splitString = getCSV(value);
-		List<T> list = new ArrayList<T>();
+		List<T> list = new ArrayList<>();
 		for (String s: splitString) {
 			T val = convertString(s, listElementType);
 			if (val != null)

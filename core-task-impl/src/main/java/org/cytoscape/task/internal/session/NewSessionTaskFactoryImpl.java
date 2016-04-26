@@ -56,7 +56,7 @@ public class NewSessionTaskFactoryImpl extends AbstractTaskFactory implements Ne
 
 	@Override
 	public TaskIterator createTaskIterator(boolean destroyCurrentSession) {
-		final Map<String, Object> m = new HashMap<String, Object>();
+		final Map<String, Object> m = new HashMap<>();
 		m.put("destroyCurrentSession", destroyCurrentSession);
 
 		return tunableSetter.createTaskIterator(this.createTaskIterator(), m); 

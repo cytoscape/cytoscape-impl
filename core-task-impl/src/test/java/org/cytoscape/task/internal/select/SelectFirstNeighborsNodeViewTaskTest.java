@@ -50,7 +50,7 @@ public class SelectFirstNeighborsNodeViewTaskTest extends AbstractSelectTaskTest
 	@Test
 	public void testRun() throws Exception {
 		// more setup
-		List<CyNode> nl = new ArrayList<CyNode>();
+		List<CyNode> nl = new ArrayList<>();
 		nl.add(e4);
 		when(net.getNeighborList(e3, CyEdge.Type.ANY)).thenReturn(nl);
 

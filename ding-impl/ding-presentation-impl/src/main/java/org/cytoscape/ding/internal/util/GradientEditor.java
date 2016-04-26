@@ -35,7 +35,7 @@ public class GradientEditor extends JPanel {
 	private static final long serialVersionUID = -760260103076698312L;
 	
 	/** The controlPoints of control points */
-	private List<ControlPoint> controlPoints = new ArrayList<ControlPoint>();
+	private List<ControlPoint> controlPoints = new ArrayList<>();
 	/** The current selected control point */
 	private ControlPoint selected;
 	/** The polygon used for the markers */
@@ -57,7 +57,7 @@ public class GradientEditor extends JPanel {
 	private int barHeight;
 	
 	/** The listeners that should be notified of changes to this emitter */
-	private List<ActionListener> listeners = new ArrayList<ActionListener>();
+	private List<ActionListener> listeners = new ArrayList<>();
 	
 	// ==[ CONSTRUCTORS ]===============================================================================================
 	
@@ -246,7 +246,7 @@ public class GradientEditor extends JPanel {
 	}
 	
 	public List<ControlPoint> getControlPoints() {
-		return new ArrayList<ControlPoint>(controlPoints);
+		return new ArrayList<>(controlPoints);
 	}
 	
 	public List<Float> getPositions() {

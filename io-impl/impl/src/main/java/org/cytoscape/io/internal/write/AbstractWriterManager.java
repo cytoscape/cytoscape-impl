@@ -46,11 +46,11 @@ public class AbstractWriterManager<T extends CyWriterFactory>  implements CyWrit
 
 	public AbstractWriterManager(DataCategory category) {
 		this.category = category;
-		factories = new ConcurrentHashMap<CyFileFilter,T>(16, 0.75f, 2);
+		factories = new ConcurrentHashMap<>(16, 0.75f, 2);
 	}
 
 	public List<CyFileFilter> getAvailableWriterFilters() {
-		return new ArrayList<CyFileFilter>( factories.keySet() );
+		return new ArrayList<>(factories.keySet());
 	}
 	
 	@SuppressWarnings("unchecked")

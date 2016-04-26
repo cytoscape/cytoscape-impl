@@ -99,7 +99,7 @@ final class DeleteEdit extends AbstractCyEdit {
 		this.eventHelper = eventHelper;
 
 		// save bypass values and the positions of the nodes
-		bypassMap = new HashMap<CyIdentifiable, Map<VisualProperty<?>,Object>>();
+		bypassMap = new HashMap<>();
 		xPos = new double[nodes.size()]; 
 		yPos = new double[nodes.size()];
 		final Collection<CyNetworkView> views = netViewMgr.getNetworkViews(net);
@@ -188,7 +188,7 @@ final class DeleteEdit extends AbstractCyEdit {
 				Map<VisualProperty<?>, Object> vpMap = bypassMap.get(view.getModel());
 				
 				if (vpMap == null)
-					bypassMap.put(view.getModel(), vpMap = new HashMap<VisualProperty<?>, Object>());
+					bypassMap.put(view.getModel(), vpMap = new HashMap<>());
 				
 				vpMap.put(vp, view.getVisualProperty(vp));
 			}

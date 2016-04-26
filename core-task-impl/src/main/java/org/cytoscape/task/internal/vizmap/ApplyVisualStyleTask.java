@@ -56,8 +56,8 @@ public class ApplyVisualStyleTask extends AbstractNetworkViewCollectionTask {
 			throw new NullPointerException("VisualMappingManager is null");
 		this.vmm = vmm;
 
-		final List<VisualStyle> vsList = new ArrayList<VisualStyle>(vmm.getAllVisualStyles());
-		styles = new ListSingleSelection<VisualStyle>(vsList);
+		final List<VisualStyle> vsList = new ArrayList<>(vmm.getAllVisualStyles());
+		styles = new ListSingleSelection<>(vsList);
 		if (!vsList.isEmpty())
 			styles.setSelectedValue(vsList.get(0));
 	}

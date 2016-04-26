@@ -82,7 +82,7 @@ public class SelectFromFileListTask extends AbstractSelectTask {
 		try {
 			FileReader fin = new FileReader(file);
 			BufferedReader bin = new BufferedReader(fin);
-			Set<String> fileNodes = new HashSet<String>();
+			Set<String> fileNodes = new HashSet<>();
 			String s;
 			tm.setProgress(0.2);
 			while ((s = bin.readLine()) != null) {

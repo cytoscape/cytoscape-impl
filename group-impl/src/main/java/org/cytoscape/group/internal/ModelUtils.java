@@ -63,7 +63,7 @@ public class ModelUtils {
 	public static <T> List<T> getList(CyRow row, String column, Class<T> type) {
 		List<T> l = row.getList(column, type);
 		if (l == null)
-			l = new ArrayList<T>();
+			l = new ArrayList<>();
 		return l;
 	}
 }

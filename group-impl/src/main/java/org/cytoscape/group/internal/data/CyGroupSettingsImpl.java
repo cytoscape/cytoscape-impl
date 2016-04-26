@@ -138,17 +138,17 @@ public class CyGroupSettingsImpl implements GroupAddedListener,
 		this.appMgr = cyGroupManager.getService(CyApplicationManager.class);
 		this.eventHelper = cyGroupManager.getService(CyEventHelper.class);
 
-		allGroupDefaultMap = new HashMap<Class<?>,Aggregator<?>>();
-		allGroupListDefaultMap = new HashMap<Class<?>,Aggregator<?>>();
-		allGroupOverrideMap = new HashMap<CyColumn,Aggregator<?>>();
-		allGroupOverridePropertyMap = new HashMap<String, String>(); // Special map for loading initial properties
-		groupMap = new HashMap<CyGroup,GroupSpecificMaps>();
+		allGroupDefaultMap = new HashMap<>();
+		allGroupListDefaultMap = new HashMap<>();
+		allGroupOverrideMap = new HashMap<>();
+		allGroupOverridePropertyMap = new HashMap<>(); // Special map for loading initial properties
+		groupMap = new HashMap<>();
 		
-		groupActionMap = new ConcurrentHashMap<CyGroup, DoubleClickAction>(16, 0.75f, 2);
-		groupViewTypeMap = new ConcurrentHashMap<CyGroup, GroupViewType>(16, 0.75f, 2);
-		enableMap = new ConcurrentHashMap<CyGroup, Boolean>(16, 0.75f, 2);
-		nestedNetworkMap = new ConcurrentHashMap<CyGroup, Boolean>(16, 0.75f, 2);
-		opacityMap = new ConcurrentHashMap<CyGroup, Double>(16, 0.75f, 2);
+		groupActionMap = new ConcurrentHashMap<>(16, 0.75f, 2);
+		groupViewTypeMap = new ConcurrentHashMap<>(16, 0.75f, 2);
+		enableMap = new ConcurrentHashMap<>(16, 0.75f, 2);
+		nestedNetworkMap = new ConcurrentHashMap<>(16, 0.75f, 2);
+		opacityMap = new ConcurrentHashMap<>(16, 0.75f, 2);
 
 		// Create our properties reader
 		groupSettingsProperties = new PropsReader();
@@ -351,7 +351,7 @@ public class CyGroupSettingsImpl implements GroupAddedListener,
 				defMap.put(cKey, allGroupDefaultMap.get(cKey));
 			for (Class<?> cKey: allGroupListDefaultMap.keySet())
 				defListMap.put(cKey, allGroupListDefaultMap.get(cKey));
-			Map<CyColumn,Aggregator<?>> ovMap = new HashMap<CyColumn, Aggregator<?>>();
+			Map<CyColumn,Aggregator<?>> ovMap = new HashMap<>();
 			for (CyColumn cKey: allGroupOverrideMap.keySet())
 				ovMap.put(cKey, allGroupOverrideMap.get(cKey));
 			groupMap.put(addedGroup, new GroupSpecificMaps(defMap, defListMap, ovMap));
@@ -977,19 +977,19 @@ public class CyGroupSettingsImpl implements GroupAddedListener,
 		}
 
 		void setDefault(Class<?> ovClass, Aggregator<?> agg) {
-			if (defMap == null) defMap = new HashMap<Class<?>, Aggregator<?>>();
+			if (defMap == null) defMap = new HashMap<>();
 
 			defMap.put(ovClass, agg);
 		}
 
 		void setListDefault(Class<?> ovClass, Aggregator<?> agg) {
-			if (defListMap == null) defListMap = new HashMap<Class<?>, Aggregator<?>>();
+			if (defListMap == null) defListMap = new HashMap<>();
 
 			defListMap.put(ovClass, agg);
 		}
 
 		void setOverride(CyColumn column, Aggregator<?> agg) {
-			if (ovMap == null) ovMap = new HashMap<CyColumn, Aggregator<?>>();
+			if (ovMap == null) ovMap = new HashMap<>();
 
 			ovMap.put(column, agg);
 		}

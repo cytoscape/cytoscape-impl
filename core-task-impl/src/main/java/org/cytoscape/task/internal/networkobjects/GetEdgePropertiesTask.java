@@ -59,7 +59,7 @@ public class GetEdgePropertiesTask extends AbstractPropertyTask implements Obser
 
 	@Override
 	public void run(final TaskMonitor taskMonitor) {
-		edgePropertiesMap = new HashMap<CyEdge, Map<String, Object>>();
+		edgePropertiesMap = new HashMap<>();
 
 		CyNetwork network = edgeTunable.getNetwork();
 
@@ -73,7 +73,7 @@ public class GetEdgePropertiesTask extends AbstractPropertyTask implements Obser
 		for (CyEdge edge: edgeTunable.getEdgeList()) {
 			taskMonitor.showMessage(TaskMonitor.Level.INFO, 
 			                        "   Edge property values for edge "+DataUtils.getEdgeName(network.getDefaultEdgeTable(), edge)+":");
-			Map<String, Object> propertyMap = new HashMap<String, Object>();
+			Map<String, Object> propertyMap = new HashMap<>();
 
 			for (String property: props) {
 				try {

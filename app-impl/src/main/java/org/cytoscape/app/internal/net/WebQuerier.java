@@ -69,7 +69,7 @@ import org.slf4j.LoggerFactory;
  */
 public class WebQuerier {
 	
-	public static final List<DownloadSite> DEFAULT_DOWNLOAD_SITES = new LinkedList<DownloadSite>();
+	public static final List<DownloadSite> DEFAULT_DOWNLOAD_SITES = new LinkedList<>();
 	
 	public static final String DEFAULT_APP_STORE_URL = "http://apps.cytoscape.org/";
 	
@@ -193,13 +193,13 @@ public class WebQuerier {
 		appsByTagName = new HashMap<String, Set<WebApp>>();
 		*/
 		
-		appsByUrl = new HashMap<String, Set<WebApp>>();
-		appTagsByUrl = new HashMap<String, Map<String, AppTag>>();
-		appsByTagNameByUrl = new HashMap<String, Map<String,Set<WebApp>>>();
+		appsByUrl = new HashMap<>();
+		appTagsByUrl = new HashMap<>();
+		appsByTagNameByUrl = new HashMap<>();
 		
 		appsByUrl.put(currentAppStoreUrl, null);
-		appTagsByUrl.put(currentAppStoreUrl, new HashMap<String, AppTag>());
-		appsByTagNameByUrl.put(currentAppStoreUrl, new HashMap<String, Set<WebApp>>());
+		appTagsByUrl.put(currentAppStoreUrl, new HashMap<>());
+		appsByTagNameByUrl.put(currentAppStoreUrl, new HashMap<>());
 		
 		/*
 		Set<WebApp> webApps = getAllApps();
@@ -278,11 +278,11 @@ public class WebQuerier {
 			}
 			
 			if (appTagsByUrl.get(currentAppStoreUrl) == null) {
-				appTagsByUrl.put(currentAppStoreUrl, new HashMap<String, AppTag>());
+				appTagsByUrl.put(currentAppStoreUrl, new HashMap<>());
 			}
 			
 			if (appsByTagNameByUrl.get(currentAppStoreUrl) == null) {
-				appsByTagNameByUrl.put(currentAppStoreUrl, new HashMap<String, Set<WebApp>>());
+				appsByTagNameByUrl.put(currentAppStoreUrl, new HashMap<>());
 			}
 		}
 	}
@@ -296,7 +296,7 @@ public class WebQuerier {
 		// by the web store and is used to build a set of all available tags
 		Set<WebApp> apps = getAllApps();
 		
-		return new HashSet<AppTag>(appTagsByUrl.get(currentAppStoreUrl).values());
+		return new HashSet<>(appTagsByUrl.get(currentAppStoreUrl).values());
 	}
 
 	public boolean appsHaveBeenLoaded() {
@@ -311,7 +311,7 @@ public class WebQuerier {
 		
 		DebugHelper.print("Obtaining apps from app store..");
 
-		Set<WebApp> result = new HashSet<WebApp>();
+		Set<WebApp> result = new HashSet<>();
 		
 		String jsonResult = null;
 		try {
@@ -386,7 +386,7 @@ public class WebQuerier {
 				}
 				
 				try {
-					List<WebApp.Release> releases = new LinkedList<WebApp.Release>();
+					List<WebApp.Release> releases = new LinkedList<>();
 					
 					if (jsonObject.has("releases")) {
 						JSONArray jsonReleases = jsonObject.getJSONArray("releases");
@@ -502,7 +502,7 @@ public class WebQuerier {
 			
 			// Add the app information for this tag to the map which keeps apps categorized by tag
 			if (appsByTagNameByUrl.get(currentAppStoreUrl).get(appTagName) == null) {
-				appsByTagNameByUrl.get(currentAppStoreUrl).put(appTagName, new HashSet<WebApp>());
+				appsByTagNameByUrl.get(currentAppStoreUrl).put(appTagName, new HashSet<>());
 			}
 			
 			appsByTagNameByUrl.get(currentAppStoreUrl).get(appTagName).add(webApp);
@@ -632,7 +632,7 @@ public class WebQuerier {
 	 * @return
 	 */
 	private List<WebApp.Release> getCompatibleReleases(WebApp webApp) {
-		List<WebApp.Release> compatibleReleases = new LinkedList<WebApp.Release>();
+		List<WebApp.Release> compatibleReleases = new LinkedList<>();
 		
 		for (WebApp.Release release : webApp.getReleases()) {
 			
@@ -653,7 +653,7 @@ public class WebQuerier {
 	}
 	
 	public Set<Update> checkForUpdates(Set<App> apps, AppManager appManager) {
-		Set<Update> updates = new HashSet<Update>();
+		Set<Update> updates = new HashSet<>();
 		
 		Update update;
 		for (App app : apps) {
@@ -817,7 +817,7 @@ public class WebQuerier {
 		}
 		
 		// Find the set of all available apps
-		Set<WebApp> allWebApps = new HashSet<WebApp>(
+		Set<WebApp> allWebApps = new HashSet<>(
 				appsByUrl.get(DEFAULT_APP_STORE_URL).size());
 		
 		for (String url : appsByUrl.keySet()) {
@@ -830,7 +830,7 @@ public class WebQuerier {
 		}
 		
 		// Find set of all app releases
-		Map<Release, WebApp> allReleases = new HashMap<Release, WebApp>(
+		Map<Release, WebApp> allReleases = new HashMap<>(
 				appsByUrl.get(DEFAULT_APP_STORE_URL).size());
 		
 		List<Release> appReleases = null;

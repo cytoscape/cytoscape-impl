@@ -67,18 +67,18 @@ public final class MapTableToNetworkTablesTaskFactoryImpl extends AbstractTableT
 		TableType tableType = getTableType(type);
 		if(tableType == null)
 			throw new IllegalArgumentException("The specified type " + type + " is not acceptable.");
-		ListSingleSelection<TableType> tableTypes = new ListSingleSelection<TableType>(tableType);
+		ListSingleSelection<TableType> tableTypes = new ListSingleSelection<>(tableType);
 		tableTypes.setSelectedValue(tableType);
 		
-		List<String> networkNames = new ArrayList<String>();
+		List<String> networkNames = new ArrayList<>();
 		for(CyNetwork net: networksList){
 			networkNames.add(net.getRow(net).get(CyNetwork.NAME, String.class));
 		}
 	
-		ListMultipleSelection<String> networksListTunable = new ListMultipleSelection<String>(networkNames);
+		ListMultipleSelection<String> networksListTunable = new ListMultipleSelection<>(networkNames);
 		networksListTunable.setSelectedValues(networkNames);
 		
-		final Map<String, Object> m = new HashMap<String, Object>();
+		final Map<String, Object> m = new HashMap<>();
 		
 		m.put("dataTypeOptions", tableTypes);
 		m.put("selectedNetworksOnly", selectedNetworksOnly);

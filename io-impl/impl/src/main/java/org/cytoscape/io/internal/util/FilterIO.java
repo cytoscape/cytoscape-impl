@@ -31,7 +31,7 @@ public class FilterIO {
 	static final Logger logger = LoggerFactory.getLogger(FilterIO.class);
 	
 	public static Map<String, Object> getParameters(Transformer<?, ?> transformer) throws IntrospectionException {
-		HashMap<String, Object> map = new HashMap<String, Object>();
+		HashMap<String, Object> map = new HashMap<>();
 		
 		Class<?> type = transformer.getClass();
 		BeanInfo info = Introspector.getBeanInfo(type);
@@ -72,7 +72,7 @@ public class FilterIO {
 	}
 	
 	private static Map<String, PropertyInfo> getProperties(Transformer<?, ?> transformer) {
-		Map<String, PropertyInfo> properties = new HashMap<String, PropertyInfo>();
+		Map<String, PropertyInfo> properties = new HashMap<>();
 		Class<?> type = transformer.getClass();
 		try {
 			BeanInfo info = Introspector.getBeanInfo(type);
@@ -255,7 +255,7 @@ public class FilterIO {
 		public NamedTransformerImpl(String name, Transformer<?, ?>... transformers) {
 			this.name = name;
 			
-			this.transformers = new ArrayList<Transformer<Object, Object>>(transformers.length);
+			this.transformers = new ArrayList<>(transformers.length);
 			for (Transformer<?, ?> transformer : transformers) {
 				this.transformers.add((Transformer<Object, Object>) transformer);
 			}
@@ -265,7 +265,7 @@ public class FilterIO {
 		public NamedTransformerImpl(String name, List<Transformer<?, ?>> transformers) {
 			this.name = name;
 			
-			this.transformers = new ArrayList<Transformer<Object, Object>>(transformers.size());
+			this.transformers = new ArrayList<>(transformers.size());
 			for (Transformer<?, ?> transformer : transformers) {
 				this.transformers.add((Transformer<Object, Object>) transformer);
 			}

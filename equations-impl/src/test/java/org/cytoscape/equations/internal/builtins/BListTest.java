@@ -35,15 +35,15 @@ import junit.framework.*;
 
 public class BListTest extends TestCase {
 	public void testAll() throws Exception {
-                final List<Object> numbers = new ArrayList<Object>();
+                final List<Object> numbers = new ArrayList<>();
                 numbers.add(Boolean.valueOf(true));
                 numbers.add(Boolean.valueOf(false));
                 numbers.add(Double.valueOf(0.0));
                 numbers.add("true");
                 numbers.add(Double.valueOf(5.0));
-		final Map<String, Object> variablesAndValues = new HashMap<String, Object>();
+		final Map<String, Object> variablesAndValues = new HashMap<>();
 		variablesAndValues.put("numbers", numbers);
-		final List<Boolean> expectedResult = new ArrayList<Boolean>();
+		final List<Boolean> expectedResult = new ArrayList<>();
 		expectedResult.add(true);
 		expectedResult.add(false);
 		expectedResult.add(false);
@@ -53,7 +53,7 @@ public class BListTest extends TestCase {
 		expectedResult.add(true);
 		assertTrue(Framework.executeTest("=BLIST($numbers, FALSE, TRUE)", variablesAndValues, expectedResult));
 
-		final List<Boolean> emptyList = new ArrayList<Boolean>();
+		final List<Boolean> emptyList = new ArrayList<>();
 		assertTrue(Framework.executeTest("=BLIST()", emptyList));
 
 		assertTrue(Framework.executeTestExpectFailure("=BLIST(\"abc\")"));

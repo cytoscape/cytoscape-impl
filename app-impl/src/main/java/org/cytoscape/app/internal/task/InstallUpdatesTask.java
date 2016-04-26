@@ -24,7 +24,7 @@ public class InstallUpdatesTask extends AbstractTask {
 	public void run(TaskMonitor taskMonitor) throws Exception {
 		taskMonitor.setTitle("Install Updates");
 		taskMonitor.setTitle("");
-		List<WebApp> webApps = new ArrayList<WebApp>();
+		List<WebApp> webApps = new ArrayList<>();
         for(Update update: updates) {
         	webApps.add(update.getWebApp());
         }

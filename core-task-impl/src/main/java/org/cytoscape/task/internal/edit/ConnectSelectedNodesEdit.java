@@ -52,7 +52,7 @@ final class ConnectSelectedNodesEdit extends AbstractCyEdit {
 	@Override
 	public void redo() {
 
-		final List<CyEdge> newEdges = new ArrayList<CyEdge>(edges.size());
+		final List<CyEdge> newEdges = new ArrayList<>(edges.size());
 		for (final CyEdge edge : edges) {
 			final CyNode source = edge.getSource();
 			final CyNode target = edge.getTarget();

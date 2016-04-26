@@ -70,9 +70,9 @@ public class DoubleListAggregator extends AbstractAggregator<List<Double>> {
 
 		public List<Double>  aggregate(CyTable table, CyGroup group, CyColumn column) {
 			Class<?> listType = column.getListElementType();
-			List <Double> agg = new ArrayList<Double>();
+			List <Double> agg = new ArrayList<>();
 			List <List<Double>> aggMed = new ArrayList<>();
-			Set <Double> aggset = new HashSet<Double>();
+			Set <Double> aggset = new HashSet<>();
 			List <Double> aggregation = null;
 
 			if (type == AttributeHandlingType.NONE) return null;
@@ -136,14 +136,14 @@ public class DoubleListAggregator extends AbstractAggregator<List<Double>> {
 			}
 
 			if (type == AttributeHandlingType.UNIQUE)
-				aggregation = new ArrayList<Double>(aggset);
+				aggregation = new ArrayList<>(aggset);
 			else if (type == AttributeHandlingType.AVG) {
-				aggregation = new ArrayList<Double>();
+				aggregation = new ArrayList<>();
 				for (Double v: agg) {
 					aggregation.add(v/(double)nodeCount);
 				}
 			} else if (type == AttributeHandlingType.MEDIAN) {
-				aggregation = new ArrayList<Double>();
+				aggregation = new ArrayList<>();
 				for (List<Double> valueList: aggMed) {
 					Double[] vArray = new Double[valueList.size()];
 					vArray = valueList.toArray(vArray);

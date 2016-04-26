@@ -309,7 +309,7 @@ class FileUtilImpl implements FileUtil {
 	}
 	
 	private String addFileExt(final Collection<FileChooserFilter> filters, String fileName) {
-		final Set<String> extSet = new LinkedHashSet<String>();
+		final Set<String> extSet = new LinkedHashSet<>();
 		
 		for (final FileChooserFilter filter : filters) {
 			final String[] exts = filter.getExtensions();

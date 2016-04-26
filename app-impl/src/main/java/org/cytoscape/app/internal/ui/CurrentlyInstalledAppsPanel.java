@@ -555,9 +555,9 @@ public class CurrentlyInstalledAppsPanel extends JPanel {
     }
     
     public Map<App, Collection<App>> getOtherAppsDependingOn(Collection<App> apps) {
-    	Map<App, Collection<App>> otherAppsDependingOn = new HashMap<App, Collection<App>>();
+    	Map<App, Collection<App>> otherAppsDependingOn = new HashMap<>();
     	for(App app: apps) {
-    		List<App> dependencies = new ArrayList<App>();
+    		List<App> dependencies = new ArrayList<>();
     		for(App installedApp: appManager.getInstalledApps())  {
     			if(!installedApp.getAppName().equalsIgnoreCase("core apps") 
     					&& !apps.contains(installedApp) && installedApp.getDependencies() != null)

@@ -83,13 +83,13 @@ public abstract class GradientLayerCustomGraphics extends AbstractDCustomGraphic
 		NAME = name;
 		width = DEF_W;
 		height = DEF_H;
-		props = new HashMap<String, CustomGraphicsProperty<?>>();
-		colorList = new ArrayList<Color>();
-		stopList = new ArrayList<Float>();
+		props = new HashMap<>();
+		colorList = new ArrayList<>();
+		stopList = new ArrayList<>();
 
-		c1 = new CustomGraphicsPropertyImpl<Color>(transparentWhite);
+		c1 = new CustomGraphicsPropertyImpl<>(transparentWhite);
 		colorList.add(c1.getValue()); stopList.add(0.0f);
-		c2 = new CustomGraphicsPropertyImpl<Color>(transparentBlack);
+		c2 = new CustomGraphicsPropertyImpl<>(transparentBlack);
 		colorList.add(c2.getValue()); stopList.add(1.0f);
 		
 		this.props.put(COLOR1, c1);

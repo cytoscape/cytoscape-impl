@@ -186,7 +186,7 @@ public abstract class AbstractSessionReader extends AbstractTask implements CySe
 			for (final CyNetworkView view : networkViews)
 				view.dispose();
 			
-			final Set<CyRootNetwork> rootNetworks = new HashSet<CyRootNetwork>();
+			final Set<CyRootNetwork> rootNetworks = new HashSet<>();
 			
 			// Get all networks from the ReadCache, because it also contains unregistered networks
 			// such as group networks.

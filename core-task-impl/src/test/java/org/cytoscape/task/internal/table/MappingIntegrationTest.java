@@ -158,7 +158,7 @@ public class MappingIntegrationTest {
 		((CySubNetworkImpl) net1).handleEvent(new NetworkAddedEvent(netMgr, net1));
 
 		
-		List<CyNetwork> firstnetlist = new ArrayList<CyNetwork>(netMgr.getNetworkSet());
+		List<CyNetwork> firstnetlist = new ArrayList<>(netMgr.getNetworkSet());
 		
 		//creating a table for mapping to all networks
 		table1 = new CyTableImpl("dummy table", "ID", String.class, true, true, 
@@ -188,12 +188,12 @@ public class MappingIntegrationTest {
 		newNetTask.run(mock(TaskMonitor.class));
 		
 		
-		List<CyNetwork> secondNetList  = new ArrayList<CyNetwork>(netMgr.getNetworkSet());
+		List<CyNetwork> secondNetList  = new ArrayList<>(netMgr.getNetworkSet());
 		secondNetList.removeAll(firstnetlist);
 		assertEquals(1, secondNetList.size());
 
 		subnet1 = secondNetList.get(0);
-		secondNetList  = new ArrayList<CyNetwork>(netMgr.getNetworkSet());
+		secondNetList  = new ArrayList<>(netMgr.getNetworkSet());
 		
 		((CySubNetworkImpl) subnet1).handleEvent(new NetworkAddedEvent(netMgr, subnet1));
 		
@@ -234,7 +234,7 @@ public class MappingIntegrationTest {
 		newNetTask2.run(mock(TaskMonitor.class));
 		
 		
-		List<CyNetwork> thirdNetList  = new ArrayList<CyNetwork>(netMgr.getNetworkSet());
+		List<CyNetwork> thirdNetList  = new ArrayList<>(netMgr.getNetworkSet());
 		thirdNetList.removeAll(secondNetList);
 		assertEquals(1, thirdNetList.size());
 		subnet2 = thirdNetList.get(0);		
@@ -255,7 +255,7 @@ public class MappingIntegrationTest {
 	
 	public void mapping(CyTable table, CyNetwork net, CyRootNetwork rootNet, CyColumn col, boolean selectedOnly) throws Exception{
 		ImportTableDataTaskFactoryImpl mappingTF = new ImportTableDataTaskFactoryImpl(serviceRegistrar);
-		List<CyNetwork> nets = new ArrayList<CyNetwork>();
+		List<CyNetwork> nets = new ArrayList<>();
 		nets.add(net);
 		
 		TaskIterator ti = mappingTF.createTaskIterator(table, selectedOnly, false, nets ,rootNet,col, CyNode.class);

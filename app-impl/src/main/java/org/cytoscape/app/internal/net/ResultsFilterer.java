@@ -42,7 +42,7 @@ public class ResultsFilterer {
 	 * apps that contain the given substring, such as in its name or description.
 	 */
 	public Set<WebApp> findMatches(String text, Set<WebApp> webApps) {
-		Set<WebApp> result = new HashSet<WebApp>();
+		Set<WebApp> result = new HashSet<>();
 		
 		for (WebApp webApp : webApps) {
 			if (matches(text, webApp)) {

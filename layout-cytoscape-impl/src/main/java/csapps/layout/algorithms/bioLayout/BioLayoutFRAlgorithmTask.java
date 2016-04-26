@@ -98,7 +98,7 @@ public class BioLayoutFRAlgorithmTask extends BioLayoutAlgorithmTask {
 		this.edgeWeighter = context.edgeWeighter;
 		this.edgeWeighter.setWeightAttribute(layoutAttribute);
 		
-		displacementArray = new ArrayList<Double>(100);
+		displacementArray = new ArrayList<>(100);
 	}
 
 	/**

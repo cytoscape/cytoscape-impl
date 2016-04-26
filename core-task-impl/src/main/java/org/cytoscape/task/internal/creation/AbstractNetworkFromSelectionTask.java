@@ -167,7 +167,7 @@ abstract class AbstractNetworkFromSelectionTask extends AbstractCreationTask {
 		tm.setProgress(0.6);
 
 		// create the view in a separate task
-		final Set<CyNetwork> networks = new HashSet<CyNetwork>();
+		final Set<CyNetwork> networks = new HashSet<>();
 		networks.add(newNet);
 		
 		// Pick a CyNetworkViewFactory that is appropriate for the sourceView
@@ -189,7 +189,7 @@ abstract class AbstractNetworkFromSelectionTask extends AbstractCreationTask {
 	}
 
 	private void addColumns(CyTable parentTable, CyTable subTable) {
-		List<CyColumn> colsToAdd = new ArrayList<CyColumn>();
+		List<CyColumn> colsToAdd = new ArrayList<>();
 
 		for (CyColumn col:  parentTable.getColumns())
 			if (subTable.getColumn(col.getName()) == null)

@@ -60,7 +60,7 @@ public class RecentlyOpenedTrackerImpl implements RecentlyOpenedTracker {
 	public RecentlyOpenedTrackerImpl(final String trackerFileName, final CyApplicationConfiguration config) {
 		this.trackerFileName = trackerFileName;
 		this.propDir = config.getConfigurationDirectoryLocation();
-		this.trackerURLs = new LinkedList<URL>();
+		this.trackerURLs = new LinkedList<>();
 
 		BufferedReader reader = null;
 		try {

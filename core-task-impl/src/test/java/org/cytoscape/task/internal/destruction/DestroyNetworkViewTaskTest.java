@@ -60,7 +60,7 @@ public class DestroyNetworkViewTaskTest {
 	public void testDestroyNetworkTask() throws Exception {
 		final CyNetworkView view1 = support.getNetworkView();
 		final CyNetworkView view2 = support.getNetworkView();
-		final Set<CyNetworkView> views = new HashSet<CyNetworkView>();
+		final Set<CyNetworkView> views = new HashSet<>();
 		views.add(view1);
 		views.add(view2);
 		

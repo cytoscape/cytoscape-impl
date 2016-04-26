@@ -62,16 +62,16 @@ public class ApplyVisualStyleTaskTest {
 		TaskMonitor tm = mock(TaskMonitor.class);
 		
 		final CyNetworkView view = nvts.getNetworkView();
-		final Set<CyNetworkView> views = new HashSet<CyNetworkView>();
+		final Set<CyNetworkView> views = new HashSet<>();
 		views.add(view);
 		
 		final VisualMappingManager vmm = mock(VisualMappingManager.class);
 		ApplyVisualStyleTask task = new ApplyVisualStyleTask(views, vmm);
 		
-		final List<VisualStyle> vsList = new ArrayList<VisualStyle>();
+		final List<VisualStyle> vsList = new ArrayList<>();
 		VisualStyle style1 = mock(VisualStyle.class);
 		vsList.add(style1);
-		task.styles = new ListSingleSelection<VisualStyle>(vsList);
+		task.styles = new ListSingleSelection<>(vsList);
 		task.styles.setSelectedValue(style1);
 		task.run(tm);
 		

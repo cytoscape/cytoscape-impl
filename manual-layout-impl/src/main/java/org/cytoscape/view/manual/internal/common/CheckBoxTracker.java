@@ -41,7 +41,7 @@ public class CheckBoxTracker implements /*SelectEventListener,*/ SetCurrentNetwo
 
 	public CheckBoxTracker(JCheckBox j) {
 		jCheckBox = j;
-		listeningNetworks = new HashSet<CyNetwork>();
+		listeningNetworks = new HashSet<>();
 	}
 
 /*	public void onSelectEvent(SelectEvent event) {

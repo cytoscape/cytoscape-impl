@@ -191,7 +191,7 @@ public class BrowserTableTest {
 		int sharedNameVIndex = browserTable.convertColumnIndexToView(sharedNameMIndex);
 		
 		//hide and show all the indexes should be same
-		browserTable.setVisibleAttributeNames(new ArrayList<String>()); //hide all
+		browserTable.setVisibleAttributeNames(new ArrayList<>()); //hide all
 		assertEquals(false, btcm.getColumns(true).hasMoreElements());
 		assertEquals(-1,  browserTable.convertColumnIndexToView(suidMIndex));
 		assertEquals(-1,  browserTable.convertColumnIndexToView(nameMIndex));
@@ -275,7 +275,7 @@ public class BrowserTableTest {
 		
 		btm.setViewMode(BrowserTableModel.ViewMode.ALL);
 		RowSetRecord rsc = new RowSetRecord  (table.getRow((long)1), CyNetwork.SELECTED, (Object) true , (Object) true );
-		final List<RowSetRecord> rscs = new ArrayList<RowSetRecord>();
+		final List<RowSetRecord> rscs = new ArrayList<>();
 		rscs.add(rsc);
 		
 		try {

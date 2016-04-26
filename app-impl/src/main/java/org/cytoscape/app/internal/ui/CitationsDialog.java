@@ -256,7 +256,7 @@ class PubMedParser {
     String pubDate = null;
     String source = null;
     String title = null;
-    List<String> authors = new ArrayList<String>();
+    List<String> authors = new ArrayList<>();
     String volume = null;
     String issue = null;
     String pages = null;
@@ -312,7 +312,7 @@ class PubMedParser {
    * a map of the (potentially) same app names to {@code Article} objects.
    */
   public Map<String,Article> retrieveArticles(final Map<String,String> pmids) throws ParserConfigurationException, MalformedURLException, IOException, SAXException {
-    final Map<String,Article> articles = new HashMap<String,Article>();
+    final Map<String,Article> articles = new HashMap<>();
     final Document root = xmlRequest(makeRequestURL(pmids.values()));
     final NodeList results = root.getChildNodes();
     for (int i = 0; i < results.getLength(); i++) {
@@ -352,7 +352,7 @@ class RetrieveTask implements Task {
    * Return a map of app names to their PubMed IDs.
    */
   private Map<String,String> getPmidsOfApps() {
-    final Map<String,String> pmids = new HashMap<String,String>();
+    final Map<String,String> pmids = new HashMap<>();
     final Set<WebApp> allApps = webQuerier.getAllApps();
     webQuerier.checkWebAppInstallStatus(allApps, appMgr);
     for (final WebApp app : allApps) {
@@ -379,7 +379,7 @@ class RetrieveTask implements Task {
     final StringBuffer buffer = new StringBuffer("<html>");
     formatArticleAsHtmlDefinition("Cytoscape", articles.get("Cytoscape"), buffer);
     buffer.append("<br><hr><br>");
-    for (final String name : new TreeSet<String>(articles.keySet())) {
+    for (final String name : new TreeSet<>(articles.keySet())) {
       if (name.equals("Cytoscape"))
         continue;
       final Article article = articles.get(name);

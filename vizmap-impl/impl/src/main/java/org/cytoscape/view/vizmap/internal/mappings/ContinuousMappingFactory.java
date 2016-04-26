@@ -52,7 +52,7 @@ public class ContinuousMappingFactory implements VisualMappingFunctionFactory {
 		if(Number.class.isAssignableFrom(attrValueType) == false)
 			throw new IllegalArgumentException("ContinuousMapping can be used for numerical column types only.");
 		
-		return new ContinuousMappingImpl<K, V>(attributeName, attrValueType, vp, eventHelper);
+		return new ContinuousMappingImpl<>(attributeName, attrValueType, vp, eventHelper);
 	}
 	
 	@Override public String toString() {

@@ -147,14 +147,14 @@ class ConsoleDialog {
 	 * Contains all log events (except those deleted with the Clear button) that were added with the
 	 * <code>addLogEvent</code> method.
 	 */
-	final List<LogEvent> allLogEvents = new ArrayList<LogEvent>();
+	final List<LogEvent> allLogEvents = new ArrayList<>();
 
 	/**
 	 * Contains a subset of log events in <code>allLogEvents</code>. Only log events that are in the
 	 * currently selected log and match the currently specified regular expression filter are stored
 	 * in this array.
 	 */
-	final List<LogEvent> solicitedLogEvents = new ArrayList<LogEvent>();
+	final List<LogEvent> solicitedLogEvents = new ArrayList<>();
 
 	/**
 	 * A hierarchy tree of all the logs.

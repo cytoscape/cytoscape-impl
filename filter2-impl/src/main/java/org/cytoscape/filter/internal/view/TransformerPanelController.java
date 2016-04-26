@@ -46,9 +46,9 @@ public class TransformerPanelController extends AbstractPanelController<Transfor
 		this.transformerManager = transformerManager;
 		this.transformerViewManager = transformerViewManager;
 
-		List<FilterElement> items = new ArrayList<FilterElement>();
+		List<FilterElement> items = new ArrayList<>();
 		items.add(new FilterElement("Current Selection", null));
-		startWithComboBoxModel = new DynamicComboBoxModel<FilterElement>(items);
+		startWithComboBoxModel = new DynamicComboBoxModel<>(items);
 		filterPanelController.addNamedElementListener(new NamedElementListener<FilterElement>() {
 			@Override
 			public void handleElementRemoved(FilterElement element) {
@@ -180,7 +180,7 @@ public class TransformerPanelController extends AbstractPanelController<Transfor
 			else
 				compositeFilter = (CompositeFilter<CyNetwork,CyIdentifiable>) transformer;
 			
-			return new CompositeFilterPanel<TransformerPanel>(parent, this, controller, compositeFilter, depth);
+			return new CompositeFilterPanel<>(parent, this, controller, compositeFilter, depth);
 		}
 		
 		if(view == null)

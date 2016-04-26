@@ -72,8 +72,8 @@ public class FullScreenAction extends AbstractCyAction {
 				.getMenuShortcutKeyMask()));
 		this.desktop = desktop;
 
-		panels = new HashSet<CytoPanel>();
-		states = new HashMap<CytoPanel, CytoPanelState>();
+		panels = new HashSet<>();
+		states = new HashMap<>();
 		panels.add(desktop.getCytoPanel(CytoPanelName.WEST));
 		panels.add(desktop.getCytoPanel(CytoPanelName.EAST));
 		panels.add(desktop.getCytoPanel(CytoPanelName.SOUTH));

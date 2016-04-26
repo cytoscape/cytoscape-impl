@@ -28,7 +28,7 @@ public class InstallAppsFromWebAppTask extends AbstractTask {
 		taskMonitor.setTitle("");
 		
 		DownloadStatus status = new DownloadStatus(taskMonitor);
-		List<File> appFiles = new ArrayList<File>();
+		List<File> appFiles = new ArrayList<>();
 		for(WebApp webApp: webApps) {
 			taskMonitor.setStatusMessage("Downloading " + webApp.getFullName());
 			// Download app

@@ -114,7 +114,7 @@ public class LoadTableReaderTask extends AbstractTask implements CyTableReader, 
 		tempList.add(TextDelimiter.BACKSLASH.getDelimiter());
 		tempList.add(TextDelimiter.SLASH.getDelimiter());
 		tempList.add(TextDelimiter.COMMA.getDelimiter());
-		delimitersForDataList = new ListSingleSelection<String>(tempList);
+		delimitersForDataList = new ListSingleSelection<>(tempList);
 	}
 	
 	public LoadTableReaderTask(final InputStream is, final String fileType,final String inputName,
