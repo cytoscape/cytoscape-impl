@@ -255,7 +255,7 @@ public abstract class App {
 				&& WebQuerier.compareVersions(version, other.version) == 0) {
 
 			if (sha512Checksum != null && other.sha512Checksum != null) {
-				return (sha512Checksum.equalsIgnoreCase(other.sha512Checksum));
+				return sha512Checksum.equalsIgnoreCase(other.sha512Checksum);
 			}
 			
 			return true;

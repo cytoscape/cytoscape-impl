@@ -163,7 +163,7 @@ public class AppGetResponder {
 			if (finishStatus.getType() == FinishStatus.Type.SUCCEEDED) {
 				installStatus = "success";
 			}
-			else if ((finishStatus.getType() == FinishStatus.Type.CANCELLED)) {
+			else if (finishStatus.getType() == FinishStatus.Type.CANCELLED) {
 				installStatus = "install-failed";
 				installError = "Install cancelled by user.";
 			}

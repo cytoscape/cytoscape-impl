@@ -82,7 +82,7 @@ public abstract class AbstractLineParser {
 			return null;
 
 		final List<Object> list = new ArrayList<>();
-		final String[] parts = (s.replace("\"", "")).split(delimiter);
+		final String[] parts = s.replace("\"", "").split(delimiter);
 
 		for (String listItem : parts) {
 			try {
