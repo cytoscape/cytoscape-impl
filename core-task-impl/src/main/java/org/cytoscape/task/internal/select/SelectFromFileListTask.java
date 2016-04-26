@@ -72,7 +72,7 @@ public class SelectFromFileListTask extends AbstractSelectTask {
 
 		final Collection<CyNetworkView> views = networkViewManager.getNetworkViews(network);
 		CyNetworkView view = null;
-		if(views.size() != 0)
+		if(!views.isEmpty())
 			view = views.iterator().next();
 		
 		final SelectionEdit edit =

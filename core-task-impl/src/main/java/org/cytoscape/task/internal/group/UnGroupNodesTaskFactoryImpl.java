@@ -71,7 +71,7 @@ public class UnGroupNodesTaskFactoryImpl implements NetworkViewTaskFactory,
 		nodeList.add(nodeView.getModel());
 
 		CyNetwork net = netView.getModel();
-		if (getGroups(net, nodeList).size() > 0)
+		if (!getGroups(net, nodeList).isEmpty())
 			return true;
 		return false; 
 	}
@@ -84,7 +84,7 @@ public class UnGroupNodesTaskFactoryImpl implements NetworkViewTaskFactory,
 		// Get all of the selected nodes
 		CyNetwork net = netView.getModel();
 		final List<CyNode> selNodes = CyTableUtil.getNodesInState(net, CyNetwork.SELECTED, true);
-		if (getGroups(net, selNodes).size() > 0)
+		if (!getGroups(net, selNodes).isEmpty())
 			return true;
 		return false; 
 	}

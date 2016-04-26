@@ -215,8 +215,8 @@ public class CyGroupImpl implements CyGroup {
 		// If we already have a network pointer and we didn't get
 		// nodes or edges, and the network pointer points to the same
 		// root network, then it may have been provided by the session loader
-		if (np != null && 
-			edges.size() == 0 && nodes.size() == 0 &&
+		if (np != null &&
+				edges.isEmpty() && nodes.isEmpty() &&
 			np.getRootNetwork().equals(this.rootNetwork)) {
 
 			// See if we're already collapsed
@@ -442,7 +442,7 @@ public class CyGroupImpl implements CyGroup {
 					}
 				}
 			}
-			if (netEdges.size() > 0)
+			if (!netEdges.isEmpty())
 				getGroupNetwork().removeEdges(netEdges);
 			getGroupNetwork().removeNodes(nodes);
 			updateMetaEdges(false);
@@ -473,7 +473,7 @@ public class CyGroupImpl implements CyGroup {
 				} else if (memberEdges.contains(edge))
 					memberEdges.remove(edge);
 			}
-			if (netEdges.size() > 0) {
+			if (!netEdges.isEmpty()) {
 				getGroupNetwork().removeEdges(netEdges);
 			}
 		}
@@ -663,7 +663,7 @@ public class CyGroupImpl implements CyGroup {
 					List<CyGroup> otherGroups = mgr.getGroupsForNode(node);
 
 					// Make sure someone didn't remove it
-					if (otherGroups == null || otherGroups.size() == 0) continue;
+					if (otherGroups == null || otherGroups.isEmpty()) continue;
 					for (CyGroup group: otherGroups) {
 						if (!((CyGroupImpl)group).equals(this)) {
 							// Find any internal edges that point to this node
@@ -715,7 +715,7 @@ public class CyGroupImpl implements CyGroup {
 			// the network, then the group node didn't
 			// go away so we don't have to add it back in here
 			// System.out.println("Adding group node.  memberEdges.size() = "+memberEdges.size()+" and nodeShownSet = "+nodeShownSet.contains(net.getSUID()));
-			if (memberEdges.size() == 0 && !nodeShownSet.contains(net.getSUID())) {
+			if (memberEdges.isEmpty() && !nodeShownSet.contains(net.getSUID())) {
 				subnet.addNode(groupNode);
 				addedElements.add(groupNode);
 
@@ -821,7 +821,7 @@ public class CyGroupImpl implements CyGroup {
 			// Remove the group node from the target network only if
 			// there are no member edges. If there were member edges,
 			// the group node did not go away.
-			if (memberEdges.size() == 0 && !groupNodeShown) {
+			if (memberEdges.isEmpty() && !groupNodeShown) {
 				// First, get all of the group node's edges
 				List<CyEdge> groupEdges = subnet.getAdjacentEdgeList(groupNode, CyEdge.Type.ANY);
 
@@ -980,7 +980,7 @@ public class CyGroupImpl implements CyGroup {
 				metaEdges.clear();
 
 				// If our group node was not provided, destroy it if it doesn't have any member edges
-				if (!nodeProvided && rootNetwork.containsNode(groupNode) && memberEdges.size() == 0) {
+				if (!nodeProvided && rootNetwork.containsNode(groupNode) && memberEdges.isEmpty()) {
 					for (CyNetwork net: networkSet)
 						net.removeNodes(Collections.singletonList(groupNode));
 					rootNetwork.removeNodes(Collections.singletonList(groupNode));

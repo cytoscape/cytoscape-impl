@@ -172,7 +172,7 @@ public class DynamicLayoutMenu extends JMenu implements MenuListener {
                     nodeViews = CyLayoutAlgorithm.ALL_NODE_VIEWS;
 
                 String layoutAttribute = null;
-                if (layout.getSupportedNodeAttributeTypes().size() > 0 || layout.getSupportedEdgeAttributeTypes().size() > 0){
+                if (!layout.getSupportedNodeAttributeTypes().isEmpty() || !layout.getSupportedEdgeAttributeTypes().isEmpty()){
                 	layoutAttribute = e.getActionCommand();
                 	if (layoutAttribute.equals(UNWEIGHTED))
                 		layoutAttribute = null;

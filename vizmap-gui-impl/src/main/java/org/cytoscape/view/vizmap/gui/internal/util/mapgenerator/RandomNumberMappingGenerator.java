@@ -51,7 +51,7 @@ public class RandomNumberMappingGenerator extends AbstractDiscreteMappingGenerat
 		final Map<T, Number> valueMap = new HashMap<T, Number>();
 		
 		// Error if attributeSet is empty or null
-		if ((attributeSet == null) || (attributeSet.size() == 0))
+		if ((attributeSet == null) || (attributeSet.isEmpty()))
 			return valueMap;
 
 		final String[] range = new String[2];

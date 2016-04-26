@@ -228,7 +228,7 @@ public class CheckForUpdatesPanel extends JPanel {
 				repopulateUpdatesTable();
 
 				// Enable/disable the update all button depending on update availability
-				if (event.getSource().getUpdates().size() > 0) {
+				if (!event.getSource().getUpdates().isEmpty()) {
 					if (!installAllButton.isEnabled()) {
 						installAllButton.setEnabled(true);
 					}
@@ -397,7 +397,7 @@ public class CheckForUpdatesPanel extends JPanel {
     private void updateDescriptionBox() {
     	Set<Update> selectedUpdates = getSelectedUpdates();
     	
-    	if (selectedUpdates.size() == 0) {
+    	if (selectedUpdates.isEmpty()) {
     		descriptionTextArea.setText("");
     		installSelectedButton.setEnabled(false);
     	} else if (selectedUpdates.size() == 1) {

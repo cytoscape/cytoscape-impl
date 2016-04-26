@@ -58,7 +58,7 @@ public class ListNodesTask extends AbstractTask implements ObservableTask {
 
 		nodes = nodeTunable.getNodeList();
 
-		if (nodes == null || nodes.size() == 0) {
+		if (nodes == null || nodes.isEmpty()) {
 			taskMonitor.showMessage(TaskMonitor.Level.WARN, "No nodes found");
 			return;
 		}

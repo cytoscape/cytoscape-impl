@@ -81,10 +81,10 @@ public class RemoveFromGroupTask extends AbstractGroupTask {
 
 		tm.showMessage(TaskMonitor.Level.INFO, "Removing "+nodes+" nodes and "+edges+" edges from group "+getGroupDesc(grp));
 
-		if (edgeList != null && edgeList.size() > 0) {
+		if (edgeList != null && !edgeList.isEmpty()) {
 			grp.removeEdges(edgeList);
 		}
-		if (nodeList != null && nodeList.size() > 0) {
+		if (nodeList != null && !nodeList.isEmpty()) {
 			grp.removeNodes(nodeList);
 		}
 

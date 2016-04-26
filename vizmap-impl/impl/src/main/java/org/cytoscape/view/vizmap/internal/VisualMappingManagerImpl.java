@@ -264,7 +264,7 @@ public class VisualMappingManagerImpl implements VisualMappingManager, SetCurren
 	}
 	
 	private boolean hasDuplicatedTitle(VisualStyle vs) {
-		if (this.getAllVisualStyles().size() == 0)
+		if (this.getAllVisualStyles().isEmpty())
 			return false;
 
 		Iterator<VisualStyle> it = this.getAllVisualStyles().iterator();

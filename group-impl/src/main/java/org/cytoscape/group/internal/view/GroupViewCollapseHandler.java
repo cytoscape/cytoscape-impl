@@ -184,7 +184,7 @@ public class GroupViewCollapseHandler implements GroupAboutToCollapseListener,
 		CyRootNetwork rootNetwork = group.getRootNetwork();
 		final Collection<CyNetworkView> views = cyNetworkViewManager.getNetworkViews(network);
 		CyNetworkView view = null;
-		if(views.size() == 0) {
+		if(views.isEmpty()) {
 			return;
 		}
 
@@ -234,7 +234,7 @@ public class GroupViewCollapseHandler implements GroupAboutToCollapseListener,
 		CyGroup group = e.getSource();
 		final Collection<CyNetworkView> views = cyNetworkViewManager.getNetworkViews(network);
 		CyNetworkView view = null;
-		if(views.size() == 0) {
+		if(views.isEmpty()) {
 			return;
 		}
 
@@ -400,7 +400,7 @@ public class GroupViewCollapseHandler implements GroupAboutToCollapseListener,
 		if (groupViewType.equals(GroupViewType.COMPOUND) || 
 		    groupViewType.equals(GroupViewType.SINGLENODE)) {
 			Set<CyNetwork> networkSet = group.getNetworkSet();
-			if (networkSet == null || networkSet.size() == 0) return;
+			if (networkSet == null || networkSet.isEmpty()) return;
 
 /*
 			// Assume we're in the current network
@@ -569,7 +569,7 @@ public class GroupViewCollapseHandler implements GroupAboutToCollapseListener,
 				newEdges.add(edge);
 			}
 		}
-		if (newEdges.size() > 0)
+		if (!newEdges.isEmpty())
 			group.addEdges(newEdges);
 	}
 
@@ -577,7 +577,7 @@ public class GroupViewCollapseHandler implements GroupAboutToCollapseListener,
 		for (CyNetwork network: group.getNetworkSet()) {
 			final Collection<CyNetworkView> views = cyNetworkViewManager.getNetworkViews(network);
 			CyNetworkView view = null;
-			if(views.size() == 0) {
+			if(views.isEmpty()) {
 				continue;
 			}
 

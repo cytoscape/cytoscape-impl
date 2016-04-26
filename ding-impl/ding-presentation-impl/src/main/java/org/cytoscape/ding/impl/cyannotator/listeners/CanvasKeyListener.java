@@ -52,7 +52,7 @@ public class CanvasKeyListener implements KeyListener {
 		int code = e.getKeyCode();
 		Set<DingAnnotation> selectedAnnotations = cyAnnotator.getSelectedAnnotations();
 
-		if ((selectedAnnotations != null && selectedAnnotations.size() > 0) &&
+		if ((selectedAnnotations != null && !selectedAnnotations.isEmpty()) &&
 		    ((code == KeyEvent.VK_UP) || 
 		    (code == KeyEvent.VK_DOWN) || 
 		    (code == KeyEvent.VK_LEFT)|| 

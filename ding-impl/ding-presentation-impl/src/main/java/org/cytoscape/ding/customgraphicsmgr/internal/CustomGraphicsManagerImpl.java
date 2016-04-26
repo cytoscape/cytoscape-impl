@@ -405,7 +405,7 @@ public final class CustomGraphicsManagerImpl implements CustomGraphicsManager, C
 				final List<File> files = filesMap.get(APP_NAME);
 				// TODO: 2.x compatibility
 
-				if (files != null && files.size() != 0) {
+				if (files != null && !files.isEmpty()) {
 					// get parent directory
 					final File parent = files.get(0).getParentFile();
 					final RestoreImageTaskFactory taskFactory = new RestoreImageTaskFactory(new HashSet<URL>(), parent, this, eventHelper);

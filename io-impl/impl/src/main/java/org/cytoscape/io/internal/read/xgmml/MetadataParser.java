@@ -173,7 +173,7 @@ public class MetadataParser {
 	 * @throws URISyntaxException
 	 */
 	public Map getMetadataMap() {
-		if ((rdfAsMap == null) || (rdfAsMap.keySet().size() == 0)) {
+		if ((rdfAsMap == null) || (rdfAsMap.keySet().isEmpty())) {
 			rdfAsMap = makeNewMetadataMap();
 		}
 

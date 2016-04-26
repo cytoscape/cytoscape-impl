@@ -75,7 +75,7 @@ public class LayoutWrapperTask extends AbstractTask {
 		if (network == null)
 			network = appMgr.getCurrentNetwork();
 		List<String> attrs = getSupportedEdgeAttributes();
-		if (attrs == null || attrs.size() == 0) {
+		if (attrs == null || attrs.isEmpty()) {
 			possibleEdgeAttributes = null;
 		} else {
 			possibleEdgeAttributes = new ListSingleSelection<String>(attrs);
@@ -93,7 +93,7 @@ public class LayoutWrapperTask extends AbstractTask {
 		if (network == null)
 			network = appMgr.getCurrentNetwork();
 		List<String> attrs = getSupportedNodeAttributes();
-		if (attrs == null || attrs.size() == 0) {
+		if (attrs == null || attrs.isEmpty()) {
 			possibleNodeAttributes = null;
 		} else {
 			possibleNodeAttributes = new ListSingleSelection<String>(attrs);
@@ -122,7 +122,7 @@ public class LayoutWrapperTask extends AbstractTask {
 
 		for (CyNetworkView view: views) {
 			Set<View<CyNode>> nodeViews = new HashSet<View<CyNode>>();
-			if (nodes == null || nodes.size() == 0) {
+			if (nodes == null || nodes.isEmpty()) {
 				nodeViews = CyLayoutAlgorithm.ALL_NODE_VIEWS;
 			}	else {
 				for (CyNode node: nodes) 
@@ -136,13 +136,13 @@ public class LayoutWrapperTask extends AbstractTask {
 
 	private List<String> getSupportedEdgeAttributes() {
 		Set<Class<?>> supportedEdgeTypes = algorithm.getSupportedEdgeAttributeTypes();
-		if (supportedEdgeTypes == null || supportedEdgeTypes.size() == 0) return null;
+		if (supportedEdgeTypes == null || supportedEdgeTypes.isEmpty()) return null;
 		return getSupportedAttributes(supportedEdgeTypes, network.getDefaultEdgeTable());
 	}
 
 	private List<String> getSupportedNodeAttributes() {
 		Set<Class<?>> supportedNodeTypes = algorithm.getSupportedNodeAttributeTypes();
-		if (supportedNodeTypes == null || supportedNodeTypes.size() == 0) return null;
+		if (supportedNodeTypes == null || supportedNodeTypes.isEmpty()) return null;
 		return getSupportedAttributes(supportedNodeTypes, network.getDefaultNodeTable());
 	}
 

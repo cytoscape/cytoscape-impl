@@ -93,7 +93,7 @@ public class SifWriter implements CyWriter {
 				throw new IllegalStateException("This network contains null or empty node name.");
 			
 
-			if (edges.size() == 0) {
+			if (edges.isEmpty()) {
 				writer.write(sourceName + lineSep);
 			} else {
 				for (final CyEdge edge : edges) {

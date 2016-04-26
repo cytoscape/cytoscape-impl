@@ -222,7 +222,7 @@ public class StringToModelImpl implements StringToModel {
 		}
 
 		// Our map might be empty if we used all SUIDs
-		if (columnMap.size() == 0)
+		if (columnMap.isEmpty())
 			return rows;
 
 		for (CyRow row: table.getAllRows()) {

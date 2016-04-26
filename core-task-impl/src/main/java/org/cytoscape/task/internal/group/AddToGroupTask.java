@@ -81,10 +81,10 @@ public class AddToGroupTask extends AbstractGroupTask {
 
 		tm.showMessage(TaskMonitor.Level.INFO, "Adding "+nodes+" nodes and "+edges+" edges to group "+getGroupDesc(grp));
 
-		if (edgeList != null && edgeList.size() > 0) {
+		if (edgeList != null && !edgeList.isEmpty()) {
 			grp.addEdges(edgeList);
 		}
-		if (nodeList != null && nodeList.size() > 0) {
+		if (nodeList != null && !nodeList.isEmpty()) {
 			grp.addNodes(nodeList);
 		}
 

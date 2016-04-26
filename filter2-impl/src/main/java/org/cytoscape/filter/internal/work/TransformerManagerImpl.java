@@ -61,7 +61,7 @@ public class TransformerManagerImpl implements TransformerManager {
 	
 	@Override
 	public <C, E> void execute(C context, List<Transformer<C, E>> transformers, TransformerSink<E> sink) {
-		if (transformers.size() == 0) {
+		if (transformers.isEmpty()) {
 			return;
 		}
 		Class<C> contextType = transformers.get(0).getContextType();

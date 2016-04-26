@@ -132,7 +132,7 @@ public class FilterWriter {
 	}
 
 	private static CompositeFilter[] getSortedCompositeFilter(Collection<?> pAllFilterVect) {
-		if (pAllFilterVect == null || pAllFilterVect.size() == 0) {
+		if (pAllFilterVect == null || pAllFilterVect.isEmpty()) {
 			return null;
 		}
 
@@ -192,7 +192,7 @@ public class FilterWriter {
 				}
 			}
 
-			if (theList.size() == 0) {
+			if (theList.isEmpty()) {
 				return pDepthLevel;
 			}
 

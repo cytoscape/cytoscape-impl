@@ -73,7 +73,7 @@ public class DataUtils {
 			if (val != null)
 				list.add(val);
 		}
-		if (list.size() > 0)
+		if (!list.isEmpty())
 			return list;
 
 		return null;
@@ -89,7 +89,7 @@ public class DataUtils {
 	}
 
 	public static String convertMapToString(Map data) {
-		if (data.size() == 0)
+		if (data.isEmpty())
 			return "{}";
 
 		String result = "{";
@@ -108,7 +108,7 @@ public class DataUtils {
 	}
 
 	public static String convertListToString(List<Object> data) {
-		if (data.size() == 0)
+		if (data.isEmpty())
 			return "[]";
 
 		String result = "[";

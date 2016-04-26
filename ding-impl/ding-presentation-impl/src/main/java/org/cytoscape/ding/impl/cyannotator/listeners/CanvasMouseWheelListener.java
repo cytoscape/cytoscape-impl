@@ -59,7 +59,7 @@ public class CanvasMouseWheelListener implements MouseWheelListener{
 				factor = 0.9;
 
 		Set<DingAnnotation> selectedAnnotations = cyAnnotator.getSelectedAnnotations();
-		if(selectedAnnotations != null && selectedAnnotations.size() > 0){
+		if(selectedAnnotations != null && !selectedAnnotations.isEmpty()){
 			//If some annotations are selected
 			for (DingAnnotation annotation: selectedAnnotations) {
 				annotation.setSpecificZoom( prevZoom * factor  );

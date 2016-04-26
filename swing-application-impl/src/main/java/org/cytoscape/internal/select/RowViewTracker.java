@@ -119,7 +119,7 @@ public class RowViewTracker implements NetworkViewAddedListener,
 		}
 		
 		views.remove(view);
-		if (views.size() == 0) {
+		if (views.isEmpty()) {
 			networkViewsByTable.remove(table);
 		}
 	}

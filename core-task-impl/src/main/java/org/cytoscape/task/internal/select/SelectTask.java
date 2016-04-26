@@ -102,7 +102,7 @@ public class SelectTask extends AbstractSelectTask {
 		tm.setProgress(0.0);
 		final Collection<CyNetworkView> views = networkViewManager.getNetworkViews(network);
 		CyNetworkView view = null;
-		if(views.size() != 0)
+		if(!views.isEmpty())
 			view = views.iterator().next();
 
 		Set<CyNode> nodes = new HashSet<CyNode>();
@@ -110,13 +110,13 @@ public class SelectTask extends AbstractSelectTask {
 
 		// If we specified nodes or edges, those override any currently
 		// selected ones.  Otherwise, prime things with the current selection
-		if (nodeList.getValue() != null && nodeList.getValue().size() > 0) {
+		if (nodeList.getValue() != null && !nodeList.getValue().isEmpty()) {
 			nodes.addAll(nodeList.getValue());
 		} else {
 			nodes.addAll(CyTableUtil.getNodesInState(network, CyNetwork.SELECTED, true));
 		}
 
-		if (edgeList.getValue() != null && edgeList.getValue().size() > 0) {
+		if (edgeList.getValue() != null && !edgeList.getValue().isEmpty()) {
 			edges.addAll(edgeList.getValue());
 		} else {
 			edges.addAll(CyTableUtil.getEdgesInState(network, CyNetwork.SELECTED, true));

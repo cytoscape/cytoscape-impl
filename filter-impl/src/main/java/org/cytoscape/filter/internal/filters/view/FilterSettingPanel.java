@@ -328,7 +328,7 @@ public class FilterSettingPanel extends JPanel {
 	
 	public boolean hasNullIndexChildFilter() {
 		List<CyFilter> children = theFilter.getChildren();
-		if ((children == null)||(children.size() == 0)) {
+		if ((children == null)||(children.isEmpty())) {
 			return false;
 		}
 		for (int i=0; i<children.size(); i++) {
@@ -350,7 +350,7 @@ public class FilterSettingPanel extends JPanel {
 		// Check if each widget has associatd index, if not, try to create one
 		//System.out.println("FilterSettingpanel:refreshIndicesForWidgets()...\n");
 		List<CyFilter> children = theFilter.getChildren();
-		if ((children == null)||(children.size() == 0)) {
+		if ((children == null)||(children.isEmpty())) {
 			return;
 		}
 		

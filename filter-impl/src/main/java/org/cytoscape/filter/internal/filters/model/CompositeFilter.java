@@ -77,7 +77,7 @@ public class CompositeFilter implements CyFilter {
 		network = pNetwork;
 		
 		// Set network for all the children
-		if (children == null || children.size() == 0){
+		if (children == null || children.isEmpty()){
 			return;
 		}
 		

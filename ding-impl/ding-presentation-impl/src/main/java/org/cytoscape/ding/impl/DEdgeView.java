@@ -406,7 +406,7 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 			// Obtain existing Bend object
 			final Bend bend = graphView.m_edgeDetails.getBend(model, true);
 			
-			if (bend.getAllHandles().size() == 0) {
+			if (bend.getAllHandles().isEmpty()) {
 				// anchors object is empty. Add first handle.
 				addHandleInternal(0, pt);
 				// Index of this handle, which is first (0)

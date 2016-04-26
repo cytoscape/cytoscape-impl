@@ -115,7 +115,7 @@ public class NodeInteractionFilter extends InteractionFilter {
 			return false;
 		}
 		
-		if (adjacentEdges == null || adjacentEdges.size() == 0) {
+		if (adjacentEdges == null || adjacentEdges.isEmpty()) {
 			return false;
 		}
 				

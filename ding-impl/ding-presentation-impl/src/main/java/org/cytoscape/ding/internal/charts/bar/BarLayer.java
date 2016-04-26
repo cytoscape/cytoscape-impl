@@ -171,7 +171,7 @@ public class BarLayer extends AbstractChartLayer<CategoryDataset> {
 		
 		if (type != BarChartType.STACKED) {
 			if (type == BarChartType.HEAT_STRIPS || type == BarChartType.UP_DOWN) {
-				final Color up =   (colors.size() > 0) ? colors.get(0) : Color.LIGHT_GRAY;
+				final Color up =   (!colors.isEmpty()) ? colors.get(0) : Color.LIGHT_GRAY;
 				final Color zero = (colors.size() > 2) ? colors.get(1) : Color.BLACK;
 				final Color down = (colors.size() > 2) ? colors.get(2) : (colors.size() > 1 ? colors.get(1) : Color.GRAY);
 				plot.setRenderer(new UpDownColorBarRenderer(up, zero, down));

@@ -140,7 +140,7 @@ public class GroupViewDoubleClickListener extends AbstractNodeViewTaskFactory
 			tm.setProgress(0.0);
 			
 			List<CyGroup> groups = cyGroupManager.getGroupsForNode(node);
-			if (groups != null && groups.size() > 0) {
+			if (groups != null && !groups.isEmpty()) {
 				for (CyGroup group: groups) {
 					if (allSelected(group, nodeTable)) {
 						for (CyNode member: group.getNodeList()) {
@@ -193,7 +193,7 @@ public class GroupViewDoubleClickListener extends AbstractNodeViewTaskFactory
 			} else {
 				// Get the list of groups this node is a member of
 				List<CyGroup> groups = cyGroupManager.getGroupsForNode(node);
-				if (groups != null && groups.size() > 0) {
+				if (groups != null && !groups.isEmpty()) {
 					CyGroup group = groups.get(0);
 					String name = getName(group);
 					tm.setTitle("Collapsing group \""+name+"\"");

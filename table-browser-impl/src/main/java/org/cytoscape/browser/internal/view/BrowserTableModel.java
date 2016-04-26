@@ -193,7 +193,7 @@ public final class BrowserTableModel extends AbstractTableModel
 				case AUTO:
 					if (selectedRows == null)
 						selectedRows = new ArrayList<CyRow>(dataTable.getMatchingRows(CyNetwork.SELECTED, true));
-					if (selectedRows.size() > 0)
+					if (!selectedRows.isEmpty())
 						return selectedRows.get(rowIndex);
 					else
 						return dataTable.getRow(rowIndexToPrimaryKey[rowIndex]);

@@ -105,7 +105,7 @@ final class DeleteEdit extends AbstractCyEdit {
 		final Collection<CyNetworkView> views = netViewMgr.getNetworkViews(net);
 		CyNetworkView netView = null;
 		
-		if(views.size() != 0)
+		if(!views.isEmpty())
 			netView = views.iterator().next();
 
 		if (netView != null) {
@@ -137,7 +137,7 @@ final class DeleteEdit extends AbstractCyEdit {
 
 		final Collection<CyNetworkView> views = netViewMgr.getNetworkViews(net);
 		CyNetworkView netView = null;
-		if(views.size() != 0)
+		if(!views.isEmpty())
 			netView = views.iterator().next();
 		
 		// Manually call update presentation
@@ -155,7 +155,7 @@ final class DeleteEdit extends AbstractCyEdit {
 
 		final Collection<CyNetworkView> views = netViewMgr.getNetworkViews(net);
 		CyNetworkView netView = null;
-		if(views.size() != 0)
+		if(!views.isEmpty())
 			netView = views.iterator().next();
 		
 		VisualStyle style = visualMappingManager.getVisualStyle(netView);

@@ -127,7 +127,7 @@ public class NNFNetworkReader extends AbstractCyNetworkReader {
 			in.close();
 		}
 		
-		if (parser.getNetworks().size() == 0) {
+		if (parser.getNetworks().isEmpty()) {
 			throw new IOException("Input NNF file is empty!");
 		}
 

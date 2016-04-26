@@ -151,7 +151,7 @@ public class GroupAnnotationImpl extends AbstractAnnotation implements GroupAnno
 		argMap.put(TYPE,GroupAnnotation.class.getName());
 		String members = "";
 
-		if (annotations == null || annotations.size() == 0)
+		if (annotations == null || annotations.isEmpty())
 			return argMap;
 
 		for (DingAnnotation annotation: annotations) {
@@ -226,7 +226,7 @@ public class GroupAnnotationImpl extends AbstractAnnotation implements GroupAnno
 
 	@Override
 	public void setSpecificZoom(double newZoom) {
-		if (annotations != null && annotations.size() > 0) {
+		if (annotations != null && !annotations.isEmpty()) {
 			for (DingAnnotation child: annotations)
 				child.setSpecificZoom(newZoom);
 		}
@@ -235,7 +235,7 @@ public class GroupAnnotationImpl extends AbstractAnnotation implements GroupAnno
 
 	@Override
 	public void setZoom(double newZoom) {
-		if (annotations != null && annotations.size() > 0) {
+		if (annotations != null && !annotations.isEmpty()) {
 			for (DingAnnotation child: annotations)
 				child.setZoom(newZoom);
 		}

@@ -149,7 +149,7 @@ public abstract class AbstractPropertyTask extends AbstractTask {
 
 	private CyNetworkView getViewForNetwork(CyNetwork network) {
 		Collection<CyNetworkView> views = viewManager.getNetworkViews(network);
-		if (views == null || views.size() == 0) return null;
+		if (views == null || views.isEmpty()) return null;
 
 		for (CyNetworkView view: views)
 			return view;

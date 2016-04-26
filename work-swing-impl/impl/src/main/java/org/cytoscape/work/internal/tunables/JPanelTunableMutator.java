@@ -145,7 +145,7 @@ public class JPanelTunableMutator extends AbstractTunableInterceptor<GUITunableH
 	}
 
 	public boolean hasTunables(final Object o, String context) {
-		return getApplicableHandlers(o, context).size() > 0;
+		return !getApplicableHandlers(o, context).isEmpty();
 	}
 
 	@Override

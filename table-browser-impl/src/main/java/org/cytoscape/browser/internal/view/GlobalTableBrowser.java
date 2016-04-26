@@ -288,7 +288,7 @@ public class GlobalTableBrowser extends AbstractTableBrowser
 			if (tables.contains(deletedTable)) {
 				tables.remove(deletedTable);
 				
-				if (tables.size() > 0) {
+				if (!tables.isEmpty()) {
 					Collections.sort(tables, tableComparator);
 					setSelectedItem(tables.get(0));
 				} else {

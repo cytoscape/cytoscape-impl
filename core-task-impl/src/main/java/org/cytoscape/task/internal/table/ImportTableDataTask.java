@@ -290,7 +290,7 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 
 		final CyNetworkManager netMgr = serviceRegistrar.getService(CyNetworkManager.class);
 		
-		if (netMgr.getNetworkSet().size() > 0) {
+		if (!netMgr.getNetworkSet().isEmpty()) {
 			whereImportTable = new ListSingleSelection<>(NETWORK_COLLECTION, NETWORK_SELECTION, UNASSIGNED_TABLE);
 			whereImportTable.setSelectedValue(NETWORK_COLLECTION);
 			networksPresent = true;

@@ -71,7 +71,7 @@ public class CyAttributesUtil {
 					List<?> list = row.get(attributeKey, List.class);
 
 					//  Iterate through all elements in the list
-					if ((list != null) && (list.size() > 0)) {
+					if ((list != null) && (!list.isEmpty())) {
 						terms = new String[list.size()];
 
 						for (int i = 0; i < list.size(); i++) {
@@ -83,7 +83,7 @@ public class CyAttributesUtil {
 					Map<?, ?> map = row.get(attributeKey, Map.class);
 
 					//  Iterate through all values in the map
-					if ((map != null) && (map.size() > 0)) {
+					if ((map != null) && (!map.isEmpty())) {
 						terms = new String[map.size()];
 
 						int index = 0;
@@ -143,7 +143,7 @@ public class CyAttributesUtil {
 			}
 		}
 
-		if (set.size() > 0) {
+		if (!set.isEmpty()) {
 			return set.toArray(new String[0]);
 		} else {
 			return null;

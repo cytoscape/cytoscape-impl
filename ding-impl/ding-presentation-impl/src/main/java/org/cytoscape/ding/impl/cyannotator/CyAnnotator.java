@@ -315,7 +315,7 @@ public class CyAnnotator {
 	}
 
 	public List<Annotation> getAnnotations() {
-		if (annotationMap.keySet() != null && annotationMap.keySet().size() > 0)
+		if (annotationMap.keySet() != null && !annotationMap.keySet().isEmpty())
 			return new ArrayList<Annotation>(annotationMap.keySet());
 		return null;
 	}
@@ -414,7 +414,7 @@ public class CyAnnotator {
 	private List<String> convertAnnotationMap(List<Map<String, String>>networkAnnotations) {
 		List<String> result = new ArrayList<String>();
 
-		if (networkAnnotations == null || networkAnnotations.size() == 0) return result;
+		if (networkAnnotations == null || networkAnnotations.isEmpty()) return result;
 
 		for (Map<String,String> map: networkAnnotations) {
 			String entry = "";

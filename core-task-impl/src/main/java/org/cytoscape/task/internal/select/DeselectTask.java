@@ -85,18 +85,18 @@ public class DeselectTask extends AbstractSelectTask {
 		tm.setProgress(0.0);
 		final Collection<CyNetworkView> views = networkViewManager.getNetworkViews(network);
 		CyNetworkView view = null;
-		if(views.size() != 0)
+		if(!views.isEmpty())
 			view = views.iterator().next();
 
 		int edgeCount = 0;
 		int nodeCount = 0;
 
-		if (edgeList.getValue() != null && edgeList.getValue().size() > 0) {
+		if (edgeList.getValue() != null && !edgeList.getValue().isEmpty()) {
 			selectUtils.setSelectedEdges(network, edgeList.getValue(), false);
 			edgeCount = edgeList.getValue().size();
 		}
 
-		if (nodeList.getValue() != null && nodeList.getValue().size() > 0) {
+		if (nodeList.getValue() != null && !nodeList.getValue().isEmpty()) {
 			selectUtils.setSelectedNodes(network, nodeList.getValue(), false);
 			nodeCount = nodeList.getValue().size();
 		}

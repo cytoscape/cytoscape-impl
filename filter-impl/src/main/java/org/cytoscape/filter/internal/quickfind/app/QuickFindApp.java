@@ -258,7 +258,7 @@ public class QuickFindApp implements QuickFindListener, AddedEdgesListener,
 		//  First, do we have any edges selected?  If so, unselect them all
 		List<CyEdge> selectedEdgeSet = SelectUtil.getSelectedEdges(cyNetwork);
 
-		if (selectedEdgeSet.size() > 0) {
+		if (!selectedEdgeSet.isEmpty()) {
 			SelectUtil.setSelectedEdgeState(cyNetwork, selectedEdgeSet, false);
 		}
 
@@ -291,7 +291,7 @@ public class QuickFindApp implements QuickFindListener, AddedEdgesListener,
 		//  First, do we have any nodes selected?  If so, unselect them all
 		List<CyNode> selectedNodeSet = SelectUtil.getSelectedNodes(cyNetwork);
 
-		if (selectedNodeSet.size() > 0) {
+		if (!selectedNodeSet.isEmpty()) {
 			SelectUtil.setSelectedNodeState(cyNetwork, selectedNodeSet, false);
 		}
 

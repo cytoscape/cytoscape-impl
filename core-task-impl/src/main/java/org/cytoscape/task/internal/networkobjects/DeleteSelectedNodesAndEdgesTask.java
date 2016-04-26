@@ -80,12 +80,12 @@ public class DeleteSelectedNodesAndEdgesTask extends AbstractTask {
 			taskMonitor.setProgress(0.1);
 			selectedEdges = new HashSet<CyEdge>(CyTableUtil.getEdgesInState(network, "selected", true));
 		} else {
-			if (nodeList != null && nodeList.size() > 0)
+			if (nodeList != null && !nodeList.isEmpty())
 				selectedNodes = nodeList;
 			else
 				selectedNodes = new ArrayList<CyNode>();
 
-			if (edgeList != null && edgeList.size() > 0)
+			if (edgeList != null && !edgeList.isEmpty())
 				selectedEdges = new HashSet<CyEdge>(edgeList);
 			else
 				selectedEdges = new HashSet<CyEdge>();

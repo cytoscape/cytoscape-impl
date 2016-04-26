@@ -57,7 +57,7 @@ public class ListEdgesTask extends AbstractTask implements ObservableTask {
 		network = edgeTunable.getNetwork();
 		edges = edgeTunable.getEdgeList();
 
-		if (edges == null || edges.size() == 0) {
+		if (edges == null || edges.isEmpty()) {
 			taskMonitor.showMessage(TaskMonitor.Level.WARN, "No edges found");
 			return;
 		}

@@ -77,7 +77,7 @@ public class InteractionTest {
 		Interaction inter0 = new Interaction(rawText0, delim);
 		assertTrue(inter0.getSource().equals("YNL312W"));
 		assertTrue(inter0.getType() == null);
-		assertTrue(inter0.getTargets().size() == 0);
+		assertTrue(inter0.getTargets().isEmpty());
 	} 
 
 } 

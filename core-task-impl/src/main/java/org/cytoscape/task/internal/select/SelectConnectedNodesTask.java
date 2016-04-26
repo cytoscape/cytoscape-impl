@@ -57,7 +57,7 @@ public class SelectConnectedNodesTask extends AbstractSelectTask {
 		tm.setProgress(0.0);
 		final Collection<CyNetworkView> views = networkViewManager.getNetworkViews(network);
 		CyNetworkView view = null;
-		if(views.size() != 0)
+		if(!views.isEmpty())
 			view = views.iterator().next();
 		
 		undoSupport.postEdit(

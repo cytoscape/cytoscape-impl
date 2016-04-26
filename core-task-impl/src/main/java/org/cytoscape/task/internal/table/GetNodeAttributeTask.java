@@ -71,7 +71,7 @@ public class GetNodeAttributeTask extends AbstractTableDataTask implements Obser
 			Map<String, Object> nodeData = getCyIdentifierData(nodeTable, 
 			                                                   node, 
 			                                                   columnTunable.getColumnNames(nodeTable));
-			if (nodeData == null || nodeData.size() == 0)
+			if (nodeData == null || nodeData.isEmpty())
 				continue;
 
 			nodeDataMap.put(node, nodeData);

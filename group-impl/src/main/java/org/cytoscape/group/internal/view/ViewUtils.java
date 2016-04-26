@@ -360,7 +360,7 @@ public class ViewUtils {
 		int index = networkSUIDs.indexOf(network.getSUID());
 		if (index >= 0)
 			return getDim(xLocations.get(index), yLocations.get(index));
-		else if (xLocations.size() > 0) {
+		else if (!xLocations.isEmpty()) {
 			// Well, do what we can...
 			return getDim(xLocations.get(0), yLocations.get(0));
 		} else

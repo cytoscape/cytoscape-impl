@@ -174,7 +174,7 @@ public class GraphMLParser extends DefaultHandler {
 	private void createGraph(final Attributes atts) {
 		final String networkID = atts.getValue(ID.getTag());
 		
-		if (networkStack.size() == 0) {
+		if (networkStack.isEmpty()) {
 			// Root network.
 			if(newNetwork == null) {
 				currentNetwork = root.addSubNetwork();

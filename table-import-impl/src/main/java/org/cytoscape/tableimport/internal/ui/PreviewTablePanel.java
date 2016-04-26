@@ -680,7 +680,7 @@ public class PreviewTablePanel extends JPanel {
 		if (delimiters != null) {
 			StringBuffer delimiterBuffer = new StringBuffer();
 
-			if (delimiters.size() != 0) {
+			if (!delimiters.isEmpty()) {
 				delimiterBuffer.append("[");
 
 				for (String delimiter : delimiters)
@@ -1144,7 +1144,7 @@ public class PreviewTablePanel extends JPanel {
 		@Override
 		@SuppressWarnings("unchecked")
 		public int getColumnCount() {
-			return dataVector.size() > 0 ? ((Vector<String>) dataVector.get(0)).size() : 0;
+			return !dataVector.isEmpty() ? ((Vector<String>) dataVector.get(0)).size() : 0;
 		}
 		
 		@Override
@@ -1157,7 +1157,7 @@ public class PreviewTablePanel extends JPanel {
 				colName = (String) columnIdentifiers.get(column);
 			
 			if (colName == null) {
-				if (firstRowNames && dataVector.size() > 0) {
+				if (firstRowNames && !dataVector.isEmpty()) {
 					// No overwritten name and should use the first data row as column names
 					final Vector<String> firstRow = (Vector<String>) dataVector.get(0);
 					

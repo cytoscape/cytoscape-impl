@@ -136,7 +136,7 @@ public class CommandExecutorImpl {
 			Map<String,Executor> ce = commandExecutorMap.get(namespace);
 			if ( ce != null ) {
 				ce.remove(command);
-				if ( ce.size() == 0 )
+				if (ce.isEmpty())
 					commandExecutorMap.remove(namespace);
 			}
 		}

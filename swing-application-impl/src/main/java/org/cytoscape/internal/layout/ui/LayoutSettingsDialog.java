@@ -495,7 +495,7 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 			List<String> attributeList = getAttributeList(view.getModel(),
 					currentLayout.getSupportedNodeAttributeTypes(), currentLayout.getSupportedEdgeAttributeTypes());
 			
-			if (attributeList.size() > 0) {
+			if (!attributeList.isEmpty()) {
 				layoutAttrTunable.layoutAttribute = new ListSingleSelection<String>(attributeList);
 				layoutAttrTunable.layoutAttribute.setSelectedValue(attributeList.get(0));
 				
@@ -522,10 +522,10 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 		List<String> attributes = new ArrayList<String>();
         Set<Class<?>> allowedTypes;
 		CyTable table;
-		if (allowedNodeAttributeTypes.size() > 0) {
+		if (!allowedNodeAttributeTypes.isEmpty()) {
 			allowedTypes = allowedNodeAttributeTypes;
 			table = network.getDefaultNodeTable();
-		} else if (allowedEdgeAttributeTypes.size() > 0) {
+		} else if (!allowedEdgeAttributeTypes.isEmpty()) {
 			allowedTypes = allowedEdgeAttributeTypes;
 			table = network.getDefaultEdgeTable();
 		} else {
@@ -538,7 +538,7 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
             }
 		}
 		
-		if (attributes.size()>0)
+		if (!attributes.isEmpty())
 			attributes.add(0, UNWEIGHTED);
         return attributes;
 	}

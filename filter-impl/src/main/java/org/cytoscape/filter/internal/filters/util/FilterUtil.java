@@ -116,7 +116,7 @@ public class FilterUtil {
 	public static boolean isFilterNameDuplicated(Collection<CompositeFilter> allFilterVect, String pFilterName) {
 		// TODO
 		//Vector<CompositeFilter> allFilterVect = ServicesUtil.filterReader.getProperties();
-		if (allFilterVect == null || allFilterVect.size() == 0)
+		if (allFilterVect == null || allFilterVect.isEmpty())
 			return false;
 		
 		for (CompositeFilter theFilter : allFilterVect) {

@@ -13,7 +13,7 @@ public class DynamicComboBoxModel<T> extends AbstractComboBoxModel implements It
 	
 	public DynamicComboBoxModel(List<T> items) {
 		this.items = items;
-		if (items.size() > 0) {
+		if (!items.isEmpty()) {
 			selectedIndex = 0;
 		} else {
 			selectedIndex = -1;
@@ -68,7 +68,7 @@ public class DynamicComboBoxModel<T> extends AbstractComboBoxModel implements It
 		int index = items.indexOf(item);
 		items.remove(index);
 		
-		if (items.size() == 0) {
+		if (items.isEmpty()) {
 			selectedIndex = -1;
 		}
 		notifyRemoved(index, index);

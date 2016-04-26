@@ -156,7 +156,7 @@ final class BrowserTableHeaderRenderer extends JPanel implements TableCellRender
 			int modelColumn = table.convertColumnIndexToModel(col);
 			List<? extends SortKey> sortKeys = rowSorter.getSortKeys();
 			
-			if (sortKeys.size() > 0) {
+			if (!sortKeys.isEmpty()) {
 				SortKey key = sortKeys.get(0);
 				
 				if (key.getColumn() == modelColumn) {

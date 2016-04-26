@@ -101,7 +101,7 @@ public class BookmarksUtilImpl implements BookmarksUtil {
 			} else {
 				List<Category> subCategories = extractCategory(cat);
 
-				if ((subCategories.size() != 0) && (result == null)) {
+				if ((!subCategories.isEmpty()) && (result == null)) {
 					result = getCategory(categoryName, subCategories);
 				}
 			}
@@ -182,7 +182,7 @@ public class BookmarksUtilImpl implements BookmarksUtil {
 		List<Category> theCategoryList = pBookmarks.getCategory();
 
 		// if the category does not exist, create it
-		if (theCategoryList.size() == 0) {
+		if (theCategoryList.isEmpty()) {
 			Category theCategory = new Category();
 			theCategory.setName(pCategoryName);
 			theCategoryList.add(theCategory);
@@ -309,7 +309,7 @@ public class BookmarksUtilImpl implements BookmarksUtil {
 		List<DataSource> theDataSources = getDataSourceList(pCategoryName,
 				pBookmarks.getCategory());
 
-		if ((theDataSources == null) || (theDataSources.size() == 0)) {
+		if ((theDataSources == null) || (theDataSources.isEmpty())) {
 			return false;
 		}
 

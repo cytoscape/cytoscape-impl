@@ -80,7 +80,7 @@ public class Spring {
          * Get a Spring instance and set it to the given parameters.
          */
         public Spring getSpring(ForceItem f1, ForceItem f2, float k, float length) {
-            if ( springs.size() > 0 ) {
+            if (!springs.isEmpty()) {
                 Spring s = (Spring)springs.remove(springs.size()-1);
                 s.item1 = f1;
                 s.item2 = f2;

@@ -105,7 +105,7 @@ public class NumericFilter<T extends Number> extends AtomicFilter {
 		NumberIndex numberIndex = (NumberIndex) quickFind_index;
 		List<?> list = numberIndex.getRange(lowBound, highBound);
 
-		if (list.size() == 0) {
+		if (list.isEmpty()) {
 			return;
 		}
 

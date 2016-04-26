@@ -102,7 +102,7 @@ public class GroupNodeContextTaskFactoryImpl extends AbstractNodeViewTaskFactory
 
 	private CyGroup getExpandedGroupForNode(CyNode node, CyNetworkView netView) {
 		List<CyGroup> groups = mgr.getGroupsForNode(node); // Always add the context node
-		if (groups == null || groups.size() == 0)
+		if (!groups.isEmpty())
 			return null;
 
 		// Return the first uncollapsed group in this network

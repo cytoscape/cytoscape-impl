@@ -185,7 +185,7 @@ class EqnSupport {
 
 		final Equation equation = (Equation)equationCandidate;
 		final Set<String> attribReferences = equation.getVariableReferences();
-		if (attribReferences.size() == 0)
+		if (attribReferences.isEmpty())
 			return new ArrayList<String>();
 
 		final Set<String> alreadyProcessed = new TreeSet<String>();
