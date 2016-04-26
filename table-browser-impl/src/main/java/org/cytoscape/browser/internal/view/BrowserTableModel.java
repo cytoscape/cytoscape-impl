@@ -57,7 +57,7 @@ import org.cytoscape.model.events.TableAboutToBeDeletedListener;
 public final class BrowserTableModel extends AbstractTableModel
 									 implements RowsCreatedListener, RowsDeletedListener, TableAboutToBeDeletedListener {
 	
-	public static enum ViewMode {
+	public enum ViewMode {
 		ALL,
 		SELECTED,
 		AUTO

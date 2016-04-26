@@ -53,7 +53,7 @@ public class InternalFrameComponent extends JComponent implements Printable {
 	 * 	Need to do some research on this layring order.
 	 * 
 	 */
-	private static enum ZOrder {
+	private enum ZOrder {
 		BACKGROUND_PANE,
 		NETWORK_PANE,
 		FOREGROUND_PANE;

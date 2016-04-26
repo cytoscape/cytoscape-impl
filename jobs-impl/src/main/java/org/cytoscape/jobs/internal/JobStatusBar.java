@@ -47,7 +47,7 @@ public class JobStatusBar extends JPanel implements StatusBarPanelFactory {
 	public static final String ICON_CANCELLED = IconManager.ICON_BAN;
 	public static final String ICON_FINISHED = IconManager.ICON_CLOUD_DOWNLOAD;
 						  
-	public static enum JobsIcon {
+	public enum JobsIcon {
 		RUNNING(ICON_RUNNING),
 		WARN(ICON_WARN),
 		ERROR(ICON_ERROR),

@@ -18,7 +18,7 @@ public class InteractionTransformer extends AbstractMemoizableTransformer<CyNetw
 									implements ElementTransformer<CyNetwork, CyIdentifiable>,
 											   SubFilterTransformer<CyNetwork,CyIdentifiable> {
 	
-	public static enum Action {
+	public enum Action {
 		ADD, REPLACE
 	}
 

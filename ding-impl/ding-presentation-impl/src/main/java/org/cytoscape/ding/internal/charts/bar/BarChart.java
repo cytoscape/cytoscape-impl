@@ -36,7 +36,7 @@ public class BarChart extends AbstractChart<BarLayer> {
 	
 	public static final double MAX_SEPARATION = 0.5;
 	
-	public static enum BarChartType { GROUPED, STACKED, HEAT_STRIPS, UP_DOWN };
+	public enum BarChartType { GROUPED, STACKED, HEAT_STRIPS, UP_DOWN };
 	
 	public static ImageIcon ICON;
 	
