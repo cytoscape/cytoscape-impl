@@ -729,10 +729,8 @@ public class InstallAppsPanel extends JPanel {
     		String latestReleaseVersion = selectedApp.getReleases().get(selectedApp.getReleases().size() - 1).getReleaseVersion();
     		text += "<br />" + latestReleaseVersion;
     		
-    		if (appAlreadyInstalled) {
-    			if (!selectedApp.getCorrespondingApp().getVersion().equalsIgnoreCase(latestReleaseVersion)) {
-    				text += " (installed: " + selectedApp.getCorrespondingApp().getVersion() + ")";
-    			}
+    		if (appAlreadyInstalled && !selectedApp.getCorrespondingApp().getVersion().equalsIgnoreCase(latestReleaseVersion)) {
+				text += " (installed: " + selectedApp.getCorrespondingApp().getVersion() + ")";
     		}
     		
     		/*

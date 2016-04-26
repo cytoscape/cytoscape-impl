@@ -150,17 +150,15 @@ public class ImportNoGuiNetworkReaderFactory extends AbstractTaskFactory {
 
 			// If this is a subnetwork, and there is only one subnetwork in the root, check the name of the root network
 			// If there is no name yet for the root network, set it the same as its base subnetwork
-			if (networks.length == 1){
-				if (networks[0] instanceof CySubNetwork){
-					CySubNetwork subnet = (CySubNetwork) networks[0];
-					final CyRootNetwork rootNet = subnet.getRootNetwork();
-					String rootNetName = rootNet.getRow(rootNet).get(CyNetwork.NAME, String.class);
-					
-					if (rootNetName == null || rootNetName.trim().length() == 0){
-						// The root network does not have a name yet, set it the same as the base subnetwork
-						rootNet.getRow(rootNet).set(
-								CyNetwork.NAME, networks[0].getRow(networks[0]).get(CyNetwork.NAME, String.class));
-					}
+			if (networks.length == 1 && networks[0] instanceof CySubNetwork){
+				CySubNetwork subnet = (CySubNetwork) networks[0];
+				final CyRootNetwork rootNet = subnet.getRootNetwork();
+				String rootNetName = rootNet.getRow(rootNet).get(CyNetwork.NAME, String.class);
+				
+				if (rootNetName == null || rootNetName.trim().length() == 0){
+					// The root network does not have a name yet, set it the same as the base subnetwork
+					rootNet.getRow(rootNet).set(
+							CyNetwork.NAME, networks[0].getRow(networks[0]).get(CyNetwork.NAME, String.class));
 				}
 			}
 			

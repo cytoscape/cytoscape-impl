@@ -314,12 +314,10 @@ public class CustomGraphicsDetailPanel extends JPanel implements ListSelectionLi
 
 	private void tagsTextFieldActionPerformed(ActionEvent evt) {
 		final String tagStr = this.tagTextField.getText();
-		if(tagStr != null && tagStr.trim().length() != 0) {
-			if(cg instanceof Taggable) {
-				final String[] tags = tagStr.split(TAG_DELIMITER);
-				for(String tag:tags)
-					((Taggable) cg).getTags().add(tag.trim());
-			}			
+		if(tagStr != null && tagStr.trim().length() != 0 && cg instanceof Taggable) {
+			final String[] tags = tagStr.split(TAG_DELIMITER);
+			for(String tag:tags)
+				((Taggable) cg).getTags().add(tag.trim());
 		}
 	}
 	

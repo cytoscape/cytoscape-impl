@@ -410,9 +410,8 @@ public class MergeTablesTask extends AbstractTask implements TunableValidator {
 	public void run(TaskMonitor taskMonitor) throws Exception {
 		// If we are here and there no networks loaded, we could only continue
 		// if the merge is on an unassigned table
-		if (!whereMergeTable.getSelectedValue().matches(UNASSIGNED_TABLE)) {
-			if (name2RootMap.isEmpty())
-				return;
+		if (!whereMergeTable.getSelectedValue().matches(UNASSIGNED_TABLE) && name2RootMap.isEmpty()) {
+			return;
 		}
 
 		if (!checkKeys()) {
