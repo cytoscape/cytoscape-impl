@@ -945,8 +945,8 @@ public final class GraphGraphics {
 	 */
 	public static Map<Byte, Shape> getArrowShapes() {
 		final Map<Byte, Shape> shapeMap = new HashMap<Byte, Shape>();
-		for (final Byte key : arrows.keySet()) {
-			shapeMap.put(key, arrows.get(key).getArrowShape() );
+		for (final Map.Entry<Byte, Arrow> entry : arrows.entrySet()) {
+			shapeMap.put(entry.getKey(), entry.getValue().getArrowShape() );
 		}
 		return shapeMap;
 	}

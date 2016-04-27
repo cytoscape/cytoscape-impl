@@ -99,11 +99,11 @@ public class CyGroupSettingsTask extends AbstractTask {
 
 		// Get any overrides
 		Map<CyColumn, Aggregator<?>> overrides = aggregationSettings.getOverrideMap();
-		for (CyColumn column: overrides.keySet()) {
+		for (Map.Entry<CyColumn, Aggregator<?>> entry : overrides.entrySet()) {
 			if (group != null)
-				settings.setOverrideAggregation(group, column, overrides.get(column));
+				settings.setOverrideAggregation(group, entry.getKey(), entry.getValue());
 			else
-				settings.setOverrideAggregation(column, overrides.get(column));
+				settings.setOverrideAggregation(entry.getKey(), entry.getValue());
 		}
 	}
 	

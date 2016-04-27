@@ -209,13 +209,13 @@ public class ClipboardImpl {
 		double xOffset = xCenter - x;
 		double yOffset = yCenter - y;
 		
-		for (CyNode node : nodePositions.keySet()) {
-			final CyNode newNode = newNodeMap.get(node);
+		for (Entry<CyNode, double[]> cyNodeEntry : nodePositions.entrySet()) {
+			final CyNode newNode = newNodeMap.get(cyNodeEntry.getKey());
 			
 			if (newNode == null || !pastedObjects.contains(newNode))
 				continue;
 			
-			final double[] position = nodePositions.get(node);
+			final double[] position = cyNodeEntry.getValue();
 			double nodeX = (position == null ? 0 : position[0]) - xOffset;
 			double nodeY = (position == null ? 0 : position[1]) - yOffset;
 
@@ -225,7 +225,7 @@ public class ClipboardImpl {
 			if (newNodeView != null) {
 				newNodeView.setVisualProperty(BasicVisualLexicon.NODE_X_LOCATION, nodeX);
 				newNodeView.setVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION, nodeY);
-				setLockedValues(newNodeView, node, nodeBypass);
+				setLockedValues(newNodeView, cyNodeEntry.getKey(), nodeBypass);
 			}
 		}
 		
@@ -412,27 +412,27 @@ public class ClipboardImpl {
 	private void copyRows(Map<CyRow,CyRow> rowMap) {
 		if (rowMap == null || rowMap.size() == 0) return;
 
-		for (CyRow sourceRow: rowMap.keySet()) {
-			CyRow targetRow = rowMap.get(sourceRow);
+		for (Entry<CyRow, CyRow> cyRowCyRowEntry : rowMap.entrySet()) {
+			CyRow targetRow = cyRowCyRowEntry.getValue();
 			CyTable destTable = targetRow.getTable();
-			CyTable sourceTable = sourceRow.getTable();
+			CyTable sourceTable = cyRowCyRowEntry.getKey().getTable();
 
 			Map<String, Object> oldDataMap;
-			if (oldValueMap.containsKey(sourceRow))
-				oldDataMap = oldValueMap.get(sourceRow);
+			if (oldValueMap.containsKey(cyRowCyRowEntry.getKey()))
+				oldDataMap = oldValueMap.get(cyRowCyRowEntry.getKey());
 			else
-				oldDataMap = sourceRow.getAllValues();
+				oldDataMap = cyRowCyRowEntry.getKey().getAllValues();
 
-			for (String colName: oldDataMap.keySet()) {
-				CyColumn column = destTable.getColumn(colName);
+			for (Entry<String, Object> stringObjectEntry : oldDataMap.entrySet()) {
+				CyColumn column = destTable.getColumn(stringObjectEntry.getKey());
 
 				if (column == null) {
-					CyColumn sourceColumn = sourceTable.getColumn(colName);
+					CyColumn sourceColumn = sourceTable.getColumn(stringObjectEntry.getKey());
 					if (sourceColumn.getType() == List.class) {
-						destTable.createListColumn(colName, sourceColumn.getListElementType(), 
+						destTable.createListColumn(stringObjectEntry.getKey(), sourceColumn.getListElementType(), 
 						                           sourceColumn.isImmutable());
 					} else {
-						destTable.createColumn(colName, sourceColumn.getType(), 
+						destTable.createColumn(stringObjectEntry.getKey(), sourceColumn.getType(), 
 						                       sourceColumn.isImmutable());
 					}
 				} else if (column.isPrimaryKey()) {
@@ -450,7 +450,7 @@ public class ClipboardImpl {
 				// the targetTable are the same, and this column is virtual, we don't
 				// want to copy it.
 				try {
-					targetRow.set(colName, oldDataMap.get(colName));
+					targetRow.set(stringObjectEntry.getKey(), stringObjectEntry.getValue());
 				} catch (IllegalArgumentException e) {
 					// Log a warning
 					System.out.println("Set failed!  "+e);

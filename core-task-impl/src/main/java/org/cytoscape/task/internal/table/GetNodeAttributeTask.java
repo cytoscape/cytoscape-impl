@@ -77,9 +77,9 @@ public class GetNodeAttributeTask extends AbstractTableDataTask implements Obser
 			nodeDataMap.put(node, nodeData);
 
 			taskMonitor.showMessage(TaskMonitor.Level.INFO, "   Node table values for node "+DataUtils.getNodeName(nodeTable, node)+":");
-			for (String column: nodeData.keySet()) {
-				if (nodeData.get(column) != null)
-					taskMonitor.showMessage(TaskMonitor.Level.INFO, "        "+column+"="+DataUtils.convertData(nodeData.get(column)));
+			for (Map.Entry<String, Object> entry : nodeData.entrySet()) {
+				if (entry.getValue() != null)
+					taskMonitor.showMessage(TaskMonitor.Level.INFO, "        "+ entry.getKey() +"="+DataUtils.convertData(entry.getValue()));
 			}
 		}
 	}

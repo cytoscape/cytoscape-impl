@@ -228,11 +228,11 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 		if (oldColumnName.equalsIgnoreCase(newColumnName))
 			return;
 
-		for(final String curColumnName : types.keySet())
-			if (curColumnName.equalsIgnoreCase(newColumnName))
+		for(final Entry<String, CyColumn> entry : types.entrySet())
+			if (entry.getKey().equalsIgnoreCase(newColumnName))
 				throw new IllegalArgumentException("column already exists with name: '"
-					   + curColumnName + "' with type: "
-					   + types.get(curColumnName).getType());
+					   + entry.getKey() + "' with type: "
+					   + entry.getValue().getType());
 		
 		synchronized(lock) {
 			if (currentlyActiveAttributes.remove(oldColumnName)) {
@@ -701,9 +701,9 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 				String normalizedTargetJoinKey = table2.normalizeColumnName(targetJoinKey);		
 				Map<Object, Object> keyToValueMap = table2.attributes.get(normalizedTargetJoinKey);
 				if(keyToValueMap != null) {
-					for (Object key2: keyToValueMap.keySet()) {
-						if (keyToValueMap.get(key2).equals(key)) {
-							fireVirtualColumnRowSetEvent(table2, key2, dependent.getName(), newValue, newRawValue, seen);
+					for (Entry<Object, Object> entry : keyToValueMap.entrySet()) {
+						if (entry.getValue().equals(key)) {
+							fireVirtualColumnRowSetEvent(table2, entry.getKey(), dependent.getName(), newValue, newRawValue, seen);
 						}
 					}
 				}

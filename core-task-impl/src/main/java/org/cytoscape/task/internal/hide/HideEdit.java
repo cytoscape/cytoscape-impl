@@ -99,8 +99,8 @@ final class HideEdit extends AbstractCyEdit {
 
 	@Override
 	public void undo() {
-		for (final View<? extends CyIdentifiable> view : previousStates.keySet()) {
-			setVisible(view, previousStates.get(view));
+		for (final Map.Entry<View<? extends CyIdentifiable>, Boolean> entry : previousStates.entrySet()) {
+			setVisible(entry.getKey(), entry.getValue());
 		}
 		
 		updateNetworkView();

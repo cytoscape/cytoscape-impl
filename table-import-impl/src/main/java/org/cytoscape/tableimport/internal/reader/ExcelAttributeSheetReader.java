@@ -131,8 +131,8 @@ public class ExcelAttributeSheetReader implements TextTableReader {
 		if (invalid.size() > 0) {
 			sb.append("\n\nThe following enties are invalid and were not imported:\n");
 
-			for (String key : invalid.keySet()) {
-				sb.append(key + " = " + invalid.get(key) + "\n");
+			for (Map.Entry<String, Object> entry : invalid.entrySet()) {
+				sb.append(entry.getKey() + " = " + entry.getValue() + "\n");
 				if ( limit-- <= 0 ) {
 					sb.append("Approximately " + (invalid.size() - 10) +
 					          " additional entries were not imported...");

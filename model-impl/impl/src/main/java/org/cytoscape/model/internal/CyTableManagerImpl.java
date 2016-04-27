@@ -126,9 +126,9 @@ public class CyTableManagerImpl implements CyTableManager, NetworkAboutToBeDestr
 		synchronized (lock) {
 			final Set<CyTable> res = new HashSet<CyTable>();
 	
-			for (final Long key : tables.keySet()) {
-				if (includePrivate || tables.get(key).isPublic())
-					res.add(tables.get(key));
+			for (final Map.Entry<Long, CyTable> entry : tables.entrySet()) {
+				if (includePrivate || entry.getValue().isPublic())
+					res.add(entry.getValue());
 			}
 	
 			return res;

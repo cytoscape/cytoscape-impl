@@ -305,26 +305,26 @@ public class GenericXGMMLReader extends AbstractCyNetworkReader {
 
 			final Set<String> attSet = atts.keySet();
 
-			for (final String attName : attSet) {
-				String attValue = atts.get(attName);
-				final VisualProperty vp = visualLexicon.lookup(type, attName);
+			for (final Map.Entry<String, String> entry : atts.entrySet()) {
+				String attValue = entry.getValue();
+				final VisualProperty vp = visualLexicon.lookup(type, entry.getKey());
 				
 				if (vp != null) {
-					if (isXGMMLTransparency(attName))
+					if (isXGMMLTransparency(entry.getKey()))
 						attValue = convertXGMMLTransparencyValue(attValue);
-					else if (isOldArrowShape(attName))
+					else if (isOldArrowShape(entry.getKey()))
 						attValue = convertOldArrowShapeValue(attValue);
 					
 					final Object parsedValue = vp.parseSerializableString(attValue);
 
 					if (parsedValue != null) {
-						if (isLockedVisualProperty(model, attName))
+						if (isLockedVisualProperty(model, entry.getKey()))
 							view.setLockedValue(vp, parsedValue);
 						else
 							view.setVisualProperty(vp, parsedValue);
 					}
 				} else {
-					unrecognizedVisualPropertyMgr.addUnrecognizedVisualProperty(netView, view, attName, attValue);
+					unrecognizedVisualPropertyMgr.addUnrecognizedVisualProperty(netView, view, entry.getKey(), attValue);
 				}
 			}
 		}

@@ -1006,9 +1006,9 @@ public class CyGroupImpl implements CyGroup {
 	protected void removeMetaEdge(CyEdge edge) {
 		synchronized (lock) {
 			if (!metaEdges.containsValue(edge))
-				for (CyEdge metaKey: metaEdges.keySet()) {
-					if (metaEdges.get(metaKey).equals(edge))
-						metaEdges.remove(metaKey);
+				for (Map.Entry<CyEdge, CyEdge> entry : metaEdges.entrySet()) {
+					if (entry.getValue().equals(edge))
+						metaEdges.remove(entry.getKey());
 				}
 		}
 	}

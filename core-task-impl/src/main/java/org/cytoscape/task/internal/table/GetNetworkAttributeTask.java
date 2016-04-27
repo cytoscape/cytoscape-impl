@@ -68,9 +68,9 @@ public class GetNetworkAttributeTask extends AbstractTableDataTask implements Ob
 		                                  columnTunable.getColumnNames(networkTable));
 
 		taskMonitor.showMessage(TaskMonitor.Level.INFO, "   Attribute values for network "+DataUtils.getNetworkTitle(network)+":");
-		for (String column: networkData.keySet()) {
-			if (networkData.get(column) != null)
-				taskMonitor.showMessage(TaskMonitor.Level.INFO, "        "+column+"="+DataUtils.convertData(networkData.get(column)));
+		for (Map.Entry<String, Object> entry : networkData.entrySet()) {
+			if (entry.getValue() != null)
+				taskMonitor.showMessage(TaskMonitor.Level.INFO, "        "+ entry.getKey() +"="+DataUtils.convertData(entry.getValue()));
 		}
 	}
 

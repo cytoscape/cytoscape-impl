@@ -75,9 +75,9 @@ public class CommandTunableInterceptorImpl extends AbstractTunableInterceptor<St
 					// information parsed from the arg string.
 					h.processArgString(args);
 				} else {
-					for ( String string: mapArgs.keySet() ) {
-						if (h.getName().equals(string)) {
-							Object v = mapArgs.get(string);
+					for (Map.Entry<String, Object> entry : mapArgs.entrySet()) {
+						if (h.getName().equals(entry.getKey())) {
+							Object v = entry.getValue();
 							try {
 								if (v instanceof String)
 									v = h.processArg((String)v);

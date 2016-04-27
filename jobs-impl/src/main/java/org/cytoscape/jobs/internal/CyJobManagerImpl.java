@@ -251,22 +251,22 @@ public class CyJobManagerImpl implements CyJobManager,
 		public void run() {
 			resetTimer();
 			List<CyJob> orphans = new ArrayList<>();
-			for (CyJob job: intervalMap.keySet()) {
-				if (intervalMap.get(job).ready()) {
-					CyJobStatus status = job.getJobExecutionService().checkJobStatus(job);
-					if (statusMap.containsKey(job) && statusMap.get(job).equals(status))
+			for (Map.Entry<CyJob, IntervalCounter> entry : intervalMap.entrySet()) {
+				if (entry.getValue().ready()) {
+					CyJobStatus status = entry.getKey().getJobExecutionService().checkJobStatus(entry.getKey());
+					if (statusMap.containsKey(entry.getKey()) && statusMap.get(entry.getKey()).equals(status))
 						continue;
 
-					if (jobMonitorMap.containsKey(job))
-						jobMonitorMap.get(job).jobStatusChanged(job, status);
+					if (jobMonitorMap.containsKey(entry.getKey()))
+						jobMonitorMap.get(entry.getKey()).jobStatusChanged(entry.getKey(), status);
 
 					if (status.isDone())
 						// Orphan
-						orphans.add(job);
+						orphans.add(entry.getKey());
 
-					statusMap.put(job, status);
+					statusMap.put(entry.getKey(), status);
 					// The jobMonitor should call loadResults
-					jobMonitor.jobStatusChanged(job, status);
+					jobMonitor.jobStatusChanged(entry.getKey(), status);
 				}
 			}
 			for (CyJob job: orphans) removeJob(job);

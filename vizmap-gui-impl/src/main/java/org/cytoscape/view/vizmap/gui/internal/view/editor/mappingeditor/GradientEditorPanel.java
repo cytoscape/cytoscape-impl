@@ -31,6 +31,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.List;
+import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
@@ -229,8 +230,8 @@ public class GradientEditorPanel<T extends Number> extends ContinuousMappingEdit
 			sortedPoints.put(val.doubleValue(), point);
 		}
 
-		for (Double key : sortedPoints.keySet()) {
-			final ContinuousMappingPoint<T, Color> point = sortedPoints.get(key);
+		for (Map.Entry<Double, ContinuousMappingPoint<T, Color>> entry : sortedPoints.entrySet()) {
+			final ContinuousMappingPoint<T, Color> point = entry.getValue();
 			BoundaryRangeValues<Color> bound = point.getRange();
 
 			getSlider().getModel().addThumb(

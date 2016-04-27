@@ -209,10 +209,10 @@ public class GeneAssociationReader extends AbstractTask implements CyTableReader
 		}
 
 		// Create one column per namespace
-		for (String name : NAMESPACE_MAP.keySet()) {
-			table.createListColumn(NAMESPACE_MAP.get(name), String.class, false);
-			table.createListColumn(NAMESPACE_MAP.get(name) + EVIDENCE_SUFFIX, String.class, false);
-			table.createListColumn(NAMESPACE_MAP.get(name) + REFERENCE_SUFFIX, String.class, false);
+		for (Map.Entry<String, String> entry : NAMESPACE_MAP.entrySet()) {
+			table.createListColumn(entry.getValue(), String.class, false);
+			table.createListColumn(entry.getValue() + EVIDENCE_SUFFIX, String.class, false);
+			table.createListColumn(entry.getValue() + REFERENCE_SUFFIX, String.class, false);
 		}
 
 		// Consolidated entry name list
