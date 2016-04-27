@@ -134,7 +134,7 @@ public class GenericXGMMLReader extends AbstractCyNetworkReader {
 			final List<CyNetwork> selectedNetworks = cyApplicationManager.getSelectedNetworks();
 			if (selectedNetworks != null && selectedNetworks.size() > 0) {
 				final CyNetwork selectedNetwork = cyApplicationManager.getSelectedNetworks().get(0);
-				String rootName = "";
+				String rootName;
 				if (selectedNetwork instanceof CySubNetwork) {
 					CySubNetwork subnet = (CySubNetwork) selectedNetwork;
 					CyRootNetwork rootNet = subnet.getRootNetwork();

@@ -122,7 +122,7 @@ public class CyComboBoxPropertyEditor extends AbstractPropertyEditor {
 	@Override
 	public void setValue(Object value) {
 		JComboBox combo = (JComboBox) editor;
-		Object current = null;
+		Object current;
 		int index = -1;
 
 		for (int i = 0, c = combo.getModel().getSize(); i < c; i++) {

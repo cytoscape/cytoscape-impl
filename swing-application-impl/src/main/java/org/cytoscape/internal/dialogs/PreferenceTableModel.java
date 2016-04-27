@@ -252,7 +252,7 @@ class StringComparator implements Comparator<String[]> {
 	 * @return  DOCUMENT ME!
 	 */
 	public int compare(String[] str1, String[] str2) {
-		int result = 0;
+		int result;
 
 		for (int i = 0; i < str1.length; i++) {
 			result = str1[i].compareTo(str2[i]);

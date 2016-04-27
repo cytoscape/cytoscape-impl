@@ -85,7 +85,7 @@ public class GetValueTask extends AbstractTableDataTask implements ObservableTas
 		// Get the primary key column
 		CyColumn primaryKColumn = table.getPrimaryKey();
 		Class keyType = primaryKColumn.getType();
-		Object key = null;
+		Object key;
 		try {
 			key = DataUtils.convertString(keyValue, keyType);
 		} catch (NumberFormatException nfe) {

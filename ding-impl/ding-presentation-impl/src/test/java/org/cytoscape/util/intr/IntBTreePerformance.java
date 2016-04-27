@@ -69,8 +69,6 @@ public class IntBTreePerformance {
 			throw new IOException("premature end of input");
 
 		// Lose reference to as much as we can.
-		in = null;
-		buff = null;
 
 		// Load the classes we're going to use into the classloader.
 		_THE_TEST_CASE_(new int[] { 0, 3, 4, 3, 9, 9, 1 });

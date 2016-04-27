@@ -80,8 +80,8 @@ public class SessionFileFilter extends BasicCyFileFilter {
 		try {
 			// Extract list of entries until it finds the version file.
 			zis = new ZipInputStream(uri.toURL().openStream());
-			ZipEntry zen = null;
-			String entryName = null;
+			ZipEntry zen;
+			String entryName;
 
 			while ((zen = zis.getNextEntry()) != null) {
 				entryName = zen.getName();
@@ -156,7 +156,7 @@ public class SessionFileFilter extends BasicCyFileFilter {
 		if (requiredVersion != null) {
 			String[] reqArr = requiredVersion.split("\\.");
 			
-			int reqMajorVer = 0;
+			int reqMajorVer;
 			int reqMinorVer = 0;
 			int reqRevision = 0;
 			

@@ -409,7 +409,7 @@ public class VizMapPropertyBuilder {
 
 		final Map<K, V> discMapping = ((DiscreteMapping<K, V>) mapping).getAll();
 
-		V val = null;
+		V val;
 		VizMapperProperty<K, V, VisualMappingFunction<K, V>> valProp;
 		String strVal;
 
@@ -451,7 +451,7 @@ public class VizMapPropertyBuilder {
 				if (renderer != null)
 					cellRendererFactory.registerRenderer(valProp, renderer);
 
-				PropertyEditor cellEditor = null;
+				PropertyEditor cellEditor;
 				if (vpEditor instanceof VisualPropertyEditor2) {
 					cellEditor = ((VisualPropertyEditor2) vpEditor).getPropertyEditor(vp);
 				} else {

@@ -105,7 +105,7 @@ public final class AboutDialog extends JDialog implements HyperlinkListener {
 		setTitle("About " + title);
 		titleLabel.setText(title);
 
-		URL target = null;
+		URL target;
 		mainEditorPane.putClientProperty(JEditorPane.HONOR_DISPLAY_PROPERTIES, Boolean.TRUE);
 		try {
 			target = new URL(description);

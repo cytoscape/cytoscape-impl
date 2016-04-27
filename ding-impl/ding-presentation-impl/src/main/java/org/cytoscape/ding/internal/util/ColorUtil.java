@@ -48,7 +48,7 @@ public final class ColorUtil {
 	}
 
 	public static Color parseColor(final String input) {
-		Color color = null;
+		Color color;
 		
 		if (input.matches("^#([A-Fa-f0-9]{8}|[A-Fa-f0-9]{6})$")) {
 			// We have a hex value with either 6 (rgb) or 8 (rgba) digits
@@ -71,7 +71,7 @@ public final class ColorUtil {
 	}
 
 	public static Color getContrastingColor(final Color color) {
-		int d = 0;
+		int d;
 		// Counting the perceptive luminance - human eye favors green color...
 		final double a = 1 - (0.299 * color.getRed() + 0.587 * color.getGreen() + 0.114 * color.getBlue()) / 255;
 

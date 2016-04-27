@@ -302,7 +302,7 @@ public class BioLayoutKKAlgorithmTask extends BioLayoutAlgorithmTask {
 	 * Perform a layout
 	 */
 	public void layoutPartition(LayoutPartition partition) {
-		LayoutPoint initialLocation = null;
+		LayoutPoint initialLocation;
 		this.partition = partition;
 		// Initialize all of our values.  This will create
 		// our internal objects and initialize them
@@ -346,7 +346,7 @@ public class BioLayoutKKAlgorithmTask extends BioLayoutAlgorithmTask {
 			throw new RuntimeException();
 
 		PartialDerivatives partials;
-		PartialDerivatives furthestNodePartials = null;
+		PartialDerivatives furthestNodePartials;
 
 		m_nodeDistanceSpringRestLengths = new double[m_nodeCount][m_nodeCount];
 		m_nodeDistanceSpringStrengths = new double[m_nodeCount][m_nodeCount];
@@ -472,8 +472,8 @@ public class BioLayoutKKAlgorithmTask extends BioLayoutAlgorithmTask {
 
 		// Not quite done, yet.  If we're only laying out selected nodes, we need
 		// to migrate the selected nodes back to their starting position
-		double xDelta = 0.0;
-		double yDelta = 0.0;
+		double xDelta;
+		double yDelta;
 		final LayoutPoint finalLocation = partition.getAverageLocation();
 		xDelta = finalLocation.getX() - initialLocation.getX();
 		yDelta = finalLocation.getY() - initialLocation.getY();

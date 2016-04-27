@@ -772,7 +772,7 @@ public class CyGroupSettingsImpl implements GroupAddedListener,
 
 	void addAggregationSetting(CyGroup group, String attribute, 
 	                           Class<?> clazz, Class<?> listClass, List<String> settings) {
-		Aggregator<?> agg = null;
+		Aggregator<?> agg;
 		if (clazz.isAssignableFrom(List.class))
 			agg = getDefaultListAggregation(group, listClass);
 		else

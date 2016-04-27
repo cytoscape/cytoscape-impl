@@ -257,7 +257,7 @@ public class ClipboardImpl {
 		CyRootNetwork targetRoot = targetNetwork.getRootNetwork();
 		boolean addedNodes = newNodeMap.size() > 0;
 
-		CyEdge newEdge = null;
+		CyEdge newEdge;
 		CyNode sourceNode = edge.getSource();
 		CyNode targetNode = edge.getTarget();
 
@@ -364,7 +364,7 @@ public class ClipboardImpl {
 		CySubNetwork targetNetwork = (CySubNetwork)targetView.getModel();
 		CyRootNetwork targetRoot = targetNetwork.getRootNetwork();
 
-		CyNode newNode = null;
+		CyNode newNode;
 
 		// Three cases:
 		// 1) We're copying nodes to a new network in a different network tree

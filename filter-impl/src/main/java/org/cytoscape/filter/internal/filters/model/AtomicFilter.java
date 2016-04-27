@@ -90,7 +90,7 @@ public abstract class AtomicFilter implements CyFilter {
 	
 	public boolean passesFilter(Object obj) {
 		
-		int index = -1;
+		int index;
 		if (obj instanceof CyNode) {
 			List<CyNode> nodes_list = network.getNodeList();
 			index = nodes_list.indexOf(obj);	

@@ -96,7 +96,7 @@ public class RecentSessionManager implements SessionLoadedListener, CyShutdownLi
 		float gravity = 0.0f;
 
 		for (final URL url : urls) {
-			File file = null;
+			File file;
 			
 			try {
 				URI uri = url.toURI();

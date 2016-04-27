@@ -77,7 +77,7 @@ public class NumericFilter<T extends Number> extends AtomicFilter {
 		List<CyNode> nodes_list = null;
 		List<CyEdge> edges_list=null;
 
-		int objectCount = -1;
+		int objectCount;
 		
 		if (index_type == QuickFind.INDEX_NODES) {
 			nodes_list = network.getNodeList();

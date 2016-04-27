@@ -81,7 +81,6 @@ public class RecentlyOpenedTrackerImpl implements RecentlyOpenedTracker {
 			if (reader != null) {
 				try {
 					reader.close();
-					reader = null;
 				} catch (IOException e) {
 					logger.error("Colud not close the reader for RecentlyOpenedTracker.",e); 	
 				}

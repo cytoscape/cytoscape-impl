@@ -44,7 +44,7 @@ public class HandleNodeGraph extends HandleGraph {
 		manager.getCompoundNodeStack().push(node);
 		
 		final String href = atts.getValue(ReadDataManager.XLINK, "href");
-		Object netId = null;
+		Object netId;
 		CyNetwork network = null;
 		
 		if (href != null) {

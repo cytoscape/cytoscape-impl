@@ -64,7 +64,7 @@ public class OriginOptionsBeforeResponseTest {
         httpd.addBeforeResponse(new OriginOptionsBeforeResponse());
         httpd.start();
 
-        HttpURLConnection connection = null;
+        HttpURLConnection connection;
         final String url = "http://localhost:2610/test";
 
         connection = connectToURL(url, "OPTIONS");

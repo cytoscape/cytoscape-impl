@@ -425,7 +425,7 @@ public final class CyRootNetworkImpl extends DefaultTablesNetwork implements CyR
 	
 	@Override
 	public String toString() {
-		String name = null;
+		String name;
 		try {
 			name = getRow(this).get(NAME, String.class);
 		} catch (NullPointerException e) {

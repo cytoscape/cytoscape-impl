@@ -318,7 +318,7 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 			RescaleOp op = new RescaleOp(1.0f, offset, null);
 			op.filter(source, adjustedImage);
 
-			float scaleFactor = 1.0f;
+			float scaleFactor;
 			// scaleFactor goes from 0-4.0 with a 
 			if (contrast <= 0) {
 				scaleFactor = 1.0f + ((float)contrast)/100.0f;

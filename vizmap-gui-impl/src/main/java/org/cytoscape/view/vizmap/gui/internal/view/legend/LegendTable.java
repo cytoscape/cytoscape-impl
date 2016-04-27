@@ -67,7 +67,7 @@ public class LegendTable extends JPanel {
 
 		setLayout(new BorderLayout());
 
-		Object value = null;
+		Object value;
 
 		for (int i = 0; i < data.length; i++) {
 			value = getIcon(data[i][0]);

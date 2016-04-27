@@ -87,9 +87,9 @@ public class UnrecognizedVisualPropertyManagerTest {
 
 	@Test
 	public void testGetUnrecognizedVisualProperties() {
-		Map<String, String> map = null;
-		View<CyNode> n = null;
-		View<CyEdge> e = null;
+		Map<String, String> map;
+		View<CyNode> n;
+		View<CyEdge> e;
 
 		n = mockView(1L, CyNode.class);
 		map = unrecognizedVisualPropertyMgr.getUnrecognizedVisualProperties(netView, n);
@@ -112,8 +112,8 @@ public class UnrecognizedVisualPropertyManagerTest {
 	private void addUnrecognizedVisualProperties() {
 		// add some unrecognized visual properties
 		// nodes
-		View<CyNode> n = null;
-		View<CyEdge> e = null;
+		View<CyNode> n;
+		View<CyEdge> e;
 
 		n = mockView(1L, CyNode.class);
 		unrecognizedVisualPropertyMgr.addUnrecognizedVisualProperty(netView, n, "att_A", "val_1");

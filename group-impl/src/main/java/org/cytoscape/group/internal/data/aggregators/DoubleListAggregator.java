@@ -73,7 +73,7 @@ public class DoubleListAggregator extends AbstractAggregator<List<Double>> {
 			List <Double> agg = new ArrayList<Double>();
 			List <List<Double>> aggMed = new ArrayList<>();
 			Set <Double> aggset = new HashSet<Double>();
-			List <Double> aggregation = null;
+			List <Double> aggregation;
 
 			if (type == AttributeHandlingType.NONE) return null;
 			if (!listType.equals(Double.class)) return null;

@@ -110,7 +110,7 @@ public class PDFWriter extends AbstractTask implements CyWriter {
 		logger.debug("Page W: " + pageWidth + " Page H: " + pageHeight);
 		final DefaultFontMapper fontMapper = new DefaultFontMapper();
 		logger.debug("FontMapper created = " + fontMapper);
-		Graphics2D g = null;
+		Graphics2D g;
 		logger.debug("!!!!! Enter block 2");
 		
 		engine.getProperties().setProperty("exportTextAsShape", new Boolean(!exportTextAsFont).toString());

@@ -64,7 +64,7 @@ public class AddAllowOriginHeaderTest {
         httpd.addAfterResponse(new AddAllowOriginHeader());
         httpd.start();
 
-        HttpURLConnection connection = null;
+        HttpURLConnection connection;
         final String url = "http://localhost:2611/test";
 
         connection = connectToURL(url, "GET");

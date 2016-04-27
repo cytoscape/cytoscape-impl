@@ -70,7 +70,7 @@ class ApplyFilterThread extends Thread {
 	}
 
 	private boolean passAtomicFilter(CyNetwork network, Object pObject, AtomicFilter pAtomicFilter) {
-		CyRow data = null;
+		CyRow data;
 
 		if (pObject instanceof CyNode) {
 			CyNode node = (CyNode) pObject;

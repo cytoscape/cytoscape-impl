@@ -404,7 +404,7 @@ public class AppManager implements FrameworkListener {
 			@Override
 			public void onFileCreate(File file) {
 				
-				App parsedApp = null;
+				App parsedApp;
 				try {
 					parsedApp = appParser
 							.parseApp(file);
@@ -447,7 +447,7 @@ public class AppManager implements FrameworkListener {
 						}
 					}
 				}
-				App app = null;
+				App app;
 				
 				if (registeredApp == null) {
 					app = parsedApp;
@@ -509,7 +509,7 @@ public class AppManager implements FrameworkListener {
 
 				//Do this so that we don't reload an old app when responding to change events
 				if (file.exists()) {
-					App parsedApp = null;
+					App parsedApp;
 					try {
 						parsedApp = appParser
 								.parseApp(file);
@@ -557,7 +557,7 @@ public class AppManager implements FrameworkListener {
 		disableAlterationObserver.addListener( new FileAlterationListenerAdaptor() {
 			@Override
 			public void onFileCreate(File file) {
-				App parsedApp = null;
+				App parsedApp;
 				try {
 					parsedApp = appParser.parseApp(file);
 				} catch (AppParsingException e) {
@@ -588,7 +588,7 @@ public class AppManager implements FrameworkListener {
 						registeredApp.setAppFile(file);
 					}
 				}
-				App app = null;
+				App app;
 				
 				if (registeredApp == null) {
 					app = parsedApp;
@@ -638,7 +638,7 @@ public class AppManager implements FrameworkListener {
 		uninstallAlterationObserver.addListener(new FileAlterationListenerAdaptor() {
 			@Override
 			public void onFileCreate(File file) {
-				App parsedApp = null;
+				App parsedApp;
 				try {
 					parsedApp = appParser.parseApp(file);
 				} catch (AppParsingException e) {
@@ -669,7 +669,7 @@ public class AppManager implements FrameworkListener {
 						registeredApp.setAppFile(file);
 					}
 				}
-				App app = null;
+				App app;
 				
 				if (registeredApp == null) {
 					app = parsedApp;
@@ -920,7 +920,7 @@ public class AppManager implements FrameworkListener {
 	 * @return The path of the root directory containing all installed and uninstalled apps.
 	 */
 	private File getBaseAppPath() {
-		File baseAppPath = null;
+		File baseAppPath;
 		
 		// TODO: At time of writing, CyApplicationConfiguration always returns the home directory for directory location.
 		try {
@@ -938,7 +938,7 @@ public class AppManager implements FrameworkListener {
 	 * @return The path of the root directory containing apps bundled with Cytoscape.
 	 */
 	private File getBundledAppsPath() {
-		File path = null;
+		File path;
 		
 		// TODO: At time of writing, CyApplicationConfiguration always returns the home directory for directory location.
 		try {

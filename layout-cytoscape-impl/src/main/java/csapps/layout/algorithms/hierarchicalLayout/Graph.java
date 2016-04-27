@@ -1813,7 +1813,7 @@ NEXTPARENT:
 		LinkedList[] nodesOnLayer = new LinkedList[nodecount + 1];
 		int x;
 		int topLayer = 0;
-		int middleLayer = 0;
+		int middleLayer;
 
 		for (x = 0; x < nodecount; x++) {
 			position[x] = 0; /* 0 means unpositioned */

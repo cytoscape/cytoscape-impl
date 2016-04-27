@@ -407,7 +407,7 @@ public class CyCustomGraphicsValueEditor implements VisualPropertyValueEditor<Cy
 			
 			try {
 				getTypeTpn().removeAll();
-				CyCustomGraphics2 initialCg2 = null;
+				CyCustomGraphics2 initialCg2;
 				
 				for (final CyCustomGraphics2Factory<?> cf : supportedFactories) {
 					final CustomGraphics2EditorPane cg2EditorPn = new CustomGraphics2EditorPane(cf);

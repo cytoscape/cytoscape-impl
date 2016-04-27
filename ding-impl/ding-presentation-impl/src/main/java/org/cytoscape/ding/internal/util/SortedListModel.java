@@ -89,7 +89,7 @@ public class SortedListModel<E> extends AbstractListModel<E> {
 	 * @return modelIndex an index in the unsorted model
 	 */
 	public int toUnsortedModelIndex(final int index) throws IndexOutOfBoundsException {
-		int modelIndex = -1;
+		int modelIndex;
 		SortedListEntry entry = sortedModel.get(index);
 		modelIndex = entry.getIndex();
 		

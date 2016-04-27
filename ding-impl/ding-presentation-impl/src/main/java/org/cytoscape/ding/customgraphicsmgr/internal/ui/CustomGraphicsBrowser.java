@@ -101,7 +101,7 @@ public class CustomGraphicsBrowser extends JXList implements CustomGraphicsLibra
 	}
 
 	private void addCustomGraphics(final String urlStr) {
-		CyCustomGraphics cg = null;
+		CyCustomGraphics cg;
 		try {
 			cg = new URLImageCustomGraphics(pool.getNextAvailableID(), urlStr);
 			if (cg != null) {

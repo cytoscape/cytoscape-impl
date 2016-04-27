@@ -138,7 +138,7 @@ public class VisualMappingManagerImpl implements VisualMappingManager, SetCurren
 		if (nv == null)
 			throw new NullPointerException("Network view is null.");
 
-		boolean changed = false;
+		boolean changed;
 
 		synchronized (lock) {
 			if (vs == null) {
@@ -235,7 +235,7 @@ public class VisualMappingManagerImpl implements VisualMappingManager, SetCurren
 
 	private String getSuggestedTitle(String title) {
 		int i = 0;
-		String suggesteTitle = title;
+		String suggesteTitle;
 
 		while (true) {
 			suggesteTitle = title + "_" + (new Integer(i).toString());

@@ -114,9 +114,9 @@ public class TopologyFilter extends CompositeFilter {
 			passFilter.apply();			
 		}	
 
-		List<CyNode> nodes_list = null;
+		List<CyNode> nodes_list;
 
-		int objectCount = -1;
+		int objectCount;
 		
 		if (advancedSetting.isNodeChecked()) {
 			nodes_list = network.getNodeList();

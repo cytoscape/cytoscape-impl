@@ -266,8 +266,8 @@ public class SessionWriterImpl extends AbstractTask implements CyWriter {
 		for (CyProperty<?> cyProps : session.getProperties()) {
 			if (cancelled) return;
 			
-			String filename = null;
-			CyFileFilter filter = null;
+			String filename;
+			CyFileFilter filter;
 			Class<?> type = cyProps.getPropertyType();
 			
 			if (Bookmarks.class.isAssignableFrom(type)) {
@@ -375,7 +375,7 @@ public class SessionWriterImpl extends AbstractTask implements CyWriter {
 
 					// copy the file contents to the zip output stream
 					FileInputStream fileIS = new FileInputStream(theFile);
-					int numRead = 0;
+					int numRead;
 			        while ((numRead = fileIS.read(buf)) > -1)
 		            	zos.write(buf, 0, numRead);
 					fileIS.close();

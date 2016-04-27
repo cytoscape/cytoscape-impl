@@ -214,7 +214,7 @@ class FileUtilImpl implements FileUtil {
 			}
 
 			File[] results = null;
-			File tmp = null;
+			File tmp;
 
 			// set the dialog type
 			if (loadSaveCustom == LOAD) {

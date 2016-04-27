@@ -302,7 +302,7 @@ public class OntologyPanelBuilder {
 		
 		final Bookmarks bookmarks = bookmarksProp.getProperties();
 		final List<DataSource> annotations = bkUtil.getDataSourceList("ontology", bookmarks.getCategory());
-		String key = null;
+		String key;
 
 		for (DataSource source : annotations) {
 			key = source.getName();
@@ -323,7 +323,7 @@ public class OntologyPanelBuilder {
 		
 		final Bookmarks bookmarks = bookmarksProp.getProperties();
 		final List<DataSource> annotations = bkUtil.getDataSourceList("annotation", bookmarks.getCategory());
-		String key = null;
+		String key;
 
 		panel.annotationComboBox.addItem(DEF_ANNOTATION_ITEM);
 
@@ -351,7 +351,7 @@ public class OntologyPanelBuilder {
 			throws IOException {
 		final URL url = new URL(dataSource);
 		final URL annotationSourceUrl = new URL(annotationSource);
-		InputStream is = null;
+		InputStream is;
 		
 		if (annotationSourceUrl.toString().endsWith("gz")) {
 			is = new GZIPInputStream(annotationSourceUrl.openStream());

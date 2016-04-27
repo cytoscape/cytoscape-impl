@@ -62,7 +62,7 @@ public class CalculatorConverterTest {
 	
 	@Test
 	public void testGetVisualPropertyId() {
-		CalculatorConverter c = null;
+		CalculatorConverter c;
 		
 		c = new CalculatorConverter("globalAppearanceCalculator.My style.defaultBackgroundColor", null);
 		assertEquals("backgroundcolor", c.getVisualPropertyId().toLowerCase());
@@ -76,7 +76,7 @@ public class CalculatorConverterTest {
 	
 	@Test
 	public void testGetVisualPropertyIdForDeprecatedKey() {
-		CalculatorConverter c = null;
+		CalculatorConverter c;
 		
 		c = new CalculatorConverter("edgeAppearanceCalculator.default.defaultEdgeLineStyle", "edgeAppearanceCalculator.default.defaultEdgeLineType");
 		assertEquals("edgelinestyle", c.getVisualPropertyId().toLowerCase());
@@ -220,7 +220,7 @@ public class CalculatorConverterTest {
 	}
 	
 	private VisualProperty getVisualProperty(String id, VisualStyle vs, Class<? extends CyIdentifiable> type) {
-		List<VisualProperty> list = null;
+		List<VisualProperty> list;
 		
 		if (type == CyNode.class)
 			list = vs.getNode().getVisualProperty();

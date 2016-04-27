@@ -390,7 +390,7 @@ public class VisualStyleSerializer {
 					AttributeType attrType = dmModel.getAttributeType();
 					
 					try {
-						Class<?> attrClass = null;
+						Class<?> attrClass;
 
 						// TODO refactor attr type assignment
 						switch (attrType) {
@@ -419,7 +419,7 @@ public class VisualStyleSerializer {
 							String sValue = entryModel.getValue();
 
 							if (sAttrValue != null && sValue != null) {
-								Object attrValue = null;
+								Object attrValue;
 
 								switch (attrType) {
 									case BOOLEAN:

@@ -982,7 +982,7 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 		if (targetJoinKeyName == null)
 			throw new NullPointerException("\"targetJoinKey\" argument must never be null.");
 
-		String targetName = "failed to create column"; 
+		String targetName; 
 
 		synchronized(lock) {
 			final String normalizedColName = normalizeColumnName(virtualColumnName);

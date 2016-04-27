@@ -77,7 +77,7 @@ public class FilterUtil {
 
 		if (pFilter.getAdvancedSetting().isNodeChecked()&& (pFilter.getNodeBits() != null)) {
 			// Select nodes
-			CyNode node = null;
+			CyNode node;
 
 			for (int i=0; i< pFilter.getNodeBits().length(); i++) {
 				int next_set_bit = pFilter.getNodeBits().nextSetBit(i);
@@ -89,7 +89,7 @@ public class FilterUtil {
 		}
 		if (pFilter.getAdvancedSetting().isEdgeChecked()&& (pFilter.getEdgeBits() != null)) {
 			// Select edges
-			CyEdge edge = null;
+			CyEdge edge;
 			for (int i=0; i< edges_list.size(); i++) {
 				int next_set_bit = pFilter.getEdgeBits().nextSetBit(i);
 				if (next_set_bit == -1) {
@@ -166,7 +166,7 @@ public class FilterUtil {
 		int nodeCount = theNetwork.getNodeCount();
 		int edgeCount = theNetwork.getEdgeCount();
 
-		int dynamicFilterThresholdValue = -1; 
+		int dynamicFilterThresholdValue; 
 		
 //		// TODO: What do we do about CyInit*?
 //		String dynamicFilterThreshold = CytoscapeInit.getProperties().getProperty(DYNAMIC_FILTER_THRESHOLD);

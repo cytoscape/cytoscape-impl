@@ -72,7 +72,7 @@ public class ExportAsWebArchiveTask extends AbstractTask {
 
 		// Compress everything as a zip archive.
 		final FileOutputStream os = new FileOutputStream(file);
-		CyWriter writer = null;
+		CyWriter writer;
 		if(exportType.equals(AS_SPA)) {
 			writer = fullWriterFactory.createWriter(os, null);
 		} else if(exportType.equals(AS_SIMPLE_PAGE)) {

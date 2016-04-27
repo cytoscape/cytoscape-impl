@@ -73,7 +73,7 @@ public class LongListAggregator extends AbstractAggregator<List<Long>> {
 			List <Long> agg = new ArrayList<Long>();
 			List <List<Long>> aggMed = new ArrayList<>();
 			Set <Long> aggset = new HashSet<Long>();
-			List <Long> aggregation = null;
+			List <Long> aggregation;
 
 			if (type == AttributeHandlingType.NONE) return null;
 			if (!listType.equals(Long.class)) return null;

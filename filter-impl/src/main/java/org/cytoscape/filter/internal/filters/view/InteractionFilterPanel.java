@@ -98,7 +98,7 @@ public class InteractionFilterPanel extends JPanel implements ItemListener{
         	// thePassFilter name == "None", it's a brand new filter
         	// Set the passFilter the first appropriate filter in the comboBox 
         	int index = 0;
-        	CompositeFilter curFilter = null;
+        	CompositeFilter curFilter;
         	for (int i=0; i< cmbPassFilter.getModel().getSize(); i++) {
         		curFilter = (CompositeFilter)cmbPassFilter.getModel().getElementAt(i);        		
     			if ((theFilter instanceof EdgeInteractionFilter && curFilter.getAdvancedSetting().isNodeChecked())||

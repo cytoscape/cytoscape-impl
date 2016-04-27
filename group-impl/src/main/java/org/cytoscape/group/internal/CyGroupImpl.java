@@ -618,7 +618,7 @@ public class CyGroupImpl implements CyGroup {
 						for (CyGroup group: mgr.getGroupsForNode(node)) {
 							if (!group.equals(this)) {
 								// Create our meta-edge
-								CyEdge metaEdge = null;
+								CyEdge metaEdge;
 	 							metaEdge = createMetaEdge(edge, group.getGroupNode(), groupNode);
 								addMetaEdge(edge, metaEdge);
 
@@ -1180,7 +1180,7 @@ public class CyGroupImpl implements CyGroup {
 				// System.out.println("Looking at partner edge: "+edge.toString());
 				CyNode source = edge.getSource();
 				CyNode target = edge.getTarget();
-				CyNode partner = null;
+				CyNode partner;
 				boolean directed = edge.isDirected();
 				if (getGroupNetwork().containsNode(target)) {
 					target = groupNode;
@@ -1222,9 +1222,9 @@ public class CyGroupImpl implements CyGroup {
 	}
 
 	private CyEdge createMetaEdge(CyEdge edge, CyNode node, CyNode groupNode) {
-		CyEdge metaEdge = null;
-		CyNode source = null;
-		CyNode target = null;
+		CyEdge metaEdge;
+		CyNode source;
+		CyNode target;
 		if (isIncoming(edge)) {
 			if (rootNetwork.containsEdge(node, groupNode)) {
 				// System.out.println("Found metaEdge(s): "+rootNetwork.getConnectingEdgeList(node, groupNode, CyEdge.Type.ANY));
@@ -1259,7 +1259,7 @@ public class CyGroupImpl implements CyGroup {
 		if (!partnerGroup.getNetworkSet().contains(net))
 			return;
 
-		CyEdge metaMetaEdge = null;
+		CyEdge metaMetaEdge;
 		CyGroupImpl partner = (CyGroupImpl)partnerGroup;
 		metaMetaEdge = createMetaEdge(connectingEdge, partnerGroup.getGroupNode(), this.groupNode);
 

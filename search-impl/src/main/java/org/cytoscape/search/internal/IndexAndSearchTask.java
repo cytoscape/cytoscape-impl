@@ -76,7 +76,7 @@ public class IndexAndSearchTask extends AbstractNetworkTask {
 		taskMonitor.setTitle("Searching the network");
 
 		// Index the given network or use existing index
-		RAMDirectory idx = null;
+		RAMDirectory idx;
 		final String status = enhancedSearch.getNetworkIndexStatus(network);
 		
 		if (status != null && status.equalsIgnoreCase(EnhancedSearch.INDEX_SET)

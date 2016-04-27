@@ -96,7 +96,7 @@ public class LoadVizmapFileTaskFactoryImpl extends AbstractTaskFactory implement
 	@Override
 	public Set<VisualStyle> loadStyles(final InputStream is) {
 		// Save the contents of inputStream in a tmp file
-		File f = null;
+		File f;
 		try {
 			f = this.getFileFromStream(is);
 		} catch (IOException e) {

@@ -61,7 +61,7 @@ public class PassthroughMappingImpl<K, V> extends AbstractVisualMappingFunction<
 		if (row == null || !row.isSet(columnName))
 			return null;
 
-		K tableValue = null;
+		K tableValue;
 		final CyColumn column = row.getTable().getColumn(columnName);
 		
 		if (column != null) {

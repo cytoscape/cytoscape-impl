@@ -260,7 +260,7 @@ public class ContinuousTrackRenderer<K extends Number, V extends Number>
 		g.setColor(BACKGROUND_COLOR);
 		g.fillRect(0, 5, track_width, trackHeight);
 
-		int newX = 0;
+		int newX;
 		int lastY = 0;
 
 		Point2D p1 = new Point2D.Float(0, 5);
@@ -748,7 +748,7 @@ public class ContinuousTrackRenderer<K extends Number, V extends Number>
 
 		int leftSpace = 10;
 		int trackHeight = iconHeight - 9;
-		int trackWidth = iconWidth - leftSpace;
+		int trackWidth;
 
 		/*
 		 * Compute fractions from mapping
@@ -813,7 +813,7 @@ public class ContinuousTrackRenderer<K extends Number, V extends Number>
 		g.translate(leftSpace, 0);
 		g.setStroke(new BasicStroke(1.0f));
 
-		int newX = 0;
+		int newX;
 		int lastY = 0;
 
 		Point2D p1 = new Point2D.Float(0, 0);
@@ -888,7 +888,7 @@ public class ContinuousTrackRenderer<K extends Number, V extends Number>
 		g.setColor(LABEL_COLOR);
 
 		if (detail) {
-			String fNum = null;
+			String fNum;
 
 			for (int j = 0; j < fractions.length; j++) {
 				fNum = String.format("%.2f", ((fractions[j] / 100) * valueRange) + minValue);

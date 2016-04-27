@@ -622,7 +622,7 @@ public class GMLNetworkReader extends AbstractCyNetworkReader {
 	@SuppressWarnings("unchecked")
 	private void layoutGraph(final CyNetworkView myView,
 			final List<KeyValue> list) {
-		CyEdge edge = null;
+		CyEdge edge;
 
 		// Count the current edge
 		int ePtr = 0;
@@ -647,7 +647,7 @@ public class GMLNetworkReader extends AbstractCyNetworkReader {
 			final List<KeyValue> list) {
 		Long rootIndex = null;
 		final List<KeyValue> graphicsList = new ArrayList<KeyValue>();
-		String label = null;
+		String label;
 
 		@SuppressWarnings("unused")
 		int tempid = 0;

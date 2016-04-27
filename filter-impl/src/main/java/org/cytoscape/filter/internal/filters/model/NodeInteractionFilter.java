@@ -100,7 +100,7 @@ public class NodeInteractionFilter extends InteractionFilter {
 	private boolean isHit(CyNode pNode, List<CyEdge> edges) {
 		
 		// Get the list of relevant edges for this node
-		List<CyEdge> adjacentEdges = null;
+		List<CyEdge> adjacentEdges;
 		
 		if (nodeType == NODE_SOURCE) {
 			adjacentEdges = network.getAdjacentEdgeList(pNode, Type.OUTGOING);
@@ -122,7 +122,7 @@ public class NodeInteractionFilter extends InteractionFilter {
 		BitSet passFilter_edgeBits = passFilter.getEdgeBits();
 		if (passFilter_edgeBits == null) return false;
 
-		int edgeIndex = -1;
+		int edgeIndex;
 		for (int i=0; i < adjacentEdges.size(); i++) {
 			edgeIndex = edges.indexOf(adjacentEdges.get(i));
 		

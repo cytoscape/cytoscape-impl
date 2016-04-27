@@ -194,7 +194,7 @@ public class AttributeValueUtil {
 				curNet = manager.getRootNetwork();
 		}
 		
-		CyRow row = null;
+		CyRow row;
 		
 		if (isHidden) {
 			row = curNet.getRow(curElement, CyNetwork.HIDDEN_ATTRS);

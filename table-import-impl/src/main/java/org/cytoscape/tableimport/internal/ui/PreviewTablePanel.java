@@ -327,7 +327,7 @@ public class PreviewTablePanel extends JPanel {
 	}
 
 	public String[] getAttributeNames() {
-		String[] names = null;
+		String[] names;
 		final PreviewTableModel model = (PreviewTableModel) getPreviewTable().getModel();
 		final int columnCount = model.getColumnCount();
 		names = new String[columnCount];
@@ -451,7 +451,7 @@ public class PreviewTablePanel extends JPanel {
 			getSheetComboBox().setVisible(false);
 			sheetLabel.setVisible(false);
 			
-			PreviewTableModel newModel = null;
+			PreviewTableModel newModel;
 			
 			if (SupportedFileType.EXCEL.getExtension().equalsIgnoreCase(fileType)
 					|| SupportedFileType.OOXML.getExtension().equalsIgnoreCase(fileType)) {
@@ -525,7 +525,7 @@ public class PreviewTablePanel extends JPanel {
 			is = URLUtil.getInputStream(sourceURL);
 			
 			try {
-				String line = null;
+				String line;
 				int i = 0;
 				bufRd = new BufferedReader(new InputStreamReader(is, Charset.forName("UTF-8").newDecoder()));
 				
@@ -668,7 +668,7 @@ public class PreviewTablePanel extends JPanel {
 			throws IOException {
 		String line;
 		String attrName = "Attr1";
-		Vector<Vector<String>> data = null;
+		Vector<Vector<String>> data;
 		int maxColumn;
 
 		BufferedReader bufRd = new BufferedReader(new InputStreamReader(tempIs, Charset.forName("UTF-8").newDecoder()));

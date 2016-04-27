@@ -610,7 +610,7 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 				TitledBorder.DEFAULT_JUSTIFICATION, TitledBorder.DEFAULT_POSITION, BORDER_FONT);
 		cellMenu.setBorder(popupBorder);
 		
-		JMenu curItem = null;
+		JMenu curItem;
 		String dispName;
 
 		for (final Object item : listItems) {

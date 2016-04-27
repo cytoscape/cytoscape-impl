@@ -185,7 +185,7 @@ public class ContinuousMappingImpl<K, V> extends AbstractVisualMappingFunction<K
 		// Also, the case of the inValue equalling the smallest key was
 		// checked above.
 		ContinuousMappingPoint<K, V> currentPoint;
-		int index = 0;
+		int index;
 
 		for (index = 0; index < points.size(); index++) {
 			currentPoint = points.get(index);

@@ -224,7 +224,7 @@ public class CalculatorConverter {
 		if ("DiscreteMapping".equalsIgnoreCase(functionType)) {
 			String controllerTypeProp = props.getProperty(baseKey + "controllerType");
 			byte controllerType = controllerTypeProp != null ? Byte.parseByte(controllerTypeProp) : TYPE_STRING;
-			AttributeType attrType = null;
+			AttributeType attrType;
 
 			if (attrName.equals("has_nested_network")) {
 				// Force to boolean (in Cy2, this attribute is a "yes\no" string type)

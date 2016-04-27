@@ -523,7 +523,7 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 			formulaBuilderButton = new JButton("f(x)");
 			formulaBuilderButton.setToolTipText("Function Builder");
 			
-			Font iconFont = null;
+			Font iconFont;
 			
 			try {
 				iconFont = Font.createFont(Font.TRUETYPE_FONT, 
@@ -724,7 +724,7 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 	private void createNewAttribute(final String type, boolean isShared) {
 		try {
 			final String[] existingAttrs = getAttributeArray();
-			String newAttribName = null;
+			String newAttribName;
 			do {
 				newAttribName = JOptionPane.showInputDialog(this, "Please enter new column name: ",
 									    "Create New " + type + " Column",
@@ -748,7 +748,7 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 							
 				if (network instanceof CySubNetwork) {
 					final CyRootNetwork rootNetwork = ((CySubNetwork) network).getRootNetwork();
-					CyTable sharedTable = null;
+					CyTable sharedTable;
 					if(this.objType == CyNode.class)
 						sharedTable = rootNetwork.getSharedNodeTable();
 					else if(this.objType == CyEdge.class)

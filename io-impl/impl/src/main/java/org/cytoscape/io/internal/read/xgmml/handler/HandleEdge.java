@@ -44,7 +44,7 @@ public class HandleEdge extends AbstractHandler {
 	@Override
 	public ParseState handle(final String tag, final Attributes atts, final ParseState current) throws SAXException {
 		// Get the label, id, source and target
-		Object id = null;
+		Object id;
 		String href = atts.getValue(ReadDataManager.XLINK, "href");
 
 		if (href == null) {
@@ -108,7 +108,7 @@ public class HandleEdge extends AbstractHandler {
 				label = String.format("%s (%s) %s", sourceId, (directed ? "directed" : "undirected"), targetId);
 
 			CyNetwork net = manager.getCurrentNetwork();
-			CyEdge edge = null;
+			CyEdge edge;
 
 			if (sourceNode != null && targetNode != null) {
 				// We need to do this because of groups that are exported from

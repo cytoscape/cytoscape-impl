@@ -301,7 +301,7 @@ public class VizMapperProxy extends Proxy
 		}
 		
 		final VisualStyle vs = e.getVisualStyleAdded();
-		boolean changed = false;
+		boolean changed;
 		
 		synchronized (lock) {
 			changed = visualStyles.add(vs);
@@ -319,7 +319,7 @@ public class VizMapperProxy extends Proxy
 		}
 		
 		final VisualStyle vs = e.getVisualStyleToBeRemoved();
-		boolean changed = false;
+		boolean changed;
 		
 		synchronized (lock) {
 			changed = visualStyles.remove(vs);

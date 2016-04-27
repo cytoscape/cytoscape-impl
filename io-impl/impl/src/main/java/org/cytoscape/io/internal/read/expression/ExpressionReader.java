@@ -486,7 +486,7 @@ public class ExpressionReader extends AbstractTableReader {
 	// it is convenient for users to load their MTX files as they are
 	// the current code requires them to remove the first line
 	private boolean isHeaderLineMTXHeader(String hline) {
-		boolean b = false;
+		boolean b;
 		String pattern = "\t+RATIOS\t+LAMBDAS";
 		b = hline.matches(pattern);
 

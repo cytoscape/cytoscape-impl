@@ -198,7 +198,7 @@ public class RestoreImageTask implements Task {
 					fMap.put(f, name);
 					fIdMap.put(f, Long.parseLong(imageProps[1]));
 
-					String tagStr = null;
+					String tagStr;
 					if (imageProps.length > 3) {
 						tagStr = imageProps[3];
 						final Set<String> tags = new TreeSet<String>();

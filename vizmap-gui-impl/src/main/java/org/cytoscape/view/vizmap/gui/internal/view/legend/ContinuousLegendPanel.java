@@ -76,7 +76,7 @@ public class ContinuousLegendPanel extends AbstractMappingLegendPanel {
 		if (legend != null)
 			remove(legend);
 
-		Integer trackW = null;
+		Integer trackW;
 
 		if (getParent() == null) {
 			trackW = 600;

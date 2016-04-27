@@ -228,7 +228,7 @@ public class BookmarksUtilImpl implements BookmarksUtil {
 		final String description = "From Bookmarks";
 		//final String provider = "Example";
 		DataCategory dataType;
-		URL url = null;
+		URL url;
 		
 		if(pCategoryName.contentEquals("network") )
 		{

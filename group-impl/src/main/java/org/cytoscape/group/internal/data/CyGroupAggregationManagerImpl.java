@@ -88,7 +88,7 @@ public class CyGroupAggregationManagerImpl
 			type = aggregator.getSupportedListType();
 			map = aggListMap;
 		}
-		List<Aggregator<?>> aggList = null;
+		List<Aggregator<?>> aggList;
 		synchronized (lock) {
 			if (map.containsKey(type))
 				aggList = map.get(type);

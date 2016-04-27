@@ -140,7 +140,7 @@ public class FormulaBuilderDialog extends JDialog {
 
 	private void initComponents() {
 		final JLabel fnIconLabel = new JLabel("f(x)");
-		Font iconFont = null;
+		Font iconFont;
 		
 		try {
 			iconFont = Font.createFont(Font.TRUETYPE_FONT, getClass().getResourceAsStream("/fonts/jsMath-cmti10.ttf"));

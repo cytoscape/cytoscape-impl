@@ -256,7 +256,7 @@ public class CyDesktopManager implements CyNetworkViewDesktopMgr {
 			}
 		} else if (type == ArrangeType.HORIZONTAL) {
 			int x = 0;
-			int y = 0;
+			int y;
 			int w = screenWidth;
 			int h = screenHeight / frameCount;
 
@@ -281,7 +281,7 @@ public class CyDesktopManager implements CyNetworkViewDesktopMgr {
 				frames[frameCount - i - 1].setBounds(x + screenX, y + screenY, w, h);
 			}
 		} else if (type == ArrangeType.VERTICAL) {
-			int x = 0;
+			int x;
 			int y = 0;
 			int w = screenWidth / frameCount;
 			int h = screenHeight;
@@ -316,7 +316,7 @@ public class CyDesktopManager implements CyNetworkViewDesktopMgr {
 	// gridLayout -- an int array-- int[i] holds the number of row for column i 
 	private void getGridLayout(final int pTotal, final int pCol, final int pRow, int[] gridLayout) {
 		if (pTotal > pRow) {
-			int row = -1;
+			int row;
 
 			if (pTotal % pCol == 0) {
 				row = pTotal / pCol;

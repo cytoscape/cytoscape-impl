@@ -89,7 +89,7 @@ public class FitLabelMappingGenerator<V extends Number> extends AbstractDiscrete
 		
 		for (final T attrVal: tableValues) {
 			final Collection<CyRow> rows = nodeTable.getMatchingRows(CyNetwork.NAME, attrVal);
-			CyRow row = null;
+			CyRow row;
 			
 			if (rows.isEmpty() == false)
 				row = rows.iterator().next();

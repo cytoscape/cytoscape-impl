@@ -173,7 +173,7 @@ public class OBOReader extends AbstractTask implements CyNetworkReader {
 
 	private void readEntry(final BufferedReader rd) throws IOException {
 		String id = "";
-		String line = null;
+		String line;
 
 		String key;
 		String val;

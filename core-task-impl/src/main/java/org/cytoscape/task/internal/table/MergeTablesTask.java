@@ -492,7 +492,7 @@ public class MergeTablesTask extends AbstractTask implements TunableValidator {
 
 	private void applyMapping(CyTable targetTable) {
 		ArrayList<CyColumn> columns = new ArrayList<>();
-		CyColumn tempCol = null;
+		CyColumn tempCol;
 
 		for (String colName : sourceMergeColumns.getSelectedValues()) {
 			tempCol = sourceTable.getSelectedValue().getColumn(colName);
@@ -519,7 +519,7 @@ public class MergeTablesTask extends AbstractTask implements TunableValidator {
 	}
 
 	private void copyRows(CyTable inputTable, List<CyColumn> sourceColumns, CyTable targetTable) {
-		CyRow sourceRow = null;
+		CyRow sourceRow;
 		CyColumn targetKeyColumn = getJoinTargetColumn(targetTable);
 
 		for (CyRow targetRow : targetTable.getAllRows()) {
@@ -642,7 +642,7 @@ public class MergeTablesTask extends AbstractTask implements TunableValidator {
 	}
 	
 	private ListMultipleSelection<String> getColumnList(final CyTable table) {
-		String tempName = null;
+		String tempName;
 		final List<String> colNames = new ArrayList<>();
 		
 		for (CyColumn col : table.getColumns()) {

@@ -64,7 +64,6 @@ public class ColorUtil {
 				} catch (IOException e) {
 					e.printStackTrace();
 				} finally {
-					bufRd = null;
 				}
 			}
 		}

@@ -1047,7 +1047,7 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 					}
 				}
 				
-				String newFilterName = "";
+				String newFilterName;
 				
 				while (true) {
 					newFilterName = JOptionPane.showInputDialog(
@@ -1213,7 +1213,7 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 		CompositeFilter theFilter = (CompositeFilter)cmbFilters.getSelectedItem();
 	
 		String tmpName = "Copy of " + theFilter.getName();
-		String newFilterName = null;
+		String newFilterName;
 		
 		while (true) {
 			Vector<String> nameVect = new Vector<String>();
@@ -1255,7 +1255,7 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 	private void renameFilter(){
 		CompositeFilter theFilter = (CompositeFilter)cmbFilters.getSelectedItem();
 		String oldFilterName = theFilter.getName();
-		String newFilterName = "";
+		String newFilterName;
 		
 		while (true) {
 			Vector<String> nameVect = new Vector<String>();
@@ -1301,7 +1301,7 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 
 	private void createNewFilter(String pFilterName, String pFilterType) {
 		// Create an empty filter, add it to the current filter list
-		CompositeFilter newFilter = null;
+		CompositeFilter newFilter;
 		
 		if (pFilterType.equalsIgnoreCase("Topology")) {
 			newFilter =  new TopologyFilter(applicationManager);

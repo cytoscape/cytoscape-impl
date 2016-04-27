@@ -214,7 +214,7 @@ public class DataSourceSelectDialog extends JDialog {
 	}
 
 	private void browseButtonActionPerformed(ActionEvent evt) {
-		File file = null;
+		File file;
 		final FileUtil fileUtil = serviceRegistrar.getService(FileUtil.class);
 
 		if (sourceType == ONTOLOGY_TYPE) {

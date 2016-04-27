@@ -132,7 +132,7 @@ public class GenericReaderManager<T extends InputStreamTaskFactory, R extends Ta
 			}
 		}
 
-		T chosenFactory = null;
+		T chosenFactory;
 
 		// No compatible factory is available.
 		if (factoryTable.isEmpty() && defaultFactory == null) {

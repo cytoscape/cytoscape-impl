@@ -28,7 +28,7 @@ public final class NumberConverter {
 	
 	@SuppressWarnings("unchecked")
 	public static final <T> T convert(final Class<T> type, final Number value) {
-		T converted = null;
+		T converted;
 		
 		if (type == Double.class || type == Number.class) {
 			Double doubleValue = value.doubleValue();

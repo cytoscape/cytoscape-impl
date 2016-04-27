@@ -600,7 +600,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 	}
 	
 	private long[] setSelectedNodes() {
-		long [] selectedNodes = null;
+		long [] selectedNodes;
 		
 		m_ptBuff[0] = m_selectionRect.x;
 		m_ptBuff[1] = m_selectionRect.y;
@@ -645,7 +645,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 	
 	
 	private long [] setSelectedEdges() {
-		long [] selectedEdges = null;
+		long [] selectedEdges;
 		if ((m_lastRenderDetail & GraphRenderer.LOD_EDGE_ANCHORS) != 0) {
 			m_ptBuff[0] = m_selectionRect.x;
 			m_ptBuff[1] = m_selectionRect.y;

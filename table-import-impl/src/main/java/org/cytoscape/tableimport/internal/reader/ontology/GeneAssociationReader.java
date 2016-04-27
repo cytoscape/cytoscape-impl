@@ -152,7 +152,7 @@ public class GeneAssociationReader extends AbstractTask implements CyTableReader
 		}
 		
 		BufferedReader bufRd = new BufferedReader(new InputStreamReader(is, Charset.forName("UTF-8").newDecoder()));
-		String line = null;
+		String line;
 		String[] parts;
 
 		while ((line = bufRd.readLine()) != null) {

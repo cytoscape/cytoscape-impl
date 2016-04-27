@@ -116,7 +116,7 @@ public class URLImageCustomGraphics <ImageCustomGraphicLayer>
 	private void buildCustomGraphics(BufferedImage targetImg) {
 		layers.clear();
 
-		Rectangle2D bound = null;
+		Rectangle2D bound;
 		width = targetImg.getWidth();
 		height = targetImg.getHeight();
 
