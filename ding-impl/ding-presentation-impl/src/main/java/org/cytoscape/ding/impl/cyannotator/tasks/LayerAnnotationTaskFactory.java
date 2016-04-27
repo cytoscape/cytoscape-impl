@@ -69,7 +69,6 @@ public class LayerAnnotationTaskFactory implements NetworkViewLocationTaskFactor
 				this.newZorder = 0;
 			else if (this.newZorder > canvas.getComponentCount()-1)
 				this.newZorder = canvas.getComponentCount()-1;
-
 			return true;
 		}
 		return false;

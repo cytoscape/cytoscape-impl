@@ -411,8 +411,7 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 			argMap.put(PARENT_ID, parent.getUUID().toString());
 
 		int zOrder = canvas.getComponentZOrder(getComponent());
-		if (zOrder != 0)
-			argMap.put(Z, Integer.toString(zOrder));
+		argMap.put(Z, Integer.toString(zOrder));
 
 		return argMap;
 	}
