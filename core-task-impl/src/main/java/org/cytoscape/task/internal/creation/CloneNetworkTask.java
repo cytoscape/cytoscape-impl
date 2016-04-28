@@ -266,12 +266,16 @@ public class CloneNetworkTask extends AbstractCreationTask implements Observable
 		else {
 			// If we're not collapsed, we need to clone the group node and it's edges
 			CyNode groupNode = origGroup.getGroupNode();
-			((CySubNetwork)origNet).addNode(groupNode);
-			cloneNode(origNet, newNet, groupNode);
-			// Now remove it
-			((CySubNetwork)origNet).removeNodes(Collections.singletonList(groupNode));
 
-			// TODO: What about non-meta edges?
+			// If the node already exists, we shouldn't need to do anything
+			if (!origNet.containsNode(groupNode)) {
+				((CySubNetwork)origNet).addNode(groupNode);
+				cloneNode(origNet, newNet, groupNode);
+				// Now remove it
+				((CySubNetwork)origNet).removeNodes(Collections.singletonList(groupNode));
+
+				// TODO: What about non-meta edges?
+			}
 		}
 
 		// Get the list of nodes for the group
