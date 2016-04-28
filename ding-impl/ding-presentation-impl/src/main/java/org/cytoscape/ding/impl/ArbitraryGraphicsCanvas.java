@@ -326,7 +326,7 @@ public class ArbitraryGraphicsCanvas extends DingCanvas implements ViewportChang
 		Component[] components = getComponents();
 
 		// no components, outta here
-		if (components.length == 0)
+		if (components.length == 0 || m_componentToPointMap == null)
 			return false;
 
 		// interate through the components

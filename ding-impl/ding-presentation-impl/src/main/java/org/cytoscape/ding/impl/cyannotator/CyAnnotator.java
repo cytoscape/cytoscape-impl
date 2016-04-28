@@ -175,7 +175,7 @@ public class CyAnnotator {
 					arrowList.add(argMap);
 					continue;
 				}
-	
+
 				Annotation a = annotationFactoryManager.createAnnotation(type,view,argMap);
 				if (a == null || !(a instanceof DingAnnotation))
 					continue;
@@ -193,9 +193,11 @@ public class CyAnnotator {
 
 				if (argMap.containsKey(Annotation.Z)) {
 					int zOrder = Integer.parseInt(argMap.get(Annotation.Z));
-					if (!zOrderMap.containsKey(canvas))
-						zOrderMap.put(canvas, new TreeMap<>());
-					zOrderMap.get(canvas).put(zOrder,annotation);
+					if (zOrder >= 0) {
+						if (!zOrderMap.containsKey(canvas))
+							zOrderMap.put(canvas, new TreeMap<>());
+						zOrderMap.get(canvas).put(zOrder,annotation);
+					}
 				}
 
 				// Now that we've added the annotation, update
@@ -226,9 +228,11 @@ public class CyAnnotator {
 
 					if (argMap.containsKey(Annotation.Z)) {
 						int zOrder = Integer.parseInt(argMap.get(Annotation.Z	));
-						if (!zOrderMap.containsKey(canvas))
-							zOrderMap.put(canvas, new TreeMap<>());
-						zOrderMap.get(canvas).put(zOrder,arrow);
+						if (zOrder >= 0) {
+							if (!zOrderMap.containsKey(canvas))
+								zOrderMap.put(canvas, new TreeMap<>());
+							zOrderMap.get(canvas).put(zOrder,arrow);
+						}
 					}
 
 					addAnnotation(arrow);
@@ -240,6 +244,7 @@ public class CyAnnotator {
 			// We use a TreeMap so that the keys (the zOrder are ordered)
 			for (Map<Integer, DingAnnotation> map: zOrderMap.values()) {
 				for (Integer zOrder: map.keySet()) {
+					// System.out.println("zOrder = "+zOrder);
 					DingAnnotation a = map.get(zOrder);
 					if (a.getCanvas() != null)
 						a.getCanvas().setComponentZOrder(a.getComponent(), zOrder);
