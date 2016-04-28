@@ -327,19 +327,23 @@ public class CloneNetworkTask extends AbstractCreationTask implements Observable
 		addColumns(origGroupNet, newGroupNet, CyNetwork.class, CyNetwork.HIDDEN_ATTRS);
 		addColumns(origGroupNet, newGroupNet, CyNode.class, CyNetwork.HIDDEN_ATTRS);
 
-		Long groupNetworkSUID = origGroup.getGroupNetwork().getSUID();
+		Long groupNetworkSUID = origGroupNet.getSUID();
 		Dimension d = GroupUtils.getPosition(origNet, origGroup, 
 		                                     groupNetworkSUID, CyNetwork.class);
-		GroupUtils.initializePositions(newNet, newGroup, groupNetworkSUID, CyNetwork.class);
-		GroupUtils.updatePosition(newNet, newGroup, groupNetworkSUID, CyNetwork.class, d);
+		if (d != null) {
+			GroupUtils.initializePositions(newNet, newGroup, groupNetworkSUID, CyNetwork.class);
+			GroupUtils.updatePosition(newNet, newGroup, groupNetworkSUID, CyNetwork.class, d);
+		}
 
 		// Clone the node table
 		for (CyNode node: origGroup.getNodeList()) {
 			Long nodeSUID = node.getSUID();
 			d = GroupUtils.getPosition(origNet, origGroup, nodeSUID, CyNode.class);
 			// System.out.println("Position of node "+node+" is "+d);
-			GroupUtils.initializePositions(newNet, newGroup, orig2NewNodeMap.get(node).getSUID(), CyNode.class);
-			GroupUtils.updatePosition(newNet, newGroup, orig2NewNodeMap.get(node).getSUID(), CyNode.class, d);
+			if (d != null) {
+				GroupUtils.initializePositions(newNet, newGroup, orig2NewNodeMap.get(node).getSUID(), CyNode.class);
+				GroupUtils.updatePosition(newNet, newGroup, orig2NewNodeMap.get(node).getSUID(), CyNode.class, d);
+			}
 		}
 	}
 
@@ -398,10 +402,13 @@ public class CloneNetworkTask extends AbstractCreationTask implements Observable
 	}
 
 	private void copyColumn(CyColumn col, CyTable subTable) {
-		if (List.class.isAssignableFrom(col.getType()))
-			subTable.createListColumn(col.getName(), col.getListElementType(), false);
-		else
-			subTable.createColumn(col.getName(), col.getType(), false);	
+		CyColumn checkCol= subTable.getColumn(col.getName());
+		if (checkCol == null) {
+			if (List.class.isAssignableFrom(col.getType()))
+				subTable.createListColumn(col.getName(), col.getListElementType(), false);
+			else
+				subTable.createColumn(col.getName(), col.getType(), false);	
+		}
 	}
 	
 	private void cloneRow(final CyNetwork newNet, final Class<? extends CyIdentifiable> tableType, final CyRow from,

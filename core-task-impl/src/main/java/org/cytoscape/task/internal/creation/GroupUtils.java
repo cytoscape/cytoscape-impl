@@ -87,6 +87,9 @@ public class GroupUtils {
 
 	public static void initializePositions(CyNetwork net, CyGroup group, Long suid, Class tableClass) {
 		CyTable table = group.getGroupNetwork().getTable(tableClass, CyNetwork.HIDDEN_ATTRS);
+		createListColumnIfNeeded(table, NETWORK_SUID_ATTR, Long.class);
+		createListColumnIfNeeded(table, X_LOCATION_ATTR, Double.class);
+		createListColumnIfNeeded(table, Y_LOCATION_ATTR, Double.class);
 		CyRow row = table.getRow(suid);
 		row.set(NETWORK_SUID_ATTR, new ArrayList<Long>());
 		row.set(X_LOCATION_ATTR, new ArrayList<Double>());
@@ -162,5 +165,11 @@ public class GroupUtils {
 		Dimension d = new Dimension();
 		d.setSize(xLocations.get(index), yLocations.get(index));
 		return d;
+	}
+
+	private static void createListColumnIfNeeded(CyTable table, String column, Class<?> clazz) {
+		if (table.getColumn(column) != null) 
+			return;
+		table.createListColumn(column, clazz, false);
 	}
 }
