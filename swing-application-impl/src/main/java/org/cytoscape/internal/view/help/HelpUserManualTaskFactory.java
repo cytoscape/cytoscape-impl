@@ -25,32 +25,23 @@ package org.cytoscape.internal.view.help;
  */
 
 
-import org.cytoscape.application.swing.CyHelpBroker;
-import org.cytoscape.application.swing.CySwingApplication;
-import org.cytoscape.work.AbstractTask;
-import org.cytoscape.work.TaskMonitor;
-
-import javax.help.CSH;
-import java.awt.event.ActionEvent;
+import org.cytoscape.application.CyVersion;
+import org.cytoscape.util.swing.OpenBrowser;
+import org.cytoscape.work.AbstractTaskFactory;
+import org.cytoscape.work.TaskIterator;
 
 
-/**
- * Really just a wrapper for the CSH.DisplayHelpFromSource action.
- */
-public class HelpContentsTask extends AbstractTask {
-	private CSH.DisplayHelpFromSource csh; 
-	private CySwingApplication app;
+public class HelpUserManualTaskFactory extends AbstractTaskFactory {
 
-	public HelpContentsTask(CyHelpBroker help, CySwingApplication app) {
-		csh = new CSH.DisplayHelpFromSource(help.getHelpBroker());
-		this.app = app;
+	private OpenBrowser openBrowser;
+	private final CyVersion cyVersion;
+
+	public HelpUserManualTaskFactory(OpenBrowser openBrowser,  CyVersion cyVersion) {
+		this.openBrowser = openBrowser;
+		this.cyVersion = cyVersion;
 	}
 
-	public void run(TaskMonitor tm) {
-		csh.actionPerformed(new ActionEvent(app.getJFrame(),0,"help"));
-	}
-
-	@Override
-	public void cancel() {
-	}
+	public TaskIterator createTaskIterator() {
+		return new TaskIterator(new HelpUserManualTask(openBrowser, cyVersion));
+	} 
 }

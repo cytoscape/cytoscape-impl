@@ -86,7 +86,7 @@ import org.cytoscape.internal.view.ToolBarEnableUpdater;
 import org.cytoscape.internal.view.help.ArrangeTaskFactory;
 import org.cytoscape.internal.view.help.HelpAboutTaskFactory;
 import org.cytoscape.internal.view.help.HelpContactHelpDeskTaskFactory;
-import org.cytoscape.internal.view.help.HelpContentsTaskFactory;
+import org.cytoscape.internal.view.help.HelpUserManualTaskFactory;
 import org.cytoscape.internal.view.help.HelpReportABugTaskFactory;
 import org.cytoscape.model.events.NetworkDestroyedListener;
 import org.cytoscape.property.CyProperty;
@@ -222,7 +222,7 @@ public class CyActivator extends AbstractCyActivator {
 		
 		SettingsAction settingsAction = new SettingsAction(layoutSettingsManager, serviceRegistrar);
 
-		HelpContentsTaskFactory helpContentsTaskFactory = new HelpContentsTaskFactory(cyHelpBroker, cytoscapeDesktop);
+		HelpUserManualTaskFactory helpUserManualTaskFactory = new HelpUserManualTaskFactory(openBrowser, cyVersion);
 		HelpContactHelpDeskTaskFactory helpContactHelpDeskTaskFactory = new HelpContactHelpDeskTaskFactory(openBrowser);
 		HelpReportABugTaskFactory helpReportABugTaskFactory = new HelpReportABugTaskFactory(openBrowser, cyVersion);
 		HelpAboutTaskFactory helpAboutTaskFactory = new HelpAboutTaskFactory(cyVersion, cytoscapeDesktop);
@@ -278,10 +278,10 @@ public class CyActivator extends AbstractCyActivator {
 		{
 			Properties props = new Properties();
 			props.setProperty(PREFERRED_MENU, "Help");
-			props.setProperty(TITLE, "Contents...");
+			props.setProperty(TITLE, "User Manual");
 			props.setProperty(MENU_GRAVITY, "1.0");
-			props.setProperty(TOOLTIP, "Show Help Contents...");
-			registerService(bc, helpContentsTaskFactory, TaskFactory.class, props);
+			props.setProperty(TOOLTIP, "Show User Manual");
+			registerService(bc, helpUserManualTaskFactory, TaskFactory.class, props);
 		}
 		{
 			Properties props = new Properties();

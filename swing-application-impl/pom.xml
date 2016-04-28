@@ -82,32 +82,6 @@
 					</execution>
 				</executions>
 			</plugin>
-		   <plugin>
-			 <groupId>org.apache.maven.plugins</groupId>
-			 <artifactId>maven-dependency-plugin</artifactId>
-			 <executions>
-			   <execution>
-				 <id>copy-javahelp</id>
-				 <phase>process-resources</phase>
-				 <goals>
-				   <goal>unpack</goal>
-				 </goals>
-				 <configuration>
-				   <artifactItems>
-					 <artifactItem>
-					   <groupId>org.cytoscape</groupId>
-					   <artifactId>help-impl</artifactId>
-					   <version>${project.version}</version>
-					   <type>zip</type>
-					   <classifier>javahelp</classifier>
-					   <overWrite>true</overWrite>
-					   <outputDirectory>target/help/cytoscape/help</outputDirectory>
-					 </artifactItem>
-				   </artifactItems>
-				 </configuration>
-			   </execution>
-			 </executions>
-		   </plugin>
 		</plugins>
 		<pluginManagement>
 			<plugins>

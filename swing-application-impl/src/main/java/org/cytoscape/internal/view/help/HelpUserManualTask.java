@@ -25,23 +25,26 @@ package org.cytoscape.internal.view.help;
  */
 
 
-import org.cytoscape.application.swing.CyHelpBroker;
-import org.cytoscape.application.swing.CySwingApplication;
-import org.cytoscape.work.AbstractTaskFactory;
-import org.cytoscape.work.TaskIterator;
+import org.cytoscape.application.CyVersion;
+import org.cytoscape.util.swing.OpenBrowser;
+import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.TaskMonitor;
 
 
-public class HelpContentsTaskFactory extends AbstractTaskFactory {
+public class HelpUserManualTask extends AbstractTask {
+	private String manualURL = "http://manual.cytoscape.org/en/";
+	private OpenBrowser openBrowser;
+	private final CyVersion cyVersion;
 
-	private CyHelpBroker help;
-	private CySwingApplication app;
-
-	public HelpContentsTaskFactory(CyHelpBroker help, CySwingApplication app) {
-		this.help = help;
-		this.app = app;
+	public HelpUserManualTask(OpenBrowser openBrowser,  CyVersion cyVersion) {
+		this.openBrowser = openBrowser;
+		this.cyVersion = cyVersion;
 	}
 
-	public TaskIterator createTaskIterator() {
-		return new TaskIterator(new HelpContentsTask(help, app));
-	} 
+	public void run(TaskMonitor tm) {
+		openBrowser.openURL(manualURL + 
+				cyVersion.getMajorVersion() + "." +
+				cyVersion.getMinorVersion() + "." +
+				cyVersion.getBugFixVersion());
+	}
 }
