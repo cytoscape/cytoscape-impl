@@ -260,6 +260,8 @@ public class CloneNetworkTask extends AbstractCreationTask implements Observable
 		List<CyNode> nodeList = new ArrayList<CyNode>();
 		List<CyEdge> edgeList = new ArrayList<CyEdge>();
 
+		// Check to see if the group node is already in the network
+		boolean groupNodeExists = origNet.containsNode(origGroup.getGroupNode());
 		boolean collapsed = origGroup.isCollapsed(origNet);
 		if (collapsed)
 			origGroup.expand(origNet);
@@ -268,7 +270,7 @@ public class CloneNetworkTask extends AbstractCreationTask implements Observable
 			CyNode groupNode = origGroup.getGroupNode();
 
 			// If the node already exists, we shouldn't need to do anything
-			if (!origNet.containsNode(groupNode)) {
+			if (!groupNodeExists) {
 				((CySubNetwork)origNet).addNode(groupNode);
 				cloneNode(origNet, newNet, groupNode);
 				// Now remove it
@@ -303,9 +305,11 @@ public class CloneNetworkTask extends AbstractCreationTask implements Observable
 		// We need to update all of our positions hints
 		cloneGroupTables(origNet, newNet, origGroup, newGroup);
 
-		// Because we're providing a group node with a network pointer, the groups code
-		// is going to think we're coming from a session.  We need to remove the group node
-		newNet.removeNodes(Collections.singletonList(newNode));
+		if (!groupNodeExists) {
+			// Because we're providing a group node with a network pointer, the groups code
+			// is going to think we're coming from a session.  We need to remove the group node
+			newNet.removeNodes(Collections.singletonList(newNode));
+		}
 
 		if (collapsed) {
 			//  ...and collapse it...
