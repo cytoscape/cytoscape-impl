@@ -57,11 +57,7 @@ public class AnnotationManagerImpl implements AnnotationManager {
 
 		if (!SwingUtilities.isEventDispatchThread()) {
 			try {
-				SwingUtilities.invokeAndWait(new Runnable() {
-					public void run() {
-						addAnnotation(annotation);
-					}
-				});
+				SwingUtilities.invokeAndWait(() -> addAnnotation(annotation));
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -86,11 +82,7 @@ public class AnnotationManagerImpl implements AnnotationManager {
 	public void removeAnnotation(final Annotation annotation) {
 		if (!SwingUtilities.isEventDispatchThread()) {
 			try {
-				SwingUtilities.invokeAndWait(new Runnable() {
-					public void run() {
-						removeAnnotation(annotation);
-					}
-				});
+				SwingUtilities.invokeAndWait(() -> removeAnnotation(annotation));
 			} catch (Exception e) {
 				e.printStackTrace();
 			}

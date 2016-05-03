@@ -110,12 +110,7 @@ class SwingTaskMonitor implements TaskMonitor {
 
 	public void open() {
 		if (!SwingUtilities.isEventDispatchThread()) {
-			SwingUtilities.invokeLater(new Runnable() {
-				@Override
-				public void run() {
-					open();
-				}
-			});
+			SwingUtilities.invokeLater(() -> open());
 			return;
 		}
 
@@ -124,16 +119,8 @@ class SwingTaskMonitor implements TaskMonitor {
 				return;
 
 			dialog = new TaskDialog(parent, serviceRegistrar);
-			dialog.addPropertyChangeListener(TaskDialog.CLOSE_EVENT, new PropertyChangeListener() {
-				public void propertyChange(PropertyChangeEvent e) {
-					close();
-				}
-			});
-			dialog.addPropertyChangeListener(TaskDialog.CANCEL_EVENT, new PropertyChangeListener() {
-				public void propertyChange(PropertyChangeEvent e) {
-					cancel();
-				}
-			});
+			dialog.addPropertyChangeListener(TaskDialog.CLOSE_EVENT, e -> close());
+			dialog.addPropertyChangeListener(TaskDialog.CANCEL_EVENT, e -> cancel());
 
 			if (firstTitle != null && firstTitle != title /* don't need to call firstTitle.equals() */) {
 				dialog.setTaskTitle(firstTitle);
@@ -171,12 +158,7 @@ class SwingTaskMonitor implements TaskMonitor {
 	 */
 	public void showDialog(final boolean sd) {
 		if (!SwingUtilities.isEventDispatchThread()) {
-			SwingUtilities.invokeLater(new Runnable() {
-				@Override
-				public void run() {
-					showDialog(sd);
-				}
-			});
+			SwingUtilities.invokeLater(() -> showDialog(sd));
 			return;
 		}
 
@@ -193,12 +175,7 @@ class SwingTaskMonitor implements TaskMonitor {
 
 	public void close() {
 		if (!SwingUtilities.isEventDispatchThread()) {
-			SwingUtilities.invokeLater(new Runnable() {
-				@Override
-				public void run() {
-					close();
-				}
-			});
+			SwingUtilities.invokeLater(() -> close());
 			return;
 		}
 
@@ -216,11 +193,7 @@ class SwingTaskMonitor implements TaskMonitor {
 		// to prevent Swing from freezing if the Tasks's cancel
 		// method takes too long to finish
 		cancelled = true;
-		Runnable cancel = new Runnable() {
-			public void run() {
-				task.cancel();
-			}
-		};
+		Runnable cancel = () -> task.cancel();
 		cancelExecutorService.submit(cancel);
 		
 		/* Do NOT close the dialog here; dialog closes when the task terminates itself after its cancel method is invoked */
@@ -232,12 +205,7 @@ class SwingTaskMonitor implements TaskMonitor {
 
 	public void setTitle(final String title) {
 		if (!SwingUtilities.isEventDispatchThread()) {
-			SwingUtilities.invokeLater(new Runnable() {
-				@Override
-				public void run() {
-					setTitle(title);
-				}
-			});
+			SwingUtilities.invokeLater(() -> setTitle(title));
 			return;
 		}
 
@@ -271,12 +239,7 @@ class SwingTaskMonitor implements TaskMonitor {
 
 	public void setProgress(final double newProgress) {
 		if (!SwingUtilities.isEventDispatchThread()) {
-			SwingUtilities.invokeLater(new Runnable() {
-				@Override
-				public void run() {
-					setProgress(newProgress);
-				}
-			});
+			SwingUtilities.invokeLater(() -> setProgress(newProgress));
 			return;
 		}
 		if ( newProgress < 0.0 ) {
@@ -296,12 +259,7 @@ class SwingTaskMonitor implements TaskMonitor {
 
 	public void showException(final Exception exception) {
 		if (!SwingUtilities.isEventDispatchThread()) {
-			SwingUtilities.invokeLater(new Runnable() {
-				@Override
-				public void run() {
-					showException(exception);
-				}
-			});
+			SwingUtilities.invokeLater(() -> showException(exception));
 			return;
 		}
 		
@@ -320,12 +278,7 @@ class SwingTaskMonitor implements TaskMonitor {
 
 	private void showStatusMessage(final TaskMonitor.Level level, final String statusMessage) {
 		if (!SwingUtilities.isEventDispatchThread()) {
-			SwingUtilities.invokeLater(new Runnable() {
-				@Override
-				public void run() {
-					showStatusMessage(level, statusMessage);
-				}
-			});
+			SwingUtilities.invokeLater(() -> showStatusMessage(level, statusMessage));
 			return;
 		}
 		this.statusMessage = statusMessage;

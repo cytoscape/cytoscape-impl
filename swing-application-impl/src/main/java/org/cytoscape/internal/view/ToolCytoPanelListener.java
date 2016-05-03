@@ -56,16 +56,13 @@ public class ToolCytoPanelListener implements CytoPanelStateChangedListener {
 
 		final CytoPanelState newState = e.getNewState();
 		
-		SwingUtilities.invokeLater(new Runnable() {
-			@Override
-			public void run() {
-				if (newState == CytoPanelState.DOCK)
-					west.addComponentToSouth(split);
-				else
-					west.addComponentToSouth(new JLabel());
+		SwingUtilities.invokeLater(() -> {
+            if (newState == CytoPanelState.DOCK)
+                west.addComponentToSouth(split);
+            else
+                west.addComponentToSouth(new JLabel());
 
-				west.validate();
-			}
-		});
+            west.validate();
+        });
 	}
 }

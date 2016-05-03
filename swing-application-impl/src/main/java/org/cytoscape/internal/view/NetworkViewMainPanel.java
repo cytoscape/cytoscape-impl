@@ -657,22 +657,19 @@ public class NetworkViewMainPanel extends JPanel {
 			// Now we can create the comparison panel
 			cp = new NetworkViewComparisonPanel(gridViewToggleModel, containersToCompare, currentView, serviceRegistrar);
 			
-			cp.getDetachComparedViewsButton().addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					final Component currentCard = getCurrentCard();
-					
-					if (currentCard instanceof NetworkViewComparisonPanel) {
-						final NetworkViewComparisonPanel cp = (NetworkViewComparisonPanel) currentCard;
-						final Set<CyNetworkView>views = cp.getAllNetworkViews();
-						
-						// End comparison first
-						endComparison(cp);
-						// Then detach the views
-						detachNetworkViews(views);
-					}
-				}
-			});
+			cp.getDetachComparedViewsButton().addActionListener(e -> {
+                final Component currentCard = getCurrentCard();
+                
+                if (currentCard instanceof NetworkViewComparisonPanel) {
+                    final NetworkViewComparisonPanel cp1 = (NetworkViewComparisonPanel) currentCard;
+                    final Set<CyNetworkView> views1 = cp1.getAllNetworkViews();
+                    
+                    // End comparison first
+                    endComparison(cp1);
+                    // Then detach the views
+                    detachNetworkViews(views1);
+                }
+            });
 			
 			cp.addPropertyChangeListener("currentNetworkView", (PropertyChangeEvent evt) -> {
 				final CyNetworkView newCurrentView = (CyNetworkView) evt.getNewValue();

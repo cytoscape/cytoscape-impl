@@ -60,24 +60,16 @@ public class EdgeBendPropertyEditor extends com.l2fprod.common.beans.editor.Abst
 		((JPanel) editor).add(button = ComponentFactory.Helper.getFactory().createMiniButton());
 		button.setText(IconManager.ICON_ELLIPSIS_H);
 		button.setFont(iconManager.getIconFont(13.0f));
-		button.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				editBend();
-			}
-		});
+		button.addActionListener(e -> editBend());
 		
 		((JPanel) editor).add(button = ComponentFactory.Helper.getFactory().createMiniButton());
 		button.setText(IconManager.ICON_REMOVE);
 		button.setFont(iconManager.getIconFont(13.0f));
-		button.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				Bend old = bend;
-				bend = null;
-				firePropertyChange(old, null);
-			}
-		});
+		button.addActionListener(e -> {
+            Bend old = bend;
+            bend = null;
+            firePropertyChange(old, null);
+        });
 	}
 
 	@Override

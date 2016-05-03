@@ -65,25 +65,17 @@ public class CyObjectPositionPropertyEditor extends	AbstractPropertyEditor {
 		((JPanel) editor).add(button = ComponentFactory.Helper.getFactory().createMiniButton());
 		button.setText(IconManager.ICON_ELLIPSIS_H);
 		button.setFont(iconManager.getIconFont(13.0f));
-		button.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				editObjectPosition();
-			}
-		});
+		button.addActionListener(e -> editObjectPosition());
 		
 		((JPanel) editor).add(button = ComponentFactory.Helper.getFactory().createMiniButton());
 		button.setText(IconManager.ICON_REMOVE);
 		button.setFont(iconManager.getIconFont(13.0f));
-		button.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				ObjectPosition old = position;
-				label.setValue(null);
-				position = null;
-				firePropertyChange(old, null);
-			}
-		});
+		button.addActionListener(e -> {
+            ObjectPosition old = position;
+            label.setValue(null);
+            position = null;
+            firePropertyChange(old, null);
+        });
 	}
 
 	@Override

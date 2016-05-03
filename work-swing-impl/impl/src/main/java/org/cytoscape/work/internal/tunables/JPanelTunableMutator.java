@@ -434,12 +434,7 @@ public class JPanelTunableMutator extends AbstractTunableInterceptor<GUITunableH
 				if (displayState.equalsIgnoreCase("uncollapsed"))
 					cp.setCollapsed(false);	
 			
-				cp.addPropertyChangeListener(new PropertyChangeListener() {
-					@Override
-					public void propertyChange(PropertyChangeEvent evt) {
-						repackEnclosingDialog(cp);
-					}
-				});
+				cp.addPropertyChangeListener(evt -> repackEnclosingDialog(cp));
 				
 				return cp;
 			} else {

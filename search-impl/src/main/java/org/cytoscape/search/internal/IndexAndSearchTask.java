@@ -140,14 +140,11 @@ public class IndexAndSearchTask extends AbstractNetworkTask {
 			taskMonitor.setTitle("Search Finished");
 			taskMonitor.setProgress(1.0);
 
-			SwingUtilities.invokeLater(new Runnable() {
-				@Override
-				public void run() {
-					JOptionPane
-					.showMessageDialog(null, "Could not find any matches.", "No Match", JOptionPane.WARNING_MESSAGE);
-					logger.warn("Could not find any matches.");
-				}
-			});
+			SwingUtilities.invokeLater(() -> {
+                JOptionPane
+                .showMessageDialog(null, "Could not find any matches.", "No Match", JOptionPane.WARNING_MESSAGE);
+                logger.warn("Could not find any matches.");
+            });
 			return;
 		}
 

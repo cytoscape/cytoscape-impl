@@ -415,14 +415,7 @@ public class WebQuerier {
 						}
 						
 						// Sort releases by version number
-						Collections.sort(releases, new Comparator<WebApp.Release>() {
-
-							@Override
-							public int compare(Release first, Release second) {
-								return compareVersions(second.getReleaseVersion(), first.getReleaseVersion());
-							}
-							
-						});
+						Collections.sort(releases, (first, second) -> compareVersions(second.getReleaseVersion(), first.getReleaseVersion()));
 					}
 					
 					webApp.setReleases(releases);

@@ -169,20 +169,14 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 		updateEnableState();
 		
 		if (browserTable != null) {
-			browserTable.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
-				@Override
-				public void valueChanged(final ListSelectionEvent e) {
-					if (!e.getValueIsAdjusting())
-						updateEnableState(formulaBuilderButton);
-				}
-			});
-			browserTable.getColumnModel().getSelectionModel().addListSelectionListener(new ListSelectionListener() {
-				@Override
-				public void valueChanged(final ListSelectionEvent e) {
-					if (!e.getValueIsAdjusting())
-						updateEnableState(formulaBuilderButton);
-				}
-			});
+			browserTable.getSelectionModel().addListSelectionListener(e -> {
+                if (!e.getValueIsAdjusting())
+                    updateEnableState(formulaBuilderButton);
+            });
+			browserTable.getColumnModel().getSelectionModel().addListSelectionListener(e -> {
+                if (!e.getValueIsAdjusting())
+                    updateEnableState(formulaBuilderButton);
+            });
 		}
 	}
 
@@ -345,12 +339,7 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 
 		final JMenuItem jMenuItemStringAttribute = new JMenuItem();
 		jMenuItemStringAttribute.setText("String");
-		jMenuItemStringAttribute.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				createNewAttribute("String", isShared);
-			}
-		});
+		jMenuItemStringAttribute.addActionListener(e -> createNewAttribute("String", isShared));
 
 		return jMenuItemStringAttribute;
 	}
@@ -358,12 +347,7 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 	private JMenuItem getJMenuItemIntegerAttribute(final boolean isShared) {
 		final JMenuItem jMenuItemIntegerAttribute = new JMenuItem();
 		jMenuItemIntegerAttribute.setText("Integer");
-		jMenuItemIntegerAttribute.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				createNewAttribute("Integer", isShared);
-			}
-		});
+		jMenuItemIntegerAttribute.addActionListener(e -> createNewAttribute("Integer", isShared));
 
 		return jMenuItemIntegerAttribute;
 	}
@@ -371,24 +355,14 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 	private JMenuItem getJMenuItemLongIntegerAttribute(final boolean isShared) {
 		final JMenuItem jMenuItemLongIntegerAttribute = new JMenuItem();
 		jMenuItemLongIntegerAttribute.setText("Long Integer");
-		jMenuItemLongIntegerAttribute.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				createNewAttribute("Long Integer", isShared);
-			}
-		});
+		jMenuItemLongIntegerAttribute.addActionListener(e -> createNewAttribute("Long Integer", isShared));
 		return jMenuItemLongIntegerAttribute;
 	}
 
 	private JMenuItem getJMenuItemFloatingPointAttribute(final boolean isShared) {
 		final JMenuItem jMenuItemFloatingPointAttribute = new JMenuItem();
 		jMenuItemFloatingPointAttribute.setText("Floating Point");
-		jMenuItemFloatingPointAttribute.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				createNewAttribute("Floating Point", isShared);
-			}
-		});
+		jMenuItemFloatingPointAttribute.addActionListener(e -> createNewAttribute("Floating Point", isShared));
 
 		return jMenuItemFloatingPointAttribute;
 	}
@@ -396,12 +370,7 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 	private JMenuItem getJMenuItemBooleanAttribute(final boolean isShared) {
 		final JMenuItem jMenuItemBooleanAttribute = new JMenuItem();
 		jMenuItemBooleanAttribute.setText("Boolean");
-		jMenuItemBooleanAttribute.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				createNewAttribute("Boolean", isShared);
-			}
-		});
+		jMenuItemBooleanAttribute.addActionListener(e -> createNewAttribute("Boolean", isShared));
 
 		return jMenuItemBooleanAttribute;
 	}
@@ -409,12 +378,7 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 	private JMenuItem getJMenuItemStringListAttribute(final boolean isShared) {
 		final JMenuItem jMenuItemStringListAttribute = new JMenuItem();
 		jMenuItemStringListAttribute.setText("String");
-		jMenuItemStringListAttribute.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				createNewAttribute("String List", isShared);
-			}
-		});
+		jMenuItemStringListAttribute.addActionListener(e -> createNewAttribute("String List", isShared));
 
 		return jMenuItemStringListAttribute;
 	}
@@ -422,12 +386,7 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 	private JMenuItem getJMenuItemIntegerListAttribute(final boolean isShared) {
 		final JMenuItem jMenuItemIntegerListAttribute = new JMenuItem();
 		jMenuItemIntegerListAttribute.setText("Integer");
-		jMenuItemIntegerListAttribute.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				createNewAttribute("Integer List", isShared);
-			}
-		});
+		jMenuItemIntegerListAttribute.addActionListener(e -> createNewAttribute("Integer List", isShared));
 
 		return jMenuItemIntegerListAttribute;
 	}
@@ -435,12 +394,7 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 	private JMenuItem getJMenuItemLongIntegerListAttribute(final boolean isShared) {
 		final JMenuItem jMenuItemLongIntegerListAttribute = new JMenuItem();
 		jMenuItemLongIntegerListAttribute.setText("Long Integer");
-		jMenuItemLongIntegerListAttribute.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				createNewAttribute("Long Integer List", isShared);
-			}
-		});
+		jMenuItemLongIntegerListAttribute.addActionListener(e -> createNewAttribute("Long Integer List", isShared));
 
 		return jMenuItemLongIntegerListAttribute;
 	}
@@ -448,12 +402,7 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 	private JMenuItem getJMenuItemFloatingPointListAttribute(final boolean isShared) {
 		final JMenuItem jMenuItemFloatingPointListAttribute = new JMenuItem();
 		jMenuItemFloatingPointListAttribute.setText("Floating Point");
-		jMenuItemFloatingPointListAttribute.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				createNewAttribute("Floating Point List", isShared);
-			}
-		});
+		jMenuItemFloatingPointListAttribute.addActionListener(e -> createNewAttribute("Floating Point List", isShared));
 
 		return jMenuItemFloatingPointListAttribute;
 	}
@@ -461,12 +410,7 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 	private JMenuItem getJMenuItemBooleanListAttribute(final boolean isShared) {
 		final JMenuItem jMenuItemBooleanListAttribute = new JMenuItem();
 		jMenuItemBooleanListAttribute.setText("Boolean");
-		jMenuItemBooleanListAttribute.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				createNewAttribute("Boolean List", isShared);
-			}
-		});
+		jMenuItemBooleanListAttribute.addActionListener(e -> createNewAttribute("Boolean List", isShared));
 
 		return jMenuItemBooleanListAttribute;
 	}
@@ -502,17 +446,14 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 			selectButton.setToolTipText("Show Columns");
 			styleButton(selectButton, iconMgr.getIconFont(ICON_FONT_SIZE));
 
-			selectButton.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(final ActionEvent e) {
-					if (browserTableModel != null) {
-						getColumnSelector().update(browserTableModel.getDataTable().getColumns(),
-								browserTable.getVisibleAttributeNames());
-						getColumnSelectorPopupMenu().pack();
-						getColumnSelectorPopupMenu().show(selectButton, 0, selectButton.getHeight());
-					}
-				}
-			});
+			selectButton.addActionListener(e -> {
+                if (browserTableModel != null) {
+                    getColumnSelector().update(browserTableModel.getDataTable().getColumns(),
+                            browserTable.getVisibleAttributeNames());
+                    getColumnSelectorPopupMenu().pack();
+                    getColumnSelectorPopupMenu().show(selectButton, 0, selectButton.getHeight());
+                }
+            });
 		}
 		
 		return selectButton;
@@ -596,13 +537,10 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 			styleButton(deleteAttributeButton, iconMgr.getIconFont(ICON_FONT_SIZE));
 			
 			// Create pop-up window for deletion
-			deleteAttributeButton.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(final ActionEvent e) {
-					removeAttribute();
-					updateEnableState();
-				}
-			});
+			deleteAttributeButton.addActionListener(e -> {
+                removeAttribute();
+                updateEnableState();
+            });
 		}
 
 		return deleteAttributeButton;
@@ -615,12 +553,7 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 			styleButton(deleteTableButton, iconMgr.getIconFont(ICON_FONT_SIZE / 2.0f));
 			
 			// Create pop-up window for deletion
-			deleteTableButton.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(final ActionEvent e) {
-					removeTable();
-				}
-			});
+			deleteTableButton.addActionListener(e -> removeTable());
 		}
 
 		return deleteTableButton;
@@ -683,13 +616,10 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 			createNewAttributeButton.setToolTipText("Create New Column");
 			styleButton(createNewAttributeButton, iconMgr.getIconFont(ICON_FONT_SIZE));
 			
-			createNewAttributeButton.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(final ActionEvent e) {
-					if (browserTableModel != null)
-						getCreateColumnMenu().show(createNewAttributeButton, 0, createNewAttributeButton.getHeight());
-				}
-			});
+			createNewAttributeButton.addActionListener(e -> {
+                if (browserTableModel != null)
+                    getCreateColumnMenu().show(createNewAttributeButton, 0, createNewAttributeButton.getHeight());
+            });
 			
 			createNewAttributeButton.setEnabled(false);
 		}

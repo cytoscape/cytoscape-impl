@@ -34,13 +34,11 @@ public class ShowInstalledAppsIfChangedTask extends AbstractTask {
 			// if an installed app's previous status has changed or can't be found
 			// show the installed apps tab in AppManagerDialog
 			if(app.getStatus() != appStatuses.get(app.getSha512Checksum())) {
-				SwingUtilities.invokeLater(new Runnable() {
-				    public void run() {
-				    	if (parent instanceof AppManagerDialog) {
-			        		((AppManagerDialog) parent).changeTab(1);
-			        	}
-				    }
-				});
+				SwingUtilities.invokeLater(() -> {
+                    if (parent instanceof AppManagerDialog) {
+                        ((AppManagerDialog) parent).changeTab(1);
+                    }
+                });
 				return;
 			}
 		}

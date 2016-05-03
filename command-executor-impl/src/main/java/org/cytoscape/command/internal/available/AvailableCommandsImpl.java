@@ -349,12 +349,7 @@ public class AvailableCommandsImpl implements AvailableCommands {
 	private void sort(final List<String> list) {
 		final Collator collator = Collator.getInstance(Locale.getDefault());
 		
-		Collections.sort(list, new Comparator<String>() {
-			@Override
-			public int compare(String s1, String s2) {
-				return collator.compare(s1, s2);
-			}
-		});
+		Collections.sort(list, (s1, s2) -> collator.compare(s1, s2));
 	}
 
 	class StaticTaskFactoryProvisioner {

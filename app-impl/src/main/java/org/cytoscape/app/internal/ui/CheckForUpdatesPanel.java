@@ -123,18 +123,10 @@ public class CheckForUpdatesPanel extends JPanel {
         manageUpdateSites = new JButton("Manage Sites...");
 
         installSelectedButton.setEnabled(false);
-        installSelectedButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
-            	installUpdates(getSelectedUpdates());
-            }
-        });
+        installSelectedButton.addActionListener(evt -> installUpdates(getSelectedUpdates()));
 
         installAllButton.setEnabled(false);
-        installAllButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
-            	installUpdates(updateManager.getUpdates());
-            }
-        });
+        installAllButton.addActionListener(evt -> installUpdates(updateManager.getUpdates()));
 
         updatesTable.setModel(new DefaultTableModel(
             new Object [][] {
@@ -161,11 +153,7 @@ public class CheckForUpdatesPanel extends JPanel {
         descriptionTextArea.setFocusable(false);
         descriptionScrollPane.setViewportView(descriptionTextArea);
 
-        manageUpdateSites.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
-                manageUpdateSitesActionPerformed(evt);
-            }
-        });
+        manageUpdateSites.addActionListener(evt -> manageUpdateSitesActionPerformed(evt));
 
         LookAndFeelUtil.equalizeSize(installSelectedButton, installAllButton);
         
@@ -207,38 +195,34 @@ public class CheckForUpdatesPanel extends JPanel {
 				)
 		);
         
-        updateManager.addUpdatesChangedListener(new UpdatesChangedListener() {
-			
-			@Override
-			public void updatesChanged(UpdatesChangedEvent event) {
+        updateManager.addUpdatesChangedListener(event -> {
 
-        		int updateCount = updateManager.getUpdates().size();
-        		updatesAvailableLabel.setText(updateCount + " " 
-        				+ (updateCount == 1 ? "update" : "updates") + " available.");
-        		
-        		Calendar lastUpdateCheckTime = updateManager.getLastUpdateCheckTime();
-        		
-        		int minute = lastUpdateCheckTime.get(Calendar.MINUTE);
-        		
-        		updateCheckTimeLabel.setText("Today, at " 
-        			+ (lastUpdateCheckTime.get(Calendar.HOUR) == 0 ? "12" : lastUpdateCheckTime.get(Calendar.HOUR)) + ":"
-        			+ (minute < 10 ? "0" : "") + minute + " "
-        			+ (lastUpdateCheckTime.get(Calendar.AM_PM) == Calendar.AM ? "am" : "pm"));
-        		
-				repopulateUpdatesTable();
+int updateCount = updateManager.getUpdates().size();
+updatesAvailableLabel.setText(updateCount + " " 
+                    + (updateCount == 1 ? "update" : "updates") + " available.");
 
-				// Enable/disable the update all button depending on update availability
-				if (event.getSource().getUpdates().size() > 0) {
-					if (!installAllButton.isEnabled()) {
-						installAllButton.setEnabled(true);
-					}
-				} else {
-					if (installAllButton.isEnabled()) {
-						installAllButton.setEnabled(false);
-					}
-				}
-			}
-		});
+Calendar lastUpdateCheckTime = updateManager.getLastUpdateCheckTime();
+
+int minute = lastUpdateCheckTime.get(Calendar.MINUTE);
+
+updateCheckTimeLabel.setText("Today, at " 
+                + (lastUpdateCheckTime.get(Calendar.HOUR) == 0 ? "12" : lastUpdateCheckTime.get(Calendar.HOUR)) + ":"
+                + (minute < 10 ? "0" : "") + minute + " "
+                + (lastUpdateCheckTime.get(Calendar.AM_PM) == Calendar.AM ? "am" : "pm"));
+
+            repopulateUpdatesTable();
+
+            // Enable/disable the update all button depending on update availability
+            if (event.getSource().getUpdates().size() > 0) {
+                if (!installAllButton.isEnabled()) {
+                    installAllButton.setEnabled(true);
+                }
+            } else {
+                if (installAllButton.isEnabled()) {
+                    installAllButton.setEnabled(false);
+                }
+            }
+        });
         
         installAllButton.setEnabled(true);
         
@@ -317,43 +301,39 @@ public class CheckForUpdatesPanel extends JPanel {
     }
     
     private void repopulateUpdatesTable() {
-    	SwingUtilities.invokeLater(new Runnable() {
-			@Override
-			public void run() {
-				updatesTable.setModel(new DefaultTableModel(
-			            new Object [][] {
+    	SwingUtilities.invokeLater(() -> {
+            updatesTable.setModel(new DefaultTableModel(
+                    new Object [][] {
 
-			            },
-			            new String [] {
-			                "App Name", "Current Version", "New Version", "Update URL"
-			            }
-			        ) {
-						
-						boolean[] canEdit = new boolean [] {
-			                false, false, false, false
-			            };
+                    },
+                    new String [] {
+                        "App Name", "Current Version", "New Version", "Update URL"
+                    }
+                ) {
+                    
+                    boolean[] canEdit = new boolean [] {
+                        false, false, false, false
+                    };
 
-						@Override
-			            public boolean isCellEditable(int rowIndex, int columnIndex) {
-			                return canEdit [columnIndex];
-			            }
-			        });
-				
-				
-				DefaultTableModel tableModel = (DefaultTableModel) updatesTable.getModel();
-				
-				for (Update update : updateManager.getUpdates()) {		    			
-					tableModel.addRow(new Object[]{
-							update,
-							update.getApp().getVersion(),
-							update.getUpdateVersion(),
-							(update.getRelease().getBaseUrl() 
-									+ update.getRelease().getRelativeUrl()).replaceAll("//+", "/").replaceFirst(":/", "://")				
-					});	
-		    	}
-			}
-    		
-    	});	
+                    @Override
+                    public boolean isCellEditable(int rowIndex, int columnIndex) {
+                        return canEdit [columnIndex];
+                    }
+                });
+            
+            
+            DefaultTableModel tableModel = (DefaultTableModel) updatesTable.getModel();
+            
+            for (Update update : updateManager.getUpdates()) {		    			
+                tableModel.addRow(new Object[]{
+                        update,
+                        update.getApp().getVersion(),
+                        update.getUpdateVersion(),
+                        (update.getRelease().getBaseUrl() 
+                                + update.getRelease().getRelativeUrl()).replaceAll("//+", "/").replaceFirst(":/", "://")				
+                });	
+            }
+        });	
     }
     
     /**
@@ -380,18 +360,14 @@ public class CheckForUpdatesPanel extends JPanel {
      * description box
      */
     private void setupDescriptionListener() {
-    	updatesTable.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
-			
-			@Override
-			public void valueChanged(ListSelectionEvent e) {
-				if (!e.getValueIsAdjusting()) {
-					//System.out.println("selection change " + e.getFirstIndex());
-					//System.out.println("selected: " + getSelectedUpdates().size());
-					
-					updateDescriptionBox();
-				}
-			}
-		});
+    	updatesTable.getSelectionModel().addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting()) {
+                //System.out.println("selection change " + e.getFirstIndex());
+                //System.out.println("selected: " + getSelectedUpdates().size());
+                
+                updateDescriptionBox();
+            }
+        });
     }
     
     private void updateDescriptionBox() {

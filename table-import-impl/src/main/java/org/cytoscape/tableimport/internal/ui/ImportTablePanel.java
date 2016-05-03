@@ -388,30 +388,15 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 			nodeRadioButton.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
 			nodeRadioButton.setMargin(new Insets(0, 0, 0, 0));
 			nodeRadioButton.setSelected(true);
-			nodeRadioButton.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent evt) {
-					attributeRadioButtonActionPerformed(evt);
-				}
-			});
+			nodeRadioButton.addActionListener(evt -> attributeRadioButtonActionPerformed(evt));
 
 			edgeRadioButton.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
 			edgeRadioButton.setMargin(new Insets(0, 0, 0, 0));
-			edgeRadioButton.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent evt) {
-					attributeRadioButtonActionPerformed(evt);
-				}
-			});
+			edgeRadioButton.addActionListener(evt -> attributeRadioButtonActionPerformed(evt));
 
 			networkRadioButton.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
 			networkRadioButton.setMargin(new Insets(0, 0, 0, 0));
-			networkRadioButton.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent evt) {
-					attributeRadioButtonActionPerformed(evt);
-				}
-			});
+			networkRadioButton.addActionListener(evt -> attributeRadioButtonActionPerformed(evt));
 		}
 
 		if (importType == ONTOLOGY_IMPORT) {
@@ -424,22 +409,19 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 			attributeFileLabel.setText("Input File");
 			
 			selectAttributeFileButton.setText("Select File(s)");
-			selectAttributeFileButton.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent evt) {
-					try {
-						setPreviewPanel();
-					} catch (Exception e) {
-						JOptionPane.showMessageDialog(
-								serviceRegistrar.getService(CySwingApplication.class).getJFrame(),
-								"<html>Could not read selected file.<p>See <b>Help->Error Dialog</b> for further details.</html>",
-								"Error",
-								JOptionPane.ERROR_MESSAGE
-						);
-						logger.warn("Could not read selected file.", e);
-					}
-				}
-			});
+			selectAttributeFileButton.addActionListener(evt -> {
+                try {
+                    setPreviewPanel();
+                } catch (Exception e) {
+                    JOptionPane.showMessageDialog(
+                            serviceRegistrar.getService(CySwingApplication.class).getJFrame(),
+                            "<html>Could not read selected file.<p>See <b>Help->Error Dialog</b> for further details.</html>",
+                            "Error",
+                            JOptionPane.ERROR_MESSAGE
+                    );
+                    logger.warn("Could not read selected file.", e);
+                }
+            });
 		}
 
 		/*
@@ -447,28 +429,22 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 		 */
 		if (importType == ONTOLOGY_IMPORT) {
 			mappingAttributeComboBox.setEnabled(true);
-			mappingAttributeComboBox.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent evt) {
-					updateTypes(getPreviewPanel().getFileType());
-					setKeyList();
-				}
-			});
+			mappingAttributeComboBox.addActionListener(evt -> {
+                updateTypes(getPreviewPanel().getFileType());
+                setKeyList();
+            });
 		}
 
-		final ChangeListener delimitersChangeListener = new ChangeListener() {
-			@Override
-			public void stateChanged(ChangeEvent evt) {
-				otherDelimiterTextField.setEnabled(otherCheckBox.isSelected());
-				
-				try {
-					if (!updating)
-						displayPreview();
-				} catch (IOException e) {
-					logger.error("Error on ChangeEvent of checkbox " + ((JCheckBox)evt.getSource()).getText(), e);
-				}
-			}
-		};
+		final ChangeListener delimitersChangeListener = evt -> {
+            otherDelimiterTextField.setEnabled(otherCheckBox.isSelected());
+            
+            try {
+                if (!updating)
+                    displayPreview();
+            } catch (IOException e) {
+                logger.error("Error on ChangeEvent of checkbox " + ((JCheckBox)evt.getSource()).getText(), e);
+            }
+        };
 		
 		commaCheckBox.addChangeListener(delimitersChangeListener);
 		semicolonCheckBox.addChangeListener(delimitersChangeListener);
@@ -499,12 +475,7 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 
 		final SpinnerNumberModel startRowSpinnerModel = new SpinnerNumberModel(1, 1, 10000000, 1);
 		startRowSpinner.setModel(startRowSpinnerModel);
-		startRowSpinner.addMouseWheelListener(new MouseWheelListener() {
-			@Override
-			public void mouseWheelMoved(MouseWheelEvent evt) {
-				startRowSpinnerMouseWheelMoved(evt);
-			}
-		});
+		startRowSpinner.addMouseWheelListener(evt -> startRowSpinnerMouseWheelMoved(evt));
 		startRowSpinner.setToolTipText("<html>Load entries from this line. <p>"
 				+ "(Click on the <strong><i>Refresh Preview</i></strong> button to refresh preview.)</p></html>");
 
@@ -813,12 +784,7 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 		if (advancedButton == null) {
 			advancedButton = new JButton("Advanced Options...");
 			
-			advancedButton.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					showAdvancedDialog();
-				}
-			});
+			advancedButton.addActionListener(e -> showAdvancedDialog());
 		}
 		
 		return advancedButton;
@@ -882,19 +848,16 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 	private JCheckBox getImportAllCheckBox() {
 		if (importAllCheckBox == null) {
 			importAllCheckBox = new JCheckBox("Import everything (Key is always ID)");
-			importAllCheckBox.addChangeListener(new ChangeListener() {
-				@Override
-				public void stateChanged(ChangeEvent e) {
-					// If Import All selected, ID combo box should be set to ID
-					if (importAllCheckBox.isSelected()) {
-						// Lock key to ID
-						mappingAttributeComboBox.setSelectedItem(ID);
-						mappingAttributeComboBox.setEnabled(false);
-					} else {
-						mappingAttributeComboBox.setEnabled(true);
-					}
-				}
-			});
+			importAllCheckBox.addChangeListener(e -> {
+                // If Import All selected, ID combo box should be set to ID
+                if (importAllCheckBox.isSelected()) {
+                    // Lock key to ID
+                    mappingAttributeComboBox.setSelectedItem(ID);
+                    mappingAttributeComboBox.setEnabled(false);
+                } else {
+                    mappingAttributeComboBox.setEnabled(true);
+                }
+            });
 		}
 		
 		return importAllCheckBox;
@@ -904,13 +867,10 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 		if (transferNameCheckBox == null) {
 			transferNameCheckBox = new JCheckBox("Use first line as column names");
 			transferNameCheckBox.setSelected(isFirstRowNames());
-			transferNameCheckBox.addChangeListener(new ChangeListener() {
-				@Override
-				public void stateChanged(ChangeEvent e) {
-					useFirstRowAsNames(transferNameCheckBox.isSelected());
-					repaint();
-				}
-			});
+			transferNameCheckBox.addChangeListener(e -> {
+                useFirstRowAsNames(transferNameCheckBox.isSelected());
+                repaint();
+            });
 		}
 		
 		return transferNameCheckBox;
@@ -1231,21 +1191,17 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 		mappingAttributeComboBox.removeAllItems();
 		final ListCellRenderer<? super String> lcr = mappingAttributeComboBox.getRenderer();
 		
-		mappingAttributeComboBox.setRenderer(new ListCellRenderer<String>() {
-			@Override
-			public Component getListCellRendererComponent(JList<? extends String> list, String value, int index,
-					boolean isSelected, boolean cellHasFocus) {
-				JLabel cmp = (JLabel) lcr.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+		mappingAttributeComboBox.setRenderer((list, value, index, isSelected, cellHasFocus) -> {
+            JLabel cmp = (JLabel) lcr.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
 
-				if (value.equals(ID)) {
-					cmp.setIcon(ID_ICON.getIcon());
-				} else {
-					// cmp.setIcon(getDataTypeIcon(selectedAttributes.getColumnTypeMap().get(value.toString())));
-				}
+            if (value.equals(ID)) {
+                cmp.setIcon(ID_ICON.getIcon());
+            } else {
+                // cmp.setIcon(getDataTypeIcon(selectedAttributes.getColumnTypeMap().get(value.toString())));
+            }
 
-				return cmp;
-			}
-		});
+            return cmp;
+        });
 
 		mappingAttributeComboBox.addItem(ID);
 

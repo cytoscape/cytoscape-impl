@@ -240,11 +240,7 @@ public final class BrowserTableModel extends AbstractTableModel
 			super.fireTableStructureChanged();
 		} else {
 			final AbstractTableModel model = (AbstractTableModel) this;
-			SwingUtilities.invokeLater (new Runnable () {
-				public void run() {
-					model.fireTableStructureChanged();
-				}
-			});
+			SwingUtilities.invokeLater (() -> model.fireTableStructureChanged());
 		}
 	}
 
@@ -254,11 +250,7 @@ public final class BrowserTableModel extends AbstractTableModel
 			super.fireTableDataChanged();
 		} else {
 			final AbstractTableModel model = (AbstractTableModel) this;
-			SwingUtilities.invokeLater (new Runnable () {
-				public void run() {
-					model.fireTableDataChanged();
-				}
-			});
+			SwingUtilities.invokeLater (() -> model.fireTableDataChanged());
 		}
 	}
 
@@ -268,11 +260,7 @@ public final class BrowserTableModel extends AbstractTableModel
 			super.fireTableChanged(event);
 		} else {
 			final AbstractTableModel model = (AbstractTableModel) this;
-			SwingUtilities.invokeLater (new Runnable () {
-				public void run() {
-					model.fireTableChanged(event);
-				}
-			});
+			SwingUtilities.invokeLater (() -> model.fireTableChanged(event));
 		}
 	}
 

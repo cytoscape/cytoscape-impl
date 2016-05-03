@@ -772,17 +772,14 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 	private void sort(final List<String> names) {
 		final Collator collator = Collator.getInstance(Locale.getDefault());
 		
-		Collections.sort(names, new Comparator<String>() {
-			@Override
-			public int compare(String s1, String s2) {
-				if (s1 == null || s2 == null) {
-					if (s2 != null) return -1;
-					if (s1 != null) return 1;
-					return 0;
-				}
-				return collator.compare(s1, s2);
-			}
-		});
+		Collections.sort(names, (s1, s2) -> {
+            if (s1 == null || s2 == null) {
+                if (s2 != null) return -1;
+                if (s1 != null) return 1;
+                return 0;
+            }
+            return collator.compare(s1, s2);
+        });
 	}
 	
 	private static class ColumnDescriptor {

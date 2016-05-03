@@ -457,13 +457,10 @@ public class CytoscapeDesktop extends JFrame
 	// handle CytoscapeStartEvent
 	@Override
 	public void handleEvent(CyStartEvent e) {
-		SwingUtilities.invokeLater(new Runnable() {
-			@Override
-			public void run() {
-				setVisible(true);
-				toFront();
-			}
-		});
+		SwingUtilities.invokeLater(() -> {
+            setVisible(true);
+            toFront();
+        });
 	}
 
 	@Override
@@ -476,23 +473,13 @@ public class CytoscapeDesktop extends JFrame
 		
 		final String title = TITLE_PREFIX_STRING + sessionName;
 		
-		SwingUtilities.invokeLater(new Runnable() {
-			@Override
-			public void run() {
-				setTitle(title);
-			}
-		});
+		SwingUtilities.invokeLater(() -> setTitle(title));
 	}
 
 	@Override
 	public void handleEvent(SessionSavedEvent e) {
 		// Update window title
 		final String sessionName = e.getSavedFileName();
-		SwingUtilities.invokeLater(new Runnable() {
-			@Override
-			public void run() {
-				setTitle(TITLE_PREFIX_STRING + sessionName);
-			}
-		});
+		SwingUtilities.invokeLater(() -> setTitle(TITLE_PREFIX_STRING + sessionName));
 	}
 }

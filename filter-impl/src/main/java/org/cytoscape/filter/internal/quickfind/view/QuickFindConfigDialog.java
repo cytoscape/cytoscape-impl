@@ -214,24 +214,21 @@ public class QuickFindConfigDialog extends JDialog {
 
 		// Cancel Button
 		JButton cancelButton = new JButton("Cancel");
-		cancelButton.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-					QuickFindConfigDialog.this.setVisible(false);
-					QuickFindConfigDialog.this.dispose();
-				}
-			});
+		cancelButton.addActionListener(e -> {
+            QuickFindConfigDialog.this.setVisible(false);
+            QuickFindConfigDialog.this.dispose();
+        });
 
 		//  Apply Button
 		applyButton = new JButton(BUTTON_REINDEX_TEXT);
-		applyButton.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-					QuickFindConfigDialog.this.setVisible(false);
-					QuickFindConfigDialog.this.dispose();
+		applyButton.addActionListener(e -> {
+            QuickFindConfigDialog.this.setVisible(false);
+            QuickFindConfigDialog.this.dispose();
 
-					String newAttribute = (String) attributeComboBox.getSelectedItem();
-					ReindexQuickFind task = new ReindexQuickFind(quickFind, currentNetwork, indexType,
-					                                             newAttribute);
-					
+            String newAttribute = (String) attributeComboBox.getSelectedItem();
+            ReindexQuickFind task = new ReindexQuickFind(quickFind, currentNetwork, indexType,
+                                                         newAttribute);
+            
 //					// TODO: Port this later
 //					JTaskConfig config = new JTaskConfig();
 //					config.setAutoDispose(true);
@@ -241,13 +238,12 @@ public class QuickFindConfigDialog extends JDialog {
 //					config.setOwner(application.getJFrame());
 //					config.setModal(true);
 
-					//  Execute Task via TaskManager
-					//  This automatically pops-open a JTask Dialog Box.
-					//  This method will block until the JTask Dialog Box
-					//  is disposed.
+            //  Execute Task via TaskManager
+            //  This automatically pops-open a JTask Dialog Box.
+            //  This method will block until the JTask Dialog Box
+            //  is disposed.
 //					TaskManager.executeTask(task, config);
-				}
-			});
+        });
 		buttonPanel.add(Box.createHorizontalGlue());
 		buttonPanel.add(cancelButton);
 		buttonPanel.add(applyButton);
@@ -400,37 +396,31 @@ public class QuickFindConfigDialog extends JDialog {
 		nodeEdgePanel.add(Box.createHorizontalGlue());
 
 		//  User has switched index type.
-		ActionListener indexTypeListener = new ActionListener() {
-			public void actionPerformed(ActionEvent actionEvent) {
-				String actionCommand = actionEvent.getActionCommand();
-				int type = Integer.parseInt(actionCommand);
+		ActionListener indexTypeListener = actionEvent -> {
+            String actionCommand = actionEvent.getActionCommand();
+            int type1 = Integer.parseInt(actionCommand);
 
-				if (type != indexType) {
-					indexType = type;
-					addingNewAttributeList = true;
+            if (type1 != indexType) {
+                indexType = type1;
+                addingNewAttributeList = true;
 
-					Vector attributeList = createAttributeList();
-					attributeComboBox.removeAllItems();
+                Vector attributeList = createAttributeList();
+                attributeComboBox.removeAllItems();
 
-					for (int i = 0; i < attributeList.size(); i++) {
-						attributeComboBox.addItem(attributeList.get(i));
-					}
+                for (int i = 0; i < attributeList.size(); i++) {
+                    attributeComboBox.addItem(attributeList.get(i));
+                }
 
-					addingNewAttributeList = false;
+                addingNewAttributeList = false;
 
-					//  Simulate attribute combo box selection.
-					//  Invoke via SwingUtilities, so that radio button
-					//  selection is not delayed.
-					if (attributeList.size() > 0) {
-						SwingUtilities.invokeLater(new Runnable() {
-								public void run() {
-									attributeComboBox.setSelectedIndex(0);
-								}
-							});
-					}
-				}
-			}
-		};
+                //  Simulate attribute combo box selection.
+                //  Invoke via SwingUtilities, so that radio button
+                //  selection is not delayed.
+                if (attributeList.size() > 0) {
+                    SwingUtilities.invokeLater(() -> attributeComboBox.setSelectedIndex(0));
+                }
+            }
+        };
 
 		nodeButton.addActionListener(indexTypeListener);
 		edgeButton.addActionListener(indexTypeListener);
@@ -463,27 +453,25 @@ public class QuickFindConfigDialog extends JDialog {
 		attributePanel.add(Box.createHorizontalGlue());
 
 		//  Add Action Listener
-		attributeComboBox.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-					//  If we are adding new attributes to combox box, ignore the event
-					if (addingNewAttributeList) {
-						return;
-					}
+		attributeComboBox.addActionListener(e -> {
+            //  If we are adding new attributes to combox box, ignore the event
+            if (addingNewAttributeList) {
+                return;
+            }
 
-					//  First, set text of apply button
-					String currentAttribute = currentIndex.getControllingAttribute();
-					String newAttribute = (String) attributeComboBox.getSelectedItem();
+            //  First, set text of apply button
+            String currentAttribute1 = currentIndex.getControllingAttribute();
+            String newAttribute = (String) attributeComboBox.getSelectedItem();
 
-					if (currentAttribute.equalsIgnoreCase(newAttribute)) {
-						applyButton.setText(BUTTON_REINDEX_TEXT);
-					} else {
-						applyButton.setText(BUTTON_INDEX_TEXT);
-					}
+            if (currentAttribute1.equalsIgnoreCase(newAttribute)) {
+                applyButton.setText(BUTTON_REINDEX_TEXT);
+            } else {
+                applyButton.setText(BUTTON_INDEX_TEXT);
+            }
 
-					addTableModel(sampleAttributeValuesTable);
-					setAttributeDescription();
-				}
-			});
+            addTableModel(sampleAttributeValuesTable);
+            setAttributeDescription();
+        });
 
 		return attributePanel;
 	}

@@ -25,13 +25,10 @@ public class FilterCytoPanelComponent implements CytoPanelComponent2 {
 	public FilterCytoPanelComponent(TransformerViewManager transformerViewManager, CyApplicationManager applicationManager, IconManager iconManager, ModelMonitor modelMonitor, final FilterPanel filterPanel, TransformerPanel transformerPanel) {
 		filterPanel.setPreferredSize(new Dimension(450, 300));
 		
-		modelMonitor.addInteractivityChangedListener(new InteractivityChangedListener() {
-			@Override
-			public void handleInteractivityChanged(boolean isInteractive) {
-				FilterPanelController filterPanelController = filterPanel.getController();
-				filterPanelController.setInteractive(isInteractive, filterPanel);
-			}
-		});
+		modelMonitor.addInteractivityChangedListener(isInteractive -> {
+            FilterPanelController filterPanelController = filterPanel.getController();
+            filterPanelController.setInteractive(isInteractive, filterPanel);
+        });
 		
 		
 		panel = new SelectPanel(filterPanel, transformerPanel);

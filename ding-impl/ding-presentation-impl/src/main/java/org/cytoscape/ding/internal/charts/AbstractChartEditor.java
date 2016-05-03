@@ -689,13 +689,10 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 			itemLabelsColumnCmb = new CyColumnComboBox(labelColumns.keySet(), true);
 			selectColumnIdItem(itemLabelsColumnCmb, chart.get(ITEM_LABELS_COLUMN, CyColumnIdentifier.class));
 			
-			itemLabelsColumnCmb.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					final CyColumnIdentifier colId = (CyColumnIdentifier) itemLabelsColumnCmb.getSelectedItem();
-					chart.set(ITEM_LABELS_COLUMN, colId != null ? colId.getColumnName() : null);
-				}
-			});
+			itemLabelsColumnCmb.addActionListener(e -> {
+                final CyColumnIdentifier colId = (CyColumnIdentifier) itemLabelsColumnCmb.getSelectedItem();
+                chart.set(ITEM_LABELS_COLUMN, colId != null ? colId.getColumnName() : null);
+            });
 		}
 
 		return itemLabelsColumnCmb;
@@ -706,13 +703,10 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 			domainLabelsColumnCmb = new CyColumnComboBox(labelColumns.keySet(), true);
 			selectColumnIdItem(domainLabelsColumnCmb, chart.get(DOMAIN_LABELS_COLUMN, CyColumnIdentifier.class));
 			
-			domainLabelsColumnCmb.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					final CyColumnIdentifier colId = (CyColumnIdentifier) domainLabelsColumnCmb.getSelectedItem();
-					chart.set(DOMAIN_LABELS_COLUMN, colId != null ? colId.getColumnName() : null);
-				}
-			});
+			domainLabelsColumnCmb.addActionListener(e -> {
+                final CyColumnIdentifier colId = (CyColumnIdentifier) domainLabelsColumnCmb.getSelectedItem();
+                chart.set(DOMAIN_LABELS_COLUMN, colId != null ? colId.getColumnName() : null);
+            });
 		}
 		
 		return domainLabelsColumnCmb;
@@ -723,13 +717,10 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 			rangeLabelsColumnCmb = new CyColumnComboBox(labelColumns.keySet(), true);
 			selectColumnIdItem(rangeLabelsColumnCmb, chart.get(RANGE_LABELS_COLUMN, CyColumnIdentifier.class));
 			
-			rangeLabelsColumnCmb.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					final CyColumnIdentifier colId = (CyColumnIdentifier) rangeLabelsColumnCmb.getSelectedItem();
-					chart.set(RANGE_LABELS_COLUMN, colId != null ? colId.getColumnName() : null);
-				}
-			});
+			rangeLabelsColumnCmb.addActionListener(e -> {
+                final CyColumnIdentifier colId = (CyColumnIdentifier) rangeLabelsColumnCmb.getSelectedItem();
+                chart.set(RANGE_LABELS_COLUMN, colId != null ? colId.getColumnName() : null);
+            });
 		}
 		
 		return rangeLabelsColumnCmb;
@@ -739,17 +730,14 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 		if (globalRangeCkb == null) {
 			globalRangeCkb = new JCheckBox("Network-Wide Axis Range");
 			globalRangeCkb.setSelected(chart.get(GLOBAL_RANGE, Boolean.class, Boolean.TRUE));
-			globalRangeCkb.addItemListener(new ItemListener() {
-				@Override
-				public void itemStateChanged(final ItemEvent e) {
-					final boolean selected = e.getStateChange() == ItemEvent.SELECTED;
-					chart.set(GLOBAL_RANGE, selected);
-					updateGlobalRange();
-					
-					if (selected)
-						updateRangeMinMax(chart.getList(RANGE, Double.class).isEmpty());
-				}
-			});
+			globalRangeCkb.addItemListener(e -> {
+                final boolean selected = e.getStateChange() == ItemEvent.SELECTED;
+                chart.set(GLOBAL_RANGE, selected);
+                updateGlobalRange();
+                
+                if (selected)
+                    updateRangeMinMax(chart.getList(RANGE, Double.class).isEmpty());
+            });
 		}
 		
 		return globalRangeCkb;
@@ -759,19 +747,16 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 		if (autoRangeCkb == null) {
 			autoRangeCkb = new JCheckBox("Automatic Range");
 			autoRangeCkb.setSelected(chart.get(AUTO_RANGE, Boolean.class, Boolean.TRUE));
-			autoRangeCkb.addItemListener(new ItemListener() {
-				@Override
-				public void itemStateChanged(final ItemEvent e) {
-					final boolean selected = e.getStateChange() == ItemEvent.SELECTED;
-					getRangeMinTxt().setEnabled(!selected);
-					getRangeMaxTxt().setEnabled(!selected);
-					getRangeMinTxt().requestFocus();
-					chart.set(AUTO_RANGE, selected);
-					
-					if (selected)
-						updateRangeMinMax(true);
-				}
-			});
+			autoRangeCkb.addItemListener(e -> {
+                final boolean selected = e.getStateChange() == ItemEvent.SELECTED;
+                getRangeMinTxt().setEnabled(!selected);
+                getRangeMaxTxt().setEnabled(!selected);
+                getRangeMinTxt().requestFocus();
+                chart.set(AUTO_RANGE, selected);
+                
+                if (selected)
+                    updateRangeMinMax(true);
+            });
 		}
 		
 		return autoRangeCkb;
@@ -823,13 +808,10 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 			refreshRangeBtn.setFont(iconMgr.getIconFont(12.0f));
 			refreshRangeBtn.setToolTipText("Refresh automatic range values");
 			
-			refreshRangeBtn.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(final ActionEvent e) {
-					updateRangeMinMax(true);
-					refreshRangeBtn.setEnabled(false);
-				}
-			});
+			refreshRangeBtn.addActionListener(e -> {
+                updateRangeMinMax(true);
+                refreshRangeBtn.setEnabled(false);
+            });
 		}
 		
 		return refreshRangeBtn;
@@ -842,18 +824,15 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 			
 			if (setItemLabels) {
 				itemLabelsVisibleCkb.setSelected(chart.get(SHOW_ITEM_LABELS, Boolean.class, false));
-				itemLabelsVisibleCkb.addActionListener(new ActionListener() {
-					@Override
-					public void actionPerformed(ActionEvent e) {
-						chart.set(SHOW_ITEM_LABELS, itemLabelsVisibleCkb.isSelected());
-						
-						itemLabelsColumnLbl.setEnabled(itemLabelsVisibleCkb.isSelected());
-						getItemLabelsColumnCmb().setEnabled(itemLabelsVisibleCkb.isSelected());
-						
-						itemFontSizeLbl.setEnabled(itemLabelsVisibleCkb.isSelected());
-						getItemFontSizeTxt().setEnabled(itemLabelsVisibleCkb.isSelected());
-					}
-				});
+				itemLabelsVisibleCkb.addActionListener(e -> {
+                    chart.set(SHOW_ITEM_LABELS, itemLabelsVisibleCkb.isSelected());
+                    
+                    itemLabelsColumnLbl.setEnabled(itemLabelsVisibleCkb.isSelected());
+                    getItemLabelsColumnCmb().setEnabled(itemLabelsVisibleCkb.isSelected());
+                    
+                    itemFontSizeLbl.setEnabled(itemLabelsVisibleCkb.isSelected());
+                    getItemFontSizeTxt().setEnabled(itemLabelsVisibleCkb.isSelected());
+                });
 			}
 		}
 		
@@ -867,12 +846,7 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 			
 			if (hasAxes) {
 				domainAxisVisibleCkb.setSelected(chart.get(SHOW_DOMAIN_AXIS, Boolean.class, false));
-				domainAxisVisibleCkb.addActionListener(new ActionListener() {
-					@Override
-					public void actionPerformed(ActionEvent e) {
-						chart.set(SHOW_DOMAIN_AXIS, domainAxisVisibleCkb.isSelected());
-					}
-				});
+				domainAxisVisibleCkb.addActionListener(e -> chart.set(SHOW_DOMAIN_AXIS, domainAxisVisibleCkb.isSelected()));
 			}
 		}
 		
@@ -886,12 +860,7 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 			
 			if (hasAxes) {
 				rangeAxisVisibleCkb.setSelected(chart.get(SHOW_RANGE_AXIS, Boolean.class, false));
-				rangeAxisVisibleCkb.addActionListener(new ActionListener() {
-					@Override
-					public void actionPerformed(ActionEvent e) {
-						chart.set(SHOW_RANGE_AXIS, rangeAxisVisibleCkb.isSelected());
-					}
-				});
+				rangeAxisVisibleCkb.addActionListener(e -> chart.set(SHOW_RANGE_AXIS, rangeAxisVisibleCkb.isSelected()));
 			}
 		}
 		
@@ -905,12 +874,7 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 			
 			if (hasAxes) {
 				rangeZeroBaselineVisibleCkb.setSelected(chart.get(SHOW_RANGE_ZERO_BASELINE, Boolean.class, false));
-				rangeZeroBaselineVisibleCkb.addActionListener(new ActionListener() {
-					@Override
-					public void actionPerformed(ActionEvent e) {
-						chart.set(SHOW_RANGE_ZERO_BASELINE, rangeZeroBaselineVisibleCkb.isSelected());
-					}
-				});
+				rangeZeroBaselineVisibleCkb.addActionListener(e -> chart.set(SHOW_RANGE_ZERO_BASELINE, rangeZeroBaselineVisibleCkb.isSelected()));
 			}
 		}
 		
@@ -938,13 +902,10 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 			domainLabelPositionCmb.setSelectedItem(
 					chart.get(DOMAIN_LABEL_POSITION, LabelPosition.class, LabelPosition.STANDARD));
 			
-			domainLabelPositionCmb.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					final LabelPosition position = (LabelPosition) domainLabelPositionCmb.getSelectedItem();
-					chart.set(DOMAIN_LABEL_POSITION, position);
-				}
-			});
+			domainLabelPositionCmb.addActionListener(e -> {
+                final LabelPosition position = (LabelPosition) domainLabelPositionCmb.getSelectedItem();
+                chart.set(DOMAIN_LABEL_POSITION, position);
+            });
 		}
 		
 		return domainLabelPositionCmb;
@@ -978,13 +939,10 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 			axisColorBtn = new ColorButton(color);
 			axisColorBtn.setVisible(hasAxes);
 			
-			axisColorBtn.addPropertyChangeListener("color", new PropertyChangeListener() {
-				@Override
-				public void propertyChange(PropertyChangeEvent e) {
-					final Color newColor = (Color) e.getNewValue();
-					chart.set(AXIS_COLOR, newColor);
-				}
-			});
+			axisColorBtn.addPropertyChangeListener("color", e -> {
+                final Color newColor = (Color) e.getNewValue();
+                chart.set(AXIS_COLOR, newColor);
+            });
 		}
 		
 		return axisColorBtn;
@@ -1050,12 +1008,7 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 			verticalRd.setVisible(setOrientation);
 			
 			if (setOrientation) {
-				verticalRd.addActionListener(new ActionListener() {
-					@Override
-					public void actionPerformed(ActionEvent e) {
-						setOrientation();
-					}
-				});
+				verticalRd.addActionListener(e -> setOrientation());
 			}
 		}
 		
@@ -1068,12 +1021,7 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 			horizontalRd.setVisible(setOrientation);
 			
 			if (setOrientation) {
-				horizontalRd.addActionListener(new ActionListener() {
-					@Override
-					public void actionPerformed(ActionEvent e) {
-						setOrientation();
-					}
-				});
+				horizontalRd.addActionListener(e -> setOrientation());
 			}
 		}
 		
@@ -1112,13 +1060,10 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 			final Color color = chart.get(BORDER_COLOR, Color.class, Color.DARK_GRAY);
 			borderColorBtn = new ColorButton(color);
 			
-			borderColorBtn.addPropertyChangeListener("color", new PropertyChangeListener() {
-				@Override
-				public void propertyChange(PropertyChangeEvent e) {
-					final Color newColor = (Color) e.getNewValue();
-					chart.set(BORDER_COLOR, newColor);
-				}
-			});
+			borderColorBtn.addPropertyChangeListener("color", e -> {
+                final Color newColor = (Color) e.getNewValue();
+                chart.set(BORDER_COLOR, newColor);
+            });
 		}
 		
 		return borderColorBtn;
@@ -1309,16 +1254,13 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 		cmb.setSelectedItem(cg2.get(propKey, Double.class, 0.0));
 		cmb.setInputVerifier(new DoubleInputVerifier());
 		
-		cmb.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				final Object angle = cmb.getSelectedItem();
-		        try {
-		        	cg2.set(propKey, angle instanceof Number ? ((Number)angle).doubleValue() : 0.0);
-		        } catch (NumberFormatException ex) {
-		        }
-			}
-		});
+		cmb.addActionListener(e -> {
+            final Object angle = cmb.getSelectedItem();
+            try {
+                cg2.set(propKey, angle instanceof Number ? ((Number)angle).doubleValue() : 0.0);
+            } catch (NumberFormatException ex) {
+            }
+        });
 		
 		return cmb;
 	}
@@ -1453,12 +1395,7 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 						new SortedListModel<CyColumnIdentifier>(allModel, SortOrder.ASCENDING, new ColumnComparator()));
 				allColumnsLs.setCellRenderer(new CyColumnCellRenderer(true));
 				
-				allColumnsLs.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
-					@Override
-					public void valueChanged(ListSelectionEvent e) {
-						updateButtons();
-					}
-				});
+				allColumnsLs.getSelectionModel().addListSelectionListener(e -> updateButtons());
 				
 				allColumnsLs.getModel().addListDataListener(new ListDataListener() {
 					@Override
@@ -1484,12 +1421,7 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 				selColumnsLs.setModel(selModel);
 				selColumnsLs.setCellRenderer(new CyColumnCellRenderer(true));
 				
-				selColumnsLs.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
-					@Override
-					public void valueChanged(ListSelectionEvent e) {
-						updateButtons();
-					}
-				});
+				selColumnsLs.getSelectionModel().addListSelectionListener(e -> updateButtons());
 			}
 			
 			return selColumnsLs;
@@ -1501,12 +1433,7 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 				addBtn.setFont(iconMgr.getIconFont(14.0f));
 				addBtn.setToolTipText("Add Selected");
 				
-				addBtn.addActionListener(new ActionListener() {
-					@Override
-					public void actionPerformed(ActionEvent e) {
-						moveDataColumns(getAllColumnsLs(), getSelColumnsLs(), false);
-					}
-				});
+				addBtn.addActionListener(e -> moveDataColumns(getAllColumnsLs(), getSelColumnsLs(), false));
 			}
 			
 			return addBtn;
@@ -1518,12 +1445,7 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 				addAllBtn.setFont(iconMgr.getIconFont(14.0f));
 				addAllBtn.setToolTipText("Add All");
 				
-				addAllBtn.addActionListener(new ActionListener() {
-					@Override
-					public void actionPerformed(ActionEvent e) {
-						moveDataColumns(getAllColumnsLs(), getSelColumnsLs(), true);
-					}
-				});
+				addAllBtn.addActionListener(e -> moveDataColumns(getAllColumnsLs(), getSelColumnsLs(), true));
 			}
 			
 			return addAllBtn;
@@ -1535,12 +1457,7 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 				removeBtn.setFont(iconMgr.getIconFont(14.0f));
 				removeBtn.setToolTipText("Remove Selected");
 				
-				removeBtn.addActionListener(new ActionListener() {
-					@Override
-					public void actionPerformed(ActionEvent e) {
-						moveDataColumns(getSelColumnsLs(), getAllColumnsLs(), false);
-					}
-				});
+				removeBtn.addActionListener(e -> moveDataColumns(getSelColumnsLs(), getAllColumnsLs(), false));
 			}
 			
 			return removeBtn;
@@ -1552,12 +1469,7 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 				removeAllBtn.setFont(iconMgr.getIconFont(14.0f));
 				removeAllBtn.setToolTipText("Remove All");
 				
-				removeAllBtn.addActionListener(new ActionListener() {
-					@Override
-					public void actionPerformed(ActionEvent e) {
-						moveDataColumns(getSelColumnsLs(), getAllColumnsLs(), true);
-					}
-				});
+				removeAllBtn.addActionListener(e -> moveDataColumns(getSelColumnsLs(), getAllColumnsLs(), true));
 			}
 			
 			return removeAllBtn;
@@ -1574,12 +1486,7 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 				moveUpBtn.setFocusPainted(false);
 				moveUpBtn.setBorder(BorderFactory.createEmptyBorder(2, 4, 2, 4));
 				
-				moveUpBtn.addActionListener(new ActionListener() {
-					@Override
-					public void actionPerformed(ActionEvent e) {
-						moveUp(getSelColumnsLs());
-					}
-				});
+				moveUpBtn.addActionListener(e -> moveUp(getSelColumnsLs()));
 			}
 			
 			return moveUpBtn;
@@ -1596,12 +1503,7 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 				moveDownBtn.setFocusPainted(false);
 				moveDownBtn.setBorder(BorderFactory.createEmptyBorder(2, 4, 2, 4));
 				
-				moveDownBtn.addActionListener(new ActionListener() {
-					@Override
-					public void actionPerformed(ActionEvent e) {
-						moveDown(getSelColumnsLs());
-					}
-				});
+				moveDownBtn.addActionListener(e -> moveDown(getSelColumnsLs()));
 			}
 			
 			return moveDownBtn;

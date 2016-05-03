@@ -76,24 +76,16 @@ public class CyHttpdImplTest {
             }
         });
 
-        httpd.addBeforeResponse(new CyHttpBeforeResponse()
-        {
-            public CyHttpResponse intercept(CyHttpRequest request)
-            {
-                if (request.getMethod().equals("OPTIONS"))
-                    return responseFactory.createHttpResponse(HttpStatus.SC_OK, "options intercepted", "text/html");
-                else
-                    return null;
-            }
+        httpd.addBeforeResponse(request -> {
+            if (request.getMethod().equals("OPTIONS"))
+                return responseFactory.createHttpResponse(HttpStatus.SC_OK, "options intercepted", "text/html");
+            else
+                return null;
         });
 
-        httpd.addAfterResponse(new CyHttpAfterResponse()
-        {
-            public CyHttpResponse intercept(CyHttpRequest request, CyHttpResponse response)
-            {
-                response.getHeaders().put("SomeRandomHeader", "WowInterceptWorks");
-                return response;
-            }
+        httpd.addAfterResponse((request, response) -> {
+            response.getHeaders().put("SomeRandomHeader", "WowInterceptWorks");
+            return response;
         });
 
 

@@ -104,12 +104,7 @@ public class SupportedFileTypesManager {
 		if (types.isEmpty())
 			return types;
 
-		Collections.sort(types, new Comparator<FileChooserFilter>() {
-			@Override
-			public int compare(FileChooserFilter o1, FileChooserFilter o2) {
-				return o1.getDescription().compareTo(o2.getDescription());
-			}
-		});
+		Collections.sort(types, (o1, o2) -> o1.getDescription().compareTo(o2.getDescription()));
 
 		String description = String.format("All %1$s files", category.getDisplayName().toLowerCase());
 		types.add(new FileChooserFilter(description,

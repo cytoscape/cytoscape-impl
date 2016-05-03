@@ -40,12 +40,7 @@ public class TransformerElementViewModel<V extends SelectPanelComponent> {
 		button.setBorderPainted(false);
 		button.setContentAreaFilled(false);
 		button.setFocusPainted(false);
-		button.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent event) {
-				controller.handleDelete(parent, view);
-			}
-		});
+		button.addActionListener(event -> controller.handleDelete(parent, view));
 		return button;
 	}
 }

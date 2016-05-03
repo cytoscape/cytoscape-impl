@@ -52,12 +52,10 @@ public final class CommandListAction extends AbstractCyAction {
 
 	@Override
 	public void actionPerformed(ActionEvent ae) {
-		SwingUtilities.invokeLater(new Runnable() {
-			public void run() {
-				final CommandListUI ui= new CommandListUI(availableCommands);
-				ui.setLocationRelativeTo(swingApp.getJFrame());
-				ui.setVisible(true);
-			}
-		});
+		SwingUtilities.invokeLater(() -> {
+            final CommandListUI ui= new CommandListUI(availableCommands);
+            ui.setLocationRelativeTo(swingApp.getJFrame());
+            ui.setVisible(true);
+        });
 	}
 }

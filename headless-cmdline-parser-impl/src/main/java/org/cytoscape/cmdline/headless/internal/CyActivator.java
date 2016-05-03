@@ -49,16 +49,14 @@ public class CyActivator extends AbstractCyActivator {
 		final CommandExecutorTaskFactory cmdExec = getService(bc,CommandExecutorTaskFactory.class); 
 		final SynchronousTaskManager taskManager = getService(bc, SynchronousTaskManager.class); 
 
-		new Thread( new Runnable() {
-			public void run() {
-				StartupConfig sc = new StartupConfig(cmdExec, taskManager);
-				Parser p = new Parser(args.getArgs(), cyShutdown, cyVersion, sc, availableCommands);
-				sc.start();
-		try { 
-				Thread.sleep(200);
-		} catch ( InterruptedException ie) { ie.printStackTrace(); }
-				cyShutdown.exit(0);
-			}
-		}).start();
+		new Thread(() -> {
+            StartupConfig sc = new StartupConfig(cmdExec, taskManager);
+            Parser p = new Parser(args.getArgs(), cyShutdown, cyVersion, sc, availableCommands);
+            sc.start();
+    try { 
+            Thread.sleep(200);
+    } catch ( InterruptedException ie) { ie.printStackTrace(); }
+            cyShutdown.exit(0);
+        }).start();
 	}
 }

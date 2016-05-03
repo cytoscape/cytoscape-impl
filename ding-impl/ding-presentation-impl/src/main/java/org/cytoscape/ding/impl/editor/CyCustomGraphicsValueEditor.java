@@ -248,12 +248,7 @@ public class CyCustomGraphicsValueEditor implements VisualPropertyValueEditor<Cy
 	public JButton getRemoveBtn() {
 		if (removeBtn == null) {
 			removeBtn = new JButton("Remove Graphics");
-			removeBtn.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(final ActionEvent e) {
-					remove();
-				}
-			});
+			removeBtn.addActionListener(e -> remove());
 		}
 		
 		return removeBtn;
@@ -459,24 +454,21 @@ public class CyCustomGraphicsValueEditor implements VisualPropertyValueEditor<Cy
 		private JTabbedPane getTypeTpn() {
 			if (typeTpn == null) {
 				typeTpn = new JTabbedPane();
-				typeTpn.addChangeListener(new ChangeListener() {
-					@Override
-					public void stateChanged(ChangeEvent e) {
-						if (updatingTypes) return;
-						
-						final Component c = typeTpn.getSelectedComponent();
-						
-						if (c instanceof CustomGraphics2EditorPane) {
-							final CyCustomGraphics2Factory<?> cf = ((CustomGraphics2EditorPane)c).getFactory();
-							
-							if (cg2 == null || !cf.getSupportedClass().isAssignableFrom(cg2.getClass()))
-								cg2 = cf.getInstance(
-										cg2 != null ? cg2.getProperties() : new HashMap<String, Object>());
-								
-							((CustomGraphics2EditorPane)c).update(cg2);
-						}
-					}
-				});
+				typeTpn.addChangeListener(e -> {
+                    if (updatingTypes) return;
+                    
+                    final Component c = typeTpn.getSelectedComponent();
+                    
+                    if (c instanceof CustomGraphics2EditorPane) {
+                        final CyCustomGraphics2Factory<?> cf = ((CustomGraphics2EditorPane)c).getFactory();
+                        
+                        if (cg2 == null || !cf.getSupportedClass().isAssignableFrom(cg2.getClass()))
+                            cg2 = cf.getInstance(
+                                    cg2 != null ? cg2.getProperties() : new HashMap<String, Object>());
+                            
+                        ((CustomGraphics2EditorPane)c).update(cg2);
+                    }
+                });
 			}
 			
 			return typeTpn;

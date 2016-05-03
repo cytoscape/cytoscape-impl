@@ -310,30 +310,23 @@ public class AttributeEditorPanel extends JPanel {
 			
 			final ListCellRenderer<? super String> renderer = listDelimiterComboBox.getRenderer();
 			
-			listDelimiterComboBox.setRenderer(new ListCellRenderer<String>() {
-				@Override
-				public Component getListCellRendererComponent(JList<? extends String> list, String value, int index,
-						boolean isSelected, boolean cellHasFocus) {
-					final Component c =
-							renderer.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-					
-					if (OTHER.equals(value) && c instanceof JComponent)
-						((JComponent)c).setFont(((JComponent)c).getFont().deriveFont(Font.ITALIC));
-					
-					return c;
-				}
-			});
+			listDelimiterComboBox.setRenderer((list, value, index, isSelected, cellHasFocus) -> {
+                final Component c =
+                        renderer.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+                
+                if (OTHER.equals(value) && c instanceof JComponent)
+                    ((JComponent)c).setFont(((JComponent)c).getFont().deriveFont(Font.ITALIC));
+                
+                return c;
+            });
 			
-			listDelimiterComboBox.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					final boolean isOther = isOtherDelimiterSelected();
-					getOtherTextField().setEnabled(isOther);
-					
-					if (!isOther || !getOtherTextField().getText().isEmpty())
-						firePropertyChange("listDelimiter", listDelimiter, listDelimiter = getListDelimiter());
-				}
-			});
+			listDelimiterComboBox.addActionListener(e -> {
+                final boolean isOther = isOtherDelimiterSelected();
+                getOtherTextField().setEnabled(isOther);
+                
+                if (!isOther || !getOtherTextField().getText().isEmpty())
+                    firePropertyChange("listDelimiter", listDelimiter, listDelimiter = getListDelimiter());
+            });
 		}
 		
 		return listDelimiterComboBox;
@@ -464,13 +457,10 @@ public class AttributeEditorPanel extends JPanel {
 		btn.setFont(iconManager.getIconFont(ICON_FONT_SIZE));
 		btn.setForeground(type.getForeground());
 		btn.setName(type.toString());
-		btn.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				updateDataTypeButtons();
-				firePropertyChange("attributeType", attrType, attrType = getAttributeType());
-			}
-		});
+		btn.addActionListener(e -> {
+            updateDataTypeButtons();
+            firePropertyChange("attributeType", attrType, attrType = getAttributeType());
+        });
 		
 		typeButtonGroup.add(btn);
 		typeButtons.put(type, btn);

@@ -19,26 +19,23 @@ public class LazyWorkQueue {
 		lock = new ReentrantLock();
 		working = lock.newCondition();
 		
-		new Thread(new Runnable() {
-			@Override
-			public void run() {
-				while (true) {
-					lock.lock();
-					try {
-						if (!hasNewWork) {
-							working.awaitUninterruptibly();
-						}
-						hasNewWork = false;
-					} finally {
-						lock.unlock();
-					} try {
-						worker.doWork();
-					} catch (Exception e) {
-						e.printStackTrace();
-					}
-				}
-			}
-		}).start();
+		new Thread(() -> {
+            while (true) {
+                lock.lock();
+                try {
+                    if (!hasNewWork) {
+                        working.awaitUninterruptibly();
+                    }
+                    hasNewWork = false;
+                } finally {
+                    lock.unlock();
+                } try {
+                    worker.doWork();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
 	}
 	
 	public void assignWorker(LazyWorker worker) {

@@ -181,12 +181,7 @@ public class FilterPanelController extends AbstractPanelController<FilterElement
 	public void addNamedTransformers(final FilterPanel panel, @SuppressWarnings("unchecked") final NamedTransformer<CyNetwork, CyIdentifiable>... namedTransformers) {
 		if (!SwingUtilities.isEventDispatchThread()) {
 			try {
-				SwingUtilities.invokeAndWait(new Runnable() {
-					@Override
-					public void run() {
-						addNamedTransformers(panel, namedTransformers);
-					}
-				});
+				SwingUtilities.invokeAndWait(() -> addNamedTransformers(panel, namedTransformers));
 			} catch (InterruptedException e) {
 				logger.error("An unexpected error occurred", e);
 			} catch (InvocationTargetException e) {

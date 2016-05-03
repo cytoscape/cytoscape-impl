@@ -141,20 +141,17 @@ public class TunableSlider extends JPanel {
 		setSliderValue();
 		setFieldValue();
 		
-		slider.addChangeListener(new ChangeListener() {
-			@Override
-			public void stateChanged(ChangeEvent e) {
-				if (ignore) return;
-				ignore = true;
-				// update the value
-				value = getSliderValue();
-				// set text field value
-				setFieldValue();
-				// fire event
-				fireChangeEvent();
-				ignore = false;
-			}
-		});
+		slider.addChangeListener(e -> {
+            if (ignore) return;
+            ignore = true;
+            // update the value
+            value = getSliderValue();
+            // set text field value
+            setFieldValue();
+            // fire event
+            fireChangeEvent();
+            ignore = false;
+        });
 		
 		textField.addActionListener(new AbstractAction() {
 			@Override

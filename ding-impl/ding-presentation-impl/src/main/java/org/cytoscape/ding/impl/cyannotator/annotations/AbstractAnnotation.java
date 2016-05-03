@@ -223,11 +223,7 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 			return;
 
 		if (!SwingUtilities.isEventDispatchThread()) {
-			SwingUtilities.invokeLater( new Runnable() {
-				public void run () {
-					changeCanvas(cnvs);
-				}
-			});
+			SwingUtilities.invokeLater(() -> changeCanvas(cnvs));
 			return;
 		}
 
@@ -273,9 +269,7 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 	@Override
 	public void addComponent(final JComponent cnvs) {
 		if (!SwingUtilities.isEventDispatchThread()) {
-			SwingUtilities.invokeLater( new Runnable () {
-				public void run() { addComponent(cnvs); }
-			});
+			SwingUtilities.invokeLater(() -> addComponent(cnvs));
 			return;
 		}
 
@@ -321,9 +315,7 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 
 	public void setLocation(final int x, final int y) {
 		if (!SwingUtilities.isEventDispatchThread()) {
-			SwingUtilities.invokeLater( new Runnable () {
-				public void run() { setLocation(x, y); }
-			});
+			SwingUtilities.invokeLater(() -> setLocation(x, y));
 			return;
 		}
 		super.setLocation(x, y);
@@ -332,9 +324,7 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 
 	public void setSize(final int width, final int height) {
 		if (!SwingUtilities.isEventDispatchThread()) {
-			SwingUtilities.invokeLater( new Runnable () {
-				public void run() { setSize(width, height); }
-			});
+			SwingUtilities.invokeLater(() -> setSize(width, height));
 			return;
 		}
 		super.setSize(width, height);
@@ -350,9 +340,7 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 
 	public void removeAnnotation() {
 		if (!SwingUtilities.isEventDispatchThread()) {
-			SwingUtilities.invokeLater( new Runnable () {
-				public void run() { removeAnnotation(); }
-			});
+			SwingUtilities.invokeLater(() -> removeAnnotation());
 			return;
 		}
 

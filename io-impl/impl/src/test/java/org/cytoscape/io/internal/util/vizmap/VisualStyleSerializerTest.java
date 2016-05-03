@@ -553,17 +553,9 @@ public class VisualStyleSerializerTest {
 	private VisualStyleFactory mockVisualStyleFactory(VisualStyle defStyle) {
 		VisualStyleFactory factory = mock(VisualStyleFactory.class);
 		
-		when(factory.createVisualStyle(defStyle)).thenAnswer(new Answer<VisualStyle>() {
-			public VisualStyle answer(InvocationOnMock invocation) throws Throwable {
-				return new DummyVisualStyle((VisualStyle) invocation.getArguments()[0]);
-			}
-		});
+		when(factory.createVisualStyle(defStyle)).thenAnswer(invocation -> new DummyVisualStyle((VisualStyle) invocation.getArguments()[0]));
 		
-		when(factory.createVisualStyle(anyString())).thenAnswer(new Answer<VisualStyle>() {
-			public VisualStyle answer(InvocationOnMock invocation) throws Throwable {
-				return new DummyVisualStyle((String) invocation.getArguments()[0]);
-			}
-		});
+		when(factory.createVisualStyle(anyString())).thenAnswer(invocation -> new DummyVisualStyle((String) invocation.getArguments()[0]));
 		
 		return factory;
 	}
@@ -573,18 +565,15 @@ public class VisualStyleSerializerTest {
 		VisualMappingFunctionFactory factory = mock(VisualMappingFunctionFactory.class);
 		
 		when(factory.createVisualMappingFunction(anyString(), any(Class.class), any(VisualProperty.class)))
-			.thenAnswer(new Answer<VisualMappingFunction>() {
-				@Override
-				public VisualMappingFunction answer(InvocationOnMock invocation) throws Throwable {
-					Object[] args = invocation.getArguments();
-					if (type == DiscreteMapping.class)
-						return new DummyDiscreteMapping((String)args[0], (Class)args[1], (VisualProperty)args[2], evtHelper);
-					else if (type == ContinuousMapping.class)
-						return new DummyContinuousMapping((String)args[0], (Class)args[1], (VisualProperty)args[2], evtHelper);
-					else
-						return new DummyPassthroughMapping((String)args[0], (Class)args[1], (VisualProperty)args[2], evtHelper);
-				}
-			});
+			.thenAnswer(invocation -> {
+                Object[] args = invocation.getArguments();
+                if (type == DiscreteMapping.class)
+                    return new DummyDiscreteMapping((String)args[0], (Class)args[1], (VisualProperty)args[2], evtHelper);
+                else if (type == ContinuousMapping.class)
+                    return new DummyContinuousMapping((String)args[0], (Class)args[1], (VisualProperty)args[2], evtHelper);
+                else
+                    return new DummyPassthroughMapping((String)args[0], (Class)args[1], (VisualProperty)args[2], evtHelper);
+            });
 		
 		return factory;
 	}

@@ -71,13 +71,10 @@ public class LinearGradientEditor extends AbstractGradientEditor<LinearGradient>
 			angleCmb.setSelectedItem(gradient.get(ANGLE, Double.class, 0.0));
 			angleCmb.setInputVerifier(new DoubleInputVerifier());
 			
-			angleCmb.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					final Object angle = angleCmb.getSelectedItem();
-		            gradient.set(ANGLE, angle instanceof Number ? ((Number)angle).doubleValue() : 0.0);
-				}
-			});
+			angleCmb.addActionListener(e -> {
+                final Object angle = angleCmb.getSelectedItem();
+                gradient.set(ANGLE, angle instanceof Number ? ((Number)angle).doubleValue() : 0.0);
+            });
 		}
 		
 		return angleCmb;

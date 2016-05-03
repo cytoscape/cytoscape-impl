@@ -534,9 +534,7 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 			boundChanged = false;
 
 			// We need to do a repaint so that we get the selection area
-			SwingUtilities.invokeLater(new Runnable() {
-				public void run() { repaint(); }
-			});
+			SwingUtilities.invokeLater(() -> repaint());
 		}
 	}
 }

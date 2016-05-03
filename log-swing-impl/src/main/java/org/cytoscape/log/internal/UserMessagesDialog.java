@@ -44,11 +44,7 @@ class UserMessagesDialog {
 		dialog.add(logViewer.getComponent(), BorderLayout.CENTER);
 
 		JButton clearBtn = new JButton("Clear");
-		clearBtn.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				logViewer.clear();
-			}
-		});
+		clearBtn.addActionListener(e -> logViewer.clear());
 		JPanel bottomBtns = new JPanel(new FlowLayout(FlowLayout.RIGHT));
 		bottomBtns.add(clearBtn);
 		dialog.add(bottomBtns, BorderLayout.SOUTH);

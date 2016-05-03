@@ -118,33 +118,25 @@ public class AdjacencyTransformerViewFactory implements TransformerViewFactory {
 			
 			
 			// now that UI has been initialized we can attach event handlers
-			actionCombo.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-					ComboItem<Action> item = actionCombo.getItemAt(actionCombo.getSelectedIndex());
-					model.setAction(item.getValue());
-				}
-			});
+			actionCombo.addActionListener(e -> {
+                ComboItem<Action> item = actionCombo.getItemAt(actionCombo.getSelectedIndex());
+                model.setAction(item.getValue());
+            });
 			
-			outputCombo.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-					ComboItem<What> item = outputCombo.getItemAt(outputCombo.getSelectedIndex());
-					model.setOutput(item.getValue());
-				}
-			});
+			outputCombo.addActionListener(e -> {
+                ComboItem<What> item = outputCombo.getItemAt(outputCombo.getSelectedIndex());
+                model.setOutput(item.getValue());
+            });
 			
-			edgesAreCombo.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-					ComboItem<EdgesAre> item = edgesAreCombo.getItemAt(edgesAreCombo.getSelectedIndex());
-					model.setEdgesAre(item.getValue());
-				}
-			});
+			edgesAreCombo.addActionListener(e -> {
+                ComboItem<EdgesAre> item = edgesAreCombo.getItemAt(edgesAreCombo.getSelectedIndex());
+                model.setEdgesAre(item.getValue());
+            });
 			
-			filterTargetCombo.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-					ComboItem<What> item = filterTargetCombo.getItemAt(filterTargetCombo.getSelectedIndex());
-					model.setFilterTarget(item.getValue());
-				}
-			});
+			filterTargetCombo.addActionListener(e -> {
+                ComboItem<What> item = filterTargetCombo.getItemAt(filterTargetCombo.getSelectedIndex());
+                model.setFilterTarget(item.getValue());
+            });
 			
 			arrowLabel.addMouseListener(new MouseAdapter() {
 				public void mouseClicked(MouseEvent event) {

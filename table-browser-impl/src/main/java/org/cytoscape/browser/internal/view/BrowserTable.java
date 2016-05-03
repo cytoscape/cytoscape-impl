@@ -300,26 +300,23 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 
 		final JTable table = this;
 		
-		openFormulaBuilderMenuItem.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(final ActionEvent e) {
-				final int cellRow = table.getSelectedRow();
-				final int cellColumn = table.getSelectedColumn();
-				final BrowserTableModel tableModel = (BrowserTableModel) getModel();
-				final JFrame rootFrame = (JFrame) SwingUtilities.getRoot(table);
-				
-				if (cellRow == -1 || cellColumn == -1 || !tableModel.isCellEditable(cellRow, cellColumn)) {
-					JOptionPane.showMessageDialog(rootFrame, "Can't enter a formula w/o a selected cell.",
-							"Information", JOptionPane.INFORMATION_MESSAGE);
-				} else {
-					final String columnName = tableModel.getColumnName(cellColumn);
-					FormulaBuilderDialog formulaBuilderDialog = new FormulaBuilderDialog(compiler, BrowserTable.this,
-							rootFrame, columnName);
-					formulaBuilderDialog.setLocationRelativeTo(rootFrame);
-					formulaBuilderDialog.setVisible(true);
-				}
-			}
-		});
+		openFormulaBuilderMenuItem.addActionListener(e -> {
+            final int cellRow = table.getSelectedRow();
+            final int cellColumn = table.getSelectedColumn();
+            final BrowserTableModel tableModel = (BrowserTableModel) getModel();
+            final JFrame rootFrame = (JFrame) SwingUtilities.getRoot(table);
+            
+            if (cellRow == -1 || cellColumn == -1 || !tableModel.isCellEditable(cellRow, cellColumn)) {
+                JOptionPane.showMessageDialog(rootFrame, "Can't enter a formula w/o a selected cell.",
+                        "Information", JOptionPane.INFORMATION_MESSAGE);
+            } else {
+                final String columnName = tableModel.getColumnName(cellColumn);
+                FormulaBuilderDialog formulaBuilderDialog = new FormulaBuilderDialog(compiler, BrowserTable.this,
+                        rootFrame, columnName);
+                formulaBuilderDialog.setLocationRelativeTo(rootFrame);
+                formulaBuilderDialog.setVisible(true);
+            }
+        });
 
 		return rightClickPopupMenu;
 	}
@@ -503,11 +500,7 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 		if (SwingUtilities.isEventDispatchThread()) {
 			tableHeader.repaint();
 		} else {
-			SwingUtilities.invokeLater (new Runnable () {
-				public void run () {
-					tableHeader.repaint();
-				}
-			});
+			SwingUtilities.invokeLater (() -> tableHeader.repaint());
 		}
 	}
 	
@@ -578,13 +571,10 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 		setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 		addMouseListener(this);
 		
-		getSelectionModel().addListSelectionListener(new ListSelectionListener() {
-			@Override
-			public void valueChanged(final ListSelectionEvent e) {
-				if (!e.getValueIsAdjusting() && !ignoreRowSelectionEvents)
-					selectFromTable();
-			}
-		});
+		getSelectionModel().addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting() && !ignoreRowSelectionEvents)
+                selectFromTable();
+        });
 	}
 	
 	private void setKeyStroke() {
@@ -624,29 +614,23 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 			curItem.add(getPopupMenu());
 
 			JMenuItem copyAll = new JMenuItem("Copy all entries");
-			copyAll.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					final StringBuilder builder = new StringBuilder();
-					for (Object oneEntry : listItems)
-						builder.append(oneEntry.toString() + "\t");
+			copyAll.addActionListener(e1 -> {
+                final StringBuilder builder = new StringBuilder();
+                for (Object oneEntry : listItems)
+                    builder.append(oneEntry.toString() + "\t");
 
-					final StringSelection selection = new StringSelection(builder.toString());
-					systemClipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-					systemClipboard.setContents(selection, selection);
-				}
-			});
+                final StringSelection selection = new StringSelection(builder.toString());
+                systemClipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+                systemClipboard.setContents(selection, selection);
+            });
 			curItem.add(copyAll);
 
 			JMenuItem copy = new JMenuItem("Copy this entry");
-			copy.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					final StringSelection selection = new StringSelection(item.toString());
-					systemClipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-					systemClipboard.setContents(selection, selection);
-				}
-			});
+			copy.addActionListener(e1 -> {
+                final StringSelection selection = new StringSelection(item.toString());
+                systemClipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+                systemClipboard.setContents(selection, selection);
+            });
 
 			curItem.add(copy);
 			if (dispName != null && (dispName.startsWith("http:") || dispName.startsWith("https:")))

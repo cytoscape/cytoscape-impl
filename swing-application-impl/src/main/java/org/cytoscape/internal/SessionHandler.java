@@ -343,23 +343,20 @@ public class SessionHandler implements CyShutdownListener, SessionLoadedListener
 				sortedNetworks.add((CySubNetwork) n);
 		}
 		
-		Collections.sort(sortedNetworks, new Comparator<CySubNetwork>() {
-			@Override
-			public int compare(final CySubNetwork n1, final CySubNetwork n2) {
-				try {
-					Integer o1 = netOrder.get(n1.getSUID());
-					Integer o2 = netOrder.get(n2.getSUID());
-					if (o1 == null) o1 = -1;
-					if (o2 == null) o2 = -1;
-					
-					return o1.compareTo(o2);
-				} catch (final Exception e) {
-					logger.error("Cannot sort networks", e);
-				}
-				
-				return 0;
-			}
-		});
+		Collections.sort(sortedNetworks, (n1, n2) -> {
+            try {
+                Integer o1 = netOrder.get(n1.getSUID());
+                Integer o2 = netOrder.get(n2.getSUID());
+                if (o1 == null) o1 = -1;
+                if (o2 == null) o2 = -1;
+                
+                return o1.compareTo(o2);
+            } catch (final Exception e) {
+                logger.error("Cannot sort networks", e);
+            }
+            
+            return 0;
+        });
 		
 		final CyApplicationManager applicationMgr = serviceRegistrar.getService(CyApplicationManager.class);
 		final CyNetworkViewManager netViewMgr = serviceRegistrar.getService(CyNetworkViewManager.class);

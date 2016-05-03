@@ -315,12 +315,7 @@ public class PreviewTablePanel extends JPanel {
 			});
 			
 			// Also close the editor dialog when the table changes
-			previewTable.getModel().addTableModelListener(new TableModelListener() {
-				@Override
-				public void tableChanged(TableModelEvent e) {
-					disposeEditDialog();
-				}
-			});
+			previewTable.getModel().addTableModelListener(e -> disposeEditDialog());
 		}
 		
 		return previewTable;
@@ -847,44 +842,32 @@ public class PreviewTablePanel extends JPanel {
 			}
 		});
 		
-		attrEditorPanel.addPropertyChangeListener("attributeName", new PropertyChangeListener() {
-			@Override
-			public void propertyChange(PropertyChangeEvent evt) {
-				final String attrName = (String) evt.getNewValue();
-				
-				if (attrName != null && !attrName.trim().isEmpty()) {
-					((PreviewTableModel) getPreviewTable().getModel()).setColumnName(colIdx, attrName);
-					getPreviewTable().getColumnModel().getColumn(colIdx).setHeaderValue(attrName);
-					updatePreviewTable();
-				}
-			}
-		});
-		attrEditorPanel.addPropertyChangeListener("attributeType", new PropertyChangeListener() {
-			@Override
-			public void propertyChange(PropertyChangeEvent evt) {
-				setType(colIdx, (SourceColumnSemantic)evt.getNewValue());
-				updatePreviewTable();
-			}
-		});
-		attrEditorPanel.addPropertyChangeListener("attributeDataType", new PropertyChangeListener() {
-			@Override
-			public void propertyChange(PropertyChangeEvent evt) {
-				final AttributeDataType newDataType = (AttributeDataType) evt.getNewValue();
+		attrEditorPanel.addPropertyChangeListener("attributeName", evt -> {
+            final String attrName1 = (String) evt.getNewValue();
+            
+            if (attrName1 != null && !attrName1.trim().isEmpty()) {
+                ((PreviewTableModel) getPreviewTable().getModel()).setColumnName(colIdx, attrName1);
+                getPreviewTable().getColumnModel().getColumn(colIdx).setHeaderValue(attrName1);
+                updatePreviewTable();
+            }
+        });
+		attrEditorPanel.addPropertyChangeListener("attributeType", evt -> {
+            setType(colIdx, (SourceColumnSemantic)evt.getNewValue());
+            updatePreviewTable();
+        });
+		attrEditorPanel.addPropertyChangeListener("attributeDataType", evt -> {
+            final AttributeDataType newDataType = (AttributeDataType) evt.getNewValue();
 
-				if (newDataType.isList())
-					setListDelimiter(colIdx, attrEditorPanel.getListDelimiter());
+            if (newDataType.isList())
+                setListDelimiter(colIdx, attrEditorPanel.getListDelimiter());
 
-				setDataType(colIdx, newDataType);
-				updatePreviewTable();
-			}
-		});
-		attrEditorPanel.addPropertyChangeListener("listDelimiter", new PropertyChangeListener() {
-			@Override
-			public void propertyChange(PropertyChangeEvent evt) {
-				setListDelimiter(colIdx, (String)evt.getNewValue());
-				updatePreviewTable();
-			}
-		});
+            setDataType(colIdx, newDataType);
+            updatePreviewTable();
+        });
+		attrEditorPanel.addPropertyChangeListener("listDelimiter", evt -> {
+            setListDelimiter(colIdx, (String)evt.getNewValue());
+            updatePreviewTable();
+        });
 		
 		positionEditDialog();
 		
@@ -1012,22 +995,19 @@ public class PreviewTablePanel extends JPanel {
 					return this;
 				}
 			});
-			sheetComboBox.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent evt) {
-					if (!updating) {
-						disposeEditDialog();
-						final Sheet sheet = (Sheet) sheetComboBox.getSelectedItem();
-						
-						try {
-							if (sheet != null)
-								updatePreviewTable(sheet);
-						} catch (IOException e) {
-							logger.error("Cannot preview Excel sheet '" + sheet.getSheetName() + "'.", e);
-						}
-					}
-				}
-			});
+			sheetComboBox.addActionListener(evt -> {
+                if (!updating) {
+                    disposeEditDialog();
+                    final Sheet sheet = (Sheet) sheetComboBox.getSelectedItem();
+                    
+                    try {
+                        if (sheet != null)
+                            updatePreviewTable(sheet);
+                    } catch (IOException e) {
+                        logger.error("Cannot preview Excel sheet '" + sheet.getSheetName() + "'.", e);
+                    }
+                }
+            });
 		}
 		
 		return sheetComboBox;
@@ -1036,25 +1016,22 @@ public class PreviewTablePanel extends JPanel {
 	private JButton getSelectAllButton() {
 		if (selectAllButton == null) {
 			selectAllButton = new JButton("Select All");
-			selectAllButton.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(final ActionEvent e) {
-					disposeEditDialog();
-					
-					// Replace types "NONE" with new guessed types.
-					// NOTE: This must not change the current data types!
-					final Set<SourceColumnSemantic> ignoredTypes = new HashSet<>(Arrays.asList(types));
-					final SourceColumnSemantic[] newTypes =
-							TypeUtil.guessTypes(importType, getPreviewTable().getModel(), dataTypes, ignoredTypes);
-					
-					for (int i = 0; i < newTypes.length; i++) {
-						if (types.length > i && types[i] == NONE)
-							setType(i, newTypes[i]);
-					}
-					
-					updatePreviewTable();
-				}
-			});
+			selectAllButton.addActionListener(e -> {
+                disposeEditDialog();
+                
+                // Replace types "NONE" with new guessed types.
+                // NOTE: This must not change the current data types!
+                final Set<SourceColumnSemantic> ignoredTypes = new HashSet<>(Arrays.asList(types));
+                final SourceColumnSemantic[] newTypes =
+                        TypeUtil.guessTypes(importType, getPreviewTable().getModel(), dataTypes, ignoredTypes);
+                
+                for (int i = 0; i < newTypes.length; i++) {
+                    if (types.length > i && types[i] == NONE)
+                        setType(i, newTypes[i]);
+                }
+                
+                updatePreviewTable();
+            });
 			
 			if (isAquaLAF()) {
 				selectAllButton.putClientProperty("JButton.buttonType", "gradient");
@@ -1070,14 +1047,11 @@ public class PreviewTablePanel extends JPanel {
 	private JButton getSelectNoneButton() {
 		if (selectNoneButton == null) {
 			selectNoneButton = new JButton("Select None");
-			selectNoneButton.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(final ActionEvent e) {
-					disposeEditDialog();
-					fillTypes(NONE);
-					updatePreviewTable();
-				}
-			});
+			selectNoneButton.addActionListener(e -> {
+                disposeEditDialog();
+                fillTypes(NONE);
+                updatePreviewTable();
+            });
 			
 			if (isAquaLAF()) {
 				selectNoneButton.putClientProperty("JButton.buttonType", "gradient");
@@ -1093,14 +1067,11 @@ public class PreviewTablePanel extends JPanel {
 	private JScrollPane getTableScrollPane() {
 		if (tableScrollPane == null) {
 			tableScrollPane = new JScrollPane(getPreviewTable());
-			tableScrollPane.getHorizontalScrollBar().addAdjustmentListener(new AdjustmentListener() {
-				@Override
-				public void adjustmentValueChanged(AdjustmentEvent e) {
-					// Realign the Attribute Editor Dialog if it is open
-					if (!e.getValueIsAdjusting())
-						positionEditDialog();
-				}
-			});
+			tableScrollPane.getHorizontalScrollBar().addAdjustmentListener(e -> {
+                // Realign the Attribute Editor Dialog if it is open
+                if (!e.getValueIsAdjusting())
+                    positionEditDialog();
+            });
 		}
 		
 		return tableScrollPane;

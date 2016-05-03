@@ -300,12 +300,7 @@ public class FormulaBuilderDialog extends JDialog {
 			functionList = new JList<>(model);
 			functionList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 			
-			functionList.addListSelectionListener(new ListSelectionListener() {
-				@Override
-				public void valueChanged(ListSelectionEvent e) {
-					functionSelected();
-				}
-			});
+			functionList.addListSelectionListener(e -> functionSelected());
 			
 			functionList.setCellRenderer(new DefaultListCellRenderer() {
 				@Override
@@ -324,12 +319,7 @@ public class FormulaBuilderDialog extends JDialog {
 			final List<Function> functions = new ArrayList<>(parser.getRegisteredFunctions());
 			final Collator collator = Collator.getInstance(Locale.getDefault());
 			
-			Collections.sort(functions, new Comparator<Function>() {
-				@Override
-				public int compare(Function f1, Function f2) {
-					return collator.compare(f1.getName(), f2.getName());
-				}
-			});
+			Collections.sort(functions, (f1, f2) -> collator.compare(f1.getName(), f2.getName()));
 			
 			final Class<?> requestedReturnType = getAttributeType(targetAttrName);
 			int index = 0;
@@ -381,12 +371,7 @@ public class FormulaBuilderDialog extends JDialog {
 		if (addButton1 == null) {
 			addButton1 = new JButton("Add");
 			addButton1.setToolTipText("Add the column reference");
-			addButton1.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					updateButtonsAndArgumentDropdown(null, (String) getAttribNamesComboBox().getSelectedItem());
-				}
-			});
+			addButton1.addActionListener(e -> updateButtonsAndArgumentDropdown(null, (String) getAttribNamesComboBox().getSelectedItem()));
 			addButton1.setEnabled(false);
 		}
 		
@@ -397,12 +382,7 @@ public class FormulaBuilderDialog extends JDialog {
 		if (addButton2 == null) {
 			addButton2 = new JButton("Add");
 			addButton2.setToolTipText("Add the constant value");
-			addButton2.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					updateButtonsAndArgumentDropdown(getConstantValuesTextField().getText(), null);
-				}
-			});
+			addButton2.addActionListener(e -> updateButtonsAndArgumentDropdown(getConstantValuesTextField().getText(), null));
 			addButton2.setEnabled(false);
 		}
 		
@@ -412,21 +392,18 @@ public class FormulaBuilderDialog extends JDialog {
 	private JButton getUndoButton() {
 		if (undoButton == null) {
 			undoButton = new JButton("Undo");
-			undoButton.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					if (!undoStack.isEmpty()) {
-						final String formula = getFormulaTextField().getText();
-						final int previousLength = undoStack.pop();
-						getFormulaTextField().setText(formula.substring(0, previousLength));
-						
-						if (!leadingArgs.isEmpty())
-							leadingArgs.remove(leadingArgs.size() - 1);
-						
-						updateButtonsAndArgumentDropdown(null, null);
-					}
-				}
-			});
+			undoButton.addActionListener(e -> {
+                if (!undoStack.isEmpty()) {
+                    final String formula = getFormulaTextField().getText();
+                    final int previousLength = undoStack.pop();
+                    getFormulaTextField().setText(formula.substring(0, previousLength));
+                    
+                    if (!leadingArgs.isEmpty())
+                        leadingArgs.remove(leadingArgs.size() - 1);
+                    
+                    updateButtonsAndArgumentDropdown(null, null);
+                }
+            });
 			undoButton.setEnabled(false);
 		}
 		
@@ -480,12 +457,7 @@ public class FormulaBuilderDialog extends JDialog {
 			
 			applyToComboBox.addItem(ApplicationDomain.ENTIRE_ATTRIBUTE);
 
-			applyToComboBox.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					applicationDomain = (ApplicationDomain) applyToComboBox.getSelectedItem();
-				}
-			});
+			applyToComboBox.addActionListener(e -> applicationDomain = (ApplicationDomain) applyToComboBox.getSelectedItem());
 			applyToComboBox.setEditable(false);
 			applyToComboBox.setEnabled(false);
 		}
@@ -652,12 +624,7 @@ public class FormulaBuilderDialog extends JDialog {
 		}
 
 		final Collator collator = Collator.getInstance(Locale.getDefault());
-		Collections.sort(possibleAttribNames, new Comparator<String>() {
-			@Override
-			public int compare(String s1, String s2) {
-				return collator.compare(s1, s2);
-			}
-		});
+		Collections.sort(possibleAttribNames, (s1, s2) -> collator.compare(s1, s2));
 
 		for (final String attribName : possibleAttribNames)
 			getAttribNamesComboBox().addItem(attribName);

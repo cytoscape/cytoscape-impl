@@ -103,13 +103,10 @@ public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurr
 			AttributeBrowserToolBar.styleButton(selectionModeButton,
 					iconManager.getIconFont(AttributeBrowserToolBar.ICON_FONT_SIZE * 4/5));
 			
-			selectionModeButton.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(final ActionEvent e) {
-					DefaultTableBrowser.this.actionPerformed(e);
-					displayMode.show(selectionModeButton, 0, selectionModeButton.getHeight());
-				}
-			});
+			selectionModeButton.addActionListener(e -> {
+                DefaultTableBrowser.this.actionPerformed(e);
+                displayMode.show(selectionModeButton, 0, selectionModeButton.getHeight());
+            });
 			
 			attributeBrowserToolBar = new AttributeBrowserToolBar(serviceRegistrar, getTableChooser(),
 					selectionModeButton, objType);
@@ -129,44 +126,32 @@ public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurr
 		final JCheckBoxMenuItem displaySelect = new JCheckBoxMenuItem("Show selected");
 		displaySelect.setSelected(rowSelectionMode == BrowserTableModel.ViewMode.SELECTED);
 
-		displayAuto.addActionListener(new ActionListener() {
-			
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				rowSelectionMode = BrowserTableModel.ViewMode.AUTO;
-				changeSelectionMode();
+		displayAuto.addActionListener(e -> {
+            rowSelectionMode = ViewMode.AUTO;
+            changeSelectionMode();
 
-				displayAuto.setSelected(true);
-				displayAll.setSelected(false);
-				displaySelect.setSelected(false);
-			}
-		});
+            displayAuto.setSelected(true);
+            displayAll.setSelected(false);
+            displaySelect.setSelected(false);
+        });
 		
-		displayAll.addActionListener(new ActionListener() {
-			
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				rowSelectionMode = BrowserTableModel.ViewMode.ALL;
-				changeSelectionMode();
+		displayAll.addActionListener(e -> {
+            rowSelectionMode = ViewMode.ALL;
+            changeSelectionMode();
 
-				displayAuto.setSelected(false);
-				displayAll.setSelected(true);
-				displaySelect.setSelected(false);
-			}
-		});
+            displayAuto.setSelected(false);
+            displayAll.setSelected(true);
+            displaySelect.setSelected(false);
+        });
 		
-		displaySelect.addActionListener(new ActionListener() {
-			
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				rowSelectionMode = BrowserTableModel.ViewMode.SELECTED;
-				changeSelectionMode();
-				
-				displayAuto.setSelected(false);
-				displayAll.setSelected(false);
-				displaySelect.setSelected(true);
-			}
-		});
+		displaySelect.addActionListener(e -> {
+            rowSelectionMode = ViewMode.SELECTED;
+            changeSelectionMode();
+            
+            displayAuto.setSelected(false);
+            displayAll.setSelected(false);
+            displaySelect.setSelected(true);
+        });
 		
 		displayMode.add(displayAuto);
 		displayMode.add(displayAll);
@@ -222,49 +207,46 @@ public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurr
 	public void handleEvent(final SetCurrentNetworkEvent e) {
 		final CyNetwork currentNetwork = e.getNetwork();
 		
-		invokeOnEDT(new Runnable() {
-			@Override
-			public void run() {
-				if (currentNetwork != null) {
-					if (objType == CyNode.class) {
-						currentTable = currentNetwork.getDefaultNodeTable();
-					} else if (objType == CyEdge.class) {
-						currentTable = currentNetwork.getDefaultEdgeTable();
-					} else {
-						currentTable = currentNetwork.getDefaultNetworkTable();
-					}
-					currentTableType = objType;
-				} else {
-					currentTable = null;
-					currentTableType = null;
-				}
-		
-				final Set<CyTable> tables = getPublicTables(currentNetwork);
-				ignoreSetCurrentTable = true;
-				
-				try {
-					getTableChooser().removeAllItems();
-					
-					if (currentTable != null) {
-						for (final CyTable tbl : tables)
-							getTableChooser().addItem(tbl);
-						
-						attributeBrowserToolBar.updateEnableState(getTableChooser());
-						getTableChooser().setSelectedItem(currentTable);
-					}
-				} finally {
-					ignoreSetCurrentTable = false;
-				}
-				
-				if (currentTable != null) {
-					final CyApplicationManager applicationManager = serviceRegistrar.getService(CyApplicationManager.class);
-					applicationManager.setCurrentTable(currentTable);
-				}
-				
-				showSelectedTable();
-				changeSelectionMode();
-			}
-		}, true);
+		invokeOnEDT(() -> {
+            if (currentNetwork != null) {
+                if (objType == CyNode.class) {
+                    currentTable = currentNetwork.getDefaultNodeTable();
+                } else if (objType == CyEdge.class) {
+                    currentTable = currentNetwork.getDefaultEdgeTable();
+                } else {
+                    currentTable = currentNetwork.getDefaultNetworkTable();
+                }
+                currentTableType = objType;
+            } else {
+                currentTable = null;
+                currentTableType = null;
+            }
+    
+            final Set<CyTable> tables = getPublicTables(currentNetwork);
+            ignoreSetCurrentTable = true;
+            
+            try {
+                getTableChooser().removeAllItems();
+                
+                if (currentTable != null) {
+                    for (final CyTable tbl : tables)
+                        getTableChooser().addItem(tbl);
+                    
+                    attributeBrowserToolBar.updateEnableState(getTableChooser());
+                    getTableChooser().setSelectedItem(currentTable);
+                }
+            } finally {
+                ignoreSetCurrentTable = false;
+            }
+            
+            if (currentTable != null) {
+                final CyApplicationManager applicationManager = serviceRegistrar.getService(CyApplicationManager.class);
+                applicationManager.setCurrentTable(currentTable);
+            }
+            
+            showSelectedTable();
+            changeSelectionMode();
+        }, true);
 		
 	}
 	
@@ -279,15 +261,12 @@ public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurr
 			final CyNetwork curNet = applicationManager.getCurrentNetwork();
 			
 			if (curNet != null && netTableManager.getTables(curNet, objType).containsValue(newTable)) {
-				invokeOnEDT(new Runnable() {
-					@Override
-					public void run() {
-						if (((DefaultComboBoxModel<CyTable>)getTableChooser().getModel()).getIndexOf(newTable) < 0) {
-							getTableChooser().addItem(newTable);
-							attributeBrowserToolBar.updateEnableState(getTableChooser());
-						}
-					}
-				}, false);
+				invokeOnEDT(() -> {
+                    if (((DefaultComboBoxModel<CyTable>)getTableChooser().getModel()).getIndexOf(newTable) < 0) {
+                        getTableChooser().addItem(newTable);
+                        attributeBrowserToolBar.updateEnableState(getTableChooser());
+                    }
+                }, false);
 			}
 		}
 	}
@@ -303,14 +282,11 @@ public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurr
 			
 			// We need this to happen synchronously or we get royally messed up by the
 			// new table selection
-			invokeOnEDT(new Runnable() {
-				@Override
-				public void run() {
-					// System.out.println("Deleting table "+cyTable+" from browser");
-					attributeBrowserToolBar.updateEnableState(getTableChooser());
-					deleteTable(cyTable);
-				}
-			}, true);
+			invokeOnEDT(() -> {
+                // System.out.println("Deleting table "+cyTable+" from browser");
+                attributeBrowserToolBar.updateEnableState(getTableChooser());
+                deleteTable(cyTable);
+            }, true);
 			
 //			final CyNetworkTableManager netTableManager = serviceRegistrar.getService(CyNetworkTableManager.class);
 //			final CyNetwork network = netTableManager.getNetworkForTable(cyTable);

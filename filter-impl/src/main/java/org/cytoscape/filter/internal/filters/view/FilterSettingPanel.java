@@ -610,13 +610,8 @@ public class FilterSettingPanel extends JPanel {
         chkNot.setName(Integer.toString(pGridY));
         chkNot.setSelected(pFilter.getNegation());
         chkNot.addActionListener(
-        		new ActionListener() {
-					@Override
-					public void actionPerformed(ActionEvent e) {
-						updateNegationStatus(chkNot);
-					}
-				}
-            );
+				e -> updateNegationStatus(chkNot)
+		);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridy = pGridY;

@@ -50,12 +50,7 @@ public final class DeleteColumnTask extends AbstractTableColumnTask implements T
 		undoSupport.postEdit(
 			new DeleteColumnEdit(column));
 		taskMonitor.setProgress(0.3);
-		SwingUtilities.invokeLater(new Runnable() {
-
-            public void run() {
-            	column.getTable().deleteColumn(column.getName());
-            }
-        });
+		SwingUtilities.invokeLater(() -> column.getTable().deleteColumn(column.getName()));
 		taskMonitor.setProgress(1.0);
 	}
 

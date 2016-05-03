@@ -150,28 +150,13 @@ public class CurrentlyInstalledAppsPanel extends JPanel {
         });
         
         enableSelectedButton.setEnabled(false);
-        enableSelectedButton.addActionListener(new ActionListener() {
-        	@Override
-            public void actionPerformed(ActionEvent evt) {
-                enableSelectedButtonActionPerformed(evt);
-            }
-        });
+        enableSelectedButton.addActionListener(evt -> enableSelectedButtonActionPerformed(evt));
 
         disableSelectedButton.setEnabled(false);
-        disableSelectedButton.addActionListener(new ActionListener() {
-        	@Override
-            public void actionPerformed(ActionEvent evt) {
-                disableSelectedButtonActionPerformed(evt);
-            }
-        });
+        disableSelectedButton.addActionListener(evt -> disableSelectedButtonActionPerformed(evt));
 
         uninstallSelectedButton.setEnabled(false);
-        uninstallSelectedButton.addActionListener(new ActionListener() {
-        	@Override
-            public void actionPerformed(ActionEvent evt) {
-                uninstallSelectedButtonActionPerformed(evt);
-            }
-        });
+        uninstallSelectedButton.addActionListener(evt -> uninstallSelectedButtonActionPerformed(evt));
 
         descriptionScrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 
@@ -320,38 +305,28 @@ public class CurrentlyInstalledAppsPanel extends JPanel {
      * Registers a listener to the {@link AppManager} to listen for app change events in order to rebuild the table
      */
     private void setupAppListener() {
-    	appListener = new AppsChangedListener() {
+    	appListener = event -> SwingUtilities.invokeLater(() -> {
+Set<App> selectedApps = getSelectedApps();
 
-			@Override
-			public void appsChanged(AppsChangedEvent event) {
-				SwingUtilities.invokeLater(new Runnable() {
+// Clear table
+DefaultTableModel tableModel = (DefaultTableModel) appsAvailableTable.getModel();
+for (int rowIndex = tableModel.getRowCount() - 1; rowIndex >= 0; rowIndex--) {
+tableModel.removeRow(rowIndex);
+}
 
-					@Override
-					public void run() {
-						Set<App> selectedApps = getSelectedApps();
-						
-						// Clear table
-						DefaultTableModel tableModel = (DefaultTableModel) appsAvailableTable.getModel();
-						for (int rowIndex = tableModel.getRowCount() - 1; rowIndex >= 0; rowIndex--) {
-							tableModel.removeRow(rowIndex);
-						}
-						
-						// Re-populate table
-						populateTable();
-						
-						// Update labels
-						updateLabels();
+// Re-populate table
+populateTable();
 
-						// Re-select previously selected apps
-						for (int rowIndex = 0; rowIndex < tableModel.getRowCount(); rowIndex++) {
-							if (selectedApps.contains(tableModel.getValueAt(rowIndex, 0))) {
-								appsAvailableTable.addRowSelectionInterval(rowIndex, rowIndex);
-							}
-						}
-					}
-				});
-			}
-    	};
+// Update labels
+updateLabels();
+
+// Re-select previously selected apps
+for (int rowIndex = 0; rowIndex < tableModel.getRowCount(); rowIndex++) {
+if (selectedApps.contains(tableModel.getValueAt(rowIndex, 0))) {
+appsAvailableTable.addRowSelectionInterval(rowIndex, rowIndex);
+}
+}
+});
     	
     	appManager.addAppListener(appListener);
     }
@@ -405,13 +380,7 @@ public class CurrentlyInstalledAppsPanel extends JPanel {
      * app description box
      */
     private void setupDescriptionListener() {
-    	appsAvailableTable.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
-			
-			@Override
-			public void valueChanged(ListSelectionEvent e) {
-				updateDescriptionBox();
-			}
-		});
+    	appsAvailableTable.getSelectionModel().addListSelectionListener(e -> updateDescriptionBox());
     }
     
     private void updateDescriptionBox() {

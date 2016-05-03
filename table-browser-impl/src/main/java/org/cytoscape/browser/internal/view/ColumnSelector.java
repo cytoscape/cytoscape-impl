@@ -102,12 +102,9 @@ public class ColumnSelector extends JPanel {
 		this.serviceRegistrar = serviceRegistrar;
 		
 		final Collator collator = Collator.getInstance(Locale.getDefault());
-		this.columns = new TreeMap<String, CyColumn>(new Comparator<String>() {
-			@Override
-			public int compare(String s1, String s2) {
-				return collator.compare(s1, s2);
-			}
-		});
+		this.columns = new TreeMap<String, CyColumn>((s1, s2) -> {
+            return collator.compare(s1, s2);
+        });
 		this.selectedColumnNames = new HashSet<>();
 		
 		init();
@@ -225,18 +222,15 @@ public class ColumnSelector extends JPanel {
 			table.setTableHeader(null);
 			table.setShowGrid(false);
 			
-			table.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
-				@Override
-				public void valueChanged(ListSelectionEvent e) {
-					if (!e.getValueIsAdjusting()) {
-						// Workaround for preventing a click on the check-box in a selected row
-						// from changing the selection when multiple table rows are already selected
-						if (table.getSelectedRowCount() > 0)
-							previousSelectedRows = Arrays.stream(table.getSelectedRows()).boxed()
-									.collect(Collectors.toList());
-					}
-				}
-			});
+			table.getSelectionModel().addListSelectionListener(e -> {
+                if (!e.getValueIsAdjusting()) {
+                    // Workaround for preventing a click on the check-box in a selected row
+                    // from changing the selection when multiple table rows are already selected
+                    if (table.getSelectedRowCount() > 0)
+                        previousSelectedRows = Arrays.stream(table.getSelectedRows()).boxed()
+                                .collect(Collectors.toList());
+                }
+            });
 			table.addMouseListener(new MouseAdapter() {
 				@Override
 				public void mousePressed(MouseEvent e) {
@@ -288,12 +282,7 @@ public class ColumnSelector extends JPanel {
 	private JButton getSelectAllButton() {
 		if (selectAllButton == null) {
 			selectAllButton = new JButton("Select All");
-			selectAllButton.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(final ActionEvent e) {
-					setSelectedToAllRows(true);
-				}
-			});
+			selectAllButton.addActionListener(e -> setSelectedToAllRows(true));
 			
 			if (isAquaLAF()) {
 				selectAllButton.putClientProperty("JButton.buttonType", "gradient");
@@ -307,12 +296,7 @@ public class ColumnSelector extends JPanel {
 	private JButton getSelectNoneButton() {
 		if (selectNoneButton == null) {
 			selectNoneButton = new JButton("Select None");
-			selectNoneButton.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(final ActionEvent e) {
-					setSelectedToAllRows(false);
-				}
-			});
+			selectNoneButton.addActionListener(e -> setSelectedToAllRows(false));
 			
 			if (isAquaLAF()) {
 				selectNoneButton.putClientProperty("JButton.buttonType", "gradient");

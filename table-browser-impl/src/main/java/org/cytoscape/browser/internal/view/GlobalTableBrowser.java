@@ -112,18 +112,15 @@ public class GlobalTableBrowser extends AbstractTableBrowser
 			if (comboBoxModel.getSize() == 0) {
 				// The last table is deleted, refresh the browser table (this is a special case)
 				deleteTable(cyTable);
-				SwingUtilities.invokeLater(new Runnable() {
-					@Override
-					public void run() {
-						serviceRegistrar.unregisterService(GlobalTableBrowser.this, CytoPanelComponent.class);
-						
-						final CyApplicationManager applicationManager =
-								serviceRegistrar.getService(CyApplicationManager.class);
-						
-						applicationManager.setCurrentTable(null);
-						showSelectedTable();
-					}
-				});
+				SwingUtilities.invokeLater(() -> {
+                    serviceRegistrar.unregisterService(GlobalTableBrowser.this, CytoPanelComponent.class);
+                    
+                    final CyApplicationManager applicationManager =
+                            serviceRegistrar.getService(CyApplicationManager.class);
+                    
+                    applicationManager.setCurrentTable(null);
+                    showSelectedTable();
+                });
 			}
 		}
 	}
@@ -148,12 +145,8 @@ public class GlobalTableBrowser extends AbstractTableBrowser
 			
 			if (tableChooser.getItemCount() == 1) {
 				SwingUtilities.invokeLater(
-					new Runnable() {
-						public void run() {
-							serviceRegistrar.registerService(GlobalTableBrowser.this, CytoPanelComponent.class,
-									new Properties());
-						}
-					});
+						() -> serviceRegistrar.registerService(GlobalTableBrowser.this, CytoPanelComponent.class,
+                                new Properties()));
 			}
 		}
 	}
@@ -171,13 +164,10 @@ public class GlobalTableBrowser extends AbstractTableBrowser
 				tableChooser.setEnabled(false);
 				// The last table is deleted, refresh the browser table (this is a special case)
 				deleteTable(table);
-				SwingUtilities.invokeLater(new Runnable() {
-					@Override
-					public void run() {
-						serviceRegistrar.unregisterService(GlobalTableBrowser.this, CytoPanelComponent.class);
-						showSelectedTable();
-					}
-				});
+				SwingUtilities.invokeLater(() -> {
+                    serviceRegistrar.unregisterService(GlobalTableBrowser.this, CytoPanelComponent.class);
+                    showSelectedTable();
+                });
 			}
 		} else if (table.isPublic() || showPrivateTables) {
 			comboBoxModel.addAndSetSelectedItem(table);
@@ -242,12 +232,7 @@ public class GlobalTableBrowser extends AbstractTableBrowser
 		GlobalTableComboBoxModel(final Map<CyTable, String> tableToStringMap) {
 			this.tableToStringMap = tableToStringMap;
 			tables = new ArrayList<CyTable>();
-			tableComparator = new Comparator<CyTable>() {
-				@Override
-				public int compare(final CyTable table1, final CyTable table2) {
-					return table1.getTitle().compareTo(table2.getTitle());
-				}
-			};
+			tableComparator = (table1, table2) -> table1.getTitle().compareTo(table2.getTitle());
 		}
 
 		private void updateTableToStringMap() {
@@ -276,12 +261,7 @@ public class GlobalTableBrowser extends AbstractTableBrowser
 			}
 
 			// This is necessary to avoid deadlock!
-			SwingUtilities.invokeLater(new Runnable() {
-				@Override
-				public void run() {
-					setSelectedItem(newTable);
-				}
-			});
+			SwingUtilities.invokeLater(() -> setSelectedItem(newTable));
 		}
 
 		void removeItem(final CyTable deletedTable) {

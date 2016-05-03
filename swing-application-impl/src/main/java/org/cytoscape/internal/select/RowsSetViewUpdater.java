@@ -90,12 +90,7 @@ public class RowsSetViewUpdater implements RowsSetListener {
 	 */
 	@Override
 	public void handleEvent(final RowsSetEvent e) {
-		SwingUtilities.invokeLater(new Runnable() {
-			@Override
-			public void run() {
-				updateView(e);
-			}
-		});
+		SwingUtilities.invokeLater(() -> updateView(e));
 	}
 
 	private final void updateView(final RowsSetEvent e) {

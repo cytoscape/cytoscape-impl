@@ -77,13 +77,10 @@ public class CompositeTransformerPanel extends JPanel implements CompositePanelC
 		button.setFont(iconManager.getIconFont(11.0f));
 		button.setToolTipText("Add new chain entry...");
 		button.putClientProperty("JButton.buttonType", "gradient");
-		button.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent event) {
-				JPopupMenu menu = transformerPanelController.createAddChainEntryMenu(CompositeTransformerPanel.this, parent);
-				menu.show(button, 0, button.getHeight());
-			}
-		});
+		button.addActionListener(event -> {
+            JPopupMenu menu = transformerPanelController.createAddChainEntryMenu(CompositeTransformerPanel.this, parent);
+            menu.show(button, 0, button.getHeight());
+        });
 		return button;
 	}
 

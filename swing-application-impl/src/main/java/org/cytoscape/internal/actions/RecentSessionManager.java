@@ -76,12 +76,7 @@ public class RecentSessionManager implements SessionLoadedListener, CyShutdownLi
 		clearMenuAction = new ClearMenuAction();
 		serviceRegistrar.registerAllServices(clearMenuAction, new Properties());
 		
-		SwingUtilities.invokeLater(new Runnable() {
-			@Override
-			public void run() {
-				updateMenuItems();
-			}
-		});
+		SwingUtilities.invokeLater(() -> updateMenuItems());
 	}
 
 	private void updateMenuItems() {
@@ -116,12 +111,7 @@ public class RecentSessionManager implements SessionLoadedListener, CyShutdownLi
 
 	@Override
 	public void handleEvent(SessionLoadedEvent e) {
-		SwingUtilities.invokeLater(new Runnable() {
-			@Override
-			public void run() {
-				updateMenuItems();
-			}
-		});
+		SwingUtilities.invokeLater(() -> updateMenuItems());
 	}
 	
 	@Override

@@ -169,66 +169,54 @@ class TaskDialog extends JDialog {
 	}
 
 	public void setTaskTitle(final String taskTitle) {
-		invokeOnEDT(new Runnable() {
-			@Override
-			public void run() {
-				final String currentTitle = titleLabel.getText();
+		invokeOnEDT(() -> {
+            final String currentTitle = titleLabel.getText();
 
-				if (currentTitle == null || currentTitle.length() == 0) {
-					titleLabel.setText(taskTitle);
-					setTitle("Cytoscape: " + taskTitle);
-				} else {
-					subtitleLabel.setVisible(true);
-					subtitleLabel.setText(taskTitle);
-				}
+            if (currentTitle == null || currentTitle.length() == 0) {
+                titleLabel.setText(taskTitle);
+                setTitle("Cytoscape: " + taskTitle);
+            } else {
+                subtitleLabel.setVisible(true);
+                subtitleLabel.setText(taskTitle);
+            }
 
-				updateLabels();
-				pack();
-			}
-		});
+            updateLabels();
+            pack();
+        });
 	}
 
 	public void setPercentCompleted(final float percent) {
-		invokeOnEDT(new Runnable() {
-			@Override
-			public void run() {
-				if (percent < 0.0f)
-					progressBar.setIndeterminate();
-				else
-					progressBar.setProgress(percent);
-			}
-		});
+		invokeOnEDT(() -> {
+            if (percent < 0.0f)
+                progressBar.setIndeterminate();
+            else
+                progressBar.setProgress(percent);
+        });
 	}
 
 	public void setException(final Throwable t) {
 		t.printStackTrace();
 		errorOccurred = true;
 
-		invokeOnEDT(new Runnable() {
-			@Override
-			public void run() {
-				setStatus(GUIDefaults.ICON_ERROR, LookAndFeelUtil.getErrorColor(), t.getMessage());
-				progressBar.setVisible(false);
-				closeButton.setVisible(true);
-				cancelButton.setVisible(false);
-				cancelLabel.setVisible(false);
-				updateLabels();
-				pack();
-			}
-		});
+		invokeOnEDT(() -> {
+            setStatus(GUIDefaults.ICON_ERROR, LookAndFeelUtil.getErrorColor(), t.getMessage());
+            progressBar.setVisible(false);
+            closeButton.setVisible(true);
+            cancelButton.setVisible(false);
+            cancelLabel.setVisible(false);
+            updateLabels();
+            pack();
+        });
 	}
 
 	public void setStatus(final String iconText, final Color iconForeground, final String message) {
-		invokeOnEDT(new Runnable() {
-			@Override
-			public void run() {
-				msgIconLabel.setText(iconText);
-				msgIconLabel.setForeground(iconForeground != null ? iconForeground : msgArea.getForeground());
-				msgArea.setText(message);
-				updateLabels();
-				pack();
-			}
-		});
+		invokeOnEDT(() -> {
+            msgIconLabel.setText(iconText);
+            msgIconLabel.setForeground(iconForeground != null ? iconForeground : msgArea.getForeground());
+            msgArea.setText(message);
+            updateLabels();
+            pack();
+        });
 	}
 
 	public boolean errorOccurred() {
@@ -247,13 +235,10 @@ class TaskDialog extends JDialog {
 	}
 	
 	private void updateLabels() {
-		invokeOnEDT(new Runnable() {
-			@Override
-			public void run() {
-				titleLabel.setVisible(titleLabel.getText() != null && !titleLabel.getText().trim().isEmpty());
-				subtitleLabel.setVisible(subtitleLabel.getText() != null && !subtitleLabel.getText().trim().isEmpty());
-			}
-		});
+		invokeOnEDT(() -> {
+            titleLabel.setVisible(titleLabel.getText() != null && !titleLabel.getText().trim().isEmpty());
+            subtitleLabel.setVisible(subtitleLabel.getText() != null && !subtitleLabel.getText().trim().isEmpty());
+        });
 	}
 
 	/**

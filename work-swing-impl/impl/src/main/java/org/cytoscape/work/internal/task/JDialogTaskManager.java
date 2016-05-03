@@ -172,11 +172,7 @@ public class JDialogTaskManager extends AbstractTaskManager<JDialog,Window> impl
 		// Used to create a thread that is executed by the shutdown hook
 		ThreadFactory threadFactory = Executors.defaultThreadFactory();
 
-		Runnable shutdownHook = new Runnable() {
-			public void run() {
-				serviceToShutdown.shutdownNow();
-			}
-		};
+		Runnable shutdownHook = () -> serviceToShutdown.shutdownNow();
 		Runtime.getRuntime().addShutdownHook(threadFactory.newThread(shutdownHook));
 	}
 
@@ -257,20 +253,18 @@ public class JDialogTaskManager extends AbstractTaskManager<JDialog,Window> impl
 	// if the task thread has not yet finished.
 	private void openTaskMonitorOnDelay(final SwingTaskMonitor taskMonitor, 
 	                                    final Future<?> executorFuture) {
-		final Runnable timedOpen = new Runnable() {
-			public void run() {
-				if (!(executorFuture.isDone() || executorFuture.isCancelled())) {
-					SwingUtilities.invokeLater(new Runnable() {
-						@Override
-						public void run() {
-							if (!taskMonitor.isClosed()) {
-								taskMonitor.open();
-							}
-						}
-					});
-				}
-			}
-		};
+		final Runnable timedOpen = () -> {
+            if (!(executorFuture.isDone() || executorFuture.isCancelled())) {
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (!taskMonitor.isClosed()) {
+                            taskMonitor.open();
+                        }
+                    }
+                });
+            }
+        };
 
 		timedDialogExecutorService.schedule(timedOpen, DELAY_BEFORE_SHOWING_DIALOG, DELAY_TIMEUNIT);
 	}

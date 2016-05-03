@@ -608,23 +608,19 @@ public class CytoPanelImp extends JPanel implements CytoPanel, ChangeListener {
 		closeButton.setFont(iconManager.getIconFont(13));
 		closeButton.setSelected(true);
 		
-		floatButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				if (isFloating())
-					DockCytoPanel();
-				else
-					FloatCytoPanel();
-				
-				notifyListeners(NOTIFICATION_STATE_CHANGE);
-			}
-		});
+		floatButton.addActionListener(e -> {
+            if (isFloating())
+                DockCytoPanel();
+            else
+                FloatCytoPanel();
+            
+            notifyListeners(NOTIFICATION_STATE_CHANGE);
+        });
 		
-		closeButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				setState(CytoPanelState.HIDE);
-				notifyListeners(NOTIFICATION_STATE_CHANGE);
-			}
-		});
+		closeButton.addActionListener(e -> {
+            setState(CytoPanelState.HIDE);
+            notifyListeners(NOTIFICATION_STATE_CHANGE);
+        });
 	}
 
 	/**

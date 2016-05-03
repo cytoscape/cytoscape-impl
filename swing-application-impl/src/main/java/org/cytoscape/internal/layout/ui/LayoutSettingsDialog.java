@@ -229,12 +229,9 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 		
 		try {
 			final Collator collator = Collator.getInstance(Locale.getDefault());
-			final TreeSet<CyLayoutAlgorithm> allLayouts = new TreeSet<>(new Comparator<CyLayoutAlgorithm>() {
-				@Override
-				public int compare(CyLayoutAlgorithm o1, CyLayoutAlgorithm o2) {
-					return collator.compare(o1.toString(), o2.toString());
-				}
-			});
+			final TreeSet<CyLayoutAlgorithm> allLayouts = new TreeSet<>((Comparator<CyLayoutAlgorithm>) (o1, o2) -> {
+                return collator.compare(o1.toString(), o2.toString());
+            });
 			allLayouts.addAll(serviceRegistrar.getService(CyLayoutAlgorithmManager.class).getAllLayouts());
 			
 			// Populate the algorithm selectors
@@ -403,55 +400,52 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 			algorithmCmb = new JComboBox<CyLayoutAlgorithm>();
 			algorithmCmb.setRenderer(new LayoutAlgorithmListCellRenderer("-- Select algorithm to view settings --"));
 			
-			algorithmCmb.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					if (initializing)
-						return;
-					
-					final Object o = algorithmCmb.getSelectedItem();
-					
-					if (o instanceof CyLayoutAlgorithm) {
-						currentLayout = (CyLayoutAlgorithm) o;
-						final PanelTaskManager taskMgr = serviceRegistrar.getService(PanelTaskManager.class);
-						final CyApplicationManager appMgr = serviceRegistrar.getService(CyApplicationManager.class);
-						
-						//Checking if the context has already been charged, if so there is no need to do it again
-						final Object context = currentLayout.getDefaultLayoutContext();
-						tunablesToSave.add(currentLayout);
+			algorithmCmb.addActionListener(e -> {
+                if (initializing)
+                    return;
+                
+                final Object o = algorithmCmb.getSelectedItem();
+                
+                if (o instanceof CyLayoutAlgorithm) {
+                    currentLayout = (CyLayoutAlgorithm) o;
+                    final PanelTaskManager taskMgr = serviceRegistrar.getService(PanelTaskManager.class);
+                    final CyApplicationManager appMgr = serviceRegistrar.getService(CyApplicationManager.class);
+                    
+                    //Checking if the context has already been charged, if so there is no need to do it again
+                    final Object context = currentLayout.getDefaultLayoutContext();
+                    tunablesToSave.add(currentLayout);
 
-						final DynamicTaskFactoryProvisioner factoryProvisioner = serviceRegistrar.getService(DynamicTaskFactoryProvisioner.class);
-						final TaskFactory provisioner = factoryProvisioner.createFor(wrapWithContext(currentLayout, context));
-						final JPanel tunablePnl = taskMgr.getConfiguration(provisioner, context);
+                    final DynamicTaskFactoryProvisioner factoryProvisioner = serviceRegistrar.getService(DynamicTaskFactoryProvisioner.class);
+                    final TaskFactory provisioner = factoryProvisioner.createFor(wrapWithContext(currentLayout, context));
+                    final JPanel tunablePnl = taskMgr.getConfiguration(provisioner, context);
 
-						layoutAttrPnl = new JPanel();
-						layoutAttrPnl.setLayout(new BoxLayout(layoutAttrPnl, BoxLayout.PAGE_AXIS));
-						layoutAttrPnl.setOpaque(!LookAndFeelUtil.isAquaLAF()); // Transparent if Aqua
-						
-						final CyNetworkView view = appMgr.getCurrentNetworkView();
-						setNetworkView(view);
+                    layoutAttrPnl = new JPanel();
+                    layoutAttrPnl.setLayout(new BoxLayout(layoutAttrPnl, BoxLayout.PAGE_AXIS));
+                    layoutAttrPnl.setOpaque(!LookAndFeelUtil.isAquaLAF()); // Transparent if Aqua
+                    
+                    final CyNetworkView view = appMgr.getCurrentNetworkView();
+                    setNetworkView(view);
 
-						getAlgorithmPnl().removeAll();
-						getAlgorithmPnl().add(layoutAttrPnl);
-						
-						if (tunablePnl != null) {
-							tunablePnl.setAlignmentX(Component.CENTER_ALIGNMENT);
-							setPanelsTransparent(tunablePnl);
-							getAlgorithmPnl().add(tunablePnl);
-						}
-						
-						if (currentLayout.getSupportsSelectedOnly() && hasSelectedNodes(view)) {
-							selectedTunable.selectedNodesOnly = true;
-							final JPanel panel = taskMgr.getConfiguration(null, selectedTunable);
-							setPanelsTransparent(panel);
-							getAlgorithmPnl().add(panel);
-						}
-						
-						currentAction = provisioner;
-						LayoutSettingsDialog.this.pack();
-					}
-				}
-			});
+                    getAlgorithmPnl().removeAll();
+                    getAlgorithmPnl().add(layoutAttrPnl);
+                    
+                    if (tunablePnl != null) {
+                        tunablePnl.setAlignmentX(Component.CENTER_ALIGNMENT);
+                        setPanelsTransparent(tunablePnl);
+                        getAlgorithmPnl().add(tunablePnl);
+                    }
+                    
+                    if (currentLayout.getSupportsSelectedOnly() && hasSelectedNodes(view)) {
+                        selectedTunable.selectedNodesOnly = true;
+                        final JPanel panel = taskMgr.getConfiguration(null, selectedTunable);
+                        setPanelsTransparent(panel);
+                        getAlgorithmPnl().add(panel);
+                    }
+                    
+                    currentAction = provisioner;
+                    LayoutSettingsDialog.this.pack();
+                }
+            });
 		}
 		
 		return algorithmCmb;
@@ -463,20 +457,17 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 	        prefAlgorithmCmb.setModel(new DefaultComboBoxModel<CyLayoutAlgorithm>());
 	        prefAlgorithmCmb.setRenderer(new LayoutAlgorithmListCellRenderer("-- Select preferred algorithm --"));
 	        
-	        prefAlgorithmCmb.addItemListener(new ItemListener() {
-				@Override
-				public void itemStateChanged(ItemEvent e) {
-					if (initializing)
-						return;
-					
-					final CyLayoutAlgorithmManager layoutAlgorithmMgr = serviceRegistrar
-							.getService(CyLayoutAlgorithmManager.class);
-					final CyLayoutAlgorithm layout = (CyLayoutAlgorithm) prefAlgorithmCmb.getSelectedItem();
-					
-					if (layout != null && !layout.equals(layoutAlgorithmMgr.getDefaultLayout()))
-						layoutAlgorithmMgr.setDefaultLayout(layout);
-				}
-	        });
+	        prefAlgorithmCmb.addItemListener(e -> {
+                if (initializing)
+                    return;
+                
+                final CyLayoutAlgorithmManager layoutAlgorithmMgr = serviceRegistrar
+                        .getService(CyLayoutAlgorithmManager.class);
+                final CyLayoutAlgorithm layout = (CyLayoutAlgorithm) prefAlgorithmCmb.getSelectedItem();
+                
+                if (layout != null && !layout.equals(layoutAlgorithmMgr.getDefaultLayout()))
+                    layoutAlgorithmMgr.setDefaultLayout(layout);
+            });
 		}
 		
 		return prefAlgorithmCmb;

@@ -87,13 +87,11 @@ public class CitationsDialog extends JDialog {
 		textPane = new JTextPane();
 		textPane.setEditable(false);
 		textPane.setContentType("text/html");
-		textPane.addHyperlinkListener(new HyperlinkListener() {
-			public void hyperlinkUpdate(HyperlinkEvent e) {
-				if (!e.getEventType().equals(HyperlinkEvent.EventType.ACTIVATED))
-					return;
-				openBrowser.openURL(e.getURL().toString());
-			}
-		});
+		textPane.addHyperlinkListener(e -> {
+            if (!e.getEventType().equals(HyperlinkEvent.EventType.ACTIVATED))
+                return;
+            openBrowser.openURL(e.getURL().toString());
+        });
 
 		setLayout(new GridBagLayout());
 		final GridBagConstraints c = new GridBagConstraints();

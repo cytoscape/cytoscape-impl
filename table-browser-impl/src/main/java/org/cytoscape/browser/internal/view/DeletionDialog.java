@@ -79,12 +79,9 @@ public class DeletionDialog extends JDialog {
 		final JLabel deleteLabel = new JLabel("Select columns to be deleted:");
 		
 		final Collator collator = Collator.getInstance(Locale.getDefault());
-		final TreeSet<CyColumn> deletableColumns = new TreeSet<>(new Comparator<CyColumn>() {
-			@Override
-			public int compare(CyColumn c1, CyColumn c2) {
-				return collator.compare(c1.getName(), c2.getName());
-			}
-		});
+		final TreeSet<CyColumn> deletableColumns = new TreeSet<>((Comparator<CyColumn>) (c1, c2) -> {
+            return collator.compare(c1.getName(), c2.getName());
+        });
 		
 		for (CyColumn col : table.getColumns()) {
 			if (!col.isImmutable())
@@ -116,15 +113,12 @@ public class DeletionDialog extends JDialog {
 
 		final JPanel buttonPanel = LookAndFeelUtil.createOkCancelPanel(deleteButton, cancelButton);
 		
-		columnList.addListSelectionListener(new ListSelectionListener() {
-			@Override
-			public void valueChanged(ListSelectionEvent e) {
-				if (!e.getValueIsAdjusting()) {
-					final int[] selectedIndices = columnList.getSelectedIndices();
-					deleteButton.getAction().setEnabled(selectedIndices != null && selectedIndices.length > 0);
-				}
-			}
-		});
+		columnList.addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting()) {
+                final int[] selectedIndices = columnList.getSelectedIndices();
+                deleteButton.getAction().setEnabled(selectedIndices != null && selectedIndices.length > 0);
+            }
+        });
 		
 		final JPanel contentPane = new JPanel();
 		final GroupLayout layout = new GroupLayout(contentPane);

@@ -108,21 +108,11 @@ public class EnhancedSearchQuery {
 			// unexpected location, e.g. when attribute or value are
 			// missing in the query. In such case, the hitCollector
 			// variable will be null.
-			SwingUtilities.invokeLater(new Runnable() {
-				@Override
-				public void run() {
-					JOptionPane.showMessageDialog(null, pe.getMessage(), "Invalid query.", JOptionPane.ERROR_MESSAGE);
-				}
-			});
+			SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(null, pe.getMessage(), "Invalid query.", JOptionPane.ERROR_MESSAGE));
 		} catch (final Exception e) {
 			// Other types of exception may occur
-			SwingUtilities.invokeLater(new Runnable() {
-				@Override
-				public void run() {
-					JOptionPane.showMessageDialog(null, e.getMessage(), "Query execution error.",
-							JOptionPane.ERROR_MESSAGE);
-				}
-			});
+			SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(null, e.getMessage(), "Query execution error.",
+                    JOptionPane.ERROR_MESSAGE));
 		}			
 	}
 

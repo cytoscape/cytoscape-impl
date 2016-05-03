@@ -83,12 +83,7 @@ public abstract class AbstractPanelController<T extends NamedElement, V extends 
 		
 		for (final TransformerViewElement element : transformerViewManager.getFilterConditionViewElements()) {
 			JMenuItem mi = new JMenuItem(element.toString());
-			mi.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					handleAddCondition(element, panel);
-				}
-			});
+			mi.addActionListener(e -> handleAddCondition(element, panel));
 			menu.add(mi);
 		}
 		

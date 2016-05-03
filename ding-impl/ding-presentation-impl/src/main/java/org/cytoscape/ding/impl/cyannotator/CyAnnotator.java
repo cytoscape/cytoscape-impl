@@ -138,9 +138,7 @@ public class CyAnnotator {
 	public void loadAnnotations() {
 		// Make sure we're on the EDT since we directly add annotations to the canvas
 		if (!SwingUtilities.isEventDispatchThread()) {
-			SwingUtilities.invokeLater(new Runnable() {
-				public void run() { loadAnnotations(); }
-			});
+			SwingUtilities.invokeLater(() -> loadAnnotations());
 			return;
 		}
 
@@ -342,9 +340,7 @@ public class CyAnnotator {
 
 	public void setSelectedAnnotation(final DingAnnotation a, final boolean selected) {
 		if (!SwingUtilities.isEventDispatchThread()) {
-			SwingUtilities.invokeLater( new Runnable() {
-				public void run() {setSelectedAnnotation(a, selected);}
-			});
+			SwingUtilities.invokeLater(() -> setSelectedAnnotation(a, selected));
 			return;
 		}
 
@@ -357,9 +353,7 @@ public class CyAnnotator {
 
 	public void clearSelectedAnnotations() {
 		if (!SwingUtilities.isEventDispatchThread()) {
-			SwingUtilities.invokeLater( new Runnable() {
-				public void run() {clearSelectedAnnotations();}
-			});
+			SwingUtilities.invokeLater(() -> clearSelectedAnnotations());
 			return;
 		}
 
@@ -462,9 +456,7 @@ public class CyAnnotator {
 
 	private void requestFocusInWindow(final Annotation annotation) {
 		if (!SwingUtilities.isEventDispatchThread()) {
-			SwingUtilities.invokeLater( new Runnable() {
-				public void run() { requestFocusInWindow(annotation); }
-			});
+			SwingUtilities.invokeLater(() -> requestFocusInWindow(annotation));
 			return;
 		}
 		if (annotation != null && annotation instanceof DingAnnotation) {

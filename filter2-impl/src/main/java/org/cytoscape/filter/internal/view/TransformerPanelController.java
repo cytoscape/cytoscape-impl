@@ -143,12 +143,7 @@ public class TransformerPanelController extends AbstractPanelController<Transfor
 		
 		for (final TransformerViewElement element : transformerViewManager.getChainTransformerViewElements()) {
 			JMenuItem mi = new JMenuItem(element.toString());
-			mi.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					handleAddTransformer(element, panel, transformerPanel);
-				}
-			});
+			mi.addActionListener(e -> handleAddTransformer(element, panel, transformerPanel));
 			menu.add(mi);
 		}
 		
@@ -201,12 +196,7 @@ public class TransformerPanelController extends AbstractPanelController<Transfor
 	public void addNamedTransformers(final TransformerPanel panel, final NamedTransformer<CyNetwork, CyIdentifiable>... namedTransformers) {
 		if (!SwingUtilities.isEventDispatchThread()) {
 			try {
-				SwingUtilities.invokeAndWait(new Runnable() {
-					@Override
-					public void run() {
-						addNamedTransformers(panel, namedTransformers);
-					}
-				});
+				SwingUtilities.invokeAndWait(() -> addNamedTransformers(panel, namedTransformers));
 			} catch (InterruptedException e) {
 				logger.error("An unexpected error occurred", e);
 			} catch (InvocationTargetException e) {

@@ -149,14 +149,11 @@ public class ColorSchemeEditor<T extends AbstractCustomGraphics2<?>> extends JPa
 			colorSchemeCmb.setRenderer(new ColorSchemeComboBoxRenderer());
 			updateColorSchemeCmb();
 			
-			colorSchemeCmb.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					final ColorScheme newScheme = (ColorScheme) colorSchemeCmb.getSelectedItem();
-					chart.set(COLOR_SCHEME, newScheme);
-					updateColorList(true);
-				}
-			});
+			colorSchemeCmb.addActionListener(e -> {
+                final ColorScheme newScheme = (ColorScheme) colorSchemeCmb.getSelectedItem();
+                chart.set(COLOR_SCHEME, newScheme);
+                updateColorList(true);
+            });
 		}
 		
 		return colorSchemeCmb;
@@ -323,15 +320,12 @@ public class ColorSchemeEditor<T extends AbstractCustomGraphics2<?>> extends JPa
 					ColorSchemeEditor.this,
 					"Colors",
 					true,
-					colorChooser, 
-					new ActionListener() {
-						@Override
-						public void actionPerformed(ActionEvent e) {
-							color = colorChooser.getColor();
-							ColorPanel.this.setBackground(color);
-							ColorPanel.this.setForeground(ColorUtil.getContrastingColor(color));
-						}
-					}, null);
+					colorChooser,
+					e -> {
+                        color = colorChooser.getColor();
+                        ColorPanel.this.setBackground(color);
+                        ColorPanel.this.setForeground(ColorUtil.getContrastingColor(color));
+                    }, null);
 			dialog.setVisible(true);
 		}
 		

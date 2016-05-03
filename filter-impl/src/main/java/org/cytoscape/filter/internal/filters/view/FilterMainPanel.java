@@ -213,81 +213,59 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 
 	@Override
 	public void handleEvent(ColumnNameChangedEvent e) {
-		SwingUtilities.invokeLater(new Runnable() {
-
-			@Override
-			public void run() {
-				handleAttributesChanged();
-				logger.warn("A column name has been updated. The filter may not be applied on some of the added widgets");
-			}
-		});
+		SwingUtilities.invokeLater(() -> {
+            handleAttributesChanged();
+            logger.warn("A column name has been updated. The filter may not be applied on some of the added widgets");
+        });
 	}	
 
 	@Override
 	public void handleEvent(final FiltersChangedEvent e) {
-		SwingUtilities.invokeLater(new Runnable() {
+		SwingUtilities.invokeLater(() -> {
+            updateCMBFilters();
 
-			@Override
-			public void run() {
-				updateCMBFilters();
+            // select the current filter
+            final CompositeFilter currentFilter = e.getCurrentFilter();
 
-				// select the current filter
-				final CompositeFilter currentFilter = e.getCurrentFilter();
-
-				if (currentFilter != null)
-					cmbFilters.setSelectedItem(currentFilter);
-			}
-		});
+            if (currentFilter != null)
+                cmbFilters.setSelectedItem(currentFilter);
+        });
 	}
 	
 	@Override
 	public void handleEvent(final RowsSetEvent e) {
-		SwingUtilities.invokeLater(new Runnable() {
+		SwingUtilities.invokeLater(() -> {
+            // Handle selection events
+            if (applicationManager.getCurrentNetwork() == null){
+                return;
+            }
 
-			@Override
-			public void run() {
-				// Handle selection events
-				if (applicationManager.getCurrentNetwork() == null){
-					return;
-				}
+            boolean isSelection = true;
+            for (RowSetRecord change : e.getPayloadCollection()) {
+                if (!change.getColumn().equals(CyNetwork.SELECTED)) {
+                    isSelection = false;
+                    break;
+                }
+            }
+            if (isSelection) {
+                updateFeedbackTableModel();
+                return;
+            }
 
-				boolean isSelection = true;
-				for (RowSetRecord change : e.getPayloadCollection()) {
-					if (!change.getColumn().equals(CyNetwork.SELECTED)) {
-						isSelection = false;
-						break;
-					}
-				}
-				if (isSelection) {
-					updateFeedbackTableModel();
-					return;
-				}
-
-				handleAttributesChanged();	
-				updateFeedbackTableModel();
-			}
-		});
+            handleAttributesChanged();	
+            updateFeedbackTableModel();
+        });
 	}
 	
 	@Override
 	public void handleEvent(RowsCreatedEvent e) {
-		SwingUtilities.invokeLater(new Runnable() {
-
-			@Override
-			public void run() {
-				handleAttributesChanged();
-			}});
+		SwingUtilities.invokeLater(() -> handleAttributesChanged());
 
 	}
 	
 	@Override
 	public void handleEvent(SessionLoadedEvent e) {
-		SwingUtilities.invokeLater(new Runnable() {
-
-			@Override
-			public void run() {
-				updateFeedbackTableModel();
-			}});
+		SwingUtilities.invokeLater(() -> updateFeedbackTableModel());
 
 	}
 	
@@ -313,32 +291,27 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 
 	@Override
 	public void handleEvent(final SetCurrentNetworkEvent e) {
-		SwingUtilities.invokeLater(new Runnable() {
-			@Override
-			public void run() {
-				enableForNetwork();
-				handleNetworkFocused(e.getNetwork());
-				refreshAttributeCMB();
-			}
-		});
+		SwingUtilities.invokeLater(() -> {
+            enableForNetwork();
+            handleNetworkFocused(e.getNetwork());
+            refreshAttributeCMB();
+        });
 	}
 	
 	@Override
 	public void handleEvent(final NetworkDestroyedEvent e) {
-		SwingUtilities.invokeLater(new Runnable() {
-			@Override
-			public void run() {
-				enableForNetwork();
-				updateFeedbackTableModel();
-				CyNetwork n = applicationManager.getCurrentNetwork();
+		SwingUtilities.invokeLater(() -> {
+            enableForNetwork();
+            updateFeedbackTableModel();
+            CyNetwork n = applicationManager.getCurrentNetwork();
 
-				if ( n == null ) {
-					setEnabled(false);
-					updateCMBFilters();
-					refreshAttributeCMB();
-					initCMBFilters();
-				}
-			}});
+            if ( n == null ) {
+                setEnabled(false);
+                updateCMBFilters();
+                refreshAttributeCMB();
+                initCMBFilters();
+            }
+        });
 	}
 	
 	
@@ -346,17 +319,14 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 	public void handleEvent(NetworkAddedEvent e) {
 		final CyNetwork network = e.getNetwork();
 		
-		SwingUtilities.invokeLater(new Runnable() {
-			@Override
-			public void run() {
-				if (!isEnabled()){
-					setEnabled(true);
-					initCMBFilters();
-				}
-				
-				updateIndex(network);
-			}
-		});
+		SwingUtilities.invokeLater(() -> {
+            if (!isEnabled()){
+                setEnabled(true);
+                initCMBFilters();
+            }
+            
+            updateIndex(network);
+        });
 
 	}
 

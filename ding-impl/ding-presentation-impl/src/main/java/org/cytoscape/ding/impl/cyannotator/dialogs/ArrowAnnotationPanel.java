@@ -87,30 +87,24 @@ public class ArrowAnnotationPanel extends JPanel {
 
 		final JCheckBox lineColorCheck = new JCheckBox();
 		lineColorCheck.setSelected(annotation.getLineColor() != null);
-		lineColorCheck.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent evt) {
-				if (lineColorCheck.isSelected()) {
-					lineColorButton.setEnabled(true);
-					lineOpacitySlider.setEnabled(true);
-					preview.setLineColor(mixColor(lineColorButton.getColor(), lineOpacitySlider.getValue()));
-				} else {
-					lineColorButton.setEnabled(false);
-					lineOpacitySlider.setEnabled(false);
-					preview.setLineColor(null);
-				}
-				previewPanel.repaint();
-			}
-		});
+		lineColorCheck.addActionListener(evt -> {
+            if (lineColorCheck.isSelected()) {
+                lineColorButton.setEnabled(true);
+                lineOpacitySlider.setEnabled(true);
+                preview.setLineColor(mixColor(lineColorButton.getColor(), lineOpacitySlider.getValue()));
+            } else {
+                lineColorButton.setEnabled(false);
+                lineOpacitySlider.setEnabled(false);
+                preview.setLineColor(null);
+            }
+            previewPanel.repaint();
+        });
 
 		lineColorButton.setEnabled(lineColorCheck.isSelected());
-		lineColorButton.addPropertyChangeListener("color", new PropertyChangeListener() {
-			@Override
-			public void propertyChange(PropertyChangeEvent evt) {
-				preview.setLineColor(mixColor((Color) evt.getNewValue(), lineOpacitySlider.getValue()));
-				previewPanel.repaint();
-			}
-		});
+		lineColorButton.addPropertyChangeListener("color", evt -> {
+            preview.setLineColor(mixColor((Color) evt.getNewValue(), lineOpacitySlider.getValue()));
+            previewPanel.repaint();
+        });
 
 		lineOpacitySlider.setMajorTickSpacing(100);
 		lineOpacitySlider.setMinorTickSpacing(25);
@@ -118,13 +112,10 @@ public class ArrowAnnotationPanel extends JPanel {
 		lineOpacitySlider.setPaintLabels(true);
 		lineOpacitySlider.setValue(100);
 		lineOpacitySlider.setEnabled(lineColorCheck.isSelected());
-		lineOpacitySlider.addChangeListener(new ChangeListener() {
-			@Override
-			public void stateChanged(ChangeEvent evt) {
-				preview.setLineColor(mixColor(preview.getLineColor(), lineOpacitySlider.getValue()));
-				previewPanel.repaint();
-			}
-		});
+		lineOpacitySlider.addChangeListener(evt -> {
+            preview.setLineColor(mixColor(preview.getLineColor(), lineOpacitySlider.getValue()));
+            previewPanel.repaint();
+        });
 
 		final JComboBox<String> lineWidthCombo = new JComboBox<>();
 		lineWidthCombo.setModel(new DefaultComboBoxModel<String>(
@@ -139,13 +130,10 @@ public class ArrowAnnotationPanel extends JPanel {
 			}
 		}
 		
-		lineWidthCombo.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent evt) {
-				preview.setLineWidth(Integer.parseInt((String) (lineWidthCombo.getModel().getSelectedItem())));
-				previewPanel.repaint();
-			}
-		});
+		lineWidthCombo.addActionListener(evt -> {
+            preview.setLineWidth(Integer.parseInt((String) (lineWidthCombo.getModel().getSelectedItem())));
+            previewPanel.repaint();
+        });
 
 		final JPanel sourcePanel = getArrowPanel(ArrowEnd.SOURCE);
 		final JPanel targetPanel = getArrowPanel(ArrowEnd.TARGET);
@@ -239,13 +227,10 @@ public class ArrowAnnotationPanel extends JPanel {
 		final List<String> arrows = annotation.getSupportedArrows();
 		arrowTypeCombo.setModel(new DefaultComboBoxModel<String>(arrows.toArray(new String[arrows.size()])));
 		arrowTypeCombo.setSelectedItem(annotation.getArrowType(end));
-		arrowTypeCombo.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent evt) {
-				preview.setArrowType(end, (String) arrowTypeCombo.getSelectedItem());
-				previewPanel.repaint();
-			}
-		});
+		arrowTypeCombo.addActionListener(evt -> {
+            preview.setArrowType(end, (String) arrowTypeCombo.getSelectedItem());
+            previewPanel.repaint();
+        });
 
 		final ColorButton arrowColorButton = new ColorButton((Color) preview.getArrowColor(end));
 		arrowColorButton.setToolTipText("Select arrow color...");
@@ -254,29 +239,23 @@ public class ArrowAnnotationPanel extends JPanel {
 		
 		final JCheckBox arrowColorCheck = new JCheckBox();
 		arrowColorCheck.setSelected(annotation.getArrowColor(end) != null);
-		arrowColorCheck.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent evt) {
-				if (arrowColorCheck.isSelected()) {
-					arrowColorButton.setEnabled(true);
-					arrowOpacitySlider.setEnabled(true);
-					preview.setArrowColor(end, mixColor(arrowColorButton.getColor(), arrowOpacitySlider.getValue()));
-				} else {
-					arrowColorButton.setEnabled(false);
-					arrowOpacitySlider.setEnabled(false);
-					preview.setArrowColor(end, null);
-				}
-			}
-		});
+		arrowColorCheck.addActionListener(evt -> {
+            if (arrowColorCheck.isSelected()) {
+                arrowColorButton.setEnabled(true);
+                arrowOpacitySlider.setEnabled(true);
+                preview.setArrowColor(end, mixColor(arrowColorButton.getColor(), arrowOpacitySlider.getValue()));
+            } else {
+                arrowColorButton.setEnabled(false);
+                arrowOpacitySlider.setEnabled(false);
+                preview.setArrowColor(end, null);
+            }
+        });
 
 		arrowColorButton.setEnabled(arrowColorCheck.isSelected());
-		arrowColorButton.addPropertyChangeListener("color", new PropertyChangeListener() {
-			@Override
-			public void propertyChange(PropertyChangeEvent evt) {
-				preview.setArrowColor(end, mixColor((Color) evt.getNewValue(), arrowOpacitySlider.getValue()));
-				previewPanel.repaint();
-			}
-		});
+		arrowColorButton.addPropertyChangeListener("color", evt -> {
+            preview.setArrowColor(end, mixColor((Color) evt.getNewValue(), arrowOpacitySlider.getValue()));
+            previewPanel.repaint();
+        });
 
 		arrowOpacitySlider.setMajorTickSpacing(100);
 		arrowOpacitySlider.setMinorTickSpacing(25);
@@ -284,13 +263,10 @@ public class ArrowAnnotationPanel extends JPanel {
 		arrowOpacitySlider.setPaintLabels(true);
 		arrowOpacitySlider.setValue(100);
 		arrowOpacitySlider.setEnabled(arrowColorCheck.isSelected());
-		arrowOpacitySlider.addChangeListener(new ChangeListener() {
-			@Override
-			public void stateChanged(ChangeEvent evt) {
-				preview.setArrowColor(end, mixColor(preview.getArrowColor(end), arrowOpacitySlider.getValue()));
-				previewPanel.repaint();
-			}
-		});
+		arrowOpacitySlider.addChangeListener(evt -> {
+            preview.setArrowColor(end, mixColor(preview.getArrowColor(end), arrowOpacitySlider.getValue()));
+            previewPanel.repaint();
+        });
 
 		final JComboBox<String> arrowSizeCombo = new JComboBox<>();
 		arrowSizeCombo.setModel(new DefaultComboBoxModel<String>(
@@ -307,13 +283,10 @@ public class ArrowAnnotationPanel extends JPanel {
 			}
 		}
 
-		arrowSizeCombo.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent evt) {
-				preview.setArrowSize(end, Integer.parseInt(arrowSizeCombo.getModel().getSelectedItem().toString()));
-				previewPanel.repaint();
-			}
-		});
+		arrowSizeCombo.addActionListener(evt -> {
+            preview.setArrowSize(end, Integer.parseInt(arrowSizeCombo.getModel().getSelectedItem().toString()));
+            previewPanel.repaint();
+        });
 
 		final JComboBox<String> anchorTypeCombo = new JComboBox<>();
 		anchorTypeCombo.setModel(new DefaultComboBoxModel<String>(new String[] { "Edge", "Center" }));
@@ -323,17 +296,14 @@ public class ArrowAnnotationPanel extends JPanel {
 		else
 			anchorTypeCombo.setSelectedIndex(0);
 
-		anchorTypeCombo.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent evt) {
-				if (anchorTypeCombo.getModel().getSelectedItem().equals("Center"))
-					preview.setAnchorType(end, AnchorType.CENTER);
-				else
-					preview.setAnchorType(end, AnchorType.ANCHOR);
+		anchorTypeCombo.addActionListener(evt -> {
+            if (anchorTypeCombo.getModel().getSelectedItem().equals("Center"))
+                preview.setAnchorType(end, AnchorType.CENTER);
+            else
+                preview.setAnchorType(end, AnchorType.ANCHOR);
 
-				previewPanel.repaint();
-			}
-		});
+            previewPanel.repaint();
+        });
 		
 		final JPanel arrowPanel = new JPanel();
 		arrowPanel.setBorder(

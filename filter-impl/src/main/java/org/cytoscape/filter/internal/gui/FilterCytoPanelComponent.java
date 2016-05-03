@@ -65,13 +65,10 @@ public class FilterCytoPanelComponent implements CytoPanelComponent, CytoPanelCo
 
 	@Override
 	public void handleEvent(final CytoPanelComponentSelectedEvent e) {
-		SwingUtilities.invokeLater( new Runnable() {
-			
-		@Override
-		public void run(){
+		SwingUtilities.invokeLater(() -> {
 		if (e.getCytoPanel().getSelectedComponent() == panel) {
 			panel.handlePanelSelected();
 		}
-		}});
+		});
 	}
 }

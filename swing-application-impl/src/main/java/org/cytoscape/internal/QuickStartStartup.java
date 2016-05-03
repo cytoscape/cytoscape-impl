@@ -53,12 +53,9 @@ public class QuickStartStartup implements CyStartListener {
 	@Override
 	public void handleEvent(CyStartEvent e) {
 		
-		SwingUtilities.invokeLater(new Runnable() {
-			@Override
-			public void run() {
-				guiTaskManager.setExecutionContext(swingApp.getJFrame());
-				guiTaskManager.execute(quickStartTaskFactory.createTaskIterator());
-			}
-		});
+		SwingUtilities.invokeLater(() -> {
+            guiTaskManager.setExecutionContext(swingApp.getJFrame());
+            guiTaskManager.execute(quickStartTaskFactory.createTaskIterator());
+        });
 	}
 }

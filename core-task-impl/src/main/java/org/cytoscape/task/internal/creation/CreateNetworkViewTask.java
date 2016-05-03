@@ -120,12 +120,9 @@ public class CreateNetworkViewTask extends AbstractNetworkCollectionTask
 		this.appMgr = appMgr;
 		this.sourceView = sourceView;
 		this.result = new ArrayList<>();
-		this.viewRenderers = new TreeSet<>(new Comparator<NetworkViewRenderer>() {
-			@Override
-			public int compare(NetworkViewRenderer r1, NetworkViewRenderer r2) {
-				return r1.toString().compareToIgnoreCase(r2.toString());
-			}
-		});
+		this.viewRenderers = new TreeSet<>((Comparator<NetworkViewRenderer>) (r1, r2) -> {
+            return r1.toString().compareToIgnoreCase(r2.toString());
+        });
 	}
 
 	public CreateNetworkViewTask(final UndoSupport undoSupport,

@@ -162,40 +162,27 @@ public class InstallAppsPanel extends JPanel {
         this.parent = parent;
     	initComponents();
         
-    	tagsTree.addTreeSelectionListener(new TreeSelectionListener() {
-			@Override
-			public void valueChanged(TreeSelectionEvent e) {
-				updateResultsTree();
-				updateDescriptionBox();
-			}
-		});
+    	tagsTree.addTreeSelectionListener(e -> {
+            updateResultsTree();
+            updateDescriptionBox();
+        });
     	
-		resultsTree.addTreeSelectionListener(new TreeSelectionListener() {
-			@Override
-			public void valueChanged(TreeSelectionEvent e) {
-				updateDescriptionBox();
-			}
-		});
+		resultsTree.addTreeSelectionListener(e -> updateDescriptionBox());
 		
 		setupTextFieldListener();
     	setupDownloadSitesChangedListener();
     	
 		//queryForApps();
 		
-		appManager.addAppListener(new AppsChangedListener() {
-			@Override
-			public void appsChanged(AppsChangedEvent event) {
-				SwingUtilities.invokeLater(new Runnable() {
-					@Override
-					public void run() {
-						TreePath[] selectionPaths = resultsTree.getSelectionPaths();
-						updateDescriptionBox();
-						fillResultsTree(resultsTreeApps);
-						resultsTree.setSelectionPaths(selectionPaths);
-					}
-				});
-			}
-		});
+		appManager.addAppListener(event -> SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                TreePath[] selectionPaths = resultsTree.getSelectionPaths();
+                updateDescriptionBox();
+                fillResultsTree(resultsTreeApps);
+                resultsTree.setSelectionPaths(selectionPaths);
+            }
+        }));
 
         this.addComponentListener(new ComponentAdapter() {
             @Override
@@ -206,21 +193,17 @@ public class InstallAppsPanel extends JPanel {
     }
     
     private void setupDownloadSitesChangedListener() {
-    	downloadSitesManager.addDownloadSitesChangedListener(new DownloadSitesChangedListener() {
-			
-			@Override
-			public void downloadSitesChanged(DownloadSitesChangedEvent downloadSitesChangedEvent) {
-				final DefaultComboBoxModel defaultComboBoxModel = new DefaultComboBoxModel(
-						new Vector<DownloadSite>(downloadSitesManager.getDownloadSites()));
-				
-				SwingUtilities.invokeLater(new Runnable() {
-					@Override
-					public void run() {
-						downloadSiteComboBox.setModel(defaultComboBoxModel);
-					}
-				});
-			}
-		});
+    	downloadSitesManager.addDownloadSitesChangedListener(downloadSitesChangedEvent -> {
+            final DefaultComboBoxModel defaultComboBoxModel = new DefaultComboBoxModel(
+                    new Vector<DownloadSite>(downloadSitesManager.getDownloadSites()));
+            
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    downloadSiteComboBox.setModel(defaultComboBoxModel);
+                }
+            });
+        });
     }
 
     private boolean hasTagTreeBeenPopulated = false;
@@ -248,17 +231,12 @@ public class InstallAppsPanel extends JPanel {
 			
 				// Once the information is obtained, update the tree
 				
-				SwingUtilities.invokeLater(new Runnable() {
-
-					@Override
-					public void run() {
-						// populateTree(appManager.getWebQuerier().getAllApps());
-						buildTagsTree();
-						
-						fillResultsTree(appManager.getWebQuerier().getAllApps());
-					}
-					
-				});
+				SwingUtilities.invokeLater(() -> {
+                    // populateTree(appManager.getWebQuerier().getAllApps());
+                    buildTagsTree();
+                    
+                    fillResultsTree(appManager.getWebQuerier().getAllApps());
+                });
 			}
 
 			@Override
@@ -290,12 +268,7 @@ public class InstallAppsPanel extends JPanel {
         filterTextField.putClientProperty("JTextField.variant", "search"); // Aqua LAF only
         filterTextField.setToolTipText("To search, start typing");
 
-        installFromFileButton.addActionListener(new ActionListener() {
-        	@Override
-            public void actionPerformed(ActionEvent evt) {
-                installFromFileButtonActionPerformed(evt);
-            }
-        });
+        installFromFileButton.addActionListener(evt -> installFromFileButtonActionPerformed(evt));
 
         descriptionSplitPane.setBorder(null);
         descriptionSplitPane.setDividerLocation(390);
@@ -348,41 +321,21 @@ public class InstallAppsPanel extends JPanel {
         descriptionSplitPane.setRightComponent(descriptionPanel);
 
         viewOnAppStoreButton.setEnabled(false);
-        viewOnAppStoreButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
-                viewOnAppStoreButtonActionPerformed(evt);
-            }
-        });
+        viewOnAppStoreButton.addActionListener(evt -> viewOnAppStoreButtonActionPerformed(evt));
 
         installButton.setEnabled(false);
-        installButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
-                installButtonActionPerformed(evt);
-            }
-        });
+        installButton.addActionListener(evt -> installButtonActionPerformed(evt));
 
         downloadSiteComboBox.setModel(new DefaultComboBoxModel(new String[] { WebQuerier.DEFAULT_APP_STORE_URL }));
-        downloadSiteComboBox.addItemListener(new ItemListener() {
-            public void itemStateChanged(ItemEvent evt) {
-                downloadSiteComboBoxItemStateChanged(evt);
-            }
-        });
-        downloadSiteComboBox.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
-                downloadSiteComboBoxActionPerformed(evt);
-            }
-        });
+        downloadSiteComboBox.addItemListener(evt -> downloadSiteComboBoxItemStateChanged(evt));
+        downloadSiteComboBox.addActionListener(evt -> downloadSiteComboBoxActionPerformed(evt));
         downloadSiteComboBox.addKeyListener(new KeyAdapter() {
             public void keyPressed(KeyEvent evt) {
                 downloadSiteComboBoxKeyPressed(evt);
             }
         });
 
-        manageSitesButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
-                manageSitesButtonActionPerformed(evt);
-            }
-        });
+        manageSitesButton.addActionListener(evt -> manageSitesButtonActionPerformed(evt));
         
         LookAndFeelUtil.equalizeSize(installFromFileButton, viewOnAppStoreButton, installButton);
         
@@ -447,30 +400,25 @@ public class InstallAppsPanel extends JPanel {
 			    			&& selectedValue != null) {
 			    		final DefaultComboBoxModel comboBoxModel = (DefaultComboBoxModel) downloadSiteComboBox.getModel();
 			    	
-			    		SwingUtilities.invokeLater(new Runnable() {
-			    			
-			    			@Override
-			    			public void run() {
-				    			boolean selectedAlreadyInList = false;
-				    	    	
-				        		for (int i = 0; i < comboBoxModel.getSize(); i++) {
-				        			Object listElement = comboBoxModel.getElementAt(i);
-				        			
-				        			if (listElement.equals(selectedValue)) {
-				        				selectedAlreadyInList = true;
-				        				
-				        				break;	
-				        			}
-				        		}
-				        		
-				        		if (!selectedAlreadyInList) {
-				        			comboBoxModel.insertElementAt(selectedValue, 1);
-				        			
-				        			editor.setItem(selectedValue);
-				        		}
-			    			}
-			    			
-			    		});
+			    		SwingUtilities.invokeLater(() -> {
+                            boolean selectedAlreadyInList = false;
+                            
+                            for (int i = 0; i < comboBoxModel.getSize(); i++) {
+                                Object listElement = comboBoxModel.getElementAt(i);
+                                
+                                if (listElement.equals(selectedValue)) {
+                                    selectedAlreadyInList = true;
+                                    
+                                    break;	
+                                }
+                            }
+                            
+                            if (!selectedAlreadyInList) {
+                                comboBoxModel.insertElementAt(selectedValue, 1);
+                                
+                                editor.setItem(selectedValue);
+                            }
+                        });
 			    	}
 			    	
 			    	if (webQuerier.getCurrentAppStoreUrl() != selectedValue.toString()) {
@@ -547,18 +495,13 @@ public class InstallAppsPanel extends JPanel {
         	ResultsFilterer resultsFilterer = new ResultsFilterer();
         	
         	private void showFilteredApps() {
-        		SwingUtilities.invokeLater(new Runnable() {
-
-					@Override
-					public void run() {
-						
-						tagsTree.clearSelection();
-						
-						fillResultsTree(resultsFilterer.findMatches(filterTextField.getText(), 
-								appManager.getWebQuerier().getAllApps()));
-					}
-					
-				});
+        		SwingUtilities.invokeLater(() -> {
+                    
+                    tagsTree.clearSelection();
+                    
+                    fillResultsTree(resultsFilterer.findMatches(filterTextField.getText(), 
+                            appManager.getWebQuerier().getAllApps()));
+                });
         	}
         	
 			@Override
@@ -596,13 +539,7 @@ public class InstallAppsPanel extends JPanel {
     	
     	List<WebQuerier.AppTag> sortedTags = new LinkedList<WebQuerier.AppTag>(availableTags);
     	
-    	Collections.sort(sortedTags, new Comparator<WebQuerier.AppTag>() {
-
-			@Override
-			public int compare(AppTag tag, AppTag other) {
-				return other.getCount() - tag.getCount();
-			}
-    	});
+    	Collections.sort(sortedTags, (tag, other) -> other.getCount() - tag.getCount());
     	
     	
     	DefaultMutableTreeNode root = new DefaultMutableTreeNode("root");
@@ -676,13 +613,7 @@ public class InstallAppsPanel extends JPanel {
     	List<WebApp> sortedApps = new LinkedList<WebApp>(webApps);
     	
     	// Sort apps by alphabetical order
-    	Collections.sort(sortedApps, new Comparator<WebApp>() {
-			@Override
-			public int compare(WebApp webApp, WebApp other) {
-				
-				return (webApp.getName().compareToIgnoreCase(other.getName()));
-			}
-    	});
+    	Collections.sort(sortedApps, (webApp, other) -> (webApp.getName().compareToIgnoreCase(other.getName())));
     	
     	DefaultMutableTreeNode root = new DefaultMutableTreeNode("root");
     	
@@ -815,33 +746,28 @@ public class InstallAppsPanel extends JPanel {
     			&& selected != null) {
     		final DefaultComboBoxModel comboBoxModel = (DefaultComboBoxModel) downloadSiteComboBox.getModel();
     	
-    		SwingUtilities.invokeLater(new Runnable() {
-    			
-    			@Override
-    			public void run() {
-	    			boolean selectedAlreadyInList = false;
-	    	    	
-	        		for (int i = 0; i < comboBoxModel.getSize(); i++) {
-	        			Object listElement = comboBoxModel.getElementAt(i);
-	        			
-	        			if (listElement.equals(selected)) {
-	        				selectedAlreadyInList = true;
-	        				
-	        				if (i > 0) {
-	        					// comboBoxModel.removeElementAt(i);
-	        					// comboBoxModel.insertElementAt(listElement, 1);
-	        				}
-	        				
-	        				break;
-	        			}
-	        		}
-	        		
-	        		if (!selectedAlreadyInList) {
-	        			comboBoxModel.insertElementAt(selected, 1);
-	        		}
-    			}
-    			
-    		});
+    		SwingUtilities.invokeLater(() -> {
+                boolean selectedAlreadyInList = false;
+                
+                for (int i = 0; i < comboBoxModel.getSize(); i++) {
+                    Object listElement = comboBoxModel.getElementAt(i);
+                    
+                    if (listElement.equals(selected)) {
+                        selectedAlreadyInList = true;
+                        
+                        if (i > 0) {
+                            // comboBoxModel.removeElementAt(i);
+                            // comboBoxModel.insertElementAt(listElement, 1);
+                        }
+                        
+                        break;
+                    }
+                }
+                
+                if (!selectedAlreadyInList) {
+                    comboBoxModel.insertElementAt(selected, 1);
+                }
+            });
     		
     		if (appManager.getWebQuerier().getCurrentAppStoreUrl() != selected.toString()) {
     			appManager.getWebQuerier().setCurrentAppStoreUrl(selected.toString());

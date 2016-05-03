@@ -42,10 +42,6 @@ public class HelpAboutTask extends AbstractTask {
 	}
 
 	public void run(TaskMonitor tm) {
-		SwingUtilities.invokeLater(new Runnable() {
-		    public void run() {
-		    	new CreditScreen(vers, cySwingApp).showCredits();
-		    }
-		});
+		SwingUtilities.invokeLater(() -> new CreditScreen(vers, cySwingApp).showCredits());
 	}
 }

@@ -436,12 +436,7 @@ public class CyActivator extends AbstractCyActivator {
 		
 		if (!SwingUtilities.isEventDispatchThread()) {
 			try {
-				SwingUtilities.invokeAndWait(new Runnable() {
-					@Override
-					public void run() {
-						setLookAndFeel(props);
-					}
-				});
+				SwingUtilities.invokeAndWait(() -> setLookAndFeel(props));
 				return;
 			} catch (InterruptedException e) {
 				logger.error("Unexpected error", e);

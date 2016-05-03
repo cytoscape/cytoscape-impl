@@ -211,18 +211,16 @@ public class EditRangeDialog extends JDialog implements ActionListener {
      * @param args the command line arguments
      */
     public static void main(String args[]) {
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-            	Vector<String> _boundsVect = new Vector<String>();
-            	_boundsVect.add("0.51");
-            	_boundsVect.add("1.08");
-            	_boundsVect.add("-0.1");
-            	_boundsVect.add("2.0");
-            	
-            	EditRangeDialog theDialog =new EditRangeDialog(new javax.swing.JFrame(), true, "Degree", _boundsVect, "int");
-            	
-                theDialog.setVisible(true);
-            }
+        java.awt.EventQueue.invokeLater(() -> {
+            Vector<String> _boundsVect = new Vector<String>();
+            _boundsVect.add("0.51");
+            _boundsVect.add("1.08");
+            _boundsVect.add("-0.1");
+            _boundsVect.add("2.0");
+            
+            EditRangeDialog theDialog =new EditRangeDialog(new javax.swing.JFrame(), true, "Degree", _boundsVect, "int");
+            
+            theDialog.setVisible(true);
         });
     }
     

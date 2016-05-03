@@ -104,19 +104,9 @@ public class CustomGraphicsDetailPanel extends JPanel implements ListSelectionLi
         nameLabel.setText("Name:");
         tagLabel.setText("Tags:");
 
-        nameTextField.addActionListener(new ActionListener() {
-        	@Override
-            public void actionPerformed(ActionEvent evt) {
-                nameTextFieldActionPerformed(evt);
-            }
-        });
+        nameTextField.addActionListener(evt -> nameTextFieldActionPerformed(evt));
 
-        tagTextField.addActionListener(new ActionListener() {
-        	@Override
-            public void actionPerformed(ActionEvent evt) {
-                tagsTextFieldActionPerformed(evt);
-            }
-        });
+        tagTextField.addActionListener(evt -> tagsTextFieldActionPerformed(evt));
 
         // Just to make the border visible
         final GroupLayout imageViewPanelLayout = new GroupLayout(imageViewPanel);
@@ -130,48 +120,25 @@ public class CustomGraphicsDetailPanel extends JPanel implements ListSelectionLi
 
         widthLabel.setText("Width:");
 
-        widthTextField.addActionListener(new ActionListener() {
-        	@Override
-            public void actionPerformed(ActionEvent evt) {
-                widthTextFieldActionPerformed(evt);
-            }
-        });
+        widthTextField.addActionListener(evt -> widthTextFieldActionPerformed(evt));
 
         heightLabel.setText("Height:");
 
         lockCheckBox.setSelected(true);
         lockCheckBox.setText("Aspect Ratio");
-        lockCheckBox.addActionListener(new ActionListener() {
-        	@Override
-            public void actionPerformed(ActionEvent evt) {
-                //lockCheckBoxActionPerformed(evt);
-            }
-        });
+        lockCheckBox.addActionListener(evt -> {
+//lockCheckBoxActionPerformed(evt);
+});
 
-        heightTextField.addActionListener(new ActionListener() {
-        	@Override
-            public void actionPerformed(ActionEvent evt) {
-                heightTextFieldActionPerformed(evt);
-            }
-        });
+        heightTextField.addActionListener(evt -> heightTextFieldActionPerformed(evt));
 
         resetButton.setText("Original");
-        resetButton.addActionListener(new ActionListener() {
-        	@Override
-            public void actionPerformed(ActionEvent evt) {
-                resetButtonActionPerformed(evt);
-            }
-        });
+        resetButton.addActionListener(evt -> resetButtonActionPerformed(evt));
 
         searchButton.setText("Search");
         searchButton.setToolTipText("This function is not implemented yet.");
         searchButton.setEnabled(false);
-        searchButton.addActionListener(new ActionListener() {
-        	@Override
-            public void actionPerformed(ActionEvent evt) {
-                optionButtonActionPerformed(evt);
-            }
-        });
+        searchButton.addActionListener(evt -> optionButtonActionPerformed(evt));
 
         final JLabel imgViewLbl = new JLabel("Actual Size View:");
         

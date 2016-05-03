@@ -232,20 +232,10 @@ public class WebServiceImportDialog<T> extends JDialog {
 
 		datasourceLabel.setText("Data Source:");
 
-		datasourceComboBox.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent evt) {
-				datasourceComboBoxActionPerformed(evt);
-			}
-		});
+		datasourceComboBox.addActionListener(evt -> datasourceComboBoxActionPerformed(evt));
 
 		aboutButton.setText("About");
-		aboutButton.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent evt) {
-				aboutButtonActionPerformed(evt);
-			}
-		});
+		aboutButton.addActionListener(evt -> aboutButtonActionPerformed(evt));
 
 		GroupLayout dataSourceLayout = new GroupLayout(datasourcePanel);
 		datasourcePanel.setLayout(dataSourceLayout);
@@ -270,28 +260,13 @@ public class WebServiceImportDialog<T> extends JDialog {
 				));
 
 		searchButton.setText("Search");
-		searchButton.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent evt) {
-				searchButtonActionPerformed();
-			}
-		});
+		searchButton.addActionListener(evt -> searchButtonActionPerformed());
 
 		cancelButton.setText("Cancel");
-		cancelButton.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent evt) {
-				cancelButtonActionPerformed(evt);
-			}
-		});
+		cancelButton.addActionListener(evt -> cancelButtonActionPerformed(evt));
 
 		clearButton.setText("Clear");
-		clearButton.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent evt) {
-				clearButtonActionPerformed(evt);
-			}
-		});
+		clearButton.addActionListener(evt -> clearButtonActionPerformed(evt));
 
 		buttonPanel = LookAndFeelUtil.createOkCancelPanel(searchButton, cancelButton, clearButton);
 		
