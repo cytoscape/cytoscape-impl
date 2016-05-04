@@ -1,12 +1,22 @@
 package org.cytoscape.view.model;
 
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.NetworkTestSupport;
+import org.cytoscape.view.model.internal.CyNetworkViewManagerImpl;
+import org.junit.After;
+import org.junit.Before;
+
 /*
  * #%L
  * Cytoscape View Model Impl (viewmodel-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,22 +34,23 @@ package org.cytoscape.view.model;
  * #L%
  */
 
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.NetworkTestSupport;
-import org.cytoscape.view.model.internal.CyNetworkViewManagerImpl;
-import org.junit.After;
-
-
 public class CyNetworkViewManagerTest extends AbstractCyNetworkViewManagerTest {
 	
 	protected NetworkTestSupport netTestSupport;
 	protected CyNetworkViewManager viewManager;
 	
-	
 	public CyNetworkViewManagerTest() {
 		netTestSupport = new NetworkTestSupport();
 	}
 
+	@Before
+	public void setUp() throws Exception {
+		super.setUp();
+		
+		CyApplicationManager applicationManager = mock(CyApplicationManager.class); 
+		when(serviceRegistrar.getService(CyApplicationManager.class)).thenReturn(applicationManager);
+	}
+	
 	@After
 	public void tearDown() throws Exception {
 		viewManager = null;
@@ -58,7 +69,7 @@ public class CyNetworkViewManagerTest extends AbstractCyNetworkViewManagerTest {
 	@Override
 	protected CyNetworkViewManager getViewManager() {
 		if (viewManager == null)
-			viewManager = new CyNetworkViewManagerImpl(eventHelper, netManager);
+			viewManager = new CyNetworkViewManagerImpl(serviceRegistrar);
 		
 		return viewManager;
 	}
