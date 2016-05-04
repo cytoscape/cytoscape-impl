@@ -1,6 +1,5 @@
 package org.cytoscape.tableimport.internal.task;
 
-import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.io.read.CyNetworkReader;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
@@ -60,7 +59,6 @@ public class RegisterOntologyTask extends AbstractTask {
 		
 		network.getRow(network).set(CyNetwork.NAME, name);
 		serviceRegistrar.getService(CyNetworkManager.class).addNetwork(network);
-		serviceRegistrar.getService(CyApplicationManager.class).setCurrentNetwork(network);
 		
 		logger.debug("New Ontology DAG Registered: model ID = " + network.getSUID());
 	}

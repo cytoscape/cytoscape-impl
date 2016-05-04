@@ -85,7 +85,7 @@ public class NewEmptyNetworkTaskTest {
 		final TaskMonitor taskMonitor = mock(TaskMonitor.class);
 		task.run(taskMonitor);
 
-		verify(netMgr, times(1)).addNetwork(any(CyNetwork.class));
+		verify(netMgr, times(1)).addNetwork(any(CyNetwork.class), eq(false));
 		verify(netViewMgr, times(1)).addNetworkView(any(CyNetworkView.class));
 		verify(vmm, times(1)).setVisualStyle(eq(currentStyle), any(CyNetworkView.class));
 	}

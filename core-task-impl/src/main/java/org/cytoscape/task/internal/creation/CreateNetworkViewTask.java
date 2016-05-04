@@ -218,7 +218,7 @@ public class CreateNetworkViewTask extends AbstractNetworkCollectionTask
 			
 			view.setVisualProperty(BasicVisualLexicon.NETWORK_TITLE, title);
 			
-			netViewMgr.addNetworkView(view);
+			netViewMgr.addNetworkView(view, false);
 
 			// Apply visual style
 			if (style != null) {

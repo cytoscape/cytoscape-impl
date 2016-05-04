@@ -162,8 +162,7 @@ abstract class AbstractNetworkFromSelectionTask extends AbstractCreationTask {
 		newNet.getRow(newNet).set(CyNetwork.NAME, getNetworkName());
 		DataUtils.saveParentNetworkSUID(newNet, parentNetwork.getSUID());
 
-		networkManager.addNetwork(newNet);
-		appMgr.setCurrentNetwork(newNet);
+		networkManager.addNetwork(newNet, false);
 		tm.setProgress(0.6);
 
 		// create the view in a separate task

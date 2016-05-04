@@ -198,12 +198,11 @@ public class NewEmptyNetworkTask extends AbstractTask {
 		tm.setProgress(0.4);
 		view = netViewFactory.createNetworkView(subNetwork);		
 		tm.setProgress(0.6);
-		netMgr.addNetwork(subNetwork);
+		netMgr.addNetwork(subNetwork, false);
 		appMgr.setCurrentNetwork(subNetwork);
 		tm.setProgress(0.8);
 		final VisualStyle style = vmMgr.getCurrentVisualStyle(); // get the current style before registering the view!
 		netViewMgr.addNetworkView(view);
-		appMgr.setCurrentNetworkView(view);
 		tm.setProgress(0.9);
 		applyVisualStyle(style);
 		tm.setProgress(1.0);

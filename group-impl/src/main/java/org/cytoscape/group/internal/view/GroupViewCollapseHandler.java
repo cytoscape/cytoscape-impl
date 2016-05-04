@@ -28,7 +28,6 @@ import java.awt.Dimension;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -36,27 +35,25 @@ import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.group.CyGroup;
 import org.cytoscape.group.CyGroupSettingsManager.GroupViewType;
+import org.cytoscape.group.events.GroupAboutToBeDestroyedEvent;
+import org.cytoscape.group.events.GroupAboutToBeDestroyedListener;
+import org.cytoscape.group.events.GroupAboutToCollapseEvent;
+import org.cytoscape.group.events.GroupAboutToCollapseListener;
+import org.cytoscape.group.events.GroupAddedEvent;
+import org.cytoscape.group.events.GroupAddedListener;
+import org.cytoscape.group.events.GroupCollapsedEvent;
+import org.cytoscape.group.events.GroupCollapsedListener;
 import org.cytoscape.group.internal.CyGroupImpl;
 import org.cytoscape.group.internal.CyGroupManagerImpl;
 import org.cytoscape.group.internal.data.CyGroupSettingsImpl;
 import org.cytoscape.group.internal.data.GroupViewTypeChangedEvent;
 import org.cytoscape.group.internal.data.GroupViewTypeChangedListener;
-import org.cytoscape.group.events.GroupAddedEvent;
-import org.cytoscape.group.events.GroupAddedListener;
-import org.cytoscape.group.events.GroupAboutToBeDestroyedEvent;
-import org.cytoscape.group.events.GroupAboutToBeDestroyedListener;
-import org.cytoscape.group.events.GroupAboutToCollapseEvent;
-import org.cytoscape.group.events.GroupAboutToCollapseListener;
-import org.cytoscape.group.events.GroupCollapsedEvent;
-import org.cytoscape.group.events.GroupCollapsedListener;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyEdge.Type;
-import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
-import org.cytoscape.model.CyTable;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.session.events.SessionLoadedEvent;
@@ -268,9 +265,9 @@ public class GroupViewCollapseHandler implements GroupAboutToCollapseListener,
 
 				// If we've already registered the network, don't do it again
 				if (!cyNetworkManager.networkExists(nn.getSUID())) {
-					cyNetworkManager.addNetwork(nn);
+					cyNetworkManager.addNetwork(nn, false);
 					nnView = cyNetworkViewFactory.createNetworkView(nn);
-					cyNetworkViewManager.addNetworkView(nnView);
+					cyNetworkViewManager.addNetworkView(nnView, false);
 
 					// Apply our current style to the nested network
 					VisualStyle style = cyStyleManager.getVisualStyle(view);

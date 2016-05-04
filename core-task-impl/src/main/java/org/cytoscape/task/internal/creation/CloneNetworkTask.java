@@ -465,12 +465,12 @@ public class CloneNetworkTask extends AbstractCreationTask implements Observable
 			tm.setProgress(0.0);
 			
 			if (!networkManager.networkExists(network.getSUID()))
-				networkManager.addNetwork(network);
+				networkManager.addNetwork(network, false);
 			
 			tm.setProgress(0.1);
 			
 			if (view != null) {
-				networkViewManager.addNetworkView(view);
+				networkViewManager.addNetworkView(view, false);
 				tm.setProgress(0.2);
 				
 				if (style != null) {

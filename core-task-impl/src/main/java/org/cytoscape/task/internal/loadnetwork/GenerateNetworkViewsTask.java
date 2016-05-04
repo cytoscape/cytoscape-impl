@@ -107,7 +107,7 @@ class GenerateNetworkViewsTask extends AbstractTask implements ObservableTask {
 				net.getRow(net).set(CyNetwork.NAME, namingUtil.getSuggestedNetworkTitle(networkName));
 			}
 			
-			networkManager.addNetwork(net);
+			networkManager.addNetwork(net, false);
 			final int numGraphObjects = net.getNodeCount() + net.getEdgeCount();
 			
 			if (numGraphObjects < viewThreshold)
@@ -181,7 +181,7 @@ class GenerateNetworkViewsTask extends AbstractTask implements ObservableTask {
 		
 		final CyNetworkView view = viewReader.buildCyNetworkView(network);
 		final VisualStyle viewStyle = vmm.getVisualStyle(view);
-		networkViewManager.addNetworkView(view);
+		networkViewManager.addNetworkView(view, false);
 		
 		// Only set current style when no style (or usually the default one) is already set for this view.
 		// This allows the CyNetworkReader implementation to set the desired style itself.

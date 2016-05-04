@@ -84,7 +84,7 @@ public class CreateNetworkViewTaskTest {
 				networkViewManager, null, eventHelper, vmm, renderingEngineManager, appManager, null);
 
 		task.run(tm);
-		verify(networkViewManager, times(1)).addNetworkView(any(CyNetworkView.class));
+		verify(networkViewManager, times(1)).addNetworkView(any(CyNetworkView.class), eq(false));
 	}
 
 	@Test
@@ -99,7 +99,7 @@ public class CreateNetworkViewTaskTest {
 				networkViewManager, null, eventHelper, vmm, renderingEngineManager, appManager, null);
 		
 		task.run(tm);
-		verify(networkViewManager, times(2)).addNetworkView(any(CyNetworkView.class));
+		verify(networkViewManager, times(2)).addNetworkView(any(CyNetworkView.class), eq(false));
 		verify(vmm, times(2)).setVisualStyle(eq(currentStyle), any(CyNetworkView.class));
 	}
 }
