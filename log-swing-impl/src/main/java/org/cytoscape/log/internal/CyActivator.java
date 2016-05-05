@@ -60,7 +60,7 @@ public class CyActivator extends AbstractCyActivator {
 	}
 
 	static <T> Map<T,T> ezMap(T... args) {
-		final Map<T,T> map = new HashMap<T,T>();
+		final Map<T,T> map = new HashMap<>();
 		for (int i = 0; i < args.length; i+= 2)
 			map.put(args[i], args[i + 1]);
 		return map;
@@ -107,14 +107,14 @@ public class CyActivator extends AbstractCyActivator {
 
 		final ExecutorService executor = Executors.newCachedThreadPool(new LowPriorityDaemonThreadFactory());
 
-		final LinkedBlockingQueue<PaxLoggingEvent> userMessagesQueue = new LinkedBlockingQueue<PaxLoggingEvent>();
+		final LinkedBlockingQueue<PaxLoggingEvent> userMessagesQueue = new LinkedBlockingQueue<>();
 		executor.submit(new UserMessagesProcesser(userMessagesQueue, statusBar, userMessagesDialog));
 		registerService(bc, new AppenderToQueue(userMessagesQueue), PaxAppender.class, ezProps(
 			"org.ops4j.pax.logging.appender.name", "OrgCytoscapeLogSwingUserMessagesAppender"));
 
 		final ConsoleDialog consoleDialog = new ConsoleDialog(taskManagerRef, cySwingApplicationRef, logViewerConfig);
 
-		final LinkedBlockingQueue<PaxLoggingEvent> allLogMessagesQueue = new LinkedBlockingQueue<PaxLoggingEvent>();
+		final LinkedBlockingQueue<PaxLoggingEvent> allLogMessagesQueue = new LinkedBlockingQueue<>();
 		executor.submit(new AllLogMessagesProcesser(allLogMessagesQueue, consoleDialog));
 		registerService(bc, new AppenderToQueue(allLogMessagesQueue), PaxAppender.class, ezProps(
 			"org.ops4j.pax.logging.appender.name", "OrgCytoscapeLogSwingAllLogMessagesAppender"));

@@ -68,7 +68,7 @@ public abstract class TunableAbstractCyWriter<S extends CyWriterFactory, T exten
 	public TunableAbstractCyWriter(T writerManager) {
 		super(writerManager);
 		final List<String> availableFormats = new ArrayList<>(getFileFilterDescriptions());
-		options = new ListSingleSelection<String>(availableFormats);
+		options = new ListSingleSelection<>(availableFormats);
 	}
 
 	@Override

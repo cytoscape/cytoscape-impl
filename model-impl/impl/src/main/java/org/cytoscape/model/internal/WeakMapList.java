@@ -42,11 +42,11 @@ import java.lang.ref.WeakReference;
  */
 class WeakMapList<S,T> {
 
-	WeakHashMap<S,List<WeakReference<T>>> data = new WeakHashMap<S,List<WeakReference<T>>>();
+	WeakHashMap<S,List<WeakReference<T>>> data = new WeakHashMap<>();
 
 	public List<T> get(S src) {
 		List<WeakReference<T>> list = data.get(src);
-		List<T> ret = new ArrayList<T>();
+		List<T> ret = new ArrayList<>();
 		if ( list == null )
 			return ret; 
 		for (WeakReference<T> ref : list) {
@@ -61,10 +61,10 @@ class WeakMapList<S,T> {
 	public void put(S src, T tgt) {
 		List<WeakReference<T>> refs = data.get(src);
 		if ( refs == null ) {
-			refs = new ArrayList<WeakReference<T>>();
+			refs = new ArrayList<>();
 			data.put(src,refs);
 		}
-		refs.add( new WeakReference<T>( tgt ) );
+		refs.add(new WeakReference<>(tgt) );
 	}
 }
 

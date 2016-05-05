@@ -692,7 +692,7 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 	}
 
 	public boolean checkKeys() {
-		List<CyColumn> joinTargetColumns = new ArrayList<CyColumn>();
+		List<CyColumn> joinTargetColumns = new ArrayList<>();
 
 		if (whereImportTable.getSelectedValue().matches(NETWORK_COLLECTION)) {
 			joinTargetColumns.add(getJoinTargetColumn(

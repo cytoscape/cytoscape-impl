@@ -35,10 +35,10 @@ public class CyGroupViewSettings {
 	CyGroupSettingsImpl settings = null;
 	CyGroup group = null;
 
-  public ListSingleSelection<DoubleClickAction> doubleClickAction = 
-		new ListSingleSelection<DoubleClickAction>(DoubleClickAction.NONE,
-		                                           DoubleClickAction.EXPANDCONTRACT,
-		                                           DoubleClickAction.SELECT);
+  public ListSingleSelection<DoubleClickAction> doubleClickAction =
+		  new ListSingleSelection<>(DoubleClickAction.NONE,
+				  DoubleClickAction.EXPANDCONTRACT,
+				  DoubleClickAction.SELECT);
 
 	// We need to use getters and setters so we can update
 	// our settings object
@@ -50,11 +50,11 @@ public class CyGroupViewSettings {
 	public void setDCAction(ListSingleSelection<DoubleClickAction> input) {
 	}
 
-  public ListSingleSelection<GroupViewType> groupViewType = 
-		new ListSingleSelection<GroupViewType>(GroupViewType.NONE,
-		                                       GroupViewType.COMPOUND,
-		                                       GroupViewType.SHOWGROUPNODE,
-		                                       GroupViewType.SINGLENODE);
+  public ListSingleSelection<GroupViewType> groupViewType =
+		  new ListSingleSelection<>(GroupViewType.NONE,
+				  GroupViewType.COMPOUND,
+				  GroupViewType.SHOWGROUPNODE,
+				  GroupViewType.SINGLENODE);
 
 	// We need to use getters and setters so we can update
 	// our settings object

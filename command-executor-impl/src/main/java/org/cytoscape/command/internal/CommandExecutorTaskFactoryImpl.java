@@ -55,7 +55,7 @@ public class CommandExecutorTaskFactoryImpl extends AbstractTaskFactory implemen
 	} 
 
 	public TaskIterator createTaskIterator(File file, TaskObserver observer) {
-        final Map<String, Object> m = new HashMap<String, Object>();
+        final Map<String, Object> m = new HashMap<>();
         m.put("file", file);
         return tunableSetter.createTaskIterator(this.createTaskIterator(observer), m, observer);
 	} 

@@ -46,7 +46,7 @@ public class TokeniserTest extends TestCase {
 
 	public void testScanner1() throws Exception {
 		final Tokeniser tokeniser = new Tokeniser("AND(1.0 >= $(BOB), OR($(JOE) = $(tiny), $(x) > LOG(1.3e17)))");
-		final ArrayList<TokenStringRepAndPosition> tokens = new ArrayList<TokenStringRepAndPosition>();
+		final ArrayList<TokenStringRepAndPosition> tokens = new ArrayList<>();
 		String tokenAsString;
 		do {
 			tokenAsString = tokeniser.getTokenAsString();
@@ -104,7 +104,7 @@ public class TokeniserTest extends TestCase {
 	 */
 	public void testScanner2() throws Exception {
 		final Tokeniser tokeniser = new Tokeniser("AND(1.0>=$(BOB),OR($(JOE)=$(tiny),$(x)>LOG(1.3e17)))");
-		final ArrayList<TokenStringRepAndPosition> tokens = new ArrayList<TokenStringRepAndPosition>();
+		final ArrayList<TokenStringRepAndPosition> tokens = new ArrayList<>();
 		String tokenAsString;
 		do {
 			tokenAsString = tokeniser.getTokenAsString();
@@ -159,7 +159,7 @@ public class TokeniserTest extends TestCase {
 
 	public void testScanner3() throws Exception {
 		final Tokeniser tokeniser = new Tokeniser("1.79^3");
-		final ArrayList<TokenStringRepAndPosition> tokens = new ArrayList<TokenStringRepAndPosition>();
+		final ArrayList<TokenStringRepAndPosition> tokens = new ArrayList<>();
 		String tokenAsString;
 		do {
 			tokenAsString = tokeniser.getTokenAsString();
@@ -185,7 +185,7 @@ public class TokeniserTest extends TestCase {
 
 	public void testScanner4() throws Exception {
 		final Tokeniser tokeniser = new Tokeniser("true, fred, FALSE, True");
-		final ArrayList<TokenStringRepAndPosition> tokens = new ArrayList<TokenStringRepAndPosition>();
+		final ArrayList<TokenStringRepAndPosition> tokens = new ArrayList<>();
 		String tokenAsString;
 		do {
 			tokenAsString = tokeniser.getTokenAsString();
@@ -215,7 +215,7 @@ public class TokeniserTest extends TestCase {
 
 	public void testScanner5() throws Exception {
 		final Tokeniser tokeniser = new Tokeniser(".79e2");
-		final ArrayList<TokenStringRepAndPosition> tokens = new ArrayList<TokenStringRepAndPosition>();
+		final ArrayList<TokenStringRepAndPosition> tokens = new ArrayList<>();
 		String tokenAsString;
 		do {
 			tokenAsString = tokeniser.getTokenAsString();

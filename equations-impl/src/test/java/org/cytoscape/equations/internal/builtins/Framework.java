@@ -63,7 +63,7 @@ class Framework {
 	 *  @return true if the test compiled and ran and produced the expected result
 	 */
 	static boolean executeTest(final String equation, final Map<String, Object> variablesAndValues, final Object expectedResult) {
-		final Map<String, Class<?>> varNameToTypeMap = new HashMap<String, Class<?>>();
+		final Map<String, Class<?>> varNameToTypeMap = new HashMap<>();
 		for (final String variableName : variablesAndValues.keySet())
 			varNameToTypeMap.put(variableName, variablesAndValues.get(variableName).getClass());
 		
@@ -77,7 +77,7 @@ class Framework {
 			return false;
 		}
 
-		final Map<String, IdentDescriptor> nameToDescriptorMap = new HashMap<String, IdentDescriptor>();
+		final Map<String, IdentDescriptor> nameToDescriptorMap = new HashMap<>();
 		try {
 			for (final String variableName : variablesAndValues.keySet())
 				nameToDescriptorMap.put(variableName, new IdentDescriptor(variablesAndValues.get(variableName)));
@@ -104,7 +104,7 @@ class Framework {
 	}
 
 	static boolean executeTest(final String equation, final Object expectedResult) {
-		final Map<String, Object> variablesAndValues = new HashMap<String, Object>();
+		final Map<String, Object> variablesAndValues = new HashMap<>();
 		return executeTest(equation, variablesAndValues, expectedResult);
 	}
 
@@ -114,7 +114,7 @@ class Framework {
 	 *
 	 */
 	static boolean executeTestExpectFailure(final String equation, final Map<String, Object> variablesAndValues) {
-		final Map<String, Class<?>> varNameToTypeMap = new HashMap<String, Class<?>>();
+		final Map<String, Class<?>> varNameToTypeMap = new HashMap<>();
 		for (final String variableName : variablesAndValues.keySet())
 			varNameToTypeMap.put(variableName, variablesAndValues.get(variableName).getClass());
 		
@@ -128,7 +128,7 @@ class Framework {
 			return true;
 		}
 
-		final Map<String, IdentDescriptor> nameToDescriptorMap = new HashMap<String, IdentDescriptor>();
+		final Map<String, IdentDescriptor> nameToDescriptorMap = new HashMap<>();
 		try {
 			for (final String variableName : variablesAndValues.keySet())
 				nameToDescriptorMap.put(variableName, new IdentDescriptor(variablesAndValues.get(variableName)));
@@ -148,7 +148,7 @@ class Framework {
 	}
 
 	static boolean executeTestExpectFailure(final String equation) {
-		final Map<String, Object> variablesAndValues = new HashMap<String, Object>();
+		final Map<String, Object> variablesAndValues = new HashMap<>();
 		return executeTestExpectFailure(equation, variablesAndValues);
 	}
 

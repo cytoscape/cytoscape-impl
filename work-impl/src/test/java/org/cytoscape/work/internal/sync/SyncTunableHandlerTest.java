@@ -45,7 +45,7 @@ public class SyncTunableHandlerTest {
         final Tunable tun = stringField.getAnnotation(Tunable.class);
         SyncTunableHandler syncHandler = new SyncTunableHandler(stringField, th, tun);
 
-		Map<String,Object> map = new HashMap<String,Object>();
+		Map<String,Object> map = new HashMap<>();
 		map.put("tstring","hello");
 
 		syncHandler.setValueMap(map);

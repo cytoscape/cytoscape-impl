@@ -9,7 +9,7 @@ import org.junit.Test;
 
 public class AbstractCustomGraphics2Test {
 
-	protected Map<String, Object> props1 = new HashMap<String, Object>();
+	protected Map<String, Object> props1 = new HashMap<>();
 	
 	@Test
 	public void testPropertyNamesPrefix() {

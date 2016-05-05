@@ -104,7 +104,7 @@ public class IntHashPerformance {
 
 		// Print sorted array to standard out.
 		if (!repeat) {
-			ArrayList<Integer> arrList = new ArrayList<Integer>();
+			ArrayList<Integer> arrList = new ArrayList<>();
 
 			for (int i = 0; i < uniqueElements.length; i++)
 				arrList.add(Integer.valueOf(uniqueElements[i]));
@@ -125,7 +125,7 @@ public class IntHashPerformance {
 			millisEnd = System.currentTimeMillis();
 			System.err.println((millisEnd - millisBegin) + " (repeated test)");
 
-			ArrayList<Integer> arrList = new ArrayList<Integer>();
+			ArrayList<Integer> arrList = new ArrayList<>();
 
 			for (int i = 0; i < uniqueElements.length; i++)
 				arrList.add(Integer.valueOf(uniqueElements[i]));

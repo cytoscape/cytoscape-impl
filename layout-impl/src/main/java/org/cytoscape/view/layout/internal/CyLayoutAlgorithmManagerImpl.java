@@ -61,8 +61,8 @@ public class CyLayoutAlgorithmManagerImpl implements CyLayoutAlgorithmManager {
 			final CyLayoutAlgorithm defaultLayout) {
 		this.cyProps = p;
 		this.serviceRegistrar = serviceRegistrar;
-		layoutMap = new ConcurrentHashMap<String,CyLayoutAlgorithm>(16, 0.75f, 2);
-		serviceMap = new ConcurrentHashMap<String,TaskFactory>(16, 0.75f, 2);
+		layoutMap = new ConcurrentHashMap<>(16, 0.75f, 2);
+		serviceMap = new ConcurrentHashMap<>(16, 0.75f, 2);
 
 		// Get some services that we'll need.  
 		// NOTE: This creates a loader-order dependency for application-impl.  We

@@ -91,9 +91,9 @@ public class GroupUtils {
 		createListColumnIfNeeded(table, X_LOCATION_ATTR, Double.class);
 		createListColumnIfNeeded(table, Y_LOCATION_ATTR, Double.class);
 		CyRow row = table.getRow(suid);
-		row.set(NETWORK_SUID_ATTR, new ArrayList<Long>());
-		row.set(X_LOCATION_ATTR, new ArrayList<Double>());
-		row.set(Y_LOCATION_ATTR, new ArrayList<Double>());
+		row.set(NETWORK_SUID_ATTR, new ArrayList<>());
+		row.set(X_LOCATION_ATTR, new ArrayList<>());
+		row.set(Y_LOCATION_ATTR, new ArrayList<>());
 	}
 
 
@@ -144,7 +144,7 @@ public class GroupUtils {
 	private static <T> List<T> getList(CyRow row, String column, Class<T> type) {
 		List<T> l = row.getList(column, type);
 		if (l == null)
-			l = new ArrayList<T>();
+			l = new ArrayList<>();
 		return l;
 	}
 

@@ -38,7 +38,7 @@ public class PreferenceTableModel extends AbstractTableModel {
 	static int[] columnWidth = new int[] { 150, 250 };
 	static int[] alignment = new int[] { JLabel.LEFT, JLabel.LEFT };
 	private Properties properties;
-	Vector<String[]> propertiesList = new Vector<String[]>();
+	Vector<String[]> propertiesList = new Vector<>();
 	static String[] columnHeader = new String[] { "Property Name", "Value" };
 
 	/**

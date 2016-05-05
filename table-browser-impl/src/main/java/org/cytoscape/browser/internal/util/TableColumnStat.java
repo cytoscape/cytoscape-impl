@@ -33,9 +33,9 @@ import java.util.TreeMap;
 public class TableColumnStat {
 
 	String title;
-	Map<String, Boolean> colNameVisibilityMap = new LinkedHashMap<String, Boolean>();
-	Map<Integer, String> orderedCol = new TreeMap<Integer, String>();
-	List<String> visCols = new ArrayList<String>();
+	Map<String, Boolean> colNameVisibilityMap = new LinkedHashMap<>();
+	Map<Integer, String> orderedCol = new TreeMap<>();
+	List<String> visCols = new ArrayList<>();
 
 	public TableColumnStat (String title){
 		this.title = title;
@@ -48,7 +48,7 @@ public class TableColumnStat {
 	}
 
 	public List<String> getOrderedCol (){
-		return new ArrayList<String>( orderedCol.values());
+		return new ArrayList<>(orderedCol.values());
 	}
 
 	public List<String> getVisibleCols(){

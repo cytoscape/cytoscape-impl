@@ -1203,7 +1203,7 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 			return;
 
 		final String selectedKeyAttribute = mappingAttributeComboBox.getSelectedItem().toString();
-		final Set<Object> valueSet = new TreeSet<Object>();
+		final Set<Object> valueSet = new TreeSet<>();
 
 		// TODO -- setKeyList
 		if (selectedKeyAttribute.equals(ID)) {

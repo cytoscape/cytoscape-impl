@@ -206,7 +206,7 @@ public class ColumnFilterViewFactory implements TransformerViewFactory {
 			predicateComboBox.addItem(new ComboItem<>(Predicate.REGEX, "matches regex"));
 			
 			List<ColumnComboBoxElement> nameComboBoxModel = modelMonitor.getColumnComboBoxModel();
-			nameComboBox = style.createCombo(new DynamicComboBoxModel<ColumnComboBoxElement>(nameComboBoxModel));
+			nameComboBox = style.createCombo(new DynamicComboBoxModel<>(nameComboBoxModel));
 			nameComboBox.setRenderer(ViewUtil.createElipsisRenderer(30));
 			
 			numericNegateComboBox = new BooleanComboBox(style, "is", "is not");

@@ -104,7 +104,7 @@ public class NewNetworkSelectedNodesOnlyTaskTest {
 		net.getRow(edge1).set(CyNetwork.SELECTED, true);
 		
 		int numberOfNetsBeforeTask = netmgr.getNetworkSet().size();
-		List<CyNetwork> netListbeforeTask = new ArrayList<CyNetwork>(netmgr.getNetworkSet());
+		List<CyNetwork> netListbeforeTask = new ArrayList<>(netmgr.getNetworkSet());
 
 		final NewNetworkSelectedNodesOnlyTask task =
 			new NewNetworkSelectedNodesOnlyTask(undoSupport, net, cyroot, cnvf, netmgr,
@@ -118,7 +118,7 @@ public class NewNetworkSelectedNodesOnlyTaskTest {
 		int numberOfNetsAfterTask = netmgr.getNetworkSet().size();
 		assertEquals(1, numberOfNetsAfterTask - numberOfNetsBeforeTask);
 		
-		List<CyNetwork> networkList = new ArrayList<CyNetwork>(netmgr.getNetworkSet());
+		List<CyNetwork> networkList = new ArrayList<>(netmgr.getNetworkSet());
 		networkList.removeAll(netListbeforeTask);
 		assertEquals(1, networkList.get(0).getNodeList().size());
 		assertEquals(0, networkList.get(0).getEdgeList().size());

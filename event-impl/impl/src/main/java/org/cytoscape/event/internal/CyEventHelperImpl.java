@@ -58,9 +58,9 @@ public class CyEventHelperImpl implements CyEventHelper {
 	
 	public CyEventHelperImpl(final CyListenerAdapter normal) {
 		this.normal = normal;
-		sourceAccMap = new LinkedHashMap<Object,Map<Class<?>,PayloadAccumulator<?,?,?>>>();
+		sourceAccMap = new LinkedHashMap<>();
 		payloadEventMonitor = Executors.newSingleThreadScheduledExecutor();
-		silencedSources = new WeakHashMap<Object, Object>();
+		silencedSources = new WeakHashMap<>();
 		havePayload = false;
 
 		// This thread just flushes any accumulated payload events.
@@ -121,7 +121,7 @@ public class CyEventHelperImpl implements CyEventHelper {
 
 			Map<Class<?>,PayloadAccumulator<?,?,?>> cmap = sourceAccMap.get(source);
 			if ( cmap == null ) { 
-				cmap = new LinkedHashMap<Class<?>,PayloadAccumulator<?,?,?>>();
+				cmap = new LinkedHashMap<>();
 				sourceAccMap.put(source,cmap);
 			}
 	
@@ -129,7 +129,7 @@ public class CyEventHelperImpl implements CyEventHelper {
 	
 			if ( acc == null ) {
 				try {
-					acc = new PayloadAccumulator<S,P,E>(source, eventType);
+					acc = new PayloadAccumulator<>(source, eventType);
 					cmap.put(eventType,acc);
 				} catch (NoSuchMethodException nsme) {
 					logger.warn("Unable to add payload to event, because of missing event constructor.", nsme);
@@ -150,7 +150,7 @@ public class CyEventHelperImpl implements CyEventHelper {
 			if ( !havePayload )
 				return;
 			
-			flushList = new ArrayList<CyPayloadEvent<?,?>>();
+			flushList = new ArrayList<>();
 			havePayload = false;
 			
 			Iterator<Entry<Object, Map<Class<?>, PayloadAccumulator<?, ?, ?>>>> iterator = sourceAccMap.entrySet().iterator();

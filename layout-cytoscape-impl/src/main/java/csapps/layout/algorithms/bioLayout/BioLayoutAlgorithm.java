@@ -55,7 +55,7 @@ public abstract class BioLayoutAlgorithm extends AbstractLayoutAlgorithm {
 	
 	@Override
 	public Set<Class<?>> getSupportedEdgeAttributeTypes() {
-		Set<Class<?>> ret = new HashSet<Class<?>>();
+		Set<Class<?>> ret = new HashSet<>();
 		if (!supportWeights)
 			return ret;
 

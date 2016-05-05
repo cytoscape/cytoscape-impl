@@ -54,7 +54,7 @@ public class CyNetworkViewWriterTest extends AbstractCyWriterTest {
 		writerManager = mock(CyNetworkViewWriterManager.class);
 		view = viewSupport.getNetworkView();
 		
-		final List<CyFileFilter> filters = new ArrayList<CyFileFilter>();
+		final List<CyFileFilter> filters = new ArrayList<>();
 		final CyFileFilter dummyFilter = mock(CyFileFilter.class);
 		filters.add(dummyFilter);
 		when(dummyFilter.getDescription()).thenReturn("dummy description");

@@ -74,34 +74,34 @@ public class JoinTablesTaskTaskFactoryImpl extends AbstractTableTaskFactory impl
 		TableType tableType = getTableType(type);
 		if(tableType == null)
 			throw new IllegalArgumentException("The specified type " + type + " is not acceptable.");
-		ListSingleSelection<TableType> tableTypes = new ListSingleSelection<TableType>(tableType);
+		ListSingleSelection<TableType> tableTypes = new ListSingleSelection<>(tableType);
 		tableTypes.setSelectedValue(tableType);
 		
-		List<String> networkNames = new ArrayList<String>();
+		List<String> networkNames = new ArrayList<>();
 		for(CyNetwork net: networkList){
 			networkNames.add(net.getRow(net).get(CyNetwork.NAME, String.class));
 		}
 	
-		ListMultipleSelection<String> networksListTunable = new ListMultipleSelection<String>(networkNames);
+		ListMultipleSelection<String> networksListTunable = new ListMultipleSelection<>(networkNames);
 		networksListTunable.setSelectedValues(networkNames);
 		
-		List<String> rootNetworkNames = new ArrayList<String>();
-		ListSingleSelection<String> rootNetworkList = new ListSingleSelection<String>();
+		List<String> rootNetworkNames = new ArrayList<>();
+		ListSingleSelection<String> rootNetworkList = new ListSingleSelection<>();
 		if (rootNetwork != null){
 			rootNetworkNames.add( rootNetwork.getRow(rootNetwork).get(CyNetwork.NAME, String.class));
-			rootNetworkList = new ListSingleSelection<String>(rootNetworkNames);
+			rootNetworkList = new ListSingleSelection<>(rootNetworkNames);
 			rootNetworkList.setSelectedValue(rootNetworkNames.get(0));
 		}
 
-		List<String> columnNames = new ArrayList<String>();
-		ListSingleSelection<String> columnNamesList = new ListSingleSelection<String>();
+		List<String> columnNames = new ArrayList<>();
+		ListSingleSelection<String> columnNamesList = new ListSingleSelection<>();
 		if (targetJoinColumn != null){
 			columnNames.add(targetJoinColumn.getName());
-			columnNamesList = new ListSingleSelection<String>(columnNames);
+			columnNamesList = new ListSingleSelection<>(columnNames);
 			columnNamesList.setSelectedValue(columnNames.get(0));
 		}
 		
-		final Map<String, Object> m = new HashMap<String, Object>();
+		final Map<String, Object> m = new HashMap<>();
 		
 		m.put("DataTypeOptions", tableTypes);
 		m.put("SelectedNetworksOnly", selectedNetworksOnly);

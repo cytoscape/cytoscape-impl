@@ -93,8 +93,8 @@ public class FilterApp implements CyShutdownListener, SessionLoadedListener, CyS
 	@Override
 	public void handleEvent(SessionLoadedEvent e) {
 		// Remove current session-only filters
-		List<CompositeFilter> removeList = new ArrayList<CompositeFilter>();
-		Set<String> globalNames = new HashSet<String>();
+		List<CompositeFilter> removeList = new ArrayList<>();
+		Set<String> globalNames = new HashSet<>();
 		
 		for (CompositeFilter cf : modelLocator.getFilters()) {
 			if (!cf.getAdvancedSetting().isGlobalChecked())
@@ -147,7 +147,7 @@ public class FilterApp implements CyShutdownListener, SessionLoadedListener, CyS
 	@Override
 	public void handleEvent(SessionAboutToBeSavedEvent e) {
 		Vector<CompositeFilter> allFilters = modelLocator.getFilters();
-		List<CompositeFilter> saveList = new ArrayList<CompositeFilter>();
+		List<CompositeFilter> saveList = new ArrayList<>();
 		
 		for (CompositeFilter cf : allFilters) {
 			if (cf.getAdvancedSetting().isSessionChecked())
@@ -164,7 +164,7 @@ public class FilterApp implements CyShutdownListener, SessionLoadedListener, CyS
 				writer.write(saveList, tmpFile);
 				
 				// Add it to the apps list
-				List<File> fileList = new ArrayList<File>();
+				List<File> fileList = new ArrayList<>();
 				fileList.add(tmpFile);
 				e.addAppFiles(FilterUtil.FILTER_APP_NAME, fileList);
 			} catch (Exception ex) {
@@ -217,7 +217,7 @@ public class FilterApp implements CyShutdownListener, SessionLoadedListener, CyS
 	
 	private void saveGlobalFilters() {
 		// Get current global filters
-		Set<CompositeFilter> globalFilters = new LinkedHashSet<CompositeFilter>();
+		Set<CompositeFilter> globalFilters = new LinkedHashSet<>();
 		
 		for (CompositeFilter cf : modelLocator.getFilters()) {
 			if (cf.getAdvancedSetting().isGlobalChecked())

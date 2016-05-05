@@ -48,7 +48,7 @@ public class SetCurrentNetworkTaskTest {
 		TaskMonitor tm= mock(TaskMonitor.class);
 		CyNetwork net= mock(CyNetwork.class);
 		
-		HashSet<CyNetwork> netSet = new HashSet<CyNetwork>();
+		HashSet<CyNetwork> netSet = new HashSet<>();
 		netSet.add(net);
 		
 		when(netmgr.getNetworkSet()).thenReturn(netSet);

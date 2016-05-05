@@ -44,11 +44,11 @@ private final VisualLexicon lexicon;
 	@Override
 	public VisualPropertyDependency<Double> createVisualPropertyDependency() {
 		// Node Size Dependency
-		final Set<VisualProperty<Double>> nodeSizeVisualProperties = new HashSet<VisualProperty<Double>>();
+		final Set<VisualProperty<Double>> nodeSizeVisualProperties = new HashSet<>();
 		nodeSizeVisualProperties.add(BasicVisualLexicon.NODE_WIDTH);
 		nodeSizeVisualProperties.add(BasicVisualLexicon.NODE_HEIGHT);
 
-		VisualPropertyDependency<Double> vpDep = new VisualPropertyDependency<Double>("nodeSizeLocked", "Lock node width and height", nodeSizeVisualProperties, lexicon);
+		VisualPropertyDependency<Double> vpDep = new VisualPropertyDependency<>("nodeSizeLocked", "Lock node width and height", nodeSizeVisualProperties, lexicon);
 		vpDep.setDependency(true);
 		return vpDep;
 	}

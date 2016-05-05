@@ -93,7 +93,7 @@ public class CyGroupAggregationManagerImpl
 			if (map.containsKey(type))
 				aggList = map.get(type);
 			else {
-				aggList = new ArrayList<Aggregator<?>>();
+				aggList = new ArrayList<>();
 				map.put(type, aggList);
 			}
 	
@@ -122,7 +122,7 @@ public class CyGroupAggregationManagerImpl
 		synchronized (lock) {
 			if (aggMap.containsKey(type))
 				return aggMap.get(type);
-			return new ArrayList<Aggregator<?>>();
+			return new ArrayList<>();
 		}
 	}
 
@@ -131,7 +131,7 @@ public class CyGroupAggregationManagerImpl
 		synchronized (lock) {
 			if (aggListMap.containsKey(type))
 				return aggListMap.get(type);
-			return new ArrayList<Aggregator<?>>();
+			return new ArrayList<>();
 		}
 	}
 
@@ -154,7 +154,7 @@ public class CyGroupAggregationManagerImpl
 	@Override
 	public List<Aggregator<?>> getAggregators() {
 		synchronized (lock) {
-			List<Aggregator<?>> allAggs = new ArrayList<Aggregator<?>>();
+			List<Aggregator<?>> allAggs = new ArrayList<>();
 			for (Class<?> c: aggMap.keySet()) {
 				allAggs.addAll(getAggregators(c));
 			}
@@ -165,7 +165,7 @@ public class CyGroupAggregationManagerImpl
 	@Override
 	public List<Aggregator<?>> getListAggregators() {
 		synchronized (lock) {
-			List<Aggregator<?>> allAggs = new ArrayList<Aggregator<?>>();
+			List<Aggregator<?>> allAggs = new ArrayList<>();
 			for (Class<?> c: aggListMap.keySet()) {
 				allAggs.addAll(getAggregators(c));
 			}
@@ -176,14 +176,14 @@ public class CyGroupAggregationManagerImpl
 	@Override
 	public List<Class<?>> getSupportedClasses() {
 		synchronized (lock) {
-			return new ArrayList<Class<?>>(aggMap.keySet());
+			return new ArrayList<>(aggMap.keySet());
 		}
 	}
 
 	@Override
 	public List<Class<?>> getSupportedListClasses() {
 		synchronized (lock) {
-			return new ArrayList<Class<?>>(aggListMap.keySet());
+			return new ArrayList<>(aggListMap.keySet());
 		}
 	}
 }

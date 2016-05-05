@@ -38,7 +38,7 @@ public class ObjectPositionVisualProperty extends AbstractVisualProperty<ObjectP
 	private static final ObjectPosition MIN_OBJECT = ObjectPositionImpl.DEFAULT_POSITION;
 
 	static {
-		OBJECT_POSITION_RANGE = new ContinuousRange<ObjectPosition>(ObjectPosition.class, MIN_OBJECT, MIN_OBJECT, true, true);
+		OBJECT_POSITION_RANGE = new ContinuousRange<>(ObjectPosition.class, MIN_OBJECT, MIN_OBJECT, true, true);
 	}
 
 	public ObjectPositionVisualProperty(ObjectPosition defaultValue,

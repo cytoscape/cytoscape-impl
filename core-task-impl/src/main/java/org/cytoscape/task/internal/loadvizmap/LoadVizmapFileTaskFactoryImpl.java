@@ -83,7 +83,7 @@ public class LoadVizmapFileTaskFactoryImpl extends AbstractTaskFactory implement
 		// Set up map containing values to be assigned to tunables.
 		// The name "file" is the name of the tunable field in
 		// LoadVizmapFileTask.
-		Map<String, Object> m = new HashMap<String, Object>();
+		Map<String, Object> m = new HashMap<>();
 		m.put("file", f);
 
 		LoadVizmapFileTask task = createTask();
@@ -118,7 +118,7 @@ public class LoadVizmapFileTaskFactoryImpl extends AbstractTaskFactory implement
 	@Override
 	public TaskIterator createTaskIterator(File file, TaskObserver observer) {
 
-		final Map<String, Object> m = new HashMap<String, Object>();
+		final Map<String, Object> m = new HashMap<>();
 		m.put("file", file);
 
 		return tunableSetter.createTaskIterator(this.createTaskIterator(), m, observer);
@@ -130,7 +130,7 @@ public class LoadVizmapFileTaskFactoryImpl extends AbstractTaskFactory implement
 		File returnFile = null;
 
 		// Get the contents from inputStream
-		final List<String> list = new ArrayList<String>();
+		final List<String> list = new ArrayList<>();
 
 		BufferedReader bf = null;
 		String line;

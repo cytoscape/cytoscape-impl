@@ -398,7 +398,7 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 
 	@Override
 	public Map<String,String> getArgMap() {
-		Map<String, String> argMap = new HashMap<String, String>();
+		Map<String, String> argMap = new HashMap<>();
 		addNodeCoordinates(argMap);
 		argMap.put(ZOOM,Double.toString(this.globalZoom));
 		if (canvasName.equals(DGraphView.Canvas.BACKGROUND_CANVAS))

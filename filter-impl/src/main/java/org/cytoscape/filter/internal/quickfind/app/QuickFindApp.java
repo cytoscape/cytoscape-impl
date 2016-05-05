@@ -184,7 +184,7 @@ public class QuickFindApp implements QuickFindListener, AddedEdgesListener,
 					} else {
 						SelectUtil.setSelectedEdgeState(network, list, true);
 
-						List<CyNode> nodeList = new ArrayList<CyNode>();
+						List<CyNode> nodeList = new ArrayList<>();
 
 						for (int i = 0; i < list.size(); i++) {
 							CyEdge edge = (CyEdge) list.get(i);
@@ -267,12 +267,12 @@ public class QuickFindApp implements QuickFindListener, AddedEdgesListener,
 
 		//  Then, figure out which new nodes to select
 		//  This is the set operation:  R - S
-		final Set<CyNode> toBeSelected = new HashSet<CyNode>(rangeList);
+		final Set<CyNode> toBeSelected = new HashSet<>(rangeList);
 		toBeSelected.removeAll(selectedNodeSet);
 
 		//  Then, figure out which current nodes to unselect
 		//  This is the set operation:  S - R
-		final Set<CyNode> toBeUnselected = new HashSet<CyNode>(selectedNodeSet);
+		final Set<CyNode> toBeUnselected = new HashSet<>(selectedNodeSet);
 		toBeUnselected.removeAll(rangeList);
 
 		SwingUtilities.invokeLater(new Runnable() {
@@ -300,12 +300,12 @@ public class QuickFindApp implements QuickFindListener, AddedEdgesListener,
 
 		//  Then, figure out which new nodes to select
 		//  This is the set operation:  R - S
-		final Set<CyEdge> toBeSelected = new HashSet<CyEdge>(rangeList);
+		final Set<CyEdge> toBeSelected = new HashSet<>(rangeList);
 		toBeSelected.removeAll(selectedEdgeSet);
 
 		//  Then, figure out which current nodes to unselect
 		//  This is the set operation:  S - R
-		final Set<CyEdge> toBeUnselected = new HashSet<CyEdge>(selectedEdgeSet);
+		final Set<CyEdge> toBeUnselected = new HashSet<>(selectedEdgeSet);
 		toBeUnselected.removeAll(rangeList);
 
 		SwingUtilities.invokeLater(new Runnable() {

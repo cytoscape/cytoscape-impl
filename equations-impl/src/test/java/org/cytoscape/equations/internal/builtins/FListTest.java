@@ -35,15 +35,15 @@ import junit.framework.*;
 
 public class FListTest extends TestCase {
 	public void testAll() throws Exception {
-                final List<Object> numbers = new ArrayList<Object>();
+                final List<Object> numbers = new ArrayList<>();
                 numbers.add(Double.valueOf(1.0));
                 numbers.add(Integer.valueOf(2));
                 numbers.add(Double.valueOf(3.0));
                 numbers.add("4.0");
                 numbers.add(Double.valueOf(5.0));
-		final Map<String, Object> variablesAndValues = new HashMap<String, Object>();
+		final Map<String, Object> variablesAndValues = new HashMap<>();
 		variablesAndValues.put("numbers", numbers);
-		final List<Double> expectedResult = new ArrayList<Double>();
+		final List<Double> expectedResult = new ArrayList<>();
 		expectedResult.add(1.0);
 		expectedResult.add(2.0);
 		expectedResult.add(3.0);
@@ -53,7 +53,7 @@ public class FListTest extends TestCase {
 		expectedResult.add(7.0);
 		assertTrue(Framework.executeTest("=FLIST($numbers, 6, 7)", variablesAndValues, expectedResult));
 
-		final List<Double> emptyList = new ArrayList<Double>();
+		final List<Double> emptyList = new ArrayList<>();
 		assertTrue(Framework.executeTest("=FLIST()", emptyList));
 
 		assertTrue(Framework.executeTestExpectFailure("=FLIST(\"abc\")"));

@@ -70,7 +70,7 @@ public class DiscreteMappingTest {
 		final Class<String> type = String.class;
 
 		CyEventHelper eventHelper = mock(CyEventHelper.class);
-		final DiscreteMapping<String, Paint> mapping = new DiscreteMappingImpl<String, Paint>(attrName, type,
+		final DiscreteMapping<String, Paint> mapping = new DiscreteMappingImpl<>(attrName, type,
 				BasicVisualLexicon.NODE_FILL_COLOR, eventHelper);
 
 		return mapping;

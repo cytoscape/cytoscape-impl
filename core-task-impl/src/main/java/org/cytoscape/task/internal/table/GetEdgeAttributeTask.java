@@ -65,7 +65,7 @@ public class GetEdgeAttributeTask extends AbstractTableDataTask implements Obser
 
 		CyTable edgeTable = getNetworkTable(network, CyEdge.class, columnTunable.getNamespace());
 
-		edgeDataMap = new HashMap<CyIdentifiable, Map<String, Object>>();
+		edgeDataMap = new HashMap<>();
 
 		for (CyEdge edge: edgeTunable.getEdgeList()) {
 		  Map<String, Object> edgeData = getCyIdentifierData(edgeTable, 

@@ -25,7 +25,7 @@ public class LineChartTest extends AbstractCustomGraphics2Test {
 	
 	@Before
 	public void setUp() throws Exception {
-		props1 = new HashMap<String, Object>();
+		props1 = new HashMap<>();
 		props1.put(DATA_COLUMNS, asList(colIdFactory.createColumnIdentifier("data")));
 		props1.put(AUTO_RANGE, true);
 		props1.put(GLOBAL_RANGE, false);

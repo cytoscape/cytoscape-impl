@@ -74,10 +74,10 @@ public class MergeTablesTaskFactoryImpl extends AbstractTaskFactory implements M
 		TableType tableType = getTableType(type);
 		if(tableType == null)
 			throw new IllegalArgumentException("The specified type " + type + " is not acceptable.");
-		ListSingleSelection<TableType> tableTypes = new ListSingleSelection<TableType>(tableType);
+		ListSingleSelection<TableType> tableTypes = new ListSingleSelection<>(tableType);
 		tableTypes.setSelectedValue(tableType);
 		
-		List<String> networkNames = new ArrayList<String>();
+		List<String> networkNames = new ArrayList<>();
 		if(networkList != null)
 		{
 			for(CyNetwork net: networkList){
@@ -85,28 +85,28 @@ public class MergeTablesTaskFactoryImpl extends AbstractTaskFactory implements M
 			}
 		}
 	
-		ListMultipleSelection<String> networksListTunable = new ListMultipleSelection<String>(networkNames);
+		ListMultipleSelection<String> networksListTunable = new ListMultipleSelection<>(networkNames);
 		networksListTunable.setSelectedValues(networkNames);
 		
-		List<String> rootNetworkNames = new ArrayList<String>();
-		ListSingleSelection<String> rootNetworkList = new ListSingleSelection<String>();
+		List<String> rootNetworkNames = new ArrayList<>();
+		ListSingleSelection<String> rootNetworkList = new ListSingleSelection<>();
 		if (rootNetwork != null){
 			rootNetworkNames.add( rootNetwork.getRow(rootNetwork).get(CyNetwork.NAME, String.class));
-			rootNetworkList = new ListSingleSelection<String>(rootNetworkNames);
+			rootNetworkList = new ListSingleSelection<>(rootNetworkNames);
 			rootNetworkList.setSelectedValue(rootNetworkNames.get(0));
 		}
 
-		List<String> columnNames = new ArrayList<String>();
-		ListSingleSelection<String> columnNamesList = new ListSingleSelection<String>();
+		List<String> columnNames = new ArrayList<>();
+		ListSingleSelection<String> columnNamesList = new ListSingleSelection<>();
 		if (targetJoinColumn != null){
 			columnNames.add(targetJoinColumn.getName());
-			columnNamesList = new ListSingleSelection<String>(columnNames);
+			columnNamesList = new ListSingleSelection<>(columnNames);
 			columnNamesList.setSelectedValue(columnNames.get(0));
 		}
 		
-		final Map<String, Object> m = new HashMap<String, Object>();
+		final Map<String, Object> m = new HashMap<>();
 		
-	    ListSingleSelection<String> chooser = new ListSingleSelection<String>(MergeTablesTask.NETWORK_COLLECTION,MergeTablesTask.NETWORK_SELECTION,MergeTablesTask.UNASSIGNED_TABLE);
+	    ListSingleSelection<String> chooser = new ListSingleSelection<>(MergeTablesTask.NETWORK_COLLECTION, MergeTablesTask.NETWORK_SELECTION, MergeTablesTask.UNASSIGNED_TABLE);
 		
 	    if(mapToNetworks)
 	    {
@@ -118,22 +118,22 @@ public class MergeTablesTaskFactoryImpl extends AbstractTaskFactory implements M
 	    else
 	    	chooser.setSelectedValue(MergeTablesTask.UNASSIGNED_TABLE);
 	    
-		ListSingleSelection<CyTable> sourceTableList = new ListSingleSelection<CyTable> (sourceTable);
+		ListSingleSelection<CyTable> sourceTableList = new ListSingleSelection<>(sourceTable);
 		sourceTableList.setSelectedValue(sourceTable);
 		ListSingleSelection<Object> targetTableList;
 		if(targetTable != null)
 		{
-			targetTableList = new ListSingleSelection<Object> (targetTable);
+			targetTableList = new ListSingleSelection<>(targetTable);
 			targetTableList.setSelectedValue(targetTable);
 		}
 		else
 		{
-			targetTableList = new ListSingleSelection<Object> (MergeTablesTask.NO_TABLES);
+			targetTableList = new ListSingleSelection<>(MergeTablesTask.NO_TABLES);
 			targetTableList.setSelectedValue(MergeTablesTask.NO_TABLES);
 		}
-		ListMultipleSelection<String> sourceColNames = new ListMultipleSelection<String>(sourceColumnsList);
+		ListMultipleSelection<String> sourceColNames = new ListMultipleSelection<>(sourceColumnsList);
 		sourceColNames.setSelectedValues(sourceColumnsList);
-		ListSingleSelection<String> sourceColumn = new ListSingleSelection<String>(sourceKeyColumn);
+		ListSingleSelection<String> sourceColumn = new ListSingleSelection<>(sourceKeyColumn);
 		sourceColumn.setSelectedValue(sourceKeyColumn);
 		
 		

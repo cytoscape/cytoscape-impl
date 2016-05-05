@@ -58,7 +58,7 @@ public class FilterPanelController extends AbstractPanelController<FilterElement
 		if (filter instanceof CompositeFilter) {
 			String addButtonTT = transformerViewManager.getAddButtonTooltip(filter);
 			CompositeFilterController controller = CompositeFilterController.createFor(view, addButtonTT);
-			return new CompositeFilterPanel<FilterPanel>(parent, this, controller, (CompositeFilter<CyNetwork, CyIdentifiable>) filter, depth);
+			return new CompositeFilterPanel<>(parent, this, controller, (CompositeFilter<CyNetwork, CyIdentifiable>) filter, depth);
 		}
 		
 		if(view == null)

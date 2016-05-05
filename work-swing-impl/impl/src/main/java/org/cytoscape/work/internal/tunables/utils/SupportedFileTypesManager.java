@@ -50,8 +50,8 @@ public class SupportedFileTypesManager {
 	Set<CyFileFilterProvider> outputFactories;
 
 	public SupportedFileTypesManager() {
-		inputFactories = new HashSet<CyFileFilterProvider>();
-		outputFactories = new HashSet<CyFileFilterProvider>();
+		inputFactories = new HashSet<>();
+		outputFactories = new HashSet<>();
 	}
 
 	public void addInputStreamTaskFactory(InputStreamTaskFactory factory, Map<?,?> properties) {
@@ -80,9 +80,9 @@ public class SupportedFileTypesManager {
 	private List<FileChooserFilter> getSupportedFileTypes(final DataCategory category,
 							      final Set<CyFileFilterProvider> factories)
 	{
-		List<FileChooserFilter> types = new ArrayList<FileChooserFilter>();
+		List<FileChooserFilter> types = new ArrayList<>();
 
-		Set<String> allExtensions = new HashSet<String>();
+		Set<String> allExtensions = new HashSet<>();
 		for (final CyFileFilterProvider factory : factories) {
 			CyFileFilter filter = factory.getFileFilter();
 			// this is a hack to exclude internal session table format
@@ -113,7 +113,7 @@ public class SupportedFileTypesManager {
 
 		String description = String.format("All %1$s files", category.getDisplayName().toLowerCase());
 		types.add(new FileChooserFilter(description,
-						new ArrayList<String>(allExtensions).toArray(new String[allExtensions.size()])));
+				new ArrayList<>(allExtensions).toArray(new String[allExtensions.size()])));
 		return types;
 	}
 }

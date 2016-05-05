@@ -83,7 +83,7 @@ public class TestCyGroupFactory {
 		CyNode node3 = network.addNode();
 		CyNode node4 = network.addNode();
 		CyNode node5 = network.addNode();
-		List<CyNode> groupNodes = new ArrayList<CyNode>();
+		List<CyNode> groupNodes = new ArrayList<>();
 		groupNodes.add(node1);
 		groupNodes.add(node2);
 		groupNodes.add(node3);
@@ -93,7 +93,7 @@ public class TestCyGroupFactory {
 		CyEdge edge3 = network.addEdge(node2, node4, false);
 		CyEdge edge4 = network.addEdge(node2, node5, false);
 		CyEdge edge5 = network.addEdge(node3, node5, false);
-		List<CyEdge> groupEdges = new ArrayList<CyEdge>();
+		List<CyEdge> groupEdges = new ArrayList<>();
 		groupEdges.add(edge1);
 		groupEdges.add(edge2);
 		groupEdges.add(edge3);
@@ -104,7 +104,7 @@ public class TestCyGroupFactory {
 		assertTrue("group1 node count = 3", group1.getNodeList().size() == 3);
 		assertTrue("group1 internal edge count = 2", group1.getInternalEdgeList().size() == 2);
 		assertTrue("group1 external edge count = 3", group1.getExternalEdgeList().size() == 3);
-		CyGroup group2 = factory.createGroup(network, groupNodes, new ArrayList<CyEdge>(), true);
+		CyGroup group2 = factory.createGroup(network, groupNodes, new ArrayList<>(), true);
 		assertNotNull(group2);
 		assertTrue("group2 node count = 3", group2.getNodeList().size() == 3);
 		assertTrue("group2 internal edge count = 0", group2.getInternalEdgeList().size() == 0);
@@ -244,8 +244,8 @@ public class TestCyGroupFactory {
 
     private static <T> void assertEqualWithoutOrder(final Collection<T> a, final Collection<T> b)
     {
-        final Set<T> aset = new HashSet<T>(a);
-        final Set<T> bset = new HashSet<T>(b);
+        final Set<T> aset = new HashSet<>(a);
+        final Set<T> bset = new HashSet<>(b);
         assertEquals(aset, bset);
     }
 }

@@ -56,7 +56,7 @@ public enum ColorGradient {
 	}
 	
 	public List<Color> getColors() {
-		final List<Color> retColors = new ArrayList<Color>();
+		final List<Color> retColors = new ArrayList<>();
 		retColors.add(up);
 		if (zero != null) retColors.add(zero);
 		retColors.add(down);
@@ -82,7 +82,7 @@ public enum ColorGradient {
 	}
 	
 	private void addGradient(final ColorGradient cg) {
-		if (cMap == null) cMap = new HashMap<String, ColorGradient>();
+		if (cMap == null) cMap = new HashMap<>();
 		cMap.put(normalize(cg.name()), cg);
 	}
 	

@@ -174,8 +174,8 @@ public class CloneNetworkTask extends AbstractCreationTask implements Observable
 	}
 	
 	private void cloneNodes(final CyNetwork origNet, final CyNetwork newNet) {
-		orig2NewNodeMap = new WeakHashMap<CyNode, CyNode>();
-		new2OrigNodeMap = new WeakHashMap<CyNode, CyNode>();
+		orig2NewNodeMap = new WeakHashMap<>();
+		new2OrigNodeMap = new WeakHashMap<>();
 		
 		for (final CyNode origNode : origNet.getNodeList()) {
 			cloneNode(origNet, newNet, origNode);
@@ -198,8 +198,8 @@ public class CloneNetworkTask extends AbstractCreationTask implements Observable
 	}
 
 	private void cloneEdges(final CyNetwork origNet, final CyNetwork newNet) {
-		new2OrigEdgeMap = new WeakHashMap<CyEdge, CyEdge>();
-		orig2NewEdgeMap = new WeakHashMap<CyEdge, CyEdge>();
+		new2OrigEdgeMap = new WeakHashMap<>();
+		orig2NewEdgeMap = new WeakHashMap<>();
 		
 		for (final CyEdge origEdge : origNet.getEdgeList()) {
 			cloneEdge(origNet, newNet, origEdge);
@@ -257,8 +257,8 @@ public class CloneNetworkTask extends AbstractCreationTask implements Observable
 	}
 
 	private CyGroup cloneGroup(final CyNetwork origNet, final CyNetwork newNet, final CyGroup origGroup) {
-		List<CyNode> nodeList = new ArrayList<CyNode>();
-		List<CyEdge> edgeList = new ArrayList<CyEdge>();
+		List<CyNode> nodeList = new ArrayList<>();
+		List<CyEdge> edgeList = new ArrayList<>();
 
 		// Check to see if the group node is already in the network
 		boolean groupNodeExists = origNet.containsNode(origGroup.getGroupNode());

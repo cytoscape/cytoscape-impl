@@ -210,7 +210,7 @@ public class CyApplicationManagerImpl implements CyApplicationManager,
 	@Override
 	public List<CyNetworkView> getSelectedNetworkViews() {
 		synchronized (lock) {
-			return new ArrayList<CyNetworkView>(selectedNetworkViews);
+			return new ArrayList<>(selectedNetworkViews);
 		}
 	}
 
@@ -231,7 +231,7 @@ public class CyApplicationManagerImpl implements CyApplicationManager,
 		if (networkViews != null)
 			selectedNetworkViews.addAll(networkViews);
 
-		eventsToFire.add(new SetSelectedNetworkViewsEvent(this, new ArrayList<CyNetworkView>(selectedNetworkViews)));
+		eventsToFire.add(new SetSelectedNetworkViewsEvent(this, new ArrayList<>(selectedNetworkViews)));
 	}
 	
 	@Override
@@ -263,7 +263,7 @@ public class CyApplicationManagerImpl implements CyApplicationManager,
 
 	private void internalSetSelectedNetworks(List<CyNetwork> networks, List<CyEvent<?>> eventsToFire) {
 		Set<CyNetwork> selectedNetworks = networks != null ? new LinkedHashSet<>(networks)
-				: new LinkedHashSet<CyNetwork>();
+				: new LinkedHashSet<>();
 		selectedNetworks = selectNetworks(selectedNetworks);
 		
 		eventsToFire.add(new SetSelectedNetworksEvent(this, new ArrayList<>(selectedNetworks)));

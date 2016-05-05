@@ -35,18 +35,18 @@ import junit.framework.*;
 
 public class SumTest extends TestCase {
 	public void testAll() throws Exception {
-		final List<Object> list = new ArrayList<Object>();
+		final List<Object> list = new ArrayList<>();
 		list.add("14");
 		list.add(Long.valueOf(3L));
 		list.add(Double.valueOf(1.3));
 
-		final Map<String, Object> variablesAndValues = new HashMap<String, Object>();
+		final Map<String, Object> variablesAndValues = new HashMap<>();
 		variablesAndValues.put("LIST", list);
 
 		assertTrue(Framework.executeTest("=SUM($LIST,\"5\",2.2)", variablesAndValues, Double.valueOf(25.5)));
 		assertTrue(Framework.executeTest("=SUM()", Double.valueOf(0.0)));
 
-		final List<Object> emptyList = new ArrayList<Object>();
+		final List<Object> emptyList = new ArrayList<>();
 		variablesAndValues.put("EMPTY_LIST", emptyList);
 		assertTrue(Framework.executeTest("=SUM($EMPTY_LIST,0.0)", variablesAndValues, Double.valueOf(0.0)));
 	}

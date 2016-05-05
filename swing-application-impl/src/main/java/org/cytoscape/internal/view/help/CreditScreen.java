@@ -81,7 +81,7 @@ public class CreditScreen {
 			image = new ImageIcon(getClass().getResource(CREDIT_IMAGE)); 
 			BufferedReader br = new BufferedReader(
 				new InputStreamReader(getClass().getResource(CREDITS).openStream(), Charset.forName("UTF-8").newDecoder()));
-			lines = new ArrayList<String>();
+			lines = new ArrayList<>();
 			while ( br.ready() )
 				lines.add( br.readLine() );
 		} catch (IOException ioe) {

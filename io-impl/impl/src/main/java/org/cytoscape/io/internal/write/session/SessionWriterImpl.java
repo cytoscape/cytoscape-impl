@@ -141,7 +141,7 @@ public class SessionWriterImpl extends AbstractTask implements CyWriter {
 		cysessionDocId = "CytoscapeSession-" + now;
 		sessionDir = cysessionDocId + "/";
 		
-		tableVisualStylesByName = new HashMap<String, VisualStyle>();
+		tableVisualStylesByName = new HashMap<>();
 		
 		for (final VisualStyle vs : session.getVisualStyles())
 			tableVisualStylesByName.put(vs.getTitle(), vs);
@@ -299,7 +299,7 @@ public class SessionWriterImpl extends AbstractTask implements CyWriter {
 	 */
 	private void zipNetworks() throws Exception {
 		final Set<CyNetwork> networks = session.getNetworks();
-		final Set<CyRootNetwork> rootNetworks = new HashSet<CyRootNetwork>();
+		final Set<CyRootNetwork> rootNetworks = new HashSet<>();
 
 		// Zip only root-networks, because sub-networks should be automatically saved with them.
 		for (final CyNetwork n : networks) {
@@ -387,7 +387,7 @@ public class SessionWriterImpl extends AbstractTask implements CyWriter {
 	}
 
 	private void zipTables() throws Exception {
-		tableFilenamesBySUID = new HashMap<Long, String>();
+		tableFilenamesBySUID = new HashMap<>();
 		Set<CyTableMetadata> tableData = session.getTables();
 		
 		for (CyTableMetadata metadata : tableData) {

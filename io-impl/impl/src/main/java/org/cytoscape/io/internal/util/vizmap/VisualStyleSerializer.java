@@ -133,7 +133,7 @@ public class VisualStyleSerializer {
 	 * @return A collection of VisualStyle objects.
 	 */
 	public Set<VisualStyle> createVisualStyles(final Vizmap vizmap) {
-		final Set<VisualStyle> styles = new HashSet<VisualStyle>();
+		final Set<VisualStyle> styles = new HashSet<>();
 		lexicon = renderingEngineManager.getDefaultVisualLexicon();
 
 		if (lexicon == null) {
@@ -178,7 +178,7 @@ public class VisualStyleSerializer {
 		List<org.cytoscape.io.internal.util.vizmap.model.VisualStyle> vizmapStyles = vizmap.getVisualStyle();
 
 		// Group properties keys/values by visual style name:
-		Map<String, Map<String, String>> styleNamesMap = new HashMap<String, Map<String, String>>();
+		Map<String, Map<String, String>> styleNamesMap = new HashMap<>();
 		Set<String> propNames = props.stringPropertyNames();
 
 		for (String key : propNames) {
@@ -190,7 +190,7 @@ public class VisualStyleSerializer {
 				Map<String, String> keyValueMap = styleNamesMap.get(styleName);
 
 				if (keyValueMap == null) {
-					keyValueMap = new HashMap<String, String>();
+					keyValueMap = new HashMap<>();
 					styleNamesMap.put(styleName, keyValueMap);
 				}
 
@@ -470,7 +470,7 @@ public class VisualStyleSerializer {
 							V equal = parseValue(pModel.getEqualValue(), vp);
 							V greater = parseValue(pModel.getGreaterValue(), vp);
 
-							BoundaryRangeValues<V> brv = new BoundaryRangeValues<V>(lesser, equal, greater);
+							BoundaryRangeValues<V> brv = new BoundaryRangeValues<>(lesser, equal, greater);
 							Double attrValue = pModel.getAttrValue().doubleValue();
 
 							cm.addPoint((K) attrValue, brv);
@@ -523,7 +523,7 @@ public class VisualStyleSerializer {
 		final Edge edgeSection = vsModel.getEdge();
 		final Network networkSection = vsModel.getNetwork();
 
-		final Set<Dependency> dependencyStates = new HashSet<Dependency>();
+		final Set<Dependency> dependencyStates = new HashSet<>();
 
 		if (nodeSection != null)
 			dependencyStates.addAll(nodeSection.getDependency());

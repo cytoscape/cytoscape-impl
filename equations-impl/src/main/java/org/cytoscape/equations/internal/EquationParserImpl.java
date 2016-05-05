@@ -126,8 +126,8 @@ public class EquationParserImpl implements EquationParser {
 	private Set<Function> registeredFunctions;
 
 	public EquationParserImpl() {
-		this.nameToFunctionMap = new HashMap<String, Function>();
-		this.registeredFunctions = new HashSet<Function>();
+		this.nameToFunctionMap = new HashMap<>();
+		this.registeredFunctions = new HashSet<>();
 		this.parseTree = null;
 
 		registerBuiltins();
@@ -168,8 +168,8 @@ public class EquationParserImpl implements EquationParser {
 			throw new NullPointerException("0: formula string must start with an equal sign.");
 
 		this.variableNameToTypeMap = variableNameToTypeMap;
-		this.variableReferences = new TreeSet<String>();
-		this.defaultVariableValues = new TreeMap<String, Object>();
+		this.variableReferences = new TreeSet<>();
+		this.defaultVariableValues = new TreeMap<>();
 		this.tokeniser = new Tokeniser(formula.substring(1));
 		this.lastErrorMessage = null;
 
@@ -424,8 +424,8 @@ public class EquationParserImpl implements EquationParser {
 			                                + functionNameCandidate + "\".");
 
 		// Parse the comma-separated argument list.
-		final ArrayList<Class<?>> argTypes = new ArrayList<Class<?>>();
-		ArrayList<AbstractNode> args = new ArrayList<AbstractNode>();
+		final ArrayList<Class<?>> argTypes = new ArrayList<>();
+		ArrayList<AbstractNode> args = new ArrayList<>();
 		int sourceLocation;
 		for (;;) {
 			token = tokeniser.getToken();

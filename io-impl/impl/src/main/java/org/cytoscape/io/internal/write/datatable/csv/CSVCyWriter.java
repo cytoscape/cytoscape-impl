@@ -78,7 +78,7 @@ public class CSVCyWriter implements CyWriter {
 		taskMonitor.setProgress(0.0);
 		CSVWriter writer = new CSVWriter(new OutputStreamWriter(outputStream, encoding), ',', '"', "\r\n");
 		try {
-			List<CyColumn> columns = new ArrayList<CyColumn>();
+			List<CyColumn> columns = new ArrayList<>();
 			for (CyColumn column : table.getColumns()) {
 				if (column.getVirtualColumnInfo().isVirtual()) {
 					if (!includeVirtualColumns)

@@ -72,7 +72,7 @@ public class ImportTableDataTaskFactoryImpl extends AbstractTableTaskFactory imp
 			final CyColumn targetJoinColumn,
 			final Class<? extends CyIdentifiable> type
 	) {
-		ListSingleSelection<String> chooser = new ListSingleSelection<String>(ImportTableDataTask.NETWORK_COLLECTION,
+		ListSingleSelection<String> chooser = new ListSingleSelection<>(ImportTableDataTask.NETWORK_COLLECTION,
 				ImportTableDataTask.NETWORK_SELECTION, ImportTableDataTask.UNASSIGNED_TABLE);
 
 		final Map<String, Object> m = new HashMap<>();
@@ -86,7 +86,7 @@ public class ImportTableDataTaskFactoryImpl extends AbstractTableTaskFactory imp
 			ListSingleSelection<TableType> tableTypes = new ListSingleSelection<>(tableType);
 			tableTypes.setSelectedValue(tableType);
 
-			List<String> networkNames = new ArrayList<String>();
+			List<String> networkNames = new ArrayList<>();
 
 			for (CyNetwork net : networkList) {
 				networkNames.add(net.getRow(net).get(CyNetwork.NAME, String.class));
@@ -100,11 +100,11 @@ public class ImportTableDataTaskFactoryImpl extends AbstractTableTaskFactory imp
 
 			if (rootNetwork != null) {
 				rootNetworkNames.add(rootNetwork.getRow(rootNetwork).get(CyNetwork.NAME, String.class));
-				rootNetworkList = new ListSingleSelection<String>(rootNetworkNames);
+				rootNetworkList = new ListSingleSelection<>(rootNetworkNames);
 				rootNetworkList.setSelectedValue(rootNetworkNames.get(0));
 			}
 
-			List<String> columnNames = new ArrayList<String>();
+			List<String> columnNames = new ArrayList<>();
 			ListSingleSelection<String> columnNamesList = new ListSingleSelection<>();
 
 			if (targetJoinColumn != null) {

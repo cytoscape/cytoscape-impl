@@ -105,8 +105,8 @@ public class SelectTask extends AbstractSelectTask {
 		if(views.size() != 0)
 			view = views.iterator().next();
 
-		Set<CyNode> nodes = new HashSet<CyNode>();
-		Set<CyEdge> edges = new HashSet<CyEdge>();
+		Set<CyNode> nodes = new HashSet<>();
+		Set<CyEdge> edges = new HashSet<>();
 
 		// If we specified nodes or edges, those override any currently
 		// selected ones.  Otherwise, prime things with the current selection
@@ -143,7 +143,7 @@ public class SelectTask extends AbstractSelectTask {
 			}
 
 			// OK, now add them in
-			for (CyNode node: new ArrayList<CyNode>(nodes))
+			for (CyNode node: new ArrayList<>(nodes))
 				nodes.addAll(network.getNeighborList(node, type));
 
 			// Now, nodes has all of the nodes we specified and the appropriate first neighbors
@@ -173,7 +173,7 @@ public class SelectTask extends AbstractSelectTask {
 
 		// Finally, handle inversion
 		if (invert.getSelectedValue().equals("nodes") || invert.getSelectedValue().equals("both")) {
-			Set<CyNode> newNodes = new HashSet<CyNode>();
+			Set<CyNode> newNodes = new HashSet<>();
 			for (CyNode node: network.getNodeList()) {
 				if (!nodes.contains(node))
 					newNodes.add(node);
@@ -186,7 +186,7 @@ public class SelectTask extends AbstractSelectTask {
 			selectUtils.setSelectedNodes(network, nodes, true);
 
 		if (invert.getSelectedValue().equals("edges") || invert.getSelectedValue().equals("both")) {
-			Set<CyEdge> newEdges = new HashSet<CyEdge>();
+			Set<CyEdge> newEdges = new HashSet<>();
 			for (CyEdge edge: network.getEdgeList()) {
 				if (!edges.contains(edge))
 					newEdges.add(edge);

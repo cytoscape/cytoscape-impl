@@ -62,8 +62,8 @@ public class QuickFindImpl implements QuickFind {
 
 
 	public QuickFindImpl() {
-		this.listenerList = new ArrayList<QuickFindListener>();
-		this.networkMap = new WeakHashMap<CyNetwork, GenericIndex>();
+		this.listenerList = new ArrayList<>();
+		this.networkMap = new WeakHashMap<>();
 	}
 	
 	

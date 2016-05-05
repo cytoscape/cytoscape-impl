@@ -63,8 +63,8 @@ public class ListAggregator extends AbstractAggregator {
 
 		public List aggregate(CyTable table, CyGroup group, CyColumn column) {
 			Class listType = column.getListElementType();
-			List <Object> agg = new ArrayList<Object>();
-			Set <Object> aggset = new HashSet<Object>();
+			List <Object> agg = new ArrayList<>();
+			Set <Object> aggset = new HashSet<>();
 			List <?> aggregation = null;
 
 			if (type == AttributeHandlingType.NONE) return null;
@@ -90,7 +90,7 @@ public class ListAggregator extends AbstractAggregator {
 			if (type == AttributeHandlingType.CONCAT)
 				aggregation = agg;
 			else if (type == AttributeHandlingType.UNIQUE)
-				aggregation = new ArrayList<Object>(aggset);
+				aggregation = new ArrayList<>(aggset);
 
 			if (aggregation != null)
 				table.getRow(group.getGroupNode().getSUID()).set(column.getName(), aggregation);

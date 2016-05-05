@@ -64,14 +64,14 @@ public final class MapGlobalToLocalTableTaskFactoryImpl extends AbstractTableTas
 	@Override
 	public TaskIterator createTaskIterator(CyTable globalTable,
 			Collection<CyTable> localTables) {
-		final Map<String, Object> m = new HashMap<String, Object>();
+		final Map<String, Object> m = new HashMap<>();
 
-		List<String> localTableTitles = new ArrayList<String>();
+		List<String> localTableTitles = new ArrayList<>();
 		for(CyTable local: localTables){
 			localTableTitles.add(local.getTitle());
 		}
 		
-		ListMultipleSelection<String> localTablesTunable = new ListMultipleSelection<String>(localTableTitles);
+		ListMultipleSelection<String> localTablesTunable = new ListMultipleSelection<>(localTableTitles);
 		localTablesTunable.setSelectedValues(localTableTitles);
 
 		m.put("localTables", localTablesTunable);

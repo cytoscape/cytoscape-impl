@@ -136,15 +136,15 @@ public class NodeChangeListener implements ViewChangedListener, SessionLoadedLis
 
 	public void addGroup(CyGroup group, CyNetworkView networkView) {
 		if (!groupMap.containsKey(networkView))
-			groupMap.put(networkView, new HashSet<CyNode>());
+			groupMap.put(networkView, new HashSet<>());
 
 		groupMap.get(networkView).add(group.getGroupNode());
 
 		if (!nodeMap.containsKey(networkView))
-			nodeMap.put(networkView, new HashSet<CyNode>());
+			nodeMap.put(networkView, new HashSet<>());
 
 		if (!node2GroupMap.containsKey(networkView))
-			node2GroupMap.put(networkView, new HashMap<CyNode, CyGroup>());
+			node2GroupMap.put(networkView, new HashMap<>());
 
 		Map<CyNode, CyGroup> node2Group = node2GroupMap.get(networkView);
 

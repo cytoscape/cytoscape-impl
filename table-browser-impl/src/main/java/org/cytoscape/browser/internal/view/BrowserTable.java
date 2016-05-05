@@ -419,7 +419,7 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 
 	public List<String> getVisibleAttributeNames() {
 		BrowserTableModel model = (BrowserTableModel) getModel();
-		final List<String> visibleAttrNames = new ArrayList<String>();
+		final List<String> visibleAttrNames = new ArrayList<>();
 		
 		for (final String name : model.getAllAttributeNames()) {
 			if (isColumnVisible(name))
@@ -794,8 +794,8 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 	 * @param rows
 	 */
 	private void bulkUpdate(final Collection<RowSetRecord> rows) {
-		final Set<Long> suidSelected = new HashSet<Long>();
-		final Set<Long> suidUnselected = new HashSet<Long>();
+		final Set<Long> suidSelected = new HashSet<>();
+		final Set<Long> suidUnselected = new HashSet<>();
 
 		for (RowSetRecord rowSetRecord : rows) {
 			if (rowSetRecord.getColumn().equals(CyNetwork.SELECTED)) {
@@ -866,7 +866,7 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 			return;
 
 		final int selectedRowCount = getSelectedRowCount();
-		final Set<CyRow> targetRows = new HashSet<CyRow>();
+		final Set<CyRow> targetRows = new HashSet<>();
 		
 		for (int i = 0; i < selectedRowCount; i++) {
 			// getting the row from data table solves the problem with hidden or

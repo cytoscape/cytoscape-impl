@@ -277,7 +277,7 @@ public class AppParser {
 		List<App.Dependency> deps = null;
 		final String depsStr = manifest.getMainAttributes().getValue("Cytoscape-App-Dependencies");
 		if (depsStr != null && depsStr.trim().length() != 0) {
-			deps = new ArrayList<App.Dependency>();
+			deps = new ArrayList<>();
 			final String[] depsPieces = splitSmart(',', depsStr);
 			for (final String depPiece : depsPieces) {
 				final String[] depPieces = splitSmart(';', depPiece);

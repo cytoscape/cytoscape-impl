@@ -41,7 +41,7 @@ public class SyncTunableMutatorTest {
 		SyncTunableMutator stm = new SyncTunableMutator();
 		stm.addTunableHandlerFactory( new SyncTunableHandlerFactory(), new Properties() );
 
-		Map<String,Object> map = new HashMap<String,Object>();
+		Map<String,Object> map = new HashMap<>();
 		map.put("tstring","hello");
 
 		stm.setConfigurationContext(map);

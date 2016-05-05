@@ -36,19 +36,19 @@ public class AttribParserTest extends TestCase {
 	private final EquationParser parser = new EquationParserImpl();
 
 	public void testSimpleExpr() throws Exception {
-		final Map<String, Class<?>> attribNameToTypeMap = new HashMap<String, Class<?>>();
+		final Map<String, Class<?>> attribNameToTypeMap = new HashMap<>();
 		attribNameToTypeMap.put("BOB", Double.class);
 		assertTrue(parser.parse("=42 - 12 + 3 * (4 - 2) + ${BOB:12}", attribNameToTypeMap));
 	}
 
 	public void testStringVarDefault() throws Exception {
-		final Map<String, Class<?>> attribNameToTypeMap = new HashMap<String, Class<?>>();
+		final Map<String, Class<?>> attribNameToTypeMap = new HashMap<>();
 		attribNameToTypeMap.put("STR", String.class);
 		assertTrue(parser.parse("=${STR:\"xyz\"}", attribNameToTypeMap));
 	}
 
 	public void testUnaryPlusAndMinus() throws Exception {
-		final Map<String, Class<?>> attribNameToTypeMap = new HashMap<String, Class<?>>();
+		final Map<String, Class<?>> attribNameToTypeMap = new HashMap<>();
 		attribNameToTypeMap.put("attr1", Double.class);
 		attribNameToTypeMap.put("attr2", Double.class);
 		assertTrue(parser.parse("=-17.8E-14", attribNameToTypeMap));
@@ -56,17 +56,17 @@ public class AttribParserTest extends TestCase {
 	}
 
 	public void testFunctionCall() throws Exception {
-		final Map<String, Class<?>> attribNameToTypeMap = new HashMap<String, Class<?>>();
+		final Map<String, Class<?>> attribNameToTypeMap = new HashMap<>();
 		assertTrue(parser.parse("=42 + log(4 - 2)", attribNameToTypeMap));
 	}
 
 	public void testExponentiation() throws Exception {
-		final Map<String, Class<?>> attribNameToTypeMap = new HashMap<String, Class<?>>();
+		final Map<String, Class<?>> attribNameToTypeMap = new HashMap<>();
 		assertTrue(parser.parse("=2^3^4 - 0.0002", attribNameToTypeMap));
 	}
 
 	public void testComparisons() throws Exception {
-		final Map<String, Class<?>> attribNameToTypeMap = new HashMap<String, Class<?>>();
+		final Map<String, Class<?>> attribNameToTypeMap = new HashMap<>();
 		attribNameToTypeMap.put("x", Double.class);
 		attribNameToTypeMap.put("y", Double.class);
 		attribNameToTypeMap.put("limit", Double.class);
@@ -75,7 +75,7 @@ public class AttribParserTest extends TestCase {
 	}
 
 	public void testVarargs() throws Exception {
-		final Map<String, Class<?>> attribNameToTypeMap = new HashMap<String, Class<?>>();
+		final Map<String, Class<?>> attribNameToTypeMap = new HashMap<>();
 		assertFalse(parser.parse("=LOG()", attribNameToTypeMap));
 		assertTrue(parser.parse("=LOG(1)", attribNameToTypeMap));
 		assertTrue(parser.parse("=LOG(1,2)", attribNameToTypeMap));
@@ -83,14 +83,14 @@ public class AttribParserTest extends TestCase {
 	}
 
 	public void testFixedargs() throws Exception {
-		final Map<String, Class<?>> attribNameToTypeMap = new HashMap<String, Class<?>>();
+		final Map<String, Class<?>> attribNameToTypeMap = new HashMap<>();
 		assertFalse(parser.parse("=ABS()", attribNameToTypeMap));
 		assertTrue(parser.parse("=ABS(1)", attribNameToTypeMap));
 		assertFalse(parser.parse("=ABS(1,2)", attribNameToTypeMap));
 	}
 
 	public void testNOT() throws Exception {
-		final Map<String, Class<?>> attribNameToTypeMap = new HashMap<String, Class<?>>();
+		final Map<String, Class<?>> attribNameToTypeMap = new HashMap<>();
 		attribNameToTypeMap.put("logical", Boolean.class);
 		assertFalse(parser.parse("=NOT()", attribNameToTypeMap));
 		assertTrue(parser.parse("=NOT(true)", attribNameToTypeMap));
@@ -101,26 +101,26 @@ public class AttribParserTest extends TestCase {
 	}
 
 	public void testUPPERandLOWER() throws Exception {
-		final Map<String, Class<?>> attribNameToTypeMap = new HashMap<String, Class<?>>();
+		final Map<String, Class<?>> attribNameToTypeMap = new HashMap<>();
 		assertTrue(parser.parse("=UPPER(\"Fred\")", attribNameToTypeMap));
 		assertTrue(parser.parse("=\"bozo\"&LOWER(\"UPPER\")", attribNameToTypeMap));
 	}
 
 	public void testBracelessAttribReferences() throws Exception {
-		final Map<String, Class<?>> attribNameToTypeMap = new HashMap<String, Class<?>>();
+		final Map<String, Class<?>> attribNameToTypeMap = new HashMap<>();
 		attribNameToTypeMap.put("BOB", Double.class);
 		attribNameToTypeMap.put("FRED", Double.class);
 		assertTrue(parser.parse("=$BOB+$FRED", attribNameToTypeMap));
 	}
 
 	public void testIntegerToFloatingPointConversion() throws Exception {
-		final Map<String, Class<?>> attribNameToTypeMap = new HashMap<String, Class<?>>();
+		final Map<String, Class<?>> attribNameToTypeMap = new HashMap<>();
 		attribNameToTypeMap.put("BOB", Long.class);
 		assertTrue(parser.parse("=$BOB > 5.3", attribNameToTypeMap));
 	}
 
 	public void testMixedModeArithmetic() throws Exception {
-		final Map<String, Class<?>> attribNameToTypeMap = new HashMap<String, Class<?>>();
+		final Map<String, Class<?>> attribNameToTypeMap = new HashMap<>();
 		attribNameToTypeMap.put("x", Long.class);
 		assertTrue(parser.parse("=$x + 2.0", attribNameToTypeMap));
 	}

@@ -169,13 +169,13 @@ public class DNodeViewTest {
 		node1 = network.addNode();
 		node2 = network.addNode();
 
-		List<CyNode> nl = new ArrayList<CyNode>();
+		List<CyNode> nl = new ArrayList<>();
 		nl.add(node1);
 		nl.add(node2);
 
 		edge1 = network.addEdge(node1, node2, true);
 
-		List<CyEdge> el = new ArrayList<CyEdge>();
+		List<CyEdge> el = new ArrayList<>();
 		el.add(edge1);
 	}
 	

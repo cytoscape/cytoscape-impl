@@ -64,11 +64,11 @@ public final class MapGlobalToLocalTableTask extends AbstractTask {
 		if (allNetworks.size() == 0)
 			throw new IllegalStateException("No network in current session.  You need at least one network.");
 
-		this.name2tableMap = new HashMap<String, CyTable>();
+		this.name2tableMap = new HashMap<>();
 		this.globalTable = globalTable;
 		
 
-		final List<String> locals = new ArrayList<String>();
+		final List<String> locals = new ArrayList<>();
 		
 		for (final CyNetwork network : allNetworks) {
 			locals.add(network.getDefaultNodeTable().getTitle());
@@ -82,7 +82,7 @@ public final class MapGlobalToLocalTableTask extends AbstractTask {
 		}
 		name2tableMap.put(this.globalTable.getTitle(), this.globalTable);
 
-		this.localTables = new ListMultipleSelection<String>(locals);
+		this.localTables = new ListMultipleSelection<>(locals);
 	}
 
 	@Override

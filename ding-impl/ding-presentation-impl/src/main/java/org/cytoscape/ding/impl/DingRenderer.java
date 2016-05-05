@@ -23,7 +23,7 @@ public class DingRenderer implements NetworkViewRenderer {
 	private Map<String, RenderingEngineFactory<CyNetwork>> renderingEngineFactories;
 
 	private DingRenderer() {
-		renderingEngineFactories = new ConcurrentHashMap<String, RenderingEngineFactory<CyNetwork>>(16, 0.75f, 2);
+		renderingEngineFactories = new ConcurrentHashMap<>(16, 0.75f, 2);
 	}
 
 	public void registerNetworkViewFactory(CyNetworkViewFactory viewFactory) {

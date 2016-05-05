@@ -139,7 +139,7 @@ public class CyApplicationManagerImplTest {
 	
 	@Test
 	public void testSetEmptySelectedNetworks() {
-		appMgr.setSelectedNetworks(new ArrayList<CyNetwork>());
+		appMgr.setSelectedNetworks(new ArrayList<>());
 		assertTrue(appMgr.getSelectedNetworks().isEmpty());
 		assertTrue(appMgr.getSelectedNetworkViews().isEmpty());
 	}

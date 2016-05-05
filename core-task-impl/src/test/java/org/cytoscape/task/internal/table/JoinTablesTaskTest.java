@@ -140,7 +140,7 @@ public class JoinTablesTaskTest {
 	}
 
 	private void testSubnetworkAfterJointoRoot() {
-		List<CyNode> nodes = new ArrayList<CyNode>();
+		List<CyNode> nodes = new ArrayList<>();
 		nodes.add(node1);
 		nodes.add(node2);
 
@@ -168,7 +168,7 @@ public class JoinTablesTaskTest {
 	}
 
 	private void testSubnetworkAfterJointoSub() {
-		List<CyNode> nodes = new ArrayList<CyNode>();
+		List<CyNode> nodes = new ArrayList<>();
 		nodes.add(node1);
 		nodes.add(node2);
 
@@ -209,10 +209,10 @@ public class JoinTablesTaskTest {
 		CyRow row2 = table1.getRow(node2Name);
 		row2.set(col, "col1 row2");
 
-		List<String> s = new ArrayList<String>();
+		List<String> s = new ArrayList<>();
 		s.add("listRow1-1");
 		s.add("listRow1-2");
-		List<String> s2 = new ArrayList<String>();
+		List<String> s2 = new ArrayList<>();
 		s2.add("listRow2-1");
 		s2.add("listRow2-2");
 
@@ -228,7 +228,7 @@ public class JoinTablesTaskTest {
 	public void join(CyTable table, CyNetwork net, CyRootNetwork rootNet, CyColumn col, boolean selectedOnly)
 			throws Exception {
 		JoinTablesTaskTaskFactoryImpl joinTableTF = new JoinTablesTaskTaskFactoryImpl(netMgr, ts, rootNetMgr);
-		List<CyNetwork> nets = new ArrayList<CyNetwork>();
+		List<CyNetwork> nets = new ArrayList<>();
 		nets.add(net);
 
 		TaskIterator ti = joinTableTF.createTaskIterator(table, selectedOnly, nets, rootNet, col, CyNode.class);

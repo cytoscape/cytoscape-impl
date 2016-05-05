@@ -37,10 +37,10 @@ public class ResolveAppDependenciesTask extends AbstractTask {
 	final private boolean promptToReplace;
 	
 	public ResolveAppDependenciesTask(final Collection<App> apps, final AppManager appManager, final boolean promptToReplace) {
-		appQueue = new LinkedList<App>(apps);
-		dependencyStack = new Stack<String>();
-		appsToInstall = new ArrayList<App>();
-		appsToReplace = new HashMap<App, App>();
+		appQueue = new LinkedList<>(apps);
+		dependencyStack = new Stack<>();
+		appsToInstall = new ArrayList<>();
+		appsToReplace = new HashMap<>();
 		this.appManager = appManager;
 		this.promptToReplace = promptToReplace;
 	}

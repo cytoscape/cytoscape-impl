@@ -51,7 +51,7 @@ public class AnnotationFactoryManager {
 	List<AnnotationFactory> annotationFactories;
 
 	public AnnotationFactoryManager() {
-		annotationFactories = new CopyOnWriteArrayList<AnnotationFactory>();
+		annotationFactories = new CopyOnWriteArrayList<>();
 	}
 
 	// This method is used to create annotations when we're reading the serialization from a saved

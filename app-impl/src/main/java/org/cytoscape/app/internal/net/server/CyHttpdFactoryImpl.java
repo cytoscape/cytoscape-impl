@@ -90,9 +90,9 @@ class CyHttpdImpl implements CyHttpd
     static final int PORT_REBIND_INTERVAL = 5000;
 
     final ServerSocketFactory serverSocketFactory;
-    final List<CyHttpResponder> responders = new ArrayList<CyHttpResponder>();
-    final List<CyHttpBeforeResponse> beforeResponses = new ArrayList<CyHttpBeforeResponse>();
-    final List<CyHttpAfterResponse> afterResponses = new ArrayList<CyHttpAfterResponse>();
+    final List<CyHttpResponder> responders = new ArrayList<>();
+    final List<CyHttpBeforeResponse> beforeResponses = new ArrayList<>();
+    final List<CyHttpAfterResponse> afterResponses = new ArrayList<>();
 
     boolean running = false;
     boolean aborted = false;

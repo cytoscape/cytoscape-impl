@@ -75,14 +75,14 @@ public class AttributeListModel
 	//@SuppressWarnings("unchecked")
 	public AttributeListModel(final BrowserTableModel browserTableModel) {
 		this(browserTableModel,
-		     new HashSet<Class<?>>((List<Class<?>>)(Arrays.asList(new Class<?>[] {
-			String.class,
-			Boolean.class,
-			Double.class,
-			Integer.class,
-			Long.class,
-			List.class
-		     }))));
+				new HashSet<>((List<Class<?>>) (Arrays.asList(new Class<?>[]{
+						String.class,
+						Boolean.class,
+						Double.class,
+						Integer.class,
+						Long.class,
+						List.class
+				}))));
 	}
 
 	public void setBrowserTableModel(final BrowserTableModel newBrowserTableModel) {
@@ -97,7 +97,7 @@ public class AttributeListModel
 		if (browserTableModel == null)
 			return;
 
-		attributeNames = new ArrayList<String>();
+		attributeNames = new ArrayList<>();
 		final CyTable attributes = browserTableModel.getDataTable();
 		
 		for (final CyColumn col : attributes.getColumns()){

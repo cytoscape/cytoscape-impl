@@ -63,14 +63,14 @@ public class CyNetworkManagerImpl implements CyNetworkManager {
      * @param cyEventHelper
      */
 	public CyNetworkManagerImpl(final CyServiceRegistrar serviceRegistrar) {
-		this.networkMap = new HashMap<Long, CyNetwork>();
+		this.networkMap = new HashMap<>();
 		this.serviceRegistrar = serviceRegistrar;
 	}
 
 	@Override
 	public Set<CyNetwork> getNetworkSet() {
 		synchronized (lock) {
-			return new HashSet<CyNetwork>(networkMap.values());
+			return new HashSet<>(networkMap.values());
 		}
 	}
 

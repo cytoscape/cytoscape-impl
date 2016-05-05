@@ -87,8 +87,8 @@ public class RestoreImageTask implements Task {
 	private static final String IMAGE_EXT = "png";
 
 	// Default vectors
-	private static final Set<Class<?>> DEF_VECTORS = new HashSet<Class<?>>();
-	private static final Set<String> DEF_VECTORS_NAMES = new HashSet<String>();
+	private static final Set<Class<?>> DEF_VECTORS = new HashSet<>();
+	private static final Set<String> DEF_VECTORS_NAMES = new HashSet<>();
 
 	static {
 		DEF_VECTORS.add(GradientRoundRectangleLayer.class);
@@ -130,7 +130,7 @@ public class RestoreImageTask implements Task {
 	private void restoreSampleImages() throws IOException {
 		// Filter by display name
 		final Collection<CyCustomGraphics> allGraphics = manager.getAllCustomGraphics();
-		final Set<String> names = new HashSet<String>();
+		final Set<String> names = new HashSet<>();
 		for(CyCustomGraphics cg: allGraphics)
 			names.add(cg.getDisplayName());
 		
@@ -148,7 +148,7 @@ public class RestoreImageTask implements Task {
 	}
 
 	private void restoreImages() {
-		final CompletionService<BufferedImage> cs = new ExecutorCompletionService<BufferedImage>(imageLoaderService);
+		final CompletionService<BufferedImage> cs = new ExecutorCompletionService<>(imageLoaderService);
 
 		imageHomeDirectory.mkdir();
 
@@ -167,11 +167,11 @@ public class RestoreImageTask implements Task {
 
 		if (this.imageHomeDirectory != null && imageHomeDirectory.isDirectory()) {
 			final File[] imageFiles = imageHomeDirectory.listFiles();
-			final Map<Future<BufferedImage>, String> fMap = new HashMap<Future<BufferedImage>, String>();
-			final Map<Future<BufferedImage>, Long> fIdMap = new HashMap<Future<BufferedImage>, Long>();
-			final Map<Future<BufferedImage>, Set<String>> metatagMap = new HashMap<Future<BufferedImage>, Set<String>>();
+			final Map<Future<BufferedImage>, String> fMap = new HashMap<>();
+			final Map<Future<BufferedImage>, Long> fIdMap = new HashMap<>();
+			final Map<Future<BufferedImage>, Set<String>> metatagMap = new HashMap<>();
 			
-			final Set<File> validFiles = new HashSet<File>();
+			final Set<File> validFiles = new HashSet<>();
 			try {
 				for (File file : imageFiles) {
 					if (file.toString().endsWith(IMAGE_EXT) == false)
@@ -201,7 +201,7 @@ public class RestoreImageTask implements Task {
 					String tagStr = null;
 					if (imageProps.length > 3) {
 						tagStr = imageProps[3];
-						final Set<String> tags = new TreeSet<String>();
+						final Set<String> tags = new TreeSet<>();
 						String[] tagParts = tagStr.split("\\" + AbstractDCustomGraphics.LIST_DELIMITER);
 						for (String tag : tagParts)
 							tags.add(tag.trim());

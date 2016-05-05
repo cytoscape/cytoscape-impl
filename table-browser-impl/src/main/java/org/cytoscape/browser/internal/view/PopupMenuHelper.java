@@ -268,7 +268,7 @@ public class PopupMenuHelper {
 				if (net != null) {
 					final BrowserTableModel tableModel = (BrowserTableModel) table.getModel();
 					final int[] selectedRows = table.getSelectedRows();
-					final Set<CyRow> targetRows = new HashSet<CyRow>();
+					final Set<CyRow> targetRows = new HashSet<>();
 					
 					for (final int rowIndex : selectedRows) {
 						// Getting the row from data table solves the problem with hidden or moved SUID column.

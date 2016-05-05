@@ -50,7 +50,7 @@ public class ColorScheme {
 				colors = gradient.getColors();
 				
 				if (colors.size() > nColors && nColors == 2) {
-					List<Color> newColors = new ArrayList<Color>();
+					List<Color> newColors = new ArrayList<>();
 					newColors.add(colors.get(0));
 					newColors.add(colors.get(2));
 				}
@@ -89,7 +89,7 @@ public class ColorScheme {
 		Calendar cal = Calendar.getInstance();
 		int seed = cal.get(Calendar.SECOND);
 		Random rand = new Random(seed);
-		List<Color> result = new ArrayList<Color>(nColors);
+		List<Color> result = new ArrayList<>(nColors);
 		
 		for (int index = 0; index < nColors; index++) {
 			int r = rand.nextInt(255);
@@ -103,7 +103,7 @@ public class ColorScheme {
 
 	// Rainbow colors just divide the Hue wheel into n pieces and return them
 	public static List<Color> generateRainbowColors(int nColors) {
-		List<Color> values = new ArrayList<Color>();
+		List<Color> values = new ArrayList<>();
 		
 		for (float i = 0.0f; i < (float) nColors; i += 1.0f) {
 			values.add(new Color(Color.HSBtoRGB(i / (float) nColors, 1.0f, 1.0f)));
@@ -115,7 +115,7 @@ public class ColorScheme {
 	// Rainbow colors just divide the Hue wheel into n pieces and return them,
 	// but in this case, we're going to change the saturation and intensity
 	public static List<Color> generateModulatedRainbowColors(int nColors) {
-		List<Color> values = new ArrayList<Color>();
+		List<Color> values = new ArrayList<>();
 		
 		for (float i = 0.0f; i < (float) nColors; i += 1.0f) {
 			float sat = (Math.abs(((Number) Math.cos((8 * i) / (2 * Math.PI))).floatValue()) * 0.7f) + 0.3f;
@@ -129,7 +129,7 @@ public class ColorScheme {
 
 	// This is like rainbow, but we alternate sides of the color wheel
 	public static List<Color> generateContrastingColors(int nColors) {
-		List<Color> values = new ArrayList<Color>();
+		List<Color> values = new ArrayList<>();
 		
 		// We need to special-case the situation where we only have two colors
 		if (nColors == 2) {

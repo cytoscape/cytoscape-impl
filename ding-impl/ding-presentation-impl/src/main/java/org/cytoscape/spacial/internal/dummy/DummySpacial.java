@@ -44,7 +44,7 @@ public class DummySpacial implements SpacialIndex2D {
 
 	public DummySpacial(DGraphView networkView) {
 		this.networkView = networkView;
-		nodeViews = new ArrayList<DNodeView>();
+		nodeViews = new ArrayList<>();
 		for (CyNode node: networkView.getModel().getNodeList()) {
 			DNodeView v = (DNodeView)networkView.getNodeView(node);
 			if (v != null && v.isVisible()) nodeViews.add(v);

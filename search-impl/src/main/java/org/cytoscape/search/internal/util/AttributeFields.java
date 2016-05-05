@@ -43,7 +43,7 @@ public class AttributeFields {
 	private final Map<String, Class<?>> columnTypeMap;
 
 	public AttributeFields(final CyNetwork network) {
-		this.columnTypeMap = new HashMap<String, Class<?>>();
+		this.columnTypeMap = new HashMap<>();
 		initFields(network);
 	}
 

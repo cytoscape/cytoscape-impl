@@ -73,8 +73,8 @@ public class NNFParser {
 		}
 		this.nMap = nMap;
 		
-		networkMap = new HashMap<String, CyNetwork>();
-		networks = new ArrayList<CyNetwork>();	
+		networkMap = new HashMap<>();
+		networks = new ArrayList<>();	
 	}
 
 
@@ -300,7 +300,7 @@ public class NNFParser {
 	
 
 	static public String[] splitLine(final String line) {
-		final List<String> parts = new ArrayList<String>();
+		final List<String> parts = new ArrayList<>();
 		boolean escaped = false;
 		StringBuilder part = null;
 		for (int i = 0; i < line.length(); ++i) {

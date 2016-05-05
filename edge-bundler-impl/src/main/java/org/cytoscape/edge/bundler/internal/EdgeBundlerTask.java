@@ -142,7 +142,7 @@ public class EdgeBundlerTask extends AbstractNetworkViewTask {
 		{
 			Collection<View<CyEdge>> edgeView = this.view.getEdgeViews();
 
-			edges = new ArrayList<View<CyEdge>>(edgeView.size());
+			edges = new ArrayList<>(edgeView.size());
 
 			for (View<CyEdge> e : edgeView) {
 				boolean n1 = view.getNodeView(e.getModel().getSource()).getVisualProperty(EDGE_SELECTED);
@@ -155,7 +155,7 @@ public class EdgeBundlerTask extends AbstractNetworkViewTask {
 		{
 			Collection<View<CyEdge>> edgeView = this.view.getEdgeViews();
 
-			edges = new ArrayList<View<CyEdge>>(edgeView.size());
+			edges = new ArrayList<>(edgeView.size());
 
 			for (View<CyEdge> e : edgeView)
 				if (e.getVisualProperty(EDGE_SELECTED))
@@ -340,7 +340,7 @@ public class EdgeBundlerTask extends AbstractNetworkViewTask {
 			edgeCompatability[ei] = new double[ei];
 			edgeAlign[ei] = new boolean[ei];
 
-			List<Integer> compatibleEdges = new ArrayList<Integer>(1000);
+			List<Integer> compatibleEdges = new ArrayList<>(1000);
 			for (int ej = 0; ej < ei; ej++) {
 				edgeCompatability[ei][ej] = cangle(ei, ej) * cscale(ei, ej) * cpos(ei, ej) * cvis(ei, ej);
 				edgeAlign[ei][ej] = cangleSign(ei, ej) > 0;

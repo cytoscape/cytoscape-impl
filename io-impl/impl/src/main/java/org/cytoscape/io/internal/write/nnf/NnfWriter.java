@@ -83,7 +83,7 @@ public class NnfWriter implements CyWriter {
 	private void writeNetwork(Writer writer, final CyNetwork network) throws IOException {
 		final String title = network.getRow(network).get(CyNetwork.NAME, String.class);
 
-		final Set<String> encounteredNodes = new HashSet<String>();
+		final Set<String> encounteredNodes = new HashSet<>();
 
 		final List<CyEdge> edges = (List<CyEdge>)network.getEdgeList();
 		for (final CyEdge edge : edges) {

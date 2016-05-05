@@ -274,8 +274,8 @@ public final class CustomGraphicsManagerImpl implements CustomGraphicsManager, C
 		if (!sorted)
 			return graphicsMap.values();
 
-		List<CyCustomGraphics> values = 
-			new ArrayList<CyCustomGraphics>(graphicsMap.values());
+		List<CyCustomGraphics> values =
+				new ArrayList<>(graphicsMap.values());
 		Collections.sort(values, new CGComparator());
 		return values;
 	}
@@ -288,7 +288,7 @@ public final class CustomGraphicsManagerImpl implements CustomGraphicsManager, C
 	 */
 	@Override
 	public Collection<CyCustomGraphics> getAllPersistantCustomGraphics() {
-		Set<CyCustomGraphics> cgSet = new HashSet<CyCustomGraphics>();
+		Set<CyCustomGraphics> cgSet = new HashSet<>();
 		for (CyCustomGraphics cg: getAllCustomGraphics()) {
 			// Currently, we only export URLImageCustomGraphics to the session file.  This
 			// may change in the future......
@@ -334,7 +334,7 @@ public final class CustomGraphicsManagerImpl implements CustomGraphicsManager, C
 
 	@Override
 	public SortedSet<Long> getIDSet() {
-		return new TreeSet<Long>(graphicsMap.keySet());
+		return new TreeSet<>(graphicsMap.keySet());
 	}
 
 	@Override
@@ -408,7 +408,7 @@ public final class CustomGraphicsManagerImpl implements CustomGraphicsManager, C
 				if (files != null && files.size() != 0) {
 					// get parent directory
 					final File parent = files.get(0).getParentFile();
-					final RestoreImageTaskFactory taskFactory = new RestoreImageTaskFactory(new HashSet<URL>(), parent, this, eventHelper);
+					final RestoreImageTaskFactory taskFactory = new RestoreImageTaskFactory(new HashSet<>(), parent, this, eventHelper);
 					final TaskIterator loadImagesIterator = taskFactory.createTaskIterator();
 					
 					for (CyNetworkView networkView: sess.getNetworkViews()) {

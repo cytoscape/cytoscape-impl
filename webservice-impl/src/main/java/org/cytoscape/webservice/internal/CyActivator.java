@@ -51,11 +51,11 @@ public class CyActivator extends AbstractCyActivator {
 		CySwingApplication cySwingApplicationServiceRef = getService(bc, CySwingApplication.class);
 		
 		// UI for Network Import Clients
-		WebServiceImportDialog<NetworkImportWebServiceClient> unifiedNetworkImportDialog = new WebServiceImportDialog<NetworkImportWebServiceClient>(
+		WebServiceImportDialog<NetworkImportWebServiceClient> unifiedNetworkImportDialog = new WebServiceImportDialog<>(
 				NetworkImportWebServiceClient.class, "Import Network from Public Databases", serviceRegistrar);
 		
 		// UI for Table Import Clients
-		WebServiceImportDialog<TableImportWebServiceClient> unifiedTableImportDialog = new WebServiceImportDialog<TableImportWebServiceClient>(
+		WebServiceImportDialog<TableImportWebServiceClient> unifiedTableImportDialog = new WebServiceImportDialog<>(
 				TableImportWebServiceClient.class, "Import Table from Public Databases", serviceRegistrar);
 		
 		WebServiceGUIImpl webServiceGui = new WebServiceGUIImpl();

@@ -178,7 +178,7 @@ public class VisualStyleFactoryImpl implements VisualStyleFactory {
 				originalMapping.getVisualProperty(), eventHelper);
 		List<ContinuousMappingPoint<K, V>> points = originalMapping.getAllPoints();
 		for (ContinuousMappingPoint<K, V> point : points)
-			copyMapping.addPoint(point.getValue(), new BoundaryRangeValues<V>(point.getRange()));
+			copyMapping.addPoint(point.getValue(), new BoundaryRangeValues<>(point.getRange()));
 
 		return copyMapping;
 	}

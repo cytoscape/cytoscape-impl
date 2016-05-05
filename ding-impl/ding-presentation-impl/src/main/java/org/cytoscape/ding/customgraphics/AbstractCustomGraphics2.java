@@ -58,7 +58,7 @@ public abstract class AbstractCustomGraphics2<T extends CustomGraphicLayer> impl
 	protected AbstractCustomGraphics2(final String displayName) {
 		logger = LoggerFactory.getLogger(this.getClass());
 		this.displayName = displayName;
-		this.properties = new HashMap<String, Object>();
+		this.properties = new HashMap<>();
 	}
 	
 	protected AbstractCustomGraphics2(final String displayName, final String input) {
@@ -253,7 +253,7 @@ public abstract class AbstractCustomGraphics2<T extends CustomGraphicLayer> impl
 	
 	@SuppressWarnings("unchecked")
 	protected Map<String, Object> parseInput(final String input) {
-		final Map<String, Object> props = new HashMap<String, Object>();
+		final Map<String, Object> props = new HashMap<>();
 		
 		if (input != null && !input.isEmpty()) {
 			try {

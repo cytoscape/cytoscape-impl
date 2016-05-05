@@ -96,7 +96,7 @@ public class CommandListUI extends JDialog {
 		for (String namespace : availableCommands.getNamespaces()) {
 			for (String command : availableCommands.getCommands(namespace)) {
 
-				final Stack<String> row = new Stack<String>();
+				final Stack<String> row = new Stack<>();
 				row.add(namespace);
 				row.add(command);
 

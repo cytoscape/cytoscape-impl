@@ -62,7 +62,7 @@ public class CyHttpRequestImpl implements CyHttpRequest
 
         method = request.getRequestLine().getMethod().toUpperCase();
 
-        headers = new HashMap<String,String>();
+        headers = new HashMap<>();
         for (final Header header : request.getAllHeaders())
         {
             final String name = header.getName();

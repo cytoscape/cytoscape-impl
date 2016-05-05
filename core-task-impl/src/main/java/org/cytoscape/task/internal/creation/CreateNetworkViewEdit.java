@@ -102,7 +102,7 @@ final class CreateNetworkViewEdit extends AbstractCyEdit {
 		networkScaleFactor = view.getVisualProperty(NETWORK_SCALE_FACTOR);
 
 		final Collection<View<CyNode>> nodeViews = view.getNodeViews();
-		nodesAndLocations = new WeakHashMap<CyNode, NodeLocations>(nodeViews.size());
+		nodesAndLocations = new WeakHashMap<>(nodeViews.size());
 		for (final View<CyNode> nodeView : nodeViews)
 			nodesAndLocations.put(nodeView.getModel(), new NodeLocations(nodeView));
 

@@ -22,7 +22,7 @@ public class ShowInstalledAppsIfChangedTask extends AbstractTask {
 	public ShowInstalledAppsIfChangedTask(final AppManager appManager, final Container parent) {
 		this.appManager = appManager;
 		this.parent = parent;
-		this.appStatuses = new HashMap<String, AppStatus>();
+		this.appStatuses = new HashMap<>();
 		for(App app: appManager.getApps()) {
 			appStatuses.put(app.getSha512Checksum(), app.getStatus());
 		}

@@ -177,9 +177,9 @@ public class JoinTablesTask extends AbstractTask {
 	private final void init(CyRootNetworkManager rootNetworkManeger, CyNetworkManager networkManager) {
 		this.rootNetworkManager = rootNetworkManeger;
 		this.networkManager = networkManager;
-		this.name2NetworkMap = new HashMap<String, CyNetwork>();
-		this.name2RootMap = new HashMap<String, CyRootNetwork>();
-		this.source2targetColumnMap = new HashMap<String, String>();
+		this.name2NetworkMap = new HashMap<>();
+		this.name2RootMap = new HashMap<>();
+		this.source2targetColumnMap = new HashMap<>();
 
 		initTunable(networkManager);
 	}
@@ -188,31 +188,31 @@ public class JoinTablesTask extends AbstractTask {
 
 		selectedNetworksOnly = false;
 
-		final List<TableType> options = new ArrayList<TableType>();
+		final List<TableType> options = new ArrayList<>();
 		for (TableType type : TableType.values())
 			options.add(type);
-		dataTypeOptions = new ListSingleSelection<TableType>(options);
+		dataTypeOptions = new ListSingleSelection<>(options);
 		dataTypeOptions.setSelectedValue(TableType.NODE_ATTR);
 
 		for (CyNetwork net : networkManage.getNetworkSet()) {
 			String netName = net.getRow(net).get(CyNetwork.NAME, String.class);
 			name2NetworkMap.put(netName, net);
 		}
-		List<String> names = new ArrayList<String>();
+		List<String> names = new ArrayList<>();
 		names.addAll(name2NetworkMap.keySet());
 		if (names.isEmpty())
-			networkList = new ListMultipleSelection<String>(NO_NETWORKS);
+			networkList = new ListMultipleSelection<>(NO_NETWORKS);
 		else
-			networkList = new ListMultipleSelection<String>(names);
+			networkList = new ListMultipleSelection<>(names);
 
 		for (CyNetwork net : networkManager.getNetworkSet()) {
 			final CyRootNetwork rootNet = rootNetworkManager.getRootNetwork(net);
 			if (!name2RootMap.containsValue(rootNet))
 				name2RootMap.put(rootNet.getRow(rootNet).get(CyRootNetwork.NAME, String.class), rootNet);
 		}
-		List<String> rootNames = new ArrayList<String>();
+		List<String> rootNames = new ArrayList<>();
 		rootNames.addAll(name2RootMap.keySet());
-		rootNetworkList = new ListSingleSelection<String>(rootNames);
+		rootNetworkList = new ListSingleSelection<>(rootNames);
 		rootNetworkList.setSelectedValue(rootNames.get(0));
 
 		columnList = getColumns(name2RootMap.get(rootNetworkList.getSelectedValue()),
@@ -222,11 +222,11 @@ public class JoinTablesTask extends AbstractTask {
 	public ListSingleSelection<String> getColumns(CyNetwork network, TableType tableType, String namespace) {
 		CyTable selectedTable = getTable(network, tableType, CyRootNetwork.SHARED_ATTRS);
 
-		List<String> colNames = new ArrayList<String>();
+		List<String> colNames = new ArrayList<>();
 		for (CyColumn col : selectedTable.getColumns())
 			colNames.add(col.getName());
 
-		ListSingleSelection<String> columns = new ListSingleSelection<String>(colNames);
+		ListSingleSelection<String> columns = new ListSingleSelection<>(colNames);
 		columns.setSelectedValue(CyRootNetwork.SHARED_NAME);
 		return columns;
 	}
@@ -248,7 +248,7 @@ public class JoinTablesTask extends AbstractTask {
 	}
 
 	private void mapTableToLocalAttrs(TableType tableType) {
-		List<CyNetwork> networks = new ArrayList<CyNetwork>();
+		List<CyNetwork> networks = new ArrayList<>();
 
 		if (networkList.getSelectedValues().isEmpty())
 			return;

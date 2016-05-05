@@ -109,7 +109,7 @@ final class VirtualColumn implements VirtualColumnInfo {
 
 	Collection<CyRow> getMatchingRows(final Object value) {
 		final Collection<CyRow> sourceRows = sourceTable.getMatchingRows(sourceColumn.getName(), value);
-		final Set<CyRow> targetRows = new HashSet<CyRow>();
+		final Set<CyRow> targetRows = new HashSet<>();
 		for (final CyRow sourceRow : sourceRows) {
 			final Object targetValue = sourceRow.get(sourceJoinColumn.getName(), sourceJoinColumn.getType());
 			if (targetValue != null) {

@@ -50,7 +50,7 @@ public class ExportAsWebArchiveTask extends AbstractTask {
 		this.simpleWriterFactory = simpleWriterFactory;
 		this.zippedWriterFactory = zippedWriterFactory;
 		
-		this.outputFormat = new ListSingleSelection<String>(AS_SPA, AS_SIMPLE_PAGE, AS_ZIPPED_ARCHIVE);
+		this.outputFormat = new ListSingleSelection<>(AS_SPA, AS_SIMPLE_PAGE, AS_ZIPPED_ARCHIVE);
 	}
 
 	/**

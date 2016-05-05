@@ -35,13 +35,13 @@ import junit.framework.*;
 
 public class AverageTest extends TestCase {
 	public void testAll() throws Exception {
-                final List<Double> numbers = new ArrayList<Double>();
+                final List<Double> numbers = new ArrayList<>();
                 numbers.add(1.0);
                 numbers.add(2.0);
                 numbers.add(3.0);
                 numbers.add(4.0);
                 numbers.add(5.0);
-		final Map<String, Object> variablesAndValues = new HashMap<String, Object>();
+		final Map<String, Object> variablesAndValues = new HashMap<>();
 		variablesAndValues.put("numbers", numbers);
 		assertTrue(Framework.executeTest("=AVERAGE($numbers)", variablesAndValues, Double.valueOf(3.0)));
 		assertTrue(Framework.executeTest("=AVERAGE(1,2,3.0,4,5)", Double.valueOf(3.0)));

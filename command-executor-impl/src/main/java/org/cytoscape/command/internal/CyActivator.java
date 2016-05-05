@@ -77,20 +77,20 @@ public class CyActivator extends AbstractCyActivator {
 		CommandTunableInterceptorImpl interceptor = new CommandTunableInterceptorImpl();
 		
 
-		StringTunableHandlerFactory<FileTunableHandler> fileTHF = new SimpleStringTunableHandlerFactory<FileTunableHandler>(FileTunableHandler.class, File.class);
-		StringTunableHandlerFactory<IntTunableHandler> intTHF = new SimpleStringTunableHandlerFactory<IntTunableHandler>(IntTunableHandler.class, Integer.class, int.class);
-		StringTunableHandlerFactory<DoubleTunableHandler> doubleTHF = new SimpleStringTunableHandlerFactory<DoubleTunableHandler>(DoubleTunableHandler.class, Double.class, double.class);
-		StringTunableHandlerFactory<FloatTunableHandler> floatTHF = new SimpleStringTunableHandlerFactory<FloatTunableHandler>(FloatTunableHandler.class, Float.class, float.class);
-		StringTunableHandlerFactory<LongTunableHandler> longTHF = new SimpleStringTunableHandlerFactory<LongTunableHandler>(LongTunableHandler.class, Long.class, long.class);
-		StringTunableHandlerFactory<BooleanTunableHandler> booleanTHF = new SimpleStringTunableHandlerFactory<BooleanTunableHandler>(BooleanTunableHandler.class, Boolean.class, boolean.class);
-		StringTunableHandlerFactory<StringTunableHandlerImpl> stringTHF = new SimpleStringTunableHandlerFactory<StringTunableHandlerImpl>(StringTunableHandlerImpl.class, String.class);
-		StringTunableHandlerFactory<BoundedIntTunableHandler> boundedIntTHF = new SimpleStringTunableHandlerFactory<BoundedIntTunableHandler>(BoundedIntTunableHandler.class, BoundedInteger.class);
-		StringTunableHandlerFactory<BoundedDoubleTunableHandler> boundedDoubleTHF = new SimpleStringTunableHandlerFactory<BoundedDoubleTunableHandler>(BoundedDoubleTunableHandler.class, BoundedDouble.class);
-		StringTunableHandlerFactory<BoundedFloatTunableHandler> boundedFloatTHF = new SimpleStringTunableHandlerFactory<BoundedFloatTunableHandler>(BoundedFloatTunableHandler.class, BoundedFloat.class);
-		StringTunableHandlerFactory<BoundedLongTunableHandler> boundedLongTHF = new SimpleStringTunableHandlerFactory<BoundedLongTunableHandler>(BoundedLongTunableHandler.class, BoundedLong.class);
-		StringTunableHandlerFactory<URLTunableHandler> urlTHF = new SimpleStringTunableHandlerFactory<URLTunableHandler>(URLTunableHandler.class, URL.class);
-		StringTunableHandlerFactory<ListSingleTunableHandler> listSingleTHF = new SimpleStringTunableHandlerFactory<ListSingleTunableHandler>(ListSingleTunableHandler.class, ListSingleSelection.class);
-		StringTunableHandlerFactory<ListMultipleTunableHandler> listMultipleTHF = new SimpleStringTunableHandlerFactory<ListMultipleTunableHandler>(ListMultipleTunableHandler.class, ListMultipleSelection.class);
+		StringTunableHandlerFactory<FileTunableHandler> fileTHF = new SimpleStringTunableHandlerFactory<>(FileTunableHandler.class, File.class);
+		StringTunableHandlerFactory<IntTunableHandler> intTHF = new SimpleStringTunableHandlerFactory<>(IntTunableHandler.class, Integer.class, int.class);
+		StringTunableHandlerFactory<DoubleTunableHandler> doubleTHF = new SimpleStringTunableHandlerFactory<>(DoubleTunableHandler.class, Double.class, double.class);
+		StringTunableHandlerFactory<FloatTunableHandler> floatTHF = new SimpleStringTunableHandlerFactory<>(FloatTunableHandler.class, Float.class, float.class);
+		StringTunableHandlerFactory<LongTunableHandler> longTHF = new SimpleStringTunableHandlerFactory<>(LongTunableHandler.class, Long.class, long.class);
+		StringTunableHandlerFactory<BooleanTunableHandler> booleanTHF = new SimpleStringTunableHandlerFactory<>(BooleanTunableHandler.class, Boolean.class, boolean.class);
+		StringTunableHandlerFactory<StringTunableHandlerImpl> stringTHF = new SimpleStringTunableHandlerFactory<>(StringTunableHandlerImpl.class, String.class);
+		StringTunableHandlerFactory<BoundedIntTunableHandler> boundedIntTHF = new SimpleStringTunableHandlerFactory<>(BoundedIntTunableHandler.class, BoundedInteger.class);
+		StringTunableHandlerFactory<BoundedDoubleTunableHandler> boundedDoubleTHF = new SimpleStringTunableHandlerFactory<>(BoundedDoubleTunableHandler.class, BoundedDouble.class);
+		StringTunableHandlerFactory<BoundedFloatTunableHandler> boundedFloatTHF = new SimpleStringTunableHandlerFactory<>(BoundedFloatTunableHandler.class, BoundedFloat.class);
+		StringTunableHandlerFactory<BoundedLongTunableHandler> boundedLongTHF = new SimpleStringTunableHandlerFactory<>(BoundedLongTunableHandler.class, BoundedLong.class);
+		StringTunableHandlerFactory<URLTunableHandler> urlTHF = new SimpleStringTunableHandlerFactory<>(URLTunableHandler.class, URL.class);
+		StringTunableHandlerFactory<ListSingleTunableHandler> listSingleTHF = new SimpleStringTunableHandlerFactory<>(ListSingleTunableHandler.class, ListSingleSelection.class);
+		StringTunableHandlerFactory<ListMultipleTunableHandler> listMultipleTHF = new SimpleStringTunableHandlerFactory<>(ListMultipleTunableHandler.class, ListMultipleSelection.class);
 
 		registerService(bc,fileTHF,StringTunableHandlerFactory.class,new Properties());
 		registerService(bc,intTHF,StringTunableHandlerFactory.class,new Properties());
@@ -112,21 +112,21 @@ public class CyActivator extends AbstractCyActivator {
 		                                          cyNetworkManagerServiceRef, cytableManagerServiceRef,cyNetworkViewManagerServiceRef);
 		registerService(bc,stm,StringToModel.class,new Properties());
 
-		CyIdentifiableStringTunableHandlerFactory<CyNetworkTunableHandler> networkTHF = 
-			new CyIdentifiableStringTunableHandlerFactory<CyNetworkTunableHandler>(stm, CyNetworkTunableHandler.class, CyNetwork.class);
-		CyIdentifiableStringTunableHandlerFactory<CyTableTunableHandler> tableTHF = 
-				new CyIdentifiableStringTunableHandlerFactory<CyTableTunableHandler>(stm, CyTableTunableHandler.class, CyTable.class);
-		CyIdentifiableStringTunableHandlerFactory<NodeListTunableHandler> nodeListTHF = 
-			new CyIdentifiableStringTunableHandlerFactory<NodeListTunableHandler>(stm, NodeListTunableHandler.class, NodeList.class);
-		CyIdentifiableStringTunableHandlerFactory<EdgeListTunableHandler> edgeListTHF = 
-			new CyIdentifiableStringTunableHandlerFactory<EdgeListTunableHandler>(stm, EdgeListTunableHandler.class, EdgeList.class);
+		CyIdentifiableStringTunableHandlerFactory<CyNetworkTunableHandler> networkTHF =
+				new CyIdentifiableStringTunableHandlerFactory<>(stm, CyNetworkTunableHandler.class, CyNetwork.class);
+		CyIdentifiableStringTunableHandlerFactory<CyTableTunableHandler> tableTHF =
+				new CyIdentifiableStringTunableHandlerFactory<>(stm, CyTableTunableHandler.class, CyTable.class);
+		CyIdentifiableStringTunableHandlerFactory<NodeListTunableHandler> nodeListTHF =
+				new CyIdentifiableStringTunableHandlerFactory<>(stm, NodeListTunableHandler.class, NodeList.class);
+		CyIdentifiableStringTunableHandlerFactory<EdgeListTunableHandler> edgeListTHF =
+				new CyIdentifiableStringTunableHandlerFactory<>(stm, EdgeListTunableHandler.class, EdgeList.class);
 		registerService(bc,networkTHF,StringTunableHandlerFactory.class,new Properties());
 		registerService(bc,tableTHF,StringTunableHandlerFactory.class,new Properties());
 		registerService(bc,nodeListTHF,StringTunableHandlerFactory.class,new Properties());
 		registerService(bc,edgeListTHF,StringTunableHandlerFactory.class,new Properties());
 
-		CyIdentifiableStringTunableHandlerFactory<RowListTunableHandler> rowListTHF = 
-			new CyIdentifiableStringTunableHandlerFactory<RowListTunableHandler>(stm, RowListTunableHandler.class, RowList.class);
+		CyIdentifiableStringTunableHandlerFactory<RowListTunableHandler> rowListTHF =
+				new CyIdentifiableStringTunableHandlerFactory<>(stm, RowListTunableHandler.class, RowList.class);
 		registerService(bc,rowListTHF,StringTunableHandlerFactory.class,new Properties());
 
 		BasicArgHandlerFactory argHandlerFactory = new BasicArgHandlerFactory();

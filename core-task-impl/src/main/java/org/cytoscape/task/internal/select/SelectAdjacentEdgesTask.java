@@ -62,7 +62,7 @@ public class SelectAdjacentEdgesTask extends AbstractSelectTask {
 			new SelectionEdit(eventHelper, "Select Adjacent Edges", network, view,
 			                  SelectionEdit.SelectionFilter.EDGES_ONLY));
 		tm.setProgress(0.2);
-		final Set<CyEdge> edgeSet = new HashSet<CyEdge>();
+		final Set<CyEdge> edgeSet = new HashSet<>();
 
 		// Get the list of selected nodes
 		for (CyNode node : CyTableUtil.getNodesInState(network, "selected", true)) {

@@ -63,7 +63,7 @@ public enum DArrowShape {
 	
 	private static final Map<Byte, Shape> ARROW_SHAPES;
 	/** old_key -> ArrowShape */
-	private static final Map<String, DArrowShape> legacyShapes = new Hashtable<String, DArrowShape>();
+	private static final Map<String, DArrowShape> legacyShapes = new Hashtable<>();
 	static {
 		// We have to support Cytoscape 2.8 XGMML shapes!
 		legacyShapes.put("0", NONE);

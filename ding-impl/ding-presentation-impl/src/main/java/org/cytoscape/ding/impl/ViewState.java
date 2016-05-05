@@ -70,7 +70,7 @@ public class ViewState {
 		// node views, which can disappear between when this edit
 		// is created and when it is used.
 		if (whatToSave == ViewChangeEdit.SavedObjs.ALL || whatToSave == ViewChangeEdit.SavedObjs.NODES) {
-			points = new WeakHashMap<CyNode, Point2D.Double>();
+			points = new WeakHashMap<>();
 			for (CyNode n: view.getNetwork().getNodeList()) {
 				NodeView nv = view.getDNodeView(n);
 				
@@ -80,8 +80,8 @@ public class ViewState {
 		}
 
 		if (whatToSave == ViewChangeEdit.SavedObjs.ALL || whatToSave == ViewChangeEdit.SavedObjs.EDGES) {
-			anchors = new WeakHashMap<CyEdge, List>();
-			linetype = new WeakHashMap<CyEdge, Integer>();
+			anchors = new WeakHashMap<>();
+			linetype = new WeakHashMap<>();
 			for (CyEdge e: view.getNetwork().getEdgeList()) {
 				final DEdgeView ev = view.getDEdgeView(e);
 				DGraphView gView = (DGraphView) ev.getGraphView();
@@ -93,7 +93,7 @@ public class ViewState {
 
 		if (whatToSave == ViewChangeEdit.SavedObjs.SELECTED ||
 		    whatToSave == ViewChangeEdit.SavedObjs.SELECTED_NODES ) {
-			points = new WeakHashMap<CyNode, Point2D.Double>();
+			points = new WeakHashMap<>();
 
 			Iterator<CyNode> nodeIter = view.getSelectedNodes().iterator();
 			while (nodeIter.hasNext()) {
@@ -106,8 +106,8 @@ public class ViewState {
 
 		if (whatToSave == ViewChangeEdit.SavedObjs.SELECTED ||
 		    whatToSave == ViewChangeEdit.SavedObjs.SELECTED_EDGES ) {
-			anchors = new WeakHashMap<CyEdge, List>();
-			linetype = new WeakHashMap<CyEdge, Integer>();
+			anchors = new WeakHashMap<>();
+			linetype = new WeakHashMap<>();
 
 			Iterator<CyEdge> edgeIter = view.getSelectedEdges().iterator();
 			while (edgeIter.hasNext()) {

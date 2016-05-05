@@ -63,7 +63,7 @@ public class CommandFileExecutorTask extends AbstractTask {
 
 			fin = new FileReader(file);
 			bin = new BufferedReader(fin);
-			List<String> lines = new ArrayList<String>();
+			List<String> lines = new ArrayList<>();
 			String s;
 
 			while ((s = bin.readLine()) != null) 

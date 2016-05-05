@@ -23,7 +23,7 @@ public class HeatMapChartTest extends AbstractCustomGraphics2Test {
 	
 	@Before
 	public void setUp() throws Exception {
-		props1 = new HashMap<String, Object>();
+		props1 = new HashMap<>();
 		props1.put(DATA_COLUMNS, 
 				asList(colIdFactory.createColumnIdentifier("data1"),
 					   colIdFactory.createColumnIdentifier("data2")));

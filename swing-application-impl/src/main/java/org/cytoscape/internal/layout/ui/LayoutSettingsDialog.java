@@ -400,7 +400,7 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 	
 	private JComboBox<CyLayoutAlgorithm> getAlgorithmCmb() {
 		if (algorithmCmb == null) {
-			algorithmCmb = new JComboBox<CyLayoutAlgorithm>();
+			algorithmCmb = new JComboBox<>();
 			algorithmCmb.setRenderer(new LayoutAlgorithmListCellRenderer("-- Select algorithm to view settings --"));
 			
 			algorithmCmb.addActionListener(new ActionListener() {
@@ -459,8 +459,8 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 	
 	private JComboBox<CyLayoutAlgorithm> getPrefAlgorithmCmb() {
 		if (prefAlgorithmCmb == null) {
-			prefAlgorithmCmb = new JComboBox<CyLayoutAlgorithm>();
-	        prefAlgorithmCmb.setModel(new DefaultComboBoxModel<CyLayoutAlgorithm>());
+			prefAlgorithmCmb = new JComboBox<>();
+	        prefAlgorithmCmb.setModel(new DefaultComboBoxModel<>());
 	        prefAlgorithmCmb.setRenderer(new LayoutAlgorithmListCellRenderer("-- Select preferred algorithm --"));
 	        
 	        prefAlgorithmCmb.addItemListener(new ItemListener() {
@@ -496,7 +496,7 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 					currentLayout.getSupportedNodeAttributeTypes(), currentLayout.getSupportedEdgeAttributeTypes());
 			
 			if (attributeList.size() > 0) {
-				layoutAttrTunable.layoutAttribute = new ListSingleSelection<String>(attributeList);
+				layoutAttrTunable.layoutAttribute = new ListSingleSelection<>(attributeList);
 				layoutAttrTunable.layoutAttribute.setSelectedValue(attributeList.get(0));
 				
 				final PanelTaskManager taskMgr = serviceRegistrar.getService(PanelTaskManager.class);
@@ -519,7 +519,7 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 	}
 	
 	private List<String> getAttributeList(CyNetwork network, Set<Class<?>> allowedNodeAttributeTypes, Set<Class<?>> allowedEdgeAttributeTypes) {
-		List<String> attributes = new ArrayList<String>();
+		List<String> attributes = new ArrayList<>();
         Set<Class<?>> allowedTypes;
 		CyTable table;
 		if (allowedNodeAttributeTypes.size() > 0) {
@@ -554,7 +554,7 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 
 	private Set<View<CyNode>> getLayoutNodes(CyLayoutAlgorithm layout, CyNetworkView networkView) {
 		if (layout.getSupportsSelectedOnly() && selectedTunable.selectedNodesOnly) {
-			Set<View<CyNode>> nodeViews = new HashSet<View<CyNode>>();
+			Set<View<CyNode>> nodeViews = new HashSet<>();
 			CyNetwork network = networkView.getModel();
 			for (View<CyNode> view : networkView.getNodeViews()) {
 				if (network.getRow(view.getModel()).get(CyNetwork.SELECTED, Boolean.class) &&

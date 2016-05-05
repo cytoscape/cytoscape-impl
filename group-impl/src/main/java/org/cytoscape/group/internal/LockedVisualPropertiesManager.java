@@ -63,7 +63,7 @@ public class LockedVisualPropertiesManager {
 				continue;
 			
 			final Collection<VisualProperty<?>> visualProps = getSupportedVisualProperties(netView);
-			final Map<VisualProperty<?>, Object> lockedValues = new HashMap<VisualProperty<?>, Object>();
+			final Map<VisualProperty<?>, Object> lockedValues = new HashMap<>();
 					
 			for (final VisualProperty<?> vp : visualProps) {
 				if (vp.getTargetDataType().isAssignableFrom(element.getClass()) && view.isValueLocked(vp))
@@ -123,7 +123,7 @@ public class LockedVisualPropertiesManager {
 	}
 	
 	private Collection<VisualProperty<?>> getSupportedVisualProperties(final CyNetworkView netView) {
-		final Collection<VisualProperty<?>> props = new HashSet<VisualProperty<?>>();
+		final Collection<VisualProperty<?>> props = new HashSet<>();
 		
 		// TODO what if the network view renderer provides a different lexicon?
 		final VisualMappingManager vmMgr = serviceRegistrar.getService(VisualMappingManager.class);

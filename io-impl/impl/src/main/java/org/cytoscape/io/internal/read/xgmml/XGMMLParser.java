@@ -65,7 +65,7 @@ public class XGMMLParser extends DefaultHandler {
 	 */
 	@Override
 	public void startDocument() throws SAXException {
-		stateStack = new Stack<ParseState>();
+		stateStack = new Stack<>();
 		parseState = ParseState.NONE;
 		handlerFactory.init();
 		super.startDocument();

@@ -59,7 +59,7 @@ public class GetNodePropertiesTask extends AbstractPropertyTask implements Obser
 
 	@Override
 	public void run(final TaskMonitor taskMonitor) {
-		nodePropertiesMap = new HashMap<CyNode, Map<String, Object>>();
+		nodePropertiesMap = new HashMap<>();
 
 		CyNetwork network = nodeTunable.getNetwork();
 
@@ -73,7 +73,7 @@ public class GetNodePropertiesTask extends AbstractPropertyTask implements Obser
 		for (CyNode node: nodeTunable.getNodeList()) {
 			taskMonitor.showMessage(TaskMonitor.Level.INFO, 
 			                        "   Node property values for node "+DataUtils.getNodeName(network.getDefaultNodeTable(), node)+":");
-			Map<String, Object> propertyMap = new HashMap<String, Object>();
+			Map<String, Object> propertyMap = new HashMap<>();
 
 			for (String property: props) {
 				try {

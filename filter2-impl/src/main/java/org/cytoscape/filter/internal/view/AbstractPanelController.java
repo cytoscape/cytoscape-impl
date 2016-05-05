@@ -73,9 +73,9 @@ public abstract class AbstractPanelController<T extends NamedElement, V extends 
 		
 		logger = LoggerFactory.getLogger(getClass());
 		
-		List<T> modelItems = new ArrayList<T>();
-		namedElementComboBoxModel = new DynamicComboBoxModel<T>(modelItems);
-		namedElementListeners = new CopyOnWriteArrayList<NamedElementListener<T>>();
+		List<T> modelItems = new ArrayList<>();
+		namedElementComboBoxModel = new DynamicComboBoxModel<>(modelItems);
+		namedElementListeners = new CopyOnWriteArrayList<>();
 	}
 
 	public JPopupMenu createAddConditionMenu(final CompositeFilterPanel<?> panel) {

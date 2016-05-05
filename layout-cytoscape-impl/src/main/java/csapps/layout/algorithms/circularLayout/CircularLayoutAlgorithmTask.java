@@ -76,9 +76,9 @@ public class CircularLayoutAlgorithmTask extends AbstractPartitionLayoutTask {
 			return;
 		}
 
-		nodeViews = new HashMap<Integer, View<CyNode>>(numNodes);
+		nodeViews = new HashMap<>(numNodes);
 
-		Map<CyNode, Integer> nodeIdexMap = new HashMap<CyNode, Integer>();
+		Map<CyNode, Integer> nodeIdexMap = new HashMap<>();
 		int nodeIndex = 0;
 
 		Iterator<LayoutNode> nodeIter = partition.getNodeList().iterator();
@@ -97,7 +97,7 @@ public class CircularLayoutAlgorithmTask extends AbstractPartitionLayoutTask {
 			return;
 
 		/* create edge list from edges between selected nodes */
-		final List<Edge> edges = new LinkedList<Edge>();
+		final List<Edge> edges = new LinkedList<>();
 		final Iterator<LayoutEdge> edgeIter = partition.edgeIterator();
 		while (edgeIter.hasNext() && !cancelled) {
 			final LayoutEdge ev = edgeIter.next();
@@ -145,7 +145,7 @@ public class CircularLayoutAlgorithmTask extends AbstractPartitionLayoutTask {
 			return;
 
 		drawnBiComps = new boolean[bc.length];
-		node2BiComp = new HashMap<Integer, Integer>();
+		node2BiComp = new HashMap<>();
 
 		for (int i = 0; i < bc.length; i++)
 			if (bc[i].length > 3) {
@@ -178,7 +178,7 @@ public class CircularLayoutAlgorithmTask extends AbstractPartitionLayoutTask {
 
 		drawnBiComps[maxIndex] = true;
 
-		nodeHeights = new HashMap<Integer, Integer>();
+		nodeHeights = new HashMap<>();
 
 		SetOuterCircle(maxIndex, radius, startX, startY, -1);
 
@@ -211,7 +211,7 @@ public class CircularLayoutAlgorithmTask extends AbstractPartitionLayoutTask {
 		int outerNodesCount = 0;
 		int rnc = 0;
 		Iterator<Integer> iter;
-		Map<Integer, Integer> outerCircle = new HashMap<Integer, Integer>();
+		Map<Integer, Integer> outerCircle = new HashMap<>();
 
 		for (int i = 0; i < bc[compIndex].length; i++) {
 			iter = edgesFrom[bc[compIndex][i]].iterator();
@@ -298,7 +298,7 @@ public class CircularLayoutAlgorithmTask extends AbstractPartitionLayoutTask {
 			}
 		}
 
-		HashMap<Integer, Integer> addedNeighbours = new HashMap<Integer, Integer>();
+		HashMap<Integer, Integer> addedNeighbours = new HashMap<>();
 
 		for (int i = 0; i < bc[compIndex].length; i++) {
 			iter = edgesFrom[bc[compIndex][i]].iterator();
@@ -466,10 +466,10 @@ public class CircularLayoutAlgorithmTask extends AbstractPartitionLayoutTask {
 	 * @return
 	 */
 	private int[] SortInnerCircle(int[] icNodes) {
-		LinkedList<Integer> greedyNodes = new LinkedList<Integer>();
-		LinkedList<Integer> modestNodes = new LinkedList<Integer>();
+		LinkedList<Integer> greedyNodes = new LinkedList<>();
+		LinkedList<Integer> modestNodes = new LinkedList<>();
 
-		HashMap<Integer, Integer> forFunct = new HashMap<Integer, Integer>();
+		HashMap<Integer, Integer> forFunct = new HashMap<>();
 
 		for (int i = 0; i < icNodes.length; i++)
 			forFunct.put(Integer.valueOf(icNodes[i]), Integer.valueOf(0));
@@ -599,7 +599,7 @@ public class CircularLayoutAlgorithmTask extends AbstractPartitionLayoutTask {
 			int min1Id = -1;
 			int min2Id = -2;
 			int maxId = -3;
-			HashMap<Integer, Integer> tmp = new HashMap<Integer, Integer>();
+			HashMap<Integer, Integer> tmp = new HashMap<>();
 
 			while (iter.hasNext()) {
 				currentNeighbour = ((Integer) iter.next()).intValue();
@@ -688,7 +688,7 @@ public class CircularLayoutAlgorithmTask extends AbstractPartitionLayoutTask {
 				 //                  + (remStartAngle - ((neighboursCount / 2) * deltaAngle)));
 			}
 
-			tmp = new HashMap<Integer, Integer>();
+			tmp = new HashMap<>();
 
 			while (iter.hasNext()) {
 				currentNeighbour = ((Integer) iter.next()).intValue();
@@ -771,7 +771,7 @@ public class CircularLayoutAlgorithmTask extends AbstractPartitionLayoutTask {
 		Iterator iter = edgesFrom[nodeID].iterator();
 		int currentNeighbour;
 		int noOfChildren = 0;
-		HashMap<Integer, Integer> tmp = new HashMap<Integer, Integer>();
+		HashMap<Integer, Integer> tmp = new HashMap<>();
 
 		while (iter.hasNext()) {
 			currentNeighbour = ((Integer) iter.next()).intValue();

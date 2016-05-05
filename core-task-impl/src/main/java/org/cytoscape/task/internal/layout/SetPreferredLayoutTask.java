@@ -43,13 +43,13 @@ public class SetPreferredLayoutTask extends AbstractTask {
 
 	public SetPreferredLayoutTask(final CyLayoutAlgorithmManager layouts) {
 		this.layouts = layouts;
-		List<String> layoutNames = new ArrayList<String>();
+		List<String> layoutNames = new ArrayList<>();
 		
 		for (CyLayoutAlgorithm alg: layouts.getAllLayouts()) {
 			layoutNames.add(alg.getName());
 		}
 		
-		preferredLayout = new ListSingleSelection<String>(layoutNames);
+		preferredLayout = new ListSingleSelection<>(layoutNames);
 	}
 
 	@Override

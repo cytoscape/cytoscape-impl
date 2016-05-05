@@ -129,7 +129,7 @@ public class VisualStyleSerializerTest {
 
 	@Test
 	public void testVizmapNotNullForEmptyVS() throws Exception {
-		assertNotNull(serializer.createVizmap(new ArrayList<VisualStyle>()));
+		assertNotNull(serializer.createVizmap(new ArrayList<>()));
 	}
 
 	@Test
@@ -598,9 +598,9 @@ public class VisualStyleSerializerTest {
 
 		public DummyVisualStyle(String title) {
 			this.title = title;
-			this.defaults = new HashMap<VisualProperty<?>, Object>();
-			this.mappings = new HashMap<VisualProperty<?>, VisualMappingFunction<?,?>>();
-			this.dependencies = new HashSet<VisualPropertyDependency<?>>();
+			this.defaults = new HashMap<>();
+			this.mappings = new HashMap<>();
+			this.dependencies = new HashSet<>();
 			createDependencies();
 		}
 
@@ -695,10 +695,10 @@ public class VisualStyleSerializerTest {
 		private void createDependencies() {
 			// This is not good, but is the only way to test dependencies, since they are Ding-specific
 			// Let's create Node Size Dependency only, because the other ones require Ding's lexicon
-			final Set<VisualProperty<Double>> nodeSizeProperties = new HashSet<VisualProperty<Double>>();
+			final Set<VisualProperty<Double>> nodeSizeProperties = new HashSet<>();
 			nodeSizeProperties.add(NODE_WIDTH);
 			nodeSizeProperties.add(NODE_HEIGHT);
-			addVisualPropertyDependency(new VisualPropertyDependency<Double>(NODE_SIZE_LOCKED_DEPENDENCY, "Lock node W/H", 
+			addVisualPropertyDependency(new VisualPropertyDependency<>(NODE_SIZE_LOCKED_DEPENDENCY, "Lock node W/H",
 					nodeSizeProperties, lexicon));
 		}
 	}
@@ -711,7 +711,7 @@ public class VisualStyleSerializerTest {
 		public DummyDiscreteMapping(String columnName, Class<K> columnType, VisualProperty<V> vp, 
 				CyEventHelper eventHelper) {
 			super(columnName, columnType, vp, eventHelper);
-			map = new HashMap<K, V>();
+			map = new HashMap<>();
 		}
 
 		@Override
@@ -741,7 +741,7 @@ public class VisualStyleSerializerTest {
 		
 		@Override
 		protected VisualMappingFunction<?, ?> clone() throws CloneNotSupportedException {
-			DummyDiscreteMapping<K, V> clone = new DummyDiscreteMapping<K, V>(columnName, columnType, vp, eventHelper);
+			DummyDiscreteMapping<K, V> clone = new DummyDiscreteMapping<>(columnName, columnType, vp, eventHelper);
 			clone.map.putAll(map);
 			
 			return clone;
@@ -756,7 +756,7 @@ public class VisualStyleSerializerTest {
 		public DummyContinuousMapping(String columnName, Class<K> columnType, VisualProperty<V> vp,
 				CyEventHelper eventHelper) {
 			super(columnName, columnType, vp, eventHelper);
-			points = new ArrayList<ContinuousMappingPoint<K,V>>();
+			points = new ArrayList<>();
 		}
 
 		@Override
@@ -771,7 +771,7 @@ public class VisualStyleSerializerTest {
 
 		@Override
 		public void addPoint(K value, BoundaryRangeValues<V> brv) {
-			points.add(new ContinuousMappingPoint<K, V>(value, brv, this, eventHelper));
+			points.add(new ContinuousMappingPoint<>(value, brv, this, eventHelper));
 		}
 
 		@Override
@@ -791,7 +791,7 @@ public class VisualStyleSerializerTest {
 		
 		@Override
 		protected VisualMappingFunction<?, ?> clone() throws CloneNotSupportedException {
-			DummyContinuousMapping<K, V> clone = new DummyContinuousMapping<K, V>(columnName, columnType, vp, eventHelper);
+			DummyContinuousMapping<K, V> clone = new DummyContinuousMapping<>(columnName, columnType, vp, eventHelper);
 			clone.points.addAll(points);
 			
 			return clone;
@@ -813,7 +813,7 @@ public class VisualStyleSerializerTest {
 
 		@Override
 		protected VisualMappingFunction<?, ?> clone() throws CloneNotSupportedException {
-			return new DummyPassthroughMapping<K, V>(columnName, columnType, vp, eventHelper);
+			return new DummyPassthroughMapping<>(columnName, columnType, vp, eventHelper);
 		}
 	}
 }

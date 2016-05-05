@@ -38,7 +38,7 @@ public class LogViewerTest {
 
 	@Before
 	public void setUp() {
-		config = new HashMap<String,String>();
+		config = new HashMap<>();
 		config.put("colorParityTrue","ffffff");
 		config.put("colorParityFalse","eeeeee");
 		config.put("entryTemplate","<html><body><ul><li>%s %s %s %s</li><ul></body></html>");

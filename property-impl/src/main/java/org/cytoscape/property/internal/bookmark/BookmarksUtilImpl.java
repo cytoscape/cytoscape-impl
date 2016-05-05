@@ -62,7 +62,7 @@ public class BookmarksUtilImpl implements BookmarksUtil {
 	public BookmarksUtilImpl( final CyServiceRegistrar register){
 
 		this.register =register;
-		this.dataSourceMap = new HashMap<DataSource, org.cytoscape.io.datasource.DataSource>();
+		this.dataSourceMap = new HashMap<>();
 		
 	}
 	/*
@@ -135,7 +135,7 @@ public class BookmarksUtilImpl implements BookmarksUtil {
 
 	private List<DataSource> extractDataSources(Category cat) {
 		final List<Object> entries = cat.getCategoryOrDataSource();
-		final List<DataSource> datasourceList = new ArrayList<DataSource>();
+		final List<DataSource> datasourceList = new ArrayList<>();
 
 		for (Object obj : entries) {
 			if (obj.getClass() == DataSource.class) {
@@ -148,7 +148,7 @@ public class BookmarksUtilImpl implements BookmarksUtil {
 
 	private List<Category> extractCategory(Category cat) {
 		final List<Object> entries = cat.getCategoryOrDataSource();
-		final List<Category> categoryList = new ArrayList<Category>();
+		final List<Category> categoryList = new ArrayList<>();
 
 		for (Object obj : entries) {
 			if (obj.getClass() == Category.class) {

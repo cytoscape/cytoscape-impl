@@ -59,7 +59,7 @@ public class EditNetworkTitleTaskFactoryImpl extends AbstractNetworkTaskFactory 
 
 	@Override
 	public TaskIterator createTaskIterator(CyNetwork network, String title) {
-		final Map<String, Object> m = new HashMap<String, Object>();
+		final Map<String, Object> m = new HashMap<>();
 		m.put("title", title);
 
 		return tunableSetter.createTaskIterator(this.createTaskIterator(network), m); 

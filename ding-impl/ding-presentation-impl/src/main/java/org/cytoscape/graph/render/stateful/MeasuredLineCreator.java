@@ -65,7 +65,7 @@ class MeasuredLineCreator {
 		this.textAsShape = textAsShape;
 		this.labelWidth = labelWidth;
 		this.rawLines = rawLine.split("\n"); 
-		this.measuredLines = new ArrayList<MeasuredLine>();
+		this.measuredLines = new ArrayList<>();
 
 		calculateRawBounds(); 
 		createMeasuredLines();

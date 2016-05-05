@@ -98,9 +98,9 @@ public class OBOReader extends AbstractTask implements CyNetworkReader {
 		this.dagName = dagName;
 		this.serviceRegistrar = serviceRegistrar;
 
-		termID2nodeMap = new HashMap<String, CyNode>();
+		termID2nodeMap = new HashMap<>();
 		networks = new CyNetwork[1];
-		interactionList = new ArrayList<String[]>();
+		interactionList = new ArrayList<>();
 	}
 	
 	@Override
@@ -113,7 +113,7 @@ public class OBOReader extends AbstractTask implements CyNetworkReader {
 		
 		try {
 			// Phase 1: read header information
-			header = new HashMap<String, String>();
+			header = new HashMap<>();
 			
 			while ((line = bufRd.readLine()) != null) {
 				if (line.startsWith(TERM_TAG))
@@ -253,7 +253,7 @@ public class OBOReader extends AbstractTask implements CyNetworkReader {
 				List<String> listAttr = ontologyDAG.getRow(termNode).getList(key, String.class);
 
 				if (listAttr == null)
-					listAttr = new ArrayList<String>();
+					listAttr = new ArrayList<>();
 
 				listAttr.add(synonymParts[1]);
 
@@ -297,7 +297,7 @@ public class OBOReader extends AbstractTask implements CyNetworkReader {
 
 				List<String> listAttr = ontologyDAG.getRow(termNode).getList(key, String.class);
 				if (listAttr == null)
-					listAttr = new ArrayList<String>();
+					listAttr = new ArrayList<>();
 
 				if (val != null) {
 					if (key.equals(DISJOINT_FROM.toString())) {
@@ -330,7 +330,7 @@ public class OBOReader extends AbstractTask implements CyNetworkReader {
 		if (trimed.length() == 0) {
 			return null;
 		} else {
-			List<String> entries = new ArrayList<String>();
+			List<String> entries = new ArrayList<>();
 
 			for (String entry : trimed.split(",")) {
 				entries.add(entry.trim());

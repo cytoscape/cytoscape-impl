@@ -75,7 +75,7 @@ public class SelectExportTableTask extends AbstractTask {
 		}
 		
 		Collections.sort(options);
-		selectTable =  new ListSingleSelection<String>(options);
+		selectTable = new ListSingleSelection<>(options);
 	}
 	
 	private void populateNetworkTableMap() {

@@ -179,10 +179,10 @@ public final class GraphGraphics {
 	private static final double CURVE_ELLIPTICAL = (4.0d * (Math.sqrt(2.0d) - 1.0d)) / 3.0d;
 
 	// Mapping from node to its border stroke object.
-	private static final Map<Float,Stroke> borderStrokes = new HashMap<Float,Stroke>();
+	private static final Map<Float,Stroke> borderStrokes = new HashMap<>();
 
 	static {		
-		nodeShapes = new HashMap<Byte,NodeShape>();
+		nodeShapes = new HashMap<>();
 
 		nodeShapes.put(SHAPE_RECTANGLE, new RectangleNodeShape()); 
 		nodeShapes.put(SHAPE_ELLIPSE, new EllipseNodeShape()); 
@@ -194,7 +194,7 @@ public final class GraphGraphics {
 		nodeShapes.put(SHAPE_TRIANGLE, new TriangleNodeShape()); 
 		nodeShapes.put(SHAPE_VEE, new VeeNodeShape());
 
-		arrows = new HashMap<Byte,Arrow>();
+		arrows = new HashMap<>();
 
 		arrows.put(ARROW_NONE, new NoArrow() );
 		arrows.put(ARROW_DELTA, new DeltaArrow() );
@@ -928,7 +928,7 @@ public final class GraphGraphics {
 	 * @return A map of node shape bytes to Shape objects.
 	 */
 	public static Map<Byte, Shape> getNodeShapes() {
-		final Map<Byte, Shape> shapeMap = new HashMap<Byte, Shape>();
+		final Map<Byte, Shape> shapeMap = new HashMap<>();
 
 		for ( NodeShape ns : nodeShapes.values() ) {
 			final Shape shape = ns.getShape(0f, 0f, DEF_SHAPE_SIZE, DEF_SHAPE_SIZE);
@@ -944,7 +944,7 @@ public final class GraphGraphics {
 	 * @return A map of arrow shape bytes to Shape objects.
 	 */
 	public static Map<Byte, Shape> getArrowShapes() {
-		final Map<Byte, Shape> shapeMap = new HashMap<Byte, Shape>();
+		final Map<Byte, Shape> shapeMap = new HashMap<>();
 		for (final Byte key : arrows.keySet()) {
 			shapeMap.put(key, arrows.get(key).getArrowShape() );
 		}

@@ -70,7 +70,7 @@ public class LayoutPartitionTest {
 	@Test
 	public void testLayoutPartitionConstructorTest2() {
 
-		Set<View<CyNode>> nodesToLayOut = new HashSet<View<CyNode>>();
+		Set<View<CyNode>> nodesToLayOut = new HashSet<>();
 		nodesToLayOut.add(networkView.getNodeView(source));
 		nodesToLayOut.add(networkView.getNodeView(target));
 		EdgeWeighter edgeWeighter = new EdgeWeighter();

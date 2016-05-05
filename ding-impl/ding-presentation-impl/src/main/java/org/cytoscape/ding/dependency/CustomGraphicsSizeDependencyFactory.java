@@ -44,7 +44,7 @@ public class CustomGraphicsSizeDependencyFactory implements VisualPropertyDepend
 	@Override
 	public VisualPropertyDependency<Double> createVisualPropertyDependency() {
 		
-		final Set<VisualProperty<Double>> customGraphicsSizeDependency = new HashSet<VisualProperty<Double>>();
+		final Set<VisualProperty<Double>> customGraphicsSizeDependency = new HashSet<>();
 		customGraphicsSizeDependency.add(DVisualLexicon.NODE_CUSTOMGRAPHICS_SIZE_1);
 		customGraphicsSizeDependency.add(DVisualLexicon.NODE_CUSTOMGRAPHICS_SIZE_2);
 		customGraphicsSizeDependency.add(DVisualLexicon.NODE_CUSTOMGRAPHICS_SIZE_3);
@@ -55,7 +55,7 @@ public class CustomGraphicsSizeDependencyFactory implements VisualPropertyDepend
 		customGraphicsSizeDependency.add(DVisualLexicon.NODE_CUSTOMGRAPHICS_SIZE_8);
 		customGraphicsSizeDependency.add(DVisualLexicon.NODE_CUSTOMGRAPHICS_SIZE_9);
 		
-		VisualPropertyDependency<Double> vpDep = new VisualPropertyDependency<Double>("nodeCustomGraphicsSizeSync", "Fit Custom Graphics to node", customGraphicsSizeDependency, lexicon);
+		VisualPropertyDependency<Double> vpDep = new VisualPropertyDependency<>("nodeCustomGraphicsSizeSync", "Fit Custom Graphics to node", customGraphicsSizeDependency, lexicon);
 		vpDep.setDependency(true);
 		
 		return vpDep;

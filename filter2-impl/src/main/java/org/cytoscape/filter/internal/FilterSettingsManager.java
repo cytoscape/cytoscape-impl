@@ -81,7 +81,7 @@ public class FilterSettingsManager implements SessionAboutToBeSavedListener, Ses
 		FilterPanelController filterPanelController = filterPanel.getController();
 		TransformerPanelController transformerPanelController = transformerPanel.getController();
 
-		List<File> files = new ArrayList<File>();
+		List<File> files = new ArrayList<>();
 		try {
 			File root = File.createTempFile(SESSION_NAMESPACE, ".temp");
 			root.delete();

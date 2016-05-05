@@ -105,7 +105,7 @@ public class NewNetworkCommandTask extends AbstractNetworkFromSelectionTask {
 	@Override
 	Set<CyNode> getNodes(final CyNetwork net) {
 		if (nodes == null) {
-			nodes = new HashSet<CyNode>(nodeList.getValue());
+			nodes = new HashSet<>(nodeList.getValue());
 
 			if (edgeList != null && edgeList.getValue() != null) {
 				final Collection<CyEdge> selectedEdges = edgeList.getValue();
@@ -127,9 +127,9 @@ public class NewNetworkCommandTask extends AbstractNetworkFromSelectionTask {
 	Set<CyEdge> getEdges(final CyNetwork net) {
 		if (edges == null) {
 			if (edgeList != null && edgeList.getValue() != null)
-				edges = new HashSet<CyEdge>(edgeList.getValue());
+				edges = new HashSet<>(edgeList.getValue());
 			else
-				edges = new HashSet<CyEdge>();
+				edges = new HashSet<>();
 		}
 
 		if (!excludeEdges) {

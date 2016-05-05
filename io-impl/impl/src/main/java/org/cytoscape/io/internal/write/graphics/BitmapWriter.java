@@ -190,13 +190,13 @@ public class BitmapWriter extends AbstractTask implements CyWriter {
 
 		widthInPixels = initialWPixel;
 		heightInPixels = initialHPixel;
-		ArrayList<Integer> values = new ArrayList<Integer>();
+		ArrayList<Integer> values = new ArrayList<>();
 		values.add(72);
 		values.add(100);
 		values.add(150);
 		values.add(300);
 		values.add(600);
-		resolution = new ListSingleSelection<Integer>(values);
+		resolution = new ListSingleSelection<>(values);
 		resolution.setSelectedValue(72);
 		double dpi = 72.0 ;
 		

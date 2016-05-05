@@ -144,8 +144,8 @@ public class NNFNetworkReader extends AbstractCyNetworkReader {
 	}
 
 	private String retriveOverviewNetworkName(final BufferedReader in) throws IOException {
-		HashSet<String> networkSet = new HashSet<String>();
-		HashSet<String> nodeSet = new HashSet<String>();
+		HashSet<String> networkSet = new HashSet<>();
+		HashSet<String> nodeSet = new HashSet<>();
 		
 		String line;
 		

@@ -73,11 +73,11 @@ public class AvailableCommandsImpl implements AvailableCommands {
 
 	public AvailableCommandsImpl(ArgRecorder argRec, CyApplicationManager appMgr) {
 		this.argRec = argRec;
-		this.commands = new HashMap<String, TaskFactory>();
-		this.descriptions = new HashMap<String, String>();
-		this.argHandlers = new HashMap<String,Map<String,Map<String, ArgHandler>>>();
+		this.commands = new HashMap<>();
+		this.descriptions = new HashMap<>();
+		this.argHandlers = new HashMap<>();
 	 	this.factoryProvisioner = new StaticTaskFactoryProvisioner();
-		this.provisioners = new IdentityHashMap<Object, TaskFactory>();
+		this.provisioners = new IdentityHashMap<>();
 		this.appMgr = appMgr;
 	}
 
@@ -277,7 +277,7 @@ public class AvailableCommandsImpl implements AvailableCommands {
 			Map<String, ArgHandler> args = null;
 			Map<String,Map<String, ArgHandler>> mm = argHandlers.get(namespace);
 			if ( mm == null ) {
-				mm = new HashMap<String,Map<String, ArgHandler>>();
+				mm = new HashMap<>();
 				argHandlers.put(namespace,mm);
 			}
 			mm.put(command,args);
@@ -326,7 +326,7 @@ public class AvailableCommandsImpl implements AvailableCommands {
 			if (ti == null)
 				return Collections.emptyMap();
 
-			Map<String, ArgHandler> argMap = new HashMap<String, ArgHandler>();
+			Map<String, ArgHandler> argMap = new HashMap<>();
 
 			while ( ti.hasNext() ) {	
 				List<ArgHandler> handlers = argRec.getHandlers(ti.next());
@@ -362,7 +362,7 @@ public class AvailableCommandsImpl implements AvailableCommands {
 			return new AbstractTaskFactory() {
 				@Override
 				public TaskIterator createTaskIterator() {
-					final Reference<CyNetwork> reference = new WeakReference<CyNetwork>(appMgr.getCurrentNetwork());
+					final Reference<CyNetwork> reference = new WeakReference<>(appMgr.getCurrentNetwork());
 					return factory.createTaskIterator(reference.get());
 				}
 			};
@@ -372,7 +372,7 @@ public class AvailableCommandsImpl implements AvailableCommands {
 			return new AbstractTaskFactory() {
 				@Override
 				public TaskIterator createTaskIterator() {
-					final Reference<CyNetworkView> reference = new WeakReference<CyNetworkView>(appMgr.getCurrentNetworkView());
+					final Reference<CyNetworkView> reference = new WeakReference<>(appMgr.getCurrentNetworkView());
 					return factory.createTaskIterator(reference.get());
 				}
 			};
@@ -382,9 +382,9 @@ public class AvailableCommandsImpl implements AvailableCommands {
 			return new AbstractTaskFactory() {
 				@Override
 				public TaskIterator createTaskIterator() {
-					List<CyNetworkView> views = new ArrayList<CyNetworkView>();
+					List<CyNetworkView> views = new ArrayList<>();
 					views.add(appMgr.getCurrentNetworkView());
-					final Reference<List<CyNetworkView>> reference = new WeakReference<List<CyNetworkView>>(views);
+					final Reference<List<CyNetworkView>> reference = new WeakReference<>(views);
 					return factory.createTaskIterator(reference.get());
 				}
 			};
@@ -394,7 +394,7 @@ public class AvailableCommandsImpl implements AvailableCommands {
 			return new AbstractTaskFactory() {
 				@Override
 				public TaskIterator createTaskIterator() {
-					final Reference<CyTable> reference = new WeakReference<CyTable>(appMgr.getCurrentNetwork().getDefaultNetworkTable());
+					final Reference<CyTable> reference = new WeakReference<>(appMgr.getCurrentNetwork().getDefaultNetworkTable());
 					return factory.createTaskIterator(reference.get());
 				}
 			};

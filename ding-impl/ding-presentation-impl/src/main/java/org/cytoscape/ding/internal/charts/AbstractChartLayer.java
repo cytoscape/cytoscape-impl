@@ -286,7 +286,7 @@ public abstract class AbstractChartLayer<T extends Dataset> implements Cy2DGraph
 	}
 	
 	public static List<String> createDefaultLabels(final int size) {
-		final List<String> labels = new ArrayList<String>(size);
+		final List<String> labels = new ArrayList<>(size);
 		
 		for (int i = 0; i < size; i++)
 			labels.add("#" + (i+1));

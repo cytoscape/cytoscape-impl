@@ -35,7 +35,7 @@ import junit.framework.*;
 
 public class ModeTest extends TestCase {
 	public void testAll() throws Exception {
-                final List<Object> numbers = new ArrayList<Object>();
+                final List<Object> numbers = new ArrayList<>();
                 numbers.add(new Double(5.0));
                 numbers.add(new Long(3L));
                 numbers.add(new Double(4.0));
@@ -45,7 +45,7 @@ public class ModeTest extends TestCase {
                 numbers.add(new Long(5L));
                 numbers.add(new Double(3.0));
                 numbers.add(new Long(7L));
-		final Map<String, Object> variablesAndValues = new HashMap<String, Object>();
+		final Map<String, Object> variablesAndValues = new HashMap<>();
 		variablesAndValues.put("list", numbers);
 		assertTrue(Framework.executeTest("=MODE($list)", variablesAndValues, Double.valueOf(3)));
 		assertTrue(Framework.executeTestExpectFailure("=MODE()"));

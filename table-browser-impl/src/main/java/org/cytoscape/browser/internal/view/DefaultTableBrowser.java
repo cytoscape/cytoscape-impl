@@ -185,8 +185,8 @@ public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurr
 		
 		if (rowSelectionMode == ViewMode.ALL) {
 			// Show the current selected rows
-			final Set<Long> suidSelected = new HashSet<Long>();
-			final Set<Long> suidUnselected = new HashSet<Long>();
+			final Set<Long> suidSelected = new HashSet<>();
+			final Set<Long> suidUnselected = new HashSet<>();
 			final Collection<CyRow> selectedRows = currentTable.getMatchingRows(CyNetwork.SELECTED, Boolean.TRUE);
 	
 			for (final CyRow row : selectedRows) {
@@ -336,7 +336,7 @@ public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurr
 	
 	private JComboBox<CyTable> getTableChooser() {
 		if (tableChooser == null) {
-			tableChooser = new JComboBox<>(new DefaultComboBoxModel<CyTable>());
+			tableChooser = new JComboBox<>(new DefaultComboBoxModel<>());
 			tableChooser.setRenderer(new TableChooserCellRenderer());
 			tableChooser.addActionListener(this);
 			final Dimension d = new Dimension(SELECTOR_WIDTH, tableChooser.getPreferredSize().height);

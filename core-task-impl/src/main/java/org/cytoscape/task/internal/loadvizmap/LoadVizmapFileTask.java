@@ -124,7 +124,7 @@ class AddVisualStylesTask extends AbstractTask implements ObservableTask {
 	@Override
 	public Object getResults(Class expectedResult) {
 		if (expectedResult.equals(List.class))
-			return new ArrayList<VisualStyle>(styles);
+			return new ArrayList<>(styles);
 		else if (expectedResult.equals(String.class)) {
 			String strRes = "";
 			for (VisualStyle style: styles) {

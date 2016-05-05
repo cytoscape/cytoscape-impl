@@ -69,7 +69,7 @@ public class ApplyToNetworkHandler extends AbstractApplyHandler<CyNetwork> {
 		final CyNetworkView netView = (CyNetworkView) view;
 		final Collection<View<CyNode>> nodeViews = netView.getNodeViews();
 		final Collection<View<CyEdge>> edgeViews = netView.getEdgeViews();
-		final Collection<View<CyNetwork>> networkViewSet = new HashSet<View<CyNetwork>>();
+		final Collection<View<CyNetwork>> networkViewSet = new HashSet<>();
 		networkViewSet.add(netView);
 		
 		// Make sure the dependency maps are up to date
@@ -185,7 +185,7 @@ public class ApplyToNetworkHandler extends AbstractApplyHandler<CyNetwork> {
 		@Override
 		public void run() {
 			final Class<? extends CyIdentifiable> targetDataType = rootVisualProperty.getTargetDataType();
-			final LinkedList<VisualLexiconNode> descendants = new LinkedList<VisualLexiconNode>();
+			final LinkedList<VisualLexiconNode> descendants = new LinkedList<>();
 			descendants.addAll(lexicon.getVisualLexiconNode(rootVisualProperty).getChildren());
 			
 			while (!descendants.isEmpty()) {
@@ -233,7 +233,7 @@ public class ApplyToNetworkHandler extends AbstractApplyHandler<CyNetwork> {
 			
 			if (dep.isDependencyEnabled()) {
 				// Dependency is enabled.  Need to use parent value instead.
-				final Set<VisualProperty<?>> vpSet = new HashSet<VisualProperty<?>>(dep.getVisualProperties());
+				final Set<VisualProperty<?>> vpSet = new HashSet<>(dep.getVisualProperties());
 				vpSet.add(parentVP);
 				
 				Object defaultValue = style.getDefaultValue(parentVP);

@@ -80,10 +80,10 @@ public class CyAnnotator {
 	private ArrowAnnotationImpl repositioning = null;
 	private DingAnnotation moving = null;
 
-	private Map<DingAnnotation, Map<String,String>> annotationMap = 
-	        new HashMap<DingAnnotation, Map<String,String>>();
+	private Map<DingAnnotation, Map<String,String>> annotationMap =
+			new HashMap<>();
 
-	private Set<DingAnnotation> selectedAnnotations = new HashSet<DingAnnotation>();
+	private Set<DingAnnotation> selectedAnnotations = new HashSet<>();
 
 	private CanvasMouseMotionListener mouseMotionListener;
 	private CanvasMouseListener mouseListener;
@@ -158,8 +158,8 @@ public class CyAnnotator {
 		List<String> annotations = network.getRow(network, CyNetwork.LOCAL_ATTRS).
 		                                          getList(ANNOTATION_ATTRIBUTE,String.class);
 
-		List<Map<String,String>> arrowList = 
-		    new ArrayList<Map<String, String>>(); // Keep a list of arrows
+		List<Map<String,String>> arrowList =
+				new ArrayList<>(); // Keep a list of arrows
 
 		Map<Object,Map<Integer, DingAnnotation>> zOrderMap = new HashMap<>();
 
@@ -336,7 +336,7 @@ public class CyAnnotator {
 
 	public List<Annotation> getAnnotations() {
 		if (annotationMap.keySet() != null && annotationMap.keySet().size() > 0)
-			return new ArrayList<Annotation>(annotationMap.keySet());
+			return new ArrayList<>(annotationMap.keySet());
 		return null;
 	}
 
@@ -365,7 +365,7 @@ public class CyAnnotator {
 
 		boolean repaintForeGround = false;
 		boolean repaintBackGround = false;
-		for (DingAnnotation a: new ArrayList<DingAnnotation>(selectedAnnotations)) {
+		for (DingAnnotation a: new ArrayList<>(selectedAnnotations)) {
 			setSelectedAnnotation(a, false);
 			if (a.getCanvasName().equals(Annotation.FOREGROUND))
 				repaintForeGround = true;
@@ -421,7 +421,7 @@ public class CyAnnotator {
 
 	private void updateNetworkAttributes(CyNetwork network) {
 		// Convert the annotation to a list
-		List<Map<String,String>> networkAnnotations = new ArrayList<Map<String, String>>();
+		List<Map<String,String>> networkAnnotations = new ArrayList<>();
 		for (DingAnnotation annotation: annotationMap.keySet()) {
 			if (view.getModel().equals(network))
 				networkAnnotations.add(annotationMap.get(annotation));
@@ -432,7 +432,7 @@ public class CyAnnotator {
 	}
 
 	private List<String> convertAnnotationMap(List<Map<String, String>>networkAnnotations) {
-		List<String> result = new ArrayList<String>();
+		List<String> result = new ArrayList<>();
 
 		if (networkAnnotations == null || networkAnnotations.size() == 0) return result;
 
@@ -447,7 +447,7 @@ public class CyAnnotator {
 	}
 
 	private Map<String, String> createArgMap(String mapstring) {
-		Map<String, String> result = new HashMap<String, String>();
+		Map<String, String> result = new HashMap<>();
 		String[] argList = mapstring.split("[|]");
 		if (argList.length == 0) return result;
 

@@ -61,8 +61,8 @@ public class DiscreteValueList<T> extends JXList {
 		this.type = type;
 		this.vp = vp;
 		this.defViewPanel = defViewPanel;
-		this.values = Collections.synchronizedSet(new LinkedHashSet<T>());
-		iconMap = new HashMap<T, Icon>();
+		this.values = Collections.synchronizedSet(new LinkedHashSet<>());
+		iconMap = new HashMap<>();
 		
 		setModel(model = new DefaultListModel());
 		setCellRenderer(new IconCellRenderer());

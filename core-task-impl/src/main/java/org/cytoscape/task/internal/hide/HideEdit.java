@@ -65,7 +65,7 @@ final class HideEdit extends AbstractCyEdit {
 		this.eventHelper = eventHelper;
 		this.vmMgr = vmMgr;
 		
-		previousStates = new HashMap<View<? extends CyIdentifiable>, Boolean>();
+		previousStates = new HashMap<>();
 
 		// Save current visible values
 		for (final CyIdentifiable model : elements) {

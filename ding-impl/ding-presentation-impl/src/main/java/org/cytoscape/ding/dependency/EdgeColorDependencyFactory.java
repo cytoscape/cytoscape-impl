@@ -46,13 +46,13 @@ private final VisualLexicon lexicon;
 	public VisualPropertyDependency<Paint> createVisualPropertyDependency() {
 		
 		// Create Visual Property Dependencies
-		final Set<VisualProperty<Paint>> edgeColorDependency = new HashSet<VisualProperty<Paint>>();
+		final Set<VisualProperty<Paint>> edgeColorDependency = new HashSet<>();
 		
 		edgeColorDependency.add(DVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT);
 		edgeColorDependency.add(DVisualLexicon.EDGE_SOURCE_ARROW_UNSELECTED_PAINT);
 		edgeColorDependency.add(DVisualLexicon.EDGE_TARGET_ARROW_UNSELECTED_PAINT);
 		
-		return new VisualPropertyDependency<Paint>("arrowColorMatchesEdge", "Edge color to arrows", edgeColorDependency, lexicon);
+		return new VisualPropertyDependency<>("arrowColorMatchesEdge", "Edge color to arrows", edgeColorDependency, lexicon);
 	}
 
 }

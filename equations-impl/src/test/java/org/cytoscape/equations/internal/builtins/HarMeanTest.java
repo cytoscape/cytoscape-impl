@@ -35,14 +35,14 @@ import junit.framework.*;
 
 public class HarMeanTest extends TestCase {
 	public void testAll() throws Exception {
-                final List<Object> numbers = new ArrayList<Object>();
+                final List<Object> numbers = new ArrayList<>();
 		numbers.add(new Double(4.0));
                 numbers.add(new Long(5L));
                 numbers.add(new Double(8.0));
                 numbers.add(new Double(7.0));
                 numbers.add(new Long(11L));
                 numbers.add(new Long(4L));
-		final Map<String, Object> variablesAndValues = new HashMap<String, Object>();
+		final Map<String, Object> variablesAndValues = new HashMap<>();
 		variablesAndValues.put("list", numbers);
 		assertTrue(Framework.executeTest("=HARMEAN($list, 3)", variablesAndValues, Double.valueOf(5.028375962061728)));
 		assertTrue(Framework.executeTest("=HARMEAN(3.0,3,\"3.0\")", Double.valueOf(3.0)));

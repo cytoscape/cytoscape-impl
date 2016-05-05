@@ -61,8 +61,8 @@ public class UnrecognizedVisualPropertyManager implements NetworkViewAboutToBeDe
 		this.tableFactory = tableFactory;
 		this.tableMgr = tableMgr;
 		
-		rendererTablesMap = new HashMap<Long, CyTable>();
-		vpTablesMap = new HashMap<Long, CyTable>();
+		rendererTablesMap = new HashMap<>();
+		vpTablesMap = new HashMap<>();
 	}
 
 	/**
@@ -129,7 +129,7 @@ public class UnrecognizedVisualPropertyManager implements NetworkViewAboutToBeDe
 		if (netView == null) throw new IllegalArgumentException("The 'netView' argument cannot be null");
 		if (view == null) throw new IllegalArgumentException("The 'view' argument cannot be null");
 
-		Map<String, String> map = new HashMap<String, String>();
+		Map<String, String> map = new HashMap<>();
 
 		CyTable rendererTbl = rendererTablesMap.get(netView.getSUID());
 		CyTable vpTbl = vpTablesMap.get(netView.getSUID());

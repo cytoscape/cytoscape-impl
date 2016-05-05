@@ -174,7 +174,7 @@ public class NetworkViewGrid extends JPanel {
 	}
 	
 	public int indexOf(final ThumbnailPanel tp) {
-		return new ArrayList<CyNetworkView>(thumbnailPanels.keySet()).indexOf(tp.getNetworkView());
+		return new ArrayList<>(thumbnailPanels.keySet()).indexOf(tp.getNetworkView());
 	}
 	
 	public boolean isEmpty() {

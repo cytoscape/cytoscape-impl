@@ -62,7 +62,7 @@ public final class TableColumnStatFileIO {
 			writer.close();
 			
 			// Add it to the apps list
-			List<File> fileList = new ArrayList<File>();
+			List<File> fileList = new ArrayList<>();
 			boolean flag = false;
 			if (e.getAppFileListMap().containsKey(APP_NAME)){
 				fileList = e.getAppFileListMap().get(APP_NAME);
@@ -77,7 +77,7 @@ public final class TableColumnStatFileIO {
 	}
 	
 	public static Map<String, TableColumnStat>  read ( SessionLoadedEvent e, String className){
-		Map<String, TableColumnStat> tableColStats = new HashMap<String, TableColumnStat>();
+		Map<String, TableColumnStat> tableColStats = new HashMap<>();
 		CySession sess = e.getLoadedSession();
 
 		if (sess == null) 

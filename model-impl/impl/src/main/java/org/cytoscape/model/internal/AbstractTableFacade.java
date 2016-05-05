@@ -132,7 +132,7 @@ public abstract class AbstractTableFacade implements CyTable {
 	}
 
 	private final Collection<CyColumn> getFacadeColumns(final Collection<CyColumn> columns) {
-		List<CyColumn> facadeColumns = new ArrayList<CyColumn>( columns.size() ); 
+		List<CyColumn> facadeColumns = new ArrayList<>(columns.size()); 
 		for ( CyColumn column : columns )
 			facadeColumns.add( getFacadeColumn(column) ); 
 
@@ -195,7 +195,7 @@ public abstract class AbstractTableFacade implements CyTable {
 	}
 
 	private final List<CyRow> getFacadeRows(final Collection<CyRow> rows) {
-		final List<CyRow> frows = new ArrayList<CyRow>( rows.size() ); 
+		final List<CyRow> frows = new ArrayList<>(rows.size()); 
 		for (final CyRow r : rows)
 			frows.add( getFacadeRow(r) ); 
 

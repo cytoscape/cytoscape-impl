@@ -81,6 +81,6 @@ public class ListNetworkAttributesTask extends AbstractTableDataTask implements 
 			}
 			return returnString.substring(0, returnString.length()-1)+"]";
 		}
-		return new ArrayList<CyColumn>(columnList);
+		return new ArrayList<>(columnList);
 	}
 }

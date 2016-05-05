@@ -68,7 +68,7 @@ public class SelectFirstNeighborsTask extends AbstractSelectTask {
 			                  SelectionEdit.SelectionFilter.NODES_ONLY));
 		tm.setProgress(0.1);
 		final List<CyNode> selectedNodes = CyTableUtil.getNodesInState(network, CyNetwork.SELECTED, true);
-		final Set<CyNode> nodes = new HashSet<CyNode>();
+		final Set<CyNode> nodes = new HashSet<>();
 		tm.setProgress(0.2);
 		for (CyNode currentNode : selectedNodes)
 			nodes.addAll(network.getNeighborList(currentNode, direction));

@@ -72,9 +72,9 @@ public abstract class AbstractDViewModel<M extends CyIdentifiable> implements Vi
 		this.eventHelper = eventHelper;
 
 		// All access to these maps should go through "lock" field
-		this.visualProperties = Collections.synchronizedMap(new IdentityHashMap<VisualProperty<?>, Object>());
-		this.directLocks = Collections.synchronizedMap(new IdentityHashMap<VisualProperty<?>, Object>());
-		allLocks = Collections.synchronizedMap(new IdentityHashMap<VisualProperty<?>, Object>());
+		this.visualProperties = Collections.synchronizedMap(new IdentityHashMap<>());
+		this.directLocks = Collections.synchronizedMap(new IdentityHashMap<>());
+		allLocks = Collections.synchronizedMap(new IdentityHashMap<>());
 	}
 
 	@Override
@@ -113,7 +113,7 @@ public abstract class AbstractDViewModel<M extends CyIdentifiable> implements Vi
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	private void propagateLockedVisualProperty(final VisualProperty parent, final Collection<VisualLexiconNode> roots, 
 			final Object value) {
-		final LinkedList<VisualLexiconNode> nodes = new LinkedList<VisualLexiconNode>();
+		final LinkedList<VisualLexiconNode> nodes = new LinkedList<>();
 		nodes.addAll(roots);
 		
 		while (!nodes.isEmpty()) {
@@ -165,7 +165,7 @@ public abstract class AbstractDViewModel<M extends CyIdentifiable> implements Vi
 			directLocks.remove(vp);
 			
 			VisualLexiconNode root = lexicon.getVisualLexiconNode(vp);
-			LinkedList<VisualLexiconNode> nodes = new LinkedList<VisualLexiconNode>();
+			LinkedList<VisualLexiconNode> nodes = new LinkedList<>();
 			nodes.add(root);
 			
 			while (!nodes.isEmpty()) {

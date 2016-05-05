@@ -395,8 +395,8 @@ public class ManageDownloadSitesDialog extends JDialog {
 	            }
 			};
 		
-		final List<DownloadSite> downloadSites = new LinkedList<DownloadSite>(
-    			downloadSitesManager.getDownloadSites());
+		final List<DownloadSite> downloadSites = new LinkedList<>(
+				downloadSitesManager.getDownloadSites());
     	
     	// Sort by name
     	Collections.sort(downloadSites, new Comparator<DownloadSite>() {
@@ -481,7 +481,7 @@ public class ManageDownloadSitesDialog extends JDialog {
     }
     
     private DownloadSite getSelectedSite() {
-        Set<DownloadSite> selectedSites = new HashSet<DownloadSite>();
+        Set<DownloadSite> selectedSites = new HashSet<>();
     	int[] selectedRows = sitesTable.getSelectedRows();
     	
         for (int index = 0; index < selectedRows.length; index++) {

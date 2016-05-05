@@ -52,8 +52,8 @@ public class Layout {
 	 */
 	public Layout(CyNetwork gp) {
 		this.gp = gp;
-		nodeXMap = new HashMap<Long, Double>(PrimeFinder.nextPrime(gp.getNodeCount()));
-		nodeYMap = new HashMap<Long, Double>(PrimeFinder.nextPrime(gp.getNodeCount()));
+		nodeXMap = new HashMap<>(PrimeFinder.nextPrime(gp.getNodeCount()));
+		nodeYMap = new HashMap<>(PrimeFinder.nextPrime(gp.getNodeCount()));
 	}
 
 	/**

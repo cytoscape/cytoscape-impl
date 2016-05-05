@@ -339,7 +339,7 @@ public class BioLayoutKKAlgorithmTask extends BioLayoutAlgorithmTask {
 
 		int numIterations = (int) ((m_nodeCount * m_averageIterationsPerNode) / m_numLayoutPasses);
 
-		List <PartialDerivatives>partialsList = new ArrayList<PartialDerivatives>();
+		List <PartialDerivatives>partialsList = new ArrayList<>();
 		double[] potentialEnergy = new double[1];
 
 		if (potentialEnergy[0] != 0.0)
@@ -488,7 +488,7 @@ public class BioLayoutKKAlgorithmTask extends BioLayoutAlgorithmTask {
 
 	private int[][] calculateNodeDistances() {
 		int[][] distances = new int[m_nodeCount][];
-		LinkedList<Integer> queue = new LinkedList<Integer>();
+		LinkedList<Integer> queue = new LinkedList<>();
 		boolean[] completedNodes = new boolean[m_nodeCount];
 		int toNode;
 		int fromNode;

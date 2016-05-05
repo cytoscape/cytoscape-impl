@@ -77,7 +77,7 @@ public class GoToNestedNetworkTask extends AbstractNodeViewTask {
 			
 			if (pointerView == null) {
 				// Create a network view
-				final Set<CyNetwork> networks = new HashSet<CyNetwork>();
+				final Set<CyNetwork> networks = new HashSet<>();
 				networks.add(netPointer);
 				TaskIterator iter = createViewFactory.createTaskIterator(networks);
 				this.insertTasksAfterCurrentTask(iter);

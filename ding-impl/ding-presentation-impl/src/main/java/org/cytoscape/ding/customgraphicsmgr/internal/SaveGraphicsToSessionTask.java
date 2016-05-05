@@ -47,7 +47,7 @@ public class SaveGraphicsToSessionTask implements Task {
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
 		// Add it to the apps list
-		final List<File> fileList = new ArrayList<File>();
+		final List<File> fileList = new ArrayList<>();
 		final String[] fileArray = imageHomeDirectory.list();
 		for (final String file : fileArray)
 			fileList.add(new File(imageHomeDirectory, file));

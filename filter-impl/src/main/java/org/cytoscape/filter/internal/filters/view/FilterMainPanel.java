@@ -136,7 +136,7 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 	private DropDownMenuButton optionButton;
 	
 	private FilterSettingPanel currentFilterSettingPanel;
-	private HashMap<CompositeFilter,FilterSettingPanel> filter2SettingPanelMap = new HashMap<CompositeFilter,FilterSettingPanel>();
+	private HashMap<CompositeFilter,FilterSettingPanel> filter2SettingPanelMap = new HashMap<>();
 
 	/*
 	 * Icons used in this panel.
@@ -434,7 +434,7 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 	 * "String" nor "numeric" will be excluded
 	 */
 	private List<String> getCyAttributesList(final CyNetwork network, final String pType) {
-		final Vector<String> attributeList = new Vector<String>();
+		final Vector<String> attributeList = new Vector<>();
 		CyTable table = null;
 		
 		if (pType.equalsIgnoreCase("node") && network.getNodeCount() > 0) {
@@ -444,7 +444,7 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 		}
 		
 		if (table != null) {
-			final Collection<CyColumn> columns = new HashSet<CyColumn>(table.getColumns());
+			final Collection<CyColumn> columns = new HashSet<>(table.getColumns());
 			
 			for (final CyColumn column : columns) {
 				if (column!= null){
@@ -1216,7 +1216,7 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 		String newFilterName = null;
 		
 		while (true) {
-			Vector<String> nameVect = new Vector<String>();
+			Vector<String> nameVect = new Vector<>();
 			nameVect.add(tmpName);
 			
 			EditNameDialog theDialog = new EditNameDialog("Copy Filter", "Please enter a new Filter name:", nameVect, 300,170);
@@ -1258,7 +1258,7 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 		String newFilterName = "";
 		
 		while (true) {
-			Vector<String> nameVect = new Vector<String>();
+			Vector<String> nameVect = new Vector<>();
 			nameVect.add(oldFilterName);
 			
 			EditNameDialog theDialog = new EditNameDialog("Edit Filter Name", "Please enter a new Filter name:", nameVect, 300,170);

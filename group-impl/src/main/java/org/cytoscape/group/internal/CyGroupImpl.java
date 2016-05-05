@@ -145,15 +145,15 @@ public class CyGroupImpl implements CyGroup {
 
 		// System.out.println("Creating new group: "+this.groupNode);
 
-		this.externalEdges = new HashSet<CyEdge>();
-		this.metaEdges = new HashMap<CyEdge, CyEdge>();
-		this.memberEdges = new HashSet<CyEdge>();
-		this.networkSet = new HashSet<CyNetwork>();
-		this.collapseSet = new HashSet<Long>();
-		this.nodeShownSet = new HashSet<Long>();
-		this.collapsedNodes = new HashMap<Long, List<CyNode>>();
-		this.externalEdgeProcessed = new HashSet<CyEdge>();
-		this.groupNodeEdges = new HashSet<CyEdge>();
+		this.externalEdges = new HashSet<>();
+		this.metaEdges = new HashMap<>();
+		this.memberEdges = new HashSet<>();
+		this.networkSet = new HashSet<>();
+		this.collapseSet = new HashSet<>();
+		this.nodeShownSet = new HashSet<>();
+		this.collapsedNodes = new HashMap<>();
+		this.externalEdgeProcessed = new HashSet<>();
+		this.groupNodeEdges = new HashSet<>();
 		this.savedLocalValuesMap = new HashMap<>();
 		this.savedHiddenValuesMap = new HashMap<>();
 
@@ -161,17 +161,17 @@ public class CyGroupImpl implements CyGroup {
 		networkSet.add(network);
 
 		if (nodes == null)
-			nodes = new ArrayList<CyNode>();
+			nodes = new ArrayList<>();
 
 		// This is merely a copy of the "nodes" list but as a set,
 		// so it's fast to call the contains() method.
-		Set<CyNode> nodeMap = new HashSet<CyNode>(nodes);
+		Set<CyNode> nodeMap = new HashSet<>(nodes);
 
 		// This block of code makes the distinction between internal and external edges
 		// based on the edges we were given. If "edges" is null, it's our responsibility
 		// to build the edge list from the parent network's edges in our group.
 		if (edges != null) {
-			List<CyEdge> intEdges = new ArrayList<CyEdge>();
+			List<CyEdge> intEdges = new ArrayList<>();
 			// Remove those edges in the list that aren't attached to nodes in
 			// the list.  Otherwise, we'll wind up adding nodes to the group
 			// that the user didn't request.
@@ -187,7 +187,7 @@ public class CyGroupImpl implements CyGroup {
 			edges = intEdges;
 		} else if (edges == null) {
 			// Create the edge lists
-			edges = new ArrayList<CyEdge>();
+			edges = new ArrayList<>();
 
 			// Get all of the edges and put them in the right lists
 			for (CyNode n: nodes) {
@@ -351,8 +351,8 @@ public class CyGroupImpl implements CyGroup {
 
 				addNode(n);
 
-				List<CyEdge> adjacentEdges = 
-					new ArrayList<CyEdge>(rootNetwork.getAdjacentEdgeList(n, CyEdge.Type.ANY));
+				List<CyEdge> adjacentEdges =
+						new ArrayList<>(rootNetwork.getAdjacentEdgeList(n, CyEdge.Type.ANY));
 
 				for (CyEdge edge: adjacentEdges) {
 					// System.out.println("Looking at edge: "+edge);
@@ -429,7 +429,7 @@ public class CyGroupImpl implements CyGroup {
 	@Override
 	public void removeNodes(List<CyNode> nodes) {
 		synchronized (lock) {
-			List<CyEdge> netEdges = new ArrayList<CyEdge>();
+			List<CyEdge> netEdges = new ArrayList<>();
 			for (CyNode node: nodes) {
 				List<CyEdge> edges = rootNetwork.getAdjacentEdgeList(node, CyEdge.Type.ANY);
 				for (CyEdge edge: edges) {
@@ -459,7 +459,7 @@ public class CyGroupImpl implements CyGroup {
 	@Override
 	public void removeEdges(List<CyEdge> edges) {
 		synchronized (lock) {
-			List<CyEdge> netEdges = new ArrayList<CyEdge>();
+			List<CyEdge> netEdges = new ArrayList<>();
 			for (CyEdge edge: edges) {
 				if (getGroupNetwork().containsEdge(edge)) {
 					netEdges.add(edge);
@@ -606,7 +606,7 @@ public class CyGroupImpl implements CyGroup {
 		synchronized (lock) {
 			// Deselect all of our external edges, and check for any possible
 			// collapsed partner groups
-			ListIterator<CyEdge> iterator = (new ArrayList<CyEdge>(externalEdges)).listIterator();
+			ListIterator<CyEdge> iterator = (new ArrayList<>(externalEdges)).listIterator();
 			while (iterator.hasNext()) {
 				CyEdge edge = iterator.next();
 				if (net.containsEdge(edge)) {
@@ -626,7 +626,7 @@ public class CyGroupImpl implements CyGroup {
 								addPartnerMetaEdges(net, edge, group, metaEdge);
 
 								// Get the external edges and make them part of our external
-								ListIterator<CyEdge> edgeIterator = (new ArrayList<CyEdge>(group.getExternalEdgeList())).listIterator();
+								ListIterator<CyEdge> edgeIterator = (new ArrayList<>(group.getExternalEdgeList())).listIterator();
 								while (edgeIterator.hasNext()) {
 									CyEdge partnerEdge = edgeIterator.next();
 									CyEdge partnerMetaEdge = null;
@@ -651,7 +651,7 @@ public class CyGroupImpl implements CyGroup {
 			// Only collapse nodes that are actually in our
 			// network.  This checks for nodes that are in
 			// multiple groups.
-			nodes = new ArrayList<CyNode>();
+			nodes = new ArrayList<>();
 			for (CyNode node: getNodeList()) {
 				if (net.containsNode(node)) {
 					nodes.add(node);
@@ -702,7 +702,7 @@ public class CyGroupImpl implements CyGroup {
 
 		subnet.removeNodes(nodes);
 
-		final Set<CyIdentifiable> addedElements = new HashSet<CyIdentifiable>();
+		final Set<CyIdentifiable> addedElements = new HashSet<>();
 
 		synchronized (lock) {
 			if (net.containsNode(groupNode)) {
@@ -815,7 +815,7 @@ public class CyGroupImpl implements CyGroup {
 
 		final CyNetworkViewManager netViewMgr = mgr.getService(CyNetworkViewManager.class);
 		final Collection<CyNetworkView> netViewList = netViewMgr.getNetworkViews(net);
-		final Set<CyIdentifiable> addedElements = new HashSet<CyIdentifiable>();
+		final Set<CyIdentifiable> addedElements = new HashSet<>();
 
 		synchronized (lock) {
 			// Remove the group node from the target network only if
@@ -834,7 +834,7 @@ public class CyGroupImpl implements CyGroup {
 					saveLocalAttributes(net, e);
 				}
 
-				groupNodeEdges = new HashSet<CyEdge>();
+				groupNodeEdges = new HashSet<>();
 				// Now, see which of these groupEdges aren't meta-edges
 				for (CyEdge edge: groupEdges) {
 					if (!isMeta(edge))
@@ -1071,8 +1071,8 @@ public class CyGroupImpl implements CyGroup {
 	 */
 	private void updateMetaEdges(boolean ignoreMetaEdges) {
 		synchronized (lock) {
-			metaEdges = new HashMap<CyEdge, CyEdge>();
-			Set<CyGroup> partnersSeen = new HashSet<CyGroup>();
+			metaEdges = new HashMap<>();
+			Set<CyGroup> partnersSeen = new HashSet<>();
 			// System.out.println("Updating metaEdges: ignoreMetaEdges = "+ignoreMetaEdges);
 
 //			long simpleMeta = 0L;
@@ -1084,7 +1084,7 @@ public class CyGroupImpl implements CyGroup {
 			// We need to use a list iterator because we might need to add new
 			// edges to our outer edge list and we want to add them to the
 			// iterator to re-examine them
-			ListIterator<CyEdge> iterator = (new ArrayList<CyEdge>(externalEdges)).listIterator();
+			ListIterator<CyEdge> iterator = (new ArrayList<>(externalEdges)).listIterator();
 			while (iterator.hasNext()) {
 				// long timeStamp = System.currentTimeMillis();
 				CyEdge edge = iterator.next();
@@ -1172,7 +1172,7 @@ public class CyGroupImpl implements CyGroup {
 	// Find the edge in our partner that links to us
 	protected void addPartnerEdges(CyGroup metaPartner, CyNetwork net, Set<CyGroup> partnersSeen) {
 		Set<CyEdge> partnerEdges = metaPartner.getExternalEdgeList();
-		Set<CyEdge> newEdges = new HashSet<CyEdge>();
+		Set<CyEdge> newEdges = new HashSet<>();
 
 		synchronized (lock) {
 			// XXX Performance hog XXX
@@ -1387,12 +1387,12 @@ public class CyGroupImpl implements CyGroup {
 		CyRow localRow = net.getRow(cyObject, CyNetwork.LOCAL_ATTRS);
 		Long netSuid = net.getSUID();
 		if (!savedLocalValuesMap.containsKey(net.getSUID()))
-			savedLocalValuesMap.put(netSuid, new HashMap<CyIdentifiable, Map<String, Object>>());
-		savedLocalValuesMap.get(netSuid).put(cyObject, new HashMap<String, Object>(localRow.getAllValues()));
+			savedLocalValuesMap.put(netSuid, new HashMap<>());
+		savedLocalValuesMap.get(netSuid).put(cyObject, new HashMap<>(localRow.getAllValues()));
 		CyRow hiddenRow = net.getRow(cyObject, CyNetwork.HIDDEN_ATTRS);
 		if (!savedHiddenValuesMap.containsKey(net.getSUID()))
-			savedHiddenValuesMap.put(netSuid, new HashMap<CyIdentifiable, Map<String, Object>>());
-		savedHiddenValuesMap.get(netSuid).put(cyObject, new HashMap<String, Object>(hiddenRow.getAllValues()));
+			savedHiddenValuesMap.put(netSuid, new HashMap<>());
+		savedHiddenValuesMap.get(netSuid).put(cyObject, new HashMap<>(hiddenRow.getAllValues()));
 	}
 
 	private void restoreLocalAttributes(CyNetwork net, Set<CyIdentifiable> cyObjects) {

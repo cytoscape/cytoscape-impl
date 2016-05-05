@@ -84,7 +84,7 @@ public class DVisualLexicon extends BasicVisualLexicon {
 	private static final Map<VisualProperty<CyCustomGraphics>, VisualProperty<ObjectPosition>> CG_TO_POSITION = new HashMap<>();
 	private static final Map<VisualProperty<Double>, VisualProperty<CyCustomGraphics>> SIZE_TO_CG = new HashMap<>();
 	
-	private static final Set<VisualProperty<?>> UNSUPPORTED_VP_SET = new HashSet<VisualProperty<?>>();
+	private static final Set<VisualProperty<?>> UNSUPPORTED_VP_SET = new HashSet<>();
 
 
 	// Root of Ding's VP tree.

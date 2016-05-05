@@ -127,8 +127,8 @@ public class ArrowAnnotationPanel extends JPanel {
 		});
 
 		final JComboBox<String> lineWidthCombo = new JComboBox<>();
-		lineWidthCombo.setModel(new DefaultComboBoxModel<String>(
-				new String[] { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15" }));
+		lineWidthCombo.setModel(new DefaultComboBoxModel<>(
+				new String[]{"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15"}));
 		lineWidthCombo.setSelectedIndex(1);
 		
 		for (int i = 0; i < lineWidthCombo.getModel().getSize(); i++) {
@@ -237,7 +237,7 @@ public class ArrowAnnotationPanel extends JPanel {
 		
 		final JComboBox<String> arrowTypeCombo = new JComboBox<>();
 		final List<String> arrows = annotation.getSupportedArrows();
-		arrowTypeCombo.setModel(new DefaultComboBoxModel<String>(arrows.toArray(new String[arrows.size()])));
+		arrowTypeCombo.setModel(new DefaultComboBoxModel<>(arrows.toArray(new String[arrows.size()])));
 		arrowTypeCombo.setSelectedItem(annotation.getArrowType(end));
 		arrowTypeCombo.addActionListener(new ActionListener() {
 			@Override
@@ -293,9 +293,9 @@ public class ArrowAnnotationPanel extends JPanel {
 		});
 
 		final JComboBox<String> arrowSizeCombo = new JComboBox<>();
-		arrowSizeCombo.setModel(new DefaultComboBoxModel<String>(
-				new String[] { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", 
-						       "11", "12", "13", "14", "15", "16", "17", "18", "19", "20" }
+		arrowSizeCombo.setModel(new DefaultComboBoxModel<>(
+				new String[]{"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10",
+						"11", "12", "13", "14", "15", "16", "17", "18", "19", "20"}
 		));
 		arrowSizeCombo.setSelectedIndex(1);
 
@@ -316,7 +316,7 @@ public class ArrowAnnotationPanel extends JPanel {
 		});
 
 		final JComboBox<String> anchorTypeCombo = new JComboBox<>();
-		anchorTypeCombo.setModel(new DefaultComboBoxModel<String>(new String[] { "Edge", "Center" }));
+		anchorTypeCombo.setModel(new DefaultComboBoxModel<>(new String[]{"Edge", "Center"}));
 
 		if (annotation.getAnchorType(end) == AnchorType.CENTER)
 			anchorTypeCombo.setSelectedIndex(1);

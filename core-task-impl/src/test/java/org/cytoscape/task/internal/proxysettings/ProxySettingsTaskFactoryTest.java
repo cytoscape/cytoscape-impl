@@ -48,7 +48,7 @@ public class ProxySettingsTaskFactoryTest {
 		CyEventHelper eventHelper = mock(CyEventHelper.class);
 
 		Properties properties = new Properties();
-		final CyProperty<Properties> proxyProperties = new SimpleCyProperty<Properties>("Test", properties, Properties.class, SavePolicy.DO_NOT_SAVE);
+		final CyProperty<Properties> proxyProperties = new SimpleCyProperty<>("Test", properties, Properties.class, SavePolicy.DO_NOT_SAVE);
 		ProxySettingsTaskFactoryImpl factory = new ProxySettingsTaskFactoryImpl(proxyProperties, streamUtil, eventHelper);
 		
 		TaskIterator ti = factory.createTaskIterator();

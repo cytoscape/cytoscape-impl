@@ -225,7 +225,7 @@ public class GlobalTableBrowser extends AbstractTableBrowser
 		private final Map<CyTable, String> tableToStringMap;
 		
 		GlobalTableChooser() {
-			tableToStringMap = new HashMap<CyTable, String>();
+			tableToStringMap = new HashMap<>();
 			setModel(new GlobalTableComboBoxModel(tableToStringMap));
 			setRenderer(new TableChooserCellRenderer(tableToStringMap));
 		}
@@ -241,7 +241,7 @@ public class GlobalTableBrowser extends AbstractTableBrowser
 
 		GlobalTableComboBoxModel(final Map<CyTable, String> tableToStringMap) {
 			this.tableToStringMap = tableToStringMap;
-			tables = new ArrayList<CyTable>();
+			tables = new ArrayList<>();
 			tableComparator = new Comparator<CyTable>() {
 				@Override
 				public int compare(final CyTable table1, final CyTable table2) {

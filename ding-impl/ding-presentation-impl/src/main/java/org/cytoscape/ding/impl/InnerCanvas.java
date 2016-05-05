@@ -1717,7 +1717,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 		m_view.cyEventHelper.silenceEventSource(table);
 
 		// Create RowsSetEvent
-		List<RowSetRecord> rowsChanged = new ArrayList<RowSetRecord>();
+		List<RowSetRecord> rowsChanged = new ArrayList<>();
 		
 		for (final CyIdentifiable nodeOrEdge : nodesOrEdges) {
 			CyRow row = m_view.getModel().getRow(nodeOrEdge);

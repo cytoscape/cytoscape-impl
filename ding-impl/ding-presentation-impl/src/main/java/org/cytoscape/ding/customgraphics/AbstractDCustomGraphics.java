@@ -78,10 +78,10 @@ public abstract class AbstractDCustomGraphics<T extends CustomGraphicLayer>
 	public AbstractDCustomGraphics(final Long id, final String displayName) {
 		this.id = id;
 		
-		this.layers = new ArrayList<T>();
+		this.layers = new ArrayList<>();
 		this.displayName = displayName;
 
-		this.tags = new TreeSet<String>();
+		this.tags = new TreeSet<>();
 		//this.position = new ObjectPositionImpl();
 	}
 	

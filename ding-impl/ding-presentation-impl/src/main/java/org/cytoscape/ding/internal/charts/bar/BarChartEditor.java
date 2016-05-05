@@ -45,8 +45,8 @@ public class BarChartEditor extends AbstractChartEditor<BarChart> {
 	private static final ColorScheme[] UP_DOWN_COLOR_SCHEMES;
 	
 	static {
-		final List<ColorScheme> heatStripSchemeList = new ArrayList<ColorScheme>();
-		final List<ColorScheme> upDownSchemeList = new ArrayList<ColorScheme>();
+		final List<ColorScheme> heatStripSchemeList = new ArrayList<>();
+		final List<ColorScheme> upDownSchemeList = new ArrayList<>();
 		
 		for (final ColorGradient cg : ColorGradient.values()) {
 			if (cg.getColors().size() == 2)

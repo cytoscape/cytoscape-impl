@@ -317,7 +317,7 @@ public class NetworkViewMediator
 					Set<View<?>> viewSet = mvpInfoMap.get(mvpInfo);
 					
 					if (viewSet == null)
-						mvpInfoMap.put(mvpInfo, viewSet = new HashSet<View<?>>());
+						mvpInfoMap.put(mvpInfo, viewSet = new HashSet<>());
 					
 					viewSet.add(view);
 				}

@@ -273,9 +273,9 @@ public class Graph {
 		low = new int[nodecount];
 		pred = new int[nodecount];
 		time = 0;
-		neighbours = new HashMap<Integer, LinkedList<Integer>>();
-		edgesStack = new Stack<Edge>();
-		biComponents = new LinkedList<LinkedList<Integer>>();
+		neighbours = new HashMap<>();
+		edgesStack = new Stack<>();
+		biComponents = new LinkedList<>();
 	}
 
 	/**
@@ -599,7 +599,7 @@ public class Graph {
 					}
 
 					if (noChildren >= 2) {
-						LinkedList<Integer> singleComponent = new LinkedList<Integer>();
+						LinkedList<Integer> singleComponent = new LinkedList<>();
 						singleComponent.add(Integer.valueOf(edgesStack.peek().getTo()));
 
 						while (edgesStack.peek().getFrom() != current) {
@@ -622,7 +622,7 @@ public class Graph {
 						// skini sa steka sve do art tacke to je jedna bi komp
 					}
 				} else if (low[neigh] >= d[current]) {
-					LinkedList<Integer> singleComponent = new LinkedList<Integer>();
+					LinkedList<Integer> singleComponent = new LinkedList<>();
 					singleComponent.add(Integer.valueOf(edgesStack.peek().getTo()));
 
 					while (edgesStack.peek().getFrom() != current) {
@@ -659,7 +659,7 @@ public class Graph {
 	 */
 	public int[][] biconnectedComponents() {
 		for (int i = 0; i < nodecount; i++)
-			neighbours.put(Integer.valueOf(i), new LinkedList<Integer>());
+			neighbours.put(Integer.valueOf(i), new LinkedList<>());
 
 		for (int i = 0; i < edge.length; i++)
 			neighbours.get(Integer.valueOf(edge[i].getFrom())).add(Integer.valueOf(edge[i].getTo()));

@@ -61,7 +61,7 @@ public class SelectConnectedNodesTaskTest extends AbstractSelectTaskTester {
 		final CyTable edgeTable = mock(CyTable.class);
 		when(net.getDefaultEdgeTable()).thenReturn(edgeTable);
 		
-		Set<CyRow> selectedEdges = new HashSet<CyRow>();
+		Set<CyRow> selectedEdges = new HashSet<>();
 		selectedEdges.add(r1);
 		when(edgeTable.getMatchingRows(CyNetwork.SELECTED, true)).thenReturn(selectedEdges);
 

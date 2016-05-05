@@ -35,7 +35,7 @@ import org.cytoscape.model.CyNetwork;
  */
 public class OntologyDAGManager {
 	
-	private static final Map<String, CyNetwork> dagMap = new HashMap<String, CyNetwork>();
+	private static final Map<String, CyNetwork> dagMap = new HashMap<>();
 	
 	public static CyNetwork getOntologyDAG(final String ontologyID) {
 		return dagMap.get(ontologyID);

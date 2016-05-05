@@ -36,7 +36,7 @@ import org.cytoscape.view.vizmap.mappings.ValueTranslator;
 
 public class PassthroughMappingFactory implements VisualMappingFunctionFactory {
 	
-	private static final Map<Class<?>, ValueTranslator<?, ?>> TRANSLATORS = new HashMap<Class<?>, ValueTranslator<?,?>>();
+	private static final Map<Class<?>, ValueTranslator<?, ?>> TRANSLATORS = new HashMap<>();
 	private static final ValueTranslator<Object, String> DEFAULT_TRANSLATOR = new StringTranslator();
 	
 	private final CyEventHelper eventHelper;
@@ -61,10 +61,10 @@ public class PassthroughMappingFactory implements VisualMappingFunctionFactory {
 		final ValueTranslator<?, ?> translator = TRANSLATORS.get(vp.getRange().getType());
 
 		if (translator != null)
-			return new PassthroughMappingImpl<K, V>(attributeName, attrValueType, vp,
+			return new PassthroughMappingImpl<>(attributeName, attrValueType, vp,
 					(ValueTranslator<K, V>) translator, eventHelper);
 		else
-			return new PassthroughMappingImpl<K, V>(attributeName, attrValueType, vp,
+			return new PassthroughMappingImpl<>(attributeName, attrValueType, vp,
 					(ValueTranslator<K, V>) DEFAULT_TRANSLATOR, eventHelper);
 	}
 

@@ -146,7 +146,7 @@ public class TopoFilterPanel extends JPanel implements ActionListener, ItemListe
         // Create an empty filter, add to the top of the filter list in the combobox
 		CompositeFilter emptyFilter = new CompositeFilter("None");
 
-		Vector<CompositeFilter> tmpVect = new Vector<CompositeFilter>();
+		Vector<CompositeFilter> tmpVect = new Vector<>();
 		tmpVect.add(emptyFilter);
 		Vector<CompositeFilter> allFilters = modelLocator.getFilters();
 		tmpVect.addAll(allFilters);

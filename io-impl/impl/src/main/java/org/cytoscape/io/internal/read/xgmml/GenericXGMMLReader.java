@@ -82,7 +82,7 @@ public class GenericXGMMLReader extends AbstractCyNetworkReader {
 	protected final UnrecognizedVisualPropertyManager unrecognizedVisualPropertyMgr;
 	protected final VisualLexicon visualLexicon;
 	
-	private static final Map<String, String> legacyArrowShapes = new HashMap<String, String>();
+	private static final Map<String, String> legacyArrowShapes = new HashMap<>();
 	private static final Logger logger = LoggerFactory.getLogger(GenericXGMMLReader.class);
 	
 	static {

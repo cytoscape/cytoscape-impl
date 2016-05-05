@@ -185,7 +185,7 @@ class ApplyFilterThread extends Thread {
 			return;
 
 		if (pCompositeFilter.getAdvancedSetting().isNodeChecked()) {
-			final List<CyNode> passedNodes = new ArrayList<CyNode>();
+			final List<CyNode> passedNodes = new ArrayList<>();
 
 			for (CyNode node : nodes_list) {
 				try {
@@ -204,7 +204,7 @@ class ApplyFilterThread extends Thread {
 		}
 
 		if (pCompositeFilter.getAdvancedSetting().isEdgeChecked()) {
-			final List<CyEdge> passedEdges = new ArrayList<CyEdge>();
+			final List<CyEdge> passedEdges = new ArrayList<>();
 
 			for (CyEdge edge : edges_list) {
 				try {

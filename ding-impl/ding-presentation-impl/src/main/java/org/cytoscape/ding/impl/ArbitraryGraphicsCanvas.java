@@ -102,8 +102,8 @@ public class ArbitraryGraphicsCanvas extends DingCanvas implements ViewportChang
 		m_innerCanvas = innerCanvas;
 		m_backgroundColor = backgroundColor;
 		m_isOpaque = isOpaque;
-		m_componentToNodeMap = new HashMap<Component, CyNode>();
-		m_componentToPointMap = new HashMap<Component, Point>();
+		m_componentToNodeMap = new HashMap<>();
+		m_componentToPointMap = new HashMap<>();
 	}
 
 	/**

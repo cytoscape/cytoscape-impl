@@ -74,9 +74,9 @@ public class CutTask extends AbstractTask {
 		this.eventHelper = eventHelper;
 		
 		// Get all of the selected nodes and edges
-		selNodes = new HashSet<CyNode>(CyTableUtil.getNodesInState(netView.getModel(), CyNetwork.SELECTED, true));
-		selEdges = new HashSet<CyEdge>(CyTableUtil.getEdgesInState(netView.getModel(), CyNetwork.SELECTED, true));
-		deletedEdges = new HashMap<CyEdge, Map<VisualProperty<?>,Object>>();
+		selNodes = new HashSet<>(CyTableUtil.getNodesInState(netView.getModel(), CyNetwork.SELECTED, true));
+		selEdges = new HashSet<>(CyTableUtil.getEdgesInState(netView.getModel(), CyNetwork.SELECTED, true));
+		deletedEdges = new HashMap<>();
 	}
 
 	@SuppressWarnings("unchecked")
@@ -105,7 +105,7 @@ public class CutTask extends AbstractTask {
 			
 			for (CyEdge edge : adjacentEdgeList) {
 				if (!selEdges.contains(edge)) {
-					deletedEdges.put(edge, new HashMap<VisualProperty<?>, Object>());
+					deletedEdges.put(edge, new HashMap<>());
 					
 					// Save the bypass values for this edge
 					View<CyEdge> edgeView = netView.getEdgeView(edge);
@@ -138,8 +138,8 @@ public class CutTask extends AbstractTask {
 		@Override
 		public void undo() {
 			clipMgr.setCurrentClipboard(clipboard);
-			final HashSet<CyIdentifiable> objects = 
-					new HashSet<CyIdentifiable>(clipMgr.paste(netView, clipboard.getCenterX(), clipboard.getCenterY()));
+			final HashSet<CyIdentifiable> objects =
+					new HashSet<>(clipMgr.paste(netView, clipboard.getCenterX(), clipboard.getCenterY()));
 			
 			// Restore edges that were not cut, but were deleted because their nodes were cut
 			if (netView.getModel() instanceof CySubNetwork) {

@@ -49,11 +49,11 @@ public class CheckListManager<T> extends MouseAdapter implements ActionListener,
 	
     private ListSelectionModel selectionModel = new DefaultListSelectionModel(); 
     private JList list = new JList();
-    ArrayList<T> arrayOut = new ArrayList<T>();
+    ArrayList<T> arrayOut = new ArrayList<>();
     ArrayList<Integer> arrayTest=null;
     ListMultipleSelection<T> LMS;
     int hotspot = new JCheckBox().getPreferredSize().width;
-    Map<Integer,T> map = new HashMap<Integer,T>();
+    Map<Integer,T> map = new HashMap<>();
     int test;
  
     public CheckListManager(JList list,ListMultipleSelection<T> LMS){

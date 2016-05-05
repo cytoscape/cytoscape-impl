@@ -34,7 +34,7 @@ public class WebServiceGUIImpl implements WebServiceGUI {
 	Map<Class<?>, Window> clientWindowsByType;
 	
 	public WebServiceGUIImpl() {
-		clientWindowsByType = new HashMap<Class<?>, Window>();
+		clientWindowsByType = new HashMap<>();
 	}
 	
 	public void addClient(Class<?> webServiceClientType, Window window) {

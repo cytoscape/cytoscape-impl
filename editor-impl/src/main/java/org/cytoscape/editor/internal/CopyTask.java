@@ -47,8 +47,8 @@ public class CopyTask extends AbstractTask {
 	public CopyTask(final CyNetworkView netView, final ClipboardManagerImpl clipMgr) {
 		this.netView = netView;
 		// Get all of the selected nodes and edges
-		selNodes = new HashSet<CyNode>(CyTableUtil.getNodesInState(netView.getModel(), CyNetwork.SELECTED, true));
-		selEdges = new HashSet<CyEdge>(CyTableUtil.getEdgesInState(netView.getModel(), CyNetwork.SELECTED, true));
+		selNodes = new HashSet<>(CyTableUtil.getNodesInState(netView.getModel(), CyNetwork.SELECTED, true));
+		selEdges = new HashSet<>(CyTableUtil.getEdgesInState(netView.getModel(), CyNetwork.SELECTED, true));
 
 		// Save them in our list
 		this.clipMgr = clipMgr;

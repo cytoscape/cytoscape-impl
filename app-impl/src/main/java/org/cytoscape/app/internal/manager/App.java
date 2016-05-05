@@ -463,7 +463,7 @@ public abstract class App {
 		File uninstallDirectoryPath = new File(appManager.getUninstalledAppsPath());
 
 		// Want to make sure the app file's name does not collide with another name in these directories
-		LinkedList<String> uniqueNameDirectories = new LinkedList<String>();
+		LinkedList<String> uniqueNameDirectories = new LinkedList<>();
 		
 		if (!parentPath.equals(installDirectoryPath))
 			uniqueNameDirectories.add(installDirectoryPath.getCanonicalPath());
@@ -481,7 +481,7 @@ public abstract class App {
 			uniqueNameDirectories.add(targetDirectory.getCanonicalPath());
 		
 		// If the app file is in one of these directories, do a move instead of a copy
-		LinkedList<File> moveDirectories = new LinkedList<File>();
+		LinkedList<File> moveDirectories = new LinkedList<>();
 		moveDirectories.add(installDirectoryPath);
 		moveDirectories.add(disabledDirectoryPath);
 		moveDirectories.add(uninstallDirectoryPath);

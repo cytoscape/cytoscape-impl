@@ -78,7 +78,7 @@ public final class IntTHash<T> implements java.io.Serializable {
 	 */
 	public IntTHash() {
 		m_keys = new int[INITIAL_SIZE];
-		m_vals = new ArrayList<T>();
+		m_vals = new ArrayList<>();
 		m_elements = 0;
 		m_thresholdSize = (int) (THRESHOLD_FACTOR * (double) m_keys.length);
 
@@ -295,7 +295,7 @@ public final class IntTHash<T> implements java.io.Serializable {
 		}
 
 		final int[] newKeys = new int[newSize];
-		final List<T> newVals = new ArrayList<T>(newSize);
+		final List<T> newVals = new ArrayList<>(newSize);
 
 		for (int i = 0; i < newKeys.length; i++)
 			newKeys[i] = -1;

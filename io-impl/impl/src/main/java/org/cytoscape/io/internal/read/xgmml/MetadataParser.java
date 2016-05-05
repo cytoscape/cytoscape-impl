@@ -102,7 +102,7 @@ public class MetadataParser {
 	 * structure.
 	 */
 	public Map<String, String> makeNewMetadataMap() {
-		Map<String, String> dataMap = new HashMap<String, String>();
+		Map<String, String> dataMap = new HashMap<>();
 
 		// Extract default values from property
 		String defSource = props.getProperty("defaultMetadata.source");

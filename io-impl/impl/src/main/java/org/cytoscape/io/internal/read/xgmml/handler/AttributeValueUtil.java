@@ -310,7 +310,7 @@ public class AttributeValueUtil {
 			        	table.createListColumn(name, clazz, false, new ArrayList());
 			            column = row.getTable().getColumn(name);
 			            
-			            manager.listAttrHolder = new ArrayList<Object>();
+			            manager.listAttrHolder = new ArrayList<>();
 					}
 		        }
 				

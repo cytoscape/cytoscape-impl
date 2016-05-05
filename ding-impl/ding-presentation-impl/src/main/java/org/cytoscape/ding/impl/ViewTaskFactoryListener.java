@@ -53,14 +53,14 @@ public class ViewTaskFactoryListener {
 
 	public ViewTaskFactoryListener(NVLTFActionSupport nvltfActionSupport){
 		this.nvltfActionSupport = nvltfActionSupport;
-		viewMap = new ConcurrentHashMap<CyNetworkView, Reference<DGraphView>>(16, 0.75f, 2);
-		nodeViewTFs = new ConcurrentHashMap<NodeViewTaskFactory, Map>(16, 0.75f, 2);
-		edgeViewTFs = new ConcurrentHashMap<EdgeViewTaskFactory, Map>(16, 0.75f, 2);
-		emptySpaceTFs = new ConcurrentHashMap<NetworkViewTaskFactory, Map>(16, 0.75f, 2);
-		networkViewLocationTFs = new ConcurrentHashMap<NetworkViewLocationTaskFactory, Map>(16, 0.75f, 2);
-		cyNodeViewContexMenuFactory = new ConcurrentHashMap<CyNodeViewContextMenuFactory, Map>(16, 0.75f, 2);
-		cyEdgeViewContextMenuFactory = new ConcurrentHashMap<CyEdgeViewContextMenuFactory, Map>(16, 0.75f, 2);
-		cyNetworkViewContextMenuFactory = new ConcurrentHashMap<CyNetworkViewContextMenuFactory, Map>(16, 0.75f, 2);
+		viewMap = new ConcurrentHashMap<>(16, 0.75f, 2);
+		nodeViewTFs = new ConcurrentHashMap<>(16, 0.75f, 2);
+		edgeViewTFs = new ConcurrentHashMap<>(16, 0.75f, 2);
+		emptySpaceTFs = new ConcurrentHashMap<>(16, 0.75f, 2);
+		networkViewLocationTFs = new ConcurrentHashMap<>(16, 0.75f, 2);
+		cyNodeViewContexMenuFactory = new ConcurrentHashMap<>(16, 0.75f, 2);
+		cyEdgeViewContextMenuFactory = new ConcurrentHashMap<>(16, 0.75f, 2);
+		cyNetworkViewContextMenuFactory = new ConcurrentHashMap<>(16, 0.75f, 2);
 	}
 
 	

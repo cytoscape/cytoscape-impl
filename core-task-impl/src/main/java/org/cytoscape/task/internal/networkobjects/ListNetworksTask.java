@@ -50,7 +50,7 @@ public class ListNetworksTask extends AbstractTask implements ObservableTask{
 
 	public Object getResults(Class type) {
 		if (type.equals(List.class)) {
-			return  new ArrayList<CyNetwork>(networks);
+			return new ArrayList<>(networks);
 		} else if (type.equals(Set.class)) {
 			return  networks;
 		} else if (type.equals(String.class)){

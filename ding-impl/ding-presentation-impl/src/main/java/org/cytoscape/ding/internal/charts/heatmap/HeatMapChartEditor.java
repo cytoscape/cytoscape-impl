@@ -24,7 +24,7 @@ public class HeatMapChartEditor extends AbstractChartEditor<HeatMapChart> {
 	private static final ColorScheme[] UP_ZERO_DOWN_COLOR_SCHEMES;
 	
 	static {
-		final List<ColorScheme> upZeroDownSchemeList = new ArrayList<ColorScheme>();
+		final List<ColorScheme> upZeroDownSchemeList = new ArrayList<>();
 		
 		for (final ColorGradient cg : ColorGradient.values()) {
 			if (cg.getColors().size() == 3)

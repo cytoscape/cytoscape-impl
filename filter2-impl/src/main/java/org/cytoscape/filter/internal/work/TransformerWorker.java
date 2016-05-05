@@ -132,7 +132,7 @@ public class TransformerWorker extends AbstractWorker<TransformerPanel, Transfor
 			monitor.start();
 			
 			int maximum = getElementCount(context);
-			ArrayList<CyIdentifiable> elements = new ArrayList<CyIdentifiable>(maximum);
+			ArrayList<CyIdentifiable> elements = new ArrayList<>(maximum);
 			DiscreteProgressMonitor discreteMonitor = new DiscreteProgressMonitor(monitor);
 			discreteMonitor.setTotalWork(maximum);
 			
@@ -178,7 +178,7 @@ public class TransformerWorker extends AbstractWorker<TransformerPanel, Transfor
 			monitor.setStatusMessage("Filtering");
 			
 			int maximum = getElementCount(context);
-			ArrayList<CyIdentifiable> elements = new ArrayList<CyIdentifiable>(maximum);
+			ArrayList<CyIdentifiable> elements = new ArrayList<>(maximum);
 			DiscreteProgressMonitor discreteMonitor = new DiscreteProgressMonitor(monitor);
 			discreteMonitor.setTotalWork(maximum);
 			

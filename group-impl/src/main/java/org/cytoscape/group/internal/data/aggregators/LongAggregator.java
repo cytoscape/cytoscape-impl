@@ -78,7 +78,7 @@ public class LongAggregator extends AbstractAggregator {
 				aggregation = Long.MAX_VALUE;
 				break;
 			case MEDIAN:
-				valueList = new ArrayList<Long>();
+				valueList = new ArrayList<>();
 				break;
 			}
 

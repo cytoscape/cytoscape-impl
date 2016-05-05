@@ -211,7 +211,7 @@ public class InstallAppsPanel extends JPanel {
 			@Override
 			public void downloadSitesChanged(DownloadSitesChangedEvent downloadSitesChangedEvent) {
 				final DefaultComboBoxModel defaultComboBoxModel = new DefaultComboBoxModel(
-						new Vector<DownloadSite>(downloadSitesManager.getDownloadSites()));
+						new Vector<>(downloadSitesManager.getDownloadSites()));
 				
 				SwingUtilities.invokeLater(new Runnable() {
 					@Override
@@ -509,7 +509,7 @@ public class InstallAppsPanel extends JPanel {
     }
     
 	private void installFromFileButtonActionPerformed(ActionEvent evt) {
-		List<String> sha1Checksums = new ArrayList<String>();
+		List<String> sha1Checksums = new ArrayList<>();
 		for(App app: appManager.getApps()) {
 			sha1Checksums.add(app.getSha512Checksum());
 		}
@@ -517,7 +517,7 @@ public class InstallAppsPanel extends JPanel {
     	FileChooserFilter fileChooserFilter = new FileChooserFilter("Jar, Zip, and Karaf Kar Files (*.jar, *.zip, *.kar)",
     			new String[]{"jar", "zip", "kar"});
     	
-    	Collection<FileChooserFilter> fileChooserFilters = new LinkedList<FileChooserFilter>();
+    	Collection<FileChooserFilter> fileChooserFilters = new LinkedList<>();
     	fileChooserFilters.add(fileChooserFilter);
     	
     	// Show the dialog
@@ -594,7 +594,7 @@ public class InstallAppsPanel extends JPanel {
     	if(availableApps == null || availableTags == null)
     		return;
     	
-    	List<WebQuerier.AppTag> sortedTags = new LinkedList<WebQuerier.AppTag>(availableTags);
+    	List<WebQuerier.AppTag> sortedTags = new LinkedList<>(availableTags);
     	
     	Collections.sort(sortedTags, new Comparator<WebQuerier.AppTag>() {
 
@@ -668,12 +668,12 @@ public class InstallAppsPanel extends JPanel {
     private void fillResultsTree(Set<WebApp> webApps) {
     	if(webApps == null) {
     		resultsTree.setModel(new DefaultTreeModel(null));
-    		resultsTreeApps = new HashSet<WebApp>();
+    		resultsTreeApps = new HashSet<>();
     		return;
     	}
     	
     	appManager.getWebQuerier().checkWebAppInstallStatus(webApps, appManager);
-    	List<WebApp> sortedApps = new LinkedList<WebApp>(webApps);
+    	List<WebApp> sortedApps = new LinkedList<>(webApps);
     	
     	// Sort apps by alphabetical order
     	Collections.sort(sortedApps, new Comparator<WebApp>() {
@@ -701,7 +701,7 @@ public class InstallAppsPanel extends JPanel {
     	
     	resultsTree.setModel(new DefaultTreeModel(root));
     	
-    	resultsTreeApps = new HashSet<WebApp>(webApps);
+    	resultsTreeApps = new HashSet<>(webApps);
   
     }
     

@@ -64,8 +64,8 @@ public class RowViewTracker implements NetworkViewAddedListener,
 	private final Map<CyTable, Set<CyNetworkView>> networkViewsByTable;
 
 	public RowViewTracker() {
-		rowViewMapsByNetworkView = new IdentityHashMap<CyNetworkView, Map<CyRow,View<? extends CyIdentifiable>>>();
-		networkViewsByTable = new IdentityHashMap<CyTable, Set<CyNetworkView>>();
+		rowViewMapsByNetworkView = new IdentityHashMap<>();
+		networkViewsByTable = new IdentityHashMap<>();
 	}
 
 	public void handleEvent(final NetworkViewAddedEvent e) {
@@ -99,7 +99,7 @@ public class RowViewTracker implements NetworkViewAddedListener,
 		}
 		Set<CyNetworkView> views = networkViewsByTable.get(table);
 		if (views == null) {
-			views = new HashSet<CyNetworkView>();
+			views = new HashSet<>();
 			networkViewsByTable.put(table, views);
 		}
 		views.add(view);
@@ -197,7 +197,7 @@ public class RowViewTracker implements NetworkViewAddedListener,
 	private Map<CyRow, View<? extends CyIdentifiable>> getRowViewMapInternal(CyNetworkView view) {
 		Map<CyRow, View<? extends CyIdentifiable>> rowViewMap = rowViewMapsByNetworkView.get(view);
 		if (rowViewMap == null) {
-			rowViewMap = new IdentityHashMap<CyRow, View<? extends CyIdentifiable>>();
+			rowViewMap = new IdentityHashMap<>();
 			rowViewMapsByNetworkView.put(view, rowViewMap);
 		}
 		return rowViewMap;

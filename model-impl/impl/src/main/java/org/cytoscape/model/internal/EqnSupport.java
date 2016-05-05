@@ -119,7 +119,7 @@ class EqnSupport {
 		final Collection<String> attribReferences = equation.getVariableReferences();
 		final Map<String, Object> defaultValues = equation.getDefaultVariableValues();
 
-		final Map<String, IdentDescriptor> nameToDescriptorMap = new TreeMap<String, IdentDescriptor>();
+		final Map<String, IdentDescriptor> nameToDescriptorMap = new TreeMap<>();
 		for (final String attribRef : attribReferences) {
 			if (attribRef.equals("ID")) {
 				nameToDescriptorMap.put("ID", new IdentDescriptor(key));
@@ -181,23 +181,23 @@ class EqnSupport {
 	{
 		final Object equationCandidate = tableImpl.getValueOrEquation(key, columnName);
 		if (!(equationCandidate instanceof Equation))
-			return new ArrayList<String>();
+			return new ArrayList<>();
 
 		final Equation equation = (Equation)equationCandidate;
 		final Set<String> attribReferences = equation.getVariableReferences();
 		if (attribReferences.size() == 0)
-			return new ArrayList<String>();
+			return new ArrayList<>();
 
-		final Set<String> alreadyProcessed = new TreeSet<String>();
+		final Set<String> alreadyProcessed = new TreeSet<>();
 		alreadyProcessed.add(columnName);
-		final List<TopoGraphNode> dependencies = new ArrayList<TopoGraphNode>();
+		final List<TopoGraphNode> dependencies = new ArrayList<>();
 		for (final String attribReference : attribReferences)
                         followReferences(key, attribReference, alreadyProcessed, dependencies,
 					 tableImpl);
 
 
 		final List<TopoGraphNode> topoOrder = TopologicalSort.sort(dependencies);
-		final List<String> retVal = new ArrayList<String>();
+		final List<String> retVal = new ArrayList<>();
 		for (final TopoGraphNode node : topoOrder) {
 			final AttribTopoGraphNode attribTopoGraphNode = (AttribTopoGraphNode)node;
 			final String nodeName = attribTopoGraphNode.getNodeName();

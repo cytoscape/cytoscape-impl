@@ -90,7 +90,7 @@ public class PieChart extends AbstractChart<PieLayer> {
 	@Override
 	public Map<String, List<Double>> getDataFromColumns(final CyNetwork network, final CyIdentifiable model,
 			final List<CyColumnIdentifier> columnNames) {
-		final Map<String, List<Double>> data = new HashMap<String, List<Double>>();
+		final Map<String, List<Double>> data = new HashMap<>();
 		
 		// Values from multiple series have to be merged into one single series
 		final Map<String, List<Double>> rawData = super.getDataFromColumns(network, model, columnNames);

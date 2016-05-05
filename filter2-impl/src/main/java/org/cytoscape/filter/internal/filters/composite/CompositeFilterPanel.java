@@ -70,7 +70,7 @@ public class CompositeFilterPanel<P extends SelectPanelComponent> extends JPanel
 		this.model = model;
 		
 		separator = new CompositeSeparator();
-		new DropTarget(separator, new DragHandler<P>(separator, filterPanelController, parent, null));
+		new DropTarget(separator, new DragHandler<>(separator, filterPanelController, parent, null));
 
 		ViewUtil.configureFilterView(this);
 		
@@ -200,7 +200,7 @@ public class CompositeFilterPanel<P extends SelectPanelComponent> extends JPanel
 	}
 	
 	private List<CombiningMethodElement> getCombiningMethods() {
-		List<CombiningMethodElement> methods = new ArrayList<CombiningMethodElement>(2);
+		List<CombiningMethodElement> methods = new ArrayList<>(2);
 		methods.add(new CombiningMethodElement("Match all (AND)", CompositeFilter.Type.ALL));
 		methods.add(new CombiningMethodElement("Match any (OR)", CompositeFilter.Type.ANY));
 		return methods;
@@ -258,7 +258,7 @@ public class CompositeFilterPanel<P extends SelectPanelComponent> extends JPanel
 
 	public void addFilter(Filter<CyNetwork, CyIdentifiable> filter) {
 		JComponent component = filterPanelController.createView(parent, filter, depth + 1);
-		final TransformerElementViewModel<P> viewModel = new TransformerElementViewModel<P>(component, filterPanelController, parent);
+		final TransformerElementViewModel<P> viewModel = new TransformerElementViewModel<>(component, filterPanelController, parent);
 		addViewModel(filter, viewModel);
 	}
 

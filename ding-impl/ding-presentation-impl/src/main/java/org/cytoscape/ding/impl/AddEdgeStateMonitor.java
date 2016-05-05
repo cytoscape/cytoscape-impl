@@ -57,8 +57,8 @@ class AddEdgeStateMonitor {
 	private final DGraphView m_view;
 	private final Stroke eraseStroke;
 
-	private static Map<CyNetworkView,CyNode> sourceNodes = new WeakHashMap<CyNetworkView,CyNode>();
-	private static Map<CyNetworkView,Point2D> sourcePoints = new WeakHashMap<CyNetworkView,Point2D>();
+	private static Map<CyNetworkView,CyNode> sourceNodes = new WeakHashMap<>();
+	private static Map<CyNetworkView,Point2D> sourcePoints = new WeakHashMap<>();
 
 	AddEdgeStateMonitor(InnerCanvas canvas, DGraphView m_view) {
 		this.canvas = canvas;

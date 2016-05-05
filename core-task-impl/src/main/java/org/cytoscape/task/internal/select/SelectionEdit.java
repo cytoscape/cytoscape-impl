@@ -96,14 +96,14 @@ final class SelectionEdit extends AbstractCyEdit {
 	private void saveSelectionState() {
 		if (filter == SelectionFilter.NODES_ONLY || filter == SelectionFilter.NODES_AND_EDGES) {
 			final Collection<CyRow> rows = network.getDefaultNodeTable().getAllRows();
-			nodeRows = new ArrayList<RowAndSelectionState>(rows.size());
+			nodeRows = new ArrayList<>(rows.size());
 			for (final CyRow row : rows)
 				nodeRows.add(new RowAndSelectionState(row, row.get(CyNetwork.SELECTED, Boolean.class)));
 		}
 
 		if (filter == SelectionFilter.EDGES_ONLY || filter == SelectionFilter.NODES_AND_EDGES) {
 			final Collection<CyRow> rows = network.getDefaultEdgeTable().getAllRows();
-			edgeRows = new ArrayList<RowAndSelectionState>(rows.size());
+			edgeRows = new ArrayList<>(rows.size());
 			for (final CyRow row : rows)
 				edgeRows.add(new RowAndSelectionState(row, row.get(CyNetwork.SELECTED, Boolean.class)));
 		}

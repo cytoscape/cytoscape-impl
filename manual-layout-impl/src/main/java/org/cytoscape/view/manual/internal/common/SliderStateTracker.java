@@ -41,7 +41,7 @@ public class SliderStateTracker implements  SetCurrentNetworkViewListener {
 	PolymorphicSlider slider;
 
 	public SliderStateTracker(PolymorphicSlider s) {
-		layoutStateMap = new HashMap<Long,Integer>();
+		layoutStateMap = new HashMap<>();
 		preFocusedViewId = 0l;
 		slider = s;
 	}

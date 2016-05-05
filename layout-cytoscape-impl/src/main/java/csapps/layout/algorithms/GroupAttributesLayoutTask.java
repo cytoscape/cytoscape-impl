@@ -115,8 +115,8 @@ public class GroupAttributesLayoutTask extends AbstractLayoutTask {
 	}
 	/** Needed to allow usage of parametric types */
 	private <T extends Comparable<T>> void doConstruct(Class<T> klass){
-		final Map<T, List<CyNode>> partitionMap = new TreeMap<T, List<CyNode>>();
-		final List<CyNode> invalidNodes = new ArrayList<CyNode>();
+		final Map<T, List<CyNode>> partitionMap = new TreeMap<>();
+		final List<CyNode> invalidNodes = new ArrayList<>();
 		makeDiscrete(partitionMap, invalidNodes, klass);
 
 		final List<List<CyNode>> partitionList = sort(partitionMap);
@@ -163,7 +163,7 @@ public class GroupAttributesLayoutTask extends AbstractLayoutTask {
 			} else {
 				List<CyNode> list = map.get(key);
 				if (list == null) {
-					list = new ArrayList<CyNode>();
+					list = new ArrayList<>();
 					map.put(key, list);
 				}
 				list.add(node);
@@ -175,7 +175,7 @@ public class GroupAttributesLayoutTask extends AbstractLayoutTask {
 		if (map == null)
 			return null;
 
-		List<T> keys = new ArrayList<T>(map.keySet());
+		List<T> keys = new ArrayList<>(map.keySet());
 		Collections.sort(keys);
 
 		Comparator<CyNode> comparator = new Comparator<CyNode>() {
@@ -190,7 +190,7 @@ public class GroupAttributesLayoutTask extends AbstractLayoutTask {
 			}
 		};
 
-		List<List<CyNode>> sortedlist = new ArrayList<List<CyNode>>(map.keySet().size());
+		List<List<CyNode>> sortedlist = new ArrayList<>(map.keySet().size());
 
 		for (T key : keys) {
 			List<CyNode> partition = map.get(key);

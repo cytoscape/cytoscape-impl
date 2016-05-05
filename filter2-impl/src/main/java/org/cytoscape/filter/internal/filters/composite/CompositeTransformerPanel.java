@@ -54,12 +54,12 @@ public class CompositeTransformerPanel extends JPanel implements CompositePanelC
 		this.iconManager = iconManager;
 		
 		separator = new CompositeSeparator();
-		new DropTarget(separator, new DragHandler<TransformerPanel>(separator, transformerPanelController, parent, null));
+		new DropTarget(separator, new DragHandler<>(separator, transformerPanelController, parent, null));
 		
 		ViewUtil.configureFilterView(this);
 		setBorder(BorderFactory.createEmptyBorder());
 
-		viewModels = new WeakHashMap<Transformer<CyNetwork,CyIdentifiable>, TransformerElementViewModel<TransformerPanel>>();
+		viewModels = new WeakHashMap<>();
 		layout = new GroupLayout(this);
 		setLayout(layout);
 
@@ -67,7 +67,7 @@ public class CompositeTransformerPanel extends JPanel implements CompositePanelC
 
 		for (Transformer<CyNetwork, CyIdentifiable> transformer : model) {
 			JComponent component = transformerPanelController.createView(parent, transformer, 0);
-			TransformerElementViewModel<TransformerPanel> viewModel = new TransformerElementViewModel<TransformerPanel>(component, transformerPanelController, parent);
+			TransformerElementViewModel<TransformerPanel> viewModel = new TransformerElementViewModel<>(component, transformerPanelController, parent);
 			viewModels.put(transformer, viewModel);
 		}
 	}
@@ -142,13 +142,13 @@ public class CompositeTransformerPanel extends JPanel implements CompositePanelC
 		List<Transformer<CyNetwork, CyIdentifiable>> model;
 		
 		Controller() {
-			model = new ArrayList<Transformer<CyNetwork,CyIdentifiable>>();
+			model = new ArrayList<>();
 		}
 	}
 
 	public void addTransformer(Transformer<CyNetwork, CyIdentifiable> transformer) {
 		JComponent component = transformerPanelController.createView(parent, transformer, 0);
-		final TransformerElementViewModel<TransformerPanel> viewModel = new TransformerElementViewModel<TransformerPanel>(component, transformerPanelController, parent);
+		final TransformerElementViewModel<TransformerPanel> viewModel = new TransformerElementViewModel<>(component, transformerPanelController, parent);
 		addViewModel(transformer, viewModel);
 	}
 

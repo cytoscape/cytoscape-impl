@@ -54,7 +54,7 @@ public class TunableSetterTest {
 		TestObject object = new TestObject();
 		Assert.assertEquals(5D, object.score);
 		
-		Map<String, Object> settings = new HashMap<String, Object>();
+		Map<String, Object> settings = new HashMap<>();
 		settings.put("score", 10D);
 		
 		setter.applyTunables(object, settings);
@@ -67,7 +67,7 @@ public class TunableSetterTest {
 		TunableTask[] tasks = new TunableTask[] { new FirstTask(), new LastTask() };
 		TaskIterator taskIterator = new TaskIterator(tasks);
 		
-		Map<String, Object> settings = new HashMap<String, Object>();
+		Map<String, Object> settings = new HashMap<>();
 		settings.put("firstTask", "new value1");
 		settings.put("lastTask", "new value2");
 		TaskIterator taskIterator2 = setter.createTaskIterator(taskIterator, settings);

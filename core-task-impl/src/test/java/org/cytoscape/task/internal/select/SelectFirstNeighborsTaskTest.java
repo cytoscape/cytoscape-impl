@@ -63,14 +63,14 @@ public class SelectFirstNeighborsTaskTest extends AbstractSelectTaskTester {
 		when(r3.get("selected", Boolean.class)).thenReturn(true);
 		when(r4.get("selected", Boolean.class)).thenReturn(false);
 
-		Set<CyRow> selectedNodes = new HashSet<CyRow>();
+		Set<CyRow> selectedNodes = new HashSet<>();
 		selectedNodes.add(r3);
 		when(nodeTable.getMatchingRows(CyNetwork.SELECTED, true)).thenReturn(selectedNodes);
 		
 		when (r3.get(CyNetwork.SUID, Long.class)).thenReturn(3L);
 		when (net.getNode(3L)).thenReturn(e3);
 
-		List<CyNode> nl = new ArrayList<CyNode>();
+		List<CyNode> nl = new ArrayList<>();
 		nl.add(e4);
 		when(net.getNeighborList(e3, CyEdge.Type.ANY)).thenReturn(nl);
 

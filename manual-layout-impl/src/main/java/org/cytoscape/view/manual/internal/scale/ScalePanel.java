@@ -93,7 +93,7 @@ public class ScalePanel extends AbstractManualPanel implements ChangeListener, P
 
 		prevValue = jSlider.getValue();
 
-		Hashtable<Integer,JLabel> labels = new Hashtable<Integer,JLabel>();
+		Hashtable<Integer,JLabel> labels = new Hashtable<>();
 		labels.put(new Integer(-300), new JLabel("1/8"));
 		labels.put(new Integer(-200), new JLabel("1/4"));
 		labels.put(new Integer(-100), new JLabel("1/2"));

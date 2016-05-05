@@ -333,7 +333,7 @@ public class OntologyPanelBuilder {
 			panel.annotationUrlMap.put(key, source.getHref());
 			panel.annotationFormatMap.put(key, source.getFormat());
 
-			final Map<String, String> attrMap = new HashMap<String, String>();
+			final Map<String, String> attrMap = new HashMap<>();
 
 			for (Attribute attr : source.getAttribute())
 				attrMap.put(attr.getName(), attr.getContent());

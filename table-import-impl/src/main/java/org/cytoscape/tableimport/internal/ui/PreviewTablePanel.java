@@ -255,7 +255,7 @@ public class PreviewTablePanel extends JPanel {
 	
 	public JTable getPreviewTable() {
 		if (previewTable == null) {
-			previewTable = new JTable(new PreviewTableModel(new Vector<Vector<String>>(), new Vector<String>(), false));
+			previewTable = new JTable(new PreviewTableModel(new Vector<>(), new Vector<>(), false));
 			previewTable.setShowGrid(false);
 			previewTable.setCellSelectionEnabled(false);
 			previewTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
@@ -661,7 +661,7 @@ public class PreviewTablePanel extends JPanel {
 
 		final boolean firstRowNames = importType == NETWORK_IMPORT || importType == TABLE_IMPORT;
 		
-		return new PreviewTableModel(data, new Vector<String>(), firstRowNames);
+		return new PreviewTableModel(data, new Vector<>(), firstRowNames);
 	}
 	
 	private PreviewTableModel parseText(InputStream tempIs, List<String> delimiters, int startLine)
@@ -791,7 +791,7 @@ public class PreviewTablePanel extends JPanel {
 			
 			return new PreviewTableModel(data, columnNames, firstRowNames);
 		} else {
-			return new PreviewTableModel(data, new Vector<String>(), firstRowNames);
+			return new PreviewTableModel(data, new Vector<>(), firstRowNames);
 		}
 	}
 	

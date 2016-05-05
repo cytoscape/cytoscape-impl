@@ -78,7 +78,7 @@ public class LayoutWrapperTask extends AbstractTask {
 		if (attrs == null || attrs.size() == 0) {
 			possibleEdgeAttributes = null;
 		} else {
-			possibleEdgeAttributes = new ListSingleSelection<String>(attrs);
+			possibleEdgeAttributes = new ListSingleSelection<>(attrs);
 		}
 		return possibleEdgeAttributes;
 	}
@@ -96,7 +96,7 @@ public class LayoutWrapperTask extends AbstractTask {
 		if (attrs == null || attrs.size() == 0) {
 			possibleNodeAttributes = null;
 		} else {
-			possibleNodeAttributes = new ListSingleSelection<String>(attrs);
+			possibleNodeAttributes = new ListSingleSelection<>(attrs);
 		}
 		return possibleNodeAttributes;
 	}
@@ -121,7 +121,7 @@ public class LayoutWrapperTask extends AbstractTask {
 		nodes = nodeList.getValue();
 
 		for (CyNetworkView view: views) {
-			Set<View<CyNode>> nodeViews = new HashSet<View<CyNode>>();
+			Set<View<CyNode>> nodeViews = new HashSet<>();
 			if (nodes == null || nodes.size() == 0) {
 				nodeViews = CyLayoutAlgorithm.ALL_NODE_VIEWS;
 			}	else {
@@ -147,7 +147,7 @@ public class LayoutWrapperTask extends AbstractTask {
 	}
 
 	private List<String> getSupportedAttributes(Set<Class<?>> types, CyTable table) {
-		List<String> attributes = new ArrayList<String>();
+		List<String> attributes = new ArrayList<>();
 		attributes.add(UNWEIGHTED);
 		for (CyColumn column: table.getColumns()) {
 			for (Class<?> type: types) {

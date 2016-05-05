@@ -23,13 +23,13 @@ public class TransformerElementViewModel<V extends SelectPanelComponent> {
 		this.view = view;
 		this.parent  = parent;
 		
-		handle = new Handle<V>(controller.getIconManager(), parent, controller, view);
+		handle = new Handle<>(controller.getIconManager(), parent, controller, view);
 		separator = new CompositeSeparator();
 		deleteButton = createDeleteButton(controller.getIconManager(), controller);
 
-		new DropTarget(view,      new DragHandler<V>(view, controller, parent, handle));
-		new DropTarget(separator, new DragHandler<V>(separator, controller, parent, null));
-		new DropTarget(handle,    new DragHandler<V>(handle, controller, parent, null));
+		new DropTarget(view, new DragHandler<>(view, controller, parent, handle));
+		new DropTarget(separator, new DragHandler<>(separator, controller, parent, null));
+		new DropTarget(handle, new DragHandler<>(handle, controller, parent, null));
 	}
 
 	private JComponent createDeleteButton(IconManager iconManager, final AbstractPanelController<?, V> controller) {

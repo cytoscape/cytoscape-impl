@@ -98,7 +98,7 @@ public class URLHandler extends AbstractGUITunableHandler {
 		final Collection<DataSource> dataSources = dsManager.getDataSources(
 				DataCategory.valueOf(((String)getParams().get("fileCategory")).toUpperCase()));
 		
-		final SortedSet<String> labelSet = new TreeSet<String>();
+		final SortedSet<String> labelSet = new TreeSet<>();
 		
 		if (dataSources != null) {
 			for (DataSource ds : dataSources) {

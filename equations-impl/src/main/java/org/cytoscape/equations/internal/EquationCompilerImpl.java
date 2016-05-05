@@ -56,7 +56,7 @@ public class EquationCompilerImpl implements EquationCompiler {
 
 		final TreeNode parseTree = parser.getParseTree();
 
-		final Stack<CodeAndSourceLocation> codeStack = new Stack<CodeAndSourceLocation>();
+		final Stack<CodeAndSourceLocation> codeStack = new Stack<>();
 		try {
 			parseTree.genCode(codeStack);
 		} catch (final IllegalStateException e) {
@@ -93,7 +93,7 @@ public class EquationCompilerImpl implements EquationCompiler {
 	 *  @param errorMessage  the runtime error message that the returned equation will produce
 	 */
 	public Equation getErrorEquation(final String equation, final Class<?> type, final String errorMessage) {
-		final Map<String, Class<?>> variableNameToTypeMap = new HashMap<String, Class<?>>();
+		final Map<String, Class<?>> variableNameToTypeMap = new HashMap<>();
 		if (!compile("=ERROR(\"" + escapeQuotes(errorMessage) + "\")", variableNameToTypeMap))
 			throw new IllegalStateException("internal error in Equation.getErrorEquation().  This should *never* happen.");
 

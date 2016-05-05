@@ -59,8 +59,8 @@ public class NoGuiSelectExportTableTask extends AbstractTask {
 	private final CyTableManager cyTableManagerServiceRef;
 	private final CyNetworkManager cyNetworkManagerServiceRef;
 
-	private HashMap<CyTable, CyNetwork> tableNetworkMap = new HashMap<CyTable, CyNetwork>();
-	private HashMap<String, CyTable> titleTableMap = new HashMap<String, CyTable>();
+	private HashMap<CyTable, CyNetwork> tableNetworkMap = new HashMap<>();
+	private HashMap<String, CyTable> titleTableMap = new HashMap<>();
 	
 	public NoGuiSelectExportTableTask (CyTableWriterManager writerManager,CyTableManager cyTableManagerServiceRef, CyNetworkManager cyNetworkManagerServiceRef){
 		this.cyTableManagerServiceRef = cyTableManagerServiceRef;
@@ -77,7 +77,7 @@ public class NoGuiSelectExportTableTask extends AbstractTask {
 	}
 
 	private void populateSelectTable() {
-		final List<String> options = new ArrayList<String>();
+		final List<String> options = new ArrayList<>();
 		
 		for ( CyTable tbl : cyTableManagerServiceRef.getAllTables(false)) {
 			String title = tbl.getTitle();
@@ -86,7 +86,7 @@ public class NoGuiSelectExportTableTask extends AbstractTask {
 		}
 		
 		Collections.sort(options);
-		selectTable =  new ListSingleSelection<String>(options);
+		selectTable = new ListSingleSelection<>(options);
 	}
 	
 	

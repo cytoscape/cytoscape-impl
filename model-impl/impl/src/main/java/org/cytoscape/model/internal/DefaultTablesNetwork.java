@@ -68,7 +68,7 @@ abstract class DefaultTablesNetwork extends SimpleNetwork {
 	
 	protected void initTables(final CyNetwork network, final SharedTableFacade sharedNetworkTable, 
 	                          final SharedTableFacade sharedNodeTable, final SharedTableFacade sharedEdgeTable) {
-		this.networkRef = new WeakReference<CyNetwork>(network);
+		this.networkRef = new WeakReference<>(network);
 		
 		createNetworkTables(super.getSUID(), tableFactory, publicTables /* table size is always small */, sharedNetworkTable);
 		createNodeTables(super.getSUID(), tableFactory, publicTables, tableSizeDeterminer, sharedNodeTable);
@@ -195,7 +195,7 @@ abstract class DefaultTablesNetwork extends SimpleNetwork {
 	}
 
 	protected <T extends CyIdentifiable> void removeRows(Collection<T> items, Class<? extends T> type) {
-		Collection<Long> primaryKeys = new ArrayList<Long>();
+		Collection<Long> primaryKeys = new ArrayList<>();
 		for (T item : items) {
 			primaryKeys.add(item.getSUID());
 		}

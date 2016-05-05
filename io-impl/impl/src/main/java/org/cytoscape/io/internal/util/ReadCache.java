@@ -73,16 +73,16 @@ public class ReadCache {
 	}
 
 	public void init() {
-		oldIdMap = new HashMap<Long, Object>();
-		nodeByIdMap = new HashMap<Object, CyNode>();
-		edgeByIdMap = new HashMap<Object, CyEdge>();
-		networkByIdMap = new HashMap<Object, CyNetwork>();
-		networkViewByIdMap = new HashMap<Object, CyNetworkView>();
-		nodeByNameMap = new HashMap<Object, CyNode>();
-		nodeLinkMap = new WeakHashMap<CyNetwork, Set<Long>>();
-		edgeLinkMap = new WeakHashMap<CyNetwork, Set<Long>>();
-		unresolvedNodeMap = new WeakHashMap<CySubNetwork, Set<CyNode>>();
-		networkPointerMap = new WeakHashMap<CyNode, Object>();
+		oldIdMap = new HashMap<>();
+		nodeByIdMap = new HashMap<>();
+		edgeByIdMap = new HashMap<>();
+		networkByIdMap = new HashMap<>();
+		networkViewByIdMap = new HashMap<>();
+		nodeByNameMap = new HashMap<>();
+		nodeLinkMap = new WeakHashMap<>();
+		edgeLinkMap = new WeakHashMap<>();
+		unresolvedNodeMap = new WeakHashMap<>();
+		networkPointerMap = new WeakHashMap<>();
 	}
 	
 	public void dispose() {
@@ -191,7 +191,7 @@ public class ReadCache {
 		Set<CyNode> nodes = unresolvedNodeMap.get(net);
 		
 		if (nodes == null) {
-			nodes = new HashSet<CyNode>();
+			nodes = new HashSet<>();
 			unresolvedNodeMap.put(net, nodes);
 		}
 		
@@ -230,7 +230,7 @@ public class ReadCache {
 			Set<Long> idSet = map.get(net);
 			
 			if (idSet == null) {
-				idSet = new HashSet<Long>();
+				idSet = new HashSet<>();
 				map.put(net, idSet);
 			}
 			
@@ -271,8 +271,8 @@ public class ReadCache {
 	 */
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public Set<CyTable> getNetworkTables() {
-		final Set<CyTable> tables = new HashSet<CyTable>();
-		final Set<CyNetwork> networks = new HashSet<CyNetwork>();
+		final Set<CyTable> tables = new HashSet<>();
+		final Set<CyNetwork> networks = new HashSet<>();
 		final Class<?>[] types = new Class[] { CyNetwork.class, CyNode.class, CyEdge.class };
 		
 		if (networkByIdMap.values() != null)
@@ -280,7 +280,7 @@ public class ReadCache {
 		
 		for (final CyNetwork n : networks) {
 			for (final Class t : types) {
-				Map<String, CyTable> tblMap = new HashMap<String, CyTable>(netTblMgr.getTables(n, t));
+				Map<String, CyTable> tblMap = new HashMap<>(netTblMgr.getTables(n, t));
 				tblMap.remove(CyNetwork.DEFAULT_ATTRS);
 				
 				if (tblMap != null)
@@ -288,7 +288,7 @@ public class ReadCache {
 				
 				if (n instanceof CySubNetwork) {
 					// Don't forget the root-network tables.
-					tblMap = new HashMap<String, CyTable>(netTblMgr.getTables(((CySubNetwork) n).getRootNetwork(), t));
+					tblMap = new HashMap<>(netTblMgr.getTables(((CySubNetwork) n).getRootNetwork(), t));
 					tblMap.remove(CyRootNetwork.DEFAULT_ATTRS);
 					tblMap.remove(CyRootNetwork.SHARED_DEFAULT_ATTRS);
 					

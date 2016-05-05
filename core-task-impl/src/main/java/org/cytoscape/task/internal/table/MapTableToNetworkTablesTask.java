@@ -103,7 +103,7 @@ public final class MapTableToNetworkTablesTask extends AbstractTask {
 		globalTable = null;
 		this.byReader = true;
 		this.networkManager = networkManager;
-		this.name2NetworkMap = new HashMap<String, CyNetwork>();
+		this.name2NetworkMap = new HashMap<>();
 		this.rootNetworkManager = rootNetworkManager;
 		
 		initTunable(networkManager);
@@ -115,29 +115,29 @@ public final class MapTableToNetworkTablesTask extends AbstractTask {
 		this.globalTable = globalTable;
 		this.byReader = false;
 		this.reader = null;
-		this.name2NetworkMap = new HashMap<String, CyNetwork>();
+		this.name2NetworkMap = new HashMap<>();
 		this.rootNetworkManager = rootNetworkManager;
 
 		initTunable(networkManager);
 	}
 
 	private void initTunable(CyNetworkManager networkManage){
-		final List<TableType> options = new ArrayList<TableType>();
+		final List<TableType> options = new ArrayList<>();
 		for(TableType type: TableType.values())
 			options.add(type);
-		dataTypeOptions = new ListSingleSelection<TableType>(options);
+		dataTypeOptions = new ListSingleSelection<>(options);
 		dataTypeOptions.setSelectedValue(TableType.NODE_ATTR);
 
 		for(CyNetwork net: networkManage.getNetworkSet()){
 			String netName = net.getRow(net).get(CyNetwork.NAME, String.class);
 			name2NetworkMap.put(netName, net);
 		}
-		List<String> names = new ArrayList<String>();
+		List<String> names = new ArrayList<>();
 		names.addAll(name2NetworkMap.keySet());
 		if(names.isEmpty())
-			networkList = new ListMultipleSelection<String>(NO_NETWORKS);
+			networkList = new ListMultipleSelection<>(NO_NETWORKS);
 		else
-			networkList = new ListMultipleSelection<String>(names);
+			networkList = new ListMultipleSelection<>(names);
 
 	}
 
@@ -156,7 +156,7 @@ public final class MapTableToNetworkTablesTask extends AbstractTask {
 
 
 	private void mapTableToLocalAttrs(TableType tableType) {
-		List<CyNetwork> networks = new ArrayList<CyNetwork>();
+		List<CyNetwork> networks = new ArrayList<>();
 
 		if(!networkList.getSelectedValues().get(0).equals(NO_NETWORKS))
 			for(String netName: networkList.getSelectedValues())
@@ -172,7 +172,7 @@ public final class MapTableToNetworkTablesTask extends AbstractTask {
 
 
 	private void mapTableToDefaultAttrs(TableType tableType) {
-		List<CyRootNetwork> rootNetworkList = new ArrayList<CyRootNetwork>();
+		List<CyRootNetwork> rootNetworkList = new ArrayList<>();
 		for (CyNetwork net : networkManager.getNetworkSet())
 			if (! rootNetworkList.contains(rootNetworkManager.getRootNetwork(net)))
 				rootNetworkList.add( rootNetworkManager.getRootNetwork(net));

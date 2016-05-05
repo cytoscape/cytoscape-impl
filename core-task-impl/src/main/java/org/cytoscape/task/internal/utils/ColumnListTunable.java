@@ -47,10 +47,10 @@ public class ColumnListTunable {
 		if (table == null) return null;
 
 		if (columnList == null || columnList.equalsIgnoreCase("all"))
-			return new ArrayList<CyColumn>(table.getColumns());
+			return new ArrayList<>(table.getColumns());
 
 		String[] columns = columnList.split(",");
-		List<CyColumn> returnValue = new ArrayList<CyColumn>();
+		List<CyColumn> returnValue = new ArrayList<>();
 		for (String column: columns) {
 			CyColumn c = table.getColumn(column);
 			if (c != null) returnValue.add(c);
@@ -61,7 +61,7 @@ public class ColumnListTunable {
 	public List<String> getColumnNames(CyTable table) {
 		if (table == null) return null;
 
-		List<String> resultString = new ArrayList<String>();
+		List<String> resultString = new ArrayList<>();
 		for (CyColumn column: getColumnList(table))
 			resultString.add(column.getName());
 		return resultString;

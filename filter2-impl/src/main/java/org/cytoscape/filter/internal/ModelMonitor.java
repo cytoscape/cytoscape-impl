@@ -70,7 +70,7 @@ public class ModelMonitor implements SetCurrentNetworkListener,
 		nodeColumnRanges = new HashMap<>();
 		edgeColumnRanges = new HashMap<>();
 		
-		columnNames = new ArrayList<ColumnComboBoxElement>();
+		columnNames = new ArrayList<>();
 		defaultColumnName = new ColumnComboBoxElement("Choose column...");
 		columnNames.add(defaultColumnName);
 		

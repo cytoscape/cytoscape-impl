@@ -122,7 +122,7 @@ public final class TableBrowserUtil {
 			throw new IllegalStateException("unknown column type: "
 					+ columnType.getName() + ".");
 
-		ArrayList<Object> retValue = new ArrayList<Object>();
+		ArrayList<Object> retValue = new ArrayList<>();
 		retValue.add(parsedValue);;
 		retValue.add(errorMessage);
 

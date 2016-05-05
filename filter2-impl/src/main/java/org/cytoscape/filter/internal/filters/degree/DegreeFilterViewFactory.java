@@ -41,7 +41,7 @@ public class DegreeFilterViewFactory implements TransformerViewFactory {
 		this.modelMonitor = modelMonitor;
 		this.style = style;
 		
-		edgeTypeComboBoxModel = new ArrayList<ComboItem<Type>>();
+		edgeTypeComboBoxModel = new ArrayList<>();
 		edgeTypeComboBoxModel.add(new ComboItem<>(Type.ANY, "In + Out"));
 		edgeTypeComboBoxModel.add(new ComboItem<>(Type.INCOMING, "In"));
 		edgeTypeComboBoxModel.add(new ComboItem<>(Type.OUTGOING, "Out"));
@@ -168,7 +168,7 @@ public class DegreeFilterViewFactory implements TransformerViewFactory {
 			
 			ViewUtil.configureFilterView(this);
 			
-			edgeTypeComboBox = style.createCombo(new DynamicComboBoxModel<ComboItem<Type>>(edgeTypeComboBoxModel));
+			edgeTypeComboBox = style.createCombo(new DynamicComboBoxModel<>(edgeTypeComboBoxModel));
 			
 			edgeTypeComboBox.addActionListener(new ActionListener() {
 				@Override

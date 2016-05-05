@@ -68,8 +68,8 @@ public class AddNestedNetworkTask extends AbstractNodeViewTask {
 		super(nv,view);
 		this.vmMgr = vmMgr;
 		
-		final List<CyNetwork> networks = new ArrayList<CyNetwork>(mgr.getNetworkSet());
-		nestedNetwork = new ListSingleSelection<CyNetwork>(networks);
+		final List<CyNetwork> networks = new ArrayList<>(mgr.getNetworkSet());
+		nestedNetwork = new ListSingleSelection<>(networks);
 		final CyNetwork netPointer = nodeView.getModel().getNetworkPointer();
 		
 		if (netPointer != null && networks.contains(netPointer))

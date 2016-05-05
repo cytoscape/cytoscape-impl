@@ -100,7 +100,7 @@ public final class CyRootNetworkImpl extends DefaultTablesNetwork implements CyR
 		this.publicTables = publicTables;
 		this.savePolicy = savePolicy;
 		suid = super.getSUID(); 
-		subNetworks = new ArrayList<CySubNetwork>();
+		subNetworks = new ArrayList<>();
 		nextNodeIndex = 0;
 		nextEdgeIndex = 0;
 		
@@ -380,7 +380,7 @@ public final class CyRootNetworkImpl extends DefaultTablesNetwork implements CyR
 
 	@Override
 	public List<CySubNetwork> getSubNetworkList() {
-		return new ArrayList<CySubNetwork>(subNetworks);
+		return new ArrayList<>(subNetworks);
 	}
 
 	@Override
@@ -447,9 +447,9 @@ public final class CyRootNetworkImpl extends DefaultTablesNetwork implements CyR
 	}
 	
 	private class NetworkAddedListenerDelegator implements NetworkAddedListener {
-		List<WeakReference<NetworkAddedListener>> listeners = new ArrayList<WeakReference<NetworkAddedListener>>();
+		List<WeakReference<NetworkAddedListener>> listeners = new ArrayList<>();
 		public void addListener(NetworkAddedListener l) {
-			listeners.add(new WeakReference<NetworkAddedListener>(l));
+			listeners.add(new WeakReference<>(l));
 		}
 		public void handleEvent(NetworkAddedEvent e) {
 			for (WeakReference<NetworkAddedListener> ref : listeners) {
@@ -465,7 +465,7 @@ public final class CyRootNetworkImpl extends DefaultTablesNetwork implements CyR
 		if(e.getNetwork() == this || subNetworks.contains(e.getNetwork())) {
 			// Check if another network from this root was already registered - return if so
 			CyNetworkManager netManager = e.getSource();
-			List<CyNetwork> networks = new ArrayList<CyNetwork>();
+			List<CyNetwork> networks = new ArrayList<>();
 			networks.add(this);
 			networks.addAll(subNetworks);
 			networks.remove(e.getNetwork());

@@ -167,8 +167,8 @@ class IdentifiersCollector extends Collector {
 
 	private Searcher searcher;
 
-	public ArrayList<String> nodeHitsIdentifiers = new ArrayList<String>();
-	public ArrayList<String> edgeHitsIdentifiers = new ArrayList<String>();
+	public ArrayList<String> nodeHitsIdentifiers = new ArrayList<>();
+	public ArrayList<String> edgeHitsIdentifiers = new ArrayList<>();
 
 	public IdentifiersCollector(Searcher searcher) {
 		this.searcher = searcher;

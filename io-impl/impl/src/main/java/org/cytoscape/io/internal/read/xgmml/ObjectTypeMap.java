@@ -115,7 +115,7 @@ public class ObjectTypeMap {
 			}
 			break;
 		case LIST:
-			typedValue = new ArrayList<Object>();
+			typedValue = new ArrayList<>();
 		default:
 			break;
 		}

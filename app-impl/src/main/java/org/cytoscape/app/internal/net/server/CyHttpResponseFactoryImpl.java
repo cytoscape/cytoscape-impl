@@ -44,7 +44,7 @@ public class CyHttpResponseFactoryImpl implements CyHttpResponseFactory
     {
         return new CyHttpResponse()
         {
-            final Map<String,String> headers = new HashMap<String,String>();
+            final Map<String,String> headers = new HashMap<>();
 
             public int getStatusCode()
             {

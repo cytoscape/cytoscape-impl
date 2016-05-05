@@ -42,7 +42,7 @@ public class ColumnSetListener implements RowsSetListener {
 	private final Object lock = new Object();
 	
 	ColumnSetListener(final String columnName, final String sharedColumnName) {
-		tables = new WeakMapList<CyTable,CyTable>();
+		tables = new WeakMapList<>();
 		this.columnName = columnName;
 		this.sharedColumnName = sharedColumnName;
 	}

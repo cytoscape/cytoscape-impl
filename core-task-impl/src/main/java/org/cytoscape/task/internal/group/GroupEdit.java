@@ -80,7 +80,7 @@ public class GroupEdit extends AbstractCyEdit {
 			// Undo group nodes
 			mgr.destroyGroup(group);
 		} else if (groupSet != null) {
-			Set<CyGroup>newGroups = new HashSet<CyGroup>();
+			Set<CyGroup>newGroups = new HashSet<>();
 
 			// Undo ungroup nodes
 			for (CyGroup group: groupSet) {
@@ -130,24 +130,24 @@ public class GroupEdit extends AbstractCyEdit {
 	}
 
 	private void initMaps() {
-		nodeMap = new HashMap<CyGroup, List<CyNode>>();
-		edgesMap = new HashMap<CyGroup, List<CyEdge>>();
-		networkMap = new HashMap<CyGroup, List<CyNetwork>>();
-		collapseMap = new HashMap<CyGroup, List<CyNetwork>>();
+		nodeMap = new HashMap<>();
+		edgesMap = new HashMap<>();
+		networkMap = new HashMap<>();
+		collapseMap = new HashMap<>();
 	}
 
 	private void createShadowGroup(CyGroup group) {
 		// Get the nodes, edges, and external edges
 		nodeMap.put(group, group.getNodeList());
-		List<CyEdge> edgesList = new ArrayList<CyEdge>(group.getInternalEdgeList());
+		List<CyEdge> edgesList = new ArrayList<>(group.getInternalEdgeList());
 		edgesList.addAll(group.getExternalEdgeList());
 		edgesMap.put(group, edgesList);
 
 		// Get the networks
-		networkMap.put(group, new ArrayList<CyNetwork>(group.getNetworkSet()));
+		networkMap.put(group, new ArrayList<>(group.getNetworkSet()));
 
 		// Get the collapse set
-		List<CyNetwork> collapseList = new ArrayList<CyNetwork>();
+		List<CyNetwork> collapseList = new ArrayList<>();
 		for (CyNetwork net: group.getNetworkSet()) {
 			if (group.isCollapsed(net)) {
 				collapseList.add(net);

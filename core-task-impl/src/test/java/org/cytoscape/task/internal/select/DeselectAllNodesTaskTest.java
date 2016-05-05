@@ -55,7 +55,7 @@ public class DeselectAllNodesTaskTest extends AbstractSelectTaskTester {
 		when(net.getDefaultNodeTable()).thenReturn(nodeTable);
 		UndoSupport undoSupport = mock(UndoSupport.class);
 
-		Set<CyRow> selectedNodes = new HashSet<CyRow>();
+		Set<CyRow> selectedNodes = new HashSet<>();
 		selectedNodes.add(r3);
 		selectedNodes.add(r4);
 		when(nodeTable.getMatchingRows(CyNetwork.SELECTED, true)).thenReturn(selectedNodes);

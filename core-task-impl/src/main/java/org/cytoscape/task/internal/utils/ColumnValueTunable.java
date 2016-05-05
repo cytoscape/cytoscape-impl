@@ -53,10 +53,10 @@ public class ColumnValueTunable {
 		if (table == null) return null;
 
 		if (columnList == null || columnList.equalsIgnoreCase("all"))
-			return new ArrayList<CyColumn>(table.getColumns());
+			return new ArrayList<>(table.getColumns());
 
 		String[] columns = columnList.split(",");
-		List<CyColumn> returnValue = new ArrayList<CyColumn>();
+		List<CyColumn> returnValue = new ArrayList<>();
 		for (String column: columns) {
 			CyColumn c = table.getColumn(column);
 			if (c != null) returnValue.add(c);
@@ -67,7 +67,7 @@ public class ColumnValueTunable {
 	public List<String> getColumnNames(CyTable table) {
 		if (table == null) return null;
 
-		List<String> resultString = new ArrayList<String>();
+		List<String> resultString = new ArrayList<>();
 		for (CyColumn column: getColumnList(table))
 			resultString.add(column.getName());
 		return resultString;
@@ -76,7 +76,7 @@ public class ColumnValueTunable {
 	public Map<CyColumn, Object> getValueMap(CyTable table) {
 		if (table == null) return null;
 	
-		Map<CyColumn, Object> returnValues = new HashMap<CyColumn, Object>();
+		Map<CyColumn, Object> returnValues = new HashMap<>();
 
 		List<String> values = parseValues(valueList);
 		int index = 0;
@@ -96,7 +96,7 @@ public class ColumnValueTunable {
 		if (type.equals(List.class)) {
 			Class elementType = column.getListElementType();
 			String[] values = value.split(",");
-			List<Object> vList = new ArrayList<Object>();
+			List<Object> vList = new ArrayList<>();
 			for (String v: values) {
 				vList.add(getValue(v, elementType, column));
 			}
@@ -116,7 +116,7 @@ public class ColumnValueTunable {
 	}
 
 	private List<String> parseValues(String values) {
-		List<String> vList = new ArrayList<String>();
+		List<String> vList = new ArrayList<>();
 
 		boolean inList = false;
 		String listString = "";

@@ -186,7 +186,7 @@ public class DynamicLayoutMenu extends JMenu implements MenuListener {
             if ( selectedNodes.isEmpty() )
                 return CyLayoutAlgorithm.ALL_NODE_VIEWS;
 
-            Set<View<CyNode>> nodeViews = new HashSet<View<CyNode>>();
+            Set<View<CyNode>> nodeViews = new HashSet<>();
             for ( CyNode n : selectedNodes ) {
             	View<CyNode> nodeView = view.getNodeView(n);
             	if (nodeView.getVisualProperty(BasicVisualLexicon.NODE_VISIBLE))

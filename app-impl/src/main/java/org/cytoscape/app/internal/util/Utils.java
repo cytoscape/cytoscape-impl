@@ -108,7 +108,7 @@ public class Utils {
 	 */
 	public static ArrayList<String> splitByChar(String packageList,
 			char delimiter) {
-		ArrayList<String> splitList = new ArrayList<String>();
+		ArrayList<String> splitList = new ArrayList<>();
 		int index = 0;
 		while (index < packageList.length()) {
 			int nextIndex = indexOfChar(packageList, index, delimiter);

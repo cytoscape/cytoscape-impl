@@ -17,15 +17,15 @@ public class DefaultBuffer<C, E> implements TransformerBuffer<C, E> {
 		this.contextType = contextType;
 		this.elementType = elementType;
 		if (concurrencyLevel > 1) {
-			elements = Collections.newSetFromMap(new ConcurrentHashMap<E, Boolean>(initialCapacity, 0.75f, concurrencyLevel));
+			elements = Collections.newSetFromMap(new ConcurrentHashMap<>(initialCapacity, 0.75f, concurrencyLevel));
 		} else {
-			elements = Collections.newSetFromMap(new IdentityHashMap<E, Boolean>(initialCapacity));
+			elements = Collections.newSetFromMap(new IdentityHashMap<>(initialCapacity));
 		}
 	}
 
 	@Override
 	public List<E> getElementList(C context) {
-		return new ArrayList<E>(elements);
+		return new ArrayList<>(elements);
 	}
 	
 	@Override

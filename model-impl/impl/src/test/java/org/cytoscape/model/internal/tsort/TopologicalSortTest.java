@@ -37,7 +37,7 @@ class Node implements TopoGraphNode {
 
 	Node(final String nodeName) {
 		this.nodeName = nodeName;
-		this.dependents = new HashSet<TopoGraphNode>();
+		this.dependents = new HashSet<>();
 	}
 
 	@Override public String toString() { return nodeName; }
@@ -67,7 +67,7 @@ public class TopologicalSortTest extends TestCase {
 		node11.addDependent(node10);
 		node8.addDependent(node9);
 
-		final Collection<TopoGraphNode> nodes = new ArrayList<TopoGraphNode>();
+		final Collection<TopoGraphNode> nodes = new ArrayList<>();
 		nodes.add(node7);
 		nodes.add(node5);
 		nodes.add(node3);
@@ -104,7 +104,7 @@ public class TopologicalSortTest extends TestCase {
 		node11.addDependent(node10);
 		node8.addDependent(node9);
 
-		final Collection<TopoGraphNode> nodes = new ArrayList<TopoGraphNode>();
+		final Collection<TopoGraphNode> nodes = new ArrayList<>();
 		nodes.add(node7);
 		nodes.add(node5);
 		nodes.add(node3);
@@ -127,7 +127,7 @@ public class TopologicalSortTest extends TestCase {
 		nodeB.addDependent(nodeC);
 		nodeC.addDependent(nodeA);
 
-		final Collection<TopoGraphNode> nodes = new ArrayList<TopoGraphNode>();
+		final Collection<TopoGraphNode> nodes = new ArrayList<>();
 		nodes.add(nodeA);
 		nodes.add(nodeB);
 		nodes.add(nodeC);
@@ -150,7 +150,7 @@ public class TopologicalSortTest extends TestCase {
 
 		nodeB.addDependent(nodeB);
 
-		final Collection<TopoGraphNode> nodes = new ArrayList<TopoGraphNode>();
+		final Collection<TopoGraphNode> nodes = new ArrayList<>();
 		nodes.add(nodeA);
 		nodes.add(nodeB);
 		nodes.add(nodeC);

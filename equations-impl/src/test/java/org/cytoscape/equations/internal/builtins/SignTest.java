@@ -33,7 +33,7 @@ import junit.framework.*;
 
 public class SignTest extends TestCase {
 	public void testAll() throws Exception {
-		final Map<String, Object> variablesAndValues = new HashMap<String, Object>();
+		final Map<String, Object> variablesAndValues = new HashMap<>();
 		variablesAndValues.put("POS", Long.valueOf(+11));
 		variablesAndValues.put("NEG", Long.valueOf(-12));
 		variablesAndValues.put("ZERO", Long.valueOf(0));

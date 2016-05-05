@@ -61,7 +61,7 @@ public class SelectAdjacentEdgesTaskTest extends AbstractSelectTaskTester {
 		when(r3.get("selected", Boolean.class)).thenReturn(true);
 		when(r4.get("selected", Boolean.class)).thenReturn(false);
 		
-		Set<CyRow> selectedNodes = new HashSet<CyRow>();
+		Set<CyRow> selectedNodes = new HashSet<>();
 		selectedNodes.add(r3);
 		when(table.getMatchingRows(CyNetwork.SELECTED, true)).thenReturn(selectedNodes);
 		
@@ -69,7 +69,7 @@ public class SelectAdjacentEdgesTaskTest extends AbstractSelectTaskTester {
 		when (net.getNode(3L)).thenReturn(e3);
 		
 
-		List<CyEdge> el = new ArrayList<CyEdge>();
+		List<CyEdge> el = new ArrayList<>();
 		el.add(e1);
 		when(net.getAdjacentEdgeList(e3, CyEdge.Type.ANY)).thenReturn(el);
 

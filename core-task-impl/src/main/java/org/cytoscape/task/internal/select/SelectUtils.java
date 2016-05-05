@@ -67,7 +67,7 @@ final class SelectUtils {
 		eventHelper.silenceEventSource(table);
 
 		// Create the RowSetRecord collection
-		List<RowSetRecord> rowsChanged = new ArrayList<RowSetRecord>();
+		List<RowSetRecord> rowsChanged = new ArrayList<>();
 
 		for (final CyIdentifiable nodeOrEdge : objects) {
 			CyRow row = network.getRow(nodeOrEdge);

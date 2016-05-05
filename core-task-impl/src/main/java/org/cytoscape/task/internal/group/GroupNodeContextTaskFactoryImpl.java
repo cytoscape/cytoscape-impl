@@ -79,7 +79,7 @@ public class GroupNodeContextTaskFactoryImpl extends AbstractNodeViewTaskFactory
 
 	@Override
 	public TaskIterator createTaskIterator(View<CyNode> nodeView, CyNetworkView netView) {
-		List<CyGroup> groups = new ArrayList<CyGroup>();
+		List<CyGroup> groups = new ArrayList<>();
 		final List<CyNode> selNodes = CyTableUtil.getNodesInState(netView.getModel(), CyNetwork.SELECTED, true);
 
 		if (collapse) {

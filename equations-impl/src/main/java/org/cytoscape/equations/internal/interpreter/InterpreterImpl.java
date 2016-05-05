@@ -58,7 +58,7 @@ public class InterpreterImpl implements Interpreter {
 		if (equation == null || variableNameToDescriptorMap == null)
 			throw new NullPointerException("null equation or variableNameToDescriptorMap.");
 
-		this.argumentStack               = new Stack<Object>();
+		this.argumentStack               = new Stack<>();
 		this.variableNameToDescriptorMap = variableNameToDescriptorMap;
 
 		final Object[] code = equation.getCode();

@@ -90,17 +90,17 @@ public class CalculatorConverter {
 	private static final Map<String, String> oldArrowColors;
 
 	static {
-		converters = new HashMap<Class<? extends CyIdentifiable>, Map<String, CalculatorConverter>>();
-		converters.put(CyNode.class, new HashMap<String, CalculatorConverter>());
-		converters.put(CyEdge.class, new HashMap<String, CalculatorConverter>());
-		converters.put(CyNetwork.class, new HashMap<String, CalculatorConverter>());
+		converters = new HashMap<>();
+		converters.put(CyNode.class, new HashMap<>());
+		converters.put(CyEdge.class, new HashMap<>());
+		converters.put(CyNetwork.class, new HashMap<>());
 
-		oldLineStyles = new HashMap<String, String>();
+		oldLineStyles = new HashMap<>();
 		oldLineStyles.put("", "SOLID");
 		oldLineStyles.put("LINE", "SOLID");
 		oldLineStyles.put("DASHED", "EQUAL_DASH");
 
-		oldArrowColors = new HashMap<String, String>();
+		oldArrowColors = new HashMap<>();
 		oldArrowColors.put("WHITE", "255,255,255");
 		oldArrowColors.put("BLACK", "0,0,0");
 	}

@@ -202,8 +202,8 @@ public class ShapeAnnotationPanel extends JPanel {
 		});
 
 		borderWidthCombo = new JComboBox<>();
-		borderWidthCombo.setModel(new DefaultComboBoxModel<String>(
-				new String[] { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13" }));
+		borderWidthCombo.setModel(new DefaultComboBoxModel<>(
+				new String[]{"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13"}));
 		borderWidthCombo.setSelectedIndex(1);
 
 		for (int i = 0; i < borderWidthCombo.getModel().getSize(); i++) {

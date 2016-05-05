@@ -79,8 +79,8 @@ public class OpenSessionCommandTask extends AbstractTask {
 	@Tunable(description="Session file to load:", params="fileCategory=session;input=true")
 	public File file;
 
-	private Set<CyNetwork> currentNetworkSet = new HashSet<CyNetwork>();
-	private Set<CyGroup> currentGroupSet = new HashSet<CyGroup>();
+	private Set<CyNetwork> currentNetworkSet = new HashSet<>();
+	private Set<CyGroup> currentGroupSet = new HashSet<>();
 
 	/**
 	 * Constructor.<br>
@@ -192,7 +192,7 @@ public class OpenSessionCommandTask extends AbstractTask {
 			// This is necessary because the new CySession contains only registered networks;
 			// unregistered networks (e.g. CyGroup networks) may have been loaded and need to be disposed as well.
 			// The Network Table Manager should contain all networks, including the unregistered ones.
-			final Set<CyNetwork> newNetworkSet = new HashSet<CyNetwork>(netTableManager.getNetworkSet());
+			final Set<CyNetwork> newNetworkSet = new HashSet<>(netTableManager.getNetworkSet());
 			
 			for (final CyNetwork net : newNetworkSet) {
 				if (!currentNetworkSet.contains(net)) {

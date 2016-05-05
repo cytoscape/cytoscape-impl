@@ -57,7 +57,7 @@ public abstract class AbstractTableDataTask extends AbstractTask {
 		if (id == null) return null;
 	
 		if (columnList == null)
-			columnList = new ArrayList<String>(CyTableUtil.getColumnNames(table));
+			columnList = new ArrayList<>(CyTableUtil.getColumnNames(table));
 		
 		return getDataFromTable(table, id.getSUID(), columnList);
 	}
@@ -108,7 +108,7 @@ public abstract class AbstractTableDataTask extends AbstractTask {
 	}
 
 	public Map<String, Object> getDataFromTable(CyTable table, Object key, List<String> columnList) {
-		Map<String, Object> result = new HashMap<String, Object>();
+		Map<String, Object> result = new HashMap<>();
 		if (table.rowExists(key)) {
 			CyRow row = table.getRow(key);
 			for (String column: columnList) {
