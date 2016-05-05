@@ -53,6 +53,7 @@ import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.presentation.RenderingEngineManager;
 import org.cytoscape.view.vizmap.VisualMappingManager;
+import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.undo.UndoSupport;
 
@@ -182,7 +183,20 @@ abstract class AbstractNetworkFromSelectionTask extends AbstractCreationTask {
 		final CreateNetworkViewTask createViewTask = 
 			new CreateNetworkViewTask(undoSupport, networks, sourceViewFactory, networkViewManager,
 				                        null, eventHelper, vmMgr, renderingEngineMgr, appMgr, sourceView);
-		insertTasksAfterCurrentTask(createViewTask);
+		insertTasksAfterCurrentTask(createViewTask, new AbstractTask() {
+			@Override
+			@SuppressWarnings("unchecked")
+			public void run(final TaskMonitor tm) throws Exception {
+				// Select the new view
+				tm.setProgress(0.0);
+				final List<CyNetworkView> createdViews = (List<CyNetworkView>) createViewTask.getResults(List.class);
+				
+				if (!createdViews.isEmpty())
+					appMgr.setCurrentNetworkView(createdViews.get(createdViews.size() - 1));
+				
+				tm.setProgress(1.0);
+			}
+		});
 		
 		tm.setProgress(1.0);
 	}
