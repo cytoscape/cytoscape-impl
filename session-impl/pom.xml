@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>org.cytoscape</groupId>
 		<artifactId>impl-parent</artifactId>
-		<version>3.4.0</version>
+		<version>3.5.0-SNAPSHOT</version>
 	</parent>
 
 	<properties>
@@ -14,7 +14,7 @@
 
 	<groupId>org.cytoscape</groupId>
 	<artifactId>session-impl</artifactId>
-	<version>3.4.0</version>
+	<version>3.5.0-SNAPSHOT</version>
 	<name>Cytoscape Session Impl (${project.artifactId})</name>
 
 	<packaging>bundle</packaging>
