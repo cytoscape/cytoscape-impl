@@ -6,7 +6,7 @@ package org.cytoscape.tableimport.internal.ui;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -721,8 +721,8 @@ public class PreviewTablePanel extends JPanel {
 			// comma should you read the file using OpenCSV
 			// New method... Using OpenCSV
 			final CSVReader reader = new CSVReader(bufRd);
-			String[] rowData; // Note that rowData is roughly equivalent to
-								// "parts" in the old code.
+			String[] rowData; // Note that rowData is roughly equivalent to "parts" in the old code.
+			
 			while ((rowData = reader.readNext()) != null) {
 				final List<String> list = Arrays.asList(rowData);
 				line = list.isEmpty() ? "" : String.join(TextDelimiter.COMMA.getDelimiter(), list);

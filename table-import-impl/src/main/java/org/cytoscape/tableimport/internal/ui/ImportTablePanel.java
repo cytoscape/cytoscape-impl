@@ -6,7 +6,7 @@ package org.cytoscape.tableimport.internal.ui;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -55,13 +55,11 @@ import java.awt.Dialog.ModalityType;
 import java.awt.Insets;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
-import java.awt.event.MouseWheelListener;
 import java.beans.IndexedPropertyChangeEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -367,11 +365,6 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 
 		attributeFileLabel = new JLabel();
 
-		startRowSpinner = new JSpinner();
-
-		commentLineTextField = new JTextField();
-		commentLineTextField.setName("commentLineTextField");
-
 		attrTypeButtonGroup.add(nodeRadioButton);
 		attrTypeButtonGroup.add(edgeRadioButton);
 		attrTypeButtonGroup.add(networkRadioButton);
@@ -390,29 +383,20 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 			nodeRadioButton.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
 			nodeRadioButton.setMargin(new Insets(0, 0, 0, 0));
 			nodeRadioButton.setSelected(true);
-			nodeRadioButton.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent evt) {
-					attributeRadioButtonActionPerformed(evt);
-				}
+			nodeRadioButton.addActionListener((ActionEvent evt) -> {
+				attributeRadioButtonActionPerformed(evt);
 			});
 
 			edgeRadioButton.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
 			edgeRadioButton.setMargin(new Insets(0, 0, 0, 0));
-			edgeRadioButton.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent evt) {
-					attributeRadioButtonActionPerformed(evt);
-				}
+			edgeRadioButton.addActionListener((ActionEvent evt) -> {
+				attributeRadioButtonActionPerformed(evt);
 			});
 
 			networkRadioButton.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
 			networkRadioButton.setMargin(new Insets(0, 0, 0, 0));
-			networkRadioButton.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent evt) {
-					attributeRadioButtonActionPerformed(evt);
-				}
+			networkRadioButton.addActionListener((ActionEvent evt) -> {
+				attributeRadioButtonActionPerformed(evt);
 			});
 		}
 
@@ -426,21 +410,18 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 			attributeFileLabel.setText("Input File");
 			
 			selectAttributeFileButton.setText("Select File(s)");
-			selectAttributeFileButton.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent evt) {
-					try {
-						setPreviewPanel();
-					} catch (Exception e) {
-						JOptionPane.showMessageDialog(
-								serviceRegistrar.getService(CySwingApplication.class).getJFrame(),
-								"<html>Could not read selected file.<p>See <b>Help->Error Dialog</b> for further details.</html>",
-								"Error",
-								JOptionPane.ERROR_MESSAGE
-						);
-						logger.warn("Could not read selected file.", e);
+			selectAttributeFileButton.addActionListener((ActionEvent evt) -> {
+				try {
+					setPreviewPanel();
+				} catch (Exception e) {
+					JOptionPane.showMessageDialog(
+							serviceRegistrar.getService(CySwingApplication.class).getJFrame(),
+							"<html>Could not read selected file.<p>See <b>Help->Error Dialog</b> for further details.</html>",
+							"Error",
+							JOptionPane.ERROR_MESSAGE
+					);
+					logger.warn("Could not read selected file.", e);
 					}
-				}
 			});
 		}
 
@@ -449,12 +430,9 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 		 */
 		if (importType == ONTOLOGY_IMPORT) {
 			mappingAttributeComboBox.setEnabled(true);
-			mappingAttributeComboBox.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent evt) {
-					updateTypes(getPreviewPanel().getFileType());
-					setKeyList();
-				}
+			mappingAttributeComboBox.addActionListener((ActionEvent evt) -> {
+				updateTypes(getPreviewPanel().getFileType());
+				setKeyList();
 			});
 		}
 
@@ -494,50 +472,6 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 			}
 			@Override
 			public void keyTyped(KeyEvent evt) {
-			}
-		});
-
-		startRowSpinner.setName("startRowSpinner");
-
-		final SpinnerNumberModel startRowSpinnerModel = new SpinnerNumberModel(1, 1, 10000000, 1);
-		startRowSpinner.setModel(startRowSpinnerModel);
-		startRowSpinner.addMouseWheelListener(new MouseWheelListener() {
-			@Override
-			public void mouseWheelMoved(MouseWheelEvent evt) {
-				startRowSpinnerMouseWheelMoved(evt);
-			}
-		});
-		startRowSpinner.addChangeListener((ChangeEvent e) -> {
-			try {
-				if (!updating)
-					updatePreview();
-			} catch (IOException ex) {
-				logger.error("Error on ChangeEvent of spinner Start Import Row", ex);
-			}
-		});
-		startRowSpinner.setToolTipText("Load entries from this line");
-
-		commentLineTextField.setToolTipText("Lines that start with this string will be ignored");
-		commentLineTextField.getDocument().addDocumentListener(new DocumentListener() {
-			@Override
-			public void removeUpdate(DocumentEvent e) {
-				maybeUpdatePreview();
-			}
-			@Override
-			public void insertUpdate(DocumentEvent e) {
-				maybeUpdatePreview();
-			}
-			@Override
-			public void changedUpdate(DocumentEvent e) {
-				maybeUpdatePreview();
-			}
-			private void maybeUpdatePreview() {
-				try {
-					if (!updating)
-						updatePreview();
-				} catch (IOException ex) {
-					logger.error("Error on ChangeEvent of text field Ignore Lines Starting With", ex);
-				}
 			}
 		});
 
@@ -773,8 +707,8 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 							)
 							.addGroup(layout.createParallelGroup(Alignment.LEADING, true)
 									.addComponent(getTransferNameCheckBox(), rw, rw, Short.MAX_VALUE)
-									.addComponent(startRowSpinner, PREFERRED_SIZE, 54, PREFERRED_SIZE)
-									.addComponent(commentLineTextField, PREFERRED_SIZE, 54, PREFERRED_SIZE)
+									.addComponent(getStartRowSpinner(), PREFERRED_SIZE, 54, PREFERRED_SIZE)
+									.addComponent(getCommentLineTextField(), PREFERRED_SIZE, 54, PREFERRED_SIZE)
 									.addComponent(getImportAllCheckBox(), rw, rw, Short.MAX_VALUE)
 							)
 					)
@@ -783,11 +717,11 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 					.addComponent(getTransferNameCheckBox())
 					.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
 							.addComponent(startRowLabel)
-							.addComponent(startRowSpinner)
+							.addComponent(getStartRowSpinner())
 					)
 					.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
 							.addComponent(commentLineLabel)
-							.addComponent(commentLineTextField)
+							.addComponent(getCommentLineTextField())
 					)
 					.addComponent(getImportAllCheckBox())
 			);
@@ -829,7 +763,7 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 	protected PreviewTablePanel getPreviewPanel() {
 		if (previewPanel == null) {
 			if (importType == ONTOLOGY_IMPORT) {
-				commentLineTextField.setText("!");
+				getCommentLineTextField().setText("!");
 				getImportAllCheckBox().setEnabled(false);
 			}
 			
@@ -842,12 +776,8 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 	protected JButton getAdvancedButton() {
 		if (advancedButton == null) {
 			advancedButton = new JButton("Advanced Options...");
-			
-			advancedButton.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					showAdvancedDialog();
-				}
+			advancedButton.addActionListener((ActionEvent e) -> {
+				showAdvancedDialog();
 			});
 		}
 		
@@ -912,17 +842,14 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 	private JCheckBox getImportAllCheckBox() {
 		if (importAllCheckBox == null) {
 			importAllCheckBox = new JCheckBox("Import everything (Key is always ID)");
-			importAllCheckBox.addChangeListener(new ChangeListener() {
-				@Override
-				public void stateChanged(ChangeEvent e) {
-					// If Import All selected, ID combo box should be set to ID
-					if (importAllCheckBox.isSelected()) {
-						// Lock key to ID
-						mappingAttributeComboBox.setSelectedItem(ID);
-						mappingAttributeComboBox.setEnabled(false);
-					} else {
-						mappingAttributeComboBox.setEnabled(true);
-					}
+			importAllCheckBox.addChangeListener((ChangeEvent e) -> {
+				// If Import All selected, ID combo box should be set to ID
+				if (importAllCheckBox.isSelected()) {
+					// Lock key to ID
+					mappingAttributeComboBox.setSelectedItem(ID);
+					mappingAttributeComboBox.setEnabled(false);
+				} else {
+					mappingAttributeComboBox.setEnabled(true);
 				}
 			});
 		}
@@ -941,6 +868,57 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 		}
 		
 		return transferNameCheckBox;
+	}
+	
+	private JSpinner getStartRowSpinner() {
+		if (startRowSpinner == null) {
+			startRowSpinner = new JSpinner(new SpinnerNumberModel(1, 1, 10000000, 1));
+			startRowSpinner.setToolTipText("Load entries from this line");
+			startRowSpinner.addMouseWheelListener((MouseWheelEvent evt) -> {
+				startRowSpinnerMouseWheelMoved(evt);
+			});
+			startRowSpinner.addChangeListener((ChangeEvent e) -> {
+				try {
+					if (!updating)
+						updatePreview();
+				} catch (IOException ex) {
+					logger.error("Error on ChangeEvent of spinner Start Import Row", ex);
+				}
+			});
+		}
+		
+		return startRowSpinner;
+	}
+	
+	private JTextField getCommentLineTextField() {
+		if (commentLineTextField == null) {
+			commentLineTextField = new JTextField();
+			commentLineTextField.setToolTipText("Lines that start with this string will be ignored");
+			commentLineTextField.getDocument().addDocumentListener(new DocumentListener() {
+				@Override
+				public void removeUpdate(DocumentEvent e) {
+					maybeUpdatePreview();
+				}
+				@Override
+				public void insertUpdate(DocumentEvent e) {
+					maybeUpdatePreview();
+				}
+				@Override
+				public void changedUpdate(DocumentEvent e) {
+					maybeUpdatePreview();
+				}
+				private void maybeUpdatePreview() {
+					try {
+						if (!updating)
+							updatePreview();
+					} catch (IOException ex) {
+						logger.error("Error on ChangeEvent of text field Ignore Lines Starting With", ex);
+					}
+				}
+			});
+		}
+		
+		return commentLineTextField;
 	}
 	
 	private void attributeRadioButtonActionPerformed(ActionEvent evt) {
@@ -1042,7 +1020,7 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 				panelBuilder.setAnnotationComboBox();
 			}
 	
-			startRowSpinner.setEnabled(false);
+			getStartRowSpinner().setEnabled(false);
 			getPreviewPanel().getPreviewTable().getTableHeader().setReorderingAllowed(false);
 			
 			attrTypeButtonGroup.setSelected(nodeRadioButton.getModel(), true);
@@ -1180,7 +1158,7 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 			attributeRadioButtonActionPerformed(null);
 		}
 
-		startRowSpinner.setEnabled(true);
+		getStartRowSpinner().setEnabled(true);
 
 		final Window parent = SwingUtilities.getWindowAncestor(this);
 		
@@ -1430,13 +1408,13 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 
 	private int getStartLineNumber() {
 		if (isFirstRowNames())
-			return Integer.parseInt(startRowSpinner.getValue().toString());
+			return Integer.parseInt(getStartRowSpinner().getValue().toString());
 		
-		return Integer.parseInt(startRowSpinner.getValue().toString()) - 1;
+		return Integer.parseInt(getStartRowSpinner().getValue().toString()) - 1;
 	}
 
 	private String getCommentLinePrefix() {
-		return commentLineTextField.getText();
+		return getCommentLineTextField().getText();
 	}
 
 	public AttributeMappingParameters getAttributeMappingParameters() throws Exception {
