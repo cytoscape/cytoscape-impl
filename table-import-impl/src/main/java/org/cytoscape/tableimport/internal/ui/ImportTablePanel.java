@@ -108,6 +108,8 @@ import javax.swing.ToolTipManager;
 import javax.swing.WindowConstants;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.table.TableModel;
 import javax.xml.bind.JAXBException;
 
@@ -463,7 +465,7 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 				
 				try {
 					if (!updating)
-						displayPreview();
+						updatePreview();
 				} catch (IOException e) {
 					logger.error("Error on ChangeEvent of checkbox " + ((JCheckBox)evt.getSource()).getText(), e);
 				}
@@ -485,7 +487,7 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 			public void keyReleased(KeyEvent evt) {
 				try {
 					if (otherCheckBox.isSelected())
-						displayPreview();
+						updatePreview();
 				} catch (IOException e) {
 					logger.error("Error on otherDelimiterTextField.keyReleased", e);
 				}
@@ -505,15 +507,43 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 				startRowSpinnerMouseWheelMoved(evt);
 			}
 		});
-		startRowSpinner.setToolTipText("<html>Load entries from this line. <p>"
-				+ "(Click on the <strong><i>Refresh Preview</i></strong> button to refresh preview.)</p></html>");
+		startRowSpinner.addChangeListener((ChangeEvent e) -> {
+			try {
+				if (!updating)
+					updatePreview();
+			} catch (IOException ex) {
+				logger.error("Error on ChangeEvent of spinner Start Import Row", ex);
+			}
+		});
+		startRowSpinner.setToolTipText("Load entries from this line");
 
-		commentLineTextField.setToolTipText("<html>Lines start with this string will be ignored. <br>"
-				+ "(Click on the <strong><i>Refresh Preview</i></strong> button to refresh preview.)</html>");
+		commentLineTextField.setToolTipText("Lines that start with this string will be ignored");
+		commentLineTextField.getDocument().addDocumentListener(new DocumentListener() {
+			@Override
+			public void removeUpdate(DocumentEvent e) {
+				maybeUpdatePreview();
+			}
+			@Override
+			public void insertUpdate(DocumentEvent e) {
+				maybeUpdatePreview();
+			}
+			@Override
+			public void changedUpdate(DocumentEvent e) {
+				maybeUpdatePreview();
+			}
+			private void maybeUpdatePreview() {
+				try {
+					if (!updating)
+						updatePreview();
+				} catch (IOException ex) {
+					logger.error("Error on ChangeEvent of text field Ignore Lines Starting With", ex);
+				}
+			}
+		});
 
 		defaultInteractionTextField.setText(TypeUtil.DEFAULT_INTERACTION);
-		defaultInteractionTextField.setToolTipText("<html>If <font color=\"red\"><i>Default Interaction</i></font>"
-				+ " is selected, this value will be used for <i>Interaction Type</i>.<br></html>");
+		defaultInteractionTextField.setToolTipText("<html>If <b>Default Interaction</b>"
+				+ " is selected, this value will be used for <i>Interaction Type</i><br></html>");
 
 		globalLayout();
 
@@ -647,7 +677,7 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 			final JLabel startRowLabel = new JLabel("Start Import Row:");
 			startRowLabel.setHorizontalAlignment(JLabel.RIGHT);
 			
-			final JLabel commentLineLabel = new JLabel("Ignore lines starting with:");
+			final JLabel commentLineLabel = new JLabel("Ignore Lines Starting With:");
 			commentLineLabel.setHorizontalAlignment(JLabel.RIGHT);
 			
 			final JLabel defaultInteractionLabel = new JLabel("Default Interaction:");
@@ -904,12 +934,9 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 		if (transferNameCheckBox == null) {
 			transferNameCheckBox = new JCheckBox("Use first line as column names");
 			transferNameCheckBox.setSelected(isFirstRowNames());
-			transferNameCheckBox.addChangeListener(new ChangeListener() {
-				@Override
-				public void stateChanged(ChangeEvent e) {
-					useFirstRowAsNames(transferNameCheckBox.isSelected());
-					repaint();
-				}
+			transferNameCheckBox.addChangeListener((ChangeEvent e) -> {
+				useFirstRowAsNames(transferNameCheckBox.isSelected());
+				repaint();
 			});
 		}
 		
@@ -999,8 +1026,9 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 		}
 	}
 
-	private final void displayPreview() throws IOException {
+	private final void updatePreview() throws IOException {
 		readAnnotationForPreview(checkDelimiter());
+		useFirstRowAsNames(getTransferNameCheckBox().isSelected());
 		getPreviewPanel().repaint();
 	}
 

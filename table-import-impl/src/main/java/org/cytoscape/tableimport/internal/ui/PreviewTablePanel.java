@@ -724,15 +724,21 @@ public class PreviewTablePanel extends JPanel {
 			String[] rowData; // Note that rowData is roughly equivalent to
 								// "parts" in the old code.
 			while ((rowData = reader.readNext()) != null) {
-				final Vector<String> row = new Vector<>();
+				final List<String> list = Arrays.asList(rowData);
+				line = list.isEmpty() ? "" : String.join(TextDelimiter.COMMA.getDelimiter(), list);
 				
-				for (String field : rowData)
-					row.add(field);
+				if (!ignoreLine(line, counter)) {
+					final Vector<String> row = new Vector<>();
+					
+					for (String field : rowData)
+						row.add(field);
+					
+					if (rowData.length > maxColumn)
+						maxColumn = rowData.length;
+					
+					data.add(row);
+				}
 				
-				if (rowData.length > maxColumn)
-					maxColumn = rowData.length;
-				
-				data.add(row);
 				counter++;
 
 				if (importAll == false && counter >= size)
@@ -747,10 +753,7 @@ public class PreviewTablePanel extends JPanel {
 			String[] parts;
 			
 			while ((line = bufRd.readLine()) != null) {
-				if (((commentChar != null) && line.startsWith(commentChar)) || (line.trim().length() == 0)
-						|| (counter < startLine)) {
-					// ignore
-				} else {
+				if (!ignoreLine(line, counter)) {
 					final Vector<String> row = new Vector<>();
 
 					if (delimiterRegEx.length() == 0) {
@@ -793,6 +796,11 @@ public class PreviewTablePanel extends JPanel {
 		} else {
 			return new PreviewTableModel(data, new Vector<String>(), firstRowNames);
 		}
+	}
+
+	private boolean ignoreLine(final String line, int index) {
+		return ((commentChar != null) && line.startsWith(commentChar)) || (line.trim().length() == 0)
+				|| (index < startLine);
 	}
 	
 	private void showEditDialog(final int colIdx) {
