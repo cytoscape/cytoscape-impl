@@ -632,11 +632,12 @@ public class PreviewTablePanel extends JPanel {
 		final Vector<Vector<String>> data = new Vector<>();
 
 		int rowCount = 0;
+		int validRowCount = 0;
 		FormulaEvaluator evaluator = sheet.getWorkbook().getCreationHelper().createFormulaEvaluator();
 		DataFormatter formatter = new DataFormatter();
 		Row row;
 
-		while (((row = sheet.getRow(rowCount)) != null) && (rowCount < size)) {
+		while (((row = sheet.getRow(rowCount)) != null) && (validRowCount < size)) {
 			if (rowCount >= startLine) {
 				final Vector<String> rowVector = new Vector<>();
 
@@ -654,6 +655,7 @@ public class PreviewTablePanel extends JPanel {
 				}
 
 				data.add(rowVector);
+				validRowCount++;
 			}
 
 			rowCount++;
@@ -712,7 +714,8 @@ public class PreviewTablePanel extends JPanel {
 		// TODO: Since the CSV parser allows for other delimiters, consider exploring using it for everything.
 
 		// The variables are modified by both the new method and the old method.
-		int counter = 0;
+		int rowCount = 0;
+		int validRowCount = 0;
 		maxColumn = 0;
 		data = new Vector<>();
 		
@@ -727,7 +730,7 @@ public class PreviewTablePanel extends JPanel {
 				final List<String> list = Arrays.asList(rowData);
 				line = list.isEmpty() ? "" : String.join(TextDelimiter.COMMA.getDelimiter(), list);
 				
-				if (!ignoreLine(line, counter)) {
+				if (!ignoreLine(line, rowCount)) {
 					final Vector<String> row = new Vector<>();
 					
 					for (String field : rowData)
@@ -737,11 +740,12 @@ public class PreviewTablePanel extends JPanel {
 						maxColumn = rowData.length;
 					
 					data.add(row);
+					validRowCount++;
 				}
 				
-				counter++;
+				rowCount++;
 
-				if (importAll == false && counter >= size)
+				if (importAll == false && validRowCount >= size)
 					break;
 			}
 			
@@ -753,7 +757,7 @@ public class PreviewTablePanel extends JPanel {
 			String[] parts;
 			
 			while ((line = bufRd.readLine()) != null) {
-				if (!ignoreLine(line, counter)) {
+				if (!ignoreLine(line, rowCount)) {
 					final Vector<String> row = new Vector<>();
 
 					if (delimiterRegEx.length() == 0) {
@@ -771,11 +775,12 @@ public class PreviewTablePanel extends JPanel {
 						maxColumn = parts.length;
 
 					data.add(row);
+					validRowCount++;
 				}
 
-				counter++;
+				rowCount++;
 
-				if (importAll == false && counter >= size)
+				if (importAll == false && validRowCount >= size)
 					break;
 			}
 		}
