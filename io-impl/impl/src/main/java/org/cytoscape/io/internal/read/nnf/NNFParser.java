@@ -1,5 +1,8 @@
 package org.cytoscape.io.internal.read.nnf;
 
+import java.util.ArrayList;
+import java.util.Collection;
+
 /*
  * #%L
  * Cytoscape IO Impl (io-impl)
@@ -25,23 +28,22 @@ package org.cytoscape.io.internal.read.nnf;
  */
 
 import java.util.HashMap;
-import java.util.Map;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.ArrayList;
+import java.util.Map;
+import java.util.Set;
 
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyTable;
-
-import java.util.Collection;
-
 import org.cytoscape.model.CyRow;
+import org.cytoscape.model.CyTable;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CySubNetwork;
-
-import java.util.Iterator;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.session.CyNetworkNaming;
 
 /**
  * Parser for NNF files.
@@ -49,6 +51,7 @@ import java.util.Iterator;
  * @author kono, ruschein
  */
 public class NNFParser {
+	
 	private static final String HAS_NESTED_NETWORK_ATTRIBUTE = "has_nested_network";
 	
 	// For performance, these fields will be reused.
@@ -56,43 +59,40 @@ public class NNFParser {
 	private int length;
 
 	// List of root network plus all nested networks.
-	private final List<CyNetwork> networks;
+	private final Set<CyNetwork> networks;
 	private CyNetwork overviewwork;
-	// Hash map from title to actual network
-	private Map<String, CyNetwork> networkMap;
-	private final CyRootNetwork rootNetwork;
-	private final  Map<Object, CyNode> nMap;
 	
-	public NNFParser(CyRootNetwork rootNetwork, CyNetworkFactory cyNetworkFactory, Map<Object, CyNode> nMap) {
-		if(rootNetwork != null) {
+	/** Map the original network name (as parsed from the file) to a network created by this parser instance. */
+	private Map<String, CyNetwork> networksByName;
+	
+	private final CyRootNetwork rootNetwork;
+	private final Map<Object, CyNode> nMap;
+
+	private final CyNetworkNaming namingUtil;
+	
+	public NNFParser(final CyRootNetwork rootNetwork, final CyNetworkFactory cyNetworkFactory, Map<Object, CyNode> nMap,
+			final CyServiceRegistrar serviceRegistrar) {
+		namingUtil = serviceRegistrar.getService(CyNetworkNaming.class);
+		
+		this.nMap = nMap;
+		networksByName = new HashMap<>();
+		networks = new LinkedHashSet<>();
+		
+		if (rootNetwork != null) {
 			this.rootNetwork = rootNetwork;
-			this.overviewwork = this.rootNetwork.addSubNetwork();
+			overviewwork = this.rootNetwork.addSubNetwork();
 		} else {
 			overviewwork = cyNetworkFactory.createNetwork();
-			this.rootNetwork = ((CySubNetwork)overviewwork).getRootNetwork();
+			this.rootNetwork = ((CySubNetwork) overviewwork).getRootNetwork();
 		}
-		this.nMap = nMap;
 		
-		networkMap = new HashMap<String, CyNetwork>();
-		networks = new ArrayList<CyNetwork>();	
+		networks.add(overviewwork);
 	}
 
-
-	/** Returns the first network with title "networkTitle" or null, if there is no network w/ this title.
-	 */
-	private CyNetwork getNetworkByTitle(final String networkTitle) {
-		Iterator<CySubNetwork> it = this.rootNetwork.getSubNetworkList().iterator();
-		
-		while (it.hasNext()){
-			CySubNetwork subnet = it.next();
-			String title = subnet.getRow(subnet).get(CyNetwork.NAME, String.class);
-			if (title != null && title.equals(networkTitle))
-				return subnet;
-		}
-		return null;		
+	private CyNetwork getNetworkByName(final String name) {
+		return networksByName.get(name);
 	}
 	
-
 	/**
 	 * Parse an entry/line in an NNF file.
 	 * 
@@ -103,53 +103,47 @@ public class NNFParser {
 		parts = splitLine(line);
 		length = parts.length;
 
-		CyNetwork network = networkMap.get(parts[0]);
-		
-		if (this.overviewwork.getRow(this.overviewwork).get(CyNetwork.NAME, String.class).equalsIgnoreCase(parts[0])){
-			network = this.overviewwork;
-		}
+		final String originalName = parts[0];
+		CyNetwork network = getNetworkByName(originalName);
 		
 		if (network == null) {
-			// Reuse existing networks, if possible:
-			network = getNetworkByTitle(parts[0]);
-			if (network == null) {
-				// Create network without view.  View will be created later.
-				network = this.rootNetwork.addSubNetwork(); 
-				network.getRow(network).set(CyNetwork.NAME, parts[0]);
-			}
+			// Create network without view.  View will be created later.
+			network = rootNetwork.addSubNetwork();
+			
+			final String actualName = namingUtil.getSuggestedNetworkTitle(originalName);
+			network.getRow(network).set(CyNetwork.NAME, actualName);
 
-			networkMap.put(parts[0], network);
+			networksByName.put(originalName, network);
 			networks.add(network);
 
 			// Attempt to nest network within the node with the same name			
-			CyNode parent = getNodeByName(networkMap, parts[0]);
-			if (parent != null) {
+			CyNode parent = getNodeByName(originalName);
+			
+			if (parent != null)
 				setNestedNetwork(network, parent, network);
-			}
 			
 			// is the node exist in the overview network
-			parent = getNodefromOverview(parts[0]);
-			if (parent != null) {
+			parent = getNodefromOverview(originalName);
+			
+			if (parent != null)
 				setNestedNetwork(network, parent, network);
-			}
 		}
 
 		if (length == 2) {
-			
 			CyNode node;
+			
 			if (this.nMap.get(parts[1]) == null){
 				node = network.addNode();
 				this.nMap.put(parts[1], this.rootNetwork.getNode(node.getSUID()));
-			}
-			else {
+			} else {
 				node = this.nMap.get(parts[1]);
 				CySubNetwork subnet = (CySubNetwork) network;
 				subnet.addNode(node);
 			}
 			
 			network.getRow(node).set(CyNetwork.NAME, parts[1]);
-						
-			final CyNetwork nestedNetwork = networkMap.get(parts[1]);
+			final CyNetwork nestedNetwork = getNetworkByName(parts[1]);
+			
 			if (nestedNetwork != null) {
 				setNestedNetwork(network, node, nestedNetwork);
 			}
@@ -182,7 +176,7 @@ public class NNFParser {
 				network.getRow(source).set(CyNetwork.NAME, parts[1]);
 			}
 			
-			CyNetwork nestedNetwork = networkMap.get(parts[1]);
+			CyNetwork nestedNetwork = networksByName.get(parts[1]);
 			if (nestedNetwork != null) {
 				setNestedNetwork(network, source, nestedNetwork);
 			}
@@ -220,7 +214,7 @@ public class NNFParser {
 			}
 
 			//
-			nestedNetwork = networkMap.get(parts[3]);
+			nestedNetwork = networksByName.get(parts[3]);
 			if (nestedNetwork != null) {
 				setNestedNetwork(network, target, nestedNetwork);
 			}
@@ -256,12 +250,12 @@ public class NNFParser {
 		}
 	}
 
-	private CyNode getNodeByName(Map<String, CyNetwork> networkMap, String nodeName){
+	private CyNode getNodeByName(String nodeName){
 		CyNode retNode = null;
-		Iterator<String> it = networkMap.keySet().iterator();
+		Iterator<String> it = networksByName.keySet().iterator();
 		
 		while (it.hasNext()){
-			CyNetwork network = networkMap.get(it.next());
+			CyNetwork network = networksByName.get(it.next());
 			
 			Collection<CyRow> matchingRows = network.getDefaultNodeTable().getMatchingRows(CyNetwork.NAME, nodeName);
 			if (matchingRows.isEmpty()){
@@ -280,7 +274,6 @@ public class NNFParser {
 		return retNode;
 	}
 
-	
 	private CyNode getNodefromOverview(String nodeName) {
 		Collection<CyRow> matchingRows = this.overviewwork.getDefaultNodeTable().getMatchingRows(CyNetwork.NAME, nodeName);
 		if (matchingRows.isEmpty()){
@@ -292,13 +285,12 @@ public class NNFParser {
 		return this.overviewwork.getNode(suid);
 	}
 	
-	
-	public void setOverViewnetworkName(String overviewNetworkName){
-		this.overviewwork.getRow(this.overviewwork).set(CyNetwork.NAME, overviewNetworkName);
-		this.networks.add(this.overviewwork);
+	public void setOverViewnetworkName(final String desiredName){
+		final String actualName = namingUtil.getSuggestedNetworkTitle(desiredName);
+		overviewwork.getRow(overviewwork).set(CyNetwork.NAME, actualName);
+		networksByName.put(desiredName, overviewwork);
 	}
 	
-
 	static public String[] splitLine(final String line) {
 		final List<String> parts = new ArrayList<String>();
 		boolean escaped = false;
@@ -331,7 +323,7 @@ public class NNFParser {
 		return parts.toArray(array);
 	}
 
-	protected List<CyNetwork> getNetworks() {
+	protected Set<CyNetwork> getNetworks() {
 		return networks;
 	}
 }
