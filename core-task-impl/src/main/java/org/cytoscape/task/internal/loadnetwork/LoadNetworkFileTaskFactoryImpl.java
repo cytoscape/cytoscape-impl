@@ -32,6 +32,7 @@ import org.cytoscape.io.read.CyNetworkReader;
 import org.cytoscape.io.read.CyNetworkReaderManager;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.property.CyProperty;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.CyNetworkNaming;
 import org.cytoscape.task.read.LoadNetworkFileTaskFactory;
 import org.cytoscape.view.model.CyNetworkViewFactory;
@@ -54,12 +55,12 @@ public class LoadNetworkFileTaskFactoryImpl extends AbstractTaskFactory implemen
 	private CyNetworkNaming cyNetworkNaming;
 	private final VisualMappingManager vmm;
 	private final CyNetworkViewFactory nullNetworkViewFactory;
-
+	private final CyServiceRegistrar serviceRegistrar;
 
 	public LoadNetworkFileTaskFactoryImpl(CyNetworkReaderManager mgr, CyNetworkManager netmgr,
 			final CyNetworkViewManager networkViewManager, CyProperty<Properties> cyProp,
 			CyNetworkNaming cyNetworkNaming, final VisualMappingManager vmm,
-			final CyNetworkViewFactory nullNetworkViewFactory) {
+			final CyNetworkViewFactory nullNetworkViewFactory, final CyServiceRegistrar serviceRegistrar) {
 		
 		this.mgr = mgr;
 		this.netmgr = netmgr;
@@ -68,12 +69,14 @@ public class LoadNetworkFileTaskFactoryImpl extends AbstractTaskFactory implemen
 		this.cyNetworkNaming = cyNetworkNaming;
 		this.vmm = vmm;
 		this.nullNetworkViewFactory = nullNetworkViewFactory;
+		this.serviceRegistrar = serviceRegistrar;
 	}
 	
 	@Override
 	public TaskIterator createTaskIterator() {
 		// Load, visualize, and layout.
-		return new TaskIterator(3, new LoadNetworkFileTask(mgr, netmgr, networkViewManager, props, cyNetworkNaming, vmm, nullNetworkViewFactory));
+		return new TaskIterator(3, new LoadNetworkFileTask(mgr, netmgr, networkViewManager, props, cyNetworkNaming, vmm,
+				nullNetworkViewFactory, serviceRegistrar));
 	}
 
 	@Override
@@ -81,14 +84,16 @@ public class LoadNetworkFileTaskFactoryImpl extends AbstractTaskFactory implemen
 		
 		CyNetworkReader reader = mgr.getReader(file.toURI(), file.toURI().toString());
 
-		return new TaskIterator(3, new LoadNetworkTask(mgr, netmgr, reader, file.getName(),networkViewManager, props, cyNetworkNaming, vmm, nullNetworkViewFactory));
+		return new TaskIterator(3, new LoadNetworkTask(mgr, netmgr, reader, file.getName(),networkViewManager, props,
+				cyNetworkNaming, vmm, nullNetworkViewFactory, serviceRegistrar));
 	}
 
 	@Override
 	public TaskIterator createTaskIterator(File file, TaskObserver observer) {
 		CyNetworkReader reader = mgr.getReader(file.toURI(), file.toURI().toString());
 
-		return new TaskIterator(3,new LoadNetworkTask(mgr, netmgr, reader, file.getName(),networkViewManager, props, cyNetworkNaming, vmm, nullNetworkViewFactory));
+		return new TaskIterator(3,new LoadNetworkTask(mgr, netmgr, reader, file.getName(),networkViewManager, props,
+				cyNetworkNaming, vmm, nullNetworkViewFactory, serviceRegistrar));
 
 		
 	}

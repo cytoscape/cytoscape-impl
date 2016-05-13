@@ -31,6 +31,7 @@ import static javax.swing.GroupLayout.Alignment.LEADING;
 
 import java.awt.Point;
 import java.awt.Robot;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.geom.Point2D;
 
@@ -48,6 +49,30 @@ import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.presentation.annotations.ArrowAnnotation.ArrowEnd;
 
+/*
+ * #%L
+ * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
+
 @SuppressWarnings("serial")
 public class ArrowAnnotationDialog extends JDialog {
 	
@@ -59,29 +84,28 @@ public class ArrowAnnotationDialog extends JDialog {
 
 	private final CyAnnotator cyAnnotator;    
 	private final DGraphView view;    
-	private final Point2D startingLocation;
 	private final ArrowAnnotationImpl annotation;
 	private ArrowAnnotationImpl preview;
-	private DingAnnotation source = null;
+	private DingAnnotation source;
 	private final boolean create;
 		
-	public ArrowAnnotationDialog(DGraphView view, Point2D start) {
+	public ArrowAnnotationDialog(final DGraphView view, final Point2D start, final Window owner) {
+		super(owner);
 		this.view = view;
 		this.cyAnnotator = view.getCyAnnotator();
-		this.startingLocation = start;
-		this.annotation = new ArrowAnnotationImpl(cyAnnotator, view);
+		this.annotation = new ArrowAnnotationImpl(cyAnnotator, view, owner);
 		this.source = cyAnnotator.getAnnotationAt(start);
 		this.create = true;
 
 		initComponents();
 	}
 
-	public ArrowAnnotationDialog(ArrowAnnotationImpl annotation) {
+	public ArrowAnnotationDialog(final ArrowAnnotationImpl annotation, final Window owner) {
+		super(owner);
 		this.annotation = annotation;
 		this.cyAnnotator = annotation.getCyAnnotator();
 		this.view = cyAnnotator.getView();
 		this.create = false;
-		this.startingLocation = null;
 
 		initComponents();
 	}
@@ -93,7 +117,7 @@ public class ArrowAnnotationDialog extends JDialog {
 		setResizable(false);
 
 		// Create the preview panel
-		preview = new ArrowAnnotationImpl(cyAnnotator, view);
+		preview = new ArrowAnnotationImpl(cyAnnotator, view, getOwner());
 		preview.setUsedForPreviews(true);
 		((ArrowAnnotationImpl) preview).setSize(400.0, 100.0);
 		

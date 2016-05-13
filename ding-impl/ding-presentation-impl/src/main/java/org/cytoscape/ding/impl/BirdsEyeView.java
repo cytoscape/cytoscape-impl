@@ -33,6 +33,8 @@ import java.awt.Rectangle;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
+import java.awt.event.MouseWheelEvent;
+import java.awt.event.MouseWheelListener;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.VolatileImage;
@@ -57,6 +59,8 @@ import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Swing component to display overview of the network.
@@ -106,6 +110,8 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 	private Timer redrawTimer;
 	private UpdateImage redrawTask;
 	private	BirdsEyeViewLOD bevLOD;
+	
+	private static final Logger logger = LoggerFactory.getLogger(BirdsEyeView.class);
 
 	/**
 	 * Creates a new BirdsEyeView object.
@@ -129,6 +135,7 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 		VIEW_WINDOW_BORDER_COLOR = new Color(c.getRed(), c.getGreen(), c.getBlue(), 90);
 
 		addMouseListener(new InnerMouseListener());
+		addMouseWheelListener(new InnerMouseWheelListener());
 		addMouseMotionListener(new InnerMouseMotionListener());
 		setPreferredSize(MIN_SIZE);
 		setMinimumSize(MIN_SIZE);
@@ -305,16 +312,20 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 	public void updateSubgraph(List<CyNode> nodes, List<CyEdge> edges) {
 		// System.out.println("BirdsEyeView: updateSubgraph with "+nodes.size()+" nodes and "+edges.size()+" edges");
 		try {
-		if (networkImage == null) {
-			// System.out.println("BirdsEyeView: updateSubgraph creating network image");
-			final GraphicsConfiguration gc = getGraphicsConfiguration();
-			networkImage = gc.createCompatibleVolatileImage(imageWidth, imageHeight, VolatileImage.OPAQUE);
-		}
-		// Now draw the network
-		viewModel.drawSnapshot(networkImage, new BirdsEyeViewLOD(viewModel.getGraphLOD()), viewModel.getBackgroundPaint(),
-							m_extents[0], m_extents[1], m_myXCenter, m_myYCenter, m_myScaleFactor, nodes, edges);
+			if (networkImage == null) {
+				// System.out.println("BirdsEyeView: updateSubgraph creating network image");
+				final GraphicsConfiguration gc = getGraphicsConfiguration();
+				
+				if (gc != null)
+					networkImage = gc.createCompatibleVolatileImage(imageWidth, imageHeight, VolatileImage.OPAQUE);
+			}
+			
+			// Now draw the network
+			viewModel.drawSnapshot(networkImage, new BirdsEyeViewLOD(viewModel.getGraphLOD()),
+					viewModel.getBackgroundPaint(), m_extents[0], m_extents[1], m_myXCenter, m_myYCenter,
+					m_myScaleFactor, nodes, edges);
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error("Error updating subgraph", e);
 		}
 
 		boundChanged = false; imageUpdated = false; imageDirty = true;
@@ -368,8 +379,17 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 		@Override public void mousePressed(MouseEvent e) {
 			if (e.getButton() == MouseEvent.BUTTON1) {
 				m_currMouseButton = 1;
-				m_lastXMousePos = e.getX();
+				m_lastXMousePos = e.getX(); // needed by drag listener
 				m_lastYMousePos = e.getY();
+				
+				double halfWidth  = (double)getWidth() / 2.0d;
+				double halfHeight = (double)getHeight() / 2.0d;
+				
+				double centerX = ((m_lastXMousePos - halfWidth) / m_myScaleFactor) + m_myXCenter;
+				double centerY = ((m_lastYMousePos - halfHeight) / m_myScaleFactor) + m_myYCenter;
+				
+				viewModel.setCenter(centerX, centerY);
+				viewModel.updateView();
 			}
 		}
 
@@ -380,6 +400,15 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 			}
 		}
 	}
+	
+	
+	private final class InnerMouseWheelListener implements MouseWheelListener {
+		@Override 
+		public void mouseWheelMoved(MouseWheelEvent e) {
+			viewModel.m_networkCanvas.mouseWheelMoved(e);
+		}
+	}
+	
 
 	/**
 	 * This class is for panning function.
@@ -484,7 +513,6 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 				final GraphicsConfiguration gc = getGraphicsConfiguration();
 				VolatileImage networkImage2 = gc.createCompatibleVolatileImage(imageWidth, imageHeight, VolatileImage.OPAQUE);
 
-				long timeBegin = System.currentTimeMillis();
 				// Now draw the network
 				// System.out.println("Drawing snapshot");
 				if (viewModel.getGraphLOD() instanceof DingGraphLOD)
@@ -499,9 +527,9 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 				imageDirty = false;
 				networkImage = networkImage2;
 			} catch (Exception e) {
-				e.printStackTrace();
+				logger.error("UpdateImage Error", e);
 			}
-			// System.out.println("...done");
+			
 			imageUpdated = false;
 			boundChanged = false;
 

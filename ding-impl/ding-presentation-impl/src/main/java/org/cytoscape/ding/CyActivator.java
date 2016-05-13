@@ -6,7 +6,7 @@ package org.cytoscape.ding;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -77,6 +77,7 @@ import org.cytoscape.ding.impl.DingGraphLODAll;
 import org.cytoscape.ding.impl.DingNavigationRenderingEngineFactory;
 import org.cytoscape.ding.impl.DingRenderer;
 import org.cytoscape.ding.impl.DingRenderingEngineFactory;
+import org.cytoscape.ding.impl.DingThumbnailRenderingEngineFactory;
 import org.cytoscape.ding.impl.DingViewModelFactory;
 import org.cytoscape.ding.impl.DingVisualStyleRenderingEngineFactory;
 import org.cytoscape.ding.impl.HandleFactoryImpl;
@@ -136,10 +137,6 @@ import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.VisualLexicon;
-import org.cytoscape.view.presentation.RenderingEngineManager;
-//
-// Annotation api
-//
 import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.annotations.AnnotationFactory;
 import org.cytoscape.view.presentation.annotations.AnnotationManager;
@@ -177,7 +174,6 @@ public class CyActivator extends AbstractCyActivator {
 		CyApplicationManager cyApplicationManagerServiceRef = getService(bc, CyApplicationManager.class);
 		CustomGraphicsManager customGraphicsManagerServiceRef = getService(bc, CustomGraphicsManager.class);
 		CyCustomGraphics2Manager cyCustomGraphics2ManagerServiceRef = getService(bc, CyCustomGraphics2Manager.class);
-		RenderingEngineManager renderingEngineManagerServiceRef = getService(bc, RenderingEngineManager.class);
 		CyRootNetworkManager cyRootNetworkFactoryServiceRef = getService(bc, CyRootNetworkManager.class);
 		UndoSupport undoSupportServiceRef = getService(bc, UndoSupport.class);
 		CyTableFactory cyDataTableFactoryServiceRef = getService(bc, CyTableFactory.class);
@@ -212,16 +208,17 @@ public class CyActivator extends AbstractCyActivator {
 		DingRenderingEngineFactory dingRenderingEngineFactory = new DingRenderingEngineFactory(
 				cyDataTableFactoryServiceRef, cyRootNetworkFactoryServiceRef, undoSupportServiceRef,
 				spacialIndex2DFactoryServiceRef, dVisualLexicon, dialogTaskManager,
-				cyServiceRegistrarRef, cyNetworkTableManagerServiceRef, cyEventHelperServiceRef,
+				cyServiceRegistrarRef, cyNetworkTableManagerServiceRef, cyEventHelperServiceRef, iconManagerServiceRef,
 				vtfListener, annotationFactoryManager, dingGraphLOD, vmmServiceRef,cyNetworkViewManagerServiceRef, handleFactory);
 		DingNavigationRenderingEngineFactory dingNavigationRenderingEngineFactory = new DingNavigationRenderingEngineFactory(
-				cyServiceRegistrarServiceRef, dVisualLexicon, renderingEngineManagerServiceRef,
-				cyApplicationManagerServiceRef);
+				cyServiceRegistrarServiceRef, dVisualLexicon);
 		DingRenderingEngineFactory dingVisualStyleRenderingEngineFactory = new DingVisualStyleRenderingEngineFactory(
 				cyDataTableFactoryServiceRef, cyRootNetworkFactoryServiceRef, undoSupportServiceRef,
 				spacialIndex2DFactoryServiceRef, dVisualLexicon, dialogTaskManager,
-				cyServiceRegistrarRef, cyNetworkTableManagerServiceRef, cyEventHelperServiceRef,
+				cyServiceRegistrarRef, cyNetworkTableManagerServiceRef, cyEventHelperServiceRef, iconManagerServiceRef,
 				vtfListener, annotationFactoryManager, dingGraphLOD, vmmServiceRef,cyNetworkViewManagerServiceRef, handleFactory);
+		DingThumbnailRenderingEngineFactory dingThumbnailRenderingEngineFactory = new DingThumbnailRenderingEngineFactory(dVisualLexicon, cyServiceRegistrarServiceRef);
+		
 		AddEdgeNodeViewTaskFactoryImpl addEdgeNodeViewTaskFactory = new AddEdgeNodeViewTaskFactoryImpl(vmmServiceRef, cyEventHelperServiceRef);
 
 		ContinuousMappingCellRendererFactory continuousMappingCellRendererFactory = getService(bc, ContinuousMappingCellRendererFactory.class);
@@ -233,13 +230,14 @@ public class CyActivator extends AbstractCyActivator {
 		DingViewModelFactory dingNetworkViewFactory = new DingViewModelFactory(cyDataTableFactoryServiceRef,
 				cyRootNetworkFactoryServiceRef, undoSupportServiceRef, spacialIndex2DFactoryServiceRef, dVisualLexicon,
 				dialogTaskManager, cyServiceRegistrarRef, cyNetworkTableManagerServiceRef,
-				cyEventHelperServiceRef, vtfListener, annotationFactoryManager, dingGraphLOD, vmmServiceRef, cyNetworkViewManagerServiceRef, handleFactory);
+				cyEventHelperServiceRef, iconManagerServiceRef, vtfListener, annotationFactoryManager, dingGraphLOD, vmmServiceRef, cyNetworkViewManagerServiceRef, handleFactory);
 
 		DingRenderer renderer = DingRenderer.getInstance();
 		renderer.registerNetworkViewFactory(dingNetworkViewFactory);
 		renderer.registerRenderingEngineFactory(NetworkViewRenderer.DEFAULT_CONTEXT, dingRenderingEngineFactory);
 		renderer.registerRenderingEngineFactory(NetworkViewRenderer.BIRDS_EYE_CONTEXT, dingNavigationRenderingEngineFactory);
 		renderer.registerRenderingEngineFactory(NetworkViewRenderer.VISUAL_STYLE_PREVIEW_CONTEXT, dingVisualStyleRenderingEngineFactory);
+		renderer.registerRenderingEngineFactory(NetworkViewRenderer.THUMBNAIL_CONTEXT, dingThumbnailRenderingEngineFactory);
 		registerService(bc, renderer, NetworkViewRenderer.class, new Properties());
 		
 		// Edge Bend editor
@@ -287,7 +285,7 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc, annotationManager, AnnotationManager.class, new Properties());
 
 		// Arrow
-		AnnotationFactory arrowAnnotationFactory = new ArrowAnnotationFactory();
+		AnnotationFactory<?> arrowAnnotationFactory = new ArrowAnnotationFactory(cyServiceRegistrarRef);
 		Properties arrowFactory = new Properties();
 		arrowFactory.setProperty("type","ArrowAnnotation.class");
 		registerService(bc, arrowAnnotationFactory, AnnotationFactory.class, arrowFactory);
@@ -301,7 +299,7 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc, addArrowTaskFactory, NetworkViewLocationTaskFactory.class, addArrowTaskFactoryProps);
 
 		// Image annotation
-		AnnotationFactory imageAnnotationFactory = new ImageAnnotationFactory(customGraphicsManagerServiceRef);
+		AnnotationFactory<?> imageAnnotationFactory = new ImageAnnotationFactory(cyServiceRegistrarRef);
 		Properties imageFactory = new Properties();
 		imageFactory.setProperty("type","ImageAnnotation.class");
 		registerService(bc, imageAnnotationFactory, AnnotationFactory.class, imageFactory);
@@ -315,7 +313,7 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc, addImageTaskFactory, NetworkViewLocationTaskFactory.class, addImageTaskFactoryProps);
 
 		// Shape annotation
-		AnnotationFactory shapeAnnotationFactory = new ShapeAnnotationFactory();
+		AnnotationFactory<?> shapeAnnotationFactory = new ShapeAnnotationFactory(cyServiceRegistrarRef);
 		Properties shapeFactory = new Properties();
 		shapeFactory.setProperty("type","ShapeAnnotation.class");
 		registerService(bc, shapeAnnotationFactory, AnnotationFactory.class, shapeFactory);
@@ -329,7 +327,7 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc, addShapeTaskFactory, NetworkViewLocationTaskFactory.class, addShapeTaskFactoryProps);
 
 		// Text annotation
-		AnnotationFactory textAnnotationFactory = new TextAnnotationFactory();
+		AnnotationFactory<?> textAnnotationFactory = new TextAnnotationFactory(cyServiceRegistrarRef);
 		Properties textFactory = new Properties();
 		textFactory.setProperty("type","TextAnnotation.class");
 		registerService(bc, textAnnotationFactory, AnnotationFactory.class, textFactory);
@@ -343,13 +341,12 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc, addTextTaskFactory, NetworkViewLocationTaskFactory.class, addTextTaskFactoryProps);
 
 		// Bounded Text annotation
-		AnnotationFactory boundedAnnotationFactory = new BoundedTextAnnotationFactory();
+		AnnotationFactory<?> boundedAnnotationFactory = new BoundedTextAnnotationFactory(cyServiceRegistrarRef);
 		Properties boundedFactory = new Properties();
 		boundedFactory.setProperty("type","BoundedTextAnnotation.class");
 		registerService(bc, boundedAnnotationFactory, AnnotationFactory.class, boundedFactory);
 
-		AddAnnotationTaskFactory addBoundedTextTaskFactory = 
-			new AddAnnotationTaskFactory(boundedAnnotationFactory);
+		AddAnnotationTaskFactory addBoundedTextTaskFactory =  new AddAnnotationTaskFactory(boundedAnnotationFactory);
 		Properties addBoundedTextTaskFactoryProps = new Properties();
 		addBoundedTextTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
 		addBoundedTextTaskFactoryProps.setProperty(MENU_GRAVITY, "1.6");
@@ -358,7 +355,7 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc, addBoundedTextTaskFactory, NetworkViewLocationTaskFactory.class, 
 		                addBoundedTextTaskFactoryProps);
 
-		AnnotationFactory groupAnnotationFactory = new GroupAnnotationFactory();
+		AnnotationFactory<?> groupAnnotationFactory = new GroupAnnotationFactory(cyServiceRegistrarRef);
 		Properties groupFactory = new Properties();
 		groupFactory.setProperty("type","GroupAnnotation.class");
 		registerService(bc, groupAnnotationFactory, AnnotationFactory.class, groupFactory);

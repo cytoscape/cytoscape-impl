@@ -23,8 +23,8 @@ package org.cytoscape.scripting.internal;
  * <http://www.gnu.org/licenses/lgpl-2.1.html>.
  * #L%
  */
-
-import static org.cytoscape.work.ServiceProperties.*;
+import static org.cytoscape.work.ServiceProperties.ID;
+import static org.cytoscape.work.ServiceProperties.MENU_GRAVITY;
 import static org.cytoscape.work.ServiceProperties.PREFERRED_MENU;
 import static org.cytoscape.work.ServiceProperties.TITLE;
 
@@ -49,7 +49,7 @@ public class CyActivator extends AbstractCyActivator {
 		final Properties executeScriptTaskFactoryProps = new Properties();
 		executeScriptTaskFactoryProps.setProperty(ID, "executeScriptTaskFactory");
 		executeScriptTaskFactoryProps.setProperty(PREFERRED_MENU, "File");
-		executeScriptTaskFactoryProps.setProperty(MENU_GRAVITY, "6.1f");
+		executeScriptTaskFactoryProps.setProperty(MENU_GRAVITY, "7.1f");
 		executeScriptTaskFactoryProps.setProperty(TITLE, "Run Script File...");
 		executeScriptTaskFactoryProps.setProperty("inToolBar", "false");
 

@@ -1,12 +1,16 @@
 package org.cytoscape.ding.impl;
 
+import java.awt.event.MouseEvent;
+
+import org.cytoscape.util.swing.LookAndFeelUtil;
+
 /*
  * #%L
  * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,9 +28,6 @@ package org.cytoscape.ding.impl;
  * #L%
  */
 
-
-import java.awt.event.MouseEvent;
-
 /**
  * The purpose of this class is to capture the button processing logic in a single
  * place so that it can be used consistently for different mouse events. This
@@ -37,13 +38,6 @@ import java.awt.event.MouseEvent;
  */
 class ButtonDelegator {
 
-	private static final String MAC_OS_ID = "mac";
-	private final boolean isMacPlatform;
-
-	ButtonDelegator() {
-		String os = System.getProperty("os.name");
-		isMacPlatform = os.regionMatches(true, 0, MAC_OS_ID, 0, MAC_OS_ID.length());
-	}
 
 	void delegateMouseEvent(MouseEvent e) {
 		// single click or release (i.e. no clicks)
@@ -70,15 +64,15 @@ class ButtonDelegator {
 
 	private boolean isLeftClick(MouseEvent e) {
 		boolean b1 = (e.getButton() == MouseEvent.BUTTON1);
-		if ( isMacPlatform ) {
-			return (!e.isControlDown() && !e.isMetaDown() && b1);
+		if (LookAndFeelUtil.isMac()) {
+			return (!e.isControlDown() && b1);
 		}
 		return b1;
 	}
 
 	private boolean isRightClick(MouseEvent e) {
 		boolean b3 = (e.getButton() == MouseEvent.BUTTON3); 
-		if ( !b3 && isMacPlatform ) {
+		if ( !b3 && LookAndFeelUtil.isMac() ) {
 			// control - right click
 			return (e.isControlDown() && !e.isMetaDown() && (e.getButton() == MouseEvent.BUTTON1));
 		}
@@ -87,10 +81,7 @@ class ButtonDelegator {
 
 	private boolean isMiddleClick(MouseEvent e) {
 		boolean b2 = (e.getButton() == MouseEvent.BUTTON2); 
-		if ( !b2 && isMacPlatform ) {
-			// meta - left click
-			return (!e.isControlDown() && e.isMetaDown() && (e.getButton() == MouseEvent.BUTTON1));
-		}
+
 		return b2;
 	}
 

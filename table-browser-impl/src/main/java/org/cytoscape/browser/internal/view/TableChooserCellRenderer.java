@@ -32,6 +32,7 @@ import javax.swing.DefaultListCellRenderer;
 import javax.swing.JList;
 
 import org.cytoscape.model.CyTable;
+import org.cytoscape.util.swing.LookAndFeelUtil;
 
 public class TableChooserCellRenderer extends DefaultListCellRenderer {
 
@@ -75,7 +76,13 @@ public class TableChooserCellRenderer extends DefaultListCellRenderer {
 		if (!label.toLowerCase().contains("table"))
 			label += " Table";
 		
+		if (table != null && !table.isPublic())
+			label += " [ PRIVATE ]";
+		
 		setText(label);
+		
+		if (!isSelected)
+			setForeground(table.isPublic() ? list.getForeground() : LookAndFeelUtil.getErrorColor());
 
 		return this;
 	}

@@ -367,7 +367,7 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 		Set<CyNetwork> networks = sess.getNetworks();
 
 		for (CyNetwork n : networks) {
-			netMgr.addNetwork(n);
+			netMgr.addNetwork(n, false);
 		}
 	}
 	
@@ -396,7 +396,7 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 					vpMap.put(BasicVisualLexicon.NETWORK_HEIGHT, nv.getVisualProperty(BasicVisualLexicon.NETWORK_HEIGHT));
 					vpMap.put(BasicVisualLexicon.NETWORK_WIDTH, nv.getVisualProperty(BasicVisualLexicon.NETWORK_WIDTH));
 					
-					nvMgr.addNetworkView(nv);
+					nvMgr.addNetworkView(nv, false);
 				}
 			}
 		}

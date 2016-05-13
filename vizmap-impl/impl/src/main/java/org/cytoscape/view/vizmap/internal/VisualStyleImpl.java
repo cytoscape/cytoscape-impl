@@ -162,6 +162,7 @@ public class VisualStyleImpl implements VisualStyle, VisualMappingFunctionChange
 		synchronized (lock) {
 			networkViewHandler = applyHandlersMap.get(CyNetwork.class);
 		}
+		eventHelper.flushPayloadEvents();
 		networkViewHandler.apply(null, networkView);
 	}
 

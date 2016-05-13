@@ -26,6 +26,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 public class LoadNetworkFileTaskFactoryTest extends AbstractLoadNetworkTaskTester {
+	
 	@Before
 	public void setUp() throws Exception {
 		super.setUp();
@@ -38,7 +39,7 @@ public class LoadNetworkFileTaskFactoryTest extends AbstractLoadNetworkTaskTeste
 		TunableSetter tunableSetter = new TunableSetterImpl(new SyncTunableMutatorFactory(new SyncTunableHandlerFactory()), new TunableRecorderManager());
 		CyNetworkViewFactory nullNetworkViewFactory = new NullCyNetworkViewFactory();
 		LoadNetworkFileTaskFactoryImpl factory = new LoadNetworkFileTaskFactoryImpl(mgr, netmgr, networkViewManager, 
-				props, namingUtil, vmm, nullNetworkViewFactory);
+				props, namingUtil, vmm, nullNetworkViewFactory, serviceRegistrar);
 
 		TaskMonitor taskMonitor = mock(TaskMonitor.class);
 		TaskObserver observer = mock(TaskObserver.class);

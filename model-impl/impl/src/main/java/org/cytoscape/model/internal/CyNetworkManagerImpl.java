@@ -1,12 +1,34 @@
 package org.cytoscape.model.internal;
 
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
+import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNetworkManager;
+import org.cytoscape.model.CyNode;
+import org.cytoscape.model.CyRow;
+import org.cytoscape.model.events.NetworkAboutToBeDestroyedEvent;
+import org.cytoscape.model.events.NetworkAddedEvent;
+import org.cytoscape.model.events.NetworkDestroyedEvent;
+import org.cytoscape.model.subnetwork.CyRootNetwork;
+import org.cytoscape.model.subnetwork.CySubNetwork;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.session.CyNetworkNaming;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /*
  * #%L
  * Cytoscape Model Impl (model-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -23,27 +45,6 @@ package org.cytoscape.model.internal;
  * <http://www.gnu.org/licenses/lgpl-2.1.html>.
  * #L%
  */
-
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-
-import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.model.CyEdge;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyRow;
-import org.cytoscape.model.events.NetworkAboutToBeDestroyedEvent;
-import org.cytoscape.model.events.NetworkAddedEvent;
-import org.cytoscape.model.events.NetworkDestroyedEvent;
-import org.cytoscape.model.subnetwork.CyRootNetwork;
-import org.cytoscape.model.subnetwork.CySubNetwork;
-import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.session.CyNetworkNaming;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * An implementation of CyNetworkManager.
@@ -151,9 +152,14 @@ public class CyNetworkManagerImpl implements CyNetworkManager {
 
 	@Override
 	public void addNetwork(final CyNetwork network) {
+		addNetwork(network, true);
+	}
+	
+	@Override
+	public void addNetwork(final CyNetwork network, final boolean setCurrent) {
 		if (network == null)
 			throw new NullPointerException("Network is null");
-
+		
 		synchronized (lock) {
 			logger.debug("Adding new Network Model: Model ID = " + network.getSUID());
 			
@@ -176,9 +182,16 @@ public class CyNetworkManagerImpl implements CyNetworkManager {
 			// Add the new network to the internal map
 			networkMap.put(network.getSUID(), network);
 		}
-
+		
 		final CyEventHelper cyEventHelper = serviceRegistrar.getService(CyEventHelper.class);
 		cyEventHelper.fireEvent(new NetworkAddedEvent(CyNetworkManagerImpl.this, network));
+		
+		if (setCurrent) {
+			final CyApplicationManager applicationManager = serviceRegistrar.getService(CyApplicationManager.class);
+			
+			if (applicationManager != null) // It may be null when running unit tests
+				applicationManager.setCurrentNetwork(network);
+		}
 	}
 
 	@Override

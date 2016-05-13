@@ -179,7 +179,7 @@ public class CyActivator extends AbstractCyActivator {
 		final CreateNewVisualStyleTaskFactory createNewVisualStyleTaskFactory = new CreateNewVisualStyleTaskFactory(servicesUtil);
 		final Properties createNewVisualStyleTaskFactoryProps = new Properties();
 		createNewVisualStyleTaskFactoryProps.setProperty(ServicePropertiesUtil.SERVICE_TYPE, "vizmapUI");
-		createNewVisualStyleTaskFactoryProps.setProperty(ServicePropertiesUtil.TITLE, CreateNewVisualStyleTask.TITLE);
+		createNewVisualStyleTaskFactoryProps.setProperty(ServicePropertiesUtil.TITLE, CreateNewVisualStyleTask.TITLE + "...");
 		createNewVisualStyleTaskFactoryProps.setProperty(ServicePropertiesUtil.MENU_ID, ServicePropertiesUtil.MAIN_MENU);
 		createNewVisualStyleTaskFactoryProps.setProperty(ServicePropertiesUtil.GRAVITY, "1.0");
 		registerAllServices(bc,createNewVisualStyleTaskFactory, createNewVisualStyleTaskFactoryProps);
@@ -187,7 +187,7 @@ public class CyActivator extends AbstractCyActivator {
 		final CopyVisualStyleTaskFactory copyVisualStyleTaskFactory = new CopyVisualStyleTaskFactory(servicesUtil);
 		final Properties copyVisualStyleTaskFactoryProps = new Properties();
 		copyVisualStyleTaskFactoryProps.setProperty(ServicePropertiesUtil.SERVICE_TYPE, "vizmapUI");
-		copyVisualStyleTaskFactoryProps.setProperty(ServicePropertiesUtil.TITLE, CopyVisualStyleTask.TITLE);
+		copyVisualStyleTaskFactoryProps.setProperty(ServicePropertiesUtil.TITLE, CopyVisualStyleTask.TITLE + "...");
 		copyVisualStyleTaskFactoryProps.setProperty(ServicePropertiesUtil.MENU_ID, ServicePropertiesUtil.MAIN_MENU);
 		copyVisualStyleTaskFactoryProps.setProperty(ServicePropertiesUtil.GRAVITY, "2.0");
 		registerAllServices(bc, copyVisualStyleTaskFactory, copyVisualStyleTaskFactoryProps);
@@ -195,7 +195,7 @@ public class CyActivator extends AbstractCyActivator {
 		final RenameVisualStyleTaskFactory renameVisualStyleTaskFactory = new RenameVisualStyleTaskFactory(servicesUtil);
 		final Properties renameVisualStyleTaskFactoryProps = new Properties();
 		renameVisualStyleTaskFactoryProps.setProperty(ServicePropertiesUtil.SERVICE_TYPE, "vizmapUI");
-		renameVisualStyleTaskFactoryProps.setProperty(ServicePropertiesUtil.TITLE, RenameVisualStyleTask.TITLE);
+		renameVisualStyleTaskFactoryProps.setProperty(ServicePropertiesUtil.TITLE, RenameVisualStyleTask.TITLE + "...");
 		renameVisualStyleTaskFactoryProps.setProperty(ServicePropertiesUtil.MENU_ID, ServicePropertiesUtil.MAIN_MENU);
 		renameVisualStyleTaskFactoryProps.setProperty(ServicePropertiesUtil.GRAVITY, "3.0");
 		registerAllServices(bc, renameVisualStyleTaskFactory, renameVisualStyleTaskFactoryProps);
@@ -220,7 +220,7 @@ public class CyActivator extends AbstractCyActivator {
 		final CreateLegendTaskFactory createLegendTaskFactory = new CreateLegendTaskFactory(servicesUtil);
 		final Properties createLegendTaskFactoryProps = new Properties();
 		createLegendTaskFactoryProps.setProperty(ServicePropertiesUtil.SERVICE_TYPE, "vizmapUI");
-		createLegendTaskFactoryProps.setProperty(ServicePropertiesUtil.TITLE, CreateLegendTask.TITLE);
+		createLegendTaskFactoryProps.setProperty(ServicePropertiesUtil.TITLE, CreateLegendTask.TITLE + "...");
 		createLegendTaskFactoryProps.setProperty(ServicePropertiesUtil.MENU_ID, ServicePropertiesUtil.MAIN_MENU);
 		createLegendTaskFactoryProps.setProperty(ServicePropertiesUtil.GRAVITY, "6.0");
 		createLegendTaskFactoryProps.setProperty(ServicePropertiesUtil.INSERT_SEPARATOR_BEFORE, "true");

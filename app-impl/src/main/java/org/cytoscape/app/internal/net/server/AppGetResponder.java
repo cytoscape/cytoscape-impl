@@ -24,27 +24,23 @@ package org.cytoscape.app.internal.net.server;
  * #L%
  */
 
-import java.io.File;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Semaphore;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.cytoscape.app.internal.exception.AppInstallException;
-import org.cytoscape.app.internal.exception.AppParsingException;
-import org.cytoscape.app.internal.exception.AppUninstallException;
 import org.cytoscape.app.internal.manager.App;
-import org.cytoscape.app.internal.manager.App.AppStatus;
 import org.cytoscape.app.internal.manager.AppManager;
-import org.cytoscape.app.internal.net.DownloadStatus;
 import org.cytoscape.app.internal.net.WebApp;
-import org.cytoscape.app.internal.net.WebQuerier;
+import org.cytoscape.app.internal.task.InstallAppsFromWebAppTask;
 import org.cytoscape.application.CyVersion;
-import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.FinishStatus;
+import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskManager;
-import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.TaskObserver;
 import org.json.JSONObject;
 
 /**
@@ -106,8 +102,11 @@ public class AppGetResponder {
         }
     }
 
-    public class InstallResponder extends JsonResponder {
+    public class InstallResponder extends JsonResponder implements TaskObserver {
         final Pattern pattern = Pattern.compile("^/install/(.+)/(.+)$");
+		final Semaphore semaphore = new Semaphore(0);
+        String installStatus = "app-not-found";
+		String installError = "";
 
         public Pattern getURIPattern() {
             return pattern;
@@ -122,8 +121,6 @@ public class AppGetResponder {
 				// Use the WebQuerier to obtain the app from the app store using the app name and version
 				//responseBody = "Will obtain \"" + appName + "\", version " + version;
 
-				String installStatus = "app-not-found";
-				String installError = "";
 				boolean appFoundInStore = false;
 				WebApp appToDownload = null;
 				
@@ -139,62 +136,11 @@ public class AppGetResponder {
 				}
 				responseData.put("name", appName);
 
-				if (appFoundInStore) {
-					final File[] result = new File[1];
-					final Semaphore semaphore = new Semaphore(0);
-					
+				if (appFoundInStore) {					
 					final WebApp webApp = appToDownload;
 					TaskManager<?, ?> taskManager = appManager.getSwingAppAdapter().getTaskManager();
-					taskManager.execute(new TaskIterator(new AbstractTask() {
-						private DownloadStatus status;
-
-						@Override
-						public void run(TaskMonitor taskMonitor) throws Exception {
-							try {
-								taskMonitor.setStatusMessage("Installing app: " + webApp.getFullName());
-								status = new DownloadStatus(taskMonitor);
-								result[0] = appManager.getWebQuerier().downloadApp(
-										webApp, version, new File(appManager.getDownloadedAppsPath()), status);
-							} finally {
-								semaphore.release();
-							}
-						}
-						
-						public void cancel() {
-							if (status != null) {
-								status.cancel();
-							}
-						};
-					}));
-					
+					taskManager.execute(new TaskIterator(new InstallAppsFromWebAppTask(Collections.singletonList(webApp), appManager, true)), this);
 					semaphore.acquireUninterruptibly();
-					File appFile = result[0];
-					
-					// Attempt to install app
-					if (appFile == null) {
-						installStatus = "version-not-found";
-						installError = "An entry for the app " + appName + " with version " + version
-							+ " was not found in the app store database at: " + appManager.getWebQuerier().getDefaultAppStoreUrl();
-					} else {
-						installStatus = "success";
-						
-						try {
-							App app = appManager.getAppParser().parseApp(appFile);
-							installOrUpdate(app);
-						} catch (AppParsingException e) {
-							installStatus = "install-failed";
-							installError = "The installation could not be completed because there were errors in the app file. "
-								+ "Details: " + e.getMessage();
-						} catch (AppInstallException e) {
-							installStatus = "install-failed";
-							installError = "The app file passed checking, but the app manager encountered errors while attempting" 
-								+ " to install. Details: " + e.getMessage();
-						} catch (AppUninstallException e) {
-							installStatus = "install-failed";
-							installError = "The app file passed checking, but the app manager encountered errors while attempting" 
-								+ " to uninstall old version. Details: " + e.getMessage();
-						}
-					}
 				} else {
 					installStatus = "install failed: this app is incompatible with your version of Cytoscape";
 					installError = "The app " + appName + " is not found in the app store database at "
@@ -206,27 +152,26 @@ public class AppGetResponder {
             }
             return responseData;
         }
-
-		private void installOrUpdate(App app) throws AppInstallException, AppUninstallException {
-			// Check if another version of the app is already installed.
-			App installedApp = getInstalledApp(app);
-			appManager.installApp(app);
-			if (installedApp != null) {
-				appManager.uninstallApp(installedApp);
-			}
+        
+        @Override
+		public void taskFinished(ObservableTask task) {
+			// TODO Auto-generated method stub
 		}
-		
-		private App getInstalledApp(App referenceApp) {
-			App installedApp = null;
-			for (App app : appManager.getApps()) {
-				if (app.getStatus() == AppStatus.INSTALLED && referenceApp.getAppName().equals(app.getAppName())) {
-					// Find the app with the most recent version if multiple versions are found.
-					if (installedApp == null || WebQuerier.compareVersions(referenceApp.getVersion(), installedApp.getVersion()) < 0) {
-						installedApp = app;
-					}
-				}
+
+		@Override
+		public void allFinished(FinishStatus finishStatus) {
+			if (finishStatus.getType() == FinishStatus.Type.SUCCEEDED) {
+				installStatus = "success";
 			}
-			return installedApp;
+			else if ((finishStatus.getType() == FinishStatus.Type.CANCELLED)) {
+				installStatus = "install-failed";
+				installError = "Install cancelled by user.";
+			}
+			else {
+				installStatus = "install-failed";
+				installError = finishStatus.getException().getMessage();
+			}
+			semaphore.release();
 		}
     }
 }

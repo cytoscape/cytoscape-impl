@@ -1,39 +1,19 @@
 package org.cytoscape.internal.view;
 
-/*
- * #%L
- * Cytoscape Swing Application Impl (swing-application-impl)
- * $Id:$
- * $HeadURL:$
- * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * #L%
- */
-
 import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
 
 import java.awt.BorderLayout;
-import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Toolkit;
+import java.awt.Window;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.Dictionary;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 
 import javax.swing.BorderFactory;
@@ -62,27 +42,48 @@ import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.application.swing.CytoPanelState;
 import org.cytoscape.application.swing.ToolBarComponent;
 import org.cytoscape.application.swing.events.CytoPanelStateChangedListener;
-import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.events.SessionLoadedEvent;
 import org.cytoscape.session.events.SessionLoadedListener;
 import org.cytoscape.session.events.SessionSavedEvent;
 import org.cytoscape.session.events.SessionSavedListener;
-import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.work.swing.DialogTaskManager;
-import org.cytoscape.work.swing.TaskStatusPanelFactory;
+import org.cytoscape.work.swing.StatusBarPanelFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/*
+ * #%L
+ * Cytoscape Swing Application Impl (swing-application-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
 
 /**
- * The CytoscapeDesktop is the central Window for working with Cytoscape
+ * The CytoscapeDesktop is the central Window for working with Cytoscape.
  */
-public class CytoscapeDesktop extends JFrame implements CySwingApplication, CyStartListener, SessionLoadedListener, SessionSavedListener {
+@SuppressWarnings("serial")
+public class CytoscapeDesktop extends JFrame
+		implements CySwingApplication, CyStartListener, SessionLoadedListener, SessionSavedListener {
 
-	private final static long serialVersionUID = 1202339866271348L;
-	
 	private static final String TITLE_PREFIX_STRING ="Session: ";
 	private static final String NEW_SESSION_NAME ="New Session";
 	
@@ -105,7 +106,7 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 	 * The NetworkViewManager can support three types of interfaces.
 	 * Tabbed/InternalFrame/ExternalFrame
 	 */
-	protected NetworkViewManager networkViewManager;
+	protected NetworkViewMediator netViewMediator;
 
 	//
 	// CytoPanel Variables
@@ -117,32 +118,24 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 
 	// Status Bar TODO: Move this to log-swing to avoid cyclic dependency.
 	private JPanel mainPanel;
-	private final CyShutdown shutdown; 
-	private final CyEventHelper cyEventHelper;
-	private final CyServiceRegistrar registrar;
-	private final IconManager iconManager;
-	private final JToolBar statusToolBar;
+	private JToolBar statusToolBar;
+	private StatusBarPanelFactory taskStatusPanelFactory;
+	private StatusBarPanelFactory jobStatusPanelFactory;
+	
+	private final CyServiceRegistrar serviceRegistrar;
 
-	/**
-	 * Creates a new CytoscapeDesktop object.
-	 */
-	public CytoscapeDesktop(final CytoscapeMenus cyMenus,
-							final NetworkViewManager networkViewManager,
-							final CyShutdown shut,
-							final CyEventHelper eh,
-							final CyServiceRegistrar registrar,
-							final DialogTaskManager taskManager,
-							final TaskStatusPanelFactory taskStatusPanelFactory,
-							final IconManager iconManager) {
+	public CytoscapeDesktop(
+			final CytoscapeMenus cyMenus,
+			final NetworkViewMediator netViewMediator,
+			final CyServiceRegistrar serviceRegistrar
+	) {
 		super(TITLE_PREFIX_STRING + NEW_SESSION_NAME);
 
 		this.cyMenus = cyMenus;
-		this.networkViewManager = networkViewManager;
-		this.shutdown = shut;
-		this.cyEventHelper = eh;
-		this.registrar = registrar;
-		this.iconManager = iconManager;
+		this.netViewMediator = netViewMediator;
+		this.serviceRegistrar = serviceRegistrar;
 		
+		final DialogTaskManager taskManager = serviceRegistrar.getService(DialogTaskManager.class);
 		taskManager.setExecutionContext(this);
 
 		setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource(SMALL_ICON)));
@@ -151,27 +144,65 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 		mainPanel.setLayout(new BorderLayout());
 
 		// create the CytoscapeDesktop
-		final BiModalJSplitPane masterPane = setupCytoPanels(networkViewManager);
+		final BiModalJSplitPane masterPane = setupCytoPanels(netViewMediator);
 
 		mainPanel.add(masterPane, BorderLayout.CENTER);
 		mainPanel.add(cyMenus.getJToolBar(), BorderLayout.NORTH);
 
-		statusToolBar = setupStatusPanel(taskStatusPanelFactory);
+		// statusToolBar = setupStatusPanel(jobStatusPanelFactory, taskStatusPanelFactory);
 
-		setJMenuBar(cyMenus.getJMenuBar());
-
-		if (MacFullScreenEnabler.supportsNativeFullScreenMode()) {
+		if (MacFullScreenEnabler.supportsNativeFullScreenMode())
 			MacFullScreenEnabler.setEnabled(this, true);
-		}
 
-		//don't automatically close window. Let shutdown.exit(returnVal)
-		//handle this
+		//don't automatically close window. Let shutdown.exit(returnVal) handle this
 		setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 
+		setJMenuBar(cyMenus.getJMenuBar());
+		
 		addWindowListener(new WindowAdapter() {
 			@Override
+			public void windowActivated(WindowEvent e) {
+				// This is necessary because the same menu bar can be used by other frames
+				final JMenuBar menuBar = cyMenus.getJMenuBar();
+				final Window window = SwingUtilities.getWindowAncestor(menuBar);
+				
+				if (!CytoscapeDesktop.this.equals(window)) {
+					if (window instanceof JFrame && !LookAndFeelUtil.isAquaLAF()) {
+						// Do this first, or the user could see the menu disappearing from the out-of-focus windows
+						final JMenuBar dummyMenuBar = cyMenus.createDummyMenuBar();
+						((JFrame) window).setJMenuBar(dummyMenuBar);
+						dummyMenuBar.updateUI();
+						window.repaint();
+					}
+					
+					if (LookAndFeelUtil.isAquaLAF())
+						cyMenus.setMenuBarVisible(true);
+					
+					setJMenuBar(menuBar);
+					menuBar.updateUI();
+				}
+				
+				taskManager.setExecutionContext(CytoscapeDesktop.this);
+			}
+			@Override
 			public void windowClosing(WindowEvent we) {
-				shutdown.exit(0);
+				final CyShutdown cyShutdown = serviceRegistrar.getService(CyShutdown.class);
+				cyShutdown.exit(0);
+			}
+		});
+
+		addComponentListener(new ComponentAdapter() {
+			@Override
+			public void componentHidden(ComponentEvent e) { }
+
+			@Override
+			public void componentShown(ComponentEvent e) {
+				// We need to do this later in the cycle to make sure everything is loaded
+				if (jobStatusPanelFactory == null || taskStatusPanelFactory == null) {
+					jobStatusPanelFactory = serviceRegistrar.getService(StatusBarPanelFactory.class, "(type=JobStatus)");
+					taskStatusPanelFactory = serviceRegistrar.getService(StatusBarPanelFactory.class, "(type=TaskStatus)");
+					statusToolBar = setupStatusPanel(jobStatusPanelFactory, taskStatusPanelFactory);
+				}
 			}
 		});
 
@@ -191,12 +222,15 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 		// visible by the StartupMostlyFinished class, found elsewhere.
 	}
 
-	private JToolBar setupStatusPanel(TaskStatusPanelFactory taskStatusPanelFactory) {
+	private JToolBar setupStatusPanel(StatusBarPanelFactory jobStatusPanelFactory,
+	                                  StatusBarPanelFactory taskStatusPanelFactory) {
 		final JPanel taskStatusPanel = taskStatusPanelFactory.createTaskStatusPanel();
+		final JPanel jobStatusPanel = jobStatusPanelFactory.createTaskStatusPanel();
 		final JToolBar statusToolBar = new JToolBar();
 		final MemStatusPanel memStatusPanel = new MemStatusPanel();
 		
 		if (LookAndFeelUtil.isNimbusLAF()) {
+			jobStatusPanel.setOpaque(false);
 			taskStatusPanel.setOpaque(false);
 			statusToolBar.setOpaque(false);
 			memStatusPanel.setOpaque(false);
@@ -209,9 +243,11 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 		statusPanel.setLayout(layout);
 		layout.setAutoCreateContainerGaps(false);
 		layout.setAutoCreateGaps(false);
-		
+
 		layout.setHorizontalGroup(layout.createSequentialGroup()
 				.addContainerGap()
+				.addComponent(jobStatusPanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				.addPreferredGap(ComponentPlacement.RELATED)
 				.addComponent(taskStatusPanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 				.addPreferredGap(ComponentPlacement.UNRELATED)
 				.addComponent(statusToolBar, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
@@ -222,6 +258,7 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 		layout.setVerticalGroup(layout.createSequentialGroup()
 				.addGap(LookAndFeelUtil.isWinLAF() ? 5 : 0)
 				.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
+						.addComponent(jobStatusPanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 						.addComponent(taskStatusPanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 						.addComponent(statusToolBar, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 						.addComponent(memStatusPanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
@@ -236,16 +273,10 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 
 	/**
 	 * Create the CytoPanels UI.
-	 *
-	 * @param networkPanel
-	 *            to load on left side of right bimodal.
-	 * @param networkViewManager
-	 *            to load on left side (CytoPanel West).
-	 * @return BiModalJSplitPane Object.
 	 */
-	private BiModalJSplitPane setupCytoPanels(NetworkViewManager networkViewManager) {
+	private BiModalJSplitPane setupCytoPanels(NetworkViewMediator netViewMediator) {
 		// bimodals that our Cytopanels Live within
-		final BiModalJSplitPane topRightPane = createTopRightPane(networkViewManager);
+		final BiModalJSplitPane topRightPane = createTopRightPane(netViewMediator);
 		final BiModalJSplitPane rightPane = createRightPane(topRightPane);
 		final BiModalJSplitPane masterPane = createMasterPane(rightPane);
 		createBottomLeft();
@@ -253,25 +284,18 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 		return masterPane;
 	}
 
-	/**
-	 * Creates the TopRight Pane.
-	 *
-	 * @param networkViewManager
-	 *            to load on left side of top right bimodal.
-	 * @return BiModalJSplitPane Object.
-	 */
-	private BiModalJSplitPane createTopRightPane(NetworkViewManager networkViewManager) {
+	private BiModalJSplitPane createTopRightPane(NetworkViewMediator netViewMediator) {
 		// create cytopanel with tabs along the top
-		cytoPanelEast = new CytoPanelImp(CytoPanelName.EAST, JTabbedPane.TOP, CytoPanelState.HIDE, cyEventHelper, this,
-				iconManager);
+		cytoPanelEast = new CytoPanelImp(CytoPanelName.EAST, JTabbedPane.TOP, CytoPanelState.HIDE, this,
+				serviceRegistrar);
 
 		// determine proper network view manager component
-		Component networkViewComp = (Component) networkViewManager.getDesktopPane();
+		final JPanel networkViewPanel = netViewMediator.getNetworkViewMainPanel();
 
 		// create the split pane - we show this on startup
 		BiModalJSplitPane splitPane = new BiModalJSplitPane(this, JSplitPane.HORIZONTAL_SPLIT,
 		                                                    BiModalJSplitPane.MODE_HIDE_SPLIT,
-		                                                    networkViewComp, cytoPanelEast);
+		                                                    networkViewPanel, cytoPanelEast);
 
 		// set the cytopanelcontainer
 		cytoPanelEast.setCytoPanelContainer(splitPane);
@@ -283,17 +307,10 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 		return splitPane;
 	}
 
-	/**
-	 * Creates the Right Panel.
-	 *
-	 * @param topRightPane
-	 *            TopRightPane Object.
-	 * @return BiModalJSplitPane Object
-	 */
 	private BiModalJSplitPane createRightPane(BiModalJSplitPane topRightPane) {
 		// create cytopanel with tabs along the bottom
-		cytoPanelSouth = new CytoPanelImp(CytoPanelName.SOUTH, JTabbedPane.BOTTOM,
-		                                  CytoPanelState.DOCK, cyEventHelper, this, iconManager);
+		cytoPanelSouth = new CytoPanelImp(CytoPanelName.SOUTH, JTabbedPane.BOTTOM, CytoPanelState.DOCK, this,
+				serviceRegistrar);
 
 		// create the split pane - hidden by default
 		BiModalJSplitPane splitPane = new BiModalJSplitPane(this, JSplitPane.VERTICAL_SPLIT,
@@ -314,10 +331,9 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 	}
 
 	private void createBottomLeft() {
-
 		// create cytopanel with tabs along the top for manual layout
-		cytoPanelSouthWest = new CytoPanelImp(CytoPanelName.SOUTH_WEST, JTabbedPane.TOP,
-						      CytoPanelState.HIDE, cyEventHelper, this, iconManager);
+		cytoPanelSouthWest = new CytoPanelImp(CytoPanelName.SOUTH_WEST, JTabbedPane.TOP, CytoPanelState.HIDE, this,
+				serviceRegistrar);
 
         final BiModalJSplitPane split = new BiModalJSplitPane(this, JSplitPane.VERTICAL_SPLIT,
                                       BiModalJSplitPane.MODE_HIDE_SPLIT, new JPanel(),
@@ -332,22 +348,13 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 
 		ToolCytoPanelListener t = new ToolCytoPanelListener( split, cytoPanelWest, 
 		                                                     cytoPanelSouthWest );
-		registrar.registerService(t,CytoPanelStateChangedListener.class,new Properties());
+		serviceRegistrar.registerService(t,CytoPanelStateChangedListener.class,new Properties());
 	}
 
-	/**
-	 * Creates the Master Split Pane.
-	 *
-	 * @param networkPanel
-	 *            to load on left side of CytoPanel (cytoPanelWest).
-	 * @param rightPane
-	 *            BiModalJSplitPane Object.
-	 * @return BiModalJSplitPane Object.
-	 */
 	private BiModalJSplitPane createMasterPane(BiModalJSplitPane rightPane) {
 		// create cytopanel with tabs along the top
-		cytoPanelWest = new CytoPanelImp(CytoPanelName.WEST, JTabbedPane.TOP, CytoPanelState.DOCK, cyEventHelper, this,
-				iconManager);
+		cytoPanelWest = new CytoPanelImp(CytoPanelName.WEST, JTabbedPane.TOP, CytoPanelState.DOCK, this,
+				serviceRegistrar);
 
 		// create the split pane - displayed by default
 		BiModalJSplitPane splitPane = new BiModalJSplitPane(this, JSplitPane.HORIZONTAL_SPLIT,
@@ -363,42 +370,45 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 		return splitPane;
 	}
 
-	NetworkViewManager getNetworkViewManager() {
-		return networkViewManager;
+	public void addAction(CyAction action, Map<?, ?> props) {
+		cyMenus.addAction(action, props);
 	}
 
-	public void addAction(CyAction action, Dictionary<?, ?> props) {
-		cyMenus.addAction(action);
-	}
-
+	@Override
 	public void addAction(CyAction action) {
-		cyMenus.addAction(action);
+		cyMenus.addAction(action, new HashMap<>());
 	}
 
-	public void removeAction(CyAction action, Dictionary<?, ?> props) {
+	public void removeAction(CyAction action, Map<?, ?> props) {
 		cyMenus.removeAction(action);
 	}
 
+	@Override
 	public void removeAction(CyAction action) {
 		cyMenus.removeAction(action);
 	}
 
+	@Override
 	public JMenu getJMenu(String name) {
 		return cyMenus.getJMenu(name);
 	}
 
+	@Override
 	public JMenuBar getJMenuBar() {
 		return cyMenus.getJMenuBar();
 	}
 
+	@Override
 	public JToolBar getJToolBar() {
 		return cyMenus.getJToolBar();
 	}
 
+	@Override
 	public JFrame getJFrame() {
 		return this;
 	}
 
+	@Override
 	public CytoPanel getCytoPanel(final CytoPanelName compassDirection) {
 		return getCytoPanelInternal(compassDirection);
 	}
@@ -460,8 +470,10 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 	public void handleEvent(SessionLoadedEvent e) {
 		// Update window title
 		String sessionName = e.getLoadedFileName();
+		
 		if (sessionName == null)
 			sessionName = NEW_SESSION_NAME;
+		
 		final String title = TITLE_PREFIX_STRING + sessionName;
 		
 		SwingUtilities.invokeLater(new Runnable() {

@@ -25,10 +25,8 @@ package org.cytoscape.model.internal;
  */
 
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import org.cytoscape.model.CyColumn;
@@ -126,27 +124,6 @@ final class VirtualColumn implements VirtualColumnInfo {
 		return sourceTable.countMatchingRows(sourceColumn.getName(), value);
 	}
 
-	List getColumnValues() {
-		final List targetJoinColumnValues =
-			targetTable.getColumnValues(targetJoinColumn.getName(),
-						    targetJoinColumn.getType());
-		List results = new ArrayList();
-		for (final Object targetJoinColumnValue : targetJoinColumnValues) {
-			final Collection<CyRow> sourceRows =
-				sourceTable.getMatchingRows(sourceJoinColumn.getName(),
-							    targetJoinColumnValue);
-			if (sourceRows.size() == 1) {
-				final CyRow sourceRow = sourceRows.iterator().next();
-				final Object value =
-					sourceRow.get(sourceColumn.getName(),
-						      sourceColumn.getType());
-				if (value != null)
-					results.add(value);
-			}
-		}
-
-		return results;
-	}
 	
 	@Override
 	public boolean isImmutable() {

@@ -61,7 +61,7 @@ import org.cytoscape.work.swing.DialogTaskManager;
 import org.cytoscape.work.swing.GUITunableHandlerFactory;
 import org.cytoscape.work.swing.PanelTaskManager;
 import org.cytoscape.work.swing.SimpleGUITunableHandlerFactory;
-import org.cytoscape.work.swing.TaskStatusPanelFactory;
+import org.cytoscape.work.swing.StatusBarPanelFactory;
 import org.cytoscape.work.swing.undo.SwingUndoSupport;
 import org.cytoscape.work.undo.UndoSupport;
 import org.cytoscape.work.util.BoundedDouble;
@@ -143,7 +143,11 @@ public class CyActivator extends AbstractCyActivator {
 
 		registerService(bc,jDialogTaskManager,DialogTaskManager.class, new Properties());
 		registerService(bc,jDialogTaskManager,TaskManager.class, new Properties());
-		registerService(bc,taskStatusBar,TaskStatusPanelFactory.class, new Properties());
+		{
+			Properties statusBarPanelFactoryProps = new Properties();
+			statusBarPanelFactoryProps.setProperty("type", "TaskStatus");
+			registerService(bc,taskStatusBar,StatusBarPanelFactory.class, statusBarPanelFactoryProps);
+		}
 
 		registerService(bc,jPanelTaskManager,PanelTaskManager.class, new Properties());
 

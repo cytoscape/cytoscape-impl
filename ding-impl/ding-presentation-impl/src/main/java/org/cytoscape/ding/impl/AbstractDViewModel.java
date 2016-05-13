@@ -89,10 +89,12 @@ public abstract class AbstractDViewModel<M extends CyIdentifiable> implements Vi
 
 	@Override
 	public <T, V extends T> void setVisualProperty(final VisualProperty<? extends T> vp, V value) {
-		if (value == null)
-			visualProperties.remove(vp);
-		else
-			visualProperties.put(vp, value);
+		synchronized (getDGraphView().m_lock) {
+			if (value == null)
+				visualProperties.remove(vp);
+			else
+				visualProperties.put(vp, value);
+		}
 
 		// Ding has it's own listener for selection events.  If we
 		// don't do this, we might get into a deadlock state

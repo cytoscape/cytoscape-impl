@@ -6,7 +6,7 @@
 	<parent>
 		<artifactId>parent</artifactId>
 		<groupId>org.cytoscape</groupId>
-		<version>3.3.0</version>
+		<version>3.4.0</version>
 		<relativePath>../parent</relativePath>
 	</parent>
 
@@ -16,8 +16,8 @@
 	<name>Cytoscape Implementation Parent Project POM</name>
 
 	<properties>
-		<cytoscape.api.version>3.3.0</cytoscape.api.version>
-		<cytoscape.support.version>3.3.0</cytoscape.support.version>
+		<cytoscape.api.version>3.4.0</cytoscape.api.version>
+		<cytoscape.support.version>3.4.0</cytoscape.support.version>
 	</properties>
 
 
@@ -33,7 +33,7 @@
 		<module>graphml-impl</module>
 		<module>group-impl</module>
 		<module>io-impl</module>
-		<module>json-impl</module>
+		<module>jobs-impl</module>
 		<module>layout-cytoscape-impl</module>
 		<module>layout-impl</module>
 		<module>layout-jgraph-impl</module>
@@ -47,7 +47,6 @@
 		<module>property-impl</module>
 		<module>search-impl</module>
 		<module>session-impl</module>
-		<module>help-impl</module>
 		<module>swing-util-impl</module>
 		<module>swing-application-impl</module>
 		<module>table-browser-impl</module>

@@ -31,6 +31,7 @@ import static org.mockito.Mockito.mock;
 
 import java.util.Properties;
 
+import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.io.util.StreamUtil;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.property.SimpleCyProperty;
@@ -44,10 +45,11 @@ public class ProxySettingsTaskFactoryTest {
 	public void testRun() throws Exception {
 
 		StreamUtil streamUtil = mock(StreamUtil.class);
+		CyEventHelper eventHelper = mock(CyEventHelper.class);
 
 		Properties properties = new Properties();
 		final CyProperty<Properties> proxyProperties = new SimpleCyProperty<Properties>("Test", properties, Properties.class, SavePolicy.DO_NOT_SAVE);
-		ProxySettingsTaskFactoryImpl factory = new ProxySettingsTaskFactoryImpl(proxyProperties, streamUtil);
+		ProxySettingsTaskFactoryImpl factory = new ProxySettingsTaskFactoryImpl(proxyProperties, streamUtil, eventHelper);
 		
 		TaskIterator ti = factory.createTaskIterator();
 		assertNotNull(ti);

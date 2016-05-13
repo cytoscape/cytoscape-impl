@@ -31,6 +31,7 @@ import static javax.swing.GroupLayout.Alignment.LEADING;
 import java.awt.Image;
 import java.awt.Point;
 import java.awt.Robot;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.geom.Point2D;
 
@@ -63,17 +64,19 @@ public class ImageAnnotationDialog extends JDialog {
 	private ImageAnnotationImpl preview;
 	private final boolean create;
 		
-	public ImageAnnotationDialog(DGraphView view, Point2D start) {
+	public ImageAnnotationDialog(final DGraphView view, final Point2D start, final Window owner) {
+		super(owner);
 		this.view = view;
 		this.cyAnnotator = view.getCyAnnotator();
 		this.startingLocation = start;
-		this.annotation = new ImageAnnotationImpl(cyAnnotator, view);
+		this.annotation = new ImageAnnotationImpl(cyAnnotator, view, owner);
 		this.create = true;
 
 		initComponents();
 	}
 
-	public ImageAnnotationDialog(ImageAnnotationImpl mAnnotation) {
+	public ImageAnnotationDialog(final ImageAnnotationImpl mAnnotation, final Window owner) {
+		super(owner);
 		this.annotation = mAnnotation;
 		this.cyAnnotator = mAnnotation.getCyAnnotator();
 		this.view = cyAnnotator.getView();
@@ -90,7 +93,7 @@ public class ImageAnnotationDialog extends JDialog {
 		setResizable(false);
 		
 		// Create the preview panel
-		preview = new ImageAnnotationImpl(annotation);
+		preview = new ImageAnnotationImpl(annotation, getOwner());
 		Image img = annotation.getImage();
 		double width = (double) img.getWidth(this);
 		double height = (double) img.getHeight(this);

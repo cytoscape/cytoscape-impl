@@ -55,6 +55,7 @@ import org.cytoscape.spacial.internal.rtree.RTreeFactory;
 import org.cytoscape.task.EdgeViewTaskFactory;
 import org.cytoscape.task.NetworkViewTaskFactory;
 import org.cytoscape.task.NodeViewTaskFactory;
+import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.presentation.property.NodeShapeVisualProperty;
@@ -101,6 +102,8 @@ public class DNodeViewTest {
 	private DialogTaskManager manager;
 	@Mock
 	private CyEventHelper eventHelper;
+	@Mock
+	private IconManager iconManager;
 	@Mock
 	private CyNetworkTableManager tableMgr;
 	@Mock
@@ -149,7 +152,7 @@ public class DNodeViewTest {
 		networkView = new DGraphView(network, cyRoot, undo, spacialFactory, lexicon,
 				vtfl,
 				/*nodeViewTFs, edgeViewTFs, emptySpaceTFs, dropNodeViewTFs, 
-				dropEmptySpaceTFs,*/ manager, eventHelper, annMgr, dingGraphLOD, vmm, netViewMgr, handleFactory, registrar);
+				dropEmptySpaceTFs,*/ manager, eventHelper, annMgr, dingGraphLOD, vmm, netViewMgr, handleFactory, iconManager, registrar);
 		
 		dnv1 = (DNodeView) networkView.getDNodeView(node1);
 		dnv2 = (DNodeView) networkView.getDNodeView(node2);

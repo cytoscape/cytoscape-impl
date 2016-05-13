@@ -57,7 +57,7 @@ public class PrintAction extends AbstractCyAction {
 		this.appMgr = appMgr;
 
 		setPreferredMenu("File");
-		setMenuGravity(7.0f);
+		setMenuGravity(8.1f);
 		setAcceleratorKeyStroke(KeyStroke.getKeyStroke(KeyEvent.VK_P, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
 		this.props = coreProp.getProperties();
 	}

@@ -29,10 +29,11 @@ import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
-import java.util.Properties;
+
 import javax.swing.Action;
 import javax.swing.KeyStroke;
 import javax.swing.event.MenuEvent;
+
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.ding.impl.DGraphView;
@@ -40,11 +41,9 @@ import org.cytoscape.ding.impl.DingGraphLOD;
 import org.cytoscape.ding.impl.DingGraphLODAll;
 import org.cytoscape.graph.render.stateful.GraphLOD;
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.property.CyProperty;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.presentation.RenderingEngine;
-import org.cytoscape.work.TaskManager;
 
 public class GraphicsDetailAction extends AbstractCyAction {
 

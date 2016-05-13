@@ -30,7 +30,7 @@ import static javax.swing.GroupLayout.Alignment.CENTER;
 import static javax.swing.GroupLayout.Alignment.LEADING;
 import static javax.swing.GroupLayout.Alignment.TRAILING;
 
-import java.awt.Frame;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Collections;
@@ -86,7 +86,7 @@ public class ManageDownloadSitesDialog extends JDialog {
     private DownloadSitesChangedListener downloadSitesChangedListener;
     
 
-    public ManageDownloadSitesDialog(Frame parent, DownloadSitesManager downloadSitesManager) {
+    public ManageDownloadSitesDialog(Window parent, DownloadSitesManager downloadSitesManager) {
         super(parent, ModalityType.APPLICATION_MODAL);
         
         this.downloadSitesManager = downloadSitesManager;

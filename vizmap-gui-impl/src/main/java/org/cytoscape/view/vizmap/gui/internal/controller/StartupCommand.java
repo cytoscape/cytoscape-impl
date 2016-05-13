@@ -65,9 +65,6 @@ public class StartupCommand extends SimpleCommand {
 		getFacade().registerCommand(REMOVE_LOCKED_VALUES, new RemoveLockedValuesCommand(servicesUtil));
 		getFacade().registerCommand(SET_LOCKED_VALUES, new SetLockedValuesCommand(servicesUtil));
 
-		// Initialization of the visual styles list
-		getFacade().sendNotification(LOAD_DEFAULT_VISUAL_STYLES);
-		
 		// Remove the STARTUP command because it is not called more than once
 		getFacade().removeCommand(STARTUP);
 	}

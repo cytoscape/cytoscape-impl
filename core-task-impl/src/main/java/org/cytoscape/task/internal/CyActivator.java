@@ -29,6 +29,7 @@ import static org.cytoscape.application.swing.ActionEnableSupport.ENABLE_FOR_NET
 import static org.cytoscape.application.swing.ActionEnableSupport.ENABLE_FOR_SELECTED_EDGES;
 import static org.cytoscape.application.swing.ActionEnableSupport.ENABLE_FOR_SELECTED_NODES;
 import static org.cytoscape.application.swing.ActionEnableSupport.ENABLE_FOR_SELECTED_NODES_OR_EDGES;
+import static org.cytoscape.application.swing.ActionEnableSupport.ENABLE_FOR_SINGLE_NETWORK;
 import static org.cytoscape.work.ServiceProperties.ACCELERATOR;
 import static org.cytoscape.work.ServiceProperties.COMMAND;
 import static org.cytoscape.work.ServiceProperties.COMMAND_DESCRIPTION;
@@ -322,8 +323,8 @@ public class CyActivator extends AbstractCyActivator {
 		
 		LoadVizmapFileTaskFactoryImpl loadVizmapFileTaskFactory = new LoadVizmapFileTaskFactoryImpl(vizmapReaderManagerServiceRef,visualMappingManagerServiceRef,synchronousTaskManagerServiceRef, tunableSetterServiceRef);
 
-		LoadNetworkFileTaskFactoryImpl loadNetworkFileTaskFactory = new LoadNetworkFileTaskFactoryImpl(cyNetworkReaderManagerServiceRef,cyNetworkManagerServiceRef,cyNetworkViewManagerServiceRef,cyPropertyServiceRef,cyNetworkNamingServiceRef, visualMappingManagerServiceRef, nullNetworkViewFactory);
-		LoadNetworkURLTaskFactoryImpl loadNetworkURLTaskFactory = new LoadNetworkURLTaskFactoryImpl(cyNetworkReaderManagerServiceRef,cyNetworkManagerServiceRef,cyNetworkViewManagerServiceRef,cyPropertyServiceRef,cyNetworkNamingServiceRef,streamUtilRef, visualMappingManagerServiceRef, nullNetworkViewFactory);
+		LoadNetworkFileTaskFactoryImpl loadNetworkFileTaskFactory = new LoadNetworkFileTaskFactoryImpl(cyNetworkReaderManagerServiceRef,cyNetworkManagerServiceRef,cyNetworkViewManagerServiceRef,cyPropertyServiceRef,cyNetworkNamingServiceRef, visualMappingManagerServiceRef, nullNetworkViewFactory, serviceRegistrar);
+		LoadNetworkURLTaskFactoryImpl loadNetworkURLTaskFactory = new LoadNetworkURLTaskFactoryImpl(cyNetworkReaderManagerServiceRef,cyNetworkManagerServiceRef,cyNetworkViewManagerServiceRef,cyPropertyServiceRef,cyNetworkNamingServiceRef,streamUtilRef, visualMappingManagerServiceRef, nullNetworkViewFactory, serviceRegistrar);
 
 		SelectAllTaskFactoryImpl selectAllTaskFactory = new SelectAllTaskFactoryImpl(undoSupportServiceRef,cyNetworkViewManagerServiceRef,cyEventHelperRef);
 		SelectAllEdgesTaskFactoryImpl selectAllEdgesTaskFactory = new SelectAllEdgesTaskFactoryImpl(undoSupportServiceRef,cyNetworkViewManagerServiceRef,cyEventHelperRef);
@@ -358,10 +359,10 @@ public class CyActivator extends AbstractCyActivator {
 		FitContentTaskFactory fitContentTaskFactory = new FitContentTaskFactory(undoSupportServiceRef, cyApplicationManagerServiceRef);
 		NewSessionTaskFactoryImpl newSessionTaskFactory = new NewSessionTaskFactoryImpl(cySessionManagerServiceRef, tunableSetterServiceRef, cyEventHelperRef);
 		OpenSessionCommandTaskFactory openSessionCommandTaskFactory = new OpenSessionCommandTaskFactory(cySessionManagerServiceRef,sessionReaderManagerServiceRef,cyApplicationManagerServiceRef,cyNetworkManagerServiceRef,cyTableManagerServiceRef,cyNetworkTableManagerServiceRef,cyGroupManager,recentlyOpenedTrackerServiceRef,cyEventHelperRef);
-		OpenSessionTaskFactoryImpl openSessionTaskFactory = new OpenSessionTaskFactoryImpl(cySessionManagerServiceRef,sessionReaderManagerServiceRef,cyApplicationManagerServiceRef,cyNetworkManagerServiceRef,cyTableManagerServiceRef,cyNetworkTableManagerServiceRef,cyGroupManager,recentlyOpenedTrackerServiceRef,tunableSetterServiceRef,cyEventHelperRef);
+		OpenSessionTaskFactoryImpl openSessionTaskFactory = new OpenSessionTaskFactoryImpl(cySessionManagerServiceRef,sessionReaderManagerServiceRef,cyNetworkManagerServiceRef,cyTableManagerServiceRef,cyNetworkTableManagerServiceRef,cyGroupManager,recentlyOpenedTrackerServiceRef,tunableSetterServiceRef,cyEventHelperRef);
 		SaveSessionTaskFactoryImpl saveSessionTaskFactory = new SaveSessionTaskFactoryImpl( sessionWriterManagerServiceRef, cySessionManagerServiceRef, recentlyOpenedTrackerServiceRef, cyEventHelperRef);
 		SaveSessionAsTaskFactoryImpl saveSessionAsTaskFactory = new SaveSessionAsTaskFactoryImpl( sessionWriterManagerServiceRef, cySessionManagerServiceRef, recentlyOpenedTrackerServiceRef, cyEventHelperRef, tunableSetterServiceRef);
-		ProxySettingsTaskFactoryImpl proxySettingsTaskFactory = new ProxySettingsTaskFactoryImpl(cyPropertyServiceRef, streamUtilRef);
+		ProxySettingsTaskFactoryImpl proxySettingsTaskFactory = new ProxySettingsTaskFactoryImpl(cyPropertyServiceRef, streamUtilRef, cyEventHelperRef);
 		EditNetworkTitleTaskFactoryImpl editNetworkTitleTaskFactory = new EditNetworkTitleTaskFactoryImpl(undoSupportServiceRef, cyNetworkManagerServiceRef, cyNetworkNamingServiceRef, tunableSetterServiceRef);
 		CreateNetworkViewTaskFactoryImpl createNetworkViewTaskFactory = new CreateNetworkViewTaskFactoryImpl(undoSupportServiceRef,cyNetworkViewManagerServiceRef,cyLayoutsServiceRef,cyEventHelperRef,visualMappingManagerServiceRef,renderingEngineManagerServiceRef,cyApplicationManagerServiceRef);
 		ExportNetworkImageTaskFactoryImpl exportNetworkImageTaskFactory = new ExportNetworkImageTaskFactoryImpl(viewWriterManagerServiceRef,cyApplicationManagerServiceRef);
@@ -839,10 +840,8 @@ public class CyActivator extends AbstractCyActivator {
 
 		Properties destroyNetworkTaskFactoryProps = new Properties();
 		destroyNetworkTaskFactoryProps.setProperty(PREFERRED_MENU,"Edit");
-		destroyNetworkTaskFactoryProps.setProperty(ACCELERATOR,"cmd shift w");
 		destroyNetworkTaskFactoryProps.setProperty(ENABLE_FOR,ENABLE_FOR_NETWORK);
-		destroyNetworkTaskFactoryProps.setProperty(TITLE,"Destroy Network");
-		destroyNetworkTaskFactoryProps.setProperty(IN_NETWORK_PANEL_CONTEXT_MENU,"true");
+		destroyNetworkTaskFactoryProps.setProperty(TITLE,"Destroy Networks");
 		destroyNetworkTaskFactoryProps.setProperty(MENU_GRAVITY,"3.2");
 		//destroyNetworkTaskFactoryProps.setProperty(COMMAND,"destroy");
 		//destroyNetworkTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"network");
@@ -858,10 +857,8 @@ public class CyActivator extends AbstractCyActivator {
 
 		Properties destroyNetworkViewTaskFactoryProps = new Properties();
 		destroyNetworkViewTaskFactoryProps.setProperty(PREFERRED_MENU,"Edit");
-		destroyNetworkViewTaskFactoryProps.setProperty(ACCELERATOR,"cmd w");
 		destroyNetworkViewTaskFactoryProps.setProperty(ENABLE_FOR,ENABLE_FOR_NETWORK_AND_VIEW);
 		destroyNetworkViewTaskFactoryProps.setProperty(TITLE,"Destroy Views");
-		destroyNetworkViewTaskFactoryProps.setProperty(IN_NETWORK_PANEL_CONTEXT_MENU,"true");
 		destroyNetworkViewTaskFactoryProps.setProperty(MENU_GRAVITY,"3.1");
 		destroyNetworkViewTaskFactoryProps.setProperty(COMMAND,"destroy");
 		destroyNetworkViewTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"view");
@@ -870,6 +867,8 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc,destroyNetworkViewTaskFactory,DestroyNetworkViewTaskFactory.class, destroyNetworkViewTaskFactoryProps);
 
 		Properties zoomInTaskFactoryProps = new Properties();
+		zoomInTaskFactoryProps.setProperty(PREFERRED_MENU,"View");
+		zoomInTaskFactoryProps.setProperty(MENU_GRAVITY,"6.3");
 		zoomInTaskFactoryProps.setProperty(ACCELERATOR,"cmd equals");
 		zoomInTaskFactoryProps.setProperty(LARGE_ICON_URL,getClass().getResource("/images/icons/zoom-in-32.png").toString());
 		zoomInTaskFactoryProps.setProperty(ENABLE_FOR,ENABLE_FOR_NETWORK_AND_VIEW);
@@ -882,6 +881,9 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc,zoomInTaskFactory,NetworkTaskFactory.class, zoomInTaskFactoryProps);
 
 		Properties zoomOutTaskFactoryProps = new Properties();
+		zoomOutTaskFactoryProps.setProperty(PREFERRED_MENU,"View");
+		zoomOutTaskFactoryProps.setProperty(MENU_GRAVITY,"6.4");
+		zoomOutTaskFactoryProps.setProperty(INSERT_SEPARATOR_AFTER,"true");
 		zoomOutTaskFactoryProps.setProperty(ACCELERATOR,"cmd minus");
 		zoomOutTaskFactoryProps.setProperty(LARGE_ICON_URL,getClass().getResource("/images/icons/zoom-out-32.png").toString());
 		zoomOutTaskFactoryProps.setProperty(ENABLE_FOR,ENABLE_FOR_NETWORK_AND_VIEW);
@@ -894,7 +896,9 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc,zoomOutTaskFactory,NetworkTaskFactory.class, zoomOutTaskFactoryProps);
 
 		Properties fitSelectedTaskFactoryProps = new Properties();
-		fitSelectedTaskFactoryProps.setProperty(ACCELERATOR,"cmd shift f");
+		fitSelectedTaskFactoryProps.setProperty(PREFERRED_MENU,"View");
+		fitSelectedTaskFactoryProps.setProperty(MENU_GRAVITY,"6.2");
+		fitSelectedTaskFactoryProps.setProperty(ACCELERATOR,"cmd 9");
 		fitSelectedTaskFactoryProps.setProperty(LARGE_ICON_URL,getClass().getResource("/images/icons/zoom-selected-32.png").toString());
 		fitSelectedTaskFactoryProps.setProperty(ENABLE_FOR,ENABLE_FOR_SELECTED_NODES_OR_EDGES);
 		fitSelectedTaskFactoryProps.setProperty(TITLE,"Fit Selected");
@@ -907,7 +911,9 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc,fitSelectedTaskFactory,NetworkTaskFactory.class, fitSelectedTaskFactoryProps);
 
 		Properties fitContentTaskFactoryProps = new Properties();
-		fitContentTaskFactoryProps.setProperty(ACCELERATOR,"cmd f");
+		fitContentTaskFactoryProps.setProperty(PREFERRED_MENU,"View");
+		fitContentTaskFactoryProps.setProperty(MENU_GRAVITY,"6.1");
+		fitContentTaskFactoryProps.setProperty(ACCELERATOR,"cmd 0");
 		fitContentTaskFactoryProps.setProperty(LARGE_ICON_URL,getClass().getResource("/images/icons/zoom-fit-32.png").toString());
 		fitContentTaskFactoryProps.setProperty(ENABLE_FOR,ENABLE_FOR_NETWORK_AND_VIEW);
 		fitContentTaskFactoryProps.setProperty(TITLE,"Fit Content");
@@ -920,7 +926,7 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc,fitContentTaskFactory,NetworkTaskFactory.class, fitContentTaskFactoryProps);
 
 		Properties editNetworkTitleTaskFactoryProps = new Properties();
-		editNetworkTitleTaskFactoryProps.setProperty(ENABLE_FOR,"singleNetwork");
+		editNetworkTitleTaskFactoryProps.setProperty(ENABLE_FOR,ENABLE_FOR_SINGLE_NETWORK);
 		editNetworkTitleTaskFactoryProps.setProperty(PREFERRED_MENU,"Edit");
 		editNetworkTitleTaskFactoryProps.setProperty(MENU_GRAVITY,"5.5");
 		editNetworkTitleTaskFactoryProps.setProperty(TITLE,"Rename Network...");
@@ -937,8 +943,7 @@ public class CyActivator extends AbstractCyActivator {
 		// No ENABLE_FOR because that is handled by the isReady() methdod of the task factory.
 		createNetworkViewTaskFactoryProps.setProperty(PREFERRED_MENU,"Edit");
 		createNetworkViewTaskFactoryProps.setProperty(MENU_GRAVITY,"3.0");
-		createNetworkViewTaskFactoryProps.setProperty(TITLE,"Create View");
-		createNetworkViewTaskFactoryProps.setProperty(IN_NETWORK_PANEL_CONTEXT_MENU,"true");
+		createNetworkViewTaskFactoryProps.setProperty(TITLE,"Create Views");
 		registerService(bc,createNetworkViewTaskFactory,NetworkCollectionTaskFactory.class, createNetworkViewTaskFactoryProps);
 		registerService(bc,createNetworkViewTaskFactory,CreateNetworkViewTaskFactory.class, createNetworkViewTaskFactoryProps);
 		registerServiceListener(bc, createNetworkViewTaskFactory, "addNetworkViewRenderer", "removeNetworkViewRenderer", NetworkViewRenderer.class);
@@ -947,7 +952,7 @@ public class CyActivator extends AbstractCyActivator {
 		Properties createNetworkViewCommandProps = new Properties();
 		createNetworkViewCommandProps.setProperty(COMMAND,"create");
 		createNetworkViewCommandProps.setProperty(COMMAND_NAMESPACE,"view");
-		createNetworkViewCommandProps.setProperty(COMMAND_DESCRIPTION,"Create a new view for a network");
+		createNetworkViewCommandProps.setProperty(COMMAND_DESCRIPTION,"Create a new view for a network"); // TODO test again: for current network or selected ones?
 		registerService(bc,createNetworkViewTaskFactory,TaskFactory.class, createNetworkViewCommandProps);
 
 		Properties exportNetworkTaskFactoryProps = new Properties();

@@ -25,7 +25,6 @@ package org.cytoscape.view.vizmap.gui.internal.event;
  */
 
 import java.beans.PropertyChangeEvent;
-import java.math.BigDecimal;
 import java.util.Comparator;
 import java.util.List;
 import java.util.TreeSet;
@@ -48,7 +47,6 @@ import org.cytoscape.view.vizmap.gui.event.VizMapEventHandler;
 import org.cytoscape.view.vizmap.gui.internal.VizMapperProperty;
 import org.cytoscape.view.vizmap.gui.internal.model.AttributeSet;
 import org.cytoscape.view.vizmap.gui.internal.model.AttributeSetProxy;
-import org.cytoscape.view.vizmap.gui.internal.util.MathUtil;
 import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
 import org.cytoscape.view.vizmap.gui.internal.view.VisualPropertySheetItem;
 import org.cytoscape.view.vizmap.gui.internal.view.VizMapPropertyBuilder;
@@ -363,22 +361,6 @@ public final class CellEditorEventHandler implements VizMapEventHandler {
 				if (col == null)
 					return;
 				
-				// Get new column's min/max values
-				double minTgtVal = Double.POSITIVE_INFINITY;
-				double maxTgtVal = Double.NEGATIVE_INFINITY;
-				final List<?> valueList = col.getValues(col.getType());
-
-				for (final Object o : valueList) {
-					if (o instanceof Number) {
-						double val = ((Number) o).doubleValue();
-						
-						if (!Double.isNaN(val)) {
-							maxTgtVal = Math.max(maxTgtVal, val);
-							minTgtVal = Math.min(minTgtVal, val);
-						}
-					}
-				}
-				
 				// Make sure the source points are sorted by their values
 				final TreeSet<ContinuousMappingPoint<?, ?>> srcPoints = new TreeSet<ContinuousMappingPoint<?, ?>>(
 						new Comparator<ContinuousMappingPoint<?, ?>>() {
@@ -386,16 +368,12 @@ public final class CellEditorEventHandler implements VizMapEventHandler {
 							public int compare(
 									final ContinuousMappingPoint<?, ?> o1,
 									final ContinuousMappingPoint<?, ?> o2) {
-								final BigDecimal v1 = new BigDecimal(((Number)o1.getValue()).doubleValue());
-								final BigDecimal v2 = new BigDecimal(((Number)o2.getValue()).doubleValue());
-								return v1.compareTo(v2);
+								final double v1 = ((Number)o1.getValue()).doubleValue();
+								final double v2 = ((Number)o2.getValue()).doubleValue();
+								return Double.compare(v1, v2);
 							}
 						});
 				srcPoints.addAll(points1);
-				
-				// Now that the source points are sorted, we can get the min/max source values
-				final double minSrcVal = ((Number)srcPoints.first().getValue()).doubleValue();
-				final double maxSrcVal = ((Number)srcPoints.last().getValue()).doubleValue();
 				
 				// Make sure the target mapping has no points, so delete any existing one
 				int tgtPointsSize = cm2.getPointCount();
@@ -409,13 +387,7 @@ public final class CellEditorEventHandler implements VizMapEventHandler {
 				for (int i = 0; i < srcPointsSize; i++) {
 					final ContinuousMappingPoint<?, ?> mp = cm1.getPoint(i);
 					final double srcVal = ((Number)cm1.getPoint(i).getValue()).doubleValue();
-					
-					// Linearly interpolate the new value
-					final double f = MathUtil.invLinearInterp(srcVal, minSrcVal, maxSrcVal);
-					final double tgtVal = MathUtil.linearInterp(f, minTgtVal, maxTgtVal);
-					
-					if (!Double.isNaN(tgtVal) && !Double.isInfinite(tgtVal))
-						cm2.addPoint(tgtVal, mp.getRange());
+					cm2.addPoint(srcVal, mp.getRange());
 				}
 			}
 		} else if (source instanceof DiscreteMapping && target instanceof DiscreteMapping) {

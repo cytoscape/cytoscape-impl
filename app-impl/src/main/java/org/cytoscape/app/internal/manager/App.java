@@ -81,9 +81,9 @@ public abstract class App {
 	private boolean officialNameObtained;
 	
 	/**
-	 * Whether this App object represents a core app.
+	 * Whether this App object represents an app bundled with Cytoscape.
 	 */
-	private boolean coreApp;
+	private boolean bundledApp;
 	
 	/**
 	 * The SHA-512 checksum of the app file, in format sha512:0a516c..
@@ -157,7 +157,7 @@ public abstract class App {
 	 * This is a useful method for knowing which apps not to display in an "all apps" GUI listing.
 	 */
 	public boolean isHidden() {
-		if (coreApp || status == AppStatus.INACTIVE || 
+		if (bundledApp || status == AppStatus.INACTIVE || 
 				status == AppStatus.UNINSTALLED || status == AppStatus.FILE_MOVED)
 			return true;
 		else return false;
@@ -250,7 +250,8 @@ public abstract class App {
 	public boolean heuristicEquals(App other) {
 		
 		// Return false if different app names
-		if (appName.equalsIgnoreCase(other.appName)
+		if (bundledApp == other.bundledApp
+				&& appName.equalsIgnoreCase(other.appName)
 				&& WebQuerier.compareVersions(version, other.version) == 0) {
 
 			if (sha512Checksum != null && other.sha512Checksum != null) {
@@ -334,8 +335,8 @@ public abstract class App {
 		return officialNameObtained;
 	}
 	
-	public boolean isCoreApp() {
-		return coreApp;
+	public boolean isBundledApp() {
+		return bundledApp;
 	}
 
 	public AppStatus getStatus() {
@@ -390,8 +391,8 @@ public abstract class App {
 		this.officialNameObtained = officialNameObtained;
 	}
 	
-	public void setCoreApp(boolean coreApp) {
-		this.coreApp = coreApp;
+	public void setBundledApp(boolean bundledApp) {
+		this.bundledApp = bundledApp;
 	}
 	
 	public void setStatus(AppStatus status) {

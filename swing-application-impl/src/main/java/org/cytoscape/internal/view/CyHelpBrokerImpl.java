@@ -1,12 +1,19 @@
 package org.cytoscape.internal.view;
 
+import javax.help.HelpBroker;
+import javax.help.HelpSet;
+
+import org.cytoscape.application.swing.CyHelpBroker;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /*
  * #%L
  * Cytoscape Swing Application Impl (swing-application-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,24 +31,16 @@ package org.cytoscape.internal.view;
  * #L%
  */
 
-import javax.help.HelpBroker;
-import javax.help.HelpSet;
-import java.net.URL;
-
-import org.cytoscape.application.swing.CyHelpBroker;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 
 /**
+ * @deprecated JavaHelp no longer used in Cytoscape as of 3.4.
  * This class creates the Cytoscape Help Broker for managing the JavaHelp system
  * and help set access
  */
+@Deprecated
 public class CyHelpBrokerImpl implements CyHelpBroker {
 	private HelpBroker hb;
 	private HelpSet hs;
-	private static final String HELP_RESOURCE = "/cytoscape/help/jhelpset.hs";
 	private static final Logger logger = LoggerFactory.getLogger(CyHelpBrokerImpl.class);
 
 	/**
@@ -51,10 +50,9 @@ public class CyHelpBrokerImpl implements CyHelpBroker {
 		hb = null;
 		hs = null;
 
-		URL hsURL = getClass().getResource(HELP_RESOURCE);
 
 		try {
-			hs = new HelpSet(null, hsURL);
+			hs = new HelpSet();
 			hb = hs.createHelpBroker();
 		} catch (Exception e) {
 			logger.warn("HelpSet not found.",e);
@@ -62,19 +60,21 @@ public class CyHelpBrokerImpl implements CyHelpBroker {
 	}
 
 	/**
+	 * @deprecated JavaHelp no longer used in Cytoscape as of 3.4.
 	 * Returns the HelpBroker. 
-	 *
 	 * @return the HelpBroker. 
 	 */
+	@Deprecated
 	public HelpBroker getHelpBroker() {
 		return hb;
 	}
 
 	/**
+	 * @deprecated JavaHelp no longer used in Cytoscape as of 3.4.
 	 * Returns the HelpSet. 
-	 *
 	 * @return the HelpSet. 
 	 */
+	@Deprecated
 	public HelpSet getHelpSet() {
 		return hs;
 	}

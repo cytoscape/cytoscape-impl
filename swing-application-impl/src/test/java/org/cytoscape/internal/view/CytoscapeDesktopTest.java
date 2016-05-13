@@ -18,7 +18,7 @@ import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.work.swing.DialogTaskManager;
-import org.cytoscape.work.swing.TaskStatusPanelFactory;
+import org.cytoscape.work.swing.StatusBarPanelFactory;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -28,24 +28,28 @@ public class CytoscapeDesktopTest {
 
 	CytoscapeDesktop desktop;
 	
-	@Mock NetworkViewManager netViewMgr;
+	@Mock NetworkViewMediator netViewMediator;
 	@Mock CyServiceRegistrar registrar;
 	@Mock CyShutdown shut;
 	@Mock CyEventHelper eh;
 	@Mock DialogTaskManager taskMgr;
-	@Mock TaskStatusPanelFactory taskStatusPanelFactory;
+	@Mock StatusBarPanelFactory taskStatusPanelFactory;
 	@Mock IconManager icoMgr;
 	
 	@Before
 	public void setUp() throws Exception {
 		MockitoAnnotations.initMocks(this);
+		when(registrar.getService(CyShutdown.class)).thenReturn(shut);
+		when(registrar.getService(CyEventHelper.class)).thenReturn(eh);
+		when(registrar.getService(DialogTaskManager.class)).thenReturn(taskMgr);
+		when(registrar.getService(IconManager.class)).thenReturn(icoMgr);
 		
 		final JPanel panel = new JPanel();
 		when(taskStatusPanelFactory.createTaskStatusPanel()).thenReturn(panel);
 		
 		CytoscapeMenus menus = new CytoscapeMenus(new CytoscapeMenuBar(), new CytoscapeToolBar());
 		
-		desktop = new CytoscapeDesktop(menus, netViewMgr, shut, eh, registrar, taskMgr, taskStatusPanelFactory, icoMgr);
+		desktop = new CytoscapeDesktop(menus, netViewMediator, registrar);
 	}
 	
 	@Test

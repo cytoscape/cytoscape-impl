@@ -28,6 +28,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -80,37 +81,43 @@ public final class DataSourceManagerImpl implements DataSourceManager {
 			map.remove(datasource.getName());
 		}
 	}
-	
 
 	@Override
 	public Collection<DataSource> getDataSources(DataCategory category) {
 		synchronized (lock) {
-			if (this.dataSourceMap.get(category) == null){
-				return new HashSet<DataSource>();
+			final Set<DataSource> set = new LinkedHashSet<>();
+			
+			if (dataSourceMap.get(category) != null) {
+				final Collection<DataSource> values = dataSourceMap.get(category).values();
+				
+				if (values != null)
+					set.addAll(values);
 			}
-			return this.dataSourceMap.get(category).values();
+			
+			return set;
 		}
 	}
-
 	
 	@Override
 	public Collection<DataSource> getDataSources(String providerName) {
-		
-		final Set<DataSource> sources = new HashSet<DataSource>();
+		final Set<DataSource> sources = new LinkedHashSet<>();
 		
 		synchronized (lock) {
 			Iterator<DataCategory> it = this.dataSourceMap.keySet().iterator();
 			Map<String, DataSource> map;
-			while (it.hasNext()){
+
+			while (it.hasNext()) {
 				map = this.dataSourceMap.get(it.next());
 				Iterator<DataSource> it_ds = map.values().iterator();
-				while (it_ds.hasNext()){
-					DataSource ds = it_ds.next(); 
-					if(ds.getProvider().equals(providerName))
-						sources.add(ds);				
+
+				while (it_ds.hasNext()) {
+					DataSource ds = it_ds.next();
+					
+					if (ds.getProvider().equals(providerName))
+						sources.add(ds);
 				}
-			}		
-			
+			}
+
 			return sources;
 		}
 	}

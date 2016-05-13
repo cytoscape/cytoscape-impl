@@ -47,11 +47,13 @@ import org.cytoscape.model.VirtualColumnInfo;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.session.CyNetworkNaming;
+import org.cytoscape.task.internal.utils.DataUtils;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.presentation.RenderingEngineManager;
 import org.cytoscape.view.vizmap.VisualMappingManager;
+import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.undo.UndoSupport;
 
@@ -159,8 +161,9 @@ abstract class AbstractNetworkFromSelectionTask extends AbstractCreationTask {
 		tm.setProgress(0.5);
 		
 		newNet.getRow(newNet).set(CyNetwork.NAME, getNetworkName());
+		DataUtils.saveParentNetworkSUID(newNet, parentNetwork.getSUID());
 
-		networkManager.addNetwork(newNet);
+		networkManager.addNetwork(newNet, false);
 		tm.setProgress(0.6);
 
 		// create the view in a separate task
@@ -169,7 +172,8 @@ abstract class AbstractNetworkFromSelectionTask extends AbstractCreationTask {
 		
 		// Pick a CyNetworkViewFactory that is appropriate for the sourceView
 		CyNetworkViewFactory sourceViewFactory = viewFactory;
-		if(sourceView != null) {
+		
+		if (sourceView != null) {
 			NetworkViewRenderer networkViewRenderer = appMgr.getNetworkViewRenderer(sourceView.getRendererId());
 			if(networkViewRenderer != null) {
 				sourceViewFactory = networkViewRenderer.getNetworkViewFactory();
@@ -179,7 +183,20 @@ abstract class AbstractNetworkFromSelectionTask extends AbstractCreationTask {
 		final CreateNetworkViewTask createViewTask = 
 			new CreateNetworkViewTask(undoSupport, networks, sourceViewFactory, networkViewManager,
 				                        null, eventHelper, vmMgr, renderingEngineMgr, appMgr, sourceView);
-		insertTasksAfterCurrentTask(createViewTask);
+		insertTasksAfterCurrentTask(createViewTask, new AbstractTask() {
+			@Override
+			@SuppressWarnings("unchecked")
+			public void run(final TaskMonitor tm) throws Exception {
+				// Select the new view
+				tm.setProgress(0.0);
+				final List<CyNetworkView> createdViews = (List<CyNetworkView>) createViewTask.getResults(List.class);
+				
+				if (!createdViews.isEmpty())
+					appMgr.setCurrentNetworkView(createdViews.get(createdViews.size() - 1));
+				
+				tm.setProgress(1.0);
+			}
+		});
 		
 		tm.setProgress(1.0);
 	}
@@ -209,7 +226,7 @@ abstract class AbstractNetworkFromSelectionTask extends AbstractCreationTask {
 					colInfo.getTargetJoinKey(), col.isImmutable());
 
 		else
-			if(!checkCol.getVirtualColumnInfo().isVirtual() ||
+			if (!checkCol.getVirtualColumnInfo().isVirtual() ||
 					!checkCol.getVirtualColumnInfo().getSourceTable().equals(colInfo.getSourceTable()) ||
 					!checkCol.getVirtualColumnInfo().getSourceColumn().equals(colInfo.getSourceColumn()))
 				subTable.addVirtualColumn(col.getName(), colInfo.getSourceColumn(), colInfo.getSourceTable(), 

@@ -29,13 +29,17 @@ import java.io.FileFilter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOCase;
@@ -61,6 +65,7 @@ import org.cytoscape.app.swing.CySwingAppAdapter;
 import org.cytoscape.application.CyApplicationConfiguration;
 import org.cytoscape.application.CyUserLog;
 import org.cytoscape.application.CyVersion;
+import org.cytoscape.application.events.CyStartEvent;
 import org.cytoscape.event.CyEventHelper;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkEvent;
@@ -102,7 +107,7 @@ public class AppManager implements FrameworkListener {
 	private static final String INSTALL_RESTART_DIRECTORY_NAME = "install-on-restart";
 	
 	/** This subdirectory in the Cytoscape installation directory is used to store core apps, */ 
-	private static final String CORE_APPS_DIRECTORY_NAME = "apps";
+	private static final String BUNDLED_APPS_DIRECTORY_NAME = "apps";
 	
 	/** This subdirectory in the local Cytoscape storage directory is used to store app data, as 
 	 * well as installed and uninstalled apps. */
@@ -226,18 +231,17 @@ public class AppManager implements FrameworkListener {
 	void attemptInitialization() {
 		synchronized (lock ) {
 			if (!isInitialized && startLevel.getStartLevel() >= APP_START_LEVEL) {
-				// Initialize the apps list and start apps
-				initializeApps();
-				isInitialized = true;
+				final ExecutorService service = Executors.newSingleThreadExecutor();
+				service.submit(()-> {
+					// Initialize the apps list and start apps
+					initializeApps();
+					isInitialized = true;
+				});
 			}
 		}
 	}
 	
 	void initializeApps() {
-		// Register all core apps first
-		Set<App> coreApps = obtainAppsFromDirectory(getCoreAppPath(), true);
-		apps.addAll(coreApps);
-		
 		// Move apps from install-on-restart directory to install directory
 		Set<App> installOnRestartApps = obtainAppsFromDirectory(new File(getInstallOnRestartAppsPath()), false);
 		for (App app: installOnRestartApps) {
@@ -257,8 +261,8 @@ public class AppManager implements FrameworkListener {
 		
 		// Obtain previously disabled, installed apps
 		
-		Set<App> disabledFolderApps = obtainAppsFromDirectory(new File(getDisabledAppsPath()), false);
-		for (App app: disabledFolderApps) {
+		Set<App> disabledApps = obtainAppsFromDirectory(new File(getDisabledAppsPath()), false);
+		for (App app: disabledApps) {
 			try {
 				boolean appRegistered = false;
 				for (App regApp : apps) {
@@ -277,8 +281,8 @@ public class AppManager implements FrameworkListener {
 			}
 		}
 		
-		Set<App> uninstalledFolderApps = obtainAppsFromDirectory(new File(getUninstalledAppsPath()), false);
-		for (App app: uninstalledFolderApps) {
+		Set<App> uninstalledApps = obtainAppsFromDirectory(new File(getUninstalledAppsPath()), false);
+		for (App app: uninstalledApps) {
 			try {
 				boolean appRegistered = false;
 				for (App regApp : apps) {
@@ -298,10 +302,11 @@ public class AppManager implements FrameworkListener {
 		}
 		
 		
-		Set<App> installedFolderApps = obtainAppsFromDirectory(new File(getInstalledAppsPath()), false);
-		List<App> startupApps = new ArrayList<App>(coreApps);
-		boolean appsFailed = false;
-		for (App app: installedFolderApps) {
+		Set<App> installedApps = obtainAppsFromDirectory(getBundledAppsPath(), true);
+		installedApps.addAll(obtainAppsFromDirectory(new File(getInstalledAppsPath()), false));
+		
+		Map<String, App> appsToStart = new HashMap<String, App>();
+		for(App app: installedApps) {
 			boolean appRegistered = false;
 			for (App regApp : apps) {
 				if (regApp.heuristicEquals(app))
@@ -309,55 +314,77 @@ public class AppManager implements FrameworkListener {
 			}
 			if (!appRegistered) {
 				apps.add(app);
-				boolean existsInStartup = false;
-				for(ListIterator<App> i = startupApps.listIterator(); i.hasNext();) {
-					App startupApp = i.next();
-					if(startupApp.getAppName().equalsIgnoreCase(app.getAppName())) {
-						existsInStartup = true;
-						if(app.isCompatible(version) &&
-							WebQuerier.compareVersions(startupApp.getVersion(), app.getVersion()) > 0) {
-							i.set(app);
-						}
-					}
-				}
-				if (!existsInStartup && app.isCompatible(version)) {
-					startupApps.add(app);
-				}
-			} else {
+				String appName = app.getAppName().toLowerCase();
+				App currentVersion = appsToStart.get(appName);
+				if(app.isCompatible(version) && (currentVersion == null ||  
+						compareApps(currentVersion, app) > 0))
+					appsToStart.put(appName, app);
+			}
+			else {
 				// Delete the copy
 				FileUtils.deleteQuietly(app.getAppFile());
 				app.setAppFile(null);
 			}
 		}
 		
-		for(Iterator<App> i = startupApps.iterator(); i.hasNext();) {
+		Set<App> coreAppsToStart = new HashSet<App>();
+		App coreAppsMetaApp = appsToStart.get("core apps");
+		if(coreAppsMetaApp != null && coreAppsMetaApp.getDependencies() != null) {
+			for(App.Dependency dep: coreAppsMetaApp.getDependencies()) {
+				String appName = dep.getName().toLowerCase();
+				App app = appsToStart.get(appName);
+				if(app != null) {
+					coreAppsToStart.add(app);
+				}
+			}
+			coreAppsToStart.add(coreAppsMetaApp);
+		}
+		if (!startApps(coreAppsToStart))
+			userLogger.warn("One or more core apps failed to load or start");
+		eventHelper.fireEvent(new CyStartEvent(this));
+		
+		Set<App> otherAppsToStart = new HashSet<App>(appsToStart.values());
+		otherAppsToStart.removeAll(coreAppsToStart);
+		
+		if(!startApps(otherAppsToStart))
+			userLogger.warn("One or more apps failed to load or start");		
+		eventHelper.fireEvent(new AppsFinishedStartingEvent(this));
+	}
+	
+	private int compareApps(App app1, App app2) {
+		int result = WebQuerier.compareVersions(app1.getVersion(), app2.getVersion());
+		if(result == 0) {
+			result = ((Boolean) app2.isBundledApp()).compareTo(app1.isBundledApp());
+		}
+		return result;
+	}
+	
+	private boolean startApps(Collection<App> apps) {
+		boolean success = true;
+		for(Iterator<App> i = apps.iterator(); i.hasNext();) {
 			App app = i.next();
 			try {
 				app.load(this);
 			} catch (AppLoadingException e) {
 				i.remove();
-				appsFailed = true;
+				success = false;
 				app.setStatus(AppStatus.FAILED_TO_LOAD);
 				userLogger.error("Failed to load app " + app.getAppName(), e);
 			}
 		}
 		
-		for(App app: startupApps) {
+		for(App app: apps) {
 			try {
 				app.start(this);
 				app.setStatus(AppStatus.INSTALLED);
 			} catch (AppStartupException e) {
-				appsFailed = true;
+				success = false;
 				app.setStatus(AppStatus.FAILED_TO_START);
 				userLogger.error("Failed to start app " + app.getAppName(), e);
 			}
 		}
+		return success;
 		
-		if(appsFailed)
-			userLogger.warn("One or more apps failed to load or start");
-		
-		DebugHelper.print(this, "config dir: " + applicationConfiguration.getConfigurationDirectoryLocation());
-		eventHelper.fireEvent(new AppsFinishedStartingEvent(this));
 	}
 	
 	private void setupAlterationMonitor() {
@@ -407,7 +434,7 @@ public class AppManager implements FrameworkListener {
 					else if(parsedApp.isCompatible(version) && parsedApp.getAppName().equals(app.getAppName())) {
 						try {
 							if(!app.isDetached() && app.isCompatible(version)) {
-								if(WebQuerier.compareVersions(parsedApp.getVersion(), app.getVersion()) > 0)
+								if(compareApps(parsedApp, app) > 0)
 									startApp = false;
 								else {
 									app.unload(AppManager.this);
@@ -499,7 +526,7 @@ public class AppManager implements FrameworkListener {
 					if(!app.isDetached() && app.isCompatible(version) && 
 							app.getAppName().equalsIgnoreCase(registeredApp.getAppName())) {
 						if(appToStart == null || 
-								WebQuerier.compareVersions(appToStart.getVersion(), app.getVersion()) > 0) 
+								compareApps(appToStart, app) > 0) 
 							appToStart = app;
 					}
 				}
@@ -765,7 +792,7 @@ public class AppManager implements FrameworkListener {
 	 */
 	public void installApp(App app) throws AppInstallException {
 		
-		if(app.isCoreApp()) return;
+		if(app.isBundledApp()) return;
 		
 		boolean installOnRestart = false;
 
@@ -810,7 +837,7 @@ public class AppManager implements FrameworkListener {
 	 * apps directory
 	 */
 	public void uninstallApp(App app) throws AppUninstallException {
-		if(app.isCoreApp()) return; 
+		if(app.isBundledApp()) return; 
 		
 		try {
 			app.moveAppFile(this, new File(getUninstalledAppsPath()));
@@ -821,7 +848,7 @@ public class AppManager implements FrameworkListener {
 	}
 
     public void disableApp(App app) throws AppDisableException {
-    	if(app.isCoreApp()) return;
+    	if(app.isBundledApp()) return;
     	
     	try {
 			app.moveAppFile(this, new File(getDisabledAppsPath()));
@@ -907,21 +934,21 @@ public class AppManager implements FrameworkListener {
 	}
 	
 	/**
-	 * Return the path of the directory used to contain core apps.
-	 * @return The path of the root directory containing all core apps.
+	 * Return the path of the directory containing apps bundled with Cytoscape.
+	 * @return The path of the root directory containing apps bundled with Cytoscape.
 	 */
-	private File getCoreAppPath() {
-		File coreAppPath = null;
+	private File getBundledAppsPath() {
+		File path = null;
 		
 		// TODO: At time of writing, CyApplicationConfiguration always returns the home directory for directory location.
 		try {
-			coreAppPath = new File(applicationConfiguration.getInstallationDirectoryLocation().getCanonicalPath() 
-					+ File.separator + CORE_APPS_DIRECTORY_NAME);
+			path = new File(applicationConfiguration.getInstallationDirectoryLocation().getCanonicalPath() 
+					+ File.separator + BUNDLED_APPS_DIRECTORY_NAME);
 		} catch (IOException e) {
 			throw new RuntimeException("Unable to obtain canonical path for Cytoscape installation directory", e);
 		}
 		
-		return coreAppPath;
+		return path;
 	}
 	
 	/**
@@ -1074,7 +1101,7 @@ public class AppManager implements FrameworkListener {
 	 * @param directory The directory used to parse {@link App} objects
 	 * @return A set of all {@link App} objects that were successfully parsed from files in the given directory
 	 */
-	private Set<App> obtainAppsFromDirectory(File directory, boolean isCoreAppDirectory) {
+	private Set<App> obtainAppsFromDirectory(File directory, boolean isBundled) {
 		// Obtain all files in the given directory with supported extensions, perform a non-recursive search
 		Collection<File> files = FileUtils.listFiles(directory, APP_EXTENSIONS, false); 
 		
@@ -1086,7 +1113,7 @@ public class AppManager implements FrameworkListener {
 			app = null;
 			try {
 				app = appParser.parseApp(file);
-				app.setCoreApp(isCoreAppDirectory);
+				app.setBundledApp(isBundled);
 			} catch (AppParsingException e) {
 				app = null;
 			} finally {

@@ -1,6 +1,38 @@
 package org.cytoscape.app.internal.util;
 
+import java.awt.Component;
+import java.awt.Window;
+import java.awt.event.ActionEvent;
 import java.util.ArrayList;
+
+import javax.swing.JMenuItem;
+import javax.swing.SwingUtilities;
+
+import org.cytoscape.application.swing.CySwingApplication;
+
+/*
+ * #%L
+ * Cytoscape App Impl (app-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2008 - 2016 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
 
 public class Utils {
 
@@ -85,6 +117,20 @@ public class Utils {
 		}
 		return splitList;
 	}
+	
+	public static Window getWindowAncestor(final ActionEvent evt, final CySwingApplication swingApplication) {
+		Window window = null;
+		
+		if (evt.getSource() instanceof JMenuItem) {
+			if (swingApplication.getJMenuBar() != null)
+				window = SwingUtilities.getWindowAncestor(swingApplication.getJMenuBar());
+		} else if (evt.getSource() instanceof Component) {
+			window = SwingUtilities.getWindowAncestor((Component) evt.getSource());
+		}
+		
+		if (window == null)
+			window = swingApplication.getJFrame();
+		
+		return window;
+	}
 }
-
-

@@ -3,7 +3,7 @@
 	<parent>
 		<groupId>org.cytoscape</groupId>
 		<artifactId>impl-parent</artifactId>
-		<version>3.3.0</version>
+		<version>3.4.0</version>
 	</parent>
 
 	<artifactId>model-impl-parent</artifactId>
@@ -95,6 +95,10 @@
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>equations-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>application-api</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>

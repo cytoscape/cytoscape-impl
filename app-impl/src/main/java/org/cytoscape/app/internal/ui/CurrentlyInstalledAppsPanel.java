@@ -28,17 +28,26 @@ import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
 
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
+import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
@@ -60,6 +69,7 @@ import org.cytoscape.app.internal.manager.App.AppStatus;
 import org.cytoscape.app.internal.manager.AppManager;
 import org.cytoscape.app.internal.manager.BundleApp;
 import org.cytoscape.app.internal.manager.SimpleApp;
+import org.cytoscape.app.internal.net.WebQuerier;
 import org.cytoscape.app.internal.util.DebugHelper;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 
@@ -238,6 +248,9 @@ public class CurrentlyInstalledAppsPanel extends JPanel {
     private void disableSelectedButtonActionPerformed(ActionEvent evt) {
     	// Obtain App objects corresponding to currently selected table entries
         Set<App> selectedApps = getSelectedApps();
+        Map<App, Collection<App>> otherAppsDependingOn = getOtherAppsDependingOn(selectedApps);
+        if(otherAppsDependingOn != null && !continueWithConflicts(otherAppsDependingOn)) 
+        	return;
         
         for (App app : selectedApps) {
         	if (app.getStatus().equals(AppStatus.DISABLED))
@@ -259,6 +272,9 @@ public class CurrentlyInstalledAppsPanel extends JPanel {
     private void uninstallSelectedButtonActionPerformed(ActionEvent evt) {
     	// Obtain App objects corresponding to currently selected table entries
     	Set<App> selectedApps = getSelectedApps();
+    	Map<App, Collection<App>> otherAppsDependingOn = getOtherAppsDependingOn(selectedApps);
+        if(otherAppsDependingOn != null && !continueWithConflicts(otherAppsDependingOn)) 
+        	return;
         
         for (App app : selectedApps) {
         	// Only uninstall apps that are installed
@@ -278,6 +294,7 @@ public class CurrentlyInstalledAppsPanel extends JPanel {
         uninstallSelectedButton.setEnabled(false);
         disableSelectedButton.setEnabled(true);
         enableSelectedButton.setEnabled(true);
+        appsAvailableTable.clearSelection();
     }
 
     /**
@@ -493,5 +510,69 @@ public class CurrentlyInstalledAppsPanel extends JPanel {
     			uninstallSelectedButton.setEnabled(true);
     		}
     	}
+    }
+    
+    public boolean continueWithConflicts(Map<App, Collection<App>> otherAppsDependingOn) {
+    	JPanel panel = new JPanel();
+    	panel.setLayout(new BoxLayout(panel, BoxLayout.PAGE_AXIS));
+    	JLabel title = new JLabel("The following are required by one or more installed apps:");
+    	title.setAlignmentX(LEFT_ALIGNMENT);
+    	panel.add(title);
+    	panel.add(Box.createVerticalStrut(title.getPreferredSize().height));
+    	String deps = "";
+    	for(App app: otherAppsDependingOn.keySet()) {
+    		deps +=  app.getAppName() + " (required by";
+    		for(App otherAppDependingOn: otherAppsDependingOn.get(app)) {
+    			deps += " " + otherAppDependingOn.getAppName() + ",";
+    		}
+    		deps = deps.substring(0, deps.length() - 1) + ")\n";
+    	}
+    	deps = deps.substring(0, deps.length() - 1);
+    	JTextArea textArea = new JTextArea(deps);
+    	textArea.setRows(Math.min(otherAppsDependingOn.size(), 10));
+		textArea.setEditable(false);
+		textArea.setHighlighter(null); // disables text selection
+		textArea.setBorder(null);
+		textArea.setOpaque(false);
+		
+    	JScrollPane scrollPane = new JScrollPane(textArea);
+    	scrollPane.setAlignmentX(LEFT_ALIGNMENT);
+    	scrollPane.setBorder(null);
+    	scrollPane.getViewport().setOpaque(false);
+    	scrollPane.setOpaque(false);
+    	panel.add(scrollPane);
+    	panel.add(Box.createVerticalStrut(title.getPreferredSize().height));
+    	JLabel message = new JLabel("Continue?");
+    	message.setAlignmentX(LEFT_ALIGNMENT);
+    	panel.add(message);
+    	Dimension size = panel.getPreferredSize();
+    	if(size.width > 600) {
+    		size.width = 600;
+    		panel.setPreferredSize(size);
+    	}
+    	int confirm = JOptionPane.showConfirmDialog(this, panel, "Warning", JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE);
+    	return (confirm == JOptionPane.OK_OPTION);
+    }
+    
+    public Map<App, Collection<App>> getOtherAppsDependingOn(Collection<App> apps) {
+    	Map<App, Collection<App>> otherAppsDependingOn = new HashMap<App, Collection<App>>();
+    	for(App app: apps) {
+    		List<App> dependencies = new ArrayList<App>();
+    		for(App installedApp: appManager.getInstalledApps())  {
+    			if(!installedApp.getAppName().equalsIgnoreCase("core apps") 
+    					&& !apps.contains(installedApp) && installedApp.getDependencies() != null)
+	    			for (App.Dependency dep: installedApp.getDependencies()) {
+	    				if(app.getAppName().equalsIgnoreCase(dep.getName()) &&
+	    						WebQuerier.compareVersions(dep.getVersion(), app.getVersion()) >= 0)
+	    					dependencies.add(installedApp);
+	    			}
+    		}
+    		if(!dependencies.isEmpty())
+    			otherAppsDependingOn.put(app, dependencies);
+    	}
+    	if(!otherAppsDependingOn.isEmpty())
+    		return otherAppsDependingOn;
+    	
+    	return null;
     }
 }

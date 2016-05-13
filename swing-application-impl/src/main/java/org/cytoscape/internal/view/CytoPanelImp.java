@@ -1,32 +1,9 @@
 package org.cytoscape.internal.view;
 
-/*
- * #%L
- * Cytoscape Swing Application Impl (swing-application-impl)
- * $Id:$
- * $HeadURL:$
- * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * #L%
- */
-
+import static org.cytoscape.internal.view.CytoPanelUtil.BUTTON_SIZE;
+import static org.cytoscape.util.swing.IconManager.ICON_REMOVE;
 import static org.cytoscape.util.swing.IconManager.ICON_SQUARE_O;
 import static org.cytoscape.util.swing.IconManager.ICON_THUMB_TACK;
-import static org.cytoscape.util.swing.IconManager.ICON_REMOVE;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -36,6 +13,7 @@ import java.awt.FontMetrics;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
@@ -43,12 +21,9 @@ import java.awt.event.WindowEvent;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.swing.AbstractButton;
-import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
-import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -67,9 +42,35 @@ import org.cytoscape.application.swing.CytoPanelState;
 import org.cytoscape.application.swing.events.CytoPanelComponentSelectedEvent;
 import org.cytoscape.application.swing.events.CytoPanelStateChangedEvent;
 import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.IconManager;
+import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+/*
+ * #%L
+ * Cytoscape Swing Application Impl (swing-application-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
 
 /**
  * The CytoPanel class extends JPanel to provide the following functionality:
@@ -81,9 +82,8 @@ import org.slf4j.LoggerFactory;
  *
  * @author Ethan Cerami, Benjamin Gross
  */
+@SuppressWarnings("serial")
 public class CytoPanelImp extends JPanel implements CytoPanel, ChangeListener {
-	
-	private final static long serialVersionUID = 1202339868245830L;
 	
 	private final static Logger logger = LoggerFactory.getLogger(CytoPanelImp.class);
 
@@ -101,8 +101,6 @@ public class CytoPanelImp extends JPanel implements CytoPanel, ChangeListener {
 	private static final int EAST_MAX_WIDTH = 1500;
 	private static final int EAST_MIN_HEIGHT = 100;
 	private static final int EAST_MAX_HEIGHT = 600;
-	
-	private static final int BUTTON_SIZE = 18;
 	
 	/**
 	 * The JTabbedPane we hide.
@@ -147,7 +145,7 @@ public class CytoPanelImp extends JPanel implements CytoPanel, ChangeListener {
 	/**
 	 * External window used to hold the floating CytoPanel.
 	 */
-	private JDialog externalWindow;
+	private JFrame externalWindow;
 
 	/**
 	 * The label which contains the tab title - not sure if its needed.
@@ -177,36 +175,29 @@ public class CytoPanelImp extends JPanel implements CytoPanel, ChangeListener {
 	// The dock button tool tip.
 	private static final String TOOL_TIP_CLOSE = "Close Window";
 
-	private final CyEventHelper cyEventHelper;
-	private final IconManager iconManager;
 	private final JFrame parent;
 	
 	private final Map<String, CytoPanelComponent2> componentsById;
 
-	/**
-	 * Constructor.
-	 *
-	 * @param compassDirection  Compass direction of this CytoPanel.
-	 * @param tabPlacement      Tab placement of this CytoPanel.
-	 * @param cytoPanelState    The starting CytoPanel state.
-	 */
-	public CytoPanelImp(final CytoPanelName compassDirection,
-						final int tabPlacement,
-						final CytoPanelState cytoPanelState,
-						final CyEventHelper eh,
-						final CySwingApplication cySwingApp,
-						final IconManager iconManager) {
-		this.cyEventHelper = eh;
+	private final CyServiceRegistrar serviceRegistrar;
+
+	public CytoPanelImp(
+			final CytoPanelName compassDirection,
+			final int tabPlacement,
+			final CytoPanelState cytoPanelState,
+			final CySwingApplication cySwingApp,
+			final CyServiceRegistrar serviceRegistrar
+	) {
 		this.parent = cySwingApp.getJFrame();
-		componentsById = new HashMap<String, CytoPanelComponent2>();
+		this.compassDirection = compassDirection;
+		this.serviceRegistrar = serviceRegistrar;
+		
+		componentsById = new HashMap<>();
 		
 		// setup our tabbed pane
 		tabbedPane = new JTabbedPane(tabPlacement);
 		tabbedPane.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
 		tabbedPane.addChangeListener(this);
-
-		this.compassDirection = compassDirection;
-		this.iconManager = iconManager;
 
 		// construct our panel
 		constructPanel();
@@ -593,7 +584,7 @@ public class CytoPanelImp extends JPanel implements CytoPanel, ChangeListener {
 	 */
 	private void initLabel() {
 		floatLabel = new JLabel(getTitle());
-		floatLabel.setFont(floatLabel.getFont().deriveFont(12.0f));
+		floatLabel.setFont(floatLabel.getFont().deriveFont(LookAndFeelUtil.getSmallFontSize()));
 		floatLabel.setBorder(new EmptyBorder(0, 5, 0, 0));
 	}
 
@@ -601,17 +592,19 @@ public class CytoPanelImp extends JPanel implements CytoPanel, ChangeListener {
 	 * Initializes the button.
 	 */
 	private void initButtons() {
+		final IconManager iconManager = serviceRegistrar.getService(IconManager.class);
+		
 		// Create Float / Dock Button
 		floatButton = new JButton(ICON_SQUARE_O);
 		floatButton.setToolTipText(TOOL_TIP_FLOAT);
-		styleButton(floatButton);
+		CytoPanelUtil.styleButton(floatButton);
 		floatButton.setFont(iconManager.getIconFont(12));
 		floatButton.setSelected(true);
 		
 		// Create close button
 		closeButton = new JButton(ICON_REMOVE);
 		closeButton.setToolTipText(TOOL_TIP_CLOSE);
-		styleButton(closeButton);
+		CytoPanelUtil.styleButton(closeButton);
 		closeButton.setFont(iconManager.getIconFont(13));
 		closeButton.setSelected(true);
 		
@@ -643,7 +636,7 @@ public class CytoPanelImp extends JPanel implements CytoPanel, ChangeListener {
 
 		if (!isFloating()) {
 			// new window to place this CytoPanel
-			externalWindow = new JDialog(parent);
+			externalWindow = new JFrame(parent.getGraphicsConfiguration());
 			
 			// add listener to handle when window is closed
 			addWindowListener();
@@ -760,7 +753,7 @@ public class CytoPanelImp extends JPanel implements CytoPanel, ChangeListener {
 	 *
 	 * @param externalWindow ExternalWindow Object.
 	 */
-	private void setLocationOfExternalWindow(JDialog externalWindow) {
+	private void setLocationOfExternalWindow(Window externalWindow) {
 		Toolkit tk = Toolkit.getDefaultToolkit();
 		Dimension screenDimension = tk.getScreenSize();
 
@@ -782,40 +775,30 @@ public class CytoPanelImp extends JPanel implements CytoPanel, ChangeListener {
 	 * @param notificationType What type of notification to perform.
 	 */
 	private void notifyListeners(int notificationType) {
-			// determine what event to fire
-			switch (notificationType) {
-				case NOTIFICATION_STATE_CHANGE:
-					cyEventHelper.fireEvent(new CytoPanelStateChangedEvent(this, this, cytoPanelState));
-					break;
+		final CyEventHelper eventHelper = serviceRegistrar.getService(CyEventHelper.class);
 
-				case NOTIFICATION_COMPONENT_SELECTED:
-					int selectedIndex = tabbedPane.getSelectedIndex();
-					cyEventHelper.fireEvent(new CytoPanelComponentSelectedEvent(this,this,selectedIndex));
-					break;
-
-				case NOTIFICATION_COMPONENT_ADDED:
-					break;
-
-				case NOTIFICATION_COMPONENT_REMOVED:
-					break;
-			}
+		// determine what event to fire
+		switch (notificationType) {
+			case NOTIFICATION_STATE_CHANGE:
+				eventHelper.fireEvent(new CytoPanelStateChangedEvent(this, this, cytoPanelState));
+				break;
+	
+			case NOTIFICATION_COMPONENT_SELECTED:
+				int selectedIndex = tabbedPane.getSelectedIndex();
+				eventHelper.fireEvent(new CytoPanelComponentSelectedEvent(this, this, selectedIndex));
+				break;
+	
+			case NOTIFICATION_COMPONENT_ADDED:
+				break;
+	
+			case NOTIFICATION_COMPONENT_REMOVED:
+				break;
+		}
 	}
 
 	
 	@Override
 	public Component getThisComponent() {
 		return this;
-	}
-	
-	private static void styleButton(final AbstractButton btn) {
-		btn.setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 2));
-		btn.setContentAreaFilled(false);
-		btn.setMinimumSize(new Dimension(BUTTON_SIZE, BUTTON_SIZE));
-		btn.setPreferredSize(new Dimension(BUTTON_SIZE, BUTTON_SIZE));
-		btn.setSize(new Dimension(BUTTON_SIZE, BUTTON_SIZE));
-		btn.setRolloverEnabled(false);
-		btn.setFocusPainted(false);
-		btn.setFocusable(false);
-		btn.setContentAreaFilled(false);
 	}
 }

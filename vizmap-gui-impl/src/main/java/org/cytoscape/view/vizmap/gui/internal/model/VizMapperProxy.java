@@ -20,6 +20,8 @@ import java.util.TreeSet;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.NetworkViewRenderer;
+import org.cytoscape.application.events.CyStartEvent;
+import org.cytoscape.application.events.CyStartListener;
 import org.cytoscape.application.events.SetCurrentNetworkEvent;
 import org.cytoscape.application.events.SetCurrentNetworkListener;
 import org.cytoscape.application.events.SetCurrentNetworkViewEvent;
@@ -63,7 +65,7 @@ public class VizMapperProxy extends Proxy
 							  		   VisualStyleChangedListener, SetCurrentVisualStyleListener,
 							  		   SetCurrentNetworkListener, SetCurrentNetworkViewListener,
 							  		   SessionAboutToBeLoadedListener, SessionLoadCancelledListener,
-							  		   SessionLoadedListener {
+							  		   SessionLoadedListener, CyStartListener {
 
 	public static final String NAME = "VisualStyleProxy";
 	public static final String PRESET_VIZMAP_FILE = "default_vizmap.xml";
@@ -71,7 +73,11 @@ public class VizMapperProxy extends Proxy
 	private final SortedSet<VisualStyle> visualStyles;
 	private final ServicesUtil servicesUtil;
 
+	private volatile boolean cytoscapeStarted;
 	private volatile boolean loadingSession;
+	private volatile boolean ignoreStyleEvents;
+	
+	private final Object lock = new Object();
 
 	// ==[ CONSTRUCTORS ]===============================================================================================
 	
@@ -97,15 +103,17 @@ public class VizMapperProxy extends Proxy
 	
 	// ==[ PUBLIC METHODS ]=============================================================================================
 	
-	public synchronized SortedSet<VisualStyle> getVisualStyles() {
-		return new TreeSet<VisualStyle>(visualStyles);
+	public SortedSet<VisualStyle> getVisualStyles() {
+		synchronized (lock) {
+			return new TreeSet<VisualStyle>(visualStyles);
+		}
 	}
 	
 	public void loadVisualStyles() {
 		boolean changed = false;
 		SortedSet<VisualStyle> updatedStyles = null;
 		
-		synchronized (this) {
+		synchronized (lock) {
 			// Load the styles
 			final Set<VisualStyle> allStyles = getAllVisualStyles();
 			
@@ -117,26 +125,34 @@ public class VizMapperProxy extends Proxy
 			}
 		}
 		
-		if (changed)
+		if (changed && cytoscapeStarted)
 			sendNotification(VISUAL_STYLE_SET_CHANGED, updatedStyles);
 	}
 
-	public synchronized void addVisualStyle(final VisualStyle vs) {
-		if (vs != null)
-			servicesUtil.get(VisualMappingManager.class).addVisualStyle(vs);
+	public void addVisualStyle(final VisualStyle vs) {
+		synchronized (lock) {
+			if (vs != null)
+				servicesUtil.get(VisualMappingManager.class).addVisualStyle(vs);
+		}
 	}
 	
-	public synchronized void removeVisualStyle(final VisualStyle vs) {
-		if (vs != null)
-			servicesUtil.get(VisualMappingManager.class).removeVisualStyle(vs);
+	public void removeVisualStyle(final VisualStyle vs) {
+		synchronized (lock) {
+			if (vs != null)
+				servicesUtil.get(VisualMappingManager.class).removeVisualStyle(vs);
+		}
 	}
 	
-	public synchronized VisualStyle getDefaultVisualStyle() {
-		return servicesUtil.get(VisualMappingManager.class).getDefaultVisualStyle();
+	public VisualStyle getDefaultVisualStyle() {
+		synchronized (lock) {
+			return servicesUtil.get(VisualMappingManager.class).getDefaultVisualStyle();
+		}
 	}
 	
 	public VisualStyle getCurrentVisualStyle() {
-		return servicesUtil.get(VisualMappingManager.class).getCurrentVisualStyle();
+		synchronized (lock) {
+			return servicesUtil.get(VisualMappingManager.class).getCurrentVisualStyle();
+		}
 	}
 
 	public void setCurrentVisualStyle(final VisualStyle vs) {
@@ -269,14 +285,25 @@ public class VizMapperProxy extends Proxy
 		return true;
 	}
 	
+	public void setIgnoreStyleEvents(final boolean b) {
+		synchronized (lock) {
+			ignoreStyleEvents = b;
+		}
+	}
+	
 	// --- Cytoscape EVENTS ---
 	
 	@Override
 	public void handleEvent(final VisualStyleAddedEvent e) {
+		synchronized (lock) {
+			if (!cytoscapeStarted || ignoreStyleEvents)
+				return;
+		}
+		
 		final VisualStyle vs = e.getVisualStyleAdded();
 		boolean changed = false;
 		
-		synchronized (this) {
+		synchronized (lock) {
 			changed = visualStyles.add(vs);
 		}
 		
@@ -286,10 +313,15 @@ public class VizMapperProxy extends Proxy
 	
 	@Override
 	public void handleEvent(final VisualStyleAboutToBeRemovedEvent e) {
+		synchronized (lock) {
+			if (!cytoscapeStarted || ignoreStyleEvents)
+				return;
+		}
+		
 		final VisualStyle vs = e.getVisualStyleToBeRemoved();
 		boolean changed = false;
 		
-		synchronized (this) {
+		synchronized (lock) {
 			changed = visualStyles.remove(vs);
 		}
 		
@@ -299,26 +331,32 @@ public class VizMapperProxy extends Proxy
 	
 	@Override
 	public void handleEvent(final VisualStyleChangedEvent e) {
-		if (!loadingSession)
+		if (cytoscapeStarted && !loadingSession)
 			sendNotification(VISUAL_STYLE_UPDATED, e.getSource());
 	}
 	
 	@Override
 	public void handleEvent(final SetCurrentVisualStyleEvent e) {
-		if (!loadingSession)
+		if (cytoscapeStarted && !loadingSession)
 			sendNotification(CURRENT_VISUAL_STYLE_CHANGED, e.getVisualStyle());
 	}
 	
 	@Override
 	public void handleEvent(final SetCurrentNetworkEvent e) {
-		if (!loadingSession)
+		if (cytoscapeStarted && !loadingSession)
 			sendNotification(CURRENT_NETWORK_CHANGED, e.getNetwork());
 	}
 	
 	@Override
 	public void handleEvent(final SetCurrentNetworkViewEvent e) {
-		if (!loadingSession)
+		if (cytoscapeStarted && !loadingSession)
 			sendNotification(CURRENT_NETWORK_VIEW_CHANGED, e.getNetworkView());
+	}
+	
+	@Override
+	public void handleEvent(final CyStartEvent e) {
+		cytoscapeStarted = true;
+		getFacade().sendNotification(LOAD_DEFAULT_VISUAL_STYLES);
 	}
 	
 	@Override

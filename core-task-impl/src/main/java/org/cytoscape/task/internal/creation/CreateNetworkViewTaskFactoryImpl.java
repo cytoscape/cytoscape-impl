@@ -37,6 +37,7 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.task.AbstractNetworkCollectionTaskFactory;
 import org.cytoscape.task.create.CreateNetworkViewTaskFactory;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
+import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.presentation.RenderingEngineManager;
 import org.cytoscape.view.vizmap.VisualMappingManager;
@@ -70,25 +71,30 @@ public class CreateNetworkViewTaskFactoryImpl extends AbstractNetworkCollectionT
 		this.vmm = vmm;
 		this.renderingEngineMgr = renderingEngineMgr;
 		this.appMgr = appMgr;
-		viewRenderers = new HashSet<NetworkViewRenderer>();
+		viewRenderers = new HashSet<>();
 	}
 
+	@Override
+	public TaskIterator createTaskIterator(final Collection<CyNetwork> networks, final CyNetworkViewFactory factory) {
+		// Create visualization + layout (optional)
+		final int expectedNumTasks = layoutMgr == null ? 1 : 2;
+
+		return new TaskIterator(expectedNumTasks, new CreateNetworkViewTask(undoSupport, networks, factory, netViewMgr,
+				layoutMgr, eventHelper, vmm, renderingEngineMgr, appMgr));
+	}
+	
 	@Override
 	public TaskIterator createTaskIterator(final Collection<CyNetwork> networks) {
 		if (viewRenderers.isEmpty())
 			throw new RuntimeException("Unnable to create Network View: There is no NetworkViewRenderer.");
 		
 		// Create visualization + layout (optional)
-		if (layoutMgr == null)
-			return new TaskIterator(1, new CreateNetworkViewTask(undoSupport, networks, 
-																 netViewMgr, layoutMgr, eventHelper, 
-			                                                     vmm, renderingEngineMgr, appMgr, viewRenderers));
-		else
-			return new TaskIterator(2, new CreateNetworkViewTask(undoSupport, networks, 
-																 netViewMgr, layoutMgr, eventHelper, 
-			                                                     vmm, renderingEngineMgr, appMgr, viewRenderers));
+		final int expectedNumTasks = layoutMgr == null ? 1 : 2;
+		
+		return new TaskIterator(expectedNumTasks, new CreateNetworkViewTask(undoSupport, networks, netViewMgr,
+				layoutMgr, eventHelper, vmm, renderingEngineMgr, appMgr, viewRenderers));
 	}
-
+	
 	@Override
 	public TaskIterator createTaskIterator() {
 		return createTaskIterator(Collections.singletonList(appMgr.getCurrentNetwork()));
@@ -109,7 +115,7 @@ public class CreateNetworkViewTaskFactoryImpl extends AbstractNetworkCollectionT
 		
 		return false;
 	}
-
+	
 	public void addNetworkViewRenderer(final NetworkViewRenderer renderer, final Map<?, ?> props) {
 		viewRenderers.add(renderer);
 	}

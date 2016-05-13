@@ -28,6 +28,7 @@ import static org.junit.Assert.assertEquals;
 
 import java.util.Properties;
 
+import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.io.util.StreamUtil;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.property.CyProperty.SavePolicy;
@@ -41,6 +42,7 @@ import org.mockito.MockitoAnnotations;
 public class ProxySettingTaskTest {
 
 	@Mock private StreamUtil streamUtil;
+	@Mock private CyEventHelper eventHelper;
 	@Mock private TaskMonitor tm;
 	
 	@Before
@@ -52,7 +54,7 @@ public class ProxySettingTaskTest {
 	public void testRun() throws Exception {
 		Properties properties = new Properties();
 		final CyProperty<Properties> proxyProperties = new SimpleCyProperty<Properties>("Test", properties, Properties.class, SavePolicy.DO_NOT_SAVE);
-		final ProxySettingsTask2 t = new ProxySettingsTask2(proxyProperties, streamUtil);
+		final ProxySettingsTask2 t = new ProxySettingsTask2(proxyProperties, streamUtil, eventHelper);
 
 		final String type = "http";
 		final String hostName = "dummy";

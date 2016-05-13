@@ -497,47 +497,17 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 	}
 
 	<T> List<T> getColumnValues(final String columnName, final Class<? extends T> type) {
+		if (columnName == null)
+			throw new NullPointerException("column name is null.");
+
+		if (type == null)
+			throw new NullPointerException("column type is null.");
+
 		synchronized (lock) {
-			if (columnName == null)
-				throw new NullPointerException("column name is null.");
-	
-			if (type == null)
-				throw new NullPointerException("column type is null.");
-	
-			if (columnName.equalsIgnoreCase(primaryKey)) {
-				final List primaryKeys = new ArrayList(rows.size());
-				for (final Object primaryKey : rows.keySet())
-					primaryKeys.add(primaryKey);
-				return primaryKeys;
+			List<T> l = new ArrayList<>();
+			for(Object key : rows.keySet()) {
+				l.add((T)getValue(key, columnName, type));
 			}
-	
-			final String normalizedColName = normalizeColumnName(columnName);
-			
-			final VirtualColumn virtColumn = virtualColumnMap.get(normalizedColName);
-			if (virtColumn != null)
-				return virtColumn.getColumnValues();
-	
-			Map<Object, Object> vals = attributes.get(normalizedColName);
-			if (vals == null)
-				throw new IllegalArgumentException("column \"" + columnName + "\" does not exist.");
-	
-			List l = new ArrayList(vals.size());
-			for (final Object suid : vals.keySet()) {
-				final Object value = vals.get(suid);
-				if (value instanceof Equation) {
-					final StringBuilder errorMsg = new StringBuilder();
-					final Object eqnValue =
-						EqnSupport.evalEquation((Equation)value, suid, interpreter,
-									currentlyActiveAttributes,
-									columnName, errorMsg, this);
-					lastInternalError = errorMsg.toString();
-					if (eqnValue == null)
-						throw new IllegalStateException("can't convert an equation to a value.");
-					l.add(eqnValue);
-				} else
-					l.add(value);
-			}
-	
 			return l;
 		}
 	}

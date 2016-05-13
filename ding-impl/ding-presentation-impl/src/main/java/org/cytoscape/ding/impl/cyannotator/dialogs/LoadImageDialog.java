@@ -6,7 +6,7 @@ package org.cytoscape.ding.impl.cyannotator.dialogs;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -30,6 +30,7 @@ import static javax.swing.GroupLayout.Alignment.CENTER;
 
 import java.awt.Point;
 import java.awt.Robot;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
@@ -72,7 +73,9 @@ public class LoadImageDialog extends JDialog {
 
 	private static final Logger logger = LoggerFactory.getLogger(LoadImageDialog.class);
 
-	public LoadImageDialog(DGraphView view, Point2D location, CustomGraphicsManager cgm) {
+	public LoadImageDialog(final DGraphView view, final Point2D location, final CustomGraphicsManager cgm,
+			final Window owner) {
+		super(owner);
 		this.view = view;
 		this.cgm = cgm;
 		this.cyAnnotator = view.getCyAnnotator();
@@ -148,7 +151,8 @@ public class LoadImageDialog extends JDialog {
 					url,
 					image,
 					view.getZoom(),
-					cgm
+					cgm,
+					getOwner()
 			);
 
 			newOne.getComponent().setLocation((int) startingLocation.getX(), (int) startingLocation.getY());

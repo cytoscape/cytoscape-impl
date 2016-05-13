@@ -546,9 +546,28 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 	// ///////////////// Action Listeners //////////////////////
 
 	protected void minMaxButtonActionPerformed(ActionEvent evt) {
+		CyColumn col = dataTable.getColumn(mapping.getMappingColumnName());
+		
+		// Get new column's min/max values
+		double minTgtVal = Double.POSITIVE_INFINITY;
+		double maxTgtVal = Double.NEGATIVE_INFINITY;
+		final List<?> valueList = col.getValues(col.getType());
+
+		for (final Object o : valueList) {
+			if (o instanceof Number) {
+				double val = ((Number) o).doubleValue();
+				
+				if (!Double.isNaN(val)) {
+					maxTgtVal = Math.max(maxTgtVal, val);
+					minTgtVal = Math.min(minTgtVal, val);
+				}
+			}
+		}
+		
+		
 		final JDialog dialog = (JDialog) getMainPanel().getRootPane().getParent();
 		
-		final Double[] newVal = MinMaxDialog.getMinMax(tracer.getMin(type), tracer.getMax(type), dialog);
+		final Double[] newVal = MinMaxDialog.getMinMax(tracer.getMin(type), tracer.getMax(type), minTgtVal, maxTgtVal, dialog);
 
 		if (newVal == null)
 			return;

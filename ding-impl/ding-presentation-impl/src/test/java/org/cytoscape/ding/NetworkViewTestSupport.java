@@ -37,6 +37,7 @@ import org.cytoscape.model.NetworkTestSupport;
 import org.cytoscape.model.TableTestSupport;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.spacial.internal.rtree.RTreeFactory;
+import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
@@ -65,6 +66,7 @@ public class NetworkViewTestSupport extends NetworkTestSupport {
 		                                       mock(CyServiceRegistrar.class),
 		                                       networkTableMgr,
 		                                       mock(CyEventHelper.class),
+		                                       mock(IconManager.class),
 		                                       mock(ViewTaskFactoryListener.class),
 											   mock(AnnotationFactoryManager.class),
 											   mock(DingGraphLOD.class), mock(VisualMappingManager.class),

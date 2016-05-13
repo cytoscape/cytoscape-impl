@@ -27,6 +27,7 @@ package org.cytoscape.task.internal.proxysettings;
 
 import java.util.Properties;
 
+import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.io.util.StreamUtil;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.work.AbstractTaskFactory;
@@ -35,18 +36,21 @@ import org.cytoscape.work.TaskIterator;
 
 public class ProxySettingsTaskFactoryImpl extends AbstractTaskFactory {
 	
-	private final StreamUtil streamUtil;
-	private CyProperty<Properties> proxyProperties;
 	
-	public ProxySettingsTaskFactoryImpl(CyProperty<Properties> proxyProperties, StreamUtil streamUtil) {
+	private CyProperty<Properties> proxyProperties;
+	private final StreamUtil streamUtil;
+	private final CyEventHelper eventHelper;
+	
+	public ProxySettingsTaskFactoryImpl(CyProperty<Properties> proxyProperties, StreamUtil streamUtil, CyEventHelper eventHelper) {
 		this.proxyProperties = proxyProperties;
 		this.streamUtil = streamUtil;
+		this.eventHelper = eventHelper;
 
         // Force reading of proxy properties to assign System properties
-        (new ProxySettingsTask2(proxyProperties, streamUtil)).assignSystemProperties();
+        (new ProxySettingsTask2(proxyProperties, streamUtil, eventHelper)).assignSystemProperties();
 	}
 
 	public TaskIterator createTaskIterator() {
-		return new TaskIterator(2,new ProxySettingsTask(proxyProperties, streamUtil));
+		return new TaskIterator(2,new ProxySettingsTask(proxyProperties, streamUtil, eventHelper));
 	}
 }

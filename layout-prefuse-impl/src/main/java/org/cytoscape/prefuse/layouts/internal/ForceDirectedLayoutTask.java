@@ -136,7 +136,6 @@ public class ForceDirectedLayoutTask extends AbstractPartitionLayoutTask {
 			ForceItem f2 = forceItems.get(n2); 
 			if ( f1 == null || f2 == null )
 				continue;
-			// System.out.println("Adding edge "+e+" with spring coeffficient = "+getSpringCoefficient(e)+" and length "+getSpringLength(e));
 			m_fsim.addSpring(f1, f2, getSpringCoefficient(e), getSpringLength(e)); 
 		}
 
@@ -189,6 +188,9 @@ public class ForceDirectedLayoutTask extends AbstractPartitionLayoutTask {
 	*/
 	protected float getSpringLength(LayoutEdge e) {
 		double weight = e.getWeight();
+		if (weight == 0.0)
+			return (float)(context.defaultSpringLength);
+
 		return (float)(context.defaultSpringLength/weight);
 	}
 

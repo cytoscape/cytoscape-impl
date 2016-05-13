@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Properties;
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.io.read.CyNetworkReader;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
@@ -126,13 +127,13 @@ public class ImportNoGuiNetworkReaderFactory extends AbstractTaskFactory {
 					network.getRow(network).set(CyNetwork.NAME, netNaming.getSuggestedNetworkTitle(networkName));
 				}
 				
-				netManager.addNetwork(network);
+				netManager.addNetwork(network, false);
 
 				final int numGraphObjects = network.getNodeCount() + network.getEdgeCount();
 				
 				if (numGraphObjects < viewThreshold) {
 					final CyNetworkView view = netReader.buildCyNetworkView(network);
-					netViewManager.addNetworkView(view);
+					netViewManager.addNetworkView(view, false);
 					vmManager.setVisualStyle(style, view);
 					style.apply(view);
 					
@@ -181,6 +182,19 @@ public class ImportNoGuiNetworkReaderFactory extends AbstractTaskFactory {
 						rootNet.getRow(rootNet).set(CyNetwork.NAME, netNaming.getSuggestedNetworkTitle(networkName));
 					}
 				}			
+			}
+			
+			final CyApplicationManager applicationManager = serviceRegistrar.getService(CyApplicationManager.class);
+			
+			if (!results.isEmpty()) {
+				applicationManager.setCurrentNetworkView(results.iterator().next());
+			} else {
+				for (CyNetwork net : networks) {
+					if (net instanceof CySubNetwork) {
+						applicationManager.setCurrentNetwork(net);
+						break;
+					}
+				}
 			}
 		}
 		

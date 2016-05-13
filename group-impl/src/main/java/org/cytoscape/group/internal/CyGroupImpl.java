@@ -940,6 +940,8 @@ public class CyGroupImpl implements CyGroup {
 	 * This is used by the compound node code in particular.
 	 */
 	public void setGroupNodeShown(CyNetwork net, boolean showGroupNode) {
+		// System.out.println("Setting group node shown to "+showGroupNode);
+		// Thread.dumpStack();
 		synchronized (lock) {
 			if (showGroupNode && !nodeShownSet.contains(net.getSUID())) {
 				// System.out.println("Setting node shown to true");
@@ -1413,8 +1415,10 @@ public class CyGroupImpl implements CyGroup {
 	private void copyAttributes(CyNetwork net, CyIdentifiable object, Map<String, Object> values, CyRow row) {
 		CyTable table = row.getTable();
 		for (CyColumn column: table.getColumns()) {
-			if (column.getVirtualColumnInfo().isVirtual() || 
-			    column.getVirtualColumnInfo().isImmutable())
+			// if (column.getVirtualColumnInfo().isVirtual() || 
+			//     column.getVirtualColumnInfo().isImmutable())
+			// 	continue;
+			if (column.getVirtualColumnInfo().isVirtual())
 				continue;
 
 			if (values.containsKey(column.getName())) {

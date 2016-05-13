@@ -1,12 +1,31 @@
 package org.cytoscape.app.internal.action;
 
+import java.awt.Window;
+import java.awt.event.ActionEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.util.Properties;
+
+import org.cytoscape.app.internal.manager.AppManager;
+import org.cytoscape.app.internal.net.UpdateManager;
+import org.cytoscape.app.internal.ui.AppManagerDialog;
+import org.cytoscape.app.internal.ui.downloadsites.DownloadSitesManager;
+import org.cytoscape.app.internal.util.Utils;
+import org.cytoscape.application.events.CyShutdownEvent;
+import org.cytoscape.application.events.CyShutdownListener;
+import org.cytoscape.application.swing.AbstractCyAction;
+import org.cytoscape.application.swing.CySwingApplication;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.util.swing.FileUtil;
+import org.cytoscape.work.TaskManager;
+
 /*
  * #%L
  * Cytoscape App Impl (app-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2008 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2008 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,25 +43,9 @@ package org.cytoscape.app.internal.action;
  * #L%
  */
 
-import java.awt.event.ActionEvent;
-import java.util.Properties;
-
-import org.cytoscape.app.internal.manager.AppManager;
-import org.cytoscape.app.internal.net.UpdateManager;
-import org.cytoscape.app.internal.ui.AppManagerDialog;
-import org.cytoscape.app.internal.ui.downloadsites.DownloadSitesManager;
-import org.cytoscape.application.events.CyShutdownEvent;
-import org.cytoscape.application.events.CyShutdownListener;
-import org.cytoscape.application.swing.AbstractCyAction;
-import org.cytoscape.application.swing.CySwingApplication;
-import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.util.swing.FileUtil;
-import org.cytoscape.work.TaskManager;
-
+@SuppressWarnings("serial")
 public class AppManagerAction extends AbstractCyAction {
 
-	private static final long serialVersionUID = -9145570324785249730L;
-	
 	/**
 	 * A reference to the main Cytoscape window used to position the App Manager dialog.
 	 */
@@ -78,19 +81,21 @@ public class AppManagerAction extends AbstractCyAction {
 	 */
 	private CyServiceRegistrar serviceRegistrar;
 	
-	private AppManagerDialog appManagerDialog = null;
+	private AppManagerDialog dialog;
 	
 	
 	/**
 	 * Creates and sets up the AbstractCyAction, placing an item into the menu.
 	 */
-	public AppManagerAction(AppManager appManager, 
+	public AppManagerAction(
+			AppManager appManager, 
 			DownloadSitesManager downloadSitesManager,
 			UpdateManager updateManager,
 			CySwingApplication swingApplication, 
 			FileUtil fileUtil, 
 			TaskManager taskManager, 
-			CyServiceRegistrar serviceRegistrar) {
+			CyServiceRegistrar serviceRegistrar
+	) {
 		super("App Manager...");
 		
 		setPreferredMenu("Apps");
@@ -110,13 +115,11 @@ public class AppManagerAction extends AbstractCyAction {
 
 	private CyShutdownListener createShutdownListener() {
 		CyShutdownListener shutdownListener = new CyShutdownListener() {
-			
 			@Override
 			public void handleEvent(CyShutdownEvent e) {
-				
-				if (appManagerDialog != null) {	
-					appManagerDialog.setVisible(false);
-					appManagerDialog.dispose();
+				if (dialog != null) {	
+					dialog.setVisible(false);
+					dialog.dispose();
 				}
 				
 				serviceRegistrar.unregisterService(this, CyShutdownListener.class);
@@ -127,14 +130,25 @@ public class AppManagerAction extends AbstractCyAction {
 	}
 	
 	@Override
-	public void actionPerformed(ActionEvent event) {
-				
+	public void actionPerformed(final ActionEvent evt) {
 		// Create and display the App Manager dialog
-		if (appManagerDialog == null) {
-			appManagerDialog = new AppManagerDialog(appManager, downloadSitesManager, updateManager, fileUtil, taskManager, swingApplication.getJFrame(), true);
-		} 
-		appManagerDialog.pack();
-		appManagerDialog.setVisible(true);
+		if (dialog == null) {
+			final Window owner = Utils.getWindowAncestor(evt, swingApplication);
+			dialog = new AppManagerDialog(appManager, downloadSitesManager, updateManager, fileUtil, taskManager,
+					owner);
+			dialog.addWindowListener(new WindowAdapter() {
+				@Override
+				public void windowClosed(WindowEvent e) {
+					dialog = null;
+				}
+			});
+		}
+		
+		dialog.setVisible(true);
 	}
-
+	
+	@Override
+	public boolean isEnabled() {
+		return dialog == null || !dialog.isVisible();
+	}
 }

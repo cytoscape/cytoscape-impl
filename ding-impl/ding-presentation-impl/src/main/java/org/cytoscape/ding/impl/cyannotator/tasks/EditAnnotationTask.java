@@ -6,7 +6,7 @@ package org.cytoscape.ding.impl.cyannotator.tasks;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,8 +24,6 @@ package org.cytoscape.ding.impl.cyannotator.tasks;
  * #L%
  */
 
-
-
 import java.awt.geom.Point2D;
 
 import javax.swing.JDialog;
@@ -36,16 +34,12 @@ import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
 import org.cytoscape.task.AbstractNetworkViewTask;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.work.TaskMonitor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class EditAnnotationTask extends AbstractNetworkViewTask {
+	
 	private final DingAnnotation annotation; 
 	private final Point2D location; 
 
-	private static final Logger logger = LoggerFactory.getLogger(EditAnnotationTask.class);
-	
-	
 	public EditAnnotationTask(CyNetworkView view, DingAnnotation annotation, Point2D location) {
 		super(view);
 		this.annotation = annotation;
@@ -54,15 +48,13 @@ public class EditAnnotationTask extends AbstractNetworkViewTask {
 
 	@Override
 	public void run(TaskMonitor tm) throws Exception {
-		
-		if ( view instanceof DGraphView ) {
-			SwingUtilities.invokeLater( new Runnable() {
-				public void run() {
-		 			JDialog dialog = annotation.getModifyDialog();	
-					if (dialog != null) {
-						dialog.setLocation((int)location.getX(), (int)location.getY());
-						dialog.setVisible(true);
-					}
+		if (view instanceof DGraphView) {
+			SwingUtilities.invokeLater(() -> {
+				final JDialog dialog = annotation.getModifyDialog();
+				
+				if (dialog != null) {
+					dialog.setLocation((int) location.getX(), (int) location.getY());
+					dialog.setVisible(true);
 				}
 			});
 		}

@@ -105,8 +105,6 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 	// In 3, CG Manager is treated as a regular app.  This is a unique name for it.
 	private static final String DING_CG_MANAGER_NAME = "org.cytoscape.ding.customgraphicsmgr";
 	
-	public static final String CY2_PARENT_NETWORK_COLUMN = "Cy2 Parent Network.SUID";
-	
 	public static final String CY_PROPS_FILE = "session_cytoscape.props";
 	public static final Pattern NETWORK_PATTERN = Pattern.compile(".*/(([^/]+)[.]xgmml)");
 	public static final Pattern PROPERTIES_PATTERN = Pattern.compile(".*/(([^/]+)[.]xgmml)");
@@ -123,10 +121,10 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 	private final VizmapReaderManager vizmapReaderMgr;
 
 	protected Cysession cysession;
-	private final Map<String, CyNetwork> networkLookup = new HashMap<String, CyNetwork>();
-	private final Map<String, CyNetworkView> networkViewLookup = new HashMap<String, CyNetworkView>();
-	private final Map<String, List<Node>> nodeSelectionLookup = new HashMap<String, List<Node>>();
-	private final Map<String, List<Edge>> edgeSelectionLookup = new HashMap<String, List<Edge>>();
+	private final Map<String, CyNetwork> networkLookup = new HashMap<>();
+	private final Map<String, CyNetworkView> networkViewLookup = new HashMap<>();
+	private final Map<String, List<Node>> nodeSelectionLookup = new HashMap<>();
+	private final Map<String, List<Edge>> edgeSelectionLookup = new HashMap<>();
 	private Map<String, String> xgmmlEntries;
 
 	public Cy2SessionReaderImpl(final InputStream sourceInputStream,
@@ -150,7 +148,7 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 			throw new NullPointerException("vizmap reader manager is null.");
 		this.vizmapReaderMgr = vizmapReaderMgr;
 		
-		xgmmlEntries = new HashMap<String, String>();
+		xgmmlEntries = new HashMap<>();
 	}
 	
 	@Override
@@ -212,7 +210,7 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 	
 	private void extractNetworks(TaskMonitor tm) throws JAXBException, IOException {
 		// Extract the XGMML files
-		Map<String, Network> netMap = new HashMap<String, Network>();
+		Map<String, Network> netMap = new HashMap<>();
 
 		for (Network curNet : cysession.getNetworkTree().getNetwork()) {
 			netMap.put(curNet.getId(), curNet);
@@ -311,22 +309,24 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 				final String netName = net.getRow(net).get(CyNetwork.NAME, String.class);
 				networkLookup.put(netName, net);
 				
-				// Add parent network attribute, to preserve the network hierarchy info from Cytoscape 2.x
-				final CyRow row = net.getRow(net, CyNetwork.LOCAL_ATTRS);
-				final CyTable tbl = row.getTable();
+				// Add parent network attribute to a column in the hidden table,
+				// to preserve the network hierarchy info from Cytoscape 2.x
+				final CyRow hRow = net.getRow(net, CyNetwork.HIDDEN_ATTRS);
+				final CyTable hTbl = hRow.getTable();
 				
-				if (parent instanceof CySubNetwork && tbl.getColumn(CY2_PARENT_NETWORK_COLUMN) == null)
-					tbl.createColumn(CY2_PARENT_NETWORK_COLUMN, Long.class, false);
+				if (parent instanceof CySubNetwork) {
+					if (hTbl.getColumn(CY3_PARENT_NETWORK_COLUMN) == null)
+						hTbl.createColumn(CY3_PARENT_NETWORK_COLUMN, Long.class, false);
 				
-				if (tbl.getColumn(CY2_PARENT_NETWORK_COLUMN) != null) {
-					if (parent instanceof CySubNetwork) {
-						row.set(CY2_PARENT_NETWORK_COLUMN, parent.getSUID());
-					} else {
-						// Remove the column to prevent stale values
-						// (e.g. the user imported a Cy3 XGMML that contains this attribute into Cy2)
-						tbl.deleteColumn(CY2_PARENT_NETWORK_COLUMN);
-					}
+					hRow.set(CY3_PARENT_NETWORK_COLUMN, parent.getSUID());
 				}
+				
+				final CyTable tbl = net.getRow(net, CyNetwork.LOCAL_ATTRS).getTable();
+				
+				// Remove this old column (used until v3.3) to prevent stale values
+				// (e.g. the user imported a Cy3 XGMML that contains this attribute into Cy2)
+				if (tbl.getColumn(CY2_PARENT_NETWORK_COLUMN) != null && parent instanceof CySubNetwork == false)
+					tbl.deleteColumn(CY2_PARENT_NETWORK_COLUMN);
 
 				// Restore node/edge selection
 				List<Node> selNodes = nodeSelectionLookup.get(netName);
@@ -338,7 +338,7 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 					setBooleanEdgeAttr(net, selEdges, SELECTED, DEFAULT_ATTRS);
 				
 				networks.add(net);
-			
+				
 				if (!cancelled && i == 0 && createView) {
 					// Create a network view for the first network only,
 					// which is supposed to be the top-level one
@@ -400,7 +400,7 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 		
 		// Put the file into appFileListMap
 		if (!appFileListMap.containsKey(appName))
-			appFileListMap.put(appName, new ArrayList<File>());
+			appFileListMap.put(appName, new ArrayList<>());
 
 		List<File> fileList = appFileListMap.get(appName);
 		fileList.add(file);
@@ -479,7 +479,9 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 		}
 
 		// Put the file into appFileListMap
-		if (!appFileListMap.containsKey(DING_CG_MANAGER_NAME)) appFileListMap.put(DING_CG_MANAGER_NAME, new ArrayList<File>());
+		if (!appFileListMap.containsKey(DING_CG_MANAGER_NAME))
+			appFileListMap.put(DING_CG_MANAGER_NAME, new ArrayList<>());
+		
 		List<File> fileList = appFileListMap.get(DING_CG_MANAGER_NAME);
 		fileList.add(file);
 	}
@@ -658,6 +660,23 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 						if (h != null)
 							view.setVisualProperty(BasicVisualLexicon.NETWORK_HEIGHT, h.doubleValue());
 					}
+				}
+			}
+		}
+		
+		if (!networks.isEmpty()) {
+			// Select the last network that has a view, since Cy2 files do not contain the network selection info
+			final CyNetwork[] array = networks.toArray(new CyNetwork[networks.size()]);
+			
+			for (int i = array.length - 1; i >= 0; i--) {
+				final CyNetwork net = array[i];
+				final CyRow row = net.getRow(net);
+				final String netName = row.get(CyNetwork.NAME, String.class);
+				final CyNetworkView view = networkViewLookup.get(netName);
+				
+				if (view != null) {
+					row.set(CyNetwork.SELECTED, true);
+					break;
 				}
 			}
 		}

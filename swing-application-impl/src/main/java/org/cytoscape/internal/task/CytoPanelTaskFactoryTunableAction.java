@@ -55,12 +55,15 @@ import org.slf4j.LoggerFactory;
  *  This class is used to provide actions for task factories that have been annotated with tunables and therefore
  *  should end up wrapped in CytoPanel components.
  */
+@SuppressWarnings("serial")
 public class CytoPanelTaskFactoryTunableAction extends AbstractCyAction {
+	
 	/**
 	 *  A listener that upon receiving the button-click event validates the tunables and then
 	 *  creates and executes a task.
 	 */
 	private static class ExecuteButtonListener implements ActionListener {
+		
 		final private TaskFactory factory;
 		final private PanelTaskManager manager;
 		final private Object context;
@@ -71,6 +74,7 @@ public class CytoPanelTaskFactoryTunableAction extends AbstractCyAction {
 			this.context = context;
 		}
 
+		@Override
 		public void actionPerformed(final ActionEvent event) {
 			// Perform input validation?
 			if (context instanceof TunableValidator) {

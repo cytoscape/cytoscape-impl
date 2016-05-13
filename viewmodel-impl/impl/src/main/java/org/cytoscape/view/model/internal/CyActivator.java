@@ -26,29 +26,23 @@ package org.cytoscape.view.model.internal;
 
 import java.util.Properties;
 
-import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.service.util.AbstractCyActivator;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.osgi.framework.BundleContext;
 
-
 public class CyActivator extends AbstractCyActivator {
-	public CyActivator() {
-		super();
-	}
 
+	@Override
 	public void start(BundleContext bc) {
-		CyEventHelper cyEventHelperServiceRef = getService(bc,CyEventHelper.class);		
-		CyNetworkManager cyNetworkManagerServiceRef = getService(bc,CyNetworkManager.class);		
-		
-		CyNetworkViewManagerImpl cyNetworkViewManager = new CyNetworkViewManagerImpl(cyEventHelperServiceRef,cyNetworkManagerServiceRef);
-		
-		registerAllServices(bc,cyNetworkViewManager, new Properties());
-		
+		CyServiceRegistrar serviceRegistrar = getService(bc, CyServiceRegistrar.class);
+
+		CyNetworkViewManagerImpl cyNetworkViewManager = new CyNetworkViewManagerImpl(serviceRegistrar);
+		registerAllServices(bc, cyNetworkViewManager, new Properties());
+
 		NullCyNetworkViewFactory nullCyNetworkViewFactory = new NullCyNetworkViewFactory();
 		Properties nullViewFactoryProperties = new Properties();
 		nullViewFactoryProperties.put("id", "NullCyNetworkViewFactory");
-		registerService(bc,  nullCyNetworkViewFactory, CyNetworkViewFactory.class, nullViewFactoryProperties);
+		registerService(bc, nullCyNetworkViewFactory, CyNetworkViewFactory.class, nullViewFactoryProperties);
 	}
 }

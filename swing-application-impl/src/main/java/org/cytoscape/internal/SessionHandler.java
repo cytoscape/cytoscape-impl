@@ -1,12 +1,62 @@
 package org.cytoscape.internal;
 
+import static org.cytoscape.internal.util.ViewUtil.invokeOnEDT;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+
+import javax.swing.JOptionPane;
+
+import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.events.CyShutdownEvent;
+import org.cytoscape.application.events.CyShutdownListener;
+import org.cytoscape.application.swing.CytoPanel;
+import org.cytoscape.application.swing.CytoPanelName;
+import org.cytoscape.application.swing.CytoPanelState;
+import org.cytoscape.internal.io.SessionIO;
+import org.cytoscape.internal.io.networklist.Network;
+import org.cytoscape.internal.io.networklist.NetworkList;
+import org.cytoscape.internal.io.sessionstate.Cytopanel;
+import org.cytoscape.internal.io.sessionstate.Cytopanels;
+import org.cytoscape.internal.io.sessionstate.SessionState;
+import org.cytoscape.internal.view.CytoscapeDesktop;
+import org.cytoscape.internal.view.NetworkMainPanel;
+import org.cytoscape.internal.view.NetworkViewMediator;
+import org.cytoscape.internal.view.SubNetworkPanel;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNetworkManager;
+import org.cytoscape.model.subnetwork.CySubNetwork;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.session.CySession;
+import org.cytoscape.session.CySessionManager;
+import org.cytoscape.session.events.SessionAboutToBeSavedEvent;
+import org.cytoscape.session.events.SessionAboutToBeSavedListener;
+import org.cytoscape.session.events.SessionLoadedEvent;
+import org.cytoscape.session.events.SessionLoadedListener;
+import org.cytoscape.task.write.SaveSessionAsTaskFactory;
+import org.cytoscape.util.swing.FileChooserFilter;
+import org.cytoscape.util.swing.FileUtil;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.CyNetworkViewManager;
+import org.cytoscape.work.SynchronousTaskManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /*
  * #%L
  * Cytoscape Swing Application Impl (swing-application-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,88 +74,34 @@ package org.cytoscape.internal;
  * #L%
  */
 
-import java.io.File;
-import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-
-import javax.swing.JInternalFrame;
-import javax.swing.JOptionPane;
-import javax.swing.SwingUtilities;
-
-import org.cytoscape.application.events.CyShutdownEvent;
-import org.cytoscape.application.events.CyShutdownListener;
-import org.cytoscape.application.swing.CytoPanel;
-import org.cytoscape.application.swing.CytoPanelName;
-import org.cytoscape.application.swing.CytoPanelState;
-import org.cytoscape.internal.io.SessionIO;
-import org.cytoscape.internal.io.networklist.Network;
-import org.cytoscape.internal.io.networklist.NetworkList;
-import org.cytoscape.internal.io.sessionstate.Cytopanel;
-import org.cytoscape.internal.io.sessionstate.Cytopanels;
-import org.cytoscape.internal.io.sessionstate.NetworkFrame;
-import org.cytoscape.internal.io.sessionstate.NetworkFrames;
-import org.cytoscape.internal.io.sessionstate.SessionState;
-import org.cytoscape.internal.view.CytoscapeDesktop;
-import org.cytoscape.internal.view.NetworkPanel;
-import org.cytoscape.internal.view.NetworkViewManager;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.session.CySession;
-import org.cytoscape.session.CySessionManager;
-import org.cytoscape.session.events.SessionAboutToBeSavedEvent;
-import org.cytoscape.session.events.SessionAboutToBeSavedListener;
-import org.cytoscape.session.events.SessionLoadedEvent;
-import org.cytoscape.session.events.SessionLoadedListener;
-import org.cytoscape.task.write.SaveSessionAsTaskFactory;
-import org.cytoscape.util.swing.FileChooserFilter;
-import org.cytoscape.util.swing.FileUtil;
-import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.work.SynchronousTaskManager;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 public class SessionHandler implements CyShutdownListener, SessionLoadedListener, SessionAboutToBeSavedListener {
 
 	private static final String APP_NAME = "org.cytoscape.swing-application";
 	private static final String SESSION_STATE_FILENAME = "session_state.xml";
 	private static final String NETWORK_LIST_FILENAME = "network_list.xml";
 	
+	private final Map<String, CytoPanelName> CYTOPANEL_NAMES = new LinkedHashMap<>();
+	
 	private final CytoscapeDesktop desktop;
-	private final CyNetworkManager netMgr;
-	private final NetworkViewManager netViewMgr;
-	private final SynchronousTaskManager<?> syncTaskMgr;
-	private final SaveSessionAsTaskFactory saveTaskFactory;
+	private final NetworkViewMediator netViewMediator;
 	private final SessionIO sessionIO;
-	private final CySessionManager sessionManager;
-	private final FileUtil fileUtil;
-	private final NetworkPanel netPanel;
-	private final Map<String, CytoPanelName> CYTOPANEL_NAMES = new LinkedHashMap<String, CytoPanelName>();
+	private final NetworkMainPanel netPanel;
+	private final CyServiceRegistrar serviceRegistrar;
 	
 	private static final Logger logger = LoggerFactory.getLogger(SessionHandler.class);
 	
-	public SessionHandler(final CytoscapeDesktop desktop,
-						  final CyNetworkManager netMgr,
-						  final NetworkViewManager netViewMgr,
-						  final SynchronousTaskManager<?> syncTaskMgr,
-						  final SaveSessionAsTaskFactory saveTaskFactory,
-						  final SessionIO sessionIO,
-						  final CySessionManager sessionManager,
-						  final FileUtil fileUtil,
-						  final NetworkPanel netPanel) {
+	public SessionHandler(
+			final CytoscapeDesktop desktop,
+			final NetworkViewMediator netViewMediator,
+			final SessionIO sessionIO,
+			final NetworkMainPanel netPanel,
+			final CyServiceRegistrar serviceRegistrar
+	) {
 		this.desktop = desktop;
-		this.netMgr = netMgr;
-		this.netViewMgr = netViewMgr;
-		this.syncTaskMgr = syncTaskMgr;
-		this.saveTaskFactory = saveTaskFactory;
+		this.netViewMediator = netViewMediator;
 		this.sessionIO = sessionIO;
-		this.sessionManager = sessionManager;
-		this.fileUtil = fileUtil;
 		this.netPanel = netPanel;
+		this.serviceRegistrar = serviceRegistrar;
 		
 		CYTOPANEL_NAMES.put("CytoPanel1", CytoPanelName.WEST);
 		CYTOPANEL_NAMES.put("CytoPanel2", CytoPanelName.SOUTH);
@@ -114,8 +110,10 @@ public class SessionHandler implements CyShutdownListener, SessionLoadedListener
 
 	@Override
 	public void handleEvent(final CyShutdownEvent e) {
+		final CyNetworkManager netMgr = serviceRegistrar.getService(CyNetworkManager.class);
+		
 		// If there are no networks, just quit.
-		if (netMgr.getNetworkSet().size() == 0 || e.forceShutdown()) 
+		if (netMgr.getNetworkSet().isEmpty() || e.forceShutdown()) 
 			return;
 
 		// Ask user whether to save current session or not.
@@ -130,27 +128,35 @@ public class SessionHandler implements CyShutdownListener, SessionLoadedListener
 		if (n == JOptionPane.NO_OPTION) {
 			return;
 		} else if (n == JOptionPane.YES_OPTION) {
-			final String sessionFileName = sessionManager.getCurrentSessionFileName();
+			final CySessionManager sessionMgr = serviceRegistrar.getService(CySessionManager.class);
+			final String sessionFileName = sessionMgr.getCurrentSessionFileName();
 			final File file;
 			
-			if (sessionFileName == null || sessionFileName.isEmpty() ){
-				FileChooserFilter filter = new FileChooserFilter("Session File" , "cys");
+			if (sessionFileName == null || sessionFileName.isEmpty()) {
+				FileChooserFilter filter = new FileChooserFilter("Session File", "cys");
 				List<FileChooserFilter> filterCollection = new ArrayList<FileChooserFilter>(1);
 				filterCollection.add(filter);
+				
+				final FileUtil fileUtil = serviceRegistrar.getService(FileUtil.class);
 				file = fileUtil.getFile(desktop, "Save Session File", FileUtil.SAVE, filterCollection );
 			} else {
 				file = new File(sessionFileName);
 			}
 			
-			if (file == null){ //just check the file again in case the file chooser dialoge task is canceled.
+			if (file == null) { //just check the file again in case the file chooser dialoge task is canceled.
 				e.abortShutdown("User canceled the shutdown request.");
 				return;
 			}
 			
+			final SynchronousTaskManager<?> syncTaskMgr = serviceRegistrar.getService(SynchronousTaskManager.class);
+			final SaveSessionAsTaskFactory saveTaskFactory = serviceRegistrar.getService(SaveSessionAsTaskFactory.class);
+			
 			syncTaskMgr.execute(saveTaskFactory.createTaskIterator(file));
+			
 			return;
 		} else {
 			e.abortShutdown("User canceled the shutdown request.");
+			
 			return; 
 		}
 	}
@@ -161,7 +167,7 @@ public class SessionHandler implements CyShutdownListener, SessionLoadedListener
 		final File f1 = saveSessionState(e);
 		final File f2 = saveNetworkList(e);
 		
-		final List<File> files = new ArrayList<File>();
+		final List<File> files = new ArrayList<>();
 		if (f1 != null) files.add(f1);
 		if (f2 != null) files.add(f2);
 		
@@ -181,44 +187,18 @@ public class SessionHandler implements CyShutdownListener, SessionLoadedListener
 		if (sess == null)
 			return;
 		
-		SwingUtilities.invokeLater(new Runnable() {
-			@Override
-			public void run() {
-				postLoading(sess);
-			}
+		invokeOnEDT(() -> {
+			postLoading(sess);
 		});
 	}
 	
 	private File saveSessionState(final SessionAboutToBeSavedEvent e) {
 		final SessionState sessState = new SessionState();
 
-		// Network Frames
-		final NetworkFrames netFrames = new NetworkFrames();
-		sessState.setNetworkFrames(netFrames);
-
-		final JInternalFrame[] internalFrames = netViewMgr.getDesktopPane().getAllFrames();
-
-		for (JInternalFrame iframe : internalFrames) {
-			final CyNetworkView view = netViewMgr.getNetworkView(iframe);
-
-			if (view == null) {
-				logger.error("Cannot save position of network frame \"" + iframe.getTitle()
-						+ "\": Network View is null.");
-				continue;
-			}
-
-			final NetworkFrame nf = new NetworkFrame();
-			nf.setNetworkViewID(view.getSUID().toString());
-			nf.setX(BigInteger.valueOf(iframe.getX()));
-			nf.setY(BigInteger.valueOf(iframe.getY()));
-
-			netFrames.getNetworkFrame().add(nf);
-		}
-
 		// CytoPanels States
 		final Cytopanels cytopanels = new Cytopanels();
 		sessState.setCytopanels(cytopanels);
-
+		
 		for (Map.Entry<String, CytoPanelName> entry : CYTOPANEL_NAMES.entrySet()) {
 			final CytoPanel p = desktop.getCytoPanel(entry.getValue());
 
@@ -285,54 +265,23 @@ public class SessionHandler implements CyShutdownListener, SessionLoadedListener
 						netList = sessionIO.read(f, NetworkList.class);
 				}
 				
-				if (sessState != null) {
-					setNetworkFrameLocations(sessState.getNetworkFrames(), sess);
+				if (sessState != null)
 					setCytoPanelStates(sessState.getCytopanels());
-				}
 				
-				if (netList != null) {
-					setNetworkListOrder(netList.getNetwork(), sess);
-				}
-			}
-		}
-	}
-
-	/**
-	 * Restore each network frame's location.
-	 * @param frames
-	 */
-	private void setNetworkFrameLocations(final NetworkFrames frames, final CySession sess) {
-		if (frames != null) {
-			final List<NetworkFrame> framesList = frames.getNetworkFrame();
-			
-			for (NetworkFrame nf : framesList) {
-				final String oldIdStr = nf.getNetworkViewID(); // ID in the original session--it's probably different now
-				CyNetworkView view = null;
-				
-				// Try to convert the old ID to Long--only works if the loaded session is a 3.0 format
-				try {
-					final Long oldSuid = Long.valueOf(oldIdStr);
-					view = sess.getObject(oldSuid, CyNetworkView.class);
-				} catch (NumberFormatException nfe) {
-					logger.debug("The old network view id is not a number: " + oldIdStr);
-					view = sess.getObject(oldIdStr, CyNetworkView.class);
-				}
-				
-				if (view != null) {
-					final JInternalFrame iframe = netViewMgr.getInternalFrame(view);
+				if (netList == null) {
+					// Probably a Cy2 session file, which does not provide a separate "network_list" file
+					// so let's get the orders from the networks in the CySession file
+					// (we just assume the Session Reader sent the networks in the correct order in a LinkedHashSet)
+					final Set<CyNetwork> netSet = sess.getNetworks();
+					final Map<Long, Integer> netOrder = new HashMap<>();
+					int count = 0;
 					
-					if (iframe != null) {
-						iframe.moveToBack(); // In order to restore its z-index
+					for (CyNetwork n : netSet)
+						netOrder.put(n.getSUID(), count++);
 						
-						if (nf.getX() != null && nf.getY() != null) {
-							int x = nf.getX().intValue();
-							int y = nf.getY().intValue();
-							iframe.setLocation(x, y);
-						}
-					}
+					setSessionNetworks(netOrder);
 				} else {
-					logger.warn("Cannot restore network frame's position: Network View not found for former ID \""
-							+ oldIdStr + "\".");
+					setSessionNetworks(netList.getNetwork(), sess);
 				}
 			}
 		}
@@ -369,16 +318,65 @@ public class SessionHandler implements CyShutdownListener, SessionLoadedListener
 		}
 	}
 	
-	private void setNetworkListOrder(final List<Network> networks, final CySession sess) {
-		final Map<Long, Integer> order = new HashMap<Long, Integer>();
+	private void setSessionNetworks(final List<Network> netInfoList, final CySession sess) {
+		final Map<Long, Integer> netOrder = new HashMap<>();
 		
-		for (final Network n : networks) {
+		for (final Network n : netInfoList) {
 			final CyNetwork net = sess.getObject(n.getId(), CyNetwork.class); // in order to retrieve the new SUID
 			
 			if (net != null)
-				order.put(net.getSUID(), n.getOrder());
+				netOrder.put(net.getSUID(), n.getOrder());
 		}
 		
-		netPanel.setNetworkListOrder(order);
+		setSessionNetworks(netOrder);
+	}
+	
+	/**
+	 * @param netOrder Maps CyNetwork SUID to the network position
+	 */
+	private void setSessionNetworks(final Map<Long, Integer> netOrder) {
+		final CyNetworkManager netMgr = serviceRegistrar.getService(CyNetworkManager.class);
+		final List<CySubNetwork> sortedNetworks = new ArrayList<>();
+		
+		for (CyNetwork n : netMgr.getNetworkSet()) {
+			if (n instanceof CySubNetwork && netMgr.networkExists(n.getSUID()))
+				sortedNetworks.add((CySubNetwork) n);
+		}
+		
+		Collections.sort(sortedNetworks, new Comparator<CySubNetwork>() {
+			@Override
+			public int compare(final CySubNetwork n1, final CySubNetwork n2) {
+				try {
+					Integer o1 = netOrder.get(n1.getSUID());
+					Integer o2 = netOrder.get(n2.getSUID());
+					if (o1 == null) o1 = -1;
+					if (o2 == null) o2 = -1;
+					
+					return o1.compareTo(o2);
+				} catch (final Exception e) {
+					logger.error("Cannot sort networks", e);
+				}
+				
+				return 0;
+			}
+		});
+		
+		final CyApplicationManager applicationMgr = serviceRegistrar.getService(CyApplicationManager.class);
+		final CyNetworkViewManager netViewMgr = serviceRegistrar.getService(CyNetworkViewManager.class);
+		
+		final List<CyNetwork> selectedNetworks = applicationMgr.getSelectedNetworks();
+		final List<CyNetworkView> selectedViews = applicationMgr.getSelectedNetworkViews();
+		
+		invokeOnEDT(() -> {
+			netPanel.setNetworks(sortedNetworks);
+			
+			for (SubNetworkPanel snp : netPanel.getAllSubNetworkItems()) {
+				final int count = netViewMgr.getNetworkViews(snp.getModel().getNetwork()).size();
+				snp.getModel().setViewCount(count);
+			}
+			
+			netPanel.setSelectedNetworks(selectedNetworks);
+			netViewMediator.getNetworkViewMainPanel().setSelectedNetworkViews(selectedViews);
+		});
 	}
 }

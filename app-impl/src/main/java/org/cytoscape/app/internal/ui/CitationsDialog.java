@@ -1,108 +1,123 @@
 package org.cytoscape.app.internal.ui;
 
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.Date;
-import java.util.List;
-import java.util.Collection;
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Comparator;
-
-import java.net.URL;
-import java.net.MalformedURLException;
+import java.awt.Dimension;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import java.awt.Window;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 
-import javax.xml.parsers.DocumentBuilderFactory;
+import javax.swing.JDialog;
+import javax.swing.JScrollPane;
+import javax.swing.JTextPane;
+import javax.swing.event.HyperlinkEvent;
+import javax.swing.event.HyperlinkListener;
 import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+
+import org.cytoscape.app.internal.manager.App;
+import org.cytoscape.app.internal.manager.AppManager;
+import org.cytoscape.app.internal.net.WebApp;
+import org.cytoscape.app.internal.net.WebQuerier;
+import org.cytoscape.util.swing.OpenBrowser;
+import org.cytoscape.work.Task;
+import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.TaskManager;
+import org.cytoscape.work.TaskMonitor;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.w3c.dom.NamedNodeMap;
 import org.xml.sax.SAXException;
 
-import javax.swing.JDialog;
-import javax.swing.JTextPane;
-import javax.swing.JScrollPane;
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
-import javax.swing.JButton;
-import javax.swing.JPanel;
+/*
+ * #%L
+ * Cytoscape App Impl (app-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2008 - 2016 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
 
-import javax.swing.event.HyperlinkEvent;
-import javax.swing.event.HyperlinkListener;
+@SuppressWarnings("serial")
+public class CitationsDialog extends JDialog {
 
-import java.awt.Frame;
-import java.awt.Dimension;
-import java.awt.GridBagLayout;
-import java.awt.GridBagConstraints;
-import java.awt.FlowLayout;
-import java.awt.Insets;
+	final WebQuerier webQuerier;
+	final AppManager appMgr;
+	final TaskManager taskMgr;
+	final Window parent;
+	final JTextPane textPane;
 
-import java.awt.event.ActionListener;
-import java.awt.event.ActionEvent;
+	public CitationsDialog(WebQuerier webQuerier, AppManager appMgr, TaskManager taskMgr, Window parent,
+			final OpenBrowser openBrowser) {
+		super(parent, "Citations", JDialog.ModalityType.MODELESS);
+		this.webQuerier = webQuerier;
+		this.appMgr = appMgr;
+		this.taskMgr = taskMgr;
+		this.parent = parent;
 
-import java.io.File;
+		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+		setPreferredSize(new Dimension(500, 400));
 
-import org.cytoscape.work.Task;
-import org.cytoscape.work.TaskMonitor;
-import org.cytoscape.work.TaskIterator;
-import org.cytoscape.work.TaskManager;
-import org.cytoscape.app.internal.net.WebQuerier;
-import org.cytoscape.app.internal.net.WebApp;
-import org.cytoscape.app.internal.manager.App;
-import org.cytoscape.app.internal.manager.AppManager;
-import org.cytoscape.util.swing.OpenBrowser;
+		textPane = new JTextPane();
+		textPane.setEditable(false);
+		textPane.setContentType("text/html");
+		textPane.addHyperlinkListener(new HyperlinkListener() {
+			public void hyperlinkUpdate(HyperlinkEvent e) {
+				if (!e.getEventType().equals(HyperlinkEvent.EventType.ACTIVATED))
+					return;
+				openBrowser.openURL(e.getURL().toString());
+			}
+		});
 
-public class CitationsDialog {
-  final WebQuerier webQuerier;
-  final AppManager appMgr;
-  final TaskManager taskMgr;
-  final Frame parent;
-  final JDialog dialog;
-  final JTextPane textPane;
+		setLayout(new GridBagLayout());
+		final GridBagConstraints c = new GridBagConstraints();
 
-  public CitationsDialog(WebQuerier webQuerier, AppManager appMgr, TaskManager taskMgr, Frame parent, final OpenBrowser openBrowser) {
-    this.webQuerier = webQuerier;
-    this.appMgr = appMgr;
-    this.taskMgr = taskMgr;
-    this.parent = parent;
+		c.gridx = 0;
+		c.gridy = 0;
+		c.gridwidth = 1;
+		c.gridheight = 1;
+		c.weightx = 1.0;
+		c.weighty = 1.0;
+		c.fill = GridBagConstraints.BOTH;
+		c.insets = new Insets(0, 0, 0, 0);
+		add(new JScrollPane(textPane), c);
+	}
 
-    dialog = new JDialog(parent, "Citations", JDialog.ModalityType.MODELESS);
-    dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-    dialog.setPreferredSize(new Dimension(500, 400));
-
-    textPane = new JTextPane();
-    textPane.setEditable(false);
-    textPane.setContentType("text/html");
-    textPane.addHyperlinkListener(new HyperlinkListener() {
-      public void hyperlinkUpdate(HyperlinkEvent e) {
-        if (!e.getEventType().equals(HyperlinkEvent.EventType.ACTIVATED))
-          return;
-        openBrowser.openURL(e.getURL().toString());
-      }
-    });
-
-    dialog.setLayout(new GridBagLayout());
-    final GridBagConstraints c = new GridBagConstraints();
-
-    c.gridx = 0;      c.gridy = 0;
-    c.gridwidth = 1;  c.gridheight = 1;
-    c.weightx = 1.0;  c.weighty = 1.0;
-    c.fill = GridBagConstraints.BOTH;
-    c.insets = new Insets(0, 0, 0, 0);
-    dialog.add(new JScrollPane(textPane), c);
-  }
-
-  public void show() {
-    dialog.pack();
-    dialog.setVisible(true);
-    taskMgr.execute(new TaskIterator(new RetrieveTask(webQuerier, appMgr, textPane)));
-  }
+	@Override
+	public void setVisible(boolean b) {
+		if (b) {
+			taskMgr.execute(new TaskIterator(new RetrieveTask(webQuerier, appMgr, textPane)));
+			pack();
+		}
+		
+		super.setVisible(b);
+	}
 }
 
 /**

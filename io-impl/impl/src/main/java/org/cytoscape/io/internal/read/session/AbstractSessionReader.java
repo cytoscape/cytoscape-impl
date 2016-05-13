@@ -59,6 +59,14 @@ import org.slf4j.LoggerFactory;
 
 public abstract class AbstractSessionReader extends AbstractTask implements CySessionReader {
 
+	/** Column used to store the parent network SUID that comes from v2.8 files--was used until v3.3. */
+	public static final String CY2_PARENT_NETWORK_COLUMN = "Cy2 Parent Network.SUID";
+	/**
+	 * Column used to store the parent network SUID in versions 3.4+.
+	 * It replaces {@link AbstractSessionReader#CY2_PARENT_NETWORK_COLUMN}
+	 */
+	public static final String CY3_PARENT_NETWORK_COLUMN = "__parentNetwork.SUID";
+	
 	protected final Logger logger;
 	
 	protected InputStream sourceInputStream;
@@ -68,14 +76,14 @@ public abstract class AbstractSessionReader extends AbstractTask implements CySe
 	
 	protected DummyTaskMonitor taskMonitor;
 	
-	protected Set<CyProperty<?>> properties = new HashSet<CyProperty<?>>();
-	protected final Set<CyNetwork> networks = new LinkedHashSet<CyNetwork>();
-	protected final Set<CyNetworkView> networkViews = new LinkedHashSet<CyNetworkView>();
-	protected final Set<VisualStyle> visualStyles = new HashSet<VisualStyle>();
-	protected final Map<CyNetworkView, String> visualStyleMap = new WeakHashMap<CyNetworkView, String>();
-	protected final Set<CyTableMetadata> tableMetadata = new HashSet<CyTableMetadata>();
-	protected final Map<String, List<File>> appFileListMap = new HashMap<String, List<File>>();
-	protected final Map<Class<? extends CyIdentifiable>, Map<Object, ? extends CyIdentifiable>> objectMap = new HashMap<Class<? extends CyIdentifiable>, Map<Object, ? extends CyIdentifiable>>();
+	protected Set<CyProperty<?>> properties = new HashSet<>();
+	protected final Set<CyNetwork> networks = new LinkedHashSet<>();
+	protected final Set<CyNetworkView> networkViews = new LinkedHashSet<>();
+	protected final Set<VisualStyle> visualStyles = new HashSet<>();
+	protected final Map<CyNetworkView, String> visualStyleMap = new WeakHashMap<>();
+	protected final Set<CyTableMetadata> tableMetadata = new HashSet<>();
+	protected final Map<String, List<File>> appFileListMap = new HashMap<>();
+	protected final Map<Class<? extends CyIdentifiable>, Map<Object, ? extends CyIdentifiable>> objectMap = new HashMap<>();
 	
 	private boolean inputStreamRead;
 
@@ -306,15 +314,16 @@ public abstract class AbstractSessionReader extends AbstractTask implements CySe
 	 *  We need this class to avoid the progress-bar showing back-forth  when extract zipEntries.
 	 */
 	protected class DummyTaskMonitor implements TaskMonitor {
+		@Override
 		public void setTitle(String title) {
 		}
-
+		@Override
 		public void setProgress(double progress) {
 		}
-
+		@Override
 		public void setStatusMessage(String statusMessage) {
 		}
-
+		@Override
         public void showMessage(TaskMonitor.Level level, String message) {
         }
 	}

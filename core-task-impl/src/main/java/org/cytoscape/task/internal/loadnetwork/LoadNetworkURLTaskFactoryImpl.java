@@ -34,6 +34,7 @@ import org.cytoscape.io.read.CyNetworkReaderManager;
 import org.cytoscape.io.util.StreamUtil;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.property.CyProperty;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.CyNetworkNaming;
 import org.cytoscape.task.read.LoadNetworkURLTaskFactory;
 import org.cytoscape.view.model.CyNetworkViewFactory;
@@ -59,6 +60,7 @@ public class LoadNetworkURLTaskFactoryImpl extends AbstractTaskFactory implement
 	
 	private final VisualMappingManager vmm;
 	private final CyNetworkViewFactory nullNetworkViewFactory;
+	private final CyServiceRegistrar serviceRegistrar;
 
 	public LoadNetworkURLTaskFactoryImpl(
 			final CyNetworkReaderManager mgr,
@@ -68,7 +70,8 @@ public class LoadNetworkURLTaskFactoryImpl extends AbstractTaskFactory implement
 			final CyNetworkNaming cyNetworkNaming,
 			final StreamUtil streamUtil,
 			final VisualMappingManager vmm,
-			final CyNetworkViewFactory nullNetworkViewFactory
+			final CyNetworkViewFactory nullNetworkViewFactory,
+			final CyServiceRegistrar serviceRegistrar
 	) {
 		this.mgr = mgr;
 		this.netmgr = netmgr;
@@ -78,13 +81,14 @@ public class LoadNetworkURLTaskFactoryImpl extends AbstractTaskFactory implement
 		this.streamUtil = streamUtil;
 		this.vmm = vmm;
 		this.nullNetworkViewFactory = nullNetworkViewFactory;
+		this.serviceRegistrar = serviceRegistrar;
 	}
 
 	@Override
 	public TaskIterator createTaskIterator() {
 		// Usually we need to create view, so expected number is 2.
 		return new TaskIterator(2, new LoadNetworkURLTask(mgr, netmgr, networkViewManager, props, cyNetworkNaming,
-				streamUtil, vmm, nullNetworkViewFactory));
+				streamUtil, vmm, nullNetworkViewFactory, serviceRegistrar));
 	}
 
 	public TaskIterator createTaskIterator(final URL url) {
@@ -113,6 +117,6 @@ public class LoadNetworkURLTaskFactoryImpl extends AbstractTaskFactory implement
 		}
 
 		return new TaskIterator(2, new LoadNetworkTask(mgr, netmgr, reader, name, networkViewManager, props,
-				cyNetworkNaming, vmm, nullNetworkViewFactory));
+				cyNetworkNaming, vmm, nullNetworkViewFactory, serviceRegistrar));
 	}
 }

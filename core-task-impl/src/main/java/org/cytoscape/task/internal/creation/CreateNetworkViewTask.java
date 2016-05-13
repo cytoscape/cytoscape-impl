@@ -29,6 +29,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -70,7 +71,7 @@ public class CreateNetworkViewTask extends AbstractNetworkCollectionTask
 	private final RenderingEngineManager renderingEngineMgr;
 	private final CyApplicationManager appMgr;
 	private final CyNetworkView sourceView;
-	private	Collection<CyNetworkView> result;
+	private	List<CyNetworkView> result;
 
 	@Tunable(description="Network to create a view for", context="nogui")
 	public CyNetwork network;
@@ -118,8 +119,8 @@ public class CreateNetworkViewTask extends AbstractNetworkCollectionTask
 		this.renderingEngineMgr = renderingEngineMgr;
 		this.appMgr = appMgr;
 		this.sourceView = sourceView;
-		this.result = new ArrayList<CyNetworkView>();
-		this.viewRenderers = new TreeSet<NetworkViewRenderer>(new Comparator<NetworkViewRenderer>() {
+		this.result = new ArrayList<>();
+		this.viewRenderers = new TreeSet<>(new Comparator<NetworkViewRenderer>() {
 			@Override
 			public int compare(NetworkViewRenderer r1, NetworkViewRenderer r2) {
 				return r1.toString().compareToIgnoreCase(r2.toString());
@@ -127,40 +128,79 @@ public class CreateNetworkViewTask extends AbstractNetworkCollectionTask
 		});
 	}
 
+	public CreateNetworkViewTask(final UndoSupport undoSupport,
+								 final Collection<CyNetwork> networks,
+								 final CyNetworkViewFactory viewFactory,
+								 final CyNetworkViewManager netViewMgr,
+								 final CyLayoutAlgorithmManager layoutMgr,
+								 final CyEventHelper eventHelper,
+								 final VisualMappingManager vmMgr,
+								 final RenderingEngineManager renderingEngineMgr,
+								 final CyApplicationManager appMgr) {
+		this(undoSupport, networks, viewFactory, netViewMgr, layoutMgr, eventHelper, vmMgr, renderingEngineMgr, appMgr,
+				null);
+	}
+
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
 		taskMonitor.setProgress(0.0);
-		taskMonitor.setTitle("Creating Network View");
-		taskMonitor.setStatusMessage("Creating network view...");
+		
+		final Collection<CyNetwork> netList = network != null ? Collections.singletonList(network) : networks;
+		final int total = netList.size();
+		
+		taskMonitor.setTitle("Creating Network View" + (total == 1 ? "" : "s"));
+		taskMonitor.setStatusMessage("Creating " + total + " network view" + (total == 1 ? "" : "s") + "...");
 		
 		if (viewFactory == null && viewRenderers.size() > 1) {
 			// Let the user choose the network view renderer first
-			final ChooseViewRendererTask chooseRendererTask = new ChooseViewRendererTask(networks);
+			final ChooseViewRendererTask chooseRendererTask = new ChooseViewRendererTask(netList);
 			insertTasksAfterCurrentTask(chooseRendererTask);
 		} else {
+			final CyNetwork curNet = appMgr.getCurrentNetwork();
+			CyNetworkView curView = appMgr.getCurrentNetworkView();
+			
 			final VisualStyle style = vmMgr.getCurrentVisualStyle();
-			Collection<CyNetwork> graphs = networks;
-	
-			if (network != null)
-				graphs = Collections.singletonList(network);
-			
 			int i = 0;
-			int viewCount = graphs.size();
+			int viewCount = netList.size();
 			
-			for (final CyNetwork n : graphs) {
-				if (netViewMgr.getNetworkViews(n).isEmpty()) { // TODO delete this check when multiple views per network is supported
-					result.add(createView(n, style, taskMonitor));
-					taskMonitor.setStatusMessage("Network view successfully created for:  "
-							+ n.getRow(n).get(CyNetwork.NAME, String.class));
-					i++;
-					taskMonitor.setProgress((i / (double) viewCount));
-				}
-				else
-					taskMonitor.setStatusMessage("Network view already present for:  "
-							+ n.getRow(n).get(CyNetwork.NAME, String.class));
+			for (final CyNetwork n : netList) {
+				// TODO Remove this check when multiple views per network is supported
+				if (netViewMgr.viewExists(n))
+					continue;
+				
+				final CyNetworkView view = createView(n, style, taskMonitor);
+				result.add(view);
+				
+				if (curView == null && n.equals(curNet))
+					curView = view;
+				
+				taskMonitor.setStatusMessage("Network view successfully created for:  "
+						+ n.getRow(n).get(CyNetwork.NAME, String.class));
+				i++;
+				taskMonitor.setProgress((i / (double) viewCount));
 			}
+			
+			final List<CyNetwork> selectedNetworks = appMgr.getSelectedNetworks();
+			final List<CyNetworkView> selectedViews = new ArrayList<>(appMgr.getSelectedNetworkViews());
+			boolean setSelectedViews = false;
+			
+			for (CyNetworkView view : result) {
+				if (selectedNetworks.contains(view.getModel())) {
+					selectedViews.add(view);
+					setSelectedViews = true;
+				}
+			}
+			
+			if (curView == null && !selectedViews.isEmpty())
+				curView = selectedViews.get(0);
+			
+			if (setSelectedViews)
+				appMgr.setSelectedNetworkViews(selectedViews);
+			
+			if (curView != null)
+				appMgr.setCurrentNetworkView(curView);
 		}
-	
+		
 		taskMonitor.setProgress(1.0);
 	}
 
@@ -174,11 +214,11 @@ public class CreateNetworkViewTask extends AbstractNetworkCollectionTask
 			// Create a default title
 			final Collection<CyNetworkView> netViews = netViewMgr.getNetworkViews(network);
 			String title = network.getDefaultNetworkTable().getRow(network.getSUID()).get(CyNetwork.NAME, String.class);
-			title += (" View" + (netViews.isEmpty() ? "" : " (" + (netViews.size() + 1) + ")")); // TODO
+			title += (netViews.isEmpty() ? "" : " (" + (netViews.size() + 1) + ")");
 			
 			view.setVisualProperty(BasicVisualLexicon.NETWORK_TITLE, title);
 			
-			netViewMgr.addNetworkView(view);
+			netViewMgr.addNetworkView(view, false);
 
 			// Apply visual style
 			if (style != null) {
@@ -186,14 +226,13 @@ public class CreateNetworkViewTask extends AbstractNetworkCollectionTask
 				style.apply(view);
 			}
 
-			// If a source view has been provided, use that to set the X/Y
-			// positions of the
+			// If a source view has been provided, use that to set the X/Y positions of the
 			// nodes along with the visual style.
 			if (sourceView != null) {
-				insertTasksAfterCurrentTask(new CopyExistingViewTask(vmMgr, renderingEngineMgr, view, sourceView, null,
-						null, true));
+				insertTasksAfterCurrentTask(
+						new CopyExistingViewTask(renderingEngineMgr, view, sourceView, style, null, null, true));
 			} else if (layoutMgr != null && layout == true) {
-				final Set<CyNetworkView> views = new HashSet<CyNetworkView>();
+				final Set<CyNetworkView> views = new HashSet<>();
 				views.add(view);
 				insertTasksAfterCurrentTask(new ApplyPreferredLayoutTask(views, layoutMgr));
 //				executeInParallel(view, style, new ApplyPreferredLayoutTask(views, layoutMgr), tMonitor);
@@ -291,7 +330,7 @@ public class CreateNetworkViewTask extends AbstractNetworkCollectionTask
 		
 		public ChooseViewRendererTask(final Collection<CyNetwork> networks) {
 			super(networks);
-			renderers = new ListSingleSelection<NetworkViewRenderer>(new ArrayList<NetworkViewRenderer>(viewRenderers));
+			renderers = new ListSingleSelection<>(new ArrayList<>(viewRenderers));
 			
 			final NetworkViewRenderer defViewRenderer = appMgr.getDefaultNetworkViewRenderer();
 			

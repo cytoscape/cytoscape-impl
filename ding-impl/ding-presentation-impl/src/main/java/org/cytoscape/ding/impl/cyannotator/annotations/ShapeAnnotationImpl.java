@@ -30,6 +30,7 @@ import java.awt.Graphics;
 import java.awt.Paint;
 import java.awt.Rectangle;
 import java.awt.Shape;
+import java.awt.Window;
 import java.awt.geom.Rectangle2D;
 import java.util.List;
 import java.util.Map;
@@ -56,16 +57,16 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
 	protected double shapeHeight = 0.0;
 	protected double factor = 1.0;
 
-	public ShapeAnnotationImpl(CyAnnotator cyAnnotator, DGraphView view, double width, double height) {
-		super(cyAnnotator, view);
+	public ShapeAnnotationImpl(CyAnnotator cyAnnotator, DGraphView view, double width, double height, Window owner) {
+		super(cyAnnotator, view, owner);
 		shapeWidth = width;
 		shapeHeight = height;
 		shapeType = ShapeType.RECTANGLE;
 		borderWidth = 1.0;
 	}
 
-	public ShapeAnnotationImpl(ShapeAnnotationImpl c, double width, double height) {
-		super(c);
+	public ShapeAnnotationImpl(ShapeAnnotationImpl c, double width, double height, Window owner) {
+		super(c, owner);
 		shapeWidth = width;
 		shapeHeight = height;
 		shapeType = GraphicsUtilities.getShapeType(c.getShapeType());
@@ -76,8 +77,8 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
 	}
 
 	public ShapeAnnotationImpl(CyAnnotator cyAnnotator, DGraphView view, double x, double y, ShapeType shapeType,
-			double width, double height, Paint fillColor, Paint edgeColor, float edgeThickness) {
-		super(cyAnnotator, view, x, y, view.getZoom());
+			double width, double height, Paint fillColor, Paint edgeColor, float edgeThickness, Window owner) {
+		super(cyAnnotator, view, x, y, view.getZoom(), owner);
 
 		this.shapeType = shapeType;
 		this.fillColor = fillColor;
@@ -91,8 +92,8 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
 		setSize((int) (shapeWidth + borderWidth * 2 * getZoom()), (int) (shapeHeight + borderWidth * 2 * getZoom()));
 	}
 
-	public ShapeAnnotationImpl(CyAnnotator cyAnnotator, DGraphView view, Map<String, String> argMap) {
-		super(cyAnnotator, view, argMap);
+	public ShapeAnnotationImpl(CyAnnotator cyAnnotator, DGraphView view, Map<String, String> argMap, Window owner) {
+		super(cyAnnotator, view, argMap, owner);
 
 		this.fillColor = getColor(argMap, FILLCOLOR, null);
 		setFillColor(fillColor);
@@ -322,7 +323,7 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
 
 	@Override
 	public JDialog getModifyDialog() {
-		return new ShapeAnnotationDialog(this);
+		return new ShapeAnnotationDialog(this, owner);
 	}
 
 	private ShapeType getShapeFromString(String shapeName) {

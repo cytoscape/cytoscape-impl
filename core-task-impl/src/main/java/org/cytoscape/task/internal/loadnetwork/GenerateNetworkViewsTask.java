@@ -25,14 +25,15 @@ package org.cytoscape.task.internal.loadnetwork;
  */
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.io.read.CyNetworkReader;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CySubNetwork;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.CyNetworkNaming;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
@@ -55,7 +56,8 @@ class GenerateNetworkViewsTask extends AbstractTask implements ObservableTask {
 	private final int viewThreshold;
 	private final VisualMappingManager vmm;
 	private final CyNetworkViewFactory nullNetworkViewFactory;
-	private	Collection<CyNetworkView> results;
+	private final CyServiceRegistrar serviceRegistrar;
+	private	List<CyNetworkView> results;
 
 	public GenerateNetworkViewsTask(
 			final String name,
@@ -65,7 +67,8 @@ class GenerateNetworkViewsTask extends AbstractTask implements ObservableTask {
 			final CyNetworkNaming namingUtil,
 			final int viewThreshold,
 			final VisualMappingManager vmm,
-			final CyNetworkViewFactory nullNetworkViewFactory
+			final CyNetworkViewFactory nullNetworkViewFactory,
+			final CyServiceRegistrar serviceRegistrar
 	) {
 		this.name = name;
 		this.viewReader = viewReader;
@@ -75,22 +78,25 @@ class GenerateNetworkViewsTask extends AbstractTask implements ObservableTask {
 		this.viewThreshold = viewThreshold;
 		this.vmm = vmm;
 		this.nullNetworkViewFactory = nullNetworkViewFactory;
+		this.serviceRegistrar = serviceRegistrar;
 	}
 
 	@Override
 	public void run(final TaskMonitor taskMonitor) throws Exception {
-		taskMonitor.setProgress(0.0);
-
 		final CyNetwork[] networks = viewReader.getNetworks();
-		double numNets = (double)(networks.length);
+		
+		if (networks == null || networks.length == 0)
+			return;
+		
+		taskMonitor.setProgress(0.0);
+		double numNets = (double) networks.length;
 		int i = 0;
 		results = new ArrayList<>();
-		
 		final List<CyNetwork> largeNetworks = new ArrayList<>();
 		
-		for (CyNetwork network : networks) {
+		for (CyNetwork net : networks) {
 			// Use original name if exists
-			String networkName = network.getRow(network).get(CyNetwork.NAME, String.class);
+			String networkName = net.getRow(net).get(CyNetwork.NAME, String.class);
 			
 			if (networkName == null || networkName.trim().length() == 0) {
 				networkName = name;
@@ -98,23 +104,23 @@ class GenerateNetworkViewsTask extends AbstractTask implements ObservableTask {
 				if (networkName == null)
 					networkName = "? (Name is missing)";
 				
-				network.getRow(network).set(CyNetwork.NAME, namingUtil.getSuggestedNetworkTitle(networkName));
+				net.getRow(net).set(CyNetwork.NAME, namingUtil.getSuggestedNetworkTitle(networkName));
 			}
 			
-			networkManager.addNetwork(network);
-			final int numGraphObjects = network.getNodeCount() + network.getEdgeCount();
+			networkManager.addNetwork(net, false);
+			final int numGraphObjects = net.getNodeCount() + net.getEdgeCount();
 			
 			if (numGraphObjects < viewThreshold)
-				createNetworkView(network);
+				createNetworkView(net);
 			else
-				largeNetworks.add(network);
+				largeNetworks.add(net);
 			
 			taskMonitor.setProgress((double)(++i)/numNets);
 		}
 
 		// If this is a subnetwork, and there is only one subnetwork in the root, check the name of the root network
 		// If there is no name yet for the root network, set it the same as its base subnetwork
-		if (networks.length == 1){
+		if (networks.length == 1) {
 			if (networks[0] instanceof CySubNetwork){
 				CySubNetwork subnet = (CySubNetwork) networks[0];
 				final CyRootNetwork rootNet = subnet.getRootNetwork();
@@ -146,8 +152,11 @@ class GenerateNetworkViewsTask extends AbstractTask implements ObservableTask {
 			}			
 		}
 		
+		setCurrentNetworkAndViewTask(networks[0]);
+		
 		if (!largeNetworks.isEmpty())
 			insertTasksAfterCurrentTask(new ConfirmCreateNetworkViewsTask(largeNetworks));
+			
 	}
 
 	@Override
@@ -172,7 +181,7 @@ class GenerateNetworkViewsTask extends AbstractTask implements ObservableTask {
 		
 		final CyNetworkView view = viewReader.buildCyNetworkView(network);
 		final VisualStyle viewStyle = vmm.getVisualStyle(view);
-		networkViewManager.addNetworkView(view);
+		networkViewManager.addNetworkView(view, false);
 		
 		// Only set current style when no style (or usually the default one) is already set for this view.
 		// This allows the CyNetworkReader implementation to set the desired style itself.
@@ -189,6 +198,25 @@ class GenerateNetworkViewsTask extends AbstractTask implements ObservableTask {
 			view.fitContent();
 		
 		results.add(view);
+	}
+	
+	public void setCurrentNetworkAndViewTask(final CyNetwork network) {
+		final CyNetworkViewManager netViewManager = serviceRegistrar.getService(CyNetworkViewManager.class);
+		final List<CyNetworkView> views = new ArrayList<>(netViewManager.getNetworkViews(network));
+		
+		final CyApplicationManager applicationManager = serviceRegistrar.getService(CyApplicationManager.class);
+		boolean currentViewSet = false;
+		
+		for (CyNetworkView v : views) {
+			if (v.getModel().equals(network)) {
+				applicationManager.setCurrentNetworkView(v);
+				currentViewSet = true;
+				break;
+			}
+		}
+		
+		if (!currentViewSet)
+			applicationManager.setCurrentNetwork(network);
 	}
 	
 	public class ConfirmCreateNetworkViewsTask extends AbstractTask implements ObservableTask {
@@ -219,6 +247,9 @@ class GenerateNetworkViewsTask extends AbstractTask implements ObservableTask {
 				
 				taskMonitor.setProgress((double)(++i)/numNets);
 			}
+			
+			if (!networks.isEmpty())
+				setCurrentNetworkAndViewTask(networks.get(0));
 		}
 		
 		@Override

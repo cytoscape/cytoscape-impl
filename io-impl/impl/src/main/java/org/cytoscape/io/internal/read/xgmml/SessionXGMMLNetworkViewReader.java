@@ -82,7 +82,12 @@ public class SessionXGMMLNetworkViewReader extends GenericXGMMLReader {
 		setVisualProperties(netView, netView, atts);
 		
 		// Cache the view with its former SUID
-		readDataMgr.getCache().cache(readDataMgr.getNetworkViewId(), netView);
+		Object oldNetworkViewId = readDataMgr.getNetworkViewId();
+		readDataMgr.getCache().cache(oldNetworkViewId, netView);
+		
+		if(oldNetworkViewId instanceof Long) {
+			readDataMgr.getSUIDUpdater().addSUIDMapping((Long)oldNetworkViewId, netView.getSUID());
+		}
 	}
 
 	@Override

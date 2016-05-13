@@ -6,7 +6,7 @@ package org.cytoscape.ding.impl.cyannotator.create;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -29,38 +29,45 @@ import java.util.Map;
 
 import javax.swing.JDialog;
 
-import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.presentation.annotations.Annotation;
-import org.cytoscape.view.presentation.annotations.ImageAnnotation;
-
 import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
 import org.cytoscape.ding.impl.DGraphView;
-import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.impl.cyannotator.annotations.ImageAnnotationImpl;
 import org.cytoscape.ding.impl.cyannotator.dialogs.LoadImageDialog;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.presentation.annotations.ImageAnnotation;
 
-public class ImageAnnotationFactory implements DingAnnotationFactory<ImageAnnotation> {
-	private final CustomGraphicsManager customGraphicsManager;
-
-	public ImageAnnotationFactory(CustomGraphicsManager customGraphicsManager) {
-		this.customGraphicsManager = customGraphicsManager;
-	}
-
-	public JDialog createAnnotationDialog(DGraphView view, Point2D location) {
-		return new LoadImageDialog(view, location, customGraphicsManager);
+public class ImageAnnotationFactory extends AbstractDingAnnotationFactory<ImageAnnotation> {
+	
+	public ImageAnnotationFactory(final CyServiceRegistrar serviceRegistrar) {
+		super(serviceRegistrar);
 	}
 
 	@Override
-	public ImageAnnotation createAnnotation(Class<? extends ImageAnnotation> clazz, CyNetworkView view, Map<String, String> argMap) {
+	public JDialog createAnnotationDialog(DGraphView view, Point2D location) {
+		final CustomGraphicsManager customGraphicsManager = serviceRegistrar.getService(CustomGraphicsManager.class);
+		
+		return new LoadImageDialog(view, location, customGraphicsManager, getActiveWindow());
+	}
+
+	@Override
+	public ImageAnnotation createAnnotation(Class<? extends ImageAnnotation> clazz, CyNetworkView view,
+			Map<String, String> argMap) {
 		if (!(view instanceof DGraphView))
 			return null;
 
 		DGraphView dView = (DGraphView) view;
+
 		if (ImageAnnotation.class.equals(clazz)) {
-			ImageAnnotationImpl a = new ImageAnnotationImpl(dView.getCyAnnotator(), dView, argMap, customGraphicsManager);
+			final CustomGraphicsManager customGraphicsManager = serviceRegistrar
+					.getService(CustomGraphicsManager.class);
+			final ImageAnnotationImpl a = new ImageAnnotationImpl(dView.getCyAnnotator(), dView, argMap,
+					customGraphicsManager, getActiveWindow());
 			a.update();
-			return (ImageAnnotation)a;
-		} else 
+
+			return (ImageAnnotation) a;
+		} else {
 			return null;
+		}
 	}
 }

@@ -1,12 +1,27 @@
 package org.cytoscape.internal.view;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.swing.Action;
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
+import javax.swing.JSeparator;
+import javax.swing.JToolBar;
+
+import org.cytoscape.application.swing.CyAction;
+import org.cytoscape.application.swing.ToolBarComponent;
+
 /*
  * #%L
  * Cytoscape Swing Application Impl (swing-application-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,20 +39,6 @@ package org.cytoscape.internal.view;
  * #L%
  */
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import javax.swing.Action;
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JSeparator;
-import javax.swing.JToolBar;
-
-import org.cytoscape.application.swing.CyAction;
-import org.cytoscape.application.swing.ToolBarComponent;
 
 /**
  * Implementation of Toolbar on the Cytoscape Desktop applicaiton.
@@ -56,10 +57,12 @@ public class CytoscapeToolBar extends JToolBar {
 	 */
 	public CytoscapeToolBar() {
 		super("Cytoscape Tools");
-		actionButtonMap = new HashMap<CyAction,JButton>();
-		componentGravity = new HashMap<Object,Float>();
-		orderedList = new ArrayList<Object>();
 		
+		actionButtonMap = new HashMap<>();
+		componentGravity = new HashMap<>();
+		orderedList = new ArrayList<>();
+		
+		setFloatable(false);
 		setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, (new JSeparator()).getForeground()));
 	}
 
@@ -76,19 +79,9 @@ public class CytoscapeToolBar extends JToolBar {
 		if ( actionButtonMap.containsKey( action ) )
 			return false;
 
-		action.updateEnableState();
+		final JButton button = createToolBarButton(action);
 
-		JButton button = new JButton(action); 
-		button.setBorderPainted(false);
-		button.setRolloverEnabled(true);
-		button.setHideActionText(true);
 		componentGravity.put(button,action.getToolbarGravity());
-
-		//  If SHORT_DESCRIPTION exists, use this as tool-tip
-		String shortDescription = (String) action.getValue(Action.SHORT_DESCRIPTION);
-		if (shortDescription != null) 
-			button.setToolTipText(shortDescription);
-
 		actionButtonMap.put(action, button);
 		int addInd = getInsertLocation(action.getToolbarGravity());
 		orderedList.add(addInd, button);
@@ -137,7 +130,6 @@ public class CytoscapeToolBar extends JToolBar {
 	 * otherwise if there's a button for the action, remove it.
 	 */
 	public boolean removeAction(CyAction action) {
-
 		JButton button = actionButtonMap.remove(action);
 
 		if (button == null) {
@@ -169,5 +161,22 @@ public class CytoscapeToolBar extends JToolBar {
 			this.remove(tbc.getComponent());
 			this.repaint();
 		}	
+	}
+	
+	public static JButton createToolBarButton(CyAction action) {
+		action.updateEnableState();
+		
+		final JButton button = new JButton(action); 
+		button.setBorderPainted(false);
+		button.setRolloverEnabled(true);
+		button.setHideActionText(true);
+
+		//  If SHORT_DESCRIPTION exists, use this as tool-tip
+		final String shortDescription = (String) action.getValue(Action.SHORT_DESCRIPTION);
+		
+		if (shortDescription != null) 
+			button.setToolTipText(shortDescription);
+		
+		return button;
 	}
 }

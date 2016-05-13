@@ -1174,9 +1174,11 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 	protected double[] minMax(double min, double max, final List<? extends Number> values) {
 		if (values != null) {
 			for (final Number v : values) {
-				final double dv = v.doubleValue();
-				min = Math.min(min, dv);
-				max = Math.max(max, dv);
+				if (v != null) {
+					final double dv = v.doubleValue();
+					min = Math.min(min, dv);
+					max = Math.max(max, dv);
+				}
 			}
 		}
 		

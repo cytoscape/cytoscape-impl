@@ -26,6 +26,7 @@ package org.cytoscape.ding.impl.cyannotator.tasks;
 
 
 
+import java.awt.Component;
 import java.awt.datatransfer.Transferable;
 import java.awt.geom.Point2D;
 
@@ -63,6 +64,13 @@ public class LayerAnnotationTask extends AbstractNetworkViewTask {
 		JComponent canvas = annotation.getCanvas();
 		canvas.setComponentZOrder(annotation.getComponent(), zorder);
 		canvas.repaint();
+		if ( view instanceof DGraphView ) {
+			DGraphView dView = (DGraphView) view;
+			CyAnnotator cyAnnotator = dView.getCyAnnotator();
+			// Force an update of all of the argMaps
+			for (Annotation ann: cyAnnotator.getAnnotations())
+				cyAnnotator.addAnnotation(ann);
+		}
 		annotation.contentChanged(); // We need to do this to update the Bird's Eye View
 	}
 }

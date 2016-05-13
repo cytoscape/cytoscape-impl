@@ -44,6 +44,7 @@ import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.spacial.SpacialIndex2DFactory;
 import org.cytoscape.spacial.internal.rtree.RTreeFactory;
+import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.presentation.property.NodeShapeVisualProperty;
@@ -81,6 +82,8 @@ public class DGraphViewApplyTest {
 	private DialogTaskManager manager;
 	@Mock
 	private CyEventHelper cyEventHelper;
+	@Mock
+	private IconManager iconManager;
 	@Mock
 	private AnnotationFactoryManager annMgr;
 	@Mock
@@ -131,7 +134,7 @@ public class DGraphViewApplyTest {
 		handleFactory = new HandleFactoryImpl();
 
 		dgv = new DGraphView(network, cyRoot, undo, spacialFactory, dingLexicon, vtfl, manager, cyEventHelper, annMgr,
-				dingGraphLOD, vmm, netViewMgr, handleFactory, registrar);
+				dingGraphLOD, vmm, netViewMgr, handleFactory, iconManager, registrar);
 
 		assertNotNull(dgv);
 		assertEquals(3, dgv.getModel().getNodeCount());

@@ -27,6 +27,7 @@ package org.cytoscape.task.internal.proxysettings;
 
 import java.util.Properties;
 
+import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.io.util.StreamUtil;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.work.AbstractTask;
@@ -38,12 +39,14 @@ import org.cytoscape.work.TaskMonitor;
  */
 public class ProxySettingsTask extends AbstractTask {
 
-	private final StreamUtil streamUtil;
 	private CyProperty<Properties> proxyProperties;
+	private final StreamUtil streamUtil;
+	private final CyEventHelper eventHelper;
 	
-	public ProxySettingsTask(CyProperty<Properties> proxyProperties, final StreamUtil streamUtil) {
+	public ProxySettingsTask(CyProperty<Properties> proxyProperties, final StreamUtil streamUtil, final CyEventHelper eventHelper) {
 		this.proxyProperties = proxyProperties;
 		this.streamUtil = streamUtil;
+		this.eventHelper = eventHelper;
 	}
 	
 	public void run(TaskMonitor taskMonitor) {
@@ -53,7 +56,7 @@ public class ProxySettingsTask extends AbstractTask {
 	
 		// We run ProxySeting in another task, because TunableValidator is used. If we run
 		// it in the same task, Cytoscape will be frozen during validating process
-		ProxySettingsTask2 task = new ProxySettingsTask2(proxyProperties, this.streamUtil);
+		ProxySettingsTask2 task = new ProxySettingsTask2(proxyProperties, this.streamUtil, this.eventHelper);
 		
 		this.insertTasksAfterCurrentTask(task);
 

@@ -53,6 +53,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.UUID;
 
 import org.cytoscape.model.CyNetwork;
@@ -160,6 +161,8 @@ public class CyAnnotator {
 		List<Map<String,String>> arrowList = 
 		    new ArrayList<Map<String, String>>(); // Keep a list of arrows
 
+		Map<Object,Map<Integer, DingAnnotation>> zOrderMap = new HashMap<>();
+
 		if (annotations != null) {
 			for (String s: annotations) {
 				Map<String, String> argMap = createArgMap(s);
@@ -172,15 +175,29 @@ public class CyAnnotator {
 					arrowList.add(argMap);
 					continue;
 				}
-	
+
 				Annotation a = annotationFactoryManager.createAnnotation(type,view,argMap);
-				if (a != null && a instanceof DingAnnotation) {
-					annotation = (DingAnnotation)a;
-	
-					if (annotation.getCanvas() != null)
-						annotation.getCanvas().add(annotation.getComponent());
-					else
-						foreGroundCanvas.add(annotation.getComponent());
+				if (a == null || !(a instanceof DingAnnotation))
+					continue;
+
+				annotation = (DingAnnotation)a;
+				Object canvas;
+
+				if (annotation.getCanvas() != null) {
+					annotation.getCanvas().add(annotation.getComponent());
+					canvas = annotation.getCanvas();
+				} else {
+					canvas = foreGroundCanvas;
+					foreGroundCanvas.add(annotation.getComponent());
+				}
+
+				if (argMap.containsKey(Annotation.Z)) {
+					int zOrder = Integer.parseInt(argMap.get(Annotation.Z));
+					if (zOrder >= 0) {
+						if (!zOrderMap.containsKey(canvas))
+							zOrderMap.put(canvas, new TreeMap<>());
+						zOrderMap.get(canvas).put(zOrder,annotation);
+					}
 				}
 
 				// Now that we've added the annotation, update
@@ -200,12 +217,39 @@ public class CyAnnotator {
 				if (annotation instanceof ArrowAnnotationImpl) {
 					ArrowAnnotationImpl arrow = (ArrowAnnotationImpl)annotation;
 					arrow.getSource().addArrow(arrow);
-					if (arrow.getCanvas() != null)
+					Object canvas;
+					if (arrow.getCanvas() != null) {
 						arrow.getCanvas().add(arrow.getComponent());
-					else
+						canvas = arrow.getCanvas();
+					} else {
 						foreGroundCanvas.add(arrow.getComponent());
+						canvas = foreGroundCanvas;
+					}
+
+					if (argMap.containsKey(Annotation.Z)) {
+						int zOrder = Integer.parseInt(argMap.get(Annotation.Z	));
+						if (zOrder >= 0) {
+							if (!zOrderMap.containsKey(canvas))
+								zOrderMap.put(canvas, new TreeMap<>());
+							zOrderMap.get(canvas).put(zOrder,arrow);
+						}
+					}
 
 					addAnnotation(arrow);
+				}
+			}
+
+			// Now, handle our Z-Order.  This needs to be done after everything else is
+			// added to make sure that we have the proper number of components
+			// We use a TreeMap so that the keys (the zOrder are ordered)
+			for (Map<Integer, DingAnnotation> map: zOrderMap.values()) {
+				for (Integer zOrder: map.keySet()) {
+					// System.out.println("zOrder = "+zOrder);
+					DingAnnotation a = map.get(zOrder);
+					if (a.getCanvas() != null)
+						a.getCanvas().setComponentZOrder(a.getComponent(), zOrder);
+					else
+						foreGroundCanvas.setComponentZOrder(a.getComponent(), zOrder);
 				}
 			}
 		}

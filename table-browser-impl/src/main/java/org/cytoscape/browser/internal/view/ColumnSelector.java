@@ -1,5 +1,54 @@
 package org.cytoscape.browser.internal.view;
 
+import static javax.swing.GroupLayout.DEFAULT_SIZE;
+import static javax.swing.GroupLayout.PREFERRED_SIZE;
+import static javax.swing.GroupLayout.Alignment.CENTER;
+import static org.cytoscape.util.swing.LookAndFeelUtil.isAquaLAF;
+
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.text.Collator;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Set;
+import java.util.SortedMap;
+import java.util.TreeMap;
+import java.util.stream.Collectors;
+
+import javax.swing.BorderFactory;
+import javax.swing.GroupLayout;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.LayoutStyle.ComponentPlacement;
+import javax.swing.UIManager;
+import javax.swing.border.Border;
+import javax.swing.border.EmptyBorder;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableCellRenderer;
+
+import org.cytoscape.model.CyColumn;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.util.swing.IconManager;
+import org.cytoscape.util.swing.LookAndFeelUtil;
+
 /*
  * #%L
  * Cytoscape Table Browser Impl (table-browser-impl)
@@ -24,44 +73,6 @@ package org.cytoscape.browser.internal.view;
  * #L%
  */
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.text.Collator;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Set;
-import java.util.SortedMap;
-import java.util.TreeMap;
-import java.util.stream.Collectors;
-
-import javax.swing.JCheckBox;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.UIManager;
-import javax.swing.border.Border;
-import javax.swing.border.EmptyBorder;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableCellRenderer;
-
-import org.cytoscape.model.CyColumn;
-import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.util.swing.IconManager;
-import org.cytoscape.util.swing.LookAndFeelUtil;
-
 @SuppressWarnings("serial")
 public class ColumnSelector extends JPanel {
 	
@@ -78,6 +89,8 @@ public class ColumnSelector extends JPanel {
 	
 	private JTable table;
 	private JScrollPane tableScrollPane;
+	private JButton selectAllButton;
+	private JButton selectNoneButton;
 	
 	private final SortedMap<String, CyColumn> columns;
 	private final Set<String> selectedColumnNames;
@@ -112,7 +125,8 @@ public class ColumnSelector extends JPanel {
 		if (selectedColumnNames != null)
 			this.selectedColumnNames.addAll(selectedColumnNames);
 		
-		updateComponents();
+		updateTable();
+		updateSelectionButtons();
 	}
 
 	public Set<String> getSelectedColumnNames() {
@@ -120,11 +134,35 @@ public class ColumnSelector extends JPanel {
 	}
 	
 	private void init() {
-		setLayout(new BorderLayout());
-		add(getTableScrollPane(), BorderLayout.CENTER);
+		setBackground(getTableScrollPane().getBackground());
+		
+		LookAndFeelUtil.equalizeSize(getSelectAllButton(), getSelectNoneButton());
+		
+		final GroupLayout layout = new GroupLayout(this);
+		setLayout(layout);
+		layout.setAutoCreateContainerGaps(false);
+		layout.setAutoCreateGaps(false);
+		
+		layout.setHorizontalGroup(layout.createParallelGroup(CENTER, true)
+				.addComponent(getTableScrollPane(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				.addGroup(layout.createSequentialGroup()
+						.addContainerGap()
+						.addComponent(getSelectAllButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addPreferredGap(ComponentPlacement.RELATED)
+						.addComponent(getSelectNoneButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addContainerGap()
+				)
+		);
+		layout.setVerticalGroup(layout.createSequentialGroup()
+				.addComponent(getTableScrollPane(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				.addGroup(layout.createParallelGroup(CENTER, true)
+						.addComponent(getSelectAllButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addComponent(getSelectNoneButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				)
+		);
 	}
 	
-	private void updateComponents() {
+	private void updateTable() {
 		final Object[][] data = new Object[columns.size()][headerNames.length];
 		int i = 0;
 		
@@ -150,6 +188,26 @@ public class ColumnSelector extends JPanel {
 		getTable().getColumnModel().getColumn(SELECTED_COL_IDX).setResizable(false);
 		getTable().getColumnModel().getColumn(TYPE_COL_IDX).setResizable(false);
 		getTable().getColumnModel().getColumn(SHARED_COL_IDX).setResizable(false);
+	}
+	
+	private void updateSelectionButtons() {
+		final int rowCount = table.getRowCount();
+		boolean hasUnselected = false;
+		boolean hasSelected = false;
+		
+		for (int i = 0; i < rowCount; i++) {
+			final boolean selected = (boolean) table.getModel().getValueAt(i, SELECTED_COL_IDX);
+			
+			if (!hasUnselected)
+				hasUnselected = !selected;
+			if (!hasSelected)
+				hasSelected = selected;
+			if (hasUnselected && hasSelected)
+				break;
+		}
+		
+		getSelectAllButton().setEnabled(hasUnselected);
+		getSelectNoneButton().setEnabled(hasSelected);
 	}
 	
 	private JTable getTable() {
@@ -200,6 +258,7 @@ public class ColumnSelector extends JPanel {
 					    }
 						
 						toggleSelection(row);
+						updateSelectionButtons();
 					}
 				}
 			});
@@ -213,7 +272,10 @@ public class ColumnSelector extends JPanel {
 			tableScrollPane = new JScrollPane();
 			tableScrollPane.setPreferredSize(new Dimension(300, 180));
 			tableScrollPane.setViewportView(getTable());
-			tableScrollPane.setBorder(new EmptyBorder(0, 2, 0, 2));
+			tableScrollPane.setBorder(BorderFactory.createCompoundBorder(
+					BorderFactory.createEmptyBorder(0, 2, 0, 2),
+					BorderFactory.createMatteBorder(0, 0, 1, 0, UIManager.getColor("Separator.foreground"))
+			));
 			
 			final Color bg = UIManager.getColor("Table.background");
 			tableScrollPane.setBackground(bg);
@@ -221,6 +283,61 @@ public class ColumnSelector extends JPanel {
 		}
 
 		return tableScrollPane;
+	}
+	
+	private JButton getSelectAllButton() {
+		if (selectAllButton == null) {
+			selectAllButton = new JButton("Select All");
+			selectAllButton.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(final ActionEvent e) {
+					setSelectedToAllRows(true);
+				}
+			});
+			
+			if (isAquaLAF()) {
+				selectAllButton.putClientProperty("JButton.buttonType", "gradient");
+				selectAllButton.putClientProperty("JComponent.sizeVariant", "small");
+			}
+		}
+		
+		return selectAllButton;
+	}
+	
+	private JButton getSelectNoneButton() {
+		if (selectNoneButton == null) {
+			selectNoneButton = new JButton("Select None");
+			selectNoneButton.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(final ActionEvent e) {
+					setSelectedToAllRows(false);
+				}
+			});
+			
+			if (isAquaLAF()) {
+				selectNoneButton.putClientProperty("JButton.buttonType", "gradient");
+				selectNoneButton.putClientProperty("JComponent.sizeVariant", "small");
+			}
+		}
+		
+		return selectNoneButton;
+	}
+	
+	private void setSelectedToAllRows(final boolean selected) {
+		final int rowCount = getTable().getRowCount();
+		
+		for (int i = 0; i < rowCount; i++) {
+			getTable().setValueAt(selected, i, SELECTED_COL_IDX);
+			final String name = (String) getTable().getValueAt(i, NAME_COL_IDX);
+			
+			if (selected)
+				selectedColumnNames.add(name);
+			else
+				selectedColumnNames.remove(name);
+		}
+		
+		getTable().repaint();
+		updateSelectionButtons();
 	}
 	
 	private void toggleSelection(final int row) {
