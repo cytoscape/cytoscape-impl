@@ -24,6 +24,7 @@ import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
+import org.slf4j.Logger;
 
 /*
  * #%L
@@ -192,6 +193,25 @@ public final class ViewUtil {
 			runnable.run();
 		else
 			SwingUtilities.invokeLater(runnable);
+	}
+	
+	public static void invokeOnEDTAndWait(final Runnable runnable) {
+		invokeOnEDTAndWait(runnable, null);
+	}
+	
+	public static void invokeOnEDTAndWait(final Runnable runnable, final Logger logger) {
+		if (SwingUtilities.isEventDispatchThread()) {
+			runnable.run();
+		} else {
+			try {
+				SwingUtilities.invokeAndWait(runnable);
+			} catch (Exception e) {
+				if (logger != null)
+					logger.error("Unexpected error", e);
+				else
+					e.printStackTrace();
+			}
+		}
 	}
 	
 	private ViewUtil() {

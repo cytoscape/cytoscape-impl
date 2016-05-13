@@ -276,69 +276,97 @@ public class NetworkMediator implements NetworkAddedListener, NetworkViewAddedLi
 	}
 	
 	public void addTaskFactory(TaskFactory factory, Map<?, ?> props) {
-		addFactory(factory, props);
+		invokeOnEDT(() -> {
+			addFactory(factory, props);
+		});
 	}
 
 	public void removeTaskFactory(TaskFactory factory, Map<?, ?> props) {
-		removeFactory(factory);
+		invokeOnEDT(() -> {
+			removeFactory(factory);
+		});
 	}
 
 	public void addNetworkCollectionTaskFactory(NetworkCollectionTaskFactory factory, Map<?, ?> props) {
-		final DynamicTaskFactoryProvisioner factoryProvisioner = serviceRegistrar.getService(DynamicTaskFactoryProvisioner.class);
-		TaskFactory provisioner = factoryProvisioner.createFor(factory);
-		provisionerMap.put(factory, provisioner);
-		addFactory(provisioner, props);
+		invokeOnEDT(() -> {
+			final DynamicTaskFactoryProvisioner factoryProvisioner = serviceRegistrar
+					.getService(DynamicTaskFactoryProvisioner.class);
+			TaskFactory provisioner = factoryProvisioner.createFor(factory);
+			provisionerMap.put(factory, provisioner);
+			addFactory(provisioner, props);
+		});
 	}
 
 	public void removeNetworkCollectionTaskFactory(NetworkCollectionTaskFactory factory, Map<?, ?> props) {
-		removeFactory(provisionerMap.remove(factory));
+		invokeOnEDT(() -> {
+			removeFactory(provisionerMap.remove(factory));
+		});
 	}
 
 	public void addNetworkViewCollectionTaskFactory(NetworkViewCollectionTaskFactory factory, Map<?, ?> props) {
-		final DynamicTaskFactoryProvisioner factoryProvisioner = serviceRegistrar.getService(DynamicTaskFactoryProvisioner.class);
-		TaskFactory provisioner = factoryProvisioner.createFor(factory);
-		provisionerMap.put(factory, provisioner);
-		addFactory(provisioner, props);
+		invokeOnEDT(() -> {
+			final DynamicTaskFactoryProvisioner factoryProvisioner = serviceRegistrar
+					.getService(DynamicTaskFactoryProvisioner.class);
+			TaskFactory provisioner = factoryProvisioner.createFor(factory);
+			provisionerMap.put(factory, provisioner);
+			addFactory(provisioner, props);
+		});
 	}
 
 	public void removeNetworkViewCollectionTaskFactory(NetworkViewCollectionTaskFactory factory, Map<?, ?> props) {
-		removeFactory(provisionerMap.remove(factory));
+		invokeOnEDT(() -> {
+			removeFactory(provisionerMap.remove(factory));
+		});
 	}
 
 	public void addNetworkTaskFactory(NetworkTaskFactory factory, Map<?, ?> props) {
-		final DynamicTaskFactoryProvisioner factoryProvisioner = serviceRegistrar.getService(DynamicTaskFactoryProvisioner.class);
-		TaskFactory provisioner = factoryProvisioner.createFor(factory);
-		provisionerMap.put(factory, provisioner);
-		addFactory(provisioner, props);
+		invokeOnEDT(() -> {
+			final DynamicTaskFactoryProvisioner factoryProvisioner = serviceRegistrar
+					.getService(DynamicTaskFactoryProvisioner.class);
+			TaskFactory provisioner = factoryProvisioner.createFor(factory);
+			provisionerMap.put(factory, provisioner);
+			addFactory(provisioner, props);
+		});
 	}
 
 	public void removeNetworkTaskFactory(NetworkTaskFactory factory, Map<?, ?> props) {
-		removeFactory(provisionerMap.remove(factory));
+		invokeOnEDT(() -> {
+			removeFactory(provisionerMap.remove(factory));
+		});
 	}
 
 	public void addNetworkViewTaskFactory(final NetworkViewTaskFactory factory, Map<?, ?> props) {
-		final DynamicTaskFactoryProvisioner factoryProvisioner = serviceRegistrar.getService(DynamicTaskFactoryProvisioner.class);
-		TaskFactory provisioner = factoryProvisioner.createFor(factory);
-		provisionerMap.put(factory, provisioner);
-		addFactory(provisioner, props);
+		invokeOnEDT(() -> {
+			final DynamicTaskFactoryProvisioner factoryProvisioner = serviceRegistrar
+					.getService(DynamicTaskFactoryProvisioner.class);
+			TaskFactory provisioner = factoryProvisioner.createFor(factory);
+			provisionerMap.put(factory, provisioner);
+			addFactory(provisioner, props);
+		});
 	}
 
 	public void removeNetworkViewTaskFactory(NetworkViewTaskFactory factory, Map<?, ?> props) {
-		removeFactory(provisionerMap.remove(factory));
+		invokeOnEDT(() -> {
+			removeFactory(provisionerMap.remove(factory));
+		});
 	}
 	
 	public void addCyAction(final CyAction action, Map<?, ?> props) {
-		addAction(action);
+		invokeOnEDT(() -> {
+			addAction(action);
+		});
 	}
 	
 	public void removeCyAction(final CyAction action, Map<?, ?> props) {
-		final JMenuItem item = popupMap.remove(action);
-		
-		if (item != null)
-			popup.remove(item);
-		
-		popupActionMap.remove(action);
-		popup.removePopupMenuListener(action);
+		invokeOnEDT(() -> {
+			final JMenuItem item = popupMap.remove(action);
+			
+			if (item != null)
+				popup.remove(item);
+			
+			popupActionMap.remove(action);
+			popup.removePopupMenuListener(action);
+		});
 	}
 	
 	// // Private Methods // //
