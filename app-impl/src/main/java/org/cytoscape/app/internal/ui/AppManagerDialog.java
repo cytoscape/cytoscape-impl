@@ -24,7 +24,8 @@ import org.cytoscape.app.internal.net.UpdateManager;
 import org.cytoscape.app.internal.ui.downloadsites.DownloadSitesManager;
 import org.cytoscape.app.internal.ui.downloadsites.ManageDownloadSitesDialog;
 import org.cytoscape.util.swing.FileUtil;
-import org.cytoscape.util.swing.Help;
+// import Help;
+// import org.cytoscape.util.swing.HelpImpl;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.work.TaskManager;
 import javax.swing.Box;
@@ -131,23 +132,8 @@ public class AppManagerDialog extends JDialog {
 				dispose();
 			}
 		});
-        
-       //-----------------------------------------------------
-        final JButton helpButton = new JButton(new AbstractAction("?") {
-  			@Override
-  			public void actionPerformed(ActionEvent e) {
-//   				System.out.println("launch AppMangager help page");
-                    Help.linkout("App_Manager");
-         }  });
-          
-        final JPanel buttonSubPanel = LookAndFeelUtil.createOkCancelPanel(null, closeButton);
-        final JPanel buttonPanel = new JPanel();
-        buttonPanel.setLayout(new BoxLayout(buttonPanel, BoxLayout.LINE_AXIS));
-        buttonPanel.add(helpButton);  // set max width or graphic
-        buttonPanel.add(Box.createHorizontalGlue());
-        buttonPanel.add(buttonSubPanel);
-           
-       //-----------------------------------------------------
+        final JPanel buttonPanel = LookAndFeelUtil.createOkCancelPanel(null, closeButton, "App_Manager");     //#3534      
+
         final GroupLayout layout = new GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setAutoCreateContainerGaps(true);
