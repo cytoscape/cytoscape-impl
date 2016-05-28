@@ -70,7 +70,7 @@ public class RotatePanel extends AbstractManualPanel implements ChangeListener, 
 	public RotatePanel(CyApplicationManager appMgr) {
 		super("Rotate");
 		this.appMgr = appMgr;
-		System.out.println("RotatePanel");
+// 		System.out.println("RotatePanel");
 		
 		if (LookAndFeelUtil.isAquaLAF())
 			setOpaque(false);

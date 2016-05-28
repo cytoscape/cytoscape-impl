@@ -55,7 +55,7 @@ public class ControlPanel extends AbstractManualPanel {
 	 */
 	public ControlPanel(CyApplicationManager app) {
 		super("Layout Tools");
-		System.out.println("ControlPanel");
+// 		System.out.println("ControlPanel");
 		
 		if (LookAndFeelUtil.isAquaLAF())
 			setOpaque(false);
