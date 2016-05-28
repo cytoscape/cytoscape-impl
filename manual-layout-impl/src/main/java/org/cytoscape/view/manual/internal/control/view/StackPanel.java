@@ -32,6 +32,9 @@ import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JPanel;
+import javax.swing.BoxLayout;
+import javax.swing.JLabel;
+import javax.swing.Box;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
@@ -70,7 +73,18 @@ public class StackPanel extends JPanel {
 		HStackCenter hac = new HStackCenter(haci,app);
 		HStackBottom hab = new HStackBottom(habi,app);
 
-		setLayout(new GridLayout(1,6,0,0));
+		setLayout(new BoxLayout(this, BoxLayout.LINE_AXIS));
+		int HGHT = 32;
+		setMinimumSize(new Dimension(120, HGHT));
+		setPreferredSize(new Dimension(300, HGHT));
+		setMaximumSize(new Dimension(350, HGHT));
+		
+		JLabel stack = new JLabel("Stack");
+		add(Box.createRigidArea(new Dimension(25, 0)));
+    	add(stack);
+		stack.setPreferredSize(new Dimension(105, 25));
+		stack.setMinimumSize(new Dimension(105, 25));
+		stack.setMaximumSize(new Dimension(105, 25));
 		add(createJButton(val, "Vertical Stack Left"));
 		add(createJButton(vac, "Vertical Stack Center"));
 		add(createJButton(var, "Vertical Stack Right"));
@@ -78,16 +92,16 @@ public class StackPanel extends JPanel {
 		add(createJButton(hac, "Horizontal Stack Center"));
 		add(createJButton(hab, "Horizontal Stack Bottom"));
 
-		setBorder(LookAndFeelUtil.createTitledBorder("Stack"));
+// 		setBorder(LookAndFeelUtil.createTitledBorder("Stack"));
 	}
 
 	protected JButton createJButton(Action a, String tt) {
 		JButton b = new JButton(a);
 		b.setToolTipText(tt);
-		b.setPreferredSize(new Dimension(27, 18));
-		b.setMaximumSize(new Dimension(27, 18));
-		b.setMinimumSize(new Dimension(27, 18));
-		b.setBorder(BorderFactory.createEmptyBorder());
+		b.setPreferredSize(new Dimension(32, 24));
+		b.setMaximumSize(new Dimension(32, 24));
+		b.setMinimumSize(new Dimension(32, 24));
+		b.setBorder(BorderFactory.createEmptyBorder(3,3,3,3));
 		b.setBorderPainted(false);
 		b.setOpaque(false);
 		b.setContentAreaFilled(false);

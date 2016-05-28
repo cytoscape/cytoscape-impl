@@ -24,9 +24,10 @@ package org.cytoscape.view.manual.internal.control;
  * #L%
  */
 
-import java.awt.GridLayout;
-
 import javax.swing.BorderFactory;
+import javax.swing.BoxLayout;
+import javax.swing.Box;
+import java.awt.Dimension;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
@@ -34,6 +35,8 @@ import org.cytoscape.view.manual.internal.common.AbstractManualPanel;
 import org.cytoscape.view.manual.internal.control.view.AlignPanel;
 import org.cytoscape.view.manual.internal.control.view.DistPanel;
 import org.cytoscape.view.manual.internal.control.view.StackPanel;
+import org.cytoscape.view.manual.internal.rotate.RotatePanel;
+import org.cytoscape.view.manual.internal.scale.ScalePanel;
 
 /**
  *
@@ -44,22 +47,28 @@ import org.cytoscape.view.manual.internal.control.view.StackPanel;
  */
 public class ControlPanel extends AbstractManualPanel {
 	
+	
 	private static final long serialVersionUID = -2098655182032300315L;
 
 	/**
 	 * Creates a new ControlPanel object.
 	 */
 	public ControlPanel(CyApplicationManager app) {
-		super("Align and Distribute");
+		super("Layout Tools");
+		System.out.println("ControlPanel");
 		
 		if (LookAndFeelUtil.isAquaLAF())
 			setOpaque(false);
 		
-		setBorder(BorderFactory.createEmptyBorder(3, 3, 3, 3));
-		setLayout(new GridLayout(3,1));
+		setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 2));
+		setLayout(new BoxLayout(this,  BoxLayout.PAGE_AXIS));
 
+		add(new ScalePanel(app));
 		add(new AlignPanel(app));
 		add(new DistPanel(app));
 		add(new StackPanel(app));
+		add(Box.createRigidArea(new Dimension(3,20)));
+		add(new RotatePanel(app));
+
 	} 
 } 

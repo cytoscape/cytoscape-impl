@@ -27,11 +27,14 @@ package org.cytoscape.view.manual.internal.control.view;
 import java.awt.Dimension;
 import java.awt.GridLayout;
 
+import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JPanel;
+import javax.swing.JLabel;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
@@ -71,9 +74,19 @@ public class AlignPanel extends JPanel {
 		VAlignCenter vac = new VAlignCenter(vaci,app);
 		VAlignBottom vab = new VAlignBottom(vabi,app);
 
-		setLayout(new GridLayout(1,6));
+		int HGHT = 32;
+		setMinimumSize(new Dimension(120, HGHT));
+		setPreferredSize(new Dimension(300, HGHT));
+		setMaximumSize(new Dimension(350, HGHT));
 
-		add(createJButton(hal, "Horizontal Align Left"));
+		setLayout(new BoxLayout(this, BoxLayout.LINE_AXIS));
+		JLabel algn = new JLabel("Align");
+		algn.setPreferredSize(new Dimension(105, 25));
+		algn.setMinimumSize(new Dimension(105, 25));
+		algn.setMaximumSize(new Dimension(105, 25));
+		add(Box.createRigidArea(new Dimension(25, 0)));
+	    add(algn);
+	    add(createJButton(hal, "Horizontal Align Left"));
 		add(createJButton(hac, "Horizontal Align Center"));
 		add(createJButton(har, "Horizontal Align Right"));
 
@@ -81,15 +94,16 @@ public class AlignPanel extends JPanel {
 		add(createJButton(vac, "Vertical Align Center"));
 		add(createJButton(vab, "Vertical Align Bottom"));
 
-		setBorder(LookAndFeelUtil.createTitledBorder("Align"));
+// 		setBorder(LookAndFeelUtil.createTitledBorder("Align"));
 	}
 
 	protected JButton createJButton(Action a, String tt) {
 		JButton b = new JButton(a);
 		b.setToolTipText(tt);
-		b.setPreferredSize(new Dimension(27, 18));
-		b.setMaximumSize(new Dimension(27, 18));
-		b.setBorder(BorderFactory.createEmptyBorder());
+		b.setPreferredSize(new Dimension(32, 24));
+		b.setMaximumSize(new Dimension(32, 24));
+		b.setMinimumSize(new Dimension(32, 24));
+		b.setBorder(BorderFactory.createEmptyBorder(3,3,3,3));
 		b.setBorderPainted(false);
 		b.setOpaque(false);
 		b.setContentAreaFilled(false);
