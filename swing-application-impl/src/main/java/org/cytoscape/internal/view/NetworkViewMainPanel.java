@@ -61,6 +61,8 @@ import org.cytoscape.view.presentation.RenderingEngineFactory;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.work.swing.DialogTaskManager;
 
+import org.cytoscape.internal.view.CyDropListener;
+
 /*
  * #%L
  * Cytoscape Swing Application Impl (swing-application-impl)
@@ -799,6 +801,7 @@ public class NetworkViewMainPanel extends JPanel {
 	private void init() {
 		setBorder(BorderFactory.createMatteBorder(0, 1, 1, 1, UIManager.getColor("Separator.foreground")));
 		
+		new CyDropListener(this, serviceRegistrar);
 		setLayout(new BorderLayout());
 		add(getContentPane(), BorderLayout.CENTER);
 		
