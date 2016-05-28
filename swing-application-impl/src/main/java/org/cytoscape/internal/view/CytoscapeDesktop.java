@@ -338,11 +338,11 @@ public class CytoscapeDesktop extends JFrame
         final BiModalJSplitPane split = new BiModalJSplitPane(this, JSplitPane.VERTICAL_SPLIT,
                                       BiModalJSplitPane.MODE_HIDE_SPLIT, new JPanel(),
                                       cytoPanelSouthWest);
-        split.setResizeWeight(0);
+        split.setResizeWeight(0.3);
         cytoPanelSouthWest.setCytoPanelContainer(split);
-        cytoPanelSouthWest.setMinimumSize(new Dimension(180, 330));
-        cytoPanelSouthWest.setMaximumSize(new Dimension(180, 330));
-        cytoPanelSouthWest.setPreferredSize(new Dimension(180, 330));
+        cytoPanelSouthWest.setMinimumSize(new Dimension(150, 200));     
+        cytoPanelSouthWest.setMaximumSize(new Dimension(380, 450));
+        cytoPanelSouthWest.setPreferredSize(new Dimension(220, 430));
 
 		ToolCytoPanelListener t = new ToolCytoPanelListener( split, cytoPanelWest, 
 		                                                     cytoPanelSouthWest );
