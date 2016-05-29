@@ -883,13 +883,13 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc,zoomInTaskFactory,NetworkTaskFactory.class, zoomInTaskFactoryProps);
 
 		Properties helpProps = new Properties();
-		helpProps.setProperty(PREFERRED_MENU,"View");
-		helpProps.setProperty(MENU_GRAVITY,"65.3");
+// 		helpProps.setProperty(PREFERRED_MENU,"View");
+// 		helpProps.setProperty(MENU_GRAVITY,"65.3");
 		helpProps.setProperty(ACCELERATOR,"cmd ?");
 		helpProps.setProperty(LARGE_ICON_URL,getClass().getResource("/images/icons/help.png").toString());
 		helpProps.setProperty(TITLE,"Help");
 		helpProps.setProperty(TOOLTIP,"Link to context sensitive help");
-		helpProps.setProperty(TOOL_BAR_GRAVITY,"5.5");
+		helpProps.setProperty(TOOL_BAR_GRAVITY,"65.5");
 		helpProps.setProperty(IN_TOOL_BAR,"true");
 //		helpProps.setProperty(COMMAND,"zoom in");
 //		helpProps.setProperty(COMMAND_NAMESPACE,"view");
