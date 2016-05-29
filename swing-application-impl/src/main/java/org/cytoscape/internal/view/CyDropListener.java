@@ -166,14 +166,17 @@ public class CyDropListener implements DropTargetListener {
 
                    try
                    {
-                        InputStream stream = new FileInputStream(file);
+                        if (file.getName().toUpper().endsWith(".SIF")
+                        {
+                            InputStream stream = new FileInputStream(file);
                     		SwingUtilities.invokeLater(new Runnable() {
-			    	public void run() {
-                      taskManager.execute(factory.createTaskIterator(stream, file.getName()));
-			    	}
-			    });
+			    	            public void run() {
+                                    taskManager.execute(factory.createTaskIterator(stream, file.getName()));
+			    	            }
+			                });
                
-                        System.out.println("DONE IMPORTING: " + file.getName());
+                            System.out.println("DONE IMPORTING: " + file.getName());
+                        }
                     }
                     catch (Exception e)     {
                     	System.out.println("Exception: " + e.getMessage()); 
