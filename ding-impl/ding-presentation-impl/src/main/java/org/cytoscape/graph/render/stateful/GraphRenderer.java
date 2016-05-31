@@ -53,6 +53,8 @@ import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
+import org.cytoscape.view.presentation.property.ArrowShapeVisualProperty;
+import org.cytoscape.view.presentation.property.values.ArrowShape;
 import org.cytoscape.view.vizmap.VisualPropertyDependency;
 
 
@@ -422,31 +424,29 @@ public final class GraphRenderer {
 							final Paint segPaint = edgeDetails.getPaint(edge);
 
 							// Compute arrows.
-							final byte srcArrow;
-
-							// Compute arrows.
-							final byte trgArrow;
+							final ArrowShape srcArrow;
+							final ArrowShape trgArrow;
 							final float srcArrowSize;
 							final float trgArrowSize;
 							final Paint srcArrowPaint;
 							final Paint trgArrowPaint;
 
 							if ((lodBits & LOD_EDGE_ARROWS) == 0) { // Not rendering arrows.
-								trgArrow = srcArrow = GraphGraphics.ARROW_NONE;
+								trgArrow = srcArrow = ArrowShapeVisualProperty.NONE;
 								trgArrowSize = srcArrowSize = 0.0f;
 								trgArrowPaint = srcArrowPaint = null;
 							} else { // Rendering edge arrows.
 								srcArrow = edgeDetails.getSourceArrowShape(edge);
 								trgArrow = edgeDetails.getTargetArrowShape(edge);
-								srcArrowSize = ((srcArrow == GraphGraphics.ARROW_NONE) 
+								srcArrowSize = ((srcArrow == ArrowShapeVisualProperty.NONE) 
 								                 ? 0.0f
 								                 : edgeDetails.getSourceArrowSize(edge));
-								trgArrowSize = ((trgArrow == GraphGraphics.ARROW_NONE)
+								trgArrowSize = ((trgArrow == ArrowShapeVisualProperty.NONE)
 								                 ? 0.0f
 								                 : edgeDetails.getTargetArrowSize(edge));
-								srcArrowPaint = ((srcArrow == GraphGraphics.ARROW_NONE)
+								srcArrowPaint = ((srcArrow == ArrowShapeVisualProperty.NONE)
 								                 ? null : edgeDetails.getSourceArrowPaint(edge));
-								trgArrowPaint = ((trgArrow == GraphGraphics.ARROW_NONE)
+								trgArrowPaint = ((trgArrow == ArrowShapeVisualProperty.NONE)
 								                 ? null : edgeDetails.getTargetArrowPaint(edge));
 							}
 
@@ -840,10 +840,10 @@ public final class GraphRenderer {
 	 */
 	public final static boolean computeEdgeEndpoints(final GraphGraphics grafx,
 	                                                 final float[] srcNodeExtents,
-	                                                 final byte srcNodeShape, final byte srcArrow,
+	                                                 final byte srcNodeShape, final ArrowShape srcArrow,
 	                                                 final float srcArrowSize, EdgeAnchors anchors,
 	                                                 final float[] trgNodeExtents,
-	                                                 final byte trgNodeShape, final byte trgArrow,
+	                                                 final byte trgNodeShape, final ArrowShape trgArrow,
 	                                                 final float trgArrowSize,
 	                                                 final float[] rtnValSrc,
 	                                                 final float[] rtnValTrg) {
