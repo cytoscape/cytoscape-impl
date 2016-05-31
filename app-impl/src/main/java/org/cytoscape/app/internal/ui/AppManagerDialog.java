@@ -128,7 +128,7 @@ public class AppManagerDialog extends JDialog {
 			}
 		});
         
-        final JPanel buttonPanel = LookAndFeelUtil.createOkCancelPanel(null, closeButton);
+        final JPanel buttonPanel = LookAndFeelUtil.createOkCancelPanel(null, closeButton, "App_Manager");
         
         final GroupLayout layout = new GroupLayout(getContentPane());
         getContentPane().setLayout(layout);

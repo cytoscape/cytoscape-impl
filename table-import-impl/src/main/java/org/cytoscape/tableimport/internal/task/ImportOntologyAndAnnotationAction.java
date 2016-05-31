@@ -114,7 +114,7 @@ public class ImportOntologyAndAnnotationAction extends AbstractCyAction {
 			ontologyPanel =
 					new ImportTablePanel(ImportType.ONTOLOGY_IMPORT, null, null, isTaskfactory, serviceRegistrar);
 			
-			final JPanel buttonPanel = LookAndFeelUtil.createOkCancelPanel(importButton, cancelButton);
+			final JPanel buttonPanel = LookAndFeelUtil.createOkCancelPanel(importButton, cancelButton, "Ontology_and_Annotation_Import");
 			
 			layout.setHorizontalGroup(layout.createParallelGroup(LEADING, true)
 					.addComponent(ontologyPanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
