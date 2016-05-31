@@ -81,28 +81,28 @@ final class DEdgeDetails extends EdgeDetails {
 	// Mapped Values
 	// If value found in these map objects, the value will be used by the renderer.
 	// Otherwise, default value will be used.
-	Map<CyEdge, Object> m_colorsLowDetail = new ConcurrentHashMap<CyEdge, Object>(16, 0.75f, 2);
-	Map<CyEdge, Object> m_selectedColorsLowDetail = new ConcurrentHashMap<CyEdge, Object>(16, 0.75f, 2);
-	Map<CyEdge, Float> m_segmentThicknesses = new ConcurrentHashMap<CyEdge, Float>(16, 0.75f, 2);
-	Map<CyEdge, Stroke> m_segmentStrokes = new ConcurrentHashMap<CyEdge, Stroke>(16, 0.75f, 2);
+	Map<CyEdge, Object> m_colorsLowDetail = new ConcurrentHashMap<>(16, 0.75f, 2);
+	Map<CyEdge, Object> m_selectedColorsLowDetail = new ConcurrentHashMap<>(16, 0.75f, 2);
+	Map<CyEdge, Float> m_segmentThicknesses = new ConcurrentHashMap<>(16, 0.75f, 2);
+	Map<CyEdge, Stroke> m_segmentStrokes = new ConcurrentHashMap<>(16, 0.75f, 2);
 	Map<CyEdge, ArrowShape> m_sourceArrows = new ConcurrentHashMap<>(16, 0.75f, 2);
-	Map<CyEdge, Paint> m_sourceArrowPaints = new ConcurrentHashMap<CyEdge, Paint>(16, 0.75f, 2);
-	Map<CyEdge, Paint> m_sourceArrowSelectedPaints = new ConcurrentHashMap<CyEdge, Paint>(16, 0.75f, 2);
+	Map<CyEdge, Paint> m_sourceArrowPaints = new ConcurrentHashMap<>(16, 0.75f, 2);
+	Map<CyEdge, Paint> m_sourceArrowSelectedPaints = new ConcurrentHashMap<>(16, 0.75f, 2);
 	Map<CyEdge, ArrowShape> m_targetArrows = new ConcurrentHashMap<>(16, 0.75f, 2);
-	Map<CyEdge, Paint> m_targetArrowPaints = new ConcurrentHashMap<CyEdge, Paint>(16, 0.75f, 2);
-	Map<CyEdge, Paint> m_targetArrowSelectedPaints = new ConcurrentHashMap<CyEdge, Paint>(16, 0.75f, 2);
-	Map<CyEdge, Integer> m_labelCounts = new ConcurrentHashMap<CyEdge, Integer>(16, 0.75f, 2);
-	Map<CyEdge, String> m_labelTexts = new ConcurrentHashMap<CyEdge, String>(16, 0.75f, 2);
-	Map<CyEdge, Font> m_labelFonts = new ConcurrentHashMap<CyEdge, Font>(16, 0.75f, 2);
-	Map<CyEdge, Paint> m_labelPaints = new ConcurrentHashMap<CyEdge, Paint>(16, 0.75f, 2);
-	Map<CyEdge, Double> m_labelWidths = new ConcurrentHashMap<CyEdge, Double>(16, 0.75f, 2);
-	Map<CyEdge, Paint> m_unselectedPaints = new ConcurrentHashMap<CyEdge, Paint>(16, 0.75f, 2);
-	Map<CyEdge, Paint> m_selectedPaints = new ConcurrentHashMap<CyEdge, Paint>(16, 0.75f, 2);
-	Map<CyEdge, Integer> m_lineCurved = new ConcurrentHashMap<CyEdge, Integer>(16, 0.75f, 2);
-	Map<CyEdge, Bend> m_edgeBends = new ConcurrentHashMap<CyEdge, Bend>(16, 0.75f, 2);
-	Map<CyEdge, String> m_edgeTooltips = new ConcurrentHashMap<CyEdge, String>(16, 0.75f, 2);
-	Map<CyEdge, Integer> m_edgeTansparencies = new ConcurrentHashMap<CyEdge, Integer>(16, 0.75f, 2);
-	Map<CyEdge, Integer> m_edgeLabelTansparencies = new ConcurrentHashMap<CyEdge, Integer>(16, 0.75f, 2);
+	Map<CyEdge, Paint> m_targetArrowPaints = new ConcurrentHashMap<>(16, 0.75f, 2);
+	Map<CyEdge, Paint> m_targetArrowSelectedPaints = new ConcurrentHashMap<>(16, 0.75f, 2);
+	Map<CyEdge, Integer> m_labelCounts = new ConcurrentHashMap<>(16, 0.75f, 2);
+	Map<CyEdge, String> m_labelTexts = new ConcurrentHashMap<>(16, 0.75f, 2);
+	Map<CyEdge, Font> m_labelFonts = new ConcurrentHashMap<>(16, 0.75f, 2);
+	Map<CyEdge, Paint> m_labelPaints = new ConcurrentHashMap<>(16, 0.75f, 2);
+	Map<CyEdge, Double> m_labelWidths = new ConcurrentHashMap<>(16, 0.75f, 2);
+	Map<CyEdge, Paint> m_unselectedPaints = new ConcurrentHashMap<>(16, 0.75f, 2);
+	Map<CyEdge, Paint> m_selectedPaints = new ConcurrentHashMap<>(16, 0.75f, 2);
+	Map<CyEdge, Integer> m_lineCurved = new ConcurrentHashMap<>(16, 0.75f, 2);
+	Map<CyEdge, Bend> m_edgeBends = new ConcurrentHashMap<>(16, 0.75f, 2);
+	Map<CyEdge, String> m_edgeTooltips = new ConcurrentHashMap<>(16, 0.75f, 2);
+	Map<CyEdge, Integer> m_edgeTansparencies = new ConcurrentHashMap<>(16, 0.75f, 2);
+	Map<CyEdge, Integer> m_edgeLabelTansparencies = new ConcurrentHashMap<>(16, 0.75f, 2);
 
 	// Default Values
 	ArrowShape m_sourceArrowDefault;
@@ -127,38 +127,38 @@ final class DEdgeDetails extends EdgeDetails {
 
 	private boolean isCleared = false;
 
-	private final Set<CyEdge> selected = new HashSet<CyEdge>();
+	private final Set<CyEdge> selected = new HashSet<>();
 
 	DEdgeDetails(final DGraphView view) {
 		dGraphView = view;
-		defaultValues = new HashMap<VisualProperty<?>, Object>();
+		defaultValues = new HashMap<>();
 	}
 
 	void clear() {
 		if (isCleared)
 			return;
 
-		m_segmentThicknesses = new ConcurrentHashMap<CyEdge, Float>();
-		m_segmentStrokes = new ConcurrentHashMap<CyEdge, Stroke>();
+		m_segmentThicknesses = new ConcurrentHashMap<>();
+		m_segmentStrokes = new ConcurrentHashMap<>();
 		m_sourceArrows = new ConcurrentHashMap<>();
-		m_sourceArrowPaints = new ConcurrentHashMap<CyEdge, Paint>();
+		m_sourceArrowPaints = new ConcurrentHashMap<>();
 		m_targetArrows = new ConcurrentHashMap<>();
-		m_targetArrowPaints = new ConcurrentHashMap<CyEdge, Paint>();
-		m_targetArrowSelectedPaints = new ConcurrentHashMap<CyEdge, Paint>();
-		m_labelCounts = new ConcurrentHashMap<CyEdge, Integer>();
-		m_labelTexts = new ConcurrentHashMap<CyEdge, String>();
-		m_labelFonts = new ConcurrentHashMap<CyEdge, Font>();
-		m_labelPaints = new ConcurrentHashMap<CyEdge, Paint>();
-		m_labelWidths = new ConcurrentHashMap<CyEdge, Double>();
-		m_unselectedPaints = new ConcurrentHashMap<CyEdge, Paint>();
-		m_selectedPaints = new ConcurrentHashMap<CyEdge, Paint>();
-		m_colorsLowDetail = new ConcurrentHashMap<CyEdge, Object>();
-		m_selectedColorsLowDetail = new ConcurrentHashMap<CyEdge, Object>();
-		m_lineCurved = new ConcurrentHashMap<CyEdge, Integer>();
-		m_edgeBends = new ConcurrentHashMap<CyEdge, Bend>();
-		m_edgeTooltips = new ConcurrentHashMap<CyEdge, String>();
-		m_edgeTansparencies = new ConcurrentHashMap<CyEdge, Integer>();
-		m_edgeLabelTansparencies = new ConcurrentHashMap<CyEdge, Integer>();
+		m_targetArrowPaints = new ConcurrentHashMap<>();
+		m_targetArrowSelectedPaints = new ConcurrentHashMap<>();
+		m_labelCounts = new ConcurrentHashMap<>();
+		m_labelTexts = new ConcurrentHashMap<>();
+		m_labelFonts = new ConcurrentHashMap<>();
+		m_labelPaints = new ConcurrentHashMap<>();
+		m_labelWidths = new ConcurrentHashMap<>();
+		m_unselectedPaints = new ConcurrentHashMap<>();
+		m_selectedPaints = new ConcurrentHashMap<>();
+		m_colorsLowDetail = new ConcurrentHashMap<>();
+		m_selectedColorsLowDetail = new ConcurrentHashMap<>();
+		m_lineCurved = new ConcurrentHashMap<>();
+		m_edgeBends = new ConcurrentHashMap<>();
+		m_edgeTooltips = new ConcurrentHashMap<>();
+		m_edgeTansparencies = new ConcurrentHashMap<>();
+		m_edgeLabelTansparencies = new ConcurrentHashMap<>();
 
 		isCleared = true;
 	}
@@ -1243,6 +1243,7 @@ final class DEdgeDetails extends EdgeDetails {
 			return getUnselectedPaint(edge);
 	}
 	
+	@SuppressWarnings("unchecked")
 	public <T, V extends T> V getDefaultValue(VisualProperty<T> vp) {
 		return (V) defaultValues.get(vp);
 	}
