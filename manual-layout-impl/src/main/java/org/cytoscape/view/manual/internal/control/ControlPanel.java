@@ -1,12 +1,47 @@
 package org.cytoscape.view.manual.internal.control;
 
+import java.awt.Dimension;
+import java.util.Collection;
+
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+
+import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.events.SetCurrentNetworkViewEvent;
+import org.cytoscape.application.events.SetCurrentNetworkViewListener;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNetworkTableManager;
+import org.cytoscape.model.CyNode;
+import org.cytoscape.model.CyTable;
+import org.cytoscape.model.events.RowSetRecord;
+import org.cytoscape.model.events.RowsSetEvent;
+import org.cytoscape.model.events.RowsSetListener;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.session.events.SessionAboutToBeLoadedEvent;
+import org.cytoscape.session.events.SessionAboutToBeLoadedListener;
+import org.cytoscape.session.events.SessionLoadCancelledEvent;
+import org.cytoscape.session.events.SessionLoadCancelledListener;
+import org.cytoscape.session.events.SessionLoadedEvent;
+import org.cytoscape.session.events.SessionLoadedListener;
+import org.cytoscape.util.swing.LookAndFeelUtil;
+import org.cytoscape.view.manual.internal.Util;
+import org.cytoscape.view.manual.internal.common.AbstractManualPanel;
+import org.cytoscape.view.manual.internal.control.view.AlignPanel;
+import org.cytoscape.view.manual.internal.control.view.DistPanel;
+import org.cytoscape.view.manual.internal.control.view.StackPanel;
+import org.cytoscape.view.manual.internal.rotate.RotatePanel;
+import org.cytoscape.view.manual.internal.scale.ScalePanel;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.View;
+
 /*
  * #%L
  * Cytoscape Manual Layout Impl (manual-layout-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,6 +59,7 @@ package org.cytoscape.view.manual.internal.control;
  * #L%
  */
 
+<<<<<<< HEAD
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.Box;
@@ -38,15 +74,16 @@ import org.cytoscape.view.manual.internal.control.view.StackPanel;
 import org.cytoscape.view.manual.internal.rotate.RotatePanel;
 import org.cytoscape.view.manual.internal.scale.ScalePanel;
 
+=======
+>>>>>>> c7392cb225683f02f29c75f8ece5e585ccc4bd5d
 /**
- *
  * GUI for Align and Distribute of manualLayout
- *
- *      Rewrite based on the class ControlAction       9/13/2006        Peng-Liang Wang
- *
  */
-public class ControlPanel extends AbstractManualPanel {
+@SuppressWarnings("serial")
+public class ControlPanel extends AbstractManualPanel implements SessionAboutToBeLoadedListener,
+		SessionLoadCancelledListener, SessionLoadedListener, SetCurrentNetworkViewListener, RowsSetListener {
 	
+<<<<<<< HEAD
 	
 	private static final long serialVersionUID = -2098655182032300315L;
 
@@ -56,11 +93,29 @@ public class ControlPanel extends AbstractManualPanel {
 	public ControlPanel(CyApplicationManager app) {
 		super("Layout Tools");
 // 		System.out.println("ControlPanel");
+=======
+	private ScalePanel scalePanel;
+	private AlignPanel alignPanel;
+	private DistPanel distPanel;
+	private StackPanel stackPanel;
+	private RotatePanel rotatePanel;
+	
+	private boolean loadingSession;
+	
+	private final CyServiceRegistrar serviceRegistrar;
+	
+	public ControlPanel(final CyServiceRegistrar serviceRegistrar) {
+		super("Layout Tools");
+		this.serviceRegistrar = serviceRegistrar;
+		
+		final CyApplicationManager appMgr = serviceRegistrar.getService(CyApplicationManager.class);
+>>>>>>> c7392cb225683f02f29c75f8ece5e585ccc4bd5d
 		
 		if (LookAndFeelUtil.isAquaLAF())
 			setOpaque(false);
 		
 		setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 2));
+<<<<<<< HEAD
 		setLayout(new BoxLayout(this,  BoxLayout.PAGE_AXIS));
 
 		add(new ScalePanel(app));
@@ -71,4 +126,80 @@ public class ControlPanel extends AbstractManualPanel {
 		add(new RotatePanel(app));
 
 	} 
+=======
+		
+		setLayout(new BoxLayout(this,  BoxLayout.PAGE_AXIS));
+
+		add(scalePanel = new ScalePanel(appMgr));
+		add(alignPanel = new AlignPanel(appMgr));
+		add(distPanel = new DistPanel(appMgr));
+		add(stackPanel = new StackPanel(appMgr));
+		add(Box.createRigidArea(new Dimension(3, 20)));
+		add(rotatePanel = new RotatePanel(appMgr));
+		
+		updatePanels();
+	}
+
+	@Override
+	public void handleEvent(final SessionAboutToBeLoadedEvent e) {
+		loadingSession = true;
+	}
+	
+	@Override
+	public void handleEvent(final SessionLoadCancelledEvent e) {
+		loadingSession = false;
+		updatePanels();
+	}
+	
+	@Override
+	public void handleEvent(final SessionLoadedEvent e) {
+		loadingSession = false;
+		updatePanels();
+	}
+	
+	@Override
+	public void handleEvent(SetCurrentNetworkViewEvent e) {
+		if (!loadingSession)
+			updatePanels();
+	}
+	
+	@Override
+	public void handleEvent(RowsSetEvent e) {
+		if (loadingSession)
+			return;
+		
+		final CyApplicationManager appMgr = serviceRegistrar.getService(CyApplicationManager.class);
+		final CyNetworkView currentView = appMgr.getCurrentNetworkView();
+		
+		if (currentView == null)
+			return;
+		
+		final CyTable tbl = e.getSource();
+		final CyNetworkTableManager netTblMgr = serviceRegistrar.getService(CyNetworkTableManager.class);
+		final CyNetwork net = netTblMgr.getNetworkForTable(tbl);
+		
+		if (net == null || !net.equals(currentView.getModel()) || !tbl.equals(net.getDefaultNodeTable()))
+			return;
+		
+		final Collection<RowSetRecord> selectedRecords = e.getColumnRecords(CyNetwork.SELECTED);
+		
+		if (!selectedRecords.isEmpty())
+			updatePanels();
+	}
+
+	private void updatePanels() {
+		final CyApplicationManager appMgr = serviceRegistrar.getService(CyApplicationManager.class);
+		final CyNetworkView view = appMgr.getCurrentNetworkView();
+		final Collection<View<CyNode>> selectedNodeViews = view != null ? Util.findSelectedNodes(view) : null;
+		
+		scalePanel.setEnabled(view != null);
+		rotatePanel.setEnabled(view != null);
+		
+		final boolean enabled = selectedNodeViews != null && !selectedNodeViews.isEmpty();
+		
+		alignPanel.setEnabled(enabled);
+		distPanel.setEnabled(enabled);
+		stackPanel.setEnabled(enabled);
+	}
+>>>>>>> c7392cb225683f02f29c75f8ece5e585ccc4bd5d
 } 

@@ -6,7 +6,7 @@ package org.cytoscape.ding.impl;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,7 +24,6 @@ package org.cytoscape.ding.impl;
  * #L%
  */
 
-
 import java.awt.Font;
 import java.awt.Paint;
 import java.awt.Stroke;
@@ -36,6 +35,7 @@ import org.cytoscape.ding.DVisualLexicon;
 import org.cytoscape.ding.EdgeView;
 import org.cytoscape.ding.GraphView;
 import org.cytoscape.ding.Label;
+import org.cytoscape.ding.impl.strokes.AnimatedStroke;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.graph.render.immed.EdgeAnchors;
 import org.cytoscape.model.CyEdge;
@@ -47,8 +47,6 @@ import org.cytoscape.view.presentation.property.values.Bend;
 import org.cytoscape.view.presentation.property.values.Handle;
 import org.cytoscape.view.presentation.property.values.HandleFactory;
 import org.cytoscape.view.presentation.property.values.LineType;
-
-import org.cytoscape.ding.impl.strokes.AnimatedStroke;
 
 /**
  * Ding implementation of Edge View.
@@ -300,18 +298,18 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 
 	
 	@Override
-	public void setSourceEdgeEnd(final int rendererTypeID) {
+	public void setSourceEdgeEnd(final ArrowShape arrowShape) {
 		synchronized (graphView.m_lock) {
-			graphView.m_edgeDetails.overrideSourceArrow(model, (byte) rendererTypeID);
+			graphView.m_edgeDetails.overrideSourceArrow(model, arrowShape);
 		}
 
 		graphView.setContentChanged();
 	}
 
 	@Override
-	public void setTargetEdgeEnd(final int rendererTypeID) {
+	public void setTargetEdgeEnd(final ArrowShape arrowShape) {
 		synchronized (graphView.m_lock) {
-			graphView.m_edgeDetails.overrideTargetArrow(model, (byte) rendererTypeID);
+			graphView.m_edgeDetails.overrideTargetArrow(model, arrowShape);
 		}
 
 		graphView.setContentChanged();
@@ -683,11 +681,11 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 		} else if (vp == BasicVisualLexicon.EDGE_TARGET_ARROW_SHAPE) {
 			final ArrowShape shape = (ArrowShape) value;
 			final String shapeID = shape.getSerializableString();
-			setTargetEdgeEnd(DArrowShape.parseArrowText(shapeID).getRendererTypeID());
+			setTargetEdgeEnd(DArrowShape.parseArrowText(shapeID).getPresentationShape());
 		} else if (vp == BasicVisualLexicon.EDGE_SOURCE_ARROW_SHAPE) {
 			final ArrowShape shape = (ArrowShape) value;
 			final String shapeID = shape.getSerializableString();
-			setSourceEdgeEnd(DArrowShape.parseArrowText(shapeID).getRendererTypeID());
+			setSourceEdgeEnd(DArrowShape.parseArrowText(shapeID).getPresentationShape());
 		} else if (vp == BasicVisualLexicon.EDGE_LABEL) {
 			setText(value.toString());
 		} else if (vp == BasicVisualLexicon.EDGE_LABEL_WIDTH) {

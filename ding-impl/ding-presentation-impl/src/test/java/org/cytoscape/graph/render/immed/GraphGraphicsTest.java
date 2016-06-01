@@ -1,12 +1,24 @@
 package org.cytoscape.graph.render.immed;
 
+import java.awt.BasicStroke;
+import java.awt.Color;
+import java.awt.image.BufferedImage;
+import java.util.Random;
+
+import org.apache.commons.math.MathException;
+import org.apache.commons.math.stat.inference.TestUtils;
+import org.cytoscape.view.presentation.property.ArrowShapeVisualProperty;
+import org.cytoscape.view.presentation.property.values.ArrowShape;
+
+import junit.framework.TestCase;
+
 /*
  * #%L
  * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2009 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2009 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,24 +36,18 @@ package org.cytoscape.graph.render.immed;
  * #L%
  */
 
-
-import junit.framework.*;
-
-import java.util.List;
-import java.awt.Color;
-import java.awt.Image;
-import java.awt.image.BufferedImage;
-import javax.imageio.ImageIO;
-import java.io.File;
-import java.io.IOException;
-import java.util.Random;
-import java.awt.BasicStroke;
-
-import org.apache.commons.math.stat.inference.TestUtils;
-import org.apache.commons.math.MathException;
-
-
 public class GraphGraphicsTest extends TestCase {
+	
+	private static ArrowShape[] ARROWS = new ArrowShape[] {
+			ArrowShapeVisualProperty.DELTA,
+			ArrowShapeVisualProperty.DIAMOND,
+			ArrowShapeVisualProperty.CIRCLE,
+			ArrowShapeVisualProperty.T,
+			ArrowShapeVisualProperty.HALF_TOP,
+			ArrowShapeVisualProperty.HALF_BOTTOM,
+			ArrowShapeVisualProperty.ARROW
+	};
+	
 	GraphGraphics currentGraphGraphics;
 	OldGraphGraphics oldGraphGraphics;
 	int numNodes; 
@@ -151,14 +157,16 @@ public class GraphGraphicsTest extends TestCase {
 		long nodeDur = end - begin;
 
 		BasicStroke edgeStroke = new BasicStroke(1f);
-
+		
 		begin = System.nanoTime();
 		for ( int i = 0; i < numEdges; i++ ) {
+			ArrowShape arrow = ARROWS[i % 7];
+			
 			currentGraphGraphics.drawEdgeFull(
-				(byte)((i % 7)-8),
+				arrow,
 				rand.nextFloat() * (20f),
 				Color.red, 
-				(byte)((i % 7)-8),
+				arrow,
 				rand.nextFloat() * (20f),
 				Color.orange, 
 				rand.nextFloat() * (rand.nextBoolean() ? size : -size),

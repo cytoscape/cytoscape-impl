@@ -305,14 +305,15 @@ public class PreferencesDialog extends JDialog implements ItemListener, ActionLi
 			contentPane.setLayout(layout);
 			layout.setAutoCreateContainerGaps(true);
 			layout.setAutoCreateGaps(true);
-			
+			final JPanel buttonPanel = LookAndFeelUtil.createOkCancelPanel(null, closeButton, "Linkout");     //#3534      
+
 			layout.setHorizontalGroup(layout.createParallelGroup(Alignment.TRAILING, true)
 					.addComponent(propsTablePanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-					.addComponent(closeButton, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(buttonPanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 			);
 			layout.setVerticalGroup(layout.createSequentialGroup()
 					.addComponent(propsTablePanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-					.addComponent(closeButton)
+					.addComponent(buttonPanel)
 			);
 		}
 		

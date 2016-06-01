@@ -1,12 +1,38 @@
 package org.cytoscape.view.manual.internal.scale;
 
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.util.Hashtable;
+
+import javax.swing.AbstractAction;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JSlider;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+
+import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.util.swing.LookAndFeelUtil;
+import org.cytoscape.view.manual.internal.common.AbstractManualPanel;
+import org.cytoscape.view.manual.internal.common.CheckBoxTracker;
+import org.cytoscape.view.manual.internal.common.GraphConverter2;
+import org.cytoscape.view.manual.internal.common.PolymorphicSlider;
+import org.cytoscape.view.manual.internal.common.SliderStateTracker;
+import org.cytoscape.view.manual.internal.layout.algorithm.MutablePolyEdgeGraphLayout;
+import org.cytoscape.view.model.CyNetworkView;
+
 /*
  * #%L
  * Cytoscape Manual Layout Impl (manual-layout-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,6 +50,7 @@ package org.cytoscape.view.manual.internal.scale;
  * #L%
  */
 
+<<<<<<< HEAD
 
 import java.awt.event.ActionEvent;
 import java.util.Hashtable;
@@ -57,11 +84,10 @@ import org.cytoscape.view.manual.internal.layout.algorithm.MutablePolyEdgeGraphL
 import org.cytoscape.view.model.CyNetworkView;
 
 
+=======
+>>>>>>> c7392cb225683f02f29c75f8ece5e585ccc4bd5d
 /**
- *
  * GUI for scale of manualLayout
- *
- *      Rewrite based on the class ScaleAction       9/13/2006        Peng-Liang Wang
  */
 @SuppressWarnings("serial")
 public class ScalePanel extends AbstractManualPanel implements ChangeListener, PolymorphicSlider {
@@ -70,6 +96,11 @@ public class ScalePanel extends AbstractManualPanel implements ChangeListener, P
 	private JSlider jSlider;
 	private JCheckBox alongXAxis;
 	private JCheckBox alongYAxis;
+<<<<<<< HEAD
+=======
+	private JButton clearButton;
+	
+>>>>>>> c7392cb225683f02f29c75f8ece5e585ccc4bd5d
 	private int prevValue; 
 
 	private boolean startAdjusting = true;
@@ -123,7 +154,11 @@ public class ScalePanel extends AbstractManualPanel implements ChangeListener, P
 //		radioButtonGroup.add(alongYAxisOnlyRadioButton);
 //		radioButtonGroup.add(alongBothAxesRadioButton);
 
+<<<<<<< HEAD
 		JButton clearButton = new JButton("Reset Scale");
+=======
+		clearButton = new JButton("Reset Scale");
+>>>>>>> c7392cb225683f02f29c75f8ece5e585ccc4bd5d
 		clearButton.addActionListener(new AbstractAction() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -206,6 +241,9 @@ public class ScalePanel extends AbstractManualPanel implements ChangeListener, P
 			return;
 
 		CyNetworkView currentView = appMgr.getCurrentNetworkView();
+		
+		if (currentView == null)
+			return;
 
 		// TODO support undo events
 		// only create the edit when we're beginning to adjust
@@ -243,5 +281,16 @@ public class ScalePanel extends AbstractManualPanel implements ChangeListener, P
 			//currentEdit.post();
 			startAdjusting = true;
 		} 
+	}
+
+	@Override
+	public void setEnabled(final boolean enabled) {
+		jCheckBox.setEnabled(enabled);
+		jSlider.setEnabled(enabled);
+		alongXAxis.setEnabled(enabled);
+		alongYAxis.setEnabled(enabled);
+		clearButton.setEnabled(enabled);
+		
+		super.setEnabled(enabled);
 	}
 }

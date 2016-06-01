@@ -1,8 +1,8 @@
-package org.cytoscape.view.manual.internal.common;
+package org.cytoscape.task.internal.help;
 
 /*
  * #%L
- * Cytoscape Manual Layout Impl (manual-layout-impl)
+ * Cytoscape Core Task Impl (core-task-impl)
  * $Id:$
  * $HeadURL:$
  * %%
@@ -23,43 +23,22 @@ package org.cytoscape.view.manual.internal.common;
  * <http://www.gnu.org/licenses/lgpl-2.1.html>.
  * #L%
  */
+ 
+
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.AbstractTaskFactory;
 
 
-import java.awt.Component;
+public class HelpTaskFactory extends AbstractTaskFactory {
+    private final CyServiceRegistrar registrar;
 
-import javax.swing.Icon;
-import javax.swing.JPanel;
-
-import org.cytoscape.application.swing.CytoPanelComponent;
-import org.cytoscape.application.swing.CytoPanelName;
-
-@SuppressWarnings("serial")
-public abstract class AbstractManualPanel extends JPanel implements CytoPanelComponent {
-
-	private final String title;
-
-	public AbstractManualPanel(String title) {
+	public HelpTaskFactory(final CyServiceRegistrar serviceRegistrar) {
 		super();
-		this.title = title;
+		registrar = serviceRegistrar;
 	}
 
-	@Override
-	public CytoPanelName getCytoPanelName() {
-		return CytoPanelName.SOUTH_WEST;
-	}
-
-	@Override
-	public String getTitle() {
-		return title;
-	}
-
-	@Override
-	public Component getComponent() {
-		return this;
-	}
-
-	@Override
-	public Icon getIcon() {
-		return null;
-	}
+	public TaskIterator createTaskIterator() {
+		return new TaskIterator(new HelpTask(registrar,"http://manual.cytoscape.org/en/3.4.0/Quick_Tour_of_Cytoscape.html"));
+	} 
 }

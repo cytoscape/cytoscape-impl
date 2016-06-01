@@ -60,7 +60,9 @@ import org.cytoscape.util.intr.LongStack;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.model.View;
+import org.cytoscape.view.presentation.property.ArrowShapeVisualProperty;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
+import org.cytoscape.view.presentation.property.values.ArrowShape;
 import org.cytoscape.view.presentation.property.values.Bend;
 import org.cytoscape.view.presentation.property.values.Handle;
 import org.cytoscape.work.undo.UndoSupport;
@@ -828,21 +830,21 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 							trgExtents = m_view.m_extentsBuff;
 						}
 
-						final byte srcArrow;
-						final byte trgArrow;
+						final ArrowShape srcArrow;
+						final ArrowShape trgArrow;
 						final float srcArrowSize;
 						final float trgArrowSize;
 
 						if ((m_lastRenderDetail & GraphRenderer.LOD_EDGE_ARROWS) == 0) {
-							srcArrow = trgArrow = GraphGraphics.ARROW_NONE;
+							srcArrow = trgArrow = ArrowShapeVisualProperty.NONE;
 							srcArrowSize = trgArrowSize = 0.0f;
 						} else {
 							srcArrow = m_view.m_edgeDetails.getSourceArrowShape(edge);
 							trgArrow = m_view.m_edgeDetails.getTargetArrowShape(edge);
-							srcArrowSize = ((srcArrow == GraphGraphics.ARROW_NONE) 
+							srcArrowSize = ((srcArrow == ArrowShapeVisualProperty.NONE) 
 							                ? 0.0f
 							                : m_view.m_edgeDetails.getSourceArrowSize(edge));
-							trgArrowSize = ((trgArrow == GraphGraphics.ARROW_NONE) 
+							trgArrowSize = ((trgArrow == ArrowShapeVisualProperty.NONE) 
 							                ? 0.0f
 							                : m_view.m_edgeDetails.getTargetArrowSize(edge));
 						}

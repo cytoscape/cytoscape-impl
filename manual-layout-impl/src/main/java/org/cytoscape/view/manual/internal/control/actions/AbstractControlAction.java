@@ -1,12 +1,26 @@
 package org.cytoscape.view.manual.internal.control.actions;
 
+import java.awt.event.ActionEvent;
+import java.util.Comparator;
+import java.util.List;
+
+import javax.swing.AbstractAction;
+import javax.swing.Icon;
+
+import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.model.CyNode;
+import org.cytoscape.view.manual.internal.Util;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.View;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
+
 /*
  * #%L
  * Cytoscape Manual Layout Impl (manual-layout-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,70 +38,33 @@ package org.cytoscape.view.manual.internal.control.actions;
  * #L%
  */
 
-
-import java.awt.event.ActionEvent;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-
-import javax.swing.AbstractAction;
-import javax.swing.Icon;
-
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyTableUtil;
-import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.View;
-import org.cytoscape.view.presentation.property.BasicVisualLexicon;
-
-
+@SuppressWarnings("serial")
 public abstract class AbstractControlAction extends AbstractAction {
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 482354803994808731L;
+	
 	protected double X_min;
 	protected double X_max;
 	protected double Y_min;
 	protected double Y_max;
-	protected List<View<CyNode>> selectedNodeViews;
-	protected CyNetworkView view;
 
 	private final CyApplicationManager appMgr;
 
-	/**
-	 * Creates a new AbstractControlAction object.
-	 *
-	 * @param icon  DOCUMENT ME!
-	 */
 	public AbstractControlAction(String name, Icon icon, CyApplicationManager appMgr) {
 		super(name,icon);
 		this.appMgr = appMgr;
 	}
 
-	private void findSelectedNodes() {
-		List<View<CyNode>> snv = new ArrayList<View<CyNode>>();
-		for (CyNode n : CyTableUtil.getNodesInState(view.getModel(),CyNetwork.SELECTED,true))
-			snv.add( view.getNodeView(n) );
-		selectedNodeViews = snv; 
-	}
-
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @param e DOCUMENT ME!
-	 */
+	@Override
 	public void actionPerformed(ActionEvent e) {
-		view = appMgr.getCurrentNetworkView();
-		findSelectedNodes();
-		//ViewChangeEdit vce = new ViewChangeEdit(view, title);
-		computeDimensions();
-		control(selectedNodeViews);
-		view.updateView();
-		//vce.post();
+		final CyNetworkView view = appMgr.getCurrentNetworkView();
+		final List<View<CyNode>> selectedNodeViews = view != null ? Util.findSelectedNodes(view) : null;
+		
+		if (selectedNodeViews != null && !selectedNodeViews.isEmpty()) {
+			computeDimensions(selectedNodeViews);
+			control(selectedNodeViews);
+			view.updateView();
+		}
 	}
-
+	
 	protected abstract void control(List<View<CyNode>> l);
 
 	/**
@@ -106,14 +83,13 @@ public abstract class AbstractControlAction extends AbstractAction {
 		return n.getVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION);
 	}
 
-	private void computeDimensions() {
+	private void computeDimensions(List<View<CyNode>> selectedNodeViews) {
 		X_min = Double.POSITIVE_INFINITY;
 		X_max = Double.NEGATIVE_INFINITY;
 		Y_min = Double.POSITIVE_INFINITY;
 		Y_max = Double.NEGATIVE_INFINITY;
 
-		for ( View<CyNode> node_view : selectedNodeViews ) {
-
+		for (View<CyNode> node_view : selectedNodeViews) {
 			double X = getX(node_view);
 
 			if (X > X_max)
@@ -133,6 +109,7 @@ public abstract class AbstractControlAction extends AbstractAction {
 	}
 
 	public class XComparator implements Comparator<View<CyNode>> {
+		@Override
 		public int compare(View<CyNode> n1, View<CyNode> n2) {
 			if (getX(n1) == getX(n2))
 				return 0;
@@ -153,6 +130,7 @@ public abstract class AbstractControlAction extends AbstractAction {
 	}
 
 	public class YComparator implements Comparator<View<CyNode>> {
+		@Override
 		public int compare(View<CyNode> n1, View<CyNode> n2) {
 			if (getY(n1) == getY(n2))
 				return 0;

@@ -158,7 +158,11 @@ public class CyDropListener implements DropTargetListener {
            }
            else
            {
+<<<<<<< HEAD
                 final InputStreamTaskFactory factory = registrar.getSecd .rvice(InputStreamTaskFactory.class);
+=======
+                final InputStreamTaskFactory factory = registrar.getService(InputStreamTaskFactory.class);
+>>>>>>> c7392cb225683f02f29c75f8ece5e585ccc4bd5d
         	    final TaskManager taskManager = registrar.getService(TaskManager.class);
                 if (factory != null)
                 {    
@@ -193,4 +197,8 @@ public class CyDropListener implements DropTargetListener {
 
 	}
 
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> c7392cb225683f02f29c75f8ece5e585ccc4bd5d

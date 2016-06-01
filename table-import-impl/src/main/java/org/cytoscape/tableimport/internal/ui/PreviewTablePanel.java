@@ -6,7 +6,7 @@ package org.cytoscape.tableimport.internal.ui;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -632,11 +632,12 @@ public class PreviewTablePanel extends JPanel {
 		final Vector<Vector<String>> data = new Vector<>();
 
 		int rowCount = 0;
+		int validRowCount = 0;
 		FormulaEvaluator evaluator = sheet.getWorkbook().getCreationHelper().createFormulaEvaluator();
 		DataFormatter formatter = new DataFormatter();
 		Row row;
 
-		while (((row = sheet.getRow(rowCount)) != null) && (rowCount < size)) {
+		while (((row = sheet.getRow(rowCount)) != null) && (validRowCount < size)) {
 			if (rowCount >= startLine) {
 				final Vector<String> rowVector = new Vector<>();
 
@@ -654,6 +655,7 @@ public class PreviewTablePanel extends JPanel {
 				}
 
 				data.add(rowVector);
+				validRowCount++;
 			}
 
 			rowCount++;
@@ -712,7 +714,8 @@ public class PreviewTablePanel extends JPanel {
 		// TODO: Since the CSV parser allows for other delimiters, consider exploring using it for everything.
 
 		// The variables are modified by both the new method and the old method.
-		int counter = 0;
+		int rowCount = 0;
+		int validRowCount = 0;
 		maxColumn = 0;
 		data = new Vector<>();
 		
@@ -721,21 +724,28 @@ public class PreviewTablePanel extends JPanel {
 			// comma should you read the file using OpenCSV
 			// New method... Using OpenCSV
 			final CSVReader reader = new CSVReader(bufRd);
-			String[] rowData; // Note that rowData is roughly equivalent to
-								// "parts" in the old code.
+			String[] rowData; // Note that rowData is roughly equivalent to "parts" in the old code.
+			
 			while ((rowData = reader.readNext()) != null) {
-				final Vector<String> row = new Vector<>();
+				final List<String> list = Arrays.asList(rowData);
+				line = list.isEmpty() ? "" : String.join(TextDelimiter.COMMA.getDelimiter(), list);
 				
-				for (String field : rowData)
-					row.add(field);
+				if (!ignoreLine(line, rowCount)) {
+					final Vector<String> row = new Vector<>();
+					
+					for (String field : rowData)
+						row.add(field);
+					
+					if (rowData.length > maxColumn)
+						maxColumn = rowData.length;
+					
+					data.add(row);
+					validRowCount++;
+				}
 				
-				if (rowData.length > maxColumn)
-					maxColumn = rowData.length;
-				
-				data.add(row);
-				counter++;
+				rowCount++;
 
-				if (importAll == false && counter >= size)
+				if (importAll == false && validRowCount >= size)
 					break;
 			}
 			
@@ -747,10 +757,7 @@ public class PreviewTablePanel extends JPanel {
 			String[] parts;
 			
 			while ((line = bufRd.readLine()) != null) {
-				if (((commentChar != null) && line.startsWith(commentChar)) || (line.trim().length() == 0)
-						|| (counter < startLine)) {
-					// ignore
-				} else {
+				if (!ignoreLine(line, rowCount)) {
 					final Vector<String> row = new Vector<>();
 
 					if (delimiterRegEx.length() == 0) {
@@ -768,11 +775,12 @@ public class PreviewTablePanel extends JPanel {
 						maxColumn = parts.length;
 
 					data.add(row);
+					validRowCount++;
 				}
 
-				counter++;
+				rowCount++;
 
-				if (importAll == false && counter >= size)
+				if (importAll == false && validRowCount >= size)
 					break;
 			}
 		}
@@ -793,6 +801,11 @@ public class PreviewTablePanel extends JPanel {
 		} else {
 			return new PreviewTableModel(data, new Vector<String>(), firstRowNames);
 		}
+	}
+
+	private boolean ignoreLine(final String line, int index) {
+		return ((commentChar != null) && line.startsWith(commentChar)) || (line.trim().length() == 0)
+				|| (index < startLine);
 	}
 	
 	private void showEditDialog(final int colIdx) {

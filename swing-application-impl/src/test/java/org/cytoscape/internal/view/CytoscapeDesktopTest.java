@@ -21,9 +21,11 @@ import org.cytoscape.work.swing.DialogTaskManager;
 import org.cytoscape.work.swing.StatusBarPanelFactory;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+@RunWith(SwingRunner.class)
 public class CytoscapeDesktopTest {
 
 	CytoscapeDesktop desktop;

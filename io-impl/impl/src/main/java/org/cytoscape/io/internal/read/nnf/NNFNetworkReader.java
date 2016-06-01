@@ -42,6 +42,7 @@ import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.layout.CyLayoutAlgorithm;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.model.CyNetworkView;
@@ -65,13 +66,17 @@ public class NNFNetworkReader extends AbstractCyNetworkReader {
 	private NNFParser parser;
 	private TaskMonitor parentTaskMonitor;
 
+	private final CyServiceRegistrar serviceRegistrar;
+
 	public NNFNetworkReader(final InputStream is,
 							final CyLayoutAlgorithmManager layouts,
 							final CyApplicationManager cyApplicationManager,
 							final CyNetworkFactory cyNetworkFactory,
 							final CyNetworkManager cyNetworkManager,
-							final CyRootNetworkManager cyRootNetworkManager) {
+							final CyRootNetworkManager cyRootNetworkManager,
+							final CyServiceRegistrar serviceRegistrar) {
 		super(is, cyApplicationManager, cyNetworkFactory, cyNetworkManager, cyRootNetworkManager);
+		this.serviceRegistrar = serviceRegistrar;
 		this.layouts = layouts;
 	}
 
@@ -80,7 +85,7 @@ public class NNFNetworkReader extends AbstractCyNetworkReader {
 		final CyRootNetwork rootNetwork = getRootNetwork();
 		Map<Object, CyNode> nMap = this.getNodeMap();
 		
-		this.parser = new NNFParser(rootNetwork, cyNetworkFactory, nMap);
+		this.parser = new NNFParser(rootNetwork, cyNetworkFactory, nMap, serviceRegistrar);
 		
 		try {
 			readInput(tm);

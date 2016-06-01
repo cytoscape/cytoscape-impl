@@ -2,6 +2,8 @@ package org.cytoscape.internal.view;
 
 import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
+import static org.cytoscape.internal.util.ViewUtil.invokeOnEDT;
+import static org.cytoscape.internal.util.ViewUtil.invokeOnEDTAndWait;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -91,7 +93,6 @@ public class CytoscapeDesktop extends JFrame
 	private static final int DEF_DIVIDER_LOATION = 450;
 	
 	private static final String SMALL_ICON = "/images/logo.png";
-	private static final int DIVIDER_SIZE = 4;
 	
 	@SuppressWarnings("unused")
 	private static final Logger logger = LoggerFactory.getLogger(CytoscapeDesktop.class);
@@ -320,7 +321,6 @@ public class CytoscapeDesktop extends JFrame
 		// set the cytopanel container
 		cytoPanelSouth.setCytoPanelContainer(splitPane);
 
-		splitPane.setDividerSize(DIVIDER_SIZE);
 		splitPane.setDividerLocation(DEF_DIVIDER_LOATION);
 
 		// set resize weight - top component gets all the extra space.
@@ -344,8 +344,6 @@ public class CytoscapeDesktop extends JFrame
         cytoPanelSouthWest.setMaximumSize(new Dimension(180, 530));
         cytoPanelSouthWest.setPreferredSize(new Dimension(180, 430));
 
-        split.setDividerSize(DIVIDER_SIZE);
-
 		ToolCytoPanelListener t = new ToolCytoPanelListener( split, cytoPanelWest, 
 		                                                     cytoPanelSouthWest );
 		serviceRegistrar.registerService(t,CytoPanelStateChangedListener.class,new Properties());
@@ -360,8 +358,6 @@ public class CytoscapeDesktop extends JFrame
 		BiModalJSplitPane splitPane = new BiModalJSplitPane(this, JSplitPane.HORIZONTAL_SPLIT,
 		                                                    BiModalJSplitPane.MODE_SHOW_SPLIT,
 		                                                    cytoPanelWest, rightPane);
-
-		splitPane.setDividerSize(DIVIDER_SIZE);
 
 		// set the cytopanel container
 		cytoPanelWest.setCytoPanelContainer(splitPane);
@@ -432,13 +428,17 @@ public class CytoscapeDesktop extends JFrame
 	}
 
 	public void addCytoPanelComponent(CytoPanelComponent cp, Dictionary<?, ?> props) {
-		CytoPanelImp impl = getCytoPanelInternal(cp.getCytoPanelName());
-		impl.add(cp);
+		invokeOnEDTAndWait(() -> {
+			CytoPanelImp impl = getCytoPanelInternal(cp.getCytoPanelName());
+			impl.add(cp);
+		});
 	}
 
 	public void removeCytoPanelComponent(CytoPanelComponent cp, Dictionary<?, ?> props) {
-		CytoPanelImp impl = getCytoPanelInternal(cp.getCytoPanelName());
-		impl.remove(cp);
+		invokeOnEDTAndWait(() -> {
+			CytoPanelImp impl = getCytoPanelInternal(cp.getCytoPanelName());
+			impl.remove(cp);
+		});
 	}
 
 	@Override
@@ -447,22 +447,23 @@ public class CytoscapeDesktop extends JFrame
 	}
 
 	public void addToolBarComponent(ToolBarComponent tp, Dictionary<?, ?> props) {
-		((CytoscapeToolBar)cyMenus.getJToolBar()).addToolBarComponent(tp);
+		invokeOnEDTAndWait(() -> {
+			((CytoscapeToolBar) cyMenus.getJToolBar()).addToolBarComponent(tp);
+		});
 	}
 
 	public void removeToolBarComponent(ToolBarComponent tp, Dictionary<?, ?> props) {
-		((CytoscapeToolBar)cyMenus.getJToolBar()).removeToolBarComponent(tp);		
+		invokeOnEDTAndWait(() -> {
+			((CytoscapeToolBar) cyMenus.getJToolBar()).removeToolBarComponent(tp);
+		});
 	}
 	
 	// handle CytoscapeStartEvent
 	@Override
 	public void handleEvent(CyStartEvent e) {
-		SwingUtilities.invokeLater(new Runnable() {
-			@Override
-			public void run() {
-				setVisible(true);
-				toFront();
-			}
+		invokeOnEDT(() -> {
+			setVisible(true);
+			toFront();
 		});
 	}
 
@@ -476,11 +477,8 @@ public class CytoscapeDesktop extends JFrame
 		
 		final String title = TITLE_PREFIX_STRING + sessionName;
 		
-		SwingUtilities.invokeLater(new Runnable() {
-			@Override
-			public void run() {
-				setTitle(title);
-			}
+		invokeOnEDT(() -> {
+			setTitle(title);
 		});
 	}
 
@@ -488,11 +486,9 @@ public class CytoscapeDesktop extends JFrame
 	public void handleEvent(SessionSavedEvent e) {
 		// Update window title
 		final String sessionName = e.getSavedFileName();
-		SwingUtilities.invokeLater(new Runnable() {
-			@Override
-			public void run() {
-				setTitle(TITLE_PREFIX_STRING + sessionName);
-			}
+		
+		invokeOnEDT(() -> {
+			setTitle(TITLE_PREFIX_STRING + sessionName);
 		});
 	}
 }

@@ -25,8 +25,6 @@ import java.awt.event.KeyEvent;
 import javax.swing.AbstractAction;
 import javax.swing.ActionMap;
 import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.Box.Filler;
 import javax.swing.GroupLayout;
 import javax.swing.InputMap;
 import javax.swing.JButton;
@@ -98,7 +96,6 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 	private JLabel selectionLabel;
 	private JLabel hiddenLabel;
 	private JButton birdsEyeViewButton;
-	private Filler bottomFiller;
 	private BirdsEyeViewPanel birdsEyeViewPanel;
 	private final GridViewTogglePanel gridViewTogglePanel;
 	
@@ -189,8 +186,8 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 		getVisualizationContainer().repaint();
 		updateTollBar();
 		
-		if (getBirdsEyeViewPanel().isVisible())
-			getBirdsEyeViewPanel().update();
+		if (isVisible() && getBirdsEyeViewPanel().isVisible())
+			updateBirdsEyeViewPanel();
 	}
 	
 	protected void updateTollBar() {
@@ -212,7 +209,7 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 		
 		updateBirdsEyeButton();
 		getToolBar().updateUI();
-		updateGlassPane();
+		updateBirdsEyeViewPanel();
 	}
 	
 	protected void updateInfoPanel() {
@@ -259,18 +256,30 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 		getBirdsEyeViewButton().setForeground(UIManager.getColor(bevVisible ? "Focus.color" : "Button.foreground"));
 	}
 	
+	private void updateBirdsEyeViewPanel() {
+		final int cw = getVisualizationContainer().getWidth();
+		final int ch = getVisualizationContainer().getHeight();
+		
+		if (cw > 0 && ch > 0) {
+			int w = Math.min(200, cw);
+			int h = Math.min(200, ch);
+			
+			if (w > 0 && h > 0) {
+				int x = cw - w;
+				int y = ch - h;
+				getBirdsEyeViewPanel().setBounds(x, y, w, h);
+				getBirdsEyeViewPanel().update();
+			}
+		}
+	}
+	
 	void updateViewSize() {
+		if (isVisible() && getBirdsEyeViewPanel().isVisible())
+			updateBirdsEyeViewPanel();
+		
 		resizeTimer.stop();
 		resizeTimer.setInitialDelay(100);
 		resizeTimer.start();
-	}
-	
-	protected void updateGlassPane() {
-		final Dimension size = getToolBar().getSize();
-		getBottomFiller().setMinimumSize(size);
-		getBottomFiller().setPreferredSize(size);
-		getBottomFiller().setMaximumSize(size);
-		getBottomFiller().setSize(size);
 	}
 	
 	void dispose() {
@@ -284,28 +293,7 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 		setFocusable(true);
 		setRequestFocusEnabled(true);
 		
-		final JPanel glassPane = new JPanel();
-		
-		{
-			final GroupLayout layout = new GroupLayout(glassPane);
-			glassPane.setLayout(layout);
-			layout.setAutoCreateContainerGaps(false);
-			layout.setAutoCreateGaps(false);
-			
-			layout.setHorizontalGroup(layout.createParallelGroup()
-					.addGroup(layout.createSequentialGroup()
-							.addGap(0, 0, Short.MAX_VALUE)
-							.addComponent(getBirdsEyeViewPanel(), 10, 200, 200)
-					)
-					.addComponent(getBottomFiller())
-			);
-			layout.setVerticalGroup(layout.createSequentialGroup()
-					.addGap(0, 0, Short.MAX_VALUE)
-					.addComponent(getBirdsEyeViewPanel(), 10, 200, 200)
-					.addComponent(getBottomFiller())
-			);
-		}
-		
+		final JPanel glassPane = new JPanel(null);
 		getRootPane().setGlassPane(glassPane);
 		glassPane.setOpaque(false);
 		glassPane.setVisible(true);
@@ -314,7 +302,7 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 		getContentPane().add(getVisualizationContainer(), BorderLayout.CENTER);
 		getContentPane().add(getToolBar(), BorderLayout.SOUTH);
 		
-		getRootPane().addComponentListener(new ComponentAdapter() {
+		getVisualizationContainer().addComponentListener(new ComponentAdapter() {
 			@Override
 			public void componentResized(ComponentEvent e) {
 				if (!detached) // if detached, let the View frame handle it
@@ -326,6 +314,9 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 		setKeyBindings(getRootPane());
 		
 		updateTollBar();
+		updateBirdsEyeViewPanel();
+		
+		glassPane.add(getBirdsEyeViewPanel());
 		
 		resizeTimer = new Timer(0, new ResizeActionListener());
 		resizeTimer.setRepeats(false);
@@ -556,21 +547,12 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 					updateBirdsEyeButton();
 					
 					if (getBirdsEyeViewPanel().isVisible())
-						getBirdsEyeViewPanel().update();
+						updateBirdsEyeViewPanel();
 				}
 			});
 		}
 		
 		return birdsEyeViewButton;
-	}
-	
-	private Filler getBottomFiller() {
-		if (bottomFiller == null) {
-			final Dimension d = getToolBar().getPreferredSize();
-			bottomFiller = new Box.Filler(d, d, d);
-		}
-		
-		return bottomFiller;
 	}
 	
 	BirdsEyeViewPanel getBirdsEyeViewPanel() {

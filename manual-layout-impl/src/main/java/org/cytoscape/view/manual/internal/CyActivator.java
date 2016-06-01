@@ -1,12 +1,27 @@
 package org.cytoscape.view.manual.internal;
 
+import static org.cytoscape.view.manual.internal.Util.invokeOnEDTAndWait;
+
+import java.util.Properties;
+
+import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.swing.CySwingApplication;
+import org.cytoscape.service.util.AbstractCyActivator;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.view.manual.internal.control.ControlPanel;
+import org.cytoscape.view.manual.internal.control.ControlPanelAction;
+import org.cytoscape.view.model.CyNetworkViewManager;
+import org.osgi.framework.BundleContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /*
  * #%L
  * Cytoscape Manual Layout Impl (manual-layout-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,27 +39,16 @@ package org.cytoscape.view.manual.internal;
  * #L%
  */
 
-import java.util.Properties;
-
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.application.swing.CySwingApplication;
-import org.cytoscape.application.swing.CytoPanelComponent;
-import org.cytoscape.service.util.AbstractCyActivator;
-import org.cytoscape.view.manual.internal.control.ControlPanel;
-import org.cytoscape.view.manual.internal.control.ControlPanelAction;
-import org.cytoscape.view.manual.internal.rotate.RotatePanel;
-import org.cytoscape.view.manual.internal.rotate.RotatePanelAction;
-import org.cytoscape.view.manual.internal.scale.ScalePanel;
-import org.cytoscape.view.manual.internal.scale.ScalePanelAction;
-import org.cytoscape.view.model.CyNetworkViewManager;
-import org.osgi.framework.BundleContext;
-
-
-
 public class CyActivator extends AbstractCyActivator {
+	
+	private ControlPanel controlPanel;
+	private ControlPanelAction controlPanelAction;
+	
+	private static Logger logger = LoggerFactory.getLogger(CyActivator.class);
 	
 	@Override
 	public void start(BundleContext bc) {
+<<<<<<< HEAD
 		CySwingApplication cySwingApplicationServiceRef = getService(bc,CySwingApplication.class);
 		CyApplicationManager cyApplicationManagerServiceRef = getService(bc, CyApplicationManager.class);
 		CyNetworkViewManager cyNetworkViewManagerServiceRef = getService(bc, CyNetworkViewManager.class);
@@ -55,12 +59,27 @@ public class CyActivator extends AbstractCyActivator {
 		ControlPanelAction controlPanelAction = new ControlPanelAction(controlPanel, cySwingApplicationServiceRef, cyApplicationManagerServiceRef, cyNetworkViewManagerServiceRef);
 // 		RotatePanelAction rotatePanelAction = new RotatePanelAction(rotatePanel, cySwingApplicationServiceRef, cyApplicationManagerServiceRef, cyNetworkViewManagerServiceRef);
 // 		ScalePanelAction scalePanelAction = new ScalePanelAction(scalePanel, cySwingApplicationServiceRef, cyApplicationManagerServiceRef, cyNetworkViewManagerServiceRef);
+=======
+		final CyServiceRegistrar serviceRegistrar = getService(bc, CyServiceRegistrar.class);
+		final CySwingApplication cySwingApplicationServiceRef = getService(bc, CySwingApplication.class);
+		final CyApplicationManager cyApplicationManagerServiceRef = getService(bc, CyApplicationManager.class);
+		final CyNetworkViewManager cyNetworkViewManagerServiceRef = getService(bc, CyNetworkViewManager.class);
+>>>>>>> c7392cb225683f02f29c75f8ece5e585ccc4bd5d
 
+		invokeOnEDTAndWait(() -> {
+			controlPanel = new ControlPanel(serviceRegistrar);
+			controlPanelAction = new ControlPanelAction(controlPanel, cySwingApplicationServiceRef, cyApplicationManagerServiceRef, cyNetworkViewManagerServiceRef);
+		}, logger);
+		
 		registerAllServices(bc, controlPanelAction, new Properties());
+<<<<<<< HEAD
 // 		registerAllServices(bc, scalePanelAction, new Properties());
 // 		registerAllServices(bc, rotatePanelAction, new Properties());
 		registerService(bc, controlPanel, CytoPanelComponent.class, new Properties());
 // 		registerService(bc, scalePanel, CytoPanelComponent.class, new Properties());
 // 		registerService(bc, rotatePanel, CytoPanelComponent.class, new Properties());
+=======
+		registerAllServices(bc, controlPanel, new Properties());
+>>>>>>> c7392cb225683f02f29c75f8ece5e585ccc4bd5d
 	}
 }

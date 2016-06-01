@@ -1,12 +1,32 @@
 package org.cytoscape.view.manual.internal.control.view;
 
+import java.awt.Dimension;
+
+import javax.swing.Action;
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+
+import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.util.swing.LookAndFeelUtil;
+import org.cytoscape.view.manual.internal.control.actions.stack.HStackBottom;
+import org.cytoscape.view.manual.internal.control.actions.stack.HStackCenter;
+import org.cytoscape.view.manual.internal.control.actions.stack.HStackTop;
+import org.cytoscape.view.manual.internal.control.actions.stack.VStackCenter;
+import org.cytoscape.view.manual.internal.control.actions.stack.VStackLeft;
+import org.cytoscape.view.manual.internal.control.actions.stack.VStackRight;
+
 /*
  * #%L
  * Cytoscape Manual Layout Impl (manual-layout-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,6 +44,7 @@ package org.cytoscape.view.manual.internal.control.view;
  * #L%
  */
 
+<<<<<<< HEAD
 import java.awt.Dimension;
 import java.awt.GridLayout;
 
@@ -48,12 +69,18 @@ import org.cytoscape.view.manual.internal.control.actions.stack.VStackRight;
 /**
  *
  */
+=======
+>>>>>>> c7392cb225683f02f29c75f8ece5e585ccc4bd5d
 @SuppressWarnings("serial")
 public class StackPanel extends JPanel {
 	
-	/**
-	 * Creates a new StackPanel object.
-	 */
+	private JButton valButton;
+	private JButton vacButton;
+	private JButton varButton;
+	private JButton hatButton;
+	private JButton hacButton;
+	private JButton habButton;
+	
 	public StackPanel(CyApplicationManager app) {
 		if (LookAndFeelUtil.isAquaLAF())
 			setOpaque(false);
@@ -85,6 +112,7 @@ public class StackPanel extends JPanel {
 		stack.setPreferredSize(new Dimension(105, 25));
 		stack.setMinimumSize(new Dimension(105, 25));
 		stack.setMaximumSize(new Dimension(105, 25));
+<<<<<<< HEAD
 		add(createJButton(val, "Vertical Stack Left"));
 		add(createJButton(vac, "Vertical Stack Center"));
 		add(createJButton(var, "Vertical Stack Right"));
@@ -93,6 +121,26 @@ public class StackPanel extends JPanel {
 		add(createJButton(hab, "Horizontal Stack Bottom"));
 
 // 		setBorder(LookAndFeelUtil.createTitledBorder("Stack"));
+=======
+		add(valButton = createJButton(val, "Vertical Stack Left"));
+		add(vacButton = createJButton(vac, "Vertical Stack Center"));
+		add(varButton = createJButton(var, "Vertical Stack Right"));
+		add(hatButton = createJButton(hat, "Horizontal Stack Top"));
+		add(hacButton = createJButton(hac, "Horizontal Stack Center"));
+		add(habButton = createJButton(hab, "Horizontal Stack Bottom"));
+	}
+	
+	@Override
+	public void setEnabled(final boolean enabled) {
+		valButton.setEnabled(enabled);
+		vacButton.setEnabled(enabled);
+		varButton.setEnabled(enabled);
+		hatButton.setEnabled(enabled);
+		hacButton.setEnabled(enabled);
+		habButton.setEnabled(enabled);
+		
+		super.setEnabled(enabled);
+>>>>>>> c7392cb225683f02f29c75f8ece5e585ccc4bd5d
 	}
 
 	protected JButton createJButton(Action a, String tt) {

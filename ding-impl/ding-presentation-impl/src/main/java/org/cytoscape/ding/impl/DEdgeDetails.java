@@ -6,7 +6,7 @@ package org.cytoscape.ding.impl;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -49,8 +49,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.cytoscape.ding.DArrowShape;
 import org.cytoscape.ding.DVisualLexicon;
 import org.cytoscape.ding.EdgeView;
+import org.cytoscape.ding.impl.strokes.AnimatedStroke;
+import org.cytoscape.ding.impl.strokes.WidthStroke;
 import org.cytoscape.graph.render.immed.EdgeAnchors;
-import org.cytoscape.graph.render.immed.GraphGraphics;
 import org.cytoscape.graph.render.stateful.EdgeDetails;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
@@ -58,13 +59,11 @@ import org.cytoscape.model.CyNode;
 import org.cytoscape.util.intr.LongEnumerator;
 import org.cytoscape.util.intr.MinLongHeap;
 import org.cytoscape.view.model.VisualProperty;
+import org.cytoscape.view.presentation.property.ArrowShapeVisualProperty;
 import org.cytoscape.view.presentation.property.EdgeBendVisualProperty;
 import org.cytoscape.view.presentation.property.values.ArrowShape;
 import org.cytoscape.view.presentation.property.values.Bend;
 import org.cytoscape.view.presentation.property.values.LineType;
-
-import org.cytoscape.ding.impl.strokes.AnimatedStroke;
-import org.cytoscape.ding.impl.strokes.WidthStroke;
 
 /**
  * Values stored in this object will be used renderer. Be careful to keep these
@@ -82,33 +81,33 @@ final class DEdgeDetails extends EdgeDetails {
 	// Mapped Values
 	// If value found in these map objects, the value will be used by the renderer.
 	// Otherwise, default value will be used.
-	Map<CyEdge, Object> m_colorsLowDetail = new ConcurrentHashMap<CyEdge, Object>(16, 0.75f, 2);
-	Map<CyEdge, Object> m_selectedColorsLowDetail = new ConcurrentHashMap<CyEdge, Object>(16, 0.75f, 2);
-	Map<CyEdge, Float> m_segmentThicknesses = new ConcurrentHashMap<CyEdge, Float>(16, 0.75f, 2);
-	Map<CyEdge, Stroke> m_segmentStrokes = new ConcurrentHashMap<CyEdge, Stroke>(16, 0.75f, 2);
-	Map<CyEdge, Byte> m_sourceArrows = new ConcurrentHashMap<CyEdge, Byte>(16, 0.75f, 2);
-	Map<CyEdge, Paint> m_sourceArrowPaints = new ConcurrentHashMap<CyEdge, Paint>(16, 0.75f, 2);
-	Map<CyEdge, Paint> m_sourceArrowSelectedPaints = new ConcurrentHashMap<CyEdge, Paint>(16, 0.75f, 2);
-	Map<CyEdge, Byte> m_targetArrows = new ConcurrentHashMap<CyEdge, Byte>(16, 0.75f, 2);
-	Map<CyEdge, Paint> m_targetArrowPaints = new ConcurrentHashMap<CyEdge, Paint>(16, 0.75f, 2);
-	Map<CyEdge, Paint> m_targetArrowSelectedPaints = new ConcurrentHashMap<CyEdge, Paint>(16, 0.75f, 2);
-	Map<CyEdge, Integer> m_labelCounts = new ConcurrentHashMap<CyEdge, Integer>(16, 0.75f, 2);
-	Map<CyEdge, String> m_labelTexts = new ConcurrentHashMap<CyEdge, String>(16, 0.75f, 2);
-	Map<CyEdge, Font> m_labelFonts = new ConcurrentHashMap<CyEdge, Font>(16, 0.75f, 2);
-	Map<CyEdge, Paint> m_labelPaints = new ConcurrentHashMap<CyEdge, Paint>(16, 0.75f, 2);
-	Map<CyEdge, Double> m_labelWidths = new ConcurrentHashMap<CyEdge, Double>(16, 0.75f, 2);
-	Map<CyEdge, Paint> m_unselectedPaints = new ConcurrentHashMap<CyEdge, Paint>(16, 0.75f, 2);
-	Map<CyEdge, Paint> m_selectedPaints = new ConcurrentHashMap<CyEdge, Paint>(16, 0.75f, 2);
-	Map<CyEdge, Integer> m_lineCurved = new ConcurrentHashMap<CyEdge, Integer>(16, 0.75f, 2);
-	Map<CyEdge, Bend> m_edgeBends = new ConcurrentHashMap<CyEdge, Bend>(16, 0.75f, 2);
-	Map<CyEdge, String> m_edgeTooltips = new ConcurrentHashMap<CyEdge, String>(16, 0.75f, 2);
-	Map<CyEdge, Integer> m_edgeTansparencies = new ConcurrentHashMap<CyEdge, Integer>(16, 0.75f, 2);
-	Map<CyEdge, Integer> m_edgeLabelTansparencies = new ConcurrentHashMap<CyEdge, Integer>(16, 0.75f, 2);
+	Map<CyEdge, Object> m_colorsLowDetail = new ConcurrentHashMap<>(16, 0.75f, 2);
+	Map<CyEdge, Object> m_selectedColorsLowDetail = new ConcurrentHashMap<>(16, 0.75f, 2);
+	Map<CyEdge, Float> m_segmentThicknesses = new ConcurrentHashMap<>(16, 0.75f, 2);
+	Map<CyEdge, Stroke> m_segmentStrokes = new ConcurrentHashMap<>(16, 0.75f, 2);
+	Map<CyEdge, ArrowShape> m_sourceArrows = new ConcurrentHashMap<>(16, 0.75f, 2);
+	Map<CyEdge, Paint> m_sourceArrowPaints = new ConcurrentHashMap<>(16, 0.75f, 2);
+	Map<CyEdge, Paint> m_sourceArrowSelectedPaints = new ConcurrentHashMap<>(16, 0.75f, 2);
+	Map<CyEdge, ArrowShape> m_targetArrows = new ConcurrentHashMap<>(16, 0.75f, 2);
+	Map<CyEdge, Paint> m_targetArrowPaints = new ConcurrentHashMap<>(16, 0.75f, 2);
+	Map<CyEdge, Paint> m_targetArrowSelectedPaints = new ConcurrentHashMap<>(16, 0.75f, 2);
+	Map<CyEdge, Integer> m_labelCounts = new ConcurrentHashMap<>(16, 0.75f, 2);
+	Map<CyEdge, String> m_labelTexts = new ConcurrentHashMap<>(16, 0.75f, 2);
+	Map<CyEdge, Font> m_labelFonts = new ConcurrentHashMap<>(16, 0.75f, 2);
+	Map<CyEdge, Paint> m_labelPaints = new ConcurrentHashMap<>(16, 0.75f, 2);
+	Map<CyEdge, Double> m_labelWidths = new ConcurrentHashMap<>(16, 0.75f, 2);
+	Map<CyEdge, Paint> m_unselectedPaints = new ConcurrentHashMap<>(16, 0.75f, 2);
+	Map<CyEdge, Paint> m_selectedPaints = new ConcurrentHashMap<>(16, 0.75f, 2);
+	Map<CyEdge, Integer> m_lineCurved = new ConcurrentHashMap<>(16, 0.75f, 2);
+	Map<CyEdge, Bend> m_edgeBends = new ConcurrentHashMap<>(16, 0.75f, 2);
+	Map<CyEdge, String> m_edgeTooltips = new ConcurrentHashMap<>(16, 0.75f, 2);
+	Map<CyEdge, Integer> m_edgeTansparencies = new ConcurrentHashMap<>(16, 0.75f, 2);
+	Map<CyEdge, Integer> m_edgeLabelTansparencies = new ConcurrentHashMap<>(16, 0.75f, 2);
 
 	// Default Values
-	Byte m_sourceArrowDefault;
+	ArrowShape m_sourceArrowDefault;
 	Paint m_sourceArrowPaintDefault = EDGE_SOURCE_ARROW_UNSELECTED_PAINT.getDefault();
-	Byte m_targetArrowDefault;
+	ArrowShape m_targetArrowDefault;
 	Paint m_targetArrowPaintDefault = EDGE_TARGET_ARROW_UNSELECTED_PAINT.getDefault();
 	Double m_segmentThicknessDefault = EDGE_WIDTH.getDefault();
 	Stroke m_segmentStrokeDefault = new BasicStroke(m_segmentThicknessDefault.floatValue());
@@ -128,38 +127,38 @@ final class DEdgeDetails extends EdgeDetails {
 
 	private boolean isCleared = false;
 
-	private final Set<CyEdge> selected = new HashSet<CyEdge>();
+	private final Set<CyEdge> selected = new HashSet<>();
 
 	DEdgeDetails(final DGraphView view) {
 		dGraphView = view;
-		defaultValues = new HashMap<VisualProperty<?>, Object>();
+		defaultValues = new HashMap<>();
 	}
 
 	void clear() {
 		if (isCleared)
 			return;
 
-		m_segmentThicknesses = new ConcurrentHashMap<CyEdge, Float>();
-		m_segmentStrokes = new ConcurrentHashMap<CyEdge, Stroke>();
-		m_sourceArrows = new ConcurrentHashMap<CyEdge, Byte>();
-		m_sourceArrowPaints = new ConcurrentHashMap<CyEdge, Paint>();
-		m_targetArrows = new ConcurrentHashMap<CyEdge, Byte>();
-		m_targetArrowPaints = new ConcurrentHashMap<CyEdge, Paint>();
-		m_targetArrowSelectedPaints = new ConcurrentHashMap<CyEdge, Paint>();
-		m_labelCounts = new ConcurrentHashMap<CyEdge, Integer>();
-		m_labelTexts = new ConcurrentHashMap<CyEdge, String>();
-		m_labelFonts = new ConcurrentHashMap<CyEdge, Font>();
-		m_labelPaints = new ConcurrentHashMap<CyEdge, Paint>();
-		m_labelWidths = new ConcurrentHashMap<CyEdge, Double>();
-		m_unselectedPaints = new ConcurrentHashMap<CyEdge, Paint>();
-		m_selectedPaints = new ConcurrentHashMap<CyEdge, Paint>();
-		m_colorsLowDetail = new ConcurrentHashMap<CyEdge, Object>();
-		m_selectedColorsLowDetail = new ConcurrentHashMap<CyEdge, Object>();
-		m_lineCurved = new ConcurrentHashMap<CyEdge, Integer>();
-		m_edgeBends = new ConcurrentHashMap<CyEdge, Bend>();
-		m_edgeTooltips = new ConcurrentHashMap<CyEdge, String>();
-		m_edgeTansparencies = new ConcurrentHashMap<CyEdge, Integer>();
-		m_edgeLabelTansparencies = new ConcurrentHashMap<CyEdge, Integer>();
+		m_segmentThicknesses = new ConcurrentHashMap<>();
+		m_segmentStrokes = new ConcurrentHashMap<>();
+		m_sourceArrows = new ConcurrentHashMap<>();
+		m_sourceArrowPaints = new ConcurrentHashMap<>();
+		m_targetArrows = new ConcurrentHashMap<>();
+		m_targetArrowPaints = new ConcurrentHashMap<>();
+		m_targetArrowSelectedPaints = new ConcurrentHashMap<>();
+		m_labelCounts = new ConcurrentHashMap<>();
+		m_labelTexts = new ConcurrentHashMap<>();
+		m_labelFonts = new ConcurrentHashMap<>();
+		m_labelPaints = new ConcurrentHashMap<>();
+		m_labelWidths = new ConcurrentHashMap<>();
+		m_unselectedPaints = new ConcurrentHashMap<>();
+		m_selectedPaints = new ConcurrentHashMap<>();
+		m_colorsLowDetail = new ConcurrentHashMap<>();
+		m_selectedColorsLowDetail = new ConcurrentHashMap<>();
+		m_lineCurved = new ConcurrentHashMap<>();
+		m_edgeBends = new ConcurrentHashMap<>();
+		m_edgeTooltips = new ConcurrentHashMap<>();
+		m_edgeTansparencies = new ConcurrentHashMap<>();
+		m_edgeLabelTansparencies = new ConcurrentHashMap<>();
 
 		isCleared = true;
 	}
@@ -256,38 +255,34 @@ final class DEdgeDetails extends EdgeDetails {
 	}
 
 	@Override
-	public byte getSourceArrowShape(final CyEdge edge) {
+	public ArrowShape getSourceArrowShape(final CyEdge edge) {
 		// Check bypass
 		final DEdgeView dev = dGraphView.getDEdgeView(edge);
+		
 		if (dev.isValueLocked(DVisualLexicon.EDGE_SOURCE_ARROW_SHAPE)) {
 			final ArrowShape tgtArrow = dev.getVisualProperty(DVisualLexicon.EDGE_SOURCE_ARROW_SHAPE);
 			final String shapeID = tgtArrow.getSerializableString();
-			return DArrowShape.parseArrowText(shapeID).getRendererTypeID();
+			
+			return DArrowShape.parseArrowText(shapeID).getPresentationShape();
 		}
 
-		final Byte arrow = m_sourceArrows.get(edge);
+		final ArrowShape arrow = m_sourceArrows.get(edge);
+		
 		if (arrow == null)
-			if (m_sourceArrowDefault == null)
-				return super.getSourceArrowShape(edge);
-			else
-				return m_sourceArrowDefault.byteValue();
+			return m_sourceArrowDefault == null ? super.getSourceArrowShape(edge) : m_sourceArrowDefault;
 
 		return arrow;
 	}
 
-	void setSourceArrowDefault(byte arrow) {
+	void setSourceArrowDefault(final ArrowShape arrow) {
 		m_sourceArrowDefault = arrow;
-		defaultValues.put(DVisualLexicon.EDGE_SOURCE_ARROW_SHAPE, DArrowShape.getArrowShape(m_sourceArrowDefault));
+		defaultValues.put(DVisualLexicon.EDGE_SOURCE_ARROW_SHAPE, arrow);
 	}
 
-	/*
-	 * A non-negative arrowType has the special meaning to remove overridden
-	 * arrow.
-	 */
-	void overrideSourceArrow(final CyEdge edge, final byte arrowType) {
-		if ((arrowType >= 0) || (arrowType == super.getSourceArrowShape(edge)))
+	void overrideSourceArrow(final CyEdge edge, final ArrowShape arrowType) {
+		if (arrowType == null) {
 			m_sourceArrows.remove(edge);
-		else {
+		} else {
 			m_sourceArrows.put(edge, arrowType);
 			isCleared = false;
 		}
@@ -346,38 +341,34 @@ final class DEdgeDetails extends EdgeDetails {
 	}
 
 	@Override
-	public byte getTargetArrowShape(final CyEdge edge) {
+	public ArrowShape getTargetArrowShape(final CyEdge edge) {
 		// Check bypass
 		final DEdgeView dev = dGraphView.getDEdgeView(edge);
+		
 		if (dev.isValueLocked(DVisualLexicon.EDGE_TARGET_ARROW_SHAPE)) {
 			final ArrowShape tgtArrow = dev.getVisualProperty(DVisualLexicon.EDGE_TARGET_ARROW_SHAPE);
 			final String shapeID = tgtArrow.getSerializableString();
-			return DArrowShape.parseArrowText(shapeID).getRendererTypeID();
+			
+			return DArrowShape.parseArrowText(shapeID).getPresentationShape();
 		}
 
-		final Byte arrow = m_targetArrows.get(edge);
+		final ArrowShape arrow = m_targetArrows.get(edge);
+		
 		if (arrow == null)
-			if (m_targetArrowDefault == null)
-				return super.getTargetArrowShape(edge);
-			else
-				return m_targetArrowDefault.byteValue();
+			return m_targetArrowDefault == null ? super.getTargetArrowShape(edge) : m_targetArrowDefault;
 
 		return arrow;
 	}
 
-	void setTargetArrowDefault(final byte arrow) {
+	void setTargetArrowDefault(final ArrowShape arrow) {
 		m_targetArrowDefault = arrow;
-		defaultValues.put(DVisualLexicon.EDGE_TARGET_ARROW_SHAPE, DArrowShape.getArrowShape(m_targetArrowDefault));
+		defaultValues.put(DVisualLexicon.EDGE_TARGET_ARROW_SHAPE, arrow);
 	}
 
-	/*
-	 * A non-negative arrowType has the special meaning to remove overridden
-	 * arrow.
-	 */
-	void overrideTargetArrow(final CyEdge edge, final byte arrowType) {
-		if ((arrowType >= 0) || (arrowType == super.getTargetArrowShape(edge)))
+	void overrideTargetArrow(final CyEdge edge, final ArrowShape arrowType) {
+		if (arrowType == null) {
 			m_targetArrows.remove(edge);
-		else {
+		} else {
 			m_targetArrows.put(edge, arrowType);
 			isCleared = false;
 		}
@@ -934,28 +925,25 @@ final class DEdgeDetails extends EdgeDetails {
 	}
 
 	@Override
-	public float getSourceArrowSize(CyEdge edge) {
-		// For the half arrows, we need to scale multiplicatively
-		// so that the arrow matches the line.
-		final int arrowType = getSourceArrowShape(edge);
-		if (arrowType == GraphGraphics.ARROW_HALF_TOP || arrowType == GraphGraphics.ARROW_HALF_BOTTOM)
+	public float getSourceArrowSize(final CyEdge edge) {
+		// For the half arrows, we need to scale multiplicatively so that the arrow matches the line.
+		final ArrowShape arrowType = getSourceArrowShape(edge);
+		
+		if (arrowType == ArrowShapeVisualProperty.HALF_TOP || arrowType == ArrowShapeVisualProperty.HALF_BOTTOM)
 			return (getWidth(edge) * DEdgeDetails.DEFAULT_ARROW_SIZE);
-
-		// For all other arrows we can scale additively. This produces less
-		// egregiously big arrows.
+		// For all other arrows we can scale additively. This produces less egregiously big arrows.
 		else
 			return (getWidth(edge) + DEdgeDetails.DEFAULT_ARROW_SIZE);
 	}
 
 	@Override
-	public float getTargetArrowSize(CyEdge edge) {
-		// For the half arrows, we need to scale multiplicatively
-		// so that the arrow matches the line.
-		final int arrowType = getTargetArrowShape(edge);
-		if (arrowType == GraphGraphics.ARROW_HALF_TOP || arrowType == GraphGraphics.ARROW_HALF_BOTTOM)
+	public float getTargetArrowSize(final CyEdge edge) {
+		// For the half arrows, we need to scale multiplicatively so that the arrow matches the line.
+		final ArrowShape arrowType = getTargetArrowShape(edge);
+		
+		if (arrowType == ArrowShapeVisualProperty.HALF_TOP || arrowType == ArrowShapeVisualProperty.HALF_BOTTOM)
 			return (getWidth(edge) * DEdgeDetails.DEFAULT_ARROW_SIZE);
-		// For all other arrows we can scale additively. This produces
-		// less egregiously big arrows.
+		// For all other arrows we can scale additively. This produces less egregiously big arrows.
 		else
 			return (getWidth(edge) + DEdgeDetails.DEFAULT_ARROW_SIZE);
 	}
@@ -1255,6 +1243,7 @@ final class DEdgeDetails extends EdgeDetails {
 			return getUnselectedPaint(edge);
 	}
 	
+	@SuppressWarnings("unchecked")
 	public <T, V extends T> V getDefaultValue(VisualProperty<T> vp) {
 		return (V) defaultValues.get(vp);
 	}

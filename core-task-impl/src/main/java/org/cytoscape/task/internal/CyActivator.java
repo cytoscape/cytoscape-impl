@@ -149,6 +149,7 @@ import org.cytoscape.task.internal.group.ListGroupsTaskFactory;
 import org.cytoscape.task.internal.group.RemoveFromGroupTaskFactory;
 import org.cytoscape.task.internal.group.RenameGroupTaskFactory;
 import org.cytoscape.task.internal.group.UnGroupNodesTaskFactoryImpl;
+import org.cytoscape.task.internal.help.HelpTaskFactory;
 import org.cytoscape.task.internal.hide.HideCommandTaskFactory;
 import org.cytoscape.task.internal.hide.HideSelectedEdgesTaskFactoryImpl;
 import org.cytoscape.task.internal.hide.HideSelectedNodesTaskFactoryImpl;
@@ -353,6 +354,7 @@ public class CyActivator extends AbstractCyActivator {
 		NewNetworkSelectedNodesOnlyTaskFactoryImpl newNetworkSelectedNodesOnlyTaskFactory = new NewNetworkSelectedNodesOnlyTaskFactoryImpl(undoSupportServiceRef,cyRootNetworkFactoryServiceRef,cyNetworkViewFactoryServiceRef,cyNetworkManagerServiceRef,cyNetworkViewManagerServiceRef,cyNetworkNamingServiceRef,visualMappingManagerServiceRef,cyApplicationManagerServiceRef,cyEventHelperRef,cyGroupManager,renderingEngineManagerServiceRef);
 		DestroyNetworkTaskFactoryImpl destroyNetworkTaskFactory = new DestroyNetworkTaskFactoryImpl(cyNetworkManagerServiceRef);
 		DestroyNetworkViewTaskFactoryImpl destroyNetworkViewTaskFactory = new DestroyNetworkViewTaskFactoryImpl(cyNetworkViewManagerServiceRef);
+		HelpTaskFactory helpTaskFactory = new HelpTaskFactory(serviceRegistrar);
 		ZoomInTaskFactory zoomInTaskFactory = new ZoomInTaskFactory(undoSupportServiceRef, cyApplicationManagerServiceRef);
 		ZoomOutTaskFactory zoomOutTaskFactory = new ZoomOutTaskFactory(undoSupportServiceRef, cyApplicationManagerServiceRef);
 		FitSelectedTaskFactory fitSelectedTaskFactory = new FitSelectedTaskFactory(undoSupportServiceRef, cyApplicationManagerServiceRef);
@@ -879,6 +881,19 @@ public class CyActivator extends AbstractCyActivator {
 //		zoomInTaskFactoryProps.setProperty(COMMAND,"zoom in");
 //		zoomInTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"view");
 		registerService(bc,zoomInTaskFactory,NetworkTaskFactory.class, zoomInTaskFactoryProps);
+
+		Properties helpProps = new Properties();
+// 		helpProps.setProperty(PREFERRED_MENU,"View");
+// 		helpProps.setProperty(MENU_GRAVITY,"65.3");
+		helpProps.setProperty(ACCELERATOR,"cmd ?");
+		helpProps.setProperty(LARGE_ICON_URL,getClass().getResource("/images/icons/help-32.png").toString());
+		helpProps.setProperty(TITLE,"Help");
+		helpProps.setProperty(TOOLTIP,"Link to context sensitive help");
+		helpProps.setProperty(TOOL_BAR_GRAVITY,"65.5");
+		helpProps.setProperty(IN_TOOL_BAR,"true");
+//		helpProps.setProperty(COMMAND,"zoom in");
+//		helpProps.setProperty(COMMAND_NAMESPACE,"view");
+		registerService(bc,helpTaskFactory,TaskFactory.class, helpProps);
 
 		Properties zoomOutTaskFactoryProps = new Properties();
 		zoomOutTaskFactoryProps.setProperty(PREFERRED_MENU,"View");
