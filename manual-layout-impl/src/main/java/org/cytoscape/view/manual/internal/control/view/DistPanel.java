@@ -31,6 +31,9 @@ import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JPanel;
+import javax.swing.BoxLayout;
+import javax.swing.Box;
+import javax.swing.JLabel;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
@@ -70,8 +73,19 @@ public class DistPanel extends JPanel {
 		VDistCenter vac = new VDistCenter(vaci,app);
 		VDistBottom vab = new VDistBottom(vabi,app);
 
-		setLayout(new java.awt.GridLayout(1,6));
+		setLayout(new BoxLayout(this, BoxLayout.LINE_AXIS));
+		int HGHT = 32;
+		setMinimumSize(new Dimension(120, HGHT));
+		setPreferredSize(new Dimension(300, HGHT));
+		setMaximumSize(new Dimension(350, HGHT));
 
+		JLabel dst = new JLabel("Distribute");
+// 		dst.setSize(new Dimension(85, 25));
+		dst.setPreferredSize(new Dimension(105, 25));
+		dst.setMinimumSize(new Dimension(105, 25));
+		dst.setMaximumSize(new Dimension(105, 25));
+    	add(Box.createRigidArea(new Dimension(25, 0)));
+        add(dst);
 		add(createJButton(hal, "Horizontal Distribute Left"));
 		add(createJButton(hac, "Horizontal Distribute Center"));
 		add(createJButton(har, "Horizontal Distribute Right"));
@@ -79,15 +93,16 @@ public class DistPanel extends JPanel {
 		add(createJButton(vac, "Vertical Distribute Center"));
 		add(createJButton(vab, "Vertical Distribute Bottom"));
 
-		setBorder(LookAndFeelUtil.createTitledBorder("Distribute"));
+// 		setBorder(LookAndFeelUtil.createTitledBorder("Distribute"));
 	}
 
 	protected JButton createJButton(Action a, String tt) {
 		JButton b = new JButton(a);
 		b.setToolTipText(tt);
-		b.setPreferredSize(new Dimension(27, 18));
-		b.setMaximumSize(new Dimension(27, 18));
-		b.setBorder(BorderFactory.createEmptyBorder());
+		b.setPreferredSize(new Dimension(32, 24));
+		b.setMaximumSize(new Dimension(32, 24));
+		b.setMinimumSize(new Dimension(32, 24));
+		b.setBorder(BorderFactory.createEmptyBorder(3,3,3,3));
 		b.setBorderPainted(false);
 		b.setOpaque(false);
 		b.setContentAreaFilled(false);
