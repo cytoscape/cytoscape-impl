@@ -1,12 +1,34 @@
 package org.cytoscape.view.manual.internal.rotate;
 
+import java.awt.Color;
+import java.awt.Dimension;
+
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.JCheckBox;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JSlider;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+
+import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.util.swing.LookAndFeelUtil;
+import org.cytoscape.view.manual.internal.common.AbstractManualPanel;
+import org.cytoscape.view.manual.internal.common.CheckBoxTracker;
+import org.cytoscape.view.manual.internal.common.GraphConverter2;
+import org.cytoscape.view.manual.internal.common.PolymorphicSlider;
+import org.cytoscape.view.manual.internal.common.SliderStateTracker;
+import org.cytoscape.view.manual.internal.layout.algorithm.MutablePolyEdgeGraphLayout;
+import org.cytoscape.view.model.CyNetworkView;
+
 /*
  * #%L
  * Cytoscape Manual Layout Impl (manual-layout-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,36 +46,8 @@ package org.cytoscape.view.manual.internal.rotate;
  * #L%
  */
 
-
-import java.awt.Dimension;
-
-import javax.swing.GroupLayout;
-import javax.swing.GroupLayout.Alignment;
-import javax.swing.LayoutStyle.ComponentPlacement;
-import javax.swing.JCheckBox;
-import javax.swing.JPanel;
-import javax.swing.BoxLayout;
-import javax.swing.JLabel;
-import javax.swing.JSlider;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import javax.swing.Box;
-import java.awt.Color;
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.util.swing.LookAndFeelUtil;
-import org.cytoscape.view.manual.internal.common.AbstractManualPanel;
-import org.cytoscape.view.manual.internal.common.CheckBoxTracker;
-import org.cytoscape.view.manual.internal.common.GraphConverter2;
-import org.cytoscape.view.manual.internal.common.PolymorphicSlider;
-import org.cytoscape.view.manual.internal.common.SliderStateTracker;
-import org.cytoscape.view.manual.internal.layout.algorithm.MutablePolyEdgeGraphLayout;
-import org.cytoscape.view.model.CyNetworkView;
-
-
 /**
  * GUI for rotation of manualLayout
- *
- *      Rewrite based on the class RotateAction       9/13/2006        Peng-Liang Wang
  */
 @SuppressWarnings("serial")
 public class RotatePanel extends AbstractManualPanel implements ChangeListener, PolymorphicSlider {
@@ -147,7 +141,11 @@ public class RotatePanel extends AbstractManualPanel implements ChangeListener, 
 	public void stateChanged(ChangeEvent e) {
 		if (e.getSource() != jSlider)
 			return;
+		
 		CyNetworkView currentView = appMgr.getCurrentNetworkView();
+		
+		if (currentView == null)
+			return;
 
 		// only create the edit at the beginning of the adjustment
 		if ( startAdjusting ) {
@@ -170,5 +168,13 @@ public class RotatePanel extends AbstractManualPanel implements ChangeListener, 
 			//currentEdit.post();
 			startAdjusting = true;
 		}
+	}
+	
+	@Override
+	public void setEnabled(final boolean enabled) {
+		jCheckBox.setEnabled(enabled);
+		jSlider.setEnabled(enabled);
+		
+		super.setEnabled(enabled);
 	}
 } 

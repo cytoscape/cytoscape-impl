@@ -1,12 +1,32 @@
 package org.cytoscape.view.manual.internal.control.view;
 
+import java.awt.Dimension;
+
+import javax.swing.Action;
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+
+import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.util.swing.LookAndFeelUtil;
+import org.cytoscape.view.manual.internal.control.actions.align.HAlignCenter;
+import org.cytoscape.view.manual.internal.control.actions.align.HAlignLeft;
+import org.cytoscape.view.manual.internal.control.actions.align.HAlignRight;
+import org.cytoscape.view.manual.internal.control.actions.align.VAlignBottom;
+import org.cytoscape.view.manual.internal.control.actions.align.VAlignCenter;
+import org.cytoscape.view.manual.internal.control.actions.align.VAlignTop;
+
 /*
  * #%L
  * Cytoscape Manual Layout Impl (manual-layout-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,37 +44,16 @@ package org.cytoscape.view.manual.internal.control.view;
  * #L%
  */
 
-import java.awt.Dimension;
-import java.awt.GridLayout;
-
-import javax.swing.Box;
-import javax.swing.BoxLayout;
-import javax.swing.Action;
-import javax.swing.BorderFactory;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JPanel;
-import javax.swing.JLabel;
-
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.util.swing.LookAndFeelUtil;
-import org.cytoscape.view.manual.internal.control.actions.align.HAlignCenter;
-import org.cytoscape.view.manual.internal.control.actions.align.HAlignLeft;
-import org.cytoscape.view.manual.internal.control.actions.align.HAlignRight;
-import org.cytoscape.view.manual.internal.control.actions.align.VAlignBottom;
-import org.cytoscape.view.manual.internal.control.actions.align.VAlignCenter;
-import org.cytoscape.view.manual.internal.control.actions.align.VAlignTop;
-
-
-/**
- *
- */
 @SuppressWarnings("serial")
 public class AlignPanel extends JPanel {
 	
-	/**
-	 * Creates a new AlignPanel object.
-	 */
+	private JButton halButton;
+	private JButton hacButton;
+	private JButton harButton;
+	private JButton vatButton;
+	private JButton vacButton;
+	private JButton vabButton;
+	
 	public AlignPanel(CyApplicationManager app) {
 		if (LookAndFeelUtil.isAquaLAF())
 			setOpaque(false);
@@ -86,15 +85,25 @@ public class AlignPanel extends JPanel {
 		algn.setMaximumSize(new Dimension(105, 25));
 		add(Box.createRigidArea(new Dimension(25, 0)));
 	    add(algn);
-	    add(createJButton(hal, "Horizontal Align Left"));
-		add(createJButton(hac, "Horizontal Align Center"));
-		add(createJButton(har, "Horizontal Align Right"));
+	    add(halButton = createJButton(hal, "Horizontal Align Left"));
+		add(hacButton = createJButton(hac, "Horizontal Align Center"));
+		add(harButton = createJButton(har, "Horizontal Align Right"));
 
-		add(createJButton(vat, "Vertical Align Top"));
-		add(createJButton(vac, "Vertical Align Center"));
-		add(createJButton(vab, "Vertical Align Bottom"));
-
-// 		setBorder(LookAndFeelUtil.createTitledBorder("Align"));
+		add(vatButton = createJButton(vat, "Vertical Align Top"));
+		add(vacButton = createJButton(vac, "Vertical Align Center"));
+		add(vabButton = createJButton(vab, "Vertical Align Bottom"));
+	}
+	
+	@Override
+	public void setEnabled(final boolean enabled) {
+		halButton.setEnabled(enabled);
+		hacButton.setEnabled(enabled);
+		harButton.setEnabled(enabled);
+		vatButton.setEnabled(enabled);
+		vacButton.setEnabled(enabled);
+		vabButton.setEnabled(enabled);
+		
+		super.setEnabled(enabled);
 	}
 
 	protected JButton createJButton(Action a, String tt) {

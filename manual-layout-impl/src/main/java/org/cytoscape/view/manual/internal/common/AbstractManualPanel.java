@@ -26,8 +26,9 @@ package org.cytoscape.view.manual.internal.common;
 
 
 import java.awt.Component;
-import javax.swing.JPanel;
+
 import javax.swing.Icon;
+import javax.swing.JPanel;
 
 import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.application.swing.CytoPanelName;
