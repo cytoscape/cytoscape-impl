@@ -801,6 +801,7 @@ public class NetworkViewMainPanel extends JPanel {
 		
 		setLayout(new BorderLayout());
 		add(getContentPane(), BorderLayout.CENTER);
+		new CyDropListener(this, serviceRegistrar);
 		
 		// Add Listeners
 		nullViewPanel.getCreateViewButton().addActionListener((ActionEvent e) -> {
