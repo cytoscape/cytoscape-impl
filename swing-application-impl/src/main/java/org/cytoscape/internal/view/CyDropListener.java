@@ -166,7 +166,7 @@ public class CyDropListener implements DropTargetListener {
 
                    try
                    {
-                        if (file.getName().toUpper().endsWith(".SIF")
+                        if (file.getName().toUpperCase().endsWith(".SIF"))
                         {
                             InputStream stream = new FileInputStream(file);
                     		SwingUtilities.invokeLater(new Runnable() {
