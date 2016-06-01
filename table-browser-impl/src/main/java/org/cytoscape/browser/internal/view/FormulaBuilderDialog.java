@@ -150,7 +150,7 @@ public class FormulaBuilderDialog extends JDialog {
 			throw new RuntimeException("Error loading font", e);
 		}
 		
-		final JPanel buttonPanel = LookAndFeelUtil.createOkCancelPanel(getOkButton(), getCancelButton());
+		final JPanel buttonPanel = LookAndFeelUtil.createOkCancelPanel(getOkButton(), getCancelButton(), "Column_Data_Functions_and_Equations");
 		
 		final JPanel contents = new JPanel();
 		final GroupLayout layout = new GroupLayout(contents);
