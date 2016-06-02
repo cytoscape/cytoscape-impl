@@ -44,33 +44,6 @@ import org.cytoscape.view.manual.internal.control.actions.stack.VStackRight;
  * #L%
  */
 
-<<<<<<< HEAD
-import java.awt.Dimension;
-import java.awt.GridLayout;
-
-import javax.swing.Action;
-import javax.swing.BorderFactory;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JPanel;
-import javax.swing.BoxLayout;
-import javax.swing.JLabel;
-import javax.swing.Box;
-
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.util.swing.LookAndFeelUtil;
-import org.cytoscape.view.manual.internal.control.actions.stack.HStackBottom;
-import org.cytoscape.view.manual.internal.control.actions.stack.HStackCenter;
-import org.cytoscape.view.manual.internal.control.actions.stack.HStackTop;
-import org.cytoscape.view.manual.internal.control.actions.stack.VStackCenter;
-import org.cytoscape.view.manual.internal.control.actions.stack.VStackLeft;
-import org.cytoscape.view.manual.internal.control.actions.stack.VStackRight;
-
-/**
- *
- */
-=======
->>>>>>> c7392cb225683f02f29c75f8ece5e585ccc4bd5d
 @SuppressWarnings("serial")
 public class StackPanel extends JPanel {
 	
@@ -112,16 +85,6 @@ public class StackPanel extends JPanel {
 		stack.setPreferredSize(new Dimension(105, 25));
 		stack.setMinimumSize(new Dimension(105, 25));
 		stack.setMaximumSize(new Dimension(105, 25));
-<<<<<<< HEAD
-		add(createJButton(val, "Vertical Stack Left"));
-		add(createJButton(vac, "Vertical Stack Center"));
-		add(createJButton(var, "Vertical Stack Right"));
-		add(createJButton(hat, "Horizontal Stack Top"));
-		add(createJButton(hac, "Horizontal Stack Center"));
-		add(createJButton(hab, "Horizontal Stack Bottom"));
-
-// 		setBorder(LookAndFeelUtil.createTitledBorder("Stack"));
-=======
 		add(valButton = createJButton(val, "Vertical Stack Left"));
 		add(vacButton = createJButton(vac, "Vertical Stack Center"));
 		add(varButton = createJButton(var, "Vertical Stack Right"));
@@ -140,7 +103,6 @@ public class StackPanel extends JPanel {
 		habButton.setEnabled(enabled);
 		
 		super.setEnabled(enabled);
->>>>>>> c7392cb225683f02f29c75f8ece5e585ccc4bd5d
 	}
 
 	protected JButton createJButton(Action a, String tt) {

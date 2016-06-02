@@ -48,23 +48,10 @@ public class CyActivator extends AbstractCyActivator {
 	
 	@Override
 	public void start(BundleContext bc) {
-<<<<<<< HEAD
-		CySwingApplication cySwingApplicationServiceRef = getService(bc,CySwingApplication.class);
-		CyApplicationManager cyApplicationManagerServiceRef = getService(bc, CyApplicationManager.class);
-		CyNetworkViewManager cyNetworkViewManagerServiceRef = getService(bc, CyNetworkViewManager.class);
-
-		ControlPanel controlPanel = new ControlPanel(cyApplicationManagerServiceRef);
-// 		RotatePanel rotatePanel = new RotatePanel(cyApplicationManagerServiceRef);
-// 		ScalePanel scalePanel = new ScalePanel(cyApplicationManagerServiceRef);
-		ControlPanelAction controlPanelAction = new ControlPanelAction(controlPanel, cySwingApplicationServiceRef, cyApplicationManagerServiceRef, cyNetworkViewManagerServiceRef);
-// 		RotatePanelAction rotatePanelAction = new RotatePanelAction(rotatePanel, cySwingApplicationServiceRef, cyApplicationManagerServiceRef, cyNetworkViewManagerServiceRef);
-// 		ScalePanelAction scalePanelAction = new ScalePanelAction(scalePanel, cySwingApplicationServiceRef, cyApplicationManagerServiceRef, cyNetworkViewManagerServiceRef);
-=======
 		final CyServiceRegistrar serviceRegistrar = getService(bc, CyServiceRegistrar.class);
 		final CySwingApplication cySwingApplicationServiceRef = getService(bc, CySwingApplication.class);
 		final CyApplicationManager cyApplicationManagerServiceRef = getService(bc, CyApplicationManager.class);
 		final CyNetworkViewManager cyNetworkViewManagerServiceRef = getService(bc, CyNetworkViewManager.class);
->>>>>>> c7392cb225683f02f29c75f8ece5e585ccc4bd5d
 
 		invokeOnEDTAndWait(() -> {
 			controlPanel = new ControlPanel(serviceRegistrar);
@@ -72,14 +59,6 @@ public class CyActivator extends AbstractCyActivator {
 		}, logger);
 		
 		registerAllServices(bc, controlPanelAction, new Properties());
-<<<<<<< HEAD
-// 		registerAllServices(bc, scalePanelAction, new Properties());
-// 		registerAllServices(bc, rotatePanelAction, new Properties());
-		registerService(bc, controlPanel, CytoPanelComponent.class, new Properties());
-// 		registerService(bc, scalePanel, CytoPanelComponent.class, new Properties());
-// 		registerService(bc, rotatePanel, CytoPanelComponent.class, new Properties());
-=======
 		registerAllServices(bc, controlPanel, new Properties());
->>>>>>> c7392cb225683f02f29c75f8ece5e585ccc4bd5d
 	}
 }

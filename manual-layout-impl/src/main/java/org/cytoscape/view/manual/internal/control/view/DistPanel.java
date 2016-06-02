@@ -43,34 +43,6 @@ import org.cytoscape.view.manual.internal.control.actions.dist.VDistTop;
  * <http://www.gnu.org/licenses/lgpl-2.1.html>.
  * #L%
  */
-
-<<<<<<< HEAD
-import java.awt.Dimension;
-
-import javax.swing.Action;
-import javax.swing.BorderFactory;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JPanel;
-import javax.swing.BoxLayout;
-import javax.swing.Box;
-import javax.swing.JLabel;
-
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.util.swing.LookAndFeelUtil;
-import org.cytoscape.view.manual.internal.control.actions.dist.HDistCenter;
-import org.cytoscape.view.manual.internal.control.actions.dist.HDistLeft;
-import org.cytoscape.view.manual.internal.control.actions.dist.HDistRight;
-import org.cytoscape.view.manual.internal.control.actions.dist.VDistBottom;
-import org.cytoscape.view.manual.internal.control.actions.dist.VDistCenter;
-import org.cytoscape.view.manual.internal.control.actions.dist.VDistTop;
-
-
-/**
- *
- */
-=======
->>>>>>> c7392cb225683f02f29c75f8ece5e585ccc4bd5d
 @SuppressWarnings("serial")
 public class DistPanel extends JPanel {
 	
@@ -105,24 +77,6 @@ public class DistPanel extends JPanel {
 		setMinimumSize(new Dimension(120, HGHT));
 		setPreferredSize(new Dimension(300, HGHT));
 		setMaximumSize(new Dimension(350, HGHT));
-<<<<<<< HEAD
-
-		JLabel dst = new JLabel("Distribute");
-// 		dst.setSize(new Dimension(85, 25));
-		dst.setPreferredSize(new Dimension(105, 25));
-		dst.setMinimumSize(new Dimension(105, 25));
-		dst.setMaximumSize(new Dimension(105, 25));
-    	add(Box.createRigidArea(new Dimension(25, 0)));
-        add(dst);
-		add(createJButton(hal, "Horizontal Distribute Left"));
-		add(createJButton(hac, "Horizontal Distribute Center"));
-		add(createJButton(har, "Horizontal Distribute Right"));
-		add(createJButton(vat, "Vertical Distribute Top"));
-		add(createJButton(vac, "Vertical Distribute Center"));
-		add(createJButton(vab, "Vertical Distribute Bottom"));
-
-// 		setBorder(LookAndFeelUtil.createTitledBorder("Distribute"));
-=======
 
 		JLabel dst = new JLabel("Distribute");
 		dst.setPreferredSize(new Dimension(105, 25));
@@ -148,7 +102,6 @@ public class DistPanel extends JPanel {
 		vabButton.setEnabled(enabled);
 		
 		super.setEnabled(enabled);
->>>>>>> c7392cb225683f02f29c75f8ece5e585ccc4bd5d
 	}
 
 	protected JButton createJButton(Action a, String tt) {

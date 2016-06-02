@@ -59,7 +59,6 @@ import org.cytoscape.view.model.View;
  * #L%
  */
 
-<<<<<<< HEAD
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.Box;
@@ -74,8 +73,6 @@ import org.cytoscape.view.manual.internal.control.view.StackPanel;
 import org.cytoscape.view.manual.internal.rotate.RotatePanel;
 import org.cytoscape.view.manual.internal.scale.ScalePanel;
 
-=======
->>>>>>> c7392cb225683f02f29c75f8ece5e585ccc4bd5d
 /**
  * GUI for Align and Distribute of manualLayout
  */
@@ -83,17 +80,6 @@ import org.cytoscape.view.manual.internal.scale.ScalePanel;
 public class ControlPanel extends AbstractManualPanel implements SessionAboutToBeLoadedListener,
 		SessionLoadCancelledListener, SessionLoadedListener, SetCurrentNetworkViewListener, RowsSetListener {
 	
-<<<<<<< HEAD
-	
-	private static final long serialVersionUID = -2098655182032300315L;
-
-	/**
-	 * Creates a new ControlPanel object.
-	 */
-	public ControlPanel(CyApplicationManager app) {
-		super("Layout Tools");
-// 		System.out.println("ControlPanel");
-=======
 	private ScalePanel scalePanel;
 	private AlignPanel alignPanel;
 	private DistPanel distPanel;
@@ -105,29 +91,15 @@ public class ControlPanel extends AbstractManualPanel implements SessionAboutToB
 	private final CyServiceRegistrar serviceRegistrar;
 	
 	public ControlPanel(final CyServiceRegistrar serviceRegistrar) {
-		super("Layout Tools");
+		super("Node Layout Tools");
 		this.serviceRegistrar = serviceRegistrar;
 		
 		final CyApplicationManager appMgr = serviceRegistrar.getService(CyApplicationManager.class);
->>>>>>> c7392cb225683f02f29c75f8ece5e585ccc4bd5d
 		
 		if (LookAndFeelUtil.isAquaLAF())
 			setOpaque(false);
 		
 		setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 2));
-<<<<<<< HEAD
-		setLayout(new BoxLayout(this,  BoxLayout.PAGE_AXIS));
-
-		add(new ScalePanel(app));
-		add(new AlignPanel(app));
-		add(new DistPanel(app));
-		add(new StackPanel(app));
-		add(Box.createRigidArea(new Dimension(3,20)));
-		add(new RotatePanel(app));
-
-	} 
-=======
-		
 		setLayout(new BoxLayout(this,  BoxLayout.PAGE_AXIS));
 
 		add(scalePanel = new ScalePanel(appMgr));
@@ -201,5 +173,4 @@ public class ControlPanel extends AbstractManualPanel implements SessionAboutToB
 		distPanel.setEnabled(enabled);
 		stackPanel.setEnabled(enabled);
 	}
->>>>>>> c7392cb225683f02f29c75f8ece5e585ccc4bd5d
 } 

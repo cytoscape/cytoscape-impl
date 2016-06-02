@@ -44,34 +44,10 @@ import org.cytoscape.view.manual.internal.control.actions.align.VAlignTop;
  * #L%
  */
 
-<<<<<<< HEAD
-import java.awt.Dimension;
-import java.awt.GridLayout;
-
-import javax.swing.Box;
-import javax.swing.BoxLayout;
-import javax.swing.Action;
-import javax.swing.BorderFactory;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JPanel;
-import javax.swing.JLabel;
-
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.util.swing.LookAndFeelUtil;
-import org.cytoscape.view.manual.internal.control.actions.align.HAlignCenter;
-import org.cytoscape.view.manual.internal.control.actions.align.HAlignLeft;
-import org.cytoscape.view.manual.internal.control.actions.align.HAlignRight;
-import org.cytoscape.view.manual.internal.control.actions.align.VAlignBottom;
-import org.cytoscape.view.manual.internal.control.actions.align.VAlignCenter;
-import org.cytoscape.view.manual.internal.control.actions.align.VAlignTop;
-
 
 /**
  *
  */
-=======
->>>>>>> c7392cb225683f02f29c75f8ece5e585ccc4bd5d
 @SuppressWarnings("serial")
 public class AlignPanel extends JPanel {
 	
@@ -105,7 +81,6 @@ public class AlignPanel extends JPanel {
 		setMinimumSize(new Dimension(120, HGHT));
 		setPreferredSize(new Dimension(300, HGHT));
 		setMaximumSize(new Dimension(350, HGHT));
-<<<<<<< HEAD
 
 		setLayout(new BoxLayout(this, BoxLayout.LINE_AXIS));
 		JLabel algn = new JLabel("Align");
@@ -117,23 +92,6 @@ public class AlignPanel extends JPanel {
 	    add(createJButton(hal, "Horizontal Align Left"));
 		add(createJButton(hac, "Horizontal Align Center"));
 		add(createJButton(har, "Horizontal Align Right"));
-=======
->>>>>>> c7392cb225683f02f29c75f8ece5e585ccc4bd5d
-
-		setLayout(new BoxLayout(this, BoxLayout.LINE_AXIS));
-		JLabel algn = new JLabel("Align");
-		algn.setPreferredSize(new Dimension(105, 25));
-		algn.setMinimumSize(new Dimension(105, 25));
-		algn.setMaximumSize(new Dimension(105, 25));
-		add(Box.createRigidArea(new Dimension(25, 0)));
-	    add(algn);
-	    add(halButton = createJButton(hal, "Horizontal Align Left"));
-		add(hacButton = createJButton(hac, "Horizontal Align Center"));
-		add(harButton = createJButton(har, "Horizontal Align Right"));
-
-<<<<<<< HEAD
-// 		setBorder(LookAndFeelUtil.createTitledBorder("Align"));
-=======
 		add(vatButton = createJButton(vat, "Vertical Align Top"));
 		add(vacButton = createJButton(vac, "Vertical Align Center"));
 		add(vabButton = createJButton(vab, "Vertical Align Bottom"));
@@ -149,7 +107,6 @@ public class AlignPanel extends JPanel {
 		vabButton.setEnabled(enabled);
 		
 		super.setEnabled(enabled);
->>>>>>> c7392cb225683f02f29c75f8ece5e585ccc4bd5d
 	}
 
 	protected JButton createJButton(Action a, String tt) {

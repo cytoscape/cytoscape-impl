@@ -49,43 +49,6 @@ import org.cytoscape.view.model.CyNetworkView;
  * <http://www.gnu.org/licenses/lgpl-2.1.html>.
  * #L%
  */
-
-<<<<<<< HEAD
-
-import java.awt.event.ActionEvent;
-import java.util.Hashtable;
-
-import javax.swing.JPanel;
-import javax.swing.BoxLayout;
-import javax.swing.AbstractAction;
-import javax.swing.ButtonGroup;
-import javax.swing.GroupLayout;
-import javax.swing.GroupLayout.Alignment;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JLabel;
-import javax.swing.JRadioButton;
-import javax.swing.JSlider;
-import javax.swing.LayoutStyle.ComponentPlacement;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import java.awt.Dimension;
-import javax.swing.Box;
-import java.awt.Color;
-
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.util.swing.LookAndFeelUtil;
-import org.cytoscape.view.manual.internal.common.AbstractManualPanel;
-import org.cytoscape.view.manual.internal.common.CheckBoxTracker;
-import org.cytoscape.view.manual.internal.common.GraphConverter2;
-import org.cytoscape.view.manual.internal.common.PolymorphicSlider;
-import org.cytoscape.view.manual.internal.common.SliderStateTracker;
-import org.cytoscape.view.manual.internal.layout.algorithm.MutablePolyEdgeGraphLayout;
-import org.cytoscape.view.model.CyNetworkView;
-
-
-=======
->>>>>>> c7392cb225683f02f29c75f8ece5e585ccc4bd5d
 /**
  * GUI for scale of manualLayout
  */
@@ -96,11 +59,8 @@ public class ScalePanel extends AbstractManualPanel implements ChangeListener, P
 	private JSlider jSlider;
 	private JCheckBox alongXAxis;
 	private JCheckBox alongYAxis;
-<<<<<<< HEAD
-=======
 	private JButton clearButton;
 	
->>>>>>> c7392cb225683f02f29c75f8ece5e585ccc4bd5d
 	private int prevValue; 
 
 	private boolean startAdjusting = true;
@@ -154,11 +114,7 @@ public class ScalePanel extends AbstractManualPanel implements ChangeListener, P
 //		radioButtonGroup.add(alongYAxisOnlyRadioButton);
 //		radioButtonGroup.add(alongBothAxesRadioButton);
 
-<<<<<<< HEAD
-		JButton clearButton = new JButton("Reset Scale");
-=======
 		clearButton = new JButton("Reset Scale");
->>>>>>> c7392cb225683f02f29c75f8ece5e585ccc4bd5d
 		clearButton.addActionListener(new AbstractAction() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
