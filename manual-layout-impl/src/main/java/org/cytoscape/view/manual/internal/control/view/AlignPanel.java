@@ -89,9 +89,9 @@ public class AlignPanel extends JPanel {
 		algn.setMaximumSize(new Dimension(105, 25));
 		add(Box.createRigidArea(new Dimension(25, 0)));
 	    add(algn);
-	    add(createJButton(hal, "Horizontal Align Left"));
-		add(createJButton(hac, "Horizontal Align Center"));
-		add(createJButton(har, "Horizontal Align Right"));
+	    add(halButton = createJButton(hal, "Horizontal Align Left"));
+		add(hacButton = createJButton(hac, "Horizontal Align Center"));
+		add(harButton = createJButton(har, "Horizontal Align Right"));
 		add(vatButton = createJButton(vat, "Vertical Align Top"));
 		add(vacButton = createJButton(vac, "Vertical Align Center"));
 		add(vabButton = createJButton(vab, "Vertical Align Bottom"));
