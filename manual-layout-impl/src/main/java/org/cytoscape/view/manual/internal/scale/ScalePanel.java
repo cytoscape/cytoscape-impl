@@ -1,6 +1,5 @@
 package org.cytoscape.view.manual.internal.scale;
 
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.util.Hashtable;
@@ -70,10 +69,6 @@ public class ScalePanel extends AbstractManualPanel implements ChangeListener, P
 
 	public ScalePanel(CyApplicationManager appMgr) {
 		super("Scale");
-		
-		if (LookAndFeelUtil.isAquaLAF())
-			setOpaque(false);
-// 		System.out.println("ScalePanel");
 		this.appMgr = appMgr;
 
 		jSlider = new JSlider();
@@ -101,18 +96,11 @@ public class ScalePanel extends AbstractManualPanel implements ChangeListener, P
 
 		jCheckBox = new JCheckBox("Selected Only", /* selected = */true);
 		new CheckBoxTracker( jCheckBox );
-// 		jCheckBox.setOpaque(false);
 
 		alongXAxis = new JCheckBox("Width");
 		alongYAxis = new JCheckBox("Height");
-		alongXAxis.setOpaque(false);
-		alongYAxis.setOpaque(false);
 		alongXAxis.setSelected(true);
 		alongYAxis.setSelected(true);
-//		radioButtonGroup = new ButtonGroup();
-//		radioButtonGroup.add(alongXAxisOnlyRadioButton);
-//		radioButtonGroup.add(alongYAxisOnlyRadioButton);
-//		radioButtonGroup.add(alongBothAxesRadioButton);
 
 		clearButton = new JButton("Reset Scale");
 		clearButton.addActionListener(new AbstractAction() {
@@ -156,7 +144,6 @@ public class ScalePanel extends AbstractManualPanel implements ChangeListener, P
 		top.add(new JLabel("Scale"));
 		top.add(Box.createHorizontalGlue()); 
 		top.add(jCheckBox);
-		top.setBackground(new Color(0,0,0,0));
 
 		JPanel row1 = new JPanel();
 		row1.setLayout(new BoxLayout(row1, BoxLayout.LINE_AXIS));
@@ -165,10 +152,6 @@ public class ScalePanel extends AbstractManualPanel implements ChangeListener, P
 		row1.add(alongYAxis);
 		row1.add(Box.createHorizontalGlue()); 
 		row1.add(clearButton);
-		row1.setBackground(new Color(0,0,0,0));
-//		row1.setOpacity(false);
-
-		
 		
 		setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
 		add(top);
@@ -177,7 +160,12 @@ public class ScalePanel extends AbstractManualPanel implements ChangeListener, P
 		setMinimumSize(new Dimension(100,100));
 		setPreferredSize(new Dimension(300,120));
 		setMaximumSize(new Dimension(300,120));
-
+		
+		if (LookAndFeelUtil.isAquaLAF()) {
+			setOpaque(false);
+			top.setOpaque(false);
+			row1.setOpaque(false);
+		}
 	} 
 
 	@Override
