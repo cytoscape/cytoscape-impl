@@ -1,4 +1,4 @@
-package org.cytoscape.util.swing;
+package org.cytoscape.util.swing.internal;
 
 import java.awt.Desktop;
 import java.net.URI;
