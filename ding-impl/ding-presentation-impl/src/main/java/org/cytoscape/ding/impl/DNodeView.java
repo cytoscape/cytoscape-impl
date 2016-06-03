@@ -252,7 +252,7 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 	}
 
 	@Override
-	public void setBorderWidth(float width) {
+	public void setBorderWidth(Float width) {
 		synchronized (graphView.m_lock) {
 			graphView.m_nodeDetails.overrideBorderWidth(model, width);
 			graphView.setContentChanged();
@@ -1023,7 +1023,7 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 			final Integer opacity = ((Number) value).intValue();
 			setBorderTransparency(opacity);
 		} else if (vp == DVisualLexicon.NODE_BORDER_WIDTH) {
-			setBorderWidth(((Number) value).floatValue());
+			setBorderWidth(new Float(((Number) value).floatValue()));
 		} else if (vp == DVisualLexicon.NODE_BORDER_LINE_TYPE) {
 			final DLineType dLineType = DLineType.getDLineType((LineType) value);
 			final float currentBorderWidth = graphView.m_nodeDetails.getBorderWidth(model);
