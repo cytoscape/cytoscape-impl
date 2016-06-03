@@ -43,7 +43,6 @@ import org.cytoscape.view.manual.internal.control.actions.dist.VDistTop;
  * <http://www.gnu.org/licenses/lgpl-2.1.html>.
  * #L%
  */
-
 @SuppressWarnings("serial")
 public class DistPanel extends JPanel {
 	

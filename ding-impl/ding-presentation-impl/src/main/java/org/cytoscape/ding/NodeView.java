@@ -64,7 +64,7 @@ public interface NodeView extends GraphViewObject {
 	/**
 	 * @param border_width The width of the border.
 	 */
-	void setBorderWidth( float border_width ) ;
+	void setBorderWidth( Float border_width ) ;
 
 
 	/**

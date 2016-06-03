@@ -59,6 +59,20 @@ import org.cytoscape.view.model.View;
  * #L%
  */
 
+import javax.swing.BorderFactory;
+import javax.swing.BoxLayout;
+import javax.swing.Box;
+import java.awt.Dimension;
+
+import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.util.swing.LookAndFeelUtil;
+import org.cytoscape.view.manual.internal.common.AbstractManualPanel;
+import org.cytoscape.view.manual.internal.control.view.AlignPanel;
+import org.cytoscape.view.manual.internal.control.view.DistPanel;
+import org.cytoscape.view.manual.internal.control.view.StackPanel;
+import org.cytoscape.view.manual.internal.rotate.RotatePanel;
+import org.cytoscape.view.manual.internal.scale.ScalePanel;
+
 /**
  * GUI for Align and Distribute of manualLayout
  */
@@ -77,7 +91,7 @@ public class ControlPanel extends AbstractManualPanel implements SessionAboutToB
 	private final CyServiceRegistrar serviceRegistrar;
 	
 	public ControlPanel(final CyServiceRegistrar serviceRegistrar) {
-		super("Layout Tools");
+		super("Node Layout Tools");
 		this.serviceRegistrar = serviceRegistrar;
 		
 		final CyApplicationManager appMgr = serviceRegistrar.getService(CyApplicationManager.class);
@@ -86,7 +100,6 @@ public class ControlPanel extends AbstractManualPanel implements SessionAboutToB
 			setOpaque(false);
 		
 		setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 2));
-		
 		setLayout(new BoxLayout(this,  BoxLayout.PAGE_AXIS));
 
 		add(scalePanel = new ScalePanel(appMgr));

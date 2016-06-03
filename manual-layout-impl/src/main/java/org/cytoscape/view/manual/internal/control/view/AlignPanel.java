@@ -44,6 +44,10 @@ import org.cytoscape.view.manual.internal.control.actions.align.VAlignTop;
  * #L%
  */
 
+
+/**
+ *
+ */
 @SuppressWarnings("serial")
 public class AlignPanel extends JPanel {
 	
@@ -88,7 +92,6 @@ public class AlignPanel extends JPanel {
 	    add(halButton = createJButton(hal, "Horizontal Align Left"));
 		add(hacButton = createJButton(hac, "Horizontal Align Center"));
 		add(harButton = createJButton(har, "Horizontal Align Right"));
-
 		add(vatButton = createJButton(vat, "Vertical Align Top"));
 		add(vacButton = createJButton(vac, "Vertical Align Center"));
 		add(vabButton = createJButton(vab, "Vertical Align Bottom"));

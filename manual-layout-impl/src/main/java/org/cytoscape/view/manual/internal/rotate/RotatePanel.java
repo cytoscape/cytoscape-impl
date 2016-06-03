@@ -1,6 +1,5 @@
 package org.cytoscape.view.manual.internal.rotate;
 
-import java.awt.Color;
 import java.awt.Dimension;
 
 import javax.swing.Box;
@@ -45,7 +44,6 @@ import org.cytoscape.view.model.CyNetworkView;
  * <http://www.gnu.org/licenses/lgpl-2.1.html>.
  * #L%
  */
-
 /**
  * GUI for rotation of manualLayout
  */
@@ -64,15 +62,10 @@ public class RotatePanel extends AbstractManualPanel implements ChangeListener, 
 	public RotatePanel(CyApplicationManager appMgr) {
 		super("Rotate");
 		this.appMgr = appMgr;
-// 		System.out.println("RotatePanel");
-		
-		if (LookAndFeelUtil.isAquaLAF())
-			setOpaque(false);
 		
 		// set up the user interface
 		JLabel jLabel = new JLabel();
 		jLabel.setText("Rotate");
-		jLabel.setOpaque(false);
 
 		jSlider = new JSlider();
 		jSlider.setMinimum(-180);
@@ -88,7 +81,6 @@ public class RotatePanel extends AbstractManualPanel implements ChangeListener, 
 		prevValue = jSlider.getValue();
 
 		jCheckBox = new JCheckBox("Selected Only", /* selected = */true);
-// 		jCheckBox.setOpaque(false);
 
 		new CheckBoxTracker(jCheckBox);
 
@@ -109,7 +101,6 @@ public class RotatePanel extends AbstractManualPanel implements ChangeListener, 
 //				.addComponent(jCheckBox)
 //		);
 		JPanel row1 = new JPanel();
-		row1.setBackground(new Color(0,0,0,0));
 		row1.setLayout(new BoxLayout(row1, BoxLayout.LINE_AXIS));
 		row1.add(jLabel);
 		row1.add(Box.createHorizontalGlue()); 
@@ -123,6 +114,11 @@ public class RotatePanel extends AbstractManualPanel implements ChangeListener, 
 		setMinimumSize(new Dimension(100,80));
 		setPreferredSize(new Dimension(200,80));
 		setMaximumSize(new Dimension(300,100));
+		
+		if (LookAndFeelUtil.isAquaLAF()) {
+			setOpaque(false);
+			row1.setOpaque(false);
+		}
 	} 
 
 	@Override

@@ -434,12 +434,12 @@ public class DNodeDetails extends NodeDetails {
 	}
 
 	/**
-	 * A negative width value has the special meaning to remove overridden width.
+	 * A null or negative width value has the special meaning to remove overridden width.
 	 */
-	void overrideBorderWidth(final CyNode node, final float width) {
-		if ((width < 0.0f) || (width == super.getBorderWidth(node)))
+	void overrideBorderWidth(final CyNode node, final Float width) {
+		if (width == null || width < 0.0f) {
 			m_borderWidths.remove(node);
-		else {
+		} else {
 			m_borderWidths.put(node, width);
 			isCleared = false;
 		}
