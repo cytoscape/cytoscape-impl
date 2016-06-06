@@ -44,12 +44,10 @@ public class CyStringPropertyEditor extends StringPropertyEditor {
 		((JTextField) editor).setBorder(LookAndFeelTweaks.EMPTY_BORDER);
 
 		((JTextField) editor).addFocusListener(new FocusListener() {
-			
 			@Override
 			public void focusGained(FocusEvent e) {
 				setCurrentValue();
 			}
-
 			@Override
 			public void focusLost(final FocusEvent e) {
 				checkChange();
