@@ -52,7 +52,7 @@ public final class ContinuousMappingCellRenderer extends DefaultCellRenderer {
 			int row, int column) {
 
 		if (value == null || value instanceof ContinuousMapping == false) {
-			this.setText("Unkonown Mapping");
+			this.setText("Unknown Mapping");
 			return this;
 		}
 
