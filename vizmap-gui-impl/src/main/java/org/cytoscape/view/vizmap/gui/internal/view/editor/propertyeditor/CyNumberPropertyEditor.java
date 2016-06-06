@@ -1,12 +1,23 @@
 package org.cytoscape.view.vizmap.gui.internal.view.editor.propertyeditor;
 
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
+
+import javax.swing.JTextField;
+
+import org.cytoscape.view.model.VisualProperty;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.l2fprod.common.beans.editor.StringPropertyEditor;
+
 /*
  * #%L
  * Cytoscape VizMap GUI Impl (vizmap-gui-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,40 +35,23 @@ package org.cytoscape.view.vizmap.gui.internal.view.editor.propertyeditor;
  * #L%
  */
 
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
-
-import javax.swing.JTextField;
-
-import org.cytoscape.view.model.VisualProperty;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.l2fprod.common.beans.editor.NumberPropertyEditor;
-
-/**
- *
- */
-public class CyNumberPropertyEditor<T extends Number> extends NumberPropertyEditor {
+public class CyNumberPropertyEditor<T extends Number> extends StringPropertyEditor {
 
 	private static final Logger logger = LoggerFactory.getLogger(CyNumberPropertyEditor.class);
 
 	private Object currentValue;
 	private VisualProperty<T> visualProperty;
-
-	/**
-	 * Creates a new CyStringPropertyEditor object.
-	 */
+	private final Class<T> type;
+	
 	public CyNumberPropertyEditor(final Class<T> type) {
-		super(type);
+		this.type = type;
+		((JTextField) editor).setHorizontalAlignment(JTextField.RIGHT);
 
 		((JTextField) editor).addFocusListener(new FocusListener() {
-			
 			@Override
-			public void focusGained(final FocusEvent e) {
+			public void focusGained(FocusEvent e) {
 				setCurrentValue();
 			}
-			
 			@Override
 			public void focusLost(final FocusEvent e) {
 				checkChange();
@@ -66,29 +60,33 @@ public class CyNumberPropertyEditor<T extends Number> extends NumberPropertyEdit
 	}
 
 	private void setCurrentValue() {
-		this.currentValue = super.getValue();
+		this.currentValue = getValue();
 	}
 
+	@SuppressWarnings("unchecked")
 	private void checkChange() {
-		Number newValue = (Number) super.getValue();
+		String s = (String) getValue();
+		Number newValue = parse(s);
 
-		if (visualProperty != null) {
-			final boolean isInRange = visualProperty.getRange()
-					.inRange(visualProperty.getRange().getType().cast(newValue));
-			
-			if (!isInRange) {
-				newValue = visualProperty.getDefault();
-				((JTextField) editor).setText(newValue.toString());
-				editor.repaint();
+		if (newValue != null) {
+			if (visualProperty != null) {
+				final boolean isInRange = visualProperty.getRange().inRange((T) newValue);
+				
+				if (!isInRange) {
+					newValue = visualProperty.getDefault();
+					((JTextField) editor).setText(newValue.toString());
+				}
+			} else {
+				if (newValue.doubleValue() <= 0) {
+					newValue = parse("0");
+					((JTextField) editor).setText(newValue.toString());
+				}
 			}
 		} else {
-			if (newValue.doubleValue() <= 0) {
-				newValue = 0;
-				currentValue = 0;
-				((JTextField) editor).setText("0");
-				editor.repaint();
-			}
+			((JTextField) editor).setText("");
 		}
+		
+		editor.repaint();
 
 		if ((currentValue == null && newValue != null) || 
 				(currentValue != null && !currentValue.equals(newValue)))
@@ -97,5 +95,31 @@ public class CyNumberPropertyEditor<T extends Number> extends NumberPropertyEdit
 
 	public void setVisualProperty(final VisualProperty<T> visualProperty) {
 		this.visualProperty = visualProperty;
+	}
+	
+	private Number parse(String s) {
+		Number value = null;
+		
+		try {
+			if (s != null) {
+				s = s.trim();
+				
+				if (type == Double.class)
+					value = Double.parseDouble(s);
+				else if (type == Float.class)
+					value = Float.parseFloat(s);
+				else if (type == Long.class)
+					value = Long.parseLong(s);
+				else if (type == Integer.class)
+					value = Integer.parseInt(s);
+				else if (type == Short.class)
+					value = Short.parseShort(s);
+				else if (type == Byte.class)
+					value = Byte.parseByte(s);
+			}
+		} catch (Exception e) {
+		}
+		
+		return value;
 	}
 }
