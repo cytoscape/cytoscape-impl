@@ -234,7 +234,7 @@ public final class TypeUtil {
 			for (int row = 0; row < rowCount; row++) {
 				final String val = (String) model.getValueAt(row, col);
 				
-				if (val == null)
+				if (val == null || val.isEmpty() || val.equals("null"))
 					continue;
 
 				if (dt == TYPE_STRING || dt == TYPE_STRING_LIST) {
