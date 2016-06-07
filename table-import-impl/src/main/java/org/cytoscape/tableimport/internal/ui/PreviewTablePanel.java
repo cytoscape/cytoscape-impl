@@ -621,8 +621,7 @@ public class PreviewTablePanel extends JPanel {
 		return false;
 	}
 
-	private PreviewTableModel parseExcel(final Sheet sheet, int startLine)
-			throws IOException {
+	private PreviewTableModel parseExcel(final Sheet sheet, int startLine) throws IOException {
 		int size = getPreviewSize();
 		
 		if (size == -1)
@@ -641,8 +640,8 @@ public class PreviewTablePanel extends JPanel {
 			if (rowCount >= startLine) {
 				final Vector<String> rowVector = new Vector<>();
 
-				if (maxCol < row.getPhysicalNumberOfCells())
-					maxCol = row.getPhysicalNumberOfCells();
+				if (maxCol < row.getLastCellNum())
+					maxCol = row.getLastCellNum();
 
 				for (short j = 0; j < maxCol; j++) {
 					Cell cell = row.getCell(j);
@@ -968,6 +967,10 @@ public class PreviewTablePanel extends JPanel {
 
 	private void updatePreviewTable(final Sheet sheet) throws IOException {
 		final PreviewTableModel newModel = parseExcel(sheet, startLine);
+		
+		for(int i = 0; i < newModel.getColumnCount(); i++) {
+			System.out.println(newModel.getColumnName(i));
+		}
 
 		if (newModel.getRowCount() > 0) {
 			final String sheetName = sheet.getSheetName();
@@ -1174,12 +1177,15 @@ public class PreviewTablePanel extends JPanel {
 					// No overwritten name and should use the first data row as column names
 					final Vector<String> firstRow = (Vector<String>) dataVector.get(0);
 					
-					if (firstRow != null && firstRow.size() > column)
+					if (firstRow != null && firstRow.size() > column) {
 						colName = firstRow.get(column);
-				} else {
-					// Just return a default name
-					colName = "Column " + (column + 1);
+					}
 				}
+			}
+			
+			if(colName == null) {
+				// Just return a default name
+				colName = "Column " + (column + 1);
 			}
 			
 			return colName;
