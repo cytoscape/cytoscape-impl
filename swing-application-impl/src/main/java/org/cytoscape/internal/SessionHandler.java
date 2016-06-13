@@ -249,6 +249,7 @@ public class SessionHandler implements CyShutdownListener, SessionLoadedListener
 	}
 	
 	private final void postLoading(final CySession sess) {
+		NetworkList netList = null;
 		final Map<String, List<File>> filesMap = sess.getAppFileListMap();
 
 		if (filesMap != null) {
@@ -256,7 +257,6 @@ public class SessionHandler implements CyShutdownListener, SessionLoadedListener
 
 			if (files != null) {
 				SessionState sessState = null;
-				NetworkList netList = null;
 				
 				for (File f : files) {
 					if (f.getName().endsWith(SESSION_STATE_FILENAME))
@@ -267,23 +267,23 @@ public class SessionHandler implements CyShutdownListener, SessionLoadedListener
 				
 				if (sessState != null)
 					setCytoPanelStates(sessState.getCytopanels());
-				
-				if (netList == null) {
-					// Probably a Cy2 session file, which does not provide a separate "network_list" file
-					// so let's get the orders from the networks in the CySession file
-					// (we just assume the Session Reader sent the networks in the correct order in a LinkedHashSet)
-					final Set<CyNetwork> netSet = sess.getNetworks();
-					final Map<Long, Integer> netOrder = new HashMap<>();
-					int count = 0;
-					
-					for (CyNetwork n : netSet)
-						netOrder.put(n.getSUID(), count++);
-						
-					setSessionNetworks(netOrder);
-				} else {
-					setSessionNetworks(netList.getNetwork(), sess);
-				}
 			}
+		}
+		
+		if (netList == null) {
+			// Probably a Cy2 session file, which does not provide a separate "network_list" file
+			// so let's get the orders from the networks in the CySession file
+			// (we just assume the Session Reader sent the networks in the correct order in a LinkedHashSet)
+			final Set<CyNetwork> netSet = sess.getNetworks();
+			final Map<Long, Integer> netOrder = new HashMap<>();
+			int count = 0;
+			
+			for (CyNetwork n : netSet)
+				netOrder.put(n.getSUID(), count++);
+				
+			setSessionNetworks(netOrder);
+		} else {
+			setSessionNetworks(netList.getNetwork(), sess);
 		}
 	}
 	
