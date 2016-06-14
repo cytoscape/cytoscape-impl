@@ -61,8 +61,6 @@ import org.cytoscape.view.presentation.RenderingEngineFactory;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.work.swing.DialogTaskManager;
 
-import org.cytoscape.internal.view.CyDropListener;
-
 /*
  * #%L
  * Cytoscape Swing Application Impl (swing-application-impl)
@@ -415,14 +413,22 @@ public class NetworkViewMainPanel extends JPanel {
 					}
 
 					frame.setJMenuBar(menuBar);
-					menuBar.updateUI();
 				}
 				
 				if (LookAndFeelUtil.isAquaLAF() && menuBar.equals(frame.getJMenuBar()))
 					cyMenus.setMenuBarVisible(true);
+				
+				// Don't forget to update the UI, or it can cause some issues,
+				// such as the menus being duplicated on Mac/Aqua when activating detached frames
+				// (see http://code.cytoscape.org/redmine/issues/3582)
+				menuBar.updateUI();
 			}
 			@Override
 			public void windowDeactivated(WindowEvent e) {
+				// Workaround that removes the menus from detached views frames on Mac/Aqua
+				// to prevent users from selecting them when a modal dialog is open from the detached view.
+				// The problem is that the menus are not automatically disabled on Mac/Aqua when that happens,
+				// as it should, though it works fine when the modal dialog is open from the main Cytoscape frame.
 				if (LookAndFeelUtil.isAquaLAF() && cyMenus.getJMenuBar().equals(frame.getJMenuBar()))
 					cyMenus.setMenuBarVisible(false);
 			}
