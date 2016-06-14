@@ -25,6 +25,10 @@ package org.cytoscape.browser.internal.view;
  */
 
 
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.lang.reflect.TypeVariable;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -464,6 +468,7 @@ public final class BrowserTableModel extends AbstractTableModel
 		final CyRow row = getCyRow(rowIndex);
 		final String columnName = mapColumnIndexToColumnName(columnIndex);
 		final Class<?> columnType = dataTable.getColumn(columnName).getType();
+		final Class<?> listElementType = dataTable.getColumn(columnName).getListElementType();
 
 		if (text.isEmpty()) {
 			if (!row.isSet(columnName))
@@ -477,7 +482,7 @@ public final class BrowserTableModel extends AbstractTableModel
 				final Class<?> eqnType = eqn.getType();
 
 				// Is the equation type compatible with the column type?
-				if (eqnTypeIsCompatible(columnType, eqnType)){
+				if (eqnTypeIsCompatible(columnType, listElementType, eqnType)){
 					row.set(columnName, eqn);
 				}
 				else { // The equation type is incompatible w/ the column type!
@@ -517,7 +522,8 @@ public final class BrowserTableModel extends AbstractTableModel
 				JOptionPane.ERROR_MESSAGE);
 	}
 
-	private boolean eqnTypeIsCompatible(final Class<?> columnType, final Class<?> eqnType) {
+	private boolean eqnTypeIsCompatible(final Class<?> columnType, final Class<?> listElementType, 
+	                                    final Class<?> eqnType) {
 		if (columnType == eqnType)
 			return true;
 		if (columnType == String.class) // Anything can be trivially converted to a string.
@@ -528,8 +534,26 @@ public final class BrowserTableModel extends AbstractTableModel
 			return true;
 		if (columnType == Boolean.class && (eqnType == Long.class || eqnType == Double.class))
 			return true;
+		if (columnType != List.class || !columnType.isAssignableFrom(eqnType))
+			return false;
 
-		return false;
+		// HACK!!!!!!  We don't know the type of the List, but we can do some type checking
+		// for our own builtins.  We need to do this as a negative evaluation in case
+		// an App wants to add a new List function
+		if (eqnType.getSimpleName().equals("DoubleList") && listElementType != Double.class)
+			return false;
+
+		if (eqnType.getSimpleName().equals("LongList") && 
+		    (listElementType != Integer.class && listElementType != Long.class))
+			return false;
+
+		if (eqnType.getSimpleName().equals("BooleanList") && listElementType != Boolean.class)
+			return false;
+
+		if (eqnType.getSimpleName().equals("StringList") && listElementType != String.class)
+			return false;
+
+		return true;
 	}
 
 	private String getUnqualifiedName(final Class<?> type) {

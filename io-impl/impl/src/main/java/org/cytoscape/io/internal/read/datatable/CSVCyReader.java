@@ -128,7 +128,7 @@ public class CSVCyReader implements CyTableReader {
 						final Class<?> eqnType;
 						if (compiler.compile(values[i], variableNameToTypeMap)) {
 							eqnType = compiler.getEquation().getType();
-							if(TypeUtils.eqnTypeIsCompatible(columnType, eqnType))
+							if(TypeUtils.eqnTypeIsCompatible(columnType, columnListElementType, eqnType))
 								equation = compiler.getEquation();
 							else {
 								final String errorMsg = "Equation result type is "

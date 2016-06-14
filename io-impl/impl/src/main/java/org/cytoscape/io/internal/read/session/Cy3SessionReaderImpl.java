@@ -685,11 +685,12 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 				}
 				Equation equation = (Equation) value;
 				final Class<?> columnType = column.getType();
+				final Class<?> listElementType = column.getListElementType();
 				final Class<?> expectedType = variableNameToTypeMap.remove(name);
 				try {
 					if (compiler.compile(equation.toString(), variableNameToTypeMap)) {
 						final Class<?> eqnType = compiler.getEquation().getType();
-						if(TypeUtils.eqnTypeIsCompatible(columnType, eqnType))
+						if(TypeUtils.eqnTypeIsCompatible(columnType, listElementType, eqnType))
 							equation = compiler.getEquation();
 						else {
 							final String errorMsg = "Equation result type is "
