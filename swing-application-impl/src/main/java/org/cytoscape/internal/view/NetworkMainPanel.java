@@ -192,6 +192,8 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 					getRootNetworkListPanel().updateScrollableTracksViewportHeight();
 				}
 			});
+			
+			new CyDropListener(rootNetworkScroll, serviceRegistrar);
 		}
 		
 		return rootNetworkScroll;

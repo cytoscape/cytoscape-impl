@@ -807,9 +807,9 @@ public class NetworkViewMainPanel extends JPanel {
 	private void init() {
 		setBorder(BorderFactory.createMatteBorder(0, 1, 1, 1, UIManager.getColor("Separator.foreground")));
 		
-		new CyDropListener(this, serviceRegistrar);
 		setLayout(new BorderLayout());
 		add(getContentPane(), BorderLayout.CENTER);
+		
 		new CyDropListener(this, serviceRegistrar);
 		
 		// Add Listeners
