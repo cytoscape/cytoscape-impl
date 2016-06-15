@@ -968,10 +968,6 @@ public class PreviewTablePanel extends JPanel {
 	private void updatePreviewTable(final Sheet sheet) throws IOException {
 		final PreviewTableModel newModel = parseExcel(sheet, startLine);
 		
-		for(int i = 0; i < newModel.getColumnCount(); i++) {
-			System.out.println(newModel.getColumnName(i));
-		}
-
 		if (newModel.getRowCount() > 0) {
 			final String sheetName = sheet.getSheetName();
 			
