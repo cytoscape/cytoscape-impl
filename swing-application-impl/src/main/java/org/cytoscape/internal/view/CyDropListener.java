@@ -1,34 +1,36 @@
 package org.cytoscape.internal.view;
 
-import javax.swing.JComponent;
-import javax.swing.BorderFactory;
-import javax.swing.border.Border;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
-import javax.swing.TransferHandler;
-import java.awt.dnd.DropTargetListener;
+import java.awt.dnd.DropTarget;
 import java.awt.dnd.DropTargetDragEvent;
 import java.awt.dnd.DropTargetDropEvent;
 import java.awt.dnd.DropTargetEvent;
-import java.awt.dnd.DropTarget;
-import java.awt.Color;
+import java.awt.dnd.DropTargetListener;
 import java.io.File;
-import java.util.List;
-import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.io.read.InputStreamTaskFactory;
-import java.io.InputStream;
-import java.io.FileInputStream;
-import org.cytoscape.work.TaskManager;
 import java.util.Arrays;
-import javax.swing.SwingUtilities;
+import java.util.List;
 
+import javax.swing.BorderFactory;
+import javax.swing.JComponent;
+import javax.swing.TransferHandler;
+import javax.swing.UIManager;
+import javax.swing.border.Border;
+
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.task.read.LoadNetworkFileTaskFactory;
+import org.cytoscape.work.swing.DialogTaskManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+@SuppressWarnings("serial")
 public class CyDropListener implements DropTargetListener {
 
 	private JComponent panel; // the zone that accepts the drop
 	private CyServiceRegistrar registrar; // how to pass the drop to a service
-	private Border borderSave; // we show that a drag is ongoing by changeing
-	static Border greenBorder=BorderFactory.createLineBorder(Color.green,2);
-								// the border
+	private Border borderSave; // we show that a drag is ongoing by changing
+	
+	private static final Logger logger = LoggerFactory.getLogger(CyDropListener.class);
 
 	public static boolean isAcceptable(DropTargetDropEvent ev) {
 		if (ev.isDataFlavorSupported(DataFlavor.imageFlavor))			return true;
@@ -92,15 +94,12 @@ public class CyDropListener implements DropTargetListener {
 
 	@Override
 	public void dragEnter(DropTargetDragEvent dtde) {
-// 		System.out.println("Enter");
 		borderSave = panel.getBorder();
-		panel.setBorder(greenBorder);
-
+		panel.setBorder(BorderFactory.createLineBorder(UIManager.getColor("Focus.color"), 2));
 	}
 
 	@Override
 	public void dragExit(DropTargetEvent dtde) {
-// 		System.out.println("Exit");
 		panel.setBorder(borderSave);
 	}
 
@@ -145,51 +144,28 @@ public class CyDropListener implements DropTargetListener {
 	        loadFiles(data);
 	        return;
         }
-
 	}
-	
-	private void loadFiles(List<File> data)
-	{
-        for (File file : data) {
-            System.out.println((file.isDirectory() ? "import directory: "  : "import: ") + file.getName());
-           if ( file.isDirectory())
-           {
-              loadFiles( Arrays.asList( file.listFiles()));
-           }
-           else
-           {
-                final InputStreamTaskFactory factory = registrar.getService(InputStreamTaskFactory.class);
-        	    final TaskManager taskManager = registrar.getService(TaskManager.class);
-                if (factory != null)
-                {    
-                    System.out.println("Factory: " + ((factory != null) ? factory.toString() : "MISSING"));
 
-                   try
-                   {
-                        if (file.getName().toUpperCase().endsWith(".SIF"))
-                        {
-                            InputStream stream = new FileInputStream(file);
-                    		SwingUtilities.invokeLater(new Runnable() {
-			    	            public void run() {
-                                    taskManager.execute(factory.createTaskIterator(stream, file.getName()));
-			    	            }
-			                });
-               
-                            System.out.println("DONE IMPORTING: " + file.getName());
-                        }
-                    }
-                    catch (Exception e)     {
-                    	System.out.println("Exception: " + e.getMessage()); 
-                    }   
-               }
-           } 
-        }
+	private void loadFiles(final List<File> data) {
+		final DialogTaskManager taskManager = registrar.getService(DialogTaskManager.class);
+		final LoadNetworkFileTaskFactory factory = registrar.getService(LoadNetworkFileTaskFactory.class,
+				"(id=loadNetworkFileTaskFactory)");
+
+		for (File file : data) {
+			if (file.isDirectory()) {
+				loadFiles(Arrays.asList(file.listFiles()));
+			} else if (factory != null) {
+				try {
+					taskManager.execute(factory.createTaskIterator(file));
+				} catch (Exception e) {
+					logger.error("Cannot load network file.", e);
+				}
+			}
+		}
 	}
-	
 
 	@Override
 	public void dropActionChanged(DropTargetDragEvent dtde) {
 		System.out.println("dropActionChanged");
-
 	}
 }
