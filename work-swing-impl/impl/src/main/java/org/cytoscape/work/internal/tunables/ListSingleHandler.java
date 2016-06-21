@@ -106,6 +106,11 @@ public class ListSingleHandler<T> extends AbstractGUITunableHandler
 		
 		combobox.setEnabled(combobox.getModel().getSize() > 1);
 		panel.setVisible(combobox.getModel().getSize() > 0);
+		
+		final ListSingleSelection<T> singleSelection = getSingleSelection();
+		
+		if (singleSelection != null)
+			singleSelection.addListener(this);
 	}
 
 	@Override
