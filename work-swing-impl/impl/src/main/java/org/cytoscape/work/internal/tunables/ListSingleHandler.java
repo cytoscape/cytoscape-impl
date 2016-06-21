@@ -1,12 +1,34 @@
 package org.cytoscape.work.internal.tunables;
 
+import static org.cytoscape.work.internal.tunables.utils.GUIDefaults.setTooltip;
+import static org.cytoscape.work.internal.tunables.utils.GUIDefaults.updateFieldPanel;
+
+import java.awt.Color;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.SwingConstants;
+import javax.swing.UIManager;
+
+import org.cytoscape.work.Tunable;
+import org.cytoscape.work.swing.AbstractGUITunableHandler;
+import org.cytoscape.work.util.ListChangeListener;
+import org.cytoscape.work.util.ListSelection;
+import org.cytoscape.work.util.ListSingleSelection;
+
 /*
  * #%L
  * Cytoscape Work Swing Impl (work-swing-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,31 +46,6 @@ package org.cytoscape.work.internal.tunables;
  * #L%
  */
 
-
-import static org.cytoscape.work.internal.tunables.utils.GUIDefaults.updateFieldPanel;
-import static org.cytoscape.work.internal.tunables.utils.GUIDefaults.setTooltip;
-
-import java.awt.Color;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.SwingConstants;
-import javax.swing.UIManager;
-
-import org.cytoscape.work.Tunable;
-import org.cytoscape.work.swing.AbstractGUITunableHandler;
-import org.cytoscape.work.util.ListChangeListener;
-import org.cytoscape.work.util.ListSelection;
-import org.cytoscape.work.util.ListSingleSelection;
-
-
 /**
  * Handler for the type <i>ListSingleSelection</i> of <code>Tunable</code>
  *
@@ -62,17 +59,16 @@ public class ListSingleHandler<T> extends AbstractGUITunableHandler
 	private JComboBox<T> combobox;
 
 	/**
-	 * Constructs the <code>GUIHandler</code> for the <code>ListSingleSelection</code> type
-	 *
-	 * creates a ComboBox to collect all the <code>T</code> items and displays it in the GUI
+	 * Constructs the <code>GUIHandler</code> for the <code>ListSingleSelection</code> type.
+	 * Creates a ComboBox to collect all the <code>T</code> items and displays it in the GUI.
 	 * Informations about the list and its contents are also displayed
 	 *
-	 * @param f field that has been annotated
-	 * @param o object contained in <code>f</code>
-	 * @param t tunable associated to <code>f</code>
+	 * @param field field that has been annotated
+	 * @param instance An object instance that contains the <code>field</code>
+	 * @param tunable tunable associated to <code>field</code>
 	 */
-	public ListSingleHandler(Field f, Object o, Tunable t) {
-		super(f, o, t);
+	public ListSingleHandler(final Field field, final Object instance, final Tunable tunable) {
+		super(field, instance, tunable);
 		init();
 	}
 
