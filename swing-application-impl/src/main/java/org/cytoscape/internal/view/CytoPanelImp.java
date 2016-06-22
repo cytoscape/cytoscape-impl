@@ -1,6 +1,7 @@
 package org.cytoscape.internal.view;
 
 import static org.cytoscape.internal.view.CytoPanelUtil.BUTTON_SIZE;
+import static org.cytoscape.util.swing.IconManager.ICON_CARET_DOWN;
 import static org.cytoscape.util.swing.IconManager.ICON_REMOVE;
 import static org.cytoscape.util.swing.IconManager.ICON_SQUARE_O;
 import static org.cytoscape.util.swing.IconManager.ICON_THUMB_TACK;
@@ -15,7 +16,6 @@ import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.HashMap;
@@ -23,10 +23,13 @@ import java.util.Map;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
+import javax.swing.Icon;
 import javax.swing.JButton;
+import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
 import javax.swing.border.EmptyBorder;
@@ -72,24 +75,21 @@ import org.slf4j.LoggerFactory;
  * #L%
  */
 
-/**
- * The CytoPanel class extends JPanel to provide the following functionality:
- * <UL>
- * <LI> Floating/Docking of Panel.
- * <UL>
- *
- * CytoPanel also implements CytoPanel interface.
- *
- * @author Ethan Cerami, Benjamin Gross
- */
 @SuppressWarnings("serial")
 public class CytoPanelImp extends JPanel implements CytoPanel, ChangeListener {
 	
 	private final static Logger logger = LoggerFactory.getLogger(CytoPanelImp.class);
 
+	
+	private static final int FLOAT_PANEL_SCALE_FACTOR = 2;
+
+	private static final String TOOL_TIP_SWITCH = "Switch To...";
+	private static final String TOOL_TIP_FLOAT = "Float Window";
+	private static final String TOOL_TIP_DOCK = "Dock Window";
+	private static final String TOOL_TIP_CLOSE = "Close Window";
+	
 	/**
-	 * These are the minimum sizes for our CytoPanels.  A CytoPanel can't exceed these
-	 * values.
+	 * These are the minimum sizes for our CytoPanels.  A CytoPanel can't exceed these values.
 	 */
 	private static final int WEST_MIN_WIDTH = 100;
 	private static final int WEST_MAX_WIDTH = 400;
@@ -100,23 +100,7 @@ public class CytoPanelImp extends JPanel implements CytoPanel, ChangeListener {
 	private static final int EAST_MIN_WIDTH = 100;
 	private static final int EAST_MAX_WIDTH = 1500;
 	private static final int EAST_MIN_HEIGHT = 100;
-	private static final int EAST_MAX_HEIGHT = 600;
 	
-	/**
-	 * The JTabbedPane we hide.
-	 */
-	private JTabbedPane tabbedPane;
-
-	/**
-	 * Our state.
-	 */
-	private CytoPanelState cytoPanelState;
-
-	/**
-	 * Our compass direction.
-	 */
-	private CytoPanelName compassDirection;
-
 	/**
 	 * Notification state change.
 	 */
@@ -147,36 +131,18 @@ public class CytoPanelImp extends JPanel implements CytoPanel, ChangeListener {
 	 */
 	private JFrame externalWindow;
 
-	/**
-	 * The label which contains the tab title - not sure if its needed.
-	 */
+	private JTabbedPane tabbedPane;
 	private JLabel floatLabel;
-
-	/**
-	 * The float/dock button.
-	 */
+	private JButton switchCompButton;
 	private JButton floatButton;
-	
 	private JButton closeButton;
-
-	/**
-	 * The float/dock button.
-	 */
-	private static final int FLOAT_PANEL_SCALE_FACTOR = 2;
-
-	/* the following constants should probably move into common constants class */
-
-	//The float button tool tip.
-	private static final String TOOL_TIP_FLOAT = "Float Window";
-
-	// The dock button tool tip.
-	private static final String TOOL_TIP_DOCK = "Dock Window";
 	
-	// The dock button tool tip.
-	private static final String TOOL_TIP_CLOSE = "Close Window";
-
 	private final JFrame parent;
+	private final CytoPanelName compassDirection;
+	private final int tabPlacement;
 	
+	private CytoPanelState cytoPanelState;
+
 	private final Map<String, CytoPanelComponent2> componentsById;
 
 	private final CyServiceRegistrar serviceRegistrar;
@@ -190,37 +156,19 @@ public class CytoPanelImp extends JPanel implements CytoPanel, ChangeListener {
 	) {
 		this.parent = cySwingApp.getJFrame();
 		this.compassDirection = compassDirection;
+		this.tabPlacement = tabPlacement;
 		this.serviceRegistrar = serviceRegistrar;
 		
 		componentsById = new HashMap<>();
 		
-		// setup our tabbed pane
-		tabbedPane = new JTabbedPane(tabPlacement);
-		tabbedPane.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
-		tabbedPane.addChangeListener(this);
-
-		// construct our panel
-		constructPanel();
-
-		// to hidden by default 
-		setState(cytoPanelState);
+		init();
+		setState(cytoPanelState); // to hidden by default 
 	}
 
-	/**
-	 * Sets CytoPanelContainer interface reference.
-	 *
-	 * @param cytoPanelContainer Reference to CytoPanelContainer
-	 */
 	public void setCytoPanelContainer(CytoPanelContainer cytoPanelContainer) {
-		// set our cytoPanelContainerReference
 		this.cytoPanelContainer = cytoPanelContainer;
 	}
 
-	/**
-	 * Returns the proper title based on our compass direction.
-	 *
-	 * @return A title string
-	 */
 	private String getTitle() {
 		return compassDirection.getTitle();
 	}
@@ -243,64 +191,34 @@ public class CytoPanelImp extends JPanel implements CytoPanel, ChangeListener {
 		// Check our sizes, and override, if necessary
 		checkSizes(comp.getComponent());
 		// add tab to JTabbedPane
-		tabbedPane.addTab(comp.getTitle(), comp.getIcon(), comp.getComponent());
+		getTabbedPane().addTab(comp.getTitle(), comp.getIcon(), comp.getComponent());
 		// send out a notification
 		notifyListeners(NOTIFICATION_COMPONENT_ADDED);
 	}
 
-	/**
-	 * Returns the number of components in the CytoPanel.
-	 *
-	 * @return int Number of components.
-	 */
 	@Override
 	public int getCytoPanelComponentCount() {
-		// return the number of tabs in the JTabbedPane.
-		return tabbedPane.getTabCount();
+		return getTabbedPane().getTabCount();
 	}
 
-	/**
-	 * Returns the currently selected component.
-	 *
-	 * @return component Currently selected Component reference.
-	 */
 	@Override
 	public Component getSelectedComponent() {
-		// get currently selected component in the JTabbedPane.
-		return tabbedPane.getSelectedComponent();
+		return getTabbedPane().getSelectedComponent();
 	}
 
-	/**
-	 * Returns the component at index.
-	 *
-	 * @return component at the given index.
-	 */
 	@Override
 	public Component getComponentAt(int index) {
-		return tabbedPane.getComponentAt(index);
+		return getTabbedPane().getComponentAt(index);
 	}
 
-	/**
-	 * Returns the currently selected index.
-	 *
-	 * @return index Currently selected index.
-	 */
 	@Override
 	public int getSelectedIndex() {
-		// get currently selected component in the JTabbedPane.
-		return tabbedPane.getSelectedIndex();
+		return getTabbedPane().getSelectedIndex();
 	}
 
-	/**
-	 * Returns the index for the specified component.
-	 *
-	 * @param component Component reference.
-	 * @return int      Index of the Component or -1 if not found.
-	 */
 	@Override
 	public int indexOfComponent(Component component) {
-		// get the index from JTabbedPane
-		return tabbedPane.indexOfComponent(component);
+		return getTabbedPane().indexOfComponent(component);
 	}
 	
 	@Override
@@ -310,75 +228,42 @@ public class CytoPanelImp extends JPanel implements CytoPanel, ChangeListener {
 		return cpComp != null ? indexOfComponent(cpComp.getComponent()) : -1;
 	}
 
-	/**
-	 * Removes specified component from the CytoPanel.
-	 *
-	 * @param component Component reference.
-	 */
 	@Override
 	public void remove(Component component) {
-		// remove tab from JTabbedPane (component)
-		tabbedPane.remove(component);
-
-		// send out a notification
+		getTabbedPane().remove(component);
 		notifyListeners(NOTIFICATION_COMPONENT_REMOVED);
 	}
 
 	public void remove(CytoPanelComponent comp) {
-		tabbedPane.remove(comp.getComponent());
+		getTabbedPane().remove(comp.getComponent());
 		
 		if (comp instanceof CytoPanelComponent2)
 			componentsById.remove(((CytoPanelComponent2)comp).getIdentifier());
 	}
 
-	/**
-	 * Removes the component from the CytoPanel at the specified index.
-	 *
-	 * @param index Component index.
-	 */
 	@Override
 	public void remove(int index) {
-		// remove tab from JTabbedPane (index)
-		tabbedPane.remove(index);
-
-		// send out a notification
+		getTabbedPane().remove(index);
 		notifyListeners(NOTIFICATION_COMPONENT_REMOVED);
 	}
 
-	/**
-	 * Removes all the components from the CytoPanel.
-	 */
 	@Override
 	public void removeAll() {
-		// remove all tabs and components from JTabbedPane
-		tabbedPane.removeAll();
+		getTabbedPane().removeAll();
 		componentsById.clear();
-
-		// send out a notification
 		notifyListeners(NOTIFICATION_COMPONENT_REMOVED);
 	}
 
-	/**
-	 * Sets the selected index on the CytoPanel.
-	 *
-	 * @param index The desired index.
-	 */
 	@Override
 	public void setSelectedIndex(final int index) {
-		// set selected index
-		if(tabbedPane.getTabCount()<=index)
+		if (getTabbedPane().getTabCount() <= index)
 			return;
 		
-		tabbedPane.setSelectedIndex(index);
+		getTabbedPane().setSelectedIndex(index);
 		resizeSelectedComponent();
 		// do not have to sent out notification - the tabbedPane will let us know.
 	}
 
-	/**
-	 * Sets the state of the CytoPanel.
-	 *
-	 * @param cytoPanelState A CytoPanelState.
-	 */
 	@Override
 	public void setState(CytoPanelState cytoPanelState) {
 		boolean success = false;
@@ -395,48 +280,43 @@ public class CytoPanelImp extends JPanel implements CytoPanel, ChangeListener {
 			success = true;
 		}
 
-		// houston we have a problem
-		if (!success) {
-			// made it here, houston, we have a problem
+		if (!success)
 			throw new IllegalArgumentException("Illegal Argument:  " + cytoPanelState
 			                                   + ".  is unknown.  Please see CytoPanelState class.");
-		}
 
-		// set our new state
 		this.cytoPanelState = cytoPanelState;
-
-		// let our listeners know
 		notifyListeners(NOTIFICATION_STATE_CHANGE);
 	}
 
-	/**
-	 * Gets the state of the CytoPanel.
-	 *
-	 * @return A CytoPanelState.
-	 */
 	@Override
 	public CytoPanelState getState() {
 		return cytoPanelState;
 	}
-
-	/**
-	 * Our implementation of the ChangeListener interface,
-	 * to determine when new tab has been selected
-	 */
+	
 	@Override
-	public void stateChanged(ChangeEvent e) {
-		// Handle the resize
-		resizeSelectedComponent();
-		
-		// let our listeners know
-		notifyListeners(NOTIFICATION_COMPONENT_SELECTED);
+	public Component getThisComponent() {
+		return this;
 	}
 
 	/**
-	 * Shows the CytoPanel.
+	 * Our implementation of the ChangeListener interface, to determine when new tab has been selected
 	 */
+	@Override
+	public void stateChanged(ChangeEvent e) {
+		updateSwitchCompButton();
+		resizeSelectedComponent();
+		notifyListeners(NOTIFICATION_COMPONENT_SELECTED);
+	}
+	
+	public void addComponentToSouth(Component pComponent) {
+		add(pComponent, BorderLayout.SOUTH);
+	}
+
+	public void removeComponentAtSouth(Component pComponent) {
+		remove(pComponent);
+	}
+
 	private void showCytoPanel(CytoPanelState cytoPanelState) {
-		// make ourselves visible
 		setVisible(true);
 
 		//  if our parent is a BiModalSplitPane, show the split
@@ -448,19 +328,13 @@ public class CytoPanelImp extends JPanel implements CytoPanel, ChangeListener {
 		}
 	}
 
-	/**
-	 * Hides the CytoPanel.
-	 */
 	private void hideCytoPanel(CytoPanelState cytoPanelState) {
-		// dock ourselves
-		if (isFloating()) {
+		if (isFloating())
 			DockCytoPanel();
-		}
 
-		// hide ourselves
 		setVisible(false);
 
-		//  if our Parent Container is a BiModalSplitPane, hide the split
+		// if our Parent Container is a BiModalSplitPane, hide the split
 		Container parent = this.getParent();
 
 		if (parent instanceof BiModalJSplitPane) {
@@ -488,13 +362,12 @@ public class CytoPanelImp extends JPanel implements CytoPanel, ChangeListener {
 	 */
 	private void resizeSelectedComponent() {
 		/* 
-		 * Set default resize behavior based on the currently
-		 * selected panel's preferredSize setting
+		 * Set default resize behavior based on the currently selected panel's preferredSize setting
 		 */
-		Component panel = tabbedPane.getSelectedComponent();
-		// Make sure we're not being notified that we've deleted
-		// the last panel
+		Component panel = getTabbedPane().getSelectedComponent();
+		// Make sure we're not being notified that we've deleted the last panel
 		int width = 0;
+		
 		if (panel != null && cytoPanelContainer instanceof JSplitPane) {
 			JSplitPane jsp = (JSplitPane)cytoPanelContainer;
 			// if the panel is 0x0, it's probably not created, yet
@@ -523,15 +396,11 @@ public class CytoPanelImp extends JPanel implements CytoPanel, ChangeListener {
 				                       -jsp.getDividerSize()
 				                       -width);
 			}
-		// TODO: What's the right thing to do with SOUTH?
+			// TODO: What's the right thing to do with SOUTH?
 		}
 	}
 
-	/**
-	 * Constructs this CytoPanel.
-	 */
-	private void constructPanel() {
-		// init our components
+	private void init() {
 		initLabel();
 		initButtons();
 
@@ -544,6 +413,8 @@ public class CytoPanelImp extends JPanel implements CytoPanel, ChangeListener {
 		floatDockPanel.add(Box.createHorizontalStrut(8));
 		floatDockPanel.add(floatLabel);
 		floatDockPanel.add(Box.createHorizontalGlue());
+		floatDockPanel.add(switchCompButton);
+		floatDockPanel.add(Box.createHorizontalStrut(8));
 		floatDockPanel.add(floatButton);
 		floatDockPanel.add(closeButton);
 		floatDockPanel.add(Box.createHorizontalStrut(8));
@@ -553,83 +424,91 @@ public class CytoPanelImp extends JPanel implements CytoPanel, ChangeListener {
 		floatDockPanel.setMinimumSize(new Dimension((fm.stringWidth(getTitle()) + BUTTON_SIZE)
 				* FLOAT_PANEL_SCALE_FACTOR, BUTTON_SIZE));
 		floatDockPanel.setPreferredSize(new Dimension((fm.stringWidth(getTitle()) + BUTTON_SIZE)
-				* FLOAT_PANEL_SCALE_FACTOR, BUTTON_SIZE + 10));
+				* FLOAT_PANEL_SCALE_FACTOR, BUTTON_SIZE + 2));
 
 		// use the border layout for this CytoPanel
 		setLayout(new BorderLayout());
 		add(floatDockPanel, BorderLayout.NORTH);
-		add(tabbedPane, BorderLayout.CENTER);
+		add(getTabbedPane(), BorderLayout.CENTER);
+	}
+	
+	private JTabbedPane getTabbedPane() {
+		if (tabbedPane == null) {
+			tabbedPane = new JTabbedPane(tabPlacement);
+			tabbedPane.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
+			tabbedPane.addChangeListener(this);
+		}
+		
+		return tabbedPane;
 	}
 
-	/**
-	 * Add a component to the CytoPanel just below the TabbedPane.
-	 *
-	 * @param pComponent    the component to be added.
-	 */
-	public void addComponentToSouth(Component pComponent) {
-		add(pComponent, BorderLayout.SOUTH);
-	}
-
-	/**
-	 * Remove a component from the CytoPanel just below the TabbedPane.
-	 *
-	 * @param pComponent  the component to be removed.
-	 */
-	public void removeComponentAtSouth(Component pComponent) {
-		remove(pComponent);
-	}
-
-	/**
-	 * Initializes the label.
-	 */
 	private void initLabel() {
 		floatLabel = new JLabel(getTitle());
 		floatLabel.setFont(floatLabel.getFont().deriveFont(LookAndFeelUtil.getSmallFontSize()));
 		floatLabel.setBorder(new EmptyBorder(0, 5, 0, 0));
 	}
 
-	/**
-	 * Initializes the button.
-	 */
 	private void initButtons() {
 		final IconManager iconManager = serviceRegistrar.getService(IconManager.class);
 		
-		// Create Float / Dock Button
+		switchCompButton = new JButton(ICON_CARET_DOWN);
+		switchCompButton.setToolTipText(TOOL_TIP_SWITCH);
+		CytoPanelUtil.styleButton(switchCompButton);
+		switchCompButton.setFont(iconManager.getIconFont(14));
+		switchCompButton.setSelected(true);
+		updateSwitchCompButton();
+		
+		switchCompButton.addActionListener((ActionEvent e) -> {
+			if (getTabbedPane().getTabCount() == 0)
+				return;
+
+			final JPopupMenu popupMenu = new JPopupMenu();
+			final int count = getTabbedPane().getTabCount();
+			
+			for (int i = 0; i < count; i++) {
+				final int idx = i;
+				final String title = getTabbedPane().getTitleAt(idx);
+				final Icon icon = getTabbedPane().getIconAt(idx);
+				final JCheckBoxMenuItem mi = new JCheckBoxMenuItem(title, icon);
+				mi.setEnabled(getTabbedPane().isEnabledAt(idx));
+				mi.setSelected(getTabbedPane().getSelectedIndex() == idx);
+				mi.addActionListener((ActionEvent evt) -> {
+					setSelectedIndex(idx);
+				});
+				popupMenu.add(mi);
+			}
+			
+			popupMenu.show(switchCompButton, 0, switchCompButton.getHeight());
+			popupMenu.requestFocusInWindow();
+		});
+		
 		floatButton = new JButton(ICON_SQUARE_O);
 		floatButton.setToolTipText(TOOL_TIP_FLOAT);
 		CytoPanelUtil.styleButton(floatButton);
 		floatButton.setFont(iconManager.getIconFont(12));
 		floatButton.setSelected(true);
 		
-		// Create close button
+		floatButton.addActionListener((ActionEvent e) -> {
+			if (isFloating())
+				DockCytoPanel();
+			else
+				FloatCytoPanel();
+			
+			notifyListeners(NOTIFICATION_STATE_CHANGE);
+		});
+		
 		closeButton = new JButton(ICON_REMOVE);
 		closeButton.setToolTipText(TOOL_TIP_CLOSE);
 		CytoPanelUtil.styleButton(closeButton);
 		closeButton.setFont(iconManager.getIconFont(13));
 		closeButton.setSelected(true);
 		
-		floatButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				if (isFloating())
-					DockCytoPanel();
-				else
-					FloatCytoPanel();
-				
-				notifyListeners(NOTIFICATION_STATE_CHANGE);
-			}
-		});
-		
-		closeButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				setState(CytoPanelState.HIDE);
-				notifyListeners(NOTIFICATION_STATE_CHANGE);
-			}
+		closeButton.addActionListener((ActionEvent e) -> {
+			setState(CytoPanelState.HIDE);
+			notifyListeners(NOTIFICATION_STATE_CHANGE);
 		});
 	}
 
-	/**
-	 * Float cytoPanel
-	 */
 	private void FloatCytoPanel() {
 		// show ourselves
 		showCytoPanel(CytoPanelState.FLOAT);
@@ -639,13 +518,18 @@ public class CytoPanelImp extends JPanel implements CytoPanel, ChangeListener {
 			externalWindow = new JFrame(parent.getGraphicsConfiguration());
 			
 			// add listener to handle when window is closed
-			addWindowListener();
+			externalWindow.addWindowListener(new WindowAdapter() {
+				@Override
+				public void windowClosing(WindowEvent e) {
+					DockCytoPanel();
+					notifyListeners(NOTIFICATION_STATE_CHANGE);
+				}
+			});
 
 			//  Add CytoPanel to the New External Window
-			Container contentPane = externalWindow.getContentPane();
-			contentPane.add(this, BorderLayout.CENTER);
-			final Dimension windowSize = this.getSize();
+			externalWindow.getContentPane().add(this, BorderLayout.CENTER);
 			
+			final Dimension windowSize = this.getSize();
 			externalWindow.setSize(windowSize);
 			externalWindow.validate();
 
@@ -665,10 +549,10 @@ public class CytoPanelImp extends JPanel implements CytoPanel, ChangeListener {
 			externalWindow.setVisible(true);
 
 			// set our new state
-			this.cytoPanelState = CytoPanelState.FLOAT;
+			cytoPanelState = CytoPanelState.FLOAT;
 
 			// re-layout
-			this.validate();
+			validate();
 
 			// SOUTH_WEST is used for manualLayout, it is nested in WEST
 			if (compassDirection == CytoPanelName.SOUTH_WEST) {
@@ -680,9 +564,6 @@ public class CytoPanelImp extends JPanel implements CytoPanel, ChangeListener {
 		}
 	}
 
-	/**
-	 * Dock cytoPanel
-	 */
 	private void DockCytoPanel() {
 		// show ourselves
 		showCytoPanel(CytoPanelState.DOCK);
@@ -692,14 +573,14 @@ public class CytoPanelImp extends JPanel implements CytoPanel, ChangeListener {
 			externalWindow.remove(this);
 
 			// add this cytopanel back to cytopanel container
-			if (cytoPanelContainer == null) {
+			if (cytoPanelContainer == null)
 				logger.warn("cytoPanelContainer reference has not been set.");
-			}
 
 			cytoPanelContainer.insertCytoPanel(this, compassDirection);
 
 			// dispose of the external window
 			externalWindow.dispose();
+			externalWindow = null;
 
 			// set proper button icon/text
 			floatButton.setText("\uF096");
@@ -724,35 +605,10 @@ public class CytoPanelImp extends JPanel implements CytoPanel, ChangeListener {
 		}
 	}
 
-	/**
-	 * Are we floating ?
-	 */
 	private boolean isFloating() {
 		return (cytoPanelState == CytoPanelState.FLOAT);
 	}
 
-	/**
-	 * Adds the listener to the floating window.
-	 */
-	private void addWindowListener() {
-		externalWindow.addWindowListener(new WindowAdapter() {
-				/**
-				 * Window is Closing.
-				 *
-				 * @param e Window Event.
-				 */
-				public void windowClosing(WindowEvent e) {
-					DockCytoPanel();
-					notifyListeners(NOTIFICATION_STATE_CHANGE);
-				}
-			});
-	}
-
-	/**
-	 * Sets the Location of the External Window.
-	 *
-	 * @param externalWindow ExternalWindow Object.
-	 */
 	private void setLocationOfExternalWindow(Window externalWindow) {
 		Toolkit tk = Toolkit.getDefaultToolkit();
 		Dimension screenDimension = tk.getScreenSize();
@@ -769,11 +625,6 @@ public class CytoPanelImp extends JPanel implements CytoPanel, ChangeListener {
 		externalWindow.setVisible(true);
 	}
 
-	/**
-	 * Code to notify our listeners of some particular event.
-	 *
-	 * @param notificationType What type of notification to perform.
-	 */
 	private void notifyListeners(int notificationType) {
 		final CyEventHelper eventHelper = serviceRegistrar.getService(CyEventHelper.class);
 
@@ -784,7 +635,7 @@ public class CytoPanelImp extends JPanel implements CytoPanel, ChangeListener {
 				break;
 	
 			case NOTIFICATION_COMPONENT_SELECTED:
-				int selectedIndex = tabbedPane.getSelectedIndex();
+				int selectedIndex = getTabbedPane().getSelectedIndex();
 				eventHelper.fireEvent(new CytoPanelComponentSelectedEvent(this, this, selectedIndex));
 				break;
 	
@@ -795,10 +646,8 @@ public class CytoPanelImp extends JPanel implements CytoPanel, ChangeListener {
 				break;
 		}
 	}
-
 	
-	@Override
-	public Component getThisComponent() {
-		return this;
+	private void updateSwitchCompButton() {
+		switchCompButton.setEnabled(getTabbedPane().getTabCount() > 0);
 	}
 }

@@ -42,7 +42,7 @@ import org.cytoscape.application.swing.CytoPanelName;
  */
 public class CytoPanelUtil {
 	
-	static final int BUTTON_SIZE = 18;
+	static final int BUTTON_SIZE = 16;
 	
 	/**
 	 * String used to compare against os.name System property -
