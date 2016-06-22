@@ -436,13 +436,19 @@ public final class TypeUtil {
 		return false;
 	}
 	
-	private static boolean isDouble(final String val) {
+	private static boolean isDouble(String val) {
 		if (val != null) {
+			val = val.trim();
+			
 			try {
-				Double.parseDouble(val.trim());
-				return true;
+				Double.parseDouble(val);
 			} catch (NumberFormatException e) {
+				return false;
 			}
+			
+			// Also check if it ends with 'f' or 'd' (if so, it should be a String!)
+			val = val.toLowerCase();
+			return !val.endsWith("f") && !val.endsWith("d");
 		}
 		
 		return false;

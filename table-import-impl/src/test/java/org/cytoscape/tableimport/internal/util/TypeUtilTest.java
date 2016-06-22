@@ -63,4 +63,25 @@ public class TypeUtilTest {
 		assertEquals(AttributeDataType.TYPE_BOOLEAN, types[2]);
 		assertEquals(AttributeDataType.TYPE_STRING, types[3]);
 	}
+	
+	@Test
+	public void testStringValuesNotRecognizedAsNumbers() {
+		// See http://code.cytoscape.org/redmine/issues/3228
+		DefaultTableModel model = new DefaultTableModel(
+				new String[][]{
+					{ "22d"  , "12f" , "10L", "1"     , "1" },
+					{ "12.1D", "0.1F", "10l", "1_000.01", "0x80000000" },
+					{ "0D"   , "0F"  , "0L" , "1_000_000", "0x7FFFFFFFL" }
+				},
+				new String[]{ "Column 1", "Column 2", "Column 3", "Column 4", "Column 5" }
+		);
+		
+		final AttributeDataType[] types = TypeUtil.guessDataTypes(model);
+		
+		assertEquals(AttributeDataType.TYPE_STRING, types[0]);
+		assertEquals(AttributeDataType.TYPE_STRING, types[1]);
+		assertEquals(AttributeDataType.TYPE_STRING, types[2]);
+		assertEquals(AttributeDataType.TYPE_STRING, types[3]);
+		assertEquals(AttributeDataType.TYPE_STRING, types[4]);
+	}
 }
