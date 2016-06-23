@@ -74,11 +74,14 @@ public final class ClipboardManagerImpl {
 	}
 
 	public void copy(CyNetworkView networkView, Set<CyNode> nodes, Set<CyEdge> edges, boolean cut) {
+		// System.out.println("Creating clipboard");
 		final VisualLexicon lexicon = vmMgr.getAllVisualLexicon().iterator().next();
 		currentClipboard = new ClipboardImpl(networkView, nodes, edges, cut, lexicon, eventHelper);
+		// System.out.println("Clipboard = "+currentClipboard+", this = "+this);
 	}
 
 	public List<CyIdentifiable> paste(CyNetworkView targetView, double x, double y) {
+		// System.out.println("Paste: clipboard = "+currentClipboard+", this = "+this);
 		if (currentClipboard == null) return null;
 		return currentClipboard.paste(targetView, x, y);
 	}

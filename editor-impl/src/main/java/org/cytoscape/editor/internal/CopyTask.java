@@ -70,6 +70,8 @@ public class CopyTask extends AbstractTask {
 
 	@Override
 	public void run(TaskMonitor tm) throws Exception {
+		tm.setTitle("Copy Task");
 		clipMgr.copy(netView, selNodes, selEdges);
+		tm.setStatusMessage("Copied "+selNodes.size()+" nodes and "+selEdges.size()+" edges to the clipboard");
 	}
 }

@@ -97,6 +97,7 @@ public class CutTask extends AbstractTask {
 	public void run(TaskMonitor tm) throws Exception {
 		final VisualLexicon lexicon = vmMgr.getAllVisualLexicon().iterator().next();
 		final Collection<VisualProperty<?>> edgeProps = lexicon.getAllDescendants(BasicVisualLexicon.EDGE);
+		tm.setTitle("Cut Task");
 		
 		// Save edges that connect nodes that will be cut but are not selected to be cut themselves,
 		// so they can be restored later on undo
@@ -117,6 +118,7 @@ public class CutTask extends AbstractTask {
 		}
 		
 		clipMgr.cut(netView, selNodes, selEdges);
+		tm.setStatusMessage("Cut "+selNodes.size()+" nodes and "+selEdges.size()+" edges and copied them to the clipboard");
 		undoSupport.postEdit(new CutEdit());
 	}
 	

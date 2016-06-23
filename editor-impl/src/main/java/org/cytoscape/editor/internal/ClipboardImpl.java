@@ -241,6 +241,14 @@ public class ClipboardImpl {
 			}
 		}
 
+		// Pass 5: Fix up selection.  For some reason, even though the selected column is set
+		// the nodes and edges don't show as selected.  We need to fix that now
+		for(CyIdentifiable object: pastedObjects) {
+			// Special-case selected!!!
+			if (isSelected(targetView, object))
+				reselect(targetView, object);
+		}
+
 		return pastedObjects;
 	}
 
@@ -494,6 +502,20 @@ public class ClipboardImpl {
 		
 		return position;
 	}
+
+	private boolean isSelected(final CyNetworkView networkView, final CyIdentifiable object) {
+		final CyNetwork network = networkView.getModel();
+		if (network.getRow(object).get(CyNetwork.SELECTED, Boolean.class))
+			return true;
+		return false;
+	}
+
+	private void reselect(final CyNetworkView networkView, final CyIdentifiable object) {
+		final CyNetwork network = networkView.getModel();
+		network.getRow(object).set(CyNetwork.SELECTED, false);
+		network.getRow(object).set(CyNetwork.SELECTED, true);
+	}
+
 	
 	static <T extends CyIdentifiable> void saveLockedValues(final View<T> view,
 			final Collection<VisualProperty<?>> visualProps, final Map<T, Map<VisualProperty<?>, Object>> bypassMap) {

@@ -59,11 +59,17 @@ public class PasteTask extends AbstractNetworkViewTask {
 
 	@Override
 	public void run(TaskMonitor tm) throws Exception {
+		tm.setTitle("Paste Task");
 		List<CyIdentifiable> pastedObjects;
 		if (xformPt == null)
 			pastedObjects = clipMgr.paste(view, 0.0, 0.0);
 		else
 			pastedObjects = clipMgr.paste(view, xformPt.getX(), xformPt.getY());
+
+		if (pastedObjects == null) {
+			tm.showMessage(TaskMonitor.Level.WARN, "Nothing to past");
+			return;
+		}
 
 		undoSupport.postEdit(new PasteEdit(vmm, view, xformPt, clipMgr, pastedObjects));
 		
@@ -82,5 +88,6 @@ public class PasteTask extends AbstractNetworkViewTask {
 		}
 
 		view.updateView();
+		tm.setStatusMessage("Pasted "+pastedObjects.size()+" nodes and/or edges");
 	}
 }
