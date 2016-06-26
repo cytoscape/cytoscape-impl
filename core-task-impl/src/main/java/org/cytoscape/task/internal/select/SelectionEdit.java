@@ -38,7 +38,7 @@ import org.cytoscape.work.undo.AbstractCyEdit;
 
 /** An undoable edit that will undo and redo selection of nodes and edges. */
 final class SelectionEdit extends AbstractCyEdit {
-	public static enum SelectionFilter {
+	public enum SelectionFilter {
 		NODES_ONLY, EDGES_ONLY, NODES_AND_EDGES;
 	}
 

@@ -129,7 +129,7 @@ public final class TableBrowserUtil {
 		return retValue;
 	}
 
-	static enum ListParserState {
+	enum ListParserState {
 		OPENING_BRACE_EXPECTED, COMMA_OR_CLOSING_BRACE_EXPECTED,
 		ITEM_OR_CLOSING_BRACE_EXPECTED, ITEM_EXPECTED, END_OF_INPUT_EXPECTED
 	};

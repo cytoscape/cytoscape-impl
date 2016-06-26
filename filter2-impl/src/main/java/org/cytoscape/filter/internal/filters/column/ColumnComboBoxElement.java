@@ -13,7 +13,7 @@ public class ColumnComboBoxElement implements Comparable<ColumnComboBoxElement> 
 	private final String description;
 	
 	
-	public static enum SelectedColumnType {
+	public enum SelectedColumnType {
 		NONE,
 		INTEGER,
 		DOUBLE,

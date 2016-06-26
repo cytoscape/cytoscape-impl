@@ -45,7 +45,7 @@ public class ViewChangeEdit extends AbstractCyEdit {
 
 	private UndoSupport m_undo;
 
-	public static enum SavedObjs { ALL, SELECTED, NODES, EDGES, SELECTED_NODES, SELECTED_EDGES }
+	public enum SavedObjs { ALL, SELECTED, NODES, EDGES, SELECTED_NODES, SELECTED_EDGES }
 
 	public ViewChangeEdit(GraphView view,String label,UndoSupport undo) {
 		this(view, SavedObjs.ALL, label, undo);

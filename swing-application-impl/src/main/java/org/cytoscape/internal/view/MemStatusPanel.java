@@ -57,7 +57,7 @@ class MemStatusPanel extends JPanel {
 	static final int MEM_UPDATE_DELAY_MS = 2000;
 	static final int MEM_STATE_ICON_DIM_PX = 14;
 	
-	static enum MemState {
+	enum MemState {
 		MEM_OK       (0.00f, 0.75f, LookAndFeelUtil.getSuccessColor(), "OK"),
 		MEM_LOW      (0.75f, 0.85f, LookAndFeelUtil.getWarnColor(), "Low"),
 		MEM_VERY_LOW (0.85f, 1.00f, LookAndFeelUtil.getErrorColor(), "Very Low");
@@ -101,7 +101,7 @@ class MemStatusPanel extends JPanel {
 		}
 	}
 
-	static enum MemUnit {
+	enum MemUnit {
 		GB(30L, "Gb"),
 		MB(20L, "Mb"),
 		KB(10L, "Kb");

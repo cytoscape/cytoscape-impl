@@ -18,15 +18,15 @@ public class AdjacencyTransformer extends AbstractMemoizableTransformer<CyNetwor
                                   implements ElementTransformer<CyNetwork,CyIdentifiable>, 
                                              SubFilterTransformer<CyNetwork,CyIdentifiable> {
 
-	public static enum Action {
+	public enum Action {
 		ADD, REPLACE
 	}
 	
-	public static enum What {
+	public enum What {
 		NODES, EDGES, NODES_AND_EDGES;
 	}
 	
-	public static enum EdgesAre {
+	public enum EdgesAre {
 		INCOMING, OUTGOING, INCOMING_AND_OUTGOING;
 		
 		public CyEdge.Type type() {

@@ -64,7 +64,7 @@ public final class GUIDefaults {
 	public static final String ICON_CANCELLED = IconManager.ICON_BAN;
 	public static final String ICON_FINISHED = IconManager.ICON_CHECK;
 	
-	public static enum TaskIcon {
+	public enum TaskIcon {
 		INFO(ICON_WARN),
 		WARN(ICON_WARN),
 		ERROR(ICON_ERROR),
