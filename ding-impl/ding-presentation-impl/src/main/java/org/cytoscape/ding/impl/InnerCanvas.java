@@ -54,6 +54,9 @@ import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.events.RowSetRecord;
 import org.cytoscape.model.events.RowsSetEvent;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.task.NetworkTaskFactory;
+import org.cytoscape.task.destroy.DeleteSelectedNodesAndEdgesTaskFactory;
 import org.cytoscape.util.intr.LongEnumerator;
 import org.cytoscape.util.intr.LongHash;
 import org.cytoscape.util.intr.LongStack;
@@ -65,6 +68,7 @@ import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.presentation.property.values.ArrowShape;
 import org.cytoscape.view.presentation.property.values.Bend;
 import org.cytoscape.view.presentation.property.values.Handle;
+import org.cytoscape.work.TaskManager;
 import org.cytoscape.work.undo.UndoSupport;
 
 /*
@@ -397,6 +401,16 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 		} else if ( code == KeyEvent.VK_ESCAPE ) {
 			handleEscapeKey();
 		}
+		else if ( code == KeyEvent.VK_BACK_SPACE ) 		//#1993
+			handleBackspaceKey();
+	}
+
+
+	private void handleBackspaceKey() {		//#1993
+	    CyServiceRegistrar serviceRegistrar = m_view.getRegistrar();
+		final TaskManager<?, ?> taskManager = serviceRegistrar.getService(TaskManager.class);
+		NetworkTaskFactory taskFactory = serviceRegistrar.getService(DeleteSelectedNodesAndEdgesTaskFactory.class);
+		taskManager.execute(taskFactory.createTaskIterator(m_view.getNetwork()));
 	}
 
 	/**
