@@ -372,6 +372,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 
 	private final CyNetworkViewManager netViewMgr; 
 	private final CyServiceRegistrar registrar;
+	public CyServiceRegistrar getRegistrar()	{ return registrar;	}			// AT -- #1942
 	private final HandleFactory handleFactory;
 
 	private List<CyNode> nodeSelectionList;
