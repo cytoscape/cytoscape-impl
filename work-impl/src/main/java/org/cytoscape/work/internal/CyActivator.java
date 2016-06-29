@@ -61,20 +61,16 @@ public class CyActivator extends AbstractCyActivator {
 		
 		SyncTaskManager syncTaskManager = new SyncTaskManager(mutatorFactory.createMutator());
 		registerService(bc,syncTaskManager,SynchronousTaskManager.class, syncFactoryProp);
-		
-
 		registerServiceListener(bc,syncTaskManager,"addTunableRecorder","removeTunableRecorder",TunableRecorder.class);
 		
 		TunableRecorderManager trm = new TunableRecorderManager();
 		registerServiceListener(bc,trm,"addTunableRecorder","removeTunableRecorder",TunableRecorder.class);
 
 		TunableSetterImpl tsi = new TunableSetterImpl(mutatorFactory,trm);
-		registerService(bc,tsi,TunableSetter.class, new Properties());
-
-		
+		registerService(bc,tsi,TunableSetter.class);		
 		
 		TunablePropertySerializerFactoryImpl tpsf = new TunablePropertySerializerFactoryImpl();
-		registerService(bc, tpsf, TunablePropertySerializerFactory.class, new Properties());
+		registerService(bc, tpsf, TunablePropertySerializerFactory.class);
 		registerServiceListener(bc, tpsf, "addTunableHandlerFactory", "removeTunableHandlerFactory", TunablePropertyHandlerFactory.class);
 		
 		TunablePropertyHandlerFactory<BasicTypePropertyHandler> simpleHandler = new SimpleTunablePropertyHandlerFactory<>(BasicTypePropertyHandler.class, BasicTypePropertyHandler.supportedTypes());
@@ -82,9 +78,9 @@ public class CyActivator extends AbstractCyActivator {
 		TunablePropertyHandlerFactory<ListMultiplePropertyHandler> listMultipleHandler = new SimpleTunablePropertyHandlerFactory<>(ListMultiplePropertyHandler.class, ListMultipleSelection.class);
 		TunablePropertyHandlerFactory<BoundedPropertyHandler> boundedHandler = new SimpleTunablePropertyHandlerFactory<>(BoundedPropertyHandler.class, BoundedPropertyHandler.supportedTypes());
 		
-		registerService(bc, simpleHandler,       TunablePropertyHandlerFactory.class, new Properties());
-		registerService(bc, listMultipleHandler, TunablePropertyHandlerFactory.class, new Properties());
-		registerService(bc, listSingleHandler,   TunablePropertyHandlerFactory.class, new Properties());
-		registerService(bc, boundedHandler,      TunablePropertyHandlerFactory.class, new Properties());
+		registerService(bc, simpleHandler,       TunablePropertyHandlerFactory.class);
+		registerService(bc, listMultipleHandler, TunablePropertyHandlerFactory.class);
+		registerService(bc, listSingleHandler,   TunablePropertyHandlerFactory.class);
+		registerService(bc, boundedHandler,      TunablePropertyHandlerFactory.class);
 	}
 }
