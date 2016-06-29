@@ -81,6 +81,12 @@ public class OntologyPanelBuilder {
 	private final ImportTablePanel panel;
 	private final InputStreamTaskFactory isTaskFactory;
 	private final CyServiceRegistrar serviceRegistrar;
+	private Map<String, String> annotationUrlMap;
+	private Map<String, String> annotationFormatMap;
+	private Map<String, Map<String, String>> annotationAttributesMap;
+	private Map<String, String> ontologyUrlMap;
+	private Map<String, String> ontologyTypeMap;
+	private Map<String, String> ontologyDescriptionMap;
 
 	OntologyPanelBuilder(
 			final ImportTablePanel panel,
@@ -90,6 +96,13 @@ public class OntologyPanelBuilder {
 		this.panel = panel;
 		this.isTaskFactory = isTaskFactory;
 		this.serviceRegistrar = serviceRegistrar;
+		annotationUrlMap = new HashMap<>();
+		annotationFormatMap = new HashMap<>();
+		annotationAttributesMap = new HashMap<>();
+
+		ontologyUrlMap = new HashMap<>();
+		ontologyDescriptionMap = new HashMap<>();
+		ontologyTypeMap = new HashMap<>();
 	}
 
 	protected void buildPanel() {
@@ -102,7 +115,7 @@ public class OntologyPanelBuilder {
 					boolean cellHasFocus) {
 				JLabel ontologyItem = (JLabel) ontologyLcr.getListCellRendererComponent(list, value, index, isSelected,
 						cellHasFocus);
-				String url = panel.ontologyUrlMap.get(value);
+				String url = ontologyUrlMap.get(value);
 
 				if (isSelected) {
 					ontologyItem.setBackground(list.getSelectionBackground());
@@ -145,7 +158,7 @@ public class OntologyPanelBuilder {
 			public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected,
 					boolean cellHasFocus) {
 				JLabel cmp = (JLabel) lcr.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-				String url = panel.annotationUrlMap.get(value);
+				String url = annotationUrlMap.get(value);
 
 				if (value == null)
 					cmp.setIcon(null);
@@ -184,7 +197,7 @@ public class OntologyPanelBuilder {
 	private String getOntologyTooltip() {
 		final String key = panel.ontologyComboBox.getSelectedItem().toString();
 		String tooltip = ontologyHtml.replace("%DataSourceName%", key);
-		final String description = panel.ontologyDescriptionMap.get(key);
+		final String description = ontologyDescriptionMap.get(key);
 
 		if (description == null) {
 			tooltip = tooltip.replace("%Description%", "N/A");
@@ -192,8 +205,8 @@ public class OntologyPanelBuilder {
 			tooltip = tooltip.replace("%Description%", description);
 		}
 
-		if (panel.ontologyUrlMap.get(key) != null) {
-			return tooltip.replace("%SourceURL%", panel.ontologyUrlMap.get(key));
+		if (ontologyUrlMap.get(key) != null) {
+			return tooltip.replace("%SourceURL%", ontologyUrlMap.get(key));
 		} else {
 			return tooltip.replace("%SourceURL%", "N/A");
 		}
@@ -212,7 +225,7 @@ public class OntologyPanelBuilder {
 
 		try {
 			final String selectedSourceName = panel.annotationComboBox.getSelectedItem().toString();
-			final URL sourceURL = new URL(panel.annotationUrlMap.get(selectedSourceName));
+			final URL sourceURL = new URL(annotationUrlMap.get(selectedSourceName));
 
 			panel.readAnnotationForPreviewOntology(sourceURL, panel.checkDelimiter());
 		} catch (IOException e) {
@@ -224,16 +237,16 @@ public class OntologyPanelBuilder {
 		final String key = panel.annotationComboBox.getSelectedItem().toString();
 		String tooltip = annotationHtml.replace("%DataSourceName%", key);
 
-		if (panel.annotationUrlMap.get(key) == null) {
+		if (annotationUrlMap.get(key) == null) {
 			return "";
 		}
 
-		tooltip = tooltip.replace("%SourceURL%", panel.annotationUrlMap.get(key));
+		tooltip = tooltip.replace("%SourceURL%", annotationUrlMap.get(key));
 
-		if (panel.annotationFormatMap.get(key) != null) {
-			tooltip = tooltip.replace("%Format%", panel.annotationFormatMap.get(key));
+		if (annotationFormatMap.get(key) != null) {
+			tooltip = tooltip.replace("%Format%", annotationFormatMap.get(key));
 		} else {
-			String[] parts = panel.annotationUrlMap.get(key).split("/");
+			String[] parts = annotationUrlMap.get(key).split("/");
 
 			if (parts[parts.length - 1].startsWith(GENE_ASSOCIATION)) {
 				tooltip = tooltip.replace("%Format%", "Gene Association");
@@ -242,9 +255,9 @@ public class OntologyPanelBuilder {
 			tooltip = tooltip.replace("%Format%", "General Annotation Text Table");
 		}
 
-		if (panel.annotationAttributesMap.get(key) != null) {
+		if (annotationAttributesMap.get(key) != null) {
 			StringBuffer table = new StringBuffer();
-			final Map<String, String> annotations = panel.annotationAttributesMap.get(key);
+			final Map<String, String> annotations = annotationAttributesMap.get(key);
 
 			for (String anno : annotations.keySet()) {
 				table.append("<tr>");
@@ -270,7 +283,7 @@ public class OntologyPanelBuilder {
 
 		if (key != null) {
 			panel.annotationComboBox.addItem(key);
-			panel.annotationUrlMap.put(key, dssd.getSourceUrlString());
+			annotationUrlMap.put(key, dssd.getSourceUrlString());
 			panel.annotationComboBox.setSelectedItem(key);
 			panel.annotationComboBox.setToolTipText(getAnnotationTooltip());
 		}
@@ -288,7 +301,7 @@ public class OntologyPanelBuilder {
 
 		if (key != null) {
 			panel.ontologyComboBox.insertItemAt(key, 0);
-			panel.ontologyUrlMap.put(key, dssd.getSourceUrlString());
+			ontologyUrlMap.put(key, dssd.getSourceUrlString());
 			panel.ontologyComboBox.setSelectedItem(key);
 			panel.ontologyComboBox.setToolTipText(getOntologyTooltip());
 		}
@@ -307,9 +320,9 @@ public class OntologyPanelBuilder {
 		for (DataSource source : annotations) {
 			key = source.getName();
 			panel.ontologyComboBox.addItem(key);
-			panel.ontologyUrlMap.put(key, source.getHref());
-			panel.ontologyDescriptionMap.put(key, bkUtil.getAttribute(source, "description"));
-			panel.ontologyTypeMap.put(key, bkUtil.getAttribute(source, "ontologyType"));
+			ontologyUrlMap.put(key, source.getHref());
+			ontologyDescriptionMap.put(key, bkUtil.getAttribute(source, "description"));
+			ontologyTypeMap.put(key, bkUtil.getAttribute(source, "ontologyType"));
 		}
 
 		panel.ontologyComboBox.setToolTipText(getOntologyTooltip());
@@ -330,15 +343,15 @@ public class OntologyPanelBuilder {
 		for (DataSource source : annotations) {
 			key = source.getName();
 			panel.annotationComboBox.addItem(key);
-			panel.annotationUrlMap.put(key, source.getHref());
-			panel.annotationFormatMap.put(key, source.getFormat());
+			annotationUrlMap.put(key, source.getHref());
+			annotationFormatMap.put(key, source.getFormat());
 
 			final Map<String, String> attrMap = new HashMap<String, String>();
 
 			for (Attribute attr : source.getAttribute())
 				attrMap.put(attr.getName(), attr.getContent());
 
-			panel.annotationAttributesMap.put(key, attrMap);
+			annotationAttributesMap.put(key, attrMap);
 		}
 
 		panel.annotationComboBox.setToolTipText(getAnnotationTooltip());
@@ -368,8 +381,8 @@ public class OntologyPanelBuilder {
 
 	protected void importOntologyAndAnnotation() throws IOException {
 		final String selectedOntologyName = panel.ontologyComboBox.getSelectedItem().toString();
-		final String ontologySourceLocation = panel.ontologyUrlMap.get(selectedOntologyName);
-		final String annotationSource = panel.annotationUrlMap.get(panel.annotationComboBox.getSelectedItem());
+		final String ontologySourceLocation = ontologyUrlMap.get(selectedOntologyName);
+		final String annotationSource = annotationUrlMap.get(panel.annotationComboBox.getSelectedItem());
 
 		loadOntology(ontologySourceLocation, selectedOntologyName, annotationSource);
 	}
