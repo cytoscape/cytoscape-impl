@@ -200,102 +200,100 @@ public class JPanelTunableMutator extends AbstractTunableInterceptor<GUITunableH
 					tunablePanel.add(providedGUI);
 					final JPanel retVal = tunablePanel;
 					tunablePanel = null;
-					
+
 					return retVal;
 				}
-			} 
-	
+			}
+
 			if (handlers.isEmpty()) {
 				if (tunablePanel != null) {
 					tunablePanel.removeAll();
-					
+
 					return tunablePanel;
 				}
-				
-				return null; 
+
+				return null;
 			}
-	
+
 			// This is special case handling for when there is only one tunable specified
 			// in a task, in which case we don't want a full tunable dialog
 			// and all of the extra clicks, instead we just want to show the special dialog.
 			if ( handlers.size() == 1 && handlers.get(0) instanceof DirectlyPresentableTunableHandler ) {
 				DirectlyPresentableTunableHandler fh = (DirectlyPresentableTunableHandler) handlers.get(0);
-				
+
 				if (fh.isForcedToSetDirectly()){
 					boolean fileFound = fh.setTunableDirectly(possibleParent);
-					
-					return fileFound ? null : HANDLER_CANCEL_PANEL; 
+
+					return fileFound ? null : HANDLER_CANCEL_PANEL;
 				}
 			}
-	
-			if (!panelMap.containsKey(handlers)) {
-				Map<String, JPanel> panels = new HashMap<String, JPanel>();
-				final JPanel topLevel = new SimplePanel(true);
-				panels.put(TOP_GROUP, topLevel);
-	
-				// construct the GUI
-				for (GUITunableHandler gh : handlers) {
-					// hook up dependency listeners
-					String dep = gh.getDependency();
-					
-					if (dep != null && !dep.equals("")) {
+
+			Map<String, JPanel> panels = new HashMap<String, JPanel>();
+			final JPanel topLevel = new SimplePanel(true);
+			panels.put(TOP_GROUP, topLevel);
+
+			// construct the GUI
+			for (GUITunableHandler gh : handlers) {
+				// hook up dependency listeners
+				String dep = gh.getDependency();
+
+				if (dep != null && !dep.equals("")) {
+					for (GUITunableHandler gh2 : handlers) {
+						if (gh2.getName().equals(dep)) {
+							gh2.addDependent(gh);
+							break;
+						}
+					}
+				}
+
+				// hook up change listeners
+				for (String cs : gh.getChangeSources()) {
+					if (cs != null && !cs.equals("")) {
 						for (GUITunableHandler gh2 : handlers) {
-							if (gh2.getName().equals(dep)) {
-								gh2.addDependent(gh);
+							if (gh2.getName().equals(cs)) {
+								gh2.addChangeListener(gh);
 								break;
 							}
 						}
 					}
-	
-					// hook up change listeners
-					for (String cs : gh.getChangeSources()) {
-						if (cs != null && !cs.equals("")) {
-							for (GUITunableHandler gh2 : handlers) {
-								if (gh2.getName().equals(cs)) {
-									gh2.addChangeListener(gh);
-									break;
-								}
-							}
-						}
-					}
-	
-					// Get information about the Groups and alignment from Tunables Annotations 
-					// in order to create the proper GUI
-					final Map<String, Boolean> groupToVerticalMap = processGroupParams(gh,"alignments","vertical"); 
-					final Map<String, Boolean> groupToDisplayedMap = processGroupParams(gh,"groupTitles","displayed"); 
-	
-					// find the proper group to put the handler panel in given the Alignment/Group parameters
-					String lastGroup = TOP_GROUP;
-					String groupNames = "";
-					
-					for (String g : gh.getGroups()) {
-						if (g.equals(""))
-							throw new IllegalArgumentException("A group's name must not be \"\".");
-						
-						groupNames = groupNames + g;
-						
-						if (!panels.containsKey(groupNames)) {
-							panels.put(groupNames,
-							           createJPanel(g, gh, groupToVerticalMap.get(g), groupToDisplayedMap.get(g)));
-							final JPanel pnl = panels.get(groupNames);
-							panels.get(lastGroup).add(pnl, gh.getChildKey());
-						}
-						
-						lastGroup = groupNames;
-					}
-					
-					panels.get(lastGroup).add(gh.getJPanel());
 				}
-				
-				panelMap.put(handlers, panels.get(TOP_GROUP));
+
+				// Get information about the Groups and alignment from Tunables Annotations
+				// in order to create the proper GUI
+				final Map<String, Boolean> groupToVerticalMap = processGroupParams(gh,"alignments","vertical");
+				final Map<String, Boolean> groupToDisplayedMap = processGroupParams(gh,"groupTitles","displayed");
+
+				// find the proper group to put the handler panel in given the Alignment/Group parameters
+				String lastGroup = TOP_GROUP;
+				String groupNames = "";
+
+				for (String g : gh.getGroups()) {
+					if (g.equals(""))
+						throw new IllegalArgumentException("A group's name must not be \"\".");
+
+					groupNames = groupNames + g;
+
+					if (!panels.containsKey(groupNames)) {
+						panels.put(groupNames,
+						           createJPanel(g, gh, groupToVerticalMap.get(g), groupToDisplayedMap.get(g)));
+						final JPanel pnl = panels.get(groupNames);
+						panels.get(lastGroup).add(pnl, gh.getChildKey());
+					}
+
+					lastGroup = groupNames;
+				}
+
+				panels.get(lastGroup).add(gh.getJPanel());
 			}
-	
+
+			panelMap.put(handlers, panels.get(TOP_GROUP));
+
 			updateTunableFieldPanelMargins();
-			
+
 			// Get the GUI into the proper state
 			for (GUITunableHandler gh : handlers)
 				gh.notifyDependents();
-	
+
 			// if no tunablePane is defined, then create a new JDialog to display the Tunables' panels
 			if (tunablePanel == null) {
 				return panelMap.get(handlers);
