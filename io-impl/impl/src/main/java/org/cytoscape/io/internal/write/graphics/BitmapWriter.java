@@ -61,7 +61,7 @@ public class BitmapWriter extends AbstractTask implements CyWriter {
 
 	//****
 	public BoundedDouble zoom;
-	@Tunable(description = "Zoom (%):",groups={"Image Size"},params="alignments=vertical;slider=true",listenForChange={"WidthInPixels","HeightInPixels", "WidthInInches", "HeightInInches"}, format="###'%'")
+	@Tunable(description = "Zoom (%):",groups={"Image Size"},params="alignments=vertical;slider=true",listenForChange={"WidthInPixels","HeightInPixels", "WidthInInches", "HeightInInches"}, format="###'%'", gravity = 1.0)
 	public BoundedDouble getZoom(){
 		return zoom;
 	}
@@ -81,7 +81,7 @@ public class BitmapWriter extends AbstractTask implements CyWriter {
 	//****
 	
 	public int widthInPixels;
-	@Tunable(description = "Width (px):",groups={"Image Size"},params="alignments=vertical",listenForChange={"Zoom","HeightInPixels", "WidthInInches", "HeightInInches"})
+	@Tunable(description = "Width (px):",groups={"Image Size"},params="alignments=vertical",listenForChange={"Zoom","HeightInPixels", "WidthInInches", "HeightInInches"}, gravity = 1.1)
 	public int getWidthInPixels(){
 		return widthInPixels;
 	}
@@ -99,7 +99,7 @@ public class BitmapWriter extends AbstractTask implements CyWriter {
 	
 	//****
 	public int heightInPixels;
-	@Tunable(description = "Height (px):",groups={"Image Size"},params="alignments=vertical",listenForChange={"Zoom","WidthInPixels", "WidthInInches", "HeightInInches"})
+	@Tunable(description = "Height (px):",groups={"Image Size"},params="alignments=vertical",listenForChange={"Zoom","WidthInPixels", "WidthInInches", "HeightInInches"}, gravity = 1.2)
 	public int getHeightInPixels(){
 		return heightInPixels;
 	}
@@ -117,7 +117,7 @@ public class BitmapWriter extends AbstractTask implements CyWriter {
 	
 	//****
 	public double widthInInches;
-	@Tunable(description = "Width (inches):",groups={"Image Size"},params="alignments=vertical",listenForChange={"Resolution", "Zoom", "HeightInPixels", "WidthInPixels" , "HeightInInches"})
+	@Tunable(description = "Width (inches):",groups={"Image Size"},params="alignments=vertical",listenForChange={"Resolution", "Zoom", "HeightInPixels", "WidthInPixels" , "HeightInInches"}, gravity = 1.3)
 	public double getWidthInInches(){
 		return widthInInches;
 	}
@@ -136,7 +136,7 @@ public class BitmapWriter extends AbstractTask implements CyWriter {
 	
 	//****
 	public double heightInInches;
-	@Tunable(description = "Height (inches):",groups={"Image Size"},params="alignments=vertical",listenForChange={"Resolution", "Zoom", "HeightInPixels", "WidthInPixels", "WidthInInches"})
+	@Tunable(description = "Height (inches):",groups={"Image Size"},params="alignments=vertical",listenForChange={"Resolution", "Zoom", "HeightInPixels", "WidthInPixels", "WidthInInches"}, gravity = 1.4)
 	public double getHeightInInches(){
 		return heightInInches;
 	}
@@ -154,7 +154,7 @@ public class BitmapWriter extends AbstractTask implements CyWriter {
 	
 	//****
 	public ListSingleSelection<Integer> resolution;
-	@Tunable(description = "Resolution (DPI):",groups={"Image Size"},params="alignments=vertical")
+	@Tunable(description = "Resolution (DPI):",groups={"Image Size"},params="alignments=vertical", gravity = 1.5)
 	public ListSingleSelection<Integer> getResolution(){
 		return resolution;
 	}

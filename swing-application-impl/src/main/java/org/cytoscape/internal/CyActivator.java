@@ -46,6 +46,7 @@ import org.cytoscape.internal.actions.DestroyNetworkViewsAction;
 import org.cytoscape.internal.actions.DestroyNetworksAction;
 import org.cytoscape.internal.actions.DetachedViewToolBarAction;
 import org.cytoscape.internal.actions.ExitAction;
+import org.cytoscape.internal.actions.ExportImageAction;
 import org.cytoscape.internal.actions.FullScreenAction;
 import org.cytoscape.internal.actions.FullScreenMacAction;
 import org.cytoscape.internal.actions.PreferenceAction;
@@ -192,6 +193,7 @@ public class CyActivator extends AbstractCyActivator {
 	private UndoAction undoAction;
 	private RedoAction redoAction;
 	
+	private ExportImageAction exportImageAction;
 	private PrintAction printAction;
 	private ExitAction exitAction;
 	private PreferenceAction preferenceAction;
@@ -231,6 +233,7 @@ public class CyActivator extends AbstractCyActivator {
 		
 		registerService(bc, undoAction, CyAction.class, new Properties());
 		registerService(bc, redoAction, CyAction.class, new Properties());
+		registerService(bc, exportImageAction, CyAction.class, new Properties());
 		registerService(bc, printAction, CyAction.class, new Properties());
 		registerService(bc, preferenceAction, CyAction.class, new Properties());
 		registerService(bc, bookmarkAction, CyAction.class, new Properties());
@@ -472,6 +475,7 @@ public class CyActivator extends AbstractCyActivator {
 		undoAction = new UndoAction(undoSupport);
 		redoAction = new RedoAction(undoSupport);
 		
+		exportImageAction = new ExportImageAction(cytoscapeDesktop, serviceRegistrar);
 		printAction = new PrintAction(applicationManager, netViewManager, cyProperty);
 		exitAction = new ExitAction(serviceRegistrar);
 		preferenceAction = new PreferenceAction(cytoscapeDesktop, preferencesDialogFactory);

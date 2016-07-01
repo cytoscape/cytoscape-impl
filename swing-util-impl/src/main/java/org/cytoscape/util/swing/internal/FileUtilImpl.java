@@ -167,9 +167,8 @@ class FileUtilImpl implements FileUtil {
 								if (answer == JOptionPane.NO_OPTION) // Try again
 									return getFiles(parent, title, loadSaveCustom, file.getParent(), customApproveText,
 											multiselect, filters);
-								
-								newFileName = fileNameWithExt;
 							}
+							newFileName = fileNameWithExt;
 						}
 					}
 					
@@ -308,28 +307,28 @@ class FileUtilImpl implements FileUtil {
 		}
 	}
 	
-	private String addFileExt(final Collection<FileChooserFilter> filters, String fileName) {
-		final Set<String> extSet = new LinkedHashSet<String>();
-		
-		for (final FileChooserFilter filter : filters) {
-			final String[] exts = filter.getExtensions();
-			
-			for (String ext : exts)
-				extSet.add(ext);
-		}
-		
-		// If there is more than one possible extension, don't add any extension here,
+	@Override
+	public String addFileExt(final Collection<FileChooserFilter> filters, String fileName) {
+		// If there is more than one possible file type, don't add any extension here,
 		// because we don't know which one should be chosen.
-		if (extSet.size() == 1) {
+		if (filters.size() == 1) {
 			// Check file name has the extension
 			final String upperName = fileName.toUpperCase();
-			final String ext = extSet.iterator().next();
-			
-			if (!upperName.endsWith("." + ext.toUpperCase()))
-				fileName = fileName + "." + ext;
+			final FileChooserFilter filter = filters.iterator().next();
+			String[] exts = filter.getExtensions();
+			if(exts != null && exts.length >= 1 ) {
+				for(String ext: exts) {
+					if (upperName.endsWith("." + ext.toUpperCase()))
+						return fileName;
+				}			
+				fileName = fileName + "." + filter.getExtensions()[0];
+			}
 		}
-		
 		return fileName;
+	}
+	
+	public String getCurrentDirectory() {
+		return coreProperties.getProperty(FileUtil.LAST_DIRECTORY, System.getProperty("user.dir"));
 	}
 
 	private static final class CombinedFilenameFilter implements FilenameFilter {
