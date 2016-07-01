@@ -15,6 +15,7 @@ import org.cytoscape.filter.internal.filters.composite.CompositeFilterPanel;
 import org.cytoscape.filter.internal.filters.composite.CompositeSeparator;
 import org.cytoscape.filter.internal.view.look.FilterPanelStyle;
 import org.cytoscape.filter.internal.work.FilterWorker;
+import org.cytoscape.filter.internal.work.ValidationManager;
 import org.cytoscape.filter.model.CompositeFilter;
 import org.cytoscape.filter.model.Filter;
 import org.cytoscape.filter.model.NamedTransformer;
@@ -32,10 +33,18 @@ public class FilterPanelController extends AbstractPanelController<FilterElement
 	
 	private boolean isInteractive;
 
-	public FilterPanelController(TransformerManager transformerManager, TransformerViewManager transformerViewManager,
-			FilterWorker worker, ModelMonitor modelMonitor, FilterIO filterIo, TaskManager<?, ?> taskManager,
-			FilterPanelStyle style, IconManager iconManager) {
-		super(worker, transformerManager, transformerViewManager, filterIo, taskManager, style, iconManager);
+	public FilterPanelController(
+			TransformerManager transformerManager, 
+			TransformerViewManager transformerViewManager,
+			ValidationManager validationManager,
+			FilterWorker worker, 
+			ModelMonitor modelMonitor, 
+			FilterIO filterIo, 
+			TaskManager<?, ?> taskManager,
+			FilterPanelStyle style, 
+			IconManager iconManager) 
+	{
+		super(worker, transformerManager, transformerViewManager, validationManager, filterIo, taskManager, style, iconManager);
 		worker.setController(this);
 		
 		this.transformerManager = transformerManager;

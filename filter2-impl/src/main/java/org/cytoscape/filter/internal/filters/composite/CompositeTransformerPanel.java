@@ -25,6 +25,7 @@ import org.cytoscape.filter.internal.view.TransformerPanel;
 import org.cytoscape.filter.internal.view.TransformerPanelController;
 import org.cytoscape.filter.internal.view.ViewUtil;
 import org.cytoscape.filter.model.Transformer;
+import org.cytoscape.filter.model.ValidatableTransformer;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.util.swing.IconManager;
@@ -66,11 +67,20 @@ public class CompositeTransformerPanel extends JPanel implements CompositePanelC
 		addButton = createAddChainEntryButton();
 
 		for (Transformer<CyNetwork, CyIdentifiable> transformer : model) {
-			JComponent component = transformerPanelController.createView(parent, transformer, 0);
-			TransformerElementViewModel<TransformerPanel> viewModel = new TransformerElementViewModel<TransformerPanel>(component, transformerPanelController, parent);
+			TransformerElementViewModel<TransformerPanel> viewModel = createViewModel(transformer);
 			viewModels.put(transformer, viewModel);
 		}
 	}
+	
+	private TransformerElementViewModel<TransformerPanel> createViewModel(Transformer<CyNetwork,CyIdentifiable> transformer) {
+		JComponent component = transformerPanelController.createView(parent, transformer, 0);
+		TransformerElementViewModel<TransformerPanel> viewModel = new TransformerElementViewModel<>(component, transformerPanelController, parent);
+		if(transformer instanceof ValidatableTransformer) {
+			transformerPanelController.getValidationManager().register((ValidatableTransformer<CyNetwork,CyIdentifiable>)transformer, viewModel);
+		}
+		return viewModel;
+	}
+	
 	
 	JButton createAddChainEntryButton() {
 		final JButton button = new JButton(IconManager.ICON_PLUS);
@@ -114,20 +124,30 @@ public class CompositeTransformerPanel extends JPanel implements CompositePanelC
 				panel.updateLayout();
 			}
 			
-			checkBoxGroup.addGroup(layout.createSequentialGroup()
-				.addComponent(viewModel.deleteButton, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE)
-				.addGap(4)
-				.addComponent(viewModel.handle, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE));
+			checkBoxGroup.addGroup(
+					layout.createParallelGroup()
+					.addGroup(
+						layout.createSequentialGroup()
+						.addComponent(viewModel.deleteButton, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE)
+						.addGap(4)
+						.addComponent(viewModel.handle, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE))
+					.addGap(4)
+					.addComponent(viewModel.warnIcon, Alignment.CENTER));
+			
 			viewGroup.addComponent(viewModel.view, 0, GroupLayout.PREFERRED_SIZE, Short.MAX_VALUE)
 					 .addComponent(viewModel.separator);
 			
 			rows.addGroup(layout.createParallelGroup(Alignment.LEADING)
-								.addGroup(layout.createSequentialGroup()
-										.addGap(ViewUtil.INTERNAL_VERTICAL_PADDING)
-										.addGroup(layout.createParallelGroup()
-												.addComponent(viewModel.deleteButton, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE)
-												.addComponent(viewModel.handle, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE)))
-								.addComponent(viewModel.view, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE));
+					.addGroup(layout.createSequentialGroup()
+							.addGap(ViewUtil.INTERNAL_VERTICAL_PADDING)
+							.addGroup(
+								layout.createSequentialGroup().addGroup(
+									layout.createParallelGroup()
+									.addComponent(viewModel.deleteButton, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE)
+									.addComponent(viewModel.handle, GroupLayout.PREFERRED_SIZE, GroupLayout.PREFERRED_SIZE, GroupLayout.PREFERRED_SIZE))
+								.addGap(4)
+								.addComponent(viewModel.warnIcon)))
+					.addComponent(viewModel.view, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE));
 			rows.addComponent(viewModel.separator, separatorHeight, separatorHeight, separatorHeight);
 		}
 		
@@ -147,11 +167,11 @@ public class CompositeTransformerPanel extends JPanel implements CompositePanelC
 	}
 
 	public void addTransformer(Transformer<CyNetwork, CyIdentifiable> transformer) {
-		JComponent component = transformerPanelController.createView(parent, transformer, 0);
-		final TransformerElementViewModel<TransformerPanel> viewModel = new TransformerElementViewModel<TransformerPanel>(component, transformerPanelController, parent);
+		TransformerElementViewModel<TransformerPanel> viewModel = createViewModel(transformer);
 		addViewModel(transformer, viewModel);
 	}
-
+	
+	
 	public void addViewModel(Transformer<CyNetwork, CyIdentifiable> transformer, TransformerElementViewModel<TransformerPanel> viewModel) {
 		model.add(transformer);
 		viewModels.put(transformer, viewModel);
@@ -164,6 +184,10 @@ public class CompositeTransformerPanel extends JPanel implements CompositePanelC
 		// always unregister
 		if (model != null && model.view != null) {
 			transformerPanelController.unregisterView(model.view);
+		}
+		
+		if(transformer instanceof ValidatableTransformer) {
+			transformerPanelController.getValidationManager().unregister((ValidatableTransformer<CyNetwork,CyIdentifiable>)transformer);
 		}
 	}
 	

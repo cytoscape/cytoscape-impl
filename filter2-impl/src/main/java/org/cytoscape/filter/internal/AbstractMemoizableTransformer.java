@@ -16,7 +16,7 @@ import org.cytoscape.model.CyIdentifiable;
  * complexity. The solution/optimization is to apply the dynamic programming technique
  * of memoization to the sub-filter to cache its results. But for this to work we need 
  * to know when the process of running the transformer begins and ends, so the 
- * LifecycleTransformer interface is also needed.
+ * {@link MemoizableTransformer} interface is also needed.
  * 
  * @author mkucera
  *

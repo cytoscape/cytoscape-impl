@@ -13,7 +13,7 @@ import javax.swing.JComponent;
 
 import org.cytoscape.application.events.SetCurrentNetworkEvent;
 import org.cytoscape.application.events.SetCurrentNetworkListener;
-import org.cytoscape.filter.internal.filters.column.ColumnComboBoxElement;
+import org.cytoscape.filter.internal.filters.column.ColumnElement;
 import org.cytoscape.filter.internal.filters.column.ColumnFilter;
 import org.cytoscape.filter.internal.filters.column.ColumnFilterController;
 import org.cytoscape.filter.internal.filters.column.ColumnFilterView;
@@ -54,10 +54,10 @@ public class ModelMonitor implements SetCurrentNetworkListener,
 	
 	Map<String, double[]> nodeColumnRanges;
 	Map<String, double[]> edgeColumnRanges;
-	List<ColumnComboBoxElement> columnNames;
+	List<ColumnElement> columnNames;
 	
 	private final Object lock = new Object();
-	private ColumnComboBoxElement defaultColumnName;
+	private ColumnElement defaultColumnName;
 	
 	private Map<DegreeFilterView, DegreeFilterController> degreeViews;
 	private Map<ColumnFilterView, ColumnFilterController> columnViews;
@@ -70,8 +70,8 @@ public class ModelMonitor implements SetCurrentNetworkListener,
 		nodeColumnRanges = new HashMap<>();
 		edgeColumnRanges = new HashMap<>();
 		
-		columnNames = new ArrayList<ColumnComboBoxElement>();
-		defaultColumnName = new ColumnComboBoxElement("Choose column...");
+		columnNames = new ArrayList<ColumnElement>();
+		defaultColumnName = new ColumnElement("Choose column...");
 		columnNames.add(defaultColumnName);
 		
 		interactivityChangedListeners = new CopyOnWriteArrayList<>();
@@ -219,7 +219,7 @@ public class ModelMonitor implements SetCurrentNetworkListener,
 		for (ColumnFilterController controller : columnViews.values()) {
 			ColumnFilter filter = controller.getFilter();
 			
-			Class<? extends CyIdentifiable> columnType = filter.getColumnType();
+			Class<? extends CyIdentifiable> columnType = filter.getTableType();
 			Number[] range;
 			String name = filter.getColumnName();
 			if (name == null) {
@@ -297,6 +297,10 @@ public class ModelMonitor implements SetCurrentNetworkListener,
 			}
 		}
 	}
+	
+	public boolean isCurrent(ColumnElement column) {
+		return columnNames.contains(column);
+	}
 
 	private void updateColumnViews() {
 		for (Entry<ColumnFilterView, ColumnFilterController> entry : columnViews.entrySet()) {
@@ -314,9 +318,9 @@ public class ModelMonitor implements SetCurrentNetworkListener,
 			Class<?> listElementType = column.getListElementType();
 			
 			if (List.class.equals(elementType) && (String.class.equals(listElementType) || Number.class.isAssignableFrom(listElementType) || Boolean.class.equals(listElementType))) {
-				columnNames.add(new ColumnComboBoxElement(type, column));
+				columnNames.add(new ColumnElement(type, column));
 			} else if (String.class.equals(elementType) || Number.class.isAssignableFrom(elementType) || Boolean.class.equals(elementType)) {
-				columnNames.add(new ColumnComboBoxElement(type, column));
+				columnNames.add(new ColumnElement(type, column));
 			}
 		}
 	}
@@ -343,7 +347,7 @@ public class ModelMonitor implements SetCurrentNetworkListener,
 			
 			CyColumn column = table.getColumn(event.getColumnName());
 			
-			columnNames.add(new ColumnComboBoxElement(type, column));
+			columnNames.add(new ColumnElement(type, column));
 			Collections.sort(columnNames);
 			updateColumnViews();
 		}
@@ -369,7 +373,7 @@ public class ModelMonitor implements SetCurrentNetworkListener,
 				return;
 			}
 			for (int i = 0; i < columnNames.size(); i++) {
-				ColumnComboBoxElement element = columnNames.get(i);
+				ColumnElement element = columnNames.get(i);
 				if (element.getName().equals(event.getColumnName()) && type.equals(element.getTableType())) {
 					columnNames.remove(i);
 					break;
@@ -400,10 +404,10 @@ public class ModelMonitor implements SetCurrentNetworkListener,
 				return;
 			}
 			for (int i = 0; i < columnNames.size(); i++) {
-				ColumnComboBoxElement element = columnNames.get(i);
+				ColumnElement element = columnNames.get(i);
 				if (element.getName().equals(event.getOldColumnName()) && type.equals(element.getTableType())) {
 					columnNames.remove(i);
-					columnNames.add(new ColumnComboBoxElement(element.getTableType(), column));
+					columnNames.add(new ColumnElement(element.getTableType(), column));
 					break;
 				}
 			}
@@ -443,7 +447,7 @@ public class ModelMonitor implements SetCurrentNetworkListener,
 		}
 	}
 
-	public List<ColumnComboBoxElement> getColumnComboBoxModel() {
+	public List<ColumnElement> getColumnComboBoxModel() {
 		return columnNames;
 	}
 
@@ -509,6 +513,8 @@ public class ModelMonitor implements SetCurrentNetworkListener,
 	private Number[] getColumnRange(CyTable table, String name, Map<String, double[]> ranges) {
 		double[] range = ranges.get(name);
 		CyColumn column = table.getColumn(name);
+		if(column == null)
+			return null;
 		if (range == null) {
 			range = computeRange(table, name, column);
 			ranges.put(name, range);

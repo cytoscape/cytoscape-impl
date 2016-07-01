@@ -26,6 +26,7 @@ import org.cytoscape.filter.internal.tasks.ImportNamedTransformersTask;
 import org.cytoscape.filter.internal.view.TransformerViewManager.TransformerViewElement;
 import org.cytoscape.filter.internal.view.look.FilterPanelStyle;
 import org.cytoscape.filter.internal.work.AbstractWorker;
+import org.cytoscape.filter.internal.work.ValidationManager;
 import org.cytoscape.filter.model.CompositeFilter;
 import org.cytoscape.filter.model.Filter;
 import org.cytoscape.filter.model.NamedTransformer;
@@ -46,6 +47,7 @@ public abstract class AbstractPanelController<T extends NamedElement, V extends 
 	
 	private final TransformerManager transformerManager;
 	private final TransformerViewManager transformerViewManager;
+	private final ValidationManager validationManager;
 	private final IconManager iconManager;
 	private final FilterPanelStyle style;
 	
@@ -60,14 +62,20 @@ public abstract class AbstractPanelController<T extends NamedElement, V extends 
 	
 	final Logger logger;
 
-	public AbstractPanelController(AbstractWorker<?, ?> worker, TransformerManager transformerManager, TransformerViewManager transformerViewManager,
-			                       FilterIO filterIo, TaskManager<?, ?> taskManager,
-			                       FilterPanelStyle style, IconManager iconManager) {
+	public AbstractPanelController(
+			AbstractWorker<?, ?> worker, 
+			TransformerManager transformerManager, 
+			TransformerViewManager transformerViewManager,
+			ValidationManager validationManager,
+			FilterIO filterIo, TaskManager<?, ?> taskManager,
+			FilterPanelStyle style, IconManager iconManager) 
+	{
 		this.worker = worker;
 		this.filterIo = filterIo;
 		this.taskManager = taskManager;
 		this.transformerManager = transformerManager;
 		this.transformerViewManager = transformerViewManager;
+		this.validationManager = validationManager;
 		this.style = style;
 		this.iconManager = iconManager;
 		
@@ -177,6 +185,7 @@ public abstract class AbstractPanelController<T extends NamedElement, V extends 
 			return;
 		}
 		handleElementSelected(selected, panel);
+		validationManager.runValidation();
 	}
 	
 	String findUniqueName(String name) {
@@ -332,6 +341,9 @@ public abstract class AbstractPanelController<T extends NamedElement, V extends 
 		return iconManager;
 	}
 	
+	public ValidationManager getValidationManager() {
+		return validationManager;
+	}
 	
 	public List<Integer> getPath(V view, JComponent component) {
 		if (component == view.getRootPanel()) {

@@ -22,6 +22,7 @@ import org.cytoscape.filter.internal.filters.composite.CompositeTransformerPanel
 import org.cytoscape.filter.internal.view.TransformerViewManager.TransformerViewElement;
 import org.cytoscape.filter.internal.view.look.FilterPanelStyle;
 import org.cytoscape.filter.internal.work.TransformerWorker;
+import org.cytoscape.filter.internal.work.ValidationManager;
 import org.cytoscape.filter.model.CompositeFilter;
 import org.cytoscape.filter.model.Filter;
 import org.cytoscape.filter.model.NamedTransformer;
@@ -37,10 +38,18 @@ public class TransformerPanelController extends AbstractPanelController<Transfor
 	private TransformerViewManager transformerViewManager;
 	private DynamicComboBoxModel<FilterElement> startWithComboBoxModel;
 	
-	public TransformerPanelController(TransformerManager transformerManager, 
-			TransformerViewManager transformerViewManager, FilterPanelController filterPanelController, 
-			TransformerWorker worker, FilterIO filterIo, TaskManager<?, ?> taskManager, FilterPanelStyle style, IconManager iconManager) {
-		super(worker, transformerManager, transformerViewManager, filterIo, taskManager, style, iconManager);
+	public TransformerPanelController(
+			TransformerManager transformerManager, 
+			TransformerViewManager transformerViewManager,
+			ValidationManager validationManager,
+			FilterPanelController filterPanelController, 
+			TransformerWorker worker, 
+			FilterIO filterIo, 
+			TaskManager<?, ?> taskManager, 
+			FilterPanelStyle style, 
+			IconManager iconManager) 
+	{
+		super(worker, transformerManager, transformerViewManager, validationManager, filterIo, taskManager, style, iconManager);
 		worker.setController(this);
 		
 		this.transformerManager = transformerManager;
