@@ -140,15 +140,13 @@ class FileUtilImpl implements FileUtil {
 				chooser.setModal(true);
 				chooser.setFilenameFilter(new CombinedFilenameFilter(filters));
 				chooser.setLocationRelativeTo(parent);
+				chooser.setMultipleMode(multiselect);
 				chooser.setVisible(true);
 
 				if (chooser.getFile() != null) {
-					//TODO: how can we select multiple files on Mac?
-					final File[] results = new File[1];
-					String newFileName = chooser.getFile();
-					
+					final File[] results;
 					if (loadSaveCustom == SAVE) {
-						// Is the filename missing an extension?
+						String newFileName = chooser.getFile();
 						final String fileNameWithExt = addFileExt(filters, newFileName);
 						
 						if (!fileNameWithExt.equals(newFileName)) {
@@ -170,9 +168,11 @@ class FileUtilImpl implements FileUtil {
 							}
 							newFileName = fileNameWithExt;
 						}
+						results = new File[1];
+						results[0] = new File(chooser.getDirectory() + File.separator + newFileName);
 					}
-					
-					results[0] = new File(chooser.getDirectory() + File.separator + newFileName);
+					else
+						 results = chooser.getFiles();
 
 					if (chooser.getDirectory() != null)
 						coreProperties.setProperty(FileUtil.LAST_DIRECTORY, chooser.getDirectory());
