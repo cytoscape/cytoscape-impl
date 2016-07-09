@@ -369,7 +369,7 @@ public class CyGroupSettingsImpl implements GroupAddedListener,
 	public void handleEvent(NetworkAddedEvent e) {
 		CyNetwork net = e.getNetwork();
 		Set<CyGroup> groupSet = cyGroupManager.getGroupSet(net);
-		if (groupSet == null || groupSet.size() == 0) return;
+		if (groupSet == null || groupSet.isEmpty()) return;
 		for (CyGroup group: groupSet) {
 			loadSettingsFromTable(group, net);
 		}
@@ -758,7 +758,7 @@ public class CyGroupSettingsImpl implements GroupAddedListener,
 			List<String> aggrOverrideSettings = new ArrayList<>();
 			GroupSpecificMaps gsm = groupMap.get(group);
 			Map<CyColumn,Aggregator<?>> overrides = groupMap.get(group).getOverrides();
-			if (overrides == null || overrides.size() == 0)
+			if (overrides == null || overrides.isEmpty())
 				return;
 
 			for (CyColumn column: overrides.keySet()) {
@@ -806,21 +806,21 @@ public class CyGroupSettingsImpl implements GroupAddedListener,
 		List<String> viewSettings = 
 			table.getRow(suid).getList(VIEW_SETTINGS, String.class);
 
-		if (viewSettings != null && viewSettings.size() > 0) {
+		if (viewSettings != null && !viewSettings.isEmpty()) {
 			for (String setting: viewSettings) {
 				updateSetting(group, setting);
 			}
 		}
 
 		List<String> aggrSettings = table.getRow(suid).getList(AGGREGATION_SETTINGS, String.class);
-		if (aggrSettings != null && aggrSettings.size() > 0) {
+		if (aggrSettings != null && !aggrSettings.isEmpty()) {
 			for (String setting: aggrSettings) {
 				updateAggrSetting(group, setting);
 			}
 		}
 
 		List<String> aggrOverrideSettings = table.getRow(suid).getList(AGGREGATION_OVERRIDE_SETTINGS, String.class);
-		if (aggrOverrideSettings != null && aggrOverrideSettings.size() > 0) {
+		if (aggrOverrideSettings != null && !aggrOverrideSettings.isEmpty()) {
 			for (String setting: aggrSettings) {
 				updateAggrOverrideSetting(group, setting);
 			}

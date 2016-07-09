@@ -145,7 +145,7 @@ public abstract class AbstractDCustomGraphics<T extends CustomGraphicLayer>
 	protected String makeSerializableString(String name) {
 		String tagStr = "";
 		// Build tags as a string
-		if (tags.size() != 0) {
+		if (!tags.isEmpty()) {
 			final StringBuilder builder = new StringBuilder();
 			for (String tag : tags)
 				builder.append(tag + LIST_DELIMITER);

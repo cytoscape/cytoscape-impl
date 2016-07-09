@@ -421,7 +421,7 @@ public class QuickFindConfigDialog extends JDialog {
 					//  Simulate attribute combo box selection.
 					//  Invoke via SwingUtilities, so that radio button
 					//  selection is not delayed.
-					if (attributeList.size() > 0) {
+					if (!attributeList.isEmpty()) {
 						SwingUtilities.invokeLater(new Runnable() {
 								public void run() {
 									attributeComboBox.setSelectedIndex(0);

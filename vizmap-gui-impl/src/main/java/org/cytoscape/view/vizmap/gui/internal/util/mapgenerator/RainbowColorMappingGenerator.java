@@ -38,7 +38,7 @@ public class RainbowColorMappingGenerator extends
 
 	public <T> Map<T, Color> generateMap(Set<T> attributeSet) {
 		// Error check
-		if(attributeSet == null || attributeSet.size() == 0)
+		if(attributeSet == null || attributeSet.isEmpty())
 			return null;
 
 		final float increment = 1f / ((Number) attributeSet.size())

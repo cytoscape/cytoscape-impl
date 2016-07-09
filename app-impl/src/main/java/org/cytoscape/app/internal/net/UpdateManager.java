@@ -140,7 +140,7 @@ public class UpdateManager implements AppsFinishedStartingListener {
 		for(Update update: updates) {
 			userLogger.info("Update for " + update + " available (latest version: " + update.getUpdateVersion() + ", " + update.getApp().getVersion() + " installed)");
 		}
-		if(updates.size() > 0)
+		if(!updates.isEmpty())
 			userLogger.info(updates.size() + " " + 
 						(updates.size() == 1 ? "update" : "updates") + " available" );
 	}

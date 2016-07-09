@@ -162,7 +162,7 @@ public class NodeChangeListener implements ViewChangedListener, SessionLoadedLis
 		if (groupMap.containsKey(networkView)) {
 			Set<CyNode> groups = groupMap.get(networkView);
 			groups.remove(group.getGroupNode());
-			if (groups.size() == 0)
+			if (groups.isEmpty())
 				groupMap.remove(networkView);
 		}
 
@@ -181,7 +181,7 @@ public class NodeChangeListener implements ViewChangedListener, SessionLoadedLis
 					node2Group.remove(node);
 			}
 
-			if (nodes.size() == 0)
+			if (nodes.isEmpty())
 				nodeMap.remove(networkView);
 		}
 	}
@@ -220,7 +220,7 @@ public class NodeChangeListener implements ViewChangedListener, SessionLoadedLis
 		cyEventHelper.flushPayloadEvents();
 
 		ViewUtils.updateGroupLocation(networkView.getModel(), group, groupX, groupY);
-		if (groupNodeList.size() > 0) {
+		if (!groupNodeList.isEmpty()) {
 			for (View<CyNode> nv: groupNodeList) {
 				updateGroupLocation(networkView, nv);
 			}
@@ -276,7 +276,7 @@ public class NodeChangeListener implements ViewChangedListener, SessionLoadedLis
 	private CyGroup getGroupForNode(CyNode node, CyNetworkView networkView) {
 		CyGroup group = null;
 		List<CyGroup> groupList = cyGroupManager.getGroupsForNode(node);
-		if (groupList == null || groupList.size() == 0)
+		if (groupList == null || groupList.isEmpty())
 			return null; // Shouldn't happen!
 
 		Set<CyNode> groupNodes = groupMap.get(networkView);

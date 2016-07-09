@@ -115,7 +115,7 @@ public class IndexAndSearchTask extends AbstractNetworkTask {
 		final Collection<CyNetworkView> views = viewManager.getNetworkViews(network);
 		CyNetworkView targetView = null;
 		
-		if (views.size() != 0)
+		if (!views.isEmpty())
 			targetView = views.iterator().next();
 
 		if (targetView != null)
@@ -129,7 +129,7 @@ public class IndexAndSearchTask extends AbstractNetworkTask {
 
 	// Display results
 	private void showResults(final EnhancedSearchQuery queryHandler, final TaskMonitor taskMonitor) {
-		if (network == null || network.getNodeList().size() == 0)
+		if (network == null || network.getNodeList().isEmpty())
 			return;
 
 		int nodeHitCount = queryHandler.getNodeHitCount();

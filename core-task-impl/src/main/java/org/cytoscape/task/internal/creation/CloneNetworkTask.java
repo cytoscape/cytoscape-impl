@@ -122,7 +122,7 @@ public class CloneNetworkTask extends AbstractCreationTask implements Observable
 		final Collection<CyNetworkView> views = networkViewManager.getNetworkViews(parentNetwork);
 		
 		// TODO What if the network has more than one view
-		final CyNetworkView origView = views.size() != 0 ? views.iterator().next() : null; 
+		final CyNetworkView origView = !views.isEmpty() ? views.iterator().next() : null; 
 		
 		if (origView != null) {
 			final VisualStyle style = vmm.getVisualStyle(origView);

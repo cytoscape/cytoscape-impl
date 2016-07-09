@@ -197,7 +197,7 @@ public class ListMultipleHandler<T> extends AbstractGUITunableHandler
 			final JTextArea textArea = new JTextArea(description);
 			updateFieldPanel(panel, textArea, controlPanel, horizontal);
 			setTooltip(getTooltip(), textArea, scrollpane);
-		} else if (description != null && description.length() > 0) {
+		} else if (description != null && !description.isEmpty()) {
 			// Otherwise, use JLabel
 			final JLabel label = new JLabel(description);
 			updateFieldPanel(panel, label, controlPanel, horizontal);

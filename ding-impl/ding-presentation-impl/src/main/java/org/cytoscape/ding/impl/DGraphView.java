@@ -2796,7 +2796,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 			return;
 		}
 
-		if (nodeSelectionList.size() > 0 || edgeSelectionList.size() > 0) {
+		if (!nodeSelectionList.isEmpty() || !edgeSelectionList.isEmpty()) {
 			// Update renderings
 			// System.out.println("Selecting "+nodeSelectionList.size()+" nodes and "+edgeSelectionList.size()+" edges");
 			m_networkCanvas.updateSubgraph(nodeSelectionList, edgeSelectionList);
@@ -2874,7 +2874,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 
 		// We do this this way to avoid the overhead of concurrent maps since
 		// this should be relatively rare
-		if (removeMe.size() != 0) {
+		if (!removeMe.isEmpty()) {
 			for (DEdgeView edgeView: removeMe)
 				animatedEdges.remove(edgeView);
 		}
@@ -2888,7 +2888,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		if (animatedEdges.contains(edgeView)) {
 			animatedEdges.remove(edgeView);
 
-			if (animatedEdges.size() == 0 && animationTimer.isRunning()) {
+			if (animatedEdges.isEmpty() && animationTimer.isRunning()) {
 				animationTimer.stop();
 			}
 		}

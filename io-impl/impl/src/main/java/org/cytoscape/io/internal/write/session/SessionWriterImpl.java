@@ -354,14 +354,14 @@ public class SessionWriterImpl extends AbstractTask implements CyWriter {
 		Map<String, List<File>> appFileMap = session.getAppFileListMap(); 
 
 		// now write any files to the zip files
-		if ((appFileMap != null) && (appFileMap.size() > 0)) {
+		if ((appFileMap != null) && (!appFileMap.isEmpty())) {
 			byte[] buf = new byte[5000];
 			Set<String> appSet = appFileMap.keySet();
 		
 			for (String appName : appSet) {
 				List<File> theFileList = (List<File>) appFileMap.get(appName);
 		
-				if ((theFileList == null) || (theFileList.size() == 0))
+				if ((theFileList == null) || (theFileList.isEmpty()))
 					continue;
 	
 				for (File theFile : theFileList) {

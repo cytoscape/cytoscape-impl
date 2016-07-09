@@ -216,7 +216,7 @@ class TextIndexImpl extends GenericIndexImpl implements TextIndex {
 		}
 
 		//  Return result set
-		if (graphObjectSet.size() > 0) {
+		if (!graphObjectSet.isEmpty()) {
 			hits = new Hit[1];
 
 			Object[] graphObjects = graphObjectSet.toArray(new Object[graphObjectSet.size()]);

@@ -356,7 +356,7 @@ public class NBodyForce extends AbstractForce {
         private ArrayList nodes = new ArrayList();
         
         public QuadTreeNode getQuadTreeNode() {
-            if ( nodes.size() > 0 ) {
+            if (!nodes.isEmpty()) {
                 return (QuadTreeNode)nodes.remove(nodes.size()-1);
             } else {
                 return new QuadTreeNode();

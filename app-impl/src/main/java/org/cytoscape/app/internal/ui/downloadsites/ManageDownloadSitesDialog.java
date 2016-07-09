@@ -99,7 +99,7 @@ public class ManageDownloadSitesDialog extends JDialog {
 			}
 		};
 		
-        if (downloadSitesManager.getDownloadSites().size() == 0) {
+        if (downloadSitesManager.getDownloadSites().isEmpty()) {
         	for (DownloadSite downloadSite : WebQuerier.DEFAULT_DOWNLOAD_SITES) {
         		downloadSitesManager.addDownloadSite(downloadSite);
         	}
@@ -491,7 +491,7 @@ public class ManageDownloadSitesDialog extends JDialog {
         	selectedSites.add(downloadSite);
         }
     	
-        if (selectedSites.size() > 0)
+        if (!selectedSites.isEmpty())
         	return selectedSites.iterator().next();
         
         return null;

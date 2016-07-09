@@ -152,7 +152,7 @@ public class LoadVizmapFileTaskFactoryImpl extends AbstractTaskFactory implement
 			}
 		}
 
-		if (list.size() == 0)
+		if (list.isEmpty())
 			return null;
 
 		// Save the content to a tmp file

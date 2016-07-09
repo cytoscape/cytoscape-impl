@@ -59,7 +59,7 @@ public class DestroyNetworkTask extends AbstractNetworkCollectionTask {
 		if (destroyCurrentNetwork) {
 			tm.setProgress(0.0);
 			
-			if (networks == null || networks.size() == 0) {
+			if (networks == null || networks.isEmpty()) {
 				if (network == null) {
 					tm.showMessage(TaskMonitor.Level.ERROR, "Need to specify network to destroy");
 					return;

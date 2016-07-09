@@ -75,8 +75,8 @@ public class AddTask extends AbstractTask {
 			return;
 		}	
 
-		if ((nodeList.getValue() == null||nodeList.getValue().size() == 0) && 
-        (edgeList.getValue() == null||edgeList.getValue().size() == 0)) {
+		if ((nodeList.getValue() == null|| nodeList.getValue().isEmpty()) && 
+        (edgeList.getValue() == null|| edgeList.getValue().isEmpty())) {
 			taskMonitor.showMessage(TaskMonitor.Level.WARN, "Nothing to add");
 			return;
 		}	

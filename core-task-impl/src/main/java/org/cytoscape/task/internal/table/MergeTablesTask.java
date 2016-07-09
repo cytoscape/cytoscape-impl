@@ -134,7 +134,7 @@ public class MergeTablesTask extends AbstractTask implements TunableValidator {
 		} else {
 			if (listOfGlobal.size() == 1
 					&& !(unassignedTable.getSelectedValue() instanceof CyTable)
-					|| ((listOfGlobal.size() != unassignedTable.getPossibleValues().size()) && (listOfGlobal.size() > 0))) {
+					|| ((listOfGlobal.size() != unassignedTable.getPossibleValues().size()) && (!listOfGlobal.isEmpty()))) {
 				unassignedTable = new ListSingleSelection<>(listOfGlobal);
 				targetMergeKey = getKeyColumnList((CyTable) unassignedTable.getSelectedValue());
 			}

@@ -439,7 +439,7 @@ public class WebQuerier {
 				List<WebApp.Release> compatibleReleases = getCompatibleReleases(webApp);
 				
 				// Only add this app if it has compatible releases
-				if (compatibleReleases.size() > 0) {
+				if (!compatibleReleases.isEmpty()) {
 					// Obtain tags associated with this app
 					processAppTags(webApp, jsonObject);
 	
@@ -525,7 +525,7 @@ public class WebQuerier {
 	
 		List<WebApp.Release> compatibleReleases = getCompatibleReleases(webApp);
 		
-		if (compatibleReleases.size() > 0) {
+		if (!compatibleReleases.isEmpty()) {
 			WebApp.Release releaseToDownload = null;
 			
 			if (version != null) {

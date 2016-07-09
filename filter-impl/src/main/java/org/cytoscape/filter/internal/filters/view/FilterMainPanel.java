@@ -566,7 +566,7 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 		cmbFilters.setModel(cbm);
 		cmbFilters.setRenderer(new FilterRenderer());
 		
-		if (allFilters.size() == 0) {
+		if (allFilters.isEmpty()) {
 			this.btnApplyFilter.setEnabled(false);
 			this.btnAddFilterWidget.setEnabled(false);
 		}
@@ -608,7 +608,7 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 			}
 		}
 		
-		if (filters == null || filters.size() == 0) {
+		if (filters == null || filters.isEmpty()) {
 			replaceFilterSettingPanel(null);
 		}
 	}
@@ -1155,7 +1155,7 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 		Vector<CompositeFilter> allFilters = modelLocator.getFilters(); //filterPlugin.getAllFilterVect();
 		
 		//Disable interactionMenuItem if there is no other filters to depend on
-		if (allFilters == null || allFilters.size() == 0) {
+		if (allFilters == null || allFilters.isEmpty()) {
 			newNodeInteractionFilterMenuItem.setEnabled(false);
 			newEdgeInteractionFilterMenuItem.setEnabled(false);
 			return;

@@ -143,7 +143,7 @@ public class AbstractNetworkReaderTest {
 					
 					if (tname.equals(target)) {
 						List<CyEdge> con = net.getConnectingEdgeList(n, nn, CyEdge.Type.ANY);
-						assertTrue("Connecting edge list is empty", con.size() > 0);
+						assertTrue("Connecting edge list is empty", !con.isEmpty());
 						
 						for (CyEdge e : con) {
 							String inter = net.getRow(e).get(CyEdge.INTERACTION, String.class);

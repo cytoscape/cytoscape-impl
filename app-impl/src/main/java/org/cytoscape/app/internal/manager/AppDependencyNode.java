@@ -91,7 +91,7 @@ public class AppDependencyNode {
 		while (!dependenciesToCheck.isEmpty()) {
 			AppDependencyNode current = dependenciesToCheck.remove();
 			
-			if (current.getDependencies().size() != 0) {
+			if (!current.getDependencies().isEmpty()) {
 				for (AppDependencyNode node : current.getDependencies()) {
 					dependenciesToCheck.add(node);
 				}

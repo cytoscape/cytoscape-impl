@@ -798,7 +798,7 @@ public class Graph {
 		Graph simplifiedGraph = getGraphWithoutMultipleEdges().getGraphWithoutOneOrTwoCycles();
 
 		if (nodecount == 2) {
-			if (simplifiedGraph.edgesFrom[0].size() == 0) {
+			if (simplifiedGraph.edgesFrom[0].isEmpty()) {
 				/* node 0 is a sink */
 				priority[0] = 1;
 				priority[1] = 0;
@@ -847,13 +847,13 @@ public class Graph {
 			Integer u;
 			boolean goRight = false;
 
-			if (sink.size() > 0) {
+			if (!sink.isEmpty()) {
 				u = (Integer) (sink.removeFirst());
 				goRight = true;
-			} else if (source.size() > 0) {
+			} else if (!source.isEmpty()) {
 				u = (Integer) (source.removeFirst());
 			} else {
-				while (bucket[scanBucketStart].size() == 0) {
+				while (bucket[scanBucketStart].isEmpty()) {
 					scanBucketStart--;
 				}
 
@@ -863,7 +863,7 @@ public class Graph {
 			/* cut edges and adjust adjacent nodes */
 			LinkedList simpleAdjacents = simpleEdgesTo[u.intValue()];
 
-			while (simpleAdjacents.size() > 0) {
+			while (!simpleAdjacents.isEmpty()) {
 				Integer adj = (Integer) (simpleAdjacents.removeFirst());
 				int adjindex = adj.intValue();
 				int inDeg = inDegree[adjindex];
@@ -896,7 +896,7 @@ public class Graph {
 
 			simpleAdjacents = simpleEdgesFrom[u.intValue()];
 
-			while (simpleAdjacents.size() > 0) {
+			while (!simpleAdjacents.isEmpty()) {
 				Integer adj = (Integer) (simpleAdjacents.removeFirst());
 				int adjindex = adj.intValue();
 				int inDeg = inDegree[adjindex];
@@ -1185,7 +1185,7 @@ public class Graph {
 
 		/* add all sources and isolated nodes to eligible list */
 		for (x = 0; x < nodecount; x++) {
-			if (edgesTo[x].size() == 0) {
+			if (edgesTo[x].isEmpty()) {
 				eligible.add(Integer.valueOf(x));
 				onEligible[x] = true;
 			} else {
@@ -1195,7 +1195,7 @@ public class Graph {
 
 		int nextLabel = 1;
 
-		while (eligible.size() > 0) {
+		while (!eligible.isEmpty()) {
 			/* find minimal node */
 			Iterator iter = eligible.iterator();
 			Integer minElement = ((Integer) (iter.next()));
@@ -1266,14 +1266,14 @@ NEXTCHILD:
 
 		/* add all sinks and isolated nodes to eligible */
 		for (x = 0; x < nodecount; x++) {
-			if (edgesFrom[x].size() == 0) {
+			if (edgesFrom[x].isEmpty()) {
 				eligible.add(Integer.valueOf(x));
 			}
 		}
 
 		int currentLayer = 1;
 
-		while (eligible.size() > 0) {
+		while (!eligible.isEmpty()) {
 			/* sort eligible and fill layer */
 			int currentLayerSize = 0;
 			Integer[] eligibleSort = new Integer[eligible.size()];

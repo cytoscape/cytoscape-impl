@@ -237,7 +237,7 @@ public class CyGroupManagerImpl implements CyGroupManager, AddedEdgesListener,
 		Collection<CyEdge> edges = addedEdgesEvent.getPayloadCollection();
 
 		Set<CyGroup> groups = getGroupSet(net);
-		if (groups == null || groups.size() == 0) return;
+		if (groups == null || groups.isEmpty()) return;
 
 		List<CyEdge> edgesToAdd = new ArrayList<>();
 		for (CyGroup group: groups) {
@@ -257,7 +257,7 @@ public class CyGroupManagerImpl implements CyGroupManager, AddedEdgesListener,
 		Collection<CyEdge> edges = removedEdgesEvent.getEdges();
 
 		Set<CyGroup> groups = getGroupSet(net);
-		if (groups == null || groups.size() == 0) return;
+		if (groups == null || groups.isEmpty()) return;
 
 		List<CyEdge> edgesToRemove = new ArrayList<>();
 		for (CyGroup group: groups) {

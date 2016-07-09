@@ -186,7 +186,7 @@ public class FormulaBuilderDialog extends JDialog {
 		pack();
 		setResizable(false);
 		
-		if (((DefaultListModel<Function>)getFunctionList().getModel()).size() > 0)
+		if (!((DefaultListModel<Function>) getFunctionList().getModel()).isEmpty())
 			getFunctionList().setSelectedIndex(0);
 	}
 	

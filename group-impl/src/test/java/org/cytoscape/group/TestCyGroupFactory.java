@@ -107,8 +107,8 @@ public class TestCyGroupFactory {
 		CyGroup group2 = factory.createGroup(network, groupNodes, new ArrayList<CyEdge>(), true);
 		assertNotNull(group2);
 		assertTrue("group2 node count = 3", group2.getNodeList().size() == 3);
-		assertTrue("group2 internal edge count = 0", group2.getInternalEdgeList().size() == 0);
-		assertTrue("group2 external edge count = 0", group2.getExternalEdgeList().size() == 0);
+		assertTrue("group2 internal edge count = 0", group2.getInternalEdgeList().isEmpty());
+		assertTrue("group2 external edge count = 0", group2.getExternalEdgeList().isEmpty());
 		CyGroup group3 = factory.createGroup(network, groupNodes, groupEdges, true);
 		assertNotNull(group3);
 		assertTrue("group3 node count = 3", group3.getNodeList().size() == 3);

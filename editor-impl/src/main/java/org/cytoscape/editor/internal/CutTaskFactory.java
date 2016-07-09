@@ -61,10 +61,10 @@ public class CutTaskFactory extends AbstractNetworkViewTaskFactory {
 
 		// Make sure we've got something selected
 		List<CyNode> selNodes = CyTableUtil.getNodesInState(networkView.getModel(), CyNetwork.SELECTED, true);
-		if (selNodes != null && selNodes.size() > 0) return true;
+		if (selNodes != null && !selNodes.isEmpty()) return true;
 
 		List<CyEdge> selEdges = CyTableUtil.getEdgesInState(networkView.getModel(), CyNetwork.SELECTED, true);
-		if (selEdges != null && selEdges.size() > 0) return true;
+		if (selEdges != null && !selEdges.isEmpty()) return true;
 
 		return false;
 	}

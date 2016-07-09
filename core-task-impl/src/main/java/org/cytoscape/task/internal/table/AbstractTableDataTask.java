@@ -69,7 +69,7 @@ public abstract class AbstractTableDataTask extends AbstractTask {
 
 
 	public int setCyIdentifierData(CyTable table, CyIdentifiable id, Map<CyColumn, Object> valueMap) {
-		if (id == null || valueMap.size() == 0) return 0;
+		if (id == null || valueMap.isEmpty()) return 0;
 
 		int count = 0;
 		CyRow row = table.getRow(id.getSUID());

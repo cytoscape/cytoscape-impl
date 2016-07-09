@@ -119,7 +119,7 @@ public class ClipboardImpl {
 			addRows(node, sourceRootNetwork, sourceNetwork);
 		}
 		
-		if (nodes.size() > 0) {
+		if (!nodes.isEmpty()) {
 			xCenter = xCenter / nodes.size();
 			yCenter = yCenter / nodes.size();
 		}
@@ -165,7 +165,7 @@ public class ClipboardImpl {
 	public double getCenterY() { return yCenter; }
 
 	public boolean clipboardHasData() {
-		return (nodes != null && nodes.size() > 0) || (edges != null && edges.size() > 0);
+		return (nodes != null && !nodes.isEmpty()) || (edges != null && !edges.isEmpty());
 	}
 
 	public List<CyIdentifiable> paste(CyNetworkView targetView, double x, double y) {
@@ -263,7 +263,7 @@ public class ClipboardImpl {
 
 		CySubNetwork targetNetwork = (CySubNetwork)targetView.getModel();
 		CyRootNetwork targetRoot = targetNetwork.getRootNetwork();
-		boolean addedNodes = newNodeMap.size() > 0;
+		boolean addedNodes = !newNodeMap.isEmpty();
 
 		CyEdge newEdge = null;
 		CyNode sourceNode = edge.getSource();
@@ -418,7 +418,7 @@ public class ClipboardImpl {
 	}
 
 	private void copyRows(Map<CyRow,CyRow> rowMap) {
-		if (rowMap == null || rowMap.size() == 0) return;
+		if (rowMap == null || rowMap.isEmpty()) return;
 
 		for (CyRow sourceRow: rowMap.keySet()) {
 			CyRow targetRow = rowMap.get(sourceRow);

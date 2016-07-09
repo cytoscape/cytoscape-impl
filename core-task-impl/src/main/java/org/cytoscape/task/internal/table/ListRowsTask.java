@@ -85,7 +85,7 @@ public class ListRowsTask extends AbstractTableDataTask implements ObservableTas
 	}
 
 	public Object getResults(Class requestedType) {
-		if (rowList == null || rowList.size() == 0) return null;
+		if (rowList == null || rowList.isEmpty()) return null;
 		if (requestedType.equals(String.class)) {
 			return DataUtils.convertData(rowList);
 		}

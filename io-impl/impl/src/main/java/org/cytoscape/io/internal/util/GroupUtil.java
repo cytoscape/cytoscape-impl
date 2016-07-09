@@ -119,7 +119,7 @@ public class GroupUtil {
 				continue;
 
 			List<CyNode> nodeList = addedNodes.get(net);
-			if (nodeList != null && nodeList.size() > 0) {
+			if (nodeList != null && !nodeList.isEmpty()) {
 				net.removeNodes(nodeList);
 				// Update our view if we have one
 				if (viewMap.containsKey(net))

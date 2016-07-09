@@ -133,7 +133,7 @@ public class NewEmptyNetworkTask extends AbstractTask {
 		
 		final List<CyNetwork> selectedNetworks = appMgr.getSelectedNetworks();
 
-		if (selectedNetworks != null && selectedNetworks.size() > 0) {
+		if (selectedNetworks != null && !selectedNetworks.isEmpty()) {
 			CyNetwork selectedNetwork = appMgr.getSelectedNetworks().get(0);
 			String rootName = "";
 			

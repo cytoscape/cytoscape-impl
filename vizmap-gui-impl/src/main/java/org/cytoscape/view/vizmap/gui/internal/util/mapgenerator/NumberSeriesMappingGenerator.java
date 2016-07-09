@@ -47,7 +47,7 @@ public class NumberSeriesMappingGenerator<V extends Number> extends AbstractDisc
 		final Map<T, V> valueMap = new HashMap<T, V>();
 
 		// Error check
-		if (attributeSet == null || attributeSet.size() == 0)
+		if (attributeSet == null || attributeSet.isEmpty())
 			return valueMap;
 
 		final Double[] params = new Double[2];

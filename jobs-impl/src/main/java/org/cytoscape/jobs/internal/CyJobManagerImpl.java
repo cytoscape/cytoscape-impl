@@ -96,7 +96,7 @@ public class CyJobManagerImpl implements CyJobManager,
 
 	@Override
 	public void addJob(CyJob job, CyJobMonitor jobMonitor, int pollInterval) {
-		if (jobsList.size() == 0)
+		if (jobsList.isEmpty())
 			pollTimer.schedule(new Poller(), 1000);
 		synchronized (jobsList) {
 			jobsList.add(job);
@@ -111,7 +111,7 @@ public class CyJobManagerImpl implements CyJobManager,
 		}
 		jobMonitorMap.remove(job);
 		intervalMap.remove(job);
-		if (jobsList.size() == 0) {
+		if (jobsList.isEmpty()) {
 			resetTimer();
 		}
 	}
@@ -210,7 +210,7 @@ public class CyJobManagerImpl implements CyJobManager,
 			}
 			jobFiles.add(jobFile);
 		}
-		if (jobFiles.size() > 0) {
+		if (!jobFiles.isEmpty()) {
 			try {
 				e.addAppFiles("CyJobs", jobFiles);
 			} catch (Exception ioe) {
@@ -219,7 +219,7 @@ public class CyJobManagerImpl implements CyJobManager,
 		}
 
 		// Restart our timer
-		if (jobsList.size() > 0)
+		if (!jobsList.isEmpty())
 			pollTimer.schedule(new Poller(), 1000);
 	}
 
@@ -270,7 +270,7 @@ public class CyJobManagerImpl implements CyJobManager,
 				}
 			}
 			for (CyJob job: orphans) removeJob(job);
-			if (jobsList.size() > 0)
+			if (!jobsList.isEmpty())
 				pollTimer.schedule(new Poller(), 1000);
 		}
 	}

@@ -112,7 +112,7 @@ public class CyListImpl<T> implements List<T> {
 
 	@Override
 	public void clear() {
-		if (delegate.size() == 0) {
+		if (delegate.isEmpty()) {
 			return;
 		}
 		delegate.clear();

@@ -267,7 +267,7 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 				}
 
 				// Always try to load child networks, even if the parent network is bad
-				if (!cancelled && childNet.getChild().size() != 0)
+				if (!cancelled && !childNet.getChild().isEmpty())
 					walkNetworkTree(childNet, cy2Parent, netMap, tm);
 			}
 		}

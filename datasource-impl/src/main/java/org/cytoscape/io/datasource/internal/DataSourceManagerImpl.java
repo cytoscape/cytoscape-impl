@@ -176,7 +176,7 @@ public final class DataSourceManagerImpl implements DataSourceManager {
 		synchronized (lock) {
 			Collection<DataSource> dataSourcesSet = this.getDataSources(pDataSource.getDataCategory());
 			
-			if (dataSourcesSet == null || dataSourcesSet.size() == 0){
+			if (dataSourcesSet == null || dataSourcesSet.isEmpty()){
 				return false;
 			}
 			

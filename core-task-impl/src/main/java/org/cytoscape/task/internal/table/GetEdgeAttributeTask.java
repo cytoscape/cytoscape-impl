@@ -72,7 +72,7 @@ public class GetEdgeAttributeTask extends AbstractTableDataTask implements Obser
 			                                                   edge,
 			                                                   columnTunable.getColumnNames(edgeTable));
 
-			if (edgeData == null || edgeData.size() == 0)
+			if (edgeData == null || edgeData.isEmpty())
 				continue;
 
 			edgeDataMap.put(edge, edgeData);

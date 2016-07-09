@@ -62,7 +62,7 @@ public abstract class AbstractExecuteScriptTask extends AbstractTask {
 			name2engineMap.put(engineDescription, engine);
 		}
 
-		if (engineNameList.size() == 0)
+		if (engineNameList.isEmpty())
 			throw new IllegalStateException("No Scripting Engine is available.");
 	}
 

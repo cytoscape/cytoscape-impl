@@ -61,7 +61,7 @@ public final class MapGlobalToLocalTableTask extends AbstractTask {
 		if (globalTable == null)
 			throw new IllegalStateException("No Global Table is selected.");
 
-		if (allNetworks.size() == 0)
+		if (allNetworks.isEmpty())
 			throw new IllegalStateException("No network in current session.  You need at least one network.");
 
 		this.name2tableMap = new HashMap<String, CyTable>();

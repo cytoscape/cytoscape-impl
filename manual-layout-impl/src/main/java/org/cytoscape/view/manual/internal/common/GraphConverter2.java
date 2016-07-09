@@ -78,7 +78,7 @@ public final class GraphConverter2 {
 		}
 
 		final List<CyNode> selectedNodes = CyTableUtil.getNodesInState(graphView.getModel(),CyNetwork.SELECTED,true);
-		final boolean noNodesSelected = (!onlySelectedNodesMovable) || (selectedNodes.size() == 0);
+		final boolean noNodesSelected = (!onlySelectedNodesMovable) || (selectedNodes.isEmpty());
 
 /* TODO HANDLE anchors
 		for ( View<CyEdge> currentEdgeView : graphView.getEdgeViews() ) {

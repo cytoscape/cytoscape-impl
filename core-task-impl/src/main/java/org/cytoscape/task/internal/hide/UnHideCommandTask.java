@@ -62,14 +62,14 @@ public class UnHideCommandTask extends AbstractTask {
 		List<CyNode> nodes = tunable.getNodeList();
 		CyNetwork net = tunable.getNetwork();
 
-		if ((edges == null||edges.size() == 0) && (nodes == null||nodes.size() == 0)) {
+		if ((edges == null|| edges.isEmpty()) && (nodes == null|| nodes.isEmpty())) {
 			e.showMessage(TaskMonitor.Level.ERROR, "Must specify nodes or edges to show");
 			return;
 		}
 
 		Collection<CyNetworkView> views = serviceRegistrar.getService(CyNetworkViewManager.class).getNetworkViews(net);
 		
-		if (views == null || views.size() == 0) {
+		if (views == null || views.isEmpty()) {
 			e.showMessage(TaskMonitor.Level.ERROR, "Network "+net.toString()+" doesn't have a view");
 			return;
 		}
