@@ -83,7 +83,6 @@ import org.slf4j.LoggerFactory;
 public class CySessionManagerImpl implements CySessionManager, SessionSavedListener {
 
 	private String currentFileName;
-	private CySession currentSession;
 
 	private final CyEventHelper eventHelper;
 	private final CyApplicationManager appMgr;
@@ -228,6 +227,9 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 
 	@Override
 	public void setCurrentSession(CySession sess, final String fileName) {
+		// DO NOT save a reference to the sess parameter
+		// the session is a large object and that would cause a memory leak
+		
 		// Always remove the current session first
 		disposeCurrentSession();
 
@@ -263,10 +265,9 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 			restoreCurrentVisualStyle();
 		}
 
-		currentSession = sess;
 		currentFileName = fileName;
 
-		eventHelper.fireEvent(new SessionLoadedEvent(this, currentSession, getCurrentSessionFileName()));
+		eventHelper.fireEvent(new SessionLoadedEvent(this, sess, getCurrentSessionFileName()));
 	}
 
 	/**
@@ -274,9 +275,6 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 	 */
 	@Override
 	public void handleEvent(SessionSavedEvent e) {
-		if (currentSession != e.getSavedSession())
-			currentSession = e.getSavedSession();
-		
 		if (currentFileName != e.getSavedFileName())
 			currentFileName = e.getSavedFileName();
 	}
