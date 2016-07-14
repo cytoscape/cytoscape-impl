@@ -59,7 +59,6 @@ public class DNodeDetails extends NodeDetails {
 
 	// Parent Network View
 	protected final DGraphView dGraphView;
-	private final Object m_deletedEntry = new Object();
 	
 	private final Map<VisualProperty<?>, Object> defaultValues;
 
@@ -156,14 +155,9 @@ public class DNodeDetails extends NodeDetails {
 	}
 
 	void unregisterNode(final CyNode nodeIdx) {
-		final Object o = m_colorsLowDetail.get(nodeIdx);
-		if ((o != null) && (o != m_deletedEntry))
-			m_colorsLowDetail.put(nodeIdx, m_deletedEntry);
-
-		final Object os = m_selectedColorsLowDetail.get(nodeIdx);
-		if ((os != null) && (os != m_deletedEntry))
-			m_selectedColorsLowDetail.put(nodeIdx, m_deletedEntry);
-
+		// To avoid a memory leak its important to permanently remove the node from all the maps.
+		m_colorsLowDetail.remove(nodeIdx);
+		m_selectedColorsLowDetail.remove(nodeIdx);
 		m_shapes.remove(nodeIdx);
 		m_unselectedPaints.remove(nodeIdx);
 		m_borderWidths.remove(nodeIdx);
@@ -219,7 +213,7 @@ public class DNodeDetails extends NodeDetails {
 
 		final Object o = m_colorsLowDetail.get(node);
 
-		if ((o == null) || (o == m_deletedEntry))
+		if (o == null)
 			if (m_colorLowDetailDefault == null)
 				return super.getColorLowDetail(node);
 			else
@@ -242,7 +236,7 @@ public class DNodeDetails extends NodeDetails {
 
 		final Object o = m_selectedColorsLowDetail.get(node);
 
-		if ((o == null) || (o == m_deletedEntry))
+		if (o == null)
 			if (m_selectedColorLowDetailDefault == null)
 				return (Color) DNodeView.DEFAULT_NODE_SELECTED_PAINT;
 			else

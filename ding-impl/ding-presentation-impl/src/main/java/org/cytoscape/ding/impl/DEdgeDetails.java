@@ -74,7 +74,6 @@ final class DEdgeDetails extends EdgeDetails {
 	private static final float DEFAULT_ARROW_SIZE = 6.0f;
 
 	private final DGraphView dGraphView;
-	private final Object m_deletedEntry = new Object();
 	
 	private final Map<VisualProperty<?>, Object> defaultValues; 
 
@@ -164,14 +163,9 @@ final class DEdgeDetails extends EdgeDetails {
 	}
 
 	void unregisterEdge(final CyEdge edgeIdx) {
-		final Object colorDetail = m_colorsLowDetail.get(edgeIdx);
-		if ((colorDetail != null) && (colorDetail != m_deletedEntry))
-			m_colorsLowDetail.put(edgeIdx, m_deletedEntry);
-
-		final Object selectedColorDetail = m_selectedColorsLowDetail.get(edgeIdx);
-		if ((selectedColorDetail != null) && (selectedColorDetail != m_deletedEntry))
-			m_selectedColorsLowDetail.put(edgeIdx, m_deletedEntry);
-
+		// To avoid a memory leak its important to permanently remove the node from all the maps.
+		m_colorsLowDetail.remove(edgeIdx);
+		m_selectedColorsLowDetail.remove(edgeIdx);
 		m_segmentThicknesses.remove(edgeIdx);
 		m_segmentStrokes.remove(edgeIdx);
 		m_sourceArrows.remove(edgeIdx);
@@ -216,7 +210,7 @@ final class DEdgeDetails extends EdgeDetails {
 
 		final Object o = m_colorsLowDetail.get(edge);
 
-		if ((o == null) || (o == m_deletedEntry))
+		if (o == null)
 			if (m_colorLowDetailDefault == null)
 				return super.getColorLowDetail(edge);
 			else
@@ -233,7 +227,7 @@ final class DEdgeDetails extends EdgeDetails {
 
 		final Object o = m_selectedColorsLowDetail.get(edge);
 
-		if ((o == null) || (o == m_deletedEntry))
+		if (o == null)
 			if (m_selectedColorLowDetailDefault == null)
 				return super.getColorLowDetail(edge);
 			else
