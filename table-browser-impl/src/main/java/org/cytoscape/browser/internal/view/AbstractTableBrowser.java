@@ -108,6 +108,8 @@ public abstract class AbstractTableBrowser extends JPanel
 		this.setOpaque(!isAquaLAF());
 		this.setPreferredSize(PANEL_SIZE);
 		this.setSize(PANEL_SIZE);
+		
+		new CyDropListener(this, serviceRegistrar);
 	}
 
 	/**
@@ -212,6 +214,10 @@ public abstract class AbstractTableBrowser extends JPanel
 				
 				scrollPane = new JScrollPane(browserTable);
 				scrollPanes.put(browserTable, scrollPane);
+				
+				// So the drop event can go straight through the table to the drop target associated with this panel
+				if (browserTable.getDropTarget() != null)
+					browserTable.getDropTarget().setActive(false);
 			}
 		}
 
