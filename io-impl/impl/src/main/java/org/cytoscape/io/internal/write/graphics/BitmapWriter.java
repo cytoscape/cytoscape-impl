@@ -61,7 +61,7 @@ public class BitmapWriter extends AbstractTask implements CyWriter {
 
 	//****
 	public BoundedDouble zoom;
-	@Tunable(description = "Zoom (%):",groups={"Image Size"},params="alignments=vertical;slider=true",listenForChange={"WidthInPixels","HeightInPixels", "WidthInInches", "HeightInInches"}, format="###'%'", gravity = 1.0)
+	@Tunable(description = "Zoom (%):",groups={"Image Size"},params="alignments=vertical;slider=true",listenForChange={"WidthInPixels","HeightInPixels", "WidthInInches", "HeightInInches"}, format="###.##'%'", gravity = 1.0)
 	public BoundedDouble getZoom(){
 		return zoom;
 	}
@@ -79,82 +79,86 @@ public class BitmapWriter extends AbstractTask implements CyWriter {
 	}
 
 	//****
+	public ListSingleSelection<String> units = new ListSingleSelection<String>("pixels","inches");
+	@Tunable(description="Units", groups={"Image Size"}, gravity = 1.05)
+	public ListSingleSelection<String> getUnits() {
+		return units;
+	}
+	public void setUnits(ListSingleSelection<String> units) {
+		this.units = units;
+	}
 	
 	public int widthInPixels;
-	@Tunable(description = "Width (px):",groups={"Image Size"},params="alignments=vertical",listenForChange={"Zoom","HeightInPixels", "WidthInInches", "HeightInInches"}, gravity = 1.1)
-	public int getWidthInPixels(){
-		return widthInPixels;
+	public double widthInInches;
+	@Tunable(description = "Width:",groups={"Image Size"},params="alignments=vertical",listenForChange={"Zoom","Units","Height","Resolution"}, gravity = 1.1)
+	public Double getWidth(){
+		if(units.getSelectedValue().equals("pixels"))
+			return new Double(widthInPixels);
+		else
+			return widthInInches;
 	}
-	public void setWidthInPixels(int wpf){
-		widthInPixels = wpf;
-		// udate zoom
-		zoom.setValue(( ((double)widthInPixels) / initialWPixel) * 100.0);
-		//update height
-		heightInPixels = (int) ((zoom.getValue() / 100) * initialHPixel);
-		
-		final double dpi = resolution.getSelectedValue().doubleValue();
-		widthInInches =  widthInPixels/dpi;
-		heightInInches = heightInPixels/dpi;
+	public void setWidth(Double width){
+		if(units.getSelectedValue().equals("pixels")) {
+			// update zoom
+			zoom.setValue(( ((double)width.intValue()) / initialWPixel) * 100.0);
+			
+			widthInPixels = width.intValue();
+			heightInPixels = (int) ((zoom.getValue() / 100) * initialHPixel);
+			
+			final double dpi = resolution.getSelectedValue().doubleValue();
+			widthInInches =  widthInPixels/dpi;
+			heightInInches = heightInPixels/dpi;
+		}
+		else {
+			// update zoom
+			final double dpi = resolution.getSelectedValue().doubleValue();
+			zoom.setValue(( ((double)width * dpi) / initialWPixel) * 100.0);
+
+			widthInInches = width;
+			widthInPixels = (int) (widthInInches * dpi);
+			
+			heightInPixels = (int) ((zoom.getValue()/100) * initialHPixel);
+			heightInInches = heightInPixels/dpi;
+		}
 	}
 	
 	//****
 	public int heightInPixels;
-	@Tunable(description = "Height (px):",groups={"Image Size"},params="alignments=vertical",listenForChange={"Zoom","WidthInPixels", "WidthInInches", "HeightInInches"}, gravity = 1.2)
-	public int getHeightInPixels(){
-		return heightInPixels;
-	}
-	public void setHeightInPixels(int hpf){
-		heightInPixels = hpf;	
-		// udate zoom
-		zoom.setValue (( ((double)heightInPixels) / initialHPixel) * 100.0);
-		//update width
-		widthInPixels = (int) ((zoom.getValue()/100) * initialWPixel);
-		
-		final double dpi = resolution.getSelectedValue().doubleValue();
-		widthInInches =  widthInPixels/dpi;
-		heightInInches = heightInPixels/dpi;
-	}
-	
-	//****
-	public double widthInInches;
-	@Tunable(description = "Width (inches):",groups={"Image Size"},params="alignments=vertical",listenForChange={"Resolution", "Zoom", "HeightInPixels", "WidthInPixels" , "HeightInInches"}, gravity = 1.3)
-	public double getWidthInInches(){
-		return widthInInches;
-	}
-	public void setWidthInInches(double wif){
-		widthInInches =  wif;
-		
-		final double dpi = resolution.getSelectedValue().doubleValue();
-		widthInPixels = (int) (widthInInches * dpi);
-		
-		zoom.setValue(( ((double)widthInPixels) / initialWPixel) * 100.0);
-		heightInPixels = (int) ((zoom.getValue()/100) * initialHPixel);
-		
-		heightInInches = heightInPixels/dpi;
-
-	}
-	
-	//****
 	public double heightInInches;
-	@Tunable(description = "Height (inches):",groups={"Image Size"},params="alignments=vertical",listenForChange={"Resolution", "Zoom", "HeightInPixels", "WidthInPixels", "WidthInInches"}, gravity = 1.4)
-	public double getHeightInInches(){
-		return heightInInches;
+	@Tunable(description = "Height:",groups={"Image Size"},params="alignments=vertical",listenForChange={"Zoom","Units", "Width", "Resolution"}, gravity = 1.2)
+	public Double getHeight(){
+		if(units.getSelectedValue().equals("pixels"))
+			return new Double(heightInPixels);
+		else
+			return heightInInches;
 	}
-	public void  setHeightInInches(double hif){
-		heightInInches = hif;
-		
-		final double dpi = resolution.getSelectedValue().doubleValue();
-		heightInPixels = (int) (heightInInches * dpi);
-		
-		zoom.setValue(( ((double)heightInPixels) / initialHPixel) * 100.0);
-		widthInPixels = (int) ((zoom.getValue()/100) * initialWPixel);
-		
-		widthInInches = widthInPixels/dpi;
+	public void setHeight(Double height){
+		if(units.getSelectedValue().equals("pixels")) {
+			//update zoom
+			zoom.setValue (( ((double)height.intValue()) / initialHPixel) * 100.0);
+			
+			widthInPixels = (int) ((zoom.getValue()/100) * initialWPixel);
+			heightInPixels = height.intValue();	
+			
+			final double dpi = resolution.getSelectedValue().doubleValue();
+			widthInInches =  widthInPixels/dpi;
+			heightInInches = heightInPixels/dpi;
+		}
+		else {
+			final double dpi = resolution.getSelectedValue().doubleValue();
+			zoom.setValue(( ((double)height * dpi) / initialHPixel) * 100.0);
+			
+			heightInPixels = (int) (height * dpi);
+			heightInInches = height;
+			
+			widthInPixels = (int) ((zoom.getValue()/100) * initialWPixel);
+			widthInInches = widthInPixels/dpi;
+		}
 	}
 	
 	//****
 	public ListSingleSelection<Integer> resolution;
-	@Tunable(description = "Resolution (DPI):",groups={"Image Size"},params="alignments=vertical", gravity = 1.5)
+	@Tunable(description = "Resolution (DPI):",groups={"Image Size"},params="alignments=vertical", dependsOn="Units=inches", gravity = 1.5)
 	public ListSingleSelection<Integer> getResolution(){
 		return resolution;
 	}
@@ -166,7 +170,7 @@ public class BitmapWriter extends AbstractTask implements CyWriter {
 	
 
 	private final OutputStream outStream;
-	private  RenderingEngine<?> re;
+	private RenderingEngine<?> re;
 	private String extension = null;
 	private int initialWPixel, initialHPixel; 
 
