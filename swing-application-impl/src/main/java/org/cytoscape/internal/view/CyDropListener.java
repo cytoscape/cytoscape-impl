@@ -119,7 +119,12 @@ public class CyDropListener implements DropTargetListener {
 	        	return; 
 	        }
 	        
-	        loadFiles(data);
+	        new Thread() {
+	        	@Override
+	        	public void run() {
+	        		loadFiles(data);
+	        	}
+	        }.start();
         }
 	}
 	
