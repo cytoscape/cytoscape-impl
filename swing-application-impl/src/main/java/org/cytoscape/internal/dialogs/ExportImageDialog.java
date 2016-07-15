@@ -82,7 +82,7 @@ public class ExportImageDialog extends JDialog {
 		initComponents();
 		pack();
 		setLocationRelativeTo(owner);
-		setMinimumSize(new Dimension(getPreferredSize().width, 0));
+		setMinimumSize(new Dimension(600, 0));
 	}
 	
 	private void initComponents() {
@@ -96,8 +96,8 @@ public class ExportImageDialog extends JDialog {
 		controlPanel.setLayout(new BoxLayout(controlPanel, BoxLayout.PAGE_AXIS));
 
 	    fileTextField = new JTextField(getSuggestedFileName());
-	    fileTextField.setMaximumSize(new Dimension(fileTextField.getMaximumSize().width,
-	    		fileTextField.getPreferredSize().height));
+	    fileTextField.setPreferredSize(new Dimension(fileTextField.getMinimumSize().width,
+	    		fileTextField.getMinimumSize().height));
 		
 	    formatPanel.add(new JLabel("Format:"));
 	    byteArrayOutputStream = new ByteArrayOutputStream();
