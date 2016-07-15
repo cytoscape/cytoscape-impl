@@ -25,23 +25,29 @@ package org.cytoscape.work.internal.tunables;
  */
 
 
-import static org.cytoscape.work.internal.tunables.utils.GUIDefaults.updateFieldPanel;
 import static org.cytoscape.work.internal.tunables.utils.GUIDefaults.setTooltip;
+import static org.cytoscape.work.internal.tunables.utils.GUIDefaults.updateFieldPanel;
 
-import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.Toolkit;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.text.DecimalFormat;
 import java.text.ParsePosition;
 
-import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JTextField;
-import javax.swing.UIManager;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.text.AbstractDocument;
+import javax.swing.text.AttributeSet;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
+import javax.swing.text.DocumentFilter;
 
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.internal.tunables.utils.GUIDefaults;
@@ -53,10 +59,11 @@ import org.cytoscape.work.swing.AbstractGUITunableHandler;
  *
  * @author pasteur
  */
-public abstract class AbstractNumberHandler extends AbstractGUITunableHandler implements ActionListener {
+public abstract class AbstractNumberHandler extends AbstractGUITunableHandler implements FocusListener {
 	
-	private JFormattedTextField textField;
+	private JTextField textField;
 	private DecimalFormat format;
+	private boolean isUpdating = false;
 
 	/**
 	 * It creates the Swing component for this Object (JTextField) that contains the initial value
@@ -99,12 +106,70 @@ public abstract class AbstractNumberHandler extends AbstractGUITunableHandler im
 			else
 				format = new DecimalFormat();
 		}
+		
+		format.setGroupingUsed(false);
 
 		// Set Gui
-		textField = new JFormattedTextField(format.format(d));
+		DocumentFilter filter = (new DocumentFilter() {
+			@Override
+			public void remove(DocumentFilter.FilterBypass fb,
+			          int offset,
+			          int length)
+			            throws BadLocationException {
+				Document doc = fb.getDocument();
+				StringBuilder sb = new StringBuilder();
+				sb.append(doc.getText(0, doc.getLength()));
+				sb.delete(offset, offset + length);
+				
+				if(!isUpdating) {
+					if(!setValueFromText(sb.toString())) {
+						return;
+					}
+				}
+				super.remove(fb, offset, length);
+			}
+			
+			@Override
+			public void insertString(DocumentFilter.FilterBypass fb,
+	                int offset,
+	                String string,
+	                AttributeSet attr)
+	                  throws BadLocationException {
+				Document doc = fb.getDocument();
+				StringBuilder sb = new StringBuilder();
+				sb.append(doc.getText(0, doc.getLength()));
+				sb.insert(offset, string);
+				
+				if(!isUpdating) {
+					if(!setValueFromText(sb.toString())) {
+						return;
+					}
+				}
+				super.insertString(fb, offset, string, attr);
+			}
+			
+			@Override
+		    public void replace(FilterBypass fb, int i, int i1, String string, AttributeSet as) throws BadLocationException {
+				Document doc = fb.getDocument();
+				StringBuilder sb = new StringBuilder();
+				sb.append(doc.getText(0, doc.getLength()));
+				sb.replace(i, i + i1, string);
+				
+				if(!isUpdating) {
+					if(!setValueFromText(sb.toString())) {
+						return;
+					}
+				}
+				super.replace(fb, i, i1, string, as);
+			}
+			
+		});
+		
+		textField = new JTextField(format.format(d));
 		textField.setPreferredSize(new Dimension(GUIDefaults.TEXT_BOX_WIDTH, textField.getPreferredSize().height));
 		textField.setHorizontalAlignment(JTextField.RIGHT);
-		textField.addActionListener(this);
+		textField.addFocusListener(this);
+		((AbstractDocument)textField.getDocument()).setDocumentFilter(filter);
 		
 		final JLabel label = new JLabel(getDescription());
 		
@@ -114,6 +179,7 @@ public abstract class AbstractNumberHandler extends AbstractGUITunableHandler im
 
 	@Override
 	public void update(){
+		isUpdating = true;
 		Number d;
 		try {
 			d = (Number)getNumberValue();
@@ -121,6 +187,7 @@ public abstract class AbstractNumberHandler extends AbstractGUITunableHandler im
 		} catch(final Exception e) {
 			e.printStackTrace();
 		}
+		isUpdating = false;
 	}
 	
 	/**
@@ -130,28 +197,54 @@ public abstract class AbstractNumberHandler extends AbstractGUITunableHandler im
 	 */
 	@Override
 	public void handle() {
-		textField.setBackground(UIManager.getColor("TextField.background"));
-		Number prev = getNumberValue();
+		//stub - all value changes are handled on the fly by DocumentFilter
+	}
+	
+	private boolean setValueFromText(String text) {
 		Number d = null;
 		
 		try {
-			d = getFieldValue(textField.getText());
+			d = getFieldValue(text);
 		} catch(NumberFormatException nfe) {
-			// Got a format exception -- try parsing it according to the format
-			d = format.parse(textField.getText(), new ParsePosition(0));
-			
-			if (d == null) {
-				displayError(prev);
-				return;
+			// Got a format exception -- try parsing it according to the format to handle exponential
+			ParsePosition pos = new ParsePosition(0);
+			d = format.parse(text, pos);
+			if(d == null || (text.endsWith(".")) ||
+							(text.length() != pos.getIndex() &&
+							!text.substring(pos.getIndex()).equals("E") &&
+							!text.substring(pos.getIndex()).equals("E-"))) {
+				Toolkit.getDefaultToolkit().beep();
+				return false;
 			}
+		}
+		try {
+			d = getTypedValue(d); 
+		} catch (NumberFormatException nfe) {
+			Toolkit.getDefaultToolkit().beep();
+			return false;
 		}
 
 		// Make sure we got a reasonable value by attempting to set the value
 		try {
-			setValue(getTypedValue(d));
-		} catch (final Exception e) {
-			displayError(prev);
+			setValue(d);
+		} catch (final InvocationTargetException e) {
+			JOptionPane.showMessageDialog(
+					null,
+					e.getTargetException().getMessage(), 
+					"Error",
+					JOptionPane.ERROR_MESSAGE
+			);
+			return false;
+		} catch (IllegalAccessException e) {
+			JOptionPane.showMessageDialog(
+					null,
+					e.getMessage(), 
+					"Error",
+					JOptionPane.ERROR_MESSAGE
+			);
+			return false;
 		}
+		return true;
 	}
 
 	abstract public Number getFieldValue(String text);
@@ -174,15 +267,15 @@ public abstract class AbstractNumberHandler extends AbstractGUITunableHandler im
 
 		return text;
 	}
-
-	/**
-	 *  Action listener event handler.
-	 *
-	 *  @param ae specifics of the event (ignored!)
-	 */
+	
 	@Override
-	public void actionPerformed(ActionEvent ae) {
-		handle();
+	public void focusLost(FocusEvent e) {
+		update();
+	}
+	
+	@Override
+	public void focusGained(FocusEvent e) {
+		
 	}
 
 	private Number getNumberValue() {
@@ -191,25 +284,5 @@ public abstract class AbstractNumberHandler extends AbstractGUITunableHandler im
 		} catch (Exception e) {
 			return (Number)new Double(0.0);
 		}
-	}
-
-	private void displayError(Number prev) {
-		String type = "A floating point number";
-		
-		if (getType().equals(Integer.class) || 
-				getType().equals(Long.class) ||
-				getType().equals(int.class) ||
-				getType().equals(long.class))
-			type = "An integer value";
-		
-		textField.setBackground(Color.RED);
-		JOptionPane.showMessageDialog(
-				null,
-				type+" was expected. Value will be set to previous value: " + prev, 
-				"Error",
-				JOptionPane.ERROR_MESSAGE
-		);
-		textField.setText(format.format(prev));
-		textField.setBackground(UIManager.getColor("TextField.background"));
 	}
 }

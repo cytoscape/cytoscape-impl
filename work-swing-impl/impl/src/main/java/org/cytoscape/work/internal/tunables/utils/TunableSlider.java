@@ -44,6 +44,7 @@ import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
+import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -60,7 +61,7 @@ import org.cytoscape.util.swing.LookAndFeelUtil;
 public class TunableSlider extends JPanel {
 	
 	private JSlider slider;
-	private JTextField textField;
+	private JFormattedTextField textField;
 	
 	private final Number min, max;
 	private Number value;
@@ -96,7 +97,8 @@ public class TunableSlider extends JPanel {
 	}
 
 	protected void initUI() {
-		textField = new JTextField(4);
+		textField = new JFormattedTextField(format);
+		textField.setColumns(format.toPattern().length());
 		textField.setHorizontalAlignment(JTextField.RIGHT);
 		
 		slider = new JSlider();
@@ -193,9 +195,11 @@ public class TunableSlider extends JPanel {
 	}
 
 	public void setValue(final Number value) {
+		ignore = true;
 		this.value = value;
 		setSliderValue();
 		setFieldValue();
+		ignore = false;
 	}
 	
 	private Number getSliderValue() {
@@ -350,8 +354,7 @@ public class TunableSlider extends JPanel {
 	}
 	
 	private void setFieldValue() {
-		final String text = format.format(value);
-		textField.setText(text);
+		textField.setValue(value);
 	}
 	
 	public void addChangeListener(ChangeListener cl) {
