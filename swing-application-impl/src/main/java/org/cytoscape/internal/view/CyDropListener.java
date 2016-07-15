@@ -101,21 +101,14 @@ public class CyDropListener implements DropTargetListener {
 	@SuppressWarnings("unchecked")
 	public void drop(DropTargetDropEvent evt) {
 		parentPanel.setBorder(originalBorder);
-		evt.acceptDrop(evt.getDropAction());
         
 		if (!isAcceptable(evt))
         	return;
-
-		Transferable t = evt.getTransferable();
 		
-		if (evt.isDataFlavorSupported(DataFlavor.stringFlavor)) {
-			// TODO: Add Text annotation to network view (probably better to do it from Ding)
-			try {
-				String txt = "" + t.getTransferData(DataFlavor.stringFlavor);
-			} catch (Exception e) {
-				logger.error("Cannot add text to network by Drag-and-Drop.", e);
-			}
-		} else if (evt.isDataFlavorSupported(DataFlavor.javaFileListFlavor)) {       
+		evt.acceptDrop(evt.getDropAction());
+		final Transferable t = evt.getTransferable();
+		
+		if (evt.isDataFlavorSupported(DataFlavor.javaFileListFlavor)) {       
             // Get the fileList that is being dropped.
 	        List<File> data;
 	        
