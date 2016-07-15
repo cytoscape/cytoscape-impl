@@ -1,29 +1,5 @@
 package org.cytoscape.browser.internal.view;
 
-/*
- * #%L
- * Cytoscape Table Browser Impl (table-browser-impl)
- * $Id:$
- * $HeadURL:$
- * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * #L%
- */
-
 import static org.cytoscape.util.swing.LookAndFeelUtil.isAquaLAF;
 
 import java.awt.BorderLayout;
@@ -59,17 +35,38 @@ import org.cytoscape.session.events.SessionLoadedEvent;
 import org.cytoscape.session.events.SessionLoadedListener;
 import org.cytoscape.util.swing.ColumnResizer;
 
+/*
+ * #%L
+ * Cytoscape Table Browser Impl (table-browser-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
 
 /**
  * Base class for all Table Browsers.
- *
  */
+@SuppressWarnings("serial")
 public abstract class AbstractTableBrowser extends JPanel
 										   implements CytoPanelComponent, ActionListener, SessionLoadedListener,
 										   			  SessionAboutToBeSavedListener{
 
-	private static final long serialVersionUID = 1968196123280466989L;
-	
 	static final int SELECTOR_WIDTH = 400;
 	
 	private static final Dimension PANEL_SIZE = new Dimension(550, 400);
@@ -112,32 +109,17 @@ public abstract class AbstractTableBrowser extends JPanel
 		new CyDropListener(this, serviceRegistrar);
 	}
 
-	/**
-	 * Returns the Component to be added to the CytoPanel.
-	 * @return The Component to be added to the CytoPanel.
-	 */
 	@Override
 	public Component getComponent() { return this; }
 
-	/**
-	 * Returns the name of the CytoPanel that this component should be added to.
-	 * @return the name of the CytoPanel that this component should be added to.
-	 */
 	@Override
 	public CytoPanelName getCytoPanelName() {
 		return CytoPanelName.SOUTH;
 	}
 
-	/**
-	 * Returns the title of the tab within the CytoPanel for this component.
-	 * @return the title of the tab within the CytoPanel for this component.
-	 */
 	@Override
 	public String getTitle() { return tabTitle; }
 
-	/**
-	 * @return null
-	 */
 	@Override
 	public Icon getIcon() { return null; }
 	
