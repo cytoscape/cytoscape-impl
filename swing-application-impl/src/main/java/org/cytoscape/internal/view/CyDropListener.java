@@ -71,7 +71,7 @@ public class CyDropListener implements DropTargetListener {
 	        }
 	        @Override
 	        public boolean importData(TransferHandler.TransferSupport info) {
-	            return info.isDrop() && !isAcceptable(info);
+	            return info.isDrop() && isAcceptable(info);
 	        }
 	    });
 		
