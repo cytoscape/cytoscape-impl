@@ -102,8 +102,10 @@ public class CyDropListener implements DropTargetListener {
 	public void drop(DropTargetDropEvent evt) {
 		parentPanel.setBorder(originalBorder);
         
-		if (!isAcceptable(evt))
+		if (!isAcceptable(evt)) {
+			evt.rejectDrop();
         	return;
+		}
 		
 		evt.acceptDrop(evt.getDropAction());
 		final Transferable t = evt.getTransferable();
