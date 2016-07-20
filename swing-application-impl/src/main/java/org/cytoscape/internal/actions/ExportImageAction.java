@@ -2,6 +2,7 @@ package org.cytoscape.internal.actions;
 
 import java.awt.Window;
 import java.awt.event.ActionEvent;
+import java.util.Map;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.AbstractCyAction;
@@ -17,12 +18,10 @@ public class ExportImageAction extends AbstractCyAction {
 	private static final long serialVersionUID = 658710037737217181L;
 	private Window owner;
 	private CyServiceRegistrar registrar;
-
-	public ExportImageAction(Window owner, CyServiceRegistrar registrar) {
-		super("Export as Image...", registrar.getService(CyApplicationManager.class), "networkAndView", registrar.getService(CyNetworkViewManager.class));
-		setPreferredMenu("File");
-		setEnabled(true);
-		setMenuGravity(5.2f);
+	
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	public ExportImageAction(Map props, Window owner, CyServiceRegistrar registrar) {
+		super(props, registrar.getService(CyApplicationManager.class), registrar.getService(CyNetworkViewManager.class));
 		this.owner = owner;
 		this.registrar = registrar;
 	}
