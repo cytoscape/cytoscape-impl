@@ -637,6 +637,11 @@ public abstract class FDLayout extends Layout
 		}
 	}
 	
+	protected void updateProgress()
+	{
+		updateProgress((double)this.totalIterations / (double)this.maxIterations);
+	}
+	
 // -----------------------------------------------------------------------------
 // Section: FR-Grid Variant Repulsion Force Calculation
 // -----------------------------------------------------------------------------

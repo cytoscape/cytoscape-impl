@@ -274,6 +274,9 @@ public class CoSELayout extends FDLayout
 		
 		do
 		{
+			if (cancelled)
+				return;
+			
 			this.totalIterations++;
 
 			if (this.totalIterations % FDLayoutConstants.CONVERGENCE_CHECK_PERIOD == 0)
@@ -299,6 +302,8 @@ public class CoSELayout extends FDLayout
 			
 			this.animate();
 			this.resetForces();
+			
+			updateProgress();
 		}
 		while (this.totalIterations < this.maxIterations);
 	}

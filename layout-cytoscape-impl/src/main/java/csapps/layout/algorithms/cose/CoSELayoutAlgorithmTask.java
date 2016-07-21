@@ -1,7 +1,5 @@
 package csapps.layout.algorithms.cose;
 
-import java.util.ArrayDeque;
-import java.util.Deque;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -26,6 +24,7 @@ import org.ivis.layout.LGraphManager;
 import org.ivis.layout.LGraphObject;
 import org.ivis.layout.LNode;
 import org.ivis.layout.LayoutOptionsPack;
+import org.ivis.layout.ProgressListener;
 import org.ivis.layout.Updatable;
 import org.ivis.layout.cose.CoSELayout;
 import org.slf4j.Logger;
@@ -57,6 +56,8 @@ import org.slf4j.LoggerFactory;
 
 public class CoSELayoutAlgorithmTask extends AbstractPartitionLayoutTask {
 
+	private CoSELayout cose;
+	
 	private final CyServiceRegistrar serviceRegistrar;
 	
 	private static final Logger logger = LoggerFactory.getLogger(CoSELayoutAlgorithmTask.class);
@@ -98,7 +99,15 @@ public class CoSELayoutAlgorithmTask extends AbstractPartitionLayoutTask {
 		
 		// Create the CoSE model
 		// (see http://www.cs.bilkent.edu.tr/~ivis/chilay/ChiLay-2.0-PG.pdf)
-		final CoSELayout cose = new CoSELayout();
+		cose = new CoSELayout();
+		
+		cose.addProgressListener(new ProgressListener() {
+			@Override
+			public void update(double value) {
+				taskMonitor.setProgress(value);
+			}
+		});
+		
 		final LGraphManager gm = cose.getGraphManager();
 		final LGraph root = gm.addRoot();
 		
@@ -110,11 +119,8 @@ public class CoSELayoutAlgorithmTask extends AbstractPartitionLayoutTask {
 		
 		// Create all CoSE nodes
 		final Map<CyNode, LNode> lNodeMap = new HashMap<>();
-		final Deque<LayoutNode> nodeDeque = new ArrayDeque<>(partition.getNodeList());
 		
-		while (!nodeDeque.isEmpty() && !cancelled) {
-			final LayoutNode n = nodeDeque.pollFirst();
-			
+		for (LayoutNode n : partition.getNodeList()) {
 			// If this node does not belong to a CyGroup, let's traverse its potential compound node tree.
 			if (groupManager.getGroupsForNode(n.getNode(), network).isEmpty())
 				traverseLNodeTree(n, root, cose, lNodeMap, layoutNodeMap, groupManager);
@@ -147,15 +153,16 @@ public class CoSELayoutAlgorithmTask extends AbstractPartitionLayoutTask {
 			return;
 		
 		// Move all Node Views to the new positions
-		for (LNode ln : lNodeMap.values()) {
-			if (cancelled)
-				break;
-			
-			final VNode vn = (VNode) ln.vGraphObject;
-			
-			if (vn.getLayoutNode() != null)
-				partition.moveNodeToLocation(vn.getLayoutNode());
-		}
+		for (LayoutNode n : partition.getNodeList())
+			partition.moveNodeToLocation(n);
+	}
+	
+	@Override
+	public void cancel() {
+		super.cancel();
+		
+		if (cose != null)
+			cose.cancel();
 	}
 
 	private void traverseLNodeTree(

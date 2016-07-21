@@ -1,18 +1,19 @@
 package org.ivis.layout;
 
+import java.awt.Dimension;
+import java.awt.Point;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
-import java.awt.Dimension;
-import java.awt.Point;
 
-import org.ivis.util.Transform;
 import org.ivis.util.PointD;
+import org.ivis.util.Transform;
 
 /**
  * This class lays out the associated graph model (LGraphManager, LGraph, LNode,
@@ -109,6 +110,10 @@ public abstract class Layout
 	 * TODO you may remove
 	 */
 	public long executionTime = 0;
+	
+	protected volatile boolean cancelled;
+	
+	private Set<ProgressListener> progressListeners = new LinkedHashSet<>();
 	
 // -----------------------------------------------------------------------------
 // Section: Constructors and initializations
@@ -722,6 +727,29 @@ public abstract class Layout
 				this.graphManager.add(lEdge, lEdge.source, lEdge.target);
 			}
 		}
+	}
+	
+	public void addProgressListener(ProgressListener listener)
+	{
+		progressListeners.add(listener);
+	}
+	
+	public void removeProgressListener(ProgressListener listener)
+	{
+		progressListeners.remove(listener);
+	}
+	
+	protected void updateProgress(double value)
+	{
+		for (ProgressListener listener : progressListeners)
+		{
+			listener.update(value);
+		}
+	}
+	
+	public void cancel()
+	{
+		cancelled = true;
 	}
 	
 // -----------------------------------------------------------------------------
