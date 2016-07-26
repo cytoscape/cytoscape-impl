@@ -48,7 +48,7 @@ public final class TunableDialog extends JDialog {
 
 	private static final long serialVersionUID = 7438623438647443009L;
 
-	protected final Component optionPanel;
+	protected Component optionPanel;
 	private JButton btnCancel;
 	private JButton btnOK;
 	private JScrollPane jScrollPane1;
@@ -138,5 +138,11 @@ public final class TunableDialog extends JDialog {
 		pack();
 		// Shouldn't call setSize after we pack.  Leads to really ugly dialogs if we only have a single tunable
 		// setSize(this.getSize().width + 30, this.getSize().height + 30);
+	}
+
+	public void updateOptionPanel(JPanel newPanel) {
+		optionPanel = newPanel;
+		jScrollPane1.setViewportView(optionPanel);
+		pack();
 	}
 }
