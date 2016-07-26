@@ -183,7 +183,7 @@ public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurr
 		model.setViewMode(rowSelectionMode);
 		model.updateViewMode();
 		
-		if (rowSelectionMode == ViewMode.ALL) {
+		if (rowSelectionMode == ViewMode.ALL && currentTable.getColumn(CyNetwork.SELECTED) != null) {
 			// Show the current selected rows
 			final Set<Long> suidSelected = new HashSet<Long>();
 			final Set<Long> suidUnselected = new HashSet<Long>();
