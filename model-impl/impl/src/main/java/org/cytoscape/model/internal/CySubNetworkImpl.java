@@ -27,16 +27,19 @@ package org.cytoscape.model.internal;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyEdge.Type;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.SavePolicy;
@@ -127,11 +130,14 @@ public final class CySubNetworkImpl extends DefaultTablesNetwork implements CySu
 			if (containsNode(node))
 				return false;
 
-			if (!parent.containsNode(node))
+			if (!parent.containsNode(node) && !parent.cachedNode(node))
 				throw new IllegalArgumentException("node is not contained in parent network.");
 
 			addNodeInternal(node);
 			
+			if(parent.cachedNode(node)) {
+				parent.restoreNode(node);
+			}
 			copyTableData(node);
 		}
 
@@ -169,7 +175,7 @@ public final class CySubNetworkImpl extends DefaultTablesNetwork implements CySu
 			if (containsEdge(edge))
 				return false;
 
-			if (!parent.containsEdge(edge))
+			if (!parent.containsEdge(edge) && !parent.cachedEdge(edge))
 				throw new IllegalArgumentException("edge is not contained in parent network.");
 
 			// This will:
@@ -182,6 +188,9 @@ public final class CySubNetworkImpl extends DefaultTablesNetwork implements CySu
 			// add edge
 			addEdgeInternal(edge.getSource(),edge.getTarget(),edge.isDirected(),edge);
 
+			if(parent.cachedEdge(edge)) {
+				parent.restoreEdge(edge);
+			}
 			copyTableData(edge);
 		}
 
@@ -202,6 +211,11 @@ public final class CySubNetworkImpl extends DefaultTablesNetwork implements CySu
 		final String name = parent.getRow(graphObject).get(NAME, String.class);
 		final CyRow sharedTableRow = parent.getRow(graphObject, CyRootNetwork.SHARED_ATTRS);
 		final CyRow defaultTableRow = parent.getRow(graphObject);
+		
+//		final String name = parent.getCachedAttributes(graphObject).get(NAME, String.class);
+//		final CyRow sharedTableRow = parent.getCachedAttributes(graphObject, CyRootNetwork.SHARED_ATTRS);
+//		final CyRow defaultTableRow = parent.getCachedAttributes(graphObject);
+		
 		final CyRow targetRow = this.getRow(graphObject);
 		// Step 1: Copy shared name as name of this new node
 		final String sharedName = sharedTableRow.get(CyRootNetwork.SHARED_NAME, String.class);
@@ -228,28 +242,44 @@ public final class CySubNetworkImpl extends DefaultTablesNetwork implements CySu
 			return false;
 		eventHelper.fireEvent(new AboutToRemoveNodesEvent(this, nodes));
 
-		CyTable hiddenTable = getTable(CyNode.class, CyNetwork.HIDDEN_ATTRS);
-		CyTable localTable = getTable(CyNode.class, CyNetwork.LOCAL_ATTRS);
-		CyTable defaultTable = getTable(CyNode.class, CyNetwork.DEFAULT_ATTRS);
-		List<Long> suids = new ArrayList<>();
+		CyTable nodeHiddenTable  = getTable(CyNode.class, CyNetwork.HIDDEN_ATTRS);
+		CyTable nodeDefaultTable = getTable(CyNode.class, CyNetwork.DEFAULT_ATTRS);
+		CyTable edgeHiddenTable  = getTable(CyEdge.class, CyNetwork.HIDDEN_ATTRS);
+		CyTable edgeDefaultTable = getTable(CyEdge.class, CyNetwork.DEFAULT_ATTRS);
+		
+		List<Long> nodeSuids = new ArrayList<>();
+		List<Long> edgeSuids = new ArrayList<>();
+		Set<CyEdge> edges = new HashSet<>();
 
 		for(CyNode node: nodes) {
 			if (this.containsNode(node)) {
-				Long suid = node.getSUID();
-				if (defaultTable.rowExists(suid))
-					suids.add(suid);
-				// getRow(node).set(CyNetwork.SELECTED, false);
+				Long nodeSuid = node.getSUID();
+				if (nodeDefaultTable.rowExists(nodeSuid))
+					nodeSuids.add(nodeSuid);
+				
+				for(CyEdge edge : getAdjacentEdgeIterable(node, Type.ANY)) {
+					Long edgeSuid = edge.getSUID();
+					if (edgeDefaultTable.rowExists(edgeSuid)) {
+						edgeSuids.add(edgeSuid);
+						edges.add(edge);
+					}
+				}
 			}
 		}
 
 		boolean ret = removeNodesInternal(nodes);
 
-		hiddenTable.deleteRows(suids);
-		defaultTable.deleteRows(suids);
-		// Shouldn't be needed since the default table is a facade on the local table
-		// localTable.deleteRows(suids);
-
-		if ( ret ){
+		nodeHiddenTable.deleteRows(nodeSuids);
+		nodeDefaultTable.deleteRows(nodeSuids);
+		edgeHiddenTable.deleteRows(edgeSuids);
+		edgeDefaultTable.deleteRows(edgeSuids);
+		
+		if(ret) {
+			// must call subnetworkEdgesRemoved() first
+			parent.subnetworkEdgesRemoved(edges);
+			parent.subnetworkNodesRemoved(nodes);
+		}
+		if(ret) {
 			eventHelper.fireEvent(new RemovedNodesEvent(this));
 		}
 
@@ -258,6 +288,10 @@ public final class CySubNetworkImpl extends DefaultTablesNetwork implements CySu
 
 	@Override
 	public boolean removeEdges(final Collection<CyEdge> edges) {
+		return removeEdges(edges, true);
+	}
+	
+	private boolean removeEdges(final Collection<CyEdge> edges, boolean fireEvents) {
 		if ( edges == null || edges.isEmpty() )
 			return false;
 
@@ -283,7 +317,11 @@ public final class CySubNetworkImpl extends DefaultTablesNetwork implements CySu
 		// Shouldn't be needed since the default table is a facade on the local table
 		// localTable.deleteRows(suids);
 
-		if ( ret ){
+		if(ret) {
+			parent.subnetworkEdgesRemoved(edges);
+		}
+		
+		if(ret) {
 			eventHelper.fireEvent(new RemovedEdgesEvent(this));
 		}
 

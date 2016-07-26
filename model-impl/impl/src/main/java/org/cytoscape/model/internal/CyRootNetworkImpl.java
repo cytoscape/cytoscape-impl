@@ -28,10 +28,10 @@ package org.cytoscape.model.internal;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.stream.Collectors;
 
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyEdge;
@@ -40,6 +40,7 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.CyTableFactory.InitialTableSize;
@@ -52,6 +53,8 @@ import org.cytoscape.model.events.RowsSetListener;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.session.events.SessionLoadedEvent;
+import org.cytoscape.session.events.SessionLoadedListener;
 
 
 /**
@@ -59,7 +62,7 @@ import org.cytoscape.service.util.CyServiceRegistrar;
  * for addNodes/addEdges that is missing from SimpleNetwork and provides support 
  * for subnetworks.
  */
-public final class CyRootNetworkImpl extends DefaultTablesNetwork implements CyRootNetwork, NetworkAddedListener {
+public final class CyRootNetworkImpl extends DefaultTablesNetwork implements CyRootNetwork, NetworkAddedListener, SessionLoadedListener {
 
 	private final long suid;
 	private SavePolicy savePolicy;
@@ -80,6 +83,9 @@ public final class CyRootNetworkImpl extends DefaultTablesNetwork implements CyR
 
 	private int nextNodeIndex;
 	private int nextEdgeIndex;
+	
+	private final RemovedAttributesCache removedAttributesCache;
+	
 
 	public CyRootNetworkImpl(final CyEventHelper eh, 
 	                         final CyTableManagerImpl tableMgr,
@@ -113,6 +119,8 @@ public final class CyRootNetworkImpl extends DefaultTablesNetwork implements CyR
 		
 		getRow(this).set(CyNetwork.NAME, "");
 
+		removedAttributesCache = new RemovedAttributesCache(networkTableMgr, this);
+		
 		columnAdder = new VirtualColumnAdder();
 		serviceRegistrar.registerService(columnAdder, ColumnCreatedListener.class, new Properties());
 		nameSetListener = new NameSetListener();
@@ -122,6 +130,8 @@ public final class CyRootNetworkImpl extends DefaultTablesNetwork implements CyR
 		networkAddedListenerDelegator = new NetworkAddedListenerDelegator();
 		networkAddedListenerDelegator.addListener(this);
 		serviceRegistrar.registerService(networkAddedListenerDelegator, NetworkAddedListener.class, new Properties());
+		
+		serviceRegistrar.registerService(this, SessionLoadedListener.class, new Properties());
 
 		networkNameSetListener = new NetworkNameSetListener(this);
 		serviceRegistrar.registerService(networkNameSetListener, RowsSetListener.class, new Properties());		
@@ -138,6 +148,7 @@ public final class CyRootNetworkImpl extends DefaultTablesNetwork implements CyR
 		serviceRegistrar.unregisterAllServices(interactionSetListener);
 		serviceRegistrar.unregisterAllServices(networkAddedListenerDelegator);
 		serviceRegistrar.unregisterAllServices(networkNameSetListener);
+		serviceRegistrar.unregisterService(this, SessionLoadedListener.class);
 		
 		for (CySubNetwork network : subNetworks) {
 			network.dispose();
@@ -155,6 +166,7 @@ public final class CyRootNetworkImpl extends DefaultTablesNetwork implements CyR
 			tableMgr.deleteTableInternal(table.getSUID(), true);
 		}
 		networkTableMgr.removeAllTables(this);
+		removedAttributesCache.dispose();
 	}
 	
 	// Simply register all tables to the table manager
@@ -231,18 +243,113 @@ public final class CyRootNetworkImpl extends DefaultTablesNetwork implements CyR
 	@Override
 	public boolean removeNodes(final Collection<CyNode> nodes) {
 		synchronized (lock) {
+			boolean removed = false;
+			
 			for ( CySubNetwork sub : subNetworks ) {
-				sub.removeNodes(nodes);
+				removed |= sub.removeNodes(nodes);
 				if (nodes != null && sub instanceof CySubNetworkImpl)
 					((CySubNetworkImpl) sub).removeRows(nodes, CyNode.class);
 			}
 	
+			// Explicitly removing from the root network removes from the cache
+			if(nodes != null) {
+				for(CyNode node : nodes) {
+					removedAttributesCache.evict(node);
+				}
+			}
+			
 			// Do we want to do this?????
 			this.removeRows(nodes, CyNode.class);
 			
-			return removeNodesInternal(nodes);
+			removed |= removeNodesInternal(nodes);
+			
+			return removed;
 		}
 	}
+	
+	// Check if the nodes have been removed from all subnetworks, 
+	// if so move the root instanece of the node to the recycle bin.
+	void subnetworkNodesRemoved(Collection<CyNode> nodes) {
+		List<CyNode> nodesToCache = nodes.stream()
+			.filter(node -> containsNode(node) && !anySubnetworkContains(node))
+			.collect(Collectors.toList());
+		
+		removedAttributesCache.cache(nodesToCache);
+		removeRows(nodesToCache, CyNode.class);
+		removeNodesInternal(nodesToCache);
+	}
+	
+	void subnetworkEdgesRemoved(Collection<CyEdge> edges) {
+		List<CyEdge> edgesToCache = edges.stream()
+			.filter(edge -> containsEdge(edge) && !anySubnetworkContains(edge))
+			.collect(Collectors.toList());
+		
+		removedAttributesCache.cache(edgesToCache);
+		removeRows(edgesToCache, CyEdge.class);
+		removeEdgesInternal(edgesToCache);
+		
+	}
+	
+	void garbageCollect() {
+		List<CyNode> garbageNodes = 
+			getNodeList().stream().filter(n -> !anySubnetworkContains(n)).collect(Collectors.toList());
+		List<CyEdge> garbageEdges =
+			getEdgeList().stream().filter(e -> !anySubnetworkContains(e)).collect(Collectors.toList());
+		
+		removedAttributesCache.cache(garbageNodes);
+		removedAttributesCache.cache(garbageEdges);
+		removeRows(garbageNodes, CyNode.class);
+		removeRows(garbageEdges, CyEdge.class);
+		removeNodesInternal(garbageNodes);
+		removeEdgesInternal(garbageEdges);
+	}
+	
+	
+	CyRow getCachedAttributes(CyIdentifiable element) {
+		return getCachedAttributes(element, CyNetwork.DEFAULT_ATTRS);
+	}
+	
+	CyRow getCachedAttributes(CyIdentifiable element, String namespace) {
+		if(element instanceof CyNode && super.containsNode((CyNode)element)) {
+			return this.getRow(element, namespace);
+		}
+		if(element instanceof CyEdge && super.containsEdge((CyEdge)element)) {
+			return this.getRow(element, namespace);
+		}
+		if(removedAttributesCache.contains(element)) {
+			return removedAttributesCache.getAttributes(element, namespace);
+		}
+		return null;
+	}
+	
+	
+	boolean cachedEdge(CyEdge edge) {
+		return removedAttributesCache.contains(edge);
+	}
+	
+	boolean cachedNode(CyNode node) {
+		return removedAttributesCache.contains(node);
+	}
+	
+	void restoreNode(CyNode node) {
+		
+		removedAttributesCache.restore(node);
+		addNodeInternal(node);
+	}
+	
+	void restoreEdge(CyEdge edge) {
+		removedAttributesCache.restore(edge);
+		addEdgeInternal(edge.getSource(), edge.getTarget(), edge.isDirected(), edge);
+	}
+	
+	private boolean anySubnetworkContains(CyNode node) {
+		return subNetworks.stream().anyMatch(sub -> sub.containsNode(node));
+	}
+	
+	private boolean anySubnetworkContains(CyEdge edge) {
+		return subNetworks.stream().anyMatch(sub -> sub.containsEdge(edge));
+	}
+	
 
 	@Override
 	public CyEdge addEdge(final CyNode s, final CyNode t, final boolean directed) {
@@ -265,6 +372,14 @@ public final class CyRootNetworkImpl extends DefaultTablesNetwork implements CyR
 				if (edges != null && sub instanceof CySubNetworkImpl)
 					((CySubNetworkImpl) sub).removeRows(edges, CyEdge.class);
 			}
+			
+			// Explicitly removing from the root network removes from the cache
+			if(edges != null) {
+				for(CyEdge edge : edges) {
+					removedAttributesCache.evict(edge);
+				}
+			}
+						
 			return removeEdgesInternal(edges);
 		}
 	}
@@ -275,8 +390,7 @@ public final class CyRootNetworkImpl extends DefaultTablesNetwork implements CyR
 	}
 	
 	@Override
-	public CySubNetwork addSubNetwork(final Iterable<CyNode> nodes, final Iterable<CyEdge> edges,
-			final SavePolicy policy) {
+	public CySubNetwork addSubNetwork(final Iterable<CyNode> nodes, final Iterable<CyEdge> edges, final SavePolicy policy) {
 		// Only addSubNetwork() modifies the internal state of CyRootNetworkImpl (this object), 
 		// so because it's synchronized, we don't need to synchronize this method.
 		final CySubNetwork sub = addSubNetwork(policy);
@@ -375,6 +489,8 @@ public final class CyRootNetworkImpl extends DefaultTablesNetwork implements CyR
 	
 			subNetworks.remove(sub);
 			sub.dispose();
+			
+			garbageCollect();
 		}
 	}
 
@@ -431,7 +547,9 @@ public final class CyRootNetworkImpl extends DefaultTablesNetwork implements CyR
 		} catch (NullPointerException e) {
 			name = "(unavailable)";
 		}
-		return name; 
+		
+		return "CyRootNetwork[name=" + name + " ,nodes=" + getNodeCount() + " ,edges=" + getEdgeCount() + ", " + removedAttributesCache.toString() + "]";
+//		return name; 
 	}
 
 	private int getNextNodeIndex() {
@@ -478,5 +596,11 @@ public final class CyRootNetworkImpl extends DefaultTablesNetwork implements CyR
 			registerAllTables(networkTableMgr.getTables(this, CyNode.class).values());
 			registerAllTables(networkTableMgr.getTables(this, CyEdge.class).values());
 		}
+	}
+	
+	@Override
+	public void handleEvent(SessionLoadedEvent e) {
+		// remove any unreachable nodes left over from older versions of cytoscape
+		garbageCollect();
 	}
 }

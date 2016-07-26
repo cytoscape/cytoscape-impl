@@ -30,6 +30,7 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
@@ -39,7 +40,6 @@ import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.CyTableFactory.InitialTableSize;
-import org.cytoscape.event.CyEventHelper;
 
 
 /**
@@ -194,6 +194,7 @@ abstract class DefaultTablesNetwork extends SimpleNetwork {
 			return InitialTableSize.SMALL;
 	}
 
+	// This doesn't remove the SHARED_ATTRS rows?
 	protected <T extends CyIdentifiable> void removeRows(Collection<T> items, Class<? extends T> type) {
 		Collection<Long> primaryKeys = new ArrayList<Long>();
 		for (T item : items) {
