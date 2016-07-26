@@ -56,12 +56,14 @@ import org.cytoscape.work.internal.tunables.ListSingleHandler;
 import org.cytoscape.work.internal.tunables.LongHandler;
 import org.cytoscape.work.internal.tunables.StringHandler;
 import org.cytoscape.work.internal.tunables.URLHandlerFactory;
+import org.cytoscape.work.internal.tunables.UserActionHandler;
 import org.cytoscape.work.internal.tunables.utils.SupportedFileTypesManager;
 import org.cytoscape.work.swing.DialogTaskManager;
 import org.cytoscape.work.swing.GUITunableHandlerFactory;
 import org.cytoscape.work.swing.PanelTaskManager;
 import org.cytoscape.work.swing.SimpleGUITunableHandlerFactory;
 import org.cytoscape.work.swing.StatusBarPanelFactory;
+import org.cytoscape.work.swing.util.UserAction;
 import org.cytoscape.work.swing.undo.SwingUndoSupport;
 import org.cytoscape.work.undo.UndoSupport;
 import org.cytoscape.work.util.BoundedDouble;
@@ -132,6 +134,8 @@ public class CyActivator extends AbstractCyActivator {
 				ListSingleHandler.class, ListSingleSelection.class);
 		SimpleGUITunableHandlerFactory<ListMultipleHandler> listMultipleSelectionHandlerFactory = new SimpleGUITunableHandlerFactory<>(
 				ListMultipleHandler.class, ListMultipleSelection.class);
+		SimpleGUITunableHandlerFactory<UserActionHandler> userActionHandlerFactory = new SimpleGUITunableHandlerFactory<>(
+				UserActionHandler.class, UserAction.class);
 
 		URLHandlerFactory urlHandlerFactory = new URLHandlerFactory(dsManager);
 		
@@ -165,6 +169,7 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc,listMultipleSelectionHandlerFactory,GUITunableHandlerFactory.class, new Properties());
 		registerService(bc,fileHandlerFactory,GUITunableHandlerFactory.class, new Properties());
 		registerService(bc,urlHandlerFactory,GUITunableHandlerFactory.class, new Properties());
+		registerService(bc,userActionHandlerFactory,GUITunableHandlerFactory.class, new Properties());
 		
 		registerServiceListener(bc,supportedFileTypesManager,"addInputStreamTaskFactory","removeInputStreamTaskFactory",InputStreamTaskFactory.class);
 		registerServiceListener(bc,supportedFileTypesManager,"addCyWriterTaskFactory","removeCyWriterTaskFactory",CyWriterFactory.class);
