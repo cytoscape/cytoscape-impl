@@ -55,6 +55,7 @@ public class StringHandler extends AbstractGUITunableHandler implements ActionLi
 	private static final Logger logger = LoggerFactory.getLogger(StringHandler.class);
 	
 	private JFormattedTextField textField;
+	private boolean readOnly = false;
 
 	/**
 	 * It creates the Swing component for this Object (JTextField) that contains the initial string,
@@ -75,6 +76,7 @@ public class StringHandler extends AbstractGUITunableHandler implements ActionLi
 	}
 
 	private void init() {
+		readOnly = getParams().getProperty("readOnly", "false").equalsIgnoreCase("true");
 		String s = null;
 		
 		try {
@@ -96,6 +98,8 @@ public class StringHandler extends AbstractGUITunableHandler implements ActionLi
 		
 		updateFieldPanel(panel, label, textField, horizontal);
 		setTooltip(getTooltip(), label, textField);
+		if (readOnly)
+			textField.setEditable(false);
 	}
 	
 	@Override
