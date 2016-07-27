@@ -37,6 +37,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
@@ -163,16 +164,14 @@ public class FileHandler extends AbstractGUITunableHandler implements DirectlyPr
 
 	@Override
 	public void update(){
-		final int load_or_save = input ? FileUtil.LOAD : FileUtil.SAVE;
-
-		// Use the panel's parent if we have it, otherwise use the possible
-		// parent specified in setFileTunableDirectly. 
-		Component parentComponent = SwingUtilities.getWindowAncestor(panel);
 		
-		if (parentComponent == null)
-			parentComponent = possibleParent;
-		
-		final File file = fileUtil.getFile(parentComponent, label.getText(), load_or_save, filters);
+		File file = null;
+		try {
+			file = (File) getValue();
+		} catch (IllegalAccessException | InvocationTargetException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		
 		if (file != null) {
 			textField.setText(file.getAbsolutePath());
