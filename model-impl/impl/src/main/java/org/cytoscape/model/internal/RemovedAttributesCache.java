@@ -35,7 +35,7 @@ import org.cytoscape.model.subnetwork.CyRootNetwork;
  */
 public class RemovedAttributesCache {
 	
-	private final String[] namespaces = { CyNetwork.DEFAULT_ATTRS, CyRootNetwork.SHARED_ATTRS };
+	private final String[] namespaces = { CyNetwork.DEFAULT_ATTRS, CyRootNetwork.SHARED_ATTRS, CyNetwork.HIDDEN_ATTRS };
 	
 	private final CyNetworkTableManager networkTableManager;
 	
