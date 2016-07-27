@@ -74,6 +74,7 @@ public class ListMultipleHandler<T> extends AbstractGUITunableHandler
 	private ListMultipleSelection<T> listMultipleSelection;
 	private JButton selectAllButton;
 	private JButton selectNoneButton;
+	private boolean isUpdating = false;
 
 	/**
 	 * Constructs the <code>GUIHandler</code> for the <code>ListMultipleSelection</code> type
@@ -142,7 +143,6 @@ public class ListMultipleHandler<T> extends AbstractGUITunableHandler
 			listModel.addElement(value);
 		
 		itemsContainerList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-		itemsContainerList.addListSelectionListener(this);
 		
 		// selected items
 		final List<T> selectedVals = listMultipleSelection.getSelectedValues();
@@ -161,6 +161,7 @@ public class ListMultipleHandler<T> extends AbstractGUITunableHandler
 		}
 		
 		itemsContainerList.setSelectedIndices(selectedIdx);
+		itemsContainerList.addListSelectionListener(this);
 		
 		// use a JscrollPane to visualize the items
 		final JScrollPane scrollpane = new JScrollPane(itemsContainerList);
@@ -212,6 +213,7 @@ public class ListMultipleHandler<T> extends AbstractGUITunableHandler
 	
 	@Override
 	public void update(){
+		isUpdating = true;
 		boolean reloadSelection = false;
 		
 		listMultipleSelection = getMultipleSelection();
@@ -254,6 +256,7 @@ public class ListMultipleHandler<T> extends AbstractGUITunableHandler
 		}
 		
 		panel.setVisible(itemsContainerList.getModel().getSize() > 0);
+		isUpdating = false;
 	}
 	
 	/**
@@ -301,7 +304,7 @@ public class ListMultipleHandler<T> extends AbstractGUITunableHandler
 
 	@Override
 	public void valueChanged(ListSelectionEvent e) {
-		if (!e.getValueIsAdjusting())
+		if (!e.getValueIsAdjusting() && !isUpdating)
 			handle();
 	}
 

@@ -56,6 +56,7 @@ public class StringHandler extends AbstractGUITunableHandler implements ActionLi
 	
 	private JFormattedTextField textField;
 	private boolean readOnly = false;
+	private boolean isUpdating = false;
 
 	/**
 	 * It creates the Swing component for this Object (JTextField) that contains the initial string,
@@ -104,6 +105,7 @@ public class StringHandler extends AbstractGUITunableHandler implements ActionLi
 	
 	@Override
 	public void update(){
+		isUpdating = true;
 		String s = null;
 		try {
 			s = (String)getValue();
@@ -111,6 +113,7 @@ public class StringHandler extends AbstractGUITunableHandler implements ActionLi
 		} catch (final Exception e) {
 			logger.error("Could not set String Tunable.", e);
 		}
+		isUpdating = false;
 	}
 	
 	/**
@@ -151,6 +154,7 @@ public class StringHandler extends AbstractGUITunableHandler implements ActionLi
 	
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		handle();
+		if(!isUpdating)
+			handle();
 	}
 }
