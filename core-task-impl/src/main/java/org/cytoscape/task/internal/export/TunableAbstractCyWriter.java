@@ -187,7 +187,7 @@ public abstract class TunableAbstractCyWriter<S extends CyWriterFactory, T exten
 		final String fileExtension = FilenameUtils.getExtension(fileName);
 		
 		if (!filterExtension.trim().equals(fileExtension.trim()))
-			fileName += "." + filterExtension;
+			fileName = FilenameUtils.removeExtension(fileName) + "." + filterExtension;
 		
 		return new File(fileName);
 	}
