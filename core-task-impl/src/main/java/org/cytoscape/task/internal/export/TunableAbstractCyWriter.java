@@ -92,6 +92,8 @@ public abstract class TunableAbstractCyWriter<S extends CyWriterFactory, T exten
 			public void selectionChanged(ListSelection<String> source) {
 				try {
 					writer = getWriter(getFileFilter(getExportFileFormat()));
+					if(outputFile != null)
+						outputFile = addOrReplaceExtension(outputFile);
 					if(helper != null)
 						SwingUtilities.invokeLater(new Runnable() {
 							@Override
