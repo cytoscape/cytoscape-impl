@@ -67,7 +67,6 @@ public class TunableSlider extends JPanel {
 	private final DecimalFormat format;
 	private boolean ignore;
 	
-	private Number majortickspace;
 	private int m_smin = 0;
 	private int m_srange = 100;
 	String newline = System.getProperty("line.separator");
@@ -120,35 +119,30 @@ public class TunableSlider extends JPanel {
 		slider = new JSlider();
 		
 		final Hashtable<Integer, JLabel> labelTable = new Hashtable<>();
-		majortickspace = (max.doubleValue() - min.doubleValue()) / 5;
 		
 		if (value instanceof Double || value instanceof Float) {
-			Double major = new Double(majortickspace.doubleValue());
-			double i = min.doubleValue();
-			int j = 0;
+			final double range = max.doubleValue() - min.doubleValue();
 			
-			while (i <= max.doubleValue()) {
-				final JLabel label = new JLabel(format.format(i));
-				labelTable.put(j, label);
-				i += major;
-				j += 20;
-			}
+			labelTable.put(m_smin, new JLabel(format.format(min.doubleValue())));
+			
+			if (range % 2 == 0)
+				labelTable.put(m_srange / 2, new JLabel(format.format(range / 2)));
+			
+			labelTable.put(m_srange, new JLabel(format.format(max.doubleValue())));
 		} else if (value instanceof Long || value instanceof Integer) {
-			Integer majortick = new Integer(majortickspace.intValue());
-			int i = min.intValue();
-			int j = 0;
+			final long range = max.longValue() - min.longValue();
 			
-			while (i <= max.intValue()) {
-				final JLabel label = new JLabel(format.format(i));
-				labelTable.put(j, label);
-				i += majortick;
-				j += 20;
-			}
+			labelTable.put(m_smin, new JLabel(format.format(min.longValue())));
+			
+			if (range % 2 == 0)
+				labelTable.put(m_srange / 2, new JLabel(format.format(range / 2)));
+			
+			labelTable.put(m_srange, new JLabel(format.format(max.longValue())));
 		}
 		
 		slider.setPreferredSize(new Dimension(280, slider.getPreferredSize().height));
-		slider.setMajorTickSpacing(20);
-		slider.setMinorTickSpacing(5);
+		slider.setMajorTickSpacing(m_srange / 4);
+		slider.setMinorTickSpacing(m_srange / 20);
 		slider.setLabelTable(labelTable);
 		slider.setPaintTicks(true);
 		slider.setPaintLabels(true);
