@@ -25,8 +25,8 @@ package org.cytoscape.work.internal.tunables;
  */
 
 import static org.cytoscape.work.internal.tunables.utils.GUIDefaults.TEXT_BOX_WIDTH;
-import static org.cytoscape.work.internal.tunables.utils.GUIDefaults.updateFieldPanel;
 import static org.cytoscape.work.internal.tunables.utils.GUIDefaults.setTooltip;
+import static org.cytoscape.work.internal.tunables.utils.GUIDefaults.updateFieldPanel;
 
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
@@ -91,7 +91,7 @@ public class StringHandler extends AbstractGUITunableHandler implements ActionLi
 		formatter.setOverwriteMode(false);
 		textField = new JFormattedTextField(formatter);
 		textField.setValue(s);
-		textField.setPreferredSize(new Dimension(TEXT_BOX_WIDTH, textField.getPreferredSize().height));
+		textField.setPreferredSize(new Dimension(2 * TEXT_BOX_WIDTH, textField.getPreferredSize().height));
 		textField.setHorizontalAlignment(JTextField.LEFT);
 		textField.addActionListener(this);
 
