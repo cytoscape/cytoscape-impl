@@ -63,7 +63,7 @@ import org.cytoscape.session.events.SessionLoadedListener;
  * for subnetworks.
  */
 public final class CyRootNetworkImpl extends DefaultTablesNetwork implements CyRootNetwork, NetworkAddedListener, SessionLoadedListener {
-
+	
 	private final long suid;
 	private SavePolicy savePolicy;
 	
@@ -258,7 +258,7 @@ public final class CyRootNetworkImpl extends DefaultTablesNetwork implements CyR
 				}
 			}
 			
-			// Do we want to do this?????
+			// Do we want to do this????? (MK: yes I think so)
 			this.removeRows(nodes, CyNode.class);
 			
 			removed |= removeNodesInternal(nodes);
@@ -270,8 +270,9 @@ public final class CyRootNetworkImpl extends DefaultTablesNetwork implements CyR
 	// Check if the nodes have been removed from all subnetworks, 
 	// if so move the root instanece of the node to the recycle bin.
 	void subnetworkNodesRemoved(Collection<CyNode> nodes) {
-		List<CyNode> nodesToCache = nodes.stream()
-			.filter(node -> containsNode(node) && !anySubnetworkContains(node))
+		List<CyNode> nodesToCache = nodes.stream()   // cache the nodes if they are:
+			.filter(n -> containsNode(n))            // - contained in this root network
+			.filter(n -> !anySubnetworkContains(n))  // - not contained in any subnetwork
 			.collect(Collectors.toList());
 		
 		removedAttributesCache.cache(nodesToCache);
@@ -280,8 +281,9 @@ public final class CyRootNetworkImpl extends DefaultTablesNetwork implements CyR
 	}
 	
 	void subnetworkEdgesRemoved(Collection<CyEdge> edges) {
-		List<CyEdge> edgesToCache = edges.stream()
-			.filter(edge -> containsEdge(edge) && !anySubnetworkContains(edge))
+		List<CyEdge> edgesToCache = edges.stream()  // cache the edges if they are:
+			.filter(e -> containsEdge(e))           // - contained in this root network
+			.filter(e -> !anySubnetworkContains(e)) // - not contained in any subnetwork
 			.collect(Collectors.toList());
 		
 		removedAttributesCache.cache(edgesToCache);
@@ -292,10 +294,14 @@ public final class CyRootNetworkImpl extends DefaultTablesNetwork implements CyR
 	
 	void garbageCollect() {
 		List<CyNode> garbageNodes = 
-			getNodeList().stream().filter(n -> !anySubnetworkContains(n)).collect(Collectors.toList());
+			getNodeList().stream()                   // garbage nodes are:
+			.filter(n -> !anySubnetworkContains(n))  // - not contained in any subnetwork
+			.collect(Collectors.toList());
 		List<CyEdge> garbageEdges =
-			getEdgeList().stream().filter(e -> !anySubnetworkContains(e)).collect(Collectors.toList());
-		
+			getEdgeList().stream()                   // garbage edges are:
+			.filter(e -> !anySubnetworkContains(e))  // - not contained in any subnetwork
+			.collect(Collectors.toList());
+
 		removedAttributesCache.cache(garbageNodes);
 		removedAttributesCache.cache(garbageEdges);
 		removeRows(garbageNodes, CyNode.class);
@@ -331,16 +337,6 @@ public final class CyRootNetworkImpl extends DefaultTablesNetwork implements CyR
 		return removedAttributesCache.contains(node);
 	}
 	
-	void restoreNode(CyNode node) {
-		
-		removedAttributesCache.restore(node);
-		addNodeInternal(node);
-	}
-	
-	void restoreEdge(CyEdge edge) {
-		removedAttributesCache.restore(edge);
-		addEdgeInternal(edge.getSource(), edge.getTarget(), edge.isDirected(), edge);
-	}
 	
 	private boolean anySubnetworkContains(CyNode node) {
 		return subNetworks.stream().anyMatch(sub -> sub.containsNode(node));
@@ -348,6 +344,27 @@ public final class CyRootNetworkImpl extends DefaultTablesNetwork implements CyR
 	
 	private boolean anySubnetworkContains(CyEdge edge) {
 		return subNetworks.stream().anyMatch(sub -> sub.containsEdge(edge));
+	}
+	
+	
+	@Override
+	public void restoreNode(CyNode node) {
+		if(containsNode(node))
+			return;
+		if(removedAttributesCache.contains(node)) {
+			removedAttributesCache.restore(node);
+			addNodeInternal(node);
+		}
+	}
+	
+	@Override
+	public void restoreEdge(CyEdge edge) {
+		if(containsEdge(edge))
+			return;
+		if(removedAttributesCache.contains(edge)) {
+			removedAttributesCache.restore(edge);
+			addEdgeInternal(edge.getSource(), edge.getTarget(), edge.isDirected(), edge);
+		}
 	}
 	
 
@@ -383,7 +400,7 @@ public final class CyRootNetworkImpl extends DefaultTablesNetwork implements CyR
 			return removeEdgesInternal(edges);
 		}
 	}
-
+	
 	@Override
 	public CySubNetwork addSubNetwork(final Iterable<CyNode> nodes, final Iterable<CyEdge> edges) {
 		return addSubNetwork(nodes, edges, savePolicy);
@@ -548,8 +565,8 @@ public final class CyRootNetworkImpl extends DefaultTablesNetwork implements CyR
 			name = "(unavailable)";
 		}
 		
-		return "CyRootNetwork[name=" + name + " ,nodes=" + getNodeCount() + " ,edges=" + getEdgeCount() + ", " + removedAttributesCache.toString() + "]";
-//		return name; 
+//		return "CyRootNetwork[name=" + name + " ,nodes=" + getNodeCount() + " ,edges=" + getEdgeCount() + ", " + removedAttributesCache.toString() + "]";
+		return name; 
 	}
 
 	private int getNextNodeIndex() {

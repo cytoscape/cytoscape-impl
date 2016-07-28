@@ -150,13 +150,15 @@ public class RemovedAttributesCache {
 	
 	public void restore(CyIdentifiable element) {
 		AttributesCache attributesCache = cachedElements.remove(element);
-		for(String namespace : namespaces) {
-			CyRow cachedRow = attributesCache.get(namespace);
-			Map<String,Object> attributes = cachedRow.getAllValues();
-			CyRow realRow = getRow(element, namespace);
-			if(realRow != null) {
-				for(Map.Entry<String, Object> attribute : attributes.entrySet()) {
-					realRow.set(attribute.getKey(), attribute.getValue());
+		if(attributesCache != null) {
+			for(String namespace : namespaces) {
+				CyRow cachedRow = attributesCache.get(namespace);
+				Map<String,Object> attributes = cachedRow.getAllValues();
+				CyRow realRow = getRow(element, namespace);
+				if(realRow != null) {
+					for(Map.Entry<String, Object> attribute : attributes.entrySet()) {
+						realRow.set(attribute.getKey(), attribute.getValue());
+					}
 				}
 			}
 		}

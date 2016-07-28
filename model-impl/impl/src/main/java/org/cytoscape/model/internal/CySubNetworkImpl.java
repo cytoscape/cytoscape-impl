@@ -288,10 +288,6 @@ public final class CySubNetworkImpl extends DefaultTablesNetwork implements CySu
 
 	@Override
 	public boolean removeEdges(final Collection<CyEdge> edges) {
-		return removeEdges(edges, true);
-	}
-	
-	private boolean removeEdges(final Collection<CyEdge> edges, boolean fireEvents) {
 		if ( edges == null || edges.isEmpty() )
 			return false;
 
