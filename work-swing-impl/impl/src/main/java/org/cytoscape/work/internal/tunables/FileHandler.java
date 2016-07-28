@@ -35,6 +35,8 @@ import java.awt.Dimension;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.io.File;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -50,12 +52,10 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
 
 import org.cytoscape.io.DataCategory;
 import org.cytoscape.util.swing.FileChooserFilter;
 import org.cytoscape.util.swing.FileUtil;
-import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.internal.tunables.utils.SupportedFileTypesManager;
 import org.cytoscape.work.swing.AbstractGUITunableHandler;
@@ -67,7 +67,7 @@ import org.cytoscape.work.swing.DirectlyPresentableTunableHandler;
  *
  * @author pasteur
  */
-public class FileHandler extends AbstractGUITunableHandler implements DirectlyPresentableTunableHandler{
+public class FileHandler extends AbstractGUITunableHandler implements DirectlyPresentableTunableHandler, FocusListener{
 	
 	private final FileUtil fileUtil;
 
@@ -149,7 +149,8 @@ public class FileHandler extends AbstractGUITunableHandler implements DirectlyPr
 				if (path.contains(System.getProperty("file.separator"))) {
 					file = new File(path);
 				} else {
-					file = new File(System.getProperty("user.home"), path);
+					file = new File(fileUtil.getCurrentDirectory(), path);
+					textField.setText(file.getAbsolutePath());
 				}
 				setValue(file);
 			}
@@ -181,6 +182,7 @@ public class FileHandler extends AbstractGUITunableHandler implements DirectlyPr
 		image = new ImageIcon(getClass().getResource("/images/open-file-24.png"));
 		
 		textField = new JTextField();
+		textField.addFocusListener(this);
 		
 		browseButton = new JButton( (input ? "Open File..." : "Browse..."), (input ? image : null) );
 		browseButton.setActionCommand(input ? "open" : "save");
@@ -300,6 +302,7 @@ public class FileHandler extends AbstractGUITunableHandler implements DirectlyPr
 			
 			if (file != null)
 				textField.setText(file.getAbsolutePath());
+			handle();
 		}
 	}
 
@@ -311,5 +314,14 @@ public class FileHandler extends AbstractGUITunableHandler implements DirectlyPr
 			e.printStackTrace();
 		}
 		return "";
+	}
+
+	@Override
+	public void focusGained(FocusEvent e) {
+	}
+
+	@Override
+	public void focusLost(FocusEvent e) {
+		handle();
 	}
 }
