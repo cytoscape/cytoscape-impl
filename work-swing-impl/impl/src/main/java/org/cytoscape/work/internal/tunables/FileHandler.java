@@ -82,9 +82,6 @@ public class FileHandler extends AbstractGUITunableHandler implements DirectlyPr
 
 	private Window possibleParent;
 
-	private String defaultString;
-
-
 	/**
 	 * Constructs the <code>GUIHandler</code> for the <code>File</code> type
 	 *
@@ -122,7 +119,6 @@ public class FileHandler extends AbstractGUITunableHandler implements DirectlyPr
 		filters = fileTypesManager.getSupportedFileTypes(dataCategory, input);
 		String displayName = dataCategory.getDisplayName().toLowerCase();
 		String a = isVowel( displayName.charAt(0) ) ? "an" : "a";
-		defaultString = "Please select " + a + " " + displayName + " file...";
 
 		setGui();
 		
@@ -144,7 +140,7 @@ public class FileHandler extends AbstractGUITunableHandler implements DirectlyPr
 	@Override
 	public void handle() {
 		try {
-			if (textField.getText().equals(defaultString) || textField.getText().isEmpty()) {
+			if (textField.getText().isEmpty()) {
 				setValue(null);
 			} else {
 				String path = textField.getText();
@@ -169,14 +165,13 @@ public class FileHandler extends AbstractGUITunableHandler implements DirectlyPr
 		try {
 			file = (File) getValue();
 		} catch (IllegalAccessException | InvocationTargetException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
 		if (file != null) {
 			textField.setText(file.getAbsolutePath());
 		} else {
-			textField.setText(defaultString);
+			textField.setText("");
 		}
 	}
 	
@@ -186,9 +181,6 @@ public class FileHandler extends AbstractGUITunableHandler implements DirectlyPr
 		image = new ImageIcon(getClass().getResource("/images/open-file-24.png"));
 		
 		textField = new JTextField();
-		textField.setEditable(false);
-		textField.setForeground(UIManager.getColor("Label.disabledForeground"));
-		textField.setFont(textField.getFont().deriveFont(LookAndFeelUtil.getSmallFontSize()));
 		
 		browseButton = new JButton( (input ? "Open File..." : "Browse..."), (input ? image : null) );
 		browseButton.setActionCommand(input ? "open" : "save");
@@ -200,13 +192,20 @@ public class FileHandler extends AbstractGUITunableHandler implements DirectlyPr
 
 		//set title and textfield text for the file type
 		final String fileCategory = getFileCategory();
-		textField.setText(defaultString);
 		final String description = getDescription();
 		
 		if (description == null || description.isEmpty())
 			label.setText((input ? "Load " : "Save ") + initialCaps(fileCategory) + " File");
 		else
 			label.setText(description);
+		
+		try {
+			File file = (File) getValue();
+			if(file != null)
+				textField.setText(file.getAbsolutePath());
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 		
 		controlPanel = new JPanel();
 		final GroupLayout layout = new GroupLayout(controlPanel);
@@ -264,7 +263,7 @@ public class FileHandler extends AbstractGUITunableHandler implements DirectlyPr
 		action.actionPerformed(null);
 		handle();
 		
-		return !textField.getText().equals(defaultString);
+		return !textField.getText().equals("");
 	}
 
 	// Click on the "open" or "save" button action listener

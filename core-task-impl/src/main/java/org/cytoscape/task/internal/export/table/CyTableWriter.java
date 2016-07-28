@@ -82,14 +82,11 @@ public final class CyTableWriter extends TunableAbstractCyWriter<CyTableWriterFa
 	}
 
 	@Override
-	protected CyWriter getWriter(final CyFileFilter filter, File file) throws Exception {
-		if (!fileExtensionIsOk(file))
-			file = addOrReplaceExtension(outputFile);
-
-		return writerManager.getWriter(table, filter, file);
+	protected CyWriter getWriter(final CyFileFilter filter) throws Exception {
+		return writerManager.getWriter(table, filter, outputStream);
 	}
 
-	@Tunable(description="Save Table as:", params="fileCategory=table;input=false", dependsOn="options!=")
+	@Tunable(description="Save Table as:", params="fileCategory=table;input=false", dependsOn="options!=", gravity = 0.1)
 	public File getOutputFile() {
 		return outputFile;
 	}

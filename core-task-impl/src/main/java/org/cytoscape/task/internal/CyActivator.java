@@ -1002,6 +1002,15 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc,exportCurrentTableTaskFactory,ExportSelectedTableTaskFactory.class, exportCurrentTableTaskFactoryProps);
 		
 		Properties exportNetworkImageTaskFactoryProps = new Properties();
+		exportNetworkImageTaskFactoryProps.setProperty(PREFERRED_MENU,"File");
+		exportNetworkImageTaskFactoryProps.setProperty(LARGE_ICON_URL,getClass().getResource("/images/icons/export-img-32.png").toString());
+		exportNetworkImageTaskFactoryProps.setProperty(ENABLE_FOR,ENABLE_FOR_NETWORK_AND_VIEW);
+		exportNetworkImageTaskFactoryProps.setProperty(MENU_GRAVITY,"5.2");
+		exportNetworkImageTaskFactoryProps.setProperty(TITLE,"Export as Image...");
+		exportNetworkImageTaskFactoryProps.setProperty(TOOL_BAR_GRAVITY,"3.2");
+		exportNetworkImageTaskFactoryProps.setProperty(IN_TOOL_BAR,"true");
+		exportNetworkImageTaskFactoryProps.setProperty(IN_CONTEXT_MENU,"false");
+		exportNetworkImageTaskFactoryProps.setProperty(TOOLTIP,"Export Network Image to File");
 		exportNetworkImageTaskFactoryProps.setProperty(COMMAND,"export");
 		exportNetworkImageTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"view");
 		exportNetworkImageTaskFactoryProps.setProperty(COMMAND_DESCRIPTION,"Export a view to a graphics file");

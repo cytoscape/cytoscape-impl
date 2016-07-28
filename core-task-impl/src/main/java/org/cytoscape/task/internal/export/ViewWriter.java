@@ -29,6 +29,7 @@ import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.Tunable;
+import org.cytoscape.work.swing.TunableUIHelper;
 import org.cytoscape.io.CyFileFilter;
 import org.cytoscape.io.write.CyWriter;
 import org.cytoscape.io.write.PresentationWriterManager;
@@ -41,7 +42,7 @@ import java.io.File;
  * A utility Task implementation that will write the specified View to the
  * the specified image file using the specified RenderingEngine.
  */
-public final class ViewWriter extends TunableAbstractCyWriter<PresentationWriterFactory,PresentationWriterManager> {
+public final class ViewWriter extends TunableAbstractCyWriter<PresentationWriterFactory,PresentationWriterManager>  {
 	private final View<?> view;
 	private final RenderingEngine<?> re;
 
@@ -74,19 +75,17 @@ public final class ViewWriter extends TunableAbstractCyWriter<PresentationWriter
 	/**
 	 * {@inheritDoc}
 	 */
-	protected CyWriter getWriter(CyFileFilter filter, File file) throws Exception {
-		if (!fileExtensionIsOk(file))
-			file = addOrReplaceExtension(outputFile);
-		return writerManager.getWriter(view,re,filter,file);
+	protected CyWriter getWriter(CyFileFilter filter) throws Exception {
+		return writerManager.getWriter(view,re,filter,outputStream);
 	}
 
-	@Tunable(description="Save Image as:", params="fileCategory=image;input=false", dependsOn="options!=")
+	@Tunable(description="Save Image as:", params="fileCategory=image;input=false", dependsOn="options!=", gravity = 0.1)
 	public File getOutputFile() {
 		return outputFile;
 	}
 	
-	@ProvidesTitle
-	public String getTitle() {
-		return "Export Network as Graphics";
-	}
+//	@ProvidesTitle
+//	public String getTitle() {
+//		return "Export Network as Graphics";
+//	}
 }

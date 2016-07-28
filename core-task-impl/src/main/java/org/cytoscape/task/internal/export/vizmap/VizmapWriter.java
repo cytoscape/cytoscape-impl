@@ -57,7 +57,7 @@ public class VizmapWriter extends TunableAbstractCyWriter<VizmapWriterFactory, V
 	@Tunable(description = "Select Styles:")
 	public ListMultipleSelection<VisualStyle> styles;
 	
-	@Tunable(description="Save Styles as:", params="fileCategory=vizmap;input=false")
+	@Tunable(description="Save Styles as:", params="fileCategory=vizmap;input=false", gravity = 0.1)
 	@Override
 	public File getOutputFile() {
 		return outputFile;
@@ -98,13 +98,10 @@ public class VizmapWriter extends TunableAbstractCyWriter<VizmapWriterFactory, V
 	}
 
 	@Override
-	protected CyWriter getWriter(final CyFileFilter filter, File file) throws Exception {
-		if (!fileExtensionIsOk(file))
-			file = addOrReplaceExtension(outputFile);
-
+	protected CyWriter getWriter(final CyFileFilter filter) throws Exception {
 		final Set<VisualStyle> selectedStyles = new LinkedHashSet<>(styles.getSelectedValues());
 
-		return writerManager.getWriter(selectedStyles, filter, file);
+		return writerManager.getWriter(selectedStyles, filter, outputStream);
 	}
 	
 	@Override

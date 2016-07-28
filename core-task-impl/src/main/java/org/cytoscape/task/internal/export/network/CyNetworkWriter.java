@@ -84,16 +84,11 @@ public final class CyNetworkWriter extends TunableAbstractCyWriter<CyNetworkView
 	 * {@inheritDoc}  
 	 */
 	@Override
-	protected CyWriter getWriter(CyFileFilter filter, File file)  throws Exception{
-		if (!fileExtensionIsOk(file))
-			file = addOrReplaceExtension(outputFile);
-		else
-			file = new File(file.getAbsolutePath());
-
-		return writerManager.getWriter(network,filter,file);
+	protected CyWriter getWriter(CyFileFilter filter)  throws Exception{
+		return writerManager.getWriter(network,filter,outputStream);
 	}
 	
-	@Tunable(description="Save Network as:", params="fileCategory=network;input=false", dependsOn="options!=")
+	@Tunable(description="Save Network as:", params="fileCategory=network;input=false", dependsOn="options!=", gravity = 0.1)
 	public  File getOutputFile() {	
 		return outputFile;
 	}

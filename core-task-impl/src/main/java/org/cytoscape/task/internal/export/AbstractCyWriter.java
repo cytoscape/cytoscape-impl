@@ -25,7 +25,9 @@ package org.cytoscape.task.internal.export;
  */
 
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.util.Collection;
 import java.util.Map;
 import java.util.TreeMap;
@@ -51,6 +53,8 @@ public abstract class AbstractCyWriter<S extends CyWriterFactory,T extends CyWri
 {
 	/** The file to be written. */
 	protected File outputFile;
+	/** The output stream used to write the file */
+	protected ByteArrayOutputStream outputStream;
 
 	/**
 	 * The method sets the file to be written.  This field should not
@@ -80,7 +84,9 @@ public abstract class AbstractCyWriter<S extends CyWriterFactory,T extends CyWri
 	 * @return a file format description from {@link CyFileFilter}.
 	 */
 	abstract protected String getExportFileFormat();
-
+	
+	abstract protected CyWriter getWriter();
+	
 	/** A Map that maps file filter description strings to {@link CyFileFilter}s*/
 	private final Map<String,CyFileFilter> descriptionFilterMap;
 
@@ -101,7 +107,8 @@ public abstract class AbstractCyWriter<S extends CyWriterFactory,T extends CyWri
 		if (writerManager == null)
 			throw new NullPointerException("CyWriterManager is null");
 		this.writerManager = writerManager;
-
+		
+		outputStream = new ByteArrayOutputStream();
 		descriptionFilterMap = new TreeMap<String,CyFileFilter>();
 		extensionFilterMap = new TreeMap<String,CyFileFilter>();
 		for (CyFileFilter f : writerManager.getAvailableWriterFilters()) {
@@ -118,34 +125,21 @@ public abstract class AbstractCyWriter<S extends CyWriterFactory,T extends CyWri
 	 * @param tm The {@link org.cytoscape.work.TaskMonitor} provided by the TaskManager execution environment.
 	 */
 	public final void run(final TaskMonitor tm) throws Exception {
-		if (outputFile == null)
-			throw new NullPointerException("Output file has not ben specified.");
-
-		final String desc = getExportFileFormat();
-		if (desc == null)
-			throw new NullPointerException("No file type has been specified.");
-
-		final CyFileFilter filter = getFileFilter(desc);
-		if (filter == null)
-			throw new NullPointerException("No file filter found for specified file type.");
-		
-		final CyWriter writer = getWriter(filter, outputFile); 
-		if (writer == null)
-			throw new NullPointerException("No CyWriter found for specified file type.");
-
-		insertTasksAfterCurrentTask(writer);
+		getWriter().run(tm);
+		FileOutputStream fos = new FileOutputStream(outputFile);
+		outputStream.writeTo(fos);
+		fos.close();
 	}
 
 	/**
 	 * Should return a {@link org.cytoscape.io.write.CyWriter} object for writing 
-	 * the specified file of the specified type.
+	 * a file of the specified type.
 	 * @param filter The specific type of file to be written.
-	 * @param out The file that will be written.
-	 * @return a {@link org.cytoscape.io.write.CyWriter} object for writing the specified file 
+	 * @return a {@link org.cytoscape.io.write.CyWriter} object for writing a file 
 	 * of the specified type.
 	 * @throws Exception 
 	 */
-	protected abstract CyWriter getWriter(CyFileFilter filter, File out) throws Exception;
+	protected abstract CyWriter getWriter(CyFileFilter filter) throws Exception;
 
 	/**
 	 * Returns a collection of human readable descriptions of all of the file filters 

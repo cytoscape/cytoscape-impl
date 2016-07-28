@@ -11,16 +11,11 @@ import static org.cytoscape.application.swing.CytoPanelName.SOUTH_WEST;
 import static org.cytoscape.application.swing.CytoPanelName.WEST;
 import static org.cytoscape.internal.util.ViewUtil.invokeOnEDTAndWait;
 import static org.cytoscape.work.ServiceProperties.ACCELERATOR;
-import static org.cytoscape.work.ServiceProperties.ENABLE_FOR;
-import static org.cytoscape.work.ServiceProperties.IN_CONTEXT_MENU;
 import static org.cytoscape.work.ServiceProperties.IN_NETWORK_PANEL_CONTEXT_MENU;
-import static org.cytoscape.work.ServiceProperties.IN_TOOL_BAR;
-import static org.cytoscape.work.ServiceProperties.LARGE_ICON_URL;
 import static org.cytoscape.work.ServiceProperties.MENU_GRAVITY;
 import static org.cytoscape.work.ServiceProperties.PREFERRED_MENU;
 import static org.cytoscape.work.ServiceProperties.TITLE;
 import static org.cytoscape.work.ServiceProperties.TOOLTIP;
-import static org.cytoscape.work.ServiceProperties.TOOL_BAR_GRAVITY;
 
 import java.awt.Color;
 import java.awt.Font;
@@ -51,7 +46,6 @@ import org.cytoscape.internal.actions.DestroyNetworkViewsAction;
 import org.cytoscape.internal.actions.DestroyNetworksAction;
 import org.cytoscape.internal.actions.DetachedViewToolBarAction;
 import org.cytoscape.internal.actions.ExitAction;
-import org.cytoscape.internal.actions.ExportImageAction;
 import org.cytoscape.internal.actions.FullScreenAction;
 import org.cytoscape.internal.actions.FullScreenMacAction;
 import org.cytoscape.internal.actions.PreferenceAction;
@@ -198,7 +192,6 @@ public class CyActivator extends AbstractCyActivator {
 	private UndoAction undoAction;
 	private RedoAction redoAction;
 	
-	private ExportImageAction exportImageAction;
 	private PrintAction printAction;
 	private ExitAction exitAction;
 	private PreferenceAction preferenceAction;
@@ -249,7 +242,6 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc, cytoPanelSouthWestAction, CyAction.class, new Properties());
 		registerService(bc, detachedViewToolBarAction, CyAction.class, new Properties());
 		registerService(bc, closeWindowAction, CyAction.class, new Properties());
-		registerService(bc, exportImageAction, CyAction.class, new Properties());
 		
 		registerService(bc, cyDesktopManager, CyNetworkViewDesktopMgr.class, new Properties());
 		
@@ -480,18 +472,6 @@ public class CyActivator extends AbstractCyActivator {
 		undoAction = new UndoAction(undoSupport);
 		redoAction = new RedoAction(undoSupport);
 		
-		Properties props = new Properties();
-		props.setProperty(PREFERRED_MENU,"File");
-		props.setProperty(LARGE_ICON_URL,getClass().getResource("/images/export-img-32.png").toString());
-		props.setProperty(ENABLE_FOR,ENABLE_FOR_NETWORK_AND_VIEW);
-		props.setProperty(MENU_GRAVITY,"5.2");
-		props.setProperty(TITLE,"Export as Image...");
-		props.setProperty(TOOL_BAR_GRAVITY,"3.2");
-		props.setProperty(IN_TOOL_BAR,"true");
-		props.setProperty(IN_CONTEXT_MENU,"false");
-		props.setProperty(TOOLTIP,"Export Network Image to File");
-		
-		exportImageAction = new ExportImageAction(props, cytoscapeDesktop, serviceRegistrar);
 		printAction = new PrintAction(applicationManager, netViewManager, cyProperty);
 		exitAction = new ExitAction(serviceRegistrar);
 		preferenceAction = new PreferenceAction(cytoscapeDesktop, preferencesDialogFactory);

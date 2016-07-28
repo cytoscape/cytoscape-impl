@@ -31,6 +31,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.io.File;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -58,10 +59,10 @@ public class ViewWriterTest extends AbstractCyWriterTest {
 		when(pwm.getAvailableWriterFilters()).thenReturn(filters);
 		cyWriter = new ViewWriter(pwm, view, re);
 		final CyWriter aWriter = mock(CyWriter.class);
-		when(pwm.getWriter(eq(view),eq(re),eq(fileFilter),argThat(new AnyFileMatcher()))).thenReturn(aWriter);
+		when(pwm.getWriter(eq(view),eq(re),eq(fileFilter),argThat(new AnyOutputStreamMatcher()))).thenReturn(aWriter);
 	}
 
-	static class AnyFileMatcher extends ArgumentMatcher<File> {
+	static class AnyOutputStreamMatcher extends ArgumentMatcher<OutputStream> {
 		public boolean matches(final Object o) {
 			return true;
 		}
