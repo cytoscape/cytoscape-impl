@@ -1,12 +1,43 @@
 package org.cytoscape.work.internal.tunables.utils;
 
+import static javax.swing.GroupLayout.DEFAULT_SIZE;
+import static javax.swing.GroupLayout.PREFERRED_SIZE;
+import static org.cytoscape.util.swing.LookAndFeelUtil.getSmallFontSize;
+import static org.cytoscape.util.swing.LookAndFeelUtil.isAquaLAF;
+
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.event.ActionEvent;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
+import java.text.DecimalFormat;
+import java.text.ParsePosition;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.List;
+
+import javax.swing.GroupLayout;
+import javax.swing.GroupLayout.Alignment;
+import javax.swing.JFormattedTextField;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JSlider;
+import javax.swing.JTextField;
+import javax.swing.UIManager;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+
 /*
  * #%L
  * Cytoscape Work Swing Impl (work-swing-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -23,39 +54,6 @@ package org.cytoscape.work.internal.tunables.utils;
  * <http://www.gnu.org/licenses/lgpl-2.1.html>.
  * #L%
  */
-
-
-import static javax.swing.GroupLayout.DEFAULT_SIZE;
-import static javax.swing.GroupLayout.PREFERRED_SIZE;
-
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.event.ActionEvent;
-import java.awt.event.FocusAdapter;
-import java.awt.event.FocusEvent;
-import java.text.DecimalFormat;
-import java.text.ParsePosition;
-import java.util.ArrayList;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.List;
-
-import javax.swing.AbstractAction;
-import javax.swing.GroupLayout;
-import javax.swing.GroupLayout.Alignment;
-import javax.swing.JFormattedTextField;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JSlider;
-import javax.swing.JTextField;
-import javax.swing.UIManager;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-
-import org.cytoscape.util.swing.LookAndFeelUtil;
-
 
 @SuppressWarnings("serial")
 public class TunableSlider extends JPanel {
@@ -97,16 +95,32 @@ public class TunableSlider extends JPanel {
 	}
 
 	protected void initUI() {
-		textField = new JFormattedTextField(format);
-		textField.setColumns(format.toPattern().length());
+		textField = new JFormattedTextField(format) {
+			@Override
+			public Dimension getPreferredSize() {
+				final Dimension d = super.getPreferredSize();
+				
+				if (this.getGraphics() != null) {
+					// Set the preferred text field size after it gets a Graphics
+					int sw = 16 + this.getGraphics().getFontMetrics().stringWidth(format.format(max.doubleValue()));
+					d.width = Math.max(sw, 48);
+				}
+				
+				return d;
+			}
+		};
+		
 		textField.setHorizontalAlignment(JTextField.RIGHT);
+		
+		if (isAquaLAF())
+			textField.putClientProperty("JComponent.sizeVariant", "small");
+		else if (textField.getFont() != null)
+			textField.setFont(textField.getFont().deriveFont(getSmallFontSize()));
 		
 		slider = new JSlider();
 		
 		final Hashtable<Integer, JLabel> labelTable = new Hashtable<>();
 		majortickspace = (max.doubleValue() - min.doubleValue()) / 5;
-		
-		final Font tickFont = slider.getFont().deriveFont(8.0f);
 		
 		if (value instanceof Double || value instanceof Float) {
 			Double major = new Double(majortickspace.doubleValue());
@@ -115,7 +129,6 @@ public class TunableSlider extends JPanel {
 			
 			while (i <= max.doubleValue()) {
 				final JLabel label = new JLabel(format.format(i));
-				label.setFont(tickFont);
 				labelTable.put(j, label);
 				i += major;
 				j += 20;
@@ -127,7 +140,6 @@ public class TunableSlider extends JPanel {
 			
 			while (i <= max.intValue()) {
 				final JLabel label = new JLabel(format.format(i));
-				label.setFont(tickFont);
 				labelTable.put(j, label);
 				i += majortick;
 				j += 20;
@@ -158,11 +170,8 @@ public class TunableSlider extends JPanel {
 			}
 		});
 		
-		textField.addActionListener(new AbstractAction() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				textFieldValueChanged();
-			}
+		textField.addActionListener((ActionEvent e) -> {
+			textFieldValueChanged();
 		});
 		textField.addFocusListener(new FocusAdapter() {
 			@Override
@@ -182,16 +191,30 @@ public class TunableSlider extends JPanel {
 		);
 		layout.setVerticalGroup(layout.createParallelGroup(Alignment.LEADING, false)
 				.addComponent(slider)
-				.addComponent(textField, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				.addGroup(layout.createSequentialGroup()
+						.addGap(isAquaLAF() ? 4 : 0)
+						.addComponent(textField, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				)
+
 		);
 		
-		if (LookAndFeelUtil.isAquaLAF())
+		if (isAquaLAF())
 			setOpaque(false);
+		
+		// Change the slider's label sizes -- only works if it's done after the slider has been added to
+		// its parent container and had its UI assigned
+		final Font tickFont = slider.getFont().deriveFont(getSmallFontSize());
+		
+		for (Enumeration<Integer> enumeration = labelTable.keys(); enumeration.hasMoreElements();) {
+			int k = enumeration.nextElement();
+			final JLabel label = labelTable.get(k);
+			label.setFont(tickFont); // Updates the font size
+			label.setSize(label.getPreferredSize()); // Updates the label size and slider layout
+		}
 	}
 	
 	public Number getValue(){
-		value = getFieldValue();
-		return value;
+		return getFieldValue();
 	}
 
 	public void setValue(final Number value) {
@@ -378,6 +401,7 @@ public class TunableSlider extends JPanel {
 	
 	private void textFieldValueChanged() {
 		if (ignore) return;
+		
 		ignore = true;
 		Number v = getFieldValue();
 		
