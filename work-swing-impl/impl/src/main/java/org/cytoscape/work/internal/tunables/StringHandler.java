@@ -29,8 +29,8 @@ import static org.cytoscape.work.internal.tunables.utils.GUIDefaults.setTooltip;
 import static org.cytoscape.work.internal.tunables.utils.GUIDefaults.updateFieldPanel;
 
 import java.awt.Dimension;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
@@ -50,7 +50,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author pasteur
  */
-public class StringHandler extends AbstractGUITunableHandler implements ActionListener {
+public class StringHandler extends AbstractGUITunableHandler implements FocusListener {
 	
 	private static final Logger logger = LoggerFactory.getLogger(StringHandler.class);
 	
@@ -93,7 +93,7 @@ public class StringHandler extends AbstractGUITunableHandler implements ActionLi
 		textField.setValue(s);
 		textField.setPreferredSize(new Dimension(2 * TEXT_BOX_WIDTH, textField.getPreferredSize().height));
 		textField.setHorizontalAlignment(JTextField.LEFT);
-		textField.addActionListener(this);
+		textField.addFocusListener(this);
 
 		final JLabel label = new JLabel(getDescription());
 		
@@ -122,6 +122,9 @@ public class StringHandler extends AbstractGUITunableHandler implements ActionLi
 	 */
 	@Override
 	public void handle() {
+		if(isUpdating)
+			return;
+		
 		final String string = textField.getText();
 		try {
 			if (string != null)
@@ -151,10 +154,13 @@ public class StringHandler extends AbstractGUITunableHandler implements ActionLi
 		}
 		
 	}
-	
+
 	@Override
-	public void actionPerformed(ActionEvent e) {
-		if(!isUpdating)
-			handle();
+	public void focusGained(FocusEvent e) {
+	}
+
+	@Override
+	public void focusLost(FocusEvent e) {
+		handle();
 	}
 }
