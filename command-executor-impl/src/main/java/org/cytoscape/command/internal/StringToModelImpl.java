@@ -36,10 +36,10 @@ import org.cytoscape.command.StringToModel;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
+import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.CyTableUtil;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.slf4j.Logger;
@@ -206,9 +206,13 @@ public class StringToModelImpl implements StringToModel {
 		// Create a map so we only have to traverse the table once!
 		Map<String, List<String>> columnMap = new HashMap<String,List<String>>();
 
-		for (String token: list.split(",")) {
-			String[] t = token.trim().split(":");
+		String[] split = list.split("(?<!\\\\),");
+		for (String token: split) {
+			token = token.replaceAll("\\\\,", ",");
+			String[] t = token.trim().split("(?<!\\\\):");
 			if (t.length == 2) {
+				t[0] = t[0].replaceAll("\\\\:", ":");
+				t[1] = t[1].replaceAll("\\\\:", ":");
 				// Special case SUID: don't add it to the map
 				if (SUID.equalsIgnoreCase(t[0])) {
 					Long suid = getLong(t[1]);
@@ -217,6 +221,7 @@ public class StringToModelImpl implements StringToModel {
 				} else
 					updateMap(columnMap, t[0], t[1]);
 			} else {
+				t[0] = t[0].replaceAll("\\\\:", ":");
 				updateMap(columnMap, CyNetwork.NAME, t[0]);
 			}
 		}
