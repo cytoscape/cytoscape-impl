@@ -29,15 +29,13 @@ import static org.cytoscape.work.internal.tunables.utils.GUIDefaults.setTooltip;
 import static org.cytoscape.work.internal.tunables.utils.GUIDefaults.updateFieldPanel;
 
 import java.awt.Dimension;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
-import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
-import javax.swing.text.DefaultFormatter;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.swing.AbstractGUITunableHandler;
@@ -50,11 +48,11 @@ import org.slf4j.LoggerFactory;
  *
  * @author pasteur
  */
-public class StringHandler extends AbstractGUITunableHandler implements FocusListener {
+public class StringHandler extends AbstractGUITunableHandler implements DocumentListener {
 	
 	private static final Logger logger = LoggerFactory.getLogger(StringHandler.class);
 	
-	private JFormattedTextField textField;
+	private JTextField textField;
 	private boolean readOnly = false;
 	private boolean isUpdating = false;
 
@@ -87,13 +85,10 @@ public class StringHandler extends AbstractGUITunableHandler implements FocusLis
 			s = "";
 		}
 
-		final DefaultFormatter formatter = new DefaultFormatter();
-		formatter.setOverwriteMode(false);
-		textField = new JFormattedTextField(formatter);
-		textField.setValue(s);
+		textField = new JTextField(s);
 		textField.setPreferredSize(new Dimension(2 * TEXT_BOX_WIDTH, textField.getPreferredSize().height));
 		textField.setHorizontalAlignment(JTextField.LEFT);
-		textField.addFocusListener(this);
+		textField.getDocument().addDocumentListener(this);
 
 		final JLabel label = new JLabel(getDescription());
 		
@@ -109,7 +104,7 @@ public class StringHandler extends AbstractGUITunableHandler implements FocusLis
 		String s = null;
 		try {
 			s = (String)getValue();
-			textField.setValue(s);
+			textField.setText(s);
 		} catch (final Exception e) {
 			logger.error("Could not set String Tunable.", e);
 		}
@@ -156,11 +151,17 @@ public class StringHandler extends AbstractGUITunableHandler implements FocusLis
 	}
 
 	@Override
-	public void focusGained(FocusEvent e) {
+	public void insertUpdate(DocumentEvent e) {
+		handle();
 	}
 
 	@Override
-	public void focusLost(FocusEvent e) {
+	public void removeUpdate(DocumentEvent e) {
+		handle();
+	}
+
+	@Override
+	public void changedUpdate(DocumentEvent e) {
 		handle();
 	}
 }
