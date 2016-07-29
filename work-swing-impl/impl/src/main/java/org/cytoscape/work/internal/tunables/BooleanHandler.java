@@ -57,6 +57,7 @@ public class BooleanHandler extends AbstractGUITunableHandler
 	private JOptionPane optionPane;
 	private boolean useOptionPane;
 	private int selectedOption;
+	private boolean isUpdating = false;
 	
 	/**
 	 * Constructs the <code>GUIHandler</code> for the <code>Boolean</code> type
@@ -109,6 +110,7 @@ public class BooleanHandler extends AbstractGUITunableHandler
 	
 	@Override
 	public void update(){
+		isUpdating = true;
 		boolean b;
 		try {
 			b = (Boolean) getValue();
@@ -116,6 +118,7 @@ public class BooleanHandler extends AbstractGUITunableHandler
 		} catch(Exception e){
 			e.printStackTrace();
 		}
+		isUpdating = false;
 	}
 	
 	@Override
@@ -175,6 +178,7 @@ public class BooleanHandler extends AbstractGUITunableHandler
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		handle();		
+		if(!isUpdating)
+			handle();		
 	}
 }
