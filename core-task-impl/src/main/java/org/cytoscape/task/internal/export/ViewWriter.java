@@ -79,7 +79,7 @@ public final class ViewWriter extends TunableAbstractCyWriter<PresentationWriter
 		return writerManager.getWriter(view,re,filter,outputStream);
 	}
 
-	@Tunable(description="Save Image as:", params="fileCategory=image;input=false", dependsOn="options!=", gravity = 0.1)
+	@Tunable(description="Save Image as:", params="fileCategory=image;input=false", dependsOn="options!=", gravity = 1.1)
 	public File getOutputFile() {
 		return outputFile;
 	}

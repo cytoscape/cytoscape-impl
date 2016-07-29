@@ -57,7 +57,7 @@ public class VizmapWriter extends TunableAbstractCyWriter<VizmapWriterFactory, V
 	@Tunable(description = "Select Styles:")
 	public ListMultipleSelection<VisualStyle> styles;
 	
-	@Tunable(description="Save Styles as:", params="fileCategory=vizmap;input=false", gravity = 0.1)
+	@Tunable(description="Save Styles as:", params="fileCategory=vizmap;input=false", gravity = 1.1)
 	@Override
 	public File getOutputFile() {
 		return outputFile;
