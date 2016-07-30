@@ -13,7 +13,7 @@ import org.junit.Test;
 
 public class StringToModelTest {
 	
-	
+	// MKTODO still need to test SUID
 	@Test
 	public void testNodeListParsing() {
 		NetworkTestSupport networkTestSupport = new NetworkTestSupport();
@@ -25,6 +25,7 @@ public class StringToModelTest {
 		CyNode n4 = network.addNode();
 		CyNode n5 = network.addNode();
 		CyNode n6 = network.addNode();
+		CyNode n7 = network.addNode();
 		
 		network.getRow(n1).set("name", "node 1");
 		network.getRow(n2).set("name", "node 2");
@@ -32,6 +33,7 @@ public class StringToModelTest {
 		network.getRow(n4).set("name", "node:4");
 		network.getRow(n5).set("name", "node:5,5");
 		network.getRow(n6).set("name", "node\\:6");
+		network.getRow(n7).set("name", "name:7");
 		
 		StringToModel stringToModel = new StringToModelImpl(null, null, null, null);
 		List<CyNode> nodes;
@@ -65,6 +67,10 @@ public class StringToModelTest {
 		nodes = stringToModel.getNodeList(network, "node\\\\:6");
 		assertEquals(1, nodes.size());
 		assertTrue(nodes.contains(n6));
+		
+		nodes = stringToModel.getNodeList(network, "name:node:4"); // shouldn't need to escape colons after the first colon
+		assertEquals(1, nodes.size());
+		assertTrue(nodes.contains(n4));
 	}
 
 }

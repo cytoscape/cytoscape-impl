@@ -25,6 +25,7 @@ package org.cytoscape.command.internal;
  */
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -209,20 +210,25 @@ public class StringToModelImpl implements StringToModel {
 		String[] split = list.split("(?<!\\\\),");
 		for (String token: split) {
 			token = token.replaceAll("\\\\,", ",");
-			String[] t = token.trim().split("(?<!\\\\):");
-			if (t.length == 2) {
-				t[0] = t[0].replaceAll("\\\\:", ":");
-				t[1] = t[1].replaceAll("\\\\:", ":");
+			String[] t = token.trim().split("(?<!\\\\):");			
+			if (t.length >= 2) {
+				String attribute = t[0];
+				String[] slice = Arrays.copyOfRange(t, 1, t.length);
+				String value = String.join(":", slice);
+				attribute = attribute.replaceAll("\\\\:", ":");
+				value = value.replaceAll("\\\\:", ":");
+				
 				// Special case SUID: don't add it to the map
-				if (SUID.equalsIgnoreCase(t[0])) {
-					Long suid = getLong(t[1]);
+				if (SUID.equalsIgnoreCase(attribute)) {
+					Long suid = getLong(value);
 					if (suid != null && table.rowExists(suid))
 						rows.add(table.getRow(suid));
 				} else
-					updateMap(columnMap, t[0], t[1]);
+					updateMap(columnMap, attribute, value);
 			} else {
-				t[0] = t[0].replaceAll("\\\\:", ":");
-				updateMap(columnMap, CyNetwork.NAME, t[0]);
+				String value = t[0];
+				value = value.replaceAll("\\\\:", ":");
+				updateMap(columnMap, CyNetwork.NAME, value);
 			}
 		}
 
