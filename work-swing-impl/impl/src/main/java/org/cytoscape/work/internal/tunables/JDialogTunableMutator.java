@@ -210,6 +210,7 @@ public class JDialogTunableMutator extends JPanelTunableMutator implements Tunab
 			return;
 		}
 		handlerMap.remove(objectWithTunables);
+		titleProviderMap.remove(objectWithTunables);
 
 		// Rebuild the configuration;
 		JPanel panel = buildConfiguration(objectWithTunables, parent);

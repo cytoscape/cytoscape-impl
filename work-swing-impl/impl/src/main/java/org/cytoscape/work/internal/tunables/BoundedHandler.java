@@ -35,6 +35,7 @@ import java.awt.event.FocusEvent;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.text.DecimalFormat;
+import java.util.List;
 
 import javax.swing.JLabel;
 import javax.swing.event.ChangeEvent;
@@ -198,6 +199,20 @@ public class BoundedHandler<T extends AbstractBounded, N> extends AbstractGUITun
 			final T bounded = getBounded();
 			if (lastBounded != bounded) {
 				lastBounded = bounded;
+
+				// Make sure we're the only handler for this Tunable that's listening
+				// for changes.  If we're in the middle of a refresh, we can sometimes
+				// be in a state where there are two...
+				BoundedChangeListener<N> found = null;
+				List<BoundedChangeListener<N>> listeners = ((AbstractBounded)lastBounded).getListeners();
+				for (BoundedChangeListener<N> listener: listeners) {
+					if (listener instanceof AbstractGUITunableHandler &&
+							((AbstractGUITunableHandler)listener).getQualifiedName().equals(this.getQualifiedName()))
+						found = listener;
+				}
+				if (found != null)
+					lastBounded.removeListener(found);
+
 				lastBounded.addListener(this);
 				panel.removeAll();
 				initPanel(bounded);

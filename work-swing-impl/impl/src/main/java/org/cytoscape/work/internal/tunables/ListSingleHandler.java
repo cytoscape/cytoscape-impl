@@ -106,8 +106,22 @@ public class ListSingleHandler<T> extends AbstractGUITunableHandler
 		
 		final ListSingleSelection<T> singleSelection = getSingleSelection();
 		
-		if (singleSelection != null)
+		if (singleSelection != null) {
+			// Make sure we're the only handler for this Tunable that's listening
+			// for changes.  If we're in the middle of a refresh, we can sometimes
+			// be in a state where there are two...
+			ListChangeListener<T> found = null;
+			for (ListChangeListener<T> listener: singleSelection.getListeners()) {
+				if (listener instanceof AbstractGUITunableHandler &&
+						((AbstractGUITunableHandler)listener).getQualifiedName().equals(this.getQualifiedName())) {
+					found = listener;
+				}
+			}
+			if (found != null) {
+				singleSelection.removeListener(found);
+			}
 			singleSelection.addListener(this);
+		}
 	}
 
 	@Override
