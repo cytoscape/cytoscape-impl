@@ -84,8 +84,8 @@ public final class ViewWriter extends TunableAbstractCyWriter<PresentationWriter
 		return outputFile;
 	}
 	
-//	@ProvidesTitle
-//	public String getTitle() {
-//		return "Export Network as Graphics";
-//	}
+	@ProvidesTitle
+	public String getTitle() {
+		return "Export as Image";
+	}
 }
