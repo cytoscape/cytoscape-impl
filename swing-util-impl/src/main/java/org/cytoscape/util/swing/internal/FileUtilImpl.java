@@ -31,7 +31,9 @@ import java.awt.FileDialog;
 import java.awt.Frame;
 import java.io.File;
 import java.io.FilenameFilter;
-import java.util.*;
+import java.util.Collection;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
@@ -39,17 +41,17 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 
-import org.cytoscape.property.CyProperty;
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.util.swing.FileChooserFilter;
 import org.cytoscape.util.swing.FileUtil;
 
 
 class FileUtilImpl implements FileUtil {
 	
-	private final Properties coreProperties;
+	private final CyApplicationManager cyApplicationManager;
 
-	FileUtilImpl(final CyProperty<Properties> cyCoreProperty) {
-		coreProperties = cyCoreProperty.getProperties();
+	FileUtilImpl(final CyApplicationManager cyApplicationManager) {
+		this.cyApplicationManager = cyApplicationManager;
 	}
 
 	/**
@@ -108,9 +110,6 @@ class FileUtilImpl implements FileUtil {
 		
 		if (parent == null)
 			throw new NullPointerException("\"parent\" must not be null.");
-
-		if (startDir == null)
-			startDir = coreProperties.getProperty(FileUtil.LAST_DIRECTORY, System.getProperty("user.dir"));
 		
 		final String osName = System.getProperty("os.name");
 		
@@ -136,6 +135,8 @@ class FileUtilImpl implements FileUtil {
 
 				if (startDir != null)
 					chooser.setDirectory(startDir);
+				else
+					chooser.setDirectory(cyApplicationManager.getCurrentDirectory().getAbsolutePath());
 				
 				chooser.setModal(true);
 				chooser.setFilenameFilter(new CombinedFilenameFilter(filters));
@@ -175,7 +176,7 @@ class FileUtilImpl implements FileUtil {
 						 results = chooser.getFiles();
 
 					if (chooser.getDirectory() != null)
-						coreProperties.setProperty(FileUtil.LAST_DIRECTORY, chooser.getDirectory());
+						cyApplicationManager.setCurrentDirectory(new File(chooser.getDirectory()));
 
 					return results;
 				}
@@ -187,8 +188,11 @@ class FileUtilImpl implements FileUtil {
 			return null;
 		} else {
 			// this is not a Mac, use the Swing based file dialog
-			final File start = new File(startDir);
-			final JFileChooser chooser = new JFileChooser(start);
+			final JFileChooser chooser;
+			if(startDir != null)
+				chooser = new JFileChooser(new File(startDir));
+			else
+				chooser = new JFileChooser(cyApplicationManager.getCurrentDirectory());
 			
 			// set multiple selection, if applicable
 			chooser.setMultiSelectionEnabled(multiselect);
@@ -300,15 +304,10 @@ class FileUtilImpl implements FileUtil {
 			}
 
 			if (results != null && chooser.getCurrentDirectory().getPath() != null)
-				coreProperties.setProperty(FileUtil.LAST_DIRECTORY,
-				                           chooser.getCurrentDirectory().getPath());
+				cyApplicationManager.setCurrentDirectory(chooser.getCurrentDirectory());
 
 			return results;
 		}
-	}
-	
-	public String getCurrentDirectory() {
-		return coreProperties.getProperty(FileUtil.LAST_DIRECTORY, System.getProperty("user.dir"));
 	}
 	
 	private String addFileExt(final Collection<FileChooserFilter> filters, String fileName) {

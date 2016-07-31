@@ -24,6 +24,7 @@ package org.cytoscape.application.internal;
  * #L%
  */
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -33,6 +34,7 @@ import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 
 import org.cytoscape.application.CyApplicationManager;
@@ -50,6 +52,7 @@ import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.events.NetworkAboutToBeDestroyedEvent;
 import org.cytoscape.model.events.NetworkAboutToBeDestroyedListener;
+import org.cytoscape.property.CyProperty;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedEvent;
@@ -69,6 +72,7 @@ public class CyApplicationManagerImpl implements CyApplicationManager,
 												 RenderingEngineAboutToBeRemovedListener {
 	
 	private static final Logger logger = LoggerFactory.getLogger(CyApplicationManagerImpl.class);
+	private static final String LAST_DIRECTORY = "directory.last";
 	
 	private CyNetwork currentNetwork;
 	private CyNetworkView currentNetworkView;
@@ -78,12 +82,14 @@ public class CyApplicationManagerImpl implements CyApplicationManager,
 	private Map<String, NetworkViewRenderer> renderers;
 	
 	private final CyServiceRegistrar serviceRegistrar;
+	private final Properties props;
 	private final Object lock = new Object();
 
 	private NetworkViewRenderer defaultRenderer;
 
-	public CyApplicationManagerImpl(final CyServiceRegistrar serviceRegistrar) {
+	public CyApplicationManagerImpl(final CyServiceRegistrar serviceRegistrar, CyProperty<Properties> cyProperty) {
 		this.serviceRegistrar = serviceRegistrar;
+		this.props = cyProperty.getProperties();
 		
 		selectedNetworkViews = new LinkedList<>();
 		renderers = new LinkedHashMap<>() ;
@@ -399,6 +405,26 @@ public class CyApplicationManagerImpl implements CyApplicationManager,
 		synchronized (lock) {
 			return new LinkedHashSet<>(renderers.values());
 		}
+	}
+	
+	@Override
+	public File getCurrentDirectory() {
+		String lastDir = props.getProperty(LAST_DIRECTORY);
+		File dir = (lastDir != null) ? new File(lastDir) : null;
+		if (dir == null || !dir.exists() || !dir.isDirectory()) {
+			dir = new File(System.getProperty("user.dir"));
+			if(dir != null) // if path exists but is not valid, remove the property
+				props.remove(LAST_DIRECTORY);
+		}
+		return dir;
+	}
+	
+	@Override
+	public boolean setCurrentDirectory(File dir) {
+		if(dir == null || !dir.exists() || !dir.isDirectory()) 
+			return false;
+		props.setProperty(LAST_DIRECTORY, dir.getAbsolutePath());
+		return true;
 	}
 	
 	private void fireEvents(final List<CyEvent<?>> eventsToFire) {

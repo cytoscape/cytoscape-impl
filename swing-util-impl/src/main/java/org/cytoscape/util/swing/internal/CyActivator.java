@@ -24,6 +24,7 @@ package org.cytoscape.util.swing.internal;
  * #L%
  */
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.util.swing.internal.FileUtilImpl;
 import org.cytoscape.util.swing.internal.OpenBrowserImpl;
@@ -47,9 +48,8 @@ public class CyActivator extends AbstractCyActivator {
 		OpenBrowserImpl openBrowser = new OpenBrowserImpl();
 		registerService(bc, openBrowser, OpenBrowser.class, new Properties());
 
-		CyProperty<Properties> cytoscapePropertiesServiceRef = getService(bc, CyProperty.class,
-				"(cyPropertyName=cytoscape3.props)");
-		FileUtilImpl fileUtil = new FileUtilImpl(cytoscapePropertiesServiceRef);
+		CyApplicationManager cyApplicationManager = getService(bc, CyApplicationManager.class);
+		FileUtilImpl fileUtil = new FileUtilImpl(cyApplicationManager);
 		registerService(bc, fileUtil, FileUtil.class, new Properties());
 		
 		IconManagerImpl iconManager = new IconManagerImpl();

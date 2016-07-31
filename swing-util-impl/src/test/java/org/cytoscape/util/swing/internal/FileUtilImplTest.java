@@ -29,7 +29,7 @@ import static org.mockito.Mockito.when;
 
 import java.util.Properties;
 
-import org.cytoscape.property.CyProperty;
+import org.cytoscape.application.CyApplicationManager;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -38,18 +38,14 @@ import org.mockito.MockitoAnnotations;
 public class FileUtilImplTest {
 	private FileUtilImpl fileUtil;
 	
-	@Mock private CyProperty<Properties> cyProperty;
-	
-	private Properties props = new Properties();
-	
+	@Mock private CyApplicationManager cyApplicationManager;	
 	
 
 	@Before
 	public void setUp() throws Exception {
 		MockitoAnnotations.initMocks(this);
-		when(cyProperty.getProperties()).thenReturn(props);
 		
-		fileUtil = new FileUtilImpl(cyProperty);
+		fileUtil = new FileUtilImpl(cyApplicationManager);
 	}
 
 	@Test

@@ -29,6 +29,7 @@ import java.io.File;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.util.swing.FileUtil;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.internal.tunables.utils.SupportedFileTypesManager;
@@ -39,24 +40,27 @@ import org.cytoscape.work.swing.GUITunableHandlerFactory;
 public final class FileHandlerFactory implements GUITunableHandlerFactory {
 	private final FileUtil fileUtil;
 	private final SupportedFileTypesManager fileTypesManager;
+	private final CyApplicationManager cyApplicationManager;
 
-	public FileHandlerFactory(final FileUtil fileUtil, final SupportedFileTypesManager fileTypesManager) {
+	public FileHandlerFactory(final FileUtil fileUtil, final SupportedFileTypesManager fileTypesManager,
+			final CyApplicationManager cyApplicationManager) {
 		this.fileUtil = fileUtil;
 		this.fileTypesManager = fileTypesManager;
+		this.cyApplicationManager = cyApplicationManager;
 	}
 
 	public GUITunableHandler createTunableHandler(Field field, Object instance, Tunable tunable) {
 		if (!File.class.isAssignableFrom(field.getType()))
 			return null;
 
-		return new FileHandler(field, instance, tunable, fileTypesManager, fileUtil);
+		return new FileHandler(field, instance, tunable, fileTypesManager, fileUtil, cyApplicationManager);
 	}
 
 	public GUITunableHandler createTunableHandler(Method getter, Method setter, Object instance, Tunable tunable) {
 		if (!File.class.isAssignableFrom(getter.getReturnType()))
 			return null;
 
-		return new FileHandler(getter, setter, instance, tunable, fileTypesManager, fileUtil);
+		return new FileHandler(getter, setter, instance, tunable, fileTypesManager, fileUtil, cyApplicationManager);
 	}
 
 }

@@ -15,6 +15,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Properties;
 import java.util.Set;
 
 import org.cytoscape.application.NetworkViewRenderer;
@@ -23,6 +24,7 @@ import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyTable;
+import org.cytoscape.property.CyProperty;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.presentation.RenderingEngine;
@@ -58,6 +60,7 @@ import org.mockito.MockitoAnnotations;
 public class CyApplicationManagerImplTest {
 
 	@Mock private CyServiceRegistrar serviceRegistrar;
+	@Mock private CyProperty<Properties> cyProperty;
 	@Mock private CyEventHelper evtHelper;
 	@Mock private CyNetworkManager netMgr;
 	
@@ -77,7 +80,7 @@ public class CyApplicationManagerImplTest {
 		when(serviceRegistrar.getService(CyEventHelper.class)).thenReturn(evtHelper);
 		when(serviceRegistrar.getService(CyNetworkManager.class)).thenReturn(netMgr);
 		
-		appMgr = new CyApplicationManagerImpl(serviceRegistrar);
+		appMgr = new CyApplicationManagerImpl(serviceRegistrar, cyProperty);
 	}
 
 	@Test

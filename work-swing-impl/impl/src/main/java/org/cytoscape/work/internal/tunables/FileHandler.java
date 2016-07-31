@@ -53,6 +53,7 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.io.DataCategory;
 import org.cytoscape.util.swing.FileChooserFilter;
 import org.cytoscape.util.swing.FileUtil;
@@ -70,6 +71,7 @@ import org.cytoscape.work.swing.DirectlyPresentableTunableHandler;
 public class FileHandler extends AbstractGUITunableHandler implements DirectlyPresentableTunableHandler, FocusListener{
 	
 	private final FileUtil fileUtil;
+	private CyApplicationManager cyApplicationManager;
 
 	private JPanel controlPanel;
 	private JButton browseButton;
@@ -81,6 +83,7 @@ public class FileHandler extends AbstractGUITunableHandler implements DirectlyPr
 	private List<FileChooserFilter> filters;
 
 	private Window possibleParent;
+
 
 	/**
 	 * Constructs the <code>GUIHandler</code> for the <code>File</code> type
@@ -96,18 +99,22 @@ public class FileHandler extends AbstractGUITunableHandler implements DirectlyPr
 	 * @param fileTypesManager
 	 */
 	public FileHandler(final Field field, final Object obj, final Tunable t,
-			final SupportedFileTypesManager fileTypesManager, final FileUtil fileUtil) {
+			final SupportedFileTypesManager fileTypesManager, final FileUtil fileUtil, 
+			final CyApplicationManager cyApplicationManager) {
 		super(field, obj, t);
 		this.fileTypesManager = fileTypesManager;
 		this.fileUtil = fileUtil;
+		this.cyApplicationManager = cyApplicationManager;
 		init();
 	}
 
 	public FileHandler(final Method getter, final Method setter, final Object instance, final Tunable tunable,
-			final SupportedFileTypesManager fileTypesManager, final FileUtil fileUtil) {
+			final SupportedFileTypesManager fileTypesManager, final FileUtil fileUtil,
+			final CyApplicationManager cyApplicationManager) {
 		super(getter, setter, instance, tunable);
 		this.fileTypesManager = fileTypesManager;
 		this.fileUtil = fileUtil;
+		this.cyApplicationManager = cyApplicationManager;
 		init();
 	}
 
@@ -149,7 +156,7 @@ public class FileHandler extends AbstractGUITunableHandler implements DirectlyPr
 				if (path.contains(System.getProperty("file.separator"))) {
 					file = new File(path);
 				} else {
-					file = new File(fileUtil.getCurrentDirectory(), path);
+					file = new File(cyApplicationManager.getCurrentDirectory(), path);
 					textField.setText(file.getAbsolutePath());
 				}
 				setValue(file);
