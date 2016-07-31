@@ -24,17 +24,14 @@ package org.cytoscape.util.swing.internal;
  * #L%
  */
 
+import java.util.Properties;
+
 import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.property.CyProperty;
-import org.cytoscape.util.swing.internal.FileUtilImpl;
-import org.cytoscape.util.swing.internal.OpenBrowserImpl;
+import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.util.swing.FileUtil;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.OpenBrowser;
 import org.osgi.framework.BundleContext;
-import org.cytoscape.service.util.AbstractCyActivator;
-
-import java.util.Properties;
 
 public class CyActivator extends AbstractCyActivator {
 	
