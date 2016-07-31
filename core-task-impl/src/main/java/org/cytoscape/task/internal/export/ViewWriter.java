@@ -25,17 +25,19 @@ package org.cytoscape.task.internal.export;
  */
 
 
-import org.cytoscape.view.model.View;
-import org.cytoscape.view.presentation.RenderingEngine;
-import org.cytoscape.work.ProvidesTitle;
-import org.cytoscape.work.Tunable;
-import org.cytoscape.work.swing.TunableUIHelper;
+import java.io.File;
+
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.io.CyFileFilter;
 import org.cytoscape.io.write.CyWriter;
-import org.cytoscape.io.write.PresentationWriterManager;
 import org.cytoscape.io.write.PresentationWriterFactory;
-
-import java.io.File;
+import org.cytoscape.io.write.PresentationWriterManager;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.presentation.RenderingEngine;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
+import org.cytoscape.work.ProvidesTitle;
+import org.cytoscape.work.Tunable;
 
 
 /**
@@ -43,7 +45,7 @@ import java.io.File;
  * the specified image file using the specified RenderingEngine.
  */
 public final class ViewWriter extends TunableAbstractCyWriter<PresentationWriterFactory,PresentationWriterManager>  {
-	private final View<?> view;
+	private final CyNetworkView view;
 	private final RenderingEngine<?> re;
 
 	/**
@@ -52,8 +54,9 @@ public final class ViewWriter extends TunableAbstractCyWriter<PresentationWriter
 	 * @param view The View object to be written to the specified file.
 	 * @param re The RenderingEngine used to generate the image to be written to the file.
 	 */
-	public ViewWriter(final PresentationWriterManager writerManager, final View<?> view, final RenderingEngine<?> re ) {
-		super(writerManager);
+	public ViewWriter(final PresentationWriterManager writerManager, final CyApplicationManager cyApplicationManager,
+			final CyNetworkView view, final RenderingEngine<?> re ) {
+		super(writerManager, cyApplicationManager);
 
 		if ( view == null )
 			throw new NullPointerException("view is null");
@@ -70,6 +73,7 @@ public final class ViewWriter extends TunableAbstractCyWriter<PresentationWriter
 				break;
 			}
 		}
+		this.outputFile = getSuggestedFile();
 	}
 
 	/**
@@ -87,5 +91,13 @@ public final class ViewWriter extends TunableAbstractCyWriter<PresentationWriter
 	@ProvidesTitle
 	public String getTitle() {
 		return "Export as Image";
+	}
+
+	@Override
+	protected String getExportName() {
+		String name = view.getVisualProperty(BasicVisualLexicon.NETWORK_TITLE);
+		if (name == null || name.trim().isEmpty())
+			name = view.getModel().getRow(view.getModel()).get(CyNetwork.NAME, String.class);
+		return name;
 	}
 }

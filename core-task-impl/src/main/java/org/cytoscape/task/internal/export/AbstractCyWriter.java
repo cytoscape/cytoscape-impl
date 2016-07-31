@@ -29,9 +29,12 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeMap;
 
+import org.apache.commons.io.FilenameUtils;
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.io.CyFileFilter;
 import org.cytoscape.io.write.CyWriter;
 import org.cytoscape.io.write.CyWriterFactory;
@@ -85,6 +88,12 @@ public abstract class AbstractCyWriter<S extends CyWriterFactory,T extends CyWri
 	 */
 	abstract protected String getExportFileFormat();
 	
+	/** This method returns a suggested file name for the network/table/view to be exported.
+	 * @return the suggested file name
+	 */
+	abstract protected String getExportName();
+	
+	/** @return The {*@link CyWriter} to be used to write the file */
 	abstract protected CyWriter getWriter();
 	
 	/** A Map that maps file filter description strings to {@link CyFileFilter}s*/
@@ -93,22 +102,27 @@ public abstract class AbstractCyWriter<S extends CyWriterFactory,T extends CyWri
 	/** A Map that maps file filter extension strings to {@link CyFileFilter}s*/
 	private final Map<String,CyFileFilter> extensionFilterMap;
 
-	/**
-	 * The CyWriterManager specified in the constructor.
-	 */
+	/** The CyWriterManager specified in the constructor **/
 	protected final T writerManager;
+	
+	/** The CyApplicationManager specified in the constructor **/
+	protected final CyApplicationManager cyApplicationManager;
 
 	/**
 	 * Constructor.
 	 * @param writerManager The CyWriterManager to be used to determine which
 	 * {@link org.cytoscape.io.write.CyWriter} to be used to write the file chosen by the user. 
+	 * @param CyApplicationManager The CyApplicationManager to be used to get the 
+	 * current working directory.
 	 */
-	public AbstractCyWriter(T writerManager) {
+	public AbstractCyWriter(T writerManager, CyApplicationManager cyApplicationManager) {
 		if (writerManager == null)
 			throw new NullPointerException("CyWriterManager is null");
 		this.writerManager = writerManager;
+		this.cyApplicationManager = cyApplicationManager;
 		
 		outputStream = new ByteArrayOutputStream();
+		
 		descriptionFilterMap = new TreeMap<String,CyFileFilter>();
 		extensionFilterMap = new TreeMap<String,CyFileFilter>();
 		for (CyFileFilter f : writerManager.getAvailableWriterFilters()) {
@@ -140,6 +154,20 @@ public abstract class AbstractCyWriter<S extends CyWriterFactory,T extends CyWri
 	 * @throws Exception 
 	 */
 	protected abstract CyWriter getWriter(CyFileFilter filter) throws Exception;
+	
+	/**
+	 * Returns a file in the current directory with a suggested name and extension
+	 * suitable for the current export parameters.
+	 * @return a File in the current directory with a name/extension determined by the exporter.
+	 */
+	protected File getSuggestedFile() {
+		String exportName = getExportName();
+		if (exportName == null || exportName.trim().isEmpty())
+			exportName = "Untitled";
+		
+		return new File(cyApplicationManager.getCurrentDirectory(), exportName + "." +
+				getFileFilter(getExportFileFormat()).getExtensions().iterator().next());
+	}
 
 	/**
 	 * Returns a collection of human readable descriptions of all of the file filters 
@@ -168,5 +196,50 @@ public abstract class AbstractCyWriter<S extends CyWriterFactory,T extends CyWri
 			return f;
 		else
 			return extensionFilterMap.get(description.toLowerCase());
+	}
+	
+	/**
+	 * Returns whether the given File's extension is acceptable for the selected file format
+	 * @param file The input file
+	 * @return true if the extension is accepted for the selected file format, and false otherwise
+	 */
+	protected final boolean fileExtensionIsOk(final File file) {
+		final String exportFileFormat = getExportFileFormat();
+		
+		if (exportFileFormat == null)
+			return true;
+
+		final CyFileFilter filter = getFileFilter(exportFileFormat);
+		
+		if (filter == null)
+			return true;
+
+		return filter.getExtensions().contains(FilenameUtils.getExtension(file.getName()));
+	}
+	
+	/**
+	 * Adds or replaces the extension of the given File with one suitable for the selected export file format
+	 * @param file The input file
+	 * @return a File with an extension suitable for the selected export file format
+	 */
+	protected final File addOrReplaceExtension(final File file) {
+		final CyFileFilter filter = getFileFilter(getExportFileFormat());
+		
+		if (filter == null)
+			return file;
+
+		final Iterator<String> extensions = filter.getExtensions().iterator();
+		
+		if (!extensions.hasNext())
+			return file;
+
+		final String filterExtension = extensions.next();
+		String fileName = file.getAbsolutePath();
+		final String fileExtension = FilenameUtils.getExtension(fileName);
+		
+		if (!filterExtension.trim().equals(fileExtension.trim()))
+			fileName = FilenameUtils.removeExtension(fileName) + "." + filterExtension;
+		
+		return new File(fileName);
 	}
 }

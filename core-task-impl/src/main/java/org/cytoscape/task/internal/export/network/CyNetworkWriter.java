@@ -25,7 +25,10 @@ package org.cytoscape.task.internal.export.network;
  */
 
 
+import java.io.File;
+
 import org.apache.commons.io.FilenameUtils;
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.io.CyFileFilter;
 import org.cytoscape.io.write.CyNetworkViewWriterFactory;
 import org.cytoscape.io.write.CyNetworkViewWriterManager;
@@ -34,8 +37,6 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.task.internal.export.TunableAbstractCyWriter;
 import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.Tunable;
-
-import java.io.File;
 
 
 /**
@@ -50,8 +51,9 @@ public final class CyNetworkWriter extends TunableAbstractCyWriter<CyNetworkView
 	 * {@link org.cytoscape.io.write.CyNetworkViewWriterFactory} to use to write the file.
 	 * @param network The {@link org.cytoscape.model.CyNetwork} to be written out. 
 	 */
-	public CyNetworkWriter(final CyNetworkViewWriterManager writerManager, final CyNetwork network ) {
-		super(writerManager);
+	public CyNetworkWriter(final CyNetworkViewWriterManager writerManager, final CyApplicationManager cyApplicationManager,
+			final CyNetwork network ) {
+		super(writerManager, cyApplicationManager);
 		
 		if (network == null)
 			throw new NullPointerException("Network is null.");
@@ -64,6 +66,7 @@ public final class CyNetworkWriter extends TunableAbstractCyWriter<CyNetworkView
 				break;
 			}
 		}
+		this.outputFile = getSuggestedFile();
 	}
 
 	void setDefaultFileFormatUsingFileExt(File file) {
@@ -97,8 +100,9 @@ public final class CyNetworkWriter extends TunableAbstractCyWriter<CyNetworkView
 	public String getTitle() {
 		return "Export Network";
 	}
-	
 
-	
-	
+	@Override
+	protected String getExportName() {
+		return network.getRow(network).get(CyNetwork.NAME, String.class);
+	}
 }

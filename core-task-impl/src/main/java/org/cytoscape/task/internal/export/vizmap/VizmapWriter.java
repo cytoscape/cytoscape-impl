@@ -35,6 +35,7 @@ import java.util.Locale;
 import java.util.Set;
 
 import org.apache.commons.io.FilenameUtils;
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.io.CyFileFilter;
 import org.cytoscape.io.write.CyWriter;
 import org.cytoscape.io.write.VizmapWriterFactory;
@@ -63,8 +64,9 @@ public class VizmapWriter extends TunableAbstractCyWriter<VizmapWriterFactory, V
 		return outputFile;
 	}
 	
-	public VizmapWriter(final VizmapWriterManager writerManager, final CyServiceRegistrar serviceRegistrar) {
-		super(writerManager);
+	public VizmapWriter(final VizmapWriterManager writerManager, final CyApplicationManager cyApplicationManager,
+			final CyServiceRegistrar serviceRegistrar) {
+		super(writerManager, cyApplicationManager);
 		
 		// Initialize Visual Style selector
 		final VisualMappingManager vmMgr = serviceRegistrar.getService(VisualMappingManager.class);
@@ -82,6 +84,7 @@ public class VizmapWriter extends TunableAbstractCyWriter<VizmapWriterFactory, V
 		styles = new ListMultipleSelection<>(allStyles);
 		// Select the current style by default
 		styles.setSelectedValues(Collections.singletonList(vmMgr.getCurrentVisualStyle()));
+		this.outputFile = getSuggestedFile();
 	}
 	
 	void setDefaultFileFormatUsingFileExt(final File file) {
@@ -117,5 +120,10 @@ public class VizmapWriter extends TunableAbstractCyWriter<VizmapWriterFactory, V
 		}
 		
 		return super.getValidationState(msg);
+	}
+
+	@Override
+	protected String getExportName() {
+		return "styles";
 	}
 }

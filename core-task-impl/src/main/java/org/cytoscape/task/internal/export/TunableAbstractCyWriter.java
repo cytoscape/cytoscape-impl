@@ -24,15 +24,10 @@ package org.cytoscape.task.internal.export;
  * #L%
  */
 
-import java.io.File;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
-import javax.swing.SwingUtilities;
-
-import org.apache.commons.io.FilenameUtils;
-import org.cytoscape.io.CyFileFilter;
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.io.write.CyWriter;
 import org.cytoscape.io.write.CyWriterFactory;
 import org.cytoscape.io.write.CyWriterManager;
@@ -83,8 +78,8 @@ public abstract class TunableAbstractCyWriter<S extends CyWriterFactory, T exten
 	 *            {@link org.cytoscape.io.write.CyWriter} to be used to write
 	 *            the file chosen by the user.
 	 */
-	public TunableAbstractCyWriter(T writerManager) {
-		super(writerManager);
+	public TunableAbstractCyWriter(T writerManager, CyApplicationManager cyApplicationManager) {
+		super(writerManager, cyApplicationManager);
 		final List<String> availableFormats = new ArrayList<>(getFileFilterDescriptions());
 		options = new ListSingleSelection<String>(availableFormats);
 		options.addListener(new ListChangeListener<String>() {
@@ -97,7 +92,6 @@ public abstract class TunableAbstractCyWriter<S extends CyWriterFactory, T exten
 					if(helper != null)
 						helper.refresh(TunableAbstractCyWriter.this);
 				} catch (Exception e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 			}
@@ -149,41 +143,6 @@ public abstract class TunableAbstractCyWriter<S extends CyWriterFactory, T exten
 		} else {
 			return ValidationState.OK;
 		}
-	}
-
-	protected final boolean fileExtensionIsOk(final File file) {
-		final String exportFileFormat = getExportFileFormat();
-		
-		if (exportFileFormat == null)
-			return true;
-
-		final CyFileFilter filter = getFileFilter(exportFileFormat);
-		
-		if (filter == null)
-			return true;
-
-		return filter.getExtensions().contains(FilenameUtils.getExtension(file.getName()));
-	}
-
-	protected final File addOrReplaceExtension(final File file) {
-		final CyFileFilter filter = getFileFilter(getExportFileFormat());
-		
-		if (filter == null)
-			return file;
-
-		final Iterator<String> extensions = filter.getExtensions().iterator();
-		
-		if (!extensions.hasNext())
-			return file;
-
-		final String filterExtension = extensions.next();
-		String fileName = file.getAbsolutePath();
-		final String fileExtension = FilenameUtils.getExtension(fileName);
-		
-		if (!filterExtension.trim().equals(fileExtension.trim()))
-			fileName = FilenameUtils.removeExtension(fileName) + "." + filterExtension;
-		
-		return new File(fileName);
 	}
 	
 	@Override

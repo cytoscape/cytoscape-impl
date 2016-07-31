@@ -30,17 +30,20 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import java.io.File;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.io.CyFileFilter;
 import org.cytoscape.io.write.CyWriter;
 import org.cytoscape.io.write.PresentationWriterManager;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyRow;
 import org.cytoscape.task.internal.export.AbstractCyWriterTest;
 import org.cytoscape.task.internal.export.ViewWriter;
-import org.cytoscape.view.model.View;
+import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.presentation.RenderingEngine;
 import org.junit.Before;
 import org.mockito.ArgumentMatcher;
@@ -50,14 +53,20 @@ public class ViewWriterTest extends AbstractCyWriterTest {
 	@Before
 	public void setUp() throws Exception {
 		final PresentationWriterManager pwm = mock(PresentationWriterManager.class);
-		final View<?> view = mock(View.class);
+		final CyApplicationManager appMgr = mock(CyApplicationManager.class);
+		final CyNetworkView view = mock(CyNetworkView.class);
+		final CyNetwork network = mock(CyNetwork.class);
+		final CyRow row = mock(CyRow.class);
 		final RenderingEngine re = mock(RenderingEngine.class);
 		fileFilter = mock(CyFileFilter.class);
 		when(fileFilter.getDescription()).thenReturn("A dummy filter");
+		when(fileFilter.getExtensions()).thenReturn(Collections.singleton("dummy"));
 		final List<CyFileFilter> filters = new ArrayList<CyFileFilter>();
 		filters.add(fileFilter);
 		when(pwm.getAvailableWriterFilters()).thenReturn(filters);
-		cyWriter = new ViewWriter(pwm, view, re);
+		when(view.getModel()).thenReturn(network);
+		when(network.getRow(network)).thenReturn(row);
+		cyWriter = new ViewWriter(pwm, appMgr, view, re);
 		final CyWriter aWriter = mock(CyWriter.class);
 		when(pwm.getWriter(eq(view),eq(re),eq(fileFilter),argThat(new AnyOutputStreamMatcher()))).thenReturn(aWriter);
 	}

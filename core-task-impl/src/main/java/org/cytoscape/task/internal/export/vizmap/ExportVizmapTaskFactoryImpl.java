@@ -28,6 +28,7 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.io.write.VizmapWriterManager;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.write.ExportVizmapTaskFactory;
@@ -46,8 +47,9 @@ public class ExportVizmapTaskFactoryImpl extends AbstractTaskFactory implements 
 	@Override
 	public TaskIterator createTaskIterator() {
 		final VizmapWriterManager writerManager = serviceRegistrar.getService(VizmapWriterManager.class);
+		final CyApplicationManager cyApplicationManager = serviceRegistrar.getService(CyApplicationManager.class);
 		
-		return new TaskIterator(2, new VizmapWriter(writerManager, serviceRegistrar));
+		return new TaskIterator(2, new VizmapWriter(writerManager, cyApplicationManager, serviceRegistrar));
 	}
 
 	@Override
@@ -56,7 +58,8 @@ public class ExportVizmapTaskFactoryImpl extends AbstractTaskFactory implements 
 		m.put("OutputFile", file);
 		
 		final VizmapWriterManager writerManager = serviceRegistrar.getService(VizmapWriterManager.class);
-		final VizmapWriter writer = new VizmapWriter(writerManager, serviceRegistrar);
+		final CyApplicationManager cyApplicationManager = serviceRegistrar.getService(CyApplicationManager.class);
+		final VizmapWriter writer = new VizmapWriter(writerManager, cyApplicationManager, serviceRegistrar);
 		writer.setDefaultFileFormatUsingFileExt(file);
 		
 		final TunableSetter tunableSetter = serviceRegistrar.getService(TunableSetter.class);
