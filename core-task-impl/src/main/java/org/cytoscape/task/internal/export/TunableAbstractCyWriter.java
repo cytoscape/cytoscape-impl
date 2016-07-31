@@ -62,6 +62,12 @@ public abstract class TunableAbstractCyWriter<S extends CyWriterFactory, T exten
 	
 	@Override
 	public CyWriter getWriter() {
+		if(writer == null) {
+			try {
+				writer = getWriter(getFileFilter(getExportFileFormat()));
+			}
+			catch(Exception e) {}
+		}
 		return writer;
 	}
 
