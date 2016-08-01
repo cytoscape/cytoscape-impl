@@ -1819,7 +1819,8 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc,updateView,TaskFactory.class,updateViewTaskFactoryProps);
 
 		// New in 3.2.0: Export to HTML5 archive
-		ExportAsWebArchiveTaskFactory exportAsWebArchiveTaskFactory = new ExportAsWebArchiveTaskFactory(cyNetworkManagerServiceRef);
+		ExportAsWebArchiveTaskFactory exportAsWebArchiveTaskFactory = new ExportAsWebArchiveTaskFactory(cyNetworkManagerServiceRef,
+				cyApplicationManagerServiceRef, cySessionManagerServiceRef);
 		Properties exportAsWebArchiveTaskFactoryProps = new Properties();
 		exportAsWebArchiveTaskFactoryProps.setProperty(PREFERRED_MENU,"File");
 		exportAsWebArchiveTaskFactoryProps.setProperty(ENABLE_FOR,ENABLE_FOR_NETWORK_AND_VIEW);

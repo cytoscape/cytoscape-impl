@@ -3,9 +3,11 @@ package org.cytoscape.task.internal.export.web;
 import java.util.Map;
 import java.util.Set;
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.io.write.CySessionWriterFactory;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
+import org.cytoscape.session.CySessionManager;
 import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.ServiceProperties;
 import org.cytoscape.work.TaskIterator;
@@ -19,11 +21,16 @@ public class ExportAsWebArchiveTaskFactory extends AbstractTaskFactory {
 	private CySessionWriterFactory zippedWriterFactory;
 	
 	private final CyNetworkManager networkManager;
+	private final CyApplicationManager applicationManager;
+	private final CySessionManager sessionManager;
 	
 	
-	public ExportAsWebArchiveTaskFactory(final CyNetworkManager networkManager) {
+	public ExportAsWebArchiveTaskFactory(final CyNetworkManager networkManager, final CyApplicationManager applicationManager,
+			final CySessionManager sessionManager) {
 		super();
 		this.networkManager = networkManager;
+		this.applicationManager = applicationManager;
+		this.sessionManager = sessionManager;
 	}
 
 	/**
@@ -74,7 +81,8 @@ public class ExportAsWebArchiveTaskFactory extends AbstractTaskFactory {
 		}
 		
 		final ExportAsWebArchiveTask exportTask = 
-				new ExportAsWebArchiveTask(fullWriterFactory, simpleWriterFactory, zippedWriterFactory);
+				new ExportAsWebArchiveTask(fullWriterFactory, simpleWriterFactory, zippedWriterFactory, 
+						applicationManager, sessionManager);
 		
 		if(showWarning) {
 			return new TaskIterator(new ShowWarningTask(exportTask));
