@@ -122,7 +122,7 @@ public abstract class TunableAbstractCyWriter<S extends CyWriterFactory, T exten
 
 		if (outputFile == null) {
 			try {
-				msg.append("Enter the file address.");
+				msg.append("Enter a file name.");
 			} catch (final Exception e) {
 				/* Intentionally empty. */
 			}
