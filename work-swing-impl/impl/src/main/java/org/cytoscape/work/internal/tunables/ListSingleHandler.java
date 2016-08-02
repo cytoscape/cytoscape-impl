@@ -57,6 +57,7 @@ public class ListSingleHandler<T> extends AbstractGUITunableHandler
                                   implements ActionListener, ListChangeListener<T> {
 	
 	private JComboBox<T> combobox;
+	private boolean isUpdating = false;
 
 	/**
 	 * Constructs the <code>GUIHandler</code> for the <code>ListSingleSelection</code> type.
@@ -94,8 +95,8 @@ public class ListSingleHandler<T> extends AbstractGUITunableHandler
 
 		//add list's items to the combobox
 		combobox = new JComboBox<>((T[])getSingleSelection().getPossibleValues().toArray());
-		combobox.addActionListener(this);
 		combobox.getModel().setSelectedItem(getSingleSelection().getSelectedValue());
+		combobox.addActionListener(this);
 		
 		updateFieldPanel(panel, label, combobox, horizontal);
 		setTooltip(getTooltip(), label, combobox);
@@ -105,18 +106,34 @@ public class ListSingleHandler<T> extends AbstractGUITunableHandler
 		
 		final ListSingleSelection<T> singleSelection = getSingleSelection();
 		
-		if (singleSelection != null)
+		if (singleSelection != null) {
+			// Make sure we're the only handler for this Tunable that's listening
+			// for changes.  If we're in the middle of a refresh, we can sometimes
+			// be in a state where there are two...
+			ListChangeListener<T> found = null;
+			for (ListChangeListener<T> listener: singleSelection.getListeners()) {
+				if (listener instanceof AbstractGUITunableHandler &&
+						((AbstractGUITunableHandler)listener).getQualifiedName().equals(this.getQualifiedName())) {
+					found = listener;
+				}
+			}
+			if (found != null) {
+				singleSelection.removeListener(found);
+			}
 			singleSelection.addListener(this);
+		}
 	}
 
 	@Override
 	@SuppressWarnings("unchecked")
 	public void update() {
+		isUpdating = true;
 		if (combobox == null) return;
 		combobox.setModel(new DefaultComboBoxModel<T>((T[])getSingleSelection().getPossibleValues().toArray()));
 		combobox.setSelectedItem(getSingleSelection().getSelectedValue());
 		combobox.setEnabled(combobox.getModel().getSize() > 1);
 		panel.setVisible(combobox.getModel().getSize() > 0);
+		isUpdating = false;
 	}
 
 	/**
@@ -125,7 +142,7 @@ public class ListSingleHandler<T> extends AbstractGUITunableHandler
 	@Override
 	@SuppressWarnings("unchecked")
 	public void handle() {
-		if (combobox == null)
+		if (combobox == null || isUpdating)
 			return;
 		
 		final T selectedItem = (T) combobox.getSelectedItem();

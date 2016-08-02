@@ -25,6 +25,7 @@ package org.cytoscape.task.internal.export.table;
  */
 
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.io.write.CyTableWriterManager;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyTableManager;
@@ -37,17 +38,20 @@ public class ExportNoGuiSelectedTableTaskFactoryImpl extends AbstractTaskFactory
 	private final CyTableWriterManager writerManager;
 	private final CyTableManager cyTableManagerServiceRef;
 	private final CyNetworkManager cyNetworkManagerServiceRef;
+	private final CyApplicationManager cyApplicationManagerServiceRef;
 
 	
-	public ExportNoGuiSelectedTableTaskFactoryImpl(CyTableWriterManager writerManager,
-			CyTableManager cyTableManagerServiceRef, CyNetworkManager cyNetworkManagerServiceRef) {
+	public ExportNoGuiSelectedTableTaskFactoryImpl(CyTableWriterManager writerManager, CyTableManager cyTableManagerServiceRef,
+			CyNetworkManager cyNetworkManagerServiceRef, CyApplicationManager cyApplicationManagerServiceRef) {
 		this.writerManager = writerManager;
 		this.cyTableManagerServiceRef = cyTableManagerServiceRef;
 		this.cyNetworkManagerServiceRef = cyNetworkManagerServiceRef;
+		this.cyApplicationManagerServiceRef = cyApplicationManagerServiceRef;
 	}
 	
 	@Override
 	public TaskIterator createTaskIterator() {
-		return new TaskIterator(new NoGuiSelectExportTableTask(this.writerManager, this.cyTableManagerServiceRef, this.cyNetworkManagerServiceRef));
+		return new TaskIterator(new NoGuiSelectExportTableTask(writerManager, cyTableManagerServiceRef, 
+				cyNetworkManagerServiceRef, cyApplicationManagerServiceRef));
 	}
 }

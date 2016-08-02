@@ -134,7 +134,7 @@
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
-			<artifactId>swing-util-api</artifactId>
+			<artifactId>application-api</artifactId>
 			<scope>provided</scope>
 		</dependency>
     <dependency>

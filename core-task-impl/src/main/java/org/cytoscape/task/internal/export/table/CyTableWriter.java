@@ -26,13 +26,16 @@ package org.cytoscape.task.internal.export.table;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import org.apache.commons.io.FilenameUtils;
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.io.CyFileFilter;
 import org.cytoscape.io.write.CyTableWriterManager;
 import org.cytoscape.io.write.CyTableWriterFactory;
 import org.cytoscape.io.write.CyWriter;
+import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.task.internal.export.TunableAbstractCyWriter;
 import org.cytoscape.work.ProvidesTitle;
@@ -51,21 +54,21 @@ public final class CyTableWriter extends TunableAbstractCyWriter<CyTableWriterFa
 	 * {@link org.cytoscape.io.write.CyTableWriterFactory} to use to write the file.
 	 * @param table The {@link org.cytoscape.model.CyTable} to be written out. 
  	 */
-	public CyTableWriter(final CyTableWriterManager writerManager, final CyTable table ) {
-		super(writerManager);
+	public CyTableWriter(final CyTableWriterManager writerManager, final CyApplicationManager cyApplicationManager,
+			final CyTable table) {
+		super(writerManager, cyApplicationManager);
 		
 		if (table == null)
 			throw new NullPointerException("Table is null");
 		
 		this.table = table;
-		final List<String> availableFormats = new ArrayList<>();
 		
-		for (String format : options.getPossibleValues()) {
-			if (!format.contains(".cytable"))
-				availableFormats.add(format);
+		for (Iterator<String> i = options.getPossibleValues().iterator(); i.hasNext();) {
+			if (i.next().contains(".cytable"))
+				i.remove();
 		}
 		
-		options = new ListSingleSelection<String>(availableFormats);
+		this.outputFile = getSuggestedFile();
 	}
 	
 	void setDefaultFileFormatUsingFileExt(final File file) {
@@ -82,14 +85,11 @@ public final class CyTableWriter extends TunableAbstractCyWriter<CyTableWriterFa
 	}
 
 	@Override
-	protected CyWriter getWriter(final CyFileFilter filter, File file) throws Exception {
-		if (!fileExtensionIsOk(file))
-			file = addOrReplaceExtension(outputFile);
-
-		return writerManager.getWriter(table, filter, file);
+	protected CyWriter getWriter(final CyFileFilter filter) throws Exception {
+		return writerManager.getWriter(table, filter, outputStream);
 	}
 
-	@Tunable(description="Save Table as:", params="fileCategory=table;input=false", dependsOn="options!=")
+	@Tunable(description="Save Table as:", params="fileCategory=table;input=false", dependsOn="options!=", gravity = 1.1)
 	public File getOutputFile() {
 		return outputFile;
 	}
@@ -97,5 +97,10 @@ public final class CyTableWriter extends TunableAbstractCyWriter<CyTableWriterFa
 	@ProvidesTitle
 	public String getTitle() {
 		return "Export Table";
+	}
+
+	@Override
+	protected String getExportName() {
+		return table.getTitle();
 	}
 }

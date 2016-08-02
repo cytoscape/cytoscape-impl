@@ -44,8 +44,7 @@ public class CyActivatorTest {
 	@Before
 	public void setUp() throws Exception {
 		MockitoAnnotations.initMocks(this);
-		ServiceReference[] refs = new ServiceReference[]{reference};
-		when(bc.getServiceReferences(anyString(), anyString())).thenReturn(refs);
+		when(bc.getServiceReference(anyString())).thenReturn(reference);
 		activator = new CyActivator();
 	}
 
@@ -55,7 +54,7 @@ public class CyActivatorTest {
 		assertNotNull(activator);
 	}
 
-	@Test(expected=NullPointerException.class)
+	@Test
 	public void testStart() {
 		activator.start(bc);
 	}

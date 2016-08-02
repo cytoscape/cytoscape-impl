@@ -31,6 +31,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.io.write.CyTableWriterManager;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
@@ -51,15 +52,17 @@ public class SelectExportTableTask extends AbstractTask {
 	private final CyTableWriterManager writerManager;
 	private final CyTableManager cyTableManagerServiceRef;
 	private final CyNetworkManager cyNetworkManagerServiceRef;
+	private final CyApplicationManager cyApplicationManagerServiceRef;
 
 	private HashMap<CyTable, CyNetwork> tableNetworkMap = new HashMap<>();
 	private HashMap<String, CyTable> titleTableMap = new HashMap<>();
 	
-	public SelectExportTableTask(final CyTableWriterManager writerManager,
-			final CyTableManager cyTableManagerServiceRef, final CyNetworkManager cyNetworkManagerServiceRef) {
+	public SelectExportTableTask(final CyTableWriterManager writerManager, final CyTableManager cyTableManagerServiceRef, 
+			final CyNetworkManager cyNetworkManagerServiceRef, final CyApplicationManager cyApplicationManagerServiceRef) {
 		this.cyTableManagerServiceRef = cyTableManagerServiceRef;
 		this.writerManager = writerManager;
 		this.cyNetworkManagerServiceRef = cyNetworkManagerServiceRef;
+		this.cyApplicationManagerServiceRef = cyApplicationManagerServiceRef;
 
 		populateNetworkTableMap();
 		populateSelectTable();
@@ -93,7 +96,7 @@ public class SelectExportTableTask extends AbstractTask {
 		CyTable tbl = this.titleTableMap.get(selectedTitle);
 
 		// Export the selected table
-		this.insertTasksAfterCurrentTask(new CyTableWriter(writerManager, tbl));		
+		this.insertTasksAfterCurrentTask(new CyTableWriter(writerManager, cyApplicationManagerServiceRef, tbl));		
 	}
 	
 	@ProvidesTitle

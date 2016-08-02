@@ -28,6 +28,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Properties;
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.io.datasource.DataSourceManager;
 import org.cytoscape.io.read.InputStreamTaskFactory;
 import org.cytoscape.io.write.CyWriterFactory;
@@ -82,7 +83,8 @@ public class CyActivator extends AbstractCyActivator {
 	public void start(BundleContext bc) {
 		CyServiceRegistrar serviceRegistrar = getService(bc, CyServiceRegistrar.class);
 		DataSourceManager dsManager = getService(bc, DataSourceManager.class);
-
+		
+		CyApplicationManager cyApplicationManager = getService(bc, CyApplicationManager.class);
 		FileUtil fileUtilRef = getService(bc,FileUtil.class);
 		UndoSupportImpl undoSupport = new UndoSupportImpl();
 		
@@ -139,7 +141,7 @@ public class CyActivator extends AbstractCyActivator {
 
 		URLHandlerFactory urlHandlerFactory = new URLHandlerFactory(dsManager);
 		
-		FileHandlerFactory fileHandlerFactory = new FileHandlerFactory(fileUtilRef,supportedFileTypesManager);
+		FileHandlerFactory fileHandlerFactory = new FileHandlerFactory(fileUtilRef,supportedFileTypesManager, cyApplicationManager);
 
 		Properties undoSupportProps = new Properties();
 		registerService(bc,undoSupport,UndoSupport.class, undoSupportProps);

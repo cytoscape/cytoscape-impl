@@ -31,11 +31,14 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.io.CyFileFilter;
 import org.cytoscape.io.write.PresentationWriterManager;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyRow;
 import org.cytoscape.task.internal.export.ViewWriter;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.presentation.RenderingEngine;
@@ -55,6 +58,7 @@ public class ExportNetworkImageTaskFactoryTest {
 		final List<CyFileFilter> filters = new ArrayList<CyFileFilter>();
 		final CyFileFilter dummyFilter = mock(CyFileFilter.class);
 		when(dummyFilter.getDescription()).thenReturn("dummy description");
+		when(dummyFilter.getExtensions()).thenReturn(Collections.singleton("dummy"));
 		filters.add(dummyFilter);
 		when(viewWriterMgr.getAvailableWriterFilters()).thenReturn(filters);
 		final RenderingEngine engine = mock(RenderingEngine.class);
@@ -70,6 +74,10 @@ public class ExportNetworkImageTaskFactoryTest {
 		final ExportNetworkImageTaskFactoryImpl factory = new ExportNetworkImageTaskFactoryImpl(viewWriterMgr, 
 				applicationManager);
 		final CyNetworkView view = mock(CyNetworkView.class);
+		final CyNetwork network = mock(CyNetwork.class);
+		final CyRow row = mock(CyRow.class);
+		when(view.getModel()).thenReturn(network);
+		when(network.getRow(network)).thenReturn(row);
 		
 		final TaskIterator itr = factory.createTaskIterator(view);
 		
