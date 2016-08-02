@@ -249,8 +249,10 @@ public class GroupUtil {
 			// If we're not collapsed, remove the group node from the network before
 			// we create the group
 			if (!collapsed) {
-				if (!nodeShown)
+				if (!nodeShown) {
 					net.removeNodes(Collections.singletonList(n));
+					rootNet.restoreNode(n);
+				}
 
 				// Add our internal edges into the network (if they aren't already)
 				for (CyEdge edge: netPointer.getEdgeList()) {

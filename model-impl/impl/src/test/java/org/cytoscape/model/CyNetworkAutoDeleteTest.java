@@ -34,35 +34,6 @@ public class CyNetworkAutoDeleteTest {
 	}
 	
 	
-//	private CyRootNetwork createTestNetwork() {
-//		final String TEST_COLUMN = "testColumn";
-//		
-//		CyNetwork network1 = TestCyNetworkFactory.getInstance();
-//		CyRootNetwork rootNetwork = ((CySubNetwork)network1).getRootNetwork();
-//		
-//		CyNode n1 = network1.addNode();
-//		CyNode n2 = network1.addNode();
-//		CyNode n3 = network1.addNode();
-//		CyEdge e1 = network1.addEdge(n1, n2, false);
-//		CyEdge e2 = network1.addEdge(n2, n3, false);
-//		
-//		CyTable defaultNodeTable = network1.getDefaultNodeTable();
-//		defaultNodeTable.createColumn(TEST_COLUMN, String.class, false);
-//		CyTable defaultEdgeTable = network1.getDefaultEdgeTable();
-//		defaultEdgeTable.createColumn(TEST_COLUMN, String.class, false);
-//		
-//		network1.getRow(n1).set(TEST_COLUMN, "my node 1");
-//		network1.getRow(n2).set(TEST_COLUMN, "my node 2");
-//		network1.getRow(n3).set(TEST_COLUMN, "my node 3");
-//		network1.getRow(e1).set(TEST_COLUMN, "my edge 1");
-//		network1.getRow(e2).set(TEST_COLUMN, "my edge 2");
-//		
-//		rootNetwork.addSubNetwork(Arrays.asList(n1,n2,n3), Arrays.asList(e1,e2));
-//		
-//		return rootNetwork;
-//	}
-	
-	
 	@Test
 	public void testAutoDeleteFromRootNetwork() {
 		CyNetwork network1 = TestCyNetworkFactory.getInstance();

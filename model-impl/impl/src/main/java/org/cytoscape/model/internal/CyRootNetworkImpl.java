@@ -53,7 +53,6 @@ import org.cytoscape.model.events.RowsSetListener;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.session.events.SessionLoadedEvent;
 import org.cytoscape.session.events.SessionLoadedListener;
 
 
@@ -62,7 +61,7 @@ import org.cytoscape.session.events.SessionLoadedListener;
  * for addNodes/addEdges that is missing from SimpleNetwork and provides support 
  * for subnetworks.
  */
-public final class CyRootNetworkImpl extends DefaultTablesNetwork implements CyRootNetwork, NetworkAddedListener, SessionLoadedListener {
+public final class CyRootNetworkImpl extends DefaultTablesNetwork implements CyRootNetwork, NetworkAddedListener {
 	
 	private final long suid;
 	private SavePolicy savePolicy;
@@ -130,9 +129,6 @@ public final class CyRootNetworkImpl extends DefaultTablesNetwork implements CyR
 		networkAddedListenerDelegator = new NetworkAddedListenerDelegator();
 		networkAddedListenerDelegator.addListener(this);
 		serviceRegistrar.registerService(networkAddedListenerDelegator, NetworkAddedListener.class, new Properties());
-		
-		serviceRegistrar.registerService(this, SessionLoadedListener.class, new Properties());
-
 		networkNameSetListener = new NetworkNameSetListener(this);
 		serviceRegistrar.registerService(networkNameSetListener, RowsSetListener.class, new Properties());		
 		serviceRegistrar.registerService(networkNameSetListener, NetworkAddedListener.class, new Properties());		
@@ -615,9 +611,4 @@ public final class CyRootNetworkImpl extends DefaultTablesNetwork implements CyR
 		}
 	}
 	
-	@Override
-	public void handleEvent(SessionLoadedEvent e) {
-		// remove any unreachable nodes left over from older versions of cytoscape
-		garbageCollect();
-	}
 }
