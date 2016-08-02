@@ -24,6 +24,7 @@ package org.cytoscape.task.internal.export;
  * #L%
  */
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -69,6 +70,25 @@ public abstract class TunableAbstractCyWriter<S extends CyWriterFactory, T exten
 			catch(Exception e) {}
 		}
 		return writer;
+	}
+	
+	/**
+	 * The method sets the file to be written.  This field should not
+	 * be called directly, but rather handled by the {@link org.cytoscape.work.Tunable}
+	 * processing. This method is the "setter" portion of a
+	 * getter/setter tunable method pair.
+	 * @param f The file to be written.
+	 */
+	public final void setOutputFile(File f) {
+		if ( f != null ) {
+			if(fileExtensionIsOk(f))
+				outputFile = f;
+			else {
+				outputFile = addOrReplaceExtension(f);
+				if(helper != null)
+					helper.update(this);
+			}
+		}
 	}
 
 	@Override

@@ -59,28 +59,24 @@ public abstract class AbstractCyWriter<S extends CyWriterFactory,T extends CyWri
 	/** The output stream used to write the file */
 	protected ByteArrayOutputStream outputStream;
 
-	/**
-	 * The method sets the file to be written.  This field should not
-	 * be called directly, but rather handled by the {@link org.cytoscape.work.Tunable}
-	 * processing. This method is the "setter" portion of a
-	 * getter/setter tunable method pair.
-	 * @param f The file to be written.
-	 */
-	public final void setOutputFile(File f) {
-		if ( f != null )
-			outputFile = f;
-	}
 
 	/**
-	 * This method gets the file to be written.  This method should not
+	 * An implementation method gets the file to be written.  This method should not
 	 * be called directly, but rather handled by the {@link org.cytoscape.work.Tunable}
 	 * processing. This method is the "getter" portion of a
 	 * getter/setter tunable method pair.
 	 * @return The file to be written.
 	 */
-	public File getOutputFile() {
-		return outputFile;
-	}
+	abstract public File getOutputFile();
+	
+	/**
+	 * An implementation of this method sets the file to be written.  This field should not
+	 * be called directly, but rather handled by the {@link org.cytoscape.work.Tunable}
+	 * processing. This method is the "setter" portion of a
+	 * getter/setter tunable method pair.
+	 * @param f The file to be written.
+	 */
+	abstract public void setOutputFile(File f);
 
 	/** An implementation of this method should return a file format description
 	 * from {@link CyFileFilter}, such that the string can be found in the descriptionFilterMap.
