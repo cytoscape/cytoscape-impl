@@ -14,7 +14,8 @@ import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.TunableValidator;
-import org.cytoscape.work.TunableValidator.ValidationState;
+import org.cytoscape.work.swing.RequestsUIHelper;
+import org.cytoscape.work.swing.TunableUIHelper;
 import org.cytoscape.work.util.ListChangeListener;
 import org.cytoscape.work.util.ListSelection;
 import org.cytoscape.work.util.ListSingleSelection;
@@ -24,22 +25,39 @@ import org.cytoscape.work.util.ListSingleSelection;
  * Task to export all networks and styles as Cytoscape.js style JSON.
  * 
  */
-public class ExportAsWebArchiveTask extends AbstractTask implements TunableValidator {
+public class ExportAsWebArchiveTask extends AbstractTask implements TunableValidator, RequestsUIHelper {
 
 	private static final String FILE_EXTENSION = ".zip";
 	
 	private static final String AS_SPA = "Full web application";
 	private static final String AS_SIMPLE_PAGE = "Simple viewer for current network only";
 	private static final String AS_ZIPPED_ARCHIVE = "Networks and Style JSON files only (No HTML)";
+	
+	private TunableUIHelper helper;
 
 	@ProvidesTitle
 	public String getTitle() {
 		return "Export as Cytoscape.js Web Page";
 	}
 
+	public File file; 
 	@Tunable(description = "Export Networks and Styles as:", params = "fileCategory=archive;input=false", listenForChange="outputFormat")
-	public File file;
-	
+	public File getFile() {
+		return file;
+	}
+
+	public void setFile(File file) {
+		if(file != null) {
+			if(file.getName().endsWith(FILE_EXTENSION))
+				this.file = file;
+			else {
+				this.file = new File(file.getAbsolutePath() + FILE_EXTENSION);
+				if(helper != null)
+					helper.update(this);
+			}
+		}
+	}
+
 	@Tunable(description = "Export as:")
 	public ListSingleSelection<String> outputFormat;
 
@@ -158,5 +176,10 @@ public class ExportAsWebArchiveTask extends AbstractTask implements TunableValid
 			return ValidationState.INVALID;
 		}
 		return ValidationState.OK;
+	}
+
+	@Override
+	public void setUIHelper(TunableUIHelper helper) {
+		this.helper = helper;
 	}
 }

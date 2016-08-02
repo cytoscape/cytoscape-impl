@@ -41,7 +41,7 @@ public abstract class AbstractCyWriterTest {
 
 	@Test
 	public void testOutputFile() {
-		final File outputFile = new File("dummy");
+		final File outputFile = new File("dummy.dummy");
 		cyWriter.setOutputFile(outputFile);
 		assertEquals(outputFile, cyWriter.getOutputFile());
 	}
