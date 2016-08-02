@@ -10,7 +10,6 @@ import java.util.WeakHashMap;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
@@ -36,8 +35,6 @@ import org.cytoscape.model.subnetwork.CyRootNetwork;
 public class RemovedAttributesCache {
 	
 	private final String[] namespaces = { CyNetwork.DEFAULT_ATTRS, CyRootNetwork.SHARED_ATTRS, CyNetwork.HIDDEN_ATTRS };
-	
-	private final CyNetworkTableManager networkTableManager;
 	
 	private final WeakHashMap<CyIdentifiable,AttributesCache> cachedElements;
 	private final CyNetwork network;
@@ -129,9 +126,8 @@ public class RemovedAttributesCache {
 	
 	
 	
-	public RemovedAttributesCache(CyNetworkTableManager networkTableManager, CyNetwork network) {
+	public RemovedAttributesCache(CyNetwork network) {
 		this.cachedElements = new WeakHashMap<>();
-		this.networkTableManager = networkTableManager;
 		this.network = network;
 	}
 	
@@ -168,9 +164,9 @@ public class RemovedAttributesCache {
 	private CyRow getRow(CyIdentifiable element, String namespace) {
 		CyTable table = null;
 		if (element instanceof CyNode)
-			table = networkTableManager.getTable(network, CyNode.class, namespace);
+			table = network.getTable(CyNode.class, namespace);
 		else if (element instanceof CyEdge)
-			table = networkTableManager.getTable(network, CyEdge.class, namespace);
+			table = network.getTable(CyEdge.class, namespace);
 		
 		return table == null ? null : table.getRow(element.getSUID());
 	}

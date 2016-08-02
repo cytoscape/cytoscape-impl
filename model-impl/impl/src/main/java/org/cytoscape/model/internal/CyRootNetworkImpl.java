@@ -119,7 +119,7 @@ public final class CyRootNetworkImpl extends DefaultTablesNetwork implements CyR
 		
 		getRow(this).set(CyNetwork.NAME, "");
 
-		removedAttributesCache = new RemovedAttributesCache(networkTableMgr, this);
+		removedAttributesCache = new RemovedAttributesCache(this);
 		
 		columnAdder = new VirtualColumnAdder();
 		serviceRegistrar.registerService(columnAdder, ColumnCreatedListener.class, new Properties());
