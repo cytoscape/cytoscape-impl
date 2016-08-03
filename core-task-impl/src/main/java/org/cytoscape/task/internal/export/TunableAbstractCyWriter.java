@@ -80,14 +80,12 @@ public abstract class TunableAbstractCyWriter<S extends CyWriterFactory, T exten
 	 * @param f The file to be written.
 	 */
 	public final void setOutputFile(File f) {
-		if ( f != null ) {
-			if(fileExtensionIsOk(f))
-				outputFile = f;
-			else {
-				outputFile = addOrReplaceExtension(f);
-				if(helper != null)
-					helper.update(this);
-			}
+		if(f == null || fileExtensionIsOk(f))
+			outputFile = f;
+		else {
+			outputFile = addOrReplaceExtension(f);
+			if(helper != null)
+				helper.update(this);
 		}
 	}
 
@@ -149,16 +147,8 @@ public abstract class TunableAbstractCyWriter<S extends CyWriterFactory, T exten
 
 			return ValidationState.INVALID;
 		}
-
-		boolean isFileChanged = false;
-
-		// Make sure we have the right extension, if not, then force it:
-		if (!fileExtensionIsOk(outputFile)) {
-			outputFile = addOrReplaceExtension(outputFile);
-			isFileChanged = true;
-		}
 		
-		if (isFileChanged && outputFile.exists()) {
+		if (outputFile.exists()) {
 			try {
 				msg.append("File already exists, are you sure you want to overwrite it?");
 			} catch (final Exception e) {

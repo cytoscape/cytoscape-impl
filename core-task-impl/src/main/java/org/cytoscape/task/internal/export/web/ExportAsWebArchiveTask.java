@@ -47,14 +47,12 @@ public class ExportAsWebArchiveTask extends AbstractTask implements TunableValid
 	}
 
 	public void setFile(File file) {
-		if(file != null) {
-			if(file.getName().endsWith(FILE_EXTENSION))
-				this.file = file;
-			else {
-				this.file = new File(file.getAbsolutePath() + FILE_EXTENSION);
-				if(helper != null)
-					helper.update(this);
-			}
+		if(file == null || file.getName().endsWith(FILE_EXTENSION))
+			this.file = file;
+		else {
+			this.file = new File(file.getAbsolutePath() + FILE_EXTENSION);
+			if(helper != null)
+				helper.update(this);
 		}
 	}
 
@@ -175,7 +173,18 @@ public class ExportAsWebArchiveTask extends AbstractTask implements TunableValid
 
 			return ValidationState.INVALID;
 		}
-		return ValidationState.OK;
+		
+		if (file.exists()) {
+			try {
+				msg.append("File already exists, are you sure you want to overwrite it?");
+			} catch (final Exception e) {
+				/* Intentionally empty. */
+			}
+
+			return ValidationState.REQUEST_CONFIRMATION;
+		} else {
+			return ValidationState.OK;
+		}
 	}
 
 	@Override
