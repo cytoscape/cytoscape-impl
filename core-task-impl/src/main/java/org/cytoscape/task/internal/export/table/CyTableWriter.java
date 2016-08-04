@@ -25,22 +25,19 @@ package org.cytoscape.task.internal.export.table;
  */
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
 import org.apache.commons.io.FilenameUtils;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.io.CyFileFilter;
-import org.cytoscape.io.write.CyTableWriterManager;
 import org.cytoscape.io.write.CyTableWriterFactory;
+import org.cytoscape.io.write.CyTableWriterManager;
 import org.cytoscape.io.write.CyWriter;
-import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.task.internal.export.TunableAbstractCyWriter;
 import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.Tunable;
-import org.cytoscape.work.util.ListSingleSelection;
 
 /**
  * A utility Task implementation specifically for writing {@link org.cytoscape.model.CyTable} objects.
