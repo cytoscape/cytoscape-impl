@@ -63,10 +63,12 @@ public final class CyTableWriter extends TunableAbstractCyWriter<CyTableWriterFa
 		
 		this.table = table;
 		
-		for (Iterator<String> i = options.getPossibleValues().iterator(); i.hasNext();) {
+		List<String> fileTypes = options.getPossibleValues();
+		for (Iterator<String> i = fileTypes.iterator(); i.hasNext();) {
 			if (i.next().contains(".cytable"))
 				i.remove();
 		}
+		options.setPossibleValues(fileTypes);
 		
 		this.outputFile = getSuggestedFile();
 	}
