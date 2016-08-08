@@ -14,8 +14,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import javax.swing.SwingUtilities;
-
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.events.SetCurrentNetworkEvent;
 import org.cytoscape.application.events.SetCurrentNetworkListener;
@@ -387,17 +385,11 @@ public class NetworkSelectionMediator
 	
 	private void updateApplicationManager(final CyNetwork currentNetwork, final CyNetworkView currentView,
 			final Collection<CyNetwork> selectedNetworks, final Collection<CyNetworkView> selectedViews) {
-		if (SwingUtilities.isEventDispatchThread()) {
-			new Thread(() -> {
-				updateApplicationManager(currentNetwork, currentView, selectedNetworks, selectedViews);
-			}).start();
-		} else {
 			final CyApplicationManager appMgr = serviceRegistrar.getService(CyApplicationManager.class);
-			appMgr.setSelectedNetworks(new ArrayList<>(selectedNetworks));
-			appMgr.setCurrentNetwork(currentNetwork);
-			appMgr.setSelectedNetworkViews(new ArrayList<>(selectedViews));
-			appMgr.setCurrentNetworkView(currentView);
-		}
+		appMgr.setSelectedNetworks(new ArrayList<>(selectedNetworks));
+		appMgr.setCurrentNetwork(currentNetwork);
+		appMgr.setSelectedNetworkViews(new ArrayList<>(selectedViews));
+		appMgr.setCurrentNetworkView(currentView);
 	}
 	
 	private class NetPanelPropertyChangeListener implements PropertyChangeListener {
