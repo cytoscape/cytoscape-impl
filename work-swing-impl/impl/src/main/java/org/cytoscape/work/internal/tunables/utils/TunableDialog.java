@@ -145,4 +145,8 @@ public final class TunableDialog extends JDialog {
 		jScrollPane1.setViewportView(optionPanel);
 		pack();
 	}
+
+	public JPanel getOptionPanel() {
+		return (JPanel)optionPanel;
+	}
 }

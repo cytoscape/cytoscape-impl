@@ -155,7 +155,7 @@ public class JDialogTunableMutator extends JPanelTunableMutator implements Tunab
 	 * @param objectWithTunables
 	 *            represents the objects annotated with tunables
 	 */
-	private boolean displayGUI(final JPanel optionPanel, Object objectWithTunables) {
+	private boolean displayGUI(JPanel optionPanel, Object objectWithTunables) {
 		TunableDialog tunableDialog;
 		boolean valid = false;
 		String userInput;
@@ -174,7 +174,9 @@ public class JDialogTunableMutator extends JPanelTunableMutator implements Tunab
 			tunableDialog.setVisible(true);
 
 			userInput = tunableDialog.getUserInput();
-			
+
+			optionPanel = tunableDialog.getOptionPanel();
+
 			if (userInput.equalsIgnoreCase("OK"))
 				valid = super.validateAndWriteBack(objectWithTunables);
 		} while (userInput.equalsIgnoreCase("OK") && !valid);
