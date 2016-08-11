@@ -135,10 +135,7 @@ public abstract class AbstractCyWriter<S extends CyWriterFactory,T extends CyWri
 	 * @param tm The {@link org.cytoscape.work.TaskMonitor} provided by the TaskManager execution environment.
 	 */
 	public final void run(final TaskMonitor tm) throws Exception {
-		getWriter().run(tm);
-		FileOutputStream fos = new FileOutputStream(outputFile);
-		outputStream.writeTo(fos);
-		fos.close();
+		insertTasksAfterCurrentTask(getWriter(), new FileWriterTask());
 	}
 
 	/**
@@ -237,5 +234,14 @@ public abstract class AbstractCyWriter<S extends CyWriterFactory,T extends CyWri
 			fileName = FilenameUtils.removeExtension(fileName) + "." + filterExtension;
 		
 		return new File(fileName);
+	}
+	
+	public class FileWriterTask extends AbstractTask {
+		@Override
+		public void run(TaskMonitor taskMonitor) throws Exception {
+			FileOutputStream fos = new FileOutputStream(outputFile);
+			outputStream.writeTo(fos);
+			fos.close();
+		}
 	}
 }

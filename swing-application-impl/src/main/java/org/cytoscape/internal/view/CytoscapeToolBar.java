@@ -12,6 +12,7 @@ import javax.swing.JButton;
 import javax.swing.JSeparator;
 import javax.swing.JToolBar;
 
+import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.application.swing.CyAction;
 import org.cytoscape.application.swing.ToolBarComponent;
 
@@ -78,8 +79,19 @@ public class CytoscapeToolBar extends JToolBar {
 		// At present we allow an Action to be in this tool bar only once.
 		if ( actionButtonMap.containsKey( action ) )
 			return false;
+		
+		boolean insertSepBefore = false;
+		boolean insertSepAfter = false;
+		if (action instanceof AbstractCyAction) {
+			insertSepBefore = ((AbstractCyAction)action).insertToolbarSeparatorBefore();
+			insertSepAfter = ((AbstractCyAction)action).insertToolbarSeparatorAfter();
+		}
 
 		final JButton button = createToolBarButton(action);
+		if (insertSepBefore)
+			addSeparator(action.getToolbarGravity()-.0001f);
+		if (insertSepAfter)
+			addSeparator(action.getToolbarGravity()+.0001f);
 
 		componentGravity.put(button,action.getToolbarGravity());
 		actionButtonMap.put(action, button);
