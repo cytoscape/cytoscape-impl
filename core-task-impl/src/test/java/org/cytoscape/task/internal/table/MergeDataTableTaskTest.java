@@ -39,6 +39,9 @@ import java.util.Properties;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.ding.NetworkViewTestSupport;
+import org.cytoscape.equations.EquationCompiler;
+import org.cytoscape.equations.internal.EquationCompilerImpl;
+import org.cytoscape.equations.internal.EquationParserImpl;
 import org.cytoscape.equations.internal.interpreter.InterpreterImpl;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.event.DummyCyEventHelper;
@@ -48,7 +51,6 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.NetworkTestSupport;
 import org.cytoscape.model.SavePolicy;
 import org.cytoscape.model.TableTestSupport;
@@ -92,13 +94,13 @@ public class MergeDataTableTaskTest {
     private CyServiceRegistrar serviceRegistrar = mock(CyServiceRegistrar.class);
 	private CyNetworkManagerImpl netMgr = new CyNetworkManagerImpl(serviceRegistrar);	
 	private final CyRootNetworkManagerImpl rootNetMgr = new CyRootNetworkManagerImpl();
-	private final CyTableManagerImpl tableMgr = new CyTableManagerImpl(eventHelper,new CyNetworkTableManagerImpl(),netMgr);
+	private EquationCompiler compiler = new EquationCompilerImpl(new EquationParserImpl(eventHelper));
+	private final CyTableManagerImpl tableMgr = new CyTableManagerImpl(eventHelper,new CyNetworkTableManagerImpl(),netMgr, compiler);
 	
 	private SyncTunableMutator stm = new SyncTunableMutator();
 	SyncTunableHandlerFactory syncTunableHandlerFactory = new SyncTunableHandlerFactory();
 
 	private TunableSetterImpl ts = new TunableSetterImpl(new SyncTunableMutatorFactory(syncTunableHandlerFactory),  new TunableRecorderManager());
-	CyTableManager tabMgr = new CyTableManagerImpl(eventHelper, new CyNetworkTableManagerImpl(), netMgr);
 	Properties syncFactoryProp = new Properties();
 	
 	private CyGroupManager groupMgr = mock(CyGroupManager.class);

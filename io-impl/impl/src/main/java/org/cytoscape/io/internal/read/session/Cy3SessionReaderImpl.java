@@ -56,8 +56,8 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.cytoscape.equations.Equation;
 import org.cytoscape.equations.EquationCompiler;
+import org.cytoscape.equations.EquationUtil;
 import org.cytoscape.io.internal.read.datatable.CSVCyReaderFactory;
 import org.cytoscape.io.internal.read.datatable.CyTablesXMLReader;
 import org.cytoscape.io.internal.read.session.CyTableMetadataImpl.CyTableMetadataBuilder;
@@ -65,7 +65,6 @@ import org.cytoscape.io.internal.read.xgmml.SessionXGMMLNetworkViewReader;
 import org.cytoscape.io.internal.util.GroupUtil;
 import org.cytoscape.io.internal.util.ReadCache;
 import org.cytoscape.io.internal.util.SUIDUpdater;
-import org.cytoscape.io.internal.util.TypeUtils;
 import org.cytoscape.io.internal.util.cytables.model.VirtualColumn;
 import org.cytoscape.io.internal.util.session.SessionUtil;
 import org.cytoscape.io.read.CyNetworkReader;
@@ -664,49 +663,13 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 	
 	private void restoreEquations() {
 		for (CyNetwork network : networkLookup.values()) {
-			restoreEquations(network.getDefaultNetworkTable());
-			restoreEquations(network.getDefaultNodeTable());
-			restoreEquations(network.getDefaultEdgeTable());
+			EquationUtil.refreshEquations(network.getDefaultNetworkTable(), compiler);
+			EquationUtil.refreshEquations(network.getDefaultNodeTable(), compiler);
+			EquationUtil.refreshEquations(network.getDefaultEdgeTable(), compiler);
 		}
 	}
 
-	private void restoreEquations(CyTable table) {
-		Map<String, Class<?>> variableNameToTypeMap = new HashMap<String, Class<?>>();
-		for (CyColumn column : table.getColumns()) {
-			variableNameToTypeMap.put(column.getName(), column.getType() == Integer.class ? Long.class : column.getType());
-		}
-		
-		for (CyRow row : table.getAllRows()) {
-			for (CyColumn column : table.getColumns()) {
-				String name = column.getName();
-				Object value = row.getRaw(name);
-				if (!(value instanceof Equation)) {
-					continue;
-				}
-				Equation equation = (Equation) value;
-				final Class<?> columnType = column.getType();
-				final Class<?> listElementType = column.getListElementType();
-				final Class<?> expectedType = variableNameToTypeMap.remove(name);
-				try {
-					if (compiler.compile(equation.toString(), variableNameToTypeMap)) {
-						final Class<?> eqnType = compiler.getEquation().getType();
-						if(TypeUtils.eqnTypeIsCompatible(columnType, listElementType, eqnType))
-							equation = compiler.getEquation();
-						else {
-							final String errorMsg = "Equation result type is "
-								+ TypeUtils.getUnqualifiedName(eqnType) + ", column type is "
-								+ TypeUtils.getUnqualifiedName(columnType) + ".";
-							equation = compiler.getErrorEquation(equation.toString(), expectedType, errorMsg);
-						}
-						row.set(name, compiler.getEquation());
-					}
-				} catch (Exception e) {
-					logger.error("Unexpected error while restoring equation: " + equation.toString(), e);
-				}
-				variableNameToTypeMap.put(name, expectedType);
-			}
-		}
-	}
+	
 	
 	private void moveParentNetworkColumn() {
 		for (CyNetwork net : networks) {

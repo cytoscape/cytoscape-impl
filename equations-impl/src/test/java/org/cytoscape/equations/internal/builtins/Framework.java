@@ -25,19 +25,20 @@ package org.cytoscape.equations.internal.builtins;
  */
 
 
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.cytoscape.equations.EquationCompiler;
 import org.cytoscape.equations.Function;
-import org.cytoscape.equations.EquationParser;
 import org.cytoscape.equations.IdentDescriptor;
 import org.cytoscape.equations.Interpreter;
-
 import org.cytoscape.equations.internal.EquationCompilerImpl;
 import org.cytoscape.equations.internal.EquationParserImpl;
 import org.cytoscape.equations.internal.interpreter.InterpreterImpl;
+import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.event.DummyCyEventHelper;
 
 
 class Framework {
@@ -54,8 +55,10 @@ class Framework {
 	private static final EquationCompiler compiler;
 
 	static {
-		compiler = new EquationCompilerImpl(new EquationParserImpl());
-		compiler.getParser().registerFunction(new BadReturnFunction());
+		CyEventHelper eventHelper = new DummyCyEventHelper();
+		EquationParserImpl parser = new EquationParserImpl(eventHelper);
+		compiler = new EquationCompilerImpl(parser);
+		parser.registerFunctionInternal(new BadReturnFunction());
 	}
 
 	/**

@@ -25,21 +25,20 @@ package org.cytoscape.equations.internal.interpreter;
  */
 
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import junit.framework.*;
+import junit.framework.TestCase;
 
-import org.cytoscape.equations.EquationCompiler;
 import org.cytoscape.equations.EquationParser;
 import org.cytoscape.equations.Function;
 import org.cytoscape.equations.IdentDescriptor;
 import org.cytoscape.equations.Interpreter;
-
 import org.cytoscape.equations.internal.EquationCompilerImpl;
 import org.cytoscape.equations.internal.EquationParserImpl;
+import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.event.DummyCyEventHelper;
 
 
 public class InterpreterTest extends TestCase {
@@ -52,8 +51,10 @@ public class InterpreterTest extends TestCase {
 		public Object evaluateFunction(final Object[] args) { return new Integer(1); }
 		public List<Class<?>> getPossibleArgTypes(final Class<?>[] leadingArgs) { return null; }
 	}
-
-	private final EquationCompiler compiler = new EquationCompilerImpl(new EquationParserImpl());
+	
+	private final CyEventHelper eventHelper = new DummyCyEventHelper();
+	private final EquationParserImpl parser = new EquationParserImpl(eventHelper);
+	private final EquationCompilerImpl compiler = new EquationCompilerImpl(parser);
 	private final Interpreter interpreter = new InterpreterImpl();
 
 	public void testSimpleStringConcatExpr() throws Exception {
@@ -200,10 +201,9 @@ public class InterpreterTest extends TestCase {
 	}
 
 	public void testFunctionWithBadRuntimeReturnType() throws Exception {
-		final EquationParser eqnParser = compiler.getParser();
 		final Function badReturnFunction = new BadReturnFunction();
-		if (eqnParser.getFunction(badReturnFunction.getName()) == null) // Avoid duplicate registration!
-			eqnParser.registerFunction(badReturnFunction);
+		if (parser.getFunction(badReturnFunction.getName()) == null) // Avoid duplicate registration!
+			parser.registerFunctionInternal(badReturnFunction);
 
 		final Map<String, Class<?>> attribNameToTypeMap = new HashMap<String, Class<?>>();
 		assertTrue(compiler.compile("=BAD()", attribNameToTypeMap));

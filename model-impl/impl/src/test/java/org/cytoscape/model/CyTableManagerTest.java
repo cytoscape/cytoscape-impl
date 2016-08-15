@@ -30,7 +30,10 @@ import static org.junit.Assert.*;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.cytoscape.equations.EquationCompiler;
 import org.cytoscape.equations.Interpreter;
+import org.cytoscape.equations.internal.EquationCompilerImpl;
+import org.cytoscape.equations.internal.EquationParserImpl;
 import org.cytoscape.equations.internal.interpreter.InterpreterImpl;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.event.DummyCyEventHelper;
@@ -52,6 +55,7 @@ public class CyTableManagerTest extends AbstractCyTableManagerTest {
 	private CyEventHelper eventHelper = new DummyCyEventHelper();
 	private CyNetworkNaming namingUtil = mock(CyNetworkNaming.class);
 	private CyServiceRegistrar serviceRegistrar = mock(CyServiceRegistrar.class);
+	private EquationCompiler compiler = new EquationCompilerImpl(new EquationParserImpl(eventHelper));
 
 	@Before
 	public void setUp() {
@@ -60,7 +64,7 @@ public class CyTableManagerTest extends AbstractCyTableManagerTest {
 		
 		networkTableMgr = new CyNetworkTableManagerImpl();
 		networkManager = new CyNetworkManagerImpl(serviceRegistrar);
-		mgr = new CyTableManagerImpl(eventHelper, networkTableMgr, networkManager);
+		mgr = new CyTableManagerImpl(eventHelper, networkTableMgr, networkManager, compiler);
 		
 		assertNotNull(mgr);
 		assertEquals(0, mgr.getAllTables(true).size());

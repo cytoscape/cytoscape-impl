@@ -57,15 +57,15 @@ import java.util.Arrays;
 
 
 public class CyTableTest extends AbstractCyTableTest {
-	
 	private CyNetworkNaming namingUtil = mock(CyNetworkNaming.class);
 	private CyServiceRegistrar serviceRegistrar = mock(CyServiceRegistrar.class);
-	
-	private final EquationCompiler compiler = new EquationCompilerImpl(new EquationParserImpl());
+	private EquationCompiler compiler;
 
+	
 	@Before
 	public void setUp() {
 		eventHelper = new DummyCyEventHelper();
+		compiler = new EquationCompilerImpl(new EquationParserImpl(eventHelper));
 		
 		when(serviceRegistrar.getService(CyEventHelper.class)).thenReturn(eventHelper);
 		when(serviceRegistrar.getService(CyNetworkNaming.class)).thenReturn(namingUtil);
@@ -76,8 +76,8 @@ public class CyTableTest extends AbstractCyTableTest {
 		attrs = table.getRow(1L);
 		table2 = new CyTableImpl("marge", CyIdentifiable.SUID, Long.class, false, true, SavePolicy.SESSION_FILE,
 					 eventHelper, interpreter, 1000);
-		
-		CyTableManagerImpl tblMgr = new CyTableManagerImpl(eventHelper,new CyNetworkTableManagerImpl(), new CyNetworkManagerImpl(serviceRegistrar));
+		CyTableManagerImpl tblMgr = new CyTableManagerImpl(eventHelper,new CyNetworkTableManagerImpl(), 
+				new CyNetworkManagerImpl(serviceRegistrar), compiler);
 		tblMgr.addTable(table);
 		((CyTableImpl)table).handleEvent(new TableAddedEvent(tblMgr, table));
 		tblMgr.addTable(table2);

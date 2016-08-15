@@ -29,7 +29,13 @@ import static org.mockito.Mockito.withSettings;
  */
 
 
+
+
+
+import org.cytoscape.equations.EquationCompiler;
 import org.cytoscape.equations.Interpreter;
+import org.cytoscape.equations.internal.EquationCompilerImpl;
+import org.cytoscape.equations.internal.EquationParserImpl;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.event.DummyCyEventHelper;
 import org.cytoscape.model.internal.CyNetworkFactoryImpl;
@@ -57,6 +63,7 @@ public class NetworkTestSupport {
 	
 	private CyNetworkNaming namingUtil = mock(CyNetworkNaming.class, withSettings().stubOnly());
 	private CyServiceRegistrar serviceRegistrar = mock(CyServiceRegistrar.class, withSettings().stubOnly());
+	private EquationCompiler compiler = new EquationCompilerImpl(new EquationParserImpl(eventHelper));
 	
 	public NetworkTestSupport() {
 		// Mock objects.
@@ -65,7 +72,7 @@ public class NetworkTestSupport {
 		
 		networkTableMgr = new CyNetworkTableManagerImpl();
 		networkMgr = new CyNetworkManagerImpl(serviceRegistrar);
-		tableMgr = new CyTableManagerImpl(eventHelper, networkTableMgr, networkMgr); 
+		tableMgr = new CyTableManagerImpl(eventHelper, networkTableMgr, networkMgr, compiler); 
 		
 		final CyTableFactoryImpl tableFactory = new CyTableFactoryImpl(eventHelper, mock(Interpreter.class), serviceRegistrar);
 		networkFactory = new CyNetworkFactoryImpl(eventHelper, tableMgr, networkTableMgr, tableFactory, serviceRegistrar);

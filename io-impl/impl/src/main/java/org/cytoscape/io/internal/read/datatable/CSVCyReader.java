@@ -38,7 +38,7 @@ import java.util.regex.Pattern;
 
 import org.cytoscape.equations.Equation;
 import org.cytoscape.equations.EquationCompiler;
-import org.cytoscape.io.internal.util.TypeUtils;
+import org.cytoscape.equations.EquationUtil;
 import org.cytoscape.io.read.CyTableReader;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
@@ -128,12 +128,12 @@ public class CSVCyReader implements CyTableReader {
 						final Class<?> eqnType;
 						if (compiler.compile(values[i], variableNameToTypeMap)) {
 							eqnType = compiler.getEquation().getType();
-							if(TypeUtils.eqnTypeIsCompatible(columnType, columnListElementType, eqnType))
+							if(EquationUtil.eqnTypeIsCompatible(columnType, columnListElementType, eqnType))
 								equation = compiler.getEquation();
 							else {
 								final String errorMsg = "Equation result type is "
-									+ TypeUtils.getUnqualifiedName(eqnType) + ", column type is "
-									+ TypeUtils.getUnqualifiedName(columnType) + ".";
+									+ EquationUtil.getUnqualifiedName(eqnType) + ", column type is "
+									+ EquationUtil.getUnqualifiedName(columnType) + ".";
 								equation = compiler.getErrorEquation(values[i], expectedType, errorMsg);
 							}
 						} else {

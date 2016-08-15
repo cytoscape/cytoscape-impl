@@ -38,6 +38,8 @@ import org.cytoscape.command.util.EdgeList;
 import org.cytoscape.command.util.NodeList;
 import org.cytoscape.command.util.RowList;
 import org.cytoscape.equations.AbstractFunction;
+import org.cytoscape.equations.event.EquationFunctionAddedEvent;
+import org.cytoscape.equations.event.EquationFunctionRemovedEvent;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.filter.TransformerManager;
 import org.cytoscape.filter.model.Transformer;
@@ -222,6 +224,8 @@ public class CyAppAdapterImpl implements CySwingAppAdapter {
 	private Transformers transformers;
 	private TransformerViewFactory transformerViewFactory;
 	private CyJobManager cyjobManager;
+	private EquationFunctionAddedEvent equationFunctionAddedEvent;
+	private EquationFunctionRemovedEvent equationFunctionRemovedEvent;
 
 /// from core-task api
 	private LoadVizmapFileTaskFactory loadVizmapFileTaskFactory;

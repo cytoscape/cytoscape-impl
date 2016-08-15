@@ -64,6 +64,12 @@
 			<artifactId>application-api</artifactId>
 			<scope>provided</scope>
 		</dependency>
+		<dependency>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>event-api</artifactId>
+			<type>test-jar</type>
+			<scope>provided</scope>
+		</dependency>
 
 		<!-- For testing -->
 		<dependency>

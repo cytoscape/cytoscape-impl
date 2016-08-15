@@ -29,7 +29,10 @@ import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import org.cytoscape.equations.EquationCompiler;
 import org.cytoscape.equations.Interpreter;
+import org.cytoscape.equations.internal.EquationCompilerImpl;
+import org.cytoscape.equations.internal.EquationParserImpl;
 import org.cytoscape.equations.internal.interpreter.InterpreterImpl;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.event.DummyCyEventHelper;
@@ -70,10 +73,11 @@ public class TestCyNetworkFactory {
 		when(serviceRegistrar.getService(CyNetworkNaming.class)).thenReturn(namingUtil);
 		
 		Interpreter interp = new InterpreterImpl();
-		
+		EquationCompiler compiler = new EquationCompilerImpl(new EquationParserImpl(eh));
+
 		netTblMgr = new CyNetworkTableManagerImpl();
 		netMgr = new CyNetworkManagerImpl(serviceRegistrar);
-		tblMgr = new CyTableManagerImpl(eh, netTblMgr, netMgr);
+		tblMgr = new CyTableManagerImpl(eh, netTblMgr, netMgr, compiler);
 		tblFactory = new CyTableFactoryImpl(eh, interp, serviceRegistrar);
 		
 		netFactory = new CyNetworkFactoryImpl(eh, tblMgr, netTblMgr, tblFactory, serviceRegistrar);
@@ -134,12 +138,14 @@ public class TestCyNetworkFactory {
 	public static CyRootNetwork getPublicRootInstance(DummyCyEventHelper deh, SavePolicy policy) {
 		CyNetworkNaming namingUtil = mock(CyNetworkNaming.class);
 		CyServiceRegistrar serviceRegistrar = mock(CyServiceRegistrar.class);
+		EquationCompiler compiler = new EquationCompilerImpl(new EquationParserImpl(deh));
 		
 		when(serviceRegistrar.getService(CyEventHelper.class)).thenReturn(deh);
 		when(serviceRegistrar.getService(CyNetworkNaming.class)).thenReturn(namingUtil);
 		
 		final CyNetworkTableManagerImpl ntm = new CyNetworkTableManagerImpl();
-		final CyTableManagerImpl tm = new CyTableManagerImpl(deh, ntm, new CyNetworkManagerImpl(serviceRegistrar));
+		final CyTableManagerImpl tm = new CyTableManagerImpl(deh, ntm, 
+				new CyNetworkManagerImpl(serviceRegistrar), compiler);
 		
 		final Interpreter interp = new InterpreterImpl();
 		
@@ -155,12 +161,14 @@ public class TestCyNetworkFactory {
 		DummyCyEventHelper deh = new DummyCyEventHelper();
 		CyNetworkNaming namingUtil = mock(CyNetworkNaming.class);
 		CyServiceRegistrar serviceRegistrar = mock(CyServiceRegistrar.class);
+		EquationCompiler compiler = new EquationCompilerImpl(new EquationParserImpl(deh));
 		
 		when(serviceRegistrar.getService(CyEventHelper.class)).thenReturn(deh);
 		when(serviceRegistrar.getService(CyNetworkNaming.class)).thenReturn(namingUtil);
 		
 		CyNetworkTableManagerImpl ntm = new CyNetworkTableManagerImpl();
-		CyTableManagerImpl tm = new CyTableManagerImpl(deh, ntm, new CyNetworkManagerImpl(serviceRegistrar));
+		CyTableManagerImpl tm = new CyTableManagerImpl(deh, ntm, 
+				new CyNetworkManagerImpl(serviceRegistrar), compiler);
 		Interpreter interp = new InterpreterImpl();
 		CyRootNetworkImpl ar =
 				new CyRootNetworkImpl(deh, tm, ntm, new CyTableFactoryImpl(deh, interp, serviceRegistrar),

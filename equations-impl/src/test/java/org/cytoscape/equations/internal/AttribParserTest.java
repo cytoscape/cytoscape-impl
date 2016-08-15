@@ -27,13 +27,17 @@ package org.cytoscape.equations.internal;
 
 import java.util.HashMap;
 import java.util.Map;
+
 import junit.framework.*;
 
 import org.cytoscape.equations.EquationParser;
+import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.event.DummyCyEventHelper;
 
 
 public class AttribParserTest extends TestCase {
-	private final EquationParser parser = new EquationParserImpl();
+	private final CyEventHelper eventHelper = new DummyCyEventHelper();
+	private final EquationParser parser = new EquationParserImpl(eventHelper);
 
 	public void testSimpleExpr() throws Exception {
 		final Map<String, Class<?>> attribNameToTypeMap = new HashMap<String, Class<?>>();

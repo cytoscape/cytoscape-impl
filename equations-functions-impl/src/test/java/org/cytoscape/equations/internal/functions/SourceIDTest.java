@@ -38,12 +38,13 @@ import java.util.Map;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.equations.Equation;
-import org.cytoscape.equations.EquationCompiler;
 import org.cytoscape.equations.IdentDescriptor;
 import org.cytoscape.equations.Interpreter;
 import org.cytoscape.equations.internal.EquationCompilerImpl;
 import org.cytoscape.equations.internal.EquationParserImpl;
 import org.cytoscape.equations.internal.interpreter.InterpreterImpl;
+import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.event.DummyCyEventHelper;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
@@ -53,6 +54,7 @@ import org.junit.Test;
 
 public class SourceIDTest {
 	private CyApplicationManager applicationManager;
+	private CyEventHelper eventHelper;
 
 	@Before
 	public void init() {
@@ -75,12 +77,14 @@ public class SourceIDTest {
 
 		applicationManager = mock(CyApplicationManager.class);
 		when(applicationManager.getCurrentNetwork()).thenReturn(network);
+		eventHelper = new DummyCyEventHelper();
 	}
 
 	@Test
 	public void test() {
-		final EquationCompiler compiler = new EquationCompilerImpl(new EquationParserImpl());
-		compiler.getParser().registerFunction(new SourceID(applicationManager));
+		final EquationParserImpl parser = new EquationParserImpl(eventHelper);
+		final EquationCompilerImpl compiler = new EquationCompilerImpl(parser);
+		parser.registerFunctionInternal(new SourceID(applicationManager));
 		final Map<String, Class<?>> variableNameToTypeMap = new HashMap<String, Class<?>>();
 		if (!compiler.compile("=SOURCEID(11)", variableNameToTypeMap))
 			fail(compiler.getLastErrorMsg());

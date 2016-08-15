@@ -31,8 +31,8 @@ import org.cytoscape.equations.Interpreter;
 import org.cytoscape.equations.EquationCompiler;
 import org.cytoscape.equations.EquationParser;
 import org.cytoscape.equations.Function;
+import org.cytoscape.event.CyEventHelper;
 import org.osgi.framework.BundleContext;
-
 import org.cytoscape.service.util.AbstractCyActivator;
 
 import java.util.Properties;
@@ -46,9 +46,9 @@ public class CyActivator extends AbstractCyActivator {
 
 
 	public void start(BundleContext bc) {
-		
+		CyEventHelper eventHelper = getService(bc, CyEventHelper.class);
 		InterpreterImpl interpreter = new InterpreterImpl();
-		EquationParserImpl parser = new EquationParserImpl();
+		EquationParserImpl parser = new EquationParserImpl(eventHelper);
 		EquationCompilerImpl compiler = new EquationCompilerImpl(parser);
 		
 		registerService(bc,compiler,EquationCompiler.class, new Properties());

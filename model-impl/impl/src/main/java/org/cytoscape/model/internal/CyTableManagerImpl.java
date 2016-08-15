@@ -30,15 +30,21 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.cytoscape.equations.EquationCompiler;
+import org.cytoscape.equations.EquationUtil;
+import org.cytoscape.equations.event.EquationFunctionAddedEvent;
+import org.cytoscape.equations.event.EquationFunctionAddedListener;
+import org.cytoscape.equations.event.EquationFunctionRemovedEvent;
+import org.cytoscape.equations.event.EquationFunctionRemovedListener;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTable.Mutability;
-import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.events.NetworkAboutToBeDestroyedEvent;
 import org.cytoscape.model.events.NetworkAboutToBeDestroyedListener;
@@ -55,7 +61,8 @@ import org.slf4j.LoggerFactory;
  * An interface describing a factory used for managing {@link CyTable} objects.
  * This class will be provided as a service through Spring/OSGi.
  */
-public class CyTableManagerImpl implements CyTableManager, NetworkAboutToBeDestroyedListener {
+public class CyTableManagerImpl implements CyTableManager, NetworkAboutToBeDestroyedListener, 
+	EquationFunctionAddedListener, EquationFunctionRemovedListener {
 	
 	private static final Logger logger = LoggerFactory.getLogger(CyTableManagerImpl.class);
 	
@@ -66,13 +73,14 @@ public class CyTableManagerImpl implements CyTableManager, NetworkAboutToBeDestr
 	private final CyEventHelper eventHelper;
 	private final CyNetworkTableManager networkTableManager;
 	private final CyNetworkManager networkManager;
+	private final EquationCompiler compiler;
 	
 	private final Map<Long, CyTable> tables;
 
 	private final Object lock = new Object();
 
 	public CyTableManagerImpl(final CyEventHelper eventHelper, final CyNetworkTableManager networkTableManager,
-			final CyNetworkManager networkManager) {
+			final CyNetworkManager networkManager, final EquationCompiler compiler) {
 		if(eventHelper == null)
 			throw new IllegalArgumentException("eventHelper is null.");
 		if(networkTableManager == null)
@@ -83,6 +91,7 @@ public class CyTableManagerImpl implements CyTableManager, NetworkAboutToBeDestr
 		this.eventHelper = eventHelper;
 		this.networkTableManager = networkTableManager;
 		this.networkManager = networkManager;
+		this.compiler = compiler;
 
 		tables = new HashMap<Long, CyTable>();
 	}
@@ -189,6 +198,17 @@ public class CyTableManagerImpl implements CyTableManager, NetworkAboutToBeDestr
 			for (CyTable table : networkTableManager.getTables(network, type).values())
 				deleteTableInternal(table.getSUID(), true);
 	}
+	
+	@Override
+	public void handleEvent(EquationFunctionRemovedEvent e) {
+		refreshTableEquations();
+	}
+
+
+	@Override
+	public void handleEvent(EquationFunctionAddedEvent e) {
+		refreshTableEquations();
+	}
 
 	@Override
 	public Set<CyTable> getGlobalTables() {
@@ -226,5 +246,12 @@ public class CyTableManagerImpl implements CyTableManager, NetworkAboutToBeDestr
 		}
 
 		return localTables;
+	}
+	
+	private void refreshTableEquations() {
+		Set<CyTable> tables = getAllTables(true);
+		for(CyTable table: tables) {
+			EquationUtil.refreshEquations(table, compiler);
+		}
 	}
 }

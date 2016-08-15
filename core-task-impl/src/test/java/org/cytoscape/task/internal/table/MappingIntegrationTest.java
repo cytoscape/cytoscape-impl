@@ -39,6 +39,9 @@ import java.util.Properties;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.ding.NetworkViewTestSupport;
+import org.cytoscape.equations.EquationCompiler;
+import org.cytoscape.equations.internal.EquationCompilerImpl;
+import org.cytoscape.equations.internal.EquationParserImpl;
 import org.cytoscape.equations.internal.interpreter.InterpreterImpl;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.event.DummyCyEventHelper;
@@ -94,12 +97,13 @@ public class MappingIntegrationTest {
     private CyServiceRegistrar serviceRegistrar = mock(CyServiceRegistrar.class);
 	private CyNetworkManagerImpl netMgr = new CyNetworkManagerImpl(serviceRegistrar);
 	private final CyRootNetworkManagerImpl rootNetMgr = new CyRootNetworkManagerImpl();
+	private EquationCompiler compiler = new EquationCompilerImpl(new EquationParserImpl(eventHelper));
 	
 	private SyncTunableMutator stm = new SyncTunableMutator();
 	SyncTunableHandlerFactory syncTunableHandlerFactory = new SyncTunableHandlerFactory();
 
 	private TunableSetterImpl ts = new TunableSetterImpl(new SyncTunableMutatorFactory(syncTunableHandlerFactory),  new TunableRecorderManager());
-	CyTableManager tabMgr = new CyTableManagerImpl(eventHelper, new CyNetworkTableManagerImpl(), netMgr);
+	CyTableManager tabMgr = new CyTableManagerImpl(eventHelper, new CyNetworkTableManagerImpl(), netMgr, compiler);
 	Properties syncFactoryProp = new Properties();
 	
 	private CyGroupManager groupMgr = mock(CyGroupManager.class);

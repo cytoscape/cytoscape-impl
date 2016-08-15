@@ -28,6 +28,9 @@ package org.cytoscape.model;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import org.cytoscape.equations.EquationCompiler;
+import org.cytoscape.equations.internal.EquationCompilerImpl;
+import org.cytoscape.equations.internal.EquationParserImpl;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.events.TableAddedEvent;
@@ -72,7 +75,9 @@ public class TableTestSupportTest extends AbstractCyTableTest {
 		table = factory.createTable(Integer.toString( rand.nextInt(10000) ), CyIdentifiable.SUID, Long.class, false, true);
 		table2 = factory.createTable(Integer.toString( rand.nextInt(10000) ), CyIdentifiable.SUID, Long.class, false, true);
 		attrs = table.getRow(1l);
-		CyTableManagerImpl tblMgr = new CyTableManagerImpl(eventHelper,new CyNetworkTableManagerImpl(), new CyNetworkManagerImpl(serviceRegistrar));
+		EquationCompiler compiler = new EquationCompilerImpl(new EquationParserImpl(eventHelper));
+		CyTableManagerImpl tblMgr = new CyTableManagerImpl(eventHelper,new CyNetworkTableManagerImpl(), 
+				new CyNetworkManagerImpl(serviceRegistrar), compiler);
 		tblMgr.addTable(table);
 		((CyTableImpl)table).handleEvent(new TableAddedEvent(tblMgr, table));
 		tblMgr.addTable(table2);
