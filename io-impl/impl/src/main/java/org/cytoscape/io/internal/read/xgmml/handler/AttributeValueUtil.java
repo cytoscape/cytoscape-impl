@@ -44,6 +44,7 @@ import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.VirtualColumnInfo;
+import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.Attributes;
@@ -244,6 +245,19 @@ public class AttributeValueUtil {
         		column = srcColumn;
         		row = srcRow;
         	}
+        } else {
+        	// Also check if the column exists in a network's local table
+        	final Class<? extends CyIdentifiable> tableType;
+        	
+        	if (curElement instanceof CyNode)
+        		tableType = CyNode.class;
+        	else if (curElement instanceof CyEdge)
+        		tableType = CyEdge.class;
+        	else
+        		tableType = CyNetwork.class;
+        	
+        	if (existsInLocalTable(name, tableType, manager.getRootNetwork()))
+        		row = curNet.getRow(curElement, CyNetwork.LOCAL_ATTRS);
         }
         
         Object value = null;
@@ -354,6 +368,38 @@ public class AttributeValueUtil {
             }
         }
     }
+    
+	private static boolean existsInLocalTable(final String columnName, final Class<? extends CyIdentifiable> tableType,
+			final CyRootNetwork rootNetwork) {
+		final List<CyTable> tables = getLocalTables(tableType, rootNetwork);
+		
+		for (CyTable table: tables) {
+			final CyColumn column = table.getColumn(columnName);
+			
+			if (column != null)
+				return true;
+		}
+		
+		return false;
+	}
+    
+    private static List<CyTable> getLocalTables(final Class<? extends CyIdentifiable> tableType,
+    		final CyRootNetwork rootNetwork) {
+		final List<CyTable> tables = new ArrayList<>();
+		final CyTable rootTbl = rootNetwork.getTable(tableType, CyNetwork.LOCAL_ATTRS);
+		
+		if (rootTbl != null)
+			tables.add(rootTbl);
+		
+		for (CyNetwork sub : rootNetwork.getSubNetworkList()) {
+			final CyTable netTbl = sub.getTable(tableType, CyNetwork.LOCAL_ATTRS);
+			
+			if (netTbl != null)
+				tables.add(netTbl);
+		}
+		
+		return tables;
+	}
     
     public static Long getIdFromXLink(String href) {
 		Matcher matcher = XLINK_PATTERN.matcher(href);
