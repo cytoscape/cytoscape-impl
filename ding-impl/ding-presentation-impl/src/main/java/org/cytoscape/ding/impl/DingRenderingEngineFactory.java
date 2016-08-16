@@ -26,8 +26,6 @@ package org.cytoscape.ding.impl;
 
 
 import java.awt.BorderLayout;
-import java.lang.ref.Reference;
-import java.lang.ref.WeakReference;
 
 import javax.swing.JComponent;
 import javax.swing.RootPaneContainer;
@@ -126,12 +124,10 @@ public class DingRenderingEngineFactory implements RenderingEngineFactory<CyNetw
 			throw new IllegalArgumentException("Container is null.");
 
 		if (view == null)
-			throw new IllegalArgumentException(
-					"Cannot create presentation for null view model.");
+			throw new IllegalArgumentException("Cannot create presentation for null view model.");
 
 		if (view instanceof CyNetworkView == false)
-			throw new IllegalArgumentException(
-					"Ding accepts CyNetworkView only.");
+			throw new IllegalArgumentException("Ding accepts CyNetworkView only.");
 
 		final CyNetworkView targetView = (CyNetworkView) view;
 		DGraphView dgv = null;
@@ -146,8 +142,6 @@ public class DingRenderingEngineFactory implements RenderingEngineFactory<CyNetw
 				dgv.registerServices();
 			}
 			
-			vtfListener.viewMap.put(targetView, new WeakReference<DGraphView>(dgv));
-
 			if (presentationContainer instanceof RootPaneContainer) {
 				final RootPaneContainer container = (RootPaneContainer) presentationContainer;
 				final InternalFrameComponent ifComp = new InternalFrameComponent(container.getLayeredPane(), dgv);
@@ -179,14 +173,6 @@ public class DingRenderingEngineFactory implements RenderingEngineFactory<CyNetw
 //			gv.updateView();
 //	}
 
-	public DGraphView getGraphView(CyNetworkView cnv) {
-		Reference<DGraphView> reference = vtfListener.viewMap.get(cnv);
-		if (reference == null) {
-			return null;
-		}
-		return reference.get();
-	}
-	
 	
 	@Override
 	public VisualLexicon getVisualLexicon() {
