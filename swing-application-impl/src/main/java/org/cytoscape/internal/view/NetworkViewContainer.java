@@ -287,6 +287,7 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 		getRootPane().getContentPane().removeAll();
 		
 		getBirdsEyeViewPanel().dispose();
+		gridViewTogglePanel.dispose();
 	}
 	
 	private void init() {

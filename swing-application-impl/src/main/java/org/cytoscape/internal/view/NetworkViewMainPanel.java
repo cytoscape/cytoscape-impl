@@ -166,8 +166,7 @@ public class NetworkViewMainPanel extends JPanel {
 			public void focusLost(FocusEvent e) {
 				changeCurrentViewTitle(vc);
 				vc.requestFocusInWindow();
-				Toolkit.getDefaultToolkit().addAWTEventListener(mousePressedAWTEventListener,
-						MouseEvent.MOUSE_EVENT_MASK);
+				Toolkit.getDefaultToolkit().addAWTEventListener(mousePressedAWTEventListener, MouseEvent.MOUSE_EVENT_MASK);
 			}
 			@Override
 			public void focusGained(FocusEvent e) {
