@@ -1,5 +1,9 @@
 package org.cytoscape.model;
 
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.withSettings;
+
 /*
  * #%L
  * Cytoscape Model Impl (model-impl)
@@ -28,19 +32,15 @@ package org.cytoscape.model;
 import org.cytoscape.equations.Interpreter;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.event.DummyCyEventHelper;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNetworkFactory;
-import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.model.internal.CyNetworkFactoryImpl;
 import org.cytoscape.model.internal.CyNetworkManagerImpl;
 import org.cytoscape.model.internal.CyNetworkTableManagerImpl;
+import org.cytoscape.model.internal.CyRootNetworkManagerImpl;
 import org.cytoscape.model.internal.CyTableFactoryImpl;
 import org.cytoscape.model.internal.CyTableManagerImpl;
-import org.cytoscape.model.internal.CyRootNetworkManagerImpl;
+import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.CyNetworkNaming;
-
-import static org.mockito.Mockito.*;
 
 
 /**
@@ -55,8 +55,8 @@ public class NetworkTestSupport {
 	protected CyRootNetworkManager rootNetworkManager;
 	protected CyNetworkManager networkMgr;
 	
-	private CyNetworkNaming namingUtil = mock(CyNetworkNaming.class);
-	private CyServiceRegistrar serviceRegistrar = mock(CyServiceRegistrar.class);
+	private CyNetworkNaming namingUtil = mock(CyNetworkNaming.class, withSettings().stubOnly());
+	private CyServiceRegistrar serviceRegistrar = mock(CyServiceRegistrar.class, withSettings().stubOnly());
 	
 	public NetworkTestSupport() {
 		// Mock objects.
@@ -91,4 +91,5 @@ public class NetworkTestSupport {
 	public CyNetworkManager getNetworkManager() {
 		return networkMgr;
 	}
+	
 }
