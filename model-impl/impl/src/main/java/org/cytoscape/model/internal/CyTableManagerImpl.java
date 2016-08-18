@@ -34,8 +34,6 @@ import org.cytoscape.equations.EquationCompiler;
 import org.cytoscape.equations.EquationUtil;
 import org.cytoscape.equations.event.EquationFunctionAddedEvent;
 import org.cytoscape.equations.event.EquationFunctionAddedListener;
-import org.cytoscape.equations.event.EquationFunctionRemovedEvent;
-import org.cytoscape.equations.event.EquationFunctionRemovedListener;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
@@ -61,8 +59,7 @@ import org.slf4j.LoggerFactory;
  * An interface describing a factory used for managing {@link CyTable} objects.
  * This class will be provided as a service through Spring/OSGi.
  */
-public class CyTableManagerImpl implements CyTableManager, NetworkAboutToBeDestroyedListener, 
-	EquationFunctionAddedListener, EquationFunctionRemovedListener {
+public class CyTableManagerImpl implements CyTableManager, NetworkAboutToBeDestroyedListener, EquationFunctionAddedListener {
 	
 	private static final Logger logger = LoggerFactory.getLogger(CyTableManagerImpl.class);
 	
@@ -199,12 +196,6 @@ public class CyTableManagerImpl implements CyTableManager, NetworkAboutToBeDestr
 				deleteTableInternal(table.getSUID(), true);
 	}
 	
-	@Override
-	public void handleEvent(EquationFunctionRemovedEvent e) {
-		refreshTableEquations();
-	}
-
-
 	@Override
 	public void handleEvent(EquationFunctionAddedEvent e) {
 		refreshTableEquations();

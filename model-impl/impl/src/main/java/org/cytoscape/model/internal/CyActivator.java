@@ -72,7 +72,6 @@ public class CyActivator extends AbstractCyActivator {
 		registerAllServices(bc,cyNetworkTableManager, new Properties());
 		registerService(bc,cyTableManager,NetworkAboutToBeDestroyedListener.class, new Properties());
 		registerService(bc,cyTableManager,EquationFunctionAddedListener.class, new Properties());
-		registerService(bc,cyTableManager,EquationFunctionRemovedListener.class, new Properties());
 		registerService(bc,cyNetworkManager,CyNetworkManager.class, new Properties());
 	}
 }
