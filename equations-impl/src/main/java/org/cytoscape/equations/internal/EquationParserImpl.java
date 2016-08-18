@@ -142,7 +142,7 @@ public class EquationParserImpl implements EquationParser {
 	@Override
 	public void registerFunction(Function func) throws IllegalArgumentException {
 		registerFunctionInternal(func);
-		eventHelper.fireEvent(new EquationFunctionAddedEvent(func));
+		eventHelper.addEventPayload(this, func, EquationFunctionAddedEvent.class);
 	}
 
 	public void registerFunctionInternal(final Function func) throws IllegalArgumentException {
@@ -669,7 +669,7 @@ public class EquationParserImpl implements EquationParser {
 	public void registerFunctionService(final Function function, final Map<?, ?> props) {
 		if(function != null) {
 			registerFunctionInternal(function);
-			eventHelper.fireEvent(new EquationFunctionAddedEvent(function));
+			eventHelper.addEventPayload(this, function, EquationFunctionAddedEvent.class);
 			logger.info("New Function Registered: " + function.getName());
 		}
 	}
@@ -677,7 +677,7 @@ public class EquationParserImpl implements EquationParser {
 	public void unregisterFunctionService(final Function function, final Map<?, ?> props) {
 		if(function != null) {
 			registeredFunctions.remove(function);
-			eventHelper.fireEvent(new EquationFunctionRemovedEvent(function));
+			eventHelper.addEventPayload(this, function, EquationFunctionRemovedEvent.class);
 		}
 	}
 }
