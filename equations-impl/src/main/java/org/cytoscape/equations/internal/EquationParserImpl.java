@@ -677,6 +677,7 @@ public class EquationParserImpl implements EquationParser {
 	public void unregisterFunctionService(final Function function, final Map<?, ?> props) {
 		if(function != null) {
 			registeredFunctions.remove(function);
+			nameToFunctionMap.remove(function.getName().toUpperCase(), function);
 			eventHelper.addEventPayload(this, function, EquationFunctionRemovedEvent.class);
 		}
 	}
