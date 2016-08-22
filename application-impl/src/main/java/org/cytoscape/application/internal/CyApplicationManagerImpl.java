@@ -1,29 +1,5 @@
 package org.cytoscape.application.internal;
 
-/*
- * #%L
- * Cytoscape Application Impl (application-impl)
- * $Id:$
- * $HeadURL:$
- * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * #L%
- */
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -63,6 +39,30 @@ import org.cytoscape.view.presentation.events.RenderingEngineAboutToBeRemovedLis
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/*
+ * #%L
+ * Cytoscape Application Impl (application-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
+
 /**
  * An implementation of CyApplicationManager.
  */
@@ -82,14 +82,12 @@ public class CyApplicationManagerImpl implements CyApplicationManager,
 	private Map<String, NetworkViewRenderer> renderers;
 	
 	private final CyServiceRegistrar serviceRegistrar;
-	private final Properties props;
 	private final Object lock = new Object();
 
 	private NetworkViewRenderer defaultRenderer;
 
-	public CyApplicationManagerImpl(final CyServiceRegistrar serviceRegistrar, CyProperty<Properties> cyProperty) {
+	public CyApplicationManagerImpl(final CyServiceRegistrar serviceRegistrar) {
 		this.serviceRegistrar = serviceRegistrar;
-		this.props = cyProperty.getProperties();
 		
 		selectedNetworkViews = new LinkedList<>();
 		renderers = new LinkedHashMap<>() ;
@@ -409,21 +407,30 @@ public class CyApplicationManagerImpl implements CyApplicationManager,
 	
 	@Override
 	public File getCurrentDirectory() {
+		final Properties props = (Properties) serviceRegistrar
+				.getService(CyProperty.class, "(cyPropertyName=cytoscape3.props)").getProperties();
 		String lastDir = props.getProperty(LAST_DIRECTORY);
 		File dir = (lastDir != null) ? new File(lastDir) : null;
+		
 		if (dir == null || !dir.exists() || !dir.isDirectory()) {
 			dir = new File(System.getProperty("user.dir"));
-			if(dir != null) // if path exists but is not valid, remove the property
+			
+			if (dir != null) // if path exists but is not valid, remove the property
 				props.remove(LAST_DIRECTORY);
 		}
+		
 		return dir;
 	}
 	
 	@Override
 	public boolean setCurrentDirectory(File dir) {
-		if(dir == null || !dir.exists() || !dir.isDirectory()) 
+		if (dir == null || !dir.exists() || !dir.isDirectory())
 			return false;
+		
+		final Properties props = (Properties) serviceRegistrar
+				.getService(CyProperty.class, "(cyPropertyName=cytoscape3.props)").getProperties();
 		props.setProperty(LAST_DIRECTORY, dir.getAbsolutePath());
+		
 		return true;
 	}
 	

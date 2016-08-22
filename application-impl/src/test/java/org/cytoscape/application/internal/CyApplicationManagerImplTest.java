@@ -79,8 +79,9 @@ public class CyApplicationManagerImplTest {
 		
 		when(serviceRegistrar.getService(CyEventHelper.class)).thenReturn(evtHelper);
 		when(serviceRegistrar.getService(CyNetworkManager.class)).thenReturn(netMgr);
+		when(serviceRegistrar.getService(CyProperty.class, "(cyPropertyName=cytoscape3.props)")).thenReturn(cyProperty);
 		
-		appMgr = new CyApplicationManagerImpl(serviceRegistrar, cyProperty);
+		appMgr = new CyApplicationManagerImpl(serviceRegistrar);
 	}
 
 	@Test
