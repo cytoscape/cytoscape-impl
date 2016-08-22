@@ -1,12 +1,23 @@
 package org.cytoscape.edge.bundler.internal;
 
+import static org.cytoscape.work.ServiceProperties.ENABLE_FOR;
+import static org.cytoscape.work.ServiceProperties.MENU_GRAVITY;
+import static org.cytoscape.work.ServiceProperties.PREFERRED_MENU;
+import static org.cytoscape.work.ServiceProperties.TITLE;
+
+import java.util.Properties;
+
+import org.cytoscape.service.util.AbstractCyActivator;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.osgi.framework.BundleContext;
+
 /*
  * #%L
  * Cytoscape Edge Bundler Impl (edge-bundler-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,57 +35,38 @@ package org.cytoscape.edge.bundler.internal;
  * #L%
  */
 
-import org.cytoscape.task.NetworkTaskFactory;
-import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
-import org.cytoscape.view.vizmap.VisualMappingManager;
-import org.cytoscape.view.presentation.property.values.HandleFactory;
-import org.cytoscape.view.presentation.property.values.BendFactory;
-import org.cytoscape.service.util.AbstractCyActivator;
-import java.util.Properties;
-import org.osgi.framework.BundleContext;
-import org.cytoscape.application.CyApplicationManager;
-
-import static org.cytoscape.work.ServiceProperties.*;
-
-
 public class CyActivator extends AbstractCyActivator {
-	public CyActivator() {
-		super();
-	}
-
+	
+	@Override
 	public void start(BundleContext bc) {
-
-		HandleFactory hf = getService(bc, HandleFactory.class);
-		BendFactory bf = getService(bc, BendFactory.class);
-		VisualMappingManager vmm = getService(bc, VisualMappingManager.class);
-		VisualMappingFunctionFactory discreteFactory = getService(bc,VisualMappingFunctionFactory.class,"(mapping.type=discrete)");
-		CyApplicationManager cam = getService(bc, CyApplicationManager.class);
+		final CyServiceRegistrar serviceRegistrar = getService(bc, CyServiceRegistrar.class);
 		
-		EdgeBundlerTaskFactory edgeBundlerTaskFactory = new EdgeBundlerTaskFactory(hf, bf, vmm, discreteFactory, 0, cam);
-		Properties edgeBundlerTaskFactoryProps = new Properties();
-		edgeBundlerTaskFactoryProps.setProperty(ENABLE_FOR, "networkAndView");
-		edgeBundlerTaskFactoryProps.setProperty(PREFERRED_MENU,"Layout.Bundle Edges");
-		edgeBundlerTaskFactoryProps.setProperty(MENU_GRAVITY,"11.0");
-		edgeBundlerTaskFactoryProps.setProperty(TITLE,"All Nodes and Edges");
-		registerService(bc,edgeBundlerTaskFactory,NetworkTaskFactory.class, edgeBundlerTaskFactoryProps);
-		
-		
-		edgeBundlerTaskFactory = new EdgeBundlerTaskFactory(hf, bf, vmm, discreteFactory, 1, cam);
-		edgeBundlerTaskFactoryProps = new Properties();
-		edgeBundlerTaskFactoryProps.setProperty(ENABLE_FOR, "networkAndView");
-		edgeBundlerTaskFactoryProps.setProperty(PREFERRED_MENU,"Layout.Bundle Edges");
-		edgeBundlerTaskFactoryProps.setProperty(MENU_GRAVITY,"12.0");
-		edgeBundlerTaskFactoryProps.setProperty(TITLE,"Selected Nodes Only");
-		registerService(bc,edgeBundlerTaskFactory,NetworkTaskFactory.class, edgeBundlerTaskFactoryProps);
-		
-		
-		edgeBundlerTaskFactory = new EdgeBundlerTaskFactory(hf, bf, vmm, discreteFactory, 2, cam);
-		edgeBundlerTaskFactoryProps = new Properties();
-		edgeBundlerTaskFactoryProps.setProperty(ENABLE_FOR, "networkAndView");
-		edgeBundlerTaskFactoryProps.setProperty(PREFERRED_MENU,"Layout.Bundle Edges");
-		edgeBundlerTaskFactoryProps.setProperty(MENU_GRAVITY,"13.0");
-		edgeBundlerTaskFactoryProps.setProperty(TITLE,"Selected Edges Only");
-		registerService(bc,edgeBundlerTaskFactory,NetworkTaskFactory.class, edgeBundlerTaskFactoryProps);
+		{
+			EdgeBundlerTaskFactory factory = new EdgeBundlerTaskFactory(0, serviceRegistrar);
+			Properties props = new Properties();
+			props.setProperty(ENABLE_FOR, "networkAndView");
+			props.setProperty(PREFERRED_MENU, "Layout.Bundle Edges");
+			props.setProperty(MENU_GRAVITY, "11.0");
+			props.setProperty(TITLE, "All Nodes and Edges");
+			registerAllServices(bc, factory, props);
+		}
+		{
+			EdgeBundlerTaskFactory factory = new EdgeBundlerTaskFactory(1, serviceRegistrar);
+			Properties props = new Properties();
+			props.setProperty(ENABLE_FOR, "networkAndView");
+			props.setProperty(PREFERRED_MENU, "Layout.Bundle Edges");
+			props.setProperty(MENU_GRAVITY, "12.0");
+			props.setProperty(TITLE, "Selected Nodes Only");
+			registerAllServices(bc, factory, props);
+		}
+		{
+			EdgeBundlerTaskFactory factory = new EdgeBundlerTaskFactory(2, serviceRegistrar);
+			Properties props = new Properties();
+			props.setProperty(ENABLE_FOR, "networkAndView");
+			props.setProperty(PREFERRED_MENU, "Layout.Bundle Edges");
+			props.setProperty(MENU_GRAVITY, "13.0");
+			props.setProperty(TITLE, "Selected Edges Only");
+			registerAllServices(bc, factory, props);
+		}
 	}
 }
-
