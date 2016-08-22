@@ -2,6 +2,7 @@ package org.cytoscape.command.internal;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
 
 import java.util.List;
 
@@ -9,11 +10,44 @@ import org.cytoscape.command.StringToModel;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.NetworkTestSupport;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.junit.Before;
 import org.junit.Test;
+
+/*
+ * #%L
+ * Cytoscape Command Executor Impl (command-executor-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
 
 public class StringToModelTest {
 	
-	// MKTODO still need to test SUID
+	private CyServiceRegistrar serviceRegistrar;
+	
+	@Before
+    public void setUp() throws Exception {
+		serviceRegistrar = mock(CyServiceRegistrar.class);
+    }
+	
+	// TODO still need to test SUID
 	@Test
 	public void testNodeListParsing() {
 		NetworkTestSupport networkTestSupport = new NetworkTestSupport();
@@ -35,7 +69,7 @@ public class StringToModelTest {
 		network.getRow(n6).set("name", "node\\:6");
 		network.getRow(n7).set("name", "name:7");
 		
-		StringToModel stringToModel = new StringToModelImpl(null, null, null, null);
+		StringToModel stringToModel = new StringToModelImpl(serviceRegistrar);
 		List<CyNode> nodes;
 		
 		nodes = stringToModel.getNodeList(network, "node 1,node 2");

@@ -1,29 +1,5 @@
 package org.cytoscape.command.internal;
 
-/*
- * #%L
- * Cytoscape Command Executor Impl (command-executor-impl)
- * $Id:$
- * $HeadURL:$
- * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * #L%
- */
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -42,16 +18,37 @@ import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.CyTableUtil;
-import org.cytoscape.view.model.CyNetworkViewManager;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class StringToModelImpl implements StringToModel {
-	private final CyApplicationManager appMgr;
-	private final CyNetworkManager netMgr;
-	private final CyNetworkViewManager netViewMgr;
-	private final CyTableManager tableMgr;
+/*
+ * #%L
+ * Cytoscape Command Executor Impl (command-executor-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
 
+public class StringToModelImpl implements StringToModel {
+
+	@SuppressWarnings("unused")
 	private final static Logger logger = LoggerFactory.getLogger(StringToModelImpl.class);
 
 	private final static String ALL = "all";
@@ -61,28 +58,31 @@ public class StringToModelImpl implements StringToModel {
 	private final static String SUID = "suid";
 	private final static String UNSELECTED = "unselected";
 	
-	public StringToModelImpl(CyApplicationManager appMgr, CyNetworkManager netMgr, CyTableManager tableMgr,
-	                         CyNetworkViewManager netViewMgr) {
-		this.appMgr = appMgr;
-		this.netMgr = netMgr;
-		this.netViewMgr = netViewMgr;
-		this.tableMgr = tableMgr;
+	private final CyServiceRegistrar serviceRegistrar;
+	
+	public StringToModelImpl(final CyServiceRegistrar serviceRegistrar) { 
+		this.serviceRegistrar = serviceRegistrar;
 	}
 
 	@Override
 	public CyNetwork getNetwork(String strNet) {
 		if (strNet == null || strNet.length() == 0 || strNet.equalsIgnoreCase(CURRENT))
-			return appMgr.getCurrentNetwork();
+			return serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetwork();
 
 		// Look for any special prefix
-		String column = CyNetwork.NAME;
+		final CyNetworkManager netMgr = serviceRegistrar.getService(CyNetworkManager.class);
 		String[] splitString = strNet.split(":");
+		
 		if (splitString.length > 1) {
 			if (SUID.equalsIgnoreCase(splitString[0])) {
 				Long suid = getLong(splitString[1]);
-				if (suid == null) return null;
+				
+				if (suid == null)
+					return null;
+
 				return netMgr.getNetwork(suid);
 			}
+			
 			if (NAME.equalsIgnoreCase(splitString[0]))
 				strNet = splitString[1];
 		}
@@ -91,38 +91,39 @@ public class StringToModelImpl implements StringToModel {
 			if (strNet.equalsIgnoreCase(net.getRow(net).get(CyNetwork.NAME, String.class)))
 				return net;
 		}
+		
 		return null;
 	}
 	
 	@Override
 	public CyTable getTable(String strTable) {
 		if (strTable == null || strTable.length() == 0 || strTable.equalsIgnoreCase(CURRENT))
-			return appMgr.getCurrentTable();
+			return serviceRegistrar.getService(CyApplicationManager.class).getCurrentTable();
 
 		// Look for any special prefix
 		CyNetwork network;
 		String[] splitString = strTable.split(":");
+		
 		if (splitString.length > 1) {
 			if (splitString[0].equalsIgnoreCase("node")) {
 				network = getNetwork(splitString[1]);
-				if(network != null)
+				if (network != null)
 					return network.getDefaultNodeTable();
 			}
 			if (splitString[0].equalsIgnoreCase("edge")) {
 				network = getNetwork(splitString[1]);
-				if(network != null)
+				if (network != null)
 					return network.getDefaultEdgeTable();
 			}
 			if (splitString[0].equalsIgnoreCase("network")) {
 				network = getNetwork(splitString[1]);
-				if(network != null)
+				if (network != null)
 					return network.getDefaultNetworkTable();
 			}
-		}
-		else
-		{
-			for (CyTable tab :  tableMgr.getGlobalTables())
-			{
+		} else {
+			final CyTableManager tableMgr = serviceRegistrar.getService(CyTableManager.class);
+			
+			for (CyTable tab : tableMgr.getGlobalTables()) {
 				if (tab.getTitle().contains(strTable))
 					return tab;
 			}
