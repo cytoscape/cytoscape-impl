@@ -1,12 +1,22 @@
 package org.cytoscape.io.datasource.internal;
 
+import java.util.Properties;
+import java.util.Set;
+
+import org.cytoscape.io.datasource.DataSource;
+import org.cytoscape.io.datasource.DataSourceManager;
+import org.cytoscape.io.datasource.internal.bookmarks.BookmarkDataSourceBuilder;
+import org.cytoscape.service.util.AbstractCyActivator;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.osgi.framework.BundleContext;
+
 /*
  * #%L
  * Cytoscape Datasource Impl (datasource-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,36 +34,20 @@ package org.cytoscape.io.datasource.internal;
  * #L%
  */
 
-import java.util.Properties;
-import java.util.Set;
-
-import org.cytoscape.io.datasource.internal.bookmarks.BookmarkDataSourceBuilder;
-import org.cytoscape.io.datasource.DataSource;
-import org.cytoscape.io.datasource.DataSourceManager;
-import org.cytoscape.property.CyProperty;
-import org.cytoscape.property.bookmark.Bookmarks;
-import org.cytoscape.property.bookmark.BookmarksUtil;
-import org.cytoscape.service.util.AbstractCyActivator;
-import org.osgi.framework.BundleContext;
-
 public class CyActivator extends AbstractCyActivator {
-	public CyActivator() {
-		super();
-	}
 
+	@Override
 	public void start(BundleContext bc) {
-		// Import required Services
-		CyProperty<Bookmarks> bookmarkServiceRef = getService(bc, CyProperty.class, "(cyPropertyName=bookmarks)");
-		BookmarksUtil bookmarksUtilServiceRef = getService(bc, BookmarksUtil.class);
+		final CyServiceRegistrar serviceRegistrar = getService(bc, CyServiceRegistrar.class);
 
 		DataSourceManager dataSourceManager = new DataSourceManagerImpl();
 		registerService(bc, dataSourceManager, DataSourceManager.class, new Properties());
 		registerServiceListener(bc, dataSourceManager, "addDataSource", "removeDataSource", DataSource.class);
 
-		BookmarkDataSourceBuilder bkBuilder = new BookmarkDataSourceBuilder(bookmarkServiceRef, bookmarksUtilServiceRef);
+		BookmarkDataSourceBuilder bkBuilder = new BookmarkDataSourceBuilder(serviceRegistrar);
 		final Set<DataSource> bkDataSources = bkBuilder.getDataSources();
+		
 		for (final DataSource ds : bkDataSources)
 			registerService(bc, ds, DataSource.class, new Properties());
-
 	}
 }
