@@ -1,12 +1,36 @@
 package org.cytoscape.editor.internal;
 
+import static org.cytoscape.work.ServiceProperties.ACCELERATOR;
+import static org.cytoscape.work.ServiceProperties.EDGE_EDIT_MENU;
+import static org.cytoscape.work.ServiceProperties.ENABLE_FOR;
+import static org.cytoscape.work.ServiceProperties.INSERT_SEPARATOR_AFTER;
+import static org.cytoscape.work.ServiceProperties.IN_MENU_BAR;
+import static org.cytoscape.work.ServiceProperties.MENU_GRAVITY;
+import static org.cytoscape.work.ServiceProperties.NETWORK_ADD_MENU;
+import static org.cytoscape.work.ServiceProperties.NETWORK_EDIT_MENU;
+import static org.cytoscape.work.ServiceProperties.NODE_EDIT_MENU;
+import static org.cytoscape.work.ServiceProperties.NODE_NESTED_NETWORKS_MENU;
+import static org.cytoscape.work.ServiceProperties.PREFERRED_ACTION;
+import static org.cytoscape.work.ServiceProperties.PREFERRED_MENU;
+import static org.cytoscape.work.ServiceProperties.TITLE;
+
+import java.util.Properties;
+
+import org.cytoscape.service.util.AbstractCyActivator;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.task.EdgeViewTaskFactory;
+import org.cytoscape.task.NetworkViewLocationTaskFactory;
+import org.cytoscape.task.NetworkViewTaskFactory;
+import org.cytoscape.task.NodeViewTaskFactory;
+import org.osgi.framework.BundleContext;
+
 /*
  * #%L
  * Cytoscape Editor Impl (editor-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,184 +48,162 @@ package org.cytoscape.editor.internal;
  * #L%
  */
 
-import java.util.Properties;
-
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.group.CyGroupManager;
-import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.service.util.AbstractCyActivator;
-import org.cytoscape.task.EdgeViewTaskFactory;
-import org.cytoscape.task.NetworkViewLocationTaskFactory;
-import org.cytoscape.task.NetworkViewTaskFactory;
-import org.cytoscape.task.NodeViewTaskFactory;
-import org.cytoscape.task.create.CreateNetworkViewTaskFactory;
-import org.cytoscape.view.model.CyNetworkViewManager;
-import org.cytoscape.view.vizmap.VisualMappingManager;
-import org.cytoscape.work.undo.UndoSupport;
-import org.osgi.framework.BundleContext;
-
-import static org.cytoscape.work.ServiceProperties.*;
-
 public class CyActivator extends AbstractCyActivator {
 	
-	public CyActivator() {
-		super();
-	}
-
+	@Override
 	public void start(BundleContext bc) {
-		CyApplicationManager cyApplicationManagerServiceRef = getService(bc, CyApplicationManager.class);
-		CyNetworkManager cyNetworkManagerServiceRef = getService(bc, CyNetworkManager.class);
-		CyNetworkViewManager cyNetworkViewManagerServiceRef = getService(bc, CyNetworkViewManager.class);
-		UndoSupport undoSupportServiceRef = getService(bc,UndoSupport.class);
-		CyEventHelper cyEventHelperServiceRef = getService(bc, CyEventHelper.class);
-		VisualMappingManager visualMappingManagerServiceRef = getService(bc, VisualMappingManager.class);
-		CyGroupManager cyGroupManagerServiceRef = getService(bc, CyGroupManager.class);
-		CreateNetworkViewTaskFactory createNetworkViewTaskFactoryServiceRef = getService(bc, CreateNetworkViewTaskFactory.class);
+		final CyServiceRegistrar serviceRegistrar = getService(bc, CyServiceRegistrar.class);
 
-		// NetworkView (empty space) context menus
-		SIFInterpreterTaskFactory sifInterpreterTaskFactory = new SIFInterpreterTaskFactory(visualMappingManagerServiceRef, cyEventHelperServiceRef);
-		Properties sifInterpreterTaskFactoryProps = new Properties();
-		sifInterpreterTaskFactoryProps.setProperty(ENABLE_FOR, "networkAndView");
-		sifInterpreterTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
-		sifInterpreterTaskFactoryProps.setProperty(PREFERRED_MENU, NETWORK_ADD_MENU);
-		sifInterpreterTaskFactoryProps.setProperty(MENU_GRAVITY, "1.0");
-		sifInterpreterTaskFactoryProps.setProperty(IN_MENU_BAR, "false");
-		sifInterpreterTaskFactoryProps.setProperty(TITLE, "Edge (and possibly Nodes) using SIF...");
-		registerService(bc, sifInterpreterTaskFactory, NetworkViewTaskFactory.class, sifInterpreterTaskFactoryProps);
-
-		NetworkViewLocationTaskFactory networkViewLocationTaskFactory = new AddNodeTaskFactory(cyEventHelperServiceRef, visualMappingManagerServiceRef);
-		Properties networkViewLocationTaskFactoryProps = new Properties();
-		networkViewLocationTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
-		networkViewLocationTaskFactoryProps.setProperty(PREFERRED_MENU, NETWORK_ADD_MENU);
-		networkViewLocationTaskFactoryProps.setProperty(MENU_GRAVITY, "1.1");
-		networkViewLocationTaskFactoryProps.setProperty(TITLE, "Node");
-		registerService(bc, networkViewLocationTaskFactory, NetworkViewLocationTaskFactory.class, networkViewLocationTaskFactoryProps);
-
+		{
+			// NetworkView (empty space) context menus
+			SIFInterpreterTaskFactory factory = new SIFInterpreterTaskFactory(serviceRegistrar);
+			Properties props = new Properties();
+			props.setProperty(ENABLE_FOR, "networkAndView");
+			props.setProperty(PREFERRED_ACTION, "NEW");
+			props.setProperty(PREFERRED_MENU, NETWORK_ADD_MENU);
+			props.setProperty(MENU_GRAVITY, "1.0");
+			props.setProperty(IN_MENU_BAR, "false");
+			props.setProperty(TITLE, "Edge (and possibly Nodes) using SIF...");
+			registerService(bc, factory, NetworkViewTaskFactory.class, props);
+		}
+		{
+			NetworkViewLocationTaskFactory factory = new AddNodeTaskFactory(serviceRegistrar);
+			Properties props = new Properties();
+			props.setProperty(PREFERRED_ACTION, "NEW");
+			props.setProperty(PREFERRED_MENU, NETWORK_ADD_MENU);
+			props.setProperty(MENU_GRAVITY, "1.1");
+			props.setProperty(TITLE, "Node");
+			registerService(bc, factory, NetworkViewLocationTaskFactory.class, props);
+		}
+		
 		// We need a place to hold the objects themselves
-		ClipboardManagerImpl clipboardManager = new ClipboardManagerImpl(cyEventHelperServiceRef, visualMappingManagerServiceRef);
+		ClipboardManagerImpl clipboardManager = new ClipboardManagerImpl(serviceRegistrar);
 
-		// Copy node
-		NetworkViewTaskFactory copyTaskFactory = 
-			new CopyTaskFactory(clipboardManager, cyNetworkManagerServiceRef);
-		Properties copyTaskFactoryProps = new Properties();
-		copyTaskFactoryProps.setProperty(ENABLE_FOR, "networkAndView");
-		copyTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
-		copyTaskFactoryProps.setProperty(PREFERRED_MENU, NETWORK_EDIT_MENU);
-		copyTaskFactoryProps.setProperty(ACCELERATOR, "cmd c");
-		copyTaskFactoryProps.setProperty(TITLE, "Copy");
-		copyTaskFactoryProps.setProperty(MENU_GRAVITY, "0.0f");
-		registerService(bc, copyTaskFactory, NetworkViewTaskFactory.class, copyTaskFactoryProps);
-
-		// Cut node
-		NetworkViewTaskFactory cutTaskFactory = 
-			new CutTaskFactory(clipboardManager, visualMappingManagerServiceRef, undoSupportServiceRef, cyEventHelperServiceRef);
-		Properties cutTaskFactoryProps = new Properties();
-		cutTaskFactoryProps.setProperty(ENABLE_FOR, "networkAndView");
-		cutTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
-		cutTaskFactoryProps.setProperty(PREFERRED_MENU, NETWORK_EDIT_MENU);
-		cutTaskFactoryProps.setProperty(ACCELERATOR, "cmd x");
-		cutTaskFactoryProps.setProperty(MENU_GRAVITY, "0.1f");
-		cutTaskFactoryProps.setProperty(TITLE, "Cut");
-		registerService(bc, cutTaskFactory, NetworkViewTaskFactory.class, cutTaskFactoryProps);
-
-		// Paste node
-		NetworkViewLocationTaskFactory pasteTaskFactory = 
-			new PasteTaskFactory(clipboardManager, cyEventHelperServiceRef, 
-		                       undoSupportServiceRef, visualMappingManagerServiceRef);
-		Properties pasteTaskFactoryProps = new Properties();
-		pasteTaskFactoryProps.setProperty(ENABLE_FOR, "networkAndView");
-		pasteTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
-		pasteTaskFactoryProps.setProperty(PREFERRED_MENU, NETWORK_EDIT_MENU);
-		pasteTaskFactoryProps.setProperty(TITLE, "Paste");
-		pasteTaskFactoryProps.setProperty(MENU_GRAVITY, "0.2f");
-		pasteTaskFactoryProps.setProperty(ACCELERATOR, "cmd v");
-		pasteTaskFactoryProps.setProperty(IN_MENU_BAR, "true");
-		registerService(bc, pasteTaskFactory, NetworkViewLocationTaskFactory.class, pasteTaskFactoryProps);
+		{
+			// Copy node
+			NetworkViewTaskFactory factory = new CopyTaskFactory(clipboardManager);
+			Properties props = new Properties();
+			props.setProperty(ENABLE_FOR, "networkAndView");
+			props.setProperty(PREFERRED_ACTION, "NEW");
+			props.setProperty(PREFERRED_MENU, NETWORK_EDIT_MENU);
+			props.setProperty(ACCELERATOR, "cmd c");
+			props.setProperty(TITLE, "Copy");
+			props.setProperty(MENU_GRAVITY, "0.0f");
+			registerService(bc, factory, NetworkViewTaskFactory.class, props);
+		}
+		{
+			// Cut node
+			NetworkViewTaskFactory factory = new CutTaskFactory(clipboardManager, serviceRegistrar);
+			Properties props = new Properties();
+			props.setProperty(ENABLE_FOR, "networkAndView");
+			props.setProperty(PREFERRED_ACTION, "NEW");
+			props.setProperty(PREFERRED_MENU, NETWORK_EDIT_MENU);
+			props.setProperty(ACCELERATOR, "cmd x");
+			props.setProperty(MENU_GRAVITY, "0.1f");
+			props.setProperty(TITLE, "Cut");
+			registerService(bc, factory, NetworkViewTaskFactory.class, props);
+		}
+		{
+			// Paste node
+			NetworkViewLocationTaskFactory pasteTaskFactory = new PasteTaskFactory(clipboardManager, serviceRegistrar);
+			Properties props = new Properties();
+			props.setProperty(ENABLE_FOR, "networkAndView");
+			props.setProperty(PREFERRED_ACTION, "NEW");
+			props.setProperty(PREFERRED_MENU, NETWORK_EDIT_MENU);
+			props.setProperty(TITLE, "Paste");
+			props.setProperty(MENU_GRAVITY, "0.2f");
+			props.setProperty(ACCELERATOR, "cmd v");
+			props.setProperty(IN_MENU_BAR, "true");
+			registerService(bc, pasteTaskFactory, NetworkViewLocationTaskFactory.class, props);
+		}
 
 		// At some point, add Paste Special.  Paste special would allow paste node only, paste copy, etc.
 
 		// NodeView context menus
-		// Copy node
-		NodeViewTaskFactory copyNodeTaskFactory = 
-			new CopyNodeTaskFactory(clipboardManager, cyNetworkManagerServiceRef);
-		Properties copyNodeTaskFactoryProps = new Properties();
-		copyNodeTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
-		copyNodeTaskFactoryProps.setProperty(PREFERRED_MENU, NODE_EDIT_MENU);
-		copyNodeTaskFactoryProps.setProperty(ACCELERATOR, "cmd c");
-		copyNodeTaskFactoryProps.setProperty(MENU_GRAVITY, "0.0f");
-		copyNodeTaskFactoryProps.setProperty(TITLE, "Copy");
-		registerService(bc, copyNodeTaskFactory, NodeViewTaskFactory.class, copyNodeTaskFactoryProps);
+		{
+			// Copy node
+			NodeViewTaskFactory factory = new CopyNodeTaskFactory(clipboardManager);
+			Properties props = new Properties();
+			props.setProperty(PREFERRED_ACTION, "NEW");
+			props.setProperty(PREFERRED_MENU, NODE_EDIT_MENU);
+			props.setProperty(ACCELERATOR, "cmd c");
+			props.setProperty(MENU_GRAVITY, "0.0f");
+			props.setProperty(TITLE, "Copy");
+			registerService(bc, factory, NodeViewTaskFactory.class, props);
+		}
+		{
+			// Cut node
+			NodeViewTaskFactory factory = new CutNodeTaskFactory(clipboardManager, serviceRegistrar);
+			Properties props = new Properties();
+			props.setProperty(PREFERRED_ACTION, "NEW");
+			props.setProperty(PREFERRED_MENU, NODE_EDIT_MENU);
+			props.setProperty(ACCELERATOR, "cmd x");
+			props.setProperty(MENU_GRAVITY, "0.1f");
+			props.setProperty(TITLE, "Cut");
+			registerService(bc, factory, NodeViewTaskFactory.class, props);
+		}
+		{
+			// Rename node
+			NodeViewTaskFactory factory = new RenameNodeTaskFactory(serviceRegistrar);
+			Properties props = new Properties();
+			props.setProperty(PREFERRED_ACTION, "NEW");
+			props.setProperty(PREFERRED_MENU, NODE_EDIT_MENU);
+			props.setProperty(INSERT_SEPARATOR_AFTER, "true");
+			props.setProperty(MENU_GRAVITY, "0.2f");
+			props.setProperty(TITLE, "Rename Node");
+			registerService(bc, factory, NodeViewTaskFactory.class, props);
+		}
 
-		// Cut node
-		NodeViewTaskFactory cutNodeTaskFactory = 
-			new CutNodeTaskFactory(clipboardManager, visualMappingManagerServiceRef, undoSupportServiceRef, cyEventHelperServiceRef);
-		Properties cutNodeTaskFactoryProps = new Properties();
-		cutNodeTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
-		cutNodeTaskFactoryProps.setProperty(PREFERRED_MENU, NODE_EDIT_MENU);
-		cutNodeTaskFactoryProps.setProperty(ACCELERATOR, "cmd x");
-		cutNodeTaskFactoryProps.setProperty(MENU_GRAVITY, "0.1f");
-		cutNodeTaskFactoryProps.setProperty(TITLE, "Cut");
-		registerService(bc, cutNodeTaskFactory, NodeViewTaskFactory.class, cutNodeTaskFactoryProps);
-
-		// Rename node
-		NodeViewTaskFactory renameNodeTaskFactory = 
-			new RenameNodeTaskFactory(undoSupportServiceRef);
-		Properties renameNodeTaskFactoryProps = new Properties();
-		renameNodeTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
-		renameNodeTaskFactoryProps.setProperty(PREFERRED_MENU, NODE_EDIT_MENU);
-		renameNodeTaskFactoryProps.setProperty(INSERT_SEPARATOR_AFTER, "true");
-		renameNodeTaskFactoryProps.setProperty(MENU_GRAVITY, "0.2f");
-		renameNodeTaskFactoryProps.setProperty(TITLE, "Rename Node");
-		registerService(bc, renameNodeTaskFactory, NodeViewTaskFactory.class, renameNodeTaskFactoryProps);
-
-		NodeViewTaskFactory addNestedNetworkTaskFactory = 
-			new AddNestedNetworkTaskFactory(cyNetworkManagerServiceRef, visualMappingManagerServiceRef, cyGroupManagerServiceRef);
-		Properties addNestedNetworkProps = new Properties();
-		addNestedNetworkProps.setProperty(PREFERRED_ACTION, "NEW");
-		addNestedNetworkProps.setProperty(PREFERRED_MENU, NODE_NESTED_NETWORKS_MENU);
-		addNestedNetworkProps.setProperty(MENU_GRAVITY, "0.1f");
-		addNestedNetworkProps.setProperty(TITLE, "Add Nested Network");
-		registerService(bc, addNestedNetworkTaskFactory, NodeViewTaskFactory.class, addNestedNetworkProps);
-
-		NodeViewTaskFactory deleteNestedNetworkTaskFactory = 
-			new DeleteNestedNetworkTaskFactory(cyNetworkManagerServiceRef, visualMappingManagerServiceRef, cyGroupManagerServiceRef);
-		Properties deleteNestedNetworkProps = new Properties();
-		deleteNestedNetworkProps.setProperty(PREFERRED_ACTION, "NEW");
-		deleteNestedNetworkProps.setProperty(PREFERRED_MENU, NODE_NESTED_NETWORKS_MENU);
-		deleteNestedNetworkProps.setProperty(MENU_GRAVITY, "0.2f");
-		deleteNestedNetworkProps.setProperty(TITLE, "Remove Nested Network");
-		registerService(bc, deleteNestedNetworkTaskFactory, NodeViewTaskFactory.class, deleteNestedNetworkProps);
-		
-		NodeViewTaskFactory goToNestedNetworkTaskFactory = new GoToNestedNetworkTaskFactory(cyNetworkManagerServiceRef, cyNetworkViewManagerServiceRef, cyApplicationManagerServiceRef, createNetworkViewTaskFactoryServiceRef);
-		Properties goToNestedNetworkProps = new Properties();
-		goToNestedNetworkProps.setProperty(PREFERRED_ACTION, "NEW");
-		goToNestedNetworkProps.setProperty(PREFERRED_MENU, NODE_NESTED_NETWORKS_MENU);
-		goToNestedNetworkProps.setProperty(MENU_GRAVITY, "0.3f");
-		goToNestedNetworkProps.setProperty(TITLE, "Go to Nested Network");
-		registerService(bc, goToNestedNetworkTaskFactory, NodeViewTaskFactory.class, goToNestedNetworkProps);
+		{
+			NodeViewTaskFactory factory = new AddNestedNetworkTaskFactory(serviceRegistrar);
+			Properties props = new Properties();
+			props.setProperty(PREFERRED_ACTION, "NEW");
+			props.setProperty(PREFERRED_MENU, NODE_NESTED_NETWORKS_MENU);
+			props.setProperty(MENU_GRAVITY, "0.1f");
+			props.setProperty(TITLE, "Add Nested Network");
+			registerService(bc, factory, NodeViewTaskFactory.class, props);
+		}
+		{
+			NodeViewTaskFactory factory = new DeleteNestedNetworkTaskFactory(serviceRegistrar);
+			Properties props = new Properties();
+			props.setProperty(PREFERRED_ACTION, "NEW");
+			props.setProperty(PREFERRED_MENU, NODE_NESTED_NETWORKS_MENU);
+			props.setProperty(MENU_GRAVITY, "0.2f");
+			props.setProperty(TITLE, "Remove Nested Network");
+			registerService(bc, factory, NodeViewTaskFactory.class, props);
+		}
+		{
+			NodeViewTaskFactory factory = new GoToNestedNetworkTaskFactory(serviceRegistrar);
+			Properties props = new Properties();
+			props.setProperty(PREFERRED_ACTION, "NEW");
+			props.setProperty(PREFERRED_MENU, NODE_NESTED_NETWORKS_MENU);
+			props.setProperty(MENU_GRAVITY, "0.3f");
+			props.setProperty(TITLE, "Go to Nested Network");
+			registerService(bc, factory, NodeViewTaskFactory.class, props);
+		}
 
 		// EdgeView context menus
-		// Copy node
-		EdgeViewTaskFactory copyEdgeTaskFactory = 
-			new CopyEdgeTaskFactory(clipboardManager, cyNetworkManagerServiceRef);
-		Properties copyEdgeTaskFactoryProps = new Properties();
-		copyEdgeTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
-		copyEdgeTaskFactoryProps.setProperty(PREFERRED_MENU, EDGE_EDIT_MENU);
-		copyEdgeTaskFactoryProps.setProperty(ACCELERATOR, "cmd c");
-		copyEdgeTaskFactoryProps.setProperty(MENU_GRAVITY, "0.0f");
-		copyEdgeTaskFactoryProps.setProperty(TITLE, "Copy");
-		registerService(bc, copyEdgeTaskFactory, EdgeViewTaskFactory.class, copyEdgeTaskFactoryProps);
-
-		// Cut edge
-		EdgeViewTaskFactory cutEdgeTaskFactory = 
-			new CutEdgeTaskFactory(clipboardManager, visualMappingManagerServiceRef, undoSupportServiceRef, cyEventHelperServiceRef);
-		Properties cutEdgeTaskFactoryProps = new Properties();
-		cutEdgeTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
-		cutEdgeTaskFactoryProps.setProperty(PREFERRED_MENU, EDGE_EDIT_MENU);
-		cutEdgeTaskFactoryProps.setProperty(ACCELERATOR, "cmd x");
-		cutEdgeTaskFactoryProps.setProperty(MENU_GRAVITY, "0.1f");
-		cutEdgeTaskFactoryProps.setProperty(TITLE, "Cut");
-		registerService(bc, cutEdgeTaskFactory, EdgeViewTaskFactory.class, cutEdgeTaskFactoryProps);
+		{
+			// Copy node
+			EdgeViewTaskFactory factory = new CopyEdgeTaskFactory(clipboardManager);
+			Properties props = new Properties();
+			props.setProperty(PREFERRED_ACTION, "NEW");
+			props.setProperty(PREFERRED_MENU, EDGE_EDIT_MENU);
+			props.setProperty(ACCELERATOR, "cmd c");
+			props.setProperty(MENU_GRAVITY, "0.0f");
+			props.setProperty(TITLE, "Copy");
+			registerService(bc, factory, EdgeViewTaskFactory.class, props);
+		}
+		{
+			// Cut edge
+			EdgeViewTaskFactory factory = new CutEdgeTaskFactory(clipboardManager, serviceRegistrar);
+			Properties props = new Properties();
+			props.setProperty(PREFERRED_ACTION, "NEW");
+			props.setProperty(PREFERRED_MENU, EDGE_EDIT_MENU);
+			props.setProperty(ACCELERATOR, "cmd x");
+			props.setProperty(MENU_GRAVITY, "0.1f");
+			props.setProperty(TITLE, "Cut");
+			registerService(bc, factory, EdgeViewTaskFactory.class, props);
+		}
 	}
 }

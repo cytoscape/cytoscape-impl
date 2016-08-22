@@ -1,12 +1,24 @@
 package org.cytoscape.editor.internal;
 
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNode;
+import org.cytoscape.model.CyRow;
+import org.cytoscape.model.CyTable;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.task.AbstractNodeViewTask;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.View;
+import org.cytoscape.view.vizmap.VisualMappingManager;
+import org.cytoscape.view.vizmap.VisualStyle;
+import org.cytoscape.work.TaskMonitor;
+
 /*
  * #%L
  * Cytoscape Editor Impl (editor-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,30 +36,16 @@ package org.cytoscape.editor.internal;
  * #L%
  */
 
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyRow;
-import org.cytoscape.model.CyTable;
-import org.cytoscape.task.AbstractNodeViewTask;
-import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.View;
-import org.cytoscape.view.vizmap.VisualMappingManager;
-import org.cytoscape.view.vizmap.VisualStyle;
-import org.cytoscape.work.TaskMonitor;
-
 public class DeleteNestedNetworkTask extends AbstractNodeViewTask {
 
 	private static final String HAS_NESTED_NETWORK_ATTRIBUTE = "has_nested_network";
 	
-	private final VisualMappingManager vmMgr;
+	private final CyServiceRegistrar serviceRegistrar;
 	
-	public DeleteNestedNetworkTask(final View<CyNode> nv,
-								   final CyNetworkView view,
-								   final CyNetworkManager mgr,
-								   final VisualMappingManager vmMgr) {
-		super(nv,view);
-		this.vmMgr = vmMgr;
+	public DeleteNestedNetworkTask(final View<CyNode> nv, final CyNetworkView view,
+			final CyServiceRegistrar serviceRegistrar) {
+		super(nv, view);
+		this.serviceRegistrar = serviceRegistrar;
 	}
 
 	@Override
@@ -55,6 +53,7 @@ public class DeleteNestedNetworkTask extends AbstractNodeViewTask {
 		final CyNode node = nodeView.getModel();
 		setNestedNetwork(node, null);
 		
+		final VisualMappingManager vmMgr = serviceRegistrar.getService(VisualMappingManager.class);
 		final VisualStyle style = vmMgr.getVisualStyle(netView);
 		style.apply(netView.getModel().getRow(node), nodeView);
 		netView.updateView();
@@ -68,6 +67,7 @@ public class DeleteNestedNetworkTask extends AbstractNodeViewTask {
 		CyNetwork sourceNetwork = netView.getModel();
 		CyTable nodeTable = sourceNetwork.getDefaultNodeTable();
 		boolean attributeExists = nodeTable.getColumn(HAS_NESTED_NETWORK_ATTRIBUTE) != null;
+		
 		if (targetNetwork == null && attributeExists) {
 			nodeTable.getRow(node.getSUID()).set(HAS_NESTED_NETWORK_ATTRIBUTE, false);
 		} else if (targetNetwork != null) {

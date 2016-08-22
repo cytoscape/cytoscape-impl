@@ -1,12 +1,40 @@
 package org.cytoscape.editor.internal;
 
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+
+import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyIdentifiable;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNode;
+import org.cytoscape.model.CyTableUtil;
+import org.cytoscape.model.subnetwork.CySubNetwork;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.View;
+import org.cytoscape.view.model.VisualLexicon;
+import org.cytoscape.view.model.VisualProperty;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
+import org.cytoscape.view.vizmap.VisualMappingManager;
+import org.cytoscape.view.vizmap.VisualStyle;
+import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.undo.AbstractCyEdit;
+import org.cytoscape.work.undo.UndoSupport;
+
 /*
  * #%L
  * Cytoscape Editor Impl (editor-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,67 +52,39 @@ package org.cytoscape.editor.internal;
  * #L%
  */
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-
-import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.model.CyEdge;
-import org.cytoscape.model.CyIdentifiable;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyTableUtil;
-import org.cytoscape.model.subnetwork.CySubNetwork;
-import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.View;
-import org.cytoscape.view.model.VisualLexicon;
-import org.cytoscape.view.model.VisualProperty;
-import org.cytoscape.view.presentation.property.BasicVisualLexicon;
-import org.cytoscape.view.vizmap.VisualMappingManager;
-import org.cytoscape.view.vizmap.VisualStyle;
-import org.cytoscape.work.AbstractTask;
-import org.cytoscape.work.TaskMonitor;
-import org.cytoscape.work.undo.AbstractCyEdit;
-import org.cytoscape.work.undo.UndoSupport;
-
 public class CutTask extends AbstractTask {
 	
 	private final CyNetworkView netView;
 	private final ClipboardManagerImpl clipMgr;
-	private final VisualMappingManager vmMgr;
-	private final UndoSupport undoSupport;
-	private final CyEventHelper eventHelper;
 	private final Set<CyNode> selNodes;
 	private final Set<CyEdge> selEdges;
 	private final Map<CyEdge, Map<VisualProperty<?>, Object>/*bypass values*/> deletedEdges;
+	private final CyServiceRegistrar serviceRegistrar;
 	
-	public CutTask(final CyNetworkView netView,
-				   final ClipboardManagerImpl clipMgr,
-				   final VisualMappingManager vmMgr,
-	               final UndoSupport undoSupport,
-	               final CyEventHelper eventHelper) {
+	public CutTask(
+			final CyNetworkView netView,
+			final ClipboardManagerImpl clipMgr,
+			final CyServiceRegistrar serviceRegistrar
+	) {
 		this.netView = netView;
 		this.clipMgr = clipMgr;
-		this.vmMgr = vmMgr;
-		this.undoSupport = undoSupport;
-		this.eventHelper = eventHelper;
+		this.serviceRegistrar = serviceRegistrar;
 		
 		// Get all of the selected nodes and edges
-		selNodes = new HashSet<CyNode>(CyTableUtil.getNodesInState(netView.getModel(), CyNetwork.SELECTED, true));
-		selEdges = new HashSet<CyEdge>(CyTableUtil.getEdgesInState(netView.getModel(), CyNetwork.SELECTED, true));
-		deletedEdges = new HashMap<CyEdge, Map<VisualProperty<?>,Object>>();
+		selNodes = new HashSet<>(CyTableUtil.getNodesInState(netView.getModel(), CyNetwork.SELECTED, true));
+		selEdges = new HashSet<>(CyTableUtil.getEdgesInState(netView.getModel(), CyNetwork.SELECTED, true));
+		deletedEdges = new HashMap<>();
 	}
 
 	@SuppressWarnings("unchecked")
-	public CutTask(final CyNetworkView netView, final View<?extends CyIdentifiable> objView, 
-	               final ClipboardManagerImpl clipMgr, final VisualMappingManager vmMgr,
-	               final UndoSupport undoSupport, final CyEventHelper eventHelper) {
+	public CutTask(
+			final CyNetworkView netView,
+			final View<? extends CyIdentifiable> objView,
+			final ClipboardManagerImpl clipMgr,
+			final CyServiceRegistrar serviceRegistrar
+	) {
 		// Get all of the selected nodes and edges first
-		this(netView, clipMgr, vmMgr, undoSupport, eventHelper);
+		this(netView, clipMgr, serviceRegistrar);
 
 		// Now, make sure we add our
 		if (objView.getModel() instanceof CyNode)
@@ -95,6 +95,7 @@ public class CutTask extends AbstractTask {
 
 	@Override
 	public void run(TaskMonitor tm) throws Exception {
+		final VisualMappingManager vmMgr = serviceRegistrar.getService(VisualMappingManager.class);
 		final VisualLexicon lexicon = vmMgr.getAllVisualLexicon().iterator().next();
 		final Collection<VisualProperty<?>> edgeProps = lexicon.getAllDescendants(BasicVisualLexicon.EDGE);
 		tm.setTitle("Cut Task");
@@ -119,6 +120,8 @@ public class CutTask extends AbstractTask {
 		
 		clipMgr.cut(netView, selNodes, selEdges);
 		tm.setStatusMessage("Cut "+selNodes.size()+" nodes and "+selEdges.size()+" edges and copied them to the clipboard");
+		
+		final UndoSupport undoSupport = serviceRegistrar.getService(UndoSupport.class);
 		undoSupport.postEdit(new CutEdit());
 	}
 	
@@ -141,7 +144,7 @@ public class CutTask extends AbstractTask {
 		public void undo() {
 			clipMgr.setCurrentClipboard(clipboard);
 			final HashSet<CyIdentifiable> objects = 
-					new HashSet<CyIdentifiable>(clipMgr.paste(netView, clipboard.getCenterX(), clipboard.getCenterY()));
+					new HashSet<>(clipMgr.paste(netView, clipboard.getCenterX(), clipboard.getCenterY()));
 			
 			// Restore edges that were not cut, but were deleted because their nodes were cut
 			if (netView.getModel() instanceof CySubNetwork) {
@@ -156,6 +159,7 @@ public class CutTask extends AbstractTask {
 				}
 			}
 			
+			final CyEventHelper eventHelper = serviceRegistrar.getService(CyEventHelper.class);
 			eventHelper.flushPayloadEvents(); // Make sure views are created
 			
 			// Restore bypass values to deleted edges that were not cut
@@ -167,6 +171,7 @@ public class CutTask extends AbstractTask {
 			}
 			
 			// Apply visual style to all restored nodes/edges
+			final VisualMappingManager vmMgr = serviceRegistrar.getService(VisualMappingManager.class);
 			final VisualStyle style = vmMgr.getVisualStyle(netView);
 			
 			for (CyIdentifiable element: objects) {

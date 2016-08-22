@@ -1,29 +1,5 @@
 package org.cytoscape.editor.internal;
 
-/*
- * #%L
- * Cytoscape Editor Impl (editor-impl)
- * $Id:$
- * $HeadURL:$
- * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * #L%
- */
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -44,12 +20,36 @@ import org.cytoscape.model.CyTable;
 import org.cytoscape.model.VirtualColumnInfo;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CySubNetwork;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 
+/*
+ * #%L
+ * Cytoscape Editor Impl (editor-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
 
 public class ClipboardImpl {
 	
@@ -69,42 +69,44 @@ public class ClipboardImpl {
 
 	private double xCenter, yCenter;
 	
-	private final CyEventHelper eventHelper;
+	private final CyServiceRegistrar serviceRegistrar;
 
-	public ClipboardImpl(final CyNetworkView networkView,
-						 final Set<CyNode> nodes,
-						 final Set<CyEdge> edges,
-						 boolean cut,
-						 final VisualLexicon lexicon,
-						 CyEventHelper eventHelper) {
+	public ClipboardImpl(
+			final CyNetworkView networkView,
+			final Set<CyNode> nodes,
+			final Set<CyEdge> edges,
+			final boolean cut,
+			final VisualLexicon lexicon,
+			final CyServiceRegistrar serviceRegistrar
+	) {
 		this.sourceView = networkView;
 		this.nodes = nodes;
 		this.edges = edges;
-		this.eventHelper = eventHelper;
 		this.cutOperation = cut;
+		this.serviceRegistrar = serviceRegistrar;
 
 		CyNetwork sourceNetwork = sourceView.getModel();
-		oldSharedRowMap = new WeakHashMap<CyIdentifiable, CyRow>();
-		oldLocalRowMap = new WeakHashMap<CyIdentifiable, CyRow>();
-		oldHiddenRowMap = new WeakHashMap<CyIdentifiable, CyRow>();
+		oldSharedRowMap = new WeakHashMap<>();
+		oldLocalRowMap = new WeakHashMap<>();
+		oldHiddenRowMap = new WeakHashMap<>();
 
 		// For local and hidden rows, we also need to keep track of
 		// the values since they will be removed when the row gets removed
 		// This is only really necessary for cut operations
-		oldValueMap = new WeakHashMap<CyRow, Map<String, Object>>();
+		oldValueMap = new WeakHashMap<>();
 
 		// We need the root network to get the shared attributes
 		CyRootNetwork sourceRootNetwork = ((CySubNetwork)sourceNetwork).getRootNetwork();
 
 		// save bypass values and the positions of the nodes
-		nodeBypass = new HashMap<CyNode, Map<VisualProperty<?>,Object>>();
-		edgeBypassMap = new HashMap<CyEdge, Map<VisualProperty<?>,Object>>();
+		nodeBypass = new HashMap<>();
+		edgeBypassMap = new HashMap<>();
 		final Collection<VisualProperty<?>> nodeProps = lexicon.getAllDescendants(BasicVisualLexicon.NODE);
 		final Collection<VisualProperty<?>> edgeProps = lexicon.getAllDescendants(BasicVisualLexicon.EDGE);
 		
 		xCenter = 0.0;
 		yCenter = 0.0;
-		nodePositions = new HashMap<CyNode, double[]>();
+		nodePositions = new HashMap<>();
 		
 		for (CyNode node: nodes) {
 			if (networkView != null) {
@@ -180,7 +182,7 @@ public class ClipboardImpl {
 		// Note that if we add any nodes, we'll only add edges to nodes that exist.  
 
 		// Pass 1: add the nodes 
-		final Map<CyNode, CyNode> newNodeMap = new HashMap<CyNode, CyNode>();
+		final Map<CyNode, CyNode> newNodeMap = new HashMap<>();
 		
 		for (CyNode node : nodes) {
 			CyNode newNode = pasteNode(sourceView, targetView, node, rowMap);
@@ -189,7 +191,7 @@ public class ClipboardImpl {
 		}
 
 		// Pass 2: add the edges
-		final Map<CyEdge, CyEdge> newEdgeMap = new HashMap<CyEdge, CyEdge>();
+		final Map<CyEdge, CyEdge> newEdgeMap = new HashMap<>();
 		
 		for (CyEdge edge : edges) {
 			CyEdge newEdge = pasteEdge(sourceView, targetView, edge, rowMap, newNodeMap, pastedObjects);
@@ -202,6 +204,7 @@ public class ClipboardImpl {
 
 		copyRows(rowMap);
 		
+		final CyEventHelper eventHelper = serviceRegistrar.getService(CyEventHelper.class);
 		eventHelper.flushPayloadEvents(); // Make sure node/edge views were created
 		targetView.updateView();
 

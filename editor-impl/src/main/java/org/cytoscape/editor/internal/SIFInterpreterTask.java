@@ -1,12 +1,29 @@
 package org.cytoscape.editor.internal;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNode;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.task.AbstractNetworkViewTask;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.View;
+import org.cytoscape.view.vizmap.VisualMappingManager;
+import org.cytoscape.view.vizmap.VisualStyle;
+import org.cytoscape.work.ProvidesTitle;
+import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.Tunable;
+
 /*
  * #%L
  * Cytoscape Editor Impl (editor-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,40 +41,22 @@ package org.cytoscape.editor.internal;
  * #L%
  */
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.model.CyEdge;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNode;
-import org.cytoscape.task.AbstractNetworkViewTask;
-import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.View;
-import org.cytoscape.view.vizmap.VisualMappingManager;
-import org.cytoscape.view.vizmap.VisualStyle;
-import org.cytoscape.work.ProvidesTitle;
-import org.cytoscape.work.TaskMonitor;
-import org.cytoscape.work.Tunable;
-
 public class SIFInterpreterTask extends AbstractNetworkViewTask {
 
 	@Tunable(description="Type in a nodes/edges expression in SIF format (e.g. A inhibits B):")
 	public String sifString;
 
-	private final VisualMappingManager vmm;
-	private final CyEventHelper eh;
 	private final CyNetwork network;
-
+	private final CyServiceRegistrar serviceRegistrar;
+	
 	@ProvidesTitle
 	public String getTitle() {
 		return "SIF Interpreter";
 	}
 	
-	public SIFInterpreterTask(final CyNetworkView view, final VisualMappingManager vmm, final CyEventHelper eh) {
+	public SIFInterpreterTask(final CyNetworkView view, final CyServiceRegistrar serviceRegistrar) {
 		super(view);
-		this.vmm = vmm;
-		this.eh = eh;
+		this.serviceRegistrar = serviceRegistrar;
 		network = view.getModel();
 	}
 
@@ -132,8 +131,11 @@ public class SIFInterpreterTask extends AbstractNetworkViewTask {
 				}
 				
 				// Apply visual style
-				eh.flushPayloadEvents(); // To make sure the edge view is created before applying the style
-				VisualStyle vs = vmm.getVisualStyle(view);
+				final CyEventHelper eventHelper = serviceRegistrar.getService(CyEventHelper.class);
+				eventHelper.flushPayloadEvents(); // To make sure the edge view is created before applying the style
+				
+				final VisualMappingManager vmMgr = serviceRegistrar.getService(VisualMappingManager.class);
+				VisualStyle vs = vmMgr.getVisualStyle(view);
 				vs.apply(view);
 				view.updateView();
 			}
@@ -174,4 +176,3 @@ public class SIFInterpreterTask extends AbstractNetworkViewTask {
 		return null;
 	}
 }
-

@@ -1,12 +1,23 @@
 package org.cytoscape.editor.internal;
 
+import java.util.List;
+
+import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNode;
+import org.cytoscape.model.CyTableUtil;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.task.AbstractNetworkViewTaskFactory;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.work.TaskIterator;
+
 /*
  * #%L
  * Cytoscape Editor Impl (editor-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,34 +35,14 @@ package org.cytoscape.editor.internal;
  * #L%
  */
 
-import java.util.List;
-
-import org.cytoscape.model.CyEdge;
-import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyTableUtil;
-import org.cytoscape.task.AbstractNetworkViewTaskFactory;
-import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.vizmap.VisualMappingManager;
-import org.cytoscape.work.TaskIterator;
-import org.cytoscape.work.undo.UndoSupport;
-
 public class CutTaskFactory extends AbstractNetworkViewTaskFactory {
 	
 	private final ClipboardManagerImpl clipMgr;
-	private final VisualMappingManager vmMgr;
-	private final UndoSupport undoSupport;
-	private CyEventHelper eventHelper;
+	private final CyServiceRegistrar serviceRegistrar;
 
-	public CutTaskFactory(final ClipboardManagerImpl clipboardMgr,
-						  final VisualMappingManager vmMgr,
-						  final UndoSupport undoSupport, 
-	                      final CyEventHelper eventHelper) {
+	public CutTaskFactory(final ClipboardManagerImpl clipboardMgr, final CyServiceRegistrar serviceRegistrar) {
 		this.clipMgr = clipboardMgr;
-		this.vmMgr = vmMgr;
-		this.undoSupport = undoSupport;
-		this.eventHelper = eventHelper;
+		this.serviceRegistrar = serviceRegistrar;
 	}
 
 	@Override
@@ -71,6 +62,6 @@ public class CutTaskFactory extends AbstractNetworkViewTaskFactory {
 
 	@Override
 	public TaskIterator createTaskIterator(CyNetworkView networkView) {
-		return new TaskIterator(new CutTask(networkView, clipMgr, vmMgr, undoSupport, eventHelper));
+		return new TaskIterator(new CutTask(networkView, clipMgr, serviceRegistrar));
 	}
 }

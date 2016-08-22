@@ -1,12 +1,17 @@
 package org.cytoscape.editor.internal;
 
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.task.AbstractNetworkViewTaskFactory;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.work.TaskIterator;
+
 /*
  * #%L
  * Cytoscape Editor Impl (editor-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,24 +29,17 @@ package org.cytoscape.editor.internal;
  * #L%
  */
 
-import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.vizmap.VisualMappingManager;
-import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.task.AbstractNetworkViewTaskFactory;
-import org.cytoscape.work.TaskIterator;
-
 public class SIFInterpreterTaskFactory extends AbstractNetworkViewTaskFactory {
 
-	private final VisualMappingManager vmm;
-	private final CyEventHelper eh;
+	private final CyServiceRegistrar serviceRegistrar;
 
-	public SIFInterpreterTaskFactory(final VisualMappingManager vmm, final CyEventHelper eh) {
-		this.vmm = vmm;
-		this.eh = eh;
+	public SIFInterpreterTaskFactory(final CyServiceRegistrar serviceRegistrar) { 
+		this.serviceRegistrar = serviceRegistrar;
 	}
 
+	@Override
 	public TaskIterator createTaskIterator(final CyNetworkView view) {
-		return new TaskIterator(new SIFInterpreterTask(view, vmm, eh));
+		return new TaskIterator(new SIFInterpreterTask(view, serviceRegistrar));
 	}
 }
 

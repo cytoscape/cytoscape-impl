@@ -1,9 +1,15 @@
-/**
- * The ClipboardManager provides a simple wrapper around a Clipboard.  This
- * allows us to manipulate the "current" clipboard.  In the future, we might
- * also want to provide for multiple clipboards....
- */
 package org.cytoscape.editor.internal;
+
+import java.util.List;
+import java.util.Set;
+
+import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyIdentifiable;
+import org.cytoscape.model.CyNode;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.VisualLexicon;
+import org.cytoscape.view.vizmap.VisualMappingManager;
 
 /*
  * #%L
@@ -11,7 +17,7 @@ package org.cytoscape.editor.internal;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -29,26 +35,18 @@ package org.cytoscape.editor.internal;
  * #L%
  */
 
-import java.util.List;
-import java.util.Set;
-
-import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.model.CyEdge;
-import org.cytoscape.model.CyIdentifiable;
-import org.cytoscape.model.CyNode;
-import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.VisualLexicon;
-import org.cytoscape.view.vizmap.VisualMappingManager;
-
+/**
+ * The ClipboardManager provides a simple wrapper around a Clipboard.  This
+ * allows us to manipulate the "current" clipboard.  In the future, we might
+ * also want to provide for multiple clipboards....
+ */
 public final class ClipboardManagerImpl {
 	
 	private ClipboardImpl currentClipboard;
-	private final CyEventHelper eventHelper;
-	private final VisualMappingManager vmMgr;
+	private final CyServiceRegistrar serviceRegistrar;
 
-	public ClipboardManagerImpl(final CyEventHelper eventHelper, final VisualMappingManager vmMgr) {
-		this.eventHelper = eventHelper;
-		this.vmMgr = vmMgr;
+	public ClipboardManagerImpl(final CyServiceRegistrar serviceRegistrar) { 
+		this.serviceRegistrar = serviceRegistrar;
 	}
 
 	public boolean clipboardHasData() {
@@ -57,7 +55,10 @@ public final class ClipboardManagerImpl {
 		return currentClipboard.clipboardHasData();
 	}
 
-	public ClipboardImpl getCurrentClipboard() { return currentClipboard; }
+	public ClipboardImpl getCurrentClipboard() {
+		return currentClipboard;
+	}
+
 	public void setCurrentClipboard(ClipboardImpl clip) {
 		this.currentClipboard = clip;
 	}
@@ -74,15 +75,15 @@ public final class ClipboardManagerImpl {
 	}
 
 	public void copy(CyNetworkView networkView, Set<CyNode> nodes, Set<CyEdge> edges, boolean cut) {
-		// System.out.println("Creating clipboard");
+		final VisualMappingManager vmMgr = serviceRegistrar.getService(VisualMappingManager.class);
 		final VisualLexicon lexicon = vmMgr.getAllVisualLexicon().iterator().next();
-		currentClipboard = new ClipboardImpl(networkView, nodes, edges, cut, lexicon, eventHelper);
-		// System.out.println("Clipboard = "+currentClipboard+", this = "+this);
+		currentClipboard = new ClipboardImpl(networkView, nodes, edges, cut, lexicon, serviceRegistrar);
 	}
 
 	public List<CyIdentifiable> paste(CyNetworkView targetView, double x, double y) {
-		// System.out.println("Paste: clipboard = "+currentClipboard+", this = "+this);
-		if (currentClipboard == null) return null;
+		if (currentClipboard == null)
+			return null;
+		
 		return currentClipboard.paste(targetView, x, y);
 	}
 }

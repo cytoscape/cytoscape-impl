@@ -1,12 +1,27 @@
 package org.cytoscape.editor.internal;
 
+import java.awt.geom.Point2D;
+import java.util.List;
+
+import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyIdentifiable;
+import org.cytoscape.model.CyNode;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.task.AbstractNetworkViewTask;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.View;
+import org.cytoscape.view.vizmap.VisualMappingManager;
+import org.cytoscape.view.vizmap.VisualStyle;
+import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.undo.UndoSupport;
+
 /*
  * #%L
  * Cytoscape Editor Impl (editor-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,35 +39,18 @@ package org.cytoscape.editor.internal;
  * #L%
  */
 
-import java.awt.geom.Point2D;
-import java.util.List;
-
-import org.cytoscape.model.CyEdge;
-import org.cytoscape.model.CyIdentifiable;
-import org.cytoscape.model.CyNode;
-import org.cytoscape.task.AbstractNetworkViewTask;
-import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.View;
-import org.cytoscape.view.vizmap.VisualMappingManager;
-import org.cytoscape.view.vizmap.VisualStyle;
-import org.cytoscape.work.TaskMonitor;
-import org.cytoscape.work.undo.UndoSupport;
-
 public class PasteTask extends AbstractNetworkViewTask {
 
-	private final VisualMappingManager vmm;
 	private final Point2D xformPt;
 	private final ClipboardManagerImpl clipMgr;
-	private final UndoSupport undoSupport;
+	private final CyServiceRegistrar serviceRegistrar;
 
-	public PasteTask(final VisualMappingManager vmm, final CyNetworkView view, final Point2D xformPt,
-			final ClipboardManagerImpl clip, final UndoSupport undoSupport) {
+	public PasteTask(final CyNetworkView view, final Point2D xformPt, final ClipboardManagerImpl clipMgr,
+			final CyServiceRegistrar serviceRegistrar) {
 		super(view);
-		this.vmm = vmm;
 		this.xformPt = xformPt;
-		this.clipMgr = clip;
-		this.undoSupport = undoSupport;
-
+		this.clipMgr = clipMgr;
+		this.serviceRegistrar = serviceRegistrar;
 	}
 
 	// TODO: add an isRead that is ready when we have something to paste
@@ -60,7 +58,8 @@ public class PasteTask extends AbstractNetworkViewTask {
 	@Override
 	public void run(TaskMonitor tm) throws Exception {
 		tm.setTitle("Paste Task");
-		List<CyIdentifiable> pastedObjects;
+		final List<CyIdentifiable> pastedObjects;
+		
 		if (xformPt == null)
 			pastedObjects = clipMgr.paste(view, 0.0, 0.0);
 		else
@@ -71,10 +70,13 @@ public class PasteTask extends AbstractNetworkViewTask {
 			return;
 		}
 
-		undoSupport.postEdit(new PasteEdit(vmm, view, xformPt, clipMgr, pastedObjects));
+		final UndoSupport undoSupport = serviceRegistrar.getService(UndoSupport.class);
+		undoSupport.postEdit(new PasteEdit(view, xformPt, clipMgr, pastedObjects, serviceRegistrar));
 		
 		// Apply visual style
-		VisualStyle vs = vmm.getVisualStyle(view);
+		final VisualMappingManager vmMgr = serviceRegistrar.getService(VisualMappingManager.class);
+		VisualStyle vs = vmMgr.getVisualStyle(view);
+		
 		for (CyIdentifiable element: pastedObjects) {
 			View<? extends CyIdentifiable> elementView = null;
 			if (element instanceof CyNode)
