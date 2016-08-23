@@ -1,8 +1,10 @@
-
-
-
-
 package org.cytoscape.event.internal;
+
+import java.util.Properties;
+
+import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.service.util.AbstractCyActivator;
+import org.osgi.framework.BundleContext;
 
 /*
  * #%L
@@ -10,7 +12,7 @@ package org.cytoscape.event.internal;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -28,24 +30,13 @@ package org.cytoscape.event.internal;
  * #L%
  */
 
-
-import org.cytoscape.event.internal.CyEventHelperImpl;
-import org.cytoscape.event.internal.CyListenerAdapter;
-import org.cytoscape.event.CyEventHelper;
-import org.osgi.framework.BundleContext;
-import org.cytoscape.service.util.AbstractCyActivator;
-import java.util.Properties;
-
 public class CyActivator extends AbstractCyActivator {
-	public CyActivator() {
-		super();
-	}
 
+	@Override
 	public void start(BundleContext bc) {
 		CyListenerAdapter cyListenerAdapter = new CyListenerAdapter(bc);
 		CyEventHelperImpl cyEventHelper = new CyEventHelperImpl(cyListenerAdapter);
-		
-		registerService(bc,cyEventHelper,CyEventHelper.class, new Properties());
+
+		registerService(bc, cyEventHelper, CyEventHelper.class, new Properties());
 	}
 }
-

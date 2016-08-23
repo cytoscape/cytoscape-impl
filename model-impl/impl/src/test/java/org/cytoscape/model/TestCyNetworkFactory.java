@@ -1,30 +1,5 @@
 package org.cytoscape.model;
 
-/*
- * #%L
- * Cytoscape Model Impl (model-impl)
- * $Id:$
- * $HeadURL:$
- * %%
- * Copyright (C) 2008 - 2013 The Cytoscape Consortium
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * #L%
- */
-
-
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -51,6 +26,29 @@ import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+/*
+ * #%L
+ * Cytoscape Model Impl (model-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2008 - 2016 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
 
 public class TestCyNetworkFactory {
 	
@@ -73,7 +71,7 @@ public class TestCyNetworkFactory {
 		when(serviceRegistrar.getService(CyNetworkNaming.class)).thenReturn(namingUtil);
 		
 		Interpreter interp = new InterpreterImpl();
-		EquationCompiler compiler = new EquationCompilerImpl(new EquationParserImpl(eh));
+		EquationCompiler compiler = new EquationCompilerImpl(new EquationParserImpl(serviceRegistrar));
 
 		netTblMgr = new CyNetworkTableManagerImpl();
 		netMgr = new CyNetworkManagerImpl(serviceRegistrar);
@@ -138,7 +136,7 @@ public class TestCyNetworkFactory {
 	public static CyRootNetwork getPublicRootInstance(DummyCyEventHelper deh, SavePolicy policy) {
 		CyNetworkNaming namingUtil = mock(CyNetworkNaming.class);
 		CyServiceRegistrar serviceRegistrar = mock(CyServiceRegistrar.class);
-		EquationCompiler compiler = new EquationCompilerImpl(new EquationParserImpl(deh));
+		EquationCompiler compiler = new EquationCompilerImpl(new EquationParserImpl(serviceRegistrar));
 		
 		when(serviceRegistrar.getService(CyEventHelper.class)).thenReturn(deh);
 		when(serviceRegistrar.getService(CyNetworkNaming.class)).thenReturn(namingUtil);
@@ -161,7 +159,7 @@ public class TestCyNetworkFactory {
 		DummyCyEventHelper deh = new DummyCyEventHelper();
 		CyNetworkNaming namingUtil = mock(CyNetworkNaming.class);
 		CyServiceRegistrar serviceRegistrar = mock(CyServiceRegistrar.class);
-		EquationCompiler compiler = new EquationCompilerImpl(new EquationParserImpl(deh));
+		EquationCompiler compiler = new EquationCompilerImpl(new EquationParserImpl(serviceRegistrar));
 		
 		when(serviceRegistrar.getService(CyEventHelper.class)).thenReturn(deh);
 		when(serviceRegistrar.getService(CyNetworkNaming.class)).thenReturn(namingUtil);

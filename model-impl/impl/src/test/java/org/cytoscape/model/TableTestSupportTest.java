@@ -1,12 +1,31 @@
 package org.cytoscape.model;
 
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+import java.util.Random;
+
+import org.cytoscape.equations.EquationCompiler;
+import org.cytoscape.equations.internal.EquationCompilerImpl;
+import org.cytoscape.equations.internal.EquationParserImpl;
+import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.model.events.TableAddedEvent;
+import org.cytoscape.model.internal.CyNetworkManagerImpl;
+import org.cytoscape.model.internal.CyNetworkTableManagerImpl;
+import org.cytoscape.model.internal.CyTableImpl;
+import org.cytoscape.model.internal.CyTableManagerImpl;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.session.CyNetworkNaming;
+import org.junit.After;
+import org.junit.Before;
+
 /*
  * #%L
  * Cytoscape Model Impl (model-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -23,28 +42,6 @@ package org.cytoscape.model;
  * <http://www.gnu.org/licenses/lgpl-2.1.html>.
  * #L%
  */
-
-
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
-import org.cytoscape.equations.EquationCompiler;
-import org.cytoscape.equations.internal.EquationCompilerImpl;
-import org.cytoscape.equations.internal.EquationParserImpl;
-import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.model.CyIdentifiable;
-import org.cytoscape.model.events.TableAddedEvent;
-import org.cytoscape.model.internal.CyNetworkManagerImpl;
-import org.cytoscape.model.internal.CyNetworkTableManagerImpl;
-import org.cytoscape.model.internal.CyTableImpl;
-import org.cytoscape.model.internal.CyTableManagerImpl;
-import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.session.CyNetworkNaming;
-import org.junit.Before;
-import org.junit.After;
-
-import java.util.Random;
-
 
 /**
  * This will verify that the network created by NetworkTestSupport
@@ -75,7 +72,7 @@ public class TableTestSupportTest extends AbstractCyTableTest {
 		table = factory.createTable(Integer.toString( rand.nextInt(10000) ), CyIdentifiable.SUID, Long.class, false, true);
 		table2 = factory.createTable(Integer.toString( rand.nextInt(10000) ), CyIdentifiable.SUID, Long.class, false, true);
 		attrs = table.getRow(1l);
-		EquationCompiler compiler = new EquationCompilerImpl(new EquationParserImpl(eventHelper));
+		EquationCompiler compiler = new EquationCompilerImpl(new EquationParserImpl(serviceRegistrar));
 		CyTableManagerImpl tblMgr = new CyTableManagerImpl(eventHelper,new CyNetworkTableManagerImpl(), 
 				new CyNetworkManagerImpl(serviceRegistrar), compiler);
 		tblMgr.addTable(table);

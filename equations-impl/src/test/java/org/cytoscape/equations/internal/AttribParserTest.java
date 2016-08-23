@@ -1,12 +1,27 @@
 package org.cytoscape.equations.internal;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import org.cytoscape.equations.EquationParser;
+import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.event.DummyCyEventHelper;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.junit.Before;
+import org.junit.Test;
+
 /*
  * #%L
  * Cytoscape Equations Impl (equations-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2010 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,33 +39,37 @@ package org.cytoscape.equations.internal;
  * #L%
  */
 
+public class AttribParserTest {
+	
+	private CyServiceRegistrar serviceRegistrar;
+	private CyEventHelper eventHelper;
+	private EquationParser parser;
+	
+	@Before
+	public void init() {
+		eventHelper = new DummyCyEventHelper();
+		
+		serviceRegistrar = mock(CyServiceRegistrar.class);
+		when(serviceRegistrar.getService(CyEventHelper.class)).thenReturn(eventHelper);
+		
+		parser = new EquationParserImpl(serviceRegistrar);
+	}
 
-import java.util.HashMap;
-import java.util.Map;
-
-import junit.framework.*;
-
-import org.cytoscape.equations.EquationParser;
-import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.event.DummyCyEventHelper;
-
-
-public class AttribParserTest extends TestCase {
-	private final CyEventHelper eventHelper = new DummyCyEventHelper();
-	private final EquationParser parser = new EquationParserImpl(eventHelper);
-
+	@Test
 	public void testSimpleExpr() throws Exception {
 		final Map<String, Class<?>> attribNameToTypeMap = new HashMap<String, Class<?>>();
 		attribNameToTypeMap.put("BOB", Double.class);
 		assertTrue(parser.parse("=42 - 12 + 3 * (4 - 2) + ${BOB:12}", attribNameToTypeMap));
 	}
 
+	@Test
 	public void testStringVarDefault() throws Exception {
 		final Map<String, Class<?>> attribNameToTypeMap = new HashMap<String, Class<?>>();
 		attribNameToTypeMap.put("STR", String.class);
 		assertTrue(parser.parse("=${STR:\"xyz\"}", attribNameToTypeMap));
 	}
 
+	@Test
 	public void testUnaryPlusAndMinus() throws Exception {
 		final Map<String, Class<?>> attribNameToTypeMap = new HashMap<String, Class<?>>();
 		attribNameToTypeMap.put("attr1", Double.class);
@@ -59,16 +78,19 @@ public class AttribParserTest extends TestCase {
 		assertTrue(parser.parse("=+(${attr1} + ${attr2})", attribNameToTypeMap));
 	}
 
+	@Test
 	public void testFunctionCall() throws Exception {
 		final Map<String, Class<?>> attribNameToTypeMap = new HashMap<String, Class<?>>();
 		assertTrue(parser.parse("=42 + log(4 - 2)", attribNameToTypeMap));
 	}
 
+	@Test
 	public void testExponentiation() throws Exception {
 		final Map<String, Class<?>> attribNameToTypeMap = new HashMap<String, Class<?>>();
 		assertTrue(parser.parse("=2^3^4 - 0.0002", attribNameToTypeMap));
 	}
 
+	@Test
 	public void testComparisons() throws Exception {
 		final Map<String, Class<?>> attribNameToTypeMap = new HashMap<String, Class<?>>();
 		attribNameToTypeMap.put("x", Double.class);
@@ -78,6 +100,7 @@ public class AttribParserTest extends TestCase {
 		assertTrue(parser.parse("=-15.4^3 > ${limit}", attribNameToTypeMap));
 	}
 
+	@Test
 	public void testVarargs() throws Exception {
 		final Map<String, Class<?>> attribNameToTypeMap = new HashMap<String, Class<?>>();
 		assertFalse(parser.parse("=LOG()", attribNameToTypeMap));
@@ -86,6 +109,7 @@ public class AttribParserTest extends TestCase {
 		assertFalse(parser.parse("=LOG(1,2,3)", attribNameToTypeMap));
 	}
 
+	@Test
 	public void testFixedargs() throws Exception {
 		final Map<String, Class<?>> attribNameToTypeMap = new HashMap<String, Class<?>>();
 		assertFalse(parser.parse("=ABS()", attribNameToTypeMap));
@@ -93,6 +117,7 @@ public class AttribParserTest extends TestCase {
 		assertFalse(parser.parse("=ABS(1,2)", attribNameToTypeMap));
 	}
 
+	@Test
 	public void testNOT() throws Exception {
 		final Map<String, Class<?>> attribNameToTypeMap = new HashMap<String, Class<?>>();
 		attribNameToTypeMap.put("logical", Boolean.class);
@@ -104,12 +129,14 @@ public class AttribParserTest extends TestCase {
 		assertFalse(parser.parse("=NOT(true, true)", attribNameToTypeMap));
 	}
 
+	@Test
 	public void testUPPERandLOWER() throws Exception {
 		final Map<String, Class<?>> attribNameToTypeMap = new HashMap<String, Class<?>>();
 		assertTrue(parser.parse("=UPPER(\"Fred\")", attribNameToTypeMap));
 		assertTrue(parser.parse("=\"bozo\"&LOWER(\"UPPER\")", attribNameToTypeMap));
 	}
 
+	@Test
 	public void testBracelessAttribReferences() throws Exception {
 		final Map<String, Class<?>> attribNameToTypeMap = new HashMap<String, Class<?>>();
 		attribNameToTypeMap.put("BOB", Double.class);
@@ -117,12 +144,14 @@ public class AttribParserTest extends TestCase {
 		assertTrue(parser.parse("=$BOB+$FRED", attribNameToTypeMap));
 	}
 
+	@Test
 	public void testIntegerToFloatingPointConversion() throws Exception {
 		final Map<String, Class<?>> attribNameToTypeMap = new HashMap<String, Class<?>>();
 		attribNameToTypeMap.put("BOB", Long.class);
 		assertTrue(parser.parse("=$BOB > 5.3", attribNameToTypeMap));
 	}
 
+	@Test
 	public void testMixedModeArithmetic() throws Exception {
 		final Map<String, Class<?>> attribNameToTypeMap = new HashMap<String, Class<?>>();
 		attribNameToTypeMap.put("x", Long.class);

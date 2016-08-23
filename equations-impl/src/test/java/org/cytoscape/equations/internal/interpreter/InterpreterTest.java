@@ -1,12 +1,33 @@
 package org.cytoscape.equations.internal.interpreter;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.cytoscape.equations.Function;
+import org.cytoscape.equations.IdentDescriptor;
+import org.cytoscape.equations.Interpreter;
+import org.cytoscape.equations.internal.EquationCompilerImpl;
+import org.cytoscape.equations.internal.EquationParserImpl;
+import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.event.DummyCyEventHelper;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.junit.Before;
+import org.junit.Test;
+
 /*
  * #%L
  * Cytoscape Equations Impl (equations-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2010 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,24 +45,8 @@ package org.cytoscape.equations.internal.interpreter;
  * #L%
  */
 
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import junit.framework.TestCase;
-
-import org.cytoscape.equations.EquationParser;
-import org.cytoscape.equations.Function;
-import org.cytoscape.equations.IdentDescriptor;
-import org.cytoscape.equations.Interpreter;
-import org.cytoscape.equations.internal.EquationCompilerImpl;
-import org.cytoscape.equations.internal.EquationParserImpl;
-import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.event.DummyCyEventHelper;
-
-
-public class InterpreterTest extends TestCase {
+public class InterpreterTest {
+	
 	static private class BadReturnFunction implements Function {
 		public String getName() { return "BAD"; }
 		public String getFunctionSummary() { return "Returns an invalid type at runtime."; }
@@ -52,11 +57,25 @@ public class InterpreterTest extends TestCase {
 		public List<Class<?>> getPossibleArgTypes(final Class<?>[] leadingArgs) { return null; }
 	}
 	
-	private final CyEventHelper eventHelper = new DummyCyEventHelper();
-	private final EquationParserImpl parser = new EquationParserImpl(eventHelper);
-	private final EquationCompilerImpl compiler = new EquationCompilerImpl(parser);
-	private final Interpreter interpreter = new InterpreterImpl();
+	private CyServiceRegistrar serviceRegistrar;
+	private CyEventHelper eventHelper;
+	private EquationParserImpl parser;
+	private EquationCompilerImpl compiler;
+	private Interpreter interpreter;
 
+	@Before
+	public void init() {
+		eventHelper = new DummyCyEventHelper();
+		
+		serviceRegistrar = mock(CyServiceRegistrar.class);
+		when(serviceRegistrar.getService(CyEventHelper.class)).thenReturn(eventHelper);
+		
+		parser = new EquationParserImpl(serviceRegistrar);
+		compiler = new EquationCompilerImpl(parser);
+		interpreter = new InterpreterImpl();
+	}
+	
+	@Test
 	public void testSimpleStringConcatExpr() throws Exception {
 		final Map<String, Class<?>> attribNameToTypeMap = new HashMap<String, Class<?>>();
 		attribNameToTypeMap.put("s1", String.class);
@@ -66,6 +85,7 @@ public class InterpreterTest extends TestCase {
 		assertEquals("FredBob", interpreter.execute(compiler.getEquation(), nameToDescriptorMap));
 	}
 
+	@Test
 	public void testSimpleExpr() throws Exception {
 		final Map<String, Class<?>> attribNameToTypeMap = new HashMap<String, Class<?>>();
 		attribNameToTypeMap.put("BOB", Double.class);
@@ -75,6 +95,7 @@ public class InterpreterTest extends TestCase {
 		assertEquals(new Double(26.0), interpreter.execute(compiler.getEquation(), nameToDescriptorMap));
 	}
 
+	@Test
 	public void testUnaryPlusAndMinus() throws Exception {
 		final Map<String, Class<?>> attribNameToTypeMap = new HashMap<String, Class<?>>();
 		attribNameToTypeMap.put("attr1", Double.class);
@@ -87,6 +108,7 @@ public class InterpreterTest extends TestCase {
 		assertEquals(new Double(12.0), interpreter.execute(compiler.getEquation(), nameToDescriptorMap));
 	}
 
+	@Test
 	public void testBinaryMinus() throws Exception {
 		final Map<String, Class<?>> attribNameToTypeMap = new HashMap<String, Class<?>>();
 		attribNameToTypeMap.put("attr1", Double.class);
@@ -99,6 +121,7 @@ public class InterpreterTest extends TestCase {
 		assertEquals(new Double(-0.5), interpreter.execute(compiler.getEquation(), nameToDescriptorMap));
 	}
 
+	@Test
 	public void testUnaryPlusAndMinus2() throws Exception {
 		final Map<String, Class<?>> attribNameToTypeMap = new HashMap<String, Class<?>>();
 		attribNameToTypeMap.put("attr1", Long.class);
@@ -108,6 +131,7 @@ public class InterpreterTest extends TestCase {
 		assertEquals(new Double(-5.0), interpreter.execute(compiler.getEquation(), nameToDescriptorMap));
 	}
 
+	@Test
 	public void testFunctionCall() throws Exception {
 		final Map<String, Class<?>> attribNameToTypeMap = new HashMap<String, Class<?>>();
 		assertTrue(compiler.compile("=42 + log(4 - 2)", attribNameToTypeMap));
@@ -116,6 +140,7 @@ public class InterpreterTest extends TestCase {
 			     interpreter.execute(compiler.getEquation(), nameToDescriptorMap));
 	}
 
+	@Test
 	public void testExponentiation() throws Exception {
 		final Map<String, Class<?>> attribNameToTypeMap = new HashMap<String, Class<?>>();
 		assertTrue(compiler.compile("=2^3^4 - 0.0002", attribNameToTypeMap));
@@ -124,6 +149,7 @@ public class InterpreterTest extends TestCase {
 			     interpreter.execute(compiler.getEquation(), nameToDescriptorMap));
 	}
 
+	@Test
 	public void testComparisons() throws Exception {
 		final Map<String, Class<?>> attribNameToTypeMap = new HashMap<String, Class<?>>();
 		attribNameToTypeMap.put("x", Double.class);
@@ -140,6 +166,7 @@ public class InterpreterTest extends TestCase {
 		assertEquals(new Boolean(true), interpreter.execute(compiler.getEquation(), nameToDescriptorMap));
 	}
 
+	@Test
 	public void testVarargs() throws Exception {
 		final Map<String, Class<?>> attribNameToTypeMap = new HashMap<String, Class<?>>();
 		assertFalse(compiler.compile("=LOG()", attribNameToTypeMap));
@@ -151,6 +178,7 @@ public class InterpreterTest extends TestCase {
 		assertFalse(compiler.compile("=LOG(1,2,3)", attribNameToTypeMap));
 	}
 
+	@Test
 	public void testFixedArgs() throws Exception {
 		final Map<String, Class<?>> attribNameToTypeMap = new HashMap<String, Class<?>>();
 		assertFalse(compiler.compile("=ABS()", attribNameToTypeMap));
@@ -160,6 +188,7 @@ public class InterpreterTest extends TestCase {
 		assertFalse(compiler.compile("=ABS(1,2)", attribNameToTypeMap));
 	}
 
+	@Test
 	public void testDEFINED() throws Exception {
 		final Map<String, Class<?>> attribNameToTypeMap = new HashMap<String, Class<?>>();
 		attribNameToTypeMap.put("x", Double.class);
@@ -172,6 +201,7 @@ public class InterpreterTest extends TestCase {
 		assertEquals(new Boolean(false), interpreter.execute(compiler.getEquation(), nameToDescriptorMap));
 	}
 
+	@Test
 	public void testIntegerToFloatingPointConversion() throws Exception {
 		final Map<String, Class<?>> attribNameToTypeMap = new HashMap<String, Class<?>>();
 		attribNameToTypeMap.put("BOB", Long.class);
@@ -186,6 +216,7 @@ public class InterpreterTest extends TestCase {
 		assertEquals(new Boolean(true), interpreter.execute(compiler.getEquation(), nameToDescriptorMap));
 	}
 
+	@Test
 	public void testMixedModeArithmetic() throws Exception {
 		final Map<String, Class<?>> attribNameToTypeMap = new HashMap<String, Class<?>>();
 		attribNameToTypeMap.put("x", Long.class);
@@ -200,6 +231,7 @@ public class InterpreterTest extends TestCase {
 		assertEquals(new Double(2.0), interpreter.execute(compiler.getEquation(), nameToDescriptorMap));
 	}
 
+	@Test
 	public void testFunctionWithBadRuntimeReturnType() throws Exception {
 		final Function badReturnFunction = new BadReturnFunction();
 		if (parser.getFunction(badReturnFunction.getName()) == null) // Avoid duplicate registration!
@@ -216,6 +248,7 @@ public class InterpreterTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testComparisonsWithBooleans() throws Exception {
 		final Map<String, Class<?>> attribNameToTypeMap = new HashMap<String, Class<?>>();
 		final Map<String, IdentDescriptor> nameToDescriptorMap = new HashMap<String, IdentDescriptor>();

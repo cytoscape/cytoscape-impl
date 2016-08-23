@@ -83,11 +83,12 @@ public class SourceIDTest {
 		
 		serviceRegistrar = mock(CyServiceRegistrar.class);
 		when(serviceRegistrar.getService(CyApplicationManager.class)).thenReturn(applicationManager);
+		when(serviceRegistrar.getService(CyEventHelper.class)).thenReturn(eventHelper);
 	}
 
 	@Test
 	public void test() {
-		final EquationParserImpl parser = new EquationParserImpl(eventHelper);
+		final EquationParserImpl parser = new EquationParserImpl(serviceRegistrar);
 		final EquationCompilerImpl compiler = new EquationCompilerImpl(parser);
 		parser.registerFunctionInternal(new SourceID(serviceRegistrar));
 		final Map<String, Class<?>> variableNameToTypeMap = new HashMap<String, Class<?>>();
