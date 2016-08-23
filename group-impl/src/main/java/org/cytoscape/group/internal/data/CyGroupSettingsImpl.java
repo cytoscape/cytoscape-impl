@@ -1,12 +1,42 @@
 package org.cytoscape.group.internal.data;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+
+import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.group.CyGroup;
+import org.cytoscape.group.CyGroupSettingsManager;
+import org.cytoscape.group.data.Aggregator;
+import org.cytoscape.group.data.AttributeHandlingType;
+import org.cytoscape.group.events.GroupAddedEvent;
+import org.cytoscape.group.events.GroupAddedListener;
+import org.cytoscape.group.internal.CyGroupImpl;
+import org.cytoscape.group.internal.CyGroupManagerImpl;
+import org.cytoscape.model.CyColumn;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNode;
+import org.cytoscape.model.CyTable;
+import org.cytoscape.model.events.NetworkAddedEvent;
+import org.cytoscape.model.events.NetworkAddedListener;
+import org.cytoscape.property.AbstractConfigDirPropsReader;
+import org.cytoscape.property.CyProperty;
+import org.cytoscape.property.PropertyUpdatedEvent;
+import org.cytoscape.property.PropertyUpdatedListener;
+import org.cytoscape.service.util.CyServiceRegistrar;
+
 /*
  * #%L
- * Cytoscape Group Data Impl (group-data-impl)
+ * Cytoscape Groups Impl (group-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2008 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,47 +54,6 @@ package org.cytoscape.group.internal.data;
  * #L%
  */
 
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.model.CyColumn;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyTable;
-import org.cytoscape.model.events.NetworkAddedEvent;
-import org.cytoscape.model.events.NetworkAddedListener;
-
-import org.cytoscape.work.AbstractTask;
-import org.cytoscape.work.TaskMonitor;
-import org.cytoscape.work.Tunable;
-import org.cytoscape.work.ContainsTunables;
-
-import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.group.CyGroup;
-import org.cytoscape.group.CyGroupSettingsManager;
-import org.cytoscape.group.CyGroupSettingsManager.DoubleClickAction;
-import org.cytoscape.group.CyGroupSettingsManager.GroupViewType;
-import org.cytoscape.group.internal.CyGroupImpl;
-import org.cytoscape.group.internal.CyGroupManagerImpl;
-import org.cytoscape.group.data.Aggregator;
-import org.cytoscape.group.data.AttributeHandlingType;
-import org.cytoscape.group.data.CyGroupAggregationManager;
-import org.cytoscape.group.events.GroupAddedEvent;
-import org.cytoscape.group.events.GroupAddedListener;
-import org.cytoscape.property.CyProperty;
-import org.cytoscape.property.CyProperty.SavePolicy;
-import org.cytoscape.property.SimpleCyProperty;
-import org.cytoscape.property.AbstractConfigDirPropsReader;
-import org.cytoscape.property.PropertyUpdatedEvent;
-import org.cytoscape.property.PropertyUpdatedListener;
-import org.cytoscape.service.util.CyServiceRegistrar;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-
 /**
  * This class provides the context for both the global group settings and the
  * group-specific group settings.
@@ -73,13 +62,14 @@ public class CyGroupSettingsImpl implements GroupAddedListener,
                                             NetworkAddedListener,
                                             PropertyUpdatedListener,
                                             CyGroupSettingsManager {
+	
 	final CyGroupManagerImpl cyGroupManager;
 	final CyGroupAggregationManagerImpl cyAggManager;
 	final CyServiceRegistrar cyServiceRegistrar;
 	final CyApplicationManager appMgr;
 	final CyEventHelper eventHelper;
 
-	CyProperty<Properties> groupSettingsProperties = null;
+	CyProperty<Properties> groupSettingsProperties;
 
 	// Column names for serialization/deserialization of group settings
 	public final static String AGGREGATION_SETTINGS = "__AggregationSettings";

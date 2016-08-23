@@ -1,29 +1,5 @@
 package org.cytoscape.group.internal.view;
 
-/*
- * #%L
- * Cytoscape Group View Impl (group-view-impl)
- * $Id:$
- * $HeadURL:$
- * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * #L%
- */
-
 import java.awt.Dimension;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -31,7 +7,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.group.CyGroup;
 import org.cytoscape.group.CyGroupSettingsManager.GroupViewType;
@@ -69,6 +44,30 @@ import org.cytoscape.view.vizmap.VisualStyle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/*
+ * #%L
+ * Cytoscape Groups Impl (group-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
+
 /**
  * Handle the view portion of group collapse/expand
  */
@@ -82,13 +81,11 @@ public class GroupViewCollapseHandler implements GroupAboutToCollapseListener,
 
 	private final CyGroupManagerImpl cyGroupManager;
 	private final CyGroupSettingsImpl cyGroupSettings;
-	private final CyEventHelper cyEventHelper;
 	private final NodeChangeListener nodeChangeListener;
-	private final CyApplicationManager appMgr;
-	private CyNetworkManager cyNetworkManager = null;
-	private CyNetworkViewManager cyNetworkViewManager = null;
-	private CyNetworkViewFactory cyNetworkViewFactory = null;
-	private VisualMappingManager cyStyleManager = null;
+	private CyNetworkManager cyNetworkManager;
+	private CyNetworkViewManager cyNetworkViewManager;
+	private CyNetworkViewFactory cyNetworkViewFactory;
+	private VisualMappingManager cyStyleManager;
 	private static final Logger logger = LoggerFactory.getLogger(GroupViewCollapseHandler.class);
 	private static final VisualProperty<Double> xLoc = BasicVisualLexicon.NODE_X_LOCATION;
 	private static final VisualProperty<Double> yLoc = BasicVisualLexicon.NODE_Y_LOCATION;
@@ -99,27 +96,20 @@ public class GroupViewCollapseHandler implements GroupAboutToCollapseListener,
 	private static final String ISMEMBER_EDGE_ATTR = "__isMemberEdge";
 	private static final int Z_OFFSET = -100; // Offset for group nodes
 
-	/**
-	 * 
-	 * @param cyEventHelper
-	 */
 	public GroupViewCollapseHandler(final CyGroupManagerImpl groupManager,
 	                                final CyGroupSettingsImpl groupSettings,
-	                                final NodeChangeListener nodeChangeListener,
-		                              final CyEventHelper cyEventHelper) {
+	                                final NodeChangeListener nodeChangeListener) {
 		this.cyGroupManager = groupManager;
 		this.cyGroupSettings = groupSettings;
 		this.nodeChangeListener = nodeChangeListener;
-		this.cyEventHelper = cyEventHelper;
-		this.appMgr = cyGroupManager.getService(CyApplicationManager.class);
 	}
-
 
 	/**
 	 * This is called when the user changes the view type for a particular
 	 * group.  We want to respond and change the visualization right away,
 	 * from the old visual type to the new visual type.
 	 */
+	@Override
 	public void handleEvent(GroupViewTypeChangedEvent e) {
 		getServices();
 		GroupViewType oldType = e.getOldType();
@@ -174,6 +164,7 @@ public class GroupViewCollapseHandler implements GroupAboutToCollapseListener,
 
 	}
 
+	@Override
 	public void handleEvent(GroupAboutToCollapseEvent e) {
 		getServices();
 		CyNetwork network = e.getNetwork();
@@ -181,9 +172,9 @@ public class GroupViewCollapseHandler implements GroupAboutToCollapseListener,
 		CyRootNetwork rootNetwork = group.getRootNetwork();
 		final Collection<CyNetworkView> views = cyNetworkViewManager.getNetworkViews(network);
 		CyNetworkView view = null;
-		if(views.size() == 0) {
+		
+		if (views.size() == 0)
 			return;
-		}
 
 		for (CyNetworkView v: views) {
 			if (v.getRendererId().equals("org.cytoscape.ding")) {
@@ -225,6 +216,7 @@ public class GroupViewCollapseHandler implements GroupAboutToCollapseListener,
 		}
 	}
 
+	@Override
 	public void handleEvent(GroupCollapsedEvent e) {
 		getServices();
 		CyNetwork network = e.getNetwork();
@@ -346,6 +338,7 @@ public class GroupViewCollapseHandler implements GroupAboutToCollapseListener,
 				}
 
 				// Flush events so that the view hears about it
+				final CyEventHelper cyEventHelper = cyGroupManager.getService(CyEventHelper.class);
 				cyEventHelper.flushPayloadEvents();
 
 				// Now, call ourselves as if we had been collapsed
@@ -385,6 +378,7 @@ public class GroupViewCollapseHandler implements GroupAboutToCollapseListener,
 		view.updateView();
 	}
 
+	@Override
 	public void handleEvent(GroupAddedEvent e) {
 		getServices();
 		CyGroup group = e.getGroup();
@@ -420,6 +414,7 @@ public class GroupViewCollapseHandler implements GroupAboutToCollapseListener,
 	 * If a group is destroyed, and it's a compound node, we need to fix up a
 	 * bunch of things.
 	 */
+	@Override
 	public void handleEvent(GroupAboutToBeDestroyedEvent e) {
 		getServices();
 		CyGroup group = e.getGroup();
@@ -451,13 +446,13 @@ public class GroupViewCollapseHandler implements GroupAboutToCollapseListener,
 		}
 	}
 
-
 	/**
 	 * We need to do some fixup after we load the session for compound nodes.
 	 * When the session gets loaded, we don't (yet) have a view.  We need to 
 	 * go through and kick update things to work properly if we have a view
 	 * after the session gets loaded.
 	 */
+	@Override
 	public void handleEvent(SessionLoadedEvent e) {
 		getServices();
 		// System.out.println("SessionLoadedEvent");

@@ -1,12 +1,40 @@
 package org.cytoscape.group;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.event.DummyCyEventHelper;
+import org.cytoscape.group.internal.CyGroupFactoryImpl;
+import org.cytoscape.group.internal.CyGroupManagerImpl;
+import org.cytoscape.group.internal.LockedVisualPropertiesManager;
+import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNode;
+import org.cytoscape.model.NetworkTestSupport;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.view.model.CyNetworkViewManager;
+import org.cytoscape.view.vizmap.VisualMappingManager;
+import org.junit.Test;
+
 /*
  * #%L
  * Cytoscape Groups Impl (group-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2008 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,47 +52,21 @@ package org.cytoscape.group;
  * #L%
  */
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Set;
-import java.util.HashSet;
-
-import org.cytoscape.event.DummyCyEventHelper;
-import org.cytoscape.group.internal.CyGroupFactoryImpl;
-import org.cytoscape.group.internal.CyGroupManagerImpl;
-import org.cytoscape.group.internal.LockedVisualPropertiesManager;
-import org.cytoscape.model.CyEdge;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNode;
-import org.cytoscape.model.NetworkTestSupport;
-import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.view.model.CyNetworkViewManager;
-import org.cytoscape.view.vizmap.VisualMappingManager;
-import org.junit.Test;
-
-
 public class TestCyGroupFactory {
-	public TestCyGroupFactory() { }
-
+	
 	public static CyGroupFactory getFactory() {
-		DummyCyEventHelper deh = new DummyCyEventHelper();
+		final DummyCyEventHelper eventHelper = new DummyCyEventHelper();
+		final VisualMappingManager vmMgr = mock(VisualMappingManager.class);
+		final CyNetworkViewManager netViewMgr = mock(CyNetworkViewManager.class);
 		
 		final CyServiceRegistrar serviceRegistrar = mock(CyServiceRegistrar.class);
-		CyGroupManagerImpl mgr = new CyGroupManagerImpl(serviceRegistrar, deh);
-
-		final VisualMappingManager vmMgr = mock(VisualMappingManager.class);
+		when(serviceRegistrar.getService(CyEventHelper.class)).thenReturn(eventHelper);
 		when(serviceRegistrar.getService(VisualMappingManager.class)).thenReturn(vmMgr);
-		final CyNetworkViewManager netViewMgr = mock(CyNetworkViewManager.class);
 		when(serviceRegistrar.getService(CyNetworkViewManager.class)).thenReturn(netViewMgr);
 		
+		final CyGroupManagerImpl mgr = new CyGroupManagerImpl(serviceRegistrar);
 		final LockedVisualPropertiesManager lvpMgr = new LockedVisualPropertiesManager(serviceRegistrar);
-		
-		CyGroupFactoryImpl groupFactory = new CyGroupFactoryImpl(mgr, lvpMgr, deh);
+		final CyGroupFactoryImpl groupFactory = new CyGroupFactoryImpl(mgr, lvpMgr);
 		
 		return groupFactory; 
 	}

@@ -1,12 +1,23 @@
 package org.cytoscape.group;
 
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.group.internal.CyGroupFactoryImpl;
+import org.cytoscape.group.internal.CyGroupManagerImpl;
+import org.cytoscape.group.internal.LockedVisualPropertiesManager;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.view.model.CyNetworkViewManager;
+import org.cytoscape.view.vizmap.VisualMappingManager;
+
 /*
  * #%L
  * Cytoscape Groups Impl (group-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,34 +35,25 @@ package org.cytoscape.group;
  * #L%
  */
 
-import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.group.internal.CyGroupFactoryImpl;
-import org.cytoscape.group.internal.CyGroupManagerImpl;
-import org.cytoscape.group.internal.LockedVisualPropertiesManager;
-import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.view.model.CyNetworkViewManager;
-import org.cytoscape.view.vizmap.VisualMappingManager;
-
-import static org.mockito.Mockito.*;
-
 public class GroupTestSupport {
 
 	protected CyGroupFactory groupFactory;
 	protected CyGroupManagerImpl groupManager;
 	
 	public GroupTestSupport() {
-		final CyEventHelper help = mock(CyEventHelper.class);
+		final CyEventHelper eventHelper = mock(CyEventHelper.class);
+		final VisualMappingManager vmMgr = mock(VisualMappingManager.class);
+		final CyNetworkViewManager netViewMgr = mock(CyNetworkViewManager.class);
 		
 		final CyServiceRegistrar serviceRegistrar = mock(CyServiceRegistrar.class);
-		final VisualMappingManager vmMgr = mock(VisualMappingManager.class);
+		when(serviceRegistrar.getService(CyEventHelper.class)).thenReturn(eventHelper);
 		when(serviceRegistrar.getService(VisualMappingManager.class)).thenReturn(vmMgr);
-		final CyNetworkViewManager netViewMgr = mock(CyNetworkViewManager.class);
 		when(serviceRegistrar.getService(CyNetworkViewManager.class)).thenReturn(netViewMgr);
 		
 		final LockedVisualPropertiesManager lvpMgr = new LockedVisualPropertiesManager(serviceRegistrar);
 		
-		groupManager = new CyGroupManagerImpl(serviceRegistrar, help);
-		groupFactory = new CyGroupFactoryImpl(groupManager, lvpMgr, help);
+		groupManager = new CyGroupManagerImpl(serviceRegistrar);
+		groupFactory = new CyGroupFactoryImpl(groupManager, lvpMgr);
 	}
 
 	public CyGroupFactory getGroupFactory() {

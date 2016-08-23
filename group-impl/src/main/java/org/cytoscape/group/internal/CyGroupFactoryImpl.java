@@ -1,12 +1,21 @@
 package org.cytoscape.group.internal;
 
+import java.util.List;
+
+import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.group.CyGroup;
+import org.cytoscape.group.CyGroupFactory;
+import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNode;
+
 /*
  * #%L
  * Cytoscape Groups Impl (group-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2008 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2008 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,78 +33,44 @@ package org.cytoscape.group.internal;
  * #L%
  */
 
-import java.util.List;
-
-import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.group.CyGroup;
-import org.cytoscape.group.CyGroupFactory;
-import org.cytoscape.model.CyEdge;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNode;
-import org.cytoscape.service.util.CyServiceRegistrar;
-
-
 public class CyGroupFactoryImpl implements CyGroupFactory {
 	
-	private final CyEventHelper help;
 	private final CyGroupManagerImpl mgr;
 	private final LockedVisualPropertiesManager lvpMgr;
 
-	/**
-	 * Creates a new CyNetworkFactoryImpl object.
-	 *
-	 * @param help An instance of CyEventHelper. 
-	 */
-	public CyGroupFactoryImpl(final CyGroupManagerImpl mgr, final LockedVisualPropertiesManager lvpMgr,
-	                          final CyEventHelper help)
-	{
-		if (help == null)
-			throw new NullPointerException("CyEventHelper is null.");
+	public CyGroupFactoryImpl(final CyGroupManagerImpl mgr, final LockedVisualPropertiesManager lvpMgr) {
 		if (mgr == null)
 			throw new NullPointerException("CyGroupManager is null.");
 		if (lvpMgr == null)
 			throw new NullPointerException("LockedVisualPropertiesManager is null.");
 
-		this.help             = help;
-		this.mgr              = mgr;
-		this.lvpMgr         = lvpMgr;
+		this.mgr = mgr;
+		this.lvpMgr = lvpMgr;
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	@Override
 	public CyGroup createGroup(CyNetwork network, boolean register) {
 		return createGroup(network, null, null, null, register);
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	@Override
 	public CyGroup createGroup(CyNetwork network, List<CyNode> nodes, 
 	                           List<CyEdge> edges, boolean register) {
 		return createGroup(network, null, nodes, edges, register);
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	@Override
 	public CyGroup createGroup(CyNetwork network, CyNode node, 
 	                           List<CyNode> nodes, List<CyEdge> edges, boolean register) {
-		CyGroup group = new CyGroupImpl(help, mgr, lvpMgr, network, node, nodes, edges);
+		CyGroup group = new CyGroupImpl(mgr.getService(CyEventHelper.class), mgr, lvpMgr, network, node, nodes, edges);
 		if (register)
 			mgr.addGroup(group);
 		return group;
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	@Override
 	public CyGroup createGroup(CyNetwork network, CyNode node, boolean register) {
-		CyGroup group = new CyGroupImpl(help, mgr, lvpMgr, network, node, null, null);
+		CyGroup group = new CyGroupImpl(mgr.getService(CyEventHelper.class), mgr, lvpMgr, network, node, null, null);
 		if (register)
 			mgr.addGroup(group);
 		return group;

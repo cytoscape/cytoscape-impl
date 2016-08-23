@@ -1,28 +1,5 @@
 package org.cytoscape.group.internal.view;
 
-/*
- * #%L
- * Cytoscape Group View Impl (group-view-impl)
- * $Id:$
- * $HeadURL:$
- * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * #L%
- */
 import java.awt.Dimension;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -42,21 +19,44 @@ import org.cytoscape.session.events.SessionLoadedListener;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualProperty;
+import org.cytoscape.view.model.events.ViewChangeRecord;
 import org.cytoscape.view.model.events.ViewChangedEvent;
 import org.cytoscape.view.model.events.ViewChangedListener;
-import org.cytoscape.view.model.events.ViewChangeRecord;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.vizmap.VisualMappingManager;
+
+/*
+ * #%L
+ * Cytoscape Groups Impl (group-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
 
 /**
  * Handle the view portion of group collapse/expand
  */
-public class NodeChangeListener implements ViewChangedListener, SessionLoadedListener
-{
+public class NodeChangeListener implements ViewChangedListener, SessionLoadedListener {
+	
 	private final CyGroupManagerImpl cyGroupManager;
-	private final CyEventHelper cyEventHelper;
 	private final CyGroupSettingsImpl cyGroupSettings;
-	private VisualMappingManager cyStyleManager = null;
+	private VisualMappingManager cyStyleManager;
 
 	// This is a CyNode to make it faster to reject events we don't
 	// care about
@@ -70,10 +70,8 @@ public class NodeChangeListener implements ViewChangedListener, SessionLoadedLis
 	boolean ignoreChanges = false;
 
 	public NodeChangeListener(final CyGroupManagerImpl groupManager,
-	                          final CyEventHelper eventHelper,
 	                          final CyGroupSettingsImpl cyGroupSettings) {
 		this.cyGroupManager = groupManager;
-		this.cyEventHelper = eventHelper;
 		this.cyGroupSettings = cyGroupSettings;
 		groupMap = new HashMap<>();
 		nodeMap = new HashMap<>();
@@ -125,6 +123,8 @@ public class NodeChangeListener implements ViewChangedListener, SessionLoadedLis
 				}
 			}
 		}
+		
+		final CyEventHelper cyEventHelper = cyGroupManager.getService(CyEventHelper.class);
 		cyEventHelper.flushPayloadEvents(); // Do we need to update the view?
 	}
 
@@ -217,6 +217,8 @@ public class NodeChangeListener implements ViewChangedListener, SessionLoadedLis
 			if (cyGroupManager.isGroup(node, networkView.getModel()))
 				groupNodeList.add(nv);
 		}
+		
+		final CyEventHelper cyEventHelper = cyGroupManager.getService(CyEventHelper.class);
 		cyEventHelper.flushPayloadEvents();
 
 		ViewUtils.updateGroupLocation(networkView.getModel(), group, groupX, groupY);
@@ -225,6 +227,7 @@ public class NodeChangeListener implements ViewChangedListener, SessionLoadedLis
 				updateGroupLocation(networkView, nv);
 			}
 		}
+		
 		ignoreChanges = lastIgnoreChanges;
 		cyEventHelper.flushPayloadEvents();
 	}
@@ -255,6 +258,8 @@ public class NodeChangeListener implements ViewChangedListener, SessionLoadedLis
 		ignoreChanges = true;
 		ViewUtils.styleCompoundNode(group, networkView, cyGroupManager, cyStyleManager, 
 		                            cyGroupSettings.getGroupViewType(group));
+		
+		final CyEventHelper cyEventHelper = cyGroupManager.getService(CyEventHelper.class);
 		cyEventHelper.flushPayloadEvents();
 
 		// OK, a little trickery here.  If our group is itself a node in another group, we

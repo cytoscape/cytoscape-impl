@@ -1,12 +1,30 @@
 package org.cytoscape.group.internal.view;
 
+import java.util.List;
+
+import org.cytoscape.group.CyGroup;
+import org.cytoscape.group.CyGroupSettingsManager.DoubleClickAction;
+import org.cytoscape.group.internal.CyGroupManagerImpl;
+import org.cytoscape.group.internal.data.CyGroupSettingsImpl;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNode;
+import org.cytoscape.model.CyTable;
+import org.cytoscape.model.subnetwork.CyRootNetwork;
+import org.cytoscape.task.AbstractNodeViewTask;
+import org.cytoscape.task.AbstractNodeViewTaskFactory;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.View;
+import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.TaskMonitor;
+
 /*
  * #%L
- * Cytoscape Group View Impl (group-view-impl)
+ * Cytoscape Groups Impl (group-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,29 +42,6 @@ package org.cytoscape.group.internal.view;
  * #L%
  */
 
-import java.util.List;
-
-import org.cytoscape.group.CyGroup;
-import org.cytoscape.group.CyGroupSettingsManager.DoubleClickAction;
-import org.cytoscape.group.internal.CyGroupManagerImpl;
-import org.cytoscape.group.internal.data.CyGroupSettingsImpl;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyTable;
-import org.cytoscape.model.subnetwork.CyRootNetwork;
-import org.cytoscape.task.AbstractNodeViewTask;
-import org.cytoscape.task.AbstractNodeViewTaskFactory;
-import org.cytoscape.work.AbstractTask;
-import org.cytoscape.work.TaskIterator;
-import org.cytoscape.work.TaskMonitor;
-import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.CyNetworkViewManager;
-import org.cytoscape.view.model.View;
-import org.cytoscape.view.vizmap.VisualMappingManager;
-import org.cytoscape.view.vizmap.VisualStyle;
-
-import org.cytoscape.group.internal.ModelUtils;
-
 /**
  * Handle selection
  */
@@ -54,8 +49,6 @@ public class GroupViewDoubleClickListener extends AbstractNodeViewTaskFactory
 {
 	final CyGroupManagerImpl cyGroupManager;
 	final CyGroupSettingsImpl cyGroupSettings;
-	CyNetworkViewManager viewManager = null;
-	VisualMappingManager styleManager = null;
 
 	/**
 	 * 
@@ -67,6 +60,7 @@ public class GroupViewDoubleClickListener extends AbstractNodeViewTaskFactory
 		this.cyGroupSettings = groupSettings;
 	}
 
+	@Override
 	public TaskIterator createTaskIterator(View<CyNode> nodeView, CyNetworkView networkView) {
 		CyNode node = nodeView.getModel();
 		CyNetwork net = networkView.getModel();

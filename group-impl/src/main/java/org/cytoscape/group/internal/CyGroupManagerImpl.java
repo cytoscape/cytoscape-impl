@@ -1,29 +1,5 @@
 package org.cytoscape.group.internal;
 
-/*
- * #%L
- * Cytoscape Groups Impl (group-impl)
- * $Id:$
- * $HeadURL:$
- * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * #L%
- */
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -42,20 +18,44 @@ import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
-import org.cytoscape.model.events.AddedEdgesEvent;
-import org.cytoscape.model.events.AddedEdgesListener;
 import org.cytoscape.model.events.AboutToRemoveEdgesEvent;
 import org.cytoscape.model.events.AboutToRemoveEdgesListener;
+import org.cytoscape.model.events.AddedEdgesEvent;
+import org.cytoscape.model.events.AddedEdgesListener;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
+
+/*
+ * #%L
+ * Cytoscape Groups Impl (group-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
 
 /**
  * An implementation of CyNetworkManager.
  */
 public class CyGroupManagerImpl implements CyGroupManager, AddedEdgesListener, 
                                            AboutToRemoveEdgesListener {
+	
 	private final CyServiceRegistrar cyServiceRegistrar;
-	private CyEventHelper cyEventHelper;
 
 	private Set<CyGroup> groupSet;
 	private Map<CyRootNetwork, Set<CyGroup>> rootMap;
@@ -63,16 +63,10 @@ public class CyGroupManagerImpl implements CyGroupManager, AddedEdgesListener,
 	
 	private final Object lock = new Object();
 	
-	/**
-	 * 
-	 * @param cyEventHelper
-	 */
-	public CyGroupManagerImpl(final CyServiceRegistrar cyServiceRegistrar, 
-		                        final CyEventHelper cyEventHelper) {
-		this.groupSet = new HashSet<CyGroup>();
-		this.rootMap = new HashMap<CyRootNetwork, Set<CyGroup>>();
+	public CyGroupManagerImpl(final CyServiceRegistrar cyServiceRegistrar) {
+		this.groupSet = new HashSet<>();
+		this.rootMap = new HashMap<>();
 		this.cyServiceRegistrar = cyServiceRegistrar;
-		this.cyEventHelper = cyEventHelper;
 	}
 
 	@Override
@@ -98,6 +92,8 @@ public class CyGroupManagerImpl implements CyGroupManager, AddedEdgesListener,
 				// updateGroupAttribute(group);
 			}
 		}
+		
+		final CyEventHelper cyEventHelper = getService(CyEventHelper.class);
 		cyEventHelper.fireEvent(new GroupAddedEvent(CyGroupManagerImpl.this, group));
 	}
 
@@ -174,6 +170,7 @@ public class CyGroupManagerImpl implements CyGroupManager, AddedEdgesListener,
 				return;
 		}
 
+		final CyEventHelper cyEventHelper = getService(CyEventHelper.class);
 		cyEventHelper.fireEvent(new GroupAboutToBeDestroyedEvent(CyGroupManagerImpl.this, group));
 		
 		synchronized (lock) {
