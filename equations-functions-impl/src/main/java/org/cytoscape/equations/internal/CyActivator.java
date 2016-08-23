@@ -2,13 +2,25 @@ package org.cytoscape.equations.internal;
 
 import java.util.Properties;
 
+import org.cytoscape.equations.EquationParser;
+import org.cytoscape.equations.Function;
+import org.cytoscape.equations.internal.functions.Degree;
+import org.cytoscape.equations.internal.functions.InDegree;
+import org.cytoscape.equations.internal.functions.OutDegree;
+import org.cytoscape.equations.internal.functions.SourceID;
+import org.cytoscape.equations.internal.functions.TargetID;
+import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.service.util.AbstractCyActivator;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.osgi.framework.BundleContext;
+
 /*
  * #%L
  * Cytoscape Equation Functions Impl (equations-functions-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2010 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -26,42 +38,28 @@ import java.util.Properties;
  * #L%
  */
 
-
-
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.equations.EquationParser;
-import org.cytoscape.equations.Function;
-import org.cytoscape.equations.internal.functions.Degree;
-import org.cytoscape.equations.internal.functions.InDegree;
-import org.cytoscape.equations.internal.functions.OutDegree;
-import org.cytoscape.equations.internal.functions.SourceID;
-import org.cytoscape.equations.internal.functions.TargetID;
-import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.service.util.AbstractCyActivator;
-import org.osgi.framework.BundleContext;
-
 public class CyActivator extends AbstractCyActivator {
-	public CyActivator() {
-		super();
-	}
-
+	
+	@Override
 	public void start(BundleContext bc) {
+		final CyServiceRegistrar serviceRegistrar = getService(bc, CyServiceRegistrar.class);
 
-		final CyApplicationManager applicationManager = getService(bc, CyApplicationManager.class);
+		final Function degree = new Degree(serviceRegistrar);
+		final Function inDegree = new InDegree(serviceRegistrar);
+		final Function outDegree = new OutDegree(serviceRegistrar);
+		final Function sourceId = new SourceID(serviceRegistrar);
+		final Function targetId = new TargetID(serviceRegistrar);
+		
 		final CyEventHelper eventHelper = getService(bc, CyEventHelper.class);
 		final EquationParser parser = getService(bc, EquationParser.class);
-
-		final Function degree = new Degree(applicationManager);
-		final Function inDegree = new InDegree(applicationManager);
-		final Function outDegree = new OutDegree(applicationManager);
-		final Function sourceId = new SourceID(applicationManager);
-		final Function targetId = new TargetID(applicationManager);
 		eventHelper.silenceEventSource(parser);
+		
 		registerAllServices(bc, degree, new Properties());
 		registerAllServices(bc, inDegree, new Properties());
 		registerAllServices(bc, outDegree, new Properties());
 		registerAllServices(bc, sourceId, new Properties());
 		registerAllServices(bc, targetId, new Properties());
+		
 		eventHelper.unsilenceEventSource(parser);
 	}
 }

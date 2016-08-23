@@ -1,30 +1,5 @@
 package org.cytoscape.equations.internal.functions;
 
-/*
- * #%L
- * Cytoscape Equation Functions Impl (equations-functions-impl)
- * $Id:$
- * $HeadURL:$
- * %%
- * Copyright (C) 2010 - 2013 The Cytoscape Consortium
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * #L%
- */
-
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
@@ -48,11 +23,37 @@ import org.cytoscape.event.DummyCyEventHelper;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.junit.Before;
 import org.junit.Test;
 
+/*
+ * #%L
+ * Cytoscape Equation Functions Impl (equations-functions-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2010 - 2016 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
 
 public class DegreeTest {
+	
+	private CyServiceRegistrar serviceRegistrar;
 	private CyApplicationManager applicationManager;
 	private CyEventHelper eventHelper;
 
@@ -68,20 +69,23 @@ public class DegreeTest {
 		when(network.getAdjacentEdgeList(node, CyEdge.Type.ANY)).thenReturn(edgeList);
 		when(network.getNode(101L)).thenReturn(node);
 
-		Collection<CyNode> nodes = new ArrayList<CyNode>(1);
+		Collection<CyNode> nodes = new ArrayList<>(1);
 		nodes.add(node);
 		
 		applicationManager = mock(CyApplicationManager.class);
 		when(applicationManager.getCurrentNetwork()).thenReturn(network);
 		
 		eventHelper = new DummyCyEventHelper();
+		
+		serviceRegistrar = mock(CyServiceRegistrar.class);
+		when(serviceRegistrar.getService(CyApplicationManager.class)).thenReturn(applicationManager);
 	}
 
 	@Test
 	public void test() {
 		final EquationParserImpl parser = new EquationParserImpl(eventHelper);
 		final EquationCompilerImpl compiler = new EquationCompilerImpl(parser);
-		parser.registerFunctionInternal(new Degree(applicationManager));
+		parser.registerFunctionInternal(new Degree(serviceRegistrar));
 		final Map<String, Class<?>> variableNameToTypeMap = new HashMap<String, Class<?>>();
 		if (!compiler.compile("=DEGREE(101)", variableNameToTypeMap))
 			fail(compiler.getLastErrorMsg());
