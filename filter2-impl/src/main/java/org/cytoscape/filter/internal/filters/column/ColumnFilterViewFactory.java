@@ -14,7 +14,6 @@ import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
-import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.filter.internal.ModelMonitor;
 import org.cytoscape.filter.internal.filters.column.ColumnElement.SelectedColumnType;
 import org.cytoscape.filter.internal.range.RangeChooser;
@@ -33,21 +32,44 @@ import org.cytoscape.filter.view.InteractivityChangedListener;
 import org.cytoscape.filter.view.TransformerViewFactory;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
-import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.service.util.CyServiceRegistrar;
+
+/*
+ * #%L
+ * Cytoscape Filters 2 Impl (filter2-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
 
 public class ColumnFilterViewFactory implements TransformerViewFactory {
 
-	private final CyNetworkManager networkManager;
-	private final CyApplicationManager appManager;
 	private final ModelMonitor modelMonitor;
 	private final FilterPanelStyle style;
 	
-	public ColumnFilterViewFactory(CyNetworkManager networkManager, CyApplicationManager appManager, FilterPanelStyle style, ModelMonitor modelMonitor) {
-		this.networkManager = networkManager;
-		this.appManager = appManager;
+	private final CyServiceRegistrar serviceRegistrar;
+	
+	public ColumnFilterViewFactory(FilterPanelStyle style, ModelMonitor modelMonitor, final CyServiceRegistrar serviceRegistrar) {
 		this.modelMonitor = modelMonitor;
 		this.style = style;
+		this.serviceRegistrar = serviceRegistrar;
 	}
 	
 	@Override
@@ -157,8 +179,6 @@ public class ColumnFilterViewFactory implements TransformerViewFactory {
 		
 	}
 	
-	
-	
 	@SuppressWarnings("serial")
 	class View extends JPanel implements ColumnFilterView, InteractivityChangedListener {
 		private final Controller controller;
@@ -202,7 +222,7 @@ public class ColumnFilterViewFactory implements TransformerViewFactory {
 			predicateComboBox.addItem(new ComboItem<>(Predicate.IS_NOT, "is not"));
 			predicateComboBox.addItem(new ComboItem<>(Predicate.REGEX, "matches regex"));
 			
-			columnChooser = new ColumnChooser(networkManager, appManager, style);
+			columnChooser = new ColumnChooser(style, serviceRegistrar);
 			
 			numericNegateComboBox = new BooleanComboBox(style, "is", "is not");
 			booleanComboBox = new BooleanComboBox(style, "true", "false");
@@ -233,7 +253,6 @@ public class ColumnFilterViewFactory implements TransformerViewFactory {
 		public void columnsChanged() {
 			refreshUI(true, true);
 		}
-		
 		
 		/**
 		 * Update the UI controls to reflect the state of the filter object.
@@ -439,7 +458,5 @@ public class ColumnFilterViewFactory implements TransformerViewFactory {
 			controller.intChooserController.setInteractive(isInteractive);
 			controller.doubleChooserController.setInteractive(isInteractive);
 		}
-		
 	}
-	
 }

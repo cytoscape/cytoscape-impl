@@ -33,6 +33,7 @@ import org.cytoscape.filter.model.NamedTransformer;
 import org.cytoscape.filter.model.Transformer;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskIterator;
@@ -40,7 +41,32 @@ import org.cytoscape.work.TaskManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/*
+ * #%L
+ * Cytoscape Filters 2 Impl (filter2-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
+
 public abstract class AbstractPanelController<T extends NamedElement, V extends SelectPanelComponent> {
+	
 	public static final int PROGRESS_BAR_MAXIMUM = Integer.MAX_VALUE;
 	
 	static final Pattern NAME_PATTERN = Pattern.compile("(.*?)( (\\d+))?");
@@ -48,7 +74,6 @@ public abstract class AbstractPanelController<T extends NamedElement, V extends 
 	private final TransformerManager transformerManager;
 	private final TransformerViewManager transformerViewManager;
 	private final ValidationManager validationManager;
-	private final IconManager iconManager;
 	private final FilterPanelStyle style;
 	
 	private List<NamedElementListener<T>> namedElementListeners;
@@ -57,8 +82,9 @@ public abstract class AbstractPanelController<T extends NamedElement, V extends 
 	
 	protected AbstractWorker<?, ?> worker;
 	private FilterIO filterIo;
-	private TaskManager<?, ?> taskManager;
 	private JComponent lastHoveredComponent;
+
+	protected final CyServiceRegistrar serviceRegistrar;
 	
 	final Logger logger;
 
@@ -67,17 +93,17 @@ public abstract class AbstractPanelController<T extends NamedElement, V extends 
 			TransformerManager transformerManager, 
 			TransformerViewManager transformerViewManager,
 			ValidationManager validationManager,
-			FilterIO filterIo, TaskManager<?, ?> taskManager,
-			FilterPanelStyle style, IconManager iconManager) 
-	{
+			FilterIO filterIo,
+			FilterPanelStyle style,
+			final CyServiceRegistrar serviceRegistrar
+	) {
 		this.worker = worker;
 		this.filterIo = filterIo;
-		this.taskManager = taskManager;
 		this.transformerManager = transformerManager;
 		this.transformerViewManager = transformerViewManager;
 		this.validationManager = validationManager;
 		this.style = style;
-		this.iconManager = iconManager;
+		this.serviceRegistrar = serviceRegistrar;
 		
 		logger = LoggerFactory.getLogger(getClass());
 		
@@ -306,13 +332,13 @@ public abstract class AbstractPanelController<T extends NamedElement, V extends 
 	
 	protected void handleExport(V view) {
 		Task task = new ExportNamedTransformersTask(filterIo, getNamedTransformers());
-		taskManager.execute(new TaskIterator(task));
+		serviceRegistrar.getService(TaskManager.class).execute(new TaskIterator(task));
 	}
 	
 	@SuppressWarnings("rawtypes")
 	protected void handleImport(V view) {
 		Task task = new ImportNamedTransformersTask(filterIo, (AbstractPanel) view);
-		taskManager.execute(new TaskIterator(task));
+		serviceRegistrar.getService(TaskManager.class).execute(new TaskIterator(task));
 	}
 
 	public JComponent getLastHoveredComponent() {
@@ -338,7 +364,7 @@ public abstract class AbstractPanelController<T extends NamedElement, V extends 
 	}
 	
 	public IconManager getIconManager() {
-		return iconManager;
+		return serviceRegistrar.getService(IconManager.class);
 	}
 	
 	public ValidationManager getValidationManager() {

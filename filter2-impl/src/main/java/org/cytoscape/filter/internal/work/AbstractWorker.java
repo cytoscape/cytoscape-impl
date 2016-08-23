@@ -2,16 +2,39 @@ package org.cytoscape.filter.internal.work;
 
 import javax.swing.JProgressBar;
 
-import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.filter.internal.view.AbstractPanel;
 import org.cytoscape.filter.internal.view.AbstractPanelController;
 import org.cytoscape.filter.model.TransformerListener;
+import org.cytoscape.service.util.CyServiceRegistrar;
+
+/*
+ * #%L
+ * Cytoscape Filters 2 Impl (filter2-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
 
 public abstract class AbstractWorker<V extends AbstractPanel<?,?>, C extends AbstractPanelController<?,?>> implements LazyWorker, TransformerListener {
 	
 	public static final int PROGRESS_BAR_MAXIMUM = Integer.MAX_VALUE;
 	
-	protected CyApplicationManager applicationManager;
 	protected LazyWorkQueue queue;
 	
 	private ProgressMonitor currentMonitor;
@@ -20,10 +43,12 @@ public abstract class AbstractWorker<V extends AbstractPanel<?,?>, C extends Abs
 	protected C controller;
 
 	protected boolean isInteractive;
+
+	protected final CyServiceRegistrar serviceRegistrar;
 	
-	public AbstractWorker(LazyWorkQueue queue, CyApplicationManager applicationManager) {
-		this.applicationManager = applicationManager;
+	public AbstractWorker(final LazyWorkQueue queue, final CyServiceRegistrar serviceRegistrar) {
 		this.queue = queue;
+		this.serviceRegistrar = serviceRegistrar;
 	}
 
 	@Override

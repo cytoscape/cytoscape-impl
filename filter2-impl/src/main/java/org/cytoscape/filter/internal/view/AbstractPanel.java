@@ -1,6 +1,7 @@
 package org.cytoscape.filter.internal.view;
 
-import static javax.swing.GroupLayout.*;
+import static javax.swing.GroupLayout.DEFAULT_SIZE;
+import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static org.cytoscape.util.swing.LookAndFeelUtil.isAquaLAF;
 
 import java.awt.Component;
@@ -26,12 +27,36 @@ import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
 import javax.swing.UIManager;
 
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 
+/*
+ * #%L
+ * Cytoscape Filters 2 Impl (filter2-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
+
 @SuppressWarnings({ "serial", "rawtypes" })
 public abstract class AbstractPanel<T extends NamedElement, C extends AbstractPanelController> extends JPanel implements SelectPanelComponent {
-	protected IconManager iconManager;
 	
 	protected C controller;
 	protected JComboBox namedElementComboBox;
@@ -50,10 +75,12 @@ public abstract class AbstractPanel<T extends NamedElement, C extends AbstractPa
 
 	protected JLabel statusLabel;
 	
+	protected final CyServiceRegistrar serviceRegistrar;
+	
 	@SuppressWarnings("unchecked")
-	public AbstractPanel(final C controller, IconManager iconManager) {
+	public AbstractPanel(final C controller, final CyServiceRegistrar serviceRegistrar) {
 		this.controller = controller;
-		this.iconManager = iconManager;
+		this.serviceRegistrar = serviceRegistrar;
 		
 		ComboBoxModel model = controller.getElementComboBoxModel();
 		namedElementComboBox = new JComboBox(model);
@@ -82,6 +109,8 @@ public abstract class AbstractPanel<T extends NamedElement, C extends AbstractPa
 		menu.add(exportMenu);
 		menu.add(importMenu);
 
+		final IconManager iconManager = serviceRegistrar.getService(IconManager.class);
+		
 		optionsButton = new JButton(IconManager.ICON_CARET_DOWN);
 		optionsButton.setFont(iconManager.getIconFont(11.0f));
 		optionsButton.setToolTipText("Options...");

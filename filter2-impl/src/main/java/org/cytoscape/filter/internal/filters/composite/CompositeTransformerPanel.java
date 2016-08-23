@@ -28,7 +28,32 @@ import org.cytoscape.filter.model.Transformer;
 import org.cytoscape.filter.model.ValidatableTransformer;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.IconManager;
+
+/*
+ * #%L
+ * Cytoscape Filters 2 Impl (filter2-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
 
 @SuppressWarnings("serial")
 public class CompositeTransformerPanel extends JPanel implements CompositePanelComponent {
@@ -39,28 +64,30 @@ public class CompositeTransformerPanel extends JPanel implements CompositePanelC
 	private TransformerPanel parent;
 	private TransformerPanelController transformerPanelController;
 	private List<Transformer<CyNetwork, CyIdentifiable>> model;
-	private final IconManager iconManager;
-	private JComponent separator; 
+	private JComponent separator;
 	
-	public CompositeTransformerPanel(TransformerPanel parent, TransformerPanelController transformerPanelController, 
-			List<Transformer<CyNetwork, CyIdentifiable>> model, IconManager iconManager) {
-		this(parent, transformerPanelController, new Controller(), model, iconManager);
+	private final CyServiceRegistrar serviceRegistrar;
+	
+	public CompositeTransformerPanel(TransformerPanel parent, TransformerPanelController transformerPanelController,
+			List<Transformer<CyNetwork, CyIdentifiable>> model, final CyServiceRegistrar serviceRegistrar) {
+		this(parent, transformerPanelController, new Controller(), model, serviceRegistrar);
 	}
 	
 	CompositeTransformerPanel(TransformerPanel parent, TransformerPanelController transformerPanelController,
-			final Controller controller, List<Transformer<CyNetwork, CyIdentifiable>> model, IconManager iconManager) {
+			final Controller controller, List<Transformer<CyNetwork, CyIdentifiable>> model,
+			final CyServiceRegistrar serviceRegistrar) {
 		this.parent = parent;
 		this.transformerPanelController = transformerPanelController;
 		this.model = model;
-		this.iconManager = iconManager;
+		this.serviceRegistrar = serviceRegistrar;
 		
 		separator = new CompositeSeparator();
-		new DropTarget(separator, new DragHandler<TransformerPanel>(separator, transformerPanelController, parent, null));
+		new DropTarget(separator, new DragHandler<>(separator, transformerPanelController, parent, null));
 		
 		ViewUtil.configureFilterView(this);
 		setBorder(BorderFactory.createEmptyBorder());
 
-		viewModels = new WeakHashMap<Transformer<CyNetwork,CyIdentifiable>, TransformerElementViewModel<TransformerPanel>>();
+		viewModels = new WeakHashMap<>();
 		layout = new GroupLayout(this);
 		setLayout(layout);
 
@@ -84,7 +111,7 @@ public class CompositeTransformerPanel extends JPanel implements CompositePanelC
 	
 	JButton createAddChainEntryButton() {
 		final JButton button = new JButton(IconManager.ICON_PLUS);
-		button.setFont(iconManager.getIconFont(11.0f));
+		button.setFont(serviceRegistrar.getService(IconManager.class).getIconFont(11.0f));
 		button.setToolTipText("Add new chain entry...");
 		button.putClientProperty("JButton.buttonType", "gradient");
 		button.addActionListener(new ActionListener() {

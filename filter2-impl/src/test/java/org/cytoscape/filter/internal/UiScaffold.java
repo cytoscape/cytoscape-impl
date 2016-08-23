@@ -39,19 +39,47 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.NetworkTestSupport;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.work.TaskManager;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+/*
+ * #%L
+ * Cytoscape Filters 2 Impl (filter2-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
+
 public class UiScaffold {
+	
 	static final int TOTAL_NODES = 1000;
 	static final int TOTAL_EDGES = 1000;
 	
+	@Mock CyServiceRegistrar serviceRegistrar;
 	@Mock CyApplicationManager applicationManager;
-	@Mock CyNetworkView networkView;
+	@Mock TaskManager<?, ?> taskManager;
 	@Mock IconManager iconManager;
+	@Mock CyNetworkView networkView;
 	
 	void start() {
 		MockitoAnnotations.initMocks(this);
@@ -78,7 +106,12 @@ public class UiScaffold {
 		
 		when(applicationManager.getCurrentNetworkView()).thenReturn(networkView);
 		when(applicationManager.getCurrentNetwork()).thenReturn(network);
+		
 		when(networkView.getModel()).thenReturn(network);
+		
+		when(serviceRegistrar.getService(CyApplicationManager.class)).thenReturn(applicationManager);
+		when(serviceRegistrar.getService(TaskManager.class)).thenReturn(taskManager);
+		when(serviceRegistrar.getService(IconManager.class)).thenReturn(iconManager);
 		
 		JFrame frame = new JFrame();
 		frame.setTitle("Select");
@@ -104,15 +137,14 @@ public class UiScaffold {
 
 		LazyWorkQueue queue = new LazyWorkQueue();
 		
-		FilterWorker filterWorker = new FilterWorker(queue, applicationManager);
+		FilterWorker filterWorker = new FilterWorker(queue, serviceRegistrar);
 		FilterIO filterIo = null;
-		TaskManager<?, ?> taskManager = null;
-		FilterPanelController filterPanelController = new FilterPanelController(transformerManager, transformerViewManager, validationManager, filterWorker, modelMonitor, filterIo, taskManager, style, iconManager);
-		FilterPanel filterPanel = new FilterPanel(filterPanelController, iconManager, filterWorker);
+		FilterPanelController filterPanelController = new FilterPanelController(transformerManager, transformerViewManager, validationManager, filterWorker, modelMonitor, filterIo, style, serviceRegistrar);
+		FilterPanel filterPanel = new FilterPanel(filterPanelController, filterWorker, serviceRegistrar);
 		
-		TransformerWorker transformerWorker = new TransformerWorker(queue, applicationManager, transformerManager);
-		TransformerPanelController transformerPanelController = new TransformerPanelController(transformerManager, transformerViewManager, validationManager, filterPanelController, transformerWorker, filterIo, taskManager, style, iconManager);
-		TransformerPanel transformerPanel = new TransformerPanel(transformerPanelController, iconManager, transformerWorker);
+		TransformerWorker transformerWorker = new TransformerWorker(queue, transformerManager, serviceRegistrar);
+		TransformerPanelController transformerPanelController = new TransformerPanelController(transformerManager, transformerViewManager, validationManager, filterPanelController, transformerWorker, filterIo, style, serviceRegistrar);
+		TransformerPanel transformerPanel = new TransformerPanel(transformerPanelController, transformerWorker, serviceRegistrar);
 		
 		SelectPanel selectPanel = new SelectPanel(filterPanel, transformerPanel);
 		

@@ -1,32 +1,7 @@
 package org.cytoscape.filter.internal;
 
-/*
- * #%L
- * Cytoscape Filters Impl (filter-impl)
- * $Id:$
- * $HeadURL:$
- * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * #L%
- */
-
 import java.util.Properties;
 
-import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.filter.TransformerManager;
 import org.cytoscape.filter.internal.filters.column.ColumnFilterFactory;
@@ -57,83 +32,99 @@ import org.cytoscape.filter.model.FilterFactory;
 import org.cytoscape.filter.model.HolisticTransformerFactory;
 import org.cytoscape.filter.model.TransformerSource;
 import org.cytoscape.filter.view.TransformerViewFactory;
-import org.cytoscape.io.read.CyTransformerReader;
-import org.cytoscape.io.write.CyTransformerWriter;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.service.util.AbstractCyActivator;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.events.SessionAboutToBeLoadedListener;
 import org.cytoscape.session.events.SessionAboutToBeSavedListener;
 import org.cytoscape.session.events.SessionLoadedListener;
-import org.cytoscape.util.swing.IconManager;
-import org.cytoscape.work.TaskManager;
 import org.osgi.framework.BundleContext;
+
+/*
+ * #%L
+ * Cytoscape Filters 2 Impl (filter2-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
 
 public class CyActivator extends AbstractCyActivator {
 	
-	public void start(BundleContext context) {
-		TransformerManagerImpl transformerManager = new TransformerManagerImpl();
-		registerService(context, transformerManager, TransformerManager.class, new Properties());
+	@Override
+	public void start(BundleContext bc) {
+		final CyServiceRegistrar serviceRegistrar = getService(bc, CyServiceRegistrar.class);
 		
-		registerServiceListener(context, transformerManager, "registerTransformerSource", "unregisterTransformerSource", TransformerSource.class);
-		registerServiceListener(context, transformerManager, "registerFilterFactory", "unregisterFilterFactory", FilterFactory.class);
-		registerServiceListener(context, transformerManager, "registerElementTransformerFactory", "unregisterElementTransformerFactory", ElementTransformerFactory.class);
-		registerServiceListener(context, transformerManager, "registerHolisticTransformerFactory", "unregisterHolisticTransformerFactory", HolisticTransformerFactory.class);
+		TransformerManagerImpl transformerManager = new TransformerManagerImpl();
+		registerService(bc, transformerManager, TransformerManager.class, new Properties());
+		
+		registerServiceListener(bc, transformerManager, "registerTransformerSource", "unregisterTransformerSource", TransformerSource.class);
+		registerServiceListener(bc, transformerManager, "registerFilterFactory", "unregisterFilterFactory", FilterFactory.class);
+		registerServiceListener(bc, transformerManager, "registerElementTransformerFactory", "unregisterElementTransformerFactory", ElementTransformerFactory.class);
+		registerServiceListener(bc, transformerManager, "registerHolisticTransformerFactory", "unregisterHolisticTransformerFactory", HolisticTransformerFactory.class);
 		
 		TransformerViewManager transformerViewManager = new TransformerViewManager(transformerManager);
-		registerServiceListener(context, transformerViewManager, "registerTransformerViewFactory", "unregisterTransformerViewFactory", TransformerViewFactory.class);
+		registerServiceListener(bc, transformerViewManager, "registerTransformerViewFactory", "unregisterTransformerViewFactory", TransformerViewFactory.class);
 		
-		registerService(context, new CyNetworkSource(), TransformerSource.class, new Properties());
+		registerService(bc, new CyNetworkSource(), TransformerSource.class, new Properties());
 
 		// Filters
-		registerService(context, new DegreeFilterFactory(), FilterFactory.class, new Properties());
-		registerService(context, new ColumnFilterFactory(), FilterFactory.class, new Properties());
-		registerService(context, new TopologyFilterFactory(), FilterFactory.class, new Properties());
-		registerService(context, new CompositeFilterFactory<CyNetwork, CyIdentifiable>(CyNetwork.class, CyIdentifiable.class), FilterFactory.class, new Properties());
+		registerService(bc, new DegreeFilterFactory(), FilterFactory.class, new Properties());
+		registerService(bc, new ColumnFilterFactory(), FilterFactory.class, new Properties());
+		registerService(bc, new TopologyFilterFactory(), FilterFactory.class, new Properties());
+		registerService(bc, new CompositeFilterFactory<CyNetwork, CyIdentifiable>(CyNetwork.class, CyIdentifiable.class), FilterFactory.class, new Properties());
 		
 		// Transformers
-		registerService(context, new InteractionTransformerFactory(), ElementTransformerFactory.class, new Properties());
-		registerService(context, new AdjacencyTransformerFactory(), ElementTransformerFactory.class, new Properties());
+		registerService(bc, new InteractionTransformerFactory(), ElementTransformerFactory.class, new Properties());
+		registerService(bc, new AdjacencyTransformerFactory(), ElementTransformerFactory.class, new Properties());
 		
 		ModelMonitor modelMonitor = new ModelMonitor();
-		registerAllServices(context, modelMonitor, new Properties());
+		registerAllServices(bc, modelMonitor, new Properties());
 		ValidationManager validationManager = new ValidationManager();
-		registerAllServices(context, validationManager, new Properties());
+		registerAllServices(bc, validationManager, new Properties());
 		
-		CyNetworkManager networkManager = getService(context, CyNetworkManager.class);
-		CyApplicationManager applicationManager = getService(context, CyApplicationManager.class);
-		IconManager iconManager = getService(context, IconManager.class);
 		FilterPanelStyle style = new FlatStyle();
 		
-		registerService(context, new DegreeFilterViewFactory(style, modelMonitor), TransformerViewFactory.class, new Properties());
-		registerService(context, new ColumnFilterViewFactory(networkManager, applicationManager, style, modelMonitor), TransformerViewFactory.class, new Properties());
-		registerService(context, new TopologyFilterViewFactory(style), TransformerViewFactory.class, TopologyFilterViewFactory.getServiceProperties());
-		registerService(context, new InteractionTransformerViewFactory(style), TransformerViewFactory.class, new Properties());
-		registerService(context, new AdjacencyTransformerViewFactory(style, iconManager), TransformerViewFactory.class, AdjacencyTransformerViewFactory.getServiceProperties());
+		registerService(bc, new DegreeFilterViewFactory(style, modelMonitor), TransformerViewFactory.class, new Properties());
+		registerService(bc, new ColumnFilterViewFactory(style, modelMonitor, serviceRegistrar), TransformerViewFactory.class, new Properties());
+		registerService(bc, new TopologyFilterViewFactory(style), TransformerViewFactory.class, TopologyFilterViewFactory.getServiceProperties());
+		registerService(bc, new InteractionTransformerViewFactory(style), TransformerViewFactory.class, new Properties());
+		registerService(bc, new AdjacencyTransformerViewFactory(style, serviceRegistrar), TransformerViewFactory.class, AdjacencyTransformerViewFactory.getServiceProperties());
 		
 		LazyWorkQueue queue = new LazyWorkQueue();
-		CyTransformerReader reader = getService(context, CyTransformerReader.class);
-		CyTransformerWriter writer = getService(context, CyTransformerWriter.class);
-		FilterIO filterIo = new FilterIO(reader, writer);
+		FilterIO filterIo = new FilterIO(serviceRegistrar);
 
-		TaskManager<?, ?> taskManager = getService(context, TaskManager.class);
-
-		FilterWorker filterWorker = new FilterWorker(queue, applicationManager);
-		FilterPanelController filterPanelController = new FilterPanelController(transformerManager, transformerViewManager, validationManager, filterWorker, modelMonitor, filterIo, taskManager, style, iconManager);
-		FilterPanel filterPanel = new FilterPanel(filterPanelController, iconManager, filterWorker);
+		FilterWorker filterWorker = new FilterWorker(queue, serviceRegistrar);
+		FilterPanelController filterPanelController = new FilterPanelController(transformerManager, transformerViewManager, validationManager, filterWorker, modelMonitor, filterIo, style, serviceRegistrar);
+		FilterPanel filterPanel = new FilterPanel(filterPanelController, filterWorker, serviceRegistrar);
 		
-		TransformerWorker transformerWorker = new TransformerWorker(queue, applicationManager, transformerManager);
-		TransformerPanelController transformerPanelController = new TransformerPanelController(transformerManager, transformerViewManager, validationManager, filterPanelController, transformerWorker, filterIo, taskManager, style, iconManager);
-		TransformerPanel transformerPanel = new TransformerPanel(transformerPanelController, iconManager, transformerWorker);
+		TransformerWorker transformerWorker = new TransformerWorker(queue, transformerManager, serviceRegistrar);
+		TransformerPanelController transformerPanelController = new TransformerPanelController(transformerManager, transformerViewManager, validationManager, filterPanelController, transformerWorker, filterIo, style, serviceRegistrar);
+		TransformerPanel transformerPanel = new TransformerPanel(transformerPanelController, transformerWorker, serviceRegistrar);
 	
-		CytoPanelComponent selectPanel = new FilterCytoPanelComponent(transformerViewManager, applicationManager, iconManager, modelMonitor, filterPanel, transformerPanel);
-		registerService(context, selectPanel, CytoPanelComponent.class, new Properties());
+		CytoPanelComponent selectPanel = new FilterCytoPanelComponent(transformerViewManager, modelMonitor, filterPanel, transformerPanel);
+		registerService(bc, selectPanel, CytoPanelComponent.class, new Properties());
 		
 		FilterSettingsManager settingsManager = new FilterSettingsManager(filterPanel, transformerPanel, filterIo);
-		registerService(context, settingsManager, SessionAboutToBeSavedListener.class, new Properties());
-		registerService(context, settingsManager, SessionAboutToBeLoadedListener.class, new Properties());
-		registerService(context, settingsManager, SessionLoadedListener.class, new Properties());
+		registerService(bc, settingsManager, SessionAboutToBeSavedListener.class, new Properties());
+		registerService(bc, settingsManager, SessionAboutToBeLoadedListener.class, new Properties());
+		registerService(bc, settingsManager, SessionLoadedListener.class, new Properties());
 	}
 }
 
