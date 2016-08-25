@@ -1,30 +1,5 @@
 package org.cytoscape.io.internal.read.nnf;
 
-/*
- * #%L
- * Cytoscape IO Impl (io-impl)
- * $Id:$
- * $HeadURL:$
- * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * #L%
- */
-
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -52,6 +27,30 @@ import org.cytoscape.work.TaskMonitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/*
+ * #%L
+ * Cytoscape IO Impl (io-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
+
 /**
  * Reader for graphs in the interactions file format. Given the filename,
  * provides the graph and attributes objects constructed from the file.
@@ -60,7 +59,6 @@ public class NNFNetworkReader extends AbstractCyNetworkReader {
 	
 	private static final Logger logger = LoggerFactory.getLogger(NNFNetworkReader.class);
 
-	private final CyLayoutAlgorithmManager layouts;	
 	// Optional comments start with this character and extend to the end of line.
 	private static final char COMMENT_CHAR = '#';	
 	private NNFParser parser;
@@ -68,16 +66,15 @@ public class NNFNetworkReader extends AbstractCyNetworkReader {
 
 	private final CyServiceRegistrar serviceRegistrar;
 
-	public NNFNetworkReader(final InputStream is,
-							final CyLayoutAlgorithmManager layouts,
-							final CyApplicationManager cyApplicationManager,
-							final CyNetworkFactory cyNetworkFactory,
-							final CyNetworkManager cyNetworkManager,
-							final CyRootNetworkManager cyRootNetworkManager,
-							final CyServiceRegistrar serviceRegistrar) {
-		super(is, cyApplicationManager, cyNetworkFactory, cyNetworkManager, cyRootNetworkManager);
+	public NNFNetworkReader(final InputStream is, final CyServiceRegistrar serviceRegistrar) {
+		super(
+				is, 
+				serviceRegistrar.getService(CyApplicationManager.class), 
+				serviceRegistrar.getService(CyNetworkFactory.class), 
+				serviceRegistrar.getService(CyNetworkManager.class),
+				serviceRegistrar.getService(CyRootNetworkManager.class)
+		);
 		this.serviceRegistrar = serviceRegistrar;
-		this.layouts = layouts;
 	}
 
 	@Override
@@ -205,7 +202,7 @@ public class NNFNetworkReader extends AbstractCyNetworkReader {
 	public CyNetworkView buildCyNetworkView(CyNetwork network) {
 		final CyNetworkView view = getNetworkViewFactory().createNetworkView(network);
 
-		final CyLayoutAlgorithm layout = layouts.getDefaultLayout();
+		final CyLayoutAlgorithm layout = serviceRegistrar.getService(CyLayoutAlgorithmManager.class).getDefaultLayout();
 		TaskIterator itr = layout.createTaskIterator(view, layout.getDefaultLayoutContext(), CyLayoutAlgorithm.ALL_NODE_VIEWS, "");
 		Task nextTask = itr.next();
 		try {

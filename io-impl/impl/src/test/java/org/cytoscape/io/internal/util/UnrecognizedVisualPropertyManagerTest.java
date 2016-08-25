@@ -1,12 +1,34 @@
 package org.cytoscape.io.internal.util;
 
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+import java.util.List;
+import java.util.Map;
+
+import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyIdentifiable;
+import org.cytoscape.model.CyNode;
+import org.cytoscape.model.CyRow;
+import org.cytoscape.model.CyTable;
+import org.cytoscape.model.CyTableFactory;
+import org.cytoscape.model.CyTableManager;
+import org.cytoscape.model.SavePolicy;
+import org.cytoscape.model.TableTestSupport;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.View;
+import org.junit.Before;
+import org.junit.Test;
+
 /*
  * #%L
  * Cytoscape IO Impl (io-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,29 +46,10 @@ package org.cytoscape.io.internal.util;
  * #L%
  */
 
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
-import java.util.List;
-import java.util.Map;
-
-import org.cytoscape.model.CyEdge;
-import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyRow;
-import org.cytoscape.model.CyTable;
-import org.cytoscape.model.CyIdentifiable;
-import org.cytoscape.model.CyTableFactory;
-import org.cytoscape.model.CyTableManager;
-import org.cytoscape.model.SavePolicy;
-import org.cytoscape.model.TableTestSupport;
-import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.View;
-import org.junit.Before;
-import org.junit.Test;
-
 public class UnrecognizedVisualPropertyManagerTest {
 
+	CyServiceRegistrar serviceRegistrar;
+	CyTableManager tableManager;
 	CyTableFactory tableFactory;
 	UnrecognizedVisualPropertyManager unrecognizedVisualPropertyMgr;
 	
@@ -56,8 +59,13 @@ public class UnrecognizedVisualPropertyManagerTest {
 	public void setUp() throws Exception {
 		TableTestSupport tblTestSupport = new TableTestSupport();
 		tableFactory = tblTestSupport.getTableFactory();
-		CyTableManager tableMgr = mock(CyTableManager.class);
-		unrecognizedVisualPropertyMgr = new UnrecognizedVisualPropertyManager(tableFactory, tableMgr);
+		tableManager = mock(CyTableManager.class);
+		
+		serviceRegistrar = mock(CyServiceRegistrar.class);
+		when(serviceRegistrar.getService(CyTableFactory.class)).thenReturn(tableFactory);
+		when(serviceRegistrar.getService(CyTableManager.class)).thenReturn(tableManager);
+		
+		unrecognizedVisualPropertyMgr = new UnrecognizedVisualPropertyManager(serviceRegistrar);
 
 		netView = mock(CyNetworkView.class);
 		when(netView.getSUID()).thenReturn(101L);

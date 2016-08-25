@@ -1,29 +1,5 @@
 package org.cytoscape.io.internal.read.session;
 
-/*
- * #%L
- * Cytoscape IO Impl (io-impl)
- * $Id:$
- * $HeadURL:$
- * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * #L%
- */
-
 import static org.cytoscape.io.internal.util.session.SessionUtil.BOOKMARKS_FILE;
 import static org.cytoscape.io.internal.util.session.SessionUtil.CYSESSION_FILE;
 import static org.cytoscape.io.internal.util.session.SessionUtil.IMAGES_FOLDER;
@@ -87,10 +63,35 @@ import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.property.SimpleCyProperty;
 import org.cytoscape.property.bookmark.Bookmarks;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.work.TaskMonitor;
+
+/*
+ * #%L
+ * Cytoscape IO Impl (io-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
 
 /**
  * Session reader implementation that handles the Cytoscape 2.x session format.
@@ -133,8 +134,8 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 								final CyNetworkReaderManager networkReaderMgr,
 								final CyPropertyReaderManager propertyReaderMgr,
 								final VizmapReaderManager vizmapReaderMgr,
-								final CyRootNetworkManager rootNetworkManager) {
-		super(sourceInputStream, cache, groupUtil, rootNetworkManager);
+								final CyServiceRegistrar serviceRegistrar) {
+		super(sourceInputStream, cache, groupUtil, serviceRegistrar);
 		
 		if (networkReaderMgr == null)
 			throw new NullPointerException("network reader manager is null.");
@@ -216,11 +217,13 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 			netMap.put(curNet.getId(), curNet);
 		}
 
-		walkNetworkTree(netMap.get(NETWORK_ROOT), null, netMap, tm);
+		final CyRootNetworkManager rootNetworkManager = serviceRegistrar.getService(CyRootNetworkManager.class);
+		
+		walkNetworkTree(netMap.get(NETWORK_ROOT), null, netMap, tm, rootNetworkManager);
 	}
 	
 	private void walkNetworkTree(final Network net, CyNetwork parent, final Map<String, Network> netMap,
-			final TaskMonitor tm) {
+			final TaskMonitor tm, final CyRootNetworkManager rootNetworkManager) {
 		// Get the list of children under this root
 		final List<Child> children = net.getChild();
 
@@ -268,7 +271,7 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 
 				// Always try to load child networks, even if the parent network is bad
 				if (!cancelled && childNet.getChild().size() != 0)
-					walkNetworkTree(childNet, cy2Parent, netMap, tm);
+					walkNetworkTree(childNet, cy2Parent, netMap, tm, rootNetworkManager);
 			}
 		}
 	}

@@ -1,12 +1,52 @@
 package org.cytoscape.io.internal.read.gml;
 
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_LINE_TYPE;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_SOURCE_ARROW_SHAPE;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_TARGET_ARROW_SHAPE;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_UNSELECTED_PAINT;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_WIDTH;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NETWORK_TITLE;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_BORDER_PAINT;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_BORDER_WIDTH;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_FILL_COLOR;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_HEIGHT;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_SHAPE;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_WIDTH;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_X_LOCATION;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_Y_LOCATION;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
+import java.awt.Color;
+import java.io.File;
+import java.io.FileInputStream;
+
+import org.cytoscape.io.internal.read.AbstractNetworkReaderTest;
+import org.cytoscape.io.internal.util.UnrecognizedVisualPropertyManager;
+import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNode;
+import org.cytoscape.model.CyRow;
+import org.cytoscape.model.subnetwork.CyRootNetwork;
+import org.cytoscape.model.subnetwork.CySubNetwork;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.View;
+import org.cytoscape.view.presentation.property.ArrowShapeVisualProperty;
+import org.cytoscape.view.presentation.property.LineTypeVisualProperty;
+import org.cytoscape.view.presentation.property.NodeShapeVisualProperty;
+import org.junit.Before;
+import org.junit.Test;
+
 /*
  * #%L
  * Cytoscape IO Impl (io-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -23,58 +63,15 @@ package org.cytoscape.io.internal.read.gml;
  * <http://www.gnu.org/licenses/lgpl-2.1.html>.
  * #L%
  */
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.*;
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
-
-import java.awt.Color;
-import java.io.File;
-import java.io.FileInputStream;
-
-import org.cytoscape.io.internal.read.AbstractNetworkReaderTest;
-import org.cytoscape.io.internal.util.UnrecognizedVisualPropertyManager;
-import org.cytoscape.model.CyEdge;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyRow;
-import org.cytoscape.model.CyTableFactory;
-import org.cytoscape.model.CyTableManager;
-import org.cytoscape.model.TableTestSupport;
-import org.cytoscape.model.subnetwork.CyRootNetwork;
-import org.cytoscape.model.subnetwork.CySubNetwork;
-import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.View;
-import org.cytoscape.view.model.VisualLexicon;
-import org.cytoscape.view.presentation.RenderingEngineManager;
-import org.cytoscape.view.presentation.property.ArrowShapeVisualProperty;
-import org.cytoscape.view.presentation.property.BasicVisualLexicon;
-import org.cytoscape.view.presentation.property.LineTypeVisualProperty;
-import org.cytoscape.view.presentation.property.NodeShapeVisualProperty;
-import org.cytoscape.view.presentation.property.NullVisualProperty;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 
 public class GMLNetworkReaderTest extends AbstractNetworkReaderTest {
 	
-	@Mock private RenderingEngineManager renderingEngineManager;
-	private VisualLexicon lexicon;
 	private UnrecognizedVisualPropertyManager unrecognizedVisualPropertyMgr;
 
 	@Before
 	public void setUp() throws Exception {
 		super.setUp();
-		MockitoAnnotations.initMocks(this);
-		
-		lexicon = new BasicVisualLexicon(new NullVisualProperty("MINIMAL_ROOT", "Minimal Root Visual Property"));
-		when(renderingEngineManager.getDefaultVisualLexicon()).thenReturn(lexicon);
-		
-		TableTestSupport tblTestSupport = new TableTestSupport();
-		CyTableFactory tableFactory = tblTestSupport.getTableFactory();
-		CyTableManager tableMgr = mock(CyTableManager.class);
-		
-		unrecognizedVisualPropertyMgr = new UnrecognizedVisualPropertyManager(tableFactory, tableMgr);
+		unrecognizedVisualPropertyMgr = new UnrecognizedVisualPropertyManager(serviceRegistrar);
 	}
 	
 	@Test
@@ -321,9 +318,8 @@ public class GMLNetworkReaderTest extends AbstractNetworkReaderTest {
 	
 	private GMLNetworkReader readGML(final String filename) throws Exception {
 		final File file = new File(filename);
-		GMLNetworkReader reader = new GMLNetworkReader(new FileInputStream(file), applicationManager, netFactory,
-													   renderingEngineManager, unrecognizedVisualPropertyMgr, 
-													   networkManager, rootNetworkManager);
+		GMLNetworkReader reader = new GMLNetworkReader(new FileInputStream(file), unrecognizedVisualPropertyMgr,
+				serviceRegistrar);
 		reader.run(taskMonitor);
 		
 		return reader;

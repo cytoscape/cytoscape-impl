@@ -1,12 +1,19 @@
 package org.cytoscape.io.internal.read.datatable;
 
+import java.io.InputStream;
+
+import org.cytoscape.io.CyFileFilter;
+import org.cytoscape.io.read.AbstractInputStreamTaskFactory;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.work.TaskIterator;
+
 /*
  * #%L
  * Cytoscape IO Impl (io-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,35 +31,26 @@ package org.cytoscape.io.internal.read.datatable;
  * #L%
  */
 
-
-import java.io.InputStream;
-
-import org.cytoscape.equations.EquationCompiler;
-import org.cytoscape.io.CyFileFilter;
-import org.cytoscape.io.read.AbstractInputStreamTaskFactory;
-import org.cytoscape.model.CyTableFactory;
-import org.cytoscape.work.TaskIterator;
-
-
 public class CSVCyReaderFactory extends AbstractInputStreamTaskFactory {
+	
 	private final boolean readSchema;
 	private final boolean handleEquations;
-	private final CyTableFactory tableFactory;
-	private final EquationCompiler compiler;
+	private final CyServiceRegistrar serviceRegistrar;
 
-	public CSVCyReaderFactory(final CyFileFilter filter, final boolean readSchema,
-				  final boolean handleEquations, final CyTableFactory tableFactory,
-				  final EquationCompiler compiler)
-	{
+	public CSVCyReaderFactory(
+			final CyFileFilter filter,
+			final boolean readSchema,
+			final boolean handleEquations,
+			final CyServiceRegistrar serviceRegistrar
+	) {
 		super(filter);
-		this.readSchema      = readSchema;
+		this.readSchema = readSchema;
 		this.handleEquations = handleEquations;
-		this.tableFactory    = tableFactory;
-		this.compiler        = compiler;
+		this.serviceRegistrar = serviceRegistrar;
 	}
 	
 	@Override
 	public TaskIterator createTaskIterator(InputStream stream, String inputName) {
-		return new TaskIterator(new CSVCyReader(stream, readSchema, handleEquations, tableFactory, compiler, "UTF-8"));
+		return new TaskIterator(new CSVCyReader(stream, readSchema, handleEquations, "UTF-8", serviceRegistrar));
 	}
 }

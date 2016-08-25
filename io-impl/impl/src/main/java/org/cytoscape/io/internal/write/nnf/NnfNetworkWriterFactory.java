@@ -1,12 +1,22 @@
 package org.cytoscape.io.internal.write.nnf;
 
+import java.io.OutputStream;
+
+import org.cytoscape.io.CyFileFilter;
+import org.cytoscape.io.internal.write.AbstractCyWriterFactory;
+import org.cytoscape.io.write.CyNetworkViewWriterFactory;
+import org.cytoscape.io.write.CyWriter;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.view.model.CyNetworkView;
+
 /*
  * #%L
  * Cytoscape IO Impl (io-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,30 +34,22 @@ package org.cytoscape.io.internal.write.nnf;
  * #L%
  */
 
-import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.io.CyFileFilter;
-import org.cytoscape.io.write.CyNetworkViewWriterFactory;
-import org.cytoscape.io.write.CyWriter;
-import java.io.OutputStream;
-import org.cytoscape.io.internal.write.AbstractCyWriterFactory;
-
 public class NnfNetworkWriterFactory extends AbstractCyWriterFactory implements CyNetworkViewWriterFactory {
 	
-	private final CyNetworkManager cyNetworkManagerServiceRef;
-	public NnfNetworkWriterFactory(CyNetworkManager cyNetworkManagerServiceRef,CyFileFilter filter) {
+	private final CyServiceRegistrar serviceRegistrar;
+	
+	public NnfNetworkWriterFactory(final CyFileFilter filter, final CyServiceRegistrar serviceRegistrar) {
 		super(filter);
-		this.cyNetworkManagerServiceRef = cyNetworkManagerServiceRef;
+		this.serviceRegistrar = serviceRegistrar;
 	}
 	
 	@Override
 	public CyWriter createWriter(OutputStream outputStream, CyNetworkView view) {
-		return new NnfWriter(cyNetworkManagerServiceRef, outputStream);
+		return new NnfWriter(outputStream, serviceRegistrar);
 	}
 
 	@Override
 	public CyWriter createWriter(OutputStream outputStream, CyNetwork network) {
-		return new NnfWriter(cyNetworkManagerServiceRef,outputStream);
+		return new NnfWriter(outputStream, serviceRegistrar);
 	}
 }

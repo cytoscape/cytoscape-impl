@@ -1,12 +1,16 @@
 package org.cytoscape.io.internal.read;
 
+import org.cytoscape.io.CyFileFilter;
+import org.cytoscape.io.read.AbstractInputStreamTaskFactory;
+import org.cytoscape.service.util.CyServiceRegistrar;
+
 /*
  * #%L
  * Cytoscape IO Impl (io-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,29 +28,12 @@ package org.cytoscape.io.internal.read;
  * #L%
  */
 
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.io.CyFileFilter;
-import org.cytoscape.io.read.AbstractInputStreamTaskFactory;
-import org.cytoscape.model.CyNetworkFactory;
-import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.model.subnetwork.CyRootNetworkManager;
-
 public abstract class AbstractNetworkReaderFactory extends AbstractInputStreamTaskFactory {
 
-	protected final CyApplicationManager cyApplicationManager;
-	protected final CyNetworkFactory cyNetworkFactory;
-	protected final CyNetworkManager cyNetworkManager;
-	protected final CyRootNetworkManager cyRootNetworkManager;
+	protected final CyServiceRegistrar serviceRegistrar;
 
-	public AbstractNetworkReaderFactory(final CyFileFilter filter,
-										final CyApplicationManager cyApplicationManager,
-										final CyNetworkFactory cyNetworkFactory,
-										final CyNetworkManager cyNetworkManager,
-										final CyRootNetworkManager cyRootNetworkManager) {
+	public AbstractNetworkReaderFactory(final CyFileFilter filter, final CyServiceRegistrar serviceRegistrar) {
 		super(filter);
-		this.cyApplicationManager = cyApplicationManager;
-		this.cyNetworkFactory = cyNetworkFactory;
-		this.cyNetworkManager = cyNetworkManager;
-		this.cyRootNetworkManager = cyRootNetworkManager;
+		this.serviceRegistrar = serviceRegistrar;
 	}
 }

@@ -1,12 +1,19 @@
 package org.cytoscape.io.internal.read.expression;
 
+import java.io.InputStream;
+
+import org.cytoscape.io.CyFileFilter;
+import org.cytoscape.io.internal.read.AbstractTableReaderFactory;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.work.TaskIterator;
+
 /*
  * #%L
  * Cytoscape IO Impl (io-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,23 +31,14 @@ package org.cytoscape.io.internal.read.expression;
  * #L%
  */
 
-
-import java.io.InputStream;
-
-import org.cytoscape.io.CyFileFilter;
-import org.cytoscape.io.internal.read.AbstractTableReaderFactory;
-import org.cytoscape.model.CyTableFactory;
-import org.cytoscape.work.TaskIterator;
-
-
 public class ExpressionReaderFactory extends AbstractTableReaderFactory {
 	
-	public ExpressionReaderFactory(final CyFileFilter filter, final CyTableFactory tableFactory) {
-		super(filter, tableFactory);
+	public ExpressionReaderFactory(final CyFileFilter filter, final CyServiceRegistrar serviceRegistrar) {
+		super(filter, serviceRegistrar);
 	}
 	
 	@Override
 	public TaskIterator createTaskIterator(InputStream inputStream, String inputName) {
-		return new TaskIterator(new ExpressionReader(inputStream, tableFactory));
+		return new TaskIterator(new ExpressionReader(inputStream, serviceRegistrar));
 	}
 }

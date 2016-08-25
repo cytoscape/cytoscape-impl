@@ -1,12 +1,31 @@
 package org.cytoscape.io.internal.util;
 
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyIdentifiable;
+import org.cytoscape.model.CyNode;
+import org.cytoscape.model.CyRow;
+import org.cytoscape.model.CyTable;
+import org.cytoscape.model.CyTableFactory;
+import org.cytoscape.model.CyTableManager;
+import org.cytoscape.model.SUIDFactory;
+import org.cytoscape.model.SavePolicy;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.View;
+import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedEvent;
+import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedListener;
+
 /*
  * #%L
  * Cytoscape IO Impl (io-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,45 +43,24 @@ package org.cytoscape.io.internal.util;
  * #L%
  */
 
-
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-
-import org.cytoscape.model.CyEdge;
-import org.cytoscape.model.CyIdentifiable;
-import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyRow;
-import org.cytoscape.model.CyTable;
-import org.cytoscape.model.CyTableFactory;
-import org.cytoscape.model.CyTableManager;
-import org.cytoscape.model.SUIDFactory;
-import org.cytoscape.model.SavePolicy;
-import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.View;
-import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedEvent;
-import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedListener;
-
-
 public class UnrecognizedVisualPropertyManager implements NetworkViewAboutToBeDestroyedListener {
+	
 	public static final String RENDERER_TABLE_TITLE = "UnrecognizedRenderer";
 	public static final String VISUAL_PROPERTY_TABLE_TITLE = "UnrecognizedVisualProperties";
 
 	private static final String RENDERER_TABLE_PK = CyIdentifiable.SUID;
 	private static final String VISUAL_PROPERTY_TABLE_PK = CyIdentifiable.SUID;
 
-	private final CyTableFactory tableFactory;
-	private final CyTableManager tableMgr;
+	private final CyServiceRegistrar serviceRegistrar;
 
 	Map<Long/*netViewId*/, CyTable> rendererTablesMap;
 	Map<Long/*netViewId*/, CyTable> vpTablesMap;
 
-	public UnrecognizedVisualPropertyManager(final CyTableFactory tableFactory, final CyTableManager tableMgr) {
-		this.tableFactory = tableFactory;
-		this.tableMgr = tableMgr;
+	public UnrecognizedVisualPropertyManager(final CyServiceRegistrar serviceRegistrar) {
+		this.serviceRegistrar = serviceRegistrar;
 		
-		rendererTablesMap = new HashMap<Long, CyTable>();
-		vpTablesMap = new HashMap<Long, CyTable>();
+		rendererTablesMap = new HashMap<>();
+		vpTablesMap = new HashMap<>();
 	}
 
 	/**
@@ -177,9 +175,12 @@ public class UnrecognizedVisualPropertyManager implements NetworkViewAboutToBeDe
 		 * - "att_name" (String): The unrecognized visual property name
 		 * - "target_type"(String): One of "network", "node", "edge"
 		 */
+		final CyTableFactory tableFactory = serviceRegistrar.getService(CyTableFactory.class);
 		CyTable rendererTbl = tableFactory.createTable(RENDERER_TABLE_TITLE + netViewId,
 		                                               RENDERER_TABLE_PK, Long.class, false,
 		                                               true);
+		
+		final CyTableManager tableMgr = serviceRegistrar.getService(CyTableManager.class);
 		tableMgr.addTable(rendererTbl);
 		rendererTbl.setSavePolicy(SavePolicy.DO_NOT_SAVE);
 		rendererTbl.createColumn("att_name", String.class, false);
@@ -210,8 +211,8 @@ public class UnrecognizedVisualPropertyManager implements NetworkViewAboutToBeDe
 
 	private void dropTables(CyNetworkView view) {
 		Long netViewId = view.getSUID();
-
 		CyTable vpTbl = vpTablesMap.get(netViewId);
+		final CyTableManager tableMgr = serviceRegistrar.getService(CyTableManager.class);
 
 		if (vpTbl != null) {
 			tableMgr.deleteTable(vpTbl.getSUID());

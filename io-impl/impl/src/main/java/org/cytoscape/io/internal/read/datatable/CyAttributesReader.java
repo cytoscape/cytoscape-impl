@@ -1,12 +1,33 @@
 package org.cytoscape.io.internal.read.datatable;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.URLDecoder;
+import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.StringTokenizer;
+
+import org.cytoscape.io.read.CyTableReader;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyRow;
+import org.cytoscape.model.CyTable;
+import org.cytoscape.model.CyTableFactory;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.TaskMonitor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /*
  * #%L
  * Cytoscape IO Impl (io-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,35 +45,8 @@ package org.cytoscape.io.internal.read.datatable;
  * #L%
  */
 
-
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.URLDecoder;
-import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.StringTokenizer;
-
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.io.read.CyTableReader;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.model.CyRow;
-import org.cytoscape.model.CyTable;
-import org.cytoscape.model.CyTableFactory;
-import org.cytoscape.model.CyTableManager;
-import org.cytoscape.model.subnetwork.CyRootNetworkManager;
-import org.cytoscape.task.edit.MapTableToNetworkTablesTaskFactory;
-import org.cytoscape.work.AbstractTask;
-import org.cytoscape.work.TaskMonitor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-
 public class CyAttributesReader extends AbstractTask implements CyTableReader {
+	
 	private static final Logger logger = LoggerFactory.getLogger(CyAttributesReader.class);
 
 	private static final byte TYPE_BOOLEAN = 1;
@@ -67,38 +61,34 @@ public class CyAttributesReader extends AbstractTask implements CyTableReader {
 	private int lineNum;
 	private boolean doDecoding;
 
-	private CyTableFactory tableFactory;;
 	private InputStream inputStream;
 
 	private CyTable[] cyTables;
-	private final CyApplicationManager appMgr;
-	private final CyNetworkManager netMgr;
-	private final CyRootNetworkManager rootNetFact;
 	
 	private static int nextTableNumber = 1;
+	
+	private final CyServiceRegistrar serviceRegistrar;
 
-	public CyAttributesReader(final InputStream inputStream, final CyTableFactory tableFactory,
-				  final CyApplicationManager appMgr, final CyNetworkManager netMgr, final CyRootNetworkManager rootNetFact)
-	{
+	public CyAttributesReader(final InputStream inputStream, final CyServiceRegistrar serviceRegistrar) {
 		lineNum = 0;
 		doDecoding = Boolean.valueOf(System.getProperty(DECODE_PROPERTY, "true"));
 
-		this.tableFactory = tableFactory;
-		this.appMgr = appMgr;
-		this.netMgr = netMgr;
 		this.inputStream = inputStream;
-		this.rootNetFact = rootNetFact;
+		this.serviceRegistrar = serviceRegistrar;
 	}
 
 	@Override
 	public void run(TaskMonitor tm) throws IOException {
 		tm.setProgress(0.0);
 
+		final CyTableFactory tableFactory = serviceRegistrar.getService(CyTableFactory.class);
 		final CyTable table = tableFactory.createTable(
 				"Table " + Integer.toString(nextTableNumber++), CyNetwork.NAME,
 				String.class, true, true);
+		
 		cyTables = new CyTable[] { table };
 		tm.setProgress(0.1);
+		
 		try {
 			loadAttributesInternal(table);
 			tm.setProgress(0.3);
@@ -108,8 +98,8 @@ public class CyAttributesReader extends AbstractTask implements CyTableReader {
 				inputStream = null;
 			}
 		}
-		tm.setProgress(1.0);	
 		
+		tm.setProgress(1.0);	
 	}
 
 	private void loadAttributesInternal(final CyTable table) throws IOException {
@@ -192,7 +182,6 @@ public class CyAttributesReader extends AbstractTask implements CyTableReader {
 				int inx = line.indexOf('=');
 				String key = line.substring(0, inx).trim();
 				String val = line.substring(inx + 1).trim();
-				final boolean equation = val.startsWith("=");
 
 				key = decodeString(key);
 

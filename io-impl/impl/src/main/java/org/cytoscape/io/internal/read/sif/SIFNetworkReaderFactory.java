@@ -1,12 +1,19 @@
 package org.cytoscape.io.internal.read.sif;
 
+import java.io.InputStream;
+
+import org.cytoscape.io.CyFileFilter;
+import org.cytoscape.io.internal.read.AbstractNetworkReaderFactory;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.work.TaskIterator;
+
 /*
  * #%L
  * Cytoscape IO Impl (io-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,34 +31,14 @@ package org.cytoscape.io.internal.read.sif;
  * #L%
  */
 
-import java.io.InputStream;
-
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.io.CyFileFilter;
-import org.cytoscape.io.internal.read.AbstractNetworkReaderFactory;
-import org.cytoscape.model.CyNetworkFactory;
-import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.model.subnetwork.CyRootNetworkManager;
-import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
-import org.cytoscape.work.TaskIterator;
-
 public class SIFNetworkReaderFactory extends AbstractNetworkReaderFactory {
 
-	private final CyLayoutAlgorithmManager layouts;
-	
-	public SIFNetworkReaderFactory(final CyFileFilter filter,
-								   final CyLayoutAlgorithmManager layouts,
-								   final CyApplicationManager cyApplicationManager,
-								   final CyNetworkFactory cyNetworkFactory,
-								   final CyNetworkManager cyNetworkManager,
-								   final CyRootNetworkManager cyRootNetworkManager) {
-		super(filter, cyApplicationManager, cyNetworkFactory, cyNetworkManager, cyRootNetworkManager);
-		this.layouts = layouts;
+	public SIFNetworkReaderFactory(final CyFileFilter filter, final CyServiceRegistrar serviceRegistrar) {
+		super(filter, serviceRegistrar);
 	}
 	
 	@Override
 	public TaskIterator createTaskIterator(final InputStream inputStream, final String inputName) {
-		return new TaskIterator(new SIFNetworkReader(inputStream, layouts, cyApplicationManager, cyNetworkFactory,
-				cyNetworkManager, cyRootNetworkManager));
+		return new TaskIterator(new SIFNetworkReader(inputStream, serviceRegistrar));
 	}
 }

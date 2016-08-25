@@ -1,30 +1,5 @@
 package org.cytoscape.io.internal.read.session;
 
-/*
- * #%L
- * Cytoscape IO Impl (io-impl)
- * $Id:$
- * $HeadURL:$
- * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * #L%
- */
-
-
 import static org.cytoscape.io.internal.util.session.SessionUtil.APPS_FOLDER;
 import static org.cytoscape.io.internal.util.session.SessionUtil.CYTABLE_STATE_FILE;
 import static org.cytoscape.io.internal.util.session.SessionUtil.NETWORKS_FOLDER;
@@ -88,8 +63,33 @@ import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.property.SimpleCyProperty;
 import org.cytoscape.property.bookmark.Bookmarks;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.work.TaskMonitor;
+
+/*
+ * #%L
+ * Cytoscape IO Impl (io-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
 
 /**
  * Session reader implementation that handles the Cytoscape 3 session format.
@@ -117,8 +117,6 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 	private final CyPropertyReaderManager propertyReaderMgr;
 	private final VizmapReaderManager vizmapReaderMgr;
 	private final CSVCyReaderFactory csvCyReaderFactory;
-	private final CyNetworkTableManager networkTableMgr;
-	private final EquationCompiler compiler;
 
 	protected final Map<String, CyTable> filenameTableMap;
 	private Map<CyTableMetadataBuilder, String> builderFilenameMap;
@@ -135,10 +133,8 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 							    final CyPropertyReaderManager propertyReaderMgr,
 							    final VizmapReaderManager vizmapReaderMgr,
 							    final CSVCyReaderFactory csvCyReaderFactory,
-							    final CyNetworkTableManager networkTableMgr,
-							    final CyRootNetworkManager rootNetworkMgr,
-							    final EquationCompiler compiler) {
-		super(sourceInputStream, cache, groupUtil, rootNetworkMgr);
+							    final CyServiceRegistrar serviceRegistrar) {
+		super(sourceInputStream, cache, groupUtil, serviceRegistrar);
 
 		if (suidUpdater == null) throw new NullPointerException("SUID updater is null.");
 		this.suidUpdater = suidUpdater;
@@ -155,15 +151,9 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 		if (csvCyReaderFactory == null) throw new NullPointerException("table reader manager is null.");
 		this.csvCyReaderFactory = csvCyReaderFactory;
 
-		if (networkTableMgr == null) throw new NullPointerException("network table manager is null.");
-		this.networkTableMgr = networkTableMgr;
-		
-		if (compiler == null) throw new NullPointerException("equation compiler is null.");
-		this.compiler = compiler;
-		
-		virtualColumns = new LinkedList<VirtualColumn>();
-		filenameTableMap = new HashMap<String, CyTable>();
-		builderFilenameMap = new HashMap<CyTableMetadataBuilder, String>();
+		virtualColumns = new LinkedList<>();
+		filenameTableMap = new HashMap<>();
+		builderFilenameMap = new HashMap<>();
 	}
 	
 	@Override
@@ -323,6 +313,8 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 	private void extractNetworks(InputStream is, String entryName) throws Exception {
 		CyNetworkReader reader = networkReaderMgr.getReader(is, entryName);
 		reader.run(taskMonitor);
+		
+		final CyRootNetworkManager rootNetworkManager = serviceRegistrar.getService(CyRootNetworkManager.class);
 		final CyNetwork[] netArray = reader.getNetworks();
 		
 		for (final CyNetwork net : netArray) {
@@ -452,9 +444,8 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 				String propsName = matcher.group(2);
 				
 				if (propsName != null) {
-					cyProps = new SimpleCyProperty<Properties>(propsName, props, Properties.class,
+					cyProps = new SimpleCyProperty<>(propsName, props, Properties.class,
 							CyProperty.SavePolicy.SESSION_FILE);
-					
 				}
 			}
 		} else if (obj instanceof Bookmarks) {
@@ -473,7 +464,7 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 		if (virtualColumns == null)
 			return;
 		
-		final Queue<VirtualColumn> queue = new LinkedList<VirtualColumn>();
+		final Queue<VirtualColumn> queue = new LinkedList<>();
 		queue.addAll(virtualColumns);
 		
 		// Will be used to prevent infinite loops if there are circular references or missing table/columns
@@ -528,6 +519,8 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 	}
 
 	private final void mergeNetworkTables() throws UnsupportedEncodingException {
+		final CyNetworkTableManager networkTableManager = serviceRegistrar.getService(CyNetworkTableManager.class);
+		
 		for (final Entry<Long, Set<CyTableMetadataBuilder>> entry : networkTableMap.entrySet()) {
 			final Object oldId = entry.getKey();
 			final Set<CyTableMetadataBuilder> builders = entry.getValue();
@@ -542,7 +535,7 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 				if (cancelled) return;
 				
 				builder.setNetwork(network);
-				mergeNetworkTable(network, builder);
+				mergeNetworkTable(network, builder, networkTableManager);
 				CyTableMetadata metadata = builder.build();
 				tableMetadata.add(metadata);
 				
@@ -554,7 +547,8 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 	}
 
 	@SuppressWarnings("unchecked")
-	private final void mergeNetworkTable(CyNetwork network, CyTableMetadataBuilder builder) {
+	private final void mergeNetworkTable(CyNetwork network, CyTableMetadataBuilder builder,
+			CyNetworkTableManager networkTableMgr) {
 		final Class<? extends CyIdentifiable> type = (Class<? extends CyIdentifiable>) builder.getType();
 		final String namespace = builder.getNamespace();
 		final CyTable src = builder.getTable();
@@ -662,6 +656,8 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 	}
 	
 	private void restoreEquations() {
+		final EquationCompiler compiler = serviceRegistrar.getService(EquationCompiler.class);
+		
 		for (CyNetwork network : networkLookup.values()) {
 			EquationUtil.refreshEquations(network.getDefaultNetworkTable(), compiler);
 			EquationUtil.refreshEquations(network.getDefaultNodeTable(), compiler);
@@ -669,8 +665,6 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 		}
 	}
 
-	
-	
 	private void moveParentNetworkColumn() {
 		for (CyNetwork net : networks) {
 			try {

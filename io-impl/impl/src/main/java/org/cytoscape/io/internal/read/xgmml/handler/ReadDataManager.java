@@ -1,29 +1,5 @@
 package org.cytoscape.io.internal.read.xgmml.handler;
 
-/*
- * #%L
- * Cytoscape IO Impl (io-impl)
- * $Id:$
- * $HeadURL:$
- * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * #L%
- */
-
 import static org.cytoscape.io.internal.util.GroupUtil.EXTERNAL_EDGE_ATTRIBUTE;
 import static org.cytoscape.io.internal.util.GroupUtil.GROUP_STATE_ATTRIBUTE;
 
@@ -57,10 +33,35 @@ import org.cytoscape.model.CyRow;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.model.subnetwork.CySubNetwork;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkView;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.Attributes;
+
+/*
+ * #%L
+ * Cytoscape IO Impl (io-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
 
 public class ReadDataManager {
 
@@ -137,25 +138,19 @@ public class ReadDataManager {
 	
 	private final ReadCache cache;
 	private final SUIDUpdater suidUpdater;
-	private final EquationCompiler equationCompiler;
-	private final CyNetworkFactory networkFactory;
-	private final CyRootNetworkManager rootNetworkManager;
 	private final GroupUtil groupUtil;
+	private final CyServiceRegistrar serviceRegistrar;
 
 	private static final Logger logger = LoggerFactory.getLogger(ReadDataManager.class);
 
 	public ReadDataManager(final ReadCache cache,
 						   final SUIDUpdater suidUpdater,
-						   final EquationCompiler equationCompiler,
-						   final CyNetworkFactory networkFactory,
-						   final CyRootNetworkManager rootNetworkManager,
-						   final GroupUtil groupUtil) {
+						   final GroupUtil groupUtil,
+						   final CyServiceRegistrar serviceRegistrar) {
 		this.cache = cache;
 		this.suidUpdater = suidUpdater;
-		this.equationCompiler = equationCompiler;
-		this.networkFactory = networkFactory;
-		this.rootNetworkManager = rootNetworkManager;
 		this.groupUtil = groupUtil;
+		this.serviceRegistrar = serviceRegistrar;
 		init();
 	}
 
@@ -196,22 +191,22 @@ public class ReadDataManager {
 		edgeBendX = null;
 		edgeBendY = null;
 		
-		networkStack = new Stack<Object>();
-		compoundNodeStack = new Stack<CyNode>();
+		networkStack = new Stack<>();
+		compoundNodeStack = new Stack<>();
 		
-		publicNetworks = new LinkedHashSet<CyNetwork>();
-		equations = new Hashtable<CyRow, Map<String, String>>();
+		publicNetworks = new LinkedHashSet<>();
+		equations = new Hashtable<>();
 		
-		networkGraphics = new LinkedHashMap<Long, Map<String, String>>();
-		nodeGraphics = new LinkedHashMap<Long, Map<String, String>>();
-		edgeGraphics = new LinkedHashMap<Long, Map<String, String>>();
+		networkGraphics = new LinkedHashMap<>();
+		nodeGraphics = new LinkedHashMap<>();
+		edgeGraphics = new LinkedHashMap<>();
 		
 		networkViewId = null;
 		networkId = null;
 		visualStyleName = null;
 		rendererId = null;
-		viewGraphics = new LinkedHashMap<Object, Map<String,String>>();
-		viewLockedGraphics = new LinkedHashMap<Object, Map<String,String>>();
+		viewGraphics = new LinkedHashMap<>();
+		viewLockedGraphics = new LinkedHashMap<>();
 	}
 	
 	public void dispose() {
@@ -285,7 +280,7 @@ public class ReadDataManager {
 			Map<String, String> attributes = graphics.get(element.getSUID());
 
 			if (attributes == null) {
-				attributes = new HashMap<String, String>();
+				attributes = new HashMap<>();
 				graphics.put(element.getSUID(), attributes);
 			}
 
@@ -379,6 +374,8 @@ public class ReadDataManager {
 	 * Should be called only after all XGMML attributes have been read.
 	 */
 	protected void parseAllEquations() {
+		final EquationCompiler equationCompiler = serviceRegistrar.getService(EquationCompiler.class);
+		
 		for (Map.Entry<CyRow, Map<String, String>> entry : equations.entrySet()) {
 			CyRow row = entry.getKey();
 			Map<String, String> colEquationMap = entry.getValue();
@@ -427,14 +424,18 @@ public class ReadDataManager {
 		if (this.rootNetwork != null)
 			return this.rootNetwork;
 		
+		final CyNetworkFactory networkFactory = serviceRegistrar.getService(CyNetworkFactory.class);
 		final CyNetwork baseNet = networkFactory.createNetwork();
+		
+		final CyRootNetworkManager rootNetworkManager = serviceRegistrar.getService(CyRootNetworkManager.class);
 		final CyRootNetwork rootNetwork = rootNetworkManager.getRootNetwork(baseNet);
 		
 		return rootNetwork;
 	}
 	
 	protected CyRootNetwork getRootNetwork() {
-		return (currentNetwork != null) ? rootNetworkManager.getRootNetwork(currentNetwork) : null;
+		return (currentNetwork != null) ?
+				serviceRegistrar.getService(CyRootNetworkManager.class).getRootNetwork(currentNetwork) : null;
 	}
 	
     protected CyNode createNode(final Object oldId, final String label, final CyNetwork net) {

@@ -1,12 +1,29 @@
 package org.cytoscape.io.internal.write.nnf;
 
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
+import java.nio.charset.Charset;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import org.cytoscape.io.write.CyWriter;
+import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNetworkManager;
+import org.cytoscape.model.CyNode;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.work.TaskMonitor;
+
 /*
  * #%L
  * Cytoscape IO Impl (io-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,35 +41,17 @@ package org.cytoscape.io.internal.write.nnf;
  * #L%
  */
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
-import java.nio.charset.Charset;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import org.cytoscape.io.write.CyWriter;
-import org.cytoscape.model.CyEdge;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.model.CyNode;
-import org.cytoscape.work.TaskMonitor;
-
 public class NnfWriter implements CyWriter {
 	
 	private OutputStream outputStream;
-	//private CyNetwork network;
-	private final CyNetworkManager cyNetworkManagerServiceRef;
+	
+	private final CyServiceRegistrar serviceRegistrar;
 
-	public NnfWriter(CyNetworkManager cyNetworkManagerServiceRef, OutputStream outputStream) {
+	public NnfWriter(final OutputStream outputStream, final CyServiceRegistrar serviceRegistrar) {
 		this.outputStream = outputStream;
-		//this.network = network; 
-		this.cyNetworkManagerServiceRef = cyNetworkManagerServiceRef;
+		this.serviceRegistrar = serviceRegistrar;
 	}
 
-	
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
 		taskMonitor.setProgress(0.0);
@@ -60,10 +59,12 @@ public class NnfWriter implements CyWriter {
 
 		final Writer writer = new OutputStreamWriter(outputStream, Charset.forName("UTF-8").newEncoder());
 
-		final Set<CyNetwork> networks = this.cyNetworkManagerServiceRef.getNetworkSet();
+		final Set<CyNetwork> networks = serviceRegistrar.getService(CyNetworkManager.class).getNetworkSet();
 		final float networkCount = networks.size();
+		
 		try {
 			float writtenCount = 0.0f;
+			
 			for (final CyNetwork network : networks) {
 				writeNetwork(writer, network);
 				++writtenCount;
@@ -71,21 +72,19 @@ public class NnfWriter implements CyWriter {
 			}
 		} catch (Exception e) {
 			taskMonitor.setStatusMessage("Cannot export networks as NNF.");
-		}
-		finally {
+		} finally {
 			writer.close();
 		}		
 		
 		taskMonitor.setProgress(1.0);
 	}
 	
-	
 	private void writeNetwork(Writer writer, final CyNetwork network) throws IOException {
 		final String title = network.getRow(network).get(CyNetwork.NAME, String.class);
 
-		final Set<String> encounteredNodes = new HashSet<String>();
-
+		final Set<String> encounteredNodes = new HashSet<>();
 		final List<CyEdge> edges = (List<CyEdge>)network.getEdgeList();
+		
 		for (final CyEdge edge : edges) {
 			writer.write(escapeID(title) + " ");
 			
@@ -109,6 +108,7 @@ public class NnfWriter implements CyWriter {
 		}
 
 		final List<CyNode> nodes = network.getNodeList();
+		
 		for (final CyNode node : nodes) {
 			final String nodeID = network.getRow(node).get(CyNetwork.NAME, String.class); 
 			
@@ -116,10 +116,10 @@ public class NnfWriter implements CyWriter {
 				writer.write(escapeID(title) + " " + escapeID(nodeID) + "\n");
 		}
 	}
-
 	
 	private String escapeID(final String ID) {
 		final StringBuilder builder = new StringBuilder(ID.length());
+		
 		for (int i = 0; i < ID.length(); ++i) {
 			final char ch = ID.charAt(i);
 			if (ch == ' ' || ch == '\t' || ch == '\\')
@@ -130,11 +130,8 @@ public class NnfWriter implements CyWriter {
 		return builder.toString();
 	}
 
-	
 	@Override
 	public void cancel() {
 		// TODO Auto-generated method stub
-
 	}
-
 }

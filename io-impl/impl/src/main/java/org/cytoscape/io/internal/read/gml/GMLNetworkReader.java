@@ -1,29 +1,5 @@
 package org.cytoscape.io.internal.read.gml;
 
-/*
- * #%L
- * Cytoscape IO Impl (io-impl)
- * $Id:$
- * $HeadURL:$
- * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * #L%
- */
-
 import java.io.InputStream;
 import java.io.StringWriter;
 import java.util.ArrayList;
@@ -50,6 +26,7 @@ import org.cytoscape.model.CyTable;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.model.subnetwork.CySubNetwork;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualLexicon;
@@ -61,6 +38,30 @@ import org.cytoscape.view.presentation.property.values.ArrowShape;
 import org.cytoscape.work.TaskMonitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+/*
+ * #%L
+ * Cytoscape IO Impl (io-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
 
 /**
  * This class is responsible for converting a gml object tree into cytoscape
@@ -123,8 +124,8 @@ public class GMLNetworkReader extends AbstractCyNetworkReader {
 
 	private static final String VIZMAP_PREFIX = "vizmap:";
 
-	private static Map<String, ArrowShape> legacyArrowShapes = new HashMap<String, ArrowShape>();
-	private static Map<String, ArrowShape> yedArrowShapes = new HashMap<String, ArrowShape>();
+	private static Map<String, ArrowShape> legacyArrowShapes = new HashMap<>();
+	private static Map<String, ArrowShape> yedArrowShapes = new HashMap<>();
 
 	// Entries in the file
 	private List<KeyValue> keyVals;
@@ -145,11 +146,12 @@ public class GMLNetworkReader extends AbstractCyNetworkReader {
 	private List<Map<String, Object>> edgeAttributes;
 	private boolean graphDirected = true; // use pre-3.0 cytoscape's as default
 
-	private final RenderingEngineManager renderingEngineManager;
 	private final UnrecognizedVisualPropertyManager unrecognizedVisualPropertyMgr;
+	private final CyServiceRegistrar serviceRegistrar;
 
 	private CyNetworkView view;
 	private CySubNetwork network;
+	private VisualLexicon visualLexicon;
 
 	protected static final Logger logger = LoggerFactory
 			.getLogger(GMLNetworkReader.class);
@@ -186,21 +188,24 @@ public class GMLNetworkReader extends AbstractCyNetworkReader {
 
 	public GMLNetworkReader(
 			final InputStream inputStream,
-			final CyApplicationManager cyApplicationManager,
-			final CyNetworkFactory networkFactory,
-			final RenderingEngineManager renderingEngineManager,
 			final UnrecognizedVisualPropertyManager unrecognizedVisualPropertyMgr,
-			final CyNetworkManager cyNetworkManager,
-			final CyRootNetworkManager cyRootNetworkManager) {
-		super(inputStream, cyApplicationManager, networkFactory, cyNetworkManager, cyRootNetworkManager);
-		this.renderingEngineManager = renderingEngineManager;
+			final CyServiceRegistrar serviceRegistrar
+	) {
+		super(
+				inputStream, 
+				serviceRegistrar.getService(CyApplicationManager.class), 
+				serviceRegistrar.getService(CyNetworkFactory.class), 
+				serviceRegistrar.getService(CyNetworkManager.class),
+				serviceRegistrar.getService(CyRootNetworkManager.class)
+		);
 		this.unrecognizedVisualPropertyMgr = unrecognizedVisualPropertyMgr;
+		this.serviceRegistrar = serviceRegistrar;
 
 		// Set new style name
-		edgeNames = new Vector<CyEdge>();
-		nodeNames = new Vector<String>();
-		nodeAttributes = new ArrayList<Map<String, Object>>();
-		edgeAttributes = new ArrayList<Map<String, Object>>();
+		edgeNames = new Vector<>();
+		nodeNames = new Vector<>();
+		nodeAttributes = new ArrayList<>();
+		edgeAttributes = new ArrayList<>();
 	}
 
 	@Override
@@ -809,9 +814,7 @@ public class GMLNetworkReader extends AbstractCyNetworkReader {
 			set.add(BasicVisualLexicon.EDGE_SOURCE_ARROW_SHAPE);
 			set.add(BasicVisualLexicon.EDGE_TARGET_ARROW_SHAPE);
 		} else {
-			final VisualLexicon lexicon = renderingEngineManager
-					.getDefaultVisualLexicon();
-			final VisualProperty<?> vp = lexicon.lookup(type, key);
+			final VisualProperty<?> vp = getVisualLexicon().lookup(type, key);
 
 			if (vp != null)
 				set.add(vp);
@@ -843,6 +846,13 @@ public class GMLNetworkReader extends AbstractCyNetworkReader {
 		 * Point2D.Double(x.doubleValue(), y.doubleValue());
 		 * edgeView.getBend().addHandle(pt); } } }
 		 */
+	}
+	
+	private VisualLexicon getVisualLexicon() {
+		if (visualLexicon == null)
+			visualLexicon = serviceRegistrar.getService(RenderingEngineManager.class).getDefaultVisualLexicon();
+		
+		return visualLexicon;
 	}
 
 	/**

@@ -1,12 +1,41 @@
 package org.cytoscape.io.internal.write.xgmml;
 
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_TRANSPARENCY;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NETWORK_HEIGHT;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NETWORK_TITLE;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NETWORK_WIDTH;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_BORDER_WIDTH;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_SHAPE;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_SIZE;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_X_LOCATION;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_Y_LOCATION;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_Z_LOCATION;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+import java.io.UnsupportedEncodingException;
+
+import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyIdentifiable;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNode;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.View;
+import org.cytoscape.view.presentation.property.NodeShapeVisualProperty;
+import org.cytoscape.view.vizmap.VisualStyle;
+import org.junit.Before;
+import org.junit.Test;
+
 /*
  * #%L
  * Cytoscape IO Impl (io-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -23,23 +52,6 @@ package org.cytoscape.io.internal.write.xgmml;
  * <http://www.gnu.org/licenses/lgpl-2.1.html>.
  * #L%
  */
-
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.*;
-
-import java.io.UnsupportedEncodingException;
-
-import org.cytoscape.model.CyEdge;
-import org.cytoscape.model.CyIdentifiable;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNode;
-import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.View;
-import org.cytoscape.view.presentation.property.NodeShapeVisualProperty;
-import org.cytoscape.view.vizmap.VisualStyle;
-import org.junit.Before;
-import org.junit.Test;
 
 public class SessionXGMMLNetworkViewWriterTest extends AbstractXGMMLWriterTest {
 
@@ -198,8 +210,8 @@ public class SessionXGMMLNetworkViewWriterTest extends AbstractXGMMLWriterTest {
 		SessionXGMMLNetworkViewWriter writer = null;
 		
 		if (netOrView instanceof CyNetworkView)
-			writer = new SessionXGMMLNetworkViewWriter(out, renderingEngineMgr, (CyNetworkView) netOrView,
-					unrecogVisPropMgr, netMgr, rootNetMgr, vmMgr);
+			writer = new SessionXGMMLNetworkViewWriter(out, (CyNetworkView) netOrView, unrecogVisPropMgr,
+					serviceRegistrar);
 		else
 			throw new IllegalArgumentException("netOrView must be a CyNetworkView.");
 			

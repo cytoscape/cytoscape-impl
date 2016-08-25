@@ -1,12 +1,20 @@
 package org.cytoscape.io.internal.read.gml;
 
+import java.io.InputStream;
+
+import org.cytoscape.io.CyFileFilter;
+import org.cytoscape.io.internal.read.AbstractNetworkReaderFactory;
+import org.cytoscape.io.internal.util.UnrecognizedVisualPropertyManager;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.work.TaskIterator;
+
 /*
  * #%L
  * Cytoscape IO Impl (io-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,39 +32,19 @@ package org.cytoscape.io.internal.read.gml;
  * #L%
  */
 
-import java.io.InputStream;
-
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.io.CyFileFilter;
-import org.cytoscape.io.internal.read.AbstractNetworkReaderFactory;
-import org.cytoscape.io.internal.util.UnrecognizedVisualPropertyManager;
-import org.cytoscape.model.CyNetworkFactory;
-import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.model.subnetwork.CyRootNetworkManager;
-import org.cytoscape.view.presentation.RenderingEngineManager;
-import org.cytoscape.work.TaskIterator;
-
 public class GMLNetworkReaderFactory extends AbstractNetworkReaderFactory {
 
-	private final RenderingEngineManager renderingEngineManager;
 	private final UnrecognizedVisualPropertyManager unrecognizedVisualPropertyMgr;
 
 	public GMLNetworkReaderFactory(final CyFileFilter filter,
-								   final CyApplicationManager cyApplicationManager,
-								   final CyNetworkFactory networkFactory,
-								   final RenderingEngineManager renderingEngineManager,
 								   final UnrecognizedVisualPropertyManager unrecognizedVisualPropertyMgr,
-								   final CyNetworkManager cyNetworkManager,
-								   final CyRootNetworkManager cyRootNetworkManager) {
-		super(filter, cyApplicationManager, networkFactory, cyNetworkManager, cyRootNetworkManager);
-		this.renderingEngineManager = renderingEngineManager;
+								   final CyServiceRegistrar serviceRegistrar) {
+		super(filter, serviceRegistrar);
 		this.unrecognizedVisualPropertyMgr = unrecognizedVisualPropertyMgr;
 	}
 
 	@Override
 	public TaskIterator createTaskIterator(InputStream inputStream, String inputName) {
-		return new TaskIterator(new GMLNetworkReader(inputStream, cyApplicationManager, cyNetworkFactory,
-													 renderingEngineManager, unrecognizedVisualPropertyMgr,
-													 cyNetworkManager, cyRootNetworkManager));
+		return new TaskIterator(new GMLNetworkReader(inputStream, unrecognizedVisualPropertyMgr, serviceRegistrar));
 	}
 }

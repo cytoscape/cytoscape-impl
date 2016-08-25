@@ -1,12 +1,52 @@
 package org.cytoscape.io.internal.read.xgmml;
 
+import static org.cytoscape.model.CyNetwork.DEFAULT_ATTRS;
+import static org.cytoscape.model.CyNetwork.HIDDEN_ATTRS;
+import static org.cytoscape.model.CyNetwork.LOCAL_ATTRS;
+import static org.cytoscape.model.CyNetwork.NAME;
+import static org.cytoscape.model.subnetwork.CyRootNetwork.SHARED_ATTRS;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
+import org.cytoscape.io.internal.read.AbstractNetworkReaderTest;
+import org.cytoscape.io.internal.read.xgmml.handler.ReadDataManager;
+import org.cytoscape.io.internal.util.GroupUtil;
+import org.cytoscape.io.internal.util.ReadCache;
+import org.cytoscape.io.internal.util.SUIDUpdater;
+import org.cytoscape.io.internal.util.UnrecognizedVisualPropertyManager;
+import org.cytoscape.io.internal.util.session.SessionUtil;
+import org.cytoscape.model.CyColumn;
+import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNode;
+import org.cytoscape.model.CyRow;
+import org.cytoscape.model.CyTable;
+import org.cytoscape.model.subnetwork.CyRootNetwork;
+import org.cytoscape.model.subnetwork.CySubNetwork;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
+import org.junit.Before;
+import org.junit.Test;
+
 /*
  * #%L
  * Cytoscape IO Impl (io-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,66 +64,8 @@ package org.cytoscape.io.internal.read.xgmml;
  * #L%
  */
 
-import static org.cytoscape.model.CyNetwork.DEFAULT_ATTRS;
-import static org.cytoscape.model.CyNetwork.HIDDEN_ATTRS;
-import static org.cytoscape.model.CyNetwork.LOCAL_ATTRS;
-import static org.cytoscape.model.CyNetwork.NAME;
-import static org.cytoscape.model.subnetwork.CyRootNetwork.SHARED_ATTRS;
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
-
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
-import org.cytoscape.ding.NetworkViewTestSupport;
-import org.cytoscape.equations.EquationCompiler;
-import org.cytoscape.group.CyGroupFactory;
-import org.cytoscape.group.CyGroupManager;
-import org.cytoscape.group.GroupTestSupport;
-import org.cytoscape.io.internal.read.AbstractNetworkReaderTest;
-import org.cytoscape.io.internal.read.xgmml.handler.ReadDataManager;
-import org.cytoscape.io.internal.util.GroupUtil;
-import org.cytoscape.io.internal.util.ReadCache;
-import org.cytoscape.io.internal.util.SUIDUpdater;
-import org.cytoscape.io.internal.util.UnrecognizedVisualPropertyManager;
-import org.cytoscape.io.internal.util.session.SessionUtil;
-import org.cytoscape.model.CyColumn;
-import org.cytoscape.model.CyEdge;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNetworkFactory;
-import org.cytoscape.model.CyNetworkTableManager;
-import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyRow;
-import org.cytoscape.model.CyTable;
-import org.cytoscape.model.CyTableFactory;
-import org.cytoscape.model.CyTableManager;
-import org.cytoscape.model.NetworkTestSupport;
-import org.cytoscape.model.TableTestSupport;
-import org.cytoscape.model.subnetwork.CyRootNetwork;
-import org.cytoscape.model.subnetwork.CyRootNetworkManager;
-import org.cytoscape.model.subnetwork.CySubNetwork;
-import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.CyNetworkViewFactory;
-import org.cytoscape.view.presentation.RenderingEngineManager;
-import org.cytoscape.view.presentation.property.BasicVisualLexicon;
-import org.cytoscape.view.presentation.property.NullVisualProperty;
-import org.junit.Before;
-import org.junit.Test;
-
 public class GenericXGMMLReaderTest extends AbstractNetworkReaderTest {
 
-	CyNetworkViewFactory networkViewFactory;
-	CyNetworkFactory networkFactory;
-	CyRootNetworkManager rootNetworkMgr;
-	CyNetworkTableManager netTablMgr;
-	CyGroupManager groupMgr;
-	CyTableFactory tableFactory;
-	RenderingEngineManager renderingEngineMgr;
 	ReadDataManager readDataMgr;
 	ReadCache readCache;
 	GroupUtil groupUtil;
@@ -95,38 +77,17 @@ public class GenericXGMMLReaderTest extends AbstractNetworkReaderTest {
 	@Before
 	public void setUp() throws Exception {
 		super.setUp();
-		renderingEngineMgr = mock(RenderingEngineManager.class);
-		when(renderingEngineMgr.getDefaultVisualLexicon())
-				.thenReturn(new BasicVisualLexicon(new NullVisualProperty("MINIMAL_ROOT",
-																			"Minimal Root Visual Property")));
 
-		TableTestSupport tblTestSupport = new TableTestSupport();
-		tableFactory = tblTestSupport.getTableFactory();
-		
-		NetworkTestSupport networkTestSupport = new NetworkTestSupport();
-		networkFactory = networkTestSupport.getNetworkFactory();
-		rootNetworkMgr = networkTestSupport.getRootNetworkFactory();
-		netTablMgr = networkTestSupport.getNetworkTableManager();
-		
-		NetworkViewTestSupport networkViewTestSupport = new NetworkViewTestSupport();
-		networkViewFactory = networkViewTestSupport.getNetworkViewFactory();
-		
-		GroupTestSupport groupTestSupport = new GroupTestSupport();
-		CyGroupFactory grFactory = groupTestSupport.getGroupFactory();
-		groupMgr = groupTestSupport.getGroupManager();
-		
-		readCache = new ReadCache(netTablMgr);
-		groupUtil = new GroupUtil(groupMgr, grFactory);
+		readCache = new ReadCache(serviceRegistrar);
+		groupUtil = new GroupUtil(serviceRegistrar);
 		suidUpdater = new SUIDUpdater();
-		readDataMgr = new ReadDataManager(readCache, suidUpdater, mock(EquationCompiler.class), networkFactory, 
-				rootNetworkMgr, groupUtil);
+		readDataMgr = new ReadDataManager(readCache, suidUpdater, groupUtil, serviceRegistrar);
 		
 		HandlerFactory handlerFactory = new HandlerFactory(readDataMgr);
 		handlerFactory.init();
 		parser = new XGMMLParser(handlerFactory, readDataMgr);
 
-		CyTableManager tableMgr= mock(CyTableManager.class);
-		unrecognizedVisualPropertyMgr = new UnrecognizedVisualPropertyManager(tableFactory, tableMgr);
+		unrecognizedVisualPropertyMgr = new UnrecognizedVisualPropertyManager(serviceRegistrar);
 		
 		SessionUtil.setReadingSessionFile(false);
 	}
@@ -316,16 +277,16 @@ public class GenericXGMMLReaderTest extends AbstractNetworkReaderTest {
 		assertEquals(1, reader.getNetworks().length);
 		
 		CyNetwork net = checkSingleNetwork(views, 3, 2);
-		CyRootNetwork rootNet = rootNetworkMgr.getRootNetwork(net);
+		CyRootNetwork rootNet = rootNetManager.getRootNetwork(net);
 		CyNode grNode = getNodeByName(rootNet, "metanode 1");
 		check2xGroupMetadata(net, grNode, true);
 		
-		assertCustomColumnsAreMutable(rootNetworkMgr.getRootNetwork(net));
+		assertCustomColumnsAreMutable(rootNetManager.getRootNetwork(net));
 		assertCustomColumnsAreMutable(net);
 		assertCustomColumnsAreMutable(grNode.getNetworkPointer());
 		
-		assertEquals(1, groupMgr.getGroupSet(net).size());
-		assertTrue(groupMgr.isGroup(grNode, net));
+		assertEquals(1, groupManager.getGroupSet(net).size());
+		assertTrue(groupManager.isGroup(grNode, net));
 	}
 	
 	@Test
@@ -334,7 +295,7 @@ public class GenericXGMMLReaderTest extends AbstractNetworkReaderTest {
 		// The group network should not be registered, so the network list must contain only the base network
 		assertEquals(1, reader.getNetworks().length);
 		CyNetwork net = checkSingleNetwork(views, 2, 1);
-		CyRootNetwork rootNet = rootNetworkMgr.getRootNetwork(net);
+		CyRootNetwork rootNet = rootNetManager.getRootNetwork(net);
 		CyNode grNode = getNodeByName(rootNet, "metanode 1");
 		check2xGroupMetadata(net, grNode, false);
 		
@@ -349,8 +310,8 @@ public class GenericXGMMLReaderTest extends AbstractNetworkReaderTest {
 		assertCustomColumnsAreMutable(net);
 		assertCustomColumnsAreMutable(grNet);
 		
-		assertEquals(1, groupMgr.getGroupSet(net).size());
-		assertTrue(groupMgr.isGroup(grNode, net));
+		assertEquals(1, groupManager.getGroupSet(net).size());
+		assertTrue(groupManager.isGroup(grNode, net));
 	}
 	
 	@Test
@@ -361,19 +322,19 @@ public class GenericXGMMLReaderTest extends AbstractNetworkReaderTest {
 		assertEquals(1, reader.getNetworks().length);
 		
 		CyNode grNode2 = getNodeByName(net, "Meta 2");
-		assertTrue(groupMgr.isGroup(grNode2, net));
+		assertTrue(groupManager.isGroup(grNode2, net));
 		CyNode grNode1 = getNodeByName(grNode2.getNetworkPointer(), "Meta 1"); // Nested group node
-		assertTrue(groupMgr.isGroup(grNode1, grNode2.getNetworkPointer()));
+		assertTrue(groupManager.isGroup(grNode1, grNode2.getNetworkPointer()));
 		
-		assertEquals(1, groupMgr.getGroupSet(net).size());
-		assertEquals(1, groupMgr.getGroupSet(grNode2.getNetworkPointer()).size());
+		assertEquals(1, groupManager.getGroupSet(net).size());
+		assertEquals(1, groupManager.getGroupSet(grNode2.getNetworkPointer()).size());
 	}
 
 	@Test
 	public void testIsLockedVisualProperty() throws Exception {
-		reader = new GenericXGMMLReader(new ByteArrayInputStream("".getBytes("UTF-8")), netFactory,
-				renderingEngineMgr, readDataMgr, parser, unrecognizedVisualPropertyMgr, networkManager,
-				rootNetworkManager, applicationManager);
+		reader = new GenericXGMMLReader(new ByteArrayInputStream("".getBytes("UTF-8")), readDataMgr, parser,
+				unrecognizedVisualPropertyMgr, applicationManager, netFactory, netManager, rootNetManager,
+				serviceRegistrar);
 		
 		CyNetwork network = mock(CyNetwork.class);
 		assertFalse(reader.isLockedVisualProperty(network, "GRAPH_VIEW_ZOOM"));
@@ -527,7 +488,7 @@ public class GenericXGMMLReaderTest extends AbstractNetworkReaderTest {
 		List<Long> extEdgeIds = nphRow.getList(GroupUtil.EXTERNAL_EDGE_ATTRIBUTE, Long.class);
 		assertEquals(1, extEdgeIds.size());
 		
-		CyRootNetwork rootNet = rootNetworkMgr.getRootNetwork(np);
+		CyRootNetwork rootNet = rootNetManager.getRootNetwork(np);
 		assertNotNull(rootNet.getEdge(extEdgeIds.get(0)));
 	}
 	
@@ -535,9 +496,8 @@ public class GenericXGMMLReaderTest extends AbstractNetworkReaderTest {
 		SessionUtil.setReadingSessionFile(false);
 		
 		File f = new File("./src/test/resources/testData/xgmml/" + file);
-		reader = new GenericXGMMLReader(new FileInputStream(f), netFactory,
-				renderingEngineMgr, readDataMgr, parser, unrecognizedVisualPropertyMgr,
-				networkManager, rootNetworkManager, applicationManager);
+		reader = new GenericXGMMLReader(new FileInputStream(f), readDataMgr, parser, unrecognizedVisualPropertyMgr,
+				applicationManager, netFactory, netManager, rootNetManager, serviceRegistrar);
 		reader.run(taskMonitor);
 
 		final CyNetwork[] networks = reader.getNetworks();

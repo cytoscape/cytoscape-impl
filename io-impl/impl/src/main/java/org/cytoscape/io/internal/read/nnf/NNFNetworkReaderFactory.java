@@ -1,12 +1,19 @@
 package org.cytoscape.io.internal.read.nnf;
 
+import java.io.InputStream;
+
+import org.cytoscape.io.CyFileFilter;
+import org.cytoscape.io.internal.read.AbstractNetworkReaderFactory;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.work.TaskIterator;
+
 /*
  * #%L
  * Cytoscape IO Impl (io-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,40 +31,14 @@ package org.cytoscape.io.internal.read.nnf;
  * #L%
  */
 
-import java.io.InputStream;
-
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.io.CyFileFilter;
-import org.cytoscape.io.internal.read.AbstractNetworkReaderFactory;
-import org.cytoscape.model.CyNetworkFactory;
-import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.model.subnetwork.CyRootNetworkManager;
-import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
-import org.cytoscape.work.TaskIterator;
-
 public class NNFNetworkReaderFactory extends AbstractNetworkReaderFactory {
 
-	private final CyLayoutAlgorithmManager layouts;
-	private final CyRootNetworkManager cyRootNetworkFactory;
-	private final CyServiceRegistrar serviceRegistrar;
-
-	public NNFNetworkReaderFactory(final CyFileFilter filter,
-								   final CyLayoutAlgorithmManager layouts,
-								   final CyApplicationManager cyApplicationManager,
-								   final CyNetworkFactory cyNetworkFactory,
-								   final CyNetworkManager cyNetworkManager,
-								   final CyRootNetworkManager cyRootNetworkFactory,
-								   final CyServiceRegistrar serviceRegistrar) {
-		super(filter, cyApplicationManager, cyNetworkFactory, cyNetworkManager, cyRootNetworkFactory);
-		this.serviceRegistrar = serviceRegistrar;
-		this.layouts = layouts;
-		this.cyRootNetworkFactory = cyRootNetworkFactory;
+	public NNFNetworkReaderFactory(final CyFileFilter filter, final CyServiceRegistrar serviceRegistrar) {
+		super(filter, serviceRegistrar);
 	}
 
 	@Override
 	public TaskIterator createTaskIterator(InputStream inputStream, String inputName) {
-		return new TaskIterator(new NNFNetworkReader(inputStream, layouts, cyApplicationManager, cyNetworkFactory,
-				 cyNetworkManager, cyRootNetworkFactory, serviceRegistrar));
+		return new TaskIterator(new NNFNetworkReader(inputStream, serviceRegistrar));
 	}
 }

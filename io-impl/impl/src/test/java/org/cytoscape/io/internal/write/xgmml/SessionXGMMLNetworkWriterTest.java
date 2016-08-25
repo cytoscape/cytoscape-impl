@@ -1,12 +1,28 @@
 package org.cytoscape.io.internal.write.xgmml;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
+import java.io.UnsupportedEncodingException;
+
+import org.cytoscape.io.internal.util.session.SessionUtil;
+import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyIdentifiable;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNode;
+import org.cytoscape.model.SavePolicy;
+import org.cytoscape.model.subnetwork.CyRootNetwork;
+import org.cytoscape.model.subnetwork.CySubNetwork;
+import org.junit.Before;
+import org.junit.Test;
+
 /*
  * #%L
  * Cytoscape IO Impl (io-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -23,21 +39,6 @@ package org.cytoscape.io.internal.write.xgmml;
  * <http://www.gnu.org/licenses/lgpl-2.1.html>.
  * #L%
  */
-
-import static org.junit.Assert.*;
-
-import java.io.UnsupportedEncodingException;
-
-import org.cytoscape.io.internal.util.session.SessionUtil;
-import org.cytoscape.model.CyEdge;
-import org.cytoscape.model.CyIdentifiable;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNode;
-import org.cytoscape.model.SavePolicy;
-import org.cytoscape.model.subnetwork.CyRootNetwork;
-import org.cytoscape.model.subnetwork.CySubNetwork;
-import org.junit.Before;
-import org.junit.Test;
 
 public class SessionXGMMLNetworkWriterTest extends AbstractXGMMLWriterTest {
 
@@ -241,7 +242,7 @@ public class SessionXGMMLNetworkWriterTest extends AbstractXGMMLWriterTest {
 		GenericXGMMLWriter writer = null;
 		
 		if (netOrView instanceof CyNetwork)
-			writer = new SessionXGMMLNetworkWriter(out, renderingEngineMgr, (CyNetwork)netOrView, unrecogVisPropMgr, netMgr, rootNetMgr);
+			writer = new SessionXGMMLNetworkWriter(out, (CyNetwork)netOrView, unrecogVisPropMgr, serviceRegistrar);
 		else
 			throw new IllegalArgumentException("netOrView must be a CyNetwork.");
 		

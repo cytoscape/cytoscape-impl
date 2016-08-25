@@ -1,31 +1,5 @@
 package org.cytoscape.io.read.sif;
 
-/*
- * #%L
- * Cytoscape IO Impl Performance (io-impl-performance)
- * $Id:$
- * $HeadURL:$
- * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * #L%
- */
-
-
-
 import static org.cytoscape.property.CyProperty.SavePolicy.DO_NOT_SAVE;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -64,6 +38,29 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
+/*
+ * #%L
+ * Cytoscape IO Impl Performance (io-impl-performance)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
 
 public class PerfTest {
 
@@ -74,14 +71,15 @@ public class PerfTest {
     protected static final int DEF_THRESHOLD = 10000;
     
     @Mock protected TaskMonitor taskMonitor;
-    @Mock protected CyApplicationManager cyApplicationManager;
+    @Mock protected CyServiceRegistrar serviceRegistrar;
+    @Mock protected CyApplicationManager applicationManager;
     @Mock protected NetworkViewRenderer netViewRenderer;
     @Mock protected CyLayoutAlgorithmManager layouts;
     protected CyNetworkFactory netFactory;
     protected CyNetworkViewFactory viewFactory;
     protected ReadUtils readUtil;
-    protected CyRootNetworkManager rootMgr;
-    protected CyNetworkManager netMgr;
+    protected CyRootNetworkManager rootNetManager;
+    protected CyNetworkManager netManager;
 	
 	private Properties properties;
 
@@ -95,8 +93,8 @@ public class PerfTest {
 
 		NetworkTestSupport nts = new NetworkTestSupport();
 		netFactory = nts.getNetworkFactory();
-		rootMgr = nts.getRootNetworkFactory();
-		netMgr = nts.getNetworkManager();
+		rootNetManager = nts.getRootNetworkFactory();
+		netManager = nts.getNetworkManager();
 		
 		properties = new Properties();
 		CyProperty<Properties> cyProperties = new SimpleCyProperty<Properties>("Test", properties, Properties.class, DO_NOT_SAVE);	
@@ -111,12 +109,22 @@ public class PerfTest {
 		readUtil = new ReadUtils(new StreamUtilImpl(serviceRegistrar));
 		
 		when(netViewRenderer.getNetworkViewFactory()).thenReturn(viewFactory);
-		when(cyApplicationManager.getDefaultNetworkViewRenderer()).thenReturn(netViewRenderer);
+		when(applicationManager.getDefaultNetworkViewRenderer()).thenReturn(netViewRenderer);
+		
+		serviceRegistrar = mock(CyServiceRegistrar.class);
+		when(serviceRegistrar.getService(CyProperty.class, "(cyPropertyName=cytoscape3.props)")).thenReturn(cyProperties);
+		when(serviceRegistrar.getService(CyApplicationManager.class)).thenReturn(applicationManager);
+		when(serviceRegistrar.getService(NetworkViewRenderer.class)).thenReturn(netViewRenderer);
+		when(serviceRegistrar.getService(CyNetworkFactory.class)).thenReturn(netFactory);
+		when(serviceRegistrar.getService(CyNetworkViewFactory.class)).thenReturn(viewFactory);
+		when(serviceRegistrar.getService(CyNetworkManager.class)).thenReturn(netManager);
+		when(serviceRegistrar.getService(CyRootNetworkManager.class)).thenReturn(rootNetManager);
+		when(serviceRegistrar.getService(CyLayoutAlgorithmManager.class)).thenReturn(layouts);
 	}
 
 	private  SIFNetworkReader readFile(String file) throws Exception {
 		InputStream is = getClass().getResource("/testData/sif/" + file).openStream();
-		SIFNetworkReader snvp = new SIFNetworkReader(is, layouts, cyApplicationManager, netFactory, netMgr, rootMgr);
+		SIFNetworkReader snvp = new SIFNetworkReader(is, serviceRegistrar);
 		new TaskIterator(snvp);
 		snvp.run(taskMonitor);
 
@@ -207,7 +215,7 @@ public class PerfTest {
 		System.out.println("Getting all neighbor nodes: " + (end - start));
 
         // create subnetworks
-        CyRootNetwork root = rootMgr.getRootNetwork(net);
+        CyRootNetwork root = rootNetManager.getRootNetwork(net);
         int i = 0;
         for ( CyNode n : net.getNodeList() ) {
             if ( i++ > 1000 ) break;

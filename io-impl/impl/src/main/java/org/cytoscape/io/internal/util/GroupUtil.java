@@ -1,29 +1,5 @@
 package org.cytoscape.io.internal.util;
 
-/*
- * #%L
- * Cytoscape IO Impl (io-impl)
- * $Id:$
- * $HeadURL:$
- * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * #L%
- */
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -44,9 +20,34 @@ import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CySubNetwork;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
+
+/*
+ * #%L
+ * Cytoscape IO Impl (io-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
 
 // TODO: this is a temporary solution, until we find a better way of saving/restoring groups
 public class GroupUtil {
@@ -68,31 +69,28 @@ public class GroupUtil {
 	public static final String X_OFFSET_ATTR="__xOffset";
 	public static final String Y_OFFSET_ATTR="__yOffset";
 	
-	private final CyGroupManager groupMgr;
-	private final CyGroupFactory groupFactory;
+	private final CyServiceRegistrar serviceRegistrar;
 
 	// Remember groups that we had to add
-	private Map<CyNetwork, List<CyNode>> addedNodes = null;
+	private Map<CyNetwork, List<CyNode>> addedNodes;
 	
-	public GroupUtil(final CyGroupManager groupMgr, final CyGroupFactory groupFactory) {
-		assert groupMgr != null;
-		assert groupFactory != null;
-		
-		this.groupMgr = groupMgr;
-		this.groupFactory = groupFactory;
+	public GroupUtil(final CyServiceRegistrar serviceRegistrar) {
+		assert serviceRegistrar != null;
+		this.serviceRegistrar = serviceRegistrar;
 	}
 
 	public void prepareGroupsForSerialization(final Collection<CyNetwork> networks) {
 		if (networks == null)
 			return;
 
-		addedNodes = new HashMap<CyNetwork, List<CyNode>>();
+		addedNodes = new HashMap<>();
 		
 		for (CyNetwork net: networks) {
 			if (!(net instanceof CySubNetwork))
 				continue;
 
 			// Get all of our groups
+			final CyGroupManager groupMgr = serviceRegistrar.getService(CyGroupManager.class);
 			Set<CyGroup> groupSet = groupMgr.getGroupSet(net);
 
 			// For each group, save the list of external edges
@@ -108,7 +106,7 @@ public class GroupUtil {
 		if (networks == null)
 			return;
 
-		Map <CyNetwork, CyNetworkView> viewMap = new HashMap<CyNetwork, CyNetworkView>();
+		Map <CyNetwork, CyNetworkView> viewMap = new HashMap<>();
 		if (views != null)
 			for (CyNetworkView view: views)
 				viewMap.put(view.getModel(), view);
@@ -126,15 +124,16 @@ public class GroupUtil {
 					viewMap.get(net).updateView();
 			}
 		}
-
 	}
 
 	public List<CyNode> getExpandedGroups(final CyNetwork network) {
 		// Get all of our groups in this network
+		final CyGroupManager groupMgr = serviceRegistrar.getService(CyGroupManager.class);
 		Set<CyGroup> groupSet = groupMgr.getGroupSet(network);
 
 		// For each group see if it's expanded, but present
-		List<CyNode> groupNodes = new ArrayList<CyNode>();
+		List<CyNode> groupNodes = new ArrayList<>();
+		
 		for (CyGroup group: groupSet) {
 			if (!group.isCollapsed(network)) {
 				if (network.containsNode(group.getGroupNode())) {
@@ -143,6 +142,7 @@ public class GroupUtil {
 				}
 			}
 		}
+		
 		return groupNodes;
 	}
 
@@ -150,37 +150,39 @@ public class GroupUtil {
 		CyRootNetwork rootNetwork = ((CySubNetwork)network).getRootNetwork();
 		// Don't need to worry about this for collapsed groups
 		List<CyNode> groupNodes = getExpandedGroups(network);
-		List<CyEdge> groupNodeEdges = new ArrayList<CyEdge>();
+		List<CyEdge> groupNodeEdges = new ArrayList<>();
+		
 		for (CyNode groupNode : groupNodes) {
 			groupNodeEdges.addAll(rootNetwork.getAdjacentEdgeList(groupNode, CyEdge.Type.ANY));
 		}
+		
 		return groupNodeEdges;
 	}
 
 	public List<CyEdge> getExternalEdges(final CyNetwork network) {
 		// Get all of our groups in this network
+		final CyGroupManager groupMgr = serviceRegistrar.getService(CyGroupManager.class);
 		Set<CyGroup> groupSet = groupMgr.getGroupSet(network);
-
-		List<CyEdge> externalEdges = new ArrayList<CyEdge>();
+		List<CyEdge> externalEdges = new ArrayList<>();
+		
 		for (CyGroup group: groupSet) {
 			// Don't need to worry about this for expanded groups
-			if (group.isCollapsed(network)) {
+			if (group.isCollapsed(network))
 				externalEdges.addAll(group.getExternalEdgeList());
-			}
 		}
+		
 		return externalEdges;
 	}
 	
 	/**
 	 * Make sure all network pointers are already set.
-	 * @param networks
 	 */
 	public void createGroups(final Set<CyNetwork> networks, final Set<CyNetworkView> viewSet) {
 		if (networks == null) return;
 		
 		for (final CyNetwork net : networks) {
 			if (net instanceof CySubNetwork)
-				createGroups((CySubNetwork) net, viewSet, new HashSet<CyNode>());
+				createGroups((CySubNetwork) net, viewSet, new HashSet<>());
 		}
 	}
 
@@ -189,6 +191,7 @@ public class GroupUtil {
 		// Look for possible meta-nodes by inspecting the groups metadata in the network's hidden table
 		final CyRootNetwork rootNet = net.getRootNetwork();
 		final List<CyNode> nodes = net.getNodeList();
+		final CyGroupFactory groupFactory = serviceRegistrar.getService(CyGroupFactory.class);
 
 		// Iterate each node and check if they have network pointers
 		for (final CyNode n : nodes) {
@@ -345,8 +348,9 @@ public class GroupUtil {
 	public void updateGroupNodes(final CyNetworkView view) {
 		if (view == null) return;
 
-		CyNetwork network = view.getModel();
-		Set<CyGroup> groupSet = groupMgr.getGroupSet(network);
+		final CyNetwork network = view.getModel();
+		final CyGroupManager groupMgr = serviceRegistrar.getService(CyGroupManager.class);
+		final Set<CyGroup> groupSet = groupMgr.getGroupSet(network);
 		
 		for (CyGroup group : groupSet) {
 			if (group.isCollapsed(network))
@@ -355,7 +359,8 @@ public class GroupUtil {
 	}
 	
 	public Set<CyGroup> getGroups(final Collection<CyNetwork> networks) {
-		final Set<CyGroup> groups = new HashSet<CyGroup>();
+		final Set<CyGroup> groups = new HashSet<>();
+		final CyGroupManager groupMgr = serviceRegistrar.getService(CyGroupManager.class);
 
 		for (final CyNetwork net : networks)
 			groups.addAll(groupMgr.getGroupSet(net));
@@ -364,6 +369,8 @@ public class GroupUtil {
 	}
 	
 	public void destroyGroups(final Set<CyGroup> groups) {
+		final CyGroupManager groupMgr = serviceRegistrar.getService(CyGroupManager.class);
+		
 		for (final CyGroup gr : groups)
 			groupMgr.destroyGroup(gr);
 	}

@@ -1,31 +1,8 @@
 package org.cytoscape.io.internal.write.xgmml;
 
-/*
- * #%L
- * Cytoscape IO Impl (io-impl)
- * $Id:$
- * $HeadURL:$
- * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * #L%
- */
-
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.io.ByteArrayOutputStream;
 import java.io.StringReader;
@@ -56,6 +33,7 @@ import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.presentation.RenderingEngineManager;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
@@ -67,6 +45,30 @@ import org.junit.Before;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
+
+/*
+ * #%L
+ * Cytoscape IO Impl (io-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
 
 public abstract class AbstractXGMMLWriterTest {
 
@@ -84,6 +86,7 @@ public abstract class AbstractXGMMLWriterTest {
 	protected XPathFactory xpathFactory;
 	protected Document doc;
 	protected XPath xpath;
+	
 	protected NetworkViewTestSupport netViewTestSupport;
 	protected RenderingEngineManager renderingEngineMgr;
 	protected UnrecognizedVisualPropertyManager unrecogVisPropMgr;
@@ -96,42 +99,51 @@ public abstract class AbstractXGMMLWriterTest {
 	protected CyGroupManager grMgr;
 	protected CyGroupFactory grFactory;
 	protected GroupUtil groupUtil;
+	protected CyServiceRegistrar serviceRegistrar;
 
-	
-	
 	public AbstractXGMMLWriterTest() {
 		grTestSupport = new GroupTestSupport();
 	}
 
 	@Before
 	public void init() {
-		this.netViewTestSupport = new NetworkViewTestSupport();
-		this.netMgr = mock(CyNetworkManager.class);
-		this.netFactory = netViewTestSupport.getNetworkFactory();
-		this.rootNetMgr = netViewTestSupport.getRootNetworkFactory();
+		netViewTestSupport = new NetworkViewTestSupport();
+		netMgr = mock(CyNetworkManager.class);
+		netFactory = netViewTestSupport.getNetworkFactory();
+		rootNetMgr = netViewTestSupport.getRootNetworkFactory();
 		
-		this.vmMgr = mock(VisualMappingManager.class);
+		vmMgr = mock(VisualMappingManager.class);
 		VisualStyle style = mock(VisualStyle.class);
 		when(style.getTitle()).thenReturn("default");
 		when(vmMgr.getDefaultVisualStyle()).thenReturn(style);
 		when(vmMgr.getVisualStyle(any(CyNetworkView.class))).thenReturn(style);
 		
-		this.renderingEngineMgr = mock(RenderingEngineManager.class);
-		when(this.renderingEngineMgr.getDefaultVisualLexicon()).thenReturn(
+		renderingEngineMgr = mock(RenderingEngineManager.class);
+		when(renderingEngineMgr.getDefaultVisualLexicon()).thenReturn(
 				new BasicVisualLexicon(new NullVisualProperty("MINIMAL_ROOT", "Minimal Root Visual Property")));
 		
-		this.unrecogVisPropMgr = mock(UnrecognizedVisualPropertyManager.class);
-		this.tm = mock(TaskMonitor.class);
+		unrecogVisPropMgr = mock(UnrecognizedVisualPropertyManager.class);
+		tm = mock(TaskMonitor.class);
 		
-		this.grMgr = mock(CyGroupManager.class);
-		this.grFactory = grTestSupport.getGroupFactory();
-		this.groupUtil = new GroupUtil(grMgr, grFactory);
+		grMgr = mock(CyGroupManager.class);
+		grFactory = grTestSupport.getGroupFactory();
+		
+		serviceRegistrar = mock(CyServiceRegistrar.class);
+		when(serviceRegistrar.getService(CyNetworkManager.class)).thenReturn(netMgr);
+		when(serviceRegistrar.getService(CyNetworkFactory.class)).thenReturn(netFactory);
+		when(serviceRegistrar.getService(CyRootNetworkManager.class)).thenReturn(rootNetMgr);
+		when(serviceRegistrar.getService(RenderingEngineManager.class)).thenReturn(renderingEngineMgr);
+		when(serviceRegistrar.getService(VisualMappingManager.class)).thenReturn(vmMgr);
+		when(serviceRegistrar.getService(CyGroupManager.class)).thenReturn(grMgr);
+		when(serviceRegistrar.getService(CyGroupFactory.class)).thenReturn(grFactory);
+		
+		groupUtil = new GroupUtil(serviceRegistrar);
 		
 		createBaseNetwork();
 		
-		this.out = new ByteArrayOutputStream();
-		this.xpathFactory = XPathFactory.newInstance();
-		this.doc = null;
+		out = new ByteArrayOutputStream();
+		xpathFactory = XPathFactory.newInstance();
+		doc = null;
 	}
 	
 	protected String getElementId(String elementPath) {
@@ -214,11 +226,10 @@ public abstract class AbstractXGMMLWriterTest {
 		GenericXGMMLWriter writer = null;
 		
 		if (netOrView instanceof CyNetworkView)
-			writer = new GenericXGMMLWriter(out, renderingEngineMgr, (CyNetworkView) netOrView, unrecogVisPropMgr,
-					netMgr, rootNetMgr, vmMgr, groupUtil);
+			writer = new GenericXGMMLWriter(out, (CyNetworkView) netOrView, unrecogVisPropMgr, groupUtil,
+					serviceRegistrar);
 		else if (netOrView instanceof CyNetwork)
-			writer = new GenericXGMMLWriter(out, renderingEngineMgr, (CyNetwork) netOrView, unrecogVisPropMgr, netMgr,
-					rootNetMgr, groupUtil);
+			writer = new GenericXGMMLWriter(out, (CyNetwork) netOrView, unrecogVisPropMgr, groupUtil, serviceRegistrar);
 		else
 			throw new IllegalArgumentException("netOrView must be a CyNetworkView or a CyNetwork!");
 		

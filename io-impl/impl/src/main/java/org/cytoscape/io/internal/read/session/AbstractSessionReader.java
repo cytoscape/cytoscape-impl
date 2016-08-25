@@ -1,29 +1,5 @@
 package org.cytoscape.io.internal.read.session;
 
-/*
- * #%L
- * Cytoscape IO Impl (io-impl)
- * $Id:$
- * $HeadURL:$
- * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * #L%
- */
-
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -49,6 +25,7 @@ import org.cytoscape.model.CyTableMetadata;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.property.CyProperty;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.CySession;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.vizmap.VisualStyle;
@@ -56,6 +33,30 @@ import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+/*
+ * #%L
+ * Cytoscape IO Impl (io-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
 
 public abstract class AbstractSessionReader extends AbstractTask implements CySessionReader {
 
@@ -72,7 +73,7 @@ public abstract class AbstractSessionReader extends AbstractTask implements CySe
 	protected InputStream sourceInputStream;
 	protected final ReadCache cache;
 	protected final GroupUtil groupUtil;
-	protected final CyRootNetworkManager rootNetworkManager;
+	protected final CyServiceRegistrar serviceRegistrar;
 	
 	protected DummyTaskMonitor taskMonitor;
 	
@@ -90,16 +91,16 @@ public abstract class AbstractSessionReader extends AbstractTask implements CySe
 	public AbstractSessionReader(final InputStream sourceInputStream,
 								 final ReadCache cache,
 								 final GroupUtil groupUtil,
-								 final CyRootNetworkManager rootNetworkManager) {
+								 final CyServiceRegistrar serviceRegistrar) {
 		assert sourceInputStream != null;
 		assert cache != null;
 		assert groupUtil != null;
-		assert rootNetworkManager != null;
+		assert serviceRegistrar != null;
 		
 		this.sourceInputStream = new ReusableInputStream(sourceInputStream); // So it can be read multiple times
 		this.cache = cache;
 		this.groupUtil = groupUtil;
-		this.rootNetworkManager = rootNetworkManager;
+		this.serviceRegistrar = serviceRegistrar;
 		
 		this.logger = LoggerFactory.getLogger(this.getClass());
 	}
@@ -186,7 +187,8 @@ public abstract class AbstractSessionReader extends AbstractTask implements CySe
 			for (final CyNetworkView view : networkViews)
 				view.dispose();
 			
-			final Set<CyRootNetwork> rootNetworks = new HashSet<CyRootNetwork>();
+			final CyRootNetworkManager rootNetworkManager = serviceRegistrar.getService(CyRootNetworkManager.class);
+			final Set<CyRootNetwork> rootNetworks = new HashSet<>();
 			
 			// Get all networks from the ReadCache, because it also contains unregistered networks
 			// such as group networks.

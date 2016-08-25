@@ -1,12 +1,27 @@
 package org.cytoscape.io.internal.read.sif;
 
+import static org.junit.Assert.assertTrue;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.cytoscape.io.internal.read.AbstractNetworkReaderTest;
+import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNode;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.work.TaskIterator;
+import org.junit.Test;
+
 /*
  * #%L
  * Cytoscape IO Impl (io-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -23,21 +38,6 @@ package org.cytoscape.io.internal.read.sif;
  * <http://www.gnu.org/licenses/lgpl-2.1.html>.
  * #L%
  */
-
-import static org.junit.Assert.assertTrue;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.util.ArrayList;
-import java.util.List;
-
-import org.cytoscape.io.internal.read.AbstractNetworkReaderTest;
-import org.cytoscape.model.CyEdge;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNode;
-import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.work.TaskIterator;
-import org.junit.Test;
 
 public class SIFNetworkViewReaderTest extends AbstractNetworkReaderTest {
 
@@ -60,7 +60,6 @@ public class SIFNetworkViewReaderTest extends AbstractNetworkReaderTest {
 		CyNetwork net = checkSingleNetwork(views, 31, 27);
 
 		findInteraction(net, "YNL312W", "YPL111W", "pd", 1);
-
 	}
 
 	/**
@@ -111,7 +110,7 @@ public class SIFNetworkViewReaderTest extends AbstractNetworkReaderTest {
 
 	private SIFNetworkReader readFile(String file) throws Exception {
 		File f = new File("./src/test/resources/testData/sif/" + file);
-		SIFNetworkReader snvp = new SIFNetworkReader(new FileInputStream(f), layouts, applicationManager, netFactory, networkManager, rootNetworkManager);
+		SIFNetworkReader snvp = new SIFNetworkReader(new FileInputStream(f), serviceRegistrar);
 		new TaskIterator(snvp);
 		snvp.run(taskMonitor);
 
