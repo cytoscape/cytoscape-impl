@@ -1,5 +1,27 @@
 package org.cytoscape.jobs.internal;
 
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+
+import org.apache.log4j.Logger;
+import org.cytoscape.application.CyUserLog;
+import org.cytoscape.jobs.CyJob;
+import org.cytoscape.jobs.CyJobExecutionService;
+import org.cytoscape.jobs.CyJobManager;
+import org.cytoscape.jobs.CyJobMonitor;
+import org.cytoscape.jobs.CyJobStatus;
+import org.cytoscape.session.CySession;
+import org.cytoscape.session.events.SessionAboutToBeSavedEvent;
+import org.cytoscape.session.events.SessionAboutToBeSavedListener;
+import org.cytoscape.session.events.SessionLoadedEvent;
+import org.cytoscape.session.events.SessionLoadedListener;
+
 /*
  * #%L
  * Cytoscape Jobs Impl (jobs-impl)
@@ -24,40 +46,11 @@ package org.cytoscape.jobs.internal;
  * #L%
  */
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Timer;
-import java.util.TimerTask;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-
-import org.cytoscape.application.CyUserLog;
-import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.jobs.CyJob;
-import org.cytoscape.jobs.CyJobExecutionService;
-import org.cytoscape.jobs.CyJobMonitor;
-import org.cytoscape.jobs.CyJobManager;
-import org.cytoscape.jobs.CyJobStatus;
-import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.session.CySession;
-import org.cytoscape.session.events.SessionAboutToBeSavedEvent;
-import org.cytoscape.session.events.SessionAboutToBeSavedListener;
-import org.cytoscape.session.events.SessionLoadedEvent;
-import org.cytoscape.session.events.SessionLoadedListener;
-
-import org.apache.log4j.Logger;
-
 /**
  * An implementation of CyJobManager.
  */
-public class CyJobManagerImpl implements CyJobManager, 
-                                         SessionAboutToBeSavedListener, 
-																	       SessionLoadedListener {
-	private final CyServiceRegistrar cyServiceRegistrar;
-	private CyEventHelper cyEventHelper;
+public class CyJobManagerImpl implements CyJobManager, SessionAboutToBeSavedListener, SessionLoadedListener {
+	
 	private CyJobMonitor jobMonitor;
 	final Logger logger;
 
@@ -69,15 +62,7 @@ public class CyJobManagerImpl implements CyJobManager,
 	ConcurrentMap<String, CyJobExecutionService> exServiceMap;
 	Timer pollTimer;
 
-	/**
-	 * 
-	 * @param cyServiceRegistrar
-	 * @param cyEventHelper
-	 */
-	public CyJobManagerImpl(final CyServiceRegistrar cyServiceRegistrar, 
-		                      final CyEventHelper cyEventHelper) { 
-		this.cyServiceRegistrar = cyServiceRegistrar;
-		this.cyEventHelper = cyEventHelper;
+	public CyJobManagerImpl() {
 		logger = Logger.getLogger(CyUserLog.NAME);
 
 		jobsList = new ArrayList<>();
