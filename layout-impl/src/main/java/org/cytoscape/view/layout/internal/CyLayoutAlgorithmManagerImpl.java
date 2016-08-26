@@ -1,30 +1,5 @@
 package org.cytoscape.view.layout.internal;
 
-/*
- * #%L
- * Cytoscape Layout Impl (layout-impl)
- * $Id:$
- * $HeadURL:$
- * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * #L%
- */
-
-
 import static org.cytoscape.work.ServiceProperties.COMMAND;
 import static org.cytoscape.work.ServiceProperties.COMMAND_DESCRIPTION;
 import static org.cytoscape.work.ServiceProperties.COMMAND_NAMESPACE;
@@ -44,6 +19,30 @@ import org.cytoscape.view.layout.internal.task.LayoutTaskFactoryWrapper;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.work.TaskFactory;
 
+/*
+ * #%L
+ * Cytoscape Layout Impl (layout-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
+
 /**
  * CyLayoutAlgorithmManagerImpl is a singleton class that is used to register all available
  * layout algorithms.  
@@ -52,17 +51,15 @@ public class CyLayoutAlgorithmManagerImpl implements CyLayoutAlgorithmManager {
 
 	private final Map<String, CyLayoutAlgorithm> layoutMap;
 	private final Map<String, TaskFactory> serviceMap;
-	private final CyProperty<Properties> cyProps;
 	private final CyServiceRegistrar serviceRegistrar;
 	private CyApplicationManager appManager;
 	private CyNetworkViewManager viewManager;
 
-	public CyLayoutAlgorithmManagerImpl(CyServiceRegistrar serviceRegistrar, final CyProperty<Properties> p,
-			final CyLayoutAlgorithm defaultLayout) {
-		this.cyProps = p;
+	public CyLayoutAlgorithmManagerImpl(final CyLayoutAlgorithm defaultLayout,
+			final CyServiceRegistrar serviceRegistrar) {
 		this.serviceRegistrar = serviceRegistrar;
-		layoutMap = new ConcurrentHashMap<String,CyLayoutAlgorithm>(16, 0.75f, 2);
-		serviceMap = new ConcurrentHashMap<String,TaskFactory>(16, 0.75f, 2);
+		layoutMap = new ConcurrentHashMap<>(16, 0.75f, 2);
+		serviceMap = new ConcurrentHashMap<>(16, 0.75f, 2);
 
 		// Get some services that we'll need.  
 		// NOTE: This creates a loader-order dependency for application-impl.  We
@@ -76,7 +73,7 @@ public class CyLayoutAlgorithmManagerImpl implements CyLayoutAlgorithmManager {
 			viewManager = serviceRegistrar.getService(CyNetworkViewManager.class);
 		}
 
-		addLayout(defaultLayout, new HashMap());
+		addLayout(defaultLayout, new HashMap<>());
 	}
 
 	/**
@@ -85,11 +82,8 @@ public class CyLayoutAlgorithmManagerImpl implements CyLayoutAlgorithmManager {
 	 * This can be used to register layouts that are to be used for
 	 * specific algorithmic purposes, but not, in general, supposed
 	 * to be for direct user use.
-	 *
-	 * @param layout The layout to be added
-	 * @param menu The menu that this should appear under
 	 */
-	public void addLayout(CyLayoutAlgorithm layout, Map props) {
+	public void addLayout(CyLayoutAlgorithm layout, Map<?, ?> props) {
 		if ( layout != null ) {
 			layoutMap.put(layout.getName(),layout);
 
@@ -108,10 +102,8 @@ public class CyLayoutAlgorithmManagerImpl implements CyLayoutAlgorithmManager {
 
 	/**
 	 * Remove a layout from the layout maanger's list.
-	 *
-	 * @param layout The layout to remove
 	 */
-	public void removeLayout(CyLayoutAlgorithm layout, Map props) {
+	public void removeLayout(CyLayoutAlgorithm layout, Map<?, ?> props) {
 		if ( layout != null ) {
 			layoutMap.remove(layout.getName());
 			if (serviceRegistrar != null && serviceMap.containsKey(layout.getName())) {
@@ -127,7 +119,7 @@ public class CyLayoutAlgorithmManagerImpl implements CyLayoutAlgorithmManager {
 	 * not exist, this will return null
 	 *
 	 * @param name String representing the name of the layout
-	 * @return the layout of that name or null if it is not reigstered
+	 * @return the layout of that name or null if it is not registered
 	 */
 	@Override
 	public CyLayoutAlgorithm getLayout(String name) {
@@ -154,8 +146,8 @@ public class CyLayoutAlgorithmManagerImpl implements CyLayoutAlgorithmManager {
 	 */
 	@Override
 	public CyLayoutAlgorithm getDefaultLayout() {
-		// See if the user has set the layout.default property	
-		String defaultLayout = cyProps.getProperties().getProperty(DEFAULT_LAYOUT_PROPERTY_NAME);
+		// See if the user has set the layout.default property
+		String defaultLayout = getCoreCyProperty().getProperties().getProperty(DEFAULT_LAYOUT_PROPERTY_NAME);
 		
 		if (defaultLayout == null || layoutMap.containsKey(defaultLayout) == false)
 			defaultLayout = DEFAULT_LAYOUT_NAME; 
@@ -170,8 +162,13 @@ public class CyLayoutAlgorithmManagerImpl implements CyLayoutAlgorithmManager {
 		if (!layoutMap.values().contains(layout))
 			throw new IllegalArgumentException("The layout algorithm is not registered.");
 		
-		cyProps.getProperties().setProperty(DEFAULT_LAYOUT_PROPERTY_NAME, layout.getName());
+		getCoreCyProperty().getProperties().setProperty(DEFAULT_LAYOUT_PROPERTY_NAME, layout.getName());
 		
 		return null;
+	}
+	
+	@SuppressWarnings("unchecked")
+	private CyProperty<Properties> getCoreCyProperty() {
+		return serviceRegistrar.getService(CyProperty.class, "(cyPropertyName=cytoscape3.props)");
 	}
 }

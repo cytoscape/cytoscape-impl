@@ -193,10 +193,9 @@ public class PerfTest {
 	}
 
 	private CyLayoutAlgorithmManager getLayouts() {
-		Properties p = new Properties();
-		CyProperty<Properties> props = new SimpleCyProperty<Properties>("Test",p,Properties.class,DO_NOT_SAVE);
 		CyLayoutAlgorithm gridNodeLayout = new GridNodeLayout(null);
-		CyLayoutAlgorithmManagerImpl cyLayouts = new CyLayoutAlgorithmManagerImpl(null, props, gridNodeLayout);
+		CyLayoutAlgorithmManagerImpl cyLayouts = new CyLayoutAlgorithmManagerImpl(gridNodeLayout, serviceRegistrar);
+		
 		return cyLayouts;
 	}
 }
