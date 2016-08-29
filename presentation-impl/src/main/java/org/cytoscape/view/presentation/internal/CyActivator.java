@@ -1,12 +1,21 @@
 package org.cytoscape.view.presentation.internal;
 
+import java.util.Properties;
+
+import org.cytoscape.service.util.AbstractCyActivator;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.view.presentation.RenderingEngineFactory;
+import org.cytoscape.view.presentation.internal.property.values.CyColumnIdentifierFactoryImpl;
+import org.cytoscape.view.presentation.property.values.CyColumnIdentifierFactory;
+import org.osgi.framework.BundleContext;
+
 /*
  * #%L
  * Cytoscape Presentation Impl (presentation-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,25 +33,12 @@ package org.cytoscape.view.presentation.internal;
  * #L%
  */
 
-import java.util.Properties;
-
-import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.service.util.AbstractCyActivator;
-import org.cytoscape.view.presentation.RenderingEngineFactory;
-import org.cytoscape.view.presentation.internal.property.values.CyColumnIdentifierFactoryImpl;
-import org.cytoscape.view.presentation.property.values.CyColumnIdentifierFactory;
-import org.osgi.framework.BundleContext;
-
 public class CyActivator extends AbstractCyActivator {
 	
-	public CyActivator() {
-		super();
-	}
-
 	@Override
 	public void start(BundleContext bc) {
-		final CyEventHelper eventHelper = getService(bc, CyEventHelper.class);
-		RenderingEngineManagerImpl renderingEngineManager = new RenderingEngineManagerImpl(eventHelper);
+		final CyServiceRegistrar serviceRegistrar = getService(bc, CyServiceRegistrar.class);
+		RenderingEngineManagerImpl renderingEngineManager = new RenderingEngineManagerImpl(serviceRegistrar);
 
 		Properties renderingEngineManagerProps = new Properties();
 		renderingEngineManagerProps.setProperty("service.type", "manager");
