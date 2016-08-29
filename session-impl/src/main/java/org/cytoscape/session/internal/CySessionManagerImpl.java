@@ -1,29 +1,5 @@
 package org.cytoscape.session.internal;
 
-/*
- * #%L
- * Cytoscape Session Impl (session-impl)
- * $Id:$
- * $HeadURL:$
- * %%
- * Copyright (C) 2010 - 2013 The Cytoscape Consortium
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * #L%
- */
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -75,27 +51,38 @@ import org.cytoscape.work.undo.UndoSupport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/*
+ * #%L
+ * Cytoscape Session Impl (session-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
+
 /**
  * Default implementation of {@link org.cytoscape.session.CySessionManager}.
- * 
- * @author Christian Lopes
  */
 public class CySessionManagerImpl implements CySessionManager, SessionSavedListener {
 
 	private String currentFileName;
 
-	private final CyEventHelper eventHelper;
-	private final CyApplicationManager appMgr;
-	private final CyNetworkManager netMgr;
-	private final CyTableManager tblMgr;
-	private final CyNetworkTableManager netTblMgr;
-	private final VisualMappingManager vmMgr;
-	private final CyNetworkViewManager nvMgr;
-	private final CyRootNetworkManager rootNetMgr;
-	private final RenderingEngineManager renderingEngineMgr;
-	private final CyGroupManager grMgr;
-	private final CyServiceRegistrar registrar;
-	private final UndoSupport undo;
+	private final CyServiceRegistrar serviceRegistrar;
 
 	private final Map<String, CyProperty<?>> sessionProperties;
 	private CyProperty<Bookmarks> bookmarks;
@@ -103,31 +90,9 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 
 	private static final Logger logger = LoggerFactory.getLogger(CySessionManagerImpl.class);
 
-	public CySessionManagerImpl(final CyEventHelper eventHelper,
-								final CyApplicationManager appMgr,
-								final CyNetworkManager netMgr,
-								final CyTableManager tblMgr,
-								final CyNetworkTableManager netTblMgr,
-								final VisualMappingManager vmMgr,
-								final CyNetworkViewManager nvMgr,
-								final CyRootNetworkManager rootNetMgr,
-								final RenderingEngineManager renderingEngineMgr,
-								final CyGroupManager grMgr,
-								final CyServiceRegistrar registrar,
-								final UndoSupport undo) {
-		this.eventHelper = eventHelper;
-		this.appMgr = appMgr;
-		this.netMgr = netMgr;
-		this.tblMgr = tblMgr;
-		this.netTblMgr = netTblMgr;
-		this.vmMgr = vmMgr;
-		this.nvMgr = nvMgr;
-		this.rootNetMgr = rootNetMgr;
-		this.renderingEngineMgr = renderingEngineMgr;
-		this.grMgr = grMgr;
-		this.registrar = registrar;
+	public CySessionManagerImpl(final CyServiceRegistrar serviceRegistrar) {
+		this.serviceRegistrar = serviceRegistrar;
 		this.sessionProperties = new HashMap<>();
-		this.undo = undo;
 	}
 
 	@Override
@@ -135,13 +100,18 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 		// Apps who want to save anything to a session will have to listen for this event
 		// and will then be responsible for adding files through SessionAboutToBeSavedEvent.addAppFiles(..)
 		final SessionAboutToBeSavedEvent savingEvent = new SessionAboutToBeSavedEvent(this);
+		
+		final CyEventHelper eventHelper = serviceRegistrar.getService(CyEventHelper.class);
 		eventHelper.fireEvent(savingEvent);
 
 		final Set<CyNetwork> networks = getSerializableNetworks();
+		
+		final CyNetworkViewManager nvMgr = serviceRegistrar.getService(CyNetworkViewManager.class);
 		final Set<CyNetworkView> netViews = nvMgr.getNetworkViewSet();
 
 		// Visual Styles Map
 		final Map<CyNetworkView, String> stylesMap = new HashMap<>();
+		final VisualMappingManager vmMgr = serviceRegistrar.getService(VisualMappingManager.class);
 
 		if (netViews != null) {
 			for (final CyNetworkView nv : netViews) {
@@ -170,6 +140,8 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 	
 	private Set<CyNetwork> getSerializableNetworks() {
 		final Set<CyNetwork> serializableNetworks = new HashSet<>();
+		
+		final CyNetworkTableManager netTblMgr = serviceRegistrar.getService(CyNetworkTableManager.class);
 		final Set<CyNetwork> allNetworks = netTblMgr.getNetworkSet();
 		
 		for (final CyNetwork net : allNetworks) {
@@ -181,15 +153,17 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 	}
 	
 	private Set<CyTableMetadata> createTablesMetadata(final Set<CyNetwork> networks) {
-		final Set<CyTableMetadata> result = new HashSet<CyTableMetadata>();
+		final Set<CyTableMetadata> result = new HashSet<>();
+		
 		result.addAll(createNetworkTablesMetadata(networks));
-		result.addAll(createGlobalTablesMetadata(tblMgr.getGlobalTables()));
+		result.addAll(createGlobalTablesMetadata(serviceRegistrar.getService(CyTableManager.class).getGlobalTables()));
 		
 		return result;
 	}
 
 	private Set<CyTableMetadata> createNetworkTablesMetadata(final Set<CyNetwork> networks) {
-		final Set<CyTableMetadata> result = new HashSet<CyTableMetadata>();
+		final Set<CyTableMetadata> result = new HashSet<>();
+		final CyNetworkTableManager netTblMgr = serviceRegistrar.getService(CyNetworkTableManager.class);
 		
 		// Create the metadata object for each network table
 		for (final CyNetwork network : networks) {
@@ -236,6 +210,7 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 		if (sess == null) {
 			logger.debug("Creating empty session...");
 			
+			final VisualMappingManager vmMgr = serviceRegistrar.getService(VisualMappingManager.class);
 			final Set<VisualStyle> styles = vmMgr.getAllVisualStyles();
 			final Set<CyProperty<?>> props = getAllProperties();
 
@@ -267,6 +242,7 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 
 		currentFileName = fileName;
 
+		final CyEventHelper eventHelper = serviceRegistrar.getService(CyEventHelper.class);
 		eventHelper.fireEvent(new SessionLoadedEvent(this, sess, getCurrentSessionFileName()));
 	}
 
@@ -350,19 +326,20 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 							CyProperty.SavePolicy.SESSION_FILE_AND_CONFIG_DIR);
 					
 					// The new CyProperty will replace this one, which has to be unregistered first
-					registrar.unregisterAllServices(oldCyProps);
+					serviceRegistrar.unregisterAllServices(oldCyProps);
 				}
 			}
 			
 			final Properties serviceProps = new Properties();
 			serviceProps.setProperty("cyPropertyName", cyProps.getName());
-			registrar.registerAllServices(cyProps, serviceProps);
+			serviceRegistrar.registerAllServices(cyProps, serviceProps);
 		}
 	}
 	
 	private void restoreNetworks(final CySession sess) {
 		logger.debug("Restoring networks...");
 		Set<CyNetwork> networks = sess.getNetworks();
+		final CyNetworkManager netMgr = serviceRegistrar.getService(CyNetworkManager.class);
 
 		for (CyNetwork n : networks) {
 			netMgr.addNetwork(n, false);
@@ -385,6 +362,8 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 		Map<CyNetworkView, Map<VisualProperty<?>, Object>> viewVPMap = new HashMap<>();
 		
 		if (netViews != null) {
+			final CyNetworkViewManager nvMgr = serviceRegistrar.getService(CyNetworkViewManager.class);
+			
 			for (CyNetworkView nv : netViews) {
 				if (nv != null) {
 					// Save the original values of these visual properties,
@@ -400,6 +379,7 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 		}
 
 		// Let's guarantee the network views are rendered
+		final CyEventHelper eventHelper = serviceRegistrar.getService(CyEventHelper.class);
 		eventHelper.flushPayloadEvents();
 		
 		// Set the saved visual properties again, because the renderer may have overwritten the original values
@@ -409,8 +389,12 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 			for (Entry<VisualProperty<?>, Object> entry2 : entry1.getValue().entrySet())
 				nv.setVisualProperty(entry2.getKey(), entry2.getValue());
 		}
+		
+		final CyApplicationManager appMgr = serviceRegistrar.getService(CyApplicationManager.class);
+		
 		if (!selectedViews.isEmpty())
 			appMgr.setCurrentNetworkView(selectedViews.get(0));
+		
 		appMgr.setSelectedNetworkViews(selectedViews);
 	}
 
@@ -424,6 +408,9 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 		
 		// There may be other network tables in the CyNetworkTableManager that were not serialized in the session file
 		// (e.g. Table Facades), so it's necessary to add them to CyTableManager as well
+		final CyNetworkTableManager netTblMgr = serviceRegistrar.getService(CyNetworkTableManager.class);
+		final CyRootNetworkManager rootNetMgr = serviceRegistrar.getService(CyRootNetworkManager.class);
+		
 		for (final CyNetwork net : sess.getNetworks()) {
 			allTables.addAll(netTblMgr.getTables(net, CyNetwork.class).values());
 			allTables.addAll(netTblMgr.getTables(net, CyNode.class).values());
@@ -438,6 +425,8 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 		}
 		
 		// Register all tables sent through the CySession, if not already registered
+		final CyTableManager tblMgr = serviceRegistrar.getService(CyTableManager.class);
+		
 		for (final CyTable tbl : allTables) {
 			if (tblMgr.getTable(tbl.getSUID()) == null)
 				tblMgr.addTable(tbl);
@@ -447,17 +436,20 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 	private void restoreVisualStyles(final CySession sess) {
 		logger.debug("Restoring visual styles...");
 		// Register visual styles
+		final VisualMappingManager vmMgr = serviceRegistrar.getService(VisualMappingManager.class);
 		final VisualStyle defStyle = vmMgr.getDefaultVisualStyle();
 		final String DEFAULT_STYLE_NAME = defStyle.getTitle();
 		
 		final Set<VisualStyle> styles = sess.getVisualStyles();
 		final Map<String, VisualStyle> stylesMap = new HashMap<>();
+		
+		final RenderingEngineManager engineManager = serviceRegistrar.getService(RenderingEngineManager.class);
 
 		if (styles != null) {
 			for (VisualStyle vs : styles) {
 				if (vs.getTitle().equals(DEFAULT_STYLE_NAME)) {
 					// Update the current default style, because it can't be replaced or removed
-					updateVisualStyle(vs, defStyle);
+					updateVisualStyle(vs, defStyle, engineManager);
 					vs = defStyle;
 				}
 				
@@ -493,7 +485,8 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 	 * @param target the Visual Style that will be updated.
 	 */
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	private void updateVisualStyle(final VisualStyle source, final VisualStyle target) {
+	private static void updateVisualStyle(final VisualStyle source, final VisualStyle target,
+			final RenderingEngineManager engineManager) {
 		// First clean up the target
 		final HashSet<VisualMappingFunction<?, ?>> mapingSet = new HashSet<>(target.getAllVisualMappingFunctions());
 		
@@ -507,7 +500,7 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 			target.removeVisualPropertyDependency(dep);
 		
 		// Copy the default visual properties, mappings and dependencies from source to target
-		final VisualLexicon lexicon = renderingEngineMgr.getDefaultVisualLexicon();
+		final VisualLexicon lexicon = engineManager.getDefaultVisualLexicon();
 		final Set<VisualProperty<?>> properties = lexicon.getAllVisualProperties();
 		
 		for (final VisualProperty vp : properties) {
@@ -528,9 +521,11 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 		// If the current view/network was not set, set the first selected network as current
 		if (!selectedNets.isEmpty()) {
 			final CyNetwork cn = selectedNets.get(0);
+			final CyApplicationManager appMgr = serviceRegistrar.getService(CyApplicationManager.class);
 			appMgr.setCurrentNetwork(cn);
 			
 			// Also set the current view, if there is one
+			final CyNetworkViewManager nvMgr = serviceRegistrar.getService(CyNetworkViewManager.class);
 			final Collection<CyNetworkView> cnViews = nvMgr.getNetworkViews(cn);
 			final CyNetworkView cv = cnViews.isEmpty() ? null : cnViews.iterator().next();
 			appMgr.setCurrentNetworkView(cv);
@@ -542,10 +537,14 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 
 	private void restoreCurrentVisualStyle() {
 		// Make sure the current visual style is the one applied to the current network view
+		final CyEventHelper eventHelper = serviceRegistrar.getService(CyEventHelper.class);
 		eventHelper.flushPayloadEvents();
+		
+		final CyApplicationManager appMgr = serviceRegistrar.getService(CyApplicationManager.class);
 		final CyNetworkView cv = appMgr.getCurrentNetworkView();
 		
 		if (cv != null) {
+			final VisualMappingManager vmMgr = serviceRegistrar.getService(VisualMappingManager.class);
 			final VisualStyle style = vmMgr.getVisualStyle(cv);
 			
 			if (style != null && !style.equals(vmMgr.getCurrentVisualStyle()))
@@ -559,6 +558,9 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 		// Destroy groups
 		final Set<CyGroup> groups = new HashSet<>();
 		
+		final CyNetworkManager netMgr = serviceRegistrar.getService(CyNetworkManager.class);
+		final CyGroupManager grMgr = serviceRegistrar.getService(CyGroupManager.class);
+		
 		for (final CyNetwork n : netMgr.getNetworkSet())
 			groups.addAll(grMgr.getGroupSet(n));
 		
@@ -568,25 +570,25 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 //		grMgr.reset();
 		
 		// Destroy network views
+		final CyNetworkViewManager nvMgr = serviceRegistrar.getService(CyNetworkViewManager.class);
 		final Set<CyNetworkView> netViews = nvMgr.getNetworkViewSet();
 
-		for (final CyNetworkView nv : netViews) {
+		for (final CyNetworkView nv : netViews)
 			nvMgr.destroyNetworkView(nv);
-		}
 		
 		nvMgr.reset();
 		
 		// Destroy networks
 		final Set<CyNetwork> networks = netMgr.getNetworkSet();
 		
-		for (final CyNetwork n : networks) {
+		for (final CyNetwork n : networks)
 			netMgr.destroyNetwork(n);
-		}
 		
 		netMgr.reset();
 
 		// Destroy styles
 		logger.debug("Removing current visual styles...");
+		final VisualMappingManager vmMgr = serviceRegistrar.getService(VisualMappingManager.class);
 		final VisualStyle defaultStyle = vmMgr.getDefaultVisualStyle();
 		final List<VisualStyle> allStyles = new ArrayList<>(vmMgr.getAllVisualStyles());
 
@@ -596,6 +598,7 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 		}
 
 		// Destroy tables
+		final CyTableManager tblMgr = serviceRegistrar.getService(CyTableManager.class);
 		tblMgr.reset();
 		
 		// Unregister session properties
@@ -603,15 +606,16 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 		
 		for (CyProperty<?> cyProps : cyPropsClone) {
 			if (cyProps.getSavePolicy().equals(CyProperty.SavePolicy.SESSION_FILE)) {
-				registrar.unregisterAllServices(cyProps);
+				serviceRegistrar.unregisterAllServices(cyProps);
 				sessionProperties.remove(cyProps.getName());
 			}
 		}
 		
 		// Clear undo stack
-		undo.reset();
+		serviceRegistrar.getService(UndoSupport.class).reset();
 		
 		// Reset current table and rendering engine
+		final CyApplicationManager appMgr = serviceRegistrar.getService(CyApplicationManager.class);
 		appMgr.reset();
 	}
 }
