@@ -1,12 +1,21 @@
 package org.cytoscape.model;
 
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+import org.cytoscape.equations.Interpreter;
+import org.cytoscape.equations.internal.interpreter.InterpreterImpl;
+import org.cytoscape.event.DummyCyEventHelper;
+import org.cytoscape.model.internal.CyTableFactoryImpl;
+import org.cytoscape.service.util.CyServiceRegistrar;
+
 /*
  * #%L
  * Cytoscape Model Impl (model-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,23 +33,19 @@ package org.cytoscape.model;
  * #L%
  */
 
-
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.withSettings;
-
-import org.cytoscape.equations.internal.interpreter.InterpreterImpl;
-import org.cytoscape.event.DummyCyEventHelper;
-import org.cytoscape.model.internal.CyTableFactoryImpl;
-import org.cytoscape.service.util.CyServiceRegistrar;
-
-
 public class TableTestSupport {
+	
 	protected CyTableFactory tableFactory;
 	protected DummyCyEventHelper eventHelper;
 
 	public TableTestSupport() {
 		eventHelper = new DummyCyEventHelper();
-		tableFactory = new CyTableFactoryImpl(eventHelper, new InterpreterImpl(), mock(CyServiceRegistrar.class, withSettings().stubOnly()));
+		Interpreter interpreter = new InterpreterImpl();
+		
+		CyServiceRegistrar serviceRegistrar = mock(CyServiceRegistrar.class);
+		when(serviceRegistrar.getService(Interpreter.class)).thenReturn(interpreter);
+		
+		tableFactory = new CyTableFactoryImpl(eventHelper, serviceRegistrar);
 	}
 
 	public CyTableFactory getTableFactory() {

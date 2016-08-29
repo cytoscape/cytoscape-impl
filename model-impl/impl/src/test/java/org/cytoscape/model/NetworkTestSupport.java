@@ -59,17 +59,20 @@ public class NetworkTestSupport {
 	private CyNetworkNaming namingUtil = mock(CyNetworkNaming.class, withSettings().stubOnly());
 	private CyServiceRegistrar serviceRegistrar = mock(CyServiceRegistrar.class, withSettings().stubOnly());
 	private EquationCompiler compiler = new EquationCompilerImpl(new EquationParserImpl(serviceRegistrar));
+	private Interpreter interpreter = mock(Interpreter.class);
 	
 	public NetworkTestSupport() {
 		// Mock objects.
 		when(serviceRegistrar.getService(CyEventHelper.class)).thenReturn(eventHelper);
 		when(serviceRegistrar.getService(CyNetworkNaming.class)).thenReturn(namingUtil);
+		when(serviceRegistrar.getService(EquationCompiler.class)).thenReturn(compiler);
+		when(serviceRegistrar.getService(Interpreter.class)).thenReturn(interpreter);
 		
 		networkTableMgr = new CyNetworkTableManagerImpl();
 		networkMgr = new CyNetworkManagerImpl(serviceRegistrar);
-		tableMgr = new CyTableManagerImpl(eventHelper, networkTableMgr, networkMgr, compiler); 
+		tableMgr = new CyTableManagerImpl(networkTableMgr, networkMgr, serviceRegistrar); 
 		
-		final CyTableFactoryImpl tableFactory = new CyTableFactoryImpl(eventHelper, mock(Interpreter.class), serviceRegistrar);
+		final CyTableFactoryImpl tableFactory = new CyTableFactoryImpl(eventHelper, serviceRegistrar);
 		networkFactory = new CyNetworkFactoryImpl(eventHelper, tableMgr, networkTableMgr, tableFactory, serviceRegistrar);
 		rootNetworkManager = new CyRootNetworkManagerImpl();
 	}
@@ -93,5 +96,4 @@ public class NetworkTestSupport {
 	public CyNetworkManager getNetworkManager() {
 		return networkMgr;
 	}
-	
 }

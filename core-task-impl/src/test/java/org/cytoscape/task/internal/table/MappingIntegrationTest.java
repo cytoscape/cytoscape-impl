@@ -16,6 +16,7 @@ import java.util.Properties;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.ding.NetworkViewTestSupport;
 import org.cytoscape.equations.EquationCompiler;
+import org.cytoscape.equations.Interpreter;
 import org.cytoscape.equations.internal.EquationCompilerImpl;
 import org.cytoscape.equations.internal.EquationParserImpl;
 import org.cytoscape.equations.internal.interpreter.InterpreterImpl;
@@ -97,12 +98,13 @@ public class MappingIntegrationTest {
 	private CyNetworkManagerImpl netMgr = new CyNetworkManagerImpl(serviceRegistrar);
 	private final CyRootNetworkManagerImpl rootNetMgr = new CyRootNetworkManagerImpl();
 	private EquationCompiler compiler = new EquationCompilerImpl(new EquationParserImpl(serviceRegistrar));
+	private Interpreter interpreter = new InterpreterImpl();
 	
 	private SyncTunableMutator stm = new SyncTunableMutator();
 	SyncTunableHandlerFactory syncTunableHandlerFactory = new SyncTunableHandlerFactory();
 
 	private TunableSetterImpl ts = new TunableSetterImpl(new SyncTunableMutatorFactory(syncTunableHandlerFactory),  new TunableRecorderManager());
-	CyTableManager tabMgr = new CyTableManagerImpl(eventHelper, new CyNetworkTableManagerImpl(), netMgr, compiler);
+	CyTableManager tabMgr = new CyTableManagerImpl(new CyNetworkTableManagerImpl(), netMgr, serviceRegistrar);
 	Properties syncFactoryProp = new Properties();
 	
 	private CyGroupManager groupMgr = mock(CyGroupManager.class);
@@ -117,6 +119,8 @@ public class MappingIntegrationTest {
         when(serviceRegistrar.getService(CyTableManager.class)).thenReturn(tabMgr);
         when(serviceRegistrar.getService(TunableSetter.class)).thenReturn(ts);
         when(serviceRegistrar.getService(CyApplicationManager.class)).thenReturn(appMgr);
+        when(serviceRegistrar.getService(EquationCompiler.class)).thenReturn(compiler);
+		when(serviceRegistrar.getService(Interpreter.class)).thenReturn(interpreter);
         
 		when(renderingEngineManager.getRenderingEngines(any(View.class))).thenReturn(Collections.EMPTY_LIST);
 	}
@@ -165,7 +169,7 @@ public class MappingIntegrationTest {
 		
 		//creating a table for mapping to all networks
 		table1 = new CyTableImpl("dummy table", "ID", String.class, true, true, 
-				SavePolicy.DO_NOT_SAVE , eventHelper, new InterpreterImpl(), 2);
+				SavePolicy.DO_NOT_SAVE , eventHelper, interpreter, 2);
 		table1.createColumn(table1sCol, String.class, false);
 		
 		CyRow row1 = table1.getRow(node1Name);
@@ -210,7 +214,7 @@ public class MappingIntegrationTest {
 				
 		//creating another table to map to the net1 only
 		table2 = new CyTableImpl("dummy table", "ID", String.class, true, true, 
-				SavePolicy.DO_NOT_SAVE , eventHelper, new InterpreterImpl(), 2);
+				SavePolicy.DO_NOT_SAVE , eventHelper, interpreter, 2);
 		table2.createColumn(table2sCol, String.class, false);
 		
 		CyRow row3 = table2.getRow(node1Name);

@@ -59,20 +59,23 @@ public class CyTableManagerTest extends AbstractCyTableManagerTest {
 
 	@Before
 	public void setUp() {
+		final Interpreter interpreter = new InterpreterImpl();
+		
 		when(serviceRegistrar.getService(CyEventHelper.class)).thenReturn(eventHelper);
 		when(serviceRegistrar.getService(CyNetworkNaming.class)).thenReturn(namingUtil);
+		when(serviceRegistrar.getService(EquationCompiler.class)).thenReturn(compiler);
+		when(serviceRegistrar.getService(Interpreter.class)).thenReturn(interpreter);
 		
 		networkTableMgr = new CyNetworkTableManagerImpl();
 		networkManager = new CyNetworkManagerImpl(serviceRegistrar);
-		mgr = new CyTableManagerImpl(eventHelper, networkTableMgr, networkManager, compiler);
+		mgr = new CyTableManagerImpl(networkTableMgr, networkManager, serviceRegistrar);
 		
 		assertNotNull(mgr);
 		assertEquals(0, mgr.getAllTables(true).size());
 
-		final Interpreter interpreter = new InterpreterImpl();
 		final CyServiceRegistrar serviceRegistrar = mock(CyServiceRegistrar.class);
 		
-		final CyTableFactoryImpl tableFactory = new CyTableFactoryImpl(eventHelper, interpreter, serviceRegistrar);
+		final CyTableFactoryImpl tableFactory = new CyTableFactoryImpl(eventHelper, serviceRegistrar);
 		goodNetwork = new CyRootNetworkImpl(eventHelper, (CyTableManagerImpl) mgr, networkTableMgr, tableFactory,
 				serviceRegistrar, true, SavePolicy.DO_NOT_SAVE).getBaseNetwork();
 		networkManager.addNetwork(goodNetwork);

@@ -1,29 +1,5 @@
 package org.cytoscape.model.internal;
 
-/*
- * #%L
- * Cytoscape Model Impl (model-impl)
- * $Id:$
- * $HeadURL:$
- * %%
- * Copyright (C) 2010 - 2013 The Cytoscape Consortium
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * #L%
- */
-
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -51,9 +27,33 @@ import org.cytoscape.model.events.TableAddedEvent;
 import org.cytoscape.model.events.TableDeletedEvent;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CySubNetwork;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/*
+ * #%L
+ * Cytoscape Model Impl (model-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
 
 /**
  * An interface describing a factory used for managing {@link CyTable} objects.
@@ -67,42 +67,44 @@ public class CyTableManagerImpl implements CyTableManager, NetworkAboutToBeDestr
 	private static final Class<? extends CyIdentifiable>[] COMPATIBLE_TYPES = new Class[] { CyNetwork.class,
 			CyNode.class, CyEdge.class };
 
-	private final CyEventHelper eventHelper;
 	private final CyNetworkTableManager networkTableManager;
 	private final CyNetworkManager networkManager;
-	private final EquationCompiler compiler;
+	private final CyServiceRegistrar serviceRegistrar;
 	
 	private final Map<Long, CyTable> tables;
 
 	private final Object lock = new Object();
 
-	public CyTableManagerImpl(final CyEventHelper eventHelper, final CyNetworkTableManager networkTableManager,
-			final CyNetworkManager networkManager, final EquationCompiler compiler) {
-		if(eventHelper == null)
-			throw new IllegalArgumentException("eventHelper is null.");
-		if(networkTableManager == null)
-			throw new IllegalArgumentException("networkTableManager is null.");
-		if(networkManager == null)
-			throw new IllegalArgumentException("networkManager is null.");
-		
-		this.eventHelper = eventHelper;
+	public CyTableManagerImpl(final CyNetworkTableManager networkTableManager, final CyNetworkManager networkManager,
+			final CyServiceRegistrar serviceRegistrar) {
+		if (networkTableManager == null)
+			throw new IllegalArgumentException("networkTableManager must not be null.");
+		if (networkManager == null)
+			throw new IllegalArgumentException("networkManager must not be null.");
+		if (serviceRegistrar == null)
+			throw new IllegalArgumentException("serviceRegistrar must not be null.");
+
 		this.networkTableManager = networkTableManager;
 		this.networkManager = networkManager;
-		this.compiler = compiler;
+		this.serviceRegistrar = serviceRegistrar;
 
-		tables = new HashMap<Long, CyTable>();
+		tables = new HashMap<>();
 	}
-
 
 	@Override
 	public void reset() {
 		Collection<CyTable> values;
+
 		synchronized (lock) {
 			values = tables.values();
 		}
-		for (CyTable table : values){
+		
+		final CyEventHelper eventHelper = serviceRegistrar.getService(CyEventHelper.class);
+
+		for (CyTable table : values) {
 			eventHelper.fireEvent(new TableAboutToBeDeletedEvent(this, table));
 		}
+
 		synchronized (lock) {
 			tables.clear();
 		}
@@ -111,18 +113,21 @@ public class CyTableManagerImpl implements CyTableManager, NetworkAboutToBeDestr
 	@Override
 	public void addTable(final CyTable t) {
 		boolean fireEvent = false;
+		
 		synchronized (lock) {
 			if (t == null)
 				throw new NullPointerException("added table is null");
-	
+
 			final Long suid = t.getSUID();
-	
+
 			if (tables.get(suid) == null) {
 				tables.put(suid, t);
 				fireEvent = true;
 			}
 		}
+		
 		if (fireEvent) {
+			final CyEventHelper eventHelper = serviceRegistrar.getService(CyEventHelper.class);
 			eventHelper.fireEvent(new TableAddedEvent(this, t));
 		}
 	}
@@ -159,6 +164,7 @@ public class CyTableManagerImpl implements CyTableManager, NetworkAboutToBeDestr
 			}
 		}
 
+		final CyEventHelper eventHelper = serviceRegistrar.getService(CyEventHelper.class);
 		eventHelper.fireEvent(new TableAboutToBeDeletedEvent(this, table));
 
 		synchronized (lock) {
@@ -172,8 +178,9 @@ public class CyTableManagerImpl implements CyTableManager, NetworkAboutToBeDestr
 				throw new IllegalArgumentException("can't delete an immutable table.");
 			}
 
-			if ( table instanceof CyTableImpl ) 
-				((CyTableImpl)table).removeAllVirtColumns();
+			if (table instanceof CyTableImpl)
+				((CyTableImpl) table).removeAllVirtColumns();
+
 			tables.remove(suid);
 		}
 
@@ -187,7 +194,7 @@ public class CyTableManagerImpl implements CyTableManager, NetworkAboutToBeDestr
 	public void deleteTable(long suid) {
 		deleteTableInternal(suid, false);
 	}
-	
+
 	@Override
 	public void handleEvent(NetworkAboutToBeDestroyedEvent e) {
 		CyNetwork network = e.getNetwork();
@@ -238,10 +245,12 @@ public class CyTableManagerImpl implements CyTableManager, NetworkAboutToBeDestr
 
 		return localTables;
 	}
-	
+
 	private void refreshTableEquations() {
+		final EquationCompiler compiler = serviceRegistrar.getService(EquationCompiler.class);
 		Set<CyTable> tables = getAllTables(true);
-		for(CyTable table: tables) {
+
+		for (CyTable table : tables) {
 			EquationUtil.refreshEquations(table, compiler);
 		}
 	}

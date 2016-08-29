@@ -61,17 +61,18 @@ public class CySubNetworkCyTableManagerTest extends AbstractCyTableManagerTest {
 		final CyNetworkNaming namingUtil = mock(CyNetworkNaming.class);
 		final CyServiceRegistrar serviceRegistrar = mock(CyServiceRegistrar.class);
 		final EquationCompiler compiler = new EquationCompilerImpl(new EquationParserImpl(serviceRegistrar));
+		final Interpreter interpreter = new InterpreterImpl();
 
-		
 		when(serviceRegistrar.getService(CyEventHelper.class)).thenReturn(eh);
 		when(serviceRegistrar.getService(CyNetworkNaming.class)).thenReturn(namingUtil);
+		when(serviceRegistrar.getService(EquationCompiler.class)).thenReturn(compiler);
+		when(serviceRegistrar.getService(Interpreter.class)).thenReturn(interpreter);
 		
 		networkTableMgr = new CyNetworkTableManagerImpl();
 		networkManager = new CyNetworkManagerImpl(serviceRegistrar);
-		mgr = new CyTableManagerImpl(eh, networkTableMgr, networkManager, compiler);
+		mgr = new CyTableManagerImpl(networkTableMgr, networkManager, serviceRegistrar);
 		
-		final Interpreter interpreter = new InterpreterImpl();
-		CyTableFactoryImpl tableFactory = new CyTableFactoryImpl(eh, interpreter, serviceRegistrar);
+		CyTableFactoryImpl tableFactory = new CyTableFactoryImpl(eh, serviceRegistrar);
 		CyRootNetworkImpl baseNet = new CyRootNetworkImpl(eh, (CyTableManagerImpl) mgr, networkTableMgr, tableFactory,
 				serviceRegistrar, true, SavePolicy.DO_NOT_SAVE);
 		// This is a different subnetwork and not "baseNetwork" in ArrayGraph.

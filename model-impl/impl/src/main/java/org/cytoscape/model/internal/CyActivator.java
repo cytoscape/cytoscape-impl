@@ -1,12 +1,25 @@
 package org.cytoscape.model.internal;
 
+import java.util.Properties;
+
+import org.cytoscape.equations.event.EquationFunctionAddedListener;
+import org.cytoscape.model.CyNetworkFactory;
+import org.cytoscape.model.CyNetworkManager;
+import org.cytoscape.model.CyTableFactory;
+import org.cytoscape.model.CyTableManager;
+import org.cytoscape.model.events.NetworkAboutToBeDestroyedListener;
+import org.cytoscape.model.subnetwork.CyRootNetworkManager;
+import org.cytoscape.service.util.AbstractCyActivator;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.osgi.framework.BundleContext;
+
 /*
  * #%L
  * Cytoscape Model Impl (model-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,54 +37,29 @@ package org.cytoscape.model.internal;
  * #L%
  */
 
-import java.util.Properties;
-
-import org.cytoscape.equations.EquationCompiler;
-import org.cytoscape.equations.Interpreter;
-import org.cytoscape.equations.event.EquationFunctionAddedListener;
-import org.cytoscape.equations.event.EquationFunctionRemovedListener;
-import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.model.CyNetworkFactory;
-import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.model.CyTableFactory;
-import org.cytoscape.model.CyTableManager;
-import org.cytoscape.model.events.NetworkAboutToBeDestroyedListener;
-import org.cytoscape.model.subnetwork.CyRootNetworkManager;
-import org.cytoscape.service.util.AbstractCyActivator;
-import org.cytoscape.service.util.CyServiceRegistrar;
-import org.osgi.framework.BundleContext;
-
-
 public class CyActivator extends AbstractCyActivator {
 	
-	public CyActivator() {
-		super();
-	}
-
 	@Override
 	public void start(BundleContext bc) {
-		CyEventHelper cyEventHelperServiceRef = getService(bc,CyEventHelper.class);
-		EquationCompiler compiler = getService(bc, EquationCompiler.class);
-		Interpreter InterpreterRef = getService(bc,Interpreter.class);
-		CyServiceRegistrar cyServiceRegistrarServiceRef = getService(bc,CyServiceRegistrar.class);
+		final CyServiceRegistrar serviceRegistrar = getService(bc, CyServiceRegistrar.class);
 
-		TableEventHelperFacade tableEventHelper = new TableEventHelperFacade(cyEventHelperServiceRef);
+		TableEventHelperFacade tableEventHelper = new TableEventHelperFacade(serviceRegistrar);
 		
-		CyNetworkManagerImpl cyNetworkManager = new CyNetworkManagerImpl(cyServiceRegistrarServiceRef);
-		CyNetworkTableManagerImpl cyNetworkTableManager = new CyNetworkTableManagerImpl();
-		CyTableManagerImpl cyTableManager = new CyTableManagerImpl(cyEventHelperServiceRef,cyNetworkTableManager,
-				cyNetworkManager, compiler);
-		CyTableFactoryImpl cyTableFactory = new CyTableFactoryImpl(tableEventHelper,InterpreterRef,cyServiceRegistrarServiceRef);
-		CyNetworkFactoryImpl cyNetworkFactory = new CyNetworkFactoryImpl(tableEventHelper,cyTableManager,cyNetworkTableManager,cyTableFactory,cyServiceRegistrarServiceRef);
-		CyRootNetworkManagerImpl cyRootNetworkFactory = new CyRootNetworkManagerImpl();
-		
-		registerService(bc,cyNetworkFactory,CyNetworkFactory.class, new Properties());
-		registerService(bc,cyTableFactory,CyTableFactory.class, new Properties());
-		registerService(bc,cyRootNetworkFactory,CyRootNetworkManager.class, new Properties());
-		registerService(bc,cyTableManager,CyTableManager.class, new Properties());
-		registerAllServices(bc,cyNetworkTableManager, new Properties());
-		registerService(bc,cyTableManager,NetworkAboutToBeDestroyedListener.class, new Properties());
-		registerService(bc,cyTableManager,EquationFunctionAddedListener.class, new Properties());
-		registerService(bc,cyNetworkManager,CyNetworkManager.class, new Properties());
+		CyNetworkManagerImpl networkManager = new CyNetworkManagerImpl(serviceRegistrar);
+		CyNetworkTableManagerImpl networkTableManager = new CyNetworkTableManagerImpl();
+		CyTableManagerImpl tableManager = new CyTableManagerImpl(networkTableManager, networkManager, serviceRegistrar);
+		CyTableFactoryImpl tableFactory = new CyTableFactoryImpl(tableEventHelper, serviceRegistrar);
+		CyNetworkFactoryImpl networkFactory = new CyNetworkFactoryImpl(tableEventHelper, tableManager,
+				networkTableManager, tableFactory, serviceRegistrar);
+		CyRootNetworkManagerImpl rootNetworkFactory = new CyRootNetworkManagerImpl();
+
+		registerService(bc, networkFactory, CyNetworkFactory.class, new Properties());
+		registerService(bc, tableFactory, CyTableFactory.class, new Properties());
+		registerService(bc, rootNetworkFactory, CyRootNetworkManager.class, new Properties());
+		registerService(bc, tableManager, CyTableManager.class, new Properties());
+		registerAllServices(bc, networkTableManager, new Properties());
+		registerService(bc, tableManager, NetworkAboutToBeDestroyedListener.class, new Properties());
+		registerService(bc, tableManager, EquationFunctionAddedListener.class, new Properties());
+		registerService(bc, networkManager, CyNetworkManager.class, new Properties());
 	}
 }

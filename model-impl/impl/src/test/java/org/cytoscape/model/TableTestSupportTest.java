@@ -64,22 +64,22 @@ public class TableTestSupportTest extends AbstractCyTableTest {
 
 	@Before
 	public void setUp() {
-		eventHelper = support.getDummyCyEventHelper(); 
+		eventHelper = support.getDummyCyEventHelper();
+		EquationCompiler compiler = new EquationCompilerImpl(new EquationParserImpl(serviceRegistrar));
 		
 		when(serviceRegistrar.getService(CyEventHelper.class)).thenReturn(eventHelper);
 		when(serviceRegistrar.getService(CyNetworkNaming.class)).thenReturn(namingUtil);
+		when(serviceRegistrar.getService(EquationCompiler.class)).thenReturn(compiler);
 		
 		table = factory.createTable(Integer.toString( rand.nextInt(10000) ), CyIdentifiable.SUID, Long.class, false, true);
 		table2 = factory.createTable(Integer.toString( rand.nextInt(10000) ), CyIdentifiable.SUID, Long.class, false, true);
 		attrs = table.getRow(1l);
-		EquationCompiler compiler = new EquationCompilerImpl(new EquationParserImpl(serviceRegistrar));
-		CyTableManagerImpl tblMgr = new CyTableManagerImpl(eventHelper,new CyNetworkTableManagerImpl(), 
-				new CyNetworkManagerImpl(serviceRegistrar), compiler);
+		CyTableManagerImpl tblMgr = new CyTableManagerImpl(new CyNetworkTableManagerImpl(), 
+				new CyNetworkManagerImpl(serviceRegistrar), serviceRegistrar);
 		tblMgr.addTable(table);
 		((CyTableImpl)table).handleEvent(new TableAddedEvent(tblMgr, table));
 		tblMgr.addTable(table2);
 		((CyTableImpl)table2).handleEvent(new TableAddedEvent(tblMgr, table2));
-
 	}
 
 	@After

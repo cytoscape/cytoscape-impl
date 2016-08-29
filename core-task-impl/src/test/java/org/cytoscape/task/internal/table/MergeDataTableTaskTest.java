@@ -16,6 +16,7 @@ import java.util.Properties;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.ding.NetworkViewTestSupport;
 import org.cytoscape.equations.EquationCompiler;
+import org.cytoscape.equations.Interpreter;
 import org.cytoscape.equations.internal.EquationCompilerImpl;
 import org.cytoscape.equations.internal.EquationParserImpl;
 import org.cytoscape.equations.internal.interpreter.InterpreterImpl;
@@ -94,7 +95,8 @@ public class MergeDataTableTaskTest {
 	private CyNetworkManagerImpl netMgr = new CyNetworkManagerImpl(serviceRegistrar);	
 	private final CyRootNetworkManagerImpl rootNetMgr = new CyRootNetworkManagerImpl();
 	private EquationCompiler compiler = new EquationCompilerImpl(new EquationParserImpl(serviceRegistrar));
-	private final CyTableManagerImpl tableMgr = new CyTableManagerImpl(eventHelper,new CyNetworkTableManagerImpl(),netMgr, compiler);
+	private Interpreter interpreter = new InterpreterImpl();
+	private final CyTableManagerImpl tableMgr = new CyTableManagerImpl(new CyNetworkTableManagerImpl(), netMgr, serviceRegistrar);
 	
 	private SyncTunableMutator stm = new SyncTunableMutator();
 	SyncTunableHandlerFactory syncTunableHandlerFactory = new SyncTunableHandlerFactory();
@@ -109,6 +111,8 @@ public class MergeDataTableTaskTest {
 	public void setUp() throws Exception {
 		when(serviceRegistrar.getService(CyEventHelper.class)).thenReturn(eventHelper);
         when(serviceRegistrar.getService(CyNetworkNaming.class)).thenReturn(namingUtil);
+        when(serviceRegistrar.getService(EquationCompiler.class)).thenReturn(compiler);
+		when(serviceRegistrar.getService(Interpreter.class)).thenReturn(interpreter);
 		
 		when(renderingEngineManager.getRenderingEngines(any(View.class))).thenReturn(Collections.EMPTY_LIST);
 	}
@@ -170,7 +174,7 @@ public class MergeDataTableTaskTest {
 		
 		//creating a table for mapping to all networks
 		table1 = new CyTableImpl("dummy table", "ID", String.class, true, true, 
-				SavePolicy.DO_NOT_SAVE , eventHelper, new InterpreterImpl(), 2);
+				SavePolicy.DO_NOT_SAVE , eventHelper, interpreter, 2);
 		table1.createColumn(table1sCol, String.class, false);
 		
 		CyRow row1 = table1.getRow(node1Name);
@@ -217,7 +221,7 @@ public class MergeDataTableTaskTest {
 				
 		//creating another table to map to the net1 only
 		table2 = new CyTableImpl("dummy table", "ID", String.class, true, true, 
-				SavePolicy.DO_NOT_SAVE , eventHelper, new InterpreterImpl(), 2);
+				SavePolicy.DO_NOT_SAVE , eventHelper, interpreter, 2);
 		table2.createColumn(table2sCol, String.class, false);
 		
 		CyRow row3 = table2.getRow(node1Name);
@@ -268,7 +272,7 @@ public class MergeDataTableTaskTest {
 		
 		//creating another table to map to the net1 only
 		table3 = new CyTableImpl("dummy table 3", "ID", String.class, true, true, 
-				SavePolicy.DO_NOT_SAVE , eventHelper, new InterpreterImpl(), 2);
+				SavePolicy.DO_NOT_SAVE , eventHelper, interpreter, 2);
 		table3.createColumn(table2sCol, String.class, false);
 		table3.createColumn(table3sCol, String.class, false);
 		CyRow rowTemp;
@@ -281,7 +285,7 @@ public class MergeDataTableTaskTest {
 		
 		
 		table4 = new CyTableImpl("dummy table 4", "ID", String.class, true, true, 
-				SavePolicy.DO_NOT_SAVE , eventHelper, new InterpreterImpl(), 2);
+				SavePolicy.DO_NOT_SAVE , eventHelper, interpreter, 2);
 		table4.createColumn(table2sCol, String.class, false);
 		table4.createColumn(table4sCol, String.class, false);
 		
