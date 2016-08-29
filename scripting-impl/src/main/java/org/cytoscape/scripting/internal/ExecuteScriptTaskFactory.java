@@ -1,12 +1,18 @@
 package org.cytoscape.scripting.internal;
 
+import javax.script.ScriptEngineManager;
+
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.work.AbstractTaskFactory;
+import org.cytoscape.work.TaskIterator;
+
 /*
  * #%L
  * Cytoscape Scripting Impl (scripting-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,28 +30,18 @@ package org.cytoscape.scripting.internal;
  * #L%
  */
 
-import javax.script.ScriptEngineManager;
-
-import org.cytoscape.app.CyAppAdapter;
-import org.cytoscape.command.CommandExecutorTaskFactory;
-import org.cytoscape.work.AbstractTaskFactory;
-import org.cytoscape.work.TaskIterator;
-
 public class ExecuteScriptTaskFactory extends AbstractTaskFactory {
 	
 	private final ScriptEngineManager manager;
-	private final CyAppAdapter cyAppAdapter;
-	private final CommandExecutorTaskFactory commandExecutorTaskFactoryService;
+	private final CyServiceRegistrar serviceRegistrar;
 	
-	public ExecuteScriptTaskFactory(final CyAppAdapter cyAppAdapter, final CommandExecutorTaskFactory commandExecutorTaskFactoryService) {
+	public ExecuteScriptTaskFactory(final CyServiceRegistrar serviceRegistrar) {
 		this.manager = new ScriptEngineManager();
-		this.cyAppAdapter = cyAppAdapter;
-		this.commandExecutorTaskFactoryService = commandExecutorTaskFactoryService;
+		this.serviceRegistrar = serviceRegistrar;
 	}
 
 	@Override
 	public TaskIterator createTaskIterator() {
-		return new TaskIterator(new ExecuteScriptTask(manager, cyAppAdapter, commandExecutorTaskFactoryService));
+		return new TaskIterator(new ExecuteScriptTask(manager, serviceRegistrar));
 	}
-
 }
