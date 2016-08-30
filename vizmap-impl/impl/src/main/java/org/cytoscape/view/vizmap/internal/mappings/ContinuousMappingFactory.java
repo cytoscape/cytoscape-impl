@@ -1,12 +1,19 @@
 package org.cytoscape.view.vizmap.internal.mappings;
 
+import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.view.model.VisualProperty;
+import org.cytoscape.view.vizmap.VisualMappingFunction;
+import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
+import org.cytoscape.view.vizmap.mappings.ContinuousMapping;
+
 /*
  * #%L
  * Cytoscape VizMap Impl (vizmap-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,38 +31,27 @@ package org.cytoscape.view.vizmap.internal.mappings;
  * #L%
  */
 
-import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.view.model.VisualProperty;
-import org.cytoscape.view.vizmap.VisualMappingFunction;
-import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
-import org.cytoscape.view.vizmap.mappings.ContinuousMapping;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 public class ContinuousMappingFactory implements VisualMappingFunctionFactory {
 	
-	private static final Logger logger = LoggerFactory.getLogger(ContinuousMappingFactory.class);
+	private final CyServiceRegistrar serviceRegistrar;
 	
-	private final CyEventHelper eventHelper;
-	
-	public ContinuousMappingFactory(final CyEventHelper eventHelper) {
-		this.eventHelper = eventHelper;
+	public ContinuousMappingFactory(final CyServiceRegistrar serviceRegistrar) {
+		this.serviceRegistrar = serviceRegistrar;
 	}
 
 	@Override
-	public <K, V> VisualMappingFunction<K, V> createVisualMappingFunction(final String attributeName, 
+	public <K, V> VisualMappingFunction<K, V> createVisualMappingFunction(final String attributeName,
 			Class<K> attrValueType, VisualProperty<V> vp) {
-		
-		logger.debug("Trying to create Continuous mapping.  Data Type is " + attrValueType);
-		
 		// Validate attribute type: Continuous Mapping is compatible with Numbers only.
-		if(Number.class.isAssignableFrom(attrValueType) == false)
+		if (Number.class.isAssignableFrom(attrValueType) == false)
 			throw new IllegalArgumentException("ContinuousMapping can be used for numerical column types only.");
-		
-		return new ContinuousMappingImpl<K, V>(attributeName, attrValueType, vp, eventHelper);
+
+		return new ContinuousMappingImpl<K, V>(attributeName, attrValueType, vp,
+				serviceRegistrar.getService(CyEventHelper.class));
 	}
-	
-	@Override public String toString() {
+
+	@Override
+	public String toString() {
 		return ContinuousMapping.CONTINUOUS;
 	}
 
@@ -63,5 +59,4 @@ public class ContinuousMappingFactory implements VisualMappingFunctionFactory {
 	public Class<?> getMappingFunctionType() {
 		return ContinuousMapping.class;
 	}
-
 }
