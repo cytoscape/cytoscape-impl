@@ -1,12 +1,22 @@
 package org.cytoscape.util.swing.internal;
 
+import static org.junit.Assert.assertNotNull;
+import static org.mockito.Mockito.when;
+
+import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+
 /*
  * #%L
  * Cytoscape Swing Utility Impl (swing-util-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,28 +34,21 @@ package org.cytoscape.util.swing.internal;
  * #L%
  */
 
-import static org.junit.Assert.assertNotNull;
-import static org.mockito.Mockito.when;
-
-import java.util.Properties;
-
-import org.cytoscape.application.CyApplicationManager;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-
 public class FileUtilImplTest {
+	
 	private FileUtilImpl fileUtil;
 	
-	@Mock private CyApplicationManager cyApplicationManager;	
+	@Mock private CyApplicationManager applicationManager;
+	@Mock private CyServiceRegistrar serviceRegistrar;
 	
 
 	@Before
 	public void setUp() throws Exception {
 		MockitoAnnotations.initMocks(this);
 		
-		fileUtil = new FileUtilImpl(cyApplicationManager);
+		when(serviceRegistrar.getService(CyApplicationManager.class)).thenReturn(applicationManager);
+		
+		fileUtil = new FileUtilImpl(serviceRegistrar);
 	}
 
 	@Test

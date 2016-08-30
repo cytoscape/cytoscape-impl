@@ -1,30 +1,5 @@
 package org.cytoscape.util.swing.internal;
 
-/*
- * #%L
- * Cytoscape Swing Utility Impl (swing-util-impl)
- * $Id:$
- * $HeadURL:$
- * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * #L%
- */
-
-
 import java.awt.Component;
 import java.awt.Dialog;
 import java.awt.FileDialog;
@@ -42,68 +17,74 @@ import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.FileChooserFilter;
 import org.cytoscape.util.swing.FileUtil;
 
+/*
+ * #%L
+ * Cytoscape Swing Utility Impl (swing-util-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
 
 class FileUtilImpl implements FileUtil {
 	
-	private final CyApplicationManager cyApplicationManager;
+	private final CyServiceRegistrar serviceRegistrar;
 
-	FileUtilImpl(final CyApplicationManager cyApplicationManager) {
-		this.cyApplicationManager = cyApplicationManager;
+	FileUtilImpl(final CyServiceRegistrar serviceRegistrar) {
+		this.serviceRegistrar = serviceRegistrar;
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	@Override
 	public File getFile(final Component parent, final String title, final int loadSaveCustom,
 			final Collection<FileChooserFilter> filters) {
 		return getFile(parent, title, loadSaveCustom, null, null, filters);
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	@Override
 	public File getFile(final Component parent, final String title, final int loadSaveCustom,
 	                    final String startDir, final String customApproveText,
-	                    final Collection<FileChooserFilter> filters)
-	{
+	                    final Collection<FileChooserFilter> filters) {
 		File[] result = getFiles(parent, title, loadSaveCustom, startDir,
 					 customApproveText, false, filters);
 
 		return ((result == null) || (result.length <= 0)) ? null : result[0];
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	@Override
 	public File[] getFiles(final Component parent, final String title,
 	                       final int loadSaveCustom,
-	                       final Collection<FileChooserFilter> filters)
-	{
+	                       final Collection<FileChooserFilter> filters) {
 		return getFiles(parent, title, loadSaveCustom, null, null, true, filters);
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	@Override
 	public File[] getFiles(final Component parent, final String title,
 	                       final int loadSaveCustom, final String startDir,
 	                       final String customApproveText,
-	                       final Collection<FileChooserFilter> filters)
-	{
+	                       final Collection<FileChooserFilter> filters) {
 		return getFiles(parent, title, loadSaveCustom, startDir,
 				customApproveText, true, filters);
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	@Override
 	public File[] getFiles(final Component parent, final String title, final int loadSaveCustom, String startDir,
 			final String customApproveText, final boolean multiselect, final Collection<FileChooserFilter> filters) {
@@ -112,6 +93,7 @@ class FileUtilImpl implements FileUtil {
 			throw new NullPointerException("\"parent\" must not be null.");
 		
 		final String osName = System.getProperty("os.name");
+		final CyApplicationManager applicationManager = serviceRegistrar.getService(CyApplicationManager.class);
 		
 		if (osName.startsWith("Mac")) {
 			// This is a Macintosh, use the AWT style file dialog
@@ -136,7 +118,7 @@ class FileUtilImpl implements FileUtil {
 				if (startDir != null)
 					chooser.setDirectory(startDir);
 				else
-					chooser.setDirectory(cyApplicationManager.getCurrentDirectory().getAbsolutePath());
+					chooser.setDirectory(applicationManager.getCurrentDirectory().getAbsolutePath());
 				
 				chooser.setModal(true);
 				chooser.setFilenameFilter(new CombinedFilenameFilter(filters));
@@ -176,7 +158,7 @@ class FileUtilImpl implements FileUtil {
 						 results = chooser.getFiles();
 
 					if (chooser.getDirectory() != null)
-						cyApplicationManager.setCurrentDirectory(new File(chooser.getDirectory()));
+						applicationManager.setCurrentDirectory(new File(chooser.getDirectory()));
 
 					return results;
 				}
@@ -192,7 +174,7 @@ class FileUtilImpl implements FileUtil {
 			if(startDir != null)
 				chooser = new JFileChooser(new File(startDir));
 			else
-				chooser = new JFileChooser(cyApplicationManager.getCurrentDirectory());
+				chooser = new JFileChooser(applicationManager.getCurrentDirectory());
 			
 			// set multiple selection, if applicable
 			chooser.setMultiSelectionEnabled(multiselect);
@@ -304,14 +286,14 @@ class FileUtilImpl implements FileUtil {
 			}
 
 			if (results != null && chooser.getCurrentDirectory().getPath() != null)
-				cyApplicationManager.setCurrentDirectory(chooser.getCurrentDirectory());
+				applicationManager.setCurrentDirectory(chooser.getCurrentDirectory());
 
 			return results;
 		}
 	}
 	
 	private String addFileExt(final Collection<FileChooserFilter> filters, String fileName) {
-		final Set<String> extSet = new LinkedHashSet<String>();
+		final Set<String> extSet = new LinkedHashSet<>();
 		
 		for (final FileChooserFilter filter : filters) {
 			final String[] exts = filter.getExtensions();
@@ -335,6 +317,7 @@ class FileUtilImpl implements FileUtil {
 	}
 
 	private static final class CombinedFilenameFilter implements FilenameFilter {
+		
 		private final Collection<FileChooserFilter> filters;
 
 		CombinedFilenameFilter(final Collection<FileChooserFilter> filters) {
