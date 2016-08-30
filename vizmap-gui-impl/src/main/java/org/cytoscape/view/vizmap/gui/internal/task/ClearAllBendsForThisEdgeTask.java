@@ -1,12 +1,23 @@
 package org.cytoscape.view.vizmap.gui.internal.task;
 
+import javax.swing.SwingUtilities;
+
+import org.cytoscape.model.CyEdge;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.View;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
+import org.cytoscape.view.presentation.property.values.BendFactory;
+import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
+import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.TaskMonitor;
+
 /*
  * #%L
  * Cytoscape VizMap GUI Impl (vizmap-gui-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,41 +35,25 @@ package org.cytoscape.view.vizmap.gui.internal.task;
  * #L%
  */
 
-import org.cytoscape.model.CyEdge;
-import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.View;
-import org.cytoscape.view.presentation.property.BasicVisualLexicon;
-import org.cytoscape.view.presentation.property.values.BendFactory;
-import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
-import org.cytoscape.work.AbstractTask;
-import org.cytoscape.work.TaskMonitor;
-
-import javax.swing.*;
-
 public class ClearAllBendsForThisEdgeTask extends AbstractTask {
 
 	private final View<CyEdge> edgeView;
 	private final CyNetworkView netView;
-	private final BendFactory bendFactory;
 	private final ServicesUtil servicesUtil;
 
-	ClearAllBendsForThisEdgeTask(final View<CyEdge> edgeView, final CyNetworkView netView, final BendFactory bendFactory,
-								 final ServicesUtil servicesUtil) {
+	ClearAllBendsForThisEdgeTask(final View<CyEdge> edgeView, final CyNetworkView netView,
+			final ServicesUtil servicesUtil) {
 		this.edgeView = edgeView;
 		this.netView = netView;
-		this.bendFactory = bendFactory;
 		this.servicesUtil = servicesUtil;
 	}
 
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
-		SwingUtilities.invokeLater(new Runnable() {
-
-			@Override
-			public void run() {
-				edgeView.setLockedValue(BasicVisualLexicon.EDGE_BEND, bendFactory.createBend());
-				netView.updateView();
-			}
+		SwingUtilities.invokeLater(() -> {
+			final BendFactory bendFactory = servicesUtil.get(BendFactory.class);
+			edgeView.setLockedValue(BasicVisualLexicon.EDGE_BEND, bendFactory.createBend());
+			netView.updateView();
 		});
 	}
 }
