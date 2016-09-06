@@ -1,12 +1,17 @@
 package org.cytoscape.ding;
 
+import org.cytoscape.ding.impl.ViewState;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.work.undo.AbstractCyEdit;
+import org.cytoscape.work.undo.UndoSupport;
+
 /*
  * #%L
  * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,59 +29,52 @@ package org.cytoscape.ding;
  * #L%
  */
 
-
-import org.cytoscape.ding.impl.ViewState;
-import org.cytoscape.work.undo.UndoSupport;
-import org.cytoscape.work.undo.AbstractCyEdit;
-
-
 /**
  * A Ding specific undoable edit.
  */
 public class ViewChangeEdit extends AbstractCyEdit {
-	private final static long serialVersionUID = 1202416511789433L;
 
 	private ViewState origState;
 	private ViewState newState;
+	private final GraphView graphView;
+	private final SavedObjs savedObjs;
 
-	private GraphView m_view;
-
-	private SavedObjs m_savedObjs;
-
-	private UndoSupport m_undo;
+	private final CyServiceRegistrar serviceRegistrar;
 
 	public static enum SavedObjs { ALL, SELECTED, NODES, EDGES, SELECTED_NODES, SELECTED_EDGES }
 
-	public ViewChangeEdit(GraphView view,String label,UndoSupport undo) {
-		this(view, SavedObjs.ALL, label, undo);
+	public ViewChangeEdit(GraphView view, String label, CyServiceRegistrar serviceRegistrar) {
+		this(view, SavedObjs.ALL, label, serviceRegistrar);
 	}
 
-	public ViewChangeEdit(GraphView view, SavedObjs saveObjs, String label, UndoSupport undo) {
+	public ViewChangeEdit(GraphView graphView, SavedObjs saveObjs, String label, CyServiceRegistrar serviceRegistrar) {
 		super(label);
-		m_view = view;
-		m_savedObjs = saveObjs;
-		m_undo = undo;
+		this.graphView = graphView;
+		this.savedObjs = saveObjs;
+		this.serviceRegistrar = serviceRegistrar;
 
 		saveOldPositions();
 	}
 
 	protected void saveOldPositions() {
-		origState = new ViewState(m_view, m_savedObjs);
+		origState = new ViewState(graphView, savedObjs);
 	}
 
 	protected void saveNewPositions() {
-		newState = new ViewState(m_view, m_savedObjs);
+		newState = new ViewState(graphView, savedObjs);
 	}
 
 	public void post() {
 		saveNewPositions();
-		if ( !origState.equals(newState) )
-			m_undo.postEdit( this );
+		
+		if (!origState.equals(newState))
+			serviceRegistrar.getService(UndoSupport.class).postEdit(this);
 	}
 
 	/**
 	 * Applies the new state to the view after it has been undone.
 	 */
+	@Override
 	public void redo() {
 		newState.apply();
 	}
@@ -84,6 +82,7 @@ public class ViewChangeEdit extends AbstractCyEdit {
 	/**
 	 * Applies the original state to the view.
 	 */
+	@Override
 	public void undo() {
 		origState.apply();
 	}

@@ -19,10 +19,34 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.presentation.property.values.CyColumnIdentifier;
-import org.cytoscape.view.presentation.property.values.CyColumnIdentifierFactory;
+
+/*
+ * #%L
+ * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
 
 public class PieChartEditor extends AbstractChartEditor<PieChart> {
 
@@ -33,9 +57,8 @@ public class PieChartEditor extends AbstractChartEditor<PieChart> {
 	
 	// ==[ CONSTRUCTORS ]===============================================================================================
 	
-	public PieChartEditor(final PieChart chart, final CyApplicationManager appMgr, final IconManager iconMgr,
-			final CyColumnIdentifierFactory colIdFactory) {
-		super(chart, Number.class, false, false, false, true, false, false, false, false, appMgr, iconMgr, colIdFactory);
+	public PieChartEditor(final PieChart chart, final CyServiceRegistrar serviceRegistrar) {
+		super(chart, Number.class, false, false, false, true, false, false, false, false, serviceRegistrar);
 		
 		domainLabelPositionLbl.setVisible(false);
 		getDomainLabelPositionCmb().setVisible(false);
@@ -87,7 +110,12 @@ public class PieChartEditor extends AbstractChartEditor<PieChart> {
 	@Override
 	protected ColorSchemeEditor<PieChart> getColorSchemeEditor() {
 		if (colorSchemeEditor == null) {
-			colorSchemeEditor = new PieColorSchemeEditor(chart, getColorSchemes(), appMgr.getCurrentNetwork(), iconMgr);
+			colorSchemeEditor = new PieColorSchemeEditor(
+					chart,
+					getColorSchemes(),
+					serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetwork(),
+					serviceRegistrar.getService(IconManager.class)
+			);
 		}
 		
 		return colorSchemeEditor;

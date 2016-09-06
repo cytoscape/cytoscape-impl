@@ -2,6 +2,17 @@ package org.cytoscape.ding.customgraphicsmgr.internal.action;
 
 import java.awt.Component;
 import java.awt.Window;
+import java.awt.event.ActionEvent;
+
+import javax.swing.JMenuItem;
+import javax.swing.SwingUtilities;
+
+import org.cytoscape.application.swing.AbstractCyAction;
+import org.cytoscape.application.swing.CySwingApplication;
+import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
+import org.cytoscape.ding.customgraphicsmgr.internal.ui.CustomGraphicsBrowser;
+import org.cytoscape.ding.customgraphicsmgr.internal.ui.CustomGraphicsManagerDialog;
+import org.cytoscape.service.util.CyServiceRegistrar;
 
 /*
  * #%L
@@ -9,7 +20,7 @@ import java.awt.Window;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -27,23 +38,8 @@ import java.awt.Window;
  * #L%
  */
 
-
-import java.awt.event.ActionEvent;
-
-import javax.swing.JMenuItem;
-import javax.swing.SwingUtilities;
-
-import org.cytoscape.application.swing.AbstractCyAction;
-import org.cytoscape.application.swing.CySwingApplication;
-import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
-import org.cytoscape.ding.customgraphicsmgr.internal.ui.CustomGraphicsBrowser;
-import org.cytoscape.ding.customgraphicsmgr.internal.ui.CustomGraphicsManagerDialog;
-import org.cytoscape.service.util.CyServiceRegistrar;
-
-
+@SuppressWarnings("serial")
 public class CustomGraphicsManagerAction extends AbstractCyAction {
-	
-	private static final long serialVersionUID = -4582671383878015609L;
 	
 	private final CustomGraphicsManager cgManager;
 	private final CustomGraphicsBrowser browser;

@@ -1,12 +1,22 @@
 package org.cytoscape.ding.customgraphics;
 
+import java.net.URL;
+import java.util.Collection;
+import java.util.Map;
+import java.util.Properties;
+import java.util.SortedSet;
+
+import org.cytoscape.ding.customgraphics.bitmap.MissingImageCustomGraphics;
+import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
+import org.cytoscape.view.presentation.customgraphics.CyCustomGraphicsFactory;
+
 /*
  * #%L
  * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -23,16 +33,6 @@ package org.cytoscape.ding.customgraphics;
  * <http://www.gnu.org/licenses/lgpl-2.1.html>.
  * #L%
  */
-
-import java.net.URL;
-import java.util.Collection;
-import java.util.Map;
-import java.util.Properties;
-import java.util.SortedSet;
-
-import org.cytoscape.ding.customgraphics.bitmap.MissingImageCustomGraphics;
-import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
-import org.cytoscape.view.presentation.customgraphics.CyCustomGraphicsFactory;
 
 public interface CustomGraphicsManager {
 

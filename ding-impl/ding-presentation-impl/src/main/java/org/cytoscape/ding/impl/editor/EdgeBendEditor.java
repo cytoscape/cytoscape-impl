@@ -1,12 +1,19 @@
 package org.cytoscape.ding.impl.editor;
 
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.view.presentation.property.values.Bend;
+import org.cytoscape.view.vizmap.gui.editor.AbstractVisualPropertyEditor;
+import org.cytoscape.view.vizmap.gui.editor.ContinuousEditorType;
+import org.cytoscape.view.vizmap.gui.editor.ContinuousMappingCellRendererFactory;
+import org.cytoscape.view.vizmap.gui.editor.ValueEditor;
+
 /*
  * #%L
  * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,21 +31,13 @@ package org.cytoscape.ding.impl.editor;
  * #L%
  */
 
-import org.cytoscape.util.swing.IconManager;
-import org.cytoscape.view.presentation.property.values.Bend;
-import org.cytoscape.view.vizmap.gui.editor.AbstractVisualPropertyEditor;
-import org.cytoscape.view.vizmap.gui.editor.ContinuousEditorType;
-import org.cytoscape.view.vizmap.gui.editor.ContinuousMappingCellRendererFactory;
-import org.cytoscape.view.vizmap.gui.editor.ValueEditor;
-
 public class EdgeBendEditor extends AbstractVisualPropertyEditor<Bend>{
 
 	public EdgeBendEditor(final ValueEditor<Bend> valueEditor,
-						  final ContinuousMappingCellRendererFactory cellRendererFactory,
-						  final IconManager iconManager) {
-		super(Bend.class, new EdgeBendPropertyEditor(valueEditor, iconManager), ContinuousEditorType.DISCRETE,
+			final ContinuousMappingCellRendererFactory cellRendererFactory, final CyServiceRegistrar serviceRegistrar) {
+		super(Bend.class, new EdgeBendPropertyEditor(valueEditor, serviceRegistrar), ContinuousEditorType.DISCRETE,
 				cellRendererFactory);
-		
+
 		discreteTableCellRenderer = new EdgeBendCellRenderer();
 	}
 }

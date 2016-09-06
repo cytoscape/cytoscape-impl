@@ -1,12 +1,20 @@
 package org.cytoscape.ding.customgraphicsmgr.internal;
 
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.cytoscape.session.events.SessionAboutToBeSavedEvent;
+import org.cytoscape.work.Task;
+import org.cytoscape.work.TaskMonitor;
+
 /*
  * #%L
  * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,14 +32,6 @@ package org.cytoscape.ding.customgraphicsmgr.internal;
  * #L%
  */
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-
-import org.cytoscape.session.events.SessionAboutToBeSavedEvent;
-import org.cytoscape.work.Task;
-import org.cytoscape.work.TaskMonitor;
-
 public class SaveGraphicsToSessionTask implements Task {
 	
 	private static final String APP_NAME = "org.cytoscape.ding.customgraphicsmgr";
@@ -47,8 +47,9 @@ public class SaveGraphicsToSessionTask implements Task {
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
 		// Add it to the apps list
-		final List<File> fileList = new ArrayList<File>();
+		final List<File> fileList = new ArrayList<>();
 		final String[] fileArray = imageHomeDirectory.list();
+		
 		for (final String file : fileArray)
 			fileList.add(new File(imageHomeDirectory, file));
 
@@ -57,7 +58,5 @@ public class SaveGraphicsToSessionTask implements Task {
 
 	@Override
 	public void cancel() {
-		// TODO Auto-generated method stub
 	}
-
 }

@@ -1,29 +1,5 @@
 package org.cytoscape.ding.impl;
 
-/*
- * #%L
- * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
- * $Id:$
- * $HeadURL:$
- * %%
- * Copyright (C) 2006 - 2016 The Cytoscape Consortium
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * #L%
- */
-
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -82,7 +58,6 @@ import org.cytoscape.ding.impl.events.ViewportChangeListenerChain;
 import org.cytoscape.ding.impl.strokes.AnimatedStroke;
 import org.cytoscape.ding.impl.visualproperty.CustomGraphicsVisualProperty;
 import org.cytoscape.ding.internal.util.ViewUtil;
-import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.graph.render.immed.GraphGraphics;
 import org.cytoscape.graph.render.stateful.GraphLOD;
 import org.cytoscape.graph.render.stateful.GraphRenderer;
@@ -103,7 +78,6 @@ import org.cytoscape.model.events.AddedNodesListener;
 import org.cytoscape.model.events.RowSetRecord;
 import org.cytoscape.model.events.RowsSetEvent;
 import org.cytoscape.model.events.RowsSetListener;
-import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.spacial.SpacialEntry2DEnumerator;
@@ -118,9 +92,7 @@ import org.cytoscape.util.intr.LongBTree;
 import org.cytoscape.util.intr.LongEnumerator;
 import org.cytoscape.util.intr.LongHash;
 import org.cytoscape.util.intr.LongStack;
-import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualProperty;
@@ -138,10 +110,32 @@ import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.presentation.property.values.HandleFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualPropertyDependency;
-import org.cytoscape.work.swing.DialogTaskManager;
-import org.cytoscape.work.undo.UndoSupport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+/*
+ * #%L
+ * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
 
 /**
  * DING implementation of Cytoscpae 3.
@@ -164,8 +158,6 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	// Size of square for moving handle
 	static final float DEFAULT_ANCHOR_SIZE = 12.0f;
 	
-	final CyEventHelper cyEventHelper;
-
 	// Size of snapshot image
 	protected static int DEF_SNAPSHOT_SIZE = 400;
 	
@@ -206,8 +198,6 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	 * as nodes are hidden from the view.
 	 */
 	final CySubNetwork m_drawPersp;
-
-	SpacialIndex2DFactory spacialFactory;
 
 	// FIXME
 	DummySpacialFactory dummySpacialFactory;
@@ -359,8 +349,6 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	final Map<CyNodeViewContextMenuFactory, Map> cyNodeViewContextMenuFactory;
 	final Map<CyNetworkViewContextMenuFactory, Map> cyNetworkViewContextMenuFactory;
 
-	final DialogTaskManager manager;
-
 	private final Properties props;
 	
 	private final CyAnnotator cyAnnotator;
@@ -368,11 +356,6 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	private boolean annotationsLoaded;
 	private boolean servicesRegistered;
 	
-	private final VisualMappingManager vmm;
-
-	private final CyNetworkViewManager netViewMgr; 
-	private final CyServiceRegistrar registrar;
-	public CyServiceRegistrar getRegistrar()	{ return registrar;	}			// AT -- #1993
 	private final HandleFactory handleFactory;
 
 	private List<CyNode> nodeSelectionList;
@@ -381,51 +364,32 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	boolean haveZOrder = false;
 
 	// Animated edges
-	Timer animationTimer = null;
-	Set<DEdgeView> animatedEdges = null;
+	Timer animationTimer;
+	Set<DEdgeView> animatedEdges;
 
 	public DGraphView(
 			final CyNetworkView view,
-			CyRootNetworkManager cyRoot,
-			UndoSupport undo,
-			SpacialIndex2DFactory spacialFactory,
 			final VisualLexicon dingLexicon,
-			ViewTaskFactoryListener vtfl,
-			DialogTaskManager manager,
-			CyEventHelper eventHelper,
-			AnnotationFactoryManager annMgr,
+			final ViewTaskFactoryListener vtfl,
+			final AnnotationFactoryManager annMgr,
 			final DingGraphLOD dingGraphLOD,
-			final VisualMappingManager vmm,
-			final CyNetworkViewManager netViewMgr,
 			final HandleFactory handleFactory,
-			final IconManager iconManager,
 			final CyServiceRegistrar registrar
 	) {
-		this(view.getModel(), cyRoot, undo, spacialFactory, dingLexicon, vtfl, manager, eventHelper, annMgr,
-				dingGraphLOD, vmm, netViewMgr, handleFactory, iconManager, registrar);
+		this(view.getModel(), dingLexicon, vtfl, annMgr, dingGraphLOD, handleFactory, registrar);
 	}
 	
 	public DGraphView(
 			final CyNetwork model,
-			CyRootNetworkManager cyRoot,
-			UndoSupport undo,
-			SpacialIndex2DFactory spacialFactory,
 			final VisualLexicon dingLexicon,
-			ViewTaskFactoryListener vtfl,
-			DialogTaskManager manager,
-			CyEventHelper cyEventHelper,
-			AnnotationFactoryManager annMgr,
+			final ViewTaskFactoryListener vtfl,
+			final AnnotationFactoryManager annMgr,
 			final DingGraphLOD dingGraphLOD,
-			final VisualMappingManager vmm,
-			final CyNetworkViewManager netViewMgr,
 			final HandleFactory handleFactory,
-			final IconManager iconManager,
 			final CyServiceRegistrar registrar
 	) {
-		super(model, dingLexicon, cyEventHelper);
+		super(model, dingLexicon, registrar);
 		this.props = new Properties();
-		this.vmm = vmm;
-		this.registrar = registrar;
 		this.handleFactory = handleFactory;
 		
 		long start = System.currentTimeMillis();
@@ -439,28 +403,25 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		this.cyNodeViewContextMenuFactory = vtfl.cyNodeViewContexMenuFactory;
 		this.cyNetworkViewContextMenuFactory = vtfl.cyNetworkViewContextMenuFactory;
 		
-		this.netViewMgr = netViewMgr;
-		this.manager = manager;
-		this.cyEventHelper = cyEventHelper;
-
 		// New simple implementation of the graph to keep track of visible nodes/edges.
 		m_drawPersp = new MinimalNetwork(SUIDFactory.getNextSUID());
 
-		this.spacialFactory = spacialFactory;
+		final SpacialIndex2DFactory spacialFactory = serviceRegistrar.getService(SpacialIndex2DFactory.class);
+		
 		m_spacial = spacialFactory.createSpacialIndex2D();
 		m_spacialA = spacialFactory.createSpacialIndex2D();
 		m_nodeDetails = new DNodeDetails(this);
 		m_edgeDetails = new DEdgeDetails(this);
 		nodeViewDefaultSupport = new NodeViewDefaultSupport(m_nodeDetails, m_lock);
 		edgeViewDefaultSupport = new EdgeViewDefaultSupport(m_edgeDetails, m_lock);
-		nodeViewMap = new ConcurrentHashMap<CyNode, NodeView>(16, 0.75f, 2);
-		edgeViewMap = new ConcurrentHashMap<CyEdge, EdgeView>(16, 0.75f, 2);
+		nodeViewMap = new ConcurrentHashMap<>(16, 0.75f, 2);
+		edgeViewMap = new ConcurrentHashMap<>(16, 0.75f, 2);
 		m_printLOD = new PrintLOD();
 		m_defaultNodeXMin = 0.0f;
 		m_defaultNodeYMin = 0.0f;
 		m_defaultNodeXMax = m_defaultNodeXMin + DNodeView.DEFAULT_WIDTH;
 		m_defaultNodeYMax = m_defaultNodeYMin + DNodeView.DEFAULT_HEIGHT;
-		m_networkCanvas = new InnerCanvas(m_lock, this, undo, iconManager);
+		m_networkCanvas = new InnerCanvas(m_lock, this, registrar);
 		m_backgroundCanvas = new ArbitraryGraphicsCanvas(this, m_networkCanvas, Color.white, true);
 		addViewportChangeListener(m_backgroundCanvas);
 		m_foregroundCanvas = new ArbitraryGraphicsCanvas(this, m_networkCanvas, Color.white, false);
@@ -497,8 +458,8 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		//Updating the snapshot for nested networks
 		this.addContentChangeListener(new DGraphViewContentChangeListener());
 
-		nodeSelectionList = new ArrayList<CyNode>();
-		edgeSelectionList = new ArrayList<CyEdge>();
+		nodeSelectionList = new ArrayList<>();
+		edgeSelectionList = new ArrayList<>();
 		if (!dingGraphLOD.detail(m_drawPersp.getNodeCount(), m_drawPersp.getEdgeCount()))
 			largeModel = true;
 
@@ -506,7 +467,6 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 
 		// Animation
 		animatedEdges = Collections.newSetFromMap(new ConcurrentHashMap<DEdgeView, Boolean>());
-
 
 		animationTimer = new Timer(200, this);
 		animationTimer.setRepeats(true);
@@ -519,8 +479,6 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 
 	/**
 	 * Whether node selection is enabled.
-	 *
-	 * @return Whether node selection is enabled.
 	 */
 	@Override
 	public boolean nodeSelectionEnabled() {
@@ -529,8 +487,6 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 
 	/**
 	 * Whether edge selection is enabled.
-	 *
-	 * @return Whether edge selection is enabled.
 	 */
 	@Override
 	public boolean edgeSelectionEnabled() {
@@ -636,8 +592,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		// XXX: why isn't this synchronized on m_selectedNodes?
 		synchronized (m_lock) {
 			// all nodes from the btree
-			final LongEnumerator elms = m_selectedNodes.searchRange(
-					Integer.MIN_VALUE, Integer.MAX_VALUE, false);
+			final LongEnumerator elms = m_selectedNodes.searchRange(Integer.MIN_VALUE, Integer.MAX_VALUE, false);
 			final long[] returnThis = new long[elms.numRemaining()];
 
 			for (int i = 0; i < returnThis.length; i++)
@@ -651,15 +606,13 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 
 	/**
 	 * Returns a list of selected node objects.
-	 *
-	 * @return A list of selected node objects.
 	 */
 	@Override
 	public List<CyNode> getSelectedNodes() {
 		synchronized (m_lock) {
 			// all nodes from the btree
 			final LongEnumerator elms = m_selectedNodes.searchRange(Integer.MIN_VALUE, Integer.MAX_VALUE, false);
-			final ArrayList<CyNode> returnThis = new ArrayList<CyNode>();
+			final ArrayList<CyNode> returnThis = new ArrayList<>();
 
 			while (elms.numRemaining() > 0)
 				// GINY requires all node indices to be negative (why?),
@@ -792,7 +745,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 
 		m_drawPersp.addNode(node);
 
-		final DNodeView dNodeView = new DNodeView(lexicon, this, node, vmm, netViewMgr, cyEventHelper);
+		final DNodeView dNodeView = new DNodeView(lexicon, this, node, serviceRegistrar);
 		
 		// WARNING: DO not call the following in view creation.  This is VERY slow.
 		//Boolean selected = getModel().getRow(node).get(CyNetwork.SELECTED, Boolean.class);
@@ -803,16 +756,15 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		m_spacial.insert(nodeInx, m_defaultNodeXMin, m_defaultNodeYMin, 
 		                  m_defaultNodeXMax, m_defaultNodeYMax, dNodeView.getZPosition());
 		
-		cyEventHelper.addEventPayload((CyNetworkView) this, (View<CyNode>) dNodeView, AddedNodeViewsEvent.class);
+		getEventHelper().addEventPayload((CyNetworkView) this, (View<CyNode>) dNodeView, AddedNodeViewsEvent.class);
+		
 		return dNodeView;
 	}
 
 	/**
 	 * Adds EdgeView to the GraphView.
 	 *
-	 * @param edge
-	 *            The index of EdgeView to be added.
-	 *
+	 * @param edge The index of EdgeView to be added.
 	 * @return The EdgeView that was added.
 	 */
 	@Override
@@ -835,7 +787,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 
 			m_drawPersp.addEdge(edge);
 
-			dEdgeView = new DEdgeView(this, edge, handleFactory, lexicon, cyEventHelper);
+			dEdgeView = new DEdgeView(this, edge, handleFactory, lexicon, serviceRegistrar);
 
 			edgeViewMap.put(edge, dEdgeView);
 			setContentChanged();
@@ -869,7 +821,8 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		}
 		*/
 
-		cyEventHelper.addEventPayload((CyNetworkView) this, (View<CyEdge>) dEdgeView, AddedEdgeViewsEvent.class);
+		getEventHelper().addEventPayload((CyNetworkView) this, (View<CyEdge>) dEdgeView, AddedEdgeViewsEvent.class);
+		
 		return dEdgeView;
 	}
 
@@ -913,10 +866,11 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		final DNodeView returnThis;
 		final CyNode nnode = model.getNode(nodeInx);
 		returnThis = (DNodeView) nodeViewMap.get(nnode);
-		if (returnThis == null) {
+		
+		if (returnThis == null)
 			return null;
-		}
-		cyEventHelper.addEventPayload((CyNetworkView) this, (View<CyNode>) returnThis, AboutToRemoveNodeViewsEvent.class);
+		
+		getEventHelper().addEventPayload((CyNetworkView) this, (View<CyNode>) returnThis, AboutToRemoveNodeViewsEvent.class);
 		
 		synchronized (m_lock) {
 			// We have to query edges in the m_structPersp, not m_drawPersp
@@ -1000,25 +954,23 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	@Override
 	public EdgeView removeEdgeView(long edgeInx) {
 		final DEdgeView returnThis;
-		final CyEdge edge; 
-
-		edge = model.getEdge(edgeInx);
-		if (edge == null) {
+		final CyEdge edge = model.getEdge(edgeInx);
+		
+		if (edge == null)
 			return null;
-		}
 		
 		EdgeView view = edgeViewMap.get(edge);
-		if (view == null) {
+		
+		if (view == null)
 			return null;
-		}
-		cyEventHelper.addEventPayload((CyNetworkView) this, (View<CyEdge>) view, AboutToRemoveEdgeViewsEvent.class);
+		
+		getEventHelper().addEventPayload((CyNetworkView) this, (View<CyEdge>) view, AboutToRemoveEdgeViewsEvent.class);
 		
 		synchronized (m_lock) {
 			returnThis = removeEdgeViewInternal(edge);
 
-			if (returnThis != null) {
+			if (returnThis != null)
 				setContentChanged();
-			}
 		}
 
 		/*
@@ -1111,7 +1063,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	}
 
 	private void fitContent(final boolean updateView) {
-		cyEventHelper.flushPayloadEvents();
+		getEventHelper().flushPayloadEvents();
 
 		ViewUtil.invokeOnEDT(() -> {
 			synchronized (m_lock) {
@@ -1175,7 +1127,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	}
 	
 	private void updateView(final boolean forceRedraw) {
-		cyEventHelper.flushPayloadEvents();
+		getEventHelper().flushPayloadEvents();
 		
 		if (forceRedraw)
 			setContentChanged();
@@ -1190,7 +1142,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 			setVisualProperty(BasicVisualLexicon.NETWORK_HEIGHT,(double)imageHeight);
 		}
 		
-		cyEventHelper.fireEvent(new UpdateNetworkPresentationEvent(this));
+		getEventHelper().fireEvent(new UpdateNetworkPresentationEvent(this));
 	}
 
 	/**
@@ -1520,7 +1472,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 
 	@Override
 	public void fitSelected() {
-		cyEventHelper.flushPayloadEvents();
+		getEventHelper().flushPayloadEvents();
 		
 		synchronized (m_lock) {
 			LongEnumerator selectedElms = m_selectedNodes.searchRange(Integer.MIN_VALUE, Integer.MAX_VALUE, false);
@@ -1786,6 +1738,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		// First paint the background
 		m_backgroundCanvas.drawCanvas(img, xMin, yMin, xCenter, yCenter, scaleFactor);
 		
+		final VisualMappingManager vmm = serviceRegistrar.getService(VisualMappingManager.class);
 		final Set<VisualPropertyDependency<?>> dependencies =
 				vmm.getVisualStyle(this).getAllVisualPropertyDependencies();
 
@@ -1852,6 +1805,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 			bg = new Color(bg.getRed(), bg.getBlue(), bg.getGreen(), 0);
 
 		// Create our private spacial index.
+		final SpacialIndex2DFactory spacialFactory = serviceRegistrar.getService(SpacialIndex2DFactory.class);
 		SpacialIndex2D sub_spacial = spacialFactory.createSpacialIndex2D();
 
 		// And our private subnetwork
@@ -1875,7 +1829,9 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		}
 
 		int lastRenderDetail = 0;
+		
 		try {
+			final VisualMappingManager vmm = serviceRegistrar.getService(VisualMappingManager.class);
 			final Set<VisualPropertyDependency<?>> dependencies =
 					vmm.getVisualStyle(this).getAllVisualPropertyDependencies();
 			
@@ -1884,7 +1840,9 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
  			                                             m_edgeDetails, hash, graphics, null, xCenter,
  			                                             yCenter, scale, haveZOrder, dependencies);
 		// }
-		} catch (Exception e) { e.printStackTrace(); }
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 		
 		setContentChanged(false);
 		setViewportChanged(false);
@@ -1898,10 +1856,11 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	 */
 	int renderGraph(GraphGraphics graphics, final GraphLOD lod,
 	                Paint bgColor, double xCenter, double yCenter, double scale, LongHash hash) {
-		
 		int lastRenderDetail = 0;
+		
 		try {
 			synchronized (m_lock) {
+				final VisualMappingManager vmm = serviceRegistrar.getService(VisualMappingManager.class);
 				final Set<VisualPropertyDependency<?>> dependencies =
 						vmm.getVisualStyle(this).getAllVisualPropertyDependencies();
 				
@@ -1913,8 +1872,10 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 				  						     yCenter, scale, haveZOrder,
 				  						     dependencies);
 			}
-		} catch (Exception e) {e.printStackTrace();}
-		
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
 		setContentChanged(false);
 		setViewportChanged(false);
 		m_visualChanged = true;
@@ -2439,9 +2400,9 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		if (nvs.size() <= 0)
 			return;
 		
-		//cyEventHelper.fireEvent(new AboutToRemoveNodeViewsEvent(this, nvs));
+		//getEventHelper().fireEvent(new AboutToRemoveNodeViewsEvent(this, nvs));
 
-		for ( CyNode n : e.getNodes()) 
+		for (CyNode n : e.getNodes())
 			this.removeNodeView(n);
 	}
 
@@ -2460,7 +2421,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		if (evs.size() <= 0)
 			return;
 
-		//cyEventHelper.fireEvent(new AboutToRemoveEdgeViewsEvent(this, evs));
+		//getEventHelper().fireEvent(new AboutToRemoveEdgeViewsEvent(this, evs));
 
 		for ( CyEdge edge : e.getEdges() )
 			this.removeEdgeView(edge);
@@ -2708,7 +2669,8 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		synchronized (this) {
 			if (servicesRegistered)
 				return;
-			registrar.registerAllServices(this, new Properties());
+			
+			serviceRegistrar.registerAllServices(this, new Properties());
 			servicesRegistered = true;
 		}
 	}
@@ -2718,7 +2680,8 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		synchronized (this) {
 			if (!servicesRegistered)
 				return;
-			registrar.unregisterAllServices(this);
+			
+			serviceRegistrar.unregisterAllServices(this);
 			servicesRegistered = false;
 			
 			// m_lis[0] = null;

@@ -51,10 +51,10 @@ import org.cytoscape.ding.NodeView;
 import org.cytoscape.ding.ObjectPosition;
 import org.cytoscape.ding.impl.visualproperty.CustomGraphicsVisualProperty;
 import org.cytoscape.ding.impl.visualproperty.ObjectPositionVisualProperty;
-import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.graph.render.immed.GraphGraphics;
 import org.cytoscape.graph.render.stateful.CustomGraphicsInfo;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.VisualLexicon;
@@ -65,7 +65,6 @@ import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.presentation.property.values.LineType;
 import org.cytoscape.view.presentation.property.values.NodeShape;
-import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -153,10 +152,6 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 	// Label position
 	private ObjectPosition labelPosition;
 
-	private final VisualMappingManager vmMgr;
-	
-	private final CyNetworkViewManager netViewMgr; 
-
 	// Cached extent information
 	float m_xMin = Float.MIN_VALUE;
 	float m_yMin = Float.MIN_VALUE;
@@ -174,33 +169,25 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 	DNodeView(final VisualLexicon lexicon,
 			  final DGraphView graphView,
 			  final CyNode model,
-			  final VisualMappingManager vmMgr,
-			  final CyNetworkViewManager netViewMgr,
-			  final CyEventHelper eventHelper) {
-		super(model, lexicon, eventHelper);
+			  final CyServiceRegistrar serviceRegistrar) {
+		super(model, lexicon, serviceRegistrar);
 		
 		if (graphView == null)
 			throw new NullPointerException("View must never be null.");
 		if (lexicon == null)
 			throw new NullPointerException("Lexicon must never be null.");
 
-		this.vmMgr = vmMgr;
 		this.labelPosition = new ObjectPositionImpl();
-
-		this.netViewMgr = netViewMgr;
 		this.modelIdx = model.getSUID();
-
 		this.graphView = graphView;
 		
-		this.cgInfoMap = new TreeMap<VisualProperty<CyCustomGraphics>, CustomGraphicsInfo>(
-				new Comparator<VisualProperty<CyCustomGraphics>>() {
-
-					@Override
-					public int compare(VisualProperty<CyCustomGraphics> vp1, VisualProperty<CyCustomGraphics> vp2) {
-						// Sort by: Custom Graphics 1, 2, 3, etc.
-						return vp1.getIdString().compareTo(vp2.getIdString());
-					}
-				});
+		this.cgInfoMap = new TreeMap<>(new Comparator<VisualProperty<CyCustomGraphics>>() {
+			@Override
+			public int compare(VisualProperty<CyCustomGraphics> vp1, VisualProperty<CyCustomGraphics> vp2) {
+				// Sort by: Custom Graphics 1, 2, 3, etc.
+				return vp1.getIdString().compareTo(vp2.getIdString());
+			}
+		});
 	}
 	
 	@Override
@@ -911,17 +898,18 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 	}
 
 	public void setNestedNetworkView() {
-
-		if(this.getModel().getNetworkPointer() == null)
+		if (this.getModel().getNetworkPointer() == null) {
 			this.nestedNetworkView = null;
-		else{
-			final Iterator<CyNetworkView> viewIterator =  netViewMgr.getNetworkViews(this.getModel().getNetworkPointer()).iterator();
-			if (viewIterator.hasNext() ) 
+		} else {
+			final CyNetworkViewManager netViewMgr = serviceRegistrar.getService(CyNetworkViewManager.class);
+			final Iterator<CyNetworkView> viewIterator = netViewMgr.getNetworkViews(this.getModel().getNetworkPointer())
+					.iterator();
+			
+			if (viewIterator.hasNext())
 				this.nestedNetworkView = (DGraphView) viewIterator.next();
 			else
 				this.nestedNetworkView = null;
 		}
-		
 	}
 
 	/**

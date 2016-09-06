@@ -30,9 +30,33 @@ import org.cytoscape.ding.internal.charts.ColorSchemeEditor;
 import org.cytoscape.ding.internal.charts.bar.BarChart.BarChartType;
 import org.cytoscape.ding.internal.charts.util.ColorGradient;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
-import org.cytoscape.view.presentation.property.values.CyColumnIdentifierFactory;
+
+/*
+ * #%L
+ * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
 
 public class BarChartEditor extends AbstractChartEditor<BarChart> {
 
@@ -45,8 +69,8 @@ public class BarChartEditor extends AbstractChartEditor<BarChart> {
 	private static final ColorScheme[] UP_DOWN_COLOR_SCHEMES;
 	
 	static {
-		final List<ColorScheme> heatStripSchemeList = new ArrayList<ColorScheme>();
-		final List<ColorScheme> upDownSchemeList = new ArrayList<ColorScheme>();
+		final List<ColorScheme> heatStripSchemeList = new ArrayList<>();
+		final List<ColorScheme> upDownSchemeList = new ArrayList<>();
 		
 		for (final ColorGradient cg : ColorGradient.values()) {
 			if (cg.getColors().size() == 2)
@@ -72,9 +96,8 @@ public class BarChartEditor extends AbstractChartEditor<BarChart> {
 	
 	// ==[ CONSTRUCTORS ]===============================================================================================
 	
-	public BarChartEditor(final BarChart chart, final CyApplicationManager appMgr, final IconManager iconMgr,
-			final CyColumnIdentifierFactory colIdFactory) {
-		super(chart, Number.class, false, true, true, true, true, false, true, true, appMgr, iconMgr, colIdFactory);
+	public BarChartEditor(final BarChart chart, final CyServiceRegistrar serviceRegistrar) {
+		super(chart, Number.class, false, true, true, true, true, false, true, true, serviceRegistrar);
 	}
 	
 	// ==[ PUBLIC METHODS ]=============================================================================================
@@ -316,7 +339,12 @@ public class BarChartEditor extends AbstractChartEditor<BarChart> {
 	@Override
 	protected ColorSchemeEditor<BarChart> getColorSchemeEditor() {
 		if (colorSchemeEditor == null) {
-			colorSchemeEditor = new BarColorSchemeEditor(chart, getColorSchemes(), appMgr.getCurrentNetwork(), iconMgr);
+			colorSchemeEditor = new BarColorSchemeEditor(
+					chart,
+					getColorSchemes(),
+					serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetwork(),
+					serviceRegistrar.getService(IconManager.class)
+			);
 		}
 		
 		return colorSchemeEditor;

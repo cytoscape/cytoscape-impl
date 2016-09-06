@@ -1,12 +1,26 @@
 package org.cytoscape.ding;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+import javax.swing.JButton;
+import javax.swing.JPanel;
+
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.util.swing.IconManager;
+import org.cytoscape.view.vizmap.gui.editor.ValueEditor;
+
+import com.l2fprod.common.beans.editor.AbstractPropertyEditor;
+import com.l2fprod.common.swing.ComponentFactory;
+import com.l2fprod.common.swing.PercentLayout;
+
 /*
  * #%L
  * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,22 +38,6 @@ package org.cytoscape.ding;
  * #L%
  */
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-
-import javax.swing.JButton;
-import javax.swing.JPanel;
-
-import org.cytoscape.util.swing.IconManager;
-import org.cytoscape.view.vizmap.gui.editor.ValueEditor;
-
-import com.l2fprod.common.beans.editor.AbstractPropertyEditor;
-import com.l2fprod.common.swing.ComponentFactory;
-import com.l2fprod.common.swing.PercentLayout;
-
-/**
- *
- */
 public class CyObjectPositionPropertyEditor extends	AbstractPropertyEditor {
 	
 	private ObjectPositionCellRenderer label;
@@ -53,8 +51,11 @@ public class CyObjectPositionPropertyEditor extends	AbstractPropertyEditor {
 	/**
 	 * Creates a new CyLabelPositionLabelEditor object.
 	 */
-	public CyObjectPositionPropertyEditor(final ValueEditor<ObjectPosition> valueEditor, final IconManager iconManager) {
+	public CyObjectPositionPropertyEditor(final ValueEditor<ObjectPosition> valueEditor,
+			final CyServiceRegistrar serviceRegistrar) {
 		this.valueEditor = valueEditor;
+		
+		final IconManager iconManager = serviceRegistrar.getService(IconManager.class);
 					
 		editor = new JPanel(new PercentLayout(PercentLayout.HORIZONTAL, 0));
 		((JPanel) editor).setOpaque(false);

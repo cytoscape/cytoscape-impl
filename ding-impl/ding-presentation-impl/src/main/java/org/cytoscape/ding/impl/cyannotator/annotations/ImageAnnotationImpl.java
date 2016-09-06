@@ -1,29 +1,5 @@
 package org.cytoscape.ding.impl.cyannotator.annotations;
 
-/*
- * #%L
- * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
- * $Id:$
- * $HeadURL:$
- * %%
- * Copyright (C) 2006 - 2016 The Cytoscape Consortium
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * #L%
- */
-
 import java.awt.AlphaComposite;
 import java.awt.Dimension;
 import java.awt.Graphics;
@@ -56,6 +32,30 @@ import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/*
+ * #%L
+ * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
+
 @SuppressWarnings("serial")
 public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnnotation {
 	
@@ -66,16 +66,15 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 	private float opacity = 1.0f;
 	private int brightness = 0;
 	private int contrast = 0;
-	private CyCustomGraphics cg;
+	private CyCustomGraphics<?> cg;
 	protected CustomGraphicsManager customGraphicsManager;
 
 	private static final Logger logger = LoggerFactory.getLogger(ImageAnnotationImpl.class);
 
 	// XXX HACK to force the custom graphics manager to respect these graphics
 	public void preserveCustomGraphics() {
-		for (CyCustomGraphics cg: customGraphicsManager.getAllCustomGraphics()) {
+		for (CyCustomGraphics<?> cg: customGraphicsManager.getAllCustomGraphics())
 			customGraphicsManager.setUsedInCurrentSession(cg, true);
-		}
 	}
 
 	public ImageAnnotationImpl(CyAnnotator cyAnnotator, DGraphView view, Window owner) {
@@ -107,7 +106,7 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 		this.url = url;
 		resizedImage=resizeImage((int)shapeWidth, (int)shapeHeight);
 		final Long id = customGraphicsManager.getNextAvailableID();
-		this.cg = new URLImageCustomGraphics(id, url.toString(), image);
+		this.cg = new URLImageCustomGraphics<>(id, url.toString(), image);
 		customGraphicsManager.addCustomGraphics(cg, url);
 		customGraphicsManager.setUsedInCurrentSession(cg, true);
 	}
@@ -180,10 +179,12 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 		resizedImage=resizeImage((int)shapeWidth, (int)shapeHeight);
 	}
 
+	@Override
 	public Image getImage() {
 		return image;
 	}
 
+	@Override
 	public void setImage(Image image) {
 		if (image instanceof BufferedImage)
 			this.image = (BufferedImage)image;
@@ -206,84 +207,113 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 			getCanvas().repaint();
 	}
 
+	@Override
 	public void setImage(URL url) {
 		this.url = url;
 		reloadImage();
 	}
 
+	@Override
 	public URL getImageURL() {
 		return url;
 	}
 
+	@Override
 	public void setImageOpacity(float opacity) {
 		this.opacity = opacity;
-		resizedImage=null;
+		resizedImage = null;
 	}
-	public float getImageOpacity() { return this.opacity; }
 
+	@Override
+	public float getImageOpacity() {
+		return this.opacity;
+	}
+
+	@Override
 	public void setImageBrightness(int brightness) {
 		this.brightness = brightness;
-		resizedImage=null;
+		resizedImage = null;
 	}
-	public int getImageBrightness() { return this.brightness; }
 
+	@Override
+	public int getImageBrightness() {
+		return this.brightness;
+	}
+
+	@Override
 	public void setImageContrast(int contrast) {
 		this.contrast = contrast;
-		resizedImage=null;
+		resizedImage = null;
 	}
-	public int getImageContrast() { return this.contrast; }
 
-	// Shape annotation methods.  We add these so we can get resizeImage functionality
+	@Override
+	public int getImageContrast() {
+		return this.contrast;
+	}
 
-	// At this point, we only support RECTANGLE.  At some point, it would be really
+	// Shape annotation methods. We add these so we can get resizeImage functionality
+
+	// At this point, we only support RECTANGLE. At some point, it would be really
 	// useful to clip the image to the shape
+	@Override
 	public List<String> getSupportedShapes() {
 		return Collections.singletonList(ShapeType.RECTANGLE.shapeName());
 	}
 
+	@Override
 	public void setSize(Dimension d) {
 		setSize(d.getWidth(), d.getHeight());
 	}
 
+	@Override
 	public void setSize(double width, double height) {
 		super.setSize(width, height);
 
 		// Resize the image
-		resizedImage=resizeImage((int)shapeWidth, (int)shapeHeight);
+		resizedImage = resizeImage((int) shapeWidth, (int) shapeHeight);
 		if (!usedForPreviews())
 			getCanvas().repaint();
 	}
 
+	@Override
 	public String getShapeType() {
 		return ShapeType.RECTANGLE.shapeName();
 	}
 
+	@Override
 	public void setCustomShape(Shape shape) {
 	}
 
-	public void setShapeType(String type) {}
+	@Override
+	public void setShapeType(String type) {
+	}
 
 	@Override
-	public Paint getFillColor() {return null;}
+	public Paint getFillColor() {
+		return null;
+	}
 
 	@Override
-	public double getFillOpacity() {return 0.0;}
+	public double getFillOpacity() {
+		return 0.0;
+	}
 
 	@Override
-	public void setFillColor(Paint fill) {}
+	public void setFillColor(Paint fill) {
+	}
 
 	@Override
-	public void setFillOpacity(double opacity) {}
+	public void setFillOpacity(double opacity) {
+	}
 
 	@Override
 	public Shape getShape() {
-		return new Rectangle2D.Double((double)getX(), (double)getY(), shapeWidth, shapeHeight);
+		return new Rectangle2D.Double((double) getX(), (double) getY(), shapeWidth, shapeHeight);
 	}
 	
 
 	//Returns a resizeImaged high quality BufferedImage
-	private BufferedImage resizeImage(int width, int height)
-	{
+	private BufferedImage resizeImage(int width, int height) {
 		if (image == null) {
 			if (width == 0) width = 1;
 			if (height == 0) height = 1;

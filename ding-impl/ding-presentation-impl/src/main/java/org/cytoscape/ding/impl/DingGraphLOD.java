@@ -1,12 +1,22 @@
 package org.cytoscape.ding.impl;
 
+import java.util.Properties;
+
+import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.graph.render.stateful.GraphLOD;
+import org.cytoscape.property.CyProperty;
+import org.cytoscape.property.PropertyUpdatedEvent;
+import org.cytoscape.property.PropertyUpdatedListener;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.view.model.CyNetworkView;
+
 /*
  * #%L
  * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,19 +34,10 @@ package org.cytoscape.ding.impl;
  * #L%
  */
 
-import java.util.Properties;
-
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.graph.render.stateful.GraphLOD;
-import org.cytoscape.property.CyProperty;
-import org.cytoscape.property.PropertyUpdatedEvent;
-import org.cytoscape.property.PropertyUpdatedListener;
-
 /**
  * Level of Details object for Ding.
  * 
  * TODO: design and implement event/listeners for this.
- * 
  */
 public class DingGraphLOD extends GraphLOD implements PropertyUpdatedListener {
 
@@ -48,18 +49,15 @@ public class DingGraphLOD extends GraphLOD implements PropertyUpdatedListener {
 
 	private final Properties props;
 	private final CyProperty<Properties> cyProp;
+	private final CyServiceRegistrar serviceRegistrar;
 
-	private final CyApplicationManager appManager;
 	private boolean drawEdges = true;
 
-
-	public DingGraphLOD(final CyProperty<Properties> defaultProps, final CyApplicationManager appManager) {
-		if (defaultProps == null)
-			throw new NullPointerException("CyProperty is missing.");
-
-		this.props = defaultProps.getProperties();
-		this.cyProp = defaultProps;
-		this.appManager = appManager;
+	@SuppressWarnings("unchecked")
+	public DingGraphLOD(final CyServiceRegistrar serviceRegistrar) {
+		this.cyProp = serviceRegistrar.getService(CyProperty.class, "(cyPropertyName=cytoscape3.props)");
+		this.props = cyProp.getProperties();
+		this.serviceRegistrar = serviceRegistrar;
 		init();
 	}
 
@@ -67,7 +65,7 @@ public class DingGraphLOD extends GraphLOD implements PropertyUpdatedListener {
 	public DingGraphLOD(DingGraphLOD source) {
 		this.props = source.props;
 		this.cyProp = source.cyProp;
-		this.appManager = source.appManager;
+		this.serviceRegistrar = source.serviceRegistrar;
 
 		this.coarseDetailThreshold = source.coarseDetailThreshold;
 		this.nodeBorderThreshold = source.nodeBorderThreshold;
@@ -78,7 +76,6 @@ public class DingGraphLOD extends GraphLOD implements PropertyUpdatedListener {
 	}
 
 	private void init() {
-
 		coarseDetailThreshold = parseInt(props.getProperty("render.coarseDetailThreshold"), 4000);
 		nodeBorderThreshold = parseInt(props.getProperty("render.nodeBorderThreshold"), 400);
 		nodeLabelThreshold = parseInt(props.getProperty("render.nodeLabelThreshold"), 200);
@@ -111,13 +108,15 @@ public class DingGraphLOD extends GraphLOD implements PropertyUpdatedListener {
 
 	@Override
 	public void handleEvent(PropertyUpdatedEvent e) {
-
 		if (!e.getSource().equals(cyProp))
 			return;
 
 		init();
-		appManager.getCurrentNetworkView().updateView();
-
+		
+		final CyNetworkView view = serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetworkView();
+		
+		if (view != null)
+			view.updateView();
 	}
 
 	@Override
@@ -149,6 +148,7 @@ public class DingGraphLOD extends GraphLOD implements PropertyUpdatedListener {
 	 *         positive if all edges are to be rendered, or negative if no edges
 	 *         are to be rendered.
 	 */
+	@Override
 	public byte renderEdges(final int visibleNodeCount, final int totalNodeCount, final int totalEdgeCount) {
 		if (totalEdgeCount >= Math.min(edgeArrowThreshold, edgeLabelThreshold)) {
 			// Since we don't know the visible edge count, use visible node count as a proxy
@@ -211,6 +211,7 @@ public class DingGraphLOD extends GraphLOD implements PropertyUpdatedListener {
 	 *            the number of edges that are about to be rendered.
 	 * @return true for full detail, false for low detail.
 	 */
+	@Override
 	public boolean detail(final int renderNodeCount, final int renderEdgeCount) {
 		return (renderNodeCount + renderEdgeCount) < coarseDetailThreshold;
 	}
@@ -230,6 +231,7 @@ public class DingGraphLOD extends GraphLOD implements PropertyUpdatedListener {
 	 * @return true if and only if node borders are to be rendered.
 	 * @see #detail(int, int)
 	 */
+	@Override
 	public boolean nodeBorders(final int renderNodeCount, final int renderEdgeCount) {
 		return renderNodeCount < nodeBorderThreshold;
 	}
@@ -248,6 +250,7 @@ public class DingGraphLOD extends GraphLOD implements PropertyUpdatedListener {
 	 * @return true if and only if node labels are to be rendered.
 	 * @see #detail(int, int)
 	 */
+	@Override
 	public boolean nodeLabels(final int renderNodeCount, final int renderEdgeCount) {
 		return renderNodeCount < nodeLabelThreshold;
 	}
@@ -267,6 +270,7 @@ public class DingGraphLOD extends GraphLOD implements PropertyUpdatedListener {
 	 * @return true if and only if custom node graphics are to be rendered.
 	 * @see #detail(int, int)
 	 */
+	@Override
 	public boolean customGraphics(final int renderNodeCount, final int renderEdgeCount) {
 		return renderNodeCount < nodeBorderThreshold;
 	}
@@ -286,6 +290,7 @@ public class DingGraphLOD extends GraphLOD implements PropertyUpdatedListener {
 	 * @return true if and only if edge arrows are to be rendered.
 	 * @see #detail(int, int)
 	 */
+	@Override
 	public boolean edgeArrows(final int renderNodeCount, final int renderEdgeCount) {
 		return renderEdgeCount < edgeArrowThreshold;
 	}
@@ -308,6 +313,7 @@ public class DingGraphLOD extends GraphLOD implements PropertyUpdatedListener {
 	 * @return true if and only if dashed edges are to be honored.
 	 * @see #detail(int, int)
 	 */
+	@Override
 	public boolean dashedEdges(final int renderNodeCount, final int renderEdgeCount) {
 		return true;
 	}
@@ -327,6 +333,7 @@ public class DingGraphLOD extends GraphLOD implements PropertyUpdatedListener {
 	 * @return true if and only if edge anchors are to be honored.
 	 * @see #detail(int, int)
 	 */
+	@Override
 	public boolean edgeAnchors(final int renderNodeCount, final int renderEdgeCount) {
 		return true;
 	}
@@ -345,6 +352,7 @@ public class DingGraphLOD extends GraphLOD implements PropertyUpdatedListener {
 	 * @return true if and only if edge labels are to be rendered.
 	 * @see #detail(int, int)
 	 */
+	@Override
 	public boolean edgeLabels(final int renderNodeCount, final int renderEdgeCount) {
 		return renderEdgeCount < edgeLabelThreshold;
 	}
@@ -366,10 +374,12 @@ public class DingGraphLOD extends GraphLOD implements PropertyUpdatedListener {
 	 * @see #nodeLabels(int, int)
 	 * @see #edgeLabels(int, int)
 	 */
+	@Override
 	public boolean textAsShape(final int renderNodeCount, final int renderEdgeCount) {
 		return true;
 	}
 
+	@Override
 	public double getNestedNetworkImageScaleFactor() {
 		final String scaleFactor = props.getProperty("nestedNetwork.imageScaleFactor", "1.0");
 		try {

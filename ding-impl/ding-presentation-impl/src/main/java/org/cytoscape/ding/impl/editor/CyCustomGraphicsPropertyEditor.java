@@ -1,12 +1,28 @@
 package org.cytoscape.ding.impl.editor;
 
+import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+import javax.swing.JButton;
+import javax.swing.JPanel;
+
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.util.swing.IconManager;
+import org.cytoscape.view.model.VisualProperty;
+import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
+
+import com.l2fprod.common.beans.editor.AbstractPropertyEditor;
+import com.l2fprod.common.swing.ComponentFactory;
+import com.l2fprod.common.swing.PercentLayout;
+
 /*
  * #%L
  * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,62 +40,60 @@ package org.cytoscape.ding.impl.editor;
  * #L%
  */
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-
-import javax.swing.JButton;
-import javax.swing.JPanel;
-
-import org.cytoscape.util.swing.IconManager;
-import org.cytoscape.view.model.VisualProperty;
-import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
-
-import com.l2fprod.common.beans.editor.AbstractPropertyEditor;
-import com.l2fprod.common.swing.ComponentFactory;
-import com.l2fprod.common.swing.PercentLayout;
-
-
 public class CyCustomGraphicsPropertyEditor extends AbstractPropertyEditor {
 
 	private final CyCustomGraphicsValueEditor valueEditor;
 	private CyCustomGraphicsCellRenderer label;
 	private JButton button;
 	private VisualProperty<CyCustomGraphics> visualProperty;
-	private CyCustomGraphics customGraphics;
-	private CyCustomGraphics oldCustomGraphics;
+	private CyCustomGraphics<?> customGraphics;
+	private CyCustomGraphics<?> oldCustomGraphics;
 	
-	public CyCustomGraphicsPropertyEditor(final CyCustomGraphicsValueEditor valueEditor, final IconManager iconManager) {
+	private final CyServiceRegistrar serviceRegistrar;
+	
+	public CyCustomGraphicsPropertyEditor(final CyCustomGraphicsValueEditor valueEditor,
+			final CyServiceRegistrar serviceRegistrar) {
 		this.valueEditor = valueEditor;
+		this.serviceRegistrar = serviceRegistrar;
+	}
+	
+	@Override
+	public Component getCustomEditor() {System.out.println(">>>>>>>>>> " + super.getCustomEditor());
+		if (editor == null) {
+			editor = new JPanel(new PercentLayout(PercentLayout.HORIZONTAL, 0));
+			((JPanel) editor).setOpaque(false);
+			
+			((JPanel) editor).add("*", label = new CyCustomGraphicsCellRenderer());
+			label.setOpaque(false);
+			
+			final IconManager iconManager = serviceRegistrar.getService(IconManager.class);
+			
+			// TODO just use double-click to open editor--remove buttons!!!	
+			((JPanel) editor).add(button = ComponentFactory.Helper.getFactory().createMiniButton());
+			button.setText(IconManager.ICON_ELLIPSIS_H);
+			button.setFont(iconManager.getIconFont(13.0f));
+			button.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					editChart();
+				}
+			});
+			
+			((JPanel) editor).add(button = ComponentFactory.Helper.getFactory().createMiniButton());
+			button.setText(IconManager.ICON_REMOVE);
+			button.setFont(iconManager.getIconFont(13.0f));
+			button.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					CyCustomGraphics<?> old = customGraphics;
+					label.setValue(null);
+					customGraphics = null;
+					firePropertyChange(old, null);
+				}
+			});
+		}
 		
-		editor = new JPanel(new PercentLayout(PercentLayout.HORIZONTAL, 0));
-		((JPanel) editor).setOpaque(false);
-		
-		((JPanel) editor).add("*", label = new CyCustomGraphicsCellRenderer());
-		label.setOpaque(false);
-		
-		// TODO just use double-click to open editor--remove buttons!!!	
-		((JPanel) editor).add(button = ComponentFactory.Helper.getFactory().createMiniButton());
-		button.setText(IconManager.ICON_ELLIPSIS_H);
-		button.setFont(iconManager.getIconFont(13.0f));
-		button.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				editChart();
-			}
-		});
-		
-		((JPanel) editor).add(button = ComponentFactory.Helper.getFactory().createMiniButton());
-		button.setText(IconManager.ICON_REMOVE);
-		button.setFont(iconManager.getIconFont(13.0f));
-		button.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				CyCustomGraphics old = customGraphics;
-				label.setValue(null);
-				customGraphics = null;
-				firePropertyChange(old, null);
-			}
-		});
+		return super.getCustomEditor();
 	}
 	
 	@Override
@@ -89,7 +103,7 @@ public class CyCustomGraphicsPropertyEditor extends AbstractPropertyEditor {
 	
 	@Override
 	public void setValue(final Object value) {
-		customGraphics = (CyCustomGraphics) value;
+		customGraphics = (CyCustomGraphics<?>) value;
 		label.setValue(value);
 	}
 	
@@ -99,7 +113,7 @@ public class CyCustomGraphicsPropertyEditor extends AbstractPropertyEditor {
 	
 	private void editChart() {
 		//TODO: set correct parent
-		final CyCustomGraphics newVal = valueEditor.showEditor(null, customGraphics, visualProperty);
+		final CyCustomGraphics<?> newVal = valueEditor.showEditor(null, customGraphics, visualProperty);
 
 		if (newVal != null) {
 			setValue(newVal);

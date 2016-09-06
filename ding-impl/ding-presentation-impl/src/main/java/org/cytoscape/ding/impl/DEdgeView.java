@@ -1,5 +1,29 @@
 package org.cytoscape.ding.impl;
 
+import java.awt.Font;
+import java.awt.Paint;
+import java.awt.Stroke;
+import java.awt.geom.Point2D;
+import java.util.List;
+
+import org.cytoscape.ding.DArrowShape;
+import org.cytoscape.ding.DVisualLexicon;
+import org.cytoscape.ding.EdgeView;
+import org.cytoscape.ding.GraphView;
+import org.cytoscape.ding.Label;
+import org.cytoscape.ding.impl.strokes.AnimatedStroke;
+import org.cytoscape.graph.render.immed.EdgeAnchors;
+import org.cytoscape.model.CyEdge;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.view.model.VisualLexicon;
+import org.cytoscape.view.model.VisualProperty;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
+import org.cytoscape.view.presentation.property.values.ArrowShape;
+import org.cytoscape.view.presentation.property.values.Bend;
+import org.cytoscape.view.presentation.property.values.Handle;
+import org.cytoscape.view.presentation.property.values.HandleFactory;
+import org.cytoscape.view.presentation.property.values.LineType;
+
 /*
  * #%L
  * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
@@ -24,30 +48,6 @@ package org.cytoscape.ding.impl;
  * #L%
  */
 
-import java.awt.Font;
-import java.awt.Paint;
-import java.awt.Stroke;
-import java.awt.geom.Point2D;
-import java.util.List;
-
-import org.cytoscape.ding.DArrowShape;
-import org.cytoscape.ding.DVisualLexicon;
-import org.cytoscape.ding.EdgeView;
-import org.cytoscape.ding.GraphView;
-import org.cytoscape.ding.Label;
-import org.cytoscape.ding.impl.strokes.AnimatedStroke;
-import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.graph.render.immed.EdgeAnchors;
-import org.cytoscape.model.CyEdge;
-import org.cytoscape.view.model.VisualLexicon;
-import org.cytoscape.view.model.VisualProperty;
-import org.cytoscape.view.presentation.property.BasicVisualLexicon;
-import org.cytoscape.view.presentation.property.values.ArrowShape;
-import org.cytoscape.view.presentation.property.values.Bend;
-import org.cytoscape.view.presentation.property.values.Handle;
-import org.cytoscape.view.presentation.property.values.HandleFactory;
-import org.cytoscape.view.presentation.property.values.LineType;
-
 /**
  * Ding implementation of Edge View.
  */
@@ -67,8 +67,8 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 			  final CyEdge model,
 			  final HandleFactory handleFactory,
 			  final VisualLexicon lexicon,
-			  final CyEventHelper eventHelper) {
-		super(model, lexicon, eventHelper);
+			  final CyServiceRegistrar serviceRegistrar) {
+		super(model, lexicon, serviceRegistrar);
 
 		if (graphView == null)
 			throw new IllegalArgumentException("Constructor needs its parent DGraphView.");
@@ -734,5 +734,7 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 		return graphView;
 	}
 
-	public boolean isVisible() { return isVisible; }
+	public boolean isVisible() {
+		return isVisible;
+	}
 }

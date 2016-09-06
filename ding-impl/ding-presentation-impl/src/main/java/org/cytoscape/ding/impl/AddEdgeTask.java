@@ -33,6 +33,7 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.AbstractNodeViewTask;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
@@ -46,18 +47,14 @@ import org.slf4j.LoggerFactory;
 
 public class AddEdgeTask extends AbstractNodeViewTask {
 
-	private final VisualMappingManager vmm;
-	private final CyEventHelper eh;
+	private final CyServiceRegistrar serviceRegistrar;
 	
+	@SuppressWarnings("unused")
 	private static final Logger logger = LoggerFactory.getLogger(AddEdgeTask.class);
 
-	public AddEdgeTask(final View<CyNode> nv,
-					   final CyNetworkView view,
-					   final VisualMappingManager vmm,
-					   final CyEventHelper eh) {
+	public AddEdgeTask(final View<CyNode> nv, final CyNetworkView view, final CyServiceRegistrar serviceRegistrar) {
 		super(nv, view);
-		this.vmm = vmm;
-		this.eh = eh;
+		this.serviceRegistrar = serviceRegistrar;
 	}
 
 	@Override
@@ -92,11 +89,16 @@ public class AddEdgeTask extends AbstractNodeViewTask {
 			AddEdgeStateMonitor.setSourceNode(netView, null);
 			
 			// Apply visual style
-			eh.flushPayloadEvents(); // To make sure the edge view is created before applying the style
-			VisualStyle vs = vmm.getVisualStyle(netView);
+			
+			// To make sure the edge view is created before applying the style
+			serviceRegistrar.getService(CyEventHelper.class).flushPayloadEvents();
+			
+			VisualStyle vs = serviceRegistrar.getService(VisualMappingManager.class).getVisualStyle(netView);
 			View<CyEdge> edgeView = netView.getEdgeView(newEdge);
+			
 			if (edgeView != null)
 				vs.apply(edgeRow, edgeView);
+			
 			netView.updateView();
 		}
 	}

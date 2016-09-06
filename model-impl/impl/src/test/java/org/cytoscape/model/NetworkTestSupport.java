@@ -55,9 +55,9 @@ public class NetworkTestSupport {
 	protected CyNetworkTableManagerImpl networkTableMgr;
 	protected CyRootNetworkManager rootNetworkManager;
 	protected CyNetworkManager networkMgr;
+	protected CyServiceRegistrar serviceRegistrar = mock(CyServiceRegistrar.class, withSettings().stubOnly());
 	
 	private CyNetworkNaming namingUtil = mock(CyNetworkNaming.class, withSettings().stubOnly());
-	private CyServiceRegistrar serviceRegistrar = mock(CyServiceRegistrar.class, withSettings().stubOnly());
 	private EquationCompiler compiler = new EquationCompilerImpl(new EquationParserImpl(serviceRegistrar));
 	private Interpreter interpreter = mock(Interpreter.class);
 	

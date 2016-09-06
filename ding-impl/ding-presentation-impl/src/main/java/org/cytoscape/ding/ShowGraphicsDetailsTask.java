@@ -1,12 +1,24 @@
 package org.cytoscape.ding;
 
+import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.ding.impl.DGraphView;
+import org.cytoscape.ding.impl.DingGraphLOD;
+import org.cytoscape.ding.impl.DingGraphLODAll;
+import org.cytoscape.graph.render.stateful.GraphLOD;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.presentation.RenderingEngine;
+import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.TaskMonitor;
+
 /*
  * #%L
  * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,35 +36,23 @@ package org.cytoscape.ding;
  * #L%
  */
 
-
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.work.AbstractTask;
-import org.cytoscape.work.TaskMonitor;
-import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.presentation.RenderingEngine;
-import org.cytoscape.ding.impl.DGraphView;
-import org.cytoscape.ding.impl.DingGraphLOD;
-import org.cytoscape.ding.impl.DingGraphLODAll;
-import org.cytoscape.graph.render.stateful.GraphLOD;
-import org.cytoscape.model.CyNetwork;
-
 public class ShowGraphicsDetailsTask extends AbstractTask {
 
-	private CyApplicationManager applicationManagerServiceRef;
 	private final DingGraphLOD dingGraphLOD;
 	private final DingGraphLODAll dingGraphLODAll;
+	private final CyServiceRegistrar serviceRegistrar;
 
-	
-	public ShowGraphicsDetailsTask(CyApplicationManager applicationManagerServiceRef, DingGraphLOD dingGraphLOD, DingGraphLODAll dingGraphLODAll){
-		this.applicationManagerServiceRef = applicationManagerServiceRef;
+	public ShowGraphicsDetailsTask(final DingGraphLOD dingGraphLOD, final DingGraphLODAll dingGraphLODAll,
+			final CyServiceRegistrar serviceRegistrar){
 		this.dingGraphLOD = dingGraphLOD;
 		this.dingGraphLODAll = dingGraphLODAll;
+		this.serviceRegistrar = serviceRegistrar;
 	}
 	
 	@Override
 	public void run(TaskMonitor taskMonitor) {
-		
-		final RenderingEngine<CyNetwork> engine = applicationManagerServiceRef.getCurrentRenderingEngine();
+		final CyApplicationManager applicationManager = serviceRegistrar.getService(CyApplicationManager.class);
+		final RenderingEngine<CyNetwork> engine = applicationManager.getCurrentRenderingEngine();
 
 		if (engine instanceof DGraphView == false)
 			return;
@@ -64,6 +64,7 @@ public class ShowGraphicsDetailsTask extends AbstractTask {
 		} else {
 			((DGraphView) engine).setGraphLOD(dingGraphLODAll);
 		}
+		
 		((CyNetworkView) engine.getViewModel()).updateView();
 	}
 }

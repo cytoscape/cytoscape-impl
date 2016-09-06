@@ -1,12 +1,23 @@
 package org.cytoscape.ding.impl;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
+import org.cytoscape.application.swing.CyEdgeViewContextMenuFactory;
+import org.cytoscape.application.swing.CyNetworkViewContextMenuFactory;
+import org.cytoscape.application.swing.CyNodeViewContextMenuFactory;
+import org.cytoscape.task.EdgeViewTaskFactory;
+import org.cytoscape.task.NetworkViewLocationTaskFactory;
+import org.cytoscape.task.NetworkViewTaskFactory;
+import org.cytoscape.task.NodeViewTaskFactory;
+
 /*
  * #%L
  * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -23,17 +34,6 @@ package org.cytoscape.ding.impl;
  * <http://www.gnu.org/licenses/lgpl-2.1.html>.
  * #L%
  */
-
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
-import org.cytoscape.application.swing.CyEdgeViewContextMenuFactory;
-import org.cytoscape.application.swing.CyNetworkViewContextMenuFactory;
-import org.cytoscape.application.swing.CyNodeViewContextMenuFactory;
-import org.cytoscape.task.EdgeViewTaskFactory;
-import org.cytoscape.task.NetworkViewLocationTaskFactory;
-import org.cytoscape.task.NetworkViewTaskFactory;
-import org.cytoscape.task.NodeViewTaskFactory;
 
 public class ViewTaskFactoryListener {
 

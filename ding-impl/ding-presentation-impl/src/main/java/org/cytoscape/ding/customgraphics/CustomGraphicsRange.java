@@ -1,12 +1,21 @@
 package org.cytoscape.ding.customgraphics;
 
+import java.util.HashSet;
+import java.util.Set;
+import java.util.TreeSet;
+
+import org.cytoscape.ding.customgraphicsmgr.internal.CGComparator;
+import org.cytoscape.view.model.DiscreteRange;
+import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
+import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2;
+
 /*
  * #%L
  * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,22 +33,13 @@ package org.cytoscape.ding.customgraphics;
  * #L%
  */
 
-import java.util.HashSet;
-import java.util.Set;
-import java.util.TreeSet;
-
-import org.cytoscape.ding.customgraphicsmgr.internal.CGComparator;
-import org.cytoscape.view.model.DiscreteRange;
-import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
-import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2;
-
 @SuppressWarnings("rawtypes")
 public class CustomGraphicsRange extends DiscreteRange<CyCustomGraphics>  {
 
 	private CustomGraphicsManager manager;
 	
 	public CustomGraphicsRange() {
-		super(CyCustomGraphics.class, new HashSet<CyCustomGraphics>());
+		super(CyCustomGraphics.class, new HashSet<>());
 	}
 
 	public void setManager(final CustomGraphicsManager manager) {
@@ -58,8 +58,9 @@ public class CustomGraphicsRange extends DiscreteRange<CyCustomGraphics>  {
 
 	@Override
 	public Set<CyCustomGraphics> values() {
-		Set<CyCustomGraphics> sortedSet = new TreeSet<CyCustomGraphics>(new CGComparator());
+		Set<CyCustomGraphics> sortedSet = new TreeSet<>(new CGComparator());
 		sortedSet.addAll(manager.getAllCustomGraphics());
+		
 		return sortedSet;
 	}
 

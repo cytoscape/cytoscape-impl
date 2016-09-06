@@ -1,12 +1,24 @@
 package org.cytoscape.ding.impl.cyannotator;
 
+import java.util.List;
+
+import javax.swing.SwingUtilities;
+
+import org.cytoscape.ding.impl.DGraphView;
+import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.CyNetworkViewManager;
+import org.cytoscape.view.presentation.annotations.Annotation;
+import org.cytoscape.view.presentation.annotations.AnnotationManager;
+
 /*
  * #%L
  * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,27 +36,15 @@ package org.cytoscape.ding.impl.cyannotator;
  * #L%
  */
 
-import java.awt.Rectangle;
-import java.util.List;
-import javax.swing.JComponent;
-import javax.swing.SwingUtilities;
-
-import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.CyNetworkViewManager;
-import org.cytoscape.view.presentation.annotations.Annotation;
-import org.cytoscape.view.presentation.annotations.AnnotationManager;
-
-import org.cytoscape.ding.impl.DGraphView;
-import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
-
 /**
  * This class is essentially a wrapper around each network's CyAnnotator.
  */
 public class AnnotationManagerImpl implements AnnotationManager {
-	private final CyNetworkViewManager viewManager;
+	
+	private final CyServiceRegistrar serviceRegistrar;
 
-	public AnnotationManagerImpl(CyNetworkViewManager viewManager) {
-		this.viewManager = viewManager;
+	public AnnotationManagerImpl(final CyServiceRegistrar serviceRegistrar) {
+		this.serviceRegistrar = serviceRegistrar;
 	}
 
 	/**********************************************************************************
@@ -57,23 +57,24 @@ public class AnnotationManagerImpl implements AnnotationManager {
 
 		if (!SwingUtilities.isEventDispatchThread()) {
 			try {
-				SwingUtilities.invokeAndWait(new Runnable() {
-					public void run() {
-						addAnnotation(annotation);
-					}
+				SwingUtilities.invokeAndWait(() -> {
+					addAnnotation(annotation);
 				});
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
+			
 			return;
 		}
 
 		DingAnnotation dAnnotation = (DingAnnotation)annotation;
-
 		CyNetworkView view = annotation.getNetworkView();
+		CyNetworkViewManager viewManager = serviceRegistrar.getService(CyNetworkViewManager.class);
+		
 		for (CyNetworkView networkView: viewManager.getNetworkViewSet()) {
 			if (view.equals(networkView)) {
 				((DGraphView)view).getCyAnnotator().addAnnotation(annotation);
+				
 				if (dAnnotation.getCanvas() != null)
 					dAnnotation.getCanvas().add(dAnnotation.getComponent());
 				else
@@ -86,26 +87,31 @@ public class AnnotationManagerImpl implements AnnotationManager {
 	public void removeAnnotation(final Annotation annotation) {
 		if (!SwingUtilities.isEventDispatchThread()) {
 			try {
-				SwingUtilities.invokeAndWait(new Runnable() {
-					public void run() {
-						removeAnnotation(annotation);
-					}
+				SwingUtilities.invokeAndWait(() -> {
+					removeAnnotation(annotation);
 				});
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
+			
 			return;
 		}
+		
+		CyNetworkViewManager viewManager = serviceRegistrar.getService(CyNetworkViewManager.class);
+		
 		for (CyNetworkView view: viewManager.getNetworkViewSet())
 			((DGraphView)view).getCyAnnotator().removeAnnotation(annotation);
 	}
 
 	@Override
 	public List<Annotation> getAnnotations(final CyNetworkView networkView) {
+		CyNetworkViewManager viewManager = serviceRegistrar.getService(CyNetworkViewManager.class);
+		
 		for (CyNetworkView view: viewManager.getNetworkViewSet()) {
 			if (view.equals(networkView))
 				return ((DGraphView)view).getCyAnnotator().getAnnotations();
 		}
+		
 		return null;
 	}
 }

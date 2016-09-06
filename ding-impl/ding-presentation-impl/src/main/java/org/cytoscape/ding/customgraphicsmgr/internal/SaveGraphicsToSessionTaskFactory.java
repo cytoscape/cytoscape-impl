@@ -1,12 +1,19 @@
 package org.cytoscape.ding.customgraphicsmgr.internal;
 
+import java.io.File;
+
+import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
+import org.cytoscape.session.events.SessionAboutToBeSavedEvent;
+import org.cytoscape.work.AbstractTaskFactory;
+import org.cytoscape.work.TaskIterator;
+
 /*
  * #%L
  * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -23,13 +30,6 @@ package org.cytoscape.ding.customgraphicsmgr.internal;
  * <http://www.gnu.org/licenses/lgpl-2.1.html>.
  * #L%
  */
-
-import java.io.File;
-
-import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
-import org.cytoscape.session.events.SessionAboutToBeSavedEvent;
-import org.cytoscape.work.AbstractTaskFactory;
-import org.cytoscape.work.TaskIterator;
 
 public class SaveGraphicsToSessionTaskFactory extends AbstractTaskFactory {
 

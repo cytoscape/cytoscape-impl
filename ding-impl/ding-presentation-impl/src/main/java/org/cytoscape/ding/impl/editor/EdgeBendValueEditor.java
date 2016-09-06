@@ -1,29 +1,5 @@
 package org.cytoscape.ding.impl.editor;
 
-/*
- * #%L
- * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
- * $Id:$
- * $HeadURL:$
- * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * #L%
- */
-
 import static javax.swing.GroupLayout.Alignment.LEADING;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_BEND;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_SELECTED_PAINT;
@@ -72,6 +48,7 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.SavePolicy;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
@@ -82,6 +59,30 @@ import org.cytoscape.view.presentation.property.NodeShapeVisualProperty;
 import org.cytoscape.view.presentation.property.values.Bend;
 import org.cytoscape.view.vizmap.gui.editor.ValueEditor;
 
+/*
+ * #%L
+ * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
+
 public class EdgeBendValueEditor implements ValueEditor<Bend> {
 
 	private static final Dimension DEF_PANEL_SIZE = new Dimension(600, 400);
@@ -91,27 +92,27 @@ public class EdgeBendValueEditor implements ValueEditor<Bend> {
 	private CyNetworkView dummyView;
 	private View<CyEdge> edgeView;
 
-	private final CyNetworkFactory cyNetworkFactory;
 	private final CyNetworkViewFactory cyNetworkViewFactory;
 	private final RenderingEngineFactory<CyNetwork> presentationFactory;
+	private final CyServiceRegistrar serviceRegistrar;
 
 	private boolean initialized;
 	private boolean editCancelled;
 	private boolean bendRemoved;
 
-	public EdgeBendValueEditor(final CyNetworkFactory cyNetworkFactory,
-							   final CyNetworkViewFactory cyNetworkViewFactory,
-							   final RenderingEngineFactory<CyNetwork> presentationFactory) {
-		if (cyNetworkFactory == null)
-			throw new NullPointerException("CyNetworkFactory is null.");
+	public EdgeBendValueEditor(
+			final CyNetworkViewFactory cyNetworkViewFactory,
+			final RenderingEngineFactory<CyNetwork> presentationFactory,
+			final CyServiceRegistrar serviceRegistrar
+	) {
 		if (cyNetworkViewFactory == null)
 			throw new NullPointerException("CyNetworkViewFactory is null.");
 		if (presentationFactory == null)
 			throw new NullPointerException("RenderingEngineFactory is null.");
 		
-		this.cyNetworkFactory = cyNetworkFactory;
 		this.cyNetworkViewFactory = cyNetworkViewFactory;
 		this.presentationFactory = presentationFactory;
+		this.serviceRegistrar = serviceRegistrar;
 	}
 
 	@SuppressWarnings("serial")
@@ -202,7 +203,8 @@ public class EdgeBendValueEditor implements ValueEditor<Bend> {
 		final Color BACKGROUND_COLOR = UIManager.getColor("Table.background");
 		
 		// Create very simple dummy view.
-		final CyNetwork dummyNet = cyNetworkFactory.createNetworkWithPrivateTables(SavePolicy.DO_NOT_SAVE);
+		final CyNetworkFactory networkFactory = serviceRegistrar.getService(CyNetworkFactory.class);
+		final CyNetwork dummyNet = networkFactory.createNetworkWithPrivateTables(SavePolicy.DO_NOT_SAVE);
 		final CyNode source = dummyNet.addNode();
 		final CyNode target = dummyNet.addNode();
 		final CyEdge edge = dummyNet.addEdge(source, target, true);

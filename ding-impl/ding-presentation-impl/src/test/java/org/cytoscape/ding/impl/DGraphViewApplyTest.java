@@ -1,32 +1,9 @@
 package org.cytoscape.ding.impl;
 
-/*
- * #%L
- * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
- * $Id:$
- * $HeadURL:$
- * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * #L%
- */
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.when;
 
 import java.awt.Color;
 import java.awt.Font;
@@ -59,50 +36,65 @@ import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+/*
+ * #%L
+ * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
+
 public class DGraphViewApplyTest {
 
 	private DGraphView dgv;
 
 	NetworkViewTestSupport testSupport = new NetworkViewTestSupport();
-	// Mocks
 
 	private CyNetwork network;
-	private CyRootNetworkManager cyRoot;
-
-	@Mock
-	private UndoSupport undo;
-
+	private CyRootNetworkManager rootNetworkManager;
 	private SpacialIndex2DFactory spacialFactory;
 	private VisualLexicon dingLexicon;
-
-	@Mock
-	private ViewTaskFactoryListener vtfl;
-
-	@Mock
-	private DialogTaskManager manager;
-	@Mock
-	private CyEventHelper cyEventHelper;
-	@Mock
-	private IconManager iconManager;
-	@Mock
-	private AnnotationFactoryManager annMgr;
-	@Mock
-	private DingGraphLOD dingGraphLOD;
-
-	@Mock
-	private VisualMappingManager vmm;
-
-	@Mock
-	private CyNetworkViewManager netViewMgr;
-
 	private HandleFactory handleFactory;
 
 	@Mock
-	private CyServiceRegistrar registrar;
-
+	private UndoSupport undoSupport;
+	@Mock
+	private ViewTaskFactoryListener vtfListener;
+	@Mock
+	private DialogTaskManager dialogTaskManager;
+	@Mock
+	private CyEventHelper eventHelper;
+	@Mock
+	private IconManager iconManager;
+	@Mock
+	private AnnotationFactoryManager annotationFactoryManager;
+	@Mock
+	private DingGraphLOD dingGraphLOD;
+	@Mock
+	private VisualMappingManager visualMappingManager;
+	@Mock
+	private CyNetworkViewManager networkViewManager;
 	@Mock
 	private CustomGraphicsManager cgManager;
-
+	@Mock
+	private CyServiceRegistrar serviceRegistrar;
+	
 	// Network contents
 	CyNode node1;
 	CyNode node2;
@@ -128,13 +120,22 @@ public class DGraphViewApplyTest {
 		testSupport.getNetworkTableManager();
 
 		network = buildNetworkModel();
-		cyRoot = new CyRootNetworkManagerImpl();
+		rootNetworkManager = new CyRootNetworkManagerImpl();
 		spacialFactory = new RTreeFactory();
 		dingLexicon = new DVisualLexicon(cgManager);
 		handleFactory = new HandleFactoryImpl();
+		
+		when(serviceRegistrar.getService(CyRootNetworkManager.class)).thenReturn(rootNetworkManager);
+		when(serviceRegistrar.getService(UndoSupport.class)).thenReturn(undoSupport);
+		when(serviceRegistrar.getService(SpacialIndex2DFactory.class)).thenReturn(spacialFactory);
+		when(serviceRegistrar.getService(DialogTaskManager.class)).thenReturn(dialogTaskManager);
+		when(serviceRegistrar.getService(CyEventHelper.class)).thenReturn(eventHelper);
+		when(serviceRegistrar.getService(IconManager.class)).thenReturn(iconManager);
+		when(serviceRegistrar.getService(VisualMappingManager.class)).thenReturn(visualMappingManager);
+		when(serviceRegistrar.getService(CyNetworkViewManager.class)).thenReturn(networkViewManager);
 
-		dgv = new DGraphView(network, cyRoot, undo, spacialFactory, dingLexicon, vtfl, manager, cyEventHelper, annMgr,
-				dingGraphLOD, vmm, netViewMgr, handleFactory, iconManager, registrar);
+		dgv = new DGraphView(network, dingLexicon, vtfListener, annotationFactoryManager, dingGraphLOD, handleFactory,
+				serviceRegistrar);
 
 		assertNotNull(dgv);
 		assertEquals(3, dgv.getModel().getNodeCount());
@@ -147,7 +148,6 @@ public class DGraphViewApplyTest {
 		ev1 = dgv.getDEdgeView(edge12);
 		ev2 = dgv.getDEdgeView(edge13);
 		ev3 = dgv.getDEdgeView(edge23);
-		
 	}
 
 	private CyNetwork buildNetworkModel() {
@@ -226,9 +226,6 @@ public class DGraphViewApplyTest {
 	@Test
 	public void testNodeView() {
 		final Color fillColor = new Color(10, 20, 200);
-		final Color borderColor = new Color(222, 100, 30);
-		final Color fillColorM1 = Color.red;
-		final Color fillColorM2 = Color.magenta;
 		final Color labelColor = Color.orange;
 
 		dgv.setViewDefault(DVisualLexicon.NODE_FILL_COLOR, fillColor);
@@ -276,7 +273,6 @@ public class DGraphViewApplyTest {
 		assertEquals(mapFont.getFontName(), dgv.m_nodeDetails.getLabelFont(node1, 0).getFontName());
 		assertEquals(mapFont.getFontName(), dgv.m_nodeDetails.getLabelFont(node2, 0).getFontName());
 		assertEquals(defFont.getFontName(), dgv.m_nodeDetails.getLabelFont(node3, 0).getFontName());
-
 	}
 
 	@Test

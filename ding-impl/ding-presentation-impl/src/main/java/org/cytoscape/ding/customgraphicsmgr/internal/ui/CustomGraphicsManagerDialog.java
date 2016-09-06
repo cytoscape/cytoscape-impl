@@ -1,29 +1,5 @@
 package org.cytoscape.ding.customgraphicsmgr.internal.ui;
 
-/*
- * #%L
- * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
- * $Id:$
- * $HeadURL:$
- * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * #L%
- */
-
 import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
 
@@ -62,15 +38,36 @@ import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/*
+ * #%L
+ * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
 
 /**
  * Main UI for managing on-memory library of Custom Graphics
- * 
  */
+@SuppressWarnings("serial")
 public class CustomGraphicsManagerDialog extends JDialog {
 
-	private static final long serialVersionUID = 7681270324415099781L;
-	
 	private static final Logger logger = LoggerFactory.getLogger(CustomGraphicsManagerDialog.class);
 	
 	private JButton addButton;
@@ -117,7 +114,6 @@ public class CustomGraphicsManagerDialog extends JDialog {
 		pack();
 	}
 
-	@SuppressWarnings("serial")
 	private void initComponents() {
 		deleteButton = new JButton();
 		addButton = new JButton();
@@ -223,14 +219,15 @@ public class CustomGraphicsManagerDialog extends JDialog {
 		chooser.setMultiSelectionEnabled(true);
 		chooser.setFileFilter(filter);
 		int returnVal = chooser.showOpenDialog(this);
-		if (returnVal == JFileChooser.APPROVE_OPTION) {
+		
+		if (returnVal == JFileChooser.APPROVE_OPTION)
 			processFiles(chooser.getSelectedFiles());
-		}
 	}
 
 	private void processFiles(final File[] files) {
 		for (final File file : files) {
 			BufferedImage img = null;
+			
 			if (file.isFile()) {
 				try {
 					img = ImageIO.read(file);
@@ -241,7 +238,7 @@ public class CustomGraphicsManagerDialog extends JDialog {
 			}
 
 			if (img != null) {
-				final CyCustomGraphics cg = new URLImageCustomGraphics(manager.getNextAvailableID(), file.toString(),
+				final CyCustomGraphics<?> cg = new URLImageCustomGraphics<>(manager.getNextAvailableID(), file.toString(),
 						img);
 				try {
 					manager.addCustomGraphics(cg, file.toURI().toURL());
@@ -249,6 +246,7 @@ public class CustomGraphicsManagerDialog extends JDialog {
 					e.printStackTrace();
 					continue;
 				}
+				
 				((CustomGraphicsListModel) browser.getModel()).addElement(cg);
 			}
 		}
@@ -258,12 +256,14 @@ public class CustomGraphicsManagerDialog extends JDialog {
 		final Object[] toBeRemoved = browser.getSelectedValues();
 		
 		for (Object g: toBeRemoved) {
-			final CyCustomGraphics cg = (CyCustomGraphics) g;
-			if(!manager.isUsedInCurrentSession(cg)) {
+			final CyCustomGraphics<?> cg = (CyCustomGraphics<?>) g;
+			
+			if (!manager.isUsedInCurrentSession(cg)) {
 				browser.removeCustomGraphics(cg);
 				manager.removeCustomGraphics(cg.getIdentifier());
 			} else {
-				JOptionPane.showMessageDialog(this, cg.getDisplayName() + " is used in current session and cannot remove it.", 
+				JOptionPane.showMessageDialog(this,
+						cg.getDisplayName() + " is used in current session and cannot remove it.",
 						"Custom Graphics is in Use.", JOptionPane.ERROR_MESSAGE);
 			}
 		}

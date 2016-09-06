@@ -1,29 +1,5 @@
 package org.cytoscape.ding.customgraphicsmgr.internal;
 
-/*
- * #%L
- * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
- * $Id:$
- * $HeadURL:$
- * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * #L%
- */
-
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileInputStream;
@@ -56,19 +32,41 @@ import org.cytoscape.ding.customgraphics.vector.GradientOvalLayer;
 import org.cytoscape.ding.customgraphics.vector.GradientRoundRectangleLayer;
 import org.cytoscape.ding.customgraphicsmgr.internal.event.CustomGraphicsLibraryUpdatedEvent;
 import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskMonitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/*
+ * #%L
+ * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
+
 public class RestoreImageTask implements Task {
 
 	private static final Logger logger = LoggerFactory.getLogger(RestoreImageTask.class);
 	
-	// Preset image location.
-	private static final String DEF_IMAGE_LOCATION = "images/sampleCustomGraphics";
-
 	private final CustomGraphicsManager manager;
 
 	private final ExecutorService imageLoaderService;
@@ -79,29 +77,29 @@ public class RestoreImageTask implements Task {
 	private static final String METADATA_FILE = "image_metadata.props";
 
 	private File imageHomeDirectory;
-	
-	private final CyEventHelper eventHelper;
 	private final Set<URL> defaultImageURLs;
 
+	private final CyServiceRegistrar serviceRegistrar;
+	
 	// For image I/O, PNG is used as bitmap image format.
 	private static final String IMAGE_EXT = "png";
 
 	// Default vectors
-	private static final Set<Class<?>> DEF_VECTORS = new HashSet<Class<?>>();
-	private static final Set<String> DEF_VECTORS_NAMES = new HashSet<String>();
+	private static final Set<Class<?>> DEF_VECTORS = new HashSet<>();
+	private static final Set<String> DEF_VECTORS_NAMES = new HashSet<>();
 
 	static {
 		DEF_VECTORS.add(GradientRoundRectangleLayer.class);
 		DEF_VECTORS.add(GradientOvalLayer.class);
 		
-		for(Class<?> cls: DEF_VECTORS)
+		for (Class<?> cls : DEF_VECTORS)
 			DEF_VECTORS_NAMES.add(cls.getName());
 	}
 	
 	RestoreImageTask(final Set<URL> defaultImageURLs, final File imageLocaiton, 
-	                 final CustomGraphicsManager manager, final CyEventHelper eventHelper) {
+	                 final CustomGraphicsManager manager, final CyServiceRegistrar serviceRegistrar) {
 		this.manager = manager;
-		this.eventHelper = eventHelper;
+		this.serviceRegistrar = serviceRegistrar;
 
 		// For loading images in parallel.
 		this.imageLoaderService = Executors.newFixedThreadPool(NUM_THREADS);
@@ -124,21 +122,25 @@ public class RestoreImageTask implements Task {
 		double sec = (endTime - startTime) / (1000.0);
 		logger.info("Image saving process finished in " + sec + " sec.");
 		
-		eventHelper.fireEvent(new CustomGraphicsLibraryUpdatedEvent(manager));
+		serviceRegistrar.getService(CyEventHelper.class).fireEvent(new CustomGraphicsLibraryUpdatedEvent(manager));
 	}
 	
 	private void restoreSampleImages() throws IOException {
 		// Filter by display name
 		final Collection<CyCustomGraphics> allGraphics = manager.getAllCustomGraphics();
-		final Set<String> names = new HashSet<String>();
-		for(CyCustomGraphics cg: allGraphics)
+		final Set<String> names = new HashSet<>();
+
+		for (CyCustomGraphics<?> cg : allGraphics)
 			names.add(cg.getDisplayName());
 		
 		for (final URL imageURL : defaultImageURLs) {
 			final String[] parts = imageURL.getFile().split("/");
 			final String dispNameString = parts[parts.length-1];
+			
 			if (this.manager.getCustomGraphicsBySourceURL(imageURL) == null && !names.contains(dispNameString)) {
-				final CyCustomGraphics<?> cg = new URLImageCustomGraphics(manager.getNextAvailableID(), imageURL.toString());
+				final CyCustomGraphics<?> cg = new URLImageCustomGraphics<>(manager.getNextAvailableID(),
+						imageURL.toString());
+				
 				if (cg != null) {
 					manager.addCustomGraphics(cg, imageURL);
 					cg.setDisplayName(dispNameString);
@@ -156,6 +158,7 @@ public class RestoreImageTask implements Task {
 
 		// Load metadata first.
 		final Properties prop = new Properties();
+		
 		try {
 			prop.load(new FileInputStream(new File(imageHomeDirectory, METADATA_FILE)));
 			logger.info("Custom Graphics Image property file loaded from: " + imageHomeDirectory);
@@ -167,11 +170,12 @@ public class RestoreImageTask implements Task {
 
 		if (this.imageHomeDirectory != null && imageHomeDirectory.isDirectory()) {
 			final File[] imageFiles = imageHomeDirectory.listFiles();
-			final Map<Future<BufferedImage>, String> fMap = new HashMap<Future<BufferedImage>, String>();
-			final Map<Future<BufferedImage>, Long> fIdMap = new HashMap<Future<BufferedImage>, Long>();
-			final Map<Future<BufferedImage>, Set<String>> metatagMap = new HashMap<Future<BufferedImage>, Set<String>>();
+			final Map<Future<BufferedImage>, String> fMap = new HashMap<>();
+			final Map<Future<BufferedImage>, Long> fIdMap = new HashMap<>();
+			final Map<Future<BufferedImage>, Set<String>> metatagMap = new HashMap<>();
 			
-			final Set<File> validFiles = new HashSet<File>();
+			final Set<File> validFiles = new HashSet<>();
+			
 			try {
 				for (File file : imageFiles) {
 					if (file.toString().endsWith(IMAGE_EXT) == false)
@@ -201,7 +205,7 @@ public class RestoreImageTask implements Task {
 					String tagStr = null;
 					if (imageProps.length > 3) {
 						tagStr = imageProps[3];
-						final Set<String> tags = new TreeSet<String>();
+						final Set<String> tags = new TreeSet<>();
 						String[] tagParts = tagStr.split("\\" + AbstractDCustomGraphics.LIST_DELIMITER);
 						for (String tag : tagParts)
 							tags.add(tag.trim());
@@ -218,7 +222,8 @@ public class RestoreImageTask implements Task {
 					if (image == null)
 						continue;
 
-					final CyCustomGraphics<?> cg = new URLImageCustomGraphics(fIdMap.get(f), fMap.get(f), image);
+					final CyCustomGraphics<?> cg = new URLImageCustomGraphics<>(fIdMap.get(f), fMap.get(f), image);
+					
 					if (cg instanceof Taggable && metatagMap.get(f) != null)
 						((Taggable) cg).getTags().addAll(metatagMap.get(f));
 
@@ -253,7 +258,8 @@ public class RestoreImageTask implements Task {
 	}
 
 	@Override
-	public void cancel() {}
+	public void cancel() {
+	}
 
 	private final class LoadImageTask implements Callable<BufferedImage> {
 
@@ -263,6 +269,7 @@ public class RestoreImageTask implements Task {
 			this.imageURL = imageURL;
 		}
 
+		@Override
 		public BufferedImage call() throws Exception {
 			if (imageURL == null)
 				throw new IllegalStateException("URL string cannot be null.");

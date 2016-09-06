@@ -1,12 +1,19 @@
 package org.cytoscape.ding;
 
+import org.cytoscape.ding.impl.DingGraphLOD;
+import org.cytoscape.ding.impl.DingGraphLODAll;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.task.NetworkTaskFactory;
+import org.cytoscape.work.TaskIterator;
+
 /*
  * #%L
  * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,37 +31,25 @@ package org.cytoscape.ding;
  * #L%
  */
 
-
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.ding.impl.DingGraphLOD;
-import org.cytoscape.ding.impl.DingGraphLODAll;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.work.TaskIterator;
-import org.cytoscape.task.NetworkTaskFactory;
-
 public class ShowGraphicsDetailsTaskFactory implements NetworkTaskFactory {
 
-	private CyApplicationManager applicationManagerServiceRef;
 	private final DingGraphLOD dingGraphLOD;
 	private final DingGraphLODAll dingGraphLODAll;
+	private final CyServiceRegistrar serviceRegistrar;
 	
-	public ShowGraphicsDetailsTaskFactory(CyApplicationManager applicationManagerServiceRef, DingGraphLOD dingGraphLOD, DingGraphLODAll dingGraphLODAll){
-		this.applicationManagerServiceRef = applicationManagerServiceRef;
+	public ShowGraphicsDetailsTaskFactory(final DingGraphLOD dingGraphLOD, final DingGraphLODAll dingGraphLODAll,
+			final CyServiceRegistrar serviceRegistrar){
 		this.dingGraphLOD = dingGraphLOD;
 		this.dingGraphLODAll = dingGraphLODAll;
+		this.serviceRegistrar = serviceRegistrar;
 	}
 	
-	
+	@Override
 	public TaskIterator createTaskIterator(CyNetwork network){
-		return new TaskIterator(new ShowGraphicsDetailsTask(applicationManagerServiceRef, dingGraphLOD, dingGraphLODAll));
+		return new TaskIterator(new ShowGraphicsDetailsTask(dingGraphLOD, dingGraphLODAll, serviceRegistrar));
 	}
 	
-	/**
-	 * Returns true if this task factory is ready to produce a TaskIterator.
-	 * @param network
-	 * @return true if this task factory is ready to produce a TaskIterator.
-	 */
+	@Override
 	public boolean isReady(CyNetwork network){
 		return true;
 	}

@@ -5,39 +5,32 @@ import java.util.Map;
 import javax.swing.Icon;
 import javax.swing.JComponent;
 
-import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.ding.internal.charts.ViewUtils;
-import org.cytoscape.util.swing.IconManager;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2Factory;
-import org.cytoscape.view.presentation.property.values.CyColumnIdentifierFactory;
 
 public class PieChartFactory  implements CyCustomGraphics2Factory<PieLayer> {
 
-	private final CyApplicationManager appMgr;
-	private final IconManager iconMgr;
-	private final CyColumnIdentifierFactory colIdFactory;
+	private final CyServiceRegistrar serviceRegistrar;
 
-	public PieChartFactory(final CyApplicationManager appMgr, final IconManager iconMgr,
-			final CyColumnIdentifierFactory colIdFactory) {
-		this.appMgr = appMgr;
-		this.iconMgr = iconMgr;
-		this.colIdFactory = colIdFactory;
+	public PieChartFactory(final CyServiceRegistrar serviceRegistrar) {
+		this.serviceRegistrar = serviceRegistrar;
 	}
 	
 	@Override
 	public CyCustomGraphics2<PieLayer> getInstance(final String input) {
-		return new PieChart(input, colIdFactory);
+		return new PieChart(input, serviceRegistrar);
 	}
 
 	@Override
 	public CyCustomGraphics2<PieLayer> getInstance(final CyCustomGraphics2<PieLayer> chart) {
-		return new PieChart((PieChart)chart, colIdFactory);
+		return new PieChart((PieChart)chart, serviceRegistrar);
 	}
 	
 	@Override
 	public CyCustomGraphics2<PieLayer> getInstance(final Map<String, Object> properties) {
-		return new PieChart(properties, colIdFactory);
+		return new PieChart(properties, serviceRegistrar);
 	}
 
 	@Override
@@ -57,7 +50,7 @@ public class PieChartFactory  implements CyCustomGraphics2Factory<PieLayer> {
 	
 	@Override
 	public JComponent createEditor(final CyCustomGraphics2<PieLayer> chart) {
-		return new PieChartEditor((PieChart)chart, appMgr, iconMgr, colIdFactory);
+		return new PieChartEditor((PieChart)chart, serviceRegistrar);
 	}
 	
 	@Override

@@ -1,12 +1,44 @@
 package org.cytoscape.view;
 
+import static org.mockito.Mockito.when;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+import org.cytoscape.ding.impl.DGraphView;
+import org.cytoscape.ding.impl.DingGraphLOD;
+import org.cytoscape.ding.impl.ViewTaskFactoryListener;
+import org.cytoscape.ding.impl.cyannotator.AnnotationFactoryManager;
+import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyNode;
+import org.cytoscape.model.NetworkTestSupport;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.spacial.SpacialIndex2D;
+import org.cytoscape.spacial.SpacialIndex2DFactory;
+import org.cytoscape.task.EdgeViewTaskFactory;
+import org.cytoscape.task.NetworkViewTaskFactory;
+import org.cytoscape.task.NodeViewTaskFactory;
+import org.cytoscape.util.swing.IconManager;
+import org.cytoscape.view.model.AbstractCyNetworkViewTest;
+import org.cytoscape.view.model.CyNetworkViewManager;
+import org.cytoscape.view.model.VisualLexicon;
+import org.cytoscape.view.presentation.property.values.HandleFactory;
+import org.cytoscape.view.vizmap.VisualMappingManager;
+import org.cytoscape.work.swing.DialogTaskManager;
+import org.cytoscape.work.undo.UndoSupport;
+import org.junit.Before;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+
 /*
  * #%L
  * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,50 +56,14 @@ package org.cytoscape.view;
  * #L%
  */
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
-import org.cytoscape.ding.impl.DGraphView;
-import org.cytoscape.ding.impl.DingGraphLOD;
-import org.cytoscape.ding.impl.ViewTaskFactoryListener;
-import org.cytoscape.ding.impl.cyannotator.AnnotationFactoryManager;
-import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.model.CyEdge;
-import org.cytoscape.model.CyNetworkTableManager;
-import org.cytoscape.model.CyNode;
-import org.cytoscape.model.NetworkTestSupport;
-import org.cytoscape.model.subnetwork.CyRootNetworkManager;
-import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.spacial.SpacialIndex2DFactory;
-import org.cytoscape.spacial.internal.rtree.RTreeFactory;
-import org.cytoscape.task.EdgeViewTaskFactory;
-import org.cytoscape.task.NetworkViewTaskFactory;
-import org.cytoscape.task.NodeViewTaskFactory;
-import org.cytoscape.util.swing.IconManager;
-import org.cytoscape.view.model.AbstractCyNetworkViewTest;
-import org.cytoscape.view.model.CyNetworkViewManager;
-import org.cytoscape.view.model.VisualLexicon;
-import org.cytoscape.view.presentation.property.values.HandleFactory;
-import org.cytoscape.view.vizmap.VisualMappingManager;
-import org.cytoscape.work.swing.DialogTaskManager;
-import org.cytoscape.work.undo.UndoSupport;
-import org.junit.Before;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-
 public class DNetworkViewTest extends AbstractCyNetworkViewTest {
 
-	private CyRootNetworkManager cyRoot;
-	private SpacialIndex2DFactory spacialFactory;
-
-	
 	@Mock
-	private UndoSupport undo;
+	private UndoSupport undoSupport;
 	@Mock
 	private VisualLexicon dingLexicon;
 	@Mock
-	private ViewTaskFactoryListener vtfl;
+	private ViewTaskFactoryListener vtfListener;
 	@Mock
 	private Map<NodeViewTaskFactory, Map> nodeViewTFs;
 	@Mock
@@ -75,45 +71,47 @@ public class DNetworkViewTest extends AbstractCyNetworkViewTest {
 	@Mock
 	private Map<NetworkViewTaskFactory, Map> emptySpaceTFs;
 	@Mock
-	private DialogTaskManager manager;
+	private DialogTaskManager dialogTaskManager;
 	@Mock
 	private CyEventHelper eventHelper;
 	@Mock
 	private IconManager iconManager;
 	@Mock
-	private CyNetworkTableManager tableMgr;
+	private AnnotationFactoryManager annotationFactoryManager;
 	@Mock
-	private AnnotationFactoryManager annMgr;
-	
+	private DingGraphLOD dingGraphLOD;
 	@Mock
-	private DingGraphLOD dingGRaphLOD;
-	
+	private VisualMappingManager visualMappingManager;
 	@Mock
-	private VisualMappingManager vmm;
-	
-	@Mock
-	private CyNetworkViewManager netViewMgr;
-	
+	private CyNetworkViewManager networkViewManager;
 	@Mock
 	private HandleFactory handleFactory;
-
 	@Mock
-	private CyServiceRegistrar registrar;
+	private SpacialIndex2D spacialIndex2D;
+	@Mock
+	private SpacialIndex2DFactory spacialFactory;
+	@Mock
+	private CyServiceRegistrar serviceRegistrar;
 	
 	private final NetworkTestSupport netSupport = new NetworkTestSupport();
 
 	@Before
 	public void setUp() throws Exception {
 		MockitoAnnotations.initMocks(this);
-		cyRoot = netSupport.getRootNetworkFactory();
-		spacialFactory = new RTreeFactory();
+		
+		when(spacialFactory.createSpacialIndex2D()).thenReturn(spacialIndex2D);
+		
+		when(serviceRegistrar.getService(UndoSupport.class)).thenReturn(undoSupport);
+		when(serviceRegistrar.getService(SpacialIndex2DFactory.class)).thenReturn(spacialFactory);
+		when(serviceRegistrar.getService(DialogTaskManager.class)).thenReturn(dialogTaskManager);
+		when(serviceRegistrar.getService(CyEventHelper.class)).thenReturn(eventHelper);
+		when(serviceRegistrar.getService(IconManager.class)).thenReturn(iconManager);
+		when(serviceRegistrar.getService(VisualMappingManager.class)).thenReturn(visualMappingManager);
+		when(serviceRegistrar.getService(CyNetworkViewManager.class)).thenReturn(networkViewManager);
 		
 		buildNetwork();
-		view = new DGraphView(network, cyRoot, undo, spacialFactory, dingLexicon,
-				vtfl,
-				/*nodeViewTFs, edgeViewTFs, emptySpaceTFs, dropNodeViewTFs, 
-				dropEmptySpaceTFs, */
-				manager, eventHelper, annMgr, dingGRaphLOD, vmm, netViewMgr, handleFactory, iconManager, registrar);
+		view = new DGraphView(network, dingLexicon, vtfListener, annotationFactoryManager, dingGraphLOD, handleFactory,
+				serviceRegistrar);
 	}
 	
 	@Override

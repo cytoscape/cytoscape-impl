@@ -5,49 +5,61 @@ import java.awt.Container;
 import java.awt.event.MouseListener;
 
 import org.cytoscape.ding.impl.cyannotator.AnnotationFactoryManager;
-import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNetworkTableManager;
-import org.cytoscape.model.CyTableFactory;
-import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.spacial.SpacialIndex2DFactory;
-import org.cytoscape.util.swing.IconManager;
-import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.view.presentation.property.values.HandleFactory;
-import org.cytoscape.view.vizmap.VisualMappingManager;
-import org.cytoscape.work.swing.DialogTaskManager;
-import org.cytoscape.work.undo.UndoSupport;
+
+/*
+ * #%L
+ * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
 
 public class DingVisualStyleRenderingEngineFactory extends DingRenderingEngineFactory {
+	
 	public DingVisualStyleRenderingEngineFactory(
-			CyTableFactory dataTableFactory,
-			CyRootNetworkManager rootNetworkManager, UndoSupport undo,
-			SpacialIndex2DFactory spacialFactory, VisualLexicon dingLexicon,
-			DialogTaskManager dialogTaskManager, CyServiceRegistrar registrar,
-			CyNetworkTableManager tableMgr, CyEventHelper eventHelper,
-			IconManager iconManager, ViewTaskFactoryListener vtfListener,
-			AnnotationFactoryManager annMgr, DingGraphLOD dingGraphLOD,
-			VisualMappingManager vmm, CyNetworkViewManager netViewMgr,
-			HandleFactory handleFactory) {
-		super(dataTableFactory, rootNetworkManager, undo, spacialFactory, dingLexicon,
-				dialogTaskManager, registrar, tableMgr, eventHelper, iconManager, vtfListener,
-				annMgr, dingGraphLOD, vmm, netViewMgr, handleFactory);
+			VisualLexicon dingLexicon,
+			ViewTaskFactoryListener vtfListener,
+			AnnotationFactoryManager annMgr,
+			DingGraphLOD dingGraphLOD,
+			HandleFactory handleFactory,
+			CyServiceRegistrar serviceRegistrar
+	) {
+		super(dingLexicon, vtfListener, annMgr, dingGraphLOD, handleFactory, serviceRegistrar);
 	}
 
 	@Override
 	public RenderingEngine<CyNetwork> createRenderingEngine(Object presentationContainer, View<CyNetwork> view) {
 		RenderingEngine<CyNetwork> engine = super.createRenderingEngine(presentationContainer, view);
-		
 		Container component = (Container) presentationContainer;
 		// Remove unnecessary mouse listeners.
 		final int compCount = component.getComponentCount();
+		
 		for (int i = 0; i < compCount; i++) {
 			final Component comp = component.getComponent(i);
 			final MouseListener[] listeners = comp.getMouseListeners();
+			
 			for (MouseListener ml : listeners)
 				comp.removeMouseListener(ml);
 		}
