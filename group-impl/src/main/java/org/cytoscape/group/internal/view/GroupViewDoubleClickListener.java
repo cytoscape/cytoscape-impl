@@ -10,6 +10,7 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
+import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.task.AbstractNodeViewTask;
 import org.cytoscape.task.AbstractNodeViewTaskFactory;
 import org.cytoscape.view.model.CyNetworkView;
@@ -174,7 +175,7 @@ public class GroupViewDoubleClickListener extends AbstractNodeViewTaskFactory
 			
 			if (cyGroupManager.isGroup(node, network)) {
 				CyGroup group = cyGroupManager.getGroup(node, network);
-				String name = getName(group);
+				String name = getGroupName(group);
 				if (group.isCollapsed(network)) {
 					tm.setTitle("Expanding group \""+name+"\"");
 					group.expand(network);
@@ -189,8 +190,8 @@ public class GroupViewDoubleClickListener extends AbstractNodeViewTaskFactory
 				List<CyGroup> groups = cyGroupManager.getGroupsForNode(node);
 				if (groups != null && groups.size() > 0) {
 					CyGroup group = groups.get(0);
-					String name = getName(group);
-					tm.setTitle("Collapsing group \""+name+"\"");
+					String name = getName(node, network);
+					tm.setTitle("Collapsing group for node \""+name+"\"");
 					// Collapse the first one
 					group.collapse(network);
 				}
@@ -200,11 +201,17 @@ public class GroupViewDoubleClickListener extends AbstractNodeViewTaskFactory
 		}
 	}
 
-	String getName(CyGroup group) {
+	String getGroupName(CyGroup group) {
 		CyRootNetwork rootNetwork = group.getRootNetwork();
 		String name = 
 					rootNetwork.getRow(group.getGroupNode(), CyRootNetwork.SHARED_ATTRS).
 						get(CyRootNetwork.SHARED_NAME, String.class);
+		return name;
+	}
+
+	String getName(CyNode node, CyNetwork network) {
+		String name = 
+					network.getRow(node).get(CyNetwork.NAME, String.class);
 		return name;
 	}
 	
