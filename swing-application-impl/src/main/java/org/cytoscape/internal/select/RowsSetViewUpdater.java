@@ -1,30 +1,5 @@
 package org.cytoscape.internal.select;
 
-/*
- * #%L
- * Cytoscape Swing Application Impl (swing-application-impl)
- * $Id:$
- * $HeadURL:$
- * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * #L%
- */
-
-
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
@@ -43,6 +18,7 @@ import org.cytoscape.model.VirtualColumnInfo;
 import org.cytoscape.model.events.RowSetRecord;
 import org.cytoscape.model.events.RowsSetEvent;
 import org.cytoscape.model.events.RowsSetListener;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.View;
@@ -55,38 +31,50 @@ import org.cytoscape.view.vizmap.VisualMappingFunction;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
 
+/*
+ * #%L
+ * Cytoscape Swing Application Impl (swing-application-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
+
 // TODO move to NetworkViewManager?
 /**
  * Once table values are modified, this object updates the views if necessary.
- * 
  */
 public class RowsSetViewUpdater implements RowsSetListener {
 
-	private final VisualMappingManager vmm;
-	private final CyNetworkViewManager vm;
-	private final CyApplicationManager am;
 	private final NetworkViewMediator netViewMediator;
 	private final RowViewTracker tracker;
-	private final CyColumnIdentifierFactory colIdFactory;
+	private final CyServiceRegistrar serviceRegistrar;
 
-	public RowsSetViewUpdater(final CyApplicationManager am, final CyNetworkViewManager vm,
-			final VisualMappingManager vmm, final RowViewTracker tracker, final NetworkViewMediator netViewMediator,
-			final CyColumnIdentifierFactory colIdFactory) {
-		this.am = am;
-		this.vm = vm;
-		this.vmm = vmm;
+	public RowsSetViewUpdater(final RowViewTracker tracker, final NetworkViewMediator netViewMediator,
+			final CyServiceRegistrar serviceRegistrar) {
 		this.netViewMediator = netViewMediator;
 		this.tracker = tracker;
-		this.colIdFactory = colIdFactory;
+		this.serviceRegistrar = serviceRegistrar;
 	}
 
 	/**
 	 * Called whenever {@link CyRow}s are changed. Will attempt to set the
-	 * visual property on the view with the new value that has been set in the
-	 * row.
-	 * 
-	 * @param RowsSetEvent
-	 *            The event to be processed.
+	 * visual property on the view with the new value that has been set in the row.
 	 */
 	@Override
 	public void handleEvent(final RowsSetEvent e) {
@@ -102,18 +90,22 @@ public class RowsSetViewUpdater implements RowsSetListener {
 		boolean refreshView = false;
 		boolean refreshOtherViews = false;
 		
-		final CyNetwork network = am.getCurrentNetwork();
+		final CyNetwork network = serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetwork();
+		
 		if (network == null)
 			return;
 		
 		// 1: Update current network view
-		final Collection<CyNetworkView> views = vm.getNetworkViews(network);
+		final CyNetworkViewManager netViewManager = serviceRegistrar.getService(CyNetworkViewManager.class);
+		final Collection<CyNetworkView> views = netViewManager.getNetworkViews(network);
 		CyNetworkView networkView = null;
+		
 		if (views.isEmpty())
 			return;
 		else
 			networkView = views.iterator().next();
 
+		final VisualMappingManager vmm = serviceRegistrar.getService(VisualMappingManager.class);
 		final VisualStyle vs = vmm.getVisualStyle(networkView);
 		Map<CyRow, View<? extends CyIdentifiable>> rowViewMap = tracker.getRowViewMap(networkView);
 		
@@ -162,11 +154,12 @@ public class RowsSetViewUpdater implements RowsSetListener {
 			
 			if (refreshOtherViews) {
 				// Check other views. If update is required, set the flag.
-				for (final CyNetworkView view : vm.getNetworkViewSet()) {
+				for (final CyNetworkView view : netViewManager.getNetworkViewSet()) {
 					if (view == networkView)
 						continue;
 
 					final VisualStyle style = vmm.getVisualStyle(view);
+					
 					if (style == vs) {
 						// Same style is in use. Need to apply.
 						netViewMediator.setUpdateFlag(view);
@@ -184,9 +177,11 @@ public class RowsSetViewUpdater implements RowsSetListener {
 	 */
 	private boolean isStyleAffected(final VisualStyle vs, final String columnName) {
 		boolean result = false;
-		final RenderingEngine<CyNetwork> renderer = am.getCurrentRenderingEngine();
+		final RenderingEngine<CyNetwork> renderer = serviceRegistrar.getService(CyApplicationManager.class)
+				.getCurrentRenderingEngine();
 		
 		if (renderer != null) {
+			final CyColumnIdentifierFactory colIdFactory = serviceRegistrar.getService(CyColumnIdentifierFactory.class);
 			final CyColumnIdentifier colId = colIdFactory.createColumnIdentifier(columnName);
 			final Set<VisualProperty<?>> properties = renderer.getVisualLexicon().getAllVisualProperties();
 			

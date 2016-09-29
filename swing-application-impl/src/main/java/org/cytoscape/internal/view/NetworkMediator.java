@@ -18,7 +18,6 @@ import javax.swing.JComponent;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 
-import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.events.SetCurrentNetworkEvent;
 import org.cytoscape.application.events.SetCurrentNetworkListener;
 import org.cytoscape.application.events.SetCurrentNetworkViewEvent;
@@ -373,19 +372,14 @@ public class NetworkMediator implements NetworkAddedListener, NetworkViewAddedLi
 	
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private void addFactory(final TaskFactory factory, final Map props) {
-		final CyApplicationManager appMgr = serviceRegistrar.getService(CyApplicationManager.class);
-		final CyNetworkViewManager netViewMgr = serviceRegistrar.getService(CyNetworkViewManager.class);
-		final DialogTaskManager taskMgr = serviceRegistrar.getService(DialogTaskManager.class);
-		
 		final CyAction action;
 		
 		if (props.containsKey("enableFor"))
-			action = new TaskFactoryTunableAction(taskMgr, factory, props, appMgr, netViewMgr);
+			action = new TaskFactoryTunableAction(factory, props, serviceRegistrar);
 		else
-			action = new TaskFactoryTunableAction(taskMgr, factory, props);
+			action = new TaskFactoryTunableAction(serviceRegistrar, factory, props);
 
 		final JMenuItem item = new JMenuItem(action);
-
 		Double gravity = 10.0;
 		
 		if (props.containsKey(ServiceProperties.MENU_GRAVITY))

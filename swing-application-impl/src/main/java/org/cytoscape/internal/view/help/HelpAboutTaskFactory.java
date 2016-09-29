@@ -1,12 +1,16 @@
 package org.cytoscape.internal.view.help;
 
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.work.AbstractTaskFactory;
+import org.cytoscape.work.TaskIterator;
+
 /*
  * #%L
  * Cytoscape Swing Application Impl (swing-application-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,24 +28,16 @@ package org.cytoscape.internal.view.help;
  * #L%
  */
 
-
-import org.cytoscape.application.CyVersion;
-import org.cytoscape.application.swing.CySwingApplication;
-import org.cytoscape.work.AbstractTaskFactory;
-import org.cytoscape.work.TaskIterator;
-
-
 public class HelpAboutTaskFactory extends AbstractTaskFactory {
 
-	private final CyVersion vers;
-	private final CySwingApplication cySwingApp;
+	private final CyServiceRegistrar serviceRegistrar;
 
-	public HelpAboutTaskFactory(CyVersion vers, CySwingApplication cySwingApp) {
-		this.vers = vers;
-		this.cySwingApp = cySwingApp;
+	public HelpAboutTaskFactory(final CyServiceRegistrar serviceRegistrar) {
+		this.serviceRegistrar = serviceRegistrar;
 	}
 
+	@Override
 	public TaskIterator createTaskIterator() {
-		return new TaskIterator(new HelpAboutTask(vers, cySwingApp));
+		return new TaskIterator(new HelpAboutTask(serviceRegistrar));
 	}
 }

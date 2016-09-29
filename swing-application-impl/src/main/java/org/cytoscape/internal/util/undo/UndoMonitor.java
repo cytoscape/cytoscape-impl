@@ -1,12 +1,24 @@
 package org.cytoscape.internal.util.undo;
 
+import java.util.Properties;
+
+import org.cytoscape.application.events.SetCurrentNetworkViewEvent;
+import org.cytoscape.application.events.SetCurrentNetworkViewListener;
+import org.cytoscape.model.events.NetworkDestroyedEvent;
+import org.cytoscape.model.events.NetworkDestroyedListener;
+import org.cytoscape.property.CyProperty;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.view.model.events.NetworkViewDestroyedEvent;
+import org.cytoscape.view.model.events.NetworkViewDestroyedListener;
+import org.cytoscape.work.swing.undo.SwingUndoSupport;
+
 /*
  * #%L
  * Cytoscape Swing Application Impl (swing-application-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,21 +36,6 @@ package org.cytoscape.internal.util.undo;
  * #L%
  */
 
-import java.util.Properties;
-
-import org.cytoscape.view.model.CyNetworkViewManager;
-import org.cytoscape.view.model.events.NetworkViewDestroyedEvent;
-import org.cytoscape.view.model.events.NetworkViewDestroyedListener;
-import org.cytoscape.work.swing.undo.SwingUndoSupport;
-import org.cytoscape.application.events.SetCurrentNetworkViewEvent;
-import org.cytoscape.application.events.SetCurrentNetworkViewListener;
-import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.model.events.NetworkAboutToBeDestroyedEvent;
-import org.cytoscape.model.events.NetworkAboutToBeDestroyedListener;
-import org.cytoscape.model.events.NetworkDestroyedEvent;
-import org.cytoscape.model.events.NetworkDestroyedListener;
-import org.cytoscape.property.CyProperty;
-
 /**
  * This class monitors the undoable edit stack and implements whatever
  * discard policy we might have. Currently, we discard all edits if
@@ -46,32 +43,34 @@ import org.cytoscape.property.CyProperty;
  */
 public class UndoMonitor implements SetCurrentNetworkViewListener, NetworkDestroyedListener, NetworkViewDestroyedListener {
 
-	private SwingUndoSupport undo;
-	private Properties props;
+	private final CyServiceRegistrar serviceRegistrar;
 
-	public UndoMonitor(SwingUndoSupport undo,CyProperty<Properties> cyProps) {
+	public UndoMonitor(final CyServiceRegistrar serviceRegistrar) {
+		this.serviceRegistrar = serviceRegistrar;
 
-		this.undo = undo;
-		this.props = cyProps.getProperties();
-
-		undo.getUndoManager().setLimit( getLimit() );
+		serviceRegistrar.getService(SwingUndoSupport.class).getUndoManager().setLimit(getLimit());
 	}
 
-    private int getLimit() {
-        int lim;
-        try {
-            lim = Integer.parseInt( props.getProperty("undo.limit") );
-        } catch ( Exception e ) {
-            e.printStackTrace();
-            lim = 10;
-        }
+    @SuppressWarnings("unchecked")
+	private int getLimit() {
+    	final CyProperty<Properties> cyProps =
+    			serviceRegistrar.getService(CyProperty.class, "(cyPropertyName=cytoscape3.props)");
+    	final Properties props = cyProps.getProperties();
+		
+    	int lim;
 
-        if ( lim < 0 )
-            lim = 10;
+		try {
+			lim = Integer.parseInt(props.getProperty("undo.limit"));
+		} catch (Exception e) {
+			e.printStackTrace();
+			lim = 10;
+		}
 
-        return lim;
+		if (lim < 0)
+			lim = 10;
+
+		return lim;
     }
-
 
 	/**
 	 * This method listens for changes to the current network and discards all
@@ -79,11 +78,11 @@ public class UndoMonitor implements SetCurrentNetworkViewListener, NetworkDestro
 	 * 
 	 * @param e The change event.
 	 */
+    @Override
 	public void handleEvent(final SetCurrentNetworkViewEvent e) {
 		if (e.getNetworkView() != null)
-			undo.getUndoManager().discardAllEdits();
+			serviceRegistrar.getService(SwingUndoSupport.class).getUndoManager().discardAllEdits();
 	}
-
 
     /**
  	 * This method listens for a network destroy event. If the network being destroyed 
@@ -99,10 +98,9 @@ public class UndoMonitor implements SetCurrentNetworkViewListener, NetworkDestro
 	@Override
 	public void handleEvent(NetworkDestroyedEvent e) {
 		if (e.getSource().getNetworkSet().isEmpty())
-			undo.getUndoManager().discardAllEdits();
+			serviceRegistrar.getService(SwingUndoSupport.class).getUndoManager().discardAllEdits();
 	}
 
-	
 	/**
  	 * This method listens for a network view destroy event. If the network view being destroyed 
  	 * is the only visible view, it discards all of its edits. In case more
@@ -112,9 +110,7 @@ public class UndoMonitor implements SetCurrentNetworkViewListener, NetworkDestro
 	 */
 	@Override
 	public void handleEvent(NetworkViewDestroyedEvent e) {
-
 		if (e.getSource().getNetworkViewSet().isEmpty())
-			undo.reset();
+			serviceRegistrar.getService(SwingUndoSupport.class).reset();
 	}
 }
-

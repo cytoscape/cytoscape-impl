@@ -1,12 +1,16 @@
 package org.cytoscape.internal.view.help;
 
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.work.AbstractTaskFactory;
+import org.cytoscape.work.TaskIterator;
+
 /*
  * #%L
  * Cytoscape Swing Application Impl (swing-application-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,23 +28,16 @@ package org.cytoscape.internal.view.help;
  * #L%
  */
 
-import org.cytoscape.application.CyVersion;
-import org.cytoscape.util.swing.OpenBrowser;
-import org.cytoscape.work.AbstractTaskFactory;
-import org.cytoscape.work.TaskIterator;
-
 public class HelpReportABugTaskFactory extends AbstractTaskFactory {
 
-	private OpenBrowser openBrowser;
-	private final CyVersion cyVersion;
-	public HelpReportABugTaskFactory(OpenBrowser openBrowser,  CyVersion cyVersion) {
-		this.openBrowser = openBrowser;
-		this.cyVersion = cyVersion;
+	private final CyServiceRegistrar serviceRegistrar;
+
+	public HelpReportABugTaskFactory(final CyServiceRegistrar serviceRegistrar) {
+		this.serviceRegistrar = serviceRegistrar;
 	}
+
 	@Override
 	public TaskIterator createTaskIterator() {
-
-		return new TaskIterator(new HelpReportABugTask(openBrowser, cyVersion));
+		return new TaskIterator(new HelpReportABugTask(serviceRegistrar));
 	}
-
 }

@@ -1,12 +1,17 @@
 package org.cytoscape.internal.view.help;
 
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.util.swing.OpenBrowser;
+import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.TaskMonitor;
+
 /*
  * #%L
  * Cytoscape Swing Application Impl (swing-application-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,23 +29,20 @@ package org.cytoscape.internal.view.help;
  * #L%
  */
 
-
-import org.cytoscape.util.swing.OpenBrowser;
-import org.cytoscape.work.AbstractTask;
-import org.cytoscape.work.TaskMonitor;
-
-
 public class HelpContactHelpDeskTask extends AbstractTask {
-	// Google Group's help desk top
-	private String helpDeskURL = "https://groups.google.com/forum/?fromgroups#!forum/cytoscape-helpdesk";
-	private OpenBrowser openBrowser;
+	
+	private static final String HELP_DESK_URL = "https://groups.google.com/forum/?fromgroups#!forum/cytoscape-helpdesk";
+	
+	private final CyServiceRegistrar serviceRegistrar;
 
-	public HelpContactHelpDeskTask(OpenBrowser openBrowser) {
-		this.openBrowser = openBrowser;
+	public HelpContactHelpDeskTask(final CyServiceRegistrar serviceRegistrar) {
+		this.serviceRegistrar = serviceRegistrar;
 	}
 
+	@Override
 	public void run(TaskMonitor tm) {
-		openBrowser.openURL(helpDeskURL);
+		final OpenBrowser openBrowser = serviceRegistrar.getService(OpenBrowser.class);
+		openBrowser.openURL(HELP_DESK_URL);
 	}
 
 	@Override
