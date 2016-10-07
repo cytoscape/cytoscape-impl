@@ -86,9 +86,17 @@ public abstract class AbstractTableDataTask extends AbstractTask {
 	}
 
 	public void createColumn(CyTable table, String name, String typeName, String elementTypeName) {
-		Class type = DataUtils.getType(typeName);
-		Class elementType = DataUtils.getType(elementTypeName);
+		Class<?> type = DataUtils.getType(typeName);
+		Class<?> elementType = DataUtils.getType(elementTypeName);
+		
+		if (name == null)
+			throw new IllegalArgumentException("Column name must be specified");
+		
+		name = name.trim();
 
+		if (name.isEmpty())
+			throw new IllegalArgumentException("Column name must not be blank");
+		
 		if (table.getColumn(name) != null)
 			throw new IllegalArgumentException("A column named "+name+" already exists");
 		if (type.equals(List.class))

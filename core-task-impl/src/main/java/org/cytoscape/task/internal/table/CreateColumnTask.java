@@ -68,12 +68,19 @@ public class CreateColumnTask extends AbstractTableDataTask {
 		}
 
 		if (column == null) {
-			taskMonitor.showMessage(TaskMonitor.Level.ERROR, 
-			                        "Column name must be specified");
+			taskMonitor.showMessage(TaskMonitor.Level.ERROR, "Column name must be specified");
+			return;
+		}
+		
+		column = column.trim();
+		
+		if (column.isEmpty()) {
+			taskMonitor.showMessage(TaskMonitor.Level.ERROR, "Column name must not be blank");
 			return;
 		}
 
 		CyColumn c = table.getColumn(column);
+		
 		if (c != null) {
 			taskMonitor.showMessage(TaskMonitor.Level.ERROR, 
 			                        "Column '"+column+"' already exists in table: "+table.toString());
