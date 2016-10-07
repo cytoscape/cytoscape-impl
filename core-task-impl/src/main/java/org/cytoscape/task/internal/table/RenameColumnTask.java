@@ -43,7 +43,7 @@ public final class RenameColumnTask extends AbstractTableColumnTask implements T
 		return "Rename Column";
 	}
 	
-	@Tunable(description="New column name:")
+	@Tunable(description="New Column Name:")
 	public String newColumnName;
 
 	RenameColumnTask(final UndoSupport undoSupport, final CyColumn column) {
@@ -64,14 +64,24 @@ public final class RenameColumnTask extends AbstractTableColumnTask implements T
 
 	@Override
 	public ValidationState getValidationState(final Appendable errMsg) {
-		if (newColumnName == null || newColumnName.isEmpty()) {
+		if (newColumnName == null) {
 			try {
 				errMsg.append("You must provide a new column name.");
 			} catch (Exception e) {
 			}
 			return ValidationState.INVALID;
 		}
-
+		
+		newColumnName = newColumnName.trim();
+		
+		if (newColumnName.isEmpty()) {
+			try {
+				errMsg.append("Column name must not be blank.");
+			} catch (Exception e) {
+			}
+			return ValidationState.INVALID;
+		}
+		
 		final CyTable table = column.getTable();
 		if (table.getColumn(newColumnName) != null) {
 			try {

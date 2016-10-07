@@ -725,14 +725,22 @@ public class AttributeBrowserToolBar extends JPanel implements PopupMenuListener
 		try {
 			final String[] existingAttrs = getAttributeArray();
 			String newAttribName = null;
+			
 			do {
-				newAttribName = JOptionPane.showInputDialog(this, "Please enter new column name: ",
+				newAttribName = JOptionPane.showInputDialog(this, "Column Name: ",
 									    "Create New " + type + " Column",
 									    JOptionPane.QUESTION_MESSAGE);
+				
 				if (newAttribName == null)
 					return;
-	
-				if (Arrays.binarySearch(existingAttrs, newAttribName) >= 0) {
+				
+				newAttribName = newAttribName.trim();
+				
+				if (newAttribName.isEmpty()) {
+					JOptionPane.showMessageDialog(null, "Column name must not be blank.",
+						      "Error", JOptionPane.ERROR_MESSAGE);
+					newAttribName = null;
+				} else if (Arrays.binarySearch(existingAttrs, newAttribName) >= 0) {
 					JOptionPane.showMessageDialog(null,
 								      "Column " + newAttribName + " already exists.",
 								      "Error", JOptionPane.ERROR_MESSAGE);
