@@ -31,20 +31,18 @@ import java.util.Map;
 import java.util.Set;
 
 import org.cytoscape.model.CyColumn;
-import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.CyTableUtil;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
+import org.cytoscape.task.internal.utils.DataUtils;
 import org.cytoscape.work.AbstractTask;
 
-import org.cytoscape.task.internal.utils.DataUtils;
-
 public abstract class AbstractTableDataTask extends AbstractTask {
+	
 	CyTableManager cyTableManager;
 
 	AbstractTableDataTask(CyTableManager cyTableManager) {
@@ -74,7 +72,7 @@ public abstract class AbstractTableDataTask extends AbstractTask {
 		int count = 0;
 		CyRow row = table.getRow(id.getSUID());
 		for (CyColumn column: valueMap.keySet()) {
-			Class type = column.getType();
+			Class<?> type = column.getType();
 				String name = column.getName();
 			Object value = valueMap.get(column);
 			if (value != null) {
@@ -98,11 +96,13 @@ public abstract class AbstractTableDataTask extends AbstractTask {
 			throw new IllegalArgumentException("Column name must not be blank");
 		
 		if (table.getColumn(name) != null)
-			throw new IllegalArgumentException("A column named "+name+" already exists");
+			throw new IllegalArgumentException("A column named '"+name+"' already exists");
+		
 		if (type.equals(List.class))
 			table.createListColumn(name, elementType, false);
 		else
 			table.createColumn(name, type, false);
+		
 		return;
 	}
 
@@ -116,7 +116,7 @@ public abstract class AbstractTableDataTask extends AbstractTask {
 	}
 
 	public Map<String, Object> getDataFromTable(CyTable table, Object key, List<String> columnList) {
-		Map<String, Object> result = new HashMap<String, Object>();
+		Map<String, Object> result = new HashMap<>();
 		if (table.rowExists(key)) {
 			CyRow row = table.getRow(key);
 			for (String column: columnList) {

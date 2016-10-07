@@ -1,12 +1,24 @@
 package org.cytoscape.task.internal.table;
 
+import java.util.List;
+
+import org.cytoscape.model.CyColumn;
+import org.cytoscape.model.CyTable;
+import org.cytoscape.model.CyTableManager;
+import org.cytoscape.task.internal.utils.ColumnTypeTunable;
+import org.cytoscape.task.internal.utils.DataUtils;
+import org.cytoscape.task.internal.utils.TableTunable;
+import org.cytoscape.work.ContainsTunables;
+import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.Tunable;
+
 /*
  * #%L
  * Cytoscape Core Task Impl (core-task-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,36 +36,19 @@ package org.cytoscape.task.internal.table;
  * #L%
  */
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.model.CyColumn;
-import org.cytoscape.model.CyTable;
-import org.cytoscape.model.CyTableManager;
-import org.cytoscape.work.ContainsTunables;
-import org.cytoscape.work.TaskMonitor;
-import org.cytoscape.work.Tunable;
-import org.cytoscape.task.internal.utils.ColumnTypeTunable;
-import org.cytoscape.task.internal.utils.DataUtils;
-import org.cytoscape.task.internal.utils.TableTunable;
-
 public class CreateColumnTask extends AbstractTableDataTask {
-	final CyApplicationManager appMgr;
+	
+	@ContainsTunables
+	public TableTunable tableTunable;
+
+	@Tunable(description = "Name of column", context = "nogui")
+	public String column;
 
 	@ContainsTunables
-	public TableTunable tableTunable = null;
+	public ColumnTypeTunable columnType;
 
-	@Tunable(description="Name of column", context="nogui")
-	public String column = null;
-
-	@ContainsTunables
-	public ColumnTypeTunable columnType = null;
-
-	public CreateColumnTask(CyApplicationManager appMgr, CyTableManager tableMgr) {
+	public CreateColumnTask(final CyTableManager tableMgr) {
 		super(tableMgr);
-		this.appMgr = appMgr;
 		tableTunable = new TableTunable(tableMgr);
 		columnType = new ColumnTypeTunable();
 	}
@@ -61,6 +56,7 @@ public class CreateColumnTask extends AbstractTableDataTask {
 	@Override
 	public void run(final TaskMonitor taskMonitor) {
 		CyTable table = tableTunable.getTable();
+		
 		if (table == null) {
 			taskMonitor.showMessage(TaskMonitor.Level.ERROR, 
 			                        "Unable to find table '"+tableTunable.getTableString()+"'");
@@ -88,19 +84,23 @@ public class CreateColumnTask extends AbstractTableDataTask {
 		}
 
 		String baseTypeName = columnType.getColumnType();
+		
 		if (baseTypeName == null) {
 			taskMonitor.showMessage(TaskMonitor.Level.ERROR, "Column type must be specified.");
 			return;
 		}
 
-		Class baseType = DataUtils.getType(baseTypeName);
+		Class<?> baseType = DataUtils.getType(baseTypeName);
+		
 		if (baseType.equals(List.class)) {
 			String listTypeName = columnType.getListElementType();
+			
 			if (listTypeName == null) {
 				taskMonitor.showMessage(TaskMonitor.Level.ERROR, "List element type must be specified for list columns.");
 				return;
 			}
-			Class listType = DataUtils.getType(listTypeName);
+			
+			Class<?> listType = DataUtils.getType(listTypeName);
 			table.createListColumn(column, listType, false);
 			taskMonitor.showMessage(TaskMonitor.Level.INFO, "Created list column: "+column);
 		} else {
@@ -108,5 +108,4 @@ public class CreateColumnTask extends AbstractTableDataTask {
 			taskMonitor.showMessage(TaskMonitor.Level.INFO, "Created column: "+column);
 		}
 	}
-
 }

@@ -1677,8 +1677,7 @@ public class CyActivator extends AbstractCyActivator {
 		addRowTaskFactoryProps.setProperty(COMMAND_DESCRIPTION, "Add a new row to a table");
 		registerService(bc,addRowTaskFactory,TaskFactory.class,addRowTaskFactoryProps);
 
-		CreateColumnTaskFactory createColumnTaskFactory = 
-			new CreateColumnTaskFactory(cyApplicationManagerServiceRef, cyTableManagerServiceRef); 
+		CreateColumnTaskFactory createColumnTaskFactory = new CreateColumnTaskFactory(serviceRegistrar);
 		Properties createColumnTaskFactoryProps = new Properties();
 		createColumnTaskFactoryProps.setProperty(COMMAND, "create column");
 		createColumnTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "table");
