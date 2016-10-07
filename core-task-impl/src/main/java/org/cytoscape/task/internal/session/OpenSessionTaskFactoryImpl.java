@@ -54,7 +54,6 @@ public class OpenSessionTaskFactoryImpl extends AbstractTaskFactory implements O
 
 	private final TunableSetter tunableSetter; 
 	
-	private OpenSessionTask task;
 
 	public OpenSessionTaskFactoryImpl(final CySessionManager mgr,
 									  final CySessionReaderManager rmgr,
@@ -78,9 +77,7 @@ public class OpenSessionTaskFactoryImpl extends AbstractTaskFactory implements O
 
 	@Override
 	public synchronized TaskIterator createTaskIterator() {
-		task = new OpenSessionTask(mgr, rmgr, netManager, tableManager, netTableManager, grManager, tracker,
-				eventHelper);
-		
+		OpenSessionTask task = new OpenSessionTask(mgr, rmgr, netManager, tableManager, netTableManager, grManager, tracker, eventHelper);
 		return new TaskIterator(2, task);
 	}
 
