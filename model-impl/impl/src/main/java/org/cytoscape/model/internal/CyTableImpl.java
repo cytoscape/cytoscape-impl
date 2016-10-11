@@ -1118,26 +1118,37 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 	public boolean deleteRows(final Collection<?> primaryKeys) {
 		boolean changed = false;
 		synchronized(lock) {
-			for (Object key : primaryKeys) {
-				checkKey(key);
-
-				CyRow row = rows.remove(key);
-				if (row != null) {
-					rowList.remove(row);
-					changed = true;
-				}
-
-				for (CyColumn col : getColumns()) {
-					final String normalizedColName = normalizeColumnName(col.getName());
-					final Map<Object, Object> keyToValueMap = attributes.get(normalizedColName);
-					if (keyToValueMap != null) {
-						keyToValueMap.remove(key);
-					}
+			// collect the attribute maps for the columns, faster to normalize column names outside the main loop
+			Collection<CyColumn> columns = getColumns();
+			List<Map<?,?>> attributeMaps = new ArrayList<>(columns.size());
+			for(CyColumn col : columns) {
+				final String normalizedColName = normalizeColumnName(col.getName());
+				final Map<?,?> keyToValueMap = attributes.get(normalizedColName);
+				if(keyToValueMap != null) {
+					attributeMaps.add(keyToValueMap);
 				}
 			}
+			
+			// batch remove from rowList for performance
+			Set<CyRow> rowsToRemoveFromList = new HashSet<>();
+			
+			// main loop
+			for (Object key : primaryKeys) {
+				checkKey(key);
+				CyRow row = rows.remove(key);
+				if (row != null) {
+					rowsToRemoveFromList.add(row);
+					for(Map<?,?> keyToValueMap : attributeMaps) {
+						keyToValueMap.remove(key);
+					}
+					changed = true;
+				}
+			}
+			rowList.removeAll(rowsToRemoveFromList);
 		}
 		if(changed)
 			eventHelper.fireEvent(new RowsDeletedEvent( this,  (Collection<Object>) primaryKeys));
+		
 		return changed;
 	}
 	

@@ -248,7 +248,7 @@ public final class CySubNetworkImpl extends DefaultTablesNetwork implements CySu
 		CyTable edgeDefaultTable = getTable(CyEdge.class, CyNetwork.DEFAULT_ATTRS);
 		
 		List<Long> nodeSuids = new ArrayList<>();
-		List<Long> edgeSuids = new ArrayList<>();
+		Set<Long> edgeSuids = new HashSet<>();
 		Set<CyEdge> edges = new HashSet<>();
 
 		for(CyNode node: nodes) {
