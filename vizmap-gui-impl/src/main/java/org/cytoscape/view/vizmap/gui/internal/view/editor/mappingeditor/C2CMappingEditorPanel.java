@@ -257,17 +257,19 @@ public class C2CMappingEditorPanel<K extends Number, V extends Number> extends C
 			this.spinnerModel = model;
 		}
 
+		@Override
 		public void stateChanged(ChangeEvent e) {
-
 			final Number newVal = spinnerModel.getNumber().doubleValue();
 			final int selectedIndex = getSlider().getSelectedIndex();
 			V currentValue = getSlider().getModel().getThumbAt(selectedIndex).getObject();
-			if(currentValue.equals(newVal))
+			
+			if (currentValue.equals(newVal))
 				return;
 			
 			getSlider().getModel().getThumbAt(selectedIndex).setObject(convertToValue(newVal));
-			//updateMap();
 			getSlider().repaint();
+			
+			updateMap();
 		}
 	}
 
