@@ -224,16 +224,6 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 	}
 
 	void updateColumnName(final String oldColumnName, final String newColumnName) {
-		
-		if (oldColumnName.equalsIgnoreCase(newColumnName))
-			return;
-
-		for(final String curColumnName : types.keySet())
-			if (curColumnName.equalsIgnoreCase(newColumnName))
-				throw new IllegalArgumentException("column already exists with name: '"
-					   + curColumnName + "' with type: "
-					   + types.get(curColumnName).getType());
-		
 		synchronized(lock) {
 			if (currentlyActiveAttributes.remove(oldColumnName)) {
 				currentlyActiveAttributes.add(newColumnName);
@@ -248,8 +238,8 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 			}
 
 			final CyColumn column = types.get(normalizedOldColName);
+			types.remove(normalizedOldColName);
 			types.put(normalizedNewColName, column);
-			types.remove( normalizedOldColName);
 			
 			final VirtualColumn virtualColumn = virtualColumnMap.get(normalizedOldColName);
 			if (virtualColumn != null) {
