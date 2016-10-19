@@ -16,10 +16,9 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.KeyboardFocusManager;
+import java.awt.LayoutManager;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
 import java.awt.event.KeyEvent;
 
 import javax.swing.AbstractAction;
@@ -31,6 +30,7 @@ import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JRootPane;
 import javax.swing.JSeparator;
 import javax.swing.JTable;
 import javax.swing.JTextField;
@@ -82,7 +82,7 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 	private final RenderingEngine<CyNetwork> renderingEngine;
 	private final RenderingEngineFactory<CyNetwork> thumbnailEngineFactory;
 
-	private SimpleRootPaneContainer visualizationContainer;
+	private VisRootPaneContainer visualizationContainer;
 	
 	private JPanel toolBar;
 	private JButton detachViewButton;
@@ -303,14 +303,6 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 		getContentPane().add(getVisualizationContainer(), BorderLayout.CENTER);
 		getContentPane().add(getToolBar(), BorderLayout.SOUTH);
 		
-		getVisualizationContainer().addComponentListener(new ComponentAdapter() {
-			@Override
-			public void componentResized(ComponentEvent e) {
-				if (!detached) // if detached, let the View frame handle it
-					updateViewSize();
-			};
-		});
-		
 		setKeyBindings(this);
 		setKeyBindings(getRootPane());
 		
@@ -337,9 +329,9 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 		return networkView;
 	}
 	
-	protected SimpleRootPaneContainer getVisualizationContainer() {
+	protected VisRootPaneContainer getVisualizationContainer() {
 		if (visualizationContainer == null) {
-			visualizationContainer = new SimpleRootPaneContainer();
+			visualizationContainer = new VisRootPaneContainer();
 		}
 		
 		return visualizationContainer;
@@ -664,6 +656,38 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 				networkView.updateView();
 			
 			resizeTimer.stop();
+		}
+	}
+	
+	protected final class VisRootPaneContainer extends SimpleRootPaneContainer {
+		
+		@Override
+		protected JRootPane createDefaultRootPane() {
+			return new VisRootPane();
+		}
+	}
+	
+	private final class VisRootPane extends JRootPane {
+
+		@Override
+		protected LayoutManager createRootLayout() {
+	        return new VisRootLayout();
+	    }
+		
+		protected class VisRootLayout extends RootLayout {
+
+			@Override
+			public void layoutContainer(Container parent) {
+				final int w = contentPane != null ? contentPane.getWidth() : 0;
+				final int h = contentPane != null ? contentPane.getHeight() : 0;
+				
+				super.layoutContainer(parent);
+
+				// If there are any changes to the content pane size after this layout manager updates the container,
+				// then update the network view as well
+				if (contentPane != null && (contentPane.getWidth() != w || contentPane.getHeight() != h))
+					updateViewSize();
+			}
 		}
 	}
 }
