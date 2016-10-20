@@ -1,5 +1,8 @@
 package org.cytoscape.app.internal.util;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /*
  * #%L
  * Cytoscape App Impl (app-impl)
@@ -28,6 +31,8 @@ package org.cytoscape.app.internal.util;
  * A class used to manage print commands for aiding in debugging
  */
 public class DebugHelper {
+	private static final Logger sysLogger = LoggerFactory.getLogger(DebugHelper.class);
+	
 	private static boolean debug = false;
 //	private static boolean debug = true;
 	
@@ -35,6 +40,7 @@ public class DebugHelper {
 		if (debug) {
 			System.out.println("DebugHelper: " + message);
 		}
+		sysLogger.debug(message);
 	}
 	
 	/**
@@ -45,6 +51,10 @@ public class DebugHelper {
 	public static void print(Object source, String message) {
 		if (debug) {
 			System.out.println("<" + source + ">: " + message);
+		}
+		if(sysLogger.isDebugEnabled())
+		{
+			sysLogger.debug("<" + source + ">: " + message);
 		}
 	}
 }
