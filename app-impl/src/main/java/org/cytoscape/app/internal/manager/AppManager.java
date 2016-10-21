@@ -247,7 +247,9 @@ public class AppManager implements FrameworkListener {
 		for (App app: installOnRestartApps) {
 			try {
 				app.moveAppFile(this, new File(getInstalledAppsPath()));
+				userLogger.info("Moved app '" + app.getAppName() + "' that was marked for install on restart to the 'installed' directory.");				
 			} catch (IOException e) {
+				userLogger.error("Cannot move app '" + app.getAppName() + "' that was marked for install on restart to the 'installed' directory:", e);				
 			}
 		}
 		
@@ -255,6 +257,7 @@ public class AppManager implements FrameworkListener {
 		try {
 			FileUtils.deleteDirectory(new File(getInstallOnRestartAppsPath()));
 		} catch (IOException e) {
+			userLogger.warn("Could not delete the directory of apps to install on restart:", e);				
 		}
 		
 		setupAlterationMonitor();
@@ -266,18 +269,22 @@ public class AppManager implements FrameworkListener {
 			try {
 				boolean appRegistered = false;
 				for (App regApp : apps) {
-					if (regApp.heuristicEquals(app))
+					if (regApp.heuristicEquals(app)) {
+						userLogger.warn("Disabled app '" + app.getAppName() + "' in file '" + app.getAppFile().getAbsolutePath() + "' is equal to an already registered app '" + regApp.getAppName() + "' in file '" + (regApp.getAppFile() == null ? "N/A" : regApp.getAppFile().getAbsolutePath()) + "'");
 						appRegistered = true;
+					}
 				}
 				if (!appRegistered) {
 					apps.add(app);
 					app.setStatus(AppStatus.DISABLED);
 				} else {
 					// Delete the copy
+					userLogger.info("Trying to delete the disabled copy of app '" + app.getAppName() + "' in file '" + app.getAppFile().getAbsolutePath() + "' because another copy exists.");				
 					FileUtils.deleteQuietly(app.getAppFile());
 					app.setAppFile(null);
 				}		
 			} catch (Throwable e) {
+				userLogger.error("Error validating status of the disabled app '" + app.getAppName() + "'.", e);				
 			}
 		}
 		
@@ -286,18 +293,22 @@ public class AppManager implements FrameworkListener {
 			try {
 				boolean appRegistered = false;
 				for (App regApp : apps) {
-					if (regApp.heuristicEquals(app))
+					if (regApp.heuristicEquals(app)) {
+						userLogger.warn("Uninstalled app '" + app.getAppName() + "' in file '" + app.getAppFile().getAbsolutePath() + "' is equal to an already registered app '" + regApp.getAppName() + "' in file '" + (regApp.getAppFile() == null ? "N/A" : regApp.getAppFile().getAbsolutePath()) + "'");
 						appRegistered = true;
+					}
 				}
 				if (!appRegistered) {
 					apps.add(app);
 					app.setStatus(AppStatus.UNINSTALLED);
 				} else {
 					// Delete the copy
+					userLogger.info("Trying to delete the uninstalled copy of app '" + app.getAppName() + "' in file '" + app.getAppFile().getAbsolutePath() + "' because another copy exists.");				
 					FileUtils.deleteQuietly(app.getAppFile());
 					app.setAppFile(null);
 				}
 			} catch (Throwable e) {
+				userLogger.error("Error validating status of the uninstalled app '" + app.getAppName() + "'.", e);				
 			}
 		}
 		
@@ -309,19 +320,35 @@ public class AppManager implements FrameworkListener {
 		for(App app: installedApps) {
 			boolean appRegistered = false;
 			for (App regApp : apps) {
-				if (regApp.heuristicEquals(app))
+				if (regApp.heuristicEquals(app)) {
+					userLogger.warn("Installed app '" + app.getAppName() + "' in file '" + app.getAppFile().getAbsolutePath() + "' is equal to an already registered app '" + regApp.getAppName() + "' in file '" + (regApp.getAppFile() == null ? "N/A" : regApp.getAppFile().getAbsolutePath()) + "'");
 					appRegistered = true;
+				}
 			}
 			if (!appRegistered) {
 				apps.add(app);
 				String appName = app.getAppName().toLowerCase();
 				App currentVersion = appsToStart.get(appName);
-				if(app.isCompatible(version) && (currentVersion == null ||  
-						compareApps(currentVersion, app) > 0))
-					appsToStart.put(appName, app);
+				if(app.isCompatible(version)) {
+					if (currentVersion == null) {
+						appsToStart.put(appName, app);
+					}
+					else if (compareApps(currentVersion, app) > 0) {
+						userLogger.warn("Installed app '" + app.getAppName() + "' version  " + app.getVersion() + " will override an older version (" + currentVersion.getVersion() + ") that was registered previously.");					
+						appsToStart.put(appName, app);						
+					}
+					else
+					{
+						userLogger.warn("Installed app '" + app.getAppName() + "' version " + app.getVersion() + " will not be started, because a newer version (" + currentVersion.getVersion() + ") was already registered.");					
+					}
+				}
+				else {
+					userLogger.error("Installed app '" + app.getAppName() + "' is not compatible with the running version of Cytoscape (" + version.getVersion() + ").");					
+				}
 			}
 			else {
 				// Delete the copy
+				userLogger.info("Trying to delete the installed copy of app '" + app.getAppName() + "' in file '" + app.getAppFile().getAbsolutePath() + "' because another copy exists.");				
 				FileUtils.deleteQuietly(app.getAppFile());
 				app.setAppFile(null);
 			}
@@ -365,6 +392,7 @@ public class AppManager implements FrameworkListener {
 			App app = i.next();
 			try {
 				app.load(this);
+				userLogger.info("Loaded app " + app.getAppName());
 			} catch (AppLoadingException e) {
 				i.remove();
 				success = false;
@@ -377,6 +405,7 @@ public class AppManager implements FrameworkListener {
 			try {
 				app.start(this);
 				app.setStatus(AppStatus.INSTALLED);
+				userLogger.info("Started app " + app.getAppName());
 			} catch (AppStartupException e) {
 				success = false;
 				app.setStatus(AppStatus.FAILED_TO_START);
@@ -409,13 +438,21 @@ public class AppManager implements FrameworkListener {
 					parsedApp = appParser
 							.parseApp(file);
 				} catch (AppParsingException e) {
+					userLogger.error("Could not parse app from newly discovered file '" + file.getAbsolutePath() + "' :", e);
 					return;
 				}
 				boolean startApp = parsedApp.isCompatible(version);
+				
+				if(!startApp) {
+					userLogger.error("Newly discovered app '" + parsedApp.getAppName() + "' is not compatible with the running version of Cytoscape (" + version + ").");					
+				}
+				
 				App registeredApp = null;
 				for (App app : apps) {
 					if (parsedApp.heuristicEquals(app)) {
 						registeredApp = app;
+						
+						userLogger.warn("Newly discovered app '" + parsedApp.getAppName() + "' in file '" + parsedApp.getAppFile().getAbsolutePath() + "' is equal to an already registered app '" + registeredApp.getAppName() + "' in file '" + (registeredApp.getAppFile() == null ? "N/A" : registeredApp.getAppFile().getAbsolutePath()) + "'");
 						
 						// Delete old file if it was still there
 						File oldFile = registeredApp
@@ -424,21 +461,25 @@ public class AppManager implements FrameworkListener {
 						if (oldFile != null && oldFile.exists() && !registeredApp
 								.getAppFile().equals(parsedApp
 										.getAppFile())) {
+							userLogger.info("Trying to delete the installed copy of app '" + registeredApp.getAppName() + "' in file '" + registeredApp.getAppFile().getAbsolutePath() + "' because another copy exists.");				
 							FileUtils.deleteQuietly(oldFile);
 						}
 						
 						// Update file reference to reflect file having been moved
 						registeredApp.setAppFile(file);
 						registeredApp.setStatus(AppStatus.INACTIVE);
-					}
+					} 
 					else if(parsedApp.isCompatible(version) && parsedApp.getAppName().equals(app.getAppName())) {
 						try {
 							if(!app.isDetached() && app.isCompatible(version)) {
-								if(compareApps(parsedApp, app) > 0)
+								if(compareApps(parsedApp, app) > 0) {									
 									startApp = false;
+									userLogger.warn("Not starting newly discovered app '" + parsedApp.getAppName() + "' because a newer version is already loaded.");
+								}	
 								else {
 									app.unload(AppManager.this);
 									app.setStatus(AppStatus.INACTIVE);
+									userLogger.warn("Unloading app '" + app.getAppName() + "' because the newly discovered app '" + parsedApp.getAppName() + "' is a newer version.");
 								}
 							}
 						} catch (AppUnloadingException e) {
@@ -460,6 +501,7 @@ public class AppManager implements FrameworkListener {
 						app.load(appManager);
 						app.start(appManager);
 						app.setStatus(AppStatus.INSTALLED);
+						userLogger.info("Started newly discovered app '" + app.getAppName() + "'.");
 					}
 				}
 				catch (AppLoadingException e) {
@@ -502,6 +544,7 @@ public class AppManager implements FrameworkListener {
 				try {
 					registeredApp.unload(appManager);
 					registeredApp.setStatus(AppStatus.FILE_MOVED);
+					userLogger.info("Unloaded app '" + registeredApp.getAppName() + "', because its file is no longer available.");
 				}
 				catch (AppUnloadingException e) {
 					userLogger.warn("Failed to unload app " + registeredApp.getAppName(), e);
@@ -536,6 +579,7 @@ public class AppManager implements FrameworkListener {
 						appToStart.load(appManager);
 						appToStart.start(appManager);
 						appToStart.setStatus(AppStatus.INSTALLED);
+						userLogger.info("Started app " + appToStart.getAppName() + " because a different version has been unloaded.");
 					}
 					catch (AppLoadingException e) {
 						appToStart.setStatus(AppStatus.FAILED_TO_LOAD);
