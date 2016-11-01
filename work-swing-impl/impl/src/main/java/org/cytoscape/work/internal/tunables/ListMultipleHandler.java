@@ -101,7 +101,7 @@ public class ListMultipleHandler<T> extends AbstractGUITunableHandler
 		try {
 			return (ListMultipleSelection<T>)getValue();
 		} catch(final Exception e) {
-			throw new NullPointerException("bad ListMultipleSelection object");	
+			throw new IllegalStateException("bad ListMultipleSelection object", e);	
 		}
 	}
 

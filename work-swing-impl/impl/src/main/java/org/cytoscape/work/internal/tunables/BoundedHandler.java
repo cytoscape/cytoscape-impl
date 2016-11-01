@@ -47,6 +47,8 @@ import org.cytoscape.work.internal.tunables.utils.TunableSlider;
 import org.cytoscape.work.swing.AbstractGUITunableHandler;
 import org.cytoscape.work.util.AbstractBounded;
 import org.cytoscape.work.util.BoundedChangeListener;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**
@@ -59,6 +61,9 @@ import org.cytoscape.work.util.BoundedChangeListener;
 @SuppressWarnings({ "unchecked", "rawtypes" })
 public class BoundedHandler<T extends AbstractBounded, N> extends AbstractGUITunableHandler 
                                                           implements BoundedChangeListener<N> {
+	
+	private static final Logger logger = LoggerFactory.getLogger(BoundedHandler.class);
+	
 	/**
 	 * Representation of the <code>Bounded</code> in a <code>JSlider</code>
 	 */
@@ -122,7 +127,7 @@ public class BoundedHandler<T extends AbstractBounded, N> extends AbstractGUITun
 			lastBounded.addListener(this);
 			initPanel(bounded);
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error("Error in initialization: ", e);
 		}
 	}
 
@@ -187,7 +192,7 @@ public class BoundedHandler<T extends AbstractBounded, N> extends AbstractGUITun
 		try {
 			return (T)getValue();
 		} catch (final Exception e) {
-			e.printStackTrace();
+			logger.error("Could not get value ", e);
 			throw e;
 		}
 	}
@@ -227,7 +232,7 @@ public class BoundedHandler<T extends AbstractBounded, N> extends AbstractGUITun
 				}
 			}
 		} catch (Exception e){
-			e.printStackTrace();
+			logger.error("Could not update bounded value", e);
 		}
 		isUpdating = false;
 	}
@@ -258,7 +263,7 @@ public class BoundedHandler<T extends AbstractBounded, N> extends AbstractGUITun
 			
 			setValue(bounded);
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error("Could not set bounded value", e);
 		}
 	}
 
@@ -271,6 +276,7 @@ public class BoundedHandler<T extends AbstractBounded, N> extends AbstractGUITun
 		try {
 			return getBounded().getValue().toString();
 		} catch (final Exception e) {
+			logger.error("Error getting state", e);
 			return "";
 		}
 	}
