@@ -3,12 +3,12 @@
 	<parent>
 		<groupId>org.cytoscape</groupId>
 		<artifactId>impl-parent</artifactId>
-		<version>3.5.0-SNAPSHOT</version>
+		<version>3.6.0-SNAPSHOT</version>
 	</parent>
 
 	<groupId>org.cytoscape</groupId>
 	<artifactId>work-swing-impl-parent</artifactId>
-  <version>3.5.0-SNAPSHOT</version>
+  <version>3.6.0-SNAPSHOT</version>
 	<packaging>pom</packaging>
     <name>Cytoscape Work Swing Impl Parent (${project.artifactId})</name>
 
