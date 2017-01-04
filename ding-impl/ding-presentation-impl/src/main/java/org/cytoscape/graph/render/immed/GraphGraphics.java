@@ -23,6 +23,29 @@ package org.cytoscape.graph.render.immed;
  * <http://www.gnu.org/licenses/lgpl-2.1.html>.
  * #L%
  */
+import static java.awt.RenderingHints.KEY_ALPHA_INTERPOLATION;
+import static java.awt.RenderingHints.KEY_ANTIALIASING;
+import static java.awt.RenderingHints.KEY_COLOR_RENDERING;
+import static java.awt.RenderingHints.KEY_DITHERING;
+import static java.awt.RenderingHints.KEY_FRACTIONALMETRICS;
+import static java.awt.RenderingHints.KEY_INTERPOLATION;
+import static java.awt.RenderingHints.KEY_RENDERING;
+import static java.awt.RenderingHints.KEY_STROKE_CONTROL;
+import static java.awt.RenderingHints.KEY_TEXT_ANTIALIASING;
+import static java.awt.RenderingHints.VALUE_ALPHA_INTERPOLATION_QUALITY;
+import static java.awt.RenderingHints.VALUE_ALPHA_INTERPOLATION_SPEED;
+import static java.awt.RenderingHints.VALUE_ANTIALIAS_OFF;
+import static java.awt.RenderingHints.VALUE_ANTIALIAS_ON;
+import static java.awt.RenderingHints.VALUE_COLOR_RENDER_QUALITY;
+import static java.awt.RenderingHints.VALUE_COLOR_RENDER_SPEED;
+import static java.awt.RenderingHints.VALUE_DITHER_ENABLE;
+import static java.awt.RenderingHints.VALUE_FRACTIONALMETRICS_ON;
+import static java.awt.RenderingHints.VALUE_INTERPOLATION_BICUBIC;
+import static java.awt.RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR;
+import static java.awt.RenderingHints.VALUE_RENDER_QUALITY;
+import static java.awt.RenderingHints.VALUE_RENDER_SPEED;
+import static java.awt.RenderingHints.VALUE_STROKE_PURE;
+import static java.awt.RenderingHints.VALUE_TEXT_ANTIALIAS_ON;
 
 import java.awt.AlphaComposite;
 import java.awt.BasicStroke;
@@ -35,15 +58,12 @@ import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Paint;
 import java.awt.Rectangle;
-import java.awt.RenderingHints;
 import java.awt.Shape;
 import java.awt.Stroke;
 import java.awt.TexturePaint;
 import java.awt.font.FontRenderContext;
 import java.awt.font.GlyphVector;
 import java.awt.geom.AffineTransform;
-import java.awt.geom.Arc2D;
-import java.awt.geom.Ellipse2D;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Line2D;
 import java.awt.geom.Rectangle2D;
@@ -164,7 +184,7 @@ public final class GraphGraphics {
 	private static final double CURVE_ELLIPTICAL = (4.0d * (Math.sqrt(2.0d) - 1.0d)) / 3.0d;
 
 	// Mapping from node to its border stroke object.
-	private static final Map<Float,Stroke> borderStrokes = new HashMap<Float,Stroke>();
+	private static final Map<Float,Stroke> borderStrokes = new HashMap<>();
 
 	static {		
 		nodeShapes = new HashMap<>();
@@ -206,8 +226,6 @@ public final class GraphGraphics {
 	private final AffineTransform m_currXform = new AffineTransform();
 	private final AffineTransform m_currNativeXform = new AffineTransform();
 	private final AffineTransform m_xformUtil = new AffineTransform();
-	private final Arc2D.Double m_arc2d = new Arc2D.Double();
-	private final Ellipse2D.Double m_ellp2d = new Ellipse2D.Double();
 	private final GeneralPath m_path2d = new GeneralPath();
 	private final GeneralPath m_path2dPrime = new GeneralPath();
 	private final Line2D.Double m_line2d = new Line2D.Double();
@@ -215,7 +233,9 @@ public final class GraphGraphics {
 
 	// package scoped for unit testing
 	final EdgeAnchors m_noAnchors = new EdgeAnchors() {
+		@Override
 		public final int numAnchors() { return 0; }
+		@Override
 		public final void getAnchor(final int inx, final float[] arr, final int off) { }
 	};
 
@@ -315,15 +335,12 @@ public final class GraphGraphics {
 	 * @exception IllegalArgumentException
 	 *                if scaleFactor is not positive.
 	 */
-	public final void clear(final Paint bgPaint, final double xCenter,
-			final double yCenter, final double scaleFactor) {
+	public final void clear(final Paint bgPaint, final double xCenter, final double yCenter, final double scaleFactor) {
 		if (m_debug) {
 			checkDispatchThread();
 
-			if (!(scaleFactor > 0.0d)) {
-				throw new IllegalArgumentException(
-						"scaleFactor is not positive");
-			}
+			if (!(scaleFactor > 0.0d))
+				throw new IllegalArgumentException("scaleFactor is not positive");
 		}
 
 		if (m_gMinimal != null) {
@@ -337,7 +354,6 @@ public final class GraphGraphics {
 
 		m_g2d = (Graphics2D) image.getGraphics();
 
-
 		if (m_clear) {
 			final Composite origComposite = m_g2d.getComposite();
 			m_g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC));
@@ -349,34 +365,23 @@ public final class GraphGraphics {
 		// For detailed view, render high quality image as much as possible.
 		
 		// Antialiasing is ON
-		m_g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-				RenderingHints.VALUE_ANTIALIAS_ON);
-		
+		m_g2d.setRenderingHint(KEY_ANTIALIASING, VALUE_ANTIALIAS_ON);
+
 		// Rendering quality is HIGH.
-		m_g2d.setRenderingHint(RenderingHints.KEY_RENDERING,
-				RenderingHints.VALUE_RENDER_QUALITY);
-		
+		m_g2d.setRenderingHint(KEY_RENDERING, VALUE_RENDER_QUALITY);
+
 		// High quality alpha blending is ON.
-		m_g2d.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION,
-				RenderingHints.VALUE_ALPHA_INTERPOLATION_QUALITY);
-		
+		m_g2d.setRenderingHint(KEY_ALPHA_INTERPOLATION, VALUE_ALPHA_INTERPOLATION_QUALITY);
+
 		// High quality color rendering is ON.
-		m_g2d.setRenderingHint(RenderingHints.KEY_COLOR_RENDERING,
-				RenderingHints.VALUE_COLOR_RENDER_QUALITY);
-		
-		m_g2d.setRenderingHint(RenderingHints.KEY_DITHERING,
-				RenderingHints.VALUE_DITHER_ENABLE);
-		
-		m_g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
-				RenderingHints.VALUE_INTERPOLATION_BICUBIC);
-		
+		m_g2d.setRenderingHint(KEY_COLOR_RENDERING, VALUE_COLOR_RENDER_QUALITY);
+		m_g2d.setRenderingHint(KEY_DITHERING, VALUE_DITHER_ENABLE);
+		m_g2d.setRenderingHint(KEY_INTERPOLATION, VALUE_INTERPOLATION_BICUBIC);
+
 		// Text antialiasing is ON.
-		m_g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,
-				RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-		m_g2d.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS,
-				RenderingHints.VALUE_FRACTIONALMETRICS_ON);
-		m_g2d.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL,
-				RenderingHints.VALUE_STROKE_PURE);
+		m_g2d.setRenderingHint(KEY_TEXT_ANTIALIASING, VALUE_TEXT_ANTIALIAS_ON);
+		m_g2d.setRenderingHint(KEY_FRACTIONALMETRICS, VALUE_FRACTIONALMETRICS_ON);
+		m_g2d.setRenderingHint(KEY_STROKE_CONTROL, VALUE_STROKE_PURE);
 		
 		m_g2d.setStroke(new BasicStroke(0.0f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND, 10.0f));
 
@@ -467,33 +472,29 @@ public final class GraphGraphics {
 	 *                if xMin is not less than xMax, if yMin is not less than
 	 *                yMax, or if fillColor is not opaque.
 	 */
-	public final void drawNodeLow(final float xMin, final float yMin,
-			final float xMax, final float yMax, final Color fillColor) {
+	public final void drawNodeLow(final float xMin, final float yMin, final float xMax, final float yMax,
+			final Color fillColor) {
 		if (m_debug) {
 			checkDispatchThread();
 			checkCleared();
 			checkOrder(xMin,xMax,"x");
 			checkOrder(yMin,yMax,"y");
 
-			if (fillColor.getAlpha() != 255) {
+			if (fillColor.getAlpha() != 255)
 				throw new IllegalArgumentException("fillColor is not opaque");
-			}
 		}
 
-		if (m_gMinimal == null) {
+		if (m_gMinimal == null)
 			makeMinimalGraphics();
-		}
 
-		// I'm transforming points manually because the resulting underlying
-		// graphics pipeline used is much faster.
+		// I'm transforming points manually because the resulting underlying graphics pipeline used is much faster.
 		m_ptsBuff[0] = xMin;
 		m_ptsBuff[1] = yMin;
 		m_ptsBuff[2] = xMax;
 		m_ptsBuff[3] = yMax;
 		m_currXform.transform(m_ptsBuff, 0, m_ptsBuff, 0, 2);
 
-		// Here, double values outside of the range of ints will be cast to
-		// the nearest int without overflow.
+		// Here, double values outside of the range of ints will be cast to the nearest int without overflow.
 		final int xNot = (int) m_ptsBuff[0];
 		final int yNot = (int) m_ptsBuff[1];
 		final int xOne = (int) m_ptsBuff[2];
@@ -508,16 +509,11 @@ public final class GraphGraphics {
 	 */
 	private final void makeMinimalGraphics() {
 		m_gMinimal = (Graphics2D) image.getGraphics();
-		m_gMinimal.setRenderingHint(RenderingHints.KEY_RENDERING,
-				RenderingHints.VALUE_RENDER_SPEED);
-		m_gMinimal.setRenderingHint(RenderingHints.KEY_COLOR_RENDERING,
-		 		RenderingHints.VALUE_COLOR_RENDER_SPEED);
-		m_gMinimal.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION,
-				RenderingHints.VALUE_ALPHA_INTERPOLATION_SPEED);
-		m_gMinimal.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-				RenderingHints.VALUE_ANTIALIAS_OFF);
-		m_gMinimal.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
-				RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
+		m_gMinimal.setRenderingHint(KEY_RENDERING, VALUE_RENDER_SPEED);
+		m_gMinimal.setRenderingHint(KEY_COLOR_RENDERING, VALUE_COLOR_RENDER_SPEED);
+		m_gMinimal.setRenderingHint(KEY_ALPHA_INTERPOLATION, VALUE_ALPHA_INTERPOLATION_SPEED);
+		m_gMinimal.setRenderingHint(KEY_ANTIALIASING, VALUE_ANTIALIAS_OFF);
+		m_gMinimal.setRenderingHint(KEY_INTERPOLATION, VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
 	}
 
 	/**
@@ -582,49 +578,49 @@ public final class GraphGraphics {
 	 *                nodeShape is neither one of the SHAPE_* constants nor a
 	 *                previously defined custom node shape.
 	 */
-	public final Shape drawNodeFull(final byte nodeShape, final float xMin,
-			final float yMin, final float xMax, final float yMax,
-			final Paint fillPaint, final float borderWidth, final Stroke borderStroke,
-			final Paint borderPaint) {
+	public final Shape drawNodeFull(
+			final byte nodeShape,
+			final float xMin,
+			final float yMin,
+			final float xMax,
+			final float yMax,
+			final Paint fillPaint,
+			final float borderWidth,
+			final Stroke borderStroke,
+			final Paint borderPaint
+	) {
 		if (m_debug) {
 			checkDispatchThread();
 			checkCleared();
 			checkOrder(xMin,xMax,"x");
 			checkOrder(yMin,yMax,"y");
 
-			if (!(borderWidth >= 0.0f)) {
-				throw new IllegalArgumentException(
-						"borderWidth not zero or positive");
-			}
+			if (!(borderWidth >= 0.0f))
+				throw new IllegalArgumentException("borderWidth not zero or positive");
 
-			if (!((6.0d * borderWidth) <= Math.min(((double) xMax) - xMin,
-					((double) yMax) - yMin))) {
+			if (!((6.0d * borderWidth) <= Math.min(((double) xMax) - xMin, ((double) yMax) - yMin)))
 				throw new IllegalArgumentException(
-						"borderWidth is not less than the minimum of node width and node "
-								+ "height divided by six");
-			}
+						"borderWidth is not less than the minimum of node width and node " + "height divided by six");
 		}
 
-		final float off = borderWidth/2.0f; // border offset
-		final Shape sx = getShape(nodeShape,xMin+off,yMin+off,xMax-off,yMax-off);
+		final float off = borderWidth / 2.0f; // border offset
+		final Shape sx = getShape(nodeShape, xMin + off, yMin + off, xMax - off, yMax - off);
 
 		// Draw border only when width is not zero.
 		if (borderWidth > 0.0f) {
 			m_g2d.setPaint(borderPaint);
-			if(borderStroke != null)
+			
+			if (borderStroke != null)
 				m_g2d.setStroke(borderStroke);
 			else
 				m_g2d.setStroke(getStroke(borderWidth));
-			
+
 			m_g2d.draw(sx);
 		}
 
-		// System.out.println("Node shape = "+sx);
-		// System.out.println("Node bounds = "+sx.getBounds2D());
-		// System.out.println("Paint = "+fillPaint);
-
 		m_g2d.setPaint(fillPaint);
 		m_g2d.fill(sx);
+		
 		return sx;
 	}
 
@@ -649,9 +645,8 @@ public final class GraphGraphics {
 	 *            path's coordinate system is the node coordinate system; the
 	 *            computed path is closed.
 	 */
-	public final void getNodeShape(final byte nodeShape, final float xMin,
-			final float yMin, final float xMax, final float yMax,
-			final GeneralPath path) {
+	public final void getNodeShape(final byte nodeShape, final float xMin, final float yMin, final float xMax,
+			final float yMax, final GeneralPath path) {
 		if (m_debug) {
 			checkDispatchThread();
 			checkOrder(xMin,xMax,"x");
@@ -713,16 +708,12 @@ public final class GraphGraphics {
 	 *                little over one hundered custom node shapes can be
 	 *                defined.
 	 */
-	public final byte defineCustomNodeShape(final float[] coords,
-			final int offset, final int vertexCount) {
-		if (m_debug) {
+	public final byte defineCustomNodeShape(final float[] coords, final int offset, final int vertexCount) {
+		if (m_debug)
 			checkDispatchThread();
-		}
 
-		if (vertexCount > CUSTOM_SHAPE_MAX_VERTICES) {
-			throw new IllegalArgumentException( "too many vertices (greater than "
-							+ CUSTOM_SHAPE_MAX_VERTICES + ")");
-		}
+		if (vertexCount > CUSTOM_SHAPE_MAX_VERTICES)
+			throw new IllegalArgumentException("too many vertices (greater than " + CUSTOM_SHAPE_MAX_VERTICES + ")");
 
 		final double[] polyCoords = new double[vertexCount * 2];
 
@@ -749,8 +740,8 @@ public final class GraphGraphics {
 
 		final double yDist = yMax - yMin;
 
-		if (yDist == 0.0d) 
-				throw new IllegalArgumentException( "polygon does not move in the Y direction");
+		if (yDist == 0.0d)
+			throw new IllegalArgumentException("polygon does not move in the Y direction");
 
 		final double xMid = (xMin + xMax) / 2.0d;
 		final double yMid = (yMin + yMax) / 2.0d;
@@ -761,7 +752,6 @@ public final class GraphGraphics {
 			foo = (polyCoords[i] - yMid) / yDist;
 			polyCoords[i++] = Math.min(Math.max(-0.5d, foo), 0.5d);
 		}
-
 
 		int yInterceptsCenter = 0;
 
@@ -775,39 +765,29 @@ public final class GraphGraphics {
 			final double distP0P1 = Math.sqrt(((x1 - x0) * (x1 - x0)) + ((y1 - y0) * (y1 - y0)));
 
 			// Too close to distance zero.
-			if ((float) distP0P1 == 0.0f) { 
-				throw new IllegalArgumentException(
-						"a line segment has distance [too close to] zero");
-			}
+			if ((float) distP0P1 == 0.0f)
+				throw new IllegalArgumentException("a line segment has distance [too close to] zero");
 
-			final double distP2fromP0P1 = ((((y0 - y1) * x2)
-					+ ((x1 - x0) * y2) + (x0 * y1)) - (x1 * y0)) / distP0P1;
+			final double distP2fromP0P1 = ((((y0 - y1) * x2) + ((x1 - x0) * y2) + (x0 * y1)) - (x1 * y0)) / distP0P1;
 
 			// Too close to parallel.
-			if ((float) distP2fromP0P1 == 0.0f) { 
-				throw new IllegalArgumentException(
-						"either a line segment has distance [too close to] zero or "
-								+ "two consecutive line segments are [too close to] parallel");
-			}
+			if ((float) distP2fromP0P1 == 0.0f)
+				throw new IllegalArgumentException("either a line segment has distance [too close to] zero or "
+						+ "two consecutive line segments are [too close to] parallel");
 
 			final double distCenterFromP0P1 = ((x0 * y1) - (x1 * y0)) / distP0P1;
 
-			if (!((float) distCenterFromP0P1 > 0.0f)) {
+			if (!((float) distCenterFromP0P1 > 0.0f))
 				throw new IllegalArgumentException(
-						"polygon is going counter-clockwise or is not star-shaped with "
-								+ "respect to center");
-			}
+						"polygon is going counter-clockwise or is not star-shaped with " + "respect to center");
 
-			if ((Math.min(y0, y1) < 0.0d) && (Math.max(y0, y1) >= 0.0d)) {
+			if ((Math.min(y0, y1) < 0.0d) && (Math.max(y0, y1) >= 0.0d))
 				yInterceptsCenter++;
-			}
 		}
 
-		if (yInterceptsCenter != 2) {
-			throw new IllegalArgumentException(
-					"the polygon self-intersects (we know this because the winding "
-							+ "number of the center is not one)");
-		}
+		if (yInterceptsCenter != 2)
+			throw new IllegalArgumentException("the polygon self-intersects (we know this because the winding "
+					+ "number of the center is not one)");
 
 		// polyCoords now contains a polygon spanning [-0.5, 0.5] X [-0.5, 0.5]
 		// that passes all of the criteria.
@@ -826,28 +806,20 @@ public final class GraphGraphics {
 	 * Determines whether the specified shape is a custom defined node shape.
 	 */
 	public final boolean customNodeShapeExists(final byte shape) {
-		if (m_debug) {
+		if (m_debug)
 			checkDispatchThread();
-		}
 
 		return (shape > s_last_shape) && (shape <= m_lastCustomShapeType);
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 * 
-	 * @return DOCUMENT ME!
-	 */
 	public final byte[] getCustomNodeShapes() {
-		if (m_debug) {
+		if (m_debug)
 			checkDispatchThread();
-		}
 
 		final byte[] returnThis = new byte[m_lastCustomShapeType - s_last_shape];
 
-		for (int i = 0; i < returnThis.length; i++) {
+		for (int i = 0; i < returnThis.length; i++)
 			returnThis[i] = (byte) (s_last_shape + 1 + i);
-		}
 
 		return returnThis;
 	}
@@ -855,18 +827,17 @@ public final class GraphGraphics {
 	/**
 	 * Returns the vertices of a previously defined custom node shape. The
 	 * polygon will be normalized to fit within the [-0.5, 0.5] x [-0.5, 0.5]
-	 * square. Returns null if specified shape is not a previously defined
-	 * custom shape.
+	 * square. Returns null if specified shape is not a previously defined custom shape.
 	 */
 	public final float[] getCustomNodeShape(final byte customShape) {
-		if (m_debug) {
+		if (m_debug)
 			checkDispatchThread();
-		}
 
-		if ( !customNodeShapeExists(customShape) )
+		if (!customNodeShapeExists(customShape))
 			return null;
 
-		LegacyCustomNodeShape ns = (LegacyCustomNodeShape)(nodeShapes.get(customShape));
+		LegacyCustomNodeShape ns = (LegacyCustomNodeShape) (nodeShapes.get(customShape));
+		
 		return ns.getCoords();
 	}
 
@@ -881,30 +852,25 @@ public final class GraphGraphics {
 	 *                this GraphGraphics.
 	 */
 	public final void importCustomNodeShapes(final GraphGraphics grafx) {
-		if (m_debug) {
+		if (m_debug)
 			checkDispatchThread();
-		}
 
 		// I define this error check outside the scope of m_debug because
 		// clobbering existing custom node shape definitions could be major.
-		if (m_lastCustomShapeType != s_last_shape) {
-			throw new IllegalStateException(
-					"a custom node shape is already defined in this GraphGraphics");
-		}
+		if (m_lastCustomShapeType != s_last_shape)
+			throw new IllegalStateException("a custom node shape is already defined in this GraphGraphics");
 
-		for (Map.Entry<Byte, NodeShape> entry : grafx.nodeShapes.entrySet()) {
+		for (Map.Entry<Byte, NodeShape> entry : GraphGraphics.nodeShapes.entrySet()) {
 			nodeShapes.put(entry.getKey(), entry.getValue());
 			m_lastCustomShapeType++;
 		}
 	}
 
-	private final Shape getShape(final byte nodeShape, final float xMin,
-			final float yMin, final float xMax, final float yMax) {
+	private final Shape getShape(final byte nodeShape, final float xMin, final float yMin, final float xMax,
+			final float yMax) {
 		NodeShape ns = nodeShapes.get(nodeShape);
-		if ( ns != null )
-			return ns.getShape(xMin,yMin,xMax,yMax);
-		else
-			return null;
+
+		return ns != null ? ns.getShape(xMin, yMin, xMax, yMax) : null;
 	}
 
 	/**
@@ -913,11 +879,11 @@ public final class GraphGraphics {
 	 * @return A map of node shape bytes to Shape objects.
 	 */
 	public static Map<Byte, Shape> getNodeShapes() {
-		final Map<Byte, Shape> shapeMap = new HashMap<Byte, Shape>();
+		final Map<Byte, Shape> shapeMap = new HashMap<>();
 
-		for ( NodeShape ns : nodeShapes.values() ) {
+		for (NodeShape ns : nodeShapes.values()) {
 			final Shape shape = ns.getShape(0f, 0f, DEF_SHAPE_SIZE, DEF_SHAPE_SIZE);
-			shapeMap.put(ns.getType(), new GeneralPath( shape ));
+			shapeMap.put(ns.getType(), new GeneralPath(shape));
 		}
 
 		return shapeMap;
@@ -1124,22 +1090,28 @@ public final class GraphGraphics {
 	 *                configurations does not meet specified criteria, or if more 
 	 *                than MAX_EDGE_ANCHORS anchors are specified.
 	 */
-	public final void drawEdgeFull(final ArrowShape arrow0Type,
-			final float arrow0Size, final Paint arrow0Paint,
-			final ArrowShape arrow1Type, final float arrow1Size,
-			final Paint arrow1Paint, final float x0, final float y0,
-			EdgeAnchors anchors, final float x1, final float y1,
-			final float edgeThickness, final Stroke edgeStroke, final Paint edgePaint) {
+	public final void drawEdgeFull(
+			final ArrowShape arrow0Type,
+			final float arrow0Size,
+			final Paint arrow0Paint,
+			final ArrowShape arrow1Type,
+			final float arrow1Size,
+			final Paint arrow1Paint,
+			final float x0, final float y0,
+			EdgeAnchors anchors,
+			final float x1,
+			final float y1,
+			final float edgeThickness,
+			final Stroke edgeStroke,
+			final Paint edgePaint
+	) {
 		final double curveFactor = CURVE_ELLIPTICAL;
 
-		if (anchors == null) {
+		if (anchors == null)
 			anchors = m_noAnchors;
-		}
 
-		if (m_debug) {
-			edgeFullDebug(arrow0Type, arrow0Size, arrow1Type, arrow1Size,
-					edgeStroke, edgeThickness, anchors);
-		}
+		if (m_debug)
+			edgeFullDebug(arrow0Type, arrow0Size, arrow1Type, arrow1Size, edgeStroke, edgeThickness, anchors);
 
 		if (!computeCubicPolyEdgePath(arrow0Type,
 				(arrow0Type == ArrowShapeVisualProperty.NONE) ? 0.0f : arrow0Size, arrow1Type,
@@ -1182,13 +1154,11 @@ public final class GraphGraphics {
 		m_g2d.setPaint(edgePaint);
 		m_g2d.draw(m_path2d);
 
-		if (simpleSegment) {
+		if (simpleSegment)
 			return;
-		}
 
 		// We need to figure out the phase at the end of the cubic poly-path
-		// for dashed segments. I cannot find a Java API to do this; our
-		// best
+		// for dashed segments. I cannot find a Java API to do this; our best
 		// bet would be to implement our own cubic curve length calculating
 		// function, but our computation may not agree with BasicStroke's
 		// computation. So what we're going to do is never render the arrow
@@ -1210,11 +1180,9 @@ public final class GraphGraphics {
 
 		// Only draw the edge caps if the stroke is a BasicStroke, which is to
 		// say, don't worry about how fancy strokes intersect the arrow. 
-		if ( edgeStroke instanceof BasicStroke ) {
-
+		if (edgeStroke instanceof BasicStroke) {
 			// Render arrow cap at origin of poly path.
-			final Shape arrow0Cap = computeUntransformedArrowCap(arrow0Type,
-					((double) arrow0Size) / edgeThickness);
+			final Shape arrow0Cap = computeUntransformedArrowCap(arrow0Type, arrow0Size, edgeThickness);
 
 			if (arrow0Cap != null) {
 				m_xformUtil.setTransform(cosTheta0, sinTheta0, -sinTheta0,
@@ -1227,8 +1195,7 @@ public final class GraphGraphics {
 			}
 	
 			// Render arrow cap at end of poly path.
-			final Shape arrow1Cap = computeUntransformedArrowCap(arrow1Type,
-					((double) arrow1Size) / edgeThickness);
+			final Shape arrow1Cap = computeUntransformedArrowCap(arrow1Type, arrow1Size, edgeThickness);
 	
 			if (arrow1Cap != null) {
 				m_xformUtil.setTransform(cosTheta1, sinTheta1, -sinTheta1,
@@ -1247,8 +1214,7 @@ public final class GraphGraphics {
 		final Shape arrow0 = computeUntransformedArrow(arrow0Type);
 
 		if (arrow0 != null) {
-			m_xformUtil.setTransform(cosTheta0, sinTheta0, -sinTheta0,
-					cosTheta0, m_edgePtsBuff[0], m_edgePtsBuff[1]);
+			m_xformUtil.setTransform(cosTheta0, sinTheta0, -sinTheta0, cosTheta0, m_edgePtsBuff[0], m_edgePtsBuff[1]);
 			m_g2d.transform(m_xformUtil);
 			m_g2d.scale(arrow0Size, arrow0Size);
 			m_g2d.setPaint(arrow0Paint);
@@ -1260,9 +1226,7 @@ public final class GraphGraphics {
 		final Shape arrow1 = computeUntransformedArrow(arrow1Type);
 
 		if (arrow1 != null) {
-				
-			m_xformUtil.setTransform(cosTheta1, sinTheta1, -sinTheta1,
-				cosTheta1,
+			m_xformUtil.setTransform(cosTheta1, sinTheta1, -sinTheta1, cosTheta1,
 				m_edgePtsBuff[((m_edgePtsCount - 1) * 6) - 2],
 				m_edgePtsBuff[((m_edgePtsCount - 1) * 6) - 1]);
 			m_g2d.transform(m_xformUtil);
@@ -1274,46 +1238,55 @@ public final class GraphGraphics {
 	}
 
 	@SuppressWarnings("fallthrough")
-	private final void edgeFullDebug(final ArrowShape arrow0Type,
-			final float arrow0Size, final ArrowShape arrow1Type, float arrow1Size,
+	private final void edgeFullDebug(
+			final ArrowShape arrow0Type,
+			final float arrow0Size,
+			final ArrowShape arrow1Type,
+			float arrow1Size,
 			final Stroke edgeStroke,
 			final float edgeThickness, 
-			final EdgeAnchors anchors) {
+			final EdgeAnchors anchors
+	) {
 		checkDispatchThread();
 		checkCleared();
-		if (!(edgeThickness >= 0.0f)) {
+		
+		if (!(edgeThickness >= 0.0f))
 			throw new IllegalArgumentException("edgeThickness < 0");
-		}
 
-		if ( !arrows.containsKey( arrow0Type ) )
+		if (!arrows.containsKey(arrow0Type))
 			throw new IllegalArgumentException("arrow0Type is not recognized");
 
-		if ( arrow0Type != ArrowShapeVisualProperty.NONE )
-			if (!(arrow0Size >= edgeThickness)) 
-				throw new IllegalArgumentException(
-						"arrow size must be at least as large as edge thickness");
+		if (arrow0Type != ArrowShapeVisualProperty.NONE)
+			if (!(arrow0Size >= edgeThickness))
+				throw new IllegalArgumentException("arrow size must be at least as large as edge thickness");
 
-		if ( !arrows.containsKey( arrow1Type ) )
+		if (!arrows.containsKey(arrow1Type))
 			throw new IllegalArgumentException("arrow1Type is not recognized");
 
-		if ( arrow1Type != ArrowShapeVisualProperty.NONE )
-			if (!(arrow1Size >= edgeThickness)) 
-				throw new IllegalArgumentException(
-						"arrow size must be at least as large as edge thickness");
+		if (arrow1Type != ArrowShapeVisualProperty.NONE)
+			if (!(arrow1Size >= edgeThickness))
+				throw new IllegalArgumentException("arrow size must be at least as large as edge thickness");
 
-		if (anchors.numAnchors() > MAX_EDGE_ANCHORS) {
-			throw new IllegalArgumentException("at most MAX_EDGE_ANCHORS ("
-					+ MAX_EDGE_ANCHORS + ") edge anchors can be specified");
-		}
+		if (anchors.numAnchors() > MAX_EDGE_ANCHORS)
+			throw new IllegalArgumentException(
+					"at most MAX_EDGE_ANCHORS (" + MAX_EDGE_ANCHORS + ") edge anchors can be specified");
 	}
 
-	private final void drawSimpleEdgeFull(final ArrowShape arrow0Type,
-			final float arrow0Size, final Paint arrow0Paint,
-			final ArrowShape arrow1Type, final float arrow1Size,
-			final Paint arrow1Paint, final float x0, final float y0,
-			final float x1, final float y1, final float edgeThickness,
+	private final void drawSimpleEdgeFull(
+			final ArrowShape arrow0Type,
+			final float arrow0Size,
+			final Paint arrow0Paint,
+			final ArrowShape arrow1Type,
+			final float arrow1Size,
+			final Paint arrow1Paint,
+			final float x0,
+			final float y0,
+			final float x1,
+			final float y1,
+			final float edgeWidth,
 			final Stroke edgeStroke,
-			final Paint edgePaint) {
+			final Paint edgePaint
+	) {
 		final double len = Math.sqrt(((((double) x1) - x0) * (((double) x1) - x0))
 		                           + ((((double) y1) - y0) * (((double) y1) - y0)));
 
@@ -1330,7 +1303,6 @@ public final class GraphGraphics {
 		final byte simpleSegment;
 
 		// Render the line segment if necessary.
-
 		final double t0 = (getT(arrow0Type) * arrow0Size) / len;
 		x0Adj = (t0 * (((double) x1) - x0)) + x0;
 		y0Adj = (t0 * (((double) y1) - y0)) + y0;
@@ -1342,9 +1314,7 @@ public final class GraphGraphics {
 		// If the vector point0->point1 is pointing opposite to
 		// adj0->adj1, then don't render the line segment.
 		// Dot product determines this.
-		if ((((((double) x1) - x0) * (x1Adj - x0Adj)) + 
-		     ((((double) y1) - y0) * (y1Adj - y0Adj))) > 0.0d) {
-				                
+		if ((((((double) x1) - x0) * (x1Adj - x0Adj)) + ((((double) y1) - y0) * (y1Adj - y0Adj))) > 0.0d) {
 			if (arrow0Type == ArrowShapeVisualProperty.NONE && arrow1Type == ArrowShapeVisualProperty.NONE) {
 				simpleSegment = 1; 
 			} else { 
@@ -1356,9 +1326,8 @@ public final class GraphGraphics {
 			m_g2d.setPaint(edgePaint);
 			m_g2d.draw(m_line2d);
 
-			if ( simpleSegment > 0 )
+			if (simpleSegment > 0)
 				return;
-
 		} else {
 			simpleSegment = 0; // Did not render segment.
 		}
@@ -1368,35 +1337,30 @@ public final class GraphGraphics {
 		// Using x0, x1, y0, and y1 instead of the "adjusted" endpoints is
 		// accurate enough in computation of cosine and sine because the
 		// length is guaranteed to be at least as large. Remember that the
-		// original endpoint values are specified as float whereas the adjusted
-		// points are double.
+		// original endpoint values are specified as float whereas the adjusted points are double.
 		final double cosTheta = (((double) x0) - x1) / len;
 		final double sinTheta = (((double) y0) - y1) / len;
-	
-		if ( simpleSegment < 0 && edgeStroke instanceof BasicStroke ) { 
+
+		if (simpleSegment < 0 && edgeStroke instanceof BasicStroke) {
 			// Arrow cap at point 0.
-			final Shape arrow0Cap = computeUntransformedArrowCap(arrow0Type,
-					((double) arrow0Size) / edgeThickness);
+			final Shape arrow0Cap = computeUntransformedArrowCap(arrow0Type, arrow0Size, edgeWidth);
 
 			if (arrow0Cap != null) {
-				m_xformUtil.setTransform(cosTheta, sinTheta, -sinTheta,
-						cosTheta, x0Adj, y0Adj);
+				m_xformUtil.setTransform(cosTheta, sinTheta, -sinTheta, cosTheta, x0Adj, y0Adj);
 				m_g2d.transform(m_xformUtil);
-				m_g2d.scale(edgeThickness, edgeThickness);
+				m_g2d.scale(edgeWidth, edgeWidth);
 				// The paint is already set to edge paint.
 				m_g2d.fill(arrow0Cap);
 				m_g2d.setTransform(m_currNativeXform);
 			}
 
 			// Arrow cap at point 1.
-			final Shape arrow1Cap = computeUntransformedArrowCap(arrow1Type,
-					((double) arrow1Size) / edgeThickness);
+			final Shape arrow1Cap = computeUntransformedArrowCap(arrow1Type, arrow1Size, edgeWidth);
 
 			if (arrow1Cap != null) {
-				m_xformUtil.setTransform(-cosTheta, -sinTheta, sinTheta,
-						-cosTheta, x1Adj, y1Adj);
+				m_xformUtil.setTransform(-cosTheta, -sinTheta, sinTheta, -cosTheta, x1Adj, y1Adj);
 				m_g2d.transform(m_xformUtil);
-				m_g2d.scale(edgeThickness, edgeThickness);
+				m_g2d.scale(edgeWidth, edgeWidth);
 				// The paint is already set to edge paint.
 				m_g2d.fill(arrow1Cap);
 				m_g2d.setTransform(m_currNativeXform);
@@ -1407,8 +1371,7 @@ public final class GraphGraphics {
 		final Shape arrow0 = computeUntransformedArrow(arrow0Type);
 
 		if (arrow0 != null) {
-			m_xformUtil.setTransform(cosTheta, sinTheta, -sinTheta,
-					cosTheta, x0, y0);
+			m_xformUtil.setTransform(cosTheta, sinTheta, -sinTheta, cosTheta, x0, y0);
 			m_g2d.transform(m_xformUtil);
 			m_g2d.scale(arrow0Size, arrow0Size);
 			m_g2d.setPaint(arrow0Paint);
@@ -1420,8 +1383,7 @@ public final class GraphGraphics {
 		final Shape arrow1 = computeUntransformedArrow(arrow1Type);
 
 		if (arrow1 != null) {
-			m_xformUtil.setTransform(-cosTheta, -sinTheta, sinTheta,
-					-cosTheta, x1, y1);
+			m_xformUtil.setTransform(-cosTheta, -sinTheta, sinTheta, -cosTheta, x1, y1);
 			m_g2d.transform(m_xformUtil);
 			m_g2d.scale(arrow1Size, arrow1Size);
 			m_g2d.setPaint(arrow1Paint);
@@ -1471,30 +1433,35 @@ public final class GraphGraphics {
 	 *                if any one of the edge arrow criteria specified in
 	 *                drawEdgeFull() is not satisfied.
 	 */
-	public final boolean getEdgePath(final ArrowShape arrow0Type,
-			final float arrow0Size, final ArrowShape arrow1Type,
-			final float arrow1Size, final float x0, final float y0,
-			EdgeAnchors anchors, final float x1, final float y1,
-			final GeneralPath path) {
+	public final boolean getEdgePath(
+			final ArrowShape arrow0Type,
+			final float arrow0Size,
+			final ArrowShape arrow1Type,
+			final float arrow1Size,
+			final float x0,
+			final float y0,
+			EdgeAnchors anchors,
+			final float x1,
+			final float y1,
+			final GeneralPath path
+	) {
 		final double curveFactor = CURVE_ELLIPTICAL;
 
-		if (anchors == null) {
+		if (anchors == null)
 			anchors = m_noAnchors;
-		}
 
 		if (m_debug) {
 			checkDispatchThread();
 
-			if ( !arrows.containsKey( arrow0Type ) )
+			if (!arrows.containsKey(arrow0Type))
 				throw new IllegalArgumentException("arrow0Type is not recognized");
 
-			if ( !arrows.containsKey( arrow1Type ) )
+			if (!arrows.containsKey(arrow1Type))
 				throw new IllegalArgumentException("arrow1Type is not recognized");
 
-			if (anchors.numAnchors() > MAX_EDGE_ANCHORS) {
-				throw new IllegalArgumentException("at most MAX_EDGE_ANCHORS ("
-						+ MAX_EDGE_ANCHORS + ") edge anchors can be specified");
-			}
+			if (anchors.numAnchors() > MAX_EDGE_ANCHORS)
+				throw new IllegalArgumentException(
+						"at most MAX_EDGE_ANCHORS (" + MAX_EDGE_ANCHORS + ") edge anchors can be specified");
 		}
 
 		ArrowShape arrow0 = arrow0Type;
@@ -1503,9 +1470,7 @@ public final class GraphGraphics {
 		if (!computeCubicPolyEdgePath(arrow0, (arrow0 == ArrowShapeVisualProperty.NONE) ? 0.0f
 				: arrow0Size, arrow1, (arrow1 == ArrowShapeVisualProperty.NONE) ? 0.0f
 				: arrow1Size, x0, y0, anchors, x1, y1, curveFactor)) {
-			// After filtering duplicate start and end points, there are less
-			// then
-			// 3 total.
+			// After filtering duplicate start and end points, there are less than 3 total.
 			if (m_edgePtsCount == 2) {
 				path.reset();
 				path.moveTo((float) m_edgePtsBuff[0], (float) m_edgePtsBuff[1]);
@@ -1531,22 +1496,17 @@ public final class GraphGraphics {
 					(float) m_edgePtsBuff[inx++]);
 		}
 
-		path.lineTo((float) m_edgePtsBuff[count],
-				(float) m_edgePtsBuff[count + 1]);
+		path.lineTo((float) m_edgePtsBuff[count], (float) m_edgePtsBuff[count + 1]);
 
 		return true;
 	}
 
 	/*
-	 * Returns non-null if and only if an arrow is necessary for the arrow type
-	 * specified. 
+	 * Returns non-null if and only if an arrow is necessary for the arrow type specified. 
 	 */
 	private final Shape computeUntransformedArrow(final ArrowShape arrowType) {
 		Arrow a = arrows.get(arrowType);
-		if ( a != null )
-			return a.getArrowShape();
-		else
-			return null;
+		return a != null ? a.getArrowShape() : null;
 	}
 
 	/*
@@ -1554,34 +1514,33 @@ public final class GraphGraphics {
 	 * edge thickness (only used for some arrow types). Returns non-null if and
 	 * only if a cap is necessary for the arrow type specified. 
 	 */
-	private final Shape computeUntransformedArrowCap(final ArrowShape arrowType, final double ratio) {
+	private final Shape computeUntransformedArrowCap(final ArrowShape arrowType, double arrowSize, double edgeWidth) {
 		Arrow a = arrows.get(arrowType);
-		if ( a != null )
-			return a.getCapShape(ratio);
-		else
-			return null;
+		double ratio = arrowSize / edgeWidth;
+		
+		return a != null ? a.getCapShape(ratio) : null;
 	}
 
-	/*
-	 * 
-	 */
 	private final static double getT(final ArrowShape arrowType) { 
 		Arrow a = arrows.get(arrowType);
-		if ( a != null )
-			return a.getTOffset();
-		else
-			return 0.125;
+		
+		return a != null ? a.getTOffset() : 0.125;
 	}
 
 	/*
-	 * If arrow0Type is NONE, arrow0Size should be zero. If arrow1Type is
-	 * NONE, arrow1Size should be zero.
+	 * If arrow0Type is NONE, arrow0Size should be zero. If arrow1Type is NONE, arrow1Size should be zero.
 	 */
-	private final boolean computeCubicPolyEdgePath(final ArrowShape arrow0Type,
-			final float arrow0Size, final ArrowShape arrow1Type,
-			final float arrow1Size, final float x0, final float y0,
-			final EdgeAnchors anchors, final float x1, final float y1,
-			final double curveFactor) {
+	private final boolean computeCubicPolyEdgePath(
+			final ArrowShape arrow0Type,
+			final float arrow0Size,
+			final ArrowShape arrow1Type,
+			final float arrow1Size,
+			final float x0,
+			final float y0,
+			final EdgeAnchors anchors,
+			final float x1, final float y1,
+			final double curveFactor
+	) {
 		final int numAnchors = anchors.numAnchors();
 		// add the start point to the edge points buffer
 		m_edgePtsBuff[0] = x0;
@@ -1630,9 +1589,8 @@ public final class GraphGraphics {
 		}
 
 		// no anchors, just a straight line to draw 
-		if (m_edgePtsCount < 3) {
+		if (m_edgePtsCount < 3)
 			return false;
-		}
 
 		//
 		// ok, now we're drawing a curve
@@ -1648,14 +1606,12 @@ public final class GraphGraphics {
 			m_edgePtsBuff[(m_edgePtsCount * 6) - 2] = m_edgePtsBuff[m_edgePtsCount * 2];
 			m_edgePtsBuff[(m_edgePtsCount * 6) - 1] = m_edgePtsBuff[(m_edgePtsCount * 2) + 1];
 
-			double dx = m_edgePtsBuff[(m_edgePtsCount * 2) - 2]
-					- m_edgePtsBuff[m_edgePtsCount * 2];
-			double dy = m_edgePtsBuff[(m_edgePtsCount * 2) - 1]
-					- m_edgePtsBuff[(m_edgePtsCount * 2) + 1];
+			double dx = m_edgePtsBuff[(m_edgePtsCount * 2) - 2] - m_edgePtsBuff[m_edgePtsCount * 2];
+			double dy = m_edgePtsBuff[(m_edgePtsCount * 2) - 1] - m_edgePtsBuff[(m_edgePtsCount * 2) + 1];
 			double len = Math.sqrt((dx * dx) + (dy * dy));
 			// Normalized.
 			dx /= len;
-			dy /= len; 
+			dy /= len;
 
 			// set second control point
 			m_edgePtsBuff[(m_edgePtsCount * 6) - 4] = m_edgePtsBuff[(m_edgePtsCount * 6) - 2]
@@ -1721,29 +1677,23 @@ public final class GraphGraphics {
 			double len = Math.sqrt((dx * dx) + (dy * dy));
 			// Normalized.
 			dx /= len;
-			dy /= len; 
+			dy /= len;
 
-			double segStartX = m_edgePtsBuff[0]
-					+ (dx * arrow0Size * getT(arrow0Type));
-			double segStartY = m_edgePtsBuff[1]
-					+ (dy * arrow0Size * getT(arrow0Type));
+			double segStartX = m_edgePtsBuff[0] + (dx * arrow0Size * getT(arrow0Type));
+			double segStartY = m_edgePtsBuff[1] + (dy * arrow0Size * getT(arrow0Type));
 			double candX1 = segStartX + (dx * 2.0d * arrow0Size);
-			double candX2 = segStartX
-					+ (curveFactor * (m_edgePtsBuff[2] - segStartX));
+			double candX2 = segStartX + (curveFactor * (m_edgePtsBuff[2] - segStartX));
 
-			if (Math.abs(candX1 - m_edgePtsBuff[0]) > Math.abs(candX2
-					- m_edgePtsBuff[0])) {
+			if (Math.abs(candX1 - m_edgePtsBuff[0]) > Math.abs(candX2 - m_edgePtsBuff[0])) {
 				m_edgePtsBuff[4] = candX1;
 			} else {
 				m_edgePtsBuff[4] = candX2;
 			}
 
 			double candY1 = segStartY + (dy * 2.0d * arrow0Size);
-			double candY2 = segStartY
-					+ (curveFactor * (m_edgePtsBuff[3] - segStartY));
+			double candY2 = segStartY + (curveFactor * (m_edgePtsBuff[3] - segStartY));
 
-			if (Math.abs(candY1 - m_edgePtsBuff[1]) > Math.abs(candY2
-					- m_edgePtsBuff[1])) {
+			if (Math.abs(candY1 - m_edgePtsBuff[1]) > Math.abs(candY2 - m_edgePtsBuff[1])) {
 				m_edgePtsBuff[5] = candY1;
 			} else {
 				m_edgePtsBuff[5] = candY2;
@@ -1807,24 +1757,32 @@ public final class GraphGraphics {
 	 *                nodeShape is neither one of the SHAPE_* constants nor a
 	 *                previously defined custom node shape.
 	 */
-	public final boolean computeEdgeIntersection(final byte nodeShape,
-			final float xMin, final float yMin, final float xMax,
-			final float yMax, final float offset, final float ptX,
-			final float ptY, final float[] returnVal) {
+	public final boolean computeEdgeIntersection(
+			final byte nodeShape,
+			final float xMin,
+			final float yMin,
+			final float xMax,
+			final float yMax,
+			final float offset,
+			final float ptX,
+			final float ptY,
+			final float[] returnVal
+	) {
 		if (m_debug) {
 			checkDispatchThread();
 			checkOrder(xMin,xMax,"x");
 			checkOrder(yMin,yMax,"y");
-			if (offset < 0.0f) {
+			
+			if (offset < 0.0f)
 				throw new IllegalArgumentException("offset < 0");
-			}
 		}
 
 		NodeShape ns = nodeShapes.get(nodeShape);
+		
 		if (ns == null)
 			return false;
 		else
-			return ns.computeEdgeIntersection( xMin, yMin, xMax, yMax, ptX, ptY, returnVal);
+			return ns.computeEdgeIntersection(xMin, yMin, xMax, yMax, ptX, ptY, returnVal);
 	}
 
 	/**
@@ -1857,19 +1815,18 @@ public final class GraphGraphics {
 	 * @exception IllegalArgumentException
 	 *                if color is not opaque.
 	 */
-	public final void drawTextLow(final Font font, final String text,
-			final float xCenter, final float yCenter, final Color color) {
+	public final void drawTextLow(final Font font, final String text, final float xCenter, final float yCenter,
+			final Color color) {
 		if (m_debug) {
 			checkDispatchThread();
 			checkCleared();
-			if (color.getAlpha() != 255) {
+			
+			if (color.getAlpha() != 255)
 				throw new IllegalStateException("color is not opaque");
-			}
 		}
 
-		if (m_gMinimal == null) {
+		if (m_gMinimal == null)
 			makeMinimalGraphics();
-		}
 
 		m_ptsBuff[0] = xCenter;
 		m_ptsBuff[1] = yCenter;
@@ -1881,8 +1838,7 @@ public final class GraphGraphics {
 		m_gMinimal.drawString(
 						text,
 						(int) ((-0.5d * fMetrics.stringWidth(text)) + m_ptsBuff[0]),
-						(int) ((0.5d * fMetrics.getHeight())
-								- fMetrics.getDescent() + m_ptsBuff[1]));
+						(int) ((0.5d * fMetrics.getHeight()) - fMetrics.getDescent() + m_ptsBuff[1]));
 	}
 
 	/**
@@ -1893,13 +1849,11 @@ public final class GraphGraphics {
 	 * between frames no matter what scaling factor is specified in clear().
 	 */
 	public final FontRenderContext getFontRenderContextLow() {
-		if (m_debug) {
+		if (m_debug)
 			checkDispatchThread();
-		}
 
-		if (m_gMinimal == null) {
+		if (m_gMinimal == null)
 			makeMinimalGraphics();
-		}
 
 		return m_gMinimal.getFontRenderContext();
 	}
@@ -1958,23 +1912,29 @@ public final class GraphGraphics {
 	 *            operation has a difficult time when it needs to render text
 	 *            under a transformation with a very large scale factor.
 	 */
-	public final void drawTextFull(final Font font, final double scaleFactor,
-			final String text, final float xCenter, final float yCenter,
-			final float theta, final Paint paint, final boolean drawTextAsShape) {
+	public final void drawTextFull(
+			final Font font,
+			final double scaleFactor,
+			final String text,
+			final float xCenter,
+			final float yCenter,
+			final float theta,
+			final Paint paint,
+			final boolean drawTextAsShape
+	) {
 		if (m_debug) {
 			checkDispatchThread();
 			checkCleared();
-			if (scaleFactor < 0.0) {
+			
+			if (scaleFactor < 0.0)
 				throw new IllegalArgumentException("scaleFactor must be positive");
-			}
 		}
 
 		m_g2d.translate(xCenter, yCenter);
 		m_g2d.scale(scaleFactor, scaleFactor);
 
-		if (theta != 0.0f) {
+		if (theta != 0.0f)
 			m_g2d.rotate(theta);
-		}
 
 		m_g2d.setPaint(paint);
 
@@ -1986,24 +1946,20 @@ public final class GraphGraphics {
 		if (drawTextAsShape) {
 			final GlyphVector glyphV;
 
-			if (text.length() > m_charBuff.length) {
-				m_charBuff = new char[Math.max(m_charBuff.length * 2, text
-						.length())];
-			}
+			if (text.length() > m_charBuff.length)
+				m_charBuff = new char[Math.max(m_charBuff.length * 2, text.length())];
 
 			text.getChars(0, text.length(), m_charBuff, 0);
-			glyphV = font.layoutGlyphVector(getFontRenderContextFull(),
-					m_charBuff, 0, text.length(), Font.LAYOUT_NO_LIMIT_CONTEXT);
+			glyphV = font.layoutGlyphVector(getFontRenderContextFull(), m_charBuff, 0, text.length(),
+					Font.LAYOUT_NO_LIMIT_CONTEXT);
 
 			final Rectangle2D glyphBounds = glyphV.getLogicalBounds();
-			m_g2d.translate(-glyphBounds.getCenterX(), -glyphBounds
-					.getCenterY());
+			m_g2d.translate(-glyphBounds.getCenterX(), -glyphBounds.getCenterY());
 			m_g2d.fill(glyphV.getOutline());
 		} else {
 			// Note: A new Rectangle2D is being constructed by this method call.
 			// As far as I know this performance hit is unavoidable.
-			final Rectangle2D textBounds = font.getStringBounds(text,
-					getFontRenderContextFull());
+			final Rectangle2D textBounds = font.getStringBounds(text, getFontRenderContextFull());
 			m_g2d.translate(-textBounds.getCenterX(), -textBounds.getCenterY());
 			m_g2d.setFont(font);
 			m_g2d.drawString(text, 0.0f, 0.0f);
@@ -2014,30 +1970,30 @@ public final class GraphGraphics {
 
 	/**
 	 * Returns the context that is used by drawTextFull() to produce text shapes
-	 * to be drawn to the screen. This context always has the identity
-	 * transform.
+	 * to be drawn to the screen. This context always has the identity transform.
 	 */
 	public final FontRenderContext getFontRenderContextFull() {
-		if (m_debug) {
+		if (m_debug)
 			checkDispatchThread();
-		}
 
 		return m_fontRenderContextFull;
 	}
 
-	public final void drawCustomGraphicImage(final Shape shape,
-			final float xOffset, final float yOffset, final TexturePaint paint) {
+	public final void drawCustomGraphicImage(final Shape shape, final float xOffset, final float yOffset,
+			final TexturePaint paint) {
 		if (m_debug) {
 			checkDispatchThread();
 			checkCleared();
 		}
 
 		m_g2d.translate(xOffset, yOffset);
-		if(paint instanceof TexturePaint) {
+		
+		if (paint instanceof TexturePaint) {
 			final BufferedImage bImg = ((TexturePaint) paint).getImage();
 			Rectangle bounds = shape.getBounds2D().getBounds();
 			m_g2d.drawImage(bImg, bounds.x, bounds.y, bounds.width, bounds.height, null);
 		}
+		
 		m_g2d.setTransform(m_currNativeXform);
 	}
 
@@ -2058,9 +2014,14 @@ public final class GraphGraphics {
 	 *            in node coordinates, a value to add to the Y coordinates of
 	 *            the shape's definition.
 	 */
-	public final void drawCustomGraphicFull(final CyNetworkView netView, final CyNode node,
-											final Shape nodeShape, final CustomGraphicLayer cg,
-	                                        final float xOffset, final float yOffset) {
+	public final void drawCustomGraphicFull(
+			final CyNetworkView netView,
+			final CyNode node,
+			final Shape nodeShape,
+			final CustomGraphicLayer cg,
+			final float xOffset,
+			final float yOffset
+	) {
 		if (m_debug) {
 			checkDispatchThread();
 			checkCleared();
@@ -2107,26 +2068,28 @@ public final class GraphGraphics {
 	 */
 	private final Stroke getStroke(final float borderWidth) {
 		Stroke s = borderStrokes.get(borderWidth);
-		if ( s == null ) {
+
+		if (s == null) {
 			s = new BasicStroke(borderWidth);
 			borderStrokes.put(borderWidth, s);
 		}
-		return s; 
+
+		return s;
 	}
 
 	private void checkDispatchThread() {
-		if (!EventQueue.isDispatchThread()) 
-			throw new IllegalStateException( "calling thread is not AWT event dispatcher");
+		if (!EventQueue.isDispatchThread())
+			throw new IllegalStateException("calling thread is not AWT event dispatcher");
 	}
 
 	private void checkCleared() {
-		if (!m_cleared) 
-			throw new IllegalStateException( "clear() has not been called previously");
+		if (!m_cleared)
+			throw new IllegalStateException("clear() has not been called previously");
 	}
 
 	private void checkOrder(float min, float max, String id) {
-		if (!(min < max)) 
-			throw new IllegalArgumentException( id + "Min not less than " + id + "Max");
+		if (!(min < max))
+			throw new IllegalArgumentException(id + "Min not less than " + id + "Max");
 	}
 	
 	public boolean isInitialized() {

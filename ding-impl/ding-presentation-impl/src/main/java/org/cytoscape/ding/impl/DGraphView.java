@@ -701,13 +701,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	}
 
 	/**
-	 * Adds a NodeView object to the GraphView. Creates NodeView if one doesn't
-	 * already exist.
-	 *
-	 * @param node
-	 *            The index of the NodeView object to be added.
-	 *
-	 * @return The NodeView object that is added to the GraphView.
+	 * Creates a NodeView only if one doesn't already exist.
 	 */
 	@Override
 	public NodeView addNodeView(final CyNode node) {
@@ -761,12 +755,6 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		return dNodeView;
 	}
 
-	/**
-	 * Adds EdgeView to the GraphView.
-	 *
-	 * @param edge The index of EdgeView to be added.
-	 * @return The EdgeView that was added.
-	 */
 	@Override
 	public EdgeView addEdgeView(final CyEdge edge) {
 		if (edge == null)
@@ -826,45 +814,21 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		return dEdgeView;
 	}
 
-	/**
-	 * Removes a NodeView based on specified NodeView.
-	 *
-	 * @param nodeView
-	 *            The NodeView object to be removed.
-	 *
-	 * @return The NodeView object that was removed.
-	 */
 	@Override
 	public NodeView removeNodeView(NodeView nodeView) {
 		return removeNodeView(nodeView.getCyNode().getSUID());
 	}
 
-	/**
-	 * Removes a NodeView based on specified Node.
-	 *
-	 * @param node
-	 *            The Node object connected to the NodeView to be removed.
-	 *
-	 * @return The NodeView object that was removed.
-	 */
 	@Override
 	public NodeView removeNodeView(CyNode node) {
 		return removeNodeView(node.getSUID());
 	}
 
-	/**
-	 * Removes a NodeView based on a specified index.
-	 *
-	 * @param nodeInx
-	 *            The index of the NodeView to be removed.
-	 *
-	 * @return The NodeView object that was removed.
-	 */
 	@Override
-	public NodeView removeNodeView(long nodeInx) {
+	public NodeView removeNodeView(long suid) {
 		final List<CyEdge> hiddenEdgeInx;
 		final DNodeView returnThis;
-		final CyNode nnode = model.getNode(nodeInx);
+		final CyNode nnode = model.getNode(suid);
 		returnThis = (DNodeView) nodeViewMap.get(nnode);
 		
 		if (returnThis == null)
@@ -896,7 +860,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 			m_nodeDetails.unregisterNode(nnode);
 
 			// If this node was hidden, it won't be in m_spacial.
-			m_spacial.delete(nodeInx);
+			m_spacial.delete(suid);
 
 			setContentChanged();
 		}
@@ -917,44 +881,20 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		return returnThis;
 	}
 
-	/**
-	 * Removes an EdgeView based on an EdgeView.
-	 *
-	 * @param edgeView
-	 *            The EdgeView to be removed.
-	 *
-	 * @return The EdgeView that was removed.
-	 */
 	@Override
 	public EdgeView removeEdgeView(EdgeView edgeView) {
 		return removeEdgeView(edgeView.getCyEdge().getSUID());
 	}
 
-	/**
-	 * Removes an EdgeView based on an Edge.
-	 *
-	 * @param edge
-	 *            The Edge of the EdgeView to be removed.
-	 *
-	 * @return The EdgeView that was removed.
-	 */
 	@Override
 	public EdgeView removeEdgeView(CyEdge edge) {
 		return removeEdgeView(edge.getSUID());
 	}
 
-	/**
-	 * Removes an EdgeView based on an EdgeIndex.
-	 *
-	 * @param edgeInx
-	 *            The edge index of the EdgeView to be removed.
-	 *
-	 * @return The EdgeView that was removed.
-	 */
 	@Override
-	public EdgeView removeEdgeView(long edgeInx) {
+	public EdgeView removeEdgeView(long suid) {
 		final DEdgeView returnThis;
-		final CyEdge edge = model.getEdge(edgeInx);
+		final CyEdge edge = model.getEdge(suid);
 		
 		if (edge == null)
 			return null;
@@ -1185,8 +1125,8 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	}
 	
 	@Override
-	public DNodeView getDNodeView(final long nodeInx) {
-		return getDNodeView(model.getNode(nodeInx));
+	public DNodeView getDNodeView(final long suid) {
+		return getDNodeView(model.getNode(suid));
 	}
 
 	@Override
@@ -1233,28 +1173,23 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	}
 
 	/**
-	 * Similar to getEdgeViewsList(Node, Node), only that one has control of
-	 * whether or not to include undirected edges.
+	 * Similar to getEdgeViewsList(Node, Node), only that one has control of whether or not to include undirected edges.
 	 */
 	@Override
-	public List<EdgeView> getEdgeViewsList(long oneNodeInx, long otherNodeInx,
-			boolean includeUndirected) {
+	public List<EdgeView> getEdgeViewsList(long oneNodeSUID, long otherNodeSUID, boolean includeUndirected) {
 		CyNode n1;
 		CyNode n2;
 		synchronized (m_lock) {
-			n1 = model.getNode(oneNodeInx);
-			n2 = model.getNode(otherNodeInx);
+			n1 = model.getNode(oneNodeSUID);
+			n2 = model.getNode(otherNodeSUID);
 		}
 		return getEdgeViewsList(n1, n2);
 	}
 
 
-	/**
-	 * {@inheritDoc}
-	 */
 	@Override
-	public DEdgeView getDEdgeView(final long edgeInx) {
-		return getDEdgeView(model.getEdge(edgeInx));
+	public DEdgeView getDEdgeView(final long suid) {
+		return getDEdgeView(model.getEdge(suid));
 	}
 
 	@Override
@@ -1341,15 +1276,15 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 
 	final boolean isHidden(final DEdgeView edgeView) {
 		// synchronized (m_lock) {
-			final long edgeIndex = edgeView.getCyEdge().getSUID();
-			return !m_drawPersp.containsEdge(m_drawPersp.getEdge(edgeIndex));
+			final long suid = edgeView.getCyEdge().getSUID();
+			return !m_drawPersp.containsEdge(m_drawPersp.getEdge(suid));
 		// }
 	}
 
 	final boolean isHidden(final DNodeView nodeView) {
 		// synchronized (m_lock) {
-			final long nodeIndex = nodeView.getCyNode().getSUID();
-			return !m_drawPersp.containsNode(m_drawPersp.getNode(nodeIndex));
+			final long suid = nodeView.getCyNode().getSUID();
+			return !m_drawPersp.containsNode(m_drawPersp.getNode(suid));
 		// }
 	}
 
@@ -2049,6 +1984,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	 * @return Image
 	 * @throws IllegalArgumentException
 	 */
+	@Override
 	public Image createImage(int width, int height, double shrink) {
 		return createImage(width, height, shrink, /* skipBackground = */ false);
 	}
@@ -2058,6 +1994,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	 *
 	 * @param pt
 	 */
+	@Override
 	public NodeView getPickedNodeView(Point2D pt) {
 		DNodeView nv = null;
 		double[] locn = new double[2];
