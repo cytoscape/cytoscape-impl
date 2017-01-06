@@ -141,6 +141,7 @@ final class DEdgeDetails extends EdgeDetails {
 		m_segmentStrokes = new ConcurrentHashMap<>();
 		m_sourceArrows = new ConcurrentHashMap<>();
 		m_sourceArrowPaints = new ConcurrentHashMap<>();
+		m_sourceArrowSelectedPaints = new ConcurrentHashMap<>();
 		m_targetArrows = new ConcurrentHashMap<>();
 		m_targetArrowPaints = new ConcurrentHashMap<>();
 		m_targetArrowSelectedPaints = new ConcurrentHashMap<>();
@@ -170,6 +171,7 @@ final class DEdgeDetails extends EdgeDetails {
 		m_segmentStrokes.remove(edgeIdx);
 		m_sourceArrows.remove(edgeIdx);
 		m_sourceArrowPaints.remove(edgeIdx);
+		m_sourceArrowSelectedPaints.remove(edgeIdx);
 		m_targetArrows.remove(edgeIdx);
 		m_targetArrowPaints.remove(edgeIdx);
 		m_targetArrowSelectedPaints.remove(edgeIdx);
