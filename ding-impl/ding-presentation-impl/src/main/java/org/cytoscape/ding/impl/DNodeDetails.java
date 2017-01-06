@@ -24,6 +24,26 @@ package org.cytoscape.ding.impl;
  * #L%
  */
 
+import static org.cytoscape.ding.DVisualLexicon.NODE_LABEL_POSITION;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_BORDER_LINE_TYPE;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_BORDER_PAINT;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_BORDER_TRANSPARENCY;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_BORDER_WIDTH;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_DEPTH;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_FILL_COLOR;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_LABEL;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_LABEL_COLOR;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_LABEL_FONT_FACE;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_LABEL_FONT_SIZE;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_LABEL_TRANSPARENCY;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_LABEL_WIDTH;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_NESTED_NETWORK_IMAGE_VISIBLE;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_PAINT;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_SELECTED_PAINT;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_SHAPE;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_TOOLTIP;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_TRANSPARENCY;
+
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Paint;
@@ -37,7 +57,6 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.cytoscape.ding.DNodeShape;
-import org.cytoscape.ding.DVisualLexicon;
 import org.cytoscape.ding.Justification;
 import org.cytoscape.ding.Label;
 import org.cytoscape.ding.ObjectPosition;
@@ -47,7 +66,6 @@ import org.cytoscape.graph.render.stateful.NodeDetails;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
-import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.presentation.property.values.LineType;
 import org.cytoscape.view.presentation.property.values.NodeShape;
 
@@ -93,27 +111,27 @@ public class DNodeDetails extends NodeDetails {
 	private final Object lock = new Object();
 
 	// Default values
-	Color m_colorLowDetailDefault = (Color) DVisualLexicon.NODE_FILL_COLOR.getDefault();
-	Color m_selectedColorLowDetailDefault = (Color) DVisualLexicon.NODE_SELECTED_PAINT.getDefault();
-	Paint m_unselectedPaintDefault = DVisualLexicon.NODE_FILL_COLOR.getDefault();
-	Paint m_selectedPaintDefault = DVisualLexicon.NODE_SELECTED_PAINT.getDefault();
-	NodeShape m_shapeDefault = DVisualLexicon.NODE_SHAPE.getDefault();
-	Double m_borderWidthDefault = DVisualLexicon.NODE_BORDER_WIDTH.getDefault();
-	LineType m_borderStrokeDefault = DVisualLexicon.NODE_BORDER_LINE_TYPE.getDefault();
-	Paint m_borderPaintDefault = DVisualLexicon.NODE_BORDER_PAINT.getDefault();
-	String m_labelTextDefault = DVisualLexicon.NODE_LABEL.getDefault();;
-	String m_tooltipTextDefault = DVisualLexicon.NODE_TOOLTIP.getDefault();
-	Font m_labelFontDefault = DVisualLexicon.NODE_LABEL_FONT_FACE.getDefault();
-	Paint m_labelPaintDefault = DVisualLexicon.NODE_LABEL_COLOR.getDefault();
+	Color m_colorLowDetailDefault = (Color) NODE_FILL_COLOR.getDefault();
+	Color m_selectedColorLowDetailDefault = (Color) NODE_SELECTED_PAINT.getDefault();
+	Paint m_unselectedPaintDefault = NODE_FILL_COLOR.getDefault();
+	Paint m_selectedPaintDefault = NODE_SELECTED_PAINT.getDefault();
+	NodeShape m_shapeDefault = NODE_SHAPE.getDefault();
+	Double m_borderWidthDefault = NODE_BORDER_WIDTH.getDefault();
+	LineType m_borderStrokeDefault = NODE_BORDER_LINE_TYPE.getDefault();
+	Paint m_borderPaintDefault = NODE_BORDER_PAINT.getDefault();
+	String m_labelTextDefault = NODE_LABEL.getDefault();;
+	String m_tooltipTextDefault = NODE_TOOLTIP.getDefault();
+	Font m_labelFontDefault = NODE_LABEL_FONT_FACE.getDefault();
+	Paint m_labelPaintDefault = NODE_LABEL_COLOR.getDefault();
 	Byte m_labelTextAnchorDefault;
 	Byte m_labelNodeAnchorDefault;
 	Double m_labelOffsetVectorXDefault;
 	Double m_labelOffsetVectorYDefault;
 	Byte m_labelJustifyDefault;
-	Double m_labelWidthDefault = DVisualLexicon.NODE_LABEL_WIDTH.getDefault();
-	Integer transparencyDefault = DVisualLexicon.NODE_TRANSPARENCY.getDefault();
-	Integer transparencyBorderDefault = DVisualLexicon.NODE_BORDER_TRANSPARENCY.getDefault();
-	Integer transparencyLabelDefault = DVisualLexicon.NODE_LABEL_TRANSPARENCY.getDefault();
+	Double m_labelWidthDefault = NODE_LABEL_WIDTH.getDefault();
+	Integer transparencyDefault = NODE_TRANSPARENCY.getDefault();
+	Integer transparencyBorderDefault = NODE_BORDER_TRANSPARENCY.getDefault();
+	Integer transparencyLabelDefault = NODE_LABEL_TRANSPARENCY.getDefault();
 
 	private boolean isCleared;
 
@@ -145,9 +163,9 @@ public class DNodeDetails extends NodeDetails {
 		m_labelOffsetXs = new ConcurrentHashMap<>(16, 0.75f, 2);
 		m_labelOffsetYs = new ConcurrentHashMap<>(16, 0.75f, 2);
 		m_selectedPaints = new ConcurrentHashMap<>(16, 0.75f, 2);
-		this.m_nodeTansparencies = new ConcurrentHashMap<>(16, 0.75f, 2);
-		this.m_nodeBorderTansparencies = new ConcurrentHashMap<>(16, 0.75f, 2);
-		this.m_nodeLabelTansparencies = new ConcurrentHashMap<>(16, 0.75f, 2);
+		m_nodeTansparencies = new ConcurrentHashMap<>(16, 0.75f, 2);
+		m_nodeBorderTansparencies = new ConcurrentHashMap<>(16, 0.75f, 2);
+		m_nodeLabelTansparencies = new ConcurrentHashMap<>(16, 0.75f, 2);
 		m_nodeZ = new ConcurrentHashMap<>(16, 0.75f, 2);
 		m_nestedNetworkImgVisible = new ConcurrentHashMap<>(16, 0.75f, 2);
 
@@ -202,14 +220,13 @@ public class DNodeDetails extends NodeDetails {
 			return getSelectedColorLowDetail(node);
 		else
 			return getUnselectedColorLowDetail(node);
-
 	}
 
 	private Color getUnselectedColorLowDetail(CyNode node) {
 		// Check bypass
 		final DNodeView dnv = dGraphView.getDNodeView(node);
-		if (dnv.isValueLocked(DVisualLexicon.NODE_FILL_COLOR))
-			return (Color) dnv.getVisualProperty(DVisualLexicon.NODE_FILL_COLOR);
+		if (dnv.isValueLocked(NODE_FILL_COLOR))
+			return (Color) dnv.getVisualProperty(NODE_FILL_COLOR);
 
 		final Object o = m_colorsLowDetail.get(node);
 
@@ -224,15 +241,15 @@ public class DNodeDetails extends NodeDetails {
 
 	void setColorLowDetailDefault(Color c) {
 		m_colorLowDetailDefault = c;
-		defaultValues.put(DVisualLexicon.NODE_FILL_COLOR, m_colorLowDetailDefault);
-		defaultValues.put(DVisualLexicon.NODE_PAINT, m_colorLowDetailDefault);
+		defaultValues.put(NODE_FILL_COLOR, m_colorLowDetailDefault);
+		defaultValues.put(NODE_PAINT, m_colorLowDetailDefault);
 	}
 
 	private Color getSelectedColorLowDetail(CyNode node) {
 		// Check bypass
 		final DNodeView dnv = dGraphView.getDNodeView(node);
-		if (dnv.isValueLocked(DVisualLexicon.NODE_SELECTED_PAINT))
-			return (Color) dnv.getVisualProperty(DVisualLexicon.NODE_SELECTED_PAINT);
+		if (dnv.isValueLocked(NODE_SELECTED_PAINT))
+			return (Color) dnv.getVisualProperty(NODE_SELECTED_PAINT);
 
 		final Object o = m_selectedColorsLowDetail.get(node);
 
@@ -247,14 +264,14 @@ public class DNodeDetails extends NodeDetails {
 
 	void setSelectedColorLowDetailDefault(Color c) {
 		m_selectedColorLowDetailDefault = c;
-		defaultValues.put(DVisualLexicon.NODE_SELECTED_PAINT, m_selectedColorLowDetailDefault);
+		defaultValues.put(NODE_SELECTED_PAINT, m_selectedColorLowDetailDefault);
 	}
 
 	Paint getSelectedPaint(final CyNode node) {
 		// Check bypass
 		final DNodeView dnv = dGraphView.getDNodeView(node);
-		if (dnv.isValueLocked(DVisualLexicon.NODE_SELECTED_PAINT))
-			return dnv.getVisualProperty(DVisualLexicon.NODE_SELECTED_PAINT);
+		if (dnv.isValueLocked(NODE_SELECTED_PAINT))
+			return dnv.getVisualProperty(NODE_SELECTED_PAINT);
 
 		final Paint o = m_selectedPaints.get(node);
 
@@ -269,15 +286,15 @@ public class DNodeDetails extends NodeDetails {
 
 	void setSelectedPaintDefault(Paint c) {
 		m_selectedPaintDefault = c;
-		defaultValues.put(DVisualLexicon.NODE_SELECTED_PAINT, m_selectedPaintDefault);
+		defaultValues.put(NODE_SELECTED_PAINT, m_selectedPaintDefault);
 	}
 
 	@Override
 	public byte getShape(final CyNode node) {
 		// Check bypass
 		final DNodeView dnv = dGraphView.getDNodeView(node);
-		if (dnv.isValueLocked(DVisualLexicon.NODE_SHAPE))
-			return DNodeShape.getDShape(dnv.getVisualProperty(DVisualLexicon.NODE_SHAPE)).getNativeShape();
+		if (dnv.isValueLocked(NODE_SHAPE))
+			return DNodeShape.getDShape(dnv.getVisualProperty(NODE_SHAPE)).getNativeShape();
 
 		final NodeShape originaShape = m_shapes.get(node);
 
@@ -293,7 +310,7 @@ public class DNodeDetails extends NodeDetails {
 
 	void setShapeDefault(NodeShape shape) {
 		m_shapeDefault = shape;
-		defaultValues.put(DVisualLexicon.NODE_SHAPE, m_shapeDefault);
+		defaultValues.put(NODE_SHAPE, m_shapeDefault);
 	}
 
 	/*
@@ -318,18 +335,18 @@ public class DNodeDetails extends NodeDetails {
 		final DNodeView dev = dGraphView.getDNodeView(node);
 		
 		// First check if transparency is locked, because the stored colors may not contain the correct alpha value
-		if (dev.isValueLocked(DVisualLexicon.NODE_TRANSPARENCY))
+		if (dev.isValueLocked(NODE_TRANSPARENCY))
 			trans = getTransparency(node);
 		
-		if (dev.isValueLocked(DVisualLexicon.NODE_FILL_COLOR)) {
-			paint = dev.getVisualProperty(DVisualLexicon.NODE_FILL_COLOR);
+		if (dev.isValueLocked(NODE_FILL_COLOR)) {
+			paint = dev.getVisualProperty(NODE_FILL_COLOR);
 		} else {
 			paint = m_unselectedPaints.get(node);
 
 			if (paint == null) {
 				// Mapped Value does not exist; use default
 				if (m_unselectedPaintDefault == null)
-					paint = DVisualLexicon.NODE_FILL_COLOR.getDefault();
+					paint = NODE_FILL_COLOR.getDefault();
 				else
 					paint = m_unselectedPaintDefault;
 			}
@@ -343,8 +360,8 @@ public class DNodeDetails extends NodeDetails {
 
 	void setUnselectedPaintDefault(Paint p) {
 		m_unselectedPaintDefault = p;
-		defaultValues.put(DVisualLexicon.NODE_FILL_COLOR, m_unselectedPaintDefault);
-		defaultValues.put(DVisualLexicon.NODE_PAINT, m_unselectedPaintDefault);
+		defaultValues.put(NODE_FILL_COLOR, m_unselectedPaintDefault);
+		defaultValues.put(NODE_PAINT, m_unselectedPaintDefault);
 	}
 
 	void setUnselectedPaint(final CyNode node, final Paint paint) {
@@ -408,14 +425,14 @@ public class DNodeDetails extends NodeDetails {
 	public float getBorderWidth(final CyNode node) {
 		// Check bypass
 		final DNodeView dnv = dGraphView.getDNodeView(node);
-		if (dnv.isValueLocked(DVisualLexicon.NODE_BORDER_WIDTH))
-			return dnv.getVisualProperty(DVisualLexicon.NODE_BORDER_WIDTH).floatValue();
+		if (dnv.isValueLocked(NODE_BORDER_WIDTH))
+			return dnv.getVisualProperty(NODE_BORDER_WIDTH).floatValue();
 
 		final Float o = m_borderWidths.get(node);
 		
 		if (o == null)
 			if (m_borderWidthDefault == null)
-				return DVisualLexicon.NODE_BORDER_WIDTH.getDefault().floatValue();
+				return NODE_BORDER_WIDTH.getDefault().floatValue();
 			else
 				return m_borderWidthDefault.floatValue();
 
@@ -424,7 +441,7 @@ public class DNodeDetails extends NodeDetails {
 
 	void setBorderWidthDefault(float width) {
 		m_borderWidthDefault = Double.valueOf(width);
-		defaultValues.put(DVisualLexicon.NODE_BORDER_WIDTH, m_borderWidthDefault);
+		defaultValues.put(NODE_BORDER_WIDTH, m_borderWidthDefault);
 	}
 
 	/**
@@ -444,8 +461,8 @@ public class DNodeDetails extends NodeDetails {
 		final float borderWidth = getBorderWidth(node);
 		// Check bypass
 		final DNodeView dnv = dGraphView.getDNodeView(node);
-		if (dnv.isValueLocked(DVisualLexicon.NODE_BORDER_LINE_TYPE)) {
-			final LineType lockedLineType = dnv.getVisualProperty(DVisualLexicon.NODE_BORDER_LINE_TYPE);
+		if (dnv.isValueLocked(NODE_BORDER_LINE_TYPE)) {
+			final LineType lockedLineType = dnv.getVisualProperty(NODE_BORDER_LINE_TYPE);
 			return DLineType.getDLineType(lockedLineType).getStroke(borderWidth);
 		}
 
@@ -453,7 +470,7 @@ public class DNodeDetails extends NodeDetails {
 		
 		if (stroke == null) {
 			if (m_borderStrokeDefault == null) {
-				final LineType vpDefaultLineType = dnv.getVisualProperty(DVisualLexicon.NODE_BORDER_LINE_TYPE);
+				final LineType vpDefaultLineType = dnv.getVisualProperty(NODE_BORDER_LINE_TYPE);
 				return DLineType.getDLineType(vpDefaultLineType).getStroke(borderWidth);
 			} else {
 				
@@ -466,7 +483,7 @@ public class DNodeDetails extends NodeDetails {
 
 	void setBorderLineTypeDefault(final LineType lineType) {
 		m_borderStrokeDefault = lineType;
-		defaultValues.put(DVisualLexicon.NODE_BORDER_LINE_TYPE, m_borderStrokeDefault);
+		defaultValues.put(NODE_BORDER_LINE_TYPE, m_borderStrokeDefault);
 	}
 	
 	void overrideBorderStroke(final CyNode node, final Stroke stroke) {
@@ -483,17 +500,17 @@ public class DNodeDetails extends NodeDetails {
 		final DNodeView dnv = dGraphView.getDNodeView(node);
 		
 		if (dnv == null)
-			return DVisualLexicon.NODE_BORDER_PAINT.getDefault();
+			return NODE_BORDER_PAINT.getDefault();
 		
 		Paint paint = null;
 		Integer trans = null;
 		
 		// First check if transparency is locked, because the stored colors may not contain the correct alpha value
-		if (dnv.isValueLocked(DVisualLexicon.NODE_BORDER_TRANSPARENCY))
+		if (dnv.isValueLocked(NODE_BORDER_TRANSPARENCY))
 			trans = getBorderTransparency(node);
 		
-		if (dnv.isValueLocked(DVisualLexicon.NODE_BORDER_PAINT)) {
-			paint = dnv.getVisualProperty(DVisualLexicon.NODE_BORDER_PAINT);
+		if (dnv.isValueLocked(NODE_BORDER_PAINT)) {
+			paint = dnv.getVisualProperty(NODE_BORDER_PAINT);
 		} else {
 			paint = m_borderPaints.get(node);
 
@@ -507,12 +524,12 @@ public class DNodeDetails extends NodeDetails {
 		if (paint != null)
 			return paint;
 
-		return DVisualLexicon.NODE_BORDER_PAINT.getDefault();
+		return NODE_BORDER_PAINT.getDefault();
 	}
 
 	void setBorderPaintDefault(Paint p) {
 		m_borderPaintDefault = p;
-		defaultValues.put(DVisualLexicon.NODE_BORDER_PAINT, p);
+		defaultValues.put(NODE_BORDER_PAINT, p);
 	}
 
 	/**
@@ -532,14 +549,14 @@ public class DNodeDetails extends NodeDetails {
 		// Check related bypass
 		final DNodeView dnv = dGraphView.getDNodeView(node);
 		
-		if (dnv.isValueLocked(DVisualLexicon.NODE_LABEL) && !dnv.getVisualProperty(DVisualLexicon.NODE_LABEL).isEmpty())
+		if (dnv.isValueLocked(NODE_LABEL) && !dnv.getVisualProperty(NODE_LABEL).isEmpty())
 			return 1;
 		
 		Integer count = m_labelCounts.get(node);
 		
 		if (count == null) {
 			try {
-				String defLabel = (String) defaultValues.get(DVisualLexicon.NODE_LABEL);
+				String defLabel = (String) defaultValues.get(NODE_LABEL);
 				count = (defLabel == null || defLabel.isEmpty()) ? super.getLabelCount(node) : 1;
 			} catch (ClassCastException e) {
 				count = 0;
@@ -565,8 +582,8 @@ public class DNodeDetails extends NodeDetails {
 	public String getLabelText(final CyNode node, final int labelInx) {
 		// Check bypass
 		final DNodeView dnv = dGraphView.getDNodeView(node);
-		if (dnv.isValueLocked(DVisualLexicon.NODE_LABEL))
-			return dnv.getVisualProperty(DVisualLexicon.NODE_LABEL);
+		if (dnv.isValueLocked(NODE_LABEL))
+			return dnv.getVisualProperty(NODE_LABEL);
 
 		// final long key = (((long) node) << 32) | ((long) labelInx);
 		final String o = m_labelTexts.get(node);
@@ -582,7 +599,7 @@ public class DNodeDetails extends NodeDetails {
 
 	void setLabelTextDefault(String text) {
 		m_labelTextDefault = text;
-		defaultValues.put(DVisualLexicon.NODE_LABEL, m_labelTextDefault);
+		defaultValues.put(NODE_LABEL, m_labelTextDefault);
 	}
 
 	/**
@@ -602,8 +619,8 @@ public class DNodeDetails extends NodeDetails {
 	public String getTooltipText(final CyNode node) {
 		// Check bypass
 		final DNodeView dnv = dGraphView.getDNodeView(node);
-		if (dnv.isValueLocked(DVisualLexicon.NODE_TOOLTIP))
-			return dnv.getVisualProperty(DVisualLexicon.NODE_TOOLTIP);
+		if (dnv.isValueLocked(NODE_TOOLTIP))
+			return dnv.getVisualProperty(NODE_TOOLTIP);
 
 		final String o = m_tooltipTexts.get(node);
 
@@ -618,7 +635,7 @@ public class DNodeDetails extends NodeDetails {
 
 	void setTooltipTextDefault(String tooltip) {
 		m_tooltipTextDefault = tooltip;
-		defaultValues.put(DVisualLexicon.NODE_TOOLTIP, m_tooltipTextDefault);
+		defaultValues.put(NODE_TOOLTIP, m_tooltipTextDefault);
 	}
 
 	/**
@@ -641,17 +658,17 @@ public class DNodeDetails extends NodeDetails {
 		final DNodeView dnv = dGraphView.getDNodeView(node);
 		
 		// Check bypass
-		if (dnv.isValueLocked(DVisualLexicon.NODE_LABEL_FONT_SIZE))
-			size = dnv.getVisualProperty(DVisualLexicon.NODE_LABEL_FONT_SIZE);
+		if (dnv.isValueLocked(NODE_LABEL_FONT_SIZE))
+			size = dnv.getVisualProperty(NODE_LABEL_FONT_SIZE);
 		
-		if (dnv.isValueLocked(DVisualLexicon.NODE_LABEL_FONT_FACE)) {
-			font = dnv.getVisualProperty(DVisualLexicon.NODE_LABEL_FONT_FACE);
+		if (dnv.isValueLocked(NODE_LABEL_FONT_FACE)) {
+			font = dnv.getVisualProperty(NODE_LABEL_FONT_FACE);
 		} else {
 			font = m_labelFonts.get(node);
 	
 			if (font == null) {
 				font = m_labelFontDefault != null ? 
-						m_labelFontDefault : DVisualLexicon.NODE_LABEL_FONT_FACE.getDefault();
+						m_labelFontDefault : NODE_LABEL_FONT_FACE.getDefault();
 			}
 		}
 		
@@ -663,10 +680,10 @@ public class DNodeDetails extends NodeDetails {
 
 	void setLabelFontDefault(Font f) {
 		m_labelFontDefault = f;
-		defaultValues.put(DVisualLexicon.NODE_LABEL_FONT_FACE, m_labelFontDefault);
+		defaultValues.put(NODE_LABEL_FONT_FACE, m_labelFontDefault);
 		
 		if (f != null)
-			defaultValues.put(DVisualLexicon.NODE_LABEL_FONT_SIZE, f.getSize());
+			defaultValues.put(NODE_LABEL_FONT_SIZE, f.getSize());
 	}
 
 	/*
@@ -688,17 +705,17 @@ public class DNodeDetails extends NodeDetails {
 		final DNodeView dnv = dGraphView.getDNodeView(node);
 		
 		// First check if transparency is locked, because the stored colors may not contain the correct alpha value
-		if (dnv.isValueLocked(DVisualLexicon.NODE_LABEL_TRANSPARENCY))
+		if (dnv.isValueLocked(NODE_LABEL_TRANSPARENCY))
 			trans = getLabelTransparency(node);
 		
-		if (dnv.isValueLocked(DVisualLexicon.NODE_LABEL_COLOR)) {
+		if (dnv.isValueLocked(NODE_LABEL_COLOR)) {
 			// Check bypass
-			paint = dnv.getVisualProperty(DVisualLexicon.NODE_LABEL_COLOR);
+			paint = dnv.getVisualProperty(NODE_LABEL_COLOR);
 		} else {
 			paint = m_labelPaints.get(node);
 
 			if (paint == null)
-				paint = m_labelPaintDefault != null ? m_labelPaintDefault : DVisualLexicon.NODE_LABEL_COLOR.getDefault();
+				paint = m_labelPaintDefault != null ? m_labelPaintDefault : NODE_LABEL_COLOR.getDefault();
 		}
 		
 		if (trans != null)
@@ -709,7 +726,7 @@ public class DNodeDetails extends NodeDetails {
 
 	void setLabelPaintDefault(Paint p) {
 		m_labelPaintDefault = p;
-		defaultValues.put(DVisualLexicon.NODE_LABEL_COLOR, m_labelPaintDefault);
+		defaultValues.put(NODE_LABEL_COLOR, m_labelPaintDefault);
 	}
 
 	/**
@@ -736,8 +753,8 @@ public class DNodeDetails extends NodeDetails {
 	public byte getLabelTextAnchor(final CyNode node, final int labelInx) {
 		// Check bypass
 		final DNodeView dnv = dGraphView.getDNodeView(node);
-		if (dnv.isValueLocked(DVisualLexicon.NODE_LABEL_POSITION)) {
-			final ObjectPosition lp = dnv.getVisualProperty(DVisualLexicon.NODE_LABEL_POSITION);
+		if (dnv.isValueLocked(NODE_LABEL_POSITION)) {
+			final ObjectPosition lp = dnv.getVisualProperty(NODE_LABEL_POSITION);
 			final Position anchor = lp.getAnchor();
 			return convertG2ND(anchor.getConversionConstant());
 		}
@@ -778,8 +795,8 @@ public class DNodeDetails extends NodeDetails {
 	public byte getLabelNodeAnchor(final CyNode node, final int labelInx) {
 		// Check bypass
 		final DNodeView dnv = dGraphView.getDNodeView(node);
-		if (dnv.isValueLocked(DVisualLexicon.NODE_LABEL_POSITION)) {
-			final ObjectPosition lp = dnv.getVisualProperty(DVisualLexicon.NODE_LABEL_POSITION);
+		if (dnv.isValueLocked(NODE_LABEL_POSITION)) {
+			final ObjectPosition lp = dnv.getVisualProperty(NODE_LABEL_POSITION);
 			final Position anchor = lp.getTargetAnchor();
 			return convertG2ND(anchor.getConversionConstant());
 		}
@@ -820,8 +837,8 @@ public class DNodeDetails extends NodeDetails {
 	public float getLabelOffsetVectorX(final CyNode node, final int labelInx) {
 		// Check bypass
 		final DNodeView dnv = dGraphView.getDNodeView(node);
-		if (dnv.isValueLocked(DVisualLexicon.NODE_LABEL_POSITION)) {
-			final ObjectPosition lp = dnv.getVisualProperty(DVisualLexicon.NODE_LABEL_POSITION);
+		if (dnv.isValueLocked(NODE_LABEL_POSITION)) {
+			final ObjectPosition lp = dnv.getVisualProperty(NODE_LABEL_POSITION);
 			return (float) lp.getOffsetX();
 		}
 
@@ -861,8 +878,8 @@ public class DNodeDetails extends NodeDetails {
 	public float getLabelOffsetVectorY(final CyNode node, final int labelInx) {
 		// Check bypass
 		final DNodeView dnv = dGraphView.getDNodeView(node);
-		if (dnv.isValueLocked(DVisualLexicon.NODE_LABEL_POSITION)) {
-			final ObjectPosition lp = dnv.getVisualProperty(DVisualLexicon.NODE_LABEL_POSITION);
+		if (dnv.isValueLocked(NODE_LABEL_POSITION)) {
+			final ObjectPosition lp = dnv.getVisualProperty(NODE_LABEL_POSITION);
 			return (float) lp.getOffsetY();
 		}
 
@@ -902,8 +919,8 @@ public class DNodeDetails extends NodeDetails {
 	public byte getLabelJustify(final CyNode node, final int labelInx) {
 		// Check bypass
 		final DNodeView dnv = dGraphView.getDNodeView(node);
-		if (dnv.isValueLocked(DVisualLexicon.NODE_LABEL_POSITION)) {
-			final ObjectPosition lp = dnv.getVisualProperty(DVisualLexicon.NODE_LABEL_POSITION);
+		if (dnv.isValueLocked(NODE_LABEL_POSITION)) {
+			final ObjectPosition lp = dnv.getVisualProperty(NODE_LABEL_POSITION);
 			final Justification justify = lp.getJustify();
 			return convertG2ND(justify.getConversionConstant());
 		}
@@ -945,8 +962,8 @@ public class DNodeDetails extends NodeDetails {
 		// Check bypass first
 		final DNodeView dnv = dGraphView.getDNodeView(node);
 		
-		if (dnv.isValueLocked(DVisualLexicon.NODE_LABEL_WIDTH))
-			return dnv.getVisualProperty(DVisualLexicon.NODE_LABEL_WIDTH);
+		if (dnv.isValueLocked(NODE_LABEL_WIDTH))
+			return dnv.getVisualProperty(NODE_LABEL_WIDTH);
 		
 		final Double o = m_labelWidths.get(node);
 
@@ -962,7 +979,7 @@ public class DNodeDetails extends NodeDetails {
 
 	void setLabelWidthDefault(double width) {
 		m_labelWidthDefault = width;
-		defaultValues.put(DVisualLexicon.NODE_LABEL_WIDTH, m_labelWidthDefault);
+		defaultValues.put(NODE_LABEL_WIDTH, m_labelWidthDefault);
 	}
 
 	/**
@@ -982,12 +999,12 @@ public class DNodeDetails extends NodeDetails {
 	public Integer getTransparency(final CyNode node) {
 		// Check bypass
 		final DNodeView dnv = dGraphView.getDNodeView(node);
-		if (dnv.isValueLocked(DVisualLexicon.NODE_TRANSPARENCY))
-			return dnv.getVisualProperty(DVisualLexicon.NODE_TRANSPARENCY);
+		if (dnv.isValueLocked(NODE_TRANSPARENCY))
+			return dnv.getVisualProperty(NODE_TRANSPARENCY);
 
 		Integer trans = m_nodeTansparencies.get(node);
 		if (trans == null) {
-			trans = transparencyDefault != null ? transparencyDefault : DVisualLexicon.NODE_TRANSPARENCY.getDefault();
+			trans = transparencyDefault != null ? transparencyDefault : NODE_TRANSPARENCY.getDefault();
 		}
 		
 		return trans;
@@ -995,7 +1012,7 @@ public class DNodeDetails extends NodeDetails {
 
 	void setTransparencyDefault(Integer transparency) {
 		transparencyDefault = transparency;
-		defaultValues.put(DVisualLexicon.NODE_TRANSPARENCY, transparencyDefault);
+		defaultValues.put(NODE_TRANSPARENCY, transparencyDefault);
 	}
 
 	void overrideTransparency(final CyNode node, final Integer transparency) {
@@ -1010,13 +1027,13 @@ public class DNodeDetails extends NodeDetails {
 	public Integer getLabelTransparency(final CyNode node) {
 		// Check bypass
 		final DNodeView dnv = dGraphView.getDNodeView(node);
-		if (dnv.isValueLocked(DVisualLexicon.NODE_LABEL_TRANSPARENCY))
-			return dnv.getVisualProperty(DVisualLexicon.NODE_LABEL_TRANSPARENCY);
+		if (dnv.isValueLocked(NODE_LABEL_TRANSPARENCY))
+			return dnv.getVisualProperty(NODE_LABEL_TRANSPARENCY);
 
 		Integer trans = m_nodeLabelTansparencies.get(node);
 		if (trans == null) {
 			trans = transparencyLabelDefault != null ? 
-					transparencyLabelDefault : DVisualLexicon.NODE_LABEL_TRANSPARENCY.getDefault();
+					transparencyLabelDefault : NODE_LABEL_TRANSPARENCY.getDefault();
 		}
 		
 		return trans;
@@ -1024,7 +1041,7 @@ public class DNodeDetails extends NodeDetails {
 
 	void setLabelTransparencyDefault(Integer transparency) {
 		transparencyLabelDefault = transparency;
-		defaultValues.put(DVisualLexicon.NODE_LABEL_TRANSPARENCY, transparencyLabelDefault);
+		defaultValues.put(NODE_LABEL_TRANSPARENCY, transparencyLabelDefault);
 	}
 
 	void overrideLabelTransparency(final CyNode node, final Integer transparency) {
@@ -1039,13 +1056,13 @@ public class DNodeDetails extends NodeDetails {
 	public Integer getBorderTransparency(final CyNode node) {
 		// Check bypass
 		final DNodeView dnv = dGraphView.getDNodeView(node);
-		if (dnv.isValueLocked(DVisualLexicon.NODE_BORDER_TRANSPARENCY))
-			return dnv.getVisualProperty(DVisualLexicon.NODE_BORDER_TRANSPARENCY);
+		if (dnv.isValueLocked(NODE_BORDER_TRANSPARENCY))
+			return dnv.getVisualProperty(NODE_BORDER_TRANSPARENCY);
 
 		Integer trans = m_nodeBorderTansparencies.get(node);
 		if (trans == null) {
 			trans = transparencyBorderDefault != null ? 
-					transparencyBorderDefault : DVisualLexicon.NODE_BORDER_TRANSPARENCY.getDefault();
+					transparencyBorderDefault : NODE_BORDER_TRANSPARENCY.getDefault();
 		}
 		
 		return trans;
@@ -1053,7 +1070,7 @@ public class DNodeDetails extends NodeDetails {
 
 	void setBorderTransparencyDefault(Integer transparency) {
 		transparencyBorderDefault = transparency;
-		defaultValues.put(DVisualLexicon.NODE_BORDER_TRANSPARENCY, transparencyBorderDefault);
+		defaultValues.put(NODE_BORDER_TRANSPARENCY, transparencyBorderDefault);
 	}
 
 	void overrideBorderTransparency(final CyNode node, final Integer transparency) {
@@ -1066,7 +1083,7 @@ public class DNodeDetails extends NodeDetails {
 	}
 	
 	void setNestedNetworkImgVisibleDefault(boolean visible) {
-		defaultValues.put(BasicVisualLexicon.NODE_NESTED_NETWORK_IMAGE_VISIBLE, visible);
+		defaultValues.put(NODE_NESTED_NETWORK_IMAGE_VISIBLE, visible);
 	}
 	
 	void overrideNestedNetworkImgVisible(final CyNode node, final boolean visible) {
@@ -1077,21 +1094,21 @@ public class DNodeDetails extends NodeDetails {
 	Boolean getNestedNetworkImgVisible(final CyNode node) {
 		final DNodeView dnv = (DNodeView) dGraphView.getDNodeView(node);
 		
-		if (dnv.isValueLocked(BasicVisualLexicon.NODE_NESTED_NETWORK_IMAGE_VISIBLE))
-			return dnv.getVisualProperty(BasicVisualLexicon.NODE_NESTED_NETWORK_IMAGE_VISIBLE);
+		if (dnv.isValueLocked(NODE_NESTED_NETWORK_IMAGE_VISIBLE))
+			return dnv.getVisualProperty(NODE_NESTED_NETWORK_IMAGE_VISIBLE);
 		
 		Boolean visible = m_nestedNetworkImgVisible.get(node);
 		
 		if (visible != null)
 			return visible;
 		
-		return getDefaultValue(BasicVisualLexicon.NODE_NESTED_NETWORK_IMAGE_VISIBLE);
+		return getDefaultValue(NODE_NESTED_NETWORK_IMAGE_VISIBLE);
 	}
 
 	public Double getNodeDepth(final CyNode node) {
 		final DNodeView dnv = dGraphView.getDNodeView(node);
-		if (dnv.isValueLocked(DVisualLexicon.NODE_DEPTH))
-			return dnv.getVisualProperty(DVisualLexicon.NODE_DEPTH);
+		if (dnv.isValueLocked(NODE_DEPTH))
+			return dnv.getVisualProperty(NODE_DEPTH);
 
 		Double depth = m_nodeZ.get(node);
 		if (depth == null)

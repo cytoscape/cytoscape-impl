@@ -24,12 +24,23 @@ package org.cytoscape.ding.impl;
  * #L%
  */
 
+import static org.cytoscape.ding.DVisualLexicon.EDGE_CURVED;
 import static org.cytoscape.ding.DVisualLexicon.EDGE_SOURCE_ARROW_UNSELECTED_PAINT;
 import static org.cytoscape.ding.DVisualLexicon.EDGE_TARGET_ARROW_UNSELECTED_PAINT;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_BEND;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_LABEL;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_LABEL_COLOR;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_LABEL_FONT_FACE;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_LABEL_FONT_SIZE;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_LABEL_TRANSPARENCY;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_LABEL_WIDTH;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_LINE_TYPE;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_SELECTED_PAINT;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_SOURCE_ARROW_SHAPE;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_STROKE_SELECTED_PAINT;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_TARGET_ARROW_SHAPE;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_TOOLTIP;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_TRANSPARENCY;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_UNSELECTED_PAINT;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_WIDTH;
@@ -47,7 +58,6 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.cytoscape.ding.DArrowShape;
-import org.cytoscape.ding.DVisualLexicon;
 import org.cytoscape.ding.EdgeView;
 import org.cytoscape.ding.impl.strokes.AnimatedStroke;
 import org.cytoscape.ding.impl.strokes.WidthStroke;
@@ -113,7 +123,7 @@ final class DEdgeDetails extends EdgeDetails {
 	String m_labelTextDefault;
 	Font m_labelFontDefault = EDGE_LABEL_FONT_FACE.getDefault();
 	Paint m_labelPaintDefault = EDGE_LABEL_COLOR.getDefault();
-	Double m_labelWidthDefault = DVisualLexicon.EDGE_LABEL_WIDTH.getDefault();
+	Double m_labelWidthDefault = EDGE_LABEL_WIDTH.getDefault();
 	Paint m_selectedPaintDefault = EDGE_SELECTED_PAINT.getDefault();
 	Paint m_unselectedPaintDefault = EDGE_UNSELECTED_PAINT.getDefault();
 	Paint m_colorLowDetailDefault = EDGE_UNSELECTED_PAINT.getDefault();
@@ -163,31 +173,31 @@ final class DEdgeDetails extends EdgeDetails {
 		isCleared = true;
 	}
 
-	void unregisterEdge(final CyEdge edgeIdx) {
+	void unregisterEdge(final CyEdge edge) {
 		// To avoid a memory leak its important to permanently remove the node from all the maps.
-		m_colorsLowDetail.remove(edgeIdx);
-		m_selectedColorsLowDetail.remove(edgeIdx);
-		m_segmentThicknesses.remove(edgeIdx);
-		m_segmentStrokes.remove(edgeIdx);
-		m_sourceArrows.remove(edgeIdx);
-		m_sourceArrowPaints.remove(edgeIdx);
-		m_sourceArrowSelectedPaints.remove(edgeIdx);
-		m_targetArrows.remove(edgeIdx);
-		m_targetArrowPaints.remove(edgeIdx);
-		m_targetArrowSelectedPaints.remove(edgeIdx);
-		m_labelCounts.remove(edgeIdx);
-		m_labelTexts.remove(edgeIdx);
-		m_labelFonts.remove(edgeIdx);
-		m_labelPaints.remove(edgeIdx);
-		m_labelWidths.remove(edgeIdx);
-		m_selectedPaints.remove(edgeIdx);
-		m_unselectedPaints.remove(edgeIdx);
-		m_lineCurved.remove(edgeIdx);
-		m_edgeBends.remove(edgeIdx);
-		selected.remove(edgeIdx);
-		m_edgeTooltips.remove(edgeIdx);
-		m_edgeTansparencies.remove(edgeIdx);
-		m_edgeLabelTansparencies.remove(edgeIdx);
+		m_colorsLowDetail.remove(edge);
+		m_selectedColorsLowDetail.remove(edge);
+		m_segmentThicknesses.remove(edge);
+		m_segmentStrokes.remove(edge);
+		m_sourceArrows.remove(edge);
+		m_sourceArrowPaints.remove(edge);
+		m_sourceArrowSelectedPaints.remove(edge);
+		m_targetArrows.remove(edge);
+		m_targetArrowPaints.remove(edge);
+		m_targetArrowSelectedPaints.remove(edge);
+		m_labelCounts.remove(edge);
+		m_labelTexts.remove(edge);
+		m_labelFonts.remove(edge);
+		m_labelPaints.remove(edge);
+		m_labelWidths.remove(edge);
+		m_selectedPaints.remove(edge);
+		m_unselectedPaints.remove(edge);
+		m_lineCurved.remove(edge);
+		m_edgeBends.remove(edge);
+		selected.remove(edge);
+		m_edgeTooltips.remove(edge);
+		m_edgeTansparencies.remove(edge);
+		m_edgeLabelTansparencies.remove(edge);
 	}
 	
 	public <V> void setDefaultValue(final VisualProperty<V> vp, V value) {
@@ -207,8 +217,8 @@ final class DEdgeDetails extends EdgeDetails {
 	private final Color getUnselectedColorLowDetail(final CyEdge edge) {
 		// Check bypass
 		final DEdgeView dev = dGraphView.getDEdgeView(edge);
-		if (dev.isValueLocked(DVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT))
-			return (Color) dev.getVisualProperty(DVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT);
+		if (dev.isValueLocked(EDGE_STROKE_UNSELECTED_PAINT))
+			return (Color) dev.getVisualProperty(EDGE_STROKE_UNSELECTED_PAINT);
 
 		final Object o = m_colorsLowDetail.get(edge);
 
@@ -224,8 +234,8 @@ final class DEdgeDetails extends EdgeDetails {
 	private Color getSelectedColorLowDetail(final CyEdge edge) {
 		// Check bypass
 		final DEdgeView dev = dGraphView.getDEdgeView(edge);
-		if (dev.isValueLocked(DVisualLexicon.EDGE_STROKE_SELECTED_PAINT))
-			return (Color) dev.getVisualProperty(DVisualLexicon.EDGE_STROKE_SELECTED_PAINT);
+		if (dev.isValueLocked(EDGE_STROKE_SELECTED_PAINT))
+			return (Color) dev.getVisualProperty(EDGE_STROKE_SELECTED_PAINT);
 
 		final Object o = m_selectedColorsLowDetail.get(edge);
 
@@ -240,14 +250,14 @@ final class DEdgeDetails extends EdgeDetails {
 
 	void setSelectedColorLowDetailDefault(Color c) {
 		m_selectedColorLowDetailDefault = c;
-		defaultValues.put(DVisualLexicon.EDGE_SELECTED_PAINT, m_selectedColorLowDetailDefault);
-		defaultValues.put(DVisualLexicon.EDGE_STROKE_SELECTED_PAINT, m_selectedColorLowDetailDefault);
+		defaultValues.put(EDGE_SELECTED_PAINT, m_selectedColorLowDetailDefault);
+		defaultValues.put(EDGE_STROKE_SELECTED_PAINT, m_selectedColorLowDetailDefault);
 	}
 
 	void setColorLowDetailDefault(Color c) {
 		m_colorLowDetailDefault = c;
-		defaultValues.put(DVisualLexicon.EDGE_UNSELECTED_PAINT, m_colorLowDetailDefault);
-		defaultValues.put(DVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT, m_colorLowDetailDefault);
+		defaultValues.put(EDGE_UNSELECTED_PAINT, m_colorLowDetailDefault);
+		defaultValues.put(EDGE_STROKE_UNSELECTED_PAINT, m_colorLowDetailDefault);
 	}
 
 	@Override
@@ -255,8 +265,8 @@ final class DEdgeDetails extends EdgeDetails {
 		// Check bypass
 		final DEdgeView dev = dGraphView.getDEdgeView(edge);
 		
-		if (dev.isValueLocked(DVisualLexicon.EDGE_SOURCE_ARROW_SHAPE)) {
-			final ArrowShape tgtArrow = dev.getVisualProperty(DVisualLexicon.EDGE_SOURCE_ARROW_SHAPE);
+		if (dev.isValueLocked(EDGE_SOURCE_ARROW_SHAPE)) {
+			final ArrowShape tgtArrow = dev.getVisualProperty(EDGE_SOURCE_ARROW_SHAPE);
 			final String shapeID = tgtArrow.getSerializableString();
 			
 			return DArrowShape.parseArrowText(shapeID).getPresentationShape();
@@ -272,7 +282,7 @@ final class DEdgeDetails extends EdgeDetails {
 
 	void setSourceArrowDefault(final ArrowShape arrow) {
 		m_sourceArrowDefault = arrow;
-		defaultValues.put(DVisualLexicon.EDGE_SOURCE_ARROW_SHAPE, arrow);
+		defaultValues.put(EDGE_SOURCE_ARROW_SHAPE, arrow);
 	}
 
 	void overrideSourceArrow(final CyEdge edge, final ArrowShape arrowType) {
@@ -297,13 +307,13 @@ final class DEdgeDetails extends EdgeDetails {
 	private final Paint getSourceArrowUnselectedPaint(final CyEdge edge) {
 		// Check bypass
 		final DEdgeView dev = dGraphView.getDEdgeView(edge);
-		if (dev.isValueLocked(DVisualLexicon.EDGE_SOURCE_ARROW_UNSELECTED_PAINT))
-			return dev.getVisualProperty(DVisualLexicon.EDGE_SOURCE_ARROW_UNSELECTED_PAINT);
+		if (dev.isValueLocked(EDGE_SOURCE_ARROW_UNSELECTED_PAINT))
+			return dev.getVisualProperty(EDGE_SOURCE_ARROW_UNSELECTED_PAINT);
 
 		final Paint paint = m_sourceArrowPaints.get(edge);
 		if (paint == null) {
 			if (m_sourceArrowPaintDefault == null)
-				return DVisualLexicon.EDGE_SOURCE_ARROW_UNSELECTED_PAINT.getDefault();
+				return EDGE_SOURCE_ARROW_UNSELECTED_PAINT.getDefault();
 			else
 				return m_sourceArrowPaintDefault;
 		} else
@@ -312,7 +322,7 @@ final class DEdgeDetails extends EdgeDetails {
 
 	void setSourceArrowPaintDefault(final Paint p) {
 		m_sourceArrowPaintDefault = p;
-		defaultValues.put(DVisualLexicon.EDGE_SOURCE_ARROW_UNSELECTED_PAINT, m_sourceArrowPaintDefault);
+		defaultValues.put(EDGE_SOURCE_ARROW_UNSELECTED_PAINT, m_sourceArrowPaintDefault);
 	}
 
 	/*
@@ -341,8 +351,8 @@ final class DEdgeDetails extends EdgeDetails {
 		// Check bypass
 		final DEdgeView dev = dGraphView.getDEdgeView(edge);
 		
-		if (dev.isValueLocked(DVisualLexicon.EDGE_TARGET_ARROW_SHAPE)) {
-			final ArrowShape tgtArrow = dev.getVisualProperty(DVisualLexicon.EDGE_TARGET_ARROW_SHAPE);
+		if (dev.isValueLocked(EDGE_TARGET_ARROW_SHAPE)) {
+			final ArrowShape tgtArrow = dev.getVisualProperty(EDGE_TARGET_ARROW_SHAPE);
 			final String shapeID = tgtArrow.getSerializableString();
 			
 			return DArrowShape.parseArrowText(shapeID).getPresentationShape();
@@ -358,7 +368,7 @@ final class DEdgeDetails extends EdgeDetails {
 
 	void setTargetArrowDefault(final ArrowShape arrow) {
 		m_targetArrowDefault = arrow;
-		defaultValues.put(DVisualLexicon.EDGE_TARGET_ARROW_SHAPE, arrow);
+		defaultValues.put(EDGE_TARGET_ARROW_SHAPE, arrow);
 	}
 
 	void overrideTargetArrow(final CyEdge edge, final ArrowShape arrowType) {
@@ -386,14 +396,14 @@ final class DEdgeDetails extends EdgeDetails {
 	private final Paint getTargetArrowUnselectedPaint(final CyEdge edge) {
 		// Check bypass
 		final DEdgeView dev = dGraphView.getDEdgeView(edge);
-		if (dev.isValueLocked(DVisualLexicon.EDGE_TARGET_ARROW_UNSELECTED_PAINT))
-			return dev.getVisualProperty(DVisualLexicon.EDGE_TARGET_ARROW_UNSELECTED_PAINT);
+		if (dev.isValueLocked(EDGE_TARGET_ARROW_UNSELECTED_PAINT))
+			return dev.getVisualProperty(EDGE_TARGET_ARROW_UNSELECTED_PAINT);
 
 		final Paint paint = m_targetArrowPaints.get(edge);
 
 		if (paint == null) {
 			if (m_targetArrowPaintDefault == null)
-				return DVisualLexicon.EDGE_TARGET_ARROW_UNSELECTED_PAINT.getDefault();
+				return EDGE_TARGET_ARROW_UNSELECTED_PAINT.getDefault();
 			else
 				return this.m_targetArrowPaintDefault;
 		} else
@@ -402,7 +412,7 @@ final class DEdgeDetails extends EdgeDetails {
 	
 	void setTargetArrowPaintDefault(final Paint p) {
 		m_targetArrowPaintDefault = p;
-		defaultValues.put(DVisualLexicon.EDGE_TARGET_ARROW_UNSELECTED_PAINT, m_targetArrowPaintDefault);
+		defaultValues.put(EDGE_TARGET_ARROW_UNSELECTED_PAINT, m_targetArrowPaintDefault);
 	}
 
 	/*
@@ -435,8 +445,8 @@ final class DEdgeDetails extends EdgeDetails {
 		// Bypass check
 		final DEdgeView edv = dGraphView.getDEdgeView(edge);
 		
-		if (edv.isValueLocked(DVisualLexicon.EDGE_WIDTH)) {
-			w = edv.getVisualProperty(DVisualLexicon.EDGE_WIDTH).floatValue();
+		if (edv.isValueLocked(EDGE_WIDTH)) {
+			w = edv.getVisualProperty(EDGE_WIDTH).floatValue();
 		} else {
 			w = m_segmentThicknesses.get(edge);
 			if (w == null) {
@@ -452,7 +462,7 @@ final class DEdgeDetails extends EdgeDetails {
 
 	void setSegmentThicknessDefault(float thick) {
 		m_segmentThicknessDefault = (double) thick;
-		defaultValues.put(DVisualLexicon.EDGE_WIDTH, m_segmentThicknessDefault);
+		defaultValues.put(EDGE_WIDTH, m_segmentThicknessDefault);
 	}
 
 	/*
@@ -475,9 +485,9 @@ final class DEdgeDetails extends EdgeDetails {
 
 		if (dev == null) return null;
 		
-		if (dev.isValueLocked(DVisualLexicon.EDGE_LINE_TYPE) || dev.isValueLocked(DVisualLexicon.EDGE_WIDTH)) {
+		if (dev.isValueLocked(EDGE_LINE_TYPE) || dev.isValueLocked(EDGE_WIDTH)) {
 			// If one of these properties are locked, the stroke has to be recreated
-			final LineType lineType = dev.getVisualProperty(DVisualLexicon.EDGE_LINE_TYPE);
+			final LineType lineType = dev.getVisualProperty(EDGE_LINE_TYPE);
 			stroke = DLineType.getDLineType(lineType).getStroke(getWidth(edge));
 
 			// We need to handle animated edges with some care...
@@ -508,7 +518,7 @@ final class DEdgeDetails extends EdgeDetails {
 
 	void setSegmentStrokeDefault(final Stroke s, final LineType t) {
 		m_segmentStrokeDefault = s;
-		defaultValues.put(DVisualLexicon.EDGE_LINE_TYPE, t);
+		defaultValues.put(EDGE_LINE_TYPE, t);
 	}
 
 	/*
@@ -538,8 +548,8 @@ final class DEdgeDetails extends EdgeDetails {
 
 	void setSegmentPaintDefault(final Paint p) {
 		m_unselectedPaintDefault = p;
-		defaultValues.put(DVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT, p);
-		defaultValues.put(DVisualLexicon.EDGE_UNSELECTED_PAINT, p);
+		defaultValues.put(EDGE_STROKE_UNSELECTED_PAINT, p);
+		defaultValues.put(EDGE_UNSELECTED_PAINT, p);
 	}
 
 	Paint getUnselectedPaint(final CyEdge edge) {
@@ -548,19 +558,19 @@ final class DEdgeDetails extends EdgeDetails {
 		final DEdgeView dev = dGraphView.getDEdgeView(edge);
 		
 		// First check if transparency is locked, because the stored colors may not contain the correct alpha value
-		if (dev.isValueLocked(DVisualLexicon.EDGE_TRANSPARENCY))
+		if (dev.isValueLocked(EDGE_TRANSPARENCY))
 			trans = getTransparency(edge);
 		
-		if (dev.isValueLocked(DVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT)) {
-			paint = dev.getVisualProperty(DVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT);
-		} else if (dev.isValueLocked(DVisualLexicon.EDGE_UNSELECTED_PAINT)) {
-			paint = dev.getVisualProperty(DVisualLexicon.EDGE_UNSELECTED_PAINT);
+		if (dev.isValueLocked(EDGE_STROKE_UNSELECTED_PAINT)) {
+			paint = dev.getVisualProperty(EDGE_STROKE_UNSELECTED_PAINT);
+		} else if (dev.isValueLocked(EDGE_UNSELECTED_PAINT)) {
+			paint = dev.getVisualProperty(EDGE_UNSELECTED_PAINT);
 		} else {
 			paint = m_unselectedPaints.get(edge);
 
 			if (paint == null) {
 				if (m_unselectedPaintDefault == null)
-					paint = DVisualLexicon.EDGE_UNSELECTED_PAINT.getDefault();
+					paint = EDGE_UNSELECTED_PAINT.getDefault();
 				else
 					paint = m_unselectedPaintDefault;
 			}
@@ -577,19 +587,19 @@ final class DEdgeDetails extends EdgeDetails {
 		Integer trans = null;
 		final DEdgeView dev = dGraphView.getDEdgeView(edge);
 		
-		if (dev.isValueLocked(DVisualLexicon.EDGE_TRANSPARENCY))
+		if (dev.isValueLocked(EDGE_TRANSPARENCY))
 			trans = getTransparency(edge);
 		
-		if (dev.isValueLocked(DVisualLexicon.EDGE_STROKE_SELECTED_PAINT)) {
-			paint = dev.getVisualProperty(DVisualLexicon.EDGE_STROKE_SELECTED_PAINT);
-		} else if (dev.isValueLocked(DVisualLexicon.EDGE_SELECTED_PAINT)) {
-			paint = dev.getVisualProperty(DVisualLexicon.EDGE_SELECTED_PAINT);
+		if (dev.isValueLocked(EDGE_STROKE_SELECTED_PAINT)) {
+			paint = dev.getVisualProperty(EDGE_STROKE_SELECTED_PAINT);
+		} else if (dev.isValueLocked(EDGE_SELECTED_PAINT)) {
+			paint = dev.getVisualProperty(EDGE_SELECTED_PAINT);
 		} else {
 			paint = m_selectedPaints.get(edge);
 
 			if (paint == null) {
 				if (m_selectedPaintDefault == null)
-					paint = DVisualLexicon.EDGE_SELECTED_PAINT.getDefault();
+					paint = EDGE_SELECTED_PAINT.getDefault();
 				else
 					paint = m_selectedPaintDefault;
 			}
@@ -603,8 +613,8 @@ final class DEdgeDetails extends EdgeDetails {
 
 	void setSelectedPaintDefault(final Paint p) {
 		m_selectedPaintDefault = p;
-		defaultValues.put(DVisualLexicon.EDGE_STROKE_SELECTED_PAINT, m_selectedPaintDefault);
-		defaultValues.put(DVisualLexicon.EDGE_SELECTED_PAINT, m_selectedPaintDefault);
+		defaultValues.put(EDGE_STROKE_SELECTED_PAINT, m_selectedPaintDefault);
+		defaultValues.put(EDGE_SELECTED_PAINT, m_selectedPaintDefault);
 	}
 
 	void select(final CyEdge edge) {
@@ -635,14 +645,14 @@ final class DEdgeDetails extends EdgeDetails {
 		// Check related bypass
 		final DEdgeView dev = dGraphView.getDEdgeView(edge);
 		
-		if (dev.isValueLocked(DVisualLexicon.EDGE_LABEL) && !dev.getVisualProperty(DVisualLexicon.EDGE_LABEL).isEmpty())
+		if (dev.isValueLocked(EDGE_LABEL) && !dev.getVisualProperty(EDGE_LABEL).isEmpty())
 			return 1;
 		
 		Integer count = m_labelCounts.get(edge);
 		
 		if (count == null) {
 			try {
-				String defLabel = (String) defaultValues.get(DVisualLexicon.EDGE_LABEL);
+				String defLabel = (String) defaultValues.get(EDGE_LABEL);
 				count = (defLabel == null || defLabel.isEmpty()) ? super.getLabelCount(edge) : 1;
 			} catch (ClassCastException e) {
 				count = 0;
@@ -668,8 +678,8 @@ final class DEdgeDetails extends EdgeDetails {
 	public String getLabelText(final CyEdge edge, final int labelInx) {
 		// Check bypass
 		final DEdgeView dev = dGraphView.getDEdgeView(edge);
-		if (dev.isValueLocked(DVisualLexicon.EDGE_LABEL))
-			return dev.getVisualProperty(DVisualLexicon.EDGE_LABEL);
+		if (dev.isValueLocked(EDGE_LABEL))
+			return dev.getVisualProperty(EDGE_LABEL);
 
 		final String text = m_labelTexts.get(edge);
 		if (text == null)
@@ -683,7 +693,7 @@ final class DEdgeDetails extends EdgeDetails {
 
 	void setLabelTextDefault(String text) {
 		m_labelTextDefault = text;
-		defaultValues.put(DVisualLexicon.EDGE_LABEL, m_labelTextDefault);
+		defaultValues.put(EDGE_LABEL, m_labelTextDefault);
 	}
 
 	/*
@@ -703,13 +713,13 @@ final class DEdgeDetails extends EdgeDetails {
 	public String getTooltipText(final CyEdge edge, final int labelInx) {
 		// Check bypass
 		final DEdgeView dev = dGraphView.getDEdgeView(edge);
-		if (dev.isValueLocked(DVisualLexicon.EDGE_TOOLTIP))
-			return dev.getVisualProperty(DVisualLexicon.EDGE_TOOLTIP);
+		if (dev.isValueLocked(EDGE_TOOLTIP))
+			return dev.getVisualProperty(EDGE_TOOLTIP);
 
 		final String text = m_edgeTooltips.get(edge);
 		if (text == null)
 			if (m_edgeTooltipDefault == null)
-				return DVisualLexicon.EDGE_TOOLTIP.getDefault();
+				return EDGE_TOOLTIP.getDefault();
 			else
 				return m_edgeTooltipDefault;
 
@@ -718,7 +728,7 @@ final class DEdgeDetails extends EdgeDetails {
 
 	void setTooltipTextDefault(String text) {
 		m_edgeTooltipDefault = text;
-		defaultValues.put(DVisualLexicon.EDGE_TOOLTIP, m_edgeTooltipDefault);
+		defaultValues.put(EDGE_TOOLTIP, m_edgeTooltipDefault);
 	}
 
 	void overrideTooltipText(final CyEdge edge, final String text) {
@@ -733,13 +743,13 @@ final class DEdgeDetails extends EdgeDetails {
 	public Integer getTransparency(final CyEdge edge) {
 		// Check bypass
 		final DEdgeView dev = dGraphView.getDEdgeView(edge);
-		if (dev.isValueLocked(DVisualLexicon.EDGE_TRANSPARENCY))
-			return dev.getVisualProperty(DVisualLexicon.EDGE_TRANSPARENCY);
+		if (dev.isValueLocked(EDGE_TRANSPARENCY))
+			return dev.getVisualProperty(EDGE_TRANSPARENCY);
 
 		Integer trans = m_edgeTansparencies.get(edge);
 		if (trans == null) {
 			if (transparencyDefault == null)
-				trans = DVisualLexicon.EDGE_TRANSPARENCY.getDefault();
+				trans = EDGE_TRANSPARENCY.getDefault();
 			else
 				trans = transparencyDefault;
 		}
@@ -749,7 +759,7 @@ final class DEdgeDetails extends EdgeDetails {
 
 	void setTransparencyDefault(Integer transparency) {
 		transparencyDefault = transparency;
-		defaultValues.put(DVisualLexicon.EDGE_TRANSPARENCY, transparencyDefault);
+		defaultValues.put(EDGE_TRANSPARENCY, transparencyDefault);
 	}
 
 	void overrideTransparency(final CyEdge edge, final Integer transparency) {
@@ -764,13 +774,13 @@ final class DEdgeDetails extends EdgeDetails {
 	public Integer getLabelTransparency(final CyEdge edge) {
 		// Check bypass
 		final DEdgeView dev = dGraphView.getDEdgeView(edge);
-		if (dev.isValueLocked(DVisualLexicon.EDGE_LABEL_TRANSPARENCY))
-			return dev.getVisualProperty(DVisualLexicon.EDGE_LABEL_TRANSPARENCY);
+		if (dev.isValueLocked(EDGE_LABEL_TRANSPARENCY))
+			return dev.getVisualProperty(EDGE_LABEL_TRANSPARENCY);
 
 		Integer trans = m_edgeLabelTansparencies.get(edge);
 		if (trans == null) {
 			if (labelTransparencyDefault == null)
-				trans = DVisualLexicon.EDGE_LABEL_TRANSPARENCY.getDefault();
+				trans = EDGE_LABEL_TRANSPARENCY.getDefault();
 			else
 				trans = labelTransparencyDefault;
 		}
@@ -780,7 +790,7 @@ final class DEdgeDetails extends EdgeDetails {
 
 	void setLabelTransparencyDefault(Integer transparency) {
 		labelTransparencyDefault = transparency;
-		defaultValues.put(DVisualLexicon.EDGE_LABEL_TRANSPARENCY, labelTransparencyDefault);
+		defaultValues.put(EDGE_LABEL_TRANSPARENCY, labelTransparencyDefault);
 	}
 
 	void overrideLabelTransparency(final CyEdge edge, final Integer transparency) {
@@ -799,11 +809,11 @@ final class DEdgeDetails extends EdgeDetails {
 		final DEdgeView dev = dGraphView.getDEdgeView(edge);
 		
 		// Check bypass
-		if (dev.isValueLocked(DVisualLexicon.EDGE_LABEL_FONT_SIZE))
-			size = dev.getVisualProperty(DVisualLexicon.EDGE_LABEL_FONT_SIZE);
+		if (dev.isValueLocked(EDGE_LABEL_FONT_SIZE))
+			size = dev.getVisualProperty(EDGE_LABEL_FONT_SIZE);
 		
-		if (dev.isValueLocked(DVisualLexicon.EDGE_LABEL_FONT_FACE)) {
-			font = dev.getVisualProperty(DVisualLexicon.EDGE_LABEL_FONT_FACE);
+		if (dev.isValueLocked(EDGE_LABEL_FONT_FACE)) {
+			font = dev.getVisualProperty(EDGE_LABEL_FONT_FACE);
 		} else {
 			font = m_labelFonts.get(edge);
 	
@@ -819,10 +829,10 @@ final class DEdgeDetails extends EdgeDetails {
 
 	void setLabelFontDefault(Font f) {
 		m_labelFontDefault = f;
-		defaultValues.put(DVisualLexicon.EDGE_LABEL_FONT_FACE, m_labelFontDefault);
+		defaultValues.put(EDGE_LABEL_FONT_FACE, m_labelFontDefault);
 		
 		if (f != null)
-			defaultValues.put(DVisualLexicon.EDGE_LABEL_FONT_SIZE, f.getSize());
+			defaultValues.put(EDGE_LABEL_FONT_SIZE, f.getSize());
 	}
 
 	/*
@@ -846,12 +856,12 @@ final class DEdgeDetails extends EdgeDetails {
 		final DEdgeView dev = dGraphView.getDEdgeView(edge);
 		
 		// First check if transparency is locked, because the stored colors may not contain the correct alpha value
-		if (dev.isValueLocked(DVisualLexicon.EDGE_LABEL_TRANSPARENCY))
+		if (dev.isValueLocked(EDGE_LABEL_TRANSPARENCY))
 			trans = getLabelTransparency(edge);
 		
-		if (dev.isValueLocked(DVisualLexicon.EDGE_LABEL_COLOR)) {
+		if (dev.isValueLocked(EDGE_LABEL_COLOR)) {
 			// Check bypass
-			paint = dev.getVisualProperty(DVisualLexicon.EDGE_LABEL_COLOR);
+			paint = dev.getVisualProperty(EDGE_LABEL_COLOR);
 		} else {
 			paint = m_labelPaints.get(edge);
 
@@ -867,7 +877,7 @@ final class DEdgeDetails extends EdgeDetails {
 
 	void setLabelPaintDefault(Paint p) {
 		m_labelPaintDefault = p;
-		defaultValues.put(DVisualLexicon.EDGE_LABEL_COLOR, m_labelPaintDefault);
+		defaultValues.put(EDGE_LABEL_COLOR, m_labelPaintDefault);
 	}
 
 	/*
@@ -888,8 +898,8 @@ final class DEdgeDetails extends EdgeDetails {
 		// Check bypass first
 		final DEdgeView dev = dGraphView.getDEdgeView(edge);
 		
-		if (dev.isValueLocked(DVisualLexicon.EDGE_LABEL_WIDTH))
-			return dev.getVisualProperty(DVisualLexicon.EDGE_LABEL_WIDTH);
+		if (dev.isValueLocked(EDGE_LABEL_WIDTH))
+			return dev.getVisualProperty(EDGE_LABEL_WIDTH);
 		
 		final Double width = m_labelWidths.get(edge);
 		
@@ -905,7 +915,7 @@ final class DEdgeDetails extends EdgeDetails {
 
 	void setLabelWidthDefault(double width) {
 		m_labelWidthDefault = width;
-		defaultValues.put(DVisualLexicon.EDGE_LABEL_WIDTH, m_labelWidthDefault);
+		defaultValues.put(EDGE_LABEL_WIDTH, m_labelWidthDefault);
 	}
 
 	/**
@@ -956,8 +966,8 @@ final class DEdgeDetails extends EdgeDetails {
 	Integer getLineCurved(final CyEdge edge) {
 		// Check bypass
 		final DEdgeView dev = dGraphView.getDEdgeView(edge);
-		if (dev.isValueLocked(DVisualLexicon.EDGE_CURVED)) {
-			Boolean lockedVal = dev.getVisualProperty(DVisualLexicon.EDGE_CURVED);
+		if (dev.isValueLocked(EDGE_CURVED)) {
+			Boolean lockedVal = dev.getVisualProperty(EDGE_CURVED);
 			if (lockedVal)
 				return EdgeView.CURVED_LINES;
 			else {
@@ -992,8 +1002,8 @@ final class DEdgeDetails extends EdgeDetails {
 	synchronized Bend getBend(final CyEdge edge, boolean forceCreate) {
 		// Check bypass
 		final DEdgeView dev = dGraphView.getDEdgeView(edge);
-		if (dev.isValueLocked(DVisualLexicon.EDGE_BEND))
-			return dev.getVisualProperty(DVisualLexicon.EDGE_BEND);
+		if (dev.isValueLocked(EDGE_BEND))
+			return dev.getVisualProperty(EDGE_BEND);
 
 		Bend bend = m_edgeBends.get(edge);
 
@@ -1017,7 +1027,7 @@ final class DEdgeDetails extends EdgeDetails {
 
 	void setEdgeBendDefault(final Bend bend) {
 		this.m_edgeBendDefault = bend;
-		defaultValues.put(DVisualLexicon.EDGE_BEND, m_edgeBendDefault);
+		defaultValues.put(EDGE_BEND, m_edgeBendDefault);
 	}
 
 	// Used by bends
