@@ -89,20 +89,18 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 		return graphView;
 	}
 
-
 	@Override
 	public void setStrokeWidth(final float width) {
 		synchronized (graphView.m_lock) {
-			graphView.m_edgeDetails.overrideSegmentThickness(model, width);
+			graphView.m_edgeDetails.overrideWidth(model, width);
 			graphView.setContentChanged();
 		}
 	}
 
-
 	@Override
 	public void setStroke(Stroke stroke) {
 		synchronized (graphView.m_lock) {
-			graphView.m_edgeDetails.overrideSegmentStroke(model, stroke);
+			graphView.m_edgeDetails.overrideStroke(model, stroke);
 			graphView.setContentChanged();
 			if (stroke instanceof AnimatedStroke) {
 				graphView.addAnimatedEdge(this);

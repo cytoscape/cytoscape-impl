@@ -2764,7 +2764,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 			if (s != null && s instanceof AnimatedStroke) { 
 				Stroke as = ((AnimatedStroke)s).newInstanceForNextOffset();
 				synchronized (m_lock) {
-					m_edgeDetails.overrideSegmentStroke(edge, as);
+					m_edgeDetails.overrideStroke(edge, as);
 					setContentChanged();
 				}
 			} else if (s == null) {

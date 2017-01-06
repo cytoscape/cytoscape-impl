@@ -96,27 +96,27 @@ final class EdgeViewDefaultSupport extends AbstractViewDefaultSupport {
 			setTransparency(((Number) value).intValue());
 		} else if (vp == EDGE_WIDTH) {
 			final float newWidth = ((Number) value).floatValue();
-			Float currentWidth = edgeDetails.m_segmentThicknessDefault.floatValue();
+			Float currentWidth = edgeDetails.m_widthDefault.floatValue();
 			if (currentWidth.floatValue() != newWidth) {
-				setStrokeWidth(newWidth);
+				setWidth(newWidth);
 				setStroke(DLineType.getDLineType(lineType).getStroke(newWidth), lineType);
 			}
 		} else if (vp == EDGE_LINE_TYPE) {
 			lineType = (LineType) value;
-			final Stroke newStroke = DLineType.getDLineType(lineType).getStroke(edgeDetails.m_segmentThicknessDefault.floatValue());
+			final Stroke newStroke = DLineType.getDLineType(lineType).getStroke(edgeDetails.m_widthDefault.floatValue());
 			setStroke(newStroke, lineType);
 		} else if (vp == EDGE_SOURCE_ARROW_UNSELECTED_PAINT) {
-			setSourceEdgeEndUnselectedPaint((Paint) value);
+			setSourceArrowUnselectedPaint((Paint) value);
 		} else if (vp == EDGE_TARGET_ARROW_UNSELECTED_PAINT) {
-			setTargetEdgeEndUnselectedPaint((Paint) value);
+			setTargetArrowUnselectedPaint((Paint) value);
 		} else if (vp == EDGE_TARGET_ARROW_SHAPE) {
 			final ArrowShape shape = (ArrowShape) value;
 			final String shapeID = shape.getSerializableString();
-			setTargetEdgeEnd(DArrowShape.parseArrowText(shapeID).getPresentationShape());
+			setTargetArrow(DArrowShape.parseArrowText(shapeID).getPresentationShape());
 		} else if (vp == EDGE_SOURCE_ARROW_SHAPE) {
 			final ArrowShape shape = (ArrowShape) value;
 			final String shapeID = shape.getSerializableString();
-			setSourceEdgeEnd(DArrowShape.parseArrowText(shapeID).getPresentationShape());
+			setSourceArrow(DArrowShape.parseArrowText(shapeID).getPresentationShape());
 		} else if (vp == EDGE_SOURCE_ARROW_SIZE) {
 			double newSize = ((Number) value).doubleValue();
 			setSourceArrowSize(newSize);
@@ -198,15 +198,15 @@ final class EdgeViewDefaultSupport extends AbstractViewDefaultSupport {
 		}
 	}
 
-	private void setStrokeWidth(float width) {
+	private void setWidth(float width) {
 		synchronized (lock) {
-			edgeDetails.setSegmentThicknessDefault(width);
+			edgeDetails.setWidthDefault(width);
 		}
 	}
 
 	private void setStroke(Stroke stroke, LineType type) {
 		synchronized (lock) {
-			edgeDetails.setSegmentStrokeDefault(stroke, type);
+			edgeDetails.setStrokeDefault(stroke, type);
 		}
 	}
 
@@ -227,27 +227,27 @@ final class EdgeViewDefaultSupport extends AbstractViewDefaultSupport {
 		}
 	}
 
-	private void setTargetEdgeEndUnselectedPaint(Paint paint) {
+	private void setTargetArrowUnselectedPaint(Paint paint) {
 		synchronized (lock) {
 			final Paint transColor = getTransparentColor(paint, edgeDetails.transparencyDefault);
 			edgeDetails.setTargetArrowPaintDefault(transColor);
 		}
 	}
 
-	public void setSourceEdgeEndUnselectedPaint(final Paint paint) {
+	public void setSourceArrowUnselectedPaint(final Paint paint) {
 		synchronized (lock) {
 			final Paint transColor = getTransparentColor(paint, edgeDetails.transparencyDefault);
 			edgeDetails.setSourceArrowPaintDefault(transColor);
 		}
 	}
 
-	public void setSourceEdgeEnd(final ArrowShape arrowShape) {
+	public void setSourceArrow(final ArrowShape arrowShape) {
 		synchronized (lock) {
 			edgeDetails.setSourceArrowDefault(arrowShape);
 		}
 	}
 
-	public void setTargetEdgeEnd(final ArrowShape arrowShape) {
+	public void setTargetArrow(final ArrowShape arrowShape) {
 		synchronized (lock) {
 			edgeDetails.setTargetArrowDefault(arrowShape);
 		}
