@@ -1,31 +1,12 @@
 package org.cytoscape.ding.impl;
 
-import static org.cytoscape.ding.DVisualLexicon.EDGE_CURVED;
-import static org.cytoscape.ding.DVisualLexicon.EDGE_SOURCE_ARROW_UNSELECTED_PAINT;
-import static org.cytoscape.ding.DVisualLexicon.EDGE_TARGET_ARROW_UNSELECTED_PAINT;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_BEND;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_LABEL;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_LABEL_COLOR;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_LABEL_FONT_FACE;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_LABEL_FONT_SIZE;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_LABEL_TRANSPARENCY;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_LINE_TYPE;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_SELECTED_PAINT;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_SOURCE_ARROW_SHAPE;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_STROKE_SELECTED_PAINT;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_TARGET_ARROW_SHAPE;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_TRANSPARENCY;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_UNSELECTED_PAINT;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_WIDTH;
-
 /*
  * #%L
  * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2017 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -42,6 +23,27 @@ import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_W
  * <http://www.gnu.org/licenses/lgpl-2.1.html>.
  * #L%
  */
+
+import static org.cytoscape.ding.DVisualLexicon.EDGE_CURVED;
+import static org.cytoscape.ding.DVisualLexicon.EDGE_SOURCE_ARROW_UNSELECTED_PAINT;
+import static org.cytoscape.ding.DVisualLexicon.EDGE_TARGET_ARROW_UNSELECTED_PAINT;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_BEND;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_LABEL;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_LABEL_COLOR;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_LABEL_FONT_FACE;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_LABEL_FONT_SIZE;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_LABEL_TRANSPARENCY;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_LINE_TYPE;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_SELECTED_PAINT;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_SOURCE_ARROW_SHAPE;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_SOURCE_ARROW_SIZE;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_STROKE_SELECTED_PAINT;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_TARGET_ARROW_SHAPE;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_TARGET_ARROW_SIZE;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_TRANSPARENCY;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_UNSELECTED_PAINT;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_WIDTH;
 
 import java.awt.Color;
 import java.awt.Font;
@@ -115,6 +117,12 @@ final class EdgeViewDefaultSupport extends AbstractViewDefaultSupport {
 			final ArrowShape shape = (ArrowShape) value;
 			final String shapeID = shape.getSerializableString();
 			setSourceEdgeEnd(DArrowShape.parseArrowText(shapeID).getPresentationShape());
+		} else if (vp == EDGE_SOURCE_ARROW_SIZE) {
+			double newSize = ((Number) value).doubleValue();
+			setSourceArrowSize(newSize);
+		} else if (vp == EDGE_TARGET_ARROW_SIZE) {
+			double newSize = ((Number) value).doubleValue();
+			setTargetArrowSize(newSize);
 		} else if (vp == EDGE_LABEL) {
 			setText((String) value);
 		} else if (vp == EDGE_LABEL_FONT_FACE) {
@@ -242,6 +250,18 @@ final class EdgeViewDefaultSupport extends AbstractViewDefaultSupport {
 	public void setTargetEdgeEnd(final ArrowShape arrowShape) {
 		synchronized (lock) {
 			edgeDetails.setTargetArrowDefault(arrowShape);
+		}
+	}
+	
+	private void setSourceArrowSize(final double size) {
+		synchronized (lock) {
+			edgeDetails.setSourceArrowSizeDefault(size);
+		}
+	}
+	
+	private void setTargetArrowSize(final double size) {
+		synchronized (lock) {
+			edgeDetails.setTargetArrowSizeDefault(size);
 		}
 	}
 

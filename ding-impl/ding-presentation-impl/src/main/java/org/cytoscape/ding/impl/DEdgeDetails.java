@@ -37,9 +37,11 @@ import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_L
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_LINE_TYPE;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_SELECTED_PAINT;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_SOURCE_ARROW_SHAPE;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_SOURCE_ARROW_SIZE;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_STROKE_SELECTED_PAINT;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_TARGET_ARROW_SHAPE;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_TARGET_ARROW_SIZE;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_TOOLTIP;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_TRANSPARENCY;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_UNSELECTED_PAINT;
@@ -81,10 +83,7 @@ import org.cytoscape.view.presentation.property.values.LineType;
  */
 final class DEdgeDetails extends EdgeDetails {
 
-	private static final float DEFAULT_ARROW_SIZE = 6.0f;
-
 	private final DGraphView dGraphView;
-	
 	private final Map<VisualProperty<?>, Object> defaultValues; 
 
 	// Mapped Values
@@ -97,9 +96,11 @@ final class DEdgeDetails extends EdgeDetails {
 	Map<CyEdge, ArrowShape> m_sourceArrows = new ConcurrentHashMap<>(16, 0.75f, 2);
 	Map<CyEdge, Paint> m_sourceArrowPaints = new ConcurrentHashMap<>(16, 0.75f, 2);
 	Map<CyEdge, Paint> m_sourceArrowSelectedPaints = new ConcurrentHashMap<>(16, 0.75f, 2);
+	Map<CyEdge, Double> m_sourceArrowSizes = new ConcurrentHashMap<>(16, 0.75f, 2);
 	Map<CyEdge, ArrowShape> m_targetArrows = new ConcurrentHashMap<>(16, 0.75f, 2);
 	Map<CyEdge, Paint> m_targetArrowPaints = new ConcurrentHashMap<>(16, 0.75f, 2);
 	Map<CyEdge, Paint> m_targetArrowSelectedPaints = new ConcurrentHashMap<>(16, 0.75f, 2);
+	Map<CyEdge, Double> m_targetArrowSizes = new ConcurrentHashMap<>(16, 0.75f, 2);
 	Map<CyEdge, Integer> m_labelCounts = new ConcurrentHashMap<>(16, 0.75f, 2);
 	Map<CyEdge, String> m_labelTexts = new ConcurrentHashMap<>(16, 0.75f, 2);
 	Map<CyEdge, Font> m_labelFonts = new ConcurrentHashMap<>(16, 0.75f, 2);
@@ -116,10 +117,12 @@ final class DEdgeDetails extends EdgeDetails {
 	// Default Values
 	ArrowShape m_sourceArrowDefault;
 	Paint m_sourceArrowPaintDefault = EDGE_SOURCE_ARROW_UNSELECTED_PAINT.getDefault();
+	Double m_sourceArrowSizeDefault = EDGE_SOURCE_ARROW_SIZE.getDefault();
 	ArrowShape m_targetArrowDefault;
 	Paint m_targetArrowPaintDefault = EDGE_TARGET_ARROW_UNSELECTED_PAINT.getDefault();
 	Double m_segmentThicknessDefault = EDGE_WIDTH.getDefault();
 	Stroke m_segmentStrokeDefault = new BasicStroke(m_segmentThicknessDefault.floatValue());
+	Double m_targetArrowSizeDefault = EDGE_TARGET_ARROW_SIZE.getDefault();
 	String m_labelTextDefault;
 	Font m_labelFontDefault = EDGE_LABEL_FONT_FACE.getDefault();
 	Paint m_labelPaintDefault = EDGE_LABEL_COLOR.getDefault();
@@ -152,9 +155,11 @@ final class DEdgeDetails extends EdgeDetails {
 		m_sourceArrows = new ConcurrentHashMap<>();
 		m_sourceArrowPaints = new ConcurrentHashMap<>();
 		m_sourceArrowSelectedPaints = new ConcurrentHashMap<>();
+		m_sourceArrowSizes = new ConcurrentHashMap<>();
 		m_targetArrows = new ConcurrentHashMap<>();
 		m_targetArrowPaints = new ConcurrentHashMap<>();
 		m_targetArrowSelectedPaints = new ConcurrentHashMap<>();
+		m_targetArrowSizes = new ConcurrentHashMap<>();
 		m_labelCounts = new ConcurrentHashMap<>();
 		m_labelTexts = new ConcurrentHashMap<>();
 		m_labelFonts = new ConcurrentHashMap<>();
@@ -182,9 +187,11 @@ final class DEdgeDetails extends EdgeDetails {
 		m_sourceArrows.remove(edge);
 		m_sourceArrowPaints.remove(edge);
 		m_sourceArrowSelectedPaints.remove(edge);
+		m_sourceArrowSizes.remove(edge);
 		m_targetArrows.remove(edge);
 		m_targetArrowPaints.remove(edge);
 		m_targetArrowSelectedPaints.remove(edge);
+		m_targetArrowSizes.remove(edge);
 		m_labelCounts.remove(edge);
 		m_labelTexts.remove(edge);
 		m_labelFonts.remove(edge);
@@ -932,26 +939,66 @@ final class DEdgeDetails extends EdgeDetails {
 
 	@Override
 	public float getSourceArrowSize(final CyEdge edge) {
-		// For the half arrows, we need to scale multiplicatively so that the arrow matches the line.
-		final ArrowShape arrowType = getSourceArrowShape(edge);
+		Number size = null;
+		final DEdgeView dev = dGraphView.getDEdgeView(edge);
 		
-		if (arrowType == ArrowShapeVisualProperty.HALF_TOP || arrowType == ArrowShapeVisualProperty.HALF_BOTTOM)
-			return (getWidth(edge) * DEdgeDetails.DEFAULT_ARROW_SIZE);
-		// For all other arrows we can scale additively. This produces less egregiously big arrows.
-		else
-			return (getWidth(edge) + DEdgeDetails.DEFAULT_ARROW_SIZE);
+		// Check bypass
+		if (dev.isValueLocked(EDGE_SOURCE_ARROW_SIZE)) {
+			size = dev.getVisualProperty(EDGE_SOURCE_ARROW_SIZE);
+		} else {
+			size = m_sourceArrowSizes.get(edge);
+			
+			if (size == null)
+				size = m_sourceArrowSizeDefault != null ? m_sourceArrowSizeDefault : super.getSourceArrowSize(edge);
+		}
+		
+		return adjustArrowSize(edge, getSourceArrowShape(edge), size);
+	}
+	
+	void setSourceArrowSizeDefault(final double size) {
+		m_sourceArrowSizeDefault = size;
+		defaultValues.put(EDGE_SOURCE_ARROW_SIZE, size);
+	}
+	
+	void overrideSourceArrowSize(final CyEdge edge, final double size) {
+		if (size < 0.0 || size == super.getSourceArrowSize(edge)) {
+			m_sourceArrowSizes.remove(edge);
+		} else {
+			m_sourceArrowSizes.put(edge, size);
+			isCleared = false;
+		}
 	}
 
 	@Override
 	public float getTargetArrowSize(final CyEdge edge) {
-		// For the half arrows, we need to scale multiplicatively so that the arrow matches the line.
-		final ArrowShape arrowType = getTargetArrowShape(edge);
+		Number size = null;
+		final DEdgeView dev = dGraphView.getDEdgeView(edge);
 		
-		if (arrowType == ArrowShapeVisualProperty.HALF_TOP || arrowType == ArrowShapeVisualProperty.HALF_BOTTOM)
-			return (getWidth(edge) * DEdgeDetails.DEFAULT_ARROW_SIZE);
-		// For all other arrows we can scale additively. This produces less egregiously big arrows.
-		else
-			return (getWidth(edge) + DEdgeDetails.DEFAULT_ARROW_SIZE);
+		// Check bypass
+		if (dev.isValueLocked(EDGE_TARGET_ARROW_SIZE)) {
+			size = dev.getVisualProperty(EDGE_TARGET_ARROW_SIZE);
+		} else {
+			size = m_targetArrowSizes.get(edge);
+			
+			if (size == null)
+				size = m_targetArrowSizeDefault != null ? m_targetArrowSizeDefault : super.getTargetArrowSize(edge);
+		}
+		
+		return adjustArrowSize(edge, getTargetArrowShape(edge), size);
+	}
+	
+	void setTargetArrowSizeDefault(final double size) {
+		m_targetArrowSizeDefault = size;
+		defaultValues.put(EDGE_TARGET_ARROW_SIZE, size);
+	}
+	
+	void overrideTargetArrowSize(final CyEdge edge, final double size) {
+		if (size < 0.0 || size == super.getTargetArrowSize(edge)) {
+			m_targetArrowSizes.remove(edge);
+		} else {
+			m_targetArrowSizes.put(edge, size);
+			isCleared = false;
+		}
 	}
 
 	void overrideLineCurved(final CyEdge edge, final int type) {
@@ -1252,5 +1299,13 @@ final class DEdgeDetails extends EdgeDetails {
 	@SuppressWarnings("unchecked")
 	public <T, V extends T> V getDefaultValue(VisualProperty<T> vp) {
 		return (V) defaultValues.get(vp);
+	}
+	
+	private float adjustArrowSize(final CyEdge edge, final ArrowShape arrowType, final Number size) {
+		// For the half arrows, we need to scale multiplicatively so that the arrow matches the line.
+		if (arrowType == ArrowShapeVisualProperty.HALF_TOP || arrowType == ArrowShapeVisualProperty.HALF_BOTTOM)
+			return getWidth(edge) * size.floatValue();
+		else // For all other arrows, we can scale additively. This produces less egregious big arrows.
+			return getWidth(edge) + size.floatValue();
 	}
 }

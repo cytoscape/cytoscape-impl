@@ -214,6 +214,20 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 			}
 		}
 	}
+	
+	private void setSourceArrowSize(final double size) {
+		synchronized (graphView.m_lock) {
+			graphView.m_edgeDetails.overrideSourceArrowSize(model, size);
+			graphView.setContentChanged();
+		}
+	}
+	
+	private void setTargetArrowSize(final double size) {
+		synchronized (graphView.m_lock) {
+			graphView.m_edgeDetails.overrideTargetArrowSize(model, size);
+			graphView.setContentChanged();
+		}
+	}
 
 	private final void select() {
 		final boolean somethingChanged;
@@ -676,6 +690,10 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 			setSourceEdgeEndPaint((Paint) value);
 		} else if (vp == DVisualLexicon.EDGE_TARGET_ARROW_UNSELECTED_PAINT) {
 			setTargetEdgeEndPaint((Paint) value);
+		} else if (vp == DVisualLexicon.EDGE_SOURCE_ARROW_SIZE) {
+			setSourceArrowSize(((Number) value).doubleValue());
+		} else if (vp == DVisualLexicon.EDGE_TARGET_ARROW_SIZE) {
+			setTargetArrowSize(((Number) value).doubleValue());
 		} else if (vp == BasicVisualLexicon.EDGE_SELECTED) {
 			setSelected((Boolean) value);
 		} else if (vp == BasicVisualLexicon.EDGE_TARGET_ARROW_SHAPE) {
