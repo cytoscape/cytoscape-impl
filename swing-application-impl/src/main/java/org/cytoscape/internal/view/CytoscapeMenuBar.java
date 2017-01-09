@@ -139,7 +139,9 @@ public class CytoscapeMenuBar extends JMenuBar {
 		if (menu_name == null)
 			menu_name =  DEFAULT_MENU_SPECIFIER;
 
-		menuTracker.getGravityTracker(menu_name).removeComponent(menu_item);
+		GravityTracker gravityTracker = menuTracker.getGravityTracker(menu_name);
+		gravityTracker.removeComponent(menu_item);
+		((JMenu) gravityTracker.getMenu()).removeMenuListener(action);
 
 		return true;
 	}
