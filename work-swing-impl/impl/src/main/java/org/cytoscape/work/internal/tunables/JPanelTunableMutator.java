@@ -37,6 +37,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
+import java.util.WeakHashMap;
 
 import javax.swing.BorderFactory;
 import javax.swing.JComponent;
@@ -107,7 +108,7 @@ public class JPanelTunableMutator extends AbstractTunableInterceptor<GUITunableH
 
 	public JPanelTunableMutator() {
 		super();
-		panelMap = new HashMap<>();
+		panelMap = new WeakHashMap<>();
 		
 		controlComponentListener = new ComponentListener() {
 			@Override
