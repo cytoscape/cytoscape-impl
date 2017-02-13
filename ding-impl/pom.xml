@@ -6,7 +6,7 @@
 	<parent>
 		<artifactId>impl-parent</artifactId>
 		<groupId>org.cytoscape</groupId>
-		<version>3.5.0-RC1</version>
+		<version>3.5.0-RC2</version>
 	</parent>
 
 	<artifactId>ding-impl</artifactId>
