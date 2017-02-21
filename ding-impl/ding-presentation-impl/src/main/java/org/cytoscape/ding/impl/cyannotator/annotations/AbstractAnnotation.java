@@ -30,8 +30,10 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.LinearGradientPaint;
 import java.awt.Paint;
 import java.awt.Point;
+import java.awt.RadialGradientPaint;
 import java.awt.RenderingHints;
 import java.awt.Window;
 import java.awt.geom.Point2D;
@@ -482,25 +484,104 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 			return null;
 		if (clr instanceof Color)
 			return Integer.toString(((Color)clr).getRGB());
+		if (clr instanceof LinearGradientPaint) {
+			String lg = "lingrad(";
+			LinearGradientPaint lingrad = (LinearGradientPaint)clr;
+			Point2D start = lingrad.getStartPoint();
+			Point2D end = lingrad.getEndPoint();
+			lg += convertPoint(start)+";";
+			lg += convertPoint(end)+";";
+			float[] fractions = lingrad.getFractions();
+			Color[] colors = lingrad.getColors();
+			lg += convertStops(fractions, colors)+")";
+			return lg;
+		}
+		if (clr instanceof RadialGradientPaint) {
+			String rg = "radgrad(";
+			RadialGradientPaint radgrad = (RadialGradientPaint)clr;
+			Point2D center = radgrad.getCenterPoint();
+			Point2D focus = radgrad.getFocusPoint();
+			float radius = radgrad.getRadius();
+			rg += convertPoint(center)+";";
+			rg += convertPoint(focus)+";";
+			rg += radius+";";
+			float[] fractions = radgrad.getFractions();
+			Color[] colors = radgrad.getColors();
+			rg += convertStops(fractions, colors)+")";
+			return rg;
+		}
 		return clr.toString();
   }
 
-  protected Color getColor(String strColor) {
+	protected String convertPoint(Point2D point) {
+		if (point == null)
+			return "";
+		return point.getX()+","+point.getY();
+	}
+
+	protected String convertStops(float[] fractions, Color[] colors) {
+		String stops = null;
+		for (int i = 0; i < fractions.length; i++) {
+			if (stops != null)
+				stops += ";";
+			else
+				stops = "";
+			stops += fractions[i]+","+Integer.toString(colors[i].getRGB());
+		}
+		return stops;
+	}
+
+  protected Paint getColor(String strColor) {
 		if (strColor == null)
 			return null;
-		return new Color(Integer.parseInt(strColor));
+		if (strColor.startsWith("lingrad")) {
+			String[] tokens = strColor.split("[(;)]");
+			Point2D start = getPoint2D(tokens[1]);
+			Point2D end = getPoint2D(tokens[2]);
+			float[] fractions = new float[tokens.length-3];
+			Color[] colors = new Color[tokens.length-3];
+			getStops(tokens, 3, fractions, colors);
+			return new LinearGradientPaint(start, end, fractions, colors);
+		} else if (strColor.startsWith("radgrad")) {
+			String[] tokens = strColor.split("[(;)]");
+			Point2D center = getPoint2D(tokens[1]);
+			Point2D focus = getPoint2D(tokens[2]);
+			float radius = getFloat(tokens[3]);
+			float[] fractions = new float[tokens.length-4];
+			Color[] colors = new Color[tokens.length-4];
+			getStops(tokens, 4, fractions, colors);
+		}
+		return new Color(Integer.parseInt(strColor), true);
   }
 
-  protected Color getColor(Map<String, String> argMap, String key, Color defValue) {
+  protected Paint getColor(Map<String, String> argMap, String key, Color defValue) {
 		if (!argMap.containsKey(key) || argMap.get(key) == null)
 			return defValue;
-		return new Color(Integer.parseInt(argMap.get(key)));
+		return getColor(argMap.get(key));
+	}
+
+	protected void getStops(String[] tokens, int stopStart, float[] fractions, Color[] colors) {
+		for (int i = stopStart; i < tokens.length; i++) {
+			String[] stop = tokens[i].split(",");
+			fractions[i-stopStart] = getFloat(stop[0]);
+			colors[i-stopStart] = new Color(Integer.parseInt(stop[1]), true);
+		}
+	}
+
+	protected Point2D getPoint2D(String point) {
+		if (point.length() == 0) return null;
+		String[] xy = point.split(",");
+		return new Point2D.Double(getDouble(xy[0]), getDouble(xy[1]));
 	}
 
   protected String getString(Map<String, String> argMap, String key, String defValue) {
 		if (!argMap.containsKey(key) || argMap.get(key) == null)
 			return defValue;
 		return argMap.get(key);
+	}
+
+  protected Float getFloat(String fValue) {
+		return Float.parseFloat(fValue);
 	}
 
   protected Float getFloat(Map<String, String> argMap, String key, float defValue) {
@@ -513,6 +594,10 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 		if (!argMap.containsKey(key) || argMap.get(key) == null)
 			return defValue;
 		return Integer.parseInt(argMap.get(key));
+	}
+
+	protected Double getDouble(String dValue) {
+		return Double.parseDouble(dValue);
 	}
 
   protected Double getDouble(Map<String, String> argMap, String key, double defValue) {
