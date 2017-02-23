@@ -30,10 +30,10 @@ import org.cytoscape.model.CyNetwork;
 
 
 public class InteractionFilter extends CompositeFilter {
-	public static int NODE_UNDEFINED = -1;
-	public static int NODE_SOURCE = 0;
-	public static int NODE_TARGET = 1;
-	public static int NODE_SOURCE_TARGET = 3;
+	public static final int NODE_UNDEFINED = -1;
+	public static final int NODE_SOURCE = 0;
+	public static final int NODE_TARGET = 1;
+	public static final int NODE_SOURCE_TARGET = 3;
 	
 	protected int nodeType = NODE_UNDEFINED;
 

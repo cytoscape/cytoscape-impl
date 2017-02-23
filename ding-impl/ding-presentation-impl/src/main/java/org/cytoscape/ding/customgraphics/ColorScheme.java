@@ -17,7 +17,7 @@ public class ColorScheme {
 	public static final ColorScheme RANDOM = new ColorScheme("RANDOM", "Random");
 	public static final ColorScheme CUSTOM = new ColorScheme("CUSTOM", "Custom");
 	
-	public static ColorScheme DEFAULT = CONTRASTING;
+	public static final ColorScheme DEFAULT = CONTRASTING;
 	
 	private final String key;
 	private final String label;

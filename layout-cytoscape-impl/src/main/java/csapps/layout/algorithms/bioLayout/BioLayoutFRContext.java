@@ -32,7 +32,7 @@ public class BioLayoutFRContext extends BioLayoutContext implements TunableValid
 	 * Sets the number of iterations for each update
 	 */
 	@Tunable(description="Number of iterations before updating display (0: update only at end):")
-	public static int update_iterations = 0; // 0 means we only update at the end
+	public static final int UPDATE_ITERATIONS = 0; // 0 means we only update at the end
 
 	/**
 	 * The multipliers and computed result for the

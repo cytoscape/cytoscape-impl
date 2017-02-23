@@ -40,8 +40,8 @@ import org.cytoscape.view.model.CyNetworkView;
 
 public class CyDesktopManager implements CyNetworkViewDesktopMgr {
 	
-	public static int MINIMUM_WIN_WIDTH = 200;
-	public static int MINIMUM_WIN_HEIGHT = 200;
+	public static final int MINIMUM_WIN_WIDTH = 200;
+	public static final int MINIMUM_WIN_HEIGHT = 200;
 	
 	private final NetworkViewMediator netViewMediator;
 		
