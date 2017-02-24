@@ -31,7 +31,6 @@ import javax.swing.Icon;
 
 import org.cytoscape.ding.DArrowShape;
 import org.cytoscape.ding.DNodeShape;
-import org.cytoscape.ding.ObjectPosition;
 import org.cytoscape.ding.impl.DLineType;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
 import org.cytoscape.view.presentation.property.ArrowShapeVisualProperty;
@@ -40,6 +39,7 @@ import org.cytoscape.view.presentation.property.values.ArrowShape;
 import org.cytoscape.view.presentation.property.values.Bend;
 import org.cytoscape.view.presentation.property.values.LineType;
 import org.cytoscape.view.presentation.property.values.NodeShape;
+import org.cytoscape.view.presentation.property.values.ObjectPosition;
 
 
 /**

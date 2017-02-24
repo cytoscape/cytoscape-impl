@@ -24,9 +24,9 @@ package org.cytoscape.ding;
  * #L%
  */
 
-import static org.cytoscape.ding.Justification.JUSTIFY_LEFT;
-import static org.cytoscape.ding.Justification.JUSTIFY_RIGHT;
-import static org.cytoscape.ding.Position.NONE;
+import static org.cytoscape.view.presentation.property.values.Justification.JUSTIFY_LEFT;
+import static org.cytoscape.view.presentation.property.values.Justification.JUSTIFY_RIGHT;
+import static org.cytoscape.view.presentation.property.values.Position.NONE;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -47,7 +47,9 @@ import java.beans.PropertyChangeListener;
 import javax.swing.JPanel;
 import javax.swing.UIManager;
 
-import org.cytoscape.ding.impl.ObjectPositionImpl;
+import org.cytoscape.view.presentation.property.values.Justification;
+import org.cytoscape.view.presentation.property.values.ObjectPosition;
+import org.cytoscape.view.presentation.property.values.Position;
 
 public class ObjectPlacerGraphic extends JPanel implements PropertyChangeListener {
 
@@ -152,7 +154,7 @@ public class ObjectPlacerGraphic extends JPanel implements PropertyChangeListene
 	 */
 	public ObjectPlacerGraphic(final Integer graphicSize, boolean fullDetail, final String objectName) {
 		super();
-		this.p = new ObjectPositionImpl();
+		this.p = new ObjectPosition();
 		this.objectLabel = objectName;
 		renderDetail = fullDetail;
 
@@ -280,10 +282,10 @@ public class ObjectPlacerGraphic extends JPanel implements PropertyChangeListene
 		if (renderDetail) {
 			int vspace = (ly - ascent - ascent) / 3;
 
-			if (justify == JUSTIFY_LEFT) {
+			if (justify == Justification.JUSTIFY_LEFT) {
 				g.drawString(objectLabel, xOffset + xPos + detailStrokeWidth, yOffset + yPos + vspace + ascent);
 				g.drawString(click, xOffset + xPos + detailStrokeWidth, yOffset + yPos + (2 * (vspace + ascent)));
-			} else if (justify == JUSTIFY_RIGHT) {
+			} else if (justify == Justification.JUSTIFY_RIGHT) {
 				g.drawString(objectLabel, xOffset + xPos + (lx - labelLen), yOffset + yPos + vspace + ascent);
 				g.drawString(click, xOffset + xPos + (lx - clickLen), yOffset + yPos + (2 * (vspace + ascent)));
 			} else { // center
@@ -394,8 +396,8 @@ public class ObjectPlacerGraphic extends JPanel implements PropertyChangeListene
 
 				p.setOffsetX(xOffset);
 				p.setOffsetY(yOffset);
-				p.setAnchor(Position.parse(bestLabelX + (3 * bestLabelY)));
-				p.setTargetAnchor(Position.parse(bestNodeX + (3 * bestNodeY)));
+				p.setAnchor(parsePosition(bestLabelX + (3 * bestLabelY)));
+				p.setTargetAnchor(parsePosition(bestNodeX + (3 * bestNodeY)));
 				firePropertyChange(ObjectPlacerGraphic.OBJECT_POSITION_CHANGED, null, p);
 
 				repaint();
@@ -434,15 +436,15 @@ public class ObjectPlacerGraphic extends JPanel implements PropertyChangeListene
 		final Position nodeAnchor = p.getTargetAnchor();
 
 		if (nodeAnchor != NONE) {
-			bestNodeX = nodeAnchor.getConversionConstant() % 3;
-			bestNodeY = nodeAnchor.getConversionConstant() / 3;
+			bestNodeX = nodeAnchor.ordinal() % 3;
+			bestNodeY = nodeAnchor.ordinal() / 3;
 		}
 
 		final Position labelAnchor = p.getAnchor();
 
 		if (labelAnchor != NONE) {
-			bestLabelX = labelAnchor.getConversionConstant() % 3;
-			bestLabelY = labelAnchor.getConversionConstant() / 3;
+			bestLabelX = labelAnchor.ordinal() % 3;
+			bestLabelY = labelAnchor.ordinal() / 3;
 		}
 
 		if ((nodeAnchor != NONE) || (labelAnchor != NONE)) {
@@ -468,5 +470,14 @@ public class ObjectPlacerGraphic extends JPanel implements PropertyChangeListene
 			applyPosition();
 			repaint();
 		}
+	}
+
+	private Position parsePosition(int positionConstant) {
+		for (final Position p : Position.values()) {
+			if (p.ordinal() == positionConstant)
+				return p;
+		}
+
+		return null;
 	}
 }

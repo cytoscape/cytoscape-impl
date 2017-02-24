@@ -29,7 +29,6 @@ import static javax.swing.GroupLayout.PREFERRED_SIZE;
 
 import static javax.swing.GroupLayout.Alignment.LEADING;
 import static javax.swing.GroupLayout.Alignment.TRAILING;
-import static org.cytoscape.ding.Position.NONE;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -44,7 +43,11 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
-import org.cytoscape.ding.impl.ObjectPositionImpl;
+import org.cytoscape.view.presentation.property.values.Justification;
+import org.cytoscape.view.presentation.property.values.ObjectPosition;
+import org.cytoscape.view.presentation.property.values.Position;
+import static org.cytoscape.view.presentation.property.values.Position.NONE;
+
 
 public class ObjectPlacerControl extends JPanel implements ActionListener,
 		PropertyChangeListener {
@@ -63,7 +66,7 @@ public class ObjectPlacerControl extends JPanel implements ActionListener,
 	public ObjectPlacerControl() {
 		super();
 		
-		lp = new ObjectPositionImpl();
+		lp = new ObjectPosition();
 		final Collection<String> points = Position.getDisplayNames();
 
 		final JLabel nodeAnchorLabel = new JLabel("Node Anchor Points:");

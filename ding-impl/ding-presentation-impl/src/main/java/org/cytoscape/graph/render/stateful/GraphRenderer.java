@@ -55,6 +55,8 @@ import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
 import org.cytoscape.view.presentation.property.ArrowShapeVisualProperty;
 import org.cytoscape.view.presentation.property.values.ArrowShape;
+import org.cytoscape.view.presentation.property.values.Justification;
+import org.cytoscape.view.presentation.property.values.Position;
 import org.cytoscape.view.vizmap.VisualPropertyDependency;
 
 
@@ -500,29 +502,32 @@ public final class GraphRenderer {
 									final Font font = edgeDetails.getLabelFont(edge, labelInx);
 									final double fontScaleFactor = edgeDetails.getLabelScaleFactor(edge, labelInx);
 									final Paint paint = edgeDetails.getLabelPaint(edge, labelInx);
-									final byte textAnchor = edgeDetails.getLabelTextAnchor(edge, labelInx);
-									final byte edgeAnchor = edgeDetails.getLabelEdgeAnchor(edge, labelInx);
+									final Position textAnchor = edgeDetails.getLabelTextAnchor(edge, labelInx);
+									final Position edgeAnchor = edgeDetails.getLabelEdgeAnchor(edge, labelInx);
 									final float offsetVectorX = edgeDetails.getLabelOffsetVectorX(edge, labelInx);
 									final float offsetVectorY = edgeDetails.getLabelOffsetVectorY(edge, labelInx);
-									final byte justify;
+									final Justification justify;
 
 									if (text.indexOf('\n') >= 0)
 										justify = edgeDetails.getLabelJustify(edge, labelInx);
 									else
-										justify = NodeDetails.LABEL_WRAP_JUSTIFY_CENTER;
+										justify = Justification.JUSTIFY_CENTER;
 
 									final double edgeAnchorPointX;
 									final double edgeAnchorPointY;
 
 									final double edgeLabelWidth = edgeDetails.getLabelWidth(edge);
 
-									if (edgeAnchor == EdgeDetails.EDGE_ANCHOR_SOURCE) {
+									// Note that we reuse the position enum here.  West == source and East == target
+									// This is sort of safe since we don't provide an API for changing this
+									// in any case.
+									if (edgeAnchor == Position.WEST) {
 										edgeAnchorPointX = srcXAdj;
 										edgeAnchorPointY = srcYAdj;
-									} else if (edgeAnchor == EdgeDetails.EDGE_ANCHOR_TARGET) {
+									} else if (edgeAnchor == Position.EAST) {
 										edgeAnchorPointX = trgXAdj;
 										edgeAnchorPointY = trgYAdj;
-									} else if (edgeAnchor == EdgeDetails.EDGE_ANCHOR_MIDPOINT) {
+									} else if (edgeAnchor == Position.CENTER) {
 										if (!grafx.getEdgePath(srcArrow, srcArrowSize, trgArrow,
 										                       trgArrowSize, srcXAdj, srcYAdj, anchors,
 										                       trgXAdj, trgYAdj, path2d)) {
@@ -702,18 +707,18 @@ public final class GraphRenderer {
 							final double fontScaleFactor = nodeDetails.labelScaleFactor(cyNode,
 							                                                            labelInx);
 							final Paint paint = nodeDetails.getLabelPaint(cyNode, labelInx);
-							final byte textAnchor = nodeDetails.getLabelTextAnchor(cyNode, labelInx);
-							final byte nodeAnchor = nodeDetails.getLabelNodeAnchor(cyNode, labelInx);
+							final Position textAnchor = nodeDetails.getLabelTextAnchor(cyNode, labelInx);
+							final Position nodeAnchor = nodeDetails.getLabelNodeAnchor(cyNode, labelInx);
 							final float offsetVectorX = nodeDetails.getLabelOffsetVectorX(cyNode,
 							                                                           labelInx);
 							final float offsetVectorY = nodeDetails.getLabelOffsetVectorY(cyNode,
 							                                                           labelInx);
-							final byte justify;
+							final Justification justify;
 
 							if (text.indexOf('\n') >= 0)
 								justify = nodeDetails.getLabelJustify(cyNode, labelInx);
 							else
-								justify = NodeDetails.LABEL_WRAP_JUSTIFY_CENTER;
+								justify = Justification.JUSTIFY_CENTER;
 
 							final double nodeLabelWidth = nodeDetails.getLabelWidth(cyNode);
 
@@ -754,58 +759,58 @@ public final class GraphRenderer {
 		return lodBits;
 	}
 
-	private final static void lemma_computeAnchor(final int anchor, final double[] input4x,
+	private final static void lemma_computeAnchor(final Position anchor, final double[] input4x,
 	                                              final double[] rtrn2x) {
 		switch (anchor) {
-			case NodeDetails.ANCHOR_CENTER:
+			case CENTER:
 				rtrn2x[0] = (input4x[0] + input4x[2]) / 2.0d;
 				rtrn2x[1] = (input4x[1] + input4x[3]) / 2.0d;
 
 				break;
 
-			case NodeDetails.ANCHOR_SOUTH:
+			case SOUTH:
 				rtrn2x[0] = (input4x[0] + input4x[2]) / 2.0d;
 				rtrn2x[1] = input4x[3];
 
 				break;
 
-			case NodeDetails.ANCHOR_SOUTHEAST:
+			case SOUTH_EAST:
 				rtrn2x[0] = input4x[2];
 				rtrn2x[1] = input4x[3];
 
 				break;
 
-			case NodeDetails.ANCHOR_EAST:
+			case EAST:
 				rtrn2x[0] = input4x[2];
 				rtrn2x[1] = (input4x[1] + input4x[3]) / 2.0d;
 
 				break;
 
-			case NodeDetails.ANCHOR_NORTHEAST:
+			case NORTH_EAST:
 				rtrn2x[0] = input4x[2];
 				rtrn2x[1] = input4x[1];
 
 				break;
 
-			case NodeDetails.ANCHOR_NORTH:
+			case NORTH:
 				rtrn2x[0] = (input4x[0] + input4x[2]) / 2.0d;
 				rtrn2x[1] = input4x[1];
 
 				break;
 
-			case NodeDetails.ANCHOR_NORTHWEST:
+			case NORTH_WEST:
 				rtrn2x[0] = input4x[0];
 				rtrn2x[1] = input4x[1];
 
 				break;
 
-			case NodeDetails.ANCHOR_WEST:
+			case WEST:
 				rtrn2x[0] = input4x[0];
 				rtrn2x[1] = (input4x[1] + input4x[3]) / 2.0d;
 
 				break;
 
-			case NodeDetails.ANCHOR_SOUTHWEST:
+			case SOUTH_WEST:
 				rtrn2x[0] = input4x[0];
 				rtrn2x[1] = input4x[3];
 
@@ -1124,7 +1129,7 @@ public final class GraphRenderer {
 				doubleBuff1[1] = floatBuff1[1];
 				doubleBuff1[2] = floatBuff1[2];
 				doubleBuff1[3] = floatBuff1[3];
-				lemma_computeAnchor(NodeDetails.ANCHOR_CENTER, doubleBuff1, doubleBuff2);
+				lemma_computeAnchor(Position.CENTER, doubleBuff1, doubleBuff2);
 				grafx.drawCustomGraphicImage(nestedNetworkPaint.getAnchorRect(), (float)doubleBuff2[0],  (float)doubleBuff2[1], nestedNetworkPaint); 
 			}
 
@@ -1151,7 +1156,7 @@ public final class GraphRenderer {
 						doubleBuff1[1] = floatBuff1[1];
 						doubleBuff1[2] = floatBuff1[2];
 						doubleBuff1[3] = floatBuff1[3];
-						lemma_computeAnchor(NodeDetails.ANCHOR_CENTER, doubleBuff1, doubleBuff2);
+						lemma_computeAnchor(Position.CENTER, doubleBuff1, doubleBuff2);
 						
 						float xOffset = (float) (doubleBuff2[0] + offsetVectorX);
 						float yOffset = (float) (doubleBuff2[1] + offsetVectorY);

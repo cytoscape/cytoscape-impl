@@ -7,9 +7,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.cytoscape.ding.DVisualLexicon;
-import org.cytoscape.ding.ObjectPosition;
 import org.cytoscape.ding.customgraphics.CustomGraphicsPositionCalculator;
-import org.cytoscape.ding.impl.ObjectPositionImpl;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
@@ -17,6 +15,7 @@ import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
 import org.cytoscape.view.presentation.customgraphics.ImageCustomGraphicLayer;
+import org.cytoscape.view.presentation.property.values.ObjectPosition;
 import org.cytoscape.view.vizmap.VisualPropertyDependency;
 
 @SuppressWarnings("rawtypes")
@@ -111,7 +110,7 @@ public class CustomGraphicsInfo {
 			
 			// Move the layer to the correct position
 			if (cgPos == null)
-				cgPos = ObjectPositionImpl.DEFAULT_POSITION;
+				cgPos = ObjectPosition.DEFAULT_POSITION;
 			
 			finalLayer = moveLayer(finalLayer, cgPos, nw, nh);
 			

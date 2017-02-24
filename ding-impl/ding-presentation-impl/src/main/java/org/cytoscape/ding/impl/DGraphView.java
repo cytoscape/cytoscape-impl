@@ -47,7 +47,6 @@ import org.cytoscape.ding.EdgeView;
 import org.cytoscape.ding.GraphView;
 import org.cytoscape.ding.GraphViewObject;
 import org.cytoscape.ding.NodeView;
-import org.cytoscape.ding.ObjectPosition;
 import org.cytoscape.ding.PrintLOD;
 import org.cytoscape.ding.customgraphics.NullCustomGraphics;
 import org.cytoscape.ding.icon.VisualPropertyIconFactory;
@@ -108,6 +107,7 @@ import org.cytoscape.view.model.events.UpdateNetworkPresentationEvent;
 import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.presentation.property.values.HandleFactory;
+import org.cytoscape.view.presentation.property.values.ObjectPosition;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualPropertyDependency;
 import org.slf4j.Logger;
@@ -2561,7 +2561,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		
 		if (vp != DVisualLexicon.NODE_LABEL_POSITION && defaultValue instanceof ObjectPosition) {
 			// This is a CustomGraphicsPosition.
-			if (defaultValue.equals(ObjectPositionImpl.DEFAULT_POSITION) == false) {
+			if (defaultValue.equals(ObjectPosition.DEFAULT_POSITION) == false) {
 				applyToAllNodes(vp, defaultValue);
 				return;
 			}

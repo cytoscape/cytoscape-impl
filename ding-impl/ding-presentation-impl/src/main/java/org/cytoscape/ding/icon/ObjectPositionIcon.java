@@ -30,7 +30,7 @@ import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 
 import org.cytoscape.ding.ObjectPlacerGraphic;
-import org.cytoscape.ding.ObjectPosition;
+import org.cytoscape.view.presentation.property.values.ObjectPosition;
 
 public class ObjectPositionIcon extends VisualPropertyIcon<ObjectPosition> {
 	

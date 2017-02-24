@@ -29,12 +29,12 @@ import java.awt.Font;
 import java.awt.Paint;
 
 import org.cytoscape.ding.DVisualLexicon;
-import org.cytoscape.ding.ObjectPosition;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.presentation.property.NodeShapeVisualProperty;
 import org.cytoscape.view.presentation.property.values.LineType;
 import org.cytoscape.view.presentation.property.values.NodeShape;
+import org.cytoscape.view.presentation.property.values.ObjectPosition;
 
 final class NodeViewDefaultSupport extends AbstractViewDefaultSupport {
 
@@ -201,9 +201,9 @@ final class NodeViewDefaultSupport extends AbstractViewDefaultSupport {
 
 	public void setLabelPosition(final ObjectPosition labelPosition) {
 		synchronized (lock) {
-			nodeDetails.setLabelTextAnchorDefault(labelPosition.getAnchor().getConversionConstant());
-			nodeDetails.setLabelNodeAnchorDefault(labelPosition.getTargetAnchor().getConversionConstant());
-			nodeDetails.setLabelJustifyDefault(labelPosition.getJustify().getConversionConstant());
+			nodeDetails.setLabelTextAnchorDefault(labelPosition.getAnchor());
+			nodeDetails.setLabelNodeAnchorDefault(labelPosition.getTargetAnchor());
+			nodeDetails.setLabelJustifyDefault(labelPosition.getJustify());
 			nodeDetails.setLabelOffsetVectorXDefault(labelPosition.getOffsetX());
 			nodeDetails.setLabelOffsetVectorYDefault(labelPosition.getOffsetY());
 			// We need to do this so that getVisualProperty calls that fall through to 

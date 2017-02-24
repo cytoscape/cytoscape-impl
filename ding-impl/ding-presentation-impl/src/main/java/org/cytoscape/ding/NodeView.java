@@ -31,6 +31,7 @@ import java.awt.geom.Point2D;
 
 import org.cytoscape.model.CyNode;
 import org.cytoscape.view.presentation.property.values.NodeShape;
+import org.cytoscape.view.presentation.property.values.ObjectPosition;
 
 
 /**

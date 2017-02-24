@@ -48,7 +48,6 @@ import org.cytoscape.ding.DVisualLexicon;
 import org.cytoscape.ding.GraphView;
 import org.cytoscape.ding.Label;
 import org.cytoscape.ding.NodeView;
-import org.cytoscape.ding.ObjectPosition;
 import org.cytoscape.ding.impl.visualproperty.CustomGraphicsVisualProperty;
 import org.cytoscape.ding.impl.visualproperty.ObjectPositionVisualProperty;
 import org.cytoscape.graph.render.immed.GraphGraphics;
@@ -65,6 +64,7 @@ import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.presentation.property.values.LineType;
 import org.cytoscape.view.presentation.property.values.NodeShape;
+import org.cytoscape.view.presentation.property.values.ObjectPosition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -177,7 +177,7 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 		if (lexicon == null)
 			throw new NullPointerException("Lexicon must never be null.");
 
-		this.labelPosition = new ObjectPositionImpl();
+		this.labelPosition = new ObjectPosition();
 		this.modelIdx = model.getSUID();
 		this.graphView = graphView;
 		
@@ -946,10 +946,9 @@ public class DNodeView extends AbstractDViewModel<CyNode> implements NodeView, L
 	private void updateLabelPosition() {
 		synchronized (graphView.m_lock) {
 			graphView.m_nodeDetails
-					.overrideLabelTextAnchor(model, 0, labelPosition.getAnchor().getConversionConstant());
-			graphView.m_nodeDetails.overrideLabelNodeAnchor(model, 0, labelPosition.getTargetAnchor()
-					.getConversionConstant());
-			graphView.m_nodeDetails.overrideLabelJustify(model, 0, labelPosition.getJustify().getConversionConstant());
+					.overrideLabelTextAnchor(model, 0, labelPosition.getAnchor());
+			graphView.m_nodeDetails.overrideLabelNodeAnchor(model, 0, labelPosition.getTargetAnchor());
+			graphView.m_nodeDetails.overrideLabelJustify(model, 0, labelPosition.getJustify());
 			graphView.m_nodeDetails.overrideLabelOffsetVectorX(model, 0, labelPosition.getOffsetX());
 			graphView.m_nodeDetails.overrideLabelOffsetVectorY(model, 0, labelPosition.getOffsetY());
 

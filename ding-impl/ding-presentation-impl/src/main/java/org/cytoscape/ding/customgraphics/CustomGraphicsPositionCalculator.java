@@ -28,9 +28,9 @@ import java.awt.geom.AffineTransform;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.cytoscape.ding.ObjectPosition;
-import org.cytoscape.ding.Position;
 import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
+import org.cytoscape.view.presentation.property.values.ObjectPosition;
+import org.cytoscape.view.presentation.property.values.Position;
 
 public class CustomGraphicsPositionCalculator {
 	

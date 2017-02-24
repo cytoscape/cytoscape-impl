@@ -8,6 +8,7 @@ import javax.swing.JPanel;
 
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.IconManager;
+import org.cytoscape.view.presentation.property.values.ObjectPosition;
 import org.cytoscape.view.vizmap.gui.editor.ValueEditor;
 
 import com.l2fprod.common.beans.editor.AbstractPropertyEditor;

@@ -44,6 +44,10 @@ import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_S
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_TOOLTIP;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_TRANSPARENCY;
 
+import org.cytoscape.view.presentation.property.values.Justification;
+import org.cytoscape.view.presentation.property.values.ObjectPosition;
+import org.cytoscape.view.presentation.property.values.Position;
+
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Paint;
@@ -57,10 +61,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.cytoscape.ding.DNodeShape;
-import org.cytoscape.ding.Justification;
 import org.cytoscape.ding.Label;
-import org.cytoscape.ding.ObjectPosition;
-import org.cytoscape.ding.Position;
 import org.cytoscape.graph.render.stateful.CustomGraphicsInfo;
 import org.cytoscape.graph.render.stateful.NodeDetails;
 import org.cytoscape.model.CyNode;
@@ -95,9 +96,9 @@ public class DNodeDetails extends NodeDetails {
 	Map<CyNode, Font> m_labelFonts = new ConcurrentHashMap<>(16, 0.75f, 2);
 	Map<CyNode, Paint> m_labelPaints = new ConcurrentHashMap<>(16, 0.75f, 2);
 	Map<CyNode, Double> m_labelWidths = new ConcurrentHashMap<>(16, 0.75f, 2);
-	Map<CyNode, Integer> m_labelTextAnchors = new ConcurrentHashMap<>(16, 0.75f, 2);
-	Map<CyNode, Integer> m_labelNodeAnchors = new ConcurrentHashMap<>(16, 0.75f, 2);
-	Map<CyNode, Integer> m_labelJustifys = new ConcurrentHashMap<>(16, 0.75f, 2);
+	Map<CyNode, Position> m_labelTextAnchors = new ConcurrentHashMap<>(16, 0.75f, 2);
+	Map<CyNode, Position> m_labelNodeAnchors = new ConcurrentHashMap<>(16, 0.75f, 2);
+	Map<CyNode, Justification> m_labelJustifys = new ConcurrentHashMap<>(16, 0.75f, 2);
 	Map<CyNode, Double> m_labelOffsetXs = new ConcurrentHashMap<>(16, 0.75f, 2);
 	Map<CyNode, Double> m_labelOffsetYs = new ConcurrentHashMap<>(16, 0.75f, 2);
 	Map<CyNode, Integer> m_nodeTansparencies = new ConcurrentHashMap<>(16, 0.75f, 2);
@@ -123,11 +124,11 @@ public class DNodeDetails extends NodeDetails {
 	String m_tooltipTextDefault = NODE_TOOLTIP.getDefault();
 	Font m_labelFontDefault = NODE_LABEL_FONT_FACE.getDefault();
 	Paint m_labelPaintDefault = NODE_LABEL_COLOR.getDefault();
-	Byte m_labelTextAnchorDefault;
-	Byte m_labelNodeAnchorDefault;
+	Position m_labelTextAnchorDefault;
+	Position m_labelNodeAnchorDefault;
 	Double m_labelOffsetVectorXDefault;
 	Double m_labelOffsetVectorYDefault;
-	Byte m_labelJustifyDefault;
+	Justification m_labelJustifyDefault;
 	Double m_labelWidthDefault = NODE_LABEL_WIDTH.getDefault();
 	Integer transparencyDefault = NODE_TRANSPARENCY.getDefault();
 	Integer transparencyBorderDefault = NODE_BORDER_TRANSPARENCY.getDefault();
@@ -750,85 +751,86 @@ public class DNodeDetails extends NodeDetails {
 	}
 	
 	@Override
-	public byte getLabelTextAnchor(final CyNode node, final int labelInx) {
+	public Position getLabelTextAnchor(final CyNode node, final int labelInx) {
 		// Check bypass
 		final DNodeView dnv = dGraphView.getDNodeView(node);
 		if (dnv.isValueLocked(NODE_LABEL_POSITION)) {
 			final ObjectPosition lp = dnv.getVisualProperty(NODE_LABEL_POSITION);
 			final Position anchor = lp.getAnchor();
-			return convertG2ND(anchor.getConversionConstant());
+			return anchor;
 		}
 
-		final Integer p = m_labelTextAnchors.get(node);
+		final Position p = m_labelTextAnchors.get(node);
 
 		if (p == null)
 			if (m_labelTextAnchorDefault == null)
 				return super.getLabelTextAnchor(node, labelInx);
 			else
-				return m_labelTextAnchorDefault.byteValue();
+				return m_labelTextAnchorDefault;
 
-		return convertG2ND(p);
+		return p;
 	}
 
-	void setLabelTextAnchorDefault(int anchor) {
-		m_labelTextAnchorDefault = Byte.valueOf(convertG2ND(anchor));
+	void setLabelTextAnchorDefault(Position anchor) {
+		m_labelTextAnchorDefault = anchor;
 	}
 
-	void overrideLabelTextAnchor(final CyNode node, final int inx, final int anchor) {
+	void overrideLabelTextAnchor(final CyNode node, final int inx, final Position anchor) {
 		// Three possibilities:
 		//  1) We have no default and the anchor is the same as in NodeDetails
 		//  2) We have a default and the anchor is the same as the default
 		//  3) The anchor is different altogether
 		if (m_labelTextAnchorDefault == null &&
-				convertG2ND(anchor) == super.getLabelTextAnchor(node, inx))
+				anchor == super.getLabelTextAnchor(node, inx))
 			m_labelTextAnchors.remove(node);
 		else if (m_labelTextAnchorDefault != null &&
-		         convertG2ND(anchor) == m_labelTextAnchorDefault.byteValue())
+		         anchor == m_labelTextAnchorDefault)
 			m_labelTextAnchors.remove(node);
 		else {
-			m_labelTextAnchors.put(node, Integer.valueOf(anchor));
+			m_labelTextAnchors.put(node, anchor);
 			isCleared = false;
 		}
 	}
 
 	@Override
-	public byte getLabelNodeAnchor(final CyNode node, final int labelInx) {
+	public Position getLabelNodeAnchor(final CyNode node, final int labelInx) {
 		// Check bypass
 		final DNodeView dnv = dGraphView.getDNodeView(node);
 		if (dnv.isValueLocked(NODE_LABEL_POSITION)) {
 			final ObjectPosition lp = dnv.getVisualProperty(NODE_LABEL_POSITION);
 			final Position anchor = lp.getTargetAnchor();
-			return convertG2ND(anchor.getConversionConstant());
+			//return convertG2ND(anchor.getConversionConstant());
+			return anchor;
 		}
 
-		final Integer o = m_labelNodeAnchors.get(node);
+		final Position o = m_labelNodeAnchors.get(node);
 
 		if (o == null)
 			if (m_labelNodeAnchorDefault == null)
 				return super.getLabelNodeAnchor(node, labelInx);
 			else
-				return m_labelNodeAnchorDefault.byteValue();
+				return m_labelNodeAnchorDefault;
 
-		return convertG2ND(o);
+		return o;
 	}
 
-	void setLabelNodeAnchorDefault(int anchor) {
-		m_labelNodeAnchorDefault = Byte.valueOf(convertG2ND(anchor));
+	void setLabelNodeAnchorDefault(Position anchor) {
+		m_labelNodeAnchorDefault = anchor;
 	}
 
-	void overrideLabelNodeAnchor(final CyNode node, final int inx, final int anchor) {
+	void overrideLabelNodeAnchor(final CyNode node, final int inx, final Position anchor) {
 		// Three possibilities:
 		//  1) We have no default and the anchor is the same as in NodeDetails
 		//  2) We have a default and the anchor is the same as the default
 		//  3) The anchor is different altogether
 		if (m_labelNodeAnchorDefault == null &&
-				convertG2ND(anchor) == super.getLabelNodeAnchor(node, inx))
+				anchor == super.getLabelNodeAnchor(node, inx))
 			m_labelNodeAnchors.remove(node);
 		else if (m_labelNodeAnchorDefault != null &&
-		         convertG2ND(anchor) == m_labelNodeAnchorDefault.byteValue())
+		         anchor == m_labelNodeAnchorDefault)
 			m_labelNodeAnchors.remove(node);
 		else {
-			m_labelNodeAnchors.put(node, Integer.valueOf(anchor));
+			m_labelNodeAnchors.put(node, anchor);
 			isCleared = false;
 		}
 	}
@@ -916,43 +918,43 @@ public class DNodeDetails extends NodeDetails {
 	}
 
 	@Override
-	public byte getLabelJustify(final CyNode node, final int labelInx) {
+	public Justification getLabelJustify(final CyNode node, final int labelInx) {
 		// Check bypass
 		final DNodeView dnv = dGraphView.getDNodeView(node);
 		if (dnv.isValueLocked(NODE_LABEL_POSITION)) {
 			final ObjectPosition lp = dnv.getVisualProperty(NODE_LABEL_POSITION);
 			final Justification justify = lp.getJustify();
-			return convertG2ND(justify.getConversionConstant());
+			return justify;
 		}
 
-		Integer o = m_labelJustifys.get(node);
+		Justification o = m_labelJustifys.get(node);
 
 		if (o == null)
 			if (m_labelJustifyDefault == null)
 				return super.getLabelJustify(node, labelInx);
 			else
-				return m_labelJustifyDefault.byteValue();
+				return m_labelJustifyDefault;
 
-		return convertG2ND(o);
+		return o;
 	}
 
-	void setLabelJustifyDefault(int justify) {
-		m_labelJustifyDefault = Byte.valueOf(convertG2ND(justify));		
+	void setLabelJustifyDefault(Justification justify) {
+		m_labelJustifyDefault = justify;
 	}
 
-	void overrideLabelJustify(final CyNode node, final int inx, final int justify) {
+	void overrideLabelJustify(final CyNode node, final int inx, final Justification justify) {
 		// Three possibilities:
 		//  1) We have no default and the offset is the same as in NodeDetails
 		//  2) We have a default and the offset is the same as the default
 		//  3) The offset is different altogether
 		if (m_labelJustifyDefault == null &&
-		    convertG2ND(justify) == super.getLabelJustify(node, inx))
+		    justify == super.getLabelJustify(node, inx))
 			m_labelJustifys.remove(node);
 		else if (m_labelJustifyDefault != null &&
-		    convertG2ND(justify) == m_labelJustifyDefault)
+		    justify == m_labelJustifyDefault)
 			m_labelJustifys.remove(node);
 		else {
-			m_labelJustifys.put(node, Integer.valueOf(justify));
+			m_labelJustifys.put(node, justify);
 			isCleared = false;
 		}
 	}
@@ -1123,92 +1125,6 @@ public class DNodeDetails extends NodeDetails {
 		return dNodeView.getNestedNetworkTexturePaint();
 	}
 
-	static byte convertG2ND(final int giny) {
-		switch (giny) {
-		case (Label.NORTH):
-			return NodeDetails.ANCHOR_NORTH;
-
-		case (Label.SOUTH):
-			return NodeDetails.ANCHOR_SOUTH;
-
-		case (Label.EAST):
-			return NodeDetails.ANCHOR_EAST;
-
-		case (Label.WEST):
-			return NodeDetails.ANCHOR_WEST;
-
-		case (Label.NORTHEAST):
-			return NodeDetails.ANCHOR_NORTHEAST;
-
-		case (Label.NORTHWEST):
-			return NodeDetails.ANCHOR_NORTHWEST;
-
-		case (Label.SOUTHEAST):
-			return NodeDetails.ANCHOR_SOUTHEAST;
-
-		case (Label.SOUTHWEST):
-			return NodeDetails.ANCHOR_SOUTHWEST;
-
-		case (Label.CENTER):
-			return NodeDetails.ANCHOR_CENTER;
-
-		case (Label.JUSTIFY_CENTER):
-			return NodeDetails.LABEL_WRAP_JUSTIFY_CENTER;
-
-		case (Label.JUSTIFY_RIGHT):
-			return NodeDetails.LABEL_WRAP_JUSTIFY_RIGHT;
-
-		case (Label.JUSTIFY_LEFT):
-			return NodeDetails.LABEL_WRAP_JUSTIFY_LEFT;
-
-		default:
-			return -1;
-		}
-	}
-
-	static int convertND2G(byte nd) {
-		switch (nd) {
-		case (NodeDetails.ANCHOR_NORTH):
-			return Label.NORTH;
-
-		case (NodeDetails.ANCHOR_SOUTH):
-			return Label.SOUTH;
-
-		case (NodeDetails.ANCHOR_EAST):
-			return Label.EAST;
-
-		case (NodeDetails.ANCHOR_WEST):
-			return Label.WEST;
-
-		case (NodeDetails.ANCHOR_NORTHEAST):
-			return Label.NORTHEAST;
-
-		case (NodeDetails.ANCHOR_NORTHWEST):
-			return Label.NORTHWEST;
-
-		case (NodeDetails.ANCHOR_SOUTHEAST):
-			return Label.SOUTHEAST;
-
-		case (NodeDetails.ANCHOR_SOUTHWEST):
-			return Label.SOUTHWEST;
-
-		case (NodeDetails.ANCHOR_CENTER):
-			return Label.CENTER;
-
-		case (NodeDetails.LABEL_WRAP_JUSTIFY_CENTER):
-			return Label.JUSTIFY_CENTER;
-
-		case (NodeDetails.LABEL_WRAP_JUSTIFY_RIGHT):
-			return Label.JUSTIFY_RIGHT;
-
-		case (NodeDetails.LABEL_WRAP_JUSTIFY_LEFT):
-			return Label.JUSTIFY_LEFT;
-
-		default:
-			return -1;
-		}
-	}
-	
 	@SuppressWarnings("unchecked")
 	public <T, V extends T> V getDefaultValue(VisualProperty<T> vp) {
 		return (V) defaultValues.get(vp);
