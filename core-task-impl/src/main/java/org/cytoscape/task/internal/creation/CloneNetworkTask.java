@@ -162,6 +162,12 @@ public class CloneNetworkTask extends AbstractCreationTask implements Observable
 		addColumns(origNet, newNet, CyNode.class, CyNetwork.LOCAL_ATTRS);
 		addColumns(origNet, newNet, CyEdge.class, CyNetwork.LOCAL_ATTRS);
 
+		final CyRootNetwork origRoot = rootNetMgr.getRootNetwork(origNet);
+		final CyRootNetwork newRoot = rootNetMgr.getRootNetwork(newNet);
+		addColumns(origRoot, newRoot, CyNetwork.class, CyNetwork.LOCAL_ATTRS);
+		addColumns(origRoot, newRoot, CyNode.class, CyNetwork.LOCAL_ATTRS);
+		addColumns(origRoot, newRoot, CyEdge.class, CyNetwork.LOCAL_ATTRS);
+		
 		cloneNodes(origNet, newNet);
 		cloneEdges(origNet, newNet);
 
@@ -378,7 +384,8 @@ public class CloneNetworkTask extends AbstractCreationTask implements Observable
 						// Get the original column (not the virtual one!)
 						final CyColumn origCol = info.getSourceTable().getColumn(info.getSourceColumn());
 						// Copy the original column to the root-network's table first
-						final CyTable newRootTable = newRoot.getTable(tableType, namespace);
+						String sourceNamespace = netTableMgr.getTableNamespace(info.getSourceTable());
+						final CyTable newRootTable = newRoot.getTable(tableType, sourceNamespace);
 						
 						if (newRootTable.getColumn(origCol.getName()) == null)
 							copyColumn(origCol, newRootTable);

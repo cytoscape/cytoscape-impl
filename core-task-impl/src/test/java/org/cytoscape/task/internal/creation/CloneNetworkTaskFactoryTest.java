@@ -9,6 +9,7 @@ import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.NetworkTestSupport;
+import org.cytoscape.model.internal.CyRootNetworkManagerImpl;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.session.CyNetworkNaming;
 import org.cytoscape.view.model.CyNetworkViewFactory;
@@ -38,7 +39,7 @@ public class CloneNetworkTaskFactoryTest {
 		CyNetworkNaming naming = Mockito.mock(CyNetworkNaming.class);
 		CyApplicationManager appMgr = Mockito.mock(CyApplicationManager.class);
 		CyNetworkTableManager netTableMgr = Mockito.mock(CyNetworkTableManager.class);
-		CyRootNetworkManager rootNetMgr = Mockito.mock(CyRootNetworkManager.class);
+		CyRootNetworkManager rootNetMgr = new CyRootNetworkManagerImpl();
 		CyGroupManager groupMgr = Mockito.mock(CyGroupManager.class);
 		CyGroupFactory groupFactory = Mockito.mock(CyGroupFactory.class);
 		RenderingEngineManager renderingEngineMgr = Mockito.mock(RenderingEngineManager.class);
