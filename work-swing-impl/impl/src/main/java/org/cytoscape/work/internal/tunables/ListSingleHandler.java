@@ -83,7 +83,7 @@ public class ListSingleHandler<T> extends AbstractGUITunableHandler
 		try {
 			return (ListSingleSelection<T>)getValue();
 		} catch(final Exception e) {
-			throw new NullPointerException("bad ListSingleSelection object");	
+			throw new IllegalStateException("bad ListSingleSelection object", e);	
 		}
 	}
 
