@@ -360,7 +360,20 @@ public class JDialogTaskManager extends AbstractTaskManager<JDialog,Window> impl
 				logger.warn("Caught exception executing task. ", exception);
 				taskMonitor.showException(exception);
 				history.addMessage(TaskMonitor.Level.ERROR, exception.getMessage());
+			} catch (Throwable notAnException)
+			{
+			    //The catch clause for a Throwable that is not an exception is necessary - otherwise a NoClassDefFoundError in the task goes silent and breaks the app
+				Exception surrogateException = new Exception(notAnException);
+				finishStatus = FinishStatus.newFailed(task, surrogateException);
+				logger.error("Caught an error executing task. ", notAnException);
+				taskMonitor.showException(surrogateException);
+				history.addMessage(TaskMonitor.Level.ERROR, notAnException.getMessage());				
 			} finally {
+				if (finishStatus == null)
+				{
+					//This clause is just a defensive measure if something went wrong during exception handling (finishStatus should always be set, but who knows) 
+					finishStatus = FinishStatus.newFailed(task, new IllegalStateException("Finish status was not set"));
+				}
 				history.setFinishType(finishStatus.getType());
 				if (observer != null)
 					observer.allFinished(finishStatus);
